@@ -5,7 +5,10 @@
 #include <arm_neon.h>
 #include <limits.h>
 
-/* Used to force a variable to a SIMD register.  */
+/* Used to force a variable to a SIMD register.  Also acts as a stronger
+   inhibitor of optimization than the below - necessary for int64x1_t
+   because more of the implementation is in terms of gcc vector extensions
+   (which support constant propagation) than for other types.  */
 #define force_simd(V1)   asm volatile ("mov %d0, %1.d[0]"	\
 	   : "=w"(V1)						\
 	   : "w"(V1)						\
@@ -38,14 +41,6 @@ extern void abort (void);
 #define DATA_TYPE_32 float
 #define DATA_TYPE_64 double
 #define DATA_TYPE(data_len) DATA_TYPE_##data_len
-#define INDEX64_8 [i]
-#define INDEX64_16 [i]
-#define INDEX64_32 [i]
-#define INDEX64_64
-#define INDEX128_8 [i]
-#define INDEX128_16 [i]
-#define INDEX128_32 [i]
-#define INDEX128_64 [i]
 
 #define FORCE_SIMD_INST64_8(data)
 #define FORCE_SIMD_INST64_16(data)
@@ -56,8 +51,6 @@ extern void abort (void);
 #define FORCE_SIMD_INST128_32(data)
 #define FORCE_SIMD_INST128_64(data)
 
-#define INDEX(reg_len, data_len) \
-  CONCAT1 (INDEX, reg_len##_##data_len)
 #define FORCE_SIMD_INST(reg_len, data_len, data) \
   CONCAT1 (FORCE_SIMD_INST, reg_len##_##data_len) (data)
 #define LOAD_INST(reg_len, data_len) \
@@ -77,8 +70,7 @@ extern void abort (void);
     for (i = 0; i < n; i++)						\
       {									\
         INHIB_OPTIMIZATION;						\
-	if (a INDEX (reg_len, data_len)					\
-	    != b INDEX (reg_len, data_len))				\
+	if (a[i] != b[i])						\
 	  return 1;							\
       }									\
   }

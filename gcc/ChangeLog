@@ -1,6 +1,64 @@
 2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/60825
+	* config/aarch64/aarch64-builtins.c (aarch64_types_unop_qualifiers):
+	Ignore third operand if present by marking qualifier_internal.
+
+	* config/aarch64/aarch64-simd-builtins.def (abs): Comment.
+
+	* config/aarch64/arm_neon.h (int64x1_t, uint64x1_t): Typedef to GCC
+	vector extension.
+	(aarch64_vget_lane_s64, aarch64_vdup_lane_s64,
+	arch64_vdupq_lane_s64, aarch64_vdupq_lane_u64): Remove macro.
+	(vqadd_s64, vqadd_u64, vqsub_s64, vqsub_u64, vqneg_s64, vqabs_s64,
+	vcreate_s64, vcreate_u64, vreinterpret_s64_f64, vreinterpret_u64_f64,
+	vcombine_u64, vbsl_s64, vbsl_u64, vceq_s64, vceq_u64, vceqz_s64,
+	vceqz_u64, vcge_s64, vcge_u64, vcgez_s64, vcgt_s64, vcgt_u64,
+	vcgtz_s64, vcle_s64, vcle_u64, vclez_s64, vclt_s64, vclt_u64,
+	vcltz_s64, vdup_n_s64, vdup_n_u64, vld1_s64, vld1_u64, vmov_n_s64,
+	vmov_n_u64, vqdmlals_lane_s32, vqdmlsls_lane_s32,
+	vqdmulls_lane_s32, vqrshl_s64, vqrshl_u64, vqrshl_u64, vqshl_s64,
+	vqshl_u64, vqshl_n_s64, vqshl_n_u64, vqshl_n_s64, vqshl_n_u64,
+	vqshlu_n_s64, vrshl_s64, vrshl_u64, vrshr_n_s64, vrshr_n_u64,
+	vrsra_n_s64, vrsra_n_u64, vshl_n_s64, vshl_n_u64, vshl_s64,
+	vshl_u64, vshr_n_s64, vshr_n_u64, vsli_n_s64, vsli_n_u64,
+	vsqadd_u64, vsra_n_s64, vsra_n_u64, vsri_n_s64, vsri_n_u64,
+	vst1_s64, vst1_u64, vtst_s64, vtst_u64, vuqadd_s64): Wrap existing
+	logic in GCC vector extensions
+	
+	(vpaddd_s64, vaddd_s64, vaddd_u64, vceqd_s64, vceqd_u64, vceqzd_s64
+	vceqzd_u64, vcged_s64, vcged_u64, vcgezd_s64, vcgtd_s64, vcgtd_u64,
+	vcgtzd_s64, vcled_s64, vcled_u64, vclezd_s64, vcltd_s64, vcltd_u64,
+	vcltzd_s64, vqdmlals_s32, vqdmlsls_s32, vqmovnd_s64, vqmovnd_u64
+	vqmovund_s64, vqrshld_s64, vqrshld_u64, vqrshrnd_n_s64,
+	vqrshrnd_n_u64, vqrshrund_n_s64, vqshld_s64, vqshld_u64,
+	vqshld_n_u64, vqshrnd_n_s64, vqshrnd_n_u64, vqshrund_n_s64,
+	vrshld_u64, vrshrd_n_u64, vrsrad_n_u64, vshld_n_u64, vshld_s64,
+	vshld_u64, vslid_n_u64, vsqaddd_u64, vsrad_n_u64, vsrid_n_u64,
+	vsubd_s64, vsubd_u64, vtstd_s64, vtstd_u64): Fix type signature.
+
+	(vabs_s64): Use GCC vector extensions; call __builtin_aarch64_absdi.
+
+	(vget_high_s64, vget_high_u64): Reimplement with GCC vector
+	extensions.
+
+	(__GET_LOW, vget_low_u64): Wrap result using vcreate_u64.
+	(vget_low_s64): Use __GET_LOW macro.
+	(vget_lane_s64, vget_lane_u64, vdupq_lane_s64, vdupq_lane_u64): Use
+	gcc vector extensions, add call to __builtin_aarch64_lane_boundsi.
+	(vdup_lane_s64, vdup_lane_u64,): Add __builtin_aarch64_lane_bound_si.
+	(vdupd_lane_s64, vdupd_lane_u64): Fix type signature, add
+	__builtin_aarch64_lane_boundsi, use GCC vector extensions.
+
+	(vcombine_s64): Use GCC vector extensions; remove cast.
+	(vqaddd_s64, vqaddd_u64, vqdmulls_s32, vqshld_n_s64, vqshlud_n_s64,
+	vqsubd_s64, vqsubd_u64, vrshld_s64, vrshrd_n_s64, vrsrad_n_s64,
+	vshld_n_s64, vshrd_n_s64, vslid_n_s64, vsrad_n_s64, vsrid_n_s64):
+	Fix type signature; remove cast.
+
+2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/60825
 	* config/aarch64/aarch64.c (aarch64_simd_mangle_map): Add entry for
 	V1DFmode.
 	* config/aarch64/aarch64-builtins.c (aarch64_simd_builtin_type_mode):

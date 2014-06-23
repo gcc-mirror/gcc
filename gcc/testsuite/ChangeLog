@@ -1,5 +1,52 @@
 2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* g++.dg/abi/mangle-neon-aarch64.C (f22, f23): New tests of 
+	[u]int64x1_t.
+
+	* gcc.target/aarch64/aapcs64/func-ret-64x1_1.c: Add {u,}int64x1 cases.
+	* gcc.target/aarch64/aapcs64/test_64x1_1.c: Likewise.
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vaddd_u64,
+	test_vaddd_s64, test_vceqd_s64, test_vceqzd_s64, test_vcged_s64,
+	test_vcled_s64, test_vcgezd_s64, test_vcged_u64, test_vcgtd_s64,
+	test_vcltd_s64, test_vcgtzd_s64, test_vcgtd_u64, test_vclezd_s64,
+	test_vcltzd_s64, test_vqaddd_u64, test_vqaddd_s64, test_vqdmlals_s32,
+	test_vqdmlsls_s32, test_vqdmulls_s32, test_vuqaddd_s64,
+	test_vsqaddd_u64, test_vqmovund_s64, test_vqmovnd_s64,
+	test_vqmovnd_u64, test_vsubd_u64, test_vsubd_s64, test_vqsubd_u64,
+	test_vqsubd_s64, test_vshld_s64, test_vshld_u64, test_vrshld_s64,
+	test_vrshld_u64, test_vshrd_n_s64, test_vshrd_n_u64, test_vsrad_n_s64,
+	test_vsrad_n_u64, test_vrshrd_n_s64, test_vrshrd_n_u64,
+	test_vrsrad_n_s64, test_vrsrad_n_u64, test_vqrshld_s64,
+	test_vqrshld_u64, test_vqshlud_n_s64, test_vqshld_s64, test_vqshld_u64,
+	test_vqshld_n_u64, test_vqshrund_n_s64, test_vqrshrund_n_s64,
+	test_vqshrnd_n_s64, test_vqshrnd_n_u64, test_vqrshrnd_n_s64,
+	test_vqrshrnd_n_u64, test_vshld_n_s64, test_vshdl_n_u64,
+	test_vslid_n_s64, test_vslid_n_u64, test_vsrid_n_s64,
+	test_vsrid_n_u64): Fix signature to match intrinsic.
+	
+	(test_vabs_s64): Remove.
+	(test_vaddd_s64_2, test_vsubd_s64_2): Use force_simd.
+
+	(test_vdupd_lane_s64): Rename to...
+	(test_vdupd_laneq_s64): ...and remove a call to force_simd.
+
+	(test_vdupd_lane_u64): Rename to...
+	(test_vdupd_laneq_u64): ...and remove a call to force_simd.
+
+	(test_vtst_s64): Rename to...
+	(test_vtstd_s64): ...and change int64x1_t to int64_t.
+
+	(test_vtst_u64): Rename to...
+	(test_vtstd_u64): ...and change uint64x1_t to uint64_t.
+
+	* gcc.target/aarch64/singleton_intrinsics_1.c: New file.
+	* gcc.target/aarch64/vdup_lane_1.c, gcc.target/aarch64/vdup_lane_2.c:
+	Remove out-of-bounds tests.
+	* gcc.target/aarch64/vneg_s.c (INDEX*, RUN_TEST): Remove INDEX macro.
+
+2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* g++.dg/abi/mangle-neon-aarch64.C: Also test mangling of float64x1_t.
 	* gcc.target/aarch64/aapcs/test_64x1_1.c: New test.
 	* gcc.target/aarch64/aapcs/func-ret-64x1_1.c: New test.

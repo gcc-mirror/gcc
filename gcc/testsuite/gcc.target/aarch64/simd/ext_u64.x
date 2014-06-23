@@ -9,7 +9,7 @@ main (int argc, char **argv)
   uint64_t arr2[] = {1};
   uint64x1_t in2 = vld1_u64 (arr2);
   uint64x1_t actual = vext_u64 (in1, in2, 0);
-  if (actual != in1)
+  if (actual[0] != in1[0])
     abort ();
 
   return 0;

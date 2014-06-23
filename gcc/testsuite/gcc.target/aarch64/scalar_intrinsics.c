@@ -11,45 +11,37 @@
 
 /* { dg-final { scan-assembler-times "\\tadd\\tx\[0-9\]+" 2 } } */
 
-uint64x1_t
-test_vaddd_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vaddd_u64 (uint64_t a, uint64_t b)
 {
   return vaddd_u64 (a, b);
 }
 
-int64x1_t
-test_vaddd_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vaddd_s64 (int64_t a, int64_t b)
 {
   return vaddd_s64 (a, b);
 }
 
 /* { dg-final { scan-assembler-times "\\tadd\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vaddd_s64_2 (int64x1_t a, int64x1_t b, int64x1_t c, int64x1_t d)
+int64_t
+test_vaddd_s64_2 (int64_t a, int64_t b)
 {
-  return vqaddd_s64 (vaddd_s64 (vqaddd_s64 (a, b), vqaddd_s64 (c, d)),
-		     vqaddd_s64 (a, d));
-}
-
-/* { dg-final { scan-assembler-times "\\tabs\\td\[0-9\]+, d\[0-9\]+" 1 } } */
-
-int64x1_t
-test_vabs_s64 (int64x1_t a)
-{
-  uint64x1_t res;
+  int64_t res;
   force_simd (a);
-  res = vabs_s64 (a);
+  force_simd (b);
+  res = vaddd_s64 (a, b);
   force_simd (res);
   return res;
 }
 
 /* { dg-final { scan-assembler-times "\\tcmeq\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vceqd_s64 (int64x1_t a, int64x1_t b)
+uint64_t
+test_vceqd_s64 (int64_t a, int64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vceqd_s64 (a, b);
@@ -59,10 +51,10 @@ test_vceqd_s64 (int64x1_t a, int64x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tcmeq\\td\[0-9\]+, d\[0-9\]+, #?0" 1 } } */
 
-uint64x1_t
-test_vceqzd_s64 (int64x1_t a)
+uint64_t
+test_vceqzd_s64 (int64_t a)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   res = vceqzd_s64 (a);
   force_simd (res);
@@ -71,10 +63,10 @@ test_vceqzd_s64 (int64x1_t a)
 
 /* { dg-final { scan-assembler-times "\\tcmge\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 2 } } */
 
-uint64x1_t
-test_vcged_s64 (int64x1_t a, int64x1_t b)
+uint64_t
+test_vcged_s64 (int64_t a, int64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vcged_s64 (a, b);
@@ -82,10 +74,10 @@ test_vcged_s64 (int64x1_t a, int64x1_t b)
   return res;
 }
 
-uint64x1_t
-test_vcled_s64 (int64x1_t a, int64x1_t b)
+uint64_t
+test_vcled_s64 (int64_t a, int64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vcled_s64 (a, b);
@@ -96,10 +88,10 @@ test_vcled_s64 (int64x1_t a, int64x1_t b)
 /* Idiom recognition will cause this testcase not to generate
    the expected cmge instruction, so do not check for it.  */
 
-uint64x1_t
-test_vcgezd_s64 (int64x1_t a)
+uint64_t
+test_vcgezd_s64 (int64_t a)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   res = vcgezd_s64 (a);
   force_simd (res);
@@ -108,10 +100,10 @@ test_vcgezd_s64 (int64x1_t a)
 
 /* { dg-final { scan-assembler-times "\\tcmhs\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vcged_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vcged_u64 (uint64_t a, uint64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vcged_u64 (a, b);
@@ -121,10 +113,10 @@ test_vcged_u64 (uint64x1_t a, uint64x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tcmgt\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 2 } } */
 
-uint64x1_t
-test_vcgtd_s64 (int64x1_t a, int64x1_t b)
+uint64_t
+test_vcgtd_s64 (int64_t a, int64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vcgtd_s64 (a, b);
@@ -132,10 +124,10 @@ test_vcgtd_s64 (int64x1_t a, int64x1_t b)
   return res;
 }
 
-uint64x1_t
-test_vcltd_s64 (int64x1_t a, int64x1_t b)
+uint64_t
+test_vcltd_s64 (int64_t a, int64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vcltd_s64 (a, b);
@@ -145,10 +137,10 @@ test_vcltd_s64 (int64x1_t a, int64x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tcmgt\\td\[0-9\]+, d\[0-9\]+, #?0" 1 } } */
 
-uint64x1_t
-test_vcgtzd_s64 (int64x1_t a)
+uint64_t
+test_vcgtzd_s64 (int64_t a)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   res = vcgtzd_s64 (a);
   force_simd (res);
@@ -157,10 +149,10 @@ test_vcgtzd_s64 (int64x1_t a)
 
 /* { dg-final { scan-assembler-times "\\tcmhi\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vcgtd_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vcgtd_u64 (uint64_t a, uint64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vcgtd_u64 (a, b);
@@ -170,10 +162,10 @@ test_vcgtd_u64 (uint64x1_t a, uint64x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tcmle\\td\[0-9\]+, d\[0-9\]+, #?0" 1 } } */
 
-uint64x1_t
-test_vclezd_s64 (int64x1_t a)
+uint64_t
+test_vclezd_s64 (int64_t a)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   res = vclezd_s64 (a);
   force_simd (res);
@@ -183,10 +175,10 @@ test_vclezd_s64 (int64x1_t a)
 /* Idiom recognition will cause this testcase not to generate
    the expected cmlt instruction, so do not check for it.  */
 
-uint64x1_t
-test_vcltzd_s64 (int64x1_t a)
+uint64_t
+test_vcltzd_s64 (int64_t a)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   res = vcltzd_s64 (a);
   force_simd (res);
@@ -261,32 +253,28 @@ test_vdups_lane_u32 (uint32x4_t a)
 
 /* { dg-final { scan-assembler-times "aarch64_get_lanev2di" 2 } } */
 
-int64x1_t
-test_vdupd_lane_s64 (int64x2_t a)
+int64_t
+test_vdupd_laneq_s64 (int64x2_t a)
 {
-  int64x1_t res;
-  force_simd (a);
-  res = vdupd_laneq_s64 (a, 1);
+  int64_t res = vdupd_laneq_s64 (a, 1);
   force_simd (res);
   return res;
 }
 
-uint64x1_t
-test_vdupd_lane_u64 (uint64x2_t a)
+uint64_t
+test_vdupd_laneq_u64 (uint64x2_t a)
 {
-  uint64x1_t res;
-  force_simd (a);
-  res = vdupd_laneq_u64 (a, 1);
+  uint64_t res = vdupd_laneq_u64 (a, 1);
   force_simd (res);
   return res;
 }
 
 /* { dg-final { scan-assembler-times "\\tcmtst\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 2 } } */
 
-int64x1_t
-test_vtst_s64 (int64x1_t a, int64x1_t b)
+uint64_t
+test_vtstd_s64 (int64_t a, int64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
   res = vtstd_s64 (a, b);
@@ -294,13 +282,13 @@ test_vtst_s64 (int64x1_t a, int64x1_t b)
   return res;
 }
 
-uint64x1_t
-test_vtst_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vtstd_u64 (uint64_t a, uint64_t b)
 {
-  uint64x1_t res;
+  uint64_t res;
   force_simd (a);
   force_simd (b);
-  res = vtstd_s64 (a, b);
+  res = vtstd_u64 (a, b);
   force_simd (res);
   return res;
 }
@@ -314,8 +302,8 @@ test_vpaddd_s64 (int64x2_t a)
 
 /* { dg-final { scan-assembler-times "\\tuqadd\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vqaddd_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vqaddd_u64 (uint64_t a, uint64_t b)
 {
   return vqaddd_u64 (a, b);
 }
@@ -344,10 +332,10 @@ test_vqaddb_u8 (uint8x1_t a, uint8x1_t b)
   return vqaddb_u8 (a, b);
 }
 
-/* { dg-final { scan-assembler-times "\\tsqadd\\td\[0-9\]+" 5 } } */
+/* { dg-final { scan-assembler-times "\\tsqadd\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vqaddd_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vqaddd_s64 (int64_t a, int64_t b)
 {
   return vqaddd_s64 (a, b);
 }
@@ -394,8 +382,8 @@ test_vqdmlalh_lane_s16 (int32x1_t a, int16x1_t b, int16x4_t c)
 
 /* { dg-final { scan-assembler-times "\\tsqdmlal\\td\[0-9\]+, s\[0-9\]+, s\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vqdmlals_s32 (int64x1_t a, int32x1_t b, int32x1_t c)
+int64_t
+test_vqdmlals_s32 (int64_t a, int32x1_t b, int32x1_t c)
 {
   return vqdmlals_s32 (a, b, c);
 }
@@ -426,8 +414,8 @@ test_vqdmlslh_lane_s16 (int32x1_t a, int16x1_t b, int16x4_t c)
 
 /* { dg-final { scan-assembler-times "\\tsqdmlsl\\td\[0-9\]+, s\[0-9\]+, s\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vqdmlsls_s32 (int64x1_t a, int32x1_t b, int32x1_t c)
+int64_t
+test_vqdmlsls_s32 (int64_t a, int32x1_t b, int32x1_t c)
 {
   return vqdmlsls_s32 (a, b, c);
 }
@@ -490,7 +478,7 @@ test_vqdmullh_lane_s16 (int16x1_t a, int16x4_t b)
 
 /* { dg-final { scan-assembler-times "\\tsqdmull\\td\[0-9\]+, s\[0-9\]+, s\[0-9\]+" 1 } } */
 
-int64x1_t
+int64_t
 test_vqdmulls_s32 (int32x1_t a, int32x1_t b)
 {
   return vqdmulls_s32 (a, b);
@@ -562,8 +550,8 @@ test_vuqadds_s32 (int32x1_t a, int8x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tsuqadd\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vuqaddd_s64 (int64x1_t a, int8x1_t b)
+int64_t
+test_vuqaddd_s64 (int64_t a, uint64_t b)
 {
   return vuqaddd_s64 (a, b);
 }
@@ -594,8 +582,8 @@ test_vsqadds_u32 (uint32x1_t a, int8x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tusqadd\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vsqaddd_u64 (uint64x1_t a, int8x1_t b)
+uint64_t
+test_vsqaddd_u64 (uint64_t a, int64_t b)
 {
   return vsqaddd_u64 (a, b);
 }
@@ -667,7 +655,7 @@ test_vqmovuns_s32 (int32x1_t a)
 /* { dg-final { scan-assembler-times "\\tsqxtun\\ts\[0-9\]+" 1 } } */
 
 int32x1_t
-test_vqmovund_s64 (int64x1_t a)
+test_vqmovund_s64 (int64_t a)
 {
   return vqmovund_s64 (a);
 }
@@ -691,7 +679,7 @@ test_vqmovns_s32 (int32x1_t a)
 /* { dg-final { scan-assembler-times "\\tsqxtn\\ts\[0-9\]+" 1 } } */
 
 int32x1_t
-test_vqmovnd_s64 (int64x1_t a)
+test_vqmovnd_s64 (int64_t a)
 {
   return vqmovnd_s64 (a);
 }
@@ -715,38 +703,42 @@ test_vqmovns_u32 (uint32x1_t a)
 /* { dg-final { scan-assembler-times "\\tuqxtn\\ts\[0-9\]+" 1 } } */
 
 uint32x1_t
-test_vqmovnd_u64 (uint64x1_t a)
+test_vqmovnd_u64 (uint64_t a)
 {
   return vqmovnd_u64 (a);
 }
 
 /* { dg-final { scan-assembler-times "\\tsub\\tx\[0-9\]+" 2 } } */
 
-uint64x1_t
-test_vsubd_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vsubd_u64 (uint64_t a, uint64_t b)
 {
   return vsubd_u64 (a, b);
 }
 
-int64x1_t
-test_vsubd_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vsubd_s64 (int64_t a, int64_t b)
 {
   return vsubd_s64 (a, b);
 }
 
 /* { dg-final { scan-assembler-times "\\tsub\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vsubd_s64_2 (int64x1_t a, int64x1_t b, int64x1_t c, int64x1_t d)
+int64_t
+test_vsubd_s64_2 (int64_t a, int64_t b)
 {
-  return vqsubd_s64 (vsubd_s64 (vqsubd_s64 (a, b), vqsubd_s64 (c, d)),
-		     vqsubd_s64 (a, d));
+  int64_t res;
+  force_simd (a);
+  force_simd (b);
+  res = vsubd_s64 (a, b);
+  force_simd (res);
+  return res;
 }
 
 /* { dg-final { scan-assembler-times "\\tuqsub\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vqsubd_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vqsubd_u64 (uint64_t a, uint64_t b)
 {
   return vqsubd_u64 (a, b);
 }
@@ -775,10 +767,10 @@ test_vqsubb_u8 (uint8x1_t a, uint8x1_t b)
   return vqsubb_u8 (a, b);
 }
 
-/* { dg-final { scan-assembler-times "\\tsqsub\\td\[0-9\]+" 5 } } */
+/* { dg-final { scan-assembler-times "\\tsqsub\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vqsubd_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vqsubd_s64 (int64_t a, int64_t b)
 {
   return vqsubd_s64 (a, b);
 }
@@ -809,32 +801,32 @@ test_vqsubb_s8 (int8x1_t a, int8x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tsshl\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vshld_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vshld_s64 (int64_t a, int64_t b)
 {
   return vshld_s64 (a, b);
 }
 
 /* { dg-final { scan-assembler-times "\\tushl\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vshld_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vshld_u64 (uint64_t a, uint64_t b)
 {
   return vshld_u64 (a, b);
 }
 
 /* { dg-final { scan-assembler-times "\\tsrshl\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vrshld_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vrshld_s64 (int64_t a, int64_t b)
 {
   return vrshld_s64 (a, b);
 }
 
 /* { dg-final { scan-assembler-times "\\turshl\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vrshld_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vrshld_u64 (uint64_t a, int64_t b)
 {
   return vrshld_u64 (a, b);
 }
@@ -844,64 +836,64 @@ test_vrshld_u64 (uint64x1_t a, uint64x1_t b)
 
 /* { dg-final { scan-assembler "\\tasr\\tx\[0-9\]+" } } */
 
-int64x1_t
-test_vshrd_n_s64 (int64x1_t a)
+int64_t
+test_vshrd_n_s64 (int64_t a)
 {
   return vshrd_n_s64 (a, 5);
 }
 
 /* { dg-final { scan-assembler-times "\\tlsr\\tx\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vshrd_n_u64 (uint64x1_t a)
+uint64_t
+test_vshrd_n_u64 (uint64_t a)
 {
   return vshrd_n_u64 (a, 3);
 }
 
 /* { dg-final { scan-assembler-times "\\tssra\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vsrad_n_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vsrad_n_s64 (int64_t a, int64_t b)
 {
   return vsrad_n_s64 (a, b, 2);
 }
 
 /* { dg-final { scan-assembler-times "\\tusra\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vsrad_n_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vsrad_n_u64 (uint64_t a, uint64_t b)
 {
   return vsrad_n_u64 (a, b, 5);
 }
 
 /* { dg-final { scan-assembler-times "\\tsrshr\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vrshrd_n_s64 (int64x1_t a)
+int64_t
+test_vrshrd_n_s64 (int64_t a)
 {
   return vrshrd_n_s64 (a, 5);
 }
 
 /* { dg-final { scan-assembler-times "\\turshr\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vrshrd_n_u64 (uint64x1_t a)
+uint64_t
+test_vrshrd_n_u64 (uint64_t a)
 {
   return vrshrd_n_u64 (a, 3);
 }
 
 /* { dg-final { scan-assembler-times "\\tsrsra\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vrsrad_n_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vrsrad_n_s64 (int64_t a, int64_t b)
 {
   return vrsrad_n_s64 (a, b, 3);
 }
 
 /* { dg-final { scan-assembler-times "\\tsrsra\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vrsrad_n_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vrsrad_n_u64 (uint64_t a, uint64_t b)
 {
   return vrsrad_n_u64 (a, b, 4);
 }
@@ -932,8 +924,8 @@ test_vqrshls_s32 (int32x1_t a, int32x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tsqrshl\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vqrshld_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vqrshld_s64 (int64_t a, int64_t b)
 {
   return vqrshld_s64 (a, b);
 }
@@ -964,8 +956,8 @@ test_vqrshls_u32 (uint32x1_t a, uint32x1_t b)
 
 /* { dg-final { scan-assembler-times "\\tuqrshl\\td\[0-9\]+" 1 } } */
 
-uint64x1_t
-test_vqrshld_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vqrshld_u64 (uint64_t a, uint64_t b)
 {
   return vqrshld_u64 (a, b);
 }
@@ -996,8 +988,8 @@ test_vqshlus_n_s32 (int32x1_t a)
 
 /* { dg-final { scan-assembler-times "\\tsqshlu\\td\[0-9\]+" 1 } } */
 
-int64x1_t
-test_vqshlud_n_s64 (int64x1_t a)
+int64_t
+test_vqshlud_n_s64 (int64_t a)
 {
   return vqshlud_n_s64 (a, 6);
 }
@@ -1046,14 +1038,14 @@ test_vqshls_n_s32 (int32x1_t a)
 
 /* { dg-final { scan-assembler-times "\\tsqshl\\td\[0-9\]+" 2 } } */
 
-int64x1_t
-test_vqshld_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vqshld_s64 (int64_t a, int64_t b)
 {
   return vqshld_s64 (a, b);
 }
 
-int64x1_t
-test_vqshld_n_s64 (int64x1_t a)
+int64_t
+test_vqshld_n_s64 (int64_t a)
 {
   return vqshld_n_s64 (a, 5);
 }
@@ -1102,14 +1094,14 @@ test_vqshls_n_u32 (uint32x1_t a)
 
 /* { dg-final { scan-assembler-times "\\tuqshl\\td\[0-9\]+" 2 } } */
 
-uint64x1_t
-test_vqshld_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vqshld_u64 (uint64_t a, int64_t b)
 {
   return vqshld_u64 (a, b);
 }
 
-uint64x1_t
-test_vqshld_n_u64 (uint64x1_t a)
+uint64_t
+test_vqshld_n_u64 (uint64_t a)
 {
   return vqshld_n_u64 (a, 5);
 }
@@ -1133,7 +1125,7 @@ test_vqshruns_n_s32 (int32x1_t a)
 /* { dg-final { scan-assembler-times "\\tsqshrun\\ts\[0-9\]+" 1 } } */
 
 int32x1_t
-test_vqshrund_n_s64 (int64x1_t a)
+test_vqshrund_n_s64 (int64_t a)
 {
   return vqshrund_n_s64 (a, 4);
 }
@@ -1157,7 +1149,7 @@ test_vqrshruns_n_s32 (int32x1_t a)
 /* { dg-final { scan-assembler-times "\\tsqrshrun\\ts\[0-9\]+" 1 } } */
 
 int32x1_t
-test_vqrshrund_n_s64 (int64x1_t a)
+test_vqrshrund_n_s64 (int64_t a)
 {
   return vqrshrund_n_s64 (a, 4);
 }
@@ -1181,7 +1173,7 @@ test_vqshrns_n_s32 (int32x1_t a)
 /* { dg-final { scan-assembler-times "\\tsqshrn\\ts\[0-9\]+" 1 } } */
 
 int32x1_t
-test_vqshrnd_n_s64 (int64x1_t a)
+test_vqshrnd_n_s64 (int64_t a)
 {
   return vqshrnd_n_s64 (a, 4);
 }
@@ -1205,7 +1197,7 @@ test_vqshrns_n_u32 (uint32x1_t a)
 /* { dg-final { scan-assembler-times "\\tuqshrn\\ts\[0-9\]+" 1 } } */
 
 uint32x1_t
-test_vqshrnd_n_u64 (uint64x1_t a)
+test_vqshrnd_n_u64 (uint64_t a)
 {
   return vqshrnd_n_u64 (a, 4);
 }
@@ -1229,7 +1221,7 @@ test_vqrshrns_n_s32 (int32x1_t a)
 /* { dg-final { scan-assembler-times "\\tsqrshrn\\ts\[0-9\]+" 1 } } */
 
 int32x1_t
-test_vqrshrnd_n_s64 (int64x1_t a)
+test_vqrshrnd_n_s64 (int64_t a)
 {
   return vqrshrnd_n_s64 (a, 4);
 }
@@ -1253,49 +1245,49 @@ test_vqrshrns_n_u32 (uint32x1_t a)
 /* { dg-final { scan-assembler-times "\\tuqrshrn\\ts\[0-9\]+" 1 } } */
 
 uint32x1_t
-test_vqrshrnd_n_u64 (uint64x1_t a)
+test_vqrshrnd_n_u64 (uint64_t a)
 {
   return vqrshrnd_n_u64 (a, 4);
 }
 
 /* { dg-final { scan-assembler-times "\\tlsl\\tx\[0-9\]+" 2 } } */
 
-int64x1_t
-test_vshl_n_s64 (int64x1_t a)
+int64_t
+test_vshld_n_s64 (int64_t a)
 {
   return vshld_n_s64 (a, 9);
 }
 
-uint64x1_t
-test_vshl_n_u64 (uint64x1_t a)
+uint64_t
+test_vshdl_n_u64 (uint64_t a)
 {
   return vshld_n_u64 (a, 9);
 }
 
 /* { dg-final { scan-assembler-times "\\tsli\\td\[0-9\]+" 2 } } */
 
-int64x1_t
-test_vsli_n_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vslid_n_s64 (int64_t a, int64_t b)
 {
   return vslid_n_s64 (a, b, 9);
 }
 
-uint64x1_t
-test_vsli_n_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vslid_n_u64 (uint64_t a, uint64_t b)
 {
   return vslid_n_u64 (a, b, 9);
 }
 
 /* { dg-final { scan-assembler-times "\\tsri\\td\[0-9\]+" 2 } } */
 
-int64x1_t
-test_vsri_n_s64 (int64x1_t a, int64x1_t b)
+int64_t
+test_vsrid_n_s64 (int64_t a, int64_t b)
 {
   return vsrid_n_s64 (a, b, 9);
 }
 
-uint64x1_t
-test_vsri_n_u64 (uint64x1_t a, uint64x1_t b)
+uint64_t
+test_vsrid_n_u64 (uint64_t a, uint64_t b)
 {
   return vsrid_n_u64 (a, b, 9);
 }

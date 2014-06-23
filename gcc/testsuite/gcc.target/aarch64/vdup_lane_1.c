@@ -304,12 +304,6 @@ wrap_vdup_lane_s64_0 (int64x1_t a)
   return vdup_lane_s64 (a, 0);
 }
 
-int64x1_t __attribute__ ((noinline))
-wrap_vdup_lane_s64_1 (int64x1_t a)
-{
-  return vdup_lane_s64 (a, 1);
-}
-
 int __attribute__ ((noinline))
 test_vdup_lane_s64 ()
 {
@@ -325,12 +319,6 @@ test_vdup_lane_s64 ()
   if (c[0] != d[0])
     return 1;
 
-  c[0] = 1;
-  a = vld1_s64 (c);
-  b = wrap_vdup_lane_s64_1 (a);
-  vst1_s64 (d, b);
-  if (c[0] != d[0])
-    return 1;
   return 0;
 }
 
@@ -338,12 +326,6 @@ int64x2_t __attribute__ ((noinline))
 wrap_vdupq_lane_s64_0 (int64x1_t a)
 {
   return vdupq_lane_s64 (a, 0);
-}
-
-int64x2_t __attribute__ ((noinline))
-wrap_vdupq_lane_s64_1 (int64x1_t a)
-{
-  return vdupq_lane_s64 (a, 1);
 }
 
 int __attribute__ ((noinline))
@@ -358,14 +340,6 @@ test_vdupq_lane_s64 ()
   c[0] = 0;
   a = vld1_s64 (c);
   b = wrap_vdupq_lane_s64_0 (a);
-  vst1q_s64 (d, b);
-  for (i = 0; i < 2; i++)
-    if (c[0] != d[i])
-      return 1;
-
-  c[0] = 1;
-  a = vld1_s64 (c);
-  b = wrap_vdupq_lane_s64_1 (a);
   vst1q_s64 (d, b);
   for (i = 0; i < 2; i++)
     if (c[0] != d[i])

@@ -11,5 +11,7 @@
 #include "abitest-2.h"
 #else
 FUNC_VAL_CHECK ( 0, float64x1_t, (float64x1_t) {123456.789}, D0, flat)
+FUNC_VAL_CHECK ( 1, int64x1_t, (int64x1_t) {0xdeadbeefcafebabeLL}, D0, flat)
+FUNC_VAL_CHECK ( 2, uint64x1_t, (uint64x1_t) {0xaaaabbbbccccddddULL}, D0, flat)
 #endif
 
