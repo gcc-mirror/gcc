@@ -29,6 +29,7 @@ void test01()
   using std::make_signed;
   using std::is_same;
   using std::is_signed;
+  using std::is_volatile;
 
   // Positive tests.
   typedef make_signed<const int>::type  	test2_type;
@@ -53,7 +54,9 @@ void test01()
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_signed<volatile wchar_t>::type  	test23_type;
-  static_assert( is_same<test23_type, volatile signed wchar_t>::value,
+  static_assert( is_signed<test23_type>::value
+                 && is_volatile<test23_type>::value
+                 && sizeof(test23_type) == sizeof(volatile wchar_t),
                  "make_signed<volatile wchar_t>" );
 #endif
 
