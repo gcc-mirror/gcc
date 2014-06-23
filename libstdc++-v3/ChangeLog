@@ -4,6 +4,7 @@
 	* include/std/chrono (_Checked_integral_constant): Allow zero.
 	* testsuite/20_util/duration/literals/values.cc: Test non-positive
 	values and digit separators.
+	* include/experimental/any 
 
 	PR libstdc++/61532
 	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Do not
@@ -13,6 +14,14 @@
 	cv-qualifier and size.
 	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
 	Likewise.
+
+	* include/experimental/any (any_v1): Rename namespace to
+	fundamentals_v1. Change string returned by bad_any_cast::what().
+	* include/experimental/optional (fundamentals_v1): Add namespace.
+	* include/experimental/string_view (fundamentals_v1): Likewise.
+	* testsuite/experimental/any/typedefs.cc: New.
+	* testsuite/experimental/optional/typedefs.cc: New.
+	* testsuite/experimental/string_view/typedefs.cc: New.
 
 2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
