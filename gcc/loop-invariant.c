@@ -839,6 +839,39 @@ check_dependencies (rtx insn, bitmap depends_on)
   return true;
 }
 
+/* Pre-check candidate DEST to skip the one which can not make a valid insn
+   during move_invariant_reg.  SIMPLE is to skip HARD_REGISTER.  */
+static bool
+pre_check_invariant_p (bool simple, rtx dest)
+{
+  if (simple && REG_P (dest) && DF_REG_DEF_COUNT (REGNO (dest)) > 1)
+    {
+      df_ref use;
+      rtx ref;
+      unsigned int i = REGNO (dest);
+      struct df_insn_info *insn_info;
+      df_ref def_rec;
+
+      for (use = DF_REG_USE_CHAIN (i); use; use = DF_REF_NEXT_REG (use))
+	{
+	  ref = DF_REF_INSN (use);
+	  insn_info = DF_INSN_INFO_GET (ref);
+
+	  FOR_EACH_INSN_INFO_DEF (def_rec, insn_info)
+	    if (DF_REF_REGNO (def_rec) == i)
+	      {
+		/* Multi definitions at this stage, most likely are due to
+		   instruction constraints, which requires both read and write
+		   on the same register.  Since move_invariant_reg is not
+		   powerful enough to handle such cases, just ignore the INV
+		   and leave the chance to others.  */
+		return false;
+	      }
+	}
+    }
+  return true;
+}
+
 /* Finds invariant in INSN.  ALWAYS_REACHED is true if the insn is always
    executed.  ALWAYS_EXECUTED is true if the insn is always executed,
    unless the program ends due to a function call.  */
@@ -868,7 +901,8 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
       || HARD_REGISTER_P (dest))
     simple = false;
 
-  if (!may_assign_reg_p (SET_DEST (set))
+  if (!may_assign_reg_p (dest)
+      || !pre_check_invariant_p (simple, dest)
       || !check_maybe_invariant (SET_SRC (set)))
     return;
 

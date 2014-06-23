@@ -1,3 +1,8 @@
+2014-06-23  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* loop-invariant.c (pre_check_invariant_p): New function.
+	(find_invariant_insn): Call pre_check_invariant_p.
+
 2014-06-22  Richard Henderson  <rth@redhat.com>
 
 	PR target/61565
