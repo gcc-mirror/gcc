@@ -56,6 +56,12 @@ test03()
   VERIFY( workday == std::chrono::hours(8) );
   auto fworkday = 8.0h;
   VERIFY( (fworkday == std::chrono::duration<long double, std::ratio<3600,1>>(8.0L)) );
+  auto immediate = 0s;
+  VERIFY( immediate == std::chrono::seconds(0) );
+  auto minute_ago = -1min;
+  VERIFY( minute_ago == std::chrono::minutes(-1) );
+  auto separated = 1'000'000s;
+  VERIFY( separated == std::chrono::seconds(1'000'000) );
 }
 
 int
