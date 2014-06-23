@@ -190,10 +190,11 @@ namespace __parse_int
       using __digit = _Digit<_Base, _Dig>;
       using __valid_digit = typename __digit::__valid;
       using __next = _Number_help<_Base,
-				  _Pow / (_Base * __valid_digit::value),
+				  __valid_digit::value ? _Pow / _Base : _Pow,
 				  _Digs...>;
       using type = __ull_constant<_Pow * __digit::value + __next::type::value>;
-      static_assert((type::value / _Pow) == __digit::value, "overflow");
+      static_assert((type::value / _Pow) == __digit::value,
+		    "integer literal does not fit in unsigned long long");
     };
 
   template<unsigned _Base, unsigned long long _Pow, char _Dig>
@@ -214,7 +215,6 @@ namespace __parse_int
     { };
 
 //------------------------------------------------------------------------------
-//  This _Parse_int is the same 'level' as the old _Base_dispatch.
 
   template<char... _Digs>
     struct _Parse_int;

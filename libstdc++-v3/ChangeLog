@@ -1,3 +1,10 @@
+2014-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/parse_numbers.h (_Number_help): Fix divide-by-zero.
+	* include/std/chrono (_Checked_integral_constant): Allow zero.
+	* testsuite/20_util/duration/literals/values.cc: Test non-positive
+	values and digit separators.
+
 2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
