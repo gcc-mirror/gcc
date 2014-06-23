@@ -1157,16 +1157,17 @@
 
 (define_insn "*addsi3_aarch64"
   [(set
-    (match_operand:SI 0 "register_operand" "=rk,rk,rk")
+    (match_operand:SI 0 "register_operand" "=rk,rk,w,rk")
     (plus:SI
-     (match_operand:SI 1 "register_operand" "%rk,rk,rk")
-     (match_operand:SI 2 "aarch64_plus_operand" "I,r,J")))]
+     (match_operand:SI 1 "register_operand" "%rk,rk,w,rk")
+     (match_operand:SI 2 "aarch64_plus_operand" "I,r,w,J")))]
   ""
   "@
   add\\t%w0, %w1, %2
   add\\t%w0, %w1, %w2
+  add\\t%0.2s, %1.2s, %2.2s
   sub\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alu_imm,alu_reg,alu_imm")]
+  [(set_attr "type" "alu_imm,alu_reg,neon_add,alu_imm")]
 )
 
 ;; zero_extend version of above

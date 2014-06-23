@@ -193,7 +193,6 @@ test_corners_sisd_di (Int64x1 b)
   return b;
 }
 /* { dg-final { scan-assembler "sshr\td\[0-9\]+,\ d\[0-9\]+,\ 63" } } */
-/* { dg-final { scan-assembler "shl\td\[0-9\]+,\ d\[0-9\]+,\ 1" } } */
 
 Int32x1
 test_corners_sisd_si (Int32x1 b)
@@ -207,7 +206,6 @@ test_corners_sisd_si (Int32x1 b)
   return b;
 }
 /* { dg-final { scan-assembler "sshr\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ 31" } } */
-/* { dg-final { scan-assembler "shl\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ 1" } } */
 
 
 
