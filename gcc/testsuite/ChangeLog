@@ -1,3 +1,10 @@
+2014-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 577
+	PR c++/33101
+	* g++.dg/other/void1.C: Adjust.
+	* g++.dg/other/void3.C: Likewise.
+
 2014-06-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61553
