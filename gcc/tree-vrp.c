@@ -6661,8 +6661,9 @@ remove_range_assertions (void)
 	  }
 	else
 	  {
+	    if (!is_gimple_debug (gsi_stmt (si)))
+	      is_unreachable = 0;
 	    gsi_next (&si);
-	    is_unreachable = 0;
 	  }
       }
 }

@@ -1,3 +1,9 @@
+2014-06-23  Alan Modra  <amodra@gmail.com>
+
+	PR bootstrap/61583
+	* tree-vrp.c (remove_range_assertions): Do not set is_unreachable
+	to zero on debug statements.
+
 2014-06-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_sqdmulh_lane<mode>):
