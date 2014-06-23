@@ -47,7 +47,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace experimental
 {
-inline namespace any_v1
+inline namespace fundamentals_v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class bad_any_cast : public bad_cast
   {
   public:
-    virtual const char* what() const noexcept { return "bad_any_cast"; }
+    virtual const char* what() const noexcept { return "bad any_cast"; }
   };
 
   [[gnu::noreturn]] inline void __throw_bad_any_cast()
@@ -604,7 +604,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // @} group any
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace any_v1
+} // namespace fundamentals_v1
 } // namespace experimental
 } // namespace std
 
