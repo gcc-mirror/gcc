@@ -1,3 +1,8 @@
+2014-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (*addsi3_aarch64): Add alternative in
+	vector registers.
+
 2014-06-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-cgraph.c (lto_output_node, input_node): Set/get init/fini priority

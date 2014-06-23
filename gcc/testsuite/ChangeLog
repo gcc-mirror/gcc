@@ -1,3 +1,7 @@
+2014-06-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_shift_1.c: Fix expected assembler.
+
 2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/localalias.c: Fix broken commit.
