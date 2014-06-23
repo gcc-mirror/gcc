@@ -17,5 +17,5 @@ void mydata::Set (float x)
     data[i] = x;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp" } } */
-/* { dg-final { cleanup-tree-dump "slp" } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" } } */
+/* { dg-final { cleanup-tree-dump "slp1" } } */

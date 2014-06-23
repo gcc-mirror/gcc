@@ -1,3 +1,18 @@
+2014-06-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop.c (gate_loop): New function.
+	(pass_tree_loop::gate): Call it.
+	(pass_data_tree_no_loop, pass_tree_no_loop,
+	make_pass_tree_no_loop): New.
+	* tree-vectorizer.c: Include tree-scalar-evolution.c
+	(pass_slp_vectorize::execute): Initialize loops and SCEV if
+	required.
+	(pass_slp_vectorize::clone): New method.
+	* timevar.def (TV_TREE_NOLOOP): New.
+	* tree-pass.h (make_pass_tree_no_loop): Declare.
+	* passes.def (pass_tree_no_loop): New pass group with
+	SLP vectorizer.
+
 2014-06-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/61570

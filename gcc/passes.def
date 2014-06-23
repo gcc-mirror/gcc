@@ -198,6 +198,8 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sink_code);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
+      /* Pass group that runs when 1) enabled, 2) there are loops
+	 in the function.  */
       NEXT_PASS (pass_tree_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
 	  NEXT_PASS (pass_tree_loop_init);
@@ -230,9 +232,17 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_complete_unroll);
 	  NEXT_PASS (pass_slp_vectorize);
 	  NEXT_PASS (pass_loop_prefetch);
+	  /* Run IVOPTs after the last pass that uses data-reference analysis
+	     as that doesn't handle TARGET_MEM_REFs.  */
 	  NEXT_PASS (pass_iv_optimize);
 	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_tree_loop_done);
+      POP_INSERT_PASSES ()
+      /* Pass group that runs when pass_tree_loop is disabled or there
+         are no loops in the function.  */
+      NEXT_PASS (pass_tree_no_loop);
+      PUSH_INSERT_PASSES_WITHIN (pass_tree_no_loop)
+	  NEXT_PASS (pass_slp_vectorize);
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_cse_reciprocals);

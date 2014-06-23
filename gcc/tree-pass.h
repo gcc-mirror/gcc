@@ -354,6 +354,7 @@ extern gimple_opt_pass *make_pass_early_ipa_sra (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tail_recursion (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tail_calls (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tree_loop (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_tree_no_loop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tree_loop_init (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lim (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tree_unswitch (gcc::context *ctxt);
