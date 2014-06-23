@@ -676,6 +676,15 @@
 	* config/arm/arm.c (thumb1_reorg): Move to next basic block if we
 	reach the head.
 
+2014-06-18  Olivier Hainque  <hainque@adacore.com>
+
+	* tree-core.h (tree_block): Add an "end_locus" field, allowing
+	memorization of the end of block source location.
+	* tree.h (BLOCK_SOURCE_END_LOCATION): New accessor.
+	* gimplify.c (gimplify_bind_expr): Propagate the block start and
+	end source location info we have on the block entry/exit code we
+	generate.
+
 2014-06-18  Richard Biener  <rguenther@suse.de>
 
 	* common.opt (fssa-phiopt): New option.
@@ -3067,6 +3076,13 @@
 	* tree-vrp.c (vrp_visit_phi_node): If the compare of old and
 	new range fails, drop to varying.
 
+2014-05-28  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (VXCPU_FOR_8548): New. Default to PPC85XX.
+	(CPP_SPEC): Add entry for -mcpu=8548.
+	* config/rs6000/vxworksae.h: Reinstate. Override VXCPU_FOR_8548.
+	* config.gcc (powerpc-wrs-vxworksae, tm_file): Add back vxworksae.h.
+
 2014-05-28  Tom de Vries  <tom@codesourcery.com>
 
 	* lra-int.h (struct lra_reg): Add field actual_call_used_reg_set.
@@ -3144,6 +3160,14 @@
 	PR target/61044
 	* doc/extend.texi (Local Labels): Note that label differences are
 	not supported for AVR.
+
+2014-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* rtl.h (set_for_reg_notes): Declare.
+	* emit-rtl.c (set_for_reg_notes): New function.
+	(set_unique_reg_note): Use it.
+	* optabs.c (add_equal_note): Likewise
 
 2014-05-27  Andrew Pinski  <apinski@cavium.com>
 
