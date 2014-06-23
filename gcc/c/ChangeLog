@@ -1,3 +1,8 @@
+2014-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (parser_build_binary_op): Don't call
+	warn_logical_not_parentheses if the RHS is TRUTH_NOT_EXPR.
+
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-parser.c (c_parser_omp_threadprivate): Likewise.
