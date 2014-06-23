@@ -1,3 +1,272 @@
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/localalias.c: Fix broken commit.
+	* gcc.dg/globalalias.c: Likewise.
+
+2014-06-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/localalias.c: New testcase.
+	* gcc.dg/localalias-2.c: New testcase.
+	* gcc.dg/globalalias.c: New testcase.
+	* gcc.dg/globalalias-2.c: New testcase.
+
+2014-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/arm/lto/lto.exp: Exit immediately if not arm*-*-* target.
+
+2014-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/bounds-1.c: New test.
+	* c-c++-common/ubsan/bounds-2.c: New test.
+	* c-c++-common/ubsan/bounds-3.c: New test.
+	* c-c++-common/ubsan/bounds-4.c: New test.
+	* c-c++-common/ubsan/bounds-5.c: New test.
+	* c-c++-common/ubsan/bounds-6.c: New test.
+
+2014-06-20  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	Make the tests big-endian friendly.
+
+	* gcc.target/aarch64/aapcs64/test_25.c: Update.
+	* gcc.target/aarch64/aapcs64/va_arg-1.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-12.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-2.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-3.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-4.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-5.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-6.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-7.c: Ditto.
+
+2014-06-20  Yury Gribov  <y.gribov@samsung.com>
+	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/61547
+	* c-c++-common/asan/strlen-overflow-1.c: New test.
+
+2014-06-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61540
+        * g++.dg/ipa/pr61540.C: New test.
+
+2014-06-20  Yury Gribov  <y.gribov@samsung.com>
+	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/61530
+	* c-c++-common/asan/pr61530.c: New test.
+
+2014-06-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vqdmulhh_lane_s16.c: New test.
+	* gcc.target/aarch64/simd/vqdmulhs_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhs_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlal_high_lane_s16.c: New test.
+	* gcc.target/aarch64/simd/vqdmlal_high_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlal_high_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlal_high_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlal_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlal_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlal_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlal_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlalh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlals_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsl_high_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsl_high_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsl_high_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsl_high_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsl_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsl_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsl_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlslh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsls_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulh_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulh_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhq_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhq_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_high_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_high_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_high_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_high_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmull_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmullh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulls_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulh_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulh_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhq_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhq_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vector_intrinsics.c: Simplify arm_neon.h include.
+	(test_vqdmlal_high_lane_s16): Fix parameter type.
+	(test_vqdmlal_high_lane_s32): Likewise.
+	(test_vqdmull_high_lane_s16): Likewise.
+	(test_vqdmull_high_lane_s32): Likewise.
+	(test_vqdmlsl_high_lane_s32): Likewise.
+	(test_vqdmlsl_high_lane_s16): Likewise.
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmlalh_lane_s16):
+	Fix argument type.
+	(test_vqdmlals_lane_s32): Likewise.
+	(test_vqdmlslh_lane_s16): Likewise.
+	(test_vqdmlsls_lane_s32): Likewise.
+	(test_vqdmulhh_lane_s16): Likewise.
+	(test_vqdmulhs_lane_s32): Likewise.
+	(test_vqdmullh_lane_s16): Likewise.
+	(test_vqdmulls_lane_s32): Likewise.
+	(test_vqrdmulhh_lane_s16): Likewise.
+	(test_vqrdmulhs_lane_s32): Likewise.
+
+2014-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR testsuite/61567
+	* gfortran.dg/coarray_collectives_5.f90: Update
+	dg-final scan-tree-dump-times.
+	* gfortran.dg/coarray_collectives_6.f90: Ditto.
+
+2014-06-20 Hale Wang <hale.wang@arm.com>
+
+	* gcc.target/arm/lto/: New folder to verify the LTO option.
+	* gcc.target/arm/lto/pr61123-enum-size_0.c: New test case.
+	* gcc.target/arm/lto/pr61123-enum-size_1.c: Likewise.
+	* gcc.target/arm/lto/lto.exp: New exp file used to test LTO option.
+	* lib/lto.exp (object-readelf): New procedure.
+
+2014-06-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/61454
+	* gfortran.dg/pr61454.f90: New file.
+
+2014-06-19  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/thumb1-load-64bit-constant-1.c: New test.
+	* gcc.target/arm/thumb1-load-64bit-constant-2.c: Ditto.
+	* gcc.target/arm/thumb1-load-64bit-constant-3.c: Ditto.
+
+2014-06-19  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/collectives_2.f90: Extend
+	and make valid.
+
+2014-06-18  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/aarch64/fuse-caller-save.c: New test.
+
+2014-06-18  Radovan Obradovic  <robradovic@mips.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/arm/fuse-caller-save.c: New test.
+
+2014-06-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect.exp: Remove dump-tree-dceloop-* processing.
+	* gcc.dg/vect/dump-tree-dceloop-pr26359.c: Rename to ...
+	* gcc.dg/vect/pr26359.c: ... this and adjust appropriately.
+
+2014-06-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61518
+	* gcc.dg/torture/pr61518.c: New test.
+
+2014-06-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61517
+	* gcc.c-torture/execute/bswap-2.c (incorrect_read_le32): New.
+	(incorrect_read_be32): Likewise.
+	(main): Call incorrect_read_* to test stmt replacement is made by
+	bswap at the right place.
+	* gcc.c-torture/execute/pr61517.c: New test.
+
+2014-06-18  Andreas Schwab  <schwab@suse.de>
+
+	PR rtl-optimization/54555
+	* gcc.target/m68k/pr54555.c: New test.
+
+2014-06-18  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/blocklocs.adb: New test.
+
+2014-06-18  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	PR tree-optimization/52252
+	* gcc.target/i386/pr52252-atom.c: Test on loads group of size 3.
+	* gcc.target/i386/pr52252-core.c: Ditto.
+
+	PR tree-optimization/61403
+	* gcc.target/i386/pr61403.c: Test on loads and stores group of size 3.
+
+2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/declare-simd-1.f90: New test.
+	* gfortran.dg/gomp/depend-1.f90: New test.
+	* gfortran.dg/gomp/target1.f90: New test.
+	* gfortran.dg/gomp/target2.f90: New test.
+	* gfortran.dg/gomp/target3.f90: New test.
+	* gfortran.dg/gomp/udr4.f90: Adjust expected diagnostics.
+	* gfortran.dg/openmp-define-3.f90: Expect _OPENMP 201307 instead of
+	201107.
+
+2014-06-18  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/61126
+	* gfortran.dg/wextra_1.f: Add -Wall to dg-options.
+
+2014-06-17  Tobias Burnus  <burnus@net-b.de>
+	    Alessandro Fanfarillo <alessandro.fanfarillo@gmail.com>
+
+	* gfortran.dg/coarray/send_array.f90: New.
+	* gfortran.dg/coarray/get_array.f90: New.
+	* gfortran.dg/coarray/sendget_array.f90: New.
+	* gfortran.dg/coarray/collectives_1.f90: Correct subroutine
+	names.
+	* gfortran.dg/coarray/collectives_2.f90: New.
+
+2014-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/61533
+	* gcc.target/i386/fuse-caller-save.c: Add -fomit-frame-pointer to
+	dg-options.
+
+2014-06-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/pr61335.f90 (cp_unit_create): Initialize
+	unit_id and kind_id to zero.
+
+2014-06-17  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	PR target/61483
+	* gcc.target/aarch64/aapcs64/type-def.h (struct hfa_fx2_t): New type.
+	* gcc.target/aarch64/aapcs64/va_arg-13.c: New test.
+	* gcc.target/aarch64/aapcs64/va_arg-14.c: Ditto.
+	* gcc.target/aarch64/aapcs64/va_arg-15.c: Ditto.
+
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR lto/61012
+	* gcc.dg/lto/pr61526_0.c: New testcase.
+	* gcc.dg/lto/pr61526_1.c: Likewise.
+
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/20041122-1.c: Adjust.
+	* gcc.dg/tree-ssa/forwprop-21.c: Likewise.
+	* gcc.dg/tree-ssa/vrp35.c: Revert previous adjustments.
+	* gcc.dg/tree-ssa/vrp36.c: Likewise.
+	* gcc.dg/vect/nodump-forwprop-22.c: Adjust.
+
+2014-06-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-lim-12.c: New testcase.
+
+2014-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61482
+	* g++.dg/torture/pr61482.C: New testcase.
+
+2014-06-16  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* gcc.target/i386/xop-imul64-vector.c: Remove the check for
+	vpmacsdql instruction.
+
 2014-06-16  Yury Gribov  <y.gribov@samsung.com>
 
 	* c-c++-common/asan/instrument-with-calls-1.c: New test.
@@ -5,18 +274,12 @@
 	* c-c++-common/asan/instrument-with-calls-3.c: Likewise.
 	* c-c++-common/asan/no-redundant-instrumentation-1.c: Update
 	test patterns.
-	* c-c++-common/asan/no-redundant-instrumentation-2.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-4.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-5.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-6.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-7.c:
-	Likewise.
-	* c-c++-common/asan/no-redundant-instrumentation-8.c:
-	Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-4.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-5.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-6.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-8.c: Likewise.
 
 2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -328,8 +591,8 @@
 	* gcc.target/i386/avx512f-vpmuldq-2.c: Ditto.
 	* gcc.target/i386/avx512f-vrndscalepd-2.c: Ditto.
 	* gcc.target/i386/i386.exp: Ditto.
-	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Add static void for CALC,
-	void for TEST instead of static void, initialize variables.
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Add static void for
+	CALC, void for TEST instead of static void, initialize variables.
 	* gcc.target/i386/avx512cd-vpbroadcastmw2d-2.c: Ditto.
 	* gcc.target/i386/avx512cd-vpconflictd-2.c: Void for TEST instead of
 	static void.
@@ -479,8 +742,8 @@
 	* gcc.target/i386/avx512f-vpmovusqd-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpmovusqw-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpmaxud-2.c: Add static void for CALC,
-	void for TEST instead of static void, change parameters for UNION_CHECK,
-	UNION_TYPE, MASK_MERGE and MASK_ZERO.
+	void for TEST instead of static void, change parameters for
+	UNION_CHECK, UNION_TYPE, MASK_MERGE and MASK_ZERO.
 	* gcc.target/i386/avx512f-vpmaxuq-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpminud-2.c: Ditto.
 	* gcc.target/i386/avx512f-vpminuq-2.c: Ditto.
@@ -523,7 +786,8 @@
 2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/61062
-	* gcc.target/arm/pr48252.c (main): Expect same result as endian-neutral.
+	* gcc.target/arm/pr48252.c (main): Expect same result
+	as endian-neutral.
 
 2014-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -656,8 +920,7 @@
 2014-06-05  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
-	* gcc.target/arm/pr45094.c: Remove -mcpu=cortex-a8, dg-skip-if
-	options.
+	* gcc.target/arm/pr45094.c: Remove -mcpu=cortex-a8, dg-skip-if options.
 
 2014-06-05  Richard Biener  <rguenther@suse.de>
 
@@ -2429,7 +2692,7 @@
 2014-04-24  Dinar Temirbulatov  <dtemirbulatov@gmail.com>
 
 	PR c++/57958
-	* testsuite/g++.dg/cpp0x/pr57958.C: New test.
+	* g++.dg/cpp0x/pr57958.C: New test.
 
 2014-04-24  Alan Lawrence  <alan.lawrence@arm.com>
 
@@ -3119,7 +3382,7 @@
 2014-04-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60659
-	* testsuite/g++.dg/torture/pr60659.C: New testcase.
+	* g++.dg/torture/pr60659.C: New testcase.
 
 2014-04-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -4024,7 +4287,7 @@
 2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60306
-	* testsuite/g++.dg/ipa/devirt-29.C: New testcase
+	* g++.dg/ipa/devirt-29.C: New testcase
 
 2014-03-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 

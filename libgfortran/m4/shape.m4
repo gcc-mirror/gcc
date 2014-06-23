@@ -50,7 +50,7 @@ shape_'rtype_kind` ('rtype` * const restrict ret,
     {
       GFC_DIMENSION_SET(ret->dim[0], 0, rank - 1, 1);
       ret->offset = 0;
-      ret->base_addr = xmalloc (sizeof ('rtype_name`) * rank);
+      ret->base_addr = xmallocarray (rank, sizeof ('rtype_name`));
     }
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);

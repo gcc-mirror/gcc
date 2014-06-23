@@ -1877,7 +1877,7 @@ typedef enum
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
-  AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY
+  AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY, AB_OMP_DECLARE_TARGET
 }
 ab_attribute;
 
@@ -1932,6 +1932,7 @@ static const mstring attr_bits[] =
     minit ("CLASS_POINTER", AB_CLASS_POINTER),
     minit ("IMPLICIT_PURE", AB_IMPLICIT_PURE),
     minit ("UNLIMITED_POLY", AB_UNLIMITED_POLY),
+    minit ("OMP_DECLARE_TARGET", AB_OMP_DECLARE_TARGET),
     minit (NULL, -1)
 };
 
@@ -2110,6 +2111,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_VTYPE, attr_bits);
       if (attr->vtab)
 	MIO_NAME (ab_attribute) (AB_VTAB, attr_bits);
+      if (attr->omp_declare_target)
+	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_TARGET, attr_bits);
 
       mio_rparen ();
 
@@ -2272,6 +2275,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_VTAB:
 	      attr->vtab = 1;
+	      break;
+	    case AB_OMP_DECLARE_TARGET:
+	      attr->omp_declare_target = 1;
 	      break;
 	    }
 	}

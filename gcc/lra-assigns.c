@@ -1425,7 +1425,8 @@ assign_by_spills (void)
 	      enum reg_class rclass = lra_get_allocno_class (regno);
 	      enum reg_class spill_class;
 	      
-	      if (lra_reg_info[regno].restore_regno < 0
+	      if (targetm.spill_class == NULL
+		  || lra_reg_info[regno].restore_regno < 0
 		  || ! bitmap_bit_p (&lra_inheritance_pseudos, regno)
 		  || (spill_class
 		      = ((enum reg_class)

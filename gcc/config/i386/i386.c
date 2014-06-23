@@ -23847,7 +23847,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 {
   const struct stringop_algs * algs;
   bool optimize_for_speed;
-  int max = -1;
+  int max = 0;
   const struct processor_costs *cost;
   int i;
   bool any_alg_usable_p = false;
@@ -23885,7 +23885,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
   /* If expected size is not known but max size is small enough
      so inline version is a win, set expected size into
      the range.  */
-  if (max > 1 && (unsigned HOST_WIDE_INT) max >= max_size
+  if (((max > 1 && (unsigned HOST_WIDE_INT) max >= max_size) || max == -1)
       && expected_size == -1)
     expected_size = min_size / 2 + max_size / 2;
 
@@ -23974,7 +23974,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
             *dynamic_check = 128;
           return loop_1_byte;
         }
-      if (max == -1)
+      if (max <= 0)
 	max = 4096;
       alg = decide_alg (count, max / 2, min_size, max_size, memset,
 			zero_memset, dynamic_check, noalign);
@@ -45294,8 +45294,13 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
       /* t4: ((B*E)+(A*F))<<32, ((D*G)+(C*H))<<32 */
       emit_insn (gen_ashlv2di3 (t4, t3, GEN_INT (32)));
 
-      /* op0: (((B*E)+(A*F))<<32)+(B*F), (((D*G)+(C*H))<<32)+(D*H) */
-      emit_insn (gen_xop_pmacsdql (op0, op1, op2, t4));
+      /* Multiply lower parts and add all */
+      t5 = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vec_widen_umult_even_v4si (t5, 
+					gen_lowpart (V4SImode, op1),
+					gen_lowpart (V4SImode, op2)));
+      op0 = expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
+
     }
   else
     {
@@ -46439,6 +46444,16 @@ ix86_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
 {
   int res = 1;
 
+  /* Vector part.  */
+  if (VECTOR_MODE_P (mode))
+    {
+      if (TARGET_VECTOR_PARALLEL_EXECUTION)
+	return 2;
+      else
+	return 1;
+    }
+
+  /* Scalar part.  */
   if (INTEGRAL_MODE_P (mode) && TARGET_REASSOC_INT_TO_PARALLEL)
     res = 2;
   else if (FLOAT_MODE_P (mode) && TARGET_REASSOC_FP_TO_PARALLEL)

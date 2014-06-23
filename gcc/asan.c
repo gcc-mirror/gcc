@@ -1636,6 +1636,13 @@ build_check_stmt (location_t location, tree base, tree len,
 
   gcc_assert (!(size_in_bytes > 0 && !non_zero_len_p));
 
+  if (start_instrumented && end_instrumented)
+    {
+      if (!before_p)
+        gsi_next (iter);
+      return;
+    }
+
   if (len)
     len = unshare_expr (len);
   else
@@ -1647,6 +1654,7 @@ build_check_stmt (location_t location, tree base, tree len,
   if (size_in_bytes > 1)
     {
       if ((size_in_bytes & (size_in_bytes - 1)) != 0
+	  || !is_scalar_access
 	  || size_in_bytes > 16)
 	size_in_bytes = -1;
       else if (align && align < size_in_bytes * BITS_PER_UNIT)
@@ -1735,7 +1743,7 @@ build_check_stmt (location_t location, tree base, tree len,
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
   tree base_addr = gimple_assign_lhs (g);
 
-  tree t;
+  tree t = NULL_TREE;
   if (real_size_in_bytes >= 8)
     {
       tree shadow = build_shadow_mem_access (&gsi, location, base_addr,
@@ -2029,19 +2037,19 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
 
   build_check_stmt (loc, gimple_assign_lhs (str_arg_ssa), NULL_TREE, 1, iter,
 		    /*non_zero_len_p*/true, /*before_p=*/true,
-		    /*is_store=*/false, /*is_scalar_access*/false, /*align*/0);
+		    /*is_store=*/false, /*is_scalar_access*/true, /*align*/0);
 
-  gimple stmt =
-    gimple_build_assign_with_ops (PLUS_EXPR,
-				  make_ssa_name (TREE_TYPE (len), NULL),
-				  len,
-				  build_int_cst (TREE_TYPE (len), 1));
-  gimple_set_location (stmt, loc);
-  gsi_insert_after (iter, stmt, GSI_NEW_STMT);
+  gimple g =
+    gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
+				  make_ssa_name (cptr_type, NULL),
+				  gimple_assign_lhs (str_arg_ssa),
+				  len);
+  gimple_set_location (g, loc);
+  gsi_insert_after (iter, g, GSI_NEW_STMT);
 
-  build_check_stmt (loc, gimple_assign_lhs (stmt), len, 1, iter,
+  build_check_stmt (loc, gimple_assign_lhs (g), NULL_TREE, 1, iter,
 		    /*non_zero_len_p*/true, /*before_p=*/false,
-		    /*is_store=*/false, /*is_scalar_access*/false, /*align*/0);
+		    /*is_store=*/false, /*is_scalar_access*/true, /*align*/0);
 
   return true;
 }
@@ -2754,6 +2762,9 @@ pass_sanopt::execute (function *fun)
 	      case IFN_UBSAN_NULL:
 		ubsan_expand_null_ifn (gsi);
 		break;
+	      case IFN_UBSAN_BOUNDS:
+		ubsan_expand_bounds_ifn (&gsi);
+		break;
 	      default:
 		break;
 	      }
@@ -2764,6 +2775,10 @@ pass_sanopt::execute (function *fun)
 	      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
 	      fprintf (dump_file, "\n");
 	    }
+
+	  /* ubsan_expand_bounds_ifn might move us to the end of the BB.  */
+	  if (gsi_end_p (gsi))
+	    break;
 	}
     }
   return 0;

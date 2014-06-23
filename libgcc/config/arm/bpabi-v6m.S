@@ -148,7 +148,7 @@ FUNC_START aeabi_uldivmod
 	mov r0, sp
 	push {r0, lr}
 	ldr r0, [sp, #8]
-	bl SYM(__gnu_uldivmod_helper)
+	bl SYM(__udivmoddi4)
 	ldr r3, [sp, #4]
 	mov lr, r3
 	add sp, sp, #8

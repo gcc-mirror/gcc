@@ -16,6 +16,18 @@
 ## You should have received a copy of the GNU General Public License along
 ## with this library; see the file COPYING3.  If not see
 ## <http://www.gnu.org/licenses/>.
+// By default follow the old inline rules to avoid ABI changes.
+// Logic similar to libsupc++/typeinfo (libstdc++/61536). See
+// commentary on out of line comparisons.
+
+#ifndef __GXX_TYPEINFO_EQUALITY_INLINE
+ #if !__GXX_WEAK__
+   #define __GXX_TYPEINFO_EQUALITY_INLINE 0
+  #else
+    #define __GXX_TYPEINFO_EQUALITY_INLINE 1
+  #endif
+#endif
+
 
 GLIBCXX_3.4 {
 
@@ -759,6 +771,11 @@ GLIBCXX_3.4 {
     # std::type_info
     _ZNKSt9type_info1*;
     _ZNSt9type_infoD*;
+
+#if !__GXX_TYPEINFO_EQUALITY_INLINE
+    _ZNKSt9type_info6before*;
+    _ZNKSt9type_infoeq*;
+#endif
 
     # std::exception
     _ZNKSt9exception4whatEv;

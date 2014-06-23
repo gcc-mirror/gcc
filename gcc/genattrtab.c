@@ -4766,6 +4766,7 @@ struct bypass_list
 
 static struct bypass_list *all_bypasses;
 static size_t n_bypasses;
+static size_t n_bypassed;
 
 static void
 gen_bypass_1 (const char *s, size_t len)
@@ -4811,12 +4812,18 @@ process_bypasses (void)
   struct bypass_list *b;
   struct insn_reserv *r;
 
+  n_bypassed = 0;
+
   /* The reservation list is likely to be much longer than the bypass
      list.  */
   for (r = all_insn_reservs; r; r = r->next)
     for (b = all_bypasses; b; b = b->next)
       if (fnmatch (b->pattern, r->name, 0) == 0)
-	r->bypassed = true;
+        {
+          n_bypassed++;
+          r->bypassed = true;
+          break;
+        }
 }
 
 /* Check that attribute NAME is used in define_insn_reservation condition
@@ -5075,7 +5082,7 @@ make_automaton_attrs (void)
       process_bypasses ();
 
       byps_exp = rtx_alloc (COND);
-      XVEC (byps_exp, 0) = rtvec_alloc (n_bypasses * 2);
+      XVEC (byps_exp, 0) = rtvec_alloc (n_bypassed * 2);
       XEXP (byps_exp, 1) = make_numeric_value (0);
       for (decl = all_insn_reservs, i = 0;
 	   decl;

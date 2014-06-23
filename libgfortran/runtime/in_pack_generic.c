@@ -180,7 +180,7 @@ internal_pack (gfc_array_char * source)
     return source->base_addr;
 
    /* Allocate storage for the destination.  */
-  destptr = xmalloc (ssize * size);
+  destptr = xmallocarray (ssize, size);
   dest = (char *)destptr;
   src = source->base_addr;
   stride0 = stride[0] * size;

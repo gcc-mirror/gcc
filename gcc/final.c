@@ -4760,13 +4760,13 @@ collect_fn_hard_reg_usage (void)
   int i;
 #endif
   struct cgraph_rtl_info *node;
+  HARD_REG_SET function_used_regs;
 
   /* ??? To be removed when all the ports have been fixed.  */
   if (!targetm.call_fusage_contains_non_callee_clobbers)
     return;
 
-  node = cgraph_rtl_info (current_function_decl);
-  gcc_assert (node != NULL);
+  CLEAR_HARD_REG_SET (function_used_regs);
 
   for (insn = get_insns (); insn != NULL_RTX; insn = next_insn (insn))
     {
@@ -4775,29 +4775,39 @@ collect_fn_hard_reg_usage (void)
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      find_all_hard_reg_sets (insn, &insn_used_regs, false);
-
-      if (CALL_P (insn)
-	  && !get_call_reg_set_usage (insn, &insn_used_regs, call_used_reg_set))
+      if (CALL_P (insn))
 	{
-	  CLEAR_HARD_REG_SET (node->function_used_regs);
-	  return;
+	  if (!get_call_reg_set_usage (insn, &insn_used_regs,
+				       call_used_reg_set))
+	    return;
+
+	  IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
 	}
 
-      IOR_HARD_REG_SET (node->function_used_regs, insn_used_regs);
+      find_all_hard_reg_sets (insn, &insn_used_regs, false);
+      IOR_HARD_REG_SET (function_used_regs, insn_used_regs);
     }
 
   /* Be conservative - mark fixed and global registers as used.  */
-  IOR_HARD_REG_SET (node->function_used_regs, fixed_reg_set);
+  IOR_HARD_REG_SET (function_used_regs, fixed_reg_set);
 
 #ifdef STACK_REGS
   /* Handle STACK_REGS conservatively, since the df-framework does not
      provide accurate information for them.  */
 
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
-    SET_HARD_REG_BIT (node->function_used_regs, i);
+    SET_HARD_REG_BIT (function_used_regs, i);
 #endif
 
+  /* The information we have gathered is only interesting if it exposes a
+     register from the call_used_regs that is not used in this function.  */
+  if (hard_reg_set_subset_p (call_used_reg_set, function_used_regs))
+    return;
+
+  node = cgraph_rtl_info (current_function_decl);
+  gcc_assert (node != NULL);
+
+  COPY_HARD_REG_SET (node->function_used_regs, function_used_regs);
   node->function_used_regs_valid = 1;
 }
 

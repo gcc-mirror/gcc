@@ -633,6 +633,25 @@
    (set_attr "pool_range" "*,*,*,*,*,*,1018,*,*")
    (set_attr "conds" "set,clob,*,*,nocond,nocond,nocond,nocond,nocond")])
 
+; Split the load of 64-bit constant into two loads for high and low 32-bit parts respectively
+; to see if we can load them in fewer instructions or fewer cycles.
+; For the small 64-bit integer constants that satisfy constraint J, the instruction pattern
+; thumb1_movdi_insn has a better way to handle them.
+(define_split
+  [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
+       (match_operand:ANY64 1 "const_double_operand" ""))]
+  "TARGET_THUMB1 && reload_completed && !satisfies_constraint_J (operands[1])"
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 2) (match_dup 3))]
+  "
+  operands[2] = gen_highpart (SImode, operands[0]);
+  operands[3] = gen_highpart_mode (SImode, GET_MODE (operands[0]),
+                                  operands[1]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  "
+)
+
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))]

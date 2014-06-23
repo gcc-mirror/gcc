@@ -4521,11 +4521,7 @@ eliminate (bool do_pre)
 
       gsi = gsi_for_stmt (stmt);
       if (gimple_code (stmt) == GIMPLE_PHI)
-	{
-	  remove_phi_node (&gsi, true);
-	  /* Removing a PHI node in a block may expose a forwarder block.  */
-	  el_todo |= TODO_cleanup_cfg;
-	}
+	remove_phi_node (&gsi, true);
       else
 	{
 	  basic_block bb = gimple_bb (stmt);
@@ -4534,6 +4530,9 @@ eliminate (bool do_pre)
 	    bitmap_set_bit (need_eh_cleanup, bb->index);
 	  release_defs (stmt);
 	}
+
+      /* Removing a stmt may expose a forwarder block.  */
+      el_todo |= TODO_cleanup_cfg;
     }
   el_to_remove.release ();
 

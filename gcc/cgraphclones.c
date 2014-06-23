@@ -293,7 +293,6 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   new_node->externally_visible = 0;
   new_node->local.local = 1;
   new_node->lowered = true;
-  new_node->reset_section ();
 }
 
 /* Duplicate thunk THUNK if necessary but make it to refer to NODE.

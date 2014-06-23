@@ -3877,7 +3877,7 @@ do_estimate_growth (struct cgraph_node *node)
       /* COMDAT functions are very often not shared across multiple units
          since they come from various template instantiations.
          Take this into account.  */
-      else if (node->externally_visible && node->get_comdat_group ()
+      else if (DECL_COMDAT (node->decl)
 	       && cgraph_can_remove_if_no_direct_calls_p (node))
 	d.growth -= (info->size
 		     * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY))
@@ -3928,7 +3928,7 @@ growth_likely_positive (struct cgraph_node *node, int edge_growth ATTRIBUTE_UNUS
       && (ret = node_growth_cache[node->uid]))
     return ret > 0;
   if (!cgraph_will_be_removed_from_program_if_no_direct_calls (node)
-      && (!node->externally_visible || !node->get_comdat_group ()
+      && (!DECL_COMDAT (node->decl)
 	  || !cgraph_can_remove_if_no_direct_calls_p (node)))
     return true;
   max_callers = inline_summary (node)->size * 4 / edge_growth + 2;

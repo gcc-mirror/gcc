@@ -67,7 +67,7 @@ libatomic_version_dep =
 endif
 libatomic_version_info = -version-info $(libtool_VERSION)
 
-libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script)
+libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) $(lt_host_flags)
 LIBAT_SRC_NO_LOCK = gload.c gstore.c gcas.c gexch.c glfree.c init.c fenv.c
 libatomic_la_SOURCES = $(LIBAT_SRC_NO_LOCK) lock.c
 

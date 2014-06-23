@@ -79,8 +79,8 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 	  GFC_DIMENSION_SET(ret->dim[i], 0, ub, str);
         }
 
-      /* xmalloc allocates a single byte for zero size.  */
-      ret->base_addr = xmalloc (size * arraysize);
+      /* xmallocarray allocates a single byte for zero size.  */
+      ret->base_addr = xmallocarray (arraysize, size);
     }
   else if (unlikely (compile_options.bounds_check))
     {

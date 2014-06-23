@@ -650,3 +650,82 @@ proc scan-symbol { args } {
 	fail "scan-symbol $args"
     }
 }
+
+# Call pass if object readelf is ok, otherwise fail.
+# example: /* { dg-final { object-readelf Tag_ABI_enum_size int} } */
+proc object-readelf { args } {
+    global readelf
+    global base_dir
+    upvar 2 execname execname
+
+    if { [llength $args] < 2 } {
+	error "object-readelf: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "object-readelf: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	switch [dg-process-target [lindex $args 2]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Find size like we find g++ in g++.exp.
+    if ![info exists readelf]  {
+	set readelf [findfile $base_dir/../../../binutils/readelf \
+		$base_dir/../../../binutils/readelf \
+		[findfile $base_dir/../../readelf $base_dir/../../readelf \
+		[findfile $base_dir/readelf $base_dir/readelf \
+		[transform readelf]]]]
+	verbose -log "readelf is $readelf"
+    }
+
+    set what [lindex $args 0]
+    set with [lindex $args 1]
+
+    if ![file_on_host exists $execname] {
+	verbose -log "$execname does not exist"
+	unresolved "object-readelf $what "
+	return
+    }
+
+    set output [remote_exec host "$readelf -A" "$execname"]
+    set status [lindex $output 0]
+    if { $status != 0 } {
+	verbose -log "object-readelf: $readelf failed"
+	unresolved "object-readelf $what $execname"
+	return
+    }
+
+    set text [lindex $output 1]
+    set lines [split $text "\n"]
+
+    set done 0
+    set i 0
+    while { !$done } {
+	set line_tex [lindex $lines $i]
+	if { [llength ${line_tex}] > 1} {
+	    incr i
+	    if [regexp -- $what $line_tex] {
+	        set match [regexp -- $with $line_tex]
+		set done 1
+	    }
+	} else {
+	    set done 1
+	}
+    }
+
+    verbose -log "$what size is $with;"
+    if { $match == 1 } {
+	pass "object-readelf $what size is correct."
+    } else {
+	fail "object-readelf $what size is incorrect."
+    }
+}
+
+

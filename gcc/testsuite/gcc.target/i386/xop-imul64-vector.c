@@ -33,4 +33,3 @@ int main ()
 
 /* { dg-final { scan-assembler "vpmulld" } } */
 /* { dg-final { scan-assembler "vphadddq" } } */
-/* { dg-final { scan-assembler "vpmacsdql" } } */

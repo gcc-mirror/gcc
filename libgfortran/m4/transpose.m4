@@ -61,7 +61,8 @@ transpose_'rtype_code` ('rtype` * const restrict ret,
       GFC_DIMENSION_SET(ret->dim[1], 0, GFC_DESCRIPTOR_EXTENT(source,0) - 1,
 			GFC_DESCRIPTOR_EXTENT(source, 1));
 
-      ret->base_addr = xmalloc (sizeof ('rtype_name`) * size0 ((array_t *) ret));
+      ret->base_addr = xmallocarray (size0 ((array_t *) ret), 
+                                     sizeof ('rtype_name`));
       ret->offset = 0;
     } else if (unlikely (compile_options.bounds_check))
     {

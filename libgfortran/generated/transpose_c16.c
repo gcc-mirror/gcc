@@ -60,7 +60,8 @@ transpose_c16 (gfc_array_c16 * const restrict ret,
       GFC_DIMENSION_SET(ret->dim[1], 0, GFC_DESCRIPTOR_EXTENT(source,0) - 1,
 			GFC_DESCRIPTOR_EXTENT(source, 1));
 
-      ret->base_addr = xmalloc (sizeof (GFC_COMPLEX_16) * size0 ((array_t *) ret));
+      ret->base_addr = xmallocarray (size0 ((array_t *) ret), 
+                                     sizeof (GFC_COMPLEX_16));
       ret->offset = 0;
     } else if (unlikely (compile_options.bounds_check))
     {

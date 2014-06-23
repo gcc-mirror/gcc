@@ -245,6 +245,7 @@ void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 void aarch64_init_expanders (void);
 void aarch64_print_operand (FILE *, rtx, char);
 void aarch64_print_operand_address (FILE *, rtx);
+void aarch64_emit_call_insn (rtx);
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);

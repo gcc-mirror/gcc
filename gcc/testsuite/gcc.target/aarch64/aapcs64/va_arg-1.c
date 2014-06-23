@@ -30,14 +30,14 @@ void init_data ()
 
 #include "abitest.h"
 #else
-  ARG          (         int      , 0xff  ,                            X0, LAST_NAMED_ARG_ID)
+  ARG          (         int      , 0xff  ,                            W0, LAST_NAMED_ARG_ID)
   DOTS
-  ANON_PROMOTED(unsigned char     , 0xfe  , unsigned int, 0xfe       , X1,       1)
-  ANON_PROMOTED(  signed char     , sc    ,   signed int, sc_promoted, X2,       2)
-  ANON_PROMOTED(unsigned short    , 0xdcba, unsigned int, 0xdcba     , X3,       3)
-  ANON_PROMOTED(  signed short    , ss    ,   signed int, ss_promoted, X4,       4)
-  ANON         (unsigned int      , 0xdeadbeef,                        X5,       5)
-  ANON         (  signed int      , 0xcafebabe,                        X6,       6)
+  ANON_PROMOTED(unsigned char     , 0xfe  , unsigned int, 0xfe       , W1,       1)
+  ANON_PROMOTED(  signed char     , sc    ,   signed int, sc_promoted, W2,       2)
+  ANON_PROMOTED(unsigned short    , 0xdcba, unsigned int, 0xdcba     , W3,       3)
+  ANON_PROMOTED(  signed short    , ss    ,   signed int, ss_promoted, W4,       4)
+  ANON         (unsigned int      , 0xdeadbeef,                        W5,       5)
+  ANON         (  signed int      , 0xcafebabe,                        W6,       6)
   ANON         (unsigned long long, 0xba98765432101234ULL,             X7,       7)
   ANON         (  signed long long, 0xa987654321012345LL ,             STACK,    8)
   ANON         (          __int128, qword.i              ,             STACK+16, 9)
@@ -46,5 +46,9 @@ void init_data ()
   ANON         (    long double   , 98765432123456789.987654321L,      Q2,      12)
   ANON         (             vf2_t, vf2   ,                            D3,      13)
   ANON         (             vi4_t, vi4   ,                            Q4,      14)
+#ifndef __AAPCS64_BIG_ENDIAN__
   LAST_ANON    (         int      , 0xeeee,                            STACK+32,15)
+#else
+  LAST_ANON    (         int      , 0xeeee,                            STACK+36,15)
+#endif
 #endif

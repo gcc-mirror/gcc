@@ -357,8 +357,7 @@ main (int argc, char **argv)
     }
 
   /* Sort the collected patterns.  */
-  qsort (patterns.address (), patterns.length (),
-	 sizeof (pattern), pattern_cmp);
+  patterns.qsort (pattern_cmp);
 
   /* Now that we've handled the "extra" patterns, eliminate them from
      the optabs array.  That way they don't get in the way below.  */

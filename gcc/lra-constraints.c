@@ -1333,6 +1333,8 @@ insert_move_for_subreg (rtx *before, rtx *after, rtx origreg, rtx newreg)
     }
 }
 
+static int valid_address_p (enum machine_mode mode, rtx addr, addr_space_t as);
+
 /* Make reloads for subreg in operand NOP with internal subreg mode
    REG_MODE, add new reloads for further processing.  Return true if
    any reload was generated.  */
@@ -1363,10 +1365,26 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
      equivalences in function lra_constraints) and because for spilled
      pseudos we allocate stack memory enough for the biggest
      corresponding paradoxical subreg.  */
-  if ((MEM_P (reg)
-       && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg))
-	   || MEM_ALIGN (reg) >= GET_MODE_ALIGNMENT (mode)))
-      || (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER))
+  if (MEM_P (reg)
+      && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg))
+	  || MEM_ALIGN (reg) >= GET_MODE_ALIGNMENT (mode)))
+    {
+      rtx subst, old = *curr_id->operand_loc[nop];
+
+      alter_subreg (curr_id->operand_loc[nop], false);
+      subst = *curr_id->operand_loc[nop];
+      lra_assert (MEM_P (subst));
+      if (! valid_address_p (GET_MODE (reg), XEXP (reg, 0),
+			     MEM_ADDR_SPACE (reg))
+	  || valid_address_p (GET_MODE (subst), XEXP (subst, 0),
+			      MEM_ADDR_SPACE (subst)))
+	return true;
+      /* If the address was valid and became invalid, prefer to reload
+	 the memory.  Typical case is when the index scale should
+	 correspond the memory.  */
+      *curr_id->operand_loc[nop] = old;
+    }
+  else if (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER)
     {
       alter_subreg (curr_id->operand_loc[nop], false);
       return true;
@@ -2538,6 +2556,39 @@ process_alt_operands (int only_alternative)
   return ok_p;
 }
 
+/* Make reload base reg from address AD.  */
+static rtx
+base_to_reg (struct address_info *ad)
+{
+  enum reg_class cl;
+  int code = -1;
+  rtx new_inner = NULL_RTX;
+  rtx new_reg = NULL_RTX;
+  rtx insn;
+  rtx last_insn = get_last_insn();
+
+  lra_assert (ad->base == ad->base_term && ad->disp == ad->disp_term);
+  cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
+                       get_index_code (ad));
+  new_reg = lra_create_new_reg (GET_MODE (*ad->base_term), NULL_RTX,
+                                cl, "base");
+  new_inner = simplify_gen_binary (PLUS, GET_MODE (new_reg), new_reg,
+                                   ad->disp_term == NULL
+                                   ? gen_int_mode (0, ad->mode)
+                                   : *ad->disp_term);
+  if (!valid_address_p (ad->mode, new_inner, ad->as))
+    return NULL_RTX;
+  insn = emit_insn (gen_rtx_SET (ad->mode, new_reg, *ad->base_term));
+  code = recog_memoized (insn);
+  if (code < 0)
+    {
+      delete_insns_since (last_insn);
+      return NULL_RTX;
+    }
+
+  return new_inner;
+}
+
 /* Make reload base reg + disp from address AD.  Return the new pseudo.  */
 static rtx
 base_plus_disp_to_reg (struct address_info *ad)
@@ -2757,6 +2808,8 @@ process_address_1 (int nop, rtx *before, rtx *after)
 
      3) the address is a frame address with an invalid offset.
 
+     4) the address is a frame address with an invalid base.
+
      All these cases involve a non-autoinc address, so there is no
      point revalidating other types.  */
   if (ad.autoinc_p || valid_address_p (&ad))
@@ -2838,14 +2891,19 @@ process_address_1 (int nop, rtx *before, rtx *after)
       int regno;
       enum reg_class cl;
       rtx set, insns, last_insn;
+      /* Try to reload base into register only if the base is invalid
+         for the address but with valid offset, case (4) above.  */
+      start_sequence ();
+      new_reg = base_to_reg (&ad);
+
       /* base + disp => new base, cases (1) and (3) above.  */
       /* Another option would be to reload the displacement into an
 	 index register.  However, postreload has code to optimize
 	 address reloads that have the same base and different
 	 displacements, so reloading into an index register would
 	 not necessarily be a win.  */
-      start_sequence ();
-      new_reg = base_plus_disp_to_reg (&ad);
+      if (new_reg == NULL_RTX)
+        new_reg = base_plus_disp_to_reg (&ad);
       insns = get_insns ();
       last_insn = get_last_insn ();
       /* If we generated at least two insns, try last insn source as

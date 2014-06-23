@@ -683,6 +683,13 @@ enum annot_expr_kind {
   annot_expr_kind_last
 };
 
+/* Internal functions.  */
+enum internal_fn {
+#define DEF_INTERNAL_FN(CODE, FLAGS) IFN_##CODE,
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+  IFN_LAST
+};
 
 /*---------------------------------------------------------------------------
                                 Type definitions
@@ -810,6 +817,9 @@ struct GTY(()) tree_base {
 
     /* SSA version number.  This field is only used with SSA_NAME.  */
     unsigned int version;
+
+    /* Internal function code.  */
+    enum internal_fn ifn;
   } GTY((skip(""))) u;
 };
 
@@ -1175,6 +1185,11 @@ enum omp_clause_map_kind
      array sections.  OMP_CLAUSE_SIZE for these is not the pointer size,
      which is implicitly POINTER_SIZE / BITS_PER_UNIT, but the bias.  */
   OMP_CLAUSE_MAP_POINTER,
+  /* Also internal, behaves like OMP_CLAUS_MAP_TO, but additionally any
+     OMP_CLAUSE_MAP_POINTER records consecutive after it which have addresses
+     falling into that range will not be ignored if OMP_CLAUSE_MAP_TO_PSET
+     wasn't mapped already.  */
+  OMP_CLAUSE_MAP_TO_PSET,
   OMP_CLAUSE_MAP_LAST
 };
 
@@ -1271,6 +1286,7 @@ struct GTY(()) tree_block {
   unsigned block_num : 31;
 
   location_t locus;
+  location_t end_locus;
 
   tree vars;
   vec<tree, va_gc> *nonlocalized_vars;
@@ -1781,13 +1797,6 @@ struct GTY(()) tree_decl_map {
 struct GTY(()) tree_int_map {
   struct tree_map_base base;
   unsigned int to;
-};
-
-/* Map from a tree to initialization/finalization priorities.  */
-struct GTY(()) tree_priority_map {
-  struct tree_map_base base;
-  priority_type init;
-  priority_type fini;
 };
 
 /* Map from a decl tree to a tree vector.  */

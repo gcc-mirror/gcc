@@ -13,7 +13,7 @@ program test
   call co_sum(val, stat=stat3)
 end program test
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_co_max \\(&desc.., 0B, 0, &stat1, 0B, 0, 0\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_co_min \\(&desc.., 0B, 0, &stat2, 0B, 0, 0\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_co_sum \\(&desc.., 0B, 0, &stat3, 0B, 0\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_co_max \\(&desc.., 0, &stat1, 0B, 0, 0\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_co_min \\(&desc.., 0, &stat2, 0B, 0, 0\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_co_sum \\(&desc.., 0, &stat3, 0B, 0\\);" 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

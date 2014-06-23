@@ -457,6 +457,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fbranch_count_reg, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fmove_loop_invariants, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_pta, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fssa_phiopt, NULL, 1 },
 
     /* -O2 optimizations.  */
     { OPT_LEVELS_2_PLUS, OPT_finline_small_functions, NULL, 1 },
@@ -1466,6 +1467,7 @@ common_handle_option (struct gcc_options *opts,
 		sizeof "float-divide-by-zero" - 1 },
 	      { "float-cast-overflow", SANITIZE_FLOAT_CAST,
 		sizeof "float-cast-overflow" - 1 },
+	      { "bounds", SANITIZE_BOUNDS, sizeof "bounds" - 1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;

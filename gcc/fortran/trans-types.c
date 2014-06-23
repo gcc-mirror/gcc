@@ -3107,4 +3107,91 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   return true;
 }
 
+
+/* Create a type to handle vector subscripts for coarray library calls. It
+   has the form:
+     struct caf_vector_t {
+       size_t nvec;  // size of the vector
+       union {
+         struct {
+           void *vector;
+           int kind;
+         } v;
+         struct {
+           ptrdiff_t lower_bound;
+           ptrdiff_t upper_bound;
+           ptrdiff_t stride;
+         } triplet;
+       } u;
+     }
+   where nvec == 0 for DIMEN_ELEMENT or DIMEN_RANGE and nvec being the vector
+   size in case of DIMEN_VECTOR, where kind is the integer type of the vector.  */
+
+tree
+gfc_get_caf_vector_type (int dim)
+{
+  static tree vector_types[GFC_MAX_DIMENSIONS];
+  static tree vec_type = NULL_TREE;
+  tree triplet_struct_type, vect_struct_type, union_type, tmp, *chain;
+
+  if (vector_types[dim-1] != NULL_TREE)
+    return vector_types[dim-1];
+
+  if (vec_type == NULL_TREE)
+    {
+      chain = 0;
+      vect_struct_type = make_node (RECORD_TYPE);
+      tmp = gfc_add_field_to_struct_1 (vect_struct_type,
+				       get_identifier ("vector"),
+				       pvoid_type_node, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      tmp = gfc_add_field_to_struct_1 (vect_struct_type,
+				       get_identifier ("kind"),
+				       integer_type_node, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      gfc_finish_type (vect_struct_type);
+
+      chain = 0;
+      triplet_struct_type = make_node (RECORD_TYPE);
+      tmp = gfc_add_field_to_struct_1 (triplet_struct_type,
+				       get_identifier ("lower_bound"),
+				       gfc_array_index_type, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      tmp = gfc_add_field_to_struct_1 (triplet_struct_type,
+				       get_identifier ("upper_bound"),
+				       gfc_array_index_type, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      tmp = gfc_add_field_to_struct_1 (triplet_struct_type, get_identifier ("stride"),
+				       gfc_array_index_type, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      gfc_finish_type (triplet_struct_type);
+
+      chain = 0;
+      union_type = make_node (UNION_TYPE);
+      tmp = gfc_add_field_to_struct_1 (union_type, get_identifier ("v"),
+                                       vect_struct_type, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      tmp = gfc_add_field_to_struct_1 (union_type, get_identifier ("triplet"),
+				       triplet_struct_type, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      gfc_finish_type (union_type);
+
+      chain = 0;
+      vec_type = make_node (RECORD_TYPE);
+      tmp = gfc_add_field_to_struct_1 (vec_type, get_identifier ("nvec"),
+				       size_type_node, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      tmp = gfc_add_field_to_struct_1 (vec_type, get_identifier ("u"),
+				       union_type, &chain);
+      TREE_NO_WARNING (tmp) = 1;
+      gfc_finish_type (vec_type);
+      TYPE_NAME (vec_type) = get_identifier ("caf_vector_t");
+    }
+
+  tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node,
+			  gfc_rank_cst[dim-1]);
+  vector_types[dim-1] = build_array_type (vec_type, tmp);
+  return vector_types[dim-1];
+}
+
 #include "gt-fortran-trans-types.h"

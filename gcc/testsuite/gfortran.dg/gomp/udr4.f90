@@ -6,7 +6,7 @@ subroutine f3
 !$omp declare reduction (foo) ! { dg-error "Unclassifiable OpenMP directive" }
 !$omp declare reduction (foo:integer) ! { dg-error "Unclassifiable OpenMP directive" }
 !$omp declare reduction (foo:integer:omp_out=omp_out+omp_in) &
-!$omp & initializer(omp_priv=0) initializer(omp_priv=0) ! { dg-error "Unclassifiable statement" }
+!$omp & initializer(omp_priv=0) initializer(omp_priv=0) ! { dg-error "Unexpected junk after" }
 end subroutine f3
 subroutine f4
   implicit integer (o)

@@ -543,7 +543,7 @@ C ObjC C++ ObjC++ Var(warn_switch_enum) Warning
 Warn about all enumerated switches missing a specific case
 
 Wswitch-bool
-C ObjC C++ ObjC++ Warning Init(1)
+C ObjC C++ ObjC++ Var(warn_switch_bool) Warning Init(1)
 Warn about switches with boolean controlling expression
 
 Wmissing-format-attribute
@@ -1201,11 +1201,11 @@ C ObjC C++ ObjC++ LTO Optimization Var(flag_short_double)
 Use the same size for double as for float
 
 fshort-enums
-C ObjC C++ ObjC++ Optimization Var(flag_short_enums)
+C ObjC C++ ObjC++ LTO Optimization Var(flag_short_enums)
 Use the narrowest integer type possible for enumeration types
 
 fshort-wchar
-C ObjC C++ ObjC++ Optimization Var(flag_short_wchar)
+C ObjC C++ ObjC++ LTO Optimization Var(flag_short_wchar)
 Force the underlying type for \"wchar_t\" to be \"unsigned short\"
 
 fsigned-bitfields

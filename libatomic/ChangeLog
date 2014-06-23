@@ -1,3 +1,16 @@
+2014-06-17  Kai Tietz  <ktietz@redhat.com>
+
+	* Makefile.am (libatomic_la_LDFLAGS): Add lt_host_flags.
+	* configure.ac (ACX_LT_HOST_FLAGS): New.
+	(target_thread_file): New.
+	* configure.tgt (mingw): Add mingw support.
+	* config/mingw/host-config.h: New file.
+	* config/mingw/lock.c: Likewise.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+	* aclocal.m4: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2014-02-20  Richard Henderson <rth@redhat.com>
 
 	PR c++/60272

@@ -558,7 +558,11 @@ process_bb_lives (basic_block bb, int &curr_point)
 	      /* It might be 'inheritance pseudo <- reload pseudo'.  */
 	      || (src_regno >= lra_constraint_new_regno_start
 		  && ((int) REGNO (SET_DEST (set))
-		      >= lra_constraint_new_regno_start))))
+		      >= lra_constraint_new_regno_start)
+		  /* Remember to skip special cases where src/dest regnos are
+		     the same, e.g. insn SET pattern has matching constraints
+		     like =r,0.  */
+		  && src_regno != (int) REGNO (SET_DEST (set)))))
 	{
 	  int hard_regno = -1, regno = -1;
 

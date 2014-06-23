@@ -171,7 +171,7 @@ cpp_define_builtins (cpp_reader *pfile)
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
   if (gfc_option.gfc_flag_openmp)
-    cpp_define (pfile, "_OPENMP=201107");
+    cpp_define (pfile, "_OPENMP=201307");
 
   /* The defines below are necessary for the TARGET_* macros.
 

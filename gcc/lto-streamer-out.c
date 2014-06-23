@@ -827,8 +827,6 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 					  | (DECL_CXX_CONSTRUCTOR_P (t) << 1)
 					  | (DECL_CXX_DESTRUCTOR_P (t) << 2),
 					  v);
-      if (VAR_OR_FUNCTION_DECL_P (t))
-	v = iterative_hash_host_wide_int (DECL_INIT_PRIORITY (t), v);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
@@ -852,8 +850,6 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 					| (DECL_LOOPING_CONST_OR_PURE_P (t) << 15), v);
       if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
 	v = iterative_hash_host_wide_int (DECL_FUNCTION_CODE (t), v);
-      if (DECL_STATIC_DESTRUCTOR (t))
-	v = iterative_hash_host_wide_int (DECL_FINI_PRIORITY (t), v);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))

@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "predict.h"
 #include "wide-int-print.h"
+#include "internal-fn.h"
 
 #include <new>                           // For placement-new.
 
@@ -501,6 +502,7 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
 	  pp_string (buffer, "alloc");
 	  break;
 	case OMP_CLAUSE_MAP_TO:
+	case OMP_CLAUSE_MAP_TO_PSET:
 	  pp_string (buffer, "to");
 	  break;
 	case OMP_CLAUSE_MAP_FROM:
@@ -521,6 +523,9 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
 	  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
 	      && OMP_CLAUSE_MAP_KIND (clause) == OMP_CLAUSE_MAP_POINTER)
 	    pp_string (buffer, " [pointer assign, bias: ");
+	  else if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
+		   && OMP_CLAUSE_MAP_KIND (clause) == OMP_CLAUSE_MAP_TO_PSET)
+	    pp_string (buffer, " [pointer set, len: ");
 	  else
 	    pp_string (buffer, " [len: ");
 	  dump_generic_node (buffer, OMP_CLAUSE_SIZE (clause),
@@ -1786,7 +1791,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case CALL_EXPR:
-      print_call_name (buffer, CALL_EXPR_FN (node), flags);
+      if (CALL_EXPR_FN (node) != NULL_TREE)
+	print_call_name (buffer, CALL_EXPR_FN (node), flags);
+      else
+	pp_string (buffer, internal_fn_name (CALL_EXPR_IFN (node)));
 
       /* Print parameters.  */
       pp_space (buffer);
@@ -3502,6 +3510,7 @@ dump_function_header (FILE *dump_file, tree fdecl, int flags)
     fprintf (dump_file, ", decl_uid=%d", DECL_UID (fdecl));
   if (node)
     {
+      fprintf (dump_file, ", cgraph_uid=%d", node->uid);
       fprintf (dump_file, ", symbol_order=%d)%s\n\n", node->order,
                node->frequency == NODE_FREQUENCY_HOT
                ? " (hot)"

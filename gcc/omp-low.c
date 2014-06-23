@@ -1678,6 +1678,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		}
 	      else
 		{
+		  if (ctx->outer)
+		    {
+		      scan_omp_op (&OMP_CLAUSE_DECL (c), ctx->outer);
+		      decl = OMP_CLAUSE_DECL (c);
+		    }
 		  gcc_assert (!splay_tree_lookup (ctx->field_map,
 						  (splay_tree_key) decl));
 		  tree field
@@ -2011,6 +2016,7 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
 	      tree temp = create_tmp_var (type, NULL);
 	      tree c = build_omp_clause (UNKNOWN_LOCATION,
 					 OMP_CLAUSE__LOOPTEMP_);
+	      insert_decl_map (&outer_ctx->cb, temp, temp);
 	      OMP_CLAUSE_DECL (c) = temp;
 	      OMP_CLAUSE_CHAIN (c) = gimple_omp_parallel_clauses (stmt);
 	      gimple_omp_parallel_set_clauses (stmt, c);
@@ -2507,6 +2513,23 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 		    "region");
 	  return false;
 	}
+      break;
+    case GIMPLE_OMP_TARGET:
+      for (; ctx != NULL; ctx = ctx->outer)
+	if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
+	    && gimple_omp_target_kind (ctx->stmt) == GF_OMP_TARGET_KIND_REGION)
+	  {
+	    const char *name;
+	    switch (gimple_omp_target_kind (stmt))
+	      {
+	      case GF_OMP_TARGET_KIND_REGION: name = "target"; break;
+	      case GF_OMP_TARGET_KIND_DATA: name = "target data"; break;
+	      case GF_OMP_TARGET_KIND_UPDATE: name = "target update"; break;
+	      default: gcc_unreachable ();
+	      }
+	    warning_at (gimple_location (stmt), 0,
+			"%s construct inside of target region", name);
+	  }
       break;
     default:
       break;
@@ -9041,7 +9064,10 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 					OMP_CLAUSE__LOOPTEMP_);
 	    }
 	  else
-	    temp = create_tmp_var (type, NULL);
+	    {
+	      temp = create_tmp_var (type, NULL);
+	      insert_decl_map (&ctx->outer->cb, temp, temp);
+	    }
 	  *pc = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__LOOPTEMP_);
 	  OMP_CLAUSE_DECL (*pc) = temp;
 	  pc = &OMP_CLAUSE_CHAIN (*pc);

@@ -6,7 +6,8 @@
 module declare_simd_1_mod
   contains
     real function foo (a, b, c)
-      !$omp declare simd (foo) simdlen (4) uniform (a) linear (b : 5)
+      !$omp declare simd (foo) simdlen (4) uniform (a) linear (b : 5) &
+      !$omp & notinbranch
       double precision, value :: a
       real, value :: c
       !$omp declare simd (foo)
@@ -22,6 +23,7 @@ end module declare_simd_1_mod
       real, value :: c
       real :: bar
       !$omp declare simd (bar) simdlen (4) linear (b : 2)
+      !$omp declare simd (bar) simdlen (16) inbranch
       double precision, value :: a
     end function bar
   end interface

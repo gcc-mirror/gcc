@@ -1869,10 +1869,12 @@ enum reg_class
   NO_REGS,			/* no registers in set */
   M16_STORE_REGS,		/* microMIPS store registers  */
   M16_REGS,			/* mips16 directly accessible registers */
+  M16_SP_REGS,			/* mips16 + $sp */
   T_REG,			/* mips16 T register ($24) */
   M16_T_REGS,			/* mips16 registers plus T register */
   PIC_FN_ADDR_REG,		/* SVR4 PIC function address register */
   V1_REG,			/* Register $v1 ($3) used for TLS access.  */
+  SPILL_REGS,			/* All but $sp and call preserved regs are in here */
   LEA_REGS,			/* Every GPR except $25 */
   GR_REGS,			/* integer registers */
   FP_REGS,			/* floating point registers */
@@ -1907,10 +1909,12 @@ enum reg_class
   "NO_REGS",								\
   "M16_STORE_REGS",							\
   "M16_REGS",								\
+  "M16_SP_REGS",								\
   "T_REG",								\
   "M16_T_REGS",								\
   "PIC_FN_ADDR_REG",							\
   "V1_REG",								\
+  "SPILL_REGS",								\
   "LEA_REGS",								\
   "GR_REGS",								\
   "FP_REGS",								\
@@ -1948,10 +1952,12 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
   { 0x000200fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* M16_STORE_REGS */	\
   { 0x000300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* M16_REGS */		\
+  { 0x200300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* M16_SP_REGS */		\
   { 0x01000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* T_REG */		\
   { 0x010300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* M16_T_REGS */	\
   { 0x02000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* PIC_FN_ADDR_REG */	\
   { 0x00000008, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* V1_REG */		\
+  { 0x0303fffc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* SPILL_REGS */      	\
   { 0xfdffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* LEA_REGS */		\
   { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* GR_REGS */		\
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* FP_REGS */		\
@@ -1984,7 +1990,7 @@ enum reg_class
    valid base register must belong.  A base register is one used in
    an address which is the register value plus a displacement.  */
 
-#define BASE_REG_CLASS  (TARGET_MIPS16 ? M16_REGS : GR_REGS)
+#define BASE_REG_CLASS  (TARGET_MIPS16 ? M16_SP_REGS : GR_REGS)
 
 /* A macro whose definition is the name of the class to which a
    valid index register must belong.  An index register is one used

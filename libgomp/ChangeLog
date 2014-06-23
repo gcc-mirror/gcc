@@ -1,3 +1,22 @@
+2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp_lib.f90.in (openmp_version): Set to 201307.
+	* omp_lib.h.in (openmp_version): Likewise.
+	* testsuite/libgomp.c/target-8.c: New test.
+	* testsuite/libgomp.fortran/declare-simd-1.f90: Add notinbranch
+	and inbranch clauses.
+	* testsuite/libgomp.fortran/depend-3.f90: New test.
+	* testsuite/libgomp.fortran/openmp_version-1.f: Adjust for new
+	openmp_version.
+	* testsuite/libgomp.fortran/openmp_version-2.f90: Likewise.
+	* testsuite/libgomp.fortran/target1.f90: New test.
+	* testsuite/libgomp.fortran/target2.f90: New test.
+	* testsuite/libgomp.fortran/target3.f90: New test.
+	* testsuite/libgomp.fortran/target4.f90: New test.
+	* testsuite/libgomp.fortran/target5.f90: New test.
+	* testsuite/libgomp.fortran/target6.f90: New test.
+	* testsuite/libgomp.fortran/target7.f90: New test.
+
 2014-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/60928

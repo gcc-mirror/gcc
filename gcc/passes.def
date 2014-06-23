@@ -73,7 +73,6 @@ along with GCC; see the file COPYING3.  If not see
 	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
 	  NEXT_PASS (pass_fre);
-	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_merge_phi);
 	  NEXT_PASS (pass_cd_dce);
 	  NEXT_PASS (pass_early_ipa_sra);
@@ -149,12 +148,12 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
       NEXT_PASS (pass_fre);
-      NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_vrp);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_call_cdce);
       NEXT_PASS (pass_cselim);
+      NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_tree_ifcombine);
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_tail_recursion);
@@ -204,7 +203,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_copy_prop);
-	  NEXT_PASS (pass_dce_loop);
+	  NEXT_PASS (pass_dce);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_record_bounds);
@@ -216,7 +215,7 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_graphite_transforms);
 	      NEXT_PASS (pass_lim);
 	      NEXT_PASS (pass_copy_prop);
-	      NEXT_PASS (pass_dce_loop);
+	      NEXT_PASS (pass_dce);
 	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_parallelize_loops);
@@ -225,7 +224,7 @@ along with GCC; see the file COPYING3.  If not see
 	     Please do not add any other passes in between.  */
 	  NEXT_PASS (pass_vectorize);
           PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
-	      NEXT_PASS (pass_dce_loop);
+	      NEXT_PASS (pass_dce);
           POP_INSERT_PASSES ()
           NEXT_PASS (pass_predcom);
 	  NEXT_PASS (pass_complete_unroll);
