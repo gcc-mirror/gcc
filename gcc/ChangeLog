@@ -1,3 +1,7 @@
+2014-06-23  Paul Gortmaker  <paul.gortmaker@windriver.com>
+
+	* gcc.c (set_multilib_dir): Fix typo.
+
 2014-06-23  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop.c (gate_loop): New function.
