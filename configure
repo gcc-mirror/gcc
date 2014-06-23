@@ -6109,7 +6109,7 @@ fi
         if test "x${clooginc}" = x && test "x${clooglibs}" = x \
      && test -d ${srcdir}/cloog; then
      clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
-     clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
+     clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include'
     ENABLE_CLOOG_CHECK=no
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using in-tree CLooG, disabling version check" >&5
 $as_echo "$as_me: WARNING: using in-tree CLooG, disabling version check" >&2;}

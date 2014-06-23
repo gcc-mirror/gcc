@@ -1,15 +1,12 @@
+2014-06-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix include path for in-tree cloog.
+	* config/cloog.m4 (CLOOG_INIT_FLAGS): Remove bogus include path.
+	* configure: Regenerate.
+
 2014-06-18  Richard Henderson  <rth@redhat.com>
 
 	* .gitignore: Import gcc_update output.
-
-2014-06-18  Olivier Hainque  <hainque@adacore.com>
-
-	* tree-core.h (tree_block): Add an "end_locus" field, allowing
-	memorization of the end of block source location.
-	* tree.h (BLOCK_SOURCE_END_LOCATION): New accessor.
-	* gimplify.c (gimplify_bind_expr): Propagate the block start and
-	end source location info we have on the block entry/exit code we
-	generate.
 
 2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
 
@@ -57,21 +54,6 @@
 2014-05-28  Pedro Alves  <palves@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
-
-2014-05-28  Olivier Hainque  <hainque@adacore.com>
-
-	* config/rs6000/vxworks.h (VXCPU_FOR_8548): New. Default to PPC85XX.
-	(CPP_SPEC): Add entry for -mcpu=8548.
-	* config/rs6000/vxworksae.h: Reinstate. Override	VXCPU_FOR_8548.
-	* config.gcc (powerpc-wrs-vxworksae, tm_file): Add back vxworksae.h.
-
-2014-05-26  Richard Sandiford  <rdsandiford@googlemail.com>
-	    Olivier Hainque  <hainque@adacore.com>
-
-	* rtl.h (set_for_reg_notes): Declare.
-	* emit-rtl.c (set_for_reg_notes): New function.
-	(set_unique_reg_note): Use it.
-	* optabs.c (add_equal_note): Likewise
 
 2014-05-22  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
@@ -316,7 +298,7 @@
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS: Add Nick Clifton and DJ Delorie as msp430
-        maintainers.
+	maintainers.
 
 2013-09-03  Richard Biener  <rguenther@suse.de>
 
