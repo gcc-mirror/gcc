@@ -3402,7 +3402,8 @@ parser_build_binary_op (location_t location, enum tree_code code,
 			   code1, arg1.value, code2, arg2.value);
 
   if (warn_logical_not_paren
-      && code1 == TRUTH_NOT_EXPR)
+      && code1 == TRUTH_NOT_EXPR
+      && code2 != TRUTH_NOT_EXPR)
     warn_logical_not_parentheses (location, code, arg1.value, arg2.value);
 
   /* Warn about comparisons against string literals, with the exception

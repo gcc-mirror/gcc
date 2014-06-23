@@ -1,3 +1,7 @@
+2014-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/pr49706-2.c: New test.
+
 2014-06-23  Alan Modra  <amodra@gmail.com>
 
 	* gcc.dg/pr61583.c: New.
