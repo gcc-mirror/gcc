@@ -1,3 +1,11 @@
+2014-06-23  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/39284
+	* passes.def (peephole2): Move peephole2 pass before
+	before sched2 pass.
+	* config/i386/i386.md (peehole2): Combine memories
+	and indirect jumps.
+
 2014-06-23  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-loop.c (gate_loop): New function.
