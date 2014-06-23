@@ -1,3 +1,8 @@
+2014-06-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61553
+	* c-c++-common/pr61553.c: New test.
+
 2014-06-23  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/vect/slp-pr50413.cc: Scan and cleanup appropriate SLP dumps.
