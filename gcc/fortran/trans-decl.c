@@ -3870,7 +3870,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					NULL_TREE);
 		  continue;
 		}
-	      else if (gfc_option.coarray != GFC_FCOARRAY_LIB)
+	      else
 		{
 		  gfc_save_backend_locus (&loc);
 		  gfc_set_backend_locus (&sym->declared_at);
