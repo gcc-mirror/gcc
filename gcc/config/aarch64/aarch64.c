@@ -7358,6 +7358,7 @@ static aarch64_simd_mangle_map_entry aarch64_simd_mangle_map[] = {
   { V2SImode,  "__builtin_aarch64_simd_si",     "11__Int32x2_t" },
   { V2SImode,  "__builtin_aarch64_simd_usi",    "12__Uint32x2_t" },
   { V2SFmode,  "__builtin_aarch64_simd_sf",     "13__Float32x2_t" },
+  { V1DFmode,  "__builtin_aarch64_simd_df",	"13__Float64x1_t" },
   { V8QImode,  "__builtin_aarch64_simd_poly8",  "11__Poly8x8_t" },
   { V4HImode,  "__builtin_aarch64_simd_poly16", "12__Poly16x4_t" },
   /* 128-bit containerized types.  */
