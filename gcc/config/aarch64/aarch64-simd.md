@@ -2633,7 +2633,41 @@
 
 ;; sq<r>dmulh_lane
 
-(define_insn "aarch64_sq<r>dmulh_lane<mode>"
+(define_expand "aarch64_sqdmulh_lane<mode>"
+  [(match_operand:VDQHS 0 "register_operand" "")
+   (match_operand:VDQHS 1 "register_operand" "")
+   (match_operand:<VCOND> 2 "register_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
+  "TARGET_SIMD"
+  {
+     aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCOND>mode));
+     operands[3] = GEN_INT (ENDIAN_LANE_N (<VCOND>mode, INTVAL (operands[3])));
+     emit_insn (gen_aarch64_sqdmulh_lane<mode>_internal (operands[0],
+                                                         operands[1],
+                                                         operands[2],
+                                                         operands[3]));
+     DONE;
+  }
+)
+
+(define_expand "aarch64_sqrdmulh_lane<mode>"
+  [(match_operand:VDQHS 0 "register_operand" "")
+   (match_operand:VDQHS 1 "register_operand" "")
+   (match_operand:<VCOND> 2 "register_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
+  "TARGET_SIMD"
+  {
+     aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCOND>mode));
+     operands[3] = GEN_INT (ENDIAN_LANE_N (<VCOND>mode, INTVAL (operands[3])));
+     emit_insn (gen_aarch64_sqrdmulh_lane<mode>_internal (operands[0],
+                                                          operands[1],
+                                                          operands[2],
+                                                          operands[3]));
+     DONE;
+  }
+)
+
+(define_insn "aarch64_sq<r>dmulh_lane<mode>_internal"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
         (unspec:VDQHS
 	  [(match_operand:VDQHS 1 "register_operand" "w")
@@ -2649,7 +2683,41 @@
   [(set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")]
 )
 
-(define_insn "aarch64_sq<r>dmulh_laneq<mode>"
+(define_expand "aarch64_sqdmulh_laneq<mode>"
+  [(match_operand:VDQHS 0 "register_operand" "")
+   (match_operand:VDQHS 1 "register_operand" "")
+   (match_operand:<VCONQ> 2 "register_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
+  "TARGET_SIMD"
+  {
+     aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+     operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
+     emit_insn (gen_aarch64_sqdmulh_laneq<mode>_internal (operands[0],
+                                                          operands[1],
+                                                          operands[2],
+                                                          operands[3]));
+     DONE;
+   }
+)
+
+(define_expand "aarch64_sqrdmulh_laneq<mode>"
+  [(match_operand:VDQHS 0 "register_operand" "")
+   (match_operand:VDQHS 1 "register_operand" "")
+   (match_operand:<VCONQ> 2 "register_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
+  "TARGET_SIMD"
+  {
+     aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+     operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
+     emit_insn (gen_aarch64_sqrdmulh_laneq<mode>_internal (operands[0],
+                                                           operands[1],
+                                                           operands[2],
+                                                           operands[3]));
+     DONE;
+   }
+)
+
+(define_insn "aarch64_sq<r>dmulh_laneq<mode>_internal"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
         (unspec:VDQHS
 	  [(match_operand:VDQHS 1 "register_operand" "w")
@@ -2659,13 +2727,46 @@
 	 VQDMULH))]
   "TARGET_SIMD"
   "*
-   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
    operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
    return \"sq<r>dmulh\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]\";"
   [(set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")]
 )
 
-(define_insn "aarch64_sq<r>dmulh_lane<mode>"
+(define_expand "aarch64_sqdmulh_lane<mode>"
+  [(match_operand:SD_HSI 0 "register_operand" "")
+   (match_operand:SD_HSI 1 "register_operand" "")
+   (match_operand:<VCONQ> 2 "register_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
+  "TARGET_SIMD"
+  {
+    aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+    operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
+    emit_insn (gen_aarch64_sqdmulh_lane<mode>_internal (operands[0],
+                                                        operands[1],
+                                                        operands[2],
+                                                        operands[3]));
+    DONE;
+  }
+)
+
+(define_expand "aarch64_sqrdmulh_lane<mode>"
+  [(match_operand:SD_HSI 0 "register_operand" "")
+   (match_operand:SD_HSI 1 "register_operand" "")
+   (match_operand:<VCONQ> 2 "register_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
+  "TARGET_SIMD"
+  {
+    aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
+    operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
+    emit_insn (gen_aarch64_sqrdmulh_lane<mode>_internal (operands[0],
+                                                         operands[1],
+                                                         operands[2],
+                                                         operands[3]));
+    DONE;
+  }
+)
+
+(define_insn "aarch64_sq<r>dmulh_lane<mode>_internal"
   [(set (match_operand:SD_HSI 0 "register_operand" "=w")
         (unspec:SD_HSI
 	  [(match_operand:SD_HSI 1 "register_operand" "w")
@@ -2675,7 +2776,6 @@
 	 VQDMULH))]
   "TARGET_SIMD"
   "*
-   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCONQ>mode));
    operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
    return \"sq<r>dmulh\\t%<v>0, %<v>1, %2.<v>[%3]\";"
   [(set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")]
@@ -2757,6 +2857,7 @@
   "TARGET_SIMD"
 {
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<VCON>mode) / 2);
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlal_lane<mode>_internal (operands[0], operands[1],
 						      operands[2], operands[3],
 						      operands[4]));
@@ -2772,6 +2873,7 @@
   "TARGET_SIMD"
 {
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<VCON>mode));
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<VCON>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlal_lane<mode>_internal (operands[0], operands[1],
 						      operands[2], operands[3],
 						      operands[4]));
@@ -2787,6 +2889,7 @@
   "TARGET_SIMD"
 {
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<VCON>mode) / 2);
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<VCON>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlsl_lane<mode>_internal (operands[0], operands[1],
 						      operands[2], operands[3],
 						      operands[4]));
@@ -2802,6 +2905,7 @@
   "TARGET_SIMD"
 {
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<VCON>mode));
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<VCON>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlsl_lane<mode>_internal (operands[0], operands[1],
 						      operands[2], operands[3],
 						      operands[4]));
@@ -2913,6 +3017,7 @@
 {
   rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode) / 2);
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlal2_lane<mode>_internal (operands[0], operands[1],
 						       operands[2], operands[3],
 						       operands[4], p));
@@ -2929,6 +3034,7 @@
 {
   rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlal2_lane<mode>_internal (operands[0], operands[1],
 						       operands[2], operands[3],
 						       operands[4], p));
@@ -2945,6 +3051,7 @@
 {
   rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode) / 2);
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlsl2_lane<mode>_internal (operands[0], operands[1],
 						       operands[2], operands[3],
 						       operands[4], p));
@@ -2961,6 +3068,7 @@
 {
   rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
   aarch64_simd_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  operands[4] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[4])));
   emit_insn (gen_aarch64_sqdmlsl2_lane<mode>_internal (operands[0], operands[1],
 						       operands[2], operands[3],
 						       operands[4], p));
@@ -3081,6 +3189,7 @@
   "TARGET_SIMD"
 {
   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCON>mode) / 2);
+  operands[3] = GEN_INT (ENDIAN_LANE_N (<VCON>mode, INTVAL (operands[3])));
   emit_insn (gen_aarch64_sqdmull_lane<mode>_internal (operands[0], operands[1],
 						      operands[2], operands[3]));
   DONE;
@@ -3094,6 +3203,7 @@
   "TARGET_SIMD"
 {
   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<VCON>mode));
+  operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
   emit_insn (gen_aarch64_sqdmull_lane<mode>_internal
 	       (operands[0], operands[1], operands[2], operands[3]));
   DONE;
@@ -3186,6 +3296,7 @@
 {
   rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode) / 2);
+  operands[3] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[3])));
   emit_insn (gen_aarch64_sqdmull2_lane<mode>_internal (operands[0], operands[1],
 						       operands[2], operands[3],
 						       p));
@@ -3201,6 +3312,7 @@
 {
   rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, true);
   aarch64_simd_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  operands[3] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[3])));
   emit_insn (gen_aarch64_sqdmull2_lane<mode>_internal (operands[0], operands[1],
 						       operands[2], operands[3],
 						       p));
