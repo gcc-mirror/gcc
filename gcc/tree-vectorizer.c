@@ -82,6 +82,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "dbgcnt.h"
 #include "gimple-fold.h"
+#include "tree-scalar-evolution.h"
+
 
 /* Loop or bb location.  */
 source_location vect_location;
@@ -610,6 +612,7 @@ public:
   {}
 
   /* opt_pass methods: */
+  opt_pass * clone () { return new pass_slp_vectorize (m_ctxt); }
   virtual bool gate (function *) { return flag_tree_slp_vectorize != 0; }
   virtual unsigned int execute (function *);
 
@@ -619,6 +622,13 @@ unsigned int
 pass_slp_vectorize::execute (function *fun)
 {
   basic_block bb;
+
+  bool in_loop_pipeline = scev_initialized_p ();
+  if (!in_loop_pipeline)
+    {
+      loop_optimizer_init (LOOPS_NORMAL);
+      scev_initialize ();
+    }
 
   init_stmt_vec_info_vec ();
 
@@ -639,6 +649,13 @@ pass_slp_vectorize::execute (function *fun)
     }
 
   free_stmt_vec_info_vec ();
+
+  if (!in_loop_pipeline)
+    {
+      scev_finalize ();
+      loop_optimizer_finalize ();
+    }
+
   return 0;
 }
 

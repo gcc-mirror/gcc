@@ -42,6 +42,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-vectorizer.h"
 
+
+/* Gate for loop pass group.  The group is controlled by -ftree-loop-optimize
+   but we also avoid running it when the IL doesn't contain any loop.  */
+
+static bool
+gate_loop (function *fn)
+{
+  if (!flag_tree_loop_optimize)
+    return false;
+
+  /* For -fdump-passes which runs before loop discovery print the
+     state of -ftree-loop-optimize.  */
+  if (!loops_for_fn (fn))
+    return true;
+
+  /* Make sure to drop / re-discover loops when necessary.  */
+  if (loops_state_satisfies_p (LOOPS_NEED_FIXUP))
+    fix_loop_structure (NULL);
+  return number_of_loops (fn) > 1;
+}
+
 /* The loop superpass.  */
 
 namespace {
@@ -68,7 +89,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_loop_optimize != 0; }
+  virtual bool gate (function *fn) { return gate_loop (fn); }
 
 }; // class pass_tree_loop
 
@@ -79,6 +100,45 @@ make_pass_tree_loop (gcc::context *ctxt)
 {
   return new pass_tree_loop (ctxt);
 }
+
+/* The no-loop superpass.  */
+
+namespace {
+
+const pass_data pass_data_tree_no_loop =
+{
+  GIMPLE_PASS, /* type */
+  "no_loop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_execute */
+  TV_TREE_NOLOOP, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_tree_no_loop : public gimple_opt_pass
+{
+public:
+  pass_tree_no_loop (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_tree_no_loop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fn) { return !gate_loop (fn); }
+
+}; // class pass_tree_no_loop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tree_no_loop (gcc::context *ctxt)
+{
+  return new pass_tree_no_loop (ctxt);
+}
+
 
 /* Loop optimizer initialization.  */
 
