@@ -1,3 +1,9 @@
+2014-06-23  Alan Modra  <amodra@gmail.com>
+
+	PR bootstrap/61583
+	* tree-vrp.c (remove_range_assertions): Do not set is_unreachable
+	to zero on debug statements.
+
 2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/60825
@@ -25,7 +31,7 @@
 	vsqadd_u64, vsra_n_s64, vsra_n_u64, vsri_n_s64, vsri_n_u64,
 	vst1_s64, vst1_u64, vtst_s64, vtst_u64, vuqadd_s64): Wrap existing
 	logic in GCC vector extensions
-	
+
 	(vpaddd_s64, vaddd_s64, vaddd_u64, vceqd_s64, vceqd_u64, vceqzd_s64
 	vceqzd_u64, vcged_s64, vcged_u64, vcgezd_s64, vcgtd_s64, vcgtd_u64,
 	vcgtzd_s64, vcled_s64, vcled_u64, vclezd_s64, vcltd_s64, vcltd_u64,
@@ -468,8 +474,8 @@
 
 2014-06-18  Robert Suchanek  <robert.suchanek@imgtec.com>
 
-	* lra-constraints.c (base_to_reg): New function.       
-	(process_address): Use new function.                   
+	* lra-constraints.c (base_to_reg): New function.
+	(process_address): Use new function.
 
 2014-06-18  Tom de Vries  <tom@codesourcery.com>
 

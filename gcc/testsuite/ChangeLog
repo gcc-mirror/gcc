@@ -1,6 +1,10 @@
+2014-06-23  Alan Modra  <amodra@gmail.com>
+
+	* gcc.dg/pr61583.c: New.
+
 2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
 
-	* g++.dg/abi/mangle-neon-aarch64.C (f22, f23): New tests of 
+	* g++.dg/abi/mangle-neon-aarch64.C (f22, f23): New tests of
 	[u]int64x1_t.
 
 	* gcc.target/aarch64/aapcs64/func-ret-64x1_1.c: Add {u,}int64x1 cases.
@@ -24,7 +28,7 @@
 	test_vqrshrnd_n_u64, test_vshld_n_s64, test_vshdl_n_u64,
 	test_vslid_n_s64, test_vslid_n_u64, test_vsrid_n_s64,
 	test_vsrid_n_u64): Fix signature to match intrinsic.
-	
+
 	(test_vabs_s64): Remove.
 	(test_vaddd_s64_2, test_vsubd_s64_2): Use force_simd.
 
