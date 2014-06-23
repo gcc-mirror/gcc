@@ -7810,7 +7810,7 @@ set_multilib_dir (void)
     }
 
   if (multilib_dir == NULL && multilib_os_dir != NULL
-      && strcmp (multilib_os_dir, ".") == 0)
+      && strcmp (multilib_os_dir, ".") != 0)
     {
       free (CONST_CAST (char *, multilib_os_dir));
       multilib_os_dir = NULL;
