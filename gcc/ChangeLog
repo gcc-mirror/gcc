@@ -1,3 +1,8 @@
+2014-06-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-cgraph.c (lto_output_node, input_node): Set/get init/fini priority
+	directly.
+
 2014-06-23  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* loop-invariant.c (pre_check_invariant_p): New function.

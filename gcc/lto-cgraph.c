@@ -558,9 +558,9 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     }
   streamer_write_hwi_stream (ob->main_stream, node->profile_id);
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
-    streamer_write_hwi_stream (ob->main_stream, DECL_INIT_PRIORITY (node->decl));
+    streamer_write_hwi_stream (ob->main_stream, node->get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (node->decl))
-    streamer_write_hwi_stream (ob->main_stream, DECL_FINI_PRIORITY (node->decl));
+    streamer_write_hwi_stream (ob->main_stream, node->get_fini_priority ());
 }
 
 /* Output the varpool NODE to OB. 
@@ -1215,9 +1215,9 @@ input_node (struct lto_file_decl_data *file_data,
     node->alias_target = get_alias_symbol (node->decl);
   node->profile_id = streamer_read_hwi (ib);
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
-    SET_DECL_INIT_PRIORITY (node->decl, streamer_read_hwi (ib));
+    node->set_init_priority (streamer_read_hwi (ib));
   if (DECL_STATIC_DESTRUCTOR (node->decl))
-    SET_DECL_FINI_PRIORITY (node->decl, streamer_read_hwi (ib));
+    node->set_fini_priority (streamer_read_hwi (ib));
   return node;
 }
 
