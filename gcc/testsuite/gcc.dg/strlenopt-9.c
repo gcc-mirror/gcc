@@ -18,7 +18,7 @@ fn2 (int r)
   char *p, q[10];
   strcpy (q, "abc");
   p = r ? "a" : q;
-  /* String length for p varies, therefore strlen below isn't
+  /* String length is constant for both alternatives, and strlen is
      optimized away.  */
   return strlen (p);
 }
@@ -98,7 +98,7 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 4 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 3 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "memcpy \\(" 6 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcpy \\(" 1 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */

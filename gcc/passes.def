@@ -188,7 +188,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
-      NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_ccp);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
@@ -251,6 +250,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_reassoc);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_dominator);
+      NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_vrp);
       /* The only const/copy propagation opportunities left after
 	 DOM and VRP should be due to degenerate PHI nodes.  So rather than
