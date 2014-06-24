@@ -6709,7 +6709,7 @@ finish_struct (tree t, tree attributes)
 }
 
 /* Hash table to avoid endless recursion when handling references.  */
-static hash_table <pointer_hash <tree_node> > fixed_type_or_null_ref_ht;
+static hash_table<pointer_hash<tree_node> > *fixed_type_or_null_ref_ht;
 
 /* Return the dynamic type of INSTANCE, if known.
    Used to determine whether the virtual function table is needed
@@ -6826,8 +6826,9 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
       else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
 	{
 	  /* We only need one hash table because it is always left empty.  */
-	  if (!fixed_type_or_null_ref_ht.is_created ())
-	    fixed_type_or_null_ref_ht.create (37); 
+	  if (!fixed_type_or_null_ref_ht)
+	    fixed_type_or_null_ref_ht
+	      = new hash_table<pointer_hash<tree_node> > (37); 
 
 	  /* Reference variables should be references to objects.  */
 	  if (nonnull)
@@ -6839,15 +6840,15 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	  if (VAR_P (instance)
 	      && DECL_INITIAL (instance)
 	      && !type_dependent_expression_p_push (DECL_INITIAL (instance))
-	      && !fixed_type_or_null_ref_ht.find (instance))
+	      && !fixed_type_or_null_ref_ht->find (instance))
 	    {
 	      tree type;
 	      tree_node **slot;
 
-	      slot = fixed_type_or_null_ref_ht.find_slot (instance, INSERT);
+	      slot = fixed_type_or_null_ref_ht->find_slot (instance, INSERT);
 	      *slot = instance;
 	      type = RECUR (DECL_INITIAL (instance));
-	      fixed_type_or_null_ref_ht.remove_elt (instance);
+	      fixed_type_or_null_ref_ht->remove_elt (instance);
 
 	      return type;
 	    }

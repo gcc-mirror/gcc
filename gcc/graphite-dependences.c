@@ -587,7 +587,7 @@ loop_level_carries_dependences (scop_p scop, vec<poly_bb_p> body,
    poly_bb_p.  */
 
 bool
-loop_is_parallel_p (loop_p loop, bb_pbb_htab_type bb_pbb_mapping, int depth)
+loop_is_parallel_p (loop_p loop, bb_pbb_htab_type *bb_pbb_mapping, int depth)
 {
   bool dependences;
   scop_p scop;

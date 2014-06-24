@@ -64,7 +64,7 @@ struct registration_hasher : typed_noop_remove <struct vtable_registration>
   static inline bool equal (const value_type *, const compare_type *);
 };
 
-typedef hash_table <registration_hasher> register_table_type;
+typedef hash_table<registration_hasher> register_table_type;
 typedef register_table_type::iterator registration_iterator_type;
 
 /*  This struct is used to represent the class hierarchy information
@@ -116,7 +116,7 @@ struct vtbl_map_node {
                                          variable.                          */
   struct vtbl_map_node *next, *prev;  /* Pointers for the linked list
                                          structure.                         */
-  register_table_type registered;     /* Hashtable of vtable pointers for which
+  register_table_type *registered;     /* Hashtable of vtable pointers for which
                                          we have generated a _VLTRegisterPair
                                          call with this vtable map variable. */
   bool is_used;          /* Boolean indicating if we used this vtable map

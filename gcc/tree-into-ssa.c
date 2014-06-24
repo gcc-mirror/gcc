@@ -224,7 +224,7 @@ var_info_hasher::equal (const value_type *p1, const compare_type *p2)
 
 /* Each entry in VAR_INFOS contains an element of type STRUCT 
    VAR_INFO_D.  */
-static hash_table <var_info_hasher> var_infos;
+static hash_table<var_info_hasher> *var_infos;
 
 
 /* Information stored for SSA names.  */
@@ -383,7 +383,7 @@ get_var_info (tree decl)
   struct var_info_d vi;
   var_info_d **slot;
   vi.var = decl;
-  slot = var_infos.find_slot_with_hash (&vi, DECL_UID (decl), INSERT);
+  slot = var_infos->find_slot_with_hash (&vi, DECL_UID (decl), INSERT);
   if (*slot == NULL)
     {
       var_info_p v = XCNEW (struct var_info_d);
@@ -1084,14 +1084,14 @@ insert_phi_nodes_compare_var_infos (const void *a, const void *b)
 static void
 insert_phi_nodes (bitmap_head *dfs)
 {
-  hash_table <var_info_hasher>::iterator hi;
+  hash_table<var_info_hasher>::iterator hi;
   unsigned i;
   var_info_p info;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
-  auto_vec<var_info_p> vars (var_infos.elements ());
-  FOR_EACH_HASH_TABLE_ELEMENT (var_infos, info, var_info_p, hi)
+  auto_vec<var_info_p> vars (var_infos->elements ());
+  FOR_EACH_HASH_TABLE_ELEMENT (*var_infos, info, var_info_p, hi)
     if (info->info.need_phi_state != NEED_PHI_STATE_NO)
       vars.quick_push (info);
 
@@ -1654,7 +1654,7 @@ debug_tree_ssa (void)
 /* Dump statistics for the hash table HTAB.  */
 
 static void
-htab_statistics (FILE *file, hash_table <var_info_hasher> htab)
+htab_statistics (FILE *file, const hash_table<var_info_hasher> &htab)
 {
   fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
 	   (long) htab.size (),
@@ -1668,11 +1668,11 @@ htab_statistics (FILE *file, hash_table <var_info_hasher> htab)
 void
 dump_tree_ssa_stats (FILE *file)
 {
-  if (var_infos.is_created ())
+  if (var_infos)
     {
       fprintf (file, "\nHash table statistics:\n");
       fprintf (file, "    var_infos:   ");
-      htab_statistics (file, var_infos);
+      htab_statistics (file, *var_infos);
       fprintf (file, "\n");
     }
 }
@@ -1713,8 +1713,8 @@ void
 dump_var_infos (FILE *file)
 {
   fprintf (file, "\n\nDefinition and live-in blocks:\n\n");
-  if (var_infos.is_created ())
-    var_infos.traverse <FILE *, debug_var_infos_r> (file);
+  if (var_infos)
+    var_infos->traverse <FILE *, debug_var_infos_r> (file);
 }
 
 
@@ -2206,7 +2206,7 @@ rewrite_blocks (basic_block entry, enum rewrite_mode what)
   if (dump_file && (dump_flags & TDF_STATS))
     {
       dump_dfa_stats (dump_file);
-      if (var_infos.is_created ())
+      if (var_infos)
 	dump_tree_ssa_stats (dump_file);
     }
 
@@ -2261,8 +2261,9 @@ init_ssa_renamer (void)
   cfun->gimple_df->in_ssa_p = false;
 
   /* Allocate memory for the DEF_BLOCKS hash table.  */
-  gcc_assert (!var_infos.is_created ());
-  var_infos.create (vec_safe_length (cfun->local_decls));
+  gcc_assert (!var_infos);
+  var_infos = new hash_table<var_info_hasher>
+    (vec_safe_length (cfun->local_decls));
 
   bitmap_obstack_initialize (&update_ssa_obstack);
 }
@@ -2273,8 +2274,8 @@ init_ssa_renamer (void)
 static void
 fini_ssa_renamer (void)
 {
-  if (var_infos.is_created ())
-    var_infos.dispose ();
+  delete var_infos;
+    var_infos = NULL;
 
   bitmap_obstack_release (&update_ssa_obstack);
 
@@ -3208,7 +3209,7 @@ update_ssa (unsigned update_flags)
     {
       /* If we rename bare symbols initialize the mapping to
          auxiliar info we need to keep track of.  */
-      var_infos.create (47);
+      var_infos = new hash_table<var_info_hasher> (47);
 
       /* If we have to rename some symbols from scratch, we need to
 	 start the process at the root of the CFG.  FIXME, it should

@@ -209,7 +209,7 @@ action_record_hasher::equal (const value_type *entry, const compare_type *data)
   return entry->filter == data->filter && entry->next == data->next;
 }
 
-typedef hash_table <action_record_hasher> action_hash_type;
+typedef hash_table<action_record_hasher> action_hash_type;
 
 static bool get_eh_region_and_lp_from_rtx (const_rtx, eh_region *,
 					   eh_landing_pad *);
@@ -219,7 +219,7 @@ static hashval_t t2r_hash (const void *);
 
 static void dw2_build_landing_pads (void);
 
-static int collect_one_action_chain (action_hash_type, eh_region);
+static int collect_one_action_chain (action_hash_type *, eh_region);
 static int add_call_site (rtx, int, int);
 
 static void push_uleb128 (vec<uchar, va_gc> **, unsigned int);
@@ -760,7 +760,7 @@ ttypes_filter_hasher::hash (const value_type *entry)
   return TREE_HASH (entry->t);
 }
 
-typedef hash_table <ttypes_filter_hasher> ttypes_hash_type;
+typedef hash_table<ttypes_filter_hasher> ttypes_hash_type;
 
 
 /* Helper for ehspec hashing.  */
@@ -797,18 +797,18 @@ ehspec_hasher::hash (const value_type *entry)
   return h;
 }
 
-typedef hash_table <ehspec_hasher> ehspec_hash_type;
+typedef hash_table<ehspec_hasher> ehspec_hash_type;
 
 
 /* Add TYPE (which may be NULL) to cfun->eh->ttype_data, using TYPES_HASH
    to speed up the search.  Return the filter value to be used.  */
 
 static int
-add_ttypes_entry (ttypes_hash_type ttypes_hash, tree type)
+add_ttypes_entry (ttypes_hash_type *ttypes_hash, tree type)
 {
   struct ttypes_filter **slot, *n;
 
-  slot = ttypes_hash.find_slot_with_hash (type, (hashval_t) TREE_HASH (type),
+  slot = ttypes_hash->find_slot_with_hash (type, (hashval_t) TREE_HASH (type),
 					  INSERT);
 
   if ((n = *slot) == NULL)
@@ -830,14 +830,14 @@ add_ttypes_entry (ttypes_hash_type ttypes_hash, tree type)
    to speed up the search.  Return the filter value to be used.  */
 
 static int
-add_ehspec_entry (ehspec_hash_type ehspec_hash, ttypes_hash_type ttypes_hash,
+add_ehspec_entry (ehspec_hash_type *ehspec_hash, ttypes_hash_type *ttypes_hash,
 		  tree list)
 {
   struct ttypes_filter **slot, *n;
   struct ttypes_filter dummy;
 
   dummy.t = list;
-  slot = ehspec_hash.find_slot (&dummy, INSERT);
+  slot = ehspec_hash->find_slot (&dummy, INSERT);
 
   if ((n = *slot) == NULL)
     {
@@ -886,8 +886,6 @@ void
 assign_filter_values (void)
 {
   int i;
-  ttypes_hash_type ttypes;
-  ehspec_hash_type ehspec;
   eh_region r;
   eh_catch c;
 
@@ -897,8 +895,8 @@ assign_filter_values (void)
   else
     vec_alloc (cfun->eh->ehspec_data.other, 64);
 
-  ttypes.create (31);
-  ehspec.create (31);
+  ehspec_hash_type ehspec (31);
+  ttypes_hash_type ttypes (31);
 
   for (i = 1; vec_safe_iterate (cfun->eh->region_array, i, &r); ++i)
     {
@@ -922,7 +920,8 @@ assign_filter_values (void)
 
 		  for ( ; tp_node; tp_node = TREE_CHAIN (tp_node))
 		    {
-		      int flt = add_ttypes_entry (ttypes, TREE_VALUE (tp_node));
+		      int flt
+		       	= add_ttypes_entry (&ttypes, TREE_VALUE (tp_node));
 		      tree flt_node = build_int_cst (integer_type_node, flt);
 
 		      c->filter_list
@@ -933,7 +932,7 @@ assign_filter_values (void)
 		{
 		  /* Get a filter value for the NULL list also since it
 		     will need an action record anyway.  */
-		  int flt = add_ttypes_entry (ttypes, NULL);
+		  int flt = add_ttypes_entry (&ttypes, NULL);
 		  tree flt_node = build_int_cst (integer_type_node, flt);
 
 		  c->filter_list
@@ -944,16 +943,13 @@ assign_filter_values (void)
 
 	case ERT_ALLOWED_EXCEPTIONS:
 	  r->u.allowed.filter
-	    = add_ehspec_entry (ehspec, ttypes, r->u.allowed.type_list);
+	    = add_ehspec_entry (&ehspec, &ttypes, r->u.allowed.type_list);
 	  break;
 
 	default:
 	  break;
 	}
     }
-
-  ttypes.dispose ();
-  ehspec.dispose ();
 }
 
 /* Emit SEQ into basic block just before INSN (that is assumed to be
@@ -1074,12 +1070,11 @@ static vec<int> sjlj_lp_call_site_index;
 static int
 sjlj_assign_call_site_values (void)
 {
-  action_hash_type ar_hash;
+  action_hash_type ar_hash (31);
   int i, disp_index;
   eh_landing_pad lp;
 
   vec_alloc (crtl->eh.action_record_data, 64);
-  ar_hash.create (31);
 
   disp_index = 0;
   call_site_base = 1;
@@ -1089,7 +1084,7 @@ sjlj_assign_call_site_values (void)
 	int action, call_site;
 
 	/* First: build the action table.  */
-	action = collect_one_action_chain (ar_hash, lp->region);
+	action = collect_one_action_chain (&ar_hash, lp->region);
 
 	/* Next: assign call-site values.  If dwarf2 terms, this would be
 	   the region number assigned by convert_to_eh_region_ranges, but
@@ -1107,8 +1102,6 @@ sjlj_assign_call_site_values (void)
 
 	disp_index++;
       }
-
-  ar_hash.dispose ();
 
   return disp_index;
 }
@@ -2321,13 +2314,13 @@ expand_builtin_extend_pointer (tree addr_tree)
 }
 
 static int
-add_action_record (action_hash_type ar_hash, int filter, int next)
+add_action_record (action_hash_type *ar_hash, int filter, int next)
 {
   struct action_record **slot, *new_ar, tmp;
 
   tmp.filter = filter;
   tmp.next = next;
-  slot = ar_hash.find_slot (&tmp, INSERT);
+  slot = ar_hash->find_slot (&tmp, INSERT);
 
   if ((new_ar = *slot) == NULL)
     {
@@ -2352,7 +2345,7 @@ add_action_record (action_hash_type ar_hash, int filter, int next)
 }
 
 static int
-collect_one_action_chain (action_hash_type ar_hash, eh_region region)
+collect_one_action_chain (action_hash_type *ar_hash, eh_region region)
 {
   int next;
 
@@ -2481,7 +2474,7 @@ static unsigned int
 convert_to_eh_region_ranges (void)
 {
   rtx insn, iter, note;
-  action_hash_type ar_hash;
+  action_hash_type ar_hash (31);
   int last_action = -3;
   rtx last_action_insn = NULL_RTX;
   rtx last_landing_pad = NULL_RTX;
@@ -2494,8 +2487,6 @@ convert_to_eh_region_ranges (void)
   int saved_call_site_base = call_site_base;
 
   vec_alloc (crtl->eh.action_record_data, 64);
-
-  ar_hash.create (31);
 
   for (iter = get_insns (); iter ; iter = NEXT_INSN (iter))
     if (INSN_P (iter))
@@ -2515,7 +2506,7 @@ convert_to_eh_region_ranges (void)
 	if (nothrow)
 	  continue;
 	if (region)
-	  this_action = collect_one_action_chain (ar_hash, region);
+	  this_action = collect_one_action_chain (&ar_hash, region);
 	else
 	  this_action = -1;
 
@@ -2632,7 +2623,6 @@ convert_to_eh_region_ranges (void)
 
   call_site_base = saved_call_site_base;
 
-  ar_hash.dispose ();
   return 0;
 }
 

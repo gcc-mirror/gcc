@@ -386,7 +386,7 @@ pre_ldst_expr_hasher::equal (const value_type *ptr1,
 }
 
 /* Hashtable for the load/store memory refs.  */
-static hash_table <pre_ldst_expr_hasher> pre_ldst_table;
+static hash_table<pre_ldst_expr_hasher> *pre_ldst_table;
 
 /* Bitmap containing one bit for each register in the program.
    Used when performing GCSE to track which registers have been set since
@@ -3762,7 +3762,7 @@ ldst_entry (rtx x)
 		   NULL,  /*have_reg_qty=*/false);
 
   e.pattern = x;
-  slot = pre_ldst_table.find_slot_with_hash (&e, hash, INSERT);
+  slot = pre_ldst_table->find_slot_with_hash (&e, hash, INSERT);
   if (*slot)
     return *slot;
 
@@ -3800,8 +3800,8 @@ free_ldst_entry (struct ls_expr * ptr)
 static void
 free_ld_motion_mems (void)
 {
-  if (pre_ldst_table.is_created ())
-    pre_ldst_table.dispose ();
+  delete pre_ldst_table;
+  pre_ldst_table = NULL;
 
   while (pre_ldst_mems)
     {
@@ -3857,10 +3857,10 @@ find_rtx_in_ldst (rtx x)
 {
   struct ls_expr e;
   ls_expr **slot;
-  if (!pre_ldst_table.is_created ())
+  if (!pre_ldst_table)
     return NULL;
   e.pattern = x;
-  slot = pre_ldst_table.find_slot (&e, NO_INSERT);
+  slot = pre_ldst_table->find_slot (&e, NO_INSERT);
   if (!slot || (*slot)->invalid)
     return NULL;
   return *slot;
@@ -3951,7 +3951,7 @@ compute_ld_motion_mems (void)
   rtx insn;
 
   pre_ldst_mems = NULL;
-  pre_ldst_table.create (13);
+  pre_ldst_table = new hash_table<pre_ldst_expr_hasher> (13);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -4053,7 +4053,7 @@ trim_ld_motion_mems (void)
       else
 	{
 	  *last = ptr->next;
-	  pre_ldst_table.remove_elt_with_hash (ptr, ptr->hash_index);
+	  pre_ldst_table->remove_elt_with_hash (ptr, ptr->hash_index);
 	  free_ldst_entry (ptr);
 	  ptr = * last;
 	}

@@ -225,7 +225,7 @@ finally_tree_hasher::equal (const value_type *v, const compare_type *c)
 }
 
 /* Note that this table is *not* marked GTY.  It is short-lived.  */
-static hash_table <finally_tree_hasher> finally_tree;
+static hash_table<finally_tree_hasher> *finally_tree;
 
 static void
 record_in_finally_tree (treemple child, gimple parent)
@@ -237,7 +237,7 @@ record_in_finally_tree (treemple child, gimple parent)
   n->child = child;
   n->parent = parent;
 
-  slot = finally_tree.find_slot (n, INSERT);
+  slot = finally_tree->find_slot (n, INSERT);
   gcc_assert (!*slot);
   *slot = n;
 }
@@ -316,7 +316,7 @@ outside_finally_tree (treemple start, gimple target)
   do
     {
       n.child = start;
-      p = finally_tree.find (&n);
+      p = finally_tree->find (&n);
       if (!p)
 	return true;
       start.g = p->parent;
@@ -2161,7 +2161,7 @@ pass_lower_eh::execute (function *fun)
   if (bodyp == NULL)
     return 0;
 
-  finally_tree.create (31);
+  finally_tree = new hash_table<finally_tree_hasher> (31);
   eh_region_may_contain_throw_map = BITMAP_ALLOC (NULL);
   memset (&null_state, 0, sizeof (null_state));
 
@@ -2179,7 +2179,8 @@ pass_lower_eh::execute (function *fun)
      didn't change its value, and we don't have to re-set the function.  */
   gcc_assert (bodyp == gimple_body (current_function_decl));
 
-  finally_tree.dispose ();
+  delete finally_tree;
+  finally_tree = NULL;
   BITMAP_FREE (eh_region_may_contain_throw_map);
   eh_seq = NULL;
 

@@ -134,7 +134,7 @@ tree_upper_hasher::equal (const value_type *parent, const compare_type *node)
 }
 
 /* Static variables.  */
-static hash_table <tree_upper_hasher> TB_up_ht;
+static hash_table<tree_upper_hasher> *TB_up_ht;
 static vec<tree, va_gc> *TB_history_stack;
 static int TB_verbose = 1;
 
@@ -167,7 +167,7 @@ browse_tree (tree begin)
 
   /* Store in a hashtable information about previous and upper statements.  */
   {
-    TB_up_ht.create (1023);
+    TB_up_ht = new hash_table<tree_upper_hasher> (1023);
     TB_update_up (head);
   }
 
@@ -645,7 +645,8 @@ browse_tree (tree begin)
     }
 
  ret:;
-  TB_up_ht.dispose ();
+  delete TB_up_ht;
+  TB_up_ht = NULL;
   return;
 }
 
@@ -691,7 +692,7 @@ TB_up_expr (tree node)
   if (node == NULL_TREE)
     return NULL_TREE;
 
-  res = TB_up_ht.find (node);
+  res = TB_up_ht->find (node);
   return res;
 }
 
@@ -769,7 +770,7 @@ store_child_info (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
       for (i = 0; i < n; i++)
 	{
 	  tree op = TREE_OPERAND (node, i);
-	  slot = TB_up_ht.find_slot (op, INSERT);
+	  slot = TB_up_ht->find_slot (op, INSERT);
 	  *slot = node;
 	}
     }

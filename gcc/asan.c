@@ -363,18 +363,18 @@ asan_mem_ref_hasher::equal (const asan_mem_ref *m1,
 	  && operand_equal_p (m1->start, m2->start, 0));
 }
 
-static hash_table <asan_mem_ref_hasher> asan_mem_ref_ht;
+static hash_table<asan_mem_ref_hasher> *asan_mem_ref_ht;
 
 /* Returns a reference to the hash table containing memory references.
    This function ensures that the hash table is created.  Note that
    this hash table is updated by the function
    update_mem_ref_hash_table.  */
 
-static hash_table <asan_mem_ref_hasher> &
+static hash_table<asan_mem_ref_hasher> *
 get_mem_ref_hash_table ()
 {
-  if (!asan_mem_ref_ht.is_created ())
-    asan_mem_ref_ht.create (10);
+  if (!asan_mem_ref_ht)
+    asan_mem_ref_ht = new hash_table<asan_mem_ref_hasher> (10);
 
   return asan_mem_ref_ht;
 }
@@ -384,8 +384,8 @@ get_mem_ref_hash_table ()
 static void
 empty_mem_ref_hash_table ()
 {
-  if (asan_mem_ref_ht.is_created ())
-    asan_mem_ref_ht.empty ();
+  if (asan_mem_ref_ht)
+    asan_mem_ref_ht->empty ();
 }
 
 /* Free the memory references hash table.  */
@@ -393,8 +393,8 @@ empty_mem_ref_hash_table ()
 static void
 free_mem_ref_resources ()
 {
-  if (asan_mem_ref_ht.is_created ())
-    asan_mem_ref_ht.dispose ();
+  delete asan_mem_ref_ht;
+  asan_mem_ref_ht = NULL;
 
   if (asan_mem_ref_alloc_pool)
     {
@@ -411,7 +411,7 @@ has_mem_ref_been_instrumented (tree ref, HOST_WIDE_INT access_size)
   asan_mem_ref r;
   asan_mem_ref_init (&r, ref, access_size);
 
-  return (get_mem_ref_hash_table ().find (&r) != NULL);
+  return (get_mem_ref_hash_table ()->find (&r) != NULL);
 }
 
 /* Return true iff the memory reference REF has been instrumented.  */
@@ -858,12 +858,12 @@ has_stmt_been_instrumented_p (gimple stmt)
 static void
 update_mem_ref_hash_table (tree ref, HOST_WIDE_INT access_size)
 {
-  hash_table <asan_mem_ref_hasher> ht = get_mem_ref_hash_table ();
+  hash_table<asan_mem_ref_hasher> *ht = get_mem_ref_hash_table ();
 
   asan_mem_ref r;
   asan_mem_ref_init (&r, ref, access_size);
 
-  asan_mem_ref **slot = ht.find_slot (&r, INSERT);
+  asan_mem_ref **slot = ht->find_slot (&r, INSERT);
   if (*slot == NULL)
     *slot = asan_mem_ref_new (ref, access_size);
 }

@@ -182,7 +182,7 @@ trace_info_hasher::equal (const value_type *a, const compare_type *b)
 /* The variables making up the pseudo-cfg, as described above.  */
 static vec<dw_trace_info> trace_info;
 static vec<dw_trace_info_ref> trace_work_list;
-static hash_table <trace_info_hasher> trace_index;
+static hash_table<trace_info_hasher> *trace_index;
 
 /* A vector of call frame insns for the CIE.  */
 cfi_vec cie_cfi_vec;
@@ -307,7 +307,7 @@ get_trace_info (rtx insn)
 {
   dw_trace_info dummy;
   dummy.head = insn;
-  return trace_index.find_with_hash (&dummy, INSN_UID (insn));
+  return trace_index->find_with_hash (&dummy, INSN_UID (insn));
 }
 
 static bool
@@ -2774,7 +2774,8 @@ create_pseudo_cfg (void)
 
   /* Create the trace index after we've finished building trace_info,
      avoiding stale pointer problems due to reallocation.  */
-  trace_index.create (trace_info.length ());
+  trace_index
+    = new hash_table<trace_info_hasher> (trace_info.length ());
   dw_trace_info *tp;
   FOR_EACH_VEC_ELT (trace_info, i, tp)
     {
@@ -2785,7 +2786,7 @@ create_pseudo_cfg (void)
 		 rtx_name[(int) GET_CODE (tp->head)], INSN_UID (tp->head),
 		 tp->switch_sections ? " (section switch)" : "");
 
-      slot = trace_index.find_slot_with_hash (tp, INSN_UID (tp->head), INSERT);
+      slot = trace_index->find_slot_with_hash (tp, INSN_UID (tp->head), INSERT);
       gcc_assert (*slot == NULL);
       *slot = tp;
     }
@@ -2936,7 +2937,8 @@ execute_dwarf2_frame (void)
   }
   trace_info.release ();
 
-  trace_index.dispose ();
+  delete trace_index;
+  trace_index = NULL;
 
   return 0;
 }

@@ -158,7 +158,7 @@ stridxlist_hasher::equal (const value_type *v, const compare_type *c)
 
 /* Hash table for mapping decls to a chained list of offset -> idx
    mappings.  */
-static hash_table <stridxlist_hasher> decl_to_stridxlist_htab;
+static hash_table<stridxlist_hasher> *decl_to_stridxlist_htab;
 
 /* Obstack for struct stridxlist and struct decl_stridxlist_map.  */
 static struct obstack stridx_obstack;
@@ -183,7 +183,7 @@ get_addr_stridx (tree exp)
   struct stridxlist *list;
   tree base;
 
-  if (!decl_to_stridxlist_htab.is_created ())
+  if (!decl_to_stridxlist_htab)
     return 0;
 
   base = get_addr_base_and_unit_offset (exp, &off);
@@ -191,7 +191,7 @@ get_addr_stridx (tree exp)
     return 0;
 
   ent.base.from = base;
-  e = decl_to_stridxlist_htab.find_with_hash (&ent, DECL_UID (base));
+  e = decl_to_stridxlist_htab->find_with_hash (&ent, DECL_UID (base));
   if (e == NULL)
     return 0;
 
@@ -279,14 +279,14 @@ addr_stridxptr (tree exp)
   if (base == NULL_TREE || !DECL_P (base))
     return NULL;
 
-  if (!decl_to_stridxlist_htab.is_created ())
+  if (!decl_to_stridxlist_htab)
     {
-      decl_to_stridxlist_htab.create (64);
+      decl_to_stridxlist_htab = new hash_table<stridxlist_hasher> (64);
       gcc_obstack_init (&stridx_obstack);
     }
   ent.base.from = base;
-  slot = decl_to_stridxlist_htab.find_slot_with_hash (&ent, DECL_UID (base),
-						      INSERT);
+  slot = decl_to_stridxlist_htab->find_slot_with_hash (&ent, DECL_UID (base),
+						       INSERT);
   if (*slot)
     {
       int i;
@@ -2106,10 +2106,11 @@ pass_strlen::execute (function *fun)
 
   ssa_ver_to_stridx.release ();
   free_alloc_pool (strinfo_pool);
-  if (decl_to_stridxlist_htab.is_created ())
+  if (decl_to_stridxlist_htab)
     {
       obstack_free (&stridx_obstack, NULL);
-      decl_to_stridxlist_htab.dispose ();
+      delete decl_to_stridxlist_htab;
+      decl_to_stridxlist_htab = NULL;
     }
   laststmt.stmt = NULL;
   laststmt.len = NULL_TREE;

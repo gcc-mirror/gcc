@@ -121,7 +121,7 @@ struct gimplify_ctx
 
   vec<tree> case_labels;
   /* The formal temporary table.  Should this be persistent?  */
-  hash_table <gimplify_hasher> temp_htab;
+  hash_table<gimplify_hasher> *temp_htab;
 
   int conditions;
   bool save_stack;
@@ -256,8 +256,8 @@ pop_gimplify_context (gimple body)
   else
     record_vars (c->temps);
 
-  if (c->temp_htab.is_created ())
-    c->temp_htab.dispose ();
+  delete c->temp_htab;
+  c->temp_htab = NULL;
   ctx_free (c);
 }
 
@@ -484,9 +484,9 @@ lookup_tmp_var (tree val, bool is_formal)
       elt_t **slot;
 
       elt.val = val;
-      if (!gimplify_ctxp->temp_htab.is_created ())
-        gimplify_ctxp->temp_htab.create (1000);
-      slot = gimplify_ctxp->temp_htab.find_slot (&elt, INSERT);
+      if (!gimplify_ctxp->temp_htab)
+        gimplify_ctxp->temp_htab = new hash_table<gimplify_hasher> (1000);
+      slot = gimplify_ctxp->temp_htab->find_slot (&elt, INSERT);
       if (*slot == NULL)
 	{
 	  elt_p = XNEW (elt_t);

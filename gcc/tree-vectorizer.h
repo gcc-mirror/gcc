@@ -332,7 +332,7 @@ typedef struct _loop_vec_info {
   vec<gimple> reduction_chains;
 
   /* Hash table used to choose the best peeling option.  */
-  hash_table <peel_info_hasher> peeling_htab;
+  hash_table<peel_info_hasher> *peeling_htab;
 
   /* Cost data used by the target cost model.  */
   void *target_cost_data;

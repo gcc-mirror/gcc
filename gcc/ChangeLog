@@ -1,3 +1,31 @@
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* hash-table.h: Remove a layer of indirection from hash_table so that
+	it contains the hash table's data instead of a pointer to the data.
+	* alloc-pool.c, asan.c, attribs.c, bitmap.c, cfg.c,
+	config/arm/arm.c, config/i386/winnt.c, config/ia64/ia64.c,
+	config/mips/mips.c, config/sol2.c, coverage.c, cselib.c,
+	data-streamer-out.c, dse.c, dwarf2cfi.c, dwarf2out.c, except.c,
+	fold-const.c, gcse.c, ggc-common.c,
+	gimple-ssa-strength-reduction.c, gimplify.c,
+	graphite-clast-to-gimple.c, graphite-dependences.c,
+	graphite-htab.h, graphite.c, haifa-sched.c, ipa-devirt.c,
+	ipa-profile.c, ira-color.c, ira-costs.c, loop-invariant.c,
+	loop-iv.c, loop-unroll.c, lto-streamer-in.c, lto-streamer-out.c,
+	lto-streamer.c, lto-streamer.h, passes.c, plugin.c,
+	postreload-gcse.c, sese.c, statistics.c, store-motion.c,
+	trans-mem.c, tree-browser.c, tree-cfg.c, tree-complex.c,
+	tree-eh.c, tree-into-ssa.c, tree-parloops.c, tree-sra.c,
+	tree-ssa-ccp.c, tree-ssa-coalesce.c, tree-ssa-dom.c,
+	tree-ssa-live.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivopts.c, tree-ssa-phiopt.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sccvn.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-ssa-tail-merge.c,
+	tree-ssa-threadupdate.c, tree-ssa-uncprop.c,
+tree-vect-data-refs.c, tree-vect-loop.c, tree-vectorizer.c,
+tree-vectorizer.h, valtrack.c, valtrack.h, var-tracking.c,
+vtable-verify.c, vtable-verify.h: Adjust.
+
 2014-06-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61572

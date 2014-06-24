@@ -112,12 +112,12 @@ histogram_hash::equal (const histogram_entry *val, const histogram_entry *val2)
    HASHTABLE is the on-side hash kept to avoid duplicates.  */
 
 static void
-account_time_size (hash_table <histogram_hash> hashtable,
+account_time_size (hash_table<histogram_hash> *hashtable,
 		   vec<histogram_entry *> &histogram,
 		   gcov_type count, int time, int size)
 {
   histogram_entry key = {count, 0, 0};
-  histogram_entry **val = hashtable.find_slot (&key, INSERT);
+  histogram_entry **val = hashtable->find_slot (&key, INSERT);
 
   if (!*val)
     {
@@ -179,10 +179,9 @@ ipa_profile_generate_summary (void)
 {
   struct cgraph_node *node;
   gimple_stmt_iterator gsi;
-  hash_table <histogram_hash> hashtable;
   basic_block bb;
 
-  hashtable.create (10);
+  hash_table<histogram_hash> hashtable (10);
   histogram_pool = create_alloc_pool ("IPA histogram", sizeof (struct histogram_entry),
 				      10);
   
@@ -230,9 +229,8 @@ ipa_profile_generate_summary (void)
 	    time += estimate_num_insns (stmt, &eni_time_weights);
 	    size += estimate_num_insns (stmt, &eni_size_weights);
 	  }
-	account_time_size (hashtable, histogram, bb->count, time, size);
+	account_time_size (&hashtable, histogram, bb->count, time, size);
       }
-  hashtable.dispose ();
   histogram.qsort (cmp_counts);
 }
 
@@ -263,10 +261,9 @@ ipa_profile_read_summary (void)
   struct lto_file_decl_data ** file_data_vec
     = lto_get_file_decl_data ();
   struct lto_file_decl_data * file_data;
-  hash_table <histogram_hash> hashtable;
   int j = 0;
 
-  hashtable.create (10);
+  hash_table<histogram_hash> hashtable (10);
   histogram_pool = create_alloc_pool ("IPA histogram", sizeof (struct histogram_entry),
 				      10);
 
@@ -287,7 +284,7 @@ ipa_profile_read_summary (void)
 	      gcov_type count = streamer_read_gcov_count (ib);
 	      int time = streamer_read_uhwi (ib);
 	      int size = streamer_read_uhwi (ib);
-	      account_time_size (hashtable, histogram,
+	      account_time_size (&hashtable, histogram,
 				 count, time, size);
 	    }
 	  lto_destroy_simple_input_block (file_data,
@@ -295,7 +292,6 @@ ipa_profile_read_summary (void)
 					  ib, data, len);
 	}
     }
-  hashtable.dispose ();
   histogram.qsort (cmp_counts);
 }
 

@@ -145,10 +145,10 @@ cselib_hasher::equal (const value_type *v, const compare_type *x_arg)
 }
 
 /* A table that enables us to look up elts by their value.  */
-static hash_table <cselib_hasher> cselib_hash_table;
+static hash_table<cselib_hasher> *cselib_hash_table;
 
 /* A table to hold preserved values.  */
-static hash_table <cselib_hasher> cselib_preserved_hash_table;
+static hash_table<cselib_hasher> *cselib_preserved_hash_table;
 
 /* This is a global so we don't have to pass this through every function.
    It is used in new_elt_loc_list to set SETTING_INSN.  */
@@ -499,13 +499,13 @@ preserve_constants_and_equivs (cselib_val **x, void *info ATTRIBUTE_UNUSED)
 	GET_MODE (v->val_rtx), v->val_rtx, VOIDmode
       };
       cselib_val **slot
-	= cselib_preserved_hash_table.find_slot_with_hash (&lookup,
+	= cselib_preserved_hash_table->find_slot_with_hash (&lookup,
 							   v->hash, INSERT);
       gcc_assert (!*slot);
       *slot = v;
     }
 
-  cselib_hash_table.clear_slot (x);
+  cselib_hash_table->clear_slot (x);
 
   return 1;
 }
@@ -546,10 +546,11 @@ cselib_reset_table (unsigned int num)
     }
 
   if (cselib_preserve_constants)
-    cselib_hash_table.traverse <void *, preserve_constants_and_equivs> (NULL);
+    cselib_hash_table->traverse <void *, preserve_constants_and_equivs>
+      (NULL);
   else
     {
-      cselib_hash_table.empty ();
+      cselib_hash_table->empty ();
       gcc_checking_assert (!cselib_any_perm_equivs);
     }
 
@@ -581,10 +582,10 @@ cselib_find_slot (enum machine_mode mode, rtx x, hashval_t hash,
   cselib_val **slot = NULL;
   cselib_hasher::compare_type lookup = { mode, x, memmode };
   if (cselib_preserve_constants)
-    slot = cselib_preserved_hash_table.find_slot_with_hash (&lookup, hash,
-							    NO_INSERT);
+    slot = cselib_preserved_hash_table->find_slot_with_hash (&lookup, hash,
+							     NO_INSERT);
   if (!slot)
-    slot = cselib_hash_table.find_slot_with_hash (&lookup, hash, insert);
+    slot = cselib_hash_table->find_slot_with_hash (&lookup, hash, insert);
   return slot;
 }
 
@@ -662,7 +663,7 @@ discard_useless_values (cselib_val **x, void *info ATTRIBUTE_UNUSED)
 	cselib_discard_hook (v);
 
       CSELIB_VAL_PTR (v->val_rtx) = NULL;
-      cselib_hash_table.clear_slot (x);
+      cselib_hash_table->clear_slot (x);
       unchain_one_value (v);
       n_useless_values--;
     }
@@ -683,7 +684,7 @@ remove_useless_values (void)
   do
     {
       values_became_useless = 0;
-      cselib_hash_table.traverse <void *, discard_useless_locs> (NULL);
+      cselib_hash_table->traverse <void *, discard_useless_locs> (NULL);
     }
   while (values_became_useless);
 
@@ -702,7 +703,7 @@ remove_useless_values (void)
   n_debug_values -= n_useless_debug_values;
   n_useless_debug_values = 0;
 
-  cselib_hash_table.traverse <void *, discard_useless_values> (NULL);
+  cselib_hash_table->traverse <void *, discard_useless_values> (NULL);
 
   gcc_assert (!n_useless_values);
 }
@@ -2703,7 +2704,7 @@ cselib_process_insn (rtx insn)
          quadratic behavior for very large hashtables with very few
 	 useless elements.  */
       && ((unsigned int)n_useless_values
-	  > (cselib_hash_table.elements () - n_debug_values) / 4))
+	  > (cselib_hash_table->elements () - n_debug_values) / 4))
     remove_useless_values ();
 }
 
@@ -2744,9 +2745,9 @@ cselib_init (int record_what)
     }
   used_regs = XNEWVEC (unsigned int, cselib_nregs);
   n_used_regs = 0;
-  cselib_hash_table.create (31);
+  cselib_hash_table = new hash_table<cselib_hasher> (31);
   if (cselib_preserve_constants)
-    cselib_preserved_hash_table.create (31);
+    cselib_preserved_hash_table = new hash_table<cselib_hasher> (31);
   next_uid = 1;
 }
 
@@ -2766,9 +2767,11 @@ cselib_finish (void)
   free_alloc_pool (cselib_val_pool);
   free_alloc_pool (value_pool);
   cselib_clear_table ();
-  cselib_hash_table.dispose ();
+  delete cselib_hash_table;
+  cselib_hash_table = NULL;
   if (preserved)
-    cselib_preserved_hash_table.dispose ();
+    delete cselib_preserved_hash_table;
+  cselib_preserved_hash_table = NULL;
   free (used_regs);
   used_regs = 0;
   n_useless_values = 0;
@@ -2857,9 +2860,9 @@ void
 dump_cselib_table (FILE *out)
 {
   fprintf (out, "cselib hash table:\n");
-  cselib_hash_table.traverse <FILE *, dump_cselib_val> (out);
+  cselib_hash_table->traverse <FILE *, dump_cselib_val> (out);
   fprintf (out, "cselib preserved hash table:\n");
-  cselib_preserved_hash_table.traverse <FILE *, dump_cselib_val> (out);
+  cselib_preserved_hash_table->traverse <FILE *, dump_cselib_val> (out);
   if (first_containing_mem != &dummy_val)
     {
       fputs ("first mem ", out);

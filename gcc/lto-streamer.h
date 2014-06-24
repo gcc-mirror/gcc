@@ -682,7 +682,7 @@ struct output_block
 
   /* The hash table that contains the set of strings we have seen so
      far and the indexes assigned to them.  */
-  hash_table <string_slot_hasher> string_hash_table;
+  hash_table<string_slot_hasher> *string_hash_table;
 
   /* The current cgraph_node that we are currently serializing.  Null
      if we are serializing something else.  */

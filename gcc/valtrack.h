@@ -84,7 +84,7 @@ dead_debug_hash_descr::remove (value_type *p)
 struct dead_debug_global
 {
   /* This hash table that maps pseudos to debug temps.  */
-  hash_table <dead_debug_hash_descr> htab;
+  hash_table<dead_debug_hash_descr> *htab;
   /* For each entry in htab, the bit corresponding to its REGNO will
      be set.  */
   bitmap used;

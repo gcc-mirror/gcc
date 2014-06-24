@@ -1,3 +1,8 @@
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c, semantics.c, tree.c, vtable-class-hierarchy.c:
+	Adjust.
+
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_for_loop): For

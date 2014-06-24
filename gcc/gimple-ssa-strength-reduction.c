@@ -430,7 +430,7 @@ cand_chain_hasher::equal (const value_type *chain1, const compare_type *chain2)
 }
 
 /* Hash table embodying a mapping from base exprs to chains of candidates.  */
-static hash_table <cand_chain_hasher> base_cand_map;
+static hash_table<cand_chain_hasher> *base_cand_map;
 
 /* Pointer map used by tree_to_aff_combination_expand.  */
 static struct pointer_map_t *name_expansions;
@@ -507,7 +507,7 @@ find_basis_for_base_expr (slsr_cand_t c, tree base_expr)
   int max_iters = PARAM_VALUE (PARAM_MAX_SLSR_CANDIDATE_SCAN);
 
   mapping_key.base_expr = base_expr;
-  chain = base_cand_map.find (&mapping_key);
+  chain = base_cand_map->find (&mapping_key);
 
   for (; chain && iters < max_iters; chain = chain->next, ++iters)
     {
@@ -604,7 +604,7 @@ record_potential_basis (slsr_cand_t c, tree base)
   node->base_expr = base;
   node->cand = c;
   node->next = NULL;
-  slot = base_cand_map.find_slot (node, INSERT);
+  slot = base_cand_map->find_slot (node, INSERT);
 
   if (*slot)
     {
@@ -1848,7 +1848,8 @@ static void
 dump_cand_chains (void)
 {
   fprintf (dump_file, "\nStrength reduction candidate chains:\n\n");
-  base_cand_map.traverse_noresize <void *, ssa_base_cand_dump_callback> (NULL);
+  base_cand_map->traverse_noresize <void *, ssa_base_cand_dump_callback>
+    (NULL);
   fputs ("\n", dump_file);
 }
 
@@ -3634,7 +3635,7 @@ pass_strength_reduction::execute (function *fun)
   gcc_obstack_init (&chain_obstack);
 
   /* Allocate the mapping from base expressions to candidate chains.  */
-  base_cand_map.create (500);
+  base_cand_map = new hash_table<cand_chain_hasher> (500);
 
   /* Allocate the mapping from bases to alternative bases.  */
   alt_base_map = pointer_map_create ();
@@ -3661,7 +3662,8 @@ pass_strength_reduction::execute (function *fun)
   analyze_candidates_and_replace ();
 
   loop_optimizer_finalize ();
-  base_cand_map.dispose ();
+  delete base_cand_map;
+  base_cand_map = NULL;
   obstack_free (&chain_obstack, NULL);
   pointer_map_destroy (stmt_cand_map);
   cand_vec.release ();

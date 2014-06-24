@@ -453,14 +453,14 @@ invariant_expr_hasher::equal (const value_type *entry1,
 				 entry2->inv->insn, entry2->expr);
 }
 
-typedef hash_table <invariant_expr_hasher> invariant_htab_type;
+typedef hash_table<invariant_expr_hasher> invariant_htab_type;
 
 /* Checks whether invariant with value EXPR in machine mode MODE is
    recorded in EQ.  If this is the case, return the invariant.  Otherwise
    insert INV to the table for this expression and return INV.  */
 
 static struct invariant *
-find_or_insert_inv (invariant_htab_type eq, rtx expr, enum machine_mode mode,
+find_or_insert_inv (invariant_htab_type *eq, rtx expr, enum machine_mode mode,
 		    struct invariant *inv)
 {
   hashval_t hash = hash_invariant_expr_1 (inv->insn, expr);
@@ -471,7 +471,7 @@ find_or_insert_inv (invariant_htab_type eq, rtx expr, enum machine_mode mode,
   pentry.expr = expr;
   pentry.inv = inv;
   pentry.mode = mode;
-  slot = eq.find_slot_with_hash (&pentry, hash, INSERT);
+  slot = eq->find_slot_with_hash (&pentry, hash, INSERT);
   entry = *slot;
 
   if (entry)
@@ -491,7 +491,7 @@ find_or_insert_inv (invariant_htab_type eq, rtx expr, enum machine_mode mode,
    hash table of the invariants.  */
 
 static void
-find_identical_invariants (invariant_htab_type eq, struct invariant *inv)
+find_identical_invariants (invariant_htab_type *eq, struct invariant *inv)
 {
   unsigned depno;
   bitmap_iterator bi;
@@ -528,13 +528,10 @@ merge_identical_invariants (void)
 {
   unsigned i;
   struct invariant *inv;
-  invariant_htab_type eq;
-  eq.create (invariants.length ());
+  invariant_htab_type eq (invariants.length ());
 
   FOR_EACH_VEC_ELT (invariants, i, inv)
-    find_identical_invariants (eq, inv);
-
-  eq.dispose ();
+    find_identical_invariants (&eq, inv);
 }
 
 /* Determines the basic blocks inside LOOP that are always executed and

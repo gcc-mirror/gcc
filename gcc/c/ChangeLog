@@ -1,3 +1,7 @@
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-decl.c: Adjust.
+
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_for_loop): For

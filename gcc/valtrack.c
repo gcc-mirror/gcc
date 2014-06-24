@@ -214,6 +214,7 @@ void
 dead_debug_global_init (struct dead_debug_global *debug, bitmap used)
 {
   debug->used = used;
+  debug->htab = NULL;
   if (used)
     bitmap_clear (used);
 }
@@ -250,7 +251,7 @@ dead_debug_global_find (struct dead_debug_global *global, rtx reg)
   dead_debug_global_entry temp_entry;
   temp_entry.reg = reg;
 
-  dead_debug_global_entry *entry = global->htab.find (&temp_entry);
+  dead_debug_global_entry *entry = global->htab->find (&temp_entry);
   gcc_checking_assert (entry && entry->reg == temp_entry.reg);
 
   return entry;
@@ -265,10 +266,11 @@ dead_debug_global_insert (struct dead_debug_global *global, rtx reg, rtx dtemp)
   temp_entry.reg = reg;
   temp_entry.dtemp = dtemp;
 
-  if (!global->htab.is_created ())
-    global->htab.create (31);
+  if (!global->htab)
+    global->htab = new hash_table<dead_debug_hash_descr> (31);
 
-  dead_debug_global_entry **slot = global->htab.find_slot (&temp_entry, INSERT);
+  dead_debug_global_entry **slot = global->htab->find_slot (&temp_entry,
+							    INSERT);
   gcc_checking_assert (!*slot);
   *slot = XNEW (dead_debug_global_entry);
   **slot = temp_entry;
@@ -493,8 +495,8 @@ dead_debug_global_finish (struct dead_debug_global *global, bitmap used)
   if (global->used != used)
     BITMAP_FREE (global->used);
 
-  if (global->htab.is_created ())
-    global->htab.dispose ();
+  delete global->htab;
+  global->htab = NULL;
 }
 
 /* Add USE to DEBUG, or substitute it right away if it's a pseudo in

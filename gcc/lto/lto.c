@@ -1137,7 +1137,7 @@ tree_scc_hasher::equal (const value_type *scc1, const compare_type *scc2)
   return true;
 }
 
-static hash_table <tree_scc_hasher> tree_scc_hash;
+static hash_table<tree_scc_hasher> *tree_scc_hash;
 static struct obstack tree_scc_hash_obstack;
 
 static unsigned long num_merged_types;
@@ -1734,7 +1734,7 @@ unify_scc (struct streamer_tree_cache_d *cache, unsigned from,
 
   /* Look for the list of candidate SCCs to compare against.  */
   tree_scc **slot;
-  slot = tree_scc_hash.find_slot_with_hash (scc, scc_hash, INSERT);
+  slot = tree_scc_hash->find_slot_with_hash (scc, scc_hash, INSERT);
   if (*slot)
     {
       /* Try unifying against each candidate.  */
@@ -2921,7 +2921,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
 					    gimple_canonical_type_eq, 0);
   gcc_obstack_init (&tree_scc_hash_obstack);
-  tree_scc_hash.create (4096);
+  tree_scc_hash = new hash_table<tree_scc_hasher> (4096);
 
   /* Register the common node types with the canonical type machinery so
      we properly share alias-sets across languages and TUs.  Do not
@@ -2987,7 +2987,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     print_lto_report_1 ();
 
   /* Free gimple type merging datastructures.  */
-  tree_scc_hash.dispose ();
+  delete tree_scc_hash;
+  tree_scc_hash = NULL;
   obstack_free (&tree_scc_hash_obstack, NULL);
   htab_delete (gimple_canonical_types);
   gimple_canonical_types = NULL;
@@ -3159,17 +3160,17 @@ print_lto_report_1 (void)
   fprintf (stderr, "[%s] read %lu SCCs of average size %f\n",
 	   pfx, num_sccs_read, total_scc_size / (double)num_sccs_read);
   fprintf (stderr, "[%s] %lu tree bodies read in total\n", pfx, total_scc_size);
-  if (flag_wpa && tree_scc_hash.is_created ())
+  if (flag_wpa && tree_scc_hash)
     {
       fprintf (stderr, "[%s] tree SCC table: size %ld, %ld elements, "
 	       "collision ratio: %f\n", pfx,
-	       (long) tree_scc_hash.size (),
-	       (long) tree_scc_hash.elements (),
-	       tree_scc_hash.collisions ());
+	       (long) tree_scc_hash->size (),
+	       (long) tree_scc_hash->elements (),
+	       tree_scc_hash->collisions ());
       hash_table<tree_scc_hasher>::iterator hiter;
       tree_scc *scc, *max_scc = NULL;
       unsigned max_length = 0;
-      FOR_EACH_HASH_TABLE_ELEMENT (tree_scc_hash, scc, x, hiter)
+      FOR_EACH_HASH_TABLE_ELEMENT (*tree_scc_hash, scc, x, hiter)
 	{
 	  unsigned length = 0;
 	  tree_scc *s = scc;

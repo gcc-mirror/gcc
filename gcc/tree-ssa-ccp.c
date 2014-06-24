@@ -1896,14 +1896,14 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
-typedef hash_table <pointer_hash <gimple_statement_base> > gimple_htab;
+typedef hash_table<pointer_hash<gimple_statement_base> > gimple_htab;
 
 /* Given a BUILT_IN_STACK_SAVE value SAVED_VAL, insert a clobber of VAR before
    each matching BUILT_IN_STACK_RESTORE.  Mark visited phis in VISITED.  */
 
 static void
 insert_clobber_before_stack_restore (tree saved_val, tree var,
-				     gimple_htab *visited)
+				     gimple_htab **visited)
 {
   gimple stmt, clobber_stmt;
   tree clobber;
@@ -1924,10 +1924,10 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
       }
     else if (gimple_code (stmt) == GIMPLE_PHI)
       {
-	if (!visited->is_created ())
-	  visited->create (10);
+	if (!*visited)
+	  *visited = new gimple_htab (10);
 
-	slot = visited->find_slot (stmt, INSERT);
+	slot = (*visited)->find_slot (stmt, INSERT);
 	if (*slot != NULL)
 	  continue;
 
@@ -1973,7 +1973,7 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
 {
   gimple stmt;
   tree saved_val;
-  gimple_htab visited;
+  gimple_htab *visited = NULL;
 
   for (; !gsi_end_p (i); gsi_prev_dom_bb_nondebug (&i))
     {
@@ -1990,8 +1990,7 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
       break;
     }
 
-  if (visited.is_created ())
-    visited.dispose ();
+  delete visited;
 }
 
 /* Detects a __builtin_alloca_with_align with constant size argument.  Declares
