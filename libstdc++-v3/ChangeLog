@@ -1,3 +1,16 @@
+2014-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/functexcept.h (__throw_out_of_range_fmt): Change
+	attribute to __gnu_printf__ archetype to prevent warnings for "%zu".
+	* include/bits/locale_facets_nonio.tcc (time_get::do_get_weekday):
+	Remove unused typedef.
+	(time_get::do_get_monthname): Likewise.
+	* include/bits/stl_tree.h: Add system_header pragma.
+	* include/ext/stdio_sync_filebuf.h (stdio_sync_filebuf::file): Remove
+	redundant const-qualifier.
+	* include/std/complex (complex::__rep): Use _GLIBCXX_CONSTEXPR macro
+	instead of _GLIBCXX_USE_CONSTEXPR.
+
 2014-06-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/parse_numbers.h (_Number_help): Fix divide-by-zero.

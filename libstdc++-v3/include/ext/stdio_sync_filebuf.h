@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Note that there is no way for the library to track what you do
        *  with the file, so be careful.
        */
-      std::__c_file* const
+      std::__c_file*
       file() { return this->_M_file; }
 
     protected:
