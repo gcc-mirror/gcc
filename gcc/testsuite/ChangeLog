@@ -1,3 +1,13 @@
+2014-06-24  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/aarch64/aapcs64/abitest-2.h (saved_return_address): New
+	global variable.
+	(FUNC_VAL_CHECK): Update to call myfunc via the 'ret' instruction,
+	instead of calling sequentially in the C code.
+	* gcc.target/aarch64/aapcs64/abitest.S (LABEL_TEST_FUNC_RETURN): Store
+	saved_return_address to the stack frame where LR register was stored.
+	(saved_return_address): Declare weak.
+
 2014-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33972
