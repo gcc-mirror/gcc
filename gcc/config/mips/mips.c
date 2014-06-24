@@ -17497,28 +17497,6 @@ mips_conditional_register_usage (void)
     }
 }
 
-/* When generating MIPS16 code, we want to allocate $24 (T_REG) before
-   other registers for instructions for which it is possible.  This
-   encourages the compiler to use CMP in cases where an XOR would
-   require some register shuffling.  */
-
-void
-mips_order_regs_for_local_alloc (void)
-{
-  int i;
-
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    reg_alloc_order[i] = i;
-
-  if (TARGET_MIPS16)
-    {
-      /* It really doesn't matter where we put register 0, since it is
-         a fixed register anyhow.  */
-      reg_alloc_order[0] = 24;
-      reg_alloc_order[24] = 0;
-    }
-}
-
 /* Implement EH_USES.  */
 
 bool
