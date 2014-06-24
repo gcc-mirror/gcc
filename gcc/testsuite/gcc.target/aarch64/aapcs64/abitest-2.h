@@ -5,6 +5,7 @@
 #include "validate_memory.h"
 
 void (*testfunc_ptr)(char* stack);
+unsigned long long saved_return_address;
 
 /* Helper macros to generate function name.  Example of the function name:
    func_return_val_1.  */
@@ -71,6 +72,17 @@ __attribute__ ((noinline)) type FUNC_NAME (id) (int i, double d, type t)  \
 				  optimized away.  Using i and d prevents \
 				  warnings about unused parameters.	  \
 			       */					  \
+    /* We save and set up the LR register in a way that essentially	  \
+       inserts myfunc () between the return of this function and the	  \
+       continuing execution of its caller.  By doing this, myfunc ()	  \
+       can save and check the exact content of the registers that are	  \
+       used for the function return value.				  \
+       The previous approach of sequentially calling myfunc right after	  \
+       this function does not guarantee myfunc see the exact register	  \
+       content, as compiler may emit code in between the two calls,	  \
+       especially during the -O0 codegen.  */				  \
+    asm volatile ("mov %0, x30" : "=r" (saved_return_address));		  \
+    asm volatile ("mov x30, %0" : : "r" ((unsigned long long) myfunc));   \
     return t;								  \
   }
 #include TESTFILE
@@ -84,7 +96,8 @@ __attribute__ ((noinline)) type FUNC_NAME (id) (int i, double d, type t)  \
   {									\
     testfunc_ptr = TEST_FUNC_NAME(id);					\
     FUNC_NAME(id) (0, 0.0, var);					\
-    myfunc ();								\
+    /* The above function implicitly calls myfunc () on its return,	\
+       and the execution resumes from here after myfunc () finishes.  */\
   }
 
 int main()

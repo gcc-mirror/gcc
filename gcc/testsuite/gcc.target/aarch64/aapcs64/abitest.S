@@ -50,6 +50,10 @@ LABEL_TEST_FUNC_RETURN:
       add	x9, x9, :lo12:testfunc_ptr
       ldr	x9, [x9, #0]
       blr	x9				// function return value test
+      adrp	x9, saved_return_address
+      add	x9, x9, :lo12:saved_return_address
+      ldr	x9, [x9, #0]
+      str	x9, [sp, #8]			// Update the copy of LR reg saved on stack
 LABEL_RET:
       ldp	x0, x30, [sp]
       mov	sp, x0
@@ -57,3 +61,4 @@ LABEL_RET:
 
 .weak	testfunc
 .weak	testfunc_ptr
+.weak	saved_return_address
