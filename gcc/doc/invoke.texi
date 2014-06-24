@@ -253,7 +253,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
--Winit-self  -Winline -Wmaybe-uninitialized @gol
+-Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
