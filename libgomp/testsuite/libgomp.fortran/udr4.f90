@@ -1,9 +1,9 @@
 ! { dg-do run }
 
 !$omp declare reduction (foo : character(kind=1, len=*) &
-!$omp & : omp_out = trim(omp_out) // omp_in) initializer (omp_priv = '')
+!$omp & : omp_out = fn (omp_out, omp_in)) initializer (omp_priv = '')
 !$omp declare reduction (bar : character(kind=1, len=:) &
-!$omp & : omp_out = trim(omp_in) // omp_out) initializer (omp_priv = '')
+!$omp & : omp_out = fn (omp_in, omp_out)) initializer (omp_priv = '')
 !$omp declare reduction (baz : character(kind=1, len=1) &
 !$omp & : omp_out = char (ichar (omp_out) + ichar (omp_in) &
 !$omp & - ichar ('0'))) initializer (omp_priv = '0')
@@ -11,6 +11,12 @@
 !$omp & : omp_out = char (ichar (omp_out(1:1)) + ichar (omp_in(1:1)) &
 !$omp & - ichar ('0')) // char (ichar (omp_out(2:2)) + &
 !$omp & ichar (omp_in(2:2)) - ichar ('0'))) initializer (omp_priv = '00')
+  interface
+    elemental function fn (x, y)
+      character (len=64), intent (in) :: x, y
+      character (len=64) :: fn
+    end function
+  end interface
   character(kind=1, len=64) :: c(-3:-2,1:1,7:8), d(2:3,-7:-5)
   character(kind = 1, len=1) :: e(2:4)
   character(kind = 1, len=1+1) :: f(8:10,9:10)
@@ -37,3 +43,8 @@
   if (any (f(:,:)(1:1).ne.char (ichar ('0') + 32))) call abort
   if (any (f(:,:)(2:2).ne.char (ichar ('0') + 64))) call abort
 end
+elemental function fn (x, y)
+  character (len=64), intent (in) :: x, y
+  character (len=64) :: fn
+  fn = trim(x) // y
+end function

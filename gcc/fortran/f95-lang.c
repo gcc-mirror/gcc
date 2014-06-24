@@ -1082,6 +1082,13 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_TRAP, NULL, ATTR_NOTHROW_LEAF_LIST);
   TREE_THIS_VOLATILE (builtin_decl_explicit (BUILT_IN_TRAP)) = 1;
 
+  ftype = build_varargs_function_type_list (ptr_type_node, const_ptr_type_node,
+					    size_type_node, NULL_TREE);
+  gfc_define_builtin ("__builtin_assume_aligned", ftype,
+		      BUILT_IN_ASSUME_ALIGNED,
+		      "__builtin_assume_aligned",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
+
   gfc_define_builtin ("__emutls_get_address",
 		      builtin_types[BT_FN_PTR_PTR],
 		      BUILT_IN_EMUTLS_GET_ADDRESS,

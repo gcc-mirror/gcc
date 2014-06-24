@@ -1,3 +1,22 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/aligned1.f03: New test.
+	* testsuite/libgomp.fortran/nestedfn5.f90: New test.
+	* testsuite/libgomp.fortran/target7.f90: Surround loop spawning
+	tasks with !$omp parallel !$omp single.
+	* testsuite/libgomp.fortran/target8.f90: New test.
+	* testsuite/libgomp.fortran/udr4.f90 (foo UDR, bar UDR): Adjust
+	not to use trim in the combiner, instead call elemental function.
+	(fn): New elemental function.
+	* testsuite/libgomp.fortran/udr6.f90 (do_add, dp_add, dp_init):
+	Make elemental.
+	* testsuite/libgomp.fortran/udr7.f90 (omp_priv, omp_orig, omp_out,
+	omp_in): Likewise.
+	* testsuite/libgomp.fortran/udr12.f90: New test.
+	* testsuite/libgomp.fortran/udr13.f90: New test.
+	* testsuite/libgomp.fortran/udr14.f90: New test.
+	* testsuite/libgomp.fortran/udr15.f90: New test.
+
 2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp_lib.f90.in (openmp_version): Set to 201307.

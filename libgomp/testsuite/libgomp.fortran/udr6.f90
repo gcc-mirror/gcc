@@ -8,17 +8,18 @@ module m
     real :: r = 0.0
   end type
 contains
-  function do_add(x, y)
+  elemental function do_add(x, y)
     type (dt), intent (in) :: x, y
     type (dt) :: do_add
     do_add%r = x%r + y%r
   end function
-  subroutine dp_add(x, y)
-    double precision :: x, y
+  elemental subroutine dp_add(x, y)
+    double precision, intent (inout) :: x
+    double precision, intent (in) :: y
     x = x + y
   end subroutine
-  subroutine dp_init(x)
-    double precision :: x
+  elemental subroutine dp_init(x)
+    double precision, intent (out) :: x
     x = 0.0
   end subroutine
 end module

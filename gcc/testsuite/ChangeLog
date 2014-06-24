@@ -1,3 +1,11 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/udr2.f90 (f7, f9): Add !$omp parallel with
+	reduction clause.
+	* gfortran.dg/gomp/udr4.f90 (f4): Likewise.
+	Remove Label is never defined expected error.
+	* gfortran.dg/gomp/udr8.f90: New test.
+
 2014-06-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR tree-optimization/61554

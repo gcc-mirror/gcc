@@ -1111,7 +1111,7 @@ typedef struct gfc_omp_namelist
       gfc_omp_depend_op depend_op;
       gfc_omp_map_op map_op;
     } u;
-  struct gfc_omp_udr *udr;
+  struct gfc_omp_namelist_udr *udr;
   struct gfc_omp_namelist *next;
 }
 gfc_omp_namelist;
@@ -1236,6 +1236,15 @@ typedef struct gfc_omp_udr
 }
 gfc_omp_udr;
 #define gfc_get_omp_udr() XCNEW (gfc_omp_udr)
+
+typedef struct gfc_omp_namelist_udr
+{
+  struct gfc_omp_udr *udr;
+  struct gfc_code *combiner;
+  struct gfc_code *initializer;
+}
+gfc_omp_namelist_udr;
+#define gfc_get_omp_namelist_udr() XCNEW (gfc_omp_namelist_udr)
 
 /* The gfc_st_label structure is a BBT attached to a namespace that
    records the usage of statement labels within that space.  */
@@ -3011,6 +3020,7 @@ void gfc_free_association_list (gfc_association_list *);
 /* resolve.c */
 bool gfc_resolve_expr (gfc_expr *);
 void gfc_resolve (gfc_namespace *);
+void gfc_resolve_code (gfc_code *, gfc_namespace *);
 void gfc_resolve_blocks (gfc_code *, gfc_namespace *);
 int gfc_impure_variable (gfc_symbol *);
 int gfc_pure (gfc_symbol *);

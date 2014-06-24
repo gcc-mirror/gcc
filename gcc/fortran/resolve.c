@@ -40,7 +40,7 @@ typedef enum seq_type
 seq_type;
 
 /* Stack to keep track of the nesting of blocks as we move through the
-   code.  See resolve_branch() and resolve_code().  */
+   code.  See resolve_branch() and gfc_resolve_code().  */
 
 typedef struct code_stack
 {
@@ -2887,7 +2887,8 @@ resolve_function (gfc_expr *expr)
 
   /* See if function is already resolved.  */
 
-  if (expr->value.function.name != NULL)
+  if (expr->value.function.name != NULL
+      || expr->value.function.isym != NULL)
     {
       if (expr->ts.type == BT_UNKNOWN)
 	expr->ts = sym->ts;
@@ -4930,7 +4931,7 @@ resolve_variable (gfc_expr *e)
   if (check_assumed_size_reference (sym, e))
     return false;
 
-  /* Deal with forward references to entries during resolve_code, to
+  /* Deal with forward references to entries during gfc_resolve_code, to
      satisfy, at least partially, 12.5.2.5.  */
   if (gfc_current_ns->entries
       && current_entry_id == sym->entry_id
@@ -8979,8 +8980,6 @@ resolve_block_construct (gfc_code* code)
 /* Resolve lists of blocks found in IF, SELECT CASE, WHERE, FORALL, GOTO and
    DO code nodes.  */
 
-static void resolve_code (gfc_code *, gfc_namespace *);
-
 void
 gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 {
@@ -9072,7 +9071,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	  gfc_internal_error ("gfc_resolve_blocks(): Bad block type");
 	}
 
-      resolve_code (b->next, ns);
+      gfc_resolve_code (b->next, ns);
     }
 }
 
@@ -9520,7 +9519,7 @@ nonscalar_typebound_assign (gfc_symbol *derived, int depth)
    The pointer assignments are taken care of by the intrinsic
    assignment of the structure itself.  This function recursively adds
    defined assignments where required.  The recursion is accomplished
-   by calling resolve_code.
+   by calling gfc_resolve_code.
 
    When the lhs in a defined assignment has intent INOUT, we need a
    temporary for the lhs.  In pseudo-code:
@@ -9638,9 +9637,9 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 				    comp1, comp2, (*code)->loc);
 
       /* Convert the assignment if there is a defined assignment for
-	 this type.  Otherwise, using the call from resolve_code,
+	 this type.  Otherwise, using the call from gfc_resolve_code,
 	 recurse into its components.  */
-      resolve_code (this_code, ns);
+      gfc_resolve_code (this_code, ns);
 
       if (this_code->op == EXEC_ASSIGN_CALL)
 	{
@@ -9804,8 +9803,8 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 /* Given a block of code, recursively resolve everything pointed to by this
    code block.  */
 
-static void
-resolve_code (gfc_code *code, gfc_namespace *ns)
+void
+gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 {
   int omp_workshare_save;
   int forall_save, do_concurrent_save;
@@ -10091,7 +10090,8 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 
 	case EXEC_DO_WHILE:
 	  if (code->expr1 == NULL)
-	    gfc_internal_error ("resolve_code(): No expression on DO WHILE");
+	    gfc_internal_error ("gfc_resolve_code(): No expression on "
+				"DO WHILE");
 	  if (t
 	      && (code->expr1->rank != 0
 		  || code->expr1->ts.type != BT_LOGICAL))
@@ -10233,7 +10233,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	default:
-	  gfc_internal_error ("resolve_code(): Bad statement code");
+	  gfc_internal_error ("gfc_resolve_code(): Bad statement code");
 	}
     }
 
@@ -14696,7 +14696,7 @@ gfc_resolve_uops (gfc_symtree *symtree)
    assign types to all intermediate expressions, make sure that all
    assignments are to compatible types and figure out which names
    refer to which functions or subroutines.  It doesn't check code
-   block, which is handled by resolve_code.  */
+   block, which is handled by gfc_resolve_code.  */
 
 static void
 resolve_types (gfc_namespace *ns)
@@ -14785,7 +14785,7 @@ resolve_types (gfc_namespace *ns)
 }
 
 
-/* Call resolve_code recursively.  */
+/* Call gfc_resolve_code recursively.  */
 
 static void
 resolve_codes (gfc_namespace *ns)
@@ -14811,7 +14811,7 @@ resolve_codes (gfc_namespace *ns)
   old_obstack = labels_obstack;
   bitmap_obstack_initialize (&labels_obstack);
 
-  resolve_code (ns->code, ns);
+  gfc_resolve_code (ns->code, ns);
 
   bitmap_obstack_release (&labels_obstack);
   labels_obstack = old_obstack;

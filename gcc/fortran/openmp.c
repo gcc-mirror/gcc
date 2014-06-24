@@ -486,7 +486,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, unsigned int mask,
 		for (n = *head; n; n = n->next)
 		  {
 		    n->u.reduction_op = rop;
-		    n->udr = udr;
+		    if (udr)
+		      {
+			n->udr = gfc_get_omp_namelist_udr ();
+			n->udr->udr = udr;
+		      }
 		  }
 	      continue;
 	    }
@@ -1182,6 +1186,9 @@ gfc_match_omp_declare_reduction (void)
   m = gfc_match_type_spec (&ts);
   if (m != MATCH_YES)
     return MATCH_ERROR;
+  /* Treat len=: the same as len=*.  */
+  if (ts.type == BT_CHARACTER)
+    ts.deferred = false;
   tss.safe_push (ts);
 
   while (gfc_match_char (',') == MATCH_YES)
@@ -1219,6 +1226,8 @@ gfc_match_omp_declare_reduction (void)
       omp_in->n.sym->ts = tss[i];
       omp_out->n.sym->attr.omp_udr_artificial_var = 1;
       omp_in->n.sym->attr.omp_udr_artificial_var = 1;
+      omp_out->n.sym->attr.flavor = FL_VARIABLE;
+      omp_in->n.sym->attr.flavor = FL_VARIABLE;
       gfc_commit_symbols ();
       omp_udr->combiner_ns = combiner_ns;
       omp_udr->omp_out = omp_out->n.sym;
@@ -1249,6 +1258,8 @@ gfc_match_omp_declare_reduction (void)
 	  omp_orig->n.sym->ts = tss[i];
 	  omp_priv->n.sym->attr.omp_udr_artificial_var = 1;
 	  omp_orig->n.sym->attr.omp_udr_artificial_var = 1;
+	  omp_priv->n.sym->attr.flavor = FL_VARIABLE;
+	  omp_orig->n.sym->attr.flavor = FL_VARIABLE;
 	  gfc_commit_symbols ();
 	  omp_udr->initializer_ns = initializer_ns;
 	  omp_udr->omp_priv = omp_priv->n.sym;
@@ -1900,6 +1911,104 @@ gfc_match_omp_end_single (void)
 }
 
 
+struct resolve_omp_udr_callback_data
+{
+  gfc_symbol *sym1, *sym2;
+};
+
+
+static int
+resolve_omp_udr_callback (gfc_expr **e, int *, void *data)
+{
+  struct resolve_omp_udr_callback_data *rcd
+    = (struct resolve_omp_udr_callback_data *) data;
+  if ((*e)->expr_type == EXPR_VARIABLE
+      && ((*e)->symtree->n.sym == rcd->sym1
+	  || (*e)->symtree->n.sym == rcd->sym2))
+    {
+      gfc_ref *ref = gfc_get_ref ();
+      ref->type = REF_ARRAY;
+      ref->u.ar.where = (*e)->where;
+      ref->u.ar.as = (*e)->symtree->n.sym->as;
+      ref->u.ar.type = AR_FULL;
+      ref->u.ar.dimen = 0;
+      ref->next = (*e)->ref;
+      (*e)->ref = ref;
+    }
+  return 0;
+}
+
+
+static int
+resolve_omp_udr_callback2 (gfc_expr **e, int *, void *)
+{
+  if ((*e)->expr_type == EXPR_FUNCTION
+      && (*e)->value.function.isym == NULL)
+    {
+      gfc_symbol *sym = (*e)->symtree->n.sym;
+      if (!sym->attr.intrinsic
+	  && sym->attr.if_source == IFSRC_UNKNOWN)
+	gfc_error ("Implicitly declared function %s used in "
+		   "!$OMP DECLARE REDUCTION at %L ", sym->name, &(*e)->where);
+    }
+  return 0;
+}
+
+
+static gfc_code *
+resolve_omp_udr_clause (gfc_omp_namelist *n, gfc_namespace *ns,
+			gfc_symbol *sym1, gfc_symbol *sym2)
+{
+  gfc_code *copy;
+  gfc_symbol sym1_copy, sym2_copy;
+
+  if (ns->code->op == EXEC_ASSIGN)
+    {
+      copy = gfc_get_code (EXEC_ASSIGN);
+      copy->expr1 = gfc_copy_expr (ns->code->expr1);
+      copy->expr2 = gfc_copy_expr (ns->code->expr2);
+    }
+  else
+    {
+      copy = gfc_get_code (EXEC_CALL);
+      copy->symtree = ns->code->symtree;
+      copy->ext.actual = gfc_copy_actual_arglist (ns->code->ext.actual);
+    }
+  copy->loc = ns->code->loc;
+  sym1_copy = *sym1;
+  sym2_copy = *sym2;
+  *sym1 = *n->sym;
+  *sym2 = *n->sym;
+  sym1->name = sym1_copy.name;
+  sym2->name = sym2_copy.name;
+  ns->proc_name = ns->parent->proc_name;
+  if (n->sym->attr.dimension)
+    {
+      struct resolve_omp_udr_callback_data rcd;
+      rcd.sym1 = sym1;
+      rcd.sym2 = sym2;
+      gfc_code_walker (&copy, gfc_dummy_code_callback,
+		       resolve_omp_udr_callback, &rcd);
+    }
+  gfc_resolve_code (copy, gfc_current_ns);
+  if (copy->op == EXEC_CALL && copy->resolved_isym == NULL)
+    {
+      gfc_symbol *sym = copy->resolved_sym;
+      if (sym
+	  && !sym->attr.intrinsic
+	  && sym->attr.if_source == IFSRC_UNKNOWN)
+	gfc_error ("Implicitly declared subroutine %s used in "
+		   "!$OMP DECLARE REDUCTION at %L ", sym->name,
+		   &copy->loc);
+    }
+  gfc_code_walker (&copy, gfc_dummy_code_callback,
+		   resolve_omp_udr_callback2, NULL);
+  *sym1 = sym1_copy;
+  *sym2 = sym2_copy;
+  return copy;
+}
+
+
 /* OpenMP directive resolving routines.  */
 
 static void
@@ -2295,9 +2404,15 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 			const char *udr_name = NULL;
 			if (n->udr)
 			  {
-			    udr_name = n->udr->name;
-			    n->udr = gfc_find_omp_udr (NULL, udr_name,
-						       &n->sym->ts);
+			    udr_name = n->udr->udr->name;
+			    n->udr->udr
+			      = gfc_find_omp_udr (NULL, udr_name,
+						  &n->sym->ts);
+			    if (n->udr->udr == NULL)
+			      {
+				free (n->udr);
+				n->udr = NULL;
+			      }
 			  }
 			if (n->udr == NULL)
 			  {
@@ -2337,7 +2452,20 @@ resolve_omp_clauses (gfc_code *code, locus *where,
 				       gfc_typename (&n->sym->ts), where);
 			  }
 			else
-			  n->u.reduction_op = OMP_REDUCTION_USER;
+			  {
+			    gfc_omp_udr *udr = n->udr->udr;
+			    n->u.reduction_op = OMP_REDUCTION_USER;
+			    n->udr->combiner
+			      = resolve_omp_udr_clause (n, udr->combiner_ns,
+							udr->omp_out,
+							udr->omp_in);
+			    if (udr->initializer_ns)
+			      n->udr->initializer
+				= resolve_omp_udr_clause (n,
+							  udr->initializer_ns,
+							  udr->omp_priv,
+							  udr->omp_orig);
+			  }
 		      }
 		    break;
 		  case OMP_LIST_LINEAR:
@@ -3317,15 +3445,6 @@ omp_udr_callback (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 		       &(*e)->where);
 	}
     }
-  else if ((*e)->expr_type == EXPR_FUNCTION
-	   && (*e)->value.function.isym == NULL)
-    {
-      gfc_symbol *sym = (*e)->symtree->n.sym;
-      if (!sym->attr.intrinsic
-	  && sym->attr.if_source == IFSRC_UNKNOWN)
-	gfc_error ("Implicitly declared function %s used in "
-		   "!$OMP DECLARE REDUCTION at %L ", sym->name, &(*e)->where);
-    }
   return 0;
 }
 
@@ -3337,9 +3456,6 @@ gfc_resolve_omp_udr (gfc_omp_udr *omp_udr)
   gfc_actual_arglist *a;
   const char *predef_name = NULL;
 
-  gfc_resolve (omp_udr->combiner_ns);
-  if (omp_udr->initializer_ns)
-    gfc_resolve (omp_udr->initializer_ns);
   switch (omp_udr->rop)
     {
     case OMP_REDUCTION_PLUS:
@@ -3394,16 +3510,6 @@ gfc_resolve_omp_udr (gfc_omp_udr *omp_udr)
 	gfc_error ("Subroutine call with alternate returns in combiner "
 		   "of !$OMP DECLARE REDUCTION at %L",
 		   &omp_udr->combiner_ns->code->loc);
-      if (omp_udr->combiner_ns->code->resolved_isym == NULL)
-	{
-	  gfc_symbol *sym = omp_udr->combiner_ns->code->resolved_sym;
-	  if (sym
-	      && !sym->attr.intrinsic
-	      && sym->attr.if_source == IFSRC_UNKNOWN)
-	    gfc_error ("Implicitly declared subroutine %s used in "
-		       "!$OMP DECLARE REDUCTION at %L ", sym->name,
-		       &omp_udr->combiner_ns->code->loc);
-	}
     }
   if (omp_udr->initializer_ns)
     {
@@ -3429,16 +3535,6 @@ gfc_resolve_omp_udr (gfc_omp_udr *omp_udr)
 	    gfc_error ("One of actual subroutine arguments in INITIALIZER "
 		       "clause of !$OMP DECLARE REDUCTION must be OMP_PRIV "
 		       "at %L", &omp_udr->initializer_ns->code->loc);
-	  if (omp_udr->initializer_ns->code->resolved_isym == NULL)
-	    {
-	      gfc_symbol *sym = omp_udr->initializer_ns->code->resolved_sym;
-	      if (sym
-		  && !sym->attr.intrinsic
-		  && sym->attr.if_source == IFSRC_UNKNOWN)
-		gfc_error ("Implicitly declared subroutine %s used in "
-			   "!$OMP DECLARE REDUCTION at %L ", sym->name,
-			   &omp_udr->initializer_ns->code->loc);
-	    }
 	}
     }
   else if (omp_udr->ts.type == BT_DERIVED
