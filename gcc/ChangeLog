@@ -1,3 +1,10 @@
+2014-06-24  Catherine Moore  <clm@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips.c (mips_order_regs_for_local_alloc): Delete.
+	* config/mips/mips.h (ADJUST_REG_ALLOC_ORDER): Delete.
+	* config/mips/mips-protos.h (mips_order_regs_for_local_alloc): Delete.
+
 2014-06-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	* doc/invoke.texi (Warning Options): Remove duplicated
