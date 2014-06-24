@@ -1,3 +1,7 @@
+2014-06-24  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/singleton_intrinsics_1.c: Save temps and cleanup.
+
 2014-06-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61572
