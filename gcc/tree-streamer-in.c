@@ -726,7 +726,6 @@ lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *ib,
 {
   if (TREE_CODE (expr) == TYPE_DECL)
     DECL_ORIGINAL_TYPE (expr) = stream_read_tree (ib, data_in);
-  DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
 }
 
 
@@ -773,8 +772,8 @@ static void
 lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
 					  struct data_in *data_in, tree expr)
 {
-  /* DECL_STRUCT_FUNCTION is handled by lto_input_function.  FIXME lto,
-     maybe it should be handled here?  */
+  DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
+  /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
   /* DECL_FUNCTION_SPECIFIC_TARGET is regenerated from attributes.  */
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);

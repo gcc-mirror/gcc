@@ -1,3 +1,16 @@
+2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (find_decls_types_r): Do not check DECL_VINDEX for TYPE_DECL.
+	* tree.h (DECL_VINDEX, DECL_SAVED_TREE): Restrict to DECL_FUNCTION.
+	* tree-core.h (tree_decl_non_common): Move saved_tree and vindex...
+	(tree_function_decl): ... here.
+	* tree-streamer-out.c (write_ts_decl_non_common_tree_pointers): Move
+	streaming of vindex to ...
+	(write_ts_function_decl_tree_pointers): ... here.
+	* tree-streamer-in.c (lto_input_ts_decl_non_common_tree_pointers):
+	Do not stream DECL_VINDEX.
+	(lto_input_ts_function_decl_tree_pointers): Stream it here.
+
 2014-06-24  Catherine Moore  <clm@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 

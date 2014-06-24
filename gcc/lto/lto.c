@@ -777,7 +777,6 @@ mentions_vars_p_decl_non_common (tree t)
     return true;
   CHECK_NO_VAR (DECL_ARGUMENT_FLD (t));
   CHECK_NO_VAR (DECL_RESULT_FLD (t));
-  CHECK_NO_VAR (DECL_VINDEX (t));
   return false;
 }
 
@@ -788,6 +787,7 @@ mentions_vars_p_function (tree t)
 {
   if (mentions_vars_p_decl_non_common (t))
     return true;
+  CHECK_NO_VAR (DECL_VINDEX (t));
   CHECK_VAR (DECL_FUNCTION_PERSONALITY (t));
   return false;
 }
@@ -1512,7 +1512,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	}
       else if (code == TYPE_DECL)
 	compare_tree_edges (DECL_ORIGINAL_TYPE (t1), DECL_ORIGINAL_TYPE (t2));
-      compare_tree_edges (DECL_VINDEX (t1), DECL_VINDEX (t2));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -1538,6 +1537,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
     {
       compare_tree_edges (DECL_FUNCTION_PERSONALITY (t1),
 			  DECL_FUNCTION_PERSONALITY (t2));
+      compare_tree_edges (DECL_VINDEX (t1), DECL_VINDEX (t2));
       /* DECL_FUNCTION_SPECIFIC_TARGET is not yet created.  We compare
          the attribute list instead.  */
       compare_tree_edges (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t1),
@@ -2714,10 +2714,12 @@ lto_fixup_prevailing_decls (tree t)
 	{
 	  LTO_NO_PREVAIL (DECL_ARGUMENT_FLD (t));
 	  LTO_NO_PREVAIL (DECL_RESULT_FLD (t));
-	  LTO_NO_PREVAIL (DECL_VINDEX (t));
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-	LTO_SET_PREVAIL (DECL_FUNCTION_PERSONALITY (t));
+	{
+	  LTO_SET_PREVAIL (DECL_FUNCTION_PERSONALITY (t));
+	  LTO_NO_PREVAIL (DECL_VINDEX (t));
+	}
       if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
 	{
 	  LTO_SET_PREVAIL (DECL_FIELD_OFFSET (t));

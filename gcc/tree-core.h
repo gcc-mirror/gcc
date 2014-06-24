@@ -1494,14 +1494,10 @@ struct GTY(()) tree_var_decl {
 
 struct GTY(()) tree_decl_non_common {
   struct tree_decl_with_vis common;
-  /* C++ uses this in namespaces.  */
-  tree saved_tree;
   /* C++ uses this in templates.  */
   tree arguments;
   /* Almost all FE's use this.  */
   tree result;
-  /* C++ uses this in namespaces and function_decls.  */
-  tree vindex;
 };
 
 /* FUNCTION_DECL inherits from DECL_NON_COMMON because of the use of the
@@ -1520,6 +1516,11 @@ struct GTY(()) tree_function_decl {
   /* Function specific options that are used by this function.  */
   tree function_specific_target;	/* target options */
   tree function_specific_optimization;	/* optimization options */
+
+  /* Generic function body.  */
+  tree saved_tree;
+  /* Index within a virtual table.  */
+  tree vindex;
 
   /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
      DECL_FUNCTION_CODE.  Otherwise unused.

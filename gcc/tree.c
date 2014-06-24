@@ -5306,7 +5306,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       else if (TREE_CODE (t) == TYPE_DECL)
 	{
 	  fld_worklist_push (DECL_ARGUMENT_FLD (t), fld);
-	  fld_worklist_push (DECL_VINDEX (t), fld);
 	  fld_worklist_push (DECL_ORIGINAL_TYPE (t), fld);
 	}
       else if (TREE_CODE (t) == FIELD_DECL)

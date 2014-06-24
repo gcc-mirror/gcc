@@ -638,7 +638,6 @@ write_ts_decl_non_common_tree_pointers (struct output_block *ob, tree expr,
 {
   if (TREE_CODE (expr) == TYPE_DECL)
     stream_write_tree (ob, DECL_ORIGINAL_TYPE (expr), ref_p);
-  stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
 }
 
 
@@ -682,6 +681,7 @@ static void
 write_ts_function_decl_tree_pointers (struct output_block *ob, tree expr,
 				      bool ref_p)
 {
+  stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
   /* DECL_STRUCT_FUNCTION is handled by lto_output_function.  FIXME lto,
      maybe it should be handled here?  */
   stream_write_tree (ob, DECL_FUNCTION_PERSONALITY (expr), ref_p);

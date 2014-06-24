@@ -1,3 +1,12 @@
+2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (check_methods, create_vtable_ptr, determine_key_method,
+	add_vcall_offset_vtbl_entries_1): Guard VINDEX checks by FUNCTION_DECL check.
+	* cp-tree.h (lang_decl_ns): Add ns_using and ns_users.
+	(DECL_NAMESPACE_USING, DECL_NAMESPACE_USERS): Use lang_decl_ns.
+	(DECL_NAMESPACE_ASSOCIATIONS): Use DECL_INITIAL.
+	(DECL_TEMPLATE_INSTANTIATIONS): Use DECL_SIZE_UNIT.
+
 2014-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33972
