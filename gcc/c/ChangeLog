@@ -1,3 +1,9 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_for_loop): For
+	#pragma omp parallel for simd move lastprivate clause from parallel
+	to for rather than simd.
+
 2014-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (parser_build_binary_op): Don't call
