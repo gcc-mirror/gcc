@@ -374,6 +374,12 @@ statement_sink_location (gimple stmt, basic_block frombb,
 	 nearest to commondom.  */
       if (gimple_vuse (stmt))
 	{
+	  /* Do not sink loads from hard registers.  */
+	  if (gimple_assign_single_p (stmt)
+	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == VAR_DECL
+	      && DECL_HARD_REGISTER (gimple_assign_rhs1 (stmt)))
+	    return false;
+
 	  imm_use_iterator imm_iter;
 	  use_operand_p use_p;
 	  basic_block found = NULL;
