@@ -1,3 +1,14 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_for): For #pragma omp for simd iterator
+	not mentioned in clauses use private clause if the iterator is
+	declared in #pragma omp for simd, and when adding lastprivate
+	instead, add it to the outer #pragma omp for too.  Diagnose
+	if the variable is private in outer context.  For simd collapse > 1
+	loops, replace all iterators with temporaries.
+	* omp-low.c (lower_rec_input_clauses): Handle LINEAR clause the
+	same even in collapse > 1 loops.
+
 2014-06-23  Alan Modra  <amodra@gmail.com>
 
 	PR bootstrap/61583

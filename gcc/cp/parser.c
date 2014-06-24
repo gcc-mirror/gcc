@@ -29365,9 +29365,17 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 		   change it to shared (decl) in OMP_PARALLEL_CLAUSES.  */
 		tree l = build_omp_clause (loc, OMP_CLAUSE_LASTPRIVATE);
 		OMP_CLAUSE_DECL (l) = real_decl;
-		OMP_CLAUSE_CHAIN (l) = clauses;
 		CP_OMP_CLAUSE_INFO (l) = CP_OMP_CLAUSE_INFO (*c);
-		clauses = l;
+		if (code == OMP_SIMD)
+		  {
+		    OMP_CLAUSE_CHAIN (l) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
+		    cclauses[C_OMP_CLAUSE_SPLIT_FOR] = l;
+		  }
+		else
+		  {
+		    OMP_CLAUSE_CHAIN (l) = clauses;
+		    clauses = l;
+		  }
 		OMP_CLAUSE_SET_CODE (*c, OMP_CLAUSE_SHARED);
 		CP_OMP_CLAUSE_INFO (*c) = NULL;
 		add_private_clause = false;

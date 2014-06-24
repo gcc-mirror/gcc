@@ -1,3 +1,21 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/for-2.c: Define SC to static for
+	#pragma omp for simd testing.
+	* testsuite/libgomp.c/for-2.h (SC): Define if not defined.
+	(N(f5), N(f6), N(f7), N(f8), N(f10), N(f12), N(f14)): Use
+	SC macro.
+	* testsuite/libgomp.c/simd-14.c: New test.
+	* testsuite/libgomp.c/simd-15.c: New test.
+	* testsuite/libgomp.c/simd-16.c: New test.
+	* testsuite/libgomp.c/simd-17.c: New test.
+	* testsuite/libgomp.c++/for-10.C: Define SC to static for
+	#pragma omp for simd testing.
+	* testsuite/libgomp.c++/simd10.C: New test.
+	* testsuite/libgomp.c++/simd11.C: New test.
+	* testsuite/libgomp.c++/simd12.C: New test.
+	* testsuite/libgomp.c++/simd13.C: New test.
+
 2014-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61252
