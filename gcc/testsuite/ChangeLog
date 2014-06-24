@@ -1,3 +1,10 @@
+2014-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33972
+	* g++.dg/other/operator3.C: New.
+	* g++.dg/template/operator8.C: Adjust.
+	* g++.dg/template/operator9.C: Likewise.
+
 2014-06-24  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/singleton_intrinsics_1.c: Save temps and cleanup.

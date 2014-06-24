@@ -2,5 +2,5 @@
 
 struct A
 {
-    template<operator+> void foo() {}   // { dg-error "identifier|non-function|template arguments" }
+    template<operator+> void foo() {}   // { dg-error "identifier|parameter|template arguments" }
 };

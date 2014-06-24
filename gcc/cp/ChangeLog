@@ -1,3 +1,9 @@
+2014-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33972
+	* decl.c (grokdeclarator): Do not early check for operator-function-id
+	as non-function.
+
 2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* class.c, semantics.c, tree.c, vtable-class-hierarchy.c:

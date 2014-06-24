@@ -1,6 +1,6 @@
 //PR c++/27670
 
-template<operator+> void foo(); // { dg-error "before|non-function|template" }
+template<operator+> void foo(); // { dg-error "before|parameter|template" }
 
 void bar()
 {
