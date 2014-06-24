@@ -143,7 +143,7 @@ locus_discrim_hasher::equal (const value_type *a, const compare_type *b)
   return LOCATION_LINE (a->locus) == LOCATION_LINE (b->locus);
 }
 
-static hash_table <locus_discrim_hasher> discriminator_per_locus;
+static hash_table<locus_discrim_hasher> *discriminator_per_locus;
 
 /* Basic blocks and flowgraphs.  */
 static void make_blocks (gimple_seq);
@@ -244,11 +244,12 @@ build_gimple_cfg (gimple_seq seq)
   group_case_labels ();
 
   /* Create the edges of the flowgraph.  */
-  discriminator_per_locus.create (13);
+  discriminator_per_locus = new hash_table<locus_discrim_hasher> (13);
   make_edges ();
   assign_discriminators ();
   cleanup_dead_labels ();
-  discriminator_per_locus.dispose ();
+  delete discriminator_per_locus;
+  discriminator_per_locus = NULL;
 }
 
 
@@ -938,7 +939,7 @@ next_discriminator_for_locus (location_t locus)
 
   item.locus = locus;
   item.discriminator = 0;
-  slot = discriminator_per_locus.find_slot_with_hash (
+  slot = discriminator_per_locus->find_slot_with_hash (
       &item, LOCATION_LINE (locus), INSERT);
   gcc_assert (slot);
   if (*slot == HTAB_EMPTY_ENTRY)

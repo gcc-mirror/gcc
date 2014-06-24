@@ -321,7 +321,7 @@ val_ssa_equiv_hasher::remove (value_type *elt)
 /* Global hash table implementing a mapping from invariant values
    to a list of SSA_NAMEs which have the same value.  We might be
    able to reuse tree-vn for this code.  */
-static hash_table <val_ssa_equiv_hasher> val_ssa_equiv;
+static hash_table<val_ssa_equiv_hasher> *val_ssa_equiv;
 
 static void uncprop_into_successor_phis (basic_block);
 
@@ -336,7 +336,7 @@ remove_equivalence (tree value)
   an_equiv_elt.value = value;
   an_equiv_elt.equivalences.create (0);
 
-  slot = val_ssa_equiv.find_slot (&an_equiv_elt, NO_INSERT);
+  slot = val_ssa_equiv->find_slot (&an_equiv_elt, NO_INSERT);
 
   an_equiv_elt_p = *slot;
   an_equiv_elt_p->equivalences.pop ();
@@ -354,7 +354,7 @@ record_equiv (tree value, tree equivalence)
   an_equiv_elt_p->value = value;
   an_equiv_elt_p->equivalences.create (0);
 
-  slot = val_ssa_equiv.find_slot (an_equiv_elt_p, INSERT);
+  slot = val_ssa_equiv->find_slot (an_equiv_elt_p, INSERT);
 
   if (*slot == NULL)
     *slot = an_equiv_elt_p;
@@ -446,7 +446,7 @@ uncprop_into_successor_phis (basic_block bb)
 	  /* Lookup this argument's value in the hash table.  */
 	  an_equiv_elt.value = arg;
 	  an_equiv_elt.equivalences.create (0);
-	  slot = val_ssa_equiv.find_slot (&an_equiv_elt, NO_INSERT);
+	  slot = val_ssa_equiv->find_slot (&an_equiv_elt, NO_INSERT);
 
 	  if (slot)
 	    {
@@ -578,7 +578,7 @@ pass_uncprop::execute (function *fun)
   associate_equivalences_with_edges ();
 
   /* Create our global data structures.  */
-  val_ssa_equiv.create (1024);
+  val_ssa_equiv = new hash_table<val_ssa_equiv_hasher> (1024);
 
   /* We're going to do a dominator walk, so ensure that we have
      dominance information.  */
@@ -590,7 +590,8 @@ pass_uncprop::execute (function *fun)
 
   /* we just need to empty elements out of the hash table, and cleanup the
     AUX field on the edges.  */
-  val_ssa_equiv.dispose ();
+  delete val_ssa_equiv;
+  val_ssa_equiv = NULL;
   FOR_EACH_BB_FN (bb, fun)
     {
       edge e;

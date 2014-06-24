@@ -269,7 +269,6 @@ graphite_transform_loops (void)
   scop_p scop;
   bool need_cfg_cleanup_p = false;
   vec<scop_p> scops = vNULL;
-  bb_pbb_htab_type bb_pbb_mapping;
   isl_ctx *ctx;
 
   /* If a function is parallel it was most probably already run through graphite
@@ -291,8 +290,7 @@ graphite_transform_loops (void)
       print_global_statistics (dump_file);
     }
 
-  bb_pbb_mapping.create (10);
-
+  bb_pbb_htab_type bb_pbb_mapping (10);
   FOR_EACH_VEC_ELT (scops, i, scop)
     if (dbg_cnt (graphite_scop))
       {
@@ -301,11 +299,10 @@ graphite_transform_loops (void)
 
 	if (POLY_SCOP_P (scop)
 	    && apply_poly_transforms (scop)
-	    && gloog (scop, bb_pbb_mapping))
+	    && gloog (scop, &bb_pbb_mapping))
 	  need_cfg_cleanup_p = true;
       }
 
-  bb_pbb_mapping.dispose ();
   free_scops (scops);
   graphite_finalize (need_cfg_cleanup_p);
   the_isl_ctx = NULL;

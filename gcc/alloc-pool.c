@@ -105,7 +105,7 @@ alloc_pool_hasher::equal (const value_type *d,
 }
 
 /* Hashtable mapping alloc_pool names to descriptors.  */
-static hash_table <alloc_pool_hasher>  alloc_pool_hash;
+static hash_table<alloc_pool_hasher> *alloc_pool_hash;
 
 /* For given name, return descriptor, create new if needed.  */
 static struct alloc_pool_descriptor *
@@ -113,11 +113,12 @@ allocate_pool_descriptor (const char *name)
 {
   struct alloc_pool_descriptor **slot;
 
-  if (!alloc_pool_hash.is_created ())
-    alloc_pool_hash.create (10);
+  if (!alloc_pool_hash)
+    alloc_pool_hash = new hash_table<alloc_pool_hasher> (10);
 
-  slot = alloc_pool_hash.find_slot_with_hash (name,
-					      htab_hash_pointer (name), INSERT);
+  slot = alloc_pool_hash->find_slot_with_hash (name,
+					       htab_hash_pointer (name),
+					       INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct alloc_pool_descriptor);
@@ -404,15 +405,15 @@ dump_alloc_pool_statistics (void)
   if (! GATHER_STATISTICS)
     return;
 
-  if (!alloc_pool_hash.is_created ())
+  if (!alloc_pool_hash)
     return;
 
   fprintf (stderr, "\nAlloc-pool Kind         Elt size  Pools  Allocated (elts)            Peak (elts)            Leak (elts)\n");
   fprintf (stderr, "--------------------------------------------------------------------------------------------------------------\n");
   info.total_created = 0;
   info.total_allocated = 0;
-  alloc_pool_hash.traverse <struct output_info *,
-			    print_alloc_pool_statistics> (&info);
+  alloc_pool_hash->traverse <struct output_info *,
+			     print_alloc_pool_statistics> (&info);
   fprintf (stderr, "--------------------------------------------------------------------------------------------------------------\n");
   fprintf (stderr, "%-22s           %7lu %10lu\n",
 	   "Total", info.total_created, info.total_allocated);

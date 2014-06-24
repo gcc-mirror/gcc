@@ -643,7 +643,7 @@ same_succ_reset (same_succ same)
   same->succ_flags.truncate (0);
 }
 
-static hash_table <same_succ_def> same_succ_htab;
+static hash_table<same_succ_def> *same_succ_htab;
 
 /* Array that is used to store the edge flags for a successor.  */
 
@@ -664,7 +664,7 @@ extern void debug_same_succ (void);
 DEBUG_FUNCTION void
 debug_same_succ ( void)
 {
-  same_succ_htab.traverse <FILE *, ssa_same_succ_print_traverse> (stderr);
+  same_succ_htab->traverse <FILE *, ssa_same_succ_print_traverse> (stderr);
 }
 
 
@@ -731,7 +731,7 @@ find_same_succ_bb (basic_block bb, same_succ *same_p)
 
   same->hashval = same_succ_hash (same);
 
-  slot = same_succ_htab.find_slot_with_hash (same, same->hashval, INSERT);
+  slot = same_succ_htab->find_slot_with_hash (same, same->hashval, INSERT);
   if (*slot == NULL)
     {
       *slot = same;
@@ -774,7 +774,7 @@ static void
 init_worklist (void)
 {
   alloc_aux_for_blocks (sizeof (struct aux_bb_info));
-  same_succ_htab.create (n_basic_blocks_for_fn (cfun));
+  same_succ_htab = new hash_table<same_succ_def> (n_basic_blocks_for_fn (cfun));
   same_succ_edge_flags = XCNEWVEC (int, last_basic_block_for_fn (cfun));
   deleted_bbs = BITMAP_ALLOC (NULL);
   deleted_bb_preds = BITMAP_ALLOC (NULL);
@@ -794,7 +794,8 @@ static void
 delete_worklist (void)
 {
   free_aux_for_blocks ();
-  same_succ_htab.dispose ();
+  delete same_succ_htab;
+  same_succ_htab = NULL;
   XDELETEVEC (same_succ_edge_flags);
   same_succ_edge_flags = NULL;
   BITMAP_FREE (deleted_bbs);
@@ -824,7 +825,7 @@ same_succ_flush_bb (basic_block bb)
   same_succ same = BB_SAME_SUCC (bb);
   BB_SAME_SUCC (bb) = NULL;
   if (bitmap_single_bit_set_p (same->bbs))
-    same_succ_htab.remove_elt_with_hash (same, same->hashval);
+    same_succ_htab->remove_elt_with_hash (same, same->hashval);
   else
     bitmap_clear_bit (same->bbs, bb->index);
 }
@@ -1714,7 +1715,7 @@ tail_merge_optimize (unsigned int todo)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "htab collision / search: %f\n",
-	     same_succ_htab.collisions ());
+	     same_succ_htab->collisions ());
 
   if (nr_bbs_removed_total > 0)
     {

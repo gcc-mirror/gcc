@@ -102,15 +102,15 @@ rename_map_hasher::equal (const value_type *elt1, const compare_type *elt2)
   return (elt1->old_name == elt2->old_name);
 }
 
-typedef hash_table <rename_map_hasher> rename_map_type;
+typedef hash_table<rename_map_hasher> rename_map_type;
 
 
 /* Print to stderr all the elements of RENAME_MAP.  */
 
 DEBUG_FUNCTION void
-debug_rename_map (rename_map_type rename_map)
+debug_rename_map (rename_map_type *rename_map)
 {
-  rename_map.traverse <void *, debug_rename_map_1> (NULL);
+  rename_map->traverse <void *, debug_rename_map_1> (NULL);
 }
 
 /* Computes a hash function for database element ELT.  */
@@ -416,14 +416,14 @@ get_false_edge_from_guard_bb (basic_block bb)
 /* Returns the expression associated to OLD_NAME in RENAME_MAP.  */
 
 static tree
-get_rename (rename_map_type rename_map, tree old_name)
+get_rename (rename_map_type *rename_map, tree old_name)
 {
   struct rename_map_elt_s tmp;
   rename_map_elt_s **slot;
 
   gcc_assert (TREE_CODE (old_name) == SSA_NAME);
   tmp.old_name = old_name;
-  slot = rename_map.find_slot (&tmp, NO_INSERT);
+  slot = rename_map->find_slot (&tmp, NO_INSERT);
 
   if (slot && *slot)
     return (*slot)->expr;
@@ -434,7 +434,7 @@ get_rename (rename_map_type rename_map, tree old_name)
 /* Register in RENAME_MAP the rename tuple (OLD_NAME, EXPR).  */
 
 static void
-set_rename (rename_map_type rename_map, tree old_name, tree expr)
+set_rename (rename_map_type *rename_map, tree old_name, tree expr)
 {
   struct rename_map_elt_s tmp;
   rename_map_elt_s **slot;
@@ -443,7 +443,7 @@ set_rename (rename_map_type rename_map, tree old_name, tree expr)
     return;
 
   tmp.old_name = old_name;
-  slot = rename_map.find_slot (&tmp, INSERT);
+  slot = rename_map->find_slot (&tmp, INSERT);
 
   if (!slot)
     return;
@@ -461,7 +461,7 @@ set_rename (rename_map_type rename_map, tree old_name, tree expr)
    is set when the code generation cannot continue.  */
 
 static bool
-rename_uses (gimple copy, rename_map_type rename_map,
+rename_uses (gimple copy, rename_map_type *rename_map,
 	     gimple_stmt_iterator *gsi_tgt,
 	     sese region, loop_p loop, vec<tree> iv_map,
 	     bool *gloog_error)
@@ -568,7 +568,7 @@ rename_uses (gimple copy, rename_map_type rename_map,
 
 static void
 graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
-				rename_map_type rename_map,
+				rename_map_type *rename_map,
 				vec<tree> iv_map, sese region,
 				bool *gloog_error)
 {
@@ -636,14 +636,12 @@ copy_bb_and_scalar_dependences (basic_block bb, sese region,
 				bool *gloog_error)
 {
   basic_block new_bb = split_edge (next_e);
-  rename_map_type rename_map;
-  rename_map.create (10);
+  rename_map_type rename_map (10);
 
   next_e = single_succ_edge (new_bb);
-  graphite_copy_stmts_from_block (bb, new_bb, rename_map, iv_map, region,
+  graphite_copy_stmts_from_block (bb, new_bb, &rename_map, iv_map, region,
 				  gloog_error);
   remove_phi_nodes (new_bb);
-  rename_map.dispose ();
 
   return next_e;
 }

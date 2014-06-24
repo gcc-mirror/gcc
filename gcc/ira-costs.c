@@ -167,7 +167,7 @@ cost_classes_hasher::remove (value_type *v)
 }
 
 /* Hash table of unique cost classes.  */
-static hash_table <cost_classes_hasher> cost_classes_htab;
+static hash_table<cost_classes_hasher> *cost_classes_htab;
 
 /* Map allocno class -> cost classes for pseudo of given allocno
    class.  */
@@ -188,7 +188,7 @@ initiate_regno_cost_classes (void)
 	  sizeof (cost_classes_t) * N_REG_CLASSES);
   memset (cost_classes_mode_cache, 0,
 	  sizeof (cost_classes_t) * MAX_MACHINE_MODE);
-  cost_classes_htab.create (200);
+  cost_classes_htab = new hash_table<cost_classes_hasher> (200);
 }
 
 /* Create new cost classes from cost classes FROM and set up members
@@ -262,7 +262,7 @@ setup_regno_cost_classes_by_aclass (int regno, enum reg_class aclass)
 	    }
 	  classes.classes[classes.num++] = cl;
 	}
-      slot = cost_classes_htab.find_slot (&classes, INSERT);
+      slot = cost_classes_htab->find_slot (&classes, INSERT);
       if (*slot == NULL)
 	{
 	  classes_ptr = setup_cost_classes (&classes);
@@ -301,7 +301,7 @@ setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
 	    continue;
 	  classes.classes[classes.num++] = cl;
 	}
-      slot = cost_classes_htab.find_slot (&classes, INSERT);
+      slot = cost_classes_htab->find_slot (&classes, INSERT);
       if (*slot == NULL)
 	{
 	  classes_ptr = setup_cost_classes (&classes);
@@ -319,7 +319,8 @@ static void
 finish_regno_cost_classes (void)
 {
   ira_free (regno_cost_classes);
-  cost_classes_htab.dispose ();
+  delete cost_classes_htab;
+  cost_classes_htab = NULL;
 }
 
 

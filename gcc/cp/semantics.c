@@ -4049,9 +4049,11 @@ expand_or_defer_fn (tree fn)
 
 struct nrv_data
 {
+  nrv_data () : visited (37) {}
+
   tree var;
   tree result;
-  hash_table <pointer_hash <tree_node> > visited;
+  hash_table<pointer_hash <tree_node> > visited;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */
@@ -4131,9 +4133,7 @@ finalize_nrv (tree *tp, tree var, tree result)
 
   data.var = var;
   data.result = result;
-  data.visited.create (37);
   cp_walk_tree (tp, finalize_nrv_r, &data, 0);
-  data.visited.dispose ();
 }
 
 /* Create CP_OMP_CLAUSE_INFO for clause C.  Returns true if it is invalid.  */

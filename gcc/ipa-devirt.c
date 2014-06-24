@@ -324,8 +324,8 @@ odr_hasher::remove (value_type *v)
 
 /* ODR type hash used to lookup ODR type based on tree type node.  */
 
-typedef hash_table <odr_hasher> odr_hash_type;
-static odr_hash_type odr_hash;
+typedef hash_table<odr_hasher> odr_hash_type;
+static odr_hash_type *odr_hash;
 
 /* ODR types are also stored into ODR_TYPE vector to allow consistent
    walking.  Bases appear before derived types.  Vector is garbage collected
@@ -473,7 +473,8 @@ get_odr_type (tree type, bool insert)
   type = TYPE_MAIN_VARIANT (type);
   gcc_checking_assert (TYPE_MAIN_VARIANT (type) == type);
   hash = hash_type_name (type);
-  slot = odr_hash.find_slot_with_hash (type, hash, insert ? INSERT : NO_INSERT);
+  slot
+     = odr_hash->find_slot_with_hash (type, hash, insert ? INSERT : NO_INSERT);
   if (!slot)
     return NULL;
 
@@ -611,11 +612,11 @@ build_type_inheritance_graph (void)
   FILE *inheritance_dump_file;
   int flags;
 
-  if (odr_hash.is_created ())
+  if (odr_hash)
     return;
   timevar_push (TV_IPA_INHERITANCE);
   inheritance_dump_file = dump_begin (TDI_inheritance, &flags);
-  odr_hash.create (23);
+  odr_hash = new odr_hash_type (23);
 
   /* We reconstruct the graph starting of types of all methods seen in the
      the unit.  */
@@ -1011,9 +1012,9 @@ polymorphic_call_target_hasher::remove (value_type *v)
 
 /* Polymorphic call target query cache.  */
 
-typedef hash_table <polymorphic_call_target_hasher>
+typedef hash_table<polymorphic_call_target_hasher>
    polymorphic_call_target_hash_type;
-static polymorphic_call_target_hash_type polymorphic_call_target_hash;
+static polymorphic_call_target_hash_type *polymorphic_call_target_hash;
 
 /* Destroy polymorphic call target query cache.  */
 
@@ -1022,7 +1023,8 @@ free_polymorphic_call_targets_hash ()
 {
   if (cached_polymorphic_call_targets)
     {
-      polymorphic_call_target_hash.dispose ();
+      delete polymorphic_call_target_hash;
+      polymorphic_call_target_hash = NULL;
       pointer_set_destroy (cached_polymorphic_call_targets);
       cached_polymorphic_call_targets = NULL;
     }
@@ -1599,7 +1601,7 @@ possible_polymorphic_call_targets (tree otr_type,
   bool skipped = false;
 
   /* If ODR is not initialized, return empty incomplete list.  */
-  if (!odr_hash.is_created ())
+  if (!odr_hash)
     {
       if (completep)
 	*completep = false;
@@ -1656,7 +1658,8 @@ possible_polymorphic_call_targets (tree otr_type,
   if (!cached_polymorphic_call_targets)
     {
       cached_polymorphic_call_targets = pointer_set_create ();
-      polymorphic_call_target_hash.create (23);
+      polymorphic_call_target_hash
+       	= new polymorphic_call_target_hash_type (23);
       if (!node_removal_hook_holder)
 	{
 	  node_removal_hook_holder =
@@ -1670,7 +1673,7 @@ possible_polymorphic_call_targets (tree otr_type,
   key.type = type;
   key.otr_token = otr_token;
   key.context = context;
-  slot = polymorphic_call_target_hash.find_slot (&key, INSERT);
+  slot = polymorphic_call_target_hash->find_slot (&key, INSERT);
   if (cache_token)
    *cache_token = (void *)*slot;
   if (*slot)
@@ -1865,7 +1868,7 @@ possible_polymorphic_call_target_p (tree otr_type,
           || fcode == BUILT_IN_TRAP))
     return true;
 
-  if (!odr_hash.is_created ())
+  if (!odr_hash)
     return true;
   targets = possible_polymorphic_call_targets (otr_type, otr_token, ctx, &final);
   for (i = 0; i < targets.length (); i++)
@@ -1888,7 +1891,7 @@ update_type_inheritance_graph (void)
 {
   struct cgraph_node *n;
 
-  if (!odr_hash.is_created ())
+  if (!odr_hash)
     return;
   free_polymorphic_call_targets_hash ();
   timevar_push (TV_IPA_INHERITANCE);

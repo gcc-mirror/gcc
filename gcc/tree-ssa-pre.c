@@ -253,7 +253,7 @@ static unsigned int next_expression_id;
 
 /* Mapping from expression to id number we can use in bitmap sets.  */
 static vec<pre_expr> expressions;
-static hash_table <pre_expr_d> expression_to_id;
+static hash_table<pre_expr_d> *expression_to_id;
 static vec<unsigned> name_to_id;
 
 /* Allocate an expression id for EXPR.  */
@@ -280,7 +280,7 @@ alloc_expression_id (pre_expr expr)
     }
   else
     {
-      slot = expression_to_id.find_slot (expr, INSERT);
+      slot = expression_to_id->find_slot (expr, INSERT);
       gcc_assert (!*slot);
       *slot = expr;
     }
@@ -309,7 +309,7 @@ lookup_expression_id (const pre_expr expr)
     }
   else
     {
-      slot = expression_to_id.find_slot (expr, NO_INSERT);
+      slot = expression_to_id->find_slot (expr, NO_INSERT);
       if (!slot)
 	return 0;
       return ((pre_expr)*slot)->id;
@@ -542,7 +542,7 @@ expr_pred_trans_d::equal (const value_type *ve1,
 
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
-static hash_table <expr_pred_trans_d> phi_translate_table;
+static hash_table<expr_pred_trans_d> *phi_translate_table;
 
 /* Add the tuple mapping from {expression E, basic block PRED} to
    the phi translation table and return whether it pre-existed.  */
@@ -557,7 +557,7 @@ phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
   tem.e = e;
   tem.pred = pred;
   tem.hashcode = hash;
-  slot = phi_translate_table.find_slot_with_hash (&tem, hash, INSERT);
+  slot = phi_translate_table->find_slot_with_hash (&tem, hash, INSERT);
   if (*slot)
     {
       *entry = *slot;
@@ -1783,7 +1783,7 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
       else
 	/* Remove failed translations again, they cause insert
 	   iteration to not pick up new opportunities reliably.  */
-	phi_translate_table.remove_elt_with_hash (slot, slot->hashcode);
+	phi_translate_table->remove_elt_with_hash (slot, slot->hashcode);
     }
 
   return phitrans;
@@ -4711,8 +4711,8 @@ init_pre (void)
   calculate_dominance_info (CDI_DOMINATORS);
 
   bitmap_obstack_initialize (&grand_bitmap_obstack);
-  phi_translate_table.create (5110);
-  expression_to_id.create (num_ssa_names * 3);
+  phi_translate_table = new hash_table<expr_pred_trans_d> (5110);
+  expression_to_id = new hash_table<pre_expr_d> (num_ssa_names * 3);
   bitmap_set_pool = create_alloc_pool ("Bitmap sets",
 				       sizeof (struct bitmap_set), 30);
   pre_expr_pool = create_alloc_pool ("pre_expr nodes",
@@ -4738,8 +4738,10 @@ fini_pre ()
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (bitmap_set_pool);
   free_alloc_pool (pre_expr_pool);
-  phi_translate_table.dispose ();
-  expression_to_id.dispose ();
+  delete phi_translate_table;
+  phi_translate_table = NULL;
+  delete expression_to_id;
+  expression_to_id = NULL;
   name_to_id.release ();
 
   free_aux_for_blocks ();

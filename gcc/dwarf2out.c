@@ -6745,21 +6745,21 @@ cu_hash_table_entry_hasher::remove (value_type *entry)
     }
 }
 
-typedef hash_table <cu_hash_table_entry_hasher> cu_hash_type;
+typedef hash_table<cu_hash_table_entry_hasher> cu_hash_type;
 
 /* Check whether we have already seen this CU and set up SYM_NUM
    accordingly.  */
 static int
-check_duplicate_cu (dw_die_ref cu, cu_hash_type htable, unsigned int *sym_num)
+check_duplicate_cu (dw_die_ref cu, cu_hash_type *htable, unsigned int *sym_num)
 {
   struct cu_hash_table_entry dummy;
   struct cu_hash_table_entry **slot, *entry, *last = &dummy;
 
   dummy.max_comdat_num = 0;
 
-  slot = htable.find_slot_with_hash (cu,
-				     htab_hash_string (cu->die_id.die_symbol),
-				     INSERT);
+  slot = htable->find_slot_with_hash (cu,
+				      htab_hash_string (cu->die_id.die_symbol),
+				      INSERT);
   entry = *slot;
 
   for (; entry; last = entry, entry = entry->next)
@@ -6785,14 +6785,14 @@ check_duplicate_cu (dw_die_ref cu, cu_hash_type htable, unsigned int *sym_num)
 
 /* Record SYM_NUM to record of CU in HTABLE.  */
 static void
-record_comdat_symbol_number (dw_die_ref cu, cu_hash_type htable,
+record_comdat_symbol_number (dw_die_ref cu, cu_hash_type *htable,
 			     unsigned int sym_num)
 {
   struct cu_hash_table_entry **slot, *entry;
 
-  slot = htable.find_slot_with_hash (cu,
-				     htab_hash_string (cu->die_id.die_symbol),
-				     NO_INSERT);
+  slot = htable->find_slot_with_hash (cu,
+				      htab_hash_string (cu->die_id.die_symbol),
+				      NO_INSERT);
   entry = *slot;
 
   entry->max_comdat_num = sym_num;
@@ -6808,7 +6808,6 @@ break_out_includes (dw_die_ref die)
   dw_die_ref c;
   dw_die_ref unit = NULL;
   limbo_die_node *node, **pnode;
-  cu_hash_type cu_hash_table;
 
   c = die->die_child;
   if (c) do {
@@ -6841,7 +6840,7 @@ break_out_includes (dw_die_ref die)
 #endif
 
   assign_symbol_names (die);
-  cu_hash_table.create (10);
+  cu_hash_type cu_hash_table (10);
   for (node = limbo_die_list, pnode = &limbo_die_list;
        node;
        node = node->next)
@@ -6849,7 +6848,7 @@ break_out_includes (dw_die_ref die)
       int is_dupl;
 
       compute_section_prefix (node->die);
-      is_dupl = check_duplicate_cu (node->die, cu_hash_table,
+      is_dupl = check_duplicate_cu (node->die, &cu_hash_table,
 			&comdat_symbol_number);
       assign_symbol_names (node->die);
       if (is_dupl)
@@ -6857,11 +6856,10 @@ break_out_includes (dw_die_ref die)
       else
 	{
 	  pnode = &node->next;
-	  record_comdat_symbol_number (node->die, cu_hash_table,
+	  record_comdat_symbol_number (node->die, &cu_hash_table,
 		comdat_symbol_number);
 	}
     }
-  cu_hash_table.dispose ();
 }
 
 /* Return non-zero if this DIE is a declaration.  */
@@ -7070,7 +7068,7 @@ decl_table_entry_hasher::equal (const value_type *entry1,
   return entry1->orig == entry2;
 }
 
-typedef hash_table <decl_table_entry_hasher> decl_hash_type;
+typedef hash_table<decl_table_entry_hasher> decl_hash_type;
 
 /* Copy DIE and its ancestors, up to, but not including, the compile unit
    or type unit entry, to a new tree.  Adds the new tree to UNIT and returns
@@ -7078,7 +7076,8 @@ typedef hash_table <decl_table_entry_hasher> decl_hash_type;
    to check if the ancestor has already been copied into UNIT.  */
 
 static dw_die_ref
-copy_ancestor_tree (dw_die_ref unit, dw_die_ref die, decl_hash_type decl_table)
+copy_ancestor_tree (dw_die_ref unit, dw_die_ref die,
+		    decl_hash_type *decl_table)
 {
   dw_die_ref parent = die->die_parent;
   dw_die_ref new_parent = unit;
@@ -7086,11 +7085,11 @@ copy_ancestor_tree (dw_die_ref unit, dw_die_ref die, decl_hash_type decl_table)
   decl_table_entry **slot = NULL;
   struct decl_table_entry *entry = NULL;
 
-  if (decl_table.is_created ())
+  if (decl_table)
     {
       /* Check if the entry has already been copied to UNIT.  */
-      slot = decl_table.find_slot_with_hash (die, htab_hash_pointer (die),
-					     INSERT);
+      slot = decl_table->find_slot_with_hash (die, htab_hash_pointer (die),
+					      INSERT);
       if (*slot != HTAB_EMPTY_ENTRY)
         {
           entry = *slot;
@@ -7116,7 +7115,7 @@ copy_ancestor_tree (dw_die_ref unit, dw_die_ref die, decl_hash_type decl_table)
   copy = clone_as_declaration (die);
   add_child_die (new_parent, copy);
 
-  if (decl_table.is_created ())
+  if (decl_table)
     {
       /* Record the pointer to the copy.  */
       entry->copy = copy;
@@ -7171,7 +7170,7 @@ copy_declaration_context (dw_die_ref unit, dw_die_ref die)
   if (decl->die_parent != NULL
       && !is_unit_die (decl->die_parent))
     {
-      new_decl = copy_ancestor_tree (unit, decl, decl_hash_type ());
+      new_decl = copy_ancestor_tree (unit, decl, NULL);
       if (new_decl != NULL)
         {
           remove_AT (new_decl, DW_AT_signature);
@@ -7396,7 +7395,7 @@ break_out_comdat_types (dw_die_ref die)
    Enter all the cloned children into the hash table decl_table.  */
 
 static dw_die_ref
-clone_tree_partial (dw_die_ref die, decl_hash_type decl_table)
+clone_tree_partial (dw_die_ref die, decl_hash_type *decl_table)
 {
   dw_die_ref c;
   dw_die_ref clone;
@@ -7408,8 +7407,8 @@ clone_tree_partial (dw_die_ref die, decl_hash_type decl_table)
   else
     clone = clone_die (die);
 
-  slot = decl_table.find_slot_with_hash (die,
-					 htab_hash_pointer (die), INSERT);
+  slot = decl_table->find_slot_with_hash (die,
+					  htab_hash_pointer (die), INSERT);
 
   /* Assert that DIE isn't in the hash table yet.  If it would be there
      before, the ancestors would be necessarily there as well, therefore
@@ -7433,7 +7432,7 @@ clone_tree_partial (dw_die_ref die, decl_hash_type decl_table)
    type_unit).  */
 
 static void
-copy_decls_walk (dw_die_ref unit, dw_die_ref die, decl_hash_type decl_table)
+copy_decls_walk (dw_die_ref unit, dw_die_ref die, decl_hash_type *decl_table)
 {
   dw_die_ref c;
   dw_attr_ref a;
@@ -7450,8 +7449,9 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, decl_hash_type decl_table)
           if (targ->die_mark != 0 || targ->comdat_type_p)
             continue;
 
-          slot = decl_table.find_slot_with_hash (targ, htab_hash_pointer (targ),
-						 INSERT);
+          slot = decl_table->find_slot_with_hash (targ,
+						  htab_hash_pointer (targ),
+						  INSERT);
 
           if (*slot != HTAB_EMPTY_ENTRY)
             {
@@ -7530,12 +7530,9 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, decl_hash_type decl_table)
 static void
 copy_decls_for_unworthy_types (dw_die_ref unit)
 {
-  decl_hash_type decl_table;
-
   mark_dies (unit);
-  decl_table.create (10);
-  copy_decls_walk (unit, unit, decl_table);
-  decl_table.dispose ();
+  decl_hash_type decl_table (10);
+  copy_decls_walk (unit, unit, &decl_table);
   unmark_dies (unit);
 }
 
@@ -7627,18 +7624,18 @@ external_ref_hasher::equal (const value_type *r1, const compare_type *r2)
   return r1->type == r2->type;
 }
 
-typedef hash_table <external_ref_hasher> external_ref_hash_type;
+typedef hash_table<external_ref_hasher> external_ref_hash_type;
 
 /* Return a pointer to the external_ref for references to DIE.  */
 
 static struct external_ref *
-lookup_external_ref (external_ref_hash_type map, dw_die_ref die)
+lookup_external_ref (external_ref_hash_type *map, dw_die_ref die)
 {
   struct external_ref ref, *ref_p;
   external_ref **slot;
 
   ref.type = die;
-  slot = map.find_slot (&ref, INSERT);
+  slot = map->find_slot (&ref, INSERT);
   if (*slot != HTAB_EMPTY_ENTRY)
     return *slot;
 
@@ -7654,7 +7651,7 @@ lookup_external_ref (external_ref_hash_type map, dw_die_ref die)
    references, remember how many we've seen.  */
 
 static void
-optimize_external_refs_1 (dw_die_ref die, external_ref_hash_type map)
+optimize_external_refs_1 (dw_die_ref die, external_ref_hash_type *map)
 {
   dw_die_ref c;
   dw_attr_ref a;
@@ -7725,13 +7722,12 @@ dwarf2_build_local_stub (external_ref **slot, dw_die_ref data)
    them which will be applied in build_abbrev_table.  This is useful because
    references to local DIEs are smaller.  */
 
-static external_ref_hash_type
+static external_ref_hash_type *
 optimize_external_refs (dw_die_ref die)
 {
-  external_ref_hash_type map;
-  map.create (10);
+  external_ref_hash_type *map = new external_ref_hash_type (10);
   optimize_external_refs_1 (die, map);
-  map.traverse <dw_die_ref, dwarf2_build_local_stub> (die);
+  map->traverse <dw_die_ref, dwarf2_build_local_stub> (die);
   return map;
 }
 
@@ -7741,7 +7737,7 @@ optimize_external_refs (dw_die_ref die)
    die are visited recursively.  */
 
 static void
-build_abbrev_table (dw_die_ref die, external_ref_hash_type extern_map)
+build_abbrev_table (dw_die_ref die, external_ref_hash_type *extern_map)
 {
   unsigned long abbrev_id;
   unsigned int n_alloc;
@@ -8950,7 +8946,6 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
 {
   const char *secname, *oldsym;
   char *tmp;
-  external_ref_hash_type extern_map;
 
   /* Unless we are outputting main CU, we may throw away empty ones.  */
   if (!output_if_empty && die->die_child == NULL)
@@ -8963,11 +8958,11 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
      this CU so we know which get local refs.  */
   mark_dies (die);
 
-  extern_map = optimize_external_refs (die);
+  external_ref_hash_type *extern_map = optimize_external_refs (die);
 
   build_abbrev_table (die, extern_map);
 
-  extern_map.dispose ();
+  delete extern_map;
 
   /* Initialize the beginning DIE offset - and calculate sizes/offsets.  */
   next_die_offset = DWARF_COMPILE_UNIT_HEADER_SIZE;
@@ -9142,16 +9137,16 @@ output_comdat_type_unit (comdat_type_node *node)
 #if defined (OBJECT_FORMAT_ELF)
   tree comdat_key;
 #endif
-  external_ref_hash_type extern_map;
 
   /* First mark all the DIEs in this CU so we know which get local refs.  */
   mark_dies (node->root_die);
 
-  extern_map = optimize_external_refs (node->root_die);
+  external_ref_hash_type *extern_map = optimize_external_refs (node->root_die);
 
   build_abbrev_table (node->root_die, extern_map);
 
-  extern_map.dispose ();
+  delete extern_map;
+  extern_map = NULL;
 
   /* Initialize the beginning DIE offset - and calculate sizes/offsets.  */
   next_die_offset = DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE;
@@ -21892,7 +21887,7 @@ macinfo_entry_hasher::equal (const value_type *entry1,
   return !strcmp (entry1->info, entry2->info);
 }
 
-typedef hash_table <macinfo_entry_hasher> macinfo_hash_type;
+typedef hash_table<macinfo_entry_hasher> macinfo_hash_type;
 
 /* Output a single .debug_macinfo entry.  */
 
@@ -21982,7 +21977,7 @@ output_macinfo_op (macinfo_entry *ref)
 
 static unsigned
 optimize_macinfo_range (unsigned int idx, vec<macinfo_entry, va_gc> *files,
-			macinfo_hash_type *macinfo_htab)
+			macinfo_hash_type **macinfo_htab)
 {
   macinfo_entry *first, *second, *cur, *inc;
   char linebuf[sizeof (HOST_WIDE_INT) * 3 + 1];
@@ -22069,10 +22064,10 @@ optimize_macinfo_range (unsigned int idx, vec<macinfo_entry, va_gc> *files,
   inc->code = DW_MACRO_GNU_transparent_include;
   inc->lineno = 0;
   inc->info = ggc_strdup (grp_name);
-  if (!macinfo_htab->is_created ())
-    macinfo_htab->create (10);
+  if (!*macinfo_htab)
+    *macinfo_htab = new macinfo_hash_type (10);
   /* Avoid emitting duplicates.  */
-  slot = macinfo_htab->find_slot (inc, INSERT);
+  slot = (*macinfo_htab)->find_slot (inc, INSERT);
   if (*slot != NULL)
     {
       inc->code = 0;
@@ -22092,7 +22087,7 @@ optimize_macinfo_range (unsigned int idx, vec<macinfo_entry, va_gc> *files,
   else
     {
       *slot = inc;
-      inc->lineno = macinfo_htab->elements ();
+      inc->lineno = (*macinfo_htab)->elements ();
       output_macinfo_op (inc);
     }
   return count;
@@ -22143,7 +22138,7 @@ output_macinfo (void)
   unsigned long length = vec_safe_length (macinfo_table);
   macinfo_entry *ref;
   vec<macinfo_entry, va_gc> *files = NULL;
-  macinfo_hash_type macinfo_htab;
+  macinfo_hash_type *macinfo_htab = NULL;
 
   if (! length)
     return;
@@ -22216,10 +22211,11 @@ output_macinfo (void)
       ref->code = 0;
     }
 
-  if (!macinfo_htab.is_created ())
+  if (!macinfo_htab)
     return;
 
-  macinfo_htab.dispose ();
+  delete macinfo_htab;
+  macinfo_htab = NULL;
 
   /* If any DW_MACRO_GNU_transparent_include were used, on those
      DW_MACRO_GNU_transparent_include entries terminate the
@@ -24081,14 +24077,14 @@ loc_list_hasher::equal (const value_type *a, const compare_type *b)
   return a == NULL && b == NULL;
 }
 
-typedef hash_table <loc_list_hasher> loc_list_hash_type;
+typedef hash_table<loc_list_hasher> loc_list_hash_type;
 
 
 /* Recursively optimize location lists referenced from DIE
    children and share them whenever possible.  */
 
 static void
-optimize_location_lists_1 (dw_die_ref die, loc_list_hash_type htab)
+optimize_location_lists_1 (dw_die_ref die, loc_list_hash_type *htab)
 {
   dw_die_ref c;
   dw_attr_ref a;
@@ -24102,7 +24098,7 @@ optimize_location_lists_1 (dw_die_ref die, loc_list_hash_type htab)
 	/* TODO: perform some optimizations here, before hashing
 	   it and storing into the hash table.  */
 	hash_loc_list (list);
-	slot = htab.find_slot_with_hash (list, list->hash, INSERT);
+	slot = htab->find_slot_with_hash (list, list->hash, INSERT);
 	if (*slot == NULL)
 	  *slot = list;
 	else
@@ -24151,10 +24147,8 @@ index_location_lists (dw_die_ref die)
 static void
 optimize_location_lists (dw_die_ref die)
 {
-  loc_list_hash_type htab;
-  htab.create (500);
-  optimize_location_lists_1 (die, htab);
-  htab.dispose ();
+  loc_list_hash_type htab (500);
+  optimize_location_lists_1 (die, &htab);
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -24165,7 +24159,6 @@ dwarf2out_finish (const char *filename)
 {
   limbo_die_node *node, *next_node;
   comdat_type_node *ctnode;
-  hash_table <comdat_type_hasher> comdat_type_table;
   unsigned int i;
   dw_die_ref main_comp_unit_die;
 
@@ -24434,7 +24427,7 @@ dwarf2out_finish (const char *filename)
   for (node = limbo_die_list; node; node = node->next)
     output_comp_unit (node->die, 0);
 
-  comdat_type_table.create (100);
+  hash_table<comdat_type_hasher> comdat_type_table (100);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     {
       comdat_type_node **slot = comdat_type_table.find_slot (ctnode, INSERT);
@@ -24455,7 +24448,6 @@ dwarf2out_finish (const char *filename)
       output_comdat_type_unit (ctnode);
       *slot = ctnode;
     }
-  comdat_type_table.dispose ();
 
   /* The AT_pubnames attribute needs to go in all skeleton dies, including
      both the main_cu and all skeleton TUs.  Making this call unconditional

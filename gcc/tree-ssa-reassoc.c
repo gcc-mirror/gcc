@@ -1405,7 +1405,6 @@ undistribute_ops_list (enum tree_code opcode,
   unsigned nr_candidates, nr_candidates2;
   sbitmap_iterator sbi0;
   vec<operand_entry_t> *subops;
-  hash_table <oecount_hasher> ctable;
   bool changed = false;
   int next_oecount_id = 0;
 
@@ -1453,7 +1452,9 @@ undistribute_ops_list (enum tree_code opcode,
 
   /* Build linearized sub-operand lists and the counting table.  */
   cvec.create (0);
-  ctable.create (15);
+
+  hash_table<oecount_hasher> ctable (15);
+
   /* ??? Macro arguments cannot have multi-argument template types in
      them.  This typedef is needed to workaround that limitation.  */
   typedef vec<operand_entry_t> vec_operand_entry_t_heap;
@@ -1492,7 +1493,6 @@ undistribute_ops_list (enum tree_code opcode,
 	    }
 	}
     }
-  ctable.dispose ();
 
   /* Sort the counting table.  */
   cvec.qsort (oecount_cmp);

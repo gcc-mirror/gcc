@@ -72,7 +72,7 @@ freeing_string_slot_hasher::remove (value_type *v)
 }
 
 /* The table to hold the file names.  */
-static hash_table <freeing_string_slot_hasher> file_name_hash_table;
+static hash_table<freeing_string_slot_hasher> *file_name_hash_table;
 
 
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
@@ -123,7 +123,7 @@ canon_file_name (const char *string)
   s_slot.s = string;
   s_slot.len = len;
 
-  slot = file_name_hash_table.find_slot (&s_slot, INSERT);
+  slot = file_name_hash_table->find_slot (&s_slot, INSERT);
   if (*slot == NULL)
     {
       char *saved_string;
@@ -1363,7 +1363,8 @@ void
 lto_reader_init (void)
 {
   lto_streamer_init ();
-  file_name_hash_table.create (37);
+  file_name_hash_table
+    = new hash_table<freeing_string_slot_hasher> (37);
 }
 
 

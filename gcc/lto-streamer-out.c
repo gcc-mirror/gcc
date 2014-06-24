@@ -87,7 +87,7 @@ create_output_block (enum lto_section_type section_type)
 
   clear_line_info (ob);
 
-  ob->string_hash_table.create (37);
+  ob->string_hash_table = new hash_table<string_slot_hasher> (37);
   gcc_obstack_init (&ob->obstack);
 
   return ob;
@@ -101,7 +101,8 @@ destroy_output_block (struct output_block *ob)
 {
   enum lto_section_type section_type = ob->section_type;
 
-  ob->string_hash_table.dispose ();
+  delete ob->string_hash_table;
+  ob->string_hash_table = NULL;
 
   free (ob->main_stream);
   free (ob->string_stream);

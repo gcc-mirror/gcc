@@ -16018,14 +16018,14 @@ mips_lo_sum_offset_hasher::equal (const value_type *entry,
   return rtx_equal_p (entry->base, value);
 }
 
-typedef hash_table <mips_lo_sum_offset_hasher> mips_offset_table;
+typedef hash_table<mips_lo_sum_offset_hasher> mips_offset_table;
 
 /* Look up symbolic constant X in HTAB, which is a hash table of
    mips_lo_sum_offsets.  If OPTION is NO_INSERT, return true if X can be
    paired with a recorded LO_SUM, otherwise record X in the table.  */
 
 static bool
-mips_lo_sum_offset_lookup (mips_offset_table htab, rtx x,
+mips_lo_sum_offset_lookup (mips_offset_table *htab, rtx x,
 			   enum insert_option option)
 {
   rtx base, offset;
@@ -16038,7 +16038,7 @@ mips_lo_sum_offset_lookup (mips_offset_table htab, rtx x,
     base = UNSPEC_ADDRESS (base);
 
   /* Look up the base in the hash table.  */
-  slot = htab.find_slot_with_hash (base, mips_hash_base (base), option);
+  slot = htab->find_slot_with_hash (base, mips_hash_base (base), option);
   if (slot == NULL)
     return false;
 
@@ -16068,7 +16068,7 @@ static int
 mips_record_lo_sum (rtx *loc, void *data)
 {
   if (GET_CODE (*loc) == LO_SUM)
-    mips_lo_sum_offset_lookup (*(mips_offset_table*) data,
+    mips_lo_sum_offset_lookup ((mips_offset_table*) data,
 			       XEXP (*loc, 1), INSERT);
   return 0;
 }
@@ -16078,7 +16078,7 @@ mips_record_lo_sum (rtx *loc, void *data)
    LO_SUMs in the current function.  */
 
 static bool
-mips_orphaned_high_part_p (mips_offset_table htab, rtx insn)
+mips_orphaned_high_part_p (mips_offset_table *htab, rtx insn)
 {
   enum mips_symbol_type type;
   rtx x, set;
@@ -16186,7 +16186,6 @@ mips_reorg_process_insns (void)
 {
   rtx insn, last_insn, subinsn, next_insn, lo_reg, delayed_reg;
   int hilo_delay;
-  mips_offset_table htab;
 
   /* Force all instructions to be split into their final form.  */
   split_all_insns_noflow ();
@@ -16227,7 +16226,7 @@ mips_reorg_process_insns (void)
   if (TARGET_FIX_VR4130 && !ISA_HAS_MACCHI)
     cfun->machine->all_noreorder_p = false;
 
-  htab.create (37);
+  mips_offset_table htab (37);
 
   /* Make a first pass over the instructions, recording all the LO_SUMs.  */
   for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
@@ -16272,7 +16271,7 @@ mips_reorg_process_insns (void)
 	      FOR_EACH_SUBINSN (subinsn, insn)
 		if (INSN_P (subinsn))
 		  {
-		    if (mips_orphaned_high_part_p (htab, subinsn))
+		    if (mips_orphaned_high_part_p (&htab, subinsn))
 		      {
 			PATTERN (subinsn) = gen_nop ();
 			INSN_CODE (subinsn) = CODE_FOR_nop;
@@ -16286,7 +16285,7 @@ mips_reorg_process_insns (void)
 	    {
 	      /* INSN is a single instruction.  Delete it if it's an
 		 orphaned high-part relocation.  */
-	      if (mips_orphaned_high_part_p (htab, insn))
+	      if (mips_orphaned_high_part_p (&htab, insn))
 		delete_insn (insn);
 	      /* Also delete cache barriers if the last instruction
 		 was an annulled branch.  INSN will not be speculatively
@@ -16305,8 +16304,6 @@ mips_reorg_process_insns (void)
 	    }
 	}
     }
-
-  htab.dispose ();
 }
 
 /* Return true if the function has a long branch instruction.  */

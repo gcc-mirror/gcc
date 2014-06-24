@@ -1068,7 +1068,7 @@ vect_peeling_hash_insert (loop_vec_info loop_vinfo, struct data_reference *dr,
   bool supportable_dr_alignment = vect_supportable_dr_alignment (dr, true);
 
   elem.npeel = npeel;
-  slot = LOOP_VINFO_PEELING_HTAB (loop_vinfo).find (&elem);
+  slot = LOOP_VINFO_PEELING_HTAB (loop_vinfo)->find (&elem);
   if (slot)
     slot->count++;
   else
@@ -1077,7 +1077,8 @@ vect_peeling_hash_insert (loop_vec_info loop_vinfo, struct data_reference *dr,
       slot->npeel = npeel;
       slot->dr = dr;
       slot->count = 1;
-      new_slot = LOOP_VINFO_PEELING_HTAB (loop_vinfo).find_slot (slot, INSERT);
+      new_slot
+       	= LOOP_VINFO_PEELING_HTAB (loop_vinfo)->find_slot (slot, INSERT);
       *new_slot = slot;
     }
 
@@ -1197,15 +1198,15 @@ vect_peeling_hash_choose_best_peeling (loop_vec_info loop_vinfo,
        res.inside_cost = INT_MAX;
        res.outside_cost = INT_MAX;
        LOOP_VINFO_PEELING_HTAB (loop_vinfo)
-           .traverse <_vect_peel_extended_info *,
-                      vect_peeling_hash_get_lowest_cost> (&res);
+           ->traverse <_vect_peel_extended_info *,
+                       vect_peeling_hash_get_lowest_cost> (&res);
      }
    else
      {
        res.peel_info.count = 0;
        LOOP_VINFO_PEELING_HTAB (loop_vinfo)
-           .traverse <_vect_peel_extended_info *,
-                      vect_peeling_hash_get_most_frequent> (&res);
+           ->traverse <_vect_peel_extended_info *,
+                       vect_peeling_hash_get_most_frequent> (&res);
      }
 
    *npeel = res.peel_info.npeel;
@@ -1397,8 +1398,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 						    size_zero_node) < 0;
 
               /* Save info about DR in the hash table.  */
-              if (!LOOP_VINFO_PEELING_HTAB (loop_vinfo).is_created ())
-                LOOP_VINFO_PEELING_HTAB (loop_vinfo).create (1);
+              if (!LOOP_VINFO_PEELING_HTAB (loop_vinfo))
+                LOOP_VINFO_PEELING_HTAB (loop_vinfo)
+		  = new hash_table<peel_info_hasher> (1);
 
               vectype = STMT_VINFO_VECTYPE (stmt_info);
               nelements = TYPE_VECTOR_SUBPARTS (vectype);

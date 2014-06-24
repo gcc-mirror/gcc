@@ -8586,7 +8586,7 @@ bundle_state_hasher::equal (const value_type *state1,
 /* Hash table of the bundle states.  The key is dfa_state and insn_num
    of the bundle states.  */
 
-static hash_table <bundle_state_hasher> bundle_state_table;
+static hash_table<bundle_state_hasher> *bundle_state_table;
 
 /* The function inserts the BUNDLE_STATE into the hash table.  The
    function returns nonzero if the bundle has been inserted into the
@@ -8597,7 +8597,7 @@ insert_bundle_state (struct bundle_state *bundle_state)
 {
   struct bundle_state **entry_ptr;
 
-  entry_ptr = bundle_state_table.find_slot (bundle_state, INSERT);
+  entry_ptr = bundle_state_table->find_slot (bundle_state, INSERT);
   if (*entry_ptr == NULL)
     {
       bundle_state->next = index_to_bundle_states [bundle_state->insn_num];
@@ -8634,7 +8634,7 @@ insert_bundle_state (struct bundle_state *bundle_state)
 static void
 initiate_bundle_state_table (void)
 {
-  bundle_state_table.create (50);
+  bundle_state_table = new hash_table<bundle_state_hasher> (50);
 }
 
 /* Finish work with the hash table.  */
@@ -8642,7 +8642,8 @@ initiate_bundle_state_table (void)
 static void
 finish_bundle_state_table (void)
 {
-  bundle_state_table.dispose ();
+  delete bundle_state_table;
+  bundle_state_table = NULL;
 }
 
 
