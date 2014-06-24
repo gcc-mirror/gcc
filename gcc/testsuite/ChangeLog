@@ -1,3 +1,8 @@
+2014-06-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR tree-optimization/61554
+	* g++.dg/torture/pr61554.C: New testcase.
+
 2014-06-23  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/asan/strlen-overflow-1.c: Change match patterns.
