@@ -1,3 +1,15 @@
+2014-06-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR tree-optimization/61554
+	* tree-ssa-propagate.c: Include "bitmap.h".
+	(substitute_and_fold_dom_walker): Add 'bitmap need_eh_cleanup' member,
+	properly update constructor/destructor.
+	(substitute_and_fold_dom_walker::before_dom_children):
+	Remove call to gimple_purge_dead_eh_edges, add bb->index to
+	need_eh_cleaup instead.
+	(substitute_and_fold): Call gimple_purge_all_dead_eh_edges on
+	need_eh_cleanup.
+
 2014-06-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varpool.c (dump_varpool_node): Dump used_by_single_function.
