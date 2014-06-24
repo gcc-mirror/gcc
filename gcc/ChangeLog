@@ -1,3 +1,11 @@
+2014-06-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/57742
+	* tree-ssa-strlen.c (get_string_length): Ignore malloc.
+	(handle_builtin_malloc, handle_builtin_memset): New functions.
+	(strlen_optimize_stmt): Call them.
+	* passes.def: Move strlen after loop+dom but before vrp.
+
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/61570

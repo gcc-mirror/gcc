@@ -483,6 +483,9 @@ get_string_length (strinfo si)
 	  si->length = fold_build2_loc (loc, MINUS_EXPR, size_type_node,
 					lhs, si->length);
 	  break;
+	case BUILT_IN_MALLOC:
+	  break;
+	/* BUILT_IN_CALLOC always has si->length set.  */
 	default:
 	  gcc_unreachable ();
 	  break;
@@ -508,6 +511,7 @@ maybe_invalidate (gimple stmt)
 	if (!si->dont_invalidate)
 	  {
 	    ao_ref r;
+	    /* Do not use si->length.  */
 	    ao_ref_init_from_ptr_and_size (&r, si->ptr, NULL_TREE);
 	    if (stmt_may_clobber_ref_p_1 (stmt, &r))
 	      {
@@ -1595,6 +1599,79 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
     fprintf (dump_file, "not possible.\n");
 }
 
+/* Handle a call to malloc or calloc.  */
+
+static void
+handle_builtin_malloc (enum built_in_function bcode, gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree lhs = gimple_call_lhs (stmt);
+  gcc_assert (get_stridx (lhs) == 0);
+  int idx = new_stridx (lhs);
+  tree length = NULL_TREE;
+  if (bcode == BUILT_IN_CALLOC)
+    length = build_int_cst (size_type_node, 0);
+  strinfo si = new_strinfo (lhs, idx, length);
+  if (bcode == BUILT_IN_CALLOC)
+    si->endptr = lhs;
+  set_strinfo (idx, si);
+  si->writable = true;
+  si->stmt = stmt;
+  si->dont_invalidate = true;
+}
+
+/* Handle a call to memset.
+   After a call to calloc, memset(,0,) is unnecessary.
+   memset(malloc(n),0,n) is calloc(n,1).  */
+
+static bool
+handle_builtin_memset (gimple_stmt_iterator *gsi)
+{
+  gimple stmt2 = gsi_stmt (*gsi);
+  if (!integer_zerop (gimple_call_arg (stmt2, 1)))
+    return true;
+  tree ptr = gimple_call_arg (stmt2, 0);
+  int idx1 = get_stridx (ptr);
+  if (idx1 <= 0)
+    return true;
+  strinfo si1 = get_strinfo (idx1);
+  if (!si1)
+    return true;
+  gimple stmt1 = si1->stmt;
+  if (!stmt1 || !is_gimple_call (stmt1))
+    return true;
+  tree callee1 = gimple_call_fndecl (stmt1);
+  if (!gimple_call_builtin_p (stmt1, BUILT_IN_NORMAL))
+    return true;
+  enum built_in_function code1 = DECL_FUNCTION_CODE (callee1);
+  tree size = gimple_call_arg (stmt2, 2);
+  if (code1 == BUILT_IN_CALLOC)
+    /* Not touching stmt1 */ ;
+  else if (code1 == BUILT_IN_MALLOC
+	   && operand_equal_p (gimple_call_arg (stmt1, 0), size, 0))
+    {
+      gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt1);
+      update_gimple_call (&gsi1, builtin_decl_implicit (BUILT_IN_CALLOC), 2,
+			  size, build_one_cst (size_type_node));
+    }
+  else
+    return true;
+  tree lhs = gimple_call_lhs (stmt2);
+  unlink_stmt_vdef (stmt2);
+  if (lhs)
+    {
+      gimple assign = gimple_build_assign (lhs, ptr);
+      gsi_replace (gsi, assign, false);
+    }
+  else
+    {
+      gsi_remove (gsi, true);
+      release_defs (stmt2);
+    }
+
+  return false;
+}
+
 /* Handle a POINTER_PLUS_EXPR statement.
    For p = "abcd" + 2; compute associated length, or if
    p = q + off is pointing to a '\0' character of a string, call
@@ -1831,6 +1908,14 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 	  case BUILT_IN_STRCAT:
 	  case BUILT_IN_STRCAT_CHK:
 	    handle_builtin_strcat (DECL_FUNCTION_CODE (callee), gsi);
+	    break;
+	  case BUILT_IN_MALLOC:
+	  case BUILT_IN_CALLOC:
+	    handle_builtin_malloc (DECL_FUNCTION_CODE (callee), gsi);
+	    break;
+	  case BUILT_IN_MEMSET:
+	    if (!handle_builtin_memset (gsi))
+	      return false;
 	    break;
 	  default:
 	    break;
