@@ -1,3 +1,10 @@
+2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (mentions_vars_p_decl_non_common): Move DECL_VINDEX check to ..
+	(mentions_vars_p_function): ... here.
+	(compare_tree_sccs_1): Update VINDEX checks.
+	(lto_fixup_prevailing_decls): Likewise.
+
 2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto.c (canonical_type_hash_cache): Use hash_map instead of

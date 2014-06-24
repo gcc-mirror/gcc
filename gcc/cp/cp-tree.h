@@ -2048,6 +2048,8 @@ struct GTY(()) lang_decl_fn {
 struct GTY(()) lang_decl_ns {
   struct lang_decl_base base;
   cp_binding_level *level;
+  tree ns_using;
+  tree ns_users;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -2580,16 +2582,16 @@ struct GTY(()) lang_decl {
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
    that is the common ancestor.  */
-#define DECL_NAMESPACE_USING(NODE) DECL_VINDEX (NAMESPACE_DECL_CHECK (NODE))
+#define DECL_NAMESPACE_USING(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_using)
 
 /* In a NAMESPACE_DECL, the DECL_INITIAL is used to record all users
    of a namespace, to record the transitive closure of using namespace.  */
-#define DECL_NAMESPACE_USERS(NODE) DECL_INITIAL (NAMESPACE_DECL_CHECK (NODE))
+#define DECL_NAMESPACE_USERS(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_users)
 
 /* In a NAMESPACE_DECL, the list of namespaces which have associated
    themselves with this one.  */
 #define DECL_NAMESPACE_ASSOCIATIONS(NODE) \
-  (NAMESPACE_DECL_CHECK (NODE)->decl_non_common.saved_tree)
+  DECL_INITIAL (NAMESPACE_DECL_CHECK (NODE))
 
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */
@@ -3784,7 +3786,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
    This list is not used for other templates.  */
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) \
-  DECL_VINDEX (TEMPLATE_DECL_CHECK (NODE))
+  DECL_SIZE_UNIT (TEMPLATE_DECL_CHECK (NODE))
 
 /* For a class template, this list contains the partial
    specializations of this template.  (Full specializations are not
