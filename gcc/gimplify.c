@@ -6810,6 +6810,31 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	      bool lastprivate
 		= (!has_decl_expr
 		   || !bitmap_bit_p (has_decl_expr, DECL_UID (decl)));
+	      if (lastprivate
+		  && gimplify_omp_ctxp->outer_context
+		  && gimplify_omp_ctxp->outer_context->region_type
+		     == ORT_WORKSHARE
+		  && gimplify_omp_ctxp->outer_context->combined_loop
+		  && !gimplify_omp_ctxp->outer_context->distribute)
+		{
+		  struct gimplify_omp_ctx *outer
+		    = gimplify_omp_ctxp->outer_context;
+		  n = splay_tree_lookup (outer->variables,
+					 (splay_tree_key) decl);
+		  if (n != NULL
+		      && (n->value & GOVD_DATA_SHARE_CLASS) == GOVD_LOCAL)
+		    lastprivate = false;
+		  else if (omp_check_private (outer, decl, false))
+		    error ("lastprivate variable %qE is private in outer "
+			   "context", DECL_NAME (decl));
+		  else
+		    {
+		      omp_add_variable (outer, decl,
+					GOVD_LASTPRIVATE | GOVD_SEEN);
+		      if (outer->outer_context)
+			omp_notice_variable (outer->outer_context, decl, true);
+		    }
+		}
 	      c = build_omp_clause (input_location,
 				    lastprivate ? OMP_CLAUSE_LASTPRIVATE
 						: OMP_CLAUSE_PRIVATE);
@@ -6829,10 +6854,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
       /* If DECL is not a gimple register, create a temporary variable to act
 	 as an iteration counter.  This is valid, since DECL cannot be
-	 modified in the body of the loop.  */
+	 modified in the body of the loop.  Similarly for any iteration vars
+	 in simd with collapse > 1 where the iterator vars must be
+	 lastprivate.  */
       if (orig_for_stmt != for_stmt)
 	var = decl;
-      else if (!is_gimple_reg (decl))
+      else if (!is_gimple_reg (decl)
+	       || (simd && TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1))
 	{
 	  var = create_tmp_var (TREE_TYPE (decl), get_name (decl));
 	  TREE_OPERAND (t, 0) = var;

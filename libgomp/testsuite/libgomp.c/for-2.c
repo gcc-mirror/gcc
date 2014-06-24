@@ -21,11 +21,14 @@ extern void abort (void);
 #undef F
 #undef G
 
+#undef SC
+#define SC static
 #define F for simd
 #define G f_simd
 #include "for-1.h"
 #undef F
 #undef G
+#undef SC
 
 int
 main ()

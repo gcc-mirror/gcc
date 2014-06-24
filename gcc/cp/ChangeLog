@@ -1,3 +1,9 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_for_loop): For
+	#pragma omp parallel for simd move lastprivate clause from parallel
+	to for rather than simd.
+
 2014-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 577

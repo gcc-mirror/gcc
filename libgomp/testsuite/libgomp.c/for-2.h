@@ -8,6 +8,9 @@ noreturn (void)
   for (;;);
 }
 #endif
+#ifndef SC
+#define SC
+#endif
 
 __attribute__((noinline, noclone)) void
 N(f0) (void)
@@ -57,7 +60,7 @@ __attribute__((noinline, noclone)) void
 N(f5) (int n11, int n12, int n21, int n22, int n31, int n32,
        int s1, int s2, int s3)
 {
-  int v1, v2, v3;
+  SC int v1, v2, v3;
 #pragma omp F S collapse(3)
   for (v1 = n11; v1 < n12; v1 += s1)
     for (v2 = n21; v2 < n22; v2 += s2)
@@ -69,8 +72,8 @@ __attribute__((noinline, noclone)) void
 N(f6) (int n11, int n12, int n21, int n22, long long n31, long long n32,
        int s1, int s2, long long int s3)
 {
-  int v1, v2;
-  long long v3;
+  SC int v1, v2;
+  SC long long v3;
 #pragma omp F S collapse(3)
   for (v1 = n11; v1 > n12; v1 += s1)
     for (v2 = n21; v2 > n22; v2 += s2)
@@ -81,8 +84,8 @@ N(f6) (int n11, int n12, int n21, int n22, long long n31, long long n32,
 __attribute__((noinline, noclone)) void
 N(f7) (void)
 {
-  unsigned int v1, v3;
-  unsigned long long v2;
+  SC unsigned int v1, v3;
+  SC unsigned long long v2;
 #pragma omp F S collapse(3)
   for (v1 = 0; v1 < 20; v1 += 2)
     for (v2 = __LONG_LONG_MAX__ + 16ULL;
@@ -94,7 +97,7 @@ N(f7) (void)
 __attribute__((noinline, noclone)) void
 N(f8) (void)
 {
-  long long v1, v2, v3;
+  SC long long v1, v2, v3;
 #pragma omp F S collapse(3)
   for (v1 = 0; v1 < 20; v1 += 2)
     for (v2 = 30; v2 < 20; v2++)
@@ -118,7 +121,7 @@ N(f9) (void)
 __attribute__((noinline, noclone)) void
 N(f10) (void)
 {
-  int i;
+  SC int i;
 #pragma omp F S collapse(3)
   for (i = 0; i < 10; i++)
     for (int j = 10; j < 8; j++)
@@ -146,7 +149,7 @@ N(f11) (int n)
 __attribute__((noinline, noclone)) void
 N(f12) (int n)
 {
-  int i;
+  SC int i;
 #pragma omp F S collapse(3)
   for (i = 0; i < 10; i++)
     for (int j = n; j < 8; j++)
@@ -170,7 +173,7 @@ N(f13) (void)
 __attribute__((noinline, noclone)) void
 N(f14) (void)
 {
-  float *i;
+  SC float *i;
 #pragma omp F S collapse(3)
   for (i = &b[0][0][0]; i < &b[0][0][10]; i++)
     for (float *j = &b[0][15][0]; j > &b[0][0][0]; j -= 10)
