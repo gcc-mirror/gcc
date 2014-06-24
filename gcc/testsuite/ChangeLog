@@ -1,3 +1,8 @@
+2014-06-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/localalias-2.c: Guard by require-alias.
+	* gcc.dg/globalalias-2.c: Likewise.
+
 2014-06-23  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.target/i386/indjmp-1.c: New test.
