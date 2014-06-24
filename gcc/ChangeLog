@@ -1,3 +1,9 @@
+2014-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61572
+	* tree-ssa-sink.c (statement_sink_location): Do not sink
+	loads from hard registers.
+
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_omp_for): For #pragma omp for simd iterator

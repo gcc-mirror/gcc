@@ -1,3 +1,8 @@
+2014-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61572
+	* gcc.target/i386/pr61572.c: New testcase.
+
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/gomp/udr2.f90 (f7, f9): Add !$omp parallel with
