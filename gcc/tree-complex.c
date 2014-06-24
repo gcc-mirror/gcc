@@ -83,10 +83,9 @@ static vec<tree> complex_ssa_name_components;
 static tree
 cvc_lookup (unsigned int uid)
 {
-  struct int_tree_map *h, in;
+  struct int_tree_map in;
   in.uid = uid;
-  h = complex_variable_components->find_with_hash (&in, uid);
-  return h ? h->to : NULL;
+  return complex_variable_components->find_with_hash (in, uid).to;
 }
 
 /* Insert the pair UID, TO into the complex_variable_components hashtable.  */
@@ -94,14 +93,13 @@ cvc_lookup (unsigned int uid)
 static void
 cvc_insert (unsigned int uid, tree to)
 {
-  struct int_tree_map *h;
-  int_tree_map **loc;
+  int_tree_map h;
+  int_tree_map *loc;
 
-  h = XNEW (struct int_tree_map);
-  h->uid = uid;
-  h->to = to;
+  h.uid = uid;
   loc = complex_variable_components->find_slot_with_hash (h, uid, INSERT);
-  *loc = h;
+  loc->uid = uid;
+  loc->to = to;
 }
 
 /* Return true if T is not a zero constant.  In the case of real values,

@@ -102,22 +102,13 @@ static tree TB_history_prev (void);
 void browse_tree (tree);
 
 /* Hashtable helpers.  */
-struct tree_upper_hasher : typed_noop_remove <tree_node>
+struct tree_upper_hasher : pointer_hash<tree_node>
 {
-  typedef tree_node value_type;
-  typedef tree_node compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline bool equal (const value_type &, const compare_type &);
 };
 
-inline hashval_t
-tree_upper_hasher::hash (const value_type *v)
-{
-  return pointer_hash <value_type>::hash (v);
-}
-
 inline bool
-tree_upper_hasher::equal (const value_type *parent, const compare_type *node)
+tree_upper_hasher::equal (const value_type &parent, const compare_type &node)
 {
   if (parent == NULL || node == NULL)
     return 0;

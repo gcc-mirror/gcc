@@ -550,14 +550,14 @@ vectorize_loops (void)
       for (hash_table<simd_array_to_simduid>::iterator iter
 	   = simd_array_to_simduid_htab->begin ();
 	   iter != simd_array_to_simduid_htab->end (); ++iter)
-	if ((*iter).simduid != -1U)
+	if ((*iter)->simduid != -1U)
 	  {
-	    tree decl = (*iter).decl;
+	    tree decl = (*iter)->decl;
 	    int vf = 1;
 	    if (simduid_to_vf_htab)
 	      {
 		simduid_to_vf *p = NULL, data;
-		data.simduid = (*iter).simduid;
+		data.simduid = (*iter)->simduid;
 		p = simduid_to_vf_htab->find (&data);
 		if (p)
 		  vf = p->vf;

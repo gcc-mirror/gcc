@@ -158,21 +158,22 @@ static void free_expr_hash_elt (void *);
 
 struct expr_elt_hasher
 {
-  typedef expr_hash_elt value_type;
-  typedef expr_hash_elt compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef expr_hash_elt *value_type;
+  typedef expr_hash_elt *compare_type;
+  typedef int store_values_directly;
+  static inline hashval_t hash (const value_type &);
+  static inline bool equal (const value_type &, const compare_type &);
+  static inline void remove (value_type &);
 };
 
 inline hashval_t
-expr_elt_hasher::hash (const value_type *p)
+expr_elt_hasher::hash (const value_type &p)
 {
   return p->hash;
 }
 
 inline bool
-expr_elt_hasher::equal (const value_type *p1, const compare_type *p2)
+expr_elt_hasher::equal (const value_type &p1, const compare_type &p2)
 {
   gimple stmt1 = p1->stmt;
   const struct hashable_expr *expr1 = &p1->expr;
@@ -211,7 +212,7 @@ expr_elt_hasher::equal (const value_type *p1, const compare_type *p2)
 /* Delete an expr_hash_elt and reclaim its storage.  */
 
 inline void
-expr_elt_hasher::remove (value_type *element)
+expr_elt_hasher::remove (value_type &element)
 {
   free_expr_hash_elt (element);
 }
