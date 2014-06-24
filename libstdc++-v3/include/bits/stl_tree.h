@@ -58,6 +58,8 @@
 #ifndef _STL_TREE_H
 #define _STL_TREE_H 1
 
+#pragma GCC system_header
+
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_function.h>

@@ -1064,7 +1064,6 @@ _GLIBCXX_END_NAMESPACE_LDBL
     do_get_weekday(iter_type __beg, iter_type __end, ios_base& __io,
 		   ios_base::iostate& __err, tm* __tm) const
     {
-      typedef char_traits<_CharT>		__traits_type;
       const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
@@ -1092,7 +1091,6 @@ _GLIBCXX_END_NAMESPACE_LDBL
     do_get_monthname(iter_type __beg, iter_type __end,
                      ios_base& __io, ios_base::iostate& __err, tm* __tm) const
     {
-      typedef char_traits<_CharT>		__traits_type;
       const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);

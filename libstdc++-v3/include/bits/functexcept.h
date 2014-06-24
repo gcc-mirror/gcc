@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   void
   __throw_out_of_range_fmt(const char*, ...) __attribute__((__noreturn__))
-    __attribute__((__format__(__printf__, 1, 2)));
+    __attribute__((__format__(__gnu_printf__, 1, 2)));
 
   void
   __throw_runtime_error(const char*) __attribute__((__noreturn__));
