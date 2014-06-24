@@ -1,5 +1,22 @@
 2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* hash-table.h: Add a template arg to choose between storing values
+	and storing pointers to values, and then provide partial
+	specializations for both.
+	* tree-browser.c (tree_upper_hasher): Provide the type the hash table
+	should store, not the type values should point to.
+	* tree-into-ssa.c (var_info_hasher): Likewise.
+	* tree-ssa-dom.c (expr_elt_hasher): Likewise.
+	* tree-complex.c: Adjust.
+	* tree-hasher.h (int_tree_hasher): store int_tree_map in the hash
+	table instead of int_tree_map *.
+	* tree-parloops.c: Adjust.
+	* tree-ssa-reassoc.c (ocount_hasher): Don't lie to hash_map about what
+	type is being stored.
+	* tree-vectorizer.c: Adjust.
+
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* hash-table.h: Remove a layer of indirection from hash_table so that
 	it contains the hash table's data instead of a pointer to the data.
 	* alloc-pool.c, asan.c, attribs.c, bitmap.c, cfg.c,

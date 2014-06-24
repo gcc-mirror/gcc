@@ -489,8 +489,6 @@ take_address_of (tree obj, tree type, edge entry,
 		 int_tree_htab_type *decl_address, gimple_stmt_iterator *gsi)
 {
   int uid;
-  int_tree_map **dslot;
-  struct int_tree_map ielt, *nielt;
   tree *var_p, name, addr;
   gimple stmt;
   gimple_seq stmts;
@@ -511,9 +509,10 @@ take_address_of (tree obj, tree type, edge entry,
      in the address and share it for all accesses and addresses based
      on it.  */
   uid = DECL_UID (TREE_OPERAND (TREE_OPERAND (*var_p, 0), 0));
-  ielt.uid = uid;
-  dslot = decl_address->find_slot_with_hash (&ielt, uid, INSERT);
-  if (!*dslot)
+  int_tree_map elt;
+  elt.uid = uid;
+  int_tree_map *slot = decl_address->find_slot (elt, INSERT);
+  if (!slot->to)
     {
       if (gsi == NULL)
 	return NULL;
@@ -527,13 +526,11 @@ take_address_of (tree obj, tree type, edge entry,
       stmt = gimple_build_assign (name, addr);
       gsi_insert_on_edge_immediate (entry, stmt);
 
-      nielt = XNEW (struct int_tree_map);
-      nielt->uid = uid;
-      nielt->to = name;
-      *dslot = nielt;
+      slot->uid = uid;
+      slot->to = name;
     }
   else
-    name = (*dslot)->to;
+    name = slot->to;
 
   /* Express the address in terms of the canonical SSA name.  */
   TREE_OPERAND (*var_p, 0) = name;
@@ -822,10 +819,10 @@ separate_decls_in_region_name (tree name, name_to_copy_table_type *name_copies,
 {
   tree copy, var, var_copy;
   unsigned idx, uid, nuid;
-  struct int_tree_map ielt, *nielt;
+  struct int_tree_map ielt;
   struct name_to_copy_elt elt, *nelt;
   name_to_copy_elt **slot;
-  int_tree_map **dslot;
+  int_tree_map *dslot;
 
   if (TREE_CODE (name) != SSA_NAME)
     return name;
@@ -858,29 +855,25 @@ separate_decls_in_region_name (tree name, name_to_copy_table_type *name_copies,
 
   uid = DECL_UID (var);
   ielt.uid = uid;
-  dslot = decl_copies->find_slot_with_hash (&ielt, uid, INSERT);
-  if (!*dslot)
+  dslot = decl_copies->find_slot_with_hash (ielt, uid, INSERT);
+  if (!dslot->to)
     {
       var_copy = create_tmp_var (TREE_TYPE (var), get_name (var));
       DECL_GIMPLE_REG_P (var_copy) = DECL_GIMPLE_REG_P (var);
-      nielt = XNEW (struct int_tree_map);
-      nielt->uid = uid;
-      nielt->to = var_copy;
-      *dslot = nielt;
+      dslot->uid = uid;
+      dslot->to = var_copy;
 
       /* Ensure that when we meet this decl next time, we won't duplicate
          it again.  */
       nuid = DECL_UID (var_copy);
       ielt.uid = nuid;
-      dslot = decl_copies->find_slot_with_hash (&ielt, nuid, INSERT);
-      gcc_assert (!*dslot);
-      nielt = XNEW (struct int_tree_map);
-      nielt->uid = nuid;
-      nielt->to = var_copy;
-      *dslot = nielt;
+      dslot = decl_copies->find_slot_with_hash (ielt, nuid, INSERT);
+      gcc_assert (!dslot->to);
+      dslot->uid = nuid;
+      dslot->to = var_copy;
     }
   else
-    var_copy = ((struct int_tree_map *) *dslot)->to;
+    var_copy = dslot->to;
 
   replace_ssa_name_symbol (copy, var_copy);
   return copy;
@@ -944,7 +937,7 @@ separate_decls_in_region_debug (gimple stmt,
   struct int_tree_map ielt;
   struct name_to_copy_elt elt;
   name_to_copy_elt **slot;
-  int_tree_map **dslot;
+  int_tree_map *dslot;
 
   if (gimple_debug_bind_p (stmt))
     var = gimple_debug_bind_get_var (stmt);
@@ -956,13 +949,13 @@ separate_decls_in_region_debug (gimple stmt,
     return true;
   gcc_assert (DECL_P (var) && SSA_VAR_P (var));
   ielt.uid = DECL_UID (var);
-  dslot = decl_copies->find_slot_with_hash (&ielt, ielt.uid, NO_INSERT);
+  dslot = decl_copies->find_slot_with_hash (ielt, ielt.uid, NO_INSERT);
   if (!dslot)
     return true;
   if (gimple_debug_bind_p (stmt))
-    gimple_debug_bind_set_var (stmt, ((struct int_tree_map *) *dslot)->to);
+    gimple_debug_bind_set_var (stmt, dslot->to);
   else if (gimple_debug_source_bind_p (stmt))
-    gimple_debug_source_bind_set_var (stmt, ((struct int_tree_map *) *dslot)->to);
+    gimple_debug_source_bind_set_var (stmt, dslot->to);
 
   FOR_EACH_PHI_OR_STMT_USE (use, stmt, oi, SSA_OP_USE)
   {
