@@ -1,5 +1,10 @@
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/61570
+	* config/i386/driver-i386.c (host_detect_local_cpu): For unknown
+	model family 6 CPU with has_longmode never use a CPU without
+	64-bit support.
+
 	* gimplify.c (gimplify_omp_for): For #pragma omp for simd iterator
 	not mentioned in clauses use private clause if the iterator is
 	declared in #pragma omp for simd, and when adding lastprivate
