@@ -23,6 +23,18 @@ subroutine f4
 !$omp & initializer(omp_priv = omp_in (omp_orig)) ! { dg-error "Implicitly declared function omp_in used" }
 !$omp declare reduction (id2:real:omp_out=omp_out+omp_in) &
 !$omp & initializer(omp_priv = baz (omp_orig)) ! { dg-error "Implicitly declared function baz used" }
+  integer :: i
+  real :: r
+  i = 0
+  r = 0
+!$omp parallel reduction (foo: i, r)
+!$omp end parallel
+!$omp parallel reduction (bar: i, r)
+!$omp end parallel
+!$omp parallel reduction (id1: i, r)
+!$omp end parallel
+!$omp parallel reduction (id2: i, r)
+!$omp end parallel
 end subroutine f4
 subroutine f5
   interface
@@ -37,8 +49,6 @@ subroutine f5
 !$omp & initializer (f5a (omp_priv, *20, omp_orig)) ! { dg-error "Subroutine call with alternate returns in INITIALIZER clause" }
 10 continue
 20 continue
-! { dg-error "Label\[^\n\r]* is never defined" "" { target *-*-* } 0 }
-! { dg-prune-output "<During initialization>" }
 end subroutine f5
 subroutine f6
   integer :: a

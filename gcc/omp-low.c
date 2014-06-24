@@ -2996,8 +2996,10 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx, int &max_vf,
 	{
 	  tree c = find_omp_clause (gimple_omp_for_clauses (ctx->stmt),
 				    OMP_CLAUSE_SAFELEN);
-	  if (c
-	      && compare_tree_int (OMP_CLAUSE_SAFELEN_EXPR (c), max_vf) == -1)
+	  if (c && TREE_CODE (OMP_CLAUSE_SAFELEN_EXPR (c)) != INTEGER_CST)
+	    max_vf = 1;
+	  else if (c && compare_tree_int (OMP_CLAUSE_SAFELEN_EXPR (c),
+					  max_vf) == -1)
 	    max_vf = tree_to_shwi (OMP_CLAUSE_SAFELEN_EXPR (c));
 	}
       if (max_vf > 1)
@@ -3745,8 +3747,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       tree c = find_omp_clause (gimple_omp_for_clauses (ctx->stmt),
 				OMP_CLAUSE_SAFELEN);
       if (c == NULL_TREE
-	  || compare_tree_int (OMP_CLAUSE_SAFELEN_EXPR (c),
-			       max_vf) == 1)
+	  || (TREE_CODE (OMP_CLAUSE_SAFELEN_EXPR (c)) == INTEGER_CST
+	      && compare_tree_int (OMP_CLAUSE_SAFELEN_EXPR (c),
+				   max_vf) == 1))
 	{
 	  c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_SAFELEN);
 	  OMP_CLAUSE_SAFELEN_EXPR (c) = build_int_cst (integer_type_node,
@@ -6900,8 +6903,10 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       else
 	{
 	  safelen = OMP_CLAUSE_SAFELEN_EXPR (safelen);
-	  if (!tree_fits_uhwi_p (safelen)
-	      || tree_to_uhwi (safelen) > INT_MAX)
+	  if (TREE_CODE (safelen) != INTEGER_CST)
+	    loop->safelen = 0;
+	  else if (!tree_fits_uhwi_p (safelen)
+		   || tree_to_uhwi (safelen) > INT_MAX)
 	    loop->safelen = INT_MAX;
 	  else
 	    loop->safelen = tree_to_uhwi (safelen);

@@ -1,11 +1,5 @@
 ! { dg-do run }
 
-  interface
-    real function foo (x)
-      !$omp declare target
-      real, intent(in) :: x
-    end function foo
-  end interface
   integer, parameter :: n = 1000
   integer, parameter :: c = 100
   integer :: i, j
@@ -30,9 +24,10 @@
   do i = 1, n
     if (a(i) /= i + 1) call abort
   end do
+contains
+  real function foo (x)
+    !$omp declare target
+    real, intent(in) :: x
+    foo = x + 1
+  end function foo
 end
-real function foo (x)
-  !$omp declare target
-  real, intent(in) :: x
-  foo = x + 1
-end function foo

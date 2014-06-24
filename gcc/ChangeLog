@@ -1,3 +1,23 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses) <case OMP_CLAUSE_MAP,
+	OMP_CLAUSE_TO, OMP_CLAUSE_FROM): Make sure OMP_CLAUSE_SIZE is
+	non-NULL.
+	<case OMP_CLAUSE_ALIGNED>: Gimplify OMP_CLAUSE_ALIGNED_ALIGNMENT.
+	(gimplify_adjust_omp_clauses_1): Make sure OMP_CLAUSE_SIZE is
+	non-NULL.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-low.c (lower_rec_simd_input_clauses,
+	lower_rec_input_clauses, expand_omp_simd): Handle non-constant
+	safelen the same as safelen(1).
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_ALIGNED.  For
+	OMP_CLAUSE_{MAP,TO,FROM} if not decl use walk_tree.
+	(convert_nonlocal_reference_stmt, convert_local_reference_stmt):
+	Fixup handling of GIMPLE_OMP_TARGET.
+	(convert_tramp_reference_stmt, convert_gimple_call): Handle
+	GIMPLE_OMP_TARGET.
+
 2014-06-24  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR tree-optimization/61554

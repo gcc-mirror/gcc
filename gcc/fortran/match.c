@@ -4577,6 +4577,14 @@ gfc_free_omp_namelist (gfc_omp_namelist *name)
   for (; name; name = n)
     {
       gfc_free_expr (name->expr);
+      if (name->udr)
+	{
+	  if (name->udr->combiner)
+	    gfc_free_statement (name->udr->combiner);
+	  if (name->udr->initializer)
+	    gfc_free_statement (name->udr->initializer);
+	  free (name->udr);
+	}
       n = name->next;
       free (name);
     }
