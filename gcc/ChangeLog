@@ -1,5 +1,22 @@
 2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* alloc-pool.c (alloc_pool_hash): Use hash_map instead of hash_table.
+	* dominance.c (iterate_fix_dominators): Use hash_map instead of
+	pointer_map.
+	* hash-map.h: New file.
+	* ipa-comdats.c: Use hash_map instead of pointer_map.
+	* ipa.c: Likewise.
+	* lto-section-out.c: Adjust.
+	* lto-streamer.h: Replace pointer_map with hash_map.
+	* symtab.c (verify_symtab): Likewise.
+	* tree-ssa-strlen.c (decl_to_stridxlist_htab): Likewise.
+	* tree-ssa-uncprop.c (val_ssa_equiv): Likewise.
+	* tree-streamer.h: Likewise.
+	* tree-streamer.c: Adjust.
+	* pointer-set.h: Remove pointer_map.
+
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* hash-table.h: Add a template arg to choose between storing values
 	and storing pointers to values, and then provide partial
 	specializations for both.

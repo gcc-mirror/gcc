@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "streamer-hooks.h"
 #include "lto-streamer.h"
+#include "hash-map.h"
 
 /* Cache of pickled nodes.  Used to avoid writing the same node more
    than once.  The first time a tree node is streamed out, it is
@@ -46,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 struct streamer_tree_cache_d
 {
   /* The mapping between tree nodes and slots into the nodes array.  */
-  pointer_map<unsigned> *node_map;
+  hash_map<tree, unsigned> *node_map;
 
   /* The nodes pickled so far.  */
   vec<tree> nodes;
