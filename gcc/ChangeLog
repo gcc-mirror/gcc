@@ -1,3 +1,20 @@
+2014-06-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varpool.c (dump_varpool_node): Dump used_by_single_function.
+	* tree-pass.h (make_pass_ipa_single_use): New pass.
+	* cgraph.h (used_by_single_function): New flag.
+	* lto-cgraph.c (lto_output_varpool_node, input_varpool_node): Stream
+	it.
+	* passes.def (pass_ipa_single_use): Scedule.
+	* ipa.c (BOTTOM): New macro.
+	(meet): New function
+	(propagate_single_user): New function.
+	(ipa_single_use): New function.
+	(pass_data_ipa_single_use): New pass.
+	(pass_ipa_single_use): New pass.
+	(pass_ipa_single_use::gate): New gate.
+	(make_pass_ipa_single_use): New function.
+
 2014-06-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/39284

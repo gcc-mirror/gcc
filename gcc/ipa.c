@@ -1096,3 +1096,226 @@ make_pass_ipa_cdtor_merge (gcc::context *ctxt)
 {
   return new pass_ipa_cdtor_merge (ctxt);
 }
+
+/* Invalid pointer representing BOTTOM for single user dataflow.  */
+#define BOTTOM ((cgraph_node *)(size_t) 2)
+
+/* Meet operation for single user dataflow.
+   Here we want to associate variables with sigle function that may access it.
+
+   FUNCTION is current single user of a variable, VAR is variable that uses it.
+   Latttice is stored in SINGLE_USER_MAP.
+
+   We represent: 
+    - TOP by no entry in SIGNLE_USER_MAP
+    - BOTTOM by BOTTOM in AUX pointer (to save lookups)
+    - known single user by cgraph pointer in SINGLE_USER_MAP.  */
+
+cgraph_node *
+meet (cgraph_node *function, varpool_node *var,
+       pointer_map<cgraph_node *> &single_user_map)
+{
+  struct cgraph_node *user, **f;
+
+  if (var->aux == BOTTOM)
+    return BOTTOM;
+
+  f = single_user_map.contains (var);
+  if (!f)
+    return function;
+  user = *f;
+  if (!function)
+    return user;
+  else if (function != user)
+    return BOTTOM;
+  else
+    return function;
+}
+
+/* Propagation step of single-use dataflow.
+
+   Check all uses of VNODE and see if they are used by single function FUNCTION.
+   SINGLE_USER_MAP represents the dataflow lattice.  */
+
+cgraph_node *
+propagate_single_user (varpool_node *vnode, cgraph_node *function,
+		       pointer_map<cgraph_node *> &single_user_map)
+{
+  int i;
+  struct ipa_ref *ref;
+
+  gcc_assert (!vnode->externally_visible);
+
+  /* If node is an alias, first meet with its target.  */
+  if (vnode->alias)
+    function = meet (function, varpool_alias_target (vnode), single_user_map);
+
+  /* Check all users and see if they correspond to a single function.  */
+  for (i = 0;
+       ipa_ref_list_referring_iterate (&vnode->ref_list, i, ref)
+       && function != BOTTOM; i++)
+    {
+      struct cgraph_node *cnode = dyn_cast <cgraph_node *> (ref->referring);
+      if (cnode)
+	{
+	  if (cnode->global.inlined_to)
+	    cnode = cnode->global.inlined_to;
+	  if (!function)
+	    function = cnode;
+	  else if (function != cnode)
+	    function = BOTTOM;
+	}
+      else
+        function = meet (function, dyn_cast <varpool_node *> (ref->referring), single_user_map);
+    }
+  return function;
+}
+
+/* Pass setting used_by_single_function flag.
+   This flag is set on variable when there is only one function that may possibly
+   referr to it.  */
+
+static unsigned int
+ipa_single_use (void)
+{
+  varpool_node *first = (varpool_node *) (void *) 1;
+  varpool_node *var;
+  pointer_map<cgraph_node *> single_user_map;
+
+  FOR_EACH_DEFINED_VARIABLE (var)
+    if (!varpool_all_refs_explicit_p (var))
+      var->aux = BOTTOM;
+    else
+      {
+	/* Enqueue symbol for dataflow.  */
+        var->aux = first;
+	first = var;
+      }
+
+  /* The actual dataflow.  */
+
+  while (first != (void *) 1)
+    {
+      cgraph_node *user, *orig_user, **f;
+
+      var = first;
+      first = (varpool_node *)first->aux;
+
+      f = single_user_map.contains (var);
+      if (f)
+	orig_user = *f;
+      else
+	orig_user = NULL;
+      user = propagate_single_user (var, orig_user, single_user_map);
+
+      gcc_checking_assert (var->aux != BOTTOM);
+
+      /* If user differs, enqueue all references.  */
+      if (user != orig_user)
+	{
+	  unsigned int i;
+	  ipa_ref *ref;
+
+	  *single_user_map.insert (var) = user;
+
+	  /* Enqueue all aliases for re-processing.  */
+	  for (i = 0;
+	       ipa_ref_list_referring_iterate (&var->ref_list, i, ref); i++)
+	    if (ref->use == IPA_REF_ALIAS
+		&& !ref->referring->aux)
+	      {
+		ref->referring->aux = first;
+		first = dyn_cast <varpool_node *> (ref->referring);
+	      }
+	  /* Enqueue all users for re-processing.  */
+	  for (i = 0;
+	       ipa_ref_list_reference_iterate (&var->ref_list, i, ref); i++)
+	    if (!ref->referred->aux
+	        && ref->referred->definition
+		&& is_a <varpool_node *> (ref->referred))
+	      {
+		ref->referred->aux = first;
+		first = dyn_cast <varpool_node *> (ref->referred);
+	      }
+
+	  /* If user is BOTTOM, just punt on this var.  */
+	  if (user == BOTTOM)
+	    var->aux = BOTTOM;
+	  else
+	    var->aux = NULL;
+	}
+      else
+	var->aux = NULL;
+    }
+
+  FOR_EACH_DEFINED_VARIABLE (var)
+    {
+      if (var->aux != BOTTOM)
+	{
+#ifdef ENABLE_CHECKING
+	  if (!single_user_map.contains (var))
+          gcc_assert (single_user_map.contains (var));
+#endif
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Variable %s/%i is used by single function\n",
+		       var->name (), var->order);
+	    }
+	  var->used_by_single_function = true;
+	}
+      var->aux = NULL;
+    }
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_ipa_single_use =
+{
+  IPA_PASS, /* type */
+  "single-use", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_execute */
+  TV_CGRAPHOPT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_ipa_single_use : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_single_use (gcc::context *ctxt)
+    : ipa_opt_pass_d (pass_data_ipa_single_use, ctxt,
+		      NULL, /* generate_summary */
+		      NULL, /* write_summary */
+		      NULL, /* read_summary */
+		      NULL, /* write_optimization_summary */
+		      NULL, /* read_optimization_summary */
+		      NULL, /* stmt_fixup */
+		      0, /* function_transform_todo_flags_start */
+		      NULL, /* function_transform */
+		      NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *);
+  virtual unsigned int execute (function *) { return ipa_single_use (); }
+
+}; // class pass_ipa_single_use
+
+bool
+pass_ipa_single_use::gate (function *)
+{
+  return optimize;
+}
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_single_use (gcc::context *ctxt)
+{
+  return new pass_ipa_single_use (ctxt);
+}

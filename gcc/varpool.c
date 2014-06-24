@@ -211,6 +211,8 @@ dump_varpool_node (FILE *f, varpool_node *node)
     fprintf (f, " initialized");
   if (node->output)
     fprintf (f, " output");
+  if (node->used_by_single_function)
+    fprintf (f, " used-by-single-function");
   if (TREE_READONLY (node->decl))
     fprintf (f, " read-only");
   if (ctor_for_folding (node->decl) != error_mark_node)

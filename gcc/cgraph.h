@@ -719,6 +719,12 @@ public:
   unsigned dynamically_initialized : 1;
 
   ENUM_BITFIELD(tls_model) tls_model : 3;
+
+  /* Set if the variable is known to be used by single function only.
+     This is computed by ipa_signle_use pass and used by late optimizations
+     in places where optimization would be valid for local static variable
+     if we did not do any inter-procedural code movement.  */
+  unsigned used_by_single_function : 1;
 };
 
 /* Every top level asm statement is put into a asm_node.  */
