@@ -1,3 +1,4 @@
+/* { dg-require-alias "" }  */
 extern void abort (void);
 int test2count;
 __attribute__ ((weak,noinline))
