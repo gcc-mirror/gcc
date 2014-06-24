@@ -713,6 +713,11 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		    /* Assume Core 2.  */
 		    cpu = "core2";
 		}
+	      else if (has_longmode)
+		/* Perhaps some emulator?  Assume x86-64, otherwise gcc
+		   -march=native would be unusable for 64-bit compilations,
+		   as all the CPUs below are 32-bit only.  */
+		cpu = "x86-64";
 	      else if (has_sse3)
 		/* It is Core Duo.  */
 		cpu = "pentium-m";
