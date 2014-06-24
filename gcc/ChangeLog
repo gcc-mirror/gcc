@@ -1,3 +1,10 @@
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61570
+	* config/i386/driver-i386.c (host_detect_local_cpu): For unknown
+	model family 6 CPU with has_longmode never use a CPU without
+	64-bit support.
+
 2014-06-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/61570
