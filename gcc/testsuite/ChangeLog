@@ -1,3 +1,7 @@
+2014-06-23  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/asan/strlen-overflow-1.c: Change match patterns.
+
 2014-06-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/localalias-2.c: Guard by require-alias.

@@ -26,4 +26,5 @@ int main () {
 }
 
 /* { dg-output "READ of size 1 at 0x\[0-9a-f\]+ thread T0.*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ (in _*main (\[^\n\r]*strlen-overflow-1.c:24|\[^\n\r]*:0)|\[(\]).*(\n|\r\n|\r)" } */
+/* { dg-output "    #0 0x\[0-9a-f\]+ (in _*main (\[^\n\r]*strlen-overflow-1.c:25|\[^\n\r]*:0)|\[(\]).*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*0x\[0-9a-f\]+ is located 1 bytes inside of global variable" } */
