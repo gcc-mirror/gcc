@@ -895,7 +895,7 @@ DEBUG_FUNCTION void
 verify_symtab (void)
 {
   symtab_node *node;
-  pointer_map<symtab_node *> comdat_head_map;
+  hash_map<tree, symtab_node *> comdat_head_map (251);
 
   FOR_EACH_SYMBOL (node)
     {
@@ -905,7 +905,8 @@ verify_symtab (void)
 	  symtab_node **entry, *s;
 	  bool existed;
 
-	  entry = comdat_head_map.insert (node->get_comdat_group (), &existed);
+	  entry = &comdat_head_map.get_or_insert (node->get_comdat_group (),
+						  &existed);
 	  if (!existed)
 	    *entry = node;
 	  else

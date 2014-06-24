@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "cgraph.h"
 #include "tree-pass.h"
+#include "hash-map.h"
 #include "pointer-set.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
@@ -1113,14 +1114,14 @@ make_pass_ipa_cdtor_merge (gcc::context *ctxt)
 
 cgraph_node *
 meet (cgraph_node *function, varpool_node *var,
-       pointer_map<cgraph_node *> &single_user_map)
+       hash_map<varpool_node *, cgraph_node *> &single_user_map)
 {
   struct cgraph_node *user, **f;
 
   if (var->aux == BOTTOM)
     return BOTTOM;
 
-  f = single_user_map.contains (var);
+  f = single_user_map.get (var);
   if (!f)
     return function;
   user = *f;
@@ -1139,7 +1140,7 @@ meet (cgraph_node *function, varpool_node *var,
 
 cgraph_node *
 propagate_single_user (varpool_node *vnode, cgraph_node *function,
-		       pointer_map<cgraph_node *> &single_user_map)
+		       hash_map<varpool_node *, cgraph_node *> &single_user_map)
 {
   int i;
   struct ipa_ref *ref;
@@ -1180,7 +1181,7 @@ ipa_single_use (void)
 {
   varpool_node *first = (varpool_node *) (void *) 1;
   varpool_node *var;
-  pointer_map<cgraph_node *> single_user_map;
+  hash_map<varpool_node *, cgraph_node *> single_user_map;
 
   FOR_EACH_DEFINED_VARIABLE (var)
     if (!varpool_all_refs_explicit_p (var))
@@ -1201,7 +1202,7 @@ ipa_single_use (void)
       var = first;
       first = (varpool_node *)first->aux;
 
-      f = single_user_map.contains (var);
+      f = single_user_map.get (var);
       if (f)
 	orig_user = *f;
       else
@@ -1216,7 +1217,7 @@ ipa_single_use (void)
 	  unsigned int i;
 	  ipa_ref *ref;
 
-	  *single_user_map.insert (var) = user;
+	  single_user_map.put (var, user);
 
 	  /* Enqueue all aliases for re-processing.  */
 	  for (i = 0;
@@ -1253,8 +1254,8 @@ ipa_single_use (void)
       if (var->aux != BOTTOM)
 	{
 #ifdef ENABLE_CHECKING
-	  if (!single_user_map.contains (var))
-          gcc_assert (single_user_map.contains (var));
+	  if (!single_user_map.get (var))
+          gcc_assert (single_user_map.get (var));
 #endif
 	  if (dump_file)
 	    {

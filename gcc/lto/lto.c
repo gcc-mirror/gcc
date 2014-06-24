@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "langhooks.h"
 #include "bitmap.h"
+#include "hash-map.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
@@ -261,7 +262,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
 
 /* Global canonical type table.  */
 static htab_t gimple_canonical_types;
-static pointer_map <hashval_t> *canonical_type_hash_cache;
+static hash_map<const_tree, hashval_t> *canonical_type_hash_cache;
 static unsigned long num_canonical_type_hash_entries;
 static unsigned long num_canonical_type_hash_queries;
 
@@ -405,8 +406,7 @@ static hashval_t
 gimple_canonical_type_hash (const void *p)
 {
   num_canonical_type_hash_queries++;
-  hashval_t *slot
-    = canonical_type_hash_cache->contains (CONST_CAST_TREE ((const_tree) p));
+  hashval_t *slot = canonical_type_hash_cache->get ((const_tree) p);
   gcc_assert (slot != NULL);
   return *slot;
 }
@@ -648,10 +648,8 @@ gimple_register_canonical_type_1 (tree t, hashval_t hash)
       *slot = (void *) t;
       /* Cache the just computed hash value.  */
       num_canonical_type_hash_entries++;
-      bool existed_p;
-      hashval_t *hslot = canonical_type_hash_cache->insert (t, &existed_p);
+      bool existed_p = canonical_type_hash_cache->put (t, hash);
       gcc_assert (!existed_p);
-      *hslot = hash;
     }
 }
 
@@ -2917,7 +2915,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     }
   cgraph_state = CGRAPH_LTO_STREAMING;
 
-  canonical_type_hash_cache = new pointer_map <hashval_t>;
+  canonical_type_hash_cache = new hash_map<const_tree, hashval_t> (251);
   gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
 					    gimple_canonical_type_eq, 0);
   gcc_obstack_init (&tree_scc_hash_obstack);

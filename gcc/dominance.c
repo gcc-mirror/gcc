@@ -43,6 +43,7 @@
 #include "diagnostic-core.h"
 #include "et-forest.h"
 #include "timevar.h"
+#include "hash-map.h"
 #include "pointer-set.h"
 #include "graphds.h"
 #include "bitmap.h"
@@ -1258,7 +1259,6 @@ iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
   size_t dom_i;
   edge e;
   edge_iterator ei;
-  pointer_map<int> *map;
   int *parent, *son, *brother;
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
 
@@ -1346,15 +1346,15 @@ iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
     }
 
   /* Construct the graph G.  */
-  map = new pointer_map<int>;
+  hash_map<basic_block, int> map (251);
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
       /* If the dominance tree is conservatively correct, split it now.  */
       if (conservative)
 	set_immediate_dominator (CDI_DOMINATORS, bb, NULL);
-      *map->insert (bb) = i;
+      map.put (bb, i);
     }
-  *map->insert (ENTRY_BLOCK_PTR_FOR_FN (cfun)) = n;
+  map.put (ENTRY_BLOCK_PTR_FOR_FN (cfun), n);
 
   g = new_graph (n + 1);
   for (y = 0; y < g->n_vertices; y++)
@@ -1367,7 +1367,7 @@ iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
 	  if (dom == bb)
 	    continue;
 
-	  dom_i = *map->contains (dom);
+	  dom_i = *map.get (dom);
 
 	  /* Do not include parallel edges to G.  */
 	  if (!bitmap_set_bit ((bitmap) g->vertices[dom_i].data, i))
@@ -1378,7 +1378,6 @@ iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
     }
   for (y = 0; y < g->n_vertices; y++)
     BITMAP_FREE (g->vertices[y].data);
-  delete map;
 
   /* Find the dominator tree of G.  */
   son = XNEWVEC (int, n + 1);

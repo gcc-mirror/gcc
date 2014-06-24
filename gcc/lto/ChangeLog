@@ -1,5 +1,10 @@
 2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* lto.c (canonical_type_hash_cache): Use hash_map instead of
+	pointer_map.
+
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* lto.c: Adjust.
 
 2014-06-20  Jan Hubicka  <hubicka@ucw.cz>

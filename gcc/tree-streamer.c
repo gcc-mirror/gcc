@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
+#include "hash-map.h"
 #include "is-a.h"
 #include "gimple.h"
 #include "streamer-hooks.h"
@@ -134,13 +135,11 @@ streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
 			      tree t, hashval_t hash, unsigned *ix_p,
 			      bool insert_at_next_slot_p)
 {
-  unsigned *slot;
-  unsigned ix;
   bool existed_p;
 
   gcc_assert (t);
 
-  slot = cache->node_map->insert (t, &existed_p);
+  unsigned int &ix = cache->node_map->get_or_insert (t, &existed_p);
   if (!existed_p)
     {
       /* Determine the next slot to use in the cache.  */
@@ -148,14 +147,11 @@ streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
 	ix = cache->next_idx++;
       else
 	ix = *ix_p;
-       *slot = ix;
 
       streamer_tree_cache_add_to_node_array (cache, ix, t, hash);
     }
   else
     {
-      ix = *slot;
-
       if (!insert_at_next_slot_p && ix != *ix_p)
 	{
 	  /* If the caller wants to insert T at a specific slot
@@ -163,7 +159,6 @@ streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
 	     the requested location slot.  */
 	  ix = *ix_p;
 	  streamer_tree_cache_add_to_node_array (cache, ix, t, hash);
-	  *slot = ix;
 	}
     }
 
@@ -231,7 +226,7 @@ streamer_tree_cache_lookup (struct streamer_tree_cache_d *cache, tree t,
 
   gcc_assert (t);
 
-  slot = cache->node_map->contains (t);
+  slot = cache->node_map->get (t);
   if (slot == NULL)
     {
       retval = false;
@@ -332,7 +327,7 @@ streamer_tree_cache_create (bool with_hashes, bool with_map, bool with_vec)
   cache = XCNEW (struct streamer_tree_cache_d);
 
   if (with_map)
-    cache->node_map = new pointer_map<unsigned>;
+    cache->node_map = new hash_map<tree, unsigned> (251);
   cache->next_idx = 0;
   if (with_vec)
     cache->nodes.create (165);
@@ -356,8 +351,8 @@ streamer_tree_cache_delete (struct streamer_tree_cache_d *c)
   if (c == NULL)
     return;
 
-  if (c->node_map)
-    delete c->node_map;
+  delete c->node_map;
+  c->node_map = NULL;
   c->nodes.release ();
   c->hashes.release ();
   free (c);

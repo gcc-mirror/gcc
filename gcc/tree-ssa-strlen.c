@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "hash-table.h"
+#include "hash-map.h"
 #include "bitmap.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
@@ -134,31 +135,23 @@ struct decl_stridxlist_map
 
 /* stridxlist hashtable helpers.  */
 
-struct stridxlist_hasher : typed_noop_remove <decl_stridxlist_map>
+struct stridxlist_hash_traits : default_hashmap_traits
 {
-  typedef decl_stridxlist_map value_type;
-  typedef decl_stridxlist_map compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (tree);
 };
 
 /* Hash a from tree in a decl_stridxlist_map.  */
 
 inline hashval_t
-stridxlist_hasher::hash (const value_type *item)
+stridxlist_hash_traits::hash (tree item)
 {
-  return DECL_UID (item->base.from);
-}
-
-inline bool
-stridxlist_hasher::equal (const value_type *v, const compare_type *c)
-{
-  return tree_map_base_eq (&v->base, &c->base);
+  return DECL_UID (item);
 }
 
 /* Hash table for mapping decls to a chained list of offset -> idx
    mappings.  */
-static hash_table<stridxlist_hasher> *decl_to_stridxlist_htab;
+static hash_map<tree, stridxlist, stridxlist_hash_traits>
+  *decl_to_stridxlist_htab;
 
 /* Obstack for struct stridxlist and struct decl_stridxlist_map.  */
 static struct obstack stridx_obstack;
@@ -179,7 +172,6 @@ static int
 get_addr_stridx (tree exp)
 {
   HOST_WIDE_INT off;
-  struct decl_stridxlist_map ent, *e;
   struct stridxlist *list;
   tree base;
 
@@ -190,12 +182,10 @@ get_addr_stridx (tree exp)
   if (base == NULL || !DECL_P (base))
     return 0;
 
-  ent.base.from = base;
-  e = decl_to_stridxlist_htab->find_with_hash (&ent, DECL_UID (base));
-  if (e == NULL)
+  list = decl_to_stridxlist_htab->get (base);
+  if (list == NULL)
     return 0;
 
-  list = &e->list;
   do
     {
       if (list->offset == off)
@@ -270,9 +260,6 @@ unshare_strinfo_vec (void)
 static int *
 addr_stridxptr (tree exp)
 {
-  decl_stridxlist_map **slot;
-  struct decl_stridxlist_map ent;
-  struct stridxlist *list;
   HOST_WIDE_INT off;
 
   tree base = get_addr_base_and_unit_offset (exp, &off);
@@ -281,16 +268,16 @@ addr_stridxptr (tree exp)
 
   if (!decl_to_stridxlist_htab)
     {
-      decl_to_stridxlist_htab = new hash_table<stridxlist_hasher> (64);
+      decl_to_stridxlist_htab
+       	= new hash_map<tree, stridxlist, stridxlist_hash_traits> (64);
       gcc_obstack_init (&stridx_obstack);
     }
-  ent.base.from = base;
-  slot = decl_to_stridxlist_htab->find_slot_with_hash (&ent, DECL_UID (base),
-						       INSERT);
-  if (*slot)
+
+  bool existed;
+  stridxlist *list = &decl_to_stridxlist_htab->get_or_insert (base, &existed);
+  if (existed)
     {
       int i;
-      list = &(*slot)->list;
       for (i = 0; i < 16; i++)
 	{
 	  if (list->offset == off)
@@ -303,14 +290,7 @@ addr_stridxptr (tree exp)
       list->next = XOBNEW (&stridx_obstack, struct stridxlist);
       list = list->next;
     }
-  else
-    {
-      struct decl_stridxlist_map *e
-	= XOBNEW (&stridx_obstack, struct decl_stridxlist_map);
-      e->base.from = base;
-      *slot = e;
-      list = &e->list;
-    }
+
   list->next = NULL;
   list->offset = off;
   list->idx = 0;
