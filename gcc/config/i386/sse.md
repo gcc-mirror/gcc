@@ -8260,6 +8260,36 @@
   DONE;
 })
 
+(define_expand "usadv16qi"
+  [(match_operand:V4SI 0 "register_operand")
+   (match_operand:V16QI 1 "register_operand")
+   (match_operand:V16QI 2 "nonimmediate_operand")
+   (match_operand:V4SI 3 "nonimmediate_operand")]
+  "TARGET_SSE2"
+{
+  rtx t1 = gen_reg_rtx (V2DImode);
+  rtx t2 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_sse2_psadbw (t1, operands[1], operands[2]));
+  convert_move (t2, t1, 0);
+  emit_insn (gen_addv4si3 (operands[0], t2, operands[3]));
+  DONE;
+})
+
+(define_expand "usadv32qi"
+  [(match_operand:V8SI 0 "register_operand")
+   (match_operand:V32QI 1 "register_operand")
+   (match_operand:V32QI 2 "nonimmediate_operand")
+   (match_operand:V8SI 3 "nonimmediate_operand")]
+  "TARGET_AVX2"
+{
+  rtx t1 = gen_reg_rtx (V4DImode);
+  rtx t2 = gen_reg_rtx (V8SImode);
+  emit_insn (gen_avx2_psadbw (t1, operands[1], operands[2]));
+  convert_move (t2, t1, 0);
+  emit_insn (gen_addv8si3 (operands[0], t2, operands[3]));
+  DONE;
+})
+
 (define_insn "ashr<mode>3"
   [(set (match_operand:VI24_AVX2 0 "register_operand" "=x,x")
 	(ashiftrt:VI24_AVX2

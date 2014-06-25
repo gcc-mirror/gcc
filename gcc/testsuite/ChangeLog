@@ -1,3 +1,8 @@
+2014-06-24  Cong Hou  <congh@google.com>
+
+	* gcc.dg/vect/vect-reduc-sad.c: New.
+	* lib/target-supports.exp (check_effective_target_vect_usad_char): New.
+
 2014-06-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/57742
