@@ -1,3 +1,9 @@
+2014-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/61560
+	* gcc.dg/tree-ssa/ssa-fre-32.c: Change to avoid differences
+	for targets that return _Complex float in memory.
+
 2014-06-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* gcc.target/arm/vect-noalign.c: Adjust options.
