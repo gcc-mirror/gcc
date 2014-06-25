@@ -45,7 +45,7 @@
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
 #include <bits/uses_allocator.h>
-#include <bits/alloc_traits.h>
+#include <bits/allocated_ptr.h>
 #include <ext/aligned_buffer.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -251,42 +251,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Res, typename _Alloc>
       struct _Result_alloc final : _Result<_Res>, _Alloc
       {
-        typedef typename allocator_traits<_Alloc>::template
-          rebind_alloc<_Result_alloc> __allocator_type;
+	using __allocator_type = __alloc_rebind<_Alloc, _Result_alloc>;
 
         explicit
 	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _Alloc(__a)
-        { }
+	{ }
 	
       private:
 	void _M_destroy()
-        {
-	  typedef allocator_traits<__allocator_type> __traits;
-          __allocator_type __a(*this);
-	  __traits::destroy(__a, this);
-	  __traits::deallocate(__a, this, 1);
-        }
+	{
+	  __allocator_type __a(*this);
+	  __allocated_ptr<__allocator_type> __guard_ptr{ __a, this };
+	  this->~_Result_alloc();
+	}
       };
 
     template<typename _Res, typename _Allocator>
       static _Ptr<_Result_alloc<_Res, _Allocator>>
       _S_allocate_result(const _Allocator& __a)
       {
-        typedef _Result_alloc<_Res, _Allocator>	__result_type;
-	typedef allocator_traits<typename __result_type::__allocator_type>
-	  __traits;
-        typename __traits::allocator_type __a2(__a);
-        __result_type* __p = __traits::allocate(__a2, 1);
-        __try
-	  {
-	    __traits::construct(__a2, __p, __a);
-	  }
-        __catch(...)
-	  {
-	    __traits::deallocate(__a2, __p, 1);
-	    __throw_exception_again;
-	  }
-        return _Ptr<__result_type>(__p);
+	using __result_type = _Result_alloc<_Res, _Allocator>;
+	typename __result_type::__allocator_type __a2(__a);
+	auto __guard = std::__allocate_guarded(__a2);
+	__result_type* __p = ::new((void*)__guard.get()) __result_type{__a};
+	__guard = nullptr;
+	return _Ptr<__result_type>(__p);
       }
 
     template<typename _Res, typename _Tp>

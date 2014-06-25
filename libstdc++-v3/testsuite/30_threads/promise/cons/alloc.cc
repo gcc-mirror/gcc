@@ -27,14 +27,27 @@
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
+using std::promise;
+using std::allocator_arg;
+
 void test01()
 {
-  using std::promise;
-  using std::allocator_arg;
-  using __gnu_test::uneq_allocator;
+  __gnu_test::uneq_allocator<char> alloc(99);
+  promise<int> p1(allocator_arg, alloc);
+  p1.set_value(5);
+  VERIFY( p1.get_future().get() == 5 );
+}
 
-  uneq_allocator<char> alloc(99);
+template<typename T>
+  struct Pointer : __gnu_test::PointerBase<Pointer<T>, T>
+  {
+    using __gnu_test::PointerBase<Pointer<T>, T>::PointerBase;
+  };
 
+void
+test02()
+{
+  __gnu_test::CustomPointerAlloc<Pointer<int>> alloc;
   promise<int> p1(allocator_arg, alloc);
   p1.set_value(5);
   VERIFY( p1.get_future().get() == 5 );
@@ -43,5 +56,6 @@ void test01()
 int main()
 {
   test01();
+  test02();
   return 0;
 }
