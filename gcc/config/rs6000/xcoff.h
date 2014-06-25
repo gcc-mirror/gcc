@@ -134,67 +134,11 @@
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE false
 
-/* This macro produces the initial definition of a function name.
-   On the RS/6000, we need to place an extra '.' in the function name and
-   output the function descriptor.
-   Dollar signs are converted to underscores.
+/* This macro produces the initial definition of a function name.  */
 
-   The csect for the function will have already been created when
-   text_section was selected.  We do have to go back to that csect, however.
-
-   The third and fourth parameters to the .function pseudo-op (16 and 044)
-   are placeholders which no longer have any use.  */
-
-#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
-{ char *buffer = (char *) alloca (strlen (NAME) + 1);		\
-  char *p;							\
-  int dollar_inside = 0;					\
-  strcpy (buffer, NAME);					\
-  p = strchr (buffer, '$');					\
-  while (p) {							\
-    *p = '_';							\
-    dollar_inside++;						\
-    p = strchr (p + 1, '$');					\
-  }								\
-  if (TREE_PUBLIC (DECL))					\
-    {								\
-      if (!RS6000_WEAK || !DECL_WEAK (decl))			\
-	{							\
-          if (dollar_inside) {					\
-              fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);	\
-              fprintf(FILE, "\t.rename %s,\"%s\"\n", buffer, NAME);	\
-	    }							\
-	  fputs ("\t.globl .", FILE);				\
-	  RS6000_OUTPUT_BASENAME (FILE, buffer);		\
-	  putc ('\n', FILE);					\
-	}							\
-    }								\
-  else								\
-    {								\
-      if (dollar_inside) {					\
-          fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);	\
-          fprintf(FILE, "\t.rename %s,\"%s\"\n", buffer, NAME);	\
-	}							\
-      fputs ("\t.lglobl .", FILE);				\
-      RS6000_OUTPUT_BASENAME (FILE, buffer);			\
-      putc ('\n', FILE);					\
-    }								\
-  fputs ("\t.csect ", FILE);					\
-  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
-  fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", FILE);		\
-  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
-  fputs (":\n", FILE);						\
-  fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", FILE);	\
-  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
-  fputs (", TOC[tc0], 0\n", FILE);				\
-  in_section = NULL;						\
-  switch_to_section (function_section (DECL));			\
-  putc ('.', FILE);						\
-  RS6000_OUTPUT_BASENAME (FILE, buffer);			\
-  fputs (":\n", FILE);						\
-  if (write_symbols != NO_DEBUG && !DECL_IGNORED_P (DECL))	\
-    xcoffout_declare_function (FILE, DECL, buffer);		\
-}
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
+  rs6000_xcoff_declare_function_name ((FILE), (NAME), (DECL))
 
 /* Output a reference to SYM on FILE.  */
 

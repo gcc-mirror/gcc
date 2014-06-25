@@ -1,3 +1,12 @@
+2014-06-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Replace
+	implementation with call to...
+	* config/rs6000/rs6000.c (rs6000_xcoff_declare_function_name): New
+	function.
+	* config/rs6000/rs6000-protos.h (rs6000_xcoff_declare_function_name):
+	Declare.
+
 2014-06-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/57742
