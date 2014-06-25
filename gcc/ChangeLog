@@ -1,3 +1,8 @@
+2014-06-25  Paul Gortmaker  <paul.gortmaker@windriver.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (set_multilib_dir): Malloc "." pointer as well.
+
 2014-06-25  Tom de Vries  <tom@codesourcery.com>
 
 	* config/arm/arm.c (arm_emit_call_insn): Remove clobber of CC_REGNUM.

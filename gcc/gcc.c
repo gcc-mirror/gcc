@@ -7790,10 +7790,15 @@ set_multilib_dir (void)
 		q2++;
 	      if (*q2 == ':')
 		ml_end = q2;
-	      new_multilib_os_dir = XNEWVEC (char, ml_end - q);
-	      memcpy (new_multilib_os_dir, q + 1, ml_end - q - 1);
-	      new_multilib_os_dir[ml_end - q - 1] = '\0';
-	      multilib_os_dir = *new_multilib_os_dir ? new_multilib_os_dir : ".";
+	      if (ml_end - q == 1)
+		multilib_os_dir = xstrdup (".");
+	      else
+		{
+		  new_multilib_os_dir = XNEWVEC (char, ml_end - q);
+		  memcpy (new_multilib_os_dir, q + 1, ml_end - q - 1);
+		  new_multilib_os_dir[ml_end - q - 1] = '\0';
+		  multilib_os_dir = new_multilib_os_dir;
+		}
 
 	      if (q2 < end && *q2 == ':')
 		{
