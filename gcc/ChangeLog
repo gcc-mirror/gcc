@@ -1,3 +1,9 @@
+2014-06-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tree-ssa-forwprop.c (associate_plusminus): For widening conversions
+	check for undefined overflow in (T)(P + A) - (T)P -> (T)A.
+	Issue a strict overflow warning if appropriate.
+
 2014-06-25  Martin Liska  <mliska@suse.cz>
 
 	IPA REF refactoring
