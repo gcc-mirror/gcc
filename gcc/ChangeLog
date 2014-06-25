@@ -1,3 +1,9 @@
+2014-06-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/57742
+	* tree-ssa-strlen.c (handle_builtin_memset): Update strinfo
+	after replacing the statement.
+
 2014-06-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (GHS_default_section_names): Change to const
