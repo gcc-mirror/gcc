@@ -9185,7 +9185,8 @@ c_finish_goto_ptr (location_t loc, tree expr)
 
 /* Generate a C `return' statement.  RETVAL is the expression for what
    to return, or a null pointer for `return;' with no value.  LOC is
-   the location of the return statement.  If ORIGTYPE is not NULL_TREE, it
+   the location of the return statement, or the location of the expression,
+   if the statement has any.  If ORIGTYPE is not NULL_TREE, it
    is the original type of RETVAL.  */
 
 tree
