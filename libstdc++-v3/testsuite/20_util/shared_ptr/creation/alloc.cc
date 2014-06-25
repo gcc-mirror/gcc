@@ -101,16 +101,10 @@ test02()
 	  == tracker_allocator_counter::get_deallocation_count() );
 }
 
-template<typename T>
-  struct Pointer : __gnu_test::PointerBase<Pointer<T>, T>
-  {
-    using __gnu_test::PointerBase<Pointer<T>, T>::PointerBase;
-  };
-
 void
 test03()
 {
-  __gnu_test::CustomPointerAlloc<Pointer<int>> alloc;
+  __gnu_test::CustomPointerAlloc<int> alloc;
   auto p = std::allocate_shared<int>(alloc, 1);
   VERIFY( *p == 1 );
 }

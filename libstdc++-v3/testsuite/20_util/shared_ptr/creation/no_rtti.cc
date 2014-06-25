@@ -29,13 +29,7 @@ struct X { };
 
 // test allocate_shared with no RTTI
 
-template<typename T>
-  struct Pointer : __gnu_test::PointerBase<Pointer<T>, T>
-  {
-    using __gnu_test::PointerBase<Pointer<T>, T>::PointerBase;
-  };
-
-__gnu_test::CustomPointerAlloc<Pointer<int>> alloc;
+__gnu_test::CustomPointerAlloc<int> alloc;
 
 auto p = std::allocate_shared<X>(alloc);
 

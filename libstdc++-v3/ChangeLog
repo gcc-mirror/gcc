@@ -25,6 +25,11 @@
 	with fancy pointer.
 	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
 
+	* testsuite/20_util/shared_ptr/creation/alloc.cc: Fix use of test
+	allocator.
+	* testsuite/20_util/shared_ptr/creation/no_rtti.cc: Likewise.
+	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
+
 2014-06-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/functexcept.h (__throw_out_of_range_fmt): Change
