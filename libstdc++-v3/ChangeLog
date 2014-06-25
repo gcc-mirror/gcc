@@ -6,6 +6,25 @@
 	Likewise.
 	* include/ext/alloc_traits.h: Fix comment.
 
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/allocated_ptr.h (__allocated_ptr, __allocate_guarded):
+	New RAII utilities for working with allocators.
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter): Define
+	__allocator_type typedef and use new __allocated_ptr type.
+	(_Sp_counted_ptr_inplace): Likewise.
+	(__shared_count::__shared_count, __shared_ptr::__shared_ptr): Use
+	__allocate_guarded to to simplify exception handling.
+	* include/experimental/any (any::_Manager_alloc::_S_alloc): Likewise.
+	* include/std/future (_Result_alloc::_M_destroy): Likewise.
+	(_Result_alloc::_S_allocate_result): Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line number.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/no_rtti.cc: New.
+	* testsuite/20_util/shared_ptr/creation/alloc.cc: Test allocator
+	with fancy pointer.
+	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
+
 2014-06-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/functexcept.h (__throw_out_of_range_fmt): Change

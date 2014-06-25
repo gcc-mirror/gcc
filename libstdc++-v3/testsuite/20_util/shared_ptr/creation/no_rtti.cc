@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -fno-rtti" }
 // { dg-do compile }
 
-// Copyright (C) 2013-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,12 +18,24 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.8.2.2 Template class shared_ptr [util.smartptr.shared]
+// 20.8.2.2 Class template shared_ptr [util.smartptr.shared]
 
 #include <memory>
+#include <testsuite_allocator.h>
 
-void test01()
-{
-  std::shared_ptr<void> p((void*)nullptr);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 863 }
-}
+struct X { };
+
+// 20.8.2.2.6 shared_ptr creation [util.smartptr.shared.create]
+
+// test allocate_shared with no RTTI
+
+template<typename T>
+  struct Pointer : __gnu_test::PointerBase<Pointer<T>, T>
+  {
+    using __gnu_test::PointerBase<Pointer<T>, T>::PointerBase;
+  };
+
+__gnu_test::CustomPointerAlloc<Pointer<int>> alloc;
+
+auto p = std::allocate_shared<X>(alloc);
+
