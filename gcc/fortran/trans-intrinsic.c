@@ -1258,7 +1258,8 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
 	{
 	  gfc_clear_attr (&attr);
 	  if (array_expr->ts.type == BT_CHARACTER)
-	    res_var = gfc_conv_string_tmp (se, type, argse.string_length);
+	    res_var = gfc_conv_string_tmp (se, build_pointer_type (type),
+					   argse.string_length);
 	  else
 	    res_var = gfc_create_var (type, "caf_res");
 	  dst_var = gfc_conv_scalar_to_descriptor (&argse, res_var, attr);
