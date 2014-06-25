@@ -38,16 +38,9 @@ void test01()
   VERIFY( p1.get_future().get() == 5 );
 }
 
-template<typename T>
-  struct Pointer : __gnu_test::PointerBase<Pointer<T>, T>
-  {
-    using __gnu_test::PointerBase<Pointer<T>, T>::PointerBase;
-  };
-
-void
-test02()
+void test02()
 {
-  __gnu_test::CustomPointerAlloc<Pointer<int>> alloc;
+  __gnu_test::CustomPointerAlloc<int> alloc;
   promise<int> p1(allocator_arg, alloc);
   p1.set_value(5);
   VERIFY( p1.get_future().get() == 5 );
