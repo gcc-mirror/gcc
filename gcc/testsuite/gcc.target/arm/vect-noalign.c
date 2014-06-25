@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_neon_hw } */
-/* { dg-options "-mfpu=neon -ffast-math -ftree-vectorize -fno-common -O2 -mno-unaligned-access" } */
+/* { dg-options "-O2 -fno-common -ftree-vectorize -mno-unaligned-access" }  */
+/* { dg-add-options arm_neon } */
 
 
 /* Test for-mno-unaligned-access and -ftree-vectorize  and results bus error. */
