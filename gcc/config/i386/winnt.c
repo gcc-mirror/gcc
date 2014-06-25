@@ -784,7 +784,7 @@ i386_find_on_wrapper_list (const char *target)
       char *bufptr;
       /* Breaks up the char array into separated strings
          strings and enter them into the hash table.  */
-      wrappers = new hash_table_c<wrapped_symbol_hasher> (8);
+      wrappers = new hash_table<wrapped_symbol_hasher> (8);
       for (bufptr = wrapper_list_buffer; *bufptr; ++bufptr)
 	{
 	  char *found = NULL;

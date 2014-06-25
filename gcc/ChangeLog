@@ -1,5 +1,9 @@
 2014-06-25  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* config/i386/winnt.c (i386_find_on_wrapper_list): Fix typo.
+
+2014-06-25  Trevor Saunders  <tsaunders@mozilla.com>
+
 	PR bootstrap/61598
 	* fold-const.c (fold_checksum_tree): Use a hash_table of const
 	tree_node * instead of tree_node *.
