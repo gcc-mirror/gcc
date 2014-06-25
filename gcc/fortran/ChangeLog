@@ -1,5 +1,10 @@
 2014-06-25  Tobias Burnus  <burnus@net-b.de>
 
+	* interface.c (check_intents): Fix diagnostic with
+	coindexed coarrays.
+
+2014-06-25  Tobias Burnus  <burnus@net-b.de>
+
 	* resolve.c (resolve_ordinary_assign): Don't invoke caf_send
 	when assigning a coindexed RHS scalar to a noncoindexed LHS
 	array.

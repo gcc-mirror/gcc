@@ -3170,17 +3170,26 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 
   for (;; f = f->next, a = a->next)
     {
+      gfc_expr *expr;
+
       if (f == NULL && a == NULL)
 	break;
       if (f == NULL || a == NULL)
 	gfc_internal_error ("check_intents(): List mismatch");
 
-      if (a->expr == NULL || a->expr->expr_type != EXPR_VARIABLE)
+      if (a->expr && a->expr->expr_type == EXPR_FUNCTION
+	  && a->expr->value.function.isym
+	  && a->expr->value.function.isym->id == GFC_ISYM_CAF_GET)
+	expr = a->expr->value.function.actual->expr;
+      else
+	expr = a->expr;
+
+      if (expr == NULL || expr->expr_type != EXPR_VARIABLE)
 	continue;
 
       f_intent = f->sym->attr.intent;
 
-      if (gfc_pure (NULL) && gfc_impure_variable (a->expr->symtree->n.sym))
+      if (gfc_pure (NULL) && gfc_impure_variable (expr->symtree->n.sym))
 	{
 	  if ((f->sym->ts.type == BT_CLASS && f->sym->attr.class_ok
 	       && CLASS_DATA (f->sym)->attr.class_pointer)
@@ -3188,19 +3197,19 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 	    {
 	      gfc_error ("Procedure argument at %L is local to a PURE "
 			 "procedure and has the POINTER attribute",
-			 &a->expr->where);
+			 &expr->where);
 	      return false;
 	    }
 	}
 
        /* Fortran 2008, C1283.  */
-       if (gfc_pure (NULL) && gfc_is_coindexed (a->expr))
+       if (gfc_pure (NULL) && gfc_is_coindexed (expr))
 	{
 	  if (f_intent == INTENT_INOUT || f_intent == INTENT_OUT)
 	    {
 	      gfc_error ("Coindexed actual argument at %L in PURE procedure "
 			 "is passed to an INTENT(%s) argument",
-			 &a->expr->where, gfc_intent_string (f_intent));
+			 &expr->where, gfc_intent_string (f_intent));
 	      return false;
 	    }
 
@@ -3210,18 +3219,18 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 	    {
 	      gfc_error ("Coindexed actual argument at %L in PURE procedure "
 			 "is passed to a POINTER dummy argument",
-			 &a->expr->where);
+			 &expr->where);
 	      return false;
 	    }
 	}
 
        /* F2008, Section 12.5.2.4.  */
-       if (a->expr->ts.type == BT_CLASS && f->sym->ts.type == BT_CLASS
-	   && gfc_is_coindexed (a->expr))
+       if (expr->ts.type == BT_CLASS && f->sym->ts.type == BT_CLASS
+	   && gfc_is_coindexed (expr))
 	 {
 	   gfc_error ("Coindexed polymorphic actual argument at %L is passed "
 		      "polymorphic dummy argument '%s'",
-			 &a->expr->where, f->sym->name);
+			 &expr->where, f->sym->name);
 	   return false;
 	 }
     }
