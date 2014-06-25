@@ -916,7 +916,7 @@ typedef enum
    For the *normal* section kinds (like .data, .text, etc.) we do not
    want to explicitly force the name of these sections, but would rather
    let the linker (or at least the back end) choose the name of the 
-   section, UNLESS the user has force a specific name for these section
+   section, UNLESS the user has forced a specific name for these section
    kinds.  To accomplish this set the name in ghs_default_section_names
    to null.  */
 
@@ -952,8 +952,8 @@ typedef struct data_area_stack_element
 extern data_area_stack_element * data_area_stack;
 
 /* Names of the various data areas used on the v850.  */
-extern tree GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
-extern tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+extern const char * GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+extern const char * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
 
 /* The assembler op to start the file.  */
 
