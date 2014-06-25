@@ -1,3 +1,9 @@
+2014-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61242
+	* call.c (build_aggr_conv): Ignore passed in flags.
+	(build_array_conv, build_complex_conv): Likewise.
+
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_for_loop): For
