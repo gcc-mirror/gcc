@@ -1,3 +1,17 @@
+2014-06-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (GHS_default_section_names): Change to const
+	char * type.
+	(GHS_current_section_names): Likewise.
+	(v850_insert_attributes): Do not build strings, just assign the
+	names directly.  Change the type of 'chosen_section' to const
+	char*.
+	* config/v850/v850-c.c (ghs_pragma_section): Assign the alias
+	directly to the array entry.
+	* config/v850/v850.h (GHS_default_section_names): Change to const
+	char * type.
+	(GHS_current_section_names): Likewise.
+
 2014-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* langhooks-def.h (LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR): Define.
