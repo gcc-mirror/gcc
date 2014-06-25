@@ -5287,6 +5287,8 @@ finish_omp_clauses (tree clauses)
 			  break;
 			}
 		    }
+		  else
+		    t = fold_convert (TREE_TYPE (OMP_CLAUSE_DECL (c)), t);
 		}
 	      OMP_CLAUSE_LINEAR_STEP (c) = t;
 	    }

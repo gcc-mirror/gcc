@@ -670,6 +670,7 @@ tree gfc_omp_report_decl (tree);
 tree gfc_omp_clause_default_ctor (tree, tree, tree);
 tree gfc_omp_clause_copy_ctor (tree, tree, tree);
 tree gfc_omp_clause_assign_op (tree, tree, tree);
+tree gfc_omp_clause_linear_ctor (tree, tree, tree, tree);
 tree gfc_omp_clause_dtor (tree, tree);
 void gfc_omp_finish_clause (tree, gimple_seq *);
 bool gfc_omp_disregard_value_expr (tree, bool);

@@ -822,6 +822,137 @@ gfc_omp_clause_assign_op (tree clause, tree dest, tree src)
   return gfc_finish_block (&block);
 }
 
+static void
+gfc_omp_linear_clause_add_loop (stmtblock_t *block, tree dest, tree src,
+				tree add, tree nelems)
+{
+  stmtblock_t tmpblock;
+  tree desta, srca, index = gfc_create_var (gfc_array_index_type, "S");
+  nelems = gfc_evaluate_now (nelems, block);
+
+  gfc_init_block (&tmpblock);
+  if (TREE_CODE (TREE_TYPE (dest)) == ARRAY_TYPE)
+    {
+      desta = gfc_build_array_ref (dest, index, NULL);
+      srca = gfc_build_array_ref (src, index, NULL);
+    }
+  else
+    {
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (dest)));
+      tree idx = fold_build2 (MULT_EXPR, sizetype,
+			      fold_convert (sizetype, index),
+			      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (dest))));
+      desta = build_fold_indirect_ref (fold_build2 (POINTER_PLUS_EXPR,
+						    TREE_TYPE (dest), dest,
+						    idx));
+      srca = build_fold_indirect_ref (fold_build2 (POINTER_PLUS_EXPR,
+						   TREE_TYPE (src), src,
+						    idx));
+    }
+  gfc_add_modify (&tmpblock, desta,
+		  fold_build2 (PLUS_EXPR, TREE_TYPE (desta),
+			       srca, add));
+
+  gfc_loopinfo loop;
+  gfc_init_loopinfo (&loop);
+  loop.dimen = 1;
+  loop.from[0] = gfc_index_zero_node;
+  loop.loopvar[0] = index;
+  loop.to[0] = nelems;
+  gfc_trans_scalarizing_loops (&loop, &tmpblock);
+  gfc_add_block_to_block (block, &loop.pre);
+}
+
+/* Build and return code for a constructor of DEST that initializes
+   it to SRC plus ADD (ADD is scalar integer).  */
+
+tree
+gfc_omp_clause_linear_ctor (tree clause, tree dest, tree src, tree add)
+{
+  tree type = TREE_TYPE (dest), ptr, size, nelems = NULL_TREE;
+  stmtblock_t block;
+
+  gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR);
+
+  gfc_start_block (&block);
+  add = gfc_evaluate_now (add, &block);
+
+  if ((! GFC_DESCRIPTOR_TYPE_P (type)
+       || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
+      && !GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause)))
+    {
+      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+      if (!TYPE_DOMAIN (type)
+	  || TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE
+	  || TYPE_MIN_VALUE (TYPE_DOMAIN (type)) == error_mark_node
+	  || TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == error_mark_node)
+	{
+	  nelems = fold_build2 (EXACT_DIV_EXPR, sizetype,
+				TYPE_SIZE_UNIT (type),
+				TYPE_SIZE_UNIT (TREE_TYPE (type)));
+	  nelems = size_binop (MINUS_EXPR, nelems, size_one_node);
+	}
+      else
+	nelems = array_type_nelts (type);
+      nelems = fold_convert (gfc_array_index_type, nelems);
+
+      gfc_omp_linear_clause_add_loop (&block, dest, src, add, nelems);
+      return gfc_finish_block (&block);
+    }
+
+  /* Allocatable arrays in LINEAR clauses need to be allocated
+     and copied from SRC.  */
+  gfc_add_modify (&block, dest, src);
+  if (GFC_DESCRIPTOR_TYPE_P (type))
+    {
+      tree rank = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (type) - 1];
+      size = gfc_conv_descriptor_ubound_get (dest, rank);
+      size = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			      size,
+			      gfc_conv_descriptor_lbound_get (dest, rank));
+      size = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
+			      size, gfc_index_one_node);
+      if (GFC_TYPE_ARRAY_RANK (type) > 1)
+	size = fold_build2_loc (input_location, MULT_EXPR,
+				gfc_array_index_type, size,
+				gfc_conv_descriptor_stride_get (dest, rank));
+      tree esize = fold_convert (gfc_array_index_type,
+				 TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+      nelems = gfc_evaluate_now (unshare_expr (size), &block);
+      size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			      nelems, unshare_expr (esize));
+      size = gfc_evaluate_now (fold_convert (size_type_node, size),
+			       &block);
+      nelems = fold_build2_loc (input_location, MINUS_EXPR,
+				gfc_array_index_type, nelems,
+				gfc_index_one_node);
+    }
+  else
+    size = fold_convert (size_type_node, TYPE_SIZE_UNIT (TREE_TYPE (type)));
+  ptr = gfc_create_var (pvoid_type_node, NULL);
+  gfc_allocate_using_malloc (&block, ptr, size, NULL_TREE);
+  if (GFC_DESCRIPTOR_TYPE_P (type))
+    {
+      gfc_conv_descriptor_data_set (&block, unshare_expr (dest), ptr);
+      tree etype = gfc_get_element_type (type);
+      ptr = fold_convert (build_pointer_type (etype), ptr);
+      tree srcptr = gfc_conv_descriptor_data_get (unshare_expr (src));
+      srcptr = fold_convert (build_pointer_type (etype), srcptr);
+      gfc_omp_linear_clause_add_loop (&block, ptr, srcptr, add, nelems);
+    }
+  else
+    {
+      gfc_add_modify (&block, unshare_expr (dest),
+		      fold_convert (TREE_TYPE (dest), ptr));
+      ptr = fold_convert (TREE_TYPE (dest), ptr);
+      tree dstm = build_fold_indirect_ref (ptr);
+      tree srcm = build_fold_indirect_ref (unshare_expr (src));
+      gfc_add_modify (&block, dstm,
+		      fold_build2 (PLUS_EXPR, TREE_TYPE (add), srcm, add));
+    }
+  return gfc_finish_block (&block);
+}
+
 /* Build and return code destructing DECL.  Return NULL if nothing
    to be done.  */
 
@@ -1667,7 +1798,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 				gfc_add_block_to_block (block, &se.post);
 			      }
 			  }
-			OMP_CLAUSE_LINEAR_STEP (node) = last_step;
+			OMP_CLAUSE_LINEAR_STEP (node)
+			  = fold_convert (gfc_typenode_for_spec (&n->sym->ts),
+					  last_step);
+			if (n->sym->attr.dimension || n->sym->attr.allocatable)
+			  OMP_CLAUSE_LINEAR_ARRAY (node) = 1;
 			omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 		      }
 		  }

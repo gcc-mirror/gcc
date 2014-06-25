@@ -6913,8 +6913,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	case POSTINCREMENT_EXPR:
 	  {
 	    tree decl = TREE_OPERAND (t, 0);
-	    // c_omp_for_incr_canonicalize_ptr() should have been
-	    // called to massage things appropriately.
+	    /* c_omp_for_incr_canonicalize_ptr() should have been
+	       called to massage things appropriately.  */
 	    gcc_assert (!POINTER_TYPE_P (TREE_TYPE (decl)));
 
 	    if (orig_for_stmt != for_stmt)
@@ -6930,6 +6930,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
 	case PREDECREMENT_EXPR:
 	case POSTDECREMENT_EXPR:
+	  /* c_omp_for_incr_canonicalize_ptr() should have been
+	     called to massage things appropriately.  */
+	  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (decl)));
 	  if (orig_for_stmt != for_stmt)
 	    break;
 	  t = build_int_cst (TREE_TYPE (decl), -1);
@@ -6970,12 +6973,16 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  ret = MIN (ret, tret);
 	  if (c)
 	    {
-	      OMP_CLAUSE_LINEAR_STEP (c) = TREE_OPERAND (t, 1);
+	      tree step = TREE_OPERAND (t, 1);
+	      tree stept = TREE_TYPE (decl);
+	      if (POINTER_TYPE_P (stept))
+		stept = sizetype;
+	      step = fold_convert (stept, step);
 	      if (TREE_CODE (t) == MINUS_EXPR)
+		step = fold_build1 (NEGATE_EXPR, stept, step);
+	      OMP_CLAUSE_LINEAR_STEP (c) = step;
+	      if (step != TREE_OPERAND (t, 1))
 		{
-		  t = TREE_OPERAND (t, 1);
-		  OMP_CLAUSE_LINEAR_STEP (c)
-		    = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
 		  tret = gimplify_expr (&OMP_CLAUSE_LINEAR_STEP (c),
 					&for_pre_body, NULL,
 					is_gimple_val, fb_rvalue);

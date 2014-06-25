@@ -1,3 +1,8 @@
+2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): Make sure
+	OMP_CLAUSE_LINEAR_STEP has correct type.
+
 2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* class.c (check_methods, create_vtable_ptr, determine_key_method,

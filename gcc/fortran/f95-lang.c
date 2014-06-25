@@ -126,6 +126,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_COPY_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP
+#undef LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_DTOR
 #undef LANG_HOOKS_OMP_FINISH_CLAUSE
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
@@ -158,6 +159,7 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR	gfc_omp_clause_default_ctor
 #define LANG_HOOKS_OMP_CLAUSE_COPY_CTOR		gfc_omp_clause_copy_ctor
 #define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP		gfc_omp_clause_assign_op
+#define LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR	gfc_omp_clause_linear_ctor
 #define LANG_HOOKS_OMP_CLAUSE_DTOR		gfc_omp_clause_dtor
 #define LANG_HOOKS_OMP_FINISH_CLAUSE		gfc_omp_finish_clause
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr
