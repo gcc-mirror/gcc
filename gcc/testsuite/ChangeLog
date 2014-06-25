@@ -1,3 +1,7 @@
+2014-06-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.c-torture/execute/20140622-1.c: New test.
+
 2014-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 178
