@@ -2362,8 +2362,7 @@ output_symbol_p (symtab_node *node)
     {
       int i;
       struct ipa_ref *ref;
-      for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
-					          i, ref); i++)
+      for (i = 0; node->iterate_referring (i, ref); i++)
 	{
 	  if (ref->use == IPA_REF_ALIAS)
 	    continue;

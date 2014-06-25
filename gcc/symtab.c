@@ -42,6 +42,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "lto-streamer.h"
 #include "output.h"
+#include "ipa-utils.h"
+
+static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
 const char * const ld_plugin_symbol_resolution_names[]=
 {
@@ -284,7 +287,7 @@ symtab_register_node (symtab_node *node)
   if (!node->decl->decl_with_vis.symtab_node)
     node->decl->decl_with_vis.symtab_node = node;
 
-  ipa_empty_ref_list (&node->ref_list);
+  node->ref_list.clear ();
 
   node->order = symtab_order++;
 
@@ -319,8 +322,8 @@ symtab_remove_from_same_comdat_group (symtab_node *node)
 void
 symtab_unregister_node (symtab_node *node)
 {
-  ipa_remove_all_references (&node->ref_list);
-  ipa_remove_all_referring (&node->ref_list);
+  node->remove_all_references ();
+  node->remove_all_referring ();
 
   /* Remove reference to section.  */
   node->set_section_for_node (NULL);
@@ -522,6 +525,277 @@ symtab_node::name () const
   return lang_hooks.decl_printable_name (decl, 2);
 }
 
+/* Return ipa reference from this symtab_node to
+   REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+   of the use.  */
+
+struct ipa_ref *
+symtab_node::add_reference (symtab_node *referred_node,
+			    enum ipa_ref_use use_type)
+{
+  return add_reference (referred_node, use_type, NULL);
+}
+
+
+/* Return ipa reference from this symtab_node to
+   REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+   of the use and STMT the statement (if it exists).  */
+
+struct ipa_ref *
+symtab_node::add_reference (symtab_node *referred_node,
+			    enum ipa_ref_use use_type, gimple stmt)
+{
+  struct ipa_ref *ref = NULL, *ref2 = NULL;
+  struct ipa_ref_list *list, *list2;
+  ipa_ref_t *old_references;
+
+  gcc_checking_assert (!stmt || is_a <cgraph_node *> (this));
+  gcc_checking_assert (use_type != IPA_REF_ALIAS || !stmt);
+
+  list = &ref_list;
+  old_references = vec_safe_address (list->references);
+  vec_safe_grow (list->references, vec_safe_length (list->references) + 1);
+  ref = &list->references->last ();
+
+  list2 = &referred_node->ref_list;
+  list2->referring.safe_push (ref);
+  ref->referred_index = list2->referring.length () - 1;
+  ref->referring = this;
+  ref->referred = referred_node;
+  ref->stmt = stmt;
+  ref->lto_stmt_uid = 0;
+  ref->use = use_type;
+  ref->speculative = 0;
+
+  /* If vector was moved in memory, update pointers.  */
+  if (old_references != list->references->address ())
+    {
+      int i;
+      for (i = 0; iterate_reference(i, ref2); i++)
+	ref2->referred_ref_list ()->referring[ref2->referred_index] = ref2;
+    }
+  return ref;
+}
+
+/* If VAL is a reference to a function or a variable, add a reference from
+   this symtab_node to the corresponding symbol table node.  USE_TYPE specify
+   type of the use and STMT the statement (if it exists).  Return the new
+   reference or NULL if none was created.  */
+
+struct ipa_ref *
+symtab_node::maybe_add_reference (tree val, enum ipa_ref_use use_type,
+				  gimple stmt)
+{
+  STRIP_NOPS (val);
+  if (TREE_CODE (val) != ADDR_EXPR)
+    return NULL;
+  val = get_base_var (val);
+  if (val && (TREE_CODE (val) == FUNCTION_DECL
+	       || TREE_CODE (val) == VAR_DECL))
+    {
+      symtab_node *referred = symtab_get_node (val);
+      gcc_checking_assert (referred);
+      return add_reference (referred, use_type, stmt);
+    }
+  return NULL;
+}
+
+/* Clone all references from symtab NODE to this symtab_node.  */
+
+void
+symtab_node::clone_references (struct symtab_node *node)
+{
+  struct ipa_ref *ref = NULL, *ref2 = NULL;
+  int i;
+  for (i = 0; node->iterate_reference (i, ref); i++)
+    {
+      bool speculative = ref->speculative;
+      unsigned int stmt_uid = ref->lto_stmt_uid;
+
+      ref2 = add_reference (ref->referred, ref->use, ref->stmt);
+      ref2->speculative = speculative;
+      ref2->lto_stmt_uid = stmt_uid;
+    }
+}
+
+/* Clone all referring from symtab NODE to this symtab_node.  */
+
+void
+symtab_node::clone_referring (struct symtab_node *node)
+{
+  struct ipa_ref *ref = NULL, *ref2 = NULL;
+  int i;
+  for (i = 0; node->iterate_referring(i, ref); i++)
+    {
+      bool speculative = ref->speculative;
+      unsigned int stmt_uid = ref->lto_stmt_uid;
+
+      ref2 = ref->referring->add_reference (this, ref->use, ref->stmt);
+      ref2->speculative = speculative;
+      ref2->lto_stmt_uid = stmt_uid;
+    }
+}
+
+/* Clone reference REF to this symtab_node and set its stmt to STMT.  */
+
+struct ipa_ref *
+symtab_node::clone_reference (struct ipa_ref *ref, gimple stmt)
+{
+  bool speculative = ref->speculative;
+  unsigned int stmt_uid = ref->lto_stmt_uid;
+  struct ipa_ref *ref2;
+
+  ref2 = add_reference (ref->referred, ref->use, stmt);
+  ref2->speculative = speculative;
+  ref2->lto_stmt_uid = stmt_uid;
+  return ref2;
+}
+
+/* Find the structure describing a reference to REFERRED_NODE
+   and associated with statement STMT.  */
+
+struct ipa_ref *
+symtab_node::find_reference (symtab_node *referred_node,
+			     gimple stmt, unsigned int lto_stmt_uid)
+{
+  struct ipa_ref *r = NULL;
+  int i;
+
+  for (i = 0; iterate_reference (i, r); i++)
+    if (r->referred == referred_node
+	&& !r->speculative
+	&& ((stmt && r->stmt == stmt)
+	    || (lto_stmt_uid && r->lto_stmt_uid == lto_stmt_uid)
+	    || (!stmt && !lto_stmt_uid && !r->stmt && !r->lto_stmt_uid)))
+      return r;
+  return NULL;
+}
+
+/* Remove all references that are associated with statement STMT.  */
+
+void
+symtab_node::remove_stmt_references (gimple stmt)
+{
+  struct ipa_ref *r = NULL;
+  int i = 0;
+
+  while (iterate_reference (i, r))
+    if (r->stmt == stmt)
+      r->remove_reference ();
+    else
+      i++;
+}
+
+/* Remove all stmt references in non-speculative references.
+   Those are not maintained during inlining & clonning.
+   The exception are speculative references that are updated along
+   with callgraph edges associated with them.  */
+
+void
+symtab_node::clear_stmts_in_references (void)
+{
+  struct ipa_ref *r = NULL;
+  int i;
+
+  for (i = 0; iterate_reference (i, r); i++)
+    if (!r->speculative)
+      {
+	r->stmt = NULL;
+	r->lto_stmt_uid = 0;
+      }
+}
+
+/* Remove all references in ref list.  */
+
+void
+symtab_node::remove_all_references (void)
+{
+  while (vec_safe_length (ref_list.references))
+    ref_list.references->last ().remove_reference ();
+  vec_free (ref_list.references);
+}
+
+/* Remove all referring items in ref list.  */
+
+void
+symtab_node::remove_all_referring (void)
+{
+  while (ref_list.referring.length ())
+    ref_list.referring.last ()->remove_reference ();
+  ref_list.referring.release ();
+}
+
+/* Dump references in ref list to FILE.  */
+
+void
+symtab_node::dump_references (FILE *file)
+{
+  struct ipa_ref *ref = NULL;
+  int i;
+  for (i = 0; iterate_reference (i, ref); i++)
+    {
+      fprintf (file, "%s/%i (%s)",
+               ref->referred->asm_name (),
+               ref->referred->order,
+	       ipa_ref_use_name [ref->use]);
+      if (ref->speculative)
+	fprintf (file, " (speculative)");
+    }
+  fprintf (file, "\n");
+}
+
+/* Dump referring in list to FILE.  */
+
+void
+symtab_node::dump_referring (FILE *file)
+{
+  struct ipa_ref *ref = NULL;
+  int i;
+  for (i = 0; iterate_referring(i, ref); i++)
+    {
+      fprintf (file, "%s/%i (%s)",
+               ref->referring->asm_name (),
+               ref->referring->order,
+	       ipa_ref_use_name [ref->use]);
+      if (ref->speculative)
+	fprintf (file, " (speculative)");
+    }
+  fprintf (file, "\n");
+}
+
+/* Return true if list contains an alias.  */
+bool
+symtab_node::has_aliases_p (void)
+{
+  struct ipa_ref *ref = NULL;
+  int i;
+
+  for (i = 0; iterate_referring (i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      return true;
+  return false;
+}
+
+/* Iterates I-th reference in the list, REF is also set.  */
+
+struct ipa_ref *
+symtab_node::iterate_reference (unsigned i, struct ipa_ref *&ref)
+{
+  vec_safe_iterate (ref_list.references, i, &ref);
+
+  return ref;
+}
+
+/* Iterates I-th referring item in the list, REF is also set.  */
+
+struct ipa_ref *
+symtab_node::iterate_referring (unsigned i, struct ipa_ref *&ref)
+{
+  ref_list.referring.iterate (i, &ref);
+
+  return ref;
+}
+
 static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
 
 /* Dump base fields of symtab nodes.  Not to be used directly.  */
@@ -634,9 +908,9 @@ dump_symtab_base (FILE *f, symtab_node *node)
     }
 
   fprintf (f, "  References: ");
-  ipa_dump_references (f, &node->ref_list);
+  node->dump_references (f);
   fprintf (f, "  Referring: ");
-  ipa_dump_referring (f, &node->ref_list);
+  node->dump_referring (f);
   if (node->lto_file_data)
     fprintf (f, "  Read from file: %s\n",
 	     node->lto_file_data->file_name);
@@ -819,10 +1093,9 @@ verify_symtab_base (symtab_node *node)
       while (n != node);
       if (symtab_comdat_local_p (node))
 	{
-	  struct ipa_ref_list *refs = &node->ref_list;
-	  struct ipa_ref *ref;
+	  struct ipa_ref *ref = NULL;
 
-	  for (int i = 0; ipa_ref_list_referring_iterate (refs, i, ref); ++i)
+	  for (int i = 0; node->iterate_referring (i, ref); ++i)
 	    {
 	      if (!symtab_in_same_comdat_p (ref->referring, node))
 		{
@@ -1355,7 +1628,7 @@ symtab_resolve_alias (symtab_node *node, symtab_node *target)
   node->definition = true;
   node->alias = true;
   node->analyzed = true;
-  ipa_record_reference (node, target, IPA_REF_ALIAS, NULL);
+  node->add_reference (target, IPA_REF_ALIAS, NULL);
 
   /* Add alias into the comdat group of its target unless it is already there.  */
   if (node->same_comdat_group)
@@ -1406,7 +1679,7 @@ symtab_for_node_and_aliases (symtab_node *node,
 
   if (callback (node, data))
     return true;
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
 	symtab_node *alias = ref->referring;

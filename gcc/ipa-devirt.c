@@ -686,8 +686,7 @@ referenced_from_vtable_p (struct cgraph_node *node)
   if (cgraph_state <= CGRAPH_STATE_CONSTRUCTION)
     return true;
 
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
-					      i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
 	
     if ((ref->use == IPA_REF_ALIAS
 	 && referenced_from_vtable_p (cgraph (ref->referring)))

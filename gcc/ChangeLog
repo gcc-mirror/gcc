@@ -1,3 +1,97 @@
+2014-06-25  Martin Liska  <mliska@suse.cz>
+
+	IPA REF refactoring
+	* Makefile.in: Removed header file (ipa-ref-inline.h).
+	* cgraph.c (cgraph_turn_edge_to_speculative): New IPA REF function
+	called.
+	(cgraph_speculative_call_info): Likewise.
+	(cgraph_for_node_thunks_and_aliases): Likewise.
+	(cgraph_for_node_and_aliases): Likewise.
+	(verify_cgraph_node): Likewise.
+	* cgraph.h: Batch of IPA REF functions become member functions of
+	symtab_node: add_reference, maybe_add_reference, clone_references,
+	clone_referring, clone_reference, find_reference,
+	remove_stmt_references, remove_all_references,
+	remove_all_referring, dump_references, dump_referring,
+	has_alias_p, iterate_reference, iterate_referring.
+	* cgraphbuild.c (record_reference): New IPA REF function used.
+	(record_type_list): Likewise.
+	(record_eh_tables): Likewise.
+	(mark_address): Likewise.
+	(mark_load): Likewise.
+	(mark_store): Likewise.
+	(pass_build_cgraph_edges): Likewise.
+	(rebuild_cgraph_edge): Likewise.
+	(cgraph_rebuild_references): Likewise.
+	(pass_remove_cgraph_callee_edges): Likewise.
+	* cgraphclones.c (cgraph_clone_node): Likewise.
+	(cgraph_create_virtual_clone): Likewise.
+	(cgraph_materialize_clone): Likewise.
+	(cgraph_materialize_all_clones): Likewise.
+	* cgraphunit.c (cgraph_reset_node): Likewise.
+	(cgraph_reset_node): Likewise.
+	(analyze_function): Likewise.
+	(assemble_thunks_and_aliases): Likewise.
+	(expand_function): Likewise.
+	* ipa-comdats.c (propagate_comdat_group): Likewise.
+	(enqueue_references): Likewise.
+	* ipa-cp.c (ipcp_discover_new_direct_edges): Likewise.
+	(create_specialized_node): Likewise.
+	* ipa-devirt.c (referenced_from_vtable_p): Likewise.
+	* ipa-inline-transform.c (can_remove_node_now_p_1): Likewise.
+	* ipa-inline.c (reset_edge_caches): Likewise.
+	(update_caller_keys): Likewise.
+	(execute): Likewise.
+	* ipa-prop.c (remove_described_reference): Likewise.
+	(propagate_controlled_uses): Likewise.
+	(ipa_edge_duplication_hook): Likewise.
+	(ipa_modify_call_arguments): Likewise.
+	* ipa-pure-const.c (propagate_pure_const): Likewise.
+	* ipa-ref-inline.h: Header file removed, functions moved
+	to symtab_node class.
+	* ipa-ref.c (remove_reference): New class member function.
+	(cannot_lead_to_return): New class member function.
+	(referring_ref_list): Likewise.
+	(referred_ref_list): Likewise.
+	Rest of functions moved to symtab_node class.
+	* ipa-ref.h: New member functions remove_reference,
+	cannot_lead_to_return, referring_ref_list, referred_ref_list added
+	to ipa_ref class.
+	ipa_ref_list class has new member functions: first_reference,
+	first_referring, clear, nreferences.
+	* ipa-reference.c (analyze_function): New IPA REF function used.
+	(write_node_summary_p): Likewise.
+	(ipa_reference_write_optimization_summary): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* ipa-utils.c (ipa_reverse_postorder): Likewise.
+	* ipa-visibility.c (cgraph_non_local_node_p_1): Likewise.
+	(function_and_variable_visibility): Likewise.
+	* ipa.c (has_addr_references_p): Likewise.
+	(process_references): Argument type changed.
+	(symtab_remove_unreachable_nodes): New IPA REF function used.
+	(process_references): Likewise.
+	(set_writeonly_bit): Likewise.
+	* lto-cgraph.c: Implementation of new symtab_node member functions
+	that uses new IPA REF functions.
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): New IPA REF function used.
+	* lto-streamer-out.c (output_symbol_p): Likewise.
+	* lto-streamer.h (referenced_from_this_partition_p): Argument type
+	changed.
+	* lto/lto-partition.c (add_references_to_partition): New IPA REF function
+	used.
+	(add_symbol_to_partition_1): Likewise.
+	(lto_balanced_map): Likewise.
+	* lto/lto-symtab.c (lto_cgraph_replace_node): Likewise.
+	* symtab.c: Implementation of new IPA REF API.
+	* trans-mem.c (ipa_tm_create_version_alias): New IPA REF function used.
+	(ipa_tm_create_version): Likewise.
+	(ipa_tm_execute): Likewise.
+	* tree-emutls.c (gen_emutls_addr): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+	(delete_unreachable_blocks_update_callgraph): Likewise.
+	* varpool.c (varpool_remove_unreferenced_decls): Likewise.
+	(varpool_for_node_and_aliases): Likewise.
+
 2014-06-25  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config/i386/winnt.c (i386_find_on_wrapper_list): Fix typo.

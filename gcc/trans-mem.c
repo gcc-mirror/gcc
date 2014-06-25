@@ -4860,7 +4860,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   record_tm_clone_pair (old_decl, new_decl);
 
   if (info->old_node->force_output
-      || ipa_ref_list_first_referring (&info->old_node->ref_list))
+      || info->old_node->ref_list.first_referring ())
     ipa_tm_mark_force_output_node (new_node);
   if (info->old_node->forced_by_abi)
     ipa_tm_mark_forced_by_abi_node (new_node);
@@ -4919,7 +4919,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 
   cgraph_call_function_insertion_hooks (new_node);
   if (old_node->force_output
-      || ipa_ref_list_first_referring (&old_node->ref_list))
+      || old_node->ref_list.first_referring ())
     ipa_tm_mark_force_output_node (new_node);
   if (old_node->forced_by_abi)
     ipa_tm_mark_forced_by_abi_node (new_node);
@@ -5439,7 +5439,7 @@ ipa_tm_execute (void)
     {
       struct cgraph_node *caller;
       struct cgraph_edge *e;
-      struct ipa_ref *ref;
+      struct ipa_ref *ref = NULL;
       unsigned j;
 
       if (i > 256 && i == irr_worklist.length () / 8)
@@ -5466,7 +5466,7 @@ ipa_tm_execute (void)
 	}
 
       /* Propagate back to referring aliases as well.  */
-      for (j = 0; ipa_ref_list_referring_iterate (&node->ref_list, j, ref); j++)
+      for (j = 0; node->iterate_referring (j, ref); j++)
 	{
 	  caller = cgraph (ref->referring);
 	  if (ref->use == IPA_REF_ALIAS

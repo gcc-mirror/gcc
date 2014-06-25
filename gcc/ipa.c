@@ -51,10 +51,9 @@ has_addr_references_p (struct cgraph_node *node,
 		       void *data ATTRIBUTE_UNUSED)
 {
   int i;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
-					      i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
     if (ref->use == IPA_REF_ADDR)
       return true;
   return false;
@@ -101,14 +100,14 @@ enqueue_node (symtab_node *node, symtab_node **first,
 /* Process references.  */
 
 static void
-process_references (struct ipa_ref_list *list,
+process_references (symtab_node *snode,
 		    symtab_node **first,
 		    bool before_inlining_p,
 		    struct pointer_set_t *reachable)
 {
   int i;
-  struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
+  struct ipa_ref *ref = NULL;
+  for (i = 0; snode->iterate_reference (i, ref); i++)
     {
       symtab_node *node = ref->referred;
 
@@ -358,8 +357,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		  enqueue_node (next, &first, reachable);
 	    }
 	  /* Mark references as reachable.  */
-	  process_references (&node->ref_list, &first,
-			      before_inlining_p, reachable);
+	  process_references (node, &first, before_inlining_p, reachable);
 	}
 
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
@@ -446,8 +444,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  && !vnode->alias
 	  && in_boundary_p)
 	{
-	  struct ipa_ref *ref;
-	  for (int i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+	  struct ipa_ref *ref = NULL;
+	  for (int i = 0; node->iterate_reference (i, ref); i++)
 	    enqueue_node (ref->referred, &first, reachable);
 	}
     }
@@ -493,7 +491,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		node->local.local = false;
 	      cgraph_node_remove_callees (node);
 	      symtab_remove_from_same_comdat_group (node);
-	      ipa_remove_all_references (&node->ref_list);
+	      node->remove_all_references ();
 	      changed = true;
 	    }
 	}
@@ -555,7 +553,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    varpool_remove_initializer (vnode);
 	  else
 	    DECL_INITIAL (vnode->decl) = init;
-	  ipa_remove_all_references (&vnode->ref_list);
+	  vnode->remove_all_references ();
 	}
       else
 	vnode->aux = NULL;
@@ -618,8 +616,7 @@ process_references (varpool_node *vnode,
       || TREE_THIS_VOLATILE (vnode->decl))
     *explicit_refs = false;
 
-  for (i = 0; ipa_ref_list_referring_iterate (&vnode->ref_list,
-					     i, ref)
+  for (i = 0; vnode->iterate_referring (i, ref)
 	      && *explicit_refs && (!*written || !*address_taken || !*read); i++)
     switch (ref->use)
       {
@@ -658,7 +655,7 @@ set_writeonly_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
     {
       DECL_INITIAL (vnode->decl) = NULL;
       if (!vnode->alias)
-	ipa_remove_all_references (&vnode->ref_list);
+	vnode->remove_all_references ();
     }
   return false;
 }
@@ -1153,7 +1150,7 @@ propagate_single_user (varpool_node *vnode, cgraph_node *function,
 
   /* Check all users and see if they correspond to a single function.  */
   for (i = 0;
-       ipa_ref_list_referring_iterate (&vnode->ref_list, i, ref)
+       vnode->iterate_referring (i, ref)
        && function != BOTTOM; i++)
     {
       struct cgraph_node *cnode = dyn_cast <cgraph_node *> (ref->referring);
@@ -1221,7 +1218,7 @@ ipa_single_use (void)
 
 	  /* Enqueue all aliases for re-processing.  */
 	  for (i = 0;
-	       ipa_ref_list_referring_iterate (&var->ref_list, i, ref); i++)
+	       var->iterate_referring (i, ref); i++)
 	    if (ref->use == IPA_REF_ALIAS
 		&& !ref->referring->aux)
 	      {
@@ -1230,7 +1227,7 @@ ipa_single_use (void)
 	      }
 	  /* Enqueue all users for re-processing.  */
 	  for (i = 0;
-	       ipa_ref_list_reference_iterate (&var->ref_list, i, ref); i++)
+	       var->iterate_reference (i, ref); i++)
 	    if (!ref->referred->aux
 	        && ref->referred->definition
 		&& is_a <varpool_node *> (ref->referred))

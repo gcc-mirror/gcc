@@ -84,7 +84,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	e->call_stmt_cannot_inline_p = 1;
     }
   /* Redirect incomming references.  */
-  ipa_clone_referring (prevailing_node, &node->ref_list);
+  prevailing_node->clone_referring (node);
 
   ipa_merge_profiles (prevailing_node, node);
   lto_free_function_in_decl_state_for_node (node);
@@ -106,7 +106,7 @@ lto_varpool_replace_node (varpool_node *vnode,
   gcc_assert (!vnode->definition || prevailing_node->definition);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 
-  ipa_clone_referring (prevailing_node, &vnode->ref_list);
+  prevailing_node->clone_referring (vnode);
   if (vnode->force_output)
     prevailing_node->force_output = true;
   if (vnode->forced_by_abi)

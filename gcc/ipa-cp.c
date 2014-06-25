@@ -2387,14 +2387,12 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 		    fprintf (dump_file, "     controlled uses count of param "
 			     "%i bumped down to %i\n", param_index, c);
 		  if (c == 0
-		      && (to_del = ipa_find_reference (node,
-						       cs->callee,
-						       NULL, 0)))
+		      && (to_del = node->find_reference (cs->callee, NULL, 0)))
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file, "       and even removing its "
 				 "cloning-created reference\n");
-		      ipa_remove_reference (to_del);
+		      to_del->remove_reference ();
 		    }
 		}
 	    }
@@ -2803,8 +2801,7 @@ create_specialized_node (struct cgraph_node *node,
 					  args_to_skip, "constprop");
   ipa_set_node_agg_value_chain (new_node, aggvals);
   for (av = aggvals; av; av = av->next)
-    ipa_maybe_record_reference (new_node, av->value,
-				IPA_REF_ADDR, NULL);
+    new_node->maybe_add_reference (av->value, IPA_REF_ADDR, NULL);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

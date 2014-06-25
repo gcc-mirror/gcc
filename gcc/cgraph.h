@@ -189,6 +189,71 @@ public:
       return x_section->name;
     }
 
+  /* Return ipa reference from this symtab_node to
+     REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+     of the use and STMT the statement (if it exists).  */
+  struct ipa_ref *add_reference (symtab_node *referred_node,
+				enum ipa_ref_use use_type);
+
+  /* Return ipa reference from this symtab_node to
+     REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
+     of the use and STMT the statement (if it exists).  */
+  struct ipa_ref *add_reference (symtab_node *referred_node,
+				 enum ipa_ref_use use_type, gimple stmt);
+
+  /* If VAL is a reference to a function or a variable, add a reference from
+     this symtab_node to the corresponding symbol table node.  USE_TYPE specify
+     type of the use and STMT the statement (if it exists).  Return the new
+     reference or NULL if none was created.  */
+  struct ipa_ref *maybe_add_reference (tree val, enum ipa_ref_use use_type,
+				       gimple stmt);
+
+  /* Clone all references from symtab NODE to this symtab_node.  */
+  void clone_references (symtab_node *node);
+
+  /* Remove all stmt references in non-speculative references.
+     Those are not maintained during inlining & clonning.
+     The exception are speculative references that are updated along
+     with callgraph edges associated with them.  */
+  void clone_referring (symtab_node *node);
+
+  /* Clone reference REF to this symtab_node and set its stmt to STMT.  */
+  struct ipa_ref *clone_reference (struct ipa_ref *ref, gimple stmt);
+
+  /* Find the structure describing a reference to REFERRED_NODE
+     and associated with statement STMT.  */
+  struct ipa_ref *find_reference (symtab_node *, gimple, unsigned int);
+
+  /* Remove all references that are associated with statement STMT.  */
+  void remove_stmt_references (gimple stmt);
+
+  /* Remove all stmt references in non-speculative references.
+     Those are not maintained during inlining & clonning.
+     The exception are speculative references that are updated along
+     with callgraph edges associated with them.  */
+  void clear_stmts_in_references (void);
+
+  /* Remove all references in ref list.  */
+  void remove_all_references (void);
+
+  /* Remove all referring items in ref list.  */
+  void remove_all_referring (void);
+
+  /* Dump references in ref list to FILE.  */
+  void dump_references (FILE *file);
+
+  /* Dump referring in list to FILE.  */
+  void dump_referring (FILE *);
+
+  /* Return true if list contains an alias.  */
+  bool has_aliases_p (void);
+
+  /* Iterates I-th reference in the list, REF is also set.  */
+  struct ipa_ref *iterate_reference (unsigned i, struct ipa_ref *&ref);
+
+  /* Iterates I-th referring item in the list, REF is also set.  */
+  struct ipa_ref *iterate_referring (unsigned i, struct ipa_ref *&ref);
+
   /* Vectors of referring and referenced entities.  */
   struct ipa_ref_list ref_list;
 
@@ -1537,16 +1602,13 @@ varpool_all_refs_explicit_p (varpool_node *vnode)
 /* Constant pool accessor function.  */
 htab_t constant_pool_htab (void);
 
-/* FIXME: inappropriate dependency of cgraph on IPA.  */
-#include "ipa-ref-inline.h"
-
 /* Return node that alias N is aliasing.  */
 
 static inline symtab_node *
 symtab_alias_target (symtab_node *n)
 {
-  struct ipa_ref *ref;
-  ipa_ref_list_reference_iterate (&n->ref_list, 0, ref);
+  struct ipa_ref *ref = NULL;
+  n->iterate_reference (0, ref);
   gcc_checking_assert (ref->use == IPA_REF_ALIAS);
   return ref->referred;
 }

@@ -72,7 +72,7 @@ propagate_comdat_group (struct symtab_node *symbol,
   /* Walk all references to SYMBOL, recursively dive into aliases.  */
 
   for (i = 0;
-       ipa_ref_list_referring_iterate (&symbol->ref_list, i, ref)
+       symbol->iterate_referring (i, ref)
        && newgroup != error_mark_node; i++)
     {
       struct symtab_node *symbol2 = ref->referring;
@@ -161,9 +161,9 @@ enqueue_references (symtab_node **first,
 		    symtab_node *symbol)
 {
   int i;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
-  for (i = 0; ipa_ref_list_reference_iterate (&symbol->ref_list, i, ref); i++)
+  for (i = 0; symbol->iterate_reference (i, ref); i++)
     {
       symtab_node *node = symtab_alias_ultimate_target (ref->referred, NULL);
       if (!node->aux && node->definition)

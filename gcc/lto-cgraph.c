@@ -315,14 +315,15 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
     }
 }
 
-/* Return if LIST contain references from other partitions.  */
+/* Return if NODE contain references from other partitions.  */
 
 bool
-referenced_from_other_partition_p (struct ipa_ref_list *list, lto_symtab_encoder_t encoder)
+referenced_from_other_partition_p (symtab_node *node, lto_symtab_encoder_t encoder)
 {
   int i;
-  struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
+  struct ipa_ref *ref = NULL;
+
+  for (i = 0; node->iterate_referring (i, ref); i++)
     {
       if (ref->referring->in_other_partition
           || !lto_symtab_encoder_in_partition_p (encoder, ref->referring))
@@ -348,15 +349,16 @@ reachable_from_other_partition_p (struct cgraph_node *node, lto_symtab_encoder_t
   return false;
 }
 
-/* Return if LIST contain references from other partitions.  */
+/* Return if NODE contain references from other partitions.  */
 
 bool
-referenced_from_this_partition_p (struct ipa_ref_list *list,
+referenced_from_this_partition_p (symtab_node *node,
 				  lto_symtab_encoder_t encoder)
 {
   int i;
-  struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
+  struct ipa_ref *ref = NULL;
+
+  for (i = 0; node->iterate_referring (i, ref); i++)
     if (lto_symtab_encoder_in_partition_p (encoder, ref->referring))
       return true;
   return false;
@@ -523,8 +525,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, tag == LTO_symtab_analyzed_node
 		 && symtab_get_symbol_partitioning_class (node) == SYMBOL_PARTITION
 		 && (reachable_from_other_partition_p (node, encoder)
-		     || referenced_from_other_partition_p (&node->ref_list,
-							   encoder)), 1);
+		     || referenced_from_other_partition_p (node, encoder)), 1);
   bp_pack_value (&bp, node->lowered, 1);
   bp_pack_value (&bp, in_other_partition, 1);
   /* Real aliases in a boundary become non-aliases. However we still stream
@@ -607,8 +608,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   else
     {
       bp_pack_value (&bp, node->definition
-		     && referenced_from_other_partition_p (&node->ref_list,
-							   encoder), 1);
+		     && referenced_from_other_partition_p (node, encoder), 1);
       bp_pack_value (&bp, node->analyzed
 		     && boundary_p && !DECL_EXTERNAL (node->decl), 1);
 	  /* in_other_partition.  */
@@ -760,14 +760,13 @@ output_refs (lto_symtab_encoder_t encoder)
     {
       symtab_node *node = lsei_node (lsei);
 
-      count = ipa_ref_list_nreferences (&node->ref_list);
+      count = node->ref_list.nreferences ();
       if (count)
 	{
 	  streamer_write_gcov_count_stream (ob->main_stream, count);
 	  streamer_write_uhwi_stream (ob->main_stream,
 				     lto_symtab_encoder_lookup (encoder, node));
-	  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list,
-						      i, ref); i++)
+	  for (i = 0; node->iterate_reference (i, ref); i++)
 	    lto_output_ref (ob, ref, encoder);
 	}
     }
@@ -791,17 +790,16 @@ add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
   lto_symtab_encoder_encode (encoder, node);
 }
 
-/* Add all references in LIST to encoders.  */
+/* Add all references in NODE to encoders.  */
 
 static void
-add_references (lto_symtab_encoder_t encoder,
-		struct ipa_ref_list *list)
+add_references (lto_symtab_encoder_t encoder, symtab_node *node)
 {
   int i;
-  struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
+  struct ipa_ref *ref = NULL;
+  for (i = 0; node->iterate_reference (i, ref); i++)
     if (is_a <cgraph_node *> (ref->referred))
-      add_node_to (encoder, ipa_ref_node (ref), false);
+      add_node_to (encoder, dyn_cast <cgraph_node *> (ref->referred), false);
     else
       lto_symtab_encoder_encode (encoder, ref->referred);
 }
@@ -834,7 +832,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       struct cgraph_node *node = lsei_cgraph_node (lsei);
       add_node_to (encoder, node, true);
       lto_set_symtab_encoder_in_partition (encoder, node);
-      add_references (encoder, &node->ref_list);
+      add_references (encoder, node);
       /* For proper debug info, we need to ship the origins, too.  */
       if (DECL_ABSTRACT_ORIGIN (node->decl))
 	{
@@ -850,7 +848,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 
       lto_set_symtab_encoder_in_partition (encoder, vnode);
       lto_set_symtab_encoder_encode_initializer (encoder, vnode);
-      add_references (encoder, &vnode->ref_list);
+      add_references (encoder, vnode);
       /* For proper debug info, we need to ship the origins, too.  */
       if (DECL_ABSTRACT_ORIGIN (vnode->decl))
 	{
@@ -872,7 +870,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      && ctor_for_folding (vnode->decl) != error_mark_node)
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
-	      add_references (encoder, &vnode->ref_list);
+	      add_references (encoder, vnode);
 	    }
        }
     }
@@ -1317,7 +1315,7 @@ input_ref (struct lto_input_block *ib,
   use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
   speculative = (enum ipa_ref_use) bp_unpack_value (&bp, 1);
   node = nodes[streamer_read_hwi (ib)];
-  ref = ipa_record_reference (referring_node, node, use, NULL);
+  ref = referring_node->add_reference (node, use);
   ref->speculative = speculative;
   if (is_a <cgraph_node *> (referring_node))
     ref->lto_stmt_uid = streamer_read_hwi (ib);
