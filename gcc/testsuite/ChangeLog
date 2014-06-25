@@ -1,3 +1,12 @@
+2014-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 178
+	PR c++/49132
+	* g++.dg/cpp0x/aggr1.C: New.
+	* g++.dg/cpp0x/aggr2.C: Likewise.
+	* g++.dg/init/aggr11.C: Likewise.
+	* g++.dg/init/aggr12.C: Likewise.
+
 2014-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/ipa/pr61540.C: Remove dumping test.
