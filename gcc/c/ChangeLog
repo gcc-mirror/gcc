@@ -1,3 +1,9 @@
+2014-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61162
+	* c-parser.c (c_parser_statement_after_labels): Pass the location of
+	the return expression to c_finish_return.
+
 2014-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (c_finish_omp_clauses): Make sure

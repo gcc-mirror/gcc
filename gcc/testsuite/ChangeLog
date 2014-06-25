@@ -1,3 +1,9 @@
+2014-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61162
+	* gcc.dg/pr61162.c: Adjust dg-warning.
+	* gcc.dg/pr61162-2.c: New test.
+
 2014-06-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/57742
