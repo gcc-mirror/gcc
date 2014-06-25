@@ -1,3 +1,9 @@
+2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.fortran/simd5.f90: New test.
+	* testsuite/libgomp.fortran/simd6.f90: New test.
+	* testsuite/libgomp.fortran/simd7.f90: New test.
+
 2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/for-2.c: Define SC to static for

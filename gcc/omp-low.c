@@ -3083,11 +3083,14 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
     for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
       switch (OMP_CLAUSE_CODE (c))
 	{
+	case OMP_CLAUSE_LINEAR:
+	  if (OMP_CLAUSE_LINEAR_ARRAY (c))
+	    max_vf = 1;
+	  /* FALLTHRU */
 	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_LASTPRIVATE:
-	case OMP_CLAUSE_LINEAR:
 	  if (is_variable_sized (OMP_CLAUSE_DECL (c)))
 	    max_vf = 1;
 	  break;
@@ -3413,14 +3416,12 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
 		      && gimple_omp_for_combined_into_p (ctx->stmt))
 		    {
-		      tree stept = POINTER_TYPE_P (TREE_TYPE (x))
-				   ? sizetype : TREE_TYPE (x);
-		      tree t = fold_convert (stept,
-					     OMP_CLAUSE_LINEAR_STEP (c));
-		      tree c = find_omp_clause (clauses,
-						OMP_CLAUSE__LOOPTEMP_);
-		      gcc_assert (c);
-		      tree l = OMP_CLAUSE_DECL (c);
+		      tree t = OMP_CLAUSE_LINEAR_STEP (c);
+		      tree stept = TREE_TYPE (t);
+		      tree ct = find_omp_clause (clauses,
+						 OMP_CLAUSE__LOOPTEMP_);
+		      gcc_assert (ct);
+		      tree l = OMP_CLAUSE_DECL (ct);
 		      tree n1 = fd->loop.n1;
 		      tree step = fd->loop.step;
 		      tree itype = TREE_TYPE (l);
@@ -3437,6 +3438,15 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			l = fold_build2 (TRUNC_DIV_EXPR, itype, l, step);
 		      t = fold_build2 (MULT_EXPR, stept,
 				       fold_convert (stept, l), t);
+
+		      if (OMP_CLAUSE_LINEAR_ARRAY (c))
+			{
+			  x = lang_hooks.decls.omp_clause_linear_ctor
+							(c, new_var, x, t);
+			  gimplify_and_add (x, ilist);
+			  goto do_dtor;
+			}
+
 		      if (POINTER_TYPE_P (TREE_TYPE (x)))
 			x = fold_build2 (POINTER_PLUS_EXPR,
 					 TREE_TYPE (x), x, t);
@@ -3460,10 +3470,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			    = gimple_build_assign (unshare_expr (lvar), iv);
 			  gsi_insert_before_without_update (&gsi, g,
 							    GSI_SAME_STMT);
-			  tree stept = POINTER_TYPE_P (TREE_TYPE (iv))
-				       ? sizetype : TREE_TYPE (iv);
-			  tree t = fold_convert (stept,
-						 OMP_CLAUSE_LINEAR_STEP (c));
+			  tree t = OMP_CLAUSE_LINEAR_STEP (c);
 			  enum tree_code code = PLUS_EXPR;
 			  if (POINTER_TYPE_P (TREE_TYPE (new_var)))
 			    code = POINTER_PLUS_EXPR;

@@ -1,3 +1,17 @@
+2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* langhooks-def.h (LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR): Define.
+	(LANG_HOOKS_DECLS): Add it.
+	* gimplify.c (gimplify_omp_for): Make sure OMP_CLAUSE_LINEAR_STEP
+	has correct type.
+	* tree.h (OMP_CLAUSE_LINEAR_ARRAY): Define.
+	* langhooks.h (struct lang_hooks_for_decls): Add
+	omp_clause_linear_ctor hook.
+	* omp-low.c (lower_rec_input_clauses): Set max_vf even if
+	OMP_CLAUSE_LINEAR_ARRAY is set.  Don't fold_convert
+	OMP_CLAUSE_LINEAR_STEP.  For OMP_CLAUSE_LINEAR_ARRAY in
+	combined simd loop use omp_clause_linear_ctor hook.
+
 2014-06-24  Cong Hou  <congh@google.com>
 
 	* tree-vect-patterns.c (vect_recog_sad_pattern): New function for SAD
