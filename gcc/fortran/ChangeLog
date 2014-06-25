@@ -1,10 +1,19 @@
 2014-06-25  Tobias Burnus  <burnus@net-b.de>
 
+	* resolve.c (resolve_ordinary_assign): Don't invoke caf_send
+	when assigning a coindexed RHS scalar to a noncoindexed LHS
+	array.
+	* trans-intrinsic.c (conv_caf_send): Do numeric type conversion
+	for a noncoindexed scalar RHS.
+
+2014-06-25  Tobias Burnus  <burnus@net-b.de>
+
 	* check.c (check_co_minmaxsum): Add definable check.
 	* expr.c (gfc_check_vardef_context): Fix context == NULL case.
-	* trans-expr.c (get_scalar_to_descriptor_type): Handle pointer arguments.
-	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Fix generation of temporary
-	strings.
+	* trans-expr.c (get_scalar_to_descriptor_type): Handle pointer
+	arguments.
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Fix generation of
+	temporary strings.
 
 2014-06-25  Jakub Jelinek  <jakub@redhat.com>
 

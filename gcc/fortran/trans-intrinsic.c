@@ -1349,6 +1349,7 @@ conv_caf_send (gfc_code *code) {
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
   tree caf_decl, token, offset, image_index, tmp, lhs_kind, rhs_kind;
+  tree lhs_type = NULL_TREE;
   tree vec = null_pointer_node, rhs_vec = null_pointer_node;
 
   gcc_assert (gfc_option.coarray == GFC_FCOARRAY_LIB);
@@ -1364,6 +1365,7 @@ conv_caf_send (gfc_code *code) {
       symbol_attribute attr;
       gfc_clear_attr (&attr);
       gfc_conv_expr (&lhs_se, lhs_expr);
+      lhs_type = TREE_TYPE (lhs_se.expr);
       lhs_se.expr = gfc_conv_scalar_to_descriptor (&lhs_se, lhs_se.expr, attr);
       lhs_se.expr = gfc_build_addr_expr (NULL_TREE, lhs_se.expr);
     }
@@ -1385,6 +1387,7 @@ conv_caf_send (gfc_code *code) {
 	}
       lhs_se.want_pointer = 1;
       gfc_conv_expr_descriptor (&lhs_se, lhs_expr);
+      lhs_type = gfc_get_element_type (TREE_TYPE (TREE_TYPE (lhs_se.expr)));
       if (has_vector)
 	{
 	  vec = conv_caf_vector_subscript (&block, lhs_se.expr, ar);
@@ -1418,11 +1421,16 @@ conv_caf_send (gfc_code *code) {
 
   /* RHS.  */
   gfc_init_se (&rhs_se, NULL);
+  if (rhs_expr->expr_type == EXPR_FUNCTION && rhs_expr->value.function.isym
+      && rhs_expr->value.function.isym->id == GFC_ISYM_CONVERSION)
+    rhs_expr = rhs_expr->value.function.actual->expr;
   if (rhs_expr->rank == 0)
     {
       symbol_attribute attr;
       gfc_clear_attr (&attr);
       gfc_conv_expr (&rhs_se, rhs_expr);
+      if (!gfc_is_coindexed (rhs_expr) && rhs_expr->ts.type != BT_CHARACTER)
+	 rhs_se.expr = fold_convert (lhs_type , rhs_se.expr);
       rhs_se.expr = gfc_conv_scalar_to_descriptor (&rhs_se, rhs_se.expr, attr);
       rhs_se.expr = gfc_build_addr_expr (NULL_TREE, rhs_se.expr);
     }

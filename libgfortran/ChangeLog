@@ -1,3 +1,9 @@
+2014-06-25  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/single.c (assign_char4_from_char1, assign_char1_from_char4,
+	convert_type): New static functions.
+	(_gfortran_caf_get, _gfortran_caf_send): Use them.
+
 2014-06-19  Tobias Burnus  <burnus@net-b.de>
 
 	* caf/single.c (_gfortran_caf_co_sum, _gfortran_caf_co_max,
