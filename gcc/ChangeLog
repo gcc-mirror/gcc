@@ -1,3 +1,17 @@
+2014-06-25  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR bootstrap/61598
+	* fold-const.c (fold_checksum_tree): Use a hash_table of const
+	tree_node * instead of tree_node *.
+	(fold): Adjust.
+	(print_fold_checksum): Likewise.
+	(fold_check_failed): Likewise.
+	(debug_fold_checksum): Likewise.
+	(fold_build1_stat_loc): Likewise.
+	(fold_build2_stat_loc): Likewise.
+	(fold_build3_stat_loc): Likewise.
+	(fold_build_call_array_loc): Likewise.
+
 2014-06-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Replace
