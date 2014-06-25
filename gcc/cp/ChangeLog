@@ -1,3 +1,11 @@
+2014-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 178
+	PR c++/49132
+	* typeck2.c (process_init_constructor_record): Do not complain about
+	uninitialized const members, because within aggregate-initialization,
+	members without explicit initializers are value-initialized.
+
 2014-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (finish_omp_clauses): Make sure
@@ -6,7 +14,8 @@
 2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* class.c (check_methods, create_vtable_ptr, determine_key_method,
-	add_vcall_offset_vtbl_entries_1): Guard VINDEX checks by FUNCTION_DECL check.
+	add_vcall_offset_vtbl_entries_1): Guard VINDEX checks by
+	FUNCTION_DECL check.
 	* cp-tree.h (lang_decl_ns): Add ns_using and ns_users.
 	(DECL_NAMESPACE_USING, DECL_NAMESPACE_USERS): Use lang_decl_ns.
 	(DECL_NAMESPACE_ASSOCIATIONS): Use DECL_INITIAL.
