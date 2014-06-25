@@ -1653,6 +1653,8 @@ handle_builtin_memset (gimple_stmt_iterator *gsi)
       gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt1);
       update_gimple_call (&gsi1, builtin_decl_implicit (BUILT_IN_CALLOC), 2,
 			  size, build_one_cst (size_type_node));
+      si1->length = build_int_cst (size_type_node, 0);
+      si1->stmt = gsi_stmt (gsi1);
     }
   else
     return true;

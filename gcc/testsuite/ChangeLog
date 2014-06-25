@@ -1,3 +1,8 @@
+2014-06-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/57742
+	* gcc.dg/tree-ssa/calloc-3.c: New file.
+
 2014-06-25  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/61560
