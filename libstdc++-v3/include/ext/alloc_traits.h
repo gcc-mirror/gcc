@@ -210,6 +210,6 @@ template<typename _Alloc>
   };
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
+} // namespace __gnu_cxx
 
 #endif
