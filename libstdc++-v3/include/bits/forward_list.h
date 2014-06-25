@@ -274,13 +274,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     struct _Fwd_list_base
     {
     protected:
-      typedef typename __gnu_cxx::__alloc_traits<_Alloc> _Alloc_traits;
-      typedef typename _Alloc_traits::template rebind<_Tp>::other
-        _Tp_alloc_type;
-
-      typedef typename _Alloc_traits::template
-        rebind<_Fwd_list_node<_Tp>>::other _Node_alloc_type;
-
+      typedef __alloc_rebind<_Alloc, _Tp> 		  _Tp_alloc_type;
+      typedef __alloc_rebind<_Alloc, _Fwd_list_node<_Tp>> _Node_alloc_type;
       typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
 
       struct _Fwd_list_impl 

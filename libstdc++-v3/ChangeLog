@@ -1,3 +1,11 @@
+2014-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (__alloc_rebind): Define alias template.
+	* include/bits/forward_list.h (_Fwd_list_base): Use __alloc_rebind.
+	* include/bits/hashtable_policy.h (_Insert_base, _Hashtable_alloc):
+	Likewise.
+	* include/ext/alloc_traits.h: Fix comment.
+
 2014-06-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/functexcept.h (__throw_out_of_range_fmt): Change
