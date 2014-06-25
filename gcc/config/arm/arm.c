@@ -17642,11 +17642,11 @@ arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
   if (TARGET_AAPCS_BASED)
     {
       /* For AAPCS, IP and CC can be clobbered by veneers inserted by the
-	 linker.  We need to add these to allow setting
-	 TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS to true.  */
+	 linker.  We need to add an IP clobber to allow setting
+	 TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS to true.  A CC clobber
+	 is not needed since it's a fixed register.  */
       rtx *fusage = &CALL_INSN_FUNCTION_USAGE (insn);
       clobber_reg (fusage, gen_rtx_REG (word_mode, IP_REGNUM));
-      clobber_reg (fusage, gen_rtx_REG (word_mode, CC_REGNUM));
     }
 }
 
