@@ -1,3 +1,25 @@
+2014-06-24  Cong Hou  <congh@google.com>
+
+	* tree-vect-patterns.c (vect_recog_sad_pattern): New function for SAD
+	pattern recognition.
+	(type_conversion_p): PROMOTION is true if it's a type promotion
+	conversion, and false otherwise.  Return true if the given expression
+	is a type conversion one.
+	* tree-vectorizer.h: Adjust the number of patterns.
+	* tree.def: Add SAD_EXPR.
+	* optabs.def: Add sad_optab.
+	* cfgexpand.c (expand_debug_expr): Add SAD_EXPR case.
+	* expr.c (expand_expr_real_2): Likewise.
+	* gimple-pretty-print.c (dump_ternary_rhs): Likewise.
+	* gimple.c (get_gimple_rhs_num_ops): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-cfg.c (estimate_operator_cost): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-vect-loop.c (get_initial_def_for_reduction): Likewise.
+	* config/i386/sse.md: Add SSE2 and AVX2 expand for SAD.
+	* doc/generic.texi: Add document for SAD_EXPR.
+	* doc/md.texi: Add document for ssad and usad.
+
 2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config/i386/winnt.c (i386_pe_section_type_flags): Fix const

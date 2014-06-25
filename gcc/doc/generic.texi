@@ -1702,6 +1702,7 @@ a value from @code{enum annot_expr_kind}.
 @tindex VEC_PACK_TRUNC_EXPR
 @tindex VEC_PACK_SAT_EXPR
 @tindex VEC_PACK_FIX_TRUNC_EXPR
+@tindex SAD_EXPR
 
 @table @code
 @item VEC_LSHIFT_EXPR
@@ -1782,6 +1783,15 @@ value, it is taken from the second operand. It should never evaluate to
 any other value currently, but optimizations should not rely on that
 property. In contrast with a @code{COND_EXPR}, all operands are always
 evaluated.
+
+@item SAD_EXPR
+This node represents the Sum of Absolute Differences operation.  The three
+operands must be vectors of integral types.  The first and second operand
+must have the same type.  The size of the vector element of the third
+operand must be at lease twice of the size of the vector element of the
+first and second one.  The SAD is calculated between the first and second
+operands, added to the third operand, and returned.
+
 @end table
 
 

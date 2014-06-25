@@ -3972,6 +3972,36 @@ verify_gimple_assign_ternary (gimple stmt)
 
       return false;
 
+    case SAD_EXPR:
+      if (!useless_type_conversion_p (rhs1_type, rhs2_type)
+	  || !useless_type_conversion_p (lhs_type, rhs3_type)
+	  || 2 * GET_MODE_BITSIZE (GET_MODE_INNER
+				     (TYPE_MODE (TREE_TYPE (rhs1_type))))
+	       > GET_MODE_BITSIZE (GET_MODE_INNER
+				     (TYPE_MODE (TREE_TYPE (lhs_type)))))
+	{
+	  error ("type mismatch in sad expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs2_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs3_type) != VECTOR_TYPE)
+	{
+	  error ("vector types expected in sad expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+
+      return false;
+
     case DOT_PROD_EXPR:
     case REALIGN_LOAD_EXPR:
       /* FIXME.  */

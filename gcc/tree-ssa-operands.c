@@ -859,6 +859,7 @@ get_expr_operands (struct function *fn, gimple stmt, tree *expr_p, int flags)
       }
 
     case DOT_PROD_EXPR:
+    case SAD_EXPR:
     case REALIGN_LOAD_EXPR:
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
