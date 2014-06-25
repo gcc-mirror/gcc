@@ -1,3 +1,11 @@
+2014-06-25  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (check_co_minmaxsum): Add definable check.
+	* expr.c (gfc_check_vardef_context): Fix context == NULL case.
+	* trans-expr.c (get_scalar_to_descriptor_type): Handle pointer arguments.
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get): Fix generation of temporary
+	strings.
+
 2014-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans.h (gfc_omp_clause_linear_ctor): New prototype.
