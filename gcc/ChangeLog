@@ -1,3 +1,8 @@
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/winnt.c (i386_pe_section_type_flags): Fix const
+	qualification in cast.
+
 2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (find_decls_types_r): Do not check DECL_VINDEX for TYPE_DECL.
