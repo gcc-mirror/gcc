@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-early-inlining -fdump-ipa-cp" } */
+/* { dg-options "-O3 -fno-early-inlining" } */
 
 struct data {
   data(int) {}
@@ -36,6 +36,3 @@ int main (int argc, char **argv)
   test (c);
   return 0;
 }
-
-/* { dg-final { scan-ipa-dump "Type inconsident devirtualization" "cp" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */

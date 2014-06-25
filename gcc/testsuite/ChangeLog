@@ -1,3 +1,7 @@
+2014-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/pr61540.C: Remove dumping test.
+
 2014-06-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61162
