@@ -1101,7 +1101,7 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 				 int direct_frequency)
 {
   struct cgraph_node *n = e->caller;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
   struct cgraph_edge *e2;
 
   if (dump_file)
@@ -1123,8 +1123,7 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
   e->count -= e2->count;
   e->frequency -= e2->frequency;
   cgraph_call_edge_duplication_hooks (e, e2);
-  ref = ipa_record_reference (n, n2,
-			      IPA_REF_ADDR, e->call_stmt);
+  ref = n->add_reference (n2, IPA_REF_ADDR, e->call_stmt);
   ref->lto_stmt_uid = e->lto_stmt_uid;
   ref->speculative = e->speculative;
   cgraph_mark_address_taken_node (n2);
@@ -1177,8 +1176,7 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
   indirect = e2;
 
   reference = NULL;
-  for (i = 0; ipa_ref_list_reference_iterate (&e->caller->ref_list,
-					      i, ref); i++)
+  for (i = 0; e->caller->iterate_reference (i, ref); i++)
     if (ref->speculative
 	&& ((ref->stmt && ref->stmt == e->call_stmt)
 	    || (!ref->stmt && ref->lto_stmt_uid == e->lto_stmt_uid)))
@@ -1257,7 +1255,7 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
     edge->frequency = CGRAPH_FREQ_MAX;
   edge->speculative = false;
   e2->speculative = false;
-  ipa_remove_reference (ref);
+  ref->remove_reference ();
   if (e2->indirect_unknown_callee || e2->inline_failed)
     cgraph_remove_edge (e2);
   else
@@ -2197,7 +2195,7 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
 {
   struct cgraph_edge *e;
   int i;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
   if (callback (node, data))
     return true;
@@ -2208,10 +2206,10 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
       if (cgraph_for_node_thunks_and_aliases (e->caller, callback, data,
 					      include_overwritable))
 	return true;
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct cgraph_node *alias = ipa_ref_referring_node (ref);
+	struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
 	if (include_overwritable
 	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
 	  if (cgraph_for_node_thunks_and_aliases (alias, callback, data,
@@ -2232,14 +2230,14 @@ cgraph_for_node_and_aliases (struct cgraph_node *node,
 			     bool include_overwritable)
 {
   int i;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
   if (callback (node, data))
     return true;
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct cgraph_node *alias = ipa_ref_referring_node (ref);
+	struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
 	if (include_overwritable
 	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
           if (cgraph_for_node_and_aliases (alias, callback, data,
@@ -2843,15 +2841,14 @@ verify_cgraph_node (struct cgraph_node *node)
     {
       bool ref_found = false;
       int i;
-      struct ipa_ref *ref;
+      struct ipa_ref *ref = NULL;
 
       if (node->callees)
 	{
 	  error ("Alias has call edges");
           error_found = true;
 	}
-      for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list,
-						  i, ref); i++)
+      for (i = 0; node->iterate_reference (i, ref); i++)
 	if (ref->use != IPA_REF_ALIAS)
 	  {
 	    error ("Alias has non-alias reference");
@@ -2897,7 +2894,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	{
 	  pointer_set_t *stmts = pointer_set_create ();
 	  int i;
-	  struct ipa_ref *ref;
+	  struct ipa_ref *ref = NULL;
 
 	  /* Reach the trees by walking over the CFG, and note the
 	     enclosing basic-blocks in the call edges.  */
@@ -2955,8 +2952,7 @@ verify_cgraph_node (struct cgraph_node *node)
 		}
 	      }
 	    for (i = 0;
-		 ipa_ref_list_reference_iterate (&node->ref_list, i, ref);
-		 i++)
+		 node->iterate_reference (i, ref); i++)
 	      if (ref->stmt && !pointer_set_contains (stmts, ref->stmt))
 		{
 		  error ("reference to dead statement");

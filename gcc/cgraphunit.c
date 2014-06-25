@@ -393,7 +393,7 @@ cgraph_reset_node (struct cgraph_node *node)
   node->cpp_implicit_alias = false;
 
   cgraph_node_remove_callees (node);
-  ipa_remove_all_references (&node->ref_list);
+  node->remove_all_references ();
 }
 
 /* Return true when there are references to NODE.  */
@@ -401,10 +401,10 @@ cgraph_reset_node (struct cgraph_node *node)
 static bool
 referred_to_p (symtab_node *node)
 {
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
   /* See if there are any references at all.  */
-  if (ipa_ref_list_referring_iterate (&node->ref_list, 0, ref))
+  if (node->iterate_referring (0, ref))
     return true;
   /* For functions check also calls.  */
   cgraph_node *cn = dyn_cast <cgraph_node *> (node);
@@ -1069,7 +1069,7 @@ analyze_functions (void)
 		   next = next->same_comdat_group)
 		enqueue_node (next);
 	    }
-	  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+	  for (i = 0; node->iterate_reference (i, ref); i++)
 	    if (ref->referred->definition)
 	      enqueue_node (ref->referred);
           cgraph_process_new_functions ();
@@ -1712,7 +1712,7 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
   int i;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
   for (e = node->callers; e;)
     if (e->caller->thunk.thunk_p)
@@ -1725,11 +1725,10 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
       }
     else
       e = e->next_caller;
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
-					     i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
-	struct cgraph_node *alias = ipa_ref_referring_node (ref);
+	struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
         bool saved_written = TREE_ASM_WRITTEN (node->decl);
 
 	/* Force assemble_alias to really output the alias this time instead
@@ -1852,7 +1851,7 @@ expand_function (struct cgraph_node *node)
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
      points to the dead function body.  */
   cgraph_node_remove_callees (node);
-  ipa_remove_all_references (&node->ref_list);
+  node->remove_all_references ();
 }
 
 /* Node comparer that is responsible for the order that corresponds

@@ -35,6 +35,20 @@ enum GTY(()) ipa_ref_use
 /* Record of reference in callgraph or varpool.  */
 struct GTY(()) ipa_ref
 {
+public:
+  /* Remove reference.  */
+  void remove_reference ();
+
+  /* Return true when execution of reference can lead to return from
+     function.  */
+  bool cannot_lead_to_return ();
+
+  /* Return reference list this reference is in.  */
+  struct ipa_ref_list * referring_ref_list (void);
+
+  /* Return reference list this reference is in.  */
+  struct ipa_ref_list * referred_ref_list (void);
+
   symtab_node *referring;
   symtab_node *referred;
   gimple stmt;
@@ -51,29 +65,39 @@ typedef struct ipa_ref *ipa_ref_ptr;
 /* List of references.  This is stored in both callgraph and varpool nodes.  */
 struct GTY(()) ipa_ref_list
 {
+public:
+  /* Return first reference in list or NULL if empty.  */
+  struct ipa_ref *first_reference (void)
+  {
+    if (!vec_safe_length (references))
+      return NULL;
+    return &(*references)[0];
+  }
+
+  /* Return first referring ref in list or NULL if empty.  */
+  struct ipa_ref *first_referring (void)
+  {
+    if (!referring.length ())
+      return NULL;
+    return referring[0];
+  }
+
+  /* Clear reference list.  */
+  void clear (void)
+  {
+    referring.create (0);
+    references = NULL;
+  }
+
+  /* Return number of references.  */
+  unsigned int nreferences (void)
+  {
+    return vec_safe_length (references);
+  }
+
   /* Store actual references in references vector.  */
   vec<ipa_ref_t, va_gc> *references;
   /* Referring is vector of pointers to references.  It must not live in GGC space
      or GGC will try to mark middle of references vectors.  */
   vec<ipa_ref_ptr>  GTY((skip)) referring;
 };
-
-struct ipa_ref * ipa_record_reference (symtab_node *,
-				       symtab_node *,
-				       enum ipa_ref_use, gimple);
-struct ipa_ref * ipa_maybe_record_reference (symtab_node *, tree,
-					     enum ipa_ref_use, gimple);
-
-void ipa_remove_reference (struct ipa_ref *);
-void ipa_remove_all_references (struct ipa_ref_list *);
-void ipa_remove_all_referring (struct ipa_ref_list *);
-void ipa_dump_references (FILE *, struct ipa_ref_list *);
-void ipa_dump_referring (FILE *, struct ipa_ref_list *);
-void ipa_clone_references (symtab_node *, struct ipa_ref_list *);
-void ipa_clone_referring (symtab_node *, struct ipa_ref_list *);
-struct ipa_ref * ipa_clone_ref (struct ipa_ref *, symtab_node *, gimple);
-bool ipa_ref_cannot_lead_to_return (struct ipa_ref *);
-bool ipa_ref_has_aliases_p (struct ipa_ref_list *);
-struct ipa_ref * ipa_find_reference (symtab_node *, symtab_node *, gimple, unsigned int);
-void ipa_remove_stmt_references (symtab_node *, gimple);
-void ipa_clear_stmts_in_references (symtab_node *);

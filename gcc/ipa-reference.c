@@ -450,16 +450,16 @@ static void
 analyze_function (struct cgraph_node *fn)
 {
   ipa_reference_local_vars_info_t local;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
   int i;
   tree var;
 
   local = init_function_info (fn);
-  for (i = 0; ipa_ref_list_reference_iterate (&fn->ref_list, i, ref); i++)
+  for (i = 0; fn->iterate_reference (i, ref); i++)
     {
       if (!is_a <varpool_node *> (ref->referred))
 	continue;
-      var = ipa_ref_varpool_node (ref)->decl;
+      var = ref->referred->decl;
       if (!is_proper_for_analysis (var))
 	continue;
       switch (ref->use)
@@ -468,7 +468,7 @@ analyze_function (struct cgraph_node *fn)
           bitmap_set_bit (local->statics_read, DECL_UID (var));
 	  break;
 	case IPA_REF_STORE:
-	  if (ipa_ref_cannot_lead_to_return (ref))
+	  if (ref->cannot_lead_to_return ())
 	    break;
           bitmap_set_bit (local->statics_written, DECL_UID (var));
 	  break;
@@ -882,7 +882,7 @@ write_node_summary_p (struct cgraph_node *node,
      In future we might also want to include summaries of functions references
      by initializers of constant variables references in current unit.  */
   if (!reachable_from_this_partition_p (node, encoder)
-      && !referenced_from_this_partition_p (&node->ref_list, encoder))
+      && !referenced_from_this_partition_p (node, encoder))
     return false;
 
   /* See if the info has non-empty intersections with vars we want to encode.  */
@@ -949,7 +949,7 @@ ipa_reference_write_optimization_summary (void)
       varpool_node *vnode = dyn_cast <varpool_node *> (snode);
       if (vnode
 	  && bitmap_bit_p (all_module_statics, DECL_UID (vnode->decl))
-	  && referenced_from_this_partition_p (&vnode->ref_list, encoder))
+	  && referenced_from_this_partition_p (vnode, encoder))
 	{
 	  tree decl = vnode->decl;
 	  bitmap_set_bit (ltrans_statics, DECL_UID (decl));

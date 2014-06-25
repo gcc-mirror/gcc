@@ -86,10 +86,10 @@ static void
 add_references_to_partition (ltrans_partition part, symtab_node *node)
 {
   int i;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
   /* Add all duplicated references to the partition.  */
-  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; node->iterate_reference (i, ref); i++)
     if (symtab_get_symbol_partitioning_class (ref->referred) == SYMBOL_DUPLICATE)
       add_symbol_to_partition (part, ref->referred);
     /* References to a readonly variable may be constant foled into its value.
@@ -114,7 +114,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 {
   enum symbol_partitioning_class c = symtab_get_symbol_partitioning_class (node);
   int i;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
   symtab_node *node1;
 
   /* If NODE is already there, we have nothing to do.  */
@@ -168,7 +168,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
   add_references_to_partition (part, node);
 
   /* Add all aliases associated with the symbol.  */
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
     if (ref->use == IPA_REF_ALIAS && !node->weakref)
       add_symbol_to_partition_1 (part, ref->referring);
 
@@ -516,9 +516,9 @@ lto_balanced_map (int n_lto_partitions)
 	 it and thus we need to subtract it from COST.  */
       while (last_visited_node < lto_symtab_encoder_size (partition->encoder))
 	{
-	  struct ipa_ref_list *refs;
+	  symtab_node *refs_node;
 	  int j;
-	  struct ipa_ref *ref;
+	  struct ipa_ref *ref = NULL;
 	  symtab_node *snode = lto_symtab_encoder_deref (partition->encoder,
 							last_visited_node);
 
@@ -526,7 +526,7 @@ lto_balanced_map (int n_lto_partitions)
 	    {
 	      struct cgraph_edge *edge;
 
-	      refs = &node->ref_list;
+	      refs_node = node;
 
 	      last_visited_node++;
 
@@ -570,18 +570,18 @@ lto_balanced_map (int n_lto_partitions)
 	    }
 	  else
 	    {
-	      refs = &snode->ref_list;
+	      refs_node = snode;
 	      last_visited_node++;
 	    }
 
 	  /* Compute boundary cost of IPA REF edges and at the same time look into
 	     variables referenced from current partition and try to add them.  */
-	  for (j = 0; ipa_ref_list_reference_iterate (refs, j, ref); j++)
+	  for (j = 0; refs_node->iterate_reference (j, ref); j++)
 	    if (is_a <varpool_node *> (ref->referred))
 	      {
 		int index;
 
-		vnode = ipa_ref_varpool_node (ref);
+		vnode = dyn_cast <varpool_node *> (ref->referred);
 		if (!vnode->definition)
 		  continue;
 		if (!symbol_partitioned_p (vnode) && flag_toplevel_reorder
@@ -599,7 +599,7 @@ lto_balanced_map (int n_lto_partitions)
 	      {
 		int index;
 
-		node = ipa_ref_node (ref);
+		node = dyn_cast <cgraph_node *> (ref->referred);
 		if (!node->definition)
 		  continue;
 		index = lto_symtab_encoder_lookup (partition->encoder,
@@ -610,12 +610,12 @@ lto_balanced_map (int n_lto_partitions)
 		else
 		  cost++;
 	      }
-	  for (j = 0; ipa_ref_list_referring_iterate (refs, j, ref); j++)
+	  for (j = 0; refs_node->iterate_referring (j, ref); j++)
 	    if (is_a <varpool_node *> (ref->referring))
 	      {
 		int index;
 
-		vnode = ipa_ref_referring_varpool_node (ref);
+		vnode = dyn_cast <varpool_node *> (ref->referring);
 		gcc_assert (vnode->definition);
 		/* It is better to couple variables with their users, because it allows them
 		   to be removed.  Coupling with objects they refer to only helps to reduce
@@ -636,7 +636,7 @@ lto_balanced_map (int n_lto_partitions)
 	      {
 		int index;
 
-		node = ipa_ref_referring_node (ref);
+		node = dyn_cast <cgraph_node *> (ref->referring);
 		gcc_assert (node->definition);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   node);
