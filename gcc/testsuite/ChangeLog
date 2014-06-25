@@ -1,5 +1,9 @@
 2014-06-25  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/coarray_33.f90: New.
+
+2014-06-25  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/coarray/coindexed_1.f90: New.
 
 2014-06-25  Tobias Burnus  <burnus@net-b.de>
