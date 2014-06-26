@@ -3560,7 +3560,13 @@ case "${target}" in
 		esac
 
 		if test "x$with_arch" != x && test "x$with_cpu" != x; then
-			echo "Warning: --with-arch overrides --with-cpu=$with_cpu" 1>&2
+			echo "Switch \"--with-arch\" may not be used with switch \"--with-cpu\""  1>&2
+			exit 1
+		fi
+
+		if test "x$with_cpu" != x && test "x$with_tune" != x; then
+			echo "Switch \"--with-tune\" may not be used with switch \"--with-cpu\""  1>&2
+			exit 1
 		fi
 
 		# Add extra multilibs
