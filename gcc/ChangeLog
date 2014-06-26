@@ -1,3 +1,9 @@
+2014-06-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/61503
+	* config/i386/i386.md (x86_64_shrd, x86_shrd,
+	ix86_rotr<dwi>3_doubleword): Replace ashiftrt with lshiftrt.
+
 2014-06-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
