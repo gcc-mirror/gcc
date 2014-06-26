@@ -764,6 +764,14 @@ ssa_redirect_edges (struct redirection_data **slot,
 	  if ((*path)[1]->type != EDGE_COPY_SRC_JOINER_BLOCK)
 	    EDGE_SUCC (rd->dup_blocks[0], 0)->count += e->count;
 
+	  /* If we redirect a loop latch edge cancel its loop.  */
+	  if (e->src == e->src->loop_father->latch)
+	    {
+	      e->src->loop_father->header = NULL;
+	      e->src->loop_father->latch = NULL;
+	      loops_state_set (LOOPS_NEED_FIXUP);
+	    }
+
 	  /* Redirect the incoming edge (possibly to the joiner block) to the
 	     appropriate duplicate block.  */
 	  e2 = redirect_edge_and_branch (e, rd->dup_blocks[0]);
@@ -844,7 +852,6 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
   edge e, e2;
   edge_iterator ei;
   ssa_local_info_t local_info;
-  struct loop *loop = bb->loop_father;
 
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable
@@ -852,32 +859,6 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
      incoming and outgoing edges such linear searches can get expensive.  */
   redirection_data
     = new hash_table<struct redirection_data> (EDGE_COUNT (bb->succs));
-
-  /* If we thread the latch of the loop to its exit, the loop ceases to
-     exist.  Make sure we do not restrict ourselves in order to preserve
-     this loop.  */
-  if (loop->header == bb)
-    {
-      e = loop_latch_edge (loop);
-      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-
-      if (path
-	  && (((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK && joiners)
-	      || ((*path)[1]->type == EDGE_COPY_SRC_BLOCK && !joiners)))
-	{
-	  for (unsigned int i = 1; i < path->length (); i++)
-	    {
-	      edge e2 = (*path)[i]->e;
-
-	      if (loop_exit_edge_p (loop, e2))
-		{
-		  loop->header = NULL;
-		  loop->latch = NULL;
-		  loops_state_set (LOOPS_NEED_FIXUP);
-		}
-	    }
-	}
-    }
 
   /* Record each unique threaded destination into a hash table for
      efficient lookups.  */

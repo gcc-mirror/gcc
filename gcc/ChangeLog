@@ -1,3 +1,10 @@
+2014-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61607
+	* tree-ssa-threadupdate.c (ssa_redirect_edges): Cancel the
+	loop if we redirected its latch edge.
+	(thread_block_1): Do not cancel loops prematurely.
+
 2014-06-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* toplev.c (backend_init_target): Move init_emit_regs and init_regs to...
