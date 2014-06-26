@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 				   TARGET_FLT_EVAL_METHOD_NON_DEFAULT and
 				   TARGET_OPTF.  */
 #include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
+#include "dumpfile.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -101,6 +102,12 @@ static size_t deferred_count;
 
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
+
+/* Dump files/flags to use during parsing.  */
+static FILE *original_dump_file = NULL;
+static int original_dump_flags;
+static FILE *class_dump_file = NULL;
+static int class_dump_flags;
 
 /* Whether any standard preincluded header has been preincluded.  */
 static bool done_preinclude;
@@ -1088,6 +1095,10 @@ c_common_parse_file (void)
   for (;;)
     {
       c_finish_options ();
+      /* Open the dump files to use for the original and class dump output
+         here, to be used during parsing for the current file.  */
+      original_dump_file = dump_begin (TDI_original, &original_dump_flags);
+      class_dump_file = dump_begin (TDI_class, &class_dump_flags);
       pch_init ();
       push_file_scope ();
       c_parse_file ();
@@ -1101,10 +1112,37 @@ c_common_parse_file (void)
       cpp_clear_file_cache (parse_in);
       this_input_filename
 	= cpp_read_main_file (parse_in, in_fnames[i]);
+      if (original_dump_file)
+        {
+          dump_end (TDI_original, original_dump_file);
+          original_dump_file = NULL;
+        }
+      if (class_dump_file)
+        {
+          dump_end (TDI_class, class_dump_file);
+          class_dump_file = NULL;
+        }
       /* If an input file is missing, abandon further compilation.
 	 cpplib has issued a diagnostic.  */
       if (!this_input_filename)
 	break;
+    }
+}
+
+/* Returns the appropriate dump file for PHASE to dump with FLAGS.  */
+FILE *
+get_dump_info (int phase, int *flags)
+{
+  gcc_assert (phase == TDI_original || phase == TDI_class);
+  if (phase == TDI_original)
+    {
+      *flags = original_dump_flags;
+      return original_dump_file;
+    }
+  else
+    {
+      *flags = class_dump_flags;
+      return class_dump_file;
     }
 }
 
