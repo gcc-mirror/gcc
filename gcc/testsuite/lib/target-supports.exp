@@ -706,7 +706,7 @@ proc check_effective_target_scheduling {} {
 # Return 1 if trapping arithmetic is available, 0 otherwise.
 
 proc check_effective_target_trapping {} {
-    return [check_no_compiler_messages scheduling object {
+    return [check_no_compiler_messages trapping object {
         add (int a, int b) { return a + b; }
     } "-ftrapv"]
 }

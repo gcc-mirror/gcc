@@ -1,3 +1,8 @@
+2014-06-26  Nick Clifton  <nickc@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_trapping): Fix
+	typo.
+
 2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/61537
