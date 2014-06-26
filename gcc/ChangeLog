@@ -1,3 +1,17 @@
+2014-06-26  Bernd Schmidt  <bernds@codesourcery.com>
+
+        * Makefile.in (ALL_HOST_BACKEND_OBJS): Add collect-utils.o.
+        (lto-wrapper$(exeext)): Link with collect-utils.o.
+        * collect-utils.c: New file.
+        * collect-utils.h: New file.
+        * lto-wrapper.c: Include "collect-utils.h".
+        (args_name): Delete variable.
+        (tool_name): New variable.
+        (tool_cleanup): New function.
+        (maybe_unlink): Renamed from maybe_unlink_file.  All callers changed.
+        (lto_wrapper_cleanup, fatal_signal, collect_execute, collect_wait,
+        fork_execute): Remove functions.
+
 2014-06-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/frv/frv.c (frv_in_small_data_p): Remove redundant assert.

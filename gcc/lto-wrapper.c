@@ -47,9 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "simple-object.h"
 #include "lto-section-names.h"
-
-int debug;				/* true if -save-temps.  */
-int verbose;				/* true if -v.  */
+#include "collect-utils.h"
 
 enum lto_mode_d {
   LTO_MODE_NONE,			/* Not doing LTO.  */
@@ -62,140 +60,44 @@ static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 
 static char *ltrans_output_file;
 static char *flto_out;
-static char *args_name;
 static unsigned int nr;
 static char **input_names;
 static char **output_names;
 static char *makefile;
 
-static void maybe_unlink_file (const char *);
+const char tool_name[] = "lto-wrapper";
 
- /* Delete tempfiles.  */
+/* Delete tempfiles.  Called from utils_cleanup.  */
+
+void
+tool_cleanup (void)
+{
+  unsigned int i;
+
+  if (ltrans_output_file)
+    maybe_unlink (ltrans_output_file);
+  if (flto_out)
+    maybe_unlink (flto_out);
+  if (makefile)
+    maybe_unlink (makefile);
+  for (i = 0; i < nr; ++i)
+    {
+      maybe_unlink (input_names[i]);
+      if (output_names[i])
+	maybe_unlink (output_names[i]);
+    }
+}
 
 static void
 lto_wrapper_cleanup (void)
 {
-  static bool cleanup_done = false;
-  unsigned int i;
-
-  if (cleanup_done)
-    return;
-
-  /* Setting cleanup_done prevents an infinite loop if one of the
-     calls to maybe_unlink_file fails. */
-  cleanup_done = true;
-
-  if (ltrans_output_file)
-    maybe_unlink_file (ltrans_output_file);
-  if (flto_out)
-    maybe_unlink_file (flto_out);
-  if (args_name)
-    maybe_unlink_file (args_name);
-  if (makefile)
-    maybe_unlink_file (makefile);
-  for (i = 0; i < nr; ++i)
-    {
-      maybe_unlink_file (input_names[i]);
-      if (output_names[i])
-	maybe_unlink_file (output_names[i]);
-    }
+  utils_cleanup ();
 }
-
-static void
-fatal_signal (int signum)
-{
-  signal (signum, SIG_DFL);
-  lto_wrapper_cleanup ();
-  /* Get the same signal again, this time not handled,
-     so its normal effect occurs.  */
-  kill (getpid (), signum);
-}
-
-/* Execute a program, and wait for the reply. ARGV are the arguments. The
-   last one must be NULL. */
-
-static struct pex_obj *
-collect_execute (char **argv)
-{
-  struct pex_obj *pex;
-  const char *errmsg;
-  int err;
-
-  if (verbose)
-    {
-      char **p_argv;
-      const char *str;
-
-      for (p_argv = argv; (str = *p_argv) != (char *) 0; p_argv++)
-	fprintf (stderr, " %s", str);
-
-      fprintf (stderr, "\n");
-    }
-
-  fflush (stdout);
-  fflush (stderr);
-
-  pex = pex_init (0, "lto-wrapper", NULL);
-  if (pex == NULL)
-    fatal_error ("pex_init failed: %m");
-
-  /* Do not use PEX_LAST here, we use our stdout for communicating with
-     collect2 or the linker-plugin.  Any output from the sub-process
-     will confuse that.  */
-  errmsg = pex_run (pex, PEX_SEARCH, argv[0], argv, NULL,
-		    NULL, &err);
-  if (errmsg != NULL)
-    {
-      if (err != 0)
-	{
-	  errno = err;
-	  fatal_error ("%s: %m", _(errmsg));
-	}
-      else
-	fatal_error (errmsg);
-    }
-
-  return pex;
-}
-
-
-/* Wait for a process to finish, and exit if a nonzero status is found.
-   PROG is the program name. PEX is the process we should wait for. */
-
-static int
-collect_wait (const char *prog, struct pex_obj *pex)
-{
-  int status;
-
-  if (!pex_get_status (pex, 1, &status))
-    fatal_error ("can't get program status: %m");
-  pex_free (pex);
-
-  if (status)
-    {
-      if (WIFSIGNALED (status))
-	{
-	  int sig = WTERMSIG (status);
-	  if (WCOREDUMP (status))
-	    fatal_error ("%s terminated with signal %d [%s], core dumped",
-		   prog, sig, strsignal (sig));
-	  else
-	    fatal_error ("%s terminated with signal %d [%s]",
-		   prog, sig, strsignal (sig));
-	}
-
-      if (WIFEXITED (status))
-	fatal_error ("%s returned %d exit status", prog, WEXITSTATUS (status));
-    }
-
-  return 0;
-}
-
 
 /* Unlink a temporary LTRANS file unless requested otherwise.  */
 
-static void
-maybe_unlink_file (const char *file)
+void
+maybe_unlink (const char *file)
 {
   if (! debug)
     {
@@ -205,43 +107,6 @@ maybe_unlink_file (const char *file)
     }
   else if (verbose)
     fprintf (stderr, "[Leaving LTRANS %s]\n", file);
-}
-
-
-/* Execute program ARGV[0] with arguments ARGV. Wait for it to finish.  */
-
-static void
-fork_execute (char **argv)
-{
-  struct pex_obj *pex;
-  char *new_argv[3];
-  char *at_args;
-  FILE *args;
-  int status;
-
-  args_name = make_temp_file (".args");
-  at_args = concat ("@", args_name, NULL);
-  args = fopen (args_name, "w");
-  if (args == NULL)
-    fatal_error ("failed to open %s", args_name);
-
-  status = writeargv (&argv[1], args);
-
-  if (status)
-    fatal_error ("could not write to temporary file %s",  args_name);
-
-  fclose (args);
-
-  new_argv[0] = argv[0];
-  new_argv[1] = at_args;
-  new_argv[2] = NULL;
-
-  pex = collect_execute (new_argv);
-  collect_wait (new_argv[0], pex);
-
-  maybe_unlink_file (args_name);
-  args_name = NULL;
-  free (at_args);
 }
 
 /* Template of LTRANS dumpbase suffix.  */
@@ -869,7 +734,7 @@ cont:
 	  output_names[nr-1] = output_name;
 	}
       fclose (stream);
-      maybe_unlink_file (ltrans_output_file);
+      maybe_unlink (ltrans_output_file);
       ltrans_output_file = NULL;
 
       if (parallel)
@@ -928,7 +793,7 @@ cont:
 	  else
 	    {
 	      fork_execute (CONST_CAST (char **, new_argv));
-	      maybe_unlink_file (input_name);
+	      maybe_unlink (input_name);
 	    }
 
 	  output_names[i] = output_name;
@@ -965,10 +830,10 @@ cont:
 	  new_argv[i++] = NULL;
 	  pex = collect_execute (CONST_CAST (char **, new_argv));
 	  collect_wait (new_argv[0], pex);
-	  maybe_unlink_file (makefile);
+	  maybe_unlink (makefile);
 	  makefile = NULL;
 	  for (i = 0; i < nr; ++i)
-	    maybe_unlink_file (input_names[i]);
+	    maybe_unlink (input_names[i]);
 	}
       for (i = 0; i < nr; ++i)
 	{
