@@ -1,3 +1,17 @@
+2014-06-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* toplev.c (backend_init_target): Move init_emit_regs and init_regs to...
+	(backend_init) ... here; skip ira_init_once and backend_init_target.
+	(target_reinit) ... and here; clear this_target_rtl->lang_dependent_initialized.
+	(lang_dependent_init_target): Clear this_target_rtl->lang_dependent_initialized;
+	break out rtl initialization to ...
+	(initialize_rtl): ... here; call also backend_init_target and ira_init_once.
+	* toplev.h (initialize_rtl): New function.
+	* function.c: Include toplev.h
+	(init_function_start): Call initialize_rtl.
+	* rtl.h (target_rtl): Add target_specific_initialized,
+	lang_dependent_initialized.
+
 2014-06-25  Paul Gortmaker  <paul.gortmaker@windriver.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

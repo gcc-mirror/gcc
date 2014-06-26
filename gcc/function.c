@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "bb-reorder.h"
 #include "shrink-wrap.h"
+#include "toplev.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -4630,6 +4631,10 @@ init_function_start (tree subr)
     set_cfun (DECL_STRUCT_FUNCTION (subr));
   else
     allocate_struct_function (subr, false);
+
+  /* Initialize backend, if needed.  */
+  initialize_rtl ();
+
   prepare_function_start ();
   decide_function_section (subr);
 
