@@ -1,3 +1,8 @@
+2014-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56633
+	* g++.dg/cpp0x/deleted8.C: New.
+
 2014-06-26  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/simulate-thread/bitfields-2.C: Remove allow-load-data-races
