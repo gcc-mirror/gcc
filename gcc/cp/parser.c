@@ -10647,9 +10647,9 @@ cp_parser_for_init_statement (cp_parser* parser, tree *decl)
 	  is_range_for = true;
 	  if (cxx_dialect < cxx11)
 	    {
-	      error_at (cp_lexer_peek_token (parser->lexer)->location,
-			"range-based %<for%> loops are not allowed "
-			"in C++98 mode");
+	      pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
+		       "range-based %<for%> loops only available with "
+		       "-std=c++11 or -std=gnu++11");
 	      *decl = error_mark_node;
 	    }
 	}
