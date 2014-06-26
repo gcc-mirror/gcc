@@ -1,3 +1,9 @@
+2014-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/61542
+	* config/rs6000/vsx.md (vsx_extract_v4sf): Fix bug with element
+	extraction other than index 3.
+
 2014-06-26  Teresa Johnson  <tejohnson@google.com>
 
 	* c-family/c-common.h (get_dump_info): Declare.
