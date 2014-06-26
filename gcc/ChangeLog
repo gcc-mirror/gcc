@@ -1,3 +1,9 @@
+2014-06-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi (-fsemantic-interposition): Document.
+	* common.opt (fsemantic-interposition): New flag.
+	* varasm.c (decl_replaceable_p): Use it.
+
 2014-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/61542

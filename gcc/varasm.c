@@ -6830,6 +6830,9 @@ decl_replaceable_p (tree decl)
   gcc_assert (DECL_P (decl));
   if (!TREE_PUBLIC (decl) || DECL_COMDAT (decl))
     return false;
+  if (!flag_semantic_interposition
+      && !DECL_WEAK (decl))
+    return false;
   return !decl_binds_to_current_def_p (decl);
 }
 
