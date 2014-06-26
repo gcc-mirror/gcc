@@ -70,7 +70,7 @@ const char tool_name[] = "lto-wrapper";
 /* Delete tempfiles.  Called from utils_cleanup.  */
 
 void
-tool_cleanup (void)
+tool_cleanup (bool)
 {
   unsigned int i;
 
@@ -91,7 +91,7 @@ tool_cleanup (void)
 static void
 lto_wrapper_cleanup (void)
 {
-  utils_cleanup ();
+  utils_cleanup (false);
 }
 
 /* Unlink a temporary LTRANS file unless requested otherwise.  */
@@ -684,7 +684,7 @@ run_gcc (unsigned argc, char *argv[])
 
   new_argv = XOBFINISH (&argv_obstack, const char **);
   argv_ptr = &new_argv[new_head_argc];
-  fork_execute (CONST_CAST (char **, new_argv));
+  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
 
   if (lto_mode == LTO_MODE_LTO)
     {
@@ -792,7 +792,8 @@ cont:
 	    }
 	  else
 	    {
-	      fork_execute (CONST_CAST (char **, new_argv));
+	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
+			    true);
 	      maybe_unlink (input_name);
 	    }
 
@@ -828,8 +829,9 @@ cont:
 	    }
 	  new_argv[i++] = "all";
 	  new_argv[i++] = NULL;
-	  pex = collect_execute (CONST_CAST (char **, new_argv));
-	  collect_wait (new_argv[0], pex);
+	  pex = collect_execute (new_argv[0], CONST_CAST (char **, new_argv),
+				 NULL, NULL, PEX_SEARCH, false);
+	  do_wait (new_argv[0], pex);
 	  maybe_unlink (makefile);
 	  makefile = NULL;
 	  for (i = 0; i < nr; ++i)

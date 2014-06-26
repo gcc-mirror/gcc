@@ -1,5 +1,37 @@
 2014-06-26  Bernd Schmidt  <bernds@codesourcery.com>
 
+        * Makefile.in (COLLECT2_OBJS): Add collect-utils.o.
+        (LTO_WRAPPER_OBJS): New variable.
+        (lto-wrapper$(exeext)): Use it.
+        * collect2.c: Include "collect-utils.h".
+        (verbose, debug): Remove variables.
+        (at_file_supplied): No longer static.
+        (tool_name): New variable.
+        (do_wait, fork_execute, maybe_unlink): Don't declare.
+        (tool_cleanup): No longer static.
+        (notice): Remove function.
+        (maybe_run_lto_and_relink, main, do_dsymutil): Add new arg to
+        fork_execute calls.
+        (collect_wait, do_wait, collect_execute): Remove functions.
+        (maybe_unlink): No longer static.
+        * collect2.h (verbose, debug): Don't declare.
+        (at_file_supplied): Declare.
+        * collect-utils.c (utils_cleanup): New arg from_signal.  All callers
+        changed.
+        (collect_execute): Replace with implementation from collect2, plus a
+        new arg use_atfile.  All callers changed.
+        (collect_wait): Replace with implementation from collect2.
+        (maybe_unlink_file): Remove function.
+        (fork_execute): Replace with implementation from collect2, plus a
+        new arg use_atfile.  All callers changed.
+        (do_wait): Add call to utils_cleanup to the error path.
+        * collect-utils.h (collect_execute, fork_execute, utils_cleanup)
+        (tool_cleanup): Adjust declarations.
+        * lto-wrapper.c (tool_cleanup): Add unused bool argument.
+        * tlink.c: Include "collect-utils.h".
+        (tlink_execute): New arg use_atfile.  All callers changed.
+        (tlink_init, tlink_execute): Remove declarations.
+
     	* collect-utils.c (save_temps): New variable.
     	(do_wait): Use it instead of debug.  Use fatal_error.
     	* collect-utils.h (save_temps): Declare.
