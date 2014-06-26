@@ -35,24 +35,6 @@ bool debug;
 bool verbose;
 bool save_temps;
 
-/* Delete tempfiles.  */
-
-void
-utils_cleanup (void)
-{
-  static bool cleanup_done = false;
-
-  if (cleanup_done)
-    return;
-
-  /* Setting cleanup_done prevents an infinite loop if one of the
-     calls to maybe_unlink fails. */
-  cleanup_done = true;
-
-  if (response_file)
-    maybe_unlink (response_file);
-  tool_cleanup ();
-}
 
 /* Notify user of a non-error.  */
 void
@@ -69,62 +51,13 @@ void
 fatal_signal (int signum)
 {
   signal (signum, SIG_DFL);
-  utils_cleanup ();
+  utils_cleanup (true);
   /* Get the same signal again, this time not handled,
      so its normal effect occurs.  */
   kill (getpid (), signum);
 }
-
-/* Execute a program, and wait for the reply. ARGV are the arguments. The
-   last one must be NULL. */
-
-struct pex_obj *
-collect_execute (char **argv)
-{
-  struct pex_obj *pex;
-  const char *errmsg;
-  int err;
-
-  if (verbose)
-    {
-      char **p_argv;
-      const char *str;
-
-      for (p_argv = argv; (str = *p_argv) != (char *) 0; p_argv++)
-	fprintf (stderr, " %s", str);
-
-      fprintf (stderr, "\n");
-    }
-
-  fflush (stdout);
-  fflush (stderr);
-
-  pex = pex_init (0, tool_name, NULL);
-  if (pex == NULL)
-    fatal_error ("pex_init failed: %m");
-
-  /* Do not use PEX_LAST here, we use our stdout for communicating with
-     collect2 or the linker-plugin.  Any output from the sub-process
-     will confuse that.  */
-  errmsg = pex_run (pex, PEX_SEARCH, argv[0], argv, NULL,
-		    NULL, &err);
-  if (errmsg != NULL)
-    {
-      if (err != 0)
-	{
-	  errno = err;
-	  fatal_error ("%s: %m", _(errmsg));
-	}
-      else
-	fatal_error (errmsg);
-    }
-
-  return pex;
-}
-
-
-/* Wait for a process to finish, and exit if a nonzero status is found.
-   PROG is the program name. PEX is the process we should wait for. */
+
+/* Wait for a process to finish, and exit if a nonzero status is found.  */
 
 int
 collect_wait (const char *prog, struct pex_obj *pex)
@@ -140,18 +73,14 @@ collect_wait (const char *prog, struct pex_obj *pex)
       if (WIFSIGNALED (status))
 	{
 	  int sig = WTERMSIG (status);
-	  if (WCOREDUMP (status))
-	    fatal_error ("%s terminated with signal %d [%s], core dumped",
-			 prog, sig, strsignal (sig));
-	  else
-	    fatal_error ("%s terminated with signal %d [%s]",
-			 prog, sig, strsignal (sig));
+	  fatal_error ("%s terminated with signal %d [%s]%s",
+		       prog, sig, strsignal (sig),
+		       WCOREDUMP (status) ? ", core dumped" : "");
 	}
 
       if (WIFEXITED (status))
-	fatal_error ("%s returned %d exit status", prog, WEXITSTATUS (status));
+	return WEXITSTATUS (status);
     }
-
   return 0;
 }
 
@@ -169,52 +98,130 @@ do_wait (const char *prog, struct pex_obj *pex)
     }
 }
 
-/* Unlink a temporary LTRANS file unless requested otherwise.  */
+
+/* Execute a program, and wait for the reply.  */
 
-void
-maybe_unlink_file (const char *file)
-{
-  if (!debug)
-    {
-      if (unlink_if_ordinary (file)
-	  && errno != ENOENT)
-	fatal_error ("deleting file %s: %m", file);
-    }
-  else
-    fprintf (stderr, "[Leaving %s]\n", file);
-}
-
-
-/* Execute program ARGV[0] with arguments ARGV. Wait for it to finish.  */
-
-void
-fork_execute (char **argv)
+struct pex_obj *
+collect_execute (const char *prog, char **argv, const char *outname,
+		 const char *errname, int flags, bool use_atfile)
 {
   struct pex_obj *pex;
-  char *new_argv[3];
-  char *at_args;
-  FILE *args;
-  int status;
+  const char *errmsg;
+  int err;
+  char *response_arg = NULL;
+  char *response_argv[3];
 
-  response_file = make_temp_file (".args");
-  at_args = concat ("@", response_file, NULL);
-  args = fopen (response_file, "w");
-  if (args == NULL)
-    fatal_error ("failed to open %s", response_file);
+  if (use_atfile && argv[0] != NULL)
+    {
+      /* If using @file arguments, create a temporary file and put the
+         contents of argv into it.  Then change argv to an array corresponding
+         to a single argument @FILE, where FILE is the temporary filename.  */
 
-  status = writeargv (&argv[1], args);
+      char **current_argv = argv + 1;
+      char *argv0 = argv[0];
+      int status;
+      FILE *f;
 
-  if (status)
-    fatal_error ("could not write to temporary file %s",  response_file);
+      /* Note: we assume argv contains at least one element; this is
+         checked above.  */
 
-  fclose (args);
+      response_file = make_temp_file ("");
 
-  new_argv[0] = argv[0];
-  new_argv[1] = at_args;
-  new_argv[2] = NULL;
+      f = fopen (response_file, "w");
 
-  pex = collect_execute (new_argv);
-  do_wait (new_argv[0], pex);
+      if (f == NULL)
+        fatal_error ("could not open response file %s", response_file);
 
-  free (at_args);
+      status = writeargv (current_argv, f);
+
+      if (status)
+        fatal_error ("could not write to response file %s", response_file);
+
+      status = fclose (f);
+
+      if (EOF == status)
+        fatal_error ("could not close response file %s", response_file);
+
+      response_arg = concat ("@", response_file, NULL);
+      response_argv[0] = argv0;
+      response_argv[1] = response_arg;
+      response_argv[2] = NULL;
+
+      argv = response_argv;
+    }
+
+  if (verbose || debug)
+    {
+      char **p_argv;
+      const char *str;
+
+      if (argv[0])
+	fprintf (stderr, "%s", argv[0]);
+      else
+	notice ("[cannot find %s]", prog);
+
+      for (p_argv = &argv[1]; (str = *p_argv) != (char *) 0; p_argv++)
+	fprintf (stderr, " %s", str);
+
+      fprintf (stderr, "\n");
+    }
+
+  fflush (stdout);
+  fflush (stderr);
+
+  /* If we cannot find a program we need, complain error.  Do this here
+     since we might not end up needing something that we could not find.  */
+
+  if (argv[0] == 0)
+    fatal_error ("cannot find '%s'", prog);
+
+  pex = pex_init (0, "collect2", NULL);
+  if (pex == NULL)
+    fatal_error ("pex_init failed: %m");
+
+  errmsg = pex_run (pex, flags, argv[0], argv, outname,
+		    errname, &err);
+  if (errmsg != NULL)
+    {
+      if (err != 0)
+	{
+	  errno = err;
+	  fatal_error ("%s: %m", _(errmsg));
+	}
+      else
+	fatal_error (errmsg);
+    }
+
+  free (response_arg);
+
+  return pex;
+}
+
+void
+fork_execute (const char *prog, char **argv, bool use_atfile)
+{
+  struct pex_obj *pex;
+
+  pex = collect_execute (prog, argv, NULL, NULL,
+			 PEX_LAST | PEX_SEARCH, use_atfile);
+  do_wait (prog, pex);
+}
+
+/* Delete tempfiles.  */
+
+void
+utils_cleanup (bool from_signal)
+{
+  static bool cleanup_done = false;
+
+  if (cleanup_done)
+    return;
+
+  /* Setting cleanup_done prevents an infinite loop if one of the
+     calls to maybe_unlink fails. */
+  cleanup_done = true;
+
+  if (response_file)
+    maybe_unlink (response_file);
+  tool_cleanup (from_signal);
 }
