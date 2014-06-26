@@ -4316,8 +4316,8 @@ attribute also means that the function is instantiated if the
 class itself is instantiated.
 
 @item vector
-@cindex @code{vector} attibute
-This RX attribute is similar to the @code{attribute}, including its
+@cindex @code{vector} attribute
+This RX attribute is similar to the @code{interrupt} attribute, including its
 parameters, but does not make the function an interrupt-handler type
 function (i.e. it retains the normal C function calling ABI).  See the
 @code{interrupt} attribute for a description of its arguments.

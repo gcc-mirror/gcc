@@ -1,3 +1,8 @@
+2014-06-26  Nick Clifton  <nickc@redhat.com>
+
+	* doc/extend.texi (Function Attributes): Fix typo in description
+	of RX vector attribute.
+
 2014-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config.gcc (supported_defaults): Error when passing either
