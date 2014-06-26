@@ -1,3 +1,9 @@
+2014-06-26  Jason Merrill  <jason@redhat.com>
+
+	* c-common.h (enum cxx_dialect): Add cxx1z.
+	* c.opt (std=c++1z, std=c++17, std=gnu++1z, std=gnu++17): New.
+	* c-opts.c (c_common_handle_option, set_std_cxx1z): Handle it.
+
 2014-06-23  Marek Polacek  <polacek@redhat.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
 

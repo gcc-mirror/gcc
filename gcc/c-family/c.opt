@@ -1414,6 +1414,13 @@ Conform to the ISO 2014(?) C++ draft standard (experimental and incomplete suppo
 std=c++14
 C++ ObjC++ Alias(std=c++1y) Undocumented
 
+std=c++1z
+C++ ObjC++
+Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support)
+
+std=c++17
+C++ ObjC++ Alias(std=c++1z) Undocumented
+
 std=c11
 C ObjC
 Conform to the ISO 2011 C standard (experimental and incomplete support)
@@ -1458,9 +1465,16 @@ Deprecated in favor of -std=gnu++11
 
 std=gnu++1y
 C++ ObjC++
-Conform to the ISO 201y(7?) C++ draft standard with GNU extensions (experimental and incomplete support)
+Conform to the ISO 201y(4?) C++ draft standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++14
+C++ ObjC++ Alias(std=gnu++1y) Undocumented
+
+std=gnu++1z
+C++ ObjC++
+Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support)
+
+std=gnu++17
 C++ ObjC++ Alias(std=gnu++1y) Undocumented
 
 std=gnu11
