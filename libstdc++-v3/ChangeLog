@@ -1,3 +1,8 @@
+2014-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (__shared_ptr::_Deleter): Fix
+	parameter type.
+
 2014-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h (__alloc_rebind): Define alias template.
