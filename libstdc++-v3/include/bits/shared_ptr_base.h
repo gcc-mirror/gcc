@@ -1085,7 +1085,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
         struct _Deleter
         {
-          void operator()(typename _Alloc::pointer __ptr)
+          void operator()(_Tp* __ptr)
           {
 	    __allocated_ptr<_Alloc> __guard{ _M_alloc, __ptr };
 	    allocator_traits<_Alloc>::destroy(_M_alloc, __guard.get());
