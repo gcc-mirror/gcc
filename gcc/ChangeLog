@@ -1,5 +1,18 @@
 2014-06-26  Martin Jambor  <mjambor@suse.cz>
 
+	* params.def (PARAM_ALLOW_LOAD_DATA_RACES)
+	(PARAM_ALLOW_PACKED_LOAD_DATA_RACES)
+	(PARAM_ALLOW_PACKED_STORE_DATA_RACES): Removed.
+	(PARAM_ALLOW_STORE_DATA_RACES): Set default to zero.
+	* opts.c (default_options_optimization): Set
+	PARAM_ALLOW_STORE_DATA_RACES to one at -Ofast.
+	* doc/invoke.texi (allow-load-data-races)
+	(allow-packed-load-data-races, allow-packed-store-data-races):
+	Removed.
+	(allow-store-data-races): Document the new default.
+
+2014-06-26  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-prop.c (ipa_impossible_devirt_target): No longer static,
 	renamed to ipa_impossible_devirt_target.  Fix typo.
 	* ipa-prop.h (ipa_impossible_devirt_target): Declare.
