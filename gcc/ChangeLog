@@ -1,3 +1,9 @@
+2014-06-26  Teresa Johnson  <tejohnson@google.com>
+
+	* doc/invoke.texi: Fix typo.
+	* dumpfile.c: Add support for documented -fdump-* options
+	optimized/missed/note/optall.
+
 2014-06-26  Martin Jambor  <mjambor@suse.cz>
 
 	* params.def (PARAM_ALLOW_LOAD_DATA_RACES)

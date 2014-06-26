@@ -6332,7 +6332,7 @@ passes).
 @item missed
 Enable showing missed optimization information (only available in certain
 passes).
-@item notes
+@item note
 Enable other detailed optimization information (only available in
 certain passes).
 @item =@var{filename}
