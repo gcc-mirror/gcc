@@ -9488,7 +9488,6 @@ frv_in_small_data_p (const_tree decl)
   section_name = DECL_SECTION_NAME (decl);
   if (section_name)
     {
-      gcc_assert (TREE_CODE (section_name) == STRING_CST);
       if (frv_string_begins_with (section_name, ".sdata"))
 	return true;
       if (frv_string_begins_with (section_name, ".sbss"))
