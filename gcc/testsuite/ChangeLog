@@ -1,3 +1,7 @@
+2014-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/pr61540.C: Remove dumping test.
+
 2014-06-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gfortran.dg/default_format_denormal_2.f90:  Remove xfail for
