@@ -1,7 +1,6 @@
 // Test for range-based for loop error in C++98 mode
 
-// { dg-do compile }
-// { dg-options "-std=c++98" }
+// { dg-do compile { target { ! c++11 } } }
 
 void test()
 {
