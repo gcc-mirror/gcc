@@ -1,5 +1,7 @@
 2014-06-26  Nick Clifton  <nickc@redhat.com>
 
+	* config/frv/frv.c (frv_in_small_data_p): Remove redundant assert.
+
 	* doc/extend.texi (Function Attributes): Fix typo in description
 	of RX vector attribute.
 
