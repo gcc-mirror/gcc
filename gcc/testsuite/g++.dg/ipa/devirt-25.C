@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-ipa-cp"  } */
+/* { dg-add-options bind_pic_locally } */
 
 class ert_RefCounter {
  protected:

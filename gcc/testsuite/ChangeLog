@@ -1,5 +1,12 @@
 2014-06-26  Vidya Praveen  <vidyapraveen@arm.com>
 
+	* gcc.dg/inline-22.c: Add bind_pic_locally.
+	* gcc.dg/inline_4.c: Ditto.
+	* gcc.dg/fail_always_inline.c: Ditto.
+	* g++.dg/ipa/devirt-25.C: Ditto.
+
+2014-06-26  Vidya Praveen  <vidyapraveen@arm.com>
+
 	* lib/target-support.exp (bind_pic_locally): Save the flags to
 	'flags_to_postpone' instead of appending to 'flags'.
 	* lib/gcc.exp (gcc_target_compile): Append board_info's multilib_flags
