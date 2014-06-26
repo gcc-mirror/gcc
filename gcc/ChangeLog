@@ -1,5 +1,10 @@
 2014-06-26  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-dom.c (cprop_operand): Remove restriction on
+	propagating volatile pointers.
+
+2014-06-26  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/61607
 	* tree-ssa-threadupdate.c (ssa_redirect_edges): Cancel the
 	loop if we redirected its latch edge.
