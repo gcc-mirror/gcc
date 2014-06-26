@@ -99,7 +99,7 @@ lto_wrapper_cleanup (void)
 void
 maybe_unlink (const char *file)
 {
-  if (! debug)
+  if (!save_temps)
     {
       if (unlink_if_ordinary (file)
 	  && errno != ENOENT)
@@ -540,7 +540,7 @@ run_gcc (unsigned argc, char *argv[])
 	  continue;
 
 	case OPT_save_temps:
-	  debug = 1;
+	  save_temps = 1;
 	  break;
 
 	case OPT_v:
@@ -647,7 +647,7 @@ run_gcc (unsigned argc, char *argv[])
 	  obstack_ptr_grow (&argv_obstack, dumpbase);
 	}
 
-      if (linker_output && debug)
+      if (linker_output && save_temps)
 	{
 	  ltrans_output_file = (char *) xmalloc (strlen (linker_output)
 						 + sizeof (".ltrans.out") + 1);
@@ -785,7 +785,7 @@ cont:
 	      /* If we are not preserving the ltrans input files then
 	         truncate them as soon as we have processed it.  This
 		 reduces temporary disk-space usage.  */
-	      if (! debug)
+	      if (! save_temps)
 		fprintf (mstream, "\t@-touch -r %s %s.tem > /dev/null 2>&1 "
 			 "&& mv %s.tem %s\n",
 			 input_name, input_name, input_name, input_name); 

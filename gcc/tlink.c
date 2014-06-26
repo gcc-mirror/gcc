@@ -275,7 +275,7 @@ tlink_init (void)
   else
     {
       tlink_verbose = 1;
-      if (vflag)
+      if (verbose)
 	tlink_verbose = 2;
       if (debug)
 	tlink_verbose = 3;

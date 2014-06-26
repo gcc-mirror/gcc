@@ -33,6 +33,7 @@ static char *response_file;
 
 bool debug;
 bool verbose;
+bool save_temps;
 
 /* Delete tempfiles.  */
 
@@ -159,12 +160,9 @@ do_wait (const char *prog, struct pex_obj *pex)
 {
   int ret = collect_wait (prog, pex);
   if (ret != 0)
-    {
-      error ("%s returned %d exit status", prog, ret);
-      exit (ret);
-    }
+    fatal_error ("%s returned %d exit status", prog, ret);
 
-  if (response_file && !debug)
+  if (response_file && !save_temps)
     {
       unlink (response_file);
       response_file = NULL;

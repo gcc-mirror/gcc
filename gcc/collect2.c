@@ -175,7 +175,7 @@ struct head
   int number;
 };
 
-bool vflag;				/* true if -v or --version */ 
+bool verbose;				/* true if -v or --version */ 
 static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
 #ifdef COLLECT_EXPORT_LIST
@@ -383,7 +383,7 @@ static void scan_prog_file (const char *, scanpass, scanfilter);
 /* Delete tempfiles and exit function.  */
 
 static void
-collect_atexit (void)
+tool_cleanup (bool from_signal)
 {
   if (c_file != 0 && c_file[0])
     maybe_unlink (c_file);
@@ -401,20 +401,33 @@ collect_atexit (void)
 
   if (ldout != 0 && ldout[0])
     {
-      dump_ld_file (ldout, stdout);
+      if (!from_signal)
+	dump_ld_file (ldout, stdout);
       maybe_unlink (ldout);
     }
 
   if (lderrout != 0 && lderrout[0])
     {
-      dump_ld_file (lderrout, stderr);
+      if (!from_signal)
+	dump_ld_file (lderrout, stderr);
       maybe_unlink (lderrout);
     }
-
-  if (response_file)
-    maybe_unlink (response_file);
 }
 
+static void
+collect_atexit (void)
+{
+  tool_cleanup (false);
+}
+
+static void
+handler (int signo)
+{
+  tool_cleanup (true);
+
+  signal (signo, SIG_DFL);
+  raise (signo);
+}
 
 /* Notify user of a non-error.  */
 void
@@ -437,37 +450,6 @@ notice_translated (const char *cmsgid, ...)
   vfprintf (stderr, cmsgid, ap);
   va_end (ap);
 }
-
-static void
-handler (int signo)
-{
-  if (c_file != 0 && c_file[0])
-    maybe_unlink (c_file);
-
-  if (o_file != 0 && o_file[0])
-    maybe_unlink (o_file);
-
-  if (ldout != 0 && ldout[0])
-    maybe_unlink (ldout);
-
-  if (lderrout != 0 && lderrout[0])
-    maybe_unlink (lderrout);
-
-#ifdef COLLECT_EXPORT_LIST
-  if (export_file != 0 && export_file[0])
-    maybe_unlink (export_file);
-#endif
-
-  if (lto_o_files)
-    maybe_unlink_list (lto_o_files);
-
-  if (response_file)
-    maybe_unlink (response_file);
-
-  signal (signo, SIG_DFL);
-  raise (signo);
-}
-
 
 int
 file_exists (const char *name)
@@ -1056,7 +1038,7 @@ main (int argc, char **argv)
 	    aixlazy_flag = 1;
 #endif
       }
-    vflag = debug;
+    verbose = debug;
     find_file_set_debug (debug);
     if (use_plugin)
       lto_mode = LTO_MODE_NONE;
@@ -1451,7 +1433,7 @@ main (int argc, char **argv)
 
 	    case 'v':
 	      if (arg[2] == '\0')
-		vflag = true;
+		verbose = true;
 	      break;
 
 	    case '-':
@@ -1483,7 +1465,7 @@ main (int argc, char **argv)
 	      else if (strncmp (arg, "--sysroot=", 10) == 0)
 		target_system_root = arg + 10;
 	      else if (strcmp (arg, "--version") == 0)
-		vflag = true;
+		verbose = true;
 	      else if (strcmp (arg, "--help") == 0)
 		helpflag = true;
 	      break;
@@ -1578,7 +1560,7 @@ main (int argc, char **argv)
   *c_ptr++ = c_file;
   *c_ptr = *ld1 = *object = (char *) 0;
 
-  if (vflag)
+  if (verbose)
     notice ("collect2 version %s\n", version_string);
 
   if (helpflag)
@@ -1947,7 +1929,7 @@ collect_execute (const char *prog, char **argv, const char *outname,
       argv = response_argv;
     }
 
-  if (vflag || debug)
+  if (verbose || debug)
     {
       char **p_argv;
       const char *str;
@@ -2509,7 +2491,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   nm_argv[argc++] = (char *) 0;
 
   /* Trace if needed.  */
-  if (vflag)
+  if (verbose)
     {
       const char **p_argv;
       const char *str;
@@ -2706,7 +2688,7 @@ scan_libraries (const char *prog_name)
   ldd_argv[argc++] = (char *) 0;
 
   /* Trace if needed.  */
-  if (vflag)
+  if (verbose)
     {
       const char **p_argv;
       const char *str;
