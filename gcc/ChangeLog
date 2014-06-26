@@ -203,11 +203,6 @@
 	* lto-streamer-out.c (output_symbol_p): Likewise.
 	* lto-streamer.h (referenced_from_this_partition_p): Argument type
 	changed.
-	* lto/lto-partition.c (add_references_to_partition): New IPA REF function
-	used.
-	(add_symbol_to_partition_1): Likewise.
-	(lto_balanced_map): Likewise.
-	* lto/lto-symtab.c (lto_cgraph_replace_node): Likewise.
 	* symtab.c: Implementation of new IPA REF API.
 	* trans-mem.c (ipa_tm_create_version_alias): New IPA REF function used.
 	(ipa_tm_create_version): Likewise.
