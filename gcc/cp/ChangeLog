@@ -1,3 +1,9 @@
+2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/61537
+	* parser.c (cp_parser_elaborated_type_specifier): Only consider template
+	parameter lists outside of function parameter scope.
+
 2014-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 178

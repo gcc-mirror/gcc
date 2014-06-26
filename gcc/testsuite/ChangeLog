@@ -1,3 +1,8 @@
+2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/61537
+	* g++.dg/template/pr61537.C: New testcase.
+
 2014-06-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gfortran.dg/default_format_denormal_2.f90:  Remove xfail for
