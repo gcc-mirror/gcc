@@ -1491,7 +1491,7 @@ ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) @TREEBROWSER@ main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
-  lto-wrapper.o
+  lto-wrapper.o collect-utils.o
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -1910,9 +1910,10 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 CFLAGS-collect2.o += -DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	@TARGET_SYSTEM_ROOT_DEFINE@
 
-lto-wrapper$(exeext): lto-wrapper.o ggc-none.o libcommon-target.a $(LIBDEPS)
+LTO_WRAPPER_OBJS = lto-wrapper.o collect-utils.o ggc-none.o
+lto-wrapper$(exeext): $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ \
-	    lto-wrapper.o ggc-none.o libcommon-target.a $(LIBS)
+	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBS)
 	mv -f T$@ $@
 
 # Files used by all variants of C or by the stand-alone pre-processor.
