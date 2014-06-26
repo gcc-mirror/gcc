@@ -91,7 +91,7 @@ namespace __gnu_test
     struct check_consistent_alloc_value_type<T, Alloc, T>
     { typedef T value_type; };
 
-  // An allocator facade that intercepts allocate/deallocate/construct/detroy
+  // An allocator facade that intercepts allocate/deallocate/construct/destroy
   // calls and track them through the tracker_allocator_counter class. This
   // class is templated on the target object type, but tracker isn't.
   template<typename T, typename Alloc = std::allocator<T> >
