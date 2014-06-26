@@ -1,3 +1,8 @@
+2014-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61586
+	* config/alpha/alpha.c (alpha_handle_trap_shadows): Handle BARRIER RTX.
+
 2014-06-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi (-fsemantic-interposition): Document.
@@ -36,8 +41,7 @@
 	* opts.c (default_options_optimization): Set
 	PARAM_ALLOW_STORE_DATA_RACES to one at -Ofast.
 	* doc/invoke.texi (allow-load-data-races)
-	(allow-packed-load-data-races, allow-packed-store-data-races):
-	Removed.
+	(allow-packed-load-data-races, allow-packed-store-data-races): Removed.
 	(allow-store-data-races): Document the new default.
 
 2014-06-26  Martin Jambor  <mjambor@suse.cz>
@@ -59,59 +63,59 @@
 
 2014-06-26  Bernd Schmidt  <bernds@codesourcery.com>
 
-        * Makefile.in (COLLECT2_OBJS): Add collect-utils.o.
-        (LTO_WRAPPER_OBJS): New variable.
-        (lto-wrapper$(exeext)): Use it.
-        * collect2.c: Include "collect-utils.h".
-        (verbose, debug): Remove variables.
-        (at_file_supplied): No longer static.
-        (tool_name): New variable.
-        (do_wait, fork_execute, maybe_unlink): Don't declare.
-        (tool_cleanup): No longer static.
-        (notice): Remove function.
-        (maybe_run_lto_and_relink, main, do_dsymutil): Add new arg to
-        fork_execute calls.
-        (collect_wait, do_wait, collect_execute): Remove functions.
-        (maybe_unlink): No longer static.
-        * collect2.h (verbose, debug): Don't declare.
-        (at_file_supplied): Declare.
-        * collect-utils.c (utils_cleanup): New arg from_signal.  All callers
-        changed.
-        (collect_execute): Replace with implementation from collect2, plus a
-        new arg use_atfile.  All callers changed.
-        (collect_wait): Replace with implementation from collect2.
-        (maybe_unlink_file): Remove function.
-        (fork_execute): Replace with implementation from collect2, plus a
-        new arg use_atfile.  All callers changed.
-        (do_wait): Add call to utils_cleanup to the error path.
-        * collect-utils.h (collect_execute, fork_execute, utils_cleanup)
-        (tool_cleanup): Adjust declarations.
-        * lto-wrapper.c (tool_cleanup): Add unused bool argument.
-        * tlink.c: Include "collect-utils.h".
-        (tlink_execute): New arg use_atfile.  All callers changed.
-        (tlink_init, tlink_execute): Remove declarations.
+	* Makefile.in (COLLECT2_OBJS): Add collect-utils.o.
+	(LTO_WRAPPER_OBJS): New variable.
+	(lto-wrapper$(exeext)): Use it.
+	* collect2.c: Include "collect-utils.h".
+	(verbose, debug): Remove variables.
+	(at_file_supplied): No longer static.
+	(tool_name): New variable.
+	(do_wait, fork_execute, maybe_unlink): Don't declare.
+	(tool_cleanup): No longer static.
+	(notice): Remove function.
+	(maybe_run_lto_and_relink, main, do_dsymutil): Add new arg to
+	fork_execute calls.
+	(collect_wait, do_wait, collect_execute): Remove functions.
+	(maybe_unlink): No longer static.
+	* collect2.h (verbose, debug): Don't declare.
+	(at_file_supplied): Declare.
+	* collect-utils.c (utils_cleanup): New arg from_signal.  All callers
+	changed.
+	(collect_execute): Replace with implementation from collect2, plus a
+	new arg use_atfile.  All callers changed.
+	(collect_wait): Replace with implementation from collect2.
+	(maybe_unlink_file): Remove function.
+	(fork_execute): Replace with implementation from collect2, plus a
+	new arg use_atfile.  All callers changed.
+	(do_wait): Add call to utils_cleanup to the error path.
+	* collect-utils.h (collect_execute, fork_execute, utils_cleanup)
+	(tool_cleanup): Adjust declarations.
+	* lto-wrapper.c (tool_cleanup): Add unused bool argument.
+	* tlink.c: Include "collect-utils.h".
+	(tlink_execute): New arg use_atfile.  All callers changed.
+	(tlink_init, tlink_execute): Remove declarations.
 
-    	* collect-utils.c (save_temps): New variable.
-    	(do_wait): Use it instead of debug.  Use fatal_error.
-    	* collect-utils.h (save_temps): Declare.
-    	* collect2.c (verbose): Rename from vflag.  All uses changed.
-    	(tool_cleanup): New function, copied from collect_atexit.
-    	(collect_atexit, handler): Just call it.
-    	* collect2.h (verbose): Declaration renamed from vflag.
-    	* lto-wrapper.c (maybe_unlink, run_gcc): Use save_temps instead of
-    	debug.
+	* collect-utils.c (save_temps): New variable.
+	(do_wait): Use it instead of debug.  Use fatal_error.
+	* collect-utils.h (save_temps): Declare.
+	* collect2.c (verbose): Rename from vflag.  All uses changed.
+	(tool_cleanup): New function, copied from collect_atexit.
+	(collect_atexit, handler): Just call it.
+	* collect2.h (verbose): Declaration renamed from vflag.
+	* lto-wrapper.c (maybe_unlink, run_gcc): Use save_temps instead of
+	debug.
 
-        * Makefile.in (ALL_HOST_BACKEND_OBJS): Add collect-utils.o.
-        (lto-wrapper$(exeext)): Link with collect-utils.o.
-        * collect-utils.c: New file.
-        * collect-utils.h: New file.
-        * lto-wrapper.c: Include "collect-utils.h".
-        (args_name): Delete variable.
-        (tool_name): New variable.
-        (tool_cleanup): New function.
-        (maybe_unlink): Renamed from maybe_unlink_file.  All callers changed.
-        (lto_wrapper_cleanup, fatal_signal, collect_execute, collect_wait,
-        fork_execute): Remove functions.
+	* Makefile.in (ALL_HOST_BACKEND_OBJS): Add collect-utils.o.
+	(lto-wrapper$(exeext)): Link with collect-utils.o.
+	* collect-utils.c: New file.
+	* collect-utils.h: New file.
+	* lto-wrapper.c: Include "collect-utils.h".
+	(args_name): Delete variable.
+	(tool_name): New variable.
+	(tool_cleanup): New function.
+	(maybe_unlink): Renamed from maybe_unlink_file.  All callers changed.
+	(lto_wrapper_cleanup, fatal_signal, collect_execute, collect_wait)
+	(fork_execute): Remove functions.
 
 2014-06-26  Nick Clifton  <nickc@redhat.com>
 
@@ -139,12 +143,16 @@
 
 2014-06-25  Jan Hubicka  <hubicka@ucw.cz>
 
-	* toplev.c (backend_init_target): Move init_emit_regs and init_regs to...
+	* toplev.c (backend_init_target): Move init_emit_regs and
+	init_regs to...
 	(backend_init) ... here; skip ira_init_once and backend_init_target.
-	(target_reinit) ... and here; clear this_target_rtl->lang_dependent_initialized.
-	(lang_dependent_init_target): Clear this_target_rtl->lang_dependent_initialized;
+	(target_reinit) ... and here; clear
+	this_target_rtl->lang_dependent_initialized.
+	(lang_dependent_init_target): Clear
+	this_target_rtl->lang_dependent_initialized;
 	break out rtl initialization to ...
-	(initialize_rtl): ... here; call also backend_init_target and ira_init_once.
+	(initialize_rtl): ... here; call also backend_init_target
+	and ira_init_once.
 	* toplev.h (initialize_rtl): New function.
 	* function.c: Include toplev.h
 	(init_function_start): Call initialize_rtl.
@@ -241,7 +249,8 @@
 	(set_writeonly_bit): Likewise.
 	* lto-cgraph.c: Implementation of new symtab_node member functions
 	that uses new IPA REF functions.
-	* lto-streamer-in.c (fixup_call_stmt_edges_1): New IPA REF function used.
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): New IPA REF
+	function used.
 	* lto-streamer-out.c (output_symbol_p): Likewise.
 	* lto-streamer.h (referenced_from_this_partition_p): Argument type
 	changed.
@@ -447,9 +456,9 @@
 	tree-ssa-reassoc.c, tree-ssa-sccvn.c, tree-ssa-strlen.c,
 	tree-ssa-structalias.c, tree-ssa-tail-merge.c,
 	tree-ssa-threadupdate.c, tree-ssa-uncprop.c,
-tree-vect-data-refs.c, tree-vect-loop.c, tree-vectorizer.c,
-tree-vectorizer.h, valtrack.c, valtrack.h, var-tracking.c,
-vtable-verify.c, vtable-verify.h: Adjust.
+	tree-vect-data-refs.c, tree-vect-loop.c, tree-vectorizer.c,
+	tree-vectorizer.h, valtrack.c, valtrack.h, var-tracking.c,
+	vtable-verify.c, vtable-verify.h: Adjust.
 
 2014-06-24  Richard Biener  <rguenther@suse.de>
 
@@ -503,8 +512,8 @@ vtable-verify.c, vtable-verify.h: Adjust.
 	* varpool.c (dump_varpool_node): Dump used_by_single_function.
 	* tree-pass.h (make_pass_ipa_single_use): New pass.
 	* cgraph.h (used_by_single_function): New flag.
-	* lto-cgraph.c (lto_output_varpool_node, input_varpool_node): Stream
-	it.
+	* lto-cgraph.c (lto_output_varpool_node, input_varpool_node):
+	Stream it.
 	* passes.def (pass_ipa_single_use): Scedule.
 	* ipa.c (BOTTOM): New macro.
 	(meet): New function
@@ -518,10 +527,8 @@ vtable-verify.c, vtable-verify.h: Adjust.
 2014-06-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/39284
-	* passes.def (peephole2): Move peephole2 pass before
-	before sched2 pass.
-	* config/i386/i386.md (peehole2): Combine memories
-	and indirect jumps.
+	* passes.def (peephole2): Move peephole2 pass before sched2 pass.
+	* config/i386/i386.md (peehole2): Combine memories and indirect jumps.
 
 2014-06-23  Richard Biener  <rguenther@suse.de>
 
@@ -628,8 +635,8 @@ vtable-verify.c, vtable-verify.h: Adjust.
 	variant but not df.
 	(vreinterpretv1df*, vreinterpret*v1df): New.
 	(vreinterpretdf*, vreinterpret*df): Remove.
-	* config/aarch64/aarch64-simd.md (aarch64_create, aarch64_reinterpret*):
-	Generate V1DFmode pattern not DFmode.
+	* config/aarch64/aarch64-simd.md (aarch64_create,
+	aarch64_reinterpret*): Generate V1DFmode pattern not DFmode.
 	* config/aarch64/iterators.md (VD_RE): Include V1DF, remove DF.
 	(VD1): New.
 	* config/aarch64/arm_neon.h (float64x1_t): typedef with gcc extensions.
@@ -660,8 +667,8 @@ vtable-verify.c, vtable-verify.h: Adjust.
 
 2014-06-23  Jan Hubicka  <hubicka@ucw.cz>
 
-	* lto-cgraph.c (lto_output_node, input_node): Set/get init/fini priority
-	directly.
+	* lto-cgraph.c (lto_output_node, input_node): Set/get init/fini
+	priority directly.
 
 2014-06-23  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
@@ -1044,7 +1051,7 @@ vtable-verify.c, vtable-verify.h: Adjust.
 	expand variant and aarch64_emit_call_insn.
 
 2014-06-18  Radovan Obradovic  <robradovic@mips.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_emit_call_insn): Add bool parameter.
 	* config/arm/arm.c (TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS):

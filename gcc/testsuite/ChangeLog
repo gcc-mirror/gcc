@@ -1,3 +1,8 @@
+2014-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61586
+	* gcc.target/alpha/pr61586.c: New test.
+
 2014-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57573
@@ -252,7 +257,7 @@
 	* gcc.dg/vect/no-tree-sra-bb-slp-pr50730.c: Likewise.
 	* gcc.dg/vect/pr26359.c: Likewise.
 	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c: Likewise.
-   
+
 2014-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/pr49706-2.c: New test.
@@ -316,10 +321,11 @@
 	* gcc.target/aarch64/aapcs/test_64x1_1.c: New test.
 	* gcc.target/aarch64/aapcs/func-ret-64x1_1.c: New test.
 	* gcc.target/aarch64/simd/ext_f64_1.c (main): Compare vector elements.
-	* gcc.target/aarch64/vadd_f64.c: Rewrite with macro to use vector types.
+	* gcc.target/aarch64/vadd_f64.c: Rewrite with macro to use
+	vector types.
 	* gcc.target/aarch64/vsub_f64.c: Likewise.
-	* gcc.target/aarch64/vdiv_f.c (INDEX*, RUN_TEST): Remove indexing scheme
-	as now the same for all variants.
+	* gcc.target/aarch64/vdiv_f.c (INDEX*, RUN_TEST): Remove indexing
+	scheme as now the same for all variants.
 	* gcc.target/aarch64/vrnd_f64_1.c (compare_f64): Return float64_t not
 	float64x1_t.
 
@@ -375,7 +381,7 @@
 2014-06-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61540
-        * g++.dg/ipa/pr61540.C: New test.
+	* g++.dg/ipa/pr61540.C: New test.
 
 2014-06-20  Yury Gribov  <y.gribov@samsung.com>
 	    Max Ostapenko  <m.ostapenko@partner.samsung.com>
