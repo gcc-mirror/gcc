@@ -1,3 +1,11 @@
+2014-06-25  Martin Liska  <mliska@suse.cz>
+
+	* lto/lto-partition.c (add_references_to_partition): New IPA REF function
+	used.
+	(add_symbol_to_partition_1): Likewise.
+	(lto_balanced_map): Likewise.
+	* lto/lto-symtab.c (lto_cgraph_replace_node): Likewise.
+
 2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (mentions_vars_p_decl_non_common): Move DECL_VINDEX check to ..
