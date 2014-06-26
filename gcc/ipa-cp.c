@@ -1589,15 +1589,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_get_node (target)))
-		{
-		  if (dump_file)
-		    fprintf (dump_file,
-			     "Type inconsident devirtualization: %s/%i->%s\n",
-			     ie->caller->name (), ie->caller->order,
-			     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
-		  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-		  cgraph_get_create_node (target);
-		}
+		target = ipa_impossible_devirt_target (ie, target);
 	      return target;
 	    }
 	}
@@ -1631,7 +1623,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       if (targets.length () == 1)
 	target = targets[0]->decl;
       else
-	target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	target = ipa_impossible_devirt_target (ie, NULL_TREE);
     }
   else
     {
@@ -1645,15 +1637,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 
   if (target && !possible_polymorphic_call_target_p (ie,
 						     cgraph_get_node (target)))
-    {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Type inconsident devirtualization: %s/%i->%s\n",
-		 ie->caller->name (), ie->caller->order,
-		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
-      target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-      cgraph_get_create_node (target);
-    }
+    target = ipa_impossible_devirt_target (ie, target);
 
   return target;
 }
