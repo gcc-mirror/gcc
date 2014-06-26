@@ -116,6 +116,7 @@ static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
 static void set_std_cxx11 (int);
 static void set_std_cxx1y (int);
+static void set_std_cxx1z (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
@@ -698,6 +699,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	{
 	  set_std_cxx1y (code == OPT_std_c__1y /* ISO */);
 	  if (code == OPT_std_c__1y)
+	    cpp_opts->ext_numeric_literals = 0;
+	}
+      break;
+
+    case OPT_std_c__1z:
+    case OPT_std_gnu__1z:
+      if (!preprocessing_asm_p)
+	{
+	  set_std_cxx1z (code == OPT_std_c__1z /* ISO */);
+	  if (code == OPT_std_c__1z)
 	    cpp_opts->ext_numeric_literals = 0;
 	}
       break;
@@ -1577,6 +1588,20 @@ set_std_cxx1y (int iso)
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   cxx_dialect = cxx1y;
+}
+
+/* Set the C++ 201z draft standard (without GNU extensions if ISO).  */
+static void
+set_std_cxx1z (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX1Y: CLK_GNUCXX1Y);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  /* C++11 includes the C99 standard library.  */
+  flag_isoc94 = 1;
+  flag_isoc99 = 1;
+  cxx_dialect = cxx1z;
 }
 
 /* Args to -d specify what to dump.  Silently ignore
