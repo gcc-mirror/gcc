@@ -1667,7 +1667,7 @@
     {
       if (GET_CODE (op3) == SCRATCH)
 	op3 = gen_reg_rtx (V4SFmode);
-      emit_insn (gen_vsx_xxsldwi_v4sf (op3, op1, op1, op2));
+      emit_insn (gen_vsx_xxsldwi_v4sf (op3, op1, op1, GEN_INT (ele)));
       tmp = op3;
     }
   emit_insn (gen_vsx_xscvspdp_scalar2 (op0, tmp));
