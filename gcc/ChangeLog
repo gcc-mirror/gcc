@@ -1,3 +1,8 @@
+2014-06-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config.gcc (supported_defaults): Error when passing either
+	--with-tune or --with-arch in conjunction with --with-cpu for ARM.
+
 2014-06-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-dom.c (cprop_operand): Remove restriction on
