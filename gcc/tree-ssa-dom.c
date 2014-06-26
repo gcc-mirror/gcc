@@ -1234,7 +1234,13 @@ record_equivalences_from_phis (basic_block bb)
 	 this, since this is a true assignment and not an equivalence
 	 inferred from a comparison.  All uses of this ssa name are dominated
 	 by this assignment, so unwinding just costs time and space.  */
-      if (i == gimple_phi_num_args (phi) && may_propagate_copy (lhs, rhs))
+      if (i == gimple_phi_num_args (phi)
+	  && may_propagate_copy (lhs, rhs)
+	  /* Do not propagate copies if the propagated value is at a deeper loop
+	     depth than the propagatee.  Otherwise, this may introduce uses
+	     of loop variant variables outside of their loops and prevent
+	     coalescing opportunities.  */
+	  && !(loop_depth_of_name (rhs) > loop_depth_of_name (lhs)))
 	set_ssa_name_value (lhs, rhs);
     }
 }
@@ -2245,14 +2251,6 @@ cprop_operand (gimple stmt, use_operand_p op_p)
 	 to their interaction with exception handling and some GCC
 	 extensions.  */
       if (!may_propagate_copy (op, val))
-	return;
-
-      /* Do not propagate copies if the propagated value is at a deeper loop
-	 depth than the propagatee.  Otherwise, this may move loop variant
-	 variables outside of their loops and prevent coalescing
-	 opportunities.  If the value was loop invariant, it will be hoisted
-	 by LICM and exposed for copy propagation.  */
-      if (loop_depth_of_name (val) > loop_depth_of_name (op))
 	return;
 
       /* Do not propagate copies into simple IV increment statements.

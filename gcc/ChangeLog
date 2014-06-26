@@ -1,3 +1,12 @@
+2014-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61607
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Adjust comment
+	explaining why we restrict copies on loop depth.
+	* tree-ssa-dom.c (cprop_operand): Remove restriction on
+	on loop depth.
+	(record_equivalences_from_phis): Instead add it here.
+
 2014-06-26  Bernd Schmidt  <bernds@codesourcery.com>
 
         * Makefile.in (COLLECT2_OBJS): Add collect-utils.o.
