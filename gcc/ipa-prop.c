@@ -2915,14 +2915,14 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
 /* Return the target to be used in cases of impossible devirtualization.  IE
    and target (the latter can be NULL) are dumped when dumping is enabled.  */
 
-static tree
-impossible_devirt_target (struct cgraph_edge *ie, tree target)
+tree
+ipa_impossible_devirt_target (struct cgraph_edge *ie, tree target)
 {
   if (dump_file)
     {
       if (target)
 	fprintf (dump_file,
-		 "Type inconsident devirtualization: %s/%i->%s\n",
+		 "Type inconsistent devirtualization: %s/%i->%s\n",
 		 ie->caller->name (), ie->caller->order,
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
       else
@@ -2969,7 +2969,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_get_node (target)))
-		target = impossible_devirt_target (ie, target);
+		target = ipa_impossible_devirt_target (ie, target);
 	      return ipa_make_edge_direct_to_target (ie, target);
 	    }
 	}
@@ -2999,7 +2999,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
       if (targets.length () == 1)
 	target = targets[0]->decl;
       else
-	target = impossible_devirt_target (ie, NULL_TREE);
+	target = ipa_impossible_devirt_target (ie, NULL_TREE);
     }
   else
     {
@@ -3015,7 +3015,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   if (target)
     {
       if (!possible_polymorphic_call_target_p (ie, cgraph_get_node (target)))
-	target = impossible_devirt_target (ie, target);
+	target = ipa_impossible_devirt_target (ie, target);
       return ipa_make_edge_direct_to_target (ie, target);
     }
   else

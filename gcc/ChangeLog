@@ -1,3 +1,11 @@
+2014-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_impossible_devirt_target): No longer static,
+	renamed to ipa_impossible_devirt_target.  Fix typo.
+	* ipa-prop.h (ipa_impossible_devirt_target): Declare.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Use
+	ipa_impossible_devirt_target.
+
 2014-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61607

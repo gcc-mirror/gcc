@@ -1,3 +1,8 @@
+2014-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/pr60600.C: Fix typo.
+	* g++.dg/ipa/devirt-25.C: Likewise.
+
 2014-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61607
