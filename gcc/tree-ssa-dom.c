@@ -2247,14 +2247,6 @@ cprop_operand (gimple stmt, use_operand_p op_p)
       if (!may_propagate_copy (op, val))
 	return;
 
-      /* Do not propagate addresses that point to volatiles into memory
-	 stmts without volatile operands.  */
-      if (POINTER_TYPE_P (TREE_TYPE (val))
-	  && TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (val)))
-	  && gimple_has_mem_ops (stmt)
-	  && !gimple_has_volatile_ops (stmt))
-	return;
-
       /* Do not propagate copies if the propagated value is at a deeper loop
 	 depth than the propagatee.  Otherwise, this may move loop variant
 	 variables outside of their loops and prevent coalescing
