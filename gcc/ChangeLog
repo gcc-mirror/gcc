@@ -501,7 +501,7 @@ vtable-verify.c, vtable-verify.h: Adjust.
 	* tree-vrp.c (remove_range_assertions): Do not set is_unreachable
 	to zero on debug statements.
 
-2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
+2014-06-23  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/60825
 	* config/aarch64/aarch64-builtins.c (aarch64_types_unop_qualifiers):
@@ -559,7 +559,7 @@ vtable-verify.c, vtable-verify.h: Adjust.
 	vshld_n_s64, vshrd_n_s64, vslid_n_s64, vsrad_n_s64, vsrid_n_s64):
 	Fix type signature; remove cast.
 
-2014-06-19  Alan Lawrence  <alan.lawrence@arm.com>
+2014-06-23  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/60825
 	* config/aarch64/aarch64.c (aarch64_simd_mangle_map): Add entry for
