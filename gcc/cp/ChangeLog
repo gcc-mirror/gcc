@@ -1,3 +1,9 @@
+2014-06-26  Jason Merrill  <jason@redhat.com>
+
+	N3994 Ranged-based for-loops: The Next Generation
+	* parser.c (cp_lexer_nth_token_is): New.
+	(cp_parser_for_init_statement): Allow "for (id : init)".
+
 2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/61537
