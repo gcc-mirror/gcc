@@ -1,3 +1,7 @@
+2014-06-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/interposition.c: New testcase.
+
 2014-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56633

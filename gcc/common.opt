@@ -1855,6 +1855,10 @@ fsel-sched-reschedule-pipelined
 Common Report Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
 Reschedule pipelined regions without pipelining
 
+fsemantic-interposition
+Common Report Var(flag_semantic_interposition) Init(1)
+Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker
+
 ; sched_stalled_insns means that insns can be moved prematurely from the queue
 ; of stalled insns into the ready list.
 fsched-stalled-insns
