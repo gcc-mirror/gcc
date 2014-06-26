@@ -10176,25 +10176,10 @@ The maximum number of conditional stores paires that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
 
-@item allow-load-data-races
-Allow optimizers to introduce new data races on loads.
-Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
-
 @item allow-store-data-races
 Allow optimizers to introduce new data races on stores.
 Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
-
-@item allow-packed-load-data-races
-Allow optimizers to introduce new data races on packed data loads.
-Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
-
-@item allow-packed-store-data-races
-Allow optimizers to introduce new data races on packed data stores.
-Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
+at optimization level @option{-Ofast}.
 
 @item case-values-threshold
 The smallest number of different values for which it is best to use a

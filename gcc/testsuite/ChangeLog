@@ -1,5 +1,16 @@
 2014-06-26  Martin Jambor  <mjambor@suse.cz>
 
+	* g++.dg/simulate-thread/bitfields-2.C: Remove allow-load-data-races
+	parameter.
+	* g++.dg/simulate-thread/bitfields.C: Likewise.
+	* gcc.dg/simulate-thread/strict-align-global.c: Remove
+	allow-packed-store-data-races parameter.
+	* gcc.dg/simulate-thread/subfields.c: Likewise.
+	* gcc.dg/tree-ssa/20050314-1.c: Set parameter allow-store-data-races
+	to one.
+
+2014-06-26  Martin Jambor  <mjambor@suse.cz>
+
 	* g++.dg/ipa/pr60600.C: Fix typo.
 	* g++.dg/ipa/devirt-25.C: Likewise.
 
