@@ -5312,25 +5312,35 @@ proc add_options_for_ieee { flags } {
     return $flags
 }
 
+if {![info exists flags_to_postpone]} {
+    set flags_to_postpone ""
+}
+
 # Add to FLAGS the flags needed to enable functions to bind locally
 # when using pic/PIC passes in the testsuite.
-
 proc add_options_for_bind_pic_locally { flags } {
+    global flags_to_postpone
+
+    # Instead of returning 'flags' with the -fPIE or -fpie appended, we save it
+    # in 'flags_to_postpone' and append it later in gcc_target_compile procedure in
+    # order to make sure that the multilib_flags doesn't override this.
+
     if {[check_no_compiler_messages using_pic2 assembly {
         #if __PIC__ != 2
         #error FOO
         #endif
     }]} {
-	return "$flags -fPIE"
+        set flags_to_postpone "-fPIE"
+        return $flags
     }
     if {[check_no_compiler_messages using_pic1 assembly {
         #if __PIC__ != 1
         #error FOO
         #endif
     }]} {
-	return "$flags -fpie"
+        set flags_to_postpone "-fpie"
+        return $flags
     }
-
     return $flags
 }
 

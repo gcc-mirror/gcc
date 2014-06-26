@@ -1,3 +1,12 @@
+2014-06-26  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* lib/target-support.exp (bind_pic_locally): Save the flags to
+	'flags_to_postpone' instead of appending to 'flags'.
+	* lib/gcc.exp (gcc_target_compile): Append board_info's multilib_flags
+	with flags_to_postpone and revert after target_compile.
+	* lib/g++.exp (g++_target_compile): Ditto.
+	* lib/gfortran.exp (gfortran_target_compile): Ditto.
+
 2014-06-26  Nick Clifton  <nickc@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_trapping): Fix
