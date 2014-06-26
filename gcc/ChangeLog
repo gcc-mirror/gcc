@@ -1,5 +1,15 @@
 2014-06-26  Bernd Schmidt  <bernds@codesourcery.com>
 
+    	* collect-utils.c (save_temps): New variable.
+    	(do_wait): Use it instead of debug.  Use fatal_error.
+    	* collect-utils.h (save_temps): Declare.
+    	* collect2.c (verbose): Rename from vflag.  All uses changed.
+    	(tool_cleanup): New function, copied from collect_atexit.
+    	(collect_atexit, handler): Just call it.
+    	* collect2.h (verbose): Declaration renamed from vflag.
+    	* lto-wrapper.c (maybe_unlink, run_gcc): Use save_temps instead of
+    	debug.
+
         * Makefile.in (ALL_HOST_BACKEND_OBJS): Add collect-utils.o.
         (lto-wrapper$(exeext)): Link with collect-utils.o.
         * collect-utils.c: New file.
