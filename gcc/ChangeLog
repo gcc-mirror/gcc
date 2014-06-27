@@ -1,3 +1,8 @@
+2014-06-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-math-opts.c (bswap_replace): Fix
+	SLOW_UNALIGNED_ACCESS test to only apply to unaligned object.
+
 2014-06-27  Martin Liska  <mliska@suse.cz>
 
 	* gimple.h (gimple_location_safe): New function introduced.
