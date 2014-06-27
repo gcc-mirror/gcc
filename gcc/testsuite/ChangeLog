@@ -1,3 +1,7 @@
+2014-06-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gfortran.dg/nint_2.f90: Don't XFAIL for powerpc64le-*-linux*.
+
 2014-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61614
