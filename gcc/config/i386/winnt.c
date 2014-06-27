@@ -469,19 +469,12 @@ i386_pe_reloc_rw_mask (void)
 unsigned int
 i386_pe_section_type_flags (tree decl, const char *name, int reloc)
 {
-  static hash_table<pointer_hash<unsigned int> > *htab = NULL;
   unsigned int flags;
-  unsigned int **slot;
 
   /* Ignore RELOC, if we are allowed to put relocated
      const data into read-only section.  */
   if (!flag_writable_rel_rdata)
     reloc = 0;
-  /* The names we put in the hashtable will always be the unique
-     versions given to us by the stringtable, so we can just use
-     their addresses as the keys.  */
-  if (!htab)
-    htab = new hash_table<pointer_hash<unsigned int> > (31);
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
@@ -498,19 +491,6 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
 
   if (decl && DECL_P (decl) && DECL_ONE_ONLY (decl))
     flags |= SECTION_LINKONCE;
-
-  /* See if we already have an entry for this section.  */
-  slot = htab->find_slot ((unsigned int *)name, INSERT);
-  if (!*slot)
-    {
-      *slot = (unsigned int *) xmalloc (sizeof (unsigned int));
-      **slot = flags;
-    }
-  else
-    {
-      if (decl && **slot != flags)
-	error ("%q+D causes a section type conflict", decl);
-    }
 
   return flags;
 }
