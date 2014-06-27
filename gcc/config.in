@@ -6,6 +6,18 @@
 #endif
 
 
+/* Define to the assembler option to enable compressed debug sections. */
+#ifndef USED_FOR_TARGET
+#undef AS_COMPRESS_DEBUG_OPTION
+#endif
+
+
+/* Define to the assembler option to disable compressed debug sections. */
+#ifndef USED_FOR_TARGET
+#undef AS_NO_COMPRESS_DEBUG_OPTION
+#endif
+
+
 /* Define as the number of bits in a byte, if `limits.h' doesn't. */
 #ifndef USED_FOR_TARGET
 #undef CHAR_BIT
@@ -220,6 +232,13 @@
 /* Define if your assembler supports cmpb. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_CMPB
+#endif
+
+
+/* Define to the level of your assembler's compressed debug section support.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_COMPRESS_DEBUG
 #endif
 
 
@@ -1274,6 +1293,12 @@
 #endif
 
 
+/* Define to the level of your linker's compressed debug section support. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_COMPRESS_DEBUG
+#endif
+
+
 /* Define if your linker supports --demangle option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_DEMANGLE
@@ -1696,6 +1721,12 @@
 /* Define to the linker option to ignore unused dependencies. */
 #ifndef USED_FOR_TARGET
 #undef LD_AS_NEEDED_OPTION
+#endif
+
+
+/* Define to the linker option to enable compressed debug sections. */
+#ifndef USED_FOR_TARGET
+#undef LD_COMPRESS_DEBUG_OPTION
 #endif
 
 

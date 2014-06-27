@@ -1,3 +1,25 @@
+2014-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_compress_debug): Check for assembler
+	compressed debug support.
+	(gcc_cv_ld_compress_debug): Check for linker compressed debug
+	support.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* common.opt (compressed_debug_sections): New enum.
+	(gz, gz=): New options.
+	* gcc.c (LINK_COMPRESS_DEBUG_SPEC, ASM_COMPRESS_DEBUG_SPEC):
+	Define.
+	(LINK_COMMAND_SPEC): Invoke LINK_COMPRESS_DEBUG_SPEC.
+	(asm_options): Invoke ASM_COMPRESS_DEBUG_SPEC.
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Invoke
+	LINK_COMPRESS_DEBUG_SPEC.
+	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Likewise.
+	* opts.c (common_handle_option): Handle OPT_gz, OPT_gz_.
+	* doc/invoke.texi (Option Summary, Debugging Options): Add
+	-gz[=type].
+	(Debugging Options): Document -gz[=type].
+
 2014-06-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61160

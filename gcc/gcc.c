@@ -597,6 +597,31 @@ proper position among the other output files.  */
 #endif
 #endif
 
+/* Linker options for compressed debug sections.  */
+#if HAVE_LD_COMPRESS_DEBUG == 0
+/* No linker support.  */
+#define LINK_COMPRESS_DEBUG_SPEC \
+	" %{gz*:%e-gz is not supported in this configuration} "
+#elif HAVE_LD_COMPRESS_DEBUG == 1
+/* GNU style on input, GNU ld options.  Reject, not useful.  */
+#define LINK_COMPRESS_DEBUG_SPEC \
+	" %{gz*:%e-gz is not supported in this configuration} "
+#elif HAVE_LD_COMPRESS_DEBUG == 2
+/* GNU style, GNU gold options.  */
+#define LINK_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib-gnu:" LD_COMPRESS_DEBUG_OPTION "=zlib}" \
+	" %{gz=none:"        LD_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zlib:%e-gz=zlib is not supported in this configuration} "
+#elif HAVE_LD_COMPRESS_DEBUG == 3
+/* ELF gABI style.  */
+#define LINK_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib:"  LD_COMPRESS_DEBUG_OPTION "=zlib}" \
+	" %{gz=none:"	  LD_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zlib-gnu:" LD_COMPRESS_DEBUG_OPTION "=zlib-gnu} "
+#else
+#error Unknown value for HAVE_LD_COMPRESS_DEBUG.
+#endif
+
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
    included.  */
 #ifndef LIBGCC_SPEC
@@ -630,6 +655,33 @@ proper position among the other output files.  */
 #else
 #define ASM_MAP ""
 #endif
+
+/* Assembler options for compressed debug sections.  */
+#if HAVE_LD_COMPRESS_DEBUG < 2
+/* Reject if the linker cannot write compressed debug sections.  */
+#define ASM_COMPRESS_DEBUG_SPEC \
+	" %{gz*:%e-gz is not supported in this configuration} "
+#else /* HAVE_LD_COMPRESS_DEBUG >= 2 */
+#if HAVE_AS_COMPRESS_DEBUG == 0
+/* No assembler support.  Ignore silently.  */
+#define ASM_COMPRESS_DEBUG_SPEC \
+	" %{gz*:} "
+#elif HAVE_AS_COMPRESS_DEBUG == 1
+/* GNU style, GNU as options.  */
+#define ASM_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib-gnu:" AS_COMPRESS_DEBUG_OPTION "}" \
+	" %{gz=none:"        AS_NO_COMPRESS_DEBUG_OPTION "}" \
+	" %{gz=zlib:%e-gz=zlib is not supported in this configuration} "
+#elif HAVE_AS_COMPRESS_DEBUG == 2
+/* ELF gABI style.  */
+#define ASM_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib:"  AS_COMPRESS_DEBUG_OPTION "=zlib}" \
+	" %{gz=none:"	  AS_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zlib-gnu:" AS_COMPRESS_DEBUG_OPTION "=zlib-gnu} "
+#else
+#error Unknown value for HAVE_AS_COMPRESS_DEBUG.
+#endif
+#endif /* HAVE_LD_COMPRESS_DEBUG >= 2 */
 
 /* Define ASM_DEBUG_SPEC to be a spec suitable for translating '-g'
    to the assembler.  */
@@ -761,8 +813,8 @@ proper position among the other output files.  */
     LINK_PLUGIN_SPEC \
    "%{flto|flto=*:%<fcompare-debug*} \
     %{flto} %{flto=*} %l " LINK_PIE_SPEC \
-   "%{fuse-ld=*:-fuse-ld=%*}\
-    %X %{o*} %{e*} %{N} %{n} %{r}\
+   "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
+   "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} " VTABLE_VERIFICATION_SPEC " \
     %{static:} %{L*} %(mfwrap) %(link_libgcc) " SANITIZER_EARLY_SPEC " %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
@@ -885,6 +937,7 @@ static const char *asm_options =
    to the assembler equivalents.  */
 "%{v} %{w:-W} %{I*} "
 #endif
+ASM_COMPRESS_DEBUG_SPEC
 "%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
 
 static const char *invoke_as =

@@ -344,7 +344,7 @@ Objective-C and Objective-C++ Dialects}.
 -g  -g@var{level}  -gtoggle  -gcoff  -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
--gvms  -gxcoff  -gxcoff+ @gol
+-gvms  -gxcoff  -gxcoff+ -gz@r{[}=@var{type}@r{]} @gol
 -fno-merge-debug-strings -fno-dwarf2-cfi-asm @gol
 -fdebug-prefix-map=@var{old}=@var{new} @gol
 -femit-struct-debug-baseonly -femit-struct-debug-reduced @gol
@@ -5288,6 +5288,18 @@ DWARF extensions from later standard versions is allowed.
 @opindex gno-strict-dwarf
 Allow using extensions of later DWARF standard version than selected with
 @option{-gdwarf-@var{version}}.
+
+@item -gz@r{[}=@var{type}@r{]}
+@opindex gz
+Produce compressed debug sections in DWARF format, if that is supported.
+If @var{type} is not given, the default type depends on the capabilities
+of the assembler and linker used.  @var{type} may be one of
+@option{none} (don't compress debug sections), @option{zlib} (use zlib
+compression in ELF gABI format), or @option{zlib-gnu} (use zlib
+compression in traditional GNU format).  If the linker doesn't support
+writing compressed debug sections, the option is rejected.  Otherwise,
+if the assembler does not support them, @option{-gz} is silently ignored
+when producing object files.
 
 @item -gvms
 @opindex gvms

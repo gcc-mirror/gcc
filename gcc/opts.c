@@ -1879,6 +1879,11 @@ common_handle_option (struct gcc_options *opts,
 		       loc);
       break;
 
+    case OPT_gz:
+    case OPT_gz_:
+      /* Handled completely via specs.  */
+      break;
+
     case OPT_pedantic_errors:
       dc->pedantic_errors = 1;
       control_warning_option (OPT_Wpedantic, DK_ERROR, value,

@@ -171,7 +171,8 @@ extern GTY(()) int darwin_ms_struct;
     LINK_PLUGIN_SPEC \
     "%{flto*:%<fcompare-debug*} \
     %{flto*} \
-    %l %X %{s} %{t} %{Z} %{u*} \
+    %l " LINK_COMPRESS_DEBUG_SPEC \
+   "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
     %{o*}%{!o:-o a.out} \
     %{!nostdlib:%{!nostartfiles:%S}} \

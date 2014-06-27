@@ -2527,6 +2527,28 @@ gxcoff+
 Common JoinedOrMissing Negative(gcoff)
 Generate debug information in extended XCOFF format
 
+Enum
+Name(compressed_debug_sections) Type(int)
+
+; Since -gz= is completely handled in specs, the values aren't used and we
+; assign arbitrary constants.
+EnumValue
+Enum(compressed_debug_sections) String(none) Value(0)
+
+EnumValue
+Enum(compressed_debug_sections) String(zlib) Value(1)
+
+EnumValue
+Enum(compressed_debug_sections) String(zlib-gnu) Value(2)
+
+gz
+Common Driver
+Generate compressed debug sections
+
+gz=
+Common Driver Joined Enum(compressed_debug_sections)
+-gz=<format>	Generate compressed debug sections in format <format>
+
 h
 Driver Joined Separate
 
