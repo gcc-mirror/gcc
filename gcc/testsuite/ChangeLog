@@ -1,3 +1,9 @@
+2014-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* g++.dg/ipa/pr61160-2.C: New test.
+	* g++.dg/ipa/pr61160-3.C: Likewise.
+
 2014-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57233
