@@ -318,6 +318,11 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
   if (vec_safe_is_empty (typenames) || uses_template_parms (args))
     return;
 
+  /* Don't try to print typenames when we're processing a clone.  */
+  if (current_function_decl
+      && !DECL_LANG_SPECIFIC (current_function_decl))
+    return;
+
   FOR_EACH_VEC_SAFE_ELT (typenames, i, t)
     {
       if (need_semicolon)
