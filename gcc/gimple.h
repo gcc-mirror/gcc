@@ -1501,6 +1501,15 @@ gimple_location (const_gimple g)
   return g->location;
 }
 
+/* Return location information for statement G if g is not NULL.
+   Otherwise, UNKNOWN_LOCATION is returned.  */
+
+static inline location_t
+gimple_location_safe (const_gimple g)
+{
+  return g ? gimple_location (g) : UNKNOWN_LOCATION;
+}
+
 /* Return pointer to location information for statement G.  */
 
 static inline const location_t *
