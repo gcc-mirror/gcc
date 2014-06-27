@@ -2179,7 +2179,9 @@ bswap_replace (gimple cur_stmt, gimple_stmt_iterator gsi, gimple src_stmt,
       unsigned align;
 
       align = get_object_alignment (src);
-      if (bswap && SLOW_UNALIGNED_ACCESS (TYPE_MODE (load_type), align))
+      if (bswap
+	  && align < GET_MODE_ALIGNMENT (TYPE_MODE (load_type))
+	  && SLOW_UNALIGNED_ACCESS (TYPE_MODE (load_type), align))
 	return false;
 
       gsi_move_before (&gsi, &gsi_ins);
