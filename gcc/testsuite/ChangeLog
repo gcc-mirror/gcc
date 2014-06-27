@@ -1,3 +1,15 @@
+2014-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57233
+	PR tree-optimization/61299
+	* gcc.dg/pr57233.c: New test.
+	* gcc.target/i386/pr57233.c: New test.
+	* gcc.target/i386/sse2-pr57233.c: New test.
+	* gcc.target/i386/avx-pr57233.c: New test.
+	* gcc.target/i386/avx2-pr57233.c: New test.
+	* gcc.target/i386/avx512f-pr57233.c: New test.
+	* gcc.target/i386/xop-pr57233.c: New test.
+
 2014-06-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* gcc.dg/typeof-2.c: New testcase.

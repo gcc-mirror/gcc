@@ -1,3 +1,16 @@
+2014-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57233
+	PR tree-optimization/61299
+	* tree-vect-generic.c (get_compute_type, count_type_subparts): New
+	functions.
+	(expand_vector_operations_1): Use them.  If {L,R}ROTATE_EXPR
+	would be lowered to scalar shifts, check if corresponding
+	shifts and vector BIT_IOR_EXPR are supported and don't lower
+	or lower just to narrower vector type in that case.
+	* expmed.c (expand_shift_1): Fix up handling of vector
+	shifts and rotates.
+
 2014-06-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61586
