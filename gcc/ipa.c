@@ -198,7 +198,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 
 	  if (dump_enabled_p ())
             {
-              location_t locus = gimple_location (edge->call_stmt);
+              location_t locus = gimple_location_safe (edge->call_stmt);
               dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
                                "devirtualizing call in %s/%i to %s/%i\n",
                                edge->caller->name (), edge->caller->order,

@@ -4367,7 +4367,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		{
 		  if (dump_enabled_p ())
 		    {
-		      location_t loc = gimple_location (stmt);
+		      location_t loc = gimple_location_safe (stmt);
 		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 				       "converting indirect call to "
 				       "function %s\n",
