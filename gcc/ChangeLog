@@ -1,3 +1,11 @@
+2014-06-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-06-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61586
+	* config/alpha/alpha.c (alpha_handle_trap_shadows): Handle BARRIER RTX.
+
 2014-06-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/61542
@@ -205,7 +213,7 @@
 
 	2014-06-12  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/61009
+	PR tree-optimization/61009
 	* tree-ssa-threadedge.c (thread_through_normal_block): Correct return
 	value when we stop processing a block due to problematic PHIs.
 
