@@ -1,3 +1,7 @@
+2014-06-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.dg/typeof-2.c: New testcase.
+
 2014-06-27  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/bounds-2.c: Adjust dg-output.
