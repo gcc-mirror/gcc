@@ -29,7 +29,6 @@
 #include <tr1/unordered_map>
 #include <bits/move.h>
 #include <ext/pointer.h>
-#include <ext/alloc_traits.h>
 #include <testsuite_hooks.h>
 
 namespace __gnu_test
@@ -39,19 +38,26 @@ namespace __gnu_test
   public:
     typedef std::size_t    size_type; 
 
-    static void
+    static void*
     allocate(size_type blocksize)
-    { allocationCount_ += blocksize; }
+    {
+      void* p = ::operator new(blocksize);
+      allocationCount_ += blocksize;
+      return p;
+    }
 
     static void
-    construct() { ++constructCount_; }
+    construct() { constructCount_++; }
 
     static void
-    destroy() { ++destructCount_; }
+    destroy() { destructCount_++; }
 
     static void
-    deallocate(size_type blocksize)
-    { deallocationCount_ += blocksize; }
+    deallocate(void* p, size_type blocksize)
+    {
+      ::operator delete(p);
+      deallocationCount_ += blocksize;
+    }
 
     static size_type
     get_allocation_count() { return allocationCount_; }
@@ -81,142 +87,103 @@ namespace __gnu_test
     static int        destructCount_;
   };
 
-  // Helper to detect inconsistency between type used to instantiate an
-  // allocator and the underlying allocator value_type.
-  template<typename T, typename Alloc,
-	   typename = typename Alloc::value_type>
-    struct check_consistent_alloc_value_type;
+  // A simple basic allocator that just forwards to the
+  // tracker_allocator_counter to fulfill memory requests.  This class
+  // is templated on the target object type, but tracker isn't.
+  template<class T>
+  class tracker_allocator
+  {
+  private:
+    typedef tracker_allocator_counter counter_type;
 
-  template<typename T, typename Alloc>
-    struct check_consistent_alloc_value_type<T, Alloc, T>
-    { typedef T value_type; };
-
-  // An allocator facade that intercepts allocate/deallocate/construct/destroy
-  // calls and track them through the tracker_allocator_counter class. This
-  // class is templated on the target object type, but tracker isn't.
-  template<typename T, typename Alloc = std::allocator<T> >
-    class tracker_allocator : public Alloc
-    {
-    private:
-      typedef tracker_allocator_counter counter_type;
-
-      typedef __gnu_cxx::__alloc_traits<Alloc> AllocTraits;
-
-    public:
-      typedef typename
-      check_consistent_alloc_value_type<T, Alloc>::value_type value_type;
-      typedef typename AllocTraits::pointer pointer;
-      typedef typename AllocTraits::size_type size_type;
+  public:
+    typedef T              value_type;
+    typedef T*             pointer;
+    typedef const T*       const_pointer;
+    typedef T&             reference;
+    typedef const T&       const_reference;
+    typedef std::size_t    size_type; 
+    typedef std::ptrdiff_t difference_type; 
     
-      template<class U>
-	struct rebind
-	{
-	  typedef tracker_allocator<U,
-		typename AllocTraits::template rebind<U>::other> other;
-	};
+    template<class U> struct rebind { typedef tracker_allocator<U> other; };
     
-#if __cplusplus >= 201103L
-      tracker_allocator() = default;
-      tracker_allocator(const tracker_allocator&) = default;
-      tracker_allocator(tracker_allocator&&) = default;
+    pointer
+    address(reference value) const _GLIBCXX_NOEXCEPT
+    { return std::__addressof(value); }
 
-      // Perfect forwarding constructor.
-      template<typename... _Args>
-	tracker_allocator(_Args&&... __args)
-	  : Alloc(std::forward<_Args>(__args)...)
-	{ }
-#else
-      tracker_allocator()
+    const_pointer
+    address(const_reference value) const _GLIBCXX_NOEXCEPT
+    { return std::__addressof(value); }
+
+    tracker_allocator() _GLIBCXX_USE_NOEXCEPT
+    { }
+
+    tracker_allocator(const tracker_allocator&) _GLIBCXX_USE_NOEXCEPT
+    { }
+
+    template<class U>
+      tracker_allocator(const tracker_allocator<U>&) _GLIBCXX_USE_NOEXCEPT
       { }
 
-      tracker_allocator(const tracker_allocator&)
-      { }
+    ~tracker_allocator() _GLIBCXX_USE_NOEXCEPT
+    { }
 
-      ~tracker_allocator()
-      { }
-#endif
+    size_type
+    max_size() const _GLIBCXX_USE_NOEXCEPT
+    { return size_type(-1) / sizeof(T); }
 
-      template<class U>
-	tracker_allocator(const tracker_allocator<U,
-	  typename AllocTraits::template rebind<U>::other>& alloc)
-	    _GLIBCXX_USE_NOEXCEPT
-	  : Alloc(alloc)
-	{ }
-
-      pointer
-      allocate(size_type n, const void* = 0)
-      {
-	pointer p = AllocTraits::allocate(*this, n);
-	counter_type::allocate(n * sizeof(T));
-	return p;
-      }
+    pointer
+    allocate(size_type n, const void* = 0)
+    { return static_cast<pointer>(counter_type::allocate(n * sizeof(T))); }
 
 #if __cplusplus >= 201103L
-      template<typename U, typename... Args>
-	void
-	construct(U* p, Args&&... args) 
-	{
-	  AllocTraits::construct(*this, p, std::forward<Args>(args)...);
-	  counter_type::construct();
-	}
-
-      template<typename U>
-	void
-	destroy(U* p)
-	{
-	  AllocTraits::destroy(*this, p);
-	  counter_type::destroy();
-	}
-#else
+    template<typename U, typename... Args>
       void
-      construct(pointer p, const T& value)
+      construct(U* p, Args&&... args) 
       {
-	AllocTraits::construct(*this, p, value);
+	::new((void *)p) U(std::forward<Args>(args)...);
 	counter_type::construct();
       }
 
+    template<typename U>
       void
-      destroy(pointer p)
+      destroy(U* p)
       {
-	AllocTraits::destroy(*this, p);
+	p->~U();
 	counter_type::destroy();
       }
-#endif
-
-      void
-      deallocate(pointer p, size_type num)
-      {
-	counter_type::deallocate(num * sizeof(T));
-	AllocTraits::deallocate(*this, p, num);
-      }
-
-      // Implement swap for underlying allocators that might need it.
-      friend inline void
-      swap(tracker_allocator& a, tracker_allocator& b)
-      {
-	using std::swap;
-
-	Alloc& aa = a;
-	Alloc& ab = b;
-	swap(aa, ab);
-      } 
-    };
-
-  template<class T1, class Alloc1, class T2, class Alloc2>
-    bool
-    operator==(const tracker_allocator<T1, Alloc1>& lhs, 
-	       const tracker_allocator<T2, Alloc2>& rhs) throw()
+#else
+    void
+    construct(pointer p, const T& value)
     {
-      const Alloc1& alloc1 = lhs;
-      const Alloc2& alloc2 = rhs;
-      return lhs == rhs;
+      ::new ((void *)p) T(value);
+      counter_type::construct();
     }
 
-  template<class T1, class Alloc1, class T2, class Alloc2>
+    void
+    destroy(pointer p)
+    {
+      p->~T();
+      counter_type::destroy();
+    }
+#endif
+
+    void
+    deallocate(pointer p, size_type num)
+    { counter_type::deallocate(p, num * sizeof(T)); }
+  };
+
+  template<class T1, class T2>
     bool
-    operator!=(const tracker_allocator<T1, Alloc1>& lhs, 
-	       const tracker_allocator<T2, Alloc2>& rhs) throw()
-    { return !(lhs == rhs); }
+    operator==(const tracker_allocator<T1>&, 
+	       const tracker_allocator<T2>&) throw()
+    { return true; }
+
+  template<class T1, class T2>
+    bool
+    operator!=(const tracker_allocator<T1>&, 
+	       const tracker_allocator<T2>&) throw()
+    { return false; }
 
   bool
   check_construct_destroy(const char* tag, int expected_c, int expected_d);
@@ -226,7 +193,7 @@ namespace __gnu_test
     check_deallocate_null()
     {
       // Let's not core here...
-      Alloc a;
+      Alloc  a;
       a.deallocate(0, 1);
       a.deallocate(0, 10);
       return true;
@@ -252,6 +219,7 @@ namespace __gnu_test
       throw;
     }
 
+
   // A simple allocator which can be constructed endowed of a given
   // "personality" (an integer), queried in operator== to simulate the
   // behavior of realworld "unequal" allocators (i.e., not exploiting
@@ -259,7 +227,7 @@ namespace __gnu_test
   // filled at allocation time with (pointer, personality) pairs, is
   // then consulted to enforce the requirements in Table 32 about
   // deallocation vs allocator equality.  Note that this allocator is
-  // swappable, not copy assignable, consistently with Option 3 of DR 431
+  // swappable, not assignable, consistently with Option 3 of DR 431
   // (see N1599).
   struct uneq_allocator_base
   {
@@ -276,33 +244,26 @@ namespace __gnu_test
     }
   };
 
-  template<typename Tp, typename Alloc = std::allocator<Tp> >
+  template<typename Tp>
     class uneq_allocator
-    : private uneq_allocator_base,
-      public Alloc
+    : private uneq_allocator_base
     {
-      typedef __gnu_cxx::__alloc_traits<Alloc> AllocTraits;
-
-      Alloc& base() { return *this; }
-      const Alloc& base() const  { return *this; }
-      void swap_base(Alloc& b) { swap(b, this->base()); }
-
     public:
-      typedef typename check_consistent_alloc_value_type<Tp, Alloc>::value_type
-	value_type;
-      typedef typename AllocTraits::size_type	size_type;
-      typedef typename AllocTraits::pointer	pointer;
+      typedef std::size_t                         size_type;
+      typedef std::ptrdiff_t                      difference_type;
+      typedef Tp*                                 pointer;
+      typedef const Tp*                           const_pointer;
+      typedef Tp&                                 reference;
+      typedef const Tp&                           const_reference;
+      typedef Tp                                  value_type;
 
 #if __cplusplus >= 201103L
-      typedef std::true_type			propagate_on_container_swap;
+      typedef std::true_type                      propagate_on_container_swap;
 #endif
 
       template<typename Tp1>
-	struct rebind
-	{
-	  typedef uneq_allocator<Tp1,
-		typename AllocTraits::template rebind<Tp1>::other> other;
-	};
+        struct rebind
+	{ typedef uneq_allocator<Tp1> other; };
 
       uneq_allocator() _GLIBCXX_USE_NOEXCEPT
       : personality(0) { }
@@ -311,9 +272,7 @@ namespace __gnu_test
       : personality(person) { }
       
       template<typename Tp1>
-	uneq_allocator(const uneq_allocator<Tp1,
-		       typename AllocTraits::template rebind<Tp1>::other>& b)
-	_GLIBCXX_USE_NOEXCEPT
+        uneq_allocator(const uneq_allocator<Tp1>& b) _GLIBCXX_USE_NOEXCEPT
 	: personality(b.get_personality()) { }
 
       ~uneq_allocator() _GLIBCXX_USE_NOEXCEPT
@@ -322,9 +281,20 @@ namespace __gnu_test
       int get_personality() const { return personality; }
       
       pointer
-      allocate(size_type n, const void* hint = 0)
+      address(reference x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(x); }
+    
+      const_pointer
+      address(const_reference x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(x); }
+
+      pointer
+      allocate(size_type n, const void* = 0)
       { 
-	pointer p = AllocTraits::allocate(*this, n);
+	if (__builtin_expect(n > this->max_size(), false))
+	  std::__throw_bad_alloc();
+	
+	pointer p = static_cast<Tp*>(::operator new(n * sizeof(Tp)));
 	try
 	  {
 	    get_map().insert(map_type::value_type(reinterpret_cast<void*>(p),
@@ -332,14 +302,14 @@ namespace __gnu_test
 	  }
 	catch(...)
 	  {
-	    AllocTraits::deallocate(*this, p, n);
+	    ::operator delete(p);
 	    __throw_exception_again;
 	  }
 	return p;
       }
 
       void
-      deallocate(pointer p, size_type n)
+      deallocate(pointer p, size_type)
       {
 	bool test __attribute__((unused)) = true;
 
@@ -353,18 +323,34 @@ namespace __gnu_test
 	VERIFY( it->second == personality );
 
 	get_map().erase(it);
-	AllocTraits::deallocate(*this, p, n);
+	::operator delete(p);
       }
 
+      size_type
+      max_size() const _GLIBCXX_USE_NOEXCEPT 
+      { return size_type(-1) / sizeof(Tp); }
+
 #if __cplusplus >= 201103L
+      template<typename U, typename... Args>
+        void
+        construct(U* p, Args&&... args) 
+	{ ::new((void *)p) U(std::forward<Args>(args)...); }
+
+      template<typename U>
+	void 
+	destroy(U* p) { p->~U(); }
+
       // Not copy assignable...
       uneq_allocator&
       operator=(const uneq_allocator&) = delete;
-
-      // ... but still moveable if base allocator is.
-      uneq_allocator&
-      operator=(uneq_allocator&&) = default;
 #else
+      void 
+      construct(pointer p, const Tp& val) 
+      { ::new((void *)p) Tp(val); }
+
+      void 
+      destroy(pointer p) { p->~Tp(); }
+
     private:
       // Not assignable...
       uneq_allocator&
@@ -372,39 +358,31 @@ namespace __gnu_test
 #endif
 
     private:
+
       // ... yet swappable!
       friend inline void
       swap(uneq_allocator& a, uneq_allocator& b)
-      {
-	std::swap(a.personality, b.personality);
-	a.swap_base(b);
-      } 
+      { std::swap(a.personality, b.personality); } 
+      
+      template<typename Tp1>
+        friend inline bool
+        operator==(const uneq_allocator& a, const uneq_allocator<Tp1>& b)
+        { return a.personality == b.personality; }
 
       template<typename Tp1>
-	friend inline bool
-	operator==(const uneq_allocator& a,
-		   const uneq_allocator<Tp1,
-		   typename AllocTraits::template rebind<Tp1>::other>& b)
-	{ return a.personality == b.personality; }
-
-      template<typename Tp1>
-	friend inline bool
-	operator!=(const uneq_allocator& a,
-		   const uneq_allocator<Tp1,
-		   typename AllocTraits::template rebind<Tp1>::other>& b)
-	{ return !(a == b); }
+        friend inline bool
+        operator!=(const uneq_allocator& a, const uneq_allocator<Tp1>& b)
+        { return !(a == b); }
       
       int personality;
     };
 
 #if __cplusplus >= 201103L
   // An uneq_allocator which can be used to test allocator propagation.
-  template<typename Tp, bool Propagate, typename Alloc = std::allocator<Tp>>
-    class propagating_allocator : public uneq_allocator<Tp, Alloc>
+  template<typename Tp, bool Propagate>
+    class propagating_allocator : public uneq_allocator<Tp>
     {
-      typedef __gnu_cxx::__alloc_traits<Alloc> AllocTraits;
-
-      typedef uneq_allocator<Tp, Alloc> base_alloc;
+      typedef uneq_allocator<Tp> base_alloc;
       base_alloc& base() { return *this; }
       const base_alloc& base() const  { return *this; }
       void swap_base(base_alloc& b) { swap(b, this->base()); }
@@ -415,20 +393,15 @@ namespace __gnu_test
       // default allocator_traits::rebind_alloc would select
       // uneq_allocator::rebind so we must define rebind here
       template<typename Up>
-	struct rebind
-	{
-	  typedef propagating_allocator<Up, Propagate,
-		typename AllocTraits::template rebind<Up>::other> other;
-	};
+	struct rebind { typedef propagating_allocator<Up, Propagate> other; };
 
       propagating_allocator(int i) noexcept
       : base_alloc(i)
       { }
 
       template<typename Up>
-	propagating_allocator(const propagating_allocator<Up, Propagate,
-			      typename AllocTraits::template rebind<Up>::other>& a)
-	noexcept
+	propagating_allocator(const propagating_allocator<Up, Propagate>& a)
+       	noexcept
 	: base_alloc(a)
 	{ }
 
@@ -445,8 +418,8 @@ namespace __gnu_test
       }
 
       template<bool P2>
-	propagating_allocator&
-	operator=(const propagating_allocator<Tp, P2, Alloc>& a) noexcept
+  	propagating_allocator&
+  	operator=(const propagating_allocator<Tp, P2>& a) noexcept
   	{
 	  static_assert(P2, "assigning propagating_allocator<T, true>");
 	  propagating_allocator(a).swap_base(*this);
