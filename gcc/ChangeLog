@@ -1,3 +1,8 @@
+2014-06-27  trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/winnt.c (i386_pe_section_type_flags): Remove
+	redundant diagnostic machinary.
+
 2014-06-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-math-opts.c (bswap_replace): Fix
