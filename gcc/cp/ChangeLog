@@ -1,5 +1,10 @@
 2014-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/61614
+	* semantics.c (finish_compound_literal): Revert r204228.
+
+2014-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* parser.c (cp_parser_compound_literal_p): New.
 	(cp_parser_postfix_expression, cp_parser_sizeof_operand): Use it.
 
