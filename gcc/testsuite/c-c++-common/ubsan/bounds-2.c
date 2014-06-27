@@ -22,7 +22,7 @@ static void __attribute__ ((noinline, noclone))
 fn1 (void)
 {
   volatile int a[5];
-  a[5] = 1;
+  asm ("" : : "r" (&a) : "memory");
   a[2] = a[5];
 }
 
@@ -30,9 +30,11 @@ static void __attribute__ ((noinline, noclone))
 fn2 (void)
 {
   volatile int a[5];
+  volatile int j;
   int i = 5;
   int *p = &i;
-  a[*p] = 1;
+  asm ("" : : "r" (&a) : "memory");
+  j = a[*p];
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -54,7 +56,7 @@ fn5 (void)
 {
   int i = 5;
   volatile int a[i];
-  a[i] = 1;
+  asm ("" : : "r" (&a) : "memory");
   a[2] = a[i];
 }
 
@@ -63,29 +65,32 @@ fn6 (void)
 {
   int i = 5;
   volatile int a[i];
+  volatile int j;
   fn_p (a[i]);
-  a[foo_5 ()] = 1;
+  asm ("" : : "r" (&a) : "memory");
+  j = a[foo_5 ()];
 }
 
 static void __attribute__ ((noinline, noclone))
 fn7 (void)
 {
-  int n = 5, i;
+  int n = 5;
+  volatile int i;
   volatile int c[n][n][n];
-  c[5][2][2] = 2;
-  c[2][5][2] = 2;
-  c[2][2][5] = 2;
+  asm ("" : : "r" (&c[5]) : "memory");
   i = c[5][2][2];
+  asm ("" : : "r" (&c[2]) : "memory");
   i = c[2][5][2];
+  asm ("" : : "r" (&c[2]) : "memory");
   i = c[2][2][5];
 }
 
 static void __attribute__ ((noinline, noclone))
 fn8 (void)
 {
-  int i = 5;
+  volatile int i;
   volatile struct S s;
-  s.a[10] = 1;
+  asm ("" : : "r" (&s.a) : "memory");
   i = s.a[10];
 }
 
@@ -93,7 +98,7 @@ static void __attribute__ ((noinline, noclone))
 fn9 (void)
 {
   long int *volatile d[10][5];
-  d[10][0] = 0;
+  asm ("" : : "r" (&d[10]) : "memory");
   d[8][3] = d[10][0];
 }
 
@@ -115,7 +120,7 @@ static void __attribute__ ((noinline, noclone))
 fn11 (void)
 {
   char ***volatile f[5];
-  f[5] = 0;
+  asm ("" : : "r" (&f) : "memory");
   f[2] = f[5];
 }
 
@@ -148,21 +153,13 @@ main (void)
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]\\\[\\\*\\\]\\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]\\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]\\\[\\\*\\\]\\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]\\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 10 out of bounds for type 'int \\\[10\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 10 out of bounds for type 'int \\\[10\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 10 out of bounds for type 'long int \\\*\\\[10\\\]\\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 10 out of bounds for type 'long int \\\*\\\[10\\\]\\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'char \\\*\\\*\\\*\\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'char \\\*\\\*\\\*\\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */

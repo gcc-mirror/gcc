@@ -9,11 +9,16 @@ void
 fn1 (void)
 {
   volatile struct S { char a[1]; char b; } s;
-  s.a[0] = 1; // OK
-  s.a[1] = 2; // error
+  volatile int i;
+  asm ("" : : "r" (&s.a) : "memory");
+  i = s.a[0]; // OK
+  asm ("" : : "r" (&s.a) : "memory");
+  i = s.a[1]; // error
   volatile struct S *p = &s;
-  p->a[0] = 1; // OK
-  p->a[1] = 1; // error
+  asm ("" : : "r" (&p->a) : "memory");
+  i = p->a[0]; // OK
+  asm ("" : : "r" (&p->a) : "memory");
+  i = p->a[1]; // error
 }
 
 __attribute__ ((noinline, noclone))
@@ -22,11 +27,16 @@ fn2 (void)
 {
   struct S { int c; char d[4]; };
   volatile struct T { int e; struct S f; int g; } t;
-  t.f.d[3] = 1; // OK
-  t.f.d[4] = 1; // error
+  volatile int i;
+  asm ("" : : "r" (&t.f.d) : "memory");
+  i = t.f.d[3]; // OK
+  asm ("" : : "r" (&t.f.d) : "memory");
+  i = t.f.d[4]; // error
   volatile struct T *p = &t;
-  p->f.d[3] = 1; // OK
-  p->f.d[4] = 1; // error
+  asm ("" : : "r" (&p->f.d) : "memory");
+  i = p->f.d[3]; // OK
+  asm ("" : : "r" (&p->f.d) : "memory");
+  i = p->f.d[4]; // error
 }
 
 __attribute__ ((noinline, noclone))
@@ -34,11 +44,16 @@ void
 fn3 (void)
 {
   volatile struct S { char b; char a[1]; } s;
-  s.a[0] = 1; // OK
-  s.a[1] = 1; // error
+  volatile int i;
+  asm ("" : : "r" (&s.a) : "memory");
+  i = s.a[0]; // OK
+  asm ("" : : "r" (&s.a) : "memory");
+  i = s.a[1]; // error
   volatile struct S *p = &s;
-  p->a[0] = 1; // OK
-  p->a[1] = 1; // error in strict mode
+  asm ("" : : "r" (&p->a) : "memory");
+  i = p->a[0]; // OK
+  asm ("" : : "r" (&p->a) : "memory");
+  i = p->a[1]; // error in strict mode
 }
 
 __attribute__ ((noinline, noclone))
@@ -47,11 +62,16 @@ fn4 (void)
 {
   volatile struct S { char b; char a[1]; } s;
   volatile struct T { struct S s; int i; } t;
-  t.s.a[0] = 1; // OK
-  t.s.a[1] = 1; // error
+  volatile int i;
+  asm ("" : : "r" (&t.s.a) : "memory");
+  i = t.s.a[0]; // OK
+  asm ("" : : "r" (&t.s.a) : "memory");
+  i = t.s.a[1]; // error
   volatile struct T *pt = &t;
-  pt->s.a[0] = 1; // OK
-  pt->s.a[1] = 1; // error
+  asm ("" : : "r" (&pt->s.a) : "memory");
+  i = pt->s.a[0]; // OK
+  asm ("" : : "r" (&pt->s.a) : "memory");
+  i = pt->s.a[1]; // error
 }
 
 __attribute__ ((noinline, noclone))
@@ -60,11 +80,16 @@ fn5 (void)
 {
   volatile struct S { char b; char a[1]; } s;
   volatile struct U { int a; struct S s; } u;
-  u.s.a[0] = 1; // OK
-  u.s.a[1] = 1; // error
+  volatile int i;
+  asm ("" : : "r" (&u.s.a) : "memory");
+  i = u.s.a[0]; // OK
+  asm ("" : : "r" (&u.s.a) : "memory");
+  i = u.s.a[1]; // error
   volatile struct U *pu = &u;
-  pu->s.a[0] = 1; // OK
-  pu->s.a[1] = 1; // error in strict mode
+  asm ("" : : "r" (&pu->s.a) : "memory");
+  i = pu->s.a[0]; // OK
+  asm ("" : : "r" (&pu->s.a) : "memory");
+  i = pu->s.a[1]; // error in strict mode
 }
 
 int
