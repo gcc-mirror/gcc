@@ -1,3 +1,10 @@
+2014-06-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Discard all type
+	qualifiers in __auto_type for atomic types.
+	(c_parser_typeof_specifier): Discard all type qualifiers in
+	__typeof__ for atomic types.
+
 2014-06-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61162
