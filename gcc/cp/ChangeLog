@@ -1,3 +1,8 @@
+2014-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_compound_literal_p): New.
+	(cp_parser_postfix_expression, cp_parser_sizeof_operand): Use it.
+
 2014-06-26  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_for_init_statement): Change range-for error
