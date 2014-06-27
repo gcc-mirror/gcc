@@ -265,50 +265,39 @@ eat_spaces (st_parameter_dt *dtp)
   int c;
 
   /* If internal character array IO, peak ahead and seek past spaces.
-     This is an optimazation to eliminate numerous calls to
-     next character unique to character arrays with large character
-     lengths (PR38199). */
-  if (is_array_io (dtp))
+     This is an optimization unique to character arrays with large
+     character lengths (PR38199).  This code eliminates numerous calls
+     to next_character.  */
+  if (is_array_io (dtp) && (dtp->u.p.last_char == EOF - 1))
     {
       gfc_offset offset = stell (dtp->u.p.current_unit->s);
-      gfc_offset limit = offset + dtp->u.p.current_unit->bytes_left;
+      gfc_offset i;
 
       if (dtp->common.unit) /* kind=4 */
 	{
-	  gfc_char4_t cc;
-	  limit *= (sizeof (gfc_char4_t));
-	  do
+	  for (i = 0; i < dtp->u.p.current_unit->bytes_left; i++)
 	    {
-	      cc = dtp->internal_unit[offset];
-	      offset += (sizeof (gfc_char4_t));
-	      dtp->u.p.current_unit->bytes_left--;
+	      if (dtp->internal_unit[offset + i * sizeof (gfc_char4_t)]
+		  != (gfc_char4_t)' ')
+	        break;
 	    }
-	  while (offset < limit && cc == (gfc_char4_t)' ');
-	  /* Back up, seek ahead, and fall through to complete the
-	     process so that END conditions are handled correctly.  */
-	  dtp->u.p.current_unit->bytes_left++;
-
-	  cc = dtp->internal_unit[offset];
-	  if (cc != (gfc_char4_t)' ')
-	    sseek (dtp->u.p.current_unit->s,
-		   offset-(sizeof (gfc_char4_t)), SEEK_SET);
 	}
       else
 	{
-	  do
+	  for (i = 0; i < dtp->u.p.current_unit->bytes_left; i++)
 	    {
-	      c = dtp->internal_unit[offset++];
-	      dtp->u.p.current_unit->bytes_left--;
+	      if (dtp->internal_unit[offset + i] != ' ')
+	        break;
 	    }
-	  while (offset < limit && c == ' ');
-	  /* Back up, seek ahead, and fall through to complete the
-	     process so that END conditions are handled correctly.  */
-	  dtp->u.p.current_unit->bytes_left++;
+	}
 
-	  if (dtp->internal_unit[offset] != ' ')
-	    sseek (dtp->u.p.current_unit->s, offset - 1, SEEK_SET);
+      if (i != 0)
+	{
+	  sseek (dtp->u.p.current_unit->s, offset + i, SEEK_SET);
+	  dtp->u.p.current_unit->bytes_left -= i;
 	}
     }
+
   /* Now skip spaces, EOF and EOL are handled in next_char.  */
   do
     c = next_char (dtp);

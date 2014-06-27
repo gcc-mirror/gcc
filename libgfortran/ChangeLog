@@ -1,3 +1,11 @@
+2014-06-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk.
+	PR libgfortran/61499
+	* io/list_read.c (eat_spaces): Use a 'for' loop instead of
+	'while' loop to skip the loop if there are no bytes left in the
+	string. Only seek if actual spaces can be skipped.
+
 2014-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	Backport from trunk.
