@@ -1,3 +1,8 @@
+2014-06-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61499
+	gfortran.dg/arrayio_15.f90: New test.
+
 2014-06-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61586
