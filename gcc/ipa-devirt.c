@@ -334,6 +334,17 @@ static odr_hash_type *odr_hash;
 static GTY(()) vec <odr_type, va_gc> *odr_types_ptr;
 #define odr_types (*odr_types_ptr)
 
+/* Set TYPE_BINFO of TYPE and its variants to BINFO.  */
+void
+set_type_binfo (tree type, tree binfo)
+{
+  for (; type; type = TYPE_NEXT_VARIANT (type))
+    if (COMPLETE_TYPE_P (type))
+      TYPE_BINFO (type) = binfo;
+    else
+      gcc_assert (!TYPE_BINFO (type));
+}
+
 /* TYPE is equivalent to VAL by ODR, but its tree representation differs
    from VAL->type.  This may happen in LTO where tree merging did not merge
    all variants of the same type.  It may or may not mean the ODR violation.
@@ -446,16 +457,17 @@ add_type_duplicate (odr_type val, tree type)
 	    {
 	      unsigned int i;
 
-	      TYPE_BINFO (val->type) = TYPE_BINFO (type);
+	      set_type_binfo (val->type, TYPE_BINFO (type));
 	      for (i = 0; i < val->types->length (); i++)
 		{
 		  if (TYPE_BINFO ((*val->types)[i])
 		      == master_binfo)
-		    TYPE_BINFO ((*val->types)[i]) = TYPE_BINFO (type);
+		    set_type_binfo ((*val->types)[i], TYPE_BINFO (type));
 		}
+	      BINFO_TYPE (TYPE_BINFO (type)) = val->type;
 	    }
 	  else
-	    TYPE_BINFO (type) = master_binfo;
+	    set_type_binfo (type, master_binfo);
 	}
     }
 }
@@ -495,6 +507,7 @@ get_odr_type (tree type, bool insert)
 
       val = ggc_cleared_alloc<odr_type_d> ();
       val->type = type;
+      gcc_assert (BINFO_TYPE (TYPE_BINFO (val->type)) = type);
       val->bases = vNULL;
       val->derived_types = vNULL;
       val->anonymous_namespace = type_in_anonymous_namespace_p (type);
@@ -1102,7 +1115,7 @@ get_class_context (ipa_polymorphic_call_context *context,
 	  if (!fld)
 	    goto give_up;
 
-	  type = TREE_TYPE (fld);
+	  type = TYPE_MAIN_VARIANT (TREE_TYPE (fld));
 	  offset -= pos;
 	  /* DECL_ARTIFICIAL represents a basetype.  */
 	  if (!DECL_ARTIFICIAL (fld))
@@ -1116,7 +1129,7 @@ get_class_context (ipa_polymorphic_call_context *context,
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  tree subtype = TREE_TYPE (type);
+	  tree subtype = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 
 	  /* Give up if we don't know array size.  */
 	  if (!tree_fits_shwi_p (TYPE_SIZE (subtype))
@@ -1159,7 +1172,8 @@ static bool
 contains_type_p (tree outer_type, HOST_WIDE_INT offset,
 		 tree otr_type)
 {
-  ipa_polymorphic_call_context context = {offset, outer_type,
+  ipa_polymorphic_call_context context = {offset,
+					  TYPE_MAIN_VARIANT (outer_type),
 					  false, true};
   return get_class_context (&context, otr_type);
 }
@@ -1272,7 +1286,7 @@ get_polymorphic_call_info_for_decl (ipa_polymorphic_call_context *context,
 {
   gcc_assert (DECL_P (base));
 
-  context->outer_type = TREE_TYPE (base);
+  context->outer_type = TYPE_MAIN_VARIANT (TREE_TYPE (base));
   context->offset = offset;
   /* Make very conservative assumption that all objects
      may be in construction. 
@@ -1329,7 +1343,7 @@ get_polymorphic_call_info (tree fndecl,
   *otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (ref));
 
   /* Set up basic info in case we find nothing interesting in the analysis.  */
-  context->outer_type = *otr_type;
+  context->outer_type = TYPE_MAIN_VARIANT (*otr_type);
   context->offset = 0;
   base_pointer = OBJ_TYPE_REF_OBJECT (ref);
   context->maybe_derived_type = true;
@@ -1415,7 +1429,8 @@ get_polymorphic_call_info (tree fndecl,
       if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE
 	  && SSA_NAME_VAR (base_pointer) == DECL_ARGUMENTS (fndecl))
 	{
-	  context->outer_type = TREE_TYPE (TREE_TYPE (base_pointer));
+	  context->outer_type
+	     = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (base_pointer)));
 	  gcc_assert (TREE_CODE (context->outer_type) == RECORD_TYPE);
 
 	  /* Dynamic casting has possibly upcasted the type
@@ -1450,7 +1465,8 @@ get_polymorphic_call_info (tree fndecl,
 	 object.  */
       if (DECL_BY_REFERENCE (SSA_NAME_VAR (base_pointer)))
 	{
-	  context->outer_type = TREE_TYPE (TREE_TYPE (base_pointer));
+	  context->outer_type
+	     = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (base_pointer)));
 	  gcc_assert (!POINTER_TYPE_P (context->outer_type));
 	  /* Only type inconsistent programs can have otr_type that is
 	     not part of outer type.  */
@@ -1599,6 +1615,8 @@ possible_polymorphic_call_targets (tree otr_type,
   bool can_refer;
   bool skipped = false;
 
+  otr_type = TYPE_MAIN_VARIANT (otr_type);
+
   /* If ODR is not initialized, return empty incomplete list.  */
   if (!odr_hash)
     {
@@ -1625,6 +1643,10 @@ possible_polymorphic_call_targets (tree otr_type,
 
   type = get_odr_type (otr_type, true);
 
+  /* Recording type variants would wast results cache.  */
+  gcc_assert (!context.outer_type
+	      || TYPE_MAIN_VARIANT (context.outer_type) == context.outer_type);
+
   /* Lookup the outer class type we want to walk.  */
   if (context.outer_type
       && !get_class_context (&context, otr_type))
@@ -1637,6 +1659,10 @@ possible_polymorphic_call_targets (tree otr_type,
 	*nonconstruction_targetsp = 0;
       return nodes;
     }
+
+  /* Check that get_class_context kept the main variant.  */
+  gcc_assert (!context.outer_type
+	      || TYPE_MAIN_VARIANT (context.outer_type) == context.outer_type);
 
   /* We canonicalize our query, so we do not need extra hashtable entries.  */
 

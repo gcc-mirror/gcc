@@ -1,5 +1,17 @@
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (set_type_binfo): New function.
+	(add_type_duplicate): Use it.
+	(get_odr_type): Sanity check that binfos points to main variants.
+	(get_class_context): Be sure the context's outer_type is main variant.
+	(contains_type_p): Walk main variant.
+	(get_polymorphic_call_info_for_decl): Set outer_type to be main variant.
+	(get_polymorphic_call_info): Likewise.
+	(possible_polymorphic_call_targets): Sanity check that we operate on main
+	variant.
+
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* stor-layout.c (finish_builtin_struct): Copy fields into
 	the variants.
 
