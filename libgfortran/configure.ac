@@ -530,6 +530,10 @@ AC_CHECK_TYPES([fp_rnd,fp_rnd_t], [], [], [[
 #include <math.h>
 ]])
 
+# Check whether we have fpsetsticky or fpresetsticky
+AC_CHECK_FUNC([fpsetsticky],[have_fpsetsticky=yes AC_DEFINE([HAVE_FPSETSTICKY],[1],[fpsetsticky is present])])
+AC_CHECK_FUNC([fpresetsticky],[have_fpresetsticky=yes AC_DEFINE([HAVE_FPRESETSTICKY],[1],[fpresetsticky is present])])
+
 # Check for AIX fp_trap and fp_enable
 AC_CHECK_FUNC([fp_trap],[have_fp_trap=yes AC_DEFINE([HAVE_FP_TRAP],[1],[fp_trap is present])])
 AC_CHECK_FUNC([fp_enable],[have_fp_enable=yes AC_DEFINE([HAVE_FP_ENABLE],[1],[fp_enable is present])])
@@ -539,8 +543,13 @@ AC_CHECK_FUNC([fp_enable],[have_fp_enable=yes AC_DEFINE([HAVE_FP_ENABLE],[1],[fp
 # build chain.
 . ${srcdir}/configure.host
 AC_MSG_NOTICE([FPU dependent file will be ${fpu_host}.h])
+AC_MSG_NOTICE([Support for IEEE modules: ${ieee_support}])
 FPU_HOST_HEADER=config/${fpu_host}.h
 AC_SUBST(FPU_HOST_HEADER)
+
+# Whether we will build the IEEE modules
+AM_CONDITIONAL(IEEE_SUPPORT,[test x${ieee_support} = xyes])
+AC_SUBST(IEEE_SUPPORT)
 
 # Some targets require additional compiler options for IEEE compatibility.
 IEEE_FLAGS="${ieee_flags}"

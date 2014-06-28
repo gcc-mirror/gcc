@@ -5460,12 +5460,13 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
       if (gfc_real_kinds[i].range >= range)
 	found_range = 1;
 
-      if (gfc_real_kinds[i].radix >= radix)
+      if (radix == 0 || gfc_real_kinds[i].radix == radix)
 	found_radix = 1;
 
       if (gfc_real_kinds[i].precision >= precision
 	  && gfc_real_kinds[i].range >= range
-	  && gfc_real_kinds[i].radix >= radix && gfc_real_kinds[i].kind < kind)
+	  && (radix == 0 || gfc_real_kinds[i].radix == radix)
+	  && gfc_real_kinds[i].kind < kind)
 	kind = gfc_real_kinds[i].kind;
     }
 
@@ -5484,6 +5485,87 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
     }
 
   return gfc_get_int_expr (gfc_default_integer_kind, loc, kind);
+}
+
+
+gfc_expr *
+gfc_simplify_ieee_selected_real_kind (gfc_expr *expr)
+{
+  gfc_actual_arglist *arg = expr->value.function.actual;
+  gfc_expr *p = arg->expr, *r = arg->next->expr,
+	   *rad = arg->next->next->expr;
+  int precision, range, radix, res;
+  int found_precision, found_range, found_radix, i;
+
+  if (p)
+  {
+    if (p->expr_type != EXPR_CONSTANT
+	|| gfc_extract_int (p, &precision) != NULL)
+      return NULL;
+  }
+  else
+    precision = 0;
+
+  if (r)
+  {
+    if (r->expr_type != EXPR_CONSTANT
+	|| gfc_extract_int (r, &range) != NULL)
+      return NULL;
+  }
+  else
+    range = 0;
+
+  if (rad)
+  {
+    if (rad->expr_type != EXPR_CONSTANT
+	|| gfc_extract_int (rad, &radix) != NULL)
+      return NULL;
+  }
+  else
+    radix = 0;
+
+  res = INT_MAX;
+  found_precision = 0;
+  found_range = 0;
+  found_radix = 0;
+
+  for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+    {
+      /* We only support the target's float and double types.  */
+      if (!gfc_real_kinds[i].c_float && !gfc_real_kinds[i].c_double)
+	continue;
+
+      if (gfc_real_kinds[i].precision >= precision)
+	found_precision = 1;
+
+      if (gfc_real_kinds[i].range >= range)
+	found_range = 1;
+
+      if (radix == 0 || gfc_real_kinds[i].radix == radix)
+	found_radix = 1;
+
+      if (gfc_real_kinds[i].precision >= precision
+	  && gfc_real_kinds[i].range >= range
+	  && (radix == 0 || gfc_real_kinds[i].radix == radix)
+	  && gfc_real_kinds[i].kind < res)
+	res = gfc_real_kinds[i].kind;
+    }
+
+  if (res == INT_MAX)
+    {
+      if (found_radix && found_range && !found_precision)
+	res = -1;
+      else if (found_radix && found_precision && !found_range)
+	res = -2;
+      else if (found_radix && !found_precision && !found_range)
+	res = -3;
+      else if (found_radix)
+	res = -4;
+      else
+	res = -5;
+    }
+
+  return gfc_get_int_expr (gfc_default_integer_kind, &expr->where, res);
 }
 
 

@@ -35,13 +35,14 @@ along with GCC; see the file COPYING3.  If not see
 					   obsolescent in later standards.  */
 
 
-/* Bitmasks for the various FPE that can be enabled.  */
-#define GFC_FPE_INVALID    (1<<0)
-#define GFC_FPE_DENORMAL   (1<<1)
-#define GFC_FPE_ZERO       (1<<2)
-#define GFC_FPE_OVERFLOW   (1<<3)
-#define GFC_FPE_UNDERFLOW  (1<<4)
-#define GFC_FPE_INEXACT    (1<<5)
+/* Bitmasks for the various FPE that can be enabled.  These need to be straight integers
+   e.g., 8 instead of (1<<3), because they will be included in Fortran source.  */
+#define GFC_FPE_INVALID      1
+#define GFC_FPE_DENORMAL     2
+#define GFC_FPE_ZERO         4
+#define GFC_FPE_OVERFLOW     8
+#define GFC_FPE_UNDERFLOW   16
+#define GFC_FPE_INEXACT     32
 
 /* Defines for floating-point rounding modes.  */
 #define GFC_FPE_DOWNWARD   1
@@ -49,6 +50,10 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_FPE_TOWARDZERO 3
 #define GFC_FPE_UPWARD     4
 
+/* Size of the buffer required to store FPU state for any target.
+   In particular, this has to be larger than fenv_t on all glibc targets.
+   Currently, the winner is x86_64 with 32 bytes.  */
+#define GFC_FPE_STATE_BUFFER_SIZE 32
 
 /* Bitmasks for the various runtime checks that can be enabled.  */
 #define GFC_RTCHECK_BOUNDS      (1<<0)

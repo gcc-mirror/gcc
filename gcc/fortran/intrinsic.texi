@@ -13155,6 +13155,7 @@ Fortran 95 elemental function: @ref{IEOR}
 @menu
 * ISO_FORTRAN_ENV::
 * ISO_C_BINDING::
+* IEEE modules::
 * OpenMP Modules OMP_LIB and OMP_LIB_KINDS::
 @end menu
 
@@ -13365,6 +13366,35 @@ Moreover, the following two named constants are defined:
 @end multitable
 
 Both are equivalent to the value @code{NULL} in C.
+
+
+
+@node IEEE modules
+@section IEEE modules: @code{IEEE_EXCEPTIONS}, @code{IEEE_ARITHMETIC}, and @code{IEEE_FEATURES}
+@table @asis
+@item @emph{Standard}:
+Fortran 2003 and later
+@end table
+
+The @code{IEEE_EXCEPTIONS}, @code{IEEE_ARITHMETIC}, and @code{IEEE_FEATURES}
+intrinsic modules provide support for exceptions and IEEE arithmetic, as
+defined in Fortran 2003 and later standards, and the IEC 60559:1989 standard
+(@emph{Binary floating-point arithmetic for microprocessor systems}). These
+modules are only provided on the following supported platforms:
+
+@itemize @bullet
+@item i386 and x86_64 processors
+@item platforms which use the GNU C Library (glibc)
+@item platforms with support for SysV/386 routines for floating point
+interface (including Solaris and BSDs)
+@item platforms with the AIX OS
+@end itemize
+
+For full compliance with the Fortran standards, code using the
+@code{IEEE_EXCEPTIONS} or @code{IEEE_ARITHMETIC} modules should be compiled
+with the following options: @code{-fno-unsafe-math-optimizations
+-frounding-math -fsignaling-nans}.
+
 
 @node OpenMP Modules OMP_LIB and OMP_LIB_KINDS
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}

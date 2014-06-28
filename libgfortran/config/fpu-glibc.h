@@ -27,63 +27,141 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    feenableexcept function in fenv.h to set individual exceptions
    (there's nothing to do that in C99).  */
 
+#include <assert.h>
+
 #ifdef HAVE_FENV_H
 #include <fenv.h>
 #endif
 
+
+void set_fpu_trap_exceptions (int trap, int notrap)
+{
+#ifdef FE_INVALID
+  if (trap & GFC_FPE_INVALID)
+    feenableexcept (FE_INVALID);
+  if (notrap & GFC_FPE_INVALID)
+    fedisableexcept (FE_INVALID);
+#endif
+
+/* glibc does never have a FE_DENORMAL.  */
+#ifdef FE_DENORMAL
+  if (trap & GFC_FPE_DENORMAL)
+    feenableexcept (FE_DENORMAL);
+  if (notrap & GFC_FPE_DENORMAL)
+    fedisableexcept (FE_DENORMAL);
+#endif
+
+#ifdef FE_DIVBYZERO
+  if (trap & GFC_FPE_ZERO)
+    feenableexcept (FE_DIVBYZERO);
+  if (notrap & GFC_FPE_ZERO)
+    fedisableexcept (FE_DIVBYZERO);
+#endif
+
+#ifdef FE_OVERFLOW
+  if (trap & GFC_FPE_OVERFLOW)
+    feenableexcept (FE_OVERFLOW);
+  if (notrap & GFC_FPE_OVERFLOW)
+    fedisableexcept (FE_OVERFLOW);
+#endif
+
+#ifdef FE_UNDERFLOW
+  if (trap & GFC_FPE_UNDERFLOW)
+    feenableexcept (FE_UNDERFLOW);
+  if (notrap & GFC_FPE_UNDERFLOW)
+    fedisableexcept (FE_UNDERFLOW);
+#endif
+
+#ifdef FE_INEXACT
+  if (trap & GFC_FPE_INEXACT)
+    feenableexcept (FE_INEXACT);
+  if (notrap & GFC_FPE_INEXACT)
+    fedisableexcept (FE_INEXACT);
+#endif
+}
+
+
+int
+get_fpu_trap_exceptions (void)
+{
+  int exceptions = fegetexcept ();
+  int res = 0;
+
+#ifdef FE_INVALID
+  if (exceptions & FE_INVALID) res |= GFC_FPE_INVALID;
+#endif
+
+#ifdef FE_DENORMAL
+  if (exceptions & FE_DENORMAL) res |= GFC_FPE_DENORMAL;
+#endif
+
+#ifdef FE_DIVBYZERO
+  if (exceptions & FE_DIVBYZERO) res |= GFC_FPE_ZERO;
+#endif
+
+#ifdef FE_OVERFLOW
+  if (exceptions & FE_OVERFLOW) res |= GFC_FPE_OVERFLOW;
+#endif
+
+#ifdef FE_UNDERFLOW
+  if (exceptions & FE_UNDERFLOW) res |= GFC_FPE_UNDERFLOW;
+#endif
+
+#ifdef FE_INEXACT
+  if (exceptions & FE_INEXACT) res |= GFC_FPE_INEXACT;
+#endif
+
+  return res;
+}
+
+
+int
+support_fpu_trap (int flag)
+{
+  return support_fpu_flag (flag);
+}
+
+
 void set_fpu (void)
 {
-  if (FE_ALL_EXCEPT != 0)
-    fedisableexcept (FE_ALL_EXCEPT);
-
+#ifndef FE_INVALID
   if (options.fpe & GFC_FPE_INVALID)
-#ifdef FE_INVALID
-    feenableexcept (FE_INVALID);
-#else
     estr_write ("Fortran runtime warning: IEEE 'invalid operation' "
 	        "exception not supported.\n");
 #endif
 
 /* glibc does never have a FE_DENORMAL.  */
+#ifndef FE_DENORMAL
   if (options.fpe & GFC_FPE_DENORMAL)
-#ifdef FE_DENORMAL
-    feenableexcept (FE_DENORMAL);
-#else
     estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
 	        "exception not supported.\n");
 #endif
 
+#ifndef FE_DIVBYZERO
   if (options.fpe & GFC_FPE_ZERO)
-#ifdef FE_DIVBYZERO
-    feenableexcept (FE_DIVBYZERO);
-#else
     estr_write ("Fortran runtime warning: IEEE 'division by zero' "
 	        "exception not supported.\n");
 #endif
 
+#ifndef FE_OVERFLOW
   if (options.fpe & GFC_FPE_OVERFLOW)
-#ifdef FE_OVERFLOW
-    feenableexcept (FE_OVERFLOW);
-#else
     estr_write ("Fortran runtime warning: IEEE 'overflow' "
 	        "exception not supported.\n");
 #endif
 
+#ifndef FE_UNDERFLOW
   if (options.fpe & GFC_FPE_UNDERFLOW)
-#ifdef FE_UNDERFLOW
-    feenableexcept (FE_UNDERFLOW);
-#else
     estr_write ("Fortran runtime warning: IEEE 'underflow' "
 	        "exception not supported.\n");
 #endif
 
+#ifndef FE_INEXACT
   if (options.fpe & GFC_FPE_INEXACT)
-#ifdef FE_INEXACT
-    feenableexcept (FE_INEXACT);
-#else
     estr_write ("Fortran runtime warning: IEEE 'inexact' "
 	        "exception not supported.\n");
 #endif
+
+  set_fpu_trap_exceptions (options.fpe, 0);
 }
 
 
@@ -126,6 +204,102 @@ get_fpu_except_flags (void)
 #endif
 
   return result;
+}
+
+
+void
+set_fpu_except_flags (int set, int clear)
+{
+  int exc_set = 0, exc_clr = 0;
+
+#ifdef FE_INVALID
+  if (set & GFC_FPE_INVALID)
+    exc_set |= FE_INVALID;
+  else if (clear & GFC_FPE_INVALID)
+    exc_clr |= FE_INVALID;
+#endif
+
+#ifdef FE_DIVBYZERO
+  if (set & GFC_FPE_ZERO)
+    exc_set |= FE_DIVBYZERO;
+  else if (clear & GFC_FPE_ZERO)
+    exc_clr |= FE_DIVBYZERO;
+#endif
+
+#ifdef FE_OVERFLOW
+  if (set & GFC_FPE_OVERFLOW)
+    exc_set |= FE_OVERFLOW;
+  else if (clear & GFC_FPE_OVERFLOW)
+    exc_clr |= FE_OVERFLOW;
+#endif
+
+#ifdef FE_UNDERFLOW
+  if (set & GFC_FPE_UNDERFLOW)
+    exc_set |= FE_UNDERFLOW;
+  else if (clear & GFC_FPE_UNDERFLOW)
+    exc_clr |= FE_UNDERFLOW;
+#endif
+
+#ifdef FE_DENORMAL
+  if (set & GFC_FPE_DENORMAL)
+    exc_set |= FE_DENORMAL;
+  else if (clear & GFC_FPE_DENORMAL)
+    exc_clr |= FE_DENORMAL;
+#endif
+
+#ifdef FE_INEXACT
+  if (set & GFC_FPE_INEXACT)
+    exc_set |= FE_INEXACT;
+  else if (clear & GFC_FPE_INEXACT)
+    exc_clr |= FE_INEXACT;
+#endif
+
+  feclearexcept (exc_clr);
+  feraiseexcept (exc_set);
+}
+
+
+int
+support_fpu_flag (int flag)
+{
+  if (flag & GFC_FPE_INVALID)
+  {
+#ifndef FE_INVALID
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_ZERO)
+  {
+#ifndef FE_DIVBYZERO
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_OVERFLOW)
+  {
+#ifndef FE_OVERFLOW
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_UNDERFLOW)
+  {
+#ifndef FE_UNDERFLOW
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_DENORMAL)
+  {
+#ifndef FE_DENORMAL
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_INEXACT)
+  {
+#ifndef FE_INEXACT
+    return 0;
+#endif
+  }
+
+  return 1;
 }
 
 
@@ -199,3 +373,60 @@ set_fpu_rounding_mode (int mode)
 
   fesetround (rnd_mode);
 }
+
+
+int
+support_fpu_rounding_mode (int mode)
+{
+  switch (mode)
+    {
+      case GFC_FPE_TONEAREST:
+#ifdef FE_TONEAREST
+	return 1;
+#else
+	return 0;
+#endif
+
+#ifdef FE_UPWARD
+	return 1;
+#else
+	return 0;
+#endif
+
+#ifdef FE_DOWNWARD
+	return 1;
+#else
+	return 0;
+#endif
+
+#ifdef FE_TOWARDZERO
+	return 1;
+#else
+	return 0;
+#endif
+
+      default:
+	return 0;
+    }
+}
+
+
+void
+get_fpu_state (void *state)
+{
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
+
+  fegetenv (state);
+}
+
+
+void
+set_fpu_state (void *state)
+{
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
+
+  fesetenv (state);
+}
+

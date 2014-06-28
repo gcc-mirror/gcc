@@ -754,14 +754,38 @@ internal_proto(gf_strerror);
 extern void set_fpu (void);
 internal_proto(set_fpu);
 
+extern int get_fpu_trap_exceptions (void);
+internal_proto(get_fpu_trap_exceptions);
+
+extern void set_fpu_trap_exceptions (int, int);
+internal_proto(set_fpu_trap_exceptions);
+
+extern int support_fpu_trap (int);
+internal_proto(support_fpu_trap);
+
 extern int get_fpu_except_flags (void);
 internal_proto(get_fpu_except_flags);
 
-extern void set_fpu_rounding_mode (int round);
+extern void set_fpu_except_flags (int, int);
+internal_proto(set_fpu_except_flags);
+
+extern int support_fpu_flag (int);
+internal_proto(support_fpu_flag);
+
+extern void set_fpu_rounding_mode (int);
 internal_proto(set_fpu_rounding_mode);
 
 extern int get_fpu_rounding_mode (void);
 internal_proto(get_fpu_rounding_mode);
+
+extern int support_fpu_rounding_mode (int);
+internal_proto(support_fpu_rounding_mode);
+
+extern void get_fpu_state (void *);
+internal_proto(get_fpu_state);
+
+extern void set_fpu_state (void *);
+internal_proto(set_fpu_state);
 
 /* memory.c */
 
