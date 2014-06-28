@@ -1986,6 +1986,10 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " only_called_at_exit");
   if (node->tm_clone)
     fprintf (f, " tm_clone");
+  if (DECL_STATIC_CONSTRUCTOR (node->decl))
+    fprintf (f," static_constructor (priority:%i)", node->get_init_priority ());
+  if (DECL_STATIC_DESTRUCTOR (node->decl))
+    fprintf (f," static_destructor (priority:%i)", node->get_fini_priority ());
 
   fprintf (f, "\n");
 
