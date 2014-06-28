@@ -1,5 +1,9 @@
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (dump_cgraph_node): Dump init&fini priorities.
+
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-inline.c (remap_type_1): Do not duplicate fields
 	that are shared in between type and its main variant.
 
