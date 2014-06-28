@@ -8766,6 +8766,7 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	   fixed.  */
 	if (!COMPLETE_TYPE_P (type)
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	  return -1;
 
 	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	  {
