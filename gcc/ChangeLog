@@ -1,3 +1,8 @@
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* stor-layout.c (finish_builtin_struct): Copy fields into
+	the variants.
+
 2014-06-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_aggregate_candidate): Revert
