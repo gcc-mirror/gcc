@@ -1,3 +1,10 @@
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_copy_fields_not_streamed): New function.
+	(compare_tree_sccs_1): Do not compare fields shared in between type
+	and variant.
+	(lto_read_decls): Fixup types first before inserting into hash.
+
 2014-06-25  Martin Liska  <mliska@suse.cz>
 
 	* lto/lto-partition.c (add_references_to_partition): New IPA REF function
