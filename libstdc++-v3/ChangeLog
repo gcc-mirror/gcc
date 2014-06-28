@@ -1,3 +1,16 @@
+2014-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR libstdc++/61536
+	* config/abi/pre/gnu.ver: Adjust for out of line comparisons.
+
+	2014-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/abi/pre/gnu.ver: Tighten some patterns; tidy.
+
 2014-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h (__shared_ptr::_Deleter): Fix
