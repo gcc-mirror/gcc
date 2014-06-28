@@ -1,5 +1,10 @@
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-inline.c (remap_type_1): Do not duplicate fields
+	that are shared in between type and its main variant.
+
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-prop.c (ipa_set_jf_known_type): Record always the main variant
 	of the type.
 	(ipa_set_ancestor_jf) Likewise.
