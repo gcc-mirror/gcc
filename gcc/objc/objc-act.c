@@ -2695,11 +2695,15 @@ objc_copy_binfo (tree binfo)
 static void
 objc_xref_basetypes (tree ref, tree basetype)
 {
+  tree variant;
   tree binfo = make_tree_binfo (basetype ? 1 : 0);
-
   TYPE_BINFO (ref) = binfo;
   BINFO_OFFSET (binfo) = size_zero_node;
   BINFO_TYPE (binfo) = ref;
+
+  gcc_assert (TYPE_MAIN_VARIANT (ref) == ref);
+  for (variant = ref; variant; variant = TYPE_NEXT_VARIANT (variant))
+    TYPE_BINFO (variant) = binfo;
 
   if (basetype)
     {
