@@ -1,3 +1,26 @@
+2014-06-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/29383
+	* configure.host: Add checks for IEEE support, rework priorities.
+	* configure.ac: Define IEEE_SUPPORT, check for fpsetsticky and
+	fpresetsticky.
+	* configure: Regenerate.
+	* Makefile.am: Build new ieee files, install IEEE_* modules.
+	* Makefile.in: Regenerate.
+	* gfortran.map (GFORTRAN_1.6): Add new symbols.
+	* libgfortran.h (get_fpu_trap_exceptions, set_fpu_trap_exceptions,
+	support_fpu_trap, set_fpu_except_flags, support_fpu_flag,
+	support_fpu_rounding_mode, get_fpu_state, set_fpu_state): New
+	prototypes.
+	* config/fpu-*.h (get_fpu_trap_exceptions,
+	set_fpu_trap_exceptions, support_fpu_trap, set_fpu_except_flags,
+	support_fpu_flag, support_fpu_rounding_mode, get_fpu_state,
+	set_fpu_state): New functions.
+	* ieee/ieee_features.F90: New file.
+	* ieee/ieee_exceptions.F90: New file.
+	* ieee/ieee_arithmetic.F90: New file.
+	* ieee/ieee_helper.c: New file.
+
 2014-06-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/61499

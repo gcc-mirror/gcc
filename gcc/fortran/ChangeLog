@@ -1,3 +1,24 @@
+2014-06-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/29383
+	* gfortran.h (gfc_simplify_ieee_selected_real_kind): New prototype.
+	* libgfortran.h (GFC_FPE_*): Use simple integer values, valid in
+	both C and Fortran.
+	* expr.c (gfc_check_init_expr): Simplify IEEE_SELECTED_REAL_KIND.
+	* simplify.c (gfc_simplify_ieee_selected_real_kind): New function.
+	* module.c (mio_symbol): Keep track of symbols which came from
+	intrinsic modules.
+	(gfc_use_module): Keep track of the IEEE modules.
+	* trans-decl.c (gfc_get_symbol_decl): Adjust code since
+	we have new intrinsic modules.
+	(gfc_build_builtin_function_decls): Build decls for
+	ieee_procedure_entry and ieee_procedure_exit.
+	(is_from_ieee_module, is_ieee_module_used, save_fp_state,
+	restore_fp_state): New functions.
+	(gfc_generate_function_code): Save and restore floating-point
+	state on procedure entry/exit, when IEEE modules are used.
+	* intrinsic.texi: Document the IEEE modules.
+
 2014-06-25  Tobias Burnus  <burnus@net-b.de>
 
 	* interface.c (check_intents): Fix diagnostic with

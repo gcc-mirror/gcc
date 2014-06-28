@@ -1,3 +1,18 @@
+2014-06-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/29383
+	* lib/target-supports.exp (check_effective_target_fortran_ieee): 
+	New function.
+	* gfortran.dg/ieee/ieee.exp: New file.
+	* gfortran.dg/ieee/ieee_1.F90: New file.
+	* gfortran.dg/ieee/ieee_2.f90: New file.
+	* gfortran.dg/ieee/ieee_3.f90: New file.
+	* gfortran.dg/ieee/ieee_4.f90: New file.
+	* gfortran.dg/ieee/ieee_5.f90: New file.
+	* gfortran.dg/ieee/ieee_6.f90: New file.
+	* gfortran.dg/ieee/ieee_7.f90: New file.
+	* gfortran.dg/ieee/ieee_rounding_1.f90: New file.
+
 2014-06-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/cpp0x/elision_conv.C: New.

@@ -606,6 +606,9 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 IEEE_FLAGS
+IEEE_SUPPORT
+IEEE_SUPPORT_FALSE
+IEEE_SUPPORT_TRUE
 FPU_HOST_HEADER
 LIBGFOR_BUILD_QUAD_FALSE
 LIBGFOR_BUILD_QUAD_TRUE
@@ -12346,7 +12349,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12349 "configure"
+#line 12352 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12452,7 +12455,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12455 "configure"
+#line 12458 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26119,7 +26122,20 @@ fi
 . ${srcdir}/configure.host
 { $as_echo "$as_me:${as_lineno-$LINENO}: FPU dependent file will be ${fpu_host}.h" >&5
 $as_echo "$as_me: FPU dependent file will be ${fpu_host}.h" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Support for IEEE modules: ${ieee_support}" >&5
+$as_echo "$as_me: Support for IEEE modules: ${ieee_support}" >&6;}
 FPU_HOST_HEADER=config/${fpu_host}.h
+
+
+# Whether we will build the IEEE modules
+ if test x${ieee_support} = xyes; then
+  IEEE_SUPPORT_TRUE=
+  IEEE_SUPPORT_FALSE='#'
+else
+  IEEE_SUPPORT_TRUE='#'
+  IEEE_SUPPORT_FALSE=
+fi
+
 
 
 # Some targets require additional compiler options for IEEE compatibility.
@@ -26763,6 +26779,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGFOR_BUILD_QUAD_TRUE}" && test -z "${LIBGFOR_BUILD_QUAD_FALSE}"; then
   as_fn_error "conditional \"LIBGFOR_BUILD_QUAD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${IEEE_SUPPORT_TRUE}" && test -z "${IEEE_SUPPORT_FALSE}"; then
+  as_fn_error "conditional \"IEEE_SUPPORT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -1110,6 +1110,20 @@ proc check_effective_target_fortran_real_16 { } {
 }
 
 
+# Return 1 if the target supports Fortran's IEEE modules,
+# 0 otherwise.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fortran_ieee { flags } {
+    return [check_no_compiler_messages fortran_ieee executable {
+	! Fortran
+	use, intrinsic :: ieee_features
+	end
+    } $flags ]
+}
+
+
 # Return 1 if the target supports SQRT for the largest floating-point
 # type. (Some targets lack the libm support for this FP type.)
 # On most targets, this check effectively checks either whether sqrtl is

@@ -190,6 +190,9 @@ static gzFile module_fp;
 static const char *module_name;
 static gfc_use_list *module_list;
 
+/* If we're reading an intrinsic module, this is its ID.  */
+static intmod_id current_intmod;
+
 /* Content of module.  */
 static char* module_content;
 
@@ -4096,7 +4099,10 @@ mio_symbol (gfc_symbol *sym)
   else
     {
       mio_integer (&intmod);
-      sym->from_intmod = (intmod_id) intmod;
+      if (current_intmod)
+	sym->from_intmod = current_intmod;
+      else
+	sym->from_intmod = (intmod_id) intmod;
     }
   
   mio_integer (&(sym->intmod_sym_id));
@@ -6733,6 +6739,7 @@ gfc_use_module (gfc_use_list *module)
   module_name = module->module_name;
   gfc_rename_list = module->rename;
   only_flag = module->only_flag;
+  current_intmod = INTMOD_NONE;
 
   filename = XALLOCAVEC (char, strlen (module_name) + strlen (MODULE_EXTENSION)
 			       + 1);
@@ -6777,6 +6784,26 @@ gfc_use_module (gfc_use_list *module)
       if (module_fp == NULL && module->intrinsic)
 	gfc_fatal_error ("Can't find an intrinsic module named '%s' at %C",
 			 module_name);
+
+      /* Check for the IEEE modules, so we can mark their symbols
+	 accordingly when we read them.  */
+      if (strcmp (module_name, "ieee_features") == 0
+	  && gfc_notify_std (GFC_STD_F2003, "IEEE_FEATURES module at %C"))
+	{
+	  current_intmod = INTMOD_IEEE_FEATURES;
+	}
+      else if (strcmp (module_name, "ieee_exceptions") == 0
+	       && gfc_notify_std (GFC_STD_F2003,
+				  "IEEE_EXCEPTIONS module at %C"))
+	{
+	  current_intmod = INTMOD_IEEE_EXCEPTIONS;
+	}
+      else if (strcmp (module_name, "ieee_arithmetic") == 0
+	       && gfc_notify_std (GFC_STD_F2003,
+				  "IEEE_ARITHMETIC module at %C"))
+	{
+	  current_intmod = INTMOD_IEEE_ARITHMETIC;
+	}
     }
 
   if (module_fp == NULL)

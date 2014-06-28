@@ -1,0 +1,59 @@
+# Copyright (C) 2013 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gfortran-dg.exp
+load_lib target-supports.exp
+
+# Initialize `dg'.
+dg-init
+
+# Flags specified in each test
+global DEFAULT_FFLAGS
+if ![info exists DEFAULT_FFLAGS] then {
+    set DEFAULT_FFLAGS ""
+}
+
+# Flags for finding the IEEE modules
+if [info exists TOOL_OPTIONS] {
+   set specpath [get_multilibs ${TOOL_OPTIONS}]
+} else {
+   set specpath [get_multilibs]
+}
+set options "-fintrinsic-modules-path $specpath/libgfortran/"
+
+# Bail out if IEEE tests are not supported at all
+if ![check_effective_target_fortran_ieee $options ] {
+ return
+}
+
+# Add target-independent options to require IEEE compatibility
+set options "$DEFAULT_FFLAGS $options -fno-unsafe-math-optimizations -frounding-math -fsignaling-nans"
+
+# Add target-specific options to require IEEE compatibility
+set target_options [add_options_for_ieee ""]
+set options "$options $target_options"
+
+# Main loop.
+gfortran-dg-runtest [lsort \
+      [find $srcdir/$subdir *.\[fF\]{,90,95,03,08} ] ] $options
+
+# All done.
+dg-finish

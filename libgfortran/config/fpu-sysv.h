@@ -25,73 +25,174 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* FPU-related code for SysV platforms with fpsetmask().  */
 
+/* BSD and Solaris systems have slightly different types and functions
+   naming.  We deal with these here, to simplify the code below.  */
+
+#if HAVE_FP_EXCEPT
+# define FP_EXCEPT_TYPE fp_except
+#elif HAVE_FP_EXCEPT_T
+# define FP_EXCEPT_TYPE fp_except_t
+#else
+  choke me
+#endif
+
+#if HAVE_FP_RND
+# define FP_RND_TYPE fp_rnd
+#elif HAVE_FP_RND_T
+# define FP_RND_TYPE fp_rnd_t
+#else
+  choke me
+#endif
+
+#if HAVE_FPSETSTICKY
+# define FPSETSTICKY fpsetsticky
+#elif HAVE_FPRESETSTICKY
+# define FPSETSTICKY fpresetsticky
+#else
+  choke me
+#endif
+
+
 void
-set_fpu (void)
+set_fpu_trap_exceptions (int trap, int notrap)
 {
-  int cw = 0;
+  FP_EXCEPT_TYPE cw = fpgetmask();
 
-  if (options.fpe & GFC_FPE_INVALID)
 #ifdef FP_X_INV
+  if (trap & GFC_FPE_INVALID)
     cw |= FP_X_INV;
-#else
-    estr_write ("Fortran runtime warning: IEEE 'invalid operation' "
-	        "exception not supported.\n");
+  if (notrap & GFC_FPE_INVALID)
+    cw &= ~FP_X_INV;
 #endif
 
-  if (options.fpe & GFC_FPE_DENORMAL)
 #ifdef FP_X_DNML
+  if (trap & GFC_FPE_DENORMAL)
     cw |= FP_X_DNML;
-#else
-    estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
-	        "exception not supported.\n");
+  if (notrap & GFC_FPE_DENORMAL)
+    cw &= ~FP_X_DNML;
 #endif
 
-  if (options.fpe & GFC_FPE_ZERO)
 #ifdef FP_X_DZ
+  if (trap & GFC_FPE_ZERO)
     cw |= FP_X_DZ;
-#else
-    estr_write ("Fortran runtime warning: IEEE 'division by zero' "
-	        "exception not supported.\n");
+  if (notrap & GFC_FPE_ZERO)
+    cw &= ~FP_X_DZ;
 #endif
 
-  if (options.fpe & GFC_FPE_OVERFLOW)
 #ifdef FP_X_OFL
+  if (trap & GFC_FPE_OVERFLOW)
     cw |= FP_X_OFL;
-#else
-    estr_write ("Fortran runtime warning: IEEE 'overflow' "
-	        "exception not supported.\n");
+  if (notrap & GFC_FPE_OVERFLOW)
+    cw &= ~FP_X_OFL;
 #endif
 
-  if (options.fpe & GFC_FPE_UNDERFLOW)
 #ifdef FP_X_UFL
+  if (trap & GFC_FPE_UNDERFLOW)
     cw |= FP_X_UFL;
-#else
-    estr_write ("Fortran runtime warning: IEEE 'underflow' "
-	        "exception not supported.\n");
+  if (notrap & GFC_FPE_UNDERFLOW)
+    cw &= ~FP_X_UFL;
 #endif
 
-  if (options.fpe & GFC_FPE_INEXACT)
 #ifdef FP_X_IMP
+  if (trap & GFC_FPE_INEXACT)
     cw |= FP_X_IMP;
-#else
-    estr_write ("Fortran runtime warning: IEEE 'inexact' "
-	        "exception not supported.\n");
+  if (notrap & GFC_FPE_INEXACT)
+    cw &= ~FP_X_IMP;
 #endif
 
   fpsetmask(cw);
 }
 
+
+int
+get_fpu_trap_exceptions (void)
+{
+  int res = 0;
+  FP_EXCEPT_TYPE cw = fpgetmask();
+
+#ifdef FP_X_INV
+  if (cw & FP_X_INV) res |= GFC_FPE_INVALID;
+#endif
+
+#ifdef FP_X_DNML
+  if (cw & FP_X_DNML) res |= GFC_FPE_DENORMAL;
+#endif
+
+#ifdef FP_X_DZ
+  if (cw & FP_X_DZ) res |= GFC_FPE_ZERO;
+#endif
+
+#ifdef FP_X_OFL
+  if (cw & FP_X_OFL) res |= GFC_FPE_OVERFLOW;
+#endif
+
+#ifdef FP_X_UFL
+  if (cw & FP_X_UFL) res |= GFC_FPE_UNDERFLOW;
+#endif
+
+#ifdef FP_X_IMP
+  if (cw & FP_X_IMP) res |= GFC_FPE_INEXACT;
+#endif
+
+  return res;
+}
+
+
+int
+support_fpu_trap (int flag)
+{
+  return support_fpu_flag (flag);
+}
+
+
+void
+set_fpu (void)
+{
+#ifndef FP_X_INV
+  if (options.fpe & GFC_FPE_INVALID)
+    estr_write ("Fortran runtime warning: IEEE 'invalid operation' "
+	        "exception not supported.\n");
+#endif
+
+#ifndef FP_X_DNML
+  if (options.fpe & GFC_FPE_DENORMAL)
+    estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
+	        "exception not supported.\n");
+#endif
+
+#ifndef FP_X_DZ
+  if (options.fpe & GFC_FPE_ZERO)
+    estr_write ("Fortran runtime warning: IEEE 'division by zero' "
+	        "exception not supported.\n");
+#endif
+
+#ifndef FP_X_OFL
+  if (options.fpe & GFC_FPE_OVERFLOW)
+    estr_write ("Fortran runtime warning: IEEE 'overflow' "
+	        "exception not supported.\n");
+#endif
+
+#ifndef FP_X_UFL
+  if (options.fpe & GFC_FPE_UNDERFLOW)
+    estr_write ("Fortran runtime warning: IEEE 'underflow' "
+	        "exception not supported.\n");
+#endif
+
+#ifndef FP_X_IMP
+  if (options.fpe & GFC_FPE_INEXACT)
+    estr_write ("Fortran runtime warning: IEEE 'inexact' "
+	        "exception not supported.\n");
+#endif
+
+  set_fpu_trap_exceptions (options.fpe, 0);
+}
+
+
 int
 get_fpu_except_flags (void)
 {
   int result;
-#if HAVE_FP_EXCEPT
-  fp_except set_excepts;
-#elif HAVE_FP_EXCEPT_T
-  fp_except_t set_excepts;
-#else
-  choke me
-#endif
+  FP_EXCEPT_TYPE set_excepts;
 
   result = 0;
   set_excepts = fpgetsticky ();
@@ -130,6 +231,103 @@ get_fpu_except_flags (void)
 }
 
 
+void
+set_fpu_except_flags (int set, int clear)
+{
+  FP_EXCEPT_TYPE flags;
+
+  flags = fpgetsticky ();
+
+#ifdef FP_X_INV
+  if (set & GFC_FPE_INVALID)
+    flags |= FP_X_INV;
+  if (clear & GFC_FPE_INVALID)
+    flags &= ~FP_X_INV;
+#endif
+
+#ifdef FP_X_DZ
+  if (set & GFC_FPE_ZERO)
+    flags |= FP_X_DZ;
+  if (clear & GFC_FPE_ZERO)
+    flags &= ~FP_X_DZ;
+#endif
+
+#ifdef FP_X_OFL
+  if (set & GFC_FPE_OVERFLOW)
+    flags |= FP_X_OFL;
+  if (clear & GFC_FPE_OVERFLOW)
+    flags &= ~FP_X_OFL;
+#endif
+
+#ifdef FP_X_UFL
+  if (set & GFC_FPE_UNDERFLOW)
+    flags |= FP_X_UFL;
+  if (clear & GFC_FPE_UNDERFLOW)
+    flags &= ~FP_X_UFL;
+#endif
+
+#ifdef FP_X_DNML
+  if (set & GFC_FPE_DENORMAL)
+    flags |= FP_X_DNML;
+  if (clear & GFC_FPE_DENORMAL)
+    flags &= ~FP_X_DNML;
+#endif
+
+#ifdef FP_X_IMP
+  if (set & GFC_FPE_INEXACT)
+    flags |= FP_X_IMP;
+  if (clear & GFC_FPE_INEXACT)
+    flags &= ~FP_X_IMP;
+#endif
+
+  FPSETSTICKY (flags);
+}
+
+
+int
+support_fpu_flag (int flag)
+{
+  if (flag & GFC_FPE_INVALID)
+  {
+#ifndef FP_X_INV
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_ZERO)
+  {
+#ifndef FP_X_DZ
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_OVERFLOW)
+  {
+#ifndef FP_X_OFL
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_UNDERFLOW)
+  {
+#ifndef FP_X_UFL
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_DENORMAL)
+  {
+#ifndef FP_X_DNML
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_INEXACT)
+  {
+#ifndef FP_X_IMP
+    return 0;
+#endif
+  }
+
+  return 1;
+}
+
+
 int
 get_fpu_rounding_mode (void)
 {
@@ -163,13 +361,7 @@ get_fpu_rounding_mode (void)
 void
 set_fpu_rounding_mode (int mode)
 {
-#if HAVE_FP_RND
-  fp_rnd rnd_mode;
-#elif HAVE_FP_RND_T
-  fp_rnd_t rnd_mode;
-#else
-  choke me
-#endif
+  FP_RND_TYPE rnd_mode;
 
   switch (mode)
     {
@@ -201,3 +393,78 @@ set_fpu_rounding_mode (int mode)
     }
   fpsetround (rnd_mode);
 }
+
+
+int
+support_fpu_rounding_mode (int mode)
+{
+  switch (mode)
+    {
+      case GFC_FPE_TONEAREST:
+#ifdef FP_RN
+	return 1;
+#else
+	return 0;
+#endif
+
+      case GFC_FPE_UPWARD:
+#ifdef FP_RP
+	return 1;
+#else
+	return 0;
+#endif
+
+      case GFC_FPE_DOWNWARD:
+#ifdef FP_RM
+	return 1;
+#else
+	return 0;
+#endif
+
+      case GFC_FPE_TOWARDZERO:
+#ifdef FP_RZ
+	return 1;
+#else
+	return 0;
+#endif
+
+      default:
+	return 0;
+    }
+}
+
+
+typedef struct
+{
+  FP_EXCEPT_TYPE mask;
+  FP_EXCEPT_TYPE sticky;
+  FP_RND_TYPE round;
+} fpu_state_t;
+
+
+void
+get_fpu_state (void *s)
+{
+  fpu_state_t *state = s;
+
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(fpu_state_t) <= GFC_FPE_STATE_BUFFER_SIZE);
+
+  state->mask = fpgetmask ();
+  state->sticky = fpgetsticky ();
+  state->round = fpgetround ();
+}
+
+void
+set_fpu_state (void *s)
+{
+  fpu_state_t *state = s;
+
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(fpu_state_t) <= GFC_FPE_STATE_BUFFER_SIZE);
+
+  fpsetmask (state->mask);
+  FPSETSTICKY (state->sticky);
+  fpsetround (state->round);
+}
+
