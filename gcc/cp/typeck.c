@@ -8607,7 +8607,7 @@ check_return_expr (tree retval, bool *no_warning)
       if (VOID_TYPE_P (functype))
 	return error_mark_node;
 
-      /* Under C++0x [12.8/16 class.copy], a returned lvalue is sometimes
+      /* Under C++11 [12.8/32 class.copy], a returned lvalue is sometimes
 	 treated as an rvalue for the purposes of overload resolution to
 	 favor move constructors over copy constructors.
 
@@ -8618,8 +8618,6 @@ check_return_expr (tree retval, bool *no_warning)
 	      || TREE_CODE (retval) == PARM_DECL)
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && !TREE_STATIC (retval)
-	  && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
-			  (TYPE_MAIN_VARIANT (functype)))
 	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (functype))
 	flags = flags | LOOKUP_PREFER_RVALUE;

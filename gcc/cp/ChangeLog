@@ -1,3 +1,10 @@
+2014-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	DR 1579
+	PR c++/58051
+	* typeck.c (check_return_expr): Lookup as an rvalue even when the
+	types aren't the same.
+
 2014-06-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61433
