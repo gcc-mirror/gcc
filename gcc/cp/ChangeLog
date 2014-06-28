@@ -1,3 +1,8 @@
+2014-06-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61433
+	* error.c (dump_template_bindings): Don't tsubst in a clone.
+
 2014-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61614
