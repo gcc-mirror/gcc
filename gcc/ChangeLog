@@ -1,5 +1,14 @@
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-prop.c (ipa_set_jf_known_type): Record always the main variant
+	of the type.
+	(ipa_set_ancestor_jf) Likewise.
+	(check_stmt_for_type_change): Check that we work on main variant.
+	(detect_type_change): Look into main variant.
+	(compute_known_type_jump_func): Check that main variant has BINFO.
+
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-devirt.c (set_type_binfo): New function.
 	(add_type_duplicate): Use it.
 	(get_odr_type): Sanity check that binfos points to main variants.

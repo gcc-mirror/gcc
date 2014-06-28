@@ -438,6 +438,11 @@ static void
 ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 		       tree base_type, tree component_type)
 {
+  /* Recording and propagating main variants increases change that types
+     will match.  */
+  base_type = TYPE_MAIN_VARIANT (base_type);
+  component_type = TYPE_MAIN_VARIANT (component_type);
+
   gcc_assert (TREE_CODE (component_type) == RECORD_TYPE
 	      && TYPE_BINFO (component_type));
   if (!flag_devirtualize)
@@ -529,6 +534,8 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 {
   if (!flag_devirtualize)
     type_preserved = false;
+  if (type)
+    type = TYPE_MAIN_VARIANT (type);
   gcc_assert (!type_preserved
 	      || (TREE_CODE (type) == RECORD_TYPE
 		  && TYPE_BINFO (type)
@@ -712,7 +719,9 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
   if (stmt_may_be_vtbl_ptr_store (stmt))
     {
       tree type;
+
       type = extr_type_from_vtbl_ptr_store (stmt, tci);
+      gcc_assert (!type || TYPE_MAIN_VARIANT (type) == type);
       if (tci->type_maybe_changed
 	  && type != tci->known_current_type)
 	tci->multiple_types_encountered = true;
@@ -749,9 +758,11 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
       /* Be sure expected_type is polymorphic.  */
       || !comp_type
       || TREE_CODE (comp_type) != RECORD_TYPE
-      || !TYPE_BINFO (comp_type)
-      || !BINFO_VTABLE (TYPE_BINFO (comp_type)))
+      || !TYPE_BINFO (TYPE_MAIN_VARIANT (comp_type))
+      || !BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (comp_type))))
     return true;
+
+  comp_type = TYPE_MAIN_VARIANT (comp_type);
 
   /* C++ methods are not allowed to change THIS pointer unless they
      are constructors or destructors.  */
@@ -1408,8 +1419,8 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
       /* Be sure expected_type is polymorphic.  */
       || !expected_type
       || TREE_CODE (expected_type) != RECORD_TYPE
-      || !TYPE_BINFO (expected_type)
-      || !BINFO_VTABLE (TYPE_BINFO (expected_type)))
+      || !TYPE_BINFO (TYPE_MAIN_VARIANT (expected_type))
+      || !BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (expected_type))))
     return;
 
   op = TREE_OPERAND (op, 0);
