@@ -1,3 +1,8 @@
+2014-06-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Optimize Options): Fix descriptions of
+	ipa-cp-loop-hint-bonus and ipa-cp-array-index-hint-bonus.
+
 2014-06-29  David Wohlferd <dw@LimeGreenSocks.com>
 
 	* doc/extend.texi (Function Attributes): Update 'naked' attribute
