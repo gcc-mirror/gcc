@@ -1250,6 +1250,7 @@ OBJS = \
 	graphite.o \
 	graphite-blocking.o \
 	graphite-clast-to-gimple.o \
+	graphite-isl-ast-to-gimple.o \
 	graphite-dependences.o \
 	graphite-interchange.o \
 	graphite-optimize-isl.o \

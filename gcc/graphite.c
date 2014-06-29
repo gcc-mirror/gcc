@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-poly.h"
 #include "graphite-scop-detection.h"
 #include "graphite-clast-to-gimple.h"
+#include "graphite-isl-ast-to-gimple.h"
 #include "graphite-sese-to-poly.h"
 #include "graphite-htab.h"
 
@@ -299,7 +300,10 @@ graphite_transform_loops (void)
 
 	if (POLY_SCOP_P (scop)
 	    && apply_poly_transforms (scop)
-	    && graphite_regenerate_ast_cloog (scop, &bb_pbb_mapping))
+	    && (((flag_graphite_code_gen == FGRAPHITE_CODE_GEN_ISL)
+	    && graphite_regenerate_ast_isl (scop))
+	    || ((flag_graphite_code_gen == FGRAPHITE_CODE_GEN_CLOOG)
+	    && graphite_regenerate_ast_cloog (scop, &bb_pbb_mapping))))
 	  need_cfg_cleanup_p = true;
       }
 
