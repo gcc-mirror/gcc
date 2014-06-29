@@ -10163,13 +10163,13 @@ number of such values per one parameter.
 @item ipa-cp-loop-hint-bonus
 When IPA-CP determines that a cloning candidate would make the number
 of iterations of a loop known, it adds a bonus of
-@option{ipa-cp-loop-hint-bonus} bonus to the profitability score of
+@option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
 
 @item ipa-cp-array-index-hint-bonus
 When IPA-CP determines that a cloning candidate would make the index of
 an array access known, it adds a bonus of
-@option{ipa-cp-array-index-hint-bonus} bonus to the profitability
+@option{ipa-cp-array-index-hint-bonus} to the profitability
 score of the candidate.
 
 @item ipa-max-aa-steps
