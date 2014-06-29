@@ -299,7 +299,7 @@ graphite_transform_loops (void)
 
 	if (POLY_SCOP_P (scop)
 	    && apply_poly_transforms (scop)
-	    && gloog (scop, &bb_pbb_mapping))
+	    && graphite_regenerate_ast_cloog (scop, &bb_pbb_mapping))
 	  need_cfg_cleanup_p = true;
       }
 

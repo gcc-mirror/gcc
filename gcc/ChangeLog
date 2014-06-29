@@ -1,3 +1,18 @@
+2014-06-29  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-clast-to-gimple.c:
+	gloog is renamed to graphite_regenerate_ast_cloog.
+	gloog_error is renamed to graphite_regenerate_error.
+	* graphite-clast-to-gimple.h:
+	The definition of the struct bb_pbb_def is moved to graphite-htab.h.
+	Add inclusion of the hash-table.h.
+	* graphite-htab.h:
+	The declaration of the function gloog is moved
+	to graphite-clast-to-gimple.h and renamed to
+	graphite_regenerate_ast_cloog.
+	* graphite.c (graphite_transform_loops):
+	gloog is renamed to graphite_regenerate_ast_cloog.
+
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if type
