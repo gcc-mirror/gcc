@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GRAPHITE_CLAST_TO_GIMPLE_H
 #define GCC_GRAPHITE_CLAST_TO_GIMPLE_H
 
+#include "graphite-htab.h"
+
 extern CloogState *cloog_state;
 
 /* Data structure for CLooG program representation.  */
@@ -30,14 +32,7 @@ struct cloog_prog_clast {
   struct clast_stmt *stmt;
 };
 
-/* Stores BB's related PBB.  */
-
-struct bb_pbb_def
-{
-  basic_block bb;
-  poly_bb_p pbb;
-};
-
+extern bool graphite_regenerate_ast_cloog (scop_p, bb_pbb_htab_type *);
 extern void debug_clast_stmt (struct clast_stmt *);
 extern void print_clast_stmt (FILE *, struct clast_stmt *);
 

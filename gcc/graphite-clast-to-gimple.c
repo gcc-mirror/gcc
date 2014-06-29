@@ -109,7 +109,7 @@ value_max (mpz_t res, mpz_t v1, mpz_t v2)
 
 /* This flag is set when an error occurred during the translation of
    CLAST to Gimple.  */
-static bool gloog_error;
+static bool graphite_regenerate_error;
 
 /* Verifies properties that GRAPHITE should maintain during translation.  */
 
@@ -364,7 +364,7 @@ max_precision_type (tree type1, tree type2)
 
   if (precision > BITS_PER_WORD)
     {
-      gloog_error = true;
+      graphite_regenerate_error = true;
       return integer_type_node;
     }
 
@@ -374,7 +374,7 @@ max_precision_type (tree type1, tree type2)
 
   if (!type)
     {
-      gloog_error = true;
+      graphite_regenerate_error = true;
       return integer_type_node;
     }
 
@@ -457,7 +457,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e, ivs_params_p ip)
 		if (!POINTER_TYPE_P (type))
 		  return fold_build2 (MULT_EXPR, type, cst, name);
 
-		gloog_error = true;
+		graphite_regenerate_error = true;
 		return cst;
 	      }
 	  }
@@ -536,7 +536,7 @@ type_for_interval (mpz_t bound_one, mpz_t bound_two)
 
   if (precision > BITS_PER_WORD)
     {
-      gloog_error = true;
+      graphite_regenerate_error = true;
       return integer_type_node;
     }
 
@@ -559,7 +559,7 @@ type_for_interval (mpz_t bound_one, mpz_t bound_two)
 
   if (!type)
     {
-      gloog_error = true;
+      graphite_regenerate_error = true;
       return integer_type_node;
     }
 
@@ -1113,7 +1113,8 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
 
   build_iv_mapping (iv_map, stmt, ip);
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), ip->region,
-					   next_e, iv_map, &gloog_error);
+					   next_e, iv_map,
+					   &graphite_regenerate_error);
   iv_map.release ();
 
   new_bb = next_e->src;
@@ -1489,7 +1490,7 @@ build_cloog_union_domain (scop_p scop, int nb_scattering_dims)
   return union_domain;
 }
 
-/* Return the options that will be used in GLOOG.  */
+/* Return the options that will be used in graphite_regenerate_ast_cloog.  */
 
 static CloogOptions *
 set_cloog_options (void)
@@ -1504,7 +1505,7 @@ set_cloog_options (void)
   /* Enable complex equality spreading: removes dummy statements
      (assignments) in the generated code which repeats the
      substitution equations for statements.  This is useless for
-     GLooG.  */
+     graphite_regenerate_ast_cloog.  */
   options->esp = 1;
 
   /* Silence CLooG to avoid failing tests due to debug output to stderr.  */
@@ -1662,7 +1663,7 @@ debug_generated_program (scop_p scop)
 */
 
 bool
-gloog (scop_p scop, bb_pbb_htab_type *bb_pbb_mapping)
+graphite_regenerate_ast_cloog (scop_p scop, bb_pbb_htab_type *bb_pbb_mapping)
 {
   auto_vec<tree, 10> newivs;
   loop_p context_loop;
@@ -1673,7 +1674,7 @@ gloog (scop_p scop, bb_pbb_htab_type *bb_pbb_mapping)
   struct ivs_params ip;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
-  gloog_error = false;
+  graphite_regenerate_error = false;
 
   params_index = new clast_index_htab_type (10);
 
@@ -1713,7 +1714,7 @@ gloog (scop_p scop, bb_pbb_htab_type *bb_pbb_mapping)
   recompute_all_dominators ();
   graphite_verify ();
 
-  if (gloog_error)
+  if (graphite_regenerate_error)
     set_ifsese_condition (if_region, integer_zero_node);
 
   free (if_region->true_region);
@@ -1740,6 +1741,6 @@ gloog (scop_p scop, bb_pbb_htab_type *bb_pbb_mapping)
 	       num_no_dependency);
     }
 
-  return !gloog_error;
+  return !graphite_regenerate_error;
 }
 #endif
