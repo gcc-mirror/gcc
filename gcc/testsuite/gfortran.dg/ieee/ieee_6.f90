@@ -40,7 +40,9 @@
 
   call ieee_get_flag(ieee_all, flags)
   if (.not. (all(flags .eqv. [.false.,.false.,.true.,.true.,.false.]) &
-             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.false.]))) call abort
+             .or. all(flags .eqv. [.false.,.false.,.true.,.true.,.true.]) &
+             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.false.]) &
+             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.true.]))) call abort
   call ieee_get_rounding_mode(mode)
   if (mode /= ieee_to_zero) call abort
   call ieee_get_halting_mode(ieee_all, halt)
@@ -50,7 +52,9 @@
 
   call ieee_get_flag(ieee_all, flags)
   if (.not. (all(flags .eqv. [.false.,.false.,.true.,.true.,.false.]) &
-             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.false.]))) call abort
+             .or. all(flags .eqv. [.false.,.false.,.true.,.true.,.true.]) &
+             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.false.]) &
+             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.true.]))) call abort
   call ieee_get_rounding_mode(mode)
   if (mode /= ieee_to_zero) call abort
   call ieee_get_halting_mode(ieee_all, halt)
@@ -69,7 +73,9 @@
 
   call ieee_get_flag(ieee_all, flags)
   if (.not. (all(flags .eqv. [.false.,.false.,.true.,.true.,.false.]) &
-             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.false.]))) call abort
+             .or. all(flags .eqv. [.false.,.false.,.true.,.true.,.true.]) &
+             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.false.]) &
+             .or. all(flags .eqv. [.false.,.false.,.true.,.false.,.true.]))) call abort
   call ieee_get_rounding_mode(mode)
   if (mode /= ieee_to_zero) call abort
   call ieee_get_halting_mode(ieee_all, halt)
