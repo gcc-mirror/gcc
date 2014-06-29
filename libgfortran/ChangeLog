@@ -1,3 +1,11 @@
+2014-06-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61640
+	* io/list_read.c (next_char_internal): Adjust the read length to
+	a single wide character. (eat_spaces): Add missing paren. 
+	* io/unix.c (mem_read4): Use the correct mem_alloc function for
+	wide character internal reads.
+
 2014-06-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29383
