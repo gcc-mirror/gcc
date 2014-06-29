@@ -1,5 +1,22 @@
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
+	* Makefile.in:
+	Add the compilation of graphite-isl-ast-to-gimple.o.
+	* common.opt:
+	Add new switch fgraphite-code-generator=[isl|cloog].
+	* flag-types.h:
+	Add new enum fgraphite_generator.
+	* graphite-isl-ast-to-gimple.c: New.
+	* graphite-isl-ast-to-gimple.h: New.
+	* graphite.c (graphite_transform_loops):
+	Add choice of Graphite code generator,
+	which depends on flag_graphite_code_gen.
+
+	testsuite/gcc.dg/graphite/isl-codegen-loop-dumping.c:
+	New testcase that checks that the dump is generated.
+
+2014-06-29  Roman Gareev  <gareevroman@gmail.com>
+
 	* graphite-dependences.c (subtract_commutative_associative_deps): 
 	Add NULL checking of the following variables: must_raw_no_source, 
 	may_raw_no_source, must_war_no_source, may_war_no_source, 
