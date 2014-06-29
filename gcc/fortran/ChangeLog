@@ -1,3 +1,12 @@
+2014-06-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36275
+	PR fortran/38839
+	* decl.c (check_bind_name_identifier): New function.
+	(gfc_match_bind_c): Match any constant expression as binding
+	label.
+	* match.c (gfc_match_name_C): Remove.
+
 2014-06-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29383
