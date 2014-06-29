@@ -1,3 +1,7 @@
+2014-06-28  Andrew Pinski  <apinski@cavium.com>
+
+	* lto.c (lto_read_decls): Fix comment in comment.
+
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (lto_copy_fields_not_streamed): New function.
