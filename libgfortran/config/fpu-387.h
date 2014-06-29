@@ -76,8 +76,7 @@ typedef struct
   unsigned short int __unused3;
   unsigned int __eip;
   unsigned short int __cs_selector;
-  unsigned int __opcode:11;
-  unsigned int __unused4:5;
+  unsigned short int __opcode;
   unsigned int __data_offset;
   unsigned short int __data_selector;
   unsigned short int __unused5;

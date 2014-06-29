@@ -1,3 +1,8 @@
+2014-06-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/fpu-387.h (my_fenv_t): Amend structure so it also works
+	on mingw32.
+
 2014-06-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/61640
