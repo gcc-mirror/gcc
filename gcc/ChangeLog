@@ -1,3 +1,8 @@
+2014-06-29  David Wohlferd <dw@LimeGreenSocks.com>
+
+	* doc/extend.texi (Function Attributes): Update 'naked' attribute
+	documentation.
+
 2014-06-29  Tobias Grosser <tobias@grosser.es>
 
 	PR bootstrap/61650
