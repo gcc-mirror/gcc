@@ -20,10 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
+#ifdef HAVE_cloog
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/union_map.h>
 #include <isl/ast_build.h>
+#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -41,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "sese.h"
 
+#ifdef HAVE_cloog
 #include "graphite-poly.h"
 #include "graphite-isl-ast-to-gimple.h"
 
@@ -131,3 +134,4 @@ graphite_regenerate_ast_isl (scop_p scop)
   timevar_pop (TV_GRAPHITE_CODE_GEN);
   return !graphite_regenerate_error;
 }
+#endif
