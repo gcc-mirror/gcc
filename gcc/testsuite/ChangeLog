@@ -1,3 +1,10 @@
+2014-06-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36275
+	PR fortran/38839
+	* gfortran.dg/binding_label_tests_2.f03: Adjust error messages.
+	* gfortran.dg/binding_label_tests_27.f90: New file.
+
 2014-06-29  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gfortran.dg/ieee/ieee_6.f90: Allow inexact together with

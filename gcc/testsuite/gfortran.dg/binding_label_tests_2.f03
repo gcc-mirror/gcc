@@ -7,25 +7,28 @@ contains
   subroutine ok() 
   end subroutine ok
 
-  subroutine sub0() bind(c, name="   1") ! { dg-error "Invalid C name" }
+  subroutine sub0() bind(c, name="   1") ! { dg-error "Invalid C identifier" }
   end subroutine sub0 ! { dg-error "Expecting END MODULE" }
 
-  subroutine sub1() bind(c, name="$") ! { dg-error "Invalid C name" }
-  end subroutine sub1 ! { dg-error "Expecting END MODULE" }
+  subroutine sub1() bind(c, name="$")
+  end subroutine sub1
 
-  subroutine sub2() bind(c, name="abc$") ! { dg-error "Invalid C name" }
-  end subroutine sub2 ! { dg-error "Expecting END MODULE" }
+  subroutine sub2() bind(c, name="abc$")
+  end subroutine sub2
 
-  subroutine sub3() bind(c, name="abc d") ! { dg-error "Embedded space" }
+  subroutine sub3() bind(c, name="abc d") ! { dg-error "Invalid C identifier" }
   end subroutine sub3 ! { dg-error "Expecting END MODULE" }
 
-  subroutine sub5() BIND(C, name=" myvar 2 ") ! { dg-error "Embedded space" }
+  subroutine sub4() bind(c, name="2foo") ! { dg-error "Invalid C identifier" }
+  end subroutine sub4 ! { dg-error "Expecting END MODULE" }
+
+  subroutine sub5() BIND(C, name=" myvar 2 ") ! { dg-error "Invalid C identifier" }
   end subroutine sub5 ! { dg-error "Expecting END MODULE" }
 
-  subroutine sub6() bind(c, name="         ) ! { dg-error "Invalid C name" }
+  subroutine sub6() bind(c, name="         ) ! { dg-error "Invalid C identifier" }
   end subroutine sub6 ! { dg-error "Expecting END MODULE" }
 
-  subroutine sub7() bind(c, name=) ! { dg-error "Syntax error" }
+  subroutine sub7() bind(c, name=) ! { dg-error "Invalid character" }
   end subroutine sub7 ! { dg-error "Expecting END MODULE" }
 
   subroutine sub8() bind(c, name) ! { dg-error "Syntax error" }
