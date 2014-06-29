@@ -1,5 +1,15 @@
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
+	* graphite-dependences.c (subtract_commutative_associative_deps): 
+	Add NULL checking of the following variables: must_raw_no_source, 
+	may_raw_no_source, must_war_no_source, may_war_no_source, 
+	must_waw_no_source, may_waw_no_source, must_raw, may_raw, 
+	must_war, may_war, must_waw, may_waw
+
+	testsuite/gfortran.dg/graphite/pr59586.f: New testcase.
+
+2014-06-29  Roman Gareev  <gareevroman@gmail.com>
+
 	* graphite-clast-to-gimple.c:
 	gloog is renamed to graphite_regenerate_ast_cloog.
 	gloog_error is renamed to graphite_regenerate_error.
