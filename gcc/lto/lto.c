@@ -1970,7 +1970,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 			    len, scc_entry_len, scc_hash))
 	    continue;
 
-	  /* /* Do remaining fixup tasks for prevailing nodes.  */
+	  /* Do remaining fixup tasks for prevailing nodes.  */
 	  bool seen_type = false;
 	  for (unsigned i = 0; i < len; ++i)
 	    {
