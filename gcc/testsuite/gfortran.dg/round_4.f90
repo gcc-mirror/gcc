@@ -1,6 +1,7 @@
 ! { dg-do run }
 ! { dg-add-options ieee }
 ! { dg-skip-if "PR libfortran/58015" { *-*-solaris2.9* hppa*-*-hpux* } }
+! { dg-skip-if "IBM long double 31 bits of precision, test requires 38" { powerpc*-*-linux* } }
 !
 ! PR fortran/35862
 !
