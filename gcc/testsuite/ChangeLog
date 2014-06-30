@@ -1,3 +1,8 @@
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51400
+	* g++.dg/cpp0x/constexpr-attribute3.C: New.
+
 2014-06-30  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/61607
