@@ -1,3 +1,12 @@
+2014-06-30  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/61608
+	PR target/39284
+	* bb-reorder.c (pass_duplicate_computed_gotos::execute): Cleanup
+	the cfg if there were any changes.
+	* passes.def: Revert move of peephole2 after reorder_blocks;
+	move duplicate_computed_gotos before peephole2.
+
 2014-06-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* except.c (emit_note_eh_region_end): New helper function.
