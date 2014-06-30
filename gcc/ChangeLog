@@ -1,3 +1,20 @@
+2014-06-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from Mainline
+	2014-06-20  Jakub Jelinek  <jakub@redhat.com>
+	2014-06-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61306
+	* tree-ssa-math-opts.c (struct symbolic_number): Store type of
+	expression instead of its size.
+	(do_shift_rotate): Adapt to change in struct symbolic_number. Return
+	false to prevent optimization when the result is unpredictable due to
+	arithmetic right shift of signed type with highest byte is set.
+	(verify_symbolic_number_p): Adapt to change in struct symbolic_number.
+	(find_bswap_1): Likewise. Return NULL to prevent optimization when the
+	result is unpredictable due to sign extension.
+	(find_bswap): Adapt to change in struct symbolic_number.
+
 2014-06-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61160
