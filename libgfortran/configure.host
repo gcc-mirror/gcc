@@ -19,25 +19,31 @@
 
 # DEFAULTS
 fpu_host='fpu-generic'
+ieee_support='no'
+
+if test "x${have_fp_enable}" = "xyes" && test "x${have_fp_trap}" = "xyes"; then
+  fpu_host='fpu-aix'
+  ieee_support='yes'
+fi
+
+if test "x${have_fpsetmask}" = "xyes"; then
+  fpu_host='fpu-sysv'
+  ieee_support='yes'
+fi
 
 if test "x${have_feenableexcept}" = "xyes"; then
   fpu_host='fpu-glibc'
+  ieee_support='yes'
 fi
 
 # x86 asm should be used instead of glibc, since glibc doesn't support
 # the x86 denormal exception.
 case "${host_cpu}" in
   i?86 | x86_64)
-    fpu_host='fpu-387' ;;
+    fpu_host='fpu-387'
+    ieee_support='yes'
+    ;;
 esac
-
-if test "x${have_fpsetmask}" = "xyes"; then
-  fpu_host='fpu-sysv'
-fi
-
-if test "x${have_fp_enable}" = "xyes" && test "x${have_fp_trap}" = "xyes"; then
-  fpu_host='fpu-aix'
-fi
 
 # Some targets require additional compiler options for NaN/Inf.
 ieee_flags=

@@ -14734,7 +14734,7 @@ fold (tree expr)
 #undef fold
 
 static void fold_checksum_tree (const_tree, struct md5_ctx *,
-				hash_table <pointer_hash <tree_node> >);
+				hash_table<pointer_hash<const tree_node> > *);
 static void fold_check_failed (const_tree, const_tree);
 void print_fold_checksum (const_tree);
 
@@ -14748,20 +14748,18 @@ fold (tree expr)
   tree ret;
   struct md5_ctx ctx;
   unsigned char checksum_before[16], checksum_after[16];
-  hash_table <pointer_hash <tree_node> > ht;
+  hash_table<pointer_hash<const tree_node> > ht (32);
 
-  ht.create (32);
   md5_init_ctx (&ctx);
-  fold_checksum_tree (expr, &ctx, ht);
+  fold_checksum_tree (expr, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before);
   ht.empty ();
 
   ret = fold_1 (expr);
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (expr, &ctx, ht);
+  fold_checksum_tree (expr, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after);
-  ht.dispose ();
 
   if (memcmp (checksum_before, checksum_after, 16))
     fold_check_failed (expr, ret);
@@ -14774,13 +14772,11 @@ print_fold_checksum (const_tree expr)
 {
   struct md5_ctx ctx;
   unsigned char checksum[16], cnt;
-  hash_table <pointer_hash <tree_node> > ht;
+  hash_table<pointer_hash<const tree_node> > ht (32);
 
-  ht.create (32);
   md5_init_ctx (&ctx);
-  fold_checksum_tree (expr, &ctx, ht);
+  fold_checksum_tree (expr, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum);
-  ht.dispose ();
   for (cnt = 0; cnt < 16; ++cnt)
     fprintf (stderr, "%02x", checksum[cnt]);
   putc ('\n', stderr);
@@ -14794,9 +14790,9 @@ fold_check_failed (const_tree expr ATTRIBUTE_UNUSED, const_tree ret ATTRIBUTE_UN
 
 static void
 fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
-		    hash_table <pointer_hash <tree_node> > ht)
+		    hash_table<pointer_hash <const tree_node> > *ht)
 {
-  tree_node **slot;
+  const tree_node **slot;
   enum tree_code code;
   union tree_node buf;
   int i, len;
@@ -14804,10 +14800,10 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
  recursive_label:
   if (expr == NULL)
     return;
-  slot = ht.find_slot (expr, INSERT);
+  slot = ht->find_slot (expr, INSERT);
   if (*slot != NULL)
     return;
-  *slot = CONST_CAST_TREE (expr);
+  *slot = expr;
   code = TREE_CODE (expr);
   if (TREE_CODE_CLASS (code) == tcc_declaration
       && DECL_ASSEMBLER_NAME_SET_P (expr))
@@ -14951,11 +14947,10 @@ debug_fold_checksum (const_tree t)
   int i;
   unsigned char checksum[16];
   struct md5_ctx ctx;
-  hash_table <pointer_hash <tree_node> > ht;
-  ht.create (32);
+  hash_table<pointer_hash<const tree_node> > ht (32);
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (t, &ctx, ht);
+  fold_checksum_tree (t, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum);
   ht.empty ();
 
@@ -14980,11 +14975,10 @@ fold_build1_stat_loc (location_t loc,
 #ifdef ENABLE_FOLD_CHECKING
   unsigned char checksum_before[16], checksum_after[16];
   struct md5_ctx ctx;
-  hash_table <pointer_hash <tree_node> > ht;
+  hash_table<pointer_hash<const tree_node> > ht (32);
 
-  ht.create (32);
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op0, &ctx, ht);
+  fold_checksum_tree (op0, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before);
   ht.empty ();
 #endif
@@ -14995,9 +14989,8 @@ fold_build1_stat_loc (location_t loc,
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op0, &ctx, ht);
+  fold_checksum_tree (op0, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after);
-  ht.dispose ();
 
   if (memcmp (checksum_before, checksum_after, 16))
     fold_check_failed (op0, tem);
@@ -15023,16 +15016,15 @@ fold_build2_stat_loc (location_t loc,
 		checksum_after_op0[16],
 		checksum_after_op1[16];
   struct md5_ctx ctx;
-  hash_table <pointer_hash <tree_node> > ht;
+  hash_table<pointer_hash<const tree_node> > ht (32);
 
-  ht.create (32);
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op0, &ctx, ht);
+  fold_checksum_tree (op0, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before_op0);
   ht.empty ();
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op1, &ctx, ht);
+  fold_checksum_tree (op1, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before_op1);
   ht.empty ();
 #endif
@@ -15043,7 +15035,7 @@ fold_build2_stat_loc (location_t loc,
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op0, &ctx, ht);
+  fold_checksum_tree (op0, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after_op0);
   ht.empty ();
 
@@ -15051,9 +15043,8 @@ fold_build2_stat_loc (location_t loc,
     fold_check_failed (op0, tem);
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op1, &ctx, ht);
+  fold_checksum_tree (op1, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after_op1);
-  ht.dispose ();
 
   if (memcmp (checksum_before_op1, checksum_after_op1, 16))
     fold_check_failed (op1, tem);
@@ -15079,21 +15070,20 @@ fold_build3_stat_loc (location_t loc, enum tree_code code, tree type,
 		checksum_after_op1[16],
 		checksum_after_op2[16];
   struct md5_ctx ctx;
-  hash_table <pointer_hash <tree_node> > ht;
+  hash_table<pointer_hash<const tree_node> > ht (32);
 
-  ht.create (32);
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op0, &ctx, ht);
+  fold_checksum_tree (op0, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before_op0);
   ht.empty ();
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op1, &ctx, ht);
+  fold_checksum_tree (op1, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before_op1);
   ht.empty ();
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op2, &ctx, ht);
+  fold_checksum_tree (op2, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before_op2);
   ht.empty ();
 #endif
@@ -15105,7 +15095,7 @@ fold_build3_stat_loc (location_t loc, enum tree_code code, tree type,
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op0, &ctx, ht);
+  fold_checksum_tree (op0, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after_op0);
   ht.empty ();
 
@@ -15113,7 +15103,7 @@ fold_build3_stat_loc (location_t loc, enum tree_code code, tree type,
     fold_check_failed (op0, tem);
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op1, &ctx, ht);
+  fold_checksum_tree (op1, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after_op1);
   ht.empty ();
 
@@ -15121,9 +15111,8 @@ fold_build3_stat_loc (location_t loc, enum tree_code code, tree type,
     fold_check_failed (op1, tem);
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (op2, &ctx, ht);
+  fold_checksum_tree (op2, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after_op2);
-  ht.dispose ();
 
   if (memcmp (checksum_before_op2, checksum_after_op2, 16))
     fold_check_failed (op2, tem);
@@ -15147,18 +15136,17 @@ fold_build_call_array_loc (location_t loc, tree type, tree fn,
 		checksum_after_fn[16],
 		checksum_after_arglist[16];
   struct md5_ctx ctx;
-  hash_table <pointer_hash <tree_node> > ht;
+  hash_table<pointer_hash<const tree_node> > ht (32);
   int i;
 
-  ht.create (32);
   md5_init_ctx (&ctx);
-  fold_checksum_tree (fn, &ctx, ht);
+  fold_checksum_tree (fn, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before_fn);
   ht.empty ();
 
   md5_init_ctx (&ctx);
   for (i = 0; i < nargs; i++)
-    fold_checksum_tree (argarray[i], &ctx, ht);
+    fold_checksum_tree (argarray[i], &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_before_arglist);
   ht.empty ();
 #endif
@@ -15167,7 +15155,7 @@ fold_build_call_array_loc (location_t loc, tree type, tree fn,
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
-  fold_checksum_tree (fn, &ctx, ht);
+  fold_checksum_tree (fn, &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after_fn);
   ht.empty ();
 
@@ -15176,9 +15164,8 @@ fold_build_call_array_loc (location_t loc, tree type, tree fn,
 
   md5_init_ctx (&ctx);
   for (i = 0; i < nargs; i++)
-    fold_checksum_tree (argarray[i], &ctx, ht);
+    fold_checksum_tree (argarray[i], &ctx, &ht);
   md5_finish_ctx (&ctx, checksum_after_arglist);
-  ht.dispose ();
 
   if (memcmp (checksum_before_arglist, checksum_after_arglist, 16))
     fold_check_failed (NULL_TREE, tem);

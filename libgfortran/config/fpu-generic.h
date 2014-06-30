@@ -51,6 +51,12 @@ set_fpu (void)
 	        "exception not supported.\n");
 }
 
+void
+set_fpu_trap_exceptions (int trap __attribute__((unused)),
+			 int notrap __attribute__((unused)))
+{
+}
+
 int
 get_fpu_except_flags (void)
 {

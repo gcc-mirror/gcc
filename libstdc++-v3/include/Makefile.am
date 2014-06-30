@@ -80,6 +80,7 @@ bits_builddir = ./bits
 bits_headers = \
 	${bits_srcdir}/algorithmfwd.h \
 	${bits_srcdir}/alloc_traits.h \
+	${bits_srcdir}/allocated_ptr.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
 	${bits_srcdir}/basic_ios.h \

@@ -2046,13 +2046,6 @@ enum reg_class
   182,183,184,185,186,187						\
 }
 
-/* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
-   to be rearranged based on a particular function.  On the mips16, we
-   want to allocate $24 (T_REG) before other registers for
-   instructions for which it is possible.  */
-
-#define ADJUST_REG_ALLOC_ORDER mips_order_regs_for_local_alloc ()
-
 /* True if VALUE is an unsigned 6-bit number.  */
 
 #define UIMM6_OPERAND(VALUE) \

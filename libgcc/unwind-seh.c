@@ -79,7 +79,7 @@ struct _Unwind_Context
 _Unwind_Word
 _Unwind_GetGR (struct _Unwind_Context *c, int index)
 {
-  if (index < 0 || index > 2)
+  if (index < 0 || index >= 2)
     abort ();
   return c->reg[index];
 }
@@ -89,7 +89,7 @@ _Unwind_GetGR (struct _Unwind_Context *c, int index)
 void
 _Unwind_SetGR (struct _Unwind_Context *c, int index, _Unwind_Word val)
 {
-  if (index < 0 || index > 2)
+  if (index < 0 || index >= 2)
     abort ();
   c->reg[index] = val;
 }

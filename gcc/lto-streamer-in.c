@@ -72,7 +72,7 @@ freeing_string_slot_hasher::remove (value_type *v)
 }
 
 /* The table to hold the file names.  */
-static hash_table <freeing_string_slot_hasher> file_name_hash_table;
+static hash_table<freeing_string_slot_hasher> *file_name_hash_table;
 
 
 /* Check that tag ACTUAL has one of the given values.  NUM_TAGS is the
@@ -123,7 +123,7 @@ canon_file_name (const char *string)
   s_slot.s = string;
   s_slot.len = len;
 
-  slot = file_name_hash_table.find_slot (&s_slot, INSERT);
+  slot = file_name_hash_table->find_slot (&s_slot, INSERT);
   if (*slot == NULL)
     {
       char *saved_string;
@@ -785,7 +785,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
 			 struct function *fn)
 {
   struct cgraph_edge *cedge;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
   unsigned int i;
 
   for (cedge = node->callees; cedge; cedge = cedge->next_callee)
@@ -804,9 +804,7 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
       if (!cedge->call_stmt)
         fatal_error ("Cgraph edge statement index not found");
     }
-  for (i = 0;
-       ipa_ref_list_reference_iterate (&node->ref_list, i, ref);
-       i++)
+  for (i = 0; node->iterate_reference (i, ref); i++)
     if (ref->lto_stmt_uid)
       {
 	if (gimple_stmt_max_uid (fn) < ref->lto_stmt_uid)
@@ -1363,7 +1361,8 @@ void
 lto_reader_init (void)
 {
   lto_streamer_init ();
-  file_name_hash_table.create (37);
+  file_name_hash_table
+    = new hash_table<freeing_string_slot_hasher> (37);
 }
 
 

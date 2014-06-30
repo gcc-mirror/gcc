@@ -22,7 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GRAPHITE_HTAB_H
 
 #include "hash-table.h"
-#include "graphite-clast-to-gimple.h"
+
+/* Stores BB's related PBB.  */
+
+struct bb_pbb_def
+{
+  basic_block bb;
+  poly_bb_p pbb;
+};
 
 /* Hashtable helpers.  */
 
@@ -50,11 +57,10 @@ bb_pbb_hasher::equal (const value_type *bp1, const compare_type *bp2)
   return (bp1->bb->index == bp2->bb->index);
 }
 
-typedef hash_table <bb_pbb_hasher> bb_pbb_htab_type;
+typedef hash_table<bb_pbb_hasher> bb_pbb_htab_type;
 
-extern bool gloog (scop_p, bb_pbb_htab_type);
-poly_bb_p find_pbb_via_hash (bb_pbb_htab_type, basic_block);
-bool loop_is_parallel_p (loop_p, bb_pbb_htab_type, int);
-scop_p get_loop_body_pbbs (loop_p, bb_pbb_htab_type, vec<poly_bb_p> *);
+poly_bb_p find_pbb_via_hash (bb_pbb_htab_type *, basic_block);
+bool loop_is_parallel_p (loop_p, bb_pbb_htab_type *, int);
+scop_p get_loop_body_pbbs (loop_p, bb_pbb_htab_type *, vec<poly_bb_p> *);
 
 #endif

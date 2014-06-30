@@ -1,3 +1,12 @@
+2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* objc-act.c (objc_xref_basetypes): Set TYPE_BINFO of type variants,
+	too.
+
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* objc-act.c: Adjust.
+
 2014-05-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* objc-act.c (objc_build_string_object): Adjust.

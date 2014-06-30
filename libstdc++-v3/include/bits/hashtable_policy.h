@@ -701,8 +701,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __unique_keys = typename __hashtable_base::__unique_keys;
       using __ireturn_type = typename __hashtable_base::__ireturn_type;
       using __node_type = _Hash_node<_Value, _Traits::__hash_cached::value>;
-      using __node_alloc_type =
-	typename __alloctr_rebind<_Alloc, __node_type>::__type;
+      using __node_alloc_type = __alloc_rebind<_Alloc, __node_type>;
       using __node_gen_type = _AllocNode<__node_alloc_type>;
 
       __hashtable&
@@ -1898,13 +1897,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __value_type = typename __node_type::value_type;
       using __value_alloc_type =
-	typename __alloctr_rebind<__node_alloc_type, __value_type>::__type;
+	__alloc_rebind<__node_alloc_type, __value_type>;
       using __value_alloc_traits = std::allocator_traits<__value_alloc_type>;
 
       using __node_base = __detail::_Hash_node_base;
       using __bucket_type = __node_base*;      
       using __bucket_alloc_type =
-	typename __alloctr_rebind<__node_alloc_type, __bucket_type>::__type;
+	__alloc_rebind<__node_alloc_type, __bucket_type>;
       using __bucket_alloc_traits = std::allocator_traits<__bucket_alloc_type>;
 
       _Hashtable_alloc(const _Hashtable_alloc&) = default;

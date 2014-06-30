@@ -129,7 +129,7 @@ st_expr_hasher::equal (const value_type *ptr1, const compare_type *ptr2)
 }
 
 /* Hashtable for the load/store memory refs.  */
-static hash_table <st_expr_hasher> store_motion_mems_table;
+static hash_table<st_expr_hasher> *store_motion_mems_table;
 
 /* This will search the st_expr list for a matching expression. If it
    doesn't find one, we create one and initialize it.  */
@@ -147,7 +147,7 @@ st_expr_entry (rtx x)
 		   NULL,  /*have_reg_qty=*/false);
 
   e.pattern = x;
-  slot = store_motion_mems_table.find_slot_with_hash (&e, hash, INSERT);
+  slot = store_motion_mems_table->find_slot_with_hash (&e, hash, INSERT);
   if (*slot)
     return *slot;
 
@@ -183,8 +183,8 @@ free_st_expr_entry (struct st_expr * ptr)
 static void
 free_store_motion_mems (void)
 {
-  if (store_motion_mems_table.is_created ())
-    store_motion_mems_table.dispose ();
+  delete store_motion_mems_table;
+  store_motion_mems_table = NULL;
 
   while (store_motion_mems)
     {
@@ -651,7 +651,7 @@ compute_store_table (void)
   unsigned int max_gcse_regno = max_reg_num ();
 
   store_motion_mems = NULL;
-  store_motion_mems_table.create (13);
+  store_motion_mems_table = new hash_table<st_expr_hasher> (13);
   last_set_in = XCNEWVEC (int, max_gcse_regno);
   already_set = XNEWVEC (int, max_gcse_regno);
 
@@ -713,7 +713,7 @@ compute_store_table (void)
       if (! ptr->avail_stores)
 	{
 	  *prev_next_ptr_ptr = ptr->next;
-	  store_motion_mems_table.remove_elt_with_hash (ptr, ptr->hash_index);
+	  store_motion_mems_table->remove_elt_with_hash (ptr, ptr->hash_index);
 	  free_st_expr_entry (ptr);
 	}
       else
@@ -1152,7 +1152,8 @@ one_store_motion_pass (void)
   num_stores = compute_store_table ();
   if (num_stores == 0)
     {
-      store_motion_mems_table.dispose ();
+      delete store_motion_mems_table;
+      store_motion_mems_table = NULL;
       end_alias_analysis ();
       return 0;
     }

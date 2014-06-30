@@ -23,6 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <assert.h>
+
 #ifndef __SSE_MATH__
 #include "cpuid.h"
 #endif
@@ -62,24 +64,121 @@ has_sse (void)
 
 #define _FPU_RC_MASK    0x3
 
+/* This structure corresponds to the layout of the block
+   written by FSTENV.  */
+typedef struct
+{
+  unsigned short int __control_word;
+  unsigned short int __unused1;
+  unsigned short int __status_word;
+  unsigned short int __unused2;
+  unsigned short int __tags;
+  unsigned short int __unused3;
+  unsigned int __eip;
+  unsigned short int __cs_selector;
+  unsigned short int __opcode;
+  unsigned int __data_offset;
+  unsigned short int __data_selector;
+  unsigned short int __unused5;
+  unsigned int __mxcsr;
+}
+my_fenv_t;
+
+
+/* Raise the supported floating-point exceptions from EXCEPTS.  Other
+   bits in EXCEPTS are ignored.  Code originally borrowed from
+   libatomic/config/x86/fenv.c.  */
+
+static void
+local_feraiseexcept (int excepts)
+{
+  if (excepts & _FPU_MASK_IM)
+    {
+      float f = 0.0f;
+#ifdef __SSE_MATH__
+      volatile float r __attribute__ ((unused));
+      __asm__ __volatile__ ("%vdivss\t{%0, %d0|%d0, %0}" : "+x" (f));
+      r = f; /* Needed to trigger exception.   */
+#else
+      __asm__ __volatile__ ("fdiv\t{%y0, %0|%0, %y0}" : "+t" (f));
+      /* No need for fwait, exception is triggered by emitted fstp.  */
+#endif
+    }
+  if (excepts & _FPU_MASK_DM)
+    {
+      my_fenv_t temp;
+      __asm__ __volatile__ ("fnstenv\t%0" : "=m" (temp));
+      temp.__status_word |= _FPU_MASK_DM;
+      __asm__ __volatile__ ("fldenv\t%0" : : "m" (temp));
+      __asm__ __volatile__ ("fwait");
+    }
+  if (excepts & _FPU_MASK_ZM)
+    {
+      float f = 1.0f, g = 0.0f;
+#ifdef __SSE_MATH__
+      volatile float r __attribute__ ((unused));
+      __asm__ __volatile__ ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
+      r = f; /* Needed to trigger exception.   */
+#else
+      __asm__ __volatile__ ("fdivs\t%1" : "+t" (f) : "m" (g));
+      /* No need for fwait, exception is triggered by emitted fstp.  */
+#endif
+    }
+  if (excepts & _FPU_MASK_OM)
+    {
+      my_fenv_t temp;
+      __asm__ __volatile__ ("fnstenv\t%0" : "=m" (temp));
+      temp.__status_word |= _FPU_MASK_OM;
+      __asm__ __volatile__ ("fldenv\t%0" : : "m" (temp));
+      __asm__ __volatile__ ("fwait");
+    }
+  if (excepts & _FPU_MASK_UM)
+    {
+      my_fenv_t temp;
+      __asm__ __volatile__ ("fnstenv\t%0" : "=m" (temp));
+      temp.__status_word |= _FPU_MASK_UM;
+      __asm__ __volatile__ ("fldenv\t%0" : : "m" (temp));
+      __asm__ __volatile__ ("fwait");
+    }
+  if (excepts & _FPU_MASK_PM)
+    {
+      float f = 1.0f, g = 3.0f;
+#ifdef __SSE_MATH__
+      volatile float r __attribute__ ((unused));
+      __asm__ __volatile__ ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
+      r = f; /* Needed to trigger exception.   */
+#else
+      __asm__ __volatile__ ("fdivs\t%1" : "+t" (f) : "m" (g));
+      /* No need for fwait, exception is triggered by emitted fstp.  */
+#endif
+    }
+}
+
 
 void
-set_fpu (void)
+set_fpu_trap_exceptions (int trap, int notrap)
 {
-  int excepts = 0;
+  int exc_set = 0, exc_clr = 0;
   unsigned short cw;
+
+  if (trap & GFC_FPE_INVALID) exc_set |= _FPU_MASK_IM;
+  if (trap & GFC_FPE_DENORMAL) exc_set |= _FPU_MASK_DM;
+  if (trap & GFC_FPE_ZERO) exc_set |= _FPU_MASK_ZM;
+  if (trap & GFC_FPE_OVERFLOW) exc_set |= _FPU_MASK_OM;
+  if (trap & GFC_FPE_UNDERFLOW) exc_set |= _FPU_MASK_UM;
+  if (trap & GFC_FPE_INEXACT) exc_set |= _FPU_MASK_PM;
+
+  if (notrap & GFC_FPE_INVALID) exc_clr |= _FPU_MASK_IM;
+  if (notrap & GFC_FPE_DENORMAL) exc_clr |= _FPU_MASK_DM;
+  if (notrap & GFC_FPE_ZERO) exc_clr |= _FPU_MASK_ZM;
+  if (notrap & GFC_FPE_OVERFLOW) exc_clr |= _FPU_MASK_OM;
+  if (notrap & GFC_FPE_UNDERFLOW) exc_clr |= _FPU_MASK_UM;
+  if (notrap & GFC_FPE_INEXACT) exc_clr |= _FPU_MASK_PM;
 
   __asm__ __volatile__ ("fstcw\t%0" : "=m" (cw));
 
-  if (options.fpe & GFC_FPE_INVALID) excepts |= _FPU_MASK_IM;
-  if (options.fpe & GFC_FPE_DENORMAL) excepts |= _FPU_MASK_DM;
-  if (options.fpe & GFC_FPE_ZERO) excepts |= _FPU_MASK_ZM;
-  if (options.fpe & GFC_FPE_OVERFLOW) excepts |= _FPU_MASK_OM;
-  if (options.fpe & GFC_FPE_UNDERFLOW) excepts |= _FPU_MASK_UM;
-  if (options.fpe & GFC_FPE_INEXACT) excepts |= _FPU_MASK_PM;
-
-  cw |= _FPU_MASK_ALL;
-  cw &= ~excepts;
+  cw |= exc_clr;
+  cw &= ~exc_set;
 
   __asm__ __volatile__ ("fnclex\n\tfldcw\t%0" : : "m" (cw));
 
@@ -90,14 +189,55 @@ set_fpu (void)
       __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
 
       /* The SSE exception masks are shifted by 7 bits.  */
-      cw_sse |= _FPU_MASK_ALL << 7;
-      cw_sse &= ~(excepts << 7);
+      cw_sse |= (exc_clr << 7);
+      cw_sse &= ~(exc_set << 7);
 
       /* Clear stalled exception flags.  */
       cw_sse &= ~_FPU_EX_ALL;
 
       __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
     }
+}
+
+void
+set_fpu (void)
+{
+  set_fpu_trap_exceptions (options.fpe, 0);
+}
+
+int
+get_fpu_trap_exceptions (void)
+{
+  int res = 0;
+  unsigned short cw;
+
+  __asm__ __volatile__ ("fstcw\t%0" : "=m" (cw));
+  cw &= _FPU_MASK_ALL;
+
+  if (has_sse())
+    {
+      unsigned int cw_sse;
+
+      __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
+
+      /* The SSE exception masks are shifted by 7 bits.  */
+      cw = cw | ((cw_sse >> 7) & _FPU_MASK_ALL);
+    }
+
+  if (~cw & _FPU_MASK_IM) res |= GFC_FPE_INVALID;
+  if (~cw & _FPU_MASK_DM) res |= GFC_FPE_DENORMAL;
+  if (~cw & _FPU_MASK_ZM) res |= GFC_FPE_ZERO;
+  if (~cw & _FPU_MASK_OM) res |= GFC_FPE_OVERFLOW;
+  if (~cw & _FPU_MASK_UM) res |= GFC_FPE_UNDERFLOW;
+  if (~cw & _FPU_MASK_PM) res |= GFC_FPE_INEXACT;
+
+  return res;
+}
+
+int
+support_fpu_trap (int flag __attribute__((unused)))
+{
+  return 1;
 }
 
 int
@@ -107,7 +247,7 @@ get_fpu_except_flags (void)
   int excepts;
   int result = 0;
 
-  __asm__ __volatile__ ("fnstsw\t%0" : "=a" (cw));
+  __asm__ __volatile__ ("fnstsw\t%0" : "=am" (cw));
   excepts = cw;
 
   if (has_sse())
@@ -128,6 +268,70 @@ get_fpu_except_flags (void)
   if (excepts & _FPU_MASK_PM) result |= GFC_FPE_INEXACT;
 
   return result;
+}
+
+void
+set_fpu_except_flags (int set, int clear)
+{
+  my_fenv_t temp;
+  int exc_set = 0, exc_clr = 0;
+
+  /* Translate from GFC_PE_* values to _FPU_MASK_* values.  */
+  if (set & GFC_FPE_INVALID)
+    exc_set |= _FPU_MASK_IM;
+  if (clear & GFC_FPE_INVALID)
+    exc_clr |= _FPU_MASK_IM;
+
+  if (set & GFC_FPE_DENORMAL)
+    exc_set |= _FPU_MASK_DM;
+  if (clear & GFC_FPE_DENORMAL)
+    exc_clr |= _FPU_MASK_DM;
+
+  if (set & GFC_FPE_ZERO)
+    exc_set |= _FPU_MASK_ZM;
+  if (clear & GFC_FPE_ZERO)
+    exc_clr |= _FPU_MASK_ZM;
+
+  if (set & GFC_FPE_OVERFLOW)
+    exc_set |= _FPU_MASK_OM;
+  if (clear & GFC_FPE_OVERFLOW)
+    exc_clr |= _FPU_MASK_OM;
+
+  if (set & GFC_FPE_UNDERFLOW)
+    exc_set |= _FPU_MASK_UM;
+  if (clear & GFC_FPE_UNDERFLOW)
+    exc_clr |= _FPU_MASK_UM;
+
+  if (set & GFC_FPE_INEXACT)
+    exc_set |= _FPU_MASK_PM;
+  if (clear & GFC_FPE_INEXACT)
+    exc_clr |= _FPU_MASK_PM;
+
+
+  /* Change the flags. This is tricky on 387 (unlike SSE), because we have
+     FNSTSW but no FLDSW instruction.  */
+  __asm__ __volatile__ ("fnstenv\t%0" : "=m" (temp));
+  temp.__status_word &= ~exc_clr;
+  __asm__ __volatile__ ("fldenv\t%0" : : "m" (temp));
+
+  /* Change the flags on SSE.  */
+
+  if (has_sse())
+  {
+    unsigned int cw_sse;
+
+    __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
+    cw_sse &= ~exc_clr;
+    __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
+  }
+
+  local_feraiseexcept (exc_set);
+}
+
+int
+support_fpu_flag (int flag __attribute__((unused)))
+{
+  return 1;
 }
 
 void
@@ -213,3 +417,44 @@ get_fpu_rounding_mode (void)
       return GFC_FPE_INVALID; /* Should be unreachable.  */
     }
 }
+
+int
+support_fpu_rounding_mode (int mode __attribute__((unused)))
+{
+  return 1;
+}
+
+void
+get_fpu_state (void *state)
+{
+  my_fenv_t *envp = state;
+
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE);
+
+  __asm__ __volatile__ ("fnstenv\t%0" : "=m" (*envp));
+
+  /* fnstenv has the side effect of masking all exceptions, so we need
+     to restore the control word after that.  */
+  __asm__ __volatile__ ("fldcw\t%0" : : "m" (envp->__control_word));
+
+  if (has_sse())
+    __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (envp->__mxcsr));
+}
+
+void
+set_fpu_state (void *state)
+{
+  my_fenv_t *envp = state;
+
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE);
+
+  /* glibc sources (sysdeps/x86_64/fpu/fesetenv.c) do something more
+     complex than this, but I think it suffices in our case.  */
+  __asm__ __volatile__ ("fldenv\t%0" : : "m" (*envp));
+
+  if (has_sse())
+    __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (envp->__mxcsr));
+}
+

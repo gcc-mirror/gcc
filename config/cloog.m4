@@ -63,7 +63,7 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
   if test "x${clooginc}" = x && test "x${clooglibs}" = x \
      && test -d ${srcdir}/cloog; then
      clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
-     clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
+     clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include'
     ENABLE_CLOOG_CHECK=no
     AC_MSG_WARN([using in-tree CLooG, disabling version check])
   fi

@@ -401,11 +401,8 @@ copy_prop_visit_phi_node (gimple phi)
 	arg_value = valueize_val (arg);
 
       /* Avoid copy propagation from an inner into an outer loop.
-	 Otherwise, this may move loop variant variables outside of
-	 their loops and prevent coalescing opportunities.  If the
-	 value was loop invariant, it will be hoisted by LICM and
-	 exposed for copy propagation.
-	 ???  The value will be always loop invariant.
+	 Otherwise, this may introduce uses of loop variant variables
+	 outside of their loops and prevent coalescing opportunities.
 	 In loop-closed SSA form do not copy-propagate through
 	 PHI nodes in blocks with a loop exit edge predecessor.  */
       if (TREE_CODE (arg_value) == SSA_NAME

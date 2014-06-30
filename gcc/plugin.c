@@ -80,7 +80,7 @@ event_hasher::equal (const value_type *s1, const compare_type *s2)
 
 /* A hash table to map event names to the position of the names in the
    plugin_event_name table.  */
-static hash_table <event_hasher> event_tab;
+static hash_table<event_hasher> *event_tab;
 
 /* Keep track of the limit of allocated events and space ready for
    allocating events.  */
@@ -345,19 +345,19 @@ get_named_event_id (const char *name, enum insert_option insert)
 {
   const char ***slot;
 
-  if (!event_tab.is_created ())
+  if (!event_tab)
     {
       int i;
 
-      event_tab.create (150);
+      event_tab = new hash_table<event_hasher> (150);
       for (i = 0; i < event_last; i++)
 	{
-	  slot = event_tab.find_slot (&plugin_event_name[i], INSERT);
+	  slot = event_tab->find_slot (&plugin_event_name[i], INSERT);
 	  gcc_assert (*slot == HTAB_EMPTY_ENTRY);
 	  *slot = &plugin_event_name[i];
 	}
     }
-  slot = event_tab.find_slot (&name, insert);
+  slot = event_tab->find_slot (&name, insert);
   if (slot == NULL)
     return -1;
   if (*slot != HTAB_EMPTY_ENTRY)
@@ -383,7 +383,8 @@ get_named_event_id (const char *name, enum insert_option insert)
 					 plugin_callbacks, event_horizon);
 	}
       /* All the pointers in the hash table will need to be updated.  */
-      event_tab.dispose ();
+      delete event_tab;
+      event_tab = NULL;
     }
   else
     *slot = &plugin_event_name[event_last];

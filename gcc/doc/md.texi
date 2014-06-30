@@ -4842,6 +4842,16 @@ wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or
 wider than the mode of the product. The result is placed in operand 0, which
 is of the same mode as operand 3.
 
+@cindex @code{ssad@var{m}} instruction pattern
+@item @samp{ssad@var{m}}
+@cindex @code{usad@var{m}} instruction pattern
+@item @samp{usad@var{m}}
+Compute the sum of absolute differences of two signed/unsigned elements.
+Operand 1 and operand 2 are of the same mode. Their absolute difference, which
+is of a wider mode, is computed and added to operand 3. Operand 3 is of a mode
+equal or wider than the mode of the absolute difference. The result is placed
+in operand 0, which is of the same mode as operand 3.
+
 @cindex @code{ssum_widen@var{m3}} instruction pattern
 @item @samp{ssum_widen@var{m3}}
 @cindex @code{usum_widen@var{m3}} instruction pattern

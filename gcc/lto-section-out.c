@@ -224,21 +224,17 @@ lto_output_decl_index (struct lto_output_stream *obs,
 		       struct lto_tree_ref_encoder *encoder,
 		       tree name, unsigned int *this_index)
 {
-  unsigned *slot;
-  unsigned int index;
   bool new_entry_p = FALSE;
   bool existed_p;
 
-  slot = encoder->tree_hash_table->insert (name, &existed_p);
+  unsigned int &index
+    = encoder->tree_hash_table->get_or_insert (name, &existed_p);
   if (!existed_p)
     {
       index = encoder->trees.length ();
-      *slot = index;
       encoder->trees.safe_push (name);
       new_entry_p = TRUE;
     }
-  else
-    index = *slot;
 
   if (obs)
     streamer_write_uhwi_stream (obs, index);

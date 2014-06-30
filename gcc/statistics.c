@@ -80,16 +80,16 @@ stats_counter_hasher::remove (value_type *v)
   free (v);
 }
 
-typedef hash_table <stats_counter_hasher> stats_counter_table_type;
+typedef hash_table<stats_counter_hasher> stats_counter_table_type;
 
 /* Array of statistic hashes, indexed by pass id.  */
-static stats_counter_table_type *statistics_hashes;
+static stats_counter_table_type **statistics_hashes;
 static unsigned nr_statistics_hashes;
 
 /* Return the current hashtable to be used for recording or printing
    statistics.  */
 
-static stats_counter_table_type
+static stats_counter_table_type *
 curr_statistics_hash (void)
 {
   unsigned idx;
@@ -98,20 +98,20 @@ curr_statistics_hash (void)
   idx = current_pass->static_pass_number;
 
   if (idx < nr_statistics_hashes
-      && statistics_hashes[idx].is_created ())
+      && statistics_hashes[idx])
     return statistics_hashes[idx];
 
   if (idx >= nr_statistics_hashes)
     {
-      statistics_hashes = XRESIZEVEC (stats_counter_table_type,
+      statistics_hashes = XRESIZEVEC (stats_counter_table_type *,
 				      statistics_hashes, idx+1);
       memset (statistics_hashes + nr_statistics_hashes, 0,
 	      (idx + 1 - nr_statistics_hashes)
-	      * sizeof (stats_counter_table_type));
+	      * sizeof (stats_counter_table_type *));
       nr_statistics_hashes = idx + 1;
     }
 
-  statistics_hashes[idx].create (15);
+  statistics_hashes[idx] = new stats_counter_table_type (15);
 
   return statistics_hashes[idx];
 }
@@ -195,16 +195,16 @@ statistics_fini_pass (void)
       fprintf (dump_file, "Pass statistics:\n");
       fprintf (dump_file, "----------------\n");
       curr_statistics_hash ()
-	.traverse_noresize <void *, statistics_fini_pass_1> (NULL);
+	->traverse_noresize <void *, statistics_fini_pass_1> (NULL);
       fprintf (dump_file, "\n");
     }
   if (statistics_dump_file
       && !(statistics_dump_flags & TDF_STATS
 	   || statistics_dump_flags & TDF_DETAILS))
     curr_statistics_hash ()
-      .traverse_noresize <void *, statistics_fini_pass_2> (NULL);
+      ->traverse_noresize <void *, statistics_fini_pass_2> (NULL);
   curr_statistics_hash ()
-    .traverse_noresize <void *, statistics_fini_pass_3> (NULL);
+    ->traverse_noresize <void *, statistics_fini_pass_3> (NULL);
 }
 
 /* Helper for printing summary information.  */
@@ -245,10 +245,10 @@ statistics_fini (void)
     {
       unsigned i;
       for (i = 0; i < nr_statistics_hashes; ++i)
-	if (statistics_hashes[i].is_created ()
+	if (statistics_hashes[i]
 	    && passes->get_pass_for_id (i) != NULL)
 	  statistics_hashes[i]
-	    .traverse_noresize <opt_pass *, statistics_fini_1>
+	    ->traverse_noresize <opt_pass *, statistics_fini_1>
 	    (passes->get_pass_for_id (i));
     }
 
@@ -280,14 +280,14 @@ statistics_init (void)
    and HISTOGRAM_P.  */
 
 static statistics_counter_t *
-lookup_or_add_counter (stats_counter_table_type hash, const char *id, int val,
+lookup_or_add_counter (stats_counter_table_type *hash, const char *id, int val,
 		       bool histogram_p)
 {
   statistics_counter_t **counter;
   statistics_counter_t c;
   c.id = id;
   c.val = val;
-  counter = hash.find_slot (&c, INSERT);
+  counter = hash->find_slot (&c, INSERT);
   if (!*counter)
     {
       *counter = XNEW (struct statistics_counter_s);

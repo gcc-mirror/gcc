@@ -1307,6 +1307,18 @@ check_co_minmaxsum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
   if (!variable_check (a, 0, false))
     return false;
 
+  if (!gfc_check_vardef_context (a, false, false, false, "argument 'A' with "
+				 "INTENT(INOUT)"))
+    return false;
+
+  if (gfc_has_vector_subscript (a))
+    {
+      gfc_error ("Argument 'A' with INTENT(INOUT) at %L of the intrinsic "
+		 "subroutine %s shall not have a vector subscript",
+		 &a->where, gfc_current_intrinsic);
+      return false;
+    }
+
   if (result_image != NULL)
     {
       if (!type_check (result_image, 1, BT_INTEGER))

@@ -1040,7 +1040,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_REDUCTION_IEOR: fputs ("ieor:", dumpfile); break;
 	  case OMP_REDUCTION_USER:
 	    if (n->udr)
-	      fprintf (dumpfile, "%s:", n->udr->name);
+	      fprintf (dumpfile, "%s:", n->udr->udr->name);
 	    break;
 	  default: break;
 	  }

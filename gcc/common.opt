@@ -1250,6 +1250,19 @@ Enable in and out of Graphite representation
 fgraphite-identity
 Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
+ 
+fgraphite-code-generator=
+Common Report RejectNegative Joined Optimization Enum(fgraphite_generator) Var(flag_graphite_code_gen) Init(FGRAPHITE_CODE_GEN_CLOOG)
+Choose code generator of Graphite
+
+Enum
+Name(fgraphite_generator) Type(enum fgraphite_generator) UnknownError(unknown code generator of graphite %qs)
+
+EnumValue
+Enum(fgraphite_generator) String(isl) Value(FGRAPHITE_CODE_GEN_ISL)
+
+EnumValue
+Enum(fgraphite_generator) String(cloog) Value(FGRAPHITE_CODE_GEN_CLOOG)
 
 fhoist-adjacent-loads
 Common Report Var(flag_hoist_adjacent_loads) Optimization
@@ -1854,6 +1867,10 @@ Perform software pipelining of outer loops during selective scheduling
 fsel-sched-reschedule-pipelined
 Common Report Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
 Reschedule pipelined regions without pipelining
+
+fsemantic-interposition
+Common Report Var(flag_semantic_interposition) Init(1)
+Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker
 
 ; sched_stalled_insns means that insns can be moved prematurely from the queue
 ; of stalled insns into the ready list.
@@ -2522,6 +2539,28 @@ Generate debug information in XCOFF format
 gxcoff+
 Common JoinedOrMissing Negative(gcoff)
 Generate debug information in extended XCOFF format
+
+Enum
+Name(compressed_debug_sections) Type(int)
+
+; Since -gz= is completely handled in specs, the values aren't used and we
+; assign arbitrary constants.
+EnumValue
+Enum(compressed_debug_sections) String(none) Value(0)
+
+EnumValue
+Enum(compressed_debug_sections) String(zlib) Value(1)
+
+EnumValue
+Enum(compressed_debug_sections) String(zlib-gnu) Value(2)
+
+gz
+Common Driver
+Generate compressed debug sections
+
+gz=
+Common Driver Joined Enum(compressed_debug_sections)
+-gz=<format>	Generate compressed debug sections in format <format>
 
 h
 Driver Joined Separate

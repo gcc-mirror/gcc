@@ -19,11 +19,14 @@ extern "C" void abort ();
 #undef F
 #undef G
 
+#undef SC
+#define SC static
 #define F for simd
 #define G f_simd
 #include "../libgomp.c/for-1.h"
 #undef F
 #undef G
+#undef SC
 
 int
 main ()

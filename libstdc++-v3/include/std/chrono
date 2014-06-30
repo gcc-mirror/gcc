@@ -791,7 +791,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       struct _Checked_integral_constant
       : integral_constant<_Rep, static_cast<_Rep>(_Val)>
       {
-	static_assert(_Checked_integral_constant::value > 0
+	static_assert(_Checked_integral_constant::value >= 0
 		      && _Checked_integral_constant::value == _Val,
 		      "literal value cannot be represented by duration type");
       };

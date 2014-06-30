@@ -5779,6 +5779,54 @@ gfc_match_subroutine (void)
 }
 
 
+/* Check that the NAME identifier in a BIND attribute or statement
+   is conform to C identifier rules.  */
+
+match
+check_bind_name_identifier (char **name)
+{
+  char *n = *name, *p;
+
+  /* Remove leading spaces.  */
+  while (*n == ' ')
+    n++;
+
+  /* On an empty string, free memory and set name to NULL.  */
+  if (*n == '\0')
+    {
+      free (*name);
+      *name = NULL;
+      return MATCH_YES;
+    }
+
+  /* Remove trailing spaces.  */
+  p = n + strlen(n) - 1;
+  while (*p == ' ')
+    *(p--) = '\0';
+
+  /* Insert the identifier into the symbol table.  */
+  p = xstrdup (n);
+  free (*name);
+  *name = p;
+
+  /* Now check that identifier is valid under C rules.  */
+  if (ISDIGIT (*p))
+    {
+      gfc_error ("Invalid C identifier in NAME= specifier at %C");
+      return MATCH_ERROR;
+    }
+
+  for (; *p; p++)
+    if (!(ISALNUM (*p) || *p == '_' || *p == '$'))
+      {
+        gfc_error ("Invalid C identifier in NAME= specifier at %C");
+	return MATCH_ERROR;
+      }
+
+  return MATCH_YES;
+}
+
+
 /* Match a BIND(C) specifier, with the optional 'name=' specifier if
    given, and set the binding label in either the given symbol (if not
    NULL), or in the current_ts.  The symbol may be NULL because we may
@@ -5793,10 +5841,8 @@ gfc_match_subroutine (void)
 match
 gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
 {
-  /* binding label, if exists */
-  const char* binding_label = NULL;
-  match double_quote;
-  match single_quote;
+  char *binding_label = NULL;
+  gfc_expr *e = NULL;
 
   /* Initialize the flag that specifies whether we encountered a NAME=
      specifier or not.  */
@@ -5821,44 +5867,37 @@ gfc_match_bind_c (gfc_symbol *sym, bool allow_binding_name)
 
       has_name_equals = 1;
 
-      /* Get the opening quote.  */
-      double_quote = MATCH_YES;
-      single_quote = MATCH_YES;
-      double_quote = gfc_match_char ('"');
-      if (double_quote != MATCH_YES)
-	single_quote = gfc_match_char ('\'');
-      if (double_quote != MATCH_YES && single_quote != MATCH_YES)
-        {
-          gfc_error ("Syntax error in NAME= specifier for binding label "
-                     "at %C");
-          return MATCH_ERROR;
-        }
-
-      /* Grab the binding label, using functions that will not lower
-	 case the names automatically.	*/
-      if (gfc_match_name_C (&binding_label) != MATCH_YES)
-	 return MATCH_ERROR;
-
-      /* Get the closing quotation.  */
-      if (double_quote == MATCH_YES)
+      if (gfc_match_init_expr (&e) != MATCH_YES)
 	{
-	  if (gfc_match_char ('"') != MATCH_YES)
-            {
-              gfc_error ("Missing closing quote '\"' for binding label at %C");
-              /* User started string with '"' so looked to match it.  */
-              return MATCH_ERROR;
-            }
+	  gfc_free_expr (e);
+	  return MATCH_ERROR;
 	}
-      else
+
+      if (!gfc_simplify_expr(e, 0))
 	{
-	  if (gfc_match_char ('\'') != MATCH_YES)
-            {
-              gfc_error ("Missing closing quote '\'' for binding label at %C");
-              /* User started string with "'" char.  */
-              return MATCH_ERROR;
-            }
+	  gfc_error ("NAME= specifier at %C should be a constant expression");
+	  gfc_free_expr (e);
+	  return MATCH_ERROR;
 	}
-   }
+
+      if (e->expr_type != EXPR_CONSTANT || e->ts.type != BT_CHARACTER
+	  || e->ts.kind != gfc_default_character_kind || e->rank != 0)
+	{
+	  gfc_error ("NAME= specifier at %C should be a scalar of "
+	             "default character kind");
+	  gfc_free_expr(e);
+	  return MATCH_ERROR;
+	}
+
+      // Get a C string from the Fortran string constant
+      binding_label = gfc_widechar_to_char (e->value.character.string,
+					    e->value.character.length);
+      gfc_free_expr(e);
+
+      // Check that it is valid (old gfc_match_name_C)
+      if (check_bind_name_identifier (&binding_label) != MATCH_YES)
+	return MATCH_ERROR;
+    }
 
   /* Get the required right paren.  */
   if (gfc_match_char (')') != MATCH_YES)

@@ -569,99 +569,6 @@ gfc_match_name (char *buffer)
 }
 
 
-/* Match a valid name for C, which is almost the same as for Fortran,
-   except that you can start with an underscore, etc..  It could have
-   been done by modifying the gfc_match_name, but this way other
-   things C allows can be done, such as no limits on the length.
-   Also, by rewriting it, we use the gfc_next_char_C() to prevent the
-   input characters from being automatically lower cased, since C is
-   case sensitive.  The parameter, buffer, is used to return the name
-   that is matched.  Return MATCH_ERROR if the name is not a valid C
-   name, MATCH_NO if what we're seeing isn't a name, and MATCH_YES if
-   we successfully match a C name.  */
-
-match
-gfc_match_name_C (const char **buffer)
-{
-  locus old_loc;
-  size_t i = 0;
-  gfc_char_t c;
-  char* buf;
-  size_t cursz = 16;
-
-  old_loc = gfc_current_locus;
-  gfc_gobble_whitespace ();
-
-  /* Get the next char (first possible char of name) and see if
-     it's valid for C (either a letter or an underscore).  */
-  c = gfc_next_char_literal (INSTRING_WARN);
-
-  /* If the user put nothing expect spaces between the quotes, it is valid
-     and simply means there is no name= specifier and the name is the Fortran
-     symbol name, all lowercase.  */
-  if (c == '"' || c == '\'')
-    {
-      gfc_current_locus = old_loc;
-      return MATCH_YES;
-    }
-
-  if (!ISALPHA (c) && c != '_')
-    {
-      gfc_error ("Invalid C name in NAME= specifier at %C");
-      return MATCH_ERROR;
-    }
-
-  buf = XNEWVEC (char, cursz);
-  /* Continue to read valid variable name characters.  */
-  do
-    {
-      gcc_assert (gfc_wide_fits_in_byte (c));
-
-      buf[i++] = (unsigned char) c;
-
-      if (i >= cursz)
-	{
-	  cursz *= 2;
-	  buf = XRESIZEVEC (char, buf, cursz);
-	}
-
-      old_loc = gfc_current_locus;
-
-      /* Get next char; param means we're in a string.  */
-      c = gfc_next_char_literal (INSTRING_WARN);
-    } while (ISALNUM (c) || c == '_');
-
-  /* The binding label will be needed later anyway, so just insert it
-     into the symbol table.  */
-  buf[i] = '\0';
-  *buffer = IDENTIFIER_POINTER (get_identifier (buf));
-  XDELETEVEC (buf);
-  gfc_current_locus = old_loc;
-
-  /* See if we stopped because of whitespace.  */
-  if (c == ' ')
-    {
-      gfc_gobble_whitespace ();
-      c = gfc_peek_ascii_char ();
-      if (c != '"' && c != '\'')
-        {
-          gfc_error ("Embedded space in NAME= specifier at %C");
-          return MATCH_ERROR;
-        }
-    }
-
-  /* If we stopped because we had an invalid character for a C name, report
-     that to the user by returning MATCH_NO.  */
-  if (c != '"' && c != '\'')
-    {
-      gfc_error ("Invalid C name in NAME= specifier at %C");
-      return MATCH_ERROR;
-    }
-
-  return MATCH_YES;
-}
-
-
 /* Match a symbol on the input.  Modifies the pointer to the symbol
    pointer if successful.  */
 
@@ -4577,6 +4484,14 @@ gfc_free_omp_namelist (gfc_omp_namelist *name)
   for (; name; name = n)
     {
       gfc_free_expr (name->expr);
+      if (name->udr)
+	{
+	  if (name->udr->combiner)
+	    gfc_free_statement (name->udr->combiner);
+	  if (name->udr->initializer)
+	    gfc_free_statement (name->udr->initializer);
+	  free (name->udr);
+	}
       n = name->next;
       free (name);
     }

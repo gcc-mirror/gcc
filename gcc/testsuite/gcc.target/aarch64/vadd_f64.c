@@ -4,9 +4,6 @@
 
 #include <arm_neon.h>
 
-#define FLT_EPSILON __FLT_EPSILON__
-#define DBL_EPSILON __DBL_EPSILON__
-
 #define TESTA0 0.33333
 #define TESTA1 -1.7777
 #define TESTA2 0
@@ -42,70 +39,41 @@ extern void abort (void);
     || (ABS (a - b) < epsilon)				\
    )
 
-int
-test_vadd_f64 ()
-{
-  float64x1_t a;
-  float64x1_t b;
-  float64x1_t c;
-
-  a = TESTA0;
-  b = TESTB0;
-  c = ANSW0;
-
-  a = vadd_f64 (a, b);
-  if (!FP_equals (a, c, EPSILON))
-    return 1;
-
-  a = TESTA1;
-  b = TESTB1;
-  c = ANSW1;
-
-  a = vadd_f64 (a, b);
-  if (!FP_equals (a, c, EPSILON))
-    return 1;
-
-  a = TESTA2;
-  b = TESTB2;
-  c = ANSW2;
-
-  a = vadd_f64 (a, b);
-  if (!FP_equals (a, c, EPSILON))
-    return 1;
-
-  a = TESTA3;
-  b = TESTB3;
-  c = ANSW3;
-
-  a = vadd_f64 (a, b);
-  if (!FP_equals (a, c, EPSILON))
-    return 1;
-
-  a = TESTA4;
-  b = TESTB4;
-  c = ANSW4;
-
-  a = vadd_f64 (a, b);
-  if (!FP_equals (a, c, EPSILON))
-    return 1;
-
-  a = TESTA5;
-  b = TESTB5;
-  c = ANSW5;
-
-  a = vadd_f64 (a, b);
-  if (!FP_equals (a, c, EPSILON))
-    return 1;
-
-  return 0;
+#define TEST(N)					\
+int						\
+test_vadd_f64_##N ()				\
+{						\
+  float64x1_t a = { TESTA##N };			\
+  float64x1_t b = { TESTB##N };			\
+  float64x1_t c = { ANSW##N };			\
+						\
+  a = vadd_f64 (a, b);				\
+  return !FP_equals (a[0], c[0], EPSILON);	\
 }
+
+TEST (0)
+TEST (1)
+TEST (2)
+TEST (3)
+TEST (4)
+TEST (5)
 
 /* { dg-final { scan-assembler-times "fadd\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 6 } } */
 
 int
 main (int argc, char **argv)
 {
-  if (test_vadd_f64 ())
+  if (test_vadd_f64_0 ())
+    abort ();
+  if (test_vadd_f64_1 ())
+    abort ();
+  if (test_vadd_f64_2 ())
+    abort ();
+  if (test_vadd_f64_3 ())
+    abort ();
+  if (test_vadd_f64_4 ())
+    abort ();
+  if (test_vadd_f64_5 ())
     abort ();
 
   return 0;

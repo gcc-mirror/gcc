@@ -109,6 +109,8 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_reference);
+  /* This pass needs to be scheduled after any IP code duplication.   */
+  NEXT_PASS (pass_ipa_single_use);
   /* Comdat privatization come last, as direct references to comdat local
      symbols are not allowed outside of the comdat group.  Privatizing early
      would result in missed optimizations due to this restriction.  */
@@ -186,7 +188,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
-      NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_ccp);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
@@ -198,6 +199,8 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sink_code);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
+      /* Pass group that runs when 1) enabled, 2) there are loops
+	 in the function.  */
       NEXT_PASS (pass_tree_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
 	  NEXT_PASS (pass_tree_loop_init);
@@ -230,15 +233,24 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_complete_unroll);
 	  NEXT_PASS (pass_slp_vectorize);
 	  NEXT_PASS (pass_loop_prefetch);
+	  /* Run IVOPTs after the last pass that uses data-reference analysis
+	     as that doesn't handle TARGET_MEM_REFs.  */
 	  NEXT_PASS (pass_iv_optimize);
 	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_tree_loop_done);
+      POP_INSERT_PASSES ()
+      /* Pass group that runs when pass_tree_loop is disabled or there
+         are no loops in the function.  */
+      NEXT_PASS (pass_tree_no_loop);
+      PUSH_INSERT_PASSES_WITHIN (pass_tree_no_loop)
+	  NEXT_PASS (pass_slp_vectorize);
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_dominator);
+      NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_vrp);
       /* The only const/copy propagation opportunities left after
 	 DOM and VRP should be due to degenerate PHI nodes.  So rather than
@@ -384,13 +396,20 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_rtl_dse2);
 	  NEXT_PASS (pass_stack_adjustments);
 	  NEXT_PASS (pass_jump2);
-	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
 	  NEXT_PASS (pass_regrename);
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
 	  NEXT_PASS (pass_duplicate_computed_gotos);
 	  NEXT_PASS (pass_reorder_blocks);
+	  /* We need to run peephole2 pass after the duplicate-
+	     compute-gotos and the reorder-blocks pass (PR/39284).
+	     We have a single indirect branch in the entire function
+	     before duplicate-compute-gotos pass.  This vastly reduces
+	     the size of the CFG.
+	     For preventing to run peephole2 pass twice, its run after
+	     the jump2 got removed.  */
+	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
 	  NEXT_PASS (pass_split_before_sched2);

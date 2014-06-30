@@ -719,7 +719,7 @@ pass_registry_hasher::equal (const value_type *s1, const compare_type *s2)
   return !strcmp (s1->unique_name, s2->unique_name);
 }
 
-static hash_table <pass_registry_hasher> name_to_pass_map;
+static hash_table<pass_registry_hasher> *name_to_pass_map;
 
 /* Register PASS with NAME.  */
 
@@ -729,11 +729,11 @@ register_pass_name (opt_pass *pass, const char *name)
   struct pass_registry **slot;
   struct pass_registry pr;
 
-  if (!name_to_pass_map.is_created ())
-    name_to_pass_map.create (256);
+  if (!name_to_pass_map)
+    name_to_pass_map = new hash_table<pass_registry_hasher> (256);
 
   pr.unique_name = name;
-  slot = name_to_pass_map.find_slot (&pr, INSERT);
+  slot = name_to_pass_map->find_slot (&pr, INSERT);
   if (!*slot)
     {
       struct pass_registry *new_pr;
@@ -777,7 +777,7 @@ create_pass_tab (void)
     return;
 
   pass_tab.safe_grow_cleared (g->get_passes ()->passes_by_id_size + 1);
-  name_to_pass_map.traverse <void *, passes_pass_traverse> (NULL);
+  name_to_pass_map->traverse <void *, passes_pass_traverse> (NULL);
 }
 
 static bool override_gate_status (opt_pass *, tree, bool);
@@ -867,7 +867,7 @@ get_pass_by_name (const char *name)
   struct pass_registry **slot, pr;
 
   pr.unique_name = name;
-  slot = name_to_pass_map.find_slot (&pr, NO_INSERT);
+  slot = name_to_pass_map->find_slot (&pr, NO_INSERT);
 
   if (!slot || !*slot)
     return NULL;

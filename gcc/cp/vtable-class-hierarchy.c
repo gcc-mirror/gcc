@@ -1028,7 +1028,7 @@ register_all_pairs (tree body)
 
           if (vtbl_ptr_array->length() > 0
               || (current->is_used
-                  || (current->registered.size() > 0)))
+                  || (current->registered->size() > 0)))
             {
               insert_call_to_register_pair (vtbl_ptr_array,
                                             arg1, arg2, size_hint_arg, str1,
@@ -1114,7 +1114,7 @@ write_out_vtv_count_data (void)
     {
       struct vtbl_map_node *current = vtbl_map_nodes_vec[i];
       if (!current->is_used
-          && current->registered.size() == 0)
+          && current->registered->size() == 0)
         unused_vtbl_map_vars++;
     }
 

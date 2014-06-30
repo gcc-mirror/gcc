@@ -87,7 +87,7 @@ create_output_block (enum lto_section_type section_type)
 
   clear_line_info (ob);
 
-  ob->string_hash_table.create (37);
+  ob->string_hash_table = new hash_table<string_slot_hasher> (37);
   gcc_obstack_init (&ob->obstack);
 
   return ob;
@@ -101,7 +101,8 @@ destroy_output_block (struct output_block *ob)
 {
   enum lto_section_type section_type = ob->section_type;
 
-  ob->string_hash_table.dispose ();
+  delete ob->string_hash_table;
+  ob->string_hash_table = NULL;
 
   free (ob->main_stream);
   free (ob->string_stream);
@@ -527,7 +528,6 @@ DFS_write_tree_body (struct output_block *ob,
     {
       if (TREE_CODE (expr) == TYPE_DECL)
 	DFS_follow_tree_edge (DECL_ORIGINAL_TYPE (expr));
-      DFS_follow_tree_edge (DECL_VINDEX (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -548,6 +548,7 @@ DFS_write_tree_body (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
+      DFS_follow_tree_edge (DECL_VINDEX (expr));
       DFS_follow_tree_edge (DECL_FUNCTION_PERSONALITY (expr));
       /* Do not DECL_FUNCTION_SPECIFIC_TARGET.  They will be regenerated.  */
       DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr));
@@ -960,7 +961,6 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
     {
       if (code == TYPE_DECL)
 	visit (DECL_ORIGINAL_TYPE (t));
-      visit (DECL_VINDEX (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -980,6 +980,7 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
+      visit (DECL_VINDEX (t));
       visit (DECL_FUNCTION_PERSONALITY (t));
       /* Do not follow DECL_FUNCTION_SPECIFIC_TARGET.  */
       visit (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t));
@@ -2361,8 +2362,7 @@ output_symbol_p (symtab_node *node)
     {
       int i;
       struct ipa_ref *ref;
-      for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
-					          i, ref); i++)
+      for (i = 0; node->iterate_referring (i, ref); i++)
 	{
 	  if (ref->use == IPA_REF_ALIAS)
 	    continue;

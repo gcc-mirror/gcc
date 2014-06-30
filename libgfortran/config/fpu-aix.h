@@ -33,15 +33,103 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <fpxcp.h>
 #endif
 
+#ifdef HAVE_FENV_H
+#include <fenv.h>
+#endif
+
+
+void
+set_fpu_trap_exceptions (int trap, int notrap)
+{
+  fptrap_t mode_set = 0, mode_clr = 0;
+
+#ifdef TRP_INVALID
+  if (trap & GFC_FPE_INVALID)
+    mode_set |= TRP_INVALID;
+  if (notrap & GFC_FPE_INVALID)
+    mode_clr |= TRP_INVALID;
+#endif
+
+#ifdef TRP_DIV_BY_ZERO
+  if (trap & GFC_FPE_ZERO)
+    mode_set |= TRP_DIV_BY_ZERO;
+  if (notrap & GFC_FPE_ZERO)
+    mode_clr |= TRP_DIV_BY_ZERO;
+#endif
+
+#ifdef TRP_OVERFLOW
+  if (trap & GFC_FPE_OVERFLOW)
+    mode_set |= TRP_OVERFLOW;
+  if (notrap & GFC_FPE_OVERFLOW)
+    mode_clr |= TRP_OVERFLOW;
+#endif
+
+#ifdef TRP_UNDERFLOW
+  if (trap & GFC_FPE_UNDERFLOW)
+    mode_set |= TRP_UNDERFLOW;
+  if (notrap & GFC_FPE_UNDERFLOW)
+    mode_clr |= TRP_UNDERFLOW;
+#endif
+
+#ifdef TRP_INEXACT
+  if (trap & GFC_FPE_INEXACT)
+    mode_set |= TRP_INEXACT;
+  if (notrap & GFC_FPE_INEXACT)
+    mode_clr |= TRP_INEXACT;
+#endif
+
+  fp_trap (FP_TRAP_SYNC);
+  fp_enable (mode_set);
+  fp_disable (mode_clr);
+}
+
+
+int
+get_fpu_trap_exceptions (void)
+{
+  int res = 0;
+
+#ifdef TRP_INVALID
+  if (fp_is_enabled (TRP_INVALID))
+    res |= GFC_FPE_INVALID;
+#endif
+
+#ifdef TRP_DIV_BY_ZERO
+  if (fp_is_enabled (TRP_DIV_BY_ZERO))
+    res |= GFC_FPE_ZERO;
+#endif
+
+#ifdef TRP_OVERFLOW
+  if (fp_is_enabled (TRP_OVERFLOW))
+    res |= GFC_FPE_OVERFLOW;
+#endif
+
+#ifdef TRP_UNDERFLOW
+  if (fp_is_enabled (TRP_UNDERFLOW))
+    res |= GFC_FPE_UNDERFLOW;
+#endif
+
+#ifdef TRP_INEXACT
+  if (fp_is_enabled (TRP_INEXACT))
+    res |= GFC_FPE_INEXACT;
+#endif
+
+  return res;
+}
+
+
+int
+support_fpu_trap (int flag)
+{
+  return support_fpu_flag (flag);
+}
+
+
 void
 set_fpu (void)
 {
-  fptrap_t mode = 0;
-
+#ifndef TRP_INVALID
   if (options.fpe & GFC_FPE_INVALID)
-#ifdef TRP_INVALID
-    mode |= TRP_INVALID;
-#else
     estr_write ("Fortran runtime warning: IEEE 'invalid operation' "
 	        "exception not supported.\n");
 #endif
@@ -50,42 +138,32 @@ set_fpu (void)
     estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
 	        "exception not supported.\n");
 
+#ifndef TRP_DIV_BY_ZERO
   if (options.fpe & GFC_FPE_ZERO)
-#ifdef TRP_DIV_BY_ZERO
-    mode |= TRP_DIV_BY_ZERO;
-#else
     estr_write ("Fortran runtime warning: IEEE 'division by zero' "
 	        "exception not supported.\n");
 #endif
 
+#ifndef TRP_OVERFLOW
   if (options.fpe & GFC_FPE_OVERFLOW)
-#ifdef TRP_OVERFLOW
-    mode |= TRP_OVERFLOW;
-#else
     estr_write ("Fortran runtime warning: IEEE 'overflow' "
 	        "exception not supported.\n");
 #endif
 
+#ifndef TRP_UNDERFLOW
   if (options.fpe & GFC_FPE_UNDERFLOW)
-#ifdef TRP_UNDERFLOW
-    mode |= TRP_UNDERFLOW;
-#else
     estr_write ("Fortran runtime warning: IEEE 'underflow' "
 	        "exception not supported.\n");
 #endif
 
+#ifndef TRP_INEXACT
   if (options.fpe & GFC_FPE_INEXACT)
-#ifdef TRP_INEXACT
-    mode |= TRP_INEXACT;
-#else
     estr_write ("Fortran runtime warning: IEEE 'inexact' "
 	        "exception not supported.\n");
 #endif
 
-  fp_trap(FP_TRAP_SYNC);
-  fp_enable(mode);
+  set_fpu_trap_exceptions (options.fpe, 0);
 }
-
 
 int
 get_fpu_except_flags (void)
@@ -116,6 +194,98 @@ get_fpu_except_flags (void)
 
   return result;
 }
+
+
+void
+set_fpu_except_flags (int set, int clear)
+{
+  int exc_set = 0, exc_clr = 0;
+
+#ifdef FP_INVALID
+  if (set & GFC_FPE_INVALID)
+    exc_set |= FP_INVALID;
+  else if (clear & GFC_FPE_INVALID)
+    exc_clr |= FP_INVALID;
+#endif
+
+#ifdef FP_DIV_BY_ZERO
+  if (set & GFC_FPE_ZERO)
+    exc_set |= FP_DIV_BY_ZERO;
+  else if (clear & GFC_FPE_ZERO)
+    exc_clr |= FP_DIV_BY_ZERO;
+#endif
+
+#ifdef FP_OVERFLOW
+  if (set & GFC_FPE_OVERFLOW)
+    exc_set |= FP_OVERFLOW;
+  else if (clear & GFC_FPE_OVERFLOW)
+    exc_clr |= FP_OVERFLOW;
+#endif
+
+#ifdef FP_UNDERFLOW
+  if (set & GFC_FPE_UNDERFLOW)
+    exc_set |= FP_UNDERFLOW;
+  else if (clear & GFC_FPE_UNDERFLOW)
+    exc_clr |= FP_UNDERFLOW;
+#endif
+
+/* AIX does not have FP_DENORMAL.  */
+
+#ifdef FP_INEXACT
+  if (set & GFC_FPE_INEXACT)
+    exc_set |= FP_INEXACT;
+  else if (clear & GFC_FPE_INEXACT)
+    exc_clr |= FP_INEXACT;
+#endif
+
+  fp_clr_flag (exc_clr);
+  fp_set_flag (exc_set);
+}
+
+
+int
+support_fpu_flag (int flag)
+{
+  if (flag & GFC_FPE_INVALID)
+  {
+#ifndef FP_INVALID
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_ZERO)
+  {
+#ifndef FP_DIV_BY_ZERO
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_OVERFLOW)
+  {
+#ifndef FP_OVERFLOW
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_UNDERFLOW)
+  {
+#ifndef FP_UNDERFLOW
+    return 0;
+#endif
+  }
+  else if (flag & GFC_FPE_DENORMAL)
+  {
+    /* AIX does not support denormal flag.  */
+    return 0;
+  }
+  else if (flag & GFC_FPE_INEXACT)
+  {
+#ifndef FP_INEXACT
+    return 0;
+#endif
+  }
+
+  return 1;
+}
+
+
 
 
 int
@@ -188,3 +358,60 @@ set_fpu_rounding_mode (int mode)
 
   fesetround (rnd_mode);
 }
+
+
+int
+support_fpu_rounding_mode (int mode)
+{
+  switch (mode)
+    {
+      case GFC_FPE_TONEAREST:
+#ifdef FE_TONEAREST
+	return 1;
+#else
+	return 0;
+#endif
+
+#ifdef FE_UPWARD
+	return 1;
+#else
+	return 0;
+#endif
+
+#ifdef FE_DOWNWARD
+	return 1;
+#else
+	return 0;
+#endif
+
+#ifdef FE_TOWARDZERO
+	return 1;
+#else
+	return 0;
+#endif
+
+      default:
+	return 0;
+    }
+}
+
+
+
+void
+get_fpu_state (void *state)
+{
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
+
+  fegetenv (state);
+}
+
+void
+set_fpu_state (void *state)
+{
+  /* Check we can actually store the FPU state in the allocated size.  */
+  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
+
+  fesetenv (state);
+}
+

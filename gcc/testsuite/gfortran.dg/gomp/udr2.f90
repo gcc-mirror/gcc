@@ -11,6 +11,10 @@ subroutine f7
 !$omp declare reduction (bar:real:omp_out = omp_out.or.omp_in) ! { dg-error "Operands of logical operator" }
 !$omp declare reduction (baz:real:omp_out = omp_out + omp_in)
 !$omp & initializer (a (omp_priv, omp_orig)) ! { dg-error "Unclassifiable OpenMP directive" }
+  real :: r
+  r = 0.0
+!$omp parallel reduction (bar:r)
+!$omp end parallel
 end subroutine f7
 subroutine f8
   interface
@@ -29,9 +33,15 @@ subroutine f9
     integer :: x = 0
     integer :: y = 0
   end type dt
+  integer :: i
 !$omp declare reduction (foo:integer:dt (omp_out, omp_in)) ! { dg-error "which is not consistent with the CALL" }
 !$omp declare reduction (bar:integer:omp_out = omp_out + omp_in) &
 !$omp & initializer (dt (omp_priv, omp_orig)) ! { dg-error "which is not consistent with the CALL" }
+  i = 0
+!$omp parallel reduction (foo : i)
+!$omp end parallel
+!$omp parallel reduction (bar : i)
+!$omp end parallel
 end subroutine f9
 subroutine f10
   integer :: a, b

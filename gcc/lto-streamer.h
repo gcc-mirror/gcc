@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "plugin-api.h"
 #include "hash-table.h"
+#include "hash-map.h"
 #include "target.h"
 #include "cgraph.h"
 #include "vec.h"
@@ -472,7 +473,7 @@ struct GTY(()) lto_tree_ref_table
 
 struct lto_tree_ref_encoder
 {
-  pointer_map<unsigned> *tree_hash_table;	/* Maps pointers to indices. */
+  hash_map<tree, unsigned> *tree_hash_table;	/* Maps pointers to indices. */
   vec<tree> trees;			/* Maps indices to pointers. */
 };
 
@@ -682,7 +683,7 @@ struct output_block
 
   /* The hash table that contains the set of strings we have seen so
      far and the indexes assigned to them.  */
-  hash_table <string_slot_hasher> string_hash_table;
+  hash_table<string_slot_hasher> *string_hash_table;
 
   /* The current cgraph_node that we are currently serializing.  Null
      if we are serializing something else.  */
@@ -887,7 +888,7 @@ bool referenced_from_other_partition_p (struct ipa_ref_list *,
 				        lto_symtab_encoder_t);
 bool reachable_from_other_partition_p (struct cgraph_node *,
 				       lto_symtab_encoder_t);
-bool referenced_from_this_partition_p (struct ipa_ref_list *,
+bool referenced_from_this_partition_p (struct symtab_node *,
 					lto_symtab_encoder_t);
 bool reachable_from_this_partition_p (struct cgraph_node *,
 				      lto_symtab_encoder_t);
@@ -994,7 +995,7 @@ lto_tag_check_range (enum LTO_tags actual, enum LTO_tags tag1,
 static inline void
 lto_init_tree_ref_encoder (struct lto_tree_ref_encoder *encoder)
 {
-  encoder->tree_hash_table = new pointer_map<unsigned>;
+  encoder->tree_hash_table = new hash_map<tree, unsigned> (251);
   encoder->trees.create (0);
 }
 
@@ -1005,8 +1006,8 @@ static inline void
 lto_destroy_tree_ref_encoder (struct lto_tree_ref_encoder *encoder)
 {
   /* Hash table may be delete already.  */
-  if (encoder->tree_hash_table)
-    delete encoder->tree_hash_table;
+  delete encoder->tree_hash_table;
+  encoder->tree_hash_table = NULL;
   encoder->trees.release ();
 }
 

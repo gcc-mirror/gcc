@@ -1,3 +1,93 @@
+2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/57541
+	* cp-array-notation.c (expand_sec_reduce_builtin):
+	Check that bultin argument is correct.
+	* call.c (build_cxx_call): Check for 0 arguments in builtin call.
+
+2014-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	DR 1579
+	PR c++/58051
+	* typeck.c (check_return_expr): Lookup as an rvalue even when the
+	types aren't the same.
+
+2014-06-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61433
+	* error.c (dump_template_bindings): Don't tsubst in a clone.
+
+2014-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61614
+	* semantics.c (finish_compound_literal): Revert r204228.
+
+2014-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_compound_literal_p): New.
+	(cp_parser_postfix_expression, cp_parser_sizeof_operand): Use it.
+
+2014-06-26  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_for_init_statement): Change range-for error
+	to pedwarn.
+
+	N3994 Ranged-based for-loops: The Next Generation
+	* parser.c (cp_lexer_nth_token_is): New.
+	(cp_parser_for_init_statement): Allow "for (id : init)".
+
+2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/61537
+	* parser.c (cp_parser_elaborated_type_specifier): Only consider template
+	parameter lists outside of function parameter scope.
+
+2014-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 178
+	PR c++/49132
+	* typeck2.c (process_init_constructor_record): Do not complain about
+	uninitialized const members, because within aggregate-initialization,
+	members without explicit initializers are value-initialized.
+
+2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): Make sure
+	OMP_CLAUSE_LINEAR_STEP has correct type.
+
+2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (check_methods, create_vtable_ptr, determine_key_method,
+	add_vcall_offset_vtbl_entries_1): Guard VINDEX checks by
+	FUNCTION_DECL check.
+	* cp-tree.h (lang_decl_ns): Add ns_using and ns_users.
+	(DECL_NAMESPACE_USING, DECL_NAMESPACE_USERS): Use lang_decl_ns.
+	(DECL_NAMESPACE_ASSOCIATIONS): Use DECL_INITIAL.
+	(DECL_TEMPLATE_INSTANTIATIONS): Use DECL_SIZE_UNIT.
+
+2014-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33972
+	* decl.c (grokdeclarator): Do not early check for operator-function-id
+	as non-function.
+
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c, semantics.c, tree.c, vtable-class-hierarchy.c:
+	Adjust.
+
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_for_loop): For
+	#pragma omp parallel for simd move lastprivate clause from parallel
+	to for rather than simd.
+
+2014-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 577
+	PR c++/33101
+	* decl.c (grokparms): Accept a single parameter of type 'void'.
+
 2014-06-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59296

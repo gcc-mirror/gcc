@@ -658,7 +658,7 @@ invariant_group_base_hasher::hash (const value_type *gi)
 }
 
 /* Tables of group_info structures, hashed by base value.  */
-static hash_table <invariant_group_base_hasher> rtx_group_table;
+static hash_table<invariant_group_base_hasher> *rtx_group_table;
 
 
 /* Get the GROUP for BASE.  Add a new group if it is not there.  */
@@ -675,7 +675,7 @@ get_group_info (rtx base)
       /* Find the store_base_info structure for BASE, creating a new one
 	 if necessary.  */
       tmp_gi.rtx_base = base;
-      slot = rtx_group_table.find_slot (&tmp_gi, INSERT);
+      slot = rtx_group_table->find_slot (&tmp_gi, INSERT);
       gi = (group_info_t) *slot;
     }
   else
@@ -765,7 +765,7 @@ dse_step0 (void)
     = create_alloc_pool ("deferred_change_pool",
 			 sizeof (struct deferred_change), 10);
 
-  rtx_group_table.create (11);
+  rtx_group_table = new hash_table<invariant_group_base_hasher> (11);
 
   bb_table = XNEWVEC (bb_info_t, last_basic_block_for_fn (cfun));
   rtx_group_next_id = 0;
@@ -2829,7 +2829,7 @@ dse_step1 (void)
 
   BITMAP_FREE (regs_live);
   cselib_finish ();
-  rtx_group_table.empty ();
+  rtx_group_table->empty ();
 }
 
 
@@ -3654,7 +3654,8 @@ dse_step7 (void)
 
   end_alias_analysis ();
   free (bb_table);
-  rtx_group_table.dispose ();
+  delete rtx_group_table;
+  rtx_group_table = NULL;
   rtx_group_vec.release ();
   BITMAP_FREE (all_blocks);
   BITMAP_FREE (scratch);

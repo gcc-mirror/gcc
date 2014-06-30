@@ -8717,6 +8717,11 @@ alpha_handle_trap_shadows (void)
 			}
 		      break;
 
+		    case BARRIER:
+		      /* __builtin_unreachable can expand to no code at all,
+			 leaving (barrier) RTXes in the instruction stream.  */
+		      goto close_shadow_notrapb;
+
 		    case JUMP_INSN:
 		    case CALL_INSN:
 		    case CODE_LABEL:
@@ -8732,6 +8737,7 @@ alpha_handle_trap_shadows (void)
 		  n = emit_insn_before (gen_trapb (), i);
 		  PUT_MODE (n, TImode);
 		  PUT_MODE (i, TImode);
+		close_shadow_notrapb:
 		  trap_pending = 0;
 		  shadow.used.i = 0;
 		  shadow.used.fp = 0;

@@ -2695,11 +2695,15 @@ objc_copy_binfo (tree binfo)
 static void
 objc_xref_basetypes (tree ref, tree basetype)
 {
+  tree variant;
   tree binfo = make_tree_binfo (basetype ? 1 : 0);
-
   TYPE_BINFO (ref) = binfo;
   BINFO_OFFSET (binfo) = size_zero_node;
   BINFO_TYPE (binfo) = ref;
+
+  gcc_assert (TYPE_MAIN_VARIANT (ref) == ref);
+  for (variant = ref; variant; variant = TYPE_NEXT_VARIANT (variant))
+    TYPE_BINFO (variant) = binfo;
 
   if (basetype)
     {
@@ -3940,8 +3944,7 @@ objc_detect_field_duplicates (bool check_superclasses_only)
 	  {
 	    /* First, build the hashtable by putting all the instance
 	       variables of superclasses in it.  */
-	    hash_table <decl_name_hash> htab;
-	    htab.create (37);
+	    hash_table<decl_name_hash> htab (37);
 	    tree interface;
 	    for (interface = lookup_interface (CLASS_SUPER_NAME
 					       (objc_interface_context));
@@ -4018,7 +4021,6 @@ objc_detect_field_duplicates (bool check_superclasses_only)
 		      }
 		  }
 	      }
-	    htab.dispose ();
 	    return true;
 	  }
       }

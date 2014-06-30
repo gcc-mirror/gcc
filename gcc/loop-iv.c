@@ -134,7 +134,7 @@ biv_entry_hasher::equal (const value_type *b, const compare_type *r)
 
 /* Bivs of the current loop.  */
 
-static hash_table <biv_entry_hasher> bivs;
+static hash_table<biv_entry_hasher> *bivs;
 
 static bool iv_analyze_op (rtx, rtx, struct rtx_iv *);
 
@@ -269,7 +269,7 @@ clear_iv_info (void)
 	}
     }
 
-  bivs.empty ();
+  bivs->empty ();
 }
 
 
@@ -284,7 +284,7 @@ iv_analysis_loop_init (struct loop *loop)
   if (clean_slate)
     {
       df_set_flags (DF_EQ_NOTES + DF_DEFER_INSN_RESCAN);
-      bivs.create (10);
+      bivs = new hash_table<biv_entry_hasher> (10);
       clean_slate = false;
     }
   else
@@ -844,7 +844,7 @@ record_iv (df_ref def, struct rtx_iv *iv)
 static bool
 analyzed_for_bivness_p (rtx def, struct rtx_iv *iv)
 {
-  struct biv_entry *biv = bivs.find_with_hash (def, REGNO (def));
+  struct biv_entry *biv = bivs->find_with_hash (def, REGNO (def));
 
   if (!biv)
     return false;
@@ -857,7 +857,7 @@ static void
 record_biv (rtx def, struct rtx_iv *iv)
 {
   struct biv_entry *biv = XNEW (struct biv_entry);
-  biv_entry **slot = bivs.find_slot_with_hash (def, REGNO (def), INSERT);
+  biv_entry **slot = bivs->find_slot_with_hash (def, REGNO (def), INSERT);
 
   biv->regno = REGNO (def);
   biv->iv = *iv;
@@ -1299,7 +1299,8 @@ iv_analysis_done (void)
       clear_iv_info ();
       clean_slate = true;
       df_finish_pass (true);
-      bivs.dispose ();
+      delete bivs;
+      bivs = NULL;
       free (iv_ref_table);
       iv_ref_table = NULL;
       iv_ref_table_size = 0;

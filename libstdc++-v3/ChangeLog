@@ -1,3 +1,91 @@
+2014-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR libstdc++/61536
+	* config/abi/pre/gnu.ver: Adjust for out of line comparisons.
+
+	2014-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/abi/pre/gnu.ver: Tighten some patterns; tidy.
+
+2014-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (__shared_ptr::_Deleter): Fix
+	parameter type.
+
+2014-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (__alloc_rebind): Define alias template.
+	* include/bits/forward_list.h (_Fwd_list_base): Use __alloc_rebind.
+	* include/bits/hashtable_policy.h (_Insert_base, _Hashtable_alloc):
+	Likewise.
+	* include/ext/alloc_traits.h: Fix comment.
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/allocated_ptr.h (__allocated_ptr, __allocate_guarded):
+	New RAII utilities for working with allocators.
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter): Define
+	__allocator_type typedef and use new __allocated_ptr type.
+	(_Sp_counted_ptr_inplace): Likewise.
+	(__shared_count::__shared_count, __shared_ptr::__shared_ptr): Use
+	__allocate_guarded to to simplify exception handling.
+	* include/experimental/any (any::_Manager_alloc::_S_alloc): Likewise.
+	* include/std/future (_Result_alloc::_M_destroy): Likewise.
+	(_Result_alloc::_S_allocate_result): Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line number.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/no_rtti.cc: New.
+	* testsuite/20_util/shared_ptr/creation/alloc.cc: Test allocator
+	with fancy pointer.
+	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
+
+	* testsuite/20_util/shared_ptr/creation/alloc.cc: Fix use of test
+	allocator.
+	* testsuite/20_util/shared_ptr/creation/no_rtti.cc: Likewise.
+	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
+
+2014-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/functexcept.h (__throw_out_of_range_fmt): Change
+	attribute to __gnu_printf__ archetype to prevent warnings for "%zu".
+	* include/bits/locale_facets_nonio.tcc (time_get::do_get_weekday):
+	Remove unused typedef.
+	(time_get::do_get_monthname): Likewise.
+	* include/bits/stl_tree.h: Add system_header pragma.
+	* include/ext/stdio_sync_filebuf.h (stdio_sync_filebuf::file): Remove
+	redundant const-qualifier.
+	* include/std/complex (complex::__rep): Use _GLIBCXX_CONSTEXPR macro
+	instead of _GLIBCXX_USE_CONSTEXPR.
+
+2014-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/parse_numbers.h (_Number_help): Fix divide-by-zero.
+	* include/std/chrono (_Checked_integral_constant): Allow zero.
+	* testsuite/20_util/duration/literals/values.cc: Test non-positive
+	values and digit separators.
+	* include/experimental/any 
+
+	PR libstdc++/61532
+	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Do not
+	apply the signed specifier to wchar_t.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Check
+	cv-qualifier and size.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc:
+	Likewise.
+
+	* include/experimental/any (any_v1): Rename namespace to
+	fundamentals_v1. Change string returned by bad_any_cast::what().
+	* include/experimental/optional (fundamentals_v1): Add namespace.
+	* include/experimental/string_view (fundamentals_v1): Likewise.
+	* testsuite/experimental/any/typedefs.cc: New.
+	* testsuite/experimental/optional/typedefs.cc: New.
+	* testsuite/experimental/string_view/typedefs.cc: New.
+
 2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 

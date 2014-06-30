@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "langhooks.h"
 #include "bitmap.h"
+#include "hash-map.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
@@ -261,7 +262,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
 
 /* Global canonical type table.  */
 static htab_t gimple_canonical_types;
-static pointer_map <hashval_t> *canonical_type_hash_cache;
+static hash_map<const_tree, hashval_t> *canonical_type_hash_cache;
 static unsigned long num_canonical_type_hash_entries;
 static unsigned long num_canonical_type_hash_queries;
 
@@ -405,8 +406,7 @@ static hashval_t
 gimple_canonical_type_hash (const void *p)
 {
   num_canonical_type_hash_queries++;
-  hashval_t *slot
-    = canonical_type_hash_cache->contains (CONST_CAST_TREE ((const_tree) p));
+  hashval_t *slot = canonical_type_hash_cache->get ((const_tree) p);
   gcc_assert (slot != NULL);
   return *slot;
 }
@@ -648,10 +648,8 @@ gimple_register_canonical_type_1 (tree t, hashval_t hash)
       *slot = (void *) t;
       /* Cache the just computed hash value.  */
       num_canonical_type_hash_entries++;
-      bool existed_p;
-      hashval_t *hslot = canonical_type_hash_cache->insert (t, &existed_p);
+      bool existed_p = canonical_type_hash_cache->put (t, hash);
       gcc_assert (!existed_p);
-      *hslot = hash;
     }
 }
 
@@ -779,7 +777,6 @@ mentions_vars_p_decl_non_common (tree t)
     return true;
   CHECK_NO_VAR (DECL_ARGUMENT_FLD (t));
   CHECK_NO_VAR (DECL_RESULT_FLD (t));
-  CHECK_NO_VAR (DECL_VINDEX (t));
   return false;
 }
 
@@ -790,6 +787,7 @@ mentions_vars_p_function (tree t)
 {
   if (mentions_vars_p_decl_non_common (t))
     return true;
+  CHECK_NO_VAR (DECL_VINDEX (t));
   CHECK_VAR (DECL_FUNCTION_PERSONALITY (t));
   return false;
 }
@@ -1052,6 +1050,57 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
 			 decl, get_resolution (data_in, ix));
 }
 
+/* Copy fields that are not streamed but copied from other nodes.  */
+static void
+lto_copy_fields_not_streamed (tree t)
+{
+  if (TYPE_P (t) && TYPE_MAIN_VARIANT (t) != t)
+    {
+      tree mv = TYPE_MAIN_VARIANT (t);
+
+      if (COMPLETE_TYPE_P (t))
+	{
+	  TYPE_SIZE (t) = TYPE_SIZE (mv);
+	  TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (mv);
+	}
+      TYPE_ATTRIBUTES (t) = TYPE_ATTRIBUTES (mv);
+
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
+	{
+	  if (TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
+	    TYPE_VALUES (t) = TYPE_VALUES (mv);
+	  else if (TREE_CODE (t) == ARRAY_TYPE)
+	    TYPE_DOMAIN (t) = TYPE_DOMAIN (mv);
+
+          if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t))
+	    TYPE_VFIELD (t) = TYPE_VFIELD (mv);
+	  else if ((TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
+		   || TREE_CODE (t) == INTEGER_TYPE
+		   || TREE_CODE (t) == BOOLEAN_TYPE
+		   || TREE_CODE (t) == REAL_TYPE
+		   || TREE_CODE (t) == FIXED_POINT_TYPE)
+	    TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (mv);
+
+	  if (TREE_CODE (t) == METHOD_TYPE)
+	    TYPE_METHOD_BASETYPE (t) = TYPE_METHOD_BASETYPE (mv);
+	  else if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t))
+	    TYPE_METHODS (t) = TYPE_METHODS (mv);
+	  else if (TREE_CODE (t) == OFFSET_TYPE)
+	    TYPE_OFFSET_BASETYPE (t) = TYPE_OFFSET_BASETYPE (mv);
+	  else if (TREE_CODE (t) == ARRAY_TYPE)
+	    TYPE_ARRAY_MAX_SIZE (t) = TYPE_ARRAY_MAX_SIZE (mv);
+	  else if ((TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
+		   || TREE_CODE (t) == INTEGER_TYPE
+		   || TREE_CODE (t) == BOOLEAN_TYPE
+		   || TREE_CODE (t) == REAL_TYPE
+		   || TREE_CODE (t) == FIXED_POINT_TYPE)
+	    TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (mv);
+
+	  if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t))
+	    TYPE_BINFO (t) = TYPE_BINFO (mv);
+	}
+    }
+}
 
 /* For the type T re-materialize it in the type variant list and
    the pointer/reference-to chains.  */
@@ -1137,7 +1186,7 @@ tree_scc_hasher::equal (const value_type *scc1, const compare_type *scc2)
   return true;
 }
 
-static hash_table <tree_scc_hasher> tree_scc_hash;
+static hash_table<tree_scc_hasher> *tree_scc_hash;
 static struct obstack tree_scc_hash_obstack;
 
 static unsigned long num_merged_types;
@@ -1514,7 +1563,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	}
       else if (code == TYPE_DECL)
 	compare_tree_edges (DECL_ORIGINAL_TYPE (t1), DECL_ORIGINAL_TYPE (t2));
-      compare_tree_edges (DECL_VINDEX (t1), DECL_VINDEX (t2));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
@@ -1540,6 +1588,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
     {
       compare_tree_edges (DECL_FUNCTION_PERSONALITY (t1),
 			  DECL_FUNCTION_PERSONALITY (t2));
+      compare_tree_edges (DECL_VINDEX (t1), DECL_VINDEX (t2));
       /* DECL_FUNCTION_SPECIFIC_TARGET is not yet created.  We compare
          the attribute list instead.  */
       compare_tree_edges (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t1),
@@ -1548,15 +1597,28 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      compare_tree_edges (TYPE_SIZE (t1), TYPE_SIZE (t2));
-      compare_tree_edges (TYPE_SIZE_UNIT (t1), TYPE_SIZE_UNIT (t2));
-      compare_tree_edges (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2));
-      compare_tree_edges (TYPE_NAME (t1), TYPE_NAME (t2));
+      /* See if type is the main variant.  */
+      if (TYPE_MAIN_VARIANT (t1) == t1)
+	{
+	  /* Main variant can match only another main variant.  */
+	  if (TYPE_MAIN_VARIANT (t2) != t2)
+	    return false;
+
+	  compare_tree_edges (TYPE_SIZE (t1), TYPE_SIZE (t2));
+	  compare_tree_edges (TYPE_SIZE_UNIT (t1), TYPE_SIZE_UNIT (t2));
+	  compare_tree_edges (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2));
+	}
+      else
+	/* Compare main variant pointers, but do not compare fields that are
+	   shared in between type and the main variant since those are not
+	   streamed and not copied yet.  */
+        compare_tree_edges (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2));
+
       /* Do not compare TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
 	 reconstructed during fixup.  */
       /* Do not compare TYPE_NEXT_VARIANT, we reconstruct the variant lists
 	 during fixup.  */
-      compare_tree_edges (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2));
+      compare_tree_edges (TYPE_NAME (t1), TYPE_NAME (t2));
       /* ???  Global types from different TUs have non-matching
 	 TRANSLATION_UNIT_DECLs.  Still merge them if they are otherwise
 	 equal.  */
@@ -1571,25 +1633,31 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      if (code == ENUMERAL_TYPE)
-	compare_tree_edges (TYPE_VALUES (t1), TYPE_VALUES (t2));
-      else if (code == ARRAY_TYPE)
-	compare_tree_edges (TYPE_DOMAIN (t1), TYPE_DOMAIN (t2));
-      else if (RECORD_OR_UNION_TYPE_P (t1))
+      if (TYPE_MAIN_VARIANT (t1) == t1)
+	{
+	  if (code == ENUMERAL_TYPE)
+	    compare_tree_edges (TYPE_VALUES (t1), TYPE_VALUES (t2));
+	  else if (code == ARRAY_TYPE)
+	    compare_tree_edges (TYPE_DOMAIN (t1), TYPE_DOMAIN (t2));
+	  else if (RECORD_OR_UNION_TYPE_P (t1))
+	    compare_tree_edges (TYPE_BINFO (t1), TYPE_BINFO (t2));
+	  if (!POINTER_TYPE_P (t1))
+	    compare_tree_edges (TYPE_MINVAL (t1), TYPE_MINVAL (t2));
+	  compare_tree_edges (TYPE_MAXVAL (t1), TYPE_MAXVAL (t2));
+	}
+      if (RECORD_OR_UNION_TYPE_P (t1)
+	  && TYPE_FIELDS (t1) != TYPE_FIELDS (t2))
 	{
 	  tree f1, f2;
+
 	  for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
 	       f1 || f2;
 	       f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	    compare_tree_edges (f1, f2);
-	  compare_tree_edges (TYPE_BINFO (t1), TYPE_BINFO (t2));
 	}
-      else if (code == FUNCTION_TYPE
-	       || code == METHOD_TYPE)
+      if (code == FUNCTION_TYPE
+	  || code == METHOD_TYPE)
 	compare_tree_edges (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
-      if (!POINTER_TYPE_P (t1))
-	compare_tree_edges (TYPE_MINVAL (t1), TYPE_MINVAL (t2));
-      compare_tree_edges (TYPE_MAXVAL (t1), TYPE_MAXVAL (t2));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -1734,7 +1802,7 @@ unify_scc (struct streamer_tree_cache_d *cache, unsigned from,
 
   /* Look for the list of candidate SCCs to compare against.  */
   tree_scc **slot;
-  slot = tree_scc_hash.find_slot_with_hash (scc, scc_hash, INSERT);
+  slot = tree_scc_hash->find_slot_with_hash (scc, scc_hash, INSERT);
   if (*slot)
     {
       /* Try unifying against each candidate.  */
@@ -1889,6 +1957,12 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  || TREE_CODE (first) == TRANSLATION_UNIT_DECL
 		  || streamer_handle_as_builtin_p (first)))
 	    continue;
+
+	  /* Copy fileds we do not stream before unification so we can compare them
+	     without being worried if they are already initialized.  */
+	  for (unsigned i = 0; i < len; ++i)
+	    lto_copy_fields_not_streamed
+	       (streamer_tree_cache_get_tree (data_in->reader_cache, from + i));
 
 	  /* Try to unify the SCC with already existing ones.  */
 	  if (!flag_ltrans
@@ -2716,10 +2790,12 @@ lto_fixup_prevailing_decls (tree t)
 	{
 	  LTO_NO_PREVAIL (DECL_ARGUMENT_FLD (t));
 	  LTO_NO_PREVAIL (DECL_RESULT_FLD (t));
-	  LTO_NO_PREVAIL (DECL_VINDEX (t));
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-	LTO_SET_PREVAIL (DECL_FUNCTION_PERSONALITY (t));
+	{
+	  LTO_SET_PREVAIL (DECL_FUNCTION_PERSONALITY (t));
+	  LTO_NO_PREVAIL (DECL_VINDEX (t));
+	}
       if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
 	{
 	  LTO_SET_PREVAIL (DECL_FIELD_OFFSET (t));
@@ -2917,11 +2993,11 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     }
   cgraph_state = CGRAPH_LTO_STREAMING;
 
-  canonical_type_hash_cache = new pointer_map <hashval_t>;
+  canonical_type_hash_cache = new hash_map<const_tree, hashval_t> (251);
   gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
 					    gimple_canonical_type_eq, 0);
   gcc_obstack_init (&tree_scc_hash_obstack);
-  tree_scc_hash.create (4096);
+  tree_scc_hash = new hash_table<tree_scc_hasher> (4096);
 
   /* Register the common node types with the canonical type machinery so
      we properly share alias-sets across languages and TUs.  Do not
@@ -2987,7 +3063,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     print_lto_report_1 ();
 
   /* Free gimple type merging datastructures.  */
-  tree_scc_hash.dispose ();
+  delete tree_scc_hash;
+  tree_scc_hash = NULL;
   obstack_free (&tree_scc_hash_obstack, NULL);
   htab_delete (gimple_canonical_types);
   gimple_canonical_types = NULL;
@@ -3159,17 +3236,17 @@ print_lto_report_1 (void)
   fprintf (stderr, "[%s] read %lu SCCs of average size %f\n",
 	   pfx, num_sccs_read, total_scc_size / (double)num_sccs_read);
   fprintf (stderr, "[%s] %lu tree bodies read in total\n", pfx, total_scc_size);
-  if (flag_wpa && tree_scc_hash.is_created ())
+  if (flag_wpa && tree_scc_hash)
     {
       fprintf (stderr, "[%s] tree SCC table: size %ld, %ld elements, "
 	       "collision ratio: %f\n", pfx,
-	       (long) tree_scc_hash.size (),
-	       (long) tree_scc_hash.elements (),
-	       tree_scc_hash.collisions ());
+	       (long) tree_scc_hash->size (),
+	       (long) tree_scc_hash->elements (),
+	       tree_scc_hash->collisions ());
       hash_table<tree_scc_hasher>::iterator hiter;
       tree_scc *scc, *max_scc = NULL;
       unsigned max_length = 0;
-      FOR_EACH_HASH_TABLE_ELEMENT (tree_scc_hash, scc, x, hiter)
+      FOR_EACH_HASH_TABLE_ELEMENT (*tree_scc_hash, scc, x, hiter)
 	{
 	  unsigned length = 0;
 	  tree_scc *s = scc;

@@ -1251,7 +1251,7 @@ split_function (struct split_point *split_point)
      a warning for the non-inlinable part.  */
   DECL_NO_INLINE_WARNING_P (node->decl) = 1;
   cgraph_node_remove_callees (cur_node);
-  ipa_remove_all_references (&cur_node->ref_list);
+  cur_node->remove_all_references ();
   if (!split_part_return_p)
     TREE_THIS_VOLATILE (node->decl) = 1;
   if (dump_file)

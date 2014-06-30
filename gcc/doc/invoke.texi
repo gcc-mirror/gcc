@@ -253,7 +253,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
--Winit-self  -Winline -Wmaybe-uninitialized @gol
+-Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
@@ -344,7 +344,7 @@ Objective-C and Objective-C++ Dialects}.
 -g  -g@var{level}  -gtoggle  -gcoff  -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
--gvms  -gxcoff  -gxcoff+ @gol
+-gvms  -gxcoff  -gxcoff+ -gz@r{[}=@var{type}@r{]} @gol
 -fno-merge-debug-strings -fno-dwarf2-cfi-asm @gol
 -fdebug-prefix-map=@var{old}=@var{new} @gol
 -femit-struct-debug-baseonly -femit-struct-debug-reduced @gol
@@ -411,6 +411,7 @@ Objective-C and Objective-C++ Dialects}.
 -fschedule-insns -fschedule-insns2 -fsection-anchors @gol
 -fselective-scheduling -fselective-scheduling2 @gol
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
+-fsemantic-interposition @gol
 -fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
 -fsplit-ivs-in-unroller -fsplit-wide-types -fssa-phiopt -fstack-protector @gol
 -fstack-protector-all -fstack-protector-strong -fstrict-aliasing @gol
@@ -5288,6 +5289,18 @@ DWARF extensions from later standard versions is allowed.
 Allow using extensions of later DWARF standard version than selected with
 @option{-gdwarf-@var{version}}.
 
+@item -gz@r{[}=@var{type}@r{]}
+@opindex gz
+Produce compressed debug sections in DWARF format, if that is supported.
+If @var{type} is not given, the default type depends on the capabilities
+of the assembler and linker used.  @var{type} may be one of
+@option{none} (don't compress debug sections), @option{zlib} (use zlib
+compression in ELF gABI format), or @option{zlib-gnu} (use zlib
+compression in traditional GNU format).  If the linker doesn't support
+writing compressed debug sections, the option is rejected.  Otherwise,
+if the assembler does not support them, @option{-gz} is silently ignored
+when producing object files.
+
 @item -gvms
 @opindex gvms
 Produce debugging information in Alpha/VMS debug format (if that is
@@ -6332,7 +6345,7 @@ passes).
 @item missed
 Enable showing missed optimization information (only available in certain
 passes).
-@item notes
+@item note
 Enable other detailed optimization information (only available in
 certain passes).
 @item =@var{filename}
@@ -7737,6 +7750,22 @@ This option has no effect unless one of @option{-fselective-scheduling} or
 @opindex fsel-sched-pipelining-outer-loops
 When pipelining loops during selective scheduling, also pipeline outer loops.
 This option has no effect unless @option{-fsel-sched-pipelining} is turned on.
+
+@item -fsemantic-interposition
+@opindex fsemantic-interposition
+Some object formats, like ELF, allow interposing of symbols by dynamic linker.
+This means that for symbols exported from the DSO compiler can not perform
+inter-procedural propagation, inlining and other optimizations in anticipation
+that the function or variable in question may change. While this feature is
+useful, for example, to rewrite memory allocation functions by a debugging
+implementation, it is expensive in the terms of code quality.
+With @option{-fno-semantic-inteposition} compiler assumest that if interposition
+happens for functions the overwritting function will have
+precisely same semantics (and side effects). Similarly if interposition happens
+for variables, the constructor of the variable will be the same. The flag
+has no effect for functions explicitly declared inline, where
+interposition changing semantic is never allowed and for symbols explicitly
+declared weak.
 
 @item -fshrink-wrap
 @opindex fshrink-wrap
@@ -10134,13 +10163,13 @@ number of such values per one parameter.
 @item ipa-cp-loop-hint-bonus
 When IPA-CP determines that a cloning candidate would make the number
 of iterations of a loop known, it adds a bonus of
-@option{ipa-cp-loop-hint-bonus} bonus to the profitability score of
+@option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
 
 @item ipa-cp-array-index-hint-bonus
 When IPA-CP determines that a cloning candidate would make the index of
 an array access known, it adds a bonus of
-@option{ipa-cp-array-index-hint-bonus} bonus to the profitability
+@option{ipa-cp-array-index-hint-bonus} to the profitability
 score of the candidate.
 
 @item ipa-max-aa-steps
@@ -10176,25 +10205,10 @@ The maximum number of conditional stores paires that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
 
-@item allow-load-data-races
-Allow optimizers to introduce new data races on loads.
-Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
-
 @item allow-store-data-races
 Allow optimizers to introduce new data races on stores.
 Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
-
-@item allow-packed-load-data-races
-Allow optimizers to introduce new data races on packed data loads.
-Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
-
-@item allow-packed-store-data-races
-Allow optimizers to introduce new data races on packed data stores.
-Set to 1 to allow, otherwise to 0.  This option is enabled by default
-unless implicitly set by the @option{-fmemory-model=} option.
+at optimization level @option{-Ofast}.
 
 @item case-values-threshold
 The smallest number of different values for which it is best to use a

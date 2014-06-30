@@ -1466,86 +1466,28 @@ ssa_names_hasher::equal (const value_type *n1, const compare_type *n2)
          && n1->size == n2->size;
 }
 
-/* The hash table for remembering what we've seen.  */
-static hash_table <ssa_names_hasher> seen_ssa_names;
-
-/* We see the expression EXP in basic block BB.  If it's an interesting
-   expression (an MEM_REF through an SSA_NAME) possibly insert the
-   expression into the set NONTRAP or the hash table of seen expressions.
-   STORE is true if this expression is on the LHS, otherwise it's on
-   the RHS.  */
-static void
-add_or_mark_expr (basic_block bb, tree exp,
-		  struct pointer_set_t *nontrap, bool store)
-{
-  HOST_WIDE_INT size;
-
-  if (TREE_CODE (exp) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME
-      && tree_fits_shwi_p (TREE_OPERAND (exp, 1))
-      && (size = int_size_in_bytes (TREE_TYPE (exp))) > 0)
-    {
-      tree name = TREE_OPERAND (exp, 0);
-      struct name_to_bb map;
-      name_to_bb **slot;
-      struct name_to_bb *n2bb;
-      basic_block found_bb = 0;
-
-      /* Try to find the last seen MEM_REF through the same
-         SSA_NAME, which can trap.  */
-      map.ssa_name_ver = SSA_NAME_VERSION (name);
-      map.phase = 0;
-      map.bb = 0;
-      map.store = store;
-      map.offset = tree_to_shwi (TREE_OPERAND (exp, 1));
-      map.size = size;
-
-      slot = seen_ssa_names.find_slot (&map, INSERT);
-      n2bb = *slot;
-      if (n2bb && n2bb->phase >= nt_call_phase)
-        found_bb = n2bb->bb;
-
-      /* If we've found a trapping MEM_REF, _and_ it dominates EXP
-         (it's in a basic block on the path from us to the dominator root)
-	 then we can't trap.  */
-      if (found_bb && (((size_t)found_bb->aux) & 1) == 1)
-	{
-	  pointer_set_insert (nontrap, exp);
-	}
-      else
-        {
-	  /* EXP might trap, so insert it into the hash table.  */
-	  if (n2bb)
-	    {
-	      n2bb->phase = nt_call_phase;
-	      n2bb->bb = bb;
-	    }
-	  else
-	    {
-	      n2bb = XNEW (struct name_to_bb);
-	      n2bb->ssa_name_ver = SSA_NAME_VERSION (name);
-	      n2bb->phase = nt_call_phase;
-	      n2bb->bb = bb;
-	      n2bb->store = store;
-	      n2bb->offset = map.offset;
-	      n2bb->size = size;
-	      *slot = n2bb;
-	    }
-	}
-    }
-}
-
 class nontrapping_dom_walker : public dom_walker
 {
 public:
   nontrapping_dom_walker (cdi_direction direction, pointer_set_t *ps)
-    : dom_walker (direction), m_nontrapping (ps) {}
+    : dom_walker (direction), m_nontrapping (ps), m_seen_ssa_names (128) {}
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
+
+  /* We see the expression EXP in basic block BB.  If it's an interesting
+     expression (an MEM_REF through an SSA_NAME) possibly insert the
+     expression into the set NONTRAP or the hash table of seen expressions.
+     STORE is true if this expression is on the LHS, otherwise it's on
+     the RHS.  */
+  void add_or_mark_expr (basic_block, tree, bool);
+
   pointer_set_t *m_nontrapping;
+
+  /* The hash table for remembering what we've seen.  */
+  hash_table<ssa_names_hasher> m_seen_ssa_names;
 };
 
 /* Called by walk_dominator_tree, when entering the block BB.  */
@@ -1576,8 +1518,8 @@ nontrapping_dom_walker::before_dom_children (basic_block bb)
 	nt_call_phase++;
       else if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
 	{
-	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), m_nontrapping, true);
-	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), m_nontrapping, false);
+	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), true);
+	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), false);
 	}
     }
 }
@@ -1590,6 +1532,71 @@ nontrapping_dom_walker::after_dom_children (basic_block bb)
   bb->aux = (void*)2;
 }
 
+/* We see the expression EXP in basic block BB.  If it's an interesting
+   expression (an MEM_REF through an SSA_NAME) possibly insert the
+   expression into the set NONTRAP or the hash table of seen expressions.
+   STORE is true if this expression is on the LHS, otherwise it's on
+   the RHS.  */
+void
+nontrapping_dom_walker::add_or_mark_expr (basic_block bb, tree exp, bool store)
+{
+  HOST_WIDE_INT size;
+
+  if (TREE_CODE (exp) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME
+      && tree_fits_shwi_p (TREE_OPERAND (exp, 1))
+      && (size = int_size_in_bytes (TREE_TYPE (exp))) > 0)
+    {
+      tree name = TREE_OPERAND (exp, 0);
+      struct name_to_bb map;
+      name_to_bb **slot;
+      struct name_to_bb *n2bb;
+      basic_block found_bb = 0;
+
+      /* Try to find the last seen MEM_REF through the same
+         SSA_NAME, which can trap.  */
+      map.ssa_name_ver = SSA_NAME_VERSION (name);
+      map.phase = 0;
+      map.bb = 0;
+      map.store = store;
+      map.offset = tree_to_shwi (TREE_OPERAND (exp, 1));
+      map.size = size;
+
+      slot = m_seen_ssa_names.find_slot (&map, INSERT);
+      n2bb = *slot;
+      if (n2bb && n2bb->phase >= nt_call_phase)
+        found_bb = n2bb->bb;
+
+      /* If we've found a trapping MEM_REF, _and_ it dominates EXP
+         (it's in a basic block on the path from us to the dominator root)
+	 then we can't trap.  */
+      if (found_bb && (((size_t)found_bb->aux) & 1) == 1)
+	{
+	  pointer_set_insert (m_nontrapping, exp);
+	}
+      else
+        {
+	  /* EXP might trap, so insert it into the hash table.  */
+	  if (n2bb)
+	    {
+	      n2bb->phase = nt_call_phase;
+	      n2bb->bb = bb;
+	    }
+	  else
+	    {
+	      n2bb = XNEW (struct name_to_bb);
+	      n2bb->ssa_name_ver = SSA_NAME_VERSION (name);
+	      n2bb->phase = nt_call_phase;
+	      n2bb->bb = bb;
+	      n2bb->store = store;
+	      n2bb->offset = map.offset;
+	      n2bb->size = size;
+	      *slot = n2bb;
+	    }
+	}
+    }
+}
+
 /* This is the entry point of gathering non trapping memory accesses.
    It will do a dominator walk over the whole function, and it will
    make use of the bb->aux pointers.  It returns a set of trees
@@ -1599,15 +1606,12 @@ get_non_trapping (void)
 {
   nt_call_phase = 0;
   pointer_set_t *nontrap = pointer_set_create ();
-  seen_ssa_names.create (128);
   /* We're going to do a dominator walk, so ensure that we have
      dominance information.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
   nontrapping_dom_walker (CDI_DOMINATORS, nontrap)
     .walk (cfun->cfg->x_entry_block_ptr);
-
-  seen_ssa_names.dispose ();
 
   clear_aux_for_blocks ();
   return nontrap;

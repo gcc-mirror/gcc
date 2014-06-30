@@ -30,7 +30,7 @@ set_rounding_mode (uint32_t mode)
   asm volatile ("msr fpcr, %[r]" : : [r] "r" (r) :);
 }
 
-float64x1_t __attribute__ ((noinline))
+float64_t __attribute__ ((noinline))
 compare_f64 (float64x1_t passed, float64_t expected)
 {
   return (__builtin_fabs (vget_lane_f64 (passed, 0) - expected)

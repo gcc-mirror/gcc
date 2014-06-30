@@ -2514,6 +2514,10 @@ struct GTY(()) target_rtl {
 
   /* The default memory attributes for each mode.  */
   struct mem_attrs *x_mode_mem_attrs[(int) MAX_MACHINE_MODE];
+
+  /* Track if RTL has been initialized.  */
+  bool target_specific_initialized;
+  bool lang_dependent_initialized;
 };
 
 extern GTY(()) struct target_rtl default_target_rtl;

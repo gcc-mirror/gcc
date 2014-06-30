@@ -92,7 +92,7 @@ coalesce_pair_hasher::equal (const value_type *p1, const compare_type *p2)
 	  && p1->second_element == p2->second_element);
 }
 
-typedef hash_table <coalesce_pair_hasher> coalesce_table_type;
+typedef hash_table<coalesce_pair_hasher> coalesce_table_type;
 typedef coalesce_table_type::iterator coalesce_iterator_type;
 
 
@@ -107,7 +107,7 @@ typedef struct cost_one_pair_d
 
 typedef struct coalesce_list_d
 {
-  coalesce_table_type list;	/* Hash table.  */
+  coalesce_table_type *list;	/* Hash table.  */
   coalesce_pair_p *sorted;	/* List when sorted.  */
   int num_sorted;		/* Number in the sorted list.  */
   cost_one_pair_p cost_one_list;/* Single use coalesces with cost 1.  */
@@ -244,7 +244,7 @@ create_coalesce_list (void)
     size = 40;
 
   list = (coalesce_list_p) xmalloc (sizeof (struct coalesce_list_d));
-  list->list.create (size);
+  list->list = new coalesce_table_type (size);
   list->sorted = NULL;
   list->num_sorted = 0;
   list->cost_one_list = NULL;
@@ -258,7 +258,8 @@ static inline void
 delete_coalesce_list (coalesce_list_p cl)
 {
   gcc_assert (cl->cost_one_list == NULL);
-  cl->list.dispose ();
+  delete cl->list;
+  cl->list = NULL;
   free (cl->sorted);
   gcc_assert (cl->num_sorted == 0);
   free (cl);
@@ -289,7 +290,7 @@ find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
     }
 
   hash = coalesce_pair_hasher::hash (&p);
-  slot = cl->list.find_slot_with_hash (&p, hash, create ? INSERT : NO_INSERT);
+  slot = cl->list->find_slot_with_hash (&p, hash, create ? INSERT : NO_INSERT);
   if (!slot)
     return NULL;
 
@@ -372,14 +373,14 @@ compare_pairs (const void *p1, const void *p2)
 static inline int
 num_coalesce_pairs (coalesce_list_p cl)
 {
-  return cl->list.elements ();
+  return cl->list->elements ();
 }
 
 
 /* Iterate over CL using ITER, returning values in PAIR.  */
 
 #define FOR_EACH_PARTITION_PAIR(PAIR, ITER, CL)		\
-  FOR_EACH_HASH_TABLE_ELEMENT ((CL)->list, (PAIR), coalesce_pair_p, (ITER))
+  FOR_EACH_HASH_TABLE_ELEMENT (*(CL)->list, (PAIR), coalesce_pair_p, (ITER))
 
 
 /* Prepare CL for removal of preferred pairs.  When finished they are sorted
@@ -1267,9 +1268,8 @@ coalesce_ssa_name (void)
      from the same SSA_NAME_VAR so debug info remains undisturbed.  */
   if (!optimize)
     {
-      hash_table <ssa_name_var_hash> ssa_name_hash;
+      hash_table<ssa_name_var_hash> ssa_name_hash (10);
 
-      ssa_name_hash.create (10);
       for (i = 1; i < num_ssa_names; i++)
 	{
 	  tree a = ssa_name (i);
@@ -1303,7 +1303,6 @@ coalesce_ssa_name (void)
 		}
 	    }
 	}
-      ssa_name_hash.dispose ();
     }
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);

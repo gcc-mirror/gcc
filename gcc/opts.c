@@ -620,6 +620,13 @@ default_options_optimization (struct gcc_options *opts,
      opt2 ? default_param_value (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP) : 1000,
      opts->x_param_values, opts_set->x_param_values);
 
+  /* At -Ofast, allow store motion to introduce potential race conditions.  */
+  maybe_set_param_value
+    (PARAM_ALLOW_STORE_DATA_RACES,
+     opts->x_optimize_fast ? 1
+     : default_param_value (PARAM_ALLOW_STORE_DATA_RACES),
+     opts->x_param_values, opts_set->x_param_values);
+
   if (opts->x_optimize_size)
     /* We want to crossjump as much as possible.  */
     maybe_set_param_value (PARAM_MIN_CROSSJUMP_INSNS, 1,
@@ -1870,6 +1877,11 @@ common_handle_option (struct gcc_options *opts,
     case OPT_gxcoff_:
       set_debug_level (XCOFF_DEBUG, code == OPT_gxcoff_, arg, opts, opts_set,
 		       loc);
+      break;
+
+    case OPT_gz:
+    case OPT_gz_:
+      /* Handled completely via specs.  */
       break;
 
     case OPT_pedantic_errors:

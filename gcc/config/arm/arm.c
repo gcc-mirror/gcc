@@ -4661,25 +4661,25 @@ libcall_hasher::hash (const value_type *p1)
   return hash_rtx (p1, VOIDmode, NULL, NULL, FALSE);
 }
 
-typedef hash_table <libcall_hasher> libcall_table_type;
+typedef hash_table<libcall_hasher> libcall_table_type;
 
 static void
-add_libcall (libcall_table_type htab, rtx libcall)
+add_libcall (libcall_table_type *htab, rtx libcall)
 {
-  *htab.find_slot (libcall, INSERT) = libcall;
+  *htab->find_slot (libcall, INSERT) = libcall;
 }
 
 static bool
 arm_libcall_uses_aapcs_base (const_rtx libcall)
 {
   static bool init_done = false;
-  static libcall_table_type libcall_htab;
+  static libcall_table_type *libcall_htab = NULL;
 
   if (!init_done)
     {
       init_done = true;
 
-      libcall_htab.create (31);
+      libcall_htab = new libcall_table_type (31);
       add_libcall (libcall_htab,
 		   convert_optab_libfunc (sfloat_optab, SFmode, SImode));
       add_libcall (libcall_htab,
@@ -4738,7 +4738,7 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
 							DFmode));
     }
 
-  return libcall && libcall_htab.find (libcall) != NULL;
+  return libcall && libcall_htab->find (libcall) != NULL;
 }
 
 static rtx
@@ -17642,11 +17642,11 @@ arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
   if (TARGET_AAPCS_BASED)
     {
       /* For AAPCS, IP and CC can be clobbered by veneers inserted by the
-	 linker.  We need to add these to allow setting
-	 TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS to true.  */
+	 linker.  We need to add an IP clobber to allow setting
+	 TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS to true.  A CC clobber
+	 is not needed since it's a fixed register.  */
       rtx *fusage = &CALL_INSN_FUNCTION_USAGE (insn);
       clobber_reg (fusage, gen_rtx_REG (word_mode, IP_REGNUM));
-      clobber_reg (fusage, gen_rtx_REG (word_mode, CC_REGNUM));
     }
 }
 

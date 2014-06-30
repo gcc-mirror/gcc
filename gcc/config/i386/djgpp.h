@@ -80,7 +80,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC \
 "%{!fsyntax-only: \
-%{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l %X %{o*} %{e*} %{N} %{n} \
+%{!c:%{!M:%{!MM:%{!E:%{!S:%(linker) %l " LINK_COMPRESS_DEBUG_SPEC \
+"%X %{o*} %{e*} %{N} %{n} \
 \t%{r} %{s} %{t} %{u*} %{z} %{Z}\
 \t%{!nostdlib:%{!nostartfiles:%S}}\
 \t%{static:} %{L*} %D %o\

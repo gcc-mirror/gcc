@@ -982,7 +982,7 @@ log_entry_hasher::remove (value_type *lp)
 
 
 /* The actual log.  */
-static hash_table <log_entry_hasher> tm_log;
+static hash_table<log_entry_hasher> *tm_log;
 
 /* Addresses to log with a save/restore sequence.  These should be in
    dominator order.  */
@@ -1027,14 +1027,14 @@ tm_mem_map_hasher::equal (const value_type *v, const compare_type *c)
 
 /* Map for an SSA_NAME originally pointing to a non aliased new piece
    of memory (malloc, alloc, etc).  */
-static hash_table <tm_mem_map_hasher> tm_new_mem_hash;
+static hash_table<tm_mem_map_hasher> *tm_new_mem_hash;
 
 /* Initialize logging data structures.  */
 static void
 tm_log_init (void)
 {
-  tm_log.create (10);
-  tm_new_mem_hash.create (5);
+  tm_log = new hash_table<log_entry_hasher> (10);
+  tm_new_mem_hash = new hash_table<tm_mem_map_hasher> (5);
   tm_log_save_addresses.create (5);
 }
 
@@ -1042,8 +1042,10 @@ tm_log_init (void)
 static void
 tm_log_delete (void)
 {
-  tm_log.dispose ();
-  tm_new_mem_hash.dispose ();
+  delete tm_log;
+  tm_log = NULL;
+  delete tm_new_mem_hash;
+  tm_new_mem_hash = NULL;
   tm_log_save_addresses.release ();
 }
 
@@ -1088,7 +1090,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
   struct tm_log_entry l, *lp;
 
   l.addr = addr;
-  slot = tm_log.find_slot (&l, INSERT);
+  slot = tm_log->find_slot (&l, INSERT);
   if (!*slot)
     {
       tree type = TREE_TYPE (addr);
@@ -1231,10 +1233,10 @@ tm_log_emit_stmt (tree addr, gimple stmt)
 static void
 tm_log_emit (void)
 {
-  hash_table <log_entry_hasher>::iterator hi;
+  hash_table<log_entry_hasher>::iterator hi;
   struct tm_log_entry *lp;
 
-  FOR_EACH_HASH_TABLE_ELEMENT (tm_log, lp, tm_log_entry_t, hi)
+  FOR_EACH_HASH_TABLE_ELEMENT (*tm_log, lp, tm_log_entry_t, hi)
     {
       size_t i;
       gimple stmt;
@@ -1276,7 +1278,7 @@ tm_log_emit_saves (basic_block entry_block, basic_block bb)
   for (i = 0; i < tm_log_save_addresses.length (); ++i)
     {
       l.addr = tm_log_save_addresses[i];
-      lp = *(tm_log.find_slot (&l, NO_INSERT));
+      lp = *(tm_log->find_slot (&l, NO_INSERT));
       gcc_assert (lp->save_var != NULL);
 
       /* We only care about variables in the current transaction.  */
@@ -1312,7 +1314,7 @@ tm_log_emit_restores (basic_block entry_block, basic_block bb)
   for (i = tm_log_save_addresses.length () - 1; i >= 0; i--)
     {
       l.addr = tm_log_save_addresses[i];
-      lp = *(tm_log.find_slot (&l, NO_INSERT));
+      lp = *(tm_log->find_slot (&l, NO_INSERT));
       gcc_assert (lp->save_var != NULL);
 
       /* We only care about variables in the current transaction.  */
@@ -1363,7 +1365,7 @@ thread_private_new_memory (basic_block entry_block, tree x)
 
   /* Look in cache first.  */
   elt.val = x;
-  slot = tm_new_mem_hash.find_slot (&elt, INSERT);
+  slot = tm_new_mem_hash->find_slot (&elt, INSERT);
   elt_p = *slot;
   if (elt_p)
     return elt_p->local_new_memory;
@@ -3340,7 +3342,7 @@ static bitmap_obstack tm_memopt_obstack;
 /* Unique counter for TM loads and stores. Loads and stores of the
    same address get the same ID.  */
 static unsigned int tm_memopt_value_id;
-static hash_table <tm_memop_hasher> tm_memopt_value_numbers;
+static hash_table<tm_memop_hasher> *tm_memopt_value_numbers;
 
 #define STORE_AVAIL_IN(BB) \
   ((struct tm_memopt_bitmaps *) ((BB)->aux))->store_avail_in
@@ -3374,7 +3376,7 @@ tm_memopt_value_number (gimple stmt, enum insert_option op)
 
   gcc_assert (is_tm_load (stmt) || is_tm_store (stmt));
   tmpmem.addr = gimple_call_arg (stmt, 0);
-  slot = tm_memopt_value_numbers.find_slot (&tmpmem, op);
+  slot = tm_memopt_value_numbers->find_slot (&tmpmem, op);
   if (*slot)
     mem = *slot;
   else if (op == INSERT)
@@ -3434,11 +3436,11 @@ dump_tm_memopt_set (const char *set_name, bitmap bits)
   fprintf (dump_file, "TM memopt: %s: [", set_name);
   EXECUTE_IF_SET_IN_BITMAP (bits, 0, i, bi)
     {
-      hash_table <tm_memop_hasher>::iterator hi;
+      hash_table<tm_memop_hasher>::iterator hi;
       struct tm_memop *mem = NULL;
 
       /* Yeah, yeah, yeah.  Whatever.  This is just for debugging.  */
-      FOR_EACH_HASH_TABLE_ELEMENT (tm_memopt_value_numbers, mem, tm_memop_t, hi)
+      FOR_EACH_HASH_TABLE_ELEMENT (*tm_memopt_value_numbers, mem, tm_memop_t, hi)
 	if (mem->value_id == i)
 	  break;
       gcc_assert (mem->value_id == i);
@@ -3874,7 +3876,7 @@ execute_tm_memopt (void)
   vec<basic_block> bbs;
 
   tm_memopt_value_id = 0;
-  tm_memopt_value_numbers.create (10);
+  tm_memopt_value_numbers = new hash_table<tm_memop_hasher> (10);
 
   for (region = all_tm_regions; region; region = region->next)
     {
@@ -3908,10 +3910,11 @@ execute_tm_memopt (void)
       tm_memopt_free_sets (bbs);
       bbs.release ();
       bitmap_obstack_release (&tm_memopt_obstack);
-      tm_memopt_value_numbers.empty ();
+      tm_memopt_value_numbers->empty ();
     }
 
-  tm_memopt_value_numbers.dispose ();
+  delete tm_memopt_value_numbers;
+  tm_memopt_value_numbers = NULL;
   return 0;
 }
 
@@ -4857,7 +4860,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   record_tm_clone_pair (old_decl, new_decl);
 
   if (info->old_node->force_output
-      || ipa_ref_list_first_referring (&info->old_node->ref_list))
+      || info->old_node->ref_list.first_referring ())
     ipa_tm_mark_force_output_node (new_node);
   if (info->old_node->forced_by_abi)
     ipa_tm_mark_forced_by_abi_node (new_node);
@@ -4916,7 +4919,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 
   cgraph_call_function_insertion_hooks (new_node);
   if (old_node->force_output
-      || ipa_ref_list_first_referring (&old_node->ref_list))
+      || old_node->ref_list.first_referring ())
     ipa_tm_mark_force_output_node (new_node);
   if (old_node->forced_by_abi)
     ipa_tm_mark_forced_by_abi_node (new_node);
@@ -5436,7 +5439,7 @@ ipa_tm_execute (void)
     {
       struct cgraph_node *caller;
       struct cgraph_edge *e;
-      struct ipa_ref *ref;
+      struct ipa_ref *ref = NULL;
       unsigned j;
 
       if (i > 256 && i == irr_worklist.length () / 8)
@@ -5463,7 +5466,7 @@ ipa_tm_execute (void)
 	}
 
       /* Propagate back to referring aliases as well.  */
-      for (j = 0; ipa_ref_list_referring_iterate (&node->ref_list, j, ref); j++)
+      for (j = 0; node->iterate_referring (j, ref); j++)
 	{
 	  caller = cgraph (ref->referring);
 	  if (ref->use == IPA_REF_ALIAS

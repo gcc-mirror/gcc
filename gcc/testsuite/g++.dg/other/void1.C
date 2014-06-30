@@ -4,13 +4,13 @@
 typedef void VOID;
 
 int foo(void);
-int bar(VOID);                // { dg-error "type|invalid use" }
+int bar(VOID);
 
 template<int> int foo(void);
-template<int> int bar(VOID);  // { dg-error "type|invalid use" }
+template<int> int bar(VOID);
 
 struct A
 {
   int foo(void);
-  int bar(VOID);              // { dg-error "type|invalid use" }
+  int bar(VOID);
 };

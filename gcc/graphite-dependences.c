@@ -424,24 +424,71 @@ subtract_commutative_associative_deps (scop_p scop,
 					  &x_may_waw_no_source);
 	gcc_assert (res == 0);
 
-	*must_raw = isl_union_map_subtract (*must_raw, x_must_raw);
-	*may_raw = isl_union_map_subtract (*may_raw, x_may_raw);
-	*must_raw_no_source = isl_union_map_subtract (*must_raw_no_source,
-						      x_must_raw_no_source);
-	*may_raw_no_source = isl_union_map_subtract (*may_raw_no_source,
-						     x_may_raw_no_source);
-	*must_war = isl_union_map_subtract (*must_war, x_must_war);
-	*may_war = isl_union_map_subtract (*may_war, x_may_war);
-	*must_war_no_source = isl_union_map_subtract (*must_war_no_source,
-						      x_must_war_no_source);
-	*may_war_no_source = isl_union_map_subtract (*may_war_no_source,
-						     x_may_war_no_source);
-	*must_waw = isl_union_map_subtract (*must_waw, x_must_waw);
-	*may_waw = isl_union_map_subtract (*may_waw, x_may_waw);
-	*must_waw_no_source = isl_union_map_subtract (*must_waw_no_source,
-						      x_must_waw_no_source);
-	*may_waw_no_source = isl_union_map_subtract (*may_waw_no_source,
-						     x_may_waw_no_source);
+	if (must_raw)
+	  *must_raw = isl_union_map_subtract (*must_raw, x_must_raw);
+	else
+	  isl_union_map_free (x_must_raw);
+
+	if (may_raw)
+	  *may_raw = isl_union_map_subtract (*may_raw, x_may_raw);
+	else
+	  isl_union_map_free (x_may_raw);
+
+	if (must_raw_no_source)
+	  *must_raw_no_source = isl_union_map_subtract (*must_raw_no_source,
+						        x_must_raw_no_source);
+	else
+	  isl_union_map_free (x_must_raw_no_source);
+
+	if (may_raw_no_source)
+	  *may_raw_no_source = isl_union_map_subtract (*may_raw_no_source,
+						       x_may_raw_no_source);
+	else
+	  isl_union_map_free (x_may_raw_no_source);
+
+	if (must_war)
+	  *must_war = isl_union_map_subtract (*must_war, x_must_war);
+	else
+	  isl_union_map_free (x_must_war);
+
+	if (may_war)
+	  *may_war = isl_union_map_subtract (*may_war, x_may_war);
+	else
+	  isl_union_map_free (x_may_war);
+
+	if (must_war_no_source)
+	  *must_war_no_source = isl_union_map_subtract (*must_war_no_source,
+						        x_must_war_no_source);
+	else
+	  isl_union_map_free (x_must_war_no_source);
+
+	if (may_war_no_source)
+	  *may_war_no_source = isl_union_map_subtract (*may_war_no_source,
+						       x_may_war_no_source);
+	else
+	  isl_union_map_free (x_may_war_no_source);
+
+	if (must_waw)
+	  *must_waw = isl_union_map_subtract (*must_waw, x_must_waw);
+	else
+	  isl_union_map_free (x_must_waw);
+
+	if (may_waw)
+	  *may_waw = isl_union_map_subtract (*may_waw, x_may_waw);
+	else
+	  isl_union_map_free (x_may_waw);
+
+	if (must_waw_no_source)
+	  *must_waw_no_source = isl_union_map_subtract (*must_waw_no_source,
+						        x_must_waw_no_source);
+	else
+	  isl_union_map_free (x_must_waw_no_source);
+
+	if (may_waw_no_source)
+	  *may_waw_no_source = isl_union_map_subtract (*may_waw_no_source,
+						       x_may_waw_no_source);
+	else
+	  isl_union_map_free (x_may_waw_no_source);
       }
 
   isl_union_map_free (original);
@@ -587,7 +634,7 @@ loop_level_carries_dependences (scop_p scop, vec<poly_bb_p> body,
    poly_bb_p.  */
 
 bool
-loop_is_parallel_p (loop_p loop, bb_pbb_htab_type bb_pbb_mapping, int depth)
+loop_is_parallel_p (loop_p loop, bb_pbb_htab_type *bb_pbb_mapping, int depth)
 {
   bool dependences;
   scop_p scop;

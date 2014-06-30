@@ -195,7 +195,7 @@ comdat_entry_hasher::equal (const value_type *entry1,
 
 /* Hash table of group signature symbols.  */
 
-static hash_table <comdat_entry_hasher> solaris_comdat_htab;
+static hash_table<comdat_entry_hasher> *solaris_comdat_htab;
 
 /* Output assembly to switch to COMDAT group section NAME with attributes
    FLAGS and group signature symbol DECL, using Sun as syntax.  */
@@ -236,11 +236,11 @@ solaris_elf_asm_comdat_section (const char *name, unsigned int flags, tree decl)
      identify the missing ones without changing the affected frontents,
      remember the signature symbols and emit those not marked
      TREE_SYMBOL_REFERENCED in solaris_file_end.  */
-  if (!solaris_comdat_htab.is_created ())
-    solaris_comdat_htab.create (37);
+  if (!solaris_comdat_htab)
+    solaris_comdat_htab = new hash_table<comdat_entry_hasher> (37);
 
   entry.sig = signature;
-  slot = solaris_comdat_htab.find_slot (&entry, INSERT);
+  slot = solaris_comdat_htab->find_slot (&entry, INSERT);
 
   if (*slot == NULL)
     {
@@ -284,10 +284,11 @@ solaris_define_comdat_signature (comdat_entry **slot,
 void
 solaris_file_end (void)
 {
-  if (!solaris_comdat_htab.is_created ())
+  if (!solaris_comdat_htab)
     return;
 
-  solaris_comdat_htab.traverse <void *, solaris_define_comdat_signature> (NULL);
+  solaris_comdat_htab->traverse <void *, solaris_define_comdat_signature>
+    (NULL);
 }
 
 void

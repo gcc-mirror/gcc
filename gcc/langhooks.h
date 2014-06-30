@@ -225,6 +225,10 @@ struct lang_hooks_for_decls
   /* Similarly, except use an assignment operator instead.  */
   tree (*omp_clause_assign_op) (tree clause, tree dst, tree src);
 
+  /* Build and return code for a constructor of DST that sets it to
+     SRC + ADD.  */
+  tree (*omp_clause_linear_ctor) (tree clause, tree dst, tree src, tree add);
+
   /* Build and return code destructing DECL.  Return NULL if nothing
      to be done.  */
   tree (*omp_clause_dtor) (tree clause, tree decl);

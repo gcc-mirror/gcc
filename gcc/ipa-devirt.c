@@ -324,8 +324,8 @@ odr_hasher::remove (value_type *v)
 
 /* ODR type hash used to lookup ODR type based on tree type node.  */
 
-typedef hash_table <odr_hasher> odr_hash_type;
-static odr_hash_type odr_hash;
+typedef hash_table<odr_hasher> odr_hash_type;
+static odr_hash_type *odr_hash;
 
 /* ODR types are also stored into ODR_TYPE vector to allow consistent
    walking.  Bases appear before derived types.  Vector is garbage collected
@@ -333,6 +333,17 @@ static odr_hash_type odr_hash;
 
 static GTY(()) vec <odr_type, va_gc> *odr_types_ptr;
 #define odr_types (*odr_types_ptr)
+
+/* Set TYPE_BINFO of TYPE and its variants to BINFO.  */
+void
+set_type_binfo (tree type, tree binfo)
+{
+  for (; type; type = TYPE_NEXT_VARIANT (type))
+    if (COMPLETE_TYPE_P (type))
+      TYPE_BINFO (type) = binfo;
+    else
+      gcc_assert (!TYPE_BINFO (type));
+}
 
 /* TYPE is equivalent to VAL by ODR, but its tree representation differs
    from VAL->type.  This may happen in LTO where tree merging did not merge
@@ -446,16 +457,17 @@ add_type_duplicate (odr_type val, tree type)
 	    {
 	      unsigned int i;
 
-	      TYPE_BINFO (val->type) = TYPE_BINFO (type);
+	      set_type_binfo (val->type, TYPE_BINFO (type));
 	      for (i = 0; i < val->types->length (); i++)
 		{
 		  if (TYPE_BINFO ((*val->types)[i])
 		      == master_binfo)
-		    TYPE_BINFO ((*val->types)[i]) = TYPE_BINFO (type);
+		    set_type_binfo ((*val->types)[i], TYPE_BINFO (type));
 		}
+	      BINFO_TYPE (TYPE_BINFO (type)) = val->type;
 	    }
 	  else
-	    TYPE_BINFO (type) = master_binfo;
+	    set_type_binfo (type, master_binfo);
 	}
     }
 }
@@ -473,7 +485,8 @@ get_odr_type (tree type, bool insert)
   type = TYPE_MAIN_VARIANT (type);
   gcc_checking_assert (TYPE_MAIN_VARIANT (type) == type);
   hash = hash_type_name (type);
-  slot = odr_hash.find_slot_with_hash (type, hash, insert ? INSERT : NO_INSERT);
+  slot
+     = odr_hash->find_slot_with_hash (type, hash, insert ? INSERT : NO_INSERT);
   if (!slot)
     return NULL;
 
@@ -494,6 +507,7 @@ get_odr_type (tree type, bool insert)
 
       val = ggc_cleared_alloc<odr_type_d> ();
       val->type = type;
+      gcc_assert (BINFO_TYPE (TYPE_BINFO (val->type)) = type);
       val->bases = vNULL;
       val->derived_types = vNULL;
       val->anonymous_namespace = type_in_anonymous_namespace_p (type);
@@ -611,11 +625,11 @@ build_type_inheritance_graph (void)
   FILE *inheritance_dump_file;
   int flags;
 
-  if (odr_hash.is_created ())
+  if (odr_hash)
     return;
   timevar_push (TV_IPA_INHERITANCE);
   inheritance_dump_file = dump_begin (TDI_inheritance, &flags);
-  odr_hash.create (23);
+  odr_hash = new odr_hash_type (23);
 
   /* We reconstruct the graph starting of types of all methods seen in the
      the unit.  */
@@ -685,8 +699,7 @@ referenced_from_vtable_p (struct cgraph_node *node)
   if (cgraph_state <= CGRAPH_STATE_CONSTRUCTION)
     return true;
 
-  for (i = 0; ipa_ref_list_referring_iterate (&node->ref_list,
-					      i, ref); i++)
+  for (i = 0; node->iterate_referring (i, ref); i++)
 	
     if ((ref->use == IPA_REF_ALIAS
 	 && referenced_from_vtable_p (cgraph (ref->referring)))
@@ -1011,9 +1024,9 @@ polymorphic_call_target_hasher::remove (value_type *v)
 
 /* Polymorphic call target query cache.  */
 
-typedef hash_table <polymorphic_call_target_hasher>
+typedef hash_table<polymorphic_call_target_hasher>
    polymorphic_call_target_hash_type;
-static polymorphic_call_target_hash_type polymorphic_call_target_hash;
+static polymorphic_call_target_hash_type *polymorphic_call_target_hash;
 
 /* Destroy polymorphic call target query cache.  */
 
@@ -1022,7 +1035,8 @@ free_polymorphic_call_targets_hash ()
 {
   if (cached_polymorphic_call_targets)
     {
-      polymorphic_call_target_hash.dispose ();
+      delete polymorphic_call_target_hash;
+      polymorphic_call_target_hash = NULL;
       pointer_set_destroy (cached_polymorphic_call_targets);
       cached_polymorphic_call_targets = NULL;
     }
@@ -1101,7 +1115,7 @@ get_class_context (ipa_polymorphic_call_context *context,
 	  if (!fld)
 	    goto give_up;
 
-	  type = TREE_TYPE (fld);
+	  type = TYPE_MAIN_VARIANT (TREE_TYPE (fld));
 	  offset -= pos;
 	  /* DECL_ARTIFICIAL represents a basetype.  */
 	  if (!DECL_ARTIFICIAL (fld))
@@ -1115,7 +1129,7 @@ get_class_context (ipa_polymorphic_call_context *context,
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  tree subtype = TREE_TYPE (type);
+	  tree subtype = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 
 	  /* Give up if we don't know array size.  */
 	  if (!tree_fits_shwi_p (TYPE_SIZE (subtype))
@@ -1158,7 +1172,8 @@ static bool
 contains_type_p (tree outer_type, HOST_WIDE_INT offset,
 		 tree otr_type)
 {
-  ipa_polymorphic_call_context context = {offset, outer_type,
+  ipa_polymorphic_call_context context = {offset,
+					  TYPE_MAIN_VARIANT (outer_type),
 					  false, true};
   return get_class_context (&context, otr_type);
 }
@@ -1271,7 +1286,7 @@ get_polymorphic_call_info_for_decl (ipa_polymorphic_call_context *context,
 {
   gcc_assert (DECL_P (base));
 
-  context->outer_type = TREE_TYPE (base);
+  context->outer_type = TYPE_MAIN_VARIANT (TREE_TYPE (base));
   context->offset = offset;
   /* Make very conservative assumption that all objects
      may be in construction. 
@@ -1328,7 +1343,7 @@ get_polymorphic_call_info (tree fndecl,
   *otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (ref));
 
   /* Set up basic info in case we find nothing interesting in the analysis.  */
-  context->outer_type = *otr_type;
+  context->outer_type = TYPE_MAIN_VARIANT (*otr_type);
   context->offset = 0;
   base_pointer = OBJ_TYPE_REF_OBJECT (ref);
   context->maybe_derived_type = true;
@@ -1414,7 +1429,8 @@ get_polymorphic_call_info (tree fndecl,
       if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE
 	  && SSA_NAME_VAR (base_pointer) == DECL_ARGUMENTS (fndecl))
 	{
-	  context->outer_type = TREE_TYPE (TREE_TYPE (base_pointer));
+	  context->outer_type
+	     = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (base_pointer)));
 	  gcc_assert (TREE_CODE (context->outer_type) == RECORD_TYPE);
 
 	  /* Dynamic casting has possibly upcasted the type
@@ -1449,7 +1465,8 @@ get_polymorphic_call_info (tree fndecl,
 	 object.  */
       if (DECL_BY_REFERENCE (SSA_NAME_VAR (base_pointer)))
 	{
-	  context->outer_type = TREE_TYPE (TREE_TYPE (base_pointer));
+	  context->outer_type
+	     = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (base_pointer)));
 	  gcc_assert (!POINTER_TYPE_P (context->outer_type));
 	  /* Only type inconsistent programs can have otr_type that is
 	     not part of outer type.  */
@@ -1598,8 +1615,10 @@ possible_polymorphic_call_targets (tree otr_type,
   bool can_refer;
   bool skipped = false;
 
+  otr_type = TYPE_MAIN_VARIANT (otr_type);
+
   /* If ODR is not initialized, return empty incomplete list.  */
-  if (!odr_hash.is_created ())
+  if (!odr_hash)
     {
       if (completep)
 	*completep = false;
@@ -1624,6 +1643,10 @@ possible_polymorphic_call_targets (tree otr_type,
 
   type = get_odr_type (otr_type, true);
 
+  /* Recording type variants would wast results cache.  */
+  gcc_assert (!context.outer_type
+	      || TYPE_MAIN_VARIANT (context.outer_type) == context.outer_type);
+
   /* Lookup the outer class type we want to walk.  */
   if (context.outer_type
       && !get_class_context (&context, otr_type))
@@ -1636,6 +1659,10 @@ possible_polymorphic_call_targets (tree otr_type,
 	*nonconstruction_targetsp = 0;
       return nodes;
     }
+
+  /* Check that get_class_context kept the main variant.  */
+  gcc_assert (!context.outer_type
+	      || TYPE_MAIN_VARIANT (context.outer_type) == context.outer_type);
 
   /* We canonicalize our query, so we do not need extra hashtable entries.  */
 
@@ -1656,7 +1683,8 @@ possible_polymorphic_call_targets (tree otr_type,
   if (!cached_polymorphic_call_targets)
     {
       cached_polymorphic_call_targets = pointer_set_create ();
-      polymorphic_call_target_hash.create (23);
+      polymorphic_call_target_hash
+       	= new polymorphic_call_target_hash_type (23);
       if (!node_removal_hook_holder)
 	{
 	  node_removal_hook_holder =
@@ -1670,7 +1698,7 @@ possible_polymorphic_call_targets (tree otr_type,
   key.type = type;
   key.otr_token = otr_token;
   key.context = context;
-  slot = polymorphic_call_target_hash.find_slot (&key, INSERT);
+  slot = polymorphic_call_target_hash->find_slot (&key, INSERT);
   if (cache_token)
    *cache_token = (void *)*slot;
   if (*slot)
@@ -1865,7 +1893,7 @@ possible_polymorphic_call_target_p (tree otr_type,
           || fcode == BUILT_IN_TRAP))
     return true;
 
-  if (!odr_hash.is_created ())
+  if (!odr_hash)
     return true;
   targets = possible_polymorphic_call_targets (otr_type, otr_token, ctx, &final);
   for (i = 0; i < targets.length (); i++)
@@ -1888,7 +1916,7 @@ update_type_inheritance_graph (void)
 {
   struct cgraph_node *n;
 
-  if (!odr_hash.is_created ())
+  if (!odr_hash)
     return;
   free_polymorphic_call_targets_hash ();
   timevar_push (TV_IPA_INHERITANCE);
@@ -2078,7 +2106,7 @@ ipa_devirt (void)
 	      {
 		if (dump_enabled_p ())
                   {
-                    location_t locus = gimple_location (e->call_stmt);
+                    location_t locus = gimple_location_safe (e->call_stmt);
                     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
                                      "speculatively devirtualizing call in %s/%i to %s/%i\n",
                                      n->name (), n->order,

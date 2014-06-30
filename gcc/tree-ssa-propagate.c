@@ -29,6 +29,7 @@
 #include "function.h"
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
+#include "bitmap.h"
 #include "sbitmap.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -1031,8 +1032,13 @@ public:
       fold_fn (fold_fn_), do_dce (do_dce_), something_changed (false)
     {
       stmts_to_remove.create (0);
+      need_eh_cleanup = BITMAP_ALLOC (NULL);
     }
-    ~substitute_and_fold_dom_walker () { stmts_to_remove.release (); }
+    ~substitute_and_fold_dom_walker ()
+    {
+      stmts_to_remove.release ();
+      BITMAP_FREE (need_eh_cleanup);
+    }
 
     virtual void before_dom_children (basic_block);
     virtual void after_dom_children (basic_block) {}
@@ -1042,6 +1048,7 @@ public:
     bool do_dce;
     bool something_changed;
     vec<gimple> stmts_to_remove;
+    bitmap need_eh_cleanup;
 };
 
 void
@@ -1144,7 +1151,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	  /* If we cleaned up EH information from the statement,
 	     remove EH edges.  */
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
-	    gimple_purge_dead_eh_edges (bb);
+	    bitmap_set_bit (need_eh_cleanup, bb->index);
 
 	  if (is_gimple_assign (stmt)
 	      && (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
@@ -1234,6 +1241,9 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 	  release_defs (stmt);
 	}
     }
+
+  if (!bitmap_empty_p (walker.need_eh_cleanup))
+    gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
 
   statistics_counter_event (cfun, "Constants propagated",
 			    prop_stats.num_const_prop);

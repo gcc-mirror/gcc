@@ -289,7 +289,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
   int order_pos = 0;
   struct cgraph_edge *edge;
   int pass;
-  struct ipa_ref *ref;
+  struct ipa_ref *ref = NULL;
 
   struct postorder_stack *stack =
     XCNEWVEC (struct postorder_stack, cgraph_n_nodes);
@@ -332,13 +332,13 @@ ipa_reverse_postorder (struct cgraph_node **order)
 			    (cgraph_function_node (edge->callee, NULL)->decl))
 			node2 = NULL;
 		    }
-		  for (;ipa_ref_list_referring_iterate (&stack[stack_size].node->ref_list,
+		  for (; stack[stack_size].node->iterate_referring (
 						       stack[stack_size].ref,
 						       ref) && !node2;
 		       stack[stack_size].ref++)
 		    {
 		      if (ref->use == IPA_REF_ALIAS)
-			node2 = ipa_ref_referring_node (ref);
+			node2 = dyn_cast <cgraph_node *> (ref->referring);
 		    }
 		  if (!node2)
 		    break;

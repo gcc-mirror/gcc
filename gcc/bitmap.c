@@ -80,7 +80,7 @@ bitmap_desc_hasher::equal (const value_type *d, const compare_type *l)
 }
 
 /* Hashtable mapping bitmap names to descriptors.  */
-static hash_table <bitmap_desc_hasher> bitmap_desc_hash;
+static hash_table<bitmap_desc_hasher> *bitmap_desc_hash;
 
 /* For given file and line, return descriptor, create new if needed.  */
 static bitmap_descriptor
@@ -93,12 +93,13 @@ get_bitmap_descriptor (const char *file, int line, const char *function)
   loc.function = function;
   loc.line = line;
 
-  if (!bitmap_desc_hash.is_created ())
-    bitmap_desc_hash.create (10);
+  if (!bitmap_desc_hash)
+    bitmap_desc_hash = new hash_table<bitmap_desc_hasher> (10);
 
-  slot = bitmap_desc_hash.find_slot_with_hash (&loc,
-					       htab_hash_pointer (file) + line,
-					       INSERT);
+  slot
+    = bitmap_desc_hash->find_slot_with_hash (&loc,
+					     htab_hash_pointer (file) + line,
+					     INSERT);
   if (*slot)
     return *slot;
 
@@ -2185,7 +2186,7 @@ dump_bitmap_statistics (void)
   if (! GATHER_STATISTICS)
     return;
 
-  if (!bitmap_desc_hash.is_created ())
+  if (!bitmap_desc_hash)
     return;
 
   fprintf (stderr,
@@ -2196,7 +2197,7 @@ dump_bitmap_statistics (void)
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   info.count = 0;
   info.size = 0;
-  bitmap_desc_hash.traverse <output_info *, print_statistics> (&info);
+  bitmap_desc_hash->traverse <output_info *, print_statistics> (&info);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   fprintf (stderr,
 	   "%-41s %9"PRId64" %15"PRId64"\n",

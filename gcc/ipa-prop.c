@@ -438,6 +438,11 @@ static void
 ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 		       tree base_type, tree component_type)
 {
+  /* Recording and propagating main variants increases change that types
+     will match.  */
+  base_type = TYPE_MAIN_VARIANT (base_type);
+  component_type = TYPE_MAIN_VARIANT (component_type);
+
   gcc_assert (TREE_CODE (component_type) == RECORD_TYPE
 	      && TYPE_BINFO (component_type));
   if (!flag_devirtualize)
@@ -529,6 +534,8 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 {
   if (!flag_devirtualize)
     type_preserved = false;
+  if (type)
+    type = TYPE_MAIN_VARIANT (type);
   gcc_assert (!type_preserved
 	      || (TREE_CODE (type) == RECORD_TYPE
 		  && TYPE_BINFO (type)
@@ -712,7 +719,9 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
   if (stmt_may_be_vtbl_ptr_store (stmt))
     {
       tree type;
+
       type = extr_type_from_vtbl_ptr_store (stmt, tci);
+      gcc_assert (!type || TYPE_MAIN_VARIANT (type) == type);
       if (tci->type_maybe_changed
 	  && type != tci->known_current_type)
 	tci->multiple_types_encountered = true;
@@ -749,9 +758,11 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
       /* Be sure expected_type is polymorphic.  */
       || !comp_type
       || TREE_CODE (comp_type) != RECORD_TYPE
-      || !TYPE_BINFO (comp_type)
-      || !BINFO_VTABLE (TYPE_BINFO (comp_type)))
+      || !TYPE_BINFO (TYPE_MAIN_VARIANT (comp_type))
+      || !BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (comp_type))))
     return true;
+
+  comp_type = TYPE_MAIN_VARIANT (comp_type);
 
   /* C++ methods are not allowed to change THIS pointer unless they
      are constructors or destructors.  */
@@ -1408,8 +1419,8 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
       /* Be sure expected_type is polymorphic.  */
       || !expected_type
       || TREE_CODE (expected_type) != RECORD_TYPE
-      || !TYPE_BINFO (expected_type)
-      || !BINFO_VTABLE (TYPE_BINFO (expected_type)))
+      || !TYPE_BINFO (TYPE_MAIN_VARIANT (expected_type))
+      || !BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (expected_type))))
     return;
 
   op = TREE_OPERAND (op, 0);
@@ -2673,17 +2684,11 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 
           if (dump_enabled_p ())
 	    {
-	      const char *fmt = "discovered direct call to non-function in %s/%i, "
-				"making it __builtin_unreachable\n";
-
-	      if (ie->call_stmt)
-		{
-		  location_t loc = gimple_location (ie->call_stmt);
-		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, fmt,
-				   ie->caller->name (), ie->caller->order);
-		}
-	      else if (dump_file)
-		fprintf (dump_file, fmt, ie->caller->name (), ie->caller->order);
+	      location_t loc = gimple_location_safe (ie->call_stmt);
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			       "discovered direct call to non-function in %s/%i, "
+			       "making it __builtin_unreachable\n",
+			       ie->caller->name (), ie->caller->order);
 	    }
 
 	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
@@ -2745,18 +2750,11 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
      }
   if (dump_enabled_p ())
     {
-      const char *fmt = "converting indirect call in %s to direct call to %s\n";
+      location_t loc = gimple_location_safe (ie->call_stmt);
 
-      if (ie->call_stmt)
-	{
-	  location_t loc = gimple_location (ie->call_stmt);
-
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, fmt,
-			   ie->caller->name (), callee->name ());
-
-	}
-      else if (dump_file)
-	fprintf (dump_file, fmt, ie->caller->name (), callee->name ());
+      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		       "converting indirect call in %s to direct call to %s\n",
+		       ie->caller->name (), callee->name ());
     }
   ie = cgraph_make_edge_direct (ie, callee);
   es = inline_edge_summary (ie);
@@ -2806,12 +2804,12 @@ remove_described_reference (symtab_node *symbol, struct ipa_cst_ref_desc *rdesc)
   origin = rdesc->cs;
   if (!origin)
     return false;
-  to_del = ipa_find_reference (origin->caller, symbol,
-			       origin->call_stmt, origin->lto_stmt_uid);
+  to_del = origin->caller->find_reference (symbol, origin->call_stmt,
+					   origin->lto_stmt_uid);
   if (!to_del)
     return false;
 
-  ipa_remove_reference (to_del);
+  to_del->remove_reference ();
   if (dump_file)
     fprintf (dump_file, "ipa-prop: Removed a reference from %s/%i to %s.\n",
 	     xstrdup (origin->caller->name ()),
@@ -2915,14 +2913,14 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
 /* Return the target to be used in cases of impossible devirtualization.  IE
    and target (the latter can be NULL) are dumped when dumping is enabled.  */
 
-static tree
-impossible_devirt_target (struct cgraph_edge *ie, tree target)
+tree
+ipa_impossible_devirt_target (struct cgraph_edge *ie, tree target)
 {
   if (dump_file)
     {
       if (target)
 	fprintf (dump_file,
-		 "Type inconsident devirtualization: %s/%i->%s\n",
+		 "Type inconsistent devirtualization: %s/%i->%s\n",
 		 ie->caller->name (), ie->caller->order,
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
       else
@@ -2969,7 +2967,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_get_node (target)))
-		target = impossible_devirt_target (ie, target);
+		target = ipa_impossible_devirt_target (ie, target);
 	      return ipa_make_edge_direct_to_target (ie, target);
 	    }
 	}
@@ -2999,7 +2997,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
       if (targets.length () == 1)
 	target = targets[0]->decl;
       else
-	target = impossible_devirt_target (ie, NULL_TREE);
+	target = ipa_impossible_devirt_target (ie, NULL_TREE);
     }
   else
     {
@@ -3015,7 +3013,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   if (target)
     {
       if (!possible_polymorphic_call_target_p (ie, cgraph_get_node (target)))
-	target = impossible_devirt_target (ie, target);
+	target = ipa_impossible_devirt_target (ie, target);
       return ipa_make_edge_direct_to_target (ie, target);
     }
   else
@@ -3209,8 +3207,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	      if (t && TREE_CODE (t) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL
 		  && (n = cgraph_get_node (TREE_OPERAND (t, 0)))
-		  && (ref = ipa_find_reference (new_root,
-						n, NULL, 0)))
+		  && (ref = new_root->find_reference (n, NULL, 0)))
 		{
 		  if (dump_file)
 		    fprintf (dump_file, "ipa-prop: Removing cloning-created "
@@ -3218,7 +3215,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 			     xstrdup (new_root->name ()),
 			     new_root->order,
 			     xstrdup (n->name ()), n->order);
-		  ipa_remove_reference (ref);
+		  ref->remove_reference ();
 		}
 	    }
 	}
@@ -3249,8 +3246,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 			 && IPA_NODE_REF (clone)->ipcp_orig_node)
 		    {
 		      struct ipa_ref *ref;
-		      ref = ipa_find_reference (clone,
-						n, NULL, 0);
+		      ref = clone->find_reference (n, NULL, 0);
 		      if (ref)
 			{
 			  if (dump_file)
@@ -3261,7 +3257,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 				     clone->order,
 				     xstrdup (n->name ()),
 				     n->order);
-			  ipa_remove_reference (ref);
+			  ref->remove_reference ();
 			}
 		      clone = clone->callers->caller;
 		    }
@@ -3455,10 +3451,10 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	      struct ipa_ref *ref;
 	      symtab_node *n = cgraph_node_for_jfunc (src_jf);
 	      gcc_checking_assert (n);
-	      ref = ipa_find_reference (src->caller, n,
-					src->call_stmt, src->lto_stmt_uid);
+	      ref = src->caller->find_reference (n, src->call_stmt,
+						 src->lto_stmt_uid);
 	      gcc_checking_assert (ref);
-	      ipa_clone_ref (ref, dst->caller, ref->stmt);
+	      dst->caller->clone_reference (ref, ref->stmt);
 
 	      gcc_checking_assert (ipa_refdesc_pool);
 	      struct ipa_cst_ref_desc *dst_rdesc
@@ -3899,7 +3895,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
   len = adjustments.length ();
   vargs.create (len);
   callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->decl;
-  ipa_remove_stmt_references (current_node, stmt);
+  current_node->remove_stmt_references (stmt);
 
   gsi = gsi_for_stmt (stmt);
   prev_gsi = gsi;

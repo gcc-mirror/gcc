@@ -217,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up>
         complex<_Tp>& operator/=(const complex<_Up>&);
 
-      _GLIBCXX_USE_CONSTEXPR complex __rep() const
+      _GLIBCXX_CONSTEXPR complex __rep() const
       { return *this; }
 
     private:
@@ -1180,7 +1180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
+      _GLIBCXX_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1330,7 +1330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
+      _GLIBCXX_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1482,7 +1482,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
+      _GLIBCXX_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;

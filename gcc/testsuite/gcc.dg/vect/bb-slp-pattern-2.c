@@ -48,5 +48,6 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp" { target { vect_element_align && vect_pack_trunc } } } } */
-/* { dg-final { cleanup-tree-dump "slp" } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" { target { vect_element_align && vect_pack_trunc } } } } */
+/* { dg-final { cleanup-tree-dump "slp1" } } */
+/* { dg-final { cleanup-tree-dump "slp2" } } */

@@ -706,7 +706,7 @@ proc check_effective_target_scheduling {} {
 # Return 1 if trapping arithmetic is available, 0 otherwise.
 
 proc check_effective_target_trapping {} {
-    return [check_no_compiler_messages scheduling object {
+    return [check_no_compiler_messages trapping object {
         add (int a, int b) { return a + b; }
     } "-ftrapv"]
 }
@@ -1107,6 +1107,20 @@ proc check_effective_target_fortran_real_16 { } {
 	x = cos (x)
 	end
     }]
+}
+
+
+# Return 1 if the target supports Fortran's IEEE modules,
+# 0 otherwise.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fortran_ieee { flags } {
+    return [check_no_compiler_messages fortran_ieee executable {
+	! Fortran
+	use, intrinsic :: ieee_features
+	end
+    } $flags ]
 }
 
 
@@ -3919,6 +3933,26 @@ proc check_effective_target_vect_udot_hi { } {
     return $et_vect_udot_hi_saved
 }
 
+# Return 1 if the target plus current options supports a vector
+# sad operation of unsigned chars, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_usad_char { } {
+    global et_vect_usad_char
+
+    if [info exists et_vect_usad_char_saved] {
+        verbose "check_effective_target_vect_usad_char: using cached result" 2
+    } else {
+        set et_vect_usad_char_saved 0
+        if { ([istarget i?86-*-*]
+             || [istarget x86_64-*-*]) } {
+            set et_vect_usad_char_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_usad_char: returning $et_vect_usad_char_saved" 2
+    return $et_vect_usad_char_saved
+}
 
 # Return 1 if the target plus current options supports a vector
 # demotion (packing) of shorts (to chars) and ints (to shorts) 
@@ -5292,25 +5326,35 @@ proc add_options_for_ieee { flags } {
     return $flags
 }
 
+if {![info exists flags_to_postpone]} {
+    set flags_to_postpone ""
+}
+
 # Add to FLAGS the flags needed to enable functions to bind locally
 # when using pic/PIC passes in the testsuite.
-
 proc add_options_for_bind_pic_locally { flags } {
+    global flags_to_postpone
+
+    # Instead of returning 'flags' with the -fPIE or -fpie appended, we save it
+    # in 'flags_to_postpone' and append it later in gcc_target_compile procedure in
+    # order to make sure that the multilib_flags doesn't override this.
+
     if {[check_no_compiler_messages using_pic2 assembly {
         #if __PIC__ != 2
         #error FOO
         #endif
     }]} {
-	return "$flags -fPIE"
+        set flags_to_postpone "-fPIE"
+        return $flags
     }
     if {[check_no_compiler_messages using_pic1 assembly {
         #if __PIC__ != 1
         #error FOO
         #endif
     }]} {
-	return "$flags -fpie"
+        set flags_to_postpone "-fpie"
+        return $flags
     }
-
     return $flags
 }
 

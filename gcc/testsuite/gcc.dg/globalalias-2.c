@@ -1,3 +1,4 @@
+/* { dg-require-alias "" }  */
 int test2count;
 extern void abort (void);
 static

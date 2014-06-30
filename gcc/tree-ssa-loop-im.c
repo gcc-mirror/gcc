@@ -184,7 +184,7 @@ mem_ref_hasher::equal (const value_type *mem1, const compare_type *obj2)
 static struct
 {
   /* The hash table of memory references accessed in loops.  */
-  hash_table <mem_ref_hasher> refs;
+  hash_table<mem_ref_hasher> *refs;
 
   /* The list of memory references.  */
   vec<mem_ref_p> refs_list;
@@ -609,7 +609,7 @@ mem_ref_in_stmt (gimple stmt)
   gcc_assert (!store);
 
   hash = iterative_hash_expr (*mem, 0);
-  ref = memory_accesses.refs.find_with_hash (*mem, hash);
+  ref = memory_accesses.refs->find_with_hash (*mem, hash);
 
   gcc_assert (ref != NULL);
   return ref;
@@ -1485,7 +1485,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
   else
     {
       hash = iterative_hash_expr (*mem, 0);
-      slot = memory_accesses.refs.find_slot_with_hash (*mem, hash, INSERT);
+      slot = memory_accesses.refs->find_slot_with_hash (*mem, hash, INSERT);
       if (*slot)
 	{
 	  ref = (mem_ref_p) *slot;
@@ -2436,7 +2436,7 @@ tree_ssa_lim_initialize (void)
 
   alloc_aux_for_edges (0);
 
-  memory_accesses.refs.create (100);
+  memory_accesses.refs = new hash_table<mem_ref_hasher> (100);
   memory_accesses.refs_list.create (100);
   /* Allocate a special, unanalyzable mem-ref with ID zero.  */
   memory_accesses.refs_list.quick_push
@@ -2486,7 +2486,8 @@ tree_ssa_lim_finalize (void)
   bitmap_obstack_release (&lim_bitmap_obstack);
   pointer_map_destroy (lim_aux_data_map);
 
-  memory_accesses.refs.dispose ();
+  delete memory_accesses.refs;
+  memory_accesses.refs = NULL;
 
   FOR_EACH_VEC_ELT (memory_accesses.refs_list, i, ref)
     memref_free (ref);

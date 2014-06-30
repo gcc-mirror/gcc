@@ -1023,32 +1023,36 @@ static vec<oecount> cvec;
 
 /* Oecount hashtable helpers.  */
 
-struct oecount_hasher : typed_noop_remove <void>
+struct oecount_hasher
 {
-  /* Note that this hash table stores integers, not pointers.
-     So, observe the casting in the member functions.  */
-  typedef void value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef int value_type;
+  typedef int compare_type;
+  typedef int store_values_directly;
+  static inline hashval_t hash (const value_type &);
+  static inline bool equal (const value_type &, const compare_type &);
+  static bool is_deleted (int &v) { return v == 1; }
+  static void mark_deleted (int &e) { e = 1; }
+  static bool is_empty (int &v) { return v == 0; }
+  static void mark_empty (int &e) { e = 0; }
+  static void remove (int &) {}
 };
 
 /* Hash function for oecount.  */
 
 inline hashval_t
-oecount_hasher::hash (const value_type *p)
+oecount_hasher::hash (const value_type &p)
 {
-  const oecount *c = &cvec[(size_t)p - 42];
+  const oecount *c = &cvec[p - 42];
   return htab_hash_pointer (c->op) ^ (hashval_t)c->oecode;
 }
 
 /* Comparison function for oecount.  */
 
 inline bool
-oecount_hasher::equal (const value_type *p1, const compare_type *p2)
+oecount_hasher::equal (const value_type &p1, const compare_type &p2)
 {
-  const oecount *c1 = &cvec[(size_t)p1 - 42];
-  const oecount *c2 = &cvec[(size_t)p2 - 42];
+  const oecount *c1 = &cvec[p1 - 42];
+  const oecount *c2 = &cvec[p2 - 42];
   return (c1->oecode == c2->oecode
 	  && c1->op == c2->op);
 }
@@ -1405,7 +1409,6 @@ undistribute_ops_list (enum tree_code opcode,
   unsigned nr_candidates, nr_candidates2;
   sbitmap_iterator sbi0;
   vec<operand_entry_t> *subops;
-  hash_table <oecount_hasher> ctable;
   bool changed = false;
   int next_oecount_id = 0;
 
@@ -1453,7 +1456,9 @@ undistribute_ops_list (enum tree_code opcode,
 
   /* Build linearized sub-operand lists and the counting table.  */
   cvec.create (0);
-  ctable.create (15);
+
+  hash_table<oecount_hasher> ctable (15);
+
   /* ??? Macro arguments cannot have multi-argument template types in
      them.  This typedef is needed to workaround that limitation.  */
   typedef vec<operand_entry_t> vec_operand_entry_t_heap;
@@ -1472,27 +1477,26 @@ undistribute_ops_list (enum tree_code opcode,
       FOR_EACH_VEC_ELT (subops[i], j, oe1)
 	{
 	  oecount c;
-	  void **slot;
-	  size_t idx;
+	  int *slot;
+	  int idx;
 	  c.oecode = oecode;
 	  c.cnt = 1;
 	  c.id = next_oecount_id++;
 	  c.op = oe1->op;
 	  cvec.safe_push (c);
 	  idx = cvec.length () + 41;
-	  slot = ctable.find_slot ((void *)idx, INSERT);
+	  slot = ctable.find_slot (idx, INSERT);
 	  if (!*slot)
 	    {
-	      *slot = (void *)idx;
+	      *slot = idx;
 	    }
 	  else
 	    {
 	      cvec.pop ();
-	      cvec[(size_t)*slot - 42].cnt++;
+	      cvec[*slot - 42].cnt++;
 	    }
 	}
     }
-  ctable.dispose ();
 
   /* Sort the counting table.  */
   cvec.qsort (oecount_cmp);

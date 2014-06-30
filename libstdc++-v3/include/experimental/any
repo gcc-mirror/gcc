@@ -47,7 +47,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace experimental
 {
-inline namespace any_v1
+inline namespace fundamentals_v1
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class bad_any_cast : public bad_cast
   {
   public:
-    virtual const char* what() const noexcept { return "bad_any_cast"; }
+    virtual const char* what() const noexcept { return "bad any_cast"; }
   };
 
   [[gnu::noreturn]] inline void __throw_bad_any_cast()
@@ -116,8 +116,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp, typename _Alloc>
       struct _Manager_alloc; // creates contained object using an allocator
 
-    template<typename _Tp, typename _Alloc, typename _TpAlloc
-	     = typename allocator_traits<_Alloc>::template rebind_alloc<_Tp>>
+    template<typename _Tp, typename _Alloc,
+	     typename _TpAlloc = __alloc_rebind<_Alloc, _Tp>>
       using _ManagerAlloc = conditional_t<_Internal<_Tp>::value,
 					  _Manager_internal<_Tp>,
 					  _Manager_alloc<_Tp, _TpAlloc>>;
@@ -501,19 +501,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _S_alloc(const _Alloc& __a, _Up&& __value)
     {
       typename _Traits::allocator_type __a2(__a);
-      auto __ptr = _Traits::allocate(__a2, 1);
-      __try
-	{
-	  any::_Storage __storage;
-	  __storage._M_ptr = std::__addressof(*__ptr);
-	  ::new(__storage._M_ptr) _Data{__a, std::forward<_Up>(__value)};
-	  return __storage;
-	}
-      __catch(...)
-	{
-	  _Traits::deallocate(__a2, __ptr, 1);
-	  __throw_exception_again;
-	}
+      auto __guard = std::__allocate_guarded(__a2);
+      any::_Storage __storage;
+      __storage._M_ptr = __guard.get();
+      ::new(__storage._M_ptr) _Data{__a, std::forward<_Up>(__value)};
+      __guard = nullptr;
+      return __storage;
     }
 #endif
 
@@ -591,11 +584,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	break;
       case _Op_destroy:
 	{
-	  using _PtrTr = pointer_traits<typename _Traits::pointer>;
-	  typename _Traits::allocator_type __a(__ptr->_M_alloc());
-	  auto __alloc_ptr = _PtrTr::pointer_to(*const_cast<_Data*>(__ptr));
+	  using _Alloc2 = typename _Traits::allocator_type;
+	  _Alloc2 __a(__ptr->_M_alloc());
+	  __allocated_ptr<_Alloc2> __guard{__a, const_cast<_Data*>(__ptr)};
 	  __ptr->~_Data();
-	  _Traits::deallocate(__a, __alloc_ptr, 1);
 	}
 	break;
       }
@@ -604,7 +596,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // @} group any
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace any_v1
+} // namespace fundamentals_v1
 } // namespace experimental
 } // namespace std
 

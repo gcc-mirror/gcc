@@ -651,8 +651,8 @@ delay_i2_hasher::equal (const value_type *x, const compare_type *y)
 
 /* Two hash tables to record delay_pairs, one indexed by I1 and the other
    indexed by I2.  */
-static hash_table <delay_i1_hasher> delay_htab;
-static hash_table <delay_i2_hasher> delay_htab_i2;
+static hash_table<delay_i1_hasher> *delay_htab;
+static hash_table<delay_i2_hasher> *delay_htab_i2;
 
 /* Called through htab_traverse.  Walk the hashtable using I2 as
    index, and delete all elements involving an UID higher than
@@ -664,7 +664,7 @@ haifa_htab_i2_traverse (delay_pair **slot, int *data)
   struct delay_pair *p = *slot;
   if (INSN_UID (p->i2) >= maxuid || INSN_UID (p->i1) >= maxuid)
     {
-      delay_htab_i2.clear_slot (slot);
+      delay_htab_i2->clear_slot (slot);
     }
   return 1;
 }
@@ -680,7 +680,7 @@ haifa_htab_i1_traverse (delay_pair **pslot, int *data)
 
   if (INSN_UID ((*pslot)->i1) >= maxuid)
     {
-      delay_htab.clear_slot (pslot);
+      delay_htab->clear_slot (pslot);
       return 1;
     }
   pprev = &first;
@@ -694,7 +694,7 @@ haifa_htab_i1_traverse (delay_pair **pslot, int *data)
     }
   *pprev = NULL;
   if (first == NULL)
-    delay_htab.clear_slot (pslot);
+    delay_htab->clear_slot (pslot);
   else
     *pslot = first;
   return 1;
@@ -705,8 +705,8 @@ haifa_htab_i1_traverse (delay_pair **pslot, int *data)
 void
 discard_delay_pairs_above (int max_uid)
 {
-  delay_htab.traverse <int *, haifa_htab_i1_traverse> (&max_uid);
-  delay_htab_i2.traverse <int *, haifa_htab_i2_traverse> (&max_uid);
+  delay_htab->traverse <int *, haifa_htab_i1_traverse> (&max_uid);
+  delay_htab_i2->traverse <int *, haifa_htab_i2_traverse> (&max_uid);
 }
 
 /* This function can be called by a port just before it starts the final
@@ -736,15 +736,15 @@ record_delay_slot_pair (rtx i1, rtx i2, int cycles, int stages)
   p->cycles = cycles;
   p->stages = stages;
 
-  if (!delay_htab.is_created ())
+  if (!delay_htab)
     {
-      delay_htab.create (10);
-      delay_htab_i2.create (10);
+      delay_htab = new hash_table<delay_i1_hasher> (10);
+      delay_htab_i2 = new hash_table<delay_i2_hasher> (10);
     }
-  slot = delay_htab.find_slot_with_hash (i1, htab_hash_pointer (i1), INSERT);
+  slot = delay_htab->find_slot_with_hash (i1, htab_hash_pointer (i1), INSERT);
   p->next_same_i1 = *slot;
   *slot = p;
-  slot = delay_htab_i2.find_slot_with_hash (i2, htab_hash_pointer (i2), INSERT);
+  slot = delay_htab_i2->find_slot (p, INSERT);
   *slot = p;
 }
 
@@ -755,10 +755,10 @@ real_insn_for_shadow (rtx insn)
 {
   struct delay_pair *pair;
 
-  if (!delay_htab.is_created ())
+  if (!delay_htab)
     return NULL_RTX;
 
-  pair = delay_htab_i2.find_with_hash (insn, htab_hash_pointer (insn));
+  pair = delay_htab_i2->find_with_hash (insn, htab_hash_pointer (insn));
   if (!pair || pair->stages > 0)
     return NULL_RTX;
   return pair->i1;
@@ -786,10 +786,10 @@ add_delay_dependencies (rtx insn)
   sd_iterator_def sd_it;
   dep_t dep;
 
-  if (!delay_htab.is_created ())
+  if (!delay_htab)
     return;
 
-  pair = delay_htab_i2.find_with_hash (insn, htab_hash_pointer (insn));
+  pair = delay_htab_i2->find_with_hash (insn, htab_hash_pointer (insn));
   if (!pair)
     return;
   add_dependence (insn, pair->i1, REG_DEP_ANTI);
@@ -800,7 +800,7 @@ add_delay_dependencies (rtx insn)
     {
       rtx pro = DEP_PRO (dep);
       struct delay_pair *other_pair
-	= delay_htab_i2.find_with_hash (pro, htab_hash_pointer (pro));
+	= delay_htab_i2->find_with_hash (pro, htab_hash_pointer (pro));
       if (!other_pair || other_pair->stages)
 	continue;
       if (pair_delay (other_pair) >= pair_delay (pair))
@@ -1421,11 +1421,11 @@ dep_cost_1 (dep_t link, dw_t dw)
   if (DEP_COST (link) != UNKNOWN_DEP_COST)
     return DEP_COST (link);
 
-  if (delay_htab.is_created ())
+  if (delay_htab)
     {
       struct delay_pair *delay_entry;
       delay_entry
-	= delay_htab_i2.find_with_hash (used, htab_hash_pointer (used));
+	= delay_htab_i2->find_with_hash (used, htab_hash_pointer (used));
       if (delay_entry)
 	{
 	  if (delay_entry->i1 == insn)
@@ -5779,12 +5779,12 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 	    {
 	      int delay_cost = 0;
 
-	      if (delay_htab.is_created ())
+	      if (delay_htab)
 		{
 		  struct delay_pair *delay_entry;
 		  delay_entry
-		    = delay_htab.find_with_hash (insn,
-						 htab_hash_pointer (insn));
+		    = delay_htab->find_with_hash (insn,
+						  htab_hash_pointer (insn));
 		  while (delay_entry && delay_cost == 0)
 		    {
 		      delay_cost = estimate_shadow_tick (delay_entry);
@@ -6278,13 +6278,13 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	      goto restart_choose_ready;
 	    }
 
-	  if (delay_htab.is_created ())
+	  if (delay_htab)
 	    {
 	      /* If this insn is the first part of a delay-slot pair, record a
 		 backtrack point.  */
 	      struct delay_pair *delay_entry;
 	      delay_entry
-		= delay_htab.find_with_hash (insn, htab_hash_pointer (insn));
+		= delay_htab->find_with_hash (insn, htab_hash_pointer (insn));
 	      if (delay_entry)
 		{
 		  save_backtrack_point (delay_entry, ls);
@@ -6873,10 +6873,10 @@ sched_finish (void)
 void
 free_delay_pairs (void)
 {
-  if (delay_htab.is_created ())
+  if (delay_htab)
     {
-      delay_htab.empty ();
-      delay_htab_i2.empty ();
+      delay_htab->empty ();
+      delay_htab_i2->empty ();
     }
 }
 

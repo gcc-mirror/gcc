@@ -437,6 +437,16 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
       pp_greater (buffer);
       break;
+
+    case SAD_EXPR:
+      pp_string (buffer, "SAD_EXPR <");
+      dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
+      pp_greater (buffer);
+      break;
     
     case VEC_PERM_EXPR:
       pp_string (buffer, "VEC_PERM_EXPR <");

@@ -16,6 +16,7 @@
 @SET_MAKE@
 
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -36,9 +37,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@IEEE_SUPPORT_TRUE@am__append_1 = ieee/ieee_helper.c
 
 # dummy sources for libtool
-@onestep_TRUE@am__append_1 = libgfortran_c.c libgfortran_f.f90
+@onestep_TRUE@am__append_2 = libgfortran_c.c libgfortran_f.f90
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -95,7 +97,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(cafexeclibdir)" \
 	"$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)"
+	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"
 LTLIBRARIES = $(cafexeclib_LTLIBRARIES) $(myexeclib_LTLIBRARIES) \
 	$(toolexeclib_LTLIBRARIES)
 libcaf_single_la_LIBADD =
@@ -245,7 +247,8 @@ am__objects_41 = close.lo file_pos.lo format.lo inquire.lo \
 	intrinsics.lo list_read.lo lock.lo open.lo read.lo \
 	size_from_kind.lo transfer.lo transfer128.lo unit.lo unix.lo \
 	write.lo fbuf.lo
-am__objects_42 = associated.lo abort.lo access.lo args.lo \
+@IEEE_SUPPORT_TRUE@am__objects_42 = ieee_helper.lo
+am__objects_43 = associated.lo abort.lo access.lo args.lo \
 	bit_intrinsics.lo c99_functions.lo chdir.lo chmod.lo clock.lo \
 	cpu_time.lo cshift0.lo ctime.lo date_and_time.lo dtime.lo \
 	env.lo eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo \
@@ -259,9 +262,11 @@ am__objects_42 = associated.lo abort.lo access.lo args.lo \
 	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
 	system_clock.lo time.lo transpose_generic.lo umask.lo \
 	unlink.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo
-am__objects_43 =
-am__objects_44 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+	in_unpack_generic.lo $(am__objects_42)
+@IEEE_SUPPORT_TRUE@am__objects_44 = ieee_arithmetic.lo \
+@IEEE_SUPPORT_TRUE@	ieee_exceptions.lo ieee_features.lo
+am__objects_45 =
+am__objects_46 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -285,18 +290,19 @@ am__objects_44 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_45 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_47 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_46 = misc_specifics.lo
-am__objects_47 = $(am__objects_44) $(am__objects_45) $(am__objects_46) \
+am__objects_48 = misc_specifics.lo
+am__objects_49 = $(am__objects_46) $(am__objects_47) $(am__objects_48) \
 	dprod_r8.lo f2c_specifics.lo
-am__objects_48 = $(am__objects_1) $(am__objects_40) $(am__objects_41) \
-	$(am__objects_42) $(am__objects_43) $(am__objects_47)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_48)
+am__objects_50 = $(am__objects_1) $(am__objects_40) $(am__objects_41) \
+	$(am__objects_43) $(am__objects_44) $(am__objects_45) \
+	$(am__objects_49)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_50)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
@@ -336,6 +342,7 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 DATA = $(toolexeclib_DATA)
+HEADERS = $(nodist_finclude_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 ACLOCAL = @ACLOCAL@
@@ -348,7 +355,7 @@ AMTAR = @AMTAR@
 # Some targets require additional compiler options for IEEE compatibility.
 AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules $(SECTION_FLAGS) \
 	$(IEEE_FLAGS)
-AM_FCFLAGS = @AM_FCFLAGS@
+AM_FCFLAGS = @AM_FCFLAGS@ $(IEEE_FLAGS)
 AR = @AR@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
@@ -376,6 +383,7 @@ FGREP = @FGREP@
 FPU_HOST_HEADER = @FPU_HOST_HEADER@
 GREP = @GREP@
 IEEE_FLAGS = @IEEE_FLAGS@
+IEEE_SUPPORT = @IEEE_SUPPORT@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -516,6 +524,8 @@ libcaf_single_la_SOURCES = caf/single.c
 libcaf_single_la_LDFLAGS = -static
 libcaf_single_la_DEPENDENCIES = caf/libcaf.h
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
+@IEEE_SUPPORT_TRUE@fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
+@IEEE_SUPPORT_TRUE@nodist_finclude_HEADERS = ieee_arithmetic.mod ieee_exceptions.mod ieee_features.mod
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config $(LIBQUADINCLUDE) \
 	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc \
@@ -546,70 +556,39 @@ io/fbuf.h \
 io/format.h \
 io/unix.h
 
-gfor_helper_src = \
-intrinsics/associated.c \
-intrinsics/abort.c \
-intrinsics/access.c \
-intrinsics/args.c \
-intrinsics/bit_intrinsics.c \
-intrinsics/c99_functions.c \
-intrinsics/chdir.c \
-intrinsics/chmod.c \
-intrinsics/clock.c \
-intrinsics/cpu_time.c \
-intrinsics/cshift0.c \
-intrinsics/ctime.c \
-intrinsics/date_and_time.c \
-intrinsics/dtime.c \
-intrinsics/env.c \
-intrinsics/eoshift0.c \
-intrinsics/eoshift2.c \
-intrinsics/erfc_scaled.c \
-intrinsics/etime.c \
-intrinsics/execute_command_line.c \
-intrinsics/exit.c \
-intrinsics/extends_type_of.c \
-intrinsics/fnum.c \
-intrinsics/gerror.c \
-intrinsics/getcwd.c \
-intrinsics/getlog.c \
-intrinsics/getXid.c \
-intrinsics/hostnm.c \
-intrinsics/ierrno.c \
-intrinsics/ishftc.c \
-intrinsics/iso_c_generated_procs.c \
-intrinsics/iso_c_binding.c \
-intrinsics/kill.c \
-intrinsics/link.c \
-intrinsics/malloc.c \
-intrinsics/mvbits.c \
-intrinsics/move_alloc.c \
-intrinsics/pack_generic.c \
-intrinsics/perror.c \
-intrinsics/selected_char_kind.c \
-intrinsics/signal.c \
-intrinsics/size.c \
-intrinsics/sleep.c \
-intrinsics/spread_generic.c \
-intrinsics/string_intrinsics.c \
-intrinsics/system.c \
-intrinsics/rand.c \
-intrinsics/random.c \
-intrinsics/rename.c \
-intrinsics/reshape_generic.c \
-intrinsics/reshape_packed.c \
-intrinsics/selected_int_kind.f90 \
-intrinsics/selected_real_kind.f90 \
-intrinsics/stat.c \
-intrinsics/symlnk.c \
-intrinsics/system_clock.c \
-intrinsics/time.c \
-intrinsics/transpose_generic.c \
-intrinsics/umask.c \
-intrinsics/unlink.c \
-intrinsics/unpack_generic.c \
-runtime/in_pack_generic.c \
-runtime/in_unpack_generic.c
+gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
+	intrinsics/access.c intrinsics/args.c \
+	intrinsics/bit_intrinsics.c intrinsics/c99_functions.c \
+	intrinsics/chdir.c intrinsics/chmod.c intrinsics/clock.c \
+	intrinsics/cpu_time.c intrinsics/cshift0.c intrinsics/ctime.c \
+	intrinsics/date_and_time.c intrinsics/dtime.c intrinsics/env.c \
+	intrinsics/eoshift0.c intrinsics/eoshift2.c \
+	intrinsics/erfc_scaled.c intrinsics/etime.c \
+	intrinsics/execute_command_line.c intrinsics/exit.c \
+	intrinsics/extends_type_of.c intrinsics/fnum.c \
+	intrinsics/gerror.c intrinsics/getcwd.c intrinsics/getlog.c \
+	intrinsics/getXid.c intrinsics/hostnm.c intrinsics/ierrno.c \
+	intrinsics/ishftc.c intrinsics/iso_c_generated_procs.c \
+	intrinsics/iso_c_binding.c intrinsics/kill.c intrinsics/link.c \
+	intrinsics/malloc.c intrinsics/mvbits.c \
+	intrinsics/move_alloc.c intrinsics/pack_generic.c \
+	intrinsics/perror.c intrinsics/selected_char_kind.c \
+	intrinsics/signal.c intrinsics/size.c intrinsics/sleep.c \
+	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
+	intrinsics/system.c intrinsics/rand.c intrinsics/random.c \
+	intrinsics/rename.c intrinsics/reshape_generic.c \
+	intrinsics/reshape_packed.c intrinsics/selected_int_kind.f90 \
+	intrinsics/selected_real_kind.f90 intrinsics/stat.c \
+	intrinsics/symlnk.c intrinsics/system_clock.c \
+	intrinsics/time.c intrinsics/transpose_generic.c \
+	intrinsics/umask.c intrinsics/unlink.c \
+	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
+	runtime/in_unpack_generic.c $(am__append_1)
+@IEEE_SUPPORT_FALSE@gfor_ieee_src = 
+@IEEE_SUPPORT_TRUE@gfor_ieee_src = \
+@IEEE_SUPPORT_TRUE@ieee/ieee_arithmetic.F90 \
+@IEEE_SUPPORT_TRUE@ieee/ieee_exceptions.F90 \
+@IEEE_SUPPORT_TRUE@ieee/ieee_features.F90
 
 gfor_src = \
 runtime/backtrace.c \
@@ -1100,7 +1079,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
     $(i_pow_c) $(i_rrspacing_c) $(i_spacing_c) $(i_pack_c) $(i_unpack_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
-    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h
+    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc
 
 
 # Machine generated specifics
@@ -1254,9 +1233,9 @@ intrinsics/f2c_specifics.F90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
 	$(gfor_built_specific2_src) $(gfor_misc_specifics) \
-	$(am__append_1)
+	$(am__append_2)
 prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
-    $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
+    $(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
 
 @onestep_FALSE@libgfortran_la_SOURCES = $(prereq_SRC)
 
@@ -1538,6 +1517,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iany_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iany_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iany_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ieee_helper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ierrno.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_c10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_c16.Plo@am__quote@
@@ -1918,6 +1898,12 @@ distclean-compile:
 
 .F90.lo:
 	$(LTPPFCCOMPILE) -c -o $@ $<
+
+ieee_exceptions.lo: ieee/ieee_exceptions.F90
+	$(LIBTOOL)  --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o ieee_exceptions.lo `test -f 'ieee/ieee_exceptions.F90' || echo '$(srcdir)/'`ieee/ieee_exceptions.F90
+
+ieee_features.lo: ieee/ieee_features.F90
+	$(LIBTOOL)  --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o ieee_features.lo `test -f 'ieee/ieee_features.F90' || echo '$(srcdir)/'`ieee/ieee_features.F90
 
 _abs_c4.lo: $(srcdir)/generated/_abs_c4.F90
 	$(LIBTOOL)  --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_c4.lo `test -f '$(srcdir)/generated/_abs_c4.F90' || echo '$(srcdir)/'`$(srcdir)/generated/_abs_c4.F90
@@ -5630,6 +5616,13 @@ in_unpack_generic.lo: runtime/in_unpack_generic.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_generic.lo `test -f 'runtime/in_unpack_generic.c' || echo '$(srcdir)/'`runtime/in_unpack_generic.c
 
+ieee_helper.lo: ieee/ieee_helper.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ieee_helper.lo -MD -MP -MF $(DEPDIR)/ieee_helper.Tpo -c -o ieee_helper.lo `test -f 'ieee/ieee_helper.c' || echo '$(srcdir)/'`ieee/ieee_helper.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/ieee_helper.Tpo $(DEPDIR)/ieee_helper.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ieee/ieee_helper.c' object='ieee_helper.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ieee_helper.lo `test -f 'ieee/ieee_helper.c' || echo '$(srcdir)/'`ieee/ieee_helper.c
+
 .f90.o:
 	$(FCCOMPILE) -c -o $@ $<
 
@@ -5691,6 +5684,24 @@ uninstall-toolexeclibDATA:
 	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
+install-nodist_fincludeHEADERS: $(nodist_finclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(fincludedir)" || $(MKDIR_P) "$(DESTDIR)$(fincludedir)"
+	@list='$(nodist_finclude_HEADERS)'; test -n "$(fincludedir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(fincludedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(fincludedir)" || exit $$?; \
+	done
+
+uninstall-nodist_fincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_finclude_HEADERS)'; test -n "$(fincludedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(fincludedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -5746,9 +5757,9 @@ distclean-tags:
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES) all-multi $(DATA) config.h
+all-am: Makefile $(LTLIBRARIES) all-multi $(DATA) $(HEADERS) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(cafexeclibdir)" "$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -5808,7 +5819,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-nodist_fincludeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -5859,7 +5870,8 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-cafexeclibLTLIBRARIES \
-	uninstall-myexeclibLTLIBRARIES uninstall-toolexeclibDATA \
+	uninstall-myexeclibLTLIBRARIES \
+	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: all all-multi check clean-multi distclean-multi install \
@@ -5876,15 +5888,17 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES \
 	install-data install-data-am install-dvi install-dvi-am \
 	install-exec install-exec-am install-html install-html-am \
 	install-info install-info-am install-man install-multi \
-	install-myexeclibLTLIBRARIES install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip install-toolexeclibDATA \
+	install-myexeclibLTLIBRARIES install-nodist_fincludeHEADERS \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	maintainer-clean-multi mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
 	pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-cafexeclibLTLIBRARIES uninstall-myexeclibLTLIBRARIES \
-	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
+	uninstall-nodist_fincludeHEADERS uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES
 
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@gfortran.map-sun : $(srcdir)/gfortran.map \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
@@ -5904,6 +5918,20 @@ $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 # Add the -fallow-leading-underscore option when needed
 $(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -fallow-leading-underscore
 selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
+
+# Add flags for IEEE modules
+@IEEE_SUPPORT_TRUE@$(patsubst %.F90,%.lo,$(notdir $(gfor_ieee_src))): AM_FCFLAGS += -Wno-unused-dummy-argument -Wno-c-binding-type -ffree-line-length-0 -fallow-leading-underscore
+
+# Dependencies between IEEE_ARITHMETIC and IEEE_EXCEPTIONS
+ieee_arithmetic.lo: ieee/ieee_arithmetic.F90 ieee_exceptions.lo
+	$(LTPPFCCOMPILE) -c -o $@ $<
+
+ieee_features.mod: ieee_features.lo
+	:
+ieee_exceptions.mod: ieee_exceptions.lo
+	:
+ieee_arithmetic.mod: ieee_arithmetic.lo
+	:
 @onestep_TRUE@libgfortran_c.c libgfortran_f.f90 libgfortran_F.F90:
 @onestep_TRUE@	echo > $@
 # overrides for libtool perusing the dummy sources
@@ -5930,6 +5958,10 @@ selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
 
 fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 	cp $(srcdir)/$(FPU_HOST_HEADER) $@
+
+fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
+	grep '^#define GFC_FPE_' < $(top_srcdir)/../gcc/fortran/libgfortran.h > $@ || true
+	grep '^#define GFC_FPE_' < $(srcdir)/libgfortran.h >> $@ || true
 
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@

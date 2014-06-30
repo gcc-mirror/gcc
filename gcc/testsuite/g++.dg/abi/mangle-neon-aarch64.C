@@ -8,9 +8,11 @@
 void f0 (int8x8_t a) {}
 void f1 (int16x4_t a) {}
 void f2 (int32x2_t a) {}
+void f22 (int64x1_t a) {}
 void f3 (uint8x8_t a) {}
 void f4 (uint16x4_t a) {}
 void f5 (uint32x2_t a) {}
+void f23 (uint64x1_t a) {}
 void f6 (float32x2_t a) {}
 void f7 (poly8x8_t a) {}
 void f8 (poly16x4_t a) {}
@@ -27,16 +29,19 @@ void f17 (float32x4_t a) {}
 void f18 (float64x2_t a) {}
 void f19 (poly8x16_t a) {}
 void f20 (poly16x8_t a) {}
+void f21 (float64x1_t a) {}
 
-void f21 (int8x16_t, int8x16_t) {}
+void g1 (int8x16_t, int8x16_t) {}
 
 
 // { dg-final { scan-assembler "_Z2f010__Int8x8_t:" } }
 // { dg-final { scan-assembler "_Z2f111__Int16x4_t:" } }
 // { dg-final { scan-assembler "_Z2f211__Int32x2_t:" } }
+// { dg-final { scan-assembler "_Z3f2211__Int64x1_t:" } }
 // { dg-final { scan-assembler "_Z2f311__Uint8x8_t:" } }
 // { dg-final { scan-assembler "_Z2f412__Uint16x4_t:" } }
 // { dg-final { scan-assembler "_Z2f512__Uint32x2_t:" } }
+// { dg-final { scan-assembler "_Z3f2312__Uint64x1_t:" } }
 // { dg-final { scan-assembler "_Z2f613__Float32x2_t:" } }
 // { dg-final { scan-assembler "_Z2f711__Poly8x8_t:" } }
 // { dg-final { scan-assembler "_Z2f812__Poly16x4_t:" } }
@@ -52,4 +57,5 @@ void f21 (int8x16_t, int8x16_t) {}
 // { dg-final { scan-assembler "_Z3f1813__Float64x2_t:" } }
 // { dg-final { scan-assembler "_Z3f1912__Poly8x16_t:" } }
 // { dg-final { scan-assembler "_Z3f2012__Poly16x8_t:" } }
-// { dg-final { scan-assembler "_Z3f2111__Int8x16_tS_:" } }
+// { dg-final { scan-assembler "_Z3f2113__Float64x1_t:" } }
+// { dg-final { scan-assembler "_Z2g111__Int8x16_tS_:" } }

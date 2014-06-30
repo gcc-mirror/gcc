@@ -484,6 +484,9 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case DOT_PROD_EXPR:
       return TYPE_UNSIGNED (type) ? udot_prod_optab : sdot_prod_optab;
 
+    case SAD_EXPR:
+      return TYPE_UNSIGNED (type) ? usad_optab : ssad_optab;
+
     case WIDEN_MULT_PLUS_EXPR:
       return (TYPE_UNSIGNED (type)
 	      ? (TYPE_SATURATING (type)

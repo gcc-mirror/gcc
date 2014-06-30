@@ -9007,7 +9007,7 @@ grokdeclarator (const cp_declarator *declarator,
       return error_mark_node;
     }
 
-  if (((dname && IDENTIFIER_OPNAME_P (dname)) || flags == TYPENAME_FLAG)
+  if (flags == TYPENAME_FLAG
       && innermost_code != cdk_function
       && ! (ctype && !declspecs->any_specifiers_p))
     {
@@ -11138,16 +11138,13 @@ grokparms (tree parmlist, tree *parms)
       type = TREE_TYPE (decl);
       if (VOID_TYPE_P (type))
 	{
-	  if (type == void_type_node
+	  if (same_type_p (type, void_type_node)
 	      && !init
 	      && !DECL_NAME (decl) && !result
 	      && TREE_CHAIN (parm) == void_list_node)
-	    /* this is a parmlist of `(void)', which is ok.  */
+	    /* DR 577: A parameter list consisting of a single
+	       unnamed parameter of non-dependent type 'void'.  */
 	    break;
-	  else if (typedef_variant_p (type))
-	    error_at (DECL_SOURCE_LOCATION (decl),
-		      "invalid use of typedef-name %qT in "
-		      "parameter declaration", type);
 	  else if (cv_qualified_p (type))
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "invalid use of cv-qualified type %qT in "

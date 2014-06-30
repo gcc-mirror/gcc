@@ -1,3 +1,45 @@
+2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/57541
+	* c-array-notation.c (fix_builtin_array_notation_fn):
+	Check for 0 arguments in builtin call. Check that bultin argument is
+	correct.
+	* c-parser.c (c_parser_array_notation): Check for incorrect initial
+	index.
+
+2014-06-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Discard all type
+	qualifiers in __auto_type for atomic types.
+	(c_parser_typeof_specifier): Discard all type qualifiers in
+	__typeof__ for atomic types.
+
+2014-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61162
+	* c-parser.c (c_parser_statement_after_labels): Pass the location of
+	the return expression to c_finish_return.
+
+2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Make sure
+	OMP_CLAUSE_LINEAR_STEP has correct type.
+
+2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-decl.c: Adjust.
+
+2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_for_loop): For
+	#pragma omp parallel for simd move lastprivate clause from parallel
+	to for rather than simd.
+
+2014-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (parser_build_binary_op): Don't call
+	warn_logical_not_parentheses if the RHS is TRUTH_NOT_EXPR.
+
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-parser.c (c_parser_omp_threadprivate): Likewise.

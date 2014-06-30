@@ -234,10 +234,22 @@ proc gfortran_target_compile { source dest type options } {
     global gluefile wrap_flags
     global ALWAYS_GFORTRANFLAGS
     global GFORTRAN_UNDER_TEST
+    global flags_to_postpone
+    global board_info
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
 	lappend options "ldflags=${wrap_flags}"
+    }
+
+    # bind_pic_locally adds -fpie/-fPIE flags to flags_to_postpone and it is
+    # appended here to multilib_flags as it can be overridden by the latter
+    # if it was added earlier. After the target_compile, multilib_flags is
+    # restored to its orignal content.
+    set tboard [target_info name]
+    if {[board_info $tboard exists multilib_flags]} {
+        set orig_multilib_flags "[board_info [target_info name] multilib_flags]"
+        append board_info($tboard,multilib_flags) " $flags_to_postpone"
     }
 
     lappend options "compiler=$GFORTRAN_UNDER_TEST"
@@ -245,5 +257,12 @@ proc gfortran_target_compile { source dest type options } {
 
     set options [concat "$ALWAYS_GFORTRANFLAGS" $options]
     set options [dg-additional-files-options $options $source]
-    return [target_compile $source $dest $type $options]
+    set return_val [target_compile $source $dest $type $options]
+
+    if {[board_info $tboard exists multilib_flags]} {
+        set board_info($tboard,multilib_flags) $orig_multilib_flags
+        set flags_to_postpone ""
+    }
+
+    return $return_val
 }

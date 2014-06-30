@@ -182,11 +182,10 @@ vtbl_map_node_registration_find (struct vtbl_map_node *node,
   struct vtable_registration key;
   struct vtable_registration **slot;
 
-  gcc_assert (node && node->registered.is_created ());
+  gcc_assert (node && node->registered);
 
   key.vtable_decl = vtable_decl;
-  slot = (struct vtable_registration **) node->registered.find_slot (&key,
-                                                                     NO_INSERT);
+  slot = node->registered->find_slot (&key, NO_INSERT);
 
   if (slot && (*slot))
     {
@@ -212,12 +211,11 @@ vtbl_map_node_registration_insert (struct vtbl_map_node *node,
   struct vtable_registration **slot;
   bool inserted_something = false;
 
-  if (!node || !node->registered.is_created ())
+  if (!node || !node->registered)
     return false;
 
   key.vtable_decl = vtable_decl;
-  slot = (struct vtable_registration **) node->registered.find_slot (&key,
-                                                                     INSERT);
+  slot = node->registered->find_slot (&key, INSERT);
 
   if (! *slot)
     {
@@ -307,11 +305,11 @@ vtbl_map_hasher::equal (const value_type *p1, const compare_type *p2)
    to find the nodes for various tasks (see comments in vtable-verify.h
    for more details.  */
 
-typedef hash_table <vtbl_map_hasher> vtbl_map_table_type;
+typedef hash_table<vtbl_map_hasher> vtbl_map_table_type;
 typedef vtbl_map_table_type::iterator vtbl_map_iterator_type;
 
 /* Vtable map variable nodes stored in a hash table.  */
-static vtbl_map_table_type vtbl_map_hash;
+static vtbl_map_table_type *vtbl_map_hash;
 
 /* Vtable map variable nodes stored in a vector.  */
 vec<struct vtbl_map_node *> vtbl_map_nodes_vec;
@@ -328,7 +326,7 @@ vtbl_map_get_node (tree class_type)
   tree class_name;
   unsigned int type_quals;
 
-  if (!vtbl_map_hash.is_created ())
+  if (!vtbl_map_hash)
     return NULL;
 
   gcc_assert (TREE_CODE (class_type) == RECORD_TYPE);
@@ -346,8 +344,7 @@ vtbl_map_get_node (tree class_type)
   class_name = DECL_ASSEMBLER_NAME (class_type_decl);
 
   key.class_name = class_name;
-  slot = (struct vtbl_map_node **) vtbl_map_hash.find_slot (&key,
-                                                            NO_INSERT);
+  slot = (struct vtbl_map_node **) vtbl_map_hash->find_slot (&key, NO_INSERT);
   if (!slot)
     return NULL;
   return *slot;
@@ -365,8 +362,8 @@ find_or_create_vtbl_map_node (tree base_class_type)
   tree class_type_decl;
   unsigned int type_quals;
 
-  if (!vtbl_map_hash.is_created ())
-    vtbl_map_hash.create (10);
+  if (!vtbl_map_hash)
+    vtbl_map_hash = new vtbl_map_table_type (10);
 
   /* Find the TYPE_DECL for the class.  */
   class_type_decl = TYPE_NAME (base_class_type);
@@ -377,8 +374,7 @@ find_or_create_vtbl_map_node (tree base_class_type)
 
   gcc_assert (HAS_DECL_ASSEMBLER_NAME_P (class_type_decl));
   key.class_name = DECL_ASSEMBLER_NAME (class_type_decl);
-  slot = (struct vtbl_map_node **) vtbl_map_hash.find_slot (&key,
-                                                            INSERT);
+  slot = (struct vtbl_map_node **) vtbl_map_hash->find_slot (&key, INSERT);
 
   if (*slot)
     return *slot;
@@ -396,7 +392,7 @@ find_or_create_vtbl_map_node (tree base_class_type)
   (node->class_info->parents).create (4);
   (node->class_info->children).create (4);
 
-  node->registered.create (16);
+  node->registered = new register_table_type (16);
 
   node->is_used = false;
 

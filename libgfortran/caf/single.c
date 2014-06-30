@@ -236,6 +236,292 @@ _gfortran_caf_co_max (gfc_descriptor_t *a __attribute__ ((unused)),
     *stat = 0;
 }
 
+
+static void
+assign_char4_from_char1 (size_t dst_size, size_t src_size, uint32_t *dst,
+			 unsigned char *src)
+{
+  size_t i, n;
+  n = dst_size/4 > src_size ? src_size : dst_size/4;
+  for (i = 0; i < n; ++i)
+    dst[i] = (int32_t) src[i];
+  for (; i < dst_size/4; ++i)
+    dst[i] = (int32_t) ' ';
+}
+
+
+static void
+assign_char1_from_char4 (size_t dst_size, size_t src_size, unsigned char *dst,
+			 uint32_t *src)
+{
+  size_t i, n;
+  n = dst_size > src_size/4 ? src_size/4 : dst_size;
+  for (i = 0; i < n; ++i)
+    dst[i] = src[i] > UINT8_MAX ? (unsigned char) '?' : (unsigned char) src[i];
+  if (dst_size > n)
+    memset(&dst[n], ' ', dst_size - n);
+}
+
+
+static void
+convert_type (void *dst, int dst_type, int dst_kind, void *src, int src_type,
+	      int src_kind)
+{
+#ifdef HAVE_GFC_INTEGER_16
+  typedef __int128 int128t;
+#else
+  typedef int64_t int128t;
+#endif
+
+#if defined(GFC_REAL_16_IS_LONG_DOUBLE)
+  typedef long double real128t;
+  typedef _Complex long double complex128t;
+#elif defined(HAVE_GFC_REAL_16)
+  typedef _Complex float __attribute__((mode(TC))) __complex128;
+  typedef __float128 real128t;
+  typedef __complex128 complex128t;
+#elif defined(HAVE_GFC_REAL_10)
+  typedef long double real128t;
+  typedef long double complex128t;
+#else
+  typedef double real128t;
+  typedef _Complex double complex128t;
+#endif
+
+  int128t int_val = 0;
+  real128t real_val = 0;
+  complex128t cmpx_val = 0;
+
+  switch (src_type)
+    {
+    case BT_INTEGER:
+      if (src_kind == 1)
+	int_val = *(int8_t*) src;
+      else if (src_kind == 2)
+	int_val = *(int16_t*) src;
+      else if (src_kind == 4)
+	int_val = *(int32_t*) src;
+      else if (src_kind == 8)
+	int_val = *(int64_t*) src;
+#ifdef HAVE_GFC_INTEGER_16
+      else if (src_kind == 16)
+	int_val = *(int128t*) src;
+#endif
+      else
+	goto error;
+      break;
+    case BT_REAL:
+      if (src_kind == 4)
+	real_val = *(float*) src;
+      else if (src_kind == 8)
+	real_val = *(double*) src;
+#ifdef HAVE_GFC_REAL_10
+      else if (src_kind == 10)
+	real_val = *(long double*) src;
+#endif
+#ifdef HAVE_GFC_REAL_16
+      else if (src_kind == 16)
+	real_val = *(real128t*) src;
+#endif
+      else
+	goto error;
+      break;
+    case BT_COMPLEX:
+      if (src_kind == 4)
+	cmpx_val = *(_Complex float*) src;
+      else if (src_kind == 8)
+	cmpx_val = *(_Complex double*) src;
+#ifdef HAVE_GFC_REAL_10
+      else if (src_kind == 10)
+	cmpx_val = *(_Complex long double*) src;
+#endif
+#ifdef HAVE_GFC_REAL_16
+      else if (src_kind == 16)
+	cmpx_val = *(complex128t*) src;
+#endif
+      else
+	goto error;
+      break;
+    default:
+      goto error;
+    }
+
+  switch (dst_type)
+    {
+    case BT_INTEGER:
+      if (src_type == BT_INTEGER)
+	{
+	  if (dst_kind == 1)
+	    *(int8_t*) dst = (int8_t) int_val;
+	  else if (dst_kind == 2)
+	    *(int16_t*) dst = (int16_t) int_val;
+	  else if (dst_kind == 4)
+	    *(int32_t*) dst = (int32_t) int_val;
+	  else if (dst_kind == 8)
+	    *(int64_t*) dst = (int64_t) int_val;
+#ifdef HAVE_GFC_INTEGER_16
+	  else if (dst_kind == 16)
+	    *(int128t*) dst = (int128t) int_val;
+#endif
+	  else
+	    goto error;
+	}
+      else if (src_type == BT_REAL)
+	{
+	  if (dst_kind == 1)
+	    *(int8_t*) dst = (int8_t) real_val;
+	  else if (dst_kind == 2)
+	    *(int16_t*) dst = (int16_t) real_val;
+	  else if (dst_kind == 4)
+	    *(int32_t*) dst = (int32_t) real_val;
+	  else if (dst_kind == 8)
+	    *(int64_t*) dst = (int64_t) real_val;
+#ifdef HAVE_GFC_INTEGER_16
+	  else if (dst_kind == 16)
+	    *(int128t*) dst = (int128t) real_val;
+#endif
+	  else
+	    goto error;
+	}
+      else if (src_type == BT_COMPLEX)
+	{
+	  if (dst_kind == 1)
+	    *(int8_t*) dst = (int8_t) cmpx_val;
+	  else if (dst_kind == 2)
+	    *(int16_t*) dst = (int16_t) cmpx_val;
+	  else if (dst_kind == 4)
+	    *(int32_t*) dst = (int32_t) cmpx_val;
+	  else if (dst_kind == 8)
+	    *(int64_t*) dst = (int64_t) cmpx_val;
+#ifdef HAVE_GFC_INTEGER_16
+	  else if (dst_kind == 16)
+	    *(int128t*) dst = (int128t) cmpx_val;
+#endif
+	  else
+	    goto error;
+	}
+      else
+	goto error;
+      break;
+    case BT_REAL:
+      if (src_type == BT_INTEGER)
+	{
+	  if (dst_kind == 4)
+	    *(float*) dst = (float) int_val;
+	  else if (dst_kind == 8)
+	    *(double*) dst = (double) int_val;
+#ifdef HAVE_GFC_REAL_10
+	  else if (dst_kind == 10)
+	    *(long double*) dst = (long double) int_val;
+#endif
+#ifdef HAVE_GFC_REAL_16
+	  else if (dst_kind == 16)
+	    *(real128t*) dst = (real128t) int_val;
+#endif
+	  else
+	    goto error;
+	}
+      else if (src_type == BT_REAL)
+	{
+	  if (dst_kind == 4)
+	    *(float*) dst = (float) real_val;
+	  else if (dst_kind == 8)
+	    *(double*) dst = (double) real_val;
+#ifdef HAVE_GFC_REAL_10
+	  else if (dst_kind == 10)
+	    *(long double*) dst = (long double) real_val;
+#endif
+#ifdef HAVE_GFC_REAL_16
+	  else if (dst_kind == 16)
+	    *(real128t*) dst = (real128t) real_val;
+#endif
+	  else
+	    goto error;
+	}
+      else if (src_type == BT_COMPLEX)
+	{
+	  if (dst_kind == 4)
+	    *(float*) dst = (float) cmpx_val;
+	  else if (dst_kind == 8)
+	    *(double*) dst = (double) cmpx_val;
+#ifdef HAVE_GFC_REAL_10
+	  else if (dst_kind == 10)
+	    *(long double*) dst = (long double) cmpx_val;
+#endif
+#ifdef HAVE_GFC_REAL_16
+	  else if (dst_kind == 16)
+	    *(real128t*) dst = (real128t) cmpx_val;
+#endif
+	  else
+	    goto error;
+	}
+      break;
+    case BT_COMPLEX:
+      if (src_type == BT_INTEGER)
+	{
+	  if (dst_kind == 4)
+	    *(_Complex float*) dst = (_Complex float) int_val;
+	  else if (dst_kind == 8)
+	    *(_Complex double*) dst = (_Complex double) int_val;
+#ifdef HAVE_GFC_REAL_10
+	  else if (dst_kind == 10)
+	    *(_Complex long double*) dst = (_Complex long double) int_val;
+#endif
+#ifdef HAVE_GFC_REAL_16
+	  else if (dst_kind == 16)
+	    *(complex128t*) dst = (complex128t) int_val;
+#endif
+	  else
+	    goto error;
+	}
+      else if (src_type == BT_REAL)
+	{
+	  if (dst_kind == 4)
+	    *(_Complex float*) dst = (_Complex float) real_val;
+	  else if (dst_kind == 8)
+	    *(_Complex double*) dst = (_Complex double) real_val;
+#ifdef HAVE_GFC_REAL_10
+	  else if (dst_kind == 10)
+	    *(_Complex long double*) dst = (_Complex long double) real_val;
+#endif
+#ifdef HAVE_GFC_REAL_16
+	  else if (dst_kind == 16)
+	    *(complex128t*) dst = (complex128t) real_val;
+#endif
+	  else
+	    goto error;
+	}
+      else if (src_type == BT_COMPLEX)
+	{
+	  if (dst_kind == 4)
+	    *(_Complex float*) dst = (_Complex float) cmpx_val;
+	  else if (dst_kind == 8)
+	    *(_Complex double*) dst = (_Complex double) cmpx_val;
+#ifdef HAVE_GFC_REAL_10
+	  else if (dst_kind == 10)
+	    *(_Complex long double*) dst = (_Complex long double) cmpx_val;
+#endif
+#ifdef HAVE_GFC_REAL_16
+	  else if (dst_kind == 16)
+	    *(complex128t*) dst = (complex128t) cmpx_val;
+#endif
+	  else
+	    goto error;
+	}
+      else
+	goto error;
+      break;
+    default:
+      goto error;
+    }
+
+error:
+  fprintf (stderr, "libcaf_single RUNTIME ERROR: Cannot convert type %d kind "
+	   "%d to type %d kind %d\n", src_type, src_kind, dst_type, dst_kind);
+  abort();
+}
+
+
 void
 _gfortran_caf_get (caf_token_t token, size_t offset,
 		   int image_index __attribute__ ((unused)),
@@ -243,9 +529,7 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
 		   caf_vector_t *src_vector __attribute__ ((unused)),
 		   gfc_descriptor_t *dest, int src_kind, int dst_kind)
 {
-  /* FIXME: Handle vector subscript, type conversion and assignment "array = scalar".
-     check in particular whether strings of different kinds are permitted and
-     whether it makes sense to handle array = scalar.  */
+  /* FIXME: Handle vector subscripts.  */
   size_t i, k, size;
   int j;
   int rank = GFC_DESCRIPTOR_RANK (dest);
@@ -255,19 +539,30 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
   if (rank == 0)
     {
       void *sr = (void *) ((char *) TOKEN (token) + offset);
-      if (dst_kind == src_kind)
-	memmove (GFC_DESCRIPTOR_DATA (dest), sr,
-		 dst_size > src_size ? src_size : dst_size);
-      /* else: FIXME: type conversion.  */
-      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+      if (GFC_DESCRIPTOR_TYPE (dest) == GFC_DESCRIPTOR_TYPE (src)
+	  && dst_kind == src_kind)
 	{
-	  if (dst_kind == 1)
-	    memset ((void*)(char*) GFC_DESCRIPTOR_DATA (dest) + src_size, ' ',
-		    dst_size-src_size);
-	  else /* dst_kind == 4.  */
-	    for (i = src_size/4; i < dst_size/4; i++)
-	      ((int32_t*) GFC_DESCRIPTOR_DATA (dest))[i] = (int32_t)' ';
+	  memmove (GFC_DESCRIPTOR_DATA (dest), sr,
+		   dst_size > src_size ? src_size : dst_size);
+	  if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	    {
+	      if (dst_kind == 1)
+		memset ((void*)(char*) GFC_DESCRIPTOR_DATA (dest) + src_size,
+			' ', dst_size - src_size);
+	      else /* dst_kind == 4.  */
+		for (i = src_size/4; i < dst_size/4; i++)
+		  ((int32_t*) GFC_DESCRIPTOR_DATA (dest))[i] = (int32_t) ' ';
+	    }
 	}
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_kind == 1)
+	assign_char1_from_char4 (dst_size, src_size, GFC_DESCRIPTOR_DATA (dest),
+				 sr);
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER)
+	assign_char4_from_char1 (dst_size, src_size, GFC_DESCRIPTOR_DATA (dest),
+				 sr);
+      else
+	convert_type (GFC_DESCRIPTOR_DATA (dest), GFC_DESCRIPTOR_TYPE (dest),
+		      dst_kind, sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
       return;
     }
 
@@ -300,39 +595,42 @@ _gfortran_caf_get (caf_token_t token, size_t offset,
       array_offset_dst += (i / extent) * dest->dim[rank-1]._stride;
       void *dst = dest->base_addr + array_offset_dst*GFC_DESCRIPTOR_SIZE (dest);
 
-      void *sr;
-      if (GFC_DESCRIPTOR_RANK (src) != 0)
+      ptrdiff_t array_offset_sr = 0;
+      stride = 1;
+      extent = 1;
+      for (j = 0; j < GFC_DESCRIPTOR_RANK (src)-1; j++)
 	{
-	  ptrdiff_t array_offset_sr = 0;
-	  stride = 1;
-	  extent = 1;
-	  for (j = 0; j < GFC_DESCRIPTOR_RANK (src)-1; j++)
-	    {
-	      array_offset_sr += ((i / (extent*stride))
-				  % (src->dim[j]._ubound
-				     - src->dim[j].lower_bound + 1))
-				 * src->dim[j]._stride;
-	      extent = (src->dim[j]._ubound - src->dim[j].lower_bound + 1);
-	      stride = src->dim[j]._stride;
-	    }
-	  array_offset_sr += (i / extent) * src->dim[rank-1]._stride;
-	  sr = (void *)((char *) TOKEN (token) + offset
-			+ array_offset_sr*GFC_DESCRIPTOR_SIZE (src));
+	  array_offset_sr += ((i / (extent*stride))
+			       % (src->dim[j]._ubound
+				  - src->dim[j].lower_bound + 1))
+			      * src->dim[j]._stride;
+	  extent = (src->dim[j]._ubound - src->dim[j].lower_bound + 1);
+	  stride = src->dim[j]._stride;
 	}
-      else
-	sr = (void *)((char *) TOKEN (token) + offset);
+      array_offset_sr += (i / extent) * src->dim[rank-1]._stride;
+      void *sr = (void *)((char *) TOKEN (token) + offset
+			  + array_offset_sr*GFC_DESCRIPTOR_SIZE (src));
 
-      if (dst_kind == src_kind)
-	memmove (dst, sr, dst_size > src_size ? src_size : dst_size);
-      /* else: FIXME: type conversion.  */
-      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+      if (GFC_DESCRIPTOR_TYPE (dest) == GFC_DESCRIPTOR_TYPE (src)
+	  && dst_kind == src_kind)
 	{
-	  if (dst_kind == 1)
-	    memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
-	  else /* dst_kind == 4.  */
-	    for (k = src_size/4; k < dst_size/4; i++)
-	      ((int32_t*) dst)[i] = (int32_t)' ';
+	  memmove (dst, sr, dst_size > src_size ? src_size : dst_size);
+	  if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	    {
+	      if (dst_kind == 1)
+		memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
+	      else /* dst_kind == 4.  */
+		for (k = src_size/4; k < dst_size/4; k++)
+		  ((int32_t*) dst)[k] = (int32_t) ' ';
+	    }
 	}
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_kind == 1)
+	assign_char1_from_char4 (dst_size, src_size, dst, sr);
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER)
+	assign_char4_from_char1 (dst_size, src_size, dst, sr);
+      else
+	convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
+		      sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
     }
 }
 
@@ -342,11 +640,9 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 		    int image_index __attribute__ ((unused)),
 		    gfc_descriptor_t *dest,
 		    caf_vector_t *dst_vector __attribute__ ((unused)),
-		    gfc_descriptor_t *src, int dst_kind,
-		    int src_kind __attribute__ ((unused)))
+		    gfc_descriptor_t *src, int dst_kind, int src_kind)
 {
-  /* FIXME: Handle vector subscript, type conversion and assignment "array = scalar".
-     check in particular whether strings of different kinds are permitted.  */
+  /* FIXME: Handle vector subscripts.  */
   size_t i, k, size;
   int j;
   int rank = GFC_DESCRIPTOR_RANK (dest);
@@ -356,18 +652,30 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
   if (rank == 0)
     {
       void *dst = (void *) ((char *) TOKEN (token) + offset);
-      if (dst_kind == src_kind)
-	memmove (dst, GFC_DESCRIPTOR_DATA (src),
-		 dst_size > src_size ? src_size : dst_size);
-      /* else: FIXME: type conversion.  */
-      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+      if (GFC_DESCRIPTOR_TYPE (dest) == GFC_DESCRIPTOR_TYPE (src)
+	  && dst_kind == src_kind)
 	{
-	  if (dst_kind == 1)
-	    memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
-	  else /* dst_kind == 4.  */
-	    for (i = src_size/4; i < dst_size/4; i++)
-	      ((int32_t*) dst)[i] = (int32_t)' ';
+	  memmove (dst, GFC_DESCRIPTOR_DATA (src),
+		   dst_size > src_size ? src_size : dst_size);
+	  if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	    {
+	      if (dst_kind == 1)
+		memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
+	      else /* dst_kind == 4.  */
+		for (i = src_size/4; i < dst_size/4; i++)
+		  ((int32_t*) dst)[i] = (int32_t) ' ';
+	    }
 	}
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_kind == 1)
+	assign_char1_from_char4 (dst_size, src_size, dst,
+				 GFC_DESCRIPTOR_DATA (src));
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER)
+	assign_char4_from_char1 (dst_size, src_size, dst,
+				 GFC_DESCRIPTOR_DATA (src));
+      else
+	convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
+		      GFC_DESCRIPTOR_DATA (src), GFC_DESCRIPTOR_TYPE (src),
+		      src_kind);
       return;
     }
 
@@ -382,16 +690,6 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
 
   if (size == 0)
     return;
-
-#if 0
-  if (dst_len == src_len && PREFIX (is_contiguous) (dest)
-      && PREFIX (is_contiguous) (src))
-    {
-      void *dst = (void *)((char *) TOKEN (token) + offset);
-      memmove (dst, src->base_addr, GFC_DESCRIPTOR_SIZE (dest)*size);
-      return;
-    }
-#endif
 
   for (i = 0; i < size; i++)
     {
@@ -432,17 +730,27 @@ _gfortran_caf_send (caf_token_t token, size_t offset,
       else
 	sr = src->base_addr;
 
-      if (dst_kind == src_kind)
-	memmove (dst, sr, dst_size > src_size ? src_size : dst_size);
-      /* else: FIXME: type conversion.  */
-      if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+      if (GFC_DESCRIPTOR_TYPE (dest) == GFC_DESCRIPTOR_TYPE (src)
+	  && dst_kind == src_kind)
 	{
-	  if (dst_kind == 1)
-	    memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
-	  else /* dst_kind == 4.  */
-	    for (k = src_size/4; k < dst_size/4; i++)
-	      ((int32_t*) dst)[i] = (int32_t)' ';
+	  memmove (dst, sr,
+		   dst_size > src_size ? src_size : dst_size);
+	  if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_size > src_size)
+	    {
+	      if (dst_kind == 1)
+		memset ((void*)(char*) dst + src_size, ' ', dst_size-src_size);
+	      else /* dst_kind == 4.  */
+		for (k = src_size/4; k < dst_size/4; k++)
+		  ((int32_t*) dst)[k] = (int32_t) ' ';
+	    }
 	}
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER && dst_kind == 1)
+	assign_char1_from_char4 (dst_size, src_size, dst, sr);
+      else if (GFC_DESCRIPTOR_TYPE (dest) == BT_CHARACTER)
+	assign_char4_from_char1 (dst_size, src_size, dst, sr);
+      else
+	convert_type (dst, GFC_DESCRIPTOR_TYPE (dest), dst_kind,
+		      sr, GFC_DESCRIPTOR_TYPE (src), src_kind);
     }
 }
 

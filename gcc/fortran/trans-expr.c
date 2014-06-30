@@ -57,6 +57,8 @@ get_scalar_to_descriptor_type (tree scalar, symbol_attribute attr)
   else
     akind = GFC_ARRAY_ASSUMED_SHAPE_CONT;
 
+  if (POINTER_TYPE_P (TREE_TYPE (scalar)))
+    scalar = TREE_TYPE (scalar);
   return gfc_get_array_type_bounds (TREE_TYPE (scalar), 0, 0, NULL, NULL, 1,
 				    akind, !(attr.pointer || attr.target));
 }

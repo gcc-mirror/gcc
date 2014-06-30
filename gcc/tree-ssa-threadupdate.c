@@ -311,7 +311,7 @@ create_block_for_threading (basic_block bb,
 
 /* Main data structure to hold information for duplicates of BB.  */
 
-static hash_table <redirection_data> redirection_data;
+static hash_table<redirection_data> *redirection_data;
 
 /* Given an outgoing edge E lookup and return its entry in our hash table.
 
@@ -334,7 +334,7 @@ lookup_redirection_data (edge e, enum insert_option insert)
   elt->dup_blocks[1] = NULL;
   elt->incoming_edges = NULL;
 
-  slot = redirection_data.find_slot (elt, insert);
+  slot = redirection_data->find_slot (elt, insert);
 
   /* This will only happen if INSERT is false and the entry is not
      in the hash table.  */
@@ -764,6 +764,14 @@ ssa_redirect_edges (struct redirection_data **slot,
 	  if ((*path)[1]->type != EDGE_COPY_SRC_JOINER_BLOCK)
 	    EDGE_SUCC (rd->dup_blocks[0], 0)->count += e->count;
 
+	  /* If we redirect a loop latch edge cancel its loop.  */
+	  if (e->src == e->src->loop_father->latch)
+	    {
+	      e->src->loop_father->header = NULL;
+	      e->src->loop_father->latch = NULL;
+	      loops_state_set (LOOPS_NEED_FIXUP);
+	    }
+
 	  /* Redirect the incoming edge (possibly to the joiner block) to the
 	     appropriate duplicate block.  */
 	  e2 = redirect_edge_and_branch (e, rd->dup_blocks[0]);
@@ -844,39 +852,13 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
   edge e, e2;
   edge_iterator ei;
   ssa_local_info_t local_info;
-  struct loop *loop = bb->loop_father;
 
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable
      difference.  However, if we have a block with a large number of
      incoming and outgoing edges such linear searches can get expensive.  */
-  redirection_data.create (EDGE_COUNT (bb->succs));
-
-  /* If we thread the latch of the loop to its exit, the loop ceases to
-     exist.  Make sure we do not restrict ourselves in order to preserve
-     this loop.  */
-  if (loop->header == bb)
-    {
-      e = loop_latch_edge (loop);
-      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-
-      if (path
-	  && (((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK && joiners)
-	      || ((*path)[1]->type == EDGE_COPY_SRC_BLOCK && !joiners)))
-	{
-	  for (unsigned int i = 1; i < path->length (); i++)
-	    {
-	      edge e2 = (*path)[i]->e;
-
-	      if (loop_exit_edge_p (loop, e2))
-		{
-		  loop->header = NULL;
-		  loop->latch = NULL;
-		  loops_state_set (LOOPS_NEED_FIXUP);
-		}
-	    }
-	}
-    }
+  redirection_data
+    = new hash_table<struct redirection_data> (EDGE_COUNT (bb->succs));
 
   /* Record each unique threaded destination into a hash table for
      efficient lookups.  */
@@ -961,7 +943,7 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
   local_info.template_block = NULL;
   local_info.bb = bb;
   local_info.jumps_threaded = false;
-  redirection_data.traverse <ssa_local_info_t *, ssa_create_duplicates>
+  redirection_data->traverse <ssa_local_info_t *, ssa_create_duplicates>
 			    (&local_info);
 
   /* The template does not have an outgoing edge.  Create that outgoing
@@ -969,18 +951,19 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 
      We do this after creating all the duplicates to avoid creating
      unnecessary edges.  */
-  redirection_data.traverse <ssa_local_info_t *, ssa_fixup_template_block>
+  redirection_data->traverse <ssa_local_info_t *, ssa_fixup_template_block>
 			    (&local_info);
 
   /* The hash table traversals above created the duplicate blocks (and the
      statements within the duplicate blocks).  This loop creates PHI nodes for
      the duplicated blocks and redirects the incoming edges into BB to reach
      the duplicates of BB.  */
-  redirection_data.traverse <ssa_local_info_t *, ssa_redirect_edges>
+  redirection_data->traverse <ssa_local_info_t *, ssa_redirect_edges>
 			    (&local_info);
 
   /* Done with this block.  Clear REDIRECTION_DATA.  */
-  redirection_data.dispose ();
+  delete redirection_data;
+  redirection_data = NULL;
 
   if (noloop_only
       && bb == bb->loop_father->header)

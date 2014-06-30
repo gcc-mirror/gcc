@@ -3462,7 +3462,8 @@ parser_build_binary_op (location_t location, enum tree_code code,
 			   code1, arg1.value, code2, arg2.value);
 
   if (warn_logical_not_paren
-      && code1 == TRUTH_NOT_EXPR)
+      && code1 == TRUTH_NOT_EXPR
+      && code2 != TRUTH_NOT_EXPR)
     warn_logical_not_parentheses (location, code, arg1.value, arg2.value);
 
   /* Warn about comparisons against string literals, with the exception
@@ -9443,7 +9444,8 @@ c_finish_goto_ptr (location_t loc, tree expr)
 
 /* Generate a C `return' statement.  RETVAL is the expression for what
    to return, or a null pointer for `return;' with no value.  LOC is
-   the location of the return statement.  If ORIGTYPE is not NULL_TREE, it
+   the location of the return statement, or the location of the expression,
+   if the statement has any.  If ORIGTYPE is not NULL_TREE, it
    is the original type of RETVAL.  */
 
 tree
@@ -12341,6 +12343,9 @@ c_finish_omp_clauses (tree clauses)
 		s = size_one_node;
 	      OMP_CLAUSE_LINEAR_STEP (c) = s;
 	    }
+	  else
+	    OMP_CLAUSE_LINEAR_STEP (c)
+	      = fold_convert (TREE_TYPE (t), OMP_CLAUSE_LINEAR_STEP (c));
 	  goto check_dup_generic;
 
 	check_dup_generic:

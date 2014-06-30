@@ -148,7 +148,7 @@ expr_hasher::equal (const value_type *exp1, const compare_type *exp2)
 }
 
 /* The table itself.  */
-static hash_table <expr_hasher> expr_table;
+static hash_table<expr_hasher> *expr_table;
 
 
 static struct obstack expr_obstack;
@@ -279,7 +279,7 @@ alloc_mem (void)
      make the hash table too small, but unnecessarily making it too large
      also doesn't help.  The i/4 is a gcse.c relic, and seems like a
      reasonable choice.  */
-  expr_table.create (MAX (i / 4, 13));
+  expr_table = new hash_table<expr_hasher> (MAX (i / 4, 13));
 
   /* We allocate everything on obstacks because we often can roll back
      the whole obstack to some point.  Freeing obstacks is very fast.  */
@@ -306,7 +306,8 @@ free_mem (void)
 {
   free (uid_cuid);
 
-  expr_table.dispose ();
+  delete expr_table;
+  expr_table = NULL;
 
   obstack_free (&expr_obstack, NULL);
   obstack_free (&occr_obstack, NULL);
@@ -348,7 +349,7 @@ insert_expr_in_table (rtx x, rtx insn)
   cur_expr->hash = hash;
   cur_expr->avail_occr = NULL;
 
-  slot = expr_table.find_slot_with_hash (cur_expr, hash, INSERT);
+  slot = expr_table->find_slot_with_hash (cur_expr, hash, INSERT);
 
   if (! (*slot))
     /* The expression isn't found, so insert it.  */
@@ -416,7 +417,7 @@ lookup_expr_in_table (rtx pat)
   tmp_expr->hash = hash;
   tmp_expr->avail_occr = NULL;
 
-  slot = expr_table.find_slot_with_hash (tmp_expr, hash, INSERT);
+  slot = expr_table->find_slot_with_hash (tmp_expr, hash, INSERT);
   obstack_free (&expr_obstack, tmp_expr);
 
   if (!slot)
@@ -457,13 +458,13 @@ dump_hash_table (FILE *file)
 {
   fprintf (file, "\n\nexpression hash table\n");
   fprintf (file, "size %ld, %ld elements, %f collision/search ratio\n",
-           (long) expr_table.size (),
-           (long) expr_table.elements (),
-           expr_table.collisions ());
-  if (expr_table.elements () > 0)
+           (long) expr_table->size (),
+           (long) expr_table->elements (),
+           expr_table->collisions ());
+  if (expr_table->elements () > 0)
     {
       fprintf (file, "\n\ntable entries:\n");
-      expr_table.traverse <FILE *, dump_expr_hash_table_entry> (file);
+      expr_table->traverse <FILE *, dump_expr_hash_table_entry> (file);
     }
   fprintf (file, "\n");
 }
@@ -1253,7 +1254,7 @@ delete_redundant_insns_1 (expr **slot, void *data ATTRIBUTE_UNUSED)
 static void
 delete_redundant_insns (void)
 {
-  expr_table.traverse <void *, delete_redundant_insns_1> (NULL);
+  expr_table->traverse <void *, delete_redundant_insns_1> (NULL);
   if (dump_file)
     fprintf (dump_file, "\n");
 }
@@ -1279,7 +1280,7 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
   if (dump_file)
     dump_hash_table (dump_file);
 
-  if (expr_table.elements () > 0)
+  if (expr_table->elements () > 0)
     {
       eliminate_partially_redundant_loads ();
       delete_redundant_insns ();

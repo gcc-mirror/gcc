@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-ipa-cp"  } */
+/* { dg-add-options bind_pic_locally } */
 
 class ert_RefCounter {
  protected:
@@ -22,5 +23,5 @@ void dpr_run(ebs_Object& objectA) {
   dpr_Job jobL;
   dpr_run(jobL);
 }
-/* { dg-final { scan-ipa-dump "Type inconsident devirtualization" "cp"  } } */
+/* { dg-final { scan-ipa-dump "Type inconsistent devirtualization" "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */

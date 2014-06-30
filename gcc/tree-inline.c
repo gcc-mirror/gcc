@@ -451,6 +451,8 @@ remap_type_1 (tree type, copy_body_data *id)
   TYPE_POINTER_TO (new_tree) = NULL;
   TYPE_REFERENCE_TO (new_tree) = NULL;
 
+  /* Copy all types that may contain references to local variables; be sure to
+     preserve sharing in between type and its main variant when possible.  */
   switch (TREE_CODE (new_tree))
     {
     case INTEGER_TYPE:
@@ -458,40 +460,72 @@ remap_type_1 (tree type, copy_body_data *id)
     case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-      t = TYPE_MIN_VALUE (new_tree);
-      if (t && TREE_CODE (t) != INTEGER_CST)
-        walk_tree (&TYPE_MIN_VALUE (new_tree), copy_tree_body_r, id, NULL);
+      if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
+	{
+	  gcc_checking_assert (TYPE_MIN_VALUE (type) == TYPE_MIN_VALUE (TYPE_MAIN_VARIANT (type)));
+	  gcc_checking_assert (TYPE_MAX_VALUE (type) == TYPE_MAX_VALUE (TYPE_MAIN_VARIANT (type)));
 
-      t = TYPE_MAX_VALUE (new_tree);
-      if (t && TREE_CODE (t) != INTEGER_CST)
-        walk_tree (&TYPE_MAX_VALUE (new_tree), copy_tree_body_r, id, NULL);
+	  TYPE_MIN_VALUE (new_tree) = TYPE_MIN_VALUE (TYPE_MAIN_VARIANT (new_tree));
+	  TYPE_MAX_VALUE (new_tree) = TYPE_MAX_VALUE (TYPE_MAIN_VARIANT (new_tree));
+	}
+      else
+	{
+	  t = TYPE_MIN_VALUE (new_tree);
+	  if (t && TREE_CODE (t) != INTEGER_CST)
+	    walk_tree (&TYPE_MIN_VALUE (new_tree), copy_tree_body_r, id, NULL);
+
+	  t = TYPE_MAX_VALUE (new_tree);
+	  if (t && TREE_CODE (t) != INTEGER_CST)
+	    walk_tree (&TYPE_MAX_VALUE (new_tree), copy_tree_body_r, id, NULL);
+	}
       return new_tree;
 
     case FUNCTION_TYPE:
-      TREE_TYPE (new_tree) = remap_type (TREE_TYPE (new_tree), id);
-      walk_tree (&TYPE_ARG_TYPES (new_tree), copy_tree_body_r, id, NULL);
+      if (TYPE_MAIN_VARIANT (new_tree) != new_tree
+	  && TREE_TYPE (type) == TREE_TYPE (TYPE_MAIN_VARIANT (type)))
+	TREE_TYPE (new_tree) = TREE_TYPE (TYPE_MAIN_VARIANT (new_tree));
+      else
+        TREE_TYPE (new_tree) = remap_type (TREE_TYPE (new_tree), id);
+      if (TYPE_MAIN_VARIANT (new_tree) != new_tree
+	  && TYPE_ARG_TYPES (type) == TYPE_ARG_TYPES (TYPE_MAIN_VARIANT (type)))
+	TYPE_ARG_TYPES (new_tree) = TYPE_ARG_TYPES (TYPE_MAIN_VARIANT (new_tree));
+      else
+        walk_tree (&TYPE_ARG_TYPES (new_tree), copy_tree_body_r, id, NULL);
       return new_tree;
 
     case ARRAY_TYPE:
-      TREE_TYPE (new_tree) = remap_type (TREE_TYPE (new_tree), id);
-      TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
+      if (TYPE_MAIN_VARIANT (new_tree) != new_tree
+	  && TREE_TYPE (type) == TREE_TYPE (TYPE_MAIN_VARIANT (type)))
+	TREE_TYPE (new_tree) = TREE_TYPE (TYPE_MAIN_VARIANT (new_tree));
+
+      if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
+	{
+	  gcc_checking_assert (TYPE_DOMAIN (type) == TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)));
+	  TYPE_DOMAIN (new_tree) = TYPE_DOMAIN (TYPE_MAIN_VARIANT (new_tree));
+	}
+      else
+	TYPE_DOMAIN (new_tree) = remap_type (TYPE_DOMAIN (new_tree), id);
       break;
 
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      {
-	tree f, nf = NULL;
+      if (TYPE_MAIN_VARIANT (type) != type
+	  && TYPE_FIELDS (type) == TYPE_FIELDS (TYPE_MAIN_VARIANT (type)))
+	TYPE_FIELDS (new_tree) = TYPE_FIELDS (TYPE_MAIN_VARIANT (new_tree));
+      else
+	{
+	  tree f, nf = NULL;
 
-	for (f = TYPE_FIELDS (new_tree); f ; f = DECL_CHAIN (f))
-	  {
-	    t = remap_decl (f, id);
-	    DECL_CONTEXT (t) = new_tree;
-	    DECL_CHAIN (t) = nf;
-	    nf = t;
-	  }
-	TYPE_FIELDS (new_tree) = nreverse (nf);
-      }
+	  for (f = TYPE_FIELDS (new_tree); f ; f = DECL_CHAIN (f))
+	    {
+	      t = remap_decl (f, id);
+	      DECL_CONTEXT (t) = new_tree;
+	      DECL_CHAIN (t) = nf;
+	      nf = t;
+	    }
+	  TYPE_FIELDS (new_tree) = nreverse (nf);
+	}
       break;
 
     case OFFSET_TYPE:
@@ -500,8 +534,20 @@ remap_type_1 (tree type, copy_body_data *id)
       gcc_unreachable ();
     }
 
-  walk_tree (&TYPE_SIZE (new_tree), copy_tree_body_r, id, NULL);
-  walk_tree (&TYPE_SIZE_UNIT (new_tree), copy_tree_body_r, id, NULL);
+  /* All variants of type share the same size, so use the already remaped data.  */
+  if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
+    {
+      gcc_checking_assert (TYPE_SIZE (type) == TYPE_SIZE (TYPE_MAIN_VARIANT (type)));
+      gcc_checking_assert (TYPE_SIZE_UNIT (type) == TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type)));
+
+      TYPE_SIZE (new_tree) = TYPE_SIZE (TYPE_MAIN_VARIANT (new_tree));
+      TYPE_SIZE_UNIT (new_tree) = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (new_tree));
+    }
+  else
+    {
+      walk_tree (&TYPE_SIZE (new_tree), copy_tree_body_r, id, NULL);
+      walk_tree (&TYPE_SIZE_UNIT (new_tree), copy_tree_body_r, id, NULL);
+    }
 
   return new_tree;
 }
@@ -1791,7 +1837,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 							       (old_edge->frequency + indirect->frequency)),
 							 CGRAPH_FREQ_MAX);
 			    }
-			  ipa_clone_ref (ref, id->dst_node, stmt);
+			  id->dst_node->clone_reference (ref, stmt);
 			}
 		      else
 			{
@@ -3696,6 +3742,7 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case WIDEN_SUM_EXPR:
     case WIDEN_MULT_EXPR:
     case DOT_PROD_EXPR:
+    case SAD_EXPR:
     case WIDEN_MULT_PLUS_EXPR:
     case WIDEN_MULT_MINUS_EXPR:
     case WIDEN_LSHIFT_EXPR:
@@ -5168,7 +5215,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 	      struct cgraph_edge *e;
 	      struct cgraph_node *node;
 
-	      ipa_remove_stmt_references (id->dst_node, gsi_stmt (bsi));
+	      id->dst_node->remove_stmt_references (gsi_stmt (bsi));
 
 	      if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
 		  &&(e = cgraph_edge (id->dst_node, gsi_stmt (bsi))) != NULL)
@@ -5182,7 +5229,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 		  && id->dst_node->clones)
 		for (node = id->dst_node->clones; node != id->dst_node;)
 		  {
-		    ipa_remove_stmt_references (node, gsi_stmt (bsi));
+		    node->remove_stmt_references (gsi_stmt (bsi));
 		    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
 			&& (e = cgraph_edge (node, gsi_stmt (bsi))) != NULL)
 		      {

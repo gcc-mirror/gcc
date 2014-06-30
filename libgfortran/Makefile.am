@@ -54,6 +54,11 @@ libcaf_single_la_LDFLAGS = -static
 libcaf_single_la_DEPENDENCIES = caf/libcaf.h
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
 
+if IEEE_SUPPORT
+fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
+nodist_finclude_HEADERS = ieee_arithmetic.mod ieee_exceptions.mod ieee_features.mod
+endif
+
 ## io.h conflicts with a system header on some platforms, so
 ## use -iquote
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
@@ -70,6 +75,7 @@ AM_CFLAGS += $(SECTION_FLAGS)
 
 # Some targets require additional compiler options for IEEE compatibility.
 AM_CFLAGS += $(IEEE_FLAGS)
+AM_FCFLAGS += $(IEEE_FLAGS)
 
 gfor_io_src= \
 io/close.c \
@@ -159,6 +165,21 @@ intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
 runtime/in_unpack_generic.c
+
+if IEEE_SUPPORT
+
+gfor_helper_src+=ieee/ieee_helper.c
+
+gfor_ieee_src= \
+ieee/ieee_arithmetic.F90 \
+ieee/ieee_exceptions.F90 \
+ieee/ieee_features.F90
+
+else
+
+gfor_ieee_src=
+
+endif
 
 gfor_src= \
 runtime/backtrace.c \
@@ -650,7 +671,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
     $(i_pow_c) $(i_rrspacing_c) $(i_spacing_c) $(i_pack_c) $(i_unpack_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
-    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h
+    $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc
 
 # Machine generated specifics
 gfor_built_specific_src= \
@@ -811,11 +832,27 @@ $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 $(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -fallow-leading-underscore
 selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
 
+if IEEE_SUPPORT
+# Add flags for IEEE modules
+$(patsubst %.F90,%.lo,$(notdir $(gfor_ieee_src))): AM_FCFLAGS += -Wno-unused-dummy-argument -Wno-c-binding-type -ffree-line-length-0 -fallow-leading-underscore
+endif
+
+# Dependencies between IEEE_ARITHMETIC and IEEE_EXCEPTIONS
+ieee_arithmetic.lo: ieee/ieee_arithmetic.F90 ieee_exceptions.lo
+	$(LTPPFCCOMPILE) -c -o $@ $<
+
+ieee_features.mod: ieee_features.lo
+	:
+ieee_exceptions.mod: ieee_exceptions.lo
+	:
+ieee_arithmetic.mod: ieee_arithmetic.lo
+	:
+
 BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
     $(gfor_built_specific2_src) $(gfor_misc_specifics)
 
 prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
-    $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
+    $(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
 
 if onestep
 # dummy sources for libtool
@@ -870,6 +907,10 @@ selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
 
 fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 	cp $(srcdir)/$(FPU_HOST_HEADER) $@
+
+fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
+	grep '^#define GFC_FPE_' < $(top_srcdir)/../gcc/fortran/libgfortran.h > $@ || true
+	grep '^#define GFC_FPE_' < $(srcdir)/libgfortran.h >> $@ || true
 
 ## A 'normal' build shouldn't need to regenerate these
 ## so we only include them in maintainer mode

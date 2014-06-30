@@ -1,3 +1,7 @@
+2014-06-28  Richard Biener  <rguenther@suse.de>
+
+	* gennews: Use gcc-3.0/index.html.
+
 2014-06-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* dg-extract-results.py: For Python 3, force sys.stdout to handle

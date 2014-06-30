@@ -1,3 +1,8 @@
+2014-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* sanitizer_common/sanitizer_common_interceptors.inc:
+	Cherry pick upstream r211008.
+
 2014-06-11  Richard Biener  <rguenther@suse.de>
 
 	* asan/asan_linux.cc: Cherry pick upstream r210012.
@@ -24,7 +29,8 @@
 	* asan/Makefile.in: Regenerate.
 	* tsan/Makefile.am (tsan_files): Added new files.
 	* tsan/Makefile.in: Regenerate.
-	* sanitizer_common/Makefile.am (sanitizer_common_files): Added new files.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Added new
+	files.
 	* sanitizer_common/Makefile.in: Regenerate.
 
 2014-05-14  Yury Gribov  <y.gribov@samsung.com>
