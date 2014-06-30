@@ -1,5 +1,10 @@
 2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/54891
+	* g++.dg/cpp0x/lambda/lambda-cast1.C: New.
+
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51400
 	* g++.dg/cpp0x/constexpr-attribute3.C: New.
 

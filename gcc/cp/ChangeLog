@@ -1,3 +1,11 @@
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54891
+	* parser.c (cp_parser_tokens_start_cast_expression): In C++11
+	a '[' can also start a primary-expression.
+	(cp_parser_cast_expression): Parse a cast-expression only tentatively
+	when cp_parser_tokens_start_cast_expression returns -1.
+
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61539
