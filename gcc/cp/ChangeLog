@@ -1,5 +1,8 @@
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61647
+	* pt.c (type_dependent_expression_p): Check BASELINK_OPTYPE.
+
 	PR c++/61566
 	* mangle.c (decl_mangling_context): Look through a TEMPLATE_DECL.
 
