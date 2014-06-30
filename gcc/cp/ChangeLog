@@ -1,5 +1,13 @@
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61659
+	PR lto/53808
+	* decl2.c (maybe_emit_vtables): Mark all vtable entries if
+	devirtualizing.
+	* init.c (build_vtbl_address): Don't mark destructor.
+	* class.c (finish_struct_1): Add all classes to keyed_classes
+	if devirtualizing.
+
 	PR c++/61647
 	* pt.c (type_dependent_expression_p): Check BASELINK_OPTYPE.
 
