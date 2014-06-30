@@ -1,3 +1,13 @@
+2014-06-30  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	Backport from Mainline
+	2014-06-30  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	PR target/61633
+	* config/aarch64/aarch64.md (*aarch64_ashr_sisd_or_int_<mode>3):
+	Add alternative; make early clobber.  Adjust both split patterns
+	to use operand 0 as the working register.
+
 2014-06-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/iterators.md (VCOND): Handle SI and HI modes.
