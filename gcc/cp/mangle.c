@@ -752,6 +752,10 @@ decl_mangling_context (tree decl)
   if (tcontext != NULL_TREE)
     return tcontext;
 
+  if (TREE_CODE (decl) == TEMPLATE_DECL
+      && DECL_TEMPLATE_RESULT (decl))
+    decl = DECL_TEMPLATE_RESULT (decl);
+
   if (TREE_CODE (decl) == TYPE_DECL
       && LAMBDA_TYPE_P (TREE_TYPE (decl)))
     {
