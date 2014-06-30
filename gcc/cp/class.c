@@ -6405,8 +6405,10 @@ finish_struct_1 (tree t)
 	determine_key_method (t);
 
       /* If a polymorphic class has no key method, we may emit the vtable
-	 in every translation unit where the class definition appears.  */
-      if (CLASSTYPE_KEY_METHOD (t) == NULL_TREE)
+	 in every translation unit where the class definition appears.  If
+	 we're devirtualizing, we can look into the vtable even if we
+	 aren't emitting it.  */
+      if (CLASSTYPE_KEY_METHOD (t) == NULL_TREE || flag_devirtualize)
 	keyed_classes = tree_cons (NULL_TREE, t, keyed_classes);
     }
 

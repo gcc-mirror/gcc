@@ -298,9 +298,9 @@ namespace __cxxabiv1
     __do_catch(const std::type_info* __thr_type, void** __thr_obj,
 	       unsigned int __outer) const;
 
-    inline virtual bool
+    virtual bool
     __pointer_catch(const __pbase_type_info* __thr_type, void** __thr_obj,
-		    unsigned __outer) const;
+		    unsigned __outer) const = 0;
   };
 
   // Type information for simple pointers.

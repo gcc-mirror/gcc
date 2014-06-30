@@ -1,3 +1,8 @@
+2014-06-30  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/cxxabi.h (class __pbase_type_info): __pointer_catch
+	is pure, not inline.
+
 2014-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
