@@ -35,8 +35,8 @@
 
 2014-06-30  Jakub Jelinek  <jakub@redhat.com>
 
-	* ira-build.c (sort_conflict_id_map): Don't call
-	qsort if num is 0, as ira_object_id_map might be NULL, or 1.
+	* ira-build.c (sort_conflict_id_map): Don't call qsort if num is 0,
+	as ira_object_id_map might be NULL, or 1.
 
 2014-06-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
@@ -61,56 +61,46 @@
 
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
-	* Makefile.in:
-	Add the compilation of graphite-isl-ast-to-gimple.o.
-	* common.opt:
-	Add new switch fgraphite-code-generator=[isl|cloog].
-	* flag-types.h:
-	Add new enum fgraphite_generator.
+	* Makefile.in: Add the compilation of graphite-isl-ast-to-gimple.o.
+	* common.opt: Add new switch fgraphite-code-generator=[isl|cloog].
+	* flag-types.h: Add new enum fgraphite_generator.
 	* graphite-isl-ast-to-gimple.c: New.
 	* graphite-isl-ast-to-gimple.h: New.
-	* graphite.c (graphite_transform_loops):
-	Add choice of Graphite code generator,
-	which depends on flag_graphite_code_gen.
-
-	testsuite/gcc.dg/graphite/isl-codegen-loop-dumping.c:
-	New testcase that checks that the dump is generated.
+	* graphite.c (graphite_transform_loops): Add choice of Graphite
+	code generator, which depends on flag_graphite_code_gen.
 
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
-	* graphite-dependences.c (subtract_commutative_associative_deps): 
-	Add NULL checking of the following variables: must_raw_no_source, 
-	may_raw_no_source, must_war_no_source, may_war_no_source, 
-	must_waw_no_source, may_waw_no_source, must_raw, may_raw, 
-	must_war, may_war, must_waw, may_waw
-
-	testsuite/gfortran.dg/graphite/pr59586.f: New testcase.
+	* graphite-dependences.c (subtract_commutative_associative_deps):
+	Add NULL checking of the following variables: must_raw_no_source,
+	may_raw_no_source, must_war_no_source, may_war_no_source,
+	must_waw_no_source, may_waw_no_source, must_raw, may_raw,
+	must_war, may_war, must_waw, may_waw.
 
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
-	* graphite-clast-to-gimple.c:
-	gloog is renamed to graphite_regenerate_ast_cloog.
-	gloog_error is renamed to graphite_regenerate_error.
-	* graphite-clast-to-gimple.h:
-	The definition of the struct bb_pbb_def is moved to graphite-htab.h.
+	* graphite-clast-to-gimple.c: gloog is renamed to
+	graphite_regenerate_ast_cloog.  gloog_error is renamed to
+	graphite_regenerate_error.
+	* graphite-clast-to-gimple.h: The definition of the struct
+	bb_pbb_def is moved to graphite-htab.h.
 	Add inclusion of the hash-table.h.
-	* graphite-htab.h:
-	The declaration of the function gloog is moved
+	* graphite-htab.h: The declaration of the function gloog is moved
 	to graphite-clast-to-gimple.h and renamed to
 	graphite_regenerate_ast_cloog.
-	* graphite.c (graphite_transform_loops):
-	gloog is renamed to graphite_regenerate_ast_cloog.
+	* graphite.c (graphite_transform_loops): gloog is renamed
+	to graphite_regenerate_ast_cloog.
 
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
-	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if type
-	is complete.
-	(write_ts_type_common_tree_pointers): Do not stream fields not set for incomplete
-	types; do not stream duplicated fields for variants; sanity check that variant
-	and type match.
-	(write_ts_type_non_common_tree_pointers): Likewise.
-	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in TYPE_SIZE whether
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if
 	type is complete.
+	(write_ts_type_common_tree_pointers): Do not stream fields not set
+	for incomplete types; do not stream duplicated fields for variants;
+	sanity check that variant and type match.
+	(write_ts_type_non_common_tree_pointers): Likewise.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in
+	TYPE_SIZE whether type is complete.
 	(lto_input_ts_type_common_tree_pointers): Do same changes as in
 	write_ts_type_common_tree_pointers
 	(lto_input_ts_type_non_common_tree_pointers): Likewise.
@@ -140,15 +130,15 @@
 	(get_odr_type): Sanity check that binfos points to main variants.
 	(get_class_context): Be sure the context's outer_type is main variant.
 	(contains_type_p): Walk main variant.
-	(get_polymorphic_call_info_for_decl): Set outer_type to be main variant.
+	(get_polymorphic_call_info_for_decl): Set outer_type to be
+	main variant.
 	(get_polymorphic_call_info): Likewise.
-	(possible_polymorphic_call_targets): Sanity check that we operate on main
-	variant.
+	(possible_polymorphic_call_targets): Sanity check that we operate
+	on main variant.
 
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
-	* stor-layout.c (finish_builtin_struct): Copy fields into
-	the variants.
+	* stor-layout.c (finish_builtin_struct): Copy fields into the variants.
 
 2014-06-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -159,22 +149,19 @@
 
 	* configure.ac (gcc_cv_as_compress_debug): Check for assembler
 	compressed debug support.
-	(gcc_cv_ld_compress_debug): Check for linker compressed debug
-	support.
+	(gcc_cv_ld_compress_debug): Check for linker compressed debug support.
 	* configure: Regenerate.
 	* config.in: Regenerate.
 	* common.opt (compressed_debug_sections): New enum.
 	(gz, gz=): New options.
-	* gcc.c (LINK_COMPRESS_DEBUG_SPEC, ASM_COMPRESS_DEBUG_SPEC):
-	Define.
+	* gcc.c (LINK_COMPRESS_DEBUG_SPEC, ASM_COMPRESS_DEBUG_SPEC): Define.
 	(LINK_COMMAND_SPEC): Invoke LINK_COMPRESS_DEBUG_SPEC.
 	(asm_options): Invoke ASM_COMPRESS_DEBUG_SPEC.
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Invoke
 	LINK_COMPRESS_DEBUG_SPEC.
 	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Likewise.
 	* opts.c (common_handle_option): Handle OPT_gz, OPT_gz_.
-	* doc/invoke.texi (Option Summary, Debugging Options): Add
-	-gz[=type].
+	* doc/invoke.texi (Option Summary, Debugging Options): Add -gz[=type].
 	(Debugging Options): Document -gz[=type].
 
 2014-06-27  Martin Jambor  <mjambor@suse.cz>
