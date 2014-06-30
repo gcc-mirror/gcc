@@ -396,20 +396,13 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_rtl_dse2);
 	  NEXT_PASS (pass_stack_adjustments);
 	  NEXT_PASS (pass_jump2);
+	  NEXT_PASS (pass_duplicate_computed_gotos);
+	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_if_after_reload);
 	  NEXT_PASS (pass_regrename);
 	  NEXT_PASS (pass_cprop_hardreg);
 	  NEXT_PASS (pass_fast_rtl_dce);
-	  NEXT_PASS (pass_duplicate_computed_gotos);
 	  NEXT_PASS (pass_reorder_blocks);
-	  /* We need to run peephole2 pass after the duplicate-
-	     compute-gotos and the reorder-blocks pass (PR/39284).
-	     We have a single indirect branch in the entire function
-	     before duplicate-compute-gotos pass.  This vastly reduces
-	     the size of the CFG.
-	     For preventing to run peephole2 pass twice, its run after
-	     the jump2 got removed.  */
-	  NEXT_PASS (pass_peephole2);
 	  NEXT_PASS (pass_branch_target_load_optimize2);
 	  NEXT_PASS (pass_leaf_regs);
 	  NEXT_PASS (pass_split_before_sched2);

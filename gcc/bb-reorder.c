@@ -2520,13 +2520,20 @@ pass_duplicate_computed_gotos::execute (function *fun)
       changed = true;
     }
 
-done:
-  /* Duplicating blocks above will redirect edges and may cause hot blocks
-     previously reached by both hot and cold blocks to become dominated only
-     by cold blocks.  */
+ done:
   if (changed)
-    fixup_partitions ();
-  cfg_layout_finalize ();
+    {
+      /* Duplicating blocks above will redirect edges and may cause hot
+	 blocks previously reached by both hot and cold blocks to become
+	 dominated only by cold blocks.  */
+      fixup_partitions ();
+
+      /* Merge the duplicated blocks into predecessors, when possible.  */
+      cfg_layout_finalize ();
+      cleanup_cfg (0);
+    }
+  else
+    cfg_layout_finalize ();
 
   BITMAP_FREE (candidates);
   return 0;
