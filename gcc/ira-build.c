@@ -2821,8 +2821,9 @@ sort_conflict_id_map (void)
       FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
 	ira_object_id_map[num++] = obj;
     }
-  qsort (ira_object_id_map, num, sizeof (ira_object_t),
-	 object_range_compare_func);
+  if (num > 1)
+    qsort (ira_object_id_map, num, sizeof (ira_object_t),
+	   object_range_compare_func);
   for (i = 0; i < num; i++)
     {
       ira_object_t obj = ira_object_id_map[i];
