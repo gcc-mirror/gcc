@@ -1,3 +1,10 @@
+2014-06-30  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	PR target/61633
+	* config/aarch64/aarch64.md (*aarch64_ashr_sisd_or_int_<mode>3):
+	Add alternative; make early clobber.  Adjust both split patterns
+	to use operand 0 as the working register.
+
 2014-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* ira-build.c (sort_conflict_id_map): Don't call
