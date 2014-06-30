@@ -1,5 +1,9 @@
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61539
+	* pt.c (unify_one_argument): Type/expression mismatch just causes
+	deduction failure.
+
 	DR 1030
 	PR c++/51253
 	PR c++/61382
