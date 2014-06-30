@@ -1,3 +1,12 @@
+2014-06-30  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (build_ptrmemfunc_type): Don't give a PMF RECORD_TYPE
+	TYPE_BINFO or TYPE_LANG_SPECIFIC.
+	* cp-tree.h (TYPE_PTRMEMFUNC_FLAG): Use TYPE_LANG_FLAG_2.
+	(TYPE_PTRMEMFUNC_P): Don't expect TYPE_LANG_SPECIFIC.
+	* typeck.c (build_ptrmemfunc_access_expr): Don't use lookup_member.
+	* pt.c (unify): Also check whether the argument is a PMF.
+
 2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54891
