@@ -5440,6 +5440,13 @@ signed char a = SCHAR_MAX;
 a++;
 @end smallexample
 
+@item -fsanitize=bounds
+@opindex fsanitize=bounds
+
+This option enables instrumentation of array bounds.  Various out of bounds
+accesses are detected.  Flexible array members are not instrumented, as well
+as initializers of variables with static storage.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
@@ -5460,13 +5467,6 @@ be a legitimate way of obtaining infinities and NaNs.
 This option enables floating-point type to integer conversion checking.
 We check that the result of the conversion does not overflow.
 This option does not work well with @code{FE_INVALID} exceptions enabled.
-
-@item -fsanitize=bounds
-@opindex fsanitize=bounds
-
-This option enables instrumentation of array bounds.  Various out of bounds
-accesses are detected.  Flexible array members are not instrumented, as well
-as initializers of variables with static storage.
 
 @item -fsanitize-recover
 @opindex fsanitize-recover

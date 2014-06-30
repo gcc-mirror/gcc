@@ -1,3 +1,8 @@
+2014-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-fsanitize=bounds): Move to the table with
+	-fsanitize=undefined suboptions.
+
 2014-06-30  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_perm): Enable for bigendian.
