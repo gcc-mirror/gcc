@@ -1,3 +1,8 @@
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (grokdeclarator): Don't instrument VLAs if the function
+	has no_sanitize_undefined attribute.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541

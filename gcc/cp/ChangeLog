@@ -1,3 +1,10 @@
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* cp-gimplify.c (cp_genericize): Don't instrument returns if the
+	function has no_sanitize_undefined attribute.
+	* decl.c (compute_array_index_type): Don't instrument VLAs if the
+	function has no_sanitize_undefined attribute.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541
