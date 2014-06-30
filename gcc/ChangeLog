@@ -1,3 +1,18 @@
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	Revert:
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if type
+	is complete.
+	(write_ts_type_common_tree_pointers): Do not stream fields not set for incomplete
+	types; do not stream duplicated fields for variants; sanity check that variant
+	and type match.
+	(write_ts_type_non_common_tree_pointers): Likewise.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in TYPE_SIZE whether
+	type is complete.
+	(lto_input_ts_type_common_tree_pointers): Do same changes as in
+	write_ts_type_common_tree_pointers
+	(lto_input_ts_type_non_common_tree_pointers): Likewise.
+
 2014-06-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* var-tracking.c (add_stores): Return instead of asserting if old
