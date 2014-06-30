@@ -1,3 +1,10 @@
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* convert.c (convert_to_integer): Don't instrument conversions if the
+	function has no_sanitize_undefined attribute.
+	* ubsan.c: Don't run the ubsan pass if the function has
+	no_sanitize_undefined attribute.
+
 2014-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi (-fsanitize=bounds): Move to the table with

@@ -8469,7 +8469,11 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 			     throw_bad_array_length (), void_node);
 	      finish_expr_stmt (comp);
 	    }
-	  else if (flag_sanitize & SANITIZE_VLA)
+	  else if (flag_sanitize & SANITIZE_VLA
+		   && current_function_decl != NULL_TREE
+		   && !lookup_attribute ("no_sanitize_undefined",
+					 DECL_ATTRIBUTES
+					   (current_function_decl)))
 	    {
 	      /* From C++1y onwards, we throw an exception on a negative
 		 length size of an array; see above.  */

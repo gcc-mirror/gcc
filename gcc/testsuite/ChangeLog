@@ -1,3 +1,8 @@
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/attrib-2.c: New test.
+	* g++.dg/ubsan/return-3.C: New test.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541
