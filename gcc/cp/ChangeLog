@@ -1,3 +1,8 @@
+2014-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61500
+	* tree.c (lvalue_kind): Handle MEMBER_REF and DOTSTAR_EXPR.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541
