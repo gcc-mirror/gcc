@@ -1,3 +1,7 @@
+2014-06-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* ira-loop-pressure.c: New test.
+
 2014-06-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36275

@@ -1087,16 +1087,22 @@ get_pressure_class_and_nregs (rtx insn, int *nregs)
 }
 
 /* Calculates cost and number of registers needed for moving invariant INV
-   out of the loop and stores them to *COST and *REGS_NEEDED.  */
+   out of the loop and stores them to *COST and *REGS_NEEDED.  *CL will be
+   the REG_CLASS of INV.  Return
+     -1: if INV is invalid.
+      0: if INV and its depends_on have same reg_class
+      1: if INV and its depends_on have different reg_classes.  */
 
-static void
-get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
+static int
+get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed,
+	      enum reg_class *cl)
 {
   int i, acomp_cost;
   unsigned aregs_needed[N_REG_CLASSES];
   unsigned depno;
   struct invariant *dep;
   bitmap_iterator bi;
+  int ret = 1;
 
   /* Find the representative of the class of the equivalent invariants.  */
   inv = invariants[inv->eqto];
@@ -1112,7 +1118,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
 
   if (inv->move
       || inv->stamp == actual_stamp)
-    return;
+    return -1;
   inv->stamp = actual_stamp;
 
   if (! flag_ira_loop_pressure)
@@ -1124,6 +1130,8 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
 
       pressure_class = get_pressure_class_and_nregs (inv->insn, &nregs);
       regs_needed[pressure_class] += nregs;
+      *cl = pressure_class;
+      ret = 0;
     }
 
   if (!inv->cheap_address
@@ -1164,6 +1172,8 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
   EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, depno, bi)
     {
       bool check_p;
+      enum reg_class dep_cl = ALL_REGS;
+      int dep_ret;
 
       dep = invariants[depno];
 
@@ -1171,7 +1181,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
       if (dep->move)
 	continue;
 
-      get_inv_cost (dep, &acomp_cost, aregs_needed);
+      dep_ret = get_inv_cost (dep, &acomp_cost, aregs_needed, &dep_cl);
 
       if (! flag_ira_loop_pressure)
 	check_p = aregs_needed[0] != 0;
@@ -1181,6 +1191,12 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
 	    if (aregs_needed[ira_pressure_classes[i]] != 0)
 	      break;
 	  check_p = i < ira_pressure_classes_num;
+
+	  if ((dep_ret == 1) || ((dep_ret == 0) && (*cl != dep_cl)))
+	    {
+	      *cl = ALL_REGS;
+	      ret = 1;
+	    }
 	}
       if (check_p
 	  /* We need to check always_executed, since if the original value of
@@ -1214,6 +1230,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
 	}
       (*comp_cost) += acomp_cost;
     }
+  return ret;
 }
 
 /* Calculates gain for eliminating invariant INV.  REGS_USED is the number
@@ -1228,10 +1245,12 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
 		    bool speed, bool call_p)
 {
   int comp_cost, size_cost;
+  enum reg_class cl;
+  int ret;
 
   actual_stamp++;
 
-  get_inv_cost (inv, &comp_cost, regs_needed);
+  ret = get_inv_cost (inv, &comp_cost, regs_needed, &cl);
 
   if (! flag_ira_loop_pressure)
     {
@@ -1240,6 +1259,11 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
 		   - estimate_reg_pressure_cost (new_regs[0],
 						 regs_used, speed, call_p));
     }
+  else if (ret < 0)
+    return -1;
+  else if ((ret == 0) && (cl == NO_REGS))
+    /* Hoist it anyway since it does not impact register pressure.  */
+    return 1;
   else
     {
       int i;
@@ -1248,6 +1272,10 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
       for (i = 0; i < ira_pressure_classes_num; i++)
 	{
 	  pressure_class = ira_pressure_classes[i];
+
+	  if (!reg_classes_intersect_p (pressure_class, cl))
+	    continue;
+
 	  if ((int) new_regs[pressure_class]
 	      + (int) regs_needed[pressure_class]
 	      + LOOP_DATA (curr_loop)->max_reg_pressure[pressure_class]
