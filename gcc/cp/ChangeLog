@@ -1,5 +1,8 @@
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61566
+	* mangle.c (decl_mangling_context): Look through a TEMPLATE_DECL.
+
 	* decl.c (build_ptrmemfunc_type): Don't give a PMF RECORD_TYPE
 	TYPE_BINFO or TYPE_LANG_SPECIFIC.
 	* cp-tree.h (TYPE_PTRMEMFUNC_FLAG): Use TYPE_LANG_FLAG_2.
