@@ -1,3 +1,10 @@
+2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/57541
+	* cp-array-notation.c (expand_sec_reduce_builtin):
+	Check that bultin argument is correct.
+	* call.c (build_cxx_call): Check for 0 arguments in builtin call.
+
 2014-06-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	DR 1579

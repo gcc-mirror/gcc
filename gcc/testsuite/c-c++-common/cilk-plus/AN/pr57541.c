@@ -1,9 +1,10 @@
+/* PR middle-end/57541 */
 /* { dg-do compile } */
 /* { dg-options "-fcilkplus" } */
 
 int A[10];
 
-int main () {
+int foo () {
 
   /* C compiler uses the term "undeclared" whereas C++ compiler uses
     "not declared".  Thus, grepping for declared seem to be the easiest.  */
@@ -13,5 +14,13 @@ int main () {
   A[l:s:c];
 }
 
-/* { dg-message "note: each" "defined" { target c }  10 } */
+int foo1 (int N) {
+
+  char c = (char)N;
+  short s = (short)N;
+  A[l:s:c]; /* { dg-error "declared" } */
+}
+
+
+/* { dg-message "note: each" "defined" { target c }  11 } */
 
