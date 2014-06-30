@@ -7414,6 +7414,11 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE
 	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
 	{ 
+	  if (call_expr_nargs (fn) == 0)
+	    {
+	      error_at (EXPR_LOCATION (fn), "Invalid builtin arguments");
+	      return error_mark_node;
+	    }
 	  /* for bif == BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_ZERO or
 	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO or
 	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_NONZERO or 

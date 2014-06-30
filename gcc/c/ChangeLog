@@ -1,3 +1,12 @@
+2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/57541
+	* c-array-notation.c (fix_builtin_array_notation_fn):
+	Check for 0 arguments in builtin call. Check that bultin argument is
+	correct.
+	* c-parser.c (c_parser_array_notation): Check for incorrect initial
+	index.
+
 2014-06-27  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Discard all type

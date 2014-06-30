@@ -14098,7 +14098,7 @@ c_parser_array_notation (location_t loc, c_parser *parser, tree initial_index,
   tree value_tree = NULL_TREE, type = NULL_TREE, array_type = NULL_TREE;
   tree array_type_domain = NULL_TREE; 
 
-  if (array_value == error_mark_node)
+  if (array_value == error_mark_node || initial_index == error_mark_node)
     {
       /* No need to continue.  If either of these 2 were true, then an error
 	 must be emitted already.  Thus, no need to emit them twice.  */

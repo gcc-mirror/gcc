@@ -1,3 +1,9 @@
+2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/57541
+	* c-c++-common/cilk-plus/AN/pr57541.c: New case added.
+	* c-c++-common/cilk-plus/AN/pr57541-2.c: New test.
+
 2014-06-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* ira-loop-pressure.c: New test.
