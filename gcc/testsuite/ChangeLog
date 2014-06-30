@@ -1,6 +1,18 @@
 2014-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2014-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57233
+	PR tree-optimization/61299
+	* gcc.dg/pr57233.c: New test.
+	* gcc.target/i386/pr57233.c: New test.
+	* gcc.target/i386/sse2-pr57233.c: New test.
+	* gcc.target/i386/avx-pr57233.c: New test.
+	* gcc.target/i386/avx2-pr57233.c: New test.
+	* gcc.target/i386/avx512f-pr57233.c: New test.
+	* gcc.target/i386/xop-pr57233.c: New test.
+
 	2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/gomp/udr2.f90 (f7, f9): Add !$omp parallel with

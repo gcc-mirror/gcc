@@ -1336,15 +1336,67 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   update_stmt (gsi_stmt (*gsi));
 }
 
+/* Return type in which CODE operation with optab OP can be
+   computed.  */
+
+static tree
+get_compute_type (enum tree_code code, optab op, tree type)
+{
+  /* For very wide vectors, try using a smaller vector mode.  */
+  tree compute_type = type;
+  if (op
+      && (!VECTOR_MODE_P (TYPE_MODE (type))
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing))
+    {
+      tree vector_compute_type
+	= type_for_widest_vector_mode (TREE_TYPE (type), op);
+      if (vector_compute_type != NULL_TREE
+	  && (TYPE_VECTOR_SUBPARTS (vector_compute_type)
+	      < TYPE_VECTOR_SUBPARTS (compute_type))
+	  && (optab_handler (op, TYPE_MODE (vector_compute_type))
+	      != CODE_FOR_nothing))
+	compute_type = vector_compute_type;
+    }
+
+  /* If we are breaking a BLKmode vector into smaller pieces,
+     type_for_widest_vector_mode has already looked into the optab,
+     so skip these checks.  */
+  if (compute_type == type)
+    {
+      enum machine_mode compute_mode = TYPE_MODE (compute_type);
+      if (VECTOR_MODE_P (compute_mode))
+	{
+	  if (op && optab_handler (op, compute_mode) != CODE_FOR_nothing)
+	    return compute_type;
+	  if (code == MULT_HIGHPART_EXPR
+	      && can_mult_highpart_p (compute_mode,
+				      TYPE_UNSIGNED (compute_type)))
+	    return compute_type;
+	}
+      /* There is no operation in hardware, so fall back to scalars.  */
+      compute_type = TREE_TYPE (type);
+    }
+
+  return compute_type;
+}
+
+/* Helper function of expand_vector_operations_1.  Return number of
+   vector elements for vector types or 1 for other types.  */
+
+static inline int
+count_type_subparts (tree type)
+{
+  return VECTOR_TYPE_P (type) ? TYPE_VECTOR_SUBPARTS (type) : 1;
+}
+
 /* Process one statement.  If we identify a vector operation, expand it.  */
 
 static void
 expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
-  tree lhs, rhs1, rhs2 = NULL, type, compute_type;
+  tree lhs, rhs1, rhs2 = NULL, type, compute_type = NULL_TREE;
   enum tree_code code;
-  enum machine_mode compute_mode;
   optab op = unknown_optab;
   enum gimple_rhs_class rhs_class;
   tree new_rhs;
@@ -1457,11 +1509,76 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 	{
           op = optab_for_tree_code (code, type, optab_scalar);
 
-	  /* The rtl expander will expand vector/scalar as vector/vector
-	     if necessary.  Don't bother converting the stmt here.  */
-	  if (optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing
-	      && optab_handler (opv, TYPE_MODE (type)) != CODE_FOR_nothing)
+	  compute_type = get_compute_type (code, op, type);
+	  if (compute_type == type)
 	    return;
+	  /* The rtl expander will expand vector/scalar as vector/vector
+	     if necessary.  Pick one with wider vector type.  */
+	  tree compute_vtype = get_compute_type (code, opv, type);
+	  if (count_type_subparts (compute_vtype)
+	      > count_type_subparts (compute_type))
+	    {
+	      compute_type = compute_vtype;
+	      op = opv;
+	    }
+	}
+
+      if (code == LROTATE_EXPR || code == RROTATE_EXPR)
+	{
+	  if (compute_type == NULL_TREE)
+	    compute_type = get_compute_type (code, op, type);
+	  if (compute_type == type)
+	    return;
+	  /* Before splitting vector rotates into scalar rotates,
+	     see if we can't use vector shifts and BIT_IOR_EXPR
+	     instead.  For vector by vector rotates we'd also
+	     need to check BIT_AND_EXPR and NEGATE_EXPR, punt there
+	     for now, fold doesn't seem to create such rotates anyway.  */
+	  if (compute_type == TREE_TYPE (type)
+	      && !VECTOR_INTEGER_TYPE_P (TREE_TYPE (rhs2)))
+	    {
+	      optab oplv = vashl_optab, opl = ashl_optab;
+	      optab oprv = vlshr_optab, opr = lshr_optab, opo = ior_optab;
+	      tree compute_lvtype = get_compute_type (LSHIFT_EXPR, oplv, type);
+	      tree compute_rvtype = get_compute_type (RSHIFT_EXPR, oprv, type);
+	      tree compute_otype = get_compute_type (BIT_IOR_EXPR, opo, type);
+	      tree compute_ltype = get_compute_type (LSHIFT_EXPR, opl, type);
+	      tree compute_rtype = get_compute_type (RSHIFT_EXPR, opr, type);
+	      /* The rtl expander will expand vector/scalar as vector/vector
+		 if necessary.  Pick one with wider vector type.  */
+	      if (count_type_subparts (compute_lvtype)
+		  > count_type_subparts (compute_ltype))
+		{
+		  compute_ltype = compute_lvtype;
+		  opl = oplv;
+		}
+	      if (count_type_subparts (compute_rvtype)
+		  > count_type_subparts (compute_rtype))
+		{
+		  compute_rtype = compute_rvtype;
+		  opr = oprv;
+		}
+	      /* Pick the narrowest type from LSHIFT_EXPR, RSHIFT_EXPR and
+		 BIT_IOR_EXPR.  */
+	      compute_type = compute_ltype;
+	      if (count_type_subparts (compute_type)
+		  > count_type_subparts (compute_rtype))
+		compute_type = compute_rtype;
+	      if (count_type_subparts (compute_type)
+		  > count_type_subparts (compute_otype))
+		compute_type = compute_otype;
+	      /* Verify all 3 operations can be performed in that type.  */
+	      if (compute_type != TREE_TYPE (type))
+		{
+		  if (optab_handler (opl, TYPE_MODE (compute_type))
+		      == CODE_FOR_nothing
+		      || optab_handler (opr, TYPE_MODE (compute_type))
+			 == CODE_FOR_nothing
+		      || optab_handler (opo, TYPE_MODE (compute_type))
+			 == CODE_FOR_nothing)
+		    compute_type = TREE_TYPE (type);
+		}
+	    }
 	}
     }
   else
@@ -1475,38 +1592,10 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       && INTEGRAL_TYPE_P (TREE_TYPE (type)))
     op = optab_for_tree_code (MINUS_EXPR, type, optab_default);
 
-  /* For very wide vectors, try using a smaller vector mode.  */
-  compute_type = type;
-  if (!VECTOR_MODE_P (TYPE_MODE (type)) && op)
-    {
-      tree vector_compute_type
-        = type_for_widest_vector_mode (TREE_TYPE (type), op);
-      if (vector_compute_type != NULL_TREE
-	  && (TYPE_VECTOR_SUBPARTS (vector_compute_type)
-	      < TYPE_VECTOR_SUBPARTS (compute_type))
-	  && (optab_handler (op, TYPE_MODE (vector_compute_type))
-	      != CODE_FOR_nothing))
-	compute_type = vector_compute_type;
-    }
-
-  /* If we are breaking a BLKmode vector into smaller pieces,
-     type_for_widest_vector_mode has already looked into the optab,
-     so skip these checks.  */
+  if (compute_type == NULL_TREE)
+    compute_type = get_compute_type (code, op, type);
   if (compute_type == type)
-    {
-      compute_mode = TYPE_MODE (compute_type);
-      if (VECTOR_MODE_P (compute_mode))
-	{
-          if (op && optab_handler (op, compute_mode) != CODE_FOR_nothing)
-	    return;
-	  if (code == MULT_HIGHPART_EXPR
-	      && can_mult_highpart_p (compute_mode,
-				      TYPE_UNSIGNED (compute_type)))
-	    return;
-	}
-      /* There is no operation in hardware, so fall back to scalars.  */
-      compute_type = TREE_TYPE (type);
-    }
+    return;
 
   gcc_assert (code != VEC_LSHIFT_EXPR && code != VEC_RSHIFT_EXPR);
   new_rhs = expand_vector_operation (gsi, type, compute_type, stmt, code);
