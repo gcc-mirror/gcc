@@ -1537,7 +1537,7 @@ struct gimple_opt_pass pass_cse_sincos =
 
 struct symbolic_number {
   unsigned HOST_WIDEST_INT n;
-  int size;
+  tree type;
 };
 
 /* Perform a SHIFT or ROTATE operation by COUNT bits on symbolic
@@ -1549,13 +1549,15 @@ do_shift_rotate (enum tree_code code,
 		 struct symbolic_number *n,
 		 int count)
 {
+  int bitsize = TYPE_PRECISION (n->type);
+
   if (count % 8 != 0)
     return false;
 
   /* Zero out the extra bits of N in order to avoid them being shifted
      into the significant bits.  */
-  if (n->size < (int)sizeof (HOST_WIDEST_INT))
-    n->n &= ((unsigned HOST_WIDEST_INT)1 << (n->size * BITS_PER_UNIT)) - 1;
+  if (bitsize < 8 * (int)sizeof (HOST_WIDEST_INT))
+    n->n &= ((unsigned HOST_WIDEST_INT)1 << bitsize) - 1;
 
   switch (code)
     {
@@ -1563,20 +1565,24 @@ do_shift_rotate (enum tree_code code,
       n->n <<= count;
       break;
     case RSHIFT_EXPR:
+      /* Arithmetic shift of signed type: result is dependent on the value.  */
+      if (!TYPE_UNSIGNED (n->type)
+	  && (n->n & ((unsigned HOST_WIDEST_INT) 0xff << (bitsize - 8))))
+	return false;
       n->n >>= count;
       break;
     case LROTATE_EXPR:
-      n->n = (n->n << count) | (n->n >> ((n->size * BITS_PER_UNIT) - count));
+      n->n = (n->n << count) | (n->n >> (bitsize - count));
       break;
     case RROTATE_EXPR:
-      n->n = (n->n >> count) | (n->n << ((n->size * BITS_PER_UNIT) - count));
+      n->n = (n->n >> count) | (n->n << (bitsize - count));
       break;
     default:
       return false;
     }
   /* Zero unused bits for size.  */
-  if (n->size < (int)sizeof (HOST_WIDEST_INT))
-    n->n &= ((unsigned HOST_WIDEST_INT)1 << (n->size * BITS_PER_UNIT)) - 1;
+  if (bitsize < 8 * (int)sizeof (HOST_WIDEST_INT))
+    n->n &= ((unsigned HOST_WIDEST_INT)1 << bitsize) - 1;
   return true;
 }
 
@@ -1593,7 +1599,7 @@ verify_symbolic_number_p (struct symbolic_number *n, gimple stmt)
   if (TREE_CODE (lhs_type) != INTEGER_TYPE)
     return false;
 
-  if (TYPE_PRECISION (lhs_type) != n->size * BITS_PER_UNIT)
+  if (TYPE_PRECISION (lhs_type) != TYPE_PRECISION (n->type))
     return false;
 
   return true;
@@ -1650,20 +1656,23 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	 to initialize the symbolic number.  */
       if (!source_expr1)
 	{
+	  int size;
+
 	  /* Set up the symbolic number N by setting each byte to a
 	     value between 1 and the byte size of rhs1.  The highest
 	     order byte is set to n->size and the lowest order
 	     byte to 1.  */
-	  n->size = TYPE_PRECISION (TREE_TYPE (rhs1));
-	  if (n->size % BITS_PER_UNIT != 0)
+	  n->type = TREE_TYPE (rhs1);
+	  size = TYPE_PRECISION (n->type);
+	  if (size % BITS_PER_UNIT != 0)
 	    return NULL_TREE;
-	  n->size /= BITS_PER_UNIT;
+	  size /= BITS_PER_UNIT;
 	  n->n = (sizeof (HOST_WIDEST_INT) < 8 ? 0 :
 		  (unsigned HOST_WIDEST_INT)0x08070605 << 32 | 0x04030201);
 
-	  if (n->size < (int)sizeof (HOST_WIDEST_INT))
+	  if (size < (int)sizeof (HOST_WIDEST_INT))
 	    n->n &= ((unsigned HOST_WIDEST_INT)1 <<
-		     (n->size * BITS_PER_UNIT)) - 1;
+		     (size * BITS_PER_UNIT)) - 1;
 
 	  source_expr1 = rhs1;
 	}
@@ -1672,12 +1681,12 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	{
 	case BIT_AND_EXPR:
 	  {
-	    int i;
+	    int i, size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
 	    unsigned HOST_WIDEST_INT val = widest_int_cst_value (rhs2);
 	    unsigned HOST_WIDEST_INT tmp = val;
 
 	    /* Only constants masking full bytes are allowed.  */
-	    for (i = 0; i < n->size; i++, tmp >>= BITS_PER_UNIT)
+	    for (i = 0; i < size; i++, tmp >>= BITS_PER_UNIT)
 	      if ((tmp & 0xff) != 0 && (tmp & 0xff) != 0xff)
 		return NULL_TREE;
 
@@ -1693,10 +1702,20 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  break;
 	CASE_CONVERT:
 	  {
-	    int type_size;
+	    int type_size, old_type_size;
+	    tree type;
 
-	    type_size = TYPE_PRECISION (gimple_expr_type (stmt));
+	    type = gimple_expr_type (stmt);
+	    type_size = TYPE_PRECISION (type);
 	    if (type_size % BITS_PER_UNIT != 0)
+	      return NULL_TREE;
+
+	    /* Sign extension: result is dependent on the value.  */
+	    old_type_size = TYPE_PRECISION (n->type);
+	    if (!TYPE_UNSIGNED (n->type)
+		&& type_size > old_type_size
+		&& n->n &
+		   ((unsigned HOST_WIDEST_INT) 0xff << (old_type_size - 8)))
 	      return NULL_TREE;
 
 	    if (type_size / BITS_PER_UNIT < (int)(sizeof (HOST_WIDEST_INT)))
@@ -1705,7 +1724,7 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 		   belonging to the target type.  */
 		n->n &= ((unsigned HOST_WIDEST_INT)1 << type_size) - 1;
 	      }
-	    n->size = type_size / BITS_PER_UNIT;
+	    n->type = type;
 	  }
 	  break;
 	default:
@@ -1718,7 +1737,7 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 
   if (rhs_class == GIMPLE_BINARY_RHS)
     {
-      int i;
+      int i, size;
       struct symbolic_number n1, n2;
       unsigned HOST_WIDEST_INT mask;
       tree source_expr2;
@@ -1742,11 +1761,12 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  source_expr2 = find_bswap_1 (rhs2_stmt, &n2, limit - 1);
 
 	  if (source_expr1 != source_expr2
-	      || n1.size != n2.size)
+	      || TYPE_PRECISION (n1.type) != TYPE_PRECISION (n2.type))
 	    return NULL_TREE;
 
-	  n->size = n1.size;
-	  for (i = 0, mask = 0xff; i < n->size; i++, mask <<= BITS_PER_UNIT)
+	  n->type = n1.type;
+	  size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
+	  for (i = 0, mask = 0xff; i < size; i++, mask <<= BITS_PER_UNIT)
 	    {
 	      unsigned HOST_WIDEST_INT masked1, masked2;
 
@@ -1785,7 +1805,7 @@ find_bswap (gimple stmt)
 
   struct symbolic_number n;
   tree source_expr;
-  int limit;
+  int limit, bitsize;
 
   /* The last parameter determines the depth search limit.  It usually
      correlates directly to the number of bytes to be touched.  We
@@ -1800,13 +1820,14 @@ find_bswap (gimple stmt)
     return NULL_TREE;
 
   /* Zero out the extra bits of N and CMP.  */
-  if (n.size < (int)sizeof (HOST_WIDEST_INT))
+  bitsize = TYPE_PRECISION (n.type);
+  if (bitsize < 8 * (int)sizeof (HOST_WIDEST_INT))
     {
       unsigned HOST_WIDEST_INT mask =
-	((unsigned HOST_WIDEST_INT)1 << (n.size * BITS_PER_UNIT)) - 1;
+	((unsigned HOST_WIDEST_INT)1 << bitsize) - 1;
 
       n.n &= mask;
-      cmp >>= (sizeof (HOST_WIDEST_INT) - n.size) * BITS_PER_UNIT;
+      cmp >>= sizeof (HOST_WIDEST_INT) * BITS_PER_UNIT - bitsize;
     }
 
   /* A complete byte swap should make the symbolic number to start

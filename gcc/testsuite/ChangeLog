@@ -1,3 +1,13 @@
+2014-06-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2014-06-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61306
+	* gcc.c-torture/execute/pr61306-1.c: New test.
+	* gcc.c-torture/execute/pr61306-2.c: Likewise.
+	* gcc.c-torture/execute/pr61306-3.c: Likewise.
+
 2014-06-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gfortran.dg/nint_2.f90: Don't XFAIL for powerpc64le-*-linux*.
