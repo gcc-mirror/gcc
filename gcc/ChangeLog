@@ -1,3 +1,11 @@
+2014-06-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* except.c (emit_note_eh_region_end): New helper function.
+	(convert_to_eh_region_ranges): Use emit_note_eh_region_end to
+	emit EH_REGION_END note.
+	* jump.c (cleanup_barriers): Do not split a call and its
+	corresponding CALL_ARG_LOCATION note.
+
 2014-06-30  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/61607
