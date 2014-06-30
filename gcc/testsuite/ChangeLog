@@ -1,3 +1,65 @@
+2014-06-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/vqdmulhh_lane_s16.c: New test.
+	* gcc.target/aarch64/vqdmulhs_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqrdmulhh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqrdmulhs_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlal_high_lane_s16.c: New test.
+	* gcc.target/aarch64/vqdmlal_high_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlal_high_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlal_high_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlal_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlal_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlal_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlal_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlalh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlals_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlsl_high_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlsl_high_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlsl_high_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlsl_high_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlsl_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlsl_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlsl_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmlslh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmlsls_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmulh_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmulh_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmulhq_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmulhq_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmull_high_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmull_high_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmull_high_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmull_high_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmull_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmull_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmull_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmull_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqdmullh_lane_s16.c: Likewise.
+	* gcc.target/aarch64/vqdmulls_lane_s32.c: Likewise.
+	* gcc.target/aarch64/vqrdmulh_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqrdmulh_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vqrdmulhq_laneq_s16.c: Likewise.
+	* gcc.target/aarch64/vqrdmulhq_laneq_s32.c: Likewise.
+	* gcc.target/aarch64/vector_intrinsics.c: Simplify arm_neon.h include.
+	(test_vqdmlal_high_lane_s16): Fix parameter type.
+	(test_vqdmlal_high_lane_s32): Likewise.
+	(test_vqdmull_high_lane_s16): Likewise.
+	(test_vqdmull_high_lane_s32): Likewise.
+	(test_vqdmlsl_high_lane_s32): Likewise.
+	(test_vqdmlsl_high_lane_s16): Likewise.
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmlalh_lane_s16):
+	Fix argument type.
+	(test_vqdmlals_lane_s32): Likewise.
+	(test_vqdmlslh_lane_s16): Likewise.
+	(test_vqdmlsls_lane_s32): Likewise.
+	(test_vqdmulhh_lane_s16): Likewise.
+	(test_vqdmulhs_lane_s32): Likewise.
+	(test_vqdmullh_lane_s16): Likewise.
+	(test_vqdmulls_lane_s32): Likewise.
+	(test_vqrdmulhh_lane_s16): Likewise.
+	(test_vqrdmulhs_lane_s32): Likewise.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541
