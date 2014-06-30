@@ -1,3 +1,10 @@
+2014-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51253
+	PR c++/61382
+	* gimplify.c (gimplify_arg): Non-static.
+	* gimplify.h: Declare it.
+
 2014-06-30  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	Backport from Mainline

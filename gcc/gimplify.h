@@ -77,6 +77,7 @@ extern enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 extern void gimplify_type_sizes (tree, gimple_seq *);
 extern void gimplify_one_sizepos (tree *, gimple_seq *);
 extern gimple gimplify_body (tree, bool);
+extern enum gimplify_status gimplify_arg (tree *, gimple_seq *, location_t);
 extern void gimplify_function_tree (tree);
 extern enum gimplify_status gimplify_va_arg_expr (tree *, gimple_seq *,
 						  gimple_seq *);

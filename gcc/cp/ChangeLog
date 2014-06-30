@@ -1,5 +1,18 @@
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
+	DR 1030
+	PR c++/51253
+	PR c++/61382
+	* cp-tree.h (CALL_EXPR_LIST_INIT_P): New.
+	* call.c (struct z_candidate): Add flags field.
+	(add_candidate): Add flags parm.
+	(add_function_candidate, add_conv_candidate, build_builtin_candidate)
+	(add_template_candidate_real): Pass it.
+	(build_over_call): Set CALL_EXPR_LIST_INIT_P.
+	* tree.c (build_aggr_init_expr): Copy it.
+	* semantics.c (simplify_aggr_init_expr): Copy it.
+	* cp-gimplify.c (cp_gimplify_expr): Handle it.
+
 	PR c++/61488
 	* pt.c (check_valid_ptrmem_cst_expr): Fix for template context.
 
