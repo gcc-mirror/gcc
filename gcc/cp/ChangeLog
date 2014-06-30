@@ -1,3 +1,8 @@
+2014-06-30  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (simplify_aggr_init_expr): Remove remnants of
+	2014-04-11 change.
+
 2014-06-30  Marek Polacek  <polacek@redhat.com>
 
 	* cp-gimplify.c (cp_genericize): Don't instrument returns if the
