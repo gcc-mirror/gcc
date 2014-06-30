@@ -11925,6 +11925,9 @@ c_finish_omp_clauses (tree clauses)
 		s = size_one_node;
 	      OMP_CLAUSE_LINEAR_STEP (c) = s;
 	    }
+	  else
+	    OMP_CLAUSE_LINEAR_STEP (c)
+	      = fold_convert (TREE_TYPE (t), OMP_CLAUSE_LINEAR_STEP (c));
 	  goto check_dup_generic;
 
 	check_dup_generic:

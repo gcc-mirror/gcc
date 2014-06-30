@@ -1127,6 +1127,11 @@ enum omp_clause_map_kind
      array sections.  OMP_CLAUSE_SIZE for these is not the pointer size,
      which is implicitly POINTER_SIZE / BITS_PER_UNIT, but the bias.  */
   OMP_CLAUSE_MAP_POINTER,
+  /* Also internal, behaves like OMP_CLAUS_MAP_TO, but additionally any
+     OMP_CLAUSE_MAP_POINTER records consecutive after it which have addresses
+     falling into that range will not be ignored if OMP_CLAUSE_MAP_TO_PSET
+     wasn't mapped already.  */
+  OMP_CLAUSE_MAP_TO_PSET,
   OMP_CLAUSE_MAP_LAST
 };
 

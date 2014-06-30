@@ -45,7 +45,7 @@
       parameter (omp_proc_bind_master = 2)
       parameter (omp_proc_bind_close = 3)
       parameter (omp_proc_bind_spread = 4)
-      parameter (openmp_version = 201107)
+      parameter (openmp_version = 201307)
 
       external omp_init_lock, omp_init_nest_lock
       external omp_destroy_lock, omp_destroy_nest_lock

@@ -531,7 +531,7 @@ The current status of the support is can be found in the
 @ref{TS 29113 status} sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
-(version 3.1, @url{http://openmp.org/@/wp/@/openmp-specifications/}).
+(version 4.0, @url{http://openmp.org/@/wp/@/openmp-specifications/}).
 
 @node Varying Length Character Strings
 @subsection Varying Length Character Strings
@@ -1884,8 +1884,8 @@ It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
 GNU Fortran strives to be compatible to the 
-@uref{http://www.openmp.org/mp-documents/spec31.pdf,
-OpenMP Application Program Interface v3.1}.
+@uref{http://openmp.org/wp/openmp-specifications/,
+OpenMP Application Program Interface v4.0}.
 
 To enable the processing of the OpenMP directive @code{!$omp} in
 free-form source code; the @code{c$omp}, @code{*$omp} and @code{!$omp}

@@ -1,3 +1,17 @@
+2014-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): Make sure
+	OMP_CLAUSE_LINEAR_STEP has correct type.
+
+	2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cxx_omp_finish_clause): Add a gimple_seq *
+	argument.
+	* cp-tree.h (cxx_omp_finish_clause): Adjust prototype.
+
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61539

@@ -1,3 +1,11 @@
+2014-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Make sure
+	OMP_CLAUSE_LINEAR_STEP has correct type.
+
 2014-06-30  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Discard all type

@@ -676,10 +676,10 @@ dummy_expr_callback (gfc_expr **e ATTRIBUTE_UNUSED, int *walk_subtrees,
 
 /* Dummy function for code callback, for use when we really
    don't want to do anything.  */
-static int
-dummy_code_callback (gfc_code **e ATTRIBUTE_UNUSED,
-		     int *walk_subtrees ATTRIBUTE_UNUSED,
-		     void *data ATTRIBUTE_UNUSED)
+int
+gfc_dummy_code_callback (gfc_code **e ATTRIBUTE_UNUSED,
+			 int *walk_subtrees ATTRIBUTE_UNUSED,
+			 void *data ATTRIBUTE_UNUSED)
 {
   return 0;
 }
@@ -844,7 +844,8 @@ static void
 optimize_reduction (gfc_namespace *ns)
 {
   current_ns = ns;
-  gfc_code_walker (&ns->code, dummy_code_callback, callback_reduction, NULL);
+  gfc_code_walker (&ns->code, gfc_dummy_code_callback,
+		   callback_reduction, NULL);
 
 /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
@@ -2131,6 +2132,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
+	    case EXEC_OMP_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 
 	      in_omp_workshare = false;
@@ -2145,12 +2147,31 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      in_omp_workshare = true;
 
 	      /* Fall through  */
-	      
+
+	    case EXEC_OMP_DISTRIBUTE:
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_DO:
+	    case EXEC_OMP_DO_SIMD:
 	    case EXEC_OMP_SECTIONS:
 	    case EXEC_OMP_SINGLE:
 	    case EXEC_OMP_END_SINGLE:
+	    case EXEC_OMP_SIMD:
+	    case EXEC_OMP_TARGET:
+	    case EXEC_OMP_TARGET_DATA:
+	    case EXEC_OMP_TARGET_TEAMS:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_UPDATE:
 	    case EXEC_OMP_TASK:
+	    case EXEC_OMP_TEAMS:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
 
 	      /* Come to this label only from the
 		 EXEC_OMP_PARALLEL_* cases above.  */
@@ -2159,10 +2180,27 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	      if (co->ext.omp_clauses)
 		{
+		  gfc_omp_namelist *n;
+		  static int list_types[]
+		    = { OMP_LIST_ALIGNED, OMP_LIST_LINEAR, OMP_LIST_DEPEND,
+			OMP_LIST_MAP, OMP_LIST_TO, OMP_LIST_FROM };
+		  size_t idx;
 		  WALK_SUBEXPR (co->ext.omp_clauses->if_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->final_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_threads);
 		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
+		  WALK_SUBEXPR (co->ext.omp_clauses->safelen_expr);
+		  WALK_SUBEXPR (co->ext.omp_clauses->simdlen_expr);
+		  WALK_SUBEXPR (co->ext.omp_clauses->num_teams);
+		  WALK_SUBEXPR (co->ext.omp_clauses->device);
+		  WALK_SUBEXPR (co->ext.omp_clauses->thread_limit);
+		  WALK_SUBEXPR (co->ext.omp_clauses->dist_chunk_size);
+		  for (idx = 0;
+		       idx < sizeof (list_types) / sizeof (list_types[0]);
+		       idx++)
+		    for (n = co->ext.omp_clauses->lists[list_types[idx]];
+			 n; n = n->next)
+		      WALK_SUBEXPR (n->expr);
 		}
 	      break;
 	    default:

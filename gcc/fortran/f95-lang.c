@@ -87,6 +87,24 @@ static alias_set_type gfc_get_alias_set (tree);
 static void gfc_init_ts (void);
 static tree gfc_builtin_function (tree);
 
+/* Handle an "omp declare target" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+gfc_handle_omp_declare_target_attribute (tree *, tree, tree, int, bool *)
+{
+  return NULL_TREE;
+}
+
+/* Table of valid Fortran attributes.  */
+static const struct attribute_spec gfc_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "omp declare target", 0, 0, true,  false, false,
+    gfc_handle_omp_declare_target_attribute, false },
+  { NULL,		  0, 0, false, false, false, NULL, false }
+};
+
 #undef LANG_HOOKS_NAME
 #undef LANG_HOOKS_INIT
 #undef LANG_HOOKS_FINISH
@@ -108,7 +126,9 @@ static tree gfc_builtin_function (tree);
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_COPY_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP
+#undef LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_DTOR
+#undef LANG_HOOKS_OMP_FINISH_CLAUSE
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
 #undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
 #undef LANG_HOOKS_OMP_PRIVATE_OUTER_REF
@@ -116,6 +136,7 @@ static tree gfc_builtin_function (tree);
 #undef LANG_HOOKS_BUILTIN_FUNCTION
 #undef LANG_HOOKS_BUILTIN_FUNCTION
 #undef LANG_HOOKS_GET_ARRAY_DESCR_INFO
+#undef LANG_HOOKS_ATTRIBUTE_TABLE
 
 /* Define lang hooks.  */
 #define LANG_HOOKS_NAME                 "GNU Fortran"
@@ -138,14 +159,17 @@ static tree gfc_builtin_function (tree);
 #define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR	gfc_omp_clause_default_ctor
 #define LANG_HOOKS_OMP_CLAUSE_COPY_CTOR		gfc_omp_clause_copy_ctor
 #define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP		gfc_omp_clause_assign_op
+#define LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR	gfc_omp_clause_linear_ctor
 #define LANG_HOOKS_OMP_CLAUSE_DTOR		gfc_omp_clause_dtor
+#define LANG_HOOKS_OMP_FINISH_CLAUSE		gfc_omp_finish_clause
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE	gfc_omp_private_debug_clause
 #define LANG_HOOKS_OMP_PRIVATE_OUTER_REF	gfc_omp_private_outer_ref
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
   gfc_omp_firstprivatize_type_sizes
-#define LANG_HOOKS_BUILTIN_FUNCTION          gfc_builtin_function
-#define LANG_HOOKS_GET_ARRAY_DESCR_INFO	     gfc_get_array_descr_info
+#define LANG_HOOKS_BUILTIN_FUNCTION	gfc_builtin_function
+#define LANG_HOOKS_GET_ARRAY_DESCR_INFO	gfc_get_array_descr_info
+#define LANG_HOOKS_ATTRIBUTE_TABLE	gfc_attribute_table
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -1038,7 +1062,9 @@ gfc_init_builtin_functions (void)
 #include "../sync-builtins.def"
 #undef DEF_SYNC_BUILTIN
 
-  if (gfc_option.gfc_flag_openmp || flag_tree_parallelize_loops)
+  if (gfc_option.gfc_flag_openmp
+      || gfc_option.gfc_flag_openmp_simd
+      || flag_tree_parallelize_loops)
     {
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(code, name, type, attr) \
@@ -1051,6 +1077,13 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],
 		      BUILT_IN_TRAP, NULL, ATTR_NOTHROW_LEAF_LIST);
   TREE_THIS_VOLATILE (builtin_decl_explicit (BUILT_IN_TRAP)) = 1;
+
+  ftype = build_varargs_function_type_list (ptr_type_node, const_ptr_type_node,
+					    size_type_node, NULL_TREE);
+  gfc_define_builtin ("__builtin_assume_aligned", ftype,
+		      BUILT_IN_ASSUME_ALIGNED,
+		      "__builtin_assume_aligned",
+		      ATTR_CONST_NOTHROW_LEAF_LIST);
 
   gfc_define_builtin ("__emutls_get_address",
 		      builtin_types[BT_FN_PTR_PTR],

@@ -1,3 +1,66 @@
+2014-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/udr2.f90 (f7, f9): Add !$omp parallel with
+	reduction clause.
+	* gfortran.dg/gomp/udr4.f90 (f4): Likewise.
+	Remove Label is never defined expected error.
+	* gfortran.dg/gomp/udr8.f90: New test.
+
+	2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/declare-simd-1.f90: New test.
+	* gfortran.dg/gomp/depend-1.f90: New test.
+	* gfortran.dg/gomp/target1.f90: New test.
+	* gfortran.dg/gomp/target2.f90: New test.
+	* gfortran.dg/gomp/target3.f90: New test.
+	* gfortran.dg/gomp/udr4.f90: Adjust expected diagnostics.
+	* gfortran.dg/openmp-define-3.f90: Expect _OPENMP 201307 instead of
+	201107.
+
+	2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* gfortran.dg/gomp/allocatable_components_1.f90: Remove dg-error
+	directives.
+	* gfortran.dg/gomp/associate1.f90: New test.
+	* gfortran.dg/gomp/intentin1.f90: New test.
+	* gfortran.dg/gomp/openmp-simd-1.f90: New test.
+	* gfortran.dg/gomp/openmp-simd-2.f90: New test.
+	* gfortran.dg/gomp/openmp-simd-3.f90: New test.
+	* gfortran.dg/gomp/proc_ptr_2.f90: New test.
+
+	2014-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/udr6.f90 (f1, f2, f3): Use complex(kind=8)
+	instead of complex(kind=16).
+
+	2014-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/allocatable_components_1.f90: Adjust for
+	reduction clause diagnostic changes.
+	* gfortran.dg/gomp/appendix-a/a.31.3.f90: Likewise.
+	* gfortran.dg/gomp/reduction1.f90: Likewise.
+	* gfortran.dg/gomp/reduction3.f90: Likewise.
+	* gfortran.dg/gomp/udr1.f90: New test.
+	* gfortran.dg/gomp/udr2.f90: New test.
+	* gfortran.dg/gomp/udr3.f90: New test.
+	* gfortran.dg/gomp/udr4.f90: New test.
+	* gfortran.dg/gomp/udr5.f90: New test.
+	* gfortran.dg/gomp/udr6.f90: New test.
+	* gfortran.dg/gomp/udr7.f90: New test.
+
+	2014-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60127
+	* gfortran.dg/gomp/omp_do_concurrent.f90: New.
+
+	2014-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/affinity-1.f90: New test.
+
 2014-06-30  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* gcc.dg/typeof-2.c: New testcase.

@@ -7389,8 +7389,8 @@ gfc_trans_dealloc_allocated (tree descriptor, bool coarray, gfc_expr *expr)
 
 /* This helper function calculates the size in words of a full array.  */
 
-static tree
-get_full_array_size (stmtblock_t *block, tree decl, int rank)
+tree
+gfc_full_array_size (stmtblock_t *block, tree decl, int rank)
 {
   tree idx;
   tree nelems;
@@ -7416,7 +7416,7 @@ get_full_array_size (stmtblock_t *block, tree decl, int rank)
 
 static tree
 duplicate_allocatable (tree dest, tree src, tree type, int rank,
-		       bool no_malloc, tree str_sz)
+		       bool no_malloc, bool no_memcpy, tree str_sz)
 {
   tree tmp;
   tree size;
@@ -7450,9 +7450,13 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
-      tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
-      tmp = build_call_expr_loc (input_location, tmp, 3, dest, src,
-				 fold_convert (size_type_node, size));
+      if (!no_memcpy)
+	{
+	  tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
+	  tmp = build_call_expr_loc (input_location, tmp, 3, dest, src,
+				     fold_convert (size_type_node, size));
+	  gfc_add_expr_to_block (&block, tmp);
+	}
     }
   else
     {
@@ -7461,7 +7465,7 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 
       gfc_init_block (&block);
       if (rank)
-	nelems = get_full_array_size (&block, src, rank);
+	nelems = gfc_full_array_size (&block, src, rank);
       else
 	nelems = gfc_index_one_node;
 
@@ -7481,14 +7485,17 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 
       /* We know the temporary and the value will be the same length,
 	 so can use memcpy.  */
-      tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
-      tmp = build_call_expr_loc (input_location,
-			tmp, 3, gfc_conv_descriptor_data_get (dest),
-			gfc_conv_descriptor_data_get (src),
-			fold_convert (size_type_node, size));
+      if (!no_memcpy)
+	{
+	  tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
+	  tmp = build_call_expr_loc (input_location, tmp, 3,
+				     gfc_conv_descriptor_data_get (dest),
+				     gfc_conv_descriptor_data_get (src),
+				     fold_convert (size_type_node, size));
+	  gfc_add_expr_to_block (&block, tmp);
+	}
     }
 
-  gfc_add_expr_to_block (&block, tmp);
   tmp = gfc_finish_block (&block);
 
   /* Null the destination if the source is null; otherwise do
@@ -7510,7 +7517,8 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 tree
 gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank)
 {
-  return duplicate_allocatable (dest, src, type, rank, false, NULL_TREE);
+  return duplicate_allocatable (dest, src, type, rank, false, false,
+				NULL_TREE);
 }
 
 
@@ -7519,7 +7527,16 @@ gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank)
 tree
 gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank)
 {
-  return duplicate_allocatable (dest, src, type, rank, true, NULL_TREE);
+  return duplicate_allocatable (dest, src, type, rank, true, false,
+				NULL_TREE);
+}
+
+/* Allocate dest to the same size as src, but don't copy anything.  */
+
+tree
+gfc_duplicate_allocatable_nocopy (tree dest, tree src, tree type, int rank)
+{
+  return duplicate_allocatable (dest, src, type, rank, false, true, NULL_TREE);
 }
 
 
@@ -7579,7 +7596,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  /* Use the descriptor for an allocatable array.  Since this
 	     is a full array reference, we only need the descriptor
 	     information from dimension = rank.  */
-	  tmp = get_full_array_size (&fnblock, decl, rank);
+	  tmp = gfc_full_array_size (&fnblock, decl, rank);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type, tmp,
 				 gfc_index_one_node);
@@ -7938,7 +7955,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	      size = size_of_string_in_bytes (c->ts.kind, len);
 	      tmp = duplicate_allocatable (dcmp, comp, ctype, rank,
-					   false, size);
+					   false, false, size);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 	  else if (c->attr.allocatable && !c->attr.proc_pointer

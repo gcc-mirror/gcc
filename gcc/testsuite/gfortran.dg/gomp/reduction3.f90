@@ -16,7 +16,7 @@ subroutine f1
   integer :: i, ior
   ior = 6
   i = 6
-!$omp parallel reduction (ior:i) ! { dg-error "is not INTRINSIC procedure name" }
+!$omp parallel reduction (ior:i) ! { dg-error "OMP DECLARE REDUCTION\[^\n\r\]*not found" }
 !$omp end parallel
 end subroutine f1
 subroutine f2
@@ -27,7 +27,7 @@ subroutine f2
     end function
   end interface
   i = 6
-!$omp parallel reduction (ior:i) ! { dg-error "is not INTRINSIC procedure name" }
+!$omp parallel reduction (ior:i) ! { dg-error "OMP DECLARE REDUCTION\[^\n\r\]*not found" }
   i = ior (i, 3)
 !$omp end parallel
 end subroutine f2
@@ -50,7 +50,7 @@ subroutine f5
   use mreduction3
   integer :: i
   i = 6
-!$omp parallel reduction (ior:i) ! { dg-error "is not INTRINSIC procedure name" }
+!$omp parallel reduction (ior:i) ! { dg-error "OMP DECLARE REDUCTION\[^\n\r\]*not found" }
   i = ior (i, 7)
 !$omp end parallel
 end subroutine f5
@@ -58,7 +58,7 @@ subroutine f6
   use mreduction3
   integer :: i
   i = 6
-!$omp parallel reduction (iand:i) ! { dg-error "is not INTRINSIC procedure name" }
+!$omp parallel reduction (iand:i) ! { dg-error "OMP DECLARE REDUCTION\[^\n\r\]*not found" }
   i = iand (i, 18)
 !$omp end parallel
 end subroutine f6

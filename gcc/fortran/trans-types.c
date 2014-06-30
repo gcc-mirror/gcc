@@ -2162,9 +2162,6 @@ gfc_sym_type (gfc_symbol * sym)
 						restricted);
 	      byref = 0;
 	    }
-
-	  if (sym->attr.cray_pointee)
-	    GFC_POINTER_TYPE_P (type) = 1;
         }
       else
 	{
@@ -2183,8 +2180,6 @@ gfc_sym_type (gfc_symbol * sym)
       if (sym->attr.allocatable || sym->attr.pointer
 	  || gfc_is_associate_pointer (sym))
 	type = gfc_build_pointer_type (sym, type);
-      if (sym->attr.pointer || sym->attr.cray_pointee)
-	GFC_POINTER_TYPE_P (type) = 1;
     }
 
   /* We currently pass all parameters by reference.
@@ -2553,6 +2548,8 @@ gfc_get_derived_type (gfc_symbol * derived)
 	gfc_set_decl_location (field, &c->loc);
       else if (derived->declared_at.lb)
 	gfc_set_decl_location (field, &derived->declared_at);
+
+      gfc_finish_decl_attrs (field, &c->attr);
 
       DECL_PACKED (field) |= TYPE_PACKED (typenode);
 

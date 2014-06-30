@@ -13208,8 +13208,7 @@ named constants:
 @code{OMP_LIB} provides the scalar default-integer
 named constant @code{openmp_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
-of the OpenMP version; for OpenMP v3.1 the value is @code{201107}
-and for OpenMP v4.0 the value is @code{201307}.
+of the OpenMP version; for OpenMP v4.0 the value is @code{201307}.
 
 The following scalar integer named constants of the
 kind @code{omp_sched_kind}:

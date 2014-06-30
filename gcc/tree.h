@@ -1327,8 +1327,16 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_LINEAR_VARIABLE_STRIDE(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR))
 
+/* True if a LINEAR clause is for an array or allocatable variable that
+   needs special handling by the frontend.  */
+#define OMP_CLAUSE_LINEAR_ARRAY(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR)->base.deprecated_flag)
+
 #define OMP_CLAUSE_LINEAR_STEP(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR), 1)
+
+#define OMP_CLAUSE_LINEAR_STMT(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR), 2)
 
 #define OMP_CLAUSE_LINEAR_GIMPLE_SEQ(NODE) \
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_init

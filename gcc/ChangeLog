@@ -1,3 +1,96 @@
+2014-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* langhooks-def.h (LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR): Define.
+	(LANG_HOOKS_DECLS): Add it.
+	* gimplify.c (gimplify_omp_for): Make sure OMP_CLAUSE_LINEAR_STEP
+	has correct type.
+	* tree.h (OMP_CLAUSE_LINEAR_ARRAY): Define.
+	* langhooks.h (struct lang_hooks_for_decls): Add
+	omp_clause_linear_ctor hook.
+	* omp-low.c (lower_rec_input_clauses): Set max_vf even if
+	OMP_CLAUSE_LINEAR_ARRAY is set.  Don't fold_convert
+	OMP_CLAUSE_LINEAR_STEP.  For OMP_CLAUSE_LINEAR_ARRAY in
+	combined simd loop use omp_clause_linear_ctor hook.
+
+	2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses) <case OMP_CLAUSE_MAP,
+	OMP_CLAUSE_TO, OMP_CLAUSE_FROM): Make sure OMP_CLAUSE_SIZE is
+	non-NULL.
+	<case OMP_CLAUSE_ALIGNED>: Gimplify OMP_CLAUSE_ALIGNED_ALIGNMENT.
+	(gimplify_adjust_omp_clauses_1): Make sure OMP_CLAUSE_SIZE is
+	non-NULL.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-low.c (lower_rec_simd_input_clauses,
+	lower_rec_input_clauses, expand_omp_simd): Handle non-constant
+	safelen the same as safelen(1).
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_ALIGNED.  For
+	OMP_CLAUSE_{MAP,TO,FROM} if not decl use walk_tree.
+	(convert_nonlocal_reference_stmt, convert_local_reference_stmt):
+	Fixup handling of GIMPLE_OMP_TARGET.
+	(convert_tramp_reference_stmt, convert_gimple_call): Handle
+	GIMPLE_OMP_TARGET.
+
+	2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (omp_notice_variable): If n is non-NULL
+	and no flags change in ORT_TARGET region, don't jump to
+	do_outer.
+	(struct gimplify_adjust_omp_clauses_data): New type.
+	(gimplify_adjust_omp_clauses_1): Adjust for data being
+	a struct gimplify_adjust_omp_clauses_data pointer instead
+	of tree *.  Pass pre_p as a new argument to
+	lang_hooks.decls.omp_finish_clause hook.
+	(gimplify_adjust_omp_clauses): Add pre_p argument, adjust
+	splay_tree_foreach to pass both list_p and pre_p.
+	(gimplify_omp_parallel, gimplify_omp_task, gimplify_omp_for,
+	gimplify_omp_workshare, gimplify_omp_target_update): Adjust
+	gimplify_adjust_omp_clauses callers.
+	* langhooks.c (lhd_omp_finish_clause): New function.
+	* langhooks-def.h (lhd_omp_finish_clause): New prototype.
+	(LANG_HOOKS_OMP_FINISH_CLAUSE): Define to lhd_omp_finish_clause.
+	* langhooks.h (struct lang_hooks_for_decls): Add a new
+	gimple_seq * argument to omp_finish_clause hook.
+	* omp-low.c (scan_sharing_clauses): Call scan_omp_op on
+	non-DECL_P OMP_CLAUSE_DECL if ctx->outer.
+	(scan_omp_parallel, lower_omp_for): When adding
+	_LOOPTEMP_ clause var, add it to outer ctx's decl_map
+	as identity.
+	* tree-core.h (OMP_CLAUSE_MAP_TO_PSET): New map kind.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle various OpenMP 4.0 clauses.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	OMP_CLAUSE_MAP_TO_PSET.
+
+	2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* omp-low.c (lower_rec_input_clauses) <case OMP_CLAUSE_LASTPRIVATE>:
+	Set lastprivate_firstprivate even if omp_private_outer_ref
+	langhook returns true.
+	<case OMP_CLAUSE_REDUCTION>: When calling omp_clause_default_ctor
+	langhook, call unshare_expr on new_var and call
+	build_outer_var_ref to get the last argument.
+
+	2014-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_STMT): Define.
+	* tree.c (omp_clause_num_ops): Increase OMP_CLAUSE_LINEAR
+	number of operands to 3.
+	(walk_tree_1): Walk all operands of OMP_CLAUSE_LINEAR.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_DEPEND.
+	* gimplify.c (gimplify_scan_omp_clauses): Handle
+	OMP_CLAUSE_LINEAR_STMT.
+	* omp-low.c (lower_rec_input_clauses): Fix typo.
+	(maybe_add_implicit_barrier_cancel, lower_omp_1): Add
+	cast between Fortran boolean_type_node and C _Bool if
+	needed.
+
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51253

@@ -1,3 +1,547 @@
+2014-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* module.c (MOD_VERSION): Revert back to 12.
+	(MOD_VERSION_OMP4): Define.
+	(module_omp4): New variable.
+	(mio_symbol): Call mio_omp_declare_simd only if module_omp4.
+	(read_module): Load omp udrs only if module_omp4.
+	(write_module): Write omp udrs only if module_omp4.
+	(find_omp_declare_simd): New function.
+	(gfc_dump_module): Compute module_omp4.  Use MOD_VERSION_OMP4
+	if module_omp4.
+	(gfc_use_module): Handle MOD_VERSION_OMP4, set module_omp4.
+
+	Backported from mainline
+	2014-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans.h (gfc_omp_clause_linear_ctor): New prototype.
+	* trans-openmp.c (gfc_omp_linear_clause_add_loop,
+	gfc_omp_clause_linear_ctor): New functions.
+	(gfc_trans_omp_clauses): Make sure OMP_CLAUSE_LINEAR_STEP has
+	correct type.  Set OMP_CLAUSE_LINEAR_ARRAY flag if needed.
+	* f95-lang.c (LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR): Redefine.
+
+	2014-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* dump-parse-tree.c (show_omp_namelist): Use n->udr->udr instead
+	of n->udr.
+	* f95-lang.c (gfc_init_builtin_functions): Initialize
+	BUILT_IN_ASSUME_ALIGNED.
+	* gfortran.h (gfc_omp_namelist): Change udr field type to
+	struct gfc_omp_namelist_udr.
+	(gfc_omp_namelist_udr): New type.
+	(gfc_get_omp_namelist_udr): Define.
+	(gfc_resolve_code): New prototype.
+	* match.c (gfc_free_omp_namelist): Free name->udr.
+	* module.c (intrinsics): Add INTRINSIC_USER.
+	(fix_mio_expr): Likewise.
+	(mio_expr): Handle INSTRINSIC_USER and non-resolved EXPR_FUNCTION.
+	* openmp.c (gfc_match_omp_clauses): Adjust initialization of n->udr.
+	(gfc_match_omp_declare_reduction): Treat len=: the same as len=*.
+	Set attr.flavor on omp_{out,in,priv,orig} artificial variables.
+	(struct resolve_omp_udr_callback_data): New type.
+	(resolve_omp_udr_callback, resolve_omp_udr_callback2,
+	resolve_omp_udr_clause): New functions.
+	(resolve_omp_clauses): Adjust for n->udr changes, resolve UDR clauses
+	here.
+	(omp_udr_callback): Don't check for implicitly declared functions
+	here.
+	(gfc_resolve_omp_udr): Don't call gfc_resolve.  Don't check for
+	implicitly declared subroutines here.
+	* resolve.c (resolve_function): If value.function.isym is non-NULL,
+	consider it already resolved.
+	(resolve_code): Renamed to ...
+	(gfc_resolve_code): ... this.  No longer static.
+	(gfc_resolve_blocks, generate_component_assignments, resolve_codes):
+	Adjust callers.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Don't privatize
+	by reference type (C_PTR) variables.
+	(gfc_omp_finish_clause): Make sure OMP_CLAUSE_SIZE is non-NULL.
+	(gfc_trans_omp_udr_expr): Remove.
+	(gfc_trans_omp_array_reduction_or_udr): Adjust for n->udr changes.
+	Don't call gfc_trans_omp_udr_expr, even for sym->attr.dimension
+	expand it as assignment or subroutine call.  Don't initialize
+	value.function.isym.
+
+	2014-06-18  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (OpenMP): Update refs to OpenMP 4.0.
+	* intrinsic.texi (OpenMP Modules): Ditto.
+
+	2014-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpp.c (cpp_define_builtins): Change _OPENMP macro to
+	201307.
+	* dump-parse-tree.c (show_omp_namelist): Add list_type
+	argument.  Adjust for rop being u.reduction_op now,
+	handle depend_op or map_op.
+	(show_omp_node): Adjust callers.  Print some new
+	OpenMP 4.0 clauses, adjust for OMP_LIST_DEPEND_{IN,OUT}
+	becoming a single OMP_LIST_DEPEND.
+	* f95-lang.c (gfc_handle_omp_declare_target_attribute): New
+	function.
+	(gfc_attribute_table): New variable.
+	(LANG_HOOKS_OMP_FINISH_CLAUSE, LANG_HOOKS_ATTRIBUTE_TABLE): Redefine.
+	* frontend-passes.c (gfc_code_walker): Handle new OpenMP target
+	EXEC_OMP_* codes and new clauses.
+	* gfortran.h (gfc_statement): Add ST_OMP_TARGET, ST_OMP_END_TARGET,
+	ST_OMP_TARGET_DATA, ST_OMP_END_TARGET_DATA, ST_OMP_TARGET_UPDATE,
+	ST_OMP_DECLARE_TARGET, ST_OMP_TEAMS, ST_OMP_END_TEAMS,
+	ST_OMP_DISTRIBUTE, ST_OMP_END_DISTRIBUTE, ST_OMP_DISTRIBUTE_SIMD,
+	ST_OMP_END_DISTRIBUTE_SIMD, ST_OMP_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_END_DISTRIBUTE_PARALLEL_DO, ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD,
+	ST_OMP_END_DISTRIBUTE_PARALLEL_DO_SIMD, ST_OMP_TARGET_TEAMS,
+	ST_OMP_END_TARGET_TEAMS, ST_OMP_TEAMS_DISTRIBUTE,
+	ST_OMP_END_TEAMS_DISTRIBUTE, ST_OMP_TEAMS_DISTRIBUTE_SIMD,
+	ST_OMP_END_TEAMS_DISTRIBUTE_SIMD, ST_OMP_TARGET_TEAMS_DISTRIBUTE,
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE,
+	ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD,
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD,
+	ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
+	ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
+	ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD and
+	ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD.
+	(symbol_attribute): Add omp_declare_target field.
+	(gfc_omp_depend_op, gfc_omp_map_op): New enums.
+	(gfc_omp_namelist): Replace rop field with union
+	containing reduction_op, depend_op and map_op.
+	(OMP_LIST_DEPEND_IN, OMP_LIST_DEPEND_OUT): Remove.
+	(OMP_LIST_DEPEND, OMP_LIST_MAP, OMP_LIST_TO, OMP_LIST_FROM): New.
+	(gfc_omp_clauses): Add num_teams, device, thread_limit,
+	dist_sched_kind, dist_chunk_size fields.
+	(gfc_common_head): Add omp_declare_target field.
+	(gfc_exec_op): Add EXEC_OMP_TARGET, EXEC_OMP_TARGET_DATA,
+	EXEC_OMP_TEAMS, EXEC_OMP_DISTRIBUTE, EXEC_OMP_DISTRIBUTE_SIMD,
+	EXEC_OMP_DISTRIBUTE_PARALLEL_DO, EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD,
+	EXEC_OMP_TARGET_TEAMS, EXEC_OMP_TEAMS_DISTRIBUTE,
+	EXEC_OMP_TEAMS_DISTRIBUTE_SIMD, EXEC_OMP_TARGET_TEAMS_DISTRIBUTE,
+	EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD,
+	EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO,
+	EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
+	EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD and
+	EXEC_OMP_TARGET_UPDATE.
+	(gfc_add_omp_declare_target): New prototype.
+	* match.h (gfc_match_omp_declare_target, gfc_match_omp_distribute,
+	gfc_match_omp_distribute_parallel_do,
+	gfc_match_omp_distribute_parallel_do_simd,
+	gfc_match_omp_distribute_simd, gfc_match_omp_target,
+	gfc_match_omp_target_data, gfc_match_omp_target_teams,
+	gfc_match_omp_target_teams_distribute,
+	gfc_match_omp_target_teams_distribute_parallel_do,
+	gfc_match_omp_target_teams_distribute_parallel_do_simd,
+	gfc_match_omp_target_teams_distribute_simd,
+	gfc_match_omp_target_update, gfc_match_omp_teams,
+	gfc_match_omp_teams_distribute,
+	gfc_match_omp_teams_distribute_parallel_do,
+	gfc_match_omp_teams_distribute_parallel_do_simd,
+	gfc_match_omp_teams_distribute_simd): New prototypes.
+	* module.c (ab_attribute): Add AB_OMP_DECLARE_TARGET.
+	(attr_bits): Likewise.
+	(mio_symbol_attribute): Handle omp_declare_target attribute.
+	(gfc_free_omp_clauses): Free num_teams, device, thread_limit
+	and dist_chunk_size expressions.
+	(OMP_CLAUSE_PRIVATE, OMP_CLAUSE_FIRSTPRIVATE, OMP_CLAUSE_LASTPRIVATE,
+	OMP_CLAUSE_COPYPRIVATE, OMP_CLAUSE_SHARED, OMP_CLAUSE_COPYIN,
+	OMP_CLAUSE_REDUCTION, OMP_CLAUSE_IF, OMP_CLAUSE_NUM_THREADS,
+	OMP_CLAUSE_SCHEDULE, OMP_CLAUSE_DEFAULT, OMP_CLAUSE_ORDERED,
+	OMP_CLAUSE_COLLAPSE, OMP_CLAUSE_UNTIED, OMP_CLAUSE_FINAL,
+	OMP_CLAUSE_MERGEABLE, OMP_CLAUSE_ALIGNED, OMP_CLAUSE_DEPEND,
+	OMP_CLAUSE_INBRANCH, OMP_CLAUSE_LINEAR, OMP_CLAUSE_NOTINBRANCH,
+	OMP_CLAUSE_PROC_BIND, OMP_CLAUSE_SAFELEN, OMP_CLAUSE_SIMDLEN,
+	OMP_CLAUSE_UNIFORM): Use 1U instead of 1.
+	(OMP_CLAUSE_DEVICE, OMP_CLAUSE_MAP, OMP_CLAUSE_TO, OMP_CLAUSE_FROM,
+	OMP_CLAUSE_NUM_TEAMS, OMP_CLAUSE_THREAD_LIMIT,
+	OMP_CLAUSE_DIST_SCHEDULE): Define.
+	(gfc_match_omp_clauses): Change mask parameter to unsigned int.
+	Adjust for rop becoming u.reduction_op.  Disallow inbranch with
+	notinbranch.  For depend clause, always create OMP_LIST_DEPEND
+	and fill in u.depend_op.  Handle num_teams, device, map,
+	to, from, thread_limit and dist_schedule clauses.
+	(OMP_DECLARE_SIMD_CLAUSES): Or in OMP_CLAUSE_INBRANCH and
+	OMP_CLAUSE_NOTINBRANCH.
+	(OMP_TARGET_CLAUSES, OMP_TARGET_DATA_CLAUSES,
+	OMP_TARGET_UPDATE_CLAUSES, OMP_TEAMS_CLAUSES,
+	OMP_DISTRIBUTE_CLAUSES): Define.
+	(match_omp): New function.
+	(gfc_match_omp_do, gfc_match_omp_do_simd, gfc_match_omp_parallel,
+	gfc_match_omp_parallel_do, gfc_match_omp_parallel_do_simd,
+	gfc_match_omp_parallel_sections, gfc_match_omp_parallel_workshare,
+	gfc_match_omp_sections, gfc_match_omp_simd, gfc_match_omp_single,
+	gfc_match_omp_task): Rewritten using match_omp.
+	(gfc_match_omp_threadprivate, gfc_match_omp_declare_reduction):
+	Diagnose if the directives are followed by unexpected junk.
+	(gfc_match_omp_distribute, gfc_match_omp_distribute_parallel_do,
+	gfc_match_omp_distribute_parallel_do_simd,
+	gfc_match_omp_distrbute_simd, gfc_match_omp_declare_target,
+	gfc_match_omp_target, gfc_match_omp_target_data,
+	gfc_match_omp_target_teams, gfc_match_omp_target_teams_distribute,
+	gfc_match_omp_target_teams_distribute_parallel_do,
+	gfc_match_omp_target_teams_distribute_parallel_do_simd,
+	gfc_match_omp_target_teams_distrbute_simd, gfc_match_omp_target_update,
+	gfc_match_omp_teams, gfc_match_omp_teams_distribute,
+	gfc_match_omp_teams_distribute_parallel_do,
+	gfc_match_omp_teams_distribute_parallel_do_simd,
+	gfc_match_omp_teams_distrbute_simd): New functions.
+	* openmp.c (resolve_omp_clauses): Adjust for
+	OMP_LIST_DEPEND_{IN,OUT} being changed to OMP_LIST_DEPEND.  Handle
+	OMP_LIST_MAP, OMP_LIST_FROM, OMP_LIST_TO, num_teams, device,
+	dist_chunk_size and thread_limit.
+	(gfc_resolve_omp_parallel_blocks): Only put sharing clauses into
+	ctx.sharing_clauses.  Call gfc_resolve_omp_do_blocks for various
+	new EXEC_OMP_* codes.
+	(resolve_omp_do): Handle various new EXEC_OMP_* codes.
+	(gfc_resolve_omp_directive): Likewise.
+	(gfc_resolve_omp_declare_simd): Add missing space to diagnostics.
+	* parse.c (decode_omp_directive): Handle parsing of OpenMP 4.0
+	offloading related directives.
+	(case_executable): Add ST_OMP_TARGET_UPDATE.
+	(case_exec_markers): Add ST_OMP_TARGET*, ST_OMP_TEAMS*,
+	ST_OMP_DISTRIBUTE*.
+	(case_decl): Add ST_OMP_DECLARE_TARGET.
+	(gfc_ascii_statement): Handle new ST_OMP_* codes.
+	(parse_omp_do): Handle various new ST_OMP_* codes.
+	(parse_executable): Likewise.
+	* resolve.c (gfc_resolve_blocks): Handle various new EXEC_OMP_*
+	codes.
+	(resolve_code): Likewise.
+	(resolve_symbol): Change that !$OMP DECLARE TARGET variables
+	are saved.
+	* st.c (gfc_free_statement): Handle various new EXEC_OMP_* codes.
+	* symbol.c (check_conflict): Check omp_declare_target conflicts.
+	(gfc_add_omp_declare_target): New function.
+	(gfc_copy_attr): Copy omp_declare_target.
+	* trans.c (trans_code): Handle various new EXEC_OMP_* codes.
+	* trans-common.c (build_common_decl): Add "omp declare target"
+	attribute if needed.
+	* trans-decl.c (add_attributes_to_decl): Likewise.
+	* trans.h (gfc_omp_finish_clause): New prototype.
+	* trans-openmp.c (gfc_omp_finish_clause): New function.
+	(gfc_trans_omp_reduction_list): Adjust for rop being renamed
+	to u.reduction_op.
+	(gfc_trans_omp_clauses): Adjust for OMP_LIST_DEPEND_{IN,OUT}
+	change to OMP_LIST_DEPEND and fix up depend handling.
+	Handle OMP_LIST_MAP, OMP_LIST_TO, OMP_LIST_FROM, num_teams,
+	thread_limit, device, dist_chunk_size and dist_sched_kind.
+	(gfc_trans_omp_do): Handle EXEC_OMP_DISTRIBUTE.
+	(GFC_OMP_SPLIT_DISTRIBUTE, GFC_OMP_SPLIT_TEAMS,
+	GFC_OMP_SPLIT_TARGET, GFC_OMP_SPLIT_NUM, GFC_OMP_MASK_DISTRIBUTE,
+	GFC_OMP_MASK_TEAMS, GFC_OMP_MASK_TARGET, GFC_OMP_MASK_NUM): New.
+	(gfc_split_omp_clauses): Handle splitting of clauses for new
+	EXEC_OMP_* codes.
+	(gfc_trans_omp_do_simd): Add pblock argument, adjust for being
+	callable for combined constructs.
+	(gfc_trans_omp_parallel_do, gfc_trans_omp_parallel_do_simd): Likewise.
+	(gfc_trans_omp_distribute, gfc_trans_omp_teams,
+	gfc_trans_omp_target, gfc_trans_omp_target_data,
+	gfc_trans_omp_target_update): New functions.
+	(gfc_trans_omp_directive): Adjust gfc_trans_omp_* callers, handle
+	new EXEC_OMP_* codes.
+
+	2014-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/60928
+	* f95-lang.c (gfc_init_builtin_functions): Handle -fopenmp-simd
+	like -fopenmp.
+	* openmp.c (resolve_omp_clauses): Remove allocatable components
+	diagnostics.  Add associate-name and intent(in) pointer
+	diagnostics for various clauses, diagnose procedure pointers in
+	reduction clause.
+	* parse.c (match_word_omp_simd): New function.
+	(matchs, matcho): New macros.
+	(decode_omp_directive): Change match macros to either matchs
+	or matcho.  Handle -fopenmp-simd.
+	(next_free, next_fixed): Handle -fopenmp-simd like -fopenmp.
+	* scanner.c (skip_free_comments, skip_fixed_comments, include_line):
+	Likewise.
+	* trans-array.c (get_full_array_size): Rename to...
+	(gfc_full_array_size): ... this.  No longer static.
+	(duplicate_allocatable): Adjust caller.  Add NO_MEMCPY argument
+	and handle it.
+	(gfc_duplicate_allocatable, gfc_copy_allocatable_data): Adjust
+	duplicate_allocatable callers.
+	(gfc_duplicate_allocatable_nocopy): New function.
+	(structure_alloc_comps): Adjust g*_full_array_size and
+	duplicate_allocatable caller.
+	* trans-array.h (gfc_full_array_size,
+	gfc_duplicate_allocatable_nocopy): New prototypes.
+	* trans-common.c (create_common): Call gfc_finish_decl_attrs.
+	* trans-decl.c (gfc_finish_decl_attrs): New function.
+	(gfc_finish_var_decl, create_function_arglist,
+	gfc_get_fake_result_decl): Call it.
+	(gfc_allocate_lang_decl): If DECL_LANG_SPECIFIC is already allocated,
+	don't allocate it again.
+	(gfc_get_symbol_decl): Set GFC_DECL_ASSOCIATE_VAR_P on
+	associate-names.
+	* trans.h (gfc_finish_decl_attrs): New prototype.
+	(struct lang_decl): Add scalar_allocatable and scalar_pointer
+	bitfields.
+	(GFC_DECL_SCALAR_ALLOCATABLE, GFC_DECL_SCALAR_POINTER,
+	GFC_DECL_GET_SCALAR_ALLOCATABLE, GFC_DECL_GET_SCALAR_POINTER,
+	GFC_DECL_ASSOCIATE_VAR_P): Define.
+	(GFC_POINTER_TYPE_P): Remove.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Don't check
+	GFC_POINTER_TYPE_P, instead test GFC_DECL_GET_SCALAR_ALLOCATABLE,
+	GFC_DECL_GET_SCALAR_POINTER or GFC_DECL_CRAY_POINTEE on decl.
+	(gfc_omp_predetermined_sharing): Associate-names are predetermined.
+	(enum walk_alloc_comps): New.
+	(gfc_has_alloc_comps, gfc_omp_unshare_expr_r, gfc_omp_unshare_expr,
+	gfc_walk_alloc_comps): New functions.
+	(gfc_omp_private_outer_ref): Return true for scalar allocatables or
+	decls with allocatable components.
+	(gfc_omp_clause_default_ctor, gfc_omp_clause_copy_ctor,
+	gfc_omp_clause_assign_op, gfc_omp_clause_dtor): Fix up handling of
+	allocatables, handle also OMP_CLAUSE_REDUCTION, handle scalar
+	allocatables and decls with allocatable components.
+	(gfc_trans_omp_array_reduction_or_udr): Don't handle allocatable
+	arrays here.
+	(gfc_trans_omp_reduction_list): Call
+	gfc_trans_omp_array_reduction_or_udr even for allocatable scalars.
+	(gfc_trans_omp_do_simd): If -fno-openmp, just expand it as OMP_SIMD.
+	(gfc_trans_omp_parallel_do_simd): Likewise.
+	* trans-types.c (gfc_sym_type): Don't set GFC_POINTER_TYPE_P.
+	(gfc_get_derived_type): Call gfc_finish_decl_attrs.
+
+	2014-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* dump-parse-tree.c (show_omp_namelist): Dump reduction
+	id in each list item.
+	(show_omp_node): Only handle OMP_LIST_REDUCTION, not
+	OMP_LIST_REDUCTION_FIRST .. OMP_LIST_REDUCTION_LAST.  Don't
+	dump reduction id here.
+	* frontend-passes.c (dummy_code_callback): Renamed to...
+	(gfc_dummy_code_callback): ... this.  No longer static.
+	(optimize_reduction): Use gfc_dummy_code_callback instead of
+	dummy_code_callback.
+	* gfortran.h (gfc_statement): Add ST_OMP_DECLARE_REDUCTION.
+	(symbol_attribute): Add omp_udr_artificial_var bitfield.
+	(gfc_omp_reduction_op): New enum.
+	(gfc_omp_namelist): Add rop and udr fields.
+	(OMP_LIST_PLUS, OMP_LIST_REDUCTION_FIRST, OMP_LIST_MULT,
+	OMP_LIST_SUB, OMP_LIST_AND, OMP_LIST_OR, OMP_LIST_EQV,
+	OMP_LIST_NEQV, OMP_LIST_MAX, OMP_LIST_MIN, OMP_LIST_IAND,
+	OMP_LIST_IOR, OMP_LIST_IEOR, OMP_LIST_REDUCTION_LAST): Removed.
+	(OMP_LIST_REDUCTION): New.
+	(gfc_omp_udr): New type.
+	(gfc_get_omp_udr): Define.
+	(gfc_symtree): Add n.omp_udr field.
+	(gfc_namespace): Add omp_udr_root field, add omp_udr_ns bitfield.
+	(gfc_free_omp_udr, gfc_omp_udr_find, gfc_resolve_omp_udrs,
+	gfc_dummy_code_callback): New prototypes.
+	* match.h (gfc_match_omp_declare_reduction): New prototype.
+	* module.c (MOD_VERSION): Increase to 13.
+	(omp_declare_reduction_stmt): New array.
+	(mio_omp_udr_expr, write_omp_udr, write_omp_udrs, load_omp_udrs):
+	New functions.
+	(read_module): Read OpenMP user defined reductions.
+	(write_module): Write OpenMP user defined reductions.
+	* openmp.c: Include arith.h.
+	(gfc_free_omp_udr, gfc_find_omp_udr): New functions.
+	(gfc_match_omp_clauses): Handle user defined reductions.
+	Store reduction kind into gfc_omp_namelist instead of using
+	several OMP_LIST_* entries.
+	(match_udr_expr, gfc_omp_udr_predef, gfc_omp_udr_find,
+	gfc_match_omp_declare_reduction): New functions.
+	(resolve_omp_clauses): Adjust for reduction clauses being only
+	in OMP_LIST_REDUCTION list.  Diagnose missing UDRs.
+	(struct omp_udr_callback_data): New type.
+	(omp_udr_callback, gfc_resolve_omp_udr, gfc_resolve_omp_udrs): New
+	functions.
+	* parse.c (decode_omp_directive): Handle !$omp declare reduction.
+	(case_decl): Add ST_OMP_DECLARE_REDUCTION.
+	(gfc_ascii_statement): Print ST_OMP_DECLARE_REDUCTION.
+	* resolve.c (resolve_fl_variable): Allow len=: or len=* on
+	sym->attr.omp_udr_artificial_var symbols.
+	(resolve_types): Call gfc_resolve_omp_udrs.
+	* symbol.c (gfc_get_uop): If gfc_current_ns->omp_udr_ns,
+	use parent ns instead of gfc_current_ns.
+	(gfc_get_sym_tree): Don't insert symbols into
+	namespaces with omp_udr_ns set.
+	(free_omp_udr_tree): New function.
+	(gfc_free_namespace): Call it.
+	* trans-openmp.c (struct omp_udr_find_orig_data): New type.
+	(omp_udr_find_orig, gfc_trans_omp_udr_expr): New functions.
+	(gfc_trans_omp_array_reduction): Renamed to...
+	(gfc_trans_omp_array_reduction_or_udr): ... this.  Remove SYM
+	argument, instead pass gfc_omp_namelist pointer N.  Handle
+	user defined reductions.
+	(gfc_trans_omp_reduction_list): Remove REDUCTION_CODE argument.
+	Handle user defined reductions and reduction ops in gfc_omp_namelist.
+	(gfc_trans_omp_clauses): Adjust for just a single OMP_LIST_REDUCTION
+	list.
+	(gfc_split_omp_clauses): Likewise.
+
+	2014-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60127
+	* openmp.c (resolve_omp_do): Reject do concurrent loops.
+
+	2014-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_statement): Add ST_OMP_CANCEL,
+	ST_OMP_CANCELLATION_POINT, ST_OMP_TASKGROUP, ST_OMP_END_TASKGROUP,
+	ST_OMP_SIMD, ST_OMP_END_SIMD, ST_OMP_DO_SIMD, ST_OMP_END_DO_SIMD,
+	ST_OMP_PARALLEL_DO_SIMD, ST_OMP_END_PARALLEL_DO_SIMD and
+	ST_OMP_DECLARE_SIMD.
+	(gfc_omp_namelist): New typedef.
+	(gfc_get_omp_namelist): Define.
+	(OMP_LIST_UNIFORM, OMP_LIST_ALIGNED, OMP_LIST_LINEAR,
+	OMP_LIST_DEPEND_IN, OMP_LIST_DEPEND_OUT): New clause list kinds.
+	(gfc_omp_proc_bind_kind, gfc_omp_cancel_kind): New enums.
+	(gfc_omp_clauses): Change type of lists to gfc_omp_namelist *.
+	Add inbranch, notinbranch, cancel, proc_bind, safelen_expr and
+	simdlen_expr fields.
+	(gfc_omp_declare_simd): New typedef.
+	(gfc_get_omp_declare_simd): Define.
+	(gfc_namespace): Add omp_declare_simd field.
+	(gfc_exec_op): Add EXEC_OMP_CANCEL, EXEC_OMP_CANCELLATION_POINT,
+	EXEC_OMP_TASKGROUP, EXEC_OMP_SIMD, EXEC_OMP_DO_SIMD and
+	EXEC_OMP_PARALLEL_DO_SIMD.
+	(gfc_omp_atomic_op): Add GFC_OMP_ATOMIC_MASK, GFC_OMP_ATOMIC_SEQ_CST
+	and GFC_OMP_ATOMIC_SWAP.
+	(gfc_code): Change type of omp_namelist field to gfc_omp_namelist *.
+	(gfc_free_omp_namelist, gfc_free_omp_declare_simd,
+	gfc_free_omp_declare_simd_list, gfc_resolve_omp_declare_simd): New
+	prototypes.
+	* trans-stmt.h (gfc_trans_omp_declare_simd): New prototype.
+	* symbol.c (gfc_free_namespace): Call gfc_free_omp_declare_simd.
+	* openmp.c (gfc_free_omp_clauses): Free safelen_expr and
+	simdlen_expr.  Use gfc_free_omp_namelist instead of
+	gfc_free_namelist.
+	(gfc_free_omp_declare_simd, gfc_free_omp_declare_simd_list): New
+	functions.
+	(gfc_match_omp_variable_list): Add end_colon, headp and
+	allow_sections arguments.  Handle parsing of array sections.
+	Use *omp_namelist* instead of *namelist* data structure and
+	functions/macros.  Allow termination at : character.
+	(OMP_CLAUSE_ALIGNED, OMP_CLAUSE_DEPEND, OMP_CLAUSE_INBRANCH,
+	OMP_CLAUSE_LINEAR, OMP_CLAUSE_NOTINBRANCH, OMP_CLAUSE_PROC_BIND,
+	OMP_CLAUSE_SAFELEN, OMP_CLAUSE_SIMDLEN, OMP_CLAUSE_UNIFORM): Define.
+	(gfc_match_omp_clauses): Change first and needs_space variables
+	into arguments with default values.  Parse inbranch, notinbranch,
+	proc_bind, safelen, simdlen, uniform, linear, aligned and
+	depend clauses.
+	(OMP_PARALLEL_CLAUSES): Add OMP_CLAUSE_PROC_BIND.
+	(OMP_DECLARE_SIMD_CLAUSES, OMP_SIMD_CLAUSES): Define.
+	(OMP_TASK_CLAUSES): Add OMP_CLAUSE_DEPEND.
+	(gfc_match_omp_do_simd): New function.
+	(gfc_match_omp_flush): Use *omp_namelist* instead of *namelist*
+	data structure and functions/macros.
+	(gfc_match_omp_simd, gfc_match_omp_declare_simd,
+	gfc_match_omp_parallel_do_simd): New functions.
+	(gfc_match_omp_atomic): Handle seq_cst clause.  Handle atomic swap.
+	(gfc_match_omp_taskgroup, gfc_match_omp_cancel_kind,
+	gfc_match_omp_cancel, gfc_match_omp_cancellation_point): New
+	functions.
+	(resolve_omp_clauses): Add where, omp_clauses and ns arguments.
+	Use *omp_namelist* instead of *namelist* data structure and
+	functions/macros.  Resolve uniform, aligned, linear, depend,
+	safelen and simdlen clauses.
+	(resolve_omp_atomic): Adjust for GFC_OMP_ATOMIC_{MASK,SEQ_CST,SWAP}
+	addition, recognize atomic swap.
+	(gfc_resolve_omp_parallel_blocks): Use gfc_omp_namelist instead
+	of gfc_namelist.  Handle EXEC_OMP_PARALLEL_DO_SIMD the same as
+	EXEC_OMP_PARALLEL_DO.
+	(gfc_resolve_do_iterator): Use *omp_namelist* instead of *namelist*
+	data structure and functions/macros.
+	(resolve_omp_do): Likewise.  Handle EXEC_OMP_SIMD, EXEC_OMP_DO_SIMD,
+	EXEC_OMP_PARALLEL_DO_SIMD.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_SIMD, EXEC_OMP_DO_SIMD,
+	EXEC_OMP_PARALLEL_DO_SIMD and EXEC_OMP_CANCEL.  Adjust
+	resolve_omp_clauses caller.
+	(gfc_resolve_omp_declare_simd): New function.
+	* parse.c (decode_omp_directive): Parse cancellation point, cancel,
+	declare simd, end do simd, end simd, end parallel do simd,
+	end taskgroup, parallel do simd, simd and taskgroup directives.
+	(case_executable): Add ST_OMP_CANCEL and ST_OMP_CANCELLATION_POINT.
+	(case_exec_markers): Add ST_OMP_TASKGROUP, case ST_OMP_SIMD,
+	ST_OMP_DO_SIMD and ST_OMP_PARALLEL_DO_SIMD.
+	(case_decl): Add ST_OMP_DECLARE_SIMD.
+	(gfc_ascii_statement): Handle ST_OMP_CANCEL,
+	ST_OMP_CANCELLATION_POINT, ST_OMP_TASKGROUP, ST_OMP_END_TASKGROUP,
+	ST_OMP_SIMD, ST_OMP_END_SIMD, ST_OMP_DO_SIMD, ST_OMP_END_DO_SIMD,
+	ST_OMP_PARALLEL_DO_SIMD, ST_OMP_END_PARALLEL_DO_SIMD and
+	ST_OMP_DECLARE_SIMD.
+	(parse_omp_do): Handle ST_OMP_SIMD, ST_OMP_DO_SIMD and
+	ST_OMP_PARALLEL_DO_SIMD.
+	(parse_omp_atomic): Adjust for GFC_OMP_ATOMIC_* additions.
+	(parse_omp_structured_block): Handle ST_OMP_TASKGROUP and
+	ST_OMP_PARALLEL_DO_SIMD.
+	(parse_executable): Handle ST_OMP_SIMD, ST_OMP_DO_SIMD,
+	ST_OMP_PARALLEL_DO_SIMD and ST_OMP_TASKGROUP.
+	* trans-decl.c (gfc_get_extern_function_decl,
+	gfc_create_function_decl): Call gfc_trans_omp_declare_simd if
+	needed.
+	* frontend-passes.c (gfc_code_walker): Handle EXEC_OMP_SIMD,
+	EXEC_OMP_DO_SIMD and EXEC_OMP_PARALLEL_DO_SIMD.  Walk
+	safelen_expr and simdlen_expr.  Walk expressions in gfc_omp_namelist
+	of depend, aligned and linear clauses.
+	* match.c (match_exit_cycle): Handle EXEC_OMP_SIMD, EXEC_OMP_DO_SIMD
+	and EXEC_OMP_PARALLEL_DO_SIMD.
+	(gfc_free_omp_namelist): New function.
+	* dump-parse-tree.c (show_namelist): Removed.
+	(show_omp_namelist): New function.
+	(show_omp_node): Handle OpenMP 4.0 additions.
+	(show_code_node): Handle EXEC_OMP_CANCEL, EXEC_OMP_CANCELLATION_POINT,
+	EXEC_OMP_DO_SIMD, EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and
+	EXEC_OMP_TASKGROUP.
+	* match.h (gfc_match_omp_cancel, gfc_match_omp_cancellation_point,
+	gfc_match_omp_declare_simd, gfc_match_omp_do_simd,
+	gfc_match_omp_parallel_do_simd, gfc_match_omp_simd,
+	gfc_match_omp_taskgroup): New prototypes.
+	* trans-openmp.c (gfc_trans_omp_variable): Add declare_simd
+	argument, handle it.  Allow current_function_decl to be NULL.
+	(gfc_trans_omp_variable_list): Add declare_simd argument, pass
+	it through to gfc_trans_omp_variable and disregard whether
+	sym is referenced if declare_simd is true.  Work on gfc_omp_namelist
+	instead of gfc_namelist.
+	(gfc_trans_omp_reduction_list): Work on gfc_omp_namelist instead of
+	gfc_namelist.  Adjust gfc_trans_omp_variable caller.
+	(gfc_trans_omp_clauses): Add declare_simd argument, pass it through
+	to gfc_trans_omp_variable{,_list} callers.  Work on gfc_omp_namelist
+	instead of gfc_namelist.  Handle inbranch, notinbranch, safelen,
+	simdlen, depend, uniform, linear, proc_bind and aligned clauses.
+	Handle cancel kind.
+	(gfc_trans_omp_atomic): Handle seq_cst clause, handle atomic swap,
+	adjust for GFC_OMP_ATOMIC_* changes.
+	(gfc_trans_omp_cancel, gfc_trans_omp_cancellation_point): New
+	functions.
+	(gfc_trans_omp_do): Add op argument, handle simd translation into
+	generic.
+	(GFC_OMP_SPLIT_SIMD, GFC_OMP_SPLIT_DO, GFC_OMP_SPLIT_PARALLEL,
+	GFC_OMP_SPLIT_NUM, GFC_OMP_MASK_SIMD, GFC_OMP_MASK_DO,
+	GFC_OMP_MASK_PARALLEL): New.
+	(gfc_split_omp_clauses, gfc_trans_omp_do_simd): New functions.
+	(gfc_trans_omp_parallel_do): Rework to use gfc_split_omp_clauses.
+	(gfc_trans_omp_parallel_do_simd, gfc_trans_omp_taskgroup): New
+	functions.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_CANCEL,
+	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,
+	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
+	Adjust gfc_trans_omp_do caller.
+	(gfc_trans_omp_declare_simd): New function.
+	* st.c (gfc_free_statement): Handle EXEC_OMP_CANCEL,
+	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,
+	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
+	For EXEC_OMP_FLUSH call gfc_free_omp_namelist instead of
+	gfc_free_namelist.
+	* module.c (omp_declare_simd_clauses): New variable.
+	(mio_omp_declare_simd): New function.
+	(mio_symbol): Call it.
+	* trans.c (trans_code): Handle EXEC_OMP_CANCEL,
+	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,
+	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
+	* resolve.c (gfc_resolve_blocks): Handle EXEC_OMP_DO_SIMD,  
+	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
+	(resolve_code): Handle EXEC_OMP_CANCEL,
+	EXEC_OMP_CANCELLATION_POINT, EXEC_OMP_DO_SIMD,
+	EXEC_OMP_PARALLEL_DO_SIMD, EXEC_OMP_SIMD and EXEC_OMP_TASKGROUP.
+	(resolve_types): Call gfc_resolve_omp_declare_simd.
+
 2014-06-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backport from trunk.
