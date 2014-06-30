@@ -121,15 +121,26 @@ rebuild_jump_labels_chain (rtx chain)
 static unsigned int
 cleanup_barriers (void)
 {
-  rtx insn, next, prev;
-  for (insn = get_insns (); insn; insn = next)
+  rtx insn;
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      next = NEXT_INSN (insn);
       if (BARRIER_P (insn))
 	{
-	  prev = prev_nonnote_insn (insn);
+	  rtx prev = prev_nonnote_insn (insn);
 	  if (!prev)
 	    continue;
+
+	  if (CALL_P (prev))
+	    {
+	      /* Make sure we do not split a call and its corresponding
+		 CALL_ARG_LOCATION note.  */
+	      rtx next = NEXT_INSN (prev);
+
+	      if (NOTE_P (next)
+		  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+		prev = next;
+	    }
+
 	  if (BARRIER_P (prev))
 	    delete_insn (insn);
 	  else if (prev != PREV_INSN (insn))
