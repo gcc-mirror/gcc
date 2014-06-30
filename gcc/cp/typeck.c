@@ -2848,8 +2848,10 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
      type.  */
   ptrmem_type = TREE_TYPE (ptrmem);
   gcc_assert (TYPE_PTRMEMFUNC_P (ptrmem_type));
-  member = lookup_member (ptrmem_type, member_name, /*protect=*/0,
-			  /*want_type=*/false, tf_warning_or_error);
+  for (member = TYPE_FIELDS (ptrmem_type); member;
+       member = DECL_CHAIN (member))
+    if (DECL_NAME (member) == member_name)
+      break;
   return build_simple_component_ref (ptrmem, member);
 }
 
