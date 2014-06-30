@@ -1,3 +1,9 @@
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51400
+	* c-common.c (handle_noreturn_attribute, handle_const_attribute):
+	Do not discard TYPE_QUALS of type.
+
 2014-06-26  Jason Merrill  <jason@redhat.com>
 
 	* c-common.h (enum cxx_dialect): Add cxx1z.
