@@ -1,5 +1,9 @@
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61539
+	* pt.c (unify_one_argument): Type/expression mismatch just causes
+	deduction failure.
+
 	* semantics.c (simplify_aggr_init_expr): Remove remnants of
 	2014-04-11 change.
 
