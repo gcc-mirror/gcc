@@ -1,5 +1,9 @@
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61539
+	* pt.c (unify_one_argument): Type/expression mismatch just causes
+	deduction failure.
+
 	PR c++/61500
 	* tree.c (lvalue_kind): Handle MEMBER_REF and DOTSTAR_EXPR.
 
