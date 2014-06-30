@@ -6016,7 +6016,8 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
     {
       cselib_val *oval = cselib_lookup (oloc, GET_MODE (oloc), 0, VOIDmode);
 
-      gcc_assert (oval != v);
+      if (oval == v)
+	return;
       gcc_assert (REG_P (oloc) || MEM_P (oloc));
 
       if (oval && !cselib_preserved_value_p (oval))

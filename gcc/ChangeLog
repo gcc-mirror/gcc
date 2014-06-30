@@ -1,3 +1,8 @@
+2014-06-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* var-tracking.c (add_stores): Return instead of asserting if old
+	and new values for conditional store are the same.
+
 2014-06-30  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/61608
