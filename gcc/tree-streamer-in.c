@@ -357,13 +357,6 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
-  /* This bit represent if type is complete, or if the TYPE_SIZE
-     is non-NULL.  Mark this fact into TYPE_SIZE. The actual values
-     will be filled in later.  */
-  if ((unsigned) bp_unpack_value (bp, 1))
-    TYPE_SIZE (expr) = error_mark_node;
-  else
-    TYPE_SIZE (expr) = NULL_TREE;
   TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
   TYPE_ALIGN (expr) = bp_unpack_var_len_unsigned (bp);
   TYPE_ALIAS_SET (expr) = bp_unpack_var_len_int (bp);
@@ -801,29 +794,19 @@ static void
 lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
 					struct data_in *data_in, tree expr)
 {
-  TYPE_MAIN_VARIANT (expr) = stream_read_tree (ib, data_in);
-
-  /* Variants share most the properties with the main variant.  */
-  if (TYPE_MAIN_VARIANT (expr) == expr)
-    {
-      if (COMPLETE_TYPE_P (expr))
-	{
-	  TYPE_SIZE (expr) = stream_read_tree (ib, data_in);
-	  TYPE_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
-	}
-      TYPE_ATTRIBUTES (expr) = stream_read_tree (ib, data_in);
-    }
-  /* The fileds not streamed will be copied by
-     lto_copy_fields_not_streamed.  */
+  TYPE_SIZE (expr) = stream_read_tree (ib, data_in);
+  TYPE_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
+  TYPE_ATTRIBUTES (expr) = stream_read_tree (ib, data_in);
   TYPE_NAME (expr) = stream_read_tree (ib, data_in);
-  TYPE_CONTEXT (expr) = stream_read_tree (ib, data_in);
-  TYPE_STUB_DECL (expr) = stream_read_tree (ib, data_in);
   /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
      reconstructed during fixup.  */
   /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
      during fixup.  */
+  TYPE_MAIN_VARIANT (expr) = stream_read_tree (ib, data_in);
+  TYPE_CONTEXT (expr) = stream_read_tree (ib, data_in);
   /* TYPE_CANONICAL gets re-computed during type merging.  */
   TYPE_CANONICAL (expr) = NULL_TREE;
+  TYPE_STUB_DECL (expr) = stream_read_tree (ib, data_in);
 }
 
 /* Read all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
@@ -835,48 +818,21 @@ lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
 					    struct data_in *data_in,
 					    tree expr)
 {
-  if (TYPE_MAIN_VARIANT (expr) == expr)
-    {
-      if (TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	TYPE_VALUES (expr) = stream_read_tree (ib, data_in);
-      else if (TREE_CODE (expr) == ARRAY_TYPE)
-	TYPE_DOMAIN (expr) = stream_read_tree (ib, data_in);
-
-      /* TYPE_NEXT_PTR_TO and TYPE_NEXT_REF_TO is recomputed.  */
-      if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-	TYPE_VFIELD (expr) = stream_read_tree (ib, data_in);
-      else if ((TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	       || TREE_CODE (expr) == INTEGER_TYPE
-	       || TREE_CODE (expr) == BOOLEAN_TYPE
-	       || TREE_CODE (expr) == REAL_TYPE
-	       || TREE_CODE (expr) == FIXED_POINT_TYPE)
-	TYPE_MIN_VALUE (expr) = stream_read_tree (ib, data_in);
-
-      if (TREE_CODE (expr) == METHOD_TYPE)
-	TYPE_METHOD_BASETYPE (expr) = stream_read_tree (ib, data_in);
-      else if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-	TYPE_METHODS (expr) = stream_read_tree (ib, data_in);
-      else if (TREE_CODE (expr) == OFFSET_TYPE)
-	TYPE_OFFSET_BASETYPE (expr) = stream_read_tree (ib, data_in);
-      else if (TREE_CODE (expr) == ARRAY_TYPE)
-	TYPE_ARRAY_MAX_SIZE (expr) = stream_read_tree (ib, data_in);
-      else if ((TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	       || TREE_CODE (expr) == INTEGER_TYPE
-	       || TREE_CODE (expr) == BOOLEAN_TYPE
-	       || TREE_CODE (expr) == REAL_TYPE
-	       || TREE_CODE (expr) == FIXED_POINT_TYPE)
-	TYPE_MAX_VALUE (expr) = stream_read_tree (ib, data_in);
-
-      if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-	TYPE_BINFO (expr) = stream_read_tree (ib, data_in);
-    }
-  /* The fileds not streamed will be copied by
-     lto_copy_fields_not_streamed.  */
-  if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
+  if (TREE_CODE (expr) == ENUMERAL_TYPE)
+    TYPE_VALUES (expr) = stream_read_tree (ib, data_in);
+  else if (TREE_CODE (expr) == ARRAY_TYPE)
+    TYPE_DOMAIN (expr) = stream_read_tree (ib, data_in);
+  else if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_FIELDS (expr) = streamer_read_chain (ib, data_in);
   else if (TREE_CODE (expr) == FUNCTION_TYPE
-           || TREE_CODE (expr) == METHOD_TYPE)
+	   || TREE_CODE (expr) == METHOD_TYPE)
     TYPE_ARG_TYPES (expr) = stream_read_tree (ib, data_in);
+
+  if (!POINTER_TYPE_P (expr))
+    TYPE_MINVAL (expr) = stream_read_tree (ib, data_in);
+  TYPE_MAXVAL (expr) = stream_read_tree (ib, data_in);
+  if (RECORD_OR_UNION_TYPE_P (expr))
+    TYPE_BINFO (expr) = stream_read_tree (ib, data_in);
 }
 
 

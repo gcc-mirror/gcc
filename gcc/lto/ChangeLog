@@ -1,3 +1,11 @@
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	Revert:
+	* lto.c (lto_copy_fields_not_streamed): New function.
+	(compare_tree_sccs_1): Do not compare fields shared in between type
+	and variant.
+	(lto_read_decls): Fixup types first before inserting into hash.
+
 2014-06-28  Andrew Pinski  <apinski@cavium.com>
 
 	* lto.c (lto_read_decls): Fix comment in comment.

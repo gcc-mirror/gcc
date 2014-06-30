@@ -313,7 +313,6 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_RESTRICT (expr), 1);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
-  bp_pack_value (bp, COMPLETE_TYPE_P (expr), 1);
   bp_pack_var_len_unsigned (bp, TYPE_PRECISION (expr));
   bp_pack_var_len_unsigned (bp, TYPE_ALIGN (expr));
   /* Make sure to preserve the fact whether the frontend would assign
@@ -699,37 +698,19 @@ static void
 write_ts_type_common_tree_pointers (struct output_block *ob, tree expr,
 				    bool ref_p)
 {
+  stream_write_tree (ob, TYPE_SIZE (expr), ref_p);
+  stream_write_tree (ob, TYPE_SIZE_UNIT (expr), ref_p);
+  stream_write_tree (ob, TYPE_ATTRIBUTES (expr), ref_p);
+  stream_write_tree (ob, TYPE_NAME (expr), ref_p);
+  /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
+     reconstructed during fixup.  */
   /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
      during fixup.  */
   stream_write_tree (ob, TYPE_MAIN_VARIANT (expr), ref_p);
-  if (TYPE_MAIN_VARIANT (expr) == expr)
-    {
-      if (COMPLETE_TYPE_P (expr))
-	{
-	  stream_write_tree (ob, TYPE_SIZE (expr), ref_p);
-	  stream_write_tree (ob, TYPE_SIZE_UNIT (expr), ref_p);
-	}
-      stream_write_tree (ob, TYPE_ATTRIBUTES (expr), ref_p);
-    }
-  else
-    {
-      tree mv = TYPE_MAIN_VARIANT (expr);
-
-      gcc_checking_assert (TYPE_MAIN_VARIANT (mv) == mv);
-      if (COMPLETE_TYPE_P (expr))
-	{
-	  gcc_checking_assert (TYPE_SIZE (expr) == TYPE_SIZE (mv));
-	  gcc_checking_assert (TYPE_SIZE_UNIT (expr) == TYPE_SIZE_UNIT (mv));
-	}
-      gcc_checking_assert (TYPE_ATTRIBUTES (expr) == TYPE_ATTRIBUTES (mv));
-    }
-  stream_write_tree (ob, TYPE_NAME (expr), ref_p);
   stream_write_tree (ob, TYPE_CONTEXT (expr), ref_p);
-  stream_write_tree (ob, TYPE_STUB_DECL (expr), ref_p);
-  /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
-     reconstructed during fixup.  */
   /* TYPE_CANONICAL is re-computed during type merging, so no need
      to stream it here.  */
+  stream_write_tree (ob, TYPE_STUB_DECL (expr), ref_p);
 }
 
 /* Write all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
@@ -740,85 +721,21 @@ static void
 write_ts_type_non_common_tree_pointers (struct output_block *ob, tree expr,
 					bool ref_p)
 {
-  if (TYPE_MAIN_VARIANT (expr) == expr)
-    {
-      if (TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	stream_write_tree (ob, TYPE_VALUES (expr), ref_p);
-      else if (TREE_CODE (expr) == ARRAY_TYPE)
-	stream_write_tree (ob, TYPE_DOMAIN (expr), ref_p);
+  if (TREE_CODE (expr) == ENUMERAL_TYPE)
+    stream_write_tree (ob, TYPE_VALUES (expr), ref_p);
+  else if (TREE_CODE (expr) == ARRAY_TYPE)
+    stream_write_tree (ob, TYPE_DOMAIN (expr), ref_p);
+  else if (RECORD_OR_UNION_TYPE_P (expr))
+    streamer_write_chain (ob, TYPE_FIELDS (expr), ref_p);
+  else if (TREE_CODE (expr) == FUNCTION_TYPE
+	   || TREE_CODE (expr) == METHOD_TYPE)
+    stream_write_tree (ob, TYPE_ARG_TYPES (expr), ref_p);
 
-      /* TYPE_NEXT_PTR_TO and TYPE_NEXT_REF_TO is recomputed.  */
-      if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-	stream_write_tree (ob, TYPE_VFIELD (expr), ref_p);
-      else if ((TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	       || TREE_CODE (expr) == INTEGER_TYPE
-	       || TREE_CODE (expr) == BOOLEAN_TYPE
-	       || TREE_CODE (expr) == REAL_TYPE
-	       || TREE_CODE (expr) == FIXED_POINT_TYPE)
-	stream_write_tree (ob, TYPE_MIN_VALUE (expr), ref_p);
-
-      if (TREE_CODE (expr) == METHOD_TYPE)
-	stream_write_tree (ob, TYPE_METHOD_BASETYPE (expr), ref_p);
-      else if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-	stream_write_tree (ob, TYPE_METHODS (expr), ref_p);
-      else if (TREE_CODE (expr) == OFFSET_TYPE)
-	stream_write_tree (ob, TYPE_OFFSET_BASETYPE (expr), ref_p);
-      else if (TREE_CODE (expr) == ARRAY_TYPE)
-	stream_write_tree (ob, TYPE_ARRAY_MAX_SIZE (expr), ref_p);
-      else if ((TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	       || TREE_CODE (expr) == INTEGER_TYPE
-	       || TREE_CODE (expr) == BOOLEAN_TYPE
-	       || TREE_CODE (expr) == REAL_TYPE
-	       || TREE_CODE (expr) == FIXED_POINT_TYPE)
-	stream_write_tree (ob, TYPE_MAX_VALUE (expr), ref_p);
-
-      if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-	stream_write_tree (ob, TYPE_BINFO (expr), ref_p);
-    }
-  else
-    {
-      tree mv = TYPE_MAIN_VARIANT (expr);
-
-      if (TREE_CODE (expr) == ENUMERAL_TYPE)
-        gcc_checking_assert (TYPE_VALUES (expr) == TYPE_VALUES (mv));
-      else if (TREE_CODE (expr) == ARRAY_TYPE)
-        gcc_checking_assert (TYPE_DOMAIN (expr) == TYPE_DOMAIN (mv));
-
-      if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-        gcc_checking_assert (TYPE_VFIELD (expr) == TYPE_VFIELD (mv));
-      else if ((TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	       || TREE_CODE (expr) == INTEGER_TYPE
-	       || TREE_CODE (expr) == BOOLEAN_TYPE
-	       || TREE_CODE (expr) == REAL_TYPE
-	       || TREE_CODE (expr) == FIXED_POINT_TYPE)
-        gcc_checking_assert (TYPE_MINVAL (expr) == TYPE_MINVAL (mv));
-
-      if (TREE_CODE (expr) == METHOD_TYPE)
-        gcc_checking_assert (TYPE_METHOD_BASETYPE (expr) == TYPE_METHOD_BASETYPE (mv));
-      else if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-        gcc_checking_assert (TYPE_METHODS (expr) == TYPE_METHODS (mv));
-      else if (TREE_CODE (expr) == OFFSET_TYPE)
-        gcc_checking_assert (TYPE_OFFSET_BASETYPE (expr) == TYPE_OFFSET_BASETYPE (mv));
-      else if (TREE_CODE (expr) == ARRAY_TYPE)
-        gcc_checking_assert (TYPE_ARRAY_MAX_SIZE (expr) == TYPE_ARRAY_MAX_SIZE (mv));
-      else if ((TREE_CODE (expr) == ENUMERAL_TYPE && COMPLETE_TYPE_P (expr))
-	       || TREE_CODE (expr) == INTEGER_TYPE
-	       || TREE_CODE (expr) == BOOLEAN_TYPE
-	       || TREE_CODE (expr) == REAL_TYPE
-	       || TREE_CODE (expr) == FIXED_POINT_TYPE)
-        gcc_checking_assert (TYPE_MAX_VALUE (expr) == TYPE_MAX_VALUE (mv));
-
-      if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-        gcc_checking_assert (TYPE_BINFO (expr) == TYPE_BINFO (mv));
-    }
-   /* Fortran's gfc_nonrestricted_type may build variant that has different fields.  */
-   if (RECORD_OR_UNION_TYPE_P (expr) && COMPLETE_TYPE_P (expr))
-      streamer_write_chain (ob, TYPE_FIELDS (expr), ref_p);
-   /* Parameters of variant may by modified in case ipa-prop decides to remove
-      some.  */
-   else if (TREE_CODE (expr) == FUNCTION_TYPE
-       || TREE_CODE (expr) == METHOD_TYPE)
-     stream_write_tree (ob, TYPE_ARG_TYPES (expr), ref_p);
+  if (!POINTER_TYPE_P (expr))
+    stream_write_tree (ob, TYPE_MINVAL (expr), ref_p);
+  stream_write_tree (ob, TYPE_MAXVAL (expr), ref_p);
+  if (RECORD_OR_UNION_TYPE_P (expr))
+    stream_write_tree (ob, TYPE_BINFO (expr), ref_p);
 }
 
 
