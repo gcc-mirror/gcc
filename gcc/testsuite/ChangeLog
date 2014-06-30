@@ -1,3 +1,9 @@
+2014-06-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gfortran.dg/round_4.f90: Skip for powerpc*-*-linux* since the
+	test requires greater precision than the current PowerPC long
+	double implementation supports.
+
 2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54891
