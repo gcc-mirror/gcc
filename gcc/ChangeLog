@@ -1,3 +1,7 @@
+2014-06-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific, aarch64*-*-*): Fix markup.  Reword a bit.
+
 2014-06-30  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	PR target/61633
