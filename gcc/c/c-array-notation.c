@@ -214,6 +214,13 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
   if (an_type == BUILT_IN_NONE)
     return NULL_TREE;
 
+  /* Builtin call should contain at least one argument.  */
+  if (call_expr_nargs (an_builtin_fn) == 0)
+    {
+      error_at (EXPR_LOCATION (an_builtin_fn), "Invalid builtin arguments");
+      return error_mark_node;
+    }
+
   if (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE
       || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
     {
@@ -238,7 +245,10 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
     return error_mark_node;
  
   if (rank == 0)
-    return an_builtin_fn;
+    {
+      error_at (location, "Invalid builtin arguments");
+      return error_mark_node;
+    }
   else if (rank > 1 
 	   && (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
 	       || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND))

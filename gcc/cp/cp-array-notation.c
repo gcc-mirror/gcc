@@ -250,7 +250,10 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
   if (!find_rank (location, an_builtin_fn, an_builtin_fn, true, &rank))
       return error_mark_node;
   if (rank == 0)
-    return an_builtin_fn;
+    {
+      error_at (location, "Invalid builtin arguments");
+      return error_mark_node;
+    }
   else if (rank > 1 
 	   && (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
 	       || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND))
