@@ -103,9 +103,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto __end = _M_nfa._M_insert_dummy();
 	  __alt1._M_append(__end);
 	  __alt2._M_append(__end);
+	  // __alt2 is state._M_next, __alt1 is state._M_alt. The executor
+	  // executes _M_alt before _M_next, as well as executing left
+	  // alternative before right one.
 	  _M_stack.push(_StateSeqT(_M_nfa,
-				   _M_nfa._M_insert_alt(__alt1._M_start,
-							__alt2._M_start, false),
+				   _M_nfa._M_insert_alt(__alt2._M_start,
+							__alt1._M_start, false),
 				   __end));
 	}
     }

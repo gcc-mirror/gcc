@@ -71,6 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_REGEX_USE_THOMPSON_NFA if they need to use this approach.
       bool __ret;
       if (!__re._M_automaton->_M_has_backref
+	  && !(__re._M_flags & regex_constants::ECMAScript)
 #ifndef _GLIBCXX_REGEX_USE_THOMPSON_NFA
 	  && __policy == _RegexExecutorPolicy::_S_alternate
 #endif
