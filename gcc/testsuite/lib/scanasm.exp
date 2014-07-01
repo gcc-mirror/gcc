@@ -486,6 +486,9 @@ proc dg-function-on-line { args } {
     } elseif { [istarget mips*-*-*] } {
 	set pattern [format {\t\.loc [0-9]+ %d 0( [^\n]*)?\n(\t.cfi_startproc[^\t]*\n)*\t\.set\t(no)?mips16\n\t(\.set\t(no)?micromips\n\t)?\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
 		     $line $symbol $symbol $symbol]
+    } elseif { [istarget microblaze*-*-*] } {
+        set pattern [format {:%d\n\$.*:\n\t\.ent\t%s\n\t\.type\t%s, @function\n%s:\n} \
+                     $line $symbol $symbol $symbol]
     } else {
 	set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
                      $symbol $line]
