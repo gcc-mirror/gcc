@@ -1,3 +1,14 @@
+2014-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vcage_f64.c: New test.
+	* gcc.target/aarch64/simd/vcagt_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcale_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcaled_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcales_f32.c: Likewise.
+	* gcc.target/aarch64/simd/vcalt_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcaltd_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcalts_f32.c: Likewise.
+
 2014-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp1y/pr59867.C: Fix target selector.

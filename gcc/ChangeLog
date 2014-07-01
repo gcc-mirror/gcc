@@ -1,3 +1,14 @@
+2014-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vcage_f64): New intrinsic.
+	(vcagt_f64): Likewise.
+	(vcale_f64): Likewise.
+	(vcaled_f64): Likewise.
+	(vcales_f32): Likewise.
+	(vcalt_f64): Likewise.
+	(vcaltd_f64): Likewise.
+	(vcalts_f32): Likewise.
+
 2014-07-01  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document -Wint-conversion.
