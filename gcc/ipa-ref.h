@@ -82,6 +82,32 @@ public:
     return referring[0];
   }
 
+  /* Return first referring alias.  */
+  struct ipa_ref *first_alias (void)
+  {
+    struct ipa_ref *r = first_referring ();
+
+    return r && r->use == IPA_REF_ALIAS ? r : NULL;
+  }
+
+  /* Return last referring alias.  */
+  struct ipa_ref *last_alias (void)
+  {
+    unsigned int i = 0;
+
+    for(i = 0; i < referring.length (); i++)
+      if (referring[i]->use != IPA_REF_ALIAS)
+	break;
+
+    return i == 0 ? NULL : referring[i - 1];
+  }
+
+  /* Return true if the symbol has an alias.  */
+  bool inline has_aliases_p (void)
+  {
+    return first_alias ();
+  }
+
   /* Clear reference list.  */
   void clear (void)
   {

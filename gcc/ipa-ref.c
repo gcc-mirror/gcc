@@ -38,12 +38,33 @@ ipa_ref::remove_reference ()
   struct ipa_ref *last;
 
   gcc_assert (list->referring[referred_index] == this);
+
   last = list->referring.last ();
   if (this != last)
     {
+      if (use == IPA_REF_ALIAS)
+        {
+	  /* If deleted item is IPA_REF_ALIAS, we have to move last
+	  item of IPA_REF_LIST type to the deleted position. After that
+	  we replace last node with deletion slot.  */
+	  struct ipa_ref *last_alias = list->last_alias ();
+
+	  if (last_alias && referred_index < last_alias->referred_index
+	      && last_alias != last)
+	  {
+	    unsigned last_alias_index = last_alias->referred_index;
+
+	    list->referring[referred_index] = last_alias;
+	    list->referring[referred_index]->referred_index = referred_index;
+
+	    /* New position for replacement is previous index
+	       of the last_alias.  */
+	    referred_index = last_alias_index;
+	  }
+	}
+
       list->referring[referred_index] = list->referring.last ();
-      list->referring[referred_index]->referred_index
-	  = referred_index;
+      list->referring[referred_index]->referred_index= referred_index;
     }
   list->referring.pop ();
 
@@ -54,7 +75,7 @@ ipa_ref::remove_reference ()
   if (ref != last)
     {
       *ref = *last;
-      referred_ref_list ()->referring[referred_index] = ref;
+      ref->referred_ref_list ()->referring[referred_index] = ref;
     }
   list2->references->pop ();
   gcc_assert (list2->references == old_references);

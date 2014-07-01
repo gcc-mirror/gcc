@@ -254,6 +254,9 @@ public:
   /* Iterates I-th referring item in the list, REF is also set.  */
   struct ipa_ref *iterate_referring (unsigned i, struct ipa_ref *&ref);
 
+  /* Iterates I-th referring alias item in the list, REF is also set.  */
+  struct ipa_ref *iterate_direct_aliases (unsigned i, struct ipa_ref *&ref);
+
   /* Vectors of referring and referenced entities.  */
   struct ipa_ref_list ref_list;
 
@@ -280,6 +283,10 @@ public:
   void set_init_priority (priority_type priority);
   priority_type get_init_priority ();
 };
+
+/* Walk all aliases for NODE.  */
+#define FOR_EACH_ALIAS(node, alias) \
+   for (unsigned x_i = 0; node->iterate_direct_aliases (x_i, alias); x_i++)
 
 enum availability
 {
