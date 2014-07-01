@@ -1,3 +1,8 @@
+2014-06-30  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* gcc/testsuite/lib/scanasm.exp (dg-function-on-line): Add
+	MicroBlaze specific pattern.
+
 2014-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/58781
