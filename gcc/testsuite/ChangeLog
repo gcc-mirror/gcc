@@ -1,3 +1,8 @@
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58286
+	* gcc.dg/Wincompatible-pointer-types.c: New test.
+
 2014-06-30  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* gcc/testsuite/lib/scanasm.exp (dg-function-on-line): Add

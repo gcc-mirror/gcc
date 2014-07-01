@@ -1,3 +1,8 @@
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58286
+	* c.opt (Wincompatible-pointer-types): New option.
+
 2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51400

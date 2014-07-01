@@ -6189,7 +6189,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       else
 	/* Avoid warning about the volatile ObjC EH puts on decls.  */
 	if (!objc_ok)
-	  WARN_FOR_ASSIGNMENT (location, expr_loc, 0,
+	  WARN_FOR_ASSIGNMENT (location, expr_loc,
+			       OPT_Wincompatible_pointer_types,
 			       G_("passing argument %d of %qE from "
 				  "incompatible pointer type"),
 			       G_("assignment from incompatible pointer type"),

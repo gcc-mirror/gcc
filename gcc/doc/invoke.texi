@@ -251,7 +251,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-signedness  -Wformat-y2k @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
--Wignored-qualifiers @gol
+-Wignored-qualifiers  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
@@ -4199,14 +4199,20 @@ This option is only active when @option{-ftree-vrp} is active
 (default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
 
-@item -Wno-discarded-qualifiers
+@item -Wno-discarded-qualifiers @r{(C and Objective-C only)}
 @opindex Wno-discarded-qualifiers
 @opindex Wdiscarded-qualifiers
 Do not warn if type qualifiers on pointers are being discarded.
 Typically, the compiler will warn if a @code{const char *} variable is
 passed to a function that takes @code{char *} parameter.  This option
-can be used to suppress such a warning.  This warning is only supported
-for C.
+can be used to suppress such a warning.
+
+@item -Wno-incompatible-pointer-types @r{(C and Objective-C only)}
+@opindex Wno-incompatible-pointer-types
+@opindex Wincompatible-pointer-types
+Do not warn when there is a conversion between pointers that have incompatible
+types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
+which warns for pointer argument passing or assignment with different signedness
 
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero
