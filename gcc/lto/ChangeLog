@@ -1,3 +1,9 @@
+2014-07-01  Martin Liska  <mliska@suse.cz>
+
+	IPA REF alias refactoring
+	* lto-partition.c (add_symbol_to_partition_1): Usage of
+	FOR_EACH_ALIAS added.
+
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	Revert:

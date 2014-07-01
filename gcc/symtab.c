@@ -558,8 +558,22 @@ symtab_node::add_reference (symtab_node *referred_node,
   ref = &list->references->last ();
 
   list2 = &referred_node->ref_list;
-  list2->referring.safe_push (ref);
-  ref->referred_index = list2->referring.length () - 1;
+
+  /* IPA_REF_ALIAS is always inserted at the beginning of the list.   */
+  if(use_type == IPA_REF_ALIAS)
+  {
+    list2->referring.safe_insert (0, ref);
+    ref->referred_index = 0;
+
+    for (unsigned int i = 1; i < list2->referring.length (); i++)
+      list2->referring[i]->referred_index = i;
+  }
+  else
+  {
+    list2->referring.safe_push (ref);
+    ref->referred_index = list2->referring.length () - 1;
+  }
+
   ref->referring = this;
   ref->referred = referred_node;
   ref->stmt = stmt;
@@ -795,6 +809,20 @@ symtab_node::iterate_referring (unsigned i, struct ipa_ref *&ref)
 
   return ref;
 }
+
+/* Iterates I-th referring alias item in the list, REF is also set.  */
+
+struct ipa_ref *
+symtab_node::iterate_direct_aliases (unsigned i, struct ipa_ref *&ref)
+{
+  ref_list.referring.iterate (i, &ref);
+
+  if (ref && ref->use != IPA_REF_ALIAS)
+    return NULL;
+
+  return ref;
+}
+
 
 static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
 

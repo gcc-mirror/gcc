@@ -2198,8 +2198,7 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
 				    bool include_overwritable)
 {
   struct cgraph_edge *e;
-  int i;
-  struct ipa_ref *ref = NULL;
+  struct ipa_ref *ref;
 
   if (callback (node, data))
     return true;
@@ -2210,16 +2209,16 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
       if (cgraph_for_node_thunks_and_aliases (e->caller, callback, data,
 					      include_overwritable))
 	return true;
-  for (i = 0; node->iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-	if (include_overwritable
-	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
-	  if (cgraph_for_node_thunks_and_aliases (alias, callback, data,
-						  include_overwritable))
-	    return true;
-      }
+
+  FOR_EACH_ALIAS (node, ref)
+    {
+      struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      if (include_overwritable
+	  || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
+	if (cgraph_for_node_thunks_and_aliases (alias, callback, data,
+						include_overwritable))
+	  return true;
+    }
   return false;
 }
 
@@ -2233,21 +2232,20 @@ cgraph_for_node_and_aliases (struct cgraph_node *node,
 			     void *data,
 			     bool include_overwritable)
 {
-  int i;
-  struct ipa_ref *ref = NULL;
+  struct ipa_ref *ref;
 
   if (callback (node, data))
     return true;
-  for (i = 0; node->iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-	if (include_overwritable
-	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
-          if (cgraph_for_node_and_aliases (alias, callback, data,
-					   include_overwritable))
-	    return true;
-      }
+
+  FOR_EACH_ALIAS (node, ref)
+    {
+      struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      if (include_overwritable
+	  || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
+	if (cgraph_for_node_and_aliases (alias, callback, data,
+					 include_overwritable))
+	  return true;
+    }
   return false;
 }
 

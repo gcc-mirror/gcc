@@ -5439,8 +5439,7 @@ ipa_tm_execute (void)
     {
       struct cgraph_node *caller;
       struct cgraph_edge *e;
-      struct ipa_ref *ref = NULL;
-      unsigned j;
+      struct ipa_ref *ref;
 
       if (i > 256 && i == irr_worklist.length () / 8)
 	{
@@ -5466,11 +5465,10 @@ ipa_tm_execute (void)
 	}
 
       /* Propagate back to referring aliases as well.  */
-      for (j = 0; node->iterate_referring (j, ref); j++)
+      FOR_EACH_ALIAS (node, ref)
 	{
 	  caller = cgraph (ref->referring);
-	  if (ref->use == IPA_REF_ALIAS
-	      && !caller->local.tm_may_enter_irr)
+	  if (!caller->local.tm_may_enter_irr)
 	    {
 	      /* ?? Do not traverse aliases here.  */
 	      d = get_cg_data (&caller, false);

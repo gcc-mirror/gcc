@@ -424,17 +424,15 @@ varpool_analyze_node (varpool_node *node)
 static void
 assemble_aliases (varpool_node *node)
 {
-  int i;
-  struct ipa_ref *ref = NULL;
+  struct ipa_ref *ref;
 
-  for (i = 0; node->iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
-	do_assemble_alias (alias->decl,
-			   DECL_ASSEMBLER_NAME (node->decl));
-	assemble_aliases (alias);
-      }
+  FOR_EACH_ALIAS (node, ref)
+    {
+      varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
+      do_assemble_alias (alias->decl,
+			 DECL_ASSEMBLER_NAME (node->decl));
+      assemble_aliases (alias);
+    }
 }
 
 /* Output one variable, if necessary.  Return whether we output it.  */
@@ -694,20 +692,19 @@ varpool_for_node_and_aliases (varpool_node *node,
 			      void *data,
 			      bool include_overwritable)
 {
-  int i;
-  struct ipa_ref *ref = NULL;
+  struct ipa_ref *ref;
 
   if (callback (node, data))
     return true;
-  for (i = 0; node->iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
-	if (include_overwritable
-	    || cgraph_variable_initializer_availability (alias) > AVAIL_OVERWRITABLE)
-          if (varpool_for_node_and_aliases (alias, callback, data,
-					   include_overwritable))
-	    return true;
-      }
+
+  FOR_EACH_ALIAS (node, ref)
+    {
+      varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
+      if (include_overwritable
+	  || cgraph_variable_initializer_availability (alias) > AVAIL_OVERWRITABLE)
+	if (varpool_for_node_and_aliases (alias, callback, data,
+					 include_overwritable))
+	  return true;
+    }
   return false;
 }

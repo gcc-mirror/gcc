@@ -1,3 +1,26 @@
+2014-07-01  Martin Liska  <mliska@suse.cz>
+
+	IPA REF alias refactoring
+	* cgraph.h (iterate_direct_aliases): New function.
+	(FOR_EACH_ALIAS): New macro iterates all direct aliases for a node.
+	* cgraph.c (cgraph_for_node_thunks_and_aliases): Usage of
+	FOR_EACH_ALIAS added.
+	(cgraph_for_node_and_aliases): Likewise.
+	* cgraphunit.c (assemble_thunks_and_aliases): Likewise.
+	* ipa-inline.c (reset_edge_caches): Likewise.
+	(update_caller_keys): Likewise.
+	* trans-mem.c (ipa_tm_execute): Likewise.
+	*varpool.c (varpool_analyze_node): Likewise.
+	(varpool_for_node_and_aliases): Likewise.
+	* ipa-ref.h (first_alias): New function.
+	(last_alias): Likewise.
+	(has_aliases_p): Likewise.
+	* ipa-ref.c (ipa_ref::remove_reference): Removal function
+	is sensitive to IPA_REF_ALIASes.
+	* symtab.c (symtab_node::add_reference): Node of IPA_REF_ALIAS type
+	are put at the beginning of the list.
+	(symtab_node::iterate_direct_aliases): New function.
+
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	Revert:
