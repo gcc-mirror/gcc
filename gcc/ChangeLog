@@ -1,3 +1,8 @@
+2014-07-01  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/winnt.c (i386_pe_section_type_flags): Remove name of
+	unused argument.
+
 2014-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/arm_neon.h (vcage_f64): New intrinsic.

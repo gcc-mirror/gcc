@@ -467,7 +467,7 @@ i386_pe_reloc_rw_mask (void)
 #define SECTION_PE_SHARED	SECTION_MACH_DEP
 
 unsigned int
-i386_pe_section_type_flags (tree decl, const char *name, int reloc)
+i386_pe_section_type_flags (tree decl, const char *, int reloc)
 {
   unsigned int flags;
 
