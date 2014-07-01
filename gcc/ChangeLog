@@ -1,5 +1,10 @@
 2014-07-01  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* config/i386/winnt.c (i386_pe_section_type_flags): Revert previous
+	change for not being obvious.
+
+2014-07-01  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* config/i386/winnt.c (i386_pe_section_type_flags): Remove name of
 	unused argument.
 
