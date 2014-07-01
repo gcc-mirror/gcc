@@ -1,3 +1,8 @@
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58286
+	* doc/invoke.texi: Document -Wincompatible-pointer-types.
+
 2014-07-01  Martin Liska  <mliska@suse.cz>
 
 	IPA REF alias refactoring

@@ -443,6 +443,10 @@ Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
 Warn whenever type qualifiers are ignored.
 
+Wincompatible-pointer-types
+C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
+Warn when there is a conversion between pointers that have incompatible types
+
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about variables which are initialized to themselves
