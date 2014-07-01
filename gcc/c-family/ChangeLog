@@ -1,5 +1,9 @@
 2014-07-01  Marek Polacek  <polacek@redhat.com>
 
+	* c.opt (Wint-conversion): New option.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58286
 	* c.opt (Wincompatible-pointer-types): New option.
 

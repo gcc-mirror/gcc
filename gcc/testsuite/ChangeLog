@@ -1,5 +1,9 @@
 2014-07-01  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/Wint-conversion.c: New test.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58286
 	* gcc.dg/Wincompatible-pointer-types.c: New test.
 

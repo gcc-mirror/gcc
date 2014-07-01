@@ -1,5 +1,9 @@
 2014-07-01  Marek Polacek  <polacek@redhat.com>
 
+	* doc/invoke.texi: Document -Wint-conversion.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58286
 	* doc/invoke.texi: Document -Wincompatible-pointer-types.
 
