@@ -50,6 +50,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 #include <cstring>
 
 #include <bits/regex_constants.h>

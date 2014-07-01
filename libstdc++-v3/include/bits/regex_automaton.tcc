@@ -189,7 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _StateSeq<_TraitsT>
     _StateSeq<_TraitsT>::_M_clone()
     {
-      std::vector<_StateIdT> __m(_M_nfa.size(), -1);
+      std::map<_StateIdT, _StateIdT> __m;
       std::stack<_StateIdT> __stack;
       __stack.push(_M_start);
       while (!__stack.empty())
@@ -203,21 +203,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__dup._M_opcode == _S_opcode_alternative
 	      || __dup._M_opcode == _S_opcode_repeat
 	      || __dup._M_opcode == _S_opcode_subexpr_lookahead)
-	    if (__dup._M_alt != _S_invalid_state_id && __m[__dup._M_alt] == -1)
+	    if (__dup._M_alt != _S_invalid_state_id
+		&& __m.count(__dup._M_alt) == 0)
 	      __stack.push(__dup._M_alt);
 	  if (__u == _M_end)
 	    continue;
-	  if (__dup._M_next != _S_invalid_state_id && __m[__dup._M_next] == -1)
+	  if (__dup._M_next != _S_invalid_state_id
+	      && __m.count(__dup._M_next) == 0)
 	    __stack.push(__dup._M_next);
 	}
-      for (auto __v : __m)
+      for (auto __it : __m)
 	{
-	  if (__v == -1)
-	    continue;
+	  auto __v = __it.second;
 	  auto& __ref = _M_nfa[__v];
 	  if (__ref._M_next != _S_invalid_state_id)
 	    {
-	      _GLIBCXX_DEBUG_ASSERT(__m[__ref._M_next] != -1);
+	      _GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_next) > 0);
 	      __ref._M_next = __m[__ref._M_next];
 	    }
 	  if (__ref._M_opcode == _S_opcode_alternative
@@ -225,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      || __ref._M_opcode == _S_opcode_subexpr_lookahead)
 	    if (__ref._M_alt != _S_invalid_state_id)
 	      {
-		_GLIBCXX_DEBUG_ASSERT(__m[__ref._M_alt] != -1);
+		_GLIBCXX_DEBUG_ASSERT(__m.count(__ref._M_alt) > 0);
 		__ref._M_alt = __m[__ref._M_alt];
 	      }
 	}
