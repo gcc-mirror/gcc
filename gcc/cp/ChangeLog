@@ -92,6 +92,12 @@
 	* parser.c (cp_lexer_nth_token_is): New.
 	(cp_parser_for_init_statement): Allow "for (id : init)".
 
+2014-06-26  Teresa Johnson  <tejohnson@google.com>
+
+	* class.c (dump_class_hierarchy): Use saved dump files.
+	(dump_vtable): Ditto.
+	(dump_vtt): Ditto.
+
 2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/61537
