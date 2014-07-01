@@ -1,3 +1,12 @@
+2014-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58781
+	PR c++/60249
+	PR c++/59867
+	* testsuite/g++.dg/cpp0x/pr58781.C: New.
+	* testsuite/g++.dg/cpp0x/pr60249.C: New.
+	* testsuite/g++.dg/cpp1y/pr59867.C: New.
+
 2014-06-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gfortran.dg/round_4.f90: Skip for powerpc*-*-linux* since the

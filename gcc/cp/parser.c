@@ -1899,7 +1899,7 @@ static tree cp_parser_string_literal
 static tree cp_parser_userdef_char_literal
   (cp_parser *);
 static tree cp_parser_userdef_string_literal
-  (cp_token *);
+  (tree);
 static tree cp_parser_userdef_numeric_literal
   (cp_parser *);
 
@@ -3721,8 +3721,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 	{
 	  tree literal = build_userdef_literal (suffix_id, value,
 						OT_NONE, NULL_TREE);
-	  tok->u.value = literal;
-	  return cp_parser_userdef_string_literal (tok);
+	  value = cp_parser_userdef_string_literal (literal);
 	}
     }
   else
@@ -3970,9 +3969,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
    as arguments.  */
 
 static tree
-cp_parser_userdef_string_literal (cp_token *token)
+cp_parser_userdef_string_literal (tree literal)
 {
-  tree literal = token->u.value;
   tree suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree value = USERDEF_LITERAL_VALUE (literal);
@@ -23224,10 +23222,17 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 	    ok = false;
 	}
       if (!ok)
-	error ("literal operator template %qD has invalid parameter list."
-	       "  Expected non-type template argument pack <char...>"
-	       " or <typename CharT, CharT...>",
-	       decl);
+	{
+	  if (cxx_dialect >= cxx1y)
+	    error ("literal operator template %qD has invalid parameter list."
+		   "  Expected non-type template argument pack <char...>"
+		   " or <typename CharT, CharT...>",
+		   decl);
+	  else
+	    error ("literal operator template %qD has invalid parameter list."
+		   "  Expected non-type template argument pack <char...>",
+		   decl);
+	}
     }
   /* Register member declarations.  */
   if (member_p && !friend_p && decl && !DECL_CLASS_TEMPLATE_P (decl))
