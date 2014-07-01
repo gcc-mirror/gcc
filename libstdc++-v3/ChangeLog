@@ -1,6 +1,6 @@
 2014-07-01  Tim Shen  <timshen@google.com>
 
-	PR libstdc++/61061
+	PR libstdc++/61601
 	PR libstdc++/61582
 	* include/bits/regex_automaton.h (_NFA<>::_M_insert_state): Add
 	a NFA state limit. If it's exceeded, regex_constants::error_space
