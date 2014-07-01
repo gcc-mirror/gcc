@@ -173,6 +173,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  void _M_queue(_StateIdT __i, const _ResultsVec& __res)
 	  { _M_match_queue.emplace_back(__i, __res); }
 
+	  // Dummy implementations for BFS mode.
+	  _BiIter* _M_get_sol_pos() { return nullptr; }
+
 	  // Saves states that need to be considered for the next character.
 	  vector<pair<_StateIdT, _ResultsVec>>	_M_match_queue;
 	  // Indicates which states are already visited.
@@ -192,10 +195,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  bool _M_visited(_StateIdT) const { return false; }
 	  void _M_queue(_StateIdT, const _ResultsVec&) { }
 
+	  _BiIter* _M_get_sol_pos() { return &_M_sol_pos; }
+
 	  // To record current solution.
 	  _StateIdT _M_start;
+	  _BiIter   _M_sol_pos;
 	};
-
 
     public:
       _ResultsVec                                           _M_cur_results;

@@ -82,6 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_main_dispatch(_Match_mode __match_mode, __dfs)
     {
       _M_has_sol = false;
+      *_M_states._M_get_sol_pos() = _BiIter();
       _M_cur_results = _M_results;
       _M_dfs(__match_mode, _M_states._M_start);
       return _M_has_sol;
@@ -338,7 +339,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  && (_M_flags & regex_constants::match_not_null))
 		_M_has_sol = false;
 	      if (_M_has_sol)
-		_M_results = _M_cur_results;
+		{
+		  if (_M_nfa._M_flags & regex_constants::ECMAScript)
+		    _M_results = _M_cur_results;
+		  else // POSIX
+		    {
+		      _GLIBCXX_DEBUG_ASSERT(_M_states._M_get_sol_pos());
+		      // Here's POSIX's logic: match the longest one. However
+		      // we never know which one (lhs or rhs of "|") is longer
+		      // unless we try both of them and compare the results.
+		      // The member variable _M_sol_pos records the end
+		      // position of the last successful match. It's better
+		      // to be larger, because POSIX regex is always greedy.
+		      // TODO: This could be slow.
+		      if (*_M_states._M_get_sol_pos() == _BiIter()
+			  || std::distance(_M_begin,
+					   *_M_states._M_get_sol_pos())
+			     < std::distance(_M_begin, _M_current))
+			{
+			  *_M_states._M_get_sol_pos() = _M_current;
+			  _M_results = _M_cur_results;
+			}
+		    }
+		}
 	    }
 	  else
 	    {
@@ -354,9 +377,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  break;
 	case _S_opcode_alternative:
-	  _M_dfs(__match_mode, __state._M_alt);
-	  if (!__dfs_mode || !_M_has_sol)
-	    _M_dfs(__match_mode, __state._M_next);
+	  if (_M_nfa._M_flags & regex_constants::ECMAScript)
+	    {
+	      // TODO: Let DFS support ECMAScript's alternative operation.
+	      _GLIBCXX_DEBUG_ASSERT(!__dfs_mode);
+	      _M_dfs(__match_mode, __state._M_alt);
+	      // Pick lhs if it matches. Only try rhs if it doesn't.
+	      if (!_M_has_sol)
+		_M_dfs(__match_mode, __state._M_next);
+	    }
+	  else
+	    {
+	      // Try both and compare the result.
+	      // See "case _S_opcode_accept:" handling above.
+	      _M_dfs(__match_mode, __state._M_alt);
+	      auto __has_sol = _M_has_sol;
+	      _M_has_sol = false;
+	      _M_dfs(__match_mode, __state._M_next);
+	      _M_has_sol |= __has_sol;
+	    }
 	  break;
 	default:
 	  _GLIBCXX_DEBUG_ASSERT(false);

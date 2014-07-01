@@ -1,3 +1,19 @@
+2014-07-01  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/61424
+	* include/bits/regex.tcc (__regex_algo_impl<>): Use DFS for ECMAScript,
+	not just regex containing back-references.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_M_disjunction):
+	exchange _M_next and _M_alt for alternative operator,
+	making matching from left to right.
+	* include/bits/regex_executor.h (_State_info<>::_M_get_sol_pos):
+	Add position tracking fom DFS.
+	* include/bits/regex_executor.tcc (_Executor<>::_M_main_dispatch,
+	_Executor<>::_M_dfs): Likewise.
+	* include/bits/regex_scanner.h: Remove unused enum entry.
+	* testsuite/28_regex/algorithms/regex_search/61424.cc: New
+	testcase from PR.
+
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/cxxabi.h (class __pbase_type_info): __pointer_catch

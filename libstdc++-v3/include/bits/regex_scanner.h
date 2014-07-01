@@ -67,7 +67,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_token_or,
       _S_token_closure0,
       _S_token_closure1,
-      _S_token_ungreedy,
       _S_token_line_begin,
       _S_token_line_end,
       _S_token_word_bound, // neg if _M_value[0] == 'n'
