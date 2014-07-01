@@ -1,3 +1,8 @@
+2014-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59637
+	* g++.dg/cpp0x/decltype60.C: New.
+
 2014-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vcage_f64.c: New test.
