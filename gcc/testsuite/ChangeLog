@@ -1,3 +1,7 @@
+2014-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/pr59867.C: Fix target selector.
+
 2014-07-01  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/60723
