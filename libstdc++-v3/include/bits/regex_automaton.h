@@ -28,6 +28,11 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+// This macro defines the maximal state number a NFA can have.
+#ifndef _GLIBCXX_REGEX_STATE_LIMIT
+#define _GLIBCXX_REGEX_STATE_LIMIT 100000
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __detail
@@ -254,6 +259,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_insert_state(_StateT __s)
       {
 	this->push_back(std::move(__s));
+	if (this->size() > _GLIBCXX_REGEX_STATE_LIMIT)
+	  __throw_regex_error(regex_constants::error_space);
 	return this->size()-1;
       }
 

@@ -1,5 +1,19 @@
 2014-07-01  Tim Shen  <timshen@google.com>
 
+	PR libstdc++/61061
+	PR libstdc++/61582
+	* include/bits/regex_automaton.h (_NFA<>::_M_insert_state): Add
+	a NFA state limit. If it's exceeded, regex_constants::error_space
+	will be throwed.
+	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone): Use
+	map (which is sparse) instead of vector. This reduce n times clones'
+	cost from O(n^2) to O(n).
+	* include/std/regex: Add map dependency.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/61601.cc: New
+	testcase.
+
+2014-07-01  Tim Shen  <timshen@google.com>
+
 	PR libstdc++/61424
 	* include/bits/regex.tcc (__regex_algo_impl<>): Use DFS for ECMAScript,
 	not just regex containing back-references.
