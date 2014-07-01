@@ -1,3 +1,8 @@
+2014-07-01  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/60723
+	* gcc.dg/cpp/syshdr{4,5}.{c,h}: New test files.
+
 2014-07-01  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/Wint-conversion.c: New test.
