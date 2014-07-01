@@ -1,7 +1,6 @@
 // PR c++/59867
-// { dg-do compile { target c++14 } }
+// { dg-do compile { target c++1y } }
 
-#include <iostream>
 using namespace std;
 
 // constant
