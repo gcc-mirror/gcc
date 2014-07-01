@@ -1,18 +1,3 @@
-2014-07-01  Dodji Seketeli  <dodji@redhat.com>
-
-	PR preprocessor/60723
-	* c-ppoutput.c (struct print::prev_was_system_token): New data
-	member.
-	(init_pp_output): Initialize it.
-	(maybe_print_line_1, maybe_print_line, print_line_1, print_line)
-	(do_line_change): Return a flag saying if a line marker was
-	emitted or not.
-	(scan_translation_unit): Detect if the system-ness of the token we
-	are about to emit is different from the one of the previously
-	emitted token.  If so, emit a line marker.  Avoid emitting useless
-	adjacent line markers.
-	(scan_translation_unit_directives_only): Adjust.
-
 2014-07-01  Marek Polacek  <polacek@redhat.com>
 
 	* c.opt (Wint-conversion): New option.

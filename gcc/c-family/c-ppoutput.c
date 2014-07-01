@@ -36,8 +36,6 @@ static struct
   unsigned char printed;	/* Nonzero if something output at line.  */
   bool first_time;		/* pp_file_change hasn't been called yet.  */
   const char *src_file;		/* Current source file.  */
-  bool prev_was_system_token;	/* True if the previous token was a
-				   system token.*/
 } print;
 
 /* Defined and undefined macros being queued for output with -dU at
@@ -60,11 +58,11 @@ static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
 static void dump_queued_macros (cpp_reader *);
 
-static bool print_line_1 (source_location, const char*, FILE *);
-static bool print_line (source_location, const char *);
-static bool maybe_print_line_1 (source_location, FILE *);
-static bool maybe_print_line (source_location);
-static bool do_line_change (cpp_reader *, const cpp_token *,
+static void print_line_1 (source_location, const char*, FILE *);
+static void print_line (source_location, const char *);
+static void maybe_print_line_1 (source_location, FILE *);
+static void maybe_print_line (source_location);
+static void do_line_change (cpp_reader *, const cpp_token *,
 			    source_location, int);
 
 /* Callback routines for the parser.   Most of these are active only
@@ -158,7 +156,6 @@ init_pp_output (FILE *out_stream)
   print.outf = out_stream;
   print.first_time = 1;
   print.src_file = "";
-  print.prev_was_system_token = false;
 }
 
 /* Writes out the preprocessed file, handling spacing and paste
@@ -171,7 +168,6 @@ scan_translation_unit (cpp_reader *pfile)
     = cpp_get_options (parse_in)->lang != CLK_ASM
       && !flag_no_line_commands;
   bool in_pragma = false;
-  bool line_marker_emitted = false;
 
   print.source = NULL;
   for (;;)
@@ -204,7 +200,7 @@ scan_translation_unit (cpp_reader *pfile)
 	      && do_line_adjustments
 	      && !in_pragma)
 	    {
-	      line_marker_emitted = do_line_change (pfile, token, loc, false);
+	      do_line_change (pfile, token, loc, false);
 	      putc (' ', print.outf);
 	    }
 	  else if (print.source->flags & PREV_WHITE
@@ -220,7 +216,7 @@ scan_translation_unit (cpp_reader *pfile)
 	  if (src_line != print.src_line
 	      && do_line_adjustments
 	      && !in_pragma)
-	    line_marker_emitted = do_line_change (pfile, token, loc, false);
+	    do_line_change (pfile, token, loc, false);
 	  putc (' ', print.outf);
 	}
 
@@ -232,7 +228,7 @@ scan_translation_unit (cpp_reader *pfile)
 	  const char *space;
 	  const char *name;
 
-	  line_marker_emitted = maybe_print_line (token->src_loc);
+	  maybe_print_line (token->src_loc);
 	  fputs ("#pragma ", print.outf);
 	  c_pp_lookup_pragma (token->val.pragma, &space, &name);
 	  if (space)
@@ -252,18 +248,9 @@ scan_translation_unit (cpp_reader *pfile)
 	  if (cpp_get_options (parse_in)->debug)
 	      linemap_dump_location (line_table, token->src_loc,
 				     print.outf);
-
-	  if (!line_marker_emitted
-	      && print.prev_was_system_token != !!in_system_header_at(loc))
-	    /* The system-ness of this token is different from the one
-	       of the previous token.  Let's emit a line change to
-	       mark the new system-ness before we emit the token.  */
-	    line_marker_emitted = do_line_change (pfile, token, loc, false);
 	  cpp_output_token (token, print.outf);
-	  line_marker_emitted = false;
 	}
 
-      print.prev_was_system_token = !!in_system_header_at(loc);
       /* CPP_COMMENT tokens and raw-string literal tokens can
 	 have embedded new-line characters.  Rather than enumerating
 	 all the possible token types just check if token uses
@@ -288,7 +275,7 @@ scan_translation_unit_directives_only (cpp_reader *pfile)
   struct _cpp_dir_only_callbacks cb;
 
   cb.print_lines = print_lines_directives_only;
-  cb.maybe_print_line = (void (*) (source_location)) maybe_print_line;
+  cb.maybe_print_line = maybe_print_line;
 
   _cpp_preprocess_dir_only (pfile, &cb);
 }
@@ -319,13 +306,11 @@ scan_translation_unit_trad (cpp_reader *pfile)
 
 /* If the token read on logical line LINE needs to be output on a
    different line to the current one, output the required newlines or
-   a line marker.  If a line marker was emitted, return TRUE otherwise
-   return FALSE.  */
+   a line marker, and return 1.  Otherwise return 0.  */
 
-static bool
+static void
 maybe_print_line_1 (source_location src_loc, FILE *stream)
 {
-  bool emitted_line_marker = false;
   int src_line = LOCATION_LINE (src_loc);
   const char *src_file = LOCATION_FILE (src_loc);
 
@@ -349,34 +334,29 @@ maybe_print_line_1 (source_location src_loc, FILE *stream)
 	}
     }
   else
-    emitted_line_marker = print_line_1 (src_loc, "", stream);
+    print_line_1 (src_loc, "", stream);
 
-  return emitted_line_marker;
 }
 
 /* If the token read on logical line LINE needs to be output on a
    different line to the current one, output the required newlines or
-   a line marker.  If a line marker was emitted, return TRUE otherwise
-   return FALSE.  */
+   a line marker, and return 1.  Otherwise return 0.  */
 
-static bool
+static void
 maybe_print_line (source_location src_loc)
 {
   if (cpp_get_options (parse_in)->debug)
     linemap_dump_location (line_table, src_loc,
 			   print.outf);
-  return maybe_print_line_1 (src_loc, print.outf);
+  maybe_print_line_1 (src_loc, print.outf);
 }
 
 /* Output a line marker for logical line LINE.  Special flags are "1"
-   or "2" indicating entering or leaving a file.  If the line marker
-   was effectively emitted, return TRUE otherwise return FALSE.  */
+   or "2" indicating entering or leaving a file.  */
 
-static bool
+static void
 print_line_1 (source_location src_loc, const char *special_flags, FILE *stream)
 {
-  bool emitted_line_marker = false;
-
   /* End any previous line of text.  */
   if (print.printed)
     putc ('\n', stream);
@@ -411,39 +391,33 @@ print_line_1 (source_location src_loc, const char *special_flags, FILE *stream)
 	fputs (" 3", stream);
 
       putc ('\n', stream);
-      emitted_line_marker = true;
     }
-
-  return emitted_line_marker;
 }
 
 /* Output a line marker for logical line LINE.  Special flags are "1"
-   or "2" indicating entering or leaving a file.  Return TRUE if a
-   line marker was effectively emitted, FALSE otherwise.  */
+   or "2" indicating entering or leaving a file.  */
 
-static bool
+static void
 print_line (source_location src_loc, const char *special_flags)
 {
     if (cpp_get_options (parse_in)->debug)
       linemap_dump_location (line_table, src_loc,
 			     print.outf);
-    return print_line_1 (src_loc, special_flags, print.outf);
+    print_line_1 (src_loc, special_flags, print.outf);
 }
 
-/* Helper function for cb_line_change and scan_translation_unit.
-   Return TRUE if a line marker is emitted, FALSE otherwise.  */
-static bool
+/* Helper function for cb_line_change and scan_translation_unit.  */
+static void
 do_line_change (cpp_reader *pfile, const cpp_token *token,
 		source_location src_loc, int parsing_args)
 {
-  bool emitted_line_marker = false;
   if (define_queue || undef_queue)
     dump_queued_macros (pfile);
 
   if (token->type == CPP_EOF || parsing_args)
-    return false;
+    return;
 
-  emitted_line_marker = maybe_print_line (src_loc);
+  maybe_print_line (src_loc);
   print.prev = 0;
   print.source = 0;
 
@@ -460,8 +434,6 @@ do_line_change (cpp_reader *pfile, const cpp_token *token,
       while (-- spaces >= 0)
 	putc (' ', print.outf);
     }
-
-  return emitted_line_marker;
 }
 
 /* Called when a line of output is started.  TOKEN is the first token
