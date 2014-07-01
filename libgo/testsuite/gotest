@@ -36,6 +36,7 @@ dejagnu=no
 GOARCH=""
 timeout=240
 testname=""
+bench=""
 trace=false
 while $loop; do
 	case "x$1" in
@@ -122,6 +123,15 @@ while $loop; do
 		;;
 	x--testname=*)
 		testname=`echo $1 | sed -e 's/^--testname=//'`
+		shift
+		;;
+	x--bench)
+		bench=$2
+		shift
+		shift
+		;;
+	x--bench=*)
+		bench=`echo $1 | sed -e 's/^--bench=//'`
 		shift
 		;;
 	x--trace)
@@ -473,20 +483,28 @@ xno)
 	fi
 	${GL} *.o ${GOLIBS}
 
-	if test "$trace" = "true"; then
-	    echo ./a.out -test.short -test.timeout=${timeout}s "$@"
-	fi
-	./a.out -test.short -test.timeout=${timeout}s "$@" &
-	pid=$!
-	(sleep `expr $timeout + 10`
-	    echo > gotest-timeout
-	    echo "timed out in gotest" 1>&2
-	    kill -9 $pid) &
-	alarmpid=$!
-	wait $pid
-	status=$?
-	if ! test -f gotest-timeout; then
-	    kill $alarmpid
+	if test "$bench" = ""; then
+		if test "$trace" = "true"; then
+		    echo ./a.out -test.short -test.timeout=${timeout}s "$@"
+		fi
+		./a.out -test.short -test.timeout=${timeout}s "$@" &
+		pid=$!
+		(sleep `expr $timeout + 10`
+		    echo > gotest-timeout
+		    echo "timed out in gotest" 1>&2
+		    kill -9 $pid) &
+		alarmpid=$!
+		wait $pid
+		status=$?
+		if ! test -f gotest-timeout; then
+		    kill $alarmpid
+		fi
+	else
+		if test "$trace" = "true"; then
+		    echo ./a.out -test.run=^\$ -test.bench="${bench}" "$@"
+		fi
+		./a.out -test.run=^\$ -test.bench="${bench}" "$@"
+		status=$?
 	fi
 	exit $status
 	;;
