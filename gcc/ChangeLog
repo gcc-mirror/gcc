@@ -1,3 +1,12 @@
+2014-07-01  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (remove_addr_table_entry): Remove unnecessary hash table
+        lookup.
+	(resolve_addr_in_expr): When replacing the rtx in a location list
+        entry, get a new address table entry.
+	(dwarf2out_finish): Call index_location_lists even if there are no
+        addr_index_table entries yet.
+
 2014-07-01  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config/i386/winnt.c (i386_pe_section_type_flags): Revert previous
