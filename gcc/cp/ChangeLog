@@ -1,3 +1,12 @@
+2014-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58781
+	PR c++/60249
+	PR c++/59867
+	* parser.c (cp_parser_userdef_string_literal()): Take a tree
+	not a cp_token*. (cp_parser_string_literal(): Don't hack
+	the token stream!
+
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61659
