@@ -48,11 +48,15 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/va_arg-*.c]] {
 }
 
 # Test function return value.
+#   Disable -fuse-caller-save to prevent the compiler from generating
+#   conflicting code.
+set additional_flags_for_func_ret $additional_flags
+append additional_flags_for_func_ret " -fno-use-caller-save"
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/func-ret-*.c]] {
     if {[runtest_file_p $runtests $src]} {
 	    c-torture-execute [list $src \
 				    $srcdir/$subdir/abitest.S] \
-				    $additional_flags
+				    $additional_flags_for_func_ret
     }
 }
 

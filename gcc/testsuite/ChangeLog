@@ -1,3 +1,11 @@
+2014-07-01  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/aarch64/aapcs64/aapcs64.exp:
+	(additional_flags_for_func_ret): New variable based on $additional_flags
+	with -fno-use-caller-save.
+	(func-ret-*.c): Use the new variable.
+
 2014-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59637
