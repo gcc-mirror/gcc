@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-mfp-rounding-mode=d" { target alpha*-*-* } }
 
   use, intrinsic :: ieee_features, only : ieee_rounding
   use, intrinsic :: ieee_arithmetic

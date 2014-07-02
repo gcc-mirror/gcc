@@ -1,3 +1,8 @@
+2014-07-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/ieee/ieee_1.F90 (dg-additional-options): Remove -O0.
+	* gfortran.dg/ieee/ieee_rounding_1.f90 (dg-additional-options): Add.
+
 2014-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/variadic-ex10.C: Adjust for inform instead of error.
@@ -15,8 +20,8 @@
 	    Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gcc.target/aarch64/aapcs64/aapcs64.exp:
-	(additional_flags_for_func_ret): New variable based on $additional_flags
-	with -fno-use-caller-save.
+	(additional_flags_for_func_ret): New variable based on
+	$additional_flags with -fno-use-caller-save.
 	(func-ret-*.c): Use the new variable.
 
 2014-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
