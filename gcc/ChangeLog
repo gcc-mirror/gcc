@@ -1,3 +1,8 @@
+2014-07-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm): Delete unused
+	variable i.
+
 2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
 
 	* ipa-utils.h (method_class_type, vtable_pointer_value_to_binfo,
