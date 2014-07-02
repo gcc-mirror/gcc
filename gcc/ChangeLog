@@ -1,5 +1,21 @@
 2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
 
+	* ipa-utils.h (method_class_type, vtable_pointer_value_to_binfo,
+	vtable_pointer_value_to_vtable): Constify.
+	(contains_polymorphic_type_p): Declare.
+	* ipa-devirt.c (method_class_type, vtable_pointer_value_to_binfo,
+	vtable_pointer_value_to_vtable): Constify.
+	(contains_polymorphic_type_p): New predicate.
+	* ipa-prop.c (ipa_set_jf_known_type): Allow types containing
+	polymorphic types.
+	(ipa_set_ancestor_jf): Likewise.
+	(detect_type_change): Return false in easy cases.
+	(compute_complex_assign_jump_func): Require type to contain
+	polymorphic type.
+	(compute_known_type_jump_func): Likewise.
+
+2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+
 	* tree.c (decls_same_for_odr, decls_same_for_odr,
 	types_same_for_odr): Remove.
 	(type_in_anonymous_namespace_p): Constify argument.
