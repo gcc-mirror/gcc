@@ -1,5 +1,13 @@
 2014-07-02  Nenad Vukicevic  <nenad@intrepid.com>
 
+	* Makefile.am (UPC_LINK_SCRIPT): Change the UPC link script
+	build procedure.  The previous way was always generating
+	an error as not source file was provided.  This error string
+	ended up in the UPC link script on some of the systems.
+	* Makefile.in: Regenerate.
+
+2014-07-02  Nenad Vukicevic  <nenad@intrepid.com>
+
 	* portals4/gcc-upc-lib.in: Use stddef.h for size_t
 	instead of sys/types.h as it might break on some
 	systems.

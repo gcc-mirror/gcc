@@ -2973,8 +2973,8 @@ gcc-upc-lib.h: gen-inline-libgupc.pl gcc-upc-lib.in \
                $(UPC_RUNTIME_SRC_INLINE)
 	$(PERL) $+ > $@
 @LIBGUPC_LINK_SCRIPT_TRUE@$(UPC_LINK_SCRIPT): gen-upc-ld-script.pl
-@LIBGUPC_LINK_SCRIPT_TRUE@	-$(CC) $(LDFLAGS) -Xlinker --verbose -x none /dev/null 2>&1 | \
-@LIBGUPC_LINK_SCRIPT_TRUE@	 $(PERL) $+ > $@
+@LIBGUPC_LINK_SCRIPT_TRUE@	-echo "int main(){}" | $(CC) $(LDFLAGS) -Xlinker --verbose \
+@LIBGUPC_LINK_SCRIPT_TRUE@	-o /dev/null -xc - | $(PERL) $+ > $@
 
 @LIBGUPC_CRTSTUFF_TRUE@include $(gcc_objdir)/libgcc.mvars
 @LIBGUPC_CRTSTUFF_TRUE@include $(upc_crtstuff_mak)

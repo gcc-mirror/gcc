@@ -302,8 +302,8 @@ BUILT_SOURCES = gcc-upc-lib.h
 if LIBGUPC_LINK_SCRIPT
 UPC_LINK_SCRIPT = gupc.ld
 $(UPC_LINK_SCRIPT): gen-upc-ld-script.pl
-	-$(CC) $(LDFLAGS) -Xlinker --verbose -x none /dev/null 2>&1 | \
-	 $(PERL) $+ > $@
+	-echo "int main(){}" | $(CC) $(LDFLAGS) -Xlinker --verbose \
+	-o /dev/null -xc - | $(PERL) $+ > $@
 BUILT_SOURCES += $(UPC_LINK_SCRIPT)
 else
 UPC_LINK_SCRIPT =
