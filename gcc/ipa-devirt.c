@@ -149,9 +149,10 @@ struct GTY(()) odr_type_d
 {
   /* leader type.  */
   tree type;
-  /* All bases.  */
+  /* All bases; built only for main variants of types  */
   vec<odr_type> GTY((skip)) bases;
-  /* All derrived types with virtual methods seen in unit.  */
+  /* All derrived types with virtual methods seen in unit;
+     built only for main variants oftypes  */
   vec<odr_type> GTY((skip)) derived_types;
 
   /* All equivalent types, if more than one.  */
@@ -165,6 +166,8 @@ struct GTY(()) odr_type_d
   bool anonymous_namespace;
   /* Do we know about all derivations of given type?  */
   bool all_derivations_known;
+  /* Did we report ODR violation here?  */
+  bool odr_violated;
 };
 
 
@@ -249,12 +252,25 @@ struct odr_hasher
   static inline void remove (value_type *);
 };
 
+/* Return type that was declared with T's name so that T is an
+   qualified variant of it.  */
+
+static inline tree
+main_odr_variant (const_tree t)
+{
+  if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
+    return TREE_TYPE (TYPE_NAME (t));
+  /* Unnamed types and non-C++ produced types can be compared by variants.  */
+  else
+    return TYPE_MAIN_VARIANT (t);
+}
+
 /* Produce hash based on type name.  */
 
-hashval_t
+static hashval_t
 hash_type_name (tree t)
 {
-  gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t);
+  gcc_checking_assert (main_odr_variant (t) == t);
 
   /* If not in LTO, all main variants are unique, so we can do
      pointer hash.  */
@@ -266,7 +282,8 @@ hash_type_name (tree t)
     return htab_hash_pointer (t);
 
   /* For polymorphic types, we can simply hash the virtual table.  */
-  if (TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)))
+  if (TREE_CODE (t) == RECORD_TYPE
+      && TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)))
     {
       tree v = BINFO_VTABLE (TYPE_BINFO (t));
       hashval_t hash = 0;
@@ -294,6 +311,61 @@ odr_hasher::hash (const value_type *odr_type)
   return hash_type_name (odr_type->type);
 }
 
+/* For languages with One Definition Rule, work out if
+   types are the same based on their name.
+ 
+   This is non-trivial for LTO where minnor differences in
+   the type representation may have prevented type merging
+   to merge two copies of otherwise equivalent type.
+
+   Until we start streaming mangled type names, this function works
+   only for polymorphic types.  */
+
+bool
+types_same_for_odr (const_tree type1, const_tree type2)
+{
+  gcc_checking_assert (TYPE_P (type1) && TYPE_P (type2));
+
+  type1 = main_odr_variant (type1);
+  type2 = main_odr_variant (type2);
+
+  if (type1 == type2)
+    return true;
+
+  if (!in_lto_p)
+    return false;
+
+  /* Check for anonymous namespaces. Those have !TREE_PUBLIC
+     on the corresponding TYPE_STUB_DECL.  */
+  if (type_in_anonymous_namespace_p (type1)
+      || type_in_anonymous_namespace_p (type2))
+    return false;
+
+  /* At the moment we have no way to establish ODR equivlaence at LTO
+     other than comparing virtual table pointrs of polymorphic types.
+     Eventually we should start saving mangled names in TYPE_NAME.
+     Then this condition will become non-trivial.  */
+
+  if (TREE_CODE (type1) == RECORD_TYPE
+      && TYPE_BINFO (type1) && TYPE_BINFO (type2)
+      && BINFO_VTABLE (TYPE_BINFO (type1))
+      && BINFO_VTABLE (TYPE_BINFO (type2)))
+    {
+      tree v1 = BINFO_VTABLE (TYPE_BINFO (type1));
+      tree v2 = BINFO_VTABLE (TYPE_BINFO (type2));
+      gcc_assert (TREE_CODE (v1) == POINTER_PLUS_EXPR
+		  && TREE_CODE (v2) == POINTER_PLUS_EXPR);
+      return (operand_equal_p (TREE_OPERAND (v1, 1),
+			       TREE_OPERAND (v2, 1), 0)
+	      && DECL_ASSEMBLER_NAME
+		     (TREE_OPERAND (TREE_OPERAND (v1, 0), 0))
+		 == DECL_ASSEMBLER_NAME
+		     (TREE_OPERAND (TREE_OPERAND (v2, 0), 0)));
+    }
+  gcc_unreachable ();
+}
+
+
 /* Compare types T1 and T2 and return true if they are
    equivalent.  */
 
@@ -302,7 +374,7 @@ odr_hasher::equal (const value_type *t1, const compare_type *ct2)
 {
   tree t2 = const_cast <tree> (ct2);
 
-  gcc_checking_assert (TYPE_MAIN_VARIANT (ct2) == ct2);
+  gcc_checking_assert (main_odr_variant (t2) == t2);
   if (t1->type == t2)
     return true;
   if (!in_lto_p)
@@ -350,20 +422,34 @@ set_type_binfo (tree type, tree binfo)
    all variants of the same type.  It may or may not mean the ODR violation.
    Add it to the list of duplicates and warn on some violations.  */
 
-static void
+static bool
 add_type_duplicate (odr_type val, tree type)
 {
+  bool build_bases = false;
   if (!val->types_set)
     val->types_set = pointer_set_create ();
+
+  /* Always prefer complete type to be the leader.  */
+  if (!COMPLETE_TYPE_P (val->type)
+      && COMPLETE_TYPE_P (type))
+    {
+      tree tmp = type;
+
+      build_bases = true;
+      type = val->type;
+      val->type = tmp;
+    }
 
   /* See if this duplicate is new.  */
   if (!pointer_set_insert (val->types_set, type))
     {
       bool merge = true;
       bool base_mismatch = false;
+      bool warned = 0;
+      unsigned int i,j;
+
       gcc_assert (in_lto_p);
       vec_safe_push (val->types, type);
-      unsigned int i,j;
 
       /* First we compare memory layout.  */
       if (!types_compatible_p (val->type, type))
@@ -374,9 +460,13 @@ add_type_duplicate (odr_type val, tree type)
 	      && warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)), 0,
 			     "type %qD violates one definition rule  ",
 			     type))
-	    inform (DECL_SOURCE_LOCATION (TYPE_NAME (val->type)),
-		    "a type with the same name but different layout is "
-		    "defined in another translation unit");
+	    {
+	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (val->type)),
+		      "a type with the same name but different layout is "
+		      "defined in another translation unit");
+	      warned = true;
+	    }
+	  val->odr_violated = true;
 	  if (cgraph_dump_file)
 	    {
 	      fprintf (cgraph_dump_file, "ODR violation or merging or ODR type bug?\n");
@@ -390,37 +480,45 @@ add_type_duplicate (odr_type val, tree type)
 
       /* Next sanity check that bases are the same.  If not, we will end
 	 up producing wrong answers.  */
-      for (j = 0, i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
-	if (polymorphic_type_binfo_p (BINFO_BASE_BINFO (TYPE_BINFO (type), i)))
-	  {
-	    odr_type base = get_odr_type
-			       (BINFO_TYPE
-				  (BINFO_BASE_BINFO (TYPE_BINFO (type),
-						     i)),
-				true);
-	    if (val->bases.length () <= j || val->bases[j] != base)
-	      base_mismatch = true;
-	    j++;
-	  }
-      if (base_mismatch)
+      if (COMPLETE_TYPE_P (type) && COMPLETE_TYPE_P (val->type)
+	  && TREE_CODE (val->type) == RECORD_TYPE
+	  && TREE_CODE (type) == RECORD_TYPE
+	  && TYPE_BINFO (val->type) && TYPE_BINFO (type))
 	{
-	  merge = false;
-	  odr_violation_reported = true;
-
-	  if (warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)), 0,
-			  "type %qD violates one definition rule  ",
-			  type))
-	    inform (DECL_SOURCE_LOCATION (TYPE_NAME (val->type)),
-		    "a type with the same name but different bases is "
-		    "defined in another translation unit");
-	  if (cgraph_dump_file)
+	  for (j = 0, i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
+	    if (polymorphic_type_binfo_p (BINFO_BASE_BINFO (TYPE_BINFO (type), i)))
+	      {
+		odr_type base = get_odr_type
+				   (BINFO_TYPE
+				      (BINFO_BASE_BINFO (TYPE_BINFO (type),
+							 i)),
+				    true);
+		if (val->bases.length () <= j || val->bases[j] != base)
+		  base_mismatch = true;
+		j++;
+	      }
+	  if (base_mismatch)
 	    {
-	      fprintf (cgraph_dump_file, "ODR bse violation or merging bug?\n");
-	    
-	      print_node (cgraph_dump_file, "", val->type, 0);
-	      putc ('\n',cgraph_dump_file);
-	      print_node (cgraph_dump_file, "", type, 0);
-	      putc ('\n',cgraph_dump_file);
+	      merge = false;
+	      odr_violation_reported = true;
+
+	      if (!warned
+		  && warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)), 0,
+			         "type %qD violates one definition rule  ",
+			         type))
+		inform (DECL_SOURCE_LOCATION (TYPE_NAME (val->type)),
+			"a type with the same name but different bases is "
+			"defined in another translation unit");
+	      val->odr_violated = true;
+	      if (cgraph_dump_file)
+		{
+		  fprintf (cgraph_dump_file, "ODR bse violation or merging bug?\n");
+		
+		  print_node (cgraph_dump_file, "", val->type, 0);
+		  putc ('\n',cgraph_dump_file);
+		  print_node (cgraph_dump_file, "", type, 0);
+		  putc ('\n',cgraph_dump_file);
+		}
 	    }
 	}
 
@@ -436,7 +534,14 @@ add_type_duplicate (odr_type val, tree type)
 	 merged LTO unit.  For this reason we absolutely need to remove
 	 them and replace by internal variants. Not doing so will lead
          to incomplete answers from possible_polymorphic_call_targets.  */
-      if (!flag_ltrans && merge)
+      if (!flag_ltrans && merge
+	  && TREE_CODE (val->type) == RECORD_TYPE
+	  && TREE_CODE (type) == RECORD_TYPE
+	  && TYPE_BINFO (val->type) && TYPE_BINFO (type)
+	  && TYPE_MAIN_VARIANT (type) == type
+	  && TYPE_MAIN_VARIANT (val->type) == val->type
+	  && BINFO_VTABLE (TYPE_BINFO (val->type))
+	  && BINFO_VTABLE (TYPE_BINFO (type)))
 	{
 	  tree master_binfo = TYPE_BINFO (val->type);
 	  tree v1 = BINFO_VTABLE (master_binfo);
@@ -470,6 +575,7 @@ add_type_duplicate (odr_type val, tree type)
 	    set_type_binfo (type, master_binfo);
 	}
     }
+  return build_bases;
 }
 
 /* Get ODR type hash entry for TYPE.  If INSERT is true, create
@@ -481,9 +587,12 @@ get_odr_type (tree type, bool insert)
   odr_type_d **slot;
   odr_type val;
   hashval_t hash;
+  bool build_bases = false;
+  bool insert_to_odr_array = false;
+  int base_id = -1;
 
-  type = TYPE_MAIN_VARIANT (type);
-  gcc_checking_assert (TYPE_MAIN_VARIANT (type) == type);
+  type = main_odr_variant (type);
+
   hash = hash_type_name (type);
   slot
      = odr_hash->find_slot_with_hash (type, hash, insert ? INSERT : NO_INSERT);
@@ -498,19 +607,28 @@ get_odr_type (tree type, bool insert)
       /* With LTO we need to support multiple tree representation of
 	 the same ODR type.  */
       if (val->type != type)
-        add_type_duplicate (val, type);
+        build_bases = add_type_duplicate (val, type);
     }
   else
+    {
+
+      val = ggc_cleared_alloc<odr_type_d> ();
+      val->type = type;
+      val->bases = vNULL;
+      val->derived_types = vNULL;
+      val->anonymous_namespace = type_in_anonymous_namespace_p (type);
+      build_bases = COMPLETE_TYPE_P (val->type);
+      insert_to_odr_array = true;
+    }
+
+  if (build_bases && TREE_CODE (type) == RECORD_TYPE && TYPE_BINFO (type)
+      && type == TYPE_MAIN_VARIANT (type))
     {
       tree binfo = TYPE_BINFO (type);
       unsigned int i;
 
-      val = ggc_cleared_alloc<odr_type_d> ();
-      val->type = type;
       gcc_assert (BINFO_TYPE (TYPE_BINFO (val->type)) = type);
-      val->bases = vNULL;
-      val->derived_types = vNULL;
-      val->anonymous_namespace = type_in_anonymous_namespace_p (type);
+  
       val->all_derivations_known = type_all_derivations_known_p (type);
       *slot = val;
       for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); i++)
@@ -522,12 +640,28 @@ get_odr_type (tree type, bool insert)
 	    odr_type base = get_odr_type (BINFO_TYPE (BINFO_BASE_BINFO (binfo,
 									i)),
 					  true);
+	    gcc_assert (TYPE_MAIN_VARIANT (base->type) == base->type);
 	    base->derived_types.safe_push (val);
 	    val->bases.safe_push (base);
+	    if (base->id > base_id)
+	      base_id = base->id;
 	  }
-      /* First record bases, then add into array so ids are increasing.  */
+      }
+  /* Ensure that type always appears after bases.  */
+  if (insert_to_odr_array)
+    {
       if (odr_types_ptr)
         val->id = odr_types.length ();
+      vec_safe_push (odr_types_ptr, val);
+    }
+  else if (base_id > val->id)
+    {
+      odr_types[val->id] = 0;
+      /* Be sure we did not recorded any derived types; these may need
+	 renumbering too.  */
+      gcc_assert (val->derived_types.length() == 0);
+      if (odr_types_ptr)
+	val->id = odr_types.length ();
       vec_safe_push (odr_types_ptr, val);
     }
   return val;
@@ -577,12 +711,12 @@ dump_type_inheritance_graph (FILE *f)
   fprintf (f, "\n\nType inheritance graph:\n");
   for (i = 0; i < odr_types.length (); i++)
     {
-      if (odr_types[i]->bases.length () == 0)
+      if (odr_types[i] && odr_types[i]->bases.length () == 0)
 	dump_odr_type (f, odr_types[i]);
     }
   for (i = 0; i < odr_types.length (); i++)
     {
-      if (odr_types[i]->types && odr_types[i]->types->length ())
+      if (odr_types[i] && odr_types[i]->types && odr_types[i]->types->length ())
 	{
 	  unsigned int j;
 	  fprintf (f, "Duplicate tree types for odr type %i\n", i);
@@ -637,7 +771,8 @@ build_type_inheritance_graph (void)
     if (is_a <cgraph_node *> (n)
 	&& DECL_VIRTUAL_P (n->decl)
 	&& symtab_real_symbol_p (n))
-      get_odr_type (method_class_type (TREE_TYPE (n->decl)), true);
+      get_odr_type (TYPE_MAIN_VARIANT (method_class_type (TREE_TYPE (n->decl))),
+		    true);
 
     /* Look also for virtual tables of types that do not define any methods.
  
@@ -663,7 +798,7 @@ build_type_inheritance_graph (void)
 	     && TREE_CODE (DECL_CONTEXT (n->decl)) == RECORD_TYPE
 	     && TYPE_BINFO (DECL_CONTEXT (n->decl))
 	     && polymorphic_type_binfo_p (TYPE_BINFO (DECL_CONTEXT (n->decl))))
-      get_odr_type (DECL_CONTEXT (n->decl), true);
+      get_odr_type (TYPE_MAIN_VARIANT (DECL_CONTEXT (n->decl)), true);
   if (inheritance_dump_file)
     {
       dump_type_inheritance_graph (inheritance_dump_file);
@@ -1758,7 +1893,8 @@ possible_polymorphic_call_targets (tree otr_type,
       gcc_assert (in_lto_p || context.maybe_derived_type);
     }
 
-  pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
+  if (binfo)
+    pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
 
   /* Next walk recursively all derived types.  */
   if (context.maybe_derived_type)
@@ -1827,7 +1963,7 @@ dump_possible_polymorphic_call_targets (FILE *f,
 {
   vec <cgraph_node *> targets;
   bool final;
-  odr_type type = get_odr_type (otr_type, false);
+  odr_type type = get_odr_type (TYPE_MAIN_VARIANT (otr_type), false);
   unsigned int i;
   int nonconstruction;
 
@@ -1926,7 +2062,8 @@ update_type_inheritance_graph (void)
     if (DECL_VIRTUAL_P (n->decl)
 	&& !n->definition
 	&& symtab_real_symbol_p (n))
-      get_odr_type (method_class_type (TREE_TYPE (n->decl)), true);
+      get_odr_type (method_class_type (TYPE_MAIN_VARIANT (TREE_TYPE (n->decl))),
+				       true);
   timevar_pop (TV_IPA_INHERITANCE);
 }
 

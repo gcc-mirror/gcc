@@ -1,3 +1,28 @@
+2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+
+	* tree.c (decls_same_for_odr, decls_same_for_odr,
+	types_same_for_odr): Remove.
+	(type_in_anonymous_namespace_p): Constify argument.
+	* tree.h (types_same_for_odr, type_in_anonymous_namespace_p):
+	Constify.
+	* ipa-devirt.c (odr_type_d): Add ODR_VIOLATED field.
+	(main_odr_variant): New function.
+	(hash_type_name): Make static; update assert; do not ICE on
+	non-records.
+	(types_same_for_odr): Bring here from tree.c; simplify
+	and remove old structural comparing code that doesn't work
+	for templates.
+	(odr_hasher::equal): Update assert.
+	(add_type_duplicate): Return true when bases should be computed;
+	replace incomplete loader by complete; do not output duplicated
+	warnings; do not ICE on non-records; set odr_violated flag.
+	(get_odr_type): Be ready to replace incomplete type by complete
+	one; work on ODR variants instead of main variants; reorder item
+	in array so bases have still smaller indexes.
+	(dump_type_inheritance_graph): Be ready for holdes in odr_types
+	array.
+	(possible_polymorphic_call_targets): Do not ICE when BINFO is NULL.
+
 2014-07-01  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (remove_addr_table_entry): Remove unnecessary hash table
