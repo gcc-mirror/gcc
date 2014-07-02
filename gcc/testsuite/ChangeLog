@@ -1,3 +1,10 @@
+2014-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/variadic-ex10.C: Adjust for inform instead of error.
+	* g++.dg/cpp0x/variadic-ex14.C: Likewise.
+	* g++.dg/parse/error11.C: Likewise.
+	* g++.old-deja/g++.brendan/template17.C: Likewise.
+
 2014-07-02  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray/get_array.f90: Add missing SYNC ALL.
