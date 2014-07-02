@@ -5365,12 +5365,12 @@ HOOK_VECTOR (TARGET_TOGGLE_, mode_switching)
 
 DEFHOOK
 (emit,
- "Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.",
- void, (int entity, int mode, HARD_REG_SET regs_live), NULL)
+ "Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. @var{prev_moxde} indicates the mode to switch from. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.",
+ void, (int entity, int mode, int prev_mode, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
 (needed,
- "@var{entity} is an integer specifying a mode-switched entity. If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.",
+ "@var{entity} is an integer specifying a mode-switched entity.  If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.",
  int, (int entity, rtx insn), NULL)
 
 DEFHOOK

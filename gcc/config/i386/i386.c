@@ -16447,7 +16447,8 @@ ix86_avx_emit_vzeroupper (HARD_REG_SET regs_live)
    are to be inserted.  */
 
 static void
-ix86_emit_mode_set (int entity, int mode, HARD_REG_SET regs_live)
+ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
+		    HARD_REG_SET regs_live)
 {
   switch (entity)
     {

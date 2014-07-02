@@ -711,6 +711,9 @@ extern void bitmap_union_of_preds (sbitmap, sbitmap *, basic_block);
 extern struct edge_list *pre_edge_lcm (int, sbitmap *, sbitmap *,
 				       sbitmap *, sbitmap *, sbitmap **,
 				       sbitmap **);
+extern struct edge_list *pre_edge_lcm_avs (int, sbitmap *, sbitmap *,
+					   sbitmap *, sbitmap *, sbitmap *,
+					   sbitmap *, sbitmap **, sbitmap **);
 extern struct edge_list *pre_edge_rev_lcm (int, sbitmap *,
 					   sbitmap *, sbitmap *,
 					   sbitmap *, sbitmap **,
