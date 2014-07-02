@@ -44,6 +44,7 @@ contains
       if (any (a /= caf)) &
            call abort()
     end if
+    sync all
 
     ! Whole array: ARRAY = ARRAY
     caf = -42
@@ -58,6 +59,7 @@ contains
       if (any (a /= caf)) &
            call abort()
     end if
+    sync all
 
     ! Scalar assignment
     caf = -42
@@ -90,6 +92,7 @@ contains
       if (any (a /= caf)) &
            call abort()
     end if
+    sync all
 
     ! Array sections with different ranges and pos/neg strides
     do i_sgn1 = -1, 1, 2
@@ -136,6 +139,7 @@ contains
                         call abort()
                       endif
                     end if
+                    sync all
                   end do
                 end do
               end do
@@ -183,6 +187,7 @@ contains
       if (any (a /= caf)) &
            call abort()
     end if
+    sync all
 
     ! Scalar assignment
     caf = -42
@@ -215,6 +220,7 @@ contains
       if (any (a /= caf)) &
            call abort()
     end if
+    sync all
 
     ! Array sections with different ranges and pos/neg strides
     do i_sgn1 = -1, 1, 2
@@ -261,6 +267,7 @@ contains
                         call abort()
                       endif
                     end if
+                    sync all
                   end do
                 end do
               end do
@@ -308,6 +315,7 @@ contains
       if (any (a /= caf)) &
            call abort()
     end if
+    sync all
 
     ! Scalar assignment
     caf = -42
@@ -386,6 +394,7 @@ contains
                         call abort()
                       endif
                     end if
+                    sync all
                   end do
                 end do
               end do
