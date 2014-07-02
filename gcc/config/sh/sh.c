@@ -203,7 +203,7 @@ static void push_regs (HARD_REG_SET *, int);
 static int calc_live_regs (HARD_REG_SET *);
 static HOST_WIDE_INT rounded_frame_size (int);
 static bool sh_frame_pointer_required (void);
-static void sh_emit_mode_set (int, int, HARD_REG_SET);
+static void sh_emit_mode_set (int, int, int, HARD_REG_SET);
 static int sh_mode_needed (int, rtx);
 static int sh_mode_after (int, int, rtx);
 static int sh_mode_entry (int);
@@ -13583,9 +13583,17 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
 
 static void
 sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
-		  HARD_REG_SET regs_live)
+		  int prev_mode, HARD_REG_SET regs_live)
 {
-  fpscr_set_from_mem (mode, regs_live);
+  if ((TARGET_SH4A_FP || TARGET_SH4_300)
+      && prev_mode != FP_MODE_NONE && prev_mode != mode)
+    {
+      emit_insn (gen_toggle_pr ());
+      if (TARGET_FMOVD)
+	emit_insn (gen_toggle_sz ());
+    }
+  else
+    fpscr_set_from_mem (mode, regs_live);
 }
 
 static int

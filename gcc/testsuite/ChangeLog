@@ -1,3 +1,7 @@
+2014-07-02  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/sh/fpchg.c: New test.
+
 2014-07-02  Jakub Jelinek  <jakub@redhat.com>
 	    Fritz Reese  <Reese-Fritz@zai.com>
 

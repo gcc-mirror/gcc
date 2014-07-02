@@ -1,3 +1,26 @@
+2014-07-02  Christian Bruel  <christian.bruel@st.com>
+
+	* mode-switching.c (struct bb_info): Add mode_out, mode_in caches.
+	(make_preds_opaque): Delete.
+	(clear_mode_bit, mode_bit_p, set_mode_bit): New macros.
+	(commit_mode_sets): New function.
+	(optimize_mode_switching): Handle current_mode to mode_switching_emit.
+	Process all modes at once.
+	* basic-block.h (pre_edge_lcm_avs): Declare.
+	* lcm.c (pre_edge_lcm_avs): Renamed from pre_edge_lcm.
+	Call clear_aux_for_edges. Fix comments.
+	(pre_edge_lcm): New wrapper function to call pre_edge_lcm_avs.
+	(pre_edge_rev_lcm): Idem.
+	* config/epiphany/epiphany.c (emit_set_fp_mode): Add prev_mode parameter.
+	* config/epiphany/epiphany-protos.h (emit_set_fp_mode): Idem.
+	* config/epiphany/resolve-sw-modes.c (pass_resolve_sw_modes::execute): Idem.
+	* config/i386/i386.c (x96_emit_mode_set): Idem.
+	* config/sh/sh.c (sh_emit_mode_set): Likewise. Handle PR toggle.
+	* config/sh/sh.md (toggle_pr): 	Defined if TARGET_FPU_SINGLE.
+	(fpscr_toggle) Disallow from delay slot.
+	* target.def (emit_mode_set): Add prev_mode parameter.
+	* doc/tm.texi: Regenerate.
+
 2014-07-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_vec_perm): Delete unused

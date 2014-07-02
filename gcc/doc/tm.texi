@@ -9595,12 +9595,12 @@ represented as numbers 0 @dots{} N @minus{} 1.  N is used to specify that no mod
 switch is needed / supplied.
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_MODE_EMIT (int @var{entity}, int @var{mode}, HARD_REG_SET @var{regs_live})
-Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.
+@deftypefn {Target Hook} void TARGET_MODE_EMIT (int @var{entity}, int @var{mode}, int @var{prev_mode}, HARD_REG_SET @var{regs_live})
+Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. @var{prev_moxde} indicates the mode to switch from. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_NEEDED (int @var{entity}, rtx @var{insn})
-@var{entity} is an integer specifying a mode-switched entity. If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.
+@var{entity} is an integer specifying a mode-switched entity.  If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_AFTER (int @var{entity}, int @var{mode}, rtx @var{insn})
