@@ -1,3 +1,9 @@
+2014-07-02  Jan Hubicka  <hubicka@ucw.cz>
+	    Chen Gang <gang.chen.5i5j@gmail.com>
+
+	* c-decl.c (duplicate_decls): CLear DECL_STRUCT_FUNCTION before
+	releasing symbol.
+
 2014-07-01  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (convert_for_assignment): Pass OPT_Wint_conversion
