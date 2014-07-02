@@ -232,7 +232,6 @@ static void print_value_expr_statistics (void);
 static int type_hash_marked_p (const void *);
 static unsigned int type_hash_list (const_tree, hashval_t);
 static unsigned int attribute_hash_list (const_tree, hashval_t);
-static bool decls_same_for_odr (tree decl1, tree decl2);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -11821,151 +11820,6 @@ lhd_gcc_personality (void)
   return gcc_eh_personality_decl;
 }
 
-/* For languages with One Definition Rule, work out if
-   trees are actually the same even if the tree representation
-   differs.  This handles only decls appearing in TYPE_NAME
-   and TYPE_CONTEXT.  That is NAMESPACE_DECL, TYPE_DECL,
-   RECORD_TYPE and IDENTIFIER_NODE.  */
-
-static bool
-same_for_odr (tree t1, tree t2)
-{
-  if (t1 == t2)
-    return true;
-  if (!t1 || !t2)
-    return false;
-  /* C and C++ FEs differ by using IDENTIFIER_NODE and TYPE_DECL.  */
-  if (TREE_CODE (t1) == IDENTIFIER_NODE
-      && TREE_CODE (t2) == TYPE_DECL
-      && DECL_FILE_SCOPE_P (t1))
-    {
-      t2 = DECL_NAME (t2);
-      gcc_assert (TREE_CODE (t2) == IDENTIFIER_NODE);
-    }
-  if (TREE_CODE (t2) == IDENTIFIER_NODE
-      && TREE_CODE (t1) == TYPE_DECL
-      && DECL_FILE_SCOPE_P (t2))
-    {
-      t1 = DECL_NAME (t1);
-      gcc_assert (TREE_CODE (t1) == IDENTIFIER_NODE);
-    }
-  if (TREE_CODE (t1) != TREE_CODE (t2))
-    return false;
-  if (TYPE_P (t1))
-    return types_same_for_odr (t1, t2);
-  if (DECL_P (t1))
-    return decls_same_for_odr (t1, t2);
-  return false;
-}
-
-/* For languages with One Definition Rule, work out if
-   decls are actually the same even if the tree representation
-   differs.  This handles only decls appearing in TYPE_NAME
-   and TYPE_CONTEXT.  That is NAMESPACE_DECL, TYPE_DECL,
-   RECORD_TYPE and IDENTIFIER_NODE.  */
-
-static bool
-decls_same_for_odr (tree decl1, tree decl2)
-{
-  if (decl1 && TREE_CODE (decl1) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (decl1))
-    decl1 = DECL_ORIGINAL_TYPE (decl1);
-  if (decl2 && TREE_CODE (decl2) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (decl2))
-    decl2 = DECL_ORIGINAL_TYPE (decl2);
-  if (decl1 == decl2)
-    return true;
-  if (!decl1 || !decl2)
-    return false;
-  gcc_checking_assert (DECL_P (decl1) && DECL_P (decl2));
-  if (TREE_CODE (decl1) != TREE_CODE (decl2))
-    return false;
-  if (TREE_CODE (decl1) == TRANSLATION_UNIT_DECL)
-    return true;
-  if (TREE_CODE (decl1) != NAMESPACE_DECL
-      && TREE_CODE (decl1) != TYPE_DECL)
-    return false;
-  if (!DECL_NAME (decl1))
-    return false;
-  gcc_checking_assert (TREE_CODE (DECL_NAME (decl1)) == IDENTIFIER_NODE);
-  gcc_checking_assert (!DECL_NAME (decl2)
-		       ||  TREE_CODE (DECL_NAME (decl2)) == IDENTIFIER_NODE);
-  if (DECL_NAME (decl1) != DECL_NAME (decl2))
-    return false;
-  return same_for_odr (DECL_CONTEXT (decl1),
-		       DECL_CONTEXT (decl2));
-}
-
-/* For languages with One Definition Rule, work out if
-   types are same even if the tree representation differs. 
-   This is non-trivial for LTO where minnor differences in
-   the type representation may have prevented type merging
-   to merge two copies of otherwise equivalent type.  */
-
-bool
-types_same_for_odr (tree type1, tree type2)
-{
-  gcc_checking_assert (TYPE_P (type1) && TYPE_P (type2));
-  type1 = TYPE_MAIN_VARIANT (type1);
-  type2 = TYPE_MAIN_VARIANT (type2);
-  if (type1 == type2)
-    return true;
-
-#ifndef ENABLE_CHECKING
-  if (!in_lto_p)
-    return false;
-#endif
-
-  /* Check for anonymous namespaces. Those have !TREE_PUBLIC
-     on the corresponding TYPE_STUB_DECL.  */
-  if (type_in_anonymous_namespace_p (type1)
-      || type_in_anonymous_namespace_p (type2))
-    return false;
-  /* When assembler name of virtual table is available, it is
-     easy to compare types for equivalence.  */
-  if (TYPE_BINFO (type1) && TYPE_BINFO (type2)
-      && BINFO_VTABLE (TYPE_BINFO (type1))
-      && BINFO_VTABLE (TYPE_BINFO (type2)))
-    {
-      tree v1 = BINFO_VTABLE (TYPE_BINFO (type1));
-      tree v2 = BINFO_VTABLE (TYPE_BINFO (type2));
-
-      if (TREE_CODE (v1) == POINTER_PLUS_EXPR)
-	{
-	  if (TREE_CODE (v2) != POINTER_PLUS_EXPR
-	      || !operand_equal_p (TREE_OPERAND (v1, 1),
-			     TREE_OPERAND (v2, 1), 0))
-	    return false;
-	  v1 = TREE_OPERAND (TREE_OPERAND (v1, 0), 0);
-	  v2 = TREE_OPERAND (TREE_OPERAND (v2, 0), 0);
-	}
-      v1 = DECL_ASSEMBLER_NAME (v1);
-      v2 = DECL_ASSEMBLER_NAME (v2);
-      return (v1 == v2);
-    }
-
-  /* FIXME: the code comparing type names consider all instantiations of the
-     same template to have same name.  This is because we have no access
-     to template parameters.  For types with no virtual method tables
-     we thus can return false positives.  At the moment we do not need
-     to compare types in other scenarios than devirtualization.  */
-
-  /* If types are not structuraly same, do not bother to contnue.
-     Match in the remainder of code would mean ODR violation.  */
-  if (!types_compatible_p (type1, type2))
-    return false;
-  if (!TYPE_NAME (type1))
-    return false;
-  if (!decls_same_for_odr (TYPE_NAME (type1), TYPE_NAME (type2)))
-    return false;
-  if (!same_for_odr (TYPE_CONTEXT (type1), TYPE_CONTEXT (type2)))
-    return false;
-  /* When not in LTO the MAIN_VARIANT check should be the same.  */
-  gcc_assert (in_lto_p);
-    
-  return true;
-}
-
 /* TARGET is a call target of GIMPLE call statement
    (obtained by gimple_call_fn).  Return true if it is
    OBJ_TYPE_REF representing an virtual call of C++ method.
@@ -12009,7 +11863,7 @@ obj_type_ref_class (tree ref)
 /* Return true if T is in anonymous namespace.  */
 
 bool
-type_in_anonymous_namespace_p (tree t)
+type_in_anonymous_namespace_p (const_tree t)
 {
   return (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)));
 }
