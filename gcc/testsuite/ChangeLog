@@ -1,5 +1,7 @@
 2014-07-02  Christian Bruel  <christian.bruel@st.com>
 
+	PR target/29349
+	PR target/53513
 	* gcc.target/sh/fpchg.c: New test.
 
 2014-07-02  Jakub Jelinek  <jakub@redhat.com>

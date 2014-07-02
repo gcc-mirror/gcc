@@ -1,5 +1,7 @@
 2014-07-02  Christian Bruel  <christian.bruel@st.com>
 
+	PR target/29349
+	PR target/53513
 	* mode-switching.c (struct bb_info): Add mode_out, mode_in caches.
 	(make_preds_opaque): Delete.
 	(clear_mode_bit, mode_bit_p, set_mode_bit): New macros.
