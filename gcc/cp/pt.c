@@ -6468,13 +6468,16 @@ convert_template_argument (tree parm,
 		     "parameter list for %qD",
 		     i + 1, in_decl);
 	      if (is_type)
-		error ("  expected a constant of type %qT, got %qT",
-		       TREE_TYPE (parm),
-		       (DECL_P (arg) ? DECL_NAME (arg) : orig_arg));
+		inform (input_location,
+			"  expected a constant of type %qT, got %qT",
+			TREE_TYPE (parm),
+			(DECL_P (arg) ? DECL_NAME (arg) : orig_arg));
 	      else if (requires_tmpl_type)
-		error ("  expected a class template, got %qE", orig_arg);
+		inform (input_location,
+			"  expected a class template, got %qE", orig_arg);
 	      else
-		error ("  expected a type, got %qE", orig_arg);
+		inform (input_location,
+			"  expected a type, got %qE", orig_arg);
 	    }
 	}
       return error_mark_node;
@@ -6487,9 +6490,11 @@ convert_template_argument (tree parm,
 		 "parameter list for %qD",
 		 i + 1, in_decl);
 	  if (is_tmpl_type)
-	    error ("  expected a type, got %qT", DECL_NAME (arg));
+	    inform (input_location,
+		    "  expected a type, got %qT", DECL_NAME (arg));
 	  else
-	    error ("  expected a class template, got %qT", orig_arg);
+	    inform (input_location,
+		    "  expected a class template, got %qT", orig_arg);
 	}
       return error_mark_node;
     }
@@ -6537,8 +6542,9 @@ convert_template_argument (tree parm,
 		      error ("type/value mismatch at argument %d in "
 			     "template parameter list for %qD",
 			     i + 1, in_decl);
-		      error ("  expected a template of type %qD, got %qT",
-			     parm, orig_arg);
+		      inform (input_location,
+			      "  expected a template of type %qD, got %qT",
+			      parm, orig_arg);
 		    }
 
 		  val = error_mark_node;
