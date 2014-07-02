@@ -8731,7 +8731,7 @@ void
 aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
   enum machine_mode vmode = GET_MODE (target);
-  unsigned int i, nelt = GET_MODE_NUNITS (vmode);
+  unsigned int nelt = GET_MODE_NUNITS (vmode);
   bool one_vector_p = rtx_equal_p (op0, op1);
   rtx mask;
 
