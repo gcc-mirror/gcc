@@ -3076,6 +3076,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	 prefer left rotation, if op1 is from bitsize / 2 + 1 to
 	 bitsize - 1, use other direction of rotate with 1 .. bitsize / 2 - 1
 	 amount instead.  */
+#if defined(HAVE_rotate) && defined(HAVE_rotatert)
       if (CONST_INT_P (trueop1)
 	  && IN_RANGE (INTVAL (trueop1),
 		       GET_MODE_BITSIZE (mode) / 2 + (code == ROTATE),
@@ -3083,6 +3084,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
 				    mode, op0, GEN_INT (GET_MODE_BITSIZE (mode)
 							- INTVAL (trueop1)));
+#endif
       /* FALLTHRU */
     case ASHIFTRT:
       if (trueop1 == CONST0_RTX (mode))
