@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "runtime.h"
+#include "malloc.h"
 #include "go-alloc.h"
 #include "go-assert.h"
 #include "map.h"
@@ -47,7 +48,8 @@ __go_map_delete (struct __go_map *map, const void *key)
       if (equalfn (key, entry + key_offset, key_size))
 	{
 	  *pentry = *(void **) entry;
-	  __go_free (entry);
+	  if (descriptor->__entry_size >= TinySize)
+	    __go_free (entry);
 	  map->__element_count -= 1;
 	  break;
 	}
