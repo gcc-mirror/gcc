@@ -742,7 +742,7 @@ dump_type_inheritance_graph (FILE *f)
    Lookup this pointer and get its type.    */
 
 tree
-method_class_type (tree t)
+method_class_type (const_tree t)
 {
   tree first_parm_type = TREE_VALUE (TYPE_ARG_TYPES (t));
   gcc_assert (TREE_CODE (t) == METHOD_TYPE);
@@ -1187,6 +1187,31 @@ devirt_node_removal_hook (struct cgraph_node *n, void *d ATTRIBUTE_UNUSED)
     free_polymorphic_call_targets_hash ();
 }
 
+/* Return true when TYPE contains an polymorphic type and thus is interesting
+   for devirtualization machinery.  */
+
+bool
+contains_polymorphic_type_p (const_tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+
+  if (RECORD_OR_UNION_TYPE_P (type))
+    {
+      if (TYPE_BINFO (type)
+          && polymorphic_type_binfo_p (TYPE_BINFO (type)))
+	return true;
+      for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
+	if (TREE_CODE (fld) == FIELD_DECL
+	    && !DECL_ARTIFICIAL (fld)
+	    && contains_polymorphic_type_p (TREE_TYPE (fld)))
+	  return true;
+      return false;
+    }
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return contains_polymorphic_type_p (TREE_TYPE (type));
+  return false;
+}
+
 /* CONTEXT->OUTER_TYPE is a type of memory object where object of EXPECTED_TYPE
    is contained at CONTEXT->OFFSET.  Walk the memory representation of
    CONTEXT->OUTER_TYPE and find the outermost class type that match
@@ -1349,7 +1374,8 @@ subbinfo_with_vtable_at_offset (tree binfo, unsigned HOST_WIDE_INT offset,
    Return false if T does not look like virtual table reference.  */
 
 bool
-vtable_pointer_value_to_vtable (tree t, tree *v, unsigned HOST_WIDE_INT *offset)
+vtable_pointer_value_to_vtable (const_tree t, tree *v,
+				unsigned HOST_WIDE_INT *offset)
 {
   /* We expect &MEM[(void *)&virtual_table + 16B].
      We obtain object's BINFO from the context of the virtual table. 
@@ -1395,7 +1421,7 @@ vtable_pointer_value_to_vtable (tree t, tree *v, unsigned HOST_WIDE_INT *offset)
    instance type.  */
 
 tree
-vtable_pointer_value_to_binfo (tree t)
+vtable_pointer_value_to_binfo (const_tree t)
 {
   tree vtable;
   unsigned HOST_WIDE_INT offset;

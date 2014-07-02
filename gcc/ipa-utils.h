@@ -83,15 +83,16 @@ void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
 					     const ipa_polymorphic_call_context &);
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
 				         const ipa_polymorphic_call_context &,
-					 struct cgraph_node *n);
-tree method_class_type (tree);
+					 struct cgraph_node *);
+tree method_class_type (const_tree);
 tree get_polymorphic_call_info (tree, tree, tree *,
 				HOST_WIDE_INT *,
 				ipa_polymorphic_call_context *);
 bool get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *,
 					       tree, tree, HOST_WIDE_INT);
-tree vtable_pointer_value_to_binfo (tree t);
-bool vtable_pointer_value_to_vtable (tree, tree *, unsigned HOST_WIDE_INT *);
+tree vtable_pointer_value_to_binfo (const_tree);
+bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT *);
+bool contains_polymorphic_type_p (const_tree);
 
 /* Return vector containing possible targets of polymorphic call E.
    If FINALP is non-NULL, store true if the list is complette. 
