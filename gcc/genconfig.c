@@ -36,6 +36,8 @@ static int have_cc0_flag;
 static int have_cmove_flag;
 static int have_cond_exec_flag;
 static int have_lo_sum_flag;
+static int have_rotate_flag;
+static int have_rotatert_flag;
 static int have_peephole_flag;
 static int have_peephole2_flag;
 
@@ -115,6 +117,16 @@ walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
     case LO_SUM:
       if (recog_p)
 	have_lo_sum_flag = 1;
+      return;
+
+    case ROTATE:
+      if (recog_p)
+	have_rotate_flag = 1;
+      return;
+
+    case ROTATERT:
+      if (recog_p)
+	have_rotatert_flag = 1;
       return;
 
     case SET:
@@ -345,6 +357,12 @@ main (int argc, char **argv)
 
   if (have_lo_sum_flag)
     printf ("#define HAVE_lo_sum 1\n");
+
+  if (have_rotate_flag)
+    printf ("#define HAVE_rotate 1\n");
+
+  if (have_rotatert_flag)
+    printf ("#define HAVE_rotatert 1\n");
 
   if (have_peephole_flag)
     printf ("#define HAVE_peephole 1\n");

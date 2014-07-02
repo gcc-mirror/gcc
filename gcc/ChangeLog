@@ -1,3 +1,11 @@
+2014-07-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genconfig.c (have_rotate_flag, have_rotatert_flag): New variables.
+	(walk_insn_part) <ROTATE, ROTATERT>: New cases.
+	(main): Conditionally write HAVE_rotate resp. HAVE_rotatert.
+	* simplify-rtx.c (simplify_binary_operation_1) <ROTATE, ROTATERT>:
+	Only do the transformation if both HAVE_rotate and HAVE_rotatert.
+
 2014-07-02  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/29349
