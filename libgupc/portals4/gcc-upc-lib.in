@@ -34,7 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif /* IN_TARGET_LIBS */
 
 /* Required for size_t definition.  */
-#include <sys/types.h>
+#include <stddef.h>
 
 #pragma upc c_code
 

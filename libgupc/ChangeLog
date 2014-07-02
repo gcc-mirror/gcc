@@ -1,3 +1,9 @@
+2014-07-02  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gcc-upc-lib.in: Use stddef.h for size_t
+	instead of sys/types.h as it might break on some
+	systems.
+	
 2014-05-27  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_main.c (__upc_run_threads): Set O_APPEND flag
