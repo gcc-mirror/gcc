@@ -1,3 +1,11 @@
+2014-07-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.host (ieee_flags): Add -mieee for alpha*.
+
+	* config/fpu-glibc.h (support_fpu_rounding_mode): Correctly handle
+	GFC_FPE_UPWARD, GFC_FPE_DOWNWARD and GFC_FPE_TOWARDZERO.
+	* config/fpu-aix.h (support_fpu_rounding_mode): Ditto.
+
 2014-06-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* config/fpu-387.h (my_fenv_t): Amend structure so it also works
@@ -7,7 +15,7 @@
 
 	PR libgfortran/61640
 	* io/list_read.c (next_char_internal): Adjust the read length to
-	a single wide character. (eat_spaces): Add missing paren. 
+	a single wide character. (eat_spaces): Add missing paren.
 	* io/unix.c (mem_read4): Use the correct mem_alloc function for
 	wide character internal reads.
 

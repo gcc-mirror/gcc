@@ -372,18 +372,21 @@ support_fpu_rounding_mode (int mode)
 	return 0;
 #endif
 
+      case GFC_FPE_UPWARD:
 #ifdef FE_UPWARD
 	return 1;
 #else
 	return 0;
 #endif
 
+      case GFC_FPE_DOWNWARD:
 #ifdef FE_DOWNWARD
 	return 1;
 #else
 	return 0;
 #endif
 
+      case GFC_FPE_TOWARDZERO:
 #ifdef FE_TOWARDZERO
 	return 1;
 #else
