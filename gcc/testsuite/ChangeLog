@@ -1,3 +1,8 @@
+2014-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Fritz Reese  <Reese-Fritz@zai.com>
+
+	* gfortran.dg/oldstyle_5.f: New test.
+
 2014-07-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/ieee/ieee_1.F90 (dg-additional-options): Remove -O0.
