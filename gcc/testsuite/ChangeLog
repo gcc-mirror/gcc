@@ -1,3 +1,9 @@
+2014-07-02  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/get_array.f90: Add missing SYNC ALL.
+	* gfortran.dg/coarray/send_array.f90: Ditto.
+	* gfortran.dg/coarray/sendget_array.f90: Ditto.
+
 2014-07-01  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Yufeng Zhang  <yufeng.zhang@arm.com>
 
