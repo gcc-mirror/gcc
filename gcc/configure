@@ -7318,7 +7318,7 @@ else
 
   # GNU UPC packed pointer representation defaults.
   case "$target" in
-    i35686* )
+    i[356]86* )
       UPC_PTS_PHASE_SIZE=20
       UPC_PTS_THREAD_SIZE=12
       UPC_PTS_VADDR_SIZE=32

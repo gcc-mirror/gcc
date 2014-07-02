@@ -1,3 +1,9 @@
+2014-07-02  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Fix checking for 32-bits target while
+	setting the default PTS packed bits.
+	* configure: Regenerate.
+
 2014-06-30  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 212138 into gupc branch.

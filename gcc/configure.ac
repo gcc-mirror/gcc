@@ -819,6 +819,7 @@ the packed UPC pointer-to-shared representation])
 ],
 [
   # GNU UPC packed pointer representation defaults.
+changequote(,)dnl
   case "$target" in
     i[356]86* )
       UPC_PTS_PHASE_SIZE=20
@@ -830,6 +831,7 @@ the packed UPC pointer-to-shared representation])
       UPC_PTS_THREAD_SIZE=10
       UPC_PTS_VADDR_SIZE=34
   esac
+changequote([,])dnl
 ])
 
 AC_ARG_ENABLE(upc-link-script,
