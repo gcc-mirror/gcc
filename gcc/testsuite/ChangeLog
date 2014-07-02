@@ -1,3 +1,8 @@
+2014-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Fritz Reese  <Reese-Fritz@zai.com>
+
+	* gfortran.dg/oldstyle_5.f: New test.
+
 2014-06-30  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
