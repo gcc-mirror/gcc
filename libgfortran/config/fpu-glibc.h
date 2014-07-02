@@ -130,7 +130,6 @@ void set_fpu (void)
 	        "exception not supported.\n");
 #endif
 
-/* glibc does never have a FE_DENORMAL.  */
 #ifndef FE_DENORMAL
   if (options.fpe & GFC_FPE_DENORMAL)
     estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
