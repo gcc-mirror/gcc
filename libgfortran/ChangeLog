@@ -1,3 +1,7 @@
+2014-07-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/fpu-glibc.h: Fix comment about FE_DENORMAL.
+
 2014-07-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.host (ieee_flags): Add -mieee for alpha*.

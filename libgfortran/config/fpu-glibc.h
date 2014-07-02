@@ -43,7 +43,7 @@ void set_fpu_trap_exceptions (int trap, int notrap)
     fedisableexcept (FE_INVALID);
 #endif
 
-/* glibc does never have a FE_DENORMAL.  */
+/* Some glibc targets (like alpha) have FE_DENORMAL, but not many.  */
 #ifdef FE_DENORMAL
   if (trap & GFC_FPE_DENORMAL)
     feenableexcept (FE_DENORMAL);
