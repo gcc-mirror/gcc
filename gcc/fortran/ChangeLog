@@ -1,3 +1,7 @@
+2014-07-03  Tobias Burnus  <burnus@net-b.de>
+	
+	* scanner.c (skip_free_comments): Fix indentation.
+
 2014-07-02  Jakub Jelinek  <jakub@redhat.com>
 	    Fritz Reese  <Reese-Fritz@zai.com>
 
