@@ -11,10 +11,6 @@
 
   implicit none
 
-  interface use_real
-    procedure use_real_4, use_real_8
-  end interface use_real
-
   type(ieee_flag_type), parameter :: x(5) = &
     [ IEEE_INVALID, IEEE_OVERFLOW, IEEE_DIVIDE_BY_ZERO, &
       IEEE_UNDERFLOW, IEEE_INEXACT ]
@@ -33,8 +29,8 @@
   end if ; \
   call check_flag_sub
 
-  real :: sx
-  double precision :: dx
+  real, volatile :: sx
+  double precision, volatile :: dx
 
   ! This file tests IEEE_SET_FLAG and IEEE_GET_FLAG
 
@@ -49,9 +45,7 @@
 
   ! Raise invalid, then clear
   sx = -1
-  call use_real(sx)
   sx = sqrt(sx)
-  call use_real(sx)
   CHECK_FLAGS("I    ")
   call ieee_set_flag(ieee_all, .false.)
   CHECK_FLAGS("     ")
@@ -61,13 +55,11 @@
   CHECK_FLAGS("     ")
   sx = sx*sx
   CHECK_FLAGS(" O  P")
-  call use_real(sx)
 
   ! Also raise divide-by-zero
   sx = 0
   sx = 1 / sx
   CHECK_FLAGS(" OZ P")
-  call use_real(sx)
 
   ! Clear them
   call ieee_set_flag([ieee_overflow,ieee_inexact,&
@@ -80,7 +72,6 @@
   sx = tiny(sx)
   CHECK_FLAGS("     ")
   sx = sx / 10
-  call use_real(sx)
   CHECK_FLAGS("   UP")
 
   ! Raise everything
@@ -102,9 +93,7 @@
 
   ! Raise invalid, then clear
   dx = -1
-  call use_real(dx)
   dx = sqrt(dx)
-  call use_real(dx)
   CHECK_FLAGS("I    ")
   call ieee_set_flag(ieee_all, .false.)
   CHECK_FLAGS("     ")
@@ -114,13 +103,11 @@
   CHECK_FLAGS("     ")
   dx = dx*dx
   CHECK_FLAGS(" O  P")
-  call use_real(dx)
 
   ! Also raise divide-by-zero
   dx = 0
   dx = 1 / dx
   CHECK_FLAGS(" OZ P")
-  call use_real(dx)
 
   ! Clear them
   call ieee_set_flag([ieee_overflow,ieee_inexact,&
@@ -134,7 +121,6 @@
   CHECK_FLAGS("     ")
   dx = dx / 10
   CHECK_FLAGS("   UP")
-  call use_real(dx)
 
   ! Raise everything
   call ieee_set_flag(ieee_all, .true.)
@@ -158,17 +144,6 @@ contains
       print *, "Flags not cleared in subroutine"
       call abort
     end if
-  end subroutine
-
-  ! Interface to a routine that avoids calculations to be optimized out,
-  ! making it appear that we use the result
-  subroutine use_real_4(x)
-    real :: x
-    if (x == 123456.789) print *, "toto"
-  end subroutine
-  subroutine use_real_8(x)
-    double precision :: x
-    if (x == 123456.789) print *, "toto"
   end subroutine
 
 end

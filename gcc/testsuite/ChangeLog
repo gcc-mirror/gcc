@@ -1,3 +1,8 @@
+2014-07-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/ieee_1.F90: Mark variables as volatile to
+	avoid optimization.
+
 2014-07-03  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.target/arm/identical-invariants.c: New test.
