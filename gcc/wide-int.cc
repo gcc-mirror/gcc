@@ -1,5 +1,5 @@
 /* Operations with very long integers.
-   Copyright (C) 2012-2013 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -1282,6 +1282,12 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	  && wi::fits_uhwi_p (op1)
 	  && wi::fits_uhwi_p (op2))
 	{
+	  /* This case never overflows.  */
+	  if (high)
+	    {
+	      val[0] = 0;
+	      return 1;
+	    }
 	  umul_ppmm (val[1], val[0], op1.ulow (), op2.ulow ());
 	  return 1 + (val[1] != 0 || val[0] < 0);
 	}
@@ -1294,6 +1300,8 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	  umul_ppmm (upper, val[0], op1.ulow (), op2.ulow ());
 	  if (needs_overflow)
 	    *overflow = (upper != 0);
+	  if (high)
+	    val[0] = upper;
 	  return 1;
 	}
     }
@@ -1302,12 +1310,22 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
   /* Handle multiplications by 1.  */
   if (op1 == 1)
     {
+      if (high)
+	{
+	  val[0] = wi::neg_p (op2, sgn) ? -1 : 0;
+	  return 1;
+	}
       for (i = 0; i < op2len; i++)
 	val[i] = op2val[i];
       return op2len;
     }
   if (op2 == 1)
     {
+      if (high)
+	{
+	  val[0] = wi::neg_p (op1, sgn) ? -1 : 0;
+	  return 1;
+	}
       for (i = 0; i < op1len; i++)
 	val[i] = op1val[i];
       return op1len;
