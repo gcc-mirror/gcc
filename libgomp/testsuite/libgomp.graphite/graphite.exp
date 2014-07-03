@@ -21,6 +21,9 @@ if [info exists lang_library_path] then {
 if [info exists lang_test_file] then {
     unset lang_test_file
 }
+if [info exists lang_include_flags] then {
+    unset lang_include_flags
+}
 
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
