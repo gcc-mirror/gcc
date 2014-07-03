@@ -1,3 +1,9 @@
+2014-07-03  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_atomic_subword): Use
+	BYTES_BIG_ENDIAN rather than WORDS_BIG_ENDIAN to check for byte
+	endianness.
+
 2014-07-03  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* loop-invariant.c (struct invariant): Add a new member: eqno;
