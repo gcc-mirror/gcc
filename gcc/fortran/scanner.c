@@ -744,7 +744,7 @@ skip_free_comments (void)
       if (c == '!')
 	{
 	  /* Keep the !GCC$ line.  */
-		  if (at_bol && skip_gcc_attribute (start))
+	  if (at_bol && skip_gcc_attribute (start))
 	    return false;
 
 	  /* If -fopenmp, we need to handle here 2 things:
