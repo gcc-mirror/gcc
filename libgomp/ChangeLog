@@ -1,3 +1,8 @@
+2014-07-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/fortran.exp: Explain
+	gfortran-dg-runtest usage.
+
 2014-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.fortran/simd5.f90: New test.
