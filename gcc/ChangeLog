@@ -1,3 +1,10 @@
+2014-07-03  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (-fsanitize=bounds): Tweak wording.
+	(-fsanitize=float-divide-by-zero): Move to the table with
+	-fsanitize=undefined suboptions.
+	(-fsanitize=float-cast-overflow): Likewise.
+
 2014-07-03  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_adjust_atomic_subword): Use
