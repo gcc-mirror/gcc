@@ -1,3 +1,11 @@
+2014-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (rotl<mode>3, ashl<mode>3, lshr<mode>3,
+	ashr<mode>3): Correct mode of operands[2].
+	(rotl<mode>3_dot, rotl<mode>3_dot2, ashl<mode>3_dot, ashl<mode>3_dot2,
+	lshr<mode>3_dot, lshr<mode>3_dot2, ashr<mode>3_dot, ashr<mode>3_dot2):
+	Correct mode of operands[2].  Fix split condition.
+
 2014-07-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (arch): Add armv6_or_vfpv3.
