@@ -1,3 +1,10 @@
+2014-07-03  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* loop-invariant.c (struct invariant): Add a new member: eqno;
+	(find_identical_invariants): Update eqno;
+	(create_new_invariant): Init eqno;
+	(get_inv_cost): Compute comp_cost with eqno;
+
 2014-07-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* genconfig.c (have_rotate_flag, have_rotatert_flag): New variables.

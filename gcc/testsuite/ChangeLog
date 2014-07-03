@@ -1,3 +1,7 @@
+2014-07-03  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/identical-invariants.c: New test.
+
 2014-07-02  Jan Hubicka  <hubicka@ucw.cz>
 	    Chen Gang <gang.chen.5i5j@gmail.com>
 
