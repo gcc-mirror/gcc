@@ -62,7 +62,8 @@ print_decs (const wide_int_ref &wi, char *buf)
       || (wi.get_len () == 1))
     {
       if (wi::neg_p (wi))
-      	sprintf (buf, "-" HOST_WIDE_INT_PRINT_UNSIGNED, -wi.to_shwi ());
+      	sprintf (buf, "-" HOST_WIDE_INT_PRINT_UNSIGNED,
+		 -(unsigned HOST_WIDE_INT) wi.to_shwi ());
       else
 	sprintf (buf, HOST_WIDE_INT_PRINT_DEC, wi.to_shwi ());
     }
