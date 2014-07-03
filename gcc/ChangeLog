@@ -1,3 +1,10 @@
+2014-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61682
+	* wide-int.cc (wi::mul_internal): Handle high correctly
+	for umul_ppmm using cases and when one of the operands is
+	equal to 1.
+
 2014-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (rotl<mode>3, ashl<mode>3, lshr<mode>3,
