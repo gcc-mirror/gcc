@@ -3795,8 +3795,9 @@ expand_sdiv_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 
       temp = gen_reg_rtx (mode);
       temp = emit_store_flag (temp, LT, op0, const0_rtx, mode, 0, -1);
-      if (shift_cost (optimize_insn_for_speed_p (), mode, ushift)
-	  > COSTS_N_INSNS (1))
+      if (GET_MODE_BITSIZE (mode) >= BITS_PER_WORD
+	  || shift_cost (optimize_insn_for_speed_p (), mode, ushift)
+	     > COSTS_N_INSNS (1))
 	temp = expand_binop (mode, and_optab, temp, gen_int_mode (d - 1, mode),
 			     NULL_RTX, 0, OPTAB_LIB_WIDEN);
       else

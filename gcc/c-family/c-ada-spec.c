@@ -636,8 +636,9 @@ dump_ada_nodes (pretty_printer *pp, const char *source_file)
   comments = cpp_get_comments (parse_in);
 
   /* Sort the comments table by sloc.  */
-  qsort (comments->entries, comments->count, sizeof (cpp_comment),
-	 compare_comment);
+  if (comments->count > 1)
+    qsort (comments->entries, comments->count, sizeof (cpp_comment),
+	   compare_comment);
 
   /* Interleave comments and declarations in line number order.  */
   i = j = 0;
