@@ -104,6 +104,9 @@ struct invariant
   /* The number of the invariant with the same value.  */
   unsigned eqto;
 
+  /* The number of invariants which eqto this.  */
+  unsigned eqno;
+
   /* If we moved the invariant out of the loop, the register that contains its
      value.  */
   rtx reg;
@@ -498,6 +501,7 @@ find_identical_invariants (invariant_htab_type *eq, struct invariant *inv)
   struct invariant *dep;
   rtx expr, set;
   enum machine_mode mode;
+  struct invariant *tmp;
 
   if (inv->eqto != ~0u)
     return;
@@ -513,7 +517,12 @@ find_identical_invariants (invariant_htab_type *eq, struct invariant *inv)
   mode = GET_MODE (expr);
   if (mode == VOIDmode)
     mode = GET_MODE (SET_DEST (set));
-  inv->eqto = find_or_insert_inv (eq, expr, mode, inv)->invno;
+
+  tmp = find_or_insert_inv (eq, expr, mode, inv);
+  inv->eqto = tmp->invno;
+
+  if (tmp->invno != inv->invno && inv->always_executed)
+    tmp->eqno++;
 
   if (dump_file && inv->eqto != inv->invno)
     fprintf (dump_file,
@@ -722,6 +731,10 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
 
   inv->invno = invariants.length ();
   inv->eqto = ~0u;
+
+  /* Itself.  */
+  inv->eqno = 1;
+
   if (def)
     def->invno = inv->invno;
   invariants.safe_push (inv);
@@ -1136,7 +1149,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed,
 
   if (!inv->cheap_address
       || inv->def->n_addr_uses < inv->def->n_uses)
-    (*comp_cost) += inv->cost;
+    (*comp_cost) += inv->cost * inv->eqno;
 
 #ifdef STACK_REGS
   {
