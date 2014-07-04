@@ -1693,6 +1693,7 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks, bool force_gimpl
 #ifdef ENABLE_CHECKING
       verify_flow_info ();
 #endif
+      free_dominance_info (CDI_DOMINATORS);
 
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
