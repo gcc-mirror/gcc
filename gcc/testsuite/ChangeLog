@@ -1,3 +1,8 @@
+2014-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61684
+	* gcc.c-torture/compile/pr61684.c: New test.
+
 2014-07-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lib/g++-dg.exp (g++-dg-runtest): Change interface to match
