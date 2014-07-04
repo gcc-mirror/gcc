@@ -96,7 +96,6 @@ extern int nds32_adjust_insn_length (rtx, int);
 
 /* Auxiliary functions for FP_AS_GP detection.  */
 
-extern bool nds32_symbol_load_store_p (rtx);
 extern int nds32_fp_as_gp_check_available (void);
 
 /* Auxiliary functions for jump table generation.  */
