@@ -50,10 +50,10 @@ dg-init
 
 # Main loop.  Run the tests that are specific to C++.
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[C]] \
-        $DEFAULT_CXXFLAGS
+        "" $DEFAULT_CXXFLAGS
 # Run tests that are shared with C testing.
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/dfp/*.c]] \
-        $DEFAULT_CXXFLAGS
+        "" $DEFAULT_CXXFLAGS
 
 # All done.
 dg-finish

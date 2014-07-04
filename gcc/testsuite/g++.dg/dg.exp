@@ -57,14 +57,14 @@ set tests [prune $tests $srcdir/$subdir/ubsan/*]
 set tests [prune $tests $srcdir/$subdir/tsan/*]
 
 # Main loop.
-g++-dg-runtest $tests $DEFAULT_CXXFLAGS
+g++-dg-runtest $tests "" $DEFAULT_CXXFLAGS
 
 # C/C++ common tests.
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/*.\[cSi\]]] \
-	""
+	"" ""
 
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cpp/*.\[cS\]]] \
-	""
+	"" ""
 
 
 # All done.

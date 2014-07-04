@@ -47,8 +47,8 @@ if {[check_guality "
     return 0;
   }
 "]} {
-  gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] ""
-  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/guality/*.c]] ""
+  gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" ""
+  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/guality/*.c]] "" ""
 }
 
 if [info exists guality_gdb_name] {

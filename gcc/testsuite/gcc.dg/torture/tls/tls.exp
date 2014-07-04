@@ -50,7 +50,7 @@ set-torture-options $TLS_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-        $DEFAULT_CFLAGS
+        "" $DEFAULT_CFLAGS
 
 # All done.
 torture-finish

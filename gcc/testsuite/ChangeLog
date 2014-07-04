@@ -1,3 +1,13 @@
+2014-07-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Change interface to match
+	dg-runtest's.  Adapt all callers.
+	* lib/gcc-dg.exp (gcc-dg-runtest): Likewise.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Likewise.
+	* lib/go-dg.exp (go-dg-runtest): Likewise.
+	* lib/obj-c++-dg.exp (obj-c++-dg-runtest): Likewise.
+	* lib/objc-dg.exp (objc-dg-runtest): Likewise.
+
 2014-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61682

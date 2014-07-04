@@ -29,7 +29,7 @@ proc g++-dg-prune { system text } {
 
 # Modified dg-runtest that runs tests in both C++98 and C++11 modes
 # unless they specifically specify one or the other.
-proc g++-dg-runtest { testcases default-extra-flags } {
+proc g++-dg-runtest { testcases flags default-extra-flags } {
     global runtests
 
     foreach test $testcases {
@@ -53,9 +53,9 @@ proc g++-dg-runtest { testcases default-extra-flags } {
 
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
-	foreach flags $option_list {
-	    verbose "Testing $nshort, $flags" 1
-	    dg-test $test $flags ${default-extra-flags}
+	foreach flags_t $option_list {
+	    verbose "Testing $nshort, $flags $flags_t" 1
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
 	}
     }
 }

@@ -27,7 +27,7 @@ dg-init
 # Main loop.
 set saved-dg-do-what-default ${dg-do-what-default}
 set dg-do-what-default "assemble"
-gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "-w"
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "" "-w"
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.

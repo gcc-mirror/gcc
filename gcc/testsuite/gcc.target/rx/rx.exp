@@ -37,7 +37,7 @@ dg-init
 set tests [lsort [find $srcdir/$subdir *.\[cS\]]]
 
 # Main loop.
-gcc-dg-runtest $tests $DEFAULT_CFLAGS
+gcc-dg-runtest $tests "" $DEFAULT_CFLAGS
 
 # All done.
 dg-finish

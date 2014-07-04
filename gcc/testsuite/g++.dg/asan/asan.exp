@@ -29,7 +29,7 @@ dg-init
 if [asan_init] {
 
 # Main loop.
-gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/asan/*.c]] ""
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/asan/*.c]] "" ""
 
 }
 

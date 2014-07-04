@@ -36,7 +36,7 @@ proc go-dg-prune { system text } {
 
 # Modified dg-runtest that can cycle through a list of optimization options
 # as c-torture does.
-proc go-dg-runtest { testcases default-extra-flags } {
+proc go-dg-runtest { testcases flags default-extra-flags } {
     global runtests
     global TORTURE_OPTIONS
 
@@ -57,9 +57,9 @@ proc go-dg-runtest { testcases default-extra-flags } {
 
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
-	foreach flags $option_list {
-	    verbose "Testing $nshort, $flags" 1
-	    dg-test $test $flags ${default-extra-flags}
+	foreach flags_t $option_list {
+	    verbose "Testing $nshort, $flags $flags_t" 1
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
 	}
     }
 }

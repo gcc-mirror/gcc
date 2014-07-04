@@ -29,6 +29,6 @@ torture-init
 set-torture-options [list { } { -DWIDE } ]
 
 dg-init
-gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] ""
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "" ""
 torture-finish
 dg-finish

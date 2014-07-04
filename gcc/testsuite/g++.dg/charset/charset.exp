@@ -38,7 +38,7 @@ dg-init
 
 # Main loop.
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{c,cc,S} ]] \
-        $DEFAULT_CHARSETCFLAGS
+        "" $DEFAULT_CHARSETCFLAGS
 
 # All done.
 dg-finish
