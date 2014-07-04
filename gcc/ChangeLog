@@ -1,5 +1,10 @@
 2014-07-04  Tom de Vries  <tom@codesourcery.com>
 
+	* doc/md.texi (@subsection Constraint Modifier Characters): Clarify
+	combination of earlyclobber and read/write modifiers.
+
+2014-07-04  Tom de Vries  <tom@codesourcery.com>
+
 	* config/aarch64/aarch64-simd.md
 	(define_insn "vec_unpack_trunc_<mode>"): Fix constraint.
 
