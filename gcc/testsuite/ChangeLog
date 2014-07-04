@@ -1,3 +1,11 @@
+2014-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/61382
+	Backport from mainline
+	2014-06-05  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/cpp0x/initlist86.C (main): Initialize i.
+
 2014-07-02  Jakub Jelinek  <jakub@redhat.com>
 	    Fritz Reese  <Reese-Fritz@zai.com>
 
