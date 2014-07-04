@@ -1,5 +1,8 @@
 2014-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/61654
+	* cgraphunit.c (expand_thunk): Call free_dominance_info.
+
 	PR tree-optimization/61684
 	* tree-ssa-ifcombine.c (recognize_single_bit_test): Make sure
 	rhs1 of conversion is a SSA_NAME before using SSA_NAME_DEF_STMT on it.
