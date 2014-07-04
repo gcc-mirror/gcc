@@ -1,3 +1,9 @@
+2014-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61684
+	* tree-ssa-ifcombine.c (recognize_single_bit_test): Make sure
+	rhs1 of conversion is a SSA_NAME before using SSA_NAME_DEF_STMT on it.
+
 2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
 	    Kito Cheng  <kito@0xlab.org>
 	    Monk Chiang  <sh.chiang04@gmail.com>
