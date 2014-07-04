@@ -1,0 +1,51 @@
+# General rules that all nds32/ targets must have.
+# Copyright (C) 2012-2014 Free Software Foundation, Inc.
+# Contributed by Andes Technology Corporation.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+nds32-cost.o: $(srcdir)/config/nds32/nds32-cost.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+nds32-intrinsic.o: $(srcdir)/config/nds32/nds32-intrinsic.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+nds32-isr.o: $(srcdir)/config/nds32/nds32-isr.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+nds32-md-auxiliary.o: $(srcdir)/config/nds32/nds32-md-auxiliary.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+nds32-pipelines-auxiliary.o: $(srcdir)/config/nds32/nds32-pipelines-auxiliary.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+nds32-predicates.o: $(srcdir)/config/nds32/nds32-predicates.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+nds32-memory-manipulation.o: $(srcdir)/config/nds32/nds32-memory-manipulation.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+nds32-fp-as-gp.o: $(srcdir)/config/nds32/nds32-fp-as-gp.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
