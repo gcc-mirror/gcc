@@ -138,4 +138,9 @@ extern void nds32_construct_isr_vectors_information (tree, const char *);
 extern void nds32_asm_file_start_for_isr (void);
 extern void nds32_asm_file_end_for_isr (void);
 
+/* Auxiliary functions for cost calculation.  */
+
+extern bool nds32_rtx_costs_impl (rtx, int, int, int, int *, bool);
+extern int nds32_address_cost_impl (rtx, enum machine_mode, addr_space_t, bool);
+
 /* ------------------------------------------------------------------------ */

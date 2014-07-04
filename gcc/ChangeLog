@@ -2,6 +2,16 @@
 	    Kito Cheng  <kito@0xlab.org>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 
+	* config/nds32/nds32.c (nds32_rtx_costs): Move implementation to ...
+	(nds32_address_cost): Move implementation to ...
+	* config/nds32/nds32-cost.c: ... here.
+	* config/nds32/nds32-protos.h (nds32_rtx_costs_impl): Declare.
+	(nds32_address_cost_impl): Declare.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
 	* config/nds32/nds32.c
 	(nds32_consecutive_registers_load_store_p): Move to ...
 	(nds32_valid_multiple_load_store): Move to ...
