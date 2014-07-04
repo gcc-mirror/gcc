@@ -1018,7 +1018,7 @@
 ;; For quads.
 
 (define_insn "vec_pack_trunc_<mode>"
- [(set (match_operand:<VNARROWQ2> 0 "register_operand" "+&w")
+ [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=&w")
        (vec_concat:<VNARROWQ2>
 	 (truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w"))
 	 (truncate:<VNARROWQ> (match_operand:VQN 2 "register_operand" "w"))))]
