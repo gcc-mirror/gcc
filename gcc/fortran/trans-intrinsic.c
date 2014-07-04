@@ -1179,7 +1179,8 @@ get_caf_token_offset (tree *token, tree *offset, tree caf_decl, tree se_expr,
 
   /* Offset between the coarray base address and the address wanted.  */
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (caf_decl))
-      && GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_ALLOCATABLE)
+      && (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_ALLOCATABLE
+	  || GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl)) == GFC_ARRAY_POINTER))
     *offset = build_int_cst (gfc_array_index_type, 0);
   else if (DECL_LANG_SPECIFIC (caf_decl)
 	   && GFC_DECL_CAF_OFFSET (caf_decl) != NULL_TREE)
@@ -1285,7 +1286,10 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind)
 	  ar->type = AR_FULL;
 	}
       gfc_conv_expr_descriptor (&argse, array_expr);
-
+      /* Using gfc_conv_expr_descriptor, we only get the descriptor, but that
+         has the wrong type if component references are done.  */
+      gfc_add_modify (&argse.pre, gfc_conv_descriptor_dtype (argse.expr),
+                      gfc_get_dtype_rank_type (array_expr->rank, type));
       if (has_vector)
 	{
 	  vec = conv_caf_vector_subscript (&argse.pre, argse.expr, ar);
@@ -1387,7 +1391,12 @@ conv_caf_send (gfc_code *code) {
 	}
       lhs_se.want_pointer = 1;
       gfc_conv_expr_descriptor (&lhs_se, lhs_expr);
-      lhs_type = gfc_get_element_type (TREE_TYPE (TREE_TYPE (lhs_se.expr)));
+      /* Using gfc_conv_expr_descriptor, we only get the descriptor, but that
+         has the wrong type if component references are done.  */
+      lhs_type = gfc_typenode_for_spec (&lhs_expr->ts);
+      tmp = build_fold_indirect_ref_loc (input_location, lhs_se.expr);
+      gfc_add_modify (&lhs_se.pre, gfc_conv_descriptor_dtype (tmp),
+                      gfc_get_dtype_rank_type (lhs_expr->rank, lhs_type));
       if (has_vector)
 	{
 	  vec = conv_caf_vector_subscript (&block, lhs_se.expr, ar);
@@ -1440,6 +1449,7 @@ conv_caf_send (gfc_code *code) {
          vector bounds separately.  */
       gfc_array_ref *ar, ar2;
       bool has_vector = false;
+      tree tmp2;
 
       if (gfc_is_coindexed (rhs_expr) && gfc_has_vector_subscript (rhs_expr))
 	{
@@ -1452,6 +1462,12 @@ conv_caf_send (gfc_code *code) {
 	}
       rhs_se.want_pointer = 1;
       gfc_conv_expr_descriptor (&rhs_se, rhs_expr);
+      /* Using gfc_conv_expr_descriptor, we only get the descriptor, but that
+         has the wrong type if component references are done.  */
+      tmp = build_fold_indirect_ref_loc (input_location, rhs_se.expr);
+      tmp2 = gfc_typenode_for_spec (&rhs_expr->ts);
+      gfc_add_modify (&rhs_se.pre, gfc_conv_descriptor_dtype (tmp),
+                      gfc_get_dtype_rank_type (rhs_expr->rank, tmp2));
       if (has_vector)
 	{
 	  rhs_vec = conv_caf_vector_subscript (&block, rhs_se.expr, ar);
