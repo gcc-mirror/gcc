@@ -25,7 +25,7 @@ if ![info exists ::env(GUALITY_GDB_NAME)] {
     setenv GUALITY_GDB_NAME "$guality_gdb_name"
 }
 
-gfortran-dg-runtest [lsort [glob $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] ""
+gfortran-dg-runtest [lsort [glob $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] "" ""
 
 if [info exists guality_gdb_name] {
     unsetenv GUALITY_GDB_NAME

@@ -47,8 +47,8 @@ if ![check_vect_support_and_set_flags] {
 dg-init
 
 # Main loop.
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[fF\]{,90,95,03,08} ]] $DEFAULT_VECTCFLAGS
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[fF\]{,90,95,03,08} ]] $DEFAULT_VECTCFLAGS
+gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[fF\]{,90,95,03,08} ]] "" $DEFAULT_VECTCFLAGS
+gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[fF\]{,90,95,03,08} ]] "" $DEFAULT_VECTCFLAGS
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS

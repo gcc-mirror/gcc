@@ -51,7 +51,7 @@ if { [check_effective_target_fpic] } then {
 # Combine stackalign options with the usual torture optimization flags.
 set-torture-options [concat $DG_TORTURE_OPTIONS $LTO_TORTURE_OPTIONS] $stackalign_options
 
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "$default_flags"
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" "$default_flags"
 
 torture-finish
 dg-finish

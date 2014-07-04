@@ -26,12 +26,12 @@ if { ![check_effective_target_cilkplus] } {
 dg-init
 if [cilkplus_init] {
     # Run the tests that are shared with C.
-    g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] ""
+    g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] "" ""
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] "-O3" " "
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " " " "
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] "-g -O2" " "
     # Run the C++ only tests.
-    g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] ""
+    g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" ""
 
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O1 -fcilkplus" " "

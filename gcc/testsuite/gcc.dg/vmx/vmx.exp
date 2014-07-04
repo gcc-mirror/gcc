@@ -49,7 +49,7 @@ dg-init
 
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
-	$DEFAULT_VMXCFLAGS
+	"" $DEFAULT_VMXCFLAGS
 
 # All done.
 dg-finish

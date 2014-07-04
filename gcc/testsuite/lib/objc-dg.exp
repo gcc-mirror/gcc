@@ -30,7 +30,7 @@ proc objc-dg-prune { system text } {
 
 # Modified dg-runtest that can cycle through a list of optimization options
 # as c-torture does.
-proc objc-dg-runtest { testcases default-extra-flags } {
+proc objc-dg-runtest { testcases flags default-extra-flags } {
     global runtests
 
     # Some callers set torture options themselves; don't override those.
@@ -60,9 +60,9 @@ proc objc-dg-runtest { testcases default-extra-flags } {
 
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
-	foreach flags $option_list {
+	foreach flags_t $option_list {
 	    # combine flags so that dg-skip & xfail will see the extras.
-	    set combined_flags "$flags ${default-extra-flags}"
+	    set combined_flags "$flags $flags_t ${default-extra-flags}"
 	    verbose "Testing $nshort, $combined_flags" 1
 	    dg-test $test $combined_flags ""
 	}

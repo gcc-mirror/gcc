@@ -65,6 +65,6 @@ torture-init
 set-torture-options $MATH_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 dg-init
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] "" ""
 torture-finish
 dg-finish

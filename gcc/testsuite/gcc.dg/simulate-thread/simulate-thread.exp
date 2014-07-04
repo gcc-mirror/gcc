@@ -33,8 +33,8 @@ set-torture-options [list \
 	{ -O3 -g } ]
 
 if [gdb-exists] {
-  gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] ""
-  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/simulate-thread/*.c]] ""
+  gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" ""
+  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/simulate-thread/*.c]] "" ""
 }
 
 torture-finish

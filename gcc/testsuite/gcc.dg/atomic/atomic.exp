@@ -26,7 +26,7 @@ load_lib atomic-dg.exp
 dg-init
 if [atomic_init] {
     # Main loop.
-    gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] ""
+    gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" ""
 }
 
 # All done.
