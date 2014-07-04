@@ -1582,7 +1582,10 @@ alternatives of this form often allows GCC to produce better code
 when only some of the inputs can be affected by the earlyclobber.
 See, for example, the @samp{mulsi3} insn of the ARM@.
 
-@samp{&} does not obviate the need to write @samp{=}.
+Furthermore, if the @dfn{earlyclobber} operand is also read/write operand, then
+that operand is modified only after it's used.
+
+@samp{&} does not obviate the need to write @samp{=} or @samp{+}.
 
 @cindex @samp{%} in constraint
 @item %
