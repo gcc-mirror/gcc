@@ -4813,7 +4813,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  caf_type = TREE_TYPE (caf_decl);
 
 	  if (GFC_DESCRIPTOR_TYPE_P (caf_type)
-	      && GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_ALLOCATABLE)
+	      && (GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_ALLOCATABLE
+		  || GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_POINTER))
 	    tmp = gfc_conv_descriptor_token (caf_decl);
 	  else if (DECL_LANG_SPECIFIC (caf_decl)
 		   && GFC_DECL_TOKEN (caf_decl) != NULL_TREE)

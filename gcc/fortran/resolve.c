@@ -7912,10 +7912,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->as = gfc_get_array_spec ();
       sym->as->rank = target->rank;
       sym->as->type = AS_DEFERRED;
-
-      /* Target must not be coindexed, thus the associate-variable
-	 has no corank.  */
-      sym->as->corank = 0;
+      sym->as->corank = gfc_get_corank (target);
     }
 
   /* Mark this as an associate variable.  */

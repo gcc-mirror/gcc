@@ -4670,7 +4670,8 @@ generate_coarray_sym_init (gfc_symbol *sym)
   tree tmp, size, decl, token;
 
   if (sym->attr.dummy || sym->attr.allocatable || !sym->attr.codimension
-      || sym->attr.use_assoc || !sym->attr.referenced)
+      || sym->attr.use_assoc || !sym->attr.referenced
+      || sym->attr.select_type_temporary)
     return;
 
   decl = sym->backend_decl;

@@ -1,3 +1,18 @@
+2014-07-04  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_assoc_var): Fix corank setting.
+	* trans-array.c (gfc_conv_descriptor_token): Change assert.
+	for select-type temporaries.
+	* trans-decl.c (generate_coarray_sym_init): Skip for
+	attr.select_type_temporary. 
+	* trans-expr.c (gfc_conv_procedure_call): Fix for
+	select-type temporaries.
+	* trans-intrinsic.c (get_caf_token_offset): Ditto.
+	(gfc_conv_intrinsic_caf_get, gfc_conv_intrinsic_caf_send): Set
+	the correct dtype.
+	* trans-types.h (gfc_get_dtype_rank_type): New.
+	* trans-types.c (gfc_get_dtype_rank_type): Ditto.
+
 2014-07-03  Tobias Burnus  <burnus@net-b.de>
 	
 	* scanner.c (skip_free_comments): Fix indentation.
