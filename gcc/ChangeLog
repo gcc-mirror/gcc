@@ -1,3 +1,20 @@
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.gcc (nds32*): Add new modules to extra_objs.
+	(nds32le-*-*): Use t-nds32 makefile fragment for new modules.
+	(nds32be-*-*): Likewise.
+	* config/nds32/nds32-cost.c: New file.
+	* config/nds32/nds32-fp-as-gp.c: New file.
+	* config/nds32/nds32-intrinsic.c: New file.
+	* config/nds32/nds32-isr.c: New file.
+	* config/nds32/nds32-md-auxiliary.c: New file.
+	* config/nds32/nds32-memory-manipulation.c: New file.
+	* config/nds32/nds32-pipelines-auxiliary.c: New file.
+	* config/nds32/nds32-predicates.c: New file.
+	* config/nds32/t-nds32: New file.
+
 2014-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61682
