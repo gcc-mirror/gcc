@@ -1,3 +1,8 @@
+2014-07-04  Tom de Vries  <tom@codesourcery.com>
+
+	* config/aarch64/aarch64-simd.md
+	(define_insn "vec_unpack_trunc_<mode>"): Fix constraint.
+
 2014-07-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/61714
