@@ -125,4 +125,11 @@ extern const char *nds32_output_stack_pop (void);
 
 extern int nds32_target_alignment (rtx);
 
+/* Auxiliary functions for ISR implementation.  */
+
+extern void nds32_check_isr_attrs_conflict (tree, tree);
+extern void nds32_construct_isr_vectors_information (tree, const char *);
+extern void nds32_asm_file_start_for_isr (void);
+extern void nds32_asm_file_end_for_isr (void);
+
 /* ------------------------------------------------------------------------ */
