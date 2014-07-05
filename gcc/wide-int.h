@@ -284,7 +284,7 @@ along with GCC; see the file COPYING3.  If not see
 
 template <typename T> struct generic_wide_int;
 template <int N> struct fixed_wide_int_storage;
-struct wide_int_storage;
+class wide_int_storage;
 
 /* An N-bit integer.  Until we can use typedef templates, use this instead.  */
 #define FIXED_WIDE_INT(N) \

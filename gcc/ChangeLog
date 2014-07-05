@@ -1,3 +1,8 @@
+2014-07-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* wide-int.h (wide_int_storage): Change declaration from struct 
+	to class.
+
 2014-07-05  Jan Hubicka   <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_create_indirect_edge): Update call of
