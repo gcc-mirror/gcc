@@ -1,3 +1,8 @@
+2014-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Don't accept isl 0.10.
+	* configure: Regenerate.
+
 2014-06-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Fix include path for in-tree cloog.
