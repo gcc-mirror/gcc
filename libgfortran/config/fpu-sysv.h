@@ -25,6 +25,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* FPU-related code for SysV platforms with fpsetmask().  */
 
+#include <assert.h>
+
 /* BSD and Solaris systems have slightly different types and functions
    naming.  We deal with these here, to simplify the code below.  */
 

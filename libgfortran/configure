@@ -26100,6 +26100,22 @@ _ACEOF
 fi
 
 
+# Check whether we have fpsetsticky or fpresetsticky
+ac_fn_c_check_func "$LINENO" "fpsetsticky" "ac_cv_func_fpsetsticky"
+if test "x$ac_cv_func_fpsetsticky" = x""yes; then :
+  have_fpsetsticky=yes
+$as_echo "#define HAVE_FPSETSTICKY 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "fpresetsticky" "ac_cv_func_fpresetsticky"
+if test "x$ac_cv_func_fpresetsticky" = x""yes; then :
+  have_fpresetsticky=yes
+$as_echo "#define HAVE_FPRESETSTICKY 1" >>confdefs.h
+
+fi
+
+
 # Check for AIX fp_trap and fp_enable
 ac_fn_c_check_func "$LINENO" "fp_trap" "ac_cv_func_fp_trap"
 if test "x$ac_cv_func_fp_trap" = x""yes; then :
