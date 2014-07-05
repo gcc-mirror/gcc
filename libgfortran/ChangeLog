@@ -1,3 +1,8 @@
+2014-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure, config.h.in: Regenerate.
+	* config/fpu-sysv.h: Include <assert.h>.
+
 2014-07-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* config/fpu-glibc.h: Fix comment about FE_DENORMAL.
