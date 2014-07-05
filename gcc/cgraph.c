@@ -967,7 +967,7 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
       get_polymorphic_call_info (caller->decl,
 				 target,
 				 &otr_type, &otr_token,
-				 &context);
+				 &context, call_stmt);
 
       /* Only record types can have virtual calls.  */
       gcc_assert (TREE_CODE (otr_type) == RECORD_TYPE);

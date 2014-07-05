@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-ipa-devirt-details"  } */
+/* { dg-options "-O3 -fdump-tree-ccp1"  } */
 struct A
  {
    int a;
@@ -23,7 +23,6 @@ int test(void)
   return d->foo()+b->foo();
 }
 /* The call to b->foo() is perfectly devirtualizable because C can not be in construction
-   when &c was used, but we can not analyze that so far.  Test that we at least speculate
-   that type is in the construction.  */
-/* { dg-final { scan-ipa-dump "speculatively devirtualizing" "devirt"  } } */
-/* { dg-final { cleanup-ipa-dump "devirt" } } */
+   when &c was used.  */
+/* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "ccp1"  } } */
+/* { dg-final { cleanup-tree-dump "ccp1" } } */

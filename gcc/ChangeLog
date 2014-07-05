@@ -1,3 +1,24 @@
+2014-07-05  Jan Hubicka   <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_create_indirect_edge): Update call of
+	get_polymorphic_call_info.
+	* ipa-utils.h (get_polymorphic_call_info): Add parameter CALL.
+	(possible_polymorphic_call_targets): Add parameter call.
+	(decl_maybe_in_construction_p): New predicate.
+	(get_polymorphic_call_info): Add parameter call;
+	use decl_maybe_in_construction_p.
+	* gimple-fold.c (fold_gimple_assign): Update use of
+	possible_polymorphic_call_targets.
+	(gimple_fold_call): Likewise.
+	* ipa-prop.c: Inlcude calls.h
+	(ipa_binfo_from_known_type_jfunc): Check that known type is record.
+	(param_type_may_change_p): New predicate.
+	(detect_type_change_from_memory_writes): Break out from ...
+	(detect_type_change): ... this one; use 
+	param_type_may_change_p.
+	(detect_type_change_ssa): Use param_type_may_change_p.
+	(compute_known_type_jump_func): Use decl_maybe_in_construction_p.
+
 2014-07-05  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/49423
