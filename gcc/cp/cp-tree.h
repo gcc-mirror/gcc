@@ -146,6 +146,7 @@ c-common.h, not after.
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
       USING_DECL_TYPENAME_P (in USING_DECL)
       DECL_VLA_CAPTURE_P (in FIELD_DECL)
+      DECL_ARRAY_PARAMETER_P (in PARM_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
@@ -3680,6 +3681,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    field for an array of runtime bound.  */
 #define DECL_VLA_CAPTURE_P(NODE) \
   DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE))
+
+/* Nonzero for PARM_DECL node means that this is an array function
+   parameter, i.e, a[] rather than *a.  */
+#define DECL_ARRAY_PARAMETER_P(NODE) \
+  DECL_LANG_FLAG_1 (PARM_DECL_CHECK (NODE))
 
 /* Nonzero for FIELD_DECL node means that this field is a base class
    of the parent object, as opposed to a member field.  */

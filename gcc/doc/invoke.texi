@@ -266,7 +266,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
--Wsizeof-pointer-memaccess @gol
+-Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
@@ -4675,6 +4675,13 @@ about @code{memset (ptr, 0, sizeof (ptr));} if @code{ptr} is not an array,
 but a pointer, and suggests a possible fix, or about
 @code{memcpy (&foo, ptr, sizeof (&foo));}.  This warning is enabled by
 @option{-Wall}.
+
+@item -Wsizeof-array-argument
+@opindex Wsizeof-array-argument
+@opindex Wno-sizeof-array-argument
+Warn when the @code{sizeof} operator is applied to a parameter that is
+declared as an array in a function definition.  This warning is enabled by
+default for C and C++ programs.
 
 @item -Waddress
 @opindex Waddress

@@ -8816,6 +8816,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool typedef_p = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
   bool late_return_type_p = false;
+  bool array_parameter_p = false;
   source_location saved_loc = input_location;
   const char *errmsg;
 
@@ -10454,6 +10455,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  /* Transfer const-ness of array into that of type pointed to.  */
 	  type = build_pointer_type (TREE_TYPE (type));
 	  type_quals = TYPE_UNQUALIFIED;
+	  array_parameter_p = true;
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	type = build_pointer_type (type);
@@ -10474,6 +10476,7 @@ grokdeclarator (const cp_declarator *declarator,
     if (decl_context == PARM)
       {
 	decl = cp_build_parm_decl (unqualified_id, type);
+	DECL_ARRAY_PARAMETER_P (decl) = array_parameter_p;
 
 	bad_specifiers (decl, BSP_PARM, virtualp,
 			memfn_quals != TYPE_UNQUALIFIED,

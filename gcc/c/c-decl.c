@@ -6103,6 +6103,7 @@ grokdeclarator (const struct c_declarator *declarator,
     if (decl_context == PARM)
       {
 	tree promoted_type;
+	bool array_parameter_p = false;
 
 	/* A parameter declared as an array of T is really a pointer to T.
 	   One declared as a function is really a pointer to a function.  */
@@ -6124,6 +6125,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			  "attributes in parameter array declarator ignored");
 
 	    size_varies = false;
+	    array_parameter_p = true;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
@@ -6148,6 +6150,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			   PARM_DECL, declarator->u.id, type);
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
+	C_ARRAY_PARAMETER (decl) = array_parameter_p;
 
 	/* Compute the type actually passed in the parmlist,
 	   for the case where there is no prototype.
