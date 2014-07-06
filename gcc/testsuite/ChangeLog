@@ -67,7 +67,7 @@
 	    Chen Gang <gang.chen.5i5j@gmail.com>
 
 	* gcc.c-torture/compile/section.c: New testcase.
- 
+
 2014-07-02  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/29349

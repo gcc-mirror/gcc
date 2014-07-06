@@ -5,10 +5,10 @@
 
 2014-07-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* wide-int.h (wide_int_storage): Change declaration from struct 
+	* wide-int.h (wide_int_storage): Change declaration from struct
 	to class.
 
-2014-07-05  Jan Hubicka   <hubicka@ucw.cz>
+2014-07-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_create_indirect_edge): Update call of
 	get_polymorphic_call_info.
@@ -24,8 +24,7 @@
 	(ipa_binfo_from_known_type_jfunc): Check that known type is record.
 	(param_type_may_change_p): New predicate.
 	(detect_type_change_from_memory_writes): Break out from ...
-	(detect_type_change): ... this one; use 
-	param_type_may_change_p.
+	(detect_type_change): ... this one; use param_type_may_change_p.
 	(detect_type_change_ssa): Use param_type_may_change_p.
 	(compute_known_type_jump_func): Use decl_maybe_in_construction_p.
 
@@ -72,7 +71,7 @@
 2014-07-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/61714
-	* aarch64.h (OPTION_DEFAULT_SPECS): Define.
+	* config/aarch64/aarch64.h (OPTION_DEFAULT_SPECS): Define.
 
 2014-07-04  Jakub Jelinek  <jakub@redhat.com>
 
@@ -204,9 +203,8 @@
 2014-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61682
-	* wide-int.cc (wi::mul_internal): Handle high correctly
-	for umul_ppmm using cases and when one of the operands is
-	equal to 1.
+	* wide-int.cc (wi::mul_internal): Handle high correctly for umul_ppmm
+	using cases and when one of the operands is equal to 1.
 
 2014-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -223,7 +221,7 @@
 	* vfp.md (divsf_vfp, divdf_vfp): Add earlyclobber when code can run
 	on VFP9.
 	(sqrtsf_vfp, sqrtdf_vfp): Likewise.
-	
+
 2014-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcov-io.c (gcov_read_words): Don't call memmove if excess is 0.
@@ -276,9 +274,11 @@
 	Call clear_aux_for_edges. Fix comments.
 	(pre_edge_lcm): New wrapper function to call pre_edge_lcm_avs.
 	(pre_edge_rev_lcm): Idem.
-	* config/epiphany/epiphany.c (emit_set_fp_mode): Add prev_mode parameter.
+	* config/epiphany/epiphany.c (emit_set_fp_mode): Add prev_mode
+	parameter.
 	* config/epiphany/epiphany-protos.h (emit_set_fp_mode): Idem.
-	* config/epiphany/resolve-sw-modes.c (pass_resolve_sw_modes::execute): Idem.
+	* config/epiphany/resolve-sw-modes.c (pass_resolve_sw_modes::execute):
+	Idem.
 	* config/i386/i386.c (x96_emit_mode_set): Idem.
 	* config/sh/sh.c (sh_emit_mode_set): Likewise. Handle PR toggle.
 	* config/sh/sh.md (toggle_pr): 	Defined if TARGET_FPU_SINGLE.
@@ -309,18 +309,16 @@
 
 2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
 
-	* tree.c (decls_same_for_odr, decls_same_for_odr,
-	types_same_for_odr): Remove.
+	* tree.c (decls_same_for_odr, decls_same_for_odr, types_same_for_odr):
+	Remove.
 	(type_in_anonymous_namespace_p): Constify argument.
-	* tree.h (types_same_for_odr, type_in_anonymous_namespace_p):
-	Constify.
+	* tree.h (types_same_for_odr, type_in_anonymous_namespace_p): Constify.
 	* ipa-devirt.c (odr_type_d): Add ODR_VIOLATED field.
 	(main_odr_variant): New function.
 	(hash_type_name): Make static; update assert; do not ICE on
 	non-records.
-	(types_same_for_odr): Bring here from tree.c; simplify
-	and remove old structural comparing code that doesn't work
-	for templates.
+	(types_same_for_odr): Bring here from tree.c; simplify and remove
+	old structural comparing code that doesn't work for templates.
 	(odr_hasher::equal): Update assert.
 	(add_type_duplicate): Return true when bases should be computed;
 	replace incomplete loader by complete; do not output duplicated
@@ -328,18 +326,17 @@
 	(get_odr_type): Be ready to replace incomplete type by complete
 	one; work on ODR variants instead of main variants; reorder item
 	in array so bases have still smaller indexes.
-	(dump_type_inheritance_graph): Be ready for holdes in odr_types
-	array.
+	(dump_type_inheritance_graph): Be ready for holdes in odr_types array.
 	(possible_polymorphic_call_targets): Do not ICE when BINFO is NULL.
 
 2014-07-01  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (remove_addr_table_entry): Remove unnecessary hash table
-        lookup.
+	lookup.
 	(resolve_addr_in_expr): When replacing the rtx in a location list
-        entry, get a new address table entry.
+	entry, get a new address table entry.
 	(dwarf2out_finish): Call index_location_lists even if there are no
-        addr_index_table entries yet.
+	addr_index_table entries yet.
 
 2014-07-01  Trevor Saunders  <tsaunders@mozilla.com>
 
@@ -397,14 +394,14 @@
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	Revert:
-	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if type
-	is complete.
-	(write_ts_type_common_tree_pointers): Do not stream fields not set for incomplete
-	types; do not stream duplicated fields for variants; sanity check that variant
-	and type match.
-	(write_ts_type_non_common_tree_pointers): Likewise.
-	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in TYPE_SIZE whether
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if
 	type is complete.
+	(write_ts_type_common_tree_pointers): Do not stream fields not set
+	for incomplete types; do not stream duplicated fields for variants;
+	sanity check that variant and type match.
+	(write_ts_type_non_common_tree_pointers): Likewise.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in
+	TYPE_SIZE whether type is complete.
 	(lto_input_ts_type_common_tree_pointers): Do same changes as in
 	write_ts_type_common_tree_pointers
 	(lto_input_ts_type_non_common_tree_pointers): Likewise.
