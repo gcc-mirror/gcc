@@ -1,3 +1,7 @@
+2014-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gfortran.texi (Fortran 2003 status): Fix grammar.
+
 2014-07-04  Tobias Burnus  <burnus@net-b.de>
 
 	* resolve.c (resolve_assoc_var): Fix corank setting.
