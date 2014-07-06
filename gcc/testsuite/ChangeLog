@@ -1,3 +1,17 @@
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: Use
+	-Wno-sizeof-array-argument.
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Likewise.
+	* g++.dg/warn/Wsizeof-pointer-memaccess-1.C: Likewise.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: Likewise.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Likewise.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Likewise.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Likewise.
+	* c-c++-common/sizeof-array-argument.c: New test.
+	* gcc.dg/vla-5.c: Add dg-warnings.
+
 2014-07-05  Jan Hubicka   <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-26.C: Update testcase.

@@ -534,6 +534,10 @@ Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious length parameters to certain string functions if the argument uses sizeof
 
+Wsizeof-array-argument
+C ObjC C++ ObjC++ Var(warn_sizeof_array_argument) Warning Init(1)
+Warn when sizeof is applied on a parameter declared as an array
+
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes

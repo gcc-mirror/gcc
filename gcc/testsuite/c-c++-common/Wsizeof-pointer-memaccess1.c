@@ -1,6 +1,6 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-Wall -Wno-sizeof-array-argument" } */
 
 typedef __SIZE_TYPE__ size_t;
 #ifdef __cplusplus

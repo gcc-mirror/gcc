@@ -1,3 +1,11 @@
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* c-decl.c (grokdeclarator): Set C_ARRAY_PARAMETER.
+	* c-tree.h (C_ARRAY_PARAMETER): Define.
+	* c-typeck.c (c_expr_sizeof_expr): Warn when using sizeof on an array
+	function parameter.
+
 2014-07-02  Jan Hubicka  <hubicka@ucw.cz>
 	    Chen Gang <gang.chen.5i5j@gmail.com>
 

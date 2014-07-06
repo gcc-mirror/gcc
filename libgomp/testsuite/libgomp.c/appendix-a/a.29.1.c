@@ -11,8 +11,8 @@ f (int n, int B[n][n], int C[])
   E[1][1] = 4;
 #pragma omp parallel firstprivate(B, C, D, E)
   {
-    assert (sizeof (B) == sizeof (int (*)[n]));
-    assert (sizeof (C) == sizeof (int *));
+    assert (sizeof (B) == sizeof (int (*)[n])); /* { dg-warning "on array function parameter" } */
+    assert (sizeof (C) == sizeof (int *)); /* { dg-warning "on array function parameter" } */
     assert (sizeof (D) == 4 * sizeof (int));
     assert (sizeof (E) == n * n * sizeof (int));
     /* Private B and C have values of original B and C. */

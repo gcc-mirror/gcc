@@ -1614,6 +1614,15 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
       && DECL_TEMPLATE_INSTANTIATION (e))
     instantiate_decl (e, /*defer_ok*/true, /*expl_inst_mem*/false);
 
+  if (TREE_CODE (e) == PARM_DECL
+      && DECL_ARRAY_PARAMETER_P (e)
+      && (complain & tf_warning))
+    {
+      if (warning (OPT_Wsizeof_array_argument, "%<sizeof%> on array function "
+		   "parameter %qE will return size of %qT", e, TREE_TYPE (e)))
+	inform (DECL_SOURCE_LOCATION (e), "declared here");
+    }
+
   e = mark_type_use (e);
 
   if (TREE_CODE (e) == COMPONENT_REF
