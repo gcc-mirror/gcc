@@ -1,5 +1,10 @@
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 
+	* g++.dg/ipa/imm-devirt-1.C: Fix regexp in dg-final.
+	* g++.dg/ipa/imm-devirt-2.C: Likewise.
+
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
 	PR c/6940
 	* c-c++-common/Wsizeof-pointer-memaccess1.c: Use
 	-Wno-sizeof-array-argument.
