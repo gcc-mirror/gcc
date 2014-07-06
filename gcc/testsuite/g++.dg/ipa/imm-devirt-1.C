@@ -62,6 +62,6 @@ int main (int argc, char *argv[])
    a direct call.  */
 /* { dg-final { scan-tree-dump "Inlining int middleman_1" "einline"  } } */
 /* { dg-final { scan-tree-dump "Inlining int middleman_2" "einline"  } } */
-/* { dg-final { scan-tree-dump "B::foo (" "einline"  } } */
+/* { dg-final { scan-tree-dump "B::foo \\(" "einline"  } } */
 /* { dg-final { scan-tree-dump-times "OBJ_TYPE_REF" 2 "einline"  } } */
 /* { dg-final { cleanup-tree-dump "einline" } } */
