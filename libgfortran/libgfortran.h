@@ -235,11 +235,6 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
 #undef signbit
 #define signbit(x) __builtin_signbit(x)
 
-/* TODO: find the C99 version of these an move into above ifdef.  */
-#define REALPART(z) (__real__(z))
-#define IMAGPART(z) (__imag__(z))
-#define COMPLEX_ASSIGN(z_, r_, i_) {__real__(z_) = (r_); __imag__(z_) = (i_);}
-
 #include "kinds.h"
 
 /* Define the type used for the current record number for large file I/O.
@@ -693,7 +688,7 @@ iexport_proto(backtrace);
 #define GFC_OTOA_BUF_SIZE (GFC_LARGEST_BUF * 3 + 1)
 #define GFC_BTOA_BUF_SIZE (GFC_LARGEST_BUF * 8 + 1)
 
-extern void sys_abort (void) __attribute__ ((noreturn));
+extern _Noreturn void sys_abort (void);
 internal_proto(sys_abort);
 
 extern ssize_t estr_write (const char *);
@@ -709,26 +704,25 @@ internal_proto(st_printf);
 extern const char *gfc_xtoa (GFC_UINTEGER_LARGEST, char *, size_t);
 internal_proto(gfc_xtoa);
 
-extern void os_error (const char *) __attribute__ ((noreturn));
+extern _Noreturn void os_error (const char *);
 iexport_proto(os_error);
 
 extern void show_locus (st_parameter_common *);
 internal_proto(show_locus);
 
-extern void runtime_error (const char *, ...)
-     __attribute__ ((noreturn, format (gfc_printf, 1, 2)));
+extern _Noreturn void runtime_error (const char *, ...)
+     __attribute__ ((format (gfc_printf, 1, 2)));
 iexport_proto(runtime_error);
 
-extern void runtime_error_at (const char *, const char *, ...)
-     __attribute__ ((noreturn, format (gfc_printf, 2, 3)));
+extern _Noreturn void runtime_error_at (const char *, const char *, ...)
+     __attribute__ ((format (gfc_printf, 2, 3)));
 iexport_proto(runtime_error_at);
 
 extern void runtime_warning_at (const char *, const char *, ...)
      __attribute__ ((format (gfc_printf, 2, 3)));
 iexport_proto(runtime_warning_at);
 
-extern void internal_error (st_parameter_common *, const char *)
-  __attribute__ ((noreturn));
+extern _Noreturn void internal_error (st_parameter_common *, const char *);
 internal_proto(internal_error);
 
 extern const char *translate_error (int);
@@ -875,8 +869,7 @@ internal_proto(filename_from_unit);
 
 /* stop.c */
 
-extern void stop_string (const char *, GFC_INTEGER_4)
-  __attribute__ ((noreturn));
+extern _Noreturn void stop_string (const char *, GFC_INTEGER_4);
 export_proto(stop_string);
 
 /* reshape_packed.c */
