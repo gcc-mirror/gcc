@@ -1,3 +1,7 @@
+2014-07-07  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.target/powerpc/spe-evmerge.c: New file.
+
 2014-07-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/override1.C: Tweak expected error messages.

@@ -438,7 +438,12 @@
   [(set_attr "type" "vecload")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evmergehi"
+;; Integer vector permutation instructions.  The pairs of digits in the
+;; names of these instructions indicate the indices, in the memory vector
+;; element ordering, of the vector elements permuted to the output vector
+;; from the first and the second input vector respectively.
+
+(define_insn "vec_perm00_v2si"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
 	(vec_select:V2SI
 	  (vec_concat:V4SI
@@ -446,11 +451,16 @@
 	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
 	  (parallel [(const_int 0) (const_int 2)])))]
   "TARGET_SPE"
-  "evmergehi %0,%1,%2"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergehi %0,%1,%2";
+  else
+    return "evmergelo %0,%2,%1";
+}
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evmergehilo"
+(define_insn "vec_perm01_v2si"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
 	(vec_select:V2SI
 	  (vec_concat:V4SI
@@ -458,11 +468,16 @@
 	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
 	  (parallel [(const_int 0) (const_int 3)])))]
   "TARGET_SPE"
-  "evmergehilo %0,%1,%2"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergehilo %0,%1,%2";
+  else
+    return "evmergehilo %0,%2,%1";
+}
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evmergelo"
+(define_insn "vec_perm11_v2si"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
 	(vec_select:V2SI
 	  (vec_concat:V4SI
@@ -470,11 +485,16 @@
 	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
 	  (parallel [(const_int 1) (const_int 3)])))]
   "TARGET_SPE"
-  "evmergelo %0,%1,%2"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergelo %0,%1,%2";
+  else
+    return "evmergehi %0,%2,%1";
+}
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evmergelohi"
+(define_insn "vec_perm10_v2si"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
 	(vec_select:V2SI
 	  (vec_concat:V4SI
@@ -482,7 +502,12 @@
 	    (match_operand:V2SI 2 "gpc_reg_operand" "r"))
 	  (parallel [(const_int 1) (const_int 2)])))]
   "TARGET_SPE"
-  "evmergelohi %0,%1,%2"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergelohi %0,%1,%2";
+  else
+    return "evmergelohi %0,%2,%1";
+}
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
@@ -498,6 +523,60 @@
   else
     FAIL;
 })
+
+(define_expand "spe_evmergehi"
+  [(match_operand:V2SI 0 "register_operand" "")
+   (match_operand:V2SI 1 "register_operand" "")
+   (match_operand:V2SI 2 "register_operand" "")]
+  "TARGET_SPE"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm00_v2si (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_vec_perm11_v2si (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
+(define_expand "spe_evmergehilo"
+  [(match_operand:V2SI 0 "register_operand" "")
+   (match_operand:V2SI 1 "register_operand" "")
+   (match_operand:V2SI 2 "register_operand" "")]
+  "TARGET_SPE"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm01_v2si (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_vec_perm01_v2si (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
+(define_expand "spe_evmergelo"
+  [(match_operand:V2SI 0 "register_operand" "")
+   (match_operand:V2SI 1 "register_operand" "")
+   (match_operand:V2SI 2 "register_operand" "")]
+  "TARGET_SPE"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm11_v2si (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_vec_perm00_v2si (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
+(define_expand "spe_evmergelohi"
+  [(match_operand:V2SI 0 "register_operand" "")
+   (match_operand:V2SI 1 "register_operand" "")
+   (match_operand:V2SI 2 "register_operand" "")]
+  "TARGET_SPE"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_vec_perm10_v2si (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_vec_perm10_v2si (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
+;; End of integer vector permutation instructions.
 
 (define_insn "spe_evnand"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
@@ -2220,15 +2299,31 @@
         (subreg:SPE64 (match_operand:DITI 1 "input_operand" "r,m") 0))]
   "(TARGET_E500_DOUBLE && <SPE64:MODE>mode == DFmode)
    || (TARGET_SPE && <SPE64:MODE>mode != DFmode)"
-  "@
-   evmergelo %0,%1,%L1
-   evldd%X1 %0,%y1")
+{
+  switch (which_alternative)
+    {
+    default:
+      gcc_unreachable ();
+    case 0:
+      if (WORDS_BIG_ENDIAN)
+	return "evmergelo %0,%1,%L1";
+      else
+	return "evmergelo %0,%L1,%1";
+    case 1:
+      return "evldd%X1 %0,%y1";
+    }
+})
 
 (define_insn "*frob_tf_ti"
   [(set (match_operand:TF 0 "gpc_reg_operand" "=r")
         (subreg:TF (match_operand:TI 1 "gpc_reg_operand" "r") 0))]
   "TARGET_E500_DOUBLE"
-  "evmergelo %0,%1,%L1\;evmergelo %L0,%Y1,%Z1"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergelo %0,%1,%L1\;evmergelo %L0,%Y1,%Z1";
+  else
+    return "evmergelo %L0,%Z1,%Y1\;evmergelo %0,%L1,%1";
+}
   [(set_attr "length" "8")])
 
 (define_insn "*frob_<mode>_di_2"
@@ -2236,31 +2331,63 @@
         (match_operand:DI 1 "input_operand" "r,m"))]
   "(TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
-  "@
-   evmergelo %0,%1,%L1
-   evldd%X1 %0,%y1")
+{
+  switch (which_alternative)
+    {
+    default:
+      gcc_unreachable ();
+    case 0:
+      if (WORDS_BIG_ENDIAN)
+	return "evmergelo %0,%1,%L1";
+      else
+	return "evmergelo %0,%L1,%1";
+    case 1:
+      return "evldd%X1 %0,%y1";
+    }
+})
 
 (define_insn "*frob_tf_di_8_2"
   [(set (subreg:DI (match_operand:TF 0 "nonimmediate_operand" "+&r,r") 8)
         (match_operand:DI 1 "input_operand" "r,m"))]
   "TARGET_E500_DOUBLE"
-  "@
-   evmergelo %L0,%1,%L1
-   evldd%X1 %L0,%y1")
+{
+  switch (which_alternative)
+    {
+    default:
+      gcc_unreachable ();
+    case 0:
+      if (WORDS_BIG_ENDIAN)
+	return "evmergelo %L0,%1,%L1";
+      else
+	return "evmergelo %L0,%L1,%1";
+    case 1:
+      return "evldd%X1 %L0,%y1";
+    }
+})
 
 (define_insn "*frob_di_<mode>"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=&r")
         (subreg:DI (match_operand:SPE64TF 1 "input_operand" "r") 0))]
   "(TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
-  "evmergehi %0,%1,%1\;mr %L0,%1"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergehi %0,%1,%1\;mr %L0,%1";
+  else
+    return "evmergehi %L0,%1,%1\;mr %0,%1";
+}
   [(set_attr "length" "8")])
 
 (define_insn "*frob_ti_tf"
   [(set (match_operand:TI 0 "nonimmediate_operand" "=&r")
         (subreg:TI (match_operand:TF 1 "input_operand" "r") 0))]
   "TARGET_E500_DOUBLE"
-  "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1";
+  else
+    return "evmergehi %Z0,%L1,%L1\;mr %Y0,%L1\;evmergehi %L0,%1,%1\;mr %0,%1";
+}
   [(set_attr "length" "16")])
 
 (define_insn "*frob_<DITI:mode>_<SPE64:mode>_2"
@@ -2275,22 +2402,40 @@
     default: 
       gcc_unreachable ();
     case 0:
-      return \"evmergehi %0,%1,%1\;mr %L0,%1\";
+      if (WORDS_BIG_ENDIAN)
+	return \"evmergehi %0,%1,%1\;mr %L0,%1\";
+      else
+	return \"evmergehi %L0,%1,%1\;mr %0,%1\";
     case 1:
       /* If the address is not offsettable we need to load the whole
 	 doubleword into a 64-bit register and then copy the high word
 	 to form the correct output layout.  */
       if (!offsettable_nonstrict_memref_p (operands[1]))
-	return \"evldd%X1 %L0,%y1\;evmergehi %0,%L0,%L0\";
+	{
+	  if (WORDS_BIG_ENDIAN)
+	    return \"evldd%X1 %L0,%y1\;evmergehi %0,%L0,%L0\";
+	  else
+	    return \"evldd%X1 %0,%y1\;evmergehi %L0,%0,%0\";
+	}
       /* If the low-address word is used in the address, we must load
 	it last.  Otherwise, load it first.  Note that we cannot have
 	auto-increment in that case since the address register is
 	known to be dead.  */
       if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
 			     operands[1], 0))
-	return \"lwz %L0,%L1\;lwz %0,%1\";
+	{
+	  if (WORDS_BIG_ENDIAN)
+	    return \"lwz %L0,%L1\;lwz %0,%1\";
+	  else
+	    return \"lwz %0,%1\;lwz %L0,%L1\";
+	}
       else
-        return \"lwz%U1%X1 %0,%1\;lwz %L0,%L1\";
+	{
+	  if (WORDS_BIG_ENDIAN)
+	    return \"lwz%U1%X1 %0,%1\;lwz %L0,%L1\";
+	  else
+	    return \"lwz%U1%X1 %L0,%L1\;lwz %0,%1\";
+	}
     }
 }"
   [(set_attr "length" "8,8")])
@@ -2308,15 +2453,33 @@
     default: 
       gcc_unreachable ();
     case 0:
-      return \"evmergehi %Y0,%1,%1\;mr %Z0,%1\";
+      if (WORDS_BIG_ENDIAN)
+	return \"evmergehi %Y0,%1,%1\;mr %Z0,%1\";
+      else
+	return \"evmergehi %Z0,%1,%1\;mr %Y0,%1\";
     case 1:
       if (!offsettable_nonstrict_memref_p (operands[1]))
-	return \"evldd%X1 %Z0,%y1\;evmergehi %Y0,%Z0,%Z0\";
+	{
+	  if (WORDS_BIG_ENDIAN)
+	    return \"evldd%X1 %Z0,%y1\;evmergehi %Y0,%Z0,%Z0\";
+	  else
+	    return \"evldd%X1 %Y0,%y1\;evmergehi %Z0,%Y0,%Y0\";
+	}
       if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
 			     operands[1], 0))
-	return \"lwz %Z0,%L1\;lwz %Y0,%1\";
+	{
+	  if (WORDS_BIG_ENDIAN)
+	    return \"lwz %Z0,%L1\;lwz %Y0,%1\";
+	  else
+	    return \"lwz %Y0,%1\;lwz %Z0,%L1\";
+	}
       else
-        return \"lwz%U1%X1 %Y0,%1\;lwz %Z0,%L1\";
+	{
+	  if (WORDS_BIG_ENDIAN)
+	    return \"lwz%U1%X1 %Y0,%1\;lwz %Z0,%L1\";
+	  else
+	    return \"lwz%U1%X1 %Z0,%L1\;lwz %Y0,%1\";
+	}
     }
 }"
   [(set_attr "length" "8,8")])
@@ -2325,109 +2488,225 @@
   [(set (subreg:TF (match_operand:TI 0 "gpc_reg_operand" "=&r") 0)
 	(match_operand:TF 1 "input_operand" "r"))]
   "TARGET_E500_DOUBLE"
-  "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergehi %0,%1,%1\;mr %L0,%1\;evmergehi %Y0,%L1,%L1\;mr %Z0,%L1";
+  else
+    return "evmergehi %Z0,%L1,%L1\;mr %Y0,%L1\;evmergehi %L0,%1,%1\;mr %0,%1";
+}
   [(set_attr "length" "16")])
 
-(define_insn "mov_si<mode>_e500_subreg0"
+(define_insn "mov_si<mode>_e500_subreg0_be"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,&r") 0)
 	(match_operand:SI 1 "input_operand" "r,m"))]
-  "(TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
-   || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
+  "WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
   "@
    evmergelo %0,%1,%0
    evmergelohi %0,%0,%0\;lwz%U1%X1 %0,%1\;evmergelohi %0,%0,%0"
   [(set_attr "length" "4,12")])
 
-(define_insn_and_split "*mov_si<mode>_e500_subreg0_elf_low"
+(define_insn "*mov_si<mode>_e500_subreg0_le"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,r") 0)
+	(match_operand:SI 1 "input_operand" "r,m"))]
+  "!WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
+  "@
+   mr %0,%1
+   lwz%U1%X1 %0,%1")
+
+(define_insn_and_split "*mov_si<mode>_e500_subreg0_elf_low_be"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 0)
 	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
 		   (match_operand 2 "" "")))]
-  "((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
-    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
-   && TARGET_ELF && !TARGET_64BIT && can_create_pseudo_p ()"
+  "WORDS_BIG_ENDIAN
+   && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+	|| (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
+       && TARGET_ELF && !TARGET_64BIT && can_create_pseudo_p ())"
   "#"
   "&& 1"
   [(pc)]
 {
   rtx tmp = gen_reg_rtx (SImode);
   emit_insn (gen_elf_low (tmp, operands[1], operands[2]));
-  emit_insn (gen_mov_si<mode>_e500_subreg0 (operands[0], tmp));
+  emit_insn (gen_mov_si<mode>_e500_subreg0_be (operands[0], tmp));
   DONE;
 }
   [(set_attr "length" "8")])
 
+(define_insn "*mov_si<mode>_e500_subreg0_elf_low_le"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 0)
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+		   (match_operand 2 "" "")))]
+  "!WORDS_BIG_ENDIAN
+   && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+	|| (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
+       && TARGET_ELF && !TARGET_64BIT)"
+  "addic %0,%1,%K2")
+
 ;; ??? Could use evstwwe for memory stores in some cases, depending on
 ;; the offset.
-(define_insn "*mov_si<mode>_e500_subreg0_2"
+(define_insn "*mov_si<mode>_e500_subreg0_2_be"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
 	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "+r,&r") 0))]
-  "(TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
-   || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
+  "WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
   "@
    evmergehi %0,%0,%1
    evmergelohi %1,%1,%1\;stw%U0%X0 %1,%0"
   [(set_attr "length" "4,8")])
 
-(define_insn "*mov_si<mode>_e500_subreg4"
-  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,r") 4)
-	(match_operand:SI 1 "input_operand" "r,m"))]
-  "(TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
-   || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
-  "@
-   mr %0,%1
-   lwz%U1%X1 %0,%1")
-
-(define_insn "*mov_si<mode>_e500_subreg4_elf_low"
-  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 4)
-	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
-		   (match_operand 2 "" "")))]
-  "((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
-    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
-   && TARGET_ELF && !TARGET_64BIT"
-  "addic %0,%1,%K2")
-
-(define_insn "*mov_si<mode>_e500_subreg4_2"
+(define_insn "*mov_si<mode>_e500_subreg0_2_le"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
-	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "r,r") 4))]
-  "(TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
-   || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
+	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "+r,r") 0))]
+  "!WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
   "@
    mr %0,%1
    stw%U0%X0 %1,%0")
 
-(define_insn "*mov_sitf_e500_subreg8"
+(define_insn "*mov_si<mode>_e500_subreg4_be"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,r") 4)
+	(match_operand:SI 1 "input_operand" "r,m"))]
+  "WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
+  "@
+   mr %0,%1
+   lwz%U1%X1 %0,%1")
+
+(define_insn "mov_si<mode>_e500_subreg4_le"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r,&r") 4)
+	(match_operand:SI 1 "input_operand" "r,m"))]
+  "!WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
+  "@
+   evmergelo %0,%1,%0
+   evmergelohi %0,%0,%0\;lwz%U1%X1 %0,%1\;evmergelohi %0,%0,%0"
+  [(set_attr "length" "4,12")])
+
+(define_insn "*mov_si<mode>_e500_subreg4_elf_low_be"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 4)
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+		   (match_operand 2 "" "")))]
+  "WORDS_BIG_ENDIAN
+   && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+	|| (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
+       && TARGET_ELF && !TARGET_64BIT)"
+  "addic %0,%1,%K2")
+
+(define_insn_and_split "*mov_si<mode>_e500_subreg4_elf_low_le"
+  [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 4)
+	(lo_sum:SI (match_operand:SI 1 "gpc_reg_operand" "r")
+		   (match_operand 2 "" "")))]
+  "!WORDS_BIG_ENDIAN
+   && (((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+	|| (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
+       && TARGET_ELF && !TARGET_64BIT && can_create_pseudo_p ())"
+  "#"
+  "&& 1"
+  [(pc)]
+{
+  rtx tmp = gen_reg_rtx (SImode);
+  emit_insn (gen_elf_low (tmp, operands[1], operands[2]));
+  emit_insn (gen_mov_si<mode>_e500_subreg4_le (operands[0], tmp));
+  DONE;
+}
+  [(set_attr "length" "8")])
+
+(define_insn "*mov_si<mode>_e500_subreg4_2_be"
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "r,r") 4))]
+  "WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
+  "@
+   mr %0,%1
+   stw%U0%X0 %1,%0")
+
+(define_insn "*mov_si<mode>_e500_subreg4_2_le"
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "+r,&r") 4))]
+  "!WORDS_BIG_ENDIAN
+   && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
+       || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
+  "@
+   evmergehi %0,%0,%1
+   evmergelohi %1,%1,%1\;stw%U0%X0 %1,%0"
+  [(set_attr "length" "4,8")])
+
+(define_insn "*mov_sitf_e500_subreg8_be"
   [(set (subreg:SI (match_operand:TF 0 "register_operand" "+r,&r") 8)
 	(match_operand:SI 1 "input_operand" "r,m"))]
-  "TARGET_E500_DOUBLE"
+  "WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
    evmergelo %L0,%1,%L0
    evmergelohi %L0,%L0,%L0\;lwz%U1%X1 %L0,%1\;evmergelohi %L0,%L0,%L0"
   [(set_attr "length" "4,12")])
 
-(define_insn "*mov_sitf_e500_subreg8_2"
+(define_insn "*mov_sitf_e500_subreg8_le"
+  [(set (subreg:SI (match_operand:TF 0 "register_operand" "+r,r") 8)
+	(match_operand:SI 1 "input_operand" "r,m"))]
+  "!WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
+  "@
+   mr %L0,%1
+   lwz%U1%X1 %L0,%1")
+
+(define_insn "*mov_sitf_e500_subreg8_2_be"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
 	(subreg:SI (match_operand:TF 1 "register_operand" "+r,&r") 8))]
-  "TARGET_E500_DOUBLE"
+  "WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
    evmergehi %0,%0,%L1
    evmergelohi %L1,%L1,%L1\;stw%U0%X0 %L1,%0"
   [(set_attr "length" "4,8")])
 
-(define_insn "*mov_sitf_e500_subreg12"
+(define_insn "*mov_sitf_e500_subreg8_2_le"
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+	(subreg:SI (match_operand:TF 1 "register_operand" "r,r") 8))]
+  "!WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
+  "@
+   mr %0,%L1
+   stw%U0%X0 %L1,%0")
+
+(define_insn "*mov_sitf_e500_subreg12_be"
   [(set (subreg:SI (match_operand:TF 0 "register_operand" "+r,r") 12)
 	(match_operand:SI 1 "input_operand" "r,m"))]
-  "TARGET_E500_DOUBLE"
+  "WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
    mr %L0,%1
    lwz%U1%X1 %L0,%1")
 
-(define_insn "*mov_sitf_e500_subreg12_2"
+(define_insn "*mov_sitf_e500_subreg12_le"
+  [(set (subreg:SI (match_operand:TF 0 "register_operand" "+r,&r") 12)
+	(match_operand:SI 1 "input_operand" "r,m"))]
+  "!WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
+  "@
+   evmergelo %L0,%1,%L0
+   evmergelohi %L0,%L0,%L0\;lwz%U1%X1 %L0,%1\;evmergelohi %L0,%L0,%L0"
+  [(set_attr "length" "4,12")])
+
+(define_insn "*mov_sitf_e500_subreg12_2_be"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
 	(subreg:SI (match_operand:TF 1 "register_operand" "r,r") 12))]
-  "TARGET_E500_DOUBLE"
+  "WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
    mr %0,%L1
    stw%U0%X0 %L1,%0")
+
+(define_insn "*mov_sitf_e500_subreg12_2_le"
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+	(subreg:SI (match_operand:TF 1 "register_operand" "+r,&r") 12))]
+  "!WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
+  "@
+   evmergehi %0,%0,%L1
+   evmergelohi %L1,%L1,%L1\;stw%U0%X0 %L1,%0"
+  [(set_attr "length" "4,8")])
 
 ;; FIXME: Allow r=CONST0.
 (define_insn "*movdf_e500_double"
