@@ -83,15 +83,18 @@ void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
 					     const ipa_polymorphic_call_context &);
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
 				         const ipa_polymorphic_call_context &,
-					 struct cgraph_node *n);
-tree method_class_type (tree);
+					 struct cgraph_node *);
+tree method_class_type (const_tree);
 tree get_polymorphic_call_info (tree, tree, tree *,
 				HOST_WIDE_INT *,
-				ipa_polymorphic_call_context *);
+				ipa_polymorphic_call_context *,
+				gimple call = NULL);
 bool get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *,
 					       tree, tree, HOST_WIDE_INT);
-tree vtable_pointer_value_to_binfo (tree t);
-bool vtable_pointer_value_to_vtable (tree, tree *, unsigned HOST_WIDE_INT *);
+bool decl_maybe_in_construction_p (tree, tree, gimple, tree);
+tree vtable_pointer_value_to_binfo (const_tree);
+bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT *);
+bool contains_polymorphic_type_p (const_tree);
 
 /* Return vector containing possible targets of polymorphic call E.
    If FINALP is non-NULL, store true if the list is complette. 
@@ -124,7 +127,8 @@ possible_polymorphic_call_targets (struct cgraph_edge *e,
 /* Same as above but taking OBJ_TYPE_REF as an parameter.  */
 
 inline vec <cgraph_node *>
-possible_polymorphic_call_targets (tree call,
+possible_polymorphic_call_targets (tree ref,
+				   gimple call,
 				   bool *final = NULL,
 				   void **cache_token = NULL)
 {
@@ -133,11 +137,11 @@ possible_polymorphic_call_targets (tree call,
   ipa_polymorphic_call_context context;
 
   get_polymorphic_call_info (current_function_decl,
-			     call,
-			     &otr_type, &otr_token, &context);
-  return possible_polymorphic_call_targets (obj_type_ref_class (call),
+			     ref,
+			     &otr_type, &otr_token, &context, call);
+  return possible_polymorphic_call_targets (obj_type_ref_class (ref),
 					    tree_to_uhwi
-					      (OBJ_TYPE_REF_TOKEN (call)),
+					      (OBJ_TYPE_REF_TOKEN (ref)),
 					    context,
 					    final, cache_token);
 }

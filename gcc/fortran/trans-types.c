@@ -1395,23 +1395,13 @@ gfc_get_desc_dim_type (void)
    unknown cases abort.  */
 
 tree
-gfc_get_dtype (tree type)
+gfc_get_dtype_rank_type (int rank, tree etype)
 {
   tree size;
   int n;
   HOST_WIDE_INT i;
   tree tmp;
   tree dtype;
-  tree etype;
-  int rank;
-
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type));
-
-  if (GFC_TYPE_ARRAY_DTYPE (type))
-    return GFC_TYPE_ARRAY_DTYPE (type);
-
-  rank = GFC_TYPE_ARRAY_RANK (type);
-  etype = gfc_get_element_type (type);
 
   switch (TREE_CODE (etype))
     {
@@ -1476,6 +1466,26 @@ gfc_get_dtype (tree type)
      for anything that is actually used.  */
   /* TODO: Check this is actually true, particularly when repacking
      assumed size parameters.  */
+
+  return dtype;
+}
+
+
+tree
+gfc_get_dtype (tree type)
+{
+  tree dtype;
+  tree etype;
+  int rank;
+
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type));
+
+  if (GFC_TYPE_ARRAY_DTYPE (type))
+    return GFC_TYPE_ARRAY_DTYPE (type);
+
+  rank = GFC_TYPE_ARRAY_RANK (type);
+  etype = gfc_get_element_type (type);
+  dtype = gfc_get_dtype_rank_type (rank, etype);
 
   GFC_TYPE_ARRAY_DTYPE (type) = dtype;
   return dtype;

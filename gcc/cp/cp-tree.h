@@ -126,6 +126,7 @@ c-common.h, not after.
    0: TYPE_DEPENDENT_P
    1: TYPE_HAS_USER_CONSTRUCTOR.
    2: TYPE_HAS_LATE_RETURN_TYPE (in FUNCTION_TYPE, METHOD_TYPE)
+      TYPE_PTRMEMFUNC_FLAG (in RECORD_TYPE)
    3: TYPE_FOR_JAVA.
    4: TYPE_HAS_NONTRIVIAL_DESTRUCTOR
    5: CLASS_TYPE_P (in RECORD_TYPE and UNION_TYPE)
@@ -145,6 +146,7 @@ c-common.h, not after.
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
       USING_DECL_TYPENAME_P (in USING_DECL)
       DECL_VLA_CAPTURE_P (in FIELD_DECL)
+      DECL_ARRAY_PARAMETER_P (in PARM_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
@@ -3561,11 +3563,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    function type.  */
 #define TYPE_PTRMEMFUNC_P(NODE)		\
   (TREE_CODE (NODE) == RECORD_TYPE	\
-   && TYPE_LANG_SPECIFIC (NODE)		\
    && TYPE_PTRMEMFUNC_FLAG (NODE))
 
 #define TYPE_PTRMEMFUNC_FLAG(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->ptrmemfunc_flag)
+  (TYPE_LANG_FLAG_2 (RECORD_TYPE_CHECK (NODE)))
 
 /* Returns true if NODE is a pointer-to-member.  */
 #define TYPE_PTRMEM_P(NODE) \
@@ -3680,6 +3681,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    field for an array of runtime bound.  */
 #define DECL_VLA_CAPTURE_P(NODE) \
   DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE))
+
+/* Nonzero for PARM_DECL node means that this is an array function
+   parameter, i.e, a[] rather than *a.  */
+#define DECL_ARRAY_PARAMETER_P(NODE) \
+  DECL_LANG_FLAG_1 (PARM_DECL_CHECK (NODE))
 
 /* Nonzero for FIELD_DECL node means that this field is a base class
    of the parent object, as opposed to a member field.  */

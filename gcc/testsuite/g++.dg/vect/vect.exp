@@ -59,9 +59,9 @@ dg-init
 
 # Main loop.
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.{c,cc,S} ]] \
-        $DEFAULT_VECTCFLAGS
+        "" $DEFAULT_VECTCFLAGS
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/slp-pr*.{c,cc,S} ]] \
-        $VECT_SLP_CFLAGS
+        "" $VECT_SLP_CFLAGS
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS
@@ -71,7 +71,7 @@ set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "--param max-aliased-vops=0"
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/param-max-aliased*.\[cS\]]]  \
-        $DEFAULT_VECTCFLAGS
+        "" $DEFAULT_VECTCFLAGS
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default} 

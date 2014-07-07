@@ -1,8 +1,41 @@
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* c.opt (Wsizeof-array-argument): New option.
+
+2014-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ada-spec.c (dump_ada_nodes): Don't call qsort if 
+	comments->count <= 1, as comments->entries might be NULL.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wint-conversion): New option.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58286
+	* c.opt (Wincompatible-pointer-types): New option.
+
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51400
+	* c-common.c (handle_noreturn_attribute, handle_const_attribute):
+	Do not discard TYPE_QUALS of type.
+
 2014-06-26  Jason Merrill  <jason@redhat.com>
 
 	* c-common.h (enum cxx_dialect): Add cxx1z.
 	* c.opt (std=c++1z, std=c++17, std=gnu++1z, std=gnu++17): New.
 	* c-opts.c (c_common_handle_option, set_std_cxx1z): Handle it.
+
+2014-06-26  Teresa Johnson  <tejohnson@google.com>
+
+	* c-common.h (get_dump_info): Declare.
+	* c-gimplify.c (c_genericize): Use saved dump files.
+	* c-opts.c (c_common_parse_file): Begin and end dumps
+	once around parsing invocation.
+	(get_dump_info): New function.
 
 2014-06-23  Marek Polacek  <polacek@redhat.com>
 	    Andrew MacLeod  <amacleod@redhat.com>

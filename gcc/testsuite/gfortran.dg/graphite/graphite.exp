@@ -47,19 +47,19 @@ set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[fF\]{,90
 
 # Tests to be compiled.
 set dg-do-what-default compile
-gfortran-dg-runtest $scop_files        "-O2 -fgraphite -fdump-tree-graphite-all"
-gfortran-dg-runtest $id_files          "-O2 -fgraphite-identity -ffast-math"
-gfortran-dg-runtest $interchange_files "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
-gfortran-dg-runtest $block_files       "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
+gfortran-dg-runtest $scop_files        "" "-O2 -fgraphite -fdump-tree-graphite-all"
+gfortran-dg-runtest $id_files          "" "-O2 -fgraphite-identity -ffast-math"
+gfortran-dg-runtest $interchange_files "" "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
+gfortran-dg-runtest $block_files       "" "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
 
 # Vectorizer tests, to be run or compiled, depending on target capabilities.
 if [check_vect_support_and_set_flags] {
-    gfortran-dg-runtest $vect_files "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details -ffast-math"
+    gfortran-dg-runtest $vect_files "" "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details -ffast-math"
 }
 
 # Tests to be run.
 set dg-do-what-default run
-gfortran-dg-runtest $run_id_files      "-O2 -fgraphite-identity"
+gfortran-dg-runtest $run_id_files      "" "-O2 -fgraphite-identity"
 
 # The default action for the rest of the files is 'compile'.
 set dg-do-what-default compile
@@ -69,7 +69,7 @@ foreach f $interchange_files {lremove wait_to_run_files $f}
 foreach f $scop_files        {lremove wait_to_run_files $f}
 foreach f $run_id_files      {lremove wait_to_run_files $f}
 foreach f $vect_files        {lremove wait_to_run_files $f}
-gfortran-dg-runtest $wait_to_run_files ""
+gfortran-dg-runtest $wait_to_run_files "" ""
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}

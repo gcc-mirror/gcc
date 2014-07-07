@@ -377,17 +377,17 @@ compute_insert_delete (struct edge_list *edge_list, sbitmap *antloc,
     }
 }
 
-/* Given local properties TRANSP, ANTLOC, AVOUT, KILL return the insert and
-   delete vectors for edge based LCM.  Returns an edgelist which is used to
+/* Given local properties TRANSP, ANTLOC, AVLOC, KILL return the insert and
+   delete vectors for edge based LCM  and return the AVIN, AVOUT bitmap.
    map the insert vector to what edge an expression should be inserted on.  */
 
 struct edge_list *
-pre_edge_lcm (int n_exprs, sbitmap *transp,
+pre_edge_lcm_avs (int n_exprs, sbitmap *transp,
 	      sbitmap *avloc, sbitmap *antloc, sbitmap *kill,
+	      sbitmap *avin, sbitmap *avout,
 	      sbitmap **insert, sbitmap **del)
 {
   sbitmap *antin, *antout, *earliest;
-  sbitmap *avin, *avout;
   sbitmap *later, *laterin;
   struct edge_list *edge_list;
   int num_edges;
@@ -413,10 +413,7 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 #endif
 
   /* Compute global availability.  */
-  avin = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_exprs);
-  avout = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_exprs);
   compute_available (avloc, kill, avout, avin);
-  sbitmap_vector_free (avin);
 
   /* Compute global anticipatability.  */
   antin = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_exprs);
@@ -444,7 +441,6 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 
   sbitmap_vector_free (antout);
   sbitmap_vector_free (antin);
-  sbitmap_vector_free (avout);
 
   later = sbitmap_vector_alloc (num_edges, n_exprs);
 
@@ -481,6 +477,28 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 			  last_basic_block_for_fn (cfun));
     }
 #endif
+
+  return edge_list;
+}
+
+/* Wrapper to allocate avin/avout and call pre_edge_lcm_avs.  */
+
+struct edge_list *
+pre_edge_lcm (int n_exprs, sbitmap *transp,
+	      sbitmap *avloc, sbitmap *antloc, sbitmap *kill,
+	      sbitmap **insert, sbitmap **del)
+{
+  struct edge_list *edge_list;
+  sbitmap *avin, *avout;
+
+  avin = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_exprs);
+  avout = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_exprs);
+
+  edge_list = pre_edge_lcm_avs (n_exprs, transp, avloc, antloc, kill,
+				 avin, avout, insert, del);
+
+  sbitmap_vector_free (avout);
+  sbitmap_vector_free (avin);
 
   return edge_list;
 }

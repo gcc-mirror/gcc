@@ -504,6 +504,7 @@
 (define_attr "in_delay_slot" "yes,no"
   (cond [(eq_attr "type" "cbranch") (const_string "no")
 	 (eq_attr "type" "pcload,pcload_si") (const_string "no")
+	 (eq_attr "type" "fpscr_toggle") (const_string "no")
 	 (eq_attr "needs_delay_slot" "yes") (const_string "no")
 	 (eq_attr "length" "2") (const_string "yes")
 	 ] (const_string "no")))
@@ -12239,15 +12240,12 @@ label:
   "fschg"
   [(set_attr "type" "fpscr_toggle") (set_attr "fp_set" "unknown")])
 
-;; There's no way we can use it today, since optimize mode switching
-;; doesn't enable us to know from which mode we're switching to the
-;; mode it requests, to tell whether we can use a relative mode switch
-;; (like toggle_pr) or an absolute switch (like loading fpscr from
-;; memory).
+;; Toggle FPU precision PR mode.
+
 (define_insn "toggle_pr"
   [(set (reg:PSI FPSCR_REG)
 	(xor:PSI (reg:PSI FPSCR_REG) (const_int 524288)))]
-  "TARGET_SH4A_FP && ! TARGET_FPU_SINGLE"
+  "TARGET_SH4A_FP"
   "fpchg"
   [(set_attr "type" "fpscr_toggle")])
 

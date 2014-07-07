@@ -879,6 +879,13 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define ENDIAN_LANE_N(mode, n)  \
   (BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 - n : n)
 
+/* Support for a configure-time default CPU, etc.  We currently support
+   --with-arch and --with-cpu.  Both are ignored if either is specified
+   explicitly on the command line at run time.  */
+#define OPTION_DEFAULT_SPECS				\
+  {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" },	\
+  {"cpu",  "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" },
+
 #define BIG_LITTLE_SPEC \
    " %{mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}"
 

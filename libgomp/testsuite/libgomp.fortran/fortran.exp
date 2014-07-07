@@ -8,6 +8,9 @@ global ALWAYS_CFLAGS
 set shlib_ext [get_shlib_extension]
 set lang_library_path	"../libgfortran/.libs"
 set lang_link_flags	"-lgfortran"
+if [info exists lang_include_flags] then {
+    unset lang_include_flags
+}
 set lang_test_file_found 0
 set quadmath_library_path "../libquadmath/.libs"
 
@@ -19,7 +22,8 @@ dg-init
 lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
 
 if { $blddir != "" } {
-    lappend ALWAYS_CFLAGS "additional_flags=-fintrinsic-modules-path=${blddir}"
+    set lang_source_re {^.*\.[fF](|90|95|03|08)$}
+    set lang_include_flags "-fintrinsic-modules-path=${blddir}"
     # Look for a static libgfortran first.
     if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
         set lang_test_file "${lang_library_path}/libgfortran.a"
@@ -59,8 +63,10 @@ if { $lang_test_file_found } {
     append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
     set_ld_library_path_env_vars
 
-    # Main loop.
-    gfortran-dg-runtest $tests ""
+    # For Fortran we're doing torture testing, as Fortran has far more tests
+    # with arrays etc. that testing just -O0 or -O2 is insufficient, that is
+    # typically not the case for C/C++.
+    gfortran-dg-runtest $tests "" ""
 }
 
 # All done.

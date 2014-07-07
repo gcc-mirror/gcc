@@ -6468,13 +6468,16 @@ convert_template_argument (tree parm,
 		     "parameter list for %qD",
 		     i + 1, in_decl);
 	      if (is_type)
-		error ("  expected a constant of type %qT, got %qT",
-		       TREE_TYPE (parm),
-		       (DECL_P (arg) ? DECL_NAME (arg) : orig_arg));
+		inform (input_location,
+			"  expected a constant of type %qT, got %qT",
+			TREE_TYPE (parm),
+			(DECL_P (arg) ? DECL_NAME (arg) : orig_arg));
 	      else if (requires_tmpl_type)
-		error ("  expected a class template, got %qE", orig_arg);
+		inform (input_location,
+			"  expected a class template, got %qE", orig_arg);
 	      else
-		error ("  expected a type, got %qE", orig_arg);
+		inform (input_location,
+			"  expected a type, got %qE", orig_arg);
 	    }
 	}
       return error_mark_node;
@@ -6487,9 +6490,11 @@ convert_template_argument (tree parm,
 		 "parameter list for %qD",
 		 i + 1, in_decl);
 	  if (is_tmpl_type)
-	    error ("  expected a type, got %qT", DECL_NAME (arg));
+	    inform (input_location,
+		    "  expected a type, got %qT", DECL_NAME (arg));
 	  else
-	    error ("  expected a class template, got %qT", orig_arg);
+	    inform (input_location,
+		    "  expected a class template, got %qT", orig_arg);
 	}
       return error_mark_node;
     }
@@ -6537,8 +6542,9 @@ convert_template_argument (tree parm,
 		      error ("type/value mismatch at argument %d in "
 			     "template parameter list for %qD",
 			     i + 1, in_decl);
-		      error ("  expected a template of type %qD, got %qT",
-			     parm, orig_arg);
+		      inform (input_location,
+			      "  expected a template of type %qD, got %qT",
+			      parm, orig_arg);
 		    }
 
 		  val = error_mark_node;
@@ -16501,8 +16507,9 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
 	maybe_adjust_types_for_deduction (strict, &parm, &arg, arg_expr);
     }
   else
-    gcc_assert ((TYPE_P (parm) || TREE_CODE (parm) == TEMPLATE_DECL)
-		== (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL));
+    if ((TYPE_P (parm) || TREE_CODE (parm) == TEMPLATE_DECL)
+	!= (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL))
+      return unify_template_argument_mismatch (explain_p, parm, arg);
 
   /* For deduction from an init-list we need the actual list.  */
   if (arg_expr && BRACE_ENCLOSED_INITIALIZER_P (arg_expr))
@@ -18103,6 +18110,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 			TYPE_PTRMEMFUNC_FN_TYPE (arg),
 			strict, explain_p);
 	}
+      else if (TYPE_PTRMEMFUNC_P (arg))
+	return unify_type_mismatch (explain_p, parm, arg);
 
       if (CLASSTYPE_TEMPLATE_INFO (parm))
 	{
@@ -21086,7 +21095,12 @@ type_dependent_expression_p (tree expression)
 	return true;
 
       if (BASELINK_P (expression))
-	expression = BASELINK_FUNCTIONS (expression);
+	{
+	  if (BASELINK_OPTYPE (expression)
+	      && dependent_type_p (BASELINK_OPTYPE (expression)))
+	    return true;
+	  expression = BASELINK_FUNCTIONS (expression);
+	}
 
       if (TREE_CODE (expression) == TEMPLATE_ID_EXPR)
 	{

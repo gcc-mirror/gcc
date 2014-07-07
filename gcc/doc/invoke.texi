@@ -251,9 +251,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-signedness  -Wformat-y2k @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
--Wignored-qualifiers @gol
+-Wignored-qualifiers  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
--Winit-self  -Winline @gol
+-Winit-self  -Winline  -Wno-int-conversion @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
@@ -266,7 +266,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
--Wsizeof-pointer-memaccess @gol
+-Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
@@ -4199,14 +4199,28 @@ This option is only active when @option{-ftree-vrp} is active
 (default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
 
-@item -Wno-discarded-qualifiers
+@item -Wno-discarded-qualifiers @r{(C and Objective-C only)}
 @opindex Wno-discarded-qualifiers
 @opindex Wdiscarded-qualifiers
 Do not warn if type qualifiers on pointers are being discarded.
 Typically, the compiler will warn if a @code{const char *} variable is
 passed to a function that takes @code{char *} parameter.  This option
-can be used to suppress such a warning.  This warning is only supported
-for C.
+can be used to suppress such a warning.
+
+@item -Wno-incompatible-pointer-types @r{(C and Objective-C only)}
+@opindex Wno-incompatible-pointer-types
+@opindex Wincompatible-pointer-types
+Do not warn when there is a conversion between pointers that have incompatible
+types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
+which warns for pointer argument passing or assignment with different signedness
+
+@item -Wno-int-conversion @r{(C and Objective-C only)}
+@opindex Wno-int-conversion
+@opindex Wint-conversion
+Do not warn about incompatible integer to pointer and pointer to integer
+conversions.  This warning is about implicit conversions; for explicit
+conversions the warnings @option{-Wno-int-to-pointer-cast} and
+@option{-Wno-pointer-to-int-cast} may be used.
 
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero
@@ -4661,6 +4675,13 @@ about @code{memset (ptr, 0, sizeof (ptr));} if @code{ptr} is not an array,
 but a pointer, and suggests a possible fix, or about
 @code{memcpy (&foo, ptr, sizeof (&foo));}.  This warning is enabled by
 @option{-Wall}.
+
+@item -Wsizeof-array-argument
+@opindex Wsizeof-array-argument
+@opindex Wno-sizeof-array-argument
+Warn when the @code{sizeof} operator is applied to a parameter that is
+declared as an array in a function definition.  This warning is enabled by
+default for C and C++ programs.
 
 @item -Waddress
 @opindex Waddress
@@ -5386,26 +5407,22 @@ at runtime.  Current suboptions are:
 
 @item -fsanitize=shift
 @opindex fsanitize=shift
-
 This option enables checking that the result of a shift operation is
 not undefined.  Note that what exactly is considered undefined differs
 slightly between C and C++, as well as between ISO C90 and C99, etc.
 
 @item -fsanitize=integer-divide-by-zero
 @opindex fsanitize=integer-divide-by-zero
-
 Detect integer division by zero as well as @code{INT_MIN / -1} division.
 
 @item -fsanitize=unreachable
 @opindex fsanitize=unreachable
-
 With this option, the compiler will turn the @code{__builtin_unreachable}
 call into a diagnostics message call instead.  When reaching the
 @code{__builtin_unreachable} call, the behavior is undefined.
 
 @item -fsanitize=vla-bound
 @opindex fsanitize=vla-bound
-
 This option instructs the compiler to check that the size of a variable
 length array is positive.  This option does not have any effect in
 @option{-std=c++1y} mode, as the standard requires the exception be thrown
@@ -5413,7 +5430,6 @@ instead.
 
 @item -fsanitize=null
 @opindex fsanitize=null
-
 This option enables pointer checking.  Particularly, the application
 built with this option turned on will issue an error message when it
 tries to dereference a NULL pointer, or if a reference (possibly an
@@ -5421,7 +5437,6 @@ rvalue reference) is bound to a NULL pointer.
 
 @item -fsanitize=return
 @opindex fsanitize=return
-
 This option enables return statement checking.  Programs
 built with this option turned on will issue an error message
 when the end of a non-void function is reached without actually
@@ -5429,7 +5444,6 @@ returning a value.  This option works in C++ only.
 
 @item -fsanitize=signed-integer-overflow
 @opindex fsanitize=signed-integer-overflow
-
 This option enables signed integer overflow checking.  We check that
 the result of @code{+}, @code{*}, and both unary and binary @code{-}
 does not overflow in the signed arithmetics.  Note, integer promotion
@@ -5440,15 +5454,14 @@ signed char a = SCHAR_MAX;
 a++;
 @end smallexample
 
-@end table
-
-While @option{-ftrapv} causes traps for signed overflows to be emitted,
-@option{-fsanitize=undefined} gives a diagnostic message.
-This currently works only for the C family of languages.
+@item -fsanitize=bounds
+@opindex fsanitize=bounds
+This option enables instrumentation of array bounds.  Various out of bounds
+accesses are detected.  Flexible array members and initializers of variables
+with static storage are not instrumented.
 
 @item -fsanitize=float-divide-by-zero
 @opindex fsanitize=float-divide-by-zero
-
 Detect floating-point division by zero.  Unlike other similar options,
 @option{-fsanitize=float-divide-by-zero} is not enabled by
 @option{-fsanitize=undefined}, since floating-point division by zero can
@@ -5456,17 +5469,15 @@ be a legitimate way of obtaining infinities and NaNs.
 
 @item -fsanitize=float-cast-overflow
 @opindex fsanitize=float-cast-overflow
-
 This option enables floating-point type to integer conversion checking.
 We check that the result of the conversion does not overflow.
 This option does not work well with @code{FE_INVALID} exceptions enabled.
 
-@item -fsanitize=bounds
-@opindex fsanitize=bounds
+@end table
 
-This option enables instrumentation of array bounds.  Various out of bounds
-accesses are detected.  Flexible array members are not instrumented, as well
-as initializers of variables with static storage.
+While @option{-ftrapv} causes traps for signed overflows to be emitted,
+@option{-fsanitize=undefined} gives a diagnostic message.
+This currently works only for the C family of languages.
 
 @item -fsanitize-recover
 @opindex fsanitize-recover

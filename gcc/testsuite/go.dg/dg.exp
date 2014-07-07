@@ -30,7 +30,7 @@ dg-init
 
 # Main loop.
 go-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.go ] ] $DEFAULT_GOCFLAGS
+       [glob -nocomplain $srcdir/$subdir/*.go ] ] "" $DEFAULT_GOCFLAGS
 
 # All done.
 dg-finish

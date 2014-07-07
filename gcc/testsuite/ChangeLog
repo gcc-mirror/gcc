@@ -1,3 +1,184 @@
+2014-07-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61640
+	* gfortran.dg/arrayio_16.f90: New test.
+
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ipa/imm-devirt-1.C: Fix regexp in dg-final.
+	* g++.dg/ipa/imm-devirt-2.C: Likewise.
+
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: Use
+	-Wno-sizeof-array-argument.
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Likewise.
+	* g++.dg/warn/Wsizeof-pointer-memaccess-1.C: Likewise.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: Likewise.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Likewise.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Likewise.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Likewise.
+	* c-c++-common/sizeof-array-argument.c: New test.
+	* gcc.dg/vla-5.c: Add dg-warnings.
+
+2014-07-05  Jan Hubicka   <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-26.C: Update testcase.
+	* g++.dg/ipa/imm-devirt-1.C: Update testcase.
+	* g++.dg/ipa/imm-devirt-2.C: Update testcase.
+
+2014-07-04  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/coindexed_3.f90: New.
+
+2014-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61654
+	* g++.dg/opt/pr61654.C: New test.
+
+	PR tree-optimization/61684
+	* gcc.c-torture/compile/pr61684.c: New test.
+
+2014-07-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Change interface to match
+	dg-runtest's.  Adapt all callers.
+	* lib/gcc-dg.exp (gcc-dg-runtest): Likewise.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Likewise.
+	* lib/go-dg.exp (go-dg-runtest): Likewise.
+	* lib/obj-c++-dg.exp (obj-c++-dg-runtest): Likewise.
+	* lib/objc-dg.exp (objc-dg-runtest): Likewise.
+
+2014-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61682
+	* gcc.c-torture/execute/pr61682.c: New test.
+
+2014-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/shift-dot.c: New test.
+
+2014-07-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/ieee_1.F90: Mark variables as volatile to
+	avoid optimization.
+
+2014-07-03  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/identical-invariants.c: New test.
+
+2014-07-02  Jan Hubicka  <hubicka@ucw.cz>
+	    Chen Gang <gang.chen.5i5j@gmail.com>
+
+	* gcc.c-torture/compile/section.c: New testcase.
+
+2014-07-02  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/29349
+	PR target/53513
+	* gcc.target/sh/fpchg.c: New test.
+
+2014-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Fritz Reese  <Reese-Fritz@zai.com>
+
+	* gfortran.dg/oldstyle_5.f: New test.
+
+2014-07-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/ieee/ieee_1.F90 (dg-additional-options): Remove -O0.
+	* gfortran.dg/ieee/ieee_rounding_1.f90 (dg-additional-options): Add.
+
+2014-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/variadic-ex10.C: Adjust for inform instead of error.
+	* g++.dg/cpp0x/variadic-ex14.C: Likewise.
+	* g++.dg/parse/error11.C: Likewise.
+	* g++.old-deja/g++.brendan/template17.C: Likewise.
+
+2014-07-02  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray/get_array.f90: Add missing SYNC ALL.
+	* gfortran.dg/coarray/send_array.f90: Ditto.
+	* gfortran.dg/coarray/sendget_array.f90: Ditto.
+
+2014-07-01  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/aarch64/aapcs64/aapcs64.exp:
+	(additional_flags_for_func_ret): New variable based on
+	$additional_flags with -fno-use-caller-save.
+	(func-ret-*.c): Use the new variable.
+
+2014-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59637
+	* g++.dg/cpp0x/decltype60.C: New.
+
+2014-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vcage_f64.c: New test.
+	* gcc.target/aarch64/simd/vcagt_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcale_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcaled_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcales_f32.c: Likewise.
+	* gcc.target/aarch64/simd/vcalt_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcaltd_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcalts_f32.c: Likewise.
+
+2014-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1y/pr59867.C: Fix target selector.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wint-conversion.c: New test.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58286
+	* gcc.dg/Wincompatible-pointer-types.c: New test.
+
+2014-06-30  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* gcc/testsuite/lib/scanasm.exp (dg-function-on-line): Add
+	MicroBlaze specific pattern.
+
+2014-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58781
+	PR c++/60249
+	PR c++/59867
+	* testsuite/g++.dg/cpp0x/pr58781.C: New.
+	* testsuite/g++.dg/cpp0x/pr60249.C: New.
+	* testsuite/g++.dg/cpp1y/pr59867.C: New.
+
+2014-06-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gfortran.dg/round_4.f90: Skip for powerpc*-*-linux* since the
+	test requires greater precision than the current PowerPC long
+	double implementation supports.
+
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54891
+	* g++.dg/cpp0x/lambda/lambda-cast1.C: New.
+
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51400
+	* g++.dg/cpp0x/constexpr-attribute3.C: New.
+
+2014-06-30  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61607
+	* gcc.dg/tree-ssa/pr61607.c: New test.
+
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/attrib-2.c: New test.
+	* g++.dg/ubsan/return-3.C: New test.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541
@@ -6,7 +187,12 @@
 
 2014-06-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
-	* ira-loop-pressure.c: New test.
+	* gcc.dg/ira-loop-pressure.c: New test.
+
+2014-06-29  Roman Gareev  <gareevroman@gmail.com>
+
+	* gcc.dg/graphite/isl-codegen-loop-dumping.c: New testcase that
+	checks that the dump is generated.
 
 2014-06-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -15,10 +201,13 @@
 	* gfortran.dg/binding_label_tests_2.f03: Adjust error messages.
 	* gfortran.dg/binding_label_tests_27.f90: New file.
 
+2014-06-29  Roman Gareev  <gareevroman@gmail.com>
+
+	* gfortran.dg/graphite/pr59586.f: New testcase.
+
 2014-06-29  Andreas Schwab  <schwab@linux-m68k.org>
 
-	* gfortran.dg/ieee/ieee_6.f90: Allow inexact together with
-	underflow.
+	* gfortran.dg/ieee/ieee_6.f90: Allow inexact together with underflow.
 
 2014-06-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -92,7 +281,7 @@
 2014-06-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/61499
-	gfortran.dg/arrayio_15.f90: New test.
+	* gfortran.dg/arrayio_15.f90: New test.
 
 2014-06-26  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -152,8 +341,7 @@
 
 2014-06-26  Nick Clifton  <nickc@redhat.com>
 
-	* lib/target-supports.exp (check_effective_target_trapping): Fix
-	typo.
+	* lib/target-supports.exp (check_effective_target_trapping): Fix typo.
 
 2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
 

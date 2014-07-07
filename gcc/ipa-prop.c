@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "builtins.h"
+#include "calls.h"
 
 /* Intermediate information that we get from alias analysis about a particular
    parameter in a particular basic_block.  When a parameter or the memory it
@@ -443,11 +444,10 @@ ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
   base_type = TYPE_MAIN_VARIANT (base_type);
   component_type = TYPE_MAIN_VARIANT (component_type);
 
-  gcc_assert (TREE_CODE (component_type) == RECORD_TYPE
-	      && TYPE_BINFO (component_type));
+  gcc_assert (contains_polymorphic_type_p (base_type)
+	      && contains_polymorphic_type_p (component_type));
   if (!flag_devirtualize)
     return;
-  gcc_assert (BINFO_VTABLE (TYPE_BINFO (component_type)));
   jfunc->type = IPA_JF_KNOWN_TYPE;
   jfunc->value.known_type.offset = offset,
   jfunc->value.known_type.base_type = base_type;
@@ -534,12 +534,11 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 {
   if (!flag_devirtualize)
     type_preserved = false;
+  if (!type_preserved)
+    type = NULL_TREE;
   if (type)
     type = TYPE_MAIN_VARIANT (type);
-  gcc_assert (!type_preserved
-	      || (TREE_CODE (type) == RECORD_TYPE
-		  && TYPE_BINFO (type)
-		  && BINFO_VTABLE (TYPE_BINFO (type))));
+  gcc_assert (!type_preserved || contains_polymorphic_type_p (type));
   jfunc->type = IPA_JF_ANCESTOR;
   jfunc->value.ancestor.formal_id = formal_id;
   jfunc->value.ancestor.offset = offset;
@@ -554,7 +553,11 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 tree
 ipa_binfo_from_known_type_jfunc (struct ipa_jump_func *jfunc)
 {
+  if (!RECORD_OR_UNION_TYPE_P (jfunc->value.known_type.base_type))
+    return NULL_TREE;
+
   tree base_binfo = TYPE_BINFO (jfunc->value.known_type.base_type);
+
   if (!base_binfo)
     return NULL_TREE;
   return get_binfo_at_offset (base_binfo,
@@ -733,18 +736,84 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
     return false;
 }
 
+/* See if ARG is PARAM_DECl describing instance passed by pointer
+   or reference in FUNCTION.  Return false if the dynamic type may change
+   in between beggining of the function until CALL is invoked.
 
+   Generally functions are not allowed to change type of such instances,
+   but they call destructors.  We assume that methods can not destroy the THIS
+   pointer.  Also as a special cases, constructor and destructors may change
+   type of the THIS pointer.  */
+
+static bool
+param_type_may_change_p (tree function, tree arg, gimple call)
+{
+  /* Pure functions can not do any changes on the dynamic type;
+     that require writting to memory.  */
+  if (flags_from_decl_or_type (function) & (ECF_PURE | ECF_CONST))
+    return false;
+  /* We need to check if we are within inlined consturctor
+     or destructor (ideally we would have way to check that the
+     inline cdtor is actually working on ARG, but we don't have
+     easy tie on this, so punt on all non-pure cdtors.
+     We may also record the types of cdtors and once we know type
+     of the instance match them.
+
+     Also code unification optimizations may merge calls from
+     different blocks making return values unreliable.  So
+     do nothing during late optimization.  */
+  if (DECL_STRUCT_FUNCTION (function)->after_inlining)
+    return true;
+  if (TREE_CODE (arg) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (arg)
+      && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL)
+    {
+      /* Normal (non-THIS) argument.  */
+      if ((SSA_NAME_VAR (arg) != DECL_ARGUMENTS (function)
+	   || TREE_CODE (TREE_TYPE (function)) != METHOD_TYPE)
+	  /* THIS pointer of an method - here we we want to watch constructors
+	     and destructors as those definitely may change the dynamic
+	     type.  */
+	  || (TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE
+	      && !DECL_CXX_CONSTRUCTOR_P (function)
+	      && !DECL_CXX_DESTRUCTOR_P (function)
+	      && (SSA_NAME_VAR (arg) == DECL_ARGUMENTS (function))))
+	{
+	  /* Walk the inline stack and watch out for ctors/dtors.  */
+	  for (tree block = gimple_block (call); block && TREE_CODE (block) == BLOCK;
+	       block = BLOCK_SUPERCONTEXT (block))
+	    if (BLOCK_ABSTRACT_ORIGIN (block)
+	        && TREE_CODE (BLOCK_ABSTRACT_ORIGIN (block)) == FUNCTION_DECL)
+	      {
+		tree fn = BLOCK_ABSTRACT_ORIGIN (block);
+
+		if (flags_from_decl_or_type (fn) & (ECF_PURE | ECF_CONST))
+		  continue;
+		if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+		    && (DECL_CXX_CONSTRUCTOR_P (fn)
+		        || DECL_CXX_DESTRUCTOR_P (fn)))
+		  return true;
+	      }
+	  return false;
+	}
+    }
+  return true;
+}
 
 /* Detect whether the dynamic type of ARG of COMP_TYPE has changed (before
    callsite CALL) by looking for assignments to its virtual table pointer.  If
    it is, return true and fill in the jump function JFUNC with relevant type
    information or set it to unknown.  ARG is the object itself (not a pointer
    to it, unless dereferenced).  BASE is the base of the memory access as
-   returned by get_ref_base_and_extent, as is the offset.  */
+   returned by get_ref_base_and_extent, as is the offset. 
+
+   This is helper function for detect_type_change and detect_type_change_ssa
+   that does the heavy work which is usually unnecesary.  */
 
 static bool
-detect_type_change (tree arg, tree base, tree comp_type, gimple call,
-		    struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
+detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
+				       gimple call, struct ipa_jump_func *jfunc,
+				       HOST_WIDE_INT offset)
 {
   struct type_change_info tci;
   ao_ref ao;
@@ -752,6 +821,9 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
   gcc_checking_assert (DECL_P (arg)
 		       || TREE_CODE (arg) == MEM_REF
 		       || handled_component_p (arg));
+
+  comp_type = TYPE_MAIN_VARIANT (comp_type);
+
   /* Const calls cannot call virtual methods through VMT and so type changes do
      not matter.  */
   if (!flag_devirtualize || !gimple_vuse (call)
@@ -761,21 +833,6 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
       || !TYPE_BINFO (TYPE_MAIN_VARIANT (comp_type))
       || !BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (comp_type))))
     return true;
-
-  comp_type = TYPE_MAIN_VARIANT (comp_type);
-
-  /* C++ methods are not allowed to change THIS pointer unless they
-     are constructors or destructors.  */
-  if (TREE_CODE	(base) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
-      && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0))
-      && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (base, 0))) == PARM_DECL
-      && TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
-      && !DECL_CXX_CONSTRUCTOR_P (current_function_decl)
-      && !DECL_CXX_DESTRUCTOR_P (current_function_decl)
-      && (SSA_NAME_VAR (TREE_OPERAND (base, 0))
-	  == DECL_ARGUMENTS (current_function_decl)))
-    return false;
 
   ao_ref_init (&ao, arg);
   ao.base = base;
@@ -804,6 +861,28 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
   return true;
 }
 
+/* Detect whether the dynamic type of ARG of COMP_TYPE may have changed.
+   If it is, return true and fill in the jump function JFUNC with relevant type
+   information or set it to unknown.  ARG is the object itself (not a pointer
+   to it, unless dereferenced).  BASE is the base of the memory access as
+   returned by get_ref_base_and_extent, as is the offset.  */
+
+static bool
+detect_type_change (tree arg, tree base, tree comp_type, gimple call,
+		    struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
+{
+  if (!flag_devirtualize)
+    return false;
+
+  if (TREE_CODE	(base) == MEM_REF
+      && !param_type_may_change_p (current_function_decl,
+				   TREE_OPERAND (base, 0),
+				   call))
+    return false;
+  return detect_type_change_from_memory_writes (arg, base, comp_type,
+						call, jfunc, offset);
+}
+
 /* Like detect_type_change but ARG is supposed to be a non-dereferenced pointer
    SSA name (its dereference will become the base and the offset is assumed to
    be zero).  */
@@ -817,10 +896,14 @@ detect_type_change_ssa (tree arg, tree comp_type,
       || !POINTER_TYPE_P (TREE_TYPE (arg)))
     return false;
 
+  if (!param_type_may_change_p (current_function_decl, arg, call))
+    return false;
+
   arg = build2 (MEM_REF, ptr_type_node, arg,
 		build_int_cst (ptr_type_node, 0));
 
-  return detect_type_change (arg, arg, comp_type, call, jfunc, 0);
+  return detect_type_change_from_memory_writes (arg, arg, comp_type,
+						call, jfunc, 0);
 }
 
 /* Callback of walk_aliased_vdefs.  Flags that it has been invoked to the
@@ -1258,8 +1341,9 @@ compute_complex_assign_jump_func (struct func_body_info *fbi,
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (ssa));
   if (index >= 0 && param_type && POINTER_TYPE_P (param_type))
     {
-      bool type_p = !detect_type_change (op1, base, TREE_TYPE (param_type),
-					 call, jfunc, offset);
+      bool type_p = (contains_polymorphic_type_p (TREE_TYPE (param_type))
+		     && !detect_type_change (op1, base, TREE_TYPE (param_type),
+					     call, jfunc, offset));
       if (type_p || jfunc->type == IPA_JF_UNKNOWN)
 	ipa_set_ancestor_jf (jfunc, offset,
 			     type_p ? TREE_TYPE (param_type) : NULL, index,
@@ -1391,7 +1475,8 @@ compute_complex_ancestor_jump_func (struct func_body_info *fbi,
     }
 
   bool type_p = false;
-  if (param_type && POINTER_TYPE_P (param_type))
+  if (param_type && POINTER_TYPE_P (param_type)
+      && contains_polymorphic_type_p (TREE_TYPE (param_type)))
     type_p = !detect_type_change (obj, expr, TREE_TYPE (param_type),
 				  call, jfunc, offset);
   if (type_p || jfunc->type == IPA_JF_UNKNOWN)
@@ -1415,12 +1500,10 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
 
   if (!flag_devirtualize
       || TREE_CODE (op) != ADDR_EXPR
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (op))) != RECORD_TYPE
+      || !contains_polymorphic_type_p (TREE_TYPE (TREE_TYPE (op)))
       /* Be sure expected_type is polymorphic.  */
       || !expected_type
-      || TREE_CODE (expected_type) != RECORD_TYPE
-      || !TYPE_BINFO (TYPE_MAIN_VARIANT (expected_type))
-      || !BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (expected_type))))
+      || !contains_polymorphic_type_p (expected_type))
     return;
 
   op = TREE_OPERAND (op, 0);
@@ -1428,11 +1511,15 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
   if (!DECL_P (base)
       || max_size == -1
       || max_size != size
-      || TREE_CODE (TREE_TYPE (base)) != RECORD_TYPE
-      || is_global_var (base))
+      || !contains_polymorphic_type_p (TREE_TYPE (base)))
     return;
 
-  if (detect_type_change (op, base, expected_type, call, jfunc, offset))
+  if (decl_maybe_in_construction_p (base, TREE_TYPE (base),
+				    call, current_function_decl)
+      /* Even if the var seems to be in construction by inline call stack,
+	 we may work out the actual type by walking memory writes.  */
+      && (!is_global_var (base)
+	  && detect_type_change (op, base, expected_type, call, jfunc, offset)))
     return;
 
   ipa_set_jf_known_type (jfunc, offset, TREE_TYPE (base),

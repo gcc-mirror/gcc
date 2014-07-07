@@ -3760,9 +3760,9 @@ removed and the system libunwind library will always be used.
 @end html
 @anchor{aarch64-x-x}
 @heading aarch64*-*-*
-Pre 2.24 binutils does not have support for selecting -mabi and does not
-support ILP32.  If GCC 4.9 or later is built with pre 2.24, GCC will not
-support option -mabi=ilp32.
+Binutils pre 2.24 does not have support for selecting @option{-mabi} and
+does not support ILP32.  If it is used to build GCC 4.9 or later, GCC will
+not support option @option{-mabi=ilp32}.
 
 @html
 <hr />

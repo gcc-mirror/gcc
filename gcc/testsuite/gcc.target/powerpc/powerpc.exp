@@ -45,7 +45,7 @@ if [check_vmx_hw_available] {
 }
 torture-init
 set-torture-options $SAVRES_TEST_OPTS
-gcc-dg-runtest [list $srcdir/$subdir/savres.c] $alti
+gcc-dg-runtest [list $srcdir/$subdir/savres.c] "" $alti
 
 # All done.
 torture-finish

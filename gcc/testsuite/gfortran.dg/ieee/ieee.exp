@@ -53,7 +53,7 @@ set options "$options $target_options"
 
 # Main loop.
 gfortran-dg-runtest [lsort \
-      [find $srcdir/$subdir *.\[fF\]{,90,95,03,08} ] ] $options
+      [find $srcdir/$subdir *.\[fF\]{,90,95,03,08} ] ] "" $options
 
 # All done.
 dg-finish

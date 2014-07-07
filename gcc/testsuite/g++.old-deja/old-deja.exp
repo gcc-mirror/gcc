@@ -31,7 +31,7 @@ dg-init
 set tests [lsort [find $srcdir/$subdir *.C]]
 
 # Main loop.
-g++-dg-runtest $tests $DEFAULT_CXXFLAGS
+g++-dg-runtest $tests "" $DEFAULT_CXXFLAGS
 
 # All done.
 dg-finish

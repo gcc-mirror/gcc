@@ -8731,20 +8731,26 @@ void
 aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 {
   enum machine_mode vmode = GET_MODE (target);
-  unsigned int i, nelt = GET_MODE_NUNITS (vmode);
+  unsigned int nelt = GET_MODE_NUNITS (vmode);
   bool one_vector_p = rtx_equal_p (op0, op1);
-  rtx rmask[MAX_VECT_LEN], mask;
-
-  gcc_checking_assert (!BYTES_BIG_ENDIAN);
+  rtx mask;
 
   /* The TBL instruction does not use a modulo index, so we must take care
      of that ourselves.  */
-  mask = GEN_INT (one_vector_p ? nelt - 1 : 2 * nelt - 1);
-  for (i = 0; i < nelt; ++i)
-    rmask[i] = mask;
-  mask = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rmask));
+  mask = aarch64_simd_gen_const_vector_dup (vmode,
+      one_vector_p ? nelt - 1 : 2 * nelt - 1);
   sel = expand_simple_binop (vmode, AND, sel, mask, NULL, 0, OPTAB_LIB_WIDEN);
 
+  /* For big-endian, we also need to reverse the index within the vector
+     (but not which vector).  */
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* If one_vector_p, mask is a vector of (nelt - 1)'s already.  */
+      if (!one_vector_p)
+        mask = aarch64_simd_gen_const_vector_dup (vmode, nelt - 1);
+      sel = expand_simple_binop (vmode, XOR, sel, mask,
+				 NULL, 0, OPTAB_LIB_WIDEN);
+    }
   aarch64_expand_vec_perm_1 (target, op0, op1, sel);
 }
 

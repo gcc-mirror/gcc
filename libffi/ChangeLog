@@ -1,3 +1,8 @@
+2014-07-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libffi.exp (libffi-dg-runtest): Change interface
+	match to dg-runtest's.
+
 2014-05-20  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* testsuite/lib/libffi.exp (load_gcc_lib): Register loaded libs.

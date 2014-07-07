@@ -1050,57 +1050,6 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
 			 decl, get_resolution (data_in, ix));
 }
 
-/* Copy fields that are not streamed but copied from other nodes.  */
-static void
-lto_copy_fields_not_streamed (tree t)
-{
-  if (TYPE_P (t) && TYPE_MAIN_VARIANT (t) != t)
-    {
-      tree mv = TYPE_MAIN_VARIANT (t);
-
-      if (COMPLETE_TYPE_P (t))
-	{
-	  TYPE_SIZE (t) = TYPE_SIZE (mv);
-	  TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (mv);
-	}
-      TYPE_ATTRIBUTES (t) = TYPE_ATTRIBUTES (mv);
-
-      if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
-	{
-	  if (TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
-	    TYPE_VALUES (t) = TYPE_VALUES (mv);
-	  else if (TREE_CODE (t) == ARRAY_TYPE)
-	    TYPE_DOMAIN (t) = TYPE_DOMAIN (mv);
-
-          if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t))
-	    TYPE_VFIELD (t) = TYPE_VFIELD (mv);
-	  else if ((TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
-		   || TREE_CODE (t) == INTEGER_TYPE
-		   || TREE_CODE (t) == BOOLEAN_TYPE
-		   || TREE_CODE (t) == REAL_TYPE
-		   || TREE_CODE (t) == FIXED_POINT_TYPE)
-	    TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (mv);
-
-	  if (TREE_CODE (t) == METHOD_TYPE)
-	    TYPE_METHOD_BASETYPE (t) = TYPE_METHOD_BASETYPE (mv);
-	  else if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t))
-	    TYPE_METHODS (t) = TYPE_METHODS (mv);
-	  else if (TREE_CODE (t) == OFFSET_TYPE)
-	    TYPE_OFFSET_BASETYPE (t) = TYPE_OFFSET_BASETYPE (mv);
-	  else if (TREE_CODE (t) == ARRAY_TYPE)
-	    TYPE_ARRAY_MAX_SIZE (t) = TYPE_ARRAY_MAX_SIZE (mv);
-	  else if ((TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
-		   || TREE_CODE (t) == INTEGER_TYPE
-		   || TREE_CODE (t) == BOOLEAN_TYPE
-		   || TREE_CODE (t) == REAL_TYPE
-		   || TREE_CODE (t) == FIXED_POINT_TYPE)
-	    TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (mv);
-
-	  if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t))
-	    TYPE_BINFO (t) = TYPE_BINFO (mv);
-	}
-    }
-}
 
 /* For the type T re-materialize it in the type variant list and
    the pointer/reference-to chains.  */
@@ -1597,28 +1546,15 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      /* See if type is the main variant.  */
-      if (TYPE_MAIN_VARIANT (t1) == t1)
-	{
-	  /* Main variant can match only another main variant.  */
-	  if (TYPE_MAIN_VARIANT (t2) != t2)
-	    return false;
-
-	  compare_tree_edges (TYPE_SIZE (t1), TYPE_SIZE (t2));
-	  compare_tree_edges (TYPE_SIZE_UNIT (t1), TYPE_SIZE_UNIT (t2));
-	  compare_tree_edges (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2));
-	}
-      else
-	/* Compare main variant pointers, but do not compare fields that are
-	   shared in between type and the main variant since those are not
-	   streamed and not copied yet.  */
-        compare_tree_edges (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2));
-
+      compare_tree_edges (TYPE_SIZE (t1), TYPE_SIZE (t2));
+      compare_tree_edges (TYPE_SIZE_UNIT (t1), TYPE_SIZE_UNIT (t2));
+      compare_tree_edges (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2));
+      compare_tree_edges (TYPE_NAME (t1), TYPE_NAME (t2));
       /* Do not compare TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
 	 reconstructed during fixup.  */
       /* Do not compare TYPE_NEXT_VARIANT, we reconstruct the variant lists
 	 during fixup.  */
-      compare_tree_edges (TYPE_NAME (t1), TYPE_NAME (t2));
+      compare_tree_edges (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2));
       /* ???  Global types from different TUs have non-matching
 	 TRANSLATION_UNIT_DECLs.  Still merge them if they are otherwise
 	 equal.  */
@@ -1633,31 +1569,25 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      if (TYPE_MAIN_VARIANT (t1) == t1)
-	{
-	  if (code == ENUMERAL_TYPE)
-	    compare_tree_edges (TYPE_VALUES (t1), TYPE_VALUES (t2));
-	  else if (code == ARRAY_TYPE)
-	    compare_tree_edges (TYPE_DOMAIN (t1), TYPE_DOMAIN (t2));
-	  else if (RECORD_OR_UNION_TYPE_P (t1))
-	    compare_tree_edges (TYPE_BINFO (t1), TYPE_BINFO (t2));
-	  if (!POINTER_TYPE_P (t1))
-	    compare_tree_edges (TYPE_MINVAL (t1), TYPE_MINVAL (t2));
-	  compare_tree_edges (TYPE_MAXVAL (t1), TYPE_MAXVAL (t2));
-	}
-      if (RECORD_OR_UNION_TYPE_P (t1)
-	  && TYPE_FIELDS (t1) != TYPE_FIELDS (t2))
+      if (code == ENUMERAL_TYPE)
+	compare_tree_edges (TYPE_VALUES (t1), TYPE_VALUES (t2));
+      else if (code == ARRAY_TYPE)
+	compare_tree_edges (TYPE_DOMAIN (t1), TYPE_DOMAIN (t2));
+      else if (RECORD_OR_UNION_TYPE_P (t1))
 	{
 	  tree f1, f2;
-
 	  for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
 	       f1 || f2;
 	       f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	    compare_tree_edges (f1, f2);
+	  compare_tree_edges (TYPE_BINFO (t1), TYPE_BINFO (t2));
 	}
-      if (code == FUNCTION_TYPE
-	  || code == METHOD_TYPE)
+      else if (code == FUNCTION_TYPE
+	       || code == METHOD_TYPE)
 	compare_tree_edges (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
+      if (!POINTER_TYPE_P (t1))
+	compare_tree_edges (TYPE_MINVAL (t1), TYPE_MINVAL (t2));
+      compare_tree_edges (TYPE_MAXVAL (t1), TYPE_MAXVAL (t2));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -1958,19 +1888,12 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  || streamer_handle_as_builtin_p (first)))
 	    continue;
 
-	  /* Copy fileds we do not stream before unification so we can compare them
-	     without being worried if they are already initialized.  */
-	  for (unsigned i = 0; i < len; ++i)
-	    lto_copy_fields_not_streamed
-	       (streamer_tree_cache_get_tree (data_in->reader_cache, from + i));
-
 	  /* Try to unify the SCC with already existing ones.  */
 	  if (!flag_ltrans
 	      && unify_scc (data_in->reader_cache, from,
 			    len, scc_entry_len, scc_hash))
 	    continue;
 
-	  /* Do remaining fixup tasks for prevailing nodes.  */
 	  bool seen_type = false;
 	  for (unsigned i = 0; i < len; ++i)
 	    {

@@ -443,6 +443,10 @@ Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
 Warn whenever type qualifiers are ignored.
 
+Wincompatible-pointer-types
+C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
+Warn when there is a conversion between pointers that have incompatible types
+
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about variables which are initialized to themselves
@@ -469,6 +473,10 @@ C ObjC C++ ObjC++ Undocumented Ignore
 Winherited-variadic-ctor
 C++ ObjC++ Var(warn_inh_var_ctor) Init(1) Warning
 Warn about C++11 inheriting constructors when the base has a variadic constructor
+
+Wint-conversion
+C ObjC Var(warn_int_conversion) Init(1) Warning
+Warn about incompatible integer to pointer and pointer to integer conversions
 
 Wint-to-pointer-cast
 C ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
@@ -525,6 +533,10 @@ Warn about missing fields in struct initializers
 Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious length parameters to certain string functions if the argument uses sizeof
+
+Wsizeof-array-argument
+C ObjC C++ ObjC++ Var(warn_sizeof_array_argument) Warning Init(1)
+Warn when sizeof is applied on a parameter declared as an array
 
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning

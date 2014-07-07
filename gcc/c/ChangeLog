@@ -1,3 +1,33 @@
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* c-decl.c (grokdeclarator): Set C_ARRAY_PARAMETER.
+	* c-tree.h (C_ARRAY_PARAMETER): Define.
+	* c-typeck.c (c_expr_sizeof_expr): Warn when using sizeof on an array
+	function parameter.
+
+2014-07-02  Jan Hubicka  <hubicka@ucw.cz>
+	    Chen Gang <gang.chen.5i5j@gmail.com>
+
+	* c-decl.c (duplicate_decls): CLear DECL_STRUCT_FUNCTION before
+	releasing symbol.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (convert_for_assignment): Pass OPT_Wint_conversion
+	instead of 0 to WARN_FOR_ASSIGNMENT.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58286
+	* c-typeck.c (convert_for_assignment): Pass
+	OPT_Wincompatible_pointer_types instead of 0 to WARN_FOR_ASSIGNMENT.
+
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (grokdeclarator): Don't instrument VLAs if the function
+	has no_sanitize_undefined attribute.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541

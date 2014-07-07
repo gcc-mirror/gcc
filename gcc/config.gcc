@@ -414,6 +414,7 @@ mips*-*-*)
 nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h"
+	extra_objs="nds32-cost.o nds32-intrinsic.o nds32-isr.o nds32-md-auxiliary.o nds32-pipelines-auxiliary.o nds32-predicates.o nds32-memory-manipulation.o nds32-fp-as-gp.o"
 	;;
 nios2-*-*)
 	cpu_type=nios2
@@ -2117,13 +2118,13 @@ nds32le-*-*)
 	target_cpu_default="0"
 	tm_defines="${tm_defines}"
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	tmake_file="nds32/t-mlibs"
+	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nds32be-*-*)
 	target_cpu_default="0|MASK_BIG_ENDIAN"
 	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	tmake_file="nds32/t-mlibs"
+	tmake_file="nds32/t-nds32 nds32/t-mlibs"
 	;;
 nios2-*-*)
 	tm_file="elfos.h ${tm_file}"

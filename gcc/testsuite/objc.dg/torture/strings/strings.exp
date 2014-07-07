@@ -24,11 +24,11 @@ dg-init
 # Gather a list of all tests.
 set tests [lsort [glob -nocomplain $srcdir/$subdir/*.m]]
 
-objc-dg-runtest $tests "-fgnu-runtime"
+objc-dg-runtest $tests "" "-fgnu-runtime"
 
 # Darwin targets also test with the NeXT runtime.
 if [istarget "*-*-darwin*" ] {
-  objc-dg-runtest $tests "-fnext-runtime"
+  objc-dg-runtest $tests "" "-fnext-runtime"
 }
 
 dg-finish

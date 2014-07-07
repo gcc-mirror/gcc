@@ -52,6 +52,7 @@ contains
     if (any (a /= caf2)) then
       call abort()
     end if
+    sync all
 
     ! Scalar assignment
     caf = -42
@@ -76,6 +77,7 @@ contains
     if (any (a /= caf2)) then
       call abort()
     end if
+    sync all
 
     ! Array sections with different ranges and pos/neg strides
     do i_sgn1 = -1, 1, 2
@@ -101,6 +103,7 @@ contains
                     if (any (caf2 /= a)) then
                       call abort()
                     end if
+                    sync all
                   end do
                 end do
               end do
@@ -135,6 +138,7 @@ contains
     if (any (a /= caf2)) then
       call abort()
     end if
+    sync all
 
     ! Scalar assignment
     caf = -42
@@ -159,6 +163,7 @@ contains
     if (any (a /= caf2)) then
       call abort()
     end if
+    sync all
 
     ! Array sections with different ranges and pos/neg strides
     do i_sgn1 = -1, 1, 2
@@ -184,6 +189,7 @@ contains
                     if (any (caf2 /= a)) then
                       call abort()
                     end if
+                    sync all
                   end do
                 end do
               end do
@@ -218,6 +224,7 @@ contains
     if (any (a /= caf2)) then
       call abort()
     end if
+    sync all
 
     ! Scalar assignment
     caf = -42
@@ -242,6 +249,7 @@ contains
     if (any (a /= caf2)) then
       call abort()
     end if
+    sync all
 
     ! Array sections with different ranges and pos/neg strides
     do i_sgn1 = -1, 1, 2
@@ -267,6 +275,7 @@ contains
                     if (any (caf2 /= a)) then
                       call abort()
                     end if
+                    sync all
                   end do
                 end do
               end do

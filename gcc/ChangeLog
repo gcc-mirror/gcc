@@ -1,3 +1,469 @@
+2014-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* expmed.c (struct init_expmed_rtl): Change all fields but
+	pow2 and cint from struct rtx_def to rtx.
+	(init_expmed_one_conv, init_expmed_one_mode): Adjust for that change.
+	(init_expmed): Likewise.  Allocate all the 18 rtxes and ggc_free them
+	at the end again.
+
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* doc/invoke.texi: Document -Wsizeof-array-argument.
+
+2014-07-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* wide-int.h (wide_int_storage): Change declaration from struct
+	to class.
+
+2014-07-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_create_indirect_edge): Update call of
+	get_polymorphic_call_info.
+	* ipa-utils.h (get_polymorphic_call_info): Add parameter CALL.
+	(possible_polymorphic_call_targets): Add parameter call.
+	(decl_maybe_in_construction_p): New predicate.
+	(get_polymorphic_call_info): Add parameter call;
+	use decl_maybe_in_construction_p.
+	* gimple-fold.c (fold_gimple_assign): Update use of
+	possible_polymorphic_call_targets.
+	(gimple_fold_call): Likewise.
+	* ipa-prop.c: Inlcude calls.h
+	(ipa_binfo_from_known_type_jfunc): Check that known type is record.
+	(param_type_may_change_p): New predicate.
+	(detect_type_change_from_memory_writes): Break out from ...
+	(detect_type_change): ... this one; use param_type_may_change_p.
+	(detect_type_change_ssa): Use param_type_may_change_p.
+	(compute_known_type_jump_func): Use decl_maybe_in_construction_p.
+
+2014-07-05  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/49423
+	* config/arm/arm-protos.h (arm_legitimate_address_p,
+	arm_is_constant_pool_ref): Add prototypes.
+	* config/arm/arm.c (arm_legitimate_address_p): Remove static.
+	(arm_is_constant_pool_ref) New function.
+	* config/arm/arm.md (unaligned_loadhis, arm_zero_extendhisi2_v6,
+	arm_zero_extendqisi2_v6): Use Uh constraint for memory operand.
+	(arm_extendhisi2, arm_extendhisi2_v6): Use Uh constraint for memory
+	operand. Remove pool_range and neg_pool_range attributes.
+	(arm_extendqihi_insn, arm_extendqisi, arm_extendqisi_v6): Remove
+	pool_range and neg_pool_range attributes.
+	* config/arm/constraints.md (Uh): New constraint.
+	(Uq): Don't allow constant pool references.
+
+2014-07-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md (move_lo_quad_internal_<mode>): New.
+	(move_lo_quad_internal_be_<mode>): Likewise.
+	(move_lo_quad_<mode>): Convert to define_expand.
+	(aarch64_simd_move_hi_quad_<mode>): Gate on BYTES_BIG_ENDIAN.
+	(aarch64_simd_move_hi_quad_be_<mode>): New.
+	(move_hi_quad_<mode>): Use appropriate insn for BYTES_BIG_ENDIAN.
+	(aarch64_combinez<mode>): Gate on BYTES_BIG_ENDIAN.
+	(aarch64_combinez_be<mode>): New.
+	(aarch64_combine<mode>): Convert to define_expand.
+	(aarch64_combine_internal<mode>): New.
+	(aarch64_simd_combine<mode>): Remove bogus RTL description.
+
+2014-07-04  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/md.texi (@subsection Constraint Modifier Characters): Clarify
+	combination of earlyclobber and read/write modifiers.
+
+2014-07-04  Tom de Vries  <tom@codesourcery.com>
+
+	* config/aarch64/aarch64-simd.md
+	(define_insn "vec_unpack_trunc_<mode>"): Fix constraint.
+
+2014-07-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/61714
+	* config/aarch64/aarch64.h (OPTION_DEFAULT_SPECS): Define.
+
+2014-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61654
+	* cgraphunit.c (expand_thunk): Call free_dominance_info.
+
+	PR tree-optimization/61684
+	* tree-ssa-ifcombine.c (recognize_single_bit_test): Make sure
+	rhs1 of conversion is a SSA_NAME before using SSA_NAME_DEF_STMT on it.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c (nds32_have_prologue_p): Move to ...
+	(nds32_symbol_load_store_p): Move to ...
+	(nds32_fp_as_gp_check_available): Move to ...
+	* config/nds32/nds32-fp-as-gp.c: ... here.
+	* config/nds32/nds32-protos.h (nds32_symbol_load_store_p): Remove
+	extern declaration.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c (nds32_expand_load_multiple): Move to ...
+	(nds32_expand_store_multiple): Move to ...
+	(nds32_expand_movmemqi): Move to ...
+	* config/nds32/nds32-memory-manipulation.c: ... here.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c (nds32_byte_to_size): Move to ...
+	(nds32_output_casesi_pc_relative): Move to ...
+	(nds32_output_casesi): Move to ...
+	(nds32_mem_format): Move to ...
+	(nds32_output_16bit_store): Move to ...
+	(nds32_output_16bit_load): Move to ...
+	(nds32_output_32bit_store): Move to ...
+	(nds32_output_32bit_load): Move to ...
+	(nds32_output_32bit_load_s): Move to ...
+	(nds32_output_stack_push): Move to ...
+	(nds32_output_stack_pop): Move to ...
+	* config/nds32/nds32-md-auxiliary.c: ... here.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Ling-Hua Tseng  <uranus@tinlans.org>
+
+	* config/nds32/nds32-pipelines-auxiliary.c: Add comment to describe
+	the purpose of this file.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c (nds32_rtx_costs): Move implementation to ...
+	(nds32_address_cost): Move implementation to ...
+	* config/nds32/nds32-cost.c: ... here.
+	* config/nds32/nds32-protos.h (nds32_rtx_costs_impl): Declare.
+	(nds32_address_cost_impl): Declare.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c
+	(nds32_consecutive_registers_load_store_p): Move to ...
+	(nds32_valid_multiple_load_store): Move to ...
+	(nds32_valid_stack_push_pop): Move to ...
+	(nds32_can_use_bclr_p): Move to ...
+	(nds32_can_use_bset_p): Move to ...
+	(nds32_can_use_btgl_p): Move to ...
+	(nds32_can_use_bitci_p): Move to ...
+	* config/nds32/nds32-predicates.c: ... here.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c
+	(nds32_expand_builtin_null_ftype_reg): Move to ...
+	(nds32_expand_builtin_reg_ftype_imm): Move to ...
+	(nds32_expand_builtin_null_ftype_reg_imm): Move to ...
+	(nds32_init_builtins): Move implementation to ...
+	(nds32_expand_builtin): Move implementation to ...
+	* config/nds32/nds32-intrinsic.c: ... here.
+	* config/nds32/nds32-protos.h (nds32_init_builtins_impl): Declare.
+	(nds32_expand_builtin_impl): Declare.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/nds32.c (nds32_emit_section_head_template): Move to ...
+	(nds32_emit_section_tail_template): Move to ...
+	(nds32_emit_isr_jmptbl_section): Move to ...
+	(nds32_emit_isr_vector_section): Move to ...
+	(nds32_emit_isr_reset_conten): Move to ...
+	(nds32_check_isr_attrs_conflict): Move to ...
+	(nds32_construct_isr_vectors_information): Move to ...
+	(nds32_asm_file_start): Move implementation to ...
+	(nds32_asm_file_end): Move implementation to ...
+	* config/nds32/nds32-isr.c: ... here.
+	* config/nds32/nds32-protos.h
+	(nds32_check_isr_attrs_conflict): Declare.
+	(nds32_construct_isr_vectors_information): Declare.
+	(nds32_asm_file_start_for_isr): Declare.
+	(nds32_asm_file_end_for_isr): Declare.
+
+2014-07-04  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Kito Cheng  <kito@0xlab.org>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.gcc (nds32*): Add new modules to extra_objs.
+	(nds32le-*-*): Use t-nds32 makefile fragment for new modules.
+	(nds32be-*-*): Likewise.
+	* config/nds32/nds32-cost.c: New file.
+	* config/nds32/nds32-fp-as-gp.c: New file.
+	* config/nds32/nds32-intrinsic.c: New file.
+	* config/nds32/nds32-isr.c: New file.
+	* config/nds32/nds32-md-auxiliary.c: New file.
+	* config/nds32/nds32-memory-manipulation.c: New file.
+	* config/nds32/nds32-pipelines-auxiliary.c: New file.
+	* config/nds32/nds32-predicates.c: New file.
+	* config/nds32/t-nds32: New file.
+
+2014-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61682
+	* wide-int.cc (wi::mul_internal): Handle high correctly for umul_ppmm
+	using cases and when one of the operands is equal to 1.
+
+2014-07-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (rotl<mode>3, ashl<mode>3, lshr<mode>3,
+	ashr<mode>3): Correct mode of operands[2].
+	(rotl<mode>3_dot, rotl<mode>3_dot2, ashl<mode>3_dot, ashl<mode>3_dot2,
+	lshr<mode>3_dot, lshr<mode>3_dot2, ashr<mode>3_dot, ashr<mode>3_dot2):
+	Correct mode of operands[2].  Fix split condition.
+
+2014-07-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (arch): Add armv6_or_vfpv3.
+	(arch_enabled): Add test for the above.
+	* vfp.md (divsf_vfp, divdf_vfp): Add earlyclobber when code can run
+	on VFP9.
+	(sqrtsf_vfp, sqrtdf_vfp): Likewise.
+
+2014-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcov-io.c (gcov_read_words): Don't call memmove if excess is 0.
+	* data-streamer-in.c (streamer_read_hwi): Shift UHWI 1 instead of
+	HWI 1 and negate the unsigned value.
+	* expmed.c (expand_sdiv_pow2): For modes wider than word always
+	use AND instead of shift.
+	* wide-int-print.cc (print_decs): Negate UHWI instead of HWI.
+
+2014-07-03  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (-fsanitize=bounds): Tweak wording.
+	(-fsanitize=float-divide-by-zero): Move to the table with
+	-fsanitize=undefined suboptions.
+	(-fsanitize=float-cast-overflow): Likewise.
+
+2014-07-03  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_atomic_subword): Use
+	BYTES_BIG_ENDIAN rather than WORDS_BIG_ENDIAN to check for byte
+	endianness.
+
+2014-07-03  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* loop-invariant.c (struct invariant): Add a new member: eqno;
+	(find_identical_invariants): Update eqno;
+	(create_new_invariant): Init eqno;
+	(get_inv_cost): Compute comp_cost with eqno;
+
+2014-07-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genconfig.c (have_rotate_flag, have_rotatert_flag): New variables.
+	(walk_insn_part) <ROTATE, ROTATERT>: New cases.
+	(main): Conditionally write HAVE_rotate resp. HAVE_rotatert.
+	* simplify-rtx.c (simplify_binary_operation_1) <ROTATE, ROTATERT>:
+	Only do the transformation if both HAVE_rotate and HAVE_rotatert.
+
+2014-07-02  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/29349
+	PR target/53513
+	* mode-switching.c (struct bb_info): Add mode_out, mode_in caches.
+	(make_preds_opaque): Delete.
+	(clear_mode_bit, mode_bit_p, set_mode_bit): New macros.
+	(commit_mode_sets): New function.
+	(optimize_mode_switching): Handle current_mode to mode_switching_emit.
+	Process all modes at once.
+	* basic-block.h (pre_edge_lcm_avs): Declare.
+	* lcm.c (pre_edge_lcm_avs): Renamed from pre_edge_lcm.
+	Call clear_aux_for_edges. Fix comments.
+	(pre_edge_lcm): New wrapper function to call pre_edge_lcm_avs.
+	(pre_edge_rev_lcm): Idem.
+	* config/epiphany/epiphany.c (emit_set_fp_mode): Add prev_mode
+	parameter.
+	* config/epiphany/epiphany-protos.h (emit_set_fp_mode): Idem.
+	* config/epiphany/resolve-sw-modes.c (pass_resolve_sw_modes::execute):
+	Idem.
+	* config/i386/i386.c (x96_emit_mode_set): Idem.
+	* config/sh/sh.c (sh_emit_mode_set): Likewise. Handle PR toggle.
+	* config/sh/sh.md (toggle_pr): 	Defined if TARGET_FPU_SINGLE.
+	(fpscr_toggle) Disallow from delay slot.
+	* target.def (emit_mode_set): Add prev_mode parameter.
+	* doc/tm.texi: Regenerate.
+
+2014-07-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm): Delete unused
+	variable i.
+
+2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+
+	* ipa-utils.h (method_class_type, vtable_pointer_value_to_binfo,
+	vtable_pointer_value_to_vtable): Constify.
+	(contains_polymorphic_type_p): Declare.
+	* ipa-devirt.c (method_class_type, vtable_pointer_value_to_binfo,
+	vtable_pointer_value_to_vtable): Constify.
+	(contains_polymorphic_type_p): New predicate.
+	* ipa-prop.c (ipa_set_jf_known_type): Allow types containing
+	polymorphic types.
+	(ipa_set_ancestor_jf): Likewise.
+	(detect_type_change): Return false in easy cases.
+	(compute_complex_assign_jump_func): Require type to contain
+	polymorphic type.
+	(compute_known_type_jump_func): Likewise.
+
+2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+
+	* tree.c (decls_same_for_odr, decls_same_for_odr, types_same_for_odr):
+	Remove.
+	(type_in_anonymous_namespace_p): Constify argument.
+	* tree.h (types_same_for_odr, type_in_anonymous_namespace_p): Constify.
+	* ipa-devirt.c (odr_type_d): Add ODR_VIOLATED field.
+	(main_odr_variant): New function.
+	(hash_type_name): Make static; update assert; do not ICE on
+	non-records.
+	(types_same_for_odr): Bring here from tree.c; simplify and remove
+	old structural comparing code that doesn't work for templates.
+	(odr_hasher::equal): Update assert.
+	(add_type_duplicate): Return true when bases should be computed;
+	replace incomplete loader by complete; do not output duplicated
+	warnings; do not ICE on non-records; set odr_violated flag.
+	(get_odr_type): Be ready to replace incomplete type by complete
+	one; work on ODR variants instead of main variants; reorder item
+	in array so bases have still smaller indexes.
+	(dump_type_inheritance_graph): Be ready for holdes in odr_types array.
+	(possible_polymorphic_call_targets): Do not ICE when BINFO is NULL.
+
+2014-07-01  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (remove_addr_table_entry): Remove unnecessary hash table
+	lookup.
+	(resolve_addr_in_expr): When replacing the rtx in a location list
+	entry, get a new address table entry.
+	(dwarf2out_finish): Call index_location_lists even if there are no
+	addr_index_table entries yet.
+
+2014-07-01  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/winnt.c (i386_pe_section_type_flags): Revert previous
+	change for not being obvious.
+
+2014-07-01  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/winnt.c (i386_pe_section_type_flags): Remove name of
+	unused argument.
+
+2014-07-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vcage_f64): New intrinsic.
+	(vcagt_f64): Likewise.
+	(vcale_f64): Likewise.
+	(vcaled_f64): Likewise.
+	(vcales_f32): Likewise.
+	(vcalt_f64): Likewise.
+	(vcaltd_f64): Likewise.
+	(vcalts_f32): Likewise.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document -Wint-conversion.
+
+2014-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58286
+	* doc/invoke.texi: Document -Wincompatible-pointer-types.
+
+2014-07-01  Martin Liska  <mliska@suse.cz>
+
+	IPA REF alias refactoring
+	* cgraph.h (iterate_direct_aliases): New function.
+	(FOR_EACH_ALIAS): New macro iterates all direct aliases for a node.
+	* cgraph.c (cgraph_for_node_thunks_and_aliases): Usage of
+	FOR_EACH_ALIAS added.
+	(cgraph_for_node_and_aliases): Likewise.
+	* cgraphunit.c (assemble_thunks_and_aliases): Likewise.
+	* ipa-inline.c (reset_edge_caches): Likewise.
+	(update_caller_keys): Likewise.
+	* trans-mem.c (ipa_tm_execute): Likewise.
+	*varpool.c (varpool_analyze_node): Likewise.
+	(varpool_for_node_and_aliases): Likewise.
+	* ipa-ref.h (first_alias): New function.
+	(last_alias): Likewise.
+	(has_aliases_p): Likewise.
+	* ipa-ref.c (ipa_ref::remove_reference): Removal function
+	is sensitive to IPA_REF_ALIASes.
+	* symtab.c (symtab_node::add_reference): Node of IPA_REF_ALIAS type
+	are put at the beginning of the list.
+	(symtab_node::iterate_direct_aliases): New function.
+
+2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	Revert:
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if
+	type is complete.
+	(write_ts_type_common_tree_pointers): Do not stream fields not set
+	for incomplete types; do not stream duplicated fields for variants;
+	sanity check that variant and type match.
+	(write_ts_type_non_common_tree_pointers): Likewise.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in
+	TYPE_SIZE whether type is complete.
+	(lto_input_ts_type_common_tree_pointers): Do same changes as in
+	write_ts_type_common_tree_pointers
+	(lto_input_ts_type_non_common_tree_pointers): Likewise.
+
+2014-06-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* var-tracking.c (add_stores): Return instead of asserting if old
+	and new values for conditional store are the same.
+
+2014-06-30  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/61608
+	PR target/39284
+	* bb-reorder.c (pass_duplicate_computed_gotos::execute): Cleanup
+	the cfg if there were any changes.
+	* passes.def: Revert move of peephole2 after reorder_blocks;
+	move duplicate_computed_gotos before peephole2.
+
+2014-06-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* except.c (emit_note_eh_region_end): New helper function.
+	(convert_to_eh_region_ranges): Use emit_note_eh_region_end to
+	emit EH_REGION_END note.
+	* jump.c (cleanup_barriers): Do not split a call and its
+	corresponding CALL_ARG_LOCATION note.
+
+2014-06-30  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61607
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Look
+	deeper into the SSA_NAME_VALUE chain.
+
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* convert.c (convert_to_integer): Don't instrument conversions if the
+	function has no_sanitize_undefined attribute.
+	* ubsan.c: Don't run the ubsan pass if the function has
+	no_sanitize_undefined attribute.
+
+2014-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-fsanitize=bounds): Move to the table with
+	-fsanitize=undefined suboptions.
+
+2014-06-30  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_perm): Enable for bigendian.
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm): Remove assert
+	against bigendian and adjust indices.
+
+2014-06-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific, aarch64*-*-*): Fix markup.  Reword a bit.
+
 2014-06-30  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	PR target/61633
@@ -7,8 +473,8 @@
 
 2014-06-30  Jakub Jelinek  <jakub@redhat.com>
 
-	* ira-build.c (sort_conflict_id_map): Don't call
-	qsort if num is 0, as ira_object_id_map might be NULL, or 1.
+	* ira-build.c (sort_conflict_id_map): Don't call qsort if num is 0,
+	as ira_object_id_map might be NULL, or 1.
 
 2014-06-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
@@ -33,56 +499,46 @@
 
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
-	* Makefile.in:
-	Add the compilation of graphite-isl-ast-to-gimple.o.
-	* common.opt:
-	Add new switch fgraphite-code-generator=[isl|cloog].
-	* flag-types.h:
-	Add new enum fgraphite_generator.
+	* Makefile.in: Add the compilation of graphite-isl-ast-to-gimple.o.
+	* common.opt: Add new switch fgraphite-code-generator=[isl|cloog].
+	* flag-types.h: Add new enum fgraphite_generator.
 	* graphite-isl-ast-to-gimple.c: New.
 	* graphite-isl-ast-to-gimple.h: New.
-	* graphite.c (graphite_transform_loops):
-	Add choice of Graphite code generator,
-	which depends on flag_graphite_code_gen.
-
-	testsuite/gcc.dg/graphite/isl-codegen-loop-dumping.c:
-	New testcase that checks that the dump is generated.
+	* graphite.c (graphite_transform_loops): Add choice of Graphite
+	code generator, which depends on flag_graphite_code_gen.
 
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
-	* graphite-dependences.c (subtract_commutative_associative_deps): 
-	Add NULL checking of the following variables: must_raw_no_source, 
-	may_raw_no_source, must_war_no_source, may_war_no_source, 
-	must_waw_no_source, may_waw_no_source, must_raw, may_raw, 
-	must_war, may_war, must_waw, may_waw
-
-	testsuite/gfortran.dg/graphite/pr59586.f: New testcase.
+	* graphite-dependences.c (subtract_commutative_associative_deps):
+	Add NULL checking of the following variables: must_raw_no_source,
+	may_raw_no_source, must_war_no_source, may_war_no_source,
+	must_waw_no_source, may_waw_no_source, must_raw, may_raw,
+	must_war, may_war, must_waw, may_waw.
 
 2014-06-29  Roman Gareev  <gareevroman@gmail.com>
 
-	* graphite-clast-to-gimple.c:
-	gloog is renamed to graphite_regenerate_ast_cloog.
-	gloog_error is renamed to graphite_regenerate_error.
-	* graphite-clast-to-gimple.h:
-	The definition of the struct bb_pbb_def is moved to graphite-htab.h.
+	* graphite-clast-to-gimple.c: gloog is renamed to
+	graphite_regenerate_ast_cloog.  gloog_error is renamed to
+	graphite_regenerate_error.
+	* graphite-clast-to-gimple.h: The definition of the struct
+	bb_pbb_def is moved to graphite-htab.h.
 	Add inclusion of the hash-table.h.
-	* graphite-htab.h:
-	The declaration of the function gloog is moved
+	* graphite-htab.h: The declaration of the function gloog is moved
 	to graphite-clast-to-gimple.h and renamed to
 	graphite_regenerate_ast_cloog.
-	* graphite.c (graphite_transform_loops):
-	gloog is renamed to graphite_regenerate_ast_cloog.
+	* graphite.c (graphite_transform_loops): gloog is renamed
+	to graphite_regenerate_ast_cloog.
 
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
-	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if type
-	is complete.
-	(write_ts_type_common_tree_pointers): Do not stream fields not set for incomplete
-	types; do not stream duplicated fields for variants; sanity check that variant
-	and type match.
-	(write_ts_type_non_common_tree_pointers): Likewise.
-	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in TYPE_SIZE whether
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream if
 	type is complete.
+	(write_ts_type_common_tree_pointers): Do not stream fields not set
+	for incomplete types; do not stream duplicated fields for variants;
+	sanity check that variant and type match.
+	(write_ts_type_non_common_tree_pointers): Likewise.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Mark in
+	TYPE_SIZE whether type is complete.
 	(lto_input_ts_type_common_tree_pointers): Do same changes as in
 	write_ts_type_common_tree_pointers
 	(lto_input_ts_type_non_common_tree_pointers): Likewise.
@@ -112,15 +568,15 @@
 	(get_odr_type): Sanity check that binfos points to main variants.
 	(get_class_context): Be sure the context's outer_type is main variant.
 	(contains_type_p): Walk main variant.
-	(get_polymorphic_call_info_for_decl): Set outer_type to be main variant.
+	(get_polymorphic_call_info_for_decl): Set outer_type to be
+	main variant.
 	(get_polymorphic_call_info): Likewise.
-	(possible_polymorphic_call_targets): Sanity check that we operate on main
-	variant.
+	(possible_polymorphic_call_targets): Sanity check that we operate
+	on main variant.
 
 2014-06-28  Jan Hubicka  <hubicka@ucw.cz>
 
-	* stor-layout.c (finish_builtin_struct): Copy fields into
-	the variants.
+	* stor-layout.c (finish_builtin_struct): Copy fields into the variants.
 
 2014-06-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -131,22 +587,19 @@
 
 	* configure.ac (gcc_cv_as_compress_debug): Check for assembler
 	compressed debug support.
-	(gcc_cv_ld_compress_debug): Check for linker compressed debug
-	support.
+	(gcc_cv_ld_compress_debug): Check for linker compressed debug support.
 	* configure: Regenerate.
 	* config.in: Regenerate.
 	* common.opt (compressed_debug_sections): New enum.
 	(gz, gz=): New options.
-	* gcc.c (LINK_COMPRESS_DEBUG_SPEC, ASM_COMPRESS_DEBUG_SPEC):
-	Define.
+	* gcc.c (LINK_COMPRESS_DEBUG_SPEC, ASM_COMPRESS_DEBUG_SPEC): Define.
 	(LINK_COMMAND_SPEC): Invoke LINK_COMPRESS_DEBUG_SPEC.
 	(asm_options): Invoke ASM_COMPRESS_DEBUG_SPEC.
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Invoke
 	LINK_COMPRESS_DEBUG_SPEC.
 	* config/i386/djgpp.h (LINK_COMMAND_SPEC): Likewise.
 	* opts.c (common_handle_option): Handle OPT_gz, OPT_gz_.
-	* doc/invoke.texi (Option Summary, Debugging Options): Add
-	-gz[=type].
+	* doc/invoke.texi (Option Summary, Debugging Options): Add -gz[=type].
 	(Debugging Options): Document -gz[=type].
 
 2014-06-27  Martin Jambor  <mjambor@suse.cz>
@@ -210,17 +663,6 @@
 	PR target/61542
 	* config/rs6000/vsx.md (vsx_extract_v4sf): Fix bug with element
 	extraction other than index 3.
-
-2014-06-26  Teresa Johnson  <tejohnson@google.com>
-
-	* c-family/c-common.h (get_dump_info): Declare.
-	* c-family/c-gimplify.c (c_genericize): Use saved dump files.
-	* c-family/c-opts.c (c_common_parse_file): Begin and end dumps
-	once around parsing invocation.
-	(get_dump_info): New function.
-	* cp/class.c (dump_class_hierarchy): Use saved dump files.
-	(dump_vtable): Ditto.
-	(dump_vtt): Ditto.
 
 2014-06-26  Teresa Johnson  <tejohnson@google.com>
 

@@ -1,3 +1,24 @@
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* testsuite/libgomp.c/appendix-a/a.29.1.c (f): Add dg-warnings.
+
+2014-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_target_compile): If $source
+	matches regex $lang_source_re, add $lang_include_flags to options.
+	* testsuite/libgomp.c/c.exp: Unset lang_include_flags.
+	* testsuite/libgomp.c++/c++.exp: Likewise.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.  Set lang_source_re
+	and lang_include_flags instead of adding -fintrinsic-modules-path= to
+	ALWAYS_CFLAGS.
+	* testsuite/libgomp.graphite/graphite.exp: Unset lang_include_flags.
+
+2014-07-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/fortran.exp: Explain
+	gfortran-dg-runtest usage.
+
 2014-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.fortran/simd5.f90: New test.

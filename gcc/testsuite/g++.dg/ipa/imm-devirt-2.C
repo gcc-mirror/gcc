@@ -1,7 +1,7 @@
 /* Verify that virtual calls are folded even early inlining puts them into one
    function with the definition.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-fre1-details"  } */
+/* { dg-options "-O2 -fdump-tree-einline"  } */
 
 extern "C" void abort (void);
 
@@ -91,5 +91,6 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "converting indirect call to function" "fre1"  } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */
+/* We fold into thunk of C. Eventually we should inline the thunk.  */
+/* { dg-final { scan-tree-dump "C::_ZThn24_N1C3fooEi \\(" "einline"  } } */
+/* { dg-final { cleanup-tree-dump "einline" } } */

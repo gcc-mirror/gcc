@@ -1,7 +1,7 @@
 /* Verify that virtual calls are folded even early inlining puts them into one
    function with the definition.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-fre1-details"  } */
+/* { dg-options "-O2 -fdump-tree-einline"  } */
 
 extern "C" void abort (void);
 
@@ -58,5 +58,10 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "converting indirect call to function virtual int B::foo" "fre1"  } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */
+/* middleman_2 gets early inlined and the virtual call should get turned to
+   a direct call.  */
+/* { dg-final { scan-tree-dump "Inlining int middleman_1" "einline"  } } */
+/* { dg-final { scan-tree-dump "Inlining int middleman_2" "einline"  } } */
+/* { dg-final { scan-tree-dump "B::foo \\(" "einline"  } } */
+/* { dg-final { scan-tree-dump-times "OBJ_TYPE_REF" 2 "einline"  } } */
+/* { dg-final { cleanup-tree-dump "einline" } } */

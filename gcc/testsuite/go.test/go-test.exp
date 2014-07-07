@@ -152,7 +152,7 @@ proc errchk { test opts } {
 
     set hold_runtests $runtests
     set runtests "go-test.exp"
-    go-dg-runtest $filename "-fno-show-column $DEFAULT_GOCFLAGS $opts"
+    go-dg-runtest $filename "" "-fno-show-column $DEFAULT_GOCFLAGS $opts"
     set runtests $hold_runtests
 
     file delete $filename
@@ -176,7 +176,7 @@ proc go-execute-xfail { test } {
 
     set hold_runtests $runtests
     set runtests "go-test.exp"
-    go-dg-runtest $filename "-w $DEFAULT_GOCFLAGS"
+    go-dg-runtest $filename "" "-w $DEFAULT_GOCFLAGS"
     set runtests $hold_runtests
 
     file delete $filename
@@ -524,7 +524,7 @@ proc go-gc-tests { } {
 	     || $test_line == "// echo bug395 is broken  # takes 90+ seconds to break" } {
 	    # This is a vanilla compile test.
 	    set dg-do-what-default "assemble"
-	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
+	    go-dg-runtest $test "" "-w $DEFAULT_GOCFLAGS"
 	} elseif { $test_line == "// run"
 		   || $test_line == "// \$G \$F.go && \$L \$F.\$A && ./\$A.out" } {
 	    # This is a vanilla execution test.
@@ -533,7 +533,7 @@ proc go-gc-tests { } {
 	} elseif { $test_line == "// build" } {
 	    # This is a vanilla compile and link test.
 	    set dg-do-what-default "link"
-	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
+	    go-dg-runtest $test "" "-w $DEFAULT_GOCFLAGS"
 	} elseif { [string match "// runoutput*" $test_line] \
 		       || ($test_line == "// \$G \$D/\$F.go && \$L \$F.\$A &&"
 			   && $test_line2 == "// ./\$A.out >tmp.go && \$G tmp.go && \$L -o \$A.out1 tmp.\$A && ./\$A.out1") } {

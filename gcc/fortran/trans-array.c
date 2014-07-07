@@ -298,7 +298,6 @@ gfc_conv_descriptor_token (tree desc)
 
   type = TREE_TYPE (desc);
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-  gcc_assert (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE);
   gcc_assert (gfc_option.coarray == GFC_FCOARRAY_LIB);
   field = gfc_advance_chain (TYPE_FIELDS (type), CAF_TOKEN_FIELD);
 

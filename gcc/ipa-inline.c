@@ -1119,8 +1119,7 @@ reset_edge_caches (struct cgraph_node *node)
   struct cgraph_edge *edge;
   struct cgraph_edge *e = node->callees;
   struct cgraph_node *where = node;
-  int i;
-  struct ipa_ref *ref = NULL;
+  struct ipa_ref *ref;
 
   if (where->global.inlined_to)
     where = where->global.inlined_to;
@@ -1131,9 +1130,9 @@ reset_edge_caches (struct cgraph_node *node)
   for (edge = where->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
       reset_edge_growth_cache (edge);
-  for (i = 0; where->iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      reset_edge_caches (dyn_cast <cgraph_node *> (ref->referring));
+
+  FOR_EACH_ALIAS (where, ref)
+    reset_edge_caches (dyn_cast <cgraph_node *> (ref->referring));
 
   if (!e)
     return;
@@ -1172,8 +1171,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
 		    struct cgraph_edge *check_inlinablity_for)
 {
   struct cgraph_edge *edge;
-  int i;
-  struct ipa_ref *ref = NULL;
+  struct ipa_ref *ref;
 
   if ((!node->alias && !inline_summary (node)->inlinable)
       || node->global.inlined_to)
@@ -1181,12 +1179,11 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
 
-  for (i = 0; node->iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-        update_caller_keys (heap, alias, updated_nodes, check_inlinablity_for);
-      }
+  FOR_EACH_ALIAS (node, ref)
+    {
+      struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      update_caller_keys (heap, alias, updated_nodes, check_inlinablity_for);
+    }
 
   for (edge = node->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)

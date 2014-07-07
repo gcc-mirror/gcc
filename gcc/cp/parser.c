@@ -1899,7 +1899,7 @@ static tree cp_parser_string_literal
 static tree cp_parser_userdef_char_literal
   (cp_parser *);
 static tree cp_parser_userdef_string_literal
-  (cp_token *);
+  (tree);
 static tree cp_parser_userdef_numeric_literal
   (cp_parser *);
 
@@ -3721,8 +3721,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 	{
 	  tree literal = build_userdef_literal (suffix_id, value,
 						OT_NONE, NULL_TREE);
-	  tok->u.value = literal;
-	  return cp_parser_userdef_string_literal (tok);
+	  value = cp_parser_userdef_string_literal (literal);
 	}
     }
   else
@@ -3970,9 +3969,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
    as arguments.  */
 
 static tree
-cp_parser_userdef_string_literal (cp_token *token)
+cp_parser_userdef_string_literal (tree literal)
 {
-  tree literal = token->u.value;
   tree suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree value = USERDEF_LITERAL_VALUE (literal);
@@ -4109,6 +4107,7 @@ complain_flags (bool decltype_p)
      this
      ( expression )
      id-expression
+     lambda-expression (C++11)
 
    GNU Extensions:
 
@@ -7621,10 +7620,10 @@ cp_parser_delete_expression (cp_parser* parser)
 			tf_warning_or_error);
 }
 
-/* Returns true if TOKEN may start a cast-expression and false
-   otherwise.  */
+/* Returns 1 if TOKEN may start a cast-expression and, in C++11,
+   isn't '[', -1 if TOKEN is '[' in C++11, 0 otherwise.  */
 
-static bool
+static int
 cp_parser_tokens_start_cast_expression (cp_parser *parser)
 {
   cp_token *token = cp_lexer_peek_token (parser->lexer);
@@ -7667,7 +7666,7 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
     case CPP_OR:
     case CPP_OR_OR:
     case CPP_EOF:
-      return false;
+      return 0;
 
     case CPP_OPEN_PAREN:
       /* In ((type ()) () the last () isn't a valid cast-expression,
@@ -7675,12 +7674,15 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
       return cp_lexer_peek_nth_token (parser->lexer, 2)->type
 	     != CPP_CLOSE_PAREN;
 
-      /* '[' may start a primary-expression in obj-c++.  */
+      /* '[' may start a primary-expression in obj-c++ and in C++11,
+	 as a lambda-expression, eg, '(void)[]{}'.  */
     case CPP_OPEN_SQUARE:
+      if (cxx_dialect >= cxx11)
+	return -1;
       return c_dialect_objc ();
 
     default:
-      return true;
+      return 1;
     }
 }
 
@@ -7705,7 +7707,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
     {
       tree type = NULL_TREE;
       tree expr = NULL_TREE;
-      bool cast_expression_p;
+      int cast_expression = 0;
       const char *saved_message;
 
       /* There's no way to know yet whether or not this is a cast.
@@ -7728,6 +7730,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	 will commit to the parse at that point, because we cannot
 	 undo the action that is done when creating a new class.  So,
 	 then we cannot back up and do a postfix-expression.
+
 	 Another tricky case is the following (c++/29234):
 
          struct S { void operator () (); };
@@ -7746,20 +7749,30 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	 we are dealing with an unary-expression, a postfix-expression
 	 or something else.
 
+	 Yet another tricky case, in C++11, is the following (c++/54891):
+
+	 (void)[]{};
+
+         The issue is that usually, besides the case of lambda-expressions,
+	 the parenthesized type-id cannot be followed by '[', and, eg, we
+	 want to parse '(C ())[2];' in parse/pr26997.C as unary-expression.
+	 Thus, if cp_parser_tokens_start_cast_expression returns -1, below
+	 we don't commit, we try a cast-expression, then an unary-expression.
+
 	 Save tokens so that we can put them back.  */
       cp_lexer_save_tokens (parser->lexer);
 
       /* We may be looking at a cast-expression.  */
-      cast_expression_p
-	= (cp_parser_skip_to_closing_parenthesis (parser, false, false,
-						  /*consume_paren=*/true)
-	   && cp_parser_tokens_start_cast_expression (parser));
+      if (cp_parser_skip_to_closing_parenthesis (parser, false, false,
+						 /*consume_paren=*/true))
+	cast_expression
+	  = cp_parser_tokens_start_cast_expression (parser);
 
       /* Roll back the tokens we skipped.  */
       cp_lexer_rollback_tokens (parser->lexer);
       /* If we aren't looking at a cast-expression, simulate an error so
-	 that the call to cp_parser_parse_definitely below will fail.  */
-      if (!cast_expression_p)
+	 that the call to cp_parser_error_occurred below returns true.  */
+      if (!cast_expression)
 	cp_parser_simulate_error (parser);
       else
 	{
@@ -7780,30 +7793,37 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	 function returning T.  */
       if (!cp_parser_error_occurred (parser))
 	{
-	  cp_parser_parse_definitely (parser);
+	  /* Only commit if the cast-expression doesn't start with '[' in
+	     C++11, which may or may not start a lambda-expression.  */
+	  if (cast_expression > 0)
+	    cp_parser_commit_to_topmost_tentative_parse (parser);
+
 	  expr = cp_parser_cast_expression (parser,
 					    /*address_p=*/false,
 					    /*cast_p=*/true,
 					    /*decltype_p=*/false,
 					    pidk);
 
-	  /* Warn about old-style casts, if so requested.  */
-	  if (warn_old_style_cast
-	      && !in_system_header_at (input_location)
-	      && !VOID_TYPE_P (type)
-	      && current_lang_name != lang_name_c)
-	    warning (OPT_Wold_style_cast, "use of old-style cast");
+	  if (cp_parser_parse_definitely (parser))
+	    {
+	      /* Warn about old-style casts, if so requested.  */
+	      if (warn_old_style_cast
+		  && !in_system_header_at (input_location)
+		  && !VOID_TYPE_P (type)
+		  && current_lang_name != lang_name_c)
+		warning (OPT_Wold_style_cast, "use of old-style cast");
 
-	  /* Only type conversions to integral or enumeration types
-	     can be used in constant-expressions.  */
-	  if (!cast_valid_in_integral_constant_expression_p (type)
-	      && cp_parser_non_integral_constant_expression (parser,
-							     NIC_CAST))
-	    return error_mark_node;
+	      /* Only type conversions to integral or enumeration types
+		 can be used in constant-expressions.  */
+	      if (!cast_valid_in_integral_constant_expression_p (type)
+		  && cp_parser_non_integral_constant_expression (parser,
+								 NIC_CAST))
+		return error_mark_node;
 
-	  /* Perform the cast.  */
-	  expr = build_c_cast (input_location, type, expr);
-	  return expr;
+	      /* Perform the cast.  */
+	      expr = build_c_cast (input_location, type, expr);
+	      return expr;
+	    }
 	}
       else 
         cp_parser_abort_tentative_parse (parser);
@@ -23202,10 +23222,17 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 	    ok = false;
 	}
       if (!ok)
-	error ("literal operator template %qD has invalid parameter list."
-	       "  Expected non-type template argument pack <char...>"
-	       " or <typename CharT, CharT...>",
-	       decl);
+	{
+	  if (cxx_dialect >= cxx1y)
+	    error ("literal operator template %qD has invalid parameter list."
+		   "  Expected non-type template argument pack <char...>"
+		   " or <typename CharT, CharT...>",
+		   decl);
+	  else
+	    error ("literal operator template %qD has invalid parameter list."
+		   "  Expected non-type template argument pack <char...>",
+		   decl);
+	}
     }
   /* Register member declarations.  */
   if (member_p && !friend_p && decl && !DECL_CLASS_TEMPLATE_P (decl))

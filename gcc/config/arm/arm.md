@@ -127,7 +127,7 @@
 ; for ARM or Thumb-2 with arm_arch6, and nov6 for ARM without
 ; arm_arch6.  This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
-(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,neon_for_64bits,avoid_neon_for_64bits,iwmmxt,iwmmxt2"
+(define_attr "arch" "any,a,t,32,t1,t2,v6,nov6,neon_for_64bits,avoid_neon_for_64bits,iwmmxt,iwmmxt2,armv6_or_vfpv3"
   (const_string "any"))
 
 (define_attr "arch_enabled" "no,yes"
@@ -174,7 +174,12 @@
 
 	 (and (eq_attr "arch" "iwmmxt2")
 	      (match_test "TARGET_REALLY_IWMMXT2"))
-	 (const_string "yes")]
+	 (const_string "yes")
+
+	 (and (eq_attr "arch" "armv6_or_vfpv3")
+	      (match_test "arm_arch6 || TARGET_VFP3"))
+	 (const_string "yes")
+	]
 
 	(const_string "no")))
 
@@ -4147,7 +4152,7 @@
 (define_insn "unaligned_loadhis"
   [(set (match_operand:SI 0 "s_register_operand" "=l,r")
 	(sign_extend:SI
-	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uw,m")]
+	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uw,Uh")]
 		     UNSPEC_UNALIGNED_LOAD)))]
   "unaligned_access && TARGET_32BIT"
   "ldr%(sh%)\t%0, %1\t@ unaligned"
@@ -4959,7 +4964,7 @@
 
 (define_insn "*arm_zero_extendhisi2_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,Uh")))]
   "TARGET_ARM && arm_arch6"
   "@
    uxth%?\\t%0, %1
@@ -5030,7 +5035,7 @@
 
 (define_insn "*arm_zero_extendqisi2_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,Uh")))]
   "TARGET_ARM && arm_arch6"
   "@
    uxtb%(%)\\t%0, %1
@@ -5190,31 +5195,27 @@
 
 (define_insn "*arm_extendhisi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+	(sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,Uh")))]
   "TARGET_ARM && arm_arch4 && !arm_arch6"
   "@
    #
    ldr%(sh%)\\t%0, %1"
   [(set_attr "length" "8,4")
    (set_attr "type" "alu_shift_reg,load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,256")
-   (set_attr "neg_pool_range" "*,244")]
+   (set_attr "predicable" "yes")]
 )
 
 ;; ??? Check Thumb-2 pool range
 (define_insn "*arm_extendhisi2_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+	(sign_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,Uh")))]
   "TARGET_32BIT && arm_arch6"
   "@
    sxth%?\\t%0, %1
    ldr%(sh%)\\t%0, %1"
   [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
-   (set_attr "pool_range" "*,256")
-   (set_attr "neg_pool_range" "*,244")]
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*arm_extendhisi2addsi"
@@ -5257,9 +5258,7 @@
   "TARGET_ARM && arm_arch4"
   "ldr%(sb%)\\t%0, %1"
   [(set_attr "type" "load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "256")
-   (set_attr "neg_pool_range" "244")]
+   (set_attr "predicable" "yes")]
 )
 
 (define_expand "extendqisi2"
@@ -5299,9 +5298,7 @@
    ldr%(sb%)\\t%0, %1"
   [(set_attr "length" "8,4")
    (set_attr "type" "alu_shift_reg,load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,256")
-   (set_attr "neg_pool_range" "*,244")]
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*arm_extendqisi_v6"
@@ -5313,9 +5310,7 @@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
   [(set_attr "type" "extend,load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,256")
-   (set_attr "neg_pool_range" "*,244")]
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*arm_extendqisi2addsi"

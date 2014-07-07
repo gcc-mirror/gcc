@@ -48,6 +48,8 @@ esac
 # Some targets require additional compiler options for NaN/Inf.
 ieee_flags=
 case "${host_cpu}" in
+  alpha*)
+    ieee_flags="-mieee" ;;
   sh*)
     ieee_flags="-mieee" ;;
 esac

@@ -1304,6 +1304,6 @@ proc mips-gcc-dg-test { prog do_what extra_tool_flags } {
 dg-init
 mips-dg-init
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
-    "-DNOMIPS16=__attribute__((nomips16)) -DNOMICROMIPS=__attribute__((nomicromips)) -DNOCOMPRESSION=__attribute__((nocompression))"
+    "" "-DNOMIPS16=__attribute__((nomips16)) -DNOMICROMIPS=__attribute__((nomicromips)) -DNOCOMPRESSION=__attribute__((nocompression))"
 mips-dg-finish
 dg-finish

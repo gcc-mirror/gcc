@@ -27,11 +27,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    feenableexcept function in fenv.h to set individual exceptions
    (there's nothing to do that in C99).  */
 
-#include <assert.h>
-
 #ifdef HAVE_FENV_H
 #include <fenv.h>
 #endif
+
+
+/* Check we can actually store the FPU state in the allocated size.  */
+_Static_assert (sizeof(fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
+		"GFC_FPE_STATE_BUFFER_SIZE is too small");
 
 
 void set_fpu_trap_exceptions (int trap, int notrap)
@@ -43,7 +46,7 @@ void set_fpu_trap_exceptions (int trap, int notrap)
     fedisableexcept (FE_INVALID);
 #endif
 
-/* glibc does never have a FE_DENORMAL.  */
+/* Some glibc targets (like alpha) have FE_DENORMAL, but not many.  */
 #ifdef FE_DENORMAL
   if (trap & GFC_FPE_DENORMAL)
     feenableexcept (FE_DENORMAL);
@@ -130,7 +133,6 @@ void set_fpu (void)
 	        "exception not supported.\n");
 #endif
 
-/* glibc does never have a FE_DENORMAL.  */
 #ifndef FE_DENORMAL
   if (options.fpe & GFC_FPE_DENORMAL)
     estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
@@ -387,18 +389,21 @@ support_fpu_rounding_mode (int mode)
 	return 0;
 #endif
 
+      case GFC_FPE_UPWARD:
 #ifdef FE_UPWARD
 	return 1;
 #else
 	return 0;
 #endif
 
+      case GFC_FPE_DOWNWARD:
 #ifdef FE_DOWNWARD
 	return 1;
 #else
 	return 0;
 #endif
 
+      case GFC_FPE_TOWARDZERO:
 #ifdef FE_TOWARDZERO
 	return 1;
 #else
@@ -414,9 +419,6 @@ support_fpu_rounding_mode (int mode)
 void
 get_fpu_state (void *state)
 {
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
-
   fegetenv (state);
 }
 
@@ -424,9 +426,6 @@ get_fpu_state (void *state)
 void
 set_fpu_state (void *state)
 {
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
-
   fesetenv (state);
 }
 

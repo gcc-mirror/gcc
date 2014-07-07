@@ -8073,13 +8073,10 @@ build_ptrmemfunc_type (tree type)
     unqualified_variant
       = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
-  t = make_class_type (RECORD_TYPE);
-  xref_basetypes (t, NULL_TREE);
+  t = make_node (RECORD_TYPE);
 
-  /* Let the front end know this is a pointer to member function...  */
+  /* Let the front end know this is a pointer to member function.  */
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
-  /* ... and not really a class type.  */
-  SET_CLASS_TYPE_P (t, 0);
 
   field = build_decl (input_location, FIELD_DECL, pfn_identifier, type);
   fields = field;
@@ -8109,7 +8106,6 @@ build_ptrmemfunc_type (tree type)
       TYPE_MAIN_VARIANT (t) = unqualified_variant;
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (unqualified_variant);
       TYPE_NEXT_VARIANT (unqualified_variant) = t;
-      TREE_TYPE (TYPE_BINFO (t)) = t;
     }
 
   /* Cache this pointer-to-member type so that we can find it again
@@ -8469,7 +8465,11 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 			     throw_bad_array_length (), void_node);
 	      finish_expr_stmt (comp);
 	    }
-	  else if (flag_sanitize & SANITIZE_VLA)
+	  else if (flag_sanitize & SANITIZE_VLA
+		   && current_function_decl != NULL_TREE
+		   && !lookup_attribute ("no_sanitize_undefined",
+					 DECL_ATTRIBUTES
+					   (current_function_decl)))
 	    {
 	      /* From C++1y onwards, we throw an exception on a negative
 		 length size of an array; see above.  */
@@ -8816,6 +8816,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool typedef_p = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
   bool late_return_type_p = false;
+  bool array_parameter_p = false;
   source_location saved_loc = input_location;
   const char *errmsg;
 
@@ -10454,6 +10455,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  /* Transfer const-ness of array into that of type pointed to.  */
 	  type = build_pointer_type (TREE_TYPE (type));
 	  type_quals = TYPE_UNQUALIFIED;
+	  array_parameter_p = true;
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	type = build_pointer_type (type);
@@ -10474,6 +10476,7 @@ grokdeclarator (const cp_declarator *declarator,
     if (decl_context == PARM)
       {
 	decl = cp_build_parm_decl (unqualified_id, type);
+	DECL_ARRAY_PARAMETER_P (decl) = array_parameter_p;
 
 	bad_specifiers (decl, BSP_PARM, virtualp,
 			memfn_quals != TYPE_UNQUALIFIED,

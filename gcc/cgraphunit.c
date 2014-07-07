@@ -1693,6 +1693,7 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks, bool force_gimpl
 #ifdef ENABLE_CHECKING
       verify_flow_info ();
 #endif
+      free_dominance_info (CDI_DOMINATORS);
 
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
@@ -1711,8 +1712,7 @@ static void
 assemble_thunks_and_aliases (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
-  int i;
-  struct ipa_ref *ref = NULL;
+  struct ipa_ref *ref;
 
   for (e = node->callers; e;)
     if (e->caller->thunk.thunk_p)
@@ -1725,20 +1725,20 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
       }
     else
       e = e->next_caller;
-  for (i = 0; node->iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-        bool saved_written = TREE_ASM_WRITTEN (node->decl);
 
-	/* Force assemble_alias to really output the alias this time instead
-	   of buffering it in same alias pairs.  */
-	TREE_ASM_WRITTEN (node->decl) = 1;
-	do_assemble_alias (alias->decl,
-			   DECL_ASSEMBLER_NAME (node->decl));
-	assemble_thunks_and_aliases (alias);
-	TREE_ASM_WRITTEN (node->decl) = saved_written;
-      }
+  FOR_EACH_ALIAS (node, ref)
+    {
+      struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      bool saved_written = TREE_ASM_WRITTEN (node->decl);
+
+      /* Force assemble_alias to really output the alias this time instead
+	 of buffering it in same alias pairs.  */
+      TREE_ASM_WRITTEN (node->decl) = 1;
+      do_assemble_alias (alias->decl,
+			 DECL_ASSEMBLER_NAME (node->decl));
+      assemble_thunks_and_aliases (alias);
+      TREE_ASM_WRITTEN (node->decl) = saved_written;
+    }
 }
 
 /* Expand function specified by NODE.  */

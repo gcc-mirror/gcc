@@ -13,12 +13,12 @@ void foo4(int j, int a[j]) {
 
 int foo5(int a, int b[*][*], int c[static sizeof(*b)]);
 int foo5(int a, int b[10][10], int c[400]) {
-  return sizeof (c);
+  return sizeof (c); /* { dg-warning "on array function parameter" } */
 }
 
 int foo6(int a, int b[*][*], int c[static sizeof(*b)]);
 int foo6(int a, int b[a][a], int c[sizeof(*b)]) {
-  return sizeof (c);
+  return sizeof (c); /* { dg-warning "on array function parameter" } */
 }
 
 void foo7(__typeof__ (int (*)(int o[*])) i);

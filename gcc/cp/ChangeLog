@@ -1,3 +1,72 @@
+2014-07-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/6940
+	* cp-tree.h (DECL_ARRAY_PARAMETER_P): Define.
+	* decl.c (grokdeclarator): Set DECL_ARRAY_PARAMETER_P.
+	* typeck.c (cxx_sizeof_expr): Warn when using sizeof on an array
+	function parameter.
+
+2014-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_template_argument): Use inform instead of error in
+	three places.
+
+2014-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58781
+	PR c++/60249
+	PR c++/59867
+	* parser.c (cp_parser_userdef_string_literal()): Take a tree
+	not a cp_token*. (cp_parser_string_literal(): Don't hack
+	the token stream!
+
+2014-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61659
+	PR lto/53808
+	* decl2.c (maybe_emit_vtables): Mark all vtable entries if
+	devirtualizing.
+	* init.c (build_vtbl_address): Don't mark destructor.
+	* class.c (finish_struct_1): Add all classes to keyed_classes
+	if devirtualizing.
+
+	PR c++/61647
+	* pt.c (type_dependent_expression_p): Check BASELINK_OPTYPE.
+
+	PR c++/61566
+	* mangle.c (decl_mangling_context): Look through a TEMPLATE_DECL.
+
+	* decl.c (build_ptrmemfunc_type): Don't give a PMF RECORD_TYPE
+	TYPE_BINFO or TYPE_LANG_SPECIFIC.
+	* cp-tree.h (TYPE_PTRMEMFUNC_FLAG): Use TYPE_LANG_FLAG_2.
+	(TYPE_PTRMEMFUNC_P): Don't expect TYPE_LANG_SPECIFIC.
+	* typeck.c (build_ptrmemfunc_access_expr): Don't use lookup_member.
+	* pt.c (unify): Also check whether the argument is a PMF.
+
+2014-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54891
+	* parser.c (cp_parser_tokens_start_cast_expression): In C++11
+	a '[' can also start a primary-expression.
+	(cp_parser_cast_expression): Parse a cast-expression only tentatively
+	when cp_parser_tokens_start_cast_expression returns -1.
+
+2014-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61539
+	* pt.c (unify_one_argument): Type/expression mismatch just causes
+	deduction failure.
+
+	* semantics.c (simplify_aggr_init_expr): Remove remnants of
+	2014-04-11 change.
+
+2014-06-30  Marek Polacek  <polacek@redhat.com>
+
+	* cp-gimplify.c (cp_genericize): Don't instrument returns if the
+	function has no_sanitize_undefined attribute.
+	* decl.c (compute_array_index_type): Don't instrument VLAs if the
+	function has no_sanitize_undefined attribute.
+
 2014-06-30  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/57541
@@ -35,6 +104,12 @@
 	N3994 Ranged-based for-loops: The Next Generation
 	* parser.c (cp_lexer_nth_token_is): New.
 	(cp_parser_for_init_statement): Allow "for (id : init)".
+
+2014-06-26  Teresa Johnson  <tejohnson@google.com>
+
+	* class.c (dump_class_hierarchy): Use saved dump files.
+	(dump_vtable): Ditto.
+	(dump_vtt): Ditto.
 
 2014-06-26  Adam Butcher  <adam@jessamine.co.uk>
 

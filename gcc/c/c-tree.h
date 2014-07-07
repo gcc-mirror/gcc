@@ -66,6 +66,9 @@ along with GCC; see the file COPYING3.  If not see
 /* For a FUNCTION_DECL, nonzero if it was an implicit declaration.  */
 #define C_DECL_IMPLICIT(EXP) DECL_LANG_FLAG_2 (EXP)
 
+/* For a PARM_DECL, nonzero if it was declared as an array.  */
+#define C_ARRAY_PARAMETER(NODE) DECL_LANG_FLAG_0 (NODE)
+
 /* For FUNCTION_DECLs, evaluates true if the decl is built-in but has
    been declared.  */
 #define C_DECL_DECLARED_BUILTIN(EXP)		\

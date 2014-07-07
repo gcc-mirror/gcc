@@ -33,7 +33,7 @@ template <int N> struct Foo2 {};
 template struct Foo2<::B>;  // { dg-error "21:'<::' cannot begin" "begin" { target { ! c++11 } } }
 // { dg-message "21:'<:' is an alternate" "alt" { target { ! c++11 } } 33 }
 // { dg-message "25:type/value mismatch" "mismatch" { target *-*-* } 33 }
-// { dg-error "25:expected a constant" "const" { target *-*-* } 33 }
+// { dg-message "25:expected a constant" "const" { target *-*-* } 33 }
 
 int value = 0;
 

@@ -96,7 +96,6 @@ extern int nds32_adjust_insn_length (rtx, int);
 
 /* Auxiliary functions for FP_AS_GP detection.  */
 
-extern bool nds32_symbol_load_store_p (rtx);
 extern int nds32_fp_as_gp_check_available (void);
 
 /* Auxiliary functions for jump table generation.  */
@@ -124,5 +123,23 @@ extern const char *nds32_output_stack_pop (void);
 /* Auxiliary functions to decide output alignment or not.  */
 
 extern int nds32_target_alignment (rtx);
+
+/* Auxiliary functions to expand builtin functions.  */
+
+extern void nds32_init_builtins_impl (void);
+extern rtx nds32_expand_builtin_impl (tree, rtx, rtx,
+				      enum machine_mode, int);
+
+/* Auxiliary functions for ISR implementation.  */
+
+extern void nds32_check_isr_attrs_conflict (tree, tree);
+extern void nds32_construct_isr_vectors_information (tree, const char *);
+extern void nds32_asm_file_start_for_isr (void);
+extern void nds32_asm_file_end_for_isr (void);
+
+/* Auxiliary functions for cost calculation.  */
+
+extern bool nds32_rtx_costs_impl (rtx, int, int, int, int *, bool);
+extern int nds32_address_cost_impl (rtx, enum machine_mode, addr_space_t, bool);
 
 /* ------------------------------------------------------------------------ */

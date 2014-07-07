@@ -926,7 +926,7 @@ Namelist input/output for internal files.
 
 @item Minor I/O features: Rounding during formatted output, using of
 a decimal comma instead of a decimal point, setting whether a plus sign
-should appear for positive numbers. On system where @code{strtod} honours
+should appear for positive numbers. On systems where @code{strtod} honours
 the rounding mode, the rounding mode is also supported for input.
 
 @item
