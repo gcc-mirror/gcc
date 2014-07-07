@@ -1,3 +1,9 @@
+2014-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c: Include calls.h
+	(symtab_nonoverwritable_alias_1): Check sanity of the local
+	alias.
+
 2014-07-07  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/rs6000/rs6000.c (output_vec_const_move): Handle

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "output.h"
 #include "ipa-utils.h"
+#include "calls.h"
 
 static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
@@ -1727,6 +1728,19 @@ symtab_nonoverwritable_alias_1 (symtab_node *node, void *data)
 {
   if (decl_binds_to_current_def_p (node->decl))
     {
+      symtab_node *fn = symtab_alias_ultimate_target (node);
+
+      /* Ensure that the alias is well formed this may not be the case
+	 of user defined aliases and currently it is not always the case
+	 of C++ same body aliases (that is a bug).  */
+      if (TREE_TYPE (node->decl) != TREE_TYPE (fn->decl)
+	  || DECL_CONTEXT (node->decl) != DECL_CONTEXT (fn->decl)
+	  || (TREE_CODE (node->decl) == FUNCTION_DECL
+	      && flags_from_decl_or_type (node->decl)
+		 != flags_from_decl_or_type (fn->decl))
+	  || DECL_ATTRIBUTES (node->decl) != DECL_ATTRIBUTES (fn->decl))
+	return false;
+
       *(symtab_node **)data = node;
       return true;
     }
