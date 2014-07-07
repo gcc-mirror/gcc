@@ -25,8 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* FPU-related code for SysV platforms with fpsetmask().  */
 
-#include <assert.h>
-
 /* BSD and Solaris systems have slightly different types and functions
    naming.  We deal with these here, to simplify the code below.  */
 
@@ -444,13 +442,15 @@ typedef struct
 } fpu_state_t;
 
 
+/* Check we can actually store the FPU state in the allocated size.  */
+_Static_assert (sizeof(fpu_state_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
+		"GFC_FPE_STATE_BUFFER_SIZE is too small");
+
+
 void
 get_fpu_state (void *s)
 {
   fpu_state_t *state = s;
-
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(fpu_state_t) <= GFC_FPE_STATE_BUFFER_SIZE);
 
   state->mask = fpgetmask ();
   state->sticky = fpgetsticky ();
@@ -461,9 +461,6 @@ void
 set_fpu_state (void *s)
 {
   fpu_state_t *state = s;
-
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(fpu_state_t) <= GFC_FPE_STATE_BUFFER_SIZE);
 
   fpsetmask (state->mask);
   FPSETSTICKY (state->sticky);

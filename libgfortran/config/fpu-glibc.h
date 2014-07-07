@@ -27,11 +27,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    feenableexcept function in fenv.h to set individual exceptions
    (there's nothing to do that in C99).  */
 
-#include <assert.h>
-
 #ifdef HAVE_FENV_H
 #include <fenv.h>
 #endif
+
+
+/* Check we can actually store the FPU state in the allocated size.  */
+_Static_assert (sizeof(fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
+		"GFC_FPE_STATE_BUFFER_SIZE is too small");
 
 
 void set_fpu_trap_exceptions (int trap, int notrap)
@@ -416,9 +419,6 @@ support_fpu_rounding_mode (int mode)
 void
 get_fpu_state (void *state)
 {
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
-
   fegetenv (state);
 }
 
@@ -426,9 +426,6 @@ get_fpu_state (void *state)
 void
 set_fpu_state (void *state)
 {
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(fenv_t) <= GFC_FPE_STATE_BUFFER_SIZE);
-
   fesetenv (state);
 }
 
