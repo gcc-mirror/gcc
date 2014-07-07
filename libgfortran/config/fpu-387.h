@@ -23,8 +23,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <assert.h>
-
 #ifndef __SSE_MATH__
 #include "cpuid.h"
 #endif
@@ -83,6 +81,11 @@ typedef struct
   unsigned int __mxcsr;
 }
 my_fenv_t;
+
+
+/* Check we can actually store the FPU state in the allocated size.  */
+_Static_assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
+		"GFC_FPE_STATE_BUFFER_SIZE is too small");
 
 
 /* Raise the supported floating-point exceptions from EXCEPTS.  Other
@@ -429,9 +432,6 @@ get_fpu_state (void *state)
 {
   my_fenv_t *envp = state;
 
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE);
-
   __asm__ __volatile__ ("fnstenv\t%0" : "=m" (*envp));
 
   /* fnstenv has the side effect of masking all exceptions, so we need
@@ -446,9 +446,6 @@ void
 set_fpu_state (void *state)
 {
   my_fenv_t *envp = state;
-
-  /* Check we can actually store the FPU state in the allocated size.  */
-  assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE);
 
   /* glibc sources (sysdeps/x86_64/fpu/fesetenv.c) do something more
      complex than this, but I think it suffices in our case.  */
