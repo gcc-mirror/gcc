@@ -1,3 +1,8 @@
+2014-07-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58898
+	* g++.dg/parse/pr58898.C: New.
+
 2014-07-07  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	* gfortran.dg/list_read_12.f90: Delete the file.
