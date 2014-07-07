@@ -1,4 +1,4 @@
-2014-06-24  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+2014-07-07  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* asan.c (instrument_strlen_call): Do not instrument first byte in strlen
 	if already instrumented.
