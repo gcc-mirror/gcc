@@ -786,10 +786,10 @@ mem_read4 (stream * s, void * buf, ssize_t nbytes)
   void *p;
   int nb = nbytes;
 
-  p = mem_alloc_r (s, &nb);
+  p = mem_alloc_r4 (s, &nb);
   if (p)
     {
-      memcpy (buf, p, nb);
+      memcpy (buf, p, nb * 4);
       return (ssize_t) nb;
     }
   else

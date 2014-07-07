@@ -200,7 +200,7 @@ next_char (st_parameter_dt *dtp)
     {
       /* Check for kind=4 internal unit.  */
       if (dtp->common.unit)
-       length = sread (dtp->u.p.current_unit->s, &c, sizeof (gfc_char4_t));
+       length = sread (dtp->u.p.current_unit->s, &c, 1);
       else
        {
          char cc;
@@ -277,7 +277,7 @@ eat_spaces (st_parameter_dt *dtp)
 	{
 	  for (i = 0; i < dtp->u.p.current_unit->bytes_left; i++)
 	    {
-	      if (dtp->internal_unit[offset + i * sizeof (gfc_char4_t)]
+	      if (dtp->internal_unit[(offset + i) * sizeof (gfc_char4_t)]
 		  != (gfc_char4_t)' ')
 	        break;
 	    }
