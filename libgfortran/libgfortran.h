@@ -107,14 +107,8 @@ typedef off_t gfc_offset;
    heuristic will mark this branch as much less likely as unlikely() would
    do.  */
 
-#ifndef __GNUC__
-#define __attribute__(x)
-#define likely(x)       (x)
-#define unlikely(x)     (x)
-#else
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
-#endif
 
 
 /* Make sure we have ptrdiff_t. */
