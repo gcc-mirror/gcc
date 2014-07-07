@@ -1,3 +1,7 @@
+2014-06-24  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/asan/no-redundant-instrumentation-9.c: New test.
+
 2014-07-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58898
