@@ -1,5 +1,12 @@
 2014-07-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* runtime/stop.c: Use C11 _Noreturn.
+	* libgfortran.h: Use C11 _Noreturn in prototypes.
+	Move REALPART, IMAGPART and COMPLEX_ASSIGN macros...
+	* intrinsics/c99_functions.c: ... here.
+
+2014-07-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* config/fpu-387.h, config/fpu-aix.h, config/fpu-sysv.h,
 	config/fpu-glibc.h: Use static assertions.
 
