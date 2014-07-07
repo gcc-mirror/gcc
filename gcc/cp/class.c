@@ -2771,9 +2771,9 @@ check_for_override (tree decl, tree ctype)
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype) = true;
     }
   else if (DECL_FINAL_P (decl))
-    error ("%q+#D marked final, but is not virtual", decl);
+    error ("%q+#D marked %<final%>, but is not virtual", decl);
   if (DECL_OVERRIDE_P (decl) && !overrides_found)
-    error ("%q+#D marked override, but does not override", decl);
+    error ("%q+#D marked %<override%>, but does not override", decl);
 }
 
 /* Warn about hidden virtual functions that are not overridden in t.

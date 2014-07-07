@@ -1,4 +1,8 @@
-2014-06-24  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+2014-07-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/override1.C: Tweak expected error messages.
+
+2014-07-07  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/asan/no-redundant-instrumentation-9.c: New test.
 
