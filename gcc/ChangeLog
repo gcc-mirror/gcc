@@ -1,3 +1,8 @@
+2014-06-24  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* asan.c (instrument_strlen_call): Do not instrument first byte in strlen
+	if already instrumented.
+
 2014-07-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.opt (mwords-little-endian): Delete.
