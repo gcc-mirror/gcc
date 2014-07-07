@@ -1,3 +1,13 @@
+2014-07-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.opt (mwords-little-endian): Delete.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Remove handling
+	of TARGET_LITTLE_WORDS.
+	(WORDS_BIG_ENDIAN): Define to BYTES_BIG_ENDIAN.
+	* config/arm/arm.c (arm_option_override): Remove TARGET_LITTLE_WORDS
+	warning.
+	* doc/invoke.texi: Remove references to -mwords-little-endian.
+
 2014-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* expmed.c (struct init_expmed_rtl): Change all fields but

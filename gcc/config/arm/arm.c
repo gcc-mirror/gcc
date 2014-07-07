@@ -2618,10 +2618,6 @@ arm_option_override (void)
   if (TARGET_APCS_FLOAT)
     warning (0, "passing floating point arguments in fp regs not yet supported");
 
-  if (TARGET_LITTLE_WORDS)
-    warning (OPT_Wdeprecated, "%<mwords-little-endian%> is deprecated and "
-	     "will be removed in a future release");
-
   /* Initialize boolean versions of the flags, for use in the arm.md file.  */
   arm_arch3m = (insn_flags & FL_ARCH3M) != 0;
   arm_arch4 = (insn_flags & FL_ARCH4) != 0;
