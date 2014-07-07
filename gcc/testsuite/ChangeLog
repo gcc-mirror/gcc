@@ -1,3 +1,9 @@
+2014-07-07  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	* gfortran.dg/list_read_12.f90: Delete the file.
+	* gfortran.dg/vect/vect.exp: Use gfortran-dg-runtest instead
+	of dg-runtest.
+
 2014-07-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/61640
