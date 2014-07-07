@@ -1,3 +1,8 @@
+2014-07-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61640
+	* gfortran.dg/arrayio_16.f90: New test.
+
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/ipa/imm-devirt-1.C: Fix regexp in dg-final.
@@ -276,7 +281,7 @@
 2014-06-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/61499
-	gfortran.dg/arrayio_15.f90: New test.
+	* gfortran.dg/arrayio_15.f90: New test.
 
 2014-06-26  Uros Bizjak  <ubizjak@gmail.com>
 
