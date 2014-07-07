@@ -1,3 +1,11 @@
+2014-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* expmed.c (struct init_expmed_rtl): Change all fields but
+	pow2 and cint from struct rtx_def to rtx.
+	(init_expmed_one_conv, init_expmed_one_mode): Adjust for that change.
+	(init_expmed): Likewise.  Allocate all the 18 rtxes and ggc_free them
+	at the end again.
+
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/6940
