@@ -1,3 +1,10 @@
+2014-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61459
+	PR fortran/58883
+	* trans-expr.c (fcncall_realloc_result): Use the natural type
+	for the address expression of 'res_desc'.
+
 2014-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gfortran.texi (Fortran 2003 status): Fix grammar.
@@ -8,7 +15,7 @@
 	* trans-array.c (gfc_conv_descriptor_token): Change assert.
 	for select-type temporaries.
 	* trans-decl.c (generate_coarray_sym_init): Skip for
-	attr.select_type_temporary. 
+	attr.select_type_temporary.
 	* trans-expr.c (gfc_conv_procedure_call): Fix for
 	select-type temporaries.
 	* trans-intrinsic.c (get_caf_token_offset): Ditto.
@@ -18,7 +25,7 @@
 	* trans-types.c (gfc_get_dtype_rank_type): Ditto.
 
 2014-07-03  Tobias Burnus  <burnus@net-b.de>
-	
+
 	* scanner.c (skip_free_comments): Fix indentation.
 
 2014-07-02  Jakub Jelinek  <jakub@redhat.com>
