@@ -638,7 +638,8 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
 {
   if (is_gimple_call (stmt))
     return false;
-  /* TODO: Skip clobbers, doing so triggers problem in PR60306.  */
+  if (gimple_clobber_p (stmt))
+    return false;
   else if (is_gimple_assign (stmt))
     {
       tree lhs = gimple_assign_lhs (stmt);
@@ -817,6 +818,7 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
 {
   struct type_change_info tci;
   ao_ref ao;
+  bool entry_reached = false;
 
   gcc_checking_assert (DECL_P (arg)
 		       || TREE_CODE (arg) == MEM_REF
@@ -847,13 +849,16 @@ detect_type_change_from_memory_writes (tree arg, tree base, tree comp_type,
   tci.multiple_types_encountered = false;
 
   walk_aliased_vdefs (&ao, gimple_vuse (call), check_stmt_for_type_change,
-		      &tci, NULL);
+		      &tci, NULL, &entry_reached);
   if (!tci.type_maybe_changed)
     return false;
 
   if (!tci.known_current_type
       || tci.multiple_types_encountered
-      || offset != 0)
+      || offset != 0
+      /* When the walk reached function entry, it means that type
+	 is set along some paths but not along others.  */
+      || entry_reached)
     jfunc->type = IPA_JF_UNKNOWN;
   else
     ipa_set_jf_known_type (jfunc, 0, tci.known_current_type, comp_type);
