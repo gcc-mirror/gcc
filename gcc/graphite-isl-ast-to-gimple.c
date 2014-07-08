@@ -67,7 +67,7 @@ print_isl_ast_node (FILE *file, __isl_keep isl_ast_node *node,
 
 /* Generates a build, which specifies the constraints on the parameters.  */
 
-static isl_ast_build *
+static __isl_give isl_ast_build *
 generate_isl_context (scop_p scop)
 {
   isl_set *context_isl = isl_set_params (isl_set_copy (scop->context));
@@ -77,7 +77,7 @@ generate_isl_context (scop_p scop)
 /* Generates a schedule, which specifies an order used to
    visit elements in a domain.  */
 
-static isl_union_map *
+static __isl_give isl_union_map *
 generate_isl_schedule (scop_p scop)
 {
   int i;
@@ -102,7 +102,7 @@ generate_isl_schedule (scop_p scop)
   return schedule_isl;
 }
 
-static isl_ast_node *
+static __isl_give isl_ast_node *
 scop_to_isl_ast (scop_p scop)
 {
   isl_union_map *schedule_isl = generate_isl_schedule (scop);
