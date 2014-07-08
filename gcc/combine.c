@@ -11987,7 +11987,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		= (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1);
 	      op0 = simplify_gen_binary (AND, tmode,
 					 gen_lowpart (tmode, op0),
-					 gen_int_mode (sign, mode));
+					 gen_int_mode (sign, tmode));
 	      code = (code == LT) ? NE : EQ;
 	      break;
 	    }

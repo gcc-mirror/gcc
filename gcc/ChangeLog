@@ -1,3 +1,9 @@
+2014-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61673
+	* combine.c (simplify_comparison): Test just mode's sign bit
+	in tmode rather than the sign bit and any bits above it.
+
 2014-07-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport r212298 from trunk.
