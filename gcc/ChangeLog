@@ -1,3 +1,9 @@
+2014-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61680
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Handle properly all read-write dependences with group accesses.
+
 2014-07-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/61576
