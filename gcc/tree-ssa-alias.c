@@ -2643,6 +2643,9 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
    WALKER is called with REF, the current vdef and DATA.  If WALKER
    returns true the walk is stopped, otherwise it continues.
 
+   If function entry is reached, FUNCTION_ENTRY_REACHED is set to true.
+   The pointer may be NULL and then we do not track this information.
+
    At PHI nodes walk_aliased_vdefs forks into one walk for reach
    PHI argument (but only one walk continues on merge points), the
    return value is true if any of the walks was successful.
@@ -2652,8 +2655,11 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 static unsigned int
 walk_aliased_vdefs_1 (ao_ref *ref, tree vdef,
 		      bool (*walker)(ao_ref *, tree, void *), void *data,
-		      bitmap *visited, unsigned int cnt)
+		      bitmap *visited, unsigned int cnt,
+		      bool *function_entry_reached)
 {
+  if (function_entry_reached)
+    *function_entry_reached = false;
   do
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
@@ -2663,7 +2669,11 @@ walk_aliased_vdefs_1 (ao_ref *ref, tree vdef,
 	return cnt;
 
       if (gimple_nop_p (def_stmt))
-	return cnt;
+	{
+	  if (function_entry_reached)
+	    *function_entry_reached = true;
+	  return cnt;
+	}
       else if (gimple_code (def_stmt) == GIMPLE_PHI)
 	{
 	  unsigned i;
@@ -2671,7 +2681,8 @@ walk_aliased_vdefs_1 (ao_ref *ref, tree vdef,
 	    *visited = BITMAP_ALLOC (NULL);
 	  for (i = 0; i < gimple_phi_num_args (def_stmt); ++i)
 	    cnt += walk_aliased_vdefs_1 (ref, gimple_phi_arg_def (def_stmt, i),
-					 walker, data, visited, 0);
+					 walker, data, visited, 0,
+					 function_entry_reached);
 	  return cnt;
 	}
 
@@ -2690,7 +2701,8 @@ walk_aliased_vdefs_1 (ao_ref *ref, tree vdef,
 unsigned int
 walk_aliased_vdefs (ao_ref *ref, tree vdef,
 		    bool (*walker)(ao_ref *, tree, void *), void *data,
-		    bitmap *visited)
+		    bitmap *visited,
+		    bool *function_entry_reached)
 {
   bitmap local_visited = NULL;
   unsigned int ret;
@@ -2698,7 +2710,8 @@ walk_aliased_vdefs (ao_ref *ref, tree vdef,
   timevar_push (TV_ALIAS_STMT_WALK);
 
   ret = walk_aliased_vdefs_1 (ref, vdef, walker, data,
-			      visited ? visited : &local_visited, 0);
+			      visited ? visited : &local_visited, 0,
+			      function_entry_reached);
   if (local_visited)
     BITMAP_FREE (local_visited);
 

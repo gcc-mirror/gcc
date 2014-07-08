@@ -1,3 +1,12 @@
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (walk_aliased_vdefs_1): Add FUNCTION_ENTRY_REACHED
+	parameter.
+	(walk_aliased_vdefs): Likewise.
+	* tree-ssa-alias.h (walk_aliased_vdefs): Likewise.
+	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers
+	(detect_type_change_from_memory_writes): Check if entry was reached.
+
 2014-07-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61681
