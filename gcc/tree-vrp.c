@@ -3616,15 +3616,18 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 	      /* If arg is non-zero, then ffs or popcount
 		 are non-zero.  */
 	      if (((vr0->type == VR_RANGE
-		    && integer_nonzerop (vr0->min))
+		    && range_includes_zero_p (vr0->min, vr0->max) == 0)
 		   || (vr0->type == VR_ANTI_RANGE
-		       && integer_zerop (vr0->min)))
-		  && !is_overflow_infinity (vr0->min))
+		       && range_includes_zero_p (vr0->min, vr0->max) == 1))
+		  && !is_overflow_infinity (vr0->min)
+		  && !is_overflow_infinity (vr0->max))
 		mini = 1;
 	      /* If some high bits are known to be zero,
 		 we can decrease the maximum.  */
 	      if (vr0->type == VR_RANGE
 		  && TREE_CODE (vr0->max) == INTEGER_CST
+		  && !operand_less_p (vr0->min,
+				      build_zero_cst (TREE_TYPE (vr0->min)))
 		  && !is_overflow_infinity (vr0->max))
 		maxi = tree_floor_log2 (vr0->max) + 1;
 	    }
