@@ -16647,11 +16647,10 @@ fold_ignored_result (tree t)
 /* Return the value of VALUE, rounded up to a multiple of DIVISOR. */
 
 tree
-round_up_loc (location_t loc, tree value, int divisor)
+round_up_loc (location_t loc, tree value, unsigned int divisor)
 {
   tree div = NULL_TREE;
 
-  gcc_assert (divisor > 0);
   if (divisor == 1)
     return value;
 

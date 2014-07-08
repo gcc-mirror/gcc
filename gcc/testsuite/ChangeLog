@@ -1,3 +1,8 @@
+2014-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60226
+	* c-c++-common/pr60226.c: New test.
+
 2014-07-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/61459

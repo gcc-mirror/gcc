@@ -1,3 +1,11 @@
+2014-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60226
+	* fold-const.c (round_up_loc): Change the parameter type.
+	Remove assert.
+	* fold-const.h (round_up_loc): Adjust declaration.
+	* stor-layout.c (finalize_record_size): Check for too large types.
+
 2014-07-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c: Include calls.h
