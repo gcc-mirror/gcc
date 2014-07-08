@@ -6091,6 +6091,10 @@ find_what_var_points_to (varinfo_t orig_vi)
 		pt->ipa_escaped = 1;
 	      else
 		pt->escaped = 1;
+	      /* Expand some special vars of ESCAPED in-place here.  */
+	      varinfo_t evi = get_varinfo (find (escaped_id));
+	      if (bitmap_bit_p (evi->solution, nonlocal_id))
+		pt->nonlocal = 1;
 	    }
 	  else if (vi->id == nonlocal_id)
 	    pt->nonlocal = 1;
