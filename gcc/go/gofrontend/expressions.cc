@@ -10218,7 +10218,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
   Location loc = this->location();
   Gogo* gogo = context->gogo();
 
-  Btype* int_btype = Type::lookup_integer_type("int")->get_backend(gogo);
+  Type* int_type = Type::lookup_integer_type("int");
+  Btype* int_btype = int_type->get_backend(gogo);
 
   // We need to convert the length and capacity to the Go "int" type here
   // because the length of a fixed-length array could be of type "uintptr"
@@ -10259,8 +10260,15 @@ Array_index_expression::do_get_backend(Translate_context* context)
 		 : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
   Bexpression* crash = gogo->runtime_error(code, loc)->get_backend(context);
 
+  if (this->start_->type()->integer_type() == NULL
+      && !Type::are_convertible(int_type, this->start_->type(), NULL))
+    {
+      go_assert(saw_errors());
+      return context->backend()->error_expression();
+    }
+  Expression* start_expr = Expression::make_cast(int_type, this->start_, loc);
   Bexpression* bad_index =
-    Expression::check_bounds(this->start_, loc)->get_backend(context);
+    Expression::check_bounds(start_expr, loc)->get_backend(context);
 
   Bexpression* start = this->start_->get_backend(context);
   start = gogo->backend()->convert_expression(int_btype, start, loc);
