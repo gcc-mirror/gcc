@@ -1,3 +1,10 @@
+2014-07-08  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c (generate_isl_context):
+	Add __isl_give to the declaration.
+	(generate_isl_schedule): Likewise.
+	(scop_to_isl_ast): Likewise.
+
 2014-07-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (cortexa5_extra_costs): New table.
