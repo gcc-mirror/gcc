@@ -400,15 +400,11 @@ copy_prop_visit_phi_node (gimple phi)
       else
 	arg_value = valueize_val (arg);
 
-      /* Avoid copy propagation from an inner into an outer loop.
-	 Otherwise, this may introduce uses of loop variant variables
-	 outside of their loops and prevent coalescing opportunities.
-	 In loop-closed SSA form do not copy-propagate through
-	 PHI nodes in blocks with a loop exit edge predecessor.  */
-      if (TREE_CODE (arg_value) == SSA_NAME
-	  && (loop_depth_of_name (arg_value) > loop_depth_of_name (lhs)
-	      || (loops_state_satisfies_p (LOOP_CLOSED_SSA)
-		  && loop_exit_edge_p (e->src->loop_father, e))))
+      /* In loop-closed SSA form do not copy-propagate SSA-names across
+	 loop exit edges.  */
+      if (loops_state_satisfies_p (LOOP_CLOSED_SSA)
+	  && TREE_CODE (arg_value) == SSA_NAME
+	  && loop_exit_edge_p (e->src->loop_father, e))
 	{
 	  phi_val.value = lhs;
 	  break;
@@ -470,7 +466,6 @@ init_copy_prop (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator si;
-      int depth = bb_loop_depth (bb);
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
@@ -481,21 +476,10 @@ init_copy_prop (void)
 	  /* The only statements that we care about are those that may
 	     generate useful copies.  We also need to mark conditional
 	     jumps so that their outgoing edges are added to the work
-	     lists of the propagator.
-
-	     Avoid copy propagation from an inner into an outer loop.
-	     Otherwise, this may move loop variant variables outside of
-	     their loops and prevent coalescing opportunities.  If the
-	     value was loop invariant, it will be hoisted by LICM and
-	     exposed for copy propagation.
-	     ???  This doesn't make sense.  */
+	     lists of the propagator.  */
 	  if (stmt_ends_bb_p (stmt))
             prop_set_simulate_again (stmt, true);
-	  else if (stmt_may_generate_copy (stmt)
-                   /* Since we are iterating over the statements in
-                      BB, not the phi nodes, STMT will always be an
-                      assignment.  */
-                   && loop_depth_of_name (gimple_assign_rhs1 (stmt)) <= depth)
+	  else if (stmt_may_generate_copy (stmt))
             prop_set_simulate_again (stmt, true);
 	  else
             prop_set_simulate_again (stmt, false);
