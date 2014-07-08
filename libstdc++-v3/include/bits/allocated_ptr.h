@@ -73,7 +73,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /// Release ownership of the owned pointer
-      __allocated_ptr& operator=(std::nullptr_t) noexcept { _M_ptr = nullptr; }
+      __allocated_ptr&
+      operator=(std::nullptr_t) noexcept
+      {
+	_M_ptr = nullptr;
+	return *this;
+      }
 
       /// Get the address that the owned pointer refers to.
       value_type* get() { return _S_raw_ptr(_M_ptr); }
