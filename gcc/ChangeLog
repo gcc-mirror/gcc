@@ -1,3 +1,9 @@
+2014-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61673
+	* combine.c (simplify_comparison): Test just mode's sign bit
+	in tmode rather than the sign bit and any bits above it.
+
 2014-07-08  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c (generate_isl_context):
