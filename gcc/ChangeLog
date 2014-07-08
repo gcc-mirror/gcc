@@ -1,3 +1,13 @@
+2014-07-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	Backport r211502 from mainline.
+	2014-06-10  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/59843
+	* config/aarch64/aarch64-modes.def: Add V1DFmode.
+	* config/aarch64/aarch64.c (aarch64_vector_mode_supported_p):
+	Support V1DFmode.
+
 2014-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61725

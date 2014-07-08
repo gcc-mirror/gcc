@@ -6307,7 +6307,8 @@ aarch64_vector_mode_supported_p (enum machine_mode mode)
 	  || mode == V16QImode || mode == V2DImode
 	  || mode == V2SImode  || mode == V4HImode
 	  || mode == V8QImode || mode == V2SFmode
-	  || mode == V4SFmode || mode == V2DFmode))
+	  || mode == V4SFmode || mode == V2DFmode
+	  || mode == V1DFmode))
     return true;
 
   return false;
