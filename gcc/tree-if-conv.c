@@ -1407,7 +1407,8 @@ is_cond_scalar_reduction (gimple phi, gimple *reduc,
   gimple stmt;
   gimple header_phi = NULL;
   enum tree_code reduction_op;
-  struct loop *loop = gimple_bb (phi)->loop_father;
+  basic_block bb = gimple_bb (phi);
+  struct loop *loop = bb->loop_father;
   edge latch_e = loop_latch_edge (loop);
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -1445,6 +1446,11 @@ is_cond_scalar_reduction (gimple phi, gimple *reduc,
     return false;
 
   if (!is_predicated (gimple_bb (stmt)))
+    return false;
+
+  /* Check that stmt-block is predecessor of phi-block.  */
+  if (EDGE_PRED (bb, 0)->src != gimple_bb (stmt)
+      && EDGE_PRED (bb, 1)->src != gimple_bb (stmt))
     return false;
 
   if (!has_single_use (lhs))

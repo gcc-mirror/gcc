@@ -1,3 +1,10 @@
+2014-07-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61576
+	* tree-if-conv.c (is_cond_scalar_reduction): Add check that
+	basic block containing reduction statement is predecessor
+	of phi basi block.
+
 2014-07-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60226

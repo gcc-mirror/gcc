@@ -1,3 +1,8 @@
+2014-07-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61576
+	* gcc.dg/torture/pr61576.c: New test.
+
 2014-07-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60226
