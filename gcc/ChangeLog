@@ -1,3 +1,8 @@
+2014-07-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (cortexa5_extra_costs): New table.
+	(arm_cortex_a5_tune): Use cortexa5_extra_costs.
+
 2014-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61725
