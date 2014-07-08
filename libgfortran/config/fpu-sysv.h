@@ -333,25 +333,14 @@ get_fpu_rounding_mode (void)
 {
   switch (fpgetround ())
     {
-#ifdef FP_RN
       case FP_RN:
 	return GFC_FPE_TONEAREST;
-#endif
-
-#ifdef FP_RP
       case FP_RP:
 	return GFC_FPE_UPWARD;
-#endif
-
-#ifdef FP_RM
       case FP_RM:
 	return GFC_FPE_DOWNWARD;
-#endif
-
-#ifdef FP_RZ
       case FP_RZ:
 	return GFC_FPE_TOWARDZERO;
-#endif
       default:
 	return GFC_FPE_INVALID;
     }
@@ -365,29 +354,18 @@ set_fpu_rounding_mode (int mode)
 
   switch (mode)
     {
-#ifdef FP_RN
       case GFC_FPE_TONEAREST:
 	rnd_mode = FP_RN;
         break;
-#endif
-
-#ifdef FP_RP
       case GFC_FPE_UPWARD:
 	rnd_mode = FP_RP;
         break;
-#endif
-
-#ifdef FP_RM
       case GFC_FPE_DOWNWARD:
 	rnd_mode = FP_RM;
         break;
-#endif
-
-#ifdef FP_RZ
       case GFC_FPE_TOWARDZERO:
 	rnd_mode = FP_RZ;
         break;
-#endif
       default:
 	return;
     }
@@ -401,33 +379,13 @@ support_fpu_rounding_mode (int mode)
   switch (mode)
     {
       case GFC_FPE_TONEAREST:
-#ifdef FP_RN
 	return 1;
-#else
-	return 0;
-#endif
-
       case GFC_FPE_UPWARD:
-#ifdef FP_RP
 	return 1;
-#else
-	return 0;
-#endif
-
       case GFC_FPE_DOWNWARD:
-#ifdef FP_RM
 	return 1;
-#else
-	return 0;
-#endif
-
       case GFC_FPE_TOWARDZERO:
-#ifdef FP_RZ
 	return 1;
-#else
-	return 0;
-#endif
-
       default:
 	return 0;
     }
