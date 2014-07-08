@@ -598,7 +598,7 @@ Lex::next_token()
 		}
 	      else if (p[1] == '*')
 		{
-		  this->lineoff_ = p - this->linebuf_;
+		  this->lineoff_ = p + 2 - this->linebuf_;
 		  Location location = this->location();
 		  if (!this->skip_c_comment())
 		    return Token::make_invalid_token(location);
