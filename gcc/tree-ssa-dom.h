@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void dump_dominator_optimization_stats (FILE *);
 extern void debug_dominator_optimization_stats (void);
-extern int loop_depth_of_name (tree);
 extern bool simple_iv_increment_p (gimple);
 
 #endif /* GCC_TREE_SSA_DOM_H */

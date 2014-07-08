@@ -1,3 +1,15 @@
+2014-07-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.h (loop_depth_of_name): Remove.
+	* tree-ssa-dom.c (record_equivalences_from_phis): Remove
+	restriction on loop depth difference.
+	(record_equality): Likewise.
+	(propagate_rhs_into_lhs): Likewise.  Simplify condition.
+	(loop_depth_of_name): Remove.
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Remove
+	restriction on loop depth difference.
+	(init_copy_prop): Likewise.
+
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (walk_aliased_vdefs_1): Add FUNCTION_ENTRY_REACHED
