@@ -1,3 +1,10 @@
+2014-07-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61459
+	PR fortran/58883
+	* trans-expr.c (fcncall_realloc_result): Use the natural type
+	for the address expression of 'res_desc'.
+
 2014-07-02  Jakub Jelinek  <jakub@redhat.com>
 	    Fritz Reese  <Reese-Fritz@zai.com>
 

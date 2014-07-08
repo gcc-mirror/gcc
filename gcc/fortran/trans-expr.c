@@ -7096,7 +7096,7 @@ fcncall_realloc_result (gfc_se *se, int rank)
 
   res_desc = gfc_evaluate_now (desc, &se->pre);
   gfc_conv_descriptor_data_set (&se->pre, res_desc, null_pointer_node);
-  se->expr = gfc_build_addr_expr (TREE_TYPE (se->expr), res_desc);
+  se->expr = gfc_build_addr_expr (NULL_TREE, res_desc);
 
   /* Free the lhs after the function call and copy the result data to
      the lhs descriptor.  */
