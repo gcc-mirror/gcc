@@ -19,12 +19,12 @@
 // <http://www.gnu.org/licenses/>.
 //
 
+#ifndef _TESTSUITE_REGEX_H
+#define _TESTSUITE_REGEX_H 1
+
 #include <regex>
 #include <stdexcept>
 #include <iostream>
-
-#ifndef _TESTSUITE_REGEX_H
-#define _TESTSUITE_REGEX_H 1
 
 namespace __gnu_test
 {

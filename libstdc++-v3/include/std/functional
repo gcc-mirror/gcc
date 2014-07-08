@@ -1184,8 +1184,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   /**
    *  Maps member pointers into instances of _Mem_fn but leaves all
-   *  other function objects untouched. Used by tr1::bind(). The
-   *  primary template handles the non--member-pointer case.
+   *  other function objects untouched. Used by std::bind(). The
+   *  primary template handles the non-member-pointer case.
    */
   template<typename _Tp>
     struct _Maybe_wrap_member_pointer
@@ -1203,7 +1203,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   /**
    *  Maps member pointers into instances of _Mem_fn but leaves all
-   *  other function objects untouched. Used by tr1::bind(). This
+   *  other function objects untouched. Used by std::bind(). This
    *  partial specialization handles the member pointer case.
    */
   template<typename _Tp, typename _Class>
