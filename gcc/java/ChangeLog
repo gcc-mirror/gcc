@@ -1,3 +1,10 @@
+2014-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	* builtins.c (putVolatile_builtin): Use build_qualified_type
+	instead of build_type_variant.
+	(getVolatile_builtin): Likewise.
+	(build_classdollar_field): Likewise.
+
 2014-06-24  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* jcf-io.c: Adjust.

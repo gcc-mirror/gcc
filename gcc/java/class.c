@@ -1067,11 +1067,11 @@ build_classdollar_field (tree type)
       decl 
 	= build_decl (input_location,
 		      VAR_DECL, decl_name, 
-		      (build_type_variant 
+		      (build_qualified_type
 		       (build_pointer_type 
-			(build_type_variant (class_type_node, 
-					     /* const */ 1, 0)),
-			/* const */ 1, 0)));
+			(build_qualified_type (class_type_node,
+					       TYPE_QUAL_CONST)),
+			TYPE_QUAL_CONST)));
       TREE_STATIC (decl) = 1;
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
