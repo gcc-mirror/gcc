@@ -5935,6 +5935,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget crisv32-*-*] || [istarget cris-*-*]
 	 || [istarget mmix-*-*]
 	 || [istarget s390*-*-*]
+	 || [istarget powerpc*-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
     }
