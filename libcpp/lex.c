@@ -1648,7 +1648,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
       if (is_macro (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
-	  if (CPP_OPTION (pfile, warn_literal_suffix))
+	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
 	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
 				   token->src_loc, 0,
 				   "invalid suffix on literal; C++11 requires "
@@ -1777,7 +1777,7 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
       if (is_macro (pfile, cur))
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
-	  if (CPP_OPTION (pfile, warn_literal_suffix))
+	  if (CPP_OPTION (pfile, warn_literal_suffix) && !pfile->state.skipping)
 	    cpp_warning_with_line (pfile, CPP_W_LITERAL_SUFFIX,
 				   token->src_loc, 0,
 				   "invalid suffix on literal; C++11 requires "
