@@ -1,3 +1,12 @@
+2014-07-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	Backport r211775 from trunk.
+	2014-06-18  Terry Guo  <terry.guo@arm.com>
+
+	PR target/61544
+	* config/arm/arm.c (thumb1_reorg): Move to next basic block if we
+	reach the head.
+
 2014-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/61673
