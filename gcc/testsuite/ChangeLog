@@ -1,3 +1,9 @@
+2014-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59361
+	* g++.dg/cpp0x/vt-59361.C: New.
+
 2014-07-08  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/61599
