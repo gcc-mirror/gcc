@@ -1,3 +1,9 @@
+2014-07-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* trans-array.c (gfc_build_constant_array_constructor): Build a
+	static decl manually.
+	* trans-decl.c (create_main_function): Likewise.
+
 2014-07-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/61459

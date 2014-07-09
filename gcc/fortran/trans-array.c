@@ -2045,11 +2045,15 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
 
-  tmp = gfc_create_var (tmptype, "A");
+  tmp = build_decl (input_location, VAR_DECL, create_tmp_var_name ("A"),
+		    tmptype);
+  DECL_ARTIFICIAL (tmp) = 1;
+  DECL_IGNORED_P (tmp) = 1;
   TREE_STATIC (tmp) = 1;
   TREE_CONSTANT (tmp) = 1;
   TREE_READONLY (tmp) = 1;
   DECL_INITIAL (tmp) = init;
+  pushdecl (tmp);
 
   return tmp;
 }
