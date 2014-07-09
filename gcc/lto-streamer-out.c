@@ -1131,32 +1131,18 @@ hash_scc (struct streamer_tree_cache_d *cache, unsigned first, unsigned size)
 
   /* Sort the SCC of type, hash pairs so that when we mix in
      all members of the SCC the hash value becomes independent on
-     the order we visited the SCC.  Disregard hashes equal to
-     the hash of the tree we mix into because we cannot guarantee
-     a stable sort for those across different TUs.  */
+     the order we visited the SCC.  Produce hash of the whole SCC as
+     combination of hashes of individual elements.  Then combine that hash into
+     hash of each element, so othewise identically looking elements from two
+     different SCCs are distinguished.  */
   qsort (&sccstack[first], size, sizeof (scc_entry), scc_entry_compare);
-  hashval_t *tem = XALLOCAVEC (hashval_t, size);
+
+  hashval_t scc_hash = sccstack[first].hash;
+  for (unsigned i = 1; i < size; ++i)
+    scc_hash = iterative_hash_hashval_t (scc_hash,
+					 sccstack[first+i].hash);
   for (unsigned i = 0; i < size; ++i)
-    {
-      hashval_t hash = sccstack[first+i].hash;
-      hashval_t orig_hash = hash;
-      unsigned j;
-      /* Skip same hashes.  */
-      for (j = i + 1;
-	   j < size && sccstack[first+j].hash == orig_hash; ++j)
-	;
-      for (; j < size; ++j)
-	hash = iterative_hash_hashval_t (sccstack[first+j].hash, hash);
-      for (j = 0; sccstack[first+j].hash != orig_hash; ++j)
-	hash = iterative_hash_hashval_t (sccstack[first+j].hash, hash);
-      tem[i] = hash;
-    }
-  hashval_t scc_hash = 0;
-  for (unsigned i = 0; i < size; ++i)
-    {
-      sccstack[first+i].hash = tem[i];
-      scc_hash = iterative_hash_hashval_t (tem[i], scc_hash);
-    }
+    sccstack[first+i].hash = iterative_hash_hashval_t (sccstack[first+i].hash, scc_hash);
   return scc_hash;
 }
 
