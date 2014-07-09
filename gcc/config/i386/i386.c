@@ -5039,8 +5039,11 @@ ix86_in_large_data_p (tree exp)
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
 
       /* If this is an incomplete type with size 0, then we can't put it
-	 in data because it might be too big when completed.  */
-      if (!size || size > ix86_section_threshold)
+	 in data because it might be too big when completed.  Also,
+	 int_size_in_bytes returns -1 if size can vary or is larger than
+	 an integer in which case also it is safer to assume that it goes in
+	 large data.  */
+      if (size <= 0 || size > ix86_section_threshold)
 	return true;
     }
 

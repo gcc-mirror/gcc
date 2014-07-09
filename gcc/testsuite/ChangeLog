@@ -1,3 +1,9 @@
+2014-07-08  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/61599
+	* gcc.target/i386/pr61599-1.c: New test.
+	* gcc.target/i386/pr61599-2.c: New test.
+
 2014-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/61673
