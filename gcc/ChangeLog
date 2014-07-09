@@ -1,3 +1,14 @@
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* rs6000/rs6000-protos.h (rs6000_xcoff_declare_object_name): Declare.
+	* rs6000/rs6000.c: Inline output of .set instruction.
+	(declare_alias_data): New struct.
+	(rs6000_declare_alias): New function.
+	(rs6000_xcoff_declare_function_name): Use it.
+	(rs6000_xcoff_declare_object_name): New function.
+	* config/rs6000/xcoff.h: Define ASM_DECLARE_OBJECT_NAME.
+	(ASM_OUTPUT_DEF): Turn to empty definition.
+
 2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
 
 	PR bootstrap/61679

@@ -139,6 +139,9 @@
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   rs6000_xcoff_declare_function_name ((FILE), (NAME), (DECL))
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
+  rs6000_xcoff_declare_object_name ((FILE), (NAME), (DECL))
 
 /* Output a reference to SYM on FILE.  */
 
@@ -280,14 +283,16 @@
 /* This is how we tell the assembler that two symbols have the same value.  */
 #define SET_ASM_OP "\t.set "
 
-/* This is how we tell the assembler to equate two values.  */
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
- do {	fprintf ((FILE), "%s", SET_ASM_OP);				\
-	RS6000_OUTPUT_BASENAME (FILE, LABEL1);				\
-	fprintf (FILE, ",");						\
-	RS6000_OUTPUT_BASENAME (FILE, LABEL2);				\
-	fprintf (FILE, "\n");						\
-  } while (0)
+/* This is how we tell the assembler to equate two values. 
+   The semantic of AIX assembler's .set do not correspond to middle-end expectations.
+   We output aliases as alternative symbols in the front of the definition
+   via DECLARE_FUNCTION_NAME and DECLARE_OBJECT_NAME.
+   We still need to define this macro to let middle-end know that aliases are
+   supported.
+ */
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2) do { } while (0)
+
+/* Used by rs6000_assemble_integer, among others.  */
 
 /* Used by rs6000_assemble_integer, among others.  */
 #define DOUBLE_INT_ASM_OP "\t.llong\t"
