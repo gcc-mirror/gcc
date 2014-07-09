@@ -21,43 +21,33 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GRAPHITE_HTAB_H
 #define GCC_GRAPHITE_HTAB_H
 
-#include "hash-table.h"
-
-/* Stores BB's related PBB.  */
-
-struct bb_pbb_def
-{
-  basic_block bb;
-  poly_bb_p pbb;
-};
+#include "hash-map.h"
 
 /* Hashtable helpers.  */
 
-struct bb_pbb_hasher : typed_free_remove <bb_pbb_def>
+struct bb_pbb_hasher : default_hashmap_traits
 {
-  typedef bb_pbb_def value_type;
-  typedef bb_pbb_def compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const basic_block);
+  static inline bool equal_keys (const basic_block, const basic_block);
 };
 
-/* Hash function for data base element BB_PBB.  */
+/* Hash function.  */
 
 inline hashval_t
-bb_pbb_hasher::hash (const value_type *bb_pbb)
+bb_pbb_hasher::hash (const basic_block bb)
 {
-  return (hashval_t)(bb_pbb->bb->index);
+  return (hashval_t)(bb->index);
 }
 
 /* Compare data base element PB1 and PB2.  */
 
 inline bool
-bb_pbb_hasher::equal (const value_type *bp1, const compare_type *bp2)
+bb_pbb_hasher::equal_keys (const basic_block a, const basic_block b)
 {
-  return (bp1->bb->index == bp2->bb->index);
+  return (a->index == b->index);
 }
 
-typedef hash_table<bb_pbb_hasher> bb_pbb_htab_type;
+typedef hash_map<basic_block, poly_bb_p, bb_pbb_hasher> bb_pbb_htab_type;
 
 poly_bb_p find_pbb_via_hash (bb_pbb_htab_type *, basic_block);
 bool loop_is_parallel_p (loop_p, bb_pbb_htab_type *, int);

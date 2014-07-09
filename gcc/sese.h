@@ -249,31 +249,6 @@ if_region_get_condition_block (ifsese if_region)
   return if_region_entry (if_region)->dest;
 }
 
-/* Structure containing the mapping between the old names and the new
-   names used after block copy in the new loop context.  */
-typedef struct rename_map_elt_s
-{
-  tree old_name, expr;
-} *rename_map_elt;
-
-
-extern hashval_t rename_map_elt_info (const void *);
-extern int eq_rename_map_elts (const void *, const void *);
-
-/* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
-
-static inline rename_map_elt
-new_rename_map_elt (tree old_name, tree expr)
-{
-  rename_map_elt res;
-
-  res = XNEW (struct rename_map_elt_s);
-  res->old_name = old_name;
-  res->expr = expr;
-
-  return res;
-}
-
 /* Free and compute again all the dominators information.  */
 
 static inline void
