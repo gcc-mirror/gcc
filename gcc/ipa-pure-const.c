@@ -1517,7 +1517,6 @@ const pass_data pass_data_ipa_pure_const =
   IPA_PASS, /* type */
   "pure-const", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_IPA_PURE_CONST, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -1590,7 +1589,6 @@ const pass_data pass_data_local_pure_const =
   GIMPLE_PASS, /* type */
   "local-pure-const", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_IPA_PURE_CONST, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -1740,7 +1738,6 @@ const pass_data pass_data_warn_function_noreturn =
   GIMPLE_PASS, /* type */
   "*warn_function_noreturn", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
   0, /* properties_provided */

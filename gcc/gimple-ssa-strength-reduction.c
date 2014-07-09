@@ -3597,7 +3597,6 @@ const pass_data pass_data_strength_reduction =
   GIMPLE_PASS, /* type */
   "slsr", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_GIMPLE_SLSR, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

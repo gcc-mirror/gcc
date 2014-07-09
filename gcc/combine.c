@@ -13886,7 +13886,6 @@ const pass_data pass_data_combine =
   RTL_PASS, /* type */
   "combine", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_COMBINE, /* tv_id */
   PROP_cfglayout, /* properties_required */
   0, /* properties_provided */

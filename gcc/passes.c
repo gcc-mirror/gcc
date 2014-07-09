@@ -345,7 +345,6 @@ const pass_data pass_data_early_local_passes =
   SIMPLE_IPA_PASS, /* type */
   "early_local_cleanups", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_EARLY_LOCAL, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -390,7 +389,6 @@ const pass_data pass_data_all_early_optimizations =
   GIMPLE_PASS, /* type */
   "early_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -431,7 +429,6 @@ const pass_data pass_data_all_optimizations =
   GIMPLE_PASS, /* type */
   "*all_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -467,7 +464,6 @@ const pass_data pass_data_all_optimizations_g =
   GIMPLE_PASS, /* type */
   "*all_optimizations_g", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -503,7 +499,6 @@ const pass_data pass_data_rest_of_compilation =
   RTL_PASS, /* type */
   "*rest_of_compilation", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_REST_OF_COMPILATION, /* tv_id */
   PROP_rtl, /* properties_required */
   0, /* properties_provided */
@@ -544,7 +539,6 @@ const pass_data pass_data_postreload =
   RTL_PASS, /* type */
   "*all-postreload", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_POSTRELOAD, /* tv_id */
   PROP_rtl, /* properties_required */
   0, /* properties_provided */
@@ -2152,11 +2146,8 @@ execute_one_pass (opt_pass *pass)
     timevar_push (pass->tv_id);
 
   /* Do it!  */
-  if (pass->has_execute)
-    {
-      todo_after = pass->execute (cfun);
-      do_per_function (clear_last_verified, NULL);
-    }
+  todo_after = pass->execute (cfun);
+  do_per_function (clear_last_verified, NULL);
 
   /* Stop timevar.  */
   if (pass->tv_id != TV_NONE)

@@ -16525,7 +16525,6 @@ const pass_data pass_data_mips_machine_reorg2 =
   RTL_PASS, /* type */
   "mach2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

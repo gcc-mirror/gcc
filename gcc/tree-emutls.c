@@ -819,7 +819,6 @@ const pass_data pass_data_ipa_lower_emutls =
   SIMPLE_IPA_PASS, /* type */
   "emutls", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_IPA_OPT, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

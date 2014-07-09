@@ -45,7 +45,6 @@ const pass_data pass_data_resolve_sw_modes =
   RTL_PASS, /* type */
   "resolve_sw_modes", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_MODE_SWITCH, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

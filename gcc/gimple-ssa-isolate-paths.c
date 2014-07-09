@@ -420,7 +420,6 @@ const pass_data pass_data_isolate_erroneous_paths =
   GIMPLE_PASS, /* type */
   "isolate-paths", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_ISOLATE_ERRONEOUS_PATHS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

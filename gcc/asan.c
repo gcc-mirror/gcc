@@ -2644,7 +2644,6 @@ const pass_data pass_data_asan =
   GIMPLE_PASS, /* type */
   "asan", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
   0, /* properties_provided */
@@ -2682,7 +2681,6 @@ const pass_data pass_data_asan_O0 =
   GIMPLE_PASS, /* type */
   "asan0", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
   0, /* properties_provided */
@@ -2721,7 +2719,6 @@ const pass_data pass_data_sanopt =
   GIMPLE_PASS, /* type */
   "sanopt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
   0, /* properties_provided */

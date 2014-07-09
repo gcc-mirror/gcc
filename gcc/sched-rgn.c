@@ -3650,7 +3650,6 @@ const pass_data pass_data_live_range_shrinkage =
   RTL_PASS, /* type */
   "lr_shrinkage", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_LIVE_RANGE_SHRINKAGE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3698,7 +3697,6 @@ const pass_data pass_data_sched =
   RTL_PASS, /* type */
   "sched1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_SCHED, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3745,7 +3743,6 @@ const pass_data pass_data_sched2 =
   RTL_PASS, /* type */
   "sched2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_SCHED2, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

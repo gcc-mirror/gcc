@@ -728,7 +728,6 @@ const pass_data pass_data_vtable_verify =
   GIMPLE_PASS, /* type */
   "vtable-verify", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_VTABLE_VERIFICATION, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

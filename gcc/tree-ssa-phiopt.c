@@ -2318,7 +2318,6 @@ const pass_data pass_data_phiopt =
   GIMPLE_PASS, /* type */
   "phiopt", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_PHIOPT, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
@@ -2359,7 +2358,6 @@ const pass_data pass_data_cselim =
   GIMPLE_PASS, /* type */
   "cselim", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_PHIOPT, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
