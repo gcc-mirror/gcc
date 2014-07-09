@@ -1,3 +1,9 @@
+2014-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/61728
+	* libsupc++/cxxabi.h: Define __pbase_type_info::__pointer_catch here.
+	* libsupc++/tinfo.h: Not here.
+
 2014-07-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/allocated_ptr.h (__allocated_ptr::operator=): Add
