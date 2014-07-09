@@ -7666,6 +7666,7 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
     case CPP_OR:
     case CPP_OR_OR:
     case CPP_EOF:
+    case CPP_ELLIPSIS:
       return 0;
 
     case CPP_OPEN_PAREN:
