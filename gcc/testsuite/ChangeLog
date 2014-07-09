@@ -1,3 +1,9 @@
+2014-07-09  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR testsuite/61453
+	* gfortran.dg/gfortran.dg/bind_c_array_params_2.f90:
+	Adjust regexp for more targets.
+
 2014-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
