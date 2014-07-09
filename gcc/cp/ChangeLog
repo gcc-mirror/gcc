@@ -1,3 +1,10 @@
+2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1584
+	PR c++/57466
+	* pt.c (check_cv_quals_for_unify): Implement resolution, disregard
+	cv-qualifiers of function types.
+
 2014-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
