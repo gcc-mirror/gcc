@@ -1012,34 +1012,16 @@ build_iv_mapping (vec<tree> iv_map, struct clast_user_stmt *user_stmt,
   mpz_clear (bound_two);
 }
 
-/* Construct bb_pbb_def with BB and PBB.  */
-
-static bb_pbb_def *
-new_bb_pbb_def (basic_block bb, poly_bb_p pbb)
-{
-  bb_pbb_def *bb_pbb_p;
-
-  bb_pbb_p = XNEW (bb_pbb_def);
-  bb_pbb_p->bb = bb;
-  bb_pbb_p->pbb = pbb;
-
-  return bb_pbb_p;
-}
-
 /* Mark BB with it's relevant PBB via hashing table BB_PBB_MAPPING.  */
 
 static void
 mark_bb_with_pbb (poly_bb_p pbb, basic_block bb,
 		  bb_pbb_htab_type *bb_pbb_mapping)
 {
-  bb_pbb_def tmp;
-  bb_pbb_def **x;
-
-  tmp.bb = bb;
-  x = bb_pbb_mapping->find_slot (&tmp, INSERT);
-
-  if (x && !*x)
-    *x = new_bb_pbb_def (bb, pbb);
+  bool existed;
+  poly_bb_p &e = bb_pbb_mapping->get_or_insert (bb, &existed);
+  if (!existed)
+    e = pbb;
 }
 
 /* Find BB's related poly_bb_p in hash table BB_PBB_MAPPING.  */
@@ -1047,14 +1029,9 @@ mark_bb_with_pbb (poly_bb_p pbb, basic_block bb,
 poly_bb_p
 find_pbb_via_hash (bb_pbb_htab_type *bb_pbb_mapping, basic_block bb)
 {
-  bb_pbb_def tmp;
-  bb_pbb_def **slot;
-
-  tmp.bb = bb;
-  slot = bb_pbb_mapping->find_slot (&tmp, NO_INSERT);
-
-  if (slot && *slot)
-    return ((bb_pbb_def *) *slot)->pbb;
+  poly_bb_p *pbb = bb_pbb_mapping->get (bb);
+  if (pbb)
+    return *pbb;
 
   return NULL;
 }
