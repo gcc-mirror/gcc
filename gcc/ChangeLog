@@ -1,5 +1,10 @@
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	Revert:
+	* stor-layout.c (finish_builtin_struct): Copy fields into the variants.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-visibility.c (function_and_variable_visibility): Remove
 	temporary hack disabling local aliases on AIX.
 
