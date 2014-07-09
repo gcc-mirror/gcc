@@ -5383,11 +5383,16 @@ create_main_function (tree fndecl)
     TREE_STATIC (array) = 1;
 
     /* Create a static variable to hold the jump table.  */
-    var = gfc_create_var (array_type, "options");
+    var = build_decl (input_location, VAR_DECL,
+		      create_tmp_var_name ("options"),
+		      array_type);
+    DECL_ARTIFICIAL (var) = 1;
+    DECL_IGNORED_P (var) = 1;
     TREE_CONSTANT (var) = 1;
     TREE_STATIC (var) = 1;
     TREE_READONLY (var) = 1;
     DECL_INITIAL (var) = array;
+    pushdecl (var);
     var = gfc_build_addr_expr (build_pointer_type (integer_type_node), var);
 
     tmp = build_call_expr_loc (input_location,
