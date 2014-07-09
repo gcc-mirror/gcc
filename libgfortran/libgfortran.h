@@ -775,6 +775,15 @@ internal_proto(get_fpu_state);
 extern void set_fpu_state (void *);
 internal_proto(set_fpu_state);
 
+extern int get_fpu_underflow_mode (void);
+internal_proto(get_fpu_underflow_mode);
+
+extern void set_fpu_underflow_mode (int);
+internal_proto(set_fpu_underflow_mode);
+
+extern int support_fpu_underflow_control (int);
+internal_proto(support_fpu_underflow_control);
+
 /* memory.c */
 
 extern void *xmalloc (size_t) __attribute__ ((malloc));

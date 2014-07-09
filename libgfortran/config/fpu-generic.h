@@ -75,3 +75,24 @@ void
 set_fpu_rounding_mode (int round __attribute__((unused)))
 {
 }
+
+
+int
+support_fpu_underflow_control (int kind __attribute__((unused)))
+{
+  return 0;
+}
+
+
+int
+get_fpu_underflow_mode (void)
+{
+  return 0;
+}
+
+
+void
+set_fpu_underflow_mode (int gradual __attribute__((unused)))
+{
+}
+

@@ -349,6 +349,29 @@ module IEEE_ARITHMETIC
     end function
   end interface
 
+  ! IEEE_SUPPORT_UNDERFLOW_CONTROL
+
+  interface IEEE_SUPPORT_UNDERFLOW_CONTROL
+    module procedure IEEE_SUPPORT_UNDERFLOW_CONTROL_4, &
+                     IEEE_SUPPORT_UNDERFLOW_CONTROL_8, &
+#ifdef HAVE_GFC_REAL_10
+                     IEEE_SUPPORT_UNDERFLOW_CONTROL_10, &
+#endif
+#ifdef HAVE_GFC_REAL_16
+                     IEEE_SUPPORT_UNDERFLOW_CONTROL_16, &
+#endif
+                     IEEE_SUPPORT_UNDERFLOW_CONTROL_NOARG
+  end interface
+  public :: IEEE_SUPPORT_UNDERFLOW_CONTROL
+  
+  ! Interface to the FPU-specific function
+  interface
+    pure integer function support_underflow_control_helper(kind) &
+        bind(c, name="_gfortrani_support_fpu_underflow_control")
+      integer, intent(in), value :: kind
+    end function
+  end interface
+
 ! IEEE_SUPPORT_* generic functions
 
 #if defined(HAVE_GFC_REAL_10) && defined(HAVE_GFC_REAL_16)
@@ -373,7 +396,6 @@ SUPPORTGENERIC(IEEE_SUPPORT_IO)
 SUPPORTGENERIC(IEEE_SUPPORT_NAN)
 SUPPORTGENERIC(IEEE_SUPPORT_SQRT)
 SUPPORTGENERIC(IEEE_SUPPORT_STANDARD)
-SUPPORTGENERIC(IEEE_SUPPORT_UNDERFLOW_CONTROL)
 
 contains
 
@@ -560,7 +582,6 @@ contains
   subroutine IEEE_GET_ROUNDING_MODE (ROUND_VALUE)
     implicit none
     type(IEEE_ROUND_TYPE), intent(out) :: ROUND_VALUE
-    integer :: i
 
     interface
       integer function helper() &
@@ -568,9 +589,7 @@ contains
       end function
     end interface
 
-    ! FIXME: Use intermediate variable i to avoid triggering PR59023
-    i = helper()
-    ROUND_VALUE = IEEE_ROUND_TYPE(i)
+    ROUND_VALUE = IEEE_ROUND_TYPE(helper())
   end subroutine
 
 
@@ -596,10 +615,14 @@ contains
   subroutine IEEE_GET_UNDERFLOW_MODE (GRADUAL)
     implicit none
     logical, intent(out) :: GRADUAL
-    ! We do not support getting/setting underflow mode yet. We still
-    ! provide the procedures to avoid link-time error if a user program
-    ! uses it protected by a call to IEEE_SUPPORT_UNDERFLOW_CONTROL
-    call abort
+
+    interface
+      integer function helper() &
+        bind(c, name="_gfortrani_get_fpu_underflow_mode")
+      end function
+    end interface
+
+    GRADUAL = (helper() /= 0)
   end subroutine
 
 
@@ -608,10 +631,15 @@ contains
   subroutine IEEE_SET_UNDERFLOW_MODE (GRADUAL)
     implicit none
     logical, intent(in) :: GRADUAL
-    ! We do not support getting/setting underflow mode yet. We still
-    ! provide the procedures to avoid link-time error if a user program
-    ! uses it protected by a call to IEEE_SUPPORT_UNDERFLOW_CONTROL
-    call abort
+
+    interface
+      subroutine helper(val) &
+          bind(c, name="_gfortrani_set_fpu_underflow_mode")
+        integer, value :: val
+      end subroutine
+    end interface
+
+    call helper(merge(1, 0, GRADUAL))
   end subroutine
 
 ! IEEE_SUPPORT_ROUNDING
@@ -655,6 +683,46 @@ contains
     res = .false.
 #else
     res = (support_rounding_helper(ROUND_VALUE%hidden) /= 0)
+#endif
+  end function
+
+! IEEE_SUPPORT_UNDERFLOW_CONTROL
+
+  pure logical function IEEE_SUPPORT_UNDERFLOW_CONTROL_4 (X) result(res)
+    implicit none
+    real(kind=4), intent(in) :: X
+    res = (support_underflow_control_helper(4) /= 0)
+  end function
+
+  pure logical function IEEE_SUPPORT_UNDERFLOW_CONTROL_8 (X) result(res)
+    implicit none
+    real(kind=8), intent(in) :: X
+    res = (support_underflow_control_helper(8) /= 0)
+  end function
+
+#ifdef HAVE_GFC_REAL_10
+  pure logical function IEEE_SUPPORT_UNDERFLOW_CONTROL_10 (X) result(res)
+    implicit none
+    real(kind=10), intent(in) :: X
+    res = .false.
+  end function
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+  pure logical function IEEE_SUPPORT_UNDERFLOW_CONTROL_16 (X) result(res)
+    implicit none
+    real(kind=16), intent(in) :: X
+    res = .false.
+  end function
+#endif
+
+  pure logical function IEEE_SUPPORT_UNDERFLOW_CONTROL_NOARG () result(res)
+    implicit none
+#if defined(HAVE_GFC_REAL_10) || defined(HAVE_GFC_REAL_16)
+    res = .false.
+#else
+    res = (support_underflow_control_helper(4) /= 0 &
+           .and. support_underflow_control_helper(8) /= 0)
 #endif
   end function
 
@@ -800,18 +868,5 @@ SUPPORTMACRO_NOARG(IEEE_SUPPORT_STANDARD,.false.)
 #else
 SUPPORTMACRO_NOARG(IEEE_SUPPORT_STANDARD,.true.)
 #endif
-
-! IEEE_SUPPORT_UNDERFLOW_CONTROL
-
-SUPPORTMACRO(IEEE_SUPPORT_UNDERFLOW_CONTROL,4,.false.)
-SUPPORTMACRO(IEEE_SUPPORT_UNDERFLOW_CONTROL,8,.false.)
-#ifdef HAVE_GFC_REAL_10
-SUPPORTMACRO(IEEE_SUPPORT_UNDERFLOW_CONTROL,10,.false.)
-#endif
-#ifdef HAVE_GFC_REAL_16
-SUPPORTMACRO(IEEE_SUPPORT_UNDERFLOW_CONTROL,16,.false.)
-#endif
-SUPPORTMACRO_NOARG(IEEE_SUPPORT_UNDERFLOW_CONTROL,.false.)
-
 
 end module IEEE_ARITHMETIC
