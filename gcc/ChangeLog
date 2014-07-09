@@ -1,5 +1,11 @@
 2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
 
+	PR bootstrap/61679
+	 * hash-table.h: use hash_table::value_type instead of
+       	Descriptor::value_type in the return types of several methods.
+
+2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* tree-pass.h (pass_data): Remove has_execute member.
 	* passes.c (execute_one_pass): Don't check pass->has_execute.
 	* asan.c, auto-inc-dec.c, bb-reorder.c, bt-load.c, cfgcleanup.c,
