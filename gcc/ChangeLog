@@ -1,5 +1,10 @@
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-cp.c (devirtualization_time_bonus): Walk through aliases.
+	* ipa-inline-analysis.c (estimate_edge_devirt_benefit): Likewise.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* rs6000/rs6000-protos.h (rs6000_xcoff_declare_object_name): Declare.
 	* rs6000/rs6000.c: Inline output of .set instruction.
 	(declare_alias_data): New struct.

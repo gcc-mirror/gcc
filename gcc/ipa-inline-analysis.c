@@ -2971,6 +2971,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   tree target;
   struct cgraph_node *callee;
   struct inline_summary *isummary;
+  enum availability avail;
 
   if (!known_vals.exists () && !known_binfos.exists ())
     return false;
@@ -2990,6 +2991,9 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 
   callee = cgraph_get_node (target);
   if (!callee || !callee->definition)
+    return false;
+  callee = cgraph_function_node (callee, &avail);
+  if (avail < AVAIL_AVAILABLE)
     return false;
   isummary = inline_summary (callee);
   return isummary->inlinable;

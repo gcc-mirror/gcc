@@ -1671,6 +1671,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
     {
       struct cgraph_node *callee;
       struct inline_summary *isummary;
+      enum availability avail;
       tree target;
 
       target = ipa_get_indirect_edge_target (ie, known_csts, known_binfos,
@@ -1682,6 +1683,9 @@ devirtualization_time_bonus (struct cgraph_node *node,
       res += 1;
       callee = cgraph_get_node (target);
       if (!callee || !callee->definition)
+	continue;
+      callee = cgraph_function_node (callee, &avail);
+      if (avail < AVAIL_AVAILABLE)
 	continue;
       isummary = inline_summary (callee);
       if (!isummary->inlinable)
