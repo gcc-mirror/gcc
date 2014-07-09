@@ -225,6 +225,7 @@ static int final_addr_vec_align (rtx);
 #endif
 static int align_fuzz (rtx, rtx, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
+static tree get_call_fndecl (rtx);
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -4746,6 +4747,16 @@ make_pass_clean_state (gcc::context *ctxt)
   return new pass_clean_state (ctxt);
 }
 
+/* Return true if INSN is a call to the the current function.  */
+
+static bool
+self_recursive_call_p (rtx insn)
+{
+  tree fndecl = get_call_fndecl (insn);
+  return (fndecl == current_function_decl
+	  && decl_binds_to_current_def_p (fndecl));
+}
+
 /* Collect hard register usage for the current function.  */
 
 static void
@@ -4771,7 +4782,8 @@ collect_fn_hard_reg_usage (void)
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      if (CALL_P (insn))
+      if (CALL_P (insn)
+	  && !self_recursive_call_p (insn))
 	{
 	  if (!get_call_reg_set_usage (insn, &insn_used_regs,
 				       call_used_reg_set))
