@@ -1,5 +1,10 @@
 2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/60686
+	* g++.dg/cpp0x/explicit8.C: New.
+
+2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	DR 1584
 	PR c++/57466
 	* g++.dg/template/pr57466.C: New.
