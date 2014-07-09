@@ -860,7 +860,8 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 		   bool can_refer,
 		   bool *completep)
 {
-  struct cgraph_node *target_node;
+  struct cgraph_node *target_node, *alias_target;
+  enum availability avail;
 
   /* cxa_pure_virtual and __builtin_unreachable do not need to be added into
      list of targets; the runtime effect of calling them is undefined.
@@ -883,6 +884,17 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     return;
 
   target_node = cgraph_get_node (target);
+
+  /* Preffer alias target over aliases, so we do not get confused by
+     fake duplicates.  */
+  if (target_node)
+    {
+      alias_target = cgraph_function_or_thunk_node (target_node, &avail);
+      if (target_node != alias_target
+	  && avail >= AVAIL_AVAILABLE
+	  && cgraph_function_body_availability (target_node))
+	target_node = alias_target;
+    }
 
   /* Method can only be called by polymorphic call if any
      of vtables refering to it are alive. 
@@ -910,7 +922,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     {
       gcc_assert (!target_node->global.inlined_to);
       gcc_assert (symtab_real_symbol_p (target_node));
-      if (!pointer_set_insert (inserted, target))
+      if (!pointer_set_insert (inserted, target_node->decl))
 	{
 	  pointer_set_insert (cached_polymorphic_call_targets,
 			      target_node);

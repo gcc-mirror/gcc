@@ -1,5 +1,9 @@
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (record_node): Walk through aliases.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-streamer-out.c (hash_scc): Avoid quadratic hashing loop.
 
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
