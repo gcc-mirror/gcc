@@ -1,3 +1,11 @@
+2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1584
+	PR c++/57466
+	* g++.dg/template/pr57466.C: New.
+	* g++.dg/cpp0x/pr57466.C: Likewise.
+	* g++.dg/template/unify6.C: Update.
+
 2014-07-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/ieee/underflow_1.f90: New file.
