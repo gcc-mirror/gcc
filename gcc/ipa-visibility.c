@@ -567,9 +567,6 @@ function_and_variable_visibility (bool whole_program)
 
 	 TODO: We can also update virtual tables.  */
       if (node->callers 
-          /* FIXME: currently this optimization breaks on AIX.  Disable it for targets
-             without comdat support for now.  */
-	  && SUPPORTS_ONE_ONLY
 	  && can_replace_by_local_alias (node))
 	{
 	  struct cgraph_node *alias = cgraph (symtab_nonoverwritable_alias (node));
@@ -672,10 +669,7 @@ function_and_variable_visibility (bool whole_program)
 
       /* Update virtual tables to point to local aliases where possible.  */
       if (DECL_VIRTUAL_P (vnode->decl)
-	  && !DECL_EXTERNAL (vnode->decl)
-	  /* FIXME: currently this optimization breaks on AIX.  Disable it for targets
-	     without comdat support for now.  */
-	  && SUPPORTS_ONE_ONLY)
+	  && !DECL_EXTERNAL (vnode->decl))
 	{
 	  int i;
 	  struct ipa_ref *ref;

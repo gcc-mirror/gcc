@@ -1,5 +1,10 @@
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-visibility.c (function_and_variable_visibility): Remove
+	temporary hack disabling local aliases on AIX.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-cp.c (devirtualization_time_bonus): Walk through aliases.
 	* ipa-inline-analysis.c (estimate_edge_devirt_benefit): Likewise.
 
