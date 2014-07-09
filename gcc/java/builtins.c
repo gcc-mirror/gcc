@@ -394,7 +394,8 @@ putVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
   
   addr = build_addr_sum (value_type, obj_arg, offset_arg);
   addr 
-    = fold_convert (build_pointer_type (build_type_variant (value_type, 0, 1)),
+    = fold_convert (build_pointer_type (build_qualified_type
+					(value_type, TYPE_QUAL_VOLATILE)),
 		    addr);
   
   stmt = build_call_expr (builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE), 0);
@@ -418,8 +419,9 @@ getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 
   addr = build_addr_sum (method_return_type, obj_arg, offset_arg);
   addr 
-    = fold_convert (build_pointer_type (build_type_variant 
-					(method_return_type, 0, 1)), addr);
+    = fold_convert (build_pointer_type (build_qualified_type
+					(method_return_type,
+					 TYPE_QUAL_VOLATILE)), addr);
   
   stmt = build_call_expr (builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE), 0);
   tmp = build_decl (BUILTINS_LOCATION, VAR_DECL, NULL, method_return_type);
