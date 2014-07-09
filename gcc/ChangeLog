@@ -1,5 +1,9 @@
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-streamer-out.c (hash_scc): Avoid quadratic hashing loop.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	Revert:
 	* stor-layout.c (finish_builtin_struct): Copy fields into the variants.
 
