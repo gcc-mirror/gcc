@@ -663,7 +663,7 @@ hash_table<Descriptor, Allocator, false>::~hash_table ()
    HASH is the hash value for the element to be inserted.  */
 
 template<typename Descriptor, template<typename Type> class Allocator>
-typename Descriptor::value_type **
+typename hash_table<Descriptor, Allocator, false>::value_type **
 hash_table<Descriptor, Allocator, false>
 ::find_empty_slot_for_expand (hashval_t hash)
 {
@@ -803,7 +803,7 @@ hash_table<Descriptor, Allocator, false>::clear_slot (value_type **slot)
    be used to insert or delete an element. */
 
 template<typename Descriptor, template<typename Type> class Allocator>
-typename Descriptor::value_type *
+typename hash_table<Descriptor, Allocator, false>::value_type *
 hash_table<Descriptor, Allocator, false>
 ::find_with_hash (const compare_type *comparable, hashval_t hash)
 {
@@ -841,7 +841,7 @@ hash_table<Descriptor, Allocator, false>
    entry, NULL may be returned if memory allocation fails. */
 
 template<typename Descriptor, template<typename Type> class Allocator>
-typename Descriptor::value_type **
+typename hash_table<Descriptor, Allocator, false>::value_type **
 hash_table<Descriptor, Allocator, false>
 ::find_slot_with_hash (const compare_type *comparable, hashval_t hash,
 		       enum insert_option insert)
@@ -922,7 +922,9 @@ hash_table<Descriptor, Allocator, false>
 
 template<typename Descriptor, template<typename Type> class Allocator>
 template<typename Argument,
-	  int (*Callback) (typename Descriptor::value_type **slot, Argument argument)>
+	  int (*Callback) (typename hash_table<Descriptor, Allocator,
+					       false>::value_type **slot,
+			   Argument argument)>
 void
 hash_table<Descriptor, Allocator, false>::traverse_noresize (Argument argument)
 {
@@ -946,7 +948,8 @@ hash_table<Descriptor, Allocator, false>::traverse_noresize (Argument argument)
 template <typename Descriptor,
 	  template <typename Type> class Allocator>
 template <typename Argument,
-	  int (*Callback) (typename Descriptor::value_type **slot,
+	  int (*Callback) (typename hash_table<Descriptor, Allocator,
+					       false>::value_type **slot,
 			   Argument argument)>
 void
 hash_table<Descriptor, Allocator, false>::traverse (Argument argument)
@@ -1181,7 +1184,7 @@ hash_table<Descriptor, Allocator, true>::~hash_table ()
    HASH is the hash value for the element to be inserted.  */
 
 template<typename Descriptor, template<typename Type> class Allocator>
-typename Descriptor::value_type *
+typename hash_table<Descriptor, Allocator, true>::value_type *
 hash_table<Descriptor, Allocator, true>
 ::find_empty_slot_for_expand (hashval_t hash)
 {
@@ -1321,7 +1324,7 @@ hash_table<Descriptor, Allocator, true>::clear_slot (value_type *slot)
    be used to insert or delete an element. */
 
 template<typename Descriptor, template<typename Type> class Allocator>
-typename Descriptor::value_type &
+typename hash_table<Descriptor, Allocator, true>::value_type &
 hash_table<Descriptor, Allocator, true>
 ::find_with_hash (const compare_type &comparable, hashval_t hash)
 {
@@ -1358,7 +1361,7 @@ hash_table<Descriptor, Allocator, true>
    entry, NULL may be returned if memory allocation fails. */
 
 template<typename Descriptor, template<typename Type> class Allocator>
-typename Descriptor::value_type *
+typename hash_table<Descriptor, Allocator, true>::value_type *
 hash_table<Descriptor, Allocator, true>
 ::find_slot_with_hash (const compare_type &comparable, hashval_t hash,
 		       enum insert_option insert)
@@ -1440,7 +1443,8 @@ hash_table<Descriptor, Allocator, true>
 template<typename Descriptor,
 	  template<typename Type> class Allocator>
 template<typename Argument,
-	  int (*Callback) (typename Descriptor::value_type *slot,
+	  int (*Callback) (typename hash_table<Descriptor, Allocator,
+					       true>::value_type *slot,
 			   Argument argument)>
 void
 hash_table<Descriptor, Allocator, true>::traverse_noresize (Argument argument)
@@ -1465,7 +1469,8 @@ hash_table<Descriptor, Allocator, true>::traverse_noresize (Argument argument)
 template <typename Descriptor,
 	  template <typename Type> class Allocator>
 template <typename Argument,
-	  int (*Callback) (typename Descriptor::value_type *slot,
+	  int (*Callback) (typename hash_table<Descriptor, Allocator,
+					       true>::value_type *slot,
 			   Argument argument)>
 void
 hash_table<Descriptor, Allocator, true>::traverse (Argument argument)
