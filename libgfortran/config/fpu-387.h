@@ -62,6 +62,11 @@ has_sse (void)
 
 #define _FPU_RC_MASK    0x3
 
+/* Enable flush to zero mode.  */
+
+#define MXCSR_FTZ (1 << 15)
+
+
 /* This structure corresponds to the layout of the block
    written by FSTENV.  */
 typedef struct
@@ -81,7 +86,6 @@ typedef struct
   unsigned int __mxcsr;
 }
 my_fenv_t;
-
 
 /* Check we can actually store the FPU state in the allocated size.  */
 _Static_assert (sizeof(my_fenv_t) <= (size_t) GFC_FPE_STATE_BUFFER_SIZE,
@@ -453,5 +457,49 @@ set_fpu_state (void *state)
 
   if (has_sse())
     __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (envp->__mxcsr));
+}
+
+
+int
+support_fpu_underflow_control (int kind)
+{
+  if (!has_sse())
+    return 0;
+
+  return (kind == 4 || kind == 8) ? 1 : 0;
+}
+
+
+int
+get_fpu_underflow_mode (void)
+{
+  unsigned int cw_sse;
+
+  if (!has_sse())
+    return 1;
+
+  __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
+
+  /* Return 0 for abrupt underflow (flush to zero), 1 for gradual underflow.  */
+  return (cw_sse & MXCSR_FTZ) ? 0 : 1;
+}
+
+
+void
+set_fpu_underflow_mode (int gradual)
+{
+  unsigned int cw_sse;
+
+  if (!has_sse())
+    return;
+
+  __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
+
+  if (gradual)
+    cw_sse &= ~MXCSR_FTZ;
+  else
+    cw_sse |= MXCSR_FTZ;
+
+  __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
 }
 

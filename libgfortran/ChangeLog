@@ -1,3 +1,12 @@
+2014-07-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (support_fpu_underflow_control,
+	get_fpu_underflow_mode, set_fpu_underflow_mode): New prototypes.
+	* config/fpu-*.h (support_fpu_underflow_control,
+	get_fpu_underflow_mode, set_fpu_underflow_mode):
+	New functions.
+	* ieee/ieee_arithmetic.F90: Support underflow control.
+
 2014-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/fpu-sysv.h (get_fpu_rounding_mode): Use FP_RN, FP_RP,

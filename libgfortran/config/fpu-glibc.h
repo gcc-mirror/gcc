@@ -429,3 +429,53 @@ set_fpu_state (void *state)
   fesetenv (state);
 }
 
+
+/* Underflow in glibc is currently only supported on alpha, through
+   the FE_MAP_UMZ macro and __ieee_set_fp_control() function call.  */
+
+int
+support_fpu_underflow_control (int kind __attribute__((unused)))
+{
+#if defined(__alpha__) && defined(FE_MAP_UMZ)
+  return (kind == 4 || kind == 8) ? 1 : 0;
+#else
+  return 0;
+#endif
+}
+
+
+int
+get_fpu_underflow_mode (void)
+{
+#if defined(__alpha__) && defined(FE_MAP_UMZ)
+
+  fenv_t state = __ieee_get_fp_control ();
+
+  /* Return 0 for abrupt underflow (flush to zero), 1 for gradual underflow.  */
+  return (state & FE_MAP_UMZ) ? 0 : 1;
+
+#else
+
+  return 0;
+
+#endif
+}
+
+
+void
+set_fpu_underflow_mode (int gradual __attribute__((unused)))
+{
+#if defined(__alpha__) && defined(FE_MAP_UMZ)
+
+  fenv_t state = __ieee_get_fp_control ();
+
+  if (gradual)
+    state &= ~FE_MAP_UMZ;
+  else
+    state |= FE_MAP_UMZ;
+
+  __ieee_set_fp_control (state);
+
+#endif
+}
+
