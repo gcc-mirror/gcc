@@ -1,3 +1,11 @@
+2014-07-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	Backport r211369 from trunk.
+	2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/61062
+	* gcc.target/arm/pr48252.c (main): Expect same result as endian-neutral.
+
 2014-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/61673
