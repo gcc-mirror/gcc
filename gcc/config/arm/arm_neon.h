@@ -1,5 +1,4 @@
-/* ARM NEON intrinsics include file. This file is generated automatically
-   using neon-gen.ml.  Please do not edit manually.
+/* ARM NEON intrinsics include file.
 
    Copyright (C) 2006-2014 Free Software Foundation, Inc.
    Contributed by CodeSourcery.

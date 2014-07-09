@@ -1,3 +1,13 @@
+2014-07-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	Backport r210219 from trunk.
+	2014-05-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm_neon.h: Update comment.
+	* config/arm/neon-docgen.ml: Delete.
+	* config/arm/neon-gen.ml: Delete.
+	* doc/arm-neon-intrinsics.texi: Update comment.
+
 2014-07-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	Backport r211775 from trunk.
