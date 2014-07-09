@@ -29158,7 +29158,11 @@ rs6000_xcoff_asm_output_anchor (rtx symbol)
 
   sprintf (buffer, "$ + " HOST_WIDE_INT_PRINT_DEC,
 	   SYMBOL_REF_BLOCK_OFFSET (symbol));
-  ASM_OUTPUT_DEF (asm_out_file, XSTR (symbol, 0), buffer);
+  fprintf (asm_out_file, "%s", SET_ASM_OP);
+  RS6000_OUTPUT_BASENAME (asm_out_file, XSTR (symbol, 0));
+  fprintf (asm_out_file, ",");
+  RS6000_OUTPUT_BASENAME (asm_out_file, buffer);
+  fprintf (asm_out_file, "\n");
 }
 
 static void
@@ -29455,6 +29459,85 @@ rs6000_xcoff_file_end (void)
 	 asm_out_file);
 }
 
+struct declare_alias_data
+{
+  FILE *file;
+  bool function_descriptor;
+};
+
+/* Declare alias N.  A helper function for for_node_and_aliases.  */
+
+static bool
+rs6000_declare_alias (struct symtab_node *n, void *d)
+{
+  struct declare_alias_data *data = (struct declare_alias_data *)d;
+  /* Main symbol is output specially, because varasm machinery does part of
+     the job for us - we do not need to declare .globl/lglobs and such.  */
+  if (!n->alias || n->weakref)
+    return false;
+
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (n->decl)))
+    return false;
+
+  /* Prevent assemble_alias from trying to use .set pseudo operation
+     that does not behave as expected by the middle-end.  */
+  TREE_ASM_WRITTEN (n->decl) = true;
+
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl));
+  char *buffer = (char *) alloca (strlen (name) + 2);
+  char *p;
+  int dollar_inside = 0;
+
+  strcpy (buffer, name);
+  p = strchr (buffer, '$');
+  while (p) {
+    *p = '_';
+    dollar_inside++;
+    p = strchr (p + 1, '$');
+  }
+  if (TREE_PUBLIC (n->decl))
+    {
+      if (!RS6000_WEAK || !DECL_WEAK (n->decl))
+	{
+          if (dollar_inside) {
+	      if (data->function_descriptor)
+                fprintf(data->file, "\t.rename .%s,\".%s\"\n", buffer, name);
+	      else
+                fprintf(data->file, "\t.rename %s,\"%s\"\n", buffer, name);
+	    }
+	  if (data->function_descriptor)
+	    fputs ("\t.globl .", data->file);
+	  else
+	    fputs ("\t.globl ", data->file);
+	  RS6000_OUTPUT_BASENAME (data->file, buffer);
+	  putc ('\n', data->file);
+	}
+      else if (DECL_WEAK (n->decl) && !data->function_descriptor)
+	ASM_WEAKEN_DECL (data->file, n->decl, name, NULL);
+    }
+  else
+    {
+      if (dollar_inside)
+	{
+	  if (data->function_descriptor)
+            fprintf(data->file, "\t.rename %s,\"%s\"\n", buffer, name);
+	  else
+            fprintf(data->file, "\t.rename .%s,\".%s\"\n", buffer, name);
+	}
+      if (data->function_descriptor)
+	fputs ("\t.lglobl .", data->file);
+      else
+	fputs ("\t.lglobl ", data->file);
+      RS6000_OUTPUT_BASENAME (data->file, buffer);
+      putc ('\n', data->file);
+    }
+  if (data->function_descriptor)
+    fputs (".", data->file);
+  RS6000_OUTPUT_BASENAME (data->file, buffer);
+  fputs (":\n", data->file);
+  return false;
+}
+
 /* This macro produces the initial definition of a function name.
    On the RS/6000, we need to place an extra '.' in the function name and
    output the function descriptor.
@@ -29464,7 +29547,10 @@ rs6000_xcoff_file_end (void)
    text_section was selected.  We do have to go back to that csect, however.
 
    The third and fourth parameters to the .function pseudo-op (16 and 044)
-   are placeholders which no longer have any use.  */
+   are placeholders which no longer have any use.
+
+   Because AIX assembler's .set command has unexpected semantics, we output
+   all aliases as alternative labels in front of the definition.  */
 
 void
 rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
@@ -29472,6 +29558,8 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
   char *buffer = (char *) alloca (strlen (name) + 1);
   char *p;
   int dollar_inside = 0;
+  struct declare_alias_data data = {file, false};
+
   strcpy (buffer, name);
   p = strchr (buffer, '$');
   while (p) {
@@ -29507,6 +29595,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
   fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", file);
   RS6000_OUTPUT_BASENAME (file, buffer);
   fputs (":\n", file);
+  symtab_for_node_and_aliases (symtab_get_node (decl), rs6000_declare_alias, &data, true);
   fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", file);
   RS6000_OUTPUT_BASENAME (file, buffer);
   fputs (", TOC[tc0], 0\n", file);
@@ -29515,9 +29604,24 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
   putc ('.', file);
   RS6000_OUTPUT_BASENAME (file, buffer);
   fputs (":\n", file);
+  data.function_descriptor = true;
+  symtab_for_node_and_aliases (symtab_get_node (decl), rs6000_declare_alias, &data, true);
   if (write_symbols != NO_DEBUG && !DECL_IGNORED_P (decl))
     xcoffout_declare_function (file, decl, buffer);
   return;
+}
+
+/* This macro produces the initial definition of a object (variable) name.
+   Because AIX assembler's .set command has unexpected semantics, we output
+   all aliases as alternative labels in front of the definition.  */
+
+void
+rs6000_xcoff_declare_object_name (FILE *file, const char *name, tree decl)
+{
+  struct declare_alias_data data = {file, false};
+  RS6000_OUTPUT_BASENAME (file, name);
+  fputs (":\n", file);
+  symtab_for_node_and_aliases (symtab_get_node (decl), rs6000_declare_alias, &data, true);
 }
 
 #ifdef HAVE_AS_TLS
