@@ -11,6 +11,10 @@
 	* g++.dg/cpp0x/pr57466.C: Likewise.
 	* g++.dg/template/unify6.C: Update.
 
+2014-07-09  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/fuse-caller-save-rec.c: New test.
+
 2014-07-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/ieee/underflow_1.f90: New file.

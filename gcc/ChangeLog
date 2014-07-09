@@ -1,3 +1,9 @@
+2014-07-09  Tom de Vries  <tom@codesourcery.com>
+
+       * final.c (get_call_fndecl): Declare.
+       (self_recursive_call_p): New function.
+       (collect_fn_hard_reg_usage): Handle self-recursive function calls.
+
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (record_node): Walk through aliases.
