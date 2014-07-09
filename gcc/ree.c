@@ -1133,7 +1133,6 @@ const pass_data pass_data_ree =
   RTL_PASS, /* type */
   "ree", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_REE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

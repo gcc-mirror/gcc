@@ -342,7 +342,6 @@ const pass_data pass_data_ipa_comdats =
   IPA_PASS, /* type */
   "comdats", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_IPA_COMDATS, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

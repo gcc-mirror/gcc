@@ -671,7 +671,6 @@ const pass_data pass_data_stdarg =
   GIMPLE_PASS, /* type */
   "stdarg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

@@ -1915,7 +1915,6 @@ const pass_data pass_data_rtl_cprop =
   RTL_PASS, /* type */
   "cprop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_CPROP, /* tv_id */
   PROP_cfglayout, /* properties_required */
   0, /* properties_provided */

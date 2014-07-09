@@ -1676,7 +1676,6 @@ const pass_data pass_data_loop_distribution =
   GIMPLE_PASS, /* type */
   "ldist", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_LOOP_DISTRIBUTION, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

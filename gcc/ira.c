@@ -5424,7 +5424,6 @@ const pass_data pass_data_ira =
   RTL_PASS, /* type */
   "ira", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_IRA, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -5464,7 +5463,6 @@ const pass_data pass_data_reload =
   RTL_PASS, /* type */
   "reload", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_RELOAD, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

@@ -4195,7 +4195,6 @@ const pass_data pass_data_rtl_pre =
   RTL_PASS, /* type */
   "rtl pre", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_PRE, /* tv_id */
   PROP_cfglayout, /* properties_required */
   0, /* properties_provided */
@@ -4246,7 +4245,6 @@ const pass_data pass_data_rtl_hoist =
   RTL_PASS, /* type */
   "hoist", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_HOIST, /* tv_id */
   PROP_cfglayout, /* properties_required */
   0, /* properties_provided */

@@ -163,7 +163,6 @@ const pass_data pass_data_lower_cf =
   GIMPLE_PASS, /* type */
   "lower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
   PROP_gimple_lcf, /* properties_provided */

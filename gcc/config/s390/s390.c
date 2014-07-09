@@ -8637,7 +8637,6 @@ const pass_data pass_data_s390_early_mach =
   RTL_PASS, /* type */
   "early_mach", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

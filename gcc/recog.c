@@ -3720,7 +3720,6 @@ const pass_data pass_data_peephole2 =
   RTL_PASS, /* type */
   "peephole2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_PEEPHOLE2, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3763,7 +3762,6 @@ const pass_data pass_data_split_all_insns =
   RTL_PASS, /* type */
   "split1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3817,7 +3815,6 @@ const pass_data pass_data_split_after_reload =
   RTL_PASS, /* type */
   "split2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3856,7 +3853,6 @@ const pass_data pass_data_split_before_regstack =
   RTL_PASS, /* type */
   "split3", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3924,7 +3920,6 @@ const pass_data pass_data_split_before_sched2 =
   RTL_PASS, /* type */
   "split4", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3972,7 +3967,6 @@ const pass_data pass_data_split_for_shorten_branches =
   RTL_PASS, /* type */
   "split5", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

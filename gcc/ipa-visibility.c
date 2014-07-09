@@ -733,7 +733,6 @@ const pass_data pass_data_ipa_function_and_variable_visibility =
   SIMPLE_IPA_PASS, /* type */
   "visibility", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_CGRAPHOPT, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -762,7 +761,6 @@ const pass_data pass_data_ipa_whole_program_visibility =
   IPA_PASS, /* type */
   "whole-program", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_CGRAPHOPT, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

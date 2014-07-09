@@ -300,7 +300,6 @@ const pass_data pass_data_loop2 =
   RTL_PASS, /* type */
   "loop2", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  false, /* has_execute */
   TV_LOOP, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -376,7 +375,6 @@ const pass_data pass_data_rtl_loop_init =
   RTL_PASS, /* type */
   "loop2_init", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_LOOP, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -415,7 +413,6 @@ const pass_data pass_data_rtl_loop_done =
   RTL_PASS, /* type */
   "loop2_done", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_LOOP, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -472,7 +469,6 @@ const pass_data pass_data_rtl_move_loop_invariants =
   RTL_PASS, /* type */
   "loop2_invariant", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_LOOP_MOVE_INVARIANTS, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -515,7 +511,6 @@ const pass_data pass_data_rtl_unroll_and_peel_loops =
   RTL_PASS, /* type */
   "loop2_unroll", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_LOOP_UNROLL, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -578,7 +573,6 @@ const pass_data pass_data_rtl_doloop =
   RTL_PASS, /* type */
   "loop2_doloop", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_LOOP_DOLOOP, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
