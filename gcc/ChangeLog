@@ -1,3 +1,9 @@
+2014-07-08  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/61599
+	* config/i386/i386.c (ix86_in_large_data_p): Check for size less
+	than zero.
+
 2014-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/61673
