@@ -2070,7 +2070,7 @@ void
 finish_builtin_struct (tree type, const char *name, tree fields,
 		       tree align_type)
 {
-  tree tail, next, variant;
+  tree tail, next;
 
   for (tail = NULL_TREE; fields; tail = fields, fields = next)
     {
@@ -2079,10 +2079,6 @@ finish_builtin_struct (tree type, const char *name, tree fields,
       DECL_CHAIN (fields) = tail;
     }
   TYPE_FIELDS (type) = tail;
-  for (variant = TYPE_MAIN_VARIANT (type);
-       variant != 0;
-       variant = TYPE_NEXT_VARIANT (variant))
-    TYPE_FIELDS (variant) = tail;
 
   if (align_type)
     {
