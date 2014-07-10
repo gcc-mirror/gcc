@@ -2915,12 +2915,6 @@ OpenServer/Unixware}.
 Solaris 2 (SPARC, Intel):
 @itemize
 @item
-@uref{http://www.sunfreeware.com/,,Sunfreeware}
-
-@item
-@uref{http://www.blastwave.org/,,Blastwave}
-
-@item
 @uref{http://www.opencsw.org/,,OpenCSW}
 
 @item
