@@ -2638,6 +2638,33 @@ get_lhs_or_phi_result (gimple stmt)
     gcc_unreachable ();
 }
 
+/* Return the loop depth of the basic block of the defining statement of X.
+   This number should not be treated as absolutely correct because the loop
+   information may not be completely up-to-date when dom runs.  However, it
+   will be relatively correct, and as more passes are taught to keep loop info
+   up to date, the result will become more and more accurate.  */
+
+static int
+loop_depth_of_name (tree x)
+{
+  gimple defstmt;
+  basic_block defbb;
+
+  /* If it's not an SSA_NAME, we have no clue where the definition is.  */
+  if (TREE_CODE (x) != SSA_NAME)
+    return 0;
+
+  /* Otherwise return the loop depth of the defining statement's bb.
+     Note that there may not actually be a bb for this statement, if the
+     ssa_name is live on entry.  */
+  defstmt = SSA_NAME_DEF_STMT (x);
+  defbb = gimple_bb (defstmt);
+  if (!defbb)
+    return 0;
+
+  return bb_loop_depth (defbb);
+}
+
 /* Propagate RHS into all uses of LHS (when possible).
 
    RHS and LHS are derived from STMT, which is passed in solely so
@@ -2653,7 +2680,8 @@ static void
 propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_names)
 {
   /* First verify that propagation is valid.  */
-  if (may_propagate_copy (lhs, rhs))
+  if (may_propagate_copy (lhs, rhs)
+      && loop_depth_of_name (lhs) >= loop_depth_of_name (rhs))
     {
       use_operand_p use_p;
       imm_use_iterator iter;
