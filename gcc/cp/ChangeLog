@@ -1,3 +1,8 @@
+2014-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61661
+	* semantics.c (reduced_constant_expression_p): Handle CONSTRUCTOR.
+
 2014-07-01  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	PR c++/58753
