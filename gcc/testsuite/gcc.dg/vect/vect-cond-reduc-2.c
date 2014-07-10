@@ -11,7 +11,7 @@ void foo(int k)
     if (b[i] != 0)
       res += b[i];
   }
-  a[k] = sum;
+  a[k] = res;
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
