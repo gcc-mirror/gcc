@@ -1,3 +1,14 @@
+2014-07-10  Cary Coutant  <ccoutant@google.com>
+
+        Backport from trunk at r212211.
+
+	* dwarf2out.c (remove_addr_table_entry): Remove unnecessary hash table
+        lookup.
+	(resolve_addr_in_expr): When replacing the rtx in a location list
+        entry, get a new address table entry.
+	(dwarf2out_finish): Call index_location_lists even if there are no
+        addr_index_table entries yet.
+
 2014-07-10  Tom G. Christensen  <tgc@jupiterrise.com>
 
 	* doc/install.texi: Remove links to defunct package providers for

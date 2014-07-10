@@ -4222,13 +4222,10 @@ add_addr_table_entry (void *addr, enum ate_kind kind)
 static void
 remove_addr_table_entry (addr_table_entry *entry)
 {
-  addr_table_entry *node;
-
   gcc_assert (dwarf_split_debug_info && addr_index_table);
-  node = (addr_table_entry *) htab_find (addr_index_table, entry);
   /* After an index is assigned, the table is frozen.  */
-  gcc_assert (node->refcount > 0 && node->index == NO_INDEX_ASSIGNED);
-  node->refcount--;
+  gcc_assert (entry->refcount > 0 && entry->index == NO_INDEX_ASSIGNED);
+  entry->refcount--;
 }
 
 /* Given a location list, remove all addresses it refers to from the
@@ -23099,11 +23096,16 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
 	break;
       case DW_OP_GNU_addr_index:
       case DW_OP_GNU_const_index:
-	if ((loc->dw_loc_opc == DW_OP_GNU_addr_index
-	     || (loc->dw_loc_opc == DW_OP_GNU_const_index && loc->dtprel))
-	    && resolve_one_addr (&loc->dw_loc_oprnd1.val_entry->addr.rtl,
-				 NULL))
-	  return false;
+	if (loc->dw_loc_opc == DW_OP_GNU_addr_index
+            || (loc->dw_loc_opc == DW_OP_GNU_const_index && loc->dtprel))
+          {
+            rtx rtl = loc->dw_loc_oprnd1.val_entry->addr.rtl;
+            if (resolve_one_addr (&rtl, NULL))
+              return false;
+            remove_addr_table_entry (loc->dw_loc_oprnd1.val_entry);
+            loc->dw_loc_oprnd1.val_entry =
+                add_addr_table_entry (rtl, ate_kind_rtx);
+          }
 	break;
       case DW_OP_const4u:
       case DW_OP_const8u:
@@ -24195,18 +24197,23 @@ dwarf2out_finish (const char *filename)
 		   dwarf_strict ? DW_AT_macro_info : DW_AT_GNU_macros,
 		   macinfo_section_label);
 
-  if (dwarf_split_debug_info && addr_index_table != NULL)
+  if (dwarf_split_debug_info)
     {
       /* optimize_location_lists calculates the size of the lists,
          so index them first, and assign indices to the entries.
          Although optimize_location_lists will remove entries from
          the table, it only does so for duplicates, and therefore
          only reduces ref_counts to 1.  */
-      unsigned int index = 0;
       index_location_lists (comp_unit_die ());
-      htab_traverse_noresize (addr_index_table,
-                              index_addr_table_entry, &index);
+
+      if (addr_index_table != NULL)
+        {
+          unsigned int index = 0;
+          htab_traverse_noresize (addr_index_table,
+                                  index_addr_table_entry, &index);
+        }
     }
+
   if (have_location_lists)
     optimize_location_lists (comp_unit_die ());
 
