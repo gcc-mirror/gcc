@@ -291,8 +291,6 @@ support_fpu_flag (int flag)
 }
 
 
-
-
 int
 get_fpu_rounding_mode (void)
 {
@@ -321,8 +319,9 @@ get_fpu_rounding_mode (void)
       case FE_TOWARDZERO:
 	return GFC_FPE_TOWARDZERO;
 #endif
+
       default:
-	return GFC_FPE_INVALID;
+	return 0; /* Should be unreachable.  */
     }
 }
 
@@ -357,8 +356,9 @@ set_fpu_rounding_mode (int mode)
 	rnd_mode = FE_TOWARDZERO;
 	break;
 #endif
+
       default:
-	return;
+	return; /* Should be unreachable.  */
     }
 
   fesetround (rnd_mode);
@@ -399,7 +399,7 @@ support_fpu_rounding_mode (int mode)
 #endif
 
       default:
-	return 0;
+	return 0; /* Should be unreachable.  */
     }
 }
 

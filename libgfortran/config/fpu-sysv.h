@@ -342,7 +342,7 @@ get_fpu_rounding_mode (void)
       case FP_RZ:
 	return GFC_FPE_TOWARDZERO;
       default:
-	return GFC_FPE_INVALID;
+	return 0; /* Should be unreachable.  */
     }
 }
 
@@ -367,28 +367,16 @@ set_fpu_rounding_mode (int mode)
 	rnd_mode = FP_RZ;
         break;
       default:
-	return;
+	return; /* Should be unreachable.  */
     }
   fpsetround (rnd_mode);
 }
 
 
 int
-support_fpu_rounding_mode (int mode)
+support_fpu_rounding_mode (int mode __attribute__((unused)))
 {
-  switch (mode)
-    {
-      case GFC_FPE_TONEAREST:
-	return 1;
-      case GFC_FPE_UPWARD:
-	return 1;
-      case GFC_FPE_DOWNWARD:
-	return 1;
-      case GFC_FPE_TOWARDZERO:
-	return 1;
-      default:
-	return 0;
-    }
+  return 1;
 }
 
 

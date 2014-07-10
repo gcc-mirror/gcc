@@ -421,7 +421,7 @@ get_fpu_rounding_mode (void)
     case _FPU_RC_ZERO:
       return GFC_FPE_TOWARDZERO;
     default:
-      return GFC_FPE_INVALID; /* Should be unreachable.  */
+      return 0; /* Should be unreachable.  */
     }
 }
 
