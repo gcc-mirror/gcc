@@ -1268,6 +1268,10 @@ funsigned-char
 C ObjC C++ ObjC++ LTO Var(flag_signed_char, 0)
 Make \"char\" unsigned by default
 
+fuse-all-virtuals
+C++ ObjC++ Var(flag_use_all_virtuals) Init(1)
+Treat all virtual functions as odr-used
+
 fuse-cxa-atexit
 C++ ObjC++ Var(flag_use_cxa_atexit) Init(DEFAULT_USE_CXA_ATEXIT)
 Use __cxa_atexit to register destructors

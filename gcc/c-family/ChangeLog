@@ -1,3 +1,9 @@
+2014-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61659
+	PR c++/61687
+	* c.opt (-fuse-all-virtuals): New.
+
 2014-07-09  Richard Biener  <rguenther@suse.de>
 
 	PR c-family/61741

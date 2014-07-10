@@ -1,3 +1,14 @@
+2014-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61659
+	PR c++/61687
+	* decl2.c (mark_all_virtuals): New variable.
+	(maybe_emit_vtables): Check it instead of flag_devirtualize.
+	(cp_write_global_declarations): Set it and give helpful diagnostic
+	if it introduces errors.
+	* class.c (finish_struct_1): Check it.
+	* decl.c (grokdeclarator): Clear virtualp after 'virtual auto' error.
+
 2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60686
