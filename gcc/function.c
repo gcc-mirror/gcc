@@ -4549,6 +4549,7 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       /* ??? This could be set on a per-function basis by the front-end
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
+      cfun->can_delete_dead_exceptions = flag_delete_dead_exceptions;
     }
 }
 
