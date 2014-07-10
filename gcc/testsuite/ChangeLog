@@ -1,3 +1,8 @@
+2014-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR c-family/61741
+	* c-c++-common/torture/pr61741.c: Use signed char.
+
 2014-07-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt39.adb: New test.
