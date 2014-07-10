@@ -1,3 +1,8 @@
+2014-07-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* fold-const.c (fold_checksum_tree): Look at DECL_VINDEX only for
+	FUNCTION_DECLs.
+
 2014-07-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/53590
