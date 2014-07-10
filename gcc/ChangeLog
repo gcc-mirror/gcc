@@ -1,3 +1,8 @@
+2014-07-10  Tom G. Christensen  <tgc@jupiterrise.com>
+
+	* doc/install.texi: Remove links to defunct package providers for
+	Solaris.
+
 2014-07-09  Tom de Vries  <tom@codesourcery.com>
 
        * final.c (get_call_fndecl): Declare.
