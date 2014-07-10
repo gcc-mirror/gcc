@@ -1,3 +1,8 @@
+2014-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/53590
+	* function.c (allocate_struct_function): Revert r188667 change.
+
 2014-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61684
