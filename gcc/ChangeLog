@@ -1,3 +1,9 @@
+2014-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61757
+	* tree-ssa-dom.c (loop_depth_of_name): Restore.
+	(propagate_rhs_into_lhs): Revert part of last change.
+
 2014-07-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* fold-const.c (fold_checksum_tree): Look at DECL_VINDEX only for
