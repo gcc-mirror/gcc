@@ -1,3 +1,10 @@
+2014-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/53590
+	* function.c (allocate_struct_function): Revert r188667 change.
+
+	* gimple-low.c (lower_builtin_setjmp): Use properly-typed constant.
+
 2014-07-10  Tom G. Christensen  <tgc@jupiterrise.com>
 
 	* doc/install.texi: Remove links to defunct package providers for
