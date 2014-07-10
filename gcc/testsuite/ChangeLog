@@ -1,3 +1,10 @@
+2014-07-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61742
+	* gcc.dg/torture/pr61742.c: New test.
+	* gcc.gg/vect/cond-reduc-1.c: Rename it to vect-cond-reduc-1.c
+	* gcc.gg/vect/cond-reduc-2.c: Rename it to vect-cond-reduc-2.c
+
 2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60686
