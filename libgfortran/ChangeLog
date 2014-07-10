@@ -1,3 +1,8 @@
+2014-07-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/fpu-*.h (get_fpu_rounding_mode, set_fpu_rounding_mode,
+	support_fpu_rounding_mode): Clean up, mark unreachable code as such.
+
 2014-07-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* libgfortran.h (support_fpu_underflow_control,
