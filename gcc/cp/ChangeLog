@@ -1,5 +1,8 @@
 2014-07-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61661
+	* semantics.c (reduced_constant_expression_p): Handle CONSTRUCTOR.
+
 	PR c++/61659
 	PR c++/61687
 	* decl2.c (mark_all_virtuals): New variable.
