@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fuse-caller-save (-mips16)" } */
+/* { dg-options "-fuse-caller-save (-mips16) addressing=absolute isa_rev=0" } */
 /* At -O0 and -O1, the register allocator behaves more conservatively, and
    the fuse-caller-save optimization doesnt' trigger.  */
 /* { dg-skip-if "" { *-*-* }  { "-O0" "-O1" } } */

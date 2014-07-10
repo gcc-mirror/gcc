@@ -1,3 +1,11 @@
+2014-07-10  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/mips/fuse-caller-save.c: Add addressing=absolute to
+	dg-options.
+	* gcc.target/mips/fuse-caller-save-micromips.c: Same.
+	* gcc.target/mips/fuse-caller-save-mips16.c: Same.  Add isa_rev=0 to
+	dg-options.
+
 2014-07-10  Richard Biener  <rguenther@suse.de>
 
 	PR c-family/61741
