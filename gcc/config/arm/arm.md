@@ -6286,7 +6286,7 @@
 ;; Pattern to recognize insn generated default case above
 (define_insn "*movhi_insn_arch4"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")
-	(match_operand:HI 1 "general_operand"      "rI,K,r,mi"))]
+	(match_operand:HI 1 "general_operand"      "rIk,K,r,mi"))]
   "TARGET_ARM
    && arm_arch4
    && (register_operand (operands[0], HImode)
@@ -6310,7 +6310,7 @@
 
 (define_insn "*movhi_bytes"
   [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
-	(match_operand:HI 1 "arm_rhs_operand"  "I,r,K"))]
+	(match_operand:HI 1 "arm_rhs_operand"  "I,rk,K"))]
   "TARGET_ARM"
   "@
    mov%?\\t%0, %1\\t%@ movhi
@@ -6425,7 +6425,7 @@
 
 (define_insn "*arm_movqi_insn"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,l,r,l,Uu,r,m")
-	(match_operand:QI 1 "general_operand" "r,r,I,Py,K,Uu,l,m,r"))]
+	(match_operand:QI 1 "general_operand" "rk,rk,I,Py,K,Uu,l,m,r"))]
   "TARGET_32BIT
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"

@@ -1,3 +1,8 @@
+2014-07-11  Marat Zakirov  <m.zakirov@samsung.com>
+
+	PR target/61561
+	* gcc.dg/pr61561.c: New test.
+
 2014-07-10  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/mips/fuse-caller-save.c: Add addressing=absolute to

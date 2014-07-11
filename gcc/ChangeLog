@@ -1,3 +1,10 @@
+2014-07-11  Marat Zakirov  <m.zakirov@samsung.com>
+
+	PR target/61561
+	* config/arm/arm.md (*movhi_insn_arch4): Handle stack pointer.
+	(*movhi_bytes): Likewise.
+	(*arm_movqi_insn): Likewise. 
+
 2014-07-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/56858
