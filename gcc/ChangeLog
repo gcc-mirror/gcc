@@ -1,3 +1,35 @@
+2014-07-10  Rong Xu  <xur@google.com>
+
+	Add gcov-tool: an offline gcda profile processing tool
+	Support.
+	* gcov-io.c (gcov_position): Make avaialble to gcov-tool.
+	(gcov_is_error): Ditto.
+	(gcov_read_string): Ditto.
+	(gcov_read_sync): Ditto.
+	* gcov-io.h: Move counter defines to gcov-counter.def.
+	* gcov-dump.c (tag_counters): Use gcov-counter.def.
+	* coverage.c: Ditto.
+	* gcov-tool.c: Offline gcda profile processing tool.
+	(unlink_gcda_file): Remove one gcda file.
+	(unlink_profile_dir): Remove gcda files from the profile path.
+	(gcov_output_files): Output gcda files to an output dir.
+	(profile_merge): Merge two profiles in directory.
+	(print_merge_usage_message): Print merge usage.
+	(merge_usage): Print merge usage and exit.
+	(do_merge): Driver for profile merge sub-command.
+	(profile_rewrite): Rewrite profile.
+	(print_rewrite_usage_message): Print rewrite usage.
+	(rewrite_usage): Print rewrite usage and exit.
+	(do_rewrite): Driver for profile rewrite sub-command.
+	(print_usage): Print gcov-info usage and exit.
+	(print_version): Print gcov-info version.
+	(process_args): Process arguments.
+	(main): Main routine for gcov-tool.
+	* Makefile.in: Build and install gcov-tool.
+	* gcov-counter.def: New file split from gcov-io.h.
+	* doc/gcc.texi: Include gcov-tool.texi.
+	* doc/gcov-tool.texi: Document for gcov-tool.
+
 2014-07-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61757

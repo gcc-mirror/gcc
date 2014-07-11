@@ -422,7 +422,11 @@ static void
 tag_counters (const char *filename ATTRIBUTE_UNUSED,
 	      unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 {
-  static const char *const counter_names[] = GCOV_COUNTER_NAMES;
+#define DEF_GCOV_COUNTER(COUNTER, NAME, MERGE_FN) NAME,
+  static const char *const counter_names[] = {
+#include "gcov-counter.def"
+};
+#undef DEF_GCOV_COUNTER
   unsigned n_counts = GCOV_TAG_COUNTER_NUM (length);
 
   printf (" %s %u counts",
