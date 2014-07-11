@@ -491,6 +491,7 @@ typedef struct avr_args
 extern const char *avr_device_to_as (int argc, const char **argv);
 extern const char *avr_device_to_ld (int argc, const char **argv);
 extern const char *avr_device_to_data_start (int argc, const char **argv);
+extern const char *avr_device_to_text_start (int argc, const char **argv);
 extern const char *avr_device_to_startfiles (int argc, const char **argv);
 extern const char *avr_device_to_devicelib (int argc, const char **argv);
 extern const char *avr_device_to_sp8 (int argc, const char **argv);
@@ -499,6 +500,7 @@ extern const char *avr_device_to_sp8 (int argc, const char **argv);
   { "device_to_as", avr_device_to_as },                 \
   { "device_to_ld", avr_device_to_ld },                 \
   { "device_to_data_start", avr_device_to_data_start }, \
+  { "device_to_text_start", avr_device_to_text_start }, \
   { "device_to_startfile", avr_device_to_startfiles },  \
   { "device_to_devicelib", avr_device_to_devicelib },   \
   { "device_to_sp8", avr_device_to_sp8 },
@@ -525,6 +527,7 @@ extern const char *avr_device_to_sp8 (int argc, const char **argv);
                                mmcu=at90usb64*:--pmem-wrap-around=64k}}}\
 %:device_to_ld(%{mmcu=*:%*})\
 %:device_to_data_start(%{mmcu=*:%*})\
+%:device_to_text_start(%{mmcu=*:%*}) \
 %{shared:%eshared is not supported}"
 
 #define LIB_SPEC \

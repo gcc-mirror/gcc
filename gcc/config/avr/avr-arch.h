@@ -109,6 +109,9 @@ typedef struct
   /* Start of data section.  */
   int data_section_start;
 
+  /* Start of text section. */
+  int text_section_start;
+
   /* Number of 64k segments in the flash.  */
   int n_flash;
 
