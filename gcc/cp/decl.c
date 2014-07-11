@@ -5756,8 +5756,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	  else
 	    {
 	      init = reshape_init (type, init, tf_warning_or_error);
-	      if (SCALAR_TYPE_P (type))
-		check_narrowing (type, init);
+	      flags |= LOOKUP_NO_NARROWING;
 	    }
 	}
       else if (TREE_CODE (init) == TREE_LIST
