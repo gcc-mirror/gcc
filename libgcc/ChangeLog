@@ -1,3 +1,50 @@
+2014-07-10  Rong Xu  <xur@google.com>
+
+	Add gcov-tool: an offline gcda profile processing tool
+	Support.
+	* libgcov-driver.c (gcov_max_filename): Make available
+	to gcov-tool.
+	* libgcov-merge.c (__gcov_merge_add): Replace
+	gcov_read_counter() with a Macro.
+	(__gcov_merge_ior): Ditto.
+	(__gcov_merge_time_profile): Ditto.
+	(__gcov_merge_single): Ditto.
+	(__gcov_merge_delta): Ditto.
+	* libgcov-util.c (void gcov_set_verbose): Set the verbose flag
+	in the utility functions.
+	(set_fn_ctrs): Utility function for reading gcda files to in-memory
+	gcov_list object link lists.
+	(tag_function): Ditto.
+	(tag_blocks): Ditto.
+	(tag_arcs): Ditto.
+	(tag_lines): Ditto.
+	(tag_counters): Ditto.
+	(tag_summary): Ditto.
+	(read_gcda_finalize): Ditto.
+	(read_gcda_file): Ditto.
+	(ftw_read_file): Ditto.
+	(read_profile_dir_init): Ditto.
+	(gcov_read_profile_dir): Ditto.
+	(gcov_read_counter_mem): Ditto.
+	(gcov_get_merge_weight): Ditto.
+	(merge_wrapper): A wrapper function that calls merging handler.
+	(gcov_merge): Merge two gcov_info objects with weights.
+	(find_match_gcov_info): Find the matched gcov_info in the list.
+	(gcov_profile_merge): Merge two gcov_info object lists.
+	(__gcov_add_counter_op): Process edge profile counter values.
+	(__gcov_ior_counter_op): Process IOR profile counter values.
+	(__gcov_delta_counter_op): Process delta profile counter values.
+	(__gcov_single_counter_op): Process single  profile counter values.
+	(fp_scale): Callback function for float-point scaling.
+	(int_scale): Callback function for integer fraction scaling. 
+	(gcov_profile_scale): Scaling profile counters.
+	(gcov_profile_normalize): Normalize profile counters.
+	* libgcov.h: Add headers and functions for gcov-tool use.
+	(gcov_get_counter): New.
+	(gcov_get_counter_target): Ditto.
+	(struct gcov_info): Make the functions field mutable in gcov-tool
+	compilation.
+
 2014-06-23  Kai Tietz  <ktietz@redhat.com>
 
 	PR libgcc/61585

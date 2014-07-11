@@ -247,49 +247,28 @@ typedef uint64_t gcov_type_unsigned;
 
 
 /* Counters that are collected.  */
-#define GCOV_COUNTER_ARCS 	0  /* Arc transitions.  */
-#define GCOV_COUNTERS_SUMMABLE	1  /* Counters which can be
-				      summaried.  */
-#define GCOV_FIRST_VALUE_COUNTER 1 /* The first of counters used for value
-				      profiling.  They must form a consecutive
-				      interval and their order must match
-				      the order of HIST_TYPEs in
-				      value-prof.h.  */
-#define GCOV_COUNTER_V_INTERVAL	1  /* Histogram of value inside an interval.  */
-#define GCOV_COUNTER_V_POW2	2  /* Histogram of exact power2 logarithm
-				      of a value.  */
-#define GCOV_COUNTER_V_SINGLE	3  /* The most common value of expression.  */
-#define GCOV_COUNTER_V_DELTA	4  /* The most common difference between
-				      consecutive values of expression.  */
 
-#define GCOV_COUNTER_V_INDIR	5  /* The most common indirect address */
-#define GCOV_COUNTER_AVERAGE	6  /* Compute average value passed to the
-				      counter.  */
-#define GCOV_COUNTER_IOR	7  /* IOR of the all values passed to
-				      counter.  */
-#define GCOV_TIME_PROFILER  8 /* Time profile collecting first run of a function */
-#define GCOV_LAST_VALUE_COUNTER 8  /* The last of counters used for value
-				      profiling.  */
-#define GCOV_COUNTERS		9
+#define DEF_GCOV_COUNTER(COUNTER, NAME, MERGE_FN) COUNTER,
+enum {
+#include "gcov-counter.def"
+GCOV_COUNTERS
+};
+#undef DEF_GCOV_COUNTER
+
+/* Counters which can be summaried.  */
+#define GCOV_COUNTERS_SUMMABLE	(GCOV_COUNTER_ARCS + 1)
+
+/* The first of counters used for value profiling.  They must form a
+   consecutive interval and their order must match the order of
+   HIST_TYPEs in value-prof.h.  */
+#define GCOV_FIRST_VALUE_COUNTER GCOV_COUNTERS_SUMMABLE
+
+/* The last of counters used for value profiling.  */
+#define GCOV_LAST_VALUE_COUNTER (GCOV_COUNTERS - 1)
 
 /* Number of counters used for value profiling.  */
 #define GCOV_N_VALUE_COUNTERS \
   (GCOV_LAST_VALUE_COUNTER - GCOV_FIRST_VALUE_COUNTER + 1)
-
-  /* A list of human readable names of the counters */
-#define GCOV_COUNTER_NAMES	{"arcs", "interval", "pow2", "single", \
-              "delta", "indirect_call", "average", "ior", "time_profiler"}
-
-  /* Names of merge functions for counters.  */
-#define GCOV_MERGE_FUNCTIONS	{"__gcov_merge_add",	\
-				 "__gcov_merge_add",	\
-				 "__gcov_merge_add",	\
-				 "__gcov_merge_single",	\
-				 "__gcov_merge_delta",  \
-				 "__gcov_merge_single", \
-				 "__gcov_merge_add",	\
-				 "__gcov_merge_ior",  \
-         "__gcov_merge_time_profile" }
 
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\

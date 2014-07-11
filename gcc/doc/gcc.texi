@@ -66,6 +66,7 @@ Texts being (a) (see below), and with the Back-Cover Texts being (b)
 * gcc: (gcc).                  The GNU Compiler Collection.
 * g++: (gcc).                  The GNU C++ compiler.
 * gcov: (gcc) Gcov.            @command{gcov}---a test coverage program.
+* gcov-tool: (gcc) Gcov-tool.  @command{gcov-tool}---an offline gcda profile processing program.
 @end direntry
 This file documents the use of the GNU compilers.
 @sp 1
@@ -138,6 +139,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * Objective-C::     GNU Objective-C runtime features.
 * Compatibility::   Binary Compatibility
 * Gcov::            @command{gcov}---a test coverage program.
+* Gcov-tool::       @command{gcov-tool}---an offline gcda profile processing program.
 * Trouble::         If you have trouble using GCC.
 * Bugs::            How, why and where to report bugs.
 * Service::         How To Get Help with GCC
@@ -164,6 +166,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 @include objc.texi
 @include compat.texi
 @include gcov.texi
+@include gcov-tool.texi
 @include trouble.texi
 @include bugreport.texi
 @include service.texi

@@ -123,7 +123,8 @@ SUBDIRS =@subdirs@ build
 
 # Selection of languages to be made.
 CONFIG_LANGUAGES = @all_selected_languages@
-LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
+LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) gcov-tool$(exeext) \
+            $(CONFIG_LANGUAGES)
 
 # Default values for variables overridden in Makefile fragments.
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.
@@ -196,6 +197,9 @@ GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 # flex output may yield harmless "no previous prototype" warnings
 build/gengtype-lex.o-warn = -Wno-error
 gengtype-lex.o-warn = -Wno-error
+libgcov-util.o-warn = -Wno-error
+libgcov-driver-tool.o-warn = -Wno-error
+libgcov-merge-tool.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
@@ -769,6 +773,7 @@ GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
 GCC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcc|sed '$(program_transform_name)')
 CPP_INSTALL_NAME := $(shell echo cpp|sed '$(program_transform_name)')
 GCOV_INSTALL_NAME := $(shell echo gcov|sed '$(program_transform_name)')
+GCOV_TOOL_INSTALL_NAME := $(shell echo gcov-tool|sed '$(program_transform_name)')
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \
@@ -890,7 +895,7 @@ BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 GIMPLE_H = gimple.h gimple.def gsstruct.def pointer-set.h $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
-GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h
+GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h gcov-counter.def
 RECOG_H = recog.h
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h flag-types.h $(OPTIONS_H)
@@ -1492,7 +1497,7 @@ ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) @TREEBROWSER@ main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
-  lto-wrapper.o collect-utils.o
+  $(GCOV_TOOL_OBJS) lto-wrapper.o collect-utils.o
 
 # This lists all host object files, whether they are included in this
 # compilation or not.
@@ -1517,6 +1522,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
  gcc-ranlib$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
+ gcov-tool$(exeect) \
  gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
  libcommon-target.a libcommon.a libgcc.mk
 
@@ -2576,6 +2582,22 @@ GCOV_DUMP_OBJS = gcov-dump.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
 		$(LIBS) -o $@
+
+GCOV_TOOL_DEP_FILES = $(srcdir)/../libgcc/libgcov-util.c gcov-io.c $(GCOV_IO_H) \
+  $(srcdir)/../libgcc/libgcov-driver.c $(srcdir)/../libgcc/libgcov-driver-system.c \
+  $(srcdir)/../libgcc/libgcov-merge.c \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(CONFIG_H) version.h intl.h $(DIAGNOSTIC_H)
+libgcov-util.o: $(srcdir)/../libgcc/libgcov-util.c $(GCOV_TOOL_DEP_FILES)
+	+$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -o $@ $<
+libgcov-driver-tool.o: $(srcdir)/../libgcc/libgcov-driver.c $(GCOV_TOOL_DEP_FILES)
+	+$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -DIN_GCOV_TOOL=1 -o $@ $<
+libgcov-merge-tool.o: $(srcdir)/../libgcc/libgcov-merge.c $(GCOV_TOOL_DEP_FILES)
+	+$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -DIN_GCOV_TOOL=1 -o $@ $<
+GCOV_TOOL_OBJS = gcov-tool.o libgcov-util.o libgcov-driver-tool.o libgcov-merge-tool.o
+gcov-tool$(exeext): $(GCOV_TOOL_OBJS) $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_TOOL_OBJS) $(LIBS) -o $@
 #
 # Build the include directories.  The stamp files are stmp-* rather than
 # s-* so that mostlyclean does not force the include directory to
@@ -2804,7 +2826,8 @@ TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi avr-mmcu.texi	\
 	 implement-c.texi implement-cxx.texi arm-neon-intrinsics.texi	\
-	 arm-acle-intrinsics.texi aarch64-acle-intrinsics.texi
+	 arm-acle-intrinsics.texi aarch64-acle-intrinsics.texi          \
+	 gcov-tool.texi
 
 # we explicitly use $(srcdir)/doc/tm.texi here to avoid confusion with
 # the generated tm.texi; the latter might have a more recent timestamp,
@@ -2925,7 +2948,8 @@ $(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	DESTDIR=$(@D) \
 	$(SHELL) $(srcdir)/doc/install.texi2html
 
-MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 doc/fsf-funding.7
+MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 \
+           doc/fsf-funding.7 doc/gcov-tool.1
 
 generated-manpages: man
 
@@ -3212,6 +3236,13 @@ install-common: native lang.install-common installdirs
 	    rm -f $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) gcov$(exeext) $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
 	fi
+# Install gcov-tool if it was compiled.
+	-if [ -f gcov-tool$(exeext) ]; \
+	then \
+	    rm -f $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) \
+	    gcov-tool$(exeext) $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
+	fi
 
 # Install the driver program as $(target_noncanonical)-gcc,
 # $(target_noncanonical)-gcc-$(version), and also as gcc if native.
@@ -3313,6 +3344,11 @@ $(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext): doc/cpp.1 installdirs
 	-chmod a-x $@
 
 $(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): doc/gcov.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
+
+$(DESTDIR)$(man1dir)/$(GCOV_TOOL_INSTALL_NAME)$(man1ext): doc/gcov-tool.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@

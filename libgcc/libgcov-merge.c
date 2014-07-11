@@ -53,7 +53,7 @@ void
 __gcov_merge_add (gcov_type *counters, unsigned n_counters)
 {
   for (; n_counters; counters++, n_counters--)
-    *counters += gcov_read_counter ();
+    *counters += gcov_get_counter ();
 }
 #endif /* L_gcov_merge_add */
 
@@ -65,7 +65,7 @@ void
 __gcov_merge_ior (gcov_type *counters, unsigned n_counters)
 {
   for (; n_counters; counters++, n_counters--)
-    *counters |= gcov_read_counter ();
+    *counters |= gcov_get_counter_target ();
 }
 #endif
 
@@ -81,7 +81,7 @@ __gcov_merge_time_profile (gcov_type *counters, unsigned n_counters)
 
   for (i = 0; i < n_counters; i++)
     {
-      value = gcov_read_counter ();
+      value = gcov_get_counter_target ();
 
       if (value && (!counters[i] || value < counters[i]))
         counters[i] = value;
@@ -109,9 +109,9 @@ __gcov_merge_single (gcov_type *counters, unsigned n_counters)
   n_measures = n_counters / 3;
   for (i = 0; i < n_measures; i++, counters += 3)
     {
-      value = gcov_read_counter ();
-      counter = gcov_read_counter ();
-      all = gcov_read_counter ();
+      value = gcov_get_counter_target ();
+      counter = gcov_get_counter ();
+      all = gcov_get_counter ();
 
       if (counters[0] == value)
         counters[1] += counter;
@@ -148,10 +148,10 @@ __gcov_merge_delta (gcov_type *counters, unsigned n_counters)
   n_measures = n_counters / 4;
   for (i = 0; i < n_measures; i++, counters += 4)
     {
-      /* last = */ gcov_read_counter ();
-      value = gcov_read_counter ();
-      counter = gcov_read_counter ();
-      all = gcov_read_counter ();
+      /* last = */ gcov_get_counter ();
+      value = gcov_get_counter_target ();
+      counter = gcov_get_counter ();
+      all = gcov_get_counter ();
 
       if (counters[1] == value)
         counters[2] += counter;

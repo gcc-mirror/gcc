@@ -81,7 +81,11 @@ set_gcov_list (struct gcov_info *head)
 }
 
 /* Size of the longest file name. */
-static size_t gcov_max_filename = 0;
+/* We need to expose this static variable when compiling for gcov-tool.  */
+#ifndef IN_GCOV_TOOL
+static
+#endif
+size_t gcov_max_filename = 0;
 
 /* Flag when the profile has already been dumped via __gcov_dump().  */
 static int gcov_dump_complete;

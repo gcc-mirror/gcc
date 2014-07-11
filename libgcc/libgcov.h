@@ -33,6 +33,10 @@
 #define xcalloc calloc
 #endif
 
+#ifndef IN_GCOV_TOOL
+/* About the target.  */
+/* This path will be used by libgcov runtime.  */
+
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"
@@ -78,6 +82,43 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #else
 #define GCOV_LOCKED 0
 #endif
+
+#else /* IN_GCOV_TOOL */
+/* About the host.  */
+/* This path will be compiled for the host and linked into
+   gcov-tool binary.  */
+
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+
+typedef unsigned gcov_unsigned_t;
+typedef unsigned gcov_position_t;
+/* gcov_type is typedef'd elsewhere for the compiler */
+#if defined (HOST_HAS_F_SETLKW)
+#define GCOV_LOCKED 1
+#else
+#define GCOV_LOCKED 0
+#endif
+
+/* Some Macros specific to gcov-tool.  */
+
+#define L_gcov 1
+#define L_gcov_merge_add 1
+#define L_gcov_merge_single 1
+#define L_gcov_merge_delta 1
+#define L_gcov_merge_ior 1
+#define L_gcov_merge_time_profile 1
+
+/* Make certian internal functions/variables in libgcov available for
+   gcov-tool access.  */
+#define GCOV_TOOL_LINKAGE 
+
+extern gcov_type gcov_read_counter_mem ();
+extern unsigned gcov_get_merge_weight ();
+
+#endif /* !IN_GCOV_TOOL */
 
 #if defined(inhibit_libc)
 #define IN_LIBGCOV (-1)
@@ -159,8 +200,13 @@ struct gcov_info
 					  unused) */
   
   unsigned n_functions;		/* number of functions */
+
+#ifndef IN_GCOV_TOOL
   const struct gcov_fn_info *const *functions; /* pointer to pointers
-					          to function information  */
+                                                  to function information  */
+#else
+  const struct gcov_fn_info **functions;
+#endif /* !IN_GCOV_TOOL */
 };
 
 /* Register a new object file module.  */
@@ -223,6 +269,46 @@ GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
     ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE inline void gcov_rewrite (void);
+
+/* "Counts" stored in gcda files can be a real counter value, or
+   an target address. When differentiate these two types because
+   when manipulating counts, we should only change real counter values,
+   rather target addresses.  */
+
+static inline gcov_type
+gcov_get_counter (void)
+{
+#ifndef IN_GCOV_TOOL
+  /* This version is for reading count values in libgcov runtime:
+     we read from gcda files.  */
+
+  return gcov_read_counter ();
+#else
+  /* This version is for gcov-tool. We read the value from memory and
+     multiply it by the merge weight.  */
+
+  return gcov_read_counter_mem () * gcov_get_merge_weight ();
+#endif
+}
+
+/* Similar function as gcov_get_counter(), but handles target address
+   counters.  */
+
+static inline gcov_type
+gcov_get_counter_target (void)
+{
+#ifndef IN_GCOV_TOOL
+  /* This version is for reading count target values in libgcov runtime:
+     we read from gcda files.  */
+
+  return gcov_read_counter ();
+#else
+  /* This version is for gcov-tool.  We read the value from memory and we do NOT
+     multiply it by the merge weight.  */
+
+  return gcov_read_counter_mem ();
+#endif
+}
 
 #endif /* !inhibit_libc */
 
