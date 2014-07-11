@@ -1,4 +1,9 @@
 2014-07-11  Samuel Bronson  <naesten@gmail.com>
+
+	* testsuite/lib/libstdc++.exp  (libstdc++_init): Set $GCC_COLORS=""
+	instead of insisting that GCC understand -fdiagnostics-color=never
+
+2014-07-11  Samuel Bronson  <naesten@gmail.com>
 	    Matthias Klose  <doko@ubuntu.com>
 
 	PR libstdc++/58962
