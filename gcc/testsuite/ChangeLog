@@ -1,3 +1,9 @@
+2014-07-11  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR preprocessor/61389
+	* gcc.dg/cpp/macsyntx.c: Update expected warnings.
+	* gcc.dg/cpp/sysmac1.c: Likewise.
+
 2014-07-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61473
