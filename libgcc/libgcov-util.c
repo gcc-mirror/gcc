@@ -38,7 +38,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 extern gcov_position_t gcov_position();
 extern int gcov_is_error();
-extern gcov_unsigned_t gcov_max_filename;
+extern size_t gcov_max_filename;
 
 /* Verbose mode for debug.  */
 static int verbose;
