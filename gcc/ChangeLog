@@ -1,7 +1,31 @@
+2014-07-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56858
+	* config/alpha/alpha.c: Include tree-pass.h, context.h
+	and pass_manager.h.
+	(pass_data_handle_trap_shadows): New pass.
+	(pass_handle_trap_shadows::gate): New pass gate function.
+	(make_pass_handle_trap_shadows): New function.
+	(rest_of_handle_trap_shadows): Ditto.
+
+	(alpha_align_insns_1): Rename from alpha_align_insns.
+	(pass_data_align_insns): New pass.
+	(pass_align_insns::gate): New pass gate function.
+	(make_pass_aling_insns): New function.
+	(rest_of_align_insns): Ditto.
+	(alpha_align_insns): Ditto.
+
+	(alpha_option_override): Declare handle_trap_shadows info
+	and align_insns_info.  Register handle_trap_shadows and align_insns
+	passes here.
+	(alpha_reorg): Do not call alpha_trap_shadows and
+	alpha_align_insn from here.
+
+	(alpha_pad_function_end): Do not skip BARRIERs.
+
 2014-07-10  Rong Xu  <xur@google.com>
 
-	Add gcov-tool: an offline gcda profile processing tool
-	Support.
+	Add gcov-tool: an offline gcda profile processing tool support.
 	* gcov-io.c (gcov_position): Make avaialble to gcov-tool.
 	(gcov_is_error): Ditto.
 	(gcov_read_string): Ditto.
@@ -55,9 +79,9 @@
 
 2014-07-09  Tom de Vries  <tom@codesourcery.com>
 
-       * final.c (get_call_fndecl): Declare.
-       (self_recursive_call_p): New function.
-       (collect_fn_hard_reg_usage): Handle self-recursive function calls.
+	* final.c (get_call_fndecl): Declare.
+	(self_recursive_call_p): New function.
+	(collect_fn_hard_reg_usage): Handle self-recursive function calls.
 
 2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -96,8 +120,8 @@
 2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
 
 	PR bootstrap/61679
-	 * hash-table.h: use hash_table::value_type instead of
-       	Descriptor::value_type in the return types of several methods.
+	* hash-table.h: use hash_table::value_type instead of
+	Descriptor::value_type in the return types of several methods.
 
 2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
 
@@ -212,9 +236,8 @@
 2014-07-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/61576
-	* tree-if-conv.c (is_cond_scalar_reduction): Add check that
-	basic block containing reduction statement is predecessor
-	of phi basi block.
+	* tree-if-conv.c (is_cond_scalar_reduction): Add check that basic
+	block containing reduction statement is predecessor of phi basi block.
 
 2014-07-08  Marek Polacek  <polacek@redhat.com>
 
@@ -226,30 +249,24 @@
 
 2014-07-07  Jan Hubicka  <hubicka@ucw.cz>
 
-	* symtab.c: Include calls.h
-	(symtab_nonoverwritable_alias_1): Check sanity of the local
-	alias.
+	* symtab.c: Include calls.h.
+	(symtab_nonoverwritable_alias_1): Check sanity of the local alias.
 
 2014-07-07  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/rs6000/rs6000.c (output_vec_const_move): Handle
 	little-endian code generation.
 	* config/rs6000/spe.md (spe_evmergehi): Rename to...
-	(vec_perm00_v2si): ... this.  Handle little-endian code 
-	generation.
+	(vec_perm00_v2si): ... this.  Handle little-endian code generation.
 	(spe_evmergehilo): Rename to...
-	(vec_perm01_v2si): ... this.  Handle little-endian code
-	generation.
+	(vec_perm01_v2si): ... this.  Handle little-endian code generation.
 	(spe_evmergelo): Rename to...
-	(vec_perm11_v2si): ... this.  Handle little-endian code
-	generation.
+	(vec_perm11_v2si): ... this.  Handle little-endian code generation.
 	(spe_evmergelohi): Rename to...
-	(vec_perm10_v2si): ... this.  Handle little-endian code
-	generation.
+	(vec_perm10_v2si): ... this.  Handle little-endian code generation.
 	(spe_evmergehi, spe_evmergehilo): New expanders.
 	(spe_evmergelo, spe_evmergelohi): Likewise.
-	(*frob_<SPE64:mode>_<DITI:mode>): Handle little-endian code
-	generation.
+	(*frob_<SPE64:mode>_<DITI:mode>): Handle little-endian code generation.
 	(*frob_tf_ti): Likewise.
 	(*frob_<mode>_di_2): Likewise.
 	(*frob_tf_di_8_2): Likewise.
@@ -263,7 +280,7 @@
 	endianness only.
 	(*mov_si<mode>_e500_subreg0_le): New instruction pattern.
 	(*mov_si<mode>_e500_subreg0_elf_low): Rename to...
-	(*mov_si<mode>_e500_subreg0_elf_low_be): ... this.  Restrict to 
+	(*mov_si<mode>_e500_subreg0_elf_low_be): ... this.  Restrict to
 	the big endianness only.
 	(*mov_si<mode>_e500_subreg0_elf_low_le): New instruction pattern.
 	(*mov_si<mode>_e500_subreg0_2): Rename to...
@@ -302,8 +319,8 @@
 
 2014-07-07  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
-	* asan.c (instrument_strlen_call): Do not instrument first byte in strlen
-	if already instrumented.
+	* asan.c (instrument_strlen_call): Do not instrument first byte
+	in strlen if already instrumented.
 
 2014-07-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
