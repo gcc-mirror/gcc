@@ -19,10 +19,6 @@ __go_empty_interface_compare (struct __go_empty_interface left,
 
   left_descriptor = left.__type_descriptor;
 
-  if (((uintptr_t) left_descriptor & reflectFlags) != 0
-      || ((uintptr_t) right.__type_descriptor & reflectFlags) != 0)
-    runtime_panicstring ("invalid interface value");
-
   if (left_descriptor == NULL && right.__type_descriptor == NULL)
     return 0;
   if (left_descriptor == NULL || right.__type_descriptor == NULL)
