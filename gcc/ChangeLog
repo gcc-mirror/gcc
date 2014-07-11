@@ -1,3 +1,11 @@
+2014-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61473
+	* builtins.c (fold_builtin_memory_op): Inline memory moves
+	that can be implemented with a single load followed by a
+	single store.
+	(c_strlen): Only warn when only_value is not 2.
+
 2014-07-11  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* config/i386/i386.c (expand_vec_perm_pblendv): Disable for AVX.

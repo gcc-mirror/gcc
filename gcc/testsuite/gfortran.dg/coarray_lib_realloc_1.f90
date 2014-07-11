@@ -30,6 +30,6 @@ end
 ! { dg-final { scan-tree-dump-times "__builtin_malloc" 1 "original" } }
 
 ! But copy "ii" and "CAF":
-! { dg-final { scan-tree-dump-times "__builtin_memcpy" 2 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_memcpy|= MEM" 2 "original" } }
 
 ! { dg-final { cleanup-tree-dump "original" } }
