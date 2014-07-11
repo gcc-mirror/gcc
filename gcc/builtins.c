@@ -535,6 +535,10 @@ get_pointer_alignment (tree exp)
    len = c_strlen (src, 1); if (len) expand_expr (len, ...); would not
    evaluate the side-effects.
 
+   If ONLY_VALUE is two then we do not emit warnings about out-of-bound
+   accesses.  Note that this implies the result is not going to be emitted
+   into the instruction stream.
+
    The value returned is of type `ssizetype'.
 
    Unfortunately, string_constant can't access the values of const char
@@ -606,7 +610,8 @@ c_strlen (tree src, int only_value)
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
-  if (offset < 0 || offset > max)
+  if (only_value != 2
+      && (offset < 0 || offset > max))
     {
      /* Suppress multiple warnings for propagated constant strings.  */
       if (! TREE_NO_WARNING (src))
@@ -8637,11 +8642,57 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       unsigned int src_align, dest_align;
       tree off0;
 
+      /* Build accesses at offset zero with a ref-all character type.  */
+      off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
+							 ptr_mode, true), 0);
+
+      /* If we can perform the copy efficiently with first doing all loads
+         and then all stores inline it that way.  Currently efficiently
+	 means that we can load all the memory into a single integer
+	 register which is what MOVE_MAX gives us.  */
+      src_align = get_pointer_alignment (src);
+      dest_align = get_pointer_alignment (dest);
+      if (tree_fits_uhwi_p (len)
+	  && compare_tree_int (len, MOVE_MAX) <= 0
+	  /* ???  Don't transform copies from strings with known length this
+	     confuses the tree-ssa-strlen.c.  This doesn't handle
+	     the case in gcc.dg/strlenopt-8.c which is XFAILed for that
+	     reason.  */
+	  && !c_strlen (src, 2))
+	{
+	  unsigned ilen = tree_to_uhwi (len);
+	  if (exact_log2 (ilen) != -1)
+	    {
+	      tree type = lang_hooks.types.type_for_size (ilen * 8, 1);
+	      if (type
+		  && TYPE_MODE (type) != BLKmode
+		  && (GET_MODE_SIZE (TYPE_MODE (type)) * BITS_PER_UNIT
+		      == ilen * 8)
+		  /* If the pointers are not aligned we must be able to
+		     emit an unaligned load.  */
+		  && ((src_align >= GET_MODE_ALIGNMENT (TYPE_MODE (type))
+		       && dest_align >= GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+		      || !SLOW_UNALIGNED_ACCESS (TYPE_MODE (type),
+						 MIN (src_align, dest_align))))
+		{
+		  tree srctype = type;
+		  tree desttype = type;
+		  if (src_align < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+		    srctype = build_aligned_type (type, src_align);
+		  if (dest_align < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+		    desttype = build_aligned_type (type, dest_align);
+		  if (!ignore)
+		    dest = builtin_save_expr (dest);
+		  expr = build2 (MODIFY_EXPR, type,
+				 fold_build2 (MEM_REF, desttype, dest, off0),
+				 fold_build2 (MEM_REF, srctype, src, off0));
+		  goto done;
+		}
+	    }
+	}
+
       if (endp == 3)
 	{
-	  src_align = get_pointer_alignment (src);
-	  dest_align = get_pointer_alignment (dest);
-
 	  /* Both DEST and SRC must be pointer types.
 	     ??? This is what old code did.  Is the testing for pointer types
 	     really mandatory?
@@ -8818,10 +8869,6 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       if (!ignore)
         dest = builtin_save_expr (dest);
 
-      /* Build accesses at offset zero with a ref-all character type.  */
-      off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
-							 ptr_mode, true), 0);
-
       destvar = dest;
       STRIP_NOPS (destvar);
       if (TREE_CODE (destvar) == ADDR_EXPR
@@ -8888,6 +8935,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       expr = build2 (MODIFY_EXPR, TREE_TYPE (destvar), destvar, srcvar);
     }
 
+done:
   if (ignore)
     return expr;
 

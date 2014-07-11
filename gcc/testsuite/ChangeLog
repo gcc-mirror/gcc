@@ -1,3 +1,10 @@
+2014-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61473
+	* gcc.dg/memmove-4.c: New testcase.
+	* gcc.dg/strlenopt-8.c: XFAIL.
+	* gfortran.dg/coarray_lib_realloc_1.f90: Adjust.
+
 2014-07-11  Marat Zakirov  <m.zakirov@samsung.com>
 
 	PR target/61561
