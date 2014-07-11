@@ -1,3 +1,9 @@
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (add_references_to_partition): Use 
+	varpool_ctor_useable_for_folding_p.
+	* lto.c (lto_read_in_decl_state): Update sanity check.
+
 2014-07-01  Martin Liska  <mliska@suse.cz>
 
 	IPA REF alias refactoring

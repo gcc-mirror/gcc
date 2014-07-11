@@ -236,7 +236,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
 
   ix = *data++;
   decl = streamer_tree_cache_get_tree (data_in->reader_cache, ix);
-  if (TREE_CODE (decl) != FUNCTION_DECL)
+  if (!VAR_OR_FUNCTION_DECL_P (decl))
     {
       gcc_assert (decl == void_type_node);
       decl = NULL_TREE;

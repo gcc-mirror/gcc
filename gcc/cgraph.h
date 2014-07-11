@@ -1134,6 +1134,7 @@ void varpool_analyze_node (varpool_node *);
 varpool_node * varpool_extra_name_alias (tree, tree);
 varpool_node * varpool_create_variable_alias (tree, tree);
 void varpool_reset_queue (void);
+bool varpool_ctor_useable_for_folding_p (varpool_node *);
 tree ctor_for_folding (tree);
 bool varpool_for_node_and_aliases (varpool_node *,
 		                   bool (*) (varpool_node *, void *),
@@ -1142,6 +1143,7 @@ void varpool_add_new_variable (tree);
 void symtab_initialize_asm_name_hash (void);
 void symtab_prevail_in_asm_name_hash (symtab_node *node);
 void varpool_remove_initializer (varpool_node *);
+tree varpool_get_constructor (struct varpool_node *node);
 
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);

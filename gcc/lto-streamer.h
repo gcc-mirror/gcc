@@ -685,9 +685,9 @@ struct output_block
      far and the indexes assigned to them.  */
   hash_table<string_slot_hasher> *string_hash_table;
 
-  /* The current cgraph_node that we are currently serializing.  Null
+  /* The current symbol that we are currently serializing.  Null
      if we are serializing something else.  */
-  struct cgraph_node *cgraph_node;
+  struct symtab_node *symbol;
 
   /* These are the last file and line that were seen in the stream.
      If the current node differs from these, it needs to insert
@@ -830,6 +830,9 @@ extern void lto_reader_init (void);
 extern void lto_input_function_body (struct lto_file_decl_data *,
 				     struct cgraph_node *,
 				     const char *);
+extern void lto_input_variable_constructor (struct lto_file_decl_data *,
+					    struct varpool_node *,
+					    const char *);
 extern void lto_input_constructors_and_inits (struct lto_file_decl_data *,
 					      const char *);
 extern void lto_input_toplevel_asms (struct lto_file_decl_data *, int);
