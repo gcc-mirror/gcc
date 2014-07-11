@@ -84,7 +84,7 @@
 2014-07-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/58155 - -Wliteral-suffix warns about tokens which are skipped
-	g++.dg/cpp0x/pr58155.C: New.
+	* g++.dg/cpp0x/pr58155.C: New.
 
 2014-07-09  Dominique d'Humieres <dominiq@lps.ens.fr>
 
