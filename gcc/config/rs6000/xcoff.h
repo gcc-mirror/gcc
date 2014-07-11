@@ -309,3 +309,6 @@
    than in the .eh_frame section.  We do this because the AIX linker
    would otherwise garbage collect these sections.  */
 #define EH_FRAME_IN_DATA_SECTION 1
+
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+

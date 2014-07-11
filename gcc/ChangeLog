@@ -1,3 +1,11 @@
+2014-07-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix51.h (LINK_SPEC): Remove -bnodelcsect.
+	* config/rs6000/aix52.h (LINK_SPEC): Same.
+	* config/rs6000/aix53.h (LINK_SPEC): Same.
+	* config/rs6000/aix61.h (LINK_SPEC): Same.
+	* config/rs6000/xcoff.h (MAKE_DECL_ONE_ONLY): Define.
+
 2014-07-11  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c (gmp_cst_to_tree):
