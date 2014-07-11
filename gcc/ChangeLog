@@ -1,3 +1,8 @@
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/xtensa/predicates.md (call expander): Update for
+	DECL_SECTION_NAME being string.
+
 2014-07-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61473
