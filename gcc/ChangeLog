@@ -1,3 +1,8 @@
+2014-07-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (remove_inheritance_pseudos): Process
+	destination pseudo too.
+
 2014-07-11  Rong Xu  <xur@google.com>
 
 	* gcov-tool.c (gcov_output_files): Fix build error introduced in
