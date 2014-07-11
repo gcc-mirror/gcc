@@ -101,6 +101,30 @@ avr_device_to_data_start (int argc, const char **argv)
   return concat ("-Tdata ", data_section_start_str, NULL);    
 }
 
+/* Returns command line parameters that describe start of text section.  */
+
+const char *
+avr_device_to_text_start (int argc, const char **argv)
+{
+  unsigned long text_section_start;
+  char text_section_start_str[16];
+
+  if (0 == argc)
+    return NULL;
+
+  avr_set_current_device (argv[0]);
+
+  if (avr_current_device->text_section_start == 0x0)
+    return NULL;
+
+  text_section_start = avr_current_device->text_section_start;
+
+  snprintf (text_section_start_str, sizeof(text_section_start_str) - 1,
+            "0x%lX", text_section_start);
+
+  return concat ("-Ttext ", text_section_start_str, NULL);
+}
+
 /* Returns command line parameters that describe the device startfile.  */
 
 const char *

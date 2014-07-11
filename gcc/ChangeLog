@@ -1,3 +1,23 @@
+2014-07-11  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	* config/avr/avr-arch.h (avr_mcu_t): Add text section start attribute.
+	* config/avr/avr-devices.c (AVR_MCU): Same.
+	(avr_mcu_types): add text start value to end of device list.
+	* config/avr/avr-mcus.def: Add text section start for all devices.
+	(ata5782): Add new avr5 device.
+	(ata5831): Same.
+	* config/avr/avr-tables.opt: Regenerate.
+	* config/avr/avr.h: Add declaration for text section start handler.
+	(EXTRA_SPEC_FUNCTIONS): Add text section start handler to SPEC function=
+s.
+	(LINK_SPEC): Include text section start handler to linker spec.
+	* config/avr/driver-avr.c (avr_device_to_text_start): New function to
+	pass -Ttext option to linker if the text section start for the device i=
+s
+	not zero.
+	* config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2014-07-11  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix51.h (LINK_SPEC): Remove -bnodelcsect.
