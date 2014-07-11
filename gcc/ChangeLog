@@ -1,3 +1,27 @@
+2014-07-11  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c (gmp_cst_to_tree):
+	New function.
+	(graphite_verify): New function.
+	(ivs_params_clear): New function.
+	(gcc_expression_from_isl_ast_expr_id): New function.
+	(gcc_expression_from_isl_expr_int): New function.
+	(binary_op_to_tree): New function.
+	(ternary_op_to_tree): New function.
+	(unary_op_to_tree): New function.
+	(nary_op_to_tree): New function.
+	(gcc_expression_from_isl_expr_op): New function.
+	(gcc_expression_from_isl_expression): New function.
+	(graphite_create_new_loop): New function.
+	(translate_isl_ast_for_loop): New function.
+	(get_upper_bound): New function.
+	(graphite_create_new_loop_guard): New function.
+	(translate_isl_ast_node_for): New function.
+	(translate_isl_ast): New function.
+	(add_parameters_to_ivs_params): New function.
+	(scop_to_isl_ast): New parameter ip.
+	(graphite_regenerate_ast_isl): Add generation of GIMPLE code.
+
 2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/xtensa/predicates.md (call expander): Update for
