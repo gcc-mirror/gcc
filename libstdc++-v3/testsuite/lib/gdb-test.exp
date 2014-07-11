@@ -91,7 +91,7 @@ proc gdb-test { marker {selector {}} } {
 	}
     }
 
-    set do_whatis_tests [gdb_batch_check "python print gdb.type_printers" \
+    set do_whatis_tests [gdb_batch_check "python print(gdb.type_printers)" \
 			   "\\\[\\\]"]
     if {!$do_whatis_tests} {
 	send_log "skipping 'whatis' tests - gdb too old"
@@ -252,6 +252,6 @@ proc gdb_batch_check {command pattern} {
 # but not earlier versions.
 # Return 1 if the version is ok, 0 otherwise.
 proc gdb_version_check {} {
-    return [gdb_batch_check "python print gdb.lookup_global_symbol" \
+    return [gdb_batch_check "python print(gdb.lookup_global_symbol)" \
 	      "<built-in function lookup_global_symbol>"]
 }
