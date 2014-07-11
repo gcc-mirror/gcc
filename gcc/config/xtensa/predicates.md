@@ -97,7 +97,8 @@
       /* Direct calls only allowed to static functions with PIC.  */
       if (flag_pic)
 	{
-	  tree callee, callee_sec, caller_sec;
+	  tree callee;
+	  const char * callee_sec, * caller_sec;
 
 	  if (GET_CODE (op) != SYMBOL_REF
 	      || !SYMBOL_REF_LOCAL_P (op) || SYMBOL_REF_EXTERNAL_P (op))
@@ -117,13 +118,12 @@
 	      if (DECL_ONE_ONLY (callee))
 		return false;
 	      callee_sec = DECL_SECTION_NAME (callee);
-	      if (((caller_sec == NULL_TREE) ^ (callee_sec == NULL_TREE))
-		  || (caller_sec != NULL_TREE
-		      && strcmp (TREE_STRING_POINTER (caller_sec),
-				 TREE_STRING_POINTER (callee_sec)) != 0))
+	      if (((caller_sec == NULL) ^ (callee_sec == NULL))
+		  || (caller_sec != NULL
+		      && caller_sec != callee_sec))
 		return false;
 	    }
-	  else if (caller_sec != NULL_TREE)
+	  else if (caller_sec)
 	    return false;
 	}
       return true;
