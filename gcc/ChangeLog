@@ -1,3 +1,8 @@
+2014-07-11  Rong Xu  <xur@google.com>
+
+	* gcov-tool.c (gcov_output_files): Fix build error introduced in
+	commit r212448.
+
 2014-07-11  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	* config/avr/avr-arch.h (avr_mcu_t): Add text section start attribute.
