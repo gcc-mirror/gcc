@@ -560,6 +560,19 @@ ipa_binfo_from_known_type_jfunc (struct ipa_jump_func *jfunc)
 
   if (!base_binfo)
     return NULL_TREE;
+  /* FIXME: At LTO we can't propagate to non-polymorphic type, because
+     we have no ODR equivalency on those.  This should be fixed by
+     propagating on types rather than binfos that would make type
+     matching here unnecesary.  */
+  if (in_lto_p
+      && (TREE_CODE (jfunc->value.known_type.component_type) != RECORD_TYPE
+	  || !TYPE_BINFO (jfunc->value.known_type.component_type)
+	  || !BINFO_VTABLE (TYPE_BINFO (jfunc->value.known_type.component_type))))
+    {
+      if (!jfunc->value.known_type.offset)
+	return base_binfo;
+      return NULL;
+    }
   return get_binfo_at_offset (base_binfo,
 			      jfunc->value.known_type.offset,
 			      jfunc->value.known_type.component_type);
