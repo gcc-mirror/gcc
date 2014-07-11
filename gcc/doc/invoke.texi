@@ -189,7 +189,8 @@ in the following sections.
 -fno-pretty-templates @gol
 -frepo  -fno-rtti  -fstats  -ftemplate-backtrace-limit=@var{n} @gol
 -ftemplate-depth=@var{n} @gol
--fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
+-fno-threadsafe-statics  -fno-use-all-virtuals  -fuse-cxa-atexit @gol
+-fno-weak  -nostdinc++ @gol
 -fvisibility-inlines-hidden @gol
 -fvtable-verify=@var{std|preinit|none} @gol
 -fvtv-counts -fvtv-debug @gol
@@ -2317,6 +2318,16 @@ Do not emit the extra code to use the routines specified in the C++
 ABI for thread-safe initialization of local statics.  You can use this
 option to reduce code size slightly in code that doesn't need to be
 thread-safe.
+
+@item -fno-use-all-virtuals
+@opindex fno-use-all-virtuals
+By default, G++ now treats all virtual functions declared in a
+translation unit as odr-used, so they will be instantiated or
+synthesized if possible even if they are not needed for the final
+output.  This is done so that such functions can be inlined after
+devirtualization changes an indirect call into a direct call.  If this
+instantiation and synthesis prevents your code from compiling
+successfully, you can disable it with this option.
 
 @item -fuse-cxa-atexit
 @opindex fuse-cxa-atexit
