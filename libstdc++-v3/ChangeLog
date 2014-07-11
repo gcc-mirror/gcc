@@ -3,6 +3,9 @@
 	* testsuite/lib/libstdc++.exp  (libstdc++_init): Set $GCC_COLORS=""
 	instead of insisting that GCC understand -fdiagnostics-color=never
 
+	* testsuite/lib/gdb-test.exp (gdb-test): Turn off GDB's auto-load,
+	list loaded libs.
+
 2014-07-11  Samuel Bronson  <naesten@gmail.com>
 	    Matthias Klose  <doko@ubuntu.com>
 
