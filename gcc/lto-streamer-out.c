@@ -318,7 +318,7 @@ lto_is_streamable (tree expr)
 /* For EXPR lookup and return what we want to stream to OB as DECL_INITIAL.  */
 
 static tree
-get_symbol_initial_value (struct output_block *ob, tree expr)
+get_symbol_initial_value (lto_symtab_encoder_t encoder, tree expr)
 {
   gcc_checking_assert (DECL_P (expr)
 		       && TREE_CODE (expr) != FUNCTION_DECL
@@ -331,15 +331,13 @@ get_symbol_initial_value (struct output_block *ob, tree expr)
       && !DECL_IN_CONSTANT_POOL (expr)
       && initial)
     {
-      lto_symtab_encoder_t encoder;
       varpool_node *vnode;
-
-      encoder = ob->decl_state->symtab_node_encoder;
-      vnode = varpool_get_node (expr);
-      if (!vnode
-	  || !lto_symtab_encoder_encode_initializer_p (encoder,
-						       vnode))
-	initial = error_mark_node;
+      /* Extra section needs about 30 bytes; do not produce it for simple
+	 scalar values.  */
+      if (TREE_CODE (DECL_INITIAL (expr)) == CONSTRUCTOR
+	  || !(vnode = varpool_get_node (expr))
+	  || !lto_symtab_encoder_encode_initializer_p (encoder, vnode))
+        initial = error_mark_node;
     }
 
   return initial;
@@ -369,7 +367,8 @@ lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
       && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
     {
       /* Handle DECL_INITIAL for symbols.  */
-      tree initial = get_symbol_initial_value (ob, expr);
+      tree initial = get_symbol_initial_value
+			 (ob->decl_state->symtab_node_encoder, expr);
       stream_write_tree (ob, initial, ref_p);
     }
 }
@@ -1195,7 +1194,8 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 	      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
 	    {
 	      /* Handle DECL_INITIAL for symbols.  */
-	      tree initial = get_symbol_initial_value (ob, expr);
+	      tree initial = get_symbol_initial_value (ob->decl_state->symtab_node_encoder,
+						       expr);
 	      DFS_write_tree (ob, cstate, initial, ref_p, ref_p);
 	    }
 	}
@@ -1808,7 +1808,7 @@ output_function (struct cgraph_node *node)
   ob = create_output_block (LTO_section_function_body);
 
   clear_line_info (ob);
-  ob->cgraph_node = node;
+  ob->symbol = node;
 
   gcc_assert (current_function_decl == NULL_TREE && cfun == NULL);
 
@@ -1899,6 +1899,32 @@ output_function (struct cgraph_node *node)
   destroy_output_block (ob);
 }
 
+/* Output the body of function NODE->DECL.  */
+
+static void
+output_constructor (struct varpool_node *node)
+{
+  tree var = node->decl;
+  struct output_block *ob;
+
+  ob = create_output_block (LTO_section_function_body);
+
+  clear_line_info (ob);
+  ob->symbol = node;
+
+  /* Make string 0 be a NULL string.  */
+  streamer_write_char_stream (ob->string_stream, 0);
+
+  /* Output DECL_INITIAL for the function, which contains the tree of
+     lexical scopes.  */
+  stream_write_tree (ob, DECL_INITIAL (var), true);
+
+  /* Create a section to hold the pickled output of this function.   */
+  produce_asm (ob, var);
+
+  destroy_output_block (ob);
+}
+
 
 /* Emit toplevel asms.  */
 
@@ -1957,10 +1983,10 @@ lto_output_toplevel_asms (void)
 }
 
 
-/* Copy the function body of NODE without deserializing. */
+/* Copy the function body or variable constructor of NODE without deserializing. */
 
 static void
-copy_function (struct cgraph_node *node)
+copy_function_or_variable (struct symtab_node *node)
 {
   tree function = node->decl;
   struct lto_file_decl_data *file_data = node->lto_file_data;
@@ -2072,7 +2098,7 @@ lto_output (void)
 	      if (gimple_has_body_p (node->decl) || !flag_wpa)
 		output_function (node);
 	      else
-		copy_function (node);
+		copy_function_or_variable (node);
 	      gcc_assert (lto_get_out_decl_state () == decl_state);
 	      lto_pop_out_decl_state ();
 	      lto_record_function_out_decl_state (node->decl, decl_state);
@@ -2085,6 +2111,25 @@ lto_output (void)
 	  tree ctor = DECL_INITIAL (node->decl);
 	  if (ctor && !in_lto_p)
 	    walk_tree (&ctor, wrap_refs, NULL, NULL);
+	  if (get_symbol_initial_value (encoder, node->decl) == error_mark_node
+	      && lto_symtab_encoder_encode_initializer_p (encoder, node)
+	      && !node->alias)
+	    {
+#ifdef ENABLE_CHECKING
+	      gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
+	      bitmap_set_bit (output, DECL_UID (node->decl));
+#endif
+	      decl_state = lto_new_out_decl_state ();
+	      lto_push_out_decl_state (decl_state);
+	      if (DECL_INITIAL (node->decl) != error_mark_node
+		  || !flag_wpa)
+		output_constructor (node);
+	      else
+		copy_function_or_variable (node);
+	      gcc_assert (lto_get_out_decl_state () == decl_state);
+	      lto_pop_out_decl_state ();
+	      lto_record_function_out_decl_state (node->decl, decl_state);
+	    }
 	}
     }
 

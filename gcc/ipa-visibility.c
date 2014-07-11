@@ -686,6 +686,8 @@ function_and_variable_visibility (bool whole_program)
 	  if (found)
 	    {
 	      struct pointer_set_t *visited_nodes = pointer_set_create ();
+
+	      varpool_get_constructor (vnode);
 	      walk_tree (&DECL_INITIAL (vnode->decl),
 			 update_vtable_references, NULL, visited_nodes);
 	      pointer_set_destroy (visited_nodes);

@@ -4848,7 +4848,7 @@ ipa_prop_write_jump_functions (void)
 
   ob = create_output_block (LTO_section_jump_functions);
   encoder = ob->decl_state->symtab_node_encoder;
-  ob->cgraph_node = NULL;
+  ob->symbol = NULL;
   for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
        lsei_next_function_in_partition (&lsei))
     {
@@ -5024,7 +5024,7 @@ ipa_prop_write_all_agg_replacement (void)
 
   ob = create_output_block (LTO_section_ipcp_transform);
   encoder = ob->decl_state->symtab_node_encoder;
-  ob->cgraph_node = NULL;
+  ob->symbol = NULL;
   for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
        lsei_next_function_in_partition (&lsei))
     {

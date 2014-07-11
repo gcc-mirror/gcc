@@ -1,5 +1,38 @@
 2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
 
+	* vapool.c: Include tree-ssa-alias.h, gimple.h and lto-streamer.h
+	(varpool_get_constructor): New function.
+	(varpool_ctor_useable_for_folding_p): Break out from ...
+	(ctor_for_folding): ... here; use varpool_get_constructor.
+	(varpool_assemble_decl): Likewise.
+	* lto-streamer.h (struct output_block): Turn cgraph_node
+	to symbol filed.
+	(lto_input_variable_constructor): Declare.
+	* ipa-visibility.c (function_and_variable_visibility): Use
+	varpool_get_constructor.
+	* cgraph.h (varpool_get_constructor): Declare.
+	(varpool_ctor_useable_for_folding_p): New function.
+	* lto-streamer-out.c (get_symbol_initial_value): Take encoder
+	parameter; return error_mark_node for non-trivial constructors.
+	(lto_write_tree_1, DFS_write_tree): UPdate use of
+	get_symbol_initial_value.
+	(output_function): Update initialization of symbol.
+	(output_constructor): New function.
+	(copy_function): Rename to ..
+	(copy_function_or_variable): ... this one; handle vars too.
+	(lto_output): Output variable sections.
+	* lto-streamer-in.c (input_constructor): New function.
+	(lto_read_body): Rename from ...
+	(lto_read_body_or_constructor): ... this one; handle vars
+	too.
+	(lto_input_variable_constructor): New function.
+	* ipa-prop.c (ipa_prop_write_jump_functions,
+	ipa_prop_write_all_agg_replacement): Update.
+	* lto-cgraph.c (compute_ltrans_boundary): Use it.
+	(output_cgraph_opt_summary): Set symbol to NULL.
+
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-prop.c (ipa_binfo_from_known_type_jfunc): In LTO do not walk
 	non-polymorphic types.
 	* ipa-cp.c (ipa_get_jf_ancestor_result): Likewise.

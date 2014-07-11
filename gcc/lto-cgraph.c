@@ -867,7 +867,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	{
 	  if (!lto_symtab_encoder_encode_initializer_p (encoder,
 							vnode)
-	      && ctor_for_folding (vnode->decl) != error_mark_node)
+	      && varpool_ctor_useable_for_folding_p (vnode))
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      add_references (encoder, vnode);
@@ -1808,7 +1808,7 @@ output_cgraph_opt_summary (void)
   struct output_block *ob = create_output_block (LTO_section_cgraph_opt_sum);
   unsigned count = 0;
 
-  ob->cgraph_node = NULL;
+  ob->symbol = NULL;
   encoder = ob->decl_state->symtab_node_encoder;
   n_nodes = lto_symtab_encoder_size (encoder);
   for (i = 0; i < n_nodes; i++)
