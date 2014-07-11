@@ -1,3 +1,11 @@
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_binfo_from_known_type_jfunc): In LTO do not walk
+	non-polymorphic types.
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Likewise.
+	* ipa-devirt.c (types_same_for_odr): Do not explode when one
+	of types is not polymorphic.
+
 2014-07-11  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (remove_inheritance_pseudos): Process

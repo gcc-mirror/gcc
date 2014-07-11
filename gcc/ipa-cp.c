@@ -789,6 +789,19 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
     {
       if (!ipa_get_jf_ancestor_type_preserved (jfunc))
 	return NULL;
+      /* FIXME: At LTO we can't propagate to non-polymorphic type, because
+	 we have no ODR equivalency on those.  This should be fixed by
+	 propagating on types rather than binfos that would make type
+	 matching here unnecesary.  */
+      if (in_lto_p
+	  && (TREE_CODE (ipa_get_jf_ancestor_type (jfunc)) != RECORD_TYPE
+	      || !TYPE_BINFO (ipa_get_jf_ancestor_type (jfunc))
+	      || !BINFO_VTABLE (TYPE_BINFO (ipa_get_jf_ancestor_type (jfunc)))))
+	{
+	  if (!ipa_get_jf_ancestor_offset (jfunc))
+	    return input;
+	  return NULL;
+	}
       return get_binfo_at_offset (input,
 				  ipa_get_jf_ancestor_offset (jfunc),
 				  ipa_get_jf_ancestor_type (jfunc));

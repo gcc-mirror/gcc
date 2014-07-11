@@ -341,6 +341,20 @@ types_same_for_odr (const_tree type1, const_tree type2)
       || type_in_anonymous_namespace_p (type2))
     return false;
 
+  /* See if types are obvoiusly different (i.e. different codes
+     or polymorphis wrt non-polymorphic).  This is not strictly correct
+     for ODR violating programs, but we can't do better without streaming
+     ODR names.  */
+  if (TREE_CODE (type1) != TREE_CODE (type2))
+    return false;
+  if (TREE_CODE (type1) == RECORD_TYPE
+      && (TYPE_BINFO (type1) == NULL_TREE) != (TYPE_BINFO (type1) == NULL_TREE))
+    return false;
+  if (TREE_CODE (type1) == RECORD_TYPE && TYPE_BINFO (type1)
+      && (BINFO_VTABLE (TYPE_BINFO (type1)) == NULL_TREE)
+	 != (BINFO_VTABLE (TYPE_BINFO (type2)) == NULL_TREE))
+    return false;
+
   /* At the moment we have no way to establish ODR equivlaence at LTO
      other than comparing virtual table pointrs of polymorphic types.
      Eventually we should start saving mangled names in TYPE_NAME.
