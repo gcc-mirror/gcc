@@ -43214,12 +43214,10 @@ expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
   bool ok;
 
   /* Use the same checks as in expand_vec_perm_blend, but skipping
-     AVX2 as it requires more than 2 instructions for general case.  */
+     AVX and AVX2 as they require more than 2 instructions.  */
   if (d->one_operand_p)
     return false;
-  if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
-    ;
-  else if (TARGET_SSE4_1 && GET_MODE_SIZE (vmode) == 16)
+  if (TARGET_SSE4_1 && GET_MODE_SIZE (vmode) == 16)
     ;
   else
     return false;

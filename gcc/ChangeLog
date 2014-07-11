@@ -1,3 +1,7 @@
+2014-07-11  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/i386.c (expand_vec_perm_pblendv): Disable for AVX.
+
 2014-07-11  Marat Zakirov  <m.zakirov@samsung.com>
 
 	PR target/61561
