@@ -1,3 +1,8 @@
+2014-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53159
+	* g++.dg/cpp0x/Wnarrowing1.C: New.
+
 2014-07-11  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR preprocessor/61389

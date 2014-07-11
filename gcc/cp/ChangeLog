@@ -1,3 +1,12 @@
+2014-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53159
+	* call.c (build_user_type_conversion_1): Copy LOOKUP_NO_NARROWING
+	into convflags.
+	* decl.c (check_initializer): Don't call check_narrowing here,
+	set LOOKUP_NO_NARROWING.
+	* typeck2.c (digest_init_r): Likewise.
+
 2014-07-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61661

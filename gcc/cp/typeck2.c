@@ -1027,7 +1027,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
       tree *exp;
 
       if (nested)
-	check_narrowing (type, init);
+	flags |= LOOKUP_NO_NARROWING;
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,
 					 complain);

@@ -3586,7 +3586,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 
   /* It's OK to bind a temporary for converting constructor arguments, but
      not in converting the return value of a conversion operator.  */
-  convflags = ((flags & LOOKUP_NO_TEMP_BIND) | LOOKUP_NO_CONVERSION);
+  convflags = ((flags & LOOKUP_NO_TEMP_BIND) | LOOKUP_NO_CONVERSION
+	       | (flags & LOOKUP_NO_NARROWING));
   flags &= ~LOOKUP_NO_TEMP_BIND;
 
   if (ctors)
