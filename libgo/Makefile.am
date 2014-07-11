@@ -515,7 +515,7 @@ runtime_files = \
 	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
-	iface.c \
+	go-iface.c \
 	malloc.c \
 	map.c \
 	mprof.c \
