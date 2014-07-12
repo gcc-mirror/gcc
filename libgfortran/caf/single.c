@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h> /* For exit and malloc.  */
 #include <string.h> /* For memcpy and memset.  */
 #include <stdarg.h> /* For variadic arguments.  */
+#include <assert.h>
 
 /* Define GFC_CAF_CHECK to enable run-time checking.  */
 /* #define GFC_CAF_CHECK  1  */
@@ -773,4 +774,93 @@ _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
   _gfortran_caf_send (dst_token, dst_offset, dst_image_index, dest, dst_vector,
 		      src, dst_len, src_len);
   GFC_DESCRIPTOR_DATA (src) = src_base;
+}
+
+
+void
+_gfortran_caf_atomic_define (caf_token_t token, size_t offset,
+			     int image_index __attribute__ ((unused)),
+			     void *value, int *stat,
+			     int type __attribute__ ((unused)), int kind)
+{
+  assert(kind == 4);
+
+  uint32_t *atom = (uint32_t *) ((char *) TOKEN (token) + offset);
+
+  __atomic_store (atom, (uint32_t *) value, __ATOMIC_RELAXED);
+
+  if (stat)
+    *stat = 0;
+}
+
+void
+_gfortran_caf_atomic_ref (caf_token_t token, size_t offset,
+			  int image_index __attribute__ ((unused)),
+			  void *value, int *stat,
+			  int type __attribute__ ((unused)), int kind)
+{
+  assert(kind == 4);
+
+  uint32_t *atom = (uint32_t *) ((char *) TOKEN (token) + offset);
+
+  __atomic_load (atom, (uint32_t *) value, __ATOMIC_RELAXED);
+
+  if (stat)
+    *stat = 0;
+}
+
+
+void
+_gfortran_caf_atomic_cas (caf_token_t token, size_t offset,
+			  int image_index __attribute__ ((unused)),
+			  void *old, void *compare, void *new_val, int *stat,
+			  int type __attribute__ ((unused)), int kind)
+{
+  assert(kind == 4);
+
+  uint32_t *atom = (uint32_t *) ((char *) TOKEN (token) + offset);
+
+  *(uint32_t *) old = *(uint32_t *) compare;
+  (void) __atomic_compare_exchange_n (atom, (uint32_t *) old,
+				      *(uint32_t *) new_val, false,
+				      __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+  if (stat)
+    *stat = 0;
+}
+
+
+void
+_gfortran_caf_atomic_op (int op, caf_token_t token, size_t offset,
+			 int image_index __attribute__ ((unused)),
+			 void *value, void *old, int *stat,
+			 int type __attribute__ ((unused)), int kind)
+{
+  assert(kind == 4);
+
+  uint32_t res;
+  uint32_t *atom = (uint32_t *) ((char *) TOKEN (token) + offset);
+
+  switch (op)
+    {
+    case GFC_CAF_ATOMIC_ADD:
+      res = __atomic_fetch_add (atom, *(uint32_t *) value, __ATOMIC_RELAXED);
+      break;
+    case GFC_CAF_ATOMIC_AND:
+      res = __atomic_fetch_and (atom, *(uint32_t *) value, __ATOMIC_RELAXED);
+      break;
+    case GFC_CAF_ATOMIC_OR:
+      res = __atomic_fetch_or (atom, *(uint32_t *) value, __ATOMIC_RELAXED);
+      break;
+    case GFC_CAF_ATOMIC_XOR:
+      res = __atomic_fetch_xor (atom, *(uint32_t *) value, __ATOMIC_RELAXED);
+      break;
+    default:
+      __builtin_unreachable();
+    }
+
+  if (old)
+    *(uint32_t *) old = res;
+
+  if (stat)
+    *stat = 0;
 }
