@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 /* There's probably quite a bit of duplication in this file.  We currently
    have different dependency checking functions for different types
    if dependencies.  Ideally these would probably be merged.  */
-   
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -178,14 +178,14 @@ are_identical_variables (gfc_expr *e1, gfc_expr *e2)
 
 	  /* If both are NULL, the end length compares equal, because we
 	     are looking at the same variable. This can only happen for
-	     assumed- or deferred-length character arguments.  */ 
+	     assumed- or deferred-length character arguments.  */
 
 	  if (r1->u.ss.end == NULL && r2->u.ss.end == NULL)
 	    break;
 
 	  if (gfc_dep_compare_expr (r1->u.ss.end, r2->u.ss.end) != 0)
 	    return false;
-	  
+
 	  break;
 
 	default:
@@ -206,7 +206,7 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 
   gfc_actual_arglist *args1;
   gfc_actual_arglist *args2;
-  
+
   if (e1->expr_type != EXPR_FUNCTION || e2->expr_type != EXPR_FUNCTION)
     return -2;
 
@@ -226,18 +226,18 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 	  /*  Bitwise xor, since C has no non-bitwise xor operator.  */
 	  if ((args1->expr == NULL) ^ (args2->expr == NULL))
 	    return -2;
-	  
+
 	  if (args1->expr != NULL && args2->expr != NULL
 	      && gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
 	    return -2;
-	  
+
 	  args1 = args1->next;
 	  args2 = args2->next;
 	}
       return (args1 || args2) ? -2 : 0;
     }
       else
-	return -2;      
+	return -2;
 }
 
 /* Helper function to look through parens, unary plus and widening
@@ -496,7 +496,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 
 
 /* Return the difference between two expressions.  Integer expressions of
-   the form 
+   the form
 
    X + constant, X - constant and constant + X
 
@@ -687,7 +687,7 @@ gfc_dep_difference (gfc_expr *e1, gfc_expr *e2, mpz_t *result)
 	    {
 	      e2_op1 = discard_nops (e2->value.op.op1);
 	      e2_op2 = discard_nops (e2->value.op.op2);
-	      
+
 	      /* Case 14: (c1 - X) - (c2 - X) == c1 - c2.  */
 	      if (gfc_dep_compare_expr (e1_op2, e2_op2) == 0)
 		{
@@ -937,7 +937,7 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
   switch (expr->expr_type)
     {
     case EXPR_VARIABLE:
-      /* In case of elemental subroutines, there is no dependency 
+      /* In case of elemental subroutines, there is no dependency
          between two same-range array references.  */
       if (gfc_ref_needs_temporary_p (expr->ref)
 	  || gfc_check_dependency (var, expr, elemental == NOT_ELEMENTAL))
@@ -947,24 +947,24 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
 	      /* Too many false positive with pointers.  */
 	      if (!gfc_is_data_pointer (var) && !gfc_is_data_pointer (expr))
 		{
-		  /* Elemental procedures forbid unspecified intents, 
+		  /* Elemental procedures forbid unspecified intents,
 		     and we don't check dependencies for INTENT_IN args.  */
 		  gcc_assert (intent == INTENT_OUT || intent == INTENT_INOUT);
 
-		  /* We are told not to check dependencies. 
+		  /* We are told not to check dependencies.
 		     We do it, however, and issue a warning in case we find one.
-		     If a dependency is found in the case 
+		     If a dependency is found in the case
 		     elemental == ELEM_CHECK_VARIABLE, we will generate
 		     a temporary, so we don't need to bother the user.  */
 		  gfc_warning ("INTENT(%s) actual argument at %L might "
-			       "interfere with actual argument at %L.", 
-		   	       intent == INTENT_OUT ? "OUT" : "INOUT", 
+			       "interfere with actual argument at %L.",
+		   	       intent == INTENT_OUT ? "OUT" : "INOUT",
 		   	       &var->where, &expr->where);
 		}
 	      return 0;
 	    }
 	  else
-	    return 1; 
+	    return 1;
 	}
       return 0;
 
@@ -1010,17 +1010,17 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
 	 dependencies, as we will make a temporary anyway.  */
       if (elemental)
 	{
-	  /* If the actual arg EXPR is an expression, we need to catch 
-	     a dependency between variables in EXPR and VAR, 
+	  /* If the actual arg EXPR is an expression, we need to catch
+	     a dependency between variables in EXPR and VAR,
 	     an intent((IN)OUT) variable.  */
 	  if (expr->value.op.op1
-	      && gfc_check_argument_var_dependency (var, intent, 
-						    expr->value.op.op1, 
+	      && gfc_check_argument_var_dependency (var, intent,
+						    expr->value.op.op1,
 						    ELEM_CHECK_VARIABLE))
 	    return 1;
 	  else if (expr->value.op.op2
-		   && gfc_check_argument_var_dependency (var, intent, 
-							 expr->value.op.op2, 
+		   && gfc_check_argument_var_dependency (var, intent,
+							 expr->value.op.op2,
 							 ELEM_CHECK_VARIABLE))
 	    return 1;
 	}
@@ -1030,8 +1030,8 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
       return 0;
     }
 }
-  
-  
+
+
 /* Like gfc_check_argument_var_dependency, but extended to any
    array expression OTHER, not just variables.  */
 
@@ -1154,7 +1154,7 @@ gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
 	  /* Can these lengths be zero?  */
 	  if (fl1->length <= 0 || fl2->length <= 0)
 	    return 1;
-	  /* These can't overlap if [f11,fl1+length] is before 
+	  /* These can't overlap if [f11,fl1+length] is before
 	     [fl2,fl2+length], or [fl2,fl2+length] is before
 	     [fl1,fl1+length], otherwise they do overlap.  */
 	  if (fl1->offset + fl1->length > fl2->offset
@@ -1457,7 +1457,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
     start_comparison = gfc_dep_compare_expr (l_start, r_start);
   else
     start_comparison = -2;
-      
+
   gfc_free_expr (one_expr);
 
   /* Determine LHS upper and lower bounds.  */
@@ -1559,7 +1559,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
 
   /* Check for forward dependencies x:y:-1 vs. x-1:z:-1 and
      x:y:-1 vs. x:y:-2.  */
-  if (l_dir == -1 && r_dir == -1 && 
+  if (l_dir == -1 && r_dir == -1 &&
       (start_comparison == 0 || start_comparison == 1)
       && (stride_comparison == 0 || stride_comparison == 1))
     return GFC_DEP_FORWARD;
@@ -1583,7 +1583,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
     {
       if (l_start && IS_ARRAY_EXPLICIT (l_ar->as))
 	{
-      
+
 	  /* Check for a(high:y:-s) vs. a(z:x:-s) or
 	     a(high:y:-s vs. a(z:x:-s-1) where a has a higher bound
 	     of high, which is always at least a forward dependence.  */
@@ -2023,6 +2023,7 @@ int
 gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 {
   int n;
+  int m;
   gfc_dependency fin_dep;
   gfc_dependency this_dep;
 
@@ -2045,12 +2046,12 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 	  if (lref->u.c.component != rref->u.c.component)
 	    return 0;
 	  break;
-	  
+
 	case REF_SUBSTRING:
 	  /* Substring overlaps are handled by the string assignment code
 	     if there is not an underlying dependency.  */
 	  return (fin_dep == GFC_DEP_OVERLAP) ? 1 : 0;
-	
+
 	case REF_ARRAY:
 
 	  if (ref_same_as_full_array (lref, rref))
@@ -2072,6 +2073,8 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 	      break;
 	    }
 
+	  /* Index for the reverse array.  */
+	  m = -1;
 	  for (n=0; n < lref->u.ar.dimen; n++)
 	    {
 	      /* Handle dependency when either of array reference is vector
@@ -2081,7 +2084,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 	      if (lref->u.ar.dimen_type[n] == DIMEN_VECTOR
 		  || rref->u.ar.dimen_type[n] == DIMEN_VECTOR)
 		{
-		  if (lref->u.ar.dimen_type[n] == DIMEN_VECTOR 
+		  if (lref->u.ar.dimen_type[n] == DIMEN_VECTOR
 		      && rref->u.ar.dimen_type[n] == DIMEN_VECTOR
 		      && gfc_dep_compare_expr (lref->u.ar.start[n],
 					       rref->u.ar.start[n]) == 0)
@@ -2101,7 +2104,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 	      else if (rref->u.ar.dimen_type[n] == DIMEN_ELEMENT
 		       && lref->u.ar.dimen_type[n] == DIMEN_RANGE)
 		this_dep = gfc_check_element_vs_section (rref, lref, n);
-	      else 
+	      else
 		{
 		  gcc_assert (rref->u.ar.dimen_type[n] == DIMEN_ELEMENT
 			      && lref->u.ar.dimen_type[n] == DIMEN_ELEMENT);
@@ -2118,38 +2121,44 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 		 The ability to reverse or not is set by previous conditions
 		 in this dimension.  If reversal is not activated, the
 		 value GFC_DEP_BACKWARD is reset to GFC_DEP_OVERLAP.  */
+
+	      /* Get the indexing right for the scalarizing loop. If this
+		 is an element, there is no corresponding loop.  */
+	      if (lref->u.ar.dimen_type[n] != DIMEN_ELEMENT)
+		m++;
+
 	      if (rref->u.ar.dimen_type[n] == DIMEN_RANGE
 		    && lref->u.ar.dimen_type[n] == DIMEN_RANGE)
 		{
 		  /* Set reverse if backward dependence and not inhibited.  */
-		  if (reverse && reverse[n] == GFC_ENABLE_REVERSE)
-		    reverse[n] = (this_dep == GFC_DEP_BACKWARD) ?
-			         GFC_REVERSE_SET : reverse[n];
+		  if (reverse && reverse[m] == GFC_ENABLE_REVERSE)
+		    reverse[m] = (this_dep == GFC_DEP_BACKWARD) ?
+			         GFC_REVERSE_SET : reverse[m];
 
 		  /* Set forward if forward dependence and not inhibited.  */
-		  if (reverse && reverse[n] == GFC_ENABLE_REVERSE)
-		    reverse[n] = (this_dep == GFC_DEP_FORWARD) ?
-			         GFC_FORWARD_SET : reverse[n];
+		  if (reverse && reverse[m] == GFC_ENABLE_REVERSE)
+		    reverse[m] = (this_dep == GFC_DEP_FORWARD) ?
+			         GFC_FORWARD_SET : reverse[m];
 
 		  /* Flag up overlap if dependence not compatible with
 		     the overall state of the expression.  */
-		  if (reverse && reverse[n] == GFC_REVERSE_SET
+		  if (reverse && reverse[m] == GFC_REVERSE_SET
 		        && this_dep == GFC_DEP_FORWARD)
 		    {
-	              reverse[n] = GFC_INHIBIT_REVERSE;
+	              reverse[m] = GFC_INHIBIT_REVERSE;
 		      this_dep = GFC_DEP_OVERLAP;
 		    }
-		  else if (reverse && reverse[n] == GFC_FORWARD_SET
+		  else if (reverse && reverse[m] == GFC_FORWARD_SET
 		        && this_dep == GFC_DEP_BACKWARD)
 		    {
-	              reverse[n] = GFC_INHIBIT_REVERSE;
+	              reverse[m] = GFC_INHIBIT_REVERSE;
 		      this_dep = GFC_DEP_OVERLAP;
 		    }
 
 		  /* If no intention of reversing or reversing is explicitly
 		     inhibited, convert backward dependence to overlap.  */
 		  if ((reverse == NULL && this_dep == GFC_DEP_BACKWARD)
-		      || (reverse != NULL && reverse[n] == GFC_INHIBIT_REVERSE))
+		      || (reverse != NULL && reverse[m] == GFC_INHIBIT_REVERSE))
 		    this_dep = GFC_DEP_OVERLAP;
 		}
 
