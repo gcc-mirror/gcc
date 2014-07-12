@@ -2115,6 +2115,7 @@ lto_output (void)
 	      && lto_symtab_encoder_encode_initializer_p (encoder, node)
 	      && !node->alias)
 	    {
+	      timevar_push (TV_IPA_LTO_CTORS_OUT);
 #ifdef ENABLE_CHECKING
 	      gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
 	      bitmap_set_bit (output, DECL_UID (node->decl));
@@ -2129,6 +2130,7 @@ lto_output (void)
 	      gcc_assert (lto_get_out_decl_state () == decl_state);
 	      lto_pop_out_decl_state ();
 	      lto_record_function_out_decl_state (node->decl, decl_state);
+	      timevar_pop (TV_IPA_LTO_CTORS_OUT);
 	    }
 	}
     }

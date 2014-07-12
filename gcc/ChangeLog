@@ -1,3 +1,12 @@
+2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* timevar.def (TV_IPA_LTO_DECL_INIT_IO): Remove.
+	(TV_IPA_LTO_CTORS_IN, TV_IPA_LTO_CTORS_OUT): New timevar.
+	* cgraph.c (cgraph_get_body): Push GIMPLE_IN timevar.
+	(varpool_get_constructor): Push CTORS_IN timevar.
+	* lto-streamer-out.c (lto_output): Push TV_IPA_LTO_CTORS_OUT
+	timevar.
+
 2014-07-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-builtin-types.def: Add USHORT_FTYPE_VOID.

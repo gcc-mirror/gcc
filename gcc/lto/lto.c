@@ -3094,12 +3094,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
 
-  timevar_push (TV_IPA_LTO_DECL_INIT_IO);
-
   /* Indicate that the cgraph is built and ready.  */
   cgraph_function_flags_ready = true;
 
-  timevar_pop (TV_IPA_LTO_DECL_INIT_IO);
   ggc_free (all_file_decl_data);
   all_file_decl_data = NULL;
 }
@@ -3117,9 +3114,6 @@ materialize_cgraph (void)
     fprintf (stderr,
 	     flag_wpa ? "Materializing decls:" : "Reading function bodies:");
 
-  /* Now that we have input the cgraph, we need to clear all of the aux
-     nodes and read the functions if we are not running in WPA mode.  */
-  timevar_push (TV_IPA_LTO_GIMPLE_IN);
 
   FOR_EACH_FUNCTION (node)
     {
@@ -3130,7 +3124,6 @@ materialize_cgraph (void)
 	}
     }
 
-  timevar_pop (TV_IPA_LTO_GIMPLE_IN);
 
   /* Start the appropriate timer depending on the mode that we are
      operating in.  */
