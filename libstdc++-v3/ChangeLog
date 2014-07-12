@@ -1,3 +1,17 @@
+2014-07-11  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Add the logistic_distribution as an extension.
+	* include/ext/random: Add the logistic_distribution.
+	* include/ext/random.tcc: Add the logistic_distribution.
+	* testsuite/ext/random/logistic_distribution/cons/parms.cc: New.
+	* testsuite/ext/random/logistic_distribution/cons/default.cc: New.
+	* testsuite/ext/random/logistic_distribution/requirements/typedefs.cc:
+	New.
+	* testsuite/ext/random/logistic_distribution/operators/inequal.cc: New.
+	* testsuite/ext/random/logistic_distribution/operators/equal.cc: New.
+	* testsuite/ext/random/logistic_distribution/operators/serialize.cc:
+	New.
+
 2014-07-11  Samuel Bronson  <naesten@gmail.com>
 
 	* testsuite/lib/libstdc++.exp  (libstdc++_init): Set $GCC_COLORS=""
