@@ -1,3 +1,10 @@
+2014-07-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61780
+	* dependency.c (gfc_dep_resolver): Index the 'reverse' array so
+	that elements are skipped. This then correctly aligns 'reverse'
+	with the scalarizer loops.
+
 2014-07-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/61628
