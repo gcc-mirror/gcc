@@ -130,6 +130,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "demangle.h"
 #include "dbgcnt.h"
+#include "stor-layout.h"
+#include "intl.h"
+
+static bool odr_types_equivalent_p (tree, tree, bool, bool *, pointer_set_t *);
 
 static bool odr_violation_reported = false;
 
@@ -431,6 +435,498 @@ set_type_binfo (tree type, tree binfo)
       gcc_assert (!TYPE_BINFO (type));
 }
 
+/* Compare T2 and T2 based on name or structure.  */
+
+static bool
+odr_subtypes_equivalent_p (tree t1, tree t2, pointer_set_t *visited)
+{
+  bool an1, an2;
+
+  /* This can happen in incomplete types that should be handled earlier.  */
+  gcc_assert (t1 && t2);
+
+  t1 = main_odr_variant (t1);
+  t2 = main_odr_variant (t2);
+  if (t1 == t2)
+    return true;
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return false;
+  if ((TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
+    return false;
+  if (TYPE_NAME (t1) && DECL_NAME (TYPE_NAME (t1)) != DECL_NAME (TYPE_NAME (t2)))
+    return false;
+
+  /* Anonymous namespace types must match exactly.  */
+  an1 = type_in_anonymous_namespace_p (t1);
+  an2 = type_in_anonymous_namespace_p (t2);
+  if (an1 != an2 || an1)
+    return false;
+
+  /* For types where we can not establish ODR equivalency, recurse and deeply
+     compare.  */
+  if (TREE_CODE (t1) != RECORD_TYPE
+      || !TYPE_BINFO (t1) || !TYPE_BINFO (t2)
+      || !polymorphic_type_binfo_p (TYPE_BINFO (t1))
+      || !polymorphic_type_binfo_p (TYPE_BINFO (t2)))
+    {
+      /* This should really be a pair hash, but for the moment we do not need
+	 100% reliability and it would be better to compare all ODR types so
+	 recursion here is needed only for component types.  */
+      if (pointer_set_insert (visited, t1))
+	return true;
+      return odr_types_equivalent_p (t1, t2, true, NULL, visited);
+    }
+  return types_same_for_odr (t1, t2);
+}
+
+/* Output ODR violation warning about T1 and T2 with REASON.
+   Display location of ST1 and ST2 if REASON speaks about field or
+   method of the type.
+   If WARN is false, do nothing. Set WARNED if warning was indeed
+   output.  */
+
+void
+warn_odr (tree t1, tree t2, tree st1, tree st2,
+	  bool warn, bool *warned, const char *reason)
+{
+  tree decl2 = TYPE_NAME (t2);
+
+  if (!warn)
+    return;
+  if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (t1)), OPT_Wodr,
+		   "type %qT violates one definition rule",
+		   t1))
+    return;
+  if (!st1)
+    ;
+  else if (TREE_CODE (st1) == FIELD_DECL)
+    {
+      inform (DECL_SOURCE_LOCATION (decl2),
+	      "a different type is defined in another translation unit");
+      inform (DECL_SOURCE_LOCATION (st1),
+	      "the first difference of corresponding definitions is field %qD",
+	      st1);
+      decl2 = st2;
+    }
+  else if (TREE_CODE (st1) == FUNCTION_DECL)
+    {
+      inform (DECL_SOURCE_LOCATION (decl2),
+	      "a different type is defined in another translation unit");
+      inform (DECL_SOURCE_LOCATION (st1),
+	      "the first difference of corresponding definitions is method %qD",
+	      st1);
+      decl2 = st2;
+    }
+  else
+    return;
+  inform (DECL_SOURCE_LOCATION (decl2), reason);
+
+  if (warned)
+    *warned = true;
+}
+
+/* We already warned about ODR mismatch.  T1 and T2 ought to be equivalent
+   because they are used on same place in ODR matching types.
+   They are not; inform the user.  */
+
+void
+warn_types_mismatch (tree t1, tree t2)
+{
+  if (!TYPE_NAME (t1) || !TYPE_NAME (t2))
+    return;
+  /* In Firefox it is a common bug to have same types but in
+     different namespaces.  Be a bit more informative on
+     this.  */
+  if (TYPE_CONTEXT (t1) && TYPE_CONTEXT (t2)
+      && (((TREE_CODE (TYPE_CONTEXT (t1)) == NAMESPACE_DECL)
+	    != (TREE_CODE (TYPE_CONTEXT (t2)) == NAMESPACE_DECL))
+	   || (TREE_CODE (TYPE_CONTEXT (t1)) == NAMESPACE_DECL
+	       && (DECL_NAME (TYPE_CONTEXT (t1)) !=
+		   DECL_NAME (TYPE_CONTEXT (t2))))))
+    inform (DECL_SOURCE_LOCATION (TYPE_NAME (t1)),
+	    "type %qT should match type %qT but is defined "
+	    "in different namespace  ",
+	    t1, t2);
+  else
+    inform (DECL_SOURCE_LOCATION (TYPE_NAME (t1)),
+	    "type %qT should match type %qT",
+	    t1, t2);
+  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t2)),
+	  "the incompatible type is defined here");
+}
+
+/* Compare T1 and T2, report ODR violations if WARN is true and set
+   WARNED to true if anything is reported.  Return true if types match.
+   If true is returned, the types are also compatible in the sense of
+   gimple_canonical_types_compatible_p.  */
+
+static bool
+odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, pointer_set_t *visited)
+{
+  /* Check first for the obvious case of pointer identity.  */
+  if (t1 == t2)
+    return true;
+  gcc_assert (!type_in_anonymous_namespace_p (t1));
+  gcc_assert (!type_in_anonymous_namespace_p (t2));
+
+  /* Can't be the same type if the types don't have the same code.  */
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+	        G_("a different type is defined in another translation unit"));
+      return false;
+    }
+
+  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+	        G_("a type with different qualifiers is defined in another "
+		   "translation unit"));
+      return false;
+    }
+
+  if (comp_type_attributes (t1, t2) != 1)
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+	        G_("a type with attributes "
+		   "is defined in another translation unit"));
+      return false;
+    }
+
+  if (TREE_CODE (t1) == ENUMERAL_TYPE)
+    {
+      tree v1, v2;
+      for (v1 = TYPE_VALUES (t1), v2 = TYPE_VALUES (t2);
+	   v1 && v2 ; v1 = TREE_CHAIN (v1), v2 = TREE_CHAIN (v2))
+	{
+	  if (TREE_PURPOSE (v1) != TREE_PURPOSE (v2))
+	    {
+	      warn_odr (t1, t2, NULL, NULL, warn, warned,
+			G_("an enum with different value name"
+			   " is defined in another translation unit"));
+	      return false;
+	    }
+	  if (TREE_VALUE (v1) != TREE_VALUE (v2)
+	      && !operand_equal_p (DECL_INITIAL (TREE_VALUE (v1)),
+				   DECL_INITIAL (TREE_VALUE (v2)), 0))
+	    {
+	      warn_odr (t1, t2, NULL, NULL, warn, warned,
+			G_("an enum with different values is defined"
+			   " in another translation unit"));
+	      return false;
+	    }
+	}
+      if (v1 || v2)
+	{
+	  warn_odr (t1, t2, NULL, NULL, warn, warned,
+		    G_("an enum with mismatching number of values "
+		       "is defined in another translation unit"));
+	  return false;
+	}
+    }
+
+  /* Non-aggregate types can be handled cheaply.  */
+  if (INTEGRAL_TYPE_P (t1)
+      || SCALAR_FLOAT_TYPE_P (t1)
+      || FIXED_POINT_TYPE_P (t1)
+      || TREE_CODE (t1) == VECTOR_TYPE
+      || TREE_CODE (t1) == COMPLEX_TYPE
+      || TREE_CODE (t1) == OFFSET_TYPE
+      || POINTER_TYPE_P (t1))
+    {
+      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2))
+	{
+	  warn_odr (t1, t2, NULL, NULL, warn, warned,
+		    G_("a type with different precision is defined "
+		       "in another translation unit"));
+	  return false;
+	}
+      if (TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
+	{
+	  warn_odr (t1, t2, NULL, NULL, warn, warned,
+		    G_("a type with different signedness is defined "
+		       "in another translation unit"));
+	  return false;
+	}
+
+      if (TREE_CODE (t1) == INTEGER_TYPE
+	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
+	{
+	  /* char WRT uint_8?  */
+	  warn_odr (t1, t2, NULL, NULL, warn, warned,
+		    G_("a different type is defined in another "
+		       "translation unit"));
+	  return false;
+	}
+
+      /* For canonical type comparisons we do not want to build SCCs
+	 so we cannot compare pointed-to types.  But we can, for now,
+	 require the same pointed-to type kind and match what
+	 useless_type_conversion_p would do.  */
+      if (POINTER_TYPE_P (t1))
+	{
+	  if (TYPE_ADDR_SPACE (TREE_TYPE (t1))
+	      != TYPE_ADDR_SPACE (TREE_TYPE (t2)))
+	    {
+	      warn_odr (t1, t2, NULL, NULL, warn, warned,
+			G_("it is defined as a pointer in different address "
+			   "space in another translation unit"));
+	      return false;
+	    }
+
+	  if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2), visited))
+	    {
+	      warn_odr (t1, t2, NULL, NULL, warn, warned,
+			G_("it is defined as a pointer to different type "
+			   "in another translation unit"));
+	      if (warn && warned)
+	        warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2));
+	      return false;
+	    }
+	}
+
+      /* Tail-recurse to components.  */
+      if ((TREE_CODE (t1) == VECTOR_TYPE || TREE_CODE (t1) == COMPLEX_TYPE)
+	  && !odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2), visited))
+	{
+	  /* Probably specific enough.  */
+	  warn_odr (t1, t2, NULL, NULL, warn, warned,
+		    G_("a different type is defined "
+		       "in another translation unit"));
+	  if (warn && warned)
+	    warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2));
+	  return false;
+	}
+
+      gcc_assert (operand_equal_p (TYPE_SIZE (t1), TYPE_SIZE (t2), 0));
+      gcc_assert (operand_equal_p (TYPE_SIZE_UNIT (t1),
+				   TYPE_SIZE_UNIT (t2), 0));
+      gcc_assert (TYPE_MODE (t1) == TYPE_MODE (t2));
+
+      return true;
+    }
+
+  /* Do type-specific comparisons.  */
+  switch (TREE_CODE (t1))
+    {
+    case ARRAY_TYPE:
+      {
+	/* Array types are the same if the element types are the same and
+	   the number of elements are the same.  */
+	if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2), visited))
+	  {
+	    warn_odr (t1, t2, NULL, NULL, warn, warned,
+		      G_("a different type is defined in another "
+			 "translation unit"));
+	    if (warn && warned)
+	      warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2));
+	  }
+	gcc_assert (TYPE_STRING_FLAG (t1) == TYPE_STRING_FLAG (t2));
+	gcc_assert (TYPE_NONALIASED_COMPONENT (t1)
+		    == TYPE_NONALIASED_COMPONENT (t2));
+
+	tree i1 = TYPE_DOMAIN (t1);
+	tree i2 = TYPE_DOMAIN (t2);
+
+	/* For an incomplete external array, the type domain can be
+	   NULL_TREE.  Check this condition also.  */
+	if (i1 == NULL_TREE || i2 == NULL_TREE)
+	  return true;
+
+	tree min1 = TYPE_MIN_VALUE (i1);
+	tree min2 = TYPE_MIN_VALUE (i2);
+	tree max1 = TYPE_MAX_VALUE (i1);
+	tree max2 = TYPE_MAX_VALUE (i2);
+
+	/* In C++, minimums should be always 0.  */
+	gcc_assert (min1 == min2);
+	if (!operand_equal_p (max1, max2, 0))
+	  {
+	    warn_odr (t1, t2, NULL, NULL, warn, warned,
+		      G_("an array of different size is defined "
+			 "in another translation unit"));
+	    return false;
+	  }
+	gcc_assert (operand_equal_p (TYPE_SIZE (t1), TYPE_SIZE (t2), 0));
+	gcc_assert (operand_equal_p (TYPE_SIZE_UNIT (t1),
+				     TYPE_SIZE_UNIT (t2), 0));
+      }
+      return true;
+
+    case METHOD_TYPE:
+    case FUNCTION_TYPE:
+      /* Function types are the same if the return type and arguments types
+	 are the same.  */
+      if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2), visited))
+	{
+	  warn_odr (t1, t2, NULL, NULL, warn, warned,
+		    G_("has different return value "
+		       "in another translation unit"));
+	  if (warn && warned)
+	    warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2));
+	  return false;
+	}
+
+      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
+	return true;
+      else
+	{
+	  tree parms1, parms2;
+
+	  for (parms1 = TYPE_ARG_TYPES (t1), parms2 = TYPE_ARG_TYPES (t2);
+	       parms1 && parms2;
+	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
+	    {
+	      if (!odr_subtypes_equivalent_p
+		     (TREE_VALUE (parms1), TREE_VALUE (parms2), visited))
+		{
+		  warn_odr (t1, t2, NULL, NULL, warn, warned,
+			    G_("has different parameters in another "
+			       "translation unit"));
+		  if (warn && warned)
+		    warn_types_mismatch (TREE_VALUE (parms1),
+					 TREE_VALUE (parms2));
+		  return false;
+		}
+	    }
+
+	  if (parms1 || parms2)
+	    {
+	      warn_odr (t1, t2, NULL, NULL, warn, warned,
+			G_("has different parameters "
+			   "in another translation unit"));
+	      return false;
+	    }
+
+	  return true;
+	}
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      {
+	tree f1, f2;
+
+	/* For aggregate types, all the fields must be the same.  */
+	if (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2))
+	  {
+	    for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
+		 f1 || f2;
+		 f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
+	      {
+		/* Skip non-fields.  */
+		while (f1 && TREE_CODE (f1) != FIELD_DECL)
+		  f1 = TREE_CHAIN (f1);
+		while (f2 && TREE_CODE (f2) != FIELD_DECL)
+		  f2 = TREE_CHAIN (f2);
+		if (!f1 || !f2)
+		  break;
+		if (DECL_ARTIFICIAL (f1) != DECL_ARTIFICIAL (f2))
+		  break;
+		if (DECL_NAME (f1) != DECL_NAME (f2)
+		    && !DECL_ARTIFICIAL (f1))
+		  {
+		    warn_odr (t1, t2, f1, f2, warn, warned,
+			      G_("a field with different name is defined "
+				 "in another translation unit"));
+		    return false;
+		  }
+		if (!odr_subtypes_equivalent_p (TREE_TYPE (f1), TREE_TYPE (f2), visited))
+		  {
+		    /* Do not warn about artificial fields and just go into generic
+		       field mismatch warning.  */
+		    if (DECL_ARTIFICIAL (f1))
+		      break;
+
+		    warn_odr (t1, t2, f1, f2, warn, warned,
+			      G_("a field of same name but different type "
+				 "is defined in another translation unit"));
+		    if (warn && warned)
+		      warn_types_mismatch (TREE_TYPE (f1), TREE_TYPE (f2));
+		    return false;
+		  }
+		if (!gimple_compare_field_offset (f1, f2))
+		  {
+		    /* Do not warn about artificial fields and just go into generic
+		       field mismatch warning.  */
+		    if (DECL_ARTIFICIAL (f1))
+		      break;
+		    warn_odr (t1, t2, t1, t2, warn, warned,
+			      G_("fields has different layout "
+				 "in another translation unit"));
+		    return false;
+		  }
+		gcc_assert (DECL_NONADDRESSABLE_P (f1)
+			    == DECL_NONADDRESSABLE_P (f2));
+	      }
+
+	    /* If one aggregate has more fields than the other, they
+	       are not the same.  */
+	    if (f1 || f2)
+	      {
+		warn_odr (t1, t2, NULL, NULL, warn, warned,
+			  G_("a type with different number of fields "
+			     "is defined in another translation unit"));
+		return false;
+	      }
+	    if ((TYPE_MAIN_VARIANT (t1) == t1 || TYPE_MAIN_VARIANT (t2) == t2)
+		&& (TYPE_METHODS (TYPE_MAIN_VARIANT (t1))
+		    != TYPE_METHODS (TYPE_MAIN_VARIANT (t2))))
+	      {
+		for (f1 = TYPE_METHODS (TYPE_MAIN_VARIANT (t1)),
+		     f2 = TYPE_METHODS (TYPE_MAIN_VARIANT (t2));
+		     f1 && f2 ; f1 = DECL_CHAIN (f1), f2 = DECL_CHAIN (f2))
+		  {
+		    if (DECL_ASSEMBLER_NAME (f1) != DECL_ASSEMBLER_NAME (f2))
+		      {
+			warn_odr (t1, t2, f1, f2, warn, warned,
+				  G_("a different method of same type "
+				     "is defined in another translation unit"));
+			return false;
+		      }
+		    if (DECL_VIRTUAL_P (f1) != DECL_VIRTUAL_P (f2))
+		      {
+			warn_odr (t1, t2, f1, f2, warn, warned,
+				  G_("s definition that differs by virtual "
+				     "keyword in another translation unit"));
+			return false;
+		      }
+		    if (DECL_VINDEX (f1) != DECL_VINDEX (f2))
+		      {
+			warn_odr (t1, t2, f1, f2, warn, warned,
+				  G_("virtual table layout differs in another "
+				     "translation unit"));
+			return false;
+		      }
+		    if (odr_subtypes_equivalent_p (TREE_TYPE (f1), TREE_TYPE (f2), visited))
+		      {
+			warn_odr (t1, t2, f1, f2, warn, warned,
+				  G_("method with incompatible type is defined "
+				     "in another translation unit"));
+			return false;
+		      }
+		  }
+		if (f1 || f2)
+		  {
+		    warn_odr (t1, t2, NULL, NULL, warn, warned,
+			      G_("a type with different number of methods "
+				 "is defined in another translation unit"));
+		    return false;
+		  }
+	      }
+	    gcc_assert (operand_equal_p (TYPE_SIZE (t1), TYPE_SIZE (t2), 0));
+	    gcc_assert (operand_equal_p (TYPE_SIZE_UNIT (t1),
+					 TYPE_SIZE_UNIT (t2), 0));
+	  }
+
+	return true;
+      }
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* TYPE is equivalent to VAL by ODR, but its tree representation differs
    from VAL->type.  This may happen in LTO where tree merging did not merge
    all variants of the same type.  It may or may not mean the ODR violation.
@@ -459,31 +955,23 @@ add_type_duplicate (odr_type val, tree type)
     {
       bool merge = true;
       bool base_mismatch = false;
-      bool warned = 0;
       unsigned int i,j;
+      bool warned = false;
+      pointer_set_t *visited = pointer_set_create ();
 
       gcc_assert (in_lto_p);
       vec_safe_push (val->types, type);
 
       /* First we compare memory layout.  */
-      if (!types_compatible_p (val->type, type))
+      if (!odr_types_equivalent_p (val->type, type, !flag_ltrans && !val->odr_violated,
+				   &warned, visited))
 	{
 	  merge = false;
 	  odr_violation_reported = true;
-	  if (BINFO_VTABLE (TYPE_BINFO (val->type))
-	      && warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)), 0,
-			     "type %qD violates one definition rule  ",
-			     type))
-	    {
-	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (val->type)),
-		      "a type with the same name but different layout is "
-		      "defined in another translation unit");
-	      warned = true;
-	    }
 	  val->odr_violated = true;
 	  if (cgraph_dump_file)
 	    {
-	      fprintf (cgraph_dump_file, "ODR violation or merging or ODR type bug?\n");
+	      fprintf (cgraph_dump_file, "ODR violation\n");
 	    
 	      print_node (cgraph_dump_file, "", val->type, 0);
 	      putc ('\n',cgraph_dump_file);
@@ -491,6 +979,7 @@ add_type_duplicate (odr_type val, tree type)
 	      putc ('\n',cgraph_dump_file);
 	    }
 	}
+      pointer_set_destroy (visited);
 
       /* Next sanity check that bases are the same.  If not, we will end
 	 up producing wrong answers.  */
@@ -516,13 +1005,10 @@ add_type_duplicate (odr_type val, tree type)
 	      merge = false;
 	      odr_violation_reported = true;
 
-	      if (!warned
-		  && warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)), 0,
-			         "type %qD violates one definition rule  ",
-			         type))
-		inform (DECL_SOURCE_LOCATION (TYPE_NAME (val->type)),
-			"a type with the same name but different bases is "
-			"defined in another translation unit");
+	      if (!warned && !val->odr_violated)
+		warn_odr (type, val->type, NULL, NULL, !warned, &warned,
+			  "a type with the same name but different bases is "
+			  "defined in another translation unit");
 	      val->odr_violated = true;
 	      if (cgraph_dump_file)
 		{
@@ -625,7 +1111,6 @@ get_odr_type (tree type, bool insert)
     }
   else
     {
-
       val = ggc_cleared_alloc<odr_type_d> ();
       val->type = type;
       val->bases = vNULL;

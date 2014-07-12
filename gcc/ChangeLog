@@ -1,5 +1,18 @@
 2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (type_in_anonymous_namespace_p): Ignore TREE_PUBLIC
+	on builtin types.
+	* ipa-devirt.c: Include stor-layout.h and intl.h
+	(odr_subtypes_equivalent_p): New function.
+	(warn_odr): New function.
+	(warn_type_mismatch): New function.
+	(odr_types_equivalent_p): New function.
+	(add_type_duplicate): Use it.
+	* common.opt (Wodr): New flag.
+	* doc/invoke.texi (Wodr): Document new warning.
+
+2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	* timevar.def (TV_IPA_LTO_DECL_INIT_IO): Remove.
 	(TV_IPA_LTO_CTORS_IN, TV_IPA_LTO_CTORS_OUT): New timevar.
 	* cgraph.c (cgraph_get_body): Push GIMPLE_IN timevar.
