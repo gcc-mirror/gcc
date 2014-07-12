@@ -120,6 +120,14 @@ typedef enum
 }
 libgfortran_stat_codes;
 
+typedef enum
+{
+  GFC_CAF_ATOMIC_ADD = 1,
+  GFC_CAF_ATOMIC_AND,
+  GFC_CAF_ATOMIC_OR,
+  GFC_CAF_ATOMIC_XOR
+} libcaf_atomic_codes;
+
 /* Default unit number for preconnected standard input and output.  */
 #define GFC_STDIN_UNIT_NUMBER 5
 #define GFC_STDOUT_UNIT_NUMBER 6

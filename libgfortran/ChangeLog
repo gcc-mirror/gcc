@@ -1,3 +1,12 @@
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_atomic_define,
+	_gfortran_caf_atomic_ref, _gfortran_caf_atomic_op,
+	_gfortran_caf_atomic_cas): New prototypes.
+	* caf/single.c (_gfortran_caf_atomic_define,
+	_gfortran_caf_atomic_ref, _gfortran_caf_atomic_op,
+	_gfortran_caf_atomic_cas): New functions.
+
 2014-07-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* config/fpu-*.h (get_fpu_rounding_mode, set_fpu_rounding_mode,
