@@ -9,7 +9,6 @@
 
 #include "runtime.h"
 #include "array.h"
-#include "go-panic.h"
 
 // The GOTRACEBACK environment variable controls the
 // behavior of a Go program that is crashing and exiting.
@@ -221,15 +220,6 @@ runtime_tickspersecond(void)
 	return res;
 }
 
-int64 runtime_pprof_runtime_cyclesPerSecond(void)
-     __asm__ (GOSYM_PREFIX "runtime_pprof.runtime_cyclesPerSecond");
-
-int64
-runtime_pprof_runtime_cyclesPerSecond(void)
-{
-	return runtime_tickspersecond();
-}
-
 // Called to initialize a new m (including the bootstrap m).
 // Called on the parent thread (main thread in case of bootstrap), can allocate memory.
 void
@@ -340,19 +330,6 @@ runtime_timediv(int64 v, int32 div, int32 *rem)
 // Setting the max stack size doesn't really do anything for gccgo.
 
 uintptr runtime_maxstacksize = 1<<20; // enough until runtime.main sets it for real
-
-intgo runtime_debug_setMaxStack(intgo)
-	__asm__ (GOSYM_PREFIX "runtime_debug.setMaxStack");
-
-intgo
-runtime_debug_setMaxStack(intgo in)
-{
-	intgo out;
-
-	out = runtime_maxstacksize;
-	runtime_maxstacksize = in;
-	return out;
-}
 
 void memclrBytes(Slice)
      __asm__ (GOSYM_PREFIX "runtime.memclrBytes");

@@ -1174,6 +1174,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 #endif
 
 		default:
+			runtime_printf("runtime: invalid GC instruction %p at %p\n", pc[0], pc);
 			runtime_throw("scanblock: invalid GC instruction");
 			return;
 		}
@@ -2449,13 +2450,9 @@ runtime_debug_readGCStats(Slice *pauses)
 	pauses->__count = n+3;
 }
 
-intgo runtime_debug_setGCPercent(intgo)
-  __asm__("runtime_debug.setGCPercent");
-
-intgo
-runtime_debug_setGCPercent(intgo in)
-{
-	intgo out;
+int32
+runtime_setgcpercent(int32 in) {
+	int32 out;
 
 	runtime_lock(&runtime_mheap);
 	if(gcpercent == GcpercentUnknown)

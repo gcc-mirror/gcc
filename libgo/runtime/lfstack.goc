@@ -4,6 +4,7 @@
 
 // Lock-free stack.
 
+package runtime
 #include "runtime.h"
 #include "arch.h"
 
@@ -69,11 +70,10 @@ runtime_lfstackpop(uint64 *head)
 	}
 }
 
-LFNode* runtime_lfstackpop2(uint64*)
-  __asm__ (GOSYM_PREFIX "runtime.lfstackpop2");
+func lfstackpush_go(head *uint64, node *LFNode) {
+	runtime_lfstackpush(head, node);
+}
 
-LFNode*
-runtime_lfstackpop2(uint64 *head)
-{
-	return runtime_lfstackpop(head);
+func lfstackpop_go(head *uint64) (node *LFNode) {
+	node = runtime_lfstackpop(head);
 }

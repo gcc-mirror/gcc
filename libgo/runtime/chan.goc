@@ -2,86 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+package runtime
 #include "runtime.h"
 #include "arch.h"
 #include "go-type.h"
 #include "race.h"
 #include "malloc.h"
-
-typedef	struct	WaitQ	WaitQ;
-typedef	struct	SudoG	SudoG;
-typedef	struct	Select	Select;
-typedef	struct	Scase	Scase;
-
-typedef struct	__go_type_descriptor	Type;
-typedef struct	__go_channel_type	ChanType;
-
-struct	SudoG
-{
-	G*	g;
-	uint32*	selectdone;
-	SudoG*	link;
-	int64	releasetime;
-	byte*	elem;		// data element
-};
-
-struct	WaitQ
-{
-	SudoG*	first;
-	SudoG*	last;
-};
-
-// The garbage collector is assuming that Hchan can only contain pointers into the stack
-// and cannot contain pointers into the heap.
-struct	Hchan
-{
-	uintgo	qcount;			// total data in the q
-	uintgo	dataqsiz;		// size of the circular q
-	uint16	elemsize;
-	uint8	elemalign;
-	uint8	pad;			// ensures proper alignment of the buffer that follows Hchan in memory
-	bool	closed;
-	const Type* elemtype;		// element type
-	uintgo	sendx;			// send index
-	uintgo	recvx;			// receive index
-	WaitQ	recvq;			// list of recv waiters
-	WaitQ	sendq;			// list of send waiters
-	Lock;
-};
+#include "chan.h"
 
 uint32 runtime_Hchansize = sizeof(Hchan);
-
-// Buffer follows Hchan immediately in memory.
-// chanbuf(c, i) is pointer to the i'th slot in the buffer.
-#define chanbuf(c, i) ((byte*)((c)+1)+(uintptr)(c)->elemsize*(i))
-
-enum
-{
-	debug = 0,
-
-	// Scase.kind
-	CaseRecv,
-	CaseSend,
-	CaseDefault,
-};
-
-struct	Scase
-{
-	SudoG	sg;			// must be first member (cast to Scase)
-	Hchan*	chan;			// chan
-	uint16	kind;
-	uint16	index;			// index to return
-	bool*	receivedp;		// pointer to received bool (recv2)
-};
-
-struct	Select
-{
-	uint16	tcase;			// total count of scase[]
-	uint16	ncase;			// currently filled scase[]
-	uint16*	pollorder;		// case poll order
-	Hchan**	lockorder;		// channel lock order
-	Scase	scase[1];		// one per case (in order of appearance)
-};
 
 static	void	dequeueg(WaitQ*);
 static	SudoG*	dequeue(WaitQ*);
@@ -120,21 +49,10 @@ makechan(ChanType *t, int64 hint)
 	return c;
 }
 
-// For reflect
-//	func makechan(typ *ChanType, size uint64) (chan)
-Hchan *reflect_makechan(ChanType *, uint64)
-  __asm__ (GOSYM_PREFIX "reflect.makechan");
-
-Hchan *
-reflect_makechan(ChanType *t, uint64 size)
-{
-	Hchan *c;
-
+func reflect.makechan(t *ChanType, size uint64) (c *Hchan) {
 	c = makechan(t, size);
-	return c;
 }
 
-// makechan(t *ChanType, hint int64) (hchan *chan any);
 Hchan*
 __go_new_channel(ChanType *t, uintptr hint)
 {
@@ -487,8 +405,6 @@ runtime_chanrecv2(ChanType *t, Hchan* c, byte* v)
 	return received;
 }
 
-// func selectnbsend(c chan any, elem *any) bool
-//
 // compiler implements
 //
 //	select {
@@ -506,17 +422,10 @@ runtime_chanrecv2(ChanType *t, Hchan* c, byte* v)
 //		... bar
 //	}
 //
-_Bool
-runtime_selectnbsend(ChanType *t, Hchan *c, byte *val)
-{
-	bool res;
-
-	res = chansend(t, c, val, false, runtime_getcallerpc(&t));
-	return (_Bool)res;
+func selectnbsend(t *ChanType, c *Hchan, elem *byte) (selected bool) {
+	selected = chansend(t, c, elem, false, runtime_getcallerpc(&t));
 }
 
-// func selectnbrecv(elem *any, c chan any) bool
-//
 // compiler implements
 //
 //	select {
@@ -534,17 +443,10 @@ runtime_selectnbsend(ChanType *t, Hchan *c, byte *val)
 //		... bar
 //	}
 //
-_Bool
-runtime_selectnbrecv(ChanType *t, byte *v, Hchan *c)
-{
-	bool selected;
-
-	selected = chanrecv(t, c, v, false, nil);
-	return (_Bool)selected;
+func selectnbrecv(t *ChanType, elem *byte, c *Hchan) (selected bool) {
+	selected = chanrecv(t, c, elem, false, nil);
 }
 
-// func selectnbrecv2(elem *any, ok *bool, c chan any) bool
-//
 // compiler implements
 //
 //	select {
@@ -562,76 +464,27 @@ runtime_selectnbrecv(ChanType *t, byte *v, Hchan *c)
 //		... bar
 //	}
 //
-_Bool
-runtime_selectnbrecv2(ChanType *t, byte *v, _Bool *received, Hchan *c)
-{
-	bool selected;
+func selectnbrecv2(t *ChanType, elem *byte, received *bool, c *Hchan) (selected bool) {
 	bool r;
 
-	r = false;
-	selected = chanrecv(t, c, v, false, received == nil ? nil : &r);
+	selected = chanrecv(t, c, elem, false, received == nil ? nil : &r);
 	if(received != nil)
 		*received = r;
-	return selected;
 }
 
-// For reflect:
-//	func chansend(c chan, val *any, nb bool) (selected bool)
-// where val points to the data to be sent.
-//
-// The "uintptr selected" is really "bool selected" but saying
-// uintptr gets us the right alignment for the output parameter block.
-
-_Bool reflect_chansend(ChanType *, Hchan *, byte *, _Bool)
-  __asm__ (GOSYM_PREFIX "reflect.chansend");
-
-_Bool
-reflect_chansend(ChanType *t, Hchan *c, byte *val, _Bool nb)
-{
-	bool selected;
-
-	selected = chansend(t, c, val, !nb, runtime_getcallerpc(&t));
-	return (_Bool)selected;
+func reflect.chansend(t *ChanType, c *Hchan, elem *byte, nb bool) (selected bool) {
+	selected = chansend(t, c, elem, !nb, runtime_getcallerpc(&t));
 }
 
-// For reflect:
-//	func chanrecv(c chan, nb bool, val *any) (selected, received bool)
-// where val points to a data area that will be filled in with the
-// received value.  val must have the size and type of the channel element type.
-
-struct chanrecv_ret
-{
-	_Bool selected;
-	_Bool received;
-};
-
-struct chanrecv_ret reflect_chanrecv(ChanType *, Hchan *, _Bool, byte *val)
-  __asm__ (GOSYM_PREFIX "reflect.chanrecv");
-
-struct chanrecv_ret
-reflect_chanrecv(ChanType *t, Hchan *c, _Bool nb, byte *val)
-{
-	struct chanrecv_ret ret;
-	bool selected;
-	bool received;
-
+func reflect.chanrecv(t *ChanType, c *Hchan, nb bool, elem *byte) (selected bool, received bool) {
 	received = false;
-	selected = chanrecv(t, c, val, !nb, &received);
-	ret.selected = (_Bool)selected;
-	ret.received = (_Bool)received;
-	return ret;
+	selected = chanrecv(t, c, elem, !nb, &received);
 }
 
 static Select* newselect(int32);
 
-// newselect(size uint32) (sel *byte);
-
-void* runtime_newselect(int32) __asm__ (GOSYM_PREFIX "runtime.newselect");
-
-void*
-runtime_newselect(int32 size)
-{
-	return (void*)newselect(size);
+func newselect(size int32) (sel *byte) {
+ 	sel = (byte*)newselect(size);
 }
 
 static Select*
@@ -666,19 +519,10 @@ newselect(int32 size)
 // cut in half to give stack a chance to split
 static void selectsend(Select *sel, Hchan *c, int index, void *elem);
 
-// selectsend(sel *byte, hchan *chan any, elem *any) (selected bool);
-
-void runtime_selectsend(Select *, Hchan *, void *, int32)
-  __asm__ (GOSYM_PREFIX "runtime.selectsend");
-
-void
-runtime_selectsend(Select *sel, Hchan *c, void *elem, int32 index)
-{
+func selectsend(sel *Select, c *Hchan, elem *byte, index int32) {
 	// nil cases do not compete
-	if(c == nil)
-		return;
-
-	selectsend(sel, c, index, elem);
+	if(c != nil)
+		selectsend(sel, c, index, elem);
 }
 
 static void
@@ -706,34 +550,16 @@ selectsend(Select *sel, Hchan *c, int index, void *elem)
 // cut in half to give stack a chance to split
 static void selectrecv(Select *sel, Hchan *c, int index, void *elem, bool*);
 
-// selectrecv(sel *byte, hchan *chan any, elem *any) (selected bool);
-
-void runtime_selectrecv(Select *, Hchan *, void *, int32)
-  __asm__ (GOSYM_PREFIX "runtime.selectrecv");
-
-void
-runtime_selectrecv(Select *sel, Hchan *c, void *elem, int32 index)
-{
+func selectrecv(sel *Select, c *Hchan, elem *byte, index int32) {
 	// nil cases do not compete
-	if(c == nil)
-		return;
-
-	selectrecv(sel, c, index, elem, nil);
+	if(c != nil)
+		selectrecv(sel, c, index, elem, nil);
 }
 
-// selectrecv2(sel *byte, hchan *chan any, elem *any, received *bool) (selected bool);
-
-void runtime_selectrecv2(Select *, Hchan *, void *, bool *, int32)
-  __asm__ (GOSYM_PREFIX "runtime.selectrecv2");
-
-void
-runtime_selectrecv2(Select *sel, Hchan *c, void *elem, bool *received, int32 index)
-{
+func selectrecv2(sel *Select, c *Hchan, elem *byte, received *bool, index int32) {
 	// nil cases do not compete
-	if(c == nil)
-		return;
-
-	selectrecv(sel, c, index, elem, received);
+	if(c != nil)
+		selectrecv(sel, c, index, elem, received);
 }
 
 static void
@@ -762,13 +588,7 @@ selectrecv(Select *sel, Hchan *c, int index, void *elem, bool *received)
 // cut in half to give stack a chance to split
 static void selectdefault(Select*, int);
 
-// selectdefault(sel *byte) (selected bool);
-
-void runtime_selectdefault(Select *, int32) __asm__ (GOSYM_PREFIX "runtime.selectdefault");
-
-void
-runtime_selectdefault(Select *sel, int32 index)
-{
+func selectdefault(sel *Select, index int32) {
 	selectdefault(sel, index);
 }
 
@@ -844,9 +664,7 @@ selparkcommit(G *gp, void *sel)
 	return true;
 }
 
-void
-runtime_block(void)
-{
+func block() {
 	runtime_park(nil, nil, "select (no cases)");	// forever
 }
 
@@ -854,11 +672,7 @@ static int selectgo(Select**);
 
 // selectgo(sel *byte);
 
-int runtime_selectgo(Select *) __asm__ (GOSYM_PREFIX "runtime.selectgo");
-
-int
-runtime_selectgo(Select *sel)
-{
+func selectgo(sel *Select) (ret int32) {
 	return selectgo(&sel);
 }
 
@@ -1196,22 +1010,7 @@ enum SelectDir {
 	SelectDefault,
 };
 
-// func rselect(cases []runtimeSelect) (chosen int, recvOK bool)
-
-struct rselect_ret {
-	intgo chosen;
-	_Bool recvOK;
-};
-
-struct rselect_ret reflect_rselect(Slice)
-     __asm__ (GOSYM_PREFIX "reflect.rselect");
-
-struct rselect_ret
-reflect_rselect(Slice cases)
-{
-	struct rselect_ret ret;
-	intgo chosen;
-	bool recvOK;
+func reflect.rselect(cases Slice) (chosen int, recvOK bool) {
 	int32 i;
 	Select *sel;
 	runtimeSelect* rcase, *rc;
@@ -1242,29 +1041,15 @@ reflect_rselect(Slice cases)
 	}
 
 	chosen = (intgo)(uintptr)selectgo(&sel);
-
-	ret.chosen = chosen;
-	ret.recvOK = (_Bool)recvOK;
-	return ret;
 }
 
 static void closechan(Hchan *c, void *pc);
 
-// closechan(sel *byte);
-void
-runtime_closechan(Hchan *c)
-{
+func closechan(c *Hchan) {
 	closechan(c, runtime_getcallerpc(&c));
 }
 
-// For reflect
-//	func chanclose(c chan)
-
-void reflect_chanclose(Hchan *) __asm__ (GOSYM_PREFIX "reflect.chanclose");
-
-void
-reflect_chanclose(Hchan *c)
-{
+func reflect.chanclose(c *Hchan) {
 	closechan(c, runtime_getcallerpc(&c));
 }
 
@@ -1326,21 +1111,11 @@ __go_builtin_close(Hchan *c)
 	runtime_closechan(c);
 }
 
-// For reflect
-//	func chanlen(c chan) (len int)
-
-intgo reflect_chanlen(Hchan *) __asm__ (GOSYM_PREFIX "reflect.chanlen");
-
-intgo
-reflect_chanlen(Hchan *c)
-{
-	intgo len;
-
+func reflect.chanlen(c *Hchan) (len int) {
 	if(c == nil)
 		len = 0;
 	else
 		len = c->qcount;
-	return len;
 }
 
 intgo
@@ -1349,21 +1124,11 @@ __go_chan_len(Hchan *c)
 	return reflect_chanlen(c);
 }
 
-// For reflect
-//	func chancap(c chan) int
-
-intgo reflect_chancap(Hchan *) __asm__ (GOSYM_PREFIX "reflect.chancap");
-
-intgo
-reflect_chancap(Hchan *c)
-{
-	intgo cap;
-
+func reflect.chancap(c *Hchan) (cap int) {
 	if(c == nil)
 		cap = 0;
 	else
 		cap = c->dataqsiz;
-	return cap;
 }
 
 intgo

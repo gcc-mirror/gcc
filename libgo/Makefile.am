@@ -446,7 +446,6 @@ runtime_files = \
 	runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c \
 	runtime/go-fieldtrack.c \
-	runtime/go-getgoroot.c \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
@@ -487,16 +486,12 @@ runtime_files = \
 	runtime/go-type-interface.c \
 	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
-	runtime/go-typestring.c \
 	runtime/go-unsafe-new.c \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
 	runtime/go-varargs.c \
-	runtime/chan.c \
-	runtime/cpuprof.c \
 	runtime/env_posix.c \
-	runtime/lfstack.c \
 	$(runtime_lock_files) \
 	runtime/mcache.c \
 	runtime/mcentral.c \
@@ -515,11 +510,15 @@ runtime_files = \
 	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
+	chan.c \
+	cpuprof.c \
 	go-iface.c \
+	lfstack.c \
 	malloc.c \
 	map.c \
 	mprof.c \
 	netpoll.c \
+	rdebug.c \
 	reflect.c \
 	runtime1.c \
 	sema.c \

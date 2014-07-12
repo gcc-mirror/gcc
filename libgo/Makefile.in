@@ -196,7 +196,7 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-check-interface.lo go-construct-map.lo \
 	go-convert-interface.lo go-copy.lo go-defer.lo \
 	go-deferred-recover.lo go-eface-compare.lo \
-	go-eface-val-compare.lo go-fieldtrack.lo go-getgoroot.lo \
+	go-eface-val-compare.lo go-fieldtrack.lo \
 	go-int-array-to-string.lo go-int-to-string.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
@@ -209,16 +209,15 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-strplus.lo go-strslice.lo go-traceback.lo \
 	go-type-complex.lo go-type-eface.lo go-type-error.lo \
 	go-type-float.lo go-type-identity.lo go-type-interface.lo \
-	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
-	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
-	go-unwind.lo go-varargs.lo chan.lo cpuprof.lo env_posix.lo \
-	lfstack.lo $(am__objects_1) mcache.lo mcentral.lo \
-	$(am__objects_2) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
-	$(am__objects_3) panic.lo parfor.lo print.lo proc.lo \
+	go-type-string.lo go-typedesc-equal.lo go-unsafe-new.lo \
+	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unwind.lo \
+	go-varargs.lo env_posix.lo $(am__objects_1) mcache.lo \
+	mcentral.lo $(am__objects_2) mfixalloc.lo mgc0.lo mheap.lo \
+	msize.lo $(am__objects_3) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_4) \
-	go-iface.lo malloc.lo map.lo mprof.lo netpoll.lo reflect.lo \
-	runtime1.lo sema.lo sigqueue.lo string.lo time.lo \
-	$(am__objects_5)
+	chan.lo cpuprof.lo go-iface.lo lfstack.lo malloc.lo map.lo \
+	mprof.lo netpoll.lo rdebug.lo reflect.lo runtime1.lo sema.lo \
+	sigqueue.lo string.lo time.lo $(am__objects_5)
 am_libgo_la_OBJECTS = $(am__objects_6)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -775,7 +774,6 @@ runtime_files = \
 	runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c \
 	runtime/go-fieldtrack.c \
-	runtime/go-getgoroot.c \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
@@ -816,16 +814,12 @@ runtime_files = \
 	runtime/go-type-interface.c \
 	runtime/go-type-string.c \
 	runtime/go-typedesc-equal.c \
-	runtime/go-typestring.c \
 	runtime/go-unsafe-new.c \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
 	runtime/go-varargs.c \
-	runtime/chan.c \
-	runtime/cpuprof.c \
 	runtime/env_posix.c \
-	runtime/lfstack.c \
 	$(runtime_lock_files) \
 	runtime/mcache.c \
 	runtime/mcentral.c \
@@ -844,11 +838,15 @@ runtime_files = \
 	runtime/thread.c \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
+	chan.c \
+	cpuprof.c \
 	go-iface.c \
+	lfstack.c \
 	malloc.c \
 	map.c \
 	mprof.c \
 	netpoll.c \
+	rdebug.c \
 	reflect.c \
 	runtime1.c \
 	sema.c \
@@ -2428,7 +2426,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-eface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-eface-val-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-fieldtrack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-getgoroot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-iface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-int-array-to-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-int-to-string.Plo@am__quote@
@@ -2471,7 +2468,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-string.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-typedesc-equal.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-typestring.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-new.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-newarray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-pointer.Plo@am__quote@
@@ -2499,6 +2495,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parfor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/print.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rdebug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reflect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rtems-task-variable-add.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/runtime.Plo@am__quote@
@@ -2680,13 +2677,6 @@ go-fieldtrack.lo: runtime/go-fieldtrack.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-fieldtrack.c' object='go-fieldtrack.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-fieldtrack.lo `test -f 'runtime/go-fieldtrack.c' || echo '$(srcdir)/'`runtime/go-fieldtrack.c
-
-go-getgoroot.lo: runtime/go-getgoroot.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-getgoroot.lo -MD -MP -MF $(DEPDIR)/go-getgoroot.Tpo -c -o go-getgoroot.lo `test -f 'runtime/go-getgoroot.c' || echo '$(srcdir)/'`runtime/go-getgoroot.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-getgoroot.Tpo $(DEPDIR)/go-getgoroot.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-getgoroot.c' object='go-getgoroot.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-getgoroot.lo `test -f 'runtime/go-getgoroot.c' || echo '$(srcdir)/'`runtime/go-getgoroot.c
 
 go-int-array-to-string.lo: runtime/go-int-array-to-string.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-int-array-to-string.lo -MD -MP -MF $(DEPDIR)/go-int-array-to-string.Tpo -c -o go-int-array-to-string.lo `test -f 'runtime/go-int-array-to-string.c' || echo '$(srcdir)/'`runtime/go-int-array-to-string.c
@@ -2968,13 +2958,6 @@ go-typedesc-equal.lo: runtime/go-typedesc-equal.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-typedesc-equal.lo `test -f 'runtime/go-typedesc-equal.c' || echo '$(srcdir)/'`runtime/go-typedesc-equal.c
 
-go-typestring.lo: runtime/go-typestring.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-typestring.lo -MD -MP -MF $(DEPDIR)/go-typestring.Tpo -c -o go-typestring.lo `test -f 'runtime/go-typestring.c' || echo '$(srcdir)/'`runtime/go-typestring.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-typestring.Tpo $(DEPDIR)/go-typestring.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-typestring.c' object='go-typestring.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-typestring.lo `test -f 'runtime/go-typestring.c' || echo '$(srcdir)/'`runtime/go-typestring.c
-
 go-unsafe-new.lo: runtime/go-unsafe-new.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-unsafe-new.lo -MD -MP -MF $(DEPDIR)/go-unsafe-new.Tpo -c -o go-unsafe-new.lo `test -f 'runtime/go-unsafe-new.c' || echo '$(srcdir)/'`runtime/go-unsafe-new.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-unsafe-new.Tpo $(DEPDIR)/go-unsafe-new.Plo
@@ -3010,33 +2993,12 @@ go-varargs.lo: runtime/go-varargs.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-varargs.lo `test -f 'runtime/go-varargs.c' || echo '$(srcdir)/'`runtime/go-varargs.c
 
-chan.lo: runtime/chan.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT chan.lo -MD -MP -MF $(DEPDIR)/chan.Tpo -c -o chan.lo `test -f 'runtime/chan.c' || echo '$(srcdir)/'`runtime/chan.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/chan.Tpo $(DEPDIR)/chan.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/chan.c' object='chan.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o chan.lo `test -f 'runtime/chan.c' || echo '$(srcdir)/'`runtime/chan.c
-
-cpuprof.lo: runtime/cpuprof.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cpuprof.lo -MD -MP -MF $(DEPDIR)/cpuprof.Tpo -c -o cpuprof.lo `test -f 'runtime/cpuprof.c' || echo '$(srcdir)/'`runtime/cpuprof.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/cpuprof.Tpo $(DEPDIR)/cpuprof.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/cpuprof.c' object='cpuprof.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpuprof.lo `test -f 'runtime/cpuprof.c' || echo '$(srcdir)/'`runtime/cpuprof.c
-
 env_posix.lo: runtime/env_posix.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT env_posix.lo -MD -MP -MF $(DEPDIR)/env_posix.Tpo -c -o env_posix.lo `test -f 'runtime/env_posix.c' || echo '$(srcdir)/'`runtime/env_posix.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/env_posix.Tpo $(DEPDIR)/env_posix.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/env_posix.c' object='env_posix.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env_posix.lo `test -f 'runtime/env_posix.c' || echo '$(srcdir)/'`runtime/env_posix.c
-
-lfstack.lo: runtime/lfstack.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lfstack.lo -MD -MP -MF $(DEPDIR)/lfstack.Tpo -c -o lfstack.lo `test -f 'runtime/lfstack.c' || echo '$(srcdir)/'`runtime/lfstack.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/lfstack.Tpo $(DEPDIR)/lfstack.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/lfstack.c' object='lfstack.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o lfstack.lo `test -f 'runtime/lfstack.c' || echo '$(srcdir)/'`runtime/lfstack.c
 
 lock_sema.lo: runtime/lock_sema.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lock_sema.lo -MD -MP -MF $(DEPDIR)/lock_sema.Tpo -c -o lock_sema.lo `test -f 'runtime/lock_sema.c' || echo '$(srcdir)/'`runtime/lock_sema.c
