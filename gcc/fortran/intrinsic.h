@@ -38,8 +38,12 @@ bool gfc_check_allocated (gfc_expr *);
 bool gfc_check_associated (gfc_expr *, gfc_expr *);
 bool gfc_check_atan_2 (gfc_expr *, gfc_expr *);
 bool gfc_check_atan2 (gfc_expr *, gfc_expr *);
-bool gfc_check_atomic_def (gfc_expr *, gfc_expr *);
-bool gfc_check_atomic_ref (gfc_expr *, gfc_expr *);
+bool gfc_check_atomic_cas (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+			   gfc_expr *);
+bool gfc_check_atomic_def (gfc_expr *, gfc_expr *, gfc_expr *);
+bool gfc_check_atomic_fetch_op (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+bool gfc_check_atomic_op (gfc_expr *, gfc_expr *, gfc_expr *);
+bool gfc_check_atomic_ref (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_besn (gfc_expr *, gfc_expr *);
 bool gfc_check_bessel_n2 (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_bge_bgt_ble_blt (gfc_expr *, gfc_expr *);

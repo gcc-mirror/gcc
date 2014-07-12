@@ -1006,12 +1006,11 @@ gfc_check_atan2 (gfc_expr *y, gfc_expr *x)
 
 
 static bool
-gfc_check_atomic (gfc_expr *atom, gfc_expr *value)
+gfc_check_atomic (gfc_expr *atom, int atom_no, gfc_expr *value, int val_no,
+		  gfc_expr *stat, int stat_no)
 {
-  if (atom->expr_type == EXPR_FUNCTION
-      && atom->value.function.isym
-      && atom->value.function.isym->id == GFC_ISYM_CAF_GET)
-    atom = atom->value.function.actual->expr;
+  if (!scalar_check (atom, atom_no) || !scalar_check (value, val_no))
+    return false;
 
   if (!(atom->ts.type == BT_INTEGER && atom->ts.kind == gfc_atomic_int_kind)
       && !(atom->ts.type == BT_LOGICAL
@@ -1032,10 +1031,27 @@ gfc_check_atomic (gfc_expr *atom, gfc_expr *value)
 
   if (atom->ts.type != value->ts.type)
     {
-      gfc_error ("ATOM and VALUE argument of the %s intrinsic function shall "
-		 "have the same type at %L", gfc_current_intrinsic,
-		 &value->where);
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall have the same "
+		 "type as '%s' at %L", gfc_current_intrinsic_arg[val_no]->name,
+		 gfc_current_intrinsic, &value->where,
+		 gfc_current_intrinsic_arg[atom_no]->name, &atom->where);
       return false;
+    }
+
+  if (stat != NULL)
+    {
+      if (!type_check (stat, stat_no, BT_INTEGER))
+	return false;
+      if (!scalar_check (stat, stat_no))
+	return false;
+      if (!variable_check (stat, stat_no, false))
+	return false;
+      if (!kind_value_check (stat, stat_no, gfc_default_integer_kind))
+	return false;
+
+      if (!gfc_notify_std (GFC_STD_F2008_TS, "STAT= argument to %s at %L",
+			   gfc_current_intrinsic, &stat->where))
+	return false;
     }
 
   return true;
@@ -1043,14 +1059,77 @@ gfc_check_atomic (gfc_expr *atom, gfc_expr *value)
 
 
 bool
-gfc_check_atomic_def (gfc_expr *atom, gfc_expr *value)
+gfc_check_atomic_def (gfc_expr *atom, gfc_expr *value, gfc_expr *stat)
 {
   if (atom->expr_type == EXPR_FUNCTION
       && atom->value.function.isym
       && atom->value.function.isym->id == GFC_ISYM_CAF_GET)
     atom = atom->value.function.actual->expr;
 
-  if (!scalar_check (atom, 0) || !scalar_check (value, 1))
+  if (!gfc_check_vardef_context (atom, false, false, false, NULL))
+    {
+      gfc_error ("ATOM argument of the %s intrinsic function at %L shall be "
+		 "definable", gfc_current_intrinsic, &atom->where);
+      return false;
+    }
+
+  return gfc_check_atomic (atom, 0, value, 1, stat, 2);
+}
+
+
+bool
+gfc_check_atomic_op (gfc_expr *atom, gfc_expr *value, gfc_expr *stat)
+{
+  if (atom->ts.type != BT_INTEGER || atom->ts.kind != gfc_atomic_int_kind)
+    {
+      gfc_error ("ATOM argument at %L to intrinsic function %s shall be an "
+		 "integer of ATOMIC_INT_KIND", &atom->where,
+		 gfc_current_intrinsic);
+      return false;
+    }
+
+  return gfc_check_atomic_def (atom, value, stat);
+}
+
+
+bool
+gfc_check_atomic_ref (gfc_expr *value, gfc_expr *atom, gfc_expr *stat)
+{
+  if (atom->expr_type == EXPR_FUNCTION
+      && atom->value.function.isym
+      && atom->value.function.isym->id == GFC_ISYM_CAF_GET)
+    atom = atom->value.function.actual->expr;
+
+  if (!gfc_check_vardef_context (value, false, false, false, NULL))
+    {
+      gfc_error ("VALUE argument of the %s intrinsic function at %L shall be "
+		 "definable", gfc_current_intrinsic, &value->where);
+      return false;
+    }
+
+  return gfc_check_atomic (atom, 1, value, 0, stat, 2);
+}
+
+
+bool
+gfc_check_atomic_cas (gfc_expr *atom, gfc_expr *old, gfc_expr *compare,
+		      gfc_expr *new_val,  gfc_expr *stat)
+{
+  if (atom->expr_type == EXPR_FUNCTION
+      && atom->value.function.isym
+      && atom->value.function.isym->id == GFC_ISYM_CAF_GET)
+    atom = atom->value.function.actual->expr;
+
+  if (!gfc_check_atomic (atom, 0, new_val, 3, stat, 4))
+    return false;
+
+  if (!scalar_check (old, 1) || !scalar_check (compare, 2))
+    return false;
+
+  if (!same_type_check (atom, 0, old, 1))
+    return false;
+
+  if (!same_type_check (atom, 0, compare, 2))
     return false;
 
   if (!gfc_check_vardef_context (atom, false, false, false, NULL))
@@ -1060,24 +1139,58 @@ gfc_check_atomic_def (gfc_expr *atom, gfc_expr *value)
       return false;
     }
 
-  return gfc_check_atomic (atom, value);
+  if (!gfc_check_vardef_context (old, false, false, false, NULL))
+    {
+      gfc_error ("OLD argument of the %s intrinsic function at %L shall be "
+		 "definable", gfc_current_intrinsic, &old->where);
+      return false;
+    }
+
+  return true;
 }
 
 
 bool
-gfc_check_atomic_ref (gfc_expr *value, gfc_expr *atom)
+gfc_check_atomic_fetch_op (gfc_expr *atom, gfc_expr *value, gfc_expr *old,
+			   gfc_expr *stat)
 {
-  if (!scalar_check (value, 0) || !scalar_check (atom, 1))
-    return false;
+  if (atom->expr_type == EXPR_FUNCTION
+      && atom->value.function.isym
+      && atom->value.function.isym->id == GFC_ISYM_CAF_GET)
+    atom = atom->value.function.actual->expr;
 
-  if (!gfc_check_vardef_context (value, false, false, false, NULL))
+  if (atom->ts.type != BT_INTEGER || atom->ts.kind != gfc_atomic_int_kind)
     {
-      gfc_error ("VALUE argument of the %s intrinsic function at %L shall be "
-		 "definable", gfc_current_intrinsic, &value->where);
+      gfc_error ("ATOM argument at %L to intrinsic function %s shall be an "
+		 "integer of ATOMIC_INT_KIND", &atom->where,
+		 gfc_current_intrinsic);
       return false;
     }
 
-  return gfc_check_atomic (atom, value);
+  if (!gfc_check_atomic (atom, 0, value, 1, stat, 3))
+    return false;
+
+  if (!scalar_check (old, 2))
+    return false;
+
+  if (!same_type_check (atom, 0, old, 2))
+    return false;
+
+  if (!gfc_check_vardef_context (atom, false, false, false, NULL))
+    {
+      gfc_error ("ATOM argument of the %s intrinsic function at %L shall be "
+		 "definable", gfc_current_intrinsic, &atom->where);
+      return false;
+    }
+
+  if (!gfc_check_vardef_context (old, false, false, false, NULL))
+    {
+      gfc_error ("OLD argument of the %s intrinsic function at %L shall be "
+		 "definable", gfc_current_intrinsic, &old->where);
+      return false;
+    }
+
+  return true;
 }
 
 

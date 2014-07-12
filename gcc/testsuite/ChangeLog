@@ -1,3 +1,11 @@
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_atomic_1.f90: Update dg-error.
+	* gfortran.dg/coarray_atomic_2.f90: New.
+	* gfortran.dg/coarray_atomic_3.f90: New.
+	* gfortran.dg/coarray_atomic_4.f90: New.
+	* gfortran.dg/coarray/atomic_2.f90: New.
+
 2014-07-11  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/57644 - [C++1y] Cannot bind bitfield to lvalue reference
