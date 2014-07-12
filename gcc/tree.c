@@ -11864,6 +11864,10 @@ obj_type_ref_class (tree ref)
 bool
 type_in_anonymous_namespace_p (const_tree t)
 {
+  /* TREE_PUBLIC of TYPE_STUB_DECL may not be properly set for
+     bulitin types; those have CONTEXT NULL.  */
+  if (!TYPE_CONTEXT (t))
+    return false;
   return (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)));
 }
 

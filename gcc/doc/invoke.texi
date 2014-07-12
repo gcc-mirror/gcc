@@ -260,7 +260,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wno-overflow -Wopenmp-simd @gol
+-Wno-multichar  -Wnonnull  -Wodr  -Wno-overflow  -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -4914,6 +4914,12 @@ attribute.
 @opindex Wno-overflow
 @opindex Woverflow
 Do not warn about compile-time overflow in constant expressions.
+
+@opindex Wodr
+@opindex Wno-odr
+@opindex Wodr
+Warn about One Definition Rule violations during link time optimization.
+Require @option{-flto-odr-type-merging} to be enabled. Enabled by default
 
 @item -Wopenmp-simd
 @opindex Wopenm-simd

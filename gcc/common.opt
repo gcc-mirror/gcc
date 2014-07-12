@@ -587,6 +587,10 @@ Warn if the loop cannot be optimized due to nontrivial assumptions.
 Wmissing-noreturn
 Common Alias(Wsuggest-attribute=noreturn)
 
+Wodr
+Common Warning
+Warn about some C++ One Definition Rule violations during link time optimization
+
 Woverflow
 Common Var(warn_overflow) Init(1) Warning
 Warn about overflow in arithmetic expressions
