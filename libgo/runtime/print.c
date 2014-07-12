@@ -320,7 +320,7 @@ runtime_printhex(uint64 v)
 void
 runtime_printpointer(void *p)
 {
-	runtime_printhex((uint64)(uintptr)p);
+	runtime_printhex((uintptr)p);
 }
 
 void

@@ -905,10 +905,8 @@ runtime_mal(uintptr n)
 	return runtime_mallocgc(n, 0, 0);
 }
 
-void *
-runtime_new(const Type *typ)
-{
-	return runtime_mallocgc(typ->__size, (uintptr)typ | TypeInfo_SingleObject, typ->kind&KindNoPointers ? FlagNoScan : 0);
+func new(typ *Type) (ret *uint8) {
+	ret = runtime_mallocgc(typ->__size, (uintptr)typ | TypeInfo_SingleObject, typ->kind&KindNoPointers ? FlagNoScan : 0);
 }
 
 static void*

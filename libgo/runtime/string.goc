@@ -73,13 +73,8 @@ runtime_gostringnocopy(const byte *str)
 	return s;
 }
 
-String runtime_cstringToGo(byte*)
-  __asm__ (GOSYM_PREFIX "runtime.cstringToGo");
-
-String
-runtime_cstringToGo(byte *str)
-{
-	return runtime_gostringnocopy(str);
+func cstringToGo(str *byte) (s String) {
+	s = runtime_gostringnocopy(str);
 }
 
 enum
