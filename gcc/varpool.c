@@ -268,6 +268,8 @@ varpool_get_constructor (struct varpool_node *node)
       || !in_lto_p)
     return DECL_INITIAL (node->decl);
 
+  timevar_push (TV_IPA_LTO_CTORS_IN);
+
   file_data = node->lto_file_data;
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
@@ -286,6 +288,7 @@ varpool_get_constructor (struct varpool_node *node)
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);
   lto_free_function_in_decl_state_for_node (node);
+  timevar_pop (TV_IPA_LTO_CTORS_IN);
   return DECL_INITIAL (node->decl);
 }
 

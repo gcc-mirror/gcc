@@ -3053,6 +3053,8 @@ cgraph_get_body (struct cgraph_node *node)
 
   gcc_assert (in_lto_p);
 
+  timevar_push (TV_IPA_LTO_GIMPLE_IN);
+
   file_data = node->lto_file_data;
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
@@ -3076,6 +3078,9 @@ cgraph_get_body (struct cgraph_node *node)
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);
   lto_free_function_in_decl_state_for_node (node);
+
+  timevar_pop (TV_IPA_LTO_GIMPLE_IN);
+
   return true;
 }
 
