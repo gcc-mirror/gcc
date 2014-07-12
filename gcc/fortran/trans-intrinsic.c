@@ -8339,25 +8339,104 @@ conv_co_minmaxsum (gfc_code *code)
 
 
 static tree
-conv_intrinsic_atomic_def (gfc_code *code)
+conv_intrinsic_atomic_op (gfc_code *code)
 {
-  gfc_se atom, value;
-  stmtblock_t block;
+  gfc_se atom, value, old;
+  tree tmp;
+  stmtblock_t block, post_block;
   gfc_expr *atom_expr = code->ext.actual->expr;
+  gfc_expr *stat;
+  built_in_function fn;
 
   if (atom_expr->expr_type == EXPR_FUNCTION
       && atom_expr->value.function.isym
       && atom_expr->value.function.isym->id == GFC_ISYM_CAF_GET)
     atom_expr = atom_expr->value.function.actual->expr;
 
+  gfc_start_block (&block);
+  gfc_init_block (&post_block);
   gfc_init_se (&atom, NULL);
   gfc_init_se (&value, NULL);
+  atom.want_pointer = 1;
   gfc_conv_expr (&atom, atom_expr);
+  gfc_add_block_to_block (&block, &atom.pre);
+  gfc_add_block_to_block (&post_block, &atom.post);
   gfc_conv_expr (&value, code->ext.actual->next->expr);
+  gfc_add_block_to_block (&block, &value.pre);
+  gfc_add_block_to_block (&post_block, &value.post);
 
-  gfc_init_block (&block);
-  gfc_add_modify (&block, atom.expr,
-		  fold_convert (TREE_TYPE (atom.expr), value.expr));
+  switch (code->resolved_isym->id)
+    {
+    case GFC_ISYM_ATOMIC_ADD:
+    case GFC_ISYM_ATOMIC_FETCH_ADD:
+      fn = BUILT_IN_ATOMIC_FETCH_ADD_N;
+      break;
+    case GFC_ISYM_ATOMIC_AND:
+    case GFC_ISYM_ATOMIC_FETCH_AND:
+      fn = BUILT_IN_ATOMIC_FETCH_AND_N;
+      break;
+    case GFC_ISYM_ATOMIC_DEF:
+      fn = BUILT_IN_ATOMIC_STORE_N;
+      break;
+    case GFC_ISYM_ATOMIC_OR:
+    case GFC_ISYM_ATOMIC_FETCH_OR:
+      fn = BUILT_IN_ATOMIC_FETCH_OR_N;
+      break;
+    case GFC_ISYM_ATOMIC_XOR:
+    case GFC_ISYM_ATOMIC_FETCH_XOR:
+      fn = BUILT_IN_ATOMIC_FETCH_XOR_N;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  tmp = TREE_TYPE (TREE_TYPE (atom.expr));
+  fn = (built_in_function) ((int) fn
+			    + exact_log2 (tree_to_uhwi (TYPE_SIZE_UNIT (tmp)))
+			    + 1);
+  tmp = builtin_decl_explicit (fn);
+  tree itype = TREE_TYPE (TREE_TYPE (atom.expr));
+  tmp = builtin_decl_explicit (fn);
+
+  switch (code->resolved_isym->id)
+    {
+    case GFC_ISYM_ATOMIC_ADD:
+    case GFC_ISYM_ATOMIC_AND:
+    case GFC_ISYM_ATOMIC_DEF:
+    case GFC_ISYM_ATOMIC_OR:
+    case GFC_ISYM_ATOMIC_XOR:
+      stat = code->ext.actual->next->next->expr;
+      tmp = build_call_expr_loc (input_location, tmp, 3, atom.expr,
+				 fold_convert (itype, value.expr),
+				 build_int_cst (NULL, MEMMODEL_RELAXED));
+      gfc_add_expr_to_block (&block, tmp);
+      break;
+    default:
+      stat = code->ext.actual->next->next->next->expr;
+      gfc_init_se (&old, NULL);
+      gfc_conv_expr (&old, code->ext.actual->next->next->expr);
+      gfc_add_block_to_block (&block, &old.pre);
+      gfc_add_block_to_block (&post_block, &old.post);
+      tmp = build_call_expr_loc (input_location, tmp, 3, atom.expr,
+				 fold_convert (itype, value.expr),
+				 build_int_cst (NULL, MEMMODEL_RELAXED));
+      gfc_add_modify (&block, old.expr,
+		      fold_convert (TREE_TYPE (old.expr), tmp));
+      break;
+    }
+
+  /* STAT=  */
+  if (stat != NULL)
+    {
+      gcc_assert (stat->expr_type == EXPR_VARIABLE);
+      gfc_init_se (&value, NULL);
+      gfc_conv_expr_val (&value, stat);
+      gfc_add_block_to_block (&block, &value.pre);
+      gfc_add_block_to_block (&post_block, &value.post);
+      gfc_add_modify (&block, value.expr,
+		      build_int_cst (TREE_TYPE (value.expr), 0));
+    }
+  gfc_add_block_to_block (&block, &post_block);
   return gfc_finish_block (&block);
 }
 
@@ -8366,7 +8445,63 @@ static tree
 conv_intrinsic_atomic_ref (gfc_code *code)
 {
   gfc_se atom, value;
-  stmtblock_t block;
+  tree tmp;
+  stmtblock_t block, post_block;
+  built_in_function fn;
+  gfc_expr *atom_expr = code->ext.actual->next->expr;
+
+  if (atom_expr->expr_type == EXPR_FUNCTION
+      && atom_expr->value.function.isym
+      && atom_expr->value.function.isym->id == GFC_ISYM_CAF_GET)
+    atom_expr = atom_expr->value.function.actual->expr;
+
+  gfc_start_block (&block);
+  gfc_init_block (&post_block);
+  gfc_init_se (&atom, NULL);
+  gfc_init_se (&value, NULL);
+  atom.want_pointer = 1;
+  gfc_conv_expr (&value, code->ext.actual->expr);
+  gfc_add_block_to_block (&block, &value.pre);
+  gfc_add_block_to_block (&post_block, &value.post);
+  gfc_conv_expr (&atom, atom_expr);
+  gfc_add_block_to_block (&block, &atom.pre);
+  gfc_add_block_to_block (&post_block, &atom.post);
+
+  tmp = TREE_TYPE (TREE_TYPE (atom.expr));
+  fn = (built_in_function) ((int) BUILT_IN_ATOMIC_LOAD_N
+			    + exact_log2 (tree_to_uhwi (TYPE_SIZE_UNIT (tmp)))
+			    + 1);
+  tmp = builtin_decl_explicit (fn);
+  tmp = build_call_expr_loc (input_location, tmp, 2, atom.expr,
+			     build_int_cst (integer_type_node,
+					    MEMMODEL_RELAXED));
+  gfc_add_modify (&block, value.expr,
+		  fold_convert (TREE_TYPE (value.expr), tmp));
+  
+  /* STAT=  */
+  if (code->ext.actual->next->next->expr != NULL)
+    {
+      gcc_assert (code->ext.actual->next->next->expr->expr_type
+		  == EXPR_VARIABLE);
+      gfc_init_se (&value, NULL);
+      gfc_conv_expr_val (&value, code->ext.actual->next->next->expr);
+      gfc_add_block_to_block (&block, &value.pre);
+      gfc_add_block_to_block (&post_block, &value.post);
+      gfc_add_modify (&block, value.expr,
+		      build_int_cst (TREE_TYPE (value.expr), 0));
+    }
+  gfc_add_block_to_block (&block, &post_block);
+  return gfc_finish_block (&block);
+}
+
+
+static tree
+conv_intrinsic_atomic_cas (gfc_code *code)
+{
+  gfc_se argse;
+  tree tmp, atom, old, new_val, comp;
+  stmtblock_t block, post_block;
+  built_in_function fn;
   gfc_expr *atom_expr = code->ext.actual->expr;
 
   if (atom_expr->expr_type == EXPR_FUNCTION
@@ -8374,14 +8509,60 @@ conv_intrinsic_atomic_ref (gfc_code *code)
       && atom_expr->value.function.isym->id == GFC_ISYM_CAF_GET)
     atom_expr = atom_expr->value.function.actual->expr;
 
-  gfc_init_se (&atom, NULL);
-  gfc_init_se (&value, NULL);
-  gfc_conv_expr (&value, atom_expr);
-  gfc_conv_expr (&atom, code->ext.actual->next->expr);
-
   gfc_init_block (&block);
-  gfc_add_modify (&block, value.expr,
-		  fold_convert (TREE_TYPE (value.expr), atom.expr));
+  gfc_init_block (&post_block);
+  gfc_init_se (&argse, NULL);
+  argse.want_pointer = 1;
+  gfc_conv_expr (&argse, atom_expr);
+  atom = argse.expr;
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr (&argse, code->ext.actual->next->expr);
+  gfc_add_block_to_block (&block, &argse.pre);
+  gfc_add_block_to_block (&post_block, &argse.post);
+  old = argse.expr;
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr (&argse, code->ext.actual->next->next->expr);
+  gfc_add_block_to_block (&block, &argse.pre);
+  gfc_add_block_to_block (&post_block, &argse.post);
+  comp = argse.expr;
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr (&argse, code->ext.actual->next->next->next->expr);
+  gfc_add_block_to_block (&block, &argse.pre);
+  gfc_add_block_to_block (&post_block, &argse.post);
+  new_val = argse.expr;
+
+  tmp = TREE_TYPE (TREE_TYPE (atom));
+  fn = (built_in_function) ((int) BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N
+			    + exact_log2 (tree_to_uhwi (TYPE_SIZE_UNIT (tmp)))
+			    + 1);
+  tmp = builtin_decl_explicit (fn);
+
+  gfc_add_modify (&block, old, comp);
+  tmp = build_call_expr_loc (input_location, tmp, 6, atom,
+			     gfc_build_addr_expr (NULL, old),
+			     fold_convert (TREE_TYPE (old), new_val),
+			     boolean_false_node,
+			     build_int_cst (NULL, MEMMODEL_RELAXED),
+			     build_int_cst (NULL, MEMMODEL_RELAXED));
+  gfc_add_expr_to_block (&block, tmp);
+  
+  /* STAT=  */
+  if (code->ext.actual->next->next->next->next->expr != NULL)
+    {
+      gcc_assert (code->ext.actual->next->next->next->next->expr->expr_type
+		  == EXPR_VARIABLE);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse,
+			 code->ext.actual->next->next->next->next->expr);
+      gfc_add_block_to_block (&block, &argse.pre);
+      gfc_add_block_to_block (&post_block, &argse.post);
+      gfc_add_modify (&block, argse.expr,
+		      build_int_cst (TREE_TYPE (argse.expr), 0));
+    }
+  gfc_add_block_to_block (&block, &post_block);
   return gfc_finish_block (&block);
 }
 
@@ -8632,8 +8813,20 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
       res = conv_intrinsic_move_alloc (code);
       break;
 
+    case GFC_ISYM_ATOMIC_CAS:
+      res = conv_intrinsic_atomic_cas (code);
+      break;
+
+    case GFC_ISYM_ATOMIC_ADD:
+    case GFC_ISYM_ATOMIC_AND:
     case GFC_ISYM_ATOMIC_DEF:
-      res = conv_intrinsic_atomic_def (code);
+    case GFC_ISYM_ATOMIC_OR:
+    case GFC_ISYM_ATOMIC_XOR:
+    case GFC_ISYM_ATOMIC_FETCH_ADD:
+    case GFC_ISYM_ATOMIC_FETCH_AND:
+    case GFC_ISYM_ATOMIC_FETCH_OR:
+    case GFC_ISYM_ATOMIC_FETCH_XOR:
+      res = conv_intrinsic_atomic_op (code);
       break;
 
     case GFC_ISYM_ATOMIC_REF:

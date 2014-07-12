@@ -1,3 +1,28 @@
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_atomic): Update for STAT=.
+	(gfc_check_atomic_def, gfc_check_atomic_ref): Update call.
+	(gfc_check_atomic_op, gfc_check_atomic_cas,
+	gfc_check_atomic_fetch_op): New.
+	* gfortran.h (gfc_isym_id): GFC_ISYM_ATOMIC_CAS, GFC_ISYM_ATOMIC_ADD,
+	GFC_ISYM_ATOMIC_AND, GFC_ISYM_ATOMIC_OR, GFC_ISYM_ATOMIC_XOR,
+	GFC_ISYM_ATOMIC_FETCH_ADD, GFC_ISYM_ATOMIC_FETCH_AND,
+	GFC_ISYM_ATOMIC_FETCH_OR and GFC_ISYM_ATOMIC_FETCH_XOR.
+	* intrinsic.c (add_subroutines): Handle them.
+	* intrinsic.texi: Add documentation for them.
+	(ATOMIC_REF, ATOMIC_DEFINE): Add STAT=.
+	(ISO_FORTRAN_ENV): Add STAT_FAILED_IMAGE.
+	* intrinsic.h (gfc_check_atomic_op, gfc_check_atomic_cas,
+	gfc_check_atomic_fetch_op): New
+	prototypes.
+	* libgfortran.h (libgfortran_stat_codes): Add GFC_STAT_FAILED_IMAGE.
+	* iso-fortran-env.def: Add it.
+	* trans-intrinsic.c (conv_intrinsic_atomic_op): Renamed from
+	conv_intrinsic_atomic_ref; handle more atomics.
+	(conv_intrinsic_atomic_def): Handle STAT=.
+	(conv_intrinsic_atomic_cas): New.
+	(gfc_conv_intrinsic_subroutine): Handle new atomics.
+
 2014-07-09  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* trans-array.c (gfc_build_constant_array_constructor): Build a

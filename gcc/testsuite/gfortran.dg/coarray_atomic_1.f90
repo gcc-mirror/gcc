@@ -16,6 +16,6 @@ call atomic_define(a, 7_2) ! { dg-error "must be a scalar" }
 call atomic_ref(b, b) ! { dg-error "shall be a coarray" }
 
 call atomic_define(c, 7) ! { dg-error "an integer of ATOMIC_INT_KIND or a logical of ATOMIC_LOGICAL_KIND" }
-call atomic_ref(d, a(1)) ! { dg-error "shall have the same type" }
+call atomic_ref(d, a(1)) ! { dg-error "shall have the same type as 'atom'" }
 call atomic_ref(.true., e) ! { dg-error "shall be definable" }
 end
