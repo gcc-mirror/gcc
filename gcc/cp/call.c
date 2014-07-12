@@ -4763,6 +4763,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
     {
       conversion *conv2;
       conversion *conv3;
+      bool converted = false;
 
       /* Get the high-water mark for the CONVERSION_OBSTACK.  */
       p = conversion_obstack_alloc (0);
@@ -4809,6 +4810,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	     converted to X, the conversion will fail.  */
 	  if (error_operand_p (arg2))
 	    result = error_mark_node;
+	  converted = true;
 	}
       else if (conv3 && !conv3->bad_p)
 	{
@@ -4817,6 +4819,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  arg3_type = TREE_TYPE (arg3);
 	  if (error_operand_p (arg3))
 	    result = error_mark_node;
+	  converted = true;
 	}
 
       /* Free all the conversions we allocated.  */
@@ -4840,8 +4843,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	 conditional expression failing altogether, even though,
 	 according to this step, the one operand could be converted to
 	 the type of the other.  */
-      if (((conv2 && !conv2->bad_p)
-	   || (conv3 && !conv3->bad_p))
+      if (converted
 	  && CLASS_TYPE_P (arg2_type)
 	  && cp_type_quals (arg2_type) != cp_type_quals (arg3_type))
 	arg2_type = arg3_type =

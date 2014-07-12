@@ -1,3 +1,9 @@
+2014-07-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/22434
+	PR c++/61288
+	* call.c (build_conditional_expr_1): Avoid reading freed memory.
+
 2014-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53159
