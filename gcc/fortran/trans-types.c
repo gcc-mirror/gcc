@@ -955,9 +955,9 @@ gfc_init_types (void)
 
   n = TYPE_PRECISION (gfc_array_index_type) - GFC_DTYPE_SIZE_SHIFT;
   gfc_max_array_element_size
-    = wide_int_to_tree (long_unsigned_type_node,
+    = wide_int_to_tree (size_type_node,
 			wi::mask (n, UNSIGNED,
-				  TYPE_PRECISION (long_unsigned_type_node)));
+				  TYPE_PRECISION (size_type_node)));
 
   boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
   boolean_true_node = build_int_cst (boolean_type_node, 1);

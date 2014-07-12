@@ -1,5 +1,11 @@
 2014-07-12  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/61628
+	* trans-types.c (gfc_init_types): Fix data-type bug
+	with gfc_max_array_element_size.
+
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
 	* libgfortran.h (libcaf_atomic_codes): Add.
 	* trans-decl.c (gfor_fndecl_caf_atomic_def,
 	gfor_fndecl_caf_atomic_ref, gfor_fndecl_caf_atomic_cas,
