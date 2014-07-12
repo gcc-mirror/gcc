@@ -28994,7 +28994,7 @@ static const struct builtin_description bdesc_special_args[] =
   /* 80387 (for use internally for atomic compound assignment).  */
   { 0, CODE_FOR_fnstenv, "__builtin_ia32_fnstenv", IX86_BUILTIN_FNSTENV, UNKNOWN, (int) VOID_FTYPE_PVOID },
   { 0, CODE_FOR_fldenv, "__builtin_ia32_fldenv", IX86_BUILTIN_FLDENV, UNKNOWN, (int) VOID_FTYPE_PCVOID },
-  { 0, CODE_FOR_fnstsw, "__builtin_ia32_fnstsw", IX86_BUILTIN_FNSTSW, UNKNOWN, (int) VOID_FTYPE_PUSHORT },
+  { 0, CODE_FOR_fnstsw, "__builtin_ia32_fnstsw", IX86_BUILTIN_FNSTSW, UNKNOWN, (int) USHORT_FTYPE_VOID },
   { 0, CODE_FOR_fnclex, "__builtin_ia32_fnclex", IX86_BUILTIN_FNCLEX, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* MMX */
@@ -34598,6 +34598,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       break;
 
     case INT_FTYPE_VOID:
+    case USHORT_FTYPE_VOID:
     case UINT64_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
@@ -35283,7 +35284,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_FXRSTOR64:
     case IX86_BUILTIN_FNSTENV:
     case IX86_BUILTIN_FLDENV:
-    case IX86_BUILTIN_FNSTSW:
       mode0 = BLKmode;
       switch (fcode)
 	{
@@ -35304,10 +35304,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  break;
 	case IX86_BUILTIN_FLDENV:
 	  icode = CODE_FOR_fldenv;
-	  break;
-	case IX86_BUILTIN_FNSTSW:
-	  icode = CODE_FOR_fnstsw;
-	  mode0 = HImode;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -46894,15 +46890,14 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 		      hold_fnclex);
       *clear = build_call_expr (fnclex, 0);
       tree sw_var = create_tmp_var (short_unsigned_type_node, NULL);
-      mark_addressable (sw_var);
-      tree su_ptr = build_pointer_type (short_unsigned_type_node);
-      tree sw_addr = build1 (ADDR_EXPR, su_ptr, sw_var);
-      tree fnstsw_call = build_call_expr (fnstsw, 1, sw_addr);
+      tree fnstsw_call = build_call_expr (fnstsw, 0);
+      tree sw_mod = build2 (MODIFY_EXPR, short_unsigned_type_node,
+			    sw_var, fnstsw_call);
       tree exceptions_x87 = fold_convert (integer_type_node, sw_var);
       tree update_mod = build2 (MODIFY_EXPR, integer_type_node,
 				exceptions_var, exceptions_x87);
       *update = build2 (COMPOUND_EXPR, integer_type_node,
-			fnstsw_call, update_mod);
+			sw_mod, update_mod);
       tree update_fldenv = build_call_expr (fldenv, 1, fenv_addr);
       *update = build2 (COMPOUND_EXPR, void_type_node, *update, update_fldenv);
     }

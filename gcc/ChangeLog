@@ -1,3 +1,16 @@
+2014-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-builtin-types.def: Add USHORT_FTYPE_VOID.
+	Remove VOID_FTYPE_PUSHORT.
+	* config/i386/i386.c (bdesc_special_args) <__builtin_ia32_fnstsw>:
+	Change code to USHORT_FTYPE_VOID.
+	(ix86_expand_special_args_builtin): Handle USHORT_FTYPE_VOID.
+	(ix86_expand_builtin): Remove IX86_BUILTIN_FNSTSW handling.
+	(ix86_atomic_assign_expand_fenv): Update for
+	__builtin_ia32_fnstsw changes.
+	* config/i386/i386.md (x86_fnstsw_1): Set length unconditionally to 2.
+	(fnstsw): Change operand 0 to nonimmediate operand.
+
 2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* vapool.c: Include tree-ssa-alias.h, gimple.h and lto-streamer.h
@@ -14,7 +27,7 @@
 	(varpool_ctor_useable_for_folding_p): New function.
 	* lto-streamer-out.c (get_symbol_initial_value): Take encoder
 	parameter; return error_mark_node for non-trivial constructors.
-	(lto_write_tree_1, DFS_write_tree): UPdate use of
+	(lto_write_tree_1, DFS_write_tree): Update use of
 	get_symbol_initial_value.
 	(output_function): Update initialization of symbol.
 	(output_constructor): New function.
@@ -23,8 +36,7 @@
 	(lto_output): Output variable sections.
 	* lto-streamer-in.c (input_constructor): New function.
 	(lto_read_body): Rename from ...
-	(lto_read_body_or_constructor): ... this one; handle vars
-	too.
+	(lto_read_body_or_constructor): ... this one; handle vars too.
 	(lto_input_variable_constructor): New function.
 	* ipa-prop.c (ipa_prop_write_jump_functions,
 	ipa_prop_write_all_agg_replacement): Update.
@@ -59,13 +71,12 @@
 	(ata5831): Same.
 	* config/avr/avr-tables.opt: Regenerate.
 	* config/avr/avr.h: Add declaration for text section start handler.
-	(EXTRA_SPEC_FUNCTIONS): Add text section start handler to SPEC function=
-s.
+	(EXTRA_SPEC_FUNCTIONS): Add text section start handler to
+	SPEC functions.
 	(LINK_SPEC): Include text section start handler to linker spec.
 	* config/avr/driver-avr.c (avr_device_to_text_start): New function to
-	pass -Ttext option to linker if the text section start for the device i=
-s
-	not zero.
+	pass -Ttext option to linker if the text section start for the device
+	is not zero.
 	* config/avr/t-multilib: Regenerate.
 	* doc/avr-mmcu.texi: Regenerate.
 
@@ -79,8 +90,7 @@ s
 
 2014-07-11  Roman Gareev  <gareevroman@gmail.com>
 
-	* graphite-isl-ast-to-gimple.c (gmp_cst_to_tree):
-	New function.
+	* graphite-isl-ast-to-gimple.c (gmp_cst_to_tree): New function.
 	(graphite_verify): New function.
 	(ivs_params_clear): New function.
 	(gcc_expression_from_isl_ast_expr_id): New function.
@@ -109,9 +119,8 @@ s
 2014-07-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61473
-	* builtins.c (fold_builtin_memory_op): Inline memory moves
-	that can be implemented with a single load followed by a
-	single store.
+	* builtins.c (fold_builtin_memory_op): Inline memory moves that
+	can be implemented with a single load followed by a single store.
 	(c_strlen): Only warn when only_value is not 2.
 
 2014-07-11  Evgeny Stupachenko  <evstupac@gmail.com>
@@ -123,7 +132,7 @@ s
 	PR target/61561
 	* config/arm/arm.md (*movhi_insn_arch4): Handle stack pointer.
 	(*movhi_bytes): Likewise.
-	(*arm_movqi_insn): Likewise. 
+	(*arm_movqi_insn): Likewise.
 
 2014-07-11  Uros Bizjak  <ubizjak@gmail.com>
 
