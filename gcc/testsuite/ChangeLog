@@ -1,3 +1,8 @@
+2014-07-13  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_atomic_4.f90: Avoid using a kind=16
+	integer.
+
 2014-07-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/61780
