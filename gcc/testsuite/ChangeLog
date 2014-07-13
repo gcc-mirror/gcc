@@ -1,3 +1,10 @@
+2014-07-13  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR C++/60209 - Declaration of user-defined literal operator cause error
+	* g++.dg/cpp0x/pr60209-neg.C: New.
+	* g++.dg/cpp0x/pr60209.C: New.
+	* g++.dg/cpp1y/udlit-empty-string-neg.C: Adjust messages.
+
 2014-07-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60967

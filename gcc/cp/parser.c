@@ -1895,7 +1895,7 @@ static cp_parser *cp_parser_new
 static tree cp_parser_identifier
   (cp_parser *);
 static tree cp_parser_string_literal
-  (cp_parser *, bool, bool);
+  (cp_parser *, bool, bool, bool);
 static tree cp_parser_userdef_char_literal
   (cp_parser *);
 static tree cp_parser_userdef_string_literal
@@ -3566,7 +3566,8 @@ cp_parser_identifier (cp_parser* parser)
 
    FUTURE: ObjC++ will need to handle @-strings here.  */
 static tree
-cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
+cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
+			  bool lookup_udlit = true)
 {
   tree value;
   size_t count;
@@ -3721,7 +3722,10 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 	{
 	  tree literal = build_userdef_literal (suffix_id, value,
 						OT_NONE, NULL_TREE);
-	  value = cp_parser_userdef_string_literal (literal);
+	  if (lookup_udlit)
+	    value = cp_parser_userdef_string_literal (literal);
+	  else
+	    value = literal;
 	}
     }
   else
@@ -12636,7 +12640,7 @@ cp_parser_operator (cp_parser* parser)
 {
   tree id = NULL_TREE;
   cp_token *token;
-  bool bad_encoding_prefix = false;
+  bool utf8 = false;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -12836,83 +12840,73 @@ cp_parser_operator (cp_parser* parser)
       cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
       return ansi_opname (ARRAY_REF);
 
+    case CPP_UTF8STRING:
+    case CPP_UTF8STRING_USERDEF:
+      utf8 = true;
+    case CPP_STRING:
     case CPP_WSTRING:
     case CPP_STRING16:
     case CPP_STRING32:
-    case CPP_UTF8STRING:
-     bad_encoding_prefix = true;
-      /* Fall through.  */
-
-    case CPP_STRING:
-      if (cxx_dialect == cxx98)
-	maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
-      if (bad_encoding_prefix)
-	{
-	  error ("invalid encoding prefix in literal operator");
-	  return error_mark_node;
-	}
-      if (TREE_STRING_LENGTH (token->u.value) > 2)
-	{
-	  error ("expected empty string after %<operator%> keyword");
-	  return error_mark_node;
-	}
-      /* Consume the string.  */
-      cp_lexer_consume_token (parser->lexer);
-      /* Look for the suffix identifier.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      if (token->type == CPP_NAME)
-	{
-	  id = cp_parser_identifier (parser);
-	  if (id != error_mark_node)
-	    {
-	      const char *name = IDENTIFIER_POINTER (id);
-	      return cp_literal_operator_id (name);
-	    }
-	}
-      else if (token->type == CPP_KEYWORD)
-	{
-	  error ("unexpected keyword;"
-		 " remove space between quotes and suffix identifier");
-	  return error_mark_node;
-	}
-      else
-	{
-	  error ("expected suffix identifier");
-	  return error_mark_node;
-	}
-
+    case CPP_STRING_USERDEF:
     case CPP_WSTRING_USERDEF:
     case CPP_STRING16_USERDEF:
     case CPP_STRING32_USERDEF:
-    case CPP_UTF8STRING_USERDEF:
-      bad_encoding_prefix = true;
-      /* Fall through.  */
-
-    case CPP_STRING_USERDEF:
-      if (cxx_dialect == cxx98)
-	maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
-      if (bad_encoding_prefix)
-	{
-	  error ("invalid encoding prefix in literal operator");
-	  return error_mark_node;
-	}
       {
-	tree string_tree = USERDEF_LITERAL_VALUE (token->u.value);
-	if (TREE_STRING_LENGTH (string_tree) > 2)
+	tree str, string_tree;
+	int sz, len;
+
+	if (cxx_dialect == cxx98)
+	  maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
+
+	/* Consume the string.  */
+	str = cp_parser_string_literal (parser, /*translate=*/true,
+				      /*wide_ok=*/true, /*lookup_udlit=*/false);
+	if (str == error_mark_node)
+	  return error_mark_node;
+	else if (TREE_CODE (str) == USERDEF_LITERAL)
+	  {
+	    string_tree = USERDEF_LITERAL_VALUE (str);
+	    id = USERDEF_LITERAL_SUFFIX_ID (str);
+	  }
+	else
+	  {
+	    string_tree = str;
+	    /* Look for the suffix identifier.  */
+	    token = cp_lexer_peek_token (parser->lexer);
+	    if (token->type == CPP_NAME)
+	      id = cp_parser_identifier (parser);
+	    else if (token->type == CPP_KEYWORD)
+	      {
+		error ("unexpected keyword;"
+		       " remove space between quotes and suffix identifier");
+		return error_mark_node;
+	      }
+	    else
+	      {
+		error ("expected suffix identifier");
+		return error_mark_node;
+	      }
+	  }
+	sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT
+			       (TREE_TYPE (TREE_TYPE (string_tree))));
+	len = TREE_STRING_LENGTH (string_tree) / sz - 1;
+	if (len != 0)
 	  {
 	    error ("expected empty string after %<operator%> keyword");
 	    return error_mark_node;
 	  }
-	id = USERDEF_LITERAL_SUFFIX_ID (token->u.value);
-	/* Consume the user-defined string literal.  */
-	cp_lexer_consume_token (parser->lexer);
+	if (utf8 || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string_tree)))
+	    != char_type_node)
+	  {
+	    error ("invalid encoding prefix in literal operator");
+	    return error_mark_node;
+	  }
 	if (id != error_mark_node)
 	  {
 	    const char *name = IDENTIFIER_POINTER (id);
-	    return cp_literal_operator_id (name);
+	    id = cp_literal_operator_id (name);
 	  }
-	else
-	  return error_mark_node;
+	return id;
       }
 
     default:
