@@ -282,6 +282,9 @@ public:
 
   void set_init_priority (priority_type priority);
   priority_type get_init_priority ();
+
+  /* Return true if symbol is known to be nonzero.  */
+  bool nonzero_address ();
 };
 
 /* Walk all aliases for NODE.  */
@@ -1148,6 +1151,17 @@ tree varpool_get_constructor (struct varpool_node *node);
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);
 
+/* Return true if DECL should have entry in symbol table if used.
+   Those are functions and static & external veriables*/
+
+static bool
+decl_in_symtab_p (const_tree decl)
+{
+  return (TREE_CODE (decl) == FUNCTION_DECL
+          || (TREE_CODE (decl) == VAR_DECL
+	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))));
+}
+
 /* Return symbol table node associated with DECL, if any,
    and NULL otherwise.  */
 
@@ -1155,12 +1169,7 @@ static inline symtab_node *
 symtab_get_node (const_tree decl)
 {
 #ifdef ENABLE_CHECKING
-  /* Check that we are called for sane type of object - functions
-     and static or external variables.  */
-  gcc_checking_assert (TREE_CODE (decl) == FUNCTION_DECL
-		       || (TREE_CODE (decl) == VAR_DECL
-			   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)
-			       || in_lto_p)));
+  gcc_checking_assert (decl_in_symtab_p (decl));
   /* Check that the mapping is sane - perhaps this check can go away,
      but at the moment frontends tends to corrupt the mapping by calling
      memcpy/memset on the tree nodes.  */
