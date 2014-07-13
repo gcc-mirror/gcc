@@ -1,3 +1,8 @@
+2014-07-13  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random.tcc: Fix operator>> and operator<< for
+	uniform_on_sphere_distribution.
+
 2014-07-12  Ulrich Drepper  <drepper@gmail.com>
 
 	* include/ext/random: Add uniform_on_sphere_distribution definition.
