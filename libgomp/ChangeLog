@@ -1,3 +1,8 @@
+2014-07-13  Tobias Burnus  <burnus@net-b.de>
+
+	* testsuite/libgomp.fortran/pr34020.f90: Make compile
+	with TS 18508/Fortran 2015
+
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/6940
