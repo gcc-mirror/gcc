@@ -37,7 +37,7 @@ call atomic_or(caf, 101, stat=stat)
 call atomic_xor(caf, 105_2, stat=stat)
 
 call atomic_fetch_add(caf, var3, var, stat=stat)
-call atomic_fetch_and(caf, 22_16, var, stat=stat)
+call atomic_fetch_and(caf, 22_1, var, stat=stat)
 call atomic_fetch_or(caf, var3, var, stat=stat)
 call atomic_fetch_xor(caf, 47_2, var, stat=stat)
 
