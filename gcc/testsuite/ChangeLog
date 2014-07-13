@@ -1,3 +1,8 @@
+2014-07-13  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/fuse-caller-save-xmm-run.c: New test.
+	* gcc.target/i386/fuse-caller-save-xmm.c: New test.
+
 2014-07-13  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR C++/60209 - Declaration of user-defined literal operator cause error
