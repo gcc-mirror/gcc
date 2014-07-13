@@ -1362,7 +1362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	result_type __b = __param.total_size();
 	result_type __k = 0;
 
-	if (__param.total_draws() < __param.total_size() / 2) 
+	if (__param.total_draws() < __param.total_size() / 2)
 	  {
 	    for (result_type __i = 0; __i < __param.total_draws(); ++__i)
 	      {
@@ -1536,6 +1536,65 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		param_type(__a, __b));
 
       __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename uniform_on_sphere_distribution<_Dimen, _RealType>::result_type
+      uniform_on_sphere_distribution<_Dimen, _RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __p)
+      {
+	result_type __ret;
+	_RealType __sum = _RealType(0);
+
+	std::generate(__ret.begin(), __ret.end(),
+		      [&__urng, &__sum, this](){ _RealType __t = _M_n(__urng);
+						 __sum += __t * __t;
+						 return __t; });
+	auto __norm = std::sqrt(__sum);
+	std::transform(__ret.begin(), __ret.end(), __ret.begin(),
+		       [__norm](_RealType __val){ return __val / __norm; });
+
+	return __ret;
+      }
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      uniform_on_sphere_distribution<_Dimen, _RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __param)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+
+	while (__f != __t)
+	  *__f++ = this->operator()(__urng, __param);
+      }
+
+  template<std::size_t _Dimen, typename _RealType, typename _CharT,
+	   typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
+							       _RealType>& __x)
+    {
+      // The distribution has no state, nothing to save.
+      return __os;
+    }
+
+  template<std::size_t _Dimen, typename _RealType, typename _CharT,
+	   typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
+							 _RealType>& __x)
+    {
+      // The distribution has no state, nothing to restore.
       return __is;
     }
 
