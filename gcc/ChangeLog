@@ -1,5 +1,10 @@
 2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Disable temporary hack
+	forgotten in previous commit.
+
+2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (type_in_anonymous_namespace_p): Ignore TREE_PUBLIC
 	on builtin types.
 	* ipa-devirt.c: Include stor-layout.h and intl.h

@@ -474,7 +474,7 @@ odr_subtypes_equivalent_p (tree t1, tree t2, pointer_set_t *visited)
 	 recursion here is needed only for component types.  */
       if (pointer_set_insert (visited, t1))
 	return true;
-      return odr_types_equivalent_p (t1, t2, true, NULL, visited);
+      return odr_types_equivalent_p (t1, t2, false, NULL, visited);
     }
   return types_same_for_odr (t1, t2);
 }
