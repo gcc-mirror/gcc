@@ -1890,4 +1890,67 @@ symtab_get_symbol_partitioning_class (symtab_node *node)
 
   return SYMBOL_PARTITION;
 }
+
+/* Return true when symbol is known to be non-zero.  */
+
+bool
+symtab_node::nonzero_address ()
+{
+  /* Weakrefs may be NULL when their target is not defined.  */
+  if (this->alias && this->weakref)
+    {
+      if (this->analyzed)
+	{
+	  symtab_node *target = symtab_alias_ultimate_target (this);
+
+	  if (target->alias && target->weakref)
+	    return false;
+	  /* We can not recurse to target::nonzero.  It is possible that the
+	     target is used only via the alias.
+	     We may walk references and look for strong use, but we do not know
+	     if this strong use will survive to final binary, so be
+	     conservative here.  
+	     ??? Maybe we could do the lookup during late optimization that
+	     could be useful to eliminate the NULL pointer checks in LTO
+	     programs.  */
+	  if (target->definition && !DECL_EXTERNAL (target->decl))
+	    return true;
+	  if (target->resolution != LDPR_UNKNOWN
+	      && target->resolution != LDPR_UNDEF
+	      && flag_delete_null_pointer_checks)
+	    return true;
+	  return false;
+	}
+      else
+        return false;
+    }
+
+  /* With !flag_delete_null_pointer_checks we assume that symbols may
+     bind to NULL. This is on by default on embedded targets only.
+
+     Otherwise all non-WEAK symbols must be defined and thus non-NULL or
+     linking fails.  Important case of WEAK we want to do well are comdats.
+     Those are handled by later check for definition.
+
+     When parsing, beware the cases when WEAK attribute is added later.  */
+  if (!DECL_WEAK (this->decl)
+      && flag_delete_null_pointer_checks
+      && cgraph_state > CGRAPH_STATE_PARSING)
+    return true;
+
+  /* If target is defined and not extern, we know it will be output and thus
+     it will bind to non-NULL.
+     Play safe for flag_delete_null_pointer_checks where weak definition maye
+     be re-defined by NULL.  */
+  if (this->definition && !DECL_EXTERNAL (this->decl)
+      && (flag_delete_null_pointer_checks || !DECL_WEAK (this->decl)))
+    return true;
+
+  /* As the last resort, check the resolution info.  */
+  if (this->resolution != LDPR_UNKNOWN
+      && this->resolution != LDPR_UNDEF
+      && flag_delete_null_pointer_checks)
+    return true;
+  return false;
+}
 #include "gt-symtab.h"

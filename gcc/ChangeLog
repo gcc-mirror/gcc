@@ -1,3 +1,13 @@
+2014-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (symtab_node): Add nonzero_address.
+	(decl_in_symtab_p): Break out from ...
+	(symtab_get_node): ... here.
+	* fold-const.c: Include cgraph.h
+	(tree_single_nonzero_warnv_p): Use symtab to determine
+	if symbol is non-zero.
+	* symtab.c (symtab_node::nonzero_address): New method.
+
 2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (odr_subtypes_equivalent_p): Disable temporary hack

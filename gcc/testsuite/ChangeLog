@@ -1,3 +1,12 @@
+2014-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/pr36901.h: Simplify because non-zero symbol folding no
+	longer happens during parsing.
+	* gcc.dg/pr44024.c: Update template.
+	* g++.dg/tree-ssa/nonzero-2.C: New testcase.
+	* g++.dg/tree-ssa/nonzero-1.C: New testcase.
+	* gcc.dg/tree-ssa/nonzero-1.c: New testcase.
+
 2014-07-13  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/i386/fuse-caller-save-xmm-run.c: New test.
