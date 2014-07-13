@@ -1,3 +1,17 @@
+2014-07-12  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random: Add uniform_on_sphere_distribution definition.
+	* include/ext/random.tcc: Add out-of-band member function definitions
+	for uniform_on_sphere_distribution.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	cons/default.cc: New file.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	operators/equal.cc: New file.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	operators/inequal.cc: New file.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	operators/serialize.cc: New file.
+
 2014-07-11  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Add the logistic_distribution as an extension.
@@ -94,7 +108,7 @@
 
 	Revert:
 	2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
-	    	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+		    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR libstdc++/61536
 	* config/abi/pre/gnu.ver: Adjust for out of line comparisons.
@@ -159,7 +173,7 @@
 	* include/std/chrono (_Checked_integral_constant): Allow zero.
 	* testsuite/20_util/duration/literals/values.cc: Test non-positive
 	values and digit separators.
-	* include/experimental/any 
+	* include/experimental/any
 
 	PR libstdc++/61532
 	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Do not
@@ -541,10 +555,10 @@
 
 2014-05-20  Cesar Philippidis  <cesar@codesourcery.com>
 
-	* scripts/testsuite_flags.in (cxxflags): Remove @CXXFLAGS@ since 
+	* scripts/testsuite_flags.in (cxxflags): Remove @CXXFLAGS@ since
 	libstdc++.exp imports those flags via getenv.
-	* testsuite/lib/libstdc++.exp (libstdc++_init): Ensure that 
-	CXXFLAGS contains a '-O' flag. 
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Ensure that
+	CXXFLAGS contains a '-O' flag.
 
 2014-05-20  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
 

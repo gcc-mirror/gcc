@@ -36,6 +36,7 @@
 #else
 
 #include <random>
+#include <algorithm>
 #include <array>
 #include <ext/cmath>
 #ifdef __SSE2__
@@ -2962,7 +2963,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	using _IntType = typename std::make_signed<result_type>::type;
 	return static_cast<result_type>(std::max(static_cast<_IntType>(0),
-		  		static_cast<_IntType>(this->total_draws()
+				static_cast<_IntType>(this->total_draws()
 						- this->unsuccessful_size())));
       }
 
@@ -3033,7 +3034,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend std::basic_ostream<_CharT, _Traits>&
 	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const __gnu_cxx::hypergeometric_distribution<_UIntType1>&
-                   __x);
+		   __x);
 
       /**
        * @brief Extracts a %hypergeometric_distribution random number
@@ -3127,7 +3128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
 	{ return __p1._M_a == __p2._M_a
-              && __p1._M_b == __p2._M_b; }
+	      && __p1._M_b == __p2._M_b; }
 
       private:
 	void _M_initialize();
@@ -3238,10 +3239,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        be generated are equal.
        */
       template<typename _RealType1>
-        friend bool
-        operator==(const logistic_distribution<_RealType1>& __d1,
+	friend bool
+	operator==(const logistic_distribution<_RealType1>& __d1,
 		   const logistic_distribution<_RealType1>& __d2)
-        { return __d1.param() == __d2.param(); }
+	{ return __d1.param() == __d2.param(); }
 
       /**
        * @brief Inserts a %logistic_distribution random number distribution
@@ -3292,6 +3293,196 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const logistic_distribution<_RealType1>& __d1,
 	       const logistic_distribution<_RealType1>& __d2)
     { return !(__d1 == __d2); }
+
+
+  /**
+   * @brief A distribution for random coordinates on a unit sphere.
+   *
+   * The method used in the generation function is attributed by Donald Knuth
+   * to G. W. Brown, Modern Mathematics for the Engineer (1956).
+   */
+  template<std::size_t _Dimen, typename _RealType = double>
+    class uniform_on_sphere_distribution
+    {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+      static_assert(_Dimen != 0, "dimension is zero");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef std::array<_RealType, _Dimen> result_type;
+      /** Parameter type. */
+      struct param_type
+      {
+	explicit
+	param_type()
+	{ }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return true; }
+      };
+
+      /**
+       * @brief Constructs a uniform on sphere distribution.
+       */
+      explicit
+      uniform_on_sphere_distribution()
+      : _M_param(), _M_n(_RealType(0), _RealType(1))
+      { }
+
+      explicit
+      uniform_on_sphere_distribution(const param_type& __p)
+      : _M_param(__p), _M_n(_RealType(0), _RealType(1))
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       * This function makes no sense for this distribution.
+       */
+      result_type
+      min() const
+      {
+	result_type __res;
+	__res.fill(0);
+	return __res;
+      }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       * This function makes no sense for this distribution.
+       */
+      result_type
+      max() const
+      {
+	result_type __res;
+	__res.fill(0);
+	return __res;
+      }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return this->operator()(__urng, _M_param); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p);
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ this->__generate(__f, __t, __urng, this->param()); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      template<typename _UniformRandomNumberGenerator>
+	void
+	__generate(result_type* __f, result_type* __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      /**
+       * @brief Return true if two uniform on sphere distributions have
+       *        the same parameters and the sequences that would be
+       *        generated are equal.
+       */
+      friend bool
+      operator==(const uniform_on_sphere_distribution& __d1,
+		 const uniform_on_sphere_distribution& __d2)
+      { return true; }
+
+      /**
+       * @brief Inserts a %uniform_on_sphere_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %uniform_on_sphere_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<size_t _Dimen1, typename _RealType1, typename _CharT,
+	       typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const __gnu_cxx::uniform_on_sphere_distribution<_Dimen1,
+								   _RealType1>&
+		   __x);
+
+      /**
+       * @brief Extracts a %uniform_on_sphere_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %uniform_on_sphere_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<std::size_t _Dimen1, typename _RealType1, typename _CharT,
+	       typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   __gnu_cxx::uniform_on_sphere_distribution<_Dimen1,
+							     _RealType1>& __x);
+
+    private:
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+      std::normal_distribution<_RealType> _M_n;
+    };
+
+  /**
+   * @brief Return true if two uniform on sphere distributions are different.
+   */
+  template<std::size_t _Dimen, typename _RealType>
+    inline bool
+    operator!=(const __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
+	       _RealType>& __d1,
+	       const __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
+	       _RealType>& __d2)
+   { return false; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
