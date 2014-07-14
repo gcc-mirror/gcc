@@ -1575,7 +1575,8 @@ explain_implicit_non_constexpr (tree decl)
   synthesized_method_walk (DECL_CLASS_CONTEXT (decl),
 			   special_function_p (decl), const_p,
 			   NULL, NULL, NULL, &dummy, true,
-			   NULL_TREE, NULL_TREE);
+			   DECL_INHERITED_CTOR_BASE (decl),
+			   FUNCTION_FIRST_USER_PARMTYPE (decl));
 }
 
 /* DECL is an instantiation of an inheriting constructor template.  Deduce

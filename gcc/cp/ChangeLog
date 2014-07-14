@@ -1,5 +1,13 @@
 2014-07-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58511
+	* semantics.c (is_instantiation_of_constexpr): Return true for
+	defaulted functions, too.
+	(explain_invalid_constexpr_fn): Only use
+	explain_implicit_non_constexpr if !DECL_DECLARED_CONSTEXPR_P.
+	* method.c (explain_implicit_non_constexpr): Pass
+	DECL_INHERITED_CTOR_BASE to explain_implicit_non_constexpr.
+
 	PR c++/58611
 	* decl.c (check_initializer): Don't finish_compound_literal
 	on erroneous constexpr init.
