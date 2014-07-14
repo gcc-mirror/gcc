@@ -1,3 +1,10 @@
+2014-07-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61445
+	PR c++/56947
+	* pt.c (instantiate_decl): Don't check defer_ok for local class
+	members.
+
 2014-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61294
