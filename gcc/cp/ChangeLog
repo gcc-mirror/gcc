@@ -1,5 +1,8 @@
 2014-07-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60628
+	* decl.c (create_array_type_for_decl): Only check for auto once.
+
 	PR c++/58636
 	* call.c (build_list_conv): Don't try to build a list of references.
 
