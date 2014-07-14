@@ -805,6 +805,12 @@ build_list_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   /* But no narrowing conversions.  */
   flags |= LOOKUP_NO_NARROWING;
 
+  /* Can't make an array of these types.  */
+  if (TREE_CODE (elttype) == REFERENCE_TYPE
+      || TREE_CODE (elttype) == FUNCTION_TYPE
+      || VOID_TYPE_P (elttype))
+    return NULL;
+
   FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
     {
       conversion *sub
