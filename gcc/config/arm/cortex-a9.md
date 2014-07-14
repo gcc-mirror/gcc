@@ -83,7 +83,7 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
        (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
                         alu_reg,alus_reg,logic_reg,logics_reg,\
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
-                        adr,bfm,rev,\
+                        adr,bfm,clz,rbit,rev,\
                         shift_imm,shift_reg,\
                         mov_imm,mov_reg,mvn_imm,mvn_reg,\
                         mov_shift_reg,mov_shift,\
