@@ -1,5 +1,12 @@
 2014-07-14  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/61786
+	* gcc.dg/torture/pr61786.c: New testcase.
+	* gcc.dg/lto/pr61786_0.c: Likewise.
+	* gcc.dg/lto/pr61786_1.c: Likewise.
+
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/61757
 	PR tree-optimization/61783
 	PR tree-optimization/61787
