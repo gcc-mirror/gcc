@@ -1,5 +1,11 @@
 2014-07-14  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/61779
+	* tree-ssa-copy.c (copy_prop_visit_cond_stmt): Always try
+	simplifying a condition.
+
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
 	* builtins.c (c_strlen): Make only_value == 2 really only
 	affect warning generation.
 
