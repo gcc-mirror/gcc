@@ -1,3 +1,7 @@
+2014-07-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* aarch64.md (add_losym_<mode>): Set type to alu_imm.
+
 2014-07-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61779
