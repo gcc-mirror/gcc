@@ -1,3 +1,13 @@
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61757
+	PR tree-optimization/61783
+	PR tree-optimization/61787
+	* tree-ssa-dom.c (record_equality): Revert canonicalization
+	change and add comment.
+	(propagate_rhs_into_lhs): Revert previous fix, removing
+	loop depth restriction again.
+
 2014-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/cortex-a15.md (cortex_a15_alu): Handle clz, rbit.

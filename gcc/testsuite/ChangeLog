@@ -1,3 +1,11 @@
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61757
+	PR tree-optimization/61783
+	PR tree-optimization/61787
+	* gcc.dg/torture/pr61757.c: New testcase.
+	* gcc.dg/torture/pr61787.c: Likewise.
+
 2014-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61294
