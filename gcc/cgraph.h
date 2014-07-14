@@ -1154,7 +1154,7 @@ extern void change_decl_assembler_name (tree, tree);
 /* Return true if DECL should have entry in symbol table if used.
    Those are functions and static & external veriables*/
 
-static bool
+static inline bool
 decl_in_symtab_p (const_tree decl)
 {
   return (TREE_CODE (decl) == FUNCTION_DECL
