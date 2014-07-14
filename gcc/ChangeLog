@@ -1,3 +1,13 @@
+2014-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/cortex-a15.md (cortex_a15_alu): Handle clz, rbit.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_reg): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Likewise.
+
 2014-07-14  Richard Biener  <rguenther@suse.de>
 
 	* cgraph.h (decl_in_symtab_p): Make inline.
