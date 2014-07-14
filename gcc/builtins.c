@@ -610,11 +610,11 @@ c_strlen (tree src, int only_value)
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
-  if (only_value != 2
-      && (offset < 0 || offset > max))
+  if (offset < 0 || offset > max)
     {
      /* Suppress multiple warnings for propagated constant strings.  */
-      if (! TREE_NO_WARNING (src))
+      if (only_value != 2
+	  && !TREE_NO_WARNING (src))
         {
           warning_at (loc, 0, "offset outside bounds of constant string");
           TREE_NO_WARNING (src) = 1;
