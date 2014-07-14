@@ -1,3 +1,12 @@
+2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61294
+	* c-parser.c (c_parser_expr_list): Add new argument literal_zero_mask.
+	If non-NULL, call c_parser_check_literal_zero.
+	(c_parser_check_literal_zero): New function.
+	(c_parser_postfix_expression_after_primary): Adjust
+	c_parser_expr_list caller, handle -Wmemset-transposed-args.
+
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/6940

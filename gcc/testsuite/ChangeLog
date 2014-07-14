@@ -1,3 +1,10 @@
+2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61294
+	* c-c++-common/Wmemset-transposed-args1.c: New test.
+	* c-c++-common/Wmemset-transposed-args2.c: New test.
+	* g++.dg/warn/Wmemset-transposed-args-1.C: New test.
+
 2014-07-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/pr36901.h: Simplify because non-zero symbol folding no

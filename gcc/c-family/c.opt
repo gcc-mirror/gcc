@@ -518,6 +518,10 @@ Wmain
 LangEnabledBy(C ObjC C++ ObjC++,Wpedantic, 2, 0)
 ;
 
+Wmemset-transposed-args
+C ObjC C++ ObjC++ Var(warn_memset_transposed_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not
+
 Wmissing-braces
 C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
 Warn about possibly missing braces around initializers

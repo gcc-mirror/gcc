@@ -258,8 +258,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
--Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
--Wmissing-include-dirs @gol
+-Wmain -Wmaybe-uninitialized -Wmemset-transposed-args -Wmissing-braces @gol
+-Wmissing-field-initializers -Wmissing-include-dirs @gol
 -Wno-multichar  -Wnonnull  -Wodr  -Wno-overflow  -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
@@ -4693,6 +4693,18 @@ but a pointer, and suggests a possible fix, or about
 Warn when the @code{sizeof} operator is applied to a parameter that is
 declared as an array in a function definition.  This warning is enabled by
 default for C and C++ programs.
+
+@item -Wmemset-transposed-args
+@opindex Wmemset-transposed-args
+@opindex Wno-memset-transposed-args
+Warn for suspicious calls to the @code{memset} built-in function, if the
+second argument is not zero and the third argument is zero.  This warns e.g.@
+about @code{memset (buf, sizeof buf, 0)} where most probably
+@code{memset (buf, 0, sizeof buf)} was meant instead.  The diagnostics
+is only emitted if the third argument is literal zero, if it is some expression
+that is folded to zero, or e.g. a cast of zero to some type etc., it
+is far less likely that user has mistakenly exchanged the arguments and
+no warning is emitted.  This warning is enabled by @option{-Wall}.
 
 @item -Waddress
 @opindex Waddress
