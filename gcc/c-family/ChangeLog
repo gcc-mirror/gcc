@@ -1,3 +1,8 @@
+2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61294
+	* c.opt (Wmemset-transposed-args): New warning.
+
 2014-07-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61659

@@ -1,3 +1,15 @@
+2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61294
+	* cp-tree.h (LITERAL_ZERO_P): Define.
+	* parser.c (cp_parser_parenthesized_expression_list): Add
+	want_literal_zero_p argument, if true, for literal zeros
+	insert INTEGER_CSTs with LITERAL_ZERO_P flag set.
+	(cp_parser_postfix_expression): Adjust
+	cp_parser_parenthesized_expression_list caller, handle
+	-Wmemset-transposed-args.
+	(literal_zeros): New variable.
+
 2014-07-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58511
