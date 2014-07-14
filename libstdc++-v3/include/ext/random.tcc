@@ -1584,7 +1584,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							       _RealType>& __x)
     {
       // The distribution has no state, nothing to save.
-      return __os << _M_n;
+      return __os << __x._M_n;
     }
 
   template<std::size_t _Dimen, typename _RealType, typename _CharT,
@@ -1595,7 +1595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							 _RealType>& __x)
     {
       // The distribution has no state, nothing to restore.
-      return __is >> _M_n;
+      return __is >> __x._M_n;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION
