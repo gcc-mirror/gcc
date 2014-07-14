@@ -8563,7 +8563,8 @@ conv_intrinsic_atomic_ref (gfc_code *code)
   atom = argse.expr;
 
   gfc_init_se (&argse, NULL);
-  if (gfc_option.coarray == GFC_FCOARRAY_LIB)
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+      && code->ext.actual->expr->ts.kind == atom_expr->ts.kind)
     argse.want_pointer = 1;
   gfc_conv_expr (&argse, code->ext.actual->expr);
   gfc_add_block_to_block (&block, &argse.pre);
@@ -8589,6 +8590,7 @@ conv_intrinsic_atomic_ref (gfc_code *code)
   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
     {
       tree image_index, caf_decl, offset, token;
+      tree orig_value = NULL_TREE, vardecl = NULL_TREE;
 
       caf_decl = gfc_get_tree_for_caf_expr (atom_expr);
       if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
@@ -8601,6 +8603,14 @@ conv_intrinsic_atomic_ref (gfc_code *code)
 
       get_caf_token_offset (&token, &offset, caf_decl, atom, atom_expr);
 
+      /* Different type, need type conversion.  */
+      if (!POINTER_TYPE_P (TREE_TYPE (value)))
+	{
+	  vardecl = gfc_create_var (TREE_TYPE (TREE_TYPE (atom)), "value");
+          orig_value = value;
+          value = gfc_build_addr_expr (NULL_TREE, vardecl);
+	}
+
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_atomic_ref, 7,
 				 token, offset, image_index, value, stat,
 				 build_int_cst (integer_type_node,
@@ -8608,6 +8618,9 @@ conv_intrinsic_atomic_ref (gfc_code *code)
 				 build_int_cst (integer_type_node,
 						(int) atom_expr->ts.kind));
       gfc_add_expr_to_block (&block, tmp);
+      if (vardecl != NULL_TREE)
+	gfc_add_modify (&block, orig_value,
+			fold_convert (TREE_TYPE (orig_value), vardecl));
       gfc_add_block_to_block (&block, &post_block);
       return gfc_finish_block (&block);
     }
