@@ -1264,7 +1264,6 @@ const pass_data pass_data_iv_canon =
   GIMPLE_PASS, /* type */
   "ivcanon", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_LOOP_IVCANON, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
@@ -1312,7 +1311,6 @@ const pass_data pass_data_complete_unroll =
   GIMPLE_PASS, /* type */
   "cunroll", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_COMPLETE_UNROLL, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
@@ -1361,7 +1359,6 @@ const pass_data pass_data_complete_unrolli =
   GIMPLE_PASS, /* type */
   "cunrolli", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_COMPLETE_UNROLL, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

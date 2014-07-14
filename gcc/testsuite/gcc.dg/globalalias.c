@@ -8,7 +8,6 @@
 /* { dg-do run }
    { dg-options "-O2" } 
    { dg-require-alias "" }
-   { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } 
    { dg-additional-sources "globalalias-2.c" } */
 extern int test2count;
 extern void abort (void);

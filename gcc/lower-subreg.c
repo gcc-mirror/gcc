@@ -1696,7 +1696,6 @@ const pass_data pass_data_lower_subreg =
   RTL_PASS, /* type */
   "subreg1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_LOWER_SUBREG, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -1739,7 +1738,6 @@ const pass_data pass_data_lower_subreg2 =
   RTL_PASS, /* type */
   "subreg2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_LOWER_SUBREG, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

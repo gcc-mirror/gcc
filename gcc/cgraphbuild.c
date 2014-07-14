@@ -296,7 +296,6 @@ const pass_data pass_data_build_cgraph_edges =
   GIMPLE_PASS, /* type */
   "*build_cgraph_edges", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
   0, /* properties_provided */
@@ -502,7 +501,6 @@ const pass_data pass_data_rebuild_cgraph_edges =
   GIMPLE_PASS, /* type */
   "*rebuild_cgraph_edges", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_CGRAPH, /* tv_id */
   PROP_cfg, /* properties_required */
   0, /* properties_provided */
@@ -540,7 +538,6 @@ const pass_data pass_data_remove_cgraph_callee_edges =
   GIMPLE_PASS, /* type */
   "*remove_cgraph_callee_edges", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

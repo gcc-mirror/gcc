@@ -1961,7 +1961,6 @@ const pass_data pass_data_instantiate_virtual_regs =
   RTL_PASS, /* type */
   "vregs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -4561,6 +4560,7 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       /* ??? This could be set on a per-function basis by the front-end
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
+      cfun->can_delete_dead_exceptions = flag_delete_dead_exceptions;
     }
 }
 
@@ -6208,7 +6208,6 @@ const pass_data pass_data_leaf_regs =
   RTL_PASS, /* type */
   "*leaf_regs", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -6270,7 +6269,6 @@ const pass_data pass_data_thread_prologue_and_epilogue =
   RTL_PASS, /* type */
   "pro_and_epilogue", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_THREAD_PROLOGUE_AND_EPILOGUE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -6454,7 +6452,6 @@ const pass_data pass_data_match_asm_constraints =
   RTL_PASS, /* type */
   "asmcons", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

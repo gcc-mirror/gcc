@@ -6518,7 +6518,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 
       tmp = build_fold_indirect_ref_loc (input_location, se->expr);
       tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, tmp, expr->rank);
-      
+
       /* The components shall be deallocated before
          their containing entity.  */
       gfc_prepend_expr_to_block (&se->post, tmp);
@@ -7302,7 +7302,7 @@ fcncall_realloc_result (gfc_se *se, int rank)
 
   res_desc = gfc_evaluate_now (desc, &se->pre);
   gfc_conv_descriptor_data_set (&se->pre, res_desc, null_pointer_node);
-  se->expr = gfc_build_addr_expr (TREE_TYPE (se->expr), res_desc);
+  se->expr = gfc_build_addr_expr (NULL_TREE, res_desc);
 
   /* Free the lhs after the function call and copy the result data to
      the lhs descriptor.  */

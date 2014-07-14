@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-fdelete-null-pointer-checks -fdump-tree-original" } */
+/* { dg-options "-fdelete-null-pointer-checks -fdump-tree-ccp1" } */
 
 void foo();
 
@@ -10,5 +10,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "foo" "original" { target { ! avr*-*-* } } } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
+/* { dg-final { scan-tree-dump-not "foo" "ccp1" { target { ! avr*-*-* } } } } */
+/* { dg-final { cleanup-tree-dump "ccp1" } } */

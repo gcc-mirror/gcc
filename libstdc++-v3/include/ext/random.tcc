@@ -1248,6 +1248,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   template<typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename von_mises_distribution<_RealType>::result_type
+      von_mises_distribution<_RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __p)
+      {
+	const result_type __pi
+	  = __gnu_cxx::__math_constants<result_type>::__pi;
+	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	  __aurng(__urng);
+
+	result_type __f;
+	while (1)
+	  {
+	    result_type __rnd = std::cos(__pi * __aurng());
+	    __f = (result_type(1) + __p._M_r * __rnd) / (__p._M_r + __rnd);
+	    result_type __c = __p._M_kappa * (__p._M_r - __f);
+
+	    result_type __rnd2 = __aurng();
+	    if (__c * (result_type(2) - __c) > __rnd2)
+	      break;
+	    if (std::log(__c / __rnd2) >= __c - result_type(1))
+	      break;
+	  }
+
+	result_type __res = std::acos(__f);
+#if _GLIBCXX_USE_C99_MATH_TR1
+	__res = std::copysign(__res, __aurng() - result_type(0.5));
+#else
+	if (__aurng() < result_type(0.5))
+	  __res = -__res;
+#endif
+	__res += __p._M_mu;
+	if (__res > __pi)
+	  __res -= result_type(2) * __pi;
+	else if (__res < -__pi)
+	  __res += result_type(2) * __pi;
+	return __res;
+      }
+
+  template<typename _RealType>
     template<typename _OutputIterator,
 	     typename _UniformRandomNumberGenerator>
       void
@@ -1321,7 +1362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	result_type __b = __param.total_size();
 	result_type __k = 0;
 
-	if (__param.total_draws() < __param.total_size() / 2) 
+	if (__param.total_draws() < __param.total_size() / 2)
 	  {
 	    for (result_type __i = 0; __i < __param.total_draws(); ++__i)
 	      {
@@ -1411,6 +1452,150 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __is.flags(__flags);
       return __is;
+    }
+
+
+  template<typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename logistic_distribution<_RealType>::result_type
+      logistic_distribution<_RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __p)
+      {
+	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	  __aurng(__urng);
+
+	result_type __arg = result_type(1);
+	while (__arg == result_type(1) || __arg == result_type(0))
+	  __arg = __aurng();
+	return __p.a()
+	     + __p.b() * std::log(__arg / (result_type(1) - __arg));
+      }
+
+  template<typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      logistic_distribution<_RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __p)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	  __aurng(__urng);
+
+	while (__f != __t)
+	  {
+	    result_type __arg = result_type(1);
+	    while (__arg == result_type(1) || __arg == result_type(0))
+	      __arg = __aurng();
+	    *__f++ = __p.a()
+		   + __p.b() * std::log(__arg / (result_type(1) - __arg));
+	  }
+      }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const logistic_distribution<_RealType>& __x)
+    {
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(__ios_base::scientific | __ios_base::left);
+      __os.fill(__space);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
+
+      __os << __x.a() << __space << __x.b();
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       logistic_distribution<_RealType>& __x)
+    {
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
+
+      _RealType __a, __b;
+      __is >> __a >> __b;
+      __x.param(typename logistic_distribution<_RealType>::
+		param_type(__a, __b));
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename uniform_on_sphere_distribution<_Dimen, _RealType>::result_type
+      uniform_on_sphere_distribution<_Dimen, _RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __p)
+      {
+	result_type __ret;
+	_RealType __sum = _RealType(0);
+
+	std::generate(__ret.begin(), __ret.end(),
+		      [&__urng, &__sum, this](){ _RealType __t = _M_n(__urng);
+						 __sum += __t * __t;
+						 return __t; });
+	auto __norm = std::sqrt(__sum);
+	std::transform(__ret.begin(), __ret.end(), __ret.begin(),
+		       [__norm](_RealType __val){ return __val / __norm; });
+
+	return __ret;
+      }
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      uniform_on_sphere_distribution<_Dimen, _RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __param)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+
+	while (__f != __t)
+	  *__f++ = this->operator()(__urng, __param);
+      }
+
+  template<std::size_t _Dimen, typename _RealType, typename _CharT,
+	   typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
+							       _RealType>& __x)
+    {
+      // The distribution has no state, nothing to save.
+      return __os << __x._M_n;
+    }
+
+  template<std::size_t _Dimen, typename _RealType, typename _CharT,
+	   typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
+							 _RealType>& __x)
+    {
+      // The distribution has no state, nothing to restore.
+      return __is >> __x._M_n;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

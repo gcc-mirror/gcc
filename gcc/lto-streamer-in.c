@@ -1029,6 +1029,15 @@ input_function (tree fn_decl, struct data_in *data_in,
   pop_cfun ();
 }
 
+/* Read the body of function FN_DECL from DATA_IN using input block IB.  */
+
+static void
+input_constructor (tree var, struct data_in *data_in,
+		   struct lto_input_block *ib)
+{
+  DECL_INITIAL (var) = stream_read_tree (ib, data_in);
+}
+
 
 /* Read the body from DATA for function NODE and fill it in.
    FILE_DATA are the global decls and types.  SECTION_TYPE is either
@@ -1037,8 +1046,8 @@ input_function (tree fn_decl, struct data_in *data_in,
    that function.  */
 
 static void
-lto_read_body (struct lto_file_decl_data *file_data, struct cgraph_node *node,
-	       const char *data, enum lto_section_type section_type)
+lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symtab_node *node,
+			      const char *data, enum lto_section_type section_type)
 {
   const struct lto_function_header *header;
   struct data_in *data_in;
@@ -1050,19 +1059,32 @@ lto_read_body (struct lto_file_decl_data *file_data, struct cgraph_node *node,
   tree fn_decl = node->decl;
 
   header = (const struct lto_function_header *) data;
-  cfg_offset = sizeof (struct lto_function_header);
-  main_offset = cfg_offset + header->cfg_size;
-  string_offset = main_offset + header->main_size;
+  if (TREE_CODE (node->decl) == FUNCTION_DECL)
+    {
+      cfg_offset = sizeof (struct lto_function_header);
+      main_offset = cfg_offset + header->cfg_size;
+      string_offset = main_offset + header->main_size;
 
-  LTO_INIT_INPUT_BLOCK (ib_cfg,
-		        data + cfg_offset,
-			0,
-			header->cfg_size);
+      LTO_INIT_INPUT_BLOCK (ib_cfg,
+			    data + cfg_offset,
+			    0,
+			    header->cfg_size);
 
-  LTO_INIT_INPUT_BLOCK (ib_main,
-			data + main_offset,
-			0,
-			header->main_size);
+      LTO_INIT_INPUT_BLOCK (ib_main,
+			    data + main_offset,
+			    0,
+			    header->main_size);
+    }
+  else
+    {
+      main_offset = sizeof (struct lto_function_header);
+      string_offset = main_offset + header->main_size;
+
+      LTO_INIT_INPUT_BLOCK (ib_main,
+			    data + main_offset,
+			    0,
+			    header->main_size);
+    }
 
   data_in = lto_data_in_create (file_data, data + string_offset,
 			      header->string_size, vNULL);
@@ -1082,7 +1104,10 @@ lto_read_body (struct lto_file_decl_data *file_data, struct cgraph_node *node,
 
       /* Set up the struct function.  */
       from = data_in->reader_cache->nodes.length ();
-      input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+      if (TREE_CODE (node->decl) == FUNCTION_DECL)
+        input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+      else
+        input_constructor (fn_decl, data_in, &ib_main);
       /* And fixup types we streamed locally.  */
 	{
 	  struct streamer_tree_cache_d *cache = data_in->reader_cache;
@@ -1124,7 +1149,17 @@ void
 lto_input_function_body (struct lto_file_decl_data *file_data,
 			 struct cgraph_node *node, const char *data)
 {
-  lto_read_body (file_data, node, data, LTO_section_function_body);
+  lto_read_body_or_constructor (file_data, node, data, LTO_section_function_body);
+}
+
+/* Read the body of NODE using DATA.  FILE_DATA holds the global
+   decls and types.  */
+
+void
+lto_input_variable_constructor (struct lto_file_decl_data *file_data,
+				struct varpool_node *node, const char *data)
+{
+  lto_read_body_or_constructor (file_data, node, data, LTO_section_function_body);
 }
 
 

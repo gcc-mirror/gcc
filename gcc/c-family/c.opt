@@ -518,6 +518,10 @@ Wmain
 LangEnabledBy(C ObjC C++ ObjC++,Wpedantic, 2, 0)
 ;
 
+Wmemset-transposed-args
+C ObjC C++ ObjC++ Var(warn_memset_transposed_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not
+
 Wmissing-braces
 C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
 Warn about possibly missing braces around initializers
@@ -1310,6 +1314,10 @@ Instrument UPC shared accesses and library calls, using GASP tool support
 fupc-instrument-functions
 C Var(flag_upc_instrument_functions)
 Instrument functions calls, using GASP tool support (implies -fupc-instrument)
+
+fuse-all-virtuals
+C++ ObjC++ Var(flag_use_all_virtuals) Init(1)
+Treat all virtual functions as odr-used
 
 fuse-cxa-atexit
 C++ ObjC++ Var(flag_use_cxa_atexit) Init(DEFAULT_USE_CXA_ATEXIT)

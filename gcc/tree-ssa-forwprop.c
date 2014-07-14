@@ -3596,7 +3596,6 @@ const pass_data pass_data_forwprop =
   GIMPLE_PASS, /* type */
   "forwprop", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_FORWPROP, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

@@ -5764,7 +5764,6 @@ const pass_data pass_data_ipa_free_lang_data =
   SIMPLE_IPA_PASS, /* type */
   "*free_lang_data", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_IPA_FREE_LANG_DATA, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -11948,6 +11947,10 @@ obj_type_ref_class (tree ref)
 bool
 type_in_anonymous_namespace_p (const_tree t)
 {
+  /* TREE_PUBLIC of TYPE_STUB_DECL may not be properly set for
+     bulitin types; those have CONTEXT NULL.  */
+  if (!TYPE_CONTEXT (t))
+    return false;
   return (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)));
 }
 

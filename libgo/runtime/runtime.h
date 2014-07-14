@@ -455,7 +455,7 @@ extern bool runtime_precisestack;
 #define	nelem(x)	(sizeof(x)/sizeof((x)[0]))
 #define	nil		((void*)0)
 #define USED(v)		((void) v)
-#define	ROUND(x, n)	(((x)+(n)-1)&~((n)-1)) /* all-caps to mark as macro: it evaluates n twice */
+#define	ROUND(x, n)	(((x)+(n)-1)&~(uintptr)((n)-1)) /* all-caps to mark as macro: it evaluates n twice */
 
 byte*	runtime_startup_random_data;
 uint32	runtime_startup_random_data_len;
@@ -491,6 +491,7 @@ extern	int8*	runtime_goos;
 extern	int32	runtime_ncpu;
 extern 	void	(*runtime_sysargs)(int32, uint8**);
 extern	DebugVars	runtime_debug;
+extern	uintptr	runtime_maxstacksize;
 
 /*
  * common functions and data
@@ -501,9 +502,6 @@ intgo	runtime_findnull(const byte*);
 intgo	runtime_findnullw(const uint16*);
 void	runtime_dump(byte*, int32);
 
-/*
- * very low level c-called
- */
 void	runtime_gogo(G*);
 struct __go_func_type;
 void	runtime_args(int32, byte**);
@@ -618,6 +616,7 @@ void	runtime_crash(void);
 void	runtime_parsedebugvars(void);
 void	_rt0_go(void);
 void*	runtime_funcdata(Func*, int32);
+int32	runtime_setmaxthreads(int32);
 
 void	runtime_stoptheworld(void);
 void	runtime_starttheworld(void);
@@ -690,7 +689,8 @@ LFNode*	runtime_lfstackpop(uint64 *head);
  */
 ParFor*	runtime_parforalloc(uint32 nthrmax);
 void	runtime_parforsetup(ParFor *desc, uint32 nthr, uint32 n, void *ctx, bool wait, void (*body)(ParFor*, uint32));
-void	runtime_parfordo(ParFor *desc) __asm__ (GOSYM_PREFIX "runtime.parfordo");
+void	runtime_parfordo(ParFor *desc);
+void	runtime_parforiters(ParFor*, uintptr, uintptr*, uintptr*);
 
 /*
  * low level C-called
@@ -762,6 +762,7 @@ void	runtime_procyield(uint32);
 void	runtime_osyield(void);
 void	runtime_lockOSThread(void);
 void	runtime_unlockOSThread(void);
+bool	runtime_lockedOSThread(void);
 
 bool	runtime_showframe(String, bool);
 void	runtime_printcreatedby(G*);

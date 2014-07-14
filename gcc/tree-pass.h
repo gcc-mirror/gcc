@@ -49,10 +49,6 @@ struct pass_data
   /* The -fopt-info optimization group flags as defined in dumpfile.h. */
   unsigned int optinfo_flags;
 
-  /* If true, this pass has its own implementation of the opt_pass::execute
-     method.  */
-  bool has_execute;
-
   /* The timevar id associated with this pass.  */
   /* ??? Ideally would be dynamically assigned.  */
   timevar_id_t tv_id;
@@ -92,7 +88,7 @@ public:
      true.  The default implementation returns true.  */
   virtual bool gate (function *fun);
 
-  /* This is the code to run.  If has_execute is false, then there should
+  /* This is the code to run.  If this is not overridden, then there should
      be sub-passes otherwise this pass does nothing.
      The return value contains TODOs to execute in addition to those in
      TODO_flags_finish.   */

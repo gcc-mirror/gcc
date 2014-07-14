@@ -289,9 +289,11 @@ proc libstdc++_init { testfile } {
 
     v3track cxxflags 2
 
+    # Should be as good as -fdiagnostics-color=never, but more compatible
+    setenv GCC_COLORS ""
     # Always use MO files built by this test harness.
-    set cxxflags "-fdiagnostics-color=never $cxxflags -DLOCALEDIR=\".\""
     set ccflags "$cxxflags -DLOCALEDIR=\".\""
+    set cxxflags "$cxxflags -DLOCALEDIR=\".\""
 
     # If a PCH file is available, use it.  We must delay performing
     # this check until $cxx and such have been initialized because we

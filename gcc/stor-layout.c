@@ -1591,6 +1591,11 @@ finalize_record_size (record_layout_info rli)
     unpadded_size_unit
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
+  if (TREE_CODE (unpadded_size_unit) == INTEGER_CST
+      && !TREE_OVERFLOW (unpadded_size_unit)
+      && !valid_constant_size_p (unpadded_size_unit))
+    error ("type %qT is too large", rli->t);
+
   /* Round the size up to be a multiple of the required alignment.  */
   TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t)
@@ -2069,7 +2074,7 @@ void
 finish_builtin_struct (tree type, const char *name, tree fields,
 		       tree align_type)
 {
-  tree tail, next, variant;
+  tree tail, next;
 
   for (tail = NULL_TREE; fields; tail = fields, fields = next)
     {
@@ -2078,10 +2083,6 @@ finish_builtin_struct (tree type, const char *name, tree fields,
       DECL_CHAIN (fields) = tail;
     }
   TYPE_FIELDS (type) = tail;
-  for (variant = TYPE_MAIN_VARIANT (type);
-       variant != 0;
-       variant = TYPE_NEXT_VARIANT (variant))
-    TYPE_FIELDS (variant) = tail;
 
   if (align_type)
     {

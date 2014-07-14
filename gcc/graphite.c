@@ -358,7 +358,6 @@ const pass_data pass_data_graphite =
   GIMPLE_PASS, /* type */
   "graphite0", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  false, /* has_execute */
   TV_GRAPHITE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
@@ -394,7 +393,6 @@ const pass_data pass_data_graphite_transforms =
   GIMPLE_PASS, /* type */
   "graphite", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
-  true, /* has_execute */
   TV_GRAPHITE_TRANSFORMS, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

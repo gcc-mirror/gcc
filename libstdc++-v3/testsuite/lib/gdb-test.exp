@@ -91,7 +91,7 @@ proc gdb-test { marker {selector {}} } {
 	}
     }
 
-    set do_whatis_tests [gdb_batch_check "python print gdb.type_printers" \
+    set do_whatis_tests [gdb_batch_check "python print(gdb.type_printers)" \
 			   "\\\[\\\]"]
     if {!$do_whatis_tests} {
 	send_log "skipping 'whatis' tests - gdb too old"
@@ -116,10 +116,18 @@ proc gdb-test { marker {selector {}} } {
     global gdb_tests
 
     set fd [open $cmd_file "w"]
+    # We don't want the system copy of the pretty-printers loaded
+    puts $fd "set auto-load no"
+    # Now that we've disabled auto-load, it's safe to set the target file
+    puts $fd "file ./$output_file"
+    # Load & register *our* copy of the pretty-printers
     puts $fd "source $pycode"
     puts $fd "python register_libstdcxx_printers(None)"
+    # And start the program
     puts $fd "break $line"
     puts $fd "run"
+    # So we can verify that we're using the right libs ...
+    puts $fd "info share"
 
     set count 0
     foreach {var result kind} $gdb_tests {
@@ -147,8 +155,7 @@ proc gdb-test { marker {selector {}} } {
     puts $fd "quit"
     close $fd
 
-    send_log "Spawning: $gdb_name -nx -nw -quiet -batch -x $cmd_file ./$output_file\n"
-    set res [remote_spawn target "$gdb_name -nx -nw -quiet -batch -x $cmd_file ./$output_file"]
+    set res [remote_spawn target "$gdb_name -nx -nw -quiet -batch -x $cmd_file "]
     if { $res < 0 || $res == "" } {
 	unsupported "$testname"
 	return
@@ -252,6 +259,6 @@ proc gdb_batch_check {command pattern} {
 # but not earlier versions.
 # Return 1 if the version is ok, 0 otherwise.
 proc gdb_version_check {} {
-    return [gdb_batch_check "python print gdb.lookup_global_symbol" \
+    return [gdb_batch_check "python print(gdb.lookup_global_symbol)" \
 	      "<built-in function lookup_global_symbol>"]
 }

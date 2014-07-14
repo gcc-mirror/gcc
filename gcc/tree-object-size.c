@@ -1214,7 +1214,6 @@ const pass_data pass_data_object_sizes =
   GIMPLE_PASS, /* type */
   "objsz", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

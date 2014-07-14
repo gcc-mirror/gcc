@@ -41,7 +41,6 @@
 #include <type_traits>
 #include <bits/alloc_traits.h>
 #include <bits/uses_allocator.h>
-#include <bits/functexcept.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -451,18 +450,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using _Traits = std::allocator_traits<_Alloc>;
 
-      std::tuple<_Alloc, __gnu_cxx::__aligned_buffer<_Tp>> _M_data;
+      std::tuple<__gnu_cxx::__aligned_buffer<_Tp>, _Alloc> _M_data;
 
-      _Alloc&       _M_alloc()       { return std::get<0>(_M_data); }
-      const _Alloc& _M_alloc() const { return std::get<0>(_M_data); }
+      _Alloc&       _M_alloc()       { return std::get<1>(_M_data); }
+      const _Alloc& _M_alloc() const { return std::get<1>(_M_data); }
 
-      _Tp*       _M_obj()       { return std::get<1>(_M_data)._M_ptr(); }
-      const _Tp* _M_obj() const { return std::get<1>(_M_data)._M_ptr(); }
+      _Tp*       _M_obj()       { return std::get<0>(_M_data)._M_ptr(); }
+      const _Tp* _M_obj() const { return std::get<0>(_M_data)._M_ptr(); }
 
       template<typename _Up>
-	_Data(const _Alloc& __a, _Up&& __val) : _M_data(__a, nullptr)
+	_Data(const _Alloc& __a, _Up&& __val) : _M_data(nullptr, __a)
 	{
-	  this->_M_construct(std::__use_alloc<_Tp>(_M_alloc()),
+	  this->_M_construct(std::__use_alloc<_Tp, _Alloc, _Up&&>(_M_alloc()),
 			     std::forward<_Up>(__val));
 	}
 
@@ -480,8 +479,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_construct(__uses_alloc1<_Alloc> __a, _Up&& __val)
 	{
-	  _Traits::construct(__a._M_a, _M_obj(),
-			     std::allocator_arg, __a._M_a,
+	  _Traits::construct(_M_alloc(), _M_obj(),
+			     std::allocator_arg, *__a._M_a,
 			     std::forward<_Up>(__val));
 	}
 
@@ -489,8 +488,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_construct(__uses_alloc2<_Alloc> __a, _Up&& __val)
 	{
-	  _Traits::construct(__a._M_a, _M_obj(),
-			     std::forward<_Up>(__val), __a._M_a);
+	  _Traits::construct(_M_alloc(), _M_obj(),
+			     std::forward<_Up>(__val), *__a._M_a);
 	}
     };
 

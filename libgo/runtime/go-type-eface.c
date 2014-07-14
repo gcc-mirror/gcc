@@ -44,9 +44,6 @@ __go_type_equal_empty_interface (const void *vv1, const void *vv2,
   v2 = (const struct __go_empty_interface *) vv2;
   v1_descriptor = v1->__type_descriptor;
   v2_descriptor = v2->__type_descriptor;
-  if (((uintptr_t) v1_descriptor & reflectFlags) != 0
-      || ((uintptr_t) v2_descriptor & reflectFlags) != 0)
-    runtime_panicstring ("invalid interface value");
   if (v1_descriptor == NULL || v2_descriptor == NULL)
     return v1_descriptor == v2_descriptor;
   if (!__go_type_descriptors_equal (v1_descriptor, v2_descriptor))

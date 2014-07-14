@@ -1501,7 +1501,6 @@ const pass_data pass_data_branch_target_load_optimize1 =
   RTL_PASS, /* type */
   "btl1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -1543,7 +1542,6 @@ const pass_data pass_data_branch_target_load_optimize2 =
   RTL_PASS, /* type */
   "btl2", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

@@ -782,7 +782,6 @@ const pass_data pass_data_ud_rtl_dce =
   RTL_PASS, /* type */
   "ud_dce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_DCE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -1214,7 +1213,6 @@ const pass_data pass_data_fast_rtl_dce =
   RTL_PASS, /* type */
   "rtl_dce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_DCE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

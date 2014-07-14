@@ -9,7 +9,6 @@
 /* { dg-do run }
    { dg-options "-Wstrict-aliasing=2 -fstrict-aliasing" } 
    { dg-require-alias "" }
-   { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } 
    { dg-additional-sources "localalias-2.c" } */
 extern void abort (void);
 extern int test2count;

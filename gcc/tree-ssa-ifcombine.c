@@ -735,7 +735,6 @@ const pass_data pass_data_tree_ifcombine =
   GIMPLE_PASS, /* type */
   "ifcombine", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_IFCOMBINE, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */

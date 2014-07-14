@@ -137,7 +137,7 @@
   (and (eq_attr "tune" "cortexa7")
        (eq_attr "type" "alu_reg,alus_reg,logic_reg,logics_reg,\
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
-                        bfm,rev,\
+                        bfm,clz,rbit,rev,\
                         shift_imm,shift_reg,mov_reg,mvn_reg"))
   "cortex_a7_ex1")
 

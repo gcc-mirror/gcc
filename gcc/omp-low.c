@@ -8415,7 +8415,6 @@ const pass_data pass_data_expand_omp =
   GIMPLE_PASS, /* type */
   "ompexp", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
   0, /* properties_provided */
@@ -10289,7 +10288,6 @@ const pass_data pass_data_lower_omp =
   GIMPLE_PASS, /* type */
   "omplower", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
   PROP_gimple_lomp, /* properties_provided */
@@ -10713,7 +10711,6 @@ const pass_data pass_data_diagnose_omp_blocks =
   GIMPLE_PASS, /* type */
   "*diagnose_omp_blocks", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
   0, /* properties_provided */
@@ -11924,7 +11921,6 @@ const pass_data pass_data_omp_simd_clone =
   SIMPLE_IPA_PASS,		/* type */
   "simdclone",			/* name */
   OPTGROUP_NONE,		/* optinfo_flags */
-  true,				/* has_execute */
   TV_NONE,			/* tv_id */
   ( PROP_ssa | PROP_cfg ),	/* properties_required */
   0,				/* properties_provided */

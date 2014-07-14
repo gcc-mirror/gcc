@@ -39,6 +39,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # endif
 #endif
 
+/* Macros to get real and imaginary parts of a complex, and set
+   a complex value.  */
+#define REALPART(z) (__real__(z))
+#define IMAGPART(z) (__imag__(z))
+#define COMPLEX_ASSIGN(z_, r_, i_) {__real__(z_) = (r_); __imag__(z_) = (i_);}
+
+
 /* Prototypes are included to silence -Wstrict-prototypes
    -Wmissing-prototypes.  */
 

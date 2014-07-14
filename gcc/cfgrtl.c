@@ -449,7 +449,6 @@ const pass_data pass_data_free_cfg =
   RTL_PASS, /* type */
   "*free_cfg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3469,7 +3468,6 @@ const pass_data pass_data_into_cfg_layout_mode =
   RTL_PASS, /* type */
   "into_cfglayout", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_CFG, /* tv_id */
   0, /* properties_required */
   PROP_cfglayout, /* properties_provided */
@@ -3509,7 +3507,6 @@ const pass_data pass_data_outof_cfg_layout_mode =
   RTL_PASS, /* type */
   "outof_cfglayout", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_CFG, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

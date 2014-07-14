@@ -302,15 +302,6 @@ struct __go_struct_type
   struct __go_open_array __fields;
 };
 
-/* If an empty interface has these bits set in its type pointer, it
-   was copied from a reflect.Value and is not a valid empty
-   interface.  */
-
-enum 
-{
-  reflectFlags = 3,
-};
-
 /* Whether a type descriptor is a pointer.  */
 
 static inline _Bool

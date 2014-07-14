@@ -156,7 +156,7 @@ do {									\
    %{pthread:-lpthreads} -lc"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
+#define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro}\
    %{static:-bnso %(link_syscalls) } %{shared:-bM:SRE %{!e:-bnoentry}}\
    %{!maix64:%{!shared:%{g*: %(link_libg) }}} %{maix64:-b64}\
    %{mpe:-binitfini:poe_remote_main}"

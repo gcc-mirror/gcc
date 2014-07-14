@@ -3949,13 +3949,16 @@ emit_associated_thunks (tree fn)
 }
 
 /* Returns true iff FUN is an instantiation of a constexpr function
-   template.  */
+   template or a defaulted constexpr function.  */
 
 static inline bool
 is_instantiation_of_constexpr (tree fun)
 {
-  return (DECL_TEMPLOID_INSTANTIATION (fun)
-	  && DECL_DECLARED_CONSTEXPR_P (DECL_TI_TEMPLATE (fun)));
+  return ((DECL_TEMPLOID_INSTANTIATION (fun)
+	   && DECL_DECLARED_CONSTEXPR_P (DECL_TI_TEMPLATE (fun)))
+	  || (DECL_DEFAULTED_FN (fun)
+	      && DECL_DECLARED_CONSTEXPR_P (fun)));
+
 }
 
 /* Generate RTL for FN.  */
@@ -8048,7 +8051,7 @@ explain_invalid_constexpr_fn (tree fun)
   if (is_valid_constexpr_fn (fun, true))
     {
       /* Then if it's OK, the body.  */
-      if (DECL_DEFAULTED_FN (fun))
+      if (!DECL_DECLARED_CONSTEXPR_P (fun))
 	explain_implicit_non_constexpr (fun);
       else
 	{
@@ -8519,11 +8522,24 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 bool
 reduced_constant_expression_p (tree t)
 {
-  if (TREE_CODE (t) == PTRMEM_CST)
-    /* Even if we can't lower this yet, it's constant.  */
-    return true;
-  /* FIXME are we calling this too much?  */
-  return initializer_constant_valid_p (t, TREE_TYPE (t)) != NULL_TREE;
+  switch (TREE_CODE (t))
+    {
+    case PTRMEM_CST:
+      /* Even if we can't lower this yet, it's constant.  */
+      return true;
+
+    case CONSTRUCTOR:
+      /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
+      tree elt; unsigned HOST_WIDE_INT idx;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), idx, elt)
+	if (!reduced_constant_expression_p (elt))
+	  return false;
+      return true;
+
+    default:
+      /* FIXME are we calling this too much?  */
+      return initializer_constant_valid_p (t, TREE_TYPE (t)) != NULL_TREE;
+    }
 }
 
 /* Some expressions may have constant operands but are not constant

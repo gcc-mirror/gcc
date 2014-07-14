@@ -2312,7 +2312,6 @@ const pass_data pass_data_reorder_blocks =
   RTL_PASS, /* type */
   "bbro", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_REORDER_BLOCKS, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -2382,7 +2381,6 @@ const pass_data pass_data_duplicate_computed_gotos =
   RTL_PASS, /* type */
   "compgotos", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_REORDER_BLOCKS, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -2643,7 +2641,6 @@ const pass_data pass_data_partition_blocks =
   RTL_PASS, /* type */
   "bbpart", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_REORDER_BLOCKS, /* tv_id */
   PROP_cfglayout, /* properties_required */
   0, /* properties_provided */

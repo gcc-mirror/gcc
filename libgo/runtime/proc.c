@@ -2456,26 +2456,6 @@ runtime_lockedOSThread(void)
 	return g->lockedm != nil && m->lockedg != nil;
 }
 
-// for testing of callbacks
-
-_Bool runtime_golockedOSThread(void)
-  __asm__ (GOSYM_PREFIX "runtime.golockedOSThread");
-
-_Bool
-runtime_golockedOSThread(void)
-{
-	return runtime_lockedOSThread();
-}
-
-intgo runtime_NumGoroutine (void)
-  __asm__ (GOSYM_PREFIX "runtime.NumGoroutine");
-
-intgo
-runtime_NumGoroutine()
-{
-	return runtime_gcount();
-}
-
 int32
 runtime_gcount(void)
 {
@@ -3321,13 +3301,10 @@ runtime_testSchedLocalQueueSteal(void)
 	}
 }
 
-intgo runtime_debug_setMaxThreads(intgo)
-     __asm__(GOSYM_PREFIX "runtime_debug.setMaxThreads");
-
-intgo
-runtime_debug_setMaxThreads(intgo in)
+int32
+runtime_setmaxthreads(int32 in)
 {
-	intgo out;
+	int32 out;
 
 	runtime_lock(&runtime_sched);
 	out = runtime_sched.maxmcount;
@@ -3369,31 +3346,4 @@ bool
 runtime_gcwaiting(void)
 {
 	return runtime_sched.gcwaiting;
-}
-
-// func runtime_procPin() int
-
-intgo sync_runtime_procPin(void)
-  __asm__(GOSYM_PREFIX "sync.runtime_procPin");
-
-intgo
-sync_runtime_procPin()
-{
-	M *mp;
-
-	mp = m;
-	// Disable preemption.
-	mp->locks++;
-	return mp->p->id;
-}
-
-// func runtime_procUnpin()
-
-void sync_runtime_procUnpin(void)
-  __asm__ (GOSYM_PREFIX "sync.runtime_procUnpin");
-
-void
-sync_runtime_procUnpin(void)
-{
-	m->locks--;
 }

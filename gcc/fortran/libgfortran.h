@@ -115,9 +115,18 @@ typedef enum
   GFC_STAT_UNLOCKED = 0,
   GFC_STAT_LOCKED,
   GFC_STAT_LOCKED_OTHER_IMAGE,
-  GFC_STAT_STOPPED_IMAGE = 6000 /* See LIBERROR_INQUIRE_INTERNAL_UNIT above. */
+  GFC_STAT_STOPPED_IMAGE = 6000, /* See LIBERROR_INQUIRE_INTERNAL_UNIT above. */
+  GFC_STAT_FAILED_IMAGE
 }
 libgfortran_stat_codes;
+
+typedef enum
+{
+  GFC_CAF_ATOMIC_ADD = 1,
+  GFC_CAF_ATOMIC_AND,
+  GFC_CAF_ATOMIC_OR,
+  GFC_CAF_ATOMIC_XOR
+} libcaf_atomic_codes;
 
 /* Default unit number for preconnected standard input and output.  */
 #define GFC_STDIN_UNIT_NUMBER 5

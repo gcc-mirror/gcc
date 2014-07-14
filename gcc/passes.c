@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "tree-ssa-live.h"  /* For remove_unused_locals.  */
 #include "tree-cfgcleanup.h"
+#include "hash-map.h"
 
 using namespace gcc;
 
@@ -344,7 +345,6 @@ const pass_data pass_data_early_local_passes =
   SIMPLE_IPA_PASS, /* type */
   "early_local_cleanups", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_EARLY_LOCAL, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -389,7 +389,6 @@ const pass_data pass_data_all_early_optimizations =
   GIMPLE_PASS, /* type */
   "early_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_NONE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -430,7 +429,6 @@ const pass_data pass_data_all_optimizations =
   GIMPLE_PASS, /* type */
   "*all_optimizations", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -466,7 +464,6 @@ const pass_data pass_data_all_optimizations_g =
   GIMPLE_PASS, /* type */
   "*all_optimizations_g", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_OPTIMIZE, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -502,7 +499,6 @@ const pass_data pass_data_rest_of_compilation =
   RTL_PASS, /* type */
   "*rest_of_compilation", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_REST_OF_COMPILATION, /* tv_id */
   PROP_rtl, /* properties_required */
   0, /* properties_provided */
@@ -543,7 +539,6 @@ const pass_data pass_data_postreload =
   RTL_PASS, /* type */
   "*all-postreload", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_execute */
   TV_POSTRELOAD, /* tv_id */
   PROP_rtl, /* properties_required */
   0, /* properties_provided */
@@ -687,64 +682,47 @@ pass_manager::register_dump_files (opt_pass *pass)
   while (pass);
 }
 
-struct pass_registry
-{
-  const char* unique_name;
-  opt_pass *pass;
-};
-
 /* Helper for pass_registry hash table.  */
 
-struct pass_registry_hasher : typed_noop_remove <pass_registry>
+struct pass_registry_hasher : default_hashmap_traits
 {
-  typedef pass_registry value_type;
-  typedef pass_registry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const char *);
+  static inline bool equal_keys (const char *, const char *);
 };
 
 /* Pass registry hash function.  */
 
 inline hashval_t
-pass_registry_hasher::hash (const value_type *s)
+pass_registry_hasher::hash (const char *name)
 {
-  return htab_hash_string (s->unique_name);
+  return htab_hash_string (name);
 }
 
 /* Hash equal function  */
 
 inline bool
-pass_registry_hasher::equal (const value_type *s1, const compare_type *s2)
+pass_registry_hasher::equal_keys (const char *s1, const char *s2)
 {
-  return !strcmp (s1->unique_name, s2->unique_name);
+  return !strcmp (s1, s2);
 }
 
-static hash_table<pass_registry_hasher> *name_to_pass_map;
+static hash_map<const char *, opt_pass *, pass_registry_hasher>
+  *name_to_pass_map;
 
 /* Register PASS with NAME.  */
 
 static void
 register_pass_name (opt_pass *pass, const char *name)
 {
-  struct pass_registry **slot;
-  struct pass_registry pr;
-
   if (!name_to_pass_map)
-    name_to_pass_map = new hash_table<pass_registry_hasher> (256);
+    name_to_pass_map
+      = new hash_map<const char *, opt_pass *, pass_registry_hasher> (256);
 
-  pr.unique_name = name;
-  slot = name_to_pass_map->find_slot (&pr, INSERT);
-  if (!*slot)
-    {
-      struct pass_registry *new_pr;
-
-      new_pr = XCNEW (struct pass_registry);
-      new_pr->unique_name = xstrdup (name);
-      new_pr->pass = pass;
-      *slot = new_pr;
-    }
-  else
+  if (name_to_pass_map->get (name))
     return; /* Ignore plugin passes.  */
+
+      const char *unique_name = xstrdup (name);
+      name_to_pass_map->put (unique_name, pass);
 }
 
 /* Map from pass id to canonicalized pass name.  */
@@ -754,15 +732,13 @@ static vec<char_ptr> pass_tab = vNULL;
 
 /* Callback function for traversing NAME_TO_PASS_MAP.  */
 
-int
-passes_pass_traverse (pass_registry **p, void *data ATTRIBUTE_UNUSED)
+bool
+passes_pass_traverse (const char *const &name, opt_pass *const &pass, void *)
 {
-  opt_pass *pass = (*p)->pass;
-
   gcc_assert (pass->static_pass_number > 0);
   gcc_assert (pass_tab.exists ());
 
-  pass_tab[pass->static_pass_number] = (*p)->unique_name;
+  pass_tab[pass->static_pass_number] = name;
 
   return 1;
 }
@@ -864,15 +840,11 @@ pass_manager::dump_passes () const
 static opt_pass *
 get_pass_by_name (const char *name)
 {
-  struct pass_registry **slot, pr;
+  opt_pass **p = name_to_pass_map->get (name);
+  if (p)
+    return *p;
 
-  pr.unique_name = name;
-  slot = name_to_pass_map->find_slot (&pr, NO_INSERT);
-
-  if (!slot || !*slot)
-    return NULL;
-
-  return (*slot)->pass;
+  return NULL;
 }
 
 
@@ -2174,11 +2146,8 @@ execute_one_pass (opt_pass *pass)
     timevar_push (pass->tv_id);
 
   /* Do it!  */
-  if (pass->has_execute)
-    {
-      todo_after = pass->execute (cfun);
-      do_per_function (clear_last_verified, NULL);
-    }
+  todo_after = pass->execute (cfun);
+  do_per_function (clear_last_verified, NULL);
 
   /* Stop timevar.  */
   if (pass->tv_id != TV_NONE)

@@ -22,5 +22,5 @@
 (str);				/* { dg-warning "used with arguments" } */
 (sys_str);			/* { dg-bogus "used with arguments" } */
 
-foo (one_arg);			/* { dg-warning "requires rest arguments" } */
-sys_foo (one_arg);		/* { dg-bogus "requires rest arguments" } */
+foo (one_arg);			/* { dg-warning "requires at least one" } */
+sys_foo (one_arg);		/* { dg-bogus "requires at least one" } */

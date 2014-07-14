@@ -62,6 +62,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "is-a.h"
 #include "gimple.h"
+#include "tree-pass.h"
+#include "context.h"
+#include "pass_manager.h"
 #include "gimple-iterator.h"
 #include "gimplify.h"
 #include "gimple-ssa.h"
@@ -209,6 +212,8 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_size =
 /* Declarations of static functions.  */
 static struct machine_function *alpha_init_machine_status (void);
 static rtx alpha_emit_xfloating_compare (enum rtx_code *, rtx, rtx);
+static void alpha_handle_trap_shadows (void);
+static void alpha_align_insns (void);
 
 #if TARGET_ABI_OPEN_VMS
 static void alpha_write_linkage (FILE *, const char *);
@@ -217,6 +222,113 @@ static bool vms_valid_pointer_mode (enum machine_mode);
 #define vms_patch_builtins()  gcc_unreachable()
 #endif
 
+static unsigned int
+rest_of_handle_trap_shadows (void)
+{
+  alpha_handle_trap_shadows ();
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_handle_trap_shadows =
+{
+  RTL_PASS,
+  "trap_shadows",			/* name */
+  OPTGROUP_NONE,			/* optinfo_flags */
+  TV_NONE,				/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_df_finish,			/* todo_flags_finish */
+};
+
+class pass_handle_trap_shadows : public rtl_opt_pass
+{
+public:
+  pass_handle_trap_shadows(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_handle_trap_shadows, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      return alpha_tp != ALPHA_TP_PROG || flag_exceptions;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_handle_trap_shadows ();
+    }
+
+}; // class pass_handle_trap_shadows
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_handle_trap_shadows (gcc::context *ctxt)
+{
+  return new pass_handle_trap_shadows (ctxt);
+}
+
+static unsigned int
+rest_of_align_insns (void)
+{
+  alpha_align_insns ();
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_align_insns =
+{
+  RTL_PASS,
+  "align_insns",			/* name */
+  OPTGROUP_NONE,			/* optinfo_flags */
+  TV_NONE,				/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_df_finish,			/* todo_flags_finish */
+};
+
+class pass_align_insns : public rtl_opt_pass
+{
+public:
+  pass_align_insns(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_align_insns, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      /* Due to the number of extra trapb insns, don't bother fixing up
+	 alignment when trap precision is instruction.  Moreover, we can
+	 only do our job when sched2 is run.  */
+      return ((alpha_tune == PROCESSOR_EV4
+	       || alpha_tune == PROCESSOR_EV5)
+	      && optimize && !optimize_size
+	      && alpha_tp != ALPHA_TP_INSN
+	      && flag_schedule_insns_after_reload);
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return rest_of_align_insns ();
+    }
+
+}; // class pass_align_insns
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_align_insns (gcc::context *ctxt)
+{
+  return new pass_align_insns (ctxt);
+}
+
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 /* Implement TARGET_MANGLE_TYPE.  */
 
@@ -272,6 +384,18 @@ alpha_option_override (void)
     { "21264a",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX,
       64, 64, 16*1024 }
   };
+
+  opt_pass *pass_handle_trap_shadows = make_pass_handle_trap_shadows (g);
+  static struct register_pass_info handle_trap_shadows_info
+    = { pass_handle_trap_shadows, "eh_ranges",
+	1, PASS_POS_INSERT_AFTER
+      };
+
+  opt_pass *pass_align_insns = make_pass_align_insns (g);
+  static struct register_pass_info align_insns_info
+    = { pass_align_insns, "shorten",
+	1, PASS_POS_INSERT_BEFORE
+      };
 
   int const ct_size = ARRAY_SIZE (cpu_table);
   int line_size = 0, l1_size = 0, l2_size = 0;
@@ -506,6 +630,10 @@ alpha_option_override (void)
   if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
+
+  /* This needs to be done at start up.  It's convenient to do it here.  */
+  register_pass (&handle_trap_shadows_info);
+  register_pass (&align_insns_info);
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -9178,9 +9306,9 @@ alphaev5_next_nop (int *pin_use)
 /* The instruction group alignment main loop.  */
 
 static void
-alpha_align_insns (unsigned int max_align,
-		   rtx (*next_group) (rtx, int *, int *),
-		   rtx (*next_nop) (int *))
+alpha_align_insns_1 (unsigned int max_align,
+		     rtx (*next_group) (rtx, int *, int *),
+		     rtx (*next_nop) (int *))
 {
   /* ALIGN is the known alignment for the insn group.  */
   unsigned int align;
@@ -9305,6 +9433,17 @@ alpha_align_insns (unsigned int max_align,
     }
 }
 
+static void
+alpha_align_insns (void)
+{
+  if (alpha_tune == PROCESSOR_EV4)
+    alpha_align_insns_1 (8, alphaev4_next_group, alphaev4_next_nop);
+  else if (alpha_tune == PROCESSOR_EV5)
+    alpha_align_insns_1 (16, alphaev5_next_group, alphaev5_next_nop);
+  else
+    gcc_unreachable ();
+}
+
 /* Insert an unop between sibcall or noreturn function call and GP load.  */
 
 static void
@@ -9324,12 +9463,6 @@ alpha_pad_function_end (void)
       next = NEXT_INSN (insn);
       if (next == NULL)
 	continue;
-      if (BARRIER_P (next))
-	{
-	  next = NEXT_INSN (next);
-	  if (next == NULL)
-	    continue;
-	}
       if (NOTE_P (next) && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
 	insn = next;
 
@@ -9397,22 +9530,6 @@ And in the noreturn case:
 
   if (current_function_has_exception_handlers ())
     alpha_pad_function_end ();
-
-  if (alpha_tp != ALPHA_TP_PROG || flag_exceptions)
-    alpha_handle_trap_shadows ();
-
-  /* Due to the number of extra trapb insns, don't bother fixing up
-     alignment when trap precision is instruction.  Moreover, we can
-     only do our job when sched2 is run.  */
-  if (optimize && !optimize_size
-      && alpha_tp != ALPHA_TP_INSN
-      && flag_schedule_insns_after_reload)
-    {
-      if (alpha_tune == PROCESSOR_EV4)
-	alpha_align_insns (8, alphaev4_next_group, alphaev4_next_nop);
-      else if (alpha_tune == PROCESSOR_EV5)
-	alpha_align_insns (16, alphaev5_next_group, alphaev5_next_nop);
-    }
 }
 
 static void

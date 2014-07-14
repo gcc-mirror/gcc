@@ -333,27 +333,16 @@ get_fpu_rounding_mode (void)
 {
   switch (fpgetround ())
     {
-#ifdef FP_RN
       case FP_RN:
 	return GFC_FPE_TONEAREST;
-#endif
-
-#ifdef FP_RP
       case FP_RP:
 	return GFC_FPE_UPWARD;
-#endif
-
-#ifdef FP_RM
       case FP_RM:
 	return GFC_FPE_DOWNWARD;
-#endif
-
-#ifdef FP_RZ
       case FP_RZ:
 	return GFC_FPE_TOWARDZERO;
-#endif
       default:
-	return GFC_FPE_INVALID;
+	return 0; /* Should be unreachable.  */
     }
 }
 
@@ -365,72 +354,29 @@ set_fpu_rounding_mode (int mode)
 
   switch (mode)
     {
-#ifdef FP_RN
       case GFC_FPE_TONEAREST:
 	rnd_mode = FP_RN;
         break;
-#endif
-
-#ifdef FP_RP
       case GFC_FPE_UPWARD:
 	rnd_mode = FP_RP;
         break;
-#endif
-
-#ifdef FP_RM
       case GFC_FPE_DOWNWARD:
 	rnd_mode = FP_RM;
         break;
-#endif
-
-#ifdef FP_RZ
       case GFC_FPE_TOWARDZERO:
 	rnd_mode = FP_RZ;
         break;
-#endif
       default:
-	return;
+	return; /* Should be unreachable.  */
     }
   fpsetround (rnd_mode);
 }
 
 
 int
-support_fpu_rounding_mode (int mode)
+support_fpu_rounding_mode (int mode __attribute__((unused)))
 {
-  switch (mode)
-    {
-      case GFC_FPE_TONEAREST:
-#ifdef FP_RN
-	return 1;
-#else
-	return 0;
-#endif
-
-      case GFC_FPE_UPWARD:
-#ifdef FP_RP
-	return 1;
-#else
-	return 0;
-#endif
-
-      case GFC_FPE_DOWNWARD:
-#ifdef FP_RM
-	return 1;
-#else
-	return 0;
-#endif
-
-      case GFC_FPE_TOWARDZERO:
-#ifdef FP_RZ
-	return 1;
-#else
-	return 0;
-#endif
-
-      default:
-	return 0;
-    }
+  return 1;
 }
 
 
@@ -465,5 +411,25 @@ set_fpu_state (void *s)
   fpsetmask (state->mask);
   FPSETSTICKY (state->sticky);
   fpsetround (state->round);
+}
+
+
+int
+support_fpu_underflow_control (int kind __attribute__((unused)))
+{
+  return 0;
+}
+
+
+int
+get_fpu_underflow_mode (void)
+{
+  return 0;
+}
+
+
+void
+set_fpu_underflow_mode (int gradual __attribute__((unused)))
+{
 }
 

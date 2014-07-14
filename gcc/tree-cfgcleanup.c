@@ -951,7 +951,6 @@ const pass_data pass_data_merge_phi =
   GIMPLE_PASS, /* type */
   "mergephi", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_MERGE_PHI, /* tv_id */
   ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
@@ -1125,7 +1124,6 @@ const pass_data pass_data_cleanup_cfg_post_optimizing =
   GIMPLE_PASS, /* type */
   "optimized", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_TREE_CLEANUP_CFG, /* tv_id */
   PROP_cfg, /* properties_required */
   0, /* properties_provided */

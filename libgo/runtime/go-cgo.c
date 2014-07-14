@@ -177,19 +177,3 @@ _cgo_panic (const char *p)
 
   __go_panic (e);
 }
-
-/* Return the number of CGO calls.  */
-
-int64 runtime_NumCgoCall (void) __asm__ (GOSYM_PREFIX "runtime.NumCgoCall");
-
-int64
-runtime_NumCgoCall (void)
-{
-  int64 ret;
-  M* m;
-
-  ret = 0;
-  for (m = runtime_atomicloadp (&runtime_allm); m != NULL; m = m->alllink)
-    ret += m->ncgocall;
-  return ret;
-}

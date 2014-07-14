@@ -713,19 +713,27 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
 
   if (argc < macro->paramc)
     {
-      /* As an extension, a rest argument is allowed to not appear in
+      /* As an extension, variadic arguments are allowed to not appear in
 	 the invocation at all.
 	 e.g. #define debug(format, args...) something
 	 debug("string");
 
-	 This is exactly the same as if there had been an empty rest
-	 argument - debug("string", ).  */
+	 This is exactly the same as if an empty variadic list had been
+	 supplied - debug("string", ).  */
 
       if (argc + 1 == macro->paramc && macro->variadic)
 	{
 	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr)
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "ISO C99 requires rest arguments to be used");
+	    {
+	      if (CPP_OPTION (pfile, cplusplus))
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "ISO C++11 requires at least one argument "
+			   "for the \"...\" in a variadic macro");
+	      else
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "ISO C99 requires at least one argument "
+			   "for the \"...\" in a variadic macro");
+	    }
 	  return true;
 	}
 
@@ -1748,12 +1756,20 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	       && ! CPP_OPTION (pfile, c99)
 	       && ! cpp_in_system_header (pfile))
 	{
-	  cpp_error (pfile, CPP_DL_PEDWARN,
-		     "invoking macro %s argument %d: "
-		     "empty macro arguments are undefined"
-		     " in ISO C90 and ISO C++98",
-		     NODE_NAME (node),
-		     src->val.macro_arg.arg_no);
+	  if (CPP_OPTION (pfile, cplusplus))
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "invoking macro %s argument %d: "
+		       "empty macro arguments are undefined"
+		       " in ISO C++98",
+		       NODE_NAME (node),
+		       src->val.macro_arg.arg_no);
+	  else
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "invoking macro %s argument %d: "
+		       "empty macro arguments are undefined"
+		       " in ISO C90",
+		       NODE_NAME (node),
+		       src->val.macro_arg.arg_no);
 	}
 
       /* Avoid paste on RHS (even case count == 0).  */
@@ -2798,14 +2814,27 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	      if (! CPP_OPTION (pfile, c99)
 		  && CPP_OPTION (pfile, cpp_pedantic)
 		  && CPP_OPTION (pfile, warn_variadic_macros))
-		cpp_pedwarning
-                  (pfile, CPP_W_VARIADIC_MACROS,
-		   "anonymous variadic macros were introduced in C99");
+		{
+		  if (CPP_OPTION (pfile, cplusplus))
+		    cpp_pedwarning
+			(pfile, CPP_W_VARIADIC_MACROS,
+			"anonymous variadic macros were introduced in C++11");
+		  else
+		    cpp_pedwarning
+			(pfile, CPP_W_VARIADIC_MACROS,
+			"anonymous variadic macros were introduced in C99");
+		}
 	    }
 	  else if (CPP_OPTION (pfile, cpp_pedantic)
 		   && CPP_OPTION (pfile, warn_variadic_macros))
-	    cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
+	    {
+	      if (CPP_OPTION (pfile, cplusplus))
+		cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
+		            "ISO C++ does not permit named variadic macros");
+	      else
+		cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
 		            "ISO C does not permit named variadic macros");
+	    }
 
 	  /* We're at the end, and just expect a closing parenthesis.  */
 	  token = _cpp_lex_token (pfile);
@@ -2894,11 +2923,17 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
   else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
     {
       /* While ISO C99 requires whitespace before replacement text
-	 in a macro definition, ISO C90 with TC1 allows there characters
-	 from the basic source character set.  */
+	 in a macro definition, ISO C90 with TC1 allows characters
+	 from the basic source character set there.  */
       if (CPP_OPTION (pfile, c99))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "ISO C99 requires whitespace after the macro name");
+	{
+	  if (CPP_OPTION (pfile, cplusplus))
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "ISO C++11 requires whitespace after the macro name");
+	  else
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "ISO C99 requires whitespace after the macro name");
+	}
       else
 	{
 	  int warntype = CPP_DL_WARNING;
@@ -3134,8 +3169,8 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
       && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_FORMAT_MACROS")
       /* __STDC_LIMIT_MACROS and __STDC_CONSTANT_MACROS are mentioned
 	 in the C standard, as something that one must use in C++.
-	 However DR#593 indicates that these aren't actually mentioned
-	 in the C++ standard.  We special-case them anyway.  */
+	 However DR#593 and C++11 indicate that they play no role in C++.
+	 We special-case them anyway.  */
       && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_LIMIT_MACROS")
       && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_CONSTANT_MACROS"))
     node->flags |= NODE_WARN;

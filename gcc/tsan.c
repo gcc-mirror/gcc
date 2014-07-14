@@ -739,7 +739,6 @@ const pass_data pass_data_tsan =
   GIMPLE_PASS, /* type */
   "tsan", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
   0, /* properties_provided */
@@ -781,7 +780,6 @@ const pass_data pass_data_tsan_O0 =
   GIMPLE_PASS, /* type */
   "tsan0", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_NONE, /* tv_id */
   ( PROP_ssa | PROP_cfg ), /* properties_required */
   0, /* properties_provided */

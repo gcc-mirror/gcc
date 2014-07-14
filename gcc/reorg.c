@@ -3879,7 +3879,6 @@ const pass_data pass_data_delay_slots =
   RTL_PASS, /* type */
   "dbr", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_DBR_SCHED, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
@@ -3932,7 +3931,6 @@ const pass_data pass_data_machine_reorg =
   RTL_PASS, /* type */
   "mach", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

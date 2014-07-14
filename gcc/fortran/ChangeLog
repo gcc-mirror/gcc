@@ -1,3 +1,68 @@
+2014-07-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61780
+	* dependency.c (gfc_dep_resolver): Index the 'reverse' array so
+	that elements are skipped. This then correctly aligns 'reverse'
+	with the scalarizer loops.
+
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/61628
+	* trans-types.c (gfc_init_types): Fix data-type bug
+	with gfc_max_array_element_size.
+
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* libgfortran.h (libcaf_atomic_codes): Add.
+	* trans-decl.c (gfor_fndecl_caf_atomic_def,
+	gfor_fndecl_caf_atomic_ref, gfor_fndecl_caf_atomic_cas,
+	gfor_fndecl_caf_atomic_op): New variables.
+	(gfc_build_builtin_function_decls): Initialize them.
+	* trans.h (gfor_fndecl_caf_atomic_def,
+	gfor_fndecl_caf_atomic_ref, gfor_fndecl_caf_atomic_cas,
+	gfor_fndecl_caf_atomic_op): New variables.
+	* trans-intrinsic.c (conv_intrinsic_atomic_op,
+	conv_intrinsic_atomic_ref, conv_intrinsic_atomic_cas):
+	Add library calls with -fcoarray=lib.
+
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_atomic): Update for STAT=.
+	(gfc_check_atomic_def, gfc_check_atomic_ref): Update call.
+	(gfc_check_atomic_op, gfc_check_atomic_cas,
+	gfc_check_atomic_fetch_op): New.
+	* gfortran.h (gfc_isym_id): GFC_ISYM_ATOMIC_CAS, GFC_ISYM_ATOMIC_ADD,
+	GFC_ISYM_ATOMIC_AND, GFC_ISYM_ATOMIC_OR, GFC_ISYM_ATOMIC_XOR,
+	GFC_ISYM_ATOMIC_FETCH_ADD, GFC_ISYM_ATOMIC_FETCH_AND,
+	GFC_ISYM_ATOMIC_FETCH_OR and GFC_ISYM_ATOMIC_FETCH_XOR.
+	* intrinsic.c (add_subroutines): Handle them.
+	* intrinsic.texi: Add documentation for them.
+	(ATOMIC_REF, ATOMIC_DEFINE): Add STAT=.
+	(ISO_FORTRAN_ENV): Add STAT_FAILED_IMAGE.
+	* intrinsic.h (gfc_check_atomic_op, gfc_check_atomic_cas,
+	gfc_check_atomic_fetch_op): New
+	prototypes.
+	* libgfortran.h (libgfortran_stat_codes): Add GFC_STAT_FAILED_IMAGE.
+	* iso-fortran-env.def: Add it.
+	* trans-intrinsic.c (conv_intrinsic_atomic_op): Renamed from
+	conv_intrinsic_atomic_ref; handle more atomics.
+	(conv_intrinsic_atomic_def): Handle STAT=.
+	(conv_intrinsic_atomic_cas): New.
+	(gfc_conv_intrinsic_subroutine): Handle new atomics.
+
+2014-07-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* trans-array.c (gfc_build_constant_array_constructor): Build a
+	static decl manually.
+	* trans-decl.c (create_main_function): Likewise.
+
+2014-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/61459
+	PR fortran/58883
+	* trans-expr.c (fcncall_realloc_result): Use the natural type
+	for the address expression of 'res_desc'.
+
 2014-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gfortran.texi (Fortran 2003 status): Fix grammar.
@@ -8,7 +73,7 @@
 	* trans-array.c (gfc_conv_descriptor_token): Change assert.
 	for select-type temporaries.
 	* trans-decl.c (generate_coarray_sym_init): Skip for
-	attr.select_type_temporary. 
+	attr.select_type_temporary.
 	* trans-expr.c (gfc_conv_procedure_call): Fix for
 	select-type temporaries.
 	* trans-intrinsic.c (get_caf_token_offset): Ditto.
@@ -18,7 +83,7 @@
 	* trans-types.c (gfc_get_dtype_rank_type): Ditto.
 
 2014-07-03  Tobias Burnus  <burnus@net-b.de>
-	
+
 	* scanner.c (skip_free_comments): Fix indentation.
 
 2014-07-02  Jakub Jelinek  <jakub@redhat.com>

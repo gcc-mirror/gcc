@@ -141,6 +141,10 @@ tree gfor_fndecl_caf_sync_all;
 tree gfor_fndecl_caf_sync_images;
 tree gfor_fndecl_caf_error_stop;
 tree gfor_fndecl_caf_error_stop_str;
+tree gfor_fndecl_caf_atomic_def;
+tree gfor_fndecl_caf_atomic_ref;
+tree gfor_fndecl_caf_atomic_cas;
+tree gfor_fndecl_caf_atomic_op;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_sum;
@@ -3391,6 +3395,28 @@ gfc_build_builtin_function_decls (void)
       /* CAF's ERROR STOP doesn't return.  */
       TREE_THIS_VOLATILE (gfor_fndecl_caf_error_stop_str) = 1;
 
+      gfor_fndecl_caf_atomic_def = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_atomic_define")), "R..RW",
+	void_type_node, 7, pvoid_type_node, size_type_node, integer_type_node,
+        pvoid_type_node, pint_type, integer_type_node, integer_type_node);
+
+      gfor_fndecl_caf_atomic_ref = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_atomic_ref")), "R..WW",
+	void_type_node, 7, pvoid_type_node, size_type_node, integer_type_node,
+        pvoid_type_node, pint_type, integer_type_node, integer_type_node);
+
+      gfor_fndecl_caf_atomic_cas = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_atomic_cas")), "R..WRRW",
+	void_type_node, 9, pvoid_type_node, size_type_node, integer_type_node,
+        pvoid_type_node, pvoid_type_node, pvoid_type_node, pint_type,
+	integer_type_node, integer_type_node);
+
+      gfor_fndecl_caf_atomic_op = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_atomic_op")), ".R..RWW",
+	void_type_node, 9, integer_type_node, pvoid_type_node, size_type_node,
+	integer_type_node, pvoid_type_node, pvoid_type_node, pint_type,
+	integer_type_node, integer_type_node);
+
       gfor_fndecl_co_max = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_co_max")), "W.WW",
 	void_type_node, 6, pvoid_type_node, integer_type_node,
@@ -5383,11 +5409,16 @@ create_main_function (tree fndecl)
     TREE_STATIC (array) = 1;
 
     /* Create a static variable to hold the jump table.  */
-    var = gfc_create_var (array_type, "options");
+    var = build_decl (input_location, VAR_DECL,
+		      create_tmp_var_name ("options"),
+		      array_type);
+    DECL_ARTIFICIAL (var) = 1;
+    DECL_IGNORED_P (var) = 1;
     TREE_CONSTANT (var) = 1;
     TREE_STATIC (var) = 1;
     TREE_READONLY (var) = 1;
     DECL_INITIAL (var) = array;
+    pushdecl (var);
     var = gfc_build_addr_expr (build_pointer_type (integer_type_node), var);
 
     tmp = build_call_expr_loc (input_location,

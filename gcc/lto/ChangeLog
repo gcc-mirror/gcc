@@ -1,3 +1,15 @@
+2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (read_cgraph_and_symbols): Do not push DECL_INIT_IO
+	timevar
+	(materialize_cgraph): Do not push GIMPLE_IN timevar.
+
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (add_references_to_partition): Use 
+	varpool_ctor_useable_for_folding_p.
+	* lto.c (lto_read_in_decl_state): Update sanity check.
+
 2014-07-01  Martin Liska  <mliska@suse.cz>
 
 	IPA REF alias refactoring

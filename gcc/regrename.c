@@ -1836,7 +1836,6 @@ const pass_data pass_data_regrename =
   RTL_PASS, /* type */
   "rnreg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_execute */
   TV_RENAME_REGISTERS, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

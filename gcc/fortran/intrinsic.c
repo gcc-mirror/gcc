@@ -3038,17 +3038,88 @@ add_subroutines (void)
 
   make_noreturn();
 
-  add_sym_2s ("atomic_define", GFC_ISYM_ATOMIC_DEF, CLASS_ATOMIC,
+  add_sym_3s ("atomic_define", GFC_ISYM_ATOMIC_DEF, CLASS_ATOMIC,
 	      BT_UNKNOWN, 0, GFC_STD_F2008,
 	      gfc_check_atomic_def, NULL, gfc_resolve_atomic_def,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
-	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN);
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
-  add_sym_2s ("atomic_ref", GFC_ISYM_ATOMIC_REF, CLASS_ATOMIC,
+  add_sym_3s ("atomic_ref", GFC_ISYM_ATOMIC_REF, CLASS_ATOMIC,
 	      BT_UNKNOWN, 0, GFC_STD_F2008,
 	      gfc_check_atomic_ref, NULL, gfc_resolve_atomic_ref,
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_OUT,
-	      "atom", BT_INTEGER, di, REQUIRED, INTENT_IN);
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_5s ("atomic_cas", GFC_ISYM_ATOMIC_CAS, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_cas, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_INOUT,
+	      "old", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "compare", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      "new", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_3s ("atomic_add", GFC_ISYM_ATOMIC_ADD, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_3s ("atomic_and", GFC_ISYM_ATOMIC_AND, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_3s ("atomic_or", GFC_ISYM_ATOMIC_OR, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_3s ("atomic_xor", GFC_ISYM_ATOMIC_XOR, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_4s ("atomic_fetch_add", GFC_ISYM_ATOMIC_FETCH_ADD, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_fetch_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      "old", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_4s ("atomic_fetch_and", GFC_ISYM_ATOMIC_FETCH_AND, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_fetch_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      "old", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_4s ("atomic_fetch_or", GFC_ISYM_ATOMIC_FETCH_OR, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_fetch_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      "old", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
+  add_sym_4s ("atomic_fetch_xor", GFC_ISYM_ATOMIC_FETCH_XOR, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_atomic_fetch_op, NULL, NULL,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      "old", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_0s ("backtrace", GFC_ISYM_BACKTRACE, GFC_STD_GNU, NULL);
 

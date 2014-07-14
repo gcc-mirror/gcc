@@ -586,6 +586,7 @@ void	runtime_gc_m_ptr(Eface*);
 void	runtime_gc_itab_ptr(Eface*);
 
 void	runtime_memorydump(void);
+int32	runtime_setgcpercent(int32);
 
 void	runtime_proc_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));
 void	runtime_time_scan(struct Workbuf**, void (*)(struct Workbuf**, Obj));

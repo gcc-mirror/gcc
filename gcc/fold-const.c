@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "hash-table.h"  /* Required for ENABLE_FOLD_CHECKING.  */
 #include "builtins.h"
+#include "cgraph.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -14906,7 +14907,8 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 
       if (CODE_CONTAINS_STRUCT (TREE_CODE (expr), TS_DECL_NON_COMMON))
 	{
-	  fold_checksum_tree (DECL_VINDEX (expr), ctx, ht);
+	  if (TREE_CODE (expr) == FUNCTION_DECL)
+	    fold_checksum_tree (DECL_VINDEX (expr), ctx, ht);
 	  fold_checksum_tree (DECL_RESULT_FLD (expr), ctx, ht);
 	  fold_checksum_tree (DECL_ARGUMENT_FLD (expr), ctx, ht);
 	}
@@ -16067,21 +16069,33 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
     case ADDR_EXPR:
       {
 	tree base = TREE_OPERAND (t, 0);
+
 	if (!DECL_P (base))
 	  base = get_base_address (base);
 
 	if (!base)
 	  return false;
 
-	/* Weak declarations may link to NULL.  Other things may also be NULL
-	   so protect with -fdelete-null-pointer-checks; but not variables
-	   allocated on the stack.  */
+	/* For objects in symbol table check if we know they are non-zero.
+	   Don't do anything for variables and functions before symtab is built;
+	   it is quite possible that they will be declared weak later.  */
+	if (DECL_P (base) && decl_in_symtab_p (base))
+	  {
+	    struct symtab_node *symbol;
+
+	    symbol = symtab_get_node (base);
+	    if (symbol)
+	      return symbol->nonzero_address ();
+	    else
+	      return false;
+	  }
+
+	/* Function local objects are never NULL.  */
 	if (DECL_P (base)
-	    && (flag_delete_null_pointer_checks
-		|| (DECL_CONTEXT (base)
-		    && TREE_CODE (DECL_CONTEXT (base)) == FUNCTION_DECL
-		    && auto_var_in_fn_p (base, DECL_CONTEXT (base)))))
-	  return !VAR_OR_FUNCTION_DECL_P (base) || !DECL_WEAK (base);
+	    && (DECL_CONTEXT (base)
+		&& TREE_CODE (DECL_CONTEXT (base)) == FUNCTION_DECL
+		&& auto_var_in_fn_p (base, DECL_CONTEXT (base))))
+	  return true;
 
 	/* Constants are never weak.  */
 	if (CONSTANT_CLASS_P (base))
@@ -16695,11 +16709,10 @@ fold_ignored_result (tree t)
 /* Return the value of VALUE, rounded up to a multiple of DIVISOR. */
 
 tree
-round_up_loc (location_t loc, tree value, int divisor)
+round_up_loc (location_t loc, tree value, unsigned int divisor)
 {
   tree div = NULL_TREE;
 
-  gcc_assert (divisor > 0);
   if (divisor == 1)
     return value;
 

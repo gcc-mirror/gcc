@@ -1,3 +1,43 @@
+2014-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_atomic_define,
+	_gfortran_caf_atomic_ref, _gfortran_caf_atomic_op,
+	_gfortran_caf_atomic_cas): New prototypes.
+	* caf/single.c (_gfortran_caf_atomic_define,
+	_gfortran_caf_atomic_ref, _gfortran_caf_atomic_op,
+	_gfortran_caf_atomic_cas): New functions.
+
+2014-07-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/fpu-*.h (get_fpu_rounding_mode, set_fpu_rounding_mode,
+	support_fpu_rounding_mode): Clean up, mark unreachable code as such.
+
+2014-07-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (support_fpu_underflow_control,
+	get_fpu_underflow_mode, set_fpu_underflow_mode): New prototypes.
+	* config/fpu-*.h (support_fpu_underflow_control,
+	get_fpu_underflow_mode, set_fpu_underflow_mode):
+	New functions.
+	* ieee/ieee_arithmetic.F90: Support underflow control.
+
+2014-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/fpu-sysv.h (get_fpu_rounding_mode): Use FP_RN, FP_RP,
+	FP_RM, FP_RZ unconditionally.
+	(set_fpu_rounding_mode): Likewise.
+
+2014-07-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h: Assume __GNUC__.
+
+2014-07-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/stop.c: Use C11 _Noreturn.
+	* libgfortran.h: Use C11 _Noreturn in prototypes.
+	Move REALPART, IMAGPART and COMPLEX_ASSIGN macros...
+	* intrinsics/c99_functions.c: ... here.
+
 2014-07-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* config/fpu-387.h, config/fpu-aix.h, config/fpu-sysv.h,

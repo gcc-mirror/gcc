@@ -1,3 +1,558 @@
+2014-07-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* aarch64.md (add_losym_<mode>): Set type to alu_imm.
+
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61779
+	* tree-ssa-copy.c (copy_prop_visit_cond_stmt): Always try
+	simplifying a condition.
+
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (c_strlen): Make only_value == 2 really only
+	affect warning generation.
+
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61757
+	PR tree-optimization/61783
+	PR tree-optimization/61787
+	* tree-ssa-dom.c (record_equality): Revert canonicalization
+	change and add comment.
+	(propagate_rhs_into_lhs): Revert previous fix, removing
+	loop depth restriction again.
+
+2014-07-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/cortex-a15.md (cortex_a15_alu): Handle clz, rbit.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_reg): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Likewise.
+
+2014-07-14  Richard Biener  <rguenther@suse.de>
+
+	* cgraph.h (decl_in_symtab_p): Make inline.
+
+2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61294
+	* doc/invoke.texi (-Wmemset-transposed-args): Document.
+
+	PR target/61656
+	* config/i386/i386.c (classify_argument): Don't merge classes above
+	number of words.
+
+2014-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (symtab_node): Add nonzero_address.
+	(decl_in_symtab_p): Break out from ...
+	(symtab_get_node): ... here.
+	* fold-const.c: Include cgraph.h
+	(tree_single_nonzero_warnv_p): Use symtab to determine
+	if symbol is non-zero.
+	* symtab.c (symtab_node::nonzero_address): New method.
+
+2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Disable temporary hack
+	forgotten in previous commit.
+
+2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (type_in_anonymous_namespace_p): Ignore TREE_PUBLIC
+	on builtin types.
+	* ipa-devirt.c: Include stor-layout.h and intl.h
+	(odr_subtypes_equivalent_p): New function.
+	(warn_odr): New function.
+	(warn_type_mismatch): New function.
+	(odr_types_equivalent_p): New function.
+	(add_type_duplicate): Use it.
+	* common.opt (Wodr): New flag.
+	* doc/invoke.texi (Wodr): Document new warning.
+
+2014-07-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* timevar.def (TV_IPA_LTO_DECL_INIT_IO): Remove.
+	(TV_IPA_LTO_CTORS_IN, TV_IPA_LTO_CTORS_OUT): New timevar.
+	* cgraph.c (cgraph_get_body): Push GIMPLE_IN timevar.
+	(varpool_get_constructor): Push CTORS_IN timevar.
+	* lto-streamer-out.c (lto_output): Push TV_IPA_LTO_CTORS_OUT
+	timevar.
+
+2014-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-builtin-types.def: Add USHORT_FTYPE_VOID.
+	Remove VOID_FTYPE_PUSHORT.
+	* config/i386/i386.c (bdesc_special_args) <__builtin_ia32_fnstsw>:
+	Change code to USHORT_FTYPE_VOID.
+	(ix86_expand_special_args_builtin): Handle USHORT_FTYPE_VOID.
+	(ix86_expand_builtin): Remove IX86_BUILTIN_FNSTSW handling.
+	(ix86_atomic_assign_expand_fenv): Update for
+	__builtin_ia32_fnstsw changes.
+	* config/i386/i386.md (x86_fnstsw_1): Set length unconditionally to 2.
+	(fnstsw): Change operand 0 to nonimmediate operand.
+
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* vapool.c: Include tree-ssa-alias.h, gimple.h and lto-streamer.h
+	(varpool_get_constructor): New function.
+	(varpool_ctor_useable_for_folding_p): Break out from ...
+	(ctor_for_folding): ... here; use varpool_get_constructor.
+	(varpool_assemble_decl): Likewise.
+	* lto-streamer.h (struct output_block): Turn cgraph_node
+	to symbol filed.
+	(lto_input_variable_constructor): Declare.
+	* ipa-visibility.c (function_and_variable_visibility): Use
+	varpool_get_constructor.
+	* cgraph.h (varpool_get_constructor): Declare.
+	(varpool_ctor_useable_for_folding_p): New function.
+	* lto-streamer-out.c (get_symbol_initial_value): Take encoder
+	parameter; return error_mark_node for non-trivial constructors.
+	(lto_write_tree_1, DFS_write_tree): Update use of
+	get_symbol_initial_value.
+	(output_function): Update initialization of symbol.
+	(output_constructor): New function.
+	(copy_function): Rename to ..
+	(copy_function_or_variable): ... this one; handle vars too.
+	(lto_output): Output variable sections.
+	* lto-streamer-in.c (input_constructor): New function.
+	(lto_read_body): Rename from ...
+	(lto_read_body_or_constructor): ... this one; handle vars too.
+	(lto_input_variable_constructor): New function.
+	* ipa-prop.c (ipa_prop_write_jump_functions,
+	ipa_prop_write_all_agg_replacement): Update.
+	* lto-cgraph.c (compute_ltrans_boundary): Use it.
+	(output_cgraph_opt_summary): Set symbol to NULL.
+
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (ipa_binfo_from_known_type_jfunc): In LTO do not walk
+	non-polymorphic types.
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Likewise.
+	* ipa-devirt.c (types_same_for_odr): Do not explode when one
+	of types is not polymorphic.
+
+2014-07-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (remove_inheritance_pseudos): Process
+	destination pseudo too.
+
+2014-07-11  Rong Xu  <xur@google.com>
+
+	* gcov-tool.c (gcov_output_files): Fix build error introduced in
+	commit r212448.
+
+2014-07-11  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	* config/avr/avr-arch.h (avr_mcu_t): Add text section start attribute.
+	* config/avr/avr-devices.c (AVR_MCU): Same.
+	(avr_mcu_types): add text start value to end of device list.
+	* config/avr/avr-mcus.def: Add text section start for all devices.
+	(ata5782): Add new avr5 device.
+	(ata5831): Same.
+	* config/avr/avr-tables.opt: Regenerate.
+	* config/avr/avr.h: Add declaration for text section start handler.
+	(EXTRA_SPEC_FUNCTIONS): Add text section start handler to
+	SPEC functions.
+	(LINK_SPEC): Include text section start handler to linker spec.
+	* config/avr/driver-avr.c (avr_device_to_text_start): New function to
+	pass -Ttext option to linker if the text section start for the device
+	is not zero.
+	* config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2014-07-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix51.h (LINK_SPEC): Remove -bnodelcsect.
+	* config/rs6000/aix52.h (LINK_SPEC): Same.
+	* config/rs6000/aix53.h (LINK_SPEC): Same.
+	* config/rs6000/aix61.h (LINK_SPEC): Same.
+	* config/rs6000/xcoff.h (MAKE_DECL_ONE_ONLY): Define.
+
+2014-07-11  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c (gmp_cst_to_tree): New function.
+	(graphite_verify): New function.
+	(ivs_params_clear): New function.
+	(gcc_expression_from_isl_ast_expr_id): New function.
+	(gcc_expression_from_isl_expr_int): New function.
+	(binary_op_to_tree): New function.
+	(ternary_op_to_tree): New function.
+	(unary_op_to_tree): New function.
+	(nary_op_to_tree): New function.
+	(gcc_expression_from_isl_expr_op): New function.
+	(gcc_expression_from_isl_expression): New function.
+	(graphite_create_new_loop): New function.
+	(translate_isl_ast_for_loop): New function.
+	(get_upper_bound): New function.
+	(graphite_create_new_loop_guard): New function.
+	(translate_isl_ast_node_for): New function.
+	(translate_isl_ast): New function.
+	(add_parameters_to_ivs_params): New function.
+	(scop_to_isl_ast): New parameter ip.
+	(graphite_regenerate_ast_isl): Add generation of GIMPLE code.
+
+2014-07-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/xtensa/predicates.md (call expander): Update for
+	DECL_SECTION_NAME being string.
+
+2014-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61473
+	* builtins.c (fold_builtin_memory_op): Inline memory moves that
+	can be implemented with a single load followed by a single store.
+	(c_strlen): Only warn when only_value is not 2.
+
+2014-07-11  Evgeny Stupachenko  <evstupac@gmail.com>
+
+	* config/i386/i386.c (expand_vec_perm_pblendv): Disable for AVX.
+
+2014-07-11  Marat Zakirov  <m.zakirov@samsung.com>
+
+	PR target/61561
+	* config/arm/arm.md (*movhi_insn_arch4): Handle stack pointer.
+	(*movhi_bytes): Likewise.
+	(*arm_movqi_insn): Likewise.
+
+2014-07-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56858
+	* config/alpha/alpha.c: Include tree-pass.h, context.h
+	and pass_manager.h.
+	(pass_data_handle_trap_shadows): New pass.
+	(pass_handle_trap_shadows::gate): New pass gate function.
+	(make_pass_handle_trap_shadows): New function.
+	(rest_of_handle_trap_shadows): Ditto.
+
+	(alpha_align_insns_1): Rename from alpha_align_insns.
+	(pass_data_align_insns): New pass.
+	(pass_align_insns::gate): New pass gate function.
+	(make_pass_aling_insns): New function.
+	(rest_of_align_insns): Ditto.
+	(alpha_align_insns): Ditto.
+
+	(alpha_option_override): Declare handle_trap_shadows info
+	and align_insns_info.  Register handle_trap_shadows and align_insns
+	passes here.
+	(alpha_reorg): Do not call alpha_trap_shadows and
+	alpha_align_insn from here.
+
+	(alpha_pad_function_end): Do not skip BARRIERs.
+
+2014-07-10  Rong Xu  <xur@google.com>
+
+	Add gcov-tool: an offline gcda profile processing tool support.
+	* gcov-io.c (gcov_position): Make avaialble to gcov-tool.
+	(gcov_is_error): Ditto.
+	(gcov_read_string): Ditto.
+	(gcov_read_sync): Ditto.
+	* gcov-io.h: Move counter defines to gcov-counter.def.
+	* gcov-dump.c (tag_counters): Use gcov-counter.def.
+	* coverage.c: Ditto.
+	* gcov-tool.c: Offline gcda profile processing tool.
+	(unlink_gcda_file): Remove one gcda file.
+	(unlink_profile_dir): Remove gcda files from the profile path.
+	(gcov_output_files): Output gcda files to an output dir.
+	(profile_merge): Merge two profiles in directory.
+	(print_merge_usage_message): Print merge usage.
+	(merge_usage): Print merge usage and exit.
+	(do_merge): Driver for profile merge sub-command.
+	(profile_rewrite): Rewrite profile.
+	(print_rewrite_usage_message): Print rewrite usage.
+	(rewrite_usage): Print rewrite usage and exit.
+	(do_rewrite): Driver for profile rewrite sub-command.
+	(print_usage): Print gcov-info usage and exit.
+	(print_version): Print gcov-info version.
+	(process_args): Process arguments.
+	(main): Main routine for gcov-tool.
+	* Makefile.in: Build and install gcov-tool.
+	* gcov-counter.def: New file split from gcov-io.h.
+	* doc/gcc.texi: Include gcov-tool.texi.
+	* doc/gcov-tool.texi: Document for gcov-tool.
+
+2014-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61757
+	* tree-ssa-dom.c (loop_depth_of_name): Restore.
+	(propagate_rhs_into_lhs): Revert part of last change.
+
+2014-07-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* fold-const.c (fold_checksum_tree): Look at DECL_VINDEX only for
+	FUNCTION_DECLs.
+
+2014-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/53590
+	* function.c (allocate_struct_function): Revert r188667 change.
+
+	* gimple-low.c (lower_builtin_setjmp): Use properly-typed constant.
+
+2014-07-10  Tom G. Christensen  <tgc@jupiterrise.com>
+
+	* doc/install.texi: Remove links to defunct package providers for
+	Solaris.
+
+2014-07-09  Tom de Vries  <tom@codesourcery.com>
+
+	* final.c (get_call_fndecl): Declare.
+	(self_recursive_call_p): New function.
+	(collect_fn_hard_reg_usage): Handle self-recursive function calls.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (record_node): Walk through aliases.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (hash_scc): Avoid quadratic hashing loop.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	Revert:
+	* stor-layout.c (finish_builtin_struct): Copy fields into the variants.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (function_and_variable_visibility): Remove
+	temporary hack disabling local aliases on AIX.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (devirtualization_time_bonus): Walk through aliases.
+	* ipa-inline-analysis.c (estimate_edge_devirt_benefit): Likewise.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* rs6000/rs6000-protos.h (rs6000_xcoff_declare_object_name): Declare.
+	* rs6000/rs6000.c: Inline output of .set instruction.
+	(declare_alias_data): New struct.
+	(rs6000_declare_alias): New function.
+	(rs6000_xcoff_declare_function_name): Use it.
+	(rs6000_xcoff_declare_object_name): New function.
+	* config/rs6000/xcoff.h: Define ASM_DECLARE_OBJECT_NAME.
+	(ASM_OUTPUT_DEF): Turn to empty definition.
+
+2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR bootstrap/61679
+	* hash-table.h: use hash_table::value_type instead of
+	Descriptor::value_type in the return types of several methods.
+
+2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* tree-pass.h (pass_data): Remove has_execute member.
+	* passes.c (execute_one_pass): Don't check pass->has_execute.
+	* asan.c, auto-inc-dec.c, bb-reorder.c, bt-load.c, cfgcleanup.c,
+	cfgexpand.c, cfgrtl.c, cgraphbuild.c, combine-stack-adj.c, combine.c,
+	compare-elim.c, config/arc/arc.c, config/epiphany/mode-switch-use.c,
+	config/epiphany/resolve-sw-modes.c, config/i386/i386.c,
+	config/mips/mips.c, config/rl78/rl78.c, config/s390/s390.c,
+	config/sh/sh_optimize_sett_clrt.cc, config/sh/sh_treg_combine.cc,
+	config/sparc/sparc.c, cprop.c, cse.c, dce.c, df-core.c, dse.c,
+	dwarf2cfi.c, except.c, final.c, function.c, fwprop.c, gcse.c,
+	gimple-low.c, gimple-ssa-isolate-paths.c,
+	gimple-ssa-strength-reduction.c, graphite.c, ifcvt.c, init-regs.c,
+	ipa-comdats.c, ipa-cp.c, ipa-devirt.c, ipa-inline-analysis.c,
+	ipa-inline.c, ipa-profile.c, ipa-pure-const.c, ipa-reference.c,
+	ipa-split.c, ipa-visibility.c, ipa.c, ira.c, jump.c, loop-init.c,
+	lower-subreg.c, mode-switching.c, modulo-sched.c, omp-low.c, passes.c,
+	postreload-gcse.c, postreload.c, predict.c, recog.c, ree.c,
+	reg-stack.c, regcprop.c, reginfo.c, regrename.c, reorg.c, sched-rgn.c,
+	stack-ptr-mod.c, store-motion.c, tracer.c, trans-mem.c,
+	tree-call-cdce.c, tree-cfg.c, tree-cfgcleanup.c, tree-complex.c,
+	tree-eh.c, tree-emutls.c, tree-if-conv.c, tree-into-ssa.c,
+	tree-loop-distribution.c, tree-nrv.c, tree-object-size.c,
+	tree-parloops.c, tree-pass.h, tree-predcom.c, tree-profile.c,
+	tree-sra.c, tree-ssa-ccp.c, tree-ssa-copy.c, tree-ssa-copyrename.c,
+	tree-ssa-dce.c, tree-ssa-dom.c, tree-ssa-dse.c, tree-ssa-forwprop.c,
+	tree-ssa-ifcombine.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-loop-unswitch.c, tree-ssa-loop.c, tree-ssa-math-opts.c,
+	tree-ssa-phiopt.c, tree-ssa-phiprop.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-sink.c, tree-ssa-strlen.c,
+	tree-ssa-structalias.c, tree-ssa-uncprop.c, tree-ssa-uninit.c,
+	tree-ssa.c, tree-ssanames.c, tree-stdarg.c, tree-switch-conversion.c,
+	tree-tailcall.c, tree-vect-generic.c, tree-vectorizer.c, tree-vrp.c,
+	tree.c, tsan.c, ubsan.c, var-tracking.c, vtable-verify.c,
+	web.c: Remove initializer for pass_data::has_execute.
+
+2014-07-08  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* graphite-htab.h: Use hash_map instead of hash_table.
+	* graphite-clast-to-gimple.c: Adjust.
+	* passes.c: Use hash_map instead of hash_table.
+	* sese.c: Likewise.
+	* sese.h: Remove now unused code.
+
+2014-07-08  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/61599
+	* config/i386/i386.c (ix86_in_large_data_p): Check for size less
+	than zero.
+
+2014-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61673
+	* combine.c (simplify_comparison): Test just mode's sign bit
+	in tmode rather than the sign bit and any bits above it.
+
+2014-07-08  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c (generate_isl_context):
+	Add __isl_give to the declaration.
+	(generate_isl_schedule): Likewise.
+	(scop_to_isl_ast): Likewise.
+
+2014-07-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (cortexa5_extra_costs): New table.
+	(arm_cortex_a5_tune): Use cortexa5_extra_costs.
+
+2014-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/61725
+	* tree-vrp.c (extract_range_basic): Don't assume vr0 is unsigned
+	range, use range_includes_zerop_p instead of integer_zerop on
+	vr0->min, only use log2 of max if min is not negative.
+
+2014-07-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.h (loop_depth_of_name): Remove.
+	* tree-ssa-dom.c (record_equivalences_from_phis): Remove
+	restriction on loop depth difference.
+	(record_equality): Likewise.
+	(propagate_rhs_into_lhs): Likewise.  Simplify condition.
+	(loop_depth_of_name): Remove.
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Remove
+	restriction on loop depth difference.
+	(init_copy_prop): Likewise.
+
+2014-07-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (walk_aliased_vdefs_1): Add FUNCTION_ENTRY_REACHED
+	parameter.
+	(walk_aliased_vdefs): Likewise.
+	* tree-ssa-alias.h (walk_aliased_vdefs): Likewise.
+	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers
+	(detect_type_change_from_memory_writes): Check if entry was reached.
+
+2014-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61681
+	* tree-ssa-structalias.c (find_what_var_points_to): Expand
+	NONLOCAL inside ESCAPED.
+
+2014-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61680
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Handle properly all read-write dependences with group accesses.
+
+2014-07-08  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61576
+	* tree-if-conv.c (is_cond_scalar_reduction): Add check that basic
+	block containing reduction statement is predecessor of phi basi block.
+
+2014-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60226
+	* fold-const.c (round_up_loc): Change the parameter type.
+	Remove assert.
+	* fold-const.h (round_up_loc): Adjust declaration.
+	* stor-layout.c (finalize_record_size): Check for too large types.
+
+2014-07-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c: Include calls.h.
+	(symtab_nonoverwritable_alias_1): Check sanity of the local alias.
+
+2014-07-07  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/rs6000/rs6000.c (output_vec_const_move): Handle
+	little-endian code generation.
+	* config/rs6000/spe.md (spe_evmergehi): Rename to...
+	(vec_perm00_v2si): ... this.  Handle little-endian code generation.
+	(spe_evmergehilo): Rename to...
+	(vec_perm01_v2si): ... this.  Handle little-endian code generation.
+	(spe_evmergelo): Rename to...
+	(vec_perm11_v2si): ... this.  Handle little-endian code generation.
+	(spe_evmergelohi): Rename to...
+	(vec_perm10_v2si): ... this.  Handle little-endian code generation.
+	(spe_evmergehi, spe_evmergehilo): New expanders.
+	(spe_evmergelo, spe_evmergelohi): Likewise.
+	(*frob_<SPE64:mode>_<DITI:mode>): Handle little-endian code generation.
+	(*frob_tf_ti): Likewise.
+	(*frob_<mode>_di_2): Likewise.
+	(*frob_tf_di_8_2): Likewise.
+	(*frob_di_<mode>): Likewise.
+	(*frob_ti_tf): Likewise.
+	(*frob_<DITI:mode>_<SPE64:mode>_2): Likewise.
+	(*frob_ti_<mode>_8_2): Likewise.
+	(*frob_ti_tf_2): Likewise.
+	(mov_si<mode>_e500_subreg0): Rename to...
+	(mov_si<mode>_e500_subreg0_be): ... this.  Restrict to the big
+	endianness only.
+	(*mov_si<mode>_e500_subreg0_le): New instruction pattern.
+	(*mov_si<mode>_e500_subreg0_elf_low): Rename to...
+	(*mov_si<mode>_e500_subreg0_elf_low_be): ... this.  Restrict to
+	the big endianness only.
+	(*mov_si<mode>_e500_subreg0_elf_low_le): New instruction pattern.
+	(*mov_si<mode>_e500_subreg0_2): Rename to...
+	(*mov_si<mode>_e500_subreg0_2_be): ... this.  Restrict to the
+	big big endianness only.
+	(*mov_si<mode>_e500_subreg0_2_le): New instruction pattern.
+	(*mov_si<mode>_e500_subreg4): Rename to...
+	(*mov_si<mode>_e500_subreg4_be): ... this.  Restrict to the big
+	endianness only.
+	(mov_si<mode>_e500_subreg4_le): New instruction pattern.
+	(*mov_si<mode>_e500_subreg4_elf_low): Rename to...
+	(*mov_si<mode>_e500_subreg4_elf_low_be): ... this.  Restrict to
+	the big endianness only.
+	(*mov_si<mode>_e500_subreg4_elf_low_le): New instruction/splitter
+	pattern.
+	(*mov_si<mode>_e500_subreg4_2): Rename to...
+	(*mov_si<mode>_e500_subreg4_2_be): ... this.  Restrict to the big
+	endianness only.
+	(*mov_si<mode>_e500_subreg4_2_le): New instruction pattern.
+	(*mov_sitf_e500_subreg8): Rename to...
+	(*mov_sitf_e500_subreg8_be): ... this.  Restrict to the big
+	endianness only.
+	(*mov_sitf_e500_subreg8_le): New instruction pattern.
+	(*mov_sitf_e500_subreg8_2): Rename to...
+	(*mov_sitf_e500_subreg8_2_be): ... this.  Restrict to the big
+	endianness only.
+	(*mov_sitf_e500_subreg8_2_le): New instruction pattern.
+	(*mov_sitf_e500_subreg12): Rename to...
+	(*mov_sitf_e500_subreg12_be): ... this.  Restrict to the big
+	endianness only.
+	(*mov_sitf_e500_subreg12_le): New instruction pattern.
+	(*mov_sitf_e500_subreg12_2): Rename to...
+	(*mov_sitf_e500_subreg12_2_be): ... this.  Restrict to the big
+	endianness only.
+	(*mov_sitf_e500_subreg12_2_le): New instruction pattern.
+
+2014-07-07  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* asan.c (instrument_strlen_call): Do not instrument first byte
+	in strlen if already instrumented.
+
+2014-07-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.opt (mwords-little-endian): Delete.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Remove handling
+	of TARGET_LITTLE_WORDS.
+	(WORDS_BIG_ENDIAN): Define to BYTES_BIG_ENDIAN.
+	* config/arm/arm.c (arm_option_override): Remove TARGET_LITTLE_WORDS
+	warning.
+	* doc/invoke.texi: Remove references to -mwords-little-endian.
+
 2014-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* expmed.c (struct init_expmed_rtl): Change all fields but

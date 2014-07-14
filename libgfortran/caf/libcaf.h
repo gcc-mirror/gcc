@@ -128,4 +128,13 @@ void _gfortran_caf_send (caf_token_t, size_t, int, gfc_descriptor_t *,
 void _gfortran_caf_sendget (caf_token_t, size_t, int, gfc_descriptor_t *,
 			    caf_vector_t *, caf_token_t, size_t, int,
 			    gfc_descriptor_t *, caf_vector_t *, int, int);
+
+void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
+				  int, int);
+void _gfortran_caf_atomic_ref (caf_token_t, size_t, int, void *, int *,
+			       int, int);
+void _gfortran_caf_atomic_cas (caf_token_t, size_t, int, void *, void *,
+			       void *, int *, int, int);
+void _gfortran_caf_atomic_op (int, caf_token_t, size_t, int, void *, void *,
+			      int *, int, int);
 #endif  /* LIBCAF_H  */

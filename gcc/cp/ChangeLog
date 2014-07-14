@@ -1,3 +1,100 @@
+2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/61294
+	* cp-tree.h (LITERAL_ZERO_P): Define.
+	* parser.c (cp_parser_parenthesized_expression_list): Add
+	want_literal_zero_p argument, if true, for literal zeros
+	insert INTEGER_CSTs with LITERAL_ZERO_P flag set.
+	(cp_parser_postfix_expression): Adjust
+	cp_parser_parenthesized_expression_list caller, handle
+	-Wmemset-transposed-args.
+	(literal_zeros): New variable.
+
+2014-07-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58511
+	* semantics.c (is_instantiation_of_constexpr): Return true for
+	defaulted functions, too.
+	(explain_invalid_constexpr_fn): Only use
+	explain_implicit_non_constexpr if !DECL_DECLARED_CONSTEXPR_P.
+	* method.c (explain_implicit_non_constexpr): Pass
+	DECL_INHERITED_CTOR_BASE to explain_implicit_non_constexpr.
+
+	PR c++/58611
+	* decl.c (check_initializer): Don't finish_compound_literal
+	on erroneous constexpr init.
+
+	PR c++/58612
+	* tree.c (bot_replace): Only replace a dummy 'this' parm.
+
+	PR c++/60628
+	* decl.c (create_array_type_for_decl): Only check for auto once.
+
+	PR c++/58636
+	* call.c (build_list_conv): Don't try to build a list of references.
+
+2014-07-13  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR C++/60209 - Declaration of user-defined literal operator cause error
+	* cp/parser.c (cp_parser_operator()): Fold treatment of strings
+	and user-defined string literals.  Use the full string parser.
+	(cp_parser_string_literal()): Add flag to not look for literal operator.
+
+2014-07-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/22434
+	PR c++/61288
+	* call.c (build_conditional_expr_1): Avoid reading freed memory.
+
+2014-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53159
+	* call.c (build_user_type_conversion_1): Copy LOOKUP_NO_NARROWING
+	into convflags.
+	* decl.c (check_initializer): Don't call check_narrowing here,
+	set LOOKUP_NO_NARROWING.
+	* typeck2.c (digest_init_r): Likewise.
+
+2014-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61661
+	* semantics.c (reduced_constant_expression_p): Handle CONSTRUCTOR.
+
+	PR c++/61659
+	PR c++/61687
+	* decl2.c (mark_all_virtuals): New variable.
+	(maybe_emit_vtables): Check it instead of flag_devirtualize.
+	(cp_write_global_declarations): Set it and give helpful diagnostic
+	if it introduces errors.
+	* class.c (finish_struct_1): Check it.
+	* decl.c (grokdeclarator): Clear virtualp after 'virtual auto' error.
+
+2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60686
+	* decl.c (grokdeclarator): Adjust error messages about 'explicit'
+	outside class declaration, in friend declaration, and neither on
+	constructor nor conversion operator.
+
+2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1584
+	PR c++/57466
+	* pt.c (check_cv_quals_for_unify): Implement resolution, disregard
+	cv-qualifiers of function types.
+
+2014-07-09  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59361
+	* parser.c (cp_parser_tokens_start_cast_expression): Return 0 for
+	CPP_ELLIPSIS too.
+
+2014-07-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (check_for_override): Wrap the 'final' and 'override'
+	keywords in %< and %>.
+
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/6940
@@ -16,9 +113,9 @@
 	PR c++/58781
 	PR c++/60249
 	PR c++/59867
-	* parser.c (cp_parser_userdef_string_literal()): Take a tree
-	not a cp_token*. (cp_parser_string_literal(): Don't hack
-	the token stream!
+	* parser.c (cp_parser_userdef_string_literal): Take a tree
+	not a cp_token*.
+	(cp_parser_string_literal): Don't hack the token stream.
 
 2014-06-30  Jason Merrill  <jason@redhat.com>
 

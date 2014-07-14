@@ -7,6 +7,7 @@
       lhs = rhs + lhs
       end
 
+      external atomic_add
       real lhs, rhs
       integer i
       lhs = 0

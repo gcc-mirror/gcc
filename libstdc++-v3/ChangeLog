@@ -1,3 +1,84 @@
+2014-07-14  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random.tcc: Unfortunately more fixes for
+	operator>> and operator<< for uniform_on_sphere_distribution.
+
+2014-07-13  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random.tcc: Fix operator>> and operator<< for
+	uniform_on_sphere_distribution.
+
+2014-07-12  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random: Add uniform_on_sphere_distribution definition.
+	* include/ext/random.tcc: Add out-of-band member function definitions
+	for uniform_on_sphere_distribution.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	cons/default.cc: New file.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	operators/equal.cc: New file.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	operators/inequal.cc: New file.
+	* testsuite/ext/random/uniform_on_sphere_distribution/
+	operators/serialize.cc: New file.
+
+2014-07-11  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Add the logistic_distribution as an extension.
+	* include/ext/random: Add the logistic_distribution.
+	* include/ext/random.tcc: Add the logistic_distribution.
+	* testsuite/ext/random/logistic_distribution/cons/parms.cc: New.
+	* testsuite/ext/random/logistic_distribution/cons/default.cc: New.
+	* testsuite/ext/random/logistic_distribution/requirements/typedefs.cc:
+	New.
+	* testsuite/ext/random/logistic_distribution/operators/inequal.cc: New.
+	* testsuite/ext/random/logistic_distribution/operators/equal.cc: New.
+	* testsuite/ext/random/logistic_distribution/operators/serialize.cc:
+	New.
+
+2014-07-11  Samuel Bronson  <naesten@gmail.com>
+
+	* testsuite/lib/libstdc++.exp  (libstdc++_init): Set $GCC_COLORS=""
+	instead of insisting that GCC understand -fdiagnostics-color=never
+
+	* testsuite/lib/gdb-test.exp (gdb-test): Turn off GDB's auto-load,
+	list loaded libs.
+
+2014-07-11  Samuel Bronson  <naesten@gmail.com>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	PR libstdc++/58962
+	* python/libstdcxx/v6/printers.py: Port to Python 2+3
+	(imap): New compat function.
+	(izip): Likewise.
+	(Iterator): New mixin to allow writing iterators in Python 3 style
+	regardless of which version we're running on.
+	[Python3] (long) New compat alias for "int".
+	* testsuite/lib/gdb-test.exp: Port to Python 2+3 (print syntax)
+
+2014-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/any (any::_Manager_alloc::_Data): Reorder
+	tuple members to simplify pretty printing.
+	(any::_Manager_alloc::_Data::_M_construct): Fix uses-allocator
+	construction.
+	* testsuite/experimental/any/cons/4.cc: New.
+
+2014-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/61728
+	* libsupc++/cxxabi.h: Define __pbase_type_info::__pointer_catch here.
+	* libsupc++/tinfo.h: Not here.
+
+2014-07-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocated_ptr.h (__allocated_ptr::operator=): Add
+	missing return.
+	* include/experimental/any: Remove unused header.
+	* include/std/functional (_Maybe_wrap_member_pointer): Fix comments.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+	* testsuite/util/testsuite_regex.h: Move include guard.
+
 2014-07-01  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/61601
@@ -37,7 +118,7 @@
 
 	Revert:
 	2014-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
-	    	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+		    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR libstdc++/61536
 	* config/abi/pre/gnu.ver: Adjust for out of line comparisons.
@@ -102,7 +183,7 @@
 	* include/std/chrono (_Checked_integral_constant): Allow zero.
 	* testsuite/20_util/duration/literals/values.cc: Test non-positive
 	values and digit separators.
-	* include/experimental/any 
+	* include/experimental/any
 
 	PR libstdc++/61532
 	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Do not
@@ -484,10 +565,10 @@
 
 2014-05-20  Cesar Philippidis  <cesar@codesourcery.com>
 
-	* scripts/testsuite_flags.in (cxxflags): Remove @CXXFLAGS@ since 
+	* scripts/testsuite_flags.in (cxxflags): Remove @CXXFLAGS@ since
 	libstdc++.exp imports those flags via getenv.
-	* testsuite/lib/libstdc++.exp (libstdc++_init): Ensure that 
-	CXXFLAGS contains a '-O' flag. 
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Ensure that
+	CXXFLAGS contains a '-O' flag.
 
 2014-05-20  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
 

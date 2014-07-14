@@ -60,8 +60,17 @@ Some basic guidelines for editing this document:
 * @code{ATAN}:          ATAN,      Arctangent function
 * @code{ATAN2}:         ATAN2,     Arctangent function
 * @code{ATANH}:         ATANH,     Inverse hyperbolic tangent function
+* @code{ATOMIC_ADD}:    ATOMIC_ADD, Atomic ADD operation
+* @code{ATOMIC_AND}:    ATOMIC_AND, Atomic bitwise AND operation
+* @code{ATOMIC_CAS}:    ATOMIC_CAS, Atomic compare and swap
+* @code{ATOMIC_FETCH_ADD}: ATOMIC_FETCH_ADD, Atomic ADD operation with prior fetch
+* @code{ATOMIC_FETCH_AND}: ATOMIC_FETCH_AND, Atomic bitwise AND operation with prior fetch
+* @code{ATOMIC_FETCH_OR}: ATOMIC_FETCH_OR, Atomic bitwise OR operation with prior fetch
+* @code{ATOMIC_FETCH_XOR}: ATOMIC_FETCH_XOR, Atomic bitwise XOR operation with prior fetch
+* @code{ATOMIC_OR}:     ATOMIC_OR, Atomic bitwise OR operation
 * @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_REF}:    ATOMIC_REF, Obtaining the value of a variable atomically
+* @code{ATOMIC_XOR}:    ATOMIC_XOR, Atomic bitwise OR operation
 * @code{BACKTRACE}:     BACKTRACE, Show a backtrace
 * @code{BESSEL_J0}:     BESSEL_J0, Bessel function of the first kind of order 0
 * @code{BESSEL_J1}:     BESSEL_J1, Bessel function of the first kind of order 1
@@ -1554,6 +1563,159 @@ Inverse function: @ref{TANH}
 
 
 
+@node ATOMIC_ADD
+@section @code{ATOMIC_ADD} --- Atomic ADD operation
+@fnindex ATOMIC_ADD
+@cindex Atomic subroutine, add
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_ADD(ATOM, VALUE)} atomically adds the value of @var{VAR} to the
+variable @var{ATOM}. When @var{STAT} is present and the invokation was
+successful, it is assigned the value 0. If it is present and the invokation
+has failed, it is assigned a positive value; in particular, for a coindexed
+@var{ATOM}, if the remote image has stopped, it is assigned the value of
+@code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
+failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_ADD (ATOM, VALUE [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*]
+  call atomic_add (atom[1], this_image())
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_ADD}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_AND}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@end table
+
+
+
+
+@node ATOMIC_AND
+@section @code{ATOMIC_AND} --- Atomic bitwise AND operation
+@fnindex ATOMIC_AND
+@cindex Atomic subroutine, AND
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
+AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
+and the invokation was successful, it is assigned the value 0. If it is present
+and the invokation has failed, it is assigned a positive value; in particular,
+for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
+value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
+image has failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_AND (ATOM, VALUE [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*]
+  call atomic_and (atom[1], int(b'10100011101'))
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_AND}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_ADD}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@end table
+
+
+
+@node ATOMIC_CAS
+@section @code{ATOMIC_CAS} --- Atomic compare and swap
+@fnindex ATOMIC_DEFINE
+@cindex Atomic subroutine, compare and swap
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_CAS} compares the variable @var{ATOM} with the value of
+@var{COMPARE}; if the value is the same, @var{ATOM} is set to the value
+of @var{NEW}. Additionally, @var{OLD} is set to the value of @var{ATOM}
+that was used for the comparison.  When @var{STAT} is present and the invokation
+was successful, it is assigned the value 0. If it is present and the invokation
+has failed, it is assigned a positive value; in particular, for a coindexed
+@var{ATOM}, if the remote image has stopped, it is assigned the value of
+@code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
+failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_CAS (ATOM, OLD, COMPARE, NEW [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}    @tab Scalar coarray or coindexed variable of either integer
+type with @code{ATOMIC_INT_KIND} kind or logical type with
+@code{ATOMIC_LOGICAL_KIND} kind.
+@item @var{OLD}     @tab Scalar of the same type and kind as @var{ATOM}.
+@item @var{COMPARE} @tab Scalar variable of the same type and kind as
+@var{ATOM}.
+@item @var{NEW}     @tab Scalar variable of the same type as @var{ATOM}. If kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{STAT}    @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  logical(atomic_logical_kind) :: atom[*], prev
+  call atomic_cas (atom[1], prev, .false., .true.))
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_REF}, @ref{ISO_FORTRAN_ENV}
+@end table
+
+
+
 @node ATOMIC_DEFINE
 @section @code{ATOMIC_DEFINE} --- Setting a variable atomically
 @fnindex ATOMIC_DEFINE
@@ -1562,25 +1724,31 @@ Inverse function: @ref{TANH}
 @table @asis
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} defines the variable @var{ATOM} with the value
-@var{VALUE} atomically.
+@var{VALUE} atomically. When @var{STAT} is present and the invokation was
+successful, it is assigned the value 0. If it is present and the invokation
+has failed, it is assigned a positive value; in particular, for a coindexed
+@var{ATOM}, if the remote image has stopped, it is assigned the value of
+@code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
+failed, the value @code{STAT_FAILED_IMAGE}.
 
 @item @emph{Standard}:
-Fortran 2008 and later
+Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
 
 @item @emph{Syntax}:
-@code{CALL ATOMIC_DEFINE(ATOM, VALUE)}
+@code{CALL ATOMIC_DEFINE (ATOM, VALUE [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ATOM}   @tab Scalar coarray or coindexed variable of either integer
-                        type with @code{ATOMIC_INT_KIND} kind or logical type
-                        with @code{ATOMIC_LOGICAL_KIND} kind.
-@item @var{VALURE} @tab Scalar and of the same type as @var{ATOM}. If the kind
-                        is different, the value is converted to the kind of
-                        @var{ATOM}.
+type with @code{ATOMIC_INT_KIND} kind or logical type with
+@code{ATOMIC_LOGICAL_KIND} kind.
+
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
 @end multitable
 
 @item @emph{Example}:
@@ -1593,7 +1761,263 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_REF}, @ref{ISO_FORTRAN_ENV}
+@ref{ATOMIC_REF}, @ref{ATOMIC_CAS}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_ADD}, @ref{ATOMIC_AND}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@end table
+
+
+
+@node ATOMIC_FETCH_ADD
+@section @code{ATOMIC_FETCH_ADD} --- Atomic ADD operation with prior fetch
+@fnindex ATOMIC_FETCH_ADD
+@cindex Atomic subroutine, ADD with fetch
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_FETCH_ADD(ATOM, VALUE, OLD)} atomically stores the value of
+@var{ATOM} in @var{OLD} and adds the value of @var{VAR} to the
+variable @var{ATOM}. When @var{STAT} is present and the invokation was
+successful, it is assigned the value 0. If it is present and the invokation
+has failed, it is assigned a positive value; in particular, for a coindexed
+@var{ATOM}, if the remote image has stopped, it is assigned the value of
+@code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
+failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_FETCH_ADD (ATOM, VALUE, old [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@code{ATOMIC_LOGICAL_KIND} kind.
+
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{OLD}    @tab Scalar of the same type and kind as @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*], old
+  call atomic_add (atom[1], this_image(), old)
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_ADD}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_OR}, @ref{ATOMIC_FETCH_XOR}
+@end table
+
+
+
+@node ATOMIC_FETCH_AND
+@section @code{ATOMIC_FETCH_AND} --- Atomic bitwise AND operation with prior fetch
+@fnindex ATOMIC_FETCH_AND
+@cindex Atomic subroutine, AND with fetch
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_AND(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
+@var{OLD} and defines @var{ATOM} with the bitwise AND between the values of
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
+successful, it is assigned the value 0. If it is present and the invokation has
+failed, it is assigned a positive value; in particular, for a coindexed
+@var{ATOM}, if the remote image has stopped, it is assigned the value of
+@code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
+failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_FETCH_AND (ATOM, VALUE, OLD [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{OLD}    @tab Scalar of the same type and kind as @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*], old
+  call atomic_fetch_and (atom[1], int(b'10100011101'), old)
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_AND}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_OR}, @ref{ATOMIC_FETCH_XOR}
+@end table
+
+
+
+@node ATOMIC_FETCH_OR
+@section @code{ATOMIC_FETCH_OR} --- Atomic bitwise OR operation with prior fetch
+@fnindex ATOMIC_FETCH_OR
+@cindex Atomic subroutine, OR with fetch
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_OR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
+@var{OLD} and defines @var{ATOM} with the bitwise OR between the values of
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
+successful, it is assigned the value 0. If it is present and the invokation has
+failed, it is assigned a positive value; in particular, for a coindexed
+@var{ATOM}, if the remote image has stopped, it is assigned the value of
+@code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
+failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_FETCH_OR (ATOM, VALUE, OLD [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{OLD}    @tab Scalar of the same type and kind as @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*], old
+  call atomic_fetch_or (atom[1], int(b'10100011101'), old)
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_OR}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_XOR}
+@end table
+
+
+
+@node ATOMIC_FETCH_XOR
+@section @code{ATOMIC_FETCH_XOR} --- Atomic bitwise XOR operation with prior fetch
+@fnindex ATOMIC_FETCH_XOR
+@cindex Atomic subroutine, XOR with fetch
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_XOR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
+@var{OLD} and defines @var{ATOM} with the bitwise XOR between the values of
+@var{ATOM} and @var{VALUE}. When @var{STAT} is present and the invokation was
+successful, it is assigned the value 0. If it is present and the invokation has
+failed, it is assigned a positive value; in particular, for a coindexed
+@var{ATOM}, if the remote image has stopped, it is assigned the value of
+@code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
+failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_FETCH_XOR (ATOM, VALUE, OLD [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{OLD}    @tab Scalar of the same type and kind as @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*], old
+  call atomic_fetch_xor (atom[1], int(b'10100011101'), old)
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_XOR}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_OR}
+@end table
+
+
+
+@node ATOMIC_OR
+@section @code{ATOMIC_OR} --- Atomic bitwise OR operation
+@fnindex ATOMIC_OR
+@cindex Atomic subroutine, OR
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_OR(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
+AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
+and the invokation was successful, it is assigned the value 0. If it is present
+and the invokation has failed, it is assigned a positive value; in particular,
+for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
+value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
+image has failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_OR (ATOM, VALUE [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*]
+  call atomic_or (atom[1], int(b'10100011101'))
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_OR}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_ADD}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
 @end table
 
 
@@ -1606,25 +2030,31 @@ end program atomic
 @table @asis
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} atomically assigns the value of the
-variable @var{ATOM} to @var{VALUE}.
+variable @var{ATOM} to @var{VALUE}. When @var{STAT} is present and the
+invokation was successful, it is assigned the value 0. If it is present and the
+invokation has failed, it is assigned a positive value; in particular, for a
+coindexed @var{ATOM}, if the remote image has stopped, it is assigned the value
+of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image
+has failed, the value @code{STAT_FAILED_IMAGE}.
+
 
 @item @emph{Standard}:
-Fortran 2008 and later
+Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
 
 @item @emph{Syntax}:
-@code{CALL ATOMIC_REF(VALUE, ATOM)}
+@code{CALL ATOMIC_REF(VALUE, ATOM [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{VALURE} @tab Scalar and of the same type as @var{ATOM}. If the kind
-                        is different, the value is converted to the kind of
-                        @var{ATOM}.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
 @item @var{ATOM}   @tab Scalar coarray or coindexed variable of either integer
-                        type with @code{ATOMIC_INT_KIND} kind or logical type
-                        with @code{ATOMIC_LOGICAL_KIND} kind.
+type with @code{ATOMIC_INT_KIND} kind or logical type with
+@code{ATOMIC_LOGICAL_KIND} kind.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
 @end multitable
 
 @item @emph{Example}:
@@ -1643,9 +2073,58 @@ end program atomic
 @end smallexample
 
 @item @emph{See also}:
-@ref{ATOMIC_DEFINE}, @ref{ISO_FORTRAN_ENV}
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_CAS}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_FETCH_ADD}, @ref{ATOMIC_FETCH_AND}, @ref{ATOMIC_FETCH_OR},
+@ref{ATOMIC_FETCH_XOR}
 @end table
 
+
+@node ATOMIC_XOR
+@section @code{ATOMIC_XOR} --- Atomic bitwise OR operation
+@fnindex ATOMIC_XOR
+@cindex Atomic subroutine, XOR
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
+XOR between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
+and the invokation was successful, it is assigned the value 0. If it is present
+and the invokation has failed, it is assigned a positive value; in particular,
+for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
+value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
+image has failed, the value @code{STAT_FAILED_IMAGE}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_XOR (ATOM, VALUE [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of integer
+type with @code{ATOMIC_INT_KIND} kind.
+@item @var{VALUE}  @tab Scalar of the same type as @var{ATOM}. If the kind
+is different, the value is converted to the kind of @var{ATOM}.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*]
+  call atomic_xor (atom[1], int(b'10100011101'))
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ATOMIC_FETCH_XOR}, @ref{ISO_FORTRAN_ENV},
+@ref{ATOMIC_ADD}, @ref{ATOMIC_OR}, @ref{ATOMIC_XOR}
+@end table
 
 
 @node BACKTRACE
@@ -13251,6 +13730,11 @@ later.)
 Positive, scalar default-integer constant used as STAT= return value if the
 argument in the statement requires synchronisation with an image, which has
 initiated the termination of the execution. (Fortran 2008 or later.)
+
+@item @code{STAT_FAILED_IMAGE}:
+Positive, scalar default-integer constant used as STAT= return value if the
+argument in the statement requires communication with an image, which has
+is in the failed state. (TS 18508 or later.)
 
 @item @code{STAT_UNLOCKED}:
 Scalar default-integer constant used as STAT= return value by @code{UNLOCK} to
