@@ -1,3 +1,9 @@
+2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61656
+	* config/i386/i386.c (classify_argument): Don't merge classes above
+	number of words.
+
 2014-07-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.h (symtab_node): Add nonzero_address.
