@@ -3790,7 +3790,7 @@
 		  (match_operand 2 "aarch64_valid_symref" "S")))]
   ""
   "add\\t%<w>0, %<w>1, :lo12:%a2"
-  [(set_attr "type" "alu_reg")]
+  [(set_attr "type" "alu_imm")]
 )
 
 (define_insn "ldr_got_small_<mode>"
