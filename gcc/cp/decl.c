@@ -5812,11 +5812,8 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      /* Declared constexpr, but no suitable initializer; massage
 		 init appropriately so we can pass it into store_init_value
 		 for the error.  */
-	      if (init && BRACE_ENCLOSED_INITIALIZER_P (init))
-		init = finish_compound_literal (type, init,
-						tf_warning_or_error);
-	      else if (CLASS_TYPE_P (type)
-		       && (!init || TREE_CODE (init) == TREE_LIST))
+	      if (CLASS_TYPE_P (type)
+		  && (!init || TREE_CODE (init) == TREE_LIST))
 		{
 		  init = build_functional_cast (type, init, tf_none);
 		  if (TREE_CODE (init) == TARGET_EXPR)

@@ -1,5 +1,9 @@
 2014-07-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58611
+	* decl.c (check_initializer): Don't finish_compound_literal
+	on erroneous constexpr init.
+
 	PR c++/58612
 	* tree.c (bot_replace): Only replace a dummy 'this' parm.
 
