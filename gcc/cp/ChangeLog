@@ -1,5 +1,8 @@
 2014-07-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58612
+	* tree.c (bot_replace): Only replace a dummy 'this' parm.
+
 	PR c++/60628
 	* decl.c (create_array_type_for_decl): Only check for auto once.
 
