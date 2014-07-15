@@ -14862,7 +14862,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  if (TREE_CODE (expr) == FUNCTION_DECL)
 	    {
 	      fold_checksum_tree (DECL_VINDEX (expr), ctx, ht);
-	      fold_checksum_tree (DECL_ARGUMENT (expr), ctx, ht);
+	      fold_checksum_tree (DECL_ARGUMENTS (expr), ctx, ht);
 	    }
 	  fold_checksum_tree (DECL_RESULT_FLD (expr), ctx, ht);
 	}

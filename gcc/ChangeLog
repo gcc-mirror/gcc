@@ -1,3 +1,7 @@
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (fold_checksum_tree): Fix typo in previous patch.
+
 2014-07-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* asan.c (asan_finish_file): Use varpool_finalize_decl instead of
