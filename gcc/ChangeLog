@@ -1,3 +1,7 @@
+2014-07-15  Eric Christopher  <echristo@gmail.com>
+
+	* doc/invoke.texi (Link Options): Document -z option.
+
 2014-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): New.
