@@ -541,7 +541,7 @@ varpool_assemble_decl (varpool_node *node)
       varpool_get_constructor (node);
       assemble_variable (decl, 0, 1, 0);
       gcc_assert (TREE_ASM_WRITTEN (decl));
-      node->definition = true;
+      gcc_assert (node->definition);
       assemble_aliases (node);
       return true;
     }
