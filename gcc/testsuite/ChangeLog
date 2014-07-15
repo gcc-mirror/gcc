@@ -1,3 +1,8 @@
+2014-07-15  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/61772
+	* gcc.dg/torture/pr61772.c: New test.
+
 2014-07-15  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/ubsan/bounds-1.c: New test.

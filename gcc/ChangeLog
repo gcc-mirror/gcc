@@ -1,3 +1,9 @@
+2014-07-15  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/61772
+	* ifcvt.c (dead_or_predicable): Check jump to be free of side
+	effects.
+
 2014-07-15  Richard Biener  <rguenther@suse.de>
 
 	* opts.c (default_options_table): Disable bit-ccp at -Og.
