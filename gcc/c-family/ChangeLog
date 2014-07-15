@@ -1,3 +1,8 @@
+2014-07-15  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_bounds): Don't instrument if
+	TYPE_MAX_VALUE is NULL.
+
 2014-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61294
