@@ -1,5 +1,10 @@
 2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* fold-const.c (fold_checksum_tree): Move checking of
+	DECL_RESULT.
+
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (tree_code_size): Add TRANSLATION_UNIT_DECL,
 	NAMESPACE_DECL, IMPORTED_DECL and NAMELIST_DECL;
 	call langhook for unknown declaration.
