@@ -362,6 +362,12 @@ struct GTY(()) tree_overload {
   tree function;
 };
 
+struct GTY(()) tree_template_decl {
+  struct tree_decl_common common;
+  tree arguments;
+  tree result;
+};
+
 /* Returns true iff NODE is a BASELINK.  */
 #define BASELINK_P(NODE) \
   (TREE_CODE (NODE) == BASELINK)
@@ -796,6 +802,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_BINDING,
   TS_CP_OVERLOAD,
   TS_CP_BASELINK,
+  TS_CP_TEMPLATE_DECL,
   TS_CP_WRAPPER,
   TS_CP_DEFAULT_ARG,
   TS_CP_DEFERRED_NOEXCEPT,
@@ -817,6 +824,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
   struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
+  struct tree_template_decl GTY ((tag ("TS_CP_TEMPLATE_DECL"))) template_decl;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
   struct tree_deferred_noexcept GTY ((tag ("TS_CP_DEFERRED_NOEXCEPT"))) deferred_noexcept;
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
@@ -3753,16 +3761,22 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    parameter).  The TREE_PURPOSE is the default value, if any.  The
    TEMPLATE_PARM_INDEX for the parameter is available as the
    DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
-   TYPE_DECL).  */
+   TYPE_DECL). 
+
+   FIXME: CONST_CAST_TREE is a hack that hopefully will go away after
+   tree is converted to C++ class hiearchy.  */
 #define DECL_TEMPLATE_PARMS(NODE)       \
-  TEMPLATE_DECL_CHECK (NODE)->decl_non_common.arguments
+   ((struct tree_template_decl *)CONST_CAST_TREE (TEMPLATE_DECL_CHECK (NODE)))->arguments
 #define DECL_INNERMOST_TEMPLATE_PARMS(NODE) \
    INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (NODE))
 #define DECL_NTPARMS(NODE) \
    TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (NODE))
-/* For function, method, class-data templates.  */
+/* For function, method, class-data templates.
+
+   FIXME: CONST_CAST_TREE is a hack that hopefully will go away after
+   tree is converted to C++ class hiearchy.  */
 #define DECL_TEMPLATE_RESULT(NODE)      \
-  DECL_RESULT_FLD (TEMPLATE_DECL_CHECK (NODE))
+   ((struct tree_template_decl *)CONST_CAST_TREE(TEMPLATE_DECL_CHECK (NODE)))->result
 /* For a function template at namespace scope, DECL_TEMPLATE_INSTANTIATIONS
    lists all instantiations and specializations of the function so that
    tsubst_friend_function can reassign them to another template if we find

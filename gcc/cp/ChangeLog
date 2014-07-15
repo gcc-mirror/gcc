@@ -1,3 +1,18 @@
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (build_clone): Do not clear assembler names of
+	templates.
+	* decl.c (cp_tree_node_structure): Add TEMPLATE_DECL.
+	* cp-objcp-common.c (cp_tree_size): Add TEMPLATE_DECL
+	as a special case return sizeof (struct tree_decl_non_common)
+	for other decls.
+	(cp_common_init_ts): Do not initialize NAMESPACE_DECL;
+	initialize TEMPLATE_DECL as MARK_TS_DECL_COMMON.
+	* cp/cp-tree.h (tree_template_decl): New structure.
+	(cp_tree_node_structure_enum): Add TS_CP_TEMPLATE_DECL.
+	(union cp_lang_tree_node): Add template_decl.
+	(DECL_TEMPLATE_PARMS, DECL_TEMPLATE_RESULT): Update.
+
 2014-07-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61445

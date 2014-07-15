@@ -14482,6 +14482,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case TEMPLATE_PARM_INDEX:	return TS_CP_TPI;
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case BASELINK:		return TS_CP_BASELINK;
+    case TEMPLATE_DECL:		return TS_CP_TEMPLATE_DECL;
     case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
     case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
     case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;

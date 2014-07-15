@@ -2621,13 +2621,9 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_BUILT_IN_CLASS(NODE) \
    (FUNCTION_DECL_CHECK (NODE)->function_decl.built_in_class)
 
-/* In FUNCTION_DECL, a chain of ..._DECL nodes.
-   VAR_DECL and PARM_DECL reserve the arguments slot for language-specific
-   uses.  */
+/* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
 #define DECL_ARGUMENTS(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->decl_non_common.arguments)
-#define DECL_ARGUMENT_FLD(NODE) \
-  (DECL_NON_COMMON_CHECK (NODE)->decl_non_common.arguments)
+   (FUNCTION_DECL_CHECK (NODE)->function_decl.arguments)
 
 /* In FUNCTION_DECL, the function specific target options to use when compiling
    this function.  */

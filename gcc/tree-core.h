@@ -1494,8 +1494,6 @@ struct GTY(()) tree_var_decl {
 
 struct GTY(()) tree_decl_non_common {
   struct tree_decl_with_vis common;
-  /* C++ uses this in templates.  */
-  tree arguments;
   /* Almost all FE's use this.  */
   tree result;
 };
@@ -1510,6 +1508,8 @@ struct GTY(()) tree_function_decl {
 
   struct function *f;
 
+  /* Arguments of the function.  */
+  tree arguments;
   /* The personality function. Used for stack unwinding. */
   tree personality;
 
