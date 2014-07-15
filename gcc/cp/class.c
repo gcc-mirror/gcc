@@ -6695,6 +6695,28 @@ finish_struct (tree t, tree attributes)
   else
     finish_struct_1 (t);
 
+  if (is_std_init_list (t))
+    {
+      /* People keep complaining that the compiler crashes on an invalid
+	 definition of initializer_list, so I guess we should explicitly
+	 reject it.  What the compiler internals care about is that it's a
+	 template and has a pointer field followed by an integer field.  */
+      bool ok = false;
+      if (processing_template_decl)
+	{
+	  tree f = next_initializable_field (TYPE_FIELDS (t));
+	  if (f && TREE_CODE (TREE_TYPE (f)) == POINTER_TYPE)
+	    {
+	      f = next_initializable_field (DECL_CHAIN (f));
+	      if (f && TREE_CODE (TREE_TYPE (f)) == INTEGER_TYPE)
+		ok = true;
+	    }
+	}
+      if (!ok)
+	fatal_error ("definition of std::initializer_list does not match "
+		     "#include <initializer_list>");
+    }
+
   input_location = saved_loc;
 
   TYPE_BEING_DEFINED (t) = 0;
