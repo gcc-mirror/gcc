@@ -6,6 +6,12 @@
 	and other class templates with default template arguments.
 	* testsuite/libstdc++-prettyprinters/whatis.cc: Test new recognizers.
 
+	* python/libstdcxx/v6/printers.py (SingleObjContainerPrinter): New
+	base class for experimental::any and experimental::optional printers.
+	(StdExpAnyPrinter, StdExpOptionalPrinter, StdExpStringViewPrinter):
+	New printers for Fundamentals TS types.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: New.
+
 2014-07-15  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/61720
