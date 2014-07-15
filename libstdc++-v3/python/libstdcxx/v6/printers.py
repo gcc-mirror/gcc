@@ -922,6 +922,57 @@ class Printer(object):
 
 libstdcxx_printer = None
 
+class TemplateTypePrinter(object):
+    """A type printer for class templates.
+
+    Recognizes type names that match a regular expression.
+    Replaces them with a formatted string which can use replacement field
+    {N} to refer to the \N subgroup of the regex match.
+    Type printers are recusively applied to the subgroups.
+
+    This allows recognizing e.g. "std::vector<(.*), std::allocator<\\1> >"
+    and replacing it with "std::vector<{1}>", omitting the template argument
+    that uses the default type.
+    """
+
+    def __init__(self, name, pattern, subst):
+        self.name = name
+        self.pattern = re.compile(pattern)
+        self.subst = subst
+        self.enabled = True
+
+    class _recognizer(object):
+        def __init__(self, pattern, subst):
+            self.pattern = pattern
+            self.subst = subst
+            self.type_obj = None
+
+        def recognize(self, type_obj):
+            if type_obj.tag is None:
+                return None
+
+            m = self.pattern.match(type_obj.tag)
+            if m:
+                subs = list(m.groups())
+                for i, sub in enumerate(subs):
+                    if ('{%d}' % (i+1)) in self.subst:
+                        # apply recognizers to subgroup
+                        rep = gdb.types.apply_type_recognizers(
+                                gdb.types.get_type_recognizers(),
+                                gdb.lookup_type(sub))
+                        if rep:
+                            subs[i] = rep
+                subs = [None] + subs
+                return self.subst.format(*subs)
+            return None
+
+    def instantiate(self):
+        return self._recognizer(self.pattern, self.subst)
+
+def add_one_template_type_printer(obj, name, match, subst):
+    printer = TemplateTypePrinter(name, '^std::' + match + '$', 'std::' + subst)
+    gdb.types.register_type_printer(obj, printer)
+
 class FilteringTypePrinter(object):
     def __init__(self, match, name):
         self.match = match
@@ -1012,6 +1063,56 @@ def register_type_printers(obj):
     add_one_type_printer(obj, 'discard_block_engine', 'ranlux24')
     add_one_type_printer(obj, 'discard_block_engine', 'ranlux48')
     add_one_type_printer(obj, 'shuffle_order_engine', 'knuth_b')
+
+    # Do not show defaulted template arguments in class templates
+    add_one_template_type_printer(obj, 'unique_ptr<T>',
+            'unique_ptr<(.*), std::default_delete<\\1 ?> >',
+            'unique_ptr<{1}>')
+
+    add_one_template_type_printer(obj, 'deque<T>',
+            'deque<(.*), std::allocator<\\1 ?> >',
+            'deque<{1}>')
+    add_one_template_type_printer(obj, 'forward_list<T>',
+            'forward_list<(.*), std::allocator<\\1 ?> >',
+            'forward_list<{1}>')
+    add_one_template_type_printer(obj, 'list<T>',
+            'list<(.*), std::allocator<\\1 ?> >',
+            'list<{1}>')
+    add_one_template_type_printer(obj, 'vector<T>',
+            'vector<(.*), std::allocator<\\1 ?> >',
+            'vector<{1}>')
+    add_one_template_type_printer(obj, 'map<Key, T>',
+            'map<(.*), (.*), std::less<\\1 ?>, std::allocator<std::pair<\\1 const, \\2 ?> > >',
+            'map<{1}, {2}>')
+    add_one_template_type_printer(obj, 'multimap<Key, T>',
+            'multimap<(.*), (.*), std::less<\\1 ?>, std::allocator<std::pair<\\1 const, \\2 ?> > >',
+            'multimap<{1}, {2}>')
+    add_one_template_type_printer(obj, 'set<T>',
+            'set<(.*), std::less<\\1 ?>, std::allocator<\\1 ?> >',
+            'set<{1}>')
+    add_one_template_type_printer(obj, 'multiset<T>',
+            'multiset<(.*), std::less<\\1 ?>, std::allocator<\\1 ?> >',
+            'multiset<{1}>')
+    add_one_template_type_printer(obj, 'unordered_map<Key, T>',
+            'unordered_map<(.*), (.*), std::hash<\\1 ?>, std::equal_to<\\1 ?>, std::allocator<std::pair<\\1 const, \\2 ?> > >',
+            'unordered_map<{1}, {2}>')
+    add_one_template_type_printer(obj, 'unordered_multimap<Key, T>',
+            'unordered_multimap<(.*), (.*), std::hash<\\1 ?>, std::equal_to<\\1 ?>, std::allocator<std::pair<\\1 const, \\2 ?> > >',
+            'unordered_multimap<{1}, {2}>')
+    add_one_template_type_printer(obj, 'unordered_set<T>',
+            'unordered_set<(.*), std::hash<\\1 ?>, std::equal_to<\\1 ?>, std::allocator<\\1 ?> >',
+            'unordered_set<{1}>')
+    add_one_template_type_printer(obj, 'unordered_multiset<T>',
+            'unordered_multiset<(.*), std::hash<\\1 ?>, std::equal_to<\\1 ?>, std::allocator<\\1 ?> >',
+            'unordered_multiset<{1}>')
+
+    # strip the "fundamentals_v1" inline namespace from these types
+    add_one_template_type_printer(obj, 'optional<T>',
+            'experimental::fundamentals_v1::optional<(.*)>',
+            'experimental::optional<\\1>')
+    add_one_template_type_printer(obj, 'basic_string_view<C>',
+            'experimental::fundamentals_v1::basic_string_view<(.*), std::char_traits<\\1> >',
+            'experimental::basic_string_view<\\1>')
 
 def register_libstdcxx_printers (obj):
     "Register libstdc++ pretty-printers with objfile Obj."

@@ -21,6 +21,15 @@
 #include <string>
 #include <iostream>
 #include <regex>
+#include <memory>
+#include <deque>
+#include <forward_list>
+#include <list>
+#include <vector>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 template<class T>
 void
@@ -159,6 +168,31 @@ std::basic_string<signed char> *sstring_ptr;
 holder< std::basic_string<signed char> > sstring_holder;
 // { dg-final { whatis-test sstring_holder "holder<std::basic_string<signed char, std::char_traits<signed char>, std::allocator<signed char> > >" } }
 
+std::vector<std::deque<std::unique_ptr<char>>> *seq1_ptr;
+holder< std::vector<std::deque<std::unique_ptr<char>>> > seq1_holder;
+// { dg-final { whatis-test seq1_holder "holder<std::vector<std::deque<std::unique_ptr<char>>> >" } }
+
+std::list<std::forward_list<std::unique_ptr<char>>> *seq2_ptr;
+holder< std::list<std::forward_list<std::unique_ptr<char>>> > seq2_holder;
+// { dg-final { whatis-test seq2_holder "holder<std::list<std::forward_list<std::unique_ptr<char>>> >" } }
+
+std::map<int, std::set<int>> *assoc1_ptr;
+holder< std::map<int, std::set<int>> > assoc1_holder;
+// { dg-final { whatis-test assoc1_holder "holder<std::map<int, std::set<int>> >" } }
+
+std::multimap<int, std::multiset<int>> *assoc2_ptr;
+holder< std::multimap<int, std::multiset<int>> > assoc2_holder;
+// { dg-final { whatis-test assoc2_holder "holder<std::multimap<int, std::multiset<int>> >" } }
+
+std::unordered_map<int, std::unordered_set<int>> *unord1_ptr;
+holder< std::unordered_map<int, std::unordered_set<int>> > unord1_holder;
+// { dg-final { whatis-test unord1_holder "holder<std::unordered_map<int, std::unordered_set<int>> >" } }
+
+std::unordered_multimap<int, std::unordered_multiset<int>> *unord2_ptr;
+holder< std::unordered_multimap<int, std::unordered_multiset<int>> > unord2_holder;
+// { dg-final { whatis-test unord2_holder "holder<std::unordered_multimap<int, std::unordered_multiset<int>> >" } }
+
+
 int
 main()
 {
@@ -236,6 +270,18 @@ main()
   placeholder(&ustring_holder);
   placeholder(&sstring_ptr);
   placeholder(&sstring_holder);
+  placeholder(&seq1_ptr);
+  placeholder(&seq1_holder);
+  placeholder(&seq2_ptr);
+  placeholder(&seq2_holder);
+  placeholder(&assoc1_ptr);
+  placeholder(&assoc1_holder);
+  placeholder(&assoc2_ptr);
+  placeholder(&assoc2_holder);
+  placeholder(&unord1_ptr);
+  placeholder(&unord1_holder);
+  placeholder(&unord2_ptr);
+  placeholder(&unord2_holder);
 
   return 0;
 }
