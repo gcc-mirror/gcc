@@ -836,6 +836,126 @@ class StdForwardListPrinter:
             return 'empty %s' % (self.typename)
         return '%s' % (self.typename)
 
+class SingleObjContainerPrinter(object):
+    "Base class for printers of containers of single objects"
+
+    def __init__ (self, val, viz):
+        self.contained_value = val
+        self.visualizer = viz
+
+    def _recognize(self, type):
+        """Return TYPE as a string after applying type printers"""
+        return gdb.types.apply_type_recognizers(gdb.types.get_type_recognizers(),
+                                                type) or str(type)
+
+    class _contained:
+        def __init__ (self, val):
+            self.val = val
+
+        def __iter__ (self):
+            return self
+
+        def next (self):
+            if self.val is None:
+                raise StopIteration
+            retval = self.val
+            self.val = None
+            return ('[contained value]', retval)
+
+    def children (self):
+        if self.contained_value is None:
+            return self._contained (None)
+        if hasattr (self.visualizer, 'children'):
+            return self.visualizer.children ()
+        return self._contained (self.contained_value)
+
+    def display_hint (self):
+        # if contained value is a map we want to display in the same way
+        if hasattr (self.visualizer, 'children') and hasattr (self.visualizer, 'display_hint'):
+            return self.visualizer.display_hint ()
+        return None
+
+
+class StdExpAnyPrinter(SingleObjContainerPrinter):
+    "Print a std::experimental::any"
+
+    def __init__ (self, typename, val):
+        self.typename = 'std::experimental::any'
+        self.val = val
+        self.contained_type = None
+        contained_value = None
+        visualizer = None
+        mgr = self.val['_M_manager']
+        if mgr != 0:
+            func = gdb.block_for_pc(int(mgr.cast(gdb.lookup_type('intptr_t'))))
+            if not func:
+                raise ValueError("Invalid function pointer in std::experimental::any")
+            rx = r"""({0}::_Manager_\w+<.*>)::_S_manage\({0}::_Op, {0} const\*, {0}::_Arg\*\)""".format(typename)
+            m = re.match(rx, func.function.name)
+            if not m:
+                raise ValueError("Unknown manager function in std::experimental::any")
+
+            # FIXME need to expand 'std::string' so that gdb.lookup_type works
+            mgrname = re.sub("std::string(?!\w)", gdb.lookup_type('std::string').strip_typedefs().name, m.group(1))
+            mgrtype = gdb.lookup_type(mgrname)
+            self.contained_type = mgrtype.template_argument(0)
+            valptr = None
+            if '::_Manager_internal' in mgrname:
+                valptr = self.val['_M_storage']['_M_buffer'].address
+            elif '::_Manager_external' in mgrname:
+                valptr = self.val['_M_storage']['_M_ptr']
+            elif '::_Manager_alloc' in mgrname:
+                datatype = gdb.lookup_type(mgrname + '::_Data')
+                valptr = self.val['_M_storage']['_M_ptr'].cast(datatype.pointer())
+                valptr = valptr.dereference()['_M_data'].address
+            else:
+                raise ValueError("Unknown manager function in std::experimental::any")
+            contained_value = valptr.cast(self.contained_type.pointer()).dereference()
+            visualizer = gdb.default_visualizer(contained_value)
+        super(StdExpAnyPrinter, self).__init__ (contained_value, visualizer)
+
+    def to_string (self):
+        if self.contained_type is None:
+            return '%s [no contained value]' % self.typename
+        desc = "%s containing " % self.typename
+        if hasattr (self.visualizer, 'children'):
+            return desc + self.visualizer.to_string ()
+        valtype = self._recognize (self.contained_type)
+        return desc + valtype
+
+class StdExpOptionalPrinter(SingleObjContainerPrinter):
+    "Print a std::experimental::optional"
+
+    def __init__ (self, typename, val):
+        valtype = self._recognize (val.type.template_argument(0))
+        self.typename = "std::experimental::optional<%s>" % valtype
+        self.val = val
+        contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
+        visualizer = gdb.default_visualizer (val['_M_payload'])
+        super (StdExpOptionalPrinter, self).__init__ (contained_value, visualizer)
+
+    def to_string (self):
+        if self.contained_value is None:
+            return self.typename + " [no contained value]"
+        if hasattr (self.visualizer, 'children'):
+            return self.typename + " containing " + self.visualizer.to_string ()
+        return self.typename
+
+class StdExpStringViewPrinter:
+    "Print a std::experimental::basic_string_view"
+
+    def __init__ (self, typename, val):
+        self.val = val
+
+    def to_string (self):
+        ptr = self.val['_M_str']
+        len = self.val['_M_len']
+        if hasattr (ptr, "lazy_string"):
+            return ptr.lazy_string (length = len)
+        return ptr.string (length = len)
+
+    def display_hint (self):
+        return 'string'
 
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
@@ -865,12 +985,12 @@ class Printer(object):
         self.subprinters = []
         self.lookup = {}
         self.enabled = True
-        self.compiled_rx = re.compile('^([a-zA-Z0-9_:]+)<.*>$')
+        self.compiled_rx = re.compile('^([a-zA-Z0-9_:]+)(<.*>)?$')
 
     def add(self, name, function):
         # A small sanity check.
         # FIXME
-        if not self.compiled_rx.match(name + '<>'):
+        if not self.compiled_rx.match(name):
             raise ValueError('libstdc++ programming error: "%s" does not match' % name)
         printer = RxPrinter(name, function)
         self.subprinters.append(printer)
@@ -1214,6 +1334,13 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add('std::__debug::forward_list',
                           StdForwardListPrinter)
 
+    # Library Fundamentals TS components
+    libstdcxx_printer.add_version('std::experimental::fundamentals_v1::',
+                                  'any', StdExpAnyPrinter)
+    libstdcxx_printer.add_version('std::experimental::fundamentals_v1::',
+                                  'optional', StdExpOptionalPrinter)
+    libstdcxx_printer.add_version('std::experimental::fundamentals_v1::',
+                                  'basic_string_view', StdExpStringViewPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)
