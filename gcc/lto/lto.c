@@ -775,7 +775,6 @@ mentions_vars_p_decl_non_common (tree t)
 {
   if (mentions_vars_p_decl_with_vis (t))
     return true;
-  CHECK_NO_VAR (DECL_ARGUMENT_FLD (t));
   CHECK_NO_VAR (DECL_RESULT_FLD (t));
   return false;
 }
@@ -787,6 +786,7 @@ mentions_vars_p_function (tree t)
 {
   if (mentions_vars_p_decl_non_common (t))
     return true;
+  CHECK_NO_VAR (DECL_ARGUMENTS (t));
   CHECK_NO_VAR (DECL_VINDEX (t));
   CHECK_VAR (DECL_FUNCTION_PERSONALITY (t));
   return false;
@@ -2711,11 +2711,11 @@ lto_fixup_prevailing_decls (tree t)
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
 	{
-	  LTO_NO_PREVAIL (DECL_ARGUMENT_FLD (t));
 	  LTO_NO_PREVAIL (DECL_RESULT_FLD (t));
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
 	{
+	  LTO_NO_PREVAIL (DECL_ARGUMENTS (t));
 	  LTO_SET_PREVAIL (DECL_FUNCTION_PERSONALITY (t));
 	  LTO_NO_PREVAIL (DECL_VINDEX (t));
 	}

@@ -707,8 +707,14 @@ tree_code_size (enum tree_code code)
 	    return sizeof (struct tree_function_decl);
 	  case DEBUG_EXPR_DECL:
 	    return sizeof (struct tree_decl_with_rtl);
-	  default:
+	  case TRANSLATION_UNIT_DECL:
+	    return sizeof (struct tree_translation_unit_decl);
+	  case NAMESPACE_DECL:
+	  case IMPORTED_DECL:
+	  case NAMELIST_DECL:
 	    return sizeof (struct tree_decl_non_common);
+	  default:
+	    return lang_hooks.tree_size (code);
 	  }
       }
 
@@ -5304,7 +5310,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	}
       else if (TREE_CODE (t) == TYPE_DECL)
 	{
-	  fld_worklist_push (DECL_ARGUMENT_FLD (t), fld);
 	  fld_worklist_push (DECL_ORIGINAL_TYPE (t), fld);
 	}
       else if (TREE_CODE (t) == FIELD_DECL)

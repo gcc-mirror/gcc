@@ -1,3 +1,21 @@
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* objc-act.c (objc_common_tree_size): New function.
+	* objc-act.h (KEYWORD_KEY_NAME, KEYWORD_ARG_NAME): Add type
+	checking.
+	(INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK): New macro.
+	(METHOD_SEL_NAME, METHOD_SEL_ARGS, METHOD_ADD_ARGS,
+ 	METHOD_ADD_ARGS_ELLIPSIS_P, METHOD_DEFINITION, METHOD_ENCODING,
+	METHOD_TYPE_ATTRIBUTES, METHOD_PROPERTY_CONTEXT): Add type checking.
+	(METHOD_SEL_ARGS): Use decl_common.size instead of
+	decl_non_common.result.
+	(PROPERTY_NAME, PROPERTY_GETTER_NAME, PROPERTY_SETTER_NAME,
+	PROPERTY_READONLY, PROPERTY_NONATOMIC, PROPERTY_ASSIGN_SEMANTICS,
+	PROPERTY_IVAR_NAME, PROPERTY_DYNAMIC, PROPERTY_HAS_NO_GETTER,
+	PROPERTY_HAS_NO_SETTER, PROPERTY_OPTIONAL): Add type checking.
+	(objc_common_tree_size): Declare.
+	* objc-lang.c (LANG_HOOKS_TREE_SIZE): New macro.
+
 2014-06-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* objc-act.c (objc_xref_basetypes): Set TYPE_BINFO of type variants,

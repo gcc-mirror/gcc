@@ -38,18 +38,29 @@ void objc_common_init_ts (void);
 #define OBJC_INFO_SLOT_ELTS		2
 
 /* KEYWORD_DECL */
-#define KEYWORD_KEY_NAME(DECL) ((DECL)->decl_minimal.name)
-#define KEYWORD_ARG_NAME(DECL) ((DECL)->decl_non_common.arguments)
+#define KEYWORD_KEY_NAME(DECL) (KEYWORD_DECL_CHECK (DECL)->decl_minimal.name)
+#define KEYWORD_ARG_NAME(DECL) (KEYWORD_DECL_CHECK (DECL)->decl_common.size)
+
+#define INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK(NODE) \
+  TREE_CHECK2(NODE,INSTANCE_METHOD_DECL,CLASS_METHOD_DECL)
 
 /* INSTANCE_METHOD_DECL, CLASS_METHOD_DECL */
-#define METHOD_SEL_NAME(DECL) ((DECL)->decl_minimal.name)
-#define METHOD_SEL_ARGS(DECL) ((DECL)->decl_non_common.arguments)
-#define METHOD_ADD_ARGS(DECL) ((DECL)->decl_non_common.result)
-#define METHOD_ADD_ARGS_ELLIPSIS_P(DECL) ((DECL)->decl_common.lang_flag_0)
-#define METHOD_DEFINITION(DECL) ((DECL)->decl_common.initial)
-#define METHOD_ENCODING(DECL) ((DECL)->decl_minimal.context)
-#define METHOD_TYPE_ATTRIBUTES(DECL) ((DECL)->decl_common.abstract_origin)
-#define METHOD_PROPERTY_CONTEXT(DECL) ((DECL)->decl_common.size_unit)
+#define METHOD_SEL_NAME(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_minimal.name)
+#define METHOD_SEL_ARGS(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_common.size)
+#define METHOD_ADD_ARGS(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_non_common.result)
+#define METHOD_ADD_ARGS_ELLIPSIS_P(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_common.lang_flag_0)
+#define METHOD_DEFINITION(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_common.initial)
+#define METHOD_ENCODING(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_minimal.context)
+#define METHOD_TYPE_ATTRIBUTES(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_common.abstract_origin)
+#define METHOD_PROPERTY_CONTEXT(DECL) \
+  (INSTANCE_METHOD_OR_CLASS_METHOD_DECL_CHECK (DECL)->decl_common.size_unit)
 
 
 /* PROPERTY_DECL.  A PROPERTY_DECL repesents a @property declaration
@@ -65,19 +76,24 @@ void objc_common_init_ts (void);
    valid getter/setter.  */
 
 /* PROPERTY_NAME is the name of the property.  */
-#define PROPERTY_NAME(DECL) DECL_NAME(DECL)
+#define PROPERTY_NAME(DECL) \
+   DECL_NAME(PROPERTY_DECL_CHECK (DECL))
 
 /* PROPERTY_GETTER_NAME is the identifier of the getter method.  */
-#define PROPERTY_GETTER_NAME(DECL) ((DECL)->decl_non_common.arguments)
+#define PROPERTY_GETTER_NAME(DECL)\
+   (PROPERTY_DECL_CHECK (DECL)->decl_common.size)
 
 /* PROPERTY_SETTER_NAME is the identifier of the setter method.  */
-#define PROPERTY_SETTER_NAME(DECL) ((DECL)->decl_non_common.result)
+#define PROPERTY_SETTER_NAME(DECL) \
+   (PROPERTY_DECL_CHECK (DECL)->decl_non_common.result)
 
 /* PROPERTY_READONLY can be 0 or 1.  */
-#define PROPERTY_READONLY(DECL) DECL_LANG_FLAG_0 (DECL)
+#define PROPERTY_READONLY(DECL) \
+   DECL_LANG_FLAG_0 (PROPERTY_DECL_CHECK (DECL))
 
 /* PROPERTY_NONATOMIC can be 0 or 1.  */
-#define PROPERTY_NONATOMIC(DECL) DECL_LANG_FLAG_1 (DECL)
+#define PROPERTY_NONATOMIC(DECL) \
+   DECL_LANG_FLAG_1 (PROPERTY_DECL_CHECK (DECL))
 
 typedef enum objc_property_assign_semantics {
   OBJC_PROPERTY_ASSIGN = 1,
@@ -89,31 +105,37 @@ typedef enum objc_property_assign_semantics {
    OBJC_PROPERTY_RETAIN or OBJC_PROPERTY_COPY.  We need an integer to
    store it, so we hijack the alignment, that properties don't
    have.  */
-#define PROPERTY_ASSIGN_SEMANTICS(DECL) ((DECL)->decl_common.align)
+#define PROPERTY_ASSIGN_SEMANTICS(DECL) \
+   (PROPERTY_DECL_CHECK (DECL)->decl_common.align)
 
 /* PROPERTY_IVAR_NAME is the identifier of the instance variable.
    This is set only if the PROPERTY_DECL represents a @synthesize;
    otherwise, it is set to TREE_NULL.  */
-#define PROPERTY_IVAR_NAME(DECL) ((DECL)->decl_common.initial)
+#define PROPERTY_IVAR_NAME(DECL) \
+  (PROPERTY_DECL_CHECK (DECL)->decl_common.initial)
 
 /* PROPERTY_DYNAMIC can be 0 or 1.  This is 1 if the PROPERTY_DECL
    represents a @dynamic; otherwise, it is set to 0.  */
-#define PROPERTY_DYNAMIC(DECL) DECL_LANG_FLAG_2 (DECL)
+#define PROPERTY_DYNAMIC(DECL) \
+  DECL_LANG_FLAG_2 (PROPERTY_DECL_CHECK (DECL))
 
 /* PROPERTY_HAS_NO_GETTER can be 0 or 1.  Normally it is 0, but if
    this is an artificial PROPERTY_DECL that we generate even without a
    getter, it is set to 1.  */
-#define PROPERTY_HAS_NO_GETTER(DECL) DECL_LANG_FLAG_3 (DECL)
+#define PROPERTY_HAS_NO_GETTER(DECL) \
+  DECL_LANG_FLAG_3 (PROPERTY_DECL_CHECK (DECL))
 
 /* PROPERTY_HAS_NO_SETTER can be 0 or 1.  Normally it is 0, but if
    this is an artificial PROPERTY_DECL that we generate even without a
    setter, it is set to 1.  */
-#define PROPERTY_HAS_NO_SETTER(DECL) DECL_LANG_FLAG_4 (DECL)
+#define PROPERTY_HAS_NO_SETTER(DECL) \
+  DECL_LANG_FLAG_4 (PROPERTY_DECL_CHECK (DECL))
 
 /* PROPERTY_OPTIONAL can be 0 or 1.  Normally it is 0, but if this is
    a property declared as @optional in a @protocol, then it is set to
    1.  */
-#define PROPERTY_OPTIONAL(DECL) DECL_LANG_FLAG_5 (DECL)
+#define PROPERTY_OPTIONAL(DECL) \
+  DECL_LANG_FLAG_5 (PROPERTY_DECL_CHECK (DECL))
 
 /* PROPERTY_REF.  A PROPERTY_REF represents an 'object.property'
    expression.  It is normally used for property access, but when
@@ -692,6 +714,9 @@ struct objc_try_context
    than making them externs.  */
 
 extern tree objc_create_temporary_var (tree, const char *);
+
+size_t objc_common_tree_size (enum tree_code code);
+
 
 #define objc_is_object_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_object_id)
 #define objc_is_class_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_class_id)

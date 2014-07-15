@@ -1,3 +1,14 @@
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (tree_code_size): Add TRANSLATION_UNIT_DECL,
+	NAMESPACE_DECL, IMPORTED_DECL and NAMELIST_DECL;
+	call langhook for unknown declaration.
+	(find_decls_types_r): Do not walk DECL_ARGUMENT_FLD.
+	* tree.h (DECL_ARGUMENTS): Update.
+	* print-tree.c (print_node): Update.
+	* tree-core.h (tree_decl_non_common): Remove arguments.
+	(tree_function_decl): Add arguments.
+
 2014-07-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* aarch64.md (add_losym_<mode>): Set type to alu_imm.

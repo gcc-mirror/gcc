@@ -4388,7 +4388,6 @@ build_clone (tree fn, tree name)
   clone = copy_decl (fn);
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
-  SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   /* Remember where this function came from.  */
   DECL_ABSTRACT_ORIGIN (clone) = fn;
   /* Make it easy to find the CLONE given the FN.  */
@@ -4406,6 +4405,7 @@ build_clone (tree fn, tree name)
       return clone;
     }
 
+  SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   DECL_CLONED_FUNCTION (clone) = fn;
   /* There's no pending inline data for this function.  */
   DECL_PENDING_INLINE_INFO (clone) = NULL;

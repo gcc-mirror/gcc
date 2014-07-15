@@ -514,7 +514,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
 	{
-	  print_node (file, "arguments", DECL_ARGUMENT_FLD (node), indent + 4);
 	  print_node (file, "result", DECL_RESULT_FLD (node), indent + 4);
 	}
 
@@ -540,6 +539,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       else if (code == FUNCTION_DECL
 	       && DECL_STRUCT_FUNCTION (node) != 0)
 	{
+	  print_node (file, "arguments", DECL_ARGUMENTS (node), indent + 4);
 	  indent_to (file, indent + 4);
 	  dump_addr (file, "struct-function ", DECL_STRUCT_FUNCTION (node));
 	}
