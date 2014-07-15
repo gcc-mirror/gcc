@@ -265,7 +265,7 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
   tree type = TREE_TYPE (array);
   tree domain = TYPE_DOMAIN (type);
 
-  if (domain == NULL_TREE)
+  if (domain == NULL_TREE || TYPE_MAX_VALUE (domain) == NULL_TREE)
     return NULL_TREE;
 
   tree bound = TYPE_MAX_VALUE (domain);
