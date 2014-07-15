@@ -1,4 +1,9 @@
-2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+2014-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): New.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New define.
+
+2014-07-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* fold-const.c (fold_checksum_tree): Fix typo in previous patch.
 
@@ -12,8 +17,7 @@
 2014-07-15  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/61772
-	* ifcvt.c (dead_or_predicable): Check jump to be free of side
-	effects.
+	* ifcvt.c (dead_or_predicable): Check jump to be free of side effects.
 
 2014-07-15  Richard Biener  <rguenther@suse.de>
 
@@ -21,8 +25,7 @@
 
 2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
 
-	* fold-const.c (fold_checksum_tree): Move checking of
-	DECL_RESULT.
+	* fold-const.c (fold_checksum_tree): Move checking of DECL_RESULT.
 
 2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -117,8 +120,7 @@
 	(TV_IPA_LTO_CTORS_IN, TV_IPA_LTO_CTORS_OUT): New timevar.
 	* cgraph.c (cgraph_get_body): Push GIMPLE_IN timevar.
 	(varpool_get_constructor): Push CTORS_IN timevar.
-	* lto-streamer-out.c (lto_output): Push TV_IPA_LTO_CTORS_OUT
-	timevar.
+	* lto-streamer-out.c (lto_output): Push TV_IPA_LTO_CTORS_OUT timevar.
 
 2014-07-12  Uros Bizjak  <ubizjak@gmail.com>
 
