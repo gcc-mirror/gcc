@@ -9888,6 +9888,72 @@ alpha_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       *op1 = GEN_INT (255);
     }
 }
+
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+static void
+alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  const unsigned HOST_WIDE_INT SWCR_STATUS_MASK = (0x3fUL << 17);
+
+  tree fenv_var, get_fpscr, set_fpscr, mask, ld_fenv, masked_fenv;
+  tree new_fenv_var, reload_fenv, restore_fnenv;
+  tree update_call, atomic_feraiseexcept, hold_fnclex;
+
+  /* Assume OSF/1 compatible interfaces.  */
+  if (!TARGET_ABI_OSF)
+    return;
+
+  /* Generate the equivalent of :
+       unsigned long fenv_var;
+       fenv_var = __ieee_get_fp_control ();
+
+       unsigned long masked_fenv;
+       masked_fenv = fenv_var & mask;
+
+       __ieee_set_fp_control (masked_fenv);  */
+
+  fenv_var = create_tmp_var (long_unsigned_type_node, NULL);
+  get_fpscr
+    = build_fn_decl ("__ieee_get_fp_control",
+		     build_function_type_list (long_unsigned_type_node, NULL));
+  set_fpscr
+    = build_fn_decl ("__ieee_set_fp_control",
+		     build_function_type_list (void_type_node, NULL));
+  mask = build_int_cst (long_unsigned_type_node, ~SWCR_STATUS_MASK);
+  ld_fenv = build2 (MODIFY_EXPR, long_unsigned_type_node,
+		    fenv_var, build_call_expr (get_fpscr, 0));
+  masked_fenv = build2 (BIT_AND_EXPR, long_unsigned_type_node, fenv_var, mask);
+  hold_fnclex = build_call_expr (set_fpscr, 1, masked_fenv);
+  *hold = build2 (COMPOUND_EXPR, void_type_node,
+		  build2 (COMPOUND_EXPR, void_type_node, masked_fenv, ld_fenv),
+		  hold_fnclex);
+
+  /* Store the value of masked_fenv to clear the exceptions:
+     __ieee_set_fp_control (masked_fenv);  */
+
+  *clear = build_call_expr (set_fpscr, 1, masked_fenv);
+
+  /* Generate the equivalent of :
+       unsigned long new_fenv_var;
+       new_fenv_var = __ieee_get_fp_control ();
+
+       __ieee_set_fp_control (fenv_var);
+
+       __atomic_feraiseexcept (new_fenv_var);  */
+
+  new_fenv_var = create_tmp_var (long_unsigned_type_node, NULL);
+  reload_fenv = build2 (MODIFY_EXPR, long_unsigned_type_node, new_fenv_var,
+			build_call_expr (get_fpscr, 0));
+  restore_fnenv = build_call_expr (set_fpscr, 1, fenv_var);
+  atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  update_call
+    = build_call_expr (atomic_feraiseexcept, 1,
+		       fold_convert (integer_type_node, new_fenv_var));
+  *update = build2 (COMPOUND_EXPR, void_type_node,
+		    build2 (COMPOUND_EXPR, void_type_node,
+			    reload_fenv, restore_fnenv), update_call);
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -10059,6 +10125,9 @@ alpha_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON alpha_canonicalize_comparison
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV alpha_atomic_assign_expand_fenv
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

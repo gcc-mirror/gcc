@@ -5923,7 +5923,7 @@ proc check_effective_target_fenv_exceptions {} {
 	  else
 	    abort ();
 	}
-    } "-std=gnu99"]
+    } [add_options_for_ieee "-std=gnu99"]]
 }
 
 # Return 1 if LOGICAL_OP_NON_SHORT_CIRCUIT is set to 0 for the current target.
