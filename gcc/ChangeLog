@@ -1,3 +1,7 @@
+2014-07-15  Richard Biener  <rguenther@suse.de>
+
+	* opts.c (default_options_table): Disable bit-ccp at -Og.
+
 2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* fold-const.c (fold_checksum_tree): Move checking of
