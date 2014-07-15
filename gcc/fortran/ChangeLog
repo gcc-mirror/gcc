@@ -1,3 +1,9 @@
+2014-06-15  Tobias Burnus  <burnus@net-b.de>
+
+	* symbol.c (check_conflict): Add codimension conflict with
+	pointer; fix cray-pointee check.
+
+
 2014-06-14  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-intrinsic.c (conv_intrinsic_atomic_ref): Fix handling

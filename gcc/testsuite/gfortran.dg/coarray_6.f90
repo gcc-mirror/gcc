@@ -32,7 +32,7 @@ end module m
 
 subroutine bar()
   integer, parameter :: a[*] = 4 ! { dg-error "PARAMETER attribute conflicts with CODIMENSION" }
-  integer, pointer :: b[:] ! { dg-error "is not ALLOCATABLE, SAVE nor a dummy" }
+  integer :: b[*] ! { dg-error "is not ALLOCATABLE, SAVE nor a dummy" }
 end subroutine bar
 
 subroutine vol()
