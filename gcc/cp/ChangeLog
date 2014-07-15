@@ -1,5 +1,8 @@
 2014-07-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61811
+	* decl2.c (maybe_emit_vtables): Return true for -fuse-all-virtuals.
+
 	PR c++/60848
 	PR c++/61723
 	* call.c (is_std_init_list): Don't check CLASSTYPE_TEMPLATE_INFO.
