@@ -2595,7 +2595,7 @@ asan_finish_file (void)
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (var) = ctor;
-      varpool_assemble_decl (varpool_node_for_decl (var));
+      varpool_finalize_decl (var);
 
       fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
       tree gcount_tree = build_int_cst (pointer_sized_int_node, gcount);
