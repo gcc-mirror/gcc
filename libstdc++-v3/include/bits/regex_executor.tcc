@@ -137,6 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       if (__match_mode == _Match_mode::_Exact)
 	__ret = _M_has_sol;
+      _M_states._M_match_queue.clear();
       return __ret;
     }
 

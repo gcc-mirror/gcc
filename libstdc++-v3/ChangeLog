@@ -1,3 +1,10 @@
+2014-07-15  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/61720
+	* include/bits/regex_executor.tcc (_Executor<>::_M_main_dispatch):
+	Clear match queue for next use.
+	* testsuite/28_regex/algorithms/regex_search/61720.cc: New file.
+
 2014-07-14  Ulrich Drepper  <drepper@gmail.com>
 
 	* include/ext/random.tcc: Unfortunately more fixes for
