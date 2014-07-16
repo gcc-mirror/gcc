@@ -38,12 +38,13 @@ package body Ada.Containers.Indefinite_Holders is
 
    function "=" (Left, Right : Holder) return Boolean is
    begin
-      if Left.Reference = null and Right.Reference = null then
+      if Left.Reference = Right.Reference then
+         --  Covers both null and not null but the same shared object cases.
+
          return True;
 
       elsif Left.Reference /= null and Right.Reference /= null then
          return Left.Reference.Element.all = Right.Reference.Element.all;
-
       else
          return False;
       end if;
@@ -66,6 +67,7 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Control.Container /= null then
          Reference (Control.Container.Reference);
+
          declare
             B : Natural renames Control.Container.Busy;
          begin
@@ -122,10 +124,9 @@ package body Ada.Containers.Indefinite_Holders is
               (Element => Container.Reference.Element.all'Access,
                Control => (Controlled with Container'Unrestricted_Access));
       B   : Natural renames Ref.Control.Container.Busy;
-
    begin
       Reference (Ref.Control.Container.Reference);
-         B := B + 1;
+      B := B + 1;
       return Ref;
    end Constant_Reference;
 
