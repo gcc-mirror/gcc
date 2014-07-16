@@ -15145,7 +15145,8 @@ Options:
 --incremental -- incremental processing on a per-file basis. Source files are
       only processed if they have been modified, or if files they depend
       on have been modified. This is similar to the way gnatmake/gprbuild
-      only compiles files that need to be recompiled.
+      only compiles files that need to be recompiled. You need to use a project
+      file for this to work.
 
 --output-dir=@var{dir} -- generate one .xml file for each Ada source file, in
       directory @file{dir}. (Default is to generate the XML to standard

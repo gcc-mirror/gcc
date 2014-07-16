@@ -1,3 +1,19 @@
+2014-07-16  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Document need for project file
+	for --incremental switch for gnat2xml.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Fix example of non-packable components in packed
+	records section.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* s-tpoben.adb, s-tasren.adb, s-interr.adb, s-interr-hwint.adb,
+	s-shasto.adb, s-interr-vms.adb, s-interr-sigaction.adb: Avoid use of
+	upper case in exception messages.
+
 2014-07-16  Robert Dewar  <dewar@adacore.com>
 
 	* snames.ads-tmpl, sem_attr.adb, exp_attr.adb: Same_Storage attribute

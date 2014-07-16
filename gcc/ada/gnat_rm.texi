@@ -15464,7 +15464,8 @@ taken by components.  We distinguish between @emph{packable} components and
 Components of the following types are considered packable:
 @itemize @bullet
 @item
-All primitive types are packable.
+Components of a primitive type are packable unless they are aliased
+or of an atomic type.
 
 @item
 Small packed arrays, whose size does not exceed 64 bits, and where the
@@ -15491,10 +15492,12 @@ For example, consider the record
    type Rb2 is array (1 .. 65) of Boolean;
    pragma Pack (rb2);
 
+   type AF is new Float with Atomic;
+
    type x2 is record
       l1 : Boolean;
       l2 : Duration;
-      l3 : Float;
+      l3 : AF;
       l4 : Boolean;
       l5 : Rb1;
       l6 : Rb2;
@@ -15522,8 +15525,8 @@ Studying this example, we see that the packable fields @code{l1}
 and @code{l2} are
 of length equal to their sizes, and placed at specific bit boundaries (and
 not byte boundaries) to
-eliminate padding.  But @code{l3} is of a non-packable float type, so
-it is on the next appropriate alignment boundary.
+eliminate padding.  But @code{l3} is of a non-packable float type (because
+it is aliased), so it is on the next appropriate alignment boundary.
 
 The next two fields are fully packable, so @code{l4} and @code{l5} are
 minimally packed with no gaps.  However, type @code{Rb2} is a packed

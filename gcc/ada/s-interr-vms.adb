@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2013, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,8 +104,8 @@ package body System.Interrupts is
          Static      : Boolean);
 
       entry Detach_Handler
-        (Interrupt   : Interrupt_ID;
-         Static      : Boolean);
+        (Interrupt : Interrupt_ID;
+         Static    : Boolean);
 
       entry Bind_Interrupt_To_Entry
         (T         : Task_Id;
@@ -172,10 +172,10 @@ package body System.Interrupts is
 
    Last_Unblocker : constant array (Interrupt_ID'Range) of Task_Id :=
      (others => Null_Task);
---  ??? pragma Volatile_Components (Last_Unblocker);
-   --  Holds the ID of the last Task which Unblocked this Interrupt.
-   --  It contains Null_Task if no tasks have ever requested the
-   --  Unblocking operation or the Interrupt is currently Blocked.
+   --  ??? pragma Volatile_Components (Last_Unblocker);
+   --  Holds the ID of the last Task which Unblocked this Interrupt. It
+   --  contains Null_Task if no tasks have ever requested the Unblocking
+   --  operation or the Interrupt is currently Blocked.
 
    Server_ID : array (Interrupt_ID'Range) of Task_Id :=
                  (others => Null_Task);
@@ -185,8 +185,8 @@ package body System.Interrupts is
    --  decide whether to create a new Server_Task.
 
    --  Type and Head, Tail of the list containing Registered Interrupt
-   --  Handlers. These definitions are used to register the handlers specified
-   --  by the pragma Interrupt_Handler.
+   --  Handlers. These definitions are used to register the handlers
+   --  specified by the pragma Interrupt_Handler.
 
    type Registered_Handler;
    type R_Link is access all Registered_Handler;
@@ -218,15 +218,15 @@ package body System.Interrupts is
       New_Node_Ptr : R_Link;
 
    begin
-      --  This routine registers the Handler as usable for Dynamic
-      --  Interrupt Handler. Routines attaching and detaching Handler
-      --  dynamically should first consult if the Handler is registered.
-      --  A Program Error should be raised if it is not registered.
+      --  This routine registers the Handler as usable for Dynamic Interrupt
+      --  Handler. Routines attaching and detaching Handler dynamically should
+      --  first consult if the Handler is registered. A Program Error should be
+      --  raised if it is not registered.
 
-      --  The pragma Interrupt_Handler can only appear in the library
-      --  level PO definition and instantiation. Therefore, we do not need
-      --  to implement Unregistering operation. Neither we need to
-      --  protect the queue structure using a Lock.
+      --  The pragma Interrupt_Handler can only appear in the library level PO
+      --  definition and instantiation. Therefore, we do not need to implement
+      --  Unregistering operation. Neither we need to protect the queue
+      --  structure using a Lock.
 
       pragma Assert (Handler_Addr /= System.Null_Address);
 
@@ -267,7 +267,6 @@ package body System.Interrupts is
       Fat := To_Fat_Ptr (Handler);
 
       Ptr := Registered_Handler_Head;
-
       while Ptr /= null loop
          if Ptr.H = Fat.Handler_Addr then
             return True;
@@ -296,7 +295,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       return User_Entry (Interrupt).T /= Null_Task;
@@ -310,7 +309,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       return User_Handler (Interrupt).H /= null;
@@ -324,7 +323,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       return Blocked (Interrupt);
@@ -338,7 +337,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       return Ignored (Interrupt);
@@ -354,7 +353,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       --  ??? Since Parameterless_Handler is not Atomic, the current
@@ -369,9 +368,9 @@ package body System.Interrupts is
    --------------------
 
    --  Calling this procedure with New_Handler = null and Static = True
-   --  means we want to detach the current handler regardless of the
-   --  previous handler's binding status (i.e. do not care if it is a
-   --  dynamic or static handler).
+   --  means we want to detach the current handler regardless of the previous
+   --  handler's binding status (i.e. we do not care if it is a dynamic or
+   --  static handler).
 
    --  This option is needed so that during the finalization of a PO, we
    --  can detach handlers attached through pragma Attach_Handler.
@@ -379,15 +378,15 @@ package body System.Interrupts is
    procedure Attach_Handler
      (New_Handler : Parameterless_Handler;
       Interrupt   : Interrupt_ID;
-      Static      : Boolean := False) is
+      Static      : Boolean := False)
+   is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       Interrupt_Manager.Attach_Handler (New_Handler, Interrupt, Static);
-
    end Attach_Handler;
 
    ----------------------
@@ -411,12 +410,11 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       Interrupt_Manager.Exchange_Handler
         (Old_Handler, New_Handler, Interrupt, Static);
-
    end Exchange_Handler;
 
    --------------------
@@ -437,7 +435,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       Interrupt_Manager.Detach_Handler (Interrupt, Static);
@@ -451,11 +449,11 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       return Storage_Elements.To_Address
-        (Storage_Elements.Integer_Address (Interrupt));
+               (Storage_Elements.Integer_Address (Interrupt));
    end Reference;
 
    -----------------------------
@@ -472,16 +470,15 @@ package body System.Interrupts is
       Int_Ref : System.Address)
    is
       Interrupt : constant Interrupt_ID :=
-        Interrupt_ID (Storage_Elements.To_Integer (Int_Ref));
+                    Interrupt_ID (Storage_Elements.To_Integer (Int_Ref));
 
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       Interrupt_Manager.Bind_Interrupt_To_Entry (T, E, Interrupt);
-
    end Bind_Interrupt_To_Entry;
 
    ------------------------------
@@ -501,7 +498,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       Interrupt_Manager.Block_Interrupt (Interrupt);
@@ -515,7 +512,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       Interrupt_Manager.Unblock_Interrupt (Interrupt);
@@ -530,7 +527,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       return Last_Unblocker (Interrupt);
@@ -544,7 +541,7 @@ package body System.Interrupts is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error with
-           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+           "interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       Interrupt_Manager.Ignore_Interrupt (Interrupt);
@@ -602,7 +599,7 @@ package body System.Interrupts is
             --  In case we have an Interrupt Entry already installed.
             --  raise a program error. (propagate it to the caller).
 
-            raise Program_Error with "An interrupt is already installed";
+            raise Program_Error with "an interrupt is already installed";
          end if;
 
          --  Note: A null handler with Static=True will pass the following
@@ -618,14 +615,14 @@ package body System.Interrupts is
 
            and then (User_Handler (Interrupt).Static
 
-                        --  The new handler is not specified as an
-                        --  Interrupt Handler by a pragma.
+                       --  The new handler is not specified as an
+                       --  Interrupt Handler by a pragma.
 
-                        or else not Is_Registered (New_Handler))
+                       or else not Is_Registered (New_Handler))
          then
             raise Program_Error with
-              "Trying to overwrite a static Interrupt Handler with a " &
-              "dynamic Handler";
+              "trying to overwrite a static interrupt handler with a " &
+              "dynamic handler";
          end if;
 
          --  The interrupt should no longer be ignored if it was ever ignored
@@ -673,11 +670,11 @@ package body System.Interrupts is
       begin
          if User_Entry (Interrupt).T /= Null_Task then
 
-            --  In case we have an Interrupt Entry installed.
-            --  raise a program error. (propagate it to the caller).
+            --  In case we have an Interrupt Entry installed, raise a program
+            --  error, (propagate it to the caller).
 
             raise Program_Error with
-              "An interrupt entry is already installed";
+              "an interrupt entry is already installed";
          end if;
 
          --  Note : Static = True will pass the following check. That is the
@@ -685,11 +682,11 @@ package body System.Interrupts is
          --  status of the current_Handler.
 
          if not Static and then User_Handler (Interrupt).Static then
-            --  Tries to detach a static Interrupt Handler.
-            --  raise a program error.
+
+            --  Tries to detach a static Interrupt Handler, raise program error
 
             raise Program_Error with
-              "Trying to detach a static Interrupt Handler";
+              "trying to detach a static interrupt handler";
          end if;
 
          --  The interrupt should no longer be ignored if
@@ -708,17 +705,17 @@ package body System.Interrupts is
    --  Start of processing for Interrupt_Manager
 
    begin
-      --  By making this task independent of master, when the process
-      --  goes away, the Interrupt_Manager will terminate gracefully.
+      --  By making this task independent of master, when the process goes
+      --  away, the Interrupt_Manager will terminate gracefully.
 
       System.Tasking.Utilities.Make_Independent;
 
-      --  Environment task gets its own interrupt mask, saves it,
-      --  and then masks all interrupts except the Keep_Unmasked set.
+      --  Environment task gets its own interrupt mask, saves it, and then
+      --  masks all interrupts except the Keep_Unmasked set.
 
-      --  During rendezvous, the Interrupt_Manager receives the old
-      --  interrupt mask of the environment task, and sets its own
-      --  interrupt mask to that value.
+      --  During rendezvous, the Interrupt_Manager receives the old interrupt
+      --  mask of the environment task, and sets its own interrupt mask to that
+      --  value.
 
       --  The environment task will call the entry of Interrupt_Manager some
       --  during elaboration of the body of this package.
@@ -728,18 +725,18 @@ package body System.Interrupts is
          null;
       end Initialize;
 
-      --  Note: All tasks in RTS will have all the Reserve Interrupts
-      --  being masked (except the Interrupt_Manager) and Keep_Unmasked
-      --  unmasked when created.
+      --  Note: All tasks in RTS will have all the Reserve Interrupts being
+      --  masked (except the Interrupt_Manager) and Keep_Unmasked unmasked
+      --  when created.
 
-      --  Abort_Task_Interrupt is one of the Interrupt unmasked
-      --  in all tasks. We mask the Interrupt in this particular task
-      --  so that "sigwait" is possible to catch an explicitly sent
-      --  Abort_Task_Interrupt from the Server_Tasks.
+      --  Abort_Task_Interrupt is one of the Interrupt unmasked in all tasks.
+      --  We mask the Interrupt in this particular task so that "sigwait" is
+      --  possible to catch an explicitly sent Abort_Task_Interrupt from the
+      --  Server_Tasks.
 
-      --  This sigwaiting is needed so that we make sure a Server_Task is
-      --  out of its own sigwait state. This extra synchronization is
-      --  necessary to prevent following scenarios.
+      --  This sigwaiting is needed so that we make sure a Server_Task is out
+      --  of its own sigwait state. This extra synchronization is necessary to
+      --  prevent following scenarios.
 
       --   1) Interrupt_Manager sends an Abort_Task_Interrupt to the
       --      Server_Task then changes its own interrupt mask (OS level).
@@ -759,6 +756,7 @@ package body System.Interrupts is
 
          declare
             Old_Handler : Parameterless_Handler;
+
          begin
             select
 
@@ -801,7 +799,7 @@ package body System.Interrupts is
                  or else User_Entry (Interrupt).T /= Null_Task
                then
                   raise Program_Error with
-                    "A binding for this interrupt is already present";
+                    "a binding for this interrupt is already present";
                end if;
 
                --  The interrupt should no longer be ignored if
@@ -877,8 +875,8 @@ package body System.Interrupts is
             end select;
 
          exception
-            --  If there is a program error we just want to propagate it
-            --  to the caller and do not want to stop this task.
+            --  If there is a program error we just want to propagate it to the
+            --  caller and do not want to stop this task.
 
             when Program_Error =>
                null;
@@ -1026,7 +1024,6 @@ package body System.Interrupts is
      (Object : access Dynamic_Interrupt_Protection) return Boolean
    is
       pragma Warnings (Off, Object);
-
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
