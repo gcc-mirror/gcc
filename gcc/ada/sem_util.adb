@@ -7430,7 +7430,14 @@ package body Sem_Util is
                   while Present (Prop) loop
                      Prop_Nam := First (Choices (Prop));
 
-                     if Chars (Prop_Nam) = Property then
+                     --  The property can be represented in two ways:
+                     --      others   => <value>
+                     --    <property> => <value>
+
+                     if Nkind (Prop_Nam) = N_Others_Choice
+                       or else (Nkind (Prop_Nam) = N_Identifier
+                                  and then Chars (Prop_Nam) = Property)
+                     then
                         return Is_True (Expr_Value (Expression (Prop)));
                      end if;
 
