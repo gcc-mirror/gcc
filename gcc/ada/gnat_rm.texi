@@ -110,6 +110,8 @@ Implementation Defined Pragmas
 * Pragma Assertion_Policy::
 * Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Async_Readers::
+* Pragma Async_Writers::
 * Pragma Attribute_Definition::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
@@ -141,6 +143,8 @@ Implementation Defined Pragmas
 * Pragma Detect_Blocking::
 * Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
+* Pragma Effective_Reads::
+* Pragma Effective_Writes::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
 * Pragma Enable_Atomic_Synchronization::
@@ -208,6 +212,7 @@ Implementation Defined Pragmas
 * Pragma Overflow_Mode::
 * Pragma Overriding_Renamings::
 * Pragma Partition_Elaboration_Policy::
+* Pragma Part_Of::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -227,6 +232,9 @@ Implementation Defined Pragmas
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
+* Pragma Refined_Depends::
+* Pragma Refined_Global::
+* Pragma Refined_Post::
 * Pragma Refined_State::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
@@ -279,10 +287,14 @@ Implementation Defined Pragmas
 Implementation Defined Aspects
 
 * Aspect Abstract_State::
+* Aspect Async_Readers::
+* Aspect Async_Writers::
 * Aspect Contract_Cases::
 * Aspect Depends::
 * Aspect Dimension::
 * Aspect Dimension_System::
+* Aspect Effective_Reads::
+* Aspect Effective_Writes::
 * Aspect Favor_Top_Level::
 * Aspect Global::
 * Aspect Initial_Condition::
@@ -291,9 +303,13 @@ Implementation Defined Aspects
 * Aspect Invariant::
 * Aspect Linker_Section::
 * Aspect Object_Size::
+* Aspect Part_Of::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
 * Aspect Pure_Function::
+* Aspect Refined_Depends::
+* Aspect Refined_Global::
+* Aspect Refined_Post::
 * Aspect Refined_State::
 * Aspect Remote_Access_Type::
 * Aspect Scalar_Storage_Order::
@@ -939,6 +955,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assertion_Policy::
 * Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Async_Readers::
+* Pragma Async_Writers::
 * Pragma Attribute_Definition::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
@@ -970,6 +988,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Detect_Blocking::
 * Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
+* Pragma Effective_Reads::
+* Pragma Effective_Writes::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
 * Pragma Enable_Atomic_Synchronization::
@@ -1037,6 +1057,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Overflow_Mode::
 * Pragma Overriding_Renamings::
 * Pragma Partition_Elaboration_Policy::
+* Pragma Part_Of::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -1056,6 +1077,9 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
+* Pragma Refined_Depends::
+* Pragma Refined_Global::
+* Pragma Refined_Post::
 * Pragma Refined_State::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
@@ -1610,6 +1634,20 @@ with validity checking (-gnatVa). In such cases, accessing invalid
 values will generally give an exception, though formally the program
 is erroneous so there are no guarantees that this will always be the
 case, and it is recommended that these two options not be used together.
+
+@node Pragma Async_Readers
+@unnumberedsec Pragma Async_Readers
+@findex Async_Readers
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.2.
+
+@node Pragma Async_Writers
+@unnumberedsec Pragma Async_Writers
+@findex Async_Writers
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.2.
 
 @node Pragma Ast_Entry
 @unnumberedsec Pragma Ast_Entry
@@ -2539,6 +2577,20 @@ pragma Dispatching_Domain (EXPRESSION);
 This pragma is standard in Ada 2012, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
+
+@node Pragma Effective_Reads
+@unnumberedsec Pragma Effective_Reads
+@findex Effective_Reads
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.2.
+
+@node Pragma Effective_Writes
+@unnumberedsec Pragma Effective_Writes
+@findex Effective_Writes
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.2.
 
 @node Pragma Elaboration_Checks
 @unnumberedsec Pragma Elaboration_Checks
@@ -5117,6 +5169,13 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
+@node Pragma Part_Of
+@unnumberedsec Pragma Part_Of
+@findex Part_Of
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.2.6.
+
 @node Pragma Passive
 @unnumberedsec Pragma Passive
 @findex Passive
@@ -5955,6 +6014,27 @@ pragma Profile (Ravenscar);
 
 @noindent
 which is the preferred method of setting the @code{Ravenscar} profile.
+
+@node Pragma Refined_Depends
+@unnumberedsec Pragma Refined_Depends
+@findex Refined_Depends
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.5.
+
+@node Pragma Refined_Global
+@unnumberedsec Pragma Refined_Global
+@findex Refined_Global
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.4.
+
+@node Pragma Refined_Post
+@unnumberedsec Pragma Refined_Post
+@findex Refined_Post
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.2.7.
 
 @node Pragma Refined_State
 @unnumberedsec Pragma Refined_State
@@ -7817,10 +7897,14 @@ clause.
 
 @menu
 * Aspect Abstract_State::
+* Aspect Async_Readers::
+* Aspect Async_Writers::
 * Aspect Contract_Cases::
 * Aspect Depends::
 * Aspect Dimension::
 * Aspect Dimension_System::
+* Aspect Effective_Reads::
+* Aspect Effective_Writes::
 * Aspect Favor_Top_Level::
 * Aspect Global::
 * Aspect Initial_Condition::
@@ -7830,9 +7914,13 @@ clause.
 * Aspect Linker_Section::
 * Aspect Lock_Free::
 * Aspect Object_Size::
+* Aspect Part_Of::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
 * Aspect Pure_Function::
+* Aspect Refined_Depends::
+* Aspect Refined_Global::
+* Aspect Refined_Post::
 * Aspect Refined_State::
 * Aspect Remote_Access_Type::
 * Aspect Scalar_Storage_Order::
@@ -7857,6 +7945,18 @@ clause.
 @findex Abstract_State
 @noindent
 This aspect is equivalent to pragma @code{Abstract_State}.
+
+@node Aspect Async_Readers
+@unnumberedsec Aspect Async_Readers
+@findex Async_Readers
+@noindent
+This aspect is equivalent to pragma @code{Async_Readers}.
+
+@node Aspect Async_Writers
+@unnumberedsec Aspect Async_Writers
+@findex Async_Writers
+@noindent
+This aspect is equivalent to pragma @code{Async_Writers}.
 
 @node Aspect Contract_Cases
 @unnumberedsec Aspect Contract_Cases
@@ -7962,6 +8062,18 @@ following aspect:
 See section ``Performing Dimensionality Analysis in GNAT'' in the GNAT Users
 Guide for detailed examples of use of the dimension system.
 
+@node Aspect Effective_Reads
+@unnumberedsec Aspect Effective_Reads
+@findex Effective_Reads
+@noindent
+This aspect is equivalent to pragma @code{Effective_Reads}.
+
+@node Aspect Effective_Writes
+@unnumberedsec Aspect Effective_Writes
+@findex Effective_Writes
+@noindent
+This aspect is equivalent to pragma @code{Effective_Writes}.
+
 @node Aspect Favor_Top_Level
 @unnumberedsec Aspect Favor_Top_Level
 @findex Favor_Top_Level
@@ -8019,6 +8131,12 @@ This aspect is equivalent to pragma @code{Lock_Free}.
 This aspect is equivalent to an @code{Object_Size} attribute definition
 clause.
 
+@node Aspect Part_Of
+@unnumberedsec Aspect Part_Of
+@findex Part_Of
+@noindent
+This aspect is equivalent to pragma @code{Part_Of}.
+
 @node Aspect Persistent_BSS
 @unnumberedsec Aspect Persistent_BSS
 @findex Persistent_BSS
@@ -8041,6 +8159,24 @@ expression. It is also separately controllable using pragma
 @findex Pure_Function
 @noindent
 This aspect is equivalent to pragma @code{Pure_Function}.
+
+@node Aspect Refined_Depends
+@unnumberedsec Aspect Refined_Depends
+@findex Refined_Depends
+@noindent
+This aspect is equivalent to pragma @code{Refined_Depends}.
+
+@node Aspect Refined_Global
+@unnumberedsec Aspect Refined_Global
+@findex Refined_Global
+@noindent
+This aspect is equivalent to pragma @code{Refined_Global}.
+
+@node Aspect Refined_Post
+@unnumberedsec Aspect Refined_Post
+@findex Refined_Post
+@noindent
+This aspect is equivalent to pragma @code{Refined_Post}.
 
 @node Aspect Refined_State
 @unnumberedsec Aspect Refined_State

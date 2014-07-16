@@ -1,5 +1,13 @@
 2014-07-16  Robert Dewar  <dewar@adacore.com>
 
+	* snames.ads-tmpl, sem_attr.adb, exp_attr.adb: Same_Storage attribute
+	is renamed Has_Same_Storage.
+	* gnat_rm.texi: Document missing SPARK pragmas and attributes.
+	* sem_prag.adb: Minor comment fix (use LOCAL_NAME in syntax
+	descriptions).
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb, sem_attr.adb, exp_ch4.adb, a-cohase.ads,
 	a-coinho-shared.adb, a-coinho-shared.ads: Minor reformatting.
 

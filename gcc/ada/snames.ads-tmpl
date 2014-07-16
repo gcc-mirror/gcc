@@ -868,6 +868,7 @@ package Snames is
    Name_Fore                           : constant Name_Id := N + $;
    Name_Has_Access_Values              : constant Name_Id := N + $; -- GNAT
    Name_Has_Discriminants              : constant Name_Id := N + $; -- GNAT
+   Name_Has_Same_Storage               : constant Name_Id := N + $; -- Ada 12
    Name_Has_Tagged_Values              : constant Name_Id := N + $; -- GNAT
    Name_Identity                       : constant Name_Id := N + $;
    Name_Img                            : constant Name_Id := N + $; -- GNAT
@@ -925,7 +926,6 @@ package Snames is
    Name_Safe_Large                     : constant Name_Id := N + $; -- Ada 83
    Name_Safe_Last                      : constant Name_Id := N + $;
    Name_Safe_Small                     : constant Name_Id := N + $; -- Ada 83
-   Name_Same_Storage                   : constant Name_Id := N + $; -- Ada 12
    Name_Scalar_Storage_Order           : constant Name_Id := N + $; -- GNAT
    Name_Scale                          : constant Name_Id := N + $;
    Name_Scaling                        : constant Name_Id := N + $;
@@ -1494,6 +1494,7 @@ package Snames is
       Attribute_Fore,
       Attribute_Has_Access_Values,
       Attribute_Has_Discriminants,
+      Attribute_Has_Same_Storage,
       Attribute_Has_Tagged_Values,
       Attribute_Identity,
       Attribute_Img,
@@ -1551,7 +1552,6 @@ package Snames is
       Attribute_Safe_Large,
       Attribute_Safe_Last,
       Attribute_Safe_Small,
-      Attribute_Same_Storage,
       Attribute_Scalar_Storage_Order,
       Attribute_Scale,
       Attribute_Scaling,

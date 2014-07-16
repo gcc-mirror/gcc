@@ -3012,6 +3012,73 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, P_Type);
       end From_Any;
 
+      ----------------------
+      -- Has_Same_Storage --
+      ----------------------
+
+      when Attribute_Has_Same_Storage => Has_Same_Storage : declare
+            Loc : constant Source_Ptr := Sloc (N);
+
+            X   : constant Node_Id := Prefix (N);
+            Y   : constant Node_Id := First (Expressions (N));
+            --  The arguments
+
+            X_Addr, Y_Addr : Node_Id;
+            --  Rhe expressions for their addresses
+
+            X_Size, Y_Size : Node_Id;
+            --  Rhe expressions for their sizes
+
+      begin
+         --  The attribute is expanded as:
+
+         --    (X'address = Y'address)
+         --      and then (X'Size = Y'Size)
+
+         --  If both arguments have the same Etype the second conjunct can be
+         --  omitted.
+
+         X_Addr :=
+           Make_Attribute_Reference (Loc,
+                                     Attribute_Name => Name_Address,
+                                     Prefix         => New_Copy_Tree (X));
+
+         Y_Addr :=
+           Make_Attribute_Reference (Loc,
+                                     Attribute_Name => Name_Address,
+                                     Prefix         => New_Copy_Tree (Y));
+
+         X_Size :=
+           Make_Attribute_Reference (Loc,
+                                     Attribute_Name => Name_Size,
+                                     Prefix         => New_Copy_Tree (X));
+
+         Y_Size :=
+           Make_Attribute_Reference (Loc,
+                                     Attribute_Name => Name_Size,
+                                     Prefix         => New_Copy_Tree (Y));
+
+         if Etype (X) = Etype (Y) then
+            Rewrite (N,
+                     (Make_Op_Eq (Loc,
+                      Left_Opnd  => X_Addr,
+                      Right_Opnd => Y_Addr)));
+         else
+            Rewrite (N,
+                     Make_Op_And (Loc,
+                       Left_Opnd  =>
+                         Make_Op_Eq (Loc,
+                           Left_Opnd  => X_Addr,
+                           Right_Opnd => Y_Addr),
+                       Right_Opnd =>
+                         Make_Op_Eq (Loc,
+                           Left_Opnd  => X_Size,
+                           Right_Opnd => Y_Size)));
+         end if;
+
+         Analyze_And_Resolve (N, Standard_Boolean);
+      end Has_Same_Storage;
+
       --------------
       -- Identity --
       --------------
@@ -4988,73 +5055,6 @@ package body Exp_Attr is
 
       when Attribute_Rounding =>
          Expand_Fpt_Attribute_R (N);
-
-      ------------------
-      -- Same_Storage --
-      ------------------
-
-      when Attribute_Same_Storage => Same_Storage : declare
-         Loc : constant Source_Ptr := Sloc (N);
-
-         X   : constant Node_Id := Prefix (N);
-         Y   : constant Node_Id := First (Expressions (N));
-         --  The arguments
-
-         X_Addr, Y_Addr : Node_Id;
-         --  Rhe expressions for their addresses
-
-         X_Size, Y_Size : Node_Id;
-         --  Rhe expressions for their sizes
-
-      begin
-         --  The attribute is expanded as:
-
-         --    (X'address = Y'address)
-         --      and then (X'Size = Y'Size)
-
-         --  If both arguments have the same Etype the second conjunct can be
-         --  omitted.
-
-         X_Addr :=
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Address,
-             Prefix         => New_Copy_Tree (X));
-
-         Y_Addr :=
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Address,
-             Prefix         => New_Copy_Tree (Y));
-
-         X_Size :=
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Size,
-             Prefix         => New_Copy_Tree (X));
-
-         Y_Size :=
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Size,
-             Prefix         => New_Copy_Tree (Y));
-
-         if Etype (X) = Etype (Y) then
-            Rewrite (N,
-              (Make_Op_Eq (Loc,
-                 Left_Opnd  => X_Addr,
-                 Right_Opnd => Y_Addr)));
-         else
-            Rewrite (N,
-              Make_Op_And (Loc,
-                Left_Opnd  =>
-                  Make_Op_Eq (Loc,
-                    Left_Opnd  => X_Addr,
-                    Right_Opnd => Y_Addr),
-                Right_Opnd =>
-                  Make_Op_Eq (Loc,
-                    Left_Opnd  => X_Size,
-                    Right_Opnd => Y_Size)));
-         end if;
-
-         Analyze_And_Resolve (N, Standard_Boolean);
-      end Same_Storage;
 
       -------------
       -- Scaling --
