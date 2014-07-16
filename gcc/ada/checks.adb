@@ -419,6 +419,19 @@ package body Checks is
       end if;
    end Alignment_Checks_Suppressed;
 
+   ----------------------------------
+   -- Allocation_Checks_Suppressed --
+   ----------------------------------
+
+   function Allocation_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Allocation_Check);
+      else
+         return Scope_Suppress.Suppress (Allocation_Check);
+      end if;
+   end Allocation_Checks_Suppressed;
+
    -------------------------
    -- Append_Range_Checks --
    -------------------------

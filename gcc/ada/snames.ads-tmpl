@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1096,6 +1096,7 @@ package Snames is
    Name_Access_Check                   : constant Name_Id := N + $;
    Name_Accessibility_Check            : constant Name_Id := N + $;
    Name_Alignment_Check                : constant Name_Id := N + $; -- GNAT
+   Name_Allocation_Check               : constant Name_Id := N + $;
    Name_Atomic_Synchronization         : constant Name_Id := N + $; -- GNAT
    Name_Discriminant_Check             : constant Name_Id := N + $;
    Name_Division_Check                 : constant Name_Id := N + $;

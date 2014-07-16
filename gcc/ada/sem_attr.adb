@@ -764,9 +764,7 @@ package body Sem_Attr is
 
          --  Case of access to subprogram
 
-         if Is_Entity_Name (P)
-           and then Is_Overloadable (Entity (P))
-         then
+         if Is_Entity_Name (P) and then Is_Overloadable (Entity (P)) then
             if Has_Pragma_Inline_Always (Entity (P)) then
                Error_Attr_P
                  ("prefix of % attribute cannot be Inline_Always subprogram");
@@ -961,15 +959,17 @@ package body Sem_Attr is
             end if;
          end if;
 
-         --  If we fall through, we have a normal access to object case.
-         --  Unrestricted_Access is legal wherever an allocator would be
-         --  legal, so its Etype is set to E_Allocator. The expected type
+         --  If we fall through, we have a normal access to object case
+
+         --  Unrestricted_Access is (for now) legal wherever an allocator would
+         --  be legal, so its Etype is set to E_Allocator. The expected type
          --  of the other attributes is a general access type, and therefore
          --  we label them with E_Access_Attribute_Type.
 
          if not Is_Overloaded (P) then
             Acc_Type := Build_Access_Object_Type (P_Type);
             Set_Etype (N, Acc_Type);
+
          else
             declare
                Index : Interp_Index;
@@ -1022,21 +1022,42 @@ package body Sem_Attr is
             end loop;
          end;
 
-         --  Check for aliased view unless unrestricted case. We allow a
-         --  nonaliased prefix when within an instance because the prefix may
-         --  have been a tagged formal object, which is defined to be aliased
-         --  even when the actual might not be (other instance cases will have
-         --  been caught in the generic). Similarly, within an inlined body we
-         --  know that the attribute is legal in the original subprogram, and
-         --  therefore legal in the expansion.
+         --  Check for aliased view.. We allow a nonaliased prefix when within
+         --  an instance because the prefix may have been a tagged formal
+         --  object, which is defined to be aliased even when the actual
+         --  might not be (other instance cases will have been caught in the
+         --  generic). Similarly, within an inlined body we know that the
+         --  attribute is legal in the original subprogram, and therefore
+         --  legal in the expansion.
 
-         if Aname /= Name_Unrestricted_Access
-           and then not Is_Aliased_View (P)
+         if not Is_Aliased_View (P)
            and then not In_Instance
            and then not In_Inlined_Body
          then
-            Error_Attr_P ("prefix of % attribute must be aliased");
-            Check_No_Implicit_Aliasing (P);
+            --  Here we have a non-aliased view. This is illegal unless we
+            --  have the case of Unrestricted_Access, where for now we allow
+            --  this (we will reject later if expected type is access to an
+            --  unconstrained array with a thin pointer).
+
+            if Aname /= Name_Unrestricted_Access then
+               Error_Attr_P ("prefix of % attribute must be aliased");
+               Check_No_Implicit_Aliasing (P);
+
+            --  For Unrestricted_Access, record that prefix is not aliased
+            --  to simplify legality check later on.
+
+            else
+               Set_Non_Aliased_Prefix (N);
+            end if;
+
+         --  If we have an aliased view, and we have Unrestricted_Access, then
+         --  output a warning that Unchecked_Access would have been fine, and
+         --  change the node to be Unchecked_Access.
+
+         else
+            --  For now, hold off on this change ???
+
+            null;
          end if;
       end Analyze_Access_Attribute;
 
@@ -9726,10 +9747,10 @@ package body Sem_Attr is
                Note_Possible_Modification (P, Sure => False);
             end if;
 
-            --  The following comes from a query by Adam Beneschan, concerning
-            --  improper use of universal_access in equality tests involving
-            --  anonymous access types. Another good reason for 'Ref, but
-            --  for now disable the test, which breaks several filed tests.
+            --  The following comes from a query concerning improper use of
+            --  universal_access in equality tests involving anonymous access
+            --  types. Another good reason for 'Ref, but for now disable the
+            --  test, which breaks several filed tests???
 
             if Ekind (Typ) = E_Anonymous_Access_Type
               and then Nkind_In (Parent (N), N_Op_Eq, N_Op_Ne)
@@ -9739,7 +9760,12 @@ package body Sem_Attr is
                Error_Msg_N ("\qualify attribute with some access type", N);
             end if;
 
+            --  Case where prefix is an entity name
+
             if Is_Entity_Name (P) then
+
+               --  Deal with case where prefix itself is overloaded
+
                if Is_Overloaded (P) then
                   Get_First_Interp (P, Index, It);
                   while Present (It.Nam) loop
@@ -9772,11 +9798,18 @@ package body Sem_Attr is
                      Freeze_Before (N, Entity (P));
                   end if;
 
+               --  Nothing to do if prefix is a type name
+
                elsif Is_Type (Entity (P)) then
                   null;
+
+               --  Otherwise non-overloaded other case, resolve the prefix
+
                else
                   Resolve (P);
                end if;
+
+               --  Some further error checks
 
                Error_Msg_Name_1 := Aname;
 
@@ -10109,7 +10142,7 @@ package body Sem_Attr is
                   or else
                 Attr_Id = Attribute_Unchecked_Access)
               and then (Ekind (Btyp) = E_General_Access_Type
-                          or else Ekind (Btyp) = E_Anonymous_Access_Type)
+                         or else Ekind (Btyp) = E_Anonymous_Access_Type)
             then
                --  Ada 2005 (AI-230): Check the accessibility of anonymous
                --  access types for stand-alone objects, record and array
@@ -10357,6 +10390,28 @@ package body Sem_Attr is
                      "non-volatile type", P);
                end if;
             end if;
+
+            --  Check for unrestricted access where expected type is a thin
+            --  pointer to an unconstrained array.
+
+            if Non_Aliased_Prefix (N)
+              and then Has_Size_Clause (Typ)
+              and then RM_Size (Typ) = System_Address_Size
+            then
+               declare
+                  DT : constant Entity_Id := Designated_Type (Typ);
+               begin
+                  if Is_Array_Type (DT) and then not Is_Constrained (DT) then
+                     Error_Msg_N
+                       ("illegal use of Unrestricted_Access attribute", P);
+                     Error_Msg_N
+                       ("\attempt to generate thin pointer to unaliased "
+                        & "object", P);
+                  end if;
+               end;
+            end if;
+
+            --  Mark that address of entity is taken
 
             if Is_Entity_Name (P) then
                Set_Address_Taken (Entity (P));

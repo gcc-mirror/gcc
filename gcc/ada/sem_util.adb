@@ -5045,6 +5045,7 @@ package body Sem_Util is
          --  visibility list (see below).
 
          elsif Nkind (Parent (Def_Id)) = N_Full_Type_Declaration
+           and then Ekind (Def_Id) = E_Record_Type
            and then Present (Corresponding_Remote_Type (Def_Id))
          then
             null;

@@ -1,3 +1,34 @@
+2014-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Declarations): Reinstate the check on
+	a hook object to ensure that the related transient declaration
+	is finalizable.
+	* exp_util.adb (Is_Aliased): Do not consider expresison with
+	actions as a special context.
+	(Requires_Cleanup_Actions): Reinstate the check on a hook object to
+	ensure that the related transient declaration is finalizable.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, checks.adb (Allocation_Checks_Suppressed): New function.
+	* snames.ads-tmpl: Add Allocation_Check to list of check names.
+	* types.ads: Add Allocation_Check to list of check names.
+
+2014-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb (Enter_Name): replace bogus test for presence of
+	Corresponding_Remote_Type with correct test on Ekind.
+	* sem_res.adb (Valid_Conversion): ditto; also clarify validity
+	of calls to Corresponding_ Remote_Type (documentation fix).
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document illegal case of Unrestricted_Access.
+	* sem_attr.adb (Analyze_Access_Attribute): Set_Non_Aliased_Prefix
+	where it applies.
+	(Resolve_Attribute, case Access): Flag illegal Unrestricted_Access use.
+	* sinfo.ads, sinfo.adb (Non_Aliased_Prefix): New flag.
+
 2014-07-16  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Document binder switch -Ra.

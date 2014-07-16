@@ -1809,6 +1809,13 @@ package Sinfo is
    --    is used for properly setting out of range values for use by pragmas
    --    Initialize_Scalars and Normalize_Scalars.
 
+   --  Non_Aliased_Prefix (Flag18-Sem)
+   --    Present in N_Attribute_Reference nodes. Set only for the case of an
+   --    Unrestricted_Access reference whose prefix is non-aliased, which is
+   --    the case that is permitted for Unrestricted_Access except when the
+   --    expected type is a thin pointer to unconstrained array. This flag is
+   --    to assist in detecting this illegal use of Unrestricted_Access.
+
    --  Original_Discriminant (Node2-Sem)
    --    Present in identifiers. Used in references to discriminants that
    --    appear in generic units. Because the names of the discriminants may be
@@ -3621,8 +3628,10 @@ package Sinfo is
       --  Associated_Node (Node4-Sem)
       --  Do_Overflow_Check (Flag17-Sem)
       --  Header_Size_Added (Flag11-Sem)
+      --  Must_Be_Byte_Aligned (Flag14-Sem)
+      --  Non_Aliased_Prefix (Flag18-Sem)
       --  Redundant_Use (Flag13-Sem)
-      --  Must_Be_Byte_Aligned (Flag14)
+
       --  plus fields for expression
 
       --  Note: in Modify_Tree_For_C mode, Max and Min attributes are expanded
@@ -9242,6 +9251,9 @@ package Sinfo is
    function No_Truncation
      (N : Node_Id) return Boolean;    -- Flag17
 
+   function Non_Aliased_Prefix
+     (N : Node_Id) return Boolean;    -- Flag18
+
    function Null_Present
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -10243,6 +10255,9 @@ package Sinfo is
 
    procedure Set_No_Truncation
      (N : Node_Id; Val : Boolean := True);    -- Flag17
+
+   procedure Set_Non_Aliased_Prefix
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Null_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -12510,6 +12525,7 @@ package Sinfo is
    pragma Inline (No_Initialization);
    pragma Inline (No_Minimize_Eliminate);
    pragma Inline (No_Truncation);
+   pragma Inline (Non_Aliased_Prefix);
    pragma Inline (Null_Present);
    pragma Inline (Null_Exclusion_Present);
    pragma Inline (Null_Exclusion_In_Return_Present);
@@ -12840,6 +12856,7 @@ package Sinfo is
    pragma Inline (Set_No_Initialization);
    pragma Inline (Set_No_Minimize_Eliminate);
    pragma Inline (Set_No_Truncation);
+   pragma Inline (Set_Non_Aliased_Prefix);
    pragma Inline (Set_Null_Exclusion_Present);
    pragma Inline (Set_Null_Exclusion_In_Return_Present);
    pragma Inline (Set_Null_Present);
