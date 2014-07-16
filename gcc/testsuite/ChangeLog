@@ -1,3 +1,8 @@
+2014-07-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/60723 - missing system-ness marks for macro tokens
+	* gcc.dg/cpp/syshdr{4,5}.{c,h}: New test files.
+
 2014-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/ieee/rounding_1.f90: Rename from ieee_rounding_1.f90.
