@@ -1,3 +1,43 @@
+2014-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* switch-b.adb (Scan_Binder_Switches): Add missing guard.
+
+2014-07-16  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2014-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Do not expand case
+	expression if it is the specification of a subtype predicate:
+	it will be expanded when the return statement is analyzed, or
+	when a static predicate is transformed into a static expression
+	for evaluation by the front-end.
+	* sem_ch13.adb (Get_RList): If the expression for a static
+	predicate is a case expression, extract the alternatives of the
+	branches with a True value to create the required statically
+	evaluable expression.
+
+2014-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Check): Use the location of the
+	expression, not the location of the aspect, for all generated
+	code, so that in particular the call to raise_assert_failure
+	gets the sloc of the associated condition.
+	* exp_ch6.adb
+	(Expand_Subprogram_Contract.Build_Postconditions_Procedure):
+	Set an explicit End_Label on the handled sequence of statements
+	for the _Postconditions procedure so that the implicit return
+	statement does not erroneously get associated with code generated
+	for the last condition in postconditions.
+
+2014-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* ug_words: Fix name of VMS synonym for -gnatw.z (SIZE_ALIGNMENT,
+	not SIZE_ALIGN) and -gnatw.Z (NOSIZE_ALIGNMENT, not NOSIZE_ALIGN).
+	* vms_data.ads: Add missing spaces in VMS synonyms for -gnatw.z /
+	-gnatw.Z.
+
 2014-07-16  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_prag.adb, sem_util.adb, sem_res.adb, sem_ch13.adb:

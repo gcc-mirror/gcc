@@ -7584,12 +7584,47 @@ package body Sem_Ch13 is
             when N_Qualified_Expression =>
                return Get_RList (Expression (Exp));
 
+            when N_Case_Expression =>
+            declare
+               Alt     : Node_Id;
+               Choices : List_Id;
+               Dep     : Node_Id;
+
+            begin
+               if not Is_Entity_Name (Expression (Expr))
+                 or else Etype (Expression (Expr)) /= Typ
+               then
+                  Error_Msg_N
+                    ("expression must denaote subtype", Expression (Expr));
+                  return False_Range;
+               end if;
+
+               --  Collect discrete choices in all True alternatives
+
+               Choices := New_List;
+               Alt := First (Alternatives (Exp));
+               while Present (Alt) loop
+                  Dep := Expression (Alt);
+
+                  if not Is_Static_Expression (Dep) then
+                     raise Non_Static;
+
+                  elsif Is_True (Expr_Value (Dep)) then
+                     Append_List_To (Choices,
+                       New_Copy_List (Discrete_Choices (Alt)));
+                  end if;
+
+                  Next (Alt);
+               end loop;
+
+               return Membership_Entries (First (Choices));
+            end;
+
             --  Expression with actions: if no actions, dig out expression
 
             when N_Expression_With_Actions =>
                if Is_Empty_List (Actions (Exp)) then
                   return Get_RList (Expression (Exp));
-
                else
                   raise Non_Static;
                end if;

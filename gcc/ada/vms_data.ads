@@ -3270,9 +3270,9 @@ package VMS_Data is
                                             "UNCHECKED_CONVERSIONS "       &
                                                "-gnatwz "                  &
                                             "NOUNCHECKED_CONVERSIONS "     &
-                                               "-gnatwZ"                   &
+                                               "-gnatwZ "                  &
                                             "SIZE_ALIGNMENT "              &
-                                               "-gnatw.z"                  &
+                                               "-gnatw.z "                 &
                                             "NOSIZE_ALIGNMENT "            &
                                                "-gnatw.Z";
 

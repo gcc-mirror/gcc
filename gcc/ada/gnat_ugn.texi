@@ -20163,7 +20163,7 @@ The GNAT compiler now supports dimensionality checking. The user can
 specify physical units for objects, and the compiler will verify that uses
 of these objects are compatible with their dimensions, in a fashion that is
 familiar to engineering practice. The dimensions of algebraic expressions
-(including powers with static exponents) are computed from their consistuents.
+(including powers with static exponents) are computed from their constituents.
 
 This feature depends on Ada 2012 aspect specifications, and is available from
 version 7.0.1 of GNAT onwards.

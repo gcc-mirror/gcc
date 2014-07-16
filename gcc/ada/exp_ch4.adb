@@ -4927,6 +4927,16 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  If the case expression is a predicate specification, do not
+      --  expand, because it will be converted to the proper predicate
+      --  form when building the predicate function.
+
+      if Ekind_In (Current_Scope, E_Function, E_Procedure)
+        and then Is_Predicate_Function (Current_Scope)
+      then
+         return;
+      end if;
+
       --  We expand
 
       --    case X is when A => AX, when B => BX ...
