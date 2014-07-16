@@ -1,3 +1,8 @@
+2014-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR other/61782
+	* doc/extend.texi (always_inline): Clarify.
+
 2014-07-15  Eric Christopher  <echristo@gmail.com>
 
 	* doc/invoke.texi (Link Options): Document -z option.
