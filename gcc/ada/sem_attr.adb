@@ -4843,8 +4843,9 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  For floating-point types, enable range check in
-         --  Check_Float_Overflow mode only.
+         --  Since Pred works on the base type, we normally do no check for the
+         --  floating-point case, since the base type is unconstrained. But we
+         --  make an exception in Check_Float_Overflow mode.
 
          if Is_Floating_Point_Type (P_Type) then
             if Check_Float_Overflow
@@ -5751,8 +5752,9 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  For floating-point types, enable range check in
-         --  Check_Float_Overflow mode only.
+         --  Since Pred works on the base type, we normally do no check for the
+         --  floating-point case, since the base type is unconstrained. But we
+         --  make an exception in Check_Float_Overflow mode.
 
          if Is_Floating_Point_Type (P_Type) then
             if Check_Float_Overflow

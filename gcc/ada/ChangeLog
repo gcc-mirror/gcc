@@ -1,3 +1,13 @@
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, sem_attr.adb, exp_ch4.adb, a-cohase.ads,
+	a-coinho-shared.adb, a-coinho-shared.ads: Minor reformatting.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add note that integrated
+	preprocessing cannot be applied to configuration pragma files.
+
 2014-07-16  Yannick Moy  <moy@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute/cases Pred
