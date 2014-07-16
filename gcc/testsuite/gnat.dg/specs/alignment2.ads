@@ -4,6 +4,8 @@ with Interfaces; use Interfaces;
 
 package Alignment2 is
 
+  pragma Warnings (Off, "*size*");
+
   -- warning
   type R1 is record
     A, B, C, D : Integer_8;
