@@ -379,7 +379,7 @@ package body Switch.B is
             Ptr := Ptr + 1;
             List_Closure := True;
 
-            if Switch_Chars (Ptr) = 'a' then
+            if Ptr <= Max and then Switch_Chars (Ptr) = 'a' then
                Ptr := Ptr + 1;
                List_Closure_All := True;
             end if;

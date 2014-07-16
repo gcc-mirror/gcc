@@ -8405,7 +8405,9 @@ package body Exp_Ch6 is
 
          --  Local variables
 
-         Loc    : constant Source_Ptr := Sloc (N);
+         Loc : constant Source_Ptr := Sloc (N);
+         --  Source location of subprogram contract
+
          Formal : Entity_Id;
          Typ    : Entity_Id;
 
@@ -8467,9 +8469,8 @@ package body Exp_Ch6 is
 
                if Predicate_Checks_OK (Typ) then
                   Append_Enabled_Item
-                    (Item =>
-                       Make_Predicate_Check
-                         (Typ, New_Occurrence_Of (Formal, Loc)),
+                    (Item => Make_Predicate_Check
+                                (Typ, New_Occurrence_Of (Formal, Loc)),
                      List => Stmts);
                end if;
             end if;
@@ -8614,6 +8615,12 @@ package body Exp_Ch6 is
          --  order reference. The body of _Postconditions must be placed after
          --  the declaration of Temp to preserve correct visibility.
 
+         --  Note that we set an explicit End_Label in order to override the
+         --  sloc of the implicit RETURN statement, and prevent it from
+         --  inheriting the sloc of one of the postconditions: this would cause
+         --  confusing debug info to be produced, interfering with coverage
+         --  analysis tools.
+
          Insert_Before_First_Source_Declaration (
            Make_Subprogram_Body (Loc,
              Specification              =>
@@ -8623,7 +8630,9 @@ package body Exp_Ch6 is
 
              Declarations               => Empty_List,
              Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => Stmts,
+                 End_Label  => Make_Identifier (Loc, Chars (Proc_Id)))));
 
          --  Set the attributes of the related subprogram to capture the
          --  generated procedure.
