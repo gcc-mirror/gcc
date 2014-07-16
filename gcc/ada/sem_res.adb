@@ -2453,8 +2453,8 @@ package body Sem_Res is
             --  the allocator.
 
             elsif Nkind (N) = N_Allocator
-              and then Ekind (Typ) in Access_Kind
-              and then Ekind (Etype (N)) in Access_Kind
+              and then Is_Access_Type (Typ)
+              and then Is_Access_Type (Etype (N))
               and then Designated_Type (Etype (N)) = Typ
             then
                Wrong_Type (Expression (N), Designated_Type (Typ));
@@ -11800,11 +11800,11 @@ package body Sem_Res is
 
       elsif Is_Access_Subprogram_Type (Target_Type)
 
-        --  Note: this test of Ekind (Opnd_Type) is there to prevent entering
-        --  this branch in the case of a remote access to subprogram type,
-        --  which is internally represented as an E_Record_Type.
+        --  Note: this test of Opnd_Type is there to prevent entering this
+        --  branch in the case of a remote access to subprogram type, which
+        --  is internally represented as an E_Record_Type.
 
-        and then Ekind (Opnd_Type) in Access_Kind
+        and then Is_Access_Type (Opnd_Type)
       then
          if Ekind (Base_Type (Opnd_Type)) = E_Anonymous_Access_Subprogram_Type
            and then Is_Entity_Name (Operand)

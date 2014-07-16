@@ -11400,7 +11400,7 @@ package body Sem_Ch3 is
    begin
       T := Entity (Subtype_Mark (SI));
 
-      if Ekind (T) in Access_Kind then
+      if Is_Access_Type (T) then
          T := Designated_Type (T);
       end if;
 
@@ -11950,7 +11950,7 @@ package body Sem_Ch3 is
       T_Val : Entity_Id;
 
    begin
-      if Ekind (T_Ent) in Access_Kind then
+      if Is_Access_Type (T_Ent) then
          T_Ent := Designated_Type (T_Ent);
       end if;
 
@@ -12154,7 +12154,7 @@ package body Sem_Ch3 is
 
       T := Base_Type (Entity (Subtype_Mark (S)));
 
-      if Ekind (T) in Access_Kind then
+      if Is_Access_Type (T) then
          T := Designated_Type (T);
       end if;
 

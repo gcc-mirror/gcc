@@ -1,3 +1,31 @@
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_prag.adb, sem_util.adb, sem_res.adb, sem_ch13.adb:
+	Minor code reorganization (use Is_Access_Type, not in Access_Kind).
+	* exp_ch3.adb: Minor code reorganization, use Is_Access_Type,
+	not in Access_Kind.
+	* par-ch4.adb (At_Start_Of_Attribute): New function
+	(P_Simple_Expression): Better msg for bad attribute prefix.
+	* scans.ads: Minor reformatting.
+
+2014-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'Update): If choice is a
+	static constant, check that in belongs to the corresponding index
+	subtype, to produce the proer warning when expansion is disabled.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Warn on incompatible size/alignment.
+	* gnat_ugn.texi: Document -gnatw.z and -gnatw.Z.
+	* ug_words: VMS synonyms (WARNINGS=[NO]SIZE_ALIGN) for -gnatw.z/-gnatw.Z
+	* usage.adb: Add lines for -gnatw.z/-gnatw.Z.
+	* vms_data.ads: VMS synonyms (WARNINGS=[NO]SIZE_ALIGN) for
+	-gnatw.z/-gnatw.Z
+	* warnsw.adb: Set Warn_On_Size_Alignment appropriately.
+	* warnsw.ads (Warn_On_Size_Alignment): New flag Minor
+	reformatting.
+
 2014-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Process_Declarations): Reinstate the check on

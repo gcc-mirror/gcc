@@ -78,6 +78,7 @@ package body Warnsw is
       Warn_On_Record_Holes                := Setting;
       Warn_On_Redundant_Constructs        := Setting;
       Warn_On_Reverse_Bit_Order           := Setting;
+      Warn_On_Size_Alignment              := Setting;
       Warn_On_Standard_Redefinition       := Setting;
       Warn_On_Suspicious_Contract         := Setting;
       Warn_On_Suspicious_Modulus_Value    := Setting;
@@ -170,6 +171,8 @@ package body Warnsw is
         W.Warn_On_Redundant_Constructs;
       Warn_On_Reverse_Bit_Order           :=
         W.Warn_On_Reverse_Bit_Order;
+      Warn_On_Size_Alignment              :=
+        W.Warn_On_Size_Alignment;
       Warn_On_Standard_Redefinition       :=
         W.Warn_On_Standard_Redefinition;
       Warn_On_Suspicious_Contract         :=
@@ -270,6 +273,8 @@ package body Warnsw is
         Warn_On_Redundant_Constructs;
       W.Warn_On_Reverse_Bit_Order           :=
         Warn_On_Reverse_Bit_Order;
+      W.Warn_On_Size_Alignment              :=
+        Warn_On_Size_Alignment;
       W.Warn_On_Standard_Redefinition       :=
         Warn_On_Standard_Redefinition;
       W.Warn_On_Suspicious_Contract         :=
@@ -421,6 +426,12 @@ package body Warnsw is
          when 'Y' =>
             List_Body_Required_Info             := False;
 
+         when 'z' =>
+            Warn_On_Size_Alignment              := True;
+
+         when 'Z' =>
+            Warn_On_Size_Alignment              := False;
+
          when others =>
             if Ignore_Unrecognized_VWY_Switches then
                Write_Line ("unrecognized switch -gnatw." & C & " ignored");
@@ -454,6 +465,7 @@ package body Warnsw is
       Warn_On_Non_Local_Exception         := False;
       No_Warn_On_Non_Local_Exception      := True;
       Warn_On_Reverse_Bit_Order           := False;
+      Warn_On_Size_Alignment              := False;
       Warn_On_Unrepped_Components         := False;
    end Set_GNAT_Mode_Warnings;
 
@@ -660,6 +672,7 @@ package body Warnsw is
       Warn_On_Questionable_Missing_Parens := True;
       Warn_On_Redundant_Constructs        := True;
       Warn_On_Reverse_Bit_Order           := True;
+      Warn_On_Size_Alignment              := True;
       Warn_On_Suspicious_Contract         := True;
       Warn_On_Unchecked_Conversion        := True;
       Warn_On_Unrecognized_Pragma         := True;

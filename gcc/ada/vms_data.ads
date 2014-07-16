@@ -3270,7 +3270,12 @@ package VMS_Data is
                                             "UNCHECKED_CONVERSIONS "       &
                                                "-gnatwz "                  &
                                             "NOUNCHECKED_CONVERSIONS "     &
-                                               "-gnatwZ";
+                                               "-gnatwZ"                   &
+                                            "SIZE_ALIGNMENT "              &
+                                               "-gnatw.z"                  &
+                                            "NOSIZE_ALIGNMENT "            &
+                                               "-gnatw.Z";
+
    --        /NOWARNINGS
    --
    --   Suppress the output of all warning messages from the GNAT front end.
@@ -3300,6 +3305,7 @@ package VMS_Data is
    --                               MISSING_PARENS
    --                               OVERLAPPING_ACTUALS
    --                               REVERSE_BIT_ORDER
+   --                               SIZE_ALIGNMENT
    --                               SUSPICIOUS_CONTRACT
    --                               SUSPICIOUS_MODULUS
    --                               UNCHECKED_CONVERSIONS
@@ -3588,6 +3594,12 @@ package VMS_Data is
    --   (-gnatw.v)              Generates information messages that show the
    --                           effect of specifying reverse bit order for
    --                           a record on individual components.
+   --
+   --   SIZE_ALIGNMENT          Activates warnings for record types for which
+   --   (-gnatw.z)              explicit size and alignment values are given,
+   --                           where the size value is not a multiple of the
+   --                           alignment value, resulting in an object size
+   --                           larger than the specified size.
    --
    --   STANDARD_REDEFINITION   Activate warnings on standard redefinition.
    --   (-gnatw.k)              Generates a warning message if a declaration

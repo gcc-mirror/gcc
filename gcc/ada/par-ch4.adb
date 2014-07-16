@@ -1969,6 +1969,42 @@ package body Ch4 is
       Node2      : Node_Id;
       Tokptr     : Source_Ptr;
 
+      function At_Start_Of_Attribute return Boolean;
+      --  Tests if we have quote followed by attribute name, if so, return True
+      --  otherwise return False.
+
+      ---------------------------
+      -- At_Start_Of_Attribute --
+      ---------------------------
+
+      function At_Start_Of_Attribute return Boolean is
+      begin
+         if Token /= Tok_Apostrophe then
+            return False;
+
+         else
+            declare
+               Scan_State : Saved_Scan_State;
+
+            begin
+               Save_Scan_State (Scan_State);
+               Scan; -- past quote
+
+               if Token = Tok_Identifier
+                 and then Is_Attribute_Name (Chars (Token_Node))
+               then
+                  Restore_Scan_State (Scan_State);
+                  return True;
+               else
+                  Restore_Scan_State (Scan_State);
+                  return False;
+               end if;
+            end;
+         end if;
+      end At_Start_Of_Attribute;
+
+   --  Start of processing for P_Simple_Expression
+
    begin
       --  Check for cases starting with a name. There are two reasons for
       --  special casing. First speed things up by catching a common case
@@ -2255,6 +2291,18 @@ package body Ch4 is
 
          if Prev_Token = Tok_Right_Paren and then Token = Tok_Left_Paren then
             T_Comma;
+
+         --  And if we have a quote, we may have a bad attribute
+
+         elsif At_Start_Of_Attribute then
+            Error_Msg_SC ("prefix of attribute must be a name");
+
+            if Ada_Version >= Ada_2012 then
+               Error_Msg_SC ("\qualify expression to turn it into a name");
+            end if;
+
+         --  Normal case for binary operator expected message
+
          else
             Error_Msg_AP ("binary operator expected");
          end if;

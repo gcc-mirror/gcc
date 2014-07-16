@@ -44,14 +44,19 @@ package Warnsw is
 
    Warn_On_Overridden_Size : Boolean := False;
    --  Warn when explicit record component clause or array component_size
-   --  clause specifies a size that overrides a size for the typen which was
+   --  clause specifies a size that overrides a size for the type which was
    --  set with an explicit size clause. Off by default, modified by use of
-   --  -gnatw.s/.S, but not set by -gnatwa.
+   --  -gnatw.s/.S (but not -gnatwa).
+
+   Warn_On_Size_Alignment : Boolean := True;
+   --  Warn when explicit Size and Alignment clauses are given for a type, and
+   --  the size is not a multiple of the alignment. Off by default, modified
+   --  by use of -gnatw.z/.Z and set as part of -gnatwa.
 
    Warn_On_Standard_Redefinition : Boolean := False;
    --  Warn when a program defines an identifier that matches a name in
-   --  Standard. Off by default, modified by use of -gnatw.k/.K, but not
-   --  affected by -gnatwa.
+   --  Standard. Off by default, modified by use of -gnatw.k/.K (but not
+   --  by -gnatwa).
 
    -----------------------------------
    -- Saving and Restoring Warnings --
@@ -98,6 +103,7 @@ package Warnsw is
       Warn_On_Record_Holes                : Boolean;
       Warn_On_Redundant_Constructs        : Boolean;
       Warn_On_Reverse_Bit_Order           : Boolean;
+      Warn_On_Size_Alignment              : Boolean;
       Warn_On_Standard_Redefinition       : Boolean;
       Warn_On_Suspicious_Contract         : Boolean;
       Warn_On_Suspicious_Modulus_Value    : Boolean;
