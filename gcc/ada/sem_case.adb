@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
@@ -647,6 +646,9 @@ package body Sem_Case is
       Bounds_Hi     : constant Node_Id := Type_High_Bound (Bounds_Type);
       Bounds_Lo     : constant Node_Id := Type_Low_Bound  (Bounds_Type);
       Num_Choices   : constant Nat     := Choice_Table'Last;
+      Has_Predicate : constant Boolean :=
+                        Is_Static_Subtype (Bounds_Type)
+                          and then Present (Static_Predicate (Bounds_Type));
 
       Choice      : Node_Id;
       Choice_Hi   : Uint;
@@ -679,17 +681,18 @@ package body Sem_Case is
 
       Sorting.Sort (Positive (Choice_Table'Last));
 
-      --  If the type covered by the list of choices is actually a static
-      --  subtype subject to a static predicate, then the predicate defines
-      --  subsets of legal values and we must verify that the branches of the
-      --  case match those subsets. If there is no static_predicate there is no
-      --  compiler check to perform. In particular we don't want any checks on
-      --  a case expression that itself appears as the expression of a dynamic
-      --  predicate. A case expression that defines a static predicate is
-      --  expanded earlier into a membership test and is not subject to this
-      --  spurious self-check either.
+      --  The type covered by the list of choices is actually a static subtype
+      --  subject to a static predicate. The predicate defines subsets of legal
+      --  values and requires finer grained analysis.
 
-      if Has_Aspect (Bounds_Type, Aspect_Static_Predicate) then
+      --  Note that in GNAT the predicate is considered static if the predicate
+      --  expression is static, independently of whether the aspect mentions
+      --  Static explicitly.  It is unclear whether this is RM-conforming, but
+      --  it's certainly useful, and GNAT source make use of this. The downside
+      --  is that currently case expressions cannot appear in predicates that
+      --  are not static.  ???
+
+      if Has_Predicate then
          Pred    := First (Static_Predicate (Bounds_Type));
          Prev_Lo := Uint_Minus_1;
          Prev_Hi := Uint_Minus_1;
