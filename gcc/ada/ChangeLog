@@ -1,3 +1,13 @@
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that leading/trailing asterisks are
+	now implied for the pattern match string for pragma Warnings
+	and Warning_As_Error.
+	* sem_prag.adb (Acquire_Warning_Match_String): New procedure.
+	(Analyze_Pragma, case Warning_As_Error): Call
+	Acquire_Warning_Match_String.
+	(Analyze_Pragma, case Warnings): Call Acquire_Warning_Match_String.
+
 2014-07-16  Bob Duff  <duff@adacore.com>
 
 	* gnat_ugn.texi: Document need for project file
