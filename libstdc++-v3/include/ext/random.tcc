@@ -1551,7 +1551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_RealType __sum = _RealType(0);
 
 	std::generate(__ret.begin(), __ret.end(),
-		      [&__urng, &__sum, this](){ _RealType __t = _M_n(__urng);
+		      [&__urng, &__sum, this](){ _RealType __t = _M_nd(__urng);
 						 __sum += __t * __t;
 						 return __t; });
 	auto __norm = std::sqrt(__sum);
@@ -1583,8 +1583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
 							       _RealType>& __x)
     {
-      // The distribution has no state, nothing to save.
-      return __os << __x._M_n;
+      return __os << __x._M_nd;
     }
 
   template<std::size_t _Dimen, typename _RealType, typename _CharT,
@@ -1594,8 +1593,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
 							 _RealType>& __x)
     {
-      // The distribution has no state, nothing to restore.
-      return __is >> __x._M_n;
+      return __is >> __x._M_nd;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

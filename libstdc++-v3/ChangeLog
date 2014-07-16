@@ -1,3 +1,14 @@
+2014-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/random: Minor formatting and cosmetic tweaks.
+	(uniform_on_sphere_distribution<>::operator==
+	(const uniform_on_sphere_distribution&,
+	const uniform_on_sphere_distribution&)): Compare the _M_nds.
+	(uniform_on_sphere_distribution<>::reset): Reset _M_nd.
+	(operator!=(const uniform_on_sphere_distribution&,
+	const uniform_on_sphere_distribution&)): Adjust.
+	* include/ext/random.tcc: Minor cosmetc tweaks.
+
 2014-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (TemplateTypePrinter): Add type
