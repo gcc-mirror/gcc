@@ -67,12 +67,7 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Control.Container /= null then
          Reference (Control.Container.Reference);
-
-         declare
-            B : Natural renames Control.Container.Busy;
-         begin
-            B := B + 1;
-         end;
+         Control.Container.Busy := Control.Container.Busy + 1;
       end if;
    end Adjust;
 
@@ -179,9 +174,8 @@ package body Ada.Containers.Indefinite_Holders is
       if Control.Container /= null then
          Unreference (Control.Container.Reference);
          Control.Container.Busy := Control.Container.Busy - 1;
+         Control.Container := null;
       end if;
-
-      Control.Container := null;
    end Finalize;
 
    --------------
@@ -385,10 +379,10 @@ package body Ada.Containers.Indefinite_Holders is
    --------------------
 
    procedure Update_Element
-     (Container : Holder;
+     (Container : in out Holder;
       Process   : not null access procedure (Element : in out Element_Type))
    is
-      B : Natural renames Container'Unrestricted_Access.Busy;
+      B : Natural renames Container.Busy;
 
    begin
       if Container.Reference = null then
