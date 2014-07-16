@@ -130,8 +130,7 @@ private
    overriding procedure Adjust (Container : in out Holder);
    overriding procedure Finalize (Container : in out Holder);
 
-   type Reference_Control_Type is new Controlled with
-   record
+   type Reference_Control_Type is new Controlled with record
       Container : Holder_Access;
    end record;
 

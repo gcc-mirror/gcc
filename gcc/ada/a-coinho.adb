@@ -40,10 +40,8 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Left.Element = null and Right.Element = null then
          return True;
-
       elsif Left.Element /= null and Right.Element /= null then
          return Left.Element.all = Right.Element.all;
-
       else
          return False;
       end if;
