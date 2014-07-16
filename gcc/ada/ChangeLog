@@ -1,5 +1,19 @@
 2014-07-16  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document erroneous mixing of thin pointers and
+	unrestricted access
+	* gnat_ugn.texi: Add note on size of access types about thin
+	pointers and the use of attribute Unrestricted_Access.
+
+2014-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbdlli.ads, a-cbdlli.adb, a-cbhama.ads, a-cbhama.adb,
+	* a-cbhase.ads, a-cbhase.adb, a-cborma.ads, a-cborma.adb,
+	* a-cborse.ads, a-cborse.adb, a-cobove.ads a-cobove.adb: Add Control
+	machinery to detect tampering on bounded vectors.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document that leading/trailing asterisks are
 	now implied for the pattern match string for pragma Warnings
 	and Warning_As_Error.
