@@ -6,7 +6,7 @@
 --                                                                          --
 --                               B o d y                                    --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,7 +103,7 @@ package body System.Tasking.Protected_Objects.Entries is
          STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
 
          if Ceiling_Violation then
-            raise Program_Error with "Ceiling Violation";
+            raise Program_Error with "ceiling violation";
          end if;
 
          if Single_Lock then
@@ -231,7 +231,7 @@ package body System.Tasking.Protected_Objects.Entries is
       Lock_Entries_With_Status (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
-         raise Program_Error with "Ceiling Violation";
+         raise Program_Error with "ceiling violation";
       end if;
    end Lock_Entries;
 
@@ -245,7 +245,7 @@ package body System.Tasking.Protected_Objects.Entries is
    is
    begin
       if Object.Finalized then
-         raise Program_Error with "Protected Object is finalized";
+         raise Program_Error with "protected object is finalized";
       end if;
 
       --  If pragma Detect_Blocking is active then, as described in the ARM
@@ -305,7 +305,7 @@ package body System.Tasking.Protected_Objects.Entries is
 
    begin
       if Object.Finalized then
-         raise Program_Error with "Protected Object is finalized";
+         raise Program_Error with "protected object is finalized";
       end if;
 
       --  If pragma Detect_Blocking is active then, as described in the ARM
@@ -330,7 +330,7 @@ package body System.Tasking.Protected_Objects.Entries is
       Read_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
-         raise Program_Error with "Ceiling Violation";
+         raise Program_Error with "ceiling violation";
       end if;
 
       --  We are entering in a protected action, so that we increase the
