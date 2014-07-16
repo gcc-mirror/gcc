@@ -503,7 +503,7 @@ begin
    Write_Line ("        F*   turn off warnings for unreferenced formal");
    Write_Line ("        g*+  turn on warnings for unrecognized pragma");
    Write_Line ("        G    turn off warnings for unrecognized pragma");
-   Write_Line ("        .g   turn on GNAT warnings, same as Aao.sI.C.V.X");
+   Write_Line ("        .g   turn on GNAT warnings");
    Write_Line ("        h    turn on warnings for hiding declarations");
    Write_Line ("        H*   turn off warnings for hiding declarations");
    Write_Line ("        .h   turn on warnings for holes in records");
@@ -589,6 +589,10 @@ begin
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off warnings for suspicious " &
                                                   "unchecked conversion");
+   Write_Line ("        .z*+ turn on warnings for record size not a " &
+                                                  "multiple of alignment");
+   Write_Line ("        .Z   turn off warnings for record size not a " &
+                                                  "multiple of alignment");
 
    --  Line for -gnatW switch
 

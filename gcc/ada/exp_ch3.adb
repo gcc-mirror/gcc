@@ -3230,7 +3230,7 @@ package body Exp_Ch3 is
          begin
             T := Entity (Subtype_Mark (SI));
 
-            if Ekind (T) in Access_Kind then
+            if Is_Access_Type (T) then
                T := Designated_Type (T);
             end if;
 

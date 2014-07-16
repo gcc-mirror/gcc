@@ -9726,7 +9726,7 @@ package body Sem_Util is
          return True;
       end if;
 
-      if Ekind (T) not in Access_Kind then
+      if not Is_Access_Type (T) then
 
          --  A delegate is a managed pointer. If no designated type is defined
          --  it means that it's not a delegate.
@@ -16437,7 +16437,7 @@ package body Sem_Util is
       --  the cases of access parameters, return objects of an anonymous access
       --  type, and, in Ada 95, access discriminants of limited types.
 
-      if Ekind (Btyp) in Access_Kind then
+      if Is_Access_Type (Btyp) then
          if Ekind (Btyp) = E_Anonymous_Access_Type then
 
             --  If the type is a nonlocal anonymous access type (such as for

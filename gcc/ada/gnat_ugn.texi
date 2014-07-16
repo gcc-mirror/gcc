@@ -4798,6 +4798,9 @@ Out-of-range values being assigned
 Possible order of elaboration problems
 
 @item
+Size not a multiple of alignment for a record type
+
+@item
 Assertions (pragma Assert) that are sure to fail
 
 @item
@@ -5868,6 +5871,28 @@ This warning can also be turned on using @option{-gnatwa}.
 This switch suppresses warnings for unchecked conversions
 where the types are known at compile time to have different
 sizes or conventions.
+
+@item -gnatw.z
+@emph{Activate warnings for size not a multiple of alignment.}
+@cindex @option{-gnatw.z} (@command{gcc})
+@cindex Size/Alignment warnings
+This switch activates warnings for cases of record types with
+specified @code{Size} and @code{Alignment} attributes where the
+size is not a multiple of the alignment, resulting in an object
+size that is greater than the specified size. The default
+is that such warnings are generated.
+This warning can also be turned on using @option{-gnatwa}.
+
+@item -gnatw.Z
+@emph{Suppress warnings for size not a multiple of alignment.}
+@cindex @option{-gnatw.Z} (@command{gcc})
+@cindex Size/Alignment warnings
+This switch suppresses warnings for cases of record types with
+specified @code{Size} and @code{Alignment} attributes where the
+size is not a multiple of the alignment, resulting in an object
+size that is greater than the specified size.
+The warning can also be
+suppressed by giving an explicit @code{Object_Size} value.
 
 @item ^-Wunused^WARNINGS=UNUSED^
 @cindex @option{-Wunused}

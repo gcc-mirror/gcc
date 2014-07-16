@@ -12024,8 +12024,8 @@ package body Sem_Ch13 is
             --  If the alignment of both is specified, we can do it here.
 
             if Serious_Errors_Detected = 0
-              and then Ekind (Source) in Access_Kind
-              and then Ekind (Target) in Access_Kind
+              and then Is_Access_Type (Source)
+              and then Is_Access_Type (Target)
               and then Target_Strict_Alignment
               and then Present (Designated_Type (Source))
               and then Present (Designated_Type (Target))

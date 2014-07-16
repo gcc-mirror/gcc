@@ -64,6 +64,7 @@ with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
+with Warnsw;   use Warnsw;
 
 package body Freeze is
 
@@ -4552,6 +4553,55 @@ package body Freeze is
             --  declaration of the derived type (RM 13.1(15)).
 
             Inherit_Aspects_At_Freeze_Point (E);
+         end if;
+
+         --  Check for incompatible size and alignment for record type
+
+         if Warn_On_Size_Alignment
+           and then Is_Record_Type (E)
+           and then Has_Size_Clause (E) and then Has_Alignment_Clause (E)
+
+           --  If explicit Object_Size clause given assume that the programmer
+           --  knows what he is doing, and expects the compiler behavior.
+
+           and then not Has_Object_Size_Clause (E)
+
+           --  Check for size not a multiple of alignment
+
+           and then RM_Size (E) mod (Alignment (E) * System_Storage_Unit) /= 0
+         then
+            declare
+               SC    : constant Node_Id := Size_Clause (E);
+               AC    : constant Node_Id := Alignment_Clause (E);
+               Loc   : Node_Id;
+               Abits : constant Uint := Alignment (E) * System_Storage_Unit;
+
+            begin
+               if Present (SC) and then Present (AC) then
+
+                  --  Give a warning
+
+                  if Sloc (SC) > Sloc (AC) then
+                     Loc := SC;
+                     Error_Msg_NE
+                       ("??size is not a multiple of alignment for &", Loc, E);
+                     Error_Msg_Sloc := Sloc (AC);
+                     Error_Msg_Uint_1 := Alignment (E);
+                     Error_Msg_N ("\??alignment of ^ specified #", Loc);
+
+                  else
+                     Loc := AC;
+                     Error_Msg_NE
+                       ("??size is not a multiple of alignment for &", Loc, E);
+                     Error_Msg_Sloc := Sloc (SC);
+                     Error_Msg_Uint_1 := RM_Size (E);
+                     Error_Msg_N ("\??size of ^ specified #", Loc);
+                  end if;
+
+                  Error_Msg_Uint_1 := ((RM_Size (E) / Abits) + 1) * Abits;
+                  Error_Msg_N ("\??Object_Size will be increased to ^", Loc);
+               end if;
+            end;
          end if;
 
          --  Array type

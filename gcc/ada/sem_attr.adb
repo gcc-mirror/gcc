@@ -10200,8 +10200,8 @@ package body Sem_Attr is
                if Is_Tagged_Type (Designated_Type (Typ)) then
 
                   --  If the attribute is in the context of an access
-                  --  parameter, then the prefix is allowed to be of the
-                  --  class-wide type (by AI-127).
+                  --  parameter, then the prefix is allowed to be of
+                  --  the class-wide type (by AI-127).
 
                   if Ekind (Typ) = E_Anonymous_Access_Type then
                      if not Covers (Designated_Type (Typ), Nom_Subt)
@@ -10810,6 +10810,44 @@ package body Sem_Attr is
                   Assoc := First (Component_Associations (Aggr));
                   while Present (Assoc) loop
                      Resolve (Expression (Assoc), Component_Type (Typ));
+
+                     --  The choices in the association are static constants,
+                     --  or static aggregates each of whose components belongs
+                     --  to the proper index type. However, they must also
+                     --  belong to the index subtype (s) of the prefix, which
+                     --  may be a subtype (e.g. given by a slice).
+
+                     --  Choices may also be identifiers with no staticness
+                     --  requirements, in which case rules are unclear???
+
+                     declare
+                        C    : Node_Id;
+                        C_E  : Node_Id;
+                        Indx : Node_Id;
+
+                     begin
+                        C := First (Choices (Assoc));
+                        while Present (C) loop
+                           Indx := First_Index (Etype (Prefix (N)));
+
+                           if Nkind (C) /= N_Aggregate then
+                              Set_Etype (C, Etype (Indx));
+                              Check_Non_Static_Context (C);
+
+                           else
+                              C_E := First (Expressions (C));
+                              while Present (C_E) loop
+                                 Set_Etype (C_E, Etype (Indx));
+                                 Check_Non_Static_Context (C_E);
+                                 Next (C_E);
+                                 Next_Index (Indx);
+                              end loop;
+                           end if;
+
+                           Next (C);
+                        end loop;
+                     end;
+
                      Next (Assoc);
                   end loop;
 
@@ -10820,11 +10858,13 @@ package body Sem_Attr is
                   Assoc := First (Component_Associations (Aggr));
                   while Present (Assoc) loop
                      Comp := First (Choices (Assoc));
+
                      if Nkind (Comp) /= N_Others_Choice
                        and then not Error_Posted (Comp)
                      then
                         Resolve (Expression (Assoc), Etype (Entity (Comp)));
                      end if;
+
                      Next (Assoc);
                   end loop;
                end if;

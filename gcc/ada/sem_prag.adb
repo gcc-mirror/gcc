@@ -16041,7 +16041,7 @@ package body Sem_Prag is
                      end if;
                   end if;
 
-               elsif Ekind (Etype (Def_Id)) in Access_Kind then
+               elsif Is_Access_Type (Etype (Def_Id)) then
                   if not Ekind_In (Etype (Def_Id), E_Access_Type,
                                                    E_General_Access_Type)
                     or else
