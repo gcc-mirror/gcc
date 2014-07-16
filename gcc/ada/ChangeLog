@@ -1,3 +1,14 @@
+2014-07-16  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute/cases Pred
+	and Succ): Always enable range check on fixed-point types if
+	not suppressed for the type.
+
+2014-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (State_Has_Enabled_Property):
+	Account for an external property denoted by an others choice.
+
 2014-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.ads, exp_ch4.adb (Find_Hook_Context): Relocated to Exp_Util.

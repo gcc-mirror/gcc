@@ -4843,9 +4843,10 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  For real types, enable range check in Check_Overflow_Mode only
+         --  For floating-point types, enable range check in
+         --  Check_Float_Overflow mode only.
 
-         if Is_Real_Type (P_Type) then
+         if Is_Floating_Point_Type (P_Type) then
             if Check_Float_Overflow
               and then not Range_Checks_Suppressed (P_Base_Type)
             then
@@ -5750,9 +5751,10 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  For real types, enable range check in Check_Overflow_Mode only
+         --  For floating-point types, enable range check in
+         --  Check_Float_Overflow mode only.
 
-         if Is_Real_Type (P_Type) then
+         if Is_Floating_Point_Type (P_Type) then
             if Check_Float_Overflow
               and then not Range_Checks_Suppressed (P_Base_Type)
             then
