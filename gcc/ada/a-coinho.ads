@@ -64,7 +64,7 @@ package Ada.Containers.Indefinite_Holders is
       Process   : not null access procedure (Element : Element_Type));
 
    procedure Update_Element
-     (Container : Holder;
+     (Container : in out Holder;
       Process   : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type

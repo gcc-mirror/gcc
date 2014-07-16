@@ -1,3 +1,8 @@
+2014-07-16  Vadim Godunko  <godunko@adacore.com>
+
+	* a-coinho.adb, a-coinho-shared.adb, a-coinho.ads, a-coinho-shared.ads:
+	Fix parameter mode of Update_Element.
+
 2014-07-16  Robert Dewar  <dewar@adacore.com>
 
 	* a-coinho.adb, a-coinho-shared.adb, a-coinho-shared.ads: Minor

@@ -325,10 +325,10 @@ package body Ada.Containers.Indefinite_Holders is
    --------------------
 
    procedure Update_Element
-     (Container : Holder;
+     (Container : in out Holder;
       Process   : not null access procedure (Element : in out Element_Type))
    is
-      B : Natural renames Container'Unrestricted_Access.Busy;
+      B : Natural renames Container.Busy;
 
    begin
       if Container.Element = null then
