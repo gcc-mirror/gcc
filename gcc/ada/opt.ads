@@ -885,7 +885,12 @@ package Opt is
 
    List_Closure : Boolean := False;
    --  GNATBIND
-   --  List all sources in the closure of a main (-R gnatbind switch)
+   --  List all sources in the closure of a main (-R or -Ra gnatbind switch)
+
+   List_Closure_All : Boolean := False;
+   --  GNATBIND
+   --  List all sources in closure of main including run-time units (-Ra
+   --  gnatbind switch).
 
    List_Dependencies : Boolean := False;
    --  GNATMAKE
