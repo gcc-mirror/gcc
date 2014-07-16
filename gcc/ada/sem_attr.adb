@@ -6127,6 +6127,7 @@ package body Sem_Attr is
 
       when Attribute_Update => Update : declare
          Comps : Elist_Id := No_Elist;
+         Expr  : Node_Id;
 
          procedure Check_Component_Reference
            (Comp : Entity_Id;
@@ -6310,20 +6311,25 @@ package body Sem_Attr is
                      --  Choice is a sequence of indexes for each dimension
 
                      else
-                        Index_Type := First_Index (P_Type);
-                        Index := First (Expressions (First (Choices (Assoc))));
-                        while Present (Index_Type)
-                          and then Present (Index)
-                        loop
-                           Analyze_And_Resolve (Index, Etype (Index_Type));
-                           Next_Index (Index_Type);
-                           Next (Index);
-                        end loop;
+                        Expr := First (Choices (Assoc));
+                        while Present (Expr) loop
+                           Index_Type := First_Index (P_Type);
+                           Index := First (Expressions (Expr));
+                           while Present (Index_Type)
+                             and then Present (Index)
+                           loop
+                              Analyze_And_Resolve (Index, Etype (Index_Type));
+                              Next_Index (Index_Type);
+                              Next (Index);
+                           end loop;
 
-                        if Present (Index) or else Present (Index_Type) then
-                           Error_Msg_N
-                             ("dimension mismatch in index list", Assoc);
-                        end if;
+                           if Present (Index) or else Present (Index_Type) then
+                              Error_Msg_N
+                                ("dimension mismatch in index list", Assoc);
+                           end if;
+
+                           Next (Expr);
+                        end loop;
                      end if;
                   end;
 

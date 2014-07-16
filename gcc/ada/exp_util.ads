@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -444,6 +444,13 @@ package Exp_Util is
    function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id;
    --  Given a protected type or its corresponding record, find the type of
    --  field _object.
+
+   function Find_Hook_Context (N : Node_Id) return Node_Id;
+   --  Determine a suitable node on which to attach actions related to N that
+   --  need to be elaborated unconditionally. In general this is the topmost
+   --  expression of which N is a subexpression, which in turn may or may not
+   --  be evaluated, for example if N is the right operand of a short circuit
+   --  operator.
 
    procedure Force_Evaluation
      (Exp      : Node_Id;

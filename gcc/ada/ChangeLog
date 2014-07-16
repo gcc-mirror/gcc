@@ -1,3 +1,33 @@
+2014-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.ads, exp_ch4.adb (Find_Hook_Context): Relocated to Exp_Util.
+	* exp_ch7.adb (Process_Declarations): There is no need to check
+	that a transient object being hooked is controlled as it would
+	not have been hooked in the first place.
+	* exp_ch9.adb Remove with and use clause for Exp_Ch4.
+	* exp_util.adb (Find_Hook_Context): Relocated from Exp_Ch4.
+	(Is_Aliased): A renaming of a transient controlled object is
+	not considered aliasing when it occurs within an expression
+	with actions.
+	(Requires_Cleanup_Actions): There is no need to
+	check that a transient object being hooked is controlled as it
+	would not have been hooked in the first place.
+	* exp_util.ads (Find_Hook_Context): Relocated from Exp_Ch4.
+
+2014-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Insert_After_SPARK_Mode): Moved to
+	the outer level of routine Analyze_Aspect_Specifications. Ensure
+	that the corresponding pragmas of aspects Initial_Condition and
+	Initializes are inserted after pragma SPARK_Mode.
+
+2014-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Update): Handle
+	properly a choice list with more than one choice, where each
+	is an aggregate denoting a sequence of array indices for a
+	multidimentional array. For SPARK use.
+
 2014-07-16  Vadim Godunko  <godunko@adacore.com>
 
 	* a-coinho-shared.adb (Adjust): Create
