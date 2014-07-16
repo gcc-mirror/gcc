@@ -1,5 +1,15 @@
 2014-07-16  Vincent Celier  <celier@adacore.com>
 
+	* make.adb: Do not read gnat.adc when gnatmake is invoked
+	with -gnatA.
+
+2014-07-16  Pascal Obry  <obry@adacore.com>
+
+	* gnat_rm.texi, impunit.adb, g-rewdat.adb, g-rewdat.ads: Initial
+	implementation of GNAT.Rewrite_Data.
+
+2014-07-16  Vincent Celier  <celier@adacore.com>
+
 	* gnatls.adb (Normalize): New function.
 	(Gnatls): Get the target parameters. On targets other than VMS,
 	normalize the path names in the source search path, the object search
