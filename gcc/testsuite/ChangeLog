@@ -1,3 +1,8 @@
+2014-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.db/specs/alignment2.ads, gnat.db/specs/size_clause1.ads,
+	gnat.db/specs/size_clause2.ads: Update test case.
+
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/60723 - missing system-ness marks for macro tokens
