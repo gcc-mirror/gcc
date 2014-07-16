@@ -1,3 +1,7 @@
+2014-07-16  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Don't accept isl 0.10.
