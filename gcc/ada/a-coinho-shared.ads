@@ -97,6 +97,7 @@ private
    use Ada.Streams;
 
    type Element_Access is access all Element_Type;
+   type Holder_Access is access all Holder;
 
    type Shared_Holder is record
       Counter : System.Atomic_Counters.Atomic_Counter;
@@ -131,7 +132,7 @@ private
 
    type Reference_Control_Type is new Controlled with
    record
-      Container : Shared_Holder_Access;
+      Container : Holder_Access;
    end record;
 
    overriding procedure Adjust (Control : in out Reference_Control_Type);

@@ -65,7 +65,12 @@ package body Ada.Containers.Indefinite_Holders is
    overriding procedure Adjust (Control : in out Reference_Control_Type) is
    begin
       if Control.Container /= null then
-         Reference (Control.Container);
+         Reference (Control.Container.Reference);
+         declare
+            B : Natural renames Control.Container.Busy;
+         begin
+            B := B + 1;
+         end;
       end if;
    end Adjust;
 
@@ -115,9 +120,12 @@ package body Ada.Containers.Indefinite_Holders is
    is
       Ref : constant Constant_Reference_Type :=
               (Element => Container.Reference.Element.all'Access,
-               Control => (Controlled with Container.Reference));
+               Control => (Controlled with Container'Unrestricted_Access));
+      B   : Natural renames Ref.Control.Container.Busy;
+
    begin
-      Reference (Ref.Control.Container);
+      Reference (Ref.Control.Container.Reference);
+         B := B + 1;
       return Ref;
    end Constant_Reference;
 
@@ -168,7 +176,8 @@ package body Ada.Containers.Indefinite_Holders is
    overriding procedure Finalize (Control : in out Reference_Control_Type) is
    begin
       if Control.Container /= null then
-         Unreference (Control.Container);
+         Unreference (Control.Container.Reference);
+         Control.Container.Busy := Control.Container.Busy - 1;
       end if;
 
       Control.Container := null;
@@ -284,9 +293,10 @@ package body Ada.Containers.Indefinite_Holders is
    is
       Ref : constant Reference_Type :=
               (Element => Container.Reference.Element.all'Access,
-               Control => (Controlled with Container.Reference));
+               Control => (Controlled with Container'Unrestricted_Access));
    begin
-      Reference (Ref.Control.Container);
+      Reference (Ref.Control.Container.Reference);
+      Container.Busy := Container.Busy + 1;
       return Ref;
    end Reference;
 
