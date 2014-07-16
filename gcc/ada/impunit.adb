@@ -291,6 +291,7 @@ package body Impunit is
     ("g-regexp", F),  -- GNAT.Regexp
     ("g-regist", F),  -- GNAT.Registry
     ("g-regpat", F),  -- GNAT.Regpat
+    ("g-rewdat", F),  -- GNAT.Rewrite_Data
     ("g-semaph", F),  -- GNAT.Semaphores
     ("g-sercom", F),  -- GNAT.Serial_Communications
     ("g-sestin", F),  -- GNAT.Secondary_Stack_Info
