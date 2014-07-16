@@ -103,11 +103,4 @@ package Exp_Ch4 is
    --  have special circuitry in Expand_N_Type_Conversion to promote both of
    --  the operands to type Integer.
 
-   function Find_Hook_Context (N : Node_Id) return Node_Id;
-   --  Determine a suitable node on which to attach actions related to N
-   --  that need to be elaborated unconditionally (i.e. in general the topmost
-   --  expression of which N is a subexpression, which may or may not be
-   --  evaluated, for example if N is the right operand of a short circuit
-   --  operator).
-
 end Exp_Ch4;
