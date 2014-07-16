@@ -29,6 +29,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch3;  use Exp_Ch3;
+with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
@@ -1151,7 +1152,6 @@ package body Exp_Ch9 is
       then
          declare
             Master_Decl : Node_Id;
-
          begin
             Set_Has_Master_Entity (Master_Scope);
 
@@ -1169,7 +1169,7 @@ package body Exp_Ch9 is
                   Make_Explicit_Dereference (Loc,
                     New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
 
-            Insert_Action (Related_Node, Master_Decl);
+            Insert_Action (Find_Hook_Context (Related_Node), Master_Decl);
             Analyze (Master_Decl);
 
             --  Mark the containing scope as a task master. Masters associated

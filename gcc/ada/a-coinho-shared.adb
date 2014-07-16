@@ -57,7 +57,20 @@ package body Ada.Containers.Indefinite_Holders is
    overriding procedure Adjust (Container : in out Holder) is
    begin
       if Container.Reference /= null then
-         Reference (Container.Reference);
+         if Container.Busy = 0 then
+            --  Container is not locked, reuse existing internal shared object.
+
+            Reference (Container.Reference);
+         else
+            --  Otherwise, create copy of both internal shared object and
+            --  element.
+
+            Container.Reference :=
+               new Shared_Holder'
+                 (Counter => <>,
+                  Element =>
+                     new Element_Type'(Container.Reference.Element.all));
+         end if;
       end if;
 
       Container.Busy := 0;
@@ -113,16 +126,34 @@ package body Ada.Containers.Indefinite_Holders is
    ------------------------
 
    function Constant_Reference
-     (Container : aliased Holder) return Constant_Reference_Type
-   is
-      Ref : constant Constant_Reference_Type :=
-              (Element => Container.Reference.Element.all'Access,
-               Control => (Controlled with Container'Unrestricted_Access));
-      B   : Natural renames Ref.Control.Container.Busy;
+     (Container : aliased Holder) return Constant_Reference_Type is
    begin
-      Reference (Ref.Control.Container.Reference);
-      B := B + 1;
-      return Ref;
+      if Container.Reference = null then
+         raise Constraint_Error with "container is empty";
+
+      elsif Container.Busy = 0
+        and then not System.Atomic_Counters.Is_One
+                       (Container.Reference.Counter)
+      then
+         --  Container is not locked and internal shared object is used by
+         --  other container, create copy of both internal shared object and
+         --  element.
+
+         Container'Unrestricted_Access.Reference :=
+            new Shared_Holder'
+              (Counter => <>,
+               Element => new Element_Type'(Container.Reference.Element.all));
+      end if;
+
+      declare
+         Ref : constant Constant_Reference_Type :=
+                 (Element => Container.Reference.Element.all'Access,
+                  Control => (Controlled with Container'Unrestricted_Access));
+      begin
+         Reference (Ref.Control.Container.Reference);
+         Ref.Control.Container.Busy := Ref.Control.Container.Busy + 1;
+         return Ref;
+      end;
    end Constant_Reference;
 
    ----------
@@ -133,10 +164,21 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Source.Reference = null then
          return (Controlled with null, 0);
-      else
+      elsif Source.Busy = 0 then
+         --  Container is not locked, reuse internal shared object.
+
          Reference (Source.Reference);
 
          return (Controlled with Source.Reference, 0);
+      else
+         --  Otherwise, create copy of both internal shared object and elemet.
+
+         return
+           (Controlled with
+               new Shared_Holder'
+                 (Counter => <>,
+                  Element => new Element_Type'(Source.Reference.Element.all)),
+               0);
       end if;
    end Copy;
 
@@ -224,6 +266,19 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
+
+      elsif Container.Busy = 0
+        and then not System.Atomic_Counters.Is_One
+                       (Container.Reference.Counter)
+      then
+         --  Container is not locked and internal shared object is used by
+         --  other container, create copy of both internal shared object and
+         --  element.
+
+         Container'Unrestricted_Access.Reference :=
+            new Shared_Holder'
+              (Counter => <>,
+               Element => new Element_Type'(Container.Reference.Element.all));
       end if;
 
       B := B + 1;
@@ -284,15 +339,34 @@ package body Ada.Containers.Indefinite_Holders is
    end Reference;
 
    function Reference
-     (Container : aliased in out Holder) return Reference_Type
-   is
-      Ref : constant Reference_Type :=
-              (Element => Container.Reference.Element.all'Access,
-               Control => (Controlled with Container'Unrestricted_Access));
+     (Container : aliased in out Holder) return Reference_Type is
    begin
-      Reference (Ref.Control.Container.Reference);
-      Container.Busy := Container.Busy + 1;
-      return Ref;
+      if Container.Reference = null then
+         raise Constraint_Error with "container is empty";
+
+      elsif Container.Busy = 0
+        and then not System.Atomic_Counters.Is_One
+                       (Container.Reference.Counter)
+      then
+         --  Container is not locked and internal shared object is used by
+         --  other container, create copy of both internal shared object and
+         --  element.
+
+         Container.Reference :=
+            new Shared_Holder'
+              (Counter => <>,
+               Element => new Element_Type'(Container.Reference.Element.all));
+      end if;
+
+      declare
+         Ref : constant Reference_Type :=
+                 (Element => Container.Reference.Element.all'Access,
+                  Control => (Controlled with Container'Unrestricted_Access));
+      begin
+         Reference (Ref.Control.Container.Reference);
+         Ref.Control.Container.Busy := Ref.Control.Container.Busy + 1;
+         return Ref;
+      end;
    end Reference;
 
    ---------------------
@@ -387,6 +461,19 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
+
+      elsif Container.Busy = 0
+        and then not System.Atomic_Counters.Is_One
+                       (Container.Reference.Counter)
+      then
+         --  Container is not locked and internal shared object is used by
+         --  other container, create copy of both internal shared object and
+         --  element.
+
+         Container'Unrestricted_Access.Reference :=
+            new Shared_Holder'
+              (Counter => <>,
+               Element => new Element_Type'(Container.Reference.Element.all));
       end if;
 
       B := B + 1;
