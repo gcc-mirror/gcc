@@ -1,5 +1,19 @@
 2014-07-16  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_ugn.texi: Document binder switch -Ra.
+	* gnatbind.adb (List_Closure_Display): Implement -Ra switch
+	(List_Closure_All).
+	* opt.ads (List_Closure_All): New switch.
+	* switch-b.adb (Scan_Binder_Switches): Recognize -Ra to set
+	List_Closure_All.
+
+2014-07-16  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Minor edits, to make case consistent in names
+	of types and fields.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document erroneous mixing of thin pointers and
 	unrestricted access
 	* gnat_ugn.texi: Add note on size of access types about thin

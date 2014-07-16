@@ -8451,7 +8451,12 @@ Generate binder file suitable for CodePeer.
 
 @item ^-R^-R^
 @cindex @option{^-R^-R^} (@command{gnatbind})
-Output closure source list.
+Output closure source list, which includes all non-time-units that are
+included in the bind.
+
+@item ^-Ra^-Ra^
+@cindex @option{^-Ra^-Ra^} (@command{gnatbind})
+Like @option{-R} but the list includes run-time units.
 
 @item ^-s^/READ_SOURCES=ALL^
 @cindex @option{^-s^/READ_SOURCES=ALL^} (@command{gnatbind})
@@ -20126,6 +20131,8 @@ The tool currently does not support following features:
 @c *********************************
 @node Performing Dimensionality Analysis in GNAT
 @chapter Performing Dimensionality Analysis in GNAT
+@cindex Dimensionality analysis
+
 @noindent
 The GNAT compiler now supports dimensionality checking. The user can
 specify physical units for objects, and the compiler will verify that uses
@@ -20134,22 +20141,33 @@ familiar to engineering practice. The dimensions of algebraic expressions
 (including powers with static exponents) are computed from their consistuents.
 
 This feature depends on Ada 2012 aspect specifications, and is available from
-version 7.0.1 of GNAT onwards. The GNAT-specific aspect Dimension_System allows
-you to define a system of units; the aspect Dimension then allows the user
-to declare dimensioned quantities within a given system.
+version 7.0.1 of GNAT onwards.
+The GNAT-specific aspect @code{Dimension_System}
+@cindex @code{Dimension_System} aspect
+allows you to define a system of units; the aspect @code{Dimension}
+@cindex @code{Dimension} aspect
+then allows the user to declare dimensioned quantities within a given system.
+(These aspects are described in the @i{Implementation Defined Aspects}
+chapter of the @i{GNAT Reference Manual}).
 
 The major advantage of this model is that it does not require the declaration of
 multiple operators for all possible combinations of types: it is only necessary
 to use the proper subtypes in object declarations.
 
 The simplest way to impose dimensionality checking on a computation is to make
-use of the package System.Dim.Mks, which is part of the GNAT library. This
-package defines a floating-point type MKS_Type, for which a sequence of
+use of the package @code{System.Dim.Mks},
+@cindex @code{System.Dim.Mks} package (GNAT library)
+which is part of the GNAT library. This
+package defines a floating-point type @code{MKS_Type},
+@cindex @code{MKS_Type} type
+for which a sequence of
 dimension names are specified, together with their conventional abbreviations.
 The following should be read together with the full specification of the
-package, in file s-dimmks.ads.
+package, in file @file{s-dimmks.ads}.
+@cindex @file{s-dimmks.ads} file
 
 @smallexample @c ada
+@group
    type Mks_Type is new Long_Long_Float
      with
       Dimension_System => (
@@ -20160,40 +20178,49 @@ package, in file s-dimmks.ads.
         (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Theta"),
         (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
         (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
+@end group
 @end smallexample
 
 @noindent
 The package then defines a series of subtypes that correspond to these
 conventional units. For example:
+
 @smallexample @c ada
+@group
    subtype Length is Mks_Type
      with
       Dimension => (Symbol => 'm', Meter  => 1, others => 0);
+@end group
 @end smallexample
+
 @noindent
-and similarly for Mass, Time, Electric_Current, Thermodynamic_Temperature,
-Amount_Of_Substance, and Luminous_Intensity (the standard set of units of
-the SI system).
+and similarly for @code{Mass}, @code{Time}, @code{Electric_Current},
+@code{Thermodynamic_Temperature}, @code{Amount_Of_Substance}, and
+@code{Luminous_Intensity} (the standard set of units of the SI system).
 
 The package also defines conventional names for values of each unit, for
 example:
 
 @smallexample @c ada
+@group
    m   : constant Length           := 1.0;
    kg  : constant Mass             := 1.0;
    s   : constant Time             := 1.0;
    A   : constant Electric_Current := 1.0;
+@end group
 @end smallexample
 
 @noindent
 as well as useful multiples of these units:
 
 @smallexample @c ada
+@group
    cm  : constant Length := 1.0E-02;
    g   : constant Mass   := 1.0E-03;
    min : constant Time   := 60.0;
-   day : constant TIme   := 60.0 * 24.0 * min;
+   day : constant Time   := 60.0 * 24.0 * min;
   ...
+@end group
 @end smallexample
 
 @noindent
@@ -20203,17 +20230,20 @@ specifies its dimensions within the MKS system, as well as the string to
 be used for output of a value of that unit:
 
 @smallexample @c ada
+@group
   subtype Acceleration is Mks_Type
     with Dimension => ("m/sec^^^2",
                        Meter => 1,
                        Second => -2,
                        others => 0);
+@end group
 @end smallexample
 
 @noindent
 Here is a complete example of use:
 
 @smallexample @c ada
+@group
 with System.Dim.MKS; use System.Dim.Mks;
 with System.Dim.Mks_IO; use System.Dim.Mks_IO;
 with Text_IO; use Text_IO;
@@ -20223,6 +20253,8 @@ procedure Free_Fall is
   G : constant acceleration := 9.81 * m / (s ** 2);
   T : Time := 10.0*s;
   Distance : Length;
+@end group
+@group
 begin
   Put ("Gravitational constant: ");
   Put (G, Aft => 2, Exp => 0); Put_Line ("");
@@ -20231,36 +20263,45 @@ begin
   Put (Distance, Aft => 2, Exp => 0);
   Put_Line ("");
 end Free_Fall;
+@end group
 @end smallexample
 
 @noindent
 Execution of this program yields:
 @smallexample
+@group
 Gravitational constant:  9.81 m/sec^^^2
 distance travelled in 10 seconds of free fall 490.50 m
+@end group
 @end smallexample
 
 @noindent
 However, incorrect assignments such as:
 
 @smallexample @c ada
+@group
    Distance := 5.0;
    Distance := 5.0 * kg:
+@end group
 @end smallexample
 
 @noindent
 are rejected with the following diagnoses:
 
 @smallexample
+@group
    Distance := 5.0;
       >>> dimensions mismatch in assignment
       >>> left-hand side has dimension [L]
       >>> right-hand side is dimensionless
+@end group
 
+@group
    Distance := 5.0 * kg:
       >>> dimensions mismatch in assignment
       >>> left-hand side has dimension [L]
       >>> right-hand side has dimension [M]
+@end group
 @end smallexample
 
 @noindent
@@ -20268,9 +20309,11 @@ The dimensions of an expression are properly displayed, even if there is
 no explicit subtype for it. If we add to the program:
 
 @smallexample @c ada
+@group
       Put ("Final velocity: ");
       Put (G * T, Aft =>2, Exp =>0);
       Put_Line ("");
+@end group
 @end smallexample
 
 @noindent
@@ -20278,6 +20321,7 @@ then the output includes:
 @smallexample
      Final velocity: 98.10 m.s**(-1)
 @end smallexample
+
 
 @c *********************************
 @node Generating Ada Bindings for C and C++ headers

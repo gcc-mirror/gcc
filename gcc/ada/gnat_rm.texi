@@ -15542,51 +15542,51 @@ For example, consider the record
 
 @smallexample @c ada
    type Rb1 is array (1 .. 13) of Boolean;
-   pragma Pack (rb1);
+   pragma Pack (Rb1);
 
    type Rb2 is array (1 .. 65) of Boolean;
-   pragma Pack (rb2);
+   pragma Pack (Rb2);
 
    type AF is new Float with Atomic;
 
-   type x2 is record
-      l1 : Boolean;
-      l2 : Duration;
-      l3 : AF;
-      l4 : Boolean;
-      l5 : Rb1;
-      l6 : Rb2;
+   type X2 is record
+      L1 : Boolean;
+      L2 : Duration;
+      L3 : AF;
+      L4 : Boolean;
+      L5 : Rb1;
+      L6 : Rb2;
    end record;
-   pragma Pack (x2);
+   pragma Pack (X2);
 @end smallexample
 
 @noindent
-The representation for the record x2 is as follows:
+The representation for the record X2 is as follows:
 
 @smallexample @c ada
-for x2'Size use 224;
-for x2 use record
-   l1 at  0 range  0 .. 0;
-   l2 at  0 range  1 .. 64;
-   l3 at 12 range  0 .. 31;
-   l4 at 16 range  0 .. 0;
-   l5 at 16 range  1 .. 13;
-   l6 at 18 range  0 .. 71;
+for X2'Size use 224;
+for X2 use record
+   L1 at  0 range  0 .. 0;
+   L2 at  0 range  1 .. 64;
+   L3 at 12 range  0 .. 31;
+   L4 at 16 range  0 .. 0;
+   L5 at 16 range  1 .. 13;
+   L6 at 18 range  0 .. 71;
 end record;
 @end smallexample
 
 @noindent
-Studying this example, we see that the packable fields @code{l1}
-and @code{l2} are
+Studying this example, we see that the packable fields @code{L1}
+and @code{L2} are
 of length equal to their sizes, and placed at specific bit boundaries (and
 not byte boundaries) to
-eliminate padding.  But @code{l3} is of a non-packable float type (because
+eliminate padding.  But @code{L3} is of a non-packable float type (because
 it is aliased), so it is on the next appropriate alignment boundary.
 
-The next two fields are fully packable, so @code{l4} and @code{l5} are
+The next two fields are fully packable, so @code{L4} and @code{L5} are
 minimally packed with no gaps.  However, type @code{Rb2} is a packed
 array that is longer than 64 bits, so it is itself non-packable.  Thus
-the @code{l6} field is aligned to the next byte boundary, and takes an
+the @code{L6} field is aligned to the next byte boundary, and takes an
 integral number of bytes, i.e.@: 72 bits.
 
 @node Record Representation Clauses
