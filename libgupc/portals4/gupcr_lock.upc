@@ -397,6 +397,7 @@ upc_lock (upc_lock_t *lock)
       /* We have to wait.  Clear the ownership signal field
          and insert our pointer into the predecessor's link.  */
       link->signal = 0;
+      upc_fence;
       old_link_next_addr = &old_link->next;
       old_link_next_thread = upc_threadof (old_link_next_addr);
       old_link_next_offset = upc_addrfield (old_link_next_addr);
@@ -408,6 +409,7 @@ upc_lock (upc_lock_t *lock)
       do
 	{
 	  gupcr_lock_wait ();
+	  upc_fence;
 	}
       while (!link->signal);
     }

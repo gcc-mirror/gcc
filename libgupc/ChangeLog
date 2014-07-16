@@ -1,3 +1,9 @@
+2014-07-16  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_lock.upc (upc_lock): Add upc_fence to flush
+	caches after write and before read from shared space.  Fixes
+	occasional lockup in the lock code.
+
 2014-07-02  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* Makefile.am (UPC_LINK_SCRIPT): Change the UPC link script
