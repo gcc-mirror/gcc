@@ -29185,6 +29185,10 @@ a functionally correct manner and allow porting of existing code.
 Note that another way of forcing a thin pointer representation
 is to use a component size clause for the element size in an array,
 or a record representation clause for an access field in a record.
+
+See the documentation of Unrestricted_Access in the GNAT RM for a
+full discussion of possible problems using this attribute in conjunction
+with thin pointers.
 @end table
 
 @ifclear vms

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,6 +118,24 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    end "=";
 
    ------------
+   -- Adjust --
+   ------------
+
+   procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Map renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B + 1;
+            L := L + 1;
+         end;
+      end if;
+   end Adjust;
+
+   ------------
    -- Assign --
    ------------
 
@@ -199,8 +217,16 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
       declare
          N : Node_Type renames Container.Nodes (Position.Node);
+         B : Natural renames Position.Container.Busy;
+         L : Natural renames Position.Container.Lock;
       begin
-         return (Element => N.Element'Access);
+         return R : constant Constant_Reference_Type :=
+            (Element => N.Element'Access,
+             Control => (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
       end;
    end Constant_Reference;
 
@@ -217,9 +243,21 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       end if;
 
       declare
+         Cur  : Cursor := Find (Container, Key);
+         pragma Unmodified (Cur);
+
          N : Node_Type renames Container.Nodes (Node);
+         B : Natural   renames Cur.Container.Busy;
+         L : Natural   renames Cur.Container.Lock;
+
       begin
-         return (Element => N.Element'Access);
+         return R : constant Constant_Reference_Type :=
+           (Element => N.Element'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
       end;
    end Constant_Reference;
 
@@ -443,6 +481,22 @@ package body Ada.Containers.Bounded_Hashed_Maps is
          begin
             B := B - 1;
          end;
+      end if;
+   end Finalize;
+
+   procedure Finalize (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Map renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B - 1;
+            L := L - 1;
+         end;
+
+         Control.Container := null;
       end if;
    end Finalize;
 
@@ -976,8 +1030,17 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
       declare
          N : Node_Type renames Container.Nodes (Position.Node);
+         B : Natural renames Container.Busy;
+         L : Natural renames Container.Lock;
+
       begin
-         return (Element => N.Element'Access);
+         return R : constant Reference_Type :=
+           (Element => N.Element'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
       end;
    end Reference;
 
@@ -994,8 +1057,17 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
       declare
          N : Node_Type renames Container.Nodes (Node);
+         B : Natural   renames Container.Busy;
+         L : Natural   renames Container.Lock;
+
       begin
-         return (Element => N.Element'Access);
+         return R : constant Reference_Type :=
+           (Element => N.Element'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
       end;
    end Reference;
 

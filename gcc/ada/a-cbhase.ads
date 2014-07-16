@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -444,8 +444,8 @@ package Ada.Containers.Bounded_Hashed_Sets is
          Key       : Key_Type) return Reference_Type;
 
    private
-      type Reference_Type (Element : not null access Element_Type)
-         is null record;
+      type Reference_Type (Element : not null access Element_Type) is
+        null record;
 
       use Ada.Streams;
 
@@ -475,7 +475,7 @@ private
      new Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is
-      new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
 
    use HT_Types;
    use Ada.Streams;
@@ -518,8 +518,21 @@ private
 
    for Cursor'Read use Read;
 
+   type Reference_Control_Type is new Controlled with record
+      Container : Set_Access;
+   end record;
+
+   overriding procedure Adjust (Control : in out Reference_Control_Type);
+   pragma Inline (Adjust);
+
+   overriding procedure Finalize (Control : in out Reference_Control_Type);
+   pragma Inline (Finalize);
+
    type Constant_Reference_Type
-     (Element : not null access constant Element_Type) is null record;
+     (Element : not null access constant Element_Type) is
+   record
+      Control : Reference_Control_Type;
+   end record;
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;
