@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
@@ -645,9 +646,6 @@ package body Sem_Case is
 
       Bounds_Hi     : constant Node_Id := Type_High_Bound (Bounds_Type);
       Bounds_Lo     : constant Node_Id := Type_Low_Bound  (Bounds_Type);
-      Has_Predicate : constant Boolean :=
-                        Is_Static_Subtype (Bounds_Type)
-                          and then Present (Static_Predicate (Bounds_Type));
       Num_Choices   : constant Nat     := Choice_Table'Last;
 
       Choice      : Node_Id;
@@ -681,11 +679,17 @@ package body Sem_Case is
 
       Sorting.Sort (Positive (Choice_Table'Last));
 
-      --  The type covered by the list of choices is actually a static subtype
-      --  subject to a static predicate. The predicate defines subsets of legal
-      --  values and requires finer grained analysis.
+      --  If the type covered by the list of choices is actually a static
+      --  subtype subject to a static predicate, then the predicate defines
+      --  subsets of legal values and we must verify that the branches of the
+      --  case match those subsets. If there is no static_predicate there is no
+      --  compiler check to perform. In particular we don't want any checks on
+      --  a case expression that itself appears as the expression of a dynamic
+      --  predicate. A case expression that defines a static predicate is
+      --  expanded earlier into a membership test and is not subject to this
+      --  spurious self-check either.
 
-      if Has_Predicate then
+      if Has_Aspect (Bounds_Type, Aspect_Static_Predicate) then
          Pred    := First (Static_Predicate (Bounds_Type));
          Prev_Lo := Uint_Minus_1;
          Prev_Hi := Uint_Minus_1;

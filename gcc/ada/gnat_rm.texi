@@ -6945,6 +6945,12 @@ to apply to the base type and all its subtypes. If the pragma is given
 for other than a first subtype, then it applies only to the given subtype.
 The pragma may not be given after the type is frozen.
 
+Note that this includes eliminating initialization of discriminants
+for discriminated types, and tags for tagged types. In these cases,
+you will have to use some non-portable mechanism (e.g. address
+overlays or unchecked conversion) to achieve required initialization
+of these fields before accessing any object of the corresponding type.
+
 @node Pragma Task_Name
 @unnumberedsec Pragma Task_Name
 @findex Task_Name
