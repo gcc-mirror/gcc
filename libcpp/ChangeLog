@@ -1,3 +1,15 @@
+2014-07-16  Dodji Seketeli  <dodji@redhat.com>
+
+	Support location tracking for built-in macro tokens
+	* include/line-map.h (line_maps::builtin_location): New data
+	member.
+	(line_map_init): Add a new parameter to initialize the new
+	line_maps::builtin_location data member.
+	* line-map.c (linemap_init): Initialize the
+	line_maps::builtin_location data member.
+	* macro.c (builtin_macro): Create a macro map and track the token
+	resulting from the expansion of a built-in macro.
+
 2014-07-10  Edward Smith-Rowland  <3dw4rd@verizon.net>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

@@ -1157,7 +1157,7 @@ general_init (const char *argv0)
   init_ggc ();
   init_stringpool ();
   line_table = ggc_alloc<line_maps> ();
-  linemap_init (line_table);
+  linemap_init (line_table, BUILTINS_LOCATION);
   line_table->reallocator = realloc_for_line_map;
   line_table->round_alloc_size = ggc_round_alloc_size;
   init_ttree ();
