@@ -428,7 +428,28 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
 
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
-  _cpp_push_token_context (pfile, NULL, _cpp_lex_direct (pfile), 1);
+  cpp_token *token = _cpp_lex_direct (pfile);
+  if (pfile->context->tokens_kind == TOKENS_KIND_EXTENDED)
+    {
+      /* We are tracking tokens resulting from macro expansion.
+	 Create a macro line map and generate a virtual location for
+	 the token resulting from the expansion of the built-in
+	 macro.  */
+      source_location *virt_locs = NULL;
+      _cpp_buff *token_buf = tokens_buff_new (pfile, 1, &virt_locs);
+      const line_map * map =
+	linemap_enter_macro (pfile->line_table, node,
+					    token->src_loc, 1);
+      tokens_buff_add_token (token_buf, virt_locs, token,
+			     pfile->line_table->builtin_location,
+			     pfile->line_table->builtin_location,
+			    map, /*macro_token_index=*/0);
+      push_extended_tokens_context (pfile, node, token_buf, virt_locs,
+				    (const cpp_token **)token_buf->base,
+				    1);
+    }
+  else
+    _cpp_push_token_context (pfile, NULL, token, 1);
   if (pfile->buffer->cur != pfile->buffer->rlimit)
     cpp_error (pfile, CPP_DL_ICE, "invalid built-in macro \"%s\"",
 	       NODE_NAME (node));

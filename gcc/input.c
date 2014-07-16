@@ -713,6 +713,22 @@ location_get_source_line (expanded_location xloc,
   return read ? buffer : NULL;
 }
 
+/* Test if the location originates from the spelling location of a
+   builtin-tokens.  That is, return TRUE if LOC is a (possibly
+   virtual) location of a built-in token that appears in the expansion
+   list of a macro.  Please note that this function also works on
+   tokens that result from built-in tokens.  For instance, the
+   function would return true if passed a token "4" that is the result
+   of the expansion of the built-in __LINE__ macro.  */
+bool
+is_location_from_builtin_token (source_location loc)
+{
+  const line_map *map = NULL;
+  loc = linemap_resolve_location (line_table, loc,
+				  LRK_SPELLING_LOCATION, &map);
+  return loc == BUILTINS_LOCATION;
+}
+
 /* Expand the source location LOC into a human readable location.  If
    LOC is virtual, it resolves to the expansion point of the involved
    macro.  If LOC resolves to a builtin location, the file name of the

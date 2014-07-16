@@ -1,3 +1,13 @@
+2014-07-16  Dodji Seketeli  <dodji@redhat.com>
+
+	Support location tracking for built-in macro tokens
+	* input.h (is_location_from_builtin_token): New function
+	declaration.
+	* input.c (is_location_from_builtin_token): New function
+	definition.
+	* toplev.c (general_init): Tell libcpp what the pre-defined
+	spelling location for built-in tokens is.
+
 2014-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (create_omp_child_function): Don't set DECL_NAMELESS
