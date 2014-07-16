@@ -2338,6 +2338,14 @@ package body Sinfo is
       return Flag17 (N);
    end No_Truncation;
 
+   function Non_Aliased_Prefix
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      return Flag18 (N);
+   end Non_Aliased_Prefix;
+
    function Null_Present
       (N : Node_Id) return Boolean is
    begin
@@ -5486,6 +5494,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Unchecked_Type_Conversion);
       Set_Flag17 (N, Val);
    end Set_No_Truncation;
+
+   procedure Set_Non_Aliased_Prefix
+     (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      Set_Flag18 (N, Val);
+   end Set_Non_Aliased_Prefix;
 
    procedure Set_Null_Present
       (N : Node_Id; Val : Boolean := True) is

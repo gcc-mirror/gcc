@@ -50,6 +50,7 @@ package Checks is
    function Access_Checks_Suppressed          (E : Entity_Id) return Boolean;
    function Accessibility_Checks_Suppressed   (E : Entity_Id) return Boolean;
    function Alignment_Checks_Suppressed       (E : Entity_Id) return Boolean;
+   function Allocation_Checks_Suppressed      (E : Entity_Id) return Boolean;
    function Atomic_Synchronization_Disabled   (E : Entity_Id) return Boolean;
    function Discriminant_Checks_Suppressed    (E : Entity_Id) return Boolean;
    function Division_Checks_Suppressed        (E : Entity_Id) return Boolean;

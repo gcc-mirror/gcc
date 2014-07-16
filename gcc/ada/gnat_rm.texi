@@ -9551,22 +9551,65 @@ is in scope (normal Ada accessibility rules restrict this usage).
 
 It is possible to use @code{Unrestricted_Access} for any type, but care
 must be exercised if it is used to create pointers to unconstrained array
-objects. In this case, the resulting pointer has the same scope as the
+objects.  In this case, the resulting pointer has the same scope as the
 context of the attribute, and may not be returned to some enclosing
-scope. For instance, a function cannot use @code{Unrestricted_Access}
+scope.  For instance, a function cannot use @code{Unrestricted_Access}
 to create a unconstrained pointer and then return that value to the
-caller. In addition, it is only valid to create pointers to unconstrained
+caller.  In addition, it is only valid to create pointers to unconstrained
 arrays using this attribute if the pointer has the normal default ``fat''
 representation where a pointer has two components, one points to the array
-and one points to the bounds. If a size clause is used to force ``thin''
+and one points to the bounds.  If a size clause is used to force ``thin''
 representation for a pointer to unconstrained where there is only space for
-a single pointer, then any use of @code{Unrestricted_Access}
-to create a value of such a type (e.g. by conversion from fat to
-thin pointers) is erroneous. Consider the following example:
+a single pointer, then the resulting pointer is not usable.
+
+In the simple case where a direct use of Unrestricted_Access attempts
+to make a thin pointer for a non-aliased object, the compiler will
+reject the use as illegal, as shown in the following example:
 
 @smallexample @c ada
 with System; use System;
+procedure SliceUA2 is
+   type A is access all String;
+   for A'Size use Standard'Address_Size;
+
+   procedure P (Arg : A) is
+   begin
+      null;
+   end P;
+
+   X : String := "hello world!";
+   X2 : aliased String := "hello world!";
+
+   AV : A := X'Unrestricted_Access;    -- ERROR
+             |
+>>> illegal use of Unrestricted_Access attribute
+>>> attempt to generate thin pointer to unaliased object
+
+begin
+   P (X'Unrestricted_Access);          -- ERROR
+      |
+>>> illegal use of Unrestricted_Access attribute
+>>> attempt to generate thin pointer to unaliased object
+
+   P (X(7 .. 12)'Unrestricted_Access); -- ERROR
+      |
+>>> illegal use of Unrestricted_Access attribute
+>>> attempt to generate thin pointer to unaliased object
+
+   P (X2'Unrestricted_Access);         -- OK
+end;
+@end smallexample
+
+@noindent
+but other cases cannot be detected by the compiler, and are
+considered to be erroneous. Consider the following example:
+
+@smallexample @c ada
+with System; use System;
+with System; use System;
 procedure SliceUA is
+   type AF is access all String;
+
    type A is access all String;
    for A'Size use Standard'Address_Size;
 
@@ -9578,28 +9621,29 @@ procedure SliceUA is
    end P;
 
    X : String := "hello world!";
+   Y : AF := X (7 .. 12)'Unrestricted_Access;
 
 begin
-   P (X(7 .. 12)'Unrestricted_Access);
+   P (A (Y));
 end;
 @end smallexample
 
 @noindent
-This inevitably raises @code{Program_Error}.
 A normal unconstrained array value
 or a constrained array object marked as aliased has the bounds in memory
 just before the array, so a thin pointer can retrieve both the data and
-the bounds. But in this case, the non-aliased object @code{X} does not have the
-bounds before the string. If the size clause for type @code{A}
+the bounds.  But in this case, the non-aliased object @code{X} does not have the
+bounds before the string.  If the size clause for type @code{A}
 were not present, then the pointer
 would be a fat pointer, where one component is a pointer to the bounds,
-and all would be well. But with the size clause present, the conversion from
-fat pointer to think pointer in the call looses the bounds.
+and all would be well.  But with the size clause present, the conversion from
+fat pointer to thin pointer in the call looses the bounds, and so this
+program raises a @code{Program_Error} exception if executed.
 
 In general, it is advisable to completely
 avoid mixing the use of thin pointers and the use of
 @code{Unrestricted_Access} where the designated type is an
-unconstrained array. The use of thin pointers should be restricted to
+unconstrained array.  The use of thin pointers should be restricted to
 cases of porting legacy code which implicitly assumes the size of pointers,
 and such code should not in any case be using this attribute.
 

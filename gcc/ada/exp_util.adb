@@ -4562,18 +4562,7 @@ package body Exp_Util is
             elsif Nkind (Stmt) = N_Object_Renaming_Declaration then
                Ren_Obj := Find_Renamed_Object (Stmt);
 
-               if Present (Ren_Obj)
-                 and then Ren_Obj = Trans_Id
-
-                 --  When the related context is an expression with actions,
-                 --  both the transient controlled object and its renaming are
-                 --  bound by the "scope" of the expression with actions. In
-                 --  other words, the two cannot be visible outside the scope,
-                 --  therefore the lifetime of the transient object is not
-                 --  really extended by the renaming.
-
-                 and then Nkind (Rel_Node) /= N_Expression_With_Actions
-               then
+               if Present (Ren_Obj) and then Ren_Obj = Trans_Id then
                   return True;
                end if;
             end if;
@@ -7344,6 +7333,8 @@ package body Exp_Util is
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
               and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
                                                         N_Object_Declaration
+              and then Is_Finalizable_Transient
+                         (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
             then
                return True;
 

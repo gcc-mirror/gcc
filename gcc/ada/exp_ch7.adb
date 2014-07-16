@@ -1825,6 +1825,8 @@ package body Exp_Ch7 is
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                  and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
                                    N_Object_Declaration
+                 and then Is_Finalizable_Transient
+                            (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
                then
                   Processing_Actions (Has_No_Init => True);
 
