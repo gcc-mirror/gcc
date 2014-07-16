@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,9 @@ with Prj.Env;     use Prj.Env;
 with Rident;      use Rident;
 with Sdefault;
 with Snames;
+with Stringt;
 with Switch;      use Switch;
+with Targparm;    use Targparm;
 with Types;       use Types;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
@@ -181,6 +183,11 @@ procedure Gnatls is
 
    function Image (Restriction : Restriction_Id) return String;
    --  Returns the capitalized image of Restriction
+
+   function Normalize (Path : String) return String;
+   --  Returns a normalized path name, except on VMS where the argument Path
+   --  is returned, to keep the host pathname syntax. On Windows, the directory
+   --  separators are set to '\' in Normalize_Pathname.
 
    ------------------------------------------
    -- GNATDIST specific output subprograms --
@@ -819,6 +826,19 @@ procedure Gnatls is
 
       return Result;
    end Image;
+
+   ---------------
+   -- Normalize --
+   ---------------
+
+   function Normalize (Path : String) return String is
+   begin
+      if OpenVMS_On_Target then
+         return Path;
+      else
+         return Normalize_Pathname (Path);
+      end if;
+   end Normalize;
 
    --------------------------------
    -- Output_License_Information --
@@ -1553,10 +1573,14 @@ begin
 
    Csets.Initialize;
    Snames.Initialize;
+   Stringt.Initialize;
 
    --  First check for --version or --help
 
    Check_Version_And_Help ("GNATLS", "1992");
+
+   Osint.Add_Default_Search_Dirs;
+   Get_Target_Parameters;
 
    --  Loop to scan out arguments
 
@@ -1618,8 +1642,10 @@ begin
          if Dir_In_Src_Search_Path (J)'Length = 0 then
             Write_Str ("<Current_Directory>");
          else
-            Write_Str (To_Host_Dir_Spec
-              (Dir_In_Src_Search_Path (J).all, True).all);
+            Write_Str
+              (Normalize
+                 (To_Host_Dir_Spec
+                    (Dir_In_Src_Search_Path (J).all, True).all));
          end if;
 
          Write_Eol;
@@ -1636,8 +1662,10 @@ begin
          if Dir_In_Obj_Search_Path (J)'Length = 0 then
             Write_Str ("<Current_Directory>");
          else
-            Write_Str (To_Host_Dir_Spec
-              (Dir_In_Obj_Search_Path (J).all, True).all);
+            Write_Str
+              (Normalize
+                 (To_Host_Dir_Spec
+                    (Dir_In_Obj_Search_Path (J).all, True).all));
          end if;
 
          Write_Eol;
@@ -1687,7 +1715,7 @@ begin
 
                   Write_Str ("   ");
                   Write_Str
-                    (Normalize_Pathname
+                    (Normalize
                       (To_Host_Dir_Spec
                         (Project_Path (First .. Last), True).all));
                   Write_Eol;
