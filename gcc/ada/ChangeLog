@@ -1,5 +1,26 @@
 2014-07-16  Vadim Godunko  <godunko@adacore.com>
 
+	* a-coinho-shared.adb (Adjust): Create
+	copy of internal shared object and element when source container
+	is locked.
+	(Copy): Likewise.
+	(Query_Element): Likewise.
+	(Update_Element): Likewise.
+	(Constant_Reference): Likewise. Raise Constraint_Error on attempt
+	to get reference for empty holder.
+	(Reference): Likewise.
+
+2014-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Find_Hook_Context): New subprogram, extracted
+	from Process_Transient_Oject.
+	* exp_ch4.ads: Ditto.
+	* exp_ch9.adb (Build_Class_Wide_Master): Insert the _master
+	declaration as an action on the topmost enclosing expression,
+	not on a possibly conditional subexpreession.
+
+2014-07-16  Vadim Godunko  <godunko@adacore.com>
+
 	* a-coinho.adb, a-coinho-shared.adb, a-coinho.ads, a-coinho-shared.ads:
 	Fix parameter mode of Update_Element.
 

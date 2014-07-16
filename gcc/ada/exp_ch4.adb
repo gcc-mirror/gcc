@@ -11390,6 +11390,145 @@ package body Exp_Ch4 is
       Adjust_Result_Type (N, Typ);
    end Expand_Short_Circuit_Operator;
 
+   -----------------------
+   -- Find_Hook_Context --
+   -----------------------
+
+   function Find_Hook_Context (N : Node_Id) return Node_Id is
+      Par : Node_Id;
+      Top : Node_Id;
+
+      Wrapped_Node : Node_Id;
+      --  Note: if we are in a transient scope, we want to reuse it as
+      --  the context for actions insertion, if possible. But if N is itself
+      --  part of the stored actions for the current transient scope,
+      --  then we need to insert at the appropriate (inner) location in
+      --  the not as an action on Node_To_Be_Wrapped.
+
+      In_Cond_Expr : constant Boolean := Within_Case_Or_If_Expression (N);
+
+   begin
+      --  When the node is inside a case/if expression, the lifetime of any
+      --  temporary controlled object is extended. Find a suitable insertion
+      --  node by locating the topmost case or if expressions.
+
+      if In_Cond_Expr then
+         Par := N;
+         Top := N;
+         while Present (Par) loop
+            if Nkind_In (Original_Node (Par), N_Case_Expression,
+                                              N_If_Expression)
+            then
+               Top := Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         --  The topmost case or if expression is now recovered, but it may
+         --  still not be the correct place to add generated code. Climb to
+         --  find a parent that is part of a declarative or statement list,
+         --  and is not a list of actuals in a call.
+
+         Par := Top;
+         while Present (Par) loop
+            if Is_List_Member (Par)
+              and then not Nkind_In (Par, N_Component_Association,
+                                          N_Discriminant_Association,
+                                          N_Parameter_Association,
+                                          N_Pragma_Argument_Association)
+              and then not Nkind_In
+                             (Parent (Par), N_Function_Call,
+                                            N_Procedure_Call_Statement,
+                                            N_Entry_Call_Statement)
+
+            then
+               return Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return Par;
+
+      else
+         Par := N;
+         while Present (Par) loop
+
+            --  Keep climbing past various operators
+
+            if Nkind (Parent (Par)) in N_Op
+              or else Nkind_In (Parent (Par), N_And_Then, N_Or_Else)
+            then
+               Par := Parent (Par);
+            else
+               exit;
+            end if;
+         end loop;
+
+         Top := Par;
+
+         --  The node may be located in a pragma in which case return the
+         --  pragma itself:
+
+         --    pragma Precondition (... and then Ctrl_Func_Call ...);
+
+         --  Similar case occurs when the node is related to an object
+         --  declaration or assignment:
+
+         --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
+
+         --  Another case to consider is when the node is part of a return
+         --  statement:
+
+         --    return ... and then Ctrl_Func_Call ...;
+
+         --  Another case is when the node acts as a formal in a procedure
+         --  call statement:
+
+         --    Proc (... and then Ctrl_Func_Call ...);
+
+         if Scope_Is_Transient then
+            Wrapped_Node := Node_To_Be_Wrapped;
+         else
+            Wrapped_Node := Empty;
+         end if;
+
+         while Present (Par) loop
+            if Par = Wrapped_Node
+              or else Nkind_In (Par, N_Assignment_Statement,
+                                     N_Object_Declaration,
+                                     N_Pragma,
+                                     N_Procedure_Call_Statement,
+                                     N_Simple_Return_Statement)
+            then
+               return Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         --  Return the topmost short circuit operator
+
+         return Top;
+      end if;
+   end Find_Hook_Context;
+
    -------------------------------------
    -- Fixup_Universal_Fixed_Operation --
    -------------------------------------
@@ -12548,211 +12687,6 @@ package body Exp_Ch4 is
      (Decl     : Node_Id;
       Rel_Node : Node_Id)
    is
-      Hook_Context         : Node_Id;
-      --  Node on which to insert the hook pointer (as an action)
-
-      Finalization_Context : Node_Id;
-      --  Node after which to insert finalization actions
-
-      Finalize_Always : Boolean;
-      --  If False, call to finalizer includes a test of whether the
-      --  hook pointer is null.
-
-      procedure Find_Enclosing_Contexts (N : Node_Id);
-      --  Find the logical context where N appears, and initialize
-      --  Hook_Context and Finalization_Context accordingly. Also
-      --  sets Finalize_Always.
-
-      -----------------------------
-      -- Find_Enclosing_Contexts --
-      -----------------------------
-
-      procedure Find_Enclosing_Contexts (N : Node_Id) is
-         Par : Node_Id;
-         Top : Node_Id;
-
-         Wrapped_Node : Node_Id;
-         --  Note: if we are in a transient scope, we want to reuse it as
-         --  the context for actions insertion, if possible. But if N is itself
-         --  part of the stored actions for the current transient scope,
-         --  then we need to insert at the appropriate (inner) location in
-         --  the not as an action on Node_To_Be_Wrapped.
-
-         In_Cond_Expr : constant Boolean := Within_Case_Or_If_Expression (N);
-
-      begin
-         --  When the node is inside a case/if expression, the lifetime of any
-         --  temporary controlled object is extended. Find a suitable insertion
-         --  node by locating the topmost case or if expressions.
-
-         if In_Cond_Expr then
-            Par := N;
-            Top := N;
-            while Present (Par) loop
-               if Nkind_In (Original_Node (Par), N_Case_Expression,
-                                                 N_If_Expression)
-               then
-                  Top := Par;
-
-               --  Prevent the search from going too far
-
-               elsif Is_Body_Or_Package_Declaration (Par) then
-                  exit;
-               end if;
-
-               Par := Parent (Par);
-            end loop;
-
-            --  The topmost case or if expression is now recovered, but it may
-            --  still not be the correct place to add generated code. Climb to
-            --  find a parent that is part of a declarative or statement list,
-            --  and is not a list of actuals in a call.
-
-            Par := Top;
-            while Present (Par) loop
-               if Is_List_Member (Par)
-                 and then not Nkind_In (Par, N_Component_Association,
-                                             N_Discriminant_Association,
-                                             N_Parameter_Association,
-                                             N_Pragma_Argument_Association)
-                 and then not Nkind_In
-                                (Parent (Par), N_Function_Call,
-                                               N_Procedure_Call_Statement,
-                                               N_Entry_Call_Statement)
-
-               then
-                  Hook_Context := Par;
-                  goto Hook_Context_Found;
-
-               --  Prevent the search from going too far
-
-               elsif Is_Body_Or_Package_Declaration (Par) then
-                  exit;
-               end if;
-
-               Par := Parent (Par);
-            end loop;
-
-            Hook_Context := Par;
-            goto Hook_Context_Found;
-
-         else
-            Par := N;
-            while Present (Par) loop
-
-               --  Keep climbing past various operators
-
-               if Nkind (Parent (Par)) in N_Op
-                 or else Nkind_In (Parent (Par), N_And_Then, N_Or_Else)
-               then
-                  Par := Parent (Par);
-               else
-                  exit;
-               end if;
-            end loop;
-
-            Top := Par;
-
-            --  The node may be located in a pragma in which case return the
-            --  pragma itself:
-
-            --    pragma Precondition (... and then Ctrl_Func_Call ...);
-
-            --  Similar case occurs when the node is related to an object
-            --  declaration or assignment:
-
-            --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
-
-            --  Another case to consider is when the node is part of a return
-            --  statement:
-
-            --    return ... and then Ctrl_Func_Call ...;
-
-            --  Another case is when the node acts as a formal in a procedure
-            --  call statement:
-
-            --    Proc (... and then Ctrl_Func_Call ...);
-
-            if Scope_Is_Transient then
-               Wrapped_Node := Node_To_Be_Wrapped;
-            else
-               Wrapped_Node := Empty;
-            end if;
-
-            while Present (Par) loop
-               if Par = Wrapped_Node
-                 or else Nkind_In (Par, N_Assignment_Statement,
-                                        N_Object_Declaration,
-                                        N_Pragma,
-                                        N_Procedure_Call_Statement,
-                                        N_Simple_Return_Statement)
-               then
-                  Hook_Context := Par;
-                  goto Hook_Context_Found;
-
-               --  Prevent the search from going too far
-
-               elsif Is_Body_Or_Package_Declaration (Par) then
-                  exit;
-               end if;
-
-               Par := Parent (Par);
-            end loop;
-
-            --  Return the topmost short circuit operator
-
-            Hook_Context := Top;
-         end if;
-
-      <<Hook_Context_Found>>
-
-         --  Special case for Boolean EWAs: capture expression in a temporary,
-         --  whose declaration will serve as the context around which to insert
-         --  finalization code. The finalization thus remains local to the
-         --  specific condition being evaluated.
-
-         if Is_Boolean_Type (Etype (N)) then
-
-            --  In this case, the finalization context is chosen so that
-            --  we know at finalization point that the hook pointer is
-            --  never null, so no need for a test, we can call the finalizer
-            --  unconditionally, except in the case where the object is
-            --  created in a specific branch of a conditional expression.
-
-            Finalize_Always :=
-               not (In_Cond_Expr
-                     or else
-                       Nkind_In (Original_Node (N), N_Case_Expression,
-                                                    N_If_Expression));
-
-            declare
-               Loc  : constant Source_Ptr := Sloc (N);
-               Temp : constant Entity_Id := Make_Temporary (Loc, 'E', N);
-
-            begin
-               Append_To (Actions (N),
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Temp,
-                   Constant_Present    => True,
-                   Object_Definition   =>
-                     New_Occurrence_Of (Etype (N), Loc),
-                   Expression          => Expression (N)));
-               Finalization_Context := Last (Actions (N));
-
-               Analyze (Last (Actions (N)));
-
-               Set_Expression (N, New_Occurrence_Of (Temp, Loc));
-               Analyze (Expression (N));
-            end;
-
-         else
-            Finalize_Always := False;
-            Finalization_Context := Hook_Context;
-         end if;
-      end Find_Enclosing_Contexts;
-
-      --  Local variables
-
       Loc       : constant Source_Ptr := Sloc (Decl);
       Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
       Obj_Typ   : constant Node_Id    := Etype (Obj_Id);
@@ -12763,10 +12697,66 @@ package body Exp_Ch4 is
       Temp_Id   : Entity_Id;
       Temp_Ins  : Node_Id;
 
-   --  Start of processing for Process_Transient_Object
+      Hook_Context         : constant Node_Id := Find_Hook_Context (Rel_Node);
+      --  Node on which to insert the hook pointer (as an action): the
+      --  innermost enclosing non-transient scope.
+
+      Finalization_Context : Node_Id;
+      --  Node after which to insert finalization actions
+
+      Finalize_Always : Boolean;
+      --  If False, call to finalizer includes a test of whether the
+      --  hook pointer is null.
+
+      In_Cond_Expr : constant Boolean :=
+                       Within_Case_Or_If_Expression (Rel_Node);
 
    begin
-      Find_Enclosing_Contexts (Rel_Node);
+      --  Step 0: determine where to attach finalization actions in the tree
+
+      --  Special case for Boolean EWAs: capture expression in a temporary,
+      --  whose declaration will serve as the context around which to insert
+      --  finalization code. The finalization thus remains local to the
+      --  specific condition being evaluated.
+
+      if Is_Boolean_Type (Etype (Rel_Node)) then
+
+         --  In this case, the finalization context is chosen so that
+         --  we know at finalization point that the hook pointer is
+         --  never null, so no need for a test, we can call the finalizer
+         --  unconditionally, except in the case where the object is
+         --  created in a specific branch of a conditional expression.
+
+         Finalize_Always :=
+            not (In_Cond_Expr
+                  or else
+                    Nkind_In (Original_Node (Rel_Node), N_Case_Expression,
+                                                        N_If_Expression));
+
+         declare
+            Loc  : constant Source_Ptr := Sloc (Rel_Node);
+            Temp : constant Entity_Id := Make_Temporary (Loc, 'E', Rel_Node);
+
+         begin
+            Append_To (Actions (Rel_Node),
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Occurrence_Of (Etype (Rel_Node), Loc),
+                Expression          => Expression (Rel_Node)));
+            Finalization_Context := Last (Actions (Rel_Node));
+
+            Analyze (Last (Actions (Rel_Node)));
+
+            Set_Expression (Rel_Node, New_Occurrence_Of (Temp, Loc));
+            Analyze (Expression (Rel_Node));
+         end;
+
+      else
+         Finalize_Always := False;
+         Finalization_Context := Hook_Context;
+      end if;
 
       --  Step 1: Create the access type which provides a reference to the
       --  transient controlled object.
