@@ -28,7 +28,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package can be used to rewrite data on the fly. All occurences of a
+--  This package can be used to rewrite data on the fly. All occurrences of a
 --  string (named pattern) will be replaced by another string.
 
 --  It is not necessary to load all data in memory and so this package can be
@@ -37,7 +37,7 @@
 
 --  There is no dynamic allocation in the implementation.
 
---  Example, to replace all occurences of "Gnat" with "GNAT":
+--  For example, to replace all occurrences of "Gnat" with "GNAT":
 
 --    Rewriter : Buffer := Create (Pattern => "Gnat", Value => "GNAT");
 
@@ -80,12 +80,12 @@ package GNAT.Rewrite_Data is
    function Create
      (Pattern, Value : String;
       Size           : Stream_Element_Offset := 1_024) return Buffer;
-   --  Create a rewriter buffer. Pattern is the string to be rewriten as Value.
-   --  Size represent the size of the internal buffer used to store the data
-   --  reeady to be output. A larger buffer may improve the performance as the
+   --  Create a rewrite buffer. Pattern is the string to be rewritten as Value.
+   --  Size represents the size of the internal buffer used to store the data
+   --  ready to be output. A larger buffer may improve the performance, as the
    --  Output routine (see Write, Rewrite below) will be called only when this
-   --  buffer is full. Note that Size cannot be lower than Pattern'Length, if
-   --  this is the case then Size value is set to Pattern'Length.
+   --  buffer is full. Note that Size cannot be lower than Pattern'Length, and
+   --  if this is the case, then Size value is set to Pattern'Length.
 
    function Size (B : Buffer) return Natural;
    --  Returns the current size of the buffer (count of Stream_Array_Element)
@@ -114,12 +114,13 @@ package GNAT.Rewrite_Data is
                           (Buffer : out Stream_Element_Array;
                            Last   : out Stream_Element_Offset);
       Output : not null access procedure (Data : Stream_Element_Array));
-   --  Read data from Input, rewrite it and then call Output. When there is
-   --  no more data to be read from Input Last must be set to 0. Before leaving
-   --  this routine call Flush above to send all remaining data to Output.
+   --  Read data from Input, rewrite it, and then call Output. When there is
+   --  no more data to be read from Input, Last must be set to 0. Before
+   --  leaving this routine, call Flush above to send all remaining data to
+   --  Output.
 
    procedure Link (From : in out Buffer; To : Buffer_Ref);
-   --  Link two rewrite buffers, that is all data sent to From buffer will be
+   --  Link two rewrite buffers. That is, all data sent to From buffer will be
    --  rewritten and then passed to the To rewrite buffer.
 
 private

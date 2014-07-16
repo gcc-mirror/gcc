@@ -711,7 +711,7 @@ package body System.Interrupts is
 
    procedure Unimplemented (Feature : String) is
    begin
-      raise Program_Error with feature & " not implemented on VxWorks";
+      raise Program_Error with Feature & " not implemented on VxWorks";
    end Unimplemented;
 
    -----------------------

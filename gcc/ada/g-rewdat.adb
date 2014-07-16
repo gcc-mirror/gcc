@@ -40,7 +40,7 @@ package body GNAT.Rewrite_Data is
      (B      : in out Buffer;
       Data   : Stream_Element_Array;
       Output : not null access procedure (Data : Stream_Element_Array));
-   --  Do the actual output, this ensures that we properly send the data
+   --  Do the actual output. This ensures that we properly send the data
    --  through linked rewrite buffers if any.
 
    ------------
@@ -62,7 +62,7 @@ package body GNAT.Rewrite_Data is
       function To_SEAV is new Unchecked_Conversion (SV, SEAV);
 
    begin
-      --  Return result (can't be smaller than pattern
+      --  Return result (can't be smaller than pattern)
 
       return B : Buffer
                    (SEO'Max (Size, SEO (Pattern'Length)),
