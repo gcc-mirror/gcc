@@ -276,9 +276,13 @@ AVR_MCU ("atmega256rfr2",        ARCH_AVR6, AVR_ISA_NONE, "__AVR_ATmega256RFR2__
 AVR_MCU ("atmega2564rfr2",       ARCH_AVR6, AVR_ISA_NONE, "__AVR_ATmega2564RFR2__",    0x0200, 0x0, 4, "m2564rfr2")
 /* Xmega, 16K <= Flash < 64K, RAM <= 64K */
 AVR_MCU ("avrxmega2",        ARCH_AVRXMEGA2, AVR_ISA_NONE, NULL,                       0x2000, 0x0, 1, "x32a4")
+AVR_MCU ("atxmega8e5",       ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega8E5__",       0x2000, 0x0, 1, "x8e5")
 AVR_MCU ("atxmega16a4",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega16A4__",      0x2000, 0x0, 1, "x16a4")
 AVR_MCU ("atxmega16d4",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega16D4__",      0x2000, 0x0, 1, "x16d4")
+AVR_MCU ("atxmega16e5",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega16E5__",      0x2000, 0x0, 1, "x16e5")
 AVR_MCU ("atxmega32a4",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega32A4__",      0x2000, 0x0, 1, "x32a4")
+AVR_MCU ("atxmega32c3",      ARCH_AVRXMEGA2, AVR_ISA_RMW,  "__AVR_ATxmega32C3__",      0x2000, 0x0, 1, "x32c3")
+AVR_MCU ("atxmega32d3",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega32D3__",      0x2000, 0x0, 1, "x32d3")
 AVR_MCU ("atxmega32d4",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega32D4__",      0x2000, 0x0, 1, "x32d4")
 AVR_MCU ("atxmega32x1",      ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATxmega32X1__",      0x2000, 0x0, 1, "x32x1")
 AVR_MCU ("atmxt112sl",       ARCH_AVRXMEGA2, AVR_ISA_NONE, "__AVR_ATMXT112SL__",       0x2000, 0x0, 1, "mxt112sl")
