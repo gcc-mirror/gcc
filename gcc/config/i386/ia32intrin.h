@@ -256,11 +256,7 @@ __writeeflags (unsigned long long X)
 
 #define _bswap64(a)		__bswapq(a)
 #define _popcnt64(a)		__popcntq(a)
-#define _lrotl(a,b)		__rolq((a), (b))
-#define _lrotr(a,b)		__rorq((a), (b))
 #else
-#define _lrotl(a,b)		__rold((a), (b))
-#define _lrotr(a,b)		__rord((a), (b))
 
 /* Read flags register */
 extern __inline unsigned int
@@ -278,6 +274,16 @@ __writeeflags (unsigned int X)
   __builtin_ia32_writeeflags_u32 (X);
 }
 
+#endif
+
+/* On LP64 systems, longs are 64-bit.  Use the appropriate rotate
+ * function.  */
+#ifdef __LP64__
+#define _lrotl(a,b)		__rolq((a), (b))
+#define _lrotr(a,b)		__rorq((a), (b))
+#else
+#define _lrotl(a,b)		__rold((a), (b))
+#define _lrotr(a,b)		__rord((a), (b))
 #endif
 
 #define _bit_scan_forward(a)	__bsfd(a)

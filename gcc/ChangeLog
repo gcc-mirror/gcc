@@ -1,3 +1,8 @@
+2014-07-16  David Wohlferd <dw@LimeGreenSocks.com>
+
+	PR target/61662
+	* config/i386/ia32intrin.h: Use __LP64__ to determine size of long.
+
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 
 	Support location tracking for built-in macro tokens
