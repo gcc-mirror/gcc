@@ -7714,6 +7714,8 @@ through a process called preprocessing. Integrated preprocessing is specified
 through switches @option{-gnatep} and/or @option{-gnateD}. @option{-gnatep}
 indicates, through a text file, the preprocessing data to be used.
 @option{-gnateD} specifies or modifies the values of preprocessing symbol.
+Note that integrated preprocessing applies only to Ada source files, it is
+not available for configuration pragma files.
 
 @noindent
 Note that when integrated preprocessing is used, the output from the
@@ -15098,7 +15100,6 @@ Ada source code into XML.
 
 @menu
 * Switches for gnat2xml::
-* Driving gnat2xml with gnatmake::
 * Other Programs::
 * Structure of the XML::
 @end menu
@@ -15141,8 +15142,14 @@ Options:
       the argument project has the value @var{value}. Has no effect if no
       project is specified as tool argument.
 
--mdir -- generate one .xml file for each Ada source file, in directory
-         @file{dir}. (Default is to generate the XML to standard output.)
+--incremental -- incremental processing on a per-file basis. Source files are
+      only processed if they have been modified, or if files they depend
+      on have been modified. This is similar to the way gnatmake/gprbuild
+      only compiles files that need to be recompiled.
+
+--output-dir=@var{dir} -- generate one .xml file for each Ada source file, in
+      directory @file{dir}. (Default is to generate the XML to standard
+      output.)
 
 --compact -- debugging version, with interspersed source, and a more
       compact representation of "sloc". This version does not conform
@@ -15177,38 +15184,6 @@ For example, if there is an Ada package Mumble.Dumble, whose spec and
 body source code lives in mumble-dumble.ads and mumble-dumble.adb,
 the above will produce xml-files/mumble-dumble.ads.xml and
 xml-files/mumble-dumble.adb.xml.
-
-@node Driving gnat2xml with gnatmake
-@section Driving @command{gnat2xml} with @command{gnatmake}
-
-@noindent
-You can use gnatmake to drive @command{gnat2xml} to get incremental
-updates of the XML files on a per-source-file basis. For example, if
-you already have a bunch of XML files, and then you change one source
-file, it will regenerate XML files only for that source file, and
-other related source files. Gnatmake takes care of tracking inter-file
-dependencies.
-
-To do this, you tell gnatmake to pretend that @command{gnat2xml} is
-the Ada compiler (instead of using gcc as the Ada compiler, as is
-normal).
-
-To tell gnatmake to use @command{gnat2xml} instead of gcc as the
-``compiler'', for example:
-
-@smallexample
-gnatmake -gnatc main.adb --GCC="gnat2xml -mxml"
-@end smallexample
-
-@noindent
-The @option{--GCC=} switch tells gnatmake that the ``compiler'' to run
-is @command{gnat2xml -mxml}. As usual, @option{-mxml} means to put the
-XML files in the @file{xml} subdirectory.
-
-You must give the @option{-gnatc} switch to gnatmake, which means
-``compile only; do not generate object code''. Otherwise, gnatmake will
-complain about missing object (*.o) files; @command{gnat2xml} of
-course does not generate *.o files.
 
 @node Other Programs
 @section Other Programs

@@ -39,12 +39,14 @@ package body Ada.Containers.Indefinite_Holders is
    function "=" (Left, Right : Holder) return Boolean is
    begin
       if Left.Reference = Right.Reference then
-         --  Covers both null and not null but the same shared object cases.
+
+         --  Covers both null and not null but the same shared object cases
 
          return True;
 
       elsif Left.Reference /= null and Right.Reference /= null then
          return Left.Reference.Element.all = Right.Reference.Element.all;
+
       else
          return False;
       end if;
@@ -58,7 +60,8 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Container.Reference /= null then
          if Container.Busy = 0 then
-            --  Container is not locked, reuse existing internal shared object.
+
+            --  Container is not locked, reuse existing internal shared object
 
             Reference (Container.Reference);
          else
@@ -164,20 +167,23 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       if Source.Reference = null then
          return (Controlled with null, 0);
+
       elsif Source.Busy = 0 then
-         --  Container is not locked, reuse internal shared object.
+
+         --  Container is not locked, reuse internal shared object
 
          Reference (Source.Reference);
 
          return (Controlled with Source.Reference, 0);
+
       else
-         --  Otherwise, create copy of both internal shared object and elemet.
+         --  Otherwise, create copy of both internal shared object and element
 
          return
            (Controlled with
-               new Shared_Holder'
-                 (Counter => <>,
-                  Element => new Element_Type'(Source.Reference.Element.all)),
+              new Shared_Holder'
+                (Counter => <>,
+                 Element => new Element_Type'(Source.Reference.Element.all)),
                0);
       end if;
    end Copy;
@@ -268,8 +274,8 @@ package body Ada.Containers.Indefinite_Holders is
          raise Constraint_Error with "container is empty";
 
       elsif Container.Busy = 0
-        and then not System.Atomic_Counters.Is_One
-                       (Container.Reference.Counter)
+        and then
+          not System.Atomic_Counters.Is_One (Container.Reference.Counter)
       then
          --  Container is not locked and internal shared object is used by
          --  other container, create copy of both internal shared object and
@@ -339,14 +345,15 @@ package body Ada.Containers.Indefinite_Holders is
    end Reference;
 
    function Reference
-     (Container : aliased in out Holder) return Reference_Type is
+     (Container : aliased in out Holder) return Reference_Type
+   is
    begin
       if Container.Reference = null then
          raise Constraint_Error with "container is empty";
 
       elsif Container.Busy = 0
-        and then not System.Atomic_Counters.Is_One
-                       (Container.Reference.Counter)
+        and then
+          not System.Atomic_Counters.Is_One (Container.Reference.Counter)
       then
          --  Container is not locked and internal shared object is used by
          --  other container, create copy of both internal shared object and
@@ -463,8 +470,8 @@ package body Ada.Containers.Indefinite_Holders is
          raise Constraint_Error with "container is empty";
 
       elsif Container.Busy = 0
-        and then not System.Atomic_Counters.Is_One
-                       (Container.Reference.Counter)
+        and then
+          not System.Atomic_Counters.Is_One (Container.Reference.Counter)
       then
          --  Container is not locked and internal shared object is used by
          --  other container, create copy of both internal shared object and

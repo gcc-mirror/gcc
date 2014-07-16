@@ -12558,7 +12558,7 @@ package body Exp_Ch4 is
       Temp_Id   : Entity_Id;
       Temp_Ins  : Node_Id;
 
-      Hook_Context         : constant Node_Id := Find_Hook_Context (Rel_Node);
+      Hook_Context : constant Node_Id := Find_Hook_Context (Rel_Node);
       --  Node on which to insert the hook pointer (as an action): the
       --  innermost enclosing non-transient scope.
 
@@ -12566,8 +12566,8 @@ package body Exp_Ch4 is
       --  Node after which to insert finalization actions
 
       Finalize_Always : Boolean;
-      --  If False, call to finalizer includes a test of whether the
-      --  hook pointer is null.
+      --  If False, call to finalizer includes a test of whether the hook
+      --  pointer is null.
 
       In_Cond_Expr : constant Boolean :=
                        Within_Case_Or_If_Expression (Rel_Node);
@@ -12582,11 +12582,11 @@ package body Exp_Ch4 is
 
       if Is_Boolean_Type (Etype (Rel_Node)) then
 
-         --  In this case, the finalization context is chosen so that
-         --  we know at finalization point that the hook pointer is
-         --  never null, so no need for a test, we can call the finalizer
-         --  unconditionally, except in the case where the object is
-         --  created in a specific branch of a conditional expression.
+         --  In this case, the finalization context is chosen so that we know
+         --  at finalization point that the hook pointer is never null, so no
+         --  need for a test, we can call the finalizer unconditionally, except
+         --  in the case where the object is created in a specific branch of a
+         --  conditional expression.
 
          Finalize_Always :=
             not (In_Cond_Expr

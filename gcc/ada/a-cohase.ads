@@ -544,9 +544,10 @@ private
    No_Element : constant Cursor := (Container => null, Node => null);
 
    type Iterator is new Limited_Controlled
-     and Set_Iterator_Interfaces.Forward_Iterator with record
-        Container : Set_Access;
-     end record;
+     and Set_Iterator_Interfaces.Forward_Iterator with
+   record
+      Container : Set_Access;
+   end record;
 
    overriding function First (Object : Iterator) return Cursor;
 
