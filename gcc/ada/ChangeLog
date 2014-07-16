@@ -1,3 +1,37 @@
+2014-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): Diagnose properly
+	a private extension completion that is an interface definition
+	with an interface list.
+
+2014-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatls.adb (Gnatls): Code clean ups.
+
+2014-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads, sinfo.adb (N_Compound_Statement): New node kind.
+	* sem.adb (Analyze): Handle N_Compound_Statement.
+	* sprint.adb (Sprint_Node_Actual): Ditto.
+	* sem_ch5.ads, sem_ch5.adb (Analyze_Compound_Statement): New
+	procedure to handle N_Compound_Statement.
+	* exp_aggr.adb (Collect_Initialization_Statements):
+	Use a proper compound statement node, instead of a bogus
+	expression-with-actions with a NULL statement as its expression,
+	to wrap collected initialization statements.
+	* freeze.ads, freeze.adb
+	(Explode_Initialization_Compound_Statement): New public procedure,
+	lifted from Freeze_Entity.
+	(Freeze_Entity): When freezing
+	an object with captured initialization statements and without
+	delayed freezing, explode compount statement.
+	* sem_ch4.adb (Analyze_Expression_With_Actions): Remove special
+	case that used to handle bogus EWAs with NULL statement as
+	the expression.
+	* exp_ch13.adb (Expand_N_Freeze_Entity): For an object with
+	delayed freezing and captured initialization statements, explode
+	compound statement.
+
 2014-07-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* g-rewdat.adb, g-rewdat.ads: Minor reformatting.

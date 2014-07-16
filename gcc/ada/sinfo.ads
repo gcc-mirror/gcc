@@ -86,6 +86,7 @@ package Sinfo is
    --    Add it to the documentation in the appropriate place
    --    Add its fields to this documentation section
    --    Define it in the appropriate classification in Node_Kind
+   --    Add an entry in Is_Syntactic_Field
    --    In the body (sinfo), add entries to the access functions for all
    --     its fields (except standard expression fields) to include the new
    --     node in the checks.
@@ -97,6 +98,8 @@ package Sinfo is
    --     statement in sem_eval.adb
    --    For a subexpression, add an appropriate section to the case
    --     statement in sem_res.adb
+
+   --  All back ends must be made aware of the new node kind.
 
    --  Finally, four utility programs must be run:
 
@@ -7310,6 +7313,39 @@ package Sinfo is
    --  reconstructed tree printed by Sprint, and the node descriptions here
    --  show this syntax.
 
+      ------------------------
+      -- Compound Statement --
+      ------------------------
+
+      --  This node is created by the analyzer/expander to handle some
+      --  expansion cases where a sequence of actions needs to be captured
+      --  within a single node (which acts as a container and allows the
+      --  entire list of actions to be moved around as a whole) appearing
+      --  in a sequence of statements.
+
+      --  This is the statement counterpart to expression node N_Expression_
+      --  With_Actions.
+
+      --  The required semantics is that the set of actions is executed in
+      --  the order in which it appears, as though they appeared by themselves
+      --  in the enclosing list of declarations of statements. Unlike what
+      --  happens when using an N_Block_Statement, no new scope is introduced.
+
+      --  Note: for the time being, this is used only as a transient
+      --  representation during expansion, and all compound statement nodes
+      --  must be exploded back to their constituent statements before handing
+      --  the tree to the back end.
+
+      --  Sprint syntax:  do
+      --                    action;
+      --                    action;
+      --                    ...
+      --                    action;
+      --                  end;
+
+      --  N_Compound_Statement
+      --  Actions (List1)
+
       --------------
       -- Contract --
       --------------
@@ -7375,7 +7411,7 @@ package Sinfo is
       --  The ordering is in LIFO fashion.
 
       -------------------
-      -- Expanded_Name --
+      -- Expanded Name --
       -------------------
 
       --  The N_Expanded_Name node is used to represent a selected component
@@ -7404,7 +7440,7 @@ package Sinfo is
       --  plus fields for expression
 
       -----------------------------
-      -- Expression with Actions --
+      -- Expression With Actions --
       -----------------------------
 
       --  This node is created by the analyzer/expander to handle some
@@ -7448,16 +7484,6 @@ package Sinfo is
       --  actions are inserted. The expander removes such empty cases after
       --  the expression of the node is fully analyzed and expanded, at which
       --  point it is safe to remove it, since no more actions can be inserted.
-
-      --  Note: Expression may be a Null_Statement, in which case the
-      --  N_Expression_With_Actions has type Standard_Void_Type. However some
-      --  backends do not support such expression-with-actions occurring
-      --  outside of a proper (non-void) expression, so this should just be
-      --  used as an intermediate representation within the front end. Also
-      --  note that this is really an irregularity (expressions and statements
-      --  are not interchangeable, and in particular an N_Null_Statement is
-      --  not a proper expression), and in the long term all cases of this
-      --  idiom should instead use a new node kind N_Compound_Statement.
 
       --  Note: In Modify_Tree_For_C, we never generate any declarations in
       --  the action list, which can contain only non-declarative statements.
@@ -7526,7 +7552,7 @@ package Sinfo is
       --  for this node points to the FREEZE keyword in the Sprint file output.
 
       ---------------------------
-      -- Freeze_Generic_Entity --
+      -- Freeze Generic Entity --
       ---------------------------
 
       --  The freeze point of an entity indicates the point at which the
@@ -7585,7 +7611,7 @@ package Sinfo is
       --  for this node points to the label name in the generated declaration.
 
       ---------------------
-      -- Itype_Reference --
+      -- Itype Reference --
       ---------------------
 
       --  This node is used to create a reference to an Itype. The only purpose
@@ -7609,7 +7635,7 @@ package Sinfo is
       --  for this node points to the REFERENCE keyword in the file output.
 
       ---------------------
-      -- Raise_xxx_Error --
+      -- Raise xxx Error --
       ---------------------
 
       --  One of these nodes is created during semantic analysis to replace
@@ -8197,6 +8223,7 @@ package Sinfo is
       N_Block_Statement,
       N_Case_Statement,
       N_Code_Statement,
+      N_Compound_Statement,
       N_Conditional_Entry_Call,
 
       --  N_Statement_Other_Than_Procedure_Call, N_Delay_Statement
@@ -12077,6 +12104,13 @@ package Sinfo is
         3 => False,   --  Else_Actions (List3-Sem)
         4 => False,   --  unused
         5 => False),  --  Etype (Node5-Sem)
+
+     N_Compound_Statement =>
+       (1 => True,    --  Actions (List1)
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  unused
+        5 => False),  --  unused
 
      N_Contract =>
        (1 => False,   --  Pre_Post_Conditions (Node1)

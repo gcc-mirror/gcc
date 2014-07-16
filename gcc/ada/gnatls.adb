@@ -1579,9 +1579,6 @@ begin
 
    Check_Version_And_Help ("GNATLS", "1992");
 
-   Osint.Add_Default_Search_Dirs;
-   Get_Target_Parameters;
-
    --  Loop to scan out arguments
 
    Next_Arg := 1;
@@ -1628,6 +1625,7 @@ begin
    --  Finally, add the default directories and obtain target parameters
 
    Osint.Add_Default_Search_Dirs;
+   Get_Target_Parameters;
 
    if Verbose_Mode then
       Write_Eol;

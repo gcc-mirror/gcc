@@ -1366,6 +1366,29 @@ package body Freeze is
       end if;
    end Is_Atomic_Aggregate;
 
+   -----------------------------------------------
+   -- Explode_Initialization_Compound_Statement --
+   -----------------------------------------------
+
+   procedure Explode_Initialization_Compound_Statement (E : Entity_Id) is
+      Init_Stmts : constant Node_Id := Initialization_Statements (E);
+   begin
+      if Present (Init_Stmts)
+        and then Nkind (Init_Stmts) = N_Compound_Statement
+      then
+         Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
+
+         --  Note that we rewrite Init_Stmts into a NULL statement, rather than
+         --  just removing it, because Freeze_All may rely on this particular
+         --  Node_Id still being present in the enclosing list to know where to
+         --  stop freezing.
+
+         Rewrite (Init_Stmts, Make_Null_Statement (Sloc (Init_Stmts)));
+
+         Set_Initialization_Statements (E, Empty);
+      end if;
+   end Explode_Initialization_Compound_Statement;
+
    ----------------
    -- Freeze_All --
    ----------------
@@ -4314,36 +4337,15 @@ package body Freeze is
                Layout_Object (E);
             end if;
 
-            --  If initialization statements were captured in an expression
-            --  with actions with null expression, and the object does not
-            --  have delayed freezing, move them back now directly within the
-            --  enclosing statement sequence.
+            --  For an object that does not have delayed freezing, and whose
+            --  initialization actions have been captured in a compound
+            --  statement, move them back now directly within the enclosing
+            --  statement sequence.
 
             if Ekind_In (E, E_Constant, E_Variable)
               and then not Has_Delayed_Freeze (E)
             then
-               declare
-                  Init_Stmts : constant Node_Id :=
-                                 Initialization_Statements (E);
-               begin
-                  if Present (Init_Stmts)
-                    and then Nkind (Init_Stmts) = N_Expression_With_Actions
-                    and then Nkind (Expression (Init_Stmts)) = N_Null_Statement
-                  then
-                     Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
-
-                     --  Note that we rewrite Init_Stmts into a NULL statement,
-                     --  rather than just removing it, because Freeze_All may
-                     --  depend on this particular Node_Id still being present
-                     --  in the enclosing list to signal where to stop
-                     --  freezing.
-
-                     Rewrite (Init_Stmts,
-                       Make_Null_Statement (Sloc (Init_Stmts)));
-
-                     Set_Initialization_Statements (E, Empty);
-                  end if;
-               end;
+               Explode_Initialization_Compound_Statement (E);
             end if;
          end if;
 

@@ -1016,6 +1016,15 @@ package body Sem_Ch5 is
       end;
    end Analyze_Block_Statement;
 
+   --------------------------------
+   -- Analyze_Compound_Statement --
+   --------------------------------
+
+   procedure Analyze_Compound_Statement (N : Node_Id) is
+   begin
+      Analyze_List (Actions (N));
+   end Analyze_Compound_Statement;
+
    ----------------------------
    -- Analyze_Case_Statement --
    ----------------------------
