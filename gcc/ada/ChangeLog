@@ -1,5 +1,10 @@
 2014-07-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* a-coinho-shared.adb, a-coinho-shared.ads: Proper structures for
+	tampering checks.
+
+2014-07-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* a-coinho-shared.adb: Fix spurious accessibility check.
 
 2014-06-15  Jan Hubicka  <hubicka@ucw.cz>
