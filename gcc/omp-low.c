@@ -1872,7 +1872,6 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_NAMELESS (decl) = 1;
   DECL_IGNORED_P (decl) = 0;
   TREE_PUBLIC (decl) = 0;
   DECL_UNINLINABLE (decl) = 1;
