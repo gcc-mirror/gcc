@@ -3049,8 +3049,7 @@ package body Exp_Aggr is
       end loop;
 
       if not Is_Empty_List (Init_Actions) then
-         Comp_Stmt := Make_Compound_Statement (Loc,
-                        Actions => Init_Actions);
+         Comp_Stmt := Make_Compound_Statement (Loc, Actions => Init_Actions);
          Insert_Action_After (Init_Node, Comp_Stmt);
          Set_Initialization_Statements (Obj, Comp_Stmt);
       end if;

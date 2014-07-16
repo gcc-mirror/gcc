@@ -81,7 +81,7 @@ package Sinfo is
    --  the utility program which creates the Treeprs spec (in file treeprs.ads)
    --  must be updated appropriately, since it special cases expression fields.
 
-   --  If a new tree node is added, then the following changes are made
+   --  If a new tree node is added, then the following changes are made:
 
    --    Add it to the documentation in the appropriate place
    --    Add its fields to this documentation section
@@ -486,6 +486,16 @@ package Sinfo is
    --    some cases (to point to the rewritten parent), but in other cases
    --    they are set to Empty. This needs sorting out ??? It would be much
    --    cleaner if they could always be set in the original node ???
+
+   --  There are a few cases when ASIS has to use not the original, but the
+   --  rewritten tree structures. This happens when because of some important
+   --  technical reasons it is impossible or very hard to have the original
+   --  structure properly decorated by semantic information, and the rewritten
+   --  structure fully reproduces the original source. Below is the (incomplete
+   --  for the moment) list of such exceptions:
+   --
+   --  * generic specifications and generic bodies;
+   --  * function calls that use prefixed notation (Operand.Operation [(...)]);
 
    --  Representation Information
 
@@ -7323,8 +7333,8 @@ package Sinfo is
       --  entire list of actions to be moved around as a whole) appearing
       --  in a sequence of statements.
 
-      --  This is the statement counterpart to expression node N_Expression_
-      --  With_Actions.
+      --  This is the statement counterpart to the expression node
+      --  N_Expression_With_Actions.
 
       --  The required semantics is that the set of actions is executed in
       --  the order in which it appears, as though they appeared by themselves

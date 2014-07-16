@@ -1372,6 +1372,7 @@ package body Freeze is
 
    procedure Explode_Initialization_Compound_Statement (E : Entity_Id) is
       Init_Stmts : constant Node_Id := Initialization_Statements (E);
+
    begin
       if Present (Init_Stmts)
         and then Nkind (Init_Stmts) = N_Compound_Statement
