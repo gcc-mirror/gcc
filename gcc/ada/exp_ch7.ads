@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -298,8 +298,8 @@ package Exp_Ch7 is
    --  the top of the scope stack.
 
    procedure Store_After_Actions_In_Scope (L : List_Id);
-   --  Append the list L of actions to the beginning of the after-actions store
-   --  in the top of the scope stack.
+   --  Prepend the list L of actions to the beginning of the after-actions
+   --  store in the top of the scope stack.
 
    procedure Wrap_Transient_Declaration (N : Node_Id);
    --  N is an object declaration. Expand the finalization calls after the

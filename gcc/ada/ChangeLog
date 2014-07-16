@@ -1,3 +1,23 @@
+2014-07-16  Vincent Celier  <celier@adacore.com>
+
+	* gnatls.adb: Get the target parameters only if -nostdinc was
+	not specified.
+
+2014-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): If the expression is a packed
+	component of a modular type of the right size the data is always
+	valid. This os particularly useful if the component is part of
+	a volatile variable.
+
+2014-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, sinfo.ads, freeze.adb, exp_aggr.adb: Minor reformatting
+
+2014-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.ads: Minor documentation fix.
+
 2014-07-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Find_Type_Name): Diagnose properly

@@ -6444,6 +6444,17 @@ package body Checks is
          return;
       end if;
 
+      --  If the expression is a packed component of a modular type of the
+      --  right size, the data is always valid.
+
+      if Nkind (Expr) = N_Selected_Component
+        and then Present (Component_Clause (Entity (Selector_Name (Expr))))
+        and then Is_Modular_Integer_Type (Typ)
+        and then Modulus (Typ) = 2 ** Esize (Entity (Selector_Name (Expr)))
+      then
+         return;
+      end if;
+
       --  If we have a checked conversion, then validity check applies to
       --  the expression inside the conversion, not the result, since if
       --  the expression inside is valid, then so is the conversion result.

@@ -1622,10 +1622,16 @@ begin
       First_Lib_Dir := First_Lib_Dir.Next;
    end loop;
 
-   --  Finally, add the default directories and obtain target parameters
+   --  Finally, add the default directories
 
    Osint.Add_Default_Search_Dirs;
-   Get_Target_Parameters;
+
+   --  Get the target parameters to know if the target is OpenVMS, but only if
+   --  switch -nostdinc was not specified.
+
+   if not Opt.No_Stdinc then
+      Get_Target_Parameters;
+   end if;
 
    if Verbose_Mode then
       Write_Eol;

@@ -19572,9 +19572,9 @@ Henry Spencer (and binary compatible with this C library).
 
 @noindent
 A unit to rewrite on-the-fly string occurrences in a stream of
-data. The implementation has a very minimum memory footprint as the
-full content to be processed is not loaded into memory. This makes
-this implementation usable for large files or socket streams.
+data. The implementation has a very minimal memory footprint as the
+full content to be processed is not loaded into memory all at once. This makes
+this interface usable for large files or socket streams.
 
 @node GNAT.Secondary_Stack_Info (g-sestin.ads)
 @section @code{GNAT.Secondary_Stack_Info} (@file{g-sestin.ads})
