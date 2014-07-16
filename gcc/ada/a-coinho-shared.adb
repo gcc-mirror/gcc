@@ -114,7 +114,7 @@ package body Ada.Containers.Indefinite_Holders is
      (Container : aliased Holder) return Constant_Reference_Type
    is
       Ref : constant Constant_Reference_Type :=
-              (Element => Container.Reference.Element,
+              (Element => Container.Reference.Element.all'Access,
                Control => (Controlled with Container.Reference));
    begin
       Reference (Ref.Control.Container);
@@ -283,7 +283,7 @@ package body Ada.Containers.Indefinite_Holders is
      (Container : aliased in out Holder) return Reference_Type
    is
       Ref : constant Reference_Type :=
-              (Element => Container.Reference.Element,
+              (Element => Container.Reference.Element.all'Access,
                Control => (Controlled with Container.Reference));
    begin
       Reference (Ref.Control.Container);
