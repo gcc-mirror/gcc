@@ -11491,10 +11491,12 @@ package body Sem_Prag is
          -- Async_Readers/Async_Writers/Effective_Reads/Effective_Writes --
          ------------------------------------------------------------------
 
-         --  pragma Asynch_Readers   ( identifier [, boolean_EXPRESSION] );
-         --  pragma Asynch_Writers   ( identifier [, boolean_EXPRESSION] );
-         --  pragma Effective_Reads  ( identifier [, boolean_EXPRESSION] );
-         --  pragma Effective_Writes ( identifier [, boolean_EXPRESSION] );
+         --  pragma Asynch_Readers   ( object_LOCAL_NAME [, FLAG] );
+         --  pragma Asynch_Writers   ( object_LOCAL_NAME [, FLAG] );
+         --  pragma Effective_Reads  ( object_LOCAL_NAME [, FLAG] );
+         --  pragma Effective_Writes ( object_LOCAL_NAME [, FLAG] );
+
+         --  FLAG ::= boolean_EXPRESSION
 
          when Pragma_Async_Readers    |
               Pragma_Async_Writers    |
@@ -12635,7 +12637,7 @@ package body Sem_Prag is
          -- CPP_Class --
          ---------------
 
-         --  pragma CPP_Class ([Entity =>] local_NAME)
+         --  pragma CPP_Class ([Entity =>] LOCAL_NAME)
 
          when Pragma_CPP_Class => CPP_Class : declare
          begin
@@ -13606,7 +13608,7 @@ package body Sem_Prag is
 
          --  pragma Export (
          --    [   Convention    =>] convention_IDENTIFIER,
-         --    [   Entity        =>] local_NAME
+         --    [   Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -14044,7 +14046,7 @@ package body Sem_Prag is
 
          --  pragma External (
          --    [   Convention    =>] convention_IDENTIFIER,
-         --    [   Entity        =>] local_NAME
+         --    [   Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -14491,7 +14493,7 @@ package body Sem_Prag is
          -- Implementation_Defined --
          ----------------------------
 
-         --  pragma Implementation_Defined (local_NAME);
+         --  pragma Implementation_Defined (LOCAL_NAME);
 
          --  Marks previously declared entity as implementation defined. For
          --  an overloaded entity, applies to the most recent homonym.
@@ -14645,7 +14647,7 @@ package body Sem_Prag is
 
          --  pragma Import (
          --       [Convention    =>] convention_IDENTIFIER,
-         --       [Entity        =>] local_NAME
+         --       [Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -15343,7 +15345,7 @@ package body Sem_Prag is
 
          --  pragma Interface (
          --    [   Convention    =>] convention_IDENTIFIER,
-         --    [   Entity        =>] local_NAME
+         --    [   Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -15379,7 +15381,7 @@ package body Sem_Prag is
          --------------------
 
          --  pragma Interface_Name (
-         --    [  Entity        =>] local_NAME
+         --    [  Entity        =>] LOCAL_NAME
          --    [,[External_Name =>] static_string_EXPRESSION ]
          --    [,[Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -16093,7 +16095,7 @@ package body Sem_Prag is
          -- Keep_Names --
          ----------------
 
-         --  pragma Keep_Names ([On => ] local_NAME);
+         --  pragma Keep_Names ([On => ] LOCAL_NAME);
 
          when Pragma_Keep_Names => Keep_Names : declare
             Arg : Node_Id;
@@ -17517,7 +17519,7 @@ package body Sem_Prag is
 
          --  pragma Part_Of (ABSTRACT_STATE);
 
-         --  ABSTRACT_STATE ::= name
+         --  ABSTRACT_STATE ::= NAME
 
          when Pragma_Part_Of => Part_Of : declare
             procedure Propagate_Part_Of
@@ -20902,7 +20904,7 @@ package body Sem_Prag is
          -- Unmodified --
          ----------------
 
-         --  pragma Unmodified (local_Name {, local_Name});
+         --  pragma Unmodified (LOCAL_NAME {, LOCAL_NAME});
 
          when Pragma_Unmodified => Unmodified : declare
             Arg_Node : Node_Id;
@@ -20950,7 +20952,7 @@ package body Sem_Prag is
          -- Unreferenced --
          ------------------
 
-         --  pragma Unreferenced (local_Name {, local_Name});
+         --  pragma Unreferenced (LOCAL_NAME {, LOCAL_NAME});
 
          --    or when used in a context clause:
 
@@ -21045,7 +21047,7 @@ package body Sem_Prag is
          -- Unreferenced_Objects --
          --------------------------
 
-         --  pragma Unreferenced_Objects (local_Name {, local_Name});
+         --  pragma Unreferenced_Objects (LOCAL_NAME {, LOCAL_NAME});
 
          when Pragma_Unreferenced_Objects => Unreferenced_Objects : declare
             Arg_Node : Node_Id;

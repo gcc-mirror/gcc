@@ -3550,6 +3550,22 @@ package body Sem_Attr is
          Check_E0;
          Set_Etype (N, Standard_Boolean);
 
+      ----------------------
+      -- Has_Same_Storage --
+      ----------------------
+
+      when Attribute_Has_Same_Storage =>
+         Check_Ada_2012_Attribute;
+         Check_E1;
+
+         --  The arguments must be objects of any type
+
+         Analyze_And_Resolve (P);
+         Analyze_And_Resolve (E1);
+         Check_Object_Reference (P);
+         Check_Object_Reference (E1);
+         Set_Etype (N, Standard_Boolean);
+
       -----------------------
       -- Has_Tagged_Values --
       -----------------------
@@ -5406,22 +5422,6 @@ package body Sem_Attr is
          Check_E0;
          Check_Real_Type;
          Set_Etype (N, Universal_Real);
-
-      ------------------
-      -- Same_Storage --
-      ------------------
-
-      when Attribute_Same_Storage =>
-         Check_Ada_2012_Attribute;
-         Check_E1;
-
-         --  The arguments must be objects of any type
-
-         Analyze_And_Resolve (P);
-         Analyze_And_Resolve (E1);
-         Check_Object_Reference (P);
-         Check_Object_Reference (E1);
-         Set_Etype (N, Standard_Boolean);
 
       --------------------------
       -- Scalar_Storage_Order --
@@ -7964,6 +7964,13 @@ package body Sem_Attr is
            Boolean_Literals (Has_Discriminants (P_Entity)), Loc));
          Analyze_And_Resolve (N, Standard_Boolean);
 
+      ----------------------
+      -- Has_Same_Storage --
+      ----------------------
+
+      when Attribute_Has_Same_Storage =>
+         null;
+
       -----------------------
       -- Has_Tagged_Values --
       -----------------------
@@ -8865,13 +8872,6 @@ package body Sem_Attr is
          else
             Fold_Ureal (N, Model_Small_Value (P_Type), Static);
          end if;
-
-      ------------------
-      -- Same_Storage --
-      ------------------
-
-      when Attribute_Same_Storage =>
-         null;
 
       -----------
       -- Scale --
