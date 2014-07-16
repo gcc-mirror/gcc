@@ -1,4 +1,4 @@
-2014-07-18  Jakub Jelinek  <jakub@redhat.com>
+2014-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (create_omp_child_function): Don't set DECL_NAMELESS
 	on the FUNCTION_DECL.
