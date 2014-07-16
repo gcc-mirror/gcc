@@ -148,6 +148,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_And_Then
         or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Compilation_Unit_Aux
+        or else NT (N).Nkind = N_Compound_Statement
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Freeze_Entity
         or else NT (N).Nkind = N_Or_Else);
@@ -3314,6 +3315,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_And_Then
         or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Compilation_Unit_Aux
+        or else NT (N).Nkind = N_Compound_Statement
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Freeze_Entity
         or else NT (N).Nkind = N_Or_Else);

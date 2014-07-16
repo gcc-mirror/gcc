@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ package Sem_Ch5 is
    procedure Analyze_Assignment                   (N : Node_Id);
    procedure Analyze_Block_Statement              (N : Node_Id);
    procedure Analyze_Case_Statement               (N : Node_Id);
+   procedure Analyze_Compound_Statement           (N : Node_Id);
    procedure Analyze_Exit_Statement               (N : Node_Id);
    procedure Analyze_Goto_Statement               (N : Node_Id);
    procedure Analyze_If_Statement                 (N : Node_Id);

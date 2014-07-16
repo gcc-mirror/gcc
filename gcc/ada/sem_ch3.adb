@@ -15567,6 +15567,16 @@ package body Sem_Ch3 is
                Prev_Par := Parent (Prev);
             end if;
 
+            if Nkind (N) = N_Full_Type_Declaration
+              and then Nkind_In
+                         (Type_Definition (N), N_Record_Definition,
+                                               N_Derived_Type_Definition)
+              and then Interface_Present (Type_Definition (N))
+            then
+               Error_Msg_N
+                 ("completion of private type cannot be an interface", N);
+            end if;
+
             if Nkind (Parent (Prev)) /= N_Private_Extension_Declaration then
                if Etype (Prev) /= Prev then
 
@@ -15596,15 +15606,6 @@ package body Sem_Ch3 is
                         ("completion of tagged private type must be tagged",
                          N);
                   end if;
-
-               elsif Nkind (N) = N_Full_Type_Declaration
-                 and then Nkind_In
-                            (Type_Definition (N), N_Record_Definition,
-                                                  N_Derived_Type_Definition)
-                 and then Interface_Present (Type_Definition (N))
-               then
-                  Error_Msg_N
-                    ("completion of private type cannot be an interface", N);
                end if;
 
             --  Ada 2005 (AI-251): Private extension declaration of a task

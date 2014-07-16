@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1325,6 +1325,13 @@ package body Sprint is
                Sprint_Indented_List (Component_Items (Node));
                Sprint_Node (Variant_Part (Node));
             end if;
+
+         when N_Compound_Statement =>
+            Write_Indent_Str ("do");
+            Indent_Begin;
+            Sprint_Node_List (Actions (Node));
+            Indent_End;
+            Write_Indent_Str ("end;");
 
          when N_Conditional_Entry_Call =>
             Write_Indent_Str_Sloc ("select");

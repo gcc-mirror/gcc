@@ -186,6 +186,10 @@ package Freeze is
    --  of an object declaration or an assignment. Function is a noop and
    --  returns false in other contexts.
 
+   procedure Explode_Initialization_Compound_Statement (E : Entity_Id);
+   --  If Initialization_Statements (E) is an N_Compound_Statement, insert its
+   --  actions in the enclosing list and reset the attribute.
+
    function Freeze_Entity (E : Entity_Id; N : Node_Id) return List_Id;
    --  Freeze an entity, and return Freeze nodes, to be inserted at the point
    --  of call. N is a node whose source location corresponds to the freeze

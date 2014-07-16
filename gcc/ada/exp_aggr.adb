@@ -3033,7 +3033,7 @@ package body Exp_Aggr is
       Loc          : constant Source_Ptr := Sloc (N);
       Init_Actions : constant List_Id    := New_List;
       Init_Node    : Node_Id;
-      EA           : Node_Id;
+      Comp_Stmt    : Node_Id;
 
    begin
       --  Nothing to do if Obj is already frozen, as in this case we known we
@@ -3049,12 +3049,10 @@ package body Exp_Aggr is
       end loop;
 
       if not Is_Empty_List (Init_Actions) then
-         EA :=
-           Make_Expression_With_Actions (Loc,
-             Actions    => Init_Actions,
-             Expression => Make_Null_Statement (Loc));
-         Insert_Action_After (Init_Node, EA);
-         Set_Initialization_Statements (Obj, EA);
+         Comp_Stmt := Make_Compound_Statement (Loc,
+                        Actions => Init_Actions);
+         Insert_Action_After (Init_Node, Comp_Stmt);
+         Set_Initialization_Statements (Obj, Comp_Stmt);
       end if;
    end Collect_Initialization_Statements;
 
