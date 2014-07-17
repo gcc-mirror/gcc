@@ -1,3 +1,9 @@
+2014-07-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__sync_lock_release_4): New.
+	(SYNC_LOCK_RELEASE): Update to use __kernel_cmpxchg for release.
+	Don't use SYNC_LOCK_RELEASE for int type.
+
 2014-07-14  Richard Biener  <rguenther@suse.de>
 
 	* libgcov.h (struct gcov_fn_info): Make ctrs size 1.
