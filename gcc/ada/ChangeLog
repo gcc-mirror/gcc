@@ -1,3 +1,38 @@
+2014-07-17  Vincent Celier  <celier@adacore.com>
+
+	* gnatbind.adb: Change in message "try ... for more information".
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* sprint.adb: Code clean up.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Last_Init): Relocate local variables to
+	the relevant code section. Add new local constant Obj_Id. When
+	a limited controlled object is initialized by a function call,
+	the build-in-place object access function call acts as the last
+	initialization statement.
+	* exp_util.adb (Is_Object_Access_BIP_Func_Call): New routine.
+	(Is_Secondary_Stack_BIP_Func_Call): Code reformatting.
+	* exp_util.ads (Is_Object_Access_BIP_Func_Call): New routine.
+
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Generic_Renaming): For generic subprograms,
+	propagate intrinsic flag to renamed entity, to allow e.g. renaming
+	of Unchecked_Conversion.
+	* sem_ch3.adb (Analyze_Declarations): Do not analyze contracts
+	if the declaration has errors.
+
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-rbtgbk.adb: a-rbtgbk.adb (Generic_Insert_Post): Check whether
+	container is busy before checking whether capacity allows for
+	a further insertion. Insertion in a busy container that is full
+	raises Program_Error rather than Capacity_Error. Previous to that
+	patch which exception was raised varied among container types.
+
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
 	* g-comlin.ads, g-comlin.adb: Minor clean up.

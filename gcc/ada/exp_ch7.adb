@@ -2256,10 +2256,6 @@ package body Exp_Ch7 is
             Last_Init   : out Node_Id;
             Body_Insert : out Node_Id)
          is
-            Nod_1 : Node_Id := Empty;
-            Nod_2 : Node_Id := Empty;
-            Utyp  : Entity_Id;
-
             function Is_Init_Call
               (N   : Node_Id;
                Typ : Entity_Id) return Boolean;
@@ -2332,6 +2328,14 @@ package body Exp_Ch7 is
                return Result;
             end Next_Suitable_Statement;
 
+            --  Local variables
+
+            Obj_Id : constant Entity_Id := Defining_Entity (Decl);
+            Nod_1  : Node_Id := Empty;
+            Nod_2  : Node_Id := Empty;
+            Stmt   : Node_Id;
+            Utyp   : Entity_Id;
+
          --  Start of processing for Find_Last_Init
 
          begin
@@ -2357,6 +2361,42 @@ package body Exp_Ch7 is
                Utyp := Full_View (Utyp);
             end if;
 
+            --  A limited controlled object initialized by a function call uses
+            --  the build-in-place machinery to obtain its value.
+
+            --    Obj : Lim_Controlled_Type := Func_Call;
+
+            --  is expanded into
+
+            --    Obj  : Lim_Controlled_Type;
+            --    type Ptr_Typ is access Lim_Controlled_Type;
+            --    Temp : constant Ptr_Typ :=
+            --             Func_Call
+            --               (BIPalloc  => 1,
+            --                BIPaccess => Obj'Unrestricted_Access)'reference;
+
+            --  In this scenario the declaration of the temporary acts as the
+            --  last initialization statement.
+
+            if Is_Limited_Type (Utyp)
+              and then Has_Init_Expression (Decl)
+              and then No (Expression (Decl))
+            then
+               Stmt := Next (Decl);
+               while Present (Stmt) loop
+                  if Nkind (Stmt) = N_Object_Declaration
+                    and then Present (Expression (Stmt))
+                    and then Is_Object_Access_BIP_Func_Call
+                               (Expr   => Expression (Stmt),
+                                Obj_Id => Obj_Id)
+                  then
+                     Last_Init := Stmt;
+                     exit;
+                  end if;
+
+                  Next (Stmt);
+               end loop;
+
             --  The init procedures are arranged as follows:
 
             --    Object : Controlled_Type;
@@ -2366,53 +2406,55 @@ package body Exp_Ch7 is
             --  where the user-defined initialize may be optional or may appear
             --  inside a block when abort deferral is needed.
 
-            Nod_1 := Next_Suitable_Statement (Decl);
-            if Present (Nod_1) then
-               Nod_2 := Next_Suitable_Statement (Nod_1);
+            else
+               Nod_1 := Next_Suitable_Statement (Decl);
 
-               --  The statement following an object declaration is always a
-               --  call to the type init proc.
+               if Present (Nod_1) then
+                  Nod_2 := Next_Suitable_Statement (Nod_1);
 
-               Last_Init := Nod_1;
-            end if;
+                  --  The statement following an object declaration is always a
+                  --  call to the type init proc.
 
-            --  Optional user-defined init or deep init processing
+                  Last_Init := Nod_1;
+               end if;
 
-            if Present (Nod_2) then
+               --  Optional user-defined init or deep init processing
 
-               --  The statement following the type init proc may be a block
-               --  statement in cases where abort deferral is required.
+               if Present (Nod_2) then
 
-               if Nkind (Nod_2) = N_Block_Statement then
-                  declare
-                     HSS  : constant Node_Id :=
-                              Handled_Statement_Sequence (Nod_2);
-                     Stmt : Node_Id;
+                  --  The statement following the type init proc may be a block
+                  --  statement in cases where abort deferral is required.
 
-                  begin
-                     if Present (HSS)
-                       and then Present (Statements (HSS))
-                     then
-                        Stmt := First (Statements (HSS));
+                  if Nkind (Nod_2) = N_Block_Statement then
+                     declare
+                        HSS  : constant Node_Id :=
+                                 Handled_Statement_Sequence (Nod_2);
+                        Stmt : Node_Id;
 
-                        --  Examine individual block statements and locate the
-                        --  call to [Deep_]Initialze.
+                     begin
+                        if Present (HSS)
+                          and then Present (Statements (HSS))
+                        then
+                           --  Examine individual block statements and locate
+                           --  the call to [Deep_]Initialze.
 
-                        while Present (Stmt) loop
-                           if Is_Init_Call (Stmt, Utyp) then
-                              Last_Init   := Stmt;
-                              Body_Insert := Nod_2;
+                           Stmt := First (Statements (HSS));
+                           while Present (Stmt) loop
+                              if Is_Init_Call (Stmt, Utyp) then
+                                 Last_Init   := Stmt;
+                                 Body_Insert := Nod_2;
 
-                              exit;
-                           end if;
+                                 exit;
+                              end if;
 
-                           Next (Stmt);
-                        end loop;
-                     end if;
-                  end;
+                              Next (Stmt);
+                           end loop;
+                        end if;
+                     end;
 
-               elsif Is_Init_Call (Nod_2, Utyp) then
-                  Last_Init := Nod_2;
+                  elsif Is_Init_Call (Nod_2, Utyp) then
+                     Last_Init := Nod_2;
+                  end if;
                end if;
             end if;
          end Find_Last_Init;
@@ -2434,7 +2476,7 @@ package body Exp_Ch7 is
 
          --  Set a new value for the state counter and insert the statement
          --  after the object declaration. Generate:
-         --
+
          --    Counter := <value>;
 
          Inc_Decl :=
@@ -2496,7 +2538,7 @@ package body Exp_Ch7 is
              Label_Construct     => Label));
 
          --  Create the associated jump with this object, generate:
-         --
+
          --    when <counter> =>
          --       goto L<counter>;
 
