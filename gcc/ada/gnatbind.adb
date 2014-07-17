@@ -666,10 +666,15 @@ begin
       Display_Version ("GNATBIND", "1995");
    end if;
 
-   --  Output usage information if no files
+   --  Output usage information if no arguments
 
    if not More_Lib_Files then
-      Bindusg.Display;
+      if Argument_Count = 0 then
+         Bindusg.Display;
+      else
+         Write_Line ("type ""gnatbind --help"" for help");
+      end if;
+
       Exit_Program (E_Fatal);
    end if;
 

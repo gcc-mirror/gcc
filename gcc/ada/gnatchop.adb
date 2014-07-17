@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1248,7 +1248,12 @@ procedure Gnatchop is
       --  At least one filename must be given
 
       elsif File.Last = 0 then
-         Usage;
+         if Argument_Count = 0 then
+            Usage;
+         else
+            Put_Line ("type ""gnatchop --help"" for help");
+         end if;
+
          return False;
 
       --  No directory given, set directory to null, so that we can just

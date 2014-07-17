@@ -3721,8 +3721,7 @@ package body Exp_Ch7 is
 
          End_Lab := End_Label (HSS);
          Block :=
-           Make_Block_Statement (Loc,
-             Handled_Statement_Sequence => HSS);
+           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
 
          --  Signal the finalization machinery that this particular block
          --  contains the original context.
@@ -7890,8 +7889,8 @@ package body Exp_Ch7 is
 
    begin
       if Present (SE.Actions_To_Be_Wrapped_After) then
-         Insert_List_Before_And_Analyze (
-          First (SE.Actions_To_Be_Wrapped_After), L);
+         Insert_List_Before_And_Analyze
+           (First (SE.Actions_To_Be_Wrapped_After), L);
 
       else
          SE.Actions_To_Be_Wrapped_After := L;
@@ -7915,8 +7914,8 @@ package body Exp_Ch7 is
 
    begin
       if Present (SE.Actions_To_Be_Wrapped_Before) then
-         Insert_List_After_And_Analyze (
-           Last (SE.Actions_To_Be_Wrapped_Before), L);
+         Insert_List_After_And_Analyze
+           (Last (SE.Actions_To_Be_Wrapped_Before), L);
 
       else
          SE.Actions_To_Be_Wrapped_Before := L;

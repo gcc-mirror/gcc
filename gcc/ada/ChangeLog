@@ -1,3 +1,27 @@
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, exp_ch7.ads, sinfo.ads: Minor reformatting.
+
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Check_Choice_Set): If the case expression is the
+	expression in a predicate, do not recheck coverage against itself,
+	to prevent spurious errors.
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Indicate that
+	expression comes from an aspect specification, to prevent spurious
+	errors when expression is a case expression in a predicate.
+
+2014-07-17  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, adaint.h (__gnat_set_executable): Add mode parameter.
+	* s-os_lib.ads, s-os_lib.adb (Set_Executable): Add Mode parameter.
+
+2014-07-17  Vincent Celier  <celier@adacore.com>
+
+	* gnatchop.adb, make.adb, gnatbind.adb, clean.adb, gprep.adb,
+	gnatxref.adb, gnatls.adb, gnatfind.adb, gnatname.adb: Do not output
+	the usage for an erroneous invocation of a gnat tool.
+
 2014-07-16  Vincent Celier  <celier@adacore.com>
 
 	* gnatls.adb: Get the target parameters only if -nostdinc was

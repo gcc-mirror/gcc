@@ -8033,6 +8033,11 @@ package body Sem_Ch13 is
       --  All other cases
 
       else
+         --  Indicate that the expression comes from an aspect specification,
+         --  which is used in subsequent analysis even if expansion is off.
+
+         Set_Parent (End_Decl_Expr, ASN);
+
          --  In a generic context the aspect expressions have not been
          --  preanalyzed, so do it now. There are no conformance checks
          --  to perform in this case.
@@ -8052,6 +8057,7 @@ package body Sem_Ch13 is
             and then Is_Private_Type (T)
          then
             Preanalyze_Spec_Expression (End_Decl_Expr, Full_View (T));
+
          else
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
          end if;
@@ -8059,11 +8065,12 @@ package body Sem_Ch13 is
          Err := not Fully_Conformant_Expressions (End_Decl_Expr, Freeze_Expr);
       end if;
 
-      --  Output error message if error
+      --  Output error message if error. Force error on aspect specification
+      --  even if there is an error on the expression itself.
 
       if Err then
          Error_Msg_NE
-           ("visibility of aspect for& changes after freeze point",
+           ("!visibility of aspect for& changes after freeze point",
             ASN, Ent);
          Error_Msg_NE
            ("info: & is frozen here, aspects evaluated at this point??",

@@ -295,11 +295,12 @@ package Exp_Ch7 is
 
    procedure Store_Before_Actions_In_Scope (L : List_Id);
    --  Append the list L of actions to the end of the before-actions store in
-   --  the top of the scope stack.
+   --  the top of the scope stack (also analyzes these actions).
 
    procedure Store_After_Actions_In_Scope (L : List_Id);
    --  Prepend the list L of actions to the beginning of the after-actions
-   --  store in the top of the scope stack.
+   --  stored in the top of the scope stack (also analyzes these actions).
+   --  Why prepend rather than append ???
 
    procedure Wrap_Transient_Declaration (N : Node_Id);
    --  N is an object declaration. Expand the finalization calls after the

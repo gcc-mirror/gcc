@@ -5856,9 +5856,14 @@ package body Make is
 
             Targparm.Get_Target_Parameters;
 
-            --  Output usage information if no files to compile
+            --  Output usage information if no argument on the command line
 
-            Usage;
+            if Argument_Count = 0 then
+               Usage;
+            else
+               Write_Line ("type ""gnatmake --help"" for help");
+            end if;
+
             Finish_Program (Project_Tree, E_Success);
          end if;
       end if;
