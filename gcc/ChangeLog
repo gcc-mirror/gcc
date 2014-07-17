@@ -1,3 +1,8 @@
+2014-07-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.gcc (crisv32-*-linux* | cris-*-linux*): Do not override
+	an existing tmake_file.  Don't add t-slibgcc and t-linux.
+
 2014-07-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61623

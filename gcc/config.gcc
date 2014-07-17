@@ -1121,8 +1121,7 @@ cris-*-elf | cris-*-none)
 	;;
 crisv32-*-linux* | cris-*-linux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h cris/linux.h"
-	# We need to avoid using t-linux, so override default tmake_file
-	tmake_file="cris/t-cris cris/t-linux t-slibgcc t-linux"
+	tmake_file="${tmake_file} cris/t-cris cris/t-linux"
 	extra_options="${extra_options} cris/linux.opt"
 	case $target in
 	  cris-*-*)
