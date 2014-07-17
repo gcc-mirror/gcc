@@ -54,6 +54,7 @@ package Checks is
    function Atomic_Synchronization_Disabled   (E : Entity_Id) return Boolean;
    function Discriminant_Checks_Suppressed    (E : Entity_Id) return Boolean;
    function Division_Checks_Suppressed        (E : Entity_Id) return Boolean;
+   function Duplicated_Tag_Checks_Suppressed  (E : Entity_Id) return Boolean;
    function Elaboration_Checks_Suppressed     (E : Entity_Id) return Boolean;
    function Index_Checks_Suppressed           (E : Entity_Id) return Boolean;
    function Length_Checks_Suppressed          (E : Entity_Id) return Boolean;

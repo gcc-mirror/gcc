@@ -669,20 +669,21 @@ package Types is
    Atomic_Synchronization : constant :=  5;
    Discriminant_Check     : constant :=  6;
    Division_Check         : constant :=  7;
-   Elaboration_Check      : constant :=  8;
-   Index_Check            : constant :=  9;
-   Length_Check           : constant := 10;
-   Overflow_Check         : constant := 11;
-   Predicate_Check        : constant := 12;
-   Range_Check            : constant := 13;
-   Storage_Check          : constant := 14;
-   Tag_Check              : constant := 15;
-   Validity_Check         : constant := 16;
+   Duplicated_Tag_Check   : constant :=  8;
+   Elaboration_Check      : constant :=  9;
+   Index_Check            : constant := 10;
+   Length_Check           : constant := 11;
+   Overflow_Check         : constant := 12;
+   Predicate_Check        : constant := 13;
+   Range_Check            : constant := 14;
+   Storage_Check          : constant := 15;
+   Tag_Check              : constant := 16;
+   Validity_Check         : constant := 17;
    --  Values used to represent individual predefined checks (including the
    --  setting of Atomic_Synchronization, which is implemented internally using
    --  a "check" whose name is Atomic_Synchronization).
 
-   All_Checks : constant := 17;
+   All_Checks : constant := 18;
    --  Value used to represent All_Checks value
 
    subtype Predefined_Check_Id is Check_Id range 1 .. All_Checks;

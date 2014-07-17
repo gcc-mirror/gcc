@@ -6819,15 +6819,21 @@ unpredictable. The program might crash, or print wrong answers, or
 do anything else. It might even do exactly what you wanted it to do
 (and then it might start failing mysteriously next week or next
 year). The compiler will generate code based on the assumption that
-the condition being checked is true, which can result in disaster if
-that assumption is wrong.
+the condition being checked is true, which can result in erroneous
+execution if that assumption is wrong.
 
 The checks subject to suppression include all the checks defined by
 the Ada standard, the additional implementation defined checks
-@code{Alignment_Check}, @code{Atomic_Synchronization},
+@code{Alignment_Check},
 @code{Duplicated_Tag_Check}, @code{Predicate_Check}, and
 @code{Validity_Check}, as well as any checks introduced using
-@code{pragma Check_Name}.
+@code{pragma Check_Name}. Note that code{Atomic_Synchronization}
+is not automatically suppressed by use of this option.
+
+If the code depends on certain checks being active, you can use
+pragma @code{Unsuppress} either as a configuration pragma or as
+a local pragma to make sure that a specified check is performed
+even if @option{gnatp} is specified.
 
 The @option{-gnatp} switch has no effect if a subsequent
 @option{-gnat-p} switch appears.
