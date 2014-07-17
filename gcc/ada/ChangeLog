@@ -1,3 +1,14 @@
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope.Find_Node_To_Be_Wrapped):
+	Start examining the tree at the node passed to
+	Establish_Transient_Scope (not its parent).
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	The access type for the variable storing the reference to
+	the call must be declared and frozen prior to establishing a
+	transient scope.
+	* exp_ch9.adb: Minor reformatting.
+
 2014-07-17  Pascal Obry  <obry@adacore.com>
 
 	* s-os_lib.ads: Minor comment update.

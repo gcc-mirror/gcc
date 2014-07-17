@@ -4377,7 +4377,7 @@ package body Exp_Ch9 is
          pragma Assert (Ekind (Sub) = E_Function);
          Rewrite (N,
            Make_Function_Call (Loc,
-             Name => New_Sub,
+             Name                   => New_Sub,
              Parameter_Associations => Params));
       end if;
 
