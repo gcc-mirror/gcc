@@ -1,3 +1,8 @@
+2014-07-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* real.c (encode_ieee_extended_motorola): Clear integer bit in the
+	infinity format.
+
 2014-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/61801
