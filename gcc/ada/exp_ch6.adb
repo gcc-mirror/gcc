@@ -7150,6 +7150,26 @@ package body Exp_Ch6 is
    is
       Rec   : Node_Id;
 
+      procedure Freeze_Called_Function;
+      --  If it is a function call it can appear in elaboration code and
+      --  the called entity must be frozen before the call. This must be
+      --  done before the call is expanded, as the expansion may rewrite it
+      --  to something other than a call (e.g. a temporary initialized in a
+      --  transient block).
+
+      ----------------------------
+      -- Freeze_Called_Function --
+      ----------------------------
+
+      procedure Freeze_Called_Function is
+      begin
+         if Ekind (Subp) = E_Function then
+            Freeze_Expression (Name (N));
+         end if;
+      end Freeze_Called_Function;
+
+   --  Start of processing for Expand_Protected_Subprogram_Call
+
    begin
       --  If the protected object is not an enclosing scope, this is an inter-
       --  object function call. Inter-object procedure calls are expanded by
@@ -7170,6 +7190,7 @@ package body Exp_Ch6 is
             Rec := Prefix (Prefix (Name (N)));
          end if;
 
+         Freeze_Called_Function;
          Build_Protected_Subprogram_Call (N,
            Name     => New_Occurrence_Of (Subp, Sloc (N)),
            Rec      => Convert_Concurrent (Rec, Etype (Rec)),
@@ -7182,18 +7203,12 @@ package body Exp_Ch6 is
             return;
          end if;
 
+         Freeze_Called_Function;
          Build_Protected_Subprogram_Call (N,
            Name     => Name (N),
            Rec      => Rec,
            External => False);
 
-      end if;
-
-      --  If it is a function call it can appear in elaboration code and
-      --  the called entity must be frozen here.
-
-      if Ekind (Subp) = E_Function then
-         Freeze_Expression (Name (N));
       end if;
 
       --  Analyze and resolve the new call. The actuals have already been

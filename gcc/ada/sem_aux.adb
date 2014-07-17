@@ -602,6 +602,16 @@ package body Sem_Aux is
       return Empty;
    end Get_Rep_Pragma;
 
+   ---------------------------------
+   -- Has_External_Tag_Rep_Clause --
+   ---------------------------------
+
+   function Has_External_Tag_Rep_Clause (T : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Is_Tagged_Type (T));
+      return Has_Rep_Item (T, Name_External_Tag, Check_Parents => False);
+   end Has_External_Tag_Rep_Clause;
+
    ------------------
    -- Has_Rep_Item --
    ------------------

@@ -302,6 +302,10 @@ package Exp_Ch7 is
    --  stored in the top of the scope stack (also analyzes these actions).
    --  Why prepend rather than append ???
 
+   procedure Store_Cleanup_Actions_In_Scope (L : List_Id);
+   --  Prepend the list L of actions to the beginning of the cleanup-actions
+   --  store in the top of the scope stack.
+
    procedure Wrap_Transient_Declaration (N : Node_Id);
    --  N is an object declaration. Expand the finalization calls after the
    --  declaration and make the outer scope being the transient one.

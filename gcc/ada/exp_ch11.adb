@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1960,9 +1960,11 @@ package body Exp_Ch11 is
                begin
                   if LCN = Statements (P)
                        or else
-                     LCN = SSE.Actions_To_Be_Wrapped_Before
+                     LCN = SSE.Actions_To_Be_Wrapped (Before)
                        or else
-                     LCN = SSE.Actions_To_Be_Wrapped_After
+                     LCN = SSE.Actions_To_Be_Wrapped (After)
+                       or else
+                     LCN = SSE.Actions_To_Be_Wrapped (Cleanup)
                   then
                      --  Loop through exception handlers
 

@@ -1,5 +1,61 @@
 2014-07-17  Thomas Quinot  <quinot@adacore.com>
 
+	* sem.ads (Scope_Stack_Entry): Reorganize storage of action lists;
+	introduce a new list (cleanup actions) for each (transient) scope.
+	* sinfo.ads, sinfo.adb (Cleanup_Actions): New attribute for
+	N_Block_Statement
+	* exp_ch7.ads (Store_Cleanup_Actions_In_Scope): New subprogram.
+	* exp_ch7.adb (Store_Actions_In_Scope): New subprogram, common
+	processing for Store_xxx_Actions_In_Scope.
+	(Build_Cleanup_Statements): Allow for a list of additional
+	cleanup statements to be passed by the caller.
+	(Expand_Cleanup_Actions): Take custom cleanup actions associated
+	with an N_Block_Statement into account.
+	(Insert_Actions_In_Scope_Around): Account for Scope_Stack_Entry
+	reorganization (refactoring only, no behaviour change).
+	(Make_Transient_Block): Add assertion to ensure that the current
+	scope is indeed a block (namely, the entity for the transient
+	block being constructed syntactically, which has already been
+	established as a scope).  If cleanup actions are present in the
+	transient scope, transfer them now to the transient block.
+	* exp_ch6.adb (Expand_Protected_Subprogram_Call): Freeze the
+	called function while it is still present as the name in a call
+	in the tree. This may not be the case later on if the call is
+	rewritten into a transient block.
+	* exp_smem.adb (Add_Shared_Var_Lock_Procs): The post-actions
+	inserted after calling a protected operation on a shared passive
+	protected must be performed in a block finalizer, not just
+	inserted in the tree, so that they are executed even in case of
+	a normal (RETURN) or abnormal (exception) transfer of control
+	outside of the current scope.
+	* exp_smem.ads (Add_Shared_Var_Lock_Procs): Update documentation
+	* sem_ch8.adb, expander.adb, exp_ch11.adb: Adjust for
+	Scope_Stack_Entry reorganization.
+
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_disp.adb (Make_DT, Make_VM_TSD): Do not omit Check_TSD
+	call for types that do not have an explicit attribute definition
+	clause for External_Tag, as their default tag may clash with an
+	explicit tag defined for some other type.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Controlled_Function_Call): Recognize a
+	controlled function call with multiple actual parameters that
+	appears in Object.Operation form.
+
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_External_Tag_Rep_Clause): Remove
+	entity flag.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	External_Tag): No need to set entity flag.
+	* sem_aux.ads, sem_aux.adb (Has_External_Tag_Rep_Clause):
+	Reimplement correctly in terms of Has_Rep_Item.
+
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_ch7.adb (Establish_Transient_Scope.Find_Node_To_Be_Wrapped):
 	Start examining the tree at the node passed to
 	Establish_Transient_Scope (not its parent).

@@ -4214,7 +4214,8 @@ package body Exp_Util is
      (Obj_Id : Entity_Id) return Boolean
    is
       function Is_Controlled_Function_Call (N : Node_Id) return Boolean;
-      --  Determine if particular node denotes a controlled function call
+      --  Determine if particular node denotes a controlled function call. The
+      --  call may have been heavily expanded.
 
       function Is_Displace_Call (N : Node_Id) return Boolean;
       --  Determine whether a particular node is a call to Ada.Tags.Displace.
@@ -4233,12 +4234,22 @@ package body Exp_Util is
       begin
          if Nkind (Expr) = N_Function_Call then
             Expr := Name (Expr);
-         end if;
 
-         --  The function call may appear in object.operation format
+         --  When a function call appears in Object.Operation format, the
+         --  original representation has two possible forms depending on the
+         --  availability of actual parameters:
+         --
+         --    Obj.Func_Call          --  N_Selected_Component
+         --    Obj.Func_Call (Param)  --  N_Indexed_Component
 
-         if Nkind (Expr) = N_Selected_Component then
-            Expr := Selector_Name (Expr);
+         else
+            if Nkind (Expr) = N_Indexed_Component then
+               Expr := Prefix (Expr);
+            end if;
+
+            if Nkind (Expr) = N_Selected_Component then
+               Expr := Selector_Name (Expr);
+            end if;
          end if;
 
          return

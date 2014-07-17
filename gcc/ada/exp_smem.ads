@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,9 +44,10 @@ package Exp_Smem is
    --  The argument is a protected subprogram call, before it is rewritten
    --  by Exp_Ch9.Build_Protected_Subprogram_Call. This routine, which is
    --  called only in the case of an external call to a protected object
-   --  that has Is_Shared_Passive set, deals with installing the required
-   --  global lock calls for this case. It also generates the necessary
-   --  read/write calls for the protected object within the lock region.
+   --  that has Is_Shared_Passive set, deals with installing a transient scope
+   --  and acquiring the appropriate global lock calls for this case. It also
+   --  generates the necessary read/write calls for the protected object within
+   --  the lock region.
 
    function Make_Shared_Var_Procs (N : Node_Id) return Node_Id;
    --  N is the node for the declaration of a shared passive variable.

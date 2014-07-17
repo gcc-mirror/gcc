@@ -432,6 +432,14 @@ package body Sinfo is
       return Node3 (N);
    end Classifications;
 
+   function Cleanup_Actions
+     (N : Node_Id) return List_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      return List5 (N);
+   end Cleanup_Actions;
+
    function Comes_From_Extended_Return_Statement
      (N : Node_Id) return Boolean is
    begin
@@ -3598,6 +3606,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Contract);
       Set_Node3 (N, Val); -- semantic field, no parent set
    end Set_Classifications;
+
+   procedure Set_Cleanup_Actions
+      (N : Node_Id; Val : List_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Block_Statement);
+      Set_List5 (N, Val); -- semantic field, no parent set
+   end Set_Cleanup_Actions;
 
    procedure Set_Comes_From_Extended_Return_Statement
       (N : Node_Id; Val : Boolean := True) is
