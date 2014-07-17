@@ -255,6 +255,12 @@ package Sem_Aux is
    --  Defined in tagged types. Set if an External_Tag rep. clause has been
    --  given for this type. Use to avoid the generation of the default
    --  External_Tag.
+   --
+   --  Note: we used to use an entity flag for this purpose, but that was wrong
+   --  because it was not propagated from the private view to the full view. We
+   --  could have added that propagation, but it would have been an annoying
+   --  irregularity compared to other representation aspects, and the cost of
+   --  looking up the aspect when needed is small.
 
    function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
    --  True if T has discriminants and is unconstrained, or is an array type

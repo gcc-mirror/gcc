@@ -1,3 +1,34 @@
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aux.ads: Minor comment addition.
+
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Make_Call_Into_Operator): If the call is already
+	a rewriting of an operator node, there are no actuals to be
+	propagated from original node to rewritten node when in ASIS mode.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract,
+	Analyze_Subprogram_Contract): Add new local variable Mode. Save
+	and restore the SPARK mode of the related construct in a
+	stack-like fashion.
+	* sem_ch7.adb (Analyze_Package_Body_Contract,
+	Analyze_Package_Contract): Add new local variable Mode. Save and
+	restore the SPARK mode of the related construct in a stack-like fashion.
+	* sem_util.adb Remove with and use clause for Opt.
+	(Restore_SPARK_Mode): New routine.
+	(Save_SPARK_Mode_And_Set): New routine.
+	* sem_util.ads Add with and use clause for Opt.
+	(Restore_SPARK_Mode): New routine.
+	(Save_SPARK_Mode_And_Set): New routine.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Aliased): Transient objects
+	within an expression with actions cannot be considered aliased.
+
 2014-07-17  Thomas Quinot  <quinot@adacore.com>
 
 	* sem.ads (Scope_Stack_Entry): Reorganize storage of action lists;

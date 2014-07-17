@@ -180,9 +180,12 @@ package body Sem_Ch7 is
 
    procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id) is
       Spec_Id : constant Entity_Id := Spec_Entity (Body_Id);
+      Mode    : SPARK_Mode_Type;
       Prag    : Node_Id;
 
    begin
+      Save_SPARK_Mode_And_Set (Body_Id, Mode);
+
       Prag := Get_Pragma (Body_Id, Pragma_Refined_State);
 
       --  The analysis of pragma Refined_State detects whether the spec has
@@ -200,6 +203,8 @@ package body Sem_Ch7 is
       then
          Error_Msg_N ("package & requires state refinement", Spec_Id);
       end if;
+
+      Restore_SPARK_Mode (Mode);
    end Analyze_Package_Body_Contract;
 
    ---------------------------------
@@ -839,9 +844,12 @@ package body Sem_Ch7 is
    ------------------------------
 
    procedure Analyze_Package_Contract (Pack_Id : Entity_Id) is
+      Mode : SPARK_Mode_Type;
       Prag : Node_Id;
 
    begin
+      Save_SPARK_Mode_And_Set (Pack_Id, Mode);
+
       --  Analyze the initialization related pragmas. Initializes must come
       --  before Initial_Condition due to item dependencies.
 
@@ -867,6 +875,8 @@ package body Sem_Ch7 is
             Check_Missing_Part_Of (Pack_Id);
          end if;
       end if;
+
+      Restore_SPARK_Mode (Mode);
    end Analyze_Package_Contract;
 
    ---------------------------------
