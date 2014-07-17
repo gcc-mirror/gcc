@@ -4208,11 +4208,8 @@ package body Exp_Ch7 is
 
    begin
       The_Parent := N;
+      P          := Empty;
       loop
-         P := The_Parent;
-         pragma Assert (P /= Empty);
-         The_Parent := Parent (P);
-
          case Nkind (The_Parent) is
 
             --  Simple statement can be wrapped
@@ -4263,7 +4260,7 @@ package body Exp_Ch7 is
 
             --  The expression itself is to be wrapped if its parent is a
             --  compound statement or any other statement where the expression
-            --  is known to be scalar
+            --  is known to be scalar.
 
             when N_Accept_Alternative               |
                  N_Attribute_Definition_Clause      |
@@ -4279,6 +4276,7 @@ package body Exp_Ch7 is
                  N_If_Statement                     |
                  N_Iteration_Scheme                 |
                  N_Terminate_Alternative            =>
+               pragma Assert (Present (P));
                return P;
 
             when N_Attribute_Reference =>
@@ -4344,6 +4342,9 @@ package body Exp_Ch7 is
             when others =>
                null;
          end case;
+
+         P          := The_Parent;
+         The_Parent := Parent (P);
       end loop;
    end Find_Node_To_Be_Wrapped;
 

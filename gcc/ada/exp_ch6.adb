@@ -10181,10 +10181,9 @@ package body Exp_Ch6 is
       Func_Call       : Node_Id := Function_Call;
       Function_Id     : Entity_Id;
       Pool_Actual     : Node_Id;
+      Ptr_Typ         : Entity_Id;
       Ptr_Typ_Decl    : Node_Id;
       Pass_Caller_Acc : Boolean := False;
-      New_Expr        : Node_Id;
-      Ref_Type        : Entity_Id;
       Res_Decl        : Node_Id;
       Result_Subt     : Entity_Id;
 
@@ -10223,6 +10222,53 @@ package body Exp_Ch6 is
       end if;
 
       Result_Subt := Etype (Function_Id);
+
+      --  Create an access type designating the function's result subtype. We
+      --  use the type of the original call because it may be a call to an
+      --  inherited operation, which the expansion has replaced with the parent
+      --  operation that yields the parent type. Note that this access type
+      --  must be declared before we establish a transient scope, so that it
+      --  receives the proper accessibility level.
+
+      Ptr_Typ := Make_Temporary (Loc, 'A');
+      Ptr_Typ_Decl :=
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Ptr_Typ,
+          Type_Definition     =>
+            Make_Access_To_Object_Definition (Loc,
+              All_Present        => True,
+              Subtype_Indication =>
+                New_Occurrence_Of (Etype (Function_Call), Loc)));
+
+      --  The access type and its accompanying object must be inserted after
+      --  the object declaration in the constrained case, so that the function
+      --  call can be passed access to the object. In the unconstrained case,
+      --  or if the object declaration is for a return object, the access type
+      --  and object must be inserted before the object, since the object
+      --  declaration is rewritten to be a renaming of a dereference of the
+      --  access object. Note: we need to freeze Ptr_Typ explicitly, because
+      --  the result object is in a different (transient) scope, so won't
+      --  cause freezing.
+
+      if Is_Constrained (Underlying_Type (Result_Subt))
+        and then not Is_Return_Object (Defining_Identifier (Object_Decl))
+      then
+         Insert_After_And_Analyze (Object_Decl, Ptr_Typ_Decl);
+      else
+         Insert_Action (Object_Decl, Ptr_Typ_Decl);
+      end if;
+
+      --  Force immediate freezing of Ptr_Typ because Res_Decl will be
+      --  elaborated in an inner (transient) scope and thus won't cause
+      --  freezing by itself.
+
+      declare
+         Ptr_Typ_Freeze_Ref : constant Node_Id :=
+                                New_Occurrence_Of (Ptr_Typ, Loc);
+      begin
+         Set_Parent (Ptr_Typ_Freeze_Ref, Ptr_Typ_Decl);
+         Freeze_Expression (Ptr_Typ_Freeze_Ref);
+      end;
 
       --  If the the object is a return object of an enclosing build-in-place
       --  function, then the implicit build-in-place parameters of the
@@ -10356,53 +10402,22 @@ package body Exp_Ch6 is
       Add_Access_Actual_To_Build_In_Place_Call
         (Func_Call, Function_Id, Caller_Object, Is_Access => Pass_Caller_Acc);
 
-      --  Create an access type designating the function's result subtype. We
-      --  use the type of the original expression because it may be a call to
-      --  an inherited operation, which the expansion has replaced with the
-      --  parent operation that yields the parent type.
-
-      Ref_Type := Make_Temporary (Loc, 'A');
-
-      Ptr_Typ_Decl :=
-        Make_Full_Type_Declaration (Loc,
-          Defining_Identifier => Ref_Type,
-          Type_Definition     =>
-            Make_Access_To_Object_Definition (Loc,
-              All_Present        => True,
-              Subtype_Indication =>
-                New_Occurrence_Of (Etype (Function_Call), Loc)));
-
-      --  The access type and its accompanying object must be inserted after
-      --  the object declaration in the constrained case, so that the function
-      --  call can be passed access to the object. In the unconstrained case,
-      --  or if the object declaration is for a return object, the access type
-      --  and object must be inserted before the object, since the object
-      --  declaration is rewritten to be a renaming of a dereference of the
-      --  access object.
-
-      if Is_Constrained (Underlying_Type (Result_Subt))
-        and then not Is_Return_Object (Defining_Identifier (Object_Decl))
-      then
-         Insert_After_And_Analyze (Object_Decl, Ptr_Typ_Decl);
-      else
-         Insert_Action (Object_Decl, Ptr_Typ_Decl);
-      end if;
-
       --  Finally, create an access object initialized to a reference to the
       --  function call. We know this access value cannot be null, so mark the
       --  entity accordingly to suppress the access check.
 
-      New_Expr := Make_Reference (Loc, Relocate_Node (Func_Call));
-
-      Def_Id := Make_Temporary (Loc, 'R', New_Expr);
-      Set_Etype (Def_Id, Ref_Type);
+      Def_Id := Make_Temporary (Loc, 'R', Func_Call);
+      Set_Etype (Def_Id, Ptr_Typ);
       Set_Is_Known_Non_Null (Def_Id);
 
       Res_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Def_Id,
-          Object_Definition   => New_Occurrence_Of (Ref_Type, Loc),
-          Expression          => New_Expr);
+          Constant_Present    => True,
+          Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
+          Expression          =>
+            Make_Reference (Loc, Relocate_Node (Func_Call)));
+
       Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
 
       --  If the result subtype of the called function is constrained and
