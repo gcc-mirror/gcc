@@ -314,6 +314,7 @@ symtab_remove_from_same_comdat_group (symtab_node *node)
       else
 	prev->same_comdat_group = node->same_comdat_group;
       node->same_comdat_group = NULL;
+      node->set_comdat_group (NULL_TREE);
     }
 }
 
@@ -1217,7 +1218,7 @@ verify_symtab (void)
 		{
 		  error ("Two symbols with same comdat_group are not linked by the same_comdat_group list.");
 		  dump_symtab_node (stderr, *entry);
-		  dump_symtab_node (stderr, s);
+		  dump_symtab_node (stderr, node);
 		  internal_error ("verify_symtab failed");
 		}
 	}
