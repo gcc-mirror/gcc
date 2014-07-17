@@ -1,5 +1,28 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Improve documentation of Unrestricted_Access.
+	* sinfo.ads: Document restriction on aggregates (must expand to
+	assignments if one or more assignments needs expansion, e.g. for
+	controlled types).
+	* sem_ch13.adb: All warning messages regarding bit order should
+	be info: messages.
+	* gnat_ugn.texi: Minor correction of missing @ on @code
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.ads (Implementation_Restriction): Add No_Long_Long_Integer.
+	* s-rident.ads (Partition_Boolean_Restrictions): Add
+	No_Long_Long_Integer.
+	* sem_ch3.adb (Modular_Type_Declaration): Size must be <=
+	Long_Integer'Size if restriction No_Long_Long_Integer is active.
+	(Signed_Integer_Type_Declaration): Do not allow Long_Long_Integer
+	as the implicit base type for a signed integer type declaration
+	if restriction No_Long_Long_Integer is active.
+	* sem_util.ads, sem_util.adb (Set_Entity_With_Checks): Include check for
+	No_Long_Long_Integer.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, a-ztexio.ads, exp_imgv.adb, casing.adb, casing.ads,
 	einfo.ads, checks.adb, sem_ch12.adb, a-textio.ads, freeze.adb,
 	repinfo.adb, exp_ch6.adb, sem_ch4.adb, a-witeio.ads, sem_ch8.adb,

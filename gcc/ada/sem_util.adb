@@ -15980,6 +15980,10 @@ package body Sem_Util is
          Check_Restriction (No_Abort_Statements, Post_Node);
       end if;
 
+      if Val = Standard_Long_Long_Integer then
+         Check_Restriction (No_Long_Long_Integer, Post_Node);
+      end if;
+
       --  Check for violation of No_Dynamic_Attachment
 
       if Restriction_Check_Required (No_Dynamic_Attachment)

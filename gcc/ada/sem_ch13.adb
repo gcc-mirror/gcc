@@ -302,17 +302,17 @@ package body Sem_Ch13 is
                        and then CSZ mod System_Storage_Unit = 0
                      then
                         Error_Msg_N
-                          ("multi-byte field specified with non-standard"
-                           & " Bit_Order??", CLC);
+                          ("info: multi-byte field specified with "
+                           & "non-standard Bit_Order?V?", CLC);
 
                         if Bytes_Big_Endian then
                            Error_Msg_N
-                             ("bytes are not reversed "
-                              & "(component is big-endian)??", CLC);
+                             ("\bytes are not reversed "
+                              & "(component is big-endian)?V?", CLC);
                         else
                            Error_Msg_N
-                             ("bytes are not reversed "
-                              & "(component is little-endian)??", CLC);
+                             ("\bytes are not reversed "
+                              & "(component is little-endian)?V?", CLC);
                         end if;
 
                         --  Do not allow non-contiguous field
@@ -338,13 +338,13 @@ package body Sem_Ch13 is
                        and then Warn_On_Reverse_Bit_Order
                      then
                         Error_Msg_N
-                          ("Bit_Order clause does not affect " &
+                          ("info: Bit_Order clause does not affect " &
                            "byte ordering?V?", Pos);
                         Error_Msg_Uint_1 :=
                           Intval (Pos) + Intval (FB) /
                           System_Storage_Unit;
                         Error_Msg_N
-                          ("position normalized to ^ before bit " &
+                          ("info: position normalized to ^ before bit " &
                            "order interpreted?V?", Pos);
                      end if;
 
@@ -431,7 +431,7 @@ package body Sem_Ch13 is
 
                            if Warn_On_Reverse_Bit_Order then
                               Error_Msg_N
-                                ("multi-byte field specified with "
+                                ("info: multi-byte field specified with "
                                  & "  non-standard Bit_Order?V?", CC);
 
                               if Bytes_Big_Endian then
@@ -661,14 +661,12 @@ package body Sem_Ch13 is
 
                            if Bytes_Big_Endian then
                               Error_Msg_NE
-                                ("\big-endian range for "
-                                 & "component & is ^ .. ^?V?",
-                                 First_Bit (CC), Comp);
+                                ("\big-endian range for component "
+                                 & "& is ^ .. ^?V?", First_Bit (CC), Comp);
                            else
                               Error_Msg_NE
-                                ("\little-endian range "
-                                 & "for component & is ^ .. ^?V?",
-                                 First_Bit (CC), Comp);
+                                ("\little-endian range for component"
+                                 & "& is ^ .. ^?V?", First_Bit (CC), Comp);
                            end if;
                         end if;
 
