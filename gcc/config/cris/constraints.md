@@ -118,7 +118,7 @@
 						       reload_in_progress
 						       || reload_completed)"))
 	    ;; Just an explicit indirect reference: [const]?
-	    (match_test "CONSTANT_P (XEXP (op, 0))")
+	    (match_test "CRIS_CONSTANT_P (XEXP (op, 0))")
 	    ;; Something that is indexed; [...+...]?
 	    (and (match_code "plus" "0")
 		      ;; A BDAP constant: [reg+(8|16|32)bit offset]?
@@ -159,6 +159,8 @@
 (define_constraint "U"
   "@internal"
   (and (match_test "flag_pic")
+       ;; We're just interested in the ..._or_callable_symbol part.
+       ;; (Using CRIS_CONSTANT_P would exclude that too.)
        (match_test "CONSTANT_P (op)")
        (match_operand 0 "cris_nonmemory_operand_or_callable_symbol")))
 

@@ -1,5 +1,54 @@
 2014-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/61737.
+	* config/cris/cris.c (TARGET_LEGITIMATE_CONSTANT_P)
+	(TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	(cris_cannot_force_const_mem, cris_legitimate_constant_p): New
+	functions.
+	(cris_print_index, cris_print_operand, cris_constant_index_p)
+	(cris_side_effect_mode_ok): Replace CONSTANT_P with CRIS_CONSTANT_P.
+	(cris_address_cost): Ditto last CONSTANT_P.
+	(cris_symbol_type_of): Rename from cris_pic_symbol_type_of.  All
+        callers changed.  Yield cris_offsettable_symbol for non-PIC
+        constant symbolic expressions including labels.  Yield cris_unspec
+	for all unspecs.
+	(cris_expand_pic_call_address): New parameter MARKERP.  Set its
+        target to pic_offset_table_rtx for calls that will likely go
+        through PLT, const0_rtx when they can't.  All callers changed.
+	Assert flag_pic.  Use CONSTANT_P, not CONSTANT_ADDRESS_P, for
+	symbolic expressions to be PICified.  Remove second, redundant,
+	assert on can_create_pseudo_p returning non-zero.  Use
+	replace_equiv_address_nv, not replace_equiv_address, for final
+	operand update.
+	* config/cris/cris.md ("movsi"): Move variable t to pattern
+	toplevel. Adjust assert for new cris_symbol_type member.  Use
+	CONSTANT_P instead of CONSTANT_ADDRESS_P.
+	("*movsi_internal") <case 9>: Make check for valid unspec operands
+	for lapc stricter.
+	<case CRIS_UNSPEC_PCREL, CRIS_UNSPEC_PLT_PCREL>: Clear condition
+	codes.
+	("call", "call_value"): Use second incoming operand as a marker
+	for pic-offset-table-register being used.
+	("*expanded_call_non_v32", "*expanded_call_v32")
+        ("*expanded_call_value_non_v32", "*expanded_call_value_v32"): For
+	second incoming operand to CALL, match cris_call_type_marker.
+	("*expanded_call_value_side"): Ditto.  Disable before
+	reload_completed.
+	("*expanded_call_side"): Ditto.  Fix typo in comment.
+	(moverside, movemside peepholes): Check for CRIS_CONSTANT_P, not
+	CONSTANT_P.
+	* config/cris/predicates.md ("cris_call_type_marker"): New predicate.
+	* config/cris/cris.h (CRIS_CONSTANT_P): New macro.
+	(enum cris_symbol_type): Rename from cris_pic_symbol_type.  All
+        users changed.  Add members cris_offsettable_symbol and
+	cris_unspec.
+	(cris_symbol_type): Rename from cris_pic_symbol_type.
+	* config/cris/constraints.md ("T"): Use CRIS_CONSTANT_P, not
+        just CONSTANT_P.
+	* config/cris/cris-protos.h (cris_symbol_type_of,
+	cris_expand_pic_call_address): Adjust prototypes.
+	(cris_legitimate_constant_p): New prototype.
+
 	* config.gcc (crisv32-*-linux* | cris-*-linux*): Do not override
 	an existing tmake_file.  Don't add t-slibgcc and t-linux.
 
