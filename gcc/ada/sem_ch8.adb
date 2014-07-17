@@ -625,8 +625,8 @@ package body Sem_Ch8 is
 
    procedure Analyze_Generic_Package_Renaming   (N : Node_Id) is
    begin
-      --  Apply the Text_IO Kludge here, since we may be renaming one of the
-      --  subpackages of Text_IO, then join common routine.
+      --  Test for the Text_IO special unit case here, since we may be renaming
+      --  one of the subpackages of Text_IO, then join common routine.
 
       Check_Text_IO_Special_Unit (Name (N));
 
@@ -1317,7 +1317,7 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Apply Text_IO kludge here since we may be renaming a child of Text_IO
+      --  Check for Text_IO special unit (we may be renaming a Text_IO child)
 
       Check_Text_IO_Special_Unit (Name (N));
 
@@ -2615,9 +2615,9 @@ package body Sem_Ch8 is
       --  Ada_83 because there is no requirement of full conformance between
       --  renamed entity and new entity, even though the same circuit is used.
 
-      --  This is a bit of a kludge, which introduces a really irregular use of
-      --  Ada_Version[_Explicit]. Would be nice to find cleaner way to do this
-      --  ???
+      --  This is a bit of an odd case, which introduces a really irregular use
+      --  of Ada_Version[_Explicit]. Would be nice to find cleaner way to do
+      --  this. ???
 
       Ada_Version := Ada_Version_Type'Max (Ada_Version, Ada_95);
       Ada_Version_Pragma := Empty;

@@ -3423,8 +3423,8 @@ package body Sem_Ch12 is
    begin
       Check_SPARK_Restriction ("generic is not allowed", N);
 
-      --  Very first thing: apply the special kludge for Text_IO processing
-      --  in case we are instantiating one of the children of [Wide_]Text_IO.
+      --  Very first thing: check for Text_IO sp[ecial unit in case we are
+      --  instantiating one of the children of [[Wide_]Wide_]Text_IO.
 
       Check_Text_IO_Special_Unit (Name (N));
 
@@ -4670,10 +4670,10 @@ package body Sem_Ch12 is
    begin
       Check_SPARK_Restriction ("generic is not allowed", N);
 
-      --  Very first thing: apply the special kludge for Text_IO processing
-      --  in case we are instantiating one of the children of [Wide_]Text_IO.
-      --  Of course such an instantiation is bogus (these are packages, not
-      --  subprograms), but we get a better error message if we do this.
+      --  Very first thing: check for special Text_IO unit in case we are
+      --  instantiating one of the children of [[Wide_]Wide_]Text_IO. Of course
+      --  such an instantiation is bogus (these are packages, not subprograms),
+      --  but we get a better error message if we do this.
 
       Check_Text_IO_Special_Unit (Gen_Id);
 

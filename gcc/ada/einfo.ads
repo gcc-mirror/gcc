@@ -6936,9 +6936,9 @@ package Einfo is
    --  It would be cleaner to use No_Uint in all these cases, but historically
    --  we chose to use Uint_0 at first, and the change over will take time ???
    --  This is particularly true for the RM_Size field, where a value of zero
-   --  is legitimate. We deal with this by a nasty kludge that knows that the
-   --  value is always known static for discrete types (and no other types can
-   --  have an RM_Size value of zero).
+   --  is legitimate. We deal with this by a considering that the value is
+   --  always known static for discrete types (and no other types can have
+   --  an RM_Size value of zero).
 
    --  In two cases, Known_Static_Esize and Known_Static_RM_Size, there is one
    --  more consideration, which is that we always return False for generic
@@ -7439,7 +7439,7 @@ package Einfo is
    --  It would be cleaner to use No_Uint in all these cases, but historically
    --  we chose to use Uint_0 at first, and the change over will take time ???
    --  This is particularly true for the RM_Size field, where a value of zero
-   --  is legitimate and causes some kludges around the code.
+   --  is legitimate and causes some special tests around the code.
 
    --  Contrary to the corresponding Set procedures above, these routines
    --  do NOT check the entity kind of their argument, instead they set the

@@ -2939,12 +2939,12 @@ package body Freeze is
                   S              : Entity_Id;
 
                begin
-                  --  We have a pretty bad kludge here. Suppose Rec is subtype
-                  --  being defined in a subprogram that's created as part of
-                  --  the freezing of Rec'Base. In that case, we know that
-                  --  Comp'Base must have already been frozen by the time we
-                  --  get to elaborate this because Gigi doesn't elaborate any
-                  --  bodies until it has elaborated all of the declarative
+                  --  We have a difficult case to handle here. Suppose Rec is
+                  --  subtype being defined in a subprogram that's created as
+                  --  part of the freezing of Rec'Base. In that case, we know
+                  --  that Comp'Base must have already been frozen by the time
+                  --  we get to elaborate this because Gigi doesn't elaborate
+                  --  any bodies until it has elaborated all of the declarative
                   --  part. But Is_Frozen will not be set at this point because
                   --  we are processing code in lexical order.
 
@@ -7165,7 +7165,7 @@ package body Freeze is
       --  Since we don't want T to have a Freeze_Node, we don't want its
       --  Full_View or Corresponding_Record_Type to have one either.
 
-      --  ??? Fundamentally, this whole handling is a kludge. What we really
+      --  ??? Fundamentally, this whole handling is unpleasant. What we really
       --  want is to be sure that for an Itype that's part of record R and is a
       --  subtype of type T, that it's frozen after the later of the freeze
       --  points of R and T. We have no way of doing that directly, so what we

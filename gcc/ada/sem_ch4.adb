@@ -6707,10 +6707,10 @@ package body Sem_Ch4 is
    --------------------------------
 
    procedure Remove_Abstract_Operations (N : Node_Id) is
-      Abstract_Op    : Entity_Id := Empty;
-      Address_Kludge : Boolean := False;
-      I              : Interp_Index;
-      It             : Interp;
+      Abstract_Op        : Entity_Id := Empty;
+      Address_Descendent : Boolean := False;
+      I                  : Interp_Index;
+      It                 : Interp;
 
       --  AI-310: If overloaded, remove abstract non-dispatching operations. We
       --  activate this if either extensions are enabled, or if the abstract
@@ -6746,7 +6746,7 @@ package body Sem_Ch4 is
                end if;
 
                if Is_Descendent_Of_Address (Etype (Formal)) then
-                  Address_Kludge := True;
+                  Address_Descendent := True;
                   Remove_Interp (I);
                end if;
 
@@ -6774,7 +6774,7 @@ package body Sem_Ch4 is
                Abstract_Op := It.Nam;
 
                if Is_Descendent_Of_Address (It.Typ) then
-                  Address_Kludge := True;
+                  Address_Descendent := True;
                   Remove_Interp (I);
                   exit;
 
@@ -6943,9 +6943,7 @@ package body Sem_Ch4 is
             --  predefined operators when addresses are involved since this
             --  case is handled separately.
 
-            elsif Ada_Version >= Ada_2005
-              and then not Address_Kludge
-            then
+            elsif Ada_Version >= Ada_2005 and then not Address_Descendent then
                while Present (It.Nam) loop
                   if Is_Numeric_Type (It.Typ)
                     and then Scope (It.Typ) = Standard_Standard

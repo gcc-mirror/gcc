@@ -1952,13 +1952,13 @@ package body Exp_Aggr is
                         Assoc := Expression (Assoc);
                      end if;
 
-                     --  If the located association directly denotes a
-                     --  discriminant, then use the value of a saved
-                     --  association of the aggregate. This is a kludge to
-                     --  handle certain cases involving multiple discriminants
-                     --  mapped to a single discriminant of a descendant. It's
-                     --  not clear how to locate the appropriate discriminant
-                     --  value for such cases. ???
+                     --  If the located association directly denotes
+                     --  a discriminant, then use the value of a saved
+                     --  association of the aggregate. This is an approach
+                     --  used to handle certain cases involving multiple
+                     --  discriminants mapped to a single discriminant of
+                     --  a descendant. It's not clear how to locate the
+                     --  appropriate discriminant value for such cases. ???
 
                      if Is_Entity_Name (Assoc)
                        and then Ekind (Entity (Assoc)) = E_Discriminant

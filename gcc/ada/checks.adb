@@ -6515,10 +6515,10 @@ package body Checks is
 
          PV := Duplicate_Subexpr_No_Checks (Exp, Name_Req => False);
 
-         --  A rather specialized kludge. If PV is an analyzed expression
-         --  which is an indexed component of a packed array that has not
-         --  been properly expanded, turn off its Analyzed flag to make sure
-         --  it gets properly reexpanded.
+         --  A rather specialized test. If PV is an analyzed expression which
+         --  is an indexed component of a packed array that has not been
+         --  properly expanded, turn off its Analyzed flag to make sure it
+         --  gets properly reexpanded.
 
          --  The reason this arises is that Duplicate_Subexpr_No_Checks did
          --  an analyze with the old parent pointer. This may point e.g. to

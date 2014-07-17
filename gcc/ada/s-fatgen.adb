@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -832,9 +832,8 @@ package body System.Fat_Gen is
                               Boolean'Pos (Most_Significant_Word /= 2) +
                                 Boolean'Pos (Most_Significant_Word = 2);
       --  Factor that the extracted exponent needs to be divided by to be in
-      --  range 0 .. IEEE_Emax - IEEE_Emin + 2. Special kludge: Exponent_Factor
-      --  is 1 for x86/IA64 double extended as GCC adds unused bits to the
-      --  type.
+      --  range 0 .. IEEE_Emax - IEEE_Emin + 2. Special case: Exponent_Factor
+      --  is 1 for x86/IA64 double extended (GCC adds unused bits to the type).
 
       Exponent_Mask : constant Float_Word :=
                         Float_Word (IEEE_Emax - IEEE_Emin + 2) *
