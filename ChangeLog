@@ -1,3 +1,8 @@
+2014-07-17  Roman Gareev  <gareevroman@gmail.com>
+
+	* configure.ac: Don't accept isl 0.11.
+	* configure: Regenerate.
+
 2014-07-16  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
