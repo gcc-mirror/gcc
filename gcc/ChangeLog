@@ -1,3 +1,8 @@
+2014-07-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (rx_option_override): Fix alignment values.
+	(rx_align_for_label): Likewise.
+
 2014-07-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/61737.
