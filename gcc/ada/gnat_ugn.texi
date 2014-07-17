@@ -14620,6 +14620,13 @@ as output file.
 The output may be redirected by the following switches:
 
 @table @option
+@item ^--output-dir=@var{dir}^/OUTPUT_DIR=@var{dir}^
+@cindex @option{^--output-dir^/OUTPUT_DIR^} (@command{gnatpp})
+Generate output file in directory @file{dir} with the same name as the input
+file. If @file{dir} is the same as the directory containing the input file,
+the input file is not processed; use @option{^-rnb^/REPLACE_NO_BACKUP^}
+if you want to update the input file in place.
+
 @item ^-pipe^/STANDARD_OUTPUT^
 @cindex @option{^-pipe^/STANDARD_OUTPUT^} (@command{gnatpp})
 Send the output to @code{Standard_Output}
@@ -14745,6 +14752,13 @@ Indicates that external variable @var{name} in the argument project
 has the value @var{value}. Has no effect if no project is specified as
 tool argument.
 
+@item --incremental
+@cindex @option{--incremental} @command{gnatpp}
+Incremental processing on a per-file basis. Source files are only
+processed if they have been modified, or if files they depend on have
+been modified. This is similar to the way gnatmake/gprbuild only
+compiles files that need to be recompiled.
+
 @item --pp-off=@var{xxx}
 @cindex @option{--pp-off} @command{gnatpp}
 Use @code{--xxx} as the command to turn off pretty printing, instead
@@ -14769,13 +14783,20 @@ files.
 
 @item ^-j^/PROCESSES=^@var{n}
 @cindex @option{^-j^/PROCESSES^} (@command{gnatpp})
-Use @var{n} processes to carry out the tree creations (internal representations
-of the argument sources). On a multiprocessor machine this speeds up processing
-of big sets of argument sources. If @var{n} is 0, then the maximum number of
-parallel tree creations is the number of core processors on the platform.
-This option cannot be used together with @option{^-r^/REPLACE^},
+Without @option{--incremental}, use @var{n} processes to carry out the
+tree creations (internal representations of the argument sources). On
+a multiprocessor machine this speeds up processing of big sets of
+argument sources. If @var{n} is 0, then the maximum number of parallel
+tree creations is the number of core processors on the platform. This
+option cannot be used together with @option{^-r^/REPLACE^},
 @option{^-rf^/OVERRIDING_REPLACE^} or
 @option{^-rnb^/REPLACE_NO_BACKUP^} option.
+
+With @option{--incremental}, use @var{n} @command{gnatpp} processes to
+perform pretty-printing in parallel. @var{n} = 0 means the same as
+above. In this case, @option{^-r^/REPLACE^},
+@option{^-rf^/OVERRIDING_REPLACE^} or
+@option{^-rnb^/REPLACE_NO_BACKUP^} options are allowed.
 
 @cindex @option{^-t^/TIME^} (@command{gnatpp})
 @item ^-t^/TIME^
@@ -15155,16 +15176,15 @@ that conforms to the schema.
 Usage:
 
 @smallexample
-gnat2xml [options] files
+gnat2xml [options] filenames [-files filename] [-cargs gcc_switches]
 @end smallexample
 
-``files'' are the Ada source file names.
-
 @noindent
-Options:
+options:
 @smallexample
 -h
 --help -- generate usage information and quit, ignoring all other options
+--version -- print version and quit, ignoring all other options
 
 -P @file{file} -- indicates the name of the project file that describes
       the set of sources to be processed. The exact set of argument
@@ -15186,25 +15206,25 @@ Options:
 --incremental -- incremental processing on a per-file basis. Source files are
       only processed if they have been modified, or if files they depend
       on have been modified. This is similar to the way gnatmake/gprbuild
-      only compiles files that need to be recompiled. You need to use a project
-      file for this to work.
+      only compiles files that need to be recompiled.
 
 --output-dir=@var{dir} -- generate one .xml file for each Ada source file, in
       directory @file{dir}. (Default is to generate the XML to standard
       output.)
 
---compact -- debugging version, with interspersed source, and a more
-      compact representation of "sloc". This version does not conform
-      to any schema.
-
 -I <include-dir>
     directories to search for dependencies
     You can also set the ADA_INCLUDE_PATH environment variable for this.
 
--q -- quiet
+--compact -- debugging version, with interspersed source, and a more
+      compact representation of "sloc". This version does not conform
+      to any schema.
 
--v -- verbose (print out the command line options, and the names of
-      output files as they are generated).
+-files=filename - the name of a text file containing a list
+                  of Ada source files to process
+
+-q -- quiet
+-v -- verbose
 
 -cargs ... -- options to pass to gcc
 @end smallexample
@@ -15217,7 +15237,7 @@ sources is all the immediate units of the argument project.
 Example:
 
 @smallexample
-gnat2xml -v -mxml-files *.ad[sb] -cargs -gnat2012
+gnat2xml -v -output-dir=xml-files *.ad[sb]
 @end smallexample
 
 @noindent

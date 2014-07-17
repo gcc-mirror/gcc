@@ -672,7 +672,7 @@ begin
       if Argument_Count = 0 then
          Bindusg.Display;
       else
-         Write_Line ("type ""gnatbind --help"" for help");
+         Write_Line ("try `gnatbind --help` for more information.");
       end if;
 
       Exit_Program (E_Fatal);

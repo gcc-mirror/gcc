@@ -47,7 +47,8 @@ with Types;       use Types;
 
 with Ada.Command_Line; use Ada.Command_Line;
 
-with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.Command_Line; use GNAT.Command_Line;
+with GNAT.Case_Util;    use GNAT.Case_Util;
 
 procedure Gnatls is
    pragma Ident (Gnat_Static_Version_String);
@@ -1601,7 +1602,7 @@ begin
       Set_Standard_Error;
       Write_Str ("Can't use -l with another switch");
       Write_Eol;
-      Write_Line ("type ""gnatls --help"" for help");
+      Try_Help;
       Exit_Program (E_Fatal);
    end if;
 
@@ -1753,7 +1754,7 @@ begin
          if Argument_Count = 0 then
             Usage;
          else
-            Write_Line ("type ""gnatls --help"" for help");
+            Try_Help;
          end if;
       end if;
 

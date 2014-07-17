@@ -209,7 +209,7 @@ package body GPrep is
          if Argument_Count = 0 then
             Usage;
          else
-            Put_Line ("type ""gnatprep --help"" for help");
+            GNAT.Command_Line.Try_Help;
          end if;
 
          return;
@@ -218,7 +218,7 @@ package body GPrep is
 
          --  No output file specified, exit
 
-         Put_Line ("type ""gnatprep --help"" for help");
+         GNAT.Command_Line.Try_Help;
          return;
       end if;
 
@@ -773,7 +773,7 @@ package body GPrep is
             when GNAT.Command_Line.Invalid_Switch =>
                Write_Str ("Invalid Switch: -");
                Write_Line (GNAT.Command_Line.Full_Switch);
-               Put_Line ("type ""gnatprep --help"" for help");
+               GNAT.Command_Line.Try_Help;
                OS_Exit (1);
          end;
       end loop;

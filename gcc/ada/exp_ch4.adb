@@ -11805,6 +11805,9 @@ package body Exp_Ch4 is
    --  do not need to generate an actual or formal generic part, just the
    --  instantiated function itself.
 
+   --  Perhaps we could have the actual generic available in the run-time,
+   --  obtained by rtsfind, and actually expand a real instantiation ???
+
    function Make_Array_Comparison_Op
      (Typ : Entity_Id;
       Nod : Node_Id) return Node_Id

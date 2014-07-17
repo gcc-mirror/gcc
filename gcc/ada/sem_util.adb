@@ -15981,7 +15981,7 @@ package body Sem_Util is
       end if;
 
       if Val = Standard_Long_Long_Integer then
-         Check_Restriction (No_Long_Long_Integer, Post_Node);
+         Check_Restriction (No_Long_Long_Integers, Post_Node);
       end if;
 
       --  Check for violation of No_Dynamic_Attachment

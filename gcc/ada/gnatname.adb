@@ -26,6 +26,7 @@
 with Ada.Command_Line;  use Ada.Command_Line;
 with Ada.Text_IO;       use Ada.Text_IO;
 
+with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Dynamic_Tables;
 with GNAT.OS_Lib;       use GNAT.OS_Lib;
 
@@ -289,7 +290,7 @@ procedure Gnatname is
                       Patterns.Last
                         (Arguments.Table (Arguments.Last).Foreign_Patterns) = 0
                   then
-                     Put_Line ("type ""gnatname --help"" for help");
+                     Try_Help;
                      return;
                   end if;
 
@@ -621,8 +622,8 @@ begin
    then
       if Argument_Count = 0 then
          Usage;
-      else
-         Put_Line ("type ""gnatname --help"" for help");
+      elsif not Usage_Output then
+         Try_Help;
       end if;
 
       return;

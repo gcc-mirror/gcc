@@ -17446,7 +17446,7 @@ package body Sem_Ch3 is
       end if;
 
       if M_Val > 2 ** Standard_Long_Integer_Size then
-         Check_Restriction (No_Long_Long_Integer, Mod_Expr);
+         Check_Restriction (No_Long_Long_Integers, Mod_Expr);
       end if;
 
       Set_Modulus (T, M_Val);
@@ -20626,7 +20626,7 @@ package body Sem_Ch3 is
             Base_Typ := Base_Type (Standard_Long_Integer);
 
          elsif Can_Derive_From (Standard_Long_Long_Integer) then
-            Check_Restriction (No_Long_Long_Integer, Def);
+            Check_Restriction (No_Long_Long_Integers, Def);
             Base_Typ := Base_Type (Standard_Long_Long_Integer);
 
          else

@@ -444,6 +444,7 @@ Partition-Wide Restrictions
 * No_Local_Allocators::
 * No_Local_Protected_Objects::
 * No_Local_Timing_Events::
+* No_Long_Long_Integers::
 * No_Nested_Finalization::
 * No_Protected_Type_Allocators::
 * No_Protected_Types::
@@ -9918,6 +9919,7 @@ then all compilation units in the partition must obey the restriction).
 * No_Local_Allocators::
 * No_Local_Protected_Objects::
 * No_Local_Timing_Events::
+* No_Long_Long_Integers::
 * No_Nested_Finalization::
 * No_Protected_Type_Allocators::
 * No_Protected_Types::
@@ -10366,6 +10368,14 @@ only declared at the library level.
 @findex No_Local_Timing_Events
 [RM D.7] All objects of type Ada.Timing_Events.Timing_Event are
 declared at the library level.
+
+@node No_Long_Long_Integers
+@unnumberedsubsec No_Long_Long_Integers
+@findex No_Long_Long_Integers
+[GNAT] This partition-wide restriction forbids any explicit reference to
+type Standard.Long_Long_Integer, and also forbids declaring range types whose
+implicit base type is Long_Long_Integer, and modular types whose size exceeds
+Long_Integer'Size.
 
 @node No_Nested_Finalization
 @unnumberedsubsec No_Nested_Finalization

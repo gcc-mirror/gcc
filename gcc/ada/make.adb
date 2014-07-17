@@ -73,6 +73,7 @@ with Ada.Directories;
 with Ada.Exceptions;            use Ada.Exceptions;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
+with GNAT.Command_Line;         use GNAT.Command_Line;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;      use GNAT.Dynamic_HTables;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
@@ -5861,7 +5862,7 @@ package body Make is
             if Argument_Count = 0 then
                Usage;
             else
-               Write_Line ("type ""gnatmake --help"" for help");
+               Try_Help;
             end if;
 
             Finish_Program (Project_Tree, E_Success);
