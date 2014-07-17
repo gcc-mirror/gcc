@@ -1,3 +1,10 @@
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vcaled_f64.c: Mark expected value volatile.
+	* gcc.target/aarch64/simd/vcales_f32.c: Likewise.
+	* gcc.target/aarch64/simd/vcaltd_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcalts_f32.c: Likewise.
+
 2014-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/atomic/c11-atomic-exec-5.c (dg-additional-options): Use
