@@ -1,3 +1,9 @@
+2014-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/atomic/c11-atomic-exec-5.c (dg-additional-options): Use
+	-mfp-trap-mode=sui instead of -miee-with-inexact for alpha*-*-*.
+	* gfortran.dg/ieee/ieee_1.F90 (dg-additional-options): Ditto.
+
 2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61804
@@ -315,7 +321,7 @@
 	* c-c++-common/sizeof-array-argument.c: New test.
 	* gcc.dg/vla-5.c: Add dg-warnings.
 
-2014-07-05  Jan Hubicka   <hubicka@ucw.cz>
+2014-07-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-26.C: Update testcase.
 	* g++.dg/ipa/imm-devirt-1.C: Update testcase.
