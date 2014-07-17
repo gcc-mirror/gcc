@@ -1,3 +1,23 @@
+2014-07-17  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Improve documentation of Unrestricted_Access.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Build_Invariant_Procedure): Add variable Nam
+	(Add_Invariants): Set Nam to Name_Type_Invariant if from aspect.
+
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Create_Packed_Array_Type.Install_PAT): For a
+	non-bit-packed array, propagate Reverse_Storage_Order to the
+	packed array type.
+
+2014-07-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb: Fix comment.
+	* exp_pakd.adb: Minor reformatting.
+
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
 	* bindgen.adb (Gen_Elab_Calls): Skip reference to elab

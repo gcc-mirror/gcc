@@ -846,13 +846,12 @@ package body Exp_Pakd is
          --  the resulting type as an Itype in the packed array type field of
          --  the original type, so that no explicit declaration is required.
 
-         --  Note: the packed type is created in the scope of its parent
-         --  type. There are at least some cases where the current scope
-         --  is deeper, and so when this is the case, we temporarily reset
-         --  the scope for the definition. This is clearly safe, since the
-         --  first use of the packed array type will be the implicit
-         --  reference from the corresponding unpacked type when it is
-         --  elaborated.
+         --  Note: the packed type is created in the scope of its parent type.
+         --  There are at least some cases where the current scope is deeper,
+         --  and so when this is the case, we temporarily reset the scope
+         --  for the definition. This is clearly safe, since the first use
+         --  of the packed array type will be the implicit reference from
+         --  the corresponding unpacked type when it is elaborated.
 
          if Is_Itype (Typ) then
             Set_Parent (Decl, Associated_Node_For_Itype (Typ));
@@ -895,10 +894,18 @@ package body Exp_Pakd is
          Set_Is_Packed_Array_Type      (PAT, True);
          Set_Original_Array_Type       (PAT, Typ);
 
+         --  For a non-bit-packed array, propagate reverse storage order
+         --  flag from original base type to packed array base type.
+
+         if not Is_Bit_Packed_Array (Typ) then
+            Set_Reverse_Storage_Order
+              (Etype (PAT), Reverse_Storage_Order (Base_Type (Typ)));
+         end if;
+
          --  We definitely do not want to delay freezing for packed array
-         --  types. This is of particular importance for the itypes that
-         --  are generated for record components depending on discriminants
-         --  where there is no place to put the freeze node.
+         --  types. This is of particular importance for the itypes that are
+         --  generated for record components depending on discriminants where
+         --  there is no place to put the freeze node.
 
          Set_Has_Delayed_Freeze (PAT, False);
          Set_Has_Delayed_Freeze (Etype (PAT), False);
@@ -1000,6 +1007,10 @@ package body Exp_Pakd is
          --    Natural range Enum_Type'Pos (Enum_Type'First) ..
          --                  Enum_Type'Pos (Enum_Type'Last);
 
+         --  Note that tttP is created even if no index subtype is a non
+         --  standard enumeration, because we still need to remove padding
+         --  normally inserted for component alignment.
+
          PAT :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), 'P'));
@@ -1098,7 +1109,7 @@ package body Exp_Pakd is
             Decl :=
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => PAT,
-                Type_Definition => Typedef);
+                Type_Definition     => Typedef);
          end;
 
          --  Set type as packed array type and install it
