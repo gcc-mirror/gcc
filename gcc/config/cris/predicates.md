@@ -142,7 +142,7 @@
   (ior (match_operand 0 "general_operand")
        (and (match_code "const, symbol_ref, label_ref")
        	    ; The following test is actually just an assertion.
-	    (match_test "cris_pic_symbol_type_of (op) != cris_no_symbol"))))
+	    (match_test "cris_symbol_type_of (op) != cris_no_symbol"))))
 
 ;; A predicate for the anon movsi expansion, one that fits a PCREL
 ;; operand as well as general_operand.
@@ -176,3 +176,15 @@
        (ior (match_operand 0 "memory_operand")
 	    (match_test "cris_general_operand_or_symbol (XEXP (op, 0),
 							 Pmode)"))))
+
+;; A marker for the call-insn: (const_int 0) for a call to a
+;; hidden or static function and non-pic and
+;; pic_offset_table_rtx for a call that *might* go through the
+;; PLT.
+
+(define_predicate "cris_call_type_marker"
+  (ior (and (match_operand 0 "const_int_operand")
+	    (match_test "op == const0_rtx"))
+       (and (and (match_operand 0 "register_operand")
+		 (match_test "op == pic_offset_table_rtx"))
+	    (match_test "flag_pic != 0"))))
