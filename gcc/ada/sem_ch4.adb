@@ -408,7 +408,7 @@ package body Sem_Ch4 is
 
       --  In accordance with H.4(7), the No_Allocators restriction only applies
       --  to user-written allocators. The same consideration applies to the
-      --  No_Allocators_Before_Elaboration restriction.
+      --  No_Standard_Allocators_Before_Elaboration restriction.
 
       if Comes_From_Source (N) then
          Check_Restriction (No_Allocators, N);
@@ -428,7 +428,8 @@ package body Sem_Ch4 is
               and then List_Containing (C) = Statements (P)
             then
                --  Check for allocator within task body, this is a definite
-               --  violation of No_Allocators_After_Elaboration we can detect.
+               --  violation of No_Allocators_After_Elaboration we can detect
+               --  at compile time.
 
                if Nkind (Original_Node (Parent (P))) = N_Task_Body then
                   Check_Restriction
