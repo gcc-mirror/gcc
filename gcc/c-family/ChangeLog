@@ -1,3 +1,13 @@
+2014-07-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR c-family/61741
+	* c-gimplify.c (c_gimplify_expr): Gimplify self-modify expressions
+	using unsigned arithmetic if overflow does not wrap instead of
+	if overflow is undefined.
+
 2014-07-16  Release Manager
 
 	* GCC 4.9.1 released.
