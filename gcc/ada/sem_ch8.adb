@@ -628,7 +628,7 @@ package body Sem_Ch8 is
       --  Apply the Text_IO Kludge here, since we may be renaming one of the
       --  subpackages of Text_IO, then join common routine.
 
-      Text_IO_Kludge (Name (N));
+      Check_Text_IO_Special_Unit (Name (N));
 
       Analyze_Generic_Renaming (N, E_Generic_Package);
    end Analyze_Generic_Package_Renaming;
@@ -1319,7 +1319,7 @@ package body Sem_Ch8 is
 
       --  Apply Text_IO kludge here since we may be renaming a child of Text_IO
 
-      Text_IO_Kludge (Name (N));
+      Check_Text_IO_Special_Unit (Name (N));
 
       if Current_Scope /= Standard_Standard then
          Set_Is_Pure (New_P, Is_Pure (Current_Scope));

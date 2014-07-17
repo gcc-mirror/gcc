@@ -209,7 +209,7 @@ package Snames is
    Name_Deallocate                     : constant Name_Id := N + $;
    Name_Dereference                    : constant Name_Id := N + $;
 
-   --  Names of Text_IO generic subpackages (see Rtsfind.Text_IO_Kludge)
+   --  Text_IO generic subpackages (see Rtsfind.Check_Text_IO_Special_Unit)
 
    First_Text_IO_Package               : constant Name_Id := N + $;
    Name_Decimal_IO                     : constant Name_Id := N + $;

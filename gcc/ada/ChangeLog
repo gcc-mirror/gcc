@@ -1,5 +1,16 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* debug.adb: Remove -gnatdQ.
+	* exp_disp.adb: Remove -gnatdQ.
+	* a-ztenio.ads, a-wtinio.ads, a-wtmoio.ads, a-ztcoau.ads, a-tiinio.ads,
+	a-wtfiio.ads, a-timoio.ads, sem_ch12.adb, a-tifiio.ads, a-ztinio.ads,
+	rtsfind.adb, rtsfind.ads, a-ztmoio.ads, a-wtdeio.ads, a-ztfiio.ads,
+	a-tideio.ads, a-wtflio.ads, a-ztdeio.ads, sem_ch8.adb, a-tiflio.ads,
+	sprint.adb, a-ztflio.ads, snames.ads-tmpl, a-wtenio.ads,
+	a-tienio.ads: Rename Text_IO_Kludge to Text_IO_Special_Unit.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* back_end.adb: Minor reformatting and comment additions.
 	* checks.ads, checks.adb (Duplicated_Tag_Checks_Suppressed): New
 	function.
