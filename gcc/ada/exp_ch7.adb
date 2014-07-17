@@ -767,9 +767,6 @@ package body Exp_Ch7 is
       Ins_Node   : Node_Id := Empty;
       Encl_Scope : Entity_Id := Empty)
    is
-      Desig_Typ : constant Entity_Id := Directly_Designated_Type (Typ);
-      Ptr_Typ   : Entity_Id := Root_Type (Base_Type (Typ));
-
       function In_Deallocation_Instance (E : Entity_Id) return Boolean;
       --  Determine whether entity E is inside a wrapper package created for
       --  an instance of Ada.Unchecked_Deallocation.
@@ -799,13 +796,19 @@ package body Exp_Ch7 is
          return False;
       end In_Deallocation_Instance;
 
+      --  Local variables
+
+      Desig_Typ : constant Entity_Id := Directly_Designated_Type (Typ);
+
+      Ptr_Typ : constant Entity_Id := Root_Type_Of_Full_View (Base_Type (Typ));
+      --  A finalization master created for a named access type is associated
+      --  with the full view (if applicable) as a consequence of freezing. The
+      --  full view criteria does not apply to anonymous access types because
+      --  those cannot have a private and a full view.
+
    --  Start of processing for Build_Finalization_Master
 
    begin
-      if Is_Private_Type (Ptr_Typ) and then Present (Full_View (Ptr_Typ)) then
-         Ptr_Typ := Full_View (Ptr_Typ);
-      end if;
-
       --  Certain run-time configurations and targets do not provide support
       --  for controlled types.
 

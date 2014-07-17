@@ -1697,6 +1697,11 @@ package Sem_Util is
    function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean;
    --  Return true if Subp is a function that returns an unconstrained type
 
+   function Root_Type_Of_Full_View (T : Entity_Id) return Entity_Id;
+   --  Similar to attribute Root_Type, but this version always follows the
+   --  Full_View of a private type (if available) while searching for the
+   --  ultimate derivation ancestor.
+
    function Safe_To_Capture_Value
      (N    : Node_Id;
       Ent  : Entity_Id;

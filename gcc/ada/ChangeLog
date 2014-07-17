@@ -1,5 +1,17 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* s-imguns.ads: Minor reformatting.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Finalization_Master): Move all local
+	variables to the proper code section. When looking for an existing
+	finalization master, inspect the ultimate ancestor type of the
+	full view.
+	* sem_util.ads, sem_util.adb (Root_Type_Of_Full_View): New routine.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads, aspects.adb: Add entries for aspect Annotate.
 	* gnat_rm.texi: Document Entity argument for pragma Annotate and
 	Annotate aspect.
