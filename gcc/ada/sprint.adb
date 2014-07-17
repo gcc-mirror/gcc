@@ -2249,13 +2249,30 @@ package body Sprint is
 
                   --  Print type, we used to print the Object_Definition from
                   --  the node, but it is much more useful to print the Etype
-                  --  of the defining identifier. For example, this will be a
-                  --  clear reference to the Itype with the bounds in the case
-                  --  of an unconstrained array type like String. The object
-                  --  after all is constrained, even if its nominal subtype is
+                  --  of the defining identifier for the case where the nominal
+                  --  type is an unconstrained array type. For example, this
+                  --  will be a clear reference to the Itype with the bounds
+                  --  in the case of a type like String. The object after
+                  --  all is constrained, even if its nominal subtype is
                   --  unconstrained.
 
-                  Sprint_Node (Etype (Def_Id));
+                  declare
+                     Odef : constant Node_Id := Object_Definition (Node);
+
+                  begin
+                     if Nkind (Odef) = N_Identifier
+                       and then Is_Array_Type (Etype (Odef))
+                       and then not Is_Constrained (Etype (Odef))
+                       and then Present (Etype (Def_Id))
+                     then
+                        Sprint_Node (Etype (Def_Id));
+
+                        --  In other cases, the nominal type is fine to print
+
+                     else
+                        Sprint_Node (Odef);
+                     end if;
+                  end;
 
                   if Present (Expression (Node)) then
                      Write_Str (" := ");
