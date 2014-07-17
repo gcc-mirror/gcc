@@ -6,7 +6,7 @@ foo (int *r4)
 {
   int r5 = r4[0];
   int r6 = r4[1];
-  r4[2] = r5 * r5;
+  r4[2] = (r5 << 1) + r6;
   {
     register int r5asm asm ("$5") = r5;
     register int r6asm asm ("$6") = r6;
