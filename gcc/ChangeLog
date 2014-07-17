@@ -1,5 +1,10 @@
 2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_frint_unspec_p): New function.
+	(aarch64_rtx_costs): Handle FIX, UNSIGNED_FIX, UNSPEC.
+
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/arm_neon.h (vmlal_high_lane_s16): Fix type.
 	(vmlal_high_lane_s32): Likewise.
 	(vmlal_high_lane_u16): Likewise.
