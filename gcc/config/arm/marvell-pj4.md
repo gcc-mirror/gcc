@@ -53,20 +53,20 @@
 
 (define_insn_reservation "pj4_alu" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu_imm,alus_imm,alu_reg,alus_reg,\
+       (eq_attr "type" "alu_imm,alus_imm,alu_sreg,alus_sreg,\
                         logic_imm,logics_imm,logic_reg,logics_reg,\
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
-                        adr,bfm,rev,\
+                        adr,bfm,rev,alu_dsp_reg,\
                         shift_imm,shift_reg")
        (not (eq_attr "conds" "set")))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu_imm,alus_imm,alu_reg,alus_reg,\
+       (eq_attr "type" "alu_imm,alus_imm,alu_sreg,alus_sreg,\
                         logic_imm,logics_imm,logic_reg,logics_reg,\
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
-                        adr,bfm,rev,\
+                        adr,bfm,rev,alu_dsp_reg,\
                         shift_imm,shift_reg")
        (eq_attr "conds" "set"))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")

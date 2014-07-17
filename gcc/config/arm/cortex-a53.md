@@ -73,9 +73,9 @@
 (define_insn_reservation "cortex_a53_alu" 2
   (and (eq_attr "tune" "cortexa53")
        (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
-                        alu_reg,alus_reg,logic_reg,logics_reg,\
+                        alu_sreg,alus_sreg,logic_reg,logics_reg,\
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
-                        adr,bfm,csel,clz,rbit,rev,\
+                        adr,bfm,csel,clz,rbit,rev,alu_dsp_reg,\
                         shift_imm,shift_reg,\
                         mov_imm,mov_reg,mvn_imm,mvn_reg,\
                         mrs,multiple,no_insn"))

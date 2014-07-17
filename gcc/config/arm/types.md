@@ -35,17 +35,19 @@
 ; alu_imm            any arithmetic instruction that doesn't have a shifted
 ;                    operand and has an immediate operand.  This
 ;                    excludes MOV, MVN and RSB(S) immediate.
-; alu_reg            any arithmetic instruction that doesn't have a shifted
+; alu_sreg           any arithmetic instruction that doesn't have a shifted
 ;                    or an immediate operand.  This excludes
-;                    MOV and MVN but includes MOVT.  This is also the default.
+;                    MOV and MVN but includes MOVT.  This also excludes
+;                    DSP-kind instructions.  This is also the default.
 ; alu_shift_imm      any arithmetic instruction that has a source operand
 ;                    shifted by a constant.  This excludes simple shifts.
 ; alu_shift_reg      as alu_shift_imm, with the shift amount specified in a
 ;                    register.
+; alu_dsp_reg        any DSP-kind instruction like QSUB8.
 ; alus_ext           From ARMv8-A: as alu_ext, setting condition flags.
 ;                    AArch64 Only.
 ; alus_imm           as alu_imm, setting condition flags.
-; alus_reg           as alu_reg, setting condition flags.
+; alus_sreg          as alu_sreg, setting condition flags.
 ; alus_shift_imm     as alu_shift_imm, setting condition flags.
 ; alus_shift_reg     as alu_shift_reg, setting condition flags.
 ; bfm                bitfield move operation.
@@ -540,12 +542,13 @@
   adr,\
   alu_ext,\
   alu_imm,\
-  alu_reg,\
+  alu_sreg,\
   alu_shift_imm,\
   alu_shift_reg,\
+  alu_dsp_reg,\
   alus_ext,\
   alus_imm,\
-  alus_reg,\
+  alus_sreg,\
   alus_shift_imm,\
   alus_shift_reg,\
   bfm,\

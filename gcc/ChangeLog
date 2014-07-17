@@ -1,3 +1,42 @@
+2014-07-17  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/types.md (alu_reg): Replaced by alu_sreg and alu_dsp_reg.
+	(alus_reg): Renamed to alus_sreg.
+	* config/arm/arm-fixed.md: Change type of non-dsp instructions
+	from alu_reg to alu_sreg.  Change type of dsp instructions from
+	alu_reg to alu_dsp_reg.
+	* config/arm/thumb1.md: Likewise.
+	* config/arm/thumb2.md: Likewise.
+	* config/arm/arm.c (cortexa7_older_only): Use new ALU type names.
+	* config/arm/arm1020e.md (1020alu_op): Replace alu_reg and alus_reg
+	with alu_sreg and alus_sreg.
+	* config/arm/arm1026ejs.md (alu_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Likewise.
+	* config/arm/fa526.md (526_alu_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Likewise.
+	* config/arm/fa626te.md (626te_alu_op): Likewise.
+	* config/arm/fa726te.md (726te_alu_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_op): Likewise.
+	* config/arm/arm.md (core_cycles): Replace alu_reg and alus_reg with
+	alu_sreg, alu_dsp_reg and alus_sreg.     
+	* config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_sreg): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Likewise.
+	* config/arm/marvell-pj4.md (pj4_alu, pj4_alu_conds): Likewise.
+	* config/aarch64/aarch64.md (*addsi3_aarch64, *addsi3_aarch64_uxtw,
+	subsi3, *adddi3_aarch64, *subsi3_uxtw, subdi3, absdi2, neg<mode>2,
+	*negsi2_uxtw, tlsle_small_<mode>): Rename type alu_reg to alu_sreg.     
+	(add<mode>3_compare0, *addsi3_compare0_uxtw, *add<mode>3nr_compare0,
+	sub<mode>3_compare0, *compare_neg<mode>, *neg<mode>2_compare0,
+	subsi3_compare0_uxtw, *negsi2_compare0_uxtw, *cmp<mode>): Rename type 
+	alus_reg to alus_sreg.
+
 2014-07-17  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* real.c (encode_ieee_extended_motorola): Clear integer bit in the
