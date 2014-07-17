@@ -162,4 +162,4 @@ main (void)
 /* { dg-output "\[^\n\r]*index 10 out of bounds for type 'int \\\[10\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 10 out of bounds for type 'long int \\\*\\\[10\\\]\\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 5 out of bounds for type 'char \\\*\\\*\\\*\\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[5\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*index 5 out of bounds for type 'int \\\[5\\\]'" } */

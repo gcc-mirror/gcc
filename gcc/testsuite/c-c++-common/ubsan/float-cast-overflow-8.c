@@ -198,8 +198,8 @@ main ()
 /* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" { target { int128 } } } */
+/* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type 'long long unsigned int'" } */
+/* { dg-output "(\n|\r\n|\r)\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" { target { int128 } } } */
 /* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type '__int128'\[^\n\r]*(\n|\r\n|\r)" { target { int128 } } } */
 /* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" { target { int128 } } } */
-/* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" { target { int128 } } } */
+/* { dg-output "\[^\n\r]*value \[0-9.e+-]* is outside the range of representable values of type '__int128 unsigned'" { target { int128 } } } */

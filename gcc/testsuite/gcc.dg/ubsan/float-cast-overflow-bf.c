@@ -69,4 +69,4 @@ main (void)
 /* { dg-output "\[^\n\r]*value -1.5 is outside the range of representable values of type\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value -1 is outside the range of representable values of type\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value 2 is outside the range of representable values of type\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value 2.5 is outside the range of representable values of type\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*value 2.5 is outside the range of representable values of type" } */

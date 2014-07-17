@@ -1,3 +1,20 @@
+2014-07-17  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/ubsan/bounds-2.c: Change output pattern.
+	* c-c++-common/ubsan/bounds-5.c: Likewise.
+	* c-c++-common/ubsan/bounds-6.c: Likewise.
+	* c-c++-common/ubsan/bounds-7.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-1.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-10.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-2.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-3.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-4.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-5.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-6.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: Likewise.
+	* gcc.dg/ubsan/float-cast-overflow-bf.c: Likewise.
+	* g++.dg/ubsan/float-cast-overflow-bf.C: Likewise.
+
 2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vcaled_f64.c: Mark expected value volatile.
