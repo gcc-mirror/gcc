@@ -384,7 +384,6 @@ package body Einfo is
    --    Is_Private_Composite            Flag107
    --    Default_Expressions_Processed   Flag108
    --    Is_Non_Static_Subtype           Flag109
-   --    Has_External_Tag_Rep_Clause     Flag110
 
    --    Is_Formal_Subprogram            Flag111
    --    Is_Renaming_Of_Object           Flag112
@@ -563,6 +562,8 @@ package body Einfo is
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
+
+   --    (unused)                        Flag110
 
    --    (unused)                        Flag269
    --    (unused)                        Flag270
@@ -1442,12 +1443,6 @@ package body Einfo is
    begin
       return Flag47 (Id);
    end Has_Exit;
-
-   function Has_External_Tag_Rep_Clause (Id : E) return B is
-   begin
-      pragma Assert (Is_Tagged_Type (Id));
-      return Flag110 (Id);
-   end Has_External_Tag_Rep_Clause;
 
    function Has_Forward_Instantiation (Id : E) return B is
    begin
@@ -4149,12 +4144,6 @@ package body Einfo is
    begin
       Set_Flag47 (Id, V);
    end Set_Has_Exit;
-
-   procedure Set_Has_External_Tag_Rep_Clause (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Tagged_Type (Id));
-      Set_Flag110 (Id, V);
-   end Set_Has_External_Tag_Rep_Clause;
 
    procedure Set_Has_Forward_Instantiation (Id : E; V : B := True) is
    begin
@@ -8188,7 +8177,6 @@ package body Einfo is
       W ("Has_Dynamic_Predicate_Aspect",    Flag258 (Id));
       W ("Has_Enumeration_Rep_Clause",      Flag66  (Id));
       W ("Has_Exit",                        Flag47  (Id));
-      W ("Has_External_Tag_Rep_Clause",     Flag110 (Id));
       W ("Has_Forward_Instantiation",       Flag175 (Id));
       W ("Has_Fully_Qualified_Name",        Flag173 (Id));
       W ("Has_Gigi_Rep_Item",               Flag82  (Id));

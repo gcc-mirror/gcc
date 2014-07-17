@@ -251,6 +251,11 @@ package Sem_Aux is
    --  the given names then True is returned, otherwise False indicates that no
    --  matching entry was found.
 
+   function Has_External_Tag_Rep_Clause (T : Entity_Id) return Boolean;
+   --  Defined in tagged types. Set if an External_Tag rep. clause has been
+   --  given for this type. Use to avoid the generation of the default
+   --  External_Tag.
+
    function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
    --  True if T has discriminants and is unconstrained, or is an array type
    --  whose element type Has_Unconstrained_Elements.

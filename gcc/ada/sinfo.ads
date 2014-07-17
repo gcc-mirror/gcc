@@ -832,6 +832,10 @@ package Sinfo is
    --    the secondary stack and thus the result is passed by reference rather
    --    than copied another time.
 
+   --  Cleanup_Actions (List5-Sem)
+   --    Present in block statements created for transient blocks, contains
+   --    additional cleanup actions carried over from the transient scope.
+
    --  Check_Address_Alignment (Flag11-Sem)
    --    A flag present in N_Attribute_Definition clause for a 'Address
    --    attribute definition. This flag is set if a dynamic check should be
@@ -4731,6 +4735,7 @@ package Sinfo is
       --  Identifier (Node1) block direct name (set to Empty if not present)
       --  Declarations (List2) (set to No_List if no DECLARE part)
       --  Handled_Statement_Sequence (Node4)
+      --  Cleanup_Actions (List5-Sem)
       --  Is_Task_Master (Flag5-Sem)
       --  Activation_Chain_Entity (Node3-Sem)
       --  Has_Created_Identifier (Flag15)
@@ -8689,6 +8694,9 @@ package Sinfo is
    function Classifications
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Cleanup_Actions
+     (N : Node_Id) return List_Id;    -- List5
+
    function Comes_From_Extended_Return_Statement
      (N : Node_Id) return Boolean;    -- Flag18
 
@@ -9695,6 +9703,9 @@ package Sinfo is
 
    procedure Set_Classifications
      (N : Node_Id; Val : Node_Id);            -- Node3
+
+   procedure Set_Cleanup_Actions
+     (N : Node_Id; Val : List_Id);            -- List5
 
    procedure Set_Comes_From_Extended_Return_Statement
      (N : Node_Id; Val : Boolean := True);    -- Flag18
@@ -12369,6 +12380,7 @@ package Sinfo is
    pragma Inline (Choices);
    pragma Inline (Class_Present);
    pragma Inline (Classifications);
+   pragma Inline (Cleanup_Actions);
    pragma Inline (Comes_From_Extended_Return_Statement);
    pragma Inline (Compile_Time_Known_Aggregate);
    pragma Inline (Component_Associations);
@@ -12702,6 +12714,7 @@ package Sinfo is
    pragma Inline (Set_Choices);
    pragma Inline (Set_Class_Present);
    pragma Inline (Set_Classifications);
+   pragma Inline (Set_Cleanup_Actions);
    pragma Inline (Set_Comes_From_Extended_Return_Statement);
    pragma Inline (Set_Compile_Time_Known_Aggregate);
    pragma Inline (Set_Component_Associations);

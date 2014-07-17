@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,10 +119,7 @@ package body Expander is
 
          if Serious_Errors_Detected > 0 and then Scope_Is_Transient then
             Scope_Stack.Table
-             (Scope_Stack.Last).Actions_To_Be_Wrapped_Before := No_List;
-            Scope_Stack.Table
-             (Scope_Stack.Last).Actions_To_Be_Wrapped_After  := No_List;
-
+             (Scope_Stack.Last).Actions_To_Be_Wrapped := (others => No_List);
             Pop_Scope;
          end if;
 

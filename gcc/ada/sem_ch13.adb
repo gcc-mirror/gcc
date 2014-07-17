@@ -4353,9 +4353,7 @@ package body Sem_Ch13 is
                     ("static string required for tag name!", Nam);
                end if;
 
-               if VM_Target = No_VM then
-                  Set_Has_External_Tag_Rep_Clause (U_Ent);
-               else
+               if VM_Target /= No_VM then
                   Error_Msg_Name_1 := Attr;
                   Error_Msg_N
                     ("% attribute unsupported in this configuration", Nam);

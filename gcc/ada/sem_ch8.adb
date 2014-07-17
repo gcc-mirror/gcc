@@ -7541,10 +7541,7 @@ package body Sem_Ch8 is
       --  this case (and we do the abort even with assertions off since the
       --  penalty is incorrect code generation).
 
-      if SST.Actions_To_Be_Wrapped_Before /= No_List
-           or else
-         SST.Actions_To_Be_Wrapped_After  /= No_List
-      then
+      if SST.Actions_To_Be_Wrapped /= Scope_Actions'(others => No_List) then
          raise Program_Error;
       end if;
 
@@ -7611,8 +7608,7 @@ package body Sem_Ch8 is
          SST.Is_Transient                   := False;
          SST.Node_To_Be_Wrapped             := Empty;
          SST.Pending_Freeze_Actions         := No_List;
-         SST.Actions_To_Be_Wrapped_Before   := No_List;
-         SST.Actions_To_Be_Wrapped_After    := No_List;
+         SST.Actions_To_Be_Wrapped          := (others => No_List);
          SST.First_Use_Clause               := Empty;
          SST.Is_Active_Stack_Base           := False;
          SST.Previous_Visibility            := False;

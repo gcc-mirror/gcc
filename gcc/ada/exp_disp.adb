@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6209,9 +6209,8 @@ package body Exp_Disp is
          end if;
       end if;
 
-      --  If the type has a representation clause which specifies its external
-      --  tag then generate code to check if the external tag of this type is
-      --  the same as the external tag of some other declaration.
+      --  Generate code to check if the external tag of this type is the same
+      --  as the external tag of some other declaration.
 
       --     Check_TSD (TSD'Unrestricted_Access);
 
@@ -6226,16 +6225,16 @@ package body Exp_Disp is
 
       if not No_Run_Time_Mode
         and then Ada_Version >= Ada_2005
-        and then Has_External_Tag_Rep_Clause (Typ)
         and then RTE_Available (RE_Check_TSD)
         and then not Debug_Flag_QQ
       then
          Append_To (Elab_Code,
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Check_TSD), Loc),
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Check_TSD), Loc),
              Parameter_Associations => New_List (
                Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (TSD, Loc),
+                 Prefix         => New_Occurrence_Of (TSD, Loc),
                  Attribute_Name => Name_Unchecked_Access))));
       end if;
 
@@ -6810,12 +6809,10 @@ package body Exp_Disp is
             Expressions => TSD_Aggr_List)));
 
       --  Generate:
-      --     Check_TSD
-      --       (TSD => TSD'Unrestricted_Access);
+      --     Check_TSD (TSD => TSD'Unrestricted_Access);
 
       if Ada_Version >= Ada_2005
         and then Is_Library_Level_Entity (Typ)
-        and then Has_External_Tag_Rep_Clause (Typ)
         and then RTE_Available (RE_Check_TSD)
         and then not Debug_Flag_QQ
       then

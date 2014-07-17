@@ -150,6 +150,9 @@ package body Exp_Ch7 is
    --  ??? The entire comment needs to be rewritten
    --  ??? which entire comment?
 
+   procedure Store_Actions_In_Scope (AK : Scope_Action_Kind; L : List_Id);
+   --  Shared processing for Store_xxx_Actions_In_Scope
+
    -----------------------------
    -- Finalization Management --
    -----------------------------
@@ -296,11 +299,14 @@ package body Exp_Ch7 is
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Controlled_Component set and store them using the TSS mechanism.
 
-   function Build_Cleanup_Statements (N : Node_Id) return List_Id;
+   function Build_Cleanup_Statements
+     (N                  : Node_Id;
+      Additional_Cleanup : List_Id) return List_Id;
    --  Create the clean up calls for an asynchronous call block, task master,
-   --  protected subprogram body, task allocation block or task body. If the
-   --  context does not contain the above constructs, the routine returns an
-   --  empty list.
+   --  protected subprogram body, task allocation block or task body, or
+   --  additional cleanup actions parked on a transient block. If the context
+   --  does not contain the above constructs, the routine returns an empty
+   --  list.
 
    procedure Build_Finalizer
      (N           : Node_Id;
@@ -467,7 +473,10 @@ package body Exp_Ch7 is
    -- Build_Cleanup_Statements --
    ------------------------------
 
-   function Build_Cleanup_Statements (N : Node_Id) return List_Id is
+   function Build_Cleanup_Statements
+     (N                  : Node_Id;
+      Additional_Cleanup : List_Id) return List_Id
+   is
       Is_Asynchronous_Call : constant Boolean :=
                                Nkind (N) = N_Block_Statement
                                  and then Is_Asynchronous_Call_Block (N);
@@ -626,6 +635,7 @@ package body Exp_Ch7 is
          end;
       end if;
 
+      Append_List_To (Stmts, Additional_Cleanup);
       return Stmts;
    end Build_Cleanup_Statements;
 
@@ -792,9 +802,7 @@ package body Exp_Ch7 is
    --  Start of processing for Build_Finalization_Master
 
    begin
-      if Is_Private_Type (Ptr_Typ)
-        and then Present (Full_View (Ptr_Typ))
-      then
+      if Is_Private_Type (Ptr_Typ) and then Present (Full_View (Ptr_Typ)) then
          Ptr_Typ := Full_View (Ptr_Typ);
       end if;
 
@@ -887,9 +895,7 @@ package body Exp_Ch7 is
          --  inserted in the same source unit only once. The only exception to
          --  this are instances using the same access type as generic actual.
 
-         if Comes_From_Source (Ptr_Typ)
-           and then not Inside_A_Generic
-         then
+         if Comes_From_Source (Ptr_Typ) and then not Inside_A_Generic then
             Fin_Mas_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Chars (Ptr_Typ), "FM"));
@@ -1436,9 +1442,7 @@ package body Exp_Ch7 is
                 Expression   => Make_Identifier (Loc, Chars (Counter_Id)),
                 Alternatives => Jump_Alts);
 
-            if Acts_As_Clean
-              and then Present (Jump_Block_Insert_Nod)
-            then
+            if Acts_As_Clean and then Present (Jump_Block_Insert_Nod) then
                Insert_After (Jump_Block_Insert_Nod, Jump_Block);
             else
                Prepend_To (Finalizer_Stmts, Jump_Block);
@@ -1481,10 +1485,7 @@ package body Exp_Ch7 is
          --  aborts are allowed and the clean up statements require deferral or
          --  there are controlled objects to be finalized.
 
-         if Abort_Allowed
-           and then
-             (Defer_Abort or else Has_Ctrl_Objs)
-         then
+         if Abort_Allowed and then (Defer_Abort or Has_Ctrl_Objs) then
             Prepend_To (Finalizer_Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name => New_Occurrence_Of (RTE (RE_Abort_Defer), Loc)));
@@ -1502,10 +1503,7 @@ package body Exp_Ch7 is
          --       Raise_From_Controlled_Operation (E);
          --    end if;
 
-         if Has_Ctrl_Objs
-           and then Exceptions_OK
-           and then not For_Package
-         then
+         if Has_Ctrl_Objs and Exceptions_OK and not For_Package then
             Append_To (Finalizer_Stmts,
               Build_Raise_Statement (Finalizer_Data));
          end if;
@@ -1608,9 +1606,7 @@ package body Exp_Ch7 is
             --  When the finalizer acts solely as a clean up routine, the body
             --  is inserted right after the spec.
 
-            if Acts_As_Clean
-              and then not Has_Ctrl_Objs
-            then
+            if Acts_As_Clean and then not Has_Ctrl_Objs then
                Insert_After (Fin_Spec, Fin_Body);
 
             --  In all other cases the body is inserted after either:
@@ -1706,9 +1702,7 @@ package body Exp_Ch7 is
                if Preprocess then
                   Has_Tagged_Types := True;
 
-                  if Top_Level
-                    and then No (Last_Top_Level_Ctrl_Construct)
-                  then
+                  if Top_Level and then No (Last_Top_Level_Ctrl_Construct) then
                      Last_Top_Level_Ctrl_Construct := Decl;
                   end if;
 
@@ -1723,9 +1717,7 @@ package body Exp_Ch7 is
                   Counter_Val   := Counter_Val + 1;
                   Has_Ctrl_Objs := True;
 
-                  if Top_Level
-                    and then No (Last_Top_Level_Ctrl_Construct)
-                  then
+                  if Top_Level and then No (Last_Top_Level_Ctrl_Construct) then
                      Last_Top_Level_Ctrl_Construct := Decl;
                   end if;
 
@@ -1774,9 +1766,7 @@ package body Exp_Ch7 is
                --  finalization disabled. This applies only to objects at the
                --  library level.
 
-               if For_Package
-                 and then Finalize_Storage_Only (Obj_Typ)
-               then
+               if For_Package and then Finalize_Storage_Only (Obj_Typ) then
                   null;
 
                --  Transient variables are treated separately in order to
@@ -1824,7 +1814,7 @@ package body Exp_Ch7 is
                elsif Is_Access_Type (Obj_Typ)
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                  and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                   N_Object_Declaration
+                                                        N_Object_Declaration
                  and then Is_Finalizable_Transient
                             (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
                then
@@ -1893,9 +1883,7 @@ package body Exp_Ch7 is
                --  finalization disabled. This applies only to objects at the
                --  library level.
 
-               if For_Package
-                 and then Finalize_Storage_Only (Obj_Typ)
-               then
+               if For_Package and then Finalize_Storage_Only (Obj_Typ) then
                   null;
 
                --  Return object of a build-in-place function. This case is
@@ -3534,9 +3522,7 @@ package body Exp_Ch7 is
 
    begin
       Func_Id := E;
-      while Present (Func_Id)
-        and then Func_Id /= Standard_Standard
-      loop
+      while Present (Func_Id) and then Func_Id /= Standard_Standard loop
          if Ekind (Func_Id) = E_Function then
             return Func_Id;
          end if;
@@ -3691,6 +3677,9 @@ package body Exp_Ch7 is
                                  and then
                                    not Sec_Stack_Needed_For_Return (Scop)
                                  and then VM_Target = No_VM;
+      Needs_Custom_Cleanup : constant Boolean :=
+                               Nkind (N) = N_Block_Statement
+                                 and then Present (Cleanup_Actions (N));
 
       Actions_Required     : constant Boolean :=
                                Requires_Cleanup_Actions (N, True)
@@ -3699,10 +3688,12 @@ package body Exp_Ch7 is
                                  or else Is_Protected_Body
                                  or else Is_Task_Allocation
                                  or else Is_Task_Body
-                                 or else Needs_Sec_Stack_Mark;
+                                 or else Needs_Sec_Stack_Mark
+                                 or else Needs_Custom_Cleanup;
 
       HSS : Node_Id := Handled_Statement_Sequence (N);
       Loc : Source_Ptr;
+      Cln : List_Id;
 
       procedure Wrap_HSS_In_Block;
       --  Move HSS inside a new block along with the original exception
@@ -3759,6 +3750,12 @@ package body Exp_Ch7 is
         and then not Delay_Subprogram_Descriptors (Corresponding_Spec (N))
       then
          return;
+      end if;
+
+      if Needs_Custom_Cleanup then
+         Cln := Cleanup_Actions (N);
+      else
+         Cln := No_List;
       end if;
 
       declare
@@ -3898,7 +3895,7 @@ package body Exp_Ch7 is
 
          Build_Finalizer
            (N           => N,
-            Clean_Stmts => Build_Cleanup_Statements (N),
+            Clean_Stmts => Build_Cleanup_Statements (N, Cln),
             Mark_Id     => Mark,
             Top_Decls   => New_Decls,
             Defer_Abort => Nkind (Original_Node (N)) = N_Task_Body
@@ -4440,10 +4437,10 @@ package body Exp_Ch7 is
    ------------------------------------
 
    procedure Insert_Actions_In_Scope_Around (N : Node_Id) is
-      After  : constant List_Id :=
-        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped_After;
-      Before : constant List_Id :=
-        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped_Before;
+      Act_After   : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (After);
+      Act_Before  : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (Before);
       --  Note: We used to use renamings of Scope_Stack.Table (Scope_Stack.
       --  Last), but this was incorrect as Process_Transient_Object may
       --  introduce new scopes and cause a reallocation of Scope_Stack.Table.
@@ -4794,7 +4791,7 @@ package body Exp_Ch7 is
    --  Start of processing for Insert_Actions_In_Scope_Around
 
    begin
-      if No (Before) and then No (After) then
+      if No (Act_Before) and then No (Act_After) then
          return;
       end if;
 
@@ -4833,22 +4830,22 @@ package body Exp_Ch7 is
 
          --    3)                   Target ........ Last_Obj
 
-         if Present (Before) then
+         if Present (Act_Before) then
 
             --  Flag declarations are inserted before the first object
 
-            First_Obj := First (Before);
+            First_Obj := First (Act_Before);
 
-            Insert_List_Before (Target, Before);
+            Insert_List_Before (Target, Act_Before);
          end if;
 
-         if Present (After) then
+         if Present (Act_After) then
 
             --  Finalization calls are inserted after the last object
 
-            Last_Obj := Last (After);
+            Last_Obj := Last (Act_After);
 
-            Insert_List_After (Target, After);
+            Insert_List_After (Target, Act_After);
          end if;
 
          --  Check for transient controlled objects associated with Target and
@@ -4861,14 +4858,14 @@ package body Exp_Ch7 is
 
          --  Reset the action lists
 
-         if Present (Before) then
+         if Present (Act_Before) then
             Scope_Stack.Table (Scope_Stack.Last).
-              Actions_To_Be_Wrapped_Before := No_List;
+              Actions_To_Be_Wrapped (Before) := No_List;
          end if;
 
-         if Present (After) then
+         if Present (Act_After) then
             Scope_Stack.Table (Scope_Stack.Last).
-              Actions_To_Be_Wrapped_After := No_List;
+              Actions_To_Be_Wrapped (After) := No_List;
          end if;
       end;
    end Insert_Actions_In_Scope_Around;
@@ -6564,9 +6561,7 @@ package body Exp_Ch7 is
             --  order to generate the same state counter names as those from
             --  Build_Initialize_Statements.
 
-            if Num_Comps > 0
-              and then Is_Local
-            then
+            if Num_Comps > 0 and then Is_Local then
                Counter := Counter + 1;
 
                Counter_Id :=
@@ -7253,7 +7248,7 @@ package body Exp_Ch7 is
                   Ekind (Typ) = E_Record_Type
                     and then Is_Concurrent_Record_Type (Typ)
                     and then Ekind (Corresponding_Concurrent_Type (Typ)) =
-                               E_Task_Type;
+                                                                 E_Task_Type;
       Loc     : constant Source_Ptr := Sloc (Typ);
       Proc_Id : Entity_Id;
       Stmts   : List_Id;
@@ -7832,8 +7827,10 @@ package body Exp_Ch7 is
       end if;
 
       --  Create the transient block. Set the parent now since the block itself
-      --  is not part of the tree.
+      --  is not part of the tree. The current scope is the E_Block entity
+      --  that has been pushed by Establish_Transient_Scope.
 
+      pragma Assert (Ekind (Current_Scope) = E_Block);
       Block :=
         Make_Block_Statement (Loc,
           Identifier                 => New_Occurrence_Of (Current_Scope, Loc),
@@ -7852,6 +7849,17 @@ package body Exp_Ch7 is
       if Present (Insert) then
          Freeze_All (First_Entity (Current_Scope), Insert);
       end if;
+
+      --  Transfer cleanup actions to the newly created block
+
+      declare
+         Cleanup_Actions : List_Id
+           renames Scope_Stack.Table (Scope_Stack.Last).
+                     Actions_To_Be_Wrapped (Cleanup);
+      begin
+         Set_Cleanup_Actions (Block, Cleanup_Actions);
+         Cleanup_Actions := No_List;
+      end;
 
       --  When the transient scope was established, we pushed the entry for the
       --  transient scope onto the scope stack, so that the scope was active
@@ -7881,20 +7889,17 @@ package body Exp_Ch7 is
       Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped := N;
    end Set_Node_To_Be_Wrapped;
 
-   ----------------------------------
-   -- Store_After_Actions_In_Scope --
-   ----------------------------------
+   ----------------------------
+   -- Store_Actions_In_Scope --
+   ----------------------------
 
-   procedure Store_After_Actions_In_Scope (L : List_Id) is
-      SE : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
+   procedure Store_Actions_In_Scope (AK : Scope_Action_Kind; L : List_Id) is
+      SE      : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
+      Actions : List_Id renames SE.Actions_To_Be_Wrapped (AK);
 
    begin
-      if Present (SE.Actions_To_Be_Wrapped_After) then
-         Insert_List_Before_And_Analyze
-           (First (SE.Actions_To_Be_Wrapped_After), L);
-
-      else
-         SE.Actions_To_Be_Wrapped_After := L;
+      if No (Actions) then
+         Actions := L;
 
          if Is_List_Member (SE.Node_To_Be_Wrapped) then
             Set_Parent (L, Parent (SE.Node_To_Be_Wrapped));
@@ -7903,7 +7908,22 @@ package body Exp_Ch7 is
          end if;
 
          Analyze_List (L);
+
+      elsif AK = Before then
+         Insert_List_After_And_Analyze (Last (Actions), L);
+
+      else
+         Insert_List_Before_And_Analyze (First (Actions), L);
       end if;
+   end Store_Actions_In_Scope;
+
+   ----------------------------------
+   -- Store_After_Actions_In_Scope --
+   ----------------------------------
+
+   procedure Store_After_Actions_In_Scope (L : List_Id) is
+   begin
+      Store_Actions_In_Scope (After, L);
    end Store_After_Actions_In_Scope;
 
    -----------------------------------
@@ -7911,25 +7931,18 @@ package body Exp_Ch7 is
    -----------------------------------
 
    procedure Store_Before_Actions_In_Scope (L : List_Id) is
-      SE : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
-
    begin
-      if Present (SE.Actions_To_Be_Wrapped_Before) then
-         Insert_List_After_And_Analyze
-           (Last (SE.Actions_To_Be_Wrapped_Before), L);
-
-      else
-         SE.Actions_To_Be_Wrapped_Before := L;
-
-         if Is_List_Member (SE.Node_To_Be_Wrapped) then
-            Set_Parent (L, Parent (SE.Node_To_Be_Wrapped));
-         else
-            Set_Parent (L, SE.Node_To_Be_Wrapped);
-         end if;
-
-         Analyze_List (L);
-      end if;
+      Store_Actions_In_Scope (Before, L);
    end Store_Before_Actions_In_Scope;
+
+   -----------------------------------
+   -- Store_Cleanup_Actions_In_Scope --
+   -----------------------------------
+
+   procedure Store_Cleanup_Actions_In_Scope (L : List_Id) is
+   begin
+      Store_Actions_In_Scope (Cleanup, L);
+   end Store_Cleanup_Actions_In_Scope;
 
    --------------------------------
    -- Wrap_Transient_Declaration --
