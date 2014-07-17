@@ -14669,6 +14669,7 @@ package body Sem_Util is
 
       return Name;
    end Original_Aspect_Name;
+
    --------------------------------------
    -- Original_Corresponding_Operation --
    --------------------------------------

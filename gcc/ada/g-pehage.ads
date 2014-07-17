@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2010, AdaCore                     --
+--                     Copyright (C) 2002-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,8 +121,8 @@ package GNAT.Perfect_Hash_Generators is
    --  Raised after Tries unsuccessful runs
 
    procedure Compute (Position : String := Default_Position);
-   --  Compute the hash function. Position allows to define selection of
-   --  character positions used in the word hash function. Positions can be
+   --  Compute the hash function. Position allows the definition of selection
+   --  of character positions used in the word hash function. Positions can be
    --  separated by commas and ranges like x-y may be used. Character '$'
    --  represents the final character of a word. With an empty position, the
    --  generator automatically produces positions to reduce the memory usage.

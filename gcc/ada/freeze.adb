@@ -1131,24 +1131,15 @@ package body Freeze is
                      Attribute_Scalar_Storage_Order);
       Comp_ADC_Present := Present (Comp_ADC);
 
-      --  Case of enclosing type not having explicit SSO: component cannot
-      --  have it either.
+      --  Case of record or array component: check storage order compatibility
 
-      if No (ADC) then
-         if Comp_ADC_Present then
-            Error_Msg_N
-              ("composite type must have explicit scalar storage order",
-               Err_Node);
-         end if;
-
-      --  Case of enclosing type having explicit SSO: check compatible
-      --  attribute on Comp_Type if composite.
-
-      elsif Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
+      if Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
          Comp_SSO_Differs :=
            Reverse_Storage_Order (Encl_Type)
              /=
            Reverse_Storage_Order (Comp_Type);
+
+         --  Parent and extension must have same storage order
 
          if Present (Comp) and then Chars (Comp) = Name_uParent then
             if Comp_SSO_Differs then
@@ -1157,9 +1148,15 @@ package body Freeze is
                   & "parent", Err_Node);
             end if;
 
-         elsif No (Comp_ADC) then
+         --  If enclosing composite has explicit SSO then nested composite must
+         --  have explicit SSO as well.
+
+         elsif Present (ADC) and then No (Comp_ADC) then
             Error_Msg_N ("nested composite must have explicit scalar "
                          & "storage order", Err_Node);
+
+         --  If component and composite SSO differs, check that component
+         --  falls on byte boundaries and isn't packed.
 
          elsif Comp_SSO_Differs then
 
@@ -1182,10 +1179,10 @@ package body Freeze is
             end if;
          end if;
 
-      --  Enclosing type has explicit SSO, non-composite component must not
+      --  Enclosing type has explicit SSO: non-composite component must not
       --  be aliased.
 
-      elsif Component_Aliased then
+      elsif Present (ADC) and then Component_Aliased then
          Error_Msg_N
            ("aliased component not permitted for type with "
             & "explicit Scalar_Storage_Order", Err_Node);

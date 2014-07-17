@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,7 +67,7 @@ package body Scng is
    procedure Accumulate_Token_Checksum;
    pragma Inline (Accumulate_Token_Checksum);
    --  Called after each numeric literal and identifier/keyword. For keywords,
-   --  the token used is Tok_Identifier. This allows to detect additional
+   --  the token used is Tok_Identifier. This allows detection of additional
    --  spaces added in sources when using the builder switch -m.
 
    procedure Accumulate_Token_Checksum_GNAT_6_3;

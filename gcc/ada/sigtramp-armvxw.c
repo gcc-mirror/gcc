@@ -6,7 +6,7 @@
  *                                                                          *
  *                         Asm Implementation File                          *
  *                                                                          *
- *           Copyright (C) 2013, Free Software Foundation, Inc.             *
+ *           Copyright (C) 2014, Free Software Foundation, Inc.             *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -49,7 +49,7 @@
    sequences.  The general idea is to establish CFA as sigcontext->sc_pregs
    and state where to find the registers as offsets from there.
 
-   As of today, we support a single stub, providing CFI info for common
+   As of today, we support a stub providing CFI info for common
    registers (GPRs, LR, ...). We might need variants with support for floating
    point or altivec registers as well at some point.
 
@@ -75,7 +75,7 @@
 
 extern void __gnat_sigtramp_common
 (int signo, void *siginfo, void *sigcontext,
- sighandler_t * handler, void * sc_pregs);
+ __sigtramphandler_t * handler, void * sc_pregs);
 
 
 /* -------------------------------------
@@ -85,11 +85,11 @@ extern void __gnat_sigtramp_common
    We enforce optimization to minimize the overhead of the extra layer.  */
 
 void __gnat_sigtramp (int signo, void *si, void *sc,
-		      sighandler_t * handler)
+		      __sigtramphandler_t * handler)
      __attribute__((optimize(2)));
 
 void __gnat_sigtramp (int signo, void *si, void *sc,
-		      sighandler_t * handler)
+		      __sigtramphandler_t * handler)
 {
   struct sigcontext * sctx = (struct sigcontext *) sc;
 

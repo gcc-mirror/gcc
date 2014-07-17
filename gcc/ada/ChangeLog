@@ -1,3 +1,42 @@
+2014-07-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_disp.adb: Minor reformatting.
+	* exp_disp.adb: Minor code reorganization.
+
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi, freeze.adb (Check_Component_Storage_Order): Do not
+	require an explicit SSO attribute definition clause on a composite type
+	just because one of its components has one.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case Loop_Entry): Rewrite
+	attribute out of existence if the enclosing pragma is ignored.
+	* sem_util.adb: Minor reformatting.
+
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Handle properly an
+	array aggregate expanded into assignments when it appears as a
+	local declaration in an inlined body.
+
+2014-07-17  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [__ANDROID__]: Modify for ZCX.
+	* exp_aggr.adb: Minor reformatting
+	* sigtramp-armvxw.c, sigtramp-ppcvxw.c: Update comments.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* a-strunb-shared.ads, a-stwiun-shared.ads, a-stzunb-shared.ads,
+	exp_ch7.adb, g-pehage.ads, g-socket.ads, gnat_ugn.texi, gnat_ugx.texi,
+	scng.adb: Remove incorrect usage "allow to" and "allows to".
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_dist.adb: Minor reformatting.
+
 2014-07-17  Bob Duff  <duff@adacore.com>
 
 	* gnat_ugn.texi: Improve documentation of Unrestricted_Access.

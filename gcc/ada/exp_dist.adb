@@ -1162,18 +1162,15 @@ package body Exp_Dist is
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
-            New_Occurrence_Of
-              (RTE (RE_NVList_Add_Item), Loc),
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_NVList_Add_Item), Loc),
           Parameter_Associations => New_List (
             New_Occurrence_Of (NVList, Loc),
             Make_Function_Call (Loc,
-              Name =>
-                New_Occurrence_Of
-                  (RTE (RE_To_PolyORB_String), Loc),
+              Name                   =>
+                New_Occurrence_Of (RTE (RE_To_PolyORB_String), Loc),
               Parameter_Associations => New_List (
-                Make_String_Literal (Loc,
-                  Strval => Parameter_Name_String))),
+                Make_String_Literal (Loc, Strval => Parameter_Name_String))),
             New_Occurrence_Of (Any, Loc),
             Parameter_Mode));
    end Add_Parameter_To_NVList;
