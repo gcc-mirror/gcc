@@ -1,5 +1,11 @@
 2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/50961
+	* call.c (standard_conversion): Use resolve_nondeduced_context
+	for type_unknown_p (EXPR) && TREE_CODE (TO) == BOOLEAN_TYPE.
+
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/61804
 	* parser.c (cp_parser_tokens_start_cast_expression): Return -1
 	for '++' and '--'.

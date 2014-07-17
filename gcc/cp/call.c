@@ -1107,14 +1107,22 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   to = strip_top_quals (to);
   from = strip_top_quals (from);
 
-  if ((TYPE_PTRFN_P (to) || TYPE_PTRMEMFUNC_P (to))
-      && expr && type_unknown_p (expr))
+  if (expr && type_unknown_p (expr))
     {
-      tsubst_flags_t tflags = tf_conv;
-      expr = instantiate_type (to, expr, tflags);
-      if (expr == error_mark_node)
-	return NULL;
-      from = TREE_TYPE (expr);
+      if (TYPE_PTRFN_P (to) || TYPE_PTRMEMFUNC_P (to))
+	{
+	  tsubst_flags_t tflags = tf_conv;
+	  expr = instantiate_type (to, expr, tflags);
+	  if (expr == error_mark_node)
+	    return NULL;
+	  from = TREE_TYPE (expr);
+	}
+      else if (TREE_CODE (to) == BOOLEAN_TYPE)
+	{
+	  /* Necessary for eg, TEMPLATE_ID_EXPRs (c++/50961).  */
+	  expr = resolve_nondeduced_context (expr);
+	  from = TREE_TYPE (expr);
+	}
     }
 
   fcode = TREE_CODE (from);
