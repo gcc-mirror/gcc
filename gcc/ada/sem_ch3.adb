@@ -2366,14 +2366,11 @@ package body Sem_Ch3 is
 
       --  Analyze the contracts of subprogram declarations, subprogram bodies
       --  and variables now due to the delayed visibility requirements of their
-      --  aspects. Skip analysis if the declaration already has an error.
+      --  aspects.
 
       Decl := First (L);
       while Present (Decl) loop
-         if Error_Posted (Decl) then
-            null;
-
-         elsif Nkind (Decl) = N_Object_Declaration then
+         if Nkind (Decl) = N_Object_Declaration then
             Analyze_Object_Contract (Defining_Entity (Decl));
 
          elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,

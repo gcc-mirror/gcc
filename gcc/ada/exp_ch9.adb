@@ -4379,6 +4379,12 @@ package body Exp_Ch9 is
            Make_Function_Call (Loc,
              Name                   => New_Sub,
              Parameter_Associations => Params));
+
+         --  Preserve type of call for subsequent processing (required for
+         --  call to Wrap_Transient_Expression in the case of a shared passive
+         --  protected).
+
+         Set_Etype (N, Etype (New_Sub));
       end if;
 
       if External

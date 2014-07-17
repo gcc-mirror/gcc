@@ -1,3 +1,42 @@
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Buid_Protected_Subprogram_Call): Preserve type
+	of function call for later use when shared passive objects
+	are involved.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch13.adb (Get_Aspect_Specifications):
+	Catch a case where the argument of SPARK aspect Refined_State
+	is not properly parenthesized.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not extend
+	the lifetime of a reference to an Ada 2012 container element.
+	(Is_Element_Reference): New routine.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* ali.ads: Minor comment fix.
+	* lib-writ.adb: Minor reformatting.
+
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Proper_Body): When analyzing a subunit
+	in ASIS mode, load another subunit only if it a subunit of the
+	current one, not a sibling that has been reached through the
+	analysis of an ancestor. This allows the construction of the
+	ASIS tree for the subunit even when sibling subunits have errors.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Remove the guard which
+	prevents the analysis of various contracts when the associated
+	construct is erroneous.
+	* sem_util.adb (Save_SPARK_Mode_And_Set): Do not query the
+	SPARK_Pragma of an illegal or a partially decorated construct.
+
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
 	* s-imguns.ads: Minor reformatting.

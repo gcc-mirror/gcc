@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -289,7 +289,7 @@ package ALI is
       Set_Elab_Entity : Boolean;
       --  Indicates presence of EE parameter for a unit which has an
       --  elaboration entity which must be set true as part of the
-      --  elaboration of the entity.
+      --  elaboration of the unit.
 
       Has_RACW : Boolean;
       --  Indicates presence of RA parameter for a package that declares at

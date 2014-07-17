@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -308,8 +308,8 @@ package body Ch13 is
                end if;
 
                --  Detect a common error where the non-null definition of
-               --  aspect Depends, Global, Refined_Depends or Refined_Global
-               --  must be enclosed in parentheses.
+               --  aspect Depends, Global, Refined_Depends, Refined_Global
+               --  or Refined_State lacks enclosing parentheses.
 
                if Token /= Tok_Left_Paren and then Token /= Tok_Null then
 
@@ -400,6 +400,48 @@ package body Ch13 is
                            Restore_Scan_State (Scan_State);
                         end if;
                      end;
+
+                  --  Refined_State
+
+                  elsif A_Id = Aspect_Refined_State then
+                     if Token = Tok_Identifier then
+                        declare
+                           Scan_State : Saved_Scan_State;
+
+                        begin
+                           Save_Scan_State (Scan_State);
+                           Scan;  --  past state
+
+                           --  The refinement contains a constituent, the whole
+                           --  argument of Refined_State must be parenthesized.
+
+                           --    with Refined_State => State => Constit
+
+                           if Token = Tok_Arrow then
+                              Restore_Scan_State (Scan_State);
+                              Error_Msg_SC -- CODEFIX
+                                ("missing ""(""");
+                              Resync_Past_Malformed_Aspect;
+
+                              --  Return when the current aspect is the last
+                              --  in the list of specifications and the list
+                              --  applies to a body.
+
+                              if Token = Tok_Is then
+                                 return Aspects;
+                              end if;
+
+                           --  The refinement lacks constituents. Do not flag
+                           --  this case as the error would be misleading. The
+                           --  diagnostic is left to the analysis.
+
+                           --    with Refined_State => State
+
+                           else
+                              Restore_Scan_State (Scan_State);
+                           end if;
+                        end;
+                     end if;
                   end if;
                end if;
 
