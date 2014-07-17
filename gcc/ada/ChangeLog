@@ -1,5 +1,44 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Minor comment updates.
+
+2014-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Make_Explicit_Dereference): If the expression
+	being dereferenced is a generalized indexing, reset the overloaded
+	flag on the generalized indexing call, consistent with the
+	resetting of the flag on the original indexed component.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document advise not to mix -gnatV? and
+	optimization.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Don't insist on a name
+	for the prefix when we make calls to Force_Evaluation and
+	Duplicate_Subexpr_No_Checks.
+	* exp_util.adb (Is_Volatile_Reference): Handle all cases properly
+	(Remove_Side_Effects): Handle all volatile references right
+	(Side_Effect_Free): Volatile reference is never side effect free
+	* sinfo.ads (N_Attribute_Reference): Add comments explaining
+	that in the tree, the prefix can be a general expression.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract,
+	Analyze_Subprogram_Contract): Add comments on SPARK_Mode save/restore.
+	* sem_ch7.adb (Analyze_Package_Body_Contract,
+	Analyze_Package_Contract): Add comments on SPARK_Mode save/restore.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.ads, exp_util.ads: Document Insert_Action_After,
+	Store_After_Actions_In_Scope.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aux.ads: Minor comment addition.
 
 2014-07-17  Ed Schonberg  <schonberg@adacore.com>

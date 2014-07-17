@@ -1367,6 +1367,17 @@ package body Sem_Util is
       end if;
 
       Set_Is_Overloaded (Expr, False);
+
+      --  The expression will often be a generalized indexing that yields a
+      --  container element that is then dereferenced, in which case the
+      --  generalized indexing call is also non-overloaded.
+
+      if Nkind (Expr) = N_Indexed_Component
+        and then Present (Generalized_Indexing (Expr))
+      then
+         Set_Is_Overloaded (Generalized_Indexing (Expr), False);
+      end if;
+
       Rewrite (Expr,
         Make_Explicit_Dereference (Loc,
           Prefix =>
@@ -11872,8 +11883,11 @@ package body Sem_Util is
                return Is_Variable_Prefix (Prefix (Orig_Node));
 
             when N_Selected_Component =>
-               return Is_Variable_Prefix (Prefix (Orig_Node))
-                 and then Is_Variable (Selector_Name (Orig_Node));
+               return (Is_Variable (Selector_Name (Orig_Node))
+                        and then Is_Variable_Prefix (Prefix (Orig_Node)))
+                 or else
+                   (Nkind (N) = N_Expanded_Name
+                     and then Scope (Entity (N)) = Entity (Prefix (N)));
 
             --  For an explicit dereference, the type of the prefix cannot
             --  be an access to constant or an access to subprogram.
