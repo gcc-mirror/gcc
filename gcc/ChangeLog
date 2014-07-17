@@ -1,4 +1,4 @@
-2014-07-16  Hans-Peter Nilsson  <hp@axis.com>
+2014-07-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/61737.
 	* config/cris/cris.c (TARGET_LEGITIMATE_CONSTANT_P)
