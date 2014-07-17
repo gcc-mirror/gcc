@@ -1,3 +1,4 @@
+
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 
@@ -18765,11 +18766,11 @@ leak.
 
 @noindent
 @code{gnatmem} makes use of the output created by the special version of
-allocation and deallocation routines that record call information. This
-allows to obtain accurate dynamic memory usage history at a minimal cost to
-the execution speed. Note however, that @code{gnatmem} is not supported on
-all platforms (currently, it is supported on AIX, HP-UX, GNU/Linux,
-Solaris and Windows NT/2000/XP (x86).
+allocation and deallocation routines that record call information. This allows
+it to obtain accurate dynamic memory usage history at a minimal cost to the
+execution speed. Note however, that @code{gnatmem} is not supported on all
+platforms (currently, it is supported on AIX, HP-UX, GNU/Linux, Solaris and
+Windows NT/2000/XP (x86).
 
 @noindent
 The @code{gnatmem} command has the form
@@ -18894,8 +18895,8 @@ Do the @code{gnatmem} processing starting from @file{file}, rather than
 @item -m n
 @cindex @option{-m} (@code{gnatmem})
 This switch causes @code{gnatmem} to mask the allocation roots that have less
-than n leaks. The default value is 1. Specifying the value of 0 will allow to
-examine even the roots that didn't result in leaks.
+than n leaks.  The default value is 1. Specifying the value of 0 will allow
+examination of even the roots that did not result in leaks.
 
 @item -s order
 @cindex @option{-s} (@code{gnatmem})
@@ -21636,9 +21637,9 @@ breakpoint condition (before the @code{if}).
 @item task @var{taskno}
 @cindex Task switching
 
-This command allows to switch to the task referred by @var{taskno}. In
-particular, This allows to browse the backtrace of the specified
-task. It is advised to switch back to the original task before
+This command allows switching to the task referred by @var{taskno}. In
+particular, this allows browsing of the backtrace of the specified
+task. It is advisable to switch back to the original task before
 continuing execution otherwise the scheduling of the program may be
 perturbed.
 @end table

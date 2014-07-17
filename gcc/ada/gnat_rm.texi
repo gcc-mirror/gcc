@@ -9303,9 +9303,8 @@ that make up scalar components are ordered within S:
    --  the former is used.
 @end smallexample
 
-Other properties are
-as for standard representation attribute @code{Bit_Order}, as defined by
-Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
+Other properties are as for standard representation attribute @code{Bit_Order},
+as defined by Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
 
 For a record type @var{S}, if @code{@var{S}'Scalar_Storage_Order} is
 specified explicitly, it shall be equal to @code{@var{S}'Bit_Order}. Note:
@@ -9316,18 +9315,15 @@ specified explicitly and set to the same value.
 For a record extension, the derived type shall have the same scalar storage
 order as the parent type.
 
-If a component of @var{S} has itself a record or array type, then it shall also
-have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
-if the component is a packed array, or does not start on a byte boundary, then
-the scalar storage order specified for S and for the nested component type shall
-be identical.
+If a component of @var{S} is of a record or array type, then that type shall
+also have a @code{Scalar_Storage_Order} attribute definition clause.
 
-If @var{S} appears as the type of a record or array component, the enclosing
-record or array shall also have a @code{Scalar_Storage_Order} attribute
-definition clause.
+A component of a record or array type that is a packed array, or that
+does not start on a byte boundary, must have the same scalar storage order
+as the enclosing record or array type.
 
-No component of a type that has a @code{Scalar_Storage_Order} attribute
-definition may be aliased.
+No component of a type that has an explicit @code{Scalar_Storage_Order}
+attribute definition may be aliased.
 
 A confirming @code{Scalar_Storage_Order} attribute definition clause (i.e.
 with a value equal to @code{System.Default_Bit_Order}) has no effect.

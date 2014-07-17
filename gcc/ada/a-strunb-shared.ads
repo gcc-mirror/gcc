@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -64,9 +64,9 @@
    --     preallocated memory can used later by Append/Insert operations
    --     without reallocation.
 
-   --  Reference counting uses GCC builtin atomic operations, which allows to
-   --  safely share internal data between Ada tasks. Nevertheless, this doesn't
-   --  make objects of Unbounded_String thread-safe: each instance can't be
+   --  Reference counting uses GCC builtin atomic operations, which allows safe
+   --  sharing of internal data between Ada tasks. Nevertheless, this does not
+   --  make objects of Unbounded_String thread-safe: an instance cannot be
    --  accessed by several tasks simultaneously.
 
 with Ada.Strings.Maps;

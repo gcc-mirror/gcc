@@ -3904,10 +3904,10 @@ package body Sem_Attr is
          Context           : constant Node_Id := Parent (N);
          Attr              : Node_Id;
          Enclosing_Loop    : Node_Id;
-         In_Loop_Assertion : Boolean   := False;
          Loop_Id           : Entity_Id := Empty;
          Scop              : Entity_Id;
          Stmt              : Node_Id;
+         Enclosing_Pragma  : Node_Id   := Empty;
 
       --  Start of processing for Loop_Entry
 
@@ -4025,7 +4025,7 @@ package body Sem_Attr is
                                Name_Assert_And_Cut,
                                Name_Assume)
             then
-               In_Loop_Assertion := True;
+               Enclosing_Pragma := Original_Node (Stmt);
 
             --  Locate the enclosing loop (if any). Note that Ada 2012 array
             --  iteration may be expanded into several nested loops, we are
@@ -4060,12 +4060,11 @@ package body Sem_Attr is
             --  purpose if they appear in an appropriate location in a loop,
             --  which was already checked by the top level pragma circuit).
 
-         if not In_Loop_Assertion then
-            Error_Attr
-              ("attribute % must appear within appropriate pragma", N);
+         if No (Enclosing_Pragma) then
+            Error_Attr ("attribute% must appear within appropriate pragma", N);
          end if;
 
-         --  A Loop_Entry that applies to a given loop statement shall not
+         --  A Loop_Entry that applies to a given loop statement must not
          --  appear within a body of accept statement, if this construct is
          --  itself enclosed by the given loop statement.
 
@@ -4074,10 +4073,8 @@ package body Sem_Attr is
 
             if Ekind (Scop) = E_Loop and then Scop = Loop_Id then
                exit;
-
             elsif Ekind_In (Scop, E_Block, E_Loop, E_Return_Statement) then
                null;
-
             else
                Error_Attr
                  ("attribute % cannot appear in body or accept statement", N);
@@ -4101,14 +4098,28 @@ package body Sem_Attr is
             null;
 
          elsif Present (Enclosing_Loop)
-                 and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
+           and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
          then
-            Error_Attr_P ("prefix of attribute % that applies to "
-              & "outer loop must denote an entity");
+            Error_Attr_P
+              ("prefix of attribute % that applies to "
+               & "outer loop must denote an entity");
 
          elsif Is_Potentially_Unevaluated (P) then
-            Error_Attr_P ("prefix of attribute % that is potentially "
-              & "unevaluated must denote an entity");
+            Error_Attr_P
+              ("prefix of attribute % that is potentially "
+               & "unevaluated must denote an entity");
+         end if;
+
+         --  Finally, if the Loop_Entry attribute appears within a pragma
+         --  that is ignored, we replace P'Loop_Entity by P to avoid useless
+         --  generation of the loop entity variable. Note that in this case
+         --  the expression won't be executed anyway, and this substitution
+         --  keeps types happy!
+
+         --  We should really do this in the expander, but it's easier here
+
+         if Is_Ignored (Enclosing_Pragma) then
+            Rewrite (N, Relocate_Node (P));
          end if;
       end Loop_Entry;
 

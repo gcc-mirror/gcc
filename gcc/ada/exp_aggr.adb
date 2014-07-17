@@ -5235,7 +5235,17 @@ package body Exp_Aggr is
              Scalar_Comp => Is_Scalar_Type (Ctyp));
       end;
 
-      if Comes_From_Source (Tmp) then
+      --  If the aggregate is the expression in a declaration, the expanded
+      --  code must be inserted after it. The defining entity might not come
+      --  from source if this is part of an inlined body, but the declaration
+      --  itself will.
+
+      if Comes_From_Source (Tmp)
+        or else
+          (Nkind (Parent (N)) = N_Object_Declaration
+            and then Comes_From_Source (Parent (N))
+            and then Tmp = Defining_Entity (Parent (N)))
+      then
          declare
             Node_After : constant Node_Id := Next (Parent_Node);
 

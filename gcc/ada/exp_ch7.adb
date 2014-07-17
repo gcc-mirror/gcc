@@ -215,7 +215,7 @@ package body Exp_Ch7 is
    --    A classwide type can always potentially have controlled components
    --    but the record controller of the corresponding actual type may not
    --    be known at compile time so the dispatch table contains a special
-   --    field that allows to compute the offset of the record controller
+   --    field that allows computation of the offset of the record controller
    --    dynamically. See s-finimp.Deep_Tag_Attach and a-tags.RC_Offset.
 
    --  Here is a simple example of the expansion of a controlled block :
