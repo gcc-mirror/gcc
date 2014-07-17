@@ -1,5 +1,13 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* g-comlin.ads, g-comlin.adb: Minor clean up.
+
+2014-07-17  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Update gnatpp doc.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document new restriction No_Long_Long_Integers.
 	* exp_ch4.adb (Make_Array_Comparison_Op): Add note that we
 	could do this by actually expanding a real generic.
