@@ -1,5 +1,6 @@
 2014-07-17  Hans-Peter Nilsson  <hp@axis.com>
 
+	Backport from trunk.
 	* config.gcc (crisv32-*-linux* | cris-*-linux*): Do not override
 	an existing tmake_file.  Don't add t-slibgcc and t-linux.
 
