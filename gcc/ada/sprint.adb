@@ -3307,7 +3307,7 @@ package body Sprint is
             --  correspond to the non-existent children of Text_IO.
 
             if Dump_Original_Only
-              and then Is_Text_IO_Kludge_Unit (Name (Node))
+              and then Is_Text_IO_Special_Unit (Name (Node))
             then
                null;
 

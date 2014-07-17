@@ -16,8 +16,8 @@
 --  In Ada 95, the package Ada.Wide_Wide_Text_IO.Integer_IO is a subpackage
 --  of Wide_Wide_Text_IO. In GNAT we make it a child package to avoid loading
 --  the necessary code if Integer_IO is not instantiated. See the routine
---  Rtsfind.Text_IO_Kludge for a description of how we patch up the
---  difference in semantics so that it is invisible to the Ada programmer.
+--  Rtsfind.Check_Text_IO_Special_Unit for a description of how we patch up
+--  the difference in semantics so that it is invisible to the Ada programmer.
 
 private generic
    type Num is range <>;

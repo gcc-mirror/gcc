@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,8 +36,9 @@
 --  In Ada 95, the package Ada.Text_IO.Float_IO is a subpackage of Text_IO.
 --  This is for compatibility with Ada 83. In GNAT we make it a child package
 --  to avoid loading the necessary code if Float_IO is not instantiated. See
---  routine Rtsfind.Text_IO_Kludge for a description of how we patch up the
---  difference in semantics so that it is invisible to the Ada programmer.
+--  routine Rtsfind.Check_Text_IO_Special_Unit for a description of how we
+--  patch up the difference in semantics so that it is invisible to the Ada
+--  programmer.
 
 private generic
    type Num is digits <>;
