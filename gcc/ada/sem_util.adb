@@ -41,7 +41,6 @@ with Namet.Sp; use Namet.Sp;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Output;   use Output;
-with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -15321,6 +15320,15 @@ package body Sem_Util is
       Reset_Analyzed (N);
    end Reset_Analyzed_Flags;
 
+   ------------------------
+   -- Restore_SPARK_Mode --
+   ------------------------
+
+   procedure Restore_SPARK_Mode (Mode : SPARK_Mode_Type) is
+   begin
+      SPARK_Mode := Mode;
+   end Restore_SPARK_Mode;
+
    --------------------------------
    -- Returns_Unconstrained_Type --
    --------------------------------
@@ -15623,6 +15631,28 @@ package body Sem_Util is
          return False;
       end if;
    end Same_Value;
+
+   -----------------------------
+   -- Save_SPARK_Mode_And_Set --
+   -----------------------------
+
+   procedure Save_SPARK_Mode_And_Set
+     (Context : Entity_Id;
+      Mode    : out SPARK_Mode_Type)
+   is
+      Prag : constant Node_Id := SPARK_Pragma (Context);
+
+   begin
+      --  Save the current mode in effect
+
+      Mode := SPARK_Mode;
+
+      --  Set the mode of the context as the current SPARK mode
+
+      if Present (Prag) then
+         SPARK_Mode := Get_SPARK_Mode_From_Pragma (Prag);
+      end if;
+   end Save_SPARK_Mode_And_Set;
 
    ------------------------
    -- Scope_Is_Transient --

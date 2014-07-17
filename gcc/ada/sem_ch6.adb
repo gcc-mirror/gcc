@@ -2033,12 +2033,15 @@ package body Sem_Ch6 is
 
    procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
       Body_Decl   : constant Node_Id := Parent (Parent (Body_Id));
+      Mode        : SPARK_Mode_Type;
       Prag        : Node_Id;
       Ref_Depends : Node_Id := Empty;
       Ref_Global  : Node_Id := Empty;
       Spec_Id     : Entity_Id;
 
    begin
+      Save_SPARK_Mode_And_Set (Body_Id, Mode);
+
       --  When a subprogram body declaration is illegal, its defining entity is
       --  left unanalyzed. There is nothing left to do in this case because the
       --  body lacks a contract, or even a proper Ekind.
@@ -2112,6 +2115,8 @@ package body Sem_Ch6 is
                Body_Decl, Spec_Id);
          end if;
       end if;
+
+      Restore_SPARK_Mode (Mode);
    end Analyze_Subprogram_Body_Contract;
 
    ------------------------------------
@@ -3680,6 +3685,7 @@ package body Sem_Ch6 is
       Case_Prag    : Node_Id := Empty;
       Depends      : Node_Id := Empty;
       Global       : Node_Id := Empty;
+      Mode         : SPARK_Mode_Type;
       Nam          : Name_Id;
       Post_Prag    : Node_Id := Empty;
       Prag         : Node_Id;
@@ -3687,6 +3693,8 @@ package body Sem_Ch6 is
       Seen_In_Post : Boolean := False;
 
    begin
+      Save_SPARK_Mode_And_Set (Subp, Mode);
+
       if Present (Items) then
 
          --  Analyze pre- and postconditions
@@ -3808,6 +3816,8 @@ package body Sem_Ch6 is
               ("function postcondition does not mention result?T?", Post_Prag);
          end if;
       end if;
+
+      Restore_SPARK_Mode (Mode);
    end Analyze_Subprogram_Contract;
 
    ------------------------------------

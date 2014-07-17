@@ -4557,6 +4557,15 @@ package body Exp_Util is
       --  Start of processing for Is_Aliased
 
       begin
+         --  Aliasing in expression with actions does not matter because the
+         --  scope of the transient object is always limited by the scope of
+         --  the EWA. Such objects are always hooked and always finalized at
+         --  the end of the EWA's scope.
+
+         if Nkind (Rel_Node) = N_Expression_With_Actions then
+            return False;
+         end if;
+
          Stmt := First_Stmt;
          while Present (Stmt) loop
             if Nkind (Stmt) = N_Object_Declaration then
@@ -7343,7 +7352,7 @@ package body Exp_Util is
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
               and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                                        N_Object_Declaration
+                                N_Object_Declaration
               and then Is_Finalizable_Transient
                          (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
             then

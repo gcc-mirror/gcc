@@ -1564,9 +1564,13 @@ package body Sem_Res is
       --  the call has already been constant-folded, nothing to do. We
       --  relocate the operand nodes rather than copy them, to preserve
       --  original_node pointers, given that the operands themselves may
-      --  have been rewritten.
+      --  have been rewritten. If the call was itself a rewriting of an
+      --  operator node, nothing to do.
 
-      if ASIS_Mode and then Nkind (N) in N_Op then
+      if ASIS_Mode
+        and then Nkind (N) in N_Op
+        and then Nkind (Original_Node (N)) = N_Function_Call
+      then
          if Is_Binary then
             Rewrite (First (Parameter_Associations (Original_Node (N))),
                Relocate_Node (Left_Opnd (N)));
