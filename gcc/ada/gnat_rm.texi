@@ -6829,6 +6829,16 @@ by suppressing range checks, but the specific use of @code{Alignment_Check}
 allows suppression of alignment checks without suppressing other range checks.
 
 @item
+@code{Atomic_Synchronization} can be used to suppress the special memory
+synchronization instructions that are normally generated for access to
+@code{Atomic} variables to ensure correct synchronization between tasks
+that use such variables for synchronization purposes.
+
+@item
+@code{Duplicated_Tag_Check} Can be used to suppress the check that is generated
+for a duplicated tag value when a tagged type is declared.
+
+@item
 @code{Predicate_Check} can be used to control whether predicate checks are
 active. It is applicable only to predicates for which the policy is
 @code{Check}. Unlike @code{Assertion_Policy}, which determines if a given
@@ -7458,8 +7468,16 @@ in pragma @code{Suppress}.
 One important application is to ensure that checks are on in cases where
 code depends on the checks for its correct functioning, so that the code
 will compile correctly even if the compiler switches are set to suppress
-checks.
+checks. For example, in a program that depends on external names of tagged
+types and wants to ensure that the duplicated tag check occurs even if all
+run-time checks are suppressed by a compiler switch, the following
+configuration pragma will ensure this test is not suppressed:
 
+@smallexample @c ada
+pragma Unsuppress (Duplicated_Tag_Check);
+@end smallexample
+
+@noindent
 This pragma is standard in Ada 2005. It is available in all earlier versions
 of Ada as an implementation-defined pragma.
 

@@ -23,23 +23,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;     use Atree;
-with Debug;     use Debug;
-with Elists;    use Elists;
-with Errout;    use Errout;
-with Lib;       use Lib;
-with Osint;     use Osint;
-with Opt;       use Opt;
-with Osint.C;   use Osint.C;
-with Namet;     use Namet;
-with Nlists;    use Nlists;
-with Stand;     use Stand;
-with Sinput;    use Sinput;
-with Stringt;   use Stringt;
-with Switch;    use Switch;
-with Switch.C;  use Switch.C;
-with System;    use System;
-with Types;     use Types;
+with Atree;    use Atree;
+with Debug;    use Debug;
+with Elists;   use Elists;
+with Errout;   use Errout;
+with Lib;      use Lib;
+with Osint;    use Osint;
+with Opt;      use Opt;
+with Osint.C;  use Osint.C;
+with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Stand;    use Stand;
+with Sinput;   use Sinput;
+with Stringt;  use Stringt;
+with Switch;   use Switch;
+with Switch.C; use Switch.C;
+with System;   use System;
+with Types;    use Types;
 
 with System.OS_Lib; use System.OS_Lib;
 
@@ -126,6 +126,8 @@ package body Back_End is
            Nat (Physical_To_Logical (Last_Source_Line (J), J));
       end loop;
 
+      --  Deal with case of generating SCIL, we should not be here!
+
       if Generate_SCIL then
          Error_Msg_N ("'S'C'I'L generation not available", Cunit (Main_Unit));
 
@@ -136,6 +138,8 @@ package body Back_End is
             return;
          end if;
       end if;
+
+      --  The actual call to the back end
 
       gigi
         (gnat_root          => Int (Cunit (Main_Unit)),

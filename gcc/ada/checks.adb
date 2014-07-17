@@ -423,6 +423,11 @@ package body Checks is
    -- Allocation_Checks_Suppressed --
    ----------------------------------
 
+   --  Note: at the current time there are no calls to this function, because
+   --  the relevant check is in the run-time, so it is not a check that the
+   --  compiler can suppress anyway, but we still have to recognize the check
+   --  name Allocation_Check since it is part of the standard.
+
    function Allocation_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
       if Present (E) and then Checks_May_Be_Suppressed (E) then
@@ -4616,6 +4621,19 @@ package body Checks is
       end if;
    end Division_Checks_Suppressed;
 
+   --------------------------------------
+   -- Duplicated_Tag_Checks_Suppressed --
+   --------------------------------------
+
+   function Duplicated_Tag_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Duplicated_Tag_Check);
+      else
+         return Scope_Suppress.Suppress (Duplicated_Tag_Check);
+      end if;
+   end Duplicated_Tag_Checks_Suppressed;
+
    -----------------------------------
    -- Elaboration_Checks_Suppressed --
    -----------------------------------
@@ -6478,15 +6496,24 @@ package body Checks is
 
          --  Force evaluation to avoid multiple reads for atomic/volatile
 
+         --  Note: we set Name_Req to False. We used to set it to True, with
+         --  the thinking that a name is required as the prefix of the 'Valid
+         --  call, but in fact the check that the prefix of an attribute is
+         --  a name is in the parser, and we just don't require it here.
+         --  Moreover, when we set Name_Req to True, that interfered with the
+         --  checking for Volatile, since we couldn't just capture the value.
+
          if Is_Entity_Name (Exp)
            and then Is_Volatile (Entity (Exp))
          then
-            Force_Evaluation (Exp, Name_Req => True);
+            --  Same reasoning as above for setting Name_Req to False
+
+            Force_Evaluation (Exp, Name_Req => False);
          end if;
 
          --  Build the prefix for the 'Valid call
 
-         PV := Duplicate_Subexpr_No_Checks (Exp, Name_Req => True);
+         PV := Duplicate_Subexpr_No_Checks (Exp, Name_Req => False);
 
          --  A rather specialized kludge. If PV is an analyzed expression
          --  which is an indexed component of a packed array that has not
@@ -6504,7 +6531,9 @@ package body Checks is
             Set_Analyzed (PV, False);
          end if;
 
-         --  Build the raise CE node to check for validity
+         --  Build the raise CE node to check for validity. We build a type
+         --  qualification for the prefix, since it may not be of the form of
+         --  a name, and we don't care in this context!
 
          CE :=
             Make_Raise_Constraint_Error (Loc,

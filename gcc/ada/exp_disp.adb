@@ -6227,6 +6227,7 @@ package body Exp_Disp is
         and then Ada_Version >= Ada_2005
         and then RTE_Available (RE_Check_TSD)
         and then not Debug_Flag_QQ
+        and then not Duplicated_Tag_Checks_Suppressed (Typ)
       then
          Append_To (Elab_Code,
            Make_Procedure_Call_Statement (Loc,
@@ -6815,6 +6816,7 @@ package body Exp_Disp is
         and then Is_Library_Level_Entity (Typ)
         and then RTE_Available (RE_Check_TSD)
         and then not Debug_Flag_QQ
+        and then not Duplicated_Tag_Checks_Suppressed (Typ)
       then
          Append_To (Result,
            Make_Procedure_Call_Statement (Loc,

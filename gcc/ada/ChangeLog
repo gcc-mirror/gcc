@@ -1,5 +1,17 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* back_end.adb: Minor reformatting and comment additions.
+	* checks.ads, checks.adb (Duplicated_Tag_Checks_Suppressed): New
+	function.
+	* exp_disp.adb (Make_DT): Use Duplicated_Tag_Checks_Suppressed.
+	(Make_VM_TSD): Use Duplicated_Tag_Checks_Suppressed.
+	* gnat_rm.texi: Document new check Duplicated_Tag_Checks_Suppressed.
+	* gnat_ugn.texi: Additional documentation for Duplicated_Tag_Check.
+	* snames.ads-tmpl (Duplicated_Tag_Checks_Suppressed): New check.
+	* types.ads (Duplicated_Tag_Checks_Suppressed): New check.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Minor comment updates.
 
 2014-07-17  Ed Schonberg  <schonberg@adacore.com>
