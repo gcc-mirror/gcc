@@ -1697,7 +1697,6 @@ package body Sem_Ch13 is
                --  Corresponds to pragma Implemented, construct the pragma
 
                when Aspect_Synchronization =>
-
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
@@ -2479,6 +2478,81 @@ package body Sem_Ch13 is
                         goto Continue;
                      end;
                   end if;
+
+               --  Case 2e: Annotate aspect
+
+               when Aspect_Annotate =>
+                  declare
+                     Args  : List_Id;
+                     Pargs : List_Id;
+                     Arg   : Node_Id;
+
+                  begin
+                     --  The argument can be a single identifier
+
+                     if Nkind (Expr) = N_Identifier then
+
+                        --  One level of parens is allowed
+
+                        if Paren_Count (Expr) > 1 then
+                           Error_Msg_F ("extra parentheses ignored", Expr);
+                        end if;
+
+                        Set_Paren_Count (Expr, 0);
+
+                        --  Add the single item to the list
+
+                        Args := New_List (Expr);
+
+                     --  Otherwise we must have an aggregate
+
+                     elsif Nkind (Expr) = N_Aggregate then
+
+                        --  Must be positional
+
+                        if Present (Component_Associations (Expr)) then
+                           Error_Msg_F
+                             ("purely positional aggregate required", Expr);
+                           goto Continue;
+                        end if;
+
+                        --  Must not be parenthesized
+
+                        if Paren_Count (Expr) /= 0 then
+                           Error_Msg_F ("extra parentheses ignored", Expr);
+                        end if;
+
+                        --  List of arguments is list of aggregate expressions
+
+                        Args := Expressions (Expr);
+
+                     --  Anything else is illegal
+
+                     else
+                        Error_Msg_F ("wrong form for Annotate aspect", Expr);
+                        goto Continue;
+                     end if;
+
+                     --  Prepare pragma arguments
+
+                     Pargs := New_List;
+                     Arg := First (Args);
+                     while Present (Arg) loop
+                        Append_To (Pargs,
+                          Make_Pragma_Argument_Association (Sloc (Arg),
+                            Expression => Relocate_Node (Arg)));
+                        Next (Arg);
+                     end loop;
+
+                     Append_To (Pargs,
+                       Make_Pragma_Argument_Association (Sloc (Ent),
+                         Chars      => Name_Entity,
+                         Expression => Ent));
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => Pargs,
+                        Pragma_Name                  => Name_Annotate);
+                  end;
 
                --  Case 3 : Aspects that don't correspond to pragma/attribute
                --  definition clause.
@@ -8271,6 +8345,7 @@ package body Sem_Ch13 is
          --  Here is the list of aspects that don't require delay analysis
 
          when Aspect_Abstract_State       |
+              Aspect_Annotate             |
               Aspect_Contract_Cases       |
               Aspect_Dimension            |
               Aspect_Dimension_System     |

@@ -11027,7 +11027,8 @@ package body Sem_Prag is
          -- Annotate --
          --------------
 
-         --  pragma Annotate (IDENTIFIER [, IDENTIFIER {, ARG}]);
+         --  pragma Annotate
+         --    (IDENTIFIER [, IDENTIFIER {, ARG}] [,Entity => local_NAME]);
          --  ARG ::= NAME | EXPRESSION
 
          --  The first two arguments are by convention intended to refer to an
@@ -11041,6 +11042,29 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
+
+            --  See if last argument is Entity => local_Name, and if so process
+            --  and then remove it for remaining processing.
+
+            declare
+               Last_Arg : constant Node_Id :=
+                            Last (Pragma_Argument_Associations (N));
+
+            begin
+               if Nkind (Last_Arg) = N_Pragma_Argument_Association
+                 and then Chars (Last_Arg) = Name_Entity
+               then
+                  Check_Arg_Is_Local_Name (Last_Arg);
+                  Arg_Count := Arg_Count - 1;
+
+                  --  Not allowed in compiler units (bootstrap issues)
+
+                  Check_Compiler_Unit ("Entity for pragma Annotate", N);
+               end if;
+            end;
+
+            --  Continue processing with last argument removed for now
+
             Check_Arg_Is_Identifier (Arg1);
             Check_No_Identifiers;
             Store_Note (N);
@@ -21276,6 +21300,7 @@ package body Sem_Prag is
             declare
                Last_Arg : constant Node_Id :=
                             Last (Pragma_Argument_Associations (N));
+
             begin
                if Nkind (Last_Arg) = N_Pragma_Argument_Association
                  and then Chars (Last_Arg) = Name_Reason
@@ -21287,7 +21312,7 @@ package body Sem_Prag is
 
                   --  Not allowed in compiler units (bootstrap issues)
 
-                     Check_Compiler_Unit ("Reason for pragma Warnings", N);
+                  Check_Compiler_Unit ("Reason for pragma Warnings", N);
 
                --  No REASON string, set null string as reason
 

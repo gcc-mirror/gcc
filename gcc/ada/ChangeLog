@@ -1,5 +1,24 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* aspects.ads, aspects.adb: Add entries for aspect Annotate.
+	* gnat_rm.texi: Document Entity argument for pragma Annotate and
+	Annotate aspect.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Add processing
+	for Annotate aspect.
+	* sem_prag.adb (Analyze_Pragma, case Annotate): Allow optional
+	Entity argument at end.
+	* sinfo.ads (N_Aspect_Specification): Add note on Annotate aspect.
+
+2014-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* s-imguns.ads: Fix minor typo.
+
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sprint.adb: Minor reformatting.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* sprint.adb (Write_Itype): Print proper header for string
 	literal subtype.
 

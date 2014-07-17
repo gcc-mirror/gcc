@@ -77,6 +77,7 @@ package Aspects is
       Aspect_Abstract_State,                -- GNAT
       Aspect_Address,
       Aspect_Alignment,
+      Aspect_Annotate,                      -- GNAT
       Aspect_Attach_Handler,
       Aspect_Bit_Order,
       Aspect_Component_Size,
@@ -215,6 +216,7 @@ package Aspects is
 
    Implementation_Defined_Aspect : constant array (Aspect_Id) of Boolean :=
      (Aspect_Abstract_State           => True,
+      Aspect_Annotate                 => True,
       Aspect_Async_Readers            => True,
       Aspect_Async_Writers            => True,
       Aspect_Contract_Cases           => True,
@@ -253,7 +255,8 @@ package Aspects is
    --  the same aspect attached to the same declaration are allowed.
 
    No_Duplicates_Allowed : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Test_Case => False,
+     (Aspect_Annotate  => False,
+      Aspect_Test_Case => False,
       others           => True);
 
    --  The following subtype defines aspects corresponding to library unit
@@ -292,6 +295,7 @@ package Aspects is
       Aspect_Abstract_State          => Expression,
       Aspect_Address                 => Expression,
       Aspect_Alignment               => Expression,
+      Aspect_Annotate                => Expression,
       Aspect_Attach_Handler          => Expression,
       Aspect_Bit_Order               => Expression,
       Aspect_Component_Size          => Expression,
@@ -370,6 +374,7 @@ package Aspects is
       Aspect_Address                      => Name_Address,
       Aspect_Alignment                    => Name_Alignment,
       Aspect_All_Calls_Remote             => Name_All_Calls_Remote,
+      Aspect_Annotate                     => Name_Annotate,
       Aspect_Async_Readers                => Name_Async_Readers,
       Aspect_Async_Writers                => Name_Async_Writers,
       Aspect_Asynchronous                 => Name_Asynchronous,
@@ -663,6 +668,7 @@ package Aspects is
       Aspect_Write                        => Always_Delay,
 
       Aspect_Abstract_State               => Never_Delay,
+      Aspect_Annotate                     => Never_Delay,
       Aspect_Convention                   => Never_Delay,
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
