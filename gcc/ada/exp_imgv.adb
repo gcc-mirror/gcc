@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -742,9 +742,9 @@ package body Exp_Imgv is
       --  generating spurious errors caused by the use of Integer_Address'Value
       --  in our implementation of Ada.Tags.Internal_Tag
 
-      --  Seems like a bit of a kludge, there should be a better way ???
+      --  Seems like a bit of a odd approach, there should be a better way ???
 
-      --  There is a better way, you should also test RTE_Available ???
+      --  There is a better way, test RTE_Available ???
 
       if No_Run_Time_Mode
         and then Rtyp = RTE (RE_Integer_Address)

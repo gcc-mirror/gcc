@@ -1185,10 +1185,11 @@ package body Sem_Ch3 is
       if Present (Formals) then
          Push_Scope (Desig_Type);
 
-         --  A bit of a kludge here. These kludges will be removed when Itypes
-         --  have proper parent pointers to their declarations???
+         --  Some special tests here. These special tests can be removed
+         --  if and when Itypes always have proper parent pointers to their
+         --  declarations???
 
-         --  Kludge 1) Link defining_identifier of formals. Required by
+         --  Special test 1) Link defining_identifier of formals. Required by
          --  First_Formal to provide its functionality.
 
          declare
@@ -1224,8 +1225,8 @@ package body Sem_Ch3 is
 
          Process_Formals (Formals, Parent (T_Def));
 
-         --  Kludge 2) End_Scope requires that the parent pointer be set to
-         --  something reasonable, but Itypes don't have parent pointers. So
+         --  Special test 2) End_Scope requires that the parent pointer be set
+         --  to something reasonable, but Itypes don't have parent pointers. So
          --  we set it and then unset it ???
 
          Set_Parent (Desig_Type, T_Name);
@@ -4369,8 +4370,8 @@ package body Sem_Ch3 is
       --  If ancestor has predicates then so does the subtype, and in addition
       --  we must delay the freeze to properly arrange predicate inheritance.
 
-      --  The Ancestor_Type test is a big kludge, there seem to be cases in
-      --  which T = ID, so the above tests and assignments do nothing???
+      --  The Ancestor_Type test is really unpleasant, there seem to be cases
+      --  in which T = ID, so the above tests and assignments do nothing???
 
       if Has_Predicates (T)
         or else (Present (Ancestor_Subtype (T))
@@ -11220,7 +11221,7 @@ package body Sem_Ch3 is
               or else Is_Incomplete_Or_Private_Type (Desig_Type))
         and then not Is_Constrained (Desig_Type)
       then
-         --  ??? The following code is a temporary kludge to ignore a
+         --  ??? The following code is a temporary bypass to ignore a
          --  discriminant constraint on access type if it is constraining
          --  the current record. Avoid creating the implicit subtype of the
          --  record we are currently compiling since right now, we cannot
@@ -18754,7 +18755,7 @@ package body Sem_Ch3 is
       if Known_To_Have_Preelab_Init (Priv_T) then
 
          --  Case where there is a pragma Preelaborable_Initialization. We
-         --  always allow this in predefined units, which is a bit of a kludge,
+         --  always allow this in predefined units, which is cheating a bit,
          --  but it means we don't have to struggle to meet the requirements in
          --  the RM for having Preelaborable Initialization. Otherwise we
          --  require that the type meets the RM rules. But we can't check that

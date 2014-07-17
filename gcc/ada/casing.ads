@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,6 +84,8 @@ package Casing is
    --  equivalent to Set_Casing (All_Upper_Case).
 
    function Determine_Casing (Ident : Text_Buffer) return Casing_Type;
-   --  Determines the casing of the identifier/keyword string Ident
+   --  Determines the casing of the identifier/keyword string Ident. A special
+   --  test is made for SPARK_Mode which is considered to be mixed case, since
+   --  this gives a better general behavior.
 
 end Casing;

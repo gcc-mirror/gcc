@@ -252,8 +252,8 @@ package body Sem_Warn is
       --  Given an entity name, see if the name appears to have something to
       --  do with I/O or network stuff, and if so, return True. Used to kill
       --  some false positives on a heuristic basis that such functions will
-      --  likely have some strange side effect dependencies. A rather funny
-      --  kludge, but warning messages are in the heuristics business.
+      --  likely have some strange side effect dependencies. A rather strange
+      --  test, but warning messages are in the heuristics business.
 
       function Test_Ref (N : Node_Id) return Traverse_Result;
       --  Test for reference to variable in question. Returns Abandon if

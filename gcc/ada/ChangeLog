@@ -1,5 +1,13 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, a-ztexio.ads, exp_imgv.adb, casing.adb, casing.ads,
+	einfo.ads, checks.adb, sem_ch12.adb, a-textio.ads, freeze.adb,
+	repinfo.adb, exp_ch6.adb, sem_ch4.adb, a-witeio.ads, sem_ch8.adb,
+	sem_warn.adb, exp_aggr.adb, exp_dist.adb, par-tchk.adb, s-fatgen.adb,
+	treepr.adb, lib-xref.adb: Remove the word kludge from ada sources.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* debug.adb: Remove -gnatdQ.
 	* exp_disp.adb: Remove -gnatdQ.
 	* a-ztenio.ads, a-wtinio.ads, a-wtmoio.ads, a-ztcoau.ads, a-tiinio.ads,

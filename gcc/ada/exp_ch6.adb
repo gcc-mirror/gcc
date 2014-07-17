@@ -2614,16 +2614,16 @@ package body Exp_Ch6 is
 
       --  Detect the following code in System.Finalization_Masters only on
       --  .NET/JVM targets:
-      --
+
       --    procedure Finalize (Master : in out Finalization_Master) is
       --    begin
       --       . . .
       --       begin
       --          Finalize (Curr_Ptr.all);
-      --
+
       --  Since .NET/JVM compilers lack address arithmetic and Deep_Finalize
-      --  cannot be named in library or user code, the compiler has to install
-      --  a kludge and transform the call to Finalize into Deep_Finalize.
+      --  cannot be named in library or user code, the compiler has to deal
+      --  with this by transforming the call to Finalize into Deep_Finalize.
 
       if VM_Target /= No_VM
         and then Chars (Subp) = Name_Finalize
