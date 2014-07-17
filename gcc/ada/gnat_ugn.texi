@@ -6827,7 +6827,7 @@ the Ada standard, the additional implementation defined checks
 @code{Alignment_Check},
 @code{Duplicated_Tag_Check}, @code{Predicate_Check}, and
 @code{Validity_Check}, as well as any checks introduced using
-@code{pragma Check_Name}. Note that code{Atomic_Synchronization}
+@code{pragma Check_Name}. Note that @code{Atomic_Synchronization}
 is not automatically suppressed by use of this option.
 
 If the code depends on certain checks being active, you can use

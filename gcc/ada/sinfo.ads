@@ -3627,6 +3627,16 @@ package Sinfo is
       --  references a subprogram that is a renaming, then the front end must
       --  rewrite the attribute to refer directly to the renamed entity.
 
+      --  Note: syntactically the prefix of an attribute reference must be a
+      --  name, and this (somewhat artificial) requirement is enforced by the
+      --  parser. However, for many attributes, such as 'Valid, it is quite
+      --  reasonable to apply the attribute to any value, and hence to any
+      --  expression. Internally in the tree, the prefix is an expression which
+      --  does not have to be a name, and this is handled fine by the semantic
+      --  analysis and expansion, and back ends. This arises for the case of
+      --  attribute references built by the expander (e.g. 'Valid for the case
+      --  of an implicit validity check).
+
       --  Note: In generated code, the Address and Unrestricted_Access
       --  attributes can be applied to any expression, and the meaning is
       --  to create an object containing the value (the object is in the
@@ -3638,7 +3648,7 @@ package Sinfo is
 
       --  N_Attribute_Reference
       --  Sloc points to apostrophe
-      --  Prefix (Node3)
+      --  Prefix (Node3) (general expression, see note above)
       --  Attribute_Name (Name2) identifier name from attribute designator
       --  Expressions (List1) (set to No_List if no associated expressions)
       --  Entity (Node4-Sem) used if the attribute yields a type
@@ -3731,11 +3741,18 @@ package Sinfo is
       --  are not met, then the front end must translate the aggregate into
       --  an appropriate set of assignments into a temporary.
 
-      --  Note: for the record aggregate case, gigi/gcc can handle all cases of
-      --  record aggregates, including those for packed, and rep-claused
+      --  Note: for the record aggregate case, gigi/gcc can handle most cases
+      --  of record aggregates, including those for packed, and rep-claused
       --  records, and also variant records, providing that there are no
-      --  variable length fields whose size is not known at compile time, and
-      --  providing that the aggregate is presented in fully named form.
+      --  variable length fields whose size is not known at compile time,
+      --  and providing that the aggregate is presented in fully named form.
+
+      --  The other situation in which array aggregates and record aggregates
+      --  cannot be passed to the back end is if assignment to one or more
+      --  components itself needs expansion, e.g. in the case of an assignment
+      --  of an object of a controlled type. In such cases, the front end
+      --  must expand the aggregate to a series of assignments, and apply
+      --  the required expansion to the individual assignment statements.
 
       ----------------------------------------------
       -- 4.3.1  Record Component Association List --

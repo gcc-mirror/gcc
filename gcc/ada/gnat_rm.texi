@@ -9672,6 +9672,41 @@ unconstrained array.  The use of thin pointers should be restricted to
 cases of porting legacy code which implicitly assumes the size of pointers,
 and such code should not in any case be using this attribute.
 
+Another erroroneous situation arises if the attribute is
+applied to a constant. The resulting pointer can be used to access the
+constant, but the effect of trying to modify a constant in this manner
+is not well-defined. Consider this example:
+
+@smallexample @c ada
+P : constant Integer := 4;
+type R is access all Integer;
+RV : R := P'Unrestricted_Access;
+..
+RV.all := 3;
+@end smallexample
+
+@noindent
+Here we attempt to modify the constant P from 4 to 3, but the compiler may
+or may not notice this attempt, and subsequent references to P may yield
+either the value 3 or the value 4 or the assignment may blow up if the
+compiler decides to put P in read-only memory. One particular case where
+@code{Unrestricted_Access} can be used in this way is to modify the
+value of an @code{IN} parameter:
+
+@smallexample @c ada
+procedure K (S : in String) is
+   type R is access all Character;
+   RV : R := S (3)'Unrestricted_Access;
+begin
+   RV.all := 'a';
+end;
+@end smallexample
+
+@noindent
+In general this is a risky approach. It may appear to "work" but such uses of
+@code{Unrestricted_Access} are potentially non-portable, even from one version
+of @code{GNAT} to another, so are best avoided if possible.
+
 @node Attribute Update
 @unnumberedsec Attribute Update
 @findex Update
