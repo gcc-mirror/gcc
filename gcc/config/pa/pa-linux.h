@@ -22,9 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define ("__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1");	\
-	builtin_define ("__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2");	\
-	builtin_define ("__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4");	\
 	GNU_USER_TARGET_OS_CPP_BUILTINS();	\
 	builtin_assert ("machine=bigendian");	\
     }						\
@@ -133,3 +130,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_SYNC_LIBCALL
 #define TARGET_SYNC_LIBCALL 1
+
+/* The SYNC operations are implemented as library functions, not
+   INSN patterns.  As a result, the HAVE defines for the patterns are
+   not defined.  We need to define them to generate the corresponding
+   __GCC_HAVE_SYNC_COMPARE_AND_SWAP_* and __GCC_ATOMIC_*_LOCK_FREE
+   defines.  */
+
+#define HAVE_sync_compare_and_swapqi 1
+#define HAVE_sync_compare_and_swaphi 1
+#define HAVE_sync_compare_and_swapsi 1

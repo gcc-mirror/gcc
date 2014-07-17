@@ -1,3 +1,12 @@
+2014-07-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (TARGET_OS_CPP_BUILTINS): Remove defines for
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1, __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+	and __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
+	(HAVE_sync_compare_and_swapqi): Define.
+	(HAVE_sync_compare_and_swaphi): Likewise.
+	(HAVE_sync_compare_and_swapsi): Likewise.
+
 2014-07-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/p5600.md: Add missing cpu tests.
