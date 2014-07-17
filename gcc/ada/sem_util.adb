@@ -15355,6 +15355,24 @@ package body Sem_Util is
         and then not Is_Constrained (Etype (Subp));
    end Returns_Unconstrained_Type;
 
+   ----------------------------
+   -- Root_Type_Of_Full_View --
+   ----------------------------
+
+   function Root_Type_Of_Full_View (T : Entity_Id) return Entity_Id is
+      Rtyp : constant Entity_Id := Root_Type (T);
+
+   begin
+      --  The root type of the full view may itself be a private type. Keep
+      --  looking for the ultimate derivation parent.
+
+      if Is_Private_Type (Rtyp) and then Present (Full_View (Rtyp)) then
+         return Root_Type_Of_Full_View (Full_View (Rtyp));
+      else
+         return Rtyp;
+      end if;
+   end Root_Type_Of_Full_View;
+
    ---------------------------
    -- Safe_To_Capture_Value --
    ---------------------------
