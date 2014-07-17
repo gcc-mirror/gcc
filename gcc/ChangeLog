@@ -1,5 +1,12 @@
 2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/arm_neon.h (vfma_f64): New intrinsic.
+	(vmla_f64): Likewise.
+	(vfms_f64): Likewise.
+	(vmls_f64): Likewise.
+
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_frint_unspec_p): New function.
 	(aarch64_rtx_costs): Handle FIX, UNSIGNED_FIX, UNSPEC.
 
