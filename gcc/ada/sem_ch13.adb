@@ -6218,6 +6218,11 @@ package body Sem_Ch13 is
       PDecl : Node_Id;
       PBody : Node_Id;
 
+      Nam : Name_Id;
+      --  Name for Check pragma, usually Invariant, but might be Type_Invariant
+      --  if we come from a Type_Invariant aspect, we make sure to build the
+      --  Check pragma with the right name, so that Check_Policy works right.
+
       Visible_Decls : constant List_Id := Visible_Declarations (N);
       Private_Decls : constant List_Id := Private_Declarations (N);
 
@@ -6372,6 +6377,10 @@ package body Sem_Ch13 is
                      --  Loop to find corresponding aspect, note that this
                      --  must be present given the pragma is marked delayed.
 
+                     --  Note: in practice Next_Rep_Item (Ritem) is Empty so
+                     --  this loop does nothing. Furthermore, why isn't this
+                     --  simply Corresponding_Aspect ???
+
                      Aitem := Next_Rep_Item (Ritem);
                      while Present (Aitem) loop
                         if Nkind (Aitem) = N_Aspect_Specification
@@ -6399,7 +6408,7 @@ package body Sem_Ch13 is
                --  analyze the original expression in the aspect specification
                --  because it is part of the original tree.
 
-               if ASIS_Mode then
+               if ASIS_Mode and then From_Aspect_Specification (Ritem) then
                   declare
                      Inv : constant Node_Id :=
                              Expression (Corresponding_Aspect (Ritem));
@@ -6409,13 +6418,22 @@ package body Sem_Ch13 is
                   end;
                end if;
 
+               --  Get name to be used for Check pragma
+
+               if not From_Aspect_Specification (Ritem) then
+                  Nam := Name_Invariant;
+               else
+                  Nam := Chars (Identifier (Corresponding_Aspect (Ritem)));
+               end if;
+
                --  Build first two arguments for Check pragma
 
-               Assoc := New_List (
-                 Make_Pragma_Argument_Association (Loc,
-                   Expression => Make_Identifier (Loc, Name_Invariant)),
-                 Make_Pragma_Argument_Association (Loc,
-                   Expression => Exp));
+               Assoc :=
+                 New_List (
+                   Make_Pragma_Argument_Association (Loc,
+                     Expression => Make_Identifier (Loc, Chars => Nam)),
+                   Make_Pragma_Argument_Association (Loc,
+                     Expression => Exp));
 
                --  Add message if present in Invariant pragma
 

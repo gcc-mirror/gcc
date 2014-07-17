@@ -9588,28 +9588,64 @@ end;
 @noindent
 The @code{Unrestricted_Access} attribute is similar to @code{Access}
 except that all accessibility and aliased view checks are omitted.  This
-is a user-beware attribute.  It is similar to
-@code{Address}, for which it is a desirable replacement where the value
-desired is an access type.  In other words, its effect is similar to
-first applying the @code{Address} attribute and then doing an unchecked
-conversion to a desired access type.  In GNAT, but not necessarily in
-other implementations, the use of static chains for inner level
-subprograms means that @code{Unrestricted_Access} applied to a
-subprogram yields a value that can be called as long as the subprogram
-is in scope (normal Ada accessibility rules restrict this usage).
+is a user-beware attribute.
 
-It is possible to use @code{Unrestricted_Access} for any type, but care
-must be exercised if it is used to create pointers to unconstrained array
-objects.  In this case, the resulting pointer has the same scope as the
-context of the attribute, and may not be returned to some enclosing
-scope.  For instance, a function cannot use @code{Unrestricted_Access}
-to create a unconstrained pointer and then return that value to the
-caller.  In addition, it is only valid to create pointers to unconstrained
-arrays using this attribute if the pointer has the normal default ``fat''
-representation where a pointer has two components, one points to the array
-and one points to the bounds.  If a size clause is used to force ``thin''
-representation for a pointer to unconstrained where there is only space for
-a single pointer, then the resulting pointer is not usable.
+For objects, it is similar to @code{Address}, for which it is a
+desirable replacement where the value desired is an access type.
+In other words, its effect is similar to first applying the
+@code{Address} attribute and then doing an unchecked conversion to a
+desired access type.
+
+For subprograms, @code{P'Unrestricted_Access} may be used where
+@code{P'Access} would be illegal, to construct a value of a
+less-nested named access type that designates a more-nested
+subprogram. This value may be used in indirect calls, so long as the
+more-nested subprogram still exists; once the subprogram containing it
+has returned, such calls are erroneous. For example:
+
+@smallexample @c ada
+package body P is
+
+   type Less_Nested is not null access procedure;
+   Global : Less_Nested;
+
+   procedure P1 is
+   begin
+      Global.all;
+   end P1;
+
+   procedure P2 is
+      Local_Var : Integer;
+
+      procedure More_Nested is
+      begin
+         ... Local_Var ...
+      end More_Nested;
+   begin
+      Global := More_Nested'Unrestricted_Access;
+      P1;
+   end P2;
+
+end P;
+@end smallexample
+
+When P1 is called from P2, the call via Global is OK, but if P1 were
+called after P2 returns, it would be an erroneous use of a dangling
+pointer.
+
+For objects, it is possible to use @code{Unrestricted_Access} for any
+type, but care must be exercised if it is used to create pointers to
+unconstrained array objects.  In this case, the resulting pointer has
+the same scope as the context of the attribute, and may not be
+returned to some enclosing scope.  For instance, a function cannot use
+@code{Unrestricted_Access} to create a pointer to unconstrained and
+then return that value to the caller.  In addition, it is only valid
+to create pointers to unconstrained arrays using this attribute if the
+pointer has the normal default ``fat'' representation where a pointer
+has two components, one points to the array and one points to the
+bounds.  If a size clause is used to force ``thin'' representation for
+a pointer to unconstrained where there is only space for a single
+pointer, then the resulting pointer is not usable.
 
 In the simple case where a direct use of Unrestricted_Access attempts
 to make a thin pointer for a non-aliased object, the compiler will
@@ -9686,17 +9722,17 @@ bounds before the string.  If the size clause for type @code{A}
 were not present, then the pointer
 would be a fat pointer, where one component is a pointer to the bounds,
 and all would be well.  But with the size clause present, the conversion from
-fat pointer to thin pointer in the call looses the bounds, and so this
-program raises a @code{Program_Error} exception if executed.
+fat pointer to thin pointer in the call loses the bounds, and so this
+is erroneous, and the program likely raises a @code{Program_Error} exception.
 
 In general, it is advisable to completely
 avoid mixing the use of thin pointers and the use of
 @code{Unrestricted_Access} where the designated type is an
 unconstrained array.  The use of thin pointers should be restricted to
-cases of porting legacy code which implicitly assumes the size of pointers,
+cases of porting legacy code that implicitly assumes the size of pointers,
 and such code should not in any case be using this attribute.
 
-Another erroroneous situation arises if the attribute is
+Another erroneous situation arises if the attribute is
 applied to a constant. The resulting pointer can be used to access the
 constant, but the effect of trying to modify a constant in this manner
 is not well-defined. Consider this example:
