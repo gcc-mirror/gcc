@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2013, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2014, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -314,7 +314,7 @@ getc_immediate_common (FILE *stream,
                        int *ch,
                        int *end_of_file,
                        int *avail,
-                       int waiting)
+                       int waiting ATTRIBUTE_UNUSED)
 {
 #if defined (linux) || defined (sun) \
     || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (__hpux__) \
@@ -785,9 +785,11 @@ extern void
 __gnat_localtime_tzoff (const time_t *, const int *, long *);
 
 void
-__gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
+__gnat_localtime_tzoff (const time_t *timer ATTRIBUTE_UNUSED,
+			const int *is_historic ATTRIBUTE_UNUSED,
+			long *off ATTRIBUTE_UNUSED)
 {
-  struct tm tp;
+  struct tm tp ATTRIBUTE_UNUSED;
 
 /* AIX, HPUX, Sun Solaris */
 #if defined (_AIX) || defined (__hpux__) || defined (sun)
@@ -853,8 +855,8 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
 /* Darwin, Free BSD, Linux, where component tm_gmtoff is present in
    struct tm */
 
-#elif defined (__APPLE__) || defined (__FreeBSD__) || defined (linux) ||\
-     defined (__GLIBC__)
+#elif defined (__APPLE__) || defined (__FreeBSD__) || defined (linux) \
+  || defined (__GLIBC__)
 {
   localtime_r (timer, &tp);
   *off = tp.tm_gmtoff;

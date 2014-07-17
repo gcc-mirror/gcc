@@ -10687,8 +10687,7 @@ package body Sem_Attr is
 
                HB :=
                  Make_Attribute_Reference (Loc,
-                   Prefix         =>
-                     Duplicate_Subexpr (P, Name_Req => True),
+                   Prefix         => Duplicate_Subexpr (P, Name_Req => True),
                    Attribute_Name => Name_Last,
                    Expressions    => Dims);
 

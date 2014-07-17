@@ -1,3 +1,28 @@
+2014-07-17  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.ads: Minor comment update.
+
+2014-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* sysdep.c: Add ATTRIBUTE_UNUSED to avoid warnings.  Fix some
+	indentation.
+	* socket.c: Remove #warning to avoid warning.
+	* expect.c: Indent some preprocessor directives to clarify
+	nested if.  Do not use wait.h on PikeOS.  Add ATTRIBUTE_UNUSED
+	to remove warnings.
+	* env.c: Fix indentation.  Port to PikeOS.
+	* gsocket.h: Port to PikeOS.  Remove #warning.
+	* terminals.c: Port to PikeOS.	Fix indentation of the stubs.
+	Add ATTRIBUTE_UNUSED to stubs arguments.  Fix return statement
+	of stubbed __gnat_setup_parent_communication.
+	* adaint.c: Port to PikeOS.  Reindent some preprocessor
+	directives to clarify nested if.  Fix indentation.  Add missing
+	ATTRIBUTE_UNUSED.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb, exp_ch7.ads, sinfo.ads: Minor reformatting.
