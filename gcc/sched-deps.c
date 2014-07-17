@@ -2750,7 +2750,8 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 	   Consider for instance a volatile asm that changes the fpu rounding
 	   mode.  An insn should not be moved across this even if it only uses
 	   pseudo-regs because it might give an incorrectly rounded result.  */
-	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
+	if ((code != ASM_OPERANDS || MEM_VOLATILE_P (x))
+	    && !DEBUG_INSN_P (insn))
 	  reg_pending_barrier = TRUE_BARRIER;
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
