@@ -4322,6 +4322,7 @@ package body Sprint is
                         Len : constant Uint :=
                                 String_Literal_Length (Typ);
                      begin
+                        Write_Header (False);
                         Write_Str ("String (");
                         Write_Int (UI_To_Int (LB));
                         Write_Str (" .. ");

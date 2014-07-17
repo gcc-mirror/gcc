@@ -1959,20 +1959,27 @@ package Sinfo is
    --    and multiplication operations.
 
    --  SCIL_Entity (Node4-Sem)
-   --    Present in SCIL nodes. Used to reference the tagged type associated
-   --    with the SCIL node.
+   --    Present in SCIL nodes. References the specific tagged type associated
+   --    with the SCIL node (for an N_SCIL_Dispatching_Call node, this is
+   --    the controlling type of the call; for an N_SCIL_Membership_Test node
+   --    generated as part of testing membership in T'Class, this is T; for an
+   --    N_SCIL_Dispatch_Table_Tag_Init node, this is the type being declared).
 
    --  SCIL_Controlling_Tag (Node5-Sem)
-   --    Present in N_SCIL_Dispatching_Call nodes. Used to reference the
-   --    controlling tag of a dispatching call.
+   --    Present in N_SCIL_Dispatching_Call nodes. References the
+   --    controlling tag of a dispatching call. This is usually an
+   --    N_Selected_Component node (for a _tag component), but may
+   --    be an N_Object_Declaration or N_Parameter_Specification node
+   --    in some cases (e.g., for a call to a classwide streaming operation
+   --    or to an instance of Ada.Tags.Generic_Dispatching_Constructor).
 
    --  SCIL_Tag_Value (Node5-Sem)
    --    Present in N_SCIL_Membership_Test nodes. Used to reference the tag
-   --    value that is being tested.
+   --    of the value that is being tested.
 
    --  SCIL_Target_Prim (Node2-Sem)
-   --    Present in N_SCIL_Dispatching_Call nodes. Used to reference the tagged
-   --    type primitive associated with the SCIL node.
+   --    Present in N_SCIL_Dispatching_Call nodes. References the primitive
+   --    operation named (statically) in a dispatching call.
 
    --  Scope (Node3-Sem)
    --    Present in defining identifiers, defining character literals and
@@ -7834,16 +7841,19 @@ package Sinfo is
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the quote in the Sprint file output.
 
-      -----------------
-      --  SCIL Nodes --
-      -----------------
+      ----------------
+      -- SCIL Nodes --
+      ----------------
 
-      --  SCIL nodes are special nodes added to the tree when the CodePeer
-      --  mode is active. They help the CodePeer backend to locate nodes that
-      --  require special processing. They are only generated if SCIL
-      --  generation is enabled. A standard tree-walk will not encounter
-      --  these nodes even if they are present; these nodes are only
-      --  accessible via the function SCIL_LL.Get_SCIL_Node.
+      --  SCIL nodes are special nodes added to the tree when the CodePeer mode
+      --  is active. They are only generated if SCIL generation is enabled.
+      --  A standard tree-walk will not encounter these nodes even if they
+      --  are present; these nodes are only accessible via the function
+      --  SCIL_LL.Get_SCIL_Node. These nodes have no associated dynamic
+      --  semantics.
+
+      --  Sprint syntax: [ <node kind> ]
+      --  No semantic field values are displayed.
 
       --  N_SCIL_Dispatch_Table_Tag_Init
       --  Sloc references a node for a tag initialization
