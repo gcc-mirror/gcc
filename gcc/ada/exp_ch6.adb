@@ -4195,6 +4195,33 @@ package body Exp_Ch6 is
    -------------------------------
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id) is
+      function Is_Element_Reference (N : Node_Id) return Boolean;
+      --  Determine whether node N denotes a reference to an Ada 2012 container
+      --  element.
+
+      --------------------------
+      -- Is_Element_Reference --
+      --------------------------
+
+      function Is_Element_Reference (N : Node_Id) return Boolean is
+         Ref : constant Node_Id := Original_Node (N);
+
+      begin
+         --  Analysis marks an element reference by setting the generalized
+         --  indexing attribute of an indexed component before the component
+         --  is rewritten into a function call.
+
+         return
+           Nkind (Ref) = N_Indexed_Component
+             and then Present (Generalized_Indexing (Ref));
+      end Is_Element_Reference;
+
+      --  Local variables
+
+      Is_Elem_Ref : constant Boolean := Is_Element_Reference (N);
+
+   --  Start of processing for Expand_Ctrl_Function_Call
+
    begin
       --  Optimization, if the returned value (which is on the sec-stack) is
       --  returned again, no need to copy/readjust/finalize, we can just pass
@@ -4216,12 +4243,17 @@ package body Exp_Ch6 is
 
       Remove_Side_Effects (N);
 
-      --  When the temporary function result appears inside a case or an if
-      --  expression, its lifetime must be extended to match that of the
-      --  context. If not, the function result would be finalized prematurely
-      --  and the evaluation of the expression could yield the wrong result.
+      --  When the temporary function result appears inside a case expression
+      --  or an if expression, its lifetime must be extended to match that of
+      --  the context. If not, the function result will be finalized too early
+      --  and the evaluation of the expression could yield incorrect result. An
+      --  exception to this rule are references to Ada 2012 container elements.
+      --  Such references must be finalized at the end of each iteration of the
+      --  related quantified expression, otherwise the container will remain
+      --  busy.
 
-      if Within_Case_Or_If_Expression (N)
+      if not Is_Elem_Ref
+        and then Within_Case_Or_If_Expression (N)
         and then Nkind (N) = N_Explicit_Dereference
       then
          Set_Is_Processed_Transient (Entity (Prefix (N)));

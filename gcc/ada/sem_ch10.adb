@@ -1703,12 +1703,16 @@ package body Sem_Ch10 is
       --  If the main unit is a subunit, then we are just performing semantic
       --  analysis on that subunit, and any other subunits of any parent unit
       --  should be ignored, except that if we are building trees for ASIS
-      --  usage we want to annotate the stub properly.
+      --  usage we want to annotate the stub properly. If the main unit is
+      --  itself a subunit, another subunit is irrelevant unless it is a
+      --  subunit of the current one.
 
       elsif Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
         and then Subunit_Name /= Unit_Name (Main_Unit)
       then
-         if ASIS_Mode then
+         if ASIS_Mode
+           and then Scope (Defining_Entity (N)) = Cunit_Entity (Main_Unit)
+         then
             Optional_Subunit;
          end if;
 

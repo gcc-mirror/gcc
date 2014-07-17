@@ -428,10 +428,8 @@ package body Lib.Writ is
          --  If this is a spec ...
 
          if (Is_Subprogram (Uent)
-               or else
-             Ekind (Uent) = E_Package
-               or else
-             Is_Generic_Unit (Uent))
+               or else Ekind (Uent) = E_Package
+               or else Is_Generic_Unit (Uent))
 
             --  and an elaboration entity was declared ...
 

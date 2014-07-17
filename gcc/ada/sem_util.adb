@@ -15672,17 +15672,18 @@ package body Sem_Util is
      (Context : Entity_Id;
       Mode    : out SPARK_Mode_Type)
    is
-      Prag : constant Node_Id := SPARK_Pragma (Context);
-
    begin
       --  Save the current mode in effect
 
       Mode := SPARK_Mode;
 
-      --  Set the mode of the context as the current SPARK mode
+      --  Do not consider illegal or partially decorated constructs
 
-      if Present (Prag) then
-         SPARK_Mode := Get_SPARK_Mode_From_Pragma (Prag);
+      if Ekind (Context) = E_Void or else Error_Posted (Context) then
+         null;
+
+      elsif Present (SPARK_Pragma (Context)) then
+         SPARK_Mode := Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Context));
       end if;
    end Save_SPARK_Mode_And_Set;
 
