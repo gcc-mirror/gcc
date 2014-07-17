@@ -2437,7 +2437,7 @@ This pragma is now obsolete and, other than generating a warning if warnings
 on obsolescent features are enabled, is completely ignored.
 It used to be required to ensure compatibility with C++, but
 is no longer required for that purpose because GNAT generates
-the same object layout than the G++ compiler by default.
+the same object layout as the G++ compiler by default.
 
 See @ref{Interfacing to C++} for related information.
 

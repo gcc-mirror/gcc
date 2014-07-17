@@ -6079,7 +6079,11 @@ The @option{-gnatVa} may be used to enable additional validity checks,
 which are not required by the RM. These checks are often very
 expensive (which is why the RM does not require them). These checks
 are useful in tracking down uninitialized variables, but they are
-not usually recommended for production builds.
+not usually recommended for production builds, and in particular
+we do not recommend using these extra validity checking options in
+combination with optimization, since this can confuse the optimizer.
+If performance is a consideration, leading to the need to optimize,
+then the validity checking options should not be used.
 
 The other @option{-gnatV^@var{x}^^} switches below allow finer-grained
 control; you can enable whichever validity checks you desire. However,
@@ -6820,7 +6824,8 @@ that assumption is wrong.
 
 The checks subject to suppression include all the checks defined by
 the Ada standard, the additional implementation defined checks
-@code{Alignment_Check}, @code{Atomic_Synchronization}, and
+@code{Alignment_Check}, @code{Atomic_Synchronization},
+@code{Duplicated_Tag_Check}, @code{Predicate_Check}, and
 @code{Validity_Check}, as well as any checks introduced using
 @code{pragma Check_Name}.
 
