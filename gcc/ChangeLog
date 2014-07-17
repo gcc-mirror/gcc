@@ -1,3 +1,14 @@
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vmlal_high_lane_s16): Fix type.
+	(vmlal_high_lane_s32): Likewise.
+	(vmlal_high_lane_u16): Likewise.
+	(vmlal_high_lane_u32): Likewise.
+	(vmlsl_high_lane_s16): Likewise.
+	(vmlsl_high_lane_s32): Likewise.
+	(vmlsl_high_lane_u16): Likewise.
+	(vmlsl_high_lane_u32): Likewise.
+
 2014-07-17  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/types.md (alu_reg): Replaced by alu_sreg and alu_dsp_reg.
