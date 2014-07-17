@@ -1,3 +1,8 @@
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61804
+	* g++.dg/parse/pr61804.C: New.
+
 2014-07-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.db/specs/alignment2.ads, gnat.db/specs/size_clause1.ads,

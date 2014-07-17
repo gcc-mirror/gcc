@@ -1,3 +1,9 @@
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61804
+	* parser.c (cp_parser_tokens_start_cast_expression): Return -1
+	for '++' and '--'.
+
 2014-07-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61811
