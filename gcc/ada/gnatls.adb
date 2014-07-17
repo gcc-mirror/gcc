@@ -45,6 +45,8 @@ with Switch;      use Switch;
 with Targparm;    use Targparm;
 with Types;       use Types;
 
+with Ada.Command_Line; use Ada.Command_Line;
+
 with GNAT.Case_Util; use GNAT.Case_Util;
 
 procedure Gnatls is
@@ -1599,7 +1601,7 @@ begin
       Set_Standard_Error;
       Write_Str ("Can't use -l with another switch");
       Write_Eol;
-      Usage;
+      Write_Line ("type ""gnatls --help"" for help");
       Exit_Program (E_Fatal);
    end if;
 
@@ -1748,7 +1750,11 @@ begin
 
    if not More_Lib_Files then
       if not Print_Usage and then not Verbose_Mode then
-         Usage;
+         if Argument_Count = 0 then
+            Usage;
+         else
+            Write_Line ("type ""gnatls --help"" for help");
+         end if;
       end if;
 
       Exit_Program (E_Fatal);

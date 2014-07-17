@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2013, AdaCore                     --
+--                     Copyright (C) 1995-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2375,14 +2375,14 @@ package body System.OS_Lib is
    -- Set_Executable --
    --------------------
 
-   procedure Set_Executable (Name : String) is
-      procedure C_Set_Executable (Name : C_File_Name);
+   procedure Set_Executable (Name : String; Mode : Positive := S_Owner) is
+      procedure C_Set_Executable (Name : C_File_Name; Mode : Integer);
       pragma Import (C, C_Set_Executable, "__gnat_set_executable");
       C_Name : aliased String (Name'First .. Name'Last + 1);
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
-      C_Set_Executable (C_Name (C_Name'First)'Address);
+      C_Set_Executable (C_Name (C_Name'First)'Address, Mode);
    end Set_Executable;
 
    ----------------------

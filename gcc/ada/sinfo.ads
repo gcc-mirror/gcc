@@ -492,10 +492,10 @@ package Sinfo is
    --  technical reasons it is impossible or very hard to have the original
    --  structure properly decorated by semantic information, and the rewritten
    --  structure fully reproduces the original source. Below is the (incomplete
-   --  for the moment) list of such exceptions:
+   --  for the moment???) list of such exceptions:
    --
-   --  * generic specifications and generic bodies;
-   --  * function calls that use prefixed notation (Operand.Operation [(...)]);
+   --    Generic specifications and generic bodies
+   --    Function calls that use prefixed notation (Operand.Operation [(...)])
 
    --  Representation Information
 

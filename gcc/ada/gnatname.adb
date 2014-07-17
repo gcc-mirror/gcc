@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -289,7 +289,7 @@ procedure Gnatname is
                       Patterns.Last
                         (Arguments.Table (Arguments.Last).Foreign_Patterns) = 0
                   then
-                     Usage;
+                     Put_Line ("type ""gnatname --help"" for help");
                      return;
                   end if;
 
@@ -619,7 +619,12 @@ begin
       and then
       Patterns.Last (Arguments.Table (Arguments.Last).Foreign_Patterns) = 0
    then
-      Usage;
+      if Argument_Count = 0 then
+         Usage;
+      else
+         Put_Line ("type ""gnatname --help"" for help");
+      end if;
+
       return;
    end if;
 

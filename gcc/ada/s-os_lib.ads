@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -522,6 +522,10 @@ package System.OS_Lib is
    --  contains the name of the file to which it is linked. Symbolic links may
    --  span file systems and may refer to directories.
 
+   S_Owner  : constant := 1;
+   S_Group  : constant := 2;
+   S_Others : constant := 4;
+
    procedure Set_Writable (Name : String);
    --  Change permissions on the named file to make it writable for its owner
 
@@ -533,7 +537,7 @@ package System.OS_Lib is
    --  This renaming is provided for backwards compatibility with previous
    --  versions. The use of Set_Non_Writable is preferred (clearer name).
 
-   procedure Set_Executable (Name : String);
+   procedure Set_Executable (Name : String; Mode : Positive := S_Owner);
    --  Change permissions on the named file to make it executable for its owner
 
    procedure Set_Readable (Name : String);

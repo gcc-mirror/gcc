@@ -662,6 +662,15 @@ package body Sem_Case is
    --  Start of processing for Check_Choice_Set
 
    begin
+      --  If the case is part of a predicate aspect specification, do not
+      --  recheck it against itself.
+
+      if Present (Parent (Case_Node))
+        and then Nkind (Parent (Case_Node)) = N_Aspect_Specification
+      then
+         return;
+      end if;
+
       --  Choice_Table must start at 0 which is an unused location used by the
       --  sorting algorithm. However the first valid position for a discrete
       --  choice is 1.

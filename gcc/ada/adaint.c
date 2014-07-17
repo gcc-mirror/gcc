@@ -2332,8 +2332,13 @@ __gnat_set_writable (char *name)
 #endif
 }
 
+/* must match definition in s-os_lib.ads */
+#define S_OWNER  1
+#define S_GROUP  2
+#define S_OTHERS 4
+
 void
-__gnat_set_executable (char *name)
+__gnat_set_executable (char *name, int mode)
 {
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
@@ -2349,7 +2354,12 @@ __gnat_set_executable (char *name)
 
   if (GNAT_STAT (name, &statbuf) == 0)
     {
-      statbuf.st_mode = statbuf.st_mode | S_IXUSR;
+      if (mode & S_OWNER)
+        statbuf.st_mode = statbuf.st_mode | S_IXUSR;
+      if (mode & S_GROUP)
+        statbuf.st_mode = statbuf.st_mode | S_IXGRP;
+      if (mode & S_OTHERS)
+        statbuf.st_mode = statbuf.st_mode | S_IXOTH;
       chmod (name, statbuf.st_mode);
     }
 #endif
