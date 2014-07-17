@@ -2247,7 +2247,15 @@ package body Sprint is
                      Write_Str_With_Col_Check ("not null ");
                   end if;
 
-                  Sprint_Node (Object_Definition (Node));
+                  --  Print type, we used to print the Object_Definition from
+                  --  the node, but it is much more useful to print the Etype
+                  --  of the defining identifier. For example, this will be a
+                  --  clear reference to the Itype with the bounds in the case
+                  --  of an unconstrained array type like String. The object
+                  --  after all is constrained, even if its nominal subtype is
+                  --  unconstrained.
+
+                  Sprint_Node (Etype (Def_Id));
 
                   if Present (Expression (Node)) then
                      Write_Str (" := ");

@@ -47,6 +47,7 @@ with Types;    use Types;
 
 with Ada.Command_Line;          use Ada.Command_Line;
 
+with GNAT.Command_Line;         use GNAT.Command_Line;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.IO;                   use GNAT.IO;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
@@ -1467,7 +1468,7 @@ package body Clean is
          if Argument_Count = 0 then
             Usage;
          else
-            Put_Line ("type ""gnatclean --help"" for help");
+            Try_Help;
          end if;
 
          return;

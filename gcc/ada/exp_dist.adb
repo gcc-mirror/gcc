@@ -2036,7 +2036,10 @@ package body Exp_Dist is
          Append_To (Decls, RPC_Receiver_Decl);
 
       else
-         --  Comments required here???
+         --  Case of RACW implementing a RAS with the GARLIC PCS: there is
+         --  no RPC receiver in that case, this is just an indication of
+         --  where to insert code in the tree (see comment in declaration of
+         --  type Stub_Structure).
 
          RPC_Receiver_Decl := Last (Decls);
       end if;

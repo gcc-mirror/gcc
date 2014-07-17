@@ -1,5 +1,33 @@
 2014-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document new restriction No_Long_Long_Integers.
+	* exp_ch4.adb (Make_Array_Comparison_Op): Add note that we
+	could do this by actually expanding a real generic.
+	* a-tags.ads: Add comments about performance.
+	* sprint.adb (Sprint_Node_Actual, case N_Object_Declaration):
+	Print Etype of defining identifier, rather than the object
+	definition. More information.
+
+2014-07-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb: Minor documentation clarification.
+
+2014-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Aliased): Revert previous change.
+
+2014-07-17  Vincent Celier  <celier@adacore.com>
+
+	* g-comlin.adb (Try_Help): New procedure.
+	(Getopt): Use new procedure Try_Help.
+	* g-comlin.ads (Try_Help): New procedure.
+
+2014-07-17  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Minor update.
+
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Improve documentation of Unrestricted_Access.
 	* sinfo.ads: Document restriction on aggregates (must expand to
 	assignments if one or more assignments needs expansion, e.g. for

@@ -4238,9 +4238,9 @@ package body Exp_Util is
          --  When a function call appears in Object.Operation format, the
          --  original representation has two possible forms depending on the
          --  availability of actual parameters:
-         --
-         --    Obj.Func_Call          --  N_Selected_Component
-         --    Obj.Func_Call (Param)  --  N_Indexed_Component
+
+         --    Obj.Func_Call           N_Selected_Component
+         --    Obj.Func_Call (Param)   N_Indexed_Component
 
          else
             if Nkind (Expr) = N_Indexed_Component then
@@ -4557,15 +4557,6 @@ package body Exp_Util is
       --  Start of processing for Is_Aliased
 
       begin
-         --  Aliasing in expression with actions does not matter because the
-         --  scope of the transient object is always limited by the scope of
-         --  the EWA. Such objects are always hooked and always finalized at
-         --  the end of the EWA's scope.
-
-         if Nkind (Rel_Node) = N_Expression_With_Actions then
-            return False;
-         end if;
-
          Stmt := First_Stmt;
          while Present (Stmt) loop
             if Nkind (Stmt) = N_Object_Declaration then
@@ -5295,17 +5286,33 @@ package body Exp_Util is
 
    function Is_Volatile_Reference (N : Node_Id) return Boolean is
    begin
-      if Nkind (N) in N_Has_Etype
-        and then Present (Etype (N))
-        and then Treat_As_Volatile (Etype (N))
-      then
+      --  Only source references are to be treated as volatile, internally
+      --  generated stuff cannot have volatile external effects.
+
+      if not Comes_From_Source (N) then
+         return False;
+
+      --  Never true for reference to a type
+
+      elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
+         return False;
+
+      --  True if object reference with volatile type
+
+      elsif Is_Volatile_Object (N) then
          return True;
+
+      --  True if reference to volatile entity
 
       elsif Is_Entity_Name (N) then
          return Treat_As_Volatile (Entity (N));
 
+      --  True for slice of volatile array
+
       elsif Nkind (N) = N_Slice then
          return Is_Volatile_Reference (Prefix (N));
+
+      --  True if volatile component
 
       elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
          if (Is_Entity_Name (Prefix (N))
@@ -5317,6 +5324,8 @@ package body Exp_Util is
          else
             return Is_Volatile_Reference (Prefix (N));
          end if;
+
+      --  Otherwise false
 
       else
          return False;
@@ -6844,9 +6853,7 @@ package body Exp_Util is
       --  (this happens because routines Duplicate_Subexpr_XX implicitly invoke
       --  Remove_Side_Effects).
 
-      if No (Exp_Type)
-        or else Ekind (Exp_Type) = E_Access_Attribute_Type
-      then
+      if No (Exp_Type) or else Ekind (Exp_Type) = E_Access_Attribute_Type then
          return;
 
       --  No action needed for side-effect free expressions
@@ -6913,9 +6920,12 @@ package body Exp_Util is
          Insert_Action (Exp, E);
 
       --  If the expression has the form v.all then we can just capture the
-      --  pointer, and then do an explicit dereference on the result.
+      --  pointer, and then do an explicit dereference on the result, but
+      --  this is not right if this is a volatile reference.
 
-      elsif Nkind (Exp) = N_Explicit_Dereference then
+      elsif Nkind (Exp) = N_Explicit_Dereference
+        and then not Is_Volatile_Reference (Exp)
+      then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Res :=
            Make_Explicit_Dereference (Loc, New_Occurrence_Of (Def_Id, Loc));
@@ -6987,17 +6997,21 @@ package body Exp_Util is
       --  This is needed for correctness in the case of a volatile object of
       --  a non-volatile type because the Make_Reference call of the "default"
       --  approach would generate an illegal access value (an access value
-      --  cannot designate such an object - see Analyze_Reference). We skip
-      --  using this scheme if we have an object of a volatile type and we do
-      --  not have Name_Req set true (see comments for Side_Effect_Free).
-
-      --  In Ada 2012 a qualified expression is an object, but for purposes of
-      --  removing side effects it still need to be transformed into a separate
-      --  declaration, particularly if the expression is an aggregate.
+      --  cannot designate such an object - see Analyze_Reference).
 
       elsif Is_Object_Reference (Exp)
         and then Nkind (Exp) /= N_Function_Call
+
+        --  In Ada 2012 a qualified expression is an object, but for purposes
+        --  of removing side effects it still need to be transformed into a
+        --  separate declaration, particularly in the case of an aggregate.
+
         and then Nkind (Exp) /= N_Qualified_Expression
+
+        --  We skip using this scheme if we have an object of a volatile
+        --  type and we do not have Name_Req set true (see comments for
+        --  Side_Effect_Free).
+
         and then (Name_Req or else not Treat_As_Volatile (Exp_Type))
       then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
@@ -8030,6 +8044,12 @@ package body Exp_Util is
    --  Start of processing for Side_Effect_Free
 
    begin
+      --  If volatile reference, always consider it to have side effects
+
+      if Is_Volatile_Reference (N) then
+         return False;
+      end if;
+
       --  Note on checks that could raise Constraint_Error. Strictly, if we
       --  take advantage of 11.6, these checks do not count as side effects.
       --  However, we would prefer to consider that they are side effects,
@@ -8043,12 +8063,17 @@ package body Exp_Util is
 
       if Is_Entity_Name (N) then
 
+         --  A type reference is always side effect free
+
+         if Is_Type (Entity (N)) then
+            return True;
+
          --  Variables are considered to be a side effect if Variable_Ref
          --  is set or if we have a volatile reference and Name_Req is off.
          --  If Name_Req is True then we can't help returning a name which
          --  effectively allows multiple references in any case.
 
-         if Is_Variable (N, Use_Original_Node => False) then
+         elsif Is_Variable (N, Use_Original_Node => False) then
             return not Variable_Ref
               and then (not Is_Volatile_Reference (N) or else Name_Req);
 

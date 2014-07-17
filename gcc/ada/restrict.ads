@@ -129,7 +129,7 @@ package Restrict is
       No_Implicit_Loops                  => True,
       No_Initialize_Scalars              => True,
       No_Local_Protected_Objects         => True,
-      No_Long_Long_Integer               => True,
+      No_Long_Long_Integers              => True,
       No_Protected_Type_Allocators       => True,
       No_Relative_Delay                  => True,
       No_Requeue_Statements              => True,

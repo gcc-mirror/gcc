@@ -210,7 +210,7 @@ procedure Gnatxref is
                end if;
 
             when others =>
-               Put_Line ("type ""gnatxref --help"" for help");
+               Try_Help;
                raise Usage_Error;
          end case;
       end loop;
@@ -227,7 +227,7 @@ procedure Gnatxref is
             if Ada.Strings.Fixed.Index (S, ":") /= 0 then
                Ada.Text_IO.Put_Line
                  ("Only file names are allowed on the command line");
-               Put_Line ("type ""gnatxref --help"" for help");
+               Try_Help;
                raise Usage_Error;
             end if;
 
@@ -240,13 +240,13 @@ procedure Gnatxref is
       when GNAT.Command_Line.Invalid_Switch =>
          Ada.Text_IO.Put_Line ("Invalid switch : "
                                & GNAT.Command_Line.Full_Switch);
-         Put_Line ("type ""gnatxref --help"" for help");
+         Try_Help;
          raise Usage_Error;
 
       when GNAT.Command_Line.Invalid_Parameter =>
          Ada.Text_IO.Put_Line ("Parameter missing for : "
                                & GNAT.Command_Line.Full_Switch);
-         Put_Line ("type ""gnatxref --help"" for help");
+         Try_Help;
          raise Usage_Error;
    end Parse_Cmd_Line;
 
@@ -304,7 +304,7 @@ begin
       if Argument_Count = 0 then
          Write_Usage;
       else
-         Put_Line ("type ""gnatxref --help"" for help");
+         Try_Help;
          raise Usage_Error;
       end if;
    end if;

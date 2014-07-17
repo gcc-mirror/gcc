@@ -1251,7 +1251,7 @@ procedure Gnatchop is
          if Argument_Count = 0 then
             Usage;
          else
-            Put_Line ("type ""gnatchop --help"" for help");
+            Try_Help;
          end if;
 
          return False;

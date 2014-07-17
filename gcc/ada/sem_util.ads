@@ -1796,7 +1796,7 @@ package Sem_Util is
    --    If restriction No_Dynamic_Attachment is set, then it checks that the
    --    entity is not one of the restricted names for this restriction.
    --
-   --    If restriction No_Long_Long_Integer is set, then it checks that the
+   --    If restriction No_Long_Long_Integers is set, then it checks that the
    --    entity is not Standard.Long_Long_Integer.
    --
    --    If restriction No_Implementation_Identifiers is set, then it checks

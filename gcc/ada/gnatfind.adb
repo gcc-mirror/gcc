@@ -228,7 +228,7 @@ procedure Gnatfind is
                end if;
 
             when others =>
-               Put_Line ("type ""gnatfind --help"" for help");
+               Try_Help;
                raise Usage_Error;
          end case;
       end loop;
@@ -268,18 +268,18 @@ procedure Gnatfind is
       when GNAT.Command_Line.Invalid_Switch =>
          Ada.Text_IO.Put_Line ("Invalid switch : "
                                & GNAT.Command_Line.Full_Switch);
-         Put_Line ("type ""gnatfind --help"" for help");
+         Try_Help;
          raise Usage_Error;
 
       when GNAT.Command_Line.Invalid_Parameter =>
          Ada.Text_IO.Put_Line ("Parameter missing for : "
                                & GNAT.Command_Line.Full_Switch);
-         Put_Line ("type ""gnatfind --help"" for help");
+         Try_Help;
          raise Usage_Error;
 
       when Xref_Lib.Invalid_Argument =>
          Ada.Text_IO.Put_Line ("Invalid line or column in the pattern");
-         Put_Line ("type ""gnatfind --help"" for help");
+         Try_Help;
          raise Usage_Error;
    end Parse_Cmd_Line;
 
@@ -352,7 +352,7 @@ begin
       if Argument_Count = 0 then
          Write_Usage;
       else
-         Put_Line ("type ""gnatfind --help"" for help");
+         Try_Help;
          raise Usage_Error;
       end if;
    end if;
@@ -382,7 +382,7 @@ begin
       Ada.Text_IO.Put_Line ("Error: for type hierarchy output you must "
                             & "specify only one file.");
       Ada.Text_IO.New_Line;
-      Put_Line ("type ""gnatfind --help"" for help");
+      Try_Help;
       raise Usage_Error;
    end if;
 
