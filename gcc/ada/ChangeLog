@@ -1,3 +1,14 @@
+2014-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* bindgen.adb (Gen_Elab_Calls): Skip reference to elab
+	entity if none exists (Gen_Elab_Calls): Complain if clash with
+	No_Multiple_Elaboration.
+	* s-rident.ads, restrict.ads: Add restriction No_Multiple_Elaboration.
+	* sem_util.adb (Build_Elaboration_Entity): Skip building entity
+	if not needed.
+	* gnat_rm.texi: Document restriction No_Multiple_Elaboration.
+	* sem_ch4.adb: Minor comment updates.
+
 2014-07-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch9.adb (Buid_Protected_Subprogram_Call): Preserve type

@@ -1289,18 +1289,43 @@ package body Sem_Util is
    --  Start of processing for Build_Elaboration_Entity
 
    begin
-      --  Ignore if already constructed
+      --  Ignore call if already constructed
 
       if Present (Elaboration_Entity (Spec_Id)) then
          return;
-      end if;
 
       --  Ignore in ASIS mode, elaboration entity is not in source and plays
       --  no role in analysis.
 
-      if ASIS_Mode then
+      elsif ASIS_Mode then
+         return;
+
+      --  See if we need elaboration entity. We always need it for the dynamic
+      --  elaboration model, since it is needed to properly generate the PE
+      --  exception for access before elaboration.
+
+      elsif Dynamic_Elaboration_Checks then
+         null;
+
+      --  For the static model, we don't need the elaboration counter if this
+      --  unit is sure to have no elaboration code, since that means there
+      --  is no elaboration unit to be called. Note that we can't just decide
+      --  after the fact by looking to see whether there was elaboration code,
+      --  because that's too late to make this decision.
+
+      elsif Restriction_Active (No_Elaboration_Code) then
+         return;
+
+      --  Similarly, for the static model, we can skip the elaboration counter
+      --  if we have the No_Multiple_Elaboration restriction, since for the
+      --  static model, that's the only purpose of the counter (to avoid
+      --  multiple elaboration).
+
+      elsif Restriction_Active (No_Multiple_Elaboration) then
          return;
       end if;
+
+      --  Here we need the elaboration entity
 
       --  Construct name of elaboration entity as xxx_E, where xxx is the unit
       --  name with dots replaced by double underscore. We have to manually
@@ -1351,8 +1376,8 @@ package body Sem_Util is
       Disc : Entity_Id)
    is
       Loc : constant Source_Ptr := Sloc (Expr);
-   begin
 
+   begin
       --  An entity of a type with a reference aspect is overloaded with
       --  both interpretations: with and without the dereference. Now that
       --  the dereference is made explicit, set the type of the node properly,

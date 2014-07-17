@@ -1,3 +1,4 @@
+
 \input texinfo   @c -*-texinfo-*-
 
 @c %**start of header
@@ -446,6 +447,7 @@ Partition-Wide Restrictions
 * No_Local_Protected_Objects::
 * No_Local_Timing_Events::
 * No_Long_Long_Integers::
+* No_Multiple_Elaboration::
 * No_Nested_Finalization::
 * No_Protected_Type_Allocators::
 * No_Protected_Types::
@@ -9941,6 +9943,7 @@ then all compilation units in the partition must obey the restriction).
 * No_Local_Protected_Objects::
 * No_Local_Timing_Events::
 * No_Long_Long_Integers::
+* No_Multiple_Elaboration::
 * No_Nested_Finalization::
 * No_Protected_Type_Allocators::
 * No_Protected_Types::
@@ -10397,6 +10400,23 @@ declared at the library level.
 type Standard.Long_Long_Integer, and also forbids declaring range types whose
 implicit base type is Long_Long_Integer, and modular types whose size exceeds
 Long_Integer'Size.
+
+@node No_Multiple_Elaboration
+@unnumberedsubsec No_Multiple_Elaboration
+@findex No_Multiple_Elaboration
+[GNAT] Normally each package contains a 16-bit counter used to check for access
+before elaboration, and to control multiple elaboration attempts.
+This counter is eliminated for units compiled with the static model
+of elaboration if restriction @code{No_Elaboration_Code}
+is active but because of
+the need to check for multiple elaboration in the general case, these
+counters cannot be eliminated if elaboration code may be present. The
+restriction @code{No_Multiple_Elaboration}
+allows suppression of these counters
+in static elaboration units even if they do have elaboration code. If this
+restriction is used, then the situations in which multiple elaboration is
+possible, including non-Ada main programs, and Stand Alone libraries, are not
+permitted, and will be diagnosed by the binder.
 
 @node No_Nested_Finalization
 @unnumberedsubsec No_Nested_Finalization
