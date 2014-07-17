@@ -1005,7 +1005,7 @@ package GNAT.Command_Line is
    --  the executable. This procedure should only be called when the executable
    --  accepts switch --help. When this procedure is called by executable xxx,
    --  the following message is displayed on standard error:
-   --      try `xxx --help` for more information.
+   --      try "xxx --help" for more information.
 
 private
 

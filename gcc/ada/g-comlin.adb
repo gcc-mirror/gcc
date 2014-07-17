@@ -3596,9 +3596,8 @@ package body GNAT.Command_Line is
    begin
       Put_Line
         (Standard_Error,
-         "try `" &
-         Base_Name (Ada.Command_Line.Command_Name) &
-         " --help` for more information.");
+         "try """ & Base_Name (Ada.Command_Line.Command_Name)
+         & " --help"" for more information.");
    end Try_Help;
 
 end GNAT.Command_Line;

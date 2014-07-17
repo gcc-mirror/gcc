@@ -15208,6 +15208,11 @@ options:
       on have been modified. This is similar to the way gnatmake/gprbuild
       only compiles files that need to be recompiled.
 
+-j@var{n} -- In @option{--incremental} mode, use @var{n} @command{gnat2xml}
+      processes to perform XML generation in parallel. If @var{n} is 0, then
+      the maximum number of parallel tree creations is the number of core
+      processors on the platform.
+
 --output-dir=@var{dir} -- generate one .xml file for each Ada source file, in
       directory @file{dir}. (Default is to generate the XML to standard
       output.)
