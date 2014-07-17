@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2001-2011, AdaCore                     *
+ *                     Copyright (C) 2001-2014, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -45,17 +45,17 @@
 #include <sys/types.h>
 
 #ifdef __MINGW32__
-#if OLD_MINGW
-#include <sys/wait.h>
-#endif
+# if OLD_MINGW
+#  include <sys/wait.h>
+# endif
 #elif defined (__vxworks) && defined (__RTP__)
-#include <wait.h>
+# include <wait.h>
 #elif defined (__Lynx__)
-/* ??? See comment in adaint.c.  */
-#define GCC_RESOURCE_H
-#include <sys/wait.h>
-#elif defined (__nucleus__)
-/* No wait.h available on Nucleus */
+  /* ??? See comment in adaint.c.  */
+# define GCC_RESOURCE_H
+# include <sys/wait.h>
+#elif defined (__nucleus__) || defined (__PikeOS__)
+  /* No wait.h available on Nucleus */
 #else
 #include <sys/wait.h>
 #endif
@@ -476,18 +476,20 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 #else
 
 void
-__gnat_kill (int pid, int sig, int close)
+__gnat_kill (int pid ATTRIBUTE_UNUSED,
+	     int sig ATTRIBUTE_UNUSED,
+	     int close ATTRIBUTE_UNUSED)
 {
 }
 
 int
-__gnat_waitpid (int pid, int sig)
+__gnat_waitpid (int pid ATTRIBUTE_UNUSED, int sig ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
 int
-__gnat_pipe (int *fd)
+__gnat_pipe (int *fd ATTRIBUTE_UNUSED)
 {
   return -1;
 }
@@ -499,13 +501,18 @@ __gnat_expect_fork (void)
 }
 
 void
-__gnat_expect_portable_execvp (int *pid, char *cmd, char *argv[])
+__gnat_expect_portable_execvp (int *pid ATTRIBUTE_UNUSED,
+			       char *cmd ATTRIBUTE_UNUSED,
+			       char *argv[] ATTRIBUTE_UNUSED)
 {
   *pid = 0;
 }
 
 int
-__gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
+__gnat_expect_poll (int *fd ATTRIBUTE_UNUSED,
+		    int num_fd ATTRIBUTE_UNUSED,
+		    int timeout ATTRIBUTE_UNUSED,
+		    int *is_set ATTRIBUTE_UNUSED)
 {
   return -1;
 }

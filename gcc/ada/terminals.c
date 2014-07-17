@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2013, AdaCore                     *
+ *                     Copyright (C) 2008-2014, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,27 +31,111 @@
 
 /* First all usupported platforms. Add stubs for exported routines. */
 
-#if defined (VMS) || defined (__vxworks) || defined (__Lynx__) || \
-    defined (__ANDROID__)
+#if defined (VMS) || defined (__vxworks) || defined (__Lynx__) \
+  || defined (__ANDROID__) || defined (__PikeOS__)
 
-void * __gnat_new_tty (void) { return (void*)0; }
-char * __gnat_tty_name (void* t) { return (char*)0; }
-int    __gnat_interrupt_pid (int pid) { return -1; }
-int    __gnat_interrupt_process (void* desc) { return -1; }
-int    __gnat_setup_communication (void** desc) { return -1; }
-void   __gnat_setup_parent_communication
-         (void* d, int* i, int* o, int*e, int*p) { return -1; }
-int    __gnat_setup_child_communication
-         (void* d, char **n, int u) { return -1; }
-int    __gnat_terminate_process (void *desc) { return -1; }
-int    __gnat_tty_fd (void* t) { return -1; }
-int    __gnat_tty_supported (void) { return 0; }
-int    __gnat_tty_waitpid (void *desc) { return 1; }
-void   __gnat_close_tty (void* t) {}
-void   __gnat_free_process (void** process) {}
-void   __gnat_reset_tty (void* t) {}
-void   __gnat_send_header (void* d, char h[5], int s, int *r) {}
-void   __gnat_setup_winsize (void *desc, int rows, int columns) {}
+#define ATTRIBUTE_UNUSED __attribute__((unused))
+
+void *
+__gnat_new_tty (void)
+{
+  return (void*)0;
+}
+
+char *
+__gnat_tty_name (void* t ATTRIBUTE_UNUSED)
+{
+  return (char*)0;
+}
+
+int
+__gnat_interrupt_pid (int pid ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+int
+__gnat_interrupt_process (void* desc ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+int
+__gnat_setup_communication (void** desc ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+void
+__gnat_setup_parent_communication (void *d ATTRIBUTE_UNUSED,
+				   int *i ATTRIBUTE_UNUSED,
+				   int *o ATTRIBUTE_UNUSED,
+				   int *e ATTRIBUTE_UNUSED,
+				   int *p ATTRIBUTE_UNUSED)
+{
+}
+
+int
+__gnat_setup_child_communication (void *d ATTRIBUTE_UNUSED,
+				  char **n ATTRIBUTE_UNUSED,
+				  int u ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+int
+__gnat_terminate_process (void *desc ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+int
+__gnat_tty_fd (void* t ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+int
+__gnat_tty_supported (void)
+{
+  return 0;
+}
+
+int
+__gnat_tty_waitpid (void *desc ATTRIBUTE_UNUSED)
+{
+  return 1;
+}
+
+void
+__gnat_close_tty (void* t ATTRIBUTE_UNUSED)
+{
+}
+
+void
+__gnat_free_process (void** process ATTRIBUTE_UNUSED)
+{
+}
+
+void
+__gnat_reset_tty (void* t ATTRIBUTE_UNUSED)
+{
+}
+
+void
+__gnat_send_header (void* d ATTRIBUTE_UNUSED,
+		    char h[5] ATTRIBUTE_UNUSED,
+		    int s ATTRIBUTE_UNUSED,
+		    int *r ATTRIBUTE_UNUSED)
+{
+}
+
+void
+__gnat_setup_winsize (void *desc ATTRIBUTE_UNUSED,
+		      int rows ATTRIBUTE_UNUSED,
+		      int columns ATTRIBUTE_UNUSED)
+{
+}
 
 /* For Windows platforms. */
 

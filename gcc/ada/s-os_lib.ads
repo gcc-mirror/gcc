@@ -522,10 +522,6 @@ package System.OS_Lib is
    --  contains the name of the file to which it is linked. Symbolic links may
    --  span file systems and may refer to directories.
 
-   S_Owner  : constant := 1;
-   S_Group  : constant := 2;
-   S_Others : constant := 4;
-
    procedure Set_Writable (Name : String);
    --  Change permissions on the named file to make it writable for its owner
 
@@ -537,8 +533,15 @@ package System.OS_Lib is
    --  This renaming is provided for backwards compatibility with previous
    --  versions. The use of Set_Non_Writable is preferred (clearer name).
 
+   S_Owner  : constant := 1;
+   S_Group  : constant := 2;
+   S_Others : constant := 4;
+   --  Constants for use in Mode parameter to Set_Executable
+
    procedure Set_Executable (Name : String; Mode : Positive := S_Owner);
-   --  Change permissions on the named file to make it executable for its owner
+   --  Change permissions on the file given by Name to make it executable
+   --  for its owner, group or others, according to the setting of Mode.
+   --  As indicated, the default if no Mode parameter is given is owner.
 
    procedure Set_Readable (Name : String);
    --  Change permissions on the named file to make it readable for its
