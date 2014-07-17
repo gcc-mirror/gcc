@@ -51,4 +51,4 @@ main (void)
 /* { dg-output "index -1 out of bounds for type 'int \\\[7\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index -1 out of bounds for type 'int \\\[7\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index -1 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index -1 out of bounds for type 'int \\\[10\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*index -1 out of bounds for type 'int \\\[10\\\]'" } */

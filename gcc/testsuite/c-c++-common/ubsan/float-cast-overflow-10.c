@@ -76,4 +76,4 @@
 /* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type 'long long int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*value <unknown> is outside the range of representable values of type 'long long unsigned int'" } */

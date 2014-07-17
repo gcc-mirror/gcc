@@ -34,4 +34,4 @@ main (void)
 /* { dg-output "\[^\n\r]*index 4 out of bounds for type 'int \\\[4\\\]\\\[4\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 4 out of bounds for type 'U \\\[4\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 4 out of bounds for type 'U \\\[4\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 11 out of bounds for type 'int \\\[10\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*index 11 out of bounds for type 'int \\\[10\\\]'" } */
