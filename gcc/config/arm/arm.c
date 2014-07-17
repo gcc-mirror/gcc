@@ -11710,8 +11710,9 @@ cortexa7_older_only (rtx insn)
 
   switch (get_attr_type (insn))
     {
-    case TYPE_ALU_REG:
-    case TYPE_ALUS_REG:
+    case TYPE_ALU_DSP_REG:
+    case TYPE_ALU_SREG:
+    case TYPE_ALUS_SREG:
     case TYPE_LOGIC_REG:
     case TYPE_LOGICS_REG:
     case TYPE_ADC_REG:

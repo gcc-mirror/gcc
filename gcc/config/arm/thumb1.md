@@ -81,8 +81,8 @@
     operands[2] = GEN_INT (INTVAL (operands[2]) - offset);
   }
   [(set_attr "length" "2,2,2,2,2,2,2,4,4,4")
-   (set_attr "type" "alus_imm,alus_imm,alus_reg,alus_reg,alus_reg,
-		     alus_reg,alus_reg,multiple,multiple,multiple")]
+   (set_attr "type" "alus_imm,alus_imm,alus_sreg,alus_sreg,alus_sreg,
+		     alus_sreg,alus_sreg,multiple,multiple,multiple")]
 )
 
 ;; Reloading and elimination of the frame pointer can
@@ -118,7 +118,7 @@
   "sub\\t%0, %1, %2"
   [(set_attr "length" "2")
    (set_attr "conds" "set")
-   (set_attr "type" "alus_reg")]
+   (set_attr "type" "alus_sreg")]
 )
 
 ; Unfortunately with the Thumb the '&'/'0' trick can fails when operands

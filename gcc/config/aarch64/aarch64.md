@@ -1167,7 +1167,7 @@
   add\\t%w0, %w1, %w2
   add\\t%0.2s, %1.2s, %2.2s
   sub\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alu_imm,alu_reg,neon_add,alu_imm")
+  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm")
    (set_attr "simd" "*,*,yes,*")]
 )
 
@@ -1183,7 +1183,7 @@
   add\\t%w0, %w1, %2
   add\\t%w0, %w1, %w2
   sub\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alu_imm,alu_reg,alu_imm")]
+  [(set_attr "type" "alu_imm,alu_sreg,alu_imm")]
 )
 
 (define_insn "*adddi3_aarch64"
@@ -1198,7 +1198,7 @@
   add\\t%x0, %x1, %x2
   sub\\t%x0, %x1, #%n2
   add\\t%d0, %d1, %d2"
-  [(set_attr "type" "alu_imm,alu_reg,alu_imm,alu_reg")
+  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,alu_sreg")
    (set_attr "simd" "*,*,*,yes")]
 )
 
@@ -1234,7 +1234,7 @@
   adds\\t%<w>0, %<w>1, %<w>2
   adds\\t%<w>0, %<w>1, %<w>2
   subs\\t%<w>0, %<w>1, #%n2"
-  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 ;; zero_extend version of above
@@ -1251,7 +1251,7 @@
   adds\\t%w0, %w1, %w2
   adds\\t%w0, %w1, %w2
   subs\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 (define_insn "*adds_mul_imm_<mode>"
@@ -1365,7 +1365,7 @@
   cmn\\t%<w>0, %<w>1
   cmn\\t%<w>0, %<w>1
   cmp\\t%<w>0, #%n1"
-  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 (define_insn "*compare_neg<mode>"
@@ -1375,7 +1375,7 @@
 	 (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "cmn\\t%<w>1, %<w>0"
-  [(set_attr "type" "alus_reg")]
+  [(set_attr "type" "alus_sreg")]
 )
 
 (define_insn "*add_<shift>_<mode>"
@@ -1647,7 +1647,7 @@
 		   (match_operand:SI 2 "register_operand" "r")))]
   ""
   "sub\\t%w0, %w1, %w2"
-  [(set_attr "type" "alu_reg")]
+  [(set_attr "type" "alu_sreg")]
 )
 
 ;; zero_extend version of above
@@ -1658,7 +1658,7 @@
 		   (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "sub\\t%w0, %w1, %w2"
-  [(set_attr "type" "alu_reg")]
+  [(set_attr "type" "alu_sreg")]
 )
 
 (define_insn "subdi3"
@@ -1669,7 +1669,7 @@
   "@
    sub\\t%x0, %x1, %x2
    sub\\t%d0, %d1, %d2"
-  [(set_attr "type" "alu_reg, neon_sub")
+  [(set_attr "type" "alu_sreg, neon_sub")
    (set_attr "simd" "*,yes")]
 )
 
@@ -1701,7 +1701,7 @@
 	(minus:GPI (match_dup 1) (match_dup 2)))]
   ""
   "subs\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "type" "alus_reg")]
+  [(set_attr "type" "alus_sreg")]
 )
 
 ;; zero_extend version of above
@@ -1714,7 +1714,7 @@
 	(zero_extend:DI (minus:SI (match_dup 1) (match_dup 2))))]
   ""
   "subs\\t%w0, %w1, %w2"
-  [(set_attr "type" "alus_reg")]
+  [(set_attr "type" "alus_sreg")]
 )
 
 (define_insn "*sub_<shift>_<mode>"
@@ -1925,7 +1925,7 @@
 							     GEN_INT (63)))));
     DONE;
   }
-  [(set_attr "type" "alu_reg")]
+  [(set_attr "type" "alu_sreg")]
 )
 
 (define_insn "neg<mode>2"
@@ -1935,7 +1935,7 @@
   "@
    neg\\t%<w>0, %<w>1
    neg\\t%<rtn>0<vas>, %<rtn>1<vas>"
-  [(set_attr "type" "alu_reg, neon_neg<q>")
+  [(set_attr "type" "alu_sreg, neon_neg<q>")
    (set_attr "simd" "*,yes")]
 )
 
@@ -1945,7 +1945,7 @@
 	(zero_extend:DI (neg:SI (match_operand:SI 1 "register_operand" "r"))))]
   ""
   "neg\\t%w0, %w1"
-  [(set_attr "type" "alu_reg")]
+  [(set_attr "type" "alu_sreg")]
 )
 
 (define_insn "*ngc<mode>"
@@ -1975,7 +1975,7 @@
 	(neg:GPI (match_dup 1)))]
   ""
   "negs\\t%<w>0, %<w>1"
-  [(set_attr "type" "alus_reg")]
+  [(set_attr "type" "alus_sreg")]
 )
 
 ;; zero_extend version of above
@@ -1987,7 +1987,7 @@
 	(zero_extend:DI (neg:SI (match_dup 1))))]
   ""
   "negs\\t%w0, %w1"
-  [(set_attr "type" "alus_reg")]
+  [(set_attr "type" "alus_sreg")]
 )
 
 (define_insn "*neg_<shift><mode>3_compare0"
@@ -2266,7 +2266,7 @@
    cmp\\t%<w>0, %<w>1
    cmp\\t%<w>0, %<w>1
    cmn\\t%<w>0, #%n1"
-  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
+  [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
 (define_insn "*cmp<mode>"
@@ -3901,7 +3901,7 @@
 		   UNSPEC_GOTSMALLTLS))]
   ""
   "add\\t%<w>0, %<w>1, #%G2\;add\\t%<w>0, %<w>0, #%L2"
-  [(set_attr "type" "alu_reg")
+  [(set_attr "type" "alu_sreg")
    (set_attr "length" "8")]
 )
 

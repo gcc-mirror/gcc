@@ -1117,7 +1117,7 @@
   "%I3%!\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
-   (set_attr "type" "alu_reg")]
+   (set_attr "type" "alu_sreg")]
 )
 
 (define_insn "*thumb2_shiftsi3_short"
@@ -1171,7 +1171,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
-   (set_attr "type" "alu_reg")]
+   (set_attr "type" "alu_sreg")]
 )
 
 (define_insn "*thumb2_subsi_short"
@@ -1183,7 +1183,7 @@
   "sub%!\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
-   (set_attr "type" "alu_reg")]
+   (set_attr "type" "alu_sreg")]
 )
 
 (define_peephole2
@@ -1236,7 +1236,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "length" "2,2,4")
-   (set_attr "type" "alu_reg")]
+   (set_attr "type" "alu_sreg")]
 )
 
 (define_insn "*thumb2_addsi3_compare0_scratch"
@@ -1261,7 +1261,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "length" "2,2,4,4")
-   (set_attr "type" "alus_imm,alus_reg,alus_imm,alus_reg")]
+   (set_attr "type" "alus_imm,alus_sreg,alus_imm,alus_sreg")]
 )
 
 (define_insn "*thumb2_mulsi_short"
@@ -1367,7 +1367,7 @@
   "neg%!\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
-   (set_attr "type" "alu_reg")]
+   (set_attr "type" "alu_sreg")]
 )
 
 ; Constants for op 2 will never be given to these patterns.

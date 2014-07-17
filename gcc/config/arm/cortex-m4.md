@@ -32,9 +32,9 @@
 (define_insn_reservation "cortex_m4_alu" 1
   (and (eq_attr "tune" "cortexm4")
        (ior (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
-                             alu_reg,alus_reg,logic_reg,logics_reg,\
+                             alu_sreg,alus_sreg,logic_reg,logics_reg,\
                              adc_imm,adcs_imm,adc_reg,adcs_reg,\
-                             adr,bfm,clz,rbit,rev,\
+                             adr,bfm,clz,rbit,rev,alu_dsp_reg,\
                              shift_imm,shift_reg,extend,\
                              alu_shift_imm,alus_shift_imm,\
                              logic_shift_imm,logics_shift_imm,\
