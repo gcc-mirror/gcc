@@ -287,6 +287,7 @@ Implementation Defined Pragmas
 Implementation Defined Aspects
 
 * Aspect Abstract_State::
+* Aspect Annotate::
 * Aspect Async_Readers::
 * Aspect Async_Writers::
 * Aspect Contract_Cases::
@@ -1343,7 +1344,7 @@ in the two situations.
 @noindent
 Syntax:
 @smallexample @c ada
-pragma Annotate (IDENTIFIER [,IDENTIFIER @{, ARG@}]);
+pragma Annotate (IDENTIFIER [,IDENTIFIER @{, ARG@}] [entity => local_NAME]);
 
 ARG ::= NAME | EXPRESSION
 @end smallexample
@@ -1359,7 +1360,8 @@ String literals are assumed to be either of type
 @code{Standard.String} or else @code{Wide_String} or @code{Wide_Wide_String}
 depending on the character literals they contain.
 All other kinds of arguments are analyzed as expressions, and must be
-unambiguous.
+unambiguous. The last argument if present must have the identifier
+@code{Entity} and GNAT verifies that a local name is given.
 
 The analyzed pragma is retained in the tree, but not otherwise processed
 by any part of the GNAT compiler, except to generate corresponding note
@@ -7932,6 +7934,7 @@ clause.
 
 @menu
 * Aspect Abstract_State::
+* Aspect Annotate::
 * Aspect Async_Readers::
 * Aspect Async_Writers::
 * Aspect Contract_Cases::
@@ -7980,6 +7983,24 @@ clause.
 @findex Abstract_State
 @noindent
 This aspect is equivalent to pragma @code{Abstract_State}.
+
+@node Aspect Annotate
+@unnumberedsec Annotate
+@findex Annotate
+@noindent
+There are three forms of this aspect (where ID is an identifier,
+and ARG is a general expression).
+
+@table @code
+@item Annotate => ID
+Equivalent to @code{pragma Annotate (ID, Entity => Name);}
+
+@item Annotate => (ID)
+Equivalent to @code{pragma Annotate (ID, Entity => Name);}
+
+@item Annotate => (ID ,ID @{, ARG@})
+Equivalent to @code{pragma Annotate (ID, ID @{, ARG@}, Entity => Name);}
+@end table
 
 @node Aspect Async_Readers
 @unnumberedsec Aspect Async_Readers

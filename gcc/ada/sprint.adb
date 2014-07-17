@@ -2247,7 +2247,7 @@ package body Sprint is
                      Write_Str_With_Col_Check ("not null ");
                   end if;
 
-                  --  Print type, we used to print the Object_Definition from
+                  --  Print type. We used to print the Object_Definition from
                   --  the node, but it is much more useful to print the Etype
                   --  of the defining identifier for the case where the nominal
                   --  type is an unconstrained array type. For example, this
@@ -2267,7 +2267,7 @@ package body Sprint is
                      then
                         Sprint_Node (Etype (Def_Id));
 
-                        --  In other cases, the nominal type is fine to print
+                     --  In other cases, the nominal type is fine to print
 
                      else
                         Sprint_Node (Odef);

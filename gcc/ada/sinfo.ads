@@ -1966,12 +1966,12 @@ package Sinfo is
    --    N_SCIL_Dispatch_Table_Tag_Init node, this is the type being declared).
 
    --  SCIL_Controlling_Tag (Node5-Sem)
-   --    Present in N_SCIL_Dispatching_Call nodes. References the
-   --    controlling tag of a dispatching call. This is usually an
-   --    N_Selected_Component node (for a _tag component), but may
-   --    be an N_Object_Declaration or N_Parameter_Specification node
-   --    in some cases (e.g., for a call to a classwide streaming operation
-   --    or to an instance of Ada.Tags.Generic_Dispatching_Constructor).
+   --    Present in N_SCIL_Dispatching_Call nodes. References the controlling
+   --    tag of a dispatching call. This is usually an N_Selected_Component
+   --    node (for a _tag component), but may be an N_Object_Declaration or
+   --    N_Parameter_Specification node in some cases (e.g., for a call to
+   --    a classwide streaming operation or a call to an instance of
+   --    Ada.Tags.Generic_Dispatching_Constructor).
 
    --  SCIL_Tag_Value (Node5-Sem)
    --    Present in N_SCIL_Membership_Test nodes. Used to reference the tag
@@ -7068,6 +7068,10 @@ package Sinfo is
       --     ASPECT_MARK ::= aspect_IDENTIFIER['Class]
 
       --     ASPECT_DEFINITION ::= NAME | EXPRESSION
+
+      --  Note that for Annotate, the ASPECT_DEFINITION is a pure positional
+      --  aggregate with the elements of the aggregate corresponding to the
+      --  successive arguments of the corresponding pragma.
 
       --  See separate package Aspects for details on the incorporation of
       --  these nodes into the tree, and how aspect specifications for a given
