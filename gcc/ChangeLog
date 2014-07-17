@@ -1,3 +1,10 @@
+2014-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/61801
+	* sched-deps.c (sched_analyze_2): For ASM_OPERANDS and
+	ASM_INPUT don't set reg_pending_barrier if it appears in a
+	debug-insn.
+
 2014-07-16  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.c (rx_option_override): Fix alignment values.
