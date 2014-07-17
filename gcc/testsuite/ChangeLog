@@ -1,3 +1,8 @@
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50961
+	* g++.dg/template/operator13.C: New.
+
 2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vfma_f64.c: New test.
