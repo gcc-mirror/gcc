@@ -1,3 +1,10 @@
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vfma_f64.c: New test.
+	* gcc.target/aarch64/simd/vmla_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vfms_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vmls_f64.c: Likewise.
+
 2014-07-17  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/ubsan/bounds-2.c: Change output pattern.

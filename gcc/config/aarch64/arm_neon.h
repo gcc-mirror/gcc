@@ -16764,6 +16764,14 @@ vextq_u64 (uint64x2_t __a, uint64x2_t __b, __const int __c)
 #endif
 }
 
+/* vfma  */
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vfma_f64 (float64x1_t __a, float64x1_t __b, float64x1_t __c)
+{
+  return (float64x1_t) {__builtin_fma (__b[0], __c[0], __a[0])};
+}
+
 /* vfma_lane  */
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
@@ -16865,6 +16873,14 @@ vfmaq_laneq_f64 (float64x2_t __a, float64x2_t __b,
   return __builtin_aarch64_fmav2df (__b,
 				    __aarch64_vdupq_laneq_f64 (__c, __lane),
 				    __a);
+}
+
+/* vfms  */
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vfms_f64 (float64x1_t __a, float64x1_t __b, float64x1_t __c)
+{
+  return (float64x1_t) {__builtin_fma (-__b[0], __c[0], __a[0])};
 }
 
 /* vfms_lane  */
@@ -18495,6 +18511,12 @@ vmla_f32 (float32x2_t a, float32x2_t b, float32x2_t c)
   return a + b * c;
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmla_f64 (float64x1_t __a, float64x1_t __b, float64x1_t __c)
+{
+  return __a + __b * __c;
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vmlaq_f32 (float32x4_t a, float32x4_t b, float32x4_t c)
 {
@@ -18661,6 +18683,12 @@ __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vmls_f32 (float32x2_t a, float32x2_t b, float32x2_t c)
 {
   return a - b * c;
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmls_f64 (float64x1_t __a, float64x1_t __b, float64x1_t __c)
+{
+  return __a - __b * __c;
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
