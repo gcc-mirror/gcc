@@ -7021,13 +7021,24 @@ package body Sem_Ch4 is
             return False;
          end if;
 
-      --  If the container type is a derived type, the value of the inherited
-      --  aspect is the Reference operation declared for the parent type.
+      --  If the container type is derived from another container type, the
+      --  value of the inherited aspect is the Reference operation declared
+      --  for the parent type.
+
       --  However, Reference is also a primitive operation of the type, and
       --  the inherited operation has a different signature. We retrieve the
       --  right one from the list of primitive operations of the derived type.
 
-      elsif Is_Derived_Type (Etype (Prefix)) then
+      --  Note that predefined containers are typically all derived from one
+      --  of the Controlled types. The code below is motivated by containers
+      --  that are derived from other types with a Reference aspect.
+
+      --  Additional machinery may be needed for types that have several user-
+      --  defined Reference operations with different signatures ???
+
+      elsif Is_Derived_Type (Etype (Prefix))
+        and then Etype (First_Formal (Entity (Func_Name))) /= Etype (Prefix)
+      then
          Func := Find_Prim_Op (Etype (Prefix), Chars (Func_Name));
          Func_Name := New_Occurrence_Of (Func, Loc);
       end if;
