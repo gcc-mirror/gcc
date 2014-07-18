@@ -101,7 +101,6 @@ package body Einfo is
    --    Entry_Component                 Node11
    --    Enumeration_Pos                 Uint11
    --    Generic_Homonym                 Node11
-   --    Last_Aggregate_Assignment       Node11
    --    Protected_Body_Subprogram       Node11
    --    Block_Node                      Node11
 
@@ -246,6 +245,7 @@ package body Einfo is
    --    Subprograms_For_Type            Node29
 
    --    Corresponding_Equality          Node30
+   --    Last_Aggregate_Assignment       Node30
    --    Static_Initialization           Node30
 
    --    Thunk_Entity                    Node31
@@ -2433,8 +2433,8 @@ package body Einfo is
 
    function Last_Aggregate_Assignment (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      return Node11 (Id);
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      return Node30 (Id);
    end Last_Aggregate_Assignment;
 
    function Last_Assignment (Id : E) return N is
@@ -5195,8 +5195,8 @@ package body Einfo is
 
    procedure Set_Last_Aggregate_Assignment (Id : E; V : N) is
    begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      Set_Node11 (Id, V);
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      Set_Node30 (Id, V);
    end Set_Last_Aggregate_Assignment;
 
    procedure Set_Last_Assignment (Id : E; V : N) is
@@ -8727,9 +8727,6 @@ package body Einfo is
          when E_Generic_Package                            =>
             Write_Str ("Generic_Homonym");
 
-         when E_Variable                                   =>
-            Write_Str ("Last_Aggregate_Assignment");
-
          when E_Function                                   |
               E_Procedure                                  |
               E_Entry                                      |
@@ -9525,6 +9522,10 @@ package body Einfo is
       case Ekind (Id) is
          when E_Function                                   =>
             Write_Str ("Corresponding_Equality");
+
+         when E_Constant                                   |
+              E_Variable                                   =>
+            Write_Str ("Last_Aggregate_Assignment");
 
          when E_Procedure                                  =>
             Write_Str ("Static_Initialization");

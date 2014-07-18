@@ -1,3 +1,50 @@
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Last_Aggregate_Assignment is now Node 30.
+	(Last_Aggregate_Assignment): Include
+	constants in the assertion. Update the underlying node.
+	(Set_Last_Aggregate_Assignment): Include constants in the
+	assertion. Update the underlying node.	(Write_Field11_Name):
+	Remove the entry for Last_Aggregate_Assignment.
+	(Write_Field30_Name): Add an entry for Last_Aggregate_Assignment.
+	* einfo.ads Update the node designation and usage of attribute
+	Last_Aggregate_Assignment.
+	* exp_aggr.adb (Expand_Array_Aggregate): Store the last
+	assignment statement used to initialize a controlled object.
+	(Late_Expansion): Store the last assignment statement used to
+	initialize a controlled record or an array of controlled objects.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Default
+	initialization of objects is now performed in a separate routine.
+	(Default_Initialize_Object): New routine.
+	* exp_ch7.adb (Build_BIP_Cleanup_Stmts): Add formal parameter
+	Obj_Id. Update the comment on usage.
+	(Find_Last_Init): Remove formal parameter Typ. Update comment on usage.
+	Reimplement the logic.	(Find_Last_Init_In_Block): New routine.
+	(Is_Init_Call): Add formal parameter Init_Typ. Update the
+	comment on usage.  Account for the type init proc when trying
+	to determine whether a statement is an initialization call.
+	(Make_Adjust_Call): Rename formal parameter For_Parent to
+	Skip_Self. Update all occurrences of For_Parent. Account for
+	non-tagged types. Update the call to Make_Call.
+	(Make_Call): Rename formal parameter For_Parent to Skip_Self. Update
+	comment on usage. Update all occurrences of For_Parent.
+	(Make_Final_Call): Rename formal parameter For_Parent to
+	Skip_Self. Update all occurrences of For_Parent. Account
+	for non-tagged types. Update the call to Make_Call.
+	(Process_Object_Declaration): Most variables and constants are
+	now local to the routine.
+	* exp_ch7.ads (Make_Adjust_Call): Rename formal parameter
+	For_Parent to Skip_Self. Update the comment on usage.
+	(Make_Final_Call): Rename formal parameter For_Parent to
+	Skip_Self. Update the comment on usage.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Requeue): The entry being referenced
+	can be a procedure that is implemented by entry, and have a
+	formal that is a synchronized interface.  It does not have to
+	be declared as a protected operation.
+
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Remove mention of obsolete attributes

@@ -2623,9 +2623,8 @@ package body Exp_Ch3 is
 
                    Statements => New_List (
                      Make_Procedure_Call_Statement (Loc,
-                       Name =>
+                       Name                   =>
                          New_Occurrence_Of (Local_DF_Id, Loc),
-
                        Parameter_Associations => New_List (
                          Make_Identifier (Loc, Name_uInit),
                          New_Occurrence_Of (Standard_False, Loc))),
@@ -4857,19 +4856,15 @@ package body Exp_Ch3 is
       Typ      : constant Entity_Id  := Etype (Def_Id);
       Base_Typ : constant Entity_Id  := Base_Type (Typ);
       Expr_Q   : Node_Id;
-      Id_Ref   : Node_Id;
-      New_Ref  : Node_Id;
-
-      Init_After : Node_Id := N;
-      --  Node after which the init proc call is to be inserted. This is
-      --  normally N, except for the case of a shared passive variable, in
-      --  which case the init proc call must be inserted only after the bodies
-      --  of the shared variable procedures have been seen.
 
       function Build_Equivalent_Aggregate return Boolean;
       --  If the object has a constrained discriminated type and no initial
       --  value, it may be possible to build an equivalent aggregate instead,
       --  and prevent an actual call to the initialization procedure.
+
+      procedure Default_Initialize_Object (After : Node_Id);
+      --  Generate all default initialization actions for object Def_Id. Any
+      --  new code is inserted after node After.
 
       function Rewrite_As_Renaming return Boolean;
       --  Indicate whether to rewrite a declaration with initialization into an
@@ -4911,11 +4906,10 @@ package body Exp_Ch3 is
          end if;
 
          if Ekind (Current_Scope) = E_Package
-          and then
-            (Restriction_Active (No_Elaboration_Code)
-              or else Is_Preelaborated (Current_Scope))
+           and then
+             (Restriction_Active (No_Elaboration_Code)
+               or else Is_Preelaborated (Current_Scope))
          then
-
             --  Building a static aggregate is possible if the discriminants
             --  have static values and the other components have static
             --  defaults or none.
@@ -5005,6 +4999,263 @@ package body Exp_Ch3 is
          end if;
       end Build_Equivalent_Aggregate;
 
+      -------------------------------
+      -- Default_Initialize_Object --
+      -------------------------------
+
+      procedure Default_Initialize_Object (After : Node_Id) is
+         function New_Object_Reference return Node_Id;
+         --  Return a new reference to Def_Id with attributes Assignment_OK and
+         --  Must_Not_Freeze already set.
+
+         --------------------------
+         -- New_Object_Reference --
+         --------------------------
+
+         function New_Object_Reference return Node_Id is
+            Obj_Ref : constant Node_Id := New_Occurrence_Of (Def_Id, Loc);
+
+         begin
+            --  The call to the type init proc or [Deep_]Finalize must not
+            --  freeze the related object as the call is internally generated.
+            --  This way legal rep clauses that apply to the object will not be
+            --  flagged. Note that the initialization call may be removed if
+            --  pragma Import is encountered or moved to the freeze actions of
+            --  the object because of an address clause.
+
+            Set_Assignment_OK   (Obj_Ref);
+            Set_Must_Not_Freeze (Obj_Ref);
+
+            return Obj_Ref;
+         end New_Object_Reference;
+
+         --  Local variables
+
+         Abrt_HSS   : Node_Id;
+         Abrt_Id    : Entity_Id;
+         Abrt_Stmts : List_Id;
+         Aggr_Init  : Node_Id;
+         Comp_Init  : List_Id := No_List;
+         Fin_Call   : Node_Id;
+         Fin_Stmts  : List_Id := No_List;
+         Obj_Init   : Node_Id := Empty;
+         Obj_Ref    : Node_Id;
+
+      --  Start of processing for Default_Initialize_Object
+
+      begin
+         --  Step 1: Initialize the object
+
+         if Needs_Finalization (Typ) and then not No_Initialization (N) then
+            Obj_Init :=
+              Make_Init_Call
+                (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
+                 Typ     => Typ);
+         end if;
+
+         --  Step 2: Initialize the components of the object
+
+         --  Do not initialize the components if their initialization is
+         --  prohibited or the type represents a value type in a .NET VM.
+
+         if Has_Non_Null_Base_Init_Proc (Typ)
+           and then not No_Initialization (N)
+           and then not Initialization_Suppressed (Typ)
+           and then not Is_Value_Type (Typ)
+         then
+            --  Do not initialize the components if No_Default_Initialization
+            --  applies as the the actual restriction check will occur later
+            --  when the object is frozen as it is not known yet whether the
+            --  object is imported or not.
+
+            if not Restriction_Active (No_Default_Initialization) then
+
+               --  If the values of the components are compile-time known, use
+               --  their prebuilt aggregate form directly.
+
+               Aggr_Init := Static_Initialization (Base_Init_Proc (Typ));
+
+               if Present (Aggr_Init) then
+                  Set_Expression
+                    (N, New_Copy_Tree (Aggr_Init, New_Scope => Current_Scope));
+
+               --  If type has discriminants, try to build an equivalent
+               --  aggregate using discriminant values from the declaration.
+               --  This is a useful optimization, in particular if restriction
+               --  No_Elaboration_Code is active.
+
+               elsif Build_Equivalent_Aggregate then
+                  null;
+
+               --  Otherwise invoke the type init proc
+
+               else
+                  Obj_Ref := New_Object_Reference;
+
+                  if Comes_From_Source (Def_Id) then
+                     Initialization_Warning (Obj_Ref);
+                  end if;
+
+                  Comp_Init := Build_Initialization_Call (Loc, Obj_Ref, Typ);
+               end if;
+            end if;
+
+         --  Provide a default value if the object needs simple initialization
+         --  and does not already have an initial value. A generated temporary
+         --  do not require initialization because it will be assigned later.
+
+         elsif Needs_Simple_Initialization
+                 (Typ, Initialize_Scalars
+                         and then not Has_Following_Address_Clause (N))
+           and then not Is_Internal (Def_Id)
+           and then not Has_Init_Expression (N)
+         then
+            Set_No_Initialization (N, False);
+            Set_Expression (N, Get_Simple_Init_Val (Typ, N, Esize (Def_Id)));
+            Analyze_And_Resolve (Expression (N), Typ);
+         end if;
+
+         --  Step 3: Add partial finalization and abort actions, generate:
+
+         --    Type_Init_Proc (Obj);
+         --    begin
+         --       Deep_Initialize (Obj);
+         --    exception
+         --       when others =>
+         --          Deep_Finalize (Obj, Self => False);
+         --          raise;
+         --    end;
+
+         --  Step 3a: Build the finalization block (if applicable)
+
+         --  The finalization block is required when both the object and its
+         --  controlled components are to be initialized. The block finalizes
+         --  the components if the object initialization fails.
+
+         if Has_Controlled_Component (Typ)
+           and then Present (Comp_Init)
+           and then Present (Obj_Init)
+           and then not Restriction_Active (No_Exception_Propagation)
+         then
+            --  Generate:
+            --    Type_Init_Proc (Obj);
+
+            Fin_Stmts := Comp_Init;
+
+            --  Generate:
+            --    begin
+            --       Deep_Initialize (Obj);
+            --    exception
+            --       when others =>
+            --          Deep_Finalize (Obj, Self => False);
+            --          raise;
+            --    end;
+
+            Fin_Call :=
+              Make_Final_Call
+                (Obj_Ref   => New_Object_Reference,
+                 Typ       => Typ,
+                 Skip_Self => True);
+
+            if Present (Fin_Call) then
+
+               --  Do not emit warnings related to the elaboration order when a
+               --  controlled object is declared before the body of Finalize is
+               --  seen.
+
+               Set_No_Elaboration_Check (Fin_Call);
+
+               Append_To (Fin_Stmts,
+                 Make_Block_Statement (Loc,
+                   Declarations               => No_List,
+
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements         => New_List (Obj_Init),
+
+                       Exception_Handlers => New_List (
+                         Make_Exception_Handler (Loc,
+                           Exception_Choices => New_List (
+                             Make_Others_Choice (Loc)),
+
+                           Statements        => New_List (
+                             Fin_Call,
+                             Make_Raise_Statement (Loc)))))));
+            end if;
+
+         --  Finalization is not required, the initialization calls are passed
+         --  to the abort block building circuitry, generate:
+
+         --    Type_Init_Proc (Obj);
+         --    Deep_Initialize (Obj);
+
+         else
+            if Present (Comp_Init) then
+               Fin_Stmts := Comp_Init;
+            end if;
+
+            if Present (Obj_Init) then
+               if No (Fin_Stmts) then
+                  Fin_Stmts := New_List;
+               end if;
+
+               Append_To (Fin_Stmts, Obj_Init);
+            end if;
+         end if;
+
+         --  Step 3b: Build the abort block (if applicable)
+
+         --  The abort block is required when aborts are allowed and there is
+         --  at least one initialization call that needs protection.
+
+         if Abort_Allowed
+           and then Present (Comp_Init)
+           and then Present (Obj_Init)
+         then
+            --  Generate:
+            --    Abort_Defer;
+
+            Prepend_To (Fin_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+
+            --  Generate:
+            --    begin
+            --       Abort_Defer;
+            --       <finalization statements>
+            --    at end
+            --       Abort_Undefer_Direct;
+            --    end;
+
+            Abrt_Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+            Set_Etype (Abrt_Id, Standard_Void_Type);
+            Set_Scope (Abrt_Id, Current_Scope);
+
+            Abrt_HSS :=
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements  => Fin_Stmts,
+                At_End_Proc =>
+                  New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
+
+            Abrt_Stmts := New_List (
+              Make_Block_Statement (Loc,
+                Identifier                 => New_Occurrence_Of (Abrt_Id, Loc),
+                Declarations               => No_List,
+                Handled_Statement_Sequence => Abrt_HSS));
+
+            Expand_At_End_Handler (Abrt_HSS, Abrt_Id);
+
+         --  Abort is not required, the construct from Step 3a is to be added
+         --  in the tree (either finalization block or single initialization
+         --  call).
+
+         else
+            Abrt_Stmts := Fin_Stmts;
+         end if;
+
+         --  Step 4: Insert the whole initialization sequence into the tree
+
+         Insert_Actions_After (After, Abrt_Stmts);
+      end Default_Initialize_Object;
+
       -------------------------
       -- Rewrite_As_Renaming --
       -------------------------
@@ -5017,6 +5268,17 @@ package body Exp_Ch3 is
            and then OK_To_Rename (Entity (Expr_Q))
            and then Is_Entity_Name (Obj_Def);
       end Rewrite_As_Renaming;
+
+      --  Local variables
+
+      Id_Ref  : Node_Id;
+      New_Ref : Node_Id;
+
+      Init_After : Node_Id := N;
+      --  Node after which the initialization actions are to be inserted. This
+      --  is normally N, except for the case of a shared passive variable, in
+      --  which case the init proc call must be inserted only after the bodies
+      --  of the shared variable procedures have been seen.
 
    --  Start of processing for Expand_N_Object_Declaration
 
@@ -5118,153 +5380,7 @@ package body Exp_Ch3 is
               Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
          end if;
 
-         --  Expand Initialize call for controlled objects. One may wonder why
-         --  the Initialize Call is not done in the regular Init procedure
-         --  attached to the record type. That's because the init procedure is
-         --  recursively called on each component, including _Parent, thus the
-         --  Init call for a controlled object would generate not only one
-         --  Initialize call as it is required but one for each ancestor of
-         --  its type. This processing is suppressed if No_Initialization set.
-
-         if not Needs_Finalization (Typ) or else No_Initialization (N) then
-            null;
-
-         elsif not Abort_Allowed or else not Comes_From_Source (N) then
-            Insert_Action_After (Init_After,
-              Make_Init_Call
-                (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                 Typ     => Base_Typ));
-
-         --  Abort allowed
-
-         else
-            --  We need to protect the initialize call
-
-            --  begin
-            --     Defer_Abort.all;
-            --     Initialize (...);
-            --  at end
-            --     Undefer_Abort.all;
-            --  end;
-
-            --  ??? this won't protect the initialize call for controlled
-            --  components which are part of the init proc, so this block
-            --  should probably also contain the call to _init_proc but this
-            --  requires some code reorganization...
-
-            declare
-               L   : constant List_Id := New_List (
-                       Make_Init_Call
-                         (Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
-                          Typ     => Base_Typ));
-
-               Blk : constant Node_Id :=
-                       Make_Block_Statement (Loc,
-                         Handled_Statement_Sequence =>
-                           Make_Handled_Sequence_Of_Statements (Loc, L));
-
-            begin
-               Prepend_To (L, Build_Runtime_Call (Loc, RE_Abort_Defer));
-               Set_At_End_Proc (Handled_Statement_Sequence (Blk),
-                 New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
-               Insert_Actions_After (Init_After, New_List (Blk));
-               Expand_At_End_Handler
-                 (Handled_Statement_Sequence (Blk), Entity (Identifier (Blk)));
-            end;
-         end if;
-
-         --  Call type initialization procedure if there is one. We build the
-         --  call and put it immediately after the object declaration, so that
-         --  it will be expanded in the usual manner. Note that this will
-         --  result in proper handling of defaulted discriminants.
-
-         --  Need call if there is a base init proc
-
-         if Has_Non_Null_Base_Init_Proc (Typ)
-
-           --  Suppress call if No_Initialization set on declaration
-
-           and then not No_Initialization (N)
-
-           --  Suppress call for special case of value type for VM
-
-           and then not Is_Value_Type (Typ)
-
-           --  Suppress call if initialization suppressed for the type
-
-           and then not Initialization_Suppressed (Typ)
-         then
-            --  Return without initializing when No_Default_Initialization
-            --  applies. Note that the actual restriction check occurs later,
-            --  when the object is frozen, because we don't know yet whether
-            --  the object is imported, which is a case where the check does
-            --  not apply.
-
-            if Restriction_Active (No_Default_Initialization) then
-               return;
-            end if;
-
-            --  The call to the initialization procedure does NOT freeze the
-            --  object being initialized. This is because the call is not a
-            --  source level call. This works fine, because the only possible
-            --  statements depending on freeze status that can appear after the
-            --  Init_Proc call are rep clauses which can safely appear after
-            --  actual references to the object. Note that this call may
-            --  subsequently be removed (if a pragma Import is encountered),
-            --  or moved to the freeze actions for the object (e.g. if an
-            --  address clause is applied to the object, causing it to get
-            --  delayed freezing).
-
-            Id_Ref := New_Occurrence_Of (Def_Id, Loc);
-            Set_Must_Not_Freeze (Id_Ref);
-            Set_Assignment_OK (Id_Ref);
-
-            declare
-               Init_Expr : constant Node_Id :=
-                             Static_Initialization (Base_Init_Proc (Typ));
-
-            begin
-               if Present (Init_Expr) then
-                  Set_Expression
-                    (N, New_Copy_Tree (Init_Expr, New_Scope => Current_Scope));
-                  return;
-
-               --  If type has discriminants, try to build equivalent aggregate
-               --  using discriminant values from the declaration. This
-               --  is a useful optimization, in particular if restriction
-               --  No_Elaboration_Code is active.
-
-               elsif Build_Equivalent_Aggregate then
-                  return;
-
-               else
-                  Initialization_Warning (Id_Ref);
-
-                  Insert_Actions_After (Init_After,
-                    Build_Initialization_Call (Loc, Id_Ref, Typ));
-               end if;
-            end;
-
-         --  If simple initialization is required, then set an appropriate
-         --  simple initialization expression in place. This special
-         --  initialization is required even though No_Init_Flag is present,
-         --  but is not needed if there was an explicit initialization.
-
-         --  An internally generated temporary needs no initialization because
-         --  it will be assigned subsequently. In particular, there is no point
-         --  in applying Initialize_Scalars to such a temporary.
-
-         elsif Needs_Simple_Initialization
-                 (Typ,
-                  Initialize_Scalars
-                    and then not Has_Following_Address_Clause (N))
-           and then not Is_Internal (Def_Id)
-           and then not Has_Init_Expression (N)
-         then
-            Set_No_Initialization (N, False);
-            Set_Expression (N, Get_Simple_Init_Val (Typ, N, Esize (Def_Id)));
-            Analyze_And_Resolve (Expression (N), Typ);
-         end if;
+         Default_Initialize_Object (Init_After);
 
          --  Generate attribute for Persistent_BSS if needed
 
@@ -7971,8 +8087,8 @@ package body Exp_Ch3 is
 
                if Warning_Needed then
                   Error_Msg_N
-                    ("Objects of the type cannot be initialized "
-                     & "statically by default??", Parent (E));
+                    ("Objects of the type cannot be initialized statically "
+                     & "by default??", Parent (E));
                end if;
             end if;
 
