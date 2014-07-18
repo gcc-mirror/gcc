@@ -1,5 +1,12 @@
 2014-07-18  Pascal Obry  <obry@adacore.com>
 
+	* a-textio.adb, a-witeio.adb, a-ztexio.adb: Use C_Streams Default_Text.
+	* i-cstrea.ads (Content_Encoding): Moved here, add convention C.
+	* s-ficobl.ads (Content_Encoding): Moved to C_Streams.
+	* s-fileio.adb (Open): Adjust to use Content_Encoding from C_Streams.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
 	* a-textio.adb: Rename Is_Text_File to Text_Encoding.
 	* a-ztexio.adb: Likewise.
 	* a-witeio.adb: Likewise.

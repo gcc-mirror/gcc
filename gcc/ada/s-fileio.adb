@@ -1063,7 +1063,7 @@ package body System.File_IO is
             elsif Formstr (V1 .. V2) = "text"
               or else Formstr (V1 .. V2) = "yes"
             then
-               Text_Encoding := File_Control_Block.Text;
+               Text_Encoding := Interfaces.C_Streams.Text;
             elsif Formstr (V1 .. V2) = "wtext" then
                Text_Encoding := Wtext;
             elsif Formstr (V1 .. V2) = "u8text" then
