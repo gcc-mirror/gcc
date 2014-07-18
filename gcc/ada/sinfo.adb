@@ -1713,6 +1713,14 @@ package body Sinfo is
       return Flag11 (N);
    end Includes_Infinities;
 
+   function Incomplete_View
+     (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Full_Type_Declaration);
+      return Node2 (N);
+   end Incomplete_View;
+
    function Inherited_Discriminant
       (N : Node_Id) return Boolean is
    begin
@@ -4878,6 +4886,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Range);
       Set_Flag11 (N, Val);
    end Set_Includes_Infinities;
+
+   procedure Set_Incomplete_View
+     (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Full_Type_Declaration);
+      Set_Node2 (N, Val); --  semantic field, no Parent set
+   end Set_Incomplete_View;
 
    procedure Set_Inherited_Discriminant
       (N : Node_Id; Val : Boolean := True) is

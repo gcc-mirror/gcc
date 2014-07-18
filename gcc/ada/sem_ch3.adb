@@ -2464,6 +2464,8 @@ package body Sem_Ch3 is
       Prev := Find_Type_Name (N);
 
       --  The full view, if present, now points to the current type
+      --  If there is an incomplete partial view, set a link to it, to
+      --  simplify the retrieval of primitive operations of the type.
 
       --  Ada 2005 (AI-50217): If the type was previously decorated when
       --  imported through a LIMITED WITH clause, it appears as incomplete
@@ -2472,6 +2474,7 @@ package body Sem_Ch3 is
       if Ekind (Prev) = E_Incomplete_Type and then Present (Full_View (Prev))
       then
          T := Full_View (Prev);
+         Set_Incomplete_View (N, Parent (Prev));
       else
          T := Prev;
       end if;
@@ -13537,6 +13540,7 @@ package body Sem_Ch3 is
       ------------------
 
       procedure Replace_Type (Id, New_Id : Entity_Id) is
+         Id_Type  : constant Entity_Id := Etype (Id);
          Acc_Type : Entity_Id;
          Par      : constant Node_Id := Parent (Derived_Type);
 
@@ -13547,9 +13551,9 @@ package body Sem_Ch3 is
          --  be out of the proper scope for Gigi, so we insert a reference to
          --  it after the derivation.
 
-         if Ekind (Etype (Id)) = E_Anonymous_Access_Type then
+         if Ekind (Id_Type) = E_Anonymous_Access_Type then
             declare
-               Desig_Typ : Entity_Id := Designated_Type (Etype (Id));
+               Desig_Typ : Entity_Id := Designated_Type (Id_Type);
 
             begin
                if Ekind (Desig_Typ) = E_Record_Type_With_Private
@@ -13567,7 +13571,7 @@ package body Sem_Ch3 is
                  or else (Is_Interface (Desig_Typ)
                            and then not Is_Class_Wide_Type (Desig_Typ))
                then
-                  Acc_Type := New_Copy (Etype (Id));
+                  Acc_Type := New_Copy (Id_Type);
                   Set_Etype (Acc_Type, Acc_Type);
                   Set_Scope (Acc_Type, New_Subp);
 
@@ -13599,16 +13603,23 @@ package body Sem_Ch3 is
                   Build_Itype_Reference (Acc_Type, Parent (Derived_Type));
 
                else
-                  Set_Etype (New_Id, Etype (Id));
+                  Set_Etype (New_Id, Id_Type);
                end if;
             end;
 
-         elsif Base_Type (Etype (Id)) = Base_Type (Parent_Type)
+         --  In Ada2012, a formal may have an incomplete type but the type
+         --  derivation that inherits the primitive follows the full view.
+
+         elsif Base_Type (Id_Type) = Base_Type (Parent_Type)
            or else
-             (Ekind (Etype (Id)) = E_Record_Type_With_Private
-               and then Present (Full_View (Etype (Id)))
+             (Ekind (Id_Type) = E_Record_Type_With_Private
+               and then Present (Full_View (Id_Type))
                and then
-                 Base_Type (Full_View (Etype (Id))) = Base_Type (Parent_Type))
+                 Base_Type (Full_View (Id_Type)) = Base_Type (Parent_Type))
+           or else
+             (Ada_Version >= Ada_2012
+                and then Ekind (Id_Type) = E_Incomplete_Type
+                and then Full_View (Id_Type) = Parent_Type)
          then
             --  Constraint checks on formals are generated during expansion,
             --  based on the signature of the original subprogram. The bounds
