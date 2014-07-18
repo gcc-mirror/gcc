@@ -243,16 +243,18 @@ package Interfaces.C_Streams is
    --
    --  This encoding is system dependent and only used on Windows systems.
    --
-   --  Note that modifications to Content_Encoding must be synchronized
-   --  with sysdep.c:__gnat_set_mode.
+   --  Note that modifications to Content_Encoding must be synchronized with
+   --  sysdep.c:__gnat_set_mode.
 
    subtype Text_Content_Encoding
      is Content_Encoding range Default_Text .. U16text;
 
+   subtype Non_Default_Text_Content_Encoding
+     is Content_Encoding range Text .. U16text;
+
    procedure set_mode (handle : int; Mode : Content_Encoding);
-   --  As above but can set the handle to any mode.
-   --  On Windows this can be used to have proper 16-bit wide-string output
-   --  on the console for example.
+   --  As above but can set the handle to any mode. On Windows this can be used
+   --  to have proper 16-bit wide-string output on the console for example.
 
    ----------------------------
    -- Full Path Name support --

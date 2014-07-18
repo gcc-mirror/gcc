@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,21 +64,19 @@ package Ttypes is
    --  values needed in Stand are obtained by direct reference to Ttypes
    --  and Ttypef.
 
-   --  For package System, the required constant values are obtained by
-   --  referencing appropriate attributes. Ada 95 already defines most of
-   --  the required attributes, and GNAT specific attributes have been
-   --  defined to cover the remaining cases (such as Storage_Unit). The
-   --  evaluation of these attributes obtains the required target dependent
-   --  values from Ttypes and Ttypef. The additional attributes that have
-   --  been added to GNAT (Address_Size, Storage_Unit, Word_Size, Max_Priority,
-   --  and Max_Interrupt_Priority) are for almost all purposes redundant with
-   --  respect to the corresponding references to System constants. For example
-   --  in a program, System.Address_Size and Standard'Address_Size yield the
-   --  same value. The critical use of the attribute is in writing the System
-   --  declaration of Address_Size which of course cannot refer to itself. By
-   --  this means we achieve complete target independence in the source code
-   --  of package System, i.e. there is only one copy of the source of System
-   --  for all targets.
+   --  For package System, there is a separate version for each target, with
+   --  explicit declarations of the required, constants.
+
+   --  Historical note: Originally we had in mind dealing with target dependent
+   --  differences by referencing appropriate attributes. Ada 95 already
+   --  defines most of the required attributes, and GNAT specific attributes
+   --  were defined to cover the remaining cases (such as Storage_Unit).
+   --  The additional attributes that have been added to GNAT (Address_Size,
+   --  Storage_Unit, and Word_Size) are redundant with respect to the
+   --  corresponding references to System constants. For example in a program,
+   --  System.Address_Size and Standard'Address_Size yield the same value.
+   --  These attributes have been retained for compatibility purposes, but
+   --  serve no purpose at this stage.
 
    --  Note that during compilation there are two versions of package System
    --  around. The version that is directly with'ed by compiler packages
