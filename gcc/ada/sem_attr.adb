@@ -6314,6 +6314,7 @@ package body Sem_Attr is
                   declare
                      Index      : Node_Id;
                      Index_Type : Entity_Id;
+                     Lo, Hi     : Node_Id;
 
                   begin
                      if Nkind (First (Choices (Assoc))) /= N_Aggregate then
@@ -6331,11 +6332,18 @@ package body Sem_Attr is
                         Index := First (Choices (Assoc));
                         while Present (Index) loop
                            if Nkind (Index) = N_Range then
-                              Analyze_And_Resolve
-                                (Low_Bound (Index), Etype (Index_Type));
-                              Analyze_And_Resolve
-                                (High_Bound (Index), Etype (Index_Type));
-                              Set_Etype (Index, Etype (Index_Type));
+                              Lo := Low_Bound  (Index);
+                              Hi := High_Bound (Index);
+
+                              Analyze_And_Resolve (Lo, Etype (Index_Type));
+                              if not Is_OK_Static_Expression (Lo) then
+                                 Set_Do_Range_Check (Lo);
+                              end if;
+
+                              Analyze_And_Resolve (Hi, Etype (Index_Type));
+                              if not Is_OK_Static_Expression (Hi) then
+                                 Set_Do_Range_Check (Hi);
+                              end if;
 
                            else
                               Analyze_And_Resolve (Index, Etype (Index_Type));

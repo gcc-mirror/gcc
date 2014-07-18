@@ -384,6 +384,10 @@ package System.OS_Lib is
    --  Note: this procedure is not supported on VMS and VxWorks 5. On these
    --  platforms, Success is always set to False.
 
+   procedure Set_File_Last_Modify_Time_Stamp (Name : String; Time : OS_Time);
+   --  Given the name of a file or directory, Name, set the last modification
+   --  time stamp. This function must be used for an unopened file.
+
    function Read
      (FD : File_Descriptor;
       A  : System.Address;

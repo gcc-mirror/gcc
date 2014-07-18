@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1134,8 +1134,17 @@ package body Prj.Tree is
          --  of variable or attributes.
 
          Result := Non_Limited_Project_Node_Of (With_Clause, In_Tree);
-         exit when Present (Result)
-           and then Name_Of (Result, In_Tree) = With_Name;
+
+         while Present (Result) loop
+            if Name_Of (Result, In_Tree) = With_Name then
+               return Result;
+            end if;
+
+            Result :=
+              Extended_Project_Of
+                (Project_Declaration_Of (Result, In_Tree), In_Tree);
+         end loop;
+
          With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
       end loop;
 

@@ -2385,6 +2385,20 @@ package body System.OS_Lib is
       C_Set_Executable (C_Name (C_Name'First)'Address, Mode);
    end Set_Executable;
 
+   -------------------------------------
+   -- Set_File_Last_Modify_Time_Stamp --
+   -------------------------------------
+
+   procedure Set_File_Last_Modify_Time_Stamp (Name : String; Time : OS_Time) is
+      procedure C_Set_File_Time (Name : C_File_Name; Time : OS_Time);
+      pragma Import (C, C_Set_File_Time, "__gnat_set_file_time_name");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_File_Time (C_Name'Address, Time);
+   end Set_File_Last_Modify_Time_Stamp;
+
    ----------------------
    -- Set_Non_Readable --
    ----------------------
