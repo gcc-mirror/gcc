@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -496,7 +496,7 @@ package System.OS_Interface is
    type struct_sched_param is record
       sched_priority : int;  --  scheduling priority
    end record;
-   for struct_sched_param'Size use 8*4;
+   for struct_sched_param'Size use 8 * 4;
    pragma Convention (C, struct_sched_param);
 
    function pthread_setschedparam
@@ -614,7 +614,7 @@ private
       sequence : unsigned;
       block    : pthreadLongAddr_t_ptr;
    end record;
-   for pthread_cond_t'Size use 8*32;
+   for pthread_cond_t'Size use 8 * 32;
    pragma Convention (C, pthread_cond_t);
 
    type pthread_attr_t is record
@@ -623,7 +623,7 @@ private
       arg      : pthreadLongUint_t;
       reserved : pthreadLongUint_array (0 .. 18);
    end record;
-   for pthread_attr_t'Size use 8*176;
+   for pthread_attr_t'Size use 8 * 176;
    pragma Convention (C, pthread_attr_t);
 
    type pthread_mutex_t is record
@@ -636,21 +636,21 @@ private
       owner    : unsigned;
       depth    : unsigned;
    end record;
-   for pthread_mutex_t'Size use 8*40;
+   for pthread_mutex_t'Size use 8 * 40;
    pragma Convention (C, pthread_mutex_t);
 
    type pthread_mutexattr_t is record
       valid    : long;
       reserved : pthreadLongUint_array (0 .. 14);
    end record;
-   for pthread_mutexattr_t'Size use 8*128;
+   for pthread_mutexattr_t'Size use 8 * 128;
    pragma Convention (C, pthread_mutexattr_t);
 
    type pthread_condattr_t is record
       valid    : long;
       reserved : pthreadLongUint_array (0 .. 12);
    end record;
-   for pthread_condattr_t'Size use 8*112;
+   for pthread_condattr_t'Size use 8 * 112;
    pragma Convention (C, pthread_condattr_t);
 
    type pthread_key_t is new unsigned;
