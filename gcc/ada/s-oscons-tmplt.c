@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,15 +314,23 @@ CND(SIZEOF_unsigned_int, "Size of unsigned int")
 #endif
 CND(IOV_MAX, "Maximum writev iovcnt")
 
+/* NAME_MAX is used to compute the allocation size for a struct dirent
+ * passed to readdir() / readdir_r(). However on some systems it is not
+ * defined, as it is technically a filesystem dependent property that
+ * we should retrieve through pathconf().
+ */
 #ifndef NAME_MAX
-# define NAME_MAX 255
+# ifdef MAXNAMELEN
+   /* Solaris has no NAME_MAX but defines MAXNAMELEN */
+#  define NAME_MAX MAXNAMELEN
+# else
+   /* PATH_MAX (maximum length of a full path name) is a safe last
+    * chance fall back.
+    */
+#  define NAME_MAX PATH_MAX
+# endif
 #endif
 CND(NAME_MAX, "Maximum file name length")
-
-#ifndef PATH_MAX
-# define PATH_MAX 1024
-#endif
-CND(FILENAME_MAX, "Maximum file path length")
 
 /*
 
