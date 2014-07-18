@@ -2610,7 +2610,7 @@ package body Exp_Ch7 is
              Label_Construct     => Label));
 
          --  Create the associated jump with this object, generate:
-         --
+
          --    when <counter> =>
          --       goto L<counter>;
 
@@ -2623,7 +2623,7 @@ package body Exp_Ch7 is
                  Name => New_Occurrence_Of (Entity (Label_Id), Loc)))));
 
          --  Insert the jump destination, generate:
-         --
+
          --     <<L<counter>>>
 
          Append_To (Finalizer_Stmts, Label);
@@ -2742,7 +2742,7 @@ package body Exp_Ch7 is
             --          Free (Ptr_Typ (Temp));
             --       end;
             --    end if;
-            --
+
             --  The generated code effectively detaches the temporary from the
             --  caller finalization master and deallocates the object. This is
             --  disabled on .NET/JVM because pools are not supported.

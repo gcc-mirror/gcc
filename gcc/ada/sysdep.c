@@ -105,11 +105,11 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
    end-of-file.
 
    The other target dependent declarations here are for the three functions
-   __gnat_set_binary_mode, __gnat_set_text_mode and __gnat_set_wide_text_mode:
+   __gnat_set_binary_mode, __gnat_set_text_mode and __gnat_set_mode:
 
       void __gnat_set_binary_mode (int handle);
       void __gnat_set_text_mode   (int handle);
-      void __gnat_set_wide_text_mode   (int handle);
+      void __gnat_set_mode        (int handle, int mode);
 
    These functions have no effect in Unix (or similar systems where there is
    no distinction between binary and text files), but in DOS (and similar
