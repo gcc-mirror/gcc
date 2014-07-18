@@ -1,3 +1,19 @@
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Remove note that -gnatR not allowed with -gnatc.
+	* switch-c.adb: Remove prohibition of -gnatR and -gnatc together.
+
+2014-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Kill_Rep_Clause): Clear Comes_From_Source flag
+	on the null statement.
+
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* adaint.c: Minor comment rewording.
+	* socket.c: Define macros _REENTRANT and _THREAD_SAFE so that
+	use of errno in this file is thread safe.
+
 2014-07-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_ugn.texi: Doc clarification.

@@ -31,6 +31,10 @@
 
 /*  This file provides a portable binding to the sockets API                */
 
+/* Ensure access to errno is thread safe.  */
+#define _REENTRANT
+#define _THREAD_SAFE
+
 #include "gsocket.h"
 
 #if defined(VMS)

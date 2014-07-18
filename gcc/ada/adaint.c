@@ -34,7 +34,7 @@
    package Osint.  Many of the subprograms in OS_Lib import standard
    library calls directly. This file contains all other routines.  */
 
-/* Ensure accesses to errno are thread safe.  */
+/* Ensure access to errno is thread safe.  */
 #define _REENTRANT
 #define _THREAD_SAFE
 
