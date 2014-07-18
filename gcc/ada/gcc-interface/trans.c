@@ -1065,15 +1065,16 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
   gcc_assert (Etype (gnat_node) == gnat_temp_type
 	      || (Is_Packed (gnat_temp_type)
-		  && Etype (gnat_node) == Packed_Array_Type (gnat_temp_type))
+		  && (Etype (gnat_node)
+		      == Packed_Array_Impl_Type (gnat_temp_type)))
 	      || (Is_Class_Wide_Type (Etype (gnat_node)))
 	      || (IN (Ekind (gnat_temp_type), Private_Kind)
 		  && Present (Full_View (gnat_temp_type))
 		  && ((Etype (gnat_node) == Full_View (gnat_temp_type))
 		      || (Is_Packed (Full_View (gnat_temp_type))
 			  && (Etype (gnat_node)
-			      == Packed_Array_Type (Full_View
-						    (gnat_temp_type))))))
+			      == Packed_Array_Impl_Type
+			           (Full_View (gnat_temp_type))))))
 	      || (Is_Itype (Etype (gnat_node)) && Is_Itype (gnat_temp_type))
 	      || !(Ekind (gnat_temp) == E_Variable
 		   || Ekind (gnat_temp) == E_Component
@@ -1107,7 +1108,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       if ((Ekind (gnat_temp) == E_Constant
 	   || Ekind (gnat_temp) == E_Variable || Is_Formal (gnat_temp))
 	  && !(Is_Array_Type (Etype (gnat_temp))
-	       && Present (Packed_Array_Type (Etype (gnat_temp))))
+	       && Present (Packed_Array_Impl_Type (Etype (gnat_temp))))
 	  && Present (Actual_Subtype (gnat_temp))
 	  && present_gnu_tree (Actual_Subtype (gnat_temp)))
 	gnat_temp_type = Actual_Subtype (gnat_temp);
@@ -5359,9 +5360,9 @@ unchecked_conversion_nop (Node_Id gnat_node)
   if (to_type == from_type)
     return true;
 
-  /* For an array subtype, the conversion to the PAT is a no-op.  */
+  /* For an array subtype, the conversion to the PAIT is a no-op.  */
   if (Ekind (from_type) == E_Array_Subtype
-      && to_type == Packed_Array_Type (from_type))
+      && to_type == Packed_Array_Impl_Type (from_type))
     return true;
 
   /* For a record subtype, the conversion to the type is a no-op.  */
