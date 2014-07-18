@@ -611,9 +611,18 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
       pp_printf (pp, "asm {%s}", XSTR (x, 0));
       break;
     case ADDR_VEC:
-      /* Fall through.  */
+      for (int i = 0; i < XVECLEN (x, 0); i++)
+	{
+	  print_value (pp, XVECEXP (x, 0, i), verbose);
+	  pp_semicolon (pp);
+	}
+      break;
     case ADDR_DIFF_VEC:
-      print_value (pp, XEXP (x, 0), verbose);
+      for (int i = 0; i < XVECLEN (x, 1); i++)
+	{
+	  print_value (pp, XVECEXP (x, 1, i), verbose);
+	  pp_semicolon (pp);
+	}
       break;
     case TRAP_IF:
       pp_string (pp, "trap_if ");

@@ -1,3 +1,8 @@
+2014-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR rtl-optimization/61461
+	* sched-vis.c (print_pattern) <ADDR_VEC, ADDR_DIFF_VEC>: Fixed.
+
 2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61794
