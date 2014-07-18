@@ -1,3 +1,10 @@
+2014-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61835
+	* python/libstdcxx/v6/printers.py (TemplateTypePrinter): Use
+	raw string.
+	(SingleObjContainerPrinter): Check if type printers are in use.
+
 2014-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/random: Minor formatting and cosmetic tweaks.
