@@ -1,3 +1,7 @@
+2014-07-18  Bob Duff  <duff@adacore.com>
+
+	* s-addima.ads: Minor: add comment.
+
 2014-07-18  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb (Check_Component_Storage_Order): Fix enforcement

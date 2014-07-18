@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2009 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2014, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,4 +39,5 @@
 function System.Address_Image (A : Address) return String;
 pragma Pure (System.Address_Image);
 --  Returns string (hexadecimal digits with upper case letters) representing
---  the address (string is 8/16 bytes for 32/64-bit machines).
+--  the address (string is 8/16 bytes for 32/64-bit machines). 'First of the
+--  result = 1.
