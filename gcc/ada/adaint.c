@@ -503,6 +503,25 @@ __gnat_to_gm_time (OS_Time *p_time, int *p_year, int *p_month, int *p_day,
     *p_year = *p_month = *p_day = *p_hours = *p_mins = *p_secs = 0;
 }
 
+void
+__gnat_to_os_time (OS_Time *p_time, int year, int month, int day,
+		   int hours, int mins, int secs)
+{
+  struct tm v;
+
+  v.tm_year  = year;
+  v.tm_mon   = month;
+  v.tm_mday  = day;
+  v.tm_hour  = hours;
+  v.tm_min   = mins;
+  v.tm_sec   = secs;
+  v.tm_isdst = 0;
+
+  /* returns -1 of failing, this is s-os_lib Invalid_Time */
+
+  *p_time = (OS_Time) mktime (&v);
+}
+
 /* Place the contents of the symbolic link named PATH in the buffer BUF,
    which has size BUFSIZ.  If PATH is a symbolic link, then return the number
    of characters of its content in BUF.  Otherwise, return -1.

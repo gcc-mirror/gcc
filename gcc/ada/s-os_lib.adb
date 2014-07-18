@@ -1308,6 +1308,28 @@ package body System.OS_Lib is
       Second := S;
    end GM_Split;
 
+   ----------------
+   -- GM_Time_Of --
+   ----------------
+
+   function GM_Time_Of
+     (Year   : Year_Type;
+      Month  : Month_Type;
+      Day    : Day_Type;
+      Hour   : Hour_Type;
+      Minute : Minute_Type;
+      Second : Second_Type) return OS_Time
+   is
+      procedure To_OS_Time
+        (P_Time_T : Address; Year, Month, Day, Hours, Mins, Secs : Integer);
+      pragma Import (C, To_OS_Time, "__gnat_to_os_time");
+      Result : OS_Time;
+   begin
+      To_OS_Time
+        (Result'Address, Year - 1900, Month - 1, Day, Hour, Minute, Second);
+      return Result;
+   end GM_Time_Of;
+
    -------------
    -- GM_Year --
    -------------

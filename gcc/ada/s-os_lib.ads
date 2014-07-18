@@ -152,6 +152,17 @@ package System.OS_Lib is
    --  provides a representation of it as a set of component parts, to be
    --  interpreted as a date point in UTC.
 
+   function GM_Time_Of
+     (Year   : Year_Type;
+      Month  : Month_Type;
+      Day    : Day_Type;
+      Hour   : Hour_Type;
+      Minute : Minute_Type;
+      Second : Second_Type) return OS_Time;
+   --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of
+   --  time component parts and returns an OS_Time. Returns Invalid_Time
+   --  if the creation fails.
+
    ----------------
    -- File Stuff --
    ----------------
