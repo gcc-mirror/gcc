@@ -1,5 +1,15 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* a-witeio.adb: Minor code reorganization.
+	* i-cstrea.ads: Add comment.
+
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c (NAME_MAX): Minor cleaup and comment
+	clarifications.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* g-memdum.adb, g-memdum.ads, exp_strm.adb: Minor reformatting.
 
 2014-07-18  Pascal Obry  <obry@adacore.com>

@@ -1082,13 +1082,20 @@ package body Ada.Wide_Text_IO is
       FIO.Check_Write_Status (AP (File));
 
       for K in 1 .. Spacing loop
+
+         --  We use Put here (rather than Putc) so that we get the proper
+         --  behavior on windows for output of Wide_String to the console.
+
          Put (File, Wide_Character'Val (LM));
+
          File.Line := File.Line + 1;
 
-         if File.Page_Length /= 0
-           and then File.Line > File.Page_Length
-         then
+         if File.Page_Length /= 0 and then File.Line > File.Page_Length then
+
+            --  Same situation as above, use Put instead of Putc
+
             Put (File, Wide_Character'Val (PM));
+
             File.Line := 1;
             File.Page := File.Page + 1;
          end if;
@@ -1242,8 +1249,7 @@ package body Ada.Wide_Text_IO is
          Putc (Character'Pos (C), File);
       end Out_Char;
 
-      R : int;
-      pragma Unreferenced (R);
+      Discard : int;
 
    --  Start of processing for Put
 
@@ -1252,7 +1258,7 @@ package body Ada.Wide_Text_IO is
 
       if text_translation_required then
          set_wide_text_mode (fileno (File.Stream));
-         R := fputwc (Wide_Character'Pos (Item), File.Stream);
+         Discard := fputwc (Wide_Character'Pos (Item), File.Stream);
       else
          WC_Out (Item, File.WC_Method);
       end if;
