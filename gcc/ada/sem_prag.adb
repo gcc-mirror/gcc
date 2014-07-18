@@ -13168,6 +13168,28 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Detect_Blocking := True;
 
+         ----------------------------------
+         -- Default_Scalar_Storage_Order --
+         ----------------------------------
+
+         --  pragma Default_Scalar_Storage_Order
+         --           (High_Order_First | Low_Order_First);
+
+         when Pragma_Default_Scalar_Storage_Order =>
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+
+            --  Default_Scalar_Storage_Order can appear as a configuration
+            --  pragma, or in a declarative part of a package spec.
+
+            if not Is_Configuration_Pragma then
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+            end if;
+
+            Check_No_Identifiers;
+            Check_Arg_Is_One_Of
+              (Arg1, Name_Low_Order_First, Name_High_Order_First);
+
          --------------------------
          -- Default_Storage_Pool --
          --------------------------
@@ -13179,7 +13201,7 @@ package body Sem_Prag is
             Check_Arg_Count (1);
 
             --  Default_Storage_Pool can appear as a configuration pragma, or
-            --  in a declarative part or a package spec.
+            --  in a declarative part of a package spec.
 
             if not Is_Configuration_Pragma then
                Check_Is_In_Decl_Part_Or_Package_Spec;
@@ -25483,6 +25505,7 @@ package body Sem_Prag is
       Pragma_Debug                          => -1,
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                => -1,
+      Pragma_Default_Scalar_Storage_Order   =>  0,
       Pragma_Default_Storage_Pool           => -1,
       Pragma_Depends                        => -1,
       Pragma_Disable_Atomic_Synchronization => -1,

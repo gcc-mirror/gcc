@@ -1,3 +1,29 @@
+2014-07-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Doc clarification.
+	* sem_ch13.adb (Kill_Rep_Clause): Use Replace not Rewrite.
+	* sem_ch13.ads: Minor comment update.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* repinfo.ads: Minor comment fix.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* par-prag.adb: Add dummy entry for Default_Scalar_Storage_Order.
+	* sem_prag.adb: Add dummy implementation of
+	Default_Scalar_Storage_Order.
+	* snames.ads-tmpl: Add dummy entry for
+	Default_Scalar_Storage_Order pragma.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* opt.adb (Tree_Read): Read Address_Is_Private,
+	Ignore_Rep_Clauses, Ignore_Style_Check_Pragmas, Multiple_Unit_Index.
+	(Tree_Write): Corresponding writes
+	* opt.ads: Minor comment reformatting and fixes.
+	* tree_io.ads: Increment ASIS_Version_Number.
+
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb, s-os_lib.ads, prj-tree.adb: Minor reformatting.

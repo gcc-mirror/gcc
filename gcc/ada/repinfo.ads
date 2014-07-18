@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,7 @@ package Repinfo is
 
    --    For E_Component and E_Discriminant entities, the Esize (size
    --    of component) and Component_Bit_Offset fields. Note that gigi
-   --    does not (yet ???) back annotate Normalized_Position/First_Bit.
+   --    does not back annotate Normalized_Position/First_Bit.
 
    --  There are three cases to consider:
 

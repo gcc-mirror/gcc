@@ -10295,7 +10295,7 @@ package body Sem_Ch13 is
    procedure Kill_Rep_Clause (N : Node_Id) is
    begin
       pragma Assert (Ignore_Rep_Clauses);
-      Rewrite (N, Make_Null_Statement (Sloc (N)));
+      Replace (N, Make_Null_Statement (Sloc (N)));
    end Kill_Rep_Clause;
 
    ------------------

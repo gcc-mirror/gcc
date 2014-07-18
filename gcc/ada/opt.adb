@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -249,9 +249,13 @@ package body Opt is
 
    begin
       Tree_Read_Int  (Tree_ASIS_Version_Number);
+
+      Tree_Read_Bool (Address_Is_Private);
       Tree_Read_Bool (Brief_Output);
       Tree_Read_Bool (GNAT_Mode);
       Tree_Read_Char (Identifier_Character_Set);
+      Tree_Read_Bool (Ignore_Rep_Clauses);
+      Tree_Read_Bool (Ignore_Style_Checks_Pragmas);
       Tree_Read_Int  (Maximum_File_Name_Length);
       Tree_Read_Data (Suppress_Options'Address,
                       (Suppress_Options'Size + SU - 1) / SU);
@@ -294,6 +298,7 @@ package body Opt is
       Tree_Read_Bool (Inline_Active);
       Tree_Read_Bool (Inline_Processing_Required);
       Tree_Read_Bool (List_Units);
+      Tree_Read_Int  (Multiple_Unit_Index);
       Tree_Read_Bool (Configurable_Run_Time_Mode);
       Tree_Read_Data (Operating_Mode'Address,
                       (Operating_Mode'Size + SU - 1) / Storage_Unit);
@@ -314,9 +319,13 @@ package body Opt is
 
    begin
       Tree_Write_Int  (ASIS_Version_Number);
+
+      Tree_Write_Bool (Address_Is_Private);
       Tree_Write_Bool (Brief_Output);
       Tree_Write_Bool (GNAT_Mode);
       Tree_Write_Char (Identifier_Character_Set);
+      Tree_Write_Bool (Ignore_Rep_Clauses);
+      Tree_Write_Bool (Ignore_Style_Checks_Pragmas);
       Tree_Write_Int  (Maximum_File_Name_Length);
       Tree_Write_Data (Suppress_Options'Address,
                        (Suppress_Options'Size + SU - 1) / SU);
@@ -339,6 +348,7 @@ package body Opt is
       Tree_Write_Bool (Inline_Active);
       Tree_Write_Bool (Inline_Processing_Required);
       Tree_Write_Bool (List_Units);
+      Tree_Write_Int  (Multiple_Unit_Index);
       Tree_Write_Bool (Configurable_Run_Time_Mode);
       Tree_Write_Data (Operating_Mode'Address,
                        (Operating_Mode'Size + SU - 1) / SU);

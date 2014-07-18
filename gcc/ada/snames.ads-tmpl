@@ -380,6 +380,7 @@ package Snames is
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
    Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
+   Name_Default_Scalar_Storage_Order   : constant Name_Id := N + $; -- GNAT
    Name_Default_Storage_Pool           : constant Name_Id := N + $; -- Ada 12
    Name_Disable_Atomic_Synchronization : constant Name_Id := N + $; -- GNAT
    Name_Discard_Names                  : constant Name_Id := N + $;
@@ -721,6 +722,7 @@ package Snames is
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
    Name_GPL                            : constant Name_Id := N + $;
+   Name_High_Order_First               : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
    Name_In_Out                         : constant Name_Id := N + $;
@@ -729,6 +731,7 @@ package Snames is
    Name_Internal                       : constant Name_Id := N + $;
    Name_Ivdep                          : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
+   Name_Low_Order_First                : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
    Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $;
    Name_Max_Entry_Queue_Length         : constant Name_Id := N + $;
@@ -1740,6 +1743,7 @@ package Snames is
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,
       Pragma_Detect_Blocking,
+      Pragma_Default_Scalar_Storage_Order,
       Pragma_Default_Storage_Pool,
       Pragma_Disable_Atomic_Synchronization,
       Pragma_Discard_Names,
