@@ -1227,13 +1227,13 @@ package body Ada.Wide_Text_IO is
      (File : File_Type;
       Item : Wide_Character)
    is
-      wide_text_translation_required : Boolean;
-      for wide_text_translation_required'Size use Character'Size;
-      pragma Import (C, wide_text_translation_required,
-                       "__gnat_wide_text_translation_required");
+      wide_text_translation_required : Integer;
+      pragma Import
+        (C, wide_text_translation_required,
+         "__gnat_wide_text_translation_required");
       --  Text translation is required on Windows only. This means that the
       --  console is doing translation and we do not want to do any encoding
-      --  here. If this boolean is set we just output the character as-is.
+      --  here. If this variable is not 0 we output the character via fputwc.
 
       procedure Out_Char (C : Character);
       --  Procedure to output one character of a wide character sequence
@@ -1256,7 +1256,7 @@ package body Ada.Wide_Text_IO is
    begin
       FIO.Check_Write_Status (AP (File));
 
-      if wide_text_translation_required
+      if wide_text_translation_required /= 0
         or else File.Text_Encoding /= Default_Text
       then
          set_mode (fileno (File.Stream), File.Text_Encoding);

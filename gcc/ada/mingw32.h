@@ -63,7 +63,6 @@
 
 extern UINT CurrentCodePage;
 extern UINT CurrentCCSEncoding;
-extern char __gnat_wide_text_translation_required;
 
 /*  Macros to convert to/from the code page specified in CurrentCodePage.  */
 #define S2WSC(wstr,str,len) \

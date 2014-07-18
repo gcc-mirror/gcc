@@ -9896,13 +9896,14 @@ but, unlike @code{Size}, may be set for non-first subtypes.
 @code{Standard'Wchar_T_Size} (@code{Standard} is the only permissible
 prefix) provides the size in bits of the C @code{wchar_t} type
 primarily for constructing the definition of this type in
-package @code{Interfaces.C}.
+package @code{Interfaces.C}. The result is a static constant.
 
 @node Attribute Word_Size
 @unnumberedsec Attribute Word_Size
 @findex Word_Size
 @code{Standard'Word_Size} (@code{Standard} is the only permissible
-prefix) provides the value @code{System.Word_Size}.
+prefix) provides the value @code{System.Word_Size}. The result is
+a static constant.
 
 @node Standard and Implementation Defined Restrictions
 @chapter Standard and Implementation Defined Restrictions
