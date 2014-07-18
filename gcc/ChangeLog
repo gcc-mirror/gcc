@@ -1,3 +1,13 @@
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61794
+	* config/i386/sse.md (avx512f_vextract<shuffletype>32x4_1_maskm):
+	Fix instruction constraint.
+	(<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>): Ditto.
+
 2014-07-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

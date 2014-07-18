@@ -1,3 +1,11 @@
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61794
+	* gcc.target/i386/pr61794.c: New test.
+
 2014-07-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
@@ -38,7 +46,8 @@
 	2014-06-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/61062
-	* gcc.target/arm/pr48252.c (main): Expect same result as endian-neutral.
+	* gcc.target/arm/pr48252.c (main): Expect same result as
+	endian-neutral.
 
 2014-07-08  Jakub Jelinek  <jakub@redhat.com>
 

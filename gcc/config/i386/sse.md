@@ -5887,9 +5887,10 @@
 	      (match_operand 5  "const_0_to_15_operand")]))
 	  (match_operand:<ssequartermode> 6 "memory_operand" "0")
 	  (match_operand:QI 7 "register_operand" "Yk")))]
-  "TARGET_AVX512F && (INTVAL (operands[2]) = INTVAL (operands[3]) - 1)
-  && (INTVAL (operands[3]) = INTVAL (operands[4]) - 1)
-  && (INTVAL (operands[4]) = INTVAL (operands[5]) - 1)"
+  "TARGET_AVX512F
+   && (INTVAL (operands[2]) == (INTVAL (operands[3]) - 1)
+       && INTVAL (operands[3]) == (INTVAL (operands[4]) - 1)
+       && INTVAL (operands[4]) == (INTVAL (operands[5]) - 1))"
 {
   operands[2] = GEN_INT ((INTVAL (operands[2])) >> 2);
   return "vextract<shuffletype>32x4\t{%2, %1, %0%{%7%}|%0%{%7%}, %1, %2}";
@@ -5909,9 +5910,10 @@
             (match_operand 3  "const_0_to_15_operand")
             (match_operand 4  "const_0_to_15_operand")
             (match_operand 5  "const_0_to_15_operand")])))]
-  "TARGET_AVX512F && (INTVAL (operands[2]) = INTVAL (operands[3]) - 1)
-  && (INTVAL (operands[3]) = INTVAL (operands[4]) - 1)
-  && (INTVAL (operands[4]) = INTVAL (operands[5]) - 1)"
+  "TARGET_AVX512F
+   && (INTVAL (operands[2]) == (INTVAL (operands[3]) - 1)
+       && INTVAL (operands[3]) == (INTVAL (operands[4]) - 1)
+       && INTVAL (operands[4]) == (INTVAL (operands[5]) - 1))"
 {
   operands[2] = GEN_INT ((INTVAL (operands[2])) >> 2);
   return "vextract<shuffletype>32x4\t{%2, %1, %0<mask_operand6>|%0<mask_operand6>, %1, %2}";
