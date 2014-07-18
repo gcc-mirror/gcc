@@ -17367,7 +17367,7 @@ between values.  The order of the entries is not important.  Currently
 the following keywords defined.
 
 @smallexample
-TEXT_TRANSLATION=[YES|NO]
+TEXT_TRANSLATION=[YES|NO|TEXT|BINARY|U8TEXT|WTEXT|U16TEXT]
 SHARED=[YES|NO]
 WCEM=[n|h|u|s|e|8|b]
 ENCODING=[UTF8|8BITS]
@@ -18096,14 +18096,35 @@ manner described for stream attributes.
 
 @noindent
 @samp{Text_Translation=@var{xxx}} may be used as the Form parameter
-passed to Text_IO.Create and Text_IO.Open:
-@samp{Text_Translation=@var{Yes}} is the default, which means to
+passed to Text_IO.Create and Text_IO.Open. @samp{Text_Translation=@var{xxx}}
+has no effect on Unix systems. Possible values are:
+
+@itemize @bullet
+
+@item
+@samp{@var{Yes} or @var{Text}} is the default, which means to
 translate LF to/from CR/LF on Windows systems.
-@samp{Text_Translation=@var{No}} disables this translation; i.e. it
+
+@samp{@var{No}} disables this translation; i.e. it
 uses binary mode. For output files, @samp{Text_Translation=@var{No}}
 may be used to create Unix-style files on
-Windows. @samp{Text_Translation=@var{xxx}} has no effect on Unix
-systems.
+Windows.
+
+@item
+@samp{@var{wtext}} translation enabled in Unicode mode.
+(corresponds to _O_WTEXT).
+
+@item
+@samp{@var{u8text}} translation enabled in Unicode UTF-8 mode.
+(corresponds to O_U8TEXT).
+
+@item
+@samp{@var{u16text}} translation enabled in Unicode UTF-16
+mode. (corresponds to_O_U16TEXT).
+
+@end itemize
+
+
 
 @node Shared Files
 @section Shared Files

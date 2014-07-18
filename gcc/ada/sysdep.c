@@ -152,9 +152,26 @@ __gnat_set_text_mode (int handle)
 }
 
 void
-__gnat_set_wide_text_mode (int handle)
+__gnat_set_mode (int handle, int mode)
 {
-  WIN_SETMODE (handle, CurrentCCSEncoding);
+  /*  the values here must be synchronized with
+      System.File_Control_Block.Content_Encodding:
+
+      None         = 0
+      Default_Text = 1
+      Text         = 2
+      U8text       = 3
+      Wtext        = 4
+      U16text      = 5  */
+
+ switch (mode) {
+    case 0 : WIN_SETMODE (handle, _O_BINARY);          break;
+    case 1 : WIN_SETMODE (handle, CurrentCCSEncoding); break;
+    case 2 : WIN_SETMODE (handle, _O_TEXT);            break;
+    case 3 : WIN_SETMODE (handle, _O_U8TEXT);          break;
+    case 4 : WIN_SETMODE (handle, _O_WTEXT);           break;
+    case 5 : WIN_SETMODE (handle, _O_U16TEXT);         break;
+ }
 }
 
 #ifdef __CYGWIN__
@@ -254,7 +271,7 @@ __gnat_set_text_mode (int handle ATTRIBUTE_UNUSED)
 }
 
 void
-__gnat_set_wide_text_mode (int handle ATTRIBUTE_UNUSED)
+__gnat_set_mode (int handle ATTRIBUTE_UNUSED, int mode ATTRIBUTE_UNUSED)
 {
 }
 

@@ -244,6 +244,7 @@ extern int    __gnat_pipe			   (int *);
 extern int    __gnat_expect_poll		   (int *, int, int, int *);
 extern void   __gnat_set_binary_mode		   (int);
 extern void   __gnat_set_text_mode		   (int);
+extern void   __gnat_set_mode			   (int,int);
 extern char  *__gnat_ttyname			   (int);
 extern int    __gnat_lseek			   (int, long, int);
 extern int    __gnat_set_close_on_exec		   (int, int);

@@ -892,7 +892,7 @@ package body Ada.Wide_Text_IO is
       Standard_Err.Is_Regular_File   := is_regular_file (fileno (stderr)) /= 0;
       Standard_Err.Is_Temporary_File := False;
       Standard_Err.Is_System_File    := True;
-      Standard_Err.Is_Text_File      := True;
+      Standard_Err.Text_Encoding     := FCB.Default_Text;
       Standard_Err.Access_Method     := 'T';
       Standard_Err.Self              := Standard_Err;
       Standard_Err.WC_Method         := Default_WCEM;
@@ -904,7 +904,7 @@ package body Ada.Wide_Text_IO is
       Standard_In.Is_Regular_File    := is_regular_file (fileno (stdin)) /= 0;
       Standard_In.Is_Temporary_File  := False;
       Standard_In.Is_System_File     := True;
-      Standard_In.Is_Text_File       := True;
+      Standard_In.Text_Encoding      := FCB.Default_Text;
       Standard_In.Access_Method      := 'T';
       Standard_In.Self               := Standard_In;
       Standard_In.WC_Method          := Default_WCEM;
@@ -916,7 +916,7 @@ package body Ada.Wide_Text_IO is
       Standard_Out.Is_Regular_File   := is_regular_file (fileno (stdout)) /= 0;
       Standard_Out.Is_Temporary_File := False;
       Standard_Out.Is_System_File    := True;
-      Standard_Out.Is_Text_File      := True;
+      Standard_Out.Text_Encoding     := FCB.Default_Text;
       Standard_Out.Access_Method     := 'T';
       Standard_Out.Self              := Standard_Out;
       Standard_Out.WC_Method         := Default_WCEM;
@@ -1227,6 +1227,8 @@ package body Ada.Wide_Text_IO is
      (File : File_Type;
       Item : Wide_Character)
    is
+      use type FCB.Content_Encoding;
+
       wide_text_translation_required : Boolean;
       for wide_text_translation_required'Size use Character'Size;
       pragma Import (C, wide_text_translation_required,
@@ -1256,8 +1258,12 @@ package body Ada.Wide_Text_IO is
    begin
       FIO.Check_Write_Status (AP (File));
 
-      if wide_text_translation_required then
-         set_wide_text_mode (fileno (File.Stream));
+      if wide_text_translation_required
+        or else File.Text_Encoding /= FCB.Default_Text
+      then
+         set_mode
+           (fileno (File.Stream),
+            FCB.Text_Content_Encoding'Pos (File.Text_Encoding));
          Discard := fputwc (Wide_Character'Pos (Item), File.Stream);
       else
          WC_Out (Item, File.WC_Method);
