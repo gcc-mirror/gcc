@@ -1257,7 +1257,7 @@ package body Ada.Wide_Text_IO is
       FIO.Check_Write_Status (AP (File));
 
       if wide_text_translation_required /= 0
-        or else File.Text_Encoding /= Default_Text
+        or else File.Text_Encoding in Non_Default_Text_Content_Encoding
       then
          set_mode (fileno (File.Stream), File.Text_Encoding);
          Discard := fputwc (Wide_Character'Pos (Item), File.Stream);

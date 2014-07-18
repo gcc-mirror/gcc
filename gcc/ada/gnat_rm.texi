@@ -363,8 +363,6 @@ Implementation Defined Attributes
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
-* Attribute Max_Interrupt_Priority::
-* Attribute Max_Priority::
 * Attribute Maximum_Alignment::
 * Attribute Mechanism_Code::
 * Attribute Null_Parameter::
@@ -8399,8 +8397,6 @@ consideration, you should minimize the use of these attributes.
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
-* Attribute Max_Interrupt_Priority::
-* Attribute Max_Priority::
 * Attribute Maximum_Alignment::
 * Attribute Mechanism_Code::
 * Attribute Null_Parameter::
@@ -8964,23 +8960,6 @@ provided for compatibility with the DEC Ada 83 attribute of this name.
 The @code{Mantissa} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
-
-@node Attribute Max_Interrupt_Priority
-@unnumberedsec Attribute Max_Interrupt_Priority
-@cindex Interrupt priority, maximum
-@findex Max_Interrupt_Priority
-@noindent
-@code{Standard'Max_Interrupt_Priority} (@code{Standard} is the only
-permissible prefix), provides the same value as
-@code{System.Max_Interrupt_Priority}.
-
-@node Attribute Max_Priority
-@unnumberedsec Attribute Max_Priority
-@cindex Priority, maximum
-@findex Max_Priority
-@noindent
-@code{Standard'Max_Priority} (@code{Standard} is the only permissible
-prefix) provides the same value as @code{System.Max_Priority}.
 
 @node Attribute Maximum_Alignment
 @unnumberedsec Attribute Maximum_Alignment
@@ -13056,7 +13035,15 @@ and its language-defined children.  See 13.7(2).
 @end cartouche
 @noindent
 See the definition of these packages in files @file{system.ads} and
-@file{s-stoele.ads}.
+@file{s-stoele.ads}. Note that two declarations are added to package
+System.
+
+@smallexample @c ada
+   Max_Priority           : constant Positive :=
+     Priority'Last;
+   Max_Interrupt_Priority : constant Positive :=
+     Interrupt_Priority'Last;
+@end smallexample
 
 @sp 1
 @item
