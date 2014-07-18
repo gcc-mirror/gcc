@@ -107,6 +107,8 @@ extern void   __gnat_current_time_string           (char *);
 extern void   __gnat_to_gm_time			   (OS_Time *, int *, int *,
 				                    int *, int *,
 				                    int *, int *);
+extern void   __gnat_to_os_time                    (OS_Time *, int, int, int,
+                                                    int, int, int);
 extern int    __gnat_get_maximum_file_name_length  (void);
 extern int    __gnat_get_switches_case_sensitive   (void);
 extern int    __gnat_get_file_names_case_sensitive (void);
