@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2003-2010, AdaCore                     --
+--                     Copyright (C) 2003-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,12 @@ with System;
 package GNAT.Memory_Dump is
    pragma Preelaborate;
 
-   procedure Dump (Addr : System.Address; Count : Natural);
+   type Prefix_Type is (Absolute_Address, Offset, None);
+
+   procedure Dump
+     (Addr   : System.Address;
+      Count  : Natural;
+      Prefix : Prefix_Type := Absolute_Address);
    --  Dumps indicated number (Count) of bytes, starting at the address given
    --  by Addr. The coding of this routine in its current form assumes the
    --  case of a byte addressable machine (and is therefore inapplicable to
