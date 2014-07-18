@@ -1,6 +1,14 @@
 2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
+	2014-07-16  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	PR target/61662
+	* config/i386/ia32intrin.h: Use __LP64__ to determine size of long.
+
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
 	2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61794
@@ -20,9 +28,8 @@
 2014-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/61801
-	* sched-deps.c (sched_analyze_2): For ASM_OPERANDS and
-	ASM_INPUT don't set reg_pending_barrier if it appears in a
-	debug-insn.
+	* sched-deps.c (sched_analyze_2): For ASM_OPERANDS and ASM_INPUT
+	don't set reg_pending_barrier if it appears in a debug-insn.
 
 2014-07-17  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -52,23 +59,20 @@
 	CONSTANT_P instead of CONSTANT_ADDRESS_P.
 	("*movsi_internal") <case 9>: Make check for valid unspec operands
 	for lapc stricter.
-	<case CRIS_UNSPEC_PCREL, CRIS_UNSPEC_PLT_PCREL>: Clear condition
-	codes.
+	<case CRIS_UNSPEC_PCREL, CRIS_UNSPEC_PLT_PCREL>: Clear condition codes.
 	("call", "call_value"): Use second incoming operand as a marker
 	for pic-offset-table-register being used.
 	("*expanded_call_non_v32", "*expanded_call_v32")
         ("*expanded_call_value_non_v32", "*expanded_call_value_v32"): For
 	second incoming operand to CALL, match cris_call_type_marker.
-	("*expanded_call_value_side"): Ditto.  Disable before
-	reload_completed.
+	("*expanded_call_value_side"): Ditto.  Disable before reload_completed.
 	("*expanded_call_side"): Ditto.  Fix typo in comment.
 	(moverside, movemside peepholes): Check for CRIS_CONSTANT_P, not
 	CONSTANT_P.
 	* config/cris/predicates.md ("cris_call_type_marker"): New predicate.
 	* config/cris/cris.h (CRIS_CONSTANT_P): New macro.
 	(enum cris_symbol_type): Rename from cris_pic_symbol_type.  All
-        users changed.  Add members cris_offsettable_symbol and
-	cris_unspec.
+        users changed.  Add members cris_offsettable_symbol and cris_unspec.
 	(cris_symbol_type): Rename from cris_pic_symbol_type.
 	* config/cris/constraints.md ("T"): Use CRIS_CONSTANT_P, not
         just CONSTANT_P.
@@ -122,13 +126,13 @@
 	PR target/61062
 	* config/arm/arm_neon.h (vtrn_s8, vtrn_s16, vtrn_u8, vtrn_u16, vtrn_p8,
 	vtrn_p16, vtrn_s32, vtrn_f32, vtrn_u32, vtrnq_s8, vtrnq_s16, vtrnq_s32,
-	vtrnq_f32, vtrnq_u8, vtrnq_u16, vtrnq_u32, vtrnq_p8, vtrnq_p16, vzip_s8,
-	vzip_s16, vzip_u8, vzip_u16, vzip_p8, vzip_p16, vzip_s32, vzip_f32,
-	vzip_u32, vzipq_s8, vzipq_s16, vzipq_s32, vzipq_f32, vzipq_u8,
-	vzipq_u16, vzipq_u32, vzipq_p8, vzipq_p16, vuzp_s8, vuzp_s16, vuzp_s32,
-	vuzp_f32, vuzp_u8, vuzp_u16, vuzp_u32, vuzp_p8, vuzp_p16, vuzpq_s8,
-	vuzpq_s16, vuzpq_s32, vuzpq_f32, vuzpq_u8, vuzpq_u16, vuzpq_u32,
-	vuzpq_p8, vuzpq_p16): Correct mask for bigendian.
+	vtrnq_f32, vtrnq_u8, vtrnq_u16, vtrnq_u32, vtrnq_p8, vtrnq_p16,
+	vzip_s8, vzip_s16, vzip_u8, vzip_u16, vzip_p8, vzip_p16, vzip_s32,
+	vzip_f32, vzip_u32, vzipq_s8, vzipq_s16, vzipq_s32, vzipq_f32,
+	vzipq_u8, vzipq_u16, vzipq_u32, vzipq_p8, vzipq_p16, vuzp_s8, vuzp_s16,
+	vuzp_s32, vuzp_f32, vuzp_u8, vuzp_u16, vuzp_u32, vuzp_p8, vuzp_p16,
+	vuzpq_s8, vuzpq_s16, vuzpq_s32, vuzpq_f32, vuzpq_u8, vuzpq_u16,
+	vuzpq_u32, vuzpq_p8, vuzpq_p16): Correct mask for bigendian.
 
 
 2014-07-09  Alan Lawrence  <alan.lawrence@arm.com>
@@ -246,11 +250,9 @@
 	2014-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses) <case OMP_CLAUSE_MAP,
-	OMP_CLAUSE_TO, OMP_CLAUSE_FROM): Make sure OMP_CLAUSE_SIZE is
-	non-NULL.
+	OMP_CLAUSE_TO, OMP_CLAUSE_FROM): Make sure OMP_CLAUSE_SIZE is non-NULL.
 	<case OMP_CLAUSE_ALIGNED>: Gimplify OMP_CLAUSE_ALIGNED_ALIGNMENT.
-	(gimplify_adjust_omp_clauses_1): Make sure OMP_CLAUSE_SIZE is
-	non-NULL.
+	(gimplify_adjust_omp_clauses_1): Make sure OMP_CLAUSE_SIZE is non-NULL.
 	(gimplify_adjust_omp_clauses): Likewise.
 	* omp-low.c (lower_rec_simd_input_clauses,
 	lower_rec_input_clauses, expand_omp_simd): Handle non-constant
@@ -265,9 +267,8 @@
 
 	2014-06-18  Jakub Jelinek  <jakub@redhat.com>
 
-	* gimplify.c (omp_notice_variable): If n is non-NULL
-	and no flags change in ORT_TARGET region, don't jump to
-	do_outer.
+	* gimplify.c (omp_notice_variable): If n is non-NULL and no flags
+	change in ORT_TARGET region, don't jump to do_outer.
 	(struct gimplify_adjust_omp_clauses_data): New type.
 	(gimplify_adjust_omp_clauses_1): Adjust for data being
 	a struct gimplify_adjust_omp_clauses_data pointer instead
@@ -285,14 +286,12 @@
 	gimple_seq * argument to omp_finish_clause hook.
 	* omp-low.c (scan_sharing_clauses): Call scan_omp_op on
 	non-DECL_P OMP_CLAUSE_DECL if ctx->outer.
-	(scan_omp_parallel, lower_omp_for): When adding
-	_LOOPTEMP_ clause var, add it to outer ctx's decl_map
-	as identity.
+	(scan_omp_parallel, lower_omp_for): When adding _LOOPTEMP_ clause var,
+	add it to outer ctx's decl_map as identity.
 	* tree-core.h (OMP_CLAUSE_MAP_TO_PSET): New map kind.
 	* tree-nested.c (convert_nonlocal_omp_clauses,
 	convert_local_omp_clauses): Handle various OpenMP 4.0 clauses.
-	* tree-pretty-print.c (dump_omp_clause): Handle
-	OMP_CLAUSE_MAP_TO_PSET.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_MAP_TO_PSET.
 
 	2014-06-10  Jakub Jelinek  <jakub@redhat.com>
 
@@ -316,8 +315,7 @@
 	OMP_CLAUSE_LINEAR_STMT.
 	* omp-low.c (lower_rec_input_clauses): Fix typo.
 	(maybe_add_implicit_barrier_cancel, lower_omp_1): Add
-	cast between Fortran boolean_type_node and C _Bool if
-	needed.
+	cast between Fortran boolean_type_node and C _Bool if needed.
 
 2014-06-30  Jason Merrill  <jason@redhat.com>
 
@@ -368,8 +366,7 @@
 	(aarch64_sqdmlsl_lane<mode>): Likewise.
 	(aarch64_sqdmull_lane<mode>): Likewise.
 	(aarch64_sqdmull2_lane<mode>): Likewise.
-	(aarch64_sqdmlal_laneq<mode>):
-	Replace VCON usage with VCONQ.
+	(aarch64_sqdmlal_laneq<mode>): Replace VCON usage with VCONQ.
 	Emit aarch64_sqdmlal_laneq<mode>_internal insn.
 	(aarch64_sqdmlal2_laneq<mode>): Emit
 	aarch64_sqdmlal2_laneq<mode>_internal insn.
