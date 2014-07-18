@@ -1,3 +1,7 @@
+2013-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.tgt (alpha*): Add -mfp-trap-mode=sui to XCFLAGS.
+
 2014-06-17  Kai Tietz  <ktietz@redhat.com>
 
 	* Makefile.am (libatomic_la_LDFLAGS): Add lt_host_flags.
