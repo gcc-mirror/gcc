@@ -184,6 +184,11 @@ package body Sem_Ch7 is
       Prag    : Node_Id;
 
    begin
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related package body.
+
       Save_SPARK_Mode_And_Set (Body_Id, Mode);
 
       Prag := Get_Pragma (Body_Id, Pragma_Refined_State);
@@ -203,6 +208,9 @@ package body Sem_Ch7 is
       then
          Error_Msg_N ("package & requires state refinement", Spec_Id);
       end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
 
       Restore_SPARK_Mode (Mode);
    end Analyze_Package_Body_Contract;
@@ -848,6 +856,11 @@ package body Sem_Ch7 is
       Prag : Node_Id;
 
    begin
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related package.
+
       Save_SPARK_Mode_And_Set (Pack_Id, Mode);
 
       --  Analyze the initialization related pragmas. Initializes must come
@@ -875,6 +888,9 @@ package body Sem_Ch7 is
             Check_Missing_Part_Of (Pack_Id);
          end if;
       end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
 
       Restore_SPARK_Mode (Mode);
    end Analyze_Package_Contract;
