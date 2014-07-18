@@ -855,7 +855,7 @@ __gnat_rmdir (char *path)
 int
 __gnat_fputwc(int c, FILE *stream)
 {
-#if ! defined (__vxworks) && ! defined (IS_CROSS)
+#if ! defined (__vxworks)
   return fputwc ((wchar_t)c, stream);
 #else
   return fputc (c, stream);

@@ -1,3 +1,28 @@
+2014-07-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb: Minor typo correction.
+
+2014-07-18  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Complete previous change.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* s-fileio.adb: Minor style fix.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Detect improper
+	specification of stream attributes for subtypes that are not
+	first subtypes, to prevent malformed rep_item chains in the case
+	of such illegal specifications for discriminated private subtypes.
+	(Check_Overloaded_Name): Verify that the name is an entity name
+	before other checks.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_fputwc) Do not disable on cross-build.
+
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, sem_attr.adb,

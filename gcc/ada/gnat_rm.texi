@@ -502,6 +502,7 @@ The Implementation of Standard I/O
 * Text Translation::
 * Shared Files::
 * Filenames encoding::
+* File content encoding::
 * Open Modes::
 * Operations on C Streams::
 * Interfacing to C Streams::
@@ -17288,6 +17289,7 @@ these additional facilities are also described in this chapter.
 * Text Translation::
 * Shared Files::
 * Filenames encoding::
+* File content encoding::
 * Open Modes::
 * Operations on C Streams::
 * Interfacing to C Streams::
