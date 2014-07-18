@@ -3068,11 +3068,11 @@ package Einfo is
 --       initialization, it may or may not be set if the type does have
 --       preelaborable initialization.
 
---    Last_Aggregate_Assignment (Node11)
---       Applies to controlled variables initialized by an aggregate. Points to
---       the last statement associated with the expansion of the aggregate. The
---       attribute is used by the finalization machinery when marking an object
---       as successfully initialized.
+--    Last_Aggregate_Assignment (Node30)
+--       Applies to controlled constants and variables initialized by an
+--       aggregate. Points to the last statement associated with the expansion
+--       of the aggregate. The attribute is used by the finalization machinery
+--       when marking an object as successfully initialized.
 
 --    Last_Assignment (Node26)
 --       Defined in entities for variables, and OUT or IN OUT formals. Set for
@@ -5412,6 +5412,7 @@ package Einfo is
    --    Related_Type                        (Node27)   (constants only)
    --    Initialization_Statements           (Node28)
    --    BIP_Initialization_Call             (Node29)
+   --    Last_Aggregate_Assignment           (Node30)
    --    Linker_Section_Pragma               (Node33)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
@@ -6102,7 +6103,6 @@ package Einfo is
    --    Hiding_Loop_Variable                (Node8)
    --    Current_Value                       (Node9)
    --    Encapsulating_State                 (Node10)
-   --    Last_Aggregate_Assignment           (Node11)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
@@ -6121,6 +6121,7 @@ package Einfo is
    --    Related_Type                        (Node27)
    --    Initialization_Statements           (Node28)
    --    BIP_Initialization_Call             (Node29)
+   --    Last_Aggregate_Assignment           (Node30)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Has_Alignment_Clause                (Flag46)
