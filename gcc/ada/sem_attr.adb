@@ -6336,11 +6336,13 @@ package body Sem_Attr is
                               Hi := High_Bound (Index);
 
                               Analyze_And_Resolve (Lo, Etype (Index_Type));
+
                               if not Is_OK_Static_Expression (Lo) then
                                  Set_Do_Range_Check (Lo);
                               end if;
 
                               Analyze_And_Resolve (Hi, Etype (Index_Type));
+
                               if not Is_OK_Static_Expression (Hi) then
                                  Set_Do_Range_Check (Hi);
                               end if;

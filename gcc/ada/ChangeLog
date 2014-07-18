@@ -1,3 +1,23 @@
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb, s-os_lib.ads, prj-tree.adb: Minor reformatting.
+	* types.h: Fix typo.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Check_Address_Clause): Use Kill_Rep_Clause (no
+	functional change).
+	* gnat_ugn.texi: Document that -gnatI removes rep clauses from
+	ASIS trees.
+	* sem_ch13.adb (Kill_Rep_Clause): New procedure
+	(Analyze_Attribute_Definition_Clause): Use
+	Kill_Rep_Clause. This is just a cleanup, no functional effect.
+	(Analyze_Enumeration_Representation_Clause):
+	Use Kill_Rep_Clause. This means that enum rep
+	clauses are now properly removed from -gnatct trees.
+	(Analyze_Record_Representation_Clause): Same change.
+	* sem_ch13.ads (Kill_Rep_Clause): New procedure.
+
 2014-07-18  Pascal Obry  <obry@adacore.com>
 
 	* s-os_lib.ads, s-os_lib.adb (GM_Time_Of): New routine to create an

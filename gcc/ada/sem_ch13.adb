@@ -3647,18 +3647,11 @@ package body Sem_Ch13 is
                  Attribute_Machine_Radix  |
                  Attribute_Object_Size    |
                  Attribute_Size           |
+                 Attribute_Small          |
                  Attribute_Stream_Size    |
                  Attribute_Value_Size     =>
-               Rewrite (N, Make_Null_Statement (Sloc (N)));
+               Kill_Rep_Clause (N);
                return;
-
-            --  Perhaps 'Small should not be ignored by Ignore_Rep_Clauses ???
-
-            when Attribute_Small =>
-               if Ignore_Rep_Clauses then
-                  Rewrite (N, Make_Null_Statement (Sloc (N)));
-                  return;
-               end if;
 
             --  The following should not be ignored, because in the first place
             --  they are reasonably portable, and should not cause problems in
@@ -3674,6 +3667,13 @@ package body Sem_Ch13 is
                  Attribute_Storage_Pool        |
                  Attribute_Storage_Size        |
                  Attribute_Write               =>
+               null;
+
+            --  We do not do anything here with address clauses, they will be
+            --  removed by Freeze later on, but for now, it works better to
+            --  keep then in the tree.
+
+            when Attribute_Address =>
                null;
 
             --  Other cases are errors ("attribute& cannot be set with
@@ -3830,7 +3830,7 @@ package body Sem_Ch13 is
 
             --  Even when ignoring rep clauses we need to indicate that the
             --  entity has an address clause and thus it is legal to declare
-            --  it imported.
+            --  it imported. Freeze will get rid of the address clause later.
 
             if Ignore_Rep_Clauses then
                if Ekind_In (U_Ent, E_Variable, E_Constant) then
@@ -5365,6 +5365,7 @@ package body Sem_Ch13 is
 
    begin
       if Ignore_Rep_Clauses then
+         Kill_Rep_Clause (N);
          return;
       end if;
 
@@ -5740,6 +5741,7 @@ package body Sem_Ch13 is
 
    begin
       if Ignore_Rep_Clauses then
+         Kill_Rep_Clause (N);
          return;
       end if;
 
@@ -10285,6 +10287,16 @@ package body Sem_Ch13 is
          end;
       end if;
    end Is_Operational_Item;
+
+   ---------------------
+   -- Kill_Rep_Clause --
+   ---------------------
+
+   procedure Kill_Rep_Clause (N : Node_Id) is
+   begin
+      pragma Assert (Ignore_Rep_Clauses);
+      Rewrite (N, Make_Null_Statement (Sloc (N)));
+   end Kill_Rep_Clause;
 
    ------------------
    -- Minimum_Size --

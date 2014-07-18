@@ -159,9 +159,9 @@ package System.OS_Lib is
       Hour   : Hour_Type;
       Minute : Minute_Type;
       Second : Second_Type) return OS_Time;
-   --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of
-   --  time component parts and returns an OS_Time. Returns Invalid_Time
-   --  if the creation fails.
+   --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of time
+   --  component parts and returns an OS_Time. Returns Invalid_Time if the
+   --  creation fails.
 
    ----------------
    -- File Stuff --
