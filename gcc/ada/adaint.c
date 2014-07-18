@@ -123,8 +123,9 @@ extern "C" {
 #else
 #include "mingw32.h"
 
-/* Current code page to use, set in initialize.c.  */
+/* Current code page and CCS encoding to use, set in initialize.c.  */
 UINT CurrentCodePage;
+UINT CurrentCCSEncoding;
 #endif
 
 #include <sys/utime.h>

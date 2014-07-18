@@ -1,5 +1,56 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* sem_util.adb (Check_Expression_Against_Static_Predicate):
+	Mark expression as non-static if it fails static predicate check,
+	and issue additional warning.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* a-witeio.adb (Put): Control translation based on
+	wide_text_translation_required.
+	* adaint.c (CurrentCCSEncoding): New variable.
+	* initialize.c (__gnat_initialize): On Windows initialize
+	CurrentCCSEncoding based on values in GNAT_CCS_ENCODING
+	environment variable.
+	* mingw32.h (CurrentCCSEncoding): New external.
+	(__gnat_wide_text_translation_required): Likewise.
+	* sysdep.c (wide_text_translation_required): New variable.
+	(__gnat_set_wide_text_mode): Set mode based on CurrentCCSEncoding.
+
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Remove global
+	variable Refined_States.  Add global variable Matched_Items.
+	(Check_Dependency_Clause): Account for dependency
+	clauses utilizing states with visible null refinements.
+	(Is_Null_Refined_State): New routine.
+	(Match_Items): Record each successfully matched item of pragma Depends.
+	(Record_Item): New routine.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Update): Set
+	Do_Range_Check flag on a dynamic index expression used in a
+	component association in the argument of Update.
+
+2014-07-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads, sem_eval.ads, sem_ch13.adb: Minor reformatting.
+
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Redo the marking
+	of enclosing blocks, loops and the enclosing function using a
+	parent-based traversal.
+	* exp_util.adb (Wrap_Statements_In_Block): Suppress the secondary
+	stack reclamation if the iterator loop contains a return statement
+	that uses the stack.
+	* sem_ch5.adb (Analyze_Loop_Statement): There is no need to
+	patch up the scope stack as the secondary stack management now
+	takes into account the enclosing function of the iterator loop.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, g-memdum.ads, i-cstrea.ads: Minor reformatting.
 
 2014-07-18  Robert Dewar  <dewar@adacore.com>

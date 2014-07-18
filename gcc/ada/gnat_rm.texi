@@ -18196,6 +18196,29 @@ This encoding form parameter is only supported on the Windows
 platform. On the other Operating Systems the run-time is supporting
 UTF-8 natively.
 
+@node File content encoding
+@section File content encoding
+
+@noindent
+For text files it is possible to specify the encoding to use. This is
+controlled by the by the @samp{GNAT_CCS_ENCODING} environment
+variable. And if not set @samp{TEXT} is assumed.
+
+The possible values are those supported on Windows:
+
+@table @samp
+@item TEXT
+Translated text mode
+@item WTEXT
+Translated unicode encoding
+@item U16TEXT
+Unicode 16-bit encoding
+@item U8TEXT
+Unicode 8-bit encoding
+@end table
+
+This encoding is only supported on the Windows platform.
+
 @node Open Modes
 @section Open Modes
 

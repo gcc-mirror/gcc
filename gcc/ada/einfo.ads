@@ -1881,7 +1881,7 @@ package Einfo is
 --       Defined in all types and subtypes. Set if the type (which must be
 --       a discrete, real, or string subtype) has a static predicate, i.e. a
 --       predicate whose expression is predicate-static. This can result from
---       use of a Predicate, Static_Predicate or Dynamic_Predicate aspect. We
+--       use of a Predicate, Static_Predicate, or Dynamic_Predicate aspect. We
 --       can distinguish these cases by testing Has_Static_Predicate_Aspect
 --       and Has_Dynamic_Predicate_Aspect. See description of the latter flag
 --       for further information on dynamic predicates which are also static.
@@ -1893,7 +1893,7 @@ package Einfo is
 --       from a Predicate aspect or pragma or even from a Dynamic_Predicate
 --       aspect. When we need to know the difference (e.g. to know what set of
 --       check policies apply, use this flag and Has_Dynamic_Predicate_Aspect
---       to determine which case we have.
+--       to determine which case we have).
 
 --    Has_Storage_Size_Clause (Flag23) [implementation base type only]
 --       Defined in task types and access types. It is set if a Storage_Size
