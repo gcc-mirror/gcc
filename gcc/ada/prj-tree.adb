@@ -1121,20 +1121,19 @@ package body Prj.Tree is
       In_Tree   : Project_Node_Tree_Ref;
       With_Name : Name_Id) return Project_Node_Id
    is
-      With_Clause : Project_Node_Id :=
-        First_With_Clause_Of (Project, In_Tree);
+      With_Clause : Project_Node_Id;
       Result      : Project_Node_Id := Empty_Node;
 
    begin
       --  First check all the imported projects
 
+      With_Clause := First_With_Clause_Of (Project, In_Tree);
       while Present (With_Clause) loop
 
-         --  Only non limited imported project may be used as prefix
-         --  of variable or attributes.
+         --  Only non limited imported project may be used as prefix of
+         --  variables or attributes.
 
          Result := Non_Limited_Project_Node_Of (With_Clause, In_Tree);
-
          while Present (Result) loop
             if Name_Of (Result, In_Tree) = With_Name then
                return Result;

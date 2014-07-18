@@ -604,7 +604,9 @@ package body Freeze is
                end if;
             end;
 
-            Rewrite (Addr, Make_Null_Statement (Sloc (E)));
+            --  And now remove the address clause
+
+            Kill_Rep_Clause (Addr);
 
          elsif not Error_Posted (Expr)
            and then not Needs_Finalization (Typ)
