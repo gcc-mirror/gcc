@@ -1205,7 +1205,6 @@ package body Sem_Util is
             if Denotes_Discriminant (Node (D)) then
                D_Val :=
                  New_Occurrence_Of (Discriminal (Entity (Node (D))), Loc);
-
             else
                D_Val := New_Copy_Tree (Node (D));
             end if;
@@ -1223,7 +1222,8 @@ package body Sem_Util is
       if Ekind (T) = E_Array_Subtype then
          Id := First_Index (T);
          while Present (Id) loop
-            if Denotes_Discriminant (Type_Low_Bound  (Etype (Id))) or else
+            if Denotes_Discriminant (Type_Low_Bound  (Etype (Id)))
+                 or else
                Denotes_Discriminant (Type_High_Bound (Etype (Id)))
             then
                return Build_Component_Subtype
@@ -1493,7 +1493,8 @@ package body Sem_Util is
                  N_Op_Rem
             =>
                if Do_Division_Check (Expr)
-                 or else Do_Overflow_Check (Expr)
+                    or else
+                  Do_Overflow_Check (Expr)
                then
                   return False;
                else
@@ -1636,12 +1637,13 @@ package body Sem_Util is
            and then not Comes_From_Source (T)
            and then Nkind (N) = N_Object_Declaration
          then
-            Error_Msg_NE ("type of& has incomplete component", N,
-              Defining_Identifier (N));
-
+            Error_Msg_NE
+              ("type of& has incomplete component",
+               N, Defining_Identifier (N));
          else
             Error_Msg_NE
-              ("premature usage of incomplete}", N, First_Subtype (T));
+              ("premature usage of incomplete}",
+               N, First_Subtype (T));
          end if;
       end if;
    end Check_Fully_Declared;
@@ -1754,6 +1756,7 @@ package body Sem_Util is
                   end if;
 
                   Append_Elmt (N, Writable_Actuals_List);
+
                else
                   if Identifiers_List = No_Elist then
                      Identifiers_List := New_Elmt_List;
@@ -1809,9 +1812,7 @@ package body Sem_Util is
             return;
          end if;
 
-         if Nkind (N) in N_Subexpr
-           and then Is_Static_Expression (N)
-         then
+         if Nkind (N) in N_Subexpr and then Is_Static_Expression (N) then
             return;
          end if;
 
@@ -1902,6 +1903,7 @@ package body Sem_Util is
          when N_Op | N_Membership_Test =>
             declare
                Expr : Node_Id;
+
             begin
                Collect_Identifiers (Left_Opnd (N));
 
@@ -2018,7 +2020,8 @@ package body Sem_Util is
                  and then Present (Aggregate_Bounds (N))
                  and then Compile_Time_Known_Bounds (Etype (N))
                  and then Expr_Value (High_Bound (Aggregate_Bounds (N)))
-                            > Expr_Value (Low_Bound (Aggregate_Bounds (N)))
+                            >
+                          Expr_Value (Low_Bound (Aggregate_Bounds (N)))
                then
                   declare
                      Count_Components   : Uint := Uint_0;

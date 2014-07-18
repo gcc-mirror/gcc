@@ -102,8 +102,8 @@ package body Par_SCO is
    function Is_Logical_Operator (N : Node_Id) return Boolean;
    --  N is the node for a subexpression. This procedure just tests N to see
    --  if it is a logical operator (including short circuit conditions, but
-   --  excluding OR and AND) and returns True if so, False otherwise, it does
-   --  no other processing.
+   --  excluding OR and AND) and returns True if so. It also returns True for
+   --  an if expression. False in all other cases, no other processing is done.
 
    function To_Source_Location (S : Source_Ptr) return Source_Location;
    --  Converts Source_Ptr value to Source_Location (line/col) format

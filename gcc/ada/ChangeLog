@@ -1,5 +1,19 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* par_sco.adb, a-reatim.ads, exp_attr.adb, sem_util.adb: Minor
+	reformatting.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Out_Or_In_Out_Parameter): New flag and
+	function.
+	(Set_Has_Out_Or_In_Out_Parameter): New procedure.
+	* sem_ch6.adb (Set_Formal_Mode): Set Has_Out_Or_In_Out_Parameter flag.
+	* sem_res.adb (Resolve_Call): Error if call of Ada 2012 function
+	with OUT or IN OUT from earlier Ada mode (e.g. Ada 2005)
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* bcheck.adb (Check_Consistent_Restrictions):
 	Remove obsolete code checking for violation of
 	No_Standard_Allocators_After_Elaboration (main program)
