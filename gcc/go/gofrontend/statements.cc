@@ -2664,6 +2664,7 @@ Return_statement::do_lower(Gogo*, Named_object* function, Block* enclosing,
       && vals->front()->call_expression() != NULL)
     {
       Call_expression* call = vals->front()->call_expression();
+      call->set_expected_result_count(results_count);
       delete vals;
       vals = new Expression_list;
       for (size_t i = 0; i < results_count; ++i)

@@ -1606,9 +1606,9 @@ class Call_expression : public Expression
 		  Location location)
     : Expression(EXPRESSION_CALL, location),
       fn_(fn), args_(args), type_(NULL), results_(NULL), call_(NULL),
-      call_temp_(NULL), is_varargs_(is_varargs), are_hidden_fields_ok_(false),
-      varargs_are_lowered_(false), types_are_determined_(false),
-      is_deferred_(false), issued_error_(false)
+      call_temp_(NULL), expected_result_count_(0), is_varargs_(is_varargs),
+      are_hidden_fields_ok_(false), varargs_are_lowered_(false),
+      types_are_determined_(false), is_deferred_(false), issued_error_(false)
   { }
 
   // The function to call.
@@ -1638,6 +1638,12 @@ class Call_expression : public Expression
   // for calls which return multiple results.
   Temporary_statement*
   result(size_t i) const;
+
+  // Set the number of results expected from this call.  This is used
+  // when the call appears in a context that expects multiple results,
+  // such as a, b = f().
+  void
+  set_expected_result_count(size_t);
 
   // Return whether this is a call to the predeclared function
   // recover.
@@ -1767,6 +1773,9 @@ class Call_expression : public Expression
   Bexpression* call_;
   // A temporary variable to store this call if the function returns a tuple.
   Temporary_statement* call_temp_;
+  // If not 0, the number of results expected from this call, when
+  // used in a context that expects multiple values.
+  size_t expected_result_count_;
   // True if the last argument is a varargs argument (f(a...)).
   bool is_varargs_;
   // True if this statement may pass hidden fields in the arguments.
