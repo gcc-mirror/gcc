@@ -1,3 +1,7 @@
+2014-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Template Instantiation): Remove stray parenthesis.
+
 2014-07-18  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_can_eliminate): Follow the
