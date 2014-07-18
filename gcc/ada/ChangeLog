@@ -1,3 +1,19 @@
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* a-textio.adb: Rename Is_Text_File to Text_Encoding.
+	* a-ztexio.adb: Likewise.
+	* a-witeio.adb: Likewise.
+	(Open): Pass file's translation mode to set_text_mode.
+	* s-ficobl.ads (Content_Encoding): New type.
+	(Text_Content_Encoding): New subtype.
+	(AFCB): Rename Is_Text_File to Text_Encoding.
+	* s-fileio.adb (Open): Handles new text_translation
+	values. Remove Is_Text_File which is equivalent to Text_Encoding
+	in Text_Content_Encoding.
+	* adaint.h (__gnat_set_mode): New routine.
+	* sysdep.c (__gnat_set_wide_text_mode): Removed.
+	(__gnat_set_mode): New routine.
+
 2014-07-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/decl.c, gcc-interface/trans.c,

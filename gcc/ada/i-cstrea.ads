@@ -228,11 +228,17 @@ package Interfaces.C_Streams is
    --  versa. These functions have no effect if text_translation_required is
    --  false (e.g. in normal unix mode). Use fileno to get a stream handle.
 
-   procedure set_wide_text_mode (handle : int);
-   --  This is similar to set_text_mode but switches the translation to 16-bit
-   --  wide-character instead of 8-bit character. Again, this routine has no
-   --  effect if text_translation_required is false. On Windows this is used
-   --  to have proper 16-bit wide-string output on the console for example.
+   procedure set_mode (handle : int; Mode : int);
+   --  As above but can set the handle to any mode. On Windows this can be used
+   --  to have proper 16-bit wide-string output on the console for example. The
+   --  mode value corresponds to Content_Encoding'Pos:
+   --     0 = binary, equivalent to set_binary_mode
+   --     1 = default mode, as set by the GNAT_CCS_ENCODING or equivalent to 2
+   --     2 = text, equivalent to set_text_mode
+   --     3 = u8text, set encoding to Unicode UTF-8
+   --     4 = wide-text, set encoding to Unicode
+   --     5 = u16text, set encoding to Unicode UTF-16
+   --  Wouldn't it be better to use an enumeration type here???
 
    ----------------------------
    -- Full Path Name support --
@@ -264,7 +270,7 @@ private
 
    pragma Import (C, set_binary_mode, "__gnat_set_binary_mode");
    pragma Import (C, set_text_mode, "__gnat_set_text_mode");
-   pragma Import (C, set_wide_text_mode, "__gnat_set_wide_text_mode");
+   pragma Import (C, set_mode, "__gnat_set_mode");
 
    pragma Import (C, max_path_len, "__gnat_max_path_len");
    pragma Import (C, full_name, "__gnat_full_name");
