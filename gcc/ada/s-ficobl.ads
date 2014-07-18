@@ -78,25 +78,6 @@ package System.File_Control_Block is
    --  stream with the semantics specified in the RM for file sharing. All
    --  files opened with "shared=no" will have their own stream.
 
-   type Content_Encoding is (None, Default_Text, Text, U8text, Wtext, U16text);
-   --  Described the text encoding for file content:
-   --    None         : No text encoding, this file is treated as a binary file
-   --    Default_Text : A text file but not from Text_Translation form string
-   --                   In this mode we are eventually using the system-wide
-   --                   translation if activated.
-   --    Text         : Text encoding activated
-   --    Wtext        : Unicode mode
-   --    U16text      : Unicode UTF-16 encoding
-   --    U8text       : Unicode UTF-8 encoding
-   --
-   --  This encoding is system dependent and only used on Windows systems.
-   --
-   --  Note that modifications to Content_Encoding must be synchronized
-   --  with sysdep.c:__gnat_set_mode.
-
-   subtype Text_Content_Encoding
-     is Content_Encoding range Default_Text .. U16text;
-
    type AFCB is tagged;
    type AFCB_Ptr is access all AFCB'Class;
 
@@ -135,7 +116,7 @@ package System.File_Control_Block is
       Is_System_File : Boolean;
       --  A flag set only for system files (stdin, stdout, stderr)
 
-      Text_Encoding : Content_Encoding;
+      Text_Encoding : Interfaces.C_Streams.Content_Encoding;
       --  A flag set to describe file content encoding
 
       Shared_Status : Shared_Status_Type;

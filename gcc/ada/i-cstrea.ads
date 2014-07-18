@@ -228,17 +228,31 @@ package Interfaces.C_Streams is
    --  versa. These functions have no effect if text_translation_required is
    --  false (e.g. in normal unix mode). Use fileno to get a stream handle.
 
-   procedure set_mode (handle : int; Mode : int);
-   --  As above but can set the handle to any mode. On Windows this can be used
-   --  to have proper 16-bit wide-string output on the console for example. The
-   --  mode value corresponds to Content_Encoding'Pos:
-   --     0 = binary, equivalent to set_binary_mode
-   --     1 = default mode, as set by the GNAT_CCS_ENCODING or equivalent to 2
-   --     2 = text, equivalent to set_text_mode
-   --     3 = u8text, set encoding to Unicode UTF-8
-   --     4 = wide-text, set encoding to Unicode
-   --     5 = u16text, set encoding to Unicode UTF-16
-   --  Wouldn't it be better to use an enumeration type here???
+   type Content_Encoding is (None, Default_Text, Text, U8text, Wtext, U16text);
+   for Content_Encoding use (0,    1,            2,    3,      4,     5);
+   pragma Convention (C, Content_Encoding);
+   --  Content_Encoding describes the text encoding for file content:
+   --    None         : No text encoding, this file is treated as a binary file
+   --    Default_Text : A text file but not from Text_Translation form string
+   --                   In this mode we are eventually using the system-wide
+   --                   translation if activated.
+   --    Text         : Text encoding activated
+   --    Wtext        : Unicode mode
+   --    U16text      : Unicode UTF-16 encoding
+   --    U8text       : Unicode UTF-8 encoding
+   --
+   --  This encoding is system dependent and only used on Windows systems.
+   --
+   --  Note that modifications to Content_Encoding must be synchronized
+   --  with sysdep.c:__gnat_set_mode.
+
+   subtype Text_Content_Encoding
+     is Content_Encoding range Default_Text .. U16text;
+
+   procedure set_mode (handle : int; Mode : Content_Encoding);
+   --  As above but can set the handle to any mode.
+   --  On Windows this can be used to have proper 16-bit wide-string output
+   --  on the console for example.
 
    ----------------------------
    -- Full Path Name support --
