@@ -4022,13 +4022,13 @@ package Sinfo is
       --  to deal with, and diagnose a simple expression other than a name for
       --  the right operand. This simplifies error recovery in the parser.
 
-      --  The Alternatives field below is present only if there is more
-      --  than one Membership_Choice present (which is legitimate only in
-      --  Ada 2012 mode) in which case Right_Opnd is Empty, and Alternatives
-      --  contains the list of choices. In the tree passed to the back end,
-      --  Alternatives is always No_List, and Right_Opnd is set (i.e. the
-      --  expansion circuitry expands out the complex set membership case
-      --  using simple membership operations).
+      --  The Alternatives field below is present only if there is more than
+      --  one Membership_Choice present (which is legitimate only in Ada 2012
+      --  mode) in which case Right_Opnd is Empty, and Alternatives contains
+      --  the list of choices. In the tree passed to the back end, Alternatives
+      --  is always No_List, and Right_Opnd is set (i.e. the expansion circuit
+      --  expands out the complex set membership case using simple membership
+      --  and equality operations).
 
       --  Should we rename Alternatives here to Membership_Choices ???
 
@@ -4271,7 +4271,7 @@ package Sinfo is
       --  CASE_EXPRESSION ::=
       --    case SELECTING_EXPRESSION is
       --      CASE_EXPRESSION_ALTERNATIVE
-      --      {CASE_EXPRESSION_ALTERNATIVE}
+      --      {,CASE_EXPRESSION_ALTERNATIVE}
 
       --  Note that the Alternatives cannot include pragmas (this contrasts
       --  with the situation of case statements where pragmas are allowed).

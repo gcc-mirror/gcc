@@ -415,7 +415,7 @@ package body Einfo is
    --    Has_Aliased_Components          Flag135
    --    No_Strict_Aliasing              Flag136
    --    Is_Machine_Code_Subprogram      Flag137
-   --    Is_Packed_Array_Impl_Type            Flag138
+   --    Is_Packed_Array_Impl_Type       Flag138
    --    Has_Biased_Representation       Flag139
    --    Has_Complex_Representation      Flag140
 
@@ -559,12 +559,12 @@ package body Einfo is
    --    SPARK_Aux_Pragma_Inherited      Flag266
    --    Has_Shift_Operator              Flag267
    --    Is_Independent                  Flag268
+   --    Has_Static_Predicate            Flag269
 
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag269
    --    (unused)                        Flag270
 
    --    (unused)                        Flag271
@@ -1718,6 +1718,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag211 (Id);
    end Has_Static_Discriminants;
+
+   function Has_Static_Predicate (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag269 (Id);
+   end Has_Static_Predicate;
 
    function Has_Static_Predicate_Aspect (Id : E) return B is
    begin
@@ -4435,6 +4441,12 @@ package body Einfo is
    begin
       Set_Flag211 (Id, V);
    end Set_Has_Static_Discriminants;
+
+   procedure Set_Has_Static_Predicate (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag269 (Id, V);
+   end Set_Has_Static_Predicate;
 
    procedure Set_Has_Static_Predicate_Aspect (Id : E; V : B := True) is
    begin
@@ -8243,6 +8255,7 @@ package body Einfo is
       W ("Has_Specified_Stream_Read",       Flag192 (Id));
       W ("Has_Specified_Stream_Write",      Flag193 (Id));
       W ("Has_Static_Discriminants",        Flag211 (Id));
+      W ("Has_Static_Predicate",            Flag269 (Id));
       W ("Has_Static_Predicate_Aspect",     Flag259 (Id));
       W ("Has_Storage_Size_Clause",         Flag23  (Id));
       W ("Has_Stream_Size_Clause",          Flag184 (Id));
@@ -8325,7 +8338,7 @@ package body Einfo is
       W ("Is_Optional_Parameter",           Flag134 (Id));
       W ("Is_Package_Body_Entity",          Flag160 (Id));
       W ("Is_Packed",                       Flag51  (Id));
-      W ("Is_Packed_Array_Impl_Type",            Flag138 (Id));
+      W ("Is_Packed_Array_Impl_Type",       Flag138 (Id));
       W ("Is_Potentially_Use_Visible",      Flag9   (Id));
       W ("Is_Predicate_Function",           Flag255 (Id));
       W ("Is_Predicate_Function_M",         Flag256 (Id));

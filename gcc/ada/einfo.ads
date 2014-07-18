@@ -1511,11 +1511,18 @@ package Einfo is
 
 --    Has_Dynamic_Predicate_Aspect (Flag258)
 --       Defined in all types and subtypes. Set if a Dynamic_Predicate aspect
---       applies to the type. Note that we can tell if a dynamic predicate is
---       present by looking at Has_Predicates and Static_Predicate, but that
---       could have come from a Predicate aspect or pragma, and we need to
---       record the difference so that we can use the right set of check
---       policies to figure out if the predicate is active.
+--       was explicitly applied to the type. Generally we treat predicates as
+--       static if possible, regardless of whether they are specified using
+--       Predicate, Static_Predicate, or Dynamic_Predicate. And if a predicate
+--       can be treated as static (i.e. its expression is predicate-static),
+--       then the flag Has_Static_Predicate will be set True. But there are
+--       cases where legality is affected by the presence of an explicit
+--       Dynamic_Predicate aspect. For example, even if a predicate looks
+--       static, you can't use it in a case statement if there is an explicit
+--       Dynamic_Predicate aspect specified. So test Has_Static_Predicate if
+--       you just want to know if the predicate can be evaluated statically,
+--       but test Has_Dynamic_Predicate_Aspect to enforce legality rules about
+--       the use of dynamic predicates.
 
 --    Has_Entries (synthesized)
 --       Applies to concurrent types. True if any entries are declared
@@ -1870,13 +1877,23 @@ package Einfo is
 --       case of a variant record, the component list can be trimmed down to
 --       include only the components corresponding to these discriminants.
 
+--    Has_Static_Predicate (Flag269)
+--       Defined in all types and subtypes. Set if the type (which must be
+--       a discrete, real, or string subtype) has a static predicate, i.e. a
+--       predicate whose expression is predicate-static. This can result from
+--       use of a Predicate, Static_Predicate or Dynamic_Predicate aspect. We
+--       can distinguish these cases by testing Has_Static_Predicate_Aspect
+--       and Has_Dynamic_Predicate_Aspect. See description of the latter flag
+--       for further information on dynamic predicates which are also static.
+
 --    Has_Static_Predicate_Aspect (Flag259)
 --       Defined in all types and subtypes. Set if a Static_Predicate aspect
 --       applies to the type. Note that we can tell if a static predicate is
---       present by looking at Has_Predicates and Static_Predicate, but that
---       could have come from a Predicate aspect or pragma, and we need to
---       record the difference so that we can use the right set of check
---       policies to figure out if the predicate is active.
+--       present by looking at Has_Static_Predicate, but this could have come
+--       from a Predicate aspect or pragma or even from a Dynamic_Predicate
+--       aspect. When we need to know the difference (e.g. to know what set of
+--       check policies apply, use this flag and Has_Dynamic_Predicate_Aspect
+--       to determine which case we have.
 
 --    Has_Storage_Size_Clause (Flag23) [implementation base type only]
 --       Defined in task types and access types. It is set if a Storage_Size
@@ -3873,15 +3890,15 @@ package Einfo is
 --       the corresponding parameter entities in the spec.
 
 --    Static_Predicate (List25)
---       Defined in discrete types/subtypes with predicates (Has_Predicates
---       set). Set if the type/subtype has a static predicate. Points to a
---       list of expression and N_Range nodes that represent the predicate
---       in canonical form. The canonical form has entries sorted in ascending
---       order, with duplicates eliminated, and adjacent ranges coalesced, so
---       that there is always a gap in the values between successive entries.
---       The entries in this list are fully analyzed and typed with the base
---       type of the subtype. Note that all entries are static and have values
---       within the subtype range.
+--       Defined in discrete types/subtypes with static predicates (with the
+--       two flags Has_Predicates set and Has_Static_Predicate set). Set if the
+--       type/subtype has a static predicate. Points to a list of expression
+--       and N_Range nodes that represent the predicate in canonical form. The
+--       canonical form has entries sorted in ascending order, with duplicates
+--       eliminated, and adjacent ranges coalesced, so that there is always a
+--       gap in the values between successive entries. The entries in this list
+--       are fully analyzed and typed with the base type of the subtype. Note
+--       that all entries are static and have values within the subtype range.
 
 --    Status_Flag_Or_Transient_Decl (Node15)
 --       Defined in variables and constants. Applies to objects that require
@@ -5188,6 +5205,7 @@ package Einfo is
    --    Has_Specified_Stream_Output         (Flag191)
    --    Has_Specified_Stream_Read           (Flag192)
    --    Has_Specified_Stream_Write          (Flag193)
+   --    Has_Static_Predicate                (Flag269)
    --    Has_Static_Predicate_Aspect         (Flag259)
    --    Has_Task                            (Flag30)   (base type only)
    --    Has_Unchecked_Union                 (Flag123)  (base type only)
@@ -6540,6 +6558,7 @@ package Einfo is
    function Has_Specified_Stream_Read           (Id : E) return B;
    function Has_Specified_Stream_Write          (Id : E) return B;
    function Has_Static_Discriminants            (Id : E) return B;
+   function Has_Static_Predicate                (Id : E) return B;
    function Has_Static_Predicate_Aspect         (Id : E) return B;
    function Has_Storage_Size_Clause             (Id : E) return B;
    function Has_Stream_Size_Clause              (Id : E) return B;
@@ -7166,6 +7185,7 @@ package Einfo is
    procedure Set_Has_Specified_Stream_Read       (Id : E; V : B := True);
    procedure Set_Has_Specified_Stream_Write      (Id : E; V : B := True);
    procedure Set_Has_Static_Discriminants        (Id : E; V : B := True);
+   procedure Set_Has_Static_Predicate            (Id : E; V : B := True);
    procedure Set_Has_Static_Predicate_Aspect     (Id : E; V : B := True);
    procedure Set_Has_Storage_Size_Clause         (Id : E; V : B := True);
    procedure Set_Has_Stream_Size_Clause          (Id : E; V : B := True);
@@ -7905,6 +7925,7 @@ package Einfo is
    pragma Inline (Has_Specified_Stream_Read);
    pragma Inline (Has_Specified_Stream_Write);
    pragma Inline (Has_Static_Discriminants);
+   pragma Inline (Has_Static_Predicate);
    pragma Inline (Has_Static_Predicate_Aspect);
    pragma Inline (Has_Storage_Size_Clause);
    pragma Inline (Has_Stream_Size_Clause);
@@ -8378,6 +8399,7 @@ package Einfo is
    pragma Inline (Set_Has_Specified_Stream_Read);
    pragma Inline (Set_Has_Specified_Stream_Write);
    pragma Inline (Set_Has_Static_Discriminants);
+   pragma Inline (Set_Has_Static_Predicate);
    pragma Inline (Set_Has_Static_Predicate_Aspect);
    pragma Inline (Set_Has_Storage_Size_Clause);
    pragma Inline (Set_Has_Stream_Size_Clause);

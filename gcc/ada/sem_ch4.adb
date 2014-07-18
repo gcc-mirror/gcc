@@ -1331,9 +1331,6 @@ package body Sem_Ch4 is
    -----------------------------
 
    procedure Analyze_Case_Expression (N : Node_Id) is
-      function Has_Static_Predicate (Subtyp : Entity_Id) return Boolean;
-      --  Determine whether subtype Subtyp has aspect Static_Predicate
-
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
       --  the case expression has a non static choice.
@@ -1349,28 +1346,6 @@ package body Sem_Ch4 is
            Process_Non_Static_Choice => Non_Static_Choice_Error,
            Process_Associated_Node   => No_OP);
       use Case_Choices_Checking;
-
-      --------------------------
-      -- Has_Static_Predicate --
-      --------------------------
-
-      function Has_Static_Predicate (Subtyp : Entity_Id) return Boolean is
-         Item : Node_Id;
-
-      begin
-         Item := First_Rep_Item (Subtyp);
-         while Present (Item) loop
-            if Nkind (Item) = N_Aspect_Specification
-              and then Chars (Identifier (Item)) = Name_Static_Predicate
-            then
-               return True;
-            end if;
-
-            Next_Rep_Item (Item);
-         end loop;
-
-         return False;
-      end Has_Static_Predicate;
 
       -----------------------------
       -- Non_Static_Choice_Error --
@@ -1493,7 +1468,7 @@ package body Sem_Ch4 is
       --  to bogus errors.
 
       if Is_Static_Subtype (Exp_Type)
-        and then Has_Static_Predicate (Exp_Type)
+        and then Has_Static_Predicate_Aspect (Exp_Type)
         and then In_Spec_Expression
       then
          null;

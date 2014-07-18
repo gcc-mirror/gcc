@@ -443,6 +443,17 @@ package body Exp_Ch13 is
          return;
       end if;
 
+      --  The entity may be a subtype declared for a constrained record
+      --  component, in which case the relevant scope is the scope of
+      --  the record. This happens for class-wide subtypes created for
+      --  a constrained type extension with inherited discriminants.
+
+      if Is_Type (E_Scope)
+        and then Ekind (E_Scope) not in Concurrent_Kind
+      then
+         E_Scope := Scope (E_Scope);
+      end if;
+
       --  Remember that we are processing a freezing entity and its freezing
       --  nodes. This flag (non-zero = set) is used to avoid the need of
       --  climbing through the tree while processing the freezing actions (ie.
