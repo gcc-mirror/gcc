@@ -1,3 +1,15 @@
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Fix enforcement
+	of nesting rules for composites with different SSOs.
+
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Is_Logical_Operator): An If_Expression is not
+	a proper logical operator.
+	(Has_Decision): An If_Expression indicates the presence of a decision
+	although it is not a logical operator.
+
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Remove note that -gnatR not allowed with -gnatc.

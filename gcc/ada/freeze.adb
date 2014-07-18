@@ -1086,7 +1086,7 @@ package body Freeze is
       Err_Node  : Node_Id;
 
       Comp_Byte_Aligned : Boolean;
-      --  Set True for the record case, when Comp starts on a byte boundary
+      --  Set for the record case, True if Comp starts on a byte boundary
       --  (in which case it is allowed to have different storage order).
 
       Comp_SSO_Differs  : Boolean;
@@ -1094,6 +1094,20 @@ package body Freeze is
       --  have the same scalar storage order as Encl_Type.
 
       Component_Aliased : Boolean;
+
+      function Is_Packed_Array (T : Entity_Id) return Boolean;
+      --  True for a packed array type
+
+      ---------------------
+      -- Is_Packed_Array --
+      ---------------------
+
+      function Is_Packed_Array (T : Entity_Id) return Boolean is
+      begin
+         return Is_Array_Type (T) and then Is_Packed (T);
+      end Is_Packed_Array;
+
+   --  Start of processing for Check_Component_Storage_Order
 
    begin
       --  Record case
@@ -1107,10 +1121,18 @@ package body Freeze is
             Component_Aliased := False;
 
          else
-            Comp_Byte_Aligned :=
-              Present (Component_Clause (Comp))
-                and then
-                  Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+            --  If a component clause is present, check whether component
+            --  starts on a storage element boundary. Otherwise conservatively
+            --  assume it does so only in the case where the record is not
+            --  packed.
+
+            if Present (Component_Clause (Comp)) then
+               Comp_Byte_Aligned :=
+                 Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+            else
+               Comp_Byte_Aligned := not Is_Packed (Encl_Type);
+            end if;
+
             Component_Aliased := Is_Aliased (Comp);
          end if;
 
@@ -1120,7 +1142,6 @@ package body Freeze is
          Err_Node  := Encl_Type;
          Comp_Type := Component_Type (Encl_Type);
 
-         Comp_Byte_Aligned := False;
          Component_Aliased := Has_Aliased_Components (Encl_Type);
       end if;
 
@@ -1167,14 +1188,23 @@ package body Freeze is
             --  Reject if component is a packed array, as it may be represented
             --  as a scalar internally.
 
-            if Is_Packed (Comp_Type) then
+            if Is_Packed_Array (Comp_Type) then
                Error_Msg_N
                  ("type of packed component must have same scalar "
                   & "storage order as enclosing composite", Err_Node);
 
+            --  Reject if composite is a packed array, as it may be rewritten
+            --  into an array of scalars.
+
+            elsif Is_Packed_Array (Encl_Type) then
+               Error_Msg_N ("type of packed array must have same scalar "
+                  & "storage order as component", Err_Node);
+
             --  Reject if not byte aligned
 
-            elsif not Comp_Byte_Aligned then
+            elsif Is_Record_Type (Encl_Type)
+                    and then not Comp_Byte_Aligned
+            then
                Error_Msg_N
                  ("type of non-byte-aligned component must have same scalar "
                   & "storage order as enclosing composite", Err_Node);
