@@ -46,8 +46,16 @@ package body GNAT.Memory_Dump is
 
    procedure Dump
      (Addr   : Address;
+      Count  : Natural)
+   is
+   begin
+      Dump (Addr, Count, Prefix => Absolute_Address);
+   end Dump;
+
+   procedure Dump
+     (Addr   : Address;
       Count  : Natural;
-      Prefix : Prefix_Type := Absolute_Address)
+      Prefix : Prefix_Type)
    is
       Ctr : Natural := Count;
       --  Count of bytes left to output

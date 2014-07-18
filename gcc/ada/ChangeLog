@@ -1,3 +1,33 @@
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* g-memdum.adb, g-memdum.ads: Code clean ups.
+
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Dependency_Clause):
+	Update the comment on usage. Reimplement the mechanism which
+	attempts to match a single clause of Depends against one or
+	more clauses of Refined_Depends.
+	(Input_Match): Removed.
+	(Inputs_Match): Removed.
+	(Is_Self_Referential): Removed.
+	(Normalize_Clause): Update the call to Split_Multiple_Outputs.
+	(Normalize_Outputs): Rename variable Split to New_Claue and update
+	all its occurrences.
+	(Report_Extra_Clauses): Update the comment on usage.
+	(Split_Multiple_Outputs): Renamed to Normalize_Outputs.
+
+2014-07-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* i-cstrea.ads: Minor reformatting.
+
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Wrap_Statements_In_Block): Propagate both
+	secondary stack-related flags to the generated block.
+	* sem_ch5.adb (Analyze_Loop_Statement): Update the scope chain
+	once the loop is relocated in a block.
+
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
 	* repinfo.ads: Add documentation on handling of back annotation

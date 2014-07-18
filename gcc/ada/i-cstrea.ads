@@ -230,9 +230,9 @@ package Interfaces.C_Streams is
    procedure set_text_mode   (handle : int);
 
    --  set_wide_text_mode is as set_text_mode but switches the translation to
-   --  16-bits wide-character instead of 8-bits character. Again this routine
-   --  has not effect if text_translation_required is false. On Windows this
-   --  is used to have proper 16-bits wide string output on the console for
+   --  16-bit wide-character instead of 8-bit character. Again, this routine
+   --  has no effect if text_translation_required is false. On Windows this
+   --  is used to have proper 16-bit wide-string output on the console for
    --  example.
 
    procedure set_wide_text_mode (handle : int);
