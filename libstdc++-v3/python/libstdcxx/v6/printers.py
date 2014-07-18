@@ -845,6 +845,9 @@ class SingleObjContainerPrinter(object):
 
     def _recognize(self, type):
         """Return TYPE as a string after applying type printers"""
+        global _use_type_printing
+        if not _use_type_printing:
+            return str(type)
         return gdb.types.apply_type_recognizers(gdb.types.get_type_recognizers(),
                                                 type) or str(type)
 
@@ -1043,7 +1046,7 @@ class Printer(object):
 libstdcxx_printer = None
 
 class TemplateTypePrinter(object):
-    """A type printer for class templates.
+    r"""A type printer for class templates.
 
     Recognizes type names that match a regular expression.
     Replaces them with a formatted string which can use replacement field
