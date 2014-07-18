@@ -64,9 +64,9 @@
 --       and fully analyzed (possibly with expansion) during the semantic
 --       analysis of subprogram bodies.
 
-with Namet;  use Namet;
-with Snames; use Snames;
-with Types;  use Types;
+with Namet;   use Namet;
+with Snames;  use Snames;
+with Types;   use Types;
 
 package Aspects is
 
@@ -205,10 +205,14 @@ package Aspects is
    --  The following array indicates aspects that accept 'Class
 
    Class_Aspect_OK : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Invariant      => True,
+     (Aspect_Input          => True,
+      Aspect_Invariant      => True,
+      Aspect_Output         => True,
       Aspect_Pre            => True,
       Aspect_Predicate      => True,
       Aspect_Post           => True,
+      Aspect_Read           => True,
+      Aspect_Write          => True,
       Aspect_Type_Invariant => True,
       others                => False);
 

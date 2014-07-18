@@ -3477,8 +3477,8 @@ package body Sem_Util is
 
          --  In Ada 2012, If the type has an incomplete partial view, there
          --  may be primitive operations declared before the full view, so
-         --  we need to start scanning from the the incomplete view, which
-         --  is earlier on the entity chain.
+         --  we need to start scanning from the incomplete view, which is
+         --  earlier on the entity chain.
 
          elsif Nkind (Parent (B_Type)) = N_Full_Type_Declaration
            and then Present (Incomplete_View (Parent (B_Type)))

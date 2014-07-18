@@ -1683,6 +1683,22 @@ package body Sem_Ch13 is
                      Set_Never_Set_In_Source (E, False);
                   end if;
 
+                  --  Correctness of the profile of a stream operation is
+                  --  verified at the freeze point, but we must detect the
+                  --  illegal specification of this aspect for a subtype now,
+                  --  to prevent malformed rep_item chains.
+
+                  if (A_Id = Aspect_Input
+                       or else A_Id = Aspect_Output
+                       or else A_Id = Aspect_Read
+                       or else A_Id = Aspect_Write)
+                    and not Is_First_Subtype (E)
+                  then
+                     Error_Msg_N
+                       ("local name must be a first subtype", Aspect);
+                     goto Continue;
+                  end if;
+
                   --  Construct the attribute definition clause
 
                   Aitem :=
@@ -8095,7 +8111,8 @@ package body Sem_Ch13 is
       procedure Check_Overloaded_Name is
       begin
          if not Is_Overloaded (End_Decl_Expr) then
-            Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+            Err := not Is_Entity_Name (End_Decl_Expr)
+                     or else Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
 
          else
             Err := True;
