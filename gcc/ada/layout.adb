@@ -1724,7 +1724,7 @@ package body Layout is
 
             elsif Is_Array_Type (Ctyp)
               and then Is_Bit_Packed_Array (Ctyp)
-              and then Is_Modular_Integer_Type (Packed_Array_Type (Ctyp))
+              and then Is_Modular_Integer_Type (Packed_Array_Impl_Type (Ctyp))
             then
                Forc := False;
 
@@ -2624,9 +2624,11 @@ package body Layout is
          --  array type if a packed array type has been created and the fields
          --  are not currently set.
 
-         if Is_Array_Type (E) and then Present (Packed_Array_Type (E)) then
+         if Is_Array_Type (E)
+           and then Present (Packed_Array_Impl_Type (E))
+         then
             declare
-               PAT : constant Entity_Id := Packed_Array_Type (E);
+               PAT : constant Entity_Id := Packed_Array_Impl_Type (E);
 
             begin
                if Unknown_Esize (E) then
@@ -3169,7 +3171,9 @@ package body Layout is
       --  front end layout, because otherwise this is always handled in the
       --  backend.
 
-      if Is_Packed_Array_Type (E) and then not Frontend_Layout_On_Target then
+      if Is_Packed_Array_Impl_Type (E)
+        and then not Frontend_Layout_On_Target
+      then
          return;
 
       --  If there is an alignment clause, then we respect it

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1140,7 +1140,7 @@ package body Sem_Type is
 
       elsif Is_Array_Type (T2)
         and then Is_Packed (T2)
-        and then T1 = Packed_Array_Type (T2)
+        and then T1 = Packed_Array_Impl_Type (T2)
       then
          return True;
 
@@ -1148,7 +1148,7 @@ package body Sem_Type is
 
       elsif Is_Array_Type (T1)
         and then Is_Packed (T1)
-        and then T2 = Packed_Array_Type (T1)
+        and then T2 = Packed_Array_Impl_Type (T1)
       then
          return True;
 

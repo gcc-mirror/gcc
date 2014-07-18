@@ -918,7 +918,7 @@ package body Freeze is
                   --  directly, where all the information is at hand ???
 
                   if Is_Array_Type (Etype (Comp))
-                    and then Present (Packed_Array_Type (Etype (Comp)))
+                    and then Present (Packed_Array_Impl_Type (Etype (Comp)))
                   then
                      declare
                         Ocomp  : constant Entity_Id :=
@@ -975,9 +975,10 @@ package body Freeze is
 
                      if Is_Elementary_Type (Ctyp)
                        or else (Is_Array_Type (Ctyp)
-                                 and then Present (Packed_Array_Type (Ctyp))
+                                 and then Present
+                                            (Packed_Array_Impl_Type (Ctyp))
                                  and then Is_Modular_Integer_Type
-                                            (Packed_Array_Type (Ctyp)))
+                                            (Packed_Array_Impl_Type (Ctyp)))
                      then
                         --  Packed size unknown if we have an atomic type
                         --  or a by reference type, since the back end
@@ -2523,27 +2524,27 @@ package body Freeze is
          if Is_Packed (Arr)
            and then Ekind (Arr) /= E_String_Literal_Subtype
          then
-            Create_Packed_Array_Type (Arr);
-            Freeze_And_Append (Packed_Array_Type (Arr), N, Result);
+            Create_Packed_Array_Impl_Type (Arr);
+            Freeze_And_Append (Packed_Array_Impl_Type (Arr), N, Result);
 
             --  Size information of packed array type is copied to the array
             --  type, since this is really the representation. But do not
             --  override explicit existing size values. If the ancestor subtype
-            --  is constrained the packed_array_type will be inherited from it,
-            --  but the size may have been provided already, and must not be
-            --  overridden either.
+            --  is constrained the Packed_Array_Impl_Type will be inherited
+            --  from it, but the size may have been provided already, and
+            --  must not be overridden either.
 
             if not Has_Size_Clause (Arr)
               and then
                 (No (Ancestor_Subtype (Arr))
                   or else not Has_Size_Clause (Ancestor_Subtype (Arr)))
             then
-               Set_Esize     (Arr, Esize     (Packed_Array_Type (Arr)));
-               Set_RM_Size   (Arr, RM_Size   (Packed_Array_Type (Arr)));
+               Set_Esize     (Arr, Esize     (Packed_Array_Impl_Type (Arr)));
+               Set_RM_Size   (Arr, RM_Size   (Packed_Array_Impl_Type (Arr)));
             end if;
 
             if not Has_Alignment_Clause (Arr) then
-               Set_Alignment (Arr, Alignment (Packed_Array_Type (Arr)));
+               Set_Alignment (Arr, Alignment (Packed_Array_Impl_Type (Arr)));
             end if;
          end if;
 
@@ -7321,7 +7322,7 @@ package body Freeze is
                   then
                      exit;
                   elsif Is_Array_Type (Etype (Comp))
-                     and then Present (Packed_Array_Type (Etype (Comp)))
+                     and then Present (Packed_Array_Impl_Type (Etype (Comp)))
                   then
                      Error_Msg_NE
                        ("\packed array component& " &

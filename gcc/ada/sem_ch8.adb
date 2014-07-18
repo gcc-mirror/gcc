@@ -4767,7 +4767,7 @@ package body Sem_Ch8 is
                if Is_Array_Type (Entyp)
                  and then Is_Packed (Entyp)
                  and then Present (Etype (N))
-                 and then Etype (N) = Packed_Array_Type (Entyp)
+                 and then Etype (N) = Packed_Array_Impl_Type (Entyp)
                then
                   null;
 

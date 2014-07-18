@@ -1,5 +1,13 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aggr.adb, exp_ch5.adb, sem_ch3.adb, layout.adb, sem_type.adb,
+	exp_util.adb, exp_attr.adb, einfo.adb, einfo.ads, exp_pakd.adb,
+	checks.adb, exp_pakd.ads, freeze.adb, sem_util.adb, exp_dbug.adb,
+	exp_dbug.ads, exp_ch4.adb, sem_ch8.adb, exp_aggr.adb, sem_eval.adb,
+	sem_ch13.adb: Change name Packed_Array_Type to Packed_Array_Impl_Type.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* lib-writ.adb, makeutl.adb, ali.ads: Minor reformatting.
 
 2014-07-18  Vincent Celier  <celier@adacore.com>

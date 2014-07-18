@@ -890,7 +890,8 @@ package body Sem_Ch13 is
 
                            if Is_Bit_Packed_Array (P) then
                               Set_Is_Bit_Packed_Array (Base_Type (E));
-                              Set_Packed_Array_Type (E, Packed_Array_Type (P));
+                              Set_Packed_Array_Impl_Type
+                                (E, Packed_Array_Impl_Type (P));
                            end if;
                         end if;
 

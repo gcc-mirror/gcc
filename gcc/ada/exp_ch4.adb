@@ -6189,9 +6189,9 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  For a reference to a component of a bit packed array, we have to
-      --  convert it to a reference to the corresponding Packed_Array_Type.
-      --  We only want to do this for simple references, and not for:
+      --  For a reference to a component of a bit packed array, we convert it
+      --  to a reference to the corresponding Packed_Array_Impl_Type. We only
+      --  want to do this for simple references, and not for:
 
       --    Left side of assignment, or prefix of left side of assignment, or
       --    prefix of the prefix, to handle packed arrays of packed arrays,

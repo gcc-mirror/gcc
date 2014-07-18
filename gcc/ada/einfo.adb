@@ -211,7 +211,7 @@ package body Einfo is
    --    Generic_Renamings               Elist23
    --    Inner_Instances                 Elist23
    --    Limited_View                    Node23
-   --    Packed_Array_Type               Node23
+   --    Packed_Array_Impl_Type               Node23
    --    Protection_Object               Node23
    --    Stored_Constraint               Elist23
 
@@ -415,7 +415,7 @@ package body Einfo is
    --    Has_Aliased_Components          Flag135
    --    No_Strict_Aliasing              Flag136
    --    Is_Machine_Code_Subprogram      Flag137
-   --    Is_Packed_Array_Type            Flag138
+   --    Is_Packed_Array_Impl_Type            Flag138
    --    Has_Biased_Representation       Flag139
    --    Has_Complex_Representation      Flag140
 
@@ -2201,10 +2201,10 @@ package body Einfo is
       return Flag51 (Implementation_Base_Type (Id));
    end Is_Packed;
 
-   function Is_Packed_Array_Type (Id : E) return B is
+   function Is_Packed_Array_Impl_Type (Id : E) return B is
    begin
       return Flag138 (Id);
-   end Is_Packed_Array_Type;
+   end Is_Packed_Array_Impl_Type;
 
    function Is_Potentially_Use_Visible (Id : E) return B is
    begin
@@ -2656,11 +2656,11 @@ package body Einfo is
       return Node26 (Id);
    end Package_Instantiation;
 
-   function Packed_Array_Type (Id : E) return E is
+   function Packed_Array_Impl_Type (Id : E) return E is
    begin
       pragma Assert (Is_Array_Type (Id));
       return Node23 (Id);
-   end Packed_Array_Type;
+   end Packed_Array_Impl_Type;
 
    function Parent_Subtype (Id : E) return E is
    begin
@@ -4946,10 +4946,10 @@ package body Einfo is
       Set_Flag51 (Id, V);
    end Set_Is_Packed;
 
-   procedure Set_Is_Packed_Array_Type (Id : E; V : B := True) is
+   procedure Set_Is_Packed_Array_Impl_Type (Id : E; V : B := True) is
    begin
       Set_Flag138 (Id, V);
-   end Set_Is_Packed_Array_Type;
+   end Set_Is_Packed_Array_Impl_Type;
 
    procedure Set_Is_Potentially_Use_Visible (Id : E; V : B := True) is
    begin
@@ -5414,11 +5414,11 @@ package body Einfo is
       Set_Node26 (Id, V);
    end Set_Package_Instantiation;
 
-   procedure Set_Packed_Array_Type (Id : E; V : E) is
+   procedure Set_Packed_Array_Impl_Type (Id : E; V : E) is
    begin
       pragma Assert (Is_Array_Type (Id));
       Set_Node23 (Id, V);
-   end Set_Packed_Array_Type;
+   end Set_Packed_Array_Impl_Type;
 
    procedure Set_Parent_Subtype (Id : E; V : E) is
    begin
@@ -8325,7 +8325,7 @@ package body Einfo is
       W ("Is_Optional_Parameter",           Flag134 (Id));
       W ("Is_Package_Body_Entity",          Flag160 (Id));
       W ("Is_Packed",                       Flag51  (Id));
-      W ("Is_Packed_Array_Type",            Flag138 (Id));
+      W ("Is_Packed_Array_Impl_Type",            Flag138 (Id));
       W ("Is_Potentially_Use_Visible",      Flag9   (Id));
       W ("Is_Predicate_Function",           Flag255 (Id));
       W ("Is_Predicate_Function_M",         Flag256 (Id));
@@ -9277,7 +9277,7 @@ package body Einfo is
             Write_Str ("Inner_Instances");
 
          when Array_Kind                                   =>
-            Write_Str ("Packed_Array_Type");
+            Write_Str ("Packed_Array_Impl_Type");
 
          when Entry_Kind                                   =>
             Write_Str ("Protection_Object");

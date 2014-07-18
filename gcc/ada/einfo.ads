@@ -2706,16 +2706,16 @@ package Einfo is
 --    Is_Packed_Array (synth)
 --       Applies to all entities, true if entity is for a packed array.
 
---    Is_Packed_Array_Type (Flag138)
+--    Is_Packed_Array_Impl_Type (Flag138)
 --       Defined in all entities. This flag is set on the entity for the type
 --       used to implement a packed array (either a modular type, or a subtype
 --       of Packed_Bytes{1,2,4} as appropriate). The flag is set if and only
---       if the type appears in the Packed_Array_Type field of some other type
+--       if the type appears in the Packed_Array_Impl_Type field of some other
 --       entity. It is used by the backend to activate the special processing
 --       for such types (unchecked conversions that would not otherwise be
---       allowed are allowed for such types). If the Is_Packed_Array_Type flag
---       is set in an entity, then the Original_Array_Type field of this entity
---       points to the array type for which this is the packed array type.
+--       allowed are allowed for such types). If Is_Packed_Array_Impl_Type is
+--       set in an entity, then the Original_Array_Type field of this entity
+--       points to the array type for which this is the Packed_Array_Impl_Type.
 
 --    Is_Potentially_Use_Visible (Flag9)
 --       Defined in all entities. Set if entity is potentially use visible,
@@ -3402,8 +3402,8 @@ package Einfo is
 --       subprogram type.
 
 --    Original_Array_Type (Node21)
---       Defined in modular types and array types and subtypes. Set only
---       if the Is_Packed_Array_Type flag is set, indicating that the type
+--       Defined in modular types and array types and subtypes. Set only if
+--       the Is_Packed_Array_Impl_Type flag is set, indicating that the type
 --       is the implementation type for a packed array, and in this case it
 --       points to the original array type for which this is the packed
 --       array implementation type.
@@ -3452,7 +3452,7 @@ package Einfo is
 --       it should be set in all cases, including package entities associated
 --       with formal packages. ???
 
---    Packed_Array_Type (Node23)
+--    Packed_Array_Impl_Type (Node23)
 --       Defined in array types and subtypes, including the string literal
 --       subtype case, if the corresponding type is packed (either bit packed
 --       or packed to eliminate holes in non-contiguous enumeration type index
@@ -3460,9 +3460,9 @@ package Einfo is
 --       is either a modular type for short static arrays, or an array of
 --       System.Unsigned. Note that in some situations (internal types, and
 --       references to fields of variant records), it is not always possible
---       to construct this type in advance of its use. If Packed_Array_Type
---       is empty, then the necessary type is declared on the fly for each
---       reference to the array.
+--       to construct this type in advance of its use. If this field is empty,
+--       then the necessary type is declared on the fly for each reference to
+--       the array.
 
 --    Parameter_Mode (synthesized)
 --       Applies to formal parameter entities. This is a synonym for Ekind,
@@ -5098,7 +5098,7 @@ package Einfo is
    --    Is_Limited_Record                   (Flag25)
    --    Is_Obsolescent                      (Flag153)
    --    Is_Package_Body_Entity              (Flag160)
-   --    Is_Packed_Array_Type                (Flag138)
+   --    Is_Packed_Array_Impl_Type           (Flag138)
    --    Is_Potentially_Use_Visible          (Flag9)
    --    Is_Preelaborated                    (Flag59)
    --    Is_Primitive_Wrapper                (Flag195)
@@ -5309,7 +5309,7 @@ package Einfo is
    --    Component_Type                      (Node20)   (base type only)
    --    Original_Array_Type                 (Node21)
    --    Component_Size                      (Uint22)   (base type only)
-   --    Packed_Array_Type                   (Node23)
+   --    Packed_Array_Impl_Type              (Node23)
    --    Related_Array_Object                (Node25)
    --    Component_Alignment                 (special)  (base type only)
    --    Has_Component_Size_Clause           (Flag68)   (base type only)
@@ -6024,7 +6024,7 @@ package Einfo is
    --    String_Literal_Low_Bound            (Node15)
    --    String_Literal_Length               (Uint16)
    --    First_Index                         (Node17)   (always Empty)
-   --    Packed_Array_Type                   (Node23)
+   --    Packed_Array_Impl_Type              (Node23)
    --    (plus type attributes)
 
    --  E_Subprogram_Body
@@ -6625,7 +6625,7 @@ package Einfo is
    function Is_Optional_Parameter               (Id : E) return B;
    function Is_Package_Body_Entity              (Id : E) return B;
    function Is_Packed                           (Id : E) return B;
-   function Is_Packed_Array_Type                (Id : E) return B;
+   function Is_Packed_Array_Impl_Type           (Id : E) return B;
    function Is_Potentially_Use_Visible          (Id : E) return B;
    function Is_Predicate_Function               (Id : E) return B;
    function Is_Predicate_Function_M             (Id : E) return B;
@@ -6705,7 +6705,7 @@ package Einfo is
    function Overridden_Operation                (Id : E) return E;
    function PPC_Wrapper                         (Id : E) return E;
    function Package_Instantiation               (Id : E) return N;
-   function Packed_Array_Type                   (Id : E) return E;
+   function Packed_Array_Impl_Type              (Id : E) return E;
    function Parent_Subtype                      (Id : E) return E;
    function Part_Of_Constituents                (Id : E) return L;
    function Postcondition_Proc                  (Id : E) return E;
@@ -7256,7 +7256,7 @@ package Einfo is
    procedure Set_Is_Optional_Parameter           (Id : E; V : B := True);
    procedure Set_Is_Package_Body_Entity          (Id : E; V : B := True);
    procedure Set_Is_Packed                       (Id : E; V : B := True);
-   procedure Set_Is_Packed_Array_Type            (Id : E; V : B := True);
+   procedure Set_Is_Packed_Array_Impl_Type       (Id : E; V : B := True);
    procedure Set_Is_Potentially_Use_Visible      (Id : E; V : B := True);
    procedure Set_Is_Predicate_Function           (Id : E; V : B := True);
    procedure Set_Is_Predicate_Function_M         (Id : E; V : B := True);
@@ -7336,7 +7336,7 @@ package Einfo is
    procedure Set_Overridden_Operation            (Id : E; V : E);
    procedure Set_PPC_Wrapper                     (Id : E; V : E);
    procedure Set_Package_Instantiation           (Id : E; V : N);
-   procedure Set_Packed_Array_Type               (Id : E; V : E);
+   procedure Set_Packed_Array_Impl_Type          (Id : E; V : E);
    procedure Set_Parent_Subtype                  (Id : E; V : E);
    procedure Set_Part_Of_Constituents            (Id : E; V : L);
    procedure Set_Postcondition_Proc              (Id : E; V : E);
@@ -8026,7 +8026,7 @@ package Einfo is
    pragma Inline (Is_Overloadable);
    pragma Inline (Is_Package_Body_Entity);
    pragma Inline (Is_Packed);
-   pragma Inline (Is_Packed_Array_Type);
+   pragma Inline (Is_Packed_Array_Impl_Type);
    pragma Inline (Is_Potentially_Use_Visible);
    pragma Inline (Is_Predicate_Function);
    pragma Inline (Is_Predicate_Function_M);
@@ -8116,7 +8116,7 @@ package Einfo is
    pragma Inline (Overridden_Operation);
    pragma Inline (PPC_Wrapper);
    pragma Inline (Package_Instantiation);
-   pragma Inline (Packed_Array_Type);
+   pragma Inline (Packed_Array_Impl_Type);
    pragma Inline (Parameter_Mode);
    pragma Inline (Parent_Subtype);
    pragma Inline (Part_Of_Constituents);
@@ -8467,7 +8467,7 @@ package Einfo is
    pragma Inline (Set_Is_Optional_Parameter);
    pragma Inline (Set_Is_Package_Body_Entity);
    pragma Inline (Set_Is_Packed);
-   pragma Inline (Set_Is_Packed_Array_Type);
+   pragma Inline (Set_Is_Packed_Array_Impl_Type);
    pragma Inline (Set_Is_Potentially_Use_Visible);
    pragma Inline (Set_Is_Predicate_Function);
    pragma Inline (Set_Is_Predicate_Function_M);
@@ -8547,7 +8547,7 @@ package Einfo is
    pragma Inline (Set_Overridden_Operation);
    pragma Inline (Set_PPC_Wrapper);
    pragma Inline (Set_Package_Instantiation);
-   pragma Inline (Set_Packed_Array_Type);
+   pragma Inline (Set_Packed_Array_Impl_Type);
    pragma Inline (Set_Parent_Subtype);
    pragma Inline (Set_Part_Of_Constituents);
    pragma Inline (Set_Postcondition_Proc);

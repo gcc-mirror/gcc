@@ -1607,7 +1607,7 @@ package body Exp_Aggr is
 
       if Present (Typ)
         and then Is_Bit_Packed_Array (Typ)
-        and then Is_Modular_Integer_Type (Packed_Array_Type (Typ))
+        and then Is_Modular_Integer_Type (Packed_Array_Impl_Type (Typ))
       then
          Append_To (New_Code,
            Make_Assignment_Statement (Loc,
@@ -6317,14 +6317,14 @@ package body Exp_Aggr is
       end if;
 
       --  If two-dimensional, check whether it can be folded, and transformed
-      --  into a one-dimensional aggregate for the Packed_Array_Type of the
-      --  original type.
+      --  into a one-dimensional aggregate for the Packed_Array_Impl_Type of
+      --  the original type.
 
       if Number_Dimensions (Typ) = 2 then
          return Two_Dim_Packed_Array_Handled (N);
       end if;
 
-      if not Is_Modular_Integer_Type (Packed_Array_Type (Typ)) then
+      if not Is_Modular_Integer_Type (Packed_Array_Impl_Type (Typ)) then
          return False;
       end if;
 
@@ -6523,7 +6523,7 @@ package body Exp_Aggr is
               Unchecked_Convert_To (Typ,
                 Make_Qualified_Expression (Loc,
                   Subtype_Mark =>
-                    New_Occurrence_Of (Packed_Array_Type (Typ), Loc),
+                    New_Occurrence_Of (Packed_Array_Impl_Type (Typ), Loc),
                   Expression   => Lit)));
 
             Analyze_And_Resolve (N, Typ);
@@ -6705,10 +6705,11 @@ package body Exp_Aggr is
 
    function Two_Dim_Packed_Array_Handled (N : Node_Id) return Boolean is
       Loc          : constant Source_Ptr := Sloc (N);
-      Typ          : constant Entity_Id := Etype (N);
-      Ctyp         : constant Entity_Id := Component_Type (Typ);
-      Comp_Size    : constant Int := UI_To_Int (Component_Size (Typ));
-      Packed_Array : constant Entity_Id := Packed_Array_Type (Base_Type (Typ));
+      Typ          : constant Entity_Id  := Etype (N);
+      Ctyp         : constant Entity_Id  := Component_Type (Typ);
+      Comp_Size    : constant Int        := UI_To_Int (Component_Size (Typ));
+      Packed_Array : constant Entity_Id  :=
+                       Packed_Array_Impl_Type (Base_Type (Typ));
 
       One_Comp  : Node_Id;
       --  Expression in original aggregate
