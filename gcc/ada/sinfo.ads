@@ -1867,16 +1867,16 @@ package Sinfo is
 
    --  Parameter_List_Truncated (Flag17-Sem)
    --    Present in N_Function_Call and N_Procedure_Call_Statement nodes. Set
-   --    (for OpenVMS ports of GNAT only) if the parameter list is truncated as
-   --    a result of a First_Optional_Parameter specification in an
-   --    Import_Function, Import_Procedure, or Import_Valued_Procedure pragma.
+   --    (for OpenVMS ports of GNAT only) if the parameter list is truncated
+   --    as a result of a First_Optional_Parameter specification in one of the
+   --    pragmas Import_Function, Import_Procedure, or Import_Valued_Procedure.
    --    The truncation is done by the expander by removing trailing parameters
    --    from the argument list, in accordance with the set of rules allowing
    --    such parameter removal. In particular, parameters can be removed
    --    working from the end of the parameter list backwards up to and
    --    including the entry designated by First_Optional_Parameter in the
    --    Import pragma. Parameters can be removed if they are implicit and the
-   --    default value is a known-at-compile-time value, including the use of
+   --    default value is known at compile time value, including the use of
    --    the Null_Parameter attribute, or if explicit parameter values are
    --    present that match the corresponding defaults.
 

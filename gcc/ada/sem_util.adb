@@ -3477,12 +3477,13 @@ package body Sem_Util is
 
          --  In Ada 2012, If the type has an incomplete partial view, there
          --  may be primitive operations declared before the full view, so
-         --  we need to start scanning from the incomplete view.
+         --  we need to start scanning from the the incomplete view, which
+         --  is earlier on the entity chain.
 
          elsif Nkind (Parent (B_Type)) = N_Full_Type_Declaration
            and then Present (Incomplete_View (Parent (B_Type)))
          then
-            Id := Defining_Entity (Next (Incomplete_View (Parent (B_Type))));
+            Id := Defining_Entity (Incomplete_View (Parent (B_Type)));
 
          else
             Id := Next_Entity (B_Type);
@@ -8694,6 +8695,19 @@ package body Sem_Util is
          elsif Nkind (Original_Node (Par)) = N_Pragma then
             Prag := Original_Node (Par);
             exit;
+
+         --  The expansion of attribute 'Old generates a constant to capture
+         --  the result of the prefix. If the parent traversal reaches
+         --  one of these constants, then the node technically came from a
+         --  postcondition-like pragma. Note that the Ekind is not tested here
+         --  because N may be the expression of an object declaration which is
+         --  currently being analyzed. Such objects carry Ekind of E_Void.
+
+         elsif Nkind (Par) = N_Object_Declaration
+           and then Constant_Present (Par)
+           and then Stores_Attribute_Old_Prefix (Defining_Entity (Par))
+         then
+            return True;
 
          --  Prevent the search from going too far
 

@@ -62,6 +62,9 @@ extern "C" {
 /* __gnat_initialize (NT-mingw32 Version) */
 /******************************************/
 
+char __gnat_wide_text_translation_required = 0;
+// wide text translation, 0=none, 1=activated
+
 #if defined (__MINGW32__)
 #include "mingw32.h"
 #include <windows.h>

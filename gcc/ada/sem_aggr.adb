@@ -2279,7 +2279,8 @@ package body Sem_Aggr is
                   --  is fine, it's just the wrong length. We skip this check
                   --  for standard character types (since there are no literals
                   --  and it is too much trouble to concoct them), and also if
-                  --  any of the bounds have not-known-at-compile-time values.
+                  --  any of the bounds have values that are not known at
+                  --  compile time.
 
                   --  Another case warranting a warning is when the length is
                   --  right, but as above we have an index type that is an

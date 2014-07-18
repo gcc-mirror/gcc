@@ -229,6 +229,7 @@ extern unsigned int LIB$CALLG_64 (unsigned long long argument_list [],
 
 #else
 #include <utime.h>
+#include <wchar.h>
 #endif
 
 #if defined (_WIN32)
@@ -848,6 +849,16 @@ __gnat_rmdir (char *path)
   return -1;
 #else
   return rmdir (path);
+#endif
+}
+
+int
+__gnat_fputwc(int c, FILE *stream)
+{
+#if ! defined (__vxworks) && ! defined (IS_CROSS)
+  return fputwc ((wchar_t)c, stream);
+#else
+  return fputc (c, stream);
 #endif
 }
 

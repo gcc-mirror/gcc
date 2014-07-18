@@ -123,7 +123,7 @@ package System.CRTL is
    pragma Import (C, fputc, "fputc");
 
    function fputwc (C : int; stream : FILEs) return int;
-   pragma Import (C, fputwc, "fputwc");
+   pragma Import (C, fputwc, "__gnat_fputwc");
 
    function fputs (Strng : chars; Stream : FILEs) return int;
    pragma Import (C, fputs, "fputs");
