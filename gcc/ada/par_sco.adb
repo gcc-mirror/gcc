@@ -308,8 +308,8 @@ package body Par_SCO is
 
       function Check_Node (N : Node_Id) return Traverse_Result;
       --  Determine if Nkind (N) indicates the presence of a decision (i.e.
-      --  N is a logical operator -- a decision in itelsf -- or an
-      --  IF-expression -- whose Condition attribute is a decision).
+      --  N is a logical operator, which is a decision in itself, or an
+      --  IF-expression whose Condition attribute is a decision).
 
       ----------------
       -- Check_Node --

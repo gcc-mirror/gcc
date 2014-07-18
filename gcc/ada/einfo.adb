@@ -7017,6 +7017,15 @@ package body Einfo is
         Ekind (Id) = E_Abstract_State and then Nkind (Parent (Id)) = N_Null;
    end Is_Null_State;
 
+   ---------------------
+   -- Is_Packed_Array --
+   ---------------------
+
+   function Is_Packed_Array (Id : E) return B is
+   begin
+      return Is_Array_Type (Id) and then Is_Packed (Id);
+   end Is_Packed_Array;
+
    -----------------------------------
    -- Is_Package_Or_Generic_Package --
    -----------------------------------

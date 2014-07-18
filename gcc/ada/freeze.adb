@@ -1095,20 +1095,6 @@ package body Freeze is
 
       Component_Aliased : Boolean;
 
-      function Is_Packed_Array (T : Entity_Id) return Boolean;
-      --  True for a packed array type
-
-      ---------------------
-      -- Is_Packed_Array --
-      ---------------------
-
-      function Is_Packed_Array (T : Entity_Id) return Boolean is
-      begin
-         return Is_Array_Type (T) and then Is_Packed (T);
-      end Is_Packed_Array;
-
-   --  Start of processing for Check_Component_Storage_Order
-
    begin
       --  Record case
 
@@ -1121,10 +1107,9 @@ package body Freeze is
             Component_Aliased := False;
 
          else
-            --  If a component clause is present, check whether component
-            --  starts on a storage element boundary. Otherwise conservatively
-            --  assume it does so only in the case where the record is not
-            --  packed.
+            --  If a component clause is present, check if the component starts
+            --  on a storage element boundary. Otherwise conservatively assume
+            --  it does so only in the case where the record is not packed.
 
             if Present (Component_Clause (Comp)) then
                Comp_Byte_Aligned :=

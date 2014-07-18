@@ -767,6 +767,9 @@ package ALI is
       Subunit_Name : Name_Id;
       --  Name_Id for subunit name if present, else No_Name
 
+      Unit_Name : Name_Id;
+      --  Name_Id for the unit name, if not a subunit. No_Name for a subunit.
+
       Rfile : File_Name_Type;
       --  Reference file name. Same as Sfile unless a Source_Reference pragma
       --  was used, in which case it reflects the name used in the pragma.

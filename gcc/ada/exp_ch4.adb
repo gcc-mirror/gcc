@@ -10191,7 +10191,13 @@ package body Exp_Ch4 is
                     and then S_Lov >= D_Lov
                     and then S_Hiv <= D_Hiv
                   then
-                     Set_Do_Range_Check (Operand, False);
+                     --  Unset the range check flag on the current value of
+                     --  Expression (N), since the captured Operand may have
+                     --  been rewritten (such as for the case of a conversion
+                     --  to a fixed-point type).
+
+                     Set_Do_Range_Check (Expression (N), False);
+
                      return;
                   end if;
                end;

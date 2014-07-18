@@ -1,3 +1,35 @@
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_References_Generic): Use type entity
+	as a parameter, rather than its Chars field, in order to locate
+	freeze node of type. If the predicate or invariant has references
+	to types other than the one to which the contract applies, these
+	types must be frozen, and the corresponding predicate functions
+	created, before that freeze node.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, einfo.ads, einfo.adb: Minor code reorganization.
+	* par_sco.adb: Minor reformatting.
+
+2014-07-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Real_Range_Check): Turn off
+	the Do_Range_Check flag on the conversion's current Expression
+	argument rather than on the originally captured Operand node,
+	as Expression may reflect a rewriting (as in conversions to a
+	fixed-point type).
+
+2014-07-18  Vincent Celier  <celier@adacore.com>
+
+	* ali.adb (Scan_ALI): Set Sdep_Record.Unit_Name, when the unit
+	is not a subunit.
+	* ali.ads (Sdep_Record): New component Unit_Name.
+	* lib-writ.adb (Write_ALI): Write the unit name in D lines.
+	* makeutl.adb (Check_Source_Info_In_ALI): Return False if a
+	dependent unit is in a project and the source file name is not
+	one of its sources.
+
 2014-07-18  Bob Duff  <duff@adacore.com>
 
 	* s-addima.ads: Minor: add comment.
