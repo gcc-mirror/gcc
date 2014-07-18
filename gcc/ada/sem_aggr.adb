@@ -610,7 +610,7 @@ package body Sem_Aggr is
            and then Size_Known_At_Compile_Time (Component_Type (Typ)));
 
       --  We always need a freeze node for a packed array subtype, so that we
-      --  can build the Packed_Array_Type corresponding to the subtype. If
+      --  can build the Packed_Array_Impl_Type corresponding to the subtype. If
       --  expansion is disabled, the packed array subtype is not built, and we
       --  must not generate a freeze node for the type, or else it will appear
       --  incomplete to gigi.

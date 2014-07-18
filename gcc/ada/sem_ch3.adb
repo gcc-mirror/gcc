@@ -5165,7 +5165,7 @@ package body Sem_Ch3 is
          Set_Component_Type    (Implicit_Base, Element_Type);
          Set_Has_Task          (Implicit_Base, Has_Task (Element_Type));
          Set_Component_Size    (Implicit_Base, Uint_0);
-         Set_Packed_Array_Type (Implicit_Base, Empty);
+         Set_Packed_Array_Impl_Type (Implicit_Base, Empty);
          Set_Has_Controlled_Component
                                (Implicit_Base, Has_Controlled_Component
                                                         (Element_Type)
@@ -5198,7 +5198,7 @@ package body Sem_Ch3 is
       --  Common attributes for both cases
 
       Set_Component_Type (Base_Type (T), Element_Type);
-      Set_Packed_Array_Type (T, Empty);
+      Set_Packed_Array_Impl_Type (T, Empty);
 
       if Aliased_Present (Component_Definition (Def)) then
          Check_SPARK_Restriction
@@ -5269,7 +5269,9 @@ package body Sem_Ch3 is
       --  types created for packed entities do not need such, they are
       --  compatible with the user-defined type.
 
-      if Number_Dimensions (T) = 1 and then not Is_Packed_Array_Type (T) then
+      if Number_Dimensions (T) = 1
+        and then not Is_Packed_Array_Impl_Type (T)
+      then
          New_Concatenation_Op (T);
       end if;
 
@@ -11473,13 +11475,13 @@ package body Sem_Ch3 is
       Set_Is_Private_Composite (Def_Id, Is_Private_Composite (T));
       Set_Is_Limited_Composite (Def_Id, Is_Limited_Composite (T));
 
-      --  A subtype does not inherit the packed_array_type of is parent. We
-      --  need to initialize the attribute because if Def_Id is previously
+      --  A subtype does not inherit the Packed_Array_Impl_Type of is parent.
+      --  We need to initialize the attribute because if Def_Id is previously
       --  analyzed through a limited_with clause, it will have the attributes
       --  of an incomplete type, one of which is an Elist that overlaps the
-      --  Packed_Array_Type field.
+      --  Packed_Array_Impl_Type field.
 
-      Set_Packed_Array_Type (Def_Id, Empty);
+      Set_Packed_Array_Impl_Type (Def_Id, Empty);
 
       --  Build a freeze node if parent still needs one. Also make sure that
       --  the Depends_On_Private status is set because the subtype will need
@@ -11913,7 +11915,7 @@ package body Sem_Ch3 is
            and then Is_Packed (Compon_Type)
            and then Is_Frozen (Current_Scope)
          then
-            Create_Packed_Array_Type (Array_Comp);
+            Create_Packed_Array_Impl_Type (Array_Comp);
          end if;
 
          return Array_Comp;
@@ -12775,7 +12777,7 @@ package body Sem_Ch3 is
       Set_Convention           (T1, Convention            (T2));
       Set_Is_Limited_Composite (T1, Is_Limited_Composite  (T2));
       Set_Is_Private_Composite (T1, Is_Private_Composite  (T2));
-      Set_Packed_Array_Type    (T1, Packed_Array_Type     (T2));
+      Set_Packed_Array_Impl_Type    (T1, Packed_Array_Impl_Type     (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------

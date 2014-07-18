@@ -5307,7 +5307,7 @@ package body Checks is
       --  so they are also always valid (in particular, the unused bits can be
       --  random rubbish without affecting the validity of the array value).
 
-      if not Is_Scalar_Type (Typ) or else Is_Packed_Array_Type (Typ) then
+      if not Is_Scalar_Type (Typ) or else Is_Packed_Array_Impl_Type (Typ) then
          return True;
 
       --  If no validity checking, then everything is considered valid
@@ -6526,7 +6526,7 @@ package body Checks is
 
          if Analyzed (PV)
            and then Nkind (PV) = N_Indexed_Component
-           and then Present (Packed_Array_Type (Etype (Prefix (PV))))
+           and then Present (Packed_Array_Impl_Type (Etype (Prefix (PV))))
          then
             Set_Analyzed (PV, False);
          end if;

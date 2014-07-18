@@ -6272,8 +6272,10 @@ package body Exp_Util is
       elsif Esize (Typ) /= 0 and then Esize (Typ) <= 256 then
          return False;
 
-      elsif Is_Array_Type (Typ) and then Present (Packed_Array_Type (Typ)) then
-         return May_Generate_Large_Temp (Packed_Array_Type (Typ));
+      elsif Is_Array_Type (Typ)
+        and then Present (Packed_Array_Impl_Type (Typ))
+      then
+         return May_Generate_Large_Temp (Packed_Array_Impl_Type (Typ));
 
       --  We could do more here to find other small types ???
 
@@ -6403,7 +6405,7 @@ package body Exp_Util is
         or else Is_Access_Type (Typ)
         or else
           (Is_Bit_Packed_Array (Typ)
-            and then Is_Modular_Integer_Type (Packed_Array_Type (Typ)))
+            and then Is_Modular_Integer_Type (Packed_Array_Impl_Type (Typ)))
       then
          return False;
 
@@ -7283,7 +7285,7 @@ package body Exp_Util is
    begin
       return Is_Scalar_Type (UT)
         or else (Is_Bit_Packed_Array (UT)
-                  and then Is_Scalar_Type (Packed_Array_Type (UT)));
+                  and then Is_Scalar_Type (Packed_Array_Impl_Type (UT)));
    end Represented_As_Scalar;
 
    ------------------------------
@@ -7713,8 +7715,8 @@ package body Exp_Util is
       --  Conversions to and from packed array types are always ignored and
       --  hence are safe.
 
-      elsif Is_Packed_Array_Type (Otyp)
-        or else Is_Packed_Array_Type (Ityp)
+      elsif Is_Packed_Array_Impl_Type (Otyp)
+        or else Is_Packed_Array_Impl_Type (Ityp)
       then
          return True;
       end if;

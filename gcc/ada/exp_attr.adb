@@ -2863,7 +2863,7 @@ package body Exp_Attr is
       when Attribute_First =>
 
          --  If the prefix type is a constrained packed array type which
-         --  already has a Packed_Array_Type representation defined, then
+         --  already has a Packed_Array_Impl_Type representation defined, then
          --  replace this attribute with a direct reference to 'First of the
          --  appropriate index subtype (since otherwise the back end will try
          --  to give us the value of 'First for this implementation type).
@@ -3526,7 +3526,7 @@ package body Exp_Attr is
       when Attribute_Last =>
 
          --  If the prefix type is a constrained packed array type which
-         --  already has a Packed_Array_Type representation defined, then
+         --  already has a Packed_Array_Impl_Type representation defined, then
          --  replace this attribute with a direct reference to 'Last of the
          --  appropriate index subtype (since otherwise the back end will try
          --  to give us the value of 'Last for this implementation type).
@@ -3676,11 +3676,11 @@ package body Exp_Attr is
                return;
 
             --  If the prefix type is a constrained packed array type which
-            --  already has a Packed_Array_Type representation defined, then
-            --  replace this attribute with a direct reference to 'Range_Length
-            --  of the appropriate index subtype (since otherwise the back end
-            --  will try to give us the value of 'Length for this
-            --  implementation type).
+            --  already has a Packed_Array_Impl_Type representation defined,
+            --  then replace this attribute with a reference to 'Range_Length
+            --  of the appropriate index subtype (since otherwise the
+            --  back end will try to give us the value of 'Length for
+            --  this implementation type).s
 
             elsif Is_Constrained (Ptyp) then
                Rewrite (N,
@@ -7663,7 +7663,7 @@ package body Exp_Attr is
 
       return Is_Array_Type (Arr)
         and then Is_Constrained (Arr)
-        and then Present (Packed_Array_Type (Arr));
+        and then Present (Packed_Array_Impl_Type (Arr));
    end Is_Constrained_Packed_Array;
 
    ----------------------------------------

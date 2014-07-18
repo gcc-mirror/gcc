@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -503,9 +503,9 @@ package body Exp_Ch5 is
                Des_Type : Entity_Id;
 
             begin
-               if Present (Packed_Array_Type (Typ))
-                 and then Is_Array_Type (Packed_Array_Type (Typ))
-                 and then not Is_Constrained (Packed_Array_Type (Typ))
+               if Present (Packed_Array_Impl_Type (Typ))
+                 and then Is_Array_Type (Packed_Array_Impl_Type (Typ))
+                 and then not Is_Constrained (Packed_Array_Impl_Type (Typ))
                then
                   return True;
 

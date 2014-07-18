@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -958,10 +958,10 @@ package body Exp_Dbug is
    end Get_Secondary_DT_External_Name;
 
    ---------------------------------
-   -- Make_Packed_Array_Type_Name --
+   -- Make_Packed_Array_Impl_Type_Name --
    ---------------------------------
 
-   function Make_Packed_Array_Type_Name
+   function Make_Packed_Array_Impl_Type_Name
      (Typ   : Entity_Id;
       Csize : Uint)
       return  Name_Id
@@ -971,7 +971,7 @@ package body Exp_Dbug is
       Add_Str_To_Name_Buffer ("___XP");
       Add_Uint_To_Buffer (Csize);
       return Name_Find;
-   end Make_Packed_Array_Type_Name;
+   end Make_Packed_Array_Impl_Type_Name;
 
    -----------------------------------
    -- Output_Homonym_Numbers_Suffix --

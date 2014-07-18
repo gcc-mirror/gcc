@@ -780,7 +780,7 @@ package body Sem_Eval is
       --  We do not attempt comparisons for packed arrays arrays represented as
       --  modular types, where the semantics of comparison is quite different.
 
-      elsif Is_Packed_Array_Type (Ltyp)
+      elsif Is_Packed_Array_Impl_Type (Ltyp)
         and then Is_Modular_Integer_Type (Ltyp)
       then
          return Unknown;
@@ -1317,7 +1317,7 @@ package body Sem_Eval is
             --  We might want to try to evaluate these at compile time one
             --  day, but we do not make that attempt now.
 
-            if Is_Packed_Array_Type (Etype (Op)) then
+            if Is_Packed_Array_Impl_Type (Etype (Op)) then
                return False;
             end if;
 
@@ -4620,7 +4620,7 @@ package body Sem_Eval is
       then
          if Nkind (Parent (N)) = N_Defining_Identifier
            and then Is_Array_Type (Parent (N))
-           and then Present (Packed_Array_Type (Parent (N)))
+           and then Present (Packed_Array_Impl_Type (Parent (N)))
            and then Present (First_Rep_Item (Parent (N)))
          then
             Error_Msg_N

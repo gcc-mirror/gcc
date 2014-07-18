@@ -13167,9 +13167,9 @@ package body Sem_Util is
             end if;
 
             if Is_Packed (New_Itype) then
-               Set_Packed_Array_Type (New_Itype,
+               Set_Packed_Array_Impl_Type (New_Itype,
                  Copy_Node_With_Replacement
-                   (Packed_Array_Type (New_Itype)));
+                   (Packed_Array_Impl_Type (New_Itype)));
             end if;
          end if;
       end Copy_Itype_With_Replacement;
@@ -13675,7 +13675,7 @@ package body Sem_Util is
             end if;
 
             if Is_Packed (Old_Itype) then
-               Visit_Field (Union_Id (Packed_Array_Type (Old_Itype)),
+               Visit_Field (Union_Id (Packed_Array_Impl_Type (Old_Itype)),
                             Old_Itype);
             end if;
          end if;
@@ -16057,10 +16057,10 @@ package body Sem_Util is
             --  also need it for the former if we need it for the latter.
 
             if Is_Packed (T) then
-               Set_Debug_Info_Needed_If_Not_Set (Packed_Array_Type (T));
+               Set_Debug_Info_Needed_If_Not_Set (Packed_Array_Impl_Type (T));
             end if;
 
-            if Is_Packed_Array_Type (T) then
+            if Is_Packed_Array_Impl_Type (T) then
                Set_Debug_Info_Needed_If_Not_Set (Original_Array_Type (T));
             end if;
 
