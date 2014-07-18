@@ -6,8 +6,6 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
---                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
@@ -229,37 +227,37 @@ package System.Aux_DEC is
 
    --  Conventional names for static subtypes of type UNSIGNED_LONGWORD
 
-   subtype Unsigned_1  is Unsigned_Longword range 0 .. 2** 1-1;
-   subtype Unsigned_2  is Unsigned_Longword range 0 .. 2** 2-1;
-   subtype Unsigned_3  is Unsigned_Longword range 0 .. 2** 3-1;
-   subtype Unsigned_4  is Unsigned_Longword range 0 .. 2** 4-1;
-   subtype Unsigned_5  is Unsigned_Longword range 0 .. 2** 5-1;
-   subtype Unsigned_6  is Unsigned_Longword range 0 .. 2** 6-1;
-   subtype Unsigned_7  is Unsigned_Longword range 0 .. 2** 7-1;
-   subtype Unsigned_8  is Unsigned_Longword range 0 .. 2** 8-1;
-   subtype Unsigned_9  is Unsigned_Longword range 0 .. 2** 9-1;
-   subtype Unsigned_10 is Unsigned_Longword range 0 .. 2**10-1;
-   subtype Unsigned_11 is Unsigned_Longword range 0 .. 2**11-1;
-   subtype Unsigned_12 is Unsigned_Longword range 0 .. 2**12-1;
-   subtype Unsigned_13 is Unsigned_Longword range 0 .. 2**13-1;
-   subtype Unsigned_14 is Unsigned_Longword range 0 .. 2**14-1;
-   subtype Unsigned_15 is Unsigned_Longword range 0 .. 2**15-1;
-   subtype Unsigned_16 is Unsigned_Longword range 0 .. 2**16-1;
-   subtype Unsigned_17 is Unsigned_Longword range 0 .. 2**17-1;
-   subtype Unsigned_18 is Unsigned_Longword range 0 .. 2**18-1;
-   subtype Unsigned_19 is Unsigned_Longword range 0 .. 2**19-1;
-   subtype Unsigned_20 is Unsigned_Longword range 0 .. 2**20-1;
-   subtype Unsigned_21 is Unsigned_Longword range 0 .. 2**21-1;
-   subtype Unsigned_22 is Unsigned_Longword range 0 .. 2**22-1;
-   subtype Unsigned_23 is Unsigned_Longword range 0 .. 2**23-1;
-   subtype Unsigned_24 is Unsigned_Longword range 0 .. 2**24-1;
-   subtype Unsigned_25 is Unsigned_Longword range 0 .. 2**25-1;
-   subtype Unsigned_26 is Unsigned_Longword range 0 .. 2**26-1;
-   subtype Unsigned_27 is Unsigned_Longword range 0 .. 2**27-1;
-   subtype Unsigned_28 is Unsigned_Longword range 0 .. 2**28-1;
-   subtype Unsigned_29 is Unsigned_Longword range 0 .. 2**29-1;
-   subtype Unsigned_30 is Unsigned_Longword range 0 .. 2**30-1;
-   subtype Unsigned_31 is Unsigned_Longword range 0 .. 2**31-1;
+   subtype Unsigned_1  is Unsigned_Longword range 0 .. 2** 1 - 1;
+   subtype Unsigned_2  is Unsigned_Longword range 0 .. 2** 2 - 1;
+   subtype Unsigned_3  is Unsigned_Longword range 0 .. 2** 3 - 1;
+   subtype Unsigned_4  is Unsigned_Longword range 0 .. 2** 4 - 1;
+   subtype Unsigned_5  is Unsigned_Longword range 0 .. 2** 5 - 1;
+   subtype Unsigned_6  is Unsigned_Longword range 0 .. 2** 6 - 1;
+   subtype Unsigned_7  is Unsigned_Longword range 0 .. 2** 7 - 1;
+   subtype Unsigned_8  is Unsigned_Longword range 0 .. 2** 8 - 1;
+   subtype Unsigned_9  is Unsigned_Longword range 0 .. 2** 9 - 1;
+   subtype Unsigned_10 is Unsigned_Longword range 0 .. 2**10 - 1;
+   subtype Unsigned_11 is Unsigned_Longword range 0 .. 2**11 - 1;
+   subtype Unsigned_12 is Unsigned_Longword range 0 .. 2**12 - 1;
+   subtype Unsigned_13 is Unsigned_Longword range 0 .. 2**13 - 1;
+   subtype Unsigned_14 is Unsigned_Longword range 0 .. 2**14 - 1;
+   subtype Unsigned_15 is Unsigned_Longword range 0 .. 2**15 - 1;
+   subtype Unsigned_16 is Unsigned_Longword range 0 .. 2**16 - 1;
+   subtype Unsigned_17 is Unsigned_Longword range 0 .. 2**17 - 1;
+   subtype Unsigned_18 is Unsigned_Longword range 0 .. 2**18 - 1;
+   subtype Unsigned_19 is Unsigned_Longword range 0 .. 2**19 - 1;
+   subtype Unsigned_20 is Unsigned_Longword range 0 .. 2**20 - 1;
+   subtype Unsigned_21 is Unsigned_Longword range 0 .. 2**21 - 1;
+   subtype Unsigned_22 is Unsigned_Longword range 0 .. 2**22 - 1;
+   subtype Unsigned_23 is Unsigned_Longword range 0 .. 2**23 - 1;
+   subtype Unsigned_24 is Unsigned_Longword range 0 .. 2**24 - 1;
+   subtype Unsigned_25 is Unsigned_Longword range 0 .. 2**25 - 1;
+   subtype Unsigned_26 is Unsigned_Longword range 0 .. 2**26 - 1;
+   subtype Unsigned_27 is Unsigned_Longword range 0 .. 2**27 - 1;
+   subtype Unsigned_28 is Unsigned_Longword range 0 .. 2**28 - 1;
+   subtype Unsigned_29 is Unsigned_Longword range 0 .. 2**29 - 1;
+   subtype Unsigned_30 is Unsigned_Longword range 0 .. 2**30 - 1;
+   subtype Unsigned_31 is Unsigned_Longword range 0 .. 2**31 - 1;
 
    --  Function for obtaining global symbol values
 

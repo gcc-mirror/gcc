@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -296,10 +296,11 @@ begin
                   --  Make new unit table entry (will fill in To later)
 
                   SCO_Unit_Table.Append (
-                    (File_Name => new String'(Buf (1 .. N)),
-                     Dep_Num   => Dnum,
-                     From      => SCO_Table.Last + 1,
-                     To        => 0));
+                    (File_Name  => new String'(Buf (1 .. N)),
+                     File_Index => 0,
+                     Dep_Num    => Dnum,
+                     From       => SCO_Table.Last + 1,
+                     To         => 0));
 
                      when others =>
                         raise Program_Error;

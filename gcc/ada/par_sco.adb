@@ -995,10 +995,11 @@ package body Par_SCO is
       --  name and dependency numbers later.
 
       SCO_Unit_Table.Append (
-        (Dep_Num   => 0,
-         File_Name => null,
-         From      => From,
-         To        => SCO_Table.Last));
+        (Dep_Num    => 0,
+         File_Name  => null,
+         File_Index => Get_Source_File_Index (Sloc (Lu)),
+         From       => From,
+         To         => SCO_Table.Last));
 
       SCO_Unit_Number_Table.Append (U);
    end SCO_Record;

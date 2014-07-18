@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,9 @@ package SCOs is
 
    --  Put_SCO reads the internal tables and generates text lines in the ALI
    --  format.
+
+   --  WARNING: There are C bindings for this package. Any changes to this
+   --  source file must be properly reflected in the C header file scos.h
 
    --------------------
    -- SCO ALI Format --
@@ -496,6 +499,9 @@ package SCOs is
    type SCO_Unit_Table_Entry is record
       File_Name : String_Ptr;
       --  Pointer to file name in ALI file
+
+      File_Index : Source_File_Index;
+      --  Index for the source file
 
       Dep_Num : Nat;
       --  Dependency number in ALI file

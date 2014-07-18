@@ -1581,6 +1581,7 @@ package body Sem_Util is
 
       if Compile_Time_Known_Value (Expr)
         and then Has_Predicates (Typ)
+        and then Is_Discrete_Type (Typ)
         and then Present (Static_Predicate (Typ))
         and then not Has_Dynamic_Predicate_Aspect (Typ)
       then
