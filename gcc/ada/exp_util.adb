@@ -6340,11 +6340,10 @@ package body Exp_Util is
       if Restriction_Active (No_Finalization) then
          return False;
 
-      --  C, C++, CIL and Java types are not considered controlled. It is
-      --  assumed that the non-Ada side will handle their clean up.
+      --  C++, CIL and Java types are not considered controlled. It is assumed
+      --  that the non-Ada side will handle their clean up.
 
-      elsif Convention (T) = Convention_C
-        or else Convention (T) = Convention_CIL
+      elsif Convention (T) = Convention_CIL
         or else Convention (T) = Convention_CPP
         or else Convention (T) = Convention_Java
       then
