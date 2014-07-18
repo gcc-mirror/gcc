@@ -80,9 +80,11 @@ pragma Style_Checks ("M32766");
 
 /* Feature macro definitions */
 
+/* Define _POSIX_SOURCE to get NAME_MAX, PATH_MAX */
+#define _POSIX_SOURCE
+
 #if defined (__linux__) && !defined (_XOPEN_SOURCE)
-/** For Linux _XOPEN_SOURCE must be defined, otherwise IOV_MAX is not defined
- **/
+/* For Linux, define _XOPEN_SOURCE to get IOV_MAX */
 #define _XOPEN_SOURCE 500
 #endif
 

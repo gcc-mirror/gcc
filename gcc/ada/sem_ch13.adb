@@ -6247,7 +6247,8 @@ package body Sem_Ch13 is
       pragma Inline (Is_Type_Ref);
       --  Returns if True if N is a reference to the type for the predicate in
       --  the expression (i.e. if it is an identifier whose Chars field matches
-      --  the Nam given in the call).
+      --  the Nam given in the call). N must not be parenthesized, if the type
+      --  name appears in parens, this routine will return False.
 
       function Lo_Val (N : Node_Id) return Uint;
       --  Given static expression or static range from a Static_Predicate list,
@@ -6770,7 +6771,9 @@ package body Sem_Ch13 is
 
       function Is_Type_Ref (N : Node_Id) return Boolean is
       begin
-         return Nkind (N) = N_Identifier and then Chars (N) = Nam;
+         return Nkind (N) = N_Identifier
+           and then Chars (N) = Nam
+           and then Paren_Count (N) = 0;
       end Is_Type_Ref;
 
       ------------

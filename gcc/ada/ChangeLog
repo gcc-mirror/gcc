@@ -1,5 +1,26 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch13.adb (Is_Type_Ref): Check that type name is not
+	parenthesized.
+
+2014-07-18  Vincent Celier  <celier@adacore.com>
+
+	* s-osinte-vms.ads: Fix style errors.
+
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c (_POSIX_SOURCE): Define in order to get
+	NAME_MAX and PATH_MAX.
+
+2014-07-18  Bob Duff  <duff@adacore.com>
+
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function,
+	Build_Record_Or_Elementary_Output_Procedure): For Input and
+	Output attributes, do not read/write the discriminants if they
+	have default values; that will be done by Read/Write.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aggr.adb, exp_ch5.adb, sem_ch3.adb, layout.adb, sem_type.adb,
 	exp_util.adb, exp_attr.adb, einfo.adb, einfo.ads, exp_pakd.adb,
 	checks.adb, exp_pakd.ads, freeze.adb, sem_util.adb, exp_dbug.adb,
