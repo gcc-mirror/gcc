@@ -52,6 +52,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
+with Sem_Warn; use Sem_Warn;
 with Sem_Type; use Sem_Type;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -473,6 +474,123 @@ package body Sem_Util is
              V = 32 or else
              V = 64;
    end Addressable;
+
+   ---------------------------------
+   -- Aggregate_Constraint_Checks --
+   ---------------------------------
+
+   procedure Aggregate_Constraint_Checks
+     (Exp       : Node_Id;
+      Check_Typ : Entity_Id)
+   is
+      Exp_Typ : constant Entity_Id  := Etype (Exp);
+
+   begin
+      if Raises_Constraint_Error (Exp) then
+         return;
+      end if;
+
+      --  Ada 2005 (AI-230): Generate a conversion to an anonymous access
+      --  component's type to force the appropriate accessibility checks.
+
+      --  Ada 2005 (AI-231): Generate conversion to the null-excluding
+      --  type to force the corresponding run-time check
+
+      if Is_Access_Type (Check_Typ)
+        and then ((Is_Local_Anonymous_Access (Check_Typ))
+                    or else (Can_Never_Be_Null (Check_Typ)
+                              and then not Can_Never_Be_Null (Exp_Typ)))
+      then
+         Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
+         Analyze_And_Resolve (Exp, Check_Typ);
+         Check_Unset_Reference (Exp);
+      end if;
+
+      --  This is really expansion activity, so make sure that expansion is
+      --  on and is allowed. In GNATprove mode, we also want check flags to
+      --  be added in the tree, so that the formal verification can rely on
+      --  those to be present. In GNATprove mode for formal verification, some
+      --  treatment typically only done during expansion needs to be performed
+      --  on the tree, but it should not be applied inside generics. Otherwise,
+      --  this breaks the name resolution mechanism for generic instances.
+
+      if not Expander_Active
+        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
+      then
+         return;
+      end if;
+
+      --  First check if we have to insert discriminant checks
+
+      if Has_Discriminants (Exp_Typ) then
+         Apply_Discriminant_Check (Exp, Check_Typ);
+
+      --  Next emit length checks for array aggregates
+
+      elsif Is_Array_Type (Exp_Typ) then
+         Apply_Length_Check (Exp, Check_Typ);
+
+      --  Finally emit scalar and string checks. If we are dealing with a
+      --  scalar literal we need to check by hand because the Etype of
+      --  literals is not necessarily correct.
+
+      elsif Is_Scalar_Type (Exp_Typ)
+        and then Compile_Time_Known_Value (Exp)
+      then
+         if Is_Out_Of_Range (Exp, Base_Type (Check_Typ)) then
+            Apply_Compile_Time_Constraint_Error
+              (Exp, "value not in range of}??", CE_Range_Check_Failed,
+               Ent => Base_Type (Check_Typ),
+               Typ => Base_Type (Check_Typ));
+
+         elsif Is_Out_Of_Range (Exp, Check_Typ) then
+            Apply_Compile_Time_Constraint_Error
+              (Exp, "value not in range of}??", CE_Range_Check_Failed,
+               Ent => Check_Typ,
+               Typ => Check_Typ);
+
+         elsif not Range_Checks_Suppressed (Check_Typ) then
+            Apply_Scalar_Range_Check (Exp, Check_Typ);
+         end if;
+
+      --  Verify that target type is also scalar, to prevent view anomalies
+      --  in instantiations.
+
+      elsif (Is_Scalar_Type (Exp_Typ)
+              or else Nkind (Exp) = N_String_Literal)
+        and then Is_Scalar_Type (Check_Typ)
+        and then Exp_Typ /= Check_Typ
+      then
+         if Is_Entity_Name (Exp)
+           and then Ekind (Entity (Exp)) = E_Constant
+         then
+            --  If expression is a constant, it is worthwhile checking whether
+            --  it is a bound of the type.
+
+            if (Is_Entity_Name (Type_Low_Bound (Check_Typ))
+                 and then Entity (Exp) = Entity (Type_Low_Bound (Check_Typ)))
+              or else
+               (Is_Entity_Name (Type_High_Bound (Check_Typ))
+                 and then Entity (Exp) = Entity (Type_High_Bound (Check_Typ)))
+            then
+               return;
+
+            else
+               Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
+               Analyze_And_Resolve (Exp, Check_Typ);
+               Check_Unset_Reference (Exp);
+            end if;
+
+         --  Could use a comment on this case ???
+
+         else
+            Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
+            Analyze_And_Resolve (Exp, Check_Typ);
+            Check_Unset_Reference (Exp);
+         end if;
+
+      end if;
+   end Aggregate_Constraint_Checks;
 
    -----------------------
    -- Alignment_In_Bits --
