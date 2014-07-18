@@ -1,3 +1,11 @@
+2014-07-18  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_can_eliminate): Follow the
+	GNU coding standards.
+	(nds32_register_move_cost): Likewise.
+	(nds32_memory_move_cost): Likewise.
+	(nds32_address_cost): Likewise.
+
 2014-07-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/mmix/mmix.c (mmix_intval): Drop unused automatic variable.
