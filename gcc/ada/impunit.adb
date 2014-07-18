@@ -382,8 +382,8 @@ package body Impunit is
     ("s-ststop", F),  -- System.Strings.Stream_Ops
     ("s-tasinf", F),  -- System.Task_Info
     ("s-unstyp", F),  -- System.Unsigned_Types
-    ("s-wchcnv", F),  -- System.Wch_Cnv
-    ("s-wchcon", F),  -- System.Wch_Con
+    ("s-wchcnv", F),  -- System.WCh_Cnv
+    ("s-wchcon", F),  -- System.WCh_Con
 
    --  The following are strictly speaking Ada 2012 units, but we are allowed
    --  to add children to system, so we consider them to be implementation

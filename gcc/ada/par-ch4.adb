@@ -2152,6 +2152,11 @@ package body Ch4 is
                exit when Token not in Token_Class_Binary_Addop;
                Tokptr := Token_Ptr;
                Node2 := New_Op_Node (P_Binary_Adding_Operator, Tokptr);
+
+               if Style_Check and then not Debug_Flag_Dot_QQ then
+                  Style.Check_Binary_Operator;
+               end if;
+
                Scan; -- past operator
                Set_Left_Opnd (Node2, Node1);
                Node1 := P_Term;
@@ -2406,6 +2411,11 @@ package body Ch4 is
          exit when Token not in Token_Class_Mulop;
          Tokptr := Token_Ptr;
          Node2 := New_Op_Node (P_Multiplying_Operator, Tokptr);
+
+         if Style_Check and then not Debug_Flag_Dot_QQ then
+            Style.Check_Binary_Operator;
+         end if;
+
          Scan; -- past operator
          Set_Left_Opnd (Node2, Node1);
          Set_Right_Opnd (Node2, P_Factor);

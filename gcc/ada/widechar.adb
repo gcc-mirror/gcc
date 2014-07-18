@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note: this package uses the generic subprograms in System.Wch_Cnv, which
+--  Note: this package uses the generic subprograms in System.WCh_Cnv, which
 --  completely encapsulate the set of wide character encoding methods, so no
 --  modifications are required when adding new encoding methods.
 

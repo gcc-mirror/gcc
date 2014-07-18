@@ -134,7 +134,7 @@ package body Debug is
    --  d.N  Add node to all entities
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
-   --  d.Q
+   --  d.Q  Previous (incomplete) style check for binary operators
    --  d.R  Restrictions in ali files in positional form
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
