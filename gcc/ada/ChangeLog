@@ -1,3 +1,14 @@
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* g-memdum.adb, g-memdum.ads, exp_strm.adb: Minor reformatting.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* s-crtl.ads, i-cstrea.ads (fputwc): New routine.
+	* a-witeio.adb (Put): On platforms where there is translation
+	done by the OS output the raw text.
+	(New_Line): Use Put above to properly handle the LM wide characters.
+
 2014-07-18  Thomas Quinot  <quinot@adacore.com>
 
 	* g-memdum.adb, g-memdum.ads (Dump): New parameter Prefix, defaulted

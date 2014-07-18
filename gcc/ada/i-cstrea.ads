@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,6 +119,9 @@ package Interfaces.C_Streams is
    function fputc (C : int; stream : FILEs) return int
      renames System.CRTL.fputc;
 
+   function fputwc (C : int; stream : FILEs) return int
+     renames System.CRTL.fputwc;
+
    function fputs (Strng : chars; Stream : FILEs) return int
      renames System.CRTL.fputs;
 
@@ -223,8 +226,9 @@ package Interfaces.C_Streams is
    --  versa. These functions have no effect if text_translation_required is
    --  false (i.e. in normal unix mode). Use fileno to get a stream handle.
 
-   procedure set_binary_mode (handle : int);
-   procedure set_text_mode   (handle : int);
+   procedure set_binary_mode    (handle : int);
+   procedure set_text_mode      (handle : int);
+   procedure set_wide_text_mode (handle : int);
 
    ----------------------------
    -- Full Path Name support --
@@ -256,6 +260,7 @@ private
 
    pragma Import (C, set_binary_mode, "__gnat_set_binary_mode");
    pragma Import (C, set_text_mode, "__gnat_set_text_mode");
+   pragma Import (C, set_wide_text_mode, "__gnat_set_wide_text_mode");
 
    pragma Import (C, max_path_len, "__gnat_max_path_len");
    pragma Import (C, full_name, "__gnat_full_name");

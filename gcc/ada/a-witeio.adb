@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1082,13 +1082,13 @@ package body Ada.Wide_Text_IO is
       FIO.Check_Write_Status (AP (File));
 
       for K in 1 .. Spacing loop
-         Putc (LM, File);
+         Put (File, Wide_Character'Val (LM));
          File.Line := File.Line + 1;
 
          if File.Page_Length /= 0
            and then File.Line > File.Page_Length
          then
-            Putc (PM, File);
+            Put (File, Wide_Character'Val (PM));
             File.Line := 1;
             File.Page := File.Page + 1;
          end if;
@@ -1220,6 +1220,14 @@ package body Ada.Wide_Text_IO is
      (File : File_Type;
       Item : Wide_Character)
    is
+      text_translation_required : Boolean;
+      for text_translation_required'Size use Character'Size;
+      pragma Import (C, text_translation_required,
+                       "__gnat_text_translation_required");
+      --  Text translation is required on Windows only. This means that the
+      --  console is doing translation and we do not want to do any encoding
+      --  here. If this boolean is set we just output the character as-is.
+
       procedure Out_Char (C : Character);
       --  Procedure to output one character of a wide character sequence
 
@@ -1234,11 +1242,21 @@ package body Ada.Wide_Text_IO is
          Putc (Character'Pos (C), File);
       end Out_Char;
 
+      R : int;
+      pragma Unreferenced (R);
+
    --  Start of processing for Put
 
    begin
       FIO.Check_Write_Status (AP (File));
-      WC_Out (Item, File.WC_Method);
+
+      if text_translation_required then
+         set_wide_text_mode (fileno (File.Stream));
+         R := fputwc (Wide_Character'Pos (Item), File.Stream);
+      else
+         WC_Out (Item, File.WC_Method);
+      end if;
+
       File.Col := File.Col + 1;
    end Put;
 
