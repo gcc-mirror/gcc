@@ -5736,11 +5736,7 @@ package body Einfo is
 
    procedure Set_Static_Predicate (Id : E; V : S) is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Enumeration_Subtype,
-                       E_Modular_Integer_Subtype,
-                       E_Signed_Integer_Subtype)
-          and then Has_Predicates (Id));
+      pragma Assert (Is_Discrete_Type (Id) and then Has_Predicates (Id));
       Set_List25 (Id, V);
    end Set_Static_Predicate;
 
@@ -9361,7 +9357,9 @@ package body Einfo is
               E_Entry_Family                               =>
             Write_Str ("PPC_Wrapper");
 
-         when E_Enumeration_Subtype                        |
+         when E_Enumeration_Type                           |
+              E_Enumeration_Subtype                        |
+              E_Modular_Integer_Type                       |
               E_Modular_Integer_Subtype                    |
               E_Signed_Integer_Subtype                     =>
             Write_Str ("Static_Predicate");

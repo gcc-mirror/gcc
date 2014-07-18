@@ -3241,6 +3241,19 @@ package body Exp_Attr is
             return;
          end if;
 
+         --  Stream operations can appear in user code even if the restriction
+         --  No_Streams is active (for example, when instantiating a predefined
+         --  container). In that case rewrite the attribute as a Raise to
+         --  prevent any run-time use.
+
+         if Restriction_Active (No_Streams) then
+            Rewrite (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Explicit_Raise));
+            Set_Etype (N, B_Type);
+            return;
+         end if;
+
          --  If there is a TSS for Input, just call it
 
          Fname := Find_Stream_Subprogram (P_Type, TSS_Stream_Input);
@@ -4218,6 +4231,19 @@ package body Exp_Attr is
             return;
          end if;
 
+         --  Stream operations can appear in user code even if the restriction
+         --  No_Streams is active (for example, when instantiating a predefined
+         --  container). In that case rewrite the attribute as a Raise to
+         --  prevent any run-time use.
+
+         if Restriction_Active (No_Streams) then
+            Rewrite (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Explicit_Raise));
+            Set_Etype (N, Standard_Void_Type);
+            return;
+         end if;
+
          --  If TSS for Output is present, just call it
 
          Pname := Find_Stream_Subprogram (P_Type, TSS_Stream_Output);
@@ -4842,6 +4868,19 @@ package body Exp_Attr is
          --  elsewhere, so here we just completely ignore the expansion.
 
          if No (U_Type) then
+            return;
+         end if;
+
+         --  Stream operations can appear in user code even if the restriction
+         --  No_Streams is active (for example, when instantiating a predefined
+         --  container). In that case rewrite the attribute as a Raise to
+         --  prevent any run-time use.
+
+         if Restriction_Active (No_Streams) then
+            Rewrite (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Explicit_Raise));
+            Set_Etype (N, B_Type);
             return;
          end if;
 
@@ -6542,6 +6581,19 @@ package body Exp_Attr is
          --  elsewhere, so here we just completely ignore the expansion.
 
          if No (U_Type) then
+            return;
+         end if;
+
+         --  Stream operations can appear in user code even if the restriction
+         --  No_Streams is active (for example, when instantiating a predefined
+         --  container). In that case rewrite the attribute as a Raise to
+         --  prevent any run-time use.
+
+         if Restriction_Active (No_Streams) then
+            Rewrite (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Explicit_Raise));
+            Set_Etype (N, U_Type);
             return;
          end if;
 

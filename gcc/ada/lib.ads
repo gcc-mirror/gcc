@@ -279,9 +279,9 @@ package Lib is
    --      This is the number of the unit within the generated dependency
    --      lines (D lines in the ALI file) which are sorted into alphabetical
    --      order. The number is ones origin, so a value of 2 refers to the
-   --      second generated D line. The Dependency_Number values are set
-   --      as the D lines are generated, and are used to generate proper
-   --      unit references in the generated xref information and SCO output.
+   --      second generated D line. The Dependency_Num values are set as the
+   --      D lines are generated, and are used to generate proper unit
+   --      references in the generated xref information and SCO output.
 
    --    Dynamic_Elab
    --      A flag indicating if this unit was compiled with dynamic elaboration

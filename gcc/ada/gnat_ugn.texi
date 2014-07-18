@@ -18937,6 +18937,13 @@ currently supported criteria are @code{n, h, w} standing respectively for
 number of unfreed allocations, high watermark, and final watermark
 corresponding to a specific root. The default order is @code{nwh}.
 
+@item -t
+@cindex @option{-t} (@code{gnatmem})
+This switch causes memory allocated size to be always output in bytes.
+Default @code{gnatmem} behavior is to show memory sizes less then 1 kilobyte
+in bytes, from 1 kilobyte till 1 megabyte in kilobytes and the rest in
+megabytes.
+
 @end table
 
 @node Example of gnatmem Usage

@@ -1,5 +1,47 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch13.adb (Build_Discrete_Static_Predicate): New name
+	for Build_Static_Predicate (Build_Predicate_Functions):
+	Don't try to build discrete predicate for real type.
+	(Build_Predicate_Functions): Report attempt to use
+	Static_Predicate function on real type as unimplemented.
+	* sem_util.adb (Check_Expression_Against_Static_Predicate):
+	Add guard to prevent blow up on predicate for real type.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb (Set_Static_Predicate): Simplify assertion to handle
+	properly static predicate on enumeration types and modular types
+	(not subtypes).
+
+2014-07-18  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* scos.ads (SCO_Unit_Table_Entry): Add a field to keep track of
+	the corresponding source file index.
+	* get_scos.ads (Get_SCOs): Add a default value for it.
+	* par_sco.adb (SCO_Record): Fill the corresponding value.
+	* scos.h: New.
+
+2014-07-18  Vincent Celier  <celier@adacore.com>
+
+	* a-strunb-shared.adb, s-auxdec.ads, s-rannum.adb, atree.ads,
+	urealp.adb, vms_data.ads, lib.ads, s-auxdec-vms_64.ads: Minor
+	reformatting.
+	* gnat_ugn.texi: Add documentation for new gnatmem switch -t.
+
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom.ads (Set): document possible data loss.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, cases Input,
+	Output, Read, Write): If the restriction No_Streams is active,
+	replace each occurrence of a stream attribute by an explicit
+	Raise statement.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* par_sco.adb, a-reatim.ads, exp_attr.adb, sem_util.adb: Minor
 	reformatting.
 

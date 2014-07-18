@@ -5677,30 +5677,30 @@ package VMS_Data is
    --
    --   All combinations of line metrics options are allowed.
 
-   S_Metric_Complexity : aliased constant S := "/COMPLEXITY_METRICS="      &
-                                               "ALL "                      &
-                                               "--complexity-all "         &
-                                              "NONE "                      &
-                                              "--no-complexity-all "       &
-                                              "CYCLOMATIC "                &
-                                              "--complexity-cyclomatic "   &
-                                              "NOCYCLOMATIC "              &
-                                              "--no-complexity-cyclomatic "&
-                                              "ESSENTIAL "                 &
-                                              "--complexity-essential "    &
-                                              "NOESSENTIAL "               &
-                                              "--no-complexity-essential " &
-                                              "LOOP_NESTING "              &
-                                              "--loop-nesting "            &
-                                              "NOLOOP_NESTING "            &
-                                              "--no-loop-nesting "         &
-                                              "AVERAGE_COMPLEXITY "        &
-                                              "--complexity-average "      &
-                                              "NOAVERAGE_COMPLEXITY "      &
-                                              "--no-complexity-average "   &
-                                              "EXTRA_EXIT_POINTS "         &
-                                              "--extra-exit-points "       &
-                                              "NOEXTRA_EXIT_POINTS "       &
+   S_Metric_Complexity : aliased constant S := "/COMPLEXITY_METRICS="       &
+                                               "ALL "                       &
+                                               "--complexity-all "          &
+                                              "NONE "                       &
+                                              "--no-complexity-all "        &
+                                              "CYCLOMATIC "                 &
+                                              "--complexity-cyclomatic "    &
+                                              "NOCYCLOMATIC "               &
+                                              "--no-complexity-cyclomatic " &
+                                              "ESSENTIAL "                  &
+                                              "--complexity-essential "     &
+                                              "NOESSENTIAL "                &
+                                              "--no-complexity-essential "  &
+                                              "LOOP_NESTING "               &
+                                              "--loop-nesting "             &
+                                              "NOLOOP_NESTING "             &
+                                              "--no-loop-nesting "          &
+                                              "AVERAGE_COMPLEXITY "         &
+                                              "--complexity-average "       &
+                                              "NOAVERAGE_COMPLEXITY "       &
+                                              "--no-complexity-average "    &
+                                              "EXTRA_EXIT_POINTS "          &
+                                              "--extra-exit-points "        &
+                                              "NOEXTRA_EXIT_POINTS "        &
                                               "--no-extra-exit-points";
    --      /COMPLEXITY_METRICS=(option, option ...)
 
