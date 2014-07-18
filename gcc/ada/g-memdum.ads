@@ -45,15 +45,17 @@ package GNAT.Memory_Dump is
       Count  : Natural;
       Prefix : Prefix_Type := Absolute_Address);
    --  Dumps indicated number (Count) of bytes, starting at the address given
-   --  by Addr. The coding of this routine in its current form assumes the
-   --  case of a byte addressable machine (and is therefore inapplicable to
-   --  machines like the AAMP, where the storage unit is not 8 bits). The
-   --  output is one or more lines in the following format, which is for the
-   --  case of 32-bit addresses (64-bit addresses are handled appropriately):
+   --  by Addr. The coding of this routine in its current form assumes the case
+   --  of a byte addressable machine (and is therefore inapplicable to machines
+   --  like the AAMP, where the storage unit is not 8 bits). The output is one
+   --  or more lines in the following format, which is for the case of 32-bit
+   --  addresses (64-bit addresses are handled appropriately):
    --
    --    0234_3368: 66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
    --
    --  All but the last line have 16 bytes. A question mark is used in the
    --  string data to indicate a non-printable character.
+   --
+   --  Please document Prefix ???
 
 end GNAT.Memory_Dump;

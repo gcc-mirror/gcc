@@ -81,17 +81,21 @@ package body GNAT.Memory_Dump is
       case Prefix is
          when Absolute_Address =>
             AIL := Address_Image_Length - 4 + 2;
+
          when Offset =>
             Offset_Last := Offset_Buf'First - 1;
             Set_Image_Based_Integer (Ctr, 16, 0, Offset_Buf, Offset_Last);
             AIL := Offset_Last - 4 + 2;
+
          when None =>
             AIL := 0;
       end case;
+
       Line_Len := AIL + 3 * 16 + 2 + 16;
 
       declare
          Line_Buf : String (1 .. Line_Len);
+
       begin
          while Ctr /= 0 loop
 
@@ -110,6 +114,7 @@ package body GNAT.Memory_Dump is
                      declare
                         Last : Natural := 0;
                         Len  : Natural;
+
                      begin
                         Set_Image_Based_Integer
                           (Count - Ctr, 16, 0, Offset_Buf, Last);
@@ -160,7 +165,6 @@ package body GNAT.Memory_Dump is
             GNAT.IO.Put_Line (Line_Buf (1 .. AIL + 3 * 16 + 2 + N));
          end if;
       end;
-
    end Dump;
 
 end GNAT.Memory_Dump;

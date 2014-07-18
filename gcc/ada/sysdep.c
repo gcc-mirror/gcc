@@ -104,11 +104,12 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
    file positioning function, unless the input operation encounters
    end-of-file.
 
-   The other target dependent declarations here are for the two functions
-   __gnat_set_binary_mode and __gnat_set_text_mode:
+   The other target dependent declarations here are for the three functions
+   __gnat_set_binary_mode, __gnat_set_text_mode and __gnat_set_wide_text_mode:
 
       void __gnat_set_binary_mode (int handle);
       void __gnat_set_text_mode   (int handle);
+      void __gnat_set_wide_text_mode   (int handle);
 
    These functions have no effect in Unix (or similar systems where there is
    no distinction between binary and text files), but in DOS (and similar
@@ -148,6 +149,12 @@ void
 __gnat_set_text_mode (int handle)
 {
   WIN_SETMODE (handle, O_TEXT);
+}
+
+void
+__gnat_set_wide_text_mode (int handle)
+{
+  WIN_SETMODE (handle, _O_U16TEXT);
 }
 
 #ifdef __CYGWIN__
@@ -245,6 +252,12 @@ void
 __gnat_set_text_mode (int handle ATTRIBUTE_UNUSED)
 {
 }
+
+void
+__gnat_set_wide_text_mode (int handle ATTRIBUTE_UNUSED)
+{
+}
+
 char *
 __gnat_ttyname (int filedes)
 {

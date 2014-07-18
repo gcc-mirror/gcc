@@ -1254,9 +1254,9 @@ package body Exp_Strm is
       Stms := New_List;
 
       --  Note that of course there will be no discriminants for the elementary
-      --  type case, so Has_Discriminants will be False. Note that the
-      --  language rules do not require writing the discriminants in the
-      --  defaulted case, because those are written by 'Write.
+      --  type case, so Has_Discriminants will be False. Note that the language
+      --  rules do not allow writing the discriminants in the defaulted case,
+      --  because those are written by 'Write.
 
       if Has_Discriminants (Typ)
         and then
