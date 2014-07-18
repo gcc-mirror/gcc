@@ -2885,6 +2885,12 @@ package body Sem_Ch5 is
 
             Add_Block_Identifier (Block_Nod, Block_Id);
 
+            --  Fix the loop scope once the loop statement is relocated inside
+            --  the block, otherwise the loop and the block end up sharing the
+            --  same parent scope.
+
+            Set_Scope (Ent, Block_Id);
+
             --  The expansion of iterator loops generates an iterator in order
             --  to traverse the elements of a container:
 
