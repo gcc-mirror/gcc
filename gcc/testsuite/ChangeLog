@@ -1,3 +1,8 @@
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61794
+	* gcc.target/i386/pr61794.c: New test.
+
 2014-07-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/umips-lwp-1.c (foo): Use a shift/add sequence
@@ -45,7 +50,7 @@
 2014-07-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/atomic/c11-atomic-exec-5.c (dg-additional-options): Use
-	-mfp-trap-mode=sui instead of -miee-with-inexact for alpha*-*-*.
+	-mfp-trap-mode=sui instead of -mieee-with-inexact for alpha*-*-*.
 	* gfortran.dg/ieee/ieee_1.F90 (dg-additional-options): Ditto.
 
 2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>

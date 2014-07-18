@@ -1,3 +1,10 @@
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61794
+	* config/i386/sse.md (avx512f_vextract<shuffletype>32x4_1_maskm):
+	Fix instruction constraint.
+	(<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>): Ditto.
+
 2014-07-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (Template Instantiation): Remove stray parenthesis.
@@ -1091,7 +1098,7 @@
 	* config/aarch64/aarch64.c (aarch64_expand_vec_perm): Delete unused
 	variable i.
 
-2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+2014-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.h (method_class_type, vtable_pointer_value_to_binfo,
 	vtable_pointer_value_to_vtable): Constify.
@@ -1107,7 +1114,7 @@
 	polymorphic type.
 	(compute_known_type_jump_func): Likewise.
 
-2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+2014-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (decls_same_for_odr, decls_same_for_odr, types_same_for_odr):
 	Remove.
