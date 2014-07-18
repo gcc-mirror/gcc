@@ -1,5 +1,28 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* repinfo.ads: Add documentation on handling of back annotation
+	for dynamic case.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Incomplete_View): New semantic attribute
+	of full type declaration, denotes previous declaration for
+	incomplete view of the type.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Set Incomplete_View
+	of declaration if one is present.
+	(Replace_Type): When constructing the signature of an inherited
+	operation, handle properly the case where the operation has a
+	formal whose type is an incomplete view.
+	* sem_util.adb (Collect_Primitive_Operations): Handle properly
+	the case of an operation declared after an incomplete declaration
+	for a type T and before the full declaration of T.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* i-cstrea.ads: Add documentation for set_wide_text_mode.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* a-witeio.adb: Minor code reorganization.
 	* i-cstrea.ads: Add comment.
 

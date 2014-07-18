@@ -1450,6 +1450,13 @@ package Sinfo is
    --    range is given by the programmer, even if that range is identical to
    --    the range for Float.
 
+   --  Incomplete_View (Node2-Sem)
+   --    Present in full type declarations that are completions of incomplete
+   --    type declarations. Denotes the corresponding incomplete type
+   --    declaration. Used to simplify the retrieval of primitive operations
+   --    that may be declared between the partial and the full view of an
+   --    untagged type.
+
    --  Inherited_Discriminant (Flag13-Sem)
    --    This flag is present in N_Component_Association nodes. It indicates
    --    that a given component association in an extension aggregate is the
@@ -2488,6 +2495,7 @@ package Sinfo is
       --  N_Full_Type_Declaration
       --  Sloc points to TYPE
       --  Defining_Identifier (Node1)
+      --  Incomplete_View (Node2-Sem)
       --  Discriminant_Specifications (List4) (set to No_List if none)
       --  Type_Definition (Node3)
       --  Discr_Check_Funcs_Built (Flag11-Sem)
@@ -9120,6 +9128,9 @@ package Sinfo is
    function Includes_Infinities
      (N : Node_Id) return Boolean;    -- Flag11
 
+   function Incomplete_View
+     (N : Node_Id) return Node_Id;    -- Node2
+
    function Inherited_Discriminant
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -10128,6 +10139,9 @@ package Sinfo is
    procedure Set_Includes_Infinities
      (N : Node_Id; Val : Boolean := True);    -- Flag11
 
+   procedure Set_Incomplete_View
+     (N : Node_Id;  Val : Node_Id);           -- Node2
+
    procedure Set_Inherited_Discriminant
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
@@ -10801,7 +10815,7 @@ package Sinfo is
 
      N_Full_Type_Declaration =>
        (1 => True,    --  Defining_Identifier (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Incomplete_View (Node2-Sem)
         3 => True,    --  Type_Definition (Node3)
         4 => True,    --  Discriminant_Specifications (List4)
         5 => False),  --  unused
@@ -12543,6 +12557,7 @@ package Sinfo is
    pragma Inline (Includes_Infinities);
    pragma Inline (Import_Interface_Present);
    pragma Inline (In_Present);
+   pragma Inline (Incomplete_View);
    pragma Inline (Inherited_Discriminant);
    pragma Inline (Instance_Spec);
    pragma Inline (Intval);
@@ -12873,6 +12888,7 @@ package Sinfo is
    pragma Inline (Set_Import_Interface_Present);
    pragma Inline (Set_In_Present);
    pragma Inline (Set_Includes_Infinities);
+   pragma Inline (Set_Incomplete_View);
    pragma Inline (Set_Inherited_Discriminant);
    pragma Inline (Set_Instance_Spec);
    pragma Inline (Set_Interface_List);

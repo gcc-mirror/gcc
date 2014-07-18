@@ -3400,7 +3400,14 @@ package body Sem_Util is
             Etyp := Designated_Type (Etyp);
          end if;
 
-         return Base_Type (Etyp) = B_Type;
+         --  In Ada 2012 a primitive operation may have a formal of an
+         --  incomplete view of the parent type.
+
+         return Base_Type (Etyp) = B_Type
+           or else
+             (Ada_Version >= Ada_2012
+               and then Ekind (Etyp) = E_Incomplete_Type
+               and then Full_View (Etyp) = B_Type);
       end Match;
 
    --  Start of processing for Collect_Primitive_Operations
@@ -3454,6 +3461,16 @@ package body Sem_Util is
            and then In_Private_Part (B_Scope)
          then
             Id := Next_Entity (T);
+
+         --  In Ada 2012, If the type has an incomplete partial view, there
+         --  may be primitive operations declared before the full view, so
+         --  we need to start scanning from the incomplete view.
+
+         elsif Nkind (Parent (B_Type)) = N_Full_Type_Declaration
+           and then Present (Incomplete_View (Parent (B_Type)))
+         then
+            Id := Defining_Entity (Next (Incomplete_View (Parent (B_Type))));
+
          else
             Id := Next_Entity (B_Type);
          end if;
