@@ -7471,27 +7471,44 @@ package body Exp_Ch6 is
       --  Here if secondary stack is used
 
       else
-         --  Make sure that no surrounding block will reclaim the secondary
-         --  stack on which we are going to put the result. Not only may this
-         --  introduce secondary stack leaks but worse, if the reclamation is
-         --  done too early, then the result we are returning may get
-         --  clobbered.
+         --  Prevent the reclamation of the secondary stack by all enclosing
+         --  blocks and loops as well as the related function, otherwise the
+         --  result will be reclaimed too early or even clobbered. Due to a
+         --  possible mix of internally generated blocks, source blocks and
+         --  loops, the scope stack may not be contiguous as all labels are
+         --  inserted at the top level within the related function. Instead,
+         --  perform a parent-based traversal and mark all appropriate
+         --  constructs.
 
          declare
-            S : Entity_Id;
+            P : Node_Id;
+
          begin
-            S := Current_Scope;
-            while Ekind (S) = E_Block or else Ekind (S) = E_Loop loop
-               Set_Sec_Stack_Needed_For_Return (S, True);
-               S := Enclosing_Dynamic_Scope (S);
+            P := N;
+            while Present (P) loop
+
+               --  Mark the label of a source or internally generated block or
+               --  loop.
+
+               if Nkind_In (P, N_Block_Statement, N_Loop_Statement) then
+                  Set_Sec_Stack_Needed_For_Return (Entity (Identifier (P)));
+
+               --  Mark the enclosing function
+
+               elsif Nkind (P) = N_Subprogram_Body then
+                  if Present (Corresponding_Spec (P)) then
+                     Set_Sec_Stack_Needed_For_Return (Corresponding_Spec (P));
+                  else
+                     Set_Sec_Stack_Needed_For_Return (Defining_Entity (P));
+                  end if;
+
+                  --  Do not go beyond the enclosing function
+
+                  exit;
+               end if;
+
+               P := Parent (P);
             end loop;
-
-            --  The enclosing function itself must be marked as well, to
-            --  prevent premature secondary stack cleanup.
-
-            if Ekind (S) = E_Function then
-               Set_Sec_Stack_Needed_For_Return (Scope_Id);
-            end if;
          end;
 
          --  Optimize the case where the result is a function call. In this

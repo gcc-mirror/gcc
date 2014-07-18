@@ -21829,8 +21829,9 @@ package body Sem_Prag is
       Depends      : Node_Id;
       --  The corresponding Depends pragma along with its clauses
 
-      Refined_States : Elist_Id := No_Elist;
-      --  A list containing all successfully refined states
+      Matched_Items : Elist_Id := No_Elist;
+      --  A list containing the entities of all successfully matched items
+      --  found in pragma Depends.
 
       Refinements : List_Id := No_List;
       --  The clauses of pragma Refined_Depends
@@ -21863,6 +21864,10 @@ package body Sem_Prag is
          --  Determine whether dependence clause Dep_Clause denotes an abstract
          --  state that depends on itself (State => State).
 
+         function Is_Null_Refined_State (Item : Node_Id) return Boolean;
+         --  Determine whether item Item denotes an abstract state with visible
+         --  null refinement.
+
          procedure Match_Items
            (Dep_Item : Node_Id;
             Ref_Item : Node_Id;
@@ -21886,6 +21891,9 @@ package body Sem_Prag is
          --       and Ref_Item denotes the same state.
          --  When scenario 8 is in effect, the entity of the abstract state
          --  denoted by Dep_Item is added to list Refined_States.
+
+         procedure Record_Item (Item_Id : Entity_Id);
+         --  Store the entity of an item denoted by Item_Id in Matched_Items
 
          ----------------------------
          -- Is_In_Out_State_Clause --
@@ -21914,6 +21922,28 @@ package body Sem_Prag is
                return False;
             end if;
          end Is_In_Out_State_Clause;
+
+         ---------------------------
+         -- Is_Null_Refined_State --
+         ---------------------------
+
+         function Is_Null_Refined_State (Item : Node_Id) return Boolean is
+            Item_Id : Entity_Id;
+
+         begin
+            if Is_Entity_Name (Item) then
+
+               --  Handle abstract views generated for limited with clauses
+
+               Item_Id := Available_View (Entity_Of (Item));
+
+               return
+                 Ekind (Item_Id) = E_Abstract_State
+                   and then Has_Null_Refinement (Item_Id);
+            else
+               return False;
+            end if;
+         end Is_Null_Refined_State;
 
          -----------------
          -- Match_Items --
@@ -21962,6 +21992,7 @@ package body Sem_Prag is
                   if Has_Null_Refinement (Dep_Item_Id)
                     and then (No (Ref_Item) or else Nkind (Ref_Item) = N_Null)
                   then
+                     Record_Item (Dep_Item_Id);
                      Matched := True;
 
                   --  An abstract state with visible non-null refinement
@@ -21976,12 +22007,7 @@ package body Sem_Prag is
                           and then Encapsulating_State (Ref_Item_Id) =
                                      Dep_Item_Id
                         then
-                           --  Record the successfully refined state
-
-                           if not Contains (Refined_States, Dep_Item_Id) then
-                              Add_Item (Dep_Item_Id, Refined_States);
-                           end if;
-
+                           Record_Item (Dep_Item_Id);
                            Matched := True;
                         end if;
                      end if;
@@ -21992,6 +22018,7 @@ package body Sem_Prag is
                   elsif Is_Entity_Name (Ref_Item)
                     and then Entity_Of (Ref_Item) = Dep_Item_Id
                   then
+                     Record_Item (Dep_Item_Id);
                      Matched := True;
                   end if;
 
@@ -22000,10 +22027,22 @@ package body Sem_Prag is
                elsif Is_Entity_Name (Ref_Item)
                  and then Entity_Of (Ref_Item) = Dep_Item_Id
                then
+                  Record_Item (Dep_Item_Id);
                   Matched := True;
                end if;
             end if;
          end Match_Items;
+
+         -----------------
+         -- Record_Item --
+         -----------------
+
+         procedure Record_Item (Item_Id : Entity_Id) is
+         begin
+            if not Contains (Matched_Items, Item_Id) then
+               Add_Item (Item_Id, Matched_Items);
+            end if;
+         end Record_Item;
 
          --  Local variables
 
@@ -22108,7 +22147,41 @@ package body Sem_Prag is
          if not Clause_Matched
            and then Is_In_Out_State_Clause
            and then Contains
-                      (Refined_States, Available_View (Entity_Of (Dep_Input)))
+                      (Matched_Items, Available_View (Entity_Of (Dep_Input)))
+         then
+            Clause_Matched := True;
+         end if;
+
+         --  A clause where the input is an abstract state with visible null
+         --  refinement is implicitly matched when the output has already been
+         --  matched in a previous clause.
+
+         --    Depends         => (Output => State)  --  implicitly OK
+         --    Refined_State   => (State => null)
+         --    Refined_Depends => (Output => ...)
+
+         if not Clause_Matched
+           and then Is_Null_Refined_State (Dep_Input)
+           and then Is_Entity_Name (Dep_Output)
+           and then Contains
+                      (Matched_Items, Available_View (Entity_Of (Dep_Output)))
+         then
+            Clause_Matched := True;
+         end if;
+
+         --  A clause where the output is an abstract state with visible null
+         --  refinement is implicitly matched when the input has already been
+         --  matched in a previous clause.
+
+         --    Depends           => (State => Input)  --  implicitly OK
+         --    Refined_State     => (State => null)
+         --    Refined_Depends   => (... => Input)
+
+         if not Clause_Matched
+           and then Is_Null_Refined_State (Dep_Output)
+           and then Is_Entity_Name (Dep_Input)
+           and then Contains
+                      (Matched_Items, Available_View (Entity_Of (Dep_Input)))
          then
             Clause_Matched := True;
          end if;

@@ -6668,17 +6668,18 @@ package body Exp_Util is
          --  When wrapping the statements of an iterator loop, check whether
          --  the loop requires secondary stack management and if so, propagate
          --  the appropriate flags to the block. This ensures that the cursor
-         --  is properly cleaned up at each iteration of the loop. Management
-         --  is not performed when the loop contains a return statement which
-         --  also uses the secondary stack as this will destroy the result
-         --  prematurely.
+         --  is properly cleaned up at each iteration of the loop.
 
          Iter_Loop := Find_Enclosing_Iterator_Loop (Scop);
 
          if Present (Iter_Loop) then
+            Set_Uses_Sec_Stack (Block_Id, Uses_Sec_Stack (Iter_Loop));
+
+            --  Secondary stack reclamation is suppressed when the associated
+            --  iterator loop contains a return statement which uses the stack.
+
             Set_Sec_Stack_Needed_For_Return
               (Block_Id, Sec_Stack_Needed_For_Return (Iter_Loop));
-            Set_Uses_Sec_Stack (Block_Id, Uses_Sec_Stack (Iter_Loop));
          end if;
 
          return Block_Nod;

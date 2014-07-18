@@ -6349,6 +6349,9 @@ package body Sem_Attr is
 
                            else
                               Analyze_And_Resolve (Index, Etype (Index_Type));
+                              if not Is_OK_Static_Expression (Index) then
+                                 Set_Do_Range_Check (Index);
+                              end if;
                            end if;
 
                            Next (Index);

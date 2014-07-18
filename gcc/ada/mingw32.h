@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2002-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2002-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -62,6 +62,8 @@
 #ifdef GNAT_UNICODE_SUPPORT
 
 extern UINT CurrentCodePage;
+extern UINT CurrentCCSEncoding;
+extern char __gnat_wide_text_translation_required;
 
 /*  Macros to convert to/from the code page specified in CurrentCodePage.  */
 #define S2WSC(wstr,str,len) \

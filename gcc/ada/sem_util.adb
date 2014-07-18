@@ -1718,6 +1718,17 @@ package body Sem_Util is
          else
             Error_Msg_NE
               ("??static expression fails predicate check on &", Expr, Typ);
+
+            --  We now reset the static expression indication on the expression
+            --  since it is no longer static if it fails a predicate test. We
+            --  do not do this if the predicate was officially dynamic, since
+            --  dynamic predicates don't affect legality in this manner.
+
+            if not Has_Dynamic_Predicate_Aspect (Typ) then
+               Error_Msg_N
+                 ("\??expression is no longer considered static", Expr);
+               Set_Is_Static_Expression (Expr, False);
+            end if;
          end if;
       end if;
    end Check_Expression_Against_Static_Predicate;

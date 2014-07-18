@@ -7987,14 +7987,14 @@ package body Sem_Ch13 is
             EN : Node_Id;
 
          begin
-            --  Case where we have a predicate static aspect
+            --  Case where we have a predicate-static aspect
 
             if PS then
 
                --  We don't set Has_Static_Predicate_Aspect, since we can have
                --  any of the three cases (Predicate, Dynamic_Predicate, or
                --  Static_Predicate) generating a predicate with an expression
-               --  that is predicate static. We just indicate that we have a
+               --  that is predicate-static. We just indicate that we have a
                --  predicate that can be treated as static.
 
                Set_Has_Static_Predicate (Typ);
@@ -8030,7 +8030,7 @@ package body Sem_Ch13 is
                --  First a little fiddling to get a nice location for the
                --  message. If the expression is of the form (A and then B),
                --  then use the left operand for the Sloc. This avoids getting
-               --  confused by a call to a higher level predicate with a less
+               --  confused by a call to a higher-level predicate with a less
                --  convenient source location.
 
                EN := Expr;
@@ -10348,26 +10348,26 @@ package body Sem_Ch13 is
    is
       function All_Static_Case_Alternatives (L : List_Id) return Boolean;
       --  Given a list of case expression alternatives, returns True if
-      --  all the alternative are static (have all static choices, and a
+      --  all the alternatives are static (have all static choices, and a
       --  static expression).
 
       function All_Static_Choices (L : List_Id) return Boolean;
-      --  Returns true if all elements of the list are ok static choices
+      --  Returns true if all elements of the list are OK static choices
       --  as defined below for Is_Static_Choice. Used for case expression
       --  alternatives and for the right operand of a membership test.
 
       function Is_Static_Choice (N : Node_Id) return Boolean;
       --  Returns True if N represents a static choice (static subtype, or
-      --  static subtype indication, or static expression or static range).
+      --  static subtype indication, or static expression, or static range).
       --
       --  Note that this is a bit more inclusive than we actually need
       --  (in particular membership tests do not allow the use of subtype
-      --  indications. But that doesn't matter, we have already checked
+      --  indications). But that doesn't matter, we have already checked
       --  that the construct is legal to get this far.
 
       function Is_Type_Ref (N : Node_Id) return Boolean;
       pragma Inline (Is_Type_Ref);
-      --  Returns if True if N is a reference to the type for the predicate in
+      --  Returns True if N is a reference to the type for the predicate in
       --  the expression (i.e. if it is an identifier whose Chars field matches
       --  the Nam given in the call). N must not be parenthesized, if the type
       --  name appears in parens, this routine will return False.
@@ -10442,7 +10442,7 @@ package body Sem_Ch13 is
    --  Start of processing for Is_Predicate_Static
 
    begin
-      --  Only scalar types can be predicate static
+      --  Only scalar types can be predicate-static
 
       if not Is_Scalar_Type (Etype (Expr)) then
          return False;
@@ -10519,7 +10519,7 @@ package body Sem_Ch13 is
       --  One more test that is an implementation artifact caused by the fact
       --  that we are analyzing not the original expresesion, but the generated
       --  expression in the body of the predicate function. This can include
-      --  refereces to inherited predicates, so that the expression we are
+      --  references to inherited predicates, so that the expression we are
       --  processing looks like:
 
       --    expression and then xxPredicate (typ (Inns))
@@ -10535,7 +10535,7 @@ package body Sem_Ch13 is
          return True;
 
       --  That's an exhaustive list of tests, all other cases are not
-      --  predicate static, so we return False.
+      --  predicate-static, so we return False.
 
       else
          return False;

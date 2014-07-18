@@ -131,6 +131,7 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
 #if defined (WINNT) || defined (__CYGWIN__)
 
 const char __gnat_text_translation_required = 1;
+char __gnat_wide_text_translation_required = 0;
 
 #ifdef __CYGWIN__
 #define WIN_SETMODE setmode
@@ -154,7 +155,7 @@ __gnat_set_text_mode (int handle)
 void
 __gnat_set_wide_text_mode (int handle)
 {
-  WIN_SETMODE (handle, _O_U16TEXT);
+  WIN_SETMODE (handle, CurrentCCSEncoding);
 }
 
 #ifdef __CYGWIN__
@@ -240,6 +241,7 @@ __gnat_ttyname (int filedes)
 #else
 
 const char __gnat_text_translation_required = 0;
+const char __gnat_wide_text_translation_required = 0;
 
 /* These functions do nothing in non-DOS systems. */
 

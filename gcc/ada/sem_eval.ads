@@ -367,8 +367,8 @@ package Sem_Eval is
    function Eval_Static_Predicate_Check
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
-   --  Evaluate a static predicate check applied to a known at compile time
-   --  value N, which can be of a discrete, real or string type. The caller
+   --  Evaluate a static predicate check applied to a known-at-compile-time
+   --  value N, which can be of a discrete, real, or string type. The caller
    --  has checked that a static predicate does apply to Typ.
 
    procedure Fold_Str (N : Node_Id; Val : String_Id; Static : Boolean);
