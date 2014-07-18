@@ -4093,9 +4093,7 @@ code is likely to malfunction at run time.
 
 Note that when @code{-gnatct} is used to generate trees for input
 into @code{ASIS} tools, these representation clauses are removed
-from the tree. This means that the tool will not see them. For
-example, if you use @command{gnatpp} with @code{-gnatI}, the pretty printed
-output will not include the ignored representation clauses.
+from the tree and ignored. This means that the tool will not see them.
 
 @item -gnatjnn
 @cindex @option{-gnatjnn} (@command{gcc})

@@ -81,7 +81,7 @@ package Sem_Ch13 is
 
    procedure Kill_Rep_Clause (N : Node_Id);
    --  This procedure is called for a rep clause N when we are in -gnatI mode
-   --  (Ignore_Rep_Clauses). It rewrites the node N to a null statement. This
+   --  (Ignore_Rep_Clauses). It replaces the node N with a null statement. This
    --  is only called if Ignore_Rep_Clauses is True.
 
    procedure Set_Enum_Esize (T : Entity_Id);
