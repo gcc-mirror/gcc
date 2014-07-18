@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -894,7 +894,6 @@ package body ALI is
         Sfile                        => No_File,
         Task_Dispatching_Policy      => ' ',
         Time_Slice_Value             => -1,
-        Allocator_In_Body            => False,
         WC_Encoding                  => 'b',
         Unit_Exception_Table         => False,
         Ver                          => (others => ' '),
@@ -973,14 +972,6 @@ package body ALI is
                   P := P + 1;
                   Checkc ('=');
                   ALIs.Table (Id).Time_Slice_Value := Get_Nat;
-               end if;
-
-               Skip_Space;
-
-               if Nextc = 'A' then
-                  P := P + 1;
-                  Checkc ('B');
-                  ALIs.Table (Id).Allocator_In_Body := True;
                end if;
 
                Skip_Space;

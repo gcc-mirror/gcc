@@ -1087,9 +1087,13 @@ package body Sem_Util is
       --  If T is non-private but its base type is private, this is the
       --  completion of a subtype declaration whose parent type is private
       --  (see Complete_Private_Subtype in Sem_Ch3). The proper discriminants
-      --  are to be found in the full view of the base.
+      --  are to be found in the full view of the base. Check that the private
+      --  status of T and its base differ.
 
-      if Is_Private_Type (Bas) and then Present (Full_View (Bas)) then
+      if Is_Private_Type (Bas)
+        and then not Is_Private_Type (T)
+        and then Present (Full_View (Bas))
+      then
          Bas := Full_View (Bas);
       end if;
 

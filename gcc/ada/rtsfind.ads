@@ -241,6 +241,7 @@ package Rtsfind is
       System_Dim,
       System_DSA_Services,
       System_DSA_Types,
+      System_Elaboration_Allocators,
       System_Exception_Table,
       System_Exceptions_Debug,
       System_Exn_Int,
@@ -855,6 +856,8 @@ package Rtsfind is
      RE_Get_Passive_Partition_Id,        -- System.DSA_Services
 
      RE_Any_Container_Ptr,               -- System.DSA_Types
+
+     RE_Check_Standard_Allocator,        -- System.Elaboration_Allocators
 
      RE_Register_Exception,              -- System.Exception_Table
 
@@ -2140,6 +2143,8 @@ package Rtsfind is
      RE_Get_Passive_Partition_Id         => System_DSA_Services,
 
      RE_Any_Container_Ptr                => System_DSA_Types,
+
+     RE_Check_Standard_Allocator         => System_Elaboration_Allocators,
 
      RE_Register_Exception               => System_Exception_Table,
 

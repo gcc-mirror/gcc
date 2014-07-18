@@ -801,7 +801,7 @@ package body Exp_Attr is
             pragma Assert
               (Nkind (Parent (Loop_Stmt)) = N_Handled_Sequence_Of_Statements
                 and then Nkind (Parent (Parent (Loop_Stmt))) =
-                                                      N_Block_Statement);
+                           N_Block_Statement);
 
             Decls := Declarations (Parent (Parent (Loop_Stmt)));
          end if;
@@ -1022,6 +1022,19 @@ package body Exp_Attr is
 
       if Present (Result) then
          Rewrite (Loop_Stmt, Result);
+
+         --  The insertion of condition actions associated with an iteration
+         --  scheme is usually done by the expansion of loop statements. The
+         --  expansion of Loop_Entry however reuses the iteration scheme to
+         --  build an if statement. As a result any condition actions must be
+         --  inserted before the if statement to avoid references before
+         --  declaration.
+
+         if Present (Scheme) and then Present (Condition_Actions (Scheme)) then
+            Insert_Actions (Loop_Stmt, Condition_Actions (Scheme));
+            Set_Condition_Actions (Scheme, No_List);
+         end if;
+
          Analyze (Loop_Stmt);
 
       --  The conditional block was analyzed when a previous 'Loop_Entry was

@@ -1,3 +1,57 @@
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* bcheck.adb (Check_Consistent_Restrictions):
+	Remove obsolete code checking for violation of
+	No_Standard_Allocators_After_Elaboration (main program)
+	* bindgen.adb (Gen_Adainit): Handle
+	No_Standard_Allocators_After_Elaboration
+	(Gen_Output_File_Ada): ditto.
+	* exp_ch4.adb (Expand_N_Allocator): Handle
+	No_Standard_Allocators_After_Elaboration.
+	* Makefile.rtl: Add entry for s-elaall
+	* rtsfind.ads: Add entry for Check_Standard_Allocator.
+	* s-elaall.ads, s-elaall.adb: New files.
+	* sem_ch4.adb (Analyze_Allocator): Handle
+	No_Standard_Allocators_After_Elaboration.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* lib.adb, lib.ads, lib-writ.adb, lib-writ.ads, ali.adb,
+	ali.ads, lib-load.adb: Remove Lib.Has_Allocator and all uses.
+	Remove AB parameter from ali files and all uses.
+	Remove Allocator_In_Body and all uses.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* g-expect-vms.adb: Add comment.
+
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Is_Logical_Operation): return True for
+	N_If_Expression.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'Update): Do full
+	analysis and resolution of each choice in the associations within
+	the argument of Update, because they may be variable names.
+
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Insert any condition
+	actions before the generated if statement.
+
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat_ugn.texi Enhance the documentation of
+	switches -gnateA and -gnateV.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Build_Default_Subtype): Add missing condition
+	so that code matches description: use the full view of the base
+	only if the base is private and the subtype is not.
+
 2014-07-17  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_disp.adb: Minor reformatting.

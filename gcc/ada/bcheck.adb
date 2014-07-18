@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -923,21 +923,18 @@ package body Bcheck is
    --  Start of processing for Check_Consistent_Restrictions
 
    begin
-      --  A special test, if we have a main program, then if it has an
-      --  allocator in the body, this is considered to be a violation of
-      --  the restriction No_Allocators_After_Elaboration. We just mark
-      --  this restriction and then the normal circuit will flag it.
+      --  We used to have a special test here:
 
-      if Bind_Main_Program
-        and then ALIs.Table (ALIs.First).Main_Program /= None
-        and then not No_Main_Subprogram
-        and then ALIs.Table (ALIs.First).Allocator_In_Body
-      then
-         Cumulative_Restrictions.Violated
-           (No_Standard_Allocators_After_Elaboration) := True;
-         ALIs.Table (ALIs.First).Restrictions.Violated
-           (No_Standard_Allocators_After_Elaboration) := True;
-      end if;
+         --  A special test, if we have a main program, then if it has an
+         --  allocator in the body, this is considered to be a violation of
+         --  the restriction No_Allocators_After_Elaboration. We just mark
+         --  this restriction and then the normal circuit will flag it.
+
+      --  But we don't do that any more, because in the final version of Ada
+      --  2012, it is statically illegal to have an allocator in a library-
+      --  level subprogram, so we don't need this bind time test any more.
+      --  If we have a main program with parameters (which GNAT allows), then
+      --  allocators in that will be caught by the run-time check.
 
       --  Loop through all restriction violations
 

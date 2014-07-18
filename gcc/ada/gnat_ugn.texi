@@ -3769,7 +3769,37 @@ also suppress generation of cross-reference information
 
 @item ^-gnateA^/ALIASING_CHECK^
 @cindex @option{-gnateA} (@command{gcc})
-Check that there is no aliasing between two parameters of the same subprogram.
+Check that the actual parameters of a subprogram call are not aliases of one
+another. To qualify as aliasing, the actuals must denote objects of a composite
+type, their memory locations must be identical or overlapping, and at least one
+of the corresponding formal parameters must be of mode OUT or IN OUT.
+
+@smallexample
+type Rec_Typ is record
+   Data : Integer := 0;
+end record;
+
+function Self (Val : Rec_Typ) return Rec_Typ is
+begin
+   return Val;
+end Self;
+
+procedure Detect_Aliasing (Val_1 : in out Rec_Typ; Val_2 : Rec_Typ) is
+begin
+   null;
+end Detect_Aliasing;
+
+Obj : Rec_Typ;
+
+Detect_Aliasing (Obj, Obj);
+Detect_Aliasing (Obj, Self (Obj));
+@end smallexample
+
+In the example above, the first call to @code{Detect_Aliasing} fails with a
+@code{Program_Error} at runtime because the actuals for @code{Val_1} and
+@code{Val_2} denote the same object. The second call executes without raising
+an exception because @code{Self(Obj)} produces an anonymous object which does
+not share the memory location of @code{Obj}.
 
 @item -gnatec=@var{path}
 @cindex @option{-gnatec} (@command{gcc})
@@ -3991,7 +4021,8 @@ support this switch.
 
 @item ^-gnateV^/PARAMETER_VALIDITY_CHECK^
 @cindex @option{-gnateV} (@command{gcc})
-Check validity of subprogram parameters.
+Check that all actual parameters of a subprogram call are valid according to
+the rules of validity checking (@pxref{Validity Checking}).
 
 @item ^-gnateY^/IGNORE_SUPPRESS_SYLE_CHECK_PRAGMAS^
 @cindex @option{-gnateY} (@command{gcc})

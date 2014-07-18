@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,7 +116,7 @@ package Lib.Writ is
    --  -- M  Main Program --
    --  ---------------------
 
-   --    M type [priority] [T=time-slice] [AB] [C=cpu] W=?
+   --    M type [priority] [T=time-slice] [C=cpu] W=?
 
    --      This line appears only if the main unit for this file is suitable
    --      for use as a main program. The parameters are:
@@ -140,14 +140,6 @@ package Lib.Writ is
    --          range 0 .. 10**9 giving the time slice value in units of
    --          milliseconds. The actual significance of this parameter is
    --          target dependent.
-
-   --        AB
-
-   --          Present if there is an allocator in the body of the procedure
-   --          after the BEGIN. This will be a violation of the restriction
-   --          No_Allocators_After_Elaboration if it is present, and this
-   --          unit is used as a main program (only the binder can find the
-   --          violation, since only the binder knows the main program).
 
    --        C=cpu
 

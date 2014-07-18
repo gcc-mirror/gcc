@@ -518,6 +518,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-direio$(objext) \
   s-dmotpr$(objext) \
   s-dsaser$(objext) \
+  s-elaall$(objext) \
   s-excdeb$(objext) \
   s-except$(objext) \
   s-exctab$(objext) \

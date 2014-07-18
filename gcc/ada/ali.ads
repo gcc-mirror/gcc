@@ -142,10 +142,6 @@ package ALI is
       --  line. A value of -1 indicates that no T=xxx parameter was found, or
       --  no M line was present. Not set if 'M' appears in Ignore_Lines.
 
-      Allocator_In_Body : Boolean;
-      --  Set True if an AB switch appears on the main program line. False
-      --  if no M line, or AB not present, or 'M appears in Ignore_Lines.
-
       WC_Encoding : Character;
       --  Wide character encoding if main procedure. Otherwise not relevant.
       --  Not set if 'M' appears in Ignore_Lines.

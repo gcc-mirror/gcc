@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2010, AdaCore                     --
+--                     Copyright (C) 2002-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,9 @@
 ------------------------------------------------------------------------------
 
 --  This is the VMS version
+
+--  Note: there is far too much code duplication wrt g-expect.adb (the
+--  standard version). This should be factored out ???
 
 with System;       use System;
 with Ada.Calendar; use Ada.Calendar;
