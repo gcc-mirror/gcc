@@ -135,6 +135,7 @@ package body Debug is
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
    --  d.Q  Previous (incomplete) style check for binary operators
+   --       ??? need to add doc for above switch
    --  d.R  Restrictions in ali files in positional form
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
@@ -657,6 +658,12 @@ package body Debug is
    --       flag inhibits the effect of Optimize_Length_Comparison in Exp_Ch4.
    --       This is there in case we find a situation where the optimization
    --       malfunctions, to provide a work around.
+
+   --  d.Q  Previous incomplete style checks for binary operators. Style checks
+   --       for token separation rules were incomplete and have been made
+   --       compliant with the documentation. For example, no warning was
+   --       issued for expressions such as 16-One or "A"&"B". Setting this flag
+   --       inhibits these new checks.
 
    --  d.R  As documented in lib-writ.ads, restrictions in the ali file can
    --       have two forms, positional and named. The named notation is the

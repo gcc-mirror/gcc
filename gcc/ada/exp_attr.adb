@@ -3246,6 +3246,9 @@ package body Exp_Attr is
          --  container). In that case rewrite the attribute as a Raise to
          --  prevent any run-time use.
 
+         --  This is not an explicit raise, the Reason code is wrong, we most
+         --  likely need a new Reason code ???
+
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
