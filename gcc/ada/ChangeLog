@@ -1,3 +1,17 @@
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that Wchar_T_Size and Word_Size are
+	static attributes.
+
+2014-07-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-witeio.adb, initialize.c: Update comments. Minor clean ups.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Do not include wchar.h on VxWorks.
+	* mingw32.h: Remove obsolete definition.
+
 2014-07-18  Pascal Obry  <obry@adacore.com>
 
 	* a-textio.adb, a-witeio.adb, a-ztexio.adb: Use C_Streams Default_Text.

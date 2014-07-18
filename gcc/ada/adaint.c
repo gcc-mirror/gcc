@@ -229,7 +229,9 @@ extern unsigned int LIB$CALLG_64 (unsigned long long argument_list [],
 
 #else
 #include <utime.h>
+#if ! defined (__vxworks)
 #include <wchar.h>
+#endif
 #endif
 
 #if defined (_WIN32)
