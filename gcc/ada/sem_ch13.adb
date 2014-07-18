@@ -10295,7 +10295,19 @@ package body Sem_Ch13 is
    procedure Kill_Rep_Clause (N : Node_Id) is
    begin
       pragma Assert (Ignore_Rep_Clauses);
+
+      --  Note: we use Replace rather than Rewrite, because we don't want
+      --  ASIS to be able to use Original_Node to dig out the (undecorated)
+      --  rep clause that is being replaced.
+
       Replace (N, Make_Null_Statement (Sloc (N)));
+
+      --  The null statement must be marked as not coming from source. This is
+      --  so that ASIS ignores if, and also the back end does not expect bogus
+      --  "from source" null statements in weird places (e.g. in declarative
+      --  regions where such null statements are not allowed).
+
+      Set_Comes_From_Source (N, False);
    end Kill_Rep_Clause;
 
    ------------------

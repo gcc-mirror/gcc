@@ -4213,13 +4213,10 @@ Treat pragma Restrictions as Restriction_Warnings.
 @cindex @option{-gnatR} (@command{gcc})
 Output representation information for declared types and objects.
 Note that this switch is not allowed if a previous @code{-gnatD} switch has
-been given, since these two switches are not compatible. It is also not allowed
-if a previous @code{-gnatc} switch has been given, since we must be generating
-code to be able to determine representation information.
+been given, since these two switches are not compatible.
 
 @item ^-gnatRm[s]^/REPRESENTATION_INFO^
 Output convention and parameter passing mechanisms for all subprograms.
-This form is also incompatible with the use of @code{-gnatc}.
 
 @item -gnats
 @cindex @option{-gnats} (@command{gcc})
