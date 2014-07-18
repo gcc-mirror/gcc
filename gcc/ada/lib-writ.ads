@@ -767,7 +767,7 @@ package Lib.Writ is
    --  units depend. This is used by the binder for consistency checking.
    --  These lines are also referenced by the cross-reference information.
 
-   --    D source-name time-stamp checksum [subunit-name] line:file-name
+   --    D source-name time-stamp checksum (sub)unit-name line:file-name
 
    --      source-name also includes preprocessing data file and preprocessing
    --      definition file. These preprocessing files may be given as full
@@ -782,9 +782,10 @@ package Lib.Writ is
    --      The checksum is an 8-hex digit representation of the source file
    --      checksum, with letters given in lower case.
 
-   --      The subunit name is present only if the dependency line is for a
-   --      subunit. It contains the fully qualified name of the subunit in all
-   --      lower case letters.
+   --      If the unit is not a subunit, the (sub)unit name is the unit name in
+   --      internal format, as described in package Uname. If the unit is a
+   --      subunit, the (sub)unit name is the fully qualified name of the
+   --      subunit in all lower case letters.
 
    --      The line:file-name entry is present only if a Source_Reference
    --      pragma appeared in the source file identified by source-name. In

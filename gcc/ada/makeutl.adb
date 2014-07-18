@@ -320,6 +320,9 @@ package body Makeutl is
                   end;
                end if;
 
+               --  Check that a dependent source for a unit that is from a
+               --  project is indeed a source of this unit.
+
                Unit_Name := SD.Unit_Name;
 
                if Unit_Name /= No_Name
