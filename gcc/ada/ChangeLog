@@ -1,5 +1,48 @@
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb, sem_attr.adb,
+	sem_aggr.adb, sinfo.ads, sem_eval.ads: Minor reformatting.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* sysdep.c (__gnat_wide_text_translation_required): Removed from here.
+	* initialize.c (__gnat_wide_text_translation_required): Defined here.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_fputwc): New routine.
+	* s-crtl.ads (fputwc): Now imported as __gnat_fputwc.
+
+2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag 270 is now used as Stores_Attribute_Old_Prefix.
+	(Set_Stores_Attribute_Old_Prefix): New routine.
+	(Stores_Attribute_Old_Prefix): New routine.
+	(Write_Entity_Flags):
+	Output flag Stores_Attribute_Old_Prefix.
+	* einfo.ads Add new flag Stores_Attribute_Old_Prefix along with
+	comment on usage.
+	(Set_Stores_Attribute_Old_Prefix): New routine
+	along with pragma Inline.
+	(Stores_Attribute_Old_Prefix): New
+	routine along with pragma Inline.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Mark the generated
+	constant which captures the result of attribute 'Old's prefix.
+	* sem_util.adb (In_Assertion_Expression_Pragma): Recognize a
+	relocated expression which acted as a prefix of attribute 'Old.
+
+2014-07-18  Bob Duff  <duff@adacore.com>
+
+	* s-spsufi.adb (Finalize_And_Deallocate): Set Subpool.Owner to
+	null before dispatching to Deallocate_Subpool.
+	* s-stposu.ads (Default_Subpool_For_Pool): Change mode of
+	parameter of Default_Subpool_For_Pool to 'in out'.
+	* s-stposu.adb (Set_Pool_Of_Subpool): Use raise expression. Add
+	a message to the raise.
+	* sem_util.adb: Minor reformatting.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
 	* sem_util.adb (Check_Expression_Against_Static_Predicate):
 	Mark expression as non-static if it fails static predicate check,
 	and issue additional warning.

@@ -3909,15 +3909,6 @@ package Einfo is
 --       or the declaration of a "hook" object.
 --       In which case is it a flag, or a hook object???
 
---    Storage_Size_Variable (Node15) [implementation base type only]
---       Defined in access types and task type entities. This flag is set
---       if a valid and effective pragma Storage_Size applies to the base
---       type. Points to the entity for a variable that is created to
---       hold the value given in a Storage_Size pragma for an access
---       collection or a task type. Note that in the access type case,
---       this field is defined only in the root type (since derived types
---       share the same storage pool).
-
 --    Static_Elaboration_Desired (Flag77)
 --       Defined in library-level packages. Set by the pragma of the same
 --       name, to indicate that static initialization must be attempted for
@@ -3933,12 +3924,25 @@ package Einfo is
 --       This attribute uses the same field as Overridden_Operation, which is
 --       irrelevant in init_procs.
 
+--    Storage_Size_Variable (Node15) [implementation base type only]
+--       Defined in access types and task type entities. This flag is set
+--       if a valid and effective pragma Storage_Size applies to the base
+--       type. Points to the entity for a variable that is created to
+--       hold the value given in a Storage_Size pragma for an access
+--       collection or a task type. Note that in the access type case,
+--       this field is defined only in the root type (since derived types
+--       share the same storage pool).
+
 --    Stored_Constraint (Elist23)
 --       Defined in entities that can have discriminants (concurrent types
 --       subtypes, record types and subtypes, private types and subtypes,
 --       limited private types and subtypes and incomplete types). Points
 --       to an element list containing the expressions for each of the
 --       stored discriminants for the record (sub)type.
+
+--    Stores_Attribute_Old_Prefix (Flag270)
+--       Defined in constants. Set when the constant has been generated to save
+--       the value of attribute 'Old's prefix.
 
 --    Strict_Alignment (Flag145) [implementation base type only]
 --       Defined in all type entities. Indicates that some containing part
@@ -5423,6 +5427,7 @@ package Einfo is
    --    Is_Return_Object                    (Flag209)
    --    Is_True_Constant                    (Flag163)
    --    Is_Volatile                         (Flag16)
+   --    Stores_Attribute_Old_Prefix         (Flag270)  (constants only)
    --    Optimize_Alignment_Space            (Flag241)  (constants only)
    --    Optimize_Alignment_Time             (Flag242)  (constants only)
    --    Treat_As_Volatile                   (Flag41)
@@ -6778,6 +6783,7 @@ package Einfo is
    function Status_Flag_Or_Transient_Decl       (Id : E) return E;
    function Storage_Size_Variable               (Id : E) return E;
    function Stored_Constraint                   (Id : E) return L;
+   function Stores_Attribute_Old_Prefix         (Id : E) return B;
    function Strict_Alignment                    (Id : E) return B;
    function String_Literal_Length               (Id : E) return U;
    function String_Literal_Low_Bound            (Id : E) return N;
@@ -7410,6 +7416,7 @@ package Einfo is
    procedure Set_Status_Flag_Or_Transient_Decl   (Id : E; V : E);
    procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Stored_Constraint               (Id : E; V : L);
+   procedure Set_Stores_Attribute_Old_Prefix     (Id : E; V : B := True);
    procedure Set_Strict_Alignment                (Id : E; V : B := True);
    procedure Set_String_Literal_Length           (Id : E; V : U);
    procedure Set_String_Literal_Low_Bound        (Id : E; V : N);
@@ -8192,6 +8199,7 @@ package Einfo is
    pragma Inline (Status_Flag_Or_Transient_Decl);
    pragma Inline (Storage_Size_Variable);
    pragma Inline (Stored_Constraint);
+   pragma Inline (Stores_Attribute_Old_Prefix);
    pragma Inline (Strict_Alignment);
    pragma Inline (String_Literal_Length);
    pragma Inline (String_Literal_Low_Bound);
@@ -8623,6 +8631,7 @@ package Einfo is
    pragma Inline (Set_Status_Flag_Or_Transient_Decl);
    pragma Inline (Set_Storage_Size_Variable);
    pragma Inline (Set_Stored_Constraint);
+   pragma Inline (Set_Stores_Attribute_Old_Prefix);
    pragma Inline (Set_Strict_Alignment);
    pragma Inline (Set_String_Literal_Length);
    pragma Inline (Set_String_Literal_Low_Bound);

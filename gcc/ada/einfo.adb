@@ -211,7 +211,7 @@ package body Einfo is
    --    Generic_Renamings               Elist23
    --    Inner_Instances                 Elist23
    --    Limited_View                    Node23
-   --    Packed_Array_Impl_Type               Node23
+   --    Packed_Array_Impl_Type          Node23
    --    Protection_Object               Node23
    --    Stored_Constraint               Elist23
 
@@ -560,12 +560,11 @@ package body Einfo is
    --    Has_Shift_Operator              Flag267
    --    Is_Independent                  Flag268
    --    Has_Static_Predicate            Flag269
+   --    Stores_Attribute_Old_Prefix     Flag270
 
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
-
-   --    (unused)                        Flag270
 
    --    (unused)                        Flag271
    --    (unused)                        Flag272
@@ -3003,6 +3002,11 @@ package body Einfo is
         (Is_Composite_Type (Id) and then not Is_Array_Type (Id));
       return Elist23 (Id);
    end Stored_Constraint;
+
+   function Stores_Attribute_Old_Prefix (Id : E) return B is
+   begin
+      return Flag270 (Id);
+   end Stores_Attribute_Old_Prefix;
 
    function Strict_Alignment (Id : E) return B is
    begin
@@ -5784,6 +5788,12 @@ package body Einfo is
       Set_Elist23 (Id, V);
    end Set_Stored_Constraint;
 
+   procedure Set_Stores_Attribute_Old_Prefix (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Constant);
+      Set_Flag270 (Id, V);
+   end Set_Stores_Attribute_Old_Prefix;
+
    procedure Set_Strict_Alignment (Id : E; V : B := True) is
    begin
       pragma Assert (Id = Base_Type (Id));
@@ -8413,6 +8423,7 @@ package body Einfo is
       W ("SPARK_Aux_Pragma_Inherited",      Flag266 (Id));
       W ("SPARK_Pragma_Inherited",          Flag265 (Id));
       W ("Static_Elaboration_Desired",      Flag77  (Id));
+      W ("Stores_Attribute_Old_Prefix",     Flag270 (Id));
       W ("Strict_Alignment",                Flag145 (Id));
       W ("Suppress_Elaboration_Warnings",   Flag148 (Id));
       W ("Suppress_Initialization",         Flag105 (Id));

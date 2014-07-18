@@ -4060,6 +4060,12 @@ package body Exp_Attr is
       begin
          Temp := Make_Temporary (Loc, 'T', Pref);
 
+         --  Set the entity kind now in order to mark the temporary as a
+         --  handler of attribute 'Old's prefix.
+
+         Set_Ekind (Temp, E_Constant);
+         Set_Stores_Attribute_Old_Prefix (Temp);
+
          --  Climb the parent chain looking for subprogram _Postconditions
 
          Subp := N;

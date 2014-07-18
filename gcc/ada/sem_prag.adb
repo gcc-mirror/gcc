@@ -21937,9 +21937,9 @@ package body Sem_Prag is
 
                Item_Id := Available_View (Entity_Of (Item));
 
-               return
-                 Ekind (Item_Id) = E_Abstract_State
-                   and then Has_Null_Refinement (Item_Id);
+               return Ekind (Item_Id) = E_Abstract_State
+                 and then Has_Null_Refinement (Item_Id);
+
             else
                return False;
             end if;
@@ -22146,8 +22146,8 @@ package body Sem_Prag is
 
          if not Clause_Matched
            and then Is_In_Out_State_Clause
-           and then Contains
-                      (Matched_Items, Available_View (Entity_Of (Dep_Input)))
+           and then
+             Contains (Matched_Items, Available_View (Entity_Of (Dep_Input)))
          then
             Clause_Matched := True;
          end if;
@@ -22163,8 +22163,8 @@ package body Sem_Prag is
          if not Clause_Matched
            and then Is_Null_Refined_State (Dep_Input)
            and then Is_Entity_Name (Dep_Output)
-           and then Contains
-                      (Matched_Items, Available_View (Entity_Of (Dep_Output)))
+           and then
+             Contains (Matched_Items, Available_View (Entity_Of (Dep_Output)))
          then
             Clause_Matched := True;
          end if;
@@ -22180,8 +22180,8 @@ package body Sem_Prag is
          if not Clause_Matched
            and then Is_Null_Refined_State (Dep_Output)
            and then Is_Entity_Name (Dep_Input)
-           and then Contains
-                      (Matched_Items, Available_View (Entity_Of (Dep_Input)))
+           and then
+             Contains (Matched_Items, Available_View (Entity_Of (Dep_Input)))
          then
             Clause_Matched := True;
          end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,9 +66,22 @@ package body System.Storage_Pools.Subpools.Finalization is
 
       Free (Subpool.Node);
 
-      --  Dispatch to the user-defined implementation of Deallocate_Subpool
+      --  Dispatch to the user-defined implementation of Deallocate_Subpool. It
+      --  is important to first set Subpool.Owner to null, because RM-13.11.5
+      --  requires that "The subpool no longer belongs to any pool" BEFORE
+      --  calling Deallocate_Subpool. The actual dispatching call required is:
+      --
+      --     Deallocate_Subpool(Pool_of_Subpool(Subpool).all, Subpool);
+      --
+      --  but that can't be taken literally, because Pool_of_Subpool will
+      --  return null.
 
-      Deallocate_Subpool (Pool_Of_Subpool (Subpool).all, Subpool);
+      declare
+         Owner : constant Any_Storage_Pool_With_Subpools_Ptr := Subpool.Owner;
+      begin
+         Subpool.Owner := null;
+         Deallocate_Subpool (Owner.all, Subpool);
+      end;
 
       Subpool := null;
    end Finalize_And_Deallocate;
