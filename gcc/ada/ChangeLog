@@ -1,3 +1,23 @@
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Aggregate_Constraint_Checks): Moved to sem_util.
+	* sem_util.ads, sem_util.adb (Aggregate_Constraint_Checks):
+	Moved here, so it can be shared with the resolution of 'Update,
+	whose argument shares some features with aggregates.
+	* sem_attr.adb (Resolve_Attribute, case 'Update): Apply
+	Aggregate_Constraint_Checks with the expression of each
+	association, so that the Do_Range_Check flag is set when needed.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing):  If the container
+	type is a derived type, the value of the inherited  aspect is
+	the Reference operation declared for the parent type. However,
+	Reference is also a primitive operation of the new type, and
+	the inherited operation has a different signature. We retrieve
+	the right one from the list of primitive operations of the
+	derived type.
+
 2014-07-18  Vincent Celier  <celier@adacore.com>
 
 	* debug.adb: Update comment.

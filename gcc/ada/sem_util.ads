@@ -91,6 +91,17 @@ package Sem_Util is
    --  Returns True if the value of V is the word size of an addressable
    --  factor of the word size (typically 8, 16, 32 or 64).
 
+   procedure Aggregate_Constraint_Checks
+     (Exp       : Node_Id;
+      Check_Typ : Entity_Id);
+   --  Checks expression Exp against subtype Check_Typ. If Exp is an aggregate
+   --  and Check_Typ a constrained record type with discriminants, we generate
+   --  the appropriate discriminant checks. If Exp is an array aggregate then
+   --  emit the appropriate length checks. If Exp is a scalar type, or a string
+   --  literal, Exp is changed into Check_Typ'(Exp) to ensure that range checks
+   --  are performed at run time. Also used for expressions in the argument of
+   --  'Update, which shares some of the features of an aggregate.
+
    function Alignment_In_Bits (E : Entity_Id) return Uint;
    --  If the alignment of the type or object E is currently known to the
    --  compiler, then this function returns the alignment value in bits.

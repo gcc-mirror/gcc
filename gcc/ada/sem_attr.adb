@@ -10802,6 +10802,7 @@ package body Sem_Attr is
                Typ   : constant Entity_Id := Etype (Prefix (N));
                Assoc : Node_Id;
                Comp  : Node_Id;
+               Expr  : Node_Id;
 
             begin
                --  Set the Etype of the aggregate to that of the prefix, even
@@ -10814,12 +10815,14 @@ package body Sem_Attr is
                Resolve (Prefix (N), Typ);
 
                --  For an array type, resolve expressions with the component
-               --  type of the array.
+               --  type of the array, and apply constraint checks when needed.
 
                if Is_Array_Type (Typ) then
                   Assoc := First (Component_Associations (Aggr));
                   while Present (Assoc) loop
-                     Resolve (Expression (Assoc), Component_Type (Typ));
+                     Expr  := Expression (Assoc);
+                     Resolve (Expr, Component_Type (Typ));
+                     Aggregate_Constraint_Checks (Expr, Component_Type (Typ));
 
                      --  The choices in the association are static constants,
                      --  or static aggregates each of whose components belongs
