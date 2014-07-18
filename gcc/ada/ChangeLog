@@ -1,3 +1,26 @@
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb: Minor reformatting.
+
+2014-07-18  Claire Dross  <dross@adacore.com>
+
+	* sem_aux.ads (Get_Binary_Nkind): New function that returns
+	the Node_Kind value of an entity defining a binary operator.
+	(Get_Unary_Nkind): New function that returns the Node_Kind value
+	of an entity defining a unary operator.
+
+2014-07-18  Pascal Obry  <obry@adacore.com>
+
+	* sysdep.c: comment update.
+	* adaint.c (__gnat_fputwc): Use wchar_t on a limited set of
+	platforms where it is known to be supported.
+
+2014-07-18  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_dist.adb (Process_Remote_AST_Declaration): Need
+	to set Fat_Type's Ekind in order to be able to use its
+	Corresponding_Remote_Type attribute.
+
 2014-07-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb Last_Aggregate_Assignment is now Node 30.

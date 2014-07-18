@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -647,7 +647,14 @@ package body Sem_Dist is
                           New_Occurrence_Of (RACW_Type, Loc)))))));
 
       Set_Equivalent_Type (User_Type, Fat_Type);
+
+      --  Set Fat_Type's Etype early so that we can use its
+      --  Corresponding_Remote_Type attribute, whose presence indicates that
+      --  this is the record type used to implement a RAS.
+
+      Set_Ekind (Fat_Type, E_Record_Type);
       Set_Corresponding_Remote_Type (Fat_Type, User_Type);
+
       Insert_After_And_Analyze (Subpkg_Body, Fat_Type_Decl);
 
       --  The reason we suppress the initialization procedure is that we know
