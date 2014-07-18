@@ -221,13 +221,18 @@ package Interfaces.C_Streams is
    -- Control of Text/Binary Mode --
    ---------------------------------
 
+   --  Is the above section title good enough, given the new addition???
+
    --  If text_translation_required is true, then the following functions may
    --  be used to dynamically switch a file from binary to text mode or vice
    --  versa. These functions have no effect if text_translation_required is
    --  false (i.e. in normal unix mode). Use fileno to get a stream handle.
 
-   procedure set_binary_mode    (handle : int);
-   procedure set_text_mode      (handle : int);
+   procedure set_binary_mode (handle : int);
+   procedure set_text_mode   (handle : int);
+
+   --  The following needs documentation ???
+
    procedure set_wide_text_mode (handle : int);
 
    ----------------------------

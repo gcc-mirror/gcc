@@ -80,8 +80,11 @@ pragma Style_Checks ("M32766");
 
 /* Feature macro definitions */
 
-/* Define _POSIX_SOURCE to get NAME_MAX, PATH_MAX */
-#define _POSIX_SOURCE
+/**
+ ** Note: we deliberately do not define _POSIX_SOURCE / _POSIX_C_SOURCE
+ ** unconditionally, as on many platforms these macros actually disable
+ ** a number of non-POSIX but useful/required features.
+ **/
 
 #if defined (__linux__) && !defined (_XOPEN_SOURCE)
 /* For Linux, define _XOPEN_SOURCE to get IOV_MAX */
@@ -319,17 +322,22 @@ CND(IOV_MAX, "Maximum writev iovcnt")
 /* NAME_MAX is used to compute the allocation size for a struct dirent
  * passed to readdir() / readdir_r(). However on some systems it is not
  * defined, as it is technically a filesystem dependent property that
- * we should retrieve through pathconf().
+ * we should retrieve through pathconf(). In any case, we do not need a
+ * precise value but only an upper limit.
  */
 #ifndef NAME_MAX
 # ifdef MAXNAMELEN
    /* Solaris has no NAME_MAX but defines MAXNAMELEN */
 #  define NAME_MAX MAXNAMELEN
-# else
-   /* PATH_MAX (maximum length of a full path name) is a safe last
-    * chance fall back.
-    */
+# elif defined(PATH_MAX)
+   /* PATH_MAX (maximum length of a full path name) is a safe fall back */
 #  define NAME_MAX PATH_MAX
+# elif defined(FILENAME_MAX)
+   /* Similarly FILENAME_MAX can provide a safe fall back */
+#  define NAME_MAX FILENAME_MAX
+# else
+   /* Hardcode a reasonably large value as a last chance fallback */
+#  define NAME_MAX 1024
 # endif
 #endif
 CND(NAME_MAX, "Maximum file name length")
