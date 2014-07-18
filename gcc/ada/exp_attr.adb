@@ -800,8 +800,8 @@ package body Exp_Attr is
          else
             pragma Assert
               (Nkind (Parent (Loop_Stmt)) = N_Handled_Sequence_Of_Statements
-                and then Nkind (Parent (Parent (Loop_Stmt))) =
-                           N_Block_Statement);
+                and then
+                  Nkind (Parent (Parent (Loop_Stmt))) = N_Block_Statement);
 
             Decls := Declarations (Parent (Parent (Loop_Stmt)));
          end if;

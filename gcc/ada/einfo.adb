@@ -384,6 +384,7 @@ package body Einfo is
    --    Is_Private_Composite            Flag107
    --    Default_Expressions_Processed   Flag108
    --    Is_Non_Static_Subtype           Flag109
+   --    Has_Out_Or_In_Out_Parameter     Flag110
 
    --    Is_Formal_Subprogram            Flag111
    --    Is_Renaming_Of_Object           Flag112
@@ -562,8 +563,6 @@ package body Einfo is
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
-
-   --    (unused)                        Flag110
 
    --    (unused)                        Flag269
    --    (unused)                        Flag270
@@ -1531,6 +1530,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag172 (Id);
    end Has_Object_Size_Clause;
+
+   function Has_Out_Or_In_Out_Parameter (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Generic_Function));
+      return Flag110 (Id);
+   end Has_Out_Or_In_Out_Parameter;
 
    function Has_Per_Object_Constraint (Id : E) return B is
    begin
@@ -4240,6 +4245,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag172 (Id, V);
    end Set_Has_Object_Size_Clause;
+
+   procedure Set_Has_Out_Or_In_Out_Parameter (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Generic_Function));
+      Set_Flag110 (Id, V);
+   end Set_Has_Out_Or_In_Out_Parameter;
 
    procedure Set_Has_Per_Object_Constraint (Id : E; V : B := True) is
    begin
@@ -8192,6 +8203,7 @@ package body Einfo is
       W ("Has_Missing_Return",              Flag142 (Id));
       W ("Has_Nested_Block_With_Handler",   Flag101 (Id));
       W ("Has_Non_Standard_Rep",            Flag75  (Id));
+      W ("Has_Out_Or_In_Out_Parameter",     Flag110 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
       W ("Has_Per_Object_Constraint",       Flag154 (Id));
       W ("Has_Postconditions",              Flag240 (Id));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -90,10 +90,9 @@ package Ada.Real_Time is
    function Minutes (M : Integer) return Time_Span;
    pragma Ada_05 (Minutes);
 
-   --  Seconds_Count needs 64 bits, since Time has the full range of
-   --  Duration. The delta of Duration is 10 ** (-9), so the maximum
-   --  number of seconds is 2**63/10**9 = 8*10**9 which does not quite
-   --  fit in 32 bits.
+   --  Seconds_Count needs 64 bits, since Time has the full range of Duration.
+   --  The delta of Duration is 10 ** (-9), so the maximum number of seconds is
+   --  2**63/10**9 = 8*10**9 which does not quite fit in 32 bits.
 
    type Seconds_Count is range -2 ** 63 .. 2 ** 63 - 1;
 
@@ -121,8 +120,8 @@ private
             Time_Span (System.Task_Primitives.Operations.RT_Resolution);
 
    --  Time and Time_Span are represented in 64-bit Duration value in
-   --  in nanoseconds. For example, 1 second and 1 nanosecond is
-   --  represented as the stored integer 1_000_000_001.
+   --  nanoseconds. For example, 1 second and 1 nanosecond is represented
+   --  as the stored integer 1_000_000_001.
 
    pragma Import (Intrinsic, "<");
    pragma Import (Intrinsic, "<=");
