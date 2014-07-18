@@ -1429,12 +1429,15 @@ package body Lib.Writ is
 
                --  If subunit, add unit name, omitting the %b at the end
 
-               if Present (Cunit (Unum))
-                 and then Nkind (Unit (Cunit (Unum))) = N_Subunit
-               then
+               if Present (Cunit (Unum)) then
                   Get_Decoded_Name_String (Unit_Name (Unum));
                   Write_Info_Char (' ');
-                  Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
+
+                  if Nkind (Unit (Cunit (Unum))) = N_Subunit then
+                     Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
+                  else
+                     Write_Info_Str (Name_Buffer (1 .. Name_Len));
+                  end if;
                end if;
 
                --  If Source_Reference pragma used, output information

@@ -2703,6 +2703,9 @@ package Einfo is
 --       out that the component size is not suitable for bit packing, the
 --       Is_Packed flag gets turned off.
 
+--    Is_Packed_Array (synth)
+--       Applies to all entities, true if entity is for a packed array.
+
 --    Is_Packed_Array_Type (Flag138)
 --       Defined in all entities. This flag is set on the entity for the type
 --       used to implement a packed array (either a modular type, or a subtype
@@ -6874,6 +6877,7 @@ package Einfo is
    function Is_Ghost_Subprogram                 (Id : E) return B;
    function Is_Null_State                       (Id : E) return B;
    function Is_Package_Or_Generic_Package       (Id : E) return B;
+   function Is_Packed_Array                     (Id : E) return B;
    function Is_Prival                           (Id : E) return B;
    function Is_Protected_Component              (Id : E) return B;
    function Is_Protected_Interface              (Id : E) return B;
@@ -8634,6 +8638,7 @@ package Einfo is
    pragma Inline (Base_Type);
    pragma Inline (Is_Base_Type);
    pragma Inline (Is_Package_Or_Generic_Package);
+   pragma Inline (Is_Packed_Array);
    pragma Inline (Is_Volatile);
    pragma Inline (Is_Wrapper_Package);
    pragma Inline (Known_RM_Size);

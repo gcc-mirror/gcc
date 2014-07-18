@@ -33,6 +33,7 @@ with Errout;   use Errout;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -155,14 +156,14 @@ package body Sem_Ch13 is
 
    generic
       with procedure Replace_Type_Reference (N : Node_Id);
-   procedure Replace_Type_References_Generic (N : Node_Id; TName : Name_Id);
+   procedure Replace_Type_References_Generic (N : Node_Id; T : Entity_Id);
    --  This is used to scan an expression for a predicate or invariant aspect
-   --  replacing occurrences of the name TName (the name of the subtype to
-   --  which the aspect applies) with appropriate references to the parameter
-   --  of the predicate function or invariant procedure. The procedure passed
-   --  as a generic parameter does the actual replacement of node N, which is
-   --  either a simple direct reference to TName, or a selected component that
-   --  represents an appropriately qualified occurrence of TName.
+   --  replacing occurrences of the name of the subtype to which the aspect
+   --  applies with appropriate references to the parameter of the predicate
+   --  function or invariant procedure. The procedure passed as a generic
+   --  parameter does the actual replacement of node N, which is either a
+   --  simple direct reference to T, or a selected component that represents
+   --  an appropriately qualified occurrence of T.
 
    procedure Resolve_Iterable_Operation
      (N      : Node_Id;
@@ -7216,7 +7217,7 @@ package body Sem_Ch13 is
                --  with references to the object, converted to type'Class in
                --  the case of Invariant'Class aspects.
 
-               Replace_Type_References (Exp, Chars (T));
+               Replace_Type_References (Exp, T);
 
                --  If this invariant comes from an aspect, find the aspect
                --  specification, and replace the saved expression because
@@ -7268,7 +7269,7 @@ package body Sem_Ch13 is
                      Inv : constant Node_Id :=
                              Expression (Corresponding_Aspect (Ritem));
                   begin
-                     Replace_Type_References (Inv, Chars (T));
+                     Replace_Type_References (Inv, T);
                      Preanalyze_Assert_Expression (Inv, Standard_Boolean);
                   end;
                end if;
@@ -7656,7 +7657,7 @@ package body Sem_Ch13 is
                   --  We need to replace any occurrences of the name of the
                   --  type with references to the object.
 
-                  Replace_Type_References (Arg2, Chars (Typ));
+                  Replace_Type_References (Arg2, Typ);
 
                   --  If this predicate comes from an aspect, find the aspect
                   --  specification, and replace the saved expression because
@@ -10303,7 +10304,7 @@ package body Sem_Ch13 is
       Replace (N, Make_Null_Statement (Sloc (N)));
 
       --  The null statement must be marked as not coming from source. This is
-      --  so that ASIS ignores if, and also the back end does not expect bogus
+      --  so that ASIS ignores it, and also the back end does not expect bogus
       --  "from source" null statements in weird places (e.g. in declarative
       --  regions where such null statements are not allowed).
 
@@ -10837,7 +10838,8 @@ package body Sem_Ch13 is
    -- Replace_Type_References_Generic --
    -------------------------------------
 
-   procedure Replace_Type_References_Generic (N : Node_Id; TName : Name_Id) is
+   procedure Replace_Type_References_Generic (N : Node_Id; T : Entity_Id) is
+      TName : constant Name_Id := Chars (T);
 
       function Replace_Node (N : Node_Id) return Traverse_Result;
       --  Processes a single node in the traversal procedure below, checking
@@ -10859,9 +10861,18 @@ package body Sem_Ch13 is
 
          if Nkind (N) = N_Identifier then
 
-            --  If not the type name, all done with this node
+            --  If not the type name, check whether it is a reference to
+            --  some other type, which must be frozen before the predicate
+            --  function is analyzed, i.e. before the freeze node of the
+            --  type to which the predicate applies.
 
             if Chars (N) /= TName then
+               if Present (Current_Entity (N))
+                  and then Is_Type (Current_Entity (N))
+               then
+                  Freeze_Before (Freeze_Node (T), Current_Entity (N));
+               end if;
+
                return Skip;
 
             --  Otherwise do the replacement and we are done with this node
