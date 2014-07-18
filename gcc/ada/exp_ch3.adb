@@ -1356,7 +1356,7 @@ package body Exp_Ch3 is
 
             elsif Is_Scalar_Type (Component_Type (Etype (Comp)))
                and then
-                 (not Compile_Time_Known_Value (Type_Low_Bound (Comp_Type))
+                 (not Compile_Time_Known_Value (Type_Low_Bound  (Comp_Type))
                    or else
                   not Compile_Time_Known_Value (Type_High_Bound (Comp_Type)))
             then
@@ -1620,7 +1620,7 @@ package body Exp_Ch3 is
                --  to the appropriate formal parameter.
 
                if Nkind (Arg) = N_Identifier
-                  and then Ekind (Entity (Arg)) = E_Discriminant
+                 and then Ekind (Entity (Arg)) = E_Discriminant
                then
                   Arg := New_Occurrence_Of (Discriminal (Entity (Arg)), Loc);
 
@@ -2042,7 +2042,7 @@ package body Exp_Ch3 is
                --  Append it to the list
 
                if Nkind (Arg) = N_Identifier
-                  and then Ekind (Entity (Arg)) = E_Discriminant
+                 and then Ekind (Entity (Arg)) = E_Discriminant
                then
                   Append_To (Args,
                     New_Occurrence_Of (Discriminal (Entity (Arg)), Loc));
@@ -2530,8 +2530,8 @@ package body Exp_Ch3 is
 
                   Ins_Nod := First (Body_Stmts);
                   while Present (Next (Ins_Nod))
-                     and then (Nkind (Ins_Nod) /= N_Procedure_Call_Statement
-                                or else not Is_Init_Proc (Name (Ins_Nod)))
+                    and then (Nkind (Ins_Nod) /= N_Procedure_Call_Statement
+                               or else not Is_Init_Proc (Name (Ins_Nod)))
                   loop
                      Next (Ins_Nod);
                   end loop;
@@ -3421,7 +3421,7 @@ package body Exp_Ch3 is
             return False;
 
          elsif (Has_Discriminants (Rec_Id)
-                  and then not Is_Unchecked_Union (Rec_Id))
+                 and then not Is_Unchecked_Union (Rec_Id))
            or else Is_Tagged_Type (Rec_Id)
            or else Is_Concurrent_Record_Type (Rec_Id)
            or else Has_Task (Rec_Id)
@@ -3595,9 +3595,7 @@ package body Exp_Ch3 is
                Typ      : constant Entity_Id := Etype (Comp);
 
             begin
-               if Is_Array_Type (Typ)
-                 and then Is_Itype (Typ)
-               then
+               if Is_Array_Type (Typ) and then Is_Itype (Typ) then
                   Ref := Make_Itype_Reference (Loc);
                   Set_Itype (Ref, Typ);
                   Append_Freeze_Action (Rec_Type, Ref);
@@ -3624,9 +3622,7 @@ package body Exp_Ch3 is
             --  The aggregate may have been rewritten as a Raise node, in which
             --  case there are no relevant itypes.
 
-            if Present (Agg)
-              and then Nkind (Agg) = N_Aggregate
-            then
+            if Present (Agg) and then Nkind (Agg) = N_Aggregate then
                Set_Static_Initialization (Proc_Id, Agg);
 
                declare
@@ -5045,8 +5041,8 @@ package body Exp_Ch3 is
         and then Is_Library_Level_Entity (Def_Id)
         and then Is_Library_Level_Tagged_Type (Base_Typ)
         and then (Ekind (Base_Typ) = E_Record_Type
-                    or else Ekind (Base_Typ) = E_Protected_Type
-                    or else Ekind (Base_Typ) = E_Task_Type)
+                   or else Ekind (Base_Typ) = E_Protected_Type
+                   or else Ekind (Base_Typ) = E_Task_Type)
         and then not Has_Dispatch_Table (Base_Typ)
       then
          declare
@@ -5186,17 +5182,17 @@ package body Exp_Ch3 is
 
          if Has_Non_Null_Base_Init_Proc (Typ)
 
-            --  Suppress call if No_Initialization set on declaration
+           --  Suppress call if No_Initialization set on declaration
 
-            and then not No_Initialization (N)
+           and then not No_Initialization (N)
 
-            --  Suppress call for special case of value type for VM
+           --  Suppress call for special case of value type for VM
 
-            and then not Is_Value_Type (Typ)
+           and then not Is_Value_Type (Typ)
 
-            --  Suppress call if initialization suppressed for the type
+           --  Suppress call if initialization suppressed for the type
 
-            and then not Initialization_Suppressed (Typ)
+           and then not Initialization_Suppressed (Typ)
          then
             --  Return without initializing when No_Default_Initialization
             --  applies. Note that the actual restriction check occurs later,
@@ -5346,8 +5342,7 @@ package body Exp_Ch3 is
 
            and then not
              (Nkind (Obj_Def) = N_Identifier
-               and then
-                 Present (Equivalent_Type (Entity (Obj_Def))))
+               and then Present (Equivalent_Type (Entity (Obj_Def))))
          then
             pragma Assert (Is_Class_Wide_Type (Typ));
 
@@ -5357,9 +5352,7 @@ package body Exp_Ch3 is
             --  case, the expansion of the return statement will take care of
             --  creating the object (via allocator) and initializing it.
 
-            if Is_Return_Object (Def_Id)
-              and then Is_Limited_View (Typ)
-            then
+            if Is_Return_Object (Def_Id) and then Is_Limited_View (Typ) then
                null;
 
             elsif Tagged_Type_Expansion then
@@ -5417,24 +5410,23 @@ package body Exp_Ch3 is
                     and then Interface_Present_In_Ancestor (Expr_Typ, Typ)
                     and then (Expr_Typ = Etype (Expr_Typ)
                                or else not
-                              Is_Variable_Size_Record (Etype (Expr_Typ)))
+                                 Is_Variable_Size_Record (Etype (Expr_Typ)))
                   then
                      --  Copy the object
 
                      Insert_Action (N,
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Obj_Id,
-                         Object_Definition =>
+                         Object_Definition   =>
                            New_Occurrence_Of (Expr_Typ, Loc),
-                         Expression =>
-                           Relocate_Node (Expr_N)));
+                         Expression          => Relocate_Node (Expr_N)));
 
                      --  Statically reference the tag associated with the
                      --  interface
 
                      Tag_Comp :=
                        Make_Selected_Component (Loc,
-                         Prefix => New_Occurrence_Of (Obj_Id, Loc),
+                         Prefix        => New_Occurrence_Of (Obj_Id, Loc),
                          Selector_Name =>
                            New_Occurrence_Of
                              (Find_Interface_Tag (Expr_Typ, Iface), Loc));
@@ -5747,10 +5739,10 @@ package body Exp_Ch3 is
          --  is too much trouble ???
 
          if (Is_Possibly_Unaligned_Slice (Expr)
-               or else (Is_Possibly_Unaligned_Object (Expr)
-                          and then not Represented_As_Scalar (Etype (Expr))))
+              or else (Is_Possibly_Unaligned_Object (Expr)
+                        and then not Represented_As_Scalar (Etype (Expr))))
            and then not (Is_Array_Type (Etype (Expr))
-                           and then not Is_Constrained (Etype (Expr)))
+                          and then not Is_Constrained (Etype (Expr)))
          then
             declare
                Stat : constant Node_Id :=
@@ -6053,9 +6045,9 @@ package body Exp_Ch3 is
             if Is_Itype (Base)
               and then Nkind (Associated_Node_For_Itype (Base)) =
                                                     N_Object_Declaration
-              and then (Present (Expression (Associated_Node_For_Itype (Base)))
-                          or else
-                        No_Initialization (Associated_Node_For_Itype (Base)))
+              and then
+                (Present (Expression (Associated_Node_For_Itype (Base)))
+                  or else No_Initialization (Associated_Node_For_Itype (Base)))
             then
                null;
 
@@ -6064,7 +6056,7 @@ package body Exp_Ch3 is
             --  initialize scalars mode, and these types are treated specially
             --  and do not need initialization procedures.
 
-            elsif Root_Type (Base) = Standard_String
+            elsif     Root_Type (Base) = Standard_String
               or else Root_Type (Base) = Standard_Wide_String
               or else Root_Type (Base) = Standard_Wide_Wide_String
             then
@@ -6108,7 +6100,7 @@ package body Exp_Ch3 is
       --  Normalize_Scalars and there better be a public Init_Proc for it.
 
       elsif (Present (Init_Proc (Component_Type (Base)))
-               and then No (Base_Init_Proc (Base)))
+              and then No (Base_Init_Proc (Base)))
         or else (Init_Or_Norm_Scalars and then Base = Typ)
         or else Is_Public (Typ)
       then
@@ -6765,6 +6757,16 @@ package body Exp_Ch3 is
               or else Is_Tagged_Type (Etype (Def_Id))
             then
                Set_All_DT_Position (Def_Id);
+
+            --  If this is a type derived from an untagged private type whose
+            --  full view is tagged, the type is marked tagged for layout
+            --  reasons, but it has no dispatch table.
+
+            elsif Is_Derived_Type (Def_Id)
+              and then Is_Private_Type (Etype (Def_Id))
+              and then not Is_Tagged_Type (Etype (Def_Id))
+            then
+               return;
             end if;
 
             --  Create and decorate the tags. Suppress their creation when
@@ -6925,16 +6927,16 @@ package body Exp_Ch3 is
       if Is_Tagged_Type (Def_Id)
         and then not Is_Interface (Def_Id)
       then
-         --  Do not add the body of predefined primitives in case of
-         --  CPP tagged type derivations that have convention CPP.
+         --  Do not add the body of predefined primitives in case of CPP tagged
+         --  type derivations that have convention CPP.
 
          if Is_CPP_Class (Root_Type (Def_Id))
            and then Convention (Def_Id) = Convention_CPP
          then
             null;
 
-         --  Do not add the body of predefined primitives in case of
-         --  CIL and Java tagged types.
+         --  Do not add the body of predefined primitives in case of CIL and
+         --  Java tagged types.
 
          elsif Convention (Def_Id) = Convention_CIL
            or else Convention (Def_Id) = Convention_Java
@@ -7087,8 +7089,8 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      --  Check whether individual components have a defined invariant,
-      --  and add the corresponding component invariant checks.
+      --  Check whether individual components have a defined invariant, and add
+      --  the corresponding component invariant checks.
 
       Insert_Component_Invariant_Checks
         (N, Def_Id, Build_Record_Invariant_Proc (Def_Id, N));
@@ -7569,16 +7571,16 @@ package body Exp_Ch3 is
    --  Start of processing for Get_Simple_Init_Val
 
    begin
-      --  For a private type, we should always have an underlying type
-      --  (because this was already checked in Needs_Simple_Initialization).
-      --  What we do is to get the value for the underlying type and then do
-      --  an Unchecked_Convert to the private type.
+      --  For a private type, we should always have an underlying type (because
+      --  this was already checked in Needs_Simple_Initialization). What we do
+      --  is to get the value for the underlying type and then do an unchecked
+      --  conversion to the private type.
 
       if Is_Private_Type (T) then
          Val := Get_Simple_Init_Val (Underlying_Type (T), N, Size);
 
          --  A special case, if the underlying value is null, then qualify it
-         --  with the underlying type, so that the null is properly typed
+         --  with the underlying type, so that the null is properly typed.
          --  Similarly, if it is an aggregate it must be qualified, because an
          --  unchecked conversion does not provide a context for it.
 
@@ -7603,7 +7605,7 @@ package body Exp_Ch3 is
          return Result;
 
       --  Scalars with Default_Value aspect. The first subtype may now be
-      --   private, so retrieve value from underlying type.
+      --  private, so retrieve value from underlying type.
 
       elsif Is_Scalar_Type (T) and then Has_Default_Aspect (T) then
          if Is_Private_Type (First_Subtype (T)) then
@@ -7841,9 +7843,10 @@ package body Exp_Ch3 is
       else
          return First_Rep_Item (T) /= First_Rep_Item (Root_Type (T));
 
-         --  May need a more precise check here: the First_Rep_Item may
-         --  be a stream attribute, which does not affect the representation
-         --  of the type ???
+         --  May need a more precise check here: the First_Rep_Item may be a
+         --  stream attribute, which does not affect the representation of the
+         --  type ???
+
       end if;
    end Has_New_Non_Standard_Rep;
 
@@ -7955,7 +7958,7 @@ package body Exp_Ch3 is
                         if Ekind (Comp) = E_Discriminant
                           or else
                             (Nkind (Parent (Comp)) = N_Component_Declaration
-                               and then Present (Expression (Parent (Comp))))
+                              and then Present (Expression (Parent (Comp))))
                         then
                            Warning_Needed := True;
                            exit;
@@ -7988,10 +7991,10 @@ package body Exp_Ch3 is
       Formals : List_Id;
 
    begin
-      --  First parameter is always _Init : in out typ. Note that we need
-      --  this to be in/out because in the case of the task record value,
-      --  there are default record fields (_Priority, _Size, -Task_Info)
-      --  that may be referenced in the generated initialization routine.
+      --  First parameter is always _Init : in out typ. Note that we need this
+      --  to be in/out because in the case of the task record value, there
+      --  are default record fields (_Priority, _Size, -Task_Info) that may
+      --  be referenced in the generated initialization routine.
 
       Formals := New_List (
         Make_Parameter_Specification (Loc,
@@ -8085,8 +8088,7 @@ package body Exp_Ch3 is
          Offset_To_Top_Comp : Entity_Id := Empty;
 
       begin
-         --  Initialize the pointer to the secondary DT associated with the
-         --  interface.
+         --  Initialize pointer to secondary DT associated with the interface
 
          if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
             Append_To (Stmts_List,
@@ -8157,8 +8159,8 @@ package body Exp_Ch3 is
                                   (DT_Offset_To_Top_Func (Tag_Comp), Loc),
                       Attribute_Name => Name_Address)))));
 
-            --  In this case the next component stores the value of the
-            --  offset to the top.
+            --  In this case the next component stores the value of the offset
+            --  to the top.
 
             Offset_To_Top_Comp := Next_Entity (Tag_Comp);
             pragma Assert (Present (Offset_To_Top_Comp));
@@ -8304,11 +8306,11 @@ package body Exp_Ch3 is
                      then
                         exit when
                           (Is_Record_Type (Comp_Typ)
-                             and then Is_Variable_Size_Record
-                                        (Base_Type (Comp_Typ)))
+                            and then Is_Variable_Size_Record
+                                       (Base_Type (Comp_Typ)))
                          or else
                            (Is_Array_Type (Comp_Typ)
-                              and then Is_Variable_Size_Array (Comp_Typ));
+                             and then Is_Variable_Size_Array (Comp_Typ));
                      end if;
 
                      Next_Entity (Comp);
@@ -8892,9 +8894,7 @@ package body Exp_Ch3 is
          while Present (Elmt) loop
             Prim := Node (Elmt);
 
-            if Is_User_Defined_Equality (Prim)
-              and then No (Alias (Prim))
-            then
+            if Is_User_Defined_Equality (Prim) and then No (Alias (Prim)) then
                if No (Renaming_Prim) then
                   pragma Assert (No (Eq_Prim));
                   Eq_Prim := Prim;
@@ -9489,9 +9489,9 @@ package body Exp_Ch3 is
 
       elsif Consider_IS_NS
         and then
-          (Root_Type (T) = Standard_String
-             or else Root_Type (T) = Standard_Wide_String
-             or else Root_Type (T) = Standard_Wide_Wide_String)
+          (Root_Type (T) = Standard_String      or else
+           Root_Type (T) = Standard_Wide_String or else
+           Root_Type (T) = Standard_Wide_Wide_String)
         and then
           (not Is_Itype (T)
             or else Nkind (Associated_Node_For_Itype (T)) /= N_Aggregate)
@@ -9971,9 +9971,7 @@ package body Exp_Ch3 is
       --  attribute has been specified or Write (resp. Read) is available for
       --  an ancestor type. The last condition only applies under Ada 2005.
 
-      if Is_Limited_Type (Typ)
-        and then Is_Tagged_Type (Typ)
-      then
+      if Is_Limited_Type (Typ) and then Is_Tagged_Type (Typ) then
          if Operation = TSS_Stream_Read then
             Has_Predefined_Or_Specified_Stream_Attribute :=
               Has_Specified_Stream_Read (Typ);

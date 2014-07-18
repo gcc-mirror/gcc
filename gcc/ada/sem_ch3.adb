@@ -13618,8 +13618,8 @@ package body Sem_Ch3 is
                  Base_Type (Full_View (Id_Type)) = Base_Type (Parent_Type))
            or else
              (Ada_Version >= Ada_2012
-                and then Ekind (Id_Type) = E_Incomplete_Type
-                and then Full_View (Id_Type) = Parent_Type)
+               and then Ekind (Id_Type) = E_Incomplete_Type
+               and then Full_View (Id_Type) = Parent_Type)
          then
             --  Constraint checks on formals are generated during expansion,
             --  based on the signature of the original subprogram. The bounds

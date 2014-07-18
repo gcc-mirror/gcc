@@ -1,3 +1,38 @@
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, g-memdum.ads, i-cstrea.ads: Minor reformatting.
+
+2014-07-18  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (Has_Static_Predicate): New function.
+	(Set_Has_Static_Predicate): New procedure.
+	* einfo.ads (Has_Static_Predicate): New flag.
+	* sem_ch13.adb (Is_Predicate_Static): New function
+	(Build_Predicate_Functions): Use Is_Predicate_Static to reorganize
+	(Add_Call): Minor change in Sloc of generated expression
+	(Add_Predicates): Remove setting of Static_Pred, no longer used.
+	* sem_ch4.adb (Has_Static_Predicate): Removed this function,
+	replace by use of the entity flag Has_Static_Predicate_Aspect.
+	* sem_eval.adb (Eval_Static_Predicate_Check): Check real case
+	and issue warning that predicate is not checked for now.
+	* sem_eval.ads (Eval_Static_Predicate_Check): Fix comments in
+	spec.
+	* sem_util.adb (Check_Expression_Against_Static_Predicate):
+	Carry out check for any case where there is a static predicate,
+	and output appropriate message.
+	* sinfo.ads: Minor comment corrections.
+
+2014-07-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Record_Type): If the type is derived
+	from an untagged private type whose full view is tagged, the type
+	is marked tagged for layout reasons, but it has no dispatch table,
+	so Set_All_DT_Position must not be called.
+	* exp_ch13.adb: If the freeze node is for a type internal to a
+	record declaration, as is the case for a class-wide subtype
+	of a parent component, the relevant scope is the scope of the
+	enclosing record.
+
 2014-07-18  Thomas Quinot  <quinot@adacore.com>
 
 	* g-memdum.adb, g-memdum.ads: Code clean ups.

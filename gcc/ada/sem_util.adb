@@ -1695,13 +1695,13 @@ package body Sem_Util is
    begin
       --  When the predicate is static and the value of the expression is known
       --  at compile time, evaluate the predicate check. A type is non-static
-      --  when it has aspect Dynamic_Predicate.
+      --  when it has aspect Dynamic_Predicate, but if the dynamic predicate
+      --  was predicate-static, we still check it statically. After all this
+      --  is only a warning, not an error.
 
       if Compile_Time_Known_Value (Expr)
         and then Has_Predicates (Typ)
-        and then Is_Discrete_Type (Typ)
-        and then Present (Static_Predicate (Typ))
-        and then not Has_Dynamic_Predicate_Aspect (Typ)
+        and then Has_Static_Predicate (Typ)
       then
          --  Either -gnatc is enabled or the expression is ok
 
@@ -1710,12 +1710,14 @@ package body Sem_Util is
          then
             null;
 
-         --  The expression is prohibited by the static predicate
+         --  The expression is prohibited by the static predicate. There has
+         --  been some debate if this is an illegality (in the case where
+         --  the static predicate was explicitly given as such), but that
+         --  discussion decided this was not illegal, just a warning situation.
 
          else
             Error_Msg_NE
-              ("??static expression fails static predicate check on &",
-               Expr, Typ);
+              ("??static expression fails predicate check on &", Expr, Typ);
          end if;
       end if;
    end Check_Expression_Against_Static_Predicate;

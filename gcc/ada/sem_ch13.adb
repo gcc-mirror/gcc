@@ -134,6 +134,34 @@ package body Sem_Ch13 is
    --  that do not specify a representation characteristic are operational
    --  attributes.
 
+   function Is_Predicate_Static
+     (Expr : Node_Id;
+      Nam  : Name_Id) return Boolean;
+   --  Given predicate expression Expr, tests if Expr is predicate-static in
+   --  the sense of the rules in (RM 3.2.4 (15-24)). Occurrences of the type
+   --  name in the predicate expression have been replaced by references to
+   --  an identifier whose Chars field is Nam. This name is unique, so any
+   --  identifier with Chars matching Nam must be a reference to the type.
+   --  Returns True if the expression is predicate-static and False otherwise,
+   --  but is not in the business of setting flags or issuing error messages.
+   --
+   --  Only scalar types can have static predicates, so False is always
+   --  returned for non-scalar types.
+   --
+   --  Note: the RM seems to suggest that string types can also have static
+   --  predicates. But that really makes lttle sense as very few useful
+   --  predicates can be constructed for strings. Remember that:
+   --
+   --     "ABC" < "DEF"
+   --
+   --  is not a static expression. So even though the clearly faulty RM wording
+   --  allows the following:
+   --
+   --     subtype S is String with Static_Predicate => S < "DEF"
+   --
+   --  We can't allow this, otherwise we have predicate-static applying to a
+   --  larger class than static expressions, which was never intended.
+
    procedure New_Stream_Subprogram
      (N    : Node_Id;
       Ent  : Entity_Id;
@@ -7509,9 +7537,6 @@ package body Sem_Ch13 is
       Raise_Expression_Present : Boolean := False;
       --  Set True if Expr has at least one Raise_Expression
 
-      Static_Predic : Node_Id := Empty;
-      --  Set to N_Pragma node for a static predicate if one is encountered
-
       procedure Add_Call (T : Entity_Id);
       --  Includes a call to the predicate function for type T in Expr if T
       --  has predicates and Predicate_Function (T) is non-empty.
@@ -7557,9 +7582,10 @@ package body Sem_Ch13 is
 
             if No (Expr) then
                Expr := Exp;
+
             else
                Expr :=
-                 Make_And_Then (Loc,
+                 Make_And_Then (Sloc (Expr),
                    Left_Opnd  => Relocate_Node (Expr),
                    Right_Opnd => Exp);
             end if;
@@ -7630,16 +7656,6 @@ package body Sem_Ch13 is
             if Nkind (Ritem) = N_Pragma
               and then Pragma_Name (Ritem) = Name_Predicate
             then
-               --  Save the static predicate of the type for diagnostics and
-               --  error reporting purposes.
-
-               if Present (Corresponding_Aspect (Ritem))
-                 and then Chars (Identifier (Corresponding_Aspect (Ritem))) =
-                            Name_Static_Predicate
-               then
-                  Static_Predic := Ritem;
-               end if;
-
                --  Acquire arguments
 
                Arg1 := First (Pragma_Argument_Associations (Ritem));
@@ -7963,51 +7979,80 @@ package body Sem_Ch13 is
             end;
          end if;
 
-         if Is_Discrete_Type (Typ) then
+         --  See if we have a static predicate. Note that the answer may be
+         --  yes even if we have an explicit Dynamic_Predicate present.
 
-            --  Attempt to build a static predicate for a discrete subtype.
-            --  This action may fail because the actual expression may not be
-            --  static. Note that the presence of an inherited or explicitly
-            --  declared dynamic predicate is orthogonal to this check because
-            --  we are only interested in the static predicate.
+         declare
+            PS : constant Boolean := Is_Predicate_Static (Expr, Object_Name);
+            EN : Node_Id;
 
-            Build_Discrete_Static_Predicate (Typ, Expr, Object_Name);
+         begin
+            --  Case where we have a predicate static aspect
 
-            --  Emit an error when the predicate is categorized as static
-            --  but its expression is dynamic.
+            if PS then
 
-            if Present (Static_Predic)
-              and then No (Static_Predicate (Typ))
-            then
-               Error_Msg_F
-                 ("expression does not have required form for "
-                  & "static predicate",
-                  Next (First (Pragma_Argument_Associations
-                    (Static_Predic))));
-            end if;
+               --  We don't set Has_Static_Predicate_Aspect, since we can have
+               --  any of the three cases (Predicate, Dynamic_Predicate, or
+               --  Static_Predicate) generating a predicate with an expression
+               --  that is predicate static. We just indicate that we have a
+               --  predicate that can be treated as static.
 
-         --  If a static predicate applies on other types, that's an error:
-         --  either the type is scalar but non-static, or it's not even a
-         --  scalar type. We do not issue an error on generated types, as
-         --  these may be duplicates of the same error on a source type.
+               Set_Has_Static_Predicate (Typ);
 
-         elsif Present (Static_Predic) and then Comes_From_Source (Typ) then
-            if Is_Real_Type (Typ) then
-               Error_Msg_FE
-                 ("static predicates not implemented for real type&",
-                  Typ, Typ);
+               --  For discrete subtype, build the static predicate list
 
-            elsif Is_Scalar_Type (Typ) then
-               Error_Msg_FE
-                 ("static predicate not allowed for non-static type&",
-                  Typ, Typ);
+               if Is_Discrete_Type (Typ) then
+                  Build_Discrete_Static_Predicate (Typ, Expr, Object_Name);
+
+                  --  If we don't get a static predicate list, it means that we
+                  --  have a case where this is not possible, most typically in
+                  --  the case where we inherit a dynamic predicate. We do not
+                  --  consider this an error, we just leave the predicate as
+                  --  dynamic. But if we do succeed in building the list, then
+                  --  we mark the predicate as static.
+
+                  if No (Static_Predicate (Typ)) then
+                     Set_Has_Static_Predicate (Typ, False);
+                  end if;
+               end if;
+
+            --  Case of dynamic predicate (expression is not predicate-static)
 
             else
-               Error_Msg_FE
-                 ("static predicate not allowed for non-scalar type&",
-                  Typ, Typ);
+               --  Again, we don't set Has_Dynamic_Predicate_Aspect, since that
+               --  is only set if we have an explicit Dynamic_Predicate aspect
+               --  given. Here we may simply have a Predicate aspect where the
+               --  expression happens not to be predicate-static.
+
+               --  Emit an error when the predicate is categorized as static
+               --  but its expression is not predicate-static.
+
+               --  First a little fiddling to get a nice location for the
+               --  message. If the expression is of the form (A and then B),
+               --  then use the left operand for the Sloc. This avoids getting
+               --  confused by a call to a higher level predicate with a less
+               --  convenient source location.
+
+               EN := Expr;
+               while Nkind (EN) = N_And_Then loop
+                  EN := Left_Opnd (EN);
+               end loop;
+
+               --  Now post appropriate message
+
+               if Has_Static_Predicate_Aspect (Typ) then
+                  if Is_Scalar_Type (Typ) then
+                     Error_Msg_F
+                       ("expression is not predicate-static (RM 4.3.2(16-22))",
+                        EN);
+                  else
+                     Error_Msg_FE
+                       ("static predicate not allowed for non-scalar type&",
+                        EN, Typ);
+                  end if;
+               end if;
             end if;
-         end if;
+         end;
       end if;
    end Build_Predicate_Functions;
 
@@ -10292,6 +10337,210 @@ package body Sem_Ch13 is
          end;
       end if;
    end Is_Operational_Item;
+
+   -------------------------
+   -- Is_Predicate_Static --
+   -------------------------
+
+   function Is_Predicate_Static
+     (Expr : Node_Id;
+      Nam  : Name_Id) return Boolean
+   is
+      function All_Static_Case_Alternatives (L : List_Id) return Boolean;
+      --  Given a list of case expression alternatives, returns True if
+      --  all the alternative are static (have all static choices, and a
+      --  static expression).
+
+      function All_Static_Choices (L : List_Id) return Boolean;
+      --  Returns true if all elements of the list are ok static choices
+      --  as defined below for Is_Static_Choice. Used for case expression
+      --  alternatives and for the right operand of a membership test.
+
+      function Is_Static_Choice (N : Node_Id) return Boolean;
+      --  Returns True if N represents a static choice (static subtype, or
+      --  static subtype indication, or static expression or static range).
+      --
+      --  Note that this is a bit more inclusive than we actually need
+      --  (in particular membership tests do not allow the use of subtype
+      --  indications. But that doesn't matter, we have already checked
+      --  that the construct is legal to get this far.
+
+      function Is_Type_Ref (N : Node_Id) return Boolean;
+      pragma Inline (Is_Type_Ref);
+      --  Returns if True if N is a reference to the type for the predicate in
+      --  the expression (i.e. if it is an identifier whose Chars field matches
+      --  the Nam given in the call). N must not be parenthesized, if the type
+      --  name appears in parens, this routine will return False.
+
+      ----------------------------------
+      -- All_Static_Case_Alternatives --
+      ----------------------------------
+
+      function All_Static_Case_Alternatives (L : List_Id) return Boolean is
+         N : Node_Id;
+
+      begin
+         N := First (L);
+         while Present (N) loop
+            if not (All_Static_Choices (Discrete_Choices (N))
+                     and then Is_OK_Static_Expression (Expression (N)))
+            then
+               return False;
+            end if;
+
+            Next (N);
+         end loop;
+
+         return True;
+      end All_Static_Case_Alternatives;
+
+      ------------------------
+      -- All_Static_Choices --
+      ------------------------
+
+      function All_Static_Choices (L : List_Id) return Boolean is
+         N : Node_Id;
+
+      begin
+         N := First (L);
+         while Present (N) loop
+            if not Is_Static_Choice (N) then
+               return False;
+            end if;
+
+            Next (N);
+         end loop;
+
+         return True;
+      end All_Static_Choices;
+
+      ----------------------
+      -- Is_Static_Choice --
+      ----------------------
+
+      function Is_Static_Choice (N : Node_Id) return Boolean is
+      begin
+         return Is_OK_Static_Expression (N)
+           or else (Is_Entity_Name (N) and then Is_Type (Entity (N))
+                     and then Is_OK_Static_Subtype (Entity (N)))
+           or else (Nkind (N) = N_Subtype_Indication
+                     and then Is_OK_Static_Subtype (Entity (N)))
+           or else (Nkind (N) = N_Range and then Is_OK_Static_Range (N));
+      end Is_Static_Choice;
+
+      -----------------
+      -- Is_Type_Ref --
+      -----------------
+
+      function Is_Type_Ref (N : Node_Id) return Boolean is
+      begin
+         return Nkind (N) = N_Identifier
+           and then Chars (N) = Nam
+           and then Paren_Count (N) = 0;
+      end Is_Type_Ref;
+
+   --  Start of processing for Is_Predicate_Static
+
+   begin
+      --  Only scalar types can be predicate static
+
+      if not Is_Scalar_Type (Etype (Expr)) then
+         return False;
+      end if;
+
+      --  Predicate_Static means one of the following holds. Numbers are the
+      --  corresponding paragraph numbers in (RM 3.2.4(16-22)).
+
+      --  16: A static expression
+
+      if Is_OK_Static_Expression (Expr) then
+         return True;
+
+      --  17: A membership test whose simple_expression is the current
+      --  instance, and whose membership_choice_list meets the requirements
+      --  for a static membership test.
+
+      elsif Nkind (Expr) in N_Membership_Test
+        and then ((Present (Right_Opnd (Expr))
+                    and then Is_Static_Choice (Right_Opnd (Expr)))
+                  or else
+                    (Present (Alternatives (Expr))
+                      and then All_Static_Choices (Alternatives (Expr))))
+      then
+         return True;
+
+      --  18. A case_expression whose selecting_expression is the current
+      --  instance, and whose dependent expressions are static expressions.
+
+      elsif Nkind (Expr) = N_Case_Expression
+        and then Is_Type_Ref (Expression (Expr))
+        and then All_Static_Case_Alternatives (Alternatives (Expr))
+      then
+         return True;
+
+      --  19. A call to a predefined equality or ordering operator, where one
+      --  operand is the current instance, and the other is a static
+      --  expression.
+
+      elsif Nkind (Expr) in N_Op_Compare
+        and then ((Is_Type_Ref (Left_Opnd (Expr))
+                    and then Is_OK_Static_Expression (Right_Opnd (Expr)))
+                  or else
+                    (Is_Type_Ref (Right_Opnd (Expr))
+                      and then Is_OK_Static_Expression (Left_Opnd (Expr))))
+      then
+         return True;
+
+      --  20. A call to a predefined boolean logical operator, where each
+      --  operand is predicate-static.
+
+      elsif (Nkind_In (Expr, N_Op_And, N_Op_Or, N_Op_Xor)
+              and then Is_Predicate_Static (Left_Opnd (Expr), Nam)
+              and then Is_Predicate_Static (Right_Opnd (Expr), Nam))
+        or else
+            (Nkind (Expr) = N_Op_Not
+              and then Is_Predicate_Static (Right_Opnd (Expr), Nam))
+      then
+         return True;
+
+      --  21. A short-circuit control form where both operands are
+      --  predicate-static.
+
+      elsif Nkind (Expr) in N_Short_Circuit
+        and then Is_Predicate_Static (Left_Opnd (Expr), Nam)
+        and then Is_Predicate_Static (Right_Opnd (Expr), Nam)
+      then
+         return True;
+
+      --  22. A parenthesized predicate-static expression. This does not
+      --  require any special test, since we just ignore paren levels in
+      --  all the cases above.
+
+      --  One more test that is an implementation artifact caused by the fact
+      --  that we are analyzing not the original expresesion, but the generated
+      --  expression in the body of the predicate function. This can include
+      --  refereces to inherited predicates, so that the expression we are
+      --  processing looks like:
+
+      --    expression and then xxPredicate (typ (Inns))
+
+      --  Where the call is to a Predicate function for an inherited predicate.
+      --  We simply ignore such a call (which could be to either a dynamic or
+      --  a static predicate, but remember that we can have Static_Predicate
+      --  for a non-static subtype).
+
+      elsif Nkind (Expr) = N_Function_Call
+        and then Is_Predicate_Function (Entity (Name (Expr)))
+      then
+         return True;
+
+      --  That's an exhaustive list of tests, all other cases are not
+      --  predicate static, so we return False.
+
+      else
+         return False;
+      end if;
+   end Is_Predicate_Static;
 
    ---------------------
    -- Kill_Rep_Clause --

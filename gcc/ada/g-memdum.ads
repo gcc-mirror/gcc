@@ -49,9 +49,9 @@ package GNAT.Memory_Dump is
    --  like the AAMP, where the storage unit is not 8 bits). The output is one
    --  or more lines in the following format, which is for the case of 32-bit
    --  addresses (64-bit addresses are handled appropriately):
-
+   --
    --    0234_3368: 66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
-
+   --
    --  All but the last line have 16 bytes. A question mark is used in the
    --  string data to indicate a non-printable character.
 
@@ -63,15 +63,15 @@ package GNAT.Memory_Dump is
    --  If Prefix is set to Absolute_Address, the output is identical to the
    --  above version, each line starting with the absolute address of the
    --  first dumped storage element.
-
+   --
    --  If Prefix is set to Offset, then instead each line starts with the
    --  indication of the offset relative to Addr:
-
+   --
    --    00: 66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
-
+   --
    --  Finally if Prefix is set to None, the prefix is suppressed altogether,
    --  and only the memory contents are displayed:
-
+   --
    --    66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
 
 end GNAT.Memory_Dump;
