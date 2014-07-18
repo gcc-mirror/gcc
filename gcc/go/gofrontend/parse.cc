@@ -1694,6 +1694,8 @@ Parse::init_vars_from_call(const Typed_identifier_list* vars, Type* type,
   // the right number of values, but it might.  Declare the variables,
   // and then assign the results of the call to them.
 
+  call->set_expected_result_count(vars->size());
+
   Named_object* first_var = NULL;
   unsigned int index = 0;
   bool any_new = false;
@@ -4101,6 +4103,7 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
     {
       if (op != OPERATOR_EQ)
 	error_at(location, "multiple results only permitted with %<=%>");
+      call->set_expected_result_count(lhs->size());
       delete vals;
       vals = new Expression_list;
       for (unsigned int i = 0; i < lhs->size(); ++i)
