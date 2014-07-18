@@ -4490,6 +4490,20 @@ package body Exp_Ch4 is
          end if;
       end if;
 
+      --  If no storage pool has been specified and we have the restriction
+      --  No_Standard_Allocators_After_Elaboration is present, then generate
+      --  a call to Elaboration_Allocators.Check_Standard_Allocator.
+
+      if Nkind (N) = N_Allocator
+        and then No (Storage_Pool (N))
+        and then Restriction_Active (No_Standard_Allocators_After_Elaboration)
+      then
+         Insert_Action (N,
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               New_Occurrence_Of (RTE (RE_Check_Standard_Allocator), Loc)));
+      end if;
+
       --  Handle case of qualified expression (other than optimization above)
       --  First apply constraint checks, because the bounds or discriminants
       --  in the aggregate might not match the subtype mark in the allocator.

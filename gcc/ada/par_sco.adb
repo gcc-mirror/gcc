@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -357,7 +357,7 @@ package body Par_SCO is
 
    function Is_Logical_Operator (N : Node_Id) return Boolean is
    begin
-      return Nkind_In (N, N_Op_Not, N_And_Then, N_Or_Else);
+      return Nkind_In (N, N_Op_Not, N_And_Then, N_Or_Else, N_If_Expression);
    end Is_Logical_Operator;
 
    -----------------------

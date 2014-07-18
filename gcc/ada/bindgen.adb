@@ -739,8 +739,8 @@ package body Bindgen is
          if Dispatching_Domains_Used then
             WBI ("      procedure Freeze_Dispatching_Domains;");
             WBI ("      pragma Import");
-            WBI ("        (Ada, Freeze_Dispatching_Domains, " &
-                 """__gnat_freeze_dispatching_domains"");");
+            WBI ("        (Ada, Freeze_Dispatching_Domains, "
+                 & """__gnat_freeze_dispatching_domains"");");
          end if;
 
          WBI ("   begin");
@@ -748,6 +748,18 @@ package body Bindgen is
          WBI ("         return;");
          WBI ("      end if;");
          WBI ("      Is_Elaborated := True;");
+
+         --  Call System.Elaboration_Allocators.Mark_Start_Of_Elaboration if
+         --  restriction No_Standard_Allocators_After_Elaboration is active.
+
+         if Cumulative_Restrictions.Set
+              (No_Standard_Allocators_After_Elaboration)
+         then
+            WBI ("      System.Elaboration_Allocators."
+                 & "Mark_Start_Of_Elaboration;");
+         end if;
+
+         --  Generate assignments to initialize globals
 
          Set_String ("      Main_Priority := ");
          Set_Int    (Main_Priority);
@@ -995,6 +1007,15 @@ package body Bindgen is
       end if;
 
       Gen_Elab_Calls;
+
+      --  Call System.Elaboration_Allocators.Mark_Start_Of_Elaboration if
+      --  restriction No_Standard_Allocators_After_Elaboration is active.
+
+      if Cumulative_Restrictions.Set
+        (No_Standard_Allocators_After_Elaboration)
+      then
+         WBI ("      System.Elaboration_Allocators.Mark_End_Of_Elaboration;");
+      end if;
 
       --  From this point, no new dispatching domain can be created.
 
@@ -2482,9 +2503,22 @@ package body Bindgen is
          WBI ("with System.Restrictions;");
       end if;
 
+      --  Generate with of Ada.Exceptions if needs library finalization
+
       if Needs_Library_Finalization then
          WBI ("with Ada.Exceptions;");
       end if;
+
+      --  Generate with of System.Elaboration_Allocators if the restriction
+      --  No_Standard_Allocators_After_Elaboration was present.
+
+      if Cumulative_Restrictions.Set
+           (No_Standard_Allocators_After_Elaboration)
+      then
+         WBI ("with System.Elaboration_Allocators;");
+      end if;
+
+      --  Generate start of package body
 
       WBI ("");
       WBI ("package body " & Ada_Main & " is");

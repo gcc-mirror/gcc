@@ -10828,7 +10828,8 @@ package body Sem_Attr is
                      --  may be a subtype (e.g. given by a slice).
 
                      --  Choices may also be identifiers with no staticness
-                     --  requirements, in which case rules are unclear???
+                     --  requirements, in which case they must resolve to the
+                     --  index type.
 
                      declare
                         C    : Node_Id;
@@ -10841,14 +10842,17 @@ package body Sem_Attr is
                            Indx := First_Index (Etype (Prefix (N)));
 
                            if Nkind (C) /= N_Aggregate then
-                              Set_Etype (C, Etype (Indx));
+                              Analyze_And_Resolve (C, Etype (Indx));
+                              Apply_Constraint_Check (C, Etype (Indx));
                               Check_Non_Static_Context (C);
 
                            else
                               C_E := First (Expressions (C));
                               while Present (C_E) loop
-                                 Set_Etype (C_E, Etype (Indx));
+                                 Analyze_And_Resolve (C_E, Etype (Indx));
+                                 Apply_Constraint_Check (C_E, Etype (Indx));
                                  Check_Non_Static_Context (C_E);
+
                                  Next (C_E);
                                  Next_Index (Indx);
                               end loop;
