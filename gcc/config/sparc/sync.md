@@ -64,11 +64,19 @@
   "stbar"
   [(set_attr "type" "multi")])
 
+;; For LEON3, STB has the effect of membar #StoreLoad.
+(define_insn "*membar_storeload_leon3"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
+  "TARGET_LEON3"
+  "stb\t%%g0, [%%sp-1]"
+  [(set_attr "type" "store")])
+
 ;; For V8, LDSTUB has the effect of membar #StoreLoad.
 (define_insn "*membar_storeload"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
-  "TARGET_V8"
+  "TARGET_V8 && !TARGET_LEON3"
   "ldstub\t[%%sp-1], %%g0"
   [(set_attr "type" "multi")])
 
