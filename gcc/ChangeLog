@@ -1,3 +1,8 @@
+2014-07-19  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sync.md (*membar_storeload_leon3): New insn.
+	(*membar_storeload): Disable for LEON3.
+
 2014-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR rtl-optimization/61461
