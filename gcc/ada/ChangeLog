@@ -1,5 +1,9 @@
 2014-07-19  David Wohlferd  <dw@LimeGreenSocks.com>
 
+	* gnat_rm.texi: Clean up for makeinfo 5.2.
+
+2014-07-19  David Wohlferd  <dw@LimeGreenSocks.com>
+
 	* gnat_rm.texi (Machine Code Insertions): Clean up.
 
 2014-07-18  Robert Dewar  <dewar@adacore.com>

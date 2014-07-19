@@ -85,8 +85,9 @@ AdaCore
 * Implementation of Ada 2012 Features::
 * Obsolescent Features::
 * GNU Free Documentation License::
-* Index::
+* Index:Concept Index.
 
+@detailmenu
  --- The Detailed Node Listing ---
 
 About This Guide
@@ -111,10 +112,10 @@ Implementation Defined Pragmas
 * Pragma Assertion_Policy::
 * Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Ast_Entry::
 * Pragma Async_Readers::
 * Pragma Async_Writers::
 * Pragma Attribute_Definition::
-* Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
 * Pragma Check_Float_Overflow::
@@ -697,6 +698,7 @@ Obsolescent Features
 GNU Free Documentation License
 
 Index
+@end detailmenu
 @end menu
 
 @end ifnottex
@@ -959,10 +961,10 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assertion_Policy::
 * Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Ast_Entry::
 * Pragma Async_Readers::
 * Pragma Async_Writers::
 * Pragma Attribute_Definition::
-* Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
 * Pragma Check_Float_Overflow::
@@ -19242,19 +19244,6 @@ C @code{timeval} format.
 @cindex Time
 @cindex @code{GNAT.Calendar.Time_IO} (@file{g-catiio.ads})
 
-@node GNAT.CRC32 (g-crc32.ads)
-@section @code{GNAT.CRC32} (@file{g-crc32.ads})
-@cindex @code{GNAT.CRC32} (@file{g-crc32.ads})
-@cindex CRC32
-@cindex Cyclic Redundancy Check
-
-@noindent
-This package implements the CRC-32 algorithm.  For a full description
-of this algorithm see
-``Computation of Cyclic Redundancy Checks via Table Look-Up'',
-@cite{Communications of the ACM}, Vol.@: 31 No.@: 8, pp.@: 1008-1013,
-Aug.@: 1988.  Sarwate, D.V@.
-
 @node GNAT.Case_Util (g-casuti.ads)
 @section @code{GNAT.Case_Util} (@file{g-casuti.ads})
 @cindex @code{GNAT.Case_Util} (@file{g-casuti.ads})
@@ -19328,6 +19317,19 @@ of a partition).
 
 @noindent
 Provides a simple interface to handle Ctrl-C keyboard events.
+
+@node GNAT.CRC32 (g-crc32.ads)
+@section @code{GNAT.CRC32} (@file{g-crc32.ads})
+@cindex @code{GNAT.CRC32} (@file{g-crc32.ads})
+@cindex CRC32
+@cindex Cyclic Redundancy Check
+
+@noindent
+This package implements the CRC-32 algorithm.  For a full description
+of this algorithm see
+``Computation of Cyclic Redundancy Checks via Table Look-Up'',
+@cite{Communications of the ACM}, Vol.@: 31 No.@: 8, pp.@: 1008-1013,
+Aug.@: 1988.  Sarwate, D.V@.
 
 @node GNAT.Current_Exception (g-curexc.ads)
 @section @code{GNAT.Current_Exception} (@file{g-curexc.ads})
@@ -19985,17 +19987,6 @@ A very simple facility for locking and unlocking sections of code using a
 single global task lock.  Appropriate for use in situations where contention
 between tasks is very rarely expected.
 
-@node GNAT.Time_Stamp (g-timsta.ads)
-@section @code{GNAT.Time_Stamp} (@file{g-timsta.ads})
-@cindex @code{GNAT.Time_Stamp} (@file{g-timsta.ads})
-@cindex Time stamp
-@cindex Current time
-
-@noindent
-Provides a simple function that returns a string YYYY-MM-DD HH:MM:SS.SS that
-represents the current date and time in ISO 8601 format. This is a very simple
-routine with minimal code and there are no dependencies on any other unit.
-
 @node GNAT.Threads (g-thread.ads)
 @section @code{GNAT.Threads} (@file{g-thread.ads})
 @cindex @code{GNAT.Threads} (@file{g-thread.ads})
@@ -20007,6 +19998,17 @@ Provides facilities for dealing with foreign threads which need to be known
 by the GNAT run-time system. Consult the documentation of this package for
 further details if your program has threads that are created by a non-Ada
 environment which then accesses Ada code.
+
+@node GNAT.Time_Stamp (g-timsta.ads)
+@section @code{GNAT.Time_Stamp} (@file{g-timsta.ads})
+@cindex @code{GNAT.Time_Stamp} (@file{g-timsta.ads})
+@cindex Time stamp
+@cindex Current time
+
+@noindent
+Provides a simple function that returns a string YYYY-MM-DD HH:MM:SS.SS that
+represents the current date and time in ISO 8601 format. This is a very simple
+routine with minimal code and there are no dependencies on any other unit.
 
 @node GNAT.Traceback (g-traceb.ads)
 @section @code{GNAT.Traceback} (@file{g-traceb.ads})
@@ -22902,7 +22904,7 @@ standard replacement for GNAT's @code{Task_Info} functionality.
 @include fdl.texi
 @c GNU Free Documentation License
 
-@node Index,,GNU Free Documentation License, Top
+@node Concept Index
 @unnumbered Index
 
 @printindex cp
@@ -22910,5 +22912,3 @@ standard replacement for GNAT's @code{Task_Info} functionality.
 @contents
 
 @bye
-tablishes the following set of restrictions:
-Pragma Shared
