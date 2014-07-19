@@ -1,3 +1,7 @@
+2014-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (output_stack_usage): Adjust the location of the warning.
+
 2014-07-19  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sync.md (*membar_storeload_leon3): New insn.
