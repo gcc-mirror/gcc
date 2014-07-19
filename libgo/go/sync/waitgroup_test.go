@@ -5,7 +5,6 @@
 package sync_test
 
 import (
-	"runtime"
 	. "sync"
 	"sync/atomic"
 	"testing"
@@ -61,60 +60,60 @@ func TestWaitGroupMisuse(t *testing.T) {
 	t.Fatal("Should panic")
 }
 
+func TestWaitGroupRace(t *testing.T) {
+	// Run this test for about 1ms.
+	for i := 0; i < 1000; i++ {
+		wg := &WaitGroup{}
+		n := new(int32)
+		// spawn goroutine 1
+		wg.Add(1)
+		go func() {
+			atomic.AddInt32(n, 1)
+			wg.Done()
+		}()
+		// spawn goroutine 2
+		wg.Add(1)
+		go func() {
+			atomic.AddInt32(n, 1)
+			wg.Done()
+		}()
+		// Wait for goroutine 1 and 2
+		wg.Wait()
+		if atomic.LoadInt32(n) != 2 {
+			t.Fatal("Spurious wakeup from Wait")
+		}
+	}
+}
+
 func BenchmarkWaitGroupUncontended(b *testing.B) {
 	type PaddedWaitGroup struct {
 		WaitGroup
 		pad [128]uint8
 	}
-	const CallsPerSched = 1000
-	procs := runtime.GOMAXPROCS(-1)
-	N := int32(b.N / CallsPerSched)
-	c := make(chan bool, procs)
-	for p := 0; p < procs; p++ {
-		go func() {
-			var wg PaddedWaitGroup
-			for atomic.AddInt32(&N, -1) >= 0 {
-				runtime.Gosched()
-				for g := 0; g < CallsPerSched; g++ {
-					wg.Add(1)
-					wg.Done()
-					wg.Wait()
-				}
-			}
-			c <- true
-		}()
-	}
-	for p := 0; p < procs; p++ {
-		<-c
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		var wg PaddedWaitGroup
+		for pb.Next() {
+			wg.Add(1)
+			wg.Done()
+			wg.Wait()
+		}
+	})
 }
 
 func benchmarkWaitGroupAddDone(b *testing.B, localWork int) {
-	const CallsPerSched = 1000
-	procs := runtime.GOMAXPROCS(-1)
-	N := int32(b.N / CallsPerSched)
-	c := make(chan bool, procs)
 	var wg WaitGroup
-	for p := 0; p < procs; p++ {
-		go func() {
-			foo := 0
-			for atomic.AddInt32(&N, -1) >= 0 {
-				runtime.Gosched()
-				for g := 0; g < CallsPerSched; g++ {
-					wg.Add(1)
-					for i := 0; i < localWork; i++ {
-						foo *= 2
-						foo /= 2
-					}
-					wg.Done()
-				}
+	b.RunParallel(func(pb *testing.PB) {
+		foo := 0
+		for pb.Next() {
+			wg.Add(1)
+			for i := 0; i < localWork; i++ {
+				foo *= 2
+				foo /= 2
 			}
-			c <- foo == 42
-		}()
-	}
-	for p := 0; p < procs; p++ {
-		<-c
-	}
+			wg.Done()
+		}
+		_ = foo
+	})
 }
 
 func BenchmarkWaitGroupAddDone(b *testing.B) {
@@ -126,34 +125,18 @@ func BenchmarkWaitGroupAddDoneWork(b *testing.B) {
 }
 
 func benchmarkWaitGroupWait(b *testing.B, localWork int) {
-	const CallsPerSched = 1000
-	procs := runtime.GOMAXPROCS(-1)
-	N := int32(b.N / CallsPerSched)
-	c := make(chan bool, procs)
 	var wg WaitGroup
-	wg.Add(procs)
-	for p := 0; p < procs; p++ {
-		go wg.Done()
-	}
-	for p := 0; p < procs; p++ {
-		go func() {
-			foo := 0
-			for atomic.AddInt32(&N, -1) >= 0 {
-				runtime.Gosched()
-				for g := 0; g < CallsPerSched; g++ {
-					wg.Wait()
-					for i := 0; i < localWork; i++ {
-						foo *= 2
-						foo /= 2
-					}
-				}
+	b.RunParallel(func(pb *testing.PB) {
+		foo := 0
+		for pb.Next() {
+			wg.Wait()
+			for i := 0; i < localWork; i++ {
+				foo *= 2
+				foo /= 2
 			}
-			c <- foo == 42
-		}()
-	}
-	for p := 0; p < procs; p++ {
-		<-c
-	}
+		}
+		_ = foo
+	})
 }
 
 func BenchmarkWaitGroupWait(b *testing.B) {

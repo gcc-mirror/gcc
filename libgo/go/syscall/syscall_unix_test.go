@@ -1,8 +1,8 @@
-// Copyright 2012 The Go Authors. All rights reserved.
+// Copyright 2013 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build linux dragonfly darwin freebsd netbsd openbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package syscall_test
 
@@ -13,11 +13,69 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"syscall"
 	"testing"
 	"time"
 )
+
+// Tests that below functions, structures and constants are consistent
+// on all Unix-like systems.
+func _() {
+	// program scheduling priority functions and constants
+	var (
+		_ func(int, int, int) error   = syscall.Setpriority
+		_ func(int, int) (int, error) = syscall.Getpriority
+	)
+	const (
+		_ int = syscall.PRIO_USER
+		_ int = syscall.PRIO_PROCESS
+		_ int = syscall.PRIO_PGRP
+	)
+
+	// termios constants
+	const (
+		_ int = syscall.TCIFLUSH
+		_ int = syscall.TCIOFLUSH
+		_ int = syscall.TCOFLUSH
+	)
+
+	// fcntl file locking structure and constants
+	var (
+		_ = syscall.Flock_t{
+			Type:   int16(0),
+			Whence: int16(0),
+			Start:  int64(0),
+			Len:    int64(0),
+			Pid:    int32(0),
+		}
+	)
+	const (
+		_ = syscall.F_GETLK
+		_ = syscall.F_SETLK
+		_ = syscall.F_SETLKW
+	)
+}
+
+// TestFcntlFlock tests whether the file locking structure matches
+// the calling convention of each kernel.
+func TestFcntlFlock(t *testing.T) {
+	name := filepath.Join(os.TempDir(), "TestFcntlFlock")
+	fd, err := syscall.Open(name, syscall.O_CREAT|syscall.O_RDWR|syscall.O_CLOEXEC, 0)
+	if err != nil {
+		t.Fatalf("Open failed: %v", err)
+	}
+	defer syscall.Unlink(name)
+	defer syscall.Close(fd)
+	flock := syscall.Flock_t{
+		Type:  syscall.F_RDLCK,
+		Start: 0, Len: 0, Whence: 1,
+	}
+	if err := syscall.FcntlFlock(uintptr(fd), syscall.F_GETLK, &flock); err != nil {
+		t.Fatalf("FcntlFlock failed: %v", err)
+	}
+}
 
 // TestPassFD tests passing a file descriptor over a Unix socket.
 //
@@ -27,9 +85,13 @@ import (
 // "-test.run=^TestPassFD$" and an environment variable used to signal
 // that the test should become the child process instead.
 func TestPassFD(t *testing.T) {
-	if runtime.GOOS == "dragonfly" {
+	switch runtime.GOOS {
+	case "dragonfly":
 		// TODO(jsing): Figure out why sendmsg is returning EINVAL.
-		t.Skip("Skipping test on dragonfly")
+		t.Skip("skipping test on dragonfly")
+	case "solaris":
+		// TODO(aram): Figure out why ReadMsgUnix is returning empty message.
+		t.Skip("skipping test on solaris, see issue 7402")
 	}
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "1" {
 		passFDChild()
@@ -202,5 +264,55 @@ func TestUnixRightsRoundtrip(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestRlimit(t *testing.T) {
+	var rlimit, zero syscall.Rlimit
+	err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rlimit)
+	if err != nil {
+		t.Fatalf("Getrlimit: save failed: %v", err)
+	}
+	if zero == rlimit {
+		t.Fatalf("Getrlimit: save failed: got zero value %#v", rlimit)
+	}
+	set := rlimit
+	set.Cur = set.Max - 1
+	err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &set)
+	if err != nil {
+		t.Fatalf("Setrlimit: set failed: %#v %v", set, err)
+	}
+	var get syscall.Rlimit
+	err = syscall.Getrlimit(syscall.RLIMIT_NOFILE, &get)
+	if err != nil {
+		t.Fatalf("Getrlimit: get failed: %v", err)
+	}
+	set = rlimit
+	set.Cur = set.Max - 1
+	if set != get {
+		// Seems like Darwin requires some privilege to
+		// increase the soft limit of rlimit sandbox, though
+		// Setrlimit never reports an error.
+		switch runtime.GOOS {
+		case "darwin":
+		default:
+			t.Fatalf("Rlimit: change failed: wanted %#v got %#v", set, get)
+		}
+	}
+	err = syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rlimit)
+	if err != nil {
+		t.Fatalf("Setrlimit: restore failed: %#v %v", rlimit, err)
+	}
+}
+
+func TestSeekFailure(t *testing.T) {
+	_, err := syscall.Seek(-1, 0, 0)
+	if err == nil {
+		t.Fatalf("Seek(-1, 0, 0) did not fail")
+	}
+	str := err.Error() // used to crash on Linux
+	t.Logf("Seek: %v", str)
+	if str == "" {
+		t.Fatalf("Seek(-1, 0, 0) return error with empty message")
 	}
 }

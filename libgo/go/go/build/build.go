@@ -264,6 +264,7 @@ var cgoEnabled = map[string]bool{
 	"dragonfly/amd64": true,
 	"freebsd/386":     true,
 	"freebsd/amd64":   true,
+	"freebsd/arm":     true,
 	"linux/386":       true,
 	"linux/amd64":     true,
 	"linux/arm":       true,
@@ -291,10 +292,10 @@ func defaultContext() Context {
 	// say "+build go1.x", and code that should only be built before Go 1.x
 	// (perhaps it is the stub to use in that case) should say "+build !go1.x".
 	//
-	// When we reach Go 1.3 the line will read
-	//	c.ReleaseTags = []string{"go1.1", "go1.2", "go1.3"}
+	// When we reach Go 1.4 the line will read
+	//	c.ReleaseTags = []string{"go1.1", "go1.2", "go1.3", "go1.4"}
 	// and so on.
-	c.ReleaseTags = []string{"go1.1", "go1.2"}
+	c.ReleaseTags = []string{"go1.1", "go1.2", "go1.3"}
 
 	switch os.Getenv("CGO_ENABLED") {
 	case "1":
@@ -1209,7 +1210,7 @@ func ArchChar(goarch string) (string, error) {
 	switch goarch {
 	case "386":
 		return "8", nil
-	case "amd64":
+	case "amd64", "amd64p32":
 		return "6", nil
 	case "arm":
 		return "5", nil

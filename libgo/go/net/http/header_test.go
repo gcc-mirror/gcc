@@ -192,9 +192,12 @@ func BenchmarkHeaderWriteSubset(b *testing.B) {
 	}
 }
 
-func TestHeaderWriteSubsetMallocs(t *testing.T) {
+func TestHeaderWriteSubsetAllocs(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping malloc count in short mode")
+		t.Skip("skipping alloc test in short mode")
+	}
+	if raceEnabled {
+		t.Skip("skipping test under race detector")
 	}
 	t.Skip("Skipping alloc count test on gccgo")
 	if runtime.GOMAXPROCS(0) > 1 {
@@ -205,6 +208,6 @@ func TestHeaderWriteSubsetMallocs(t *testing.T) {
 		testHeader.WriteSubset(&buf, nil)
 	})
 	if n > 0 {
-		t.Errorf("mallocs = %g; want 0", n)
+		t.Errorf("allocs = %g; want 0", n)
 	}
 }

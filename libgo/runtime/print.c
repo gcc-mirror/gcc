@@ -91,6 +91,25 @@ runtime_printf(const char *s, ...)
 	va_end(va);
 }
 
+int32
+runtime_snprintf(byte *buf, int32 n, const char *s, ...)
+{
+	G *g = runtime_g();
+	va_list va;
+	int32 m;
+
+	g->writebuf = buf;
+	g->writenbuf = n-1;
+	va_start(va, s);
+	go_vprintf(s, va);
+	va_end(va);
+	*g->writebuf = '\0';
+	m = g->writebuf - buf;
+	g->writenbuf = 0;
+	g->writebuf = nil;
+	return m;
+}
+
 // Very simple printf.  Only for debugging prints.
 // Do not add to this without checking with Rob.
 static void

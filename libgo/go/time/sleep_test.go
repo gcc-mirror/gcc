@@ -74,26 +74,13 @@ func benchmark(b *testing.B, bench func(n int)) {
 	for i := 0; i < len(garbage); i++ {
 		garbage[i] = AfterFunc(Hour, nil)
 	}
-
-	const batch = 1000
-	P := runtime.GOMAXPROCS(-1)
-	N := int32(b.N / batch)
-
 	b.ResetTimer()
 
-	var wg sync.WaitGroup
-	wg.Add(P)
-
-	for p := 0; p < P; p++ {
-		go func() {
-			for atomic.AddInt32(&N, -1) >= 0 {
-				bench(batch)
-			}
-			wg.Done()
-		}()
-	}
-
-	wg.Wait()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			bench(1000)
+		}
+	})
 
 	b.StopTimer()
 	for i := 0; i < len(garbage); i++ {
@@ -361,19 +348,18 @@ func TestReset(t *testing.T) {
 // Test that sleeping for an interval so large it overflows does not
 // result in a short sleep duration.
 func TestOverflowSleep(t *testing.T) {
-	const timeout = 25 * Millisecond
 	const big = Duration(int64(1<<63 - 1))
 	select {
 	case <-After(big):
 		t.Fatalf("big timeout fired")
-	case <-After(timeout):
+	case <-After(25 * Millisecond):
 		// OK
 	}
 	const neg = Duration(-1 << 63)
 	select {
 	case <-After(neg):
 		// OK
-	case <-After(timeout):
+	case <-After(1 * Second):
 		t.Fatalf("negative timeout didn't fire")
 	}
 }

@@ -181,7 +181,8 @@ type Scanner interface {
 // defers this error until a Scan.
 var ErrNoRows = errors.New("sql: no rows in result set")
 
-// DB is a database handle. It's safe for concurrent use by multiple
+// DB is a database handle representing a pool of zero or more
+// underlying connections. It's safe for concurrent use by multiple
 // goroutines.
 //
 // The sql package creates and frees connections automatically; it
@@ -405,7 +406,7 @@ func (db *DB) removeDepLocked(x finalCloser, dep interface{}) func() error {
 // This value should be larger than the maximum typical value
 // used for db.maxOpen. If maxOpen is significantly larger than
 // connectionRequestQueueSize then it is possible for ALL calls into the *DB
-// to block until the connectionOpener can satify the backlog of requests.
+// to block until the connectionOpener can satisfy the backlog of requests.
 var connectionRequestQueueSize = 1000000
 
 // Open opens a database specified by its database driver name and a
@@ -420,6 +421,11 @@ var connectionRequestQueueSize = 1000000
 // Open may just validate its arguments without creating a connection
 // to the database. To verify that the data source name is valid, call
 // Ping.
+//
+// The returned DB is safe for concurrent use by multiple goroutines
+// and maintains its own pool of idle connections. Thus, the Open
+// function should be called just once. It is rarely necessary to
+// close a DB.
 func Open(driverName, dataSourceName string) (*DB, error) {
 	driveri, ok := drivers[driverName]
 	if !ok {
@@ -452,6 +458,9 @@ func (db *DB) Ping() error {
 }
 
 // Close closes the database, releasing any open resources.
+//
+// It is rare to Close a DB, as the DB handle is meant to be
+// long-lived and shared between many goroutines.
 func (db *DB) Close() error {
 	db.mu.Lock()
 	if db.closed { // Make DB.Close idempotent
@@ -652,13 +661,16 @@ func (db *DB) conn() (*driverConn, error) {
 		return conn, nil
 	}
 
+	db.numOpen++ // optimistically
 	db.mu.Unlock()
 	ci, err := db.driver.Open(db.dsn)
 	if err != nil {
+		db.mu.Lock()
+		db.numOpen-- // correct for earlier optimism
+		db.mu.Unlock()
 		return nil, err
 	}
 	db.mu.Lock()
-	db.numOpen++
 	dc := &driverConn{
 		db: db,
 		ci: ci,
@@ -778,7 +790,7 @@ func (db *DB) putConn(dc *driverConn, err error) {
 // connection limit will not be exceeded.
 // If err != nil, the value of dc is ignored.
 // If err == nil, then dc must not equal nil.
-// If a connRequest was fullfilled or the *driverConn was placed in the
+// If a connRequest was fulfilled or the *driverConn was placed in the
 // freeConn list, then true is returned, otherwise false is returned.
 func (db *DB) putConnDBLocked(dc *driverConn, err error) bool {
 	if db.connRequests.Len() > 0 {
@@ -1494,6 +1506,7 @@ func (s *Stmt) finalClose() error {
 //
 //     rows, err := db.Query("SELECT ...")
 //     ...
+//     defer rows.Close()
 //     for rows.Next() {
 //         var id int
 //         var name string

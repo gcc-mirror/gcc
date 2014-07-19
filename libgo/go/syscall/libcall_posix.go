@@ -244,9 +244,6 @@ func FDZero(set *FdSet) {
 //sys Getpriority(which int, who int) (prio int, err error)
 //getpriority(which _C_int, who _C_int) _C_int
 
-//sysnb	Getrlimit(resource int, rlim *Rlimit) (err error)
-//getrlimit(resource _C_int, rlim *Rlimit) _C_int
-
 //sysnb	Getrusage(who int, rusage *Rusage) (err error)
 //getrusage(who _C_int, rusage *Rusage) _C_int
 
@@ -318,9 +315,6 @@ func Gettimeofday(tv *Timeval) (err error) {
 
 //sysnb	Setreuid(ruid int, euid int) (err error)
 //setreuid(ruid Uid_t, euid Uid_t) _C_int
-
-//sysnb	Setrlimit(resource int, rlim *Rlimit) (err error)
-//setrlimit(resource int, rlim *Rlimit) _C_int
 
 //sysnb	Setsid() (pid int, err error)
 //setsid() Pid_t

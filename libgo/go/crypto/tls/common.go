@@ -82,12 +82,14 @@ const (
 	scsvRenegotiation uint16 = 0x00ff
 )
 
-// TLS Elliptic Curves
+// CurveID is the type of a TLS identifier for an elliptic curve. See
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-8
+type CurveID uint16
+
 const (
-	curveP256 uint16 = 23
-	curveP384 uint16 = 24
-	curveP521 uint16 = 25
+	CurveP256 CurveID = 23
+	CurveP384 CurveID = 24
+	CurveP521 CurveID = 25
 )
 
 // TLS Elliptic Curve Point Formats
@@ -153,6 +155,7 @@ var supportedClientCertSignatureAlgorithms = []signatureAndHash{
 
 // ConnectionState records basic TLS details about the connection.
 type ConnectionState struct {
+	Version                    uint16                // TLS version used by the connection (e.g. VersionTLS12)
 	HandshakeComplete          bool                  // TLS handshake is complete
 	DidResume                  bool                  // connection resumes a previous TLS connection
 	CipherSuite                uint16                // cipher suite in use (TLS_RSA_WITH_RC4_128_SHA, ...)
@@ -198,12 +201,15 @@ type ClientSessionCache interface {
 	Put(sessionKey string, cs *ClientSessionState)
 }
 
-// A Config structure is used to configure a TLS client or server. After one
-// has been passed to a TLS function it must not be modified.
+// A Config structure is used to configure a TLS client or server.
+// After one has been passed to a TLS function it must not be
+// modified. A Config may be reused; the tls package will also not
+// modify it.
 type Config struct {
 	// Rand provides the source of entropy for nonces and RSA blinding.
 	// If Rand is nil, TLS uses the cryptographic random reader in package
 	// crypto/rand.
+	// The Reader must be safe for use by multiple goroutines.
 	Rand io.Reader
 
 	// Time returns the current time as the number of seconds since the epoch.
@@ -290,6 +296,11 @@ type Config struct {
 	// which is currently TLS 1.2.
 	MaxVersion uint16
 
+	// CurvePreferences contains the elliptic curves that will be used in
+	// an ECDHE handshake, in preference order. If empty, the default will
+	// be used.
+	CurvePreferences []CurveID
+
 	serverInitOnce sync.Once // guards calling (*Config).serverInit
 }
 
@@ -346,6 +357,15 @@ func (c *Config) maxVersion() uint16 {
 		return maxVersion
 	}
 	return c.MaxVersion
+}
+
+var defaultCurvePreferences = []CurveID{CurveP256, CurveP384, CurveP521}
+
+func (c *Config) curvePreferences() []CurveID {
+	if c == nil || len(c.CurvePreferences) == 0 {
+		return defaultCurvePreferences
+	}
+	return c.CurvePreferences
 }
 
 // mutualVersion returns the protocol version to use given the advertised

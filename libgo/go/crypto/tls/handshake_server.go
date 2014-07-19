@@ -117,12 +117,14 @@ func (hs *serverHandshakeState) readClientHello() (isResume bool, err error) {
 	hs.hello = new(serverHelloMsg)
 
 	supportedCurve := false
+	preferredCurves := config.curvePreferences()
 Curves:
 	for _, curve := range hs.clientHello.supportedCurves {
-		switch curve {
-		case curveP256, curveP384, curveP521:
-			supportedCurve = true
-			break Curves
+		for _, supported := range preferredCurves {
+			if supported == curve {
+				supportedCurve = true
+				break Curves
+			}
 		}
 	}
 
@@ -468,7 +470,7 @@ func (hs *serverHandshakeState) readFinished() error {
 	c := hs.c
 
 	c.readRecord(recordTypeChangeCipherSpec)
-	if err := c.error(); err != nil {
+	if err := c.in.error(); err != nil {
 		return err
 	}
 

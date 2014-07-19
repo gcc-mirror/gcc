@@ -19,7 +19,7 @@ import (
 // also uses /tmp directory in case it is prohibited to create UNIX
 // sockets in TMPDIR.
 func testUnixAddr() string {
-	f, err := ioutil.TempFile("/tmp", "nettest")
+	f, err := ioutil.TempFile("", "nettest")
 	if err != nil {
 		panic(err)
 	}
@@ -236,7 +236,7 @@ func TestIPConnSpecificMethods(t *testing.T) {
 
 func TestUnixListenerSpecificMethods(t *testing.T) {
 	switch runtime.GOOS {
-	case "plan9", "windows":
+	case "nacl", "plan9", "windows":
 		t.Skipf("skipping test on %q", runtime.GOOS)
 	}
 
@@ -278,7 +278,7 @@ func TestUnixListenerSpecificMethods(t *testing.T) {
 
 func TestUnixConnSpecificMethods(t *testing.T) {
 	switch runtime.GOOS {
-	case "plan9", "windows":
+	case "nacl", "plan9", "windows":
 		t.Skipf("skipping test on %q", runtime.GOOS)
 	}
 

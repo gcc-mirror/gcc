@@ -121,7 +121,7 @@ func TestTLS12OnlyCipherSuites(t *testing.T) {
 			TLS_RSA_WITH_RC4_128_SHA,
 		},
 		compressionMethods: []uint8{compressionNone},
-		supportedCurves:    []uint16{curveP256, curveP384, curveP521},
+		supportedCurves:    []CurveID{CurveP256, CurveP384, CurveP521},
 		supportedPoints:    []uint8{pointFormatUncompressed},
 	}
 
@@ -193,6 +193,23 @@ func testHandshake(clientConfig, serverConfig *Config) (state ConnectionState, e
 	s.Close()
 	<-done
 	return
+}
+
+func TestVersion(t *testing.T) {
+	serverConfig := &Config{
+		Certificates: testConfig.Certificates,
+		MaxVersion:   VersionTLS11,
+	}
+	clientConfig := &Config{
+		InsecureSkipVerify: true,
+	}
+	state, err := testHandshake(clientConfig, serverConfig)
+	if err != nil {
+		t.Fatalf("handshake failed: %s", err)
+	}
+	if state.Version != VersionTLS11 {
+		t.Fatalf("Incorrect version %x, should be %x", state.Version, VersionTLS11)
+	}
 }
 
 func TestCipherSuitePreference(t *testing.T) {

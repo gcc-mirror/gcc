@@ -30,7 +30,14 @@ import (
 // and caches them for reuse by subsequent calls. It uses HTTP proxies
 // as directed by the $HTTP_PROXY and $NO_PROXY (or $http_proxy and
 // $no_proxy) environment variables.
-var DefaultTransport RoundTripper = &Transport{Proxy: ProxyFromEnvironment}
+var DefaultTransport RoundTripper = &Transport{
+	Proxy: ProxyFromEnvironment,
+	Dial: (&net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}).Dial,
+	TLSHandshakeTimeout: 10 * time.Second,
+}
 
 // DefaultMaxIdleConnsPerHost is the default value of Transport's
 // MaxIdleConnsPerHost.
@@ -40,13 +47,13 @@ const DefaultMaxIdleConnsPerHost = 2
 // https, and http proxies (for either http or https with CONNECT).
 // Transport can also cache connections for future re-use.
 type Transport struct {
-	idleMu     sync.Mutex
-	idleConn   map[connectMethodKey][]*persistConn
-	idleConnCh map[connectMethodKey]chan *persistConn
-	reqMu      sync.Mutex
-	reqConn    map[*Request]*persistConn
-	altMu      sync.RWMutex
-	altProto   map[string]RoundTripper // nil or map of URI scheme => RoundTripper
+	idleMu      sync.Mutex
+	idleConn    map[connectMethodKey][]*persistConn
+	idleConnCh  map[connectMethodKey]chan *persistConn
+	reqMu       sync.Mutex
+	reqCanceler map[*Request]func()
+	altMu       sync.RWMutex
+	altProto    map[string]RoundTripper // nil or map of URI scheme => RoundTripper
 
 	// Proxy specifies a function to return a proxy for a given
 	// Request. If the function returns a non-nil error, the
@@ -62,6 +69,10 @@ type Transport struct {
 	// TLSClientConfig specifies the TLS configuration to use with
 	// tls.Client. If nil, the default configuration is used.
 	TLSClientConfig *tls.Config
+
+	// TLSHandshakeTimeout specifies the maximum amount of time waiting to
+	// wait for a TLS handshake. Zero means no timeout.
+	TLSHandshakeTimeout time.Duration
 
 	// DisableKeepAlives, if true, prevents re-use of TCP connections
 	// between different HTTP requests.
@@ -98,6 +109,9 @@ type Transport struct {
 // An error is returned if the proxy environment is invalid.
 // A nil URL and nil error are returned if no proxy is defined in the
 // environment, or a proxy should not be used for the given request.
+//
+// As a special case, if req.URL.Host is "localhost" (with or without
+// a port number), then a nil URL and nil error will be returned.
 func ProxyFromEnvironment(req *Request) (*url.URL, error) {
 	proxy := httpProxyEnv.Get()
 	if proxy == "" {
@@ -149,9 +163,11 @@ func (tr *transportRequest) extraHeaders() Header {
 // and redirects), see Get, Post, and the Client type.
 func (t *Transport) RoundTrip(req *Request) (resp *Response, err error) {
 	if req.URL == nil {
+		req.closeBody()
 		return nil, errors.New("http: nil Request.URL")
 	}
 	if req.Header == nil {
+		req.closeBody()
 		return nil, errors.New("http: nil Request.Header")
 	}
 	if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
@@ -162,16 +178,19 @@ func (t *Transport) RoundTrip(req *Request) (resp *Response, err error) {
 		}
 		t.altMu.RUnlock()
 		if rt == nil {
+			req.closeBody()
 			return nil, &badStringError{"unsupported protocol scheme", req.URL.Scheme}
 		}
 		return rt.RoundTrip(req)
 	}
 	if req.URL.Host == "" {
+		req.closeBody()
 		return nil, errors.New("http: no Host in request URL")
 	}
 	treq := &transportRequest{Request: req}
 	cm, err := t.connectMethodForRequest(treq)
 	if err != nil {
+		req.closeBody()
 		return nil, err
 	}
 
@@ -179,8 +198,10 @@ func (t *Transport) RoundTrip(req *Request) (resp *Response, err error) {
 	// host (for http or https), the http proxy, or the http proxy
 	// pre-CONNECTed to https server.  In any case, we'll be ready
 	// to send it requests.
-	pconn, err := t.getConn(cm)
+	pconn, err := t.getConn(req, cm)
 	if err != nil {
+		t.setReqCanceler(req, nil)
+		req.closeBody()
 		return nil, err
 	}
 
@@ -218,9 +239,6 @@ func (t *Transport) CloseIdleConnections() {
 	t.idleConn = nil
 	t.idleConnCh = nil
 	t.idleMu.Unlock()
-	if m == nil {
-		return
-	}
 	for _, conns := range m {
 		for _, pconn := range conns {
 			pconn.close()
@@ -232,10 +250,10 @@ func (t *Transport) CloseIdleConnections() {
 // connection.
 func (t *Transport) CancelRequest(req *Request) {
 	t.reqMu.Lock()
-	pc := t.reqConn[req]
+	cancel := t.reqCanceler[req]
 	t.reqMu.Unlock()
-	if pc != nil {
-		pc.conn.Close()
+	if cancel != nil {
+		cancel()
 	}
 }
 
@@ -406,16 +424,16 @@ func (t *Transport) getIdleConn(cm connectMethod) (pconn *persistConn) {
 	}
 }
 
-func (t *Transport) setReqConn(r *Request, pc *persistConn) {
+func (t *Transport) setReqCanceler(r *Request, fn func()) {
 	t.reqMu.Lock()
 	defer t.reqMu.Unlock()
-	if t.reqConn == nil {
-		t.reqConn = make(map[*Request]*persistConn)
+	if t.reqCanceler == nil {
+		t.reqCanceler = make(map[*Request]func())
 	}
-	if pc != nil {
-		t.reqConn[r] = pc
+	if fn != nil {
+		t.reqCanceler[r] = fn
 	} else {
-		delete(t.reqConn, r)
+		delete(t.reqCanceler, r)
 	}
 }
 
@@ -430,7 +448,7 @@ func (t *Transport) dial(network, addr string) (c net.Conn, err error) {
 // specified in the connectMethod.  This includes doing a proxy CONNECT
 // and/or setting up TLS.  If this doesn't return an error, the persistConn
 // is ready to write requests to.
-func (t *Transport) getConn(cm connectMethod) (*persistConn, error) {
+func (t *Transport) getConn(req *Request, cm connectMethod) (*persistConn, error) {
 	if pc := t.getIdleConn(cm); pc != nil {
 		return pc, nil
 	}
@@ -440,6 +458,16 @@ func (t *Transport) getConn(cm connectMethod) (*persistConn, error) {
 		err error
 	}
 	dialc := make(chan dialRes)
+
+	handlePendingDial := func() {
+		if v := <-dialc; v.err == nil {
+			t.putIdleConn(v.pc)
+		}
+	}
+
+	cancelc := make(chan struct{})
+	t.setReqCanceler(req, func() { close(cancelc) })
+
 	go func() {
 		pc, err := t.dialConn(cm)
 		dialc <- dialRes{pc, err}
@@ -456,12 +484,11 @@ func (t *Transport) getConn(cm connectMethod) (*persistConn, error) {
 		// else's dial that they didn't use.
 		// But our dial is still going, so give it away
 		// when it finishes:
-		go func() {
-			if v := <-dialc; v.err == nil {
-				t.putIdleConn(v.pc)
-			}
-		}()
+		go handlePendingDial()
 		return pc, nil
+	case <-cancelc:
+		go handlePendingDial()
+		return nil, errors.New("net/http: request canceled while waiting for connection")
 	}
 }
 
@@ -477,12 +504,13 @@ func (t *Transport) dialConn(cm connectMethod) (*persistConn, error) {
 	pa := cm.proxyAuth()
 
 	pconn := &persistConn{
-		t:        t,
-		cacheKey: cm.key(),
-		conn:     conn,
-		reqch:    make(chan requestAndChan, 50),
-		writech:  make(chan writeRequest, 50),
-		closech:  make(chan struct{}),
+		t:          t,
+		cacheKey:   cm.key(),
+		conn:       conn,
+		reqch:      make(chan requestAndChan, 1),
+		writech:    make(chan writeRequest, 1),
+		closech:    make(chan struct{}),
+		writeErrCh: make(chan error, 1),
 	}
 
 	switch {
@@ -536,19 +564,38 @@ func (t *Transport) dialConn(cm connectMethod) (*persistConn, error) {
 				cfg = &clone
 			}
 		}
-		conn = tls.Client(conn, cfg)
-		if err = conn.(*tls.Conn).Handshake(); err != nil {
+		plainConn := conn
+		tlsConn := tls.Client(plainConn, cfg)
+		errc := make(chan error, 2)
+		var timer *time.Timer // for canceling TLS handshake
+		if d := t.TLSHandshakeTimeout; d != 0 {
+			timer = time.AfterFunc(d, func() {
+				errc <- tlsHandshakeTimeoutError{}
+			})
+		}
+		go func() {
+			err := tlsConn.Handshake()
+			if timer != nil {
+				timer.Stop()
+			}
+			errc <- err
+		}()
+		if err := <-errc; err != nil {
+			plainConn.Close()
 			return nil, err
 		}
 		if !cfg.InsecureSkipVerify {
-			if err = conn.(*tls.Conn).VerifyHostname(cfg.ServerName); err != nil {
+			if err := tlsConn.VerifyHostname(cfg.ServerName); err != nil {
+				plainConn.Close()
 				return nil, err
 			}
 		}
-		pconn.conn = conn
+		cs := tlsConn.ConnectionState()
+		pconn.tlsState = &cs
+		pconn.conn = tlsConn
 	}
 
-	pconn.br = bufio.NewReader(pconn.conn)
+	pconn.br = bufio.NewReader(noteEOFReader{pconn.conn, &pconn.sawEOF})
 	pconn.bw = bufio.NewWriter(pconn.conn)
 	go pconn.readLoop()
 	go pconn.writeLoop()
@@ -615,8 +662,8 @@ func useProxy(addr string) bool {
 //
 // Cache key form                Description
 // -----------------             -------------------------
-// ||http|foo.com                http directly to server, no proxy
-// ||https|foo.com               https directly to server, no proxy
+// |http|foo.com                 http directly to server, no proxy
+// |https|foo.com                https directly to server, no proxy
 // http://proxy.com|https|foo.com  http to proxy, then CONNECT to foo.com
 // http://proxy.com|http           http to proxy, http to anywhere after that
 //
@@ -680,16 +727,23 @@ type persistConn struct {
 	t        *Transport
 	cacheKey connectMethodKey
 	conn     net.Conn
-	closed   bool                // whether conn has been closed
+	tlsState *tls.ConnectionState
 	br       *bufio.Reader       // from conn
+	sawEOF   bool                // whether we've seen EOF from conn; owned by readLoop
 	bw       *bufio.Writer       // to conn
 	reqch    chan requestAndChan // written by roundTrip; read by readLoop
 	writech  chan writeRequest   // written by roundTrip; read by writeLoop
-	closech  chan struct{}       // broadcast close when readLoop (TCP connection) closes
+	closech  chan struct{}       // closed when conn closed
 	isProxy  bool
+	// writeErrCh passes the request write error (usually nil)
+	// from the writeLoop goroutine to the readLoop which passes
+	// it off to the res.Body reader, which then uses it to decide
+	// whether or not a connection can be reused. Issue 7569.
+	writeErrCh chan error
 
-	lk                   sync.Mutex // guards following 3 fields
+	lk                   sync.Mutex // guards following fields
 	numExpectedResponses int
+	closed               bool // whether conn has been closed
 	broken               bool // an error has happened on this connection; marked broken so it's not reused.
 	// mutateHeaderFunc is an optional func to modify extra
 	// headers on each outbound request before it's written. (the
@@ -697,11 +751,16 @@ type persistConn struct {
 	mutateHeaderFunc func(Header)
 }
 
+// isBroken reports whether this connection is in a known broken state.
 func (pc *persistConn) isBroken() bool {
 	pc.lk.Lock()
 	b := pc.broken
 	pc.lk.Unlock()
 	return b
+}
+
+func (pc *persistConn) cancelRequest() {
+	pc.conn.Close()
 }
 
 var remoteSideClosedFunc func(error) bool // or nil to use default
@@ -717,7 +776,6 @@ func remoteSideClosed(err error) bool {
 }
 
 func (pc *persistConn) readLoop() {
-	defer close(pc.closech)
 	alive := true
 
 	for alive {
@@ -725,12 +783,14 @@ func (pc *persistConn) readLoop() {
 
 		pc.lk.Lock()
 		if pc.numExpectedResponses == 0 {
-			pc.closeLocked()
-			pc.lk.Unlock()
-			if len(pb) > 0 {
-				log.Printf("Unsolicited response received on idle HTTP channel starting with %q; err=%v",
-					string(pb), err)
+			if !pc.closed {
+				pc.closeLocked()
+				if len(pb) > 0 {
+					log.Printf("Unsolicited response received on idle HTTP channel starting with %q; err=%v",
+						string(pb), err)
+				}
 			}
+			pc.lk.Unlock()
 			return
 		}
 		pc.lk.Unlock()
@@ -749,6 +809,11 @@ func (pc *persistConn) readLoop() {
 				resp, err = ReadResponse(pc.br, rc.req)
 			}
 		}
+
+		if resp != nil {
+			resp.TLS = pc.tlsState
+		}
+
 		hasBody := resp != nil && rc.req.Method != "HEAD" && resp.ContentLength != 0
 
 		if err != nil {
@@ -758,13 +823,7 @@ func (pc *persistConn) readLoop() {
 				resp.Header.Del("Content-Encoding")
 				resp.Header.Del("Content-Length")
 				resp.ContentLength = -1
-				gzReader, zerr := gzip.NewReader(resp.Body)
-				if zerr != nil {
-					pc.close()
-					err = zerr
-				} else {
-					resp.Body = &readerAndCloser{gzReader, resp.Body}
-				}
+				resp.Body = &gzipReader{body: resp.Body}
 			}
 			resp.Body = &bodyEOFSignal{body: resp.Body}
 		}
@@ -787,24 +846,18 @@ func (pc *persistConn) readLoop() {
 				return nil
 			}
 			resp.Body.(*bodyEOFSignal).fn = func(err error) {
-				alive1 := alive
-				if err != nil {
-					alive1 = false
-				}
-				if alive1 && !pc.t.putIdleConn(pc) {
-					alive1 = false
-				}
-				if !alive1 || pc.isBroken() {
-					pc.close()
-				}
-				waitForBodyRead <- alive1
+				waitForBodyRead <- alive &&
+					err == nil &&
+					!pc.sawEOF &&
+					pc.wroteRequest() &&
+					pc.t.putIdleConn(pc)
 			}
 		}
 
 		if alive && !hasBody {
-			if !pc.t.putIdleConn(pc) {
-				alive = false
-			}
+			alive = !pc.sawEOF &&
+				pc.wroteRequest() &&
+				pc.t.putIdleConn(pc)
 		}
 
 		rc.ch <- responseAndError{resp, err}
@@ -812,10 +865,14 @@ func (pc *persistConn) readLoop() {
 		// Wait for the just-returned response body to be fully consumed
 		// before we race and peek on the underlying bufio reader.
 		if waitForBodyRead != nil {
-			alive = <-waitForBodyRead
+			select {
+			case alive = <-waitForBodyRead:
+			case <-pc.closech:
+				alive = false
+			}
 		}
 
-		pc.t.setReqConn(rc.req, nil)
+		pc.t.setReqCanceler(rc.req, nil)
 
 		if !alive {
 			pc.close()
@@ -837,10 +894,40 @@ func (pc *persistConn) writeLoop() {
 			}
 			if err != nil {
 				pc.markBroken()
+				wr.req.Request.closeBody()
 			}
-			wr.ch <- err
+			pc.writeErrCh <- err // to the body reader, which might recycle us
+			wr.ch <- err         // to the roundTrip function
 		case <-pc.closech:
 			return
+		}
+	}
+}
+
+// wroteRequest is a check before recycling a connection that the previous write
+// (from writeLoop above) happened and was successful.
+func (pc *persistConn) wroteRequest() bool {
+	select {
+	case err := <-pc.writeErrCh:
+		// Common case: the write happened well before the response, so
+		// avoid creating a timer.
+		return err == nil
+	default:
+		// Rare case: the request was written in writeLoop above but
+		// before it could send to pc.writeErrCh, the reader read it
+		// all, processed it, and called us here. In this case, give the
+		// write goroutine a bit of time to finish its send.
+		//
+		// Less rare case: We also get here in the legitimate case of
+		// Issue 7569, where the writer is still writing (or stalled),
+		// but the server has already replied. In this case, we don't
+		// want to wait too long, and we want to return false so this
+		// connection isn't re-used.
+		select {
+		case err := <-pc.writeErrCh:
+			return err == nil
+		case <-time.After(50 * time.Millisecond):
+			return false
 		}
 	}
 }
@@ -882,7 +969,7 @@ var errTimeout error = &httpError{err: "net/http: timeout awaiting response head
 var errClosed error = &httpError{err: "net/http: transport closed before response was received"}
 
 func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err error) {
-	pc.t.setReqConn(req.Request, pc)
+	pc.t.setReqCanceler(req.Request, pc.cancelRequest)
 	pc.lk.Lock()
 	pc.numExpectedResponses++
 	headerFn := pc.mutateHeaderFunc
@@ -967,7 +1054,7 @@ WaitResponse:
 	pc.lk.Unlock()
 
 	if re.err != nil {
-		pc.t.setReqConn(req.Request, nil)
+		pc.t.setReqCanceler(req.Request, nil)
 	}
 	return re.res, re.err
 }
@@ -992,6 +1079,7 @@ func (pc *persistConn) closeLocked() {
 	if !pc.closed {
 		pc.conn.Close()
 		pc.closed = true
+		close(pc.closech)
 	}
 	pc.mutateHeaderFunc = nil
 }
@@ -1074,7 +1162,47 @@ func (es *bodyEOFSignal) condfn(err error) {
 	es.fn = nil
 }
 
+// gzipReader wraps a response body so it can lazily
+// call gzip.NewReader on the first call to Read
+type gzipReader struct {
+	body io.ReadCloser // underlying Response.Body
+	zr   io.Reader     // lazily-initialized gzip reader
+}
+
+func (gz *gzipReader) Read(p []byte) (n int, err error) {
+	if gz.zr == nil {
+		gz.zr, err = gzip.NewReader(gz.body)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return gz.zr.Read(p)
+}
+
+func (gz *gzipReader) Close() error {
+	return gz.body.Close()
+}
+
 type readerAndCloser struct {
 	io.Reader
 	io.Closer
+}
+
+type tlsHandshakeTimeoutError struct{}
+
+func (tlsHandshakeTimeoutError) Timeout() bool   { return true }
+func (tlsHandshakeTimeoutError) Temporary() bool { return true }
+func (tlsHandshakeTimeoutError) Error() string   { return "net/http: TLS handshake timeout" }
+
+type noteEOFReader struct {
+	r      io.Reader
+	sawEOF *bool
+}
+
+func (nr noteEOFReader) Read(p []byte) (n int, err error) {
+	n, err = nr.r.Read(p)
+	if err == io.EOF {
+		*nr.sawEOF = true
+	}
+	return
 }

@@ -183,8 +183,10 @@ asynch:
 		goto asynch;
 	}
 
-	if(raceenabled)
+	if(raceenabled) {
+		runtime_raceacquire(chanbuf(c, c->sendx));
 		runtime_racerelease(chanbuf(c, c->sendx));
+	}
 
 	runtime_memmove(chanbuf(c, c->sendx), ep, c->elemsize);
 	if(++c->sendx == c->dataqsiz)
@@ -317,8 +319,10 @@ asynch:
 		goto asynch;
 	}
 
-	if(raceenabled)
+	if(raceenabled) {
 		runtime_raceacquire(chanbuf(c, c->recvx));
+		runtime_racerelease(chanbuf(c, c->recvx));
+	}
 
 	if(ep != nil)
 		runtime_memmove(ep, chanbuf(c, c->recvx), c->elemsize);
@@ -886,6 +890,7 @@ asyncrecv:
 		if(cas->sg.elem != nil)
 			runtime_racewriteobjectpc(cas->sg.elem, c->elemtype, selectgo, chanrecv);
 		runtime_raceacquire(chanbuf(c, c->recvx));
+		runtime_racerelease(chanbuf(c, c->recvx));
 	}
 	if(cas->receivedp != nil)
 		*cas->receivedp = true;
@@ -910,6 +915,7 @@ asyncrecv:
 asyncsend:
 	// can send to buffer
 	if(raceenabled) {
+		runtime_raceacquire(chanbuf(c, c->sendx));
 		runtime_racerelease(chanbuf(c, c->sendx));
 		runtime_racereadobjectpc(cas->sg.elem, c->elemtype, selectgo, chansend);
 	}

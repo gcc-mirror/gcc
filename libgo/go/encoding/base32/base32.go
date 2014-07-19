@@ -179,13 +179,11 @@ func (e *encoder) Write(p []byte) (n int, err error) {
 		nn := len(e.out) / 8 * 5
 		if nn > len(p) {
 			nn = len(p)
+			nn -= nn % 5
 		}
-		nn -= nn % 5
-		if nn > 0 {
-			e.enc.Encode(e.out[0:], p[0:nn])
-			if _, e.err = e.w.Write(e.out[0 : nn/5*8]); e.err != nil {
-				return n, e.err
-			}
+		e.enc.Encode(e.out[0:], p[0:nn])
+		if _, e.err = e.w.Write(e.out[0 : nn/5*8]); e.err != nil {
+			return n, e.err
 		}
 		n += nn
 		p = p[nn:]
@@ -268,7 +266,7 @@ func (enc *Encoding) decode(dst, src []byte) (n int, end bool, err error) {
 				// 7, 5 and 2 are not valid padding lengths, and so 1, 3 and 6 are not
 				// valid dlen values. See RFC 4648 Section 6 "Base 32 Encoding" listing
 				// the five valid padding lengths, and Section 9 "Illustrations and
-				// Examples" for an illustration for how the the 1st, 3rd and 6th base32
+				// Examples" for an illustration for how the 1st, 3rd and 6th base32
 				// src bytes do not yield enough information to decode a dst byte.
 				if dlen == 1 || dlen == 3 || dlen == 6 {
 					return n, false, CorruptInputError(olen - len(src) - 1)

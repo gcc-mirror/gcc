@@ -36,6 +36,9 @@ a comma-separated list of name=val pairs. Supported names are:
 	length of the pause. Setting gctrace=2 emits the same summary but also
 	repeats each collection.
 
+	gcdead: setting gcdead=1 causes the garbage collector to clobber all stack slots
+	that it thinks are dead.
+
 	scheddetail: setting schedtrace=X and scheddetail=1 causes the scheduler to emit
 	detailed multiline info every X milliseconds, describing state of the scheduler,
 	processors, threads and goroutines.
@@ -76,6 +79,11 @@ func Gosched()
 
 // Goexit terminates the goroutine that calls it.  No other goroutine is affected.
 // Goexit runs all deferred calls before terminating the goroutine.
+//
+// Calling Goexit from the main goroutine terminates that goroutine
+// without func main returning. Since func main has not returned,
+// the program continues execution of other goroutines.
+// If all other goroutines exit, the program crashes.
 func Goexit()
 
 // Caller reports file and line number information about function invocations on
@@ -182,10 +190,8 @@ func GOROOT() string {
 }
 
 // Version returns the Go tree's version string.
-// It is either a sequence number or, when possible,
-// a release tag like "release.2010-03-04".
-// A trailing + indicates that the tree had local modifications
-// at the time of the build.
+// It is either the commit hash and date at the time of the build or,
+// when possible, a release tag like "go1.3".
 func Version() string {
 	return theVersion
 }

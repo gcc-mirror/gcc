@@ -5,6 +5,7 @@
 package fmt
 
 import (
+	"math"
 	"strconv"
 	"unicode/utf8"
 )
@@ -360,38 +361,48 @@ func doPrec(f *fmt, def int) int {
 
 // formatFloat formats a float64; it is an efficient equivalent to  f.pad(strconv.FormatFloat()...).
 func (f *fmt) formatFloat(v float64, verb byte, prec, n int) {
-	// We leave one byte at the beginning of f.intbuf for a sign if needed,
-	// and make it a space, which we might be able to use.
-	f.intbuf[0] = ' '
-	slice := strconv.AppendFloat(f.intbuf[0:1], v, verb, prec, n)
-	// Add a plus sign or space to the floating-point string representation if missing and required.
-	// The formatted number starts at slice[1].
-	switch slice[1] {
-	case '-', '+':
-		// If we're zero padding, want the sign before the leading zeros.
-		// Achieve this by writing the sign out and padding the postive number.
-		if f.zero && f.widPresent && f.wid > len(slice) {
-			f.buf.WriteByte(slice[1])
-			f.wid--
-			f.pad(slice[2:])
-			return
-		}
-		// We're set; drop the leading space.
-		slice = slice[1:]
-	default:
-		// There's no sign, but we might need one.
-		if f.plus {
-			f.buf.WriteByte('+')
-			f.wid--
-			f.pad(slice[1:])
-			return
-		} else if f.space {
-			// space is already there
-		} else {
-			slice = slice[1:]
+	// Format number, reserving space for leading + sign if needed.
+	num := strconv.AppendFloat(f.intbuf[0:1], v, verb, prec, n)
+	if num[1] == '-' || num[1] == '+' {
+		num = num[1:]
+	} else {
+		num[0] = '+'
+	}
+	// Special handling for infinity, which doesn't look like a number so shouldn't be padded with zeros.
+	if math.IsInf(v, 0) {
+		if f.zero {
+			defer func() { f.zero = true }()
+			f.zero = false
 		}
 	}
-	f.pad(slice)
+	// num is now a signed version of the number.
+	// If we're zero padding, want the sign before the leading zeros.
+	// Achieve this by writing the sign out and then padding the unsigned number.
+	if f.zero && f.widPresent && f.wid > len(num) {
+		if f.space && v >= 0 {
+			f.buf.WriteByte(' ') // This is what C does: even with zero, f.space means space.
+			f.wid--
+		} else if f.plus || v < 0 {
+			f.buf.WriteByte(num[0])
+			f.wid--
+		}
+		f.pad(num[1:])
+		return
+	}
+	// f.space says to replace a leading + with a space.
+	if f.space && num[0] == '+' {
+		num[0] = ' '
+		f.pad(num)
+		return
+	}
+	// Now we know the sign is attached directly to the number, if present at all.
+	// We want a sign if asked for, if it's negative, or if it's infinity (+Inf vs. -Inf).
+	if f.plus || num[0] == '-' || math.IsInf(v, 0) {
+		f.pad(num)
+		return
+	}
+	// No sign to show and the number is positive; just print the unsigned number.
+	f.pad(num[1:])
 }
 
 // fmt_e64 formats a float64 in the form -1.23e+12.
@@ -436,60 +447,46 @@ func (f *fmt) fmt_fb32(v float32) { f.formatFloat(float64(v), 'b', 0, 32) }
 
 // fmt_c64 formats a complex64 according to the verb.
 func (f *fmt) fmt_c64(v complex64, verb rune) {
-	f.buf.WriteByte('(')
-	r := real(v)
-	oldPlus := f.plus
-	for i := 0; ; i++ {
-		switch verb {
-		case 'b':
-			f.fmt_fb32(r)
-		case 'e':
-			f.fmt_e32(r)
-		case 'E':
-			f.fmt_E32(r)
-		case 'f':
-			f.fmt_f32(r)
-		case 'g':
-			f.fmt_g32(r)
-		case 'G':
-			f.fmt_G32(r)
-		}
-		if i != 0 {
-			break
-		}
-		f.plus = true
-		r = imag(v)
-	}
-	f.plus = oldPlus
-	f.buf.Write(irparenBytes)
+	f.fmt_complex(float64(real(v)), float64(imag(v)), 32, verb)
 }
 
 // fmt_c128 formats a complex128 according to the verb.
 func (f *fmt) fmt_c128(v complex128, verb rune) {
+	f.fmt_complex(real(v), imag(v), 64, verb)
+}
+
+// fmt_complex formats a complex number as (r+ji).
+func (f *fmt) fmt_complex(r, j float64, size int, verb rune) {
 	f.buf.WriteByte('(')
-	r := real(v)
 	oldPlus := f.plus
+	oldSpace := f.space
+	oldWid := f.wid
 	for i := 0; ; i++ {
 		switch verb {
 		case 'b':
-			f.fmt_fb64(r)
+			f.formatFloat(r, 'b', 0, size)
 		case 'e':
-			f.fmt_e64(r)
+			f.formatFloat(r, 'e', doPrec(f, 6), size)
 		case 'E':
-			f.fmt_E64(r)
-		case 'f':
-			f.fmt_f64(r)
+			f.formatFloat(r, 'E', doPrec(f, 6), size)
+		case 'f', 'F':
+			f.formatFloat(r, 'f', doPrec(f, 6), size)
 		case 'g':
-			f.fmt_g64(r)
+			f.formatFloat(r, 'g', doPrec(f, -1), size)
 		case 'G':
-			f.fmt_G64(r)
+			f.formatFloat(r, 'G', doPrec(f, -1), size)
 		}
 		if i != 0 {
 			break
 		}
+		// Imaginary part always has a sign.
 		f.plus = true
-		r = imag(v)
+		f.space = false
+		f.wid = oldWid
+		r = j
 	}
+	f.space = oldSpace
 	f.plus = oldPlus
+	f.wid = oldWid
 	f.buf.Write(irparenBytes)
 }

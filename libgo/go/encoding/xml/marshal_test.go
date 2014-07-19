@@ -314,6 +314,31 @@ type MarshalerStruct struct {
 	Foo MyMarshalerAttrTest `xml:",attr"`
 }
 
+type InnerStruct struct {
+	XMLName Name `xml:"testns outer"`
+}
+
+type OuterStruct struct {
+	InnerStruct
+	IntAttr int `xml:"int,attr"`
+}
+
+type OuterNamedStruct struct {
+	InnerStruct
+	XMLName Name `xml:"outerns test"`
+	IntAttr int  `xml:"int,attr"`
+}
+
+type OuterNamedOrderedStruct struct {
+	XMLName Name `xml:"outerns test"`
+	InnerStruct
+	IntAttr int `xml:"int,attr"`
+}
+
+type OuterOuterStruct struct {
+	OuterStruct
+}
+
 func ifaceptr(x interface{}) interface{} {
 	return &x
 }
@@ -883,6 +908,22 @@ var marshalTests = []struct {
 		ExpectXML: `<MarshalerStruct Foo="hello world"></MarshalerStruct>`,
 		Value:     &MarshalerStruct{},
 	},
+	{
+		ExpectXML: `<outer xmlns="testns" int="10"></outer>`,
+		Value:     &OuterStruct{IntAttr: 10},
+	},
+	{
+		ExpectXML: `<test xmlns="outerns" int="10"></test>`,
+		Value:     &OuterNamedStruct{XMLName: Name{Space: "outerns", Local: "test"}, IntAttr: 10},
+	},
+	{
+		ExpectXML: `<test xmlns="outerns" int="10"></test>`,
+		Value:     &OuterNamedOrderedStruct{XMLName: Name{Space: "outerns", Local: "test"}, IntAttr: 10},
+	},
+	{
+		ExpectXML: `<outer xmlns="testns" int="10"></outer>`,
+		Value:     &OuterOuterStruct{OuterStruct{IntAttr: 10}},
+	},
 }
 
 func TestMarshal(t *testing.T) {
@@ -1147,5 +1188,79 @@ func TestStructPointerMarshal(t *testing.T) {
 	err = Unmarshal(b, &v)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+var encodeTokenTests = []struct {
+	tok  Token
+	want string
+	ok   bool
+}{
+	{StartElement{Name{"space", "local"}, nil}, "<local xmlns=\"space\">", true},
+	{StartElement{Name{"space", ""}, nil}, "", false},
+	{EndElement{Name{"space", ""}}, "", false},
+	{CharData("foo"), "foo", true},
+	{Comment("foo"), "<!--foo-->", true},
+	{Comment("foo-->"), "", false},
+	{ProcInst{"Target", []byte("Instruction")}, "<?Target Instruction?>", true},
+	{ProcInst{"", []byte("Instruction")}, "", false},
+	{ProcInst{"Target", []byte("Instruction?>")}, "", false},
+	{Directive("foo"), "<!foo>", true},
+	{Directive("foo>"), "", false},
+}
+
+func TestEncodeToken(t *testing.T) {
+	for _, tt := range encodeTokenTests {
+		var buf bytes.Buffer
+		enc := NewEncoder(&buf)
+		err := enc.EncodeToken(tt.tok)
+		switch {
+		case !tt.ok && err == nil:
+			t.Errorf("enc.EncodeToken(%#v): expected error; got none", tt.tok)
+		case tt.ok && err != nil:
+			t.Fatalf("enc.EncodeToken: %v", err)
+		case !tt.ok && err != nil:
+			// expected error, got one
+		}
+		if err := enc.Flush(); err != nil {
+			t.Fatalf("enc.EncodeToken: %v", err)
+		}
+		if got := buf.String(); got != tt.want {
+			t.Errorf("enc.EncodeToken = %s; want: %s", got, tt.want)
+		}
+	}
+}
+
+func TestProcInstEncodeToken(t *testing.T) {
+	var buf bytes.Buffer
+	enc := NewEncoder(&buf)
+
+	if err := enc.EncodeToken(ProcInst{"xml", []byte("Instruction")}); err != nil {
+		t.Fatalf("enc.EncodeToken: expected to be able to encode xml target ProcInst as first token, %s", err)
+	}
+
+	if err := enc.EncodeToken(ProcInst{"Target", []byte("Instruction")}); err != nil {
+		t.Fatalf("enc.EncodeToken: expected to be able to add non-xml target ProcInst")
+	}
+
+	if err := enc.EncodeToken(ProcInst{"xml", []byte("Instruction")}); err == nil {
+		t.Fatalf("enc.EncodeToken: expected to not be allowed to encode xml target ProcInst when not first token")
+	}
+}
+
+func TestDecodeEncode(t *testing.T) {
+	var in, out bytes.Buffer
+	in.WriteString(`<?xml version="1.0" encoding="UTF-8"?>
+<?Target Instruction?>
+<root>
+</root>	
+`)
+	dec := NewDecoder(&in)
+	enc := NewEncoder(&out)
+	for tok, err := dec.Token(); err == nil; tok, err = dec.Token() {
+		err = enc.EncodeToken(tok)
+		if err != nil {
+			t.Fatalf("enc.EncodeToken: Unable to encode token (%#v), %v", tok, err)
+		}
 	}
 }

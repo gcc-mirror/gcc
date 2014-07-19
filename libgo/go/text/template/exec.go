@@ -108,6 +108,10 @@ func errRecover(errp *error) {
 
 // ExecuteTemplate applies the template associated with t that has the given name
 // to the specified data object and writes the output to wr.
+// If an error occurs executing the template or writing its output,
+// execution stops, but partial results may already have been written to
+// the output writer.
+// A template may be executed safely in parallel.
 func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
 	tmpl := t.tmpl[name]
 	if tmpl == nil {
@@ -118,6 +122,10 @@ func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) 
 
 // Execute applies a parsed template to the specified data object,
 // and writes the output to wr.
+// If an error occurs executing the template or writing its output,
+// execution stops, but partial results may already have been written to
+// the output writer.
+// A template may be executed safely in parallel.
 func (t *Template) Execute(wr io.Writer, data interface{}) (err error) {
 	defer errRecover(&err)
 	value := reflect.ValueOf(data)

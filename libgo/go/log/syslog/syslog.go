@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build !windows,!plan9
+// +build !windows,!nacl,!plan9
 
 // Package syslog provides a simple interface to the system log
 // service. It can send messages to the syslog daemon using UNIX
@@ -115,9 +115,10 @@ func New(priority Priority, tag string) (w *Writer, err error) {
 }
 
 // Dial establishes a connection to a log daemon by connecting to
-// address raddr on the network net.  Each write to the returned
+// address raddr on the specified network.  Each write to the returned
 // writer sends a log message with the given facility, severity and
 // tag.
+// If network is empty, Dial will connect to the local syslog server.
 func Dial(network, raddr string, priority Priority, tag string) (*Writer, error) {
 	if priority < 0 || priority > LOG_LOCAL7|LOG_DEBUG {
 		return nil, errors.New("log/syslog: invalid priority")

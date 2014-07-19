@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"text/template"
@@ -32,6 +33,10 @@ func testEnv(cmd *exec.Cmd) *exec.Cmd {
 
 func executeTest(t *testing.T, templ string, data interface{}) string {
 	t.Skip("gccgo does not have a go command")
+	if runtime.GOOS == "nacl" {
+		t.Skip("skipping on nacl")
+	}
+
 	checkStaleRuntime(t)
 
 	st := template.Must(template.New("crashSource").Parse(templ))
@@ -112,8 +117,9 @@ func TestLockedDeadlock2(t *testing.T) {
 
 func TestGoexitDeadlock(t *testing.T) {
 	output := executeTest(t, goexitDeadlockSource, nil)
-	if output != "" {
-		t.Fatalf("expected no output, got:\n%s", output)
+	want := "no goroutines (main called runtime.Goexit) - deadlock!"
+	if !strings.Contains(output, want) {
+		t.Fatalf("output:\n%s\n\nwant output containing: %s", output, want)
 	}
 }
 
@@ -130,6 +136,34 @@ func TestThreadExhaustion(t *testing.T) {
 	want := "runtime: program exceeds 10-thread limit\nfatal error: thread exhaustion"
 	if !strings.HasPrefix(output, want) {
 		t.Fatalf("output does not start with %q:\n%s", want, output)
+	}
+}
+
+func TestRecursivePanic(t *testing.T) {
+	output := executeTest(t, recursivePanicSource, nil)
+	want := `wrap: bad
+panic: again
+
+`
+	if !strings.HasPrefix(output, want) {
+		t.Fatalf("output does not start with %q:\n%s", want, output)
+	}
+
+}
+
+func TestGoexitCrash(t *testing.T) {
+	output := executeTest(t, goexitExitSource, nil)
+	want := "no goroutines (main called runtime.Goexit) - deadlock!"
+	if !strings.Contains(output, want) {
+		t.Fatalf("output:\n%s\n\nwant output containing: %s", output, want)
+	}
+}
+
+func TestGoNil(t *testing.T) {
+	output := executeTest(t, goNilSource, nil)
+	want := "go of nil func value"
+	if !strings.Contains(output, want) {
+		t.Fatalf("output:\n%s\n\nwant output containing: %s", output, want)
 	}
 }
 
@@ -271,5 +305,63 @@ func main() {
 		}()
 		<-c
 	}
+}
+`
+
+const recursivePanicSource = `
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	func() {
+		defer func() {
+			fmt.Println(recover())
+		}()
+		var x [8192]byte
+		func(x [8192]byte) {
+			defer func() {
+				if err := recover(); err != nil {
+					panic("wrap: " + err.(string))
+				}
+			}()
+			panic("bad")
+		}(x)
+	}()
+	panic("again")
+}
+`
+
+const goexitExitSource = `
+package main
+
+import (
+	"runtime"
+	"time"
+)
+
+func main() {
+	go func() {
+		time.Sleep(time.Millisecond)
+	}()
+	i := 0
+	runtime.SetFinalizer(&i, func(p *int) {})
+	runtime.GC()
+	runtime.Goexit()
+}
+`
+
+const goNilSource = `
+package main
+
+func main() {
+	defer func() {
+		recover()
+	}()
+	var f func()
+	go f()
+	select{}
 }
 `

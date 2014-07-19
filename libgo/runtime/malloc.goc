@@ -63,8 +63,9 @@ extern MStats mstats;	// defined in zruntime_def_$GOOS_$GOARCH.go
 extern volatile intgo runtime_MemProfileRate
   __asm__ (GOSYM_PREFIX "runtime.MemProfileRate");
 
-static void* largealloc(uint32, uintptr*);
-static void profilealloc(void *v, uintptr size, uintptr typ);
+static MSpan* largealloc(uint32, uintptr*);
+static void profilealloc(void *v, uintptr size);
+static void settype(MSpan *s, void *v, uintptr typ);
 
 // Allocate an object of at least size bytes.
 // Small objects are allocated from the per-thread cache's free lists.
@@ -79,7 +80,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 	uintptr tinysize, size1;
 	intgo rate;
 	MCache *c;
-	MCacheList *l;
+	MSpan *s;
 	MLink *v, *next;
 	byte *tiny;
 	bool incallback;
@@ -113,8 +114,8 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 	}
 	if(m->mallocing)
 		runtime_throw("malloc/free - deadlock");
-	// Disable preemption during settype_flush.
-	// We can not use m->mallocing for this, because settype_flush calls mallocgc.
+	// Disable preemption during settype.
+	// We can not use m->mallocing for this, because settype calls mallocgc.
 	m->locks++;
 	m->mallocing = 1;
 
@@ -178,15 +179,15 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 				}
 			}
 			// Allocate a new TinySize block.
-			l = &c->list[TinySizeClass];
-			if(l->list == nil)
-				runtime_MCache_Refill(c, TinySizeClass);
-			v = l->list;
+			s = c->alloc[TinySizeClass];
+			if(s->freelist == nil)
+				s = runtime_MCache_Refill(c, TinySizeClass);
+			v = s->freelist;
 			next = v->next;
+			s->freelist = next;
+			s->ref++;
 			if(next != nil)  // prefetching nil leads to a DTLB miss
 				PREFETCH(next);
-			l->list = next;
-			l->nlist--;
 			((uint64*)v)[0] = 0;
 			((uint64*)v)[1] = 0;
 			// See if we need to replace the existing tiny block with the new one
@@ -205,15 +206,15 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		else
 			sizeclass = runtime_size_to_class128[(size-1024+127) >> 7];
 		size = runtime_class_to_size[sizeclass];
-		l = &c->list[sizeclass];
-		if(l->list == nil)
-			runtime_MCache_Refill(c, sizeclass);
-		v = l->list;
+		s = c->alloc[sizeclass];
+		if(s->freelist == nil)
+			s = runtime_MCache_Refill(c, sizeclass);
+		v = s->freelist;
 		next = v->next;
+		s->freelist = next;
+		s->ref++;
 		if(next != nil)  // prefetching nil leads to a DTLB miss
 			PREFETCH(next);
-		l->list = next;
-		l->nlist--;
 		if(!(flag & FlagNoZero)) {
 			v->next = nil;
 			// block is zeroed iff second word is zero ...
@@ -224,7 +225,8 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 		c->local_cachealloc += size;
 	} else {
 		// Allocate directly from heap.
-		v = largealloc(flag, &size);
+		s = largealloc(flag, &size);
+		v = (void*)(s->start << PageShift);
 	}
 
 	if(flag & FlagNoGC)
@@ -235,34 +237,23 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 	if(DebugTypeAtBlockEnd)
 		*(uintptr*)((uintptr)v+size-sizeof(uintptr)) = typ;
 
+	m->mallocing = 0;
 	// TODO: save type even if FlagNoScan?  Potentially expensive but might help
 	// heap profiling/tracing.
-	if(UseSpanType && !(flag & FlagNoScan) && typ != 0) {
-		uintptr *buf, i;
+	if(UseSpanType && !(flag & FlagNoScan) && typ != 0)
+		settype(s, v, typ);
 
-		buf = m->settype_buf;
-		i = m->settype_bufsize;
-		buf[i++] = (uintptr)v;
-		buf[i++] = typ;
-		m->settype_bufsize = i;
-	}
-
-	m->mallocing = 0;
-	if(UseSpanType && !(flag & FlagNoScan) && typ != 0 && m->settype_bufsize == nelem(m->settype_buf))
-		runtime_settype_flush(m);
 	if(raceenabled)
 		runtime_racemalloc(v, size);
 
 	if(runtime_debug.allocfreetrace)
-		goto profile;
+		runtime_tracealloc(v, size, typ);
 
 	if(!(flag & FlagNoProfiling) && (rate = runtime_MemProfileRate) > 0) {
 		if(size < (uintptr)rate && size < (uintptr)(uint32)c->next_sample)
 			c->next_sample -= size;
-		else {
-		profile:
-			profilealloc(v, size, typ);
-		}
+		else
+			profilealloc(v, size);
 	}
 
 	m->locks--;
@@ -276,7 +267,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 	return v;
 }
 
-static void*
+static MSpan*
 largealloc(uint32 flag, uintptr *sizep)
 {
 	uintptr npages, size;
@@ -298,11 +289,11 @@ largealloc(uint32 flag, uintptr *sizep)
 	v = (void*)(s->start << PageShift);
 	// setup for mark sweep
 	runtime_markspan(v, 0, 0, true);
-	return v;
+	return s;
 }
 
 static void
-profilealloc(void *v, uintptr size, uintptr typ)
+profilealloc(void *v, uintptr size)
 {
 	uintptr rate;
 	int32 next;
@@ -324,7 +315,7 @@ profilealloc(void *v, uintptr size, uintptr typ)
 			next = 0;
 		c->next_sample = next;
 	}
-	runtime_MProf_Malloc(v, size, typ);
+	runtime_MProf_Malloc(v, size);
 }
 
 void*
@@ -365,8 +356,8 @@ __go_free(void *v)
 	if(size < TinySize)
 		runtime_throw("freeing too small block");
 
-	if(raceenabled)
-		runtime_racefree(v);
+	if(runtime_debug.allocfreetrace)
+		runtime_tracefree(v, size);
 
 	// Ensure that the span is swept.
 	// If we free into an unswept span, we will corrupt GC bitmaps.
@@ -381,10 +372,24 @@ __go_free(void *v)
 		s->needzero = 1;
 		// Must mark v freed before calling unmarkspan and MHeap_Free:
 		// they might coalesce v into other spans and change the bitmap further.
-		runtime_markfreed(v, size);
+		runtime_markfreed(v);
 		runtime_unmarkspan(v, 1<<PageShift);
+		// NOTE(rsc,dvyukov): The original implementation of efence
+		// in CL 22060046 used SysFree instead of SysFault, so that
+		// the operating system would eventually give the memory
+		// back to us again, so that an efence program could run
+		// longer without running out of memory. Unfortunately,
+		// calling SysFree here without any kind of adjustment of the
+		// heap data structures means that when the memory does
+		// come back to us, we have the wrong metadata for it, either in
+		// the MSpan structures or in the garbage collection bitmap.
+		// Using SysFault here means that the program will run out of
+		// memory fairly quickly in efence mode, but at least it won't
+		// have mysterious crashes due to confused memory reuse.
+		// It should be possible to switch back to SysFree if we also 
+		// implement and then call some kind of MHeap_DeleteSpan.
 		if(runtime_debug.efence)
-			runtime_SysFree((void*)(s->start<<PageShift), size, &mstats.heap_sys);
+			runtime_SysFault((void*)(s->start<<PageShift), size);
 		else
 			runtime_MHeap_Free(&runtime_mheap, s, 1);
 		c->local_nlargefree++;
@@ -398,9 +403,18 @@ __go_free(void *v)
 		// Must mark v freed before calling MCache_Free:
 		// it might coalesce v and other blocks into a bigger span
 		// and change the bitmap further.
-		runtime_markfreed(v, size);
 		c->local_nsmallfree[sizeclass]++;
-		runtime_MCache_Free(c, v, sizeclass, size);
+		c->local_cachealloc -= size;
+		if(c->alloc[sizeclass] == s) {
+			// We own the span, so we can just add v to the freelist
+			runtime_markfreed(v);
+			((MLink*)v)->next = s->freelist;
+			s->freelist = v;
+			s->ref--;
+		} else {
+			// Someone else owns this span.  Add to free queue.
+			runtime_MCache_Free(c, v, sizeclass, size);
+		}
 	}
 	m->mallocing = 0;
 }
@@ -456,37 +470,6 @@ runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **sp)
 	return 1;
 }
 
-MCache*
-runtime_allocmcache(void)
-{
-	intgo rate;
-	MCache *c;
-
-	runtime_lock(&runtime_mheap);
-	c = runtime_FixAlloc_Alloc(&runtime_mheap.cachealloc);
-	runtime_unlock(&runtime_mheap);
-	runtime_memclr((byte*)c, sizeof(*c));
-
-	// Set first allocation sample size.
-	rate = runtime_MemProfileRate;
-	if(rate > 0x3fffffff)	// make 2*rate not overflow
-		rate = 0x3fffffff;
-	if(rate != 0)
-		c->next_sample = runtime_fastrand1() % (2*rate);
-
-	return c;
-}
-
-void
-runtime_freemcache(MCache *c)
-{
-	runtime_MCache_ReleaseAll(c);
-	runtime_lock(&runtime_mheap);
-	runtime_purgecachedstats(c);
-	runtime_FixAlloc_Free(&runtime_mheap.cachealloc, c);
-	runtime_unlock(&runtime_mheap);
-}
-
 void
 runtime_purgecachedstats(MCache *c)
 {
@@ -523,21 +506,25 @@ extern uintptr runtime_sizeof_C_MStats
 void
 runtime_mallocinit(void)
 {
-	byte *p;
-	uintptr arena_size, bitmap_size, spans_size;
+	byte *p, *p1;
+	uintptr arena_size, bitmap_size, spans_size, p_size;
 	extern byte _end[];
 	uintptr limit;
 	uint64 i;
+	bool reserved;
 
 	runtime_sizeof_C_MStats = sizeof(MStats) - (NumSizeClasses - 61) * sizeof(mstats.by_size[0]);
 
 	p = nil;
+	p_size = 0;
 	arena_size = 0;
 	bitmap_size = 0;
 	spans_size = 0;
+	reserved = false;
 
 	// for 64-bit build
 	USED(p);
+	USED(p_size);
 	USED(arena_size);
 	USED(bitmap_size);
 	USED(spans_size);
@@ -585,7 +572,9 @@ runtime_mallocinit(void)
 		spans_size = arena_size / PageSize * sizeof(runtime_mheap.spans[0]);
 		spans_size = ROUND(spans_size, PageSize);
 		for(i = 0; i < HeapBaseOptions; i++) {
-			p = runtime_SysReserve(HeapBase(i), bitmap_size + spans_size + arena_size + PageSize);
+			p = HeapBase(i);
+			p_size = bitmap_size + spans_size + arena_size + PageSize;
+			p = runtime_SysReserve(p, p_size, &reserved);
 			if(p != nil)
 				break;
 		}
@@ -628,7 +617,8 @@ runtime_mallocinit(void)
 		// away from the running binary image and then round up
 		// to a MB boundary.
 		p = (byte*)ROUND((uintptr)_end + (1<<18), 1<<20);
-		p = runtime_SysReserve(p, bitmap_size + spans_size + arena_size + PageSize);
+		p_size = bitmap_size + spans_size + arena_size + PageSize;
+		p = runtime_SysReserve(p, p_size, &reserved);
 		if(p == nil)
 			runtime_throw("runtime: cannot reserve arena virtual address space");
 	}
@@ -636,13 +626,17 @@ runtime_mallocinit(void)
 	// PageSize can be larger than OS definition of page size,
 	// so SysReserve can give us a PageSize-unaligned pointer.
 	// To overcome this we ask for PageSize more and round up the pointer.
-	p = (byte*)ROUND((uintptr)p, PageSize);
+	p1 = (byte*)ROUND((uintptr)p, PageSize);
 
-	runtime_mheap.spans = (MSpan**)p;
-	runtime_mheap.bitmap = p + spans_size;
-	runtime_mheap.arena_start = p + spans_size + bitmap_size;
+	runtime_mheap.spans = (MSpan**)p1;
+	runtime_mheap.bitmap = p1 + spans_size;
+	runtime_mheap.arena_start = p1 + spans_size + bitmap_size;
 	runtime_mheap.arena_used = runtime_mheap.arena_start;
-	runtime_mheap.arena_end = runtime_mheap.arena_start + arena_size;
+	runtime_mheap.arena_end = p + p_size;
+	runtime_mheap.arena_reserved = reserved;
+
+	if(((uintptr)runtime_mheap.arena_start & (PageSize-1)) != 0)
+		runtime_throw("misrounded allocation in mallocinit");
 
 	// Initialize the rest of the allocator.	
 	runtime_MHeap_Init(&runtime_mheap);
@@ -655,64 +649,87 @@ runtime_mallocinit(void)
 void*
 runtime_MHeap_SysAlloc(MHeap *h, uintptr n)
 {
-	byte *p;
+	byte *p, *p_end;
+	uintptr p_size;
+	bool reserved;
 
 
 	if(n > (uintptr)(h->arena_end - h->arena_used)) {
 		// We are in 32-bit mode, maybe we didn't use all possible address space yet.
 		// Reserve some more space.
 		byte *new_end;
-		uintptr needed;
 
-		needed = (uintptr)h->arena_used + n - (uintptr)h->arena_end;
-		needed = ROUND(needed, 256<<20);
-		new_end = h->arena_end + needed;
+		p_size = ROUND(n + PageSize, 256<<20);
+		new_end = h->arena_end + p_size;
 		if(new_end <= h->arena_start + MaxArena32) {
-			p = runtime_SysReserve(h->arena_end, new_end - h->arena_end);
-			if(p == h->arena_end)
+			// TODO: It would be bad if part of the arena
+			// is reserved and part is not.
+			p = runtime_SysReserve(h->arena_end, p_size, &reserved);
+			if(p == h->arena_end) {
 				h->arena_end = new_end;
+				h->arena_reserved = reserved;
+			}
+			else if(p+p_size <= h->arena_start + MaxArena32) {
+				// Keep everything page-aligned.
+				// Our pages are bigger than hardware pages.
+				h->arena_end = p+p_size;
+				h->arena_used = p + (-(uintptr)p&(PageSize-1));
+				h->arena_reserved = reserved;
+			} else {
+				uint64 stat;
+				stat = 0;
+				runtime_SysFree(p, p_size, &stat);
+			}
 		}
 	}
 	if(n <= (uintptr)(h->arena_end - h->arena_used)) {
 		// Keep taking from our reservation.
 		p = h->arena_used;
-		runtime_SysMap(p, n, &mstats.heap_sys);
+		runtime_SysMap(p, n, h->arena_reserved, &mstats.heap_sys);
 		h->arena_used += n;
 		runtime_MHeap_MapBits(h);
 		runtime_MHeap_MapSpans(h);
 		if(raceenabled)
 			runtime_racemapshadow(p, n);
+		
+		if(((uintptr)p & (PageSize-1)) != 0)
+			runtime_throw("misrounded allocation in MHeap_SysAlloc");
 		return p;
 	}
 	
 	// If using 64-bit, our reservation is all we have.
-	if(sizeof(void*) == 8 && (uintptr)h->bitmap >= 0xffffffffU)
+	if((uintptr)(h->arena_end - h->arena_start) >= MaxArena32)
 		return nil;
 
 	// On 32-bit, once the reservation is gone we can
 	// try to get memory at a location chosen by the OS
 	// and hope that it is in the range we allocated bitmap for.
-	p = runtime_SysAlloc(n, &mstats.heap_sys);
+	p_size = ROUND(n, PageSize) + PageSize;
+	p = runtime_SysAlloc(p_size, &mstats.heap_sys);
 	if(p == nil)
 		return nil;
 
-	if(p < h->arena_start || (uintptr)(p+n - h->arena_start) >= MaxArena32) {
+	if(p < h->arena_start || (uintptr)(p+p_size - h->arena_start) >= MaxArena32) {
 		runtime_printf("runtime: memory allocated by OS (%p) not in usable range [%p,%p)\n",
 			p, h->arena_start, h->arena_start+MaxArena32);
-		runtime_SysFree(p, n, &mstats.heap_sys);
+		runtime_SysFree(p, p_size, &mstats.heap_sys);
 		return nil;
 	}
-
+	
+	p_end = p + p_size;
+	p += -(uintptr)p & (PageSize-1);
 	if(p+n > h->arena_used) {
 		h->arena_used = p+n;
-		if(h->arena_used > h->arena_end)
-			h->arena_end = h->arena_used;
+		if(p_end > h->arena_end)
+			h->arena_end = p_end;
 		runtime_MHeap_MapBits(h);
 		runtime_MHeap_MapSpans(h);
 		if(raceenabled)
 			runtime_racemapshadow(p, n);
 	}
 	
+	if(((uintptr)p & (PageSize-1)) != 0)
+		runtime_throw("misrounded allocation in MHeap_SysAlloc");
 	return p;
 }
 
@@ -740,7 +757,7 @@ runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
 
 	if(align != 0) {
 		if(align&(align-1))
-			runtime_throw("persistentalloc: align is now a power of 2");
+			runtime_throw("persistentalloc: align is not a power of 2");
 		if(align > PageSize)
 			runtime_throw("persistentalloc: align is too large");
 	} else
@@ -768,94 +785,67 @@ runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
 	return p;
 }
 
-static Lock settype_lock;
-
-void
-runtime_settype_flush(M *mp)
+static void
+settype(MSpan *s, void *v, uintptr typ)
 {
-	uintptr *buf, *endbuf;
 	uintptr size, ofs, j, t;
 	uintptr ntypes, nbytes2, nbytes3;
 	uintptr *data2;
 	byte *data3;
-	void *v;
-	uintptr typ, p;
-	MSpan *s;
 
-	buf = mp->settype_buf;
-	endbuf = buf + mp->settype_bufsize;
-
-	runtime_lock(&settype_lock);
-	while(buf < endbuf) {
-		v = (void*)*buf;
-		*buf = 0;
-		buf++;
-		typ = *buf;
-		buf++;
-
-		// (Manually inlined copy of runtime_MHeap_Lookup)
-		p = (uintptr)v>>PageShift;
-		p -= (uintptr)runtime_mheap.arena_start >> PageShift;
-		s = runtime_mheap.spans[p];
-
-		if(s->sizeclass == 0) {
-			s->types.compression = MTypes_Single;
-			s->types.data = typ;
-			continue;
-		}
-
-		size = s->elemsize;
-		ofs = ((uintptr)v - (s->start<<PageShift)) / size;
-
-		switch(s->types.compression) {
-		case MTypes_Empty:
-			ntypes = (s->npages << PageShift) / size;
-			nbytes3 = 8*sizeof(uintptr) + 1*ntypes;
-			data3 = runtime_mallocgc(nbytes3, 0, FlagNoProfiling|FlagNoScan|FlagNoInvokeGC);
-			s->types.compression = MTypes_Bytes;
-			s->types.data = (uintptr)data3;
-			((uintptr*)data3)[1] = typ;
-			data3[8*sizeof(uintptr) + ofs] = 1;
-			break;
-
-		case MTypes_Words:
-			((uintptr*)s->types.data)[ofs] = typ;
-			break;
-
-		case MTypes_Bytes:
-			data3 = (byte*)s->types.data;
-			for(j=1; j<8; j++) {
-				if(((uintptr*)data3)[j] == typ) {
-					break;
-				}
-				if(((uintptr*)data3)[j] == 0) {
-					((uintptr*)data3)[j] = typ;
-					break;
-				}
-			}
-			if(j < 8) {
-				data3[8*sizeof(uintptr) + ofs] = j;
-			} else {
-				ntypes = (s->npages << PageShift) / size;
-				nbytes2 = ntypes * sizeof(uintptr);
-				data2 = runtime_mallocgc(nbytes2, 0, FlagNoProfiling|FlagNoScan|FlagNoInvokeGC);
-				s->types.compression = MTypes_Words;
-				s->types.data = (uintptr)data2;
-
-				// Move the contents of data3 to data2. Then deallocate data3.
-				for(j=0; j<ntypes; j++) {
-					t = data3[8*sizeof(uintptr) + j];
-					t = ((uintptr*)data3)[t];
-					data2[j] = t;
-				}
-				data2[ofs] = typ;
-			}
-			break;
-		}
+	if(s->sizeclass == 0) {
+		s->types.compression = MTypes_Single;
+		s->types.data = typ;
+		return;
 	}
-	runtime_unlock(&settype_lock);
+	size = s->elemsize;
+	ofs = ((uintptr)v - (s->start<<PageShift)) / size;
 
-	mp->settype_bufsize = 0;
+	switch(s->types.compression) {
+	case MTypes_Empty:
+		ntypes = (s->npages << PageShift) / size;
+		nbytes3 = 8*sizeof(uintptr) + 1*ntypes;
+		data3 = runtime_mallocgc(nbytes3, 0, FlagNoProfiling|FlagNoScan|FlagNoInvokeGC);
+		s->types.compression = MTypes_Bytes;
+		s->types.data = (uintptr)data3;
+		((uintptr*)data3)[1] = typ;
+		data3[8*sizeof(uintptr) + ofs] = 1;
+		break;
+		
+	case MTypes_Words:
+		((uintptr*)s->types.data)[ofs] = typ;
+		break;
+		
+	case MTypes_Bytes:
+		data3 = (byte*)s->types.data;
+		for(j=1; j<8; j++) {
+			if(((uintptr*)data3)[j] == typ) {
+				break;
+			}
+			if(((uintptr*)data3)[j] == 0) {
+				((uintptr*)data3)[j] = typ;
+				break;
+			}
+		}
+		if(j < 8) {
+			data3[8*sizeof(uintptr) + ofs] = j;
+		} else {
+			ntypes = (s->npages << PageShift) / size;
+			nbytes2 = ntypes * sizeof(uintptr);
+			data2 = runtime_mallocgc(nbytes2, 0, FlagNoProfiling|FlagNoScan|FlagNoInvokeGC);
+			s->types.compression = MTypes_Words;
+			s->types.data = (uintptr)data2;
+			
+			// Move the contents of data3 to data2. Then deallocate data3.
+			for(j=0; j<ntypes; j++) {
+				t = data3[8*sizeof(uintptr) + j];
+				t = ((uintptr*)data3)[t];
+				data2[j] = t;
+			}
+			data2[ofs] = typ;
+		}
+		break;
+	}
 }
 
 uintptr
@@ -888,9 +878,7 @@ runtime_gettype(void *v)
 			runtime_throw("runtime_gettype: invalid compression kind");
 		}
 		if(0) {
-			runtime_lock(&settype_lock);
 			runtime_printf("%p -> %d,%X\n", v, (int32)s->types.compression, (int64)t);
-			runtime_unlock(&settype_lock);
 		}
 		return t;
 	}
@@ -933,7 +921,7 @@ runtime_cnewarray(const Type *typ, intgo n)
 }
 
 func GC() {
-	runtime_gc(1);
+	runtime_gc(2);  // force GC and do eager sweep
 }
 
 func SetFinalizer(obj Eface, finalizer Eface) {
@@ -956,15 +944,25 @@ func SetFinalizer(obj Eface, finalizer Eface) {
 	// because we use &runtime_zerobase for all such allocations.
 	if(ot->__element_type != nil && ot->__element_type->__size == 0)
 		return;
+	// The following check is required for cases when a user passes a pointer to composite literal,
+	// but compiler makes it a pointer to global. For example:
+	//	var Foo = &Object{}
+	//	func main() {
+	//		runtime.SetFinalizer(Foo, nil)
+	//	}
+	// See issue 7656.
+	if((byte*)obj.__object < runtime_mheap.arena_start || runtime_mheap.arena_used <= (byte*)obj.__object)
+		return;
 	if(!runtime_mlookup(obj.__object, &base, &size, nil) || obj.__object != base) {
 		// As an implementation detail we allow to set finalizers for an inner byte
 		// of an object if it could come from tiny alloc (see mallocgc for details).
-		if(ot->__element_type == nil || (ot->__element_type->__code&GO_NO_POINTERS) == 0 || ot->__element_type->__size >= TinySize) {
-			runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block\n");
+		if(ot->__element_type == nil || (ot->__element_type->__code&KindNoPointers) == 0 || ot->__element_type->__size >= TinySize) {
+			runtime_printf("runtime.SetFinalizer: pointer not at beginning of allocated block (%p)\n", obj.__object);
 			goto throw;
 		}
 	}
 	if(finalizer.__type_descriptor != nil) {
+		runtime_createfing();
 		if(finalizer.__type_descriptor->__code != GO_FUNC)
 			goto badfunc;
 		ft = (const FuncType*)finalizer.__type_descriptor;

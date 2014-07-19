@@ -378,10 +378,6 @@ func (p *printer) setLineComment(text string) {
 	p.setComment(&ast.CommentGroup{List: []*ast.Comment{{Slash: token.NoPos, Text: text}}})
 }
 
-func (p *printer) isMultiLine(n ast.Node) bool {
-	return p.lineFor(n.End())-p.lineFor(n.Pos()) > 0
-}
-
 func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) {
 	lbrace := fields.Opening
 	list := fields.List
@@ -428,13 +424,14 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 		if len(list) == 1 {
 			sep = blank
 		}
-		newSection := false
+		var line int
 		for i, f := range list {
 			if i > 0 {
-				p.linebreak(p.lineFor(f.Pos()), 1, ignore, newSection)
+				p.linebreak(p.lineFor(f.Pos()), 1, ignore, p.linesFrom(line) > 0)
 			}
 			extraTabs := 0
 			p.setComment(f.Doc)
+			p.recordLine(&line)
 			if len(f.Names) > 0 {
 				// named fields
 				p.identList(f.Names, false)
@@ -460,7 +457,6 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 				}
 				p.setComment(f.Comment)
 			}
-			newSection = p.isMultiLine(f)
 		}
 		if isIncomplete {
 			if len(list) > 0 {
@@ -472,12 +468,13 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 
 	} else { // interface
 
-		newSection := false
+		var line int
 		for i, f := range list {
 			if i > 0 {
-				p.linebreak(p.lineFor(f.Pos()), 1, ignore, newSection)
+				p.linebreak(p.lineFor(f.Pos()), 1, ignore, p.linesFrom(line) > 0)
 			}
 			p.setComment(f.Doc)
+			p.recordLine(&line)
 			if ftyp, isFtyp := f.Type.(*ast.FuncType); isFtyp {
 				// method
 				p.expr(f.Names[0])
@@ -487,7 +484,6 @@ func (p *printer) fieldList(fields *ast.FieldList, isStruct, isIncomplete bool) 
 				p.expr(f.Type)
 			}
 			p.setComment(f.Comment)
-			newSection = p.isMultiLine(f)
 		}
 		if isIncomplete {
 			if len(list) > 0 {
@@ -826,10 +822,16 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		}
 		p.print(x.Lbrace, token.LBRACE)
 		p.exprList(x.Lbrace, x.Elts, 1, commaTerm, x.Rbrace)
-		// do not insert extra line breaks because of comments before
-		// the closing '}' as it might break the code if there is no
-		// trailing ','
-		p.print(noExtraLinebreak, x.Rbrace, token.RBRACE, noExtraLinebreak)
+		// do not insert extra line break following a /*-style comment
+		// before the closing '}' as it might break the code if there
+		// is no trailing ','
+		mode := noExtraLinebreak
+		// do not insert extra blank following a /*-style comment
+		// before the closing '}' unless the literal is empty
+		if len(x.Elts) > 0 {
+			mode |= noExtraBlank
+		}
+		p.print(mode, x.Rbrace, token.RBRACE, mode)
 
 	case *ast.Ellipsis:
 		p.print(token.ELLIPSIS)
@@ -901,20 +903,31 @@ func (p *printer) stmtList(list []ast.Stmt, nindent int, nextIsRBrace bool) {
 	if nindent > 0 {
 		p.print(indent)
 	}
-	multiLine := false
+	var line int
 	i := 0
 	for _, s := range list {
 		// ignore empty statements (was issue 3466)
 		if _, isEmpty := s.(*ast.EmptyStmt); !isEmpty {
-			// _indent == 0 only for lists of switch/select case clauses;
+			// nindent == 0 only for lists of switch/select case clauses;
 			// in those cases each clause is a new section
 			if len(p.output) > 0 {
 				// only print line break if we are not at the beginning of the output
 				// (i.e., we are not printing only a partial program)
-				p.linebreak(p.lineFor(s.Pos()), 1, ignore, i == 0 || nindent == 0 || multiLine)
+				p.linebreak(p.lineFor(s.Pos()), 1, ignore, i == 0 || nindent == 0 || p.linesFrom(line) > 0)
 			}
+			p.recordLine(&line)
 			p.stmt(s, nextIsRBrace && i == len(list)-1)
-			multiLine = p.isMultiLine(s)
+			// labeled statements put labels on a separate line, but here
+			// we only care about the start line of the actual statement
+			// without label - correct line for each label
+			for t := s; ; {
+				lt, _ := t.(*ast.LabeledStmt)
+				if lt == nil {
+					break
+				}
+				line++
+				t = lt.Stmt
+			}
 			i++
 		}
 	}
@@ -1375,22 +1388,22 @@ func (p *printer) genDecl(d *ast.GenDecl) {
 				// two or more grouped const/var declarations:
 				// determine if the type column must be kept
 				keepType := keepTypeColumn(d.Specs)
-				newSection := false
+				var line int
 				for i, s := range d.Specs {
 					if i > 0 {
-						p.linebreak(p.lineFor(s.Pos()), 1, ignore, newSection)
+						p.linebreak(p.lineFor(s.Pos()), 1, ignore, p.linesFrom(line) > 0)
 					}
+					p.recordLine(&line)
 					p.valueSpec(s.(*ast.ValueSpec), keepType[i])
-					newSection = p.isMultiLine(s)
 				}
 			} else {
-				newSection := false
+				var line int
 				for i, s := range d.Specs {
 					if i > 0 {
-						p.linebreak(p.lineFor(s.Pos()), 1, ignore, newSection)
+						p.linebreak(p.lineFor(s.Pos()), 1, ignore, p.linesFrom(line) > 0)
 					}
+					p.recordLine(&line)
 					p.spec(s, n, false)
-					newSection = p.isMultiLine(s)
 				}
 			}
 			p.print(unindent, formfeed)
@@ -1448,13 +1461,16 @@ func (p *printer) bodySize(b *ast.BlockStmt, maxSize int) int {
 		// opening and closing brace are on different lines - don't make it a one-liner
 		return maxSize + 1
 	}
-	if len(b.List) > 5 || p.commentBefore(p.posFor(pos2)) {
-		// too many statements or there is a comment inside - don't make it a one-liner
+	if len(b.List) > 5 {
+		// too many statements - don't make it a one-liner
 		return maxSize + 1
 	}
 	// otherwise, estimate body size
-	bodySize := 0
+	bodySize := p.commentSizeBefore(p.posFor(pos2))
 	for i, s := range b.List {
+		if bodySize > maxSize {
+			break // no need to continue
+		}
 		if i > 0 {
 			bodySize += 2 // space for a semicolon and blank
 		}
@@ -1488,7 +1504,7 @@ func (p *printer) adjBlock(headerSize int, sep whiteSpace, b *ast.BlockStmt) {
 			}
 			p.print(blank)
 		}
-		p.print(b.Rbrace, token.RBRACE)
+		p.print(noExtraLinebreak, b.Rbrace, token.RBRACE, noExtraLinebreak)
 		return
 	}
 

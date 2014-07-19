@@ -39,11 +39,14 @@ func (p *Process) Kill() error {
 // Wait waits for the Process to exit, and then returns a
 // ProcessState describing its status and an error, if any.
 // Wait releases any resources associated with the Process.
+// On most operating systems, the Process must be a child
+// of the current process or an error will be returned.
 func (p *Process) Wait() (*ProcessState, error) {
 	return p.wait()
 }
 
 // Signal sends a signal to the Process.
+// Sending Interrupt on Windows is not implemented.
 func (p *Process) Signal(sig Signal) error {
 	return p.signal(sig)
 }

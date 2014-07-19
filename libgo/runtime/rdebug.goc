@@ -19,3 +19,8 @@ func setGCPercent(in int) (out int) {
 func setMaxThreads(in int) (out int) {
 	out = runtime_setmaxthreads(in);
 }
+
+func SetPanicOnFault(enabled bool) (old bool) {
+	old = runtime_g()->paniconfault;
+	runtime_g()->paniconfault = enabled;
+}
