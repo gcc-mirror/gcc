@@ -756,7 +756,7 @@ gtraceback(G* gp)
 	traceback = gp->traceback;
 	gp->traceback = nil;
 	traceback->c = runtime_callers(1, traceback->locbuf,
-		sizeof traceback->locbuf / sizeof traceback->locbuf[0]);
+		sizeof traceback->locbuf / sizeof traceback->locbuf[0], false);
 	runtime_gogo(traceback->gp);
 }
 
@@ -766,7 +766,7 @@ mcommoninit(M *mp)
 	// If there is no mcache runtime_callers() will crash,
 	// and we are most likely in sysmon thread so the stack is senseless anyway.
 	if(m->mcache)
-		runtime_callers(1, mp->createstack, nelem(mp->createstack));
+		runtime_callers(1, mp->createstack, nelem(mp->createstack), false);
 
 	mp->fastrand = 0x49f6428aUL + mp->id + runtime_cputicks();
 
@@ -2584,7 +2584,7 @@ runtime_sigprof()
 	}
 
 	if(traceback) {
-		n = runtime_callers(0, prof.locbuf, nelem(prof.locbuf));
+		n = runtime_callers(0, prof.locbuf, nelem(prof.locbuf), false);
 		for(i = 0; i < n; i++)
 			prof.pcbuf[i] = prof.locbuf[i].pc;
 	}

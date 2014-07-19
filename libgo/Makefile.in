@@ -135,17 +135,18 @@ am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	encoding.lo errors.lo expvar.lo flag.lo fmt.lo hash.lo html.lo \
 	image.lo io.lo log.lo math.lo mime.lo net.lo os.lo path.lo \
-	reflect-go.lo reflect/makefunc.lo regexp.lo runtime-go.lo \
-	sort.lo strconv.lo strings.lo strings/index.lo sync.lo \
-	syscall.lo syscall/errno.lo syscall/signame.lo syscall/wait.lo \
-	testing.lo time-go.lo unicode.lo archive/tar.lo archive/zip.lo \
-	compress/bzip2.lo compress/flate.lo compress/gzip.lo \
-	compress/lzw.lo compress/zlib.lo container/heap.lo \
-	container/list.lo container/ring.lo crypto/aes.lo \
-	crypto/cipher.lo crypto/des.lo crypto/dsa.lo crypto/ecdsa.lo \
-	crypto/elliptic.lo crypto/hmac.lo crypto/md5.lo crypto/rand.lo \
-	crypto/rc4.lo crypto/rsa.lo crypto/sha1.lo crypto/sha256.lo \
-	crypto/sha512.lo crypto/subtle.lo crypto/tls.lo crypto/x509.lo \
+	reflect-go.lo reflect/makefunc.lo reflect/makefunc_ffi_c.lo \
+	regexp.lo runtime-go.lo sort.lo strconv.lo strings.lo \
+	strings/index.lo sync.lo syscall.lo syscall/errno.lo \
+	syscall/signame.lo syscall/wait.lo testing.lo time-go.lo \
+	unicode.lo archive/tar.lo archive/zip.lo compress/bzip2.lo \
+	compress/flate.lo compress/gzip.lo compress/lzw.lo \
+	compress/zlib.lo container/heap.lo container/list.lo \
+	container/ring.lo crypto/aes.lo crypto/cipher.lo crypto/des.lo \
+	crypto/dsa.lo crypto/ecdsa.lo crypto/elliptic.lo \
+	crypto/hmac.lo crypto/md5.lo crypto/rand.lo crypto/rc4.lo \
+	crypto/rsa.lo crypto/sha1.lo crypto/sha256.lo crypto/sha512.lo \
+	crypto/subtle.lo crypto/tls.lo crypto/x509.lo \
 	crypto/x509/pkix.lo database/sql.lo database/sql/driver.lo \
 	debug/dwarf.lo debug/elf.lo debug/gosym.lo debug/macho.lo \
 	debug/pe.lo debug/plan9obj.lo encoding/ascii85.lo \
@@ -196,7 +197,7 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-check-interface.lo go-construct-map.lo \
 	go-convert-interface.lo go-copy.lo go-defer.lo \
 	go-deferred-recover.lo go-eface-compare.lo \
-	go-eface-val-compare.lo go-fieldtrack.lo \
+	go-eface-val-compare.lo go-ffi.lo go-fieldtrack.lo \
 	go-int-array-to-string.lo go-int-to-string.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
@@ -773,6 +774,7 @@ runtime_files = \
 	runtime/go-deferred-recover.c \
 	runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c \
+	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
@@ -1121,9 +1123,13 @@ go_path_files = \
 go_reflect_files = \
 	go/reflect/deepequal.go \
 	go/reflect/makefunc.go \
+	go/reflect/makefunc_ffi.go \
 	$(go_reflect_makefunc_file) \
 	go/reflect/type.go \
 	go/reflect/value.go
+
+go_reflect_makefunc_c_file = \
+	go/reflect/makefunc_ffi_c.c
 
 go_regexp_files = \
 	go/regexp/exec.go \
@@ -1910,6 +1916,7 @@ libgo_go_objs = \
 	path.lo \
 	reflect-go.lo \
 	reflect/makefunc.lo \
+	reflect/makefunc_ffi_c.lo \
 	regexp.lo \
 	runtime-go.lo \
 	sort.lo \
@@ -2430,6 +2437,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-deferred-recover.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-eface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-eface-val-compare.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-fieldtrack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-iface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-int-array-to-string.Plo@am__quote@
@@ -2676,6 +2684,13 @@ go-eface-val-compare.lo: runtime/go-eface-val-compare.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-eface-val-compare.c' object='go-eface-val-compare.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-eface-val-compare.lo `test -f 'runtime/go-eface-val-compare.c' || echo '$(srcdir)/'`runtime/go-eface-val-compare.c
+
+go-ffi.lo: runtime/go-ffi.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-ffi.lo -MD -MP -MF $(DEPDIR)/go-ffi.Tpo -c -o go-ffi.lo `test -f 'runtime/go-ffi.c' || echo '$(srcdir)/'`runtime/go-ffi.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-ffi.Tpo $(DEPDIR)/go-ffi.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-ffi.c' object='go-ffi.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-ffi.lo `test -f 'runtime/go-ffi.c' || echo '$(srcdir)/'`runtime/go-ffi.c
 
 go-fieldtrack.lo: runtime/go-fieldtrack.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-fieldtrack.lo -MD -MP -MF $(DEPDIR)/go-fieldtrack.Tpo -c -o go-fieldtrack.lo `test -f 'runtime/go-fieldtrack.c' || echo '$(srcdir)/'`runtime/go-fieldtrack.c
@@ -4583,6 +4598,9 @@ reflect-go.lo: $(go_reflect_files)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
 reflect/makefunc.lo: $(go_reflect_makefunc_s_file)
+	@$(MKDIR_P) reflect
+	$(LTCOMPILE) -c -o $@ $<
+reflect/makefunc_ffi_c.lo: $(go_reflect_makefunc_c_file)
 	@$(MKDIR_P) reflect
 	$(LTCOMPILE) -c -o $@ $<
 .PHONY: reflect/check

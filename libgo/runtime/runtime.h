@@ -609,7 +609,7 @@ void	runtime_exitsyscall(void) __asm__ (GOSYM_PREFIX "syscall.Exitsyscall");
 G*	__go_go(void (*pfn)(void*), void*);
 void	siginit(void);
 bool	__go_sigsend(int32 sig);
-int32	runtime_callers(int32, Location*, int32);
+int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void);	// monotonic time
 int64	runtime_unixnanotime(void); // real time, can skip
 void	runtime_dopanic(int32) __attribute__ ((noreturn));

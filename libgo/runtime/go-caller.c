@@ -177,7 +177,7 @@ Caller (int skip)
   int32 n;
 
   runtime_memclr (&ret, sizeof ret);
-  n = runtime_callers (skip + 1, &loc, 1);
+  n = runtime_callers (skip + 1, &loc, 1, false);
   if (n < 1)
     return ret;
   ret.pc = loc.pc;

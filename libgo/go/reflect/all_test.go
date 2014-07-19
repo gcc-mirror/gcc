@@ -1502,12 +1502,6 @@ func TestCallWithStruct(t *testing.T) {
 }
 
 func TestMakeFunc(t *testing.T) {
-	switch runtime.GOARCH {
-	case "amd64", "386":
-	default:
-		t.Skip("MakeFunc not implemented for " + runtime.GOARCH)
-	}
-
 	f := dummy
 	fv := MakeFunc(TypeOf(f), func(in []Value) []Value { return in })
 	ValueOf(&f).Elem().Set(fv)
@@ -1526,12 +1520,6 @@ func TestMakeFunc(t *testing.T) {
 }
 
 func TestMakeFuncInterface(t *testing.T) {
-	switch runtime.GOARCH {
-	case "amd64", "386":
-	default:
-		t.Skip("MakeFunc not implemented for " + runtime.GOARCH)
-	}
-
 	fn := func(i int) int { return i }
 	incr := func(in []Value) []Value {
 		return []Value{ValueOf(int(in[0].Int() + 1))}
@@ -1676,12 +1664,6 @@ func TestMethod(t *testing.T) {
 }
 
 func TestMethodValue(t *testing.T) {
-	switch runtime.GOARCH {
-	case "amd64", "386":
-	default:
-		t.Skip("reflect method values not implemented for " + runtime.GOARCH)
-	}
-
 	p := Point{3, 4}
 	var i int64
 
@@ -1853,12 +1835,6 @@ type Tm4 struct {
 func (t4 Tm4) M(x int, b byte) (byte, int) { return b, x + 40 }
 
 func TestMethod5(t *testing.T) {
-	switch runtime.GOARCH {
-	case "amd64", "386":
-	default:
-		t.Skip("reflect method values not implemented for " + runtime.GOARCH)
-	}
-
 	CheckF := func(name string, f func(int, byte) (byte, int), inc int) {
 		b, x := f(1000, 99)
 		if b != 99 || x != 1000+inc {

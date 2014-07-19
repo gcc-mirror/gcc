@@ -444,6 +444,7 @@ runtime_files = \
 	runtime/go-deferred-recover.c \
 	runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c \
+	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
@@ -951,9 +952,12 @@ endif
 go_reflect_files = \
 	go/reflect/deepequal.go \
 	go/reflect/makefunc.go \
+	go/reflect/makefunc_ffi.go \
 	$(go_reflect_makefunc_file) \
 	go/reflect/type.go \
 	go/reflect/value.go
+go_reflect_makefunc_c_file = \
+	go/reflect/makefunc_ffi_c.c
 
 go_regexp_files = \
 	go/regexp/exec.go \
@@ -1849,6 +1853,7 @@ libgo_go_objs = \
 	path.lo \
 	reflect-go.lo \
 	reflect/makefunc.lo \
+	reflect/makefunc_ffi_c.lo \
 	regexp.lo \
 	runtime-go.lo \
 	sort.lo \
@@ -2250,6 +2255,9 @@ reflect-go.lo: $(go_reflect_files)
 reflect/check: $(CHECK_DEPS)
 	@$(CHECK)
 reflect/makefunc.lo: $(go_reflect_makefunc_s_file)
+	@$(MKDIR_P) reflect
+	$(LTCOMPILE) -c -o $@ $<
+reflect/makefunc_ffi_c.lo: $(go_reflect_makefunc_c_file)
 	@$(MKDIR_P) reflect
 	$(LTCOMPILE) -c -o $@ $<
 .PHONY: reflect/check

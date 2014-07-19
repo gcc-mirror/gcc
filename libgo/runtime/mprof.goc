@@ -186,7 +186,7 @@ runtime_MProf_Malloc(void *p, uintptr size)
 	Bucket *b;
 	int32 nstk;
 
-	nstk = runtime_callers(1, stk, nelem(stk));
+	nstk = runtime_callers(1, stk, nelem(stk), false);
 	runtime_lock(&proflock);
 	b = stkbucket(MProf, size, stk, nstk, true);
 	b->recent_allocs++;
@@ -249,7 +249,7 @@ runtime_blockevent(int64 cycles, int32 skip)
 	if(rate <= 0 || (rate > cycles && runtime_fastrand1()%rate > cycles))
 		return;
 
-	nstk = runtime_callers(skip, stk, nelem(stk));
+	nstk = runtime_callers(skip, stk, nelem(stk), false);
 	runtime_lock(&proflock);
 	b = stkbucket(BProf, 0, stk, nstk, true);
 	b->count++;
@@ -449,7 +449,7 @@ saveg(G *gp, TRecord *r)
 	Location locstk[nelem(r->stk)];
 
 	if(gp == runtime_g()) {
-		n = runtime_callers(0, locstk, nelem(r->stk));
+		n = runtime_callers(0, locstk, nelem(r->stk), false);
 		for(i = 0; i < n; i++)
 			r->stk[i] = locstk[i].pc;
 	}
