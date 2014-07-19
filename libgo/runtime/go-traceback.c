@@ -16,7 +16,7 @@ runtime_traceback ()
   Location locbuf[100];
   int32 c;
 
-  c = runtime_callers (1, locbuf, nelem (locbuf));
+  c = runtime_callers (1, locbuf, nelem (locbuf), false);
   runtime_printtrace (locbuf, c, true);
 }
 

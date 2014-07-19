@@ -26,6 +26,7 @@ struct callers_data
   int skip;
   int index;
   int max;
+  int keep_thunks;
 };
 
 /* Callback function for backtrace_full.  Just collect the locations.
@@ -63,7 +64,7 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
   /* Skip thunks and recover functions.  There is no equivalent to
      these functions in the gc toolchain, so returning them here means
      significantly different results for runtime.Caller(N).  */
-  if (function != NULL)
+  if (function != NULL && !arg->keep_thunks)
     {
       const char *p;
 
@@ -136,7 +137,7 @@ error_callback (void *data __attribute__ ((unused)),
 /* Gather caller PC's.  */
 
 int32
-runtime_callers (int32 skip, Location *locbuf, int32 m)
+runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
 {
   struct callers_data data;
 
@@ -144,6 +145,7 @@ runtime_callers (int32 skip, Location *locbuf, int32 m)
   data.skip = skip + 1;
   data.index = 0;
   data.max = m;
+  data.keep_thunks = keep_thunks;
   runtime_xadd (&runtime_in_callers, 1);
   backtrace_full (__go_get_backtrace_state (), 0, callback, error_callback,
 		  &data);
@@ -167,7 +169,7 @@ Callers (int skip, struct __go_open_array pc)
      which we can not correct because it would break backward
      compatibility.  Normally we would add 1 to SKIP here, but we
      don't so that we are compatible.  */
-  ret = runtime_callers (skip, locbuf, pc.__count);
+  ret = runtime_callers (skip, locbuf, pc.__count, false);
 
   for (i = 0; i < ret; i++)
     ((uintptr *) pc.__values)[i] = locbuf[i].pc;
