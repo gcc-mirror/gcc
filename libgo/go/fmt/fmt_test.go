@@ -11,7 +11,6 @@ import (
 	"math"
 	"runtime"
 	"strings"
-	"sync/atomic"
 	"testing"
 	"time"
 	"unicode"
@@ -221,8 +220,12 @@ var fmtTests = []struct {
 	{"%+.3e", 0.0, "+0.000e+00"},
 	{"%+.3e", 1.0, "+1.000e+00"},
 	{"%+.3f", -1.0, "-1.000"},
+	{"%+.3F", -1.0, "-1.000"},
+	{"%+.3F", float32(-1.0), "-1.000"},
 	{"%+07.2f", 1.0, "+001.00"},
 	{"%+07.2f", -1.0, "-001.00"},
+	{"%+10.2f", +1.0, "     +1.00"},
+	{"%+10.2f", -1.0, "     -1.00"},
 	{"% .3E", -1.0, "-1.000E+00"},
 	{"% .3e", 1.0, " 1.000e+00"},
 	{"%+.3g", 0.0, "+0"},
@@ -242,6 +245,8 @@ var fmtTests = []struct {
 	{"%+.3g", 1 + 2i, "(+1+2i)"},
 	{"%.3e", 0i, "(0.000e+00+0.000e+00i)"},
 	{"%.3f", 0i, "(0.000+0.000i)"},
+	{"%.3F", 0i, "(0.000+0.000i)"},
+	{"%.3F", complex64(0i), "(0.000+0.000i)"},
 	{"%.3g", 0i, "(0+0i)"},
 	{"%.3e", 1 + 2i, "(1.000e+00+2.000e+00i)"},
 	{"%.3f", 1 + 2i, "(1.000+2.000i)"},
@@ -400,6 +405,8 @@ var fmtTests = []struct {
 	{"%#v", "foo", `"foo"`},
 	{"%#v", barray, `[5]fmt_test.renamedUint8{0x1, 0x2, 0x3, 0x4, 0x5}`},
 	{"%#v", bslice, `[]fmt_test.renamedUint8{0x1, 0x2, 0x3, 0x4, 0x5}`},
+	{"%#v", []byte(nil), "[]byte(nil)"},
+	{"%#v", []int32(nil), "[]int32(nil)"},
 
 	// slices with other formats
 	{"%#x", []int{1, 2, 15}, `[0x1 0x2 0xf]`},
@@ -506,9 +513,76 @@ var fmtTests = []struct {
 	{"%0.100f", 1.0, zeroFill("1.", 100, "")},
 	{"%0.100f", -1.0, zeroFill("-1.", 100, "")},
 
-	// Zero padding floats used to put the minus sign in the middle.
-	{"%020f", -1.0, "-000000000001.000000"},
+	// Comparison of padding rules with C printf.
+	/*
+		C program:
+		#include <stdio.h>
+
+		char *format[] = {
+			"[%.2f]",
+			"[% .2f]",
+			"[%+.2f]",
+			"[%7.2f]",
+			"[% 7.2f]",
+			"[%+7.2f]",
+			"[%07.2f]",
+			"[% 07.2f]",
+			"[%+07.2f]",
+		};
+
+		int main(void) {
+			int i;
+			for(i = 0; i < 9; i++) {
+				printf("%s: ", format[i]);
+				printf(format[i], 1.0);
+				printf(" ");
+				printf(format[i], -1.0);
+				printf("\n");
+			}
+		}
+
+		Output:
+			[%.2f]: [1.00] [-1.00]
+			[% .2f]: [ 1.00] [-1.00]
+			[%+.2f]: [+1.00] [-1.00]
+			[%7.2f]: [   1.00] [  -1.00]
+			[% 7.2f]: [   1.00] [  -1.00]
+			[%+7.2f]: [  +1.00] [  -1.00]
+			[%07.2f]: [0001.00] [-001.00]
+			[% 07.2f]: [ 001.00] [-001.00]
+			[%+07.2f]: [+001.00] [-001.00]
+	*/
+	{"%.2f", 1.0, "1.00"},
+	{"%.2f", -1.0, "-1.00"},
+	{"% .2f", 1.0, " 1.00"},
+	{"% .2f", -1.0, "-1.00"},
+	{"%+.2f", 1.0, "+1.00"},
+	{"%+.2f", -1.0, "-1.00"},
+	{"%7.2f", 1.0, "   1.00"},
+	{"%7.2f", -1.0, "  -1.00"},
+	{"% 7.2f", 1.0, "   1.00"},
+	{"% 7.2f", -1.0, "  -1.00"},
+	{"%+7.2f", 1.0, "  +1.00"},
+	{"%+7.2f", -1.0, "  -1.00"},
+	{"%07.2f", 1.0, "0001.00"},
+	{"%07.2f", -1.0, "-001.00"},
+	{"% 07.2f", 1.0, " 001.00"},
+	{"% 07.2f", -1.0, "-001.00"},
+	{"%+07.2f", 1.0, "+001.00"},
+	{"%+07.2f", -1.0, "-001.00"},
+
+	// Complex numbers: exhaustively tested in TestComplexFormatting.
+	{"%7.2f", 1 + 2i, "(   1.00  +2.00i)"},
+	{"%+07.2f", -1 - 2i, "(-001.00-002.00i)"},
+	// Zero padding does not apply to infinities.
+	{"%020f", math.Inf(-1), "                -Inf"},
+	{"%020f", math.Inf(+1), "                +Inf"},
+	{"% 020f", math.Inf(-1), "                -Inf"},
+	{"% 020f", math.Inf(+1), "                 Inf"},
+	{"%+020f", math.Inf(-1), "                -Inf"},
+	{"%+020f", math.Inf(+1), "                +Inf"},
 	{"%20f", -1.0, "           -1.000000"},
+	// Make sure we can handle very large widths.
 	{"%0100f", -1.0, zeroFill("-", 99, "1.000000")},
 
 	// Complex fmt used to leave the plus flag set for future entries in the array
@@ -539,6 +613,16 @@ var fmtTests = []struct {
 	{"%#072o", -1, zeroFill("-", 71, "1")},
 	{"%#072d", 1, zeroFill("", 72, "1")},
 	{"%#072d", -1, zeroFill("-", 71, "1")},
+
+	// Padding for complex numbers. Has been bad, then fixed, then bad again.
+	{"%+10.2f", +104.66 + 440.51i, "(   +104.66   +440.51i)"},
+	{"%+10.2f", -104.66 + 440.51i, "(   -104.66   +440.51i)"},
+	{"%+10.2f", +104.66 - 440.51i, "(   +104.66   -440.51i)"},
+	{"%+10.2f", -104.66 - 440.51i, "(   -104.66   -440.51i)"},
+	{"%+010.2f", +104.66 + 440.51i, "(+000104.66+000440.51i)"},
+	{"%+010.2f", -104.66 + 440.51i, "(-000104.66+000440.51i)"},
+	{"%+010.2f", +104.66 - 440.51i, "(+000104.66-000440.51i)"},
+	{"%+010.2f", -104.66 - 440.51i, "(-000104.66-000440.51i)"},
 }
 
 // zeroFill generates zero-filled strings of the specified width. The length
@@ -579,6 +663,50 @@ func TestSprintf(t *testing.T) {
 				t.Errorf("Sprintf(%q, %q) = <%s> want <%s>", tt.fmt, tt.val, s, tt.out)
 			} else {
 				t.Errorf("Sprintf(%q, %v) = %q want %q", tt.fmt, tt.val, s, tt.out)
+			}
+		}
+	}
+}
+
+// TestComplexFormatting checks that a complex always formats to the same
+// thing as if done by hand with two singleton prints.
+func TestComplexFormatting(t *testing.T) {
+	var yesNo = []bool{true, false}
+	var signs = []float64{1, 0, -1}
+	for _, plus := range yesNo {
+		for _, zero := range yesNo {
+			for _, space := range yesNo {
+				for _, char := range "fFeEgG" {
+					realFmt := "%"
+					if zero {
+						realFmt += "0"
+					}
+					if space {
+						realFmt += " "
+					}
+					if plus {
+						realFmt += "+"
+					}
+					realFmt += "10.2"
+					realFmt += string(char)
+					// Imaginary part always has a sign, so force + and ignore space.
+					imagFmt := "%"
+					if zero {
+						imagFmt += "0"
+					}
+					imagFmt += "+"
+					imagFmt += "10.2"
+					imagFmt += string(char)
+					for _, realSign := range signs {
+						for _, imagSign := range signs {
+							one := Sprintf(realFmt, complex(realSign, imagSign))
+							two := Sprintf("("+realFmt+imagFmt+"i)", realSign, imagSign)
+							if one != two {
+								t.Error(f, one, two)
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -634,67 +762,61 @@ func TestReorder(t *testing.T) {
 }
 
 func BenchmarkSprintfEmpty(b *testing.B) {
-	benchmarkSprintf(b, func(buf *bytes.Buffer) {
-		Sprintf("")
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Sprintf("")
+		}
 	})
 }
 
 func BenchmarkSprintfString(b *testing.B) {
-	benchmarkSprintf(b, func(buf *bytes.Buffer) {
-		Sprintf("%s", "hello")
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Sprintf("%s", "hello")
+		}
 	})
 }
 
 func BenchmarkSprintfInt(b *testing.B) {
-	benchmarkSprintf(b, func(buf *bytes.Buffer) {
-		Sprintf("%d", 5)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Sprintf("%d", 5)
+		}
 	})
 }
 
 func BenchmarkSprintfIntInt(b *testing.B) {
-	benchmarkSprintf(b, func(buf *bytes.Buffer) {
-		Sprintf("%d %d", 5, 6)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Sprintf("%d %d", 5, 6)
+		}
 	})
 }
 
 func BenchmarkSprintfPrefixedInt(b *testing.B) {
-	benchmarkSprintf(b, func(buf *bytes.Buffer) {
-		Sprintf("This is some meaningless prefix text that needs to be scanned %d", 6)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Sprintf("This is some meaningless prefix text that needs to be scanned %d", 6)
+		}
 	})
 }
 
 func BenchmarkSprintfFloat(b *testing.B) {
-	benchmarkSprintf(b, func(buf *bytes.Buffer) {
-		Sprintf("%g", 5.23184)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			Sprintf("%g", 5.23184)
+		}
 	})
 }
 
 func BenchmarkManyArgs(b *testing.B) {
-	benchmarkSprintf(b, func(buf *bytes.Buffer) {
-		buf.Reset()
-		Fprintf(buf, "%2d/%2d/%2d %d:%d:%d %s %s\n", 3, 4, 5, 11, 12, 13, "hello", "world")
+	b.RunParallel(func(pb *testing.PB) {
+		var buf bytes.Buffer
+		for pb.Next() {
+			buf.Reset()
+			Fprintf(&buf, "%2d/%2d/%2d %d:%d:%d %s %s\n", 3, 4, 5, 11, 12, 13, "hello", "world")
+		}
 	})
-}
-
-func benchmarkSprintf(b *testing.B, f func(buf *bytes.Buffer)) {
-	const CallsPerSched = 1000
-	procs := runtime.GOMAXPROCS(-1)
-	N := int32(b.N / CallsPerSched)
-	c := make(chan bool, procs)
-	for p := 0; p < procs; p++ {
-		go func() {
-			var buf bytes.Buffer
-			for atomic.AddInt32(&N, -1) >= 0 {
-				for g := 0; g < CallsPerSched; g++ {
-					f(&buf)
-				}
-			}
-			c <- true
-		}()
-	}
-	for p := 0; p < procs; p++ {
-		<-c
-	}
 }
 
 var mallocBuf bytes.Buffer

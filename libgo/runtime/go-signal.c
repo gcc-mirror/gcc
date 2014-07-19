@@ -238,16 +238,13 @@ runtime_sighandler (int sig, Siginfo *info,
 /* The start of handling a signal which panics.  */
 
 static void
-sig_panic_leadin (int sig)
+sig_panic_leadin (G *gp)
 {
   int i;
   sigset_t clear;
 
-  if (runtime_m ()->mallocing)
-    {
-      runtime_printf ("caught signal while mallocing: %d\n", sig);
-      runtime_throw ("caught signal while mallocing");
-    }
+  if (!runtime_canpanic (gp))
+    runtime_throw ("unexpected signal during runtime execution");
 
   /* The signal handler blocked signals; unblock them.  */
   i = sigfillset (&clear);
@@ -281,13 +278,14 @@ sig_panic_info_handler (int sig, Siginfo *info, void *context)
   /* It would be nice to set g->sigpc here as the gc library does, but
      I don't know how to get it portably.  */
 
-  sig_panic_leadin (sig);
+  sig_panic_leadin (g);
 
   switch (sig)
     {
 #ifdef SIGBUS
     case SIGBUS:
-      if (info->si_code == BUS_ADRERR && (uintptr_t) info->si_addr < 0x1000)
+      if ((info->si_code == BUS_ADRERR && (uintptr_t) info->si_addr < 0x1000)
+	  || g->paniconfault)
 	runtime_panicstring ("invalid memory address or "
 			     "nil pointer dereference");
       runtime_printf ("unexpected fault address %p\n", info->si_addr);
@@ -296,10 +294,11 @@ sig_panic_info_handler (int sig, Siginfo *info, void *context)
 
 #ifdef SIGSEGV
     case SIGSEGV:
-      if ((info->si_code == 0
-	   || info->si_code == SEGV_MAPERR
-	   || info->si_code == SEGV_ACCERR)
-	  && (uintptr_t) info->si_addr < 0x1000)
+      if (((info->si_code == 0
+	    || info->si_code == SEGV_MAPERR
+	    || info->si_code == SEGV_ACCERR)
+	   && (uintptr_t) info->si_addr < 0x1000)
+	  || g->paniconfault)
 	runtime_panicstring ("invalid memory address or "
 			     "nil pointer dereference");
       runtime_printf ("unexpected fault address %p\n", info->si_addr);
@@ -342,7 +341,7 @@ sig_panic_handler (int sig)
   g->sigcode0 = 0;
   g->sigcode1 = 0;
 
-  sig_panic_leadin (sig);
+  sig_panic_leadin (g);
 
   switch (sig)
     {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd
+// +build darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package syscall
 
@@ -25,8 +25,9 @@ func c_syscall32(trap int32, a1, a2, a3, a4, a5, a6 int32) int32
 func c_syscall64(trap int64, a1, a2, a3, a4, a5, a6 int64) int64
 
 const (
-	darwin64Bit = runtime.GOOS == "darwin" && sizeofPtr == 8
-	netbsd32Bit = runtime.GOOS == "netbsd" && sizeofPtr == 4
+	darwin64Bit    = runtime.GOOS == "darwin" && sizeofPtr == 8
+	dragonfly64Bit = runtime.GOOS == "dragonfly" && sizeofPtr == 8
+	netbsd32Bit    = runtime.GOOS == "netbsd" && sizeofPtr == 4
 )
 
 // Do a system call.  We look at the size of uintptr to see how to pass

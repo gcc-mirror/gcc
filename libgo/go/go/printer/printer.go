@@ -39,8 +39,16 @@ const (
 type pmode int
 
 const (
-	noExtraLinebreak pmode = 1 << iota
+	noExtraBlank     pmode = 1 << iota // disables extra blank after /*-style comment
+	noExtraLinebreak                   // disables extra line break after /*-style comment
 )
+
+type commentInfo struct {
+	cindex         int               // current comment index
+	comment        *ast.CommentGroup // = printer.comments[cindex]; or nil
+	commentOffset  int               // = printer.posFor(printer.comments[cindex].List[0].Pos()).Offset; or infinity
+	commentNewline bool              // true if the comment group contains newlines
+}
 
 type printer struct {
 	// Configuration (does not change after initialization)
@@ -52,7 +60,8 @@ type printer struct {
 	indent      int          // current indentation
 	mode        pmode        // current printer mode
 	impliedSemi bool         // if set, a linebreak implies a semicolon
-	lastTok     token.Token  // the last token printed (token.ILLEGAL if it's whitespace)
+	lastTok     token.Token  // last token printed (token.ILLEGAL if it's whitespace)
+	prevOpen    token.Token  // previous non-brace "open" token (, [, or token.ILLEGAL
 	wsbuf       []whiteSpace // delayed white space
 
 	// Positions
@@ -61,19 +70,17 @@ type printer struct {
 	// white space). If there's a difference and SourcePos is set in
 	// ConfigMode, //line comments are used in the output to restore
 	// original source positions for a reader.
-	pos  token.Position // current position in AST (source) space
-	out  token.Position // current position in output space
-	last token.Position // value of pos after calling writeString
+	pos     token.Position // current position in AST (source) space
+	out     token.Position // current position in output space
+	last    token.Position // value of pos after calling writeString
+	linePtr *int           // if set, record out.Line for the next token in *linePtr
 
 	// The list of all source comments, in order of appearance.
 	comments        []*ast.CommentGroup // may be nil
-	cindex          int                 // current comment index
 	useNodeComments bool                // if not set, ignore lead and line comments of nodes
 
 	// Information about p.comments[p.cindex]; set up by nextComment.
-	comment        *ast.CommentGroup // = p.comments[p.cindex]; or nil
-	commentOffset  int               // = p.posFor(p.comments[p.cindex].List[0].Pos()).Offset; or infinity
-	commentNewline bool              // true if the comment group contains newlines
+	commentInfo
 
 	// Cache of already computed node sizes.
 	nodeSizes map[ast.Node]int
@@ -91,6 +98,14 @@ func (p *printer) init(cfg *Config, fset *token.FileSet, nodeSizes map[ast.Node]
 	p.wsbuf = make([]whiteSpace, 0, 16) // whitespace sequences are short
 	p.nodeSizes = nodeSizes
 	p.cachedPos = -1
+}
+
+func (p *printer) internalError(msg ...interface{}) {
+	if debug {
+		fmt.Print(p.pos.String() + ": ")
+		fmt.Println(msg...)
+		panic("go/printer")
+	}
 }
 
 // commentsHaveNewline reports whether a list of comments belonging to
@@ -129,12 +144,49 @@ func (p *printer) nextComment() {
 	p.commentOffset = infinity
 }
 
-func (p *printer) internalError(msg ...interface{}) {
-	if debug {
-		fmt.Print(p.pos.String() + ": ")
-		fmt.Println(msg...)
-		panic("go/printer")
+// commentBefore returns true iff the current comment group occurs
+// before the next position in the source code and printing it does
+// not introduce implicit semicolons.
+//
+func (p *printer) commentBefore(next token.Position) bool {
+	return p.commentOffset < next.Offset && (!p.impliedSemi || !p.commentNewline)
+}
+
+// commentSizeBefore returns the estimated size of the
+// comments on the same line before the next position.
+//
+func (p *printer) commentSizeBefore(next token.Position) int {
+	// save/restore current p.commentInfo (p.nextComment() modifies it)
+	defer func(info commentInfo) {
+		p.commentInfo = info
+	}(p.commentInfo)
+
+	size := 0
+	for p.commentBefore(next) {
+		for _, c := range p.comment.List {
+			size += len(c.Text)
+		}
+		p.nextComment()
 	}
+	return size
+}
+
+// recordLine records the output line number for the next non-whitespace
+// token in *linePtr. It is used to compute an accurate line number for a
+// formatted construct, independent of pending (not yet emitted) whitespace
+// or comments.
+//
+func (p *printer) recordLine(linePtr *int) {
+	p.linePtr = linePtr
+}
+
+// linesFrom returns the number of output lines between the current
+// output line and the line argument, ignoring any pending (not yet
+// emitted) whitespace or comments. It is used to compute an accurate
+// size (in number of lines) for a formatted construct.
+//
+func (p *printer) linesFrom(line int) int {
+	return p.out.Line - line
 }
 
 func (p *printer) posFor(pos token.Pos) token.Position {
@@ -675,10 +727,14 @@ func (p *printer) intersperseComments(next token.Position, tok token.Token) (wro
 
 	if last != nil {
 		// if the last comment is a /*-style comment and the next item
-		// follows on the same line but is not a comma or a "closing"
-		// token, add an extra blank for separation
-		if last.Text[1] == '*' && p.lineFor(last.Pos()) == next.Line && tok != token.COMMA &&
-			tok != token.RPAREN && tok != token.RBRACK && tok != token.RBRACE {
+		// follows on the same line but is not a comma, and not a "closing"
+		// token immediately following its corresponding "opening" token,
+		// add an extra blank for separation unless explicitly disabled
+		if p.mode&noExtraBlank == 0 &&
+			last.Text[1] == '*' && p.lineFor(last.Pos()) == next.Line &&
+			tok != token.COMMA &&
+			(tok != token.RPAREN || p.prevOpen == token.LPAREN) &&
+			(tok != token.RBRACK || p.prevOpen == token.LBRACK) {
 			p.writeByte(' ', 1)
 		}
 		// ensure that there is a line break after a //-style comment,
@@ -735,12 +791,8 @@ func (p *printer) writeWhitespace(n int) {
 	}
 
 	// shift remaining entries down
-	i := 0
-	for ; n < len(p.wsbuf); n++ {
-		p.wsbuf[i] = p.wsbuf[n]
-		i++
-	}
-	p.wsbuf = p.wsbuf[0:i]
+	l := copy(p.wsbuf, p.wsbuf[n:])
+	p.wsbuf = p.wsbuf[:l]
 }
 
 // ----------------------------------------------------------------------------
@@ -789,6 +841,17 @@ func (p *printer) print(args ...interface{}) {
 		var data string
 		var isLit bool
 		var impliedSemi bool // value for p.impliedSemi after this arg
+
+		// record previous opening token, if any
+		switch p.lastTok {
+		case token.ILLEGAL:
+			// ignore (white space)
+		case token.LPAREN, token.LBRACK:
+			p.prevOpen = p.lastTok
+		default:
+			// other tokens followed any opening token
+			p.prevOpen = token.ILLEGAL
+		}
 
 		switch x := arg.(type) {
 		case pmode:
@@ -899,17 +962,15 @@ func (p *printer) print(args ...interface{}) {
 			}
 		}
 
+		// the next token starts now - record its line number if requested
+		if p.linePtr != nil {
+			*p.linePtr = p.out.Line
+			p.linePtr = nil
+		}
+
 		p.writeString(next, data, isLit)
 		p.impliedSemi = impliedSemi
 	}
-}
-
-// commentBefore returns true iff the current comment group occurs
-// before the next position in the source code and printing it does
-// not introduce implicit semicolons.
-//
-func (p *printer) commentBefore(next token.Position) (result bool) {
-	return p.commentOffset < next.Offset && (!p.impliedSemi || !p.commentNewline)
 }
 
 // flush prints any pending comments and whitespace occurring textually

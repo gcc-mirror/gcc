@@ -652,7 +652,7 @@ func equal(m string, s1, s2 string, t *testing.T) bool {
 	e1 := Split(s1, "")
 	e2 := Split(s2, "")
 	for i, c1 := range e1 {
-		if i > len(e2) {
+		if i >= len(e2) {
 			break
 		}
 		r1, _ := utf8.DecodeRuneInString(c1)
@@ -854,6 +854,32 @@ func TestReadRune(t *testing.T) {
 		}
 		if res != s {
 			t.Errorf("Reader(%q).ReadRune() produced %q", s, res)
+		}
+	}
+}
+
+var UnreadRuneErrorTests = []struct {
+	name string
+	f    func(*Reader)
+}{
+	{"Read", func(r *Reader) { r.Read([]byte{0}) }},
+	{"ReadByte", func(r *Reader) { r.ReadByte() }},
+	{"UnreadRune", func(r *Reader) { r.UnreadRune() }},
+	{"Seek", func(r *Reader) { r.Seek(0, 1) }},
+	{"WriteTo", func(r *Reader) { r.WriteTo(&bytes.Buffer{}) }},
+}
+
+func TestUnreadRuneError(t *testing.T) {
+	for _, tt := range UnreadRuneErrorTests {
+		reader := NewReader("0123456789")
+		if _, _, err := reader.ReadRune(); err != nil {
+			// should not happen
+			t.Fatal(err)
+		}
+		tt.f(reader)
+		err := reader.UnreadRune()
+		if err == nil {
+			t.Errorf("Unreading after %s: expected error", tt.name)
 		}
 	}
 }

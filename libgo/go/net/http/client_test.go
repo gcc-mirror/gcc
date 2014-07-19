@@ -15,14 +15,18 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	. "net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 var robotsTxtHandler = HandlerFunc(func(w ResponseWriter, r *Request) {
@@ -52,6 +56,13 @@ func pedanticReadAll(r io.Reader) (b []byte, err error) {
 			return b, err
 		}
 	}
+}
+
+type chanWriter chan string
+
+func (w chanWriter) Write(p []byte) (n int, err error) {
+	w <- string(p)
+	return len(p), nil
 }
 
 func TestClient(t *testing.T) {
@@ -564,6 +575,8 @@ func TestClientInsecureTransport(t *testing.T) {
 	ts := httptest.NewTLSServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 		w.Write([]byte("Hello"))
 	}))
+	errc := make(chanWriter, 10) // but only expecting 1
+	ts.Config.ErrorLog = log.New(errc, "", 0)
 	defer ts.Close()
 
 	// TODO(bradfitz): add tests for skipping hostname checks too?
@@ -585,6 +598,16 @@ func TestClientInsecureTransport(t *testing.T) {
 			res.Body.Close()
 		}
 	}
+
+	select {
+	case v := <-errc:
+		if !strings.Contains(v, "TLS handshake error") {
+			t.Errorf("expected an error log message containing 'TLS handshake error'; got %q", v)
+		}
+	case <-time.After(5 * time.Second):
+		t.Errorf("timeout waiting for logged error")
+	}
+
 }
 
 func TestClientErrorWithRequestURI(t *testing.T) {
@@ -635,6 +658,8 @@ func TestClientWithIncorrectTLSServerName(t *testing.T) {
 	defer afterTest(t)
 	ts := httptest.NewTLSServer(HandlerFunc(func(w ResponseWriter, r *Request) {}))
 	defer ts.Close()
+	errc := make(chanWriter, 10) // but only expecting 1
+	ts.Config.ErrorLog = log.New(errc, "", 0)
 
 	trans := newTLSTransport(t, ts)
 	trans.TLSClientConfig.ServerName = "badserver"
@@ -645,6 +670,14 @@ func TestClientWithIncorrectTLSServerName(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "127.0.0.1") || !strings.Contains(err.Error(), "badserver") {
 		t.Errorf("wanted error mentioning 127.0.0.1 and badserver; got error: %v", err)
+	}
+	select {
+	case v := <-errc:
+		if !strings.Contains(v, "TLS handshake error") {
+			t.Errorf("expected an error log message containing 'TLS handshake error'; got %q", v)
+		}
+	case <-time.After(5 * time.Second):
+		t.Errorf("timeout waiting for logged error")
 	}
 }
 
@@ -676,6 +709,33 @@ func TestTransportUsesTLSConfigServerName(t *testing.T) {
 		t.Fatal(err)
 	}
 	res.Body.Close()
+}
+
+func TestResponseSetsTLSConnectionState(t *testing.T) {
+	defer afterTest(t)
+	ts := httptest.NewTLSServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		w.Write([]byte("Hello"))
+	}))
+	defer ts.Close()
+
+	tr := newTLSTransport(t, ts)
+	tr.TLSClientConfig.CipherSuites = []uint16{tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA}
+	tr.Dial = func(netw, addr string) (net.Conn, error) {
+		return net.Dial(netw, ts.Listener.Addr().String())
+	}
+	defer tr.CloseIdleConnections()
+	c := &Client{Transport: tr}
+	res, err := c.Get("https://example.com/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.TLS == nil {
+		t.Fatal("Response didn't set TLS Connection State.")
+	}
+	if got, want := res.TLS.CipherSuite, tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA; got != want {
+		t.Errorf("TLS Cipher Suite = %d; want %d", got, want)
+	}
 }
 
 // Verify Response.ContentLength is populated. http://golang.org/issue/4126
@@ -779,5 +839,200 @@ func TestBasicAuth(t *testing.T) {
 		}
 	} else {
 		t.Errorf("Invalid auth %q", auth)
+	}
+}
+
+func TestClientTimeout(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+	defer afterTest(t)
+	sawRoot := make(chan bool, 1)
+	sawSlow := make(chan bool, 1)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if r.URL.Path == "/" {
+			sawRoot <- true
+			Redirect(w, r, "/slow", StatusFound)
+			return
+		}
+		if r.URL.Path == "/slow" {
+			w.Write([]byte("Hello"))
+			w.(Flusher).Flush()
+			sawSlow <- true
+			time.Sleep(2 * time.Second)
+			return
+		}
+	}))
+	defer ts.Close()
+	const timeout = 500 * time.Millisecond
+	c := &Client{
+		Timeout: timeout,
+	}
+
+	res, err := c.Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	select {
+	case <-sawRoot:
+		// good.
+	default:
+		t.Fatal("handler never got / request")
+	}
+
+	select {
+	case <-sawSlow:
+		// good.
+	default:
+		t.Fatal("handler never got /slow request")
+	}
+
+	errc := make(chan error, 1)
+	go func() {
+		_, err := ioutil.ReadAll(res.Body)
+		errc <- err
+		res.Body.Close()
+	}()
+
+	const failTime = timeout * 2
+	select {
+	case err := <-errc:
+		if err == nil {
+			t.Error("expected error from ReadAll")
+		}
+		// Expected error.
+	case <-time.After(failTime):
+		t.Errorf("timeout after %v waiting for timeout of %v", failTime, timeout)
+	}
+}
+
+func TestClientRedirectEatsBody(t *testing.T) {
+	defer afterTest(t)
+	saw := make(chan string, 2)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		saw <- r.RemoteAddr
+		if r.URL.Path == "/" {
+			Redirect(w, r, "/foo", StatusFound) // which includes a body
+		}
+	}))
+	defer ts.Close()
+
+	res, err := Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	var first string
+	select {
+	case first = <-saw:
+	default:
+		t.Fatal("server didn't see a request")
+	}
+
+	var second string
+	select {
+	case second = <-saw:
+	default:
+		t.Fatal("server didn't see a second request")
+	}
+
+	if first != second {
+		t.Fatal("server saw different client ports before & after the redirect")
+	}
+}
+
+// eofReaderFunc is an io.Reader that runs itself, and then returns io.EOF.
+type eofReaderFunc func()
+
+func (f eofReaderFunc) Read(p []byte) (n int, err error) {
+	f()
+	return 0, io.EOF
+}
+
+func TestClientTrailers(t *testing.T) {
+	defer afterTest(t)
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		w.Header().Set("Connection", "close")
+		w.Header().Set("Trailer", "Server-Trailer-A, Server-Trailer-B")
+		w.Header().Add("Trailer", "Server-Trailer-C")
+
+		var decl []string
+		for k := range r.Trailer {
+			decl = append(decl, k)
+		}
+		sort.Strings(decl)
+
+		slurp, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("Server reading request body: %v", err)
+		}
+		if string(slurp) != "foo" {
+			t.Errorf("Server read request body %q; want foo", slurp)
+		}
+		if r.Trailer == nil {
+			io.WriteString(w, "nil Trailer")
+		} else {
+			fmt.Fprintf(w, "decl: %v, vals: %s, %s",
+				decl,
+				r.Trailer.Get("Client-Trailer-A"),
+				r.Trailer.Get("Client-Trailer-B"))
+		}
+
+		// TODO: golang.org/issue/7759: there's no way yet for
+		// the server to set trailers without hijacking, so do
+		// that for now, just to test the client.  Later, in
+		// Go 1.4, it should be implicit that any mutations
+		// to w.Header() after the initial write are the
+		// trailers to be sent, if and only if they were
+		// previously declared with w.Header().Set("Trailer",
+		// ..keys..)
+		w.(Flusher).Flush()
+		conn, buf, _ := w.(Hijacker).Hijack()
+		t := Header{}
+		t.Set("Server-Trailer-A", "valuea")
+		t.Set("Server-Trailer-C", "valuec") // skipping B
+		buf.WriteString("0\r\n")            // eof
+		t.Write(buf)
+		buf.WriteString("\r\n") // end of trailers
+		buf.Flush()
+		conn.Close()
+	}))
+	defer ts.Close()
+
+	var req *Request
+	req, _ = NewRequest("POST", ts.URL, io.MultiReader(
+		eofReaderFunc(func() {
+			req.Trailer["Client-Trailer-A"] = []string{"valuea"}
+		}),
+		strings.NewReader("foo"),
+		eofReaderFunc(func() {
+			req.Trailer["Client-Trailer-B"] = []string{"valueb"}
+		}),
+	))
+	req.Trailer = Header{
+		"Client-Trailer-A": nil, //  to be set later
+		"Client-Trailer-B": nil, //  to be set later
+	}
+	req.ContentLength = -1
+	res, err := DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := wantBody(res, err, "decl: [Client-Trailer-A Client-Trailer-B], vals: valuea, valueb"); err != nil {
+		t.Error(err)
+	}
+	want := Header{
+		"Server-Trailer-A": []string{"valuea"},
+		"Server-Trailer-B": nil,
+		"Server-Trailer-C": []string{"valuec"},
+	}
+	if !reflect.DeepEqual(res.Trailer, want) {
+		t.Errorf("Response trailers = %#v; want %#v", res.Trailer, want)
 	}
 }

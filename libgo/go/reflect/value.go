@@ -425,6 +425,8 @@ func (v Value) CallSlice(in []Value) []Value {
 	return v.call("CallSlice", in)
 }
 
+var callGC bool // for testing; see TestCallMethodJump
+
 var makeFuncStubFn = makeFuncStub
 var makeFuncStubCode = **(**uintptr)(unsafe.Pointer(&makeFuncStubFn))
 
@@ -437,9 +439,8 @@ func (v Value) call(op string, in []Value) []Value {
 		rcvrtype *rtype
 	)
 	if v.flag&flagMethod != 0 {
-		rcvrtype = t
 		rcvr = v
-		t, fn = methodReceiver(op, v, int(v.flag)>>flagMethodShift)
+		rcvrtype, t, fn = methodReceiver(op, v, int(v.flag)>>flagMethodShift)
 	} else if v.flag&flagIndir != 0 {
 		fn = *(*unsafe.Pointer)(v.ptr)
 	} else {
@@ -448,17 +449,6 @@ func (v Value) call(op string, in []Value) []Value {
 
 	if fn == nil {
 		panic("reflect.Value.Call: call of nil function")
-	}
-
-	// If target is makeFuncStub, short circuit the unpack onto stack /
-	// pack back into []Value for the args and return values.  Just do the
-	// call directly.
-	// We need to do this here because otherwise we have a situation where
-	// reflect.callXX calls makeFuncStub, neither of which knows the
-	// layout of the args.  That's bad for precise gc & stack copying.
-	x := (*makeFuncImpl)(fn)
-	if x.code == makeFuncStubCode {
-		return x.call(in)
 	}
 
 	isSlice := op == "CallSlice"
@@ -518,6 +508,17 @@ func (v Value) call(op string, in []Value) []Value {
 	}
 	nout := t.NumOut()
 
+	// If target is makeFuncStub, short circuit the unpack onto stack /
+	// pack back into []Value for the args and return values.  Just do the
+	// call directly.
+	// We need to do this here because otherwise we have a situation where
+	// reflect.callXX calls makeFuncStub, neither of which knows the
+	// layout of the args.  That's bad for precise gc & stack copying.
+	x := (*makeFuncImpl)(fn)
+	if x.code == makeFuncStubCode {
+		return x.call(in)
+	}
+
 	if v.flag&flagMethod != 0 {
 		nin++
 	}
@@ -575,6 +576,11 @@ func (v Value) call(op string, in []Value) []Value {
 
 	call(t, fn, v.flag&flagMethod != 0, firstPointer, pp, pr)
 
+	// For testing; see TestCallMethodJump.
+	if callGC {
+		runtime.GC()
+	}
+
 	return ret
 }
 
@@ -582,9 +588,10 @@ func (v Value) call(op string, in []Value) []Value {
 // described by v. The Value v may or may not have the
 // flagMethod bit set, so the kind cached in v.flag should
 // not be used.
+// The return value rcvrtype gives the method's actual receiver type.
 // The return value t gives the method type signature (without the receiver).
 // The return value fn is a pointer to the method code.
-func methodReceiver(op string, v Value, methodIndex int) (t *rtype, fn unsafe.Pointer) {
+func methodReceiver(op string, v Value, methodIndex int) (rcvrtype, t *rtype, fn unsafe.Pointer) {
 	i := methodIndex
 	if v.typ.Kind() == Interface {
 		tt := (*interfaceType)(unsafe.Pointer(v.typ))
@@ -599,9 +606,11 @@ func methodReceiver(op string, v Value, methodIndex int) (t *rtype, fn unsafe.Po
 		if iface.itab == nil {
 			panic("reflect: " + op + " of method on nil interface value")
 		}
+		rcvrtype = iface.itab.typ
 		fn = unsafe.Pointer(&iface.itab.fun[i])
 		t = m.typ
 	} else {
+		rcvrtype = v.typ
 		ut := v.typ.uncommon()
 		if ut == nil || i < 0 || i >= len(ut.methods) {
 			panic("reflect: internal error: invalid method index")
@@ -786,7 +795,10 @@ func (v Value) FieldByIndex(index []int) Value {
 	v.mustBe(Struct)
 	for i, x := range index {
 		if i > 0 {
-			if v.Kind() == Ptr && v.Elem().Kind() == Struct {
+			if v.Kind() == Ptr && v.typ.Elem().Kind() == Struct {
+				if v.IsNil() {
+					panic("reflect: indirection through nil pointer to embedded struct")
+				}
 				v = v.Elem()
 			}
 		}
@@ -1516,6 +1528,7 @@ func (v Value) SetCap(n int) {
 // SetMapIndex sets the value associated with key in the map v to val.
 // It panics if v's Kind is not Map.
 // If val is the zero Value, SetMapIndex deletes the key from the map.
+// Otherwise if v holds a nil map, SetMapIndex will panic.
 // As in Go, key's value must be assignable to the map's key type,
 // and val's value must be assignable to the map's value type.
 func (v Value) SetMapIndex(key, val Value) {
@@ -2198,7 +2211,7 @@ func Zero(typ Type) Value {
 }
 
 // New returns a Value representing a pointer to a new zero value
-// for the specified type.  That is, the returned Value's Type is PtrTo(t).
+// for the specified type.  That is, the returned Value's Type is PtrTo(typ).
 func New(typ Type) Value {
 	if typ == nil {
 		panic("reflect: New(nil)")

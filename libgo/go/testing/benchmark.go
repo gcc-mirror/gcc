@@ -417,6 +417,9 @@ func (b *B) RunParallel(body func(*PB)) {
 		}()
 	}
 	wg.Wait()
+	if n <= uint64(b.N) && !b.Failed() {
+		b.Fatal("RunParallel: body exited without pb.Next() == false")
+	}
 }
 
 // SetParallelism sets the number of goroutines used by RunParallel to p*GOMAXPROCS.

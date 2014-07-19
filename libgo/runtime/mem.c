@@ -26,19 +26,33 @@
 static int dev_zero = -1;
 #endif
 
-static _Bool
+static int32
 addrspace_free(void *v __attribute__ ((unused)), uintptr n __attribute__ ((unused)))
 {
 #ifdef HAVE_MINCORE
 	size_t page_size = getpagesize();
-	size_t off;
-	char one_byte;
+	int32 errval;
+	uintptr chunk;
+	uintptr off;
+	
+	// NOTE: vec must be just 1 byte long here.
+	// Mincore returns ENOMEM if any of the pages are unmapped,
+	// but we want to know that all of the pages are unmapped.
+	// To make these the same, we can only ask about one page
+	// at a time. See golang.org/issue/7476.
+	static byte vec[1];
 
 	errno = 0;
-	for(off = 0; off < n; off += page_size)
-		if(mincore((char *)v + off, page_size, (void *)&one_byte) != -1
-		   || errno != ENOMEM)
+	for(off = 0; off < n; off += chunk) {
+		chunk = page_size * sizeof vec;
+		if(chunk > (n - off))
+			chunk = n - off;
+		errval = mincore((int8*)v + off, chunk, vec);
+		// ENOMEM means unmapped, which is what we want.
+		// Anything else we assume means the pages are mapped.
+		if(errval == 0 || errno != ENOMEM)
 			return 0;
+	}
 #endif
 	return 1;
 }
@@ -115,8 +129,27 @@ runtime_SysFree(void *v, uintptr n, uint64 *stat)
 	runtime_munmap(v, n);
 }
 
+void
+runtime_SysFault(void *v, uintptr n)
+{
+	int fd = -1;
+
+#ifdef USE_DEV_ZERO
+	if (dev_zero == -1) {
+		dev_zero = open("/dev/zero", O_RDONLY);
+		if (dev_zero < 0) {
+			runtime_printf("open /dev/zero: errno=%d\n", errno);
+			exit(2);
+		}
+	}
+	fd = dev_zero;
+#endif
+
+	runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE|MAP_FIXED, fd, 0);
+}
+
 void*
-runtime_SysReserve(void *v, uintptr n)
+runtime_SysReserve(void *v, uintptr n, bool *reserved)
 {
 	int fd = -1;
 	void *p;
@@ -136,13 +169,14 @@ runtime_SysReserve(void *v, uintptr n)
 	// much address space.  Instead, assume that the reservation is okay
 	// if we can reserve at least 64K and check the assumption in SysMap.
 	// Only user-mode Linux (UML) rejects these requests.
-	if(sizeof(void*) == 8 && (uintptr)v >= 0xffffffffU) {
+	if(sizeof(void*) == 8 && (n >> 16) > 1LLU<<16) {
 		p = mmap_fixed(v, 64<<10, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
 		if (p != v) {
 			runtime_munmap(p, 64<<10);
 			return nil;
 		}
 		runtime_munmap(p, 64<<10);
+		*reserved = false;
 		return v;
 	}
 	
@@ -153,11 +187,12 @@ runtime_SysReserve(void *v, uintptr n)
 	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE|MAP_NORESERVE, fd, 0);
 	if(p == MAP_FAILED)
 		return nil;
+	*reserved = true;
 	return p;
 }
 
 void
-runtime_SysMap(void *v, uintptr n, uint64 *stat)
+runtime_SysMap(void *v, uintptr n, bool reserved, uint64 *stat)
 {
 	void *p;
 	int fd = -1;
@@ -176,7 +211,7 @@ runtime_SysMap(void *v, uintptr n, uint64 *stat)
 #endif
 
 	// On 64-bit, we don't actually have v reserved, so tread carefully.
-	if(sizeof(void*) == 8 && (uintptr)v >= 0xffffffffU) {
+	if(!reserved) {
 		p = mmap_fixed(v, n, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, fd, 0);
 		if(p == MAP_FAILED && errno == ENOMEM)
 			runtime_throw("runtime: out of memory");

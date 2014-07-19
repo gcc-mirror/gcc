@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd windows
+// +build darwin dragonfly freebsd linux nacl netbsd openbsd solaris windows
 
 package net
 
@@ -124,7 +124,7 @@ func (c *UnixConn) ReadFromUnix(b []byte) (n int, addr *UnixAddr, err error) {
 	if !c.ok() {
 		return 0, nil, syscall.EINVAL
 	}
-	n, sa, err := c.fd.ReadFrom(b)
+	n, sa, err := c.fd.readFrom(b)
 	switch sa := sa.(type) {
 	case *syscall.SockaddrUnix:
 		if sa.Name != "" {
@@ -151,7 +151,7 @@ func (c *UnixConn) ReadMsgUnix(b, oob []byte) (n, oobn, flags int, addr *UnixAdd
 	if !c.ok() {
 		return 0, 0, 0, nil, syscall.EINVAL
 	}
-	n, oobn, flags, sa, err := c.fd.ReadMsg(b, oob)
+	n, oobn, flags, sa, err := c.fd.readMsg(b, oob)
 	switch sa := sa.(type) {
 	case *syscall.SockaddrUnix:
 		if sa.Name != "" {
@@ -171,6 +171,9 @@ func (c *UnixConn) WriteToUnix(b []byte, addr *UnixAddr) (n int, err error) {
 	if !c.ok() {
 		return 0, syscall.EINVAL
 	}
+	if c.fd.isConnected {
+		return 0, &OpError{Op: "write", Net: c.fd.net, Addr: addr, Err: ErrWriteToConnected}
+	}
 	if addr == nil {
 		return 0, &OpError{Op: "write", Net: c.fd.net, Addr: nil, Err: errMissingAddress}
 	}
@@ -178,7 +181,7 @@ func (c *UnixConn) WriteToUnix(b []byte, addr *UnixAddr) (n int, err error) {
 		return 0, syscall.EAFNOSUPPORT
 	}
 	sa := &syscall.SockaddrUnix{Name: addr.Name}
-	return c.fd.WriteTo(b, sa)
+	return c.fd.writeTo(b, sa)
 }
 
 // WriteTo implements the PacketConn WriteTo method.
@@ -200,14 +203,17 @@ func (c *UnixConn) WriteMsgUnix(b, oob []byte, addr *UnixAddr) (n, oobn int, err
 	if !c.ok() {
 		return 0, 0, syscall.EINVAL
 	}
+	if c.fd.sotype == syscall.SOCK_DGRAM && c.fd.isConnected {
+		return 0, 0, &OpError{Op: "write", Net: c.fd.net, Addr: addr, Err: ErrWriteToConnected}
+	}
 	if addr != nil {
 		if addr.Net != sotypeToNet(c.fd.sotype) {
 			return 0, 0, syscall.EAFNOSUPPORT
 		}
 		sa := &syscall.SockaddrUnix{Name: addr.Name}
-		return c.fd.WriteMsg(b, oob, sa)
+		return c.fd.writeMsg(b, oob, sa)
 	}
-	return c.fd.WriteMsg(b, oob, nil)
+	return c.fd.writeMsg(b, oob, nil)
 }
 
 // CloseRead shuts down the reading side of the Unix domain connection.
@@ -216,7 +222,7 @@ func (c *UnixConn) CloseRead() error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	return c.fd.CloseRead()
+	return c.fd.closeRead()
 }
 
 // CloseWrite shuts down the writing side of the Unix domain connection.
@@ -225,7 +231,7 @@ func (c *UnixConn) CloseWrite() error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	return c.fd.CloseWrite()
+	return c.fd.closeWrite()
 }
 
 // DialUnix connects to the remote address raddr on the network net,

@@ -12,6 +12,9 @@ package syscall
 //sys	Ftruncate(fd int, length int64) (err error)
 //ftruncate64(fd _C_int, length Offset_t) _C_int
 
+//sysnb	Getrlimit(resource int, rlim *Rlimit) (err error)
+//getrlimit64(resource _C_int, rlim *Rlimit) _C_int
+
 //sys	Lstat(path string, stat *Stat_t) (err error)
 //lstat64(path *byte, stat *Stat_t) _C_int
 
@@ -29,6 +32,9 @@ package syscall
 
 //sys	Seek(fd int, offset int64, whence int) (off int64, err error)
 //lseek64(fd _C_int, offset Offset_t, whence _C_int) Offset_t
+
+//sysnb	Setrlimit(resource int, rlim *Rlimit) (err error)
+//setrlimit64(resource int, rlim *Rlimit) _C_int
 
 //sys	Stat(path string, stat *Stat_t) (err error)
 //stat64(path *byte, stat *Stat_t) _C_int

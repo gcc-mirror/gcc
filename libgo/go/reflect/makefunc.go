@@ -113,7 +113,7 @@ func makeMethodValue(op string, v Value) Value {
 	// Cause panic if method is not appropriate.
 	// The panic would still happen during the call if we omit this,
 	// but we want Interface() and other operations to fail early.
-	t, _ := methodReceiver(op, rcvr, int(v.flag)>>flagMethodShift)
+	_, t, _ := methodReceiver(op, rcvr, int(v.flag)>>flagMethodShift)
 
 	fv := &makeFuncImpl{
 		code:   code,
@@ -167,17 +167,9 @@ func (c *makeFuncImpl) call(in []Value) []Value {
 	if c.method == -1 {
 		return c.fn(in)
 	} else if c.method == -2 {
-		if c.typ.IsVariadic() {
-			return c.rcvr.CallSlice(in)
-		} else {
-			return c.rcvr.Call(in)
-		}
+		return c.rcvr.Call(in)
 	} else {
 		m := c.rcvr.Method(c.method)
-		if c.typ.IsVariadic() {
-			return m.CallSlice(in)
-		} else {
-			return m.Call(in)
-		}
+		return m.Call(in)
 	}
 }

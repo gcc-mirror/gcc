@@ -486,6 +486,7 @@ runtime_schedinit(void)
 	runtime_sched.maxmcount = 10000;
 	runtime_precisestack = 0;
 
+	// runtime_symtabinit();
 	runtime_mallocinit();
 	mcommoninit(m);
 	
@@ -494,6 +495,10 @@ runtime_schedinit(void)
 	// in a fault during a garbage collection, it will not
 	// need to allocated memory.
 	runtime_newErrorCString(0, &i);
+	
+	// Initialize the cached gotraceback value, since
+	// gotraceback calls getenv, which mallocs on Plan 9.
+	runtime_gotraceback(nil);
 
 	runtime_goargs();
 	runtime_goenvs();
@@ -526,6 +531,15 @@ initDone(void *arg __attribute__ ((unused))) {
 };
 
 // The main goroutine.
+// Note: C frames in general are not copyable during stack growth, for two reasons:
+//   1) We don't know where in a frame to find pointers to other stack locations.
+//   2) There's no guarantee that globals or heap values do not point into the frame.
+//
+// The C frame for runtime.main is copyable, because:
+//   1) There are no pointers to other stack locations in the frame
+//      (d.fn points at a global, d.link is nil, d.argp is -1).
+//   2) The only pointer into this frame is from the defer chain,
+//      which is explicitly handled during stack copying.
 void
 runtime_main(void* dummy __attribute__((unused)))
 {
@@ -1094,6 +1108,22 @@ runtime_allocm(P *p, int32 stacksize, byte** ret_g0_stack, size_t* ret_g0_stacks
 	return mp;
 }
 
+static G*
+allocg(void)
+{
+	G *gp;
+	// static Type *gtype;
+	
+	// if(gtype == nil) {
+	// 	Eface e;
+	// 	runtime_gc_g_ptr(&e);
+	// 	gtype = ((PtrType*)e.__type_descriptor)->__element_type;
+	// }
+	// gp = runtime_cnew(gtype);
+	gp = runtime_malloc(sizeof(G));
+	return gp;
+}
+
 static M* lockextra(bool nilokay);
 static void unlockextra(M*);
 
@@ -1587,6 +1617,8 @@ top:
 		gcstopm();
 		goto top;
 	}
+	if(runtime_fingwait && runtime_fingwake && (gp = runtime_wakefing()) != nil)
+		runtime_ready(gp);
 	// local runq
 	gp = runqget(m->p);
 	if(gp)
@@ -1783,6 +1815,8 @@ top:
 void
 runtime_park(bool(*unlockf)(G*, void*), void *lock, const char *reason)
 {
+	if(g->status != Grunning)
+		runtime_throw("bad g status");
 	m->waitlock = lock;
 	m->waitunlockf = unlockf;
 	g->waitreason = reason;
@@ -1834,6 +1868,8 @@ park0(G *gp)
 void
 runtime_gosched(void)
 {
+	if(g->status != Grunning)
+		runtime_throw("bad g status");
 	runtime_mcall(runtime_gosched0);
 }
 
@@ -1861,6 +1897,8 @@ runtime_gosched0(G *gp)
 void
 runtime_goexit(void)
 {
+	if(g->status != Grunning)
+		runtime_throw("bad g status");
 	if(raceenabled)
 		runtime_racegoend();
 	runtime_mcall(goexit0);
@@ -1874,6 +1912,13 @@ goexit0(G *gp)
 	gp->entry = nil;
 	gp->m = nil;
 	gp->lockedm = nil;
+	gp->paniconfault = 0;
+	gp->defer = nil; // should be true already but just in case.
+	gp->panic = nil; // non-nil for Goexit during panic. points at stack-allocated data.
+	gp->writenbuf = 0;
+	gp->writebuf = nil;
+	gp->waitreason = nil;
+	gp->param = nil;
 	m->curg = nil;
 	m->lockedg = nil;
 	if(m->locked & ~LockExternal) {
@@ -2122,8 +2167,8 @@ syscall_runtime_BeforeFork(void)
 {
 	// Fork can hang if preempted with signals frequently enough (see issue 5517).
 	// Ensure that we stay on the same M where we disable profiling.
-	m->locks++;
-	if(m->profilehz != 0)
+	runtime_m()->locks++;
+	if(runtime_m()->profilehz != 0)
 		runtime_resetcpuprofiler(0);
 }
 
@@ -2138,7 +2183,7 @@ syscall_runtime_AfterFork(void)
 	hz = runtime_sched.profilehz;
 	if(hz != 0)
 		runtime_resetcpuprofiler(hz);
-	m->locks--;
+	runtime_m()->locks--;
 }
 
 // Allocate a new g, with a stack big enough for stacksize bytes.
@@ -2147,7 +2192,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 {
 	G *newg;
 
-	newg = runtime_malloc(sizeof(G));
+	newg = allocg();
 	if(stacksize >= 0) {
 #if USING_SPLIT_STACK
 		int dont_block_signals = 0;
@@ -2204,6 +2249,10 @@ __go_go(void (*fn)(void*), void* arg)
 	P *p;
 
 //runtime_printf("newproc1 %p %p narg=%d nret=%d\n", fn->fn, argp, narg, nret);
+	if(fn == nil) {
+		m->throwing = -1;  // do not dump full stacks
+		runtime_throw("go of nil func value");
+	}
 	m->locks++;  // disable preemption because it can be holding p in a local var
 
 	p = m->p;
@@ -2510,13 +2559,13 @@ runtime_sigprof()
 	if(mp == nil)
 		return;
 
+	// Profiling runs concurrently with GC, so it must not allocate.
+	mp->mallocing++;
+
 	traceback = true;
 
 	if(mp->mcache == nil)
 		traceback = false;
-
-	// Profiling runs concurrently with GC, so it must not allocate.
-	mp->mallocing++;
 
 	runtime_lock(&prof);
 	if(prof.fn == nil) {
@@ -2765,7 +2814,7 @@ checkdead(void)
 	}
 	runtime_unlock(&allglock);
 	if(grunning == 0)  // possible if main goroutine calls runtime_Goexit()
-		runtime_exit(0);
+		runtime_throw("no goroutines (main called runtime.Goexit) - deadlock!");
 	m->throwing = -1;  // do not dump full stacks
 	runtime_throw("all goroutines are asleep - deadlock!");
 }

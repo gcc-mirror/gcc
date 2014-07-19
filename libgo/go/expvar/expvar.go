@@ -108,11 +108,11 @@ func (v *Map) String() string {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "{")
 	first := true
-	v.Do(func(kv KeyValue) {
+	v.doLocked(func(kv KeyValue) {
 		if !first {
 			fmt.Fprintf(&b, ", ")
 		}
-		fmt.Fprintf(&b, "\"%s\": %v", kv.Key, kv.Value)
+		fmt.Fprintf(&b, "%q: %v", kv.Key, kv.Value)
 		first = false
 	})
 	fmt.Fprintf(&b, "}")
@@ -202,6 +202,12 @@ func (v *Map) AddFloat(key string, delta float64) {
 func (v *Map) Do(f func(KeyValue)) {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
+	v.doLocked(f)
+}
+
+// doLocked calls f for each entry in the map.
+// v.mu must be held for reads.
+func (v *Map) doLocked(f func(KeyValue)) {
 	for _, k := range v.keys {
 		f(KeyValue{k, v.m[k]})
 	}

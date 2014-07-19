@@ -28,12 +28,14 @@ func TestShutdown(t *testing.T) {
 		defer ln.Close()
 		c, err := ln.Accept()
 		if err != nil {
-			t.Fatalf("Accept: %v", err)
+			t.Errorf("Accept: %v", err)
+			return
 		}
 		var buf [10]byte
 		n, err := c.Read(buf[:])
 		if n != 0 || err != io.EOF {
-			t.Fatalf("server Read = %d, %v; want 0, io.EOF", n, err)
+			t.Errorf("server Read = %d, %v; want 0, io.EOF", n, err)
+			return
 		}
 		c.Write([]byte("response"))
 		c.Close()
@@ -62,7 +64,7 @@ func TestShutdown(t *testing.T) {
 
 func TestShutdownUnix(t *testing.T) {
 	switch runtime.GOOS {
-	case "windows", "plan9":
+	case "nacl", "plan9", "windows":
 		t.Skipf("skipping test on %q", runtime.GOOS)
 	}
 	f, err := ioutil.TempFile("", "go_net_unixtest")
@@ -84,12 +86,14 @@ func TestShutdownUnix(t *testing.T) {
 	go func() {
 		c, err := ln.Accept()
 		if err != nil {
-			t.Fatalf("Accept: %v", err)
+			t.Errorf("Accept: %v", err)
+			return
 		}
 		var buf [10]byte
 		n, err := c.Read(buf[:])
 		if n != 0 || err != io.EOF {
-			t.Fatalf("server Read = %d, %v; want 0, io.EOF", n, err)
+			t.Errorf("server Read = %d, %v; want 0, io.EOF", n, err)
+			return
 		}
 		c.Write([]byte("response"))
 		c.Close()
@@ -196,7 +200,8 @@ func TestTCPClose(t *testing.T) {
 	go func() {
 		c, err := Dial("tcp", l.Addr().String())
 		if err != nil {
-			t.Fatal(err)
+			t.Errorf("Dial: %v", err)
+			return
 		}
 
 		go read(c)

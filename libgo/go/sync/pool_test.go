@@ -25,11 +25,11 @@ func TestPool(t *testing.T) {
 	}
 	p.Put("a")
 	p.Put("b")
-	if g := p.Get(); g != "b" {
-		t.Fatalf("got %#v; want b", g)
-	}
 	if g := p.Get(); g != "a" {
 		t.Fatalf("got %#v; want a", g)
+	}
+	if g := p.Get(); g != "b" {
+		t.Fatalf("got %#v; want b", g)
 	}
 	if g := p.Get(); g != nil {
 		t.Fatalf("got %#v; want nil", g)
@@ -87,7 +87,7 @@ func TestPoolGC(t *testing.T) {
 	}
 	for i := 0; i < 5; i++ {
 		runtime.GC()
-		time.Sleep(time.Millisecond)
+		time.Sleep(time.Duration(i*100+10) * time.Millisecond)
 		// 1 pointer can remain on stack or elsewhere
 		if atomic.LoadUint32(&fin) >= N-1 {
 			return
@@ -133,42 +133,24 @@ func TestPoolStress(t *testing.T) {
 
 func BenchmarkPool(b *testing.B) {
 	var p Pool
-	var wg WaitGroup
-	n0 := uintptr(b.N)
-	n := n0
-	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for atomic.AddUintptr(&n, ^uintptr(0)) < n0 {
-				for b := 0; b < 100; b++ {
-					p.Put(1)
-					p.Get()
-				}
-			}
-		}()
-	}
-	wg.Wait()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			p.Put(1)
+			p.Get()
+		}
+	})
 }
 
 func BenchmarkPoolOverlflow(b *testing.B) {
 	var p Pool
-	var wg WaitGroup
-	n0 := uintptr(b.N)
-	n := n0
-	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for atomic.AddUintptr(&n, ^uintptr(0)) < n0 {
-				for b := 0; b < 100; b++ {
-					p.Put(1)
-				}
-				for b := 0; b < 100; b++ {
-					p.Get()
-				}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			for b := 0; b < 100; b++ {
+				p.Put(1)
 			}
-		}()
-	}
-	wg.Wait()
+			for b := 0; b < 100; b++ {
+				p.Get()
+			}
+		}
+	})
 }

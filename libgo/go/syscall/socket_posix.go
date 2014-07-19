@@ -27,5 +27,5 @@ package syscall
 //sys	recvmsg(s int, msg *Msghdr, flags int) (n int, err error)
 //recvmsg(s _C_int, msg *Msghdr, flags _C_int) Ssize_t
 
-//sys	sendmsg(s int, msg *Msghdr, flags int) (err error)
+//sys	sendmsg(s int, msg *Msghdr, flags int) (n int, err error)
 //sendmsg(s _C_int, msg *Msghdr, flags _C_int) Ssize_t

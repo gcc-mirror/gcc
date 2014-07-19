@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"testing"
+	"time"
 )
 
 func TestGcSys(t *testing.T) {
@@ -151,5 +152,87 @@ func TestGcRescan(t *testing.T) {
 		if *p.p != 42 {
 			t.Fatal("corrupted heap")
 		}
+	}
+}
+
+func TestGcLastTime(t *testing.T) {
+	ms := new(runtime.MemStats)
+	t0 := time.Now().UnixNano()
+	runtime.GC()
+	t1 := time.Now().UnixNano()
+	runtime.ReadMemStats(ms)
+	last := int64(ms.LastGC)
+	if t0 > last || last > t1 {
+		t.Fatalf("bad last GC time: got %v, want [%v, %v]", last, t0, t1)
+	}
+}
+
+func BenchmarkSetTypeNoPtr1(b *testing.B) {
+	type NoPtr1 struct {
+		p uintptr
+	}
+	var p *NoPtr1
+	for i := 0; i < b.N; i++ {
+		p = &NoPtr1{}
+	}
+	_ = p
+}
+func BenchmarkSetTypeNoPtr2(b *testing.B) {
+	type NoPtr2 struct {
+		p, q uintptr
+	}
+	var p *NoPtr2
+	for i := 0; i < b.N; i++ {
+		p = &NoPtr2{}
+	}
+	_ = p
+}
+func BenchmarkSetTypePtr1(b *testing.B) {
+	type Ptr1 struct {
+		p *byte
+	}
+	var p *Ptr1
+	for i := 0; i < b.N; i++ {
+		p = &Ptr1{}
+	}
+	_ = p
+}
+func BenchmarkSetTypePtr2(b *testing.B) {
+	type Ptr2 struct {
+		p, q *byte
+	}
+	var p *Ptr2
+	for i := 0; i < b.N; i++ {
+		p = &Ptr2{}
+	}
+	_ = p
+}
+
+func BenchmarkAllocation(b *testing.B) {
+	type T struct {
+		x, y *byte
+	}
+	ngo := runtime.GOMAXPROCS(0)
+	work := make(chan bool, b.N+ngo)
+	result := make(chan *T)
+	for i := 0; i < b.N; i++ {
+		work <- true
+	}
+	for i := 0; i < ngo; i++ {
+		work <- false
+	}
+	for i := 0; i < ngo; i++ {
+		go func() {
+			var x *T
+			for <-work {
+				for i := 0; i < 1000; i++ {
+					x = &T{}
+				}
+			}
+			result <- x
+		}()
+	}
+	for i := 0; i < ngo; i++ {
+		<-result
 	}
 }

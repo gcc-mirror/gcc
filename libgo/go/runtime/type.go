@@ -27,6 +27,7 @@ type rtype struct {
 	string *string
 	*uncommonType
 	ptrToThis *rtype
+	zero      unsafe.Pointer
 }
 
 type _method struct {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd windows
+// +build darwin dragonfly freebsd linux nacl netbsd openbsd solaris windows
 
 package net
 
@@ -79,7 +79,7 @@ func (c *IPConn) ReadFromIP(b []byte) (int, *IPAddr, error) {
 	// TODO(cw,rsc): consider using readv if we know the family
 	// type to avoid the header trim/copy
 	var addr *IPAddr
-	n, sa, err := c.fd.ReadFrom(b)
+	n, sa, err := c.fd.readFrom(b)
 	switch sa := sa.(type) {
 	case *syscall.SockaddrInet4:
 		addr = &IPAddr{IP: sa.Addr[0:]}
@@ -112,7 +112,7 @@ func (c *IPConn) ReadMsgIP(b, oob []byte) (n, oobn, flags int, addr *IPAddr, err
 		return 0, 0, 0, nil, syscall.EINVAL
 	}
 	var sa syscall.Sockaddr
-	n, oobn, flags, sa, err = c.fd.ReadMsg(b, oob)
+	n, oobn, flags, sa, err = c.fd.readMsg(b, oob)
 	switch sa := sa.(type) {
 	case *syscall.SockaddrInet4:
 		addr = &IPAddr{IP: sa.Addr[0:]}
@@ -133,6 +133,9 @@ func (c *IPConn) WriteToIP(b []byte, addr *IPAddr) (int, error) {
 	if !c.ok() {
 		return 0, syscall.EINVAL
 	}
+	if c.fd.isConnected {
+		return 0, &OpError{Op: "write", Net: c.fd.net, Addr: addr, Err: ErrWriteToConnected}
+	}
 	if addr == nil {
 		return 0, &OpError{Op: "write", Net: c.fd.net, Addr: nil, Err: errMissingAddress}
 	}
@@ -140,7 +143,7 @@ func (c *IPConn) WriteToIP(b []byte, addr *IPAddr) (int, error) {
 	if err != nil {
 		return 0, &OpError{"write", c.fd.net, addr, err}
 	}
-	return c.fd.WriteTo(b, sa)
+	return c.fd.writeTo(b, sa)
 }
 
 // WriteTo implements the PacketConn WriteTo method.
@@ -162,6 +165,9 @@ func (c *IPConn) WriteMsgIP(b, oob []byte, addr *IPAddr) (n, oobn int, err error
 	if !c.ok() {
 		return 0, 0, syscall.EINVAL
 	}
+	if c.fd.isConnected {
+		return 0, 0, &OpError{Op: "write", Net: c.fd.net, Addr: addr, Err: ErrWriteToConnected}
+	}
 	if addr == nil {
 		return 0, 0, &OpError{Op: "write", Net: c.fd.net, Addr: nil, Err: errMissingAddress}
 	}
@@ -169,7 +175,7 @@ func (c *IPConn) WriteMsgIP(b, oob []byte, addr *IPAddr) (n, oobn int, err error
 	if err != nil {
 		return 0, 0, &OpError{"write", c.fd.net, addr, err}
 	}
-	return c.fd.WriteMsg(b, oob, sa)
+	return c.fd.writeMsg(b, oob, sa)
 }
 
 // DialIP connects to the remote address raddr on the network protocol
