@@ -20690,8 +20690,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: for suitable sys/sdt.h" >&5
-$as_echo "for suitable sys/sdt.h" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for suitable sys/sdt.h" >&5
+$as_echo_n "checking for suitable sys/sdt.h... " >&6; }
   # Note that this test has to be run with the C language.
   # Otherwise, sdt.h will try to include some headers from
   # libstdc++ itself.
