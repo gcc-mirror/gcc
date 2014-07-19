@@ -20556,16 +20556,15 @@ including machine instructions in a subprogram.
 The two features are similar, and both are closely related to the mechanism
 provided by the asm instruction in the GNU C compiler.  Full understanding
 and use of the facilities in this package requires understanding the asm
-instruction, see @ref{Extended Asm,, Assembler Instructions with C Expression
-Operands, gcc, Using the GNU Compiler Collection (GCC)}.
+instruction, see @ref{Extended Asm,,, gcc, Using the GNU Compiler 
+Collection (GCC)}.
 
 Calls to the function @code{Asm} and the procedure @code{Asm} have identical
 semantic restrictions and effects as described below.  Both are provided so
 that the procedure call can be used as a statement, and the function call
 can be used to form a code_statement.
 
-The first example given in the GCC documentation is the C @code{asm}
-instruction:
+Consider this C @code{asm} instruction:
 @smallexample
    asm ("fsinx %1 %0" : "=f" (result) : "f" (angle));
 @end smallexample
@@ -20591,12 +20590,15 @@ The @code{Asm_Output} attribute denotes a function that takes two
 parameters.  The first is a string, the second is the name of a variable
 of the type designated by the attribute prefix.  The first (string)
 argument is required to be a static expression and designates the
-constraint for the parameter (e.g.@: what kind of register is
-required).  The second argument is the variable to be updated with the
+constraint (@pxref{Constraints,,, gcc, Using the GNU Compiler 
+Collection (GCC)})
+for the parameter (e.g.@: what kind of register is required).  The second
+argument is the variable to be written or updated with the
 result.  The possible values for constraint are the same as those used in
 the RTL, and are dependent on the configuration file used to build the
 GCC back end.  If there are no output operands, then this argument may
 either be omitted, or explicitly given as @code{No_Output_Operands}.
+No support is provided for GNU C's symbolic names for output parameters.
 
 The second argument of @code{@var{my_float}'Asm_Output} functions as
 though it were an @code{out} parameter, which is a little curious, but
@@ -20613,8 +20615,9 @@ type designated by the prefix.  The first (string) argument is required
 to be a static expression, and is the constraint for the parameter,
 (e.g.@: what kind of register is required).  The second argument is the
 value to be used as the input argument.  The possible values for the
-constant are the same as those used in the RTL, and are dependent on
+constraint are the same as those used in the RTL, and are dependent on
 the configuration file used to built the GCC back end.
+No support is provided for GNU C's symbolic names for input parameters.
 
 If there are no input operands, this argument may either be omitted, or
 explicitly given as @code{No_Input_Operands}.  The fourth argument, not
@@ -20624,19 +20627,22 @@ expression, and is a space or comma separated list of names of registers
 that must be considered destroyed as a result of the @code{Asm} call.  If
 this argument is the null string (the default value), then the code
 generator assumes that no additional registers are destroyed.
+In addition to registers, the special clobbers @code{memory} and 
+@code{cc} as described in the GNU C docs are both supported.
 
 The fifth argument, not present in the above example, called the
 @dfn{volatile} argument, is by default @code{False}.  It can be set to
 the literal value @code{True} to indicate to the code generator that all
 optimizations with respect to the instruction specified should be
-suppressed, and that in particular, for an instruction that has outputs,
-the instruction will still be generated, even if none of the outputs are
-used.  @xref{Extended Asm,, Assembler Instructions with C Expression Operands,
+suppressed, and in particular an instruction that has outputs
+will still be generated, even if none of the outputs are
+used.  @xref{Volatile,,,
 gcc, Using the GNU Compiler Collection (GCC)}, for the full description.
 Generally it is strongly advisable to use Volatile for any ASM statement
-that is missing either input or output operands, or when two or more ASM
-statements appear in sequence, to avoid unwanted optimizations. A warning
-is generated if this advice is not followed.
+that is missing either input or output operands or to avoid unwanted 
+optimizations. A warning is generated if this advice is not followed.
+
+No support is provided for GNU C's @code{asm goto} feature.
 
 The @code{Asm} subprograms may be used in two ways.  First the procedure
 forms can be used anywhere a procedure call would be valid, and
@@ -20662,7 +20668,7 @@ and more flexible.  The code statement form is provided to meet the RM
 suggestion that such a facility should be made available.  The following
 is the exact syntax of the call to @code{Asm}. As usual, if named notation
 is used, the arguments may be given in arbitrary order, following the
-normal rules for use of positional and named arguments)
+normal rules for use of positional and named arguments:
 
 @smallexample
 ASM_CALL ::= Asm (
