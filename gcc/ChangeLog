@@ -1,3 +1,8 @@
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): Handle VOIDmode for calls that return values
+	in multiple locations.
+
 2014-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* toplev.c (output_stack_usage): Adjust the location of the warning.
