@@ -1,5 +1,10 @@
 2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* cse.c (exp_equiv_p) <MEM>: For GCSE, return 0 for expressions with
+	different trapping status if -fnon-call-exceptions is enabled.
+
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* expr.c (store_field): Handle VOIDmode for calls that return values
 	in multiple locations.
 
