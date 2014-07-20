@@ -434,13 +434,12 @@ func (v Value) call(op string, in []Value) []Value {
 	// Get function pointer, type.
 	t := v.typ
 	var (
-		fn       unsafe.Pointer
-		rcvr     Value
-		rcvrtype *rtype
+		fn   unsafe.Pointer
+		rcvr Value
 	)
 	if v.flag&flagMethod != 0 {
 		rcvr = v
-		rcvrtype, t, fn = methodReceiver(op, v, int(v.flag)>>flagMethodShift)
+		_, t, fn = methodReceiver(op, v, int(v.flag)>>flagMethodShift)
 	} else if v.flag&flagIndir != 0 {
 		fn = *(*unsafe.Pointer)(v.ptr)
 	} else {
