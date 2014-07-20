@@ -1,3 +1,8 @@
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): Handle VOIDmode for calls that return values
+	in multiple locations.
+
 2014-07-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (unspec enum):  Fix typo in

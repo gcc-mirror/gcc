@@ -1,3 +1,8 @@
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack20.ad[sb]: New test.
+	* gnat.dg/pack20_pkg.ads: New helper.
+
 2014-07-20  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp (go-gc-tests): Support multiple files in one
