@@ -1,3 +1,9 @@
+2014-07-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (unspec enum):  Fix typo in
+	UNSPEC_VSLDOI.
+	(altivec_vsldoi_<mode>): Likewise.
+
 2014-07-20  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
