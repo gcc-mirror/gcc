@@ -1,6 +1,12 @@
 2014-07-20  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
+	Fixes a formatting issue related to the number of characters in the
+	line.
+
+2014-07-20  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
 	Add using of build_nonstandard_integer_type instead of
 	int128_integer_type_node
 

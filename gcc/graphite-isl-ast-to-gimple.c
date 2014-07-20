@@ -464,7 +464,8 @@ get_upper_bound (__isl_keep isl_ast_node *node_for)
     case isl_ast_op_lt:
       {
         // (iterator < ub) => (iterator <= ub - 1)
-        isl_val *one = isl_val_int_from_si (isl_ast_expr_get_ctx (for_cond), 1);
+        isl_val *one =
+          isl_val_int_from_si (isl_ast_expr_get_ctx (for_cond), 1);
         isl_ast_expr *ub = isl_ast_expr_get_op_arg (for_cond, 1);
         res = isl_ast_expr_sub (ub, isl_ast_expr_from_val (one));
         break;
