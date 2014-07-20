@@ -397,7 +397,7 @@ class Gogo
   // Add a named object to the current namespace.  This is used for
   // import . "package".
   void
-  add_named_object(Named_object*);
+  add_dot_import_object(Named_object*);
 
   // Add an identifier to the list of names seen in the file block.
   void
