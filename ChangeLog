@@ -1,3 +1,8 @@
+2014-07-20  Roman Gareev  <gareevroman@gmail.com>
+
+	* configure.ac: Accept only CLooG 0.18.1.
+	* configure: Regenerate.
+
 2014-07-17  Roman Gareev  <gareevroman@gmail.com>
 
 	* configure.ac: Don't accept isl 0.11.

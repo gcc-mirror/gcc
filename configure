@@ -6031,50 +6031,8 @@ $as_echo "$as_me: WARNING: using in-tree CLooG, disabling version check" >&2;}
     CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${islinc} ${gmpinc}"
     LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${isllibs} ${gmplib}"
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.17.0 of CLooG" >&5
-$as_echo_n "checking for version 0.17.0 of CLooG... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cloog/version.h"
-int
-main ()
-{
-#if CLOOG_VERSION_MAJOR != 0 \
-    || CLOOG_VERSION_MINOR != 17 \
-    || CLOOG_VERSION_REVISION < 0
-    choke me
-   #endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  gcc_cv_cloog=yes
-else
-  gcc_cv_cloog=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_cloog" >&5
-$as_echo "$gcc_cv_cloog" >&6; }
-
-    CFLAGS=$_cloog_saved_CFLAGS
-    LDFLAGS=$_cloog_saved_LDFLAGS
-  fi
-
-
-    if test "${gcc_cv_cloog}" = no ; then
-
-
-
-  if test "${ENABLE_CLOOG_CHECK}" = yes ; then
-    _cloog_saved_CFLAGS=$CFLAGS
-    _cloog_saved_LDFLAGS=$LDFLAGS
-
-    CFLAGS="${_cloog_saved_CFLAGS} ${clooginc} ${islinc} ${gmpinc}"
-    LDFLAGS="${_cloog_saved_LDFLAGS} ${clooglibs} ${isllibs} ${gmplib}"
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.18.0 of CLooG" >&5
-$as_echo_n "checking for version 0.18.0 of CLooG... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.18.1 of CLooG" >&5
+$as_echo_n "checking for version 0.18.1 of CLooG... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "cloog/version.h"
@@ -6083,7 +6041,7 @@ main ()
 {
 #if CLOOG_VERSION_MAJOR != 0 \
     || CLOOG_VERSION_MINOR != 18 \
-    || CLOOG_VERSION_REVISION < 0
+    || CLOOG_VERSION_REVISION < 1
     choke me
    #endif
   ;
@@ -6104,7 +6062,6 @@ $as_echo "$gcc_cv_cloog" >&6; }
   fi
 
 
-    fi
 
 
 
