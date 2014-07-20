@@ -62,10 +62,14 @@ extern "C" {
 
 static bool graphite_regenerate_error;
 
-/* We always use signed 128, until isl is able to give information about
-types  */
+/* We always try to use signed 128 bit types, but fall back to smaller types
+   in case a platform does not provide types of these sizes. In the future we
+   should use isl to derive the optimal type for each subexpression.  */
 
-static tree *graphite_expression_size_type = &int128_integer_type_node;
+static int max_mode_int_precision =
+  GET_MODE_PRECISION (mode_for_size (MAX_FIXED_MODE_SIZE, MODE_INT, 0));
+static int graphite_expression_type_precision = 128 <= max_mode_int_precision ?
+						128 : max_mode_int_precision;
 
 /* Converts a GMP constant VAL to a tree and returns it.  */
 
@@ -494,7 +498,8 @@ graphite_create_new_loop_guard (edge entry_edge,
   tree cond_expr;
   edge exit_edge;
 
-  *type = *graphite_expression_size_type;
+  *type =
+    build_nonstandard_integer_type (graphite_expression_type_precision, 0);
   isl_ast_expr *for_init = isl_ast_node_for_get_init (node_for);
   *lb = gcc_expression_from_isl_expression (*type, for_init, ip);
   isl_ast_expr *upper_bound = get_upper_bound (node_for);
