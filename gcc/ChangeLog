@@ -1,3 +1,9 @@
+2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61885
+	* config/i386/avx512fintrin.h: Move constants for mantissa extraction
+	out of #ifdef __OPTIMIZE__.
+
 2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cse.c (exp_equiv_p) <MEM>: For GCSE, return 0 for expressions with
@@ -10,21 +16,18 @@
 
 2014-07-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* config/rs6000/altivec.md (unspec enum):  Fix typo in
-	UNSPEC_VSLDOI.
+	* config/rs6000/altivec.md (unspec enum):  Fix typo in UNSPEC_VSLDOI.
 	(altivec_vsldoi_<mode>): Likewise.
 
 2014-07-20  Roman Gareev  <gareevroman@gmail.com>
 
-	* graphite-isl-ast-to-gimple.c:
-	Fixes a formatting issue related to the number of characters in the
-	line.
+	* graphite-isl-ast-to-gimple.c: Fixes a formatting issue related
+	to the number of characters in the line.
 
 2014-07-20  Roman Gareev  <gareevroman@gmail.com>
 
-	* graphite-isl-ast-to-gimple.c:
-	Add using of build_nonstandard_integer_type instead of
-	int128_integer_type_node
+	* graphite-isl-ast-to-gimple.c: Add using of
+	build_nonstandard_integer_type instead of int128_integer_type_node.
 
 2014-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -120,7 +123,7 @@
 	* config/arm/fa726te.md (726te_alu_op): Likewise.
 	* config/arm/fmp626.md (mp626_alu_op): Likewise.
 	* config/arm/arm.md (core_cycles): Replace alu_reg and alus_reg with
-	alu_sreg, alu_dsp_reg and alus_sreg.     
+	alu_sreg, alu_dsp_reg and alus_sreg.
 	* config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
 	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
 	* config/arm/cortex-a53.md (cortex_a53_alu): Likewise.
@@ -132,10 +135,10 @@
 	* config/arm/marvell-pj4.md (pj4_alu, pj4_alu_conds): Likewise.
 	* config/aarch64/aarch64.md (*addsi3_aarch64, *addsi3_aarch64_uxtw,
 	subsi3, *adddi3_aarch64, *subsi3_uxtw, subdi3, absdi2, neg<mode>2,
-	*negsi2_uxtw, tlsle_small_<mode>): Rename type alu_reg to alu_sreg.     
+	*negsi2_uxtw, tlsle_small_<mode>): Rename type alu_reg to alu_sreg.
 	(add<mode>3_compare0, *addsi3_compare0_uxtw, *add<mode>3nr_compare0,
 	sub<mode>3_compare0, *compare_neg<mode>, *neg<mode>2_compare0,
-	subsi3_compare0_uxtw, *negsi2_compare0_uxtw, *cmp<mode>): Rename type 
+	subsi3_compare0_uxtw, *negsi2_compare0_uxtw, *cmp<mode>): Rename type
 	alus_reg to alus_sreg.
 
 2014-07-17  Andreas Schwab  <schwab@linux-m68k.org>
@@ -146,9 +149,8 @@
 2014-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/61801
-	* sched-deps.c (sched_analyze_2): For ASM_OPERANDS and
-	ASM_INPUT don't set reg_pending_barrier if it appears in a
-	debug-insn.
+	* sched-deps.c (sched_analyze_2): For ASM_OPERANDS and ASM_INPUT
+	don't set reg_pending_barrier if it appears in a debug-insn.
 
 2014-07-16  DJ Delorie  <dj@redhat.com>
 
@@ -166,12 +168,12 @@
 	(cris_side_effect_mode_ok): Replace CONSTANT_P with CRIS_CONSTANT_P.
 	(cris_address_cost): Ditto last CONSTANT_P.
 	(cris_symbol_type_of): Rename from cris_pic_symbol_type_of.  All
-        callers changed.  Yield cris_offsettable_symbol for non-PIC
-        constant symbolic expressions including labels.  Yield cris_unspec
+	callers changed.  Yield cris_offsettable_symbol for non-PIC
+	constant symbolic expressions including labels.  Yield cris_unspec
 	for all unspecs.
 	(cris_expand_pic_call_address): New parameter MARKERP.  Set its
-        target to pic_offset_table_rtx for calls that will likely go
-        through PLT, const0_rtx when they can't.  All callers changed.
+	target to pic_offset_table_rtx for calls that will likely go
+	through PLT, const0_rtx when they can't.  All callers changed.
 	Assert flag_pic.  Use CONSTANT_P, not CONSTANT_ADDRESS_P, for
 	symbolic expressions to be PICified.  Remove second, redundant,
 	assert on can_create_pseudo_p returning non-zero.  Use
@@ -182,26 +184,23 @@
 	CONSTANT_P instead of CONSTANT_ADDRESS_P.
 	("*movsi_internal") <case 9>: Make check for valid unspec operands
 	for lapc stricter.
-	<case CRIS_UNSPEC_PCREL, CRIS_UNSPEC_PLT_PCREL>: Clear condition
-	codes.
+	<case CRIS_UNSPEC_PCREL, CRIS_UNSPEC_PLT_PCREL>: Clear condition codes.
 	("call", "call_value"): Use second incoming operand as a marker
 	for pic-offset-table-register being used.
 	("*expanded_call_non_v32", "*expanded_call_v32")
-        ("*expanded_call_value_non_v32", "*expanded_call_value_v32"): For
+	("*expanded_call_value_non_v32", "*expanded_call_value_v32"): For
 	second incoming operand to CALL, match cris_call_type_marker.
-	("*expanded_call_value_side"): Ditto.  Disable before
-	reload_completed.
+	("*expanded_call_value_side"): Ditto.  Disable before reload_completed.
 	("*expanded_call_side"): Ditto.  Fix typo in comment.
 	(moverside, movemside peepholes): Check for CRIS_CONSTANT_P, not
 	CONSTANT_P.
 	* config/cris/predicates.md ("cris_call_type_marker"): New predicate.
 	* config/cris/cris.h (CRIS_CONSTANT_P): New macro.
 	(enum cris_symbol_type): Rename from cris_pic_symbol_type.  All
-        users changed.  Add members cris_offsettable_symbol and
-	cris_unspec.
+	users changed.  Add members cris_offsettable_symbol and cris_unspec.
 	(cris_symbol_type): Rename from cris_pic_symbol_type.
 	* config/cris/constraints.md ("T"): Use CRIS_CONSTANT_P, not
-        just CONSTANT_P.
+	just CONSTANT_P.
 	* config/cris/cris-protos.h (cris_symbol_type_of,
 	cris_expand_pic_call_address): Adjust prototypes.
 	(cris_legitimate_constant_p): New prototype.
@@ -216,7 +215,7 @@
 	set_comdat_group to NULL_TREE.
 	(verify_symtab): Fix diagnostic.
 
-2014-07-16  David Wohlferd <dw@LimeGreenSocks.com>
+2014-07-16  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	PR target/61662
 	* config/i386/ia32intrin.h: Use __LP64__ to determine size of long.
@@ -224,10 +223,8 @@
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 
 	Support location tracking for built-in macro tokens
-	* input.h (is_location_from_builtin_token): New function
-	declaration.
-	* input.c (is_location_from_builtin_token): New function
-	definition.
+	* input.h (is_location_from_builtin_token): New function declaration.
+	* input.c (is_location_from_builtin_token): New function definition.
 	* toplev.c (general_init): Tell libcpp what the pre-defined
 	spelling location for built-in tokens is.
 
