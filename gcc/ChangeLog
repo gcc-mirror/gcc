@@ -1,3 +1,7 @@
+2014-07-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.c (output_move_neon): Handle REG explicitly.
+
 2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61855
