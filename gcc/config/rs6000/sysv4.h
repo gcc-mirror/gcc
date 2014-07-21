@@ -949,3 +949,19 @@ ncrtn.o%s"
 #define TARGET_USES_SYSV4_OPT 1
 
 #undef DBX_REGISTER_NUMBER
+
+/* Link -lasan early on the command line.  For -static-libasan, don't link
+   it for -shared link, the executable should be compiled with -static-libasan
+   in that case, and for executable link link with --{,no-}whole-archive around
+   it to force everything into the executable.  And similarly for -ltsan.  */
+#if defined(HAVE_LD_STATIC_DYNAMIC)
+#undef LIBASAN_EARLY_SPEC
+#define LIBASAN_EARLY_SPEC "%{!shared:libasan_preinit%O%s} " \
+  "%{static-libasan:%{!shared:" \
+  LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
+  LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
+#undef LIBTSAN_EARLY_SPEC
+#define LIBTSAN_EARLY_SPEC "%{static-libtsan:%{!shared:" \
+  LD_STATIC_OPTION " --whole-archive -ltsan --no-whole-archive " \
+  LD_DYNAMIC_OPTION "}}%{!static-libtsan:-ltsan}"
+#endif

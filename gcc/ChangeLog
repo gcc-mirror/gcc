@@ -1,3 +1,8 @@
+2014-07-21  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/sysv4.h (LIBASAN_EARLY_SPEC): Define.
+	(LIBTSAN_EARLY_SPEC): Likewise.
+
 2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
