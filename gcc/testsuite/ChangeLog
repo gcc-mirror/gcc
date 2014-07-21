@@ -1,7 +1,7 @@
 2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/61885
-	* gcc.target/i386/pr61885.c: New test.
+	PR target/61855
+	* gcc.target/i386/pr61855.c: New test.
 
 2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
 

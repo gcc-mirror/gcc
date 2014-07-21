@@ -1,6 +1,6 @@
 2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/61885
+	PR target/61855
 	* config/i386/avx512fintrin.h: Move constants for mantissa extraction
 	out of #ifdef __OPTIMIZE__.
 
