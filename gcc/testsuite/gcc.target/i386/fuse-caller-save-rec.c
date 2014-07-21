@@ -26,5 +26,4 @@ foo (int y)
 /* { dg-final { scan-assembler-times "addl\t%\[re\]?dx, %\[re\]?ax" 1 } } */
 
 /* Verify that bar is self-recursive.  */
-/* { dg-final { scan-assembler-times "call\tbar" 2 } } */
-
+/* { dg-final { scan-assembler-times "call\t_?bar" 2 } } */
