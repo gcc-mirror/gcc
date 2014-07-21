@@ -1,3 +1,10 @@
+2014-07-21  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/sysv4.h (LIBASAN_EARLY_SPEC): Define.
+	(LIBTSAN_EARLY_SPEC): Likewise.
+	(STATIC_LIBASAN_LIBS): Likewise.
+	(STATIC_LIBTSAN_LIBS): Likewise.
+
 2014-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* toplev.c (output_stack_usage): Adjust the location of the warning.
