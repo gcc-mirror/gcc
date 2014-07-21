@@ -1,3 +1,11 @@
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
+	* gcc.target/i386/fuse-caller-save-xmm.c: Add -fomit-frame-pointer to
+	dg-options.  Add checks for insns with xmm registers.  Remove
+	cfi_def_cfa_offset checks.  Generalize checks containing %rsp.
+	(main): Remove.
+
 2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/61855
