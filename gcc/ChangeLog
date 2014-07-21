@@ -1,3 +1,12 @@
+2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61855
+	* config/i386/avx512fintrin.h: Move constants for mantissa extraction
+	out of #ifdef __OPTIMIZE__.
+
 2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (store_field): Handle VOIDmode for calls that return values
@@ -57,12 +66,12 @@
 	(cris_side_effect_mode_ok): Replace CONSTANT_P with CRIS_CONSTANT_P.
 	(cris_address_cost): Ditto last CONSTANT_P.
 	(cris_symbol_type_of): Rename from cris_pic_symbol_type_of.  All
-        callers changed.  Yield cris_offsettable_symbol for non-PIC
-        constant symbolic expressions including labels.  Yield cris_unspec
+	callers changed.  Yield cris_offsettable_symbol for non-PIC
+	constant symbolic expressions including labels.  Yield cris_unspec
 	for all unspecs.
 	(cris_expand_pic_call_address): New parameter MARKERP.  Set its
-        target to pic_offset_table_rtx for calls that will likely go
-        through PLT, const0_rtx when they can't.  All callers changed.
+	target to pic_offset_table_rtx for calls that will likely go
+	through PLT, const0_rtx when they can't.  All callers changed.
 	Assert flag_pic.  Use CONSTANT_P, not CONSTANT_ADDRESS_P, for
 	symbolic expressions to be PICified.  Remove second, redundant,
 	assert on can_create_pseudo_p returning non-zero.  Use
@@ -77,7 +86,7 @@
 	("call", "call_value"): Use second incoming operand as a marker
 	for pic-offset-table-register being used.
 	("*expanded_call_non_v32", "*expanded_call_v32")
-        ("*expanded_call_value_non_v32", "*expanded_call_value_v32"): For
+	("*expanded_call_value_non_v32", "*expanded_call_value_v32"): For
 	second incoming operand to CALL, match cris_call_type_marker.
 	("*expanded_call_value_side"): Ditto.  Disable before reload_completed.
 	("*expanded_call_side"): Ditto.  Fix typo in comment.
@@ -86,10 +95,10 @@
 	* config/cris/predicates.md ("cris_call_type_marker"): New predicate.
 	* config/cris/cris.h (CRIS_CONSTANT_P): New macro.
 	(enum cris_symbol_type): Rename from cris_pic_symbol_type.  All
-        users changed.  Add members cris_offsettable_symbol and cris_unspec.
+	users changed.  Add members cris_offsettable_symbol and cris_unspec.
 	(cris_symbol_type): Rename from cris_pic_symbol_type.
 	* config/cris/constraints.md ("T"): Use CRIS_CONSTANT_P, not
-        just CONSTANT_P.
+	just CONSTANT_P.
 	* config/cris/cris-protos.h (cris_symbol_type_of,
 	cris_expand_pic_call_address): Adjust prototypes.
 	(cris_legitimate_constant_p): New prototype.
@@ -111,14 +120,14 @@
 
 2014-07-10  Cary Coutant  <ccoutant@google.com>
 
-        Backport from trunk at r212211.
+	Backport from trunk at r212211.
 
 	* dwarf2out.c (remove_addr_table_entry): Remove unnecessary hash table
-        lookup.
+	lookup.
 	(resolve_addr_in_expr): When replacing the rtx in a location list
-        entry, get a new address table entry.
+	entry, get a new address table entry.
 	(dwarf2out_finish): Call index_location_lists even if there are no
-        addr_index_table entries yet.
+	addr_index_table entries yet.
 
 2014-07-10  Tom G. Christensen  <tgc@jupiterrise.com>
 
