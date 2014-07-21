@@ -16,12 +16,9 @@ foo (int y)
   return y + bar (y);
 }
 
-int
-main (void)
-{
-  return !(foo (5) == 13);
-}
+/* Check that no registers are saved/restored. */
+/* { dg-final { scan-assembler-not "push"  } } */
+/* { dg-final { scan-assembler-not "pop"  } } */
 
-/* { dg-final { scan-assembler-not "\.cfi_def_cfa_offset"  } } */
-/* { dg-final { scan-assembler-not "\.cfi_offset"  } } */
-
+/* Check that addition uses dx. */
+/* { dg-final { scan-assembler-times "addl\t%\[re\]?dx, %\[re\]?ax" 1 } } */

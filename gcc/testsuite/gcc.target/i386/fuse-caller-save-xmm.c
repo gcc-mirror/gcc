@@ -17,7 +17,7 @@ foo (v2df y)
 
 /* Check presence of all insns on xmm registers.  These checks are expected to
    pass with both -fuse-caller-save and -fno-use-caller-save.  */
-/* { dg-final { scan-assembler-times "addpd\t\\.LC0.*, %xmm0" 1 } } */
+/* { dg-final { scan-assembler-times "addpd\t\\.?LC0.*, %xmm0" 1 } } */
 /* { dg-final { scan-assembler-times "addpd\t%xmm1, %xmm0" 1 } } */
 /* { dg-final { scan-assembler-times "movapd\t%xmm0, %xmm1" 1 } } */
 

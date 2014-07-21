@@ -1,6 +1,18 @@
 2014-07-21  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/61827
+	* gcc.target/i386/fuse-caller-save-xmm.c: Allow LC0 without dot prefix
+	for darwin in scan-assembler-times check.
+	* gcc.target/i386/fuse-caller-save.c: Remove cfi-related
+	scan-assembler-not checks.  Add checks for insns.
+	(main): Remove.
+	* gcc.target/i386/fuse-caller-save-rec.c: Remove cfi-related
+	scan-assembler-not checks.  Copy checks from i386/fuse-caller-save.c.
+	(main): Remove.
+
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
 	* gcc.target/i386/fuse-caller-save-xmm.c: Add -fomit-frame-pointer to
 	dg-options.  Add checks for insns with xmm registers.  Remove
 	cfi_def_cfa_offset checks.  Generalize checks containing %rsp.
