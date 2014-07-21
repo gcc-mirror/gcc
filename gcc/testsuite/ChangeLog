@@ -1,6 +1,12 @@
 2014-07-21  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/61827
+	* gcc.target/i386/fuse-caller-save-rec.c: Allow underscore prefix to bar
+	symbol in scan-assembler-times call check.
+
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
 	* gcc.target/i386/fuse-caller-save-xmm.c: Allow LC0 without dot prefix
 	for darwin in scan-assembler-times check.
 	* gcc.target/i386/fuse-caller-save.c: Remove cfi-related
