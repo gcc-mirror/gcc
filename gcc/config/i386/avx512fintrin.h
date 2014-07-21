@@ -8103,6 +8103,22 @@ _mm512_stream_load_si512 (void *__P)
   return __builtin_ia32_movntdqa512 ((__v8di *)__P);
 }
 
+/* Constants for mantissa extraction */
+typedef enum
+{
+  _MM_MANT_NORM_1_2,		/* interval [1, 2)      */
+  _MM_MANT_NORM_p5_2,		/* interval [0.5, 2)    */
+  _MM_MANT_NORM_p5_1,		/* interval [0.5, 1)    */
+  _MM_MANT_NORM_p75_1p5		/* interval [0.75, 1.5) */
+} _MM_MANTISSA_NORM_ENUM;
+
+typedef enum
+{
+  _MM_MANT_SIGN_src,		/* sign = sign(SRC)     */
+  _MM_MANT_SIGN_zero,		/* sign = 0             */
+  _MM_MANT_SIGN_nan		/* DEST = NaN if sign(SRC) = 1 */
+} _MM_MANTISSA_SIGN_ENUM;
+
 #ifdef __OPTIMIZE__
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -8181,22 +8197,6 @@ _mm512_maskz_getexp_round_pd (__mmask8 __U, __m512d __A, const int __R)
 						    _mm512_setzero_pd (),
 						    (__mmask8) __U, __R);
 }
-
-/* Constants for mantissa extraction */
-typedef enum
-{
-  _MM_MANT_NORM_1_2,		/* interval [1, 2)      */
-  _MM_MANT_NORM_p5_2,		/* interval [0.5, 2)    */
-  _MM_MANT_NORM_p5_1,		/* interval [0.5, 1)    */
-  _MM_MANT_NORM_p75_1p5		/* interval [0.75, 1.5) */
-} _MM_MANTISSA_NORM_ENUM;
-
-typedef enum
-{
-  _MM_MANT_SIGN_src,		/* sign = sign(SRC)     */
-  _MM_MANT_SIGN_zero,		/* sign = 0             */
-  _MM_MANT_SIGN_nan		/* DEST = NaN if sign(SRC) = 1 */
-} _MM_MANTISSA_SIGN_ENUM;
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
