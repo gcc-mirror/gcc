@@ -59,9 +59,13 @@ if (-d .git) {
 #-----------------------------------------------------------------------------
 if ($#ARGV != 0) {
     $prog = `basename $0`; chop ($prog);
-    print "usage: $prog file.diff\n\n";
-    print "Adds a ChangeLog template to the start of file.diff\n";
-    print "It assumes that file.diff has been created with -up or -cp.\n";
+    print <<EOF;
+usage: $prog file.diff
+
+Generate ChangeLog template for file.diff.
+It assumes that patch has been created with -up or -cp.
+When file.diff is -, read standard input.
+EOF
     exit 1;
 }
 
@@ -270,15 +274,8 @@ foreach (@diff_lines) {
 # functions.
 $cl_entries{$clname} .= $change_msg ? "$change_msg\n" : ":\n";
 
-$temp = `mktemp /tmp/$basename.XXXXXX` || exit 1; chop ($temp);
-open (CLFILE, ">$temp") or die "Could not open file $temp for writing";
-
 foreach my $clname (keys %cl_entries) {
-	print CLFILE "$clname:\n\n$hdrline\n\n$cl_entries{$clname}\n";
+	print "$clname:\n\n$hdrline\n\n$cl_entries{$clname}\n";
 }
-
-# Concatenate the ChangeLog template and the original .diff file.
-system ("cat $diff >>$temp && mv $temp $diff") == 0
-    or die "Could not add the ChangeLog entry to $diff";
 
 exit 0;
