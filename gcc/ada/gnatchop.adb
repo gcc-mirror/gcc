@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,10 +209,6 @@ procedure Gnatchop is
    procedure Error_Msg (Message : String; Warning : Boolean := False);
    --  Produce an error message on standard error output
 
-   procedure File_Time_Stamp (Name : C_File_Name; Time : OS_Time);
-   --  Given the name of a file or directory, Name, set the
-   --  time stamp. This function must be used for an unopened file.
-
    function Files_Exist return Boolean;
    --  Check Unit.Table for possible file names that already exist
    --  in the file system. Returns true if files exist, False otherwise
@@ -371,18 +367,6 @@ procedure Gnatchop is
          end if;
       end if;
    end Error_Msg;
-
-   ---------------------
-   -- File_Time_Stamp --
-   ---------------------
-
-   procedure File_Time_Stamp (Name : C_File_Name; Time : OS_Time) is
-      procedure Set_File_Time (Name : C_File_Name; Time : OS_Time);
-      pragma Import (C, Set_File_Time, "__gnat_set_file_time_name");
-
-   begin
-      Set_File_Time (Name, Time);
-   end File_Time_Stamp;
 
    -----------------
    -- Files_Exist --
@@ -1248,7 +1232,12 @@ procedure Gnatchop is
       --  At least one filename must be given
 
       elsif File.Last = 0 then
-         Usage;
+         if Argument_Count = 0 then
+            Usage;
+         else
+            Try_Help;
+         end if;
+
          return False;
 
       --  No directory given, set directory to null, so that we can just
@@ -1703,7 +1692,6 @@ procedure Gnatchop is
 
       declare
          E_Name      : constant String := OS_Name (1 .. O_Length);
-         C_Name      : aliased constant String := E_Name & ASCII.NUL;
          OS_Encoding : constant String := Encoding (1 .. E_Length);
          File        : Stream_IO.File_Type;
 
@@ -1771,7 +1759,7 @@ procedure Gnatchop is
          Stream_IO.Close (File);
 
          if Preserve_Mode then
-            File_Time_Stamp (C_Name'Address, TS_Time);
+            Set_File_Last_Modify_Time_Stamp (E_Name, TS_Time);
          end if;
       end;
    end Write_Unit;

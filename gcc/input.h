@@ -36,6 +36,7 @@ extern GTY(()) struct line_maps *line_table;
 extern char builtins_location_check[(BUILTINS_LOCATION
 				     < RESERVED_LOCATION_COUNT) ? 1 : -1];
 
+extern bool is_location_from_builtin_token (source_location);
 extern expanded_location expand_location (source_location);
 extern const char *location_get_source_line (expanded_location xloc,
 					     int *line_size);

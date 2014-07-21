@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -138,6 +139,7 @@ func (c *conn) hijack() (rwc net.Conn, buf *bufio.ReadWriter, err error) {
 	buf = c.buf
 	c.rwc = nil
 	c.buf = nil
+	c.setState(rwc, StateHijacked)
 	return
 }
 
@@ -496,6 +498,10 @@ func (srv *Server) maxHeaderBytes() int {
 	return DefaultMaxHeaderBytes
 }
 
+func (srv *Server) initialLimitedReaderSize() int64 {
+	return int64(srv.maxHeaderBytes()) + 4096 // bufio slop
+}
+
 // wrapper around io.ReaderCloser which on first read, sends an
 // HTTP/1.1 100 Continue header
 type expectContinueReader struct {
@@ -566,7 +572,7 @@ func (c *conn) readRequest() (w *response, err error) {
 		}()
 	}
 
-	c.lr.N = int64(c.server.maxHeaderBytes()) + 4096 /* bufio slop */
+	c.lr.N = c.server.initialLimitedReaderSize()
 	var req *Request
 	if req, err = ReadRequest(c.buf.Reader); err != nil {
 		if c.lr.N == 0 {
@@ -614,11 +620,11 @@ const maxPostHandlerReadBytes = 256 << 10
 
 func (w *response) WriteHeader(code int) {
 	if w.conn.hijacked() {
-		log.Print("http: response.WriteHeader on hijacked connection")
+		w.conn.server.logf("http: response.WriteHeader on hijacked connection")
 		return
 	}
 	if w.wroteHeader {
-		log.Print("http: multiple response.WriteHeader calls")
+		w.conn.server.logf("http: multiple response.WriteHeader calls")
 		return
 	}
 	w.wroteHeader = true
@@ -633,7 +639,7 @@ func (w *response) WriteHeader(code int) {
 		if err == nil && v >= 0 {
 			w.contentLength = v
 		} else {
-			log.Printf("http: invalid Content-Length of %q", cl)
+			w.conn.server.logf("http: invalid Content-Length of %q", cl)
 			w.handlerHeader.Del("Content-Length")
 		}
 	}
@@ -703,6 +709,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	cw.wroteHeader = true
 
 	w := cw.res
+	keepAlivesEnabled := w.conn.server.doKeepAlives()
 	isHEAD := w.req.Method == "HEAD"
 
 	// header is written out to w.conn.buf below. Depending on the
@@ -750,7 +757,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 
 	// If this was an HTTP/1.0 request with keep-alive and we sent a
 	// Content-Length back, we can make this a keep-alive response ...
-	if w.req.wantsHttp10KeepAlive() {
+	if w.req.wantsHttp10KeepAlive() && keepAlivesEnabled {
 		sentLength := header.get("Content-Length") != ""
 		if sentLength && header.get("Connection") == "keep-alive" {
 			w.closeAfterReply = false
@@ -769,7 +776,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 		w.closeAfterReply = true
 	}
 
-	if header.get("Connection") == "close" {
+	if header.get("Connection") == "close" || !keepAlivesEnabled {
 		w.closeAfterReply = true
 	}
 
@@ -792,17 +799,15 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	}
 
 	code := w.status
-	if !bodyAllowedForStatus(code) {
-		// Must not have body.
-		// RFC 2616 section 10.3.5: "the response MUST NOT include other entity-headers"
-		for _, k := range []string{"Content-Type", "Content-Length", "Transfer-Encoding"} {
-			delHeader(k)
-		}
-	} else {
+	if bodyAllowedForStatus(code) {
 		// If no content type, apply sniffing algorithm to body.
 		_, haveType := header["Content-Type"]
 		if !haveType {
 			setHeader.contentType = DetectContentType(p)
+		}
+	} else {
+		for _, k := range suppressedHeaders(code) {
+			delHeader(k)
 		}
 	}
 
@@ -815,7 +820,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 	if hasCL && hasTE && te != "identity" {
 		// TODO: return an error if WriteHeader gets a return parameter
 		// For now just ignore the Content-Length.
-		log.Printf("http: WriteHeader called with both Transfer-Encoding of %q and a Content-Length of %d",
+		w.conn.server.logf("http: WriteHeader called with both Transfer-Encoding of %q and a Content-Length of %d",
 			te, w.contentLength)
 		delHeader("Content-Length")
 		hasCL = false
@@ -851,7 +856,7 @@ func (cw *chunkWriter) writeHeader(p []byte) {
 		return
 	}
 
-	if w.closeAfterReply && !hasToken(cw.header.get("Connection"), "close") {
+	if w.closeAfterReply && (!keepAlivesEnabled || !hasToken(cw.header.get("Connection"), "close")) {
 		delHeader("Connection")
 		if w.req.ProtoAtLeast(1, 1) {
 			setHeader.connection = "close"
@@ -961,7 +966,7 @@ func (w *response) WriteString(data string) (n int, err error) {
 // either dataB or dataS is non-zero.
 func (w *response) write(lenData int, dataB []byte, dataS string) (n int, err error) {
 	if w.conn.hijacked() {
-		log.Print("http: response.Write on hijacked connection")
+		w.conn.server.logf("http: response.Write on hijacked connection")
 		return 0, ErrHijacked
 	}
 	if !w.wroteHeader {
@@ -1079,17 +1084,25 @@ func validNPN(proto string) bool {
 	return true
 }
 
+func (c *conn) setState(nc net.Conn, state ConnState) {
+	if hook := c.server.ConnState; hook != nil {
+		hook(nc, state)
+	}
+}
+
 // Serve a new connection.
 func (c *conn) serve() {
+	origConn := c.rwc // copy it before it's set nil on Close or Hijack
 	defer func() {
 		if err := recover(); err != nil {
 			const size = 64 << 10
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)]
-			log.Printf("http: panic serving %v: %v\n%s", c.remoteAddr, err, buf)
+			c.server.logf("http: panic serving %v: %v\n%s", c.remoteAddr, err, buf)
 		}
 		if !c.hijacked() {
 			c.close()
+			c.setState(origConn, StateClosed)
 		}
 	}()
 
@@ -1101,6 +1114,7 @@ func (c *conn) serve() {
 			c.rwc.SetWriteDeadline(time.Now().Add(d))
 		}
 		if err := tlsConn.Handshake(); err != nil {
+			c.server.logf("http: TLS handshake error from %s: %v", c.rwc.RemoteAddr(), err)
 			return
 		}
 		c.tlsState = new(tls.ConnectionState)
@@ -1116,6 +1130,10 @@ func (c *conn) serve() {
 
 	for {
 		w, err := c.readRequest()
+		if c.lr.N != c.server.initialLimitedReaderSize() {
+			// If we read any bytes off the wire, we're active.
+			c.setState(c.rwc, StateActive)
+		}
 		if err != nil {
 			if err == errTooLarge {
 				// Their HTTP client may or may not be
@@ -1138,15 +1156,9 @@ func (c *conn) serve() {
 		// Expect 100 Continue support
 		req := w.req
 		if req.expectsContinue() {
-			if req.ProtoAtLeast(1, 1) {
+			if req.ProtoAtLeast(1, 1) && req.ContentLength != 0 {
 				// Wrap the Body reader with one that replies on the connection
 				req.Body = &expectContinueReader{readCloser: req.Body, resp: w}
-			}
-			if req.ContentLength == 0 {
-				w.Header().Set("Connection", "close")
-				w.WriteHeader(StatusBadRequest)
-				w.finishRequest()
-				break
 			}
 			req.Header.Del("Expect")
 		} else if req.Header.get("Expect") != "" {
@@ -1170,6 +1182,7 @@ func (c *conn) serve() {
 			}
 			break
 		}
+		c.setState(c.rwc, StateIdle)
 	}
 }
 
@@ -1564,6 +1577,7 @@ func Serve(l net.Listener, handler Handler) error {
 }
 
 // A Server defines parameters for running an HTTP server.
+// The zero value for Server is a valid configuration.
 type Server struct {
 	Addr           string        // TCP address to listen on, ":http" if empty
 	Handler        Handler       // handler to invoke, http.DefaultServeMux if nil
@@ -1580,6 +1594,66 @@ type Server struct {
 	// and RemoteAddr if not already set.  The connection is
 	// automatically closed when the function returns.
 	TLSNextProto map[string]func(*Server, *tls.Conn, Handler)
+
+	// ConnState specifies an optional callback function that is
+	// called when a client connection changes state. See the
+	// ConnState type and associated constants for details.
+	ConnState func(net.Conn, ConnState)
+
+	// ErrorLog specifies an optional logger for errors accepting
+	// connections and unexpected behavior from handlers.
+	// If nil, logging goes to os.Stderr via the log package's
+	// standard logger.
+	ErrorLog *log.Logger
+
+	disableKeepAlives int32 // accessed atomically.
+}
+
+// A ConnState represents the state of a client connection to a server.
+// It's used by the optional Server.ConnState hook.
+type ConnState int
+
+const (
+	// StateNew represents a new connection that is expected to
+	// send a request immediately. Connections begin at this
+	// state and then transition to either StateActive or
+	// StateClosed.
+	StateNew ConnState = iota
+
+	// StateActive represents a connection that has read 1 or more
+	// bytes of a request. The Server.ConnState hook for
+	// StateActive fires before the request has entered a handler
+	// and doesn't fire again until the request has been
+	// handled. After the request is handled, the state
+	// transitions to StateClosed, StateHijacked, or StateIdle.
+	StateActive
+
+	// StateIdle represents a connection that has finished
+	// handling a request and is in the keep-alive state, waiting
+	// for a new request. Connections transition from StateIdle
+	// to either StateActive or StateClosed.
+	StateIdle
+
+	// StateHijacked represents a hijacked connection.
+	// This is a terminal state. It does not transition to StateClosed.
+	StateHijacked
+
+	// StateClosed represents a closed connection.
+	// This is a terminal state. Hijacked connections do not
+	// transition to StateClosed.
+	StateClosed
+)
+
+var stateName = map[ConnState]string{
+	StateNew:      "new",
+	StateActive:   "active",
+	StateIdle:     "idle",
+	StateHijacked: "hijacked",
+	StateClosed:   "closed",
+}
+
+func (c ConnState) String() string {
+	return stateName[c]
 }
 
 // serverHandler delegates to either the server's Handler or
@@ -1632,7 +1706,7 @@ func (srv *Server) Serve(l net.Listener) error {
 				if max := 1 * time.Second; tempDelay > max {
 					tempDelay = max
 				}
-				log.Printf("http: Accept error: %v; retrying in %v", e, tempDelay)
+				srv.logf("http: Accept error: %v; retrying in %v", e, tempDelay)
 				time.Sleep(tempDelay)
 				continue
 			}
@@ -1643,7 +1717,32 @@ func (srv *Server) Serve(l net.Listener) error {
 		if err != nil {
 			continue
 		}
+		c.setState(c.rwc, StateNew) // before Serve can return
 		go c.serve()
+	}
+}
+
+func (s *Server) doKeepAlives() bool {
+	return atomic.LoadInt32(&s.disableKeepAlives) == 0
+}
+
+// SetKeepAlivesEnabled controls whether HTTP keep-alives are enabled.
+// By default, keep-alives are always enabled. Only very
+// resource-constrained environments or servers in the process of
+// shutting down should disable them.
+func (s *Server) SetKeepAlivesEnabled(v bool) {
+	if v {
+		atomic.StoreInt32(&s.disableKeepAlives, 0)
+	} else {
+		atomic.StoreInt32(&s.disableKeepAlives, 1)
+	}
+}
+
+func (s *Server) logf(format string, args ...interface{}) {
+	if s.ErrorLog != nil {
+		s.ErrorLog.Printf(format, args...)
+	} else {
+		log.Printf(format, args...)
 	}
 }
 
@@ -1870,16 +1969,23 @@ func (globalOptionsHandler) ServeHTTP(w ResponseWriter, r *Request) {
 	}
 }
 
+type eofReaderWithWriteTo struct{}
+
+func (eofReaderWithWriteTo) WriteTo(io.Writer) (int64, error) { return 0, nil }
+func (eofReaderWithWriteTo) Read([]byte) (int, error)         { return 0, io.EOF }
+
 // eofReader is a non-nil io.ReadCloser that always returns EOF.
-// It embeds a *strings.Reader so it still has a WriteTo method
-// and io.Copy won't need a buffer.
+// It has a WriteTo method so io.Copy won't need a buffer.
 var eofReader = &struct {
-	*strings.Reader
+	eofReaderWithWriteTo
 	io.Closer
 }{
-	strings.NewReader(""),
+	eofReaderWithWriteTo{},
 	ioutil.NopCloser(nil),
 }
+
+// Verify that an io.Copy from an eofReader won't require a buffer.
+var _ io.WriterTo = eofReader
 
 // initNPNRequest is an HTTP handler that initializes certain
 // uninitialized fields in its *Request. Such partially-initialized

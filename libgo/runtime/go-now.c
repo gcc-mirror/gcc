@@ -11,16 +11,6 @@
 // Return current time.  This is the implementation of time.now().
 
 struct time_now_ret
-{
-  int64_t sec;
-  int32_t nsec;
-};
-
-struct time_now_ret now()
-  __asm__ (GOSYM_PREFIX "time.now")
-  __attribute__ ((no_split_stack));
-
-struct time_now_ret
 now()
 {
   struct timeval tv;

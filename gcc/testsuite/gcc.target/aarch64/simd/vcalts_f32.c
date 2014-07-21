@@ -14,7 +14,7 @@ volatile float32_t in[SIZE] = { -10.4, -3.14, 0.0, 1.5, 5.3, 532.3 };
 int
 main (void)
 {
-  uint32_t expected;
+  volatile uint32_t expected;
   uint32_t actual;
 
   int i, j;

@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-options "-ffree-line-length-none" }
+! { dg-additional-options "-mfp-trap-mode=sui" { target alpha*-*-* } }
 !
 ! Use dg-additional-options rather than dg-options to avoid overwriting the
 ! default IEEE options which are passed by ieee.exp and necessary.

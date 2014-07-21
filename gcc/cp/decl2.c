@@ -2014,11 +2014,15 @@ maybe_emit_vtables (tree ctype)
       if (DECL_COMDAT (primary_vtbl)
 	  && CLASSTYPE_DEBUG_REQUESTED (ctype))
 	note_debug_info_needed (ctype);
-      if (mark_all_virtuals)
-	/* Make sure virtual functions get instantiated/synthesized so that
-	   they can be inlined after devirtualization even if the vtable is
-	   never emitted.  */
-	mark_vtable_entries (primary_vtbl);
+      if (mark_all_virtuals && !DECL_ODR_USED (primary_vtbl))
+	{
+	  /* Make sure virtual functions get instantiated/synthesized so that
+	     they can be inlined after devirtualization even if the vtable is
+	     never emitted.  */
+	  mark_used (primary_vtbl);
+	  mark_vtable_entries (primary_vtbl);
+	  return true;
+	}
       return false;
     }
 

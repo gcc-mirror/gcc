@@ -34,6 +34,10 @@
    package Osint.  Many of the subprograms in OS_Lib import standard
    library calls directly. This file contains all other routines.  */
 
+/* Ensure access to errno is thread safe.  */
+#define _REENTRANT
+#define _THREAD_SAFE
+
 #ifdef __vxworks
 
 /* No need to redefine exit here.  */
@@ -71,6 +75,10 @@
 #define _POSIX_EXIT 1
 #define HOST_EXECUTABLE_SUFFIX ".exe"
 #define HOST_OBJECT_SUFFIX ".obj"
+#endif
+
+#ifdef __PikeOS__
+#define __BSD_VISIBLE 1
 #endif
 
 #ifdef IN_RTS
@@ -115,8 +123,9 @@ extern "C" {
 #else
 #include "mingw32.h"
 
-/* Current code page to use, set in initialize.c.  */
+/* Current code page and CCS encoding to use, set in initialize.c.  */
 UINT CurrentCodePage;
+UINT CurrentCCSEncoding;
 #endif
 
 #include <sys/utime.h>
@@ -144,20 +153,20 @@ UINT CurrentCodePage;
 
 /* wait.h processing */
 #ifdef __MINGW32__
-#if OLD_MINGW
-#include <sys/wait.h>
-#endif
+# if OLD_MINGW
+#  include <sys/wait.h>
+# endif
 #elif defined (__vxworks) && defined (__RTP__)
-#include <wait.h>
+# include <wait.h>
 #elif defined (__Lynx__)
 /* ??? We really need wait.h and it includes resource.h on Lynx.  GCC
    has a resource.h header as well, included instead of the lynx
    version in our setup, causing lots of errors.  We don't really need
    the lynx contents of this file, so just workaround the issue by
    preventing the inclusion of the GCC header from doing anything.  */
-#define GCC_RESOURCE_H
-#include <sys/wait.h>
-#elif defined (__nucleus__)
+# define GCC_RESOURCE_H
+# include <sys/wait.h>
+#elif defined (__nucleus__) || defined (__PikeOS__)
 /* No wait() or waitpid() calls available.  */
 #else
 /* Default case.  */
@@ -495,6 +504,25 @@ __gnat_to_gm_time (OS_Time *p_time, int *p_year, int *p_month, int *p_day,
     *p_year = *p_month = *p_day = *p_hours = *p_mins = *p_secs = 0;
 }
 
+void
+__gnat_to_os_time (OS_Time *p_time, int year, int month, int day,
+		   int hours, int mins, int secs)
+{
+  struct tm v;
+
+  v.tm_year  = year;
+  v.tm_mon   = month;
+  v.tm_mday  = day;
+  v.tm_hour  = hours;
+  v.tm_min   = mins;
+  v.tm_sec   = secs;
+  v.tm_isdst = 0;
+
+  /* returns -1 of failing, this is s-os_lib Invalid_Time */
+
+  *p_time = (OS_Time) mktime (&v);
+}
+
 /* Place the contents of the symbolic link named PATH in the buffer BUF,
    which has size BUFSIZ.  If PATH is a symbolic link, then return the number
    of characters of its content in BUF.  Otherwise, return -1.
@@ -506,7 +534,7 @@ __gnat_readlink (char *path ATTRIBUTE_UNUSED,
 		 size_t bufsiz ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) || defined (VMS) \
-    || defined(__vxworks) || defined (__nucleus__)
+  || defined(__vxworks) || defined (__nucleus__) || defined (__PikeOS__)
   return -1;
 #else
   return readlink (path, buf, bufsiz);
@@ -522,7 +550,7 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 		char *newpath ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) || defined (VMS) \
-    || defined(__vxworks) || defined (__nucleus__)
+  || defined(__vxworks) || defined (__nucleus__) || defined (__PikeOS__)
   return -1;
 #else
   return symlink (oldpath, newpath);
@@ -532,7 +560,7 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 /* Try to lock a file, return 1 if success.  */
 
 #if defined (__vxworks) || defined (__nucleus__) \
-  || defined (_WIN32) || defined (VMS)
+  || defined (_WIN32) || defined (VMS) || defined (__PikeOS__)
 
 /* Version that does not use link. */
 
@@ -820,6 +848,25 @@ __gnat_rmdir (char *path)
   return -1;
 #else
   return rmdir (path);
+#endif
+}
+
+#if defined (_WIN32) || defined (linux) || defined (sun) \
+  || defined (__FreeBSD__)
+#define HAS_TARGET_WCHAR_T
+#endif
+
+#ifdef HAS_TARGET_WCHAR_T
+#include <wchar.h>
+#endif
+
+int
+__gnat_fputwc(int c, FILE *stream)
+{
+#ifdef HAS_TARGET_WCHAR_T
+  return fputwc ((wchar_t)c, stream);
+#else
+  return fputc (c, stream);
 #endif
 }
 
@@ -2332,8 +2379,13 @@ __gnat_set_writable (char *name)
 #endif
 }
 
+/* must match definition in s-os_lib.ads */
+#define S_OWNER  1
+#define S_GROUP  2
+#define S_OTHERS 4
+
 void
-__gnat_set_executable (char *name)
+__gnat_set_executable (char *name, int mode)
 {
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
@@ -2349,7 +2401,12 @@ __gnat_set_executable (char *name)
 
   if (GNAT_STAT (name, &statbuf) == 0)
     {
-      statbuf.st_mode = statbuf.st_mode | S_IXUSR;
+      if (mode & S_OWNER)
+        statbuf.st_mode = statbuf.st_mode | S_IXUSR;
+      if (mode & S_GROUP)
+        statbuf.st_mode = statbuf.st_mode | S_IXGRP;
+      if (mode & S_OTHERS)
+        statbuf.st_mode = statbuf.st_mode | S_IXOTH;
       chmod (name, statbuf.st_mode);
     }
 #endif
@@ -2465,13 +2522,14 @@ __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 #endif
 
 int
-__gnat_portable_spawn (char *args[])
+__gnat_portable_spawn (char *args[] ATTRIBUTE_UNUSED)
 {
-  int status = 0;
+  int status ATTRIBUTE_UNUSED = 0;
   int finished ATTRIBUTE_UNUSED;
   int pid ATTRIBUTE_UNUSED;
 
-#if defined (__vxworks) || defined(__nucleus__) || defined(RTX)
+#if defined (__vxworks) || defined(__nucleus__) || defined(RTX) \
+  || defined(__PikeOS__)
   return -1;
 
 #elif defined (_WIN32)
@@ -2541,11 +2599,14 @@ __gnat_dup (int oldfd)
    Return -1 if an error occurred.  */
 
 int
-__gnat_dup2 (int oldfd, int newfd)
+__gnat_dup2 (int oldfd ATTRIBUTE_UNUSED, int newfd ATTRIBUTE_UNUSED)
 {
 #if defined (__vxworks) && !defined (__RTP__)
   /* Not supported on VxWorks 5.x, but supported on VxWorks 6.0 when using
      RTPs.  */
+  return -1;
+#elif defined (__PikeOS__)
+  /* Not supported.  */
   return -1;
 #elif defined (_WIN32)
   /* Special case when oldfd and newfd are identical and are the standard
@@ -2799,10 +2860,12 @@ win32_wait (int *status)
 #endif
 
 int
-__gnat_portable_no_block_spawn (char *args[])
+__gnat_portable_no_block_spawn (char *args[] ATTRIBUTE_UNUSED)
 {
 
-#if defined (__vxworks) || defined (__nucleus__) || defined (RTX)
+#if defined (__vxworks) || defined (__nucleus__) || defined (RTX) \
+  || defined (__PikeOS__)
+  /* Not supported.  */
   return -1;
 
 #elif defined (_WIN32)
@@ -2845,7 +2908,8 @@ __gnat_portable_wait (int *process_status)
   int status = 0;
   int pid = 0;
 
-#if defined (__vxworks) || defined (__nucleus__) || defined (RTX)
+#if defined (__vxworks) || defined (__nucleus__) || defined (RTX) \
+  || defined (__PikeOS__)
   /* Not sure what to do here, so do nothing but return zero.  */
 
 #elif defined (_WIN32)

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2013, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2014, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -104,11 +104,12 @@ extern struct tm *localtime_r(const time_t *, struct tm *);
    file positioning function, unless the input operation encounters
    end-of-file.
 
-   The other target dependent declarations here are for the two functions
-   __gnat_set_binary_mode and __gnat_set_text_mode:
+   The other target dependent declarations here are for the three functions
+   __gnat_set_binary_mode, __gnat_set_text_mode and __gnat_set_mode:
 
       void __gnat_set_binary_mode (int handle);
       void __gnat_set_text_mode   (int handle);
+      void __gnat_set_mode        (int handle, int mode);
 
    These functions have no effect in Unix (or similar systems where there is
    no distinction between binary and text files), but in DOS (and similar
@@ -148,6 +149,29 @@ void
 __gnat_set_text_mode (int handle)
 {
   WIN_SETMODE (handle, O_TEXT);
+}
+
+void
+__gnat_set_mode (int handle, int mode)
+{
+  /*  the values here must be synchronized with
+      System.File_Control_Block.Content_Encodding:
+
+      None         = 0
+      Default_Text = 1
+      Text         = 2
+      U8text       = 3
+      Wtext        = 4
+      U16text      = 5  */
+
+ switch (mode) {
+    case 0 : WIN_SETMODE (handle, _O_BINARY);          break;
+    case 1 : WIN_SETMODE (handle, CurrentCCSEncoding); break;
+    case 2 : WIN_SETMODE (handle, _O_TEXT);            break;
+    case 3 : WIN_SETMODE (handle, _O_U8TEXT);          break;
+    case 4 : WIN_SETMODE (handle, _O_WTEXT);           break;
+    case 5 : WIN_SETMODE (handle, _O_U16TEXT);         break;
+ }
 }
 
 #ifdef __CYGWIN__
@@ -245,6 +269,12 @@ void
 __gnat_set_text_mode (int handle ATTRIBUTE_UNUSED)
 {
 }
+
+void
+__gnat_set_mode (int handle ATTRIBUTE_UNUSED, int mode ATTRIBUTE_UNUSED)
+{
+}
+
 char *
 __gnat_ttyname (int filedes)
 {
@@ -314,7 +344,7 @@ getc_immediate_common (FILE *stream,
                        int *ch,
                        int *end_of_file,
                        int *avail,
-                       int waiting)
+                       int waiting ATTRIBUTE_UNUSED)
 {
 #if defined (linux) || defined (sun) \
     || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (__hpux__) \
@@ -785,9 +815,11 @@ extern void
 __gnat_localtime_tzoff (const time_t *, const int *, long *);
 
 void
-__gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
+__gnat_localtime_tzoff (const time_t *timer ATTRIBUTE_UNUSED,
+			const int *is_historic ATTRIBUTE_UNUSED,
+			long *off ATTRIBUTE_UNUSED)
 {
-  struct tm tp;
+  struct tm tp ATTRIBUTE_UNUSED;
 
 /* AIX, HPUX, Sun Solaris */
 #if defined (_AIX) || defined (__hpux__) || defined (sun)
@@ -853,8 +885,8 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
 /* Darwin, Free BSD, Linux, where component tm_gmtoff is present in
    struct tm */
 
-#elif defined (__APPLE__) || defined (__FreeBSD__) || defined (linux) ||\
-     defined (__GLIBC__)
+#elif defined (__APPLE__) || defined (__FreeBSD__) || defined (linux) \
+  || defined (__GLIBC__)
 {
   localtime_r (timer, &tp);
   *off = tp.tm_gmtoff;

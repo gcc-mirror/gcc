@@ -102,7 +102,7 @@ const (
 // std0x records the std values for "01", "02", ..., "06".
 var std0x = [...]int{stdZeroMonth, stdZeroDay, stdZeroHour12, stdZeroMinute, stdZeroSecond, stdYear}
 
-// startsWithLowerCase reports whether the the string has a lower-case letter at the beginning.
+// startsWithLowerCase reports whether the string has a lower-case letter at the beginning.
 // Its purpose is to prevent matching strings like "Month" when looking for "Mon".
 func startsWithLowerCase(str string) bool {
 	if len(str) == 0 {
@@ -1037,8 +1037,8 @@ func parseTimeZone(value string) (length int, ok bool) {
 	if len(value) < 3 {
 		return 0, false
 	}
-	// Special case 1: This is the only zone with a lower-case letter.
-	if len(value) >= 4 && value[:4] == "ChST" {
+	// Special case 1: ChST and MeST are the only zones with a lower-case letter.
+	if len(value) >= 4 && (value[:4] == "ChST" || value[:4] == "MeST") {
 		return 4, true
 	}
 	// Special case 2: GMT may have an hour offset; treat it specially.
@@ -1239,6 +1239,9 @@ func ParseDuration(s string) (Duration, error) {
 
 	if neg {
 		f = -f
+	}
+	if f < float64(-1<<63) || f > float64(1<<63-1) {
+		return 0, errors.New("time: overflow parsing duration")
 	}
 	return Duration(f), nil
 }

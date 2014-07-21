@@ -598,7 +598,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(const __gnu_cxx::beta_distribution<_RealType>& __d1,
 	       const __gnu_cxx::beta_distribution<_RealType>& __d2)
-   { return !(__d1 == __d2); }
+    { return !(__d1 == __d2); }
 
 
   /**
@@ -2575,7 +2575,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(const __gnu_cxx::triangular_distribution<_RealType>& __d1,
 	       const __gnu_cxx::triangular_distribution<_RealType>& __d2)
-   { return !(__d1 == __d2); }
+    { return !(__d1 == __d2); }
 
 
   /**
@@ -2810,7 +2810,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(const __gnu_cxx::von_mises_distribution<_RealType>& __d1,
 	       const __gnu_cxx::von_mises_distribution<_RealType>& __d2)
-   { return !(__d1 == __d2); }
+    { return !(__d1 == __d2); }
 
 
   /**
@@ -3328,12 +3328,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       explicit
       uniform_on_sphere_distribution()
-      : _M_param(), _M_n(_RealType(0), _RealType(1))
+      : _M_param(), _M_nd()
       { }
 
       explicit
       uniform_on_sphere_distribution(const param_type& __p)
-      : _M_param(__p), _M_n(_RealType(0), _RealType(1))
+      : _M_param(__p), _M_nd()
       { }
 
       /**
@@ -3341,7 +3341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       void
       reset()
-      { }
+      { _M_nd.reset(); }
 
       /**
        * @brief Returns the parameter set of the distribution.
@@ -3425,14 +3425,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend bool
       operator==(const uniform_on_sphere_distribution& __d1,
 		 const uniform_on_sphere_distribution& __d2)
-      { return true; }
+      { return __d1._M_nd == __d2._M_nd; }
 
       /**
-       * @brief Inserts a %uniform_on_sphere_distribution random number distribution
-       * @p __x into the output stream @p __os.
+       * @brief Inserts a %uniform_on_sphere_distribution random number
+       *        distribution @p __x into the output stream @p __os.
        *
        * @param __os An output stream.
-       * @param __x  A %uniform_on_sphere_distribution random number distribution.
+       * @param __x  A %uniform_on_sphere_distribution random number
+       *             distribution.
        *
        * @returns The output stream with the state of @p __x inserted or in
        * an error state.
@@ -3446,11 +3447,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   __x);
 
       /**
-       * @brief Extracts a %uniform_on_sphere_distribution random number distribution
+       * @brief Extracts a %uniform_on_sphere_distribution random number
+       *        distribution
        * @p __x from the input stream @p __is.
        *
        * @param __is An input stream.
-       * @param __x  A %uniform_on_sphere_distribution random number generator engine.
+       * @param __x  A %uniform_on_sphere_distribution random number
+       *             generator engine.
        *
        * @returns The input stream with @p __x extracted or in an error state.
        */
@@ -3470,7 +3473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			const param_type& __p);
 
       param_type _M_param;
-      std::normal_distribution<_RealType> _M_n;
+      std::normal_distribution<_RealType> _M_nd;
     };
 
   /**
@@ -3482,7 +3485,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _RealType>& __d1,
 	       const __gnu_cxx::uniform_on_sphere_distribution<_Dimen,
 	       _RealType>& __d2)
-   { return false; }
+    { return !(__d1 == __d2); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx

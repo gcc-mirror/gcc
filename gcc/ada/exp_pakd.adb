@@ -519,7 +519,7 @@ package body Exp_Pakd is
    --
    --    Atyp is the constrained array type (the actual subtype has been
    --    computed if necessary to obtain the constraints, but this is still
-   --    the original array type, not the Packed_Array_Type value).
+   --    the original array type, not the Packed_Array_Impl_Type value).
    --
    --    Obj is the object which is to be indexed. It is always of type Atyp.
    --
@@ -767,7 +767,7 @@ package body Exp_Pakd is
    begin
       Convert_To_Actual_Subtype (Aexp);
       Act_ST := Underlying_Type (Etype (Aexp));
-      Create_Packed_Array_Type (Act_ST);
+      Create_Packed_Array_Impl_Type (Act_ST);
 
       --  Just replace the etype with the packed array type. This works because
       --  the expression will not be further analyzed, and Gigi considers the
@@ -784,7 +784,7 @@ package body Exp_Pakd is
       --  more complex packed expressions in actuals is confused. Probably the
       --  problem only remains for actuals in calls.
 
-      Set_Etype (Aexp, Packed_Array_Type (Act_ST));
+      Set_Etype (Aexp, Packed_Array_Impl_Type (Act_ST));
 
       if Is_Entity_Name (Aexp)
         or else
@@ -797,10 +797,10 @@ package body Exp_Pakd is
    end Convert_To_PAT_Type;
 
    ------------------------------
-   -- Create_Packed_Array_Type --
+   -- Create_Packed_Array_Impl_Type --
    ------------------------------
 
-   procedure Create_Packed_Array_Type (Typ : Entity_Id) is
+   procedure Create_Packed_Array_Impl_Type (Typ : Entity_Id) is
       Loc      : constant Source_Ptr := Sloc (Typ);
       Ctyp     : constant Entity_Id  := Component_Type (Typ);
       Csize    : constant Uint       := Component_Size (Typ);
@@ -846,13 +846,12 @@ package body Exp_Pakd is
          --  the resulting type as an Itype in the packed array type field of
          --  the original type, so that no explicit declaration is required.
 
-         --  Note: the packed type is created in the scope of its parent
-         --  type. There are at least some cases where the current scope
-         --  is deeper, and so when this is the case, we temporarily reset
-         --  the scope for the definition. This is clearly safe, since the
-         --  first use of the packed array type will be the implicit
-         --  reference from the corresponding unpacked type when it is
-         --  elaborated.
+         --  Note: the packed type is created in the scope of its parent type.
+         --  There are at least some cases where the current scope is deeper,
+         --  and so when this is the case, we temporarily reset the scope
+         --  for the definition. This is clearly safe, since the first use
+         --  of the packed array type will be the implicit reference from
+         --  the corresponding unpacked type when it is elaborated.
 
          if Is_Itype (Typ) then
             Set_Parent (Decl, Associated_Node_For_Itype (Typ));
@@ -866,7 +865,7 @@ package body Exp_Pakd is
          end if;
 
          Set_Is_Itype (PAT, True);
-         Set_Packed_Array_Type (Typ, PAT);
+         Set_Packed_Array_Impl_Type (Typ, PAT);
          Analyze (Decl, Suppress => All_Checks);
 
          if Pushed_Scope then
@@ -892,13 +891,21 @@ package body Exp_Pakd is
          Init_Alignment                (PAT);
          Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
-         Set_Is_Packed_Array_Type      (PAT, True);
+         Set_Is_Packed_Array_Impl_Type      (PAT, True);
          Set_Original_Array_Type       (PAT, Typ);
 
+         --  For a non-bit-packed array, propagate reverse storage order
+         --  flag from original base type to packed array base type.
+
+         if not Is_Bit_Packed_Array (Typ) then
+            Set_Reverse_Storage_Order
+              (Etype (PAT), Reverse_Storage_Order (Base_Type (Typ)));
+         end if;
+
          --  We definitely do not want to delay freezing for packed array
-         --  types. This is of particular importance for the itypes that
-         --  are generated for record components depending on discriminants
-         --  where there is no place to put the freeze node.
+         --  types. This is of particular importance for the itypes that are
+         --  generated for record components depending on discriminants where
+         --  there is no place to put the freeze node.
 
          Set_Has_Delayed_Freeze (PAT, False);
          Set_Has_Delayed_Freeze (Etype (PAT), False);
@@ -935,12 +942,12 @@ package body Exp_Pakd is
          end if;
       end Set_PB_Type;
 
-   --  Start of processing for Create_Packed_Array_Type
+   --  Start of processing for Create_Packed_Array_Impl_Type
 
    begin
       --  If we already have a packed array type, nothing to do
 
-      if Present (Packed_Array_Type (Typ)) then
+      if Present (Packed_Array_Impl_Type (Typ)) then
          return;
       end if;
 
@@ -956,9 +963,9 @@ package body Exp_Pakd is
          if Present (Ancest)
            and then Is_Array_Type (Ancest)
            and then Is_Constrained (Ancest)
-           and then Present (Packed_Array_Type (Ancest))
+           and then Present (Packed_Array_Impl_Type (Ancest))
          then
-            Set_Packed_Array_Type (Typ, Packed_Array_Type (Ancest));
+            Set_Packed_Array_Impl_Type (Typ, Packed_Array_Impl_Type (Ancest));
             return;
          end if;
       end if;
@@ -1000,11 +1007,15 @@ package body Exp_Pakd is
          --    Natural range Enum_Type'Pos (Enum_Type'First) ..
          --                  Enum_Type'Pos (Enum_Type'Last);
 
+         --  Note that tttP is created even if no index subtype is a non
+         --  standard enumeration, because we still need to remove padding
+         --  normally inserted for component alignment.
+
          PAT :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), 'P'));
 
-         Set_Packed_Array_Type (Typ, PAT);
+         Set_Packed_Array_Impl_Type (Typ, PAT);
 
          declare
             Indexes   : constant List_Id := New_List;
@@ -1098,12 +1109,12 @@ package body Exp_Pakd is
             Decl :=
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => PAT,
-                Type_Definition => Typedef);
+                Type_Definition     => Typedef);
          end;
 
          --  Set type as packed array type and install it
 
-         Set_Is_Packed_Array_Type (PAT);
+         Set_Is_Packed_Array_Impl_Type (PAT);
          Install_PAT;
          return;
 
@@ -1113,9 +1124,9 @@ package body Exp_Pakd is
       elsif not Is_Constrained (Typ) then
          PAT :=
            Make_Defining_Identifier (Loc,
-             Chars => Make_Packed_Array_Type_Name (Typ, Csize));
+             Chars => Make_Packed_Array_Impl_Type_Name (Typ, Csize));
 
-         Set_Packed_Array_Type (Typ, PAT);
+         Set_Packed_Array_Impl_Type (Typ, PAT);
          Set_PB_Type;
 
          Decl :=
@@ -1137,9 +1148,9 @@ package body Exp_Pakd is
       else
          PAT :=
            Make_Defining_Identifier (Loc,
-             Chars => Make_Packed_Array_Type_Name (Typ, Csize));
+             Chars => Make_Packed_Array_Impl_Type_Name (Typ, Csize));
 
-         Set_Packed_Array_Type (Typ, PAT);
+         Set_Packed_Array_Impl_Type (Typ, PAT);
 
          --  Build an expression for the length of the array in bits.
          --  This is the product of the length of each of the dimensions
@@ -1339,7 +1350,7 @@ package body Exp_Pakd is
             Set_Must_Be_On_Byte_Boundary (Typ);
          end if;
       end if;
-   end Create_Packed_Array_Type;
+   end Create_Packed_Array_Impl_Type;
 
    -----------------------------------
    -- Expand_Bit_Packed_Element_Set --
@@ -1413,7 +1424,7 @@ package body Exp_Pakd is
       Obj := Relocate_Node (Prefix (Lhs));
       Convert_To_Actual_Subtype (Obj);
       Atyp := Etype (Obj);
-      PAT  := Packed_Array_Type (Atyp);
+      PAT  := Packed_Array_Impl_Type (Atyp);
       Ctyp := Component_Type (Atyp);
       Csiz := UI_To_Int (Component_Size (Atyp));
 
@@ -2037,7 +2048,7 @@ package body Exp_Pakd is
       Obj := Relocate_Node (Prefix (N));
       Convert_To_Actual_Subtype (Obj);
       Atyp := Etype (Obj);
-      PAT  := Packed_Array_Type (Atyp);
+      PAT  := Packed_Array_Impl_Type (Atyp);
       Ctyp := Component_Type (Atyp);
       Csiz := UI_To_Int (Component_Size (Atyp));
 
@@ -2685,7 +2696,7 @@ package body Exp_Pakd is
       --  with its actual subtype. This actual subtype will have a packed array
       --  type with appropriate bounds.
 
-      if not Is_Constrained (Packed_Array_Type (Etype (Pfx))) then
+      if not Is_Constrained (Packed_Array_Impl_Type (Etype (Pfx))) then
          Convert_To_Actual_Subtype (Pfx);
       end if;
 
@@ -2714,7 +2725,7 @@ package body Exp_Pakd is
       Rewrite (N,
         Make_Indexed_Component (Sloc (N),
           Prefix      =>
-            Unchecked_Convert_To (Packed_Array_Type (Etype (Pfx)), Pfx),
+            Unchecked_Convert_To (Packed_Array_Impl_Type (Etype (Pfx)), Pfx),
           Expressions => Exprs));
 
       Analyze_And_Resolve (N, Typ);

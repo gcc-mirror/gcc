@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2090,11 +2090,11 @@ package body Treepr is
          Visit_Descendent (Field22 (N));
          Visit_Descendent (Field23 (N));
 
-         --  Now an interesting kludge. Normally parents are always printed
-         --  since we traverse the tree in a downwards direction. There is
-         --  however an exception to this rule, which is the case where a
-         --  parent is constructed by the compiler and is not referenced
-         --  elsewhere in the tree. The following catches this case
+         --  Now an interesting special case. Normally parents are always
+         --  printed since we traverse the tree in a downwards direction.
+         --  However, there is an exception to this rule, which is the
+         --  case where a parent is constructed by the compiler and is not
+         --  referenced elsewhere in the tree. The following catches this case.
 
          if not Comes_From_Source (N) then
             Visit_Descendent (Union_Id (Parent (N)));

@@ -293,13 +293,34 @@ __sync_lock_test_and_set_4 (int *ptr, int val)
 SUBWORD_TEST_AND_SET (unsigned short, 2)
 SUBWORD_TEST_AND_SET (unsigned char,  1)
 
+void HIDDEN
+__sync_lock_release_4 (int *ptr)
+{
+  int failure, oldval;
+
+  do {
+    oldval = *ptr;
+    failure = __kernel_cmpxchg (oldval, 0, ptr);
+  } while (failure != 0);
+}
+
 #define SYNC_LOCK_RELEASE(TYPE, WIDTH)					\
   void HIDDEN								\
   __sync_lock_release_##WIDTH (TYPE *ptr)				\
   {									\
-    *ptr = 0;								\
+    int failure;							\
+    unsigned int oldval, newval, shift, mask;				\
+    int *wordptr = (int *) ((unsigned long) ptr & ~3);			\
+									\
+    shift = (((unsigned long) ptr & 3) << 3) ^ INVERT_MASK_##WIDTH;	\
+    mask = MASK_##WIDTH << shift;					\
+									\
+    do {								\
+      oldval = *wordptr;						\
+      newval = oldval & ~mask;						\
+      failure = __kernel_cmpxchg (oldval, newval, wordptr);		\
+    } while (failure != 0);						\
   }
 
-SYNC_LOCK_RELEASE (int,   4)
 SYNC_LOCK_RELEASE (short, 2)
 SYNC_LOCK_RELEASE (char,  1)

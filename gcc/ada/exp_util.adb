@@ -2598,6 +2598,145 @@ package body Exp_Util is
       raise Program_Error;
    end Find_Protection_Type;
 
+   -----------------------
+   -- Find_Hook_Context --
+   -----------------------
+
+   function Find_Hook_Context (N : Node_Id) return Node_Id is
+      Par : Node_Id;
+      Top : Node_Id;
+
+      Wrapped_Node : Node_Id;
+      --  Note: if we are in a transient scope, we want to reuse it as
+      --  the context for actions insertion, if possible. But if N is itself
+      --  part of the stored actions for the current transient scope,
+      --  then we need to insert at the appropriate (inner) location in
+      --  the not as an action on Node_To_Be_Wrapped.
+
+      In_Cond_Expr : constant Boolean := Within_Case_Or_If_Expression (N);
+
+   begin
+      --  When the node is inside a case/if expression, the lifetime of any
+      --  temporary controlled object is extended. Find a suitable insertion
+      --  node by locating the topmost case or if expressions.
+
+      if In_Cond_Expr then
+         Par := N;
+         Top := N;
+         while Present (Par) loop
+            if Nkind_In (Original_Node (Par), N_Case_Expression,
+                                              N_If_Expression)
+            then
+               Top := Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         --  The topmost case or if expression is now recovered, but it may
+         --  still not be the correct place to add generated code. Climb to
+         --  find a parent that is part of a declarative or statement list,
+         --  and is not a list of actuals in a call.
+
+         Par := Top;
+         while Present (Par) loop
+            if Is_List_Member (Par)
+              and then not Nkind_In (Par, N_Component_Association,
+                                          N_Discriminant_Association,
+                                          N_Parameter_Association,
+                                          N_Pragma_Argument_Association)
+              and then not Nkind_In
+                             (Parent (Par), N_Function_Call,
+                                            N_Procedure_Call_Statement,
+                                            N_Entry_Call_Statement)
+
+            then
+               return Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return Par;
+
+      else
+         Par := N;
+         while Present (Par) loop
+
+            --  Keep climbing past various operators
+
+            if Nkind (Parent (Par)) in N_Op
+              or else Nkind_In (Parent (Par), N_And_Then, N_Or_Else)
+            then
+               Par := Parent (Par);
+            else
+               exit;
+            end if;
+         end loop;
+
+         Top := Par;
+
+         --  The node may be located in a pragma in which case return the
+         --  pragma itself:
+
+         --    pragma Precondition (... and then Ctrl_Func_Call ...);
+
+         --  Similar case occurs when the node is related to an object
+         --  declaration or assignment:
+
+         --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
+
+         --  Another case to consider is when the node is part of a return
+         --  statement:
+
+         --    return ... and then Ctrl_Func_Call ...;
+
+         --  Another case is when the node acts as a formal in a procedure
+         --  call statement:
+
+         --    Proc (... and then Ctrl_Func_Call ...);
+
+         if Scope_Is_Transient then
+            Wrapped_Node := Node_To_Be_Wrapped;
+         else
+            Wrapped_Node := Empty;
+         end if;
+
+         while Present (Par) loop
+            if Par = Wrapped_Node
+              or else Nkind_In (Par, N_Assignment_Statement,
+                                     N_Object_Declaration,
+                                     N_Pragma,
+                                     N_Procedure_Call_Statement,
+                                     N_Simple_Return_Statement)
+            then
+               return Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         --  Return the topmost short circuit operator
+
+         return Top;
+      end if;
+   end Find_Hook_Context;
+
    ----------------------
    -- Force_Evaluation --
    ----------------------
@@ -4075,7 +4214,8 @@ package body Exp_Util is
      (Obj_Id : Entity_Id) return Boolean
    is
       function Is_Controlled_Function_Call (N : Node_Id) return Boolean;
-      --  Determine if particular node denotes a controlled function call
+      --  Determine if particular node denotes a controlled function call. The
+      --  call may have been heavily expanded.
 
       function Is_Displace_Call (N : Node_Id) return Boolean;
       --  Determine whether a particular node is a call to Ada.Tags.Displace.
@@ -4094,12 +4234,22 @@ package body Exp_Util is
       begin
          if Nkind (Expr) = N_Function_Call then
             Expr := Name (Expr);
-         end if;
 
-         --  The function call may appear in object.operation format
+         --  When a function call appears in Object.Operation format, the
+         --  original representation has two possible forms depending on the
+         --  availability of actual parameters:
 
-         if Nkind (Expr) = N_Selected_Component then
-            Expr := Selector_Name (Expr);
+         --    Obj.Func_Call           N_Selected_Component
+         --    Obj.Func_Call (Param)   N_Indexed_Component
+
+         else
+            if Nkind (Expr) = N_Indexed_Component then
+               Expr := Prefix (Expr);
+            end if;
+
+            if Nkind (Expr) = N_Selected_Component then
+               Expr := Selector_Name (Expr);
+            end if;
          end if;
 
          return
@@ -4644,6 +4794,79 @@ package body Exp_Util is
           and then not Is_Build_In_Place_Function_Call (Prefix (Expr));
    end Is_Non_BIP_Func_Call;
 
+   ------------------------------------
+   -- Is_Object_Access_BIP_Func_Call --
+   ------------------------------------
+
+   function Is_Object_Access_BIP_Func_Call
+      (Expr   : Node_Id;
+       Obj_Id : Entity_Id) return Boolean
+   is
+      Access_Nam : Name_Id := No_Name;
+      Actual     : Node_Id;
+      Call       : Node_Id;
+      Formal     : Node_Id;
+      Param      : Node_Id;
+
+   begin
+      --  Build-in-place calls usually appear in 'reference format. Note that
+      --  the accessibility check machinery may add an extra 'reference due to
+      --  side effect removal.
+
+      Call := Expr;
+      while Nkind (Call) = N_Reference loop
+         Call := Prefix (Call);
+      end loop;
+
+      if Nkind_In (Call, N_Qualified_Expression,
+                         N_Unchecked_Type_Conversion)
+      then
+         Call := Expression (Call);
+      end if;
+
+      if Is_Build_In_Place_Function_Call (Call) then
+
+         --  Examine all parameter associations of the function call
+
+         Param := First (Parameter_Associations (Call));
+         while Present (Param) loop
+            if Nkind (Param) = N_Parameter_Association
+              and then Nkind (Selector_Name (Param)) = N_Identifier
+            then
+               Formal := Selector_Name (Param);
+               Actual := Explicit_Actual_Parameter (Param);
+
+               --  Construct the name of formal BIPaccess. It is much easier to
+               --  extract the name of the function using an arbitrary formal's
+               --  scope rather than the Name field of Call.
+
+               if Access_Nam = No_Name and then Present (Entity (Formal)) then
+                  Access_Nam :=
+                    New_External_Name
+                      (Chars (Scope (Entity (Formal))),
+                       BIP_Formal_Suffix (BIP_Object_Access));
+               end if;
+
+               --  A match for BIPaccess => Obj_Id'Unrestricted_Access has been
+               --  found.
+
+               if Chars (Formal) = Access_Nam
+                 and then Nkind (Actual) = N_Attribute_Reference
+                 and then Attribute_Name (Actual) = Name_Unrestricted_Access
+                 and then Nkind (Prefix (Actual)) = N_Identifier
+                 and then Entity (Prefix (Actual)) = Obj_Id
+               then
+                  return True;
+               end if;
+            end if;
+
+            Next (Param);
+         end loop;
+      end if;
+
+      return False;
+   end Is_Object_Access_BIP_Func_Call;
+
    ----------------------------------
    -- Is_Possibly_Unaligned_Object --
    ----------------------------------
@@ -5033,7 +5256,11 @@ package body Exp_Util is
    --------------------------------------
 
    function Is_Secondary_Stack_BIP_Func_Call (Expr : Node_Id) return Boolean is
-      Call : Node_Id := Expr;
+      Alloc_Nam : Name_Id := No_Name;
+      Actual    : Node_Id;
+      Call      : Node_Id := Expr;
+      Formal    : Node_Id;
+      Param     : Node_Id;
 
    begin
       --  Build-in-place calls usually appear in 'reference format. Note that
@@ -5051,49 +5278,40 @@ package body Exp_Util is
       end if;
 
       if Is_Build_In_Place_Function_Call (Call) then
-         declare
-            Access_Nam : Name_Id := No_Name;
-            Actual     : Node_Id;
-            Param      : Node_Id;
-            Formal     : Node_Id;
 
-         begin
-            --  Examine all parameter associations of the function call
+         --  Examine all parameter associations of the function call
 
-            Param := First (Parameter_Associations (Call));
-            while Present (Param) loop
-               if Nkind (Param) = N_Parameter_Association
-                 and then Nkind (Selector_Name (Param)) = N_Identifier
-               then
-                  Formal := Selector_Name (Param);
-                  Actual := Explicit_Actual_Parameter (Param);
+         Param := First (Parameter_Associations (Call));
+         while Present (Param) loop
+            if Nkind (Param) = N_Parameter_Association
+              and then Nkind (Selector_Name (Param)) = N_Identifier
+            then
+               Formal := Selector_Name (Param);
+               Actual := Explicit_Actual_Parameter (Param);
 
-                  --  Construct the name of formal BIPalloc. It is much easier
-                  --  to extract the name of the function using an arbitrary
-                  --  formal's scope rather than the Name field of Call.
+               --  Construct the name of formal BIPalloc. It is much easier to
+               --  extract the name of the function using an arbitrary formal's
+               --  scope rather than the Name field of Call.
 
-                  if Access_Nam = No_Name
-                    and then Present (Entity (Formal))
-                  then
-                     Access_Nam :=
-                       New_External_Name
-                         (Chars (Scope (Entity (Formal))),
-                          BIP_Formal_Suffix (BIP_Alloc_Form));
-                  end if;
-
-                  --  A match for BIPalloc => 2 has been found
-
-                  if Chars (Formal) = Access_Nam
-                    and then Nkind (Actual) = N_Integer_Literal
-                    and then Intval (Actual) = Uint_2
-                  then
-                     return True;
-                  end if;
+               if Alloc_Nam = No_Name and then Present (Entity (Formal)) then
+                  Alloc_Nam :=
+                    New_External_Name
+                      (Chars (Scope (Entity (Formal))),
+                       BIP_Formal_Suffix (BIP_Alloc_Form));
                end if;
 
-               Next (Param);
-            end loop;
-         end;
+               --  A match for BIPalloc => 2 has been found
+
+               if Chars (Formal) = Alloc_Nam
+                 and then Nkind (Actual) = N_Integer_Literal
+                 and then Intval (Actual) = Uint_2
+               then
+                  return True;
+               end if;
+            end if;
+
+            Next (Param);
+         end loop;
       end if;
 
       return False;
@@ -5124,10 +5342,10 @@ package body Exp_Util is
    begin
       return (not Is_Tagged_Type (T) and then Is_Derived_Type (T))
                or else
-             (Is_Private_Type (T) and then Present (Full_View (T))
-               and then not Is_Tagged_Type (Full_View (T))
-               and then Is_Derived_Type (Full_View (T))
-               and then Etype (Full_View (T)) /= T);
+                 (Is_Private_Type (T) and then Present (Full_View (T))
+                   and then not Is_Tagged_Type (Full_View (T))
+                   and then Is_Derived_Type (Full_View (T))
+                   and then Etype (Full_View (T)) /= T);
    end Is_Untagged_Derivation;
 
    ---------------------------
@@ -5136,17 +5354,33 @@ package body Exp_Util is
 
    function Is_Volatile_Reference (N : Node_Id) return Boolean is
    begin
-      if Nkind (N) in N_Has_Etype
-        and then Present (Etype (N))
-        and then Treat_As_Volatile (Etype (N))
-      then
+      --  Only source references are to be treated as volatile, internally
+      --  generated stuff cannot have volatile external effects.
+
+      if not Comes_From_Source (N) then
+         return False;
+
+      --  Never true for reference to a type
+
+      elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
+         return False;
+
+      --  True if object reference with volatile type
+
+      elsif Is_Volatile_Object (N) then
          return True;
+
+      --  True if reference to volatile entity
 
       elsif Is_Entity_Name (N) then
          return Treat_As_Volatile (Entity (N));
 
+      --  True for slice of volatile array
+
       elsif Nkind (N) = N_Slice then
          return Is_Volatile_Reference (Prefix (N));
+
+      --  True if volatile component
 
       elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
          if (Is_Entity_Name (Prefix (N))
@@ -5158,6 +5392,8 @@ package body Exp_Util is
          else
             return Is_Volatile_Reference (Prefix (N));
          end if;
+
+      --  Otherwise false
 
       else
          return False;
@@ -6036,8 +6272,10 @@ package body Exp_Util is
       elsif Esize (Typ) /= 0 and then Esize (Typ) <= 256 then
          return False;
 
-      elsif Is_Array_Type (Typ) and then Present (Packed_Array_Type (Typ)) then
-         return May_Generate_Large_Temp (Packed_Array_Type (Typ));
+      elsif Is_Array_Type (Typ)
+        and then Present (Packed_Array_Impl_Type (Typ))
+      then
+         return May_Generate_Large_Temp (Packed_Array_Impl_Type (Typ));
 
       --  We could do more here to find other small types ???
 
@@ -6104,11 +6342,10 @@ package body Exp_Util is
       if Restriction_Active (No_Finalization) then
          return False;
 
-      --  C, C++, CIL and Java types are not considered controlled. It is
-      --  assumed that the non-Ada side will handle their clean up.
+      --  C++, CIL and Java types are not considered controlled. It is assumed
+      --  that the non-Ada side will handle their clean up.
 
-      elsif Convention (T) = Convention_C
-        or else Convention (T) = Convention_CIL
+      elsif Convention (T) = Convention_CIL
         or else Convention (T) = Convention_CPP
         or else Convention (T) = Convention_Java
       then
@@ -6168,7 +6405,7 @@ package body Exp_Util is
         or else Is_Access_Type (Typ)
         or else
           (Is_Bit_Packed_Array (Typ)
-            and then Is_Modular_Integer_Type (Packed_Array_Type (Typ)))
+            and then Is_Modular_Integer_Type (Packed_Array_Impl_Type (Typ)))
       then
          return False;
 
@@ -6430,13 +6667,19 @@ package body Exp_Util is
 
          --  When wrapping the statements of an iterator loop, check whether
          --  the loop requires secondary stack management and if so, propagate
-         --  the flag to the block. This way the secondary stack is marked and
-         --  released at each iteration of the loop.
+         --  the appropriate flags to the block. This ensures that the cursor
+         --  is properly cleaned up at each iteration of the loop.
 
          Iter_Loop := Find_Enclosing_Iterator_Loop (Scop);
 
-         if Present (Iter_Loop) and then Uses_Sec_Stack (Iter_Loop) then
-            Set_Uses_Sec_Stack (Block_Id);
+         if Present (Iter_Loop) then
+            Set_Uses_Sec_Stack (Block_Id, Uses_Sec_Stack (Iter_Loop));
+
+            --  Secondary stack reclamation is suppressed when the associated
+            --  iterator loop contains a return statement which uses the stack.
+
+            Set_Sec_Stack_Needed_For_Return
+              (Block_Id, Sec_Stack_Needed_For_Return (Iter_Loop));
          end if;
 
          return Block_Nod;
@@ -6685,9 +6928,7 @@ package body Exp_Util is
       --  (this happens because routines Duplicate_Subexpr_XX implicitly invoke
       --  Remove_Side_Effects).
 
-      if No (Exp_Type)
-        or else Ekind (Exp_Type) = E_Access_Attribute_Type
-      then
+      if No (Exp_Type) or else Ekind (Exp_Type) = E_Access_Attribute_Type then
          return;
 
       --  No action needed for side-effect free expressions
@@ -6754,9 +6995,12 @@ package body Exp_Util is
          Insert_Action (Exp, E);
 
       --  If the expression has the form v.all then we can just capture the
-      --  pointer, and then do an explicit dereference on the result.
+      --  pointer, and then do an explicit dereference on the result, but
+      --  this is not right if this is a volatile reference.
 
-      elsif Nkind (Exp) = N_Explicit_Dereference then
+      elsif Nkind (Exp) = N_Explicit_Dereference
+        and then not Is_Volatile_Reference (Exp)
+      then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Res :=
            Make_Explicit_Dereference (Loc, New_Occurrence_Of (Def_Id, Loc));
@@ -6828,17 +7072,21 @@ package body Exp_Util is
       --  This is needed for correctness in the case of a volatile object of
       --  a non-volatile type because the Make_Reference call of the "default"
       --  approach would generate an illegal access value (an access value
-      --  cannot designate such an object - see Analyze_Reference). We skip
-      --  using this scheme if we have an object of a volatile type and we do
-      --  not have Name_Req set true (see comments for Side_Effect_Free).
-
-      --  In Ada 2012 a qualified expression is an object, but for purposes of
-      --  removing side effects it still need to be transformed into a separate
-      --  declaration, particularly if the expression is an aggregate.
+      --  cannot designate such an object - see Analyze_Reference).
 
       elsif Is_Object_Reference (Exp)
         and then Nkind (Exp) /= N_Function_Call
+
+        --  In Ada 2012 a qualified expression is an object, but for purposes
+        --  of removing side effects it still need to be transformed into a
+        --  separate declaration, particularly in the case of an aggregate.
+
         and then Nkind (Exp) /= N_Qualified_Expression
+
+        --  We skip using this scheme if we have an object of a volatile
+        --  type and we do not have Name_Req set true (see comments for
+        --  Side_Effect_Free).
+
         and then (Name_Req or else not Treat_As_Volatile (Exp_Type))
       then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
@@ -7043,7 +7291,7 @@ package body Exp_Util is
    begin
       return Is_Scalar_Type (UT)
         or else (Is_Bit_Packed_Array (UT)
-                  and then Is_Scalar_Type (Packed_Array_Type (UT)));
+                  and then Is_Scalar_Type (Packed_Array_Impl_Type (UT)));
    end Represented_As_Scalar;
 
    ------------------------------
@@ -7193,7 +7441,7 @@ package body Exp_Util is
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
               and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                                      N_Object_Declaration
+                                N_Object_Declaration
               and then Is_Finalizable_Transient
                          (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
             then
@@ -7205,7 +7453,7 @@ package body Exp_Util is
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
               and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                                      N_Defining_Identifier
+                                                        N_Defining_Identifier
               and then Present (Expr)
               and then Nkind (Expr) = N_Null
             then
@@ -7473,8 +7721,8 @@ package body Exp_Util is
       --  Conversions to and from packed array types are always ignored and
       --  hence are safe.
 
-      elsif Is_Packed_Array_Type (Otyp)
-        or else Is_Packed_Array_Type (Ityp)
+      elsif Is_Packed_Array_Impl_Type (Otyp)
+        or else Is_Packed_Array_Impl_Type (Ityp)
       then
          return True;
       end if;
@@ -7871,6 +8119,12 @@ package body Exp_Util is
    --  Start of processing for Side_Effect_Free
 
    begin
+      --  If volatile reference, always consider it to have side effects
+
+      if Is_Volatile_Reference (N) then
+         return False;
+      end if;
+
       --  Note on checks that could raise Constraint_Error. Strictly, if we
       --  take advantage of 11.6, these checks do not count as side effects.
       --  However, we would prefer to consider that they are side effects,
@@ -7884,12 +8138,17 @@ package body Exp_Util is
 
       if Is_Entity_Name (N) then
 
+         --  A type reference is always side effect free
+
+         if Is_Type (Entity (N)) then
+            return True;
+
          --  Variables are considered to be a side effect if Variable_Ref
          --  is set or if we have a volatile reference and Name_Req is off.
          --  If Name_Req is True then we can't help returning a name which
          --  effectively allows multiple references in any case.
 
-         if Is_Variable (N, Use_Original_Node => False) then
+         elsif Is_Variable (N, Use_Original_Node => False) then
             return not Variable_Ref
               and then (not Is_Volatile_Reference (N) or else Name_Req);
 

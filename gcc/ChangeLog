@@ -1,3 +1,291 @@
+2014-07-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.c (output_move_neon): Handle REG explicitly.
+
+2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61855
+	* config/i386/avx512fintrin.h: Move constants for mantissa extraction
+	out of #ifdef __OPTIMIZE__.
+
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cse.c (exp_equiv_p) <MEM>: For GCSE, return 0 for expressions with
+	different trapping status if -fnon-call-exceptions is enabled.
+
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): Handle VOIDmode for calls that return values
+	in multiple locations.
+
+2014-07-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (unspec enum):  Fix typo in UNSPEC_VSLDOI.
+	(altivec_vsldoi_<mode>): Likewise.
+
+2014-07-20  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c: Fixes a formatting issue related
+	to the number of characters in the line.
+
+2014-07-20  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c: Add using of
+	build_nonstandard_integer_type instead of int128_integer_type_node.
+
+2014-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (output_stack_usage): Adjust the location of the warning.
+
+2014-07-19  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sync.md (*membar_storeload_leon3): New insn.
+	(*membar_storeload): Disable for LEON3.
+
+2014-07-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR rtl-optimization/61461
+	* sched-vis.c (print_pattern) <ADDR_VEC, ADDR_DIFF_VEC>: Fixed.
+
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61794
+	* config/i386/sse.md (avx512f_vextract<shuffletype>32x4_1_maskm):
+	Fix instruction constraint.
+	(<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>): Ditto.
+
+2014-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Template Instantiation): Remove stray parenthesis.
+
+2014-07-18  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_can_eliminate): Follow the
+	GNU coding standards.
+	(nds32_register_move_cost): Likewise.
+	(nds32_memory_move_cost): Likewise.
+	(nds32_address_cost): Likewise.
+
+2014-07-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/mmix/mmix.c (mmix_intval): Drop unused automatic variable.
+
+2014-07-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (TARGET_OS_CPP_BUILTINS): Remove defines for
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1, __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+	and __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
+	(HAVE_sync_compare_and_swapqi): Define.
+	(HAVE_sync_compare_and_swaphi): Likewise.
+	(HAVE_sync_compare_and_swapsi): Likewise.
+
+2014-07-17  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/p5600.md: Add missing cpu tests.
+
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vfma_f64): New intrinsic.
+	(vmla_f64): Likewise.
+	(vfms_f64): Likewise.
+	(vmls_f64): Likewise.
+
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_frint_unspec_p): New function.
+	(aarch64_rtx_costs): Handle FIX, UNSIGNED_FIX, UNSPEC.
+
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vmlal_high_lane_s16): Fix type.
+	(vmlal_high_lane_s32): Likewise.
+	(vmlal_high_lane_u16): Likewise.
+	(vmlal_high_lane_u32): Likewise.
+	(vmlsl_high_lane_s16): Likewise.
+	(vmlsl_high_lane_s32): Likewise.
+	(vmlsl_high_lane_u16): Likewise.
+	(vmlsl_high_lane_u32): Likewise.
+
+2014-07-17  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/types.md (alu_reg): Replaced by alu_sreg and alu_dsp_reg.
+	(alus_reg): Renamed to alus_sreg.
+	* config/arm/arm-fixed.md: Change type of non-dsp instructions
+	from alu_reg to alu_sreg.  Change type of dsp instructions from
+	alu_reg to alu_dsp_reg.
+	* config/arm/thumb1.md: Likewise.
+	* config/arm/thumb2.md: Likewise.
+	* config/arm/arm.c (cortexa7_older_only): Use new ALU type names.
+	* config/arm/arm1020e.md (1020alu_op): Replace alu_reg and alus_reg
+	with alu_sreg and alus_sreg.
+	* config/arm/arm1026ejs.md (alu_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Likewise.
+	* config/arm/fa526.md (526_alu_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Likewise.
+	* config/arm/fa626te.md (626te_alu_op): Likewise.
+	* config/arm/fa726te.md (726te_alu_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_op): Likewise.
+	* config/arm/arm.md (core_cycles): Replace alu_reg and alus_reg with
+	alu_sreg, alu_dsp_reg and alus_sreg.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_sreg): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Likewise.
+	* config/arm/marvell-pj4.md (pj4_alu, pj4_alu_conds): Likewise.
+	* config/aarch64/aarch64.md (*addsi3_aarch64, *addsi3_aarch64_uxtw,
+	subsi3, *adddi3_aarch64, *subsi3_uxtw, subdi3, absdi2, neg<mode>2,
+	*negsi2_uxtw, tlsle_small_<mode>): Rename type alu_reg to alu_sreg.
+	(add<mode>3_compare0, *addsi3_compare0_uxtw, *add<mode>3nr_compare0,
+	sub<mode>3_compare0, *compare_neg<mode>, *neg<mode>2_compare0,
+	subsi3_compare0_uxtw, *negsi2_compare0_uxtw, *cmp<mode>): Rename type
+	alus_reg to alus_sreg.
+
+2014-07-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* real.c (encode_ieee_extended_motorola): Clear integer bit in the
+	infinity format.
+
+2014-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/61801
+	* sched-deps.c (sched_analyze_2): For ASM_OPERANDS and ASM_INPUT
+	don't set reg_pending_barrier if it appears in a debug-insn.
+
+2014-07-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.c (rx_option_override): Fix alignment values.
+	(rx_align_for_label): Likewise.
+
+2014-07-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/61737.
+	* config/cris/cris.c (TARGET_LEGITIMATE_CONSTANT_P)
+	(TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	(cris_cannot_force_const_mem, cris_legitimate_constant_p): New
+	functions.
+	(cris_print_index, cris_print_operand, cris_constant_index_p)
+	(cris_side_effect_mode_ok): Replace CONSTANT_P with CRIS_CONSTANT_P.
+	(cris_address_cost): Ditto last CONSTANT_P.
+	(cris_symbol_type_of): Rename from cris_pic_symbol_type_of.  All
+	callers changed.  Yield cris_offsettable_symbol for non-PIC
+	constant symbolic expressions including labels.  Yield cris_unspec
+	for all unspecs.
+	(cris_expand_pic_call_address): New parameter MARKERP.  Set its
+	target to pic_offset_table_rtx for calls that will likely go
+	through PLT, const0_rtx when they can't.  All callers changed.
+	Assert flag_pic.  Use CONSTANT_P, not CONSTANT_ADDRESS_P, for
+	symbolic expressions to be PICified.  Remove second, redundant,
+	assert on can_create_pseudo_p returning non-zero.  Use
+	replace_equiv_address_nv, not replace_equiv_address, for final
+	operand update.
+	* config/cris/cris.md ("movsi"): Move variable t to pattern
+	toplevel. Adjust assert for new cris_symbol_type member.  Use
+	CONSTANT_P instead of CONSTANT_ADDRESS_P.
+	("*movsi_internal") <case 9>: Make check for valid unspec operands
+	for lapc stricter.
+	<case CRIS_UNSPEC_PCREL, CRIS_UNSPEC_PLT_PCREL>: Clear condition codes.
+	("call", "call_value"): Use second incoming operand as a marker
+	for pic-offset-table-register being used.
+	("*expanded_call_non_v32", "*expanded_call_v32")
+	("*expanded_call_value_non_v32", "*expanded_call_value_v32"): For
+	second incoming operand to CALL, match cris_call_type_marker.
+	("*expanded_call_value_side"): Ditto.  Disable before reload_completed.
+	("*expanded_call_side"): Ditto.  Fix typo in comment.
+	(moverside, movemside peepholes): Check for CRIS_CONSTANT_P, not
+	CONSTANT_P.
+	* config/cris/predicates.md ("cris_call_type_marker"): New predicate.
+	* config/cris/cris.h (CRIS_CONSTANT_P): New macro.
+	(enum cris_symbol_type): Rename from cris_pic_symbol_type.  All
+	users changed.  Add members cris_offsettable_symbol and cris_unspec.
+	(cris_symbol_type): Rename from cris_pic_symbol_type.
+	* config/cris/constraints.md ("T"): Use CRIS_CONSTANT_P, not
+	just CONSTANT_P.
+	* config/cris/cris-protos.h (cris_symbol_type_of,
+	cris_expand_pic_call_address): Adjust prototypes.
+	(cris_legitimate_constant_p): New prototype.
+
+	* config.gcc (crisv32-*-linux* | cris-*-linux*): Do not override
+	an existing tmake_file.  Don't add t-slibgcc and t-linux.
+
+2014-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61623
+	* symtab.c (symtab_remove_from_same_comdat_group): Also
+	set_comdat_group to NULL_TREE.
+	(verify_symtab): Fix diagnostic.
+
+2014-07-16  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	PR target/61662
+	* config/i386/ia32intrin.h: Use __LP64__ to determine size of long.
+
+2014-07-16  Dodji Seketeli  <dodji@redhat.com>
+
+	Support location tracking for built-in macro tokens
+	* input.h (is_location_from_builtin_token): New function declaration.
+	* input.c (is_location_from_builtin_token): New function definition.
+	* toplev.c (general_init): Tell libcpp what the pre-defined
+	spelling location for built-in tokens is.
+
+2014-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (create_omp_child_function): Don't set DECL_NAMELESS
+	on the FUNCTION_DECL.
+
+2014-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR other/61782
+	* doc/extend.texi (always_inline): Clarify.
+
+2014-07-15  Eric Christopher  <echristo@gmail.com>
+
+	* doc/invoke.texi (Link Options): Document -z option.
+
+2014-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_atomic_assign_expand_fenv): New.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New define.
+
+2014-07-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (fold_checksum_tree): Fix typo in previous patch.
+
+2014-07-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* asan.c (asan_finish_file): Use varpool_finalize_decl instead of
+	varpool_assemble_decl.
+	* varpool.c (varpool_assemble_decl): Assert that node->definition is
+	true.
+
+2014-07-15  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/61772
+	* ifcvt.c (dead_or_predicable): Check jump to be free of side effects.
+
+2014-07-15  Richard Biener  <rguenther@suse.de>
+
+	* opts.c (default_options_table): Disable bit-ccp at -Og.
+
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (fold_checksum_tree): Move checking of DECL_RESULT.
+
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (tree_code_size): Add TRANSLATION_UNIT_DECL,
+	NAMESPACE_DECL, IMPORTED_DECL and NAMELIST_DECL;
+	call langhook for unknown declaration.
+	(find_decls_types_r): Do not walk DECL_ARGUMENT_FLD.
+	* tree.h (DECL_ARGUMENTS): Update.
+	* print-tree.c (print_node): Update.
+	* tree-core.h (tree_decl_non_common): Remove arguments.
+	(tree_function_decl): Add arguments.
+
 2014-07-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* aarch64.md (add_losym_<mode>): Set type to alu_imm.
@@ -80,8 +368,7 @@
 	(TV_IPA_LTO_CTORS_IN, TV_IPA_LTO_CTORS_OUT): New timevar.
 	* cgraph.c (cgraph_get_body): Push GIMPLE_IN timevar.
 	(varpool_get_constructor): Push CTORS_IN timevar.
-	* lto-streamer-out.c (lto_output): Push TV_IPA_LTO_CTORS_OUT
-	timevar.
+	* lto-streamer-out.c (lto_output): Push TV_IPA_LTO_CTORS_OUT timevar.
 
 2014-07-12  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -854,7 +1141,7 @@
 	* config/aarch64/aarch64.c (aarch64_expand_vec_perm): Delete unused
 	variable i.
 
-2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+2014-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.h (method_class_type, vtable_pointer_value_to_binfo,
 	vtable_pointer_value_to_vtable): Constify.
@@ -870,7 +1157,7 @@
 	polymorphic type.
 	(compute_known_type_jump_func): Likewise.
 
-2014-07-01  Jan Hubicka   <hubicka@ucw.cz>
+2014-07-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (decls_same_for_odr, decls_same_for_odr, types_same_for_odr):
 	Remove.

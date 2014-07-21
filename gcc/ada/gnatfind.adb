@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Types;    use Types;
 with Xr_Tabls; use Xr_Tabls;
 with Xref_Lib; use Xref_Lib;
 
+with Ada.Command_Line;  use Ada.Command_Line;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
 
@@ -227,7 +228,8 @@ procedure Gnatfind is
                end if;
 
             when others =>
-               Write_Usage;
+               Try_Help;
+               raise Usage_Error;
          end case;
       end loop;
 
@@ -266,16 +268,19 @@ procedure Gnatfind is
       when GNAT.Command_Line.Invalid_Switch =>
          Ada.Text_IO.Put_Line ("Invalid switch : "
                                & GNAT.Command_Line.Full_Switch);
-         Write_Usage;
+         Try_Help;
+         raise Usage_Error;
 
       when GNAT.Command_Line.Invalid_Parameter =>
          Ada.Text_IO.Put_Line ("Parameter missing for : "
                                & GNAT.Command_Line.Full_Switch);
-         Write_Usage;
+         Try_Help;
+         raise Usage_Error;
 
       when Xref_Lib.Invalid_Argument =>
          Ada.Text_IO.Put_Line ("Invalid line or column in the pattern");
-         Write_Usage;
+         Try_Help;
+         raise Usage_Error;
    end Parse_Cmd_Line;
 
    -----------
@@ -344,7 +349,12 @@ begin
    Parse_Cmd_Line;
 
    if not Have_Entity then
-      Write_Usage;
+      if Argument_Count = 0 then
+         Write_Usage;
+      else
+         Try_Help;
+         raise Usage_Error;
+      end if;
    end if;
 
    --  Special case to speed things up: if the user has a command line of the
@@ -372,7 +382,8 @@ begin
       Ada.Text_IO.Put_Line ("Error: for type hierarchy output you must "
                             & "specify only one file.");
       Ada.Text_IO.New_Line;
-      Write_Usage;
+      Try_Help;
+      raise Usage_Error;
    end if;
 
    Search (Pattern, Local_Symbols, Wide_Search, Read_Only,

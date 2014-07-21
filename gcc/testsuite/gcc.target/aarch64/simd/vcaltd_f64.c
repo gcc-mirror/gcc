@@ -14,7 +14,7 @@ volatile float64_t in[SIZE] = { -10.4, -3.14, 0.0, 1.5, 5.3, 532.3 };
 int
 main (void)
 {
-  uint64_t expected;
+  volatile uint64_t expected;
   uint64_t actual;
 
   int i, j;

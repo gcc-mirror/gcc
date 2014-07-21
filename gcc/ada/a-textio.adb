@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -921,7 +921,7 @@ package body Ada.Text_IO is
       Standard_Err.Is_Regular_File   := is_regular_file (fileno (stderr)) /= 0;
       Standard_Err.Is_Temporary_File := False;
       Standard_Err.Is_System_File    := True;
-      Standard_Err.Is_Text_File      := True;
+      Standard_Err.Text_Encoding     := Default_Text;
       Standard_Err.Access_Method     := 'T';
       Standard_Err.Self              := Standard_Err;
       Standard_Err.WC_Method         := Default_WCEM;
@@ -933,7 +933,7 @@ package body Ada.Text_IO is
       Standard_In.Is_Regular_File    := is_regular_file (fileno (stdin)) /= 0;
       Standard_In.Is_Temporary_File  := False;
       Standard_In.Is_System_File     := True;
-      Standard_In.Is_Text_File       := True;
+      Standard_In.Text_Encoding      := Default_Text;
       Standard_In.Access_Method      := 'T';
       Standard_In.Self               := Standard_In;
       Standard_In.WC_Method          := Default_WCEM;
@@ -945,7 +945,7 @@ package body Ada.Text_IO is
       Standard_Out.Is_Regular_File   := is_regular_file (fileno (stdout)) /= 0;
       Standard_Out.Is_Temporary_File := False;
       Standard_Out.Is_System_File    := True;
-      Standard_Out.Is_Text_File      := True;
+      Standard_Out.Text_Encoding     := Default_Text;
       Standard_Out.Access_Method     := 'T';
       Standard_Out.Self              := Standard_Out;
       Standard_Out.WC_Method         := Default_WCEM;

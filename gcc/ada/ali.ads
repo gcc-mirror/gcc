@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,10 +141,6 @@ package ALI is
       --  Indicates value of time slice parameter from T=xxx on main program
       --  line. A value of -1 indicates that no T=xxx parameter was found, or
       --  no M line was present. Not set if 'M' appears in Ignore_Lines.
-
-      Allocator_In_Body : Boolean;
-      --  Set True if an AB switch appears on the main program line. False
-      --  if no M line, or AB not present, or 'M appears in Ignore_Lines.
 
       WC_Encoding : Character;
       --  Wide character encoding if main procedure. Otherwise not relevant.
@@ -289,7 +285,7 @@ package ALI is
       Set_Elab_Entity : Boolean;
       --  Indicates presence of EE parameter for a unit which has an
       --  elaboration entity which must be set true as part of the
-      --  elaboration of the entity.
+      --  elaboration of the unit.
 
       Has_RACW : Boolean;
       --  Indicates presence of RA parameter for a package that declares at
@@ -771,6 +767,8 @@ package ALI is
       Subunit_Name : Name_Id;
       --  Name_Id for subunit name if present, else No_Name
 
+      Unit_Name : Name_Id;
+      --  Name_Id for the unit name if not a subunit (No_Name for a subunit)
       Rfile : File_Name_Type;
       --  Reference file name. Same as Sfile unless a Source_Reference pragma
       --  was used, in which case it reflects the name used in the pragma.

@@ -785,6 +785,16 @@ func TestMap(t *testing.T) {
 	if string(m) != expect {
 		t.Errorf("drop: expected %q got %q", expect, m)
 	}
+
+	// 6. Invalid rune
+	invalidRune := func(r rune) rune {
+		return utf8.MaxRune + 1
+	}
+	m = Map(invalidRune, []byte("x"))
+	expect = "\uFFFD"
+	if string(m) != expect {
+		t.Errorf("invalidRune: expected %q got %q", expect, m)
+	}
 }
 
 func TestToUpper(t *testing.T) { runStringTests(t, ToUpper, "ToUpper", upperTests) }
@@ -1134,7 +1144,7 @@ func TestEqualFold(t *testing.T) {
 func TestBufferGrowNegative(t *testing.T) {
 	defer func() {
 		if err := recover(); err == nil {
-			t.Fatal("Grow(-1) should have paniced")
+			t.Fatal("Grow(-1) should have panicked")
 		}
 	}()
 	var b Buffer
@@ -1144,7 +1154,7 @@ func TestBufferGrowNegative(t *testing.T) {
 func TestBufferTruncateNegative(t *testing.T) {
 	defer func() {
 		if err := recover(); err == nil {
-			t.Fatal("Truncate(-1) should have paniced")
+			t.Fatal("Truncate(-1) should have panicked")
 		}
 	}()
 	var b Buffer
@@ -1154,7 +1164,7 @@ func TestBufferTruncateNegative(t *testing.T) {
 func TestBufferTruncateOutOfRange(t *testing.T) {
 	defer func() {
 		if err := recover(); err == nil {
-			t.Fatal("Truncate(20) should have paniced")
+			t.Fatal("Truncate(20) should have panicked")
 		}
 	}()
 	var b Buffer

@@ -2307,8 +2307,12 @@ to 8.
 @item always_inline
 @cindex @code{always_inline} function attribute
 Generally, functions are not inlined unless optimization is specified.
-For functions declared inline, this attribute inlines the function even
-if no optimization level is specified.
+For functions declared inline, this attribute inlines the function
+independent of any restrictions that otherwise apply to inlining.
+Failure to inline such a function is diagnosed as an error.
+Note that if such a function is called indirectly the compiler may
+or may not inline it depending on optimization level and a failure
+to inline an indirect call may or may not be diagnosed.
 
 @item gnu_inline
 @cindex @code{gnu_inline} function attribute
@@ -18154,7 +18158,7 @@ syntax to support instantiation of the compiler support data for a
 template class (i.e.@: the vtable) without instantiating any of its
 members (with @code{inline}), and instantiation of only the static data
 members of a template class, without the support data or member
-functions (with (@code{static}):
+functions (with @code{static}):
 
 @smallexample
 extern template int max (int, int);

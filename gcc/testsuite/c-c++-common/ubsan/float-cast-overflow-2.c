@@ -70,4 +70,4 @@ main (void)
 /* { dg-output "\[^\n\r]*runtime error: value nan is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*runtime error: value -?nan is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*runtime error: value inf is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*runtime error: value -inf is outside the range of representable values of type '__int128 unsigned'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*runtime error: value -inf is outside the range of representable values of type '__int128 unsigned'" } */

@@ -473,7 +473,7 @@ Gogo::import_package(const std::string& filename,
 		 bindings->begin_declarations();
 	       p != bindings->end_declarations();
 	       ++p)
-	    this->add_named_object(p->second);
+	    this->add_dot_import_object(p->second);
 	}
       else if (ln == "_")
 	package->set_uses_sink_alias();
@@ -1968,11 +1968,32 @@ Gogo::add_sink()
   return Named_object::make_sink();
 }
 
-// Add a named object.
+// Add a named object for a dot import.
 
 void
-Gogo::add_named_object(Named_object* no)
+Gogo::add_dot_import_object(Named_object* no)
 {
+  // If the name already exists, then it was defined in some file seen
+  // earlier.  If the earlier name is just a declaration, don't add
+  // this name, because that will cause the previous declaration to
+  // merge to this imported name, which should not happen.  Just add
+  // this name to the list of file block names to get appropriate
+  // errors if we see a later definition.
+  Named_object* e = this->package_->bindings()->lookup(no->name());
+  if (e != NULL && e->package() == NULL)
+    {
+      if (e->is_unknown())
+	e = e->resolve();
+      if (e->package() == NULL
+	  && (e->is_type_declaration()
+	      || e->is_function_declaration()
+	      || e->is_unknown()))
+	{
+	  this->add_file_block_name(no->name(), no->location());
+	  return;
+	}
+    }
+
   this->current_bindings()->add_named_object(no);
 }
 

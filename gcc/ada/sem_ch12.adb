@@ -2362,7 +2362,7 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_Formal_Package_Declaration
 
    begin
-      Text_IO_Kludge (Gen_Id);
+      Check_Text_IO_Special_Unit (Gen_Id);
 
       Init_Env;
       Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
@@ -3423,10 +3423,10 @@ package body Sem_Ch12 is
    begin
       Check_SPARK_Restriction ("generic is not allowed", N);
 
-      --  Very first thing: apply the special kludge for Text_IO processing
-      --  in case we are instantiating one of the children of [Wide_]Text_IO.
+      --  Very first thing: check for Text_IO sp[ecial unit in case we are
+      --  instantiating one of the children of [[Wide_]Wide_]Text_IO.
 
-      Text_IO_Kludge (Name (N));
+      Check_Text_IO_Special_Unit (Name (N));
 
       --  Make node global for error reporting
 
@@ -4670,12 +4670,12 @@ package body Sem_Ch12 is
    begin
       Check_SPARK_Restriction ("generic is not allowed", N);
 
-      --  Very first thing: apply the special kludge for Text_IO processing
-      --  in case we are instantiating one of the children of [Wide_]Text_IO.
-      --  Of course such an instantiation is bogus (these are packages, not
-      --  subprograms), but we get a better error message if we do this.
+      --  Very first thing: check for special Text_IO unit in case we are
+      --  instantiating one of the children of [[Wide_]Wide_]Text_IO. Of course
+      --  such an instantiation is bogus (these are packages, not subprograms),
+      --  but we get a better error message if we do this.
 
-      Text_IO_Kludge (Gen_Id);
+      Check_Text_IO_Special_Unit (Gen_Id);
 
       --  Make node global for error reporting
 

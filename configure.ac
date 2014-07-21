@@ -1662,10 +1662,7 @@ if test "x$with_isl" != "xno" &&
   dnl with user input.
   ISL_INIT_FLAGS
   dnl The versions of ISL that work for Graphite
-  ISL_CHECK_VERSION(0,11)
-  if test "${gcc_cv_isl}" = no ; then
-    ISL_CHECK_VERSION(0,12)
-  fi
+  ISL_CHECK_VERSION(0,12)
   dnl Only execute fail-action, if ISL has been requested.
   ISL_IF_FAILED([
     AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
@@ -1676,10 +1673,7 @@ if test "x$with_isl" != "xno" &&
     dnl with user input.
     CLOOG_INIT_FLAGS
     dnl The versions of CLooG that work for Graphite.
-    CLOOG_CHECK_VERSION(0,17,0)
-    if test "${gcc_cv_cloog}" = no ; then
-      CLOOG_CHECK_VERSION(0,18,0)
-    fi
+    CLOOG_CHECK_VERSION(0,18,1)
 
     dnl Only execute fail-action, if CLooG has been requested.
     CLOOG_IF_FAILED([

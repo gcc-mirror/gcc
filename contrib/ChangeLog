@@ -1,3 +1,12 @@
+2014-07-21  Trevor Saunders  <tsaunders@mozilla.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* mklog: Run mklog as a filter.
+
+2014-07-21  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* mklog: Read name and email from git config when available.
+
 2014-06-28  Richard Biener  <rguenther@suse.de>
 
 	* gennews: Use gcc-3.0/index.html.

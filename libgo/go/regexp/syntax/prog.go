@@ -37,6 +37,27 @@ const (
 	InstRuneAnyNotNL
 )
 
+var instOpNames = []string{
+	"InstAlt",
+	"InstAltMatch",
+	"InstCapture",
+	"InstEmptyWidth",
+	"InstMatch",
+	"InstFail",
+	"InstNop",
+	"InstRune",
+	"InstRune1",
+	"InstRuneAny",
+	"InstRuneAnyNotNL",
+}
+
+func (i InstOp) String() string {
+	if uint(i) >= uint(len(instOpNames)) {
+		return ""
+	}
+	return instOpNames[i]
+}
+
 // An EmptyOp specifies a kind or mixture of zero-width assertions.
 type EmptyOp uint8
 
@@ -103,13 +124,13 @@ func (p *Prog) String() string {
 
 // skipNop follows any no-op or capturing instructions
 // and returns the resulting pc.
-func (p *Prog) skipNop(pc uint32) *Inst {
+func (p *Prog) skipNop(pc uint32) (*Inst, uint32) {
 	i := &p.Inst[pc]
 	for i.Op == InstNop || i.Op == InstCapture {
 		pc = i.Out
 		i = &p.Inst[pc]
 	}
-	return i
+	return i, pc
 }
 
 // op returns i.Op but merges all the Rune special cases into InstRune
@@ -126,7 +147,7 @@ func (i *Inst) op() InstOp {
 // regexp must start with.  Complete is true if the prefix
 // is the entire match.
 func (p *Prog) Prefix() (prefix string, complete bool) {
-	i := p.skipNop(uint32(p.Start))
+	i, _ := p.skipNop(uint32(p.Start))
 
 	// Avoid allocation of buffer if prefix is empty.
 	if i.op() != InstRune || len(i.Rune) != 1 {
@@ -137,7 +158,7 @@ func (p *Prog) Prefix() (prefix string, complete bool) {
 	var buf bytes.Buffer
 	for i.op() == InstRune && len(i.Rune) == 1 && Flags(i.Arg)&FoldCase == 0 {
 		buf.WriteRune(i.Rune[0])
-		i = p.skipNop(i.Out)
+		i, _ = p.skipNop(i.Out)
 	}
 	return buf.String(), i.Op == InstMatch
 }
@@ -166,35 +187,46 @@ Loop:
 	return flag
 }
 
+const noMatch = -1
+
 // MatchRune returns true if the instruction matches (and consumes) r.
 // It should only be called when i.Op == InstRune.
 func (i *Inst) MatchRune(r rune) bool {
+	return i.MatchRunePos(r) != noMatch
+}
+
+// MatchRunePos checks whether the instruction matches (and consumes) r.
+// If so, MatchRunePos returns the index of the matching rune pair
+// (or, when len(i.Rune) == 1, rune singleton).
+// If not, MatchRunePos returns -1.
+// MatchRunePos should only be called when i.Op == InstRune.
+func (i *Inst) MatchRunePos(r rune) int {
 	rune := i.Rune
 
 	// Special case: single-rune slice is from literal string, not char class.
 	if len(rune) == 1 {
 		r0 := rune[0]
 		if r == r0 {
-			return true
+			return 0
 		}
 		if Flags(i.Arg)&FoldCase != 0 {
 			for r1 := unicode.SimpleFold(r0); r1 != r0; r1 = unicode.SimpleFold(r1) {
 				if r == r1 {
-					return true
+					return 0
 				}
 			}
 		}
-		return false
+		return noMatch
 	}
 
 	// Peek at the first few pairs.
 	// Should handle ASCII well.
 	for j := 0; j < len(rune) && j <= 8; j += 2 {
 		if r < rune[j] {
-			return false
+			return noMatch
 		}
 		if r <= rune[j+1] {
-			return true
+			return j / 2
 		}
 	}
 
@@ -205,14 +237,14 @@ func (i *Inst) MatchRune(r rune) bool {
 		m := lo + (hi-lo)/2
 		if c := rune[2*m]; c <= r {
 			if r <= rune[2*m+1] {
-				return true
+				return m
 			}
 			lo = m + 1
 		} else {
 			hi = m
 		}
 	}
-	return false
+	return noMatch
 }
 
 // As per re2's Prog::IsWordChar. Determines whether rune is an ASCII word char.

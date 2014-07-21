@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,8 @@ package Exp_Pakd is
    -------------------------------------
 
    --  When a packed array (sub)type is frozen, we create a corresponding
-   --  type that will be used to hold the bits of the packed value, and
-   --  store the entity for this type in the Packed_Array_Type field of the
+   --  type that will be used to hold the bits of the packed value, and store
+   --  the entity for this type in the Packed_Array_Impl_Type field of the
    --  E_Array_Type or E_Array_Subtype entity for the packed array.
 
    --  This packed array type has the name xxxPn, where xxx is the name
@@ -207,11 +207,11 @@ package Exp_Pakd is
    -- Subprograms --
    -----------------
 
-   procedure Create_Packed_Array_Type (Typ  : Entity_Id);
+   procedure Create_Packed_Array_Impl_Type (Typ  : Entity_Id);
    --  Typ is a array type or subtype to which pragma Pack applies. If the
-   --  Packed_Array_Type field of Typ is already set, then the call has no
-   --  effect, otherwise a suitable type or subtype is created and stored
-   --  in the Packed_Array_Type field of Typ. This created type is an Itype
+   --  Packed_Array_Impl_Type field of Typ is already set, then the call has
+   --  no effect, otherwise a suitable type or subtype is created and stored in
+   --  the Packed_Array_Impl_Type field of Typ. This created type is an Itype
    --  so that Gigi will simply elaborate and freeze the type on first use
    --  (which is typically the definition of the corresponding array type).
    --

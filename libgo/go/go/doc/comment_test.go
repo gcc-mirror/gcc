@@ -42,8 +42,9 @@ func TestIsHeading(t *testing.T) {
 }
 
 var blocksTests = []struct {
-	in  string
-	out []block
+	in   string
+	out  []block
+	text string
 }{
 	{
 		in: `Para 1.
@@ -59,6 +60,22 @@ Para 3.
 	pre1
 
 Para 4.
+
+	pre
+	pre1
+
+	pre2
+
+Para 5.
+
+
+	pre
+
+
+	pre1
+	pre2
+
+Para 6.
 	pre
 	pre2
 `,
@@ -69,8 +86,44 @@ Para 4.
 			{opPara, []string{"Para 3.\n"}},
 			{opPre, []string{"pre\n", "pre1\n"}},
 			{opPara, []string{"Para 4.\n"}},
+			{opPre, []string{"pre\n", "pre1\n", "\n", "pre2\n"}},
+			{opPara, []string{"Para 5.\n"}},
+			{opPre, []string{"pre\n", "\n", "\n", "pre1\n", "pre2\n"}},
+			{opPara, []string{"Para 6.\n"}},
 			{opPre, []string{"pre\n", "pre2\n"}},
 		},
+		text: `.   Para 1. Para 1 line 2.
+
+.   Para 2.
+
+
+.   Section
+
+.   Para 3.
+
+$	pre
+$	pre1
+
+.   Para 4.
+
+$	pre
+$	pre1
+
+$	pre2
+
+.   Para 5.
+
+$	pre
+
+
+$	pre1
+$	pre2
+
+.   Para 6.
+
+$	pre
+$	pre2
+`,
 	},
 }
 
@@ -83,14 +136,28 @@ func TestBlocks(t *testing.T) {
 	}
 }
 
+func TestToText(t *testing.T) {
+	var buf bytes.Buffer
+	for i, tt := range blocksTests {
+		ToText(&buf, tt.in, ".   ", "$\t", 40)
+		if have := buf.String(); have != tt.text {
+			t.Errorf("#%d: mismatch\nhave: %s\nwant: %s\nhave vs want:\n%q\n%q", i, have, tt.text, have, tt.text)
+		}
+		buf.Reset()
+	}
+}
+
 var emphasizeTests = []struct {
-	in  string
-	out string
+	in, out string
 }{
 	{"http://www.google.com/", `<a href="http://www.google.com/">http://www.google.com/</a>`},
 	{"https://www.google.com/", `<a href="https://www.google.com/">https://www.google.com/</a>`},
 	{"http://www.google.com/path.", `<a href="http://www.google.com/path">http://www.google.com/path</a>.`},
+	{"http://en.wikipedia.org/wiki/Camellia_(cipher)", `<a href="http://en.wikipedia.org/wiki/Camellia_(cipher)">http://en.wikipedia.org/wiki/Camellia_(cipher)</a>`},
 	{"(http://www.google.com/)", `(<a href="http://www.google.com/">http://www.google.com/</a>)`},
+	{"http://gmail.com)", `<a href="http://gmail.com">http://gmail.com</a>)`},
+	{"((http://gmail.com))", `((<a href="http://gmail.com">http://gmail.com</a>))`},
+	{"http://gmail.com ((http://gmail.com)) ()", `<a href="http://gmail.com">http://gmail.com</a> ((<a href="http://gmail.com">http://gmail.com</a>)) ()`},
 	{"Foo bar http://example.com/ quux!", `Foo bar <a href="http://example.com/">http://example.com/</a> quux!`},
 	{"Hello http://example.com/%2f/ /world.", `Hello <a href="http://example.com/%2f/">http://example.com/%2f/</a> /world.`},
 	{"Lorem http: ipsum //host/path", "Lorem http: ipsum //host/path"},
@@ -104,6 +171,37 @@ func TestEmphasize(t *testing.T) {
 		out := buf.String()
 		if out != tt.out {
 			t.Errorf("#%d: mismatch\nhave: %v\nwant: %v", i, out, tt.out)
+		}
+	}
+}
+
+var pairedParensPrefixLenTests = []struct {
+	in, out string
+}{
+	{"", ""},
+	{"foo", "foo"},
+	{"()", "()"},
+	{"foo()", "foo()"},
+	{"foo()()()", "foo()()()"},
+	{"foo()((()()))", "foo()((()()))"},
+	{"foo()((()()))bar", "foo()((()()))bar"},
+	{"foo)", "foo"},
+	{"foo))", "foo"},
+	{"foo)))))", "foo"},
+	{"(foo", ""},
+	{"((foo", ""},
+	{"(((((foo", ""},
+	{"(foo)", "(foo)"},
+	{"((((foo))))", "((((foo))))"},
+	{"foo()())", "foo()()"},
+	{"foo((()())", "foo"},
+	{"foo((()())) (() foo ", "foo((()())) "},
+}
+
+func TestPairedParensPrefixLen(t *testing.T) {
+	for i, tt := range pairedParensPrefixLenTests {
+		if out := tt.in[:pairedParensPrefixLen(tt.in)]; out != tt.out {
+			t.Errorf("#%d: mismatch\nhave: %q\nwant: %q", i, out, tt.out)
 		}
 	}
 }

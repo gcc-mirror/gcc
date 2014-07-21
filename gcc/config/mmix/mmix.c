@@ -2691,8 +2691,6 @@ mmix_output_condition (FILE *stream, const_rtx x, int reversed)
 int64_t
 mmix_intval (const_rtx x)
 {
-  uint64_t retval;
-
   if (GET_CODE (x) == CONST_INT)
     return INTVAL (x);
 

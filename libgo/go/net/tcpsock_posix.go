@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd windows
+// +build darwin dragonfly freebsd linux nacl netbsd openbsd solaris windows
 
 package net
 
@@ -78,7 +78,7 @@ func (c *TCPConn) CloseRead() error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	return c.fd.CloseRead()
+	return c.fd.closeRead()
 }
 
 // CloseWrite shuts down the writing side of the TCP connection.
@@ -87,20 +87,21 @@ func (c *TCPConn) CloseWrite() error {
 	if !c.ok() {
 		return syscall.EINVAL
 	}
-	return c.fd.CloseWrite()
+	return c.fd.closeWrite()
 }
 
-// SetLinger sets the behavior of Close() on a connection which still
+// SetLinger sets the behavior of Close on a connection which still
 // has data waiting to be sent or to be acknowledged.
 //
-// If sec < 0 (the default), Close returns immediately and the
-// operating system finishes sending the data in the background.
+// If sec < 0 (the default), the operating system finishes sending the
+// data in the background.
 //
-// If sec == 0, Close returns immediately and the operating system
-// discards any unsent or unacknowledged data.
+// If sec == 0, the operating system discards any unsent or
+// unacknowledged data.
 //
-// If sec > 0, Close blocks for at most sec seconds waiting for data
-// to be sent and acknowledged.
+// If sec > 0, the data is sent in the background as with sec < 0. On
+// some operating systems after sec seconds have elapsed any remaining
+// unsent data may be discarded.
 func (c *TCPConn) SetLinger(sec int) error {
 	if !c.ok() {
 		return syscall.EINVAL

@@ -175,13 +175,15 @@ location_adhoc_data_fini (struct line_maps *set)
 /* Initialize a line map set.  */
 
 void
-linemap_init (struct line_maps *set)
+linemap_init (struct line_maps *set,
+	      source_location builtin_location)
 {
   memset (set, 0, sizeof (struct line_maps));
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =
       htab_create (100, location_adhoc_data_hash, location_adhoc_data_eq, NULL);
+  set->builtin_location = builtin_location;
 }
 
 /* Check for and warn about line_maps entered but not exited.  */

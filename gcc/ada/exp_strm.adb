@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1124,7 +1124,10 @@ package body Exp_Strm is
 
       J := 1;
 
-      if Has_Discriminants (B_Typ) then
+      if Has_Discriminants (Typ)
+        and then
+          No (Discriminant_Default_Value (First_Discriminant (Typ)))
+      then
          Discr := First_Discriminant (B_Typ);
 
          --  If the prefix subtype is constrained, then retrieve the first
@@ -1250,10 +1253,15 @@ package body Exp_Strm is
    begin
       Stms := New_List;
 
-      --  Note that of course there will be no discriminants for the
-      --  elementary type case, so Has_Discriminants will be False.
+      --  Note that of course there will be no discriminants for the elementary
+      --  type case, so Has_Discriminants will be False. Note that the language
+      --  rules do not allow writing the discriminants in the defaulted case,
+      --  because those are written by 'Write.
 
-      if Has_Discriminants (Typ) then
+      if Has_Discriminants (Typ)
+        and then
+          No (Discriminant_Default_Value (First_Discriminant (Typ)))
+      then
          Disc := First_Discriminant (Typ);
 
          while Present (Disc) loop

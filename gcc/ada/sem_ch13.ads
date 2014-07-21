@@ -79,6 +79,11 @@ package Sem_Ch13 is
    procedure Initialize;
    --  Initialize internal tables for new compilation
 
+   procedure Kill_Rep_Clause (N : Node_Id);
+   --  This procedure is called for a rep clause N when we are in -gnatI mode
+   --  (Ignore_Rep_Clauses). It replaces the node N with a null statement. This
+   --  is only called if Ignore_Rep_Clauses is True.
+
    procedure Set_Enum_Esize (T : Entity_Id);
    --  This routine sets the Esize field for an enumeration type T, based
    --  on the current representation information available for T. Note that

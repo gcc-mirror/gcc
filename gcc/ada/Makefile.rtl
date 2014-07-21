@@ -428,6 +428,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-rannum$(objext) \
   g-regexp$(objext) \
   g-regpat$(objext) \
+  g-rewdat$(objext) \
   g-sechas$(objext) \
   g-sehamd$(objext) \
   g-sehash$(objext) \
@@ -517,6 +518,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-direio$(objext) \
   s-dmotpr$(objext) \
   s-dsaser$(objext) \
+  s-elaall$(objext) \
   s-excdeb$(objext) \
   s-except$(objext) \
   s-exctab$(objext) \

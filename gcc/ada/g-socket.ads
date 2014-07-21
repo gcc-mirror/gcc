@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2013, AdaCore                     --
+--                     Copyright (C) 2001-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -759,8 +759,8 @@ package GNAT.Sockets is
       end case;
    end record;
 
-   --  A request flag allows to specify the type of message transmissions or
-   --  receptions. A request flag can be combination of zero or more
+   --  A request flag allows specification of the type of message transmissions
+   --  or receptions. A request flag can be combination of zero or more
    --  predefined request flags.
 
    type Request_Flag_Type is private;
@@ -904,7 +904,7 @@ package GNAT.Sockets is
    --  Item'First - 1 when the socket has been closed by peer. This is not
    --  an error, and no exception is raised in this case unless Item'First
    --  is Stream_Element_Offset'First, in which case Constraint_Error is
-   --  raised. Flags allows to control the reception. Raise Socket_Error on
+   --  raised. Flags allows control of the reception. Raise Socket_Error on
    --  error.
 
    procedure Receive_Socket
@@ -916,7 +916,7 @@ package GNAT.Sockets is
    --  Receive message from Socket. If Socket is not connection-oriented, the
    --  source address From of the message is filled in. Last is the index
    --  value such that Item (Last) is the last character assigned. Flags
-   --  allows to control the reception. Raises Socket_Error on error.
+   --  allows control of the reception. Raises Socket_Error on error.
 
    procedure Receive_Vector
      (Socket : Socket_Type;
@@ -958,7 +958,7 @@ package GNAT.Sockets is
       Last   : out Ada.Streams.Stream_Element_Offset;
       Flags  : Request_Flag_Type := No_Request_Flag);
    --  Transmit a message over a socket. Upon return, Last is set to the index
-   --  within Item of the last element transmitted. Flags allows to control
+   --  within Item of the last element transmitted. Flags allows control of
    --  the transmission. Raises Socket_Error on any detected error condition.
 
    procedure Send_Socket
@@ -968,7 +968,7 @@ package GNAT.Sockets is
       To     : Sock_Addr_Type;
       Flags  : Request_Flag_Type := No_Request_Flag);
    --  Transmit a message over a datagram socket. The destination address is
-   --  To. Flags allows to control the transmission. Raises Socket_Error on
+   --  To. Flags allows control of the transmission. Raises Socket_Error on
    --  error.
 
    procedure Send_Vector
@@ -1027,8 +1027,8 @@ package GNAT.Sockets is
    --  subprogram when the stream is not needed anymore.
 
    type Socket_Set_Type is limited private;
-   --  This type allows to manipulate sets of sockets. It allows to wait for
-   --  events on multiple endpoints at one time. This type has default
+   --  This type allows manipulation of sets of sockets. It allows waiting
+   --  for events on multiple endpoints at one time. This type has default
    --  initialization, and the default value is the empty set.
    --
    --  Note: This type used to contain a pointer to dynamically allocated
@@ -1072,8 +1072,8 @@ package GNAT.Sockets is
    --  Check_Selector provides the very same behaviour. The only difference is
    --  that it does not watch for exception events. Note that on some platforms
    --  it is kept process blocking on purpose. The timeout parameter allows the
-   --  user to have the behaviour he wants. Abort_Selector allows to safely
-   --  abort a blocked Check_Selector call. A special socket is opened by
+   --  user to have the behaviour he wants. Abort_Selector allows the safe
+   --  abort of a blocked Check_Selector call. A special socket is opened by
    --  Create_Selector and included in each call to Check_Selector.
    --
    --  Abort_Selector causes an event to occur on this descriptor in order to

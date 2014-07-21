@@ -9065,6 +9065,15 @@ Call_expression::result(size_t i) const
   return (*this->results_)[i];
 }
 
+// Set the number of results expected from a call expression.
+
+void
+Call_expression::set_expected_result_count(size_t count)
+{
+  go_assert(this->expected_result_count_ == 0);
+  this->expected_result_count_ = count;
+}
+
 // Return whether this is a call to the predeclared function recover.
 
 bool
@@ -9252,6 +9261,15 @@ Call_expression::do_check_types(Gogo*)
       return;
     }
 
+  if (this->expected_result_count_ != 0
+      && this->expected_result_count_ != this->result_count())
+    {
+      if (this->issue_error())
+	this->report_error(_("function result count mismatch"));
+      this->set_is_error();
+      return;
+    }
+
   bool is_method = fntype->is_method();
   if (is_method)
     {
@@ -9300,6 +9318,20 @@ Call_expression::do_check_types(Gogo*)
   else if (parameters == NULL)
     {
       if (!is_method || this->args_->size() > 1)
+	this->report_error(_("too many arguments"));
+    }
+  else if (this->args_->size() == 1
+	   && this->args_->front()->call_expression() != NULL
+	   && this->args_->front()->call_expression()->result_count() > 1)
+    {
+      // This is F(G()) when G returns more than one result.  If the
+      // results can be matched to parameters, it would have been
+      // lowered in do_lower.  If we get here we know there is a
+      // mismatch.
+      if (this->args_->front()->call_expression()->result_count()
+	  < parameters->size())
+	this->report_error(_("not enough arguments"));
+      else
 	this->report_error(_("too many arguments"));
     }
   else

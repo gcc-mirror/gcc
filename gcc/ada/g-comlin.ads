@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2013, AdaCore                     --
+--                     Copyright (C) 1999-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -999,6 +999,13 @@ package GNAT.Command_Line is
    --  Args must be freed by the caller.
    --
    --  Expanded has the same meaning as in Start.
+
+   procedure Try_Help;
+   --  Output a message on standard error to indicate how to get the usage for
+   --  the executable. This procedure should only be called when the executable
+   --  accepts switch --help. When this procedure is called by executable xxx,
+   --  the following message is displayed on standard error:
+   --      try "xxx --help" for more information.
 
 private
 

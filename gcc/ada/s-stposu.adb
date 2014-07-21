@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -456,11 +456,13 @@ package body System.Storage_Pools.Subpools is
    ------------------------------
 
    function Default_Subpool_For_Pool
-     (Pool : Root_Storage_Pool_With_Subpools) return not null Subpool_Handle
+     (Pool : in out Root_Storage_Pool_With_Subpools)
+      return not null Subpool_Handle
    is
+      pragma Unreferenced (Pool);
    begin
-      raise Program_Error;
-      return Pool.Subpools.Subpool;
+      return raise Program_Error with
+        "default Default_Subpool_For_Pool called; must be overridden";
    end Default_Subpool_For_Pool;
 
    ------------

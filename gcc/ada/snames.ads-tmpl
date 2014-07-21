@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,7 +209,7 @@ package Snames is
    Name_Deallocate                     : constant Name_Id := N + $;
    Name_Dereference                    : constant Name_Id := N + $;
 
-   --  Names of Text_IO generic subpackages (see Rtsfind.Text_IO_Kludge)
+   --  Text_IO generic subpackages (see Rtsfind.Check_Text_IO_Special_Unit)
 
    First_Text_IO_Package               : constant Name_Id := N + $;
    Name_Decimal_IO                     : constant Name_Id := N + $;
@@ -380,6 +380,7 @@ package Snames is
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
    Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
+   Name_Default_Scalar_Storage_Order   : constant Name_Id := N + $; -- GNAT
    Name_Default_Storage_Pool           : constant Name_Id := N + $; -- Ada 12
    Name_Disable_Atomic_Synchronization : constant Name_Id := N + $; -- GNAT
    Name_Discard_Names                  : constant Name_Id := N + $;
@@ -721,6 +722,7 @@ package Snames is
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
    Name_GPL                            : constant Name_Id := N + $;
+   Name_High_Order_First               : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
    Name_In_Out                         : constant Name_Id := N + $;
@@ -729,6 +731,7 @@ package Snames is
    Name_Internal                       : constant Name_Id := N + $;
    Name_Ivdep                          : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
+   Name_Low_Order_First                : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
    Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $;
    Name_Max_Entry_Queue_Length         : constant Name_Id := N + $;
@@ -868,6 +871,7 @@ package Snames is
    Name_Fore                           : constant Name_Id := N + $;
    Name_Has_Access_Values              : constant Name_Id := N + $; -- GNAT
    Name_Has_Discriminants              : constant Name_Id := N + $; -- GNAT
+   Name_Has_Same_Storage               : constant Name_Id := N + $; -- Ada 12
    Name_Has_Tagged_Values              : constant Name_Id := N + $; -- GNAT
    Name_Identity                       : constant Name_Id := N + $;
    Name_Img                            : constant Name_Id := N + $; -- GNAT
@@ -925,7 +929,6 @@ package Snames is
    Name_Safe_Large                     : constant Name_Id := N + $; -- Ada 83
    Name_Safe_Last                      : constant Name_Id := N + $;
    Name_Safe_Small                     : constant Name_Id := N + $; -- Ada 83
-   Name_Same_Storage                   : constant Name_Id := N + $; -- Ada 12
    Name_Scalar_Storage_Order           : constant Name_Id := N + $; -- GNAT
    Name_Scale                          : constant Name_Id := N + $;
    Name_Scaling                        : constant Name_Id := N + $;
@@ -1096,9 +1099,11 @@ package Snames is
    Name_Access_Check                   : constant Name_Id := N + $;
    Name_Accessibility_Check            : constant Name_Id := N + $;
    Name_Alignment_Check                : constant Name_Id := N + $; -- GNAT
+   Name_Allocation_Check               : constant Name_Id := N + $;
    Name_Atomic_Synchronization         : constant Name_Id := N + $; -- GNAT
    Name_Discriminant_Check             : constant Name_Id := N + $;
    Name_Division_Check                 : constant Name_Id := N + $;
+   Name_Duplicated_Tag_Check           : constant Name_Id := N + $; -- GNAT
    Name_Elaboration_Check              : constant Name_Id := N + $;
    Name_Index_Check                    : constant Name_Id := N + $;
    Name_Length_Check                   : constant Name_Id := N + $;
@@ -1494,6 +1499,7 @@ package Snames is
       Attribute_Fore,
       Attribute_Has_Access_Values,
       Attribute_Has_Discriminants,
+      Attribute_Has_Same_Storage,
       Attribute_Has_Tagged_Values,
       Attribute_Identity,
       Attribute_Img,
@@ -1551,7 +1557,6 @@ package Snames is
       Attribute_Safe_Large,
       Attribute_Safe_Last,
       Attribute_Safe_Small,
-      Attribute_Same_Storage,
       Attribute_Scalar_Storage_Order,
       Attribute_Scale,
       Attribute_Scaling,
@@ -1738,6 +1743,7 @@ package Snames is
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,
       Pragma_Detect_Blocking,
+      Pragma_Default_Scalar_Storage_Order,
       Pragma_Default_Storage_Pool,
       Pragma_Disable_Atomic_Synchronization,
       Pragma_Discard_Names,

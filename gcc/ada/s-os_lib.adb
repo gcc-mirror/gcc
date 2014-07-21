@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2013, AdaCore                     --
+--                     Copyright (C) 1995-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1308,6 +1308,28 @@ package body System.OS_Lib is
       Second := S;
    end GM_Split;
 
+   ----------------
+   -- GM_Time_Of --
+   ----------------
+
+   function GM_Time_Of
+     (Year   : Year_Type;
+      Month  : Month_Type;
+      Day    : Day_Type;
+      Hour   : Hour_Type;
+      Minute : Minute_Type;
+      Second : Second_Type) return OS_Time
+   is
+      procedure To_OS_Time
+        (P_Time_T : Address; Year, Month, Day, Hours, Mins, Secs : Integer);
+      pragma Import (C, To_OS_Time, "__gnat_to_os_time");
+      Result : OS_Time;
+   begin
+      To_OS_Time
+        (Result'Address, Year - 1900, Month - 1, Day, Hour, Minute, Second);
+      return Result;
+   end GM_Time_Of;
+
    -------------
    -- GM_Year --
    -------------
@@ -2375,15 +2397,29 @@ package body System.OS_Lib is
    -- Set_Executable --
    --------------------
 
-   procedure Set_Executable (Name : String) is
-      procedure C_Set_Executable (Name : C_File_Name);
+   procedure Set_Executable (Name : String; Mode : Positive := S_Owner) is
+      procedure C_Set_Executable (Name : C_File_Name; Mode : Integer);
       pragma Import (C, C_Set_Executable, "__gnat_set_executable");
       C_Name : aliased String (Name'First .. Name'Last + 1);
    begin
       C_Name (Name'Range)  := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
-      C_Set_Executable (C_Name (C_Name'First)'Address);
+      C_Set_Executable (C_Name (C_Name'First)'Address, Mode);
    end Set_Executable;
+
+   -------------------------------------
+   -- Set_File_Last_Modify_Time_Stamp --
+   -------------------------------------
+
+   procedure Set_File_Last_Modify_Time_Stamp (Name : String; Time : OS_Time) is
+      procedure C_Set_File_Time (Name : C_File_Name; Time : OS_Time);
+      pragma Import (C, C_Set_File_Time, "__gnat_set_file_time_name");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_File_Time (C_Name'Address, Time);
+   end Set_File_Last_Modify_Time_Stamp;
 
    ----------------------
    -- Set_Non_Readable --

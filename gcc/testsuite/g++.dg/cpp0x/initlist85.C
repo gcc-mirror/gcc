@@ -3,12 +3,14 @@
 
 namespace std
 {
-  struct initializer_list {};
+  struct initializer_list {};	// { dg-message "initializer_list" }
 }
 
 void foo(std::initializer_list &);
 
 void f()
 {
-  foo({1, 2});			// { dg-error "" }
+  foo({1, 2});
 }
+
+// { dg-prune-output "compilation terminated" }

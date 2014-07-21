@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Ada.Command_Line;  use Ada.Command_Line;
 with Ada.Text_IO;       use Ada.Text_IO;
 
+with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.Dynamic_Tables;
 with GNAT.OS_Lib;       use GNAT.OS_Lib;
 
@@ -289,7 +290,7 @@ procedure Gnatname is
                       Patterns.Last
                         (Arguments.Table (Arguments.Last).Foreign_Patterns) = 0
                   then
-                     Usage;
+                     Try_Help;
                      return;
                   end if;
 
@@ -619,7 +620,12 @@ begin
       and then
       Patterns.Last (Arguments.Table (Arguments.Last).Foreign_Patterns) = 0
    then
-      Usage;
+      if Argument_Count = 0 then
+         Usage;
+      elsif not Usage_Output then
+         Try_Help;
+      end if;
+
       return;
    end if;
 

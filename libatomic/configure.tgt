@@ -27,7 +27,11 @@
 # work out any special compilation flags as necessary.
 
 case "${target_cpu}" in
-  alpha*)		ARCH=alpha ;;
+  alpha*)
+	# fenv.c needs this option to generate inexact exceptions.
+	XCFLAGS="${XCFLAGS} -mfp-trap-mode=sui"
+	ARCH=alpha
+	;;
   rs6000 | powerpc*)	ARCH=powerpc ;;
   sh*)			ARCH=sh ;;
 

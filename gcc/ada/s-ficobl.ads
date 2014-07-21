@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2012, Free Software Foundation, Inc.       --
+--            Copyright (C) 1992-2014, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,8 +116,8 @@ package System.File_Control_Block is
       Is_System_File : Boolean;
       --  A flag set only for system files (stdin, stdout, stderr)
 
-      Is_Text_File : Boolean;
-      --  A flag set if the file was opened in text mode
+      Text_Encoding : Interfaces.C_Streams.Content_Encoding;
+      --  A flag set to describe file content encoding
 
       Shared_Status : Shared_Status_Type;
       --  Indicates sharing status of file, see description of type above

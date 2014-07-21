@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2003-2010, AdaCore                     --
+--                     Copyright (C) 2003-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,17 +38,40 @@ with System;
 package GNAT.Memory_Dump is
    pragma Preelaborate;
 
-   procedure Dump (Addr : System.Address; Count : Natural);
+   type Prefix_Type is (Absolute_Address, Offset, None);
+
+   procedure Dump
+     (Addr   : System.Address;
+      Count  : Natural);
    --  Dumps indicated number (Count) of bytes, starting at the address given
-   --  by Addr. The coding of this routine in its current form assumes the
-   --  case of a byte addressable machine (and is therefore inapplicable to
-   --  machines like the AAMP, where the storage unit is not 8 bits). The
-   --  output is one or more lines in the following format, which is for the
-   --  case of 32-bit addresses (64-bit addresses are handled appropriately):
+   --  by Addr. The coding of this routine in its current form assumes the case
+   --  of a byte addressable machine (and is therefore inapplicable to machines
+   --  like the AAMP, where the storage unit is not 8 bits). The output is one
+   --  or more lines in the following format, which is for the case of 32-bit
+   --  addresses (64-bit addresses are handled appropriately):
    --
    --    0234_3368: 66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
    --
    --  All but the last line have 16 bytes. A question mark is used in the
    --  string data to indicate a non-printable character.
+
+   procedure Dump
+     (Addr   : System.Address;
+      Count  : Natural;
+      Prefix : Prefix_Type);
+   --  Same as above, but allows the selection of different line formats.
+   --  If Prefix is set to Absolute_Address, the output is identical to the
+   --  above version, each line starting with the absolute address of the
+   --  first dumped storage element.
+   --
+   --  If Prefix is set to Offset, then instead each line starts with the
+   --  indication of the offset relative to Addr:
+   --
+   --    00: 66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
+   --
+   --  Finally if Prefix is set to None, the prefix is suppressed altogether,
+   --  and only the memory contents are displayed:
+   --
+   --    66 67 68 . . .  73 74 75 "fghijklmnopqstuv"
 
 end GNAT.Memory_Dump;

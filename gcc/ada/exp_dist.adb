@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1162,18 +1162,15 @@ package body Exp_Dist is
 
       return
         Make_Procedure_Call_Statement (Loc,
-          Name =>
-            New_Occurrence_Of
-              (RTE (RE_NVList_Add_Item), Loc),
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_NVList_Add_Item), Loc),
           Parameter_Associations => New_List (
             New_Occurrence_Of (NVList, Loc),
             Make_Function_Call (Loc,
-              Name =>
-                New_Occurrence_Of
-                  (RTE (RE_To_PolyORB_String), Loc),
+              Name                   =>
+                New_Occurrence_Of (RTE (RE_To_PolyORB_String), Loc),
               Parameter_Associations => New_List (
-                Make_String_Literal (Loc,
-                  Strval => Parameter_Name_String))),
+                Make_String_Literal (Loc, Strval => Parameter_Name_String))),
             New_Occurrence_Of (Any, Loc),
             Parameter_Mode));
    end Add_Parameter_To_NVList;
@@ -2036,7 +2033,10 @@ package body Exp_Dist is
          Append_To (Decls, RPC_Receiver_Decl);
 
       else
-         --  Kludge, requires comment???
+         --  Case of RACW implementing a RAS with the GARLIC PCS: there is
+         --  no RPC receiver in that case, this is just an indication of
+         --  where to insert code in the tree (see comment in declaration of
+         --  type Stub_Structure).
 
          RPC_Receiver_Decl := Last (Decls);
       end if;

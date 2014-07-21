@@ -4838,6 +4838,25 @@ aarch64_rtx_arith_op_extract_p (rtx x, enum machine_mode mode)
   return false;
 }
 
+static bool
+aarch64_frint_unspec_p (unsigned int u)
+{
+  switch (u)
+    {
+      case UNSPEC_FRINTZ:
+      case UNSPEC_FRINTP:
+      case UNSPEC_FRINTM:
+      case UNSPEC_FRINTA:
+      case UNSPEC_FRINTN:
+      case UNSPEC_FRINTX:
+      case UNSPEC_FRINTI:
+        return true;
+
+      default:
+        return false;
+    }
+}
+
 /* Calculate the cost of calculating (if_then_else (OP0) (OP1) (OP2)),
    storing it in *COST.  Result is true if the total cost of the operation
    has now been calculated.  */
@@ -5018,7 +5037,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	default:
 	  /* We can't make sense of this, assume default cost.  */
           *cost = COSTS_N_INSNS (1);
-	  break;
+	  return false;
 	}
       return false;
 
@@ -5716,6 +5735,29 @@ cost_plus:
 	*cost += extra_cost->fp[mode == DFmode].narrow;
       return false;
 
+    case FIX:
+    case UNSIGNED_FIX:
+      x = XEXP (x, 0);
+      /* Strip the rounding part.  They will all be implemented
+         by the fcvt* family of instructions anyway.  */
+      if (GET_CODE (x) == UNSPEC)
+        {
+          unsigned int uns_code = XINT (x, 1);
+
+          if (uns_code == UNSPEC_FRINTA
+              || uns_code == UNSPEC_FRINTM
+              || uns_code == UNSPEC_FRINTN
+              || uns_code == UNSPEC_FRINTP
+              || uns_code == UNSPEC_FRINTZ)
+            x = XVECEXP (x, 0, 0);
+        }
+
+      if (speed)
+        *cost += extra_cost->fp[GET_MODE (x) == DFmode].toint;
+
+      *cost += rtx_cost (x, (enum rtx_code) code, 0, speed);
+      return true;
+
     case ABS:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
@@ -5744,6 +5786,17 @@ cost_plus:
 	  *cost += extra_cost->fp[mode == DFmode].addsub;
 	}
       return false;
+
+    case UNSPEC:
+      /* The floating point round to integer frint* instructions.  */
+      if (aarch64_frint_unspec_p (XINT (x, 1)))
+        {
+          if (speed)
+            *cost += extra_cost->fp[mode == DFmode].roundint;
+
+          return false;
+        }
+      break;
 
     case TRUNCATE:
 
@@ -5779,13 +5832,14 @@ cost_plus:
 
       /* Fall through.  */
     default:
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "\nFailed to cost RTX.  Assuming default cost.\n");
-
-      return true;
+      break;
     }
-  return false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+      "\nFailed to cost RTX.  Assuming default cost.\n");
+
+  return true;
 }
 
 /* Wrapper around aarch64_rtx_costs, dumps the partial, or total cost

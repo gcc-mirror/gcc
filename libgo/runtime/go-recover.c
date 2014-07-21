@@ -63,7 +63,7 @@ __go_can_recover (const void *retaddr)
   if (!d->__makefunc_can_recover)
     return 0;
 
-  if (runtime_callers (2, &loc, 1) < 1)
+  if (runtime_callers (2, &loc, 1, false) < 1)
     return 0;
 
   /* If we have no function name, then we weren't called by Go code.
@@ -84,9 +84,10 @@ __go_can_recover (const void *retaddr)
   if (name[0] == 'f' && name[1] == 'f' && name[2] == 'i' && name[3] == '_')
     return 1;
 
-  /* We may also be called by reflect.makeFuncImpl.call, for a
-     function created by reflect.MakeFunc.  */
-  if (__builtin_strstr ((const char *) name, "makeFuncImpl") != NULL)
+  /* We may also be called by reflect.makeFuncImpl.call or
+     reflect.ffiCall, for a function created by reflect.MakeFunc.  */
+  if (__builtin_strstr ((const char *) name, "makeFuncImpl") != NULL
+      || __builtin_strcmp ((const char *) name, "reflect.ffiCall") == 0)
     return 1;
 
   return 0;

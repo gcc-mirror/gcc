@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -916,17 +916,23 @@ package body Exp_Prag is
    --------------------------
 
    procedure Expand_Pragma_Check (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      --  Location of the pragma node. Note: it is important to use this
-      --  location (and not the location of the expression) for the generated
-      --  statements, otherwise the implicit return statement in the body
-      --  of a pre/postcondition subprogram may inherit the source location
-      --  of part of the expression, which causes confusing debug information
-      --  to be generated, which interferes with coverage analysis tools.
-
       Cond : constant Node_Id := Arg2 (N);
       Nam  : constant Name_Id := Chars (Arg1 (N));
       Msg  : Node_Id;
+
+      Loc : constant Source_Ptr := Sloc (First_Node (Cond));
+      --  Source location used in the case of a failed assertion: point to the
+      --  failing condition, not Loc. Note that the source location of the
+      --  expression is not usually the best choice here, because it points to
+      --  the location of the topmost tree node, which may be an operator in
+      --  the middle of the source text of the expression. For example, it gets
+      --  located on the last AND keyword in a chain of boolean expressiond
+      --  AND'ed together. It is best to put the message on the first character
+      --  of the condition, which is the effect of the First_Node call here.
+      --  This source location is used to build the default exception message,
+      --  and also as the sloc of the call to the runtime subprogram raising
+      --  Assert_Failure, so that coverage analysis tools can relate the
+      --  call to the failed check.
 
    begin
       --  Nothing to do if pragma is ignored
@@ -984,20 +990,17 @@ package body Exp_Prag is
 
       --  Case where we generate a direct raise
 
-      if ((Debug_Flag_Dot_G
-           or else Restriction_Active (No_Exception_Propagation))
-          and then Present (Find_Local_Handler (RTE (RE_Assert_Failure), N)))
+      if ((Debug_Flag_Dot_G or else
+                              Restriction_Active (No_Exception_Propagation))
+           and then Present (Find_Local_Handler (RTE (RE_Assert_Failure), N)))
         or else (Opt.Exception_Locations_Suppressed and then No (Arg3 (N)))
       then
          Rewrite (N,
            Make_If_Statement (Loc,
-             Condition =>
-               Make_Op_Not (Loc,
-                 Right_Opnd => Cond),
+             Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
              Then_Statements => New_List (
                Make_Raise_Statement (Loc,
-                 Name =>
-                   New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
+                 Name => New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
 
       --  Case where we call the procedure
 
@@ -1011,15 +1014,7 @@ package body Exp_Prag is
 
          else
             declare
-               Msg_Loc : constant String :=
-                           Build_Location_String (Sloc (First_Node (Cond)));
-               --  Source location used in the case of a failed assertion:
-               --  point to the failing condition, not Loc. Note that the
-               --  source location of the expression is not usually the best
-               --  choice here. For example, it gets located on the last AND
-               --  keyword in a chain of boolean expressiond AND'ed together.
-               --  It is best to put the message on the first character of the
-               --  condition, which is the effect of the First_Node call here.
+               Loc_Str : constant String := Build_Location_String (Loc);
 
             begin
                Name_Len := 0;
@@ -1066,7 +1061,7 @@ package body Exp_Prag is
 
                --  In all cases, add location string
 
-               Add_Str_To_Name_Buffer (Msg_Loc);
+               Add_Str_To_Name_Buffer (Loc_Str);
 
                --  Build the message
 

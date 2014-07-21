@@ -32,7 +32,6 @@
 
 with Atree;  use Atree;
 with Einfo;  use Einfo;
-with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
 with Uintp;  use Uintp;
@@ -435,6 +434,52 @@ package body Sem_Aux is
       return Empty;
    end First_Tag_Component;
 
+   ---------------------
+   -- Get_Binary_Nkind --
+   ---------------------
+
+   function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind is
+      Name : constant String := Get_Name_String (Chars (Op));
+   begin
+      if Name = "Oadd" then
+         return N_Op_Add;
+      elsif Name = "Oconcat" then
+         return N_Op_Concat;
+      elsif Name = "Oexpon" then
+         return N_Op_Expon;
+      elsif Name = "Osubtract" then
+         return N_Op_Subtract;
+      elsif Name = "Omod" then
+         return N_Op_Mod;
+      elsif Name = "Omultiply" then
+         return N_Op_Multiply;
+      elsif Name = "Odivide" then
+         return N_Op_Divide;
+      elsif Name = "Orem" then
+         return N_Op_Rem;
+      elsif Name = "Oand" then
+         return N_Op_And;
+      elsif Name = "Oeq" then
+         return N_Op_Eq;
+      elsif Name = "Oge" then
+         return N_Op_Ge;
+      elsif Name = "Ogt" then
+         return N_Op_Gt;
+      elsif Name = "Ole" then
+         return N_Op_Le;
+      elsif Name = "Olt" then
+         return N_Op_Lt;
+      elsif Name = "One" then
+         return N_Op_Ne;
+      elsif Name = "Oxor" then
+         return N_Op_Or;
+      elsif Name = "Oor" then
+         return N_Op_Xor;
+      else
+         raise Program_Error;
+      end if;
+   end Get_Binary_Nkind;
+
    ------------------
    -- Get_Rep_Item --
    ------------------
@@ -601,6 +646,36 @@ package body Sem_Aux is
 
       return Empty;
    end Get_Rep_Pragma;
+
+   ---------------------
+   -- Get_Unary_Nkind --
+   ---------------------
+
+   function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind is
+      Name : constant String := Get_Name_String (Chars (Op));
+   begin
+      if Name = "Oabs" then
+         return N_Op_Abs;
+      elsif Name = "Osubtract" then
+         return N_Op_Minus;
+      elsif Name = "Onot" then
+         return N_Op_Not;
+      elsif Name = "Oadd" then
+         return N_Op_Plus;
+      else
+         raise Program_Error;
+      end if;
+   end Get_Unary_Nkind;
+
+   ---------------------------------
+   -- Has_External_Tag_Rep_Clause --
+   ---------------------------------
+
+   function Has_External_Tag_Rep_Clause (T : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Is_Tagged_Type (T));
+      return Has_Rep_Item (T, Name_External_Tag, Check_Parents => False);
+   end Has_External_Tag_Rep_Clause;
 
    ------------------
    -- Has_Rep_Item --

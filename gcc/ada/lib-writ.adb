@@ -82,7 +82,6 @@ package body Lib.Writ is
          Dynamic_Elab      => False,
          Fatal_Error       => False,
          Generate_Code     => False,
-         Has_Allocator     => False,
          Has_RACW          => False,
          Filler            => False,
          Ident_String      => Empty,
@@ -140,7 +139,6 @@ package body Lib.Writ is
         Dynamic_Elab      => False,
         Fatal_Error       => False,
         Generate_Code     => False,
-        Has_Allocator     => False,
         Has_RACW          => False,
         Filler            => False,
         Ident_String      => Empty,
@@ -428,10 +426,8 @@ package body Lib.Writ is
          --  If this is a spec ...
 
          if (Is_Subprogram (Uent)
-               or else
-             Ekind (Uent) = E_Package
-               or else
-             Is_Generic_Unit (Uent))
+              or else Ekind (Uent) = E_Package
+              or else Is_Generic_Unit (Uent))
 
             --  and an elaboration entity was declared ...
 
@@ -439,8 +435,7 @@ package body Lib.Writ is
 
             --  and either the elaboration flag is required ...
 
-            and then
-              (Elaboration_Entity_Required (Uent)
+            and then (Elaboration_Entity_Required (Uent)
 
                --  or this unit has elaboration code ...
 
@@ -454,9 +449,7 @@ package body Lib.Writ is
                    and then Present (Body_Entity (Uent))
                    and then
                      not Has_No_Elaboration_Code
-                           (Parent
-                             (Declaration_Node
-                               (Body_Entity (Uent))))))
+                           (Parent (Declaration_Node (Body_Entity (Uent))))))
          then
             if Convention (Uent) = Convention_CIL then
 
@@ -535,7 +528,7 @@ package body Lib.Writ is
            or else
              (Present (Library_Unit (Unode))
                 and then
-              Nkind (Unit (Library_Unit (Unode))) in N_Generic_Declaration)
+                  Nkind (Unit (Library_Unit (Unode))) in N_Generic_Declaration)
          then
             Write_Info_Str (" GE");
          end if;
@@ -580,19 +573,18 @@ package body Lib.Writ is
          if Nkind (Unit (Unode)) in N_Unit_Body then
             for S in Units.First .. Last_Unit loop
 
-               --  We are only interested in subunits.
-               --  For preproc. data and def. files, Cunit is Empty, so
-               --  we need to test that first.
+               --  We are only interested in subunits. For preproc. data and
+               --  def. files, Cunit is Empty, so we need to test that first.
 
                if Cunit (S) /= Empty
                  and then Nkind (Unit (Cunit (S))) = N_Subunit
                then
                   Pnode := Library_Unit (Cunit (S));
 
-                  --  In gnatc mode, the errors in the subunits will not
-                  --  have been recorded, but the analysis of the subunit
-                  --  may have failed. There is no information to add to
-                  --  ALI file in this case.
+                  --  In gnatc mode, the errors in the subunits will not have
+                  --  been recorded, but the analysis of the subunit may have
+                  --  failed. There is no information to add to ALI file in
+                  --  this case.
 
                   if No (Pnode) then
                      exit;
@@ -784,8 +776,8 @@ package body Lib.Writ is
             --  Add element to with table if it is with'ed or if it is the
             --  parent spec of the main unit (case of main unit is a child
             --  unit). The latter with is not needed for semantic purposes,
-            --  but is required by the binder for elaboration purposes.
-            --  For preproc. data and def. files, there is no Unit_Name,
+            --  but is required by the binder for elaboration purposes. For
+            --  preprocessing data and definition files, there is no Unit_Name,
             --  check for that first.
 
             if Unit_Name (J) /= No_Unit_Name
@@ -1022,10 +1014,6 @@ package body Lib.Writ is
                Write_Info_Nat (Opt.Time_Slice_Value);
             end if;
 
-            if Has_Allocator (Main_Unit) then
-               Write_Info_Str (" AB");
-            end if;
-
             if Main_CPU (Main_Unit) /= Default_Main_CPU then
                Write_Info_Str (" C=");
                Write_Info_Nat (Main_CPU (Main_Unit));
@@ -1065,8 +1053,8 @@ package body Lib.Writ is
             if Nkind (U) = N_Subprogram_Body
               and then Present (Corresponding_Spec (U))
               and then
-                Ekind_In (Corresponding_Spec (U),
-                  E_Generic_Procedure, E_Generic_Function)
+                Ekind_In (Corresponding_Spec (U), E_Generic_Procedure,
+                                                  E_Generic_Function)
             then
                null;
 
@@ -1191,9 +1179,7 @@ package body Lib.Writ is
       --  for which we have generated code
 
       for Unit in Units.First .. Last_Unit loop
-         if Units.Table (Unit).Generate_Code
-           or else Unit = Main_Unit
-         then
+         if Units.Table (Unit).Generate_Code or else Unit = Main_Unit then
             if not Has_No_Elaboration_Code (Cunit (Unit)) then
                Main_Restrictions.Violated (No_Elaboration_Code) := True;
             end if;
@@ -1420,8 +1406,8 @@ package body Lib.Writ is
             if Sind /= No_Source_File then
                Fname := File_Name (Sind);
 
-               --  Ensure that on platforms where the file names are not
-               --  case sensitive, the recorded file name is in lower case.
+               --  Ensure that on platforms where the file names are not case
+               --  sensitive, the recorded file name is in lower case.
 
                if not File_Names_Case_Sensitive then
                   Get_Name_String (Fname);
@@ -1437,12 +1423,15 @@ package body Lib.Writ is
 
                --  If subunit, add unit name, omitting the %b at the end
 
-               if Present (Cunit (Unum))
-                 and then Nkind (Unit (Cunit (Unum))) = N_Subunit
-               then
+               if Present (Cunit (Unum)) then
                   Get_Decoded_Name_String (Unit_Name (Unum));
                   Write_Info_Char (' ');
-                  Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
+
+                  if Nkind (Unit (Cunit (Unum))) = N_Subunit then
+                     Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
+                  else
+                     Write_Info_Str (Name_Buffer (1 .. Name_Len));
+                  end if;
                end if;
 
                --  If Source_Reference pragma used, output information

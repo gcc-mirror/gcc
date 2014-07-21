@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -601,6 +601,17 @@ package body Ada.Containers.Hashed_Sets is
       end if;
    end Finalize;
 
+   procedure Finalize (Object : in out Iterator) is
+   begin
+      if Object.Container /= null then
+         declare
+            B : Natural renames Object.Container.HT.Busy;
+         begin
+            B := B - 1;
+         end;
+      end if;
+   end Finalize;
+
    ----------
    -- Find --
    ----------
@@ -1029,8 +1040,12 @@ package body Ada.Containers.Hashed_Sets is
    function Iterate
      (Container : Set) return Set_Iterator_Interfaces.Forward_Iterator'Class
    is
+      B  : Natural renames Container'Unrestricted_Access.all.HT.Busy;
    begin
-      return Iterator'(Container => Container'Unrestricted_Access);
+      B := B + 1;
+      return It : constant Iterator :=
+         Iterator'(Limited_Controlled with
+              Container => Container'Unrestricted_Access);
    end Iterate;
 
    ------------

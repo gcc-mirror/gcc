@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -450,6 +450,11 @@ package Sem is
    --  units and their instantiations, have led to a hybrid model that carries
    --  more state than one would wish.
 
+   type Scope_Action_Kind is (Before, After, Cleanup);
+   type Scope_Actions is array (Scope_Action_Kind) of List_Id;
+   --  Transient blocks have three associated actions list, to be inserted
+   --  before and after the block's statements, and as cleanup actions.
+
    type Scope_Stack_Entry is record
       Entity : Entity_Id;
       --  Entity representing the scope
@@ -496,11 +501,11 @@ package Sem is
       --  Only used in transient scopes. Records the node which will
       --  be wrapped by the transient block.
 
-      Actions_To_Be_Wrapped_Before : List_Id;
-      Actions_To_Be_Wrapped_After  : List_Id;
-      --  Actions that have to be inserted at the start or at the end of a
-      --  transient block. Used to temporarily hold these actions until the
-      --  block is created, at which time the actions are moved to the block.
+      Actions_To_Be_Wrapped : Scope_Actions;
+      --  Actions that have to be inserted at the start, at the end, or as
+      --  cleanup actions of a transient block. Used to temporarily hold these
+      --  actions until the block is created, at which time the actions are
+      --  moved to the block.
 
       Pending_Freeze_Actions : List_Id;
       --  Used to collect freeze entity nodes and associated actions that are

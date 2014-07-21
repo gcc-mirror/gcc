@@ -42,6 +42,7 @@ with Alloc; use Alloc;
 with Namet; use Namet;
 with Table;
 with Types; use Types;
+with Sinfo; use Sinfo;
 
 package Sem_Aux is
 
@@ -251,6 +252,17 @@ package Sem_Aux is
    --  the given names then True is returned, otherwise False indicates that no
    --  matching entry was found.
 
+   function Has_External_Tag_Rep_Clause (T : Entity_Id) return Boolean;
+   --  Defined in tagged types. Set if an External_Tag rep. clause has been
+   --  given for this type. Use to avoid the generation of the default
+   --  External_Tag.
+   --
+   --  Note: we used to use an entity flag for this purpose, but that was wrong
+   --  because it was not propagated from the private view to the full view. We
+   --  could have added that propagation, but it would have been an annoying
+   --  irregularity compared to other representation aspects, and the cost of
+   --  looking up the aspect when needed is small.
+
    function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
    --  True if T has discriminants and is unconstrained, or is an array type
    --  whose element type Has_Unconstrained_Elements.
@@ -373,4 +385,18 @@ package Sem_Aux is
    --  Given an entity for a package or generic package, return corresponding
    --  package specification. Simplifies handling of child units, and better
    --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id)).
+
+   function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind;
+   --  Op must be an entity with an Ekind of E_Operator.
+   --  This function returns the Nkind value that would
+   --  be used to construct a binary operator node referencing
+   --  this entity. It is an error to call this function
+   --  if Ekind (Op) /= E_Operator.
+
+   function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
+   --  Op must be an entity with an Ekind of E_Operator.
+   --  This function returns the Nkind value that would
+   --  be used to construct a unary operator node referencing
+   --  this entity. It is an error to call this function
+   --  if Ekind (Op) /= E_Operator.
 end Sem_Aux;

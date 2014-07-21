@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,6 +127,12 @@ package Exp_Util is
    --  Assoc_Node must be a node in a list. Same as Insert_Action but the
    --  action will be inserted after N in a manner that is compatible with
    --  the transient scope mechanism.
+   --
+   --  Note: If several successive calls to Insert_Action_After are made for
+   --  the same node, they will each in turn be inserted just after the node.
+   --  This means they will end up being executed in reverse order. Use the
+   --  call to Insert_Actions_After to insert a list of actions to be executed
+   --  in the sequence in which they are given in the list.
 
    procedure Insert_Actions_After
      (Assoc_Node  : Node_Id;
@@ -445,6 +451,13 @@ package Exp_Util is
    --  Given a protected type or its corresponding record, find the type of
    --  field _object.
 
+   function Find_Hook_Context (N : Node_Id) return Node_Id;
+   --  Determine a suitable node on which to attach actions related to N that
+   --  need to be elaborated unconditionally. In general this is the topmost
+   --  expression of which N is a subexpression, which in turn may or may not
+   --  be evaluated, for example if N is the right operand of a short circuit
+   --  operator.
+
    procedure Force_Evaluation
      (Exp      : Node_Id;
       Name_Req : Boolean := False);
@@ -567,6 +580,12 @@ package Exp_Util is
 
    function Is_Non_BIP_Func_Call (Expr : Node_Id) return Boolean;
    --  Determine whether node Expr denotes a non build-in-place function call
+
+   function Is_Object_Access_BIP_Func_Call
+      (Expr   : Node_Id;
+       Obj_Id : Entity_Id) return Boolean;
+   --  Determine if Expr denotes a build-in-place function which stores its
+   --  result in the BIPaccess actual parameter whose prefix must match Obj_Id.
 
    function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean;
    --  Node N is an object reference. This function returns True if it is

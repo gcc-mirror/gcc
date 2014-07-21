@@ -201,4 +201,4 @@ main (void)
 /* { dg-output "\[^\n\r]*value nan is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value -?nan is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*value inf is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'long long unsigned int'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*value -inf is outside the range of representable values of type 'long long unsigned int'" } */

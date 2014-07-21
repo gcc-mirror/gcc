@@ -1340,7 +1340,7 @@ package body Sem_Prag is
          --  Flag Multiple should be set when Output comes from a list with
          --  multiple items.
 
-         procedure Split_Multiple_Outputs;
+         procedure Normalize_Outputs;
          --  If Clause contains more than one output, split the clause into
          --  multiple clauses with a single output. All new clauses are added
          --  after Clause.
@@ -1530,20 +1530,18 @@ package body Sem_Prag is
             end if;
          end Create_Or_Modify_Clause;
 
-         ----------------------------
-         -- Split_Multiple_Outputs --
-         ----------------------------
+         -----------------------
+         -- Normalize_Outputs --
+         -----------------------
 
-         procedure Split_Multiple_Outputs is
+         procedure Normalize_Outputs is
             Inputs      : constant Node_Id    := Expression (Clause);
             Loc         : constant Source_Ptr := Sloc (Clause);
             Outputs     : constant Node_Id    := First (Choices (Clause));
             Last_Output : Node_Id;
+            New_Clause  : Node_Id;
             Next_Output : Node_Id;
             Output      : Node_Id;
-            Split       : Node_Id;
-
-         --  Start of processing for Split_Multiple_Outputs
 
          begin
             --  Multiple outputs appear as an aggregate. Nothing to do when
@@ -1576,7 +1574,7 @@ package body Sem_Prag is
                      --  Generate a clause of the form:
                      --    (Output => Inputs)
 
-                     Split :=
+                     New_Clause :=
                        Make_Component_Association (Loc,
                          Choices    => New_List (Output),
                          Expression => New_Copy_Tree (Inputs));
@@ -1585,14 +1583,14 @@ package body Sem_Prag is
                      --  already been analyzed. There is not need to reanalyze
                      --  them.
 
-                     Set_Analyzed (Split);
-                     Insert_After (Clause, Split);
+                     Set_Analyzed (New_Clause);
+                     Insert_After (Clause, New_Clause);
                   end if;
 
                   Output := Next_Output;
                end loop;
             end if;
-         end Split_Multiple_Outputs;
+         end Normalize_Outputs;
 
          --  Local variables
 
@@ -1652,7 +1650,7 @@ package body Sem_Prag is
          --  Split a clause with multiple outputs into multiple clauses with a
          --  single output.
 
-         Split_Multiple_Outputs;
+         Normalize_Outputs;
       end Normalize_Clause;
 
       --  Local variables
@@ -2781,6 +2779,16 @@ package body Sem_Prag is
       type Args_List is array (Natural range <>) of Node_Id;
       --  Types used for arguments to Check_Arg_Order and Gather_Associations
 
+      -----------------------
+      -- Local Subprograms --
+      -----------------------
+
+      procedure Acquire_Warning_Match_String (Arg : Node_Id);
+      --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to
+      --  get the given string argument, and place it in Name_Buffer, adding
+      --  leading and trailing asterisks if they are not already present. The
+      --  caller has already checked that Arg is a static string expression.
+
       procedure Ada_2005_Pragma;
       --  Called for pragmas defined in Ada 2005, that are not in Ada 95. In
       --  Ada 95 mode, these are implementation defined pragmas, so should be
@@ -3341,8 +3349,33 @@ package body Sem_Prag is
       procedure Set_Ravenscar_Profile (N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
       --  up the Ravenscar Profile. N is the corresponding pragma node, which
-      --  is used for error messages on any constructs that violate the
-      --  profile.
+      --  is used for error messages on any constructs violating the profile.
+
+      ----------------------------------
+      -- Acquire_Warning_Match_String --
+      ----------------------------------
+
+      procedure Acquire_Warning_Match_String (Arg : Node_Id) is
+      begin
+         String_To_Name_Buffer
+           (Strval (Expr_Value_S (Get_Pragma_Arg (Arg))));
+
+         --  Add asterisk at start if not already there
+
+         if Name_Len > 0 and then Name_Buffer (1) /= '*' then
+            Name_Buffer (2 .. Name_Len + 1) :=
+              Name_Buffer (1 .. Name_Len);
+            Name_Buffer (1) := '*';
+            Name_Len := Name_Len + 1;
+         end if;
+
+         --  Add asterisk at end if not already there
+
+         if Name_Buffer (Name_Len) /= '*' then
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := '*';
+         end if;
+      end Acquire_Warning_Match_String;
 
       ---------------------
       -- Ada_2005_Pragma --
@@ -10992,7 +11025,8 @@ package body Sem_Prag is
          -- Annotate --
          --------------
 
-         --  pragma Annotate (IDENTIFIER [, IDENTIFIER {, ARG}]);
+         --  pragma Annotate
+         --    (IDENTIFIER [, IDENTIFIER {, ARG}] [,Entity => local_NAME]);
          --  ARG ::= NAME | EXPRESSION
 
          --  The first two arguments are by convention intended to refer to an
@@ -11006,6 +11040,29 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
+
+            --  See if last argument is Entity => local_Name, and if so process
+            --  and then remove it for remaining processing.
+
+            declare
+               Last_Arg : constant Node_Id :=
+                            Last (Pragma_Argument_Associations (N));
+
+            begin
+               if Nkind (Last_Arg) = N_Pragma_Argument_Association
+                 and then Chars (Last_Arg) = Name_Entity
+               then
+                  Check_Arg_Is_Local_Name (Last_Arg);
+                  Arg_Count := Arg_Count - 1;
+
+                  --  Not allowed in compiler units (bootstrap issues)
+
+                  Check_Compiler_Unit ("Entity for pragma Annotate", N);
+               end if;
+            end;
+
+            --  Continue processing with last argument removed for now
+
             Check_Arg_Is_Identifier (Arg1);
             Check_No_Identifiers;
             Store_Note (N);
@@ -11491,10 +11548,12 @@ package body Sem_Prag is
          -- Async_Readers/Async_Writers/Effective_Reads/Effective_Writes --
          ------------------------------------------------------------------
 
-         --  pragma Asynch_Readers   ( identifier [, boolean_EXPRESSION] );
-         --  pragma Asynch_Writers   ( identifier [, boolean_EXPRESSION] );
-         --  pragma Effective_Reads  ( identifier [, boolean_EXPRESSION] );
-         --  pragma Effective_Writes ( identifier [, boolean_EXPRESSION] );
+         --  pragma Asynch_Readers   ( object_LOCAL_NAME [, FLAG] );
+         --  pragma Asynch_Writers   ( object_LOCAL_NAME [, FLAG] );
+         --  pragma Effective_Reads  ( object_LOCAL_NAME [, FLAG] );
+         --  pragma Effective_Writes ( object_LOCAL_NAME [, FLAG] );
+
+         --  FLAG ::= boolean_EXPRESSION
 
          when Pragma_Async_Readers    |
               Pragma_Async_Writers    |
@@ -12635,7 +12694,7 @@ package body Sem_Prag is
          -- CPP_Class --
          ---------------
 
-         --  pragma CPP_Class ([Entity =>] local_NAME)
+         --  pragma CPP_Class ([Entity =>] LOCAL_NAME)
 
          when Pragma_CPP_Class => CPP_Class : declare
          begin
@@ -13107,6 +13166,28 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Detect_Blocking := True;
 
+         ----------------------------------
+         -- Default_Scalar_Storage_Order --
+         ----------------------------------
+
+         --  pragma Default_Scalar_Storage_Order
+         --           (High_Order_First | Low_Order_First);
+
+         when Pragma_Default_Scalar_Storage_Order =>
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+
+            --  Default_Scalar_Storage_Order can appear as a configuration
+            --  pragma, or in a declarative part of a package spec.
+
+            if not Is_Configuration_Pragma then
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+            end if;
+
+            Check_No_Identifiers;
+            Check_Arg_Is_One_Of
+              (Arg1, Name_Low_Order_First, Name_High_Order_First);
+
          --------------------------
          -- Default_Storage_Pool --
          --------------------------
@@ -13118,7 +13199,7 @@ package body Sem_Prag is
             Check_Arg_Count (1);
 
             --  Default_Storage_Pool can appear as a configuration pragma, or
-            --  in a declarative part or a package spec.
+            --  in a declarative part of a package spec.
 
             if not Is_Configuration_Pragma then
                Check_Is_In_Decl_Part_Or_Package_Spec;
@@ -13606,7 +13687,7 @@ package body Sem_Prag is
 
          --  pragma Export (
          --    [   Convention    =>] convention_IDENTIFIER,
-         --    [   Entity        =>] local_NAME
+         --    [   Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -14044,7 +14125,7 @@ package body Sem_Prag is
 
          --  pragma External (
          --    [   Convention    =>] convention_IDENTIFIER,
-         --    [   Entity        =>] local_NAME
+         --    [   Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -14491,7 +14572,7 @@ package body Sem_Prag is
          -- Implementation_Defined --
          ----------------------------
 
-         --  pragma Implementation_Defined (local_NAME);
+         --  pragma Implementation_Defined (LOCAL_NAME);
 
          --  Marks previously declared entity as implementation defined. For
          --  an overloaded entity, applies to the most recent homonym.
@@ -14645,7 +14726,7 @@ package body Sem_Prag is
 
          --  pragma Import (
          --       [Convention    =>] convention_IDENTIFIER,
-         --       [Entity        =>] local_NAME
+         --       [Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -15343,7 +15424,7 @@ package body Sem_Prag is
 
          --  pragma Interface (
          --    [   Convention    =>] convention_IDENTIFIER,
-         --    [   Entity        =>] local_NAME
+         --    [   Entity        =>] LOCAL_NAME
          --    [, [External_Name =>] static_string_EXPRESSION ]
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -15379,7 +15460,7 @@ package body Sem_Prag is
          --------------------
 
          --  pragma Interface_Name (
-         --    [  Entity        =>] local_NAME
+         --    [  Entity        =>] LOCAL_NAME
          --    [,[External_Name =>] static_string_EXPRESSION ]
          --    [,[Link_Name     =>] static_string_EXPRESSION ]);
 
@@ -16004,7 +16085,7 @@ package body Sem_Prag is
                      end if;
                   end if;
 
-               elsif Ekind (Etype (Def_Id)) in Access_Kind then
+               elsif Is_Access_Type (Etype (Def_Id)) then
                   if not Ekind_In (Etype (Def_Id), E_Access_Type,
                                                    E_General_Access_Type)
                     or else
@@ -16093,7 +16174,7 @@ package body Sem_Prag is
          -- Keep_Names --
          ----------------
 
-         --  pragma Keep_Names ([On => ] local_NAME);
+         --  pragma Keep_Names ([On => ] LOCAL_NAME);
 
          when Pragma_Keep_Names => Keep_Names : declare
             Arg : Node_Id;
@@ -17517,7 +17598,7 @@ package body Sem_Prag is
 
          --  pragma Part_Of (ABSTRACT_STATE);
 
-         --  ABSTRACT_STATE ::= name
+         --  ABSTRACT_STATE ::= NAME
 
          when Pragma_Part_Of => Part_Of : declare
             procedure Propagate_Part_Of
@@ -20902,7 +20983,7 @@ package body Sem_Prag is
          -- Unmodified --
          ----------------
 
-         --  pragma Unmodified (local_Name {, local_Name});
+         --  pragma Unmodified (LOCAL_NAME {, LOCAL_NAME});
 
          when Pragma_Unmodified => Unmodified : declare
             Arg_Node : Node_Id;
@@ -20950,7 +21031,7 @@ package body Sem_Prag is
          -- Unreferenced --
          ------------------
 
-         --  pragma Unreferenced (local_Name {, local_Name});
+         --  pragma Unreferenced (LOCAL_NAME {, LOCAL_NAME});
 
          --    or when used in a context clause:
 
@@ -21045,7 +21126,7 @@ package body Sem_Prag is
          -- Unreferenced_Objects --
          --------------------------
 
-         --  pragma Unreferenced_Objects (local_Name {, local_Name});
+         --  pragma Unreferenced_Objects (LOCAL_NAME {, LOCAL_NAME});
 
          when Pragma_Unreferenced_Objects => Unreferenced_Objects : declare
             Arg_Node : Node_Id;
@@ -21207,8 +21288,7 @@ package body Sem_Prag is
             --  OK static string expression
 
             else
-               String_To_Name_Buffer
-                 (Strval (Expr_Value_S (Get_Pragma_Arg (Arg1))));
+               Acquire_Warning_Match_String (Arg1);
                Warnings_As_Errors_Count := Warnings_As_Errors_Count + 1;
                Warnings_As_Errors (Warnings_As_Errors_Count) :=
                  new String'(Name_Buffer (1 .. Name_Len));
@@ -21240,6 +21320,7 @@ package body Sem_Prag is
             declare
                Last_Arg : constant Node_Id :=
                             Last (Pragma_Argument_Associations (N));
+
             begin
                if Nkind (Last_Arg) = N_Pragma_Argument_Association
                  and then Chars (Last_Arg) = Name_Reason
@@ -21251,7 +21332,7 @@ package body Sem_Prag is
 
                   --  Not allowed in compiler units (bootstrap issues)
 
-                     Check_Compiler_Unit ("Reason for pragma Warnings", N);
+                  Check_Compiler_Unit ("Reason for pragma Warnings", N);
 
                --  No REASON string, set null string as reason
 
@@ -21362,7 +21443,7 @@ package body Sem_Prag is
 
                else
                   Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
-                  Check_At_Most_N_Arguments (2);
+                  Check_Arg_Count (2);
 
                   declare
                      E_Id : Node_Id;
@@ -21436,8 +21517,7 @@ package body Sem_Prag is
                      --  Static string expression case
 
                      else
-                        String_To_Name_Buffer
-                          (Strval (Expr_Value_S (Get_Pragma_Arg (Arg2))));
+                        Acquire_Warning_Match_String (Arg2);
 
                         --  Note on configuration pragma case: If this is a
                         --  configuration pragma, then for an OFF pragma, we
@@ -21749,6 +21829,10 @@ package body Sem_Prag is
       Depends      : Node_Id;
       --  The corresponding Depends pragma along with its clauses
 
+      Matched_Items : Elist_Id := No_Elist;
+      --  A list containing the entities of all successfully matched items
+      --  found in pragma Depends.
+
       Refinements : List_Id := No_List;
       --  The clauses of pragma Refined_Depends
 
@@ -21756,706 +21840,472 @@ package body Sem_Prag is
       --  The entity of the subprogram subject to pragma Refined_Depends
 
       procedure Check_Dependency_Clause (Dep_Clause : Node_Id);
-      --  Verify the legality of a single clause
+      --  Try to match a single dependency clause Dep_Clause against one or
+      --  more refinement clauses found in list Refinements. Each successful
+      --  match eliminates at least one refinement clause from Refinements.
 
-      function Input_Match
-        (Dep_Input   : Node_Id;
-         Ref_Inputs  : List_Id;
-         Post_Errors : Boolean) return Boolean;
-      --  Determine whether input Dep_Input matches one of inputs found in list
-      --  Ref_Inputs. If flag Post_Errors is set, the routine reports missed or
-      --  extra input items.
-
-      function Inputs_Match
-        (Dep_Clause  : Node_Id;
-         Ref_Clause  : Node_Id;
-         Post_Errors : Boolean) return Boolean;
-      --  Determine whether the inputs of Depends clause Dep_Clause match those
-      --  of refinement clause Ref_Clause. If flag Post_Errors is set, then the
-      --  routine reports missed or extra input items.
-
-      function Is_Self_Referential (Item_Id : Entity_Id) return Boolean;
-      --  Determine whether a formal parameter, variable or state denoted by
-      --  Item_Id appears both as input and an output in a single clause of
-      --  pragma Depends.
+      procedure Normalize_Clauses (Clauses : List_Id);
+      --  Given a list of dependence or refinement clauses Clauses, normalize
+      --  each clause by creating multiple dependencies with exactly one input
+      --  and one output.
 
       procedure Report_Extra_Clauses;
-      --  Emit an error for each extra clause the appears in Refined_Depends
+      --  Emit an error for each extra clause found in list Refinements
 
       -----------------------------
       -- Check_Dependency_Clause --
       -----------------------------
 
       procedure Check_Dependency_Clause (Dep_Clause : Node_Id) is
-         Dep_Output      : constant Node_Id := First (Choices (Dep_Clause));
-         Dep_Id          : Entity_Id;
-         Matching_Clause : Node_Id := Empty;
-         Next_Ref_Clause : Node_Id;
-         Ref_Clause      : Node_Id;
-         Ref_Id          : Entity_Id;
-         Ref_Output      : Node_Id;
+         Dep_Input  : constant Node_Id := Expression (Dep_Clause);
+         Dep_Output : constant Node_Id := First (Choices (Dep_Clause));
 
-         Has_Constituent : Boolean := False;
-         --  Flag set when the refinement output list contains at least one
-         --  constituent of the state denoted by Dep_Id.
+         function Is_In_Out_State_Clause return Boolean;
+         --  Determine whether dependence clause Dep_Clause denotes an abstract
+         --  state that depends on itself (State => State).
 
-         Has_Null_State : Boolean := False;
-         --  Flag set when the output of clause Dep_Clause is a state with a
+         function Is_Null_Refined_State (Item : Node_Id) return Boolean;
+         --  Determine whether item Item denotes an abstract state with visible
          --  null refinement.
 
-         Has_Refined_State : Boolean := False;
-         --  Flag set when the output of clause Dep_Clause is a state with
-         --  visible refinement.
+         procedure Match_Items
+           (Dep_Item : Node_Id;
+            Ref_Item : Node_Id;
+            Matched  : out Boolean);
+         --  Try to match dependence item Dep_Item against refinement item
+         --  Ref_Item. To match against a possible null refinement (see 2, 7),
+         --  set Ref_Item to Empty. Flag Matched is set to True when one of
+         --  the following conformance scenarios is in effect:
+         --    1) Both items denote null
+         --    2) Dep_Item denotes null and Ref_Item is Empty (special case)
+         --    3) Both items denote attribute 'Result
+         --    4) Both items denote the same formal parameter
+         --    5) Both items denote the same variable
+         --    6) Dep_Item is an abstract state with visible null refinement
+         --       and Ref_Item denotes null.
+         --    7) Dep_Item is an abstract state with visible null refinement
+         --       and Ref_Item is Empty (special case).
+         --    8) Dep_Item is an abstract state with visible non-null
+         --       refinement and Ref_Item denotes one of its constituents.
+         --    9) Dep_Item is an abstract state without a visible refinement
+         --       and Ref_Item denotes the same state.
+         --  When scenario 8 is in effect, the entity of the abstract state
+         --  denoted by Dep_Item is added to list Refined_States.
 
-      begin
-         --  The analysis of pragma Depends should produce normalized clauses
-         --  with exactly one output. This is important because output items
-         --  are unique in the whole dependence relation and can be used as
-         --  keys.
+         procedure Record_Item (Item_Id : Entity_Id);
+         --  Store the entity of an item denoted by Item_Id in Matched_Items
 
-         pragma Assert (No (Next (Dep_Output)));
+         ----------------------------
+         -- Is_In_Out_State_Clause --
+         ----------------------------
 
-         --  Inspect all clauses of Refined_Depends and attempt to match the
-         --  output of Dep_Clause against an output from the refinement clauses
-         --  set.
+         function Is_In_Out_State_Clause return Boolean is
+            Dep_Input_Id  : Entity_Id;
+            Dep_Output_Id : Entity_Id;
 
-         Ref_Clause := First (Refinements);
-         while Present (Ref_Clause) loop
-            Matching_Clause := Empty;
+         begin
+            --  Detect the following clause:
+            --    State => State
 
-            --  Store the next clause now because a match will trim the list of
-            --  refinement clauses and this side effect should not be visible
-            --  in pragma Refined_Depends.
-
-            Next_Ref_Clause := Next (Ref_Clause);
-
-            --  The analysis of pragma Refined_Depends should produce
-            --  normalized clauses with exactly one output.
-
-            Ref_Output := First (Choices (Ref_Clause));
-            pragma Assert (No (Next (Ref_Output)));
-
-            --  Two null output lists match if their inputs match
-
-            if Nkind (Dep_Output) = N_Null
-              and then Nkind (Ref_Output) = N_Null
+            if Is_Entity_Name (Dep_Input)
+              and then Is_Entity_Name (Dep_Output)
             then
-               Matching_Clause := Ref_Clause;
-               exit;
+               --  Handle abstract views generated for limited with clauses
 
-            --  Two function 'Result attributes match if their inputs match.
-            --  Note that there is no need to compare the two prefixes because
-            --  the attributes cannot denote anything but the related function.
+               Dep_Input_Id  := Available_View (Entity_Of (Dep_Input));
+               Dep_Output_Id := Available_View (Entity_Of (Dep_Output));
 
-            elsif Is_Attribute_Result (Dep_Output)
-              and then Is_Attribute_Result (Ref_Output)
+               return
+                 Ekind (Dep_Input_Id) = E_Abstract_State
+                   and then Dep_Input_Id = Dep_Output_Id;
+            else
+               return False;
+            end if;
+         end Is_In_Out_State_Clause;
+
+         ---------------------------
+         -- Is_Null_Refined_State --
+         ---------------------------
+
+         function Is_Null_Refined_State (Item : Node_Id) return Boolean is
+            Item_Id : Entity_Id;
+
+         begin
+            if Is_Entity_Name (Item) then
+
+               --  Handle abstract views generated for limited with clauses
+
+               Item_Id := Available_View (Entity_Of (Item));
+
+               return Ekind (Item_Id) = E_Abstract_State
+                 and then Has_Null_Refinement (Item_Id);
+
+            else
+               return False;
+            end if;
+         end Is_Null_Refined_State;
+
+         -----------------
+         -- Match_Items --
+         -----------------
+
+         procedure Match_Items
+           (Dep_Item : Node_Id;
+            Ref_Item : Node_Id;
+            Matched  : out Boolean)
+         is
+            Dep_Item_Id : Entity_Id;
+            Ref_Item_Id : Entity_Id;
+
+         begin
+            --  Assume that the two items do not match
+
+            Matched := False;
+
+            --  A null matches null or Empty (special case)
+
+            if Nkind (Dep_Item) = N_Null
+              and then (No (Ref_Item) or else Nkind (Ref_Item) = N_Null)
             then
-               Matching_Clause := Ref_Clause;
-               exit;
+               Matched := True;
 
-            --  The remaining cases are formal parameters, variables and states
+            --  Attribute 'Result matches attribute 'Result
 
-            elsif Is_Entity_Name (Dep_Output) then
+            elsif Is_Attribute_Result (Dep_Item)
+              and then Is_Attribute_Result (Dep_Item)
+            then
+               Matched := True;
 
-               --  Handle abstract views of states and variables generated for
-               --  limited with clauses.
+            --  Abstract states, formal parameters and variables
 
-               Dep_Id := Available_View (Entity_Of (Dep_Output));
+            elsif Is_Entity_Name (Dep_Item) then
 
-               if Ekind (Dep_Id) = E_Abstract_State then
+               --  Handle abstract views generated for limited with clauses
 
-                  --  A state with a null refinement matches either a null
-                  --  output list or nothing at all (no clause):
+               Dep_Item_Id := Available_View (Entity_Of (Dep_Item));
 
-                  --    Refined_State   => (State => null)
+               if Ekind (Dep_Item_Id) = E_Abstract_State then
 
-                  --  No clause
+                  --  An abstract state with visible null refinement matches
+                  --  null or Empty (special case).
 
-                  --    Depends         => (State => null)
-                  --    Refined_Depends =>  null               --  OK
+                  if Has_Null_Refinement (Dep_Item_Id)
+                    and then (No (Ref_Item) or else Nkind (Ref_Item) = N_Null)
+                  then
+                     Record_Item (Dep_Item_Id);
+                     Matched := True;
 
-                  --  Null output list
+                  --  An abstract state with visible non-null refinement
+                  --  matches one of its constituents.
 
-                  --    Depends         => (State => <input>)
-                  --    Refined_Depends => (null  => <input>)  --  OK
+                  elsif Has_Non_Null_Refinement (Dep_Item_Id) then
+                     if Is_Entity_Name (Ref_Item) then
+                        Ref_Item_Id := Entity_Of (Ref_Item);
 
-                  if Has_Null_Refinement (Dep_Id) then
-                     Has_Null_State := True;
-
-                     --  When a state with null refinement matches a null
-                     --  output, compare their inputs.
-
-                     if Nkind (Ref_Output) = N_Null then
-                        Matching_Clause := Ref_Clause;
-                     end if;
-
-                     exit;
-
-                  --  The state has a non-null refinement in which case the
-                  --  match is based on constituents and inputs. A state with
-                  --  multiple output constituents may match multiple clauses:
-
-                  --    Refined_State   => (State => (C1, C2))
-                  --    Depends         => (State => <input>)
-                  --    Refined_Depends => ((C1, C2) => <input>)
-
-                  --  When normalized, the above becomes:
-
-                  --    Refined_Depends => (C1 => <input>,
-                  --                        C2 => <input>)
-
-                  elsif Has_Non_Null_Refinement (Dep_Id) then
-                     Has_Refined_State := True;
-
-                     --  Account for the case where a state with a non-null
-                     --  refinement matches a null output list:
-
-                     --    Refined_State   => (State_1 => (C1, C2),
-                     --                        State_2 => (C3, C4))
-                     --    Depends         => (State_1 => State_2)
-                     --    Refined_Depends => (null    => C3)
-
-                     if Nkind (Ref_Output) = N_Null
-                       and then Inputs_Match
-                                  (Dep_Clause  => Dep_Clause,
-                                   Ref_Clause  => Ref_Clause,
-                                   Post_Errors => False)
-                     then
-                        Has_Constituent := True;
-
-                        --  Note that the search continues after the clause is
-                        --  removed from the pool of candidates because it may
-                        --  have been normalized into multiple simple clauses.
-
-                        Remove (Ref_Clause);
-
-                     --  Otherwise the output of the refinement clause must be
-                     --  a valid constituent of the state:
-
-                     --    Refined_State   => (State => (C1, C2))
-                     --    Depends         => (State => <input>)
-                     --    Refined_Depends => (C1    => <input>)
-
-                     elsif Is_Entity_Name (Ref_Output) then
-                        Ref_Id := Entity_Of (Ref_Output);
-
-                        if Ekind_In (Ref_Id, E_Abstract_State, E_Variable)
-                          and then Present (Encapsulating_State (Ref_Id))
-                          and then Encapsulating_State (Ref_Id) = Dep_Id
-                          and then Inputs_Match
-                                     (Dep_Clause  => Dep_Clause,
-                                      Ref_Clause  => Ref_Clause,
-                                      Post_Errors => False)
+                        if Ekind_In (Ref_Item_Id, E_Abstract_State, E_Variable)
+                          and then Present (Encapsulating_State (Ref_Item_Id))
+                          and then Encapsulating_State (Ref_Item_Id) =
+                                     Dep_Item_Id
                         then
-                           Has_Constituent := True;
-
-                           --  Note that the search continues after the clause
-                           --  is removed from the pool of candidates because
-                           --  it may have been normalized into multiple simple
-                           --  clauses.
-
-                           Remove (Ref_Clause);
+                           Record_Item (Dep_Item_Id);
+                           Matched := True;
                         end if;
                      end if;
 
-                  --  The abstract view of a state matches is corresponding
-                  --  non-abstract view:
+                  --  An abstract state without a visible refinement matches
+                  --  itself.
 
-                  --    Depends         => (Lim_Pack.State => <input>)
-                  --    Refined_Depends => (State          => <input>)
-
-                  elsif Is_Entity_Name (Ref_Output)
-                    and then Entity_Of (Ref_Output) = Dep_Id
+                  elsif Is_Entity_Name (Ref_Item)
+                    and then Entity_Of (Ref_Item) = Dep_Item_Id
                   then
-                     Matching_Clause := Ref_Clause;
-                     exit;
+                     Record_Item (Dep_Item_Id);
+                     Matched := True;
                   end if;
 
-               --  Formal parameters and variables match if their inputs match
+               --  A formal parameter or a variable matches itself
 
-               elsif Is_Entity_Name (Ref_Output)
-                 and then Entity_Of (Ref_Output) = Dep_Id
+               elsif Is_Entity_Name (Ref_Item)
+                 and then Entity_Of (Ref_Item) = Dep_Item_Id
                then
-                  Matching_Clause := Ref_Clause;
-                  exit;
+                  Record_Item (Dep_Item_Id);
+                  Matched := True;
                end if;
+            end if;
+         end Match_Items;
+
+         -----------------
+         -- Record_Item --
+         -----------------
+
+         procedure Record_Item (Item_Id : Entity_Id) is
+         begin
+            if not Contains (Matched_Items, Item_Id) then
+               Add_Item (Item_Id, Matched_Items);
+            end if;
+         end Record_Item;
+
+         --  Local variables
+
+         Clause_Matched  : Boolean := False;
+         Dummy           : Boolean := False;
+         Inputs_Match    : Boolean;
+         Next_Ref_Clause : Node_Id;
+         Outputs_Match   : Boolean;
+         Ref_Clause      : Node_Id;
+         Ref_Input       : Node_Id;
+         Ref_Output      : Node_Id;
+
+      --  Start of processing for Check_Dependency_Clause
+
+      begin
+         --  Examine all refinement clauses and compare them against the
+         --  dependence clause.
+
+         Ref_Clause := First (Refinements);
+         while Present (Ref_Clause) loop
+            Next_Ref_Clause := Next (Ref_Clause);
+
+            --  Obtain the attributes of the current refinement clause
+
+            Ref_Input  := Expression (Ref_Clause);
+            Ref_Output := First (Choices (Ref_Clause));
+
+            --  The current refinement clause matches the dependence clause
+            --  when both outputs match and both inputs match. See routine
+            --  Match_Items for all possible conformance scenarios.
+
+            --    Depends           Dep_Output => Dep_Input
+            --                          ^             ^
+            --                        match ?       match ?
+            --                          v             v
+            --    Refined_Depends   Ref_Output => Ref_Input
+
+            Match_Items
+              (Dep_Item => Dep_Input,
+               Ref_Item => Ref_Input,
+               Matched  => Inputs_Match);
+
+            Match_Items
+              (Dep_Item => Dep_Output,
+               Ref_Item => Ref_Output,
+               Matched  => Outputs_Match);
+
+            --  An In_Out state clause may be matched against a refinement with
+            --  a null input or null output as long as the non-null side of the
+            --  relation contains a valid constituent of the In_Out_State.
+
+            if Is_In_Out_State_Clause then
+
+               --  Depends         => (State => State)
+               --  Refined_Depends => (null => Constit)  --  OK
+
+               if Inputs_Match
+                 and then not Outputs_Match
+                 and then Nkind (Ref_Output) = N_Null
+               then
+                  Outputs_Match := True;
+               end if;
+
+               --  Depends         => (State => State)
+               --  Refined_Depends => (Constit => null)  --  OK
+
+               if not Inputs_Match
+                 and then Outputs_Match
+                 and then Nkind (Ref_Input) = N_Null
+               then
+                  Inputs_Match := True;
+               end if;
+            end if;
+
+            --  The current refinement clause is legally constructed following
+            --  the rules in SPARK RM 7.2.5, therefore it can be removed from
+            --  the pool of candidates. The seach continues because a single
+            --  dependence clause may have multiple matching refinements.
+
+            if Inputs_Match and then Outputs_Match then
+               Clause_Matched := True;
+               Remove (Ref_Clause);
             end if;
 
             Ref_Clause := Next_Ref_Clause;
          end loop;
 
-         --  Handle the case where pragma Depends contains one or more clauses
-         --  that only mention states with null refinements. In that case the
-         --  corresponding pragma Refined_Depends may have a null relation.
+         --  Depending on the order or composition of refinement clauses, an
+         --  In_Out state clause may not be directly refinable.
 
-         --    Refined_State   => (State => null)
-         --    Depends         => (State => null)
-         --    Refined_Depends =>  null            --  OK
+         --    Depends         => ((Output, State) => (Input, State))
+         --    Refined_State   => (State => (Constit_1, Constit_2))
+         --    Refined_Depends => (Constit_1 => Input, Output => Constit_2)
 
-         --  Another instance of the same scenario occurs when the list of
-         --  refinements has been depleted while processing previous clauses.
+         --  Matching normalized clause (State => State) fails because there is
+         --  no direct refinement capable of satisfying this relation. Another
+         --  similar case arises when clauses (Constit_1 => Input) and (Output
+         --  => Constit_2) are matched first, leaving no candidates for clause
+         --  (State => State). Both scenarios are legal as long as one of the
+         --  previous clauses mentioned a valid constituent of State.
 
-         if Is_Entity_Name (Dep_Output)
-           and then (No (Refinements) or else Is_Empty_List (Refinements))
+         if not Clause_Matched
+           and then Is_In_Out_State_Clause
+           and then
+             Contains (Matched_Items, Available_View (Entity_Of (Dep_Input)))
          then
-            Dep_Id := Entity_Of (Dep_Output);
-
-            if Ekind (Dep_Id) = E_Abstract_State
-              and then Has_Null_Refinement (Dep_Id)
-            then
-               Has_Null_State := True;
-            end if;
+            Clause_Matched := True;
          end if;
 
-         --  The above search produced a match based on unique output. Ensure
-         --  that the inputs match as well and if they do, remove the clause
-         --  from the pool of candidates.
+         --  A clause where the input is an abstract state with visible null
+         --  refinement is implicitly matched when the output has already been
+         --  matched in a previous clause.
 
-         if Present (Matching_Clause) then
-            if Inputs_Match
-                 (Ref_Clause  => Ref_Clause,
-                  Dep_Clause  => Matching_Clause,
-                  Post_Errors => True)
-            then
-               Remove (Matching_Clause);
-            end if;
+         --    Depends         => (Output => State)  --  implicitly OK
+         --    Refined_State   => (State => null)
+         --    Refined_Depends => (Output => ...)
 
-         --  A state with a visible refinement was matched against one or
-         --  more clauses containing appropriate constituents.
+         if not Clause_Matched
+           and then Is_Null_Refined_State (Dep_Input)
+           and then Is_Entity_Name (Dep_Output)
+           and then
+             Contains (Matched_Items, Available_View (Entity_Of (Dep_Output)))
+         then
+            Clause_Matched := True;
+         end if;
 
-         elsif Has_Constituent then
-            null;
+         --  A clause where the output is an abstract state with visible null
+         --  refinement is implicitly matched when the input has already been
+         --  matched in a previous clause.
 
-         --  A state with a null refinement did not warrant a clause
+         --    Depends           => (State => Input)  --  implicitly OK
+         --    Refined_State     => (State => null)
+         --    Refined_Depends   => (... => Input)
 
-         elsif Has_Null_State then
-            null;
+         if not Clause_Matched
+           and then Is_Null_Refined_State (Dep_Output)
+           and then Is_Entity_Name (Dep_Input)
+           and then
+             Contains (Matched_Items, Available_View (Entity_Of (Dep_Input)))
+         then
+            Clause_Matched := True;
+         end if;
 
-         --  The dependence relation of pragma Refined_Depends does not contain
-         --  a matching clause, emit an error.
+         --  At this point either all refinement clauses have been examined or
+         --  pragma Refined_Depends contains a solitary null. Only an abstract
+         --  state with null refinement can possibly match these cases.
 
-         else
+         --    Depends         => (State => null)
+         --    Refined_State   => (State => null)
+         --    Refined_Depends =>  null            --  OK
+
+         if not Clause_Matched then
+            Match_Items
+              (Dep_Item => Dep_Input,
+               Ref_Item => Empty,
+               Matched  => Inputs_Match);
+
+            Match_Items
+              (Dep_Item => Dep_Output,
+               Ref_Item => Empty,
+               Matched  => Outputs_Match);
+
+            Clause_Matched := Inputs_Match and Outputs_Match;
+         end if;
+
+         --  If the contents of Refined_Depends are legal, then the current
+         --  dependence clause should be satisfied either by an explicit match
+         --  or by one of the special cases.
+
+         if not Clause_Matched then
             SPARK_Msg_NE
               ("dependence clause of subprogram & has no matching refinement "
-               & "in body", Ref_Clause, Spec_Id);
-
-            if Has_Refined_State then
-               SPARK_Msg_N
-                 ("\check the use of constituents in dependence refinement",
-                  Ref_Clause);
-            end if;
+               & "in body", Dep_Clause, Spec_Id);
          end if;
       end Check_Dependency_Clause;
 
-      -----------------
-      -- Input_Match --
-      -----------------
+      -----------------------
+      -- Normalize_Clauses --
+      -----------------------
 
-      function Input_Match
-        (Dep_Input   : Node_Id;
-         Ref_Inputs  : List_Id;
-         Post_Errors : Boolean) return Boolean
-      is
-         procedure Match_Error (Msg : String; N : Node_Id);
-         --  Emit a matching error if flag Post_Errors is set
+      procedure Normalize_Clauses (Clauses : List_Id) is
+         procedure Normalize_Inputs (Clause : Node_Id);
+         --  Normalize clause Clause by creating multiple clauses for each
+         --  input item of Clause. It is assumed that Clause has exactly one
+         --  output. The transformation is as follows:
+         --
+         --    Output => (Input_1, Input_2)      --  original
+         --
+         --    Output => Input_1                 --  normalizations
+         --    Output => Input_2
 
-         -----------------
-         -- Match_Error --
-         -----------------
+         ----------------------
+         -- Normalize_Inputs --
+         ----------------------
 
-         procedure Match_Error (Msg : String; N : Node_Id) is
+         procedure Normalize_Inputs (Clause : Node_Id) is
+            Inputs     : constant Node_Id    := Expression (Clause);
+            Loc        : constant Source_Ptr := Sloc (Clause);
+            Output     : constant List_Id    := Choices (Clause);
+            Last_Input : Node_Id;
+            Input      : Node_Id;
+            New_Clause : Node_Id;
+            Next_Input : Node_Id;
+
          begin
-            if Post_Errors then
-               SPARK_Msg_N (Msg, N);
-            end if;
-         end Match_Error;
+            --  Normalization is performed only when the original clause has
+            --  more than one input. Multiple inputs appear as an aggregate.
 
-         --  Local variables
+            if Nkind (Inputs) = N_Aggregate then
+               Last_Input := Last (Expressions (Inputs));
 
-         Dep_Id         : Node_Id;
-         Next_Ref_Input : Node_Id;
-         Ref_Id         : Entity_Id;
-         Ref_Input      : Node_Id;
+               --  Create a new clause for each input
 
-         Has_Constituent : Boolean := False;
-         --  Flag set when the refinement input list contains at least one
-         --  constituent of the state denoted by Dep_Id.
+               Input := First (Expressions (Inputs));
+               while Present (Input) loop
+                  Next_Input := Next (Input);
 
-         Has_Null_State : Boolean := False;
-         --  Flag set when the dependency input is a state with a visible null
-         --  refinement.
+                  --  Unhook the current input from the original input list
+                  --  because it will be relocated to a new clause.
 
-         Has_Refined_State : Boolean := False;
-         --  Flag set when the dependency input is a state with visible non-
-         --  null refinement.
+                  Remove (Input);
 
-      --  Start of processing for Input_Match
+                  --  Special processing for the last input. At this point the
+                  --  original aggregate has been stripped down to one element.
+                  --  Replace the aggregate by the element itself.
 
-      begin
-         --  Match a null input with another null input
+                  if Input = Last_Input then
+                     Rewrite (Inputs, Input);
 
-         if Nkind (Dep_Input) = N_Null then
-            Ref_Input := First (Ref_Inputs);
+                  --  Generate a clause of the form:
+                  --    Output => Input
 
-            --  Remove the matching null from the pool of candidates
+                  else
+                     New_Clause :=
+                       Make_Component_Association (Loc,
+                         Choices    => New_Copy_List_Tree (Output),
+                         Expression => Input);
 
-            if Nkind (Ref_Input) = N_Null then
-               Remove (Ref_Input);
-               return True;
+                     --  The new clause contains replicated content that has
+                     --  already been analyzed, mark the clause as analyzed.
 
-            else
-               Match_Error
-                 ("null input cannot be matched in corresponding refinement "
-                  & "clause", Dep_Input);
-            end if;
-
-         --  Remaining cases are formal parameters, variables, and states
-
-         else
-            --  Handle abstract views of states and variables generated for
-            --  limited with clauses.
-
-            Dep_Id := Available_View (Entity_Of (Dep_Input));
-
-            --  Inspect all inputs of the refinement clause and attempt to
-            --  match against the inputs of the dependence clause.
-
-            Ref_Input := First (Ref_Inputs);
-            while Present (Ref_Input) loop
-
-               --  Store the next input now because a match will remove it from
-               --  the list.
-
-               Next_Ref_Input := Next (Ref_Input);
-
-               if Ekind (Dep_Id) = E_Abstract_State then
-
-                  --  A state with a null refinement matches either a null
-                  --  input list or nothing at all (no input):
-
-                  --    Refined_State   => (State => null)
-
-                  --  No input
-
-                  --    Depends         => (<output> => (State, Input))
-                  --    Refined_Depends => (<output> => Input)  --  OK
-
-                  --  Null input list
-
-                  --    Depends         => (<output> => State)
-                  --    Refined_Depends => (<output> => null)   --  OK
-
-                  if Has_Null_Refinement (Dep_Id) then
-                     Has_Null_State := True;
-
-                     --  Remove the matching null from the pool of candidates
-
-                     if Nkind (Ref_Input) = N_Null then
-                        Remove (Ref_Input);
-                     end if;
-
-                     return True;
-
-                  --  The state has a non-null refinement in which case remove
-                  --  all the matching constituents of the state:
-
-                  --    Refined_State   => (State    => (C1, C2))
-                  --    Depends         => (<output> =>  State)
-                  --    Refined_Depends => (<output> => (C1, C2))
-
-                  elsif Has_Non_Null_Refinement (Dep_Id) then
-                     Has_Refined_State := True;
-
-                     --  A state with a visible non-null refinement may have a
-                     --  null input_list only when it is self referential.
-
-                     --    Refined_State   => (State => (C1, C2))
-                     --    Depends         => (State => State)
-                     --    Refined_Depends => (C2 => null)  --  OK
-
-                     if Nkind (Ref_Input) = N_Null
-                       and then Is_Self_Referential (Dep_Id)
-                     then
-                        --  Remove the null from the pool of candidates. Note
-                        --  that the search continues because the state may be
-                        --  represented by multiple constituents.
-
-                        Has_Constituent := True;
-                        Remove (Ref_Input);
-
-                     --  Ref_Input is an entity name
-
-                     elsif Is_Entity_Name (Ref_Input) then
-                        Ref_Id := Entity_Of (Ref_Input);
-
-                        --  The input of the refinement clause is a valid
-                        --  constituent of the state. Remove the input from the
-                        --  pool of candidates. Note that the search continues
-                        --  because the state may be represented by multiple
-                        --  constituents.
-
-                        if Ekind_In (Ref_Id, E_Abstract_State,
-                                             E_Variable)
-                          and then Present (Encapsulating_State (Ref_Id))
-                          and then Encapsulating_State (Ref_Id) = Dep_Id
-                        then
-                           Has_Constituent := True;
-                           Remove (Ref_Input);
-                        end if;
-                     end if;
-
-                  --  The abstract view of a state matches its corresponding
-                  --  non-abstract view:
-
-                  --    Depends         => (<output> => Lim_Pack.State)
-                  --    Refined_Depends => (<output> => State)
-
-                  elsif Is_Entity_Name (Ref_Input)
-                    and then Entity_Of (Ref_Input) = Dep_Id
-                  then
-                     Remove (Ref_Input);
-                     return True;
+                     Set_Analyzed (New_Clause);
+                     Insert_After (Clause, New_Clause);
                   end if;
 
-               --  Formal parameters and variables are matched on entities. If
-               --  this is the case, remove the input from the candidate list.
-
-               elsif Is_Entity_Name (Ref_Input)
-                 and then Entity_Of (Ref_Input) = Dep_Id
-               then
-                  Remove (Ref_Input);
-                  return True;
-               end if;
-
-               Ref_Input := Next_Ref_Input;
-            end loop;
-
-            --  When a state with a null refinement appears as the last input,
-            --  it matches nothing:
-
-            --    Refined_State   => (State => null)
-            --    Depends         => (<output> => (Input, State))
-            --    Refined_Depends => (<output> => Input)  --  OK
-
-            if Ekind (Dep_Id) = E_Abstract_State
-              and then Has_Null_Refinement (Dep_Id)
-              and then No (Ref_Input)
-            then
-               Has_Null_State := True;
-            end if;
-         end if;
-
-         --  A state with visible refinement was matched against one or more of
-         --  its constituents.
-
-         if Has_Constituent then
-            return True;
-
-         --  A state with a null refinement matched null or nothing
-
-         elsif Has_Null_State then
-            return True;
-
-         --  The input of a dependence clause does not have a matching input in
-         --  the refinement clause, emit an error.
-
-         else
-            Match_Error
-              ("input cannot be matched in corresponding refinement clause",
-               Dep_Input);
-
-            if Has_Refined_State then
-               Match_Error
-                 ("\check the use of constituents in dependence refinement",
-                  Dep_Input);
-            end if;
-
-            return False;
-         end if;
-      end Input_Match;
-
-      ------------------
-      -- Inputs_Match --
-      ------------------
-
-      function Inputs_Match
-        (Dep_Clause  : Node_Id;
-         Ref_Clause  : Node_Id;
-         Post_Errors : Boolean) return Boolean
-      is
-         Ref_Inputs : List_Id;
-         --  The input list of the refinement clause
-
-         procedure Report_Extra_Inputs;
-         --  Emit errors for all extra inputs that appear in Ref_Inputs
-
-         -------------------------
-         -- Report_Extra_Inputs --
-         -------------------------
-
-         procedure Report_Extra_Inputs is
-            Input : Node_Id;
-
-         begin
-            if Present (Ref_Inputs) and then Post_Errors then
-               Input := First (Ref_Inputs);
-               while Present (Input) loop
-                  SPARK_Msg_N
-                    ("unmatched or extra input in refinement clause", Input);
-
-                  Next (Input);
+                  Input := Next_Input;
                end loop;
             end if;
-         end Report_Extra_Inputs;
+         end Normalize_Inputs;
 
          --  Local variables
 
-         Dep_Inputs : constant Node_Id := Expression (Dep_Clause);
-         Inputs     : constant Node_Id := Expression (Ref_Clause);
-         Dep_Input  : Node_Id;
-         Result     : Boolean;
+         Clause : Node_Id;
 
-      --  Start of processing for Inputs_Match
+      --  Start of processing for Normalize_Clauses
 
       begin
-         --  Construct a list of all refinement inputs. Note that the input
-         --  list is copied because the algorithm modifies its contents and
-         --  this should not be visible in Refined_Depends. The same applies
-         --  for a solitary input.
-
-         if Nkind (Inputs) = N_Aggregate then
-            Ref_Inputs := New_Copy_List (Expressions (Inputs));
-         else
-            Ref_Inputs := New_List (New_Copy (Inputs));
-         end if;
-
-         --  Depending on whether the original dependency clause mentions
-         --  states with visible refinement, the corresponding refinement
-         --  clause may differ greatly in structure and contents:
-
-         --  State with null refinement
-
-         --    Refined_State   => (State    => null)
-         --    Depends         => (<output> => State)
-         --    Refined_Depends => (<output> => null)
-
-         --    Depends         => (<output> => (State, Input))
-         --    Refined_Depends => (<output> => Input)
-
-         --    Depends         => (<output> => (Input_1, State, Input_2))
-         --    Refined_Depends => (<output> => (Input_1, Input_2))
-
-         --  State with non-null refinement
-
-         --    Refined_State   => (State_1 => (C1, C2))
-         --    Depends         => (<output> => State)
-         --    Refined_Depends => (<output> => C1)
-         --  or
-         --    Refined_Depends => (<output> => (C1, C2))
-
-         if Nkind (Dep_Inputs) = N_Aggregate then
-            Dep_Input := First (Expressions (Dep_Inputs));
-            while Present (Dep_Input) loop
-               if not Input_Match
-                        (Dep_Input   => Dep_Input,
-                         Ref_Inputs  => Ref_Inputs,
-                         Post_Errors => Post_Errors)
-               then
-                  Result := False;
-               end if;
-
-               Next (Dep_Input);
-            end loop;
-
-            Result := True;
-
-         --  Solitary input
-
-         else
-            Result :=
-              Input_Match
-                (Dep_Input   => Dep_Inputs,
-                 Ref_Inputs  => Ref_Inputs,
-                 Post_Errors => Post_Errors);
-         end if;
-
-         --  List all inputs that appear as extras
-
-         Report_Extra_Inputs;
-
-         return Result;
-      end Inputs_Match;
-
-      -------------------------
-      -- Is_Self_Referential --
-      -------------------------
-
-      function Is_Self_Referential (Item_Id : Entity_Id) return Boolean is
-         function Denotes_Item (N : Node_Id) return Boolean;
-         --  Determine whether an arbitrary node N denotes item Item_Id
-
-         ------------------
-         -- Denotes_Item --
-         ------------------
-
-         function Denotes_Item (N : Node_Id) return Boolean is
-         begin
-            return
-              Is_Entity_Name (N)
-                and then Present (Entity (N))
-                and then Entity (N) = Item_Id;
-         end Denotes_Item;
-
-         --  Local variables
-
-         Clauses : constant Node_Id :=
-                     Get_Pragma_Arg
-                       (First (Pragma_Argument_Associations (Depends)));
-         Clause  : Node_Id;
-         Input   : Node_Id;
-         Output  : Node_Id;
-
-      --  Start of processing for Is_Self_Referential
-
-      begin
-         Clause := First (Component_Associations (Clauses));
+         Clause := First (Clauses);
          while Present (Clause) loop
-
-            --  Due to normalization, a dependence clause has exactly one
-            --  output even if the original clause had multiple outputs.
-
-            Output := First (Choices (Clause));
-
-            --  Detect the following scenario:
-            --
-            --    Item_Id => [(...,] Item_Id [, ...)]
-
-            if Denotes_Item (Output) then
-               Input := Expression (Clause);
-
-               --  Multiple inputs appear as an aggregate
-
-               if Nkind (Input) = N_Aggregate then
-                  Input := First (Expressions (Input));
-
-                  if Denotes_Item (Input) then
-                     return True;
-                  end if;
-
-                  Next (Input);
-
-               --  Solitary input
-
-               elsif Denotes_Item (Input) then
-                  return True;
-               end if;
-            end if;
-
+            Normalize_Inputs (Clause);
             Next (Clause);
          end loop;
-
-         return False;
-      end Is_Self_Referential;
+      end Normalize_Clauses;
 
       --------------------------
       -- Report_Extra_Clauses --
@@ -22525,16 +22375,9 @@ package body Sem_Prag is
       if Nkind (Deps) = N_Null then
          SPARK_Msg_NE
            ("useless refinement, subprogram & does not depend on abstract "
-            & "state with visible refinement",
-            N, Spec_Id);
+            & "state with visible refinement", N, Spec_Id);
          return;
       end if;
-
-      --  Multiple dependency clauses appear as component associations of an
-      --  aggregate.
-
-      pragma Assert (Nkind (Deps) = N_Aggregate);
-      Dependencies := Component_Associations (Deps);
 
       --  Analyze Refined_Depends as if it behaved as a regular pragma Depends.
       --  This ensures that the categorization of all refined dependency items
@@ -22542,7 +22385,19 @@ package body Sem_Prag is
 
       Analyze_Depends_In_Decl_Part (N);
 
+      --  Do not match dependencies against refinements if Refined_Depends is
+      --  illegal to avoid emitting misleading error.
+
       if Serious_Errors_Detected = Errors then
+
+         --  Multiple dependency clauses appear as component associations of an
+         --  aggregate. Note that the clauses are copied because the algorithm
+         --  modifies them and this should not be visible in Depends.
+
+         pragma Assert (Nkind (Deps) = N_Aggregate);
+         Dependencies := New_Copy_List_Tree (Component_Associations (Deps));
+         Normalize_Clauses (Dependencies);
+
          if Nkind (Refs) = N_Null then
             Refinements := No_List;
 
@@ -22551,33 +22406,24 @@ package body Sem_Prag is
          --  modifies them and this should not be visible in Refined_Depends.
 
          else pragma Assert (Nkind (Refs) = N_Aggregate);
-            Refinements := New_Copy_List (Component_Associations (Refs));
+            Refinements := New_Copy_List_Tree (Component_Associations (Refs));
+            Normalize_Clauses (Refinements);
          end if;
 
-         --  Inspect all the clauses of pragma Depends looking for a matching
-         --  clause in pragma Refined_Depends. The approach is to use the
-         --  sole output of a clause as a key. Output items are unique in a
-         --  dependence relation. Clause normalization also ensured that all
-         --  clauses have exactly one output. Depending on what the key is, one
-         --  or more refinement clauses may satisfy the dependency clause. Each
-         --  time a dependency clause is matched, its related refinement clause
-         --  is consumed. In the end, two things may happen:
-
-         --    1) A clause of pragma Depends was not matched in which case
-         --       Check_Dependency_Clause reports the error.
-
-         --    2) Refined_Depends has an extra clause in which case the error
-         --       is reported by Report_Extra_Clauses.
+         --  At this point the clauses of pragmas Depends and Refined_Depends
+         --  have been normalized into simple dependencies between one output
+         --  and one input. Examine all clauses of pragma Depends looking for
+         --  matching clauses in pragma Refined_Depends.
 
          Clause := First (Dependencies);
          while Present (Clause) loop
             Check_Dependency_Clause (Clause);
             Next (Clause);
          end loop;
-      end if;
 
-      if Serious_Errors_Detected = Errors then
-         Report_Extra_Clauses;
+         if Serious_Errors_Detected = Errors then
+            Report_Extra_Clauses;
+         end if;
       end if;
    end Analyze_Refined_Depends_In_Decl_Part;
 
@@ -25423,6 +25269,7 @@ package body Sem_Prag is
       Pragma_Debug                          => -1,
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                => -1,
+      Pragma_Default_Scalar_Storage_Order   =>  0,
       Pragma_Default_Storage_Pool           => -1,
       Pragma_Depends                        => -1,
       Pragma_Disable_Atomic_Synchronization => -1,

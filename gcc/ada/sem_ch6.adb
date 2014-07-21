@@ -2033,12 +2033,20 @@ package body Sem_Ch6 is
 
    procedure Analyze_Subprogram_Body_Contract (Body_Id : Entity_Id) is
       Body_Decl   : constant Node_Id := Parent (Parent (Body_Id));
+      Mode        : SPARK_Mode_Type;
       Prag        : Node_Id;
       Ref_Depends : Node_Id := Empty;
       Ref_Global  : Node_Id := Empty;
       Spec_Id     : Entity_Id;
 
    begin
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related subprogram body.
+
+      Save_SPARK_Mode_And_Set (Body_Id, Mode);
+
       --  When a subprogram body declaration is illegal, its defining entity is
       --  left unanalyzed. There is nothing left to do in this case because the
       --  body lacks a contract, or even a proper Ekind.
@@ -2112,6 +2120,11 @@ package body Sem_Ch6 is
                Body_Decl, Spec_Id);
          end if;
       end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      Restore_SPARK_Mode (Mode);
    end Analyze_Subprogram_Body_Contract;
 
    ------------------------------------
@@ -3680,6 +3693,7 @@ package body Sem_Ch6 is
       Case_Prag    : Node_Id := Empty;
       Depends      : Node_Id := Empty;
       Global       : Node_Id := Empty;
+      Mode         : SPARK_Mode_Type;
       Nam          : Name_Id;
       Post_Prag    : Node_Id := Empty;
       Prag         : Node_Id;
@@ -3687,6 +3701,13 @@ package body Sem_Ch6 is
       Seen_In_Post : Boolean := False;
 
    begin
+      --  Due to the timing of contract analysis, delayed pragmas may be
+      --  subject to the wrong SPARK_Mode, usually that of the enclosing
+      --  context. To remedy this, restore the original SPARK_Mode of the
+      --  related subprogram body.
+
+      Save_SPARK_Mode_And_Set (Subp, Mode);
+
       if Present (Items) then
 
          --  Analyze pre- and postconditions
@@ -3808,6 +3829,11 @@ package body Sem_Ch6 is
               ("function postcondition does not mention result?T?", Post_Prag);
          end if;
       end if;
+
+      --  Restore the SPARK_Mode of the enclosing context after all delayed
+      --  pragmas have been analyzed.
+
+      Restore_SPARK_Mode (Mode);
    end Analyze_Subprogram_Contract;
 
    ------------------------------------
@@ -11822,9 +11848,8 @@ package body Sem_Ch6 is
       --  point of the call.
 
       if Out_Present (Spec) then
-         if Ekind (Scope (Formal_Id)) = E_Function
-           or else Ekind (Scope (Formal_Id)) = E_Generic_Function
-         then
+         if Ekind_In (Scope (Formal_Id), E_Function, E_Generic_Function) then
+
             --  [IN] OUT parameters allowed for functions in Ada 2012
 
             if Ada_Version >= Ada_2012 then
@@ -11840,6 +11865,8 @@ package body Sem_Ch6 is
                else
                   Set_Ekind (Formal_Id, E_Out_Parameter);
                end if;
+
+               Set_Has_Out_Or_In_Out_Parameter (Scope (Formal_Id), True);
 
             --  But not in earlier versions of Ada
 

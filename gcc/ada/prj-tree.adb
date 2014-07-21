@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1121,21 +1121,29 @@ package body Prj.Tree is
       In_Tree   : Project_Node_Tree_Ref;
       With_Name : Name_Id) return Project_Node_Id
    is
-      With_Clause : Project_Node_Id :=
-        First_With_Clause_Of (Project, In_Tree);
+      With_Clause : Project_Node_Id;
       Result      : Project_Node_Id := Empty_Node;
 
    begin
       --  First check all the imported projects
 
+      With_Clause := First_With_Clause_Of (Project, In_Tree);
       while Present (With_Clause) loop
 
-         --  Only non limited imported project may be used as prefix
-         --  of variable or attributes.
+         --  Only non limited imported project may be used as prefix of
+         --  variables or attributes.
 
          Result := Non_Limited_Project_Node_Of (With_Clause, In_Tree);
-         exit when Present (Result)
-           and then Name_Of (Result, In_Tree) = With_Name;
+         while Present (Result) loop
+            if Name_Of (Result, In_Tree) = With_Name then
+               return Result;
+            end if;
+
+            Result :=
+              Extended_Project_Of
+                (Project_Declaration_Of (Result, In_Tree), In_Tree);
+         end loop;
+
          With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
       end loop;
 

@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -26,7 +27,10 @@ import (
 	"time"
 )
 
-func helperCommand(s ...string) *exec.Cmd {
+func helperCommand(t *testing.T, s ...string) *exec.Cmd {
+	if runtime.GOOS == "nacl" {
+		t.Skip("skipping on nacl")
+	}
 	cs := []string{"-test.run=TestHelperProcess", "--"}
 	cs = append(cs, s...)
 	cmd := exec.Command(os.Args[0], cs...)
@@ -39,7 +43,7 @@ func helperCommand(s ...string) *exec.Cmd {
 }
 
 func TestEcho(t *testing.T) {
-	bs, err := helperCommand("echo", "foo bar", "baz").Output()
+	bs, err := helperCommand(t, "echo", "foo bar", "baz").Output()
 	if err != nil {
 		t.Errorf("echo: %v", err)
 	}
@@ -78,7 +82,7 @@ func TestCommandRelativeName(t *testing.T) {
 func TestCatStdin(t *testing.T) {
 	// Cat, testing stdin and stdout.
 	input := "Input string\nLine 2"
-	p := helperCommand("cat")
+	p := helperCommand(t, "cat")
 	p.Stdin = strings.NewReader(input)
 	bs, err := p.Output()
 	if err != nil {
@@ -92,7 +96,7 @@ func TestCatStdin(t *testing.T) {
 
 func TestCatGoodAndBadFile(t *testing.T) {
 	// Testing combined output and error values.
-	bs, err := helperCommand("cat", "/bogus/file.foo", "exec_test.go").CombinedOutput()
+	bs, err := helperCommand(t, "cat", "/bogus/file.foo", "exec_test.go").CombinedOutput()
 	if _, ok := err.(*exec.ExitError); !ok {
 		t.Errorf("expected *exec.ExitError from cat combined; got %T: %v", err, err)
 	}
@@ -120,7 +124,7 @@ func TestNoExistBinary(t *testing.T) {
 
 func TestExitStatus(t *testing.T) {
 	// Test that exit values are returned correctly
-	cmd := helperCommand("exit", "42")
+	cmd := helperCommand(t, "exit", "42")
 	err := cmd.Run()
 	want := "exit status 42"
 	switch runtime.GOOS {
@@ -143,7 +147,7 @@ func TestPipes(t *testing.T) {
 		}
 	}
 	// Cat, testing stdin and stdout.
-	c := helperCommand("pipetest")
+	c := helperCommand(t, "pipetest")
 	stdin, err := c.StdinPipe()
 	check("StdinPipe", err)
 	stdout, err := c.StdoutPipe()
@@ -196,7 +200,7 @@ func TestStdinClose(t *testing.T) {
 			t.Fatalf("%s: %v", what, err)
 		}
 	}
-	cmd := helperCommand("stdinClose")
+	cmd := helperCommand(t, "stdinClose")
 	stdin, err := cmd.StdinPipe()
 	check("StdinPipe", err)
 	// Check that we can access methods of the underlying os.File.`
@@ -217,7 +221,7 @@ func TestStdinClose(t *testing.T) {
 
 // Issue 5071
 func TestPipeLookPathLeak(t *testing.T) {
-	fd0 := numOpenFDS(t)
+	fd0, lsof0 := numOpenFDS(t)
 	for i := 0; i < 4; i++ {
 		cmd := exec.Command("something-that-does-not-exist-binary")
 		cmd.StdoutPipe()
@@ -227,19 +231,30 @@ func TestPipeLookPathLeak(t *testing.T) {
 			t.Fatal("unexpected success")
 		}
 	}
-	fdGrowth := numOpenFDS(t) - fd0
-	if fdGrowth > 2 {
-		t.Errorf("leaked %d fds; want ~0", fdGrowth)
+	for triesLeft := 3; triesLeft >= 0; triesLeft-- {
+		open, lsof := numOpenFDS(t)
+		fdGrowth := open - fd0
+		if fdGrowth > 2 {
+			if triesLeft > 0 {
+				// Work around what appears to be a race with Linux's
+				// proc filesystem (as used by lsof). It seems to only
+				// be eventually consistent. Give it awhile to settle.
+				// See golang.org/issue/7808
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+			t.Errorf("leaked %d fds; want ~0; have:\n%s\noriginally:\n%s", fdGrowth, lsof, lsof0)
+		}
+		break
 	}
 }
 
-func numOpenFDS(t *testing.T) int {
+func numOpenFDS(t *testing.T) (n int, lsof []byte) {
 	lsof, err := exec.Command("lsof", "-n", "-p", strconv.Itoa(os.Getpid())).Output()
 	if err != nil {
 		t.Skip("skipping test; error finding or running lsof")
-		return 0
 	}
-	return bytes.Count(lsof, []byte("\n"))
+	return bytes.Count(lsof, []byte("\n")), lsof
 }
 
 var testedAlreadyLeaked = false
@@ -305,7 +320,7 @@ func TestExtraFilesFDShuffle(t *testing.T) {
 	// Moving this test case around within the overall tests may
 	// affect the FDs obtained and hence the checks to catch these cases.
 	npipes := 2
-	c := helperCommand("extraFilesAndPipes", strconv.Itoa(npipes+1))
+	c := helperCommand(t, "extraFilesAndPipes", strconv.Itoa(npipes+1))
 	rd, wr, _ := os.Pipe()
 	defer rd.Close()
 	if rd.Fd() != 3 {
@@ -405,11 +420,15 @@ func TestExtraFiles(t *testing.T) {
 
 	// Force TLS root certs to be loaded (which might involve
 	// cgo), to make sure none of that potential C code leaks fds.
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello"))
-	}))
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	// quiet expected TLS handshake error "remote error: bad certificate"
+	ts.Config.ErrorLog = log.New(ioutil.Discard, "", 0)
+	ts.StartTLS()
 	defer ts.Close()
-	http.Get(ts.URL) // ignore result; just calling to force root cert loading
+	_, err = http.Get(ts.URL)
+	if err == nil {
+		t.Errorf("success trying to fetch %s; want an error", ts.URL)
+	}
 
 	tf, err := ioutil.TempFile("", "")
 	if err != nil {
@@ -428,7 +447,7 @@ func TestExtraFiles(t *testing.T) {
 		t.Fatalf("Seek: %v", err)
 	}
 
-	c := helperCommand("read3")
+	c := helperCommand(t, "read3")
 	var stdout, stderr bytes.Buffer
 	c.Stdout = &stdout
 	c.Stderr = &stderr
@@ -471,10 +490,10 @@ func TestExtraFilesRace(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		la := listen()
-		ca := helperCommand("describefiles")
+		ca := helperCommand(t, "describefiles")
 		ca.ExtraFiles = []*os.File{listenerFile(la)}
 		lb := listen()
-		cb := helperCommand("describefiles")
+		cb := helperCommand(t, "describefiles")
 		cb.ExtraFiles = []*os.File{listenerFile(lb)}
 		ares := make(chan string)
 		bres := make(chan string)
@@ -685,6 +704,24 @@ func TestHelperProcess(*testing.T) {
 			}
 		}
 		fmt.Fprintf(os.Stderr, "child: %s", response)
+		os.Exit(0)
+	case "exec":
+		cmd := exec.Command(args[1])
+		cmd.Dir = args[0]
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Child: %s %s", err, string(output))
+			os.Exit(1)
+		}
+		fmt.Printf("%s", string(output))
+		os.Exit(0)
+	case "lookpath":
+		p, err := exec.LookPath(args[0])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "LookPath failed: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Print(p)
 		os.Exit(0)
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %q\n", cmd)

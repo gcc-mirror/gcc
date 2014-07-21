@@ -247,7 +247,7 @@ var ipConnLocalNameTests = []struct {
 
 func TestIPConnLocalName(t *testing.T) {
 	switch runtime.GOOS {
-	case "plan9", "windows":
+	case "nacl", "plan9", "windows":
 		t.Skipf("skipping test on %q", runtime.GOOS)
 	default:
 		if os.Getuid() != 0 {
@@ -277,7 +277,7 @@ func TestIPConnRemoteName(t *testing.T) {
 		}
 	}
 
-	raddr := &IPAddr{IP: IPv4(127, 0, 0, 10).To4()}
+	raddr := &IPAddr{IP: IPv4(127, 0, 0, 1).To4()}
 	c, err := DialIP("ip:tcp", &IPAddr{IP: IPv4(127, 0, 0, 1)}, raddr)
 	if err != nil {
 		t.Fatalf("DialIP failed: %v", err)

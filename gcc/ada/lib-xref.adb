@@ -477,8 +477,8 @@ package body Lib.Xref is
             elsif (K = N_Selected_Component or else K = N_Indexed_Component)
               and then Prefix (P) = N
             then
-               --  Check for access type. First a kludge, In some cases this is
-               --  called too early (see comments in Sem_Ch8.Find_Direct_Name),
+               --  Check for access type. First a special test, In some cases
+               --  this is called too early (see comments in Find_Direct_Name),
                --  at a point where the tree is not fully typed yet. In that
                --  case we may lack an Etype for N, and we can't check the
                --  Etype. For now, we always return False in such a case,

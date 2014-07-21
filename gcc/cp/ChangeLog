@@ -1,3 +1,53 @@
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50961
+	* call.c (standard_conversion): Use resolve_nondeduced_context
+	for type_unknown_p (EXPR) && TREE_CODE (TO) == BOOLEAN_TYPE.
+
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61804
+	* parser.c (cp_parser_tokens_start_cast_expression): Return -1
+	for '++' and '--'.
+
+2014-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61811
+	* decl2.c (maybe_emit_vtables): Return true for -fuse-all-virtuals.
+
+	PR c++/60848
+	PR c++/61723
+	* call.c (is_std_init_list): Don't check CLASSTYPE_TEMPLATE_INFO.
+	* class.c (finish_struct): Reject invalid definition of
+	std::initializer_list.
+
+2014-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (convert_like_real): Call print_z_candidate and inform only
+	if permerror returns true.
+
+2014-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (build_clone): Do not clear assembler names of
+	templates.
+	* decl.c (cp_tree_node_structure): Add TEMPLATE_DECL.
+	* cp-objcp-common.c (cp_tree_size): Add TEMPLATE_DECL
+	as a special case return sizeof (struct tree_decl_non_common)
+	for other decls.
+	(cp_common_init_ts): Do not initialize NAMESPACE_DECL;
+	initialize TEMPLATE_DECL as MARK_TS_DECL_COMMON.
+	* cp/cp-tree.h (tree_template_decl): New structure.
+	(cp_tree_node_structure_enum): Add TS_CP_TEMPLATE_DECL.
+	(union cp_lang_tree_node): Add template_decl.
+	(DECL_TEMPLATE_PARMS, DECL_TEMPLATE_RESULT): Update.
+
+2014-07-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61445
+	PR c++/56947
+	* pt.c (instantiate_decl): Don't check defer_ok for local class
+	members.
+
 2014-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61294
@@ -36,9 +86,9 @@
 2014-07-13  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR C++/60209 - Declaration of user-defined literal operator cause error
-	* cp/parser.c (cp_parser_operator()): Fold treatment of strings
+	* parser.c (cp_parser_operator): Fold treatment of strings
 	and user-defined string literals.  Use the full string parser.
-	(cp_parser_string_literal()): Add flag to not look for literal operator.
+	(cp_parser_string_literal): Add flag to not look for literal operator.
 
 2014-07-11  Jason Merrill  <jason@redhat.com>
 

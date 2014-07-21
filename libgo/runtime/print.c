@@ -76,9 +76,15 @@ runtime_prints(const char *s)
 // x86-64. Note that signal handlers receive slightly less stack space than they
 // would normally do if they happen to be called while this function is being
 // run. If this turns out to be a problem we could consider increasing BACKOFF.
+
 void
 runtime_printf(const char *s, ...)
 __attribute__((no_split_stack));
+
+int32
+runtime_snprintf(byte *buf, int32 n, const char *s, ...)
+__attribute__((no_split_stack));
+
 #endif
 
 void
@@ -89,6 +95,25 @@ runtime_printf(const char *s, ...)
 	va_start(va, s);
 	go_vprintf(s, va);
 	va_end(va);
+}
+
+int32
+runtime_snprintf(byte *buf, int32 n, const char *s, ...)
+{
+	G *g = runtime_g();
+	va_list va;
+	int32 m;
+
+	g->writebuf = buf;
+	g->writenbuf = n-1;
+	va_start(va, s);
+	go_vprintf(s, va);
+	va_end(va);
+	*g->writebuf = '\0';
+	m = g->writebuf - buf;
+	g->writenbuf = 0;
+	g->writebuf = nil;
+	return m;
 }
 
 // Very simple printf.  Only for debugging prints.

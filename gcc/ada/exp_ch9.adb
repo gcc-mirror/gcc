@@ -1151,7 +1151,6 @@ package body Exp_Ch9 is
       then
          declare
             Master_Decl : Node_Id;
-
          begin
             Set_Has_Master_Entity (Master_Scope);
 
@@ -1169,7 +1168,7 @@ package body Exp_Ch9 is
                   Make_Explicit_Dereference (Loc,
                     New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
 
-            Insert_Action (Related_Node, Master_Decl);
+            Insert_Action (Find_Hook_Context (Related_Node), Master_Decl);
             Analyze (Master_Decl);
 
             --  Mark the containing scope as a task master. Masters associated
@@ -4378,8 +4377,14 @@ package body Exp_Ch9 is
          pragma Assert (Ekind (Sub) = E_Function);
          Rewrite (N,
            Make_Function_Call (Loc,
-             Name => New_Sub,
+             Name                   => New_Sub,
              Parameter_Associations => Params));
+
+         --  Preserve type of call for subsequent processing (required for
+         --  call to Wrap_Transient_Expression in the case of a shared passive
+         --  protected).
+
+         Set_Etype (N, Etype (New_Sub));
       end if;
 
       if External

@@ -17,7 +17,6 @@ void	runtime_racefini(void);
 
 void	runtime_racemapshadow(void *addr, uintptr size);
 void	runtime_racemalloc(void *p, uintptr sz);
-void	runtime_racefree(void *p);
 uintptr	runtime_racegostart(void *pc);
 void	runtime_racegoend(void);
 void	runtime_racewritepc(void *addr, void *callpc, void *pc);

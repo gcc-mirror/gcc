@@ -291,6 +291,7 @@ package body Impunit is
     ("g-regexp", F),  -- GNAT.Regexp
     ("g-regist", F),  -- GNAT.Registry
     ("g-regpat", F),  -- GNAT.Regpat
+    ("g-rewdat", F),  -- GNAT.Rewrite_Data
     ("g-semaph", F),  -- GNAT.Semaphores
     ("g-sercom", F),  -- GNAT.Serial_Communications
     ("g-sestin", F),  -- GNAT.Secondary_Stack_Info
@@ -381,8 +382,8 @@ package body Impunit is
     ("s-ststop", F),  -- System.Strings.Stream_Ops
     ("s-tasinf", F),  -- System.Task_Info
     ("s-unstyp", F),  -- System.Unsigned_Types
-    ("s-wchcnv", F),  -- System.Wch_Cnv
-    ("s-wchcon", F),  -- System.Wch_Con
+    ("s-wchcnv", F),  -- System.WCh_Cnv
+    ("s-wchcon", F),  -- System.WCh_Con
 
    --  The following are strictly speaking Ada 2012 units, but we are allowed
    --  to add children to system, so we consider them to be implementation

@@ -1252,7 +1252,8 @@ built:
     {
       Node_Id gnat_error_node = Empty;
 
-      if (Is_Packed_Array_Type (gnat_entity))
+      /* For a packed array, post the message on the original array type.  */
+      if (Is_Packed_Array_Impl_Type (gnat_entity))
 	gnat_entity = Original_Array_Type (gnat_entity);
 
       if ((Ekind (gnat_entity) == E_Component

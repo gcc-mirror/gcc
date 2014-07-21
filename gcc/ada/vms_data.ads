@@ -3270,7 +3270,12 @@ package VMS_Data is
                                             "UNCHECKED_CONVERSIONS "       &
                                                "-gnatwz "                  &
                                             "NOUNCHECKED_CONVERSIONS "     &
-                                               "-gnatwZ";
+                                               "-gnatwZ "                  &
+                                            "SIZE_ALIGNMENT "              &
+                                               "-gnatw.z "                 &
+                                            "NOSIZE_ALIGNMENT "            &
+                                               "-gnatw.Z";
+
    --        /NOWARNINGS
    --
    --   Suppress the output of all warning messages from the GNAT front end.
@@ -3300,6 +3305,7 @@ package VMS_Data is
    --                               MISSING_PARENS
    --                               OVERLAPPING_ACTUALS
    --                               REVERSE_BIT_ORDER
+   --                               SIZE_ALIGNMENT
    --                               SUSPICIOUS_CONTRACT
    --                               SUSPICIOUS_MODULUS
    --                               UNCHECKED_CONVERSIONS
@@ -3588,6 +3594,12 @@ package VMS_Data is
    --   (-gnatw.v)              Generates information messages that show the
    --                           effect of specifying reverse bit order for
    --                           a record on individual components.
+   --
+   --   SIZE_ALIGNMENT          Activates warnings for record types for which
+   --   (-gnatw.z)              explicit size and alignment values are given,
+   --                           where the size value is not a multiple of the
+   --                           alignment value, resulting in an object size
+   --                           larger than the specified size.
    --
    --   STANDARD_REDEFINITION   Activate warnings on standard redefinition.
    --   (-gnatw.k)              Generates a warning message if a declaration
@@ -5665,30 +5677,30 @@ package VMS_Data is
    --
    --   All combinations of line metrics options are allowed.
 
-   S_Metric_Complexity : aliased constant S := "/COMPLEXITY_METRICS="      &
-                                               "ALL "                      &
-                                               "--complexity-all "         &
-                                              "NONE "                      &
-                                              "--no-complexity-all "       &
-                                              "CYCLOMATIC "                &
-                                              "--complexity-cyclomatic "   &
-                                              "NOCYCLOMATIC "              &
-                                              "--no-complexity-cyclomatic "&
-                                              "ESSENTIAL "                 &
-                                              "--complexity-essential "    &
-                                              "NOESSENTIAL "               &
-                                              "--no-complexity-essential " &
-                                              "LOOP_NESTING "              &
-                                              "--loop-nesting "            &
-                                              "NOLOOP_NESTING "            &
-                                              "--no-loop-nesting "         &
-                                              "AVERAGE_COMPLEXITY "        &
-                                              "--complexity-average "      &
-                                              "NOAVERAGE_COMPLEXITY "      &
-                                              "--no-complexity-average "   &
-                                              "EXTRA_EXIT_POINTS "         &
-                                              "--extra-exit-points "       &
-                                              "NOEXTRA_EXIT_POINTS "       &
+   S_Metric_Complexity : aliased constant S := "/COMPLEXITY_METRICS="       &
+                                               "ALL "                       &
+                                               "--complexity-all "          &
+                                              "NONE "                       &
+                                              "--no-complexity-all "        &
+                                              "CYCLOMATIC "                 &
+                                              "--complexity-cyclomatic "    &
+                                              "NOCYCLOMATIC "               &
+                                              "--no-complexity-cyclomatic " &
+                                              "ESSENTIAL "                  &
+                                              "--complexity-essential "     &
+                                              "NOESSENTIAL "                &
+                                              "--no-complexity-essential "  &
+                                              "LOOP_NESTING "               &
+                                              "--loop-nesting "             &
+                                              "NOLOOP_NESTING "             &
+                                              "--no-loop-nesting "          &
+                                              "AVERAGE_COMPLEXITY "         &
+                                              "--complexity-average "       &
+                                              "NOAVERAGE_COMPLEXITY "       &
+                                              "--no-complexity-average "    &
+                                              "EXTRA_EXIT_POINTS "          &
+                                              "--extra-exit-points "        &
+                                              "NOEXTRA_EXIT_POINTS "        &
                                               "--no-extra-exit-points";
    --      /COMPLEXITY_METRICS=(option, option ...)
 

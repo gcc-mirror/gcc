@@ -495,6 +495,7 @@ package body Aspects is
     Aspect_Address                      => Aspect_Address,
     Aspect_Alignment                    => Aspect_Alignment,
     Aspect_All_Calls_Remote             => Aspect_All_Calls_Remote,
+    Aspect_Annotate                     => Aspect_Annotate,
     Aspect_Async_Readers                => Aspect_Async_Readers,
     Aspect_Async_Writers                => Aspect_Async_Writers,
     Aspect_Asynchronous                 => Aspect_Asynchronous,

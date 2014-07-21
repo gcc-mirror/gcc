@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,7 @@ with Types;    use Types;
 
 with Ada.Command_Line;          use Ada.Command_Line;
 
+with GNAT.Command_Line;         use GNAT.Command_Line;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.IO;                   use GNAT.IO;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
@@ -1460,11 +1461,16 @@ package body Clean is
          end;
       end if;
 
-      --  If neither a project file nor an executable were specified, output
-      --  the usage and exit.
+      --  If neither a project file nor an executable were specified, exit
+      --  displaying the usage if there were no arguments on the command line.
 
       if Main_Project = No_Project and then Osint.Number_Of_Files = 0 then
-         Usage;
+         if Argument_Count = 0 then
+            Usage;
+         else
+            Try_Help;
+         end if;
+
          return;
       end if;
 

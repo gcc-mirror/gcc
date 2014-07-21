@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Exp_Ch6;  use Exp_Ch6;
 with Exp_Imgv; use Exp_Imgv;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -410,10 +411,18 @@ package body Exp_Ch13 is
          end;
       end if;
 
-      --  Processing for objects with address clauses
+      --  Processing for objects
 
-      if Is_Object (E) and then Present (Address_Clause (E)) then
-         Apply_Address_Clause_Check (E, N);
+      if Is_Object (E) then
+         if Present (Address_Clause (E)) then
+            Apply_Address_Clause_Check (E, N);
+         end if;
+
+         --  If initialization statements have been captured in a compound
+         --  statement, insert them back into the tree now.
+
+         Explode_Initialization_Compound_Statement (E);
+
          return;
 
       --  Only other items requiring any front end action are types and
@@ -432,6 +441,17 @@ package body Exp_Ch13 is
       if No (E_Scope) then
          Check_Error_Detected;
          return;
+      end if;
+
+      --  The entity may be a subtype declared for a constrained record
+      --  component, in which case the relevant scope is the scope of
+      --  the record. This happens for class-wide subtypes created for
+      --  a constrained type extension with inherited discriminants.
+
+      if Is_Type (E_Scope)
+        and then Ekind (E_Scope) not in Concurrent_Kind
+      then
+         E_Scope := Scope (E_Scope);
       end if;
 
       --  Remember that we are processing a freezing entity and its freezing

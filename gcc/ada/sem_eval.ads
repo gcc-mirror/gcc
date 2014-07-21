@@ -248,7 +248,7 @@ package Sem_Eval is
    --  In general we take a pessimistic view. False does not mean the value
    --  could not be known at compile time, but True means that absolutely
    --  definition it is known at compile time and it is safe to call
-   --  Expr_Value on the expression Op.
+   --  Expr_Value[_XX] on the expression Op.
    --
    --  Note that we don't define precisely the set of expressions that return
    --  True. Callers should not make any assumptions regarding the value that
@@ -365,9 +365,12 @@ package Sem_Eval is
    procedure Eval_Unchecked_Conversion   (N : Node_Id);
 
    function Eval_Static_Predicate_Check
-     (N  : Node_Id;
-     Typ : Entity_Id) return Boolean;
-   --  Evaluate a static predicate check applied to a scalar literal
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean;
+   --  Evaluate a static predicate check applied expression which represents
+   --  a value that is known at compile time (does not have to be static). The
+   --  caller has checked that a static predicate does apply to Typ, and thus
+   --  the type is known to be scalar.
 
    procedure Fold_Str (N : Node_Id; Val : String_Id; Static : Boolean);
    --  Rewrite N with a new N_String_Literal node as the result of the compile

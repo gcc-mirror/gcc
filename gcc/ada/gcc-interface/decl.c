@@ -1676,8 +1676,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   of bits and then set up the modulus, if required.  */
 	tree gnu_modulus, gnu_high = NULL_TREE;
 
-	/* Packed array types are supposed to be subtypes only.  */
-	gcc_assert (!Is_Packed_Array_Type (gnat_entity));
+	/* Packed Array Impl. Types are supposed to be subtypes only.  */
+	gcc_assert (!Is_Packed_Array_Impl_Type (gnat_entity));
 
 	gnu_type = make_unsigned_type (esize);
 
@@ -1737,7 +1737,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnat_to_gnu_entity (Ancestor_Subtype (gnat_entity), gnu_expr, 0);
 
       /* Set the precision to the Esize except for bit-packed arrays.  */
-      if (Is_Packed_Array_Type (gnat_entity)
+      if (Is_Packed_Array_Impl_Type (gnat_entity)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	esize = UI_To_Int (RM_Size (gnat_entity));
 
@@ -1790,7 +1790,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       /* For a packed array, make the original array type a parallel type.  */
       if (debug_info_p
-	  && Is_Packed_Array_Type (gnat_entity)
+	  && Is_Packed_Array_Impl_Type (gnat_entity)
 	  && present_gnu_tree (Original_Array_Type (gnat_entity)))
 	add_parallel_type (gnu_type,
 			   gnat_to_gnu_type
@@ -1800,7 +1800,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       /* We have to handle clauses that under-align the type specially.  */
       if ((Present (Alignment_Clause (gnat_entity))
-	   || (Is_Packed_Array_Type (gnat_entity)
+	   || (Is_Packed_Array_Impl_Type (gnat_entity)
 	       && Present
 		  (Alignment_Clause (Original_Array_Type (gnat_entity)))))
 	  && UI_Is_In_Int_Range (Alignment (gnat_entity)))
@@ -1817,7 +1817,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 such values), we only get the good bits, since the unused bits
 	 are uninitialized.  Both goals are accomplished by wrapping up
 	 the modular type in an enclosing record type.  */
-      if (Is_Packed_Array_Type (gnat_entity)
+      if (Is_Packed_Array_Impl_Type (gnat_entity)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	{
 	  tree gnu_field_type, gnu_field;
@@ -2245,7 +2245,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If an alignment is specified, use it if valid.  But ignore it
 	   for the original type of packed array types.  If the alignment
 	   was requested with an explicit alignment clause, state so.  */
-	if (No (Packed_Array_Type (gnat_entity))
+	if (No (Packed_Array_Impl_Type (gnat_entity))
 	    && Known_Alignment (gnat_entity))
 	  {
 	    TYPE_ALIGN (tem)
@@ -2288,10 +2288,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			  !Comes_From_Source (gnat_entity), debug_info_p,
 			  gnat_entity);
 
-	/* Give the fat pointer type a name.  If this is a packed type, tell
+	/* Give the fat pointer type a name.  If this is a packed array, tell
 	   the debugger how to interpret the underlying bits.  */
-	if (Present (Packed_Array_Type (gnat_entity)))
-	  gnat_name = Packed_Array_Type (gnat_entity);
+	if (Present (Packed_Array_Impl_Type (gnat_entity)))
+	  gnat_name = Packed_Array_Impl_Type (gnat_entity);
 	else
 	  gnat_name = gnat_entity;
 	create_type_decl (create_concat_name (gnat_name, "XUP"), gnu_fat_type,
@@ -2413,7 +2413,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      else if ((Nkind (gnat_index) == N_Range
 		        && cannot_be_superflat_p (gnat_index))
 		       /* Bit-Packed Array Types are never superflat.  */
-		       || (Is_Packed_Array_Type (gnat_entity)
+		       || (Is_Packed_Array_Impl_Type (gnat_entity)
 			   && Is_Bit_Packed_Array
 			      (Original_Array_Type (gnat_entity))))
 		gnu_high = gnu_max;
@@ -2538,7 +2538,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     used to implement a packed array, get the component type from
 	     the original array type since the representation clauses that
 	     can affect it are on the latter.  */
-	  if (Is_Packed_Array_Type (gnat_entity)
+	  if (Is_Packed_Array_Impl_Type (gnat_entity)
 	      && !Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	    {
 	      gnu_type = gnat_to_gnu_type (Original_Array_Type (gnat_entity));
@@ -2642,7 +2642,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     since the bounds are conveyed by the original array type.  */
 	  if (need_index_type_struct
 	      && debug_info_p
-	      && !Is_Packed_Array_Type (gnat_entity))
+	      && !Is_Packed_Array_Impl_Type (gnat_entity))
 	    {
 	      tree gnu_bound_rec = make_node (RECORD_TYPE);
 	      tree gnu_field_list = NULL_TREE;
@@ -2674,7 +2674,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     isn't artificial to make sure it is kept in the debug info.  */
 	  if (debug_info_p)
 	    {
-	      if (Is_Packed_Array_Type (gnat_entity)
+	      if (Is_Packed_Array_Impl_Type (gnat_entity)
 		  && present_gnu_tree (Original_Array_Type (gnat_entity)))
 		add_parallel_type (gnu_type,
 				   gnat_to_gnu_type
@@ -2691,7 +2691,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type) = convention_fortran_p;
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
-	    = (Is_Packed_Array_Type (gnat_entity)
+	    = (Is_Packed_Array_Impl_Type (gnat_entity)
 	       && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
 
 	  /* If the size is self-referential and the maximum size doesn't
@@ -2716,7 +2716,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  /* If this is a packed type, make this type the same as the packed
 	     array type, but do some adjusting in the type first.  */
-	  if (Present (Packed_Array_Type (gnat_entity)))
+	  if (Present (Packed_Array_Impl_Type (gnat_entity)))
 	    {
 	      Entity_Id gnat_index;
 	      tree gnu_inner;
@@ -2741,8 +2741,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 this type again.  */
 	      save_gnu_tree (gnat_entity, gnu_decl, false);
 
-	      gnu_decl = gnat_to_gnu_entity (Packed_Array_Type (gnat_entity),
-					     NULL_TREE, 0);
+	      gnu_decl
+		= gnat_to_gnu_entity (Packed_Array_Impl_Type (gnat_entity),
+				      NULL_TREE, 0);
 	      this_made_decl = true;
 	      gnu_type = TREE_TYPE (gnu_decl);
 	      save_gnu_tree (gnat_entity, NULL_TREE, false);
@@ -2806,7 +2807,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 
 	  else
-	    /* Abort if packed array with no Packed_Array_Type field set.  */
+	    /* Abort if packed array with no Packed_Array_Impl_Type.  */
 	    gcc_assert (!Is_Packed (gnat_entity));
 	}
       break;
@@ -5364,7 +5365,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
   /* If this is a packed array type whose original array type is itself
      an Itype without freeze node, make sure the latter is processed.  */
-  if (Is_Packed_Array_Type (gnat_entity)
+  if (Is_Packed_Array_Impl_Type (gnat_entity)
       && Is_Itype (Original_Array_Type (gnat_entity))
       && No (Freeze_Node (Original_Array_Type (gnat_entity)))
       && !present_gnu_tree (Original_Array_Type (gnat_entity)))
@@ -5620,7 +5621,8 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       /* If an alignment is specified, use it as a cap on the component type
 	 so that it can be honored for the whole type.  But ignore it for the
 	 original type of packed array types.  */
-      if (No (Packed_Array_Type (gnat_array)) && Known_Alignment (gnat_array))
+      if (No (Packed_Array_Impl_Type (gnat_array))
+	  && Known_Alignment (gnat_array))
 	max_align = validate_alignment (Alignment (gnat_array), gnat_array, 0);
       else
 	max_align = 0;

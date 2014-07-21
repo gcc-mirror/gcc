@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2005-2012, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2005-2014, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -224,7 +224,8 @@ __gnat_environ (void)
 #endif
 }
 
-void __gnat_unsetenv (char *name) {
+void __gnat_unsetenv (char *name)
+{
 #if defined (VMS)
   /* Not implemented */
   return;
@@ -282,12 +283,14 @@ void __gnat_unsetenv (char *name) {
 #endif
 }
 
-void __gnat_clearenv (void) {
+void __gnat_clearenv (void)
+{
 #if defined (VMS)
   /* not implemented */
   return;
 #elif defined (sun) \
-   || (defined (__vxworks) && ! defined (__RTP__)) || defined (__Lynx__)
+  || (defined (__vxworks) && ! defined (__RTP__)) || defined (__Lynx__) \
+  || defined (__PikeOS__)
   /* On Solaris, VxWorks (not RTPs), and Lynx there is no system
      call to unset a variable or to clear the environment so set all
      the entries in the environ table to NULL (see comment in

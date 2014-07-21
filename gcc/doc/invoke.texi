@@ -464,7 +464,7 @@ Objective-C and Objective-C++ Dialects}.
 -static-libasan -static-libtsan -static-liblsan -static-libubsan @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
--u @var{symbol}}
+-u @var{symbol} -z @var{keyword}}
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
@@ -10690,6 +10690,12 @@ linker.  When using the GNU linker, you can also get the same effect with
 Pretend the symbol @var{symbol} is undefined, to force linking of
 library modules to define it.  You can use @option{-u} multiple times with
 different symbols to force loading of additional library modules.
+
+@item -z @var{keyword}
+@opindex z
+@option{-z} is passed directly on to the linker along with the keyword
+@var{keyword}. See the section in the documentation of your linker for
+permitted values and their meanings.
 @end table
 
 @node Directory Options

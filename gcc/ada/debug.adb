@@ -80,7 +80,7 @@ package body Debug is
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
-   --  dQ   Do not generate runtime check for duplicated external tag
+   --  dQ
    --  dR   Bypass check for correct version of s-rpc
    --  dS   Never convert numbers to machine numbers in Sem_Eval
    --  dT   Convert to machine numbers only for constant declarations
@@ -134,7 +134,7 @@ package body Debug is
    --  d.N  Add node to all entities
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
-   --  d.Q
+   --  d.Q  Previous (incomplete) style check for binary operators
    --  d.R  Restrictions in ali files in positional form
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
@@ -438,12 +438,6 @@ package body Debug is
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
 
-   --  dQ   Eliminate check for duplicate external tags. This check was added
-   --       as per AI 0113, and causes some backward compatibility problems.
-   --       It is never legitimate to have duplicate external tags, so the
-   --       check is certainly valid, but this debug switch can be useful for
-   --       enabling previous behavior of ignoring this problem.
-
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use
    --       of stubs generation without needing to have GLADE (or some
@@ -664,6 +658,12 @@ package body Debug is
    --       This is there in case we find a situation where the optimization
    --       malfunctions, to provide a work around.
 
+   --  d.Q  Previous incomplete style checks for binary operators. Style checks
+   --       for token separation rules were incomplete and have been made
+   --       compliant with the documentation. For example, no warning was
+   --       issued for expressions such as 16-One or "A"&"B". Setting this flag
+   --       inhibits these new checks.
+
    --  d.R  As documented in lib-writ.ads, restrictions in the ali file can
    --       have two forms, positional and named. The named notation is the
    --       current preferred form, but the use of this debug switch will force
@@ -820,82 +820,143 @@ package body Debug is
    --------------------
 
    procedure Set_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig  is Character range '1' .. '9';
+      subtype Dig is Character range '1' .. '9';
       subtype LLet is Character range 'a' .. 'z';
       subtype ULet is Character range 'A' .. 'Z';
 
    begin
       if C in Dig then
          case Dig (C) is
-            when '1' => Debug_Flag_1 := Val;
-            when '2' => Debug_Flag_2 := Val;
-            when '3' => Debug_Flag_3 := Val;
-            when '4' => Debug_Flag_4 := Val;
-            when '5' => Debug_Flag_5 := Val;
-            when '6' => Debug_Flag_6 := Val;
-            when '7' => Debug_Flag_7 := Val;
-            when '8' => Debug_Flag_8 := Val;
-            when '9' => Debug_Flag_9 := Val;
+            when '1' =>
+               Debug_Flag_1 := Val;
+            when '2' =>
+               Debug_Flag_2 := Val;
+            when '3' =>
+               Debug_Flag_3 := Val;
+            when '4' =>
+               Debug_Flag_4 := Val;
+            when '5' =>
+               Debug_Flag_5 := Val;
+            when '6' =>
+               Debug_Flag_6 := Val;
+            when '7' =>
+               Debug_Flag_7 := Val;
+            when '8' =>
+               Debug_Flag_8 := Val;
+            when '9' =>
+               Debug_Flag_9 := Val;
          end case;
 
       elsif C in ULet then
          case ULet (C) is
-            when 'A' => Debug_Flag_AA := Val;
-            when 'B' => Debug_Flag_BB := Val;
-            when 'C' => Debug_Flag_CC := Val;
-            when 'D' => Debug_Flag_DD := Val;
-            when 'E' => Debug_Flag_EE := Val;
-            when 'F' => Debug_Flag_FF := Val;
-            when 'G' => Debug_Flag_GG := Val;
-            when 'H' => Debug_Flag_HH := Val;
-            when 'I' => Debug_Flag_II := Val;
-            when 'J' => Debug_Flag_JJ := Val;
-            when 'K' => Debug_Flag_KK := Val;
-            when 'L' => Debug_Flag_LL := Val;
-            when 'M' => Debug_Flag_MM := Val;
-            when 'N' => Debug_Flag_NN := Val;
-            when 'O' => Debug_Flag_OO := Val;
-            when 'P' => Debug_Flag_PP := Val;
-            when 'Q' => Debug_Flag_QQ := Val;
-            when 'R' => Debug_Flag_RR := Val;
-            when 'S' => Debug_Flag_SS := Val;
-            when 'T' => Debug_Flag_TT := Val;
-            when 'U' => Debug_Flag_UU := Val;
-            when 'V' => Debug_Flag_VV := Val;
-            when 'W' => Debug_Flag_WW := Val;
-            when 'X' => Debug_Flag_XX := Val;
-            when 'Y' => Debug_Flag_YY := Val;
-            when 'Z' => Debug_Flag_ZZ := Val;
+            when 'A' =>
+               Debug_Flag_AA := Val;
+            when 'B' =>
+               Debug_Flag_BB := Val;
+            when 'C' =>
+               Debug_Flag_CC := Val;
+            when 'D' =>
+               Debug_Flag_DD := Val;
+            when 'E' =>
+               Debug_Flag_EE := Val;
+            when 'F' =>
+               Debug_Flag_FF := Val;
+            when 'G' =>
+               Debug_Flag_GG := Val;
+            when 'H' =>
+               Debug_Flag_HH := Val;
+            when 'I' =>
+               Debug_Flag_II := Val;
+            when 'J' =>
+               Debug_Flag_JJ := Val;
+            when 'K' =>
+               Debug_Flag_KK := Val;
+            when 'L' =>
+               Debug_Flag_LL := Val;
+            when 'M' =>
+               Debug_Flag_MM := Val;
+            when 'N' =>
+               Debug_Flag_NN := Val;
+            when 'O' =>
+               Debug_Flag_OO := Val;
+            when 'P' =>
+               Debug_Flag_PP := Val;
+            when 'Q' =>
+               Debug_Flag_QQ := Val;
+            when 'R' =>
+               Debug_Flag_RR := Val;
+            when 'S' =>
+               Debug_Flag_SS := Val;
+            when 'T' =>
+               Debug_Flag_TT := Val;
+            when 'U' =>
+               Debug_Flag_UU := Val;
+            when 'V' =>
+               Debug_Flag_VV := Val;
+            when 'W' =>
+               Debug_Flag_WW := Val;
+            when 'X' =>
+               Debug_Flag_XX := Val;
+            when 'Y' =>
+               Debug_Flag_YY := Val;
+            when 'Z' =>
+               Debug_Flag_ZZ := Val;
          end case;
 
       else
          case LLet (C) is
-            when 'a' => Debug_Flag_A := Val;
-            when 'b' => Debug_Flag_B := Val;
-            when 'c' => Debug_Flag_C := Val;
-            when 'd' => Debug_Flag_D := Val;
-            when 'e' => Debug_Flag_E := Val;
-            when 'f' => Debug_Flag_F := Val;
-            when 'g' => Debug_Flag_G := Val;
-            when 'h' => Debug_Flag_H := Val;
-            when 'i' => Debug_Flag_I := Val;
-            when 'j' => Debug_Flag_J := Val;
-            when 'k' => Debug_Flag_K := Val;
-            when 'l' => Debug_Flag_L := Val;
-            when 'm' => Debug_Flag_M := Val;
-            when 'n' => Debug_Flag_N := Val;
-            when 'o' => Debug_Flag_O := Val;
-            when 'p' => Debug_Flag_P := Val;
-            when 'q' => Debug_Flag_Q := Val;
-            when 'r' => Debug_Flag_R := Val;
-            when 's' => Debug_Flag_S := Val;
-            when 't' => Debug_Flag_T := Val;
-            when 'u' => Debug_Flag_U := Val;
-            when 'v' => Debug_Flag_V := Val;
-            when 'w' => Debug_Flag_W := Val;
-            when 'x' => Debug_Flag_X := Val;
-            when 'y' => Debug_Flag_Y := Val;
-            when 'z' => Debug_Flag_Z := Val;
+            when 'a' =>
+               Debug_Flag_A := Val;
+            when 'b' =>
+               Debug_Flag_B := Val;
+            when 'c' =>
+               Debug_Flag_C := Val;
+            when 'd' =>
+               Debug_Flag_D := Val;
+            when 'e' =>
+               Debug_Flag_E := Val;
+            when 'f' =>
+               Debug_Flag_F := Val;
+            when 'g' =>
+               Debug_Flag_G := Val;
+            when 'h' =>
+               Debug_Flag_H := Val;
+            when 'i' =>
+               Debug_Flag_I := Val;
+            when 'j' =>
+               Debug_Flag_J := Val;
+            when 'k' =>
+               Debug_Flag_K := Val;
+            when 'l' =>
+               Debug_Flag_L := Val;
+            when 'm' =>
+               Debug_Flag_M := Val;
+            when 'n' =>
+               Debug_Flag_N := Val;
+            when 'o' =>
+               Debug_Flag_O := Val;
+            when 'p' =>
+               Debug_Flag_P := Val;
+            when 'q' =>
+               Debug_Flag_Q := Val;
+            when 'r' =>
+               Debug_Flag_R := Val;
+            when 's' =>
+               Debug_Flag_S := Val;
+            when 't' =>
+               Debug_Flag_T := Val;
+            when 'u' =>
+               Debug_Flag_U := Val;
+            when 'v' =>
+               Debug_Flag_V := Val;
+            when 'w' =>
+               Debug_Flag_W := Val;
+            when 'x' =>
+               Debug_Flag_X := Val;
+            when 'y' =>
+               Debug_Flag_Y := Val;
+            when 'z' =>
+               Debug_Flag_Z := Val;
          end case;
       end if;
    end Set_Debug_Flag;
@@ -905,82 +966,143 @@ package body Debug is
    ---------------------------
 
    procedure Set_Dotted_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig  is Character range '1' .. '9';
+      subtype Dig is Character range '1' .. '9';
       subtype LLet is Character range 'a' .. 'z';
       subtype ULet is Character range 'A' .. 'Z';
 
    begin
       if C in Dig then
          case Dig (C) is
-            when '1' => Debug_Flag_Dot_1 := Val;
-            when '2' => Debug_Flag_Dot_2 := Val;
-            when '3' => Debug_Flag_Dot_3 := Val;
-            when '4' => Debug_Flag_Dot_4 := Val;
-            when '5' => Debug_Flag_Dot_5 := Val;
-            when '6' => Debug_Flag_Dot_6 := Val;
-            when '7' => Debug_Flag_Dot_7 := Val;
-            when '8' => Debug_Flag_Dot_8 := Val;
-            when '9' => Debug_Flag_Dot_9 := Val;
+            when '1' =>
+               Debug_Flag_Dot_1 := Val;
+            when '2' =>
+               Debug_Flag_Dot_2 := Val;
+            when '3' =>
+               Debug_Flag_Dot_3 := Val;
+            when '4' =>
+               Debug_Flag_Dot_4 := Val;
+            when '5' =>
+               Debug_Flag_Dot_5 := Val;
+            when '6' =>
+               Debug_Flag_Dot_6 := Val;
+            when '7' =>
+               Debug_Flag_Dot_7 := Val;
+            when '8' =>
+               Debug_Flag_Dot_8 := Val;
+            when '9' =>
+               Debug_Flag_Dot_9 := Val;
          end case;
 
       elsif C in ULet then
          case ULet (C) is
-            when 'A' => Debug_Flag_Dot_AA := Val;
-            when 'B' => Debug_Flag_Dot_BB := Val;
-            when 'C' => Debug_Flag_Dot_CC := Val;
-            when 'D' => Debug_Flag_Dot_DD := Val;
-            when 'E' => Debug_Flag_Dot_EE := Val;
-            when 'F' => Debug_Flag_Dot_FF := Val;
-            when 'G' => Debug_Flag_Dot_GG := Val;
-            when 'H' => Debug_Flag_Dot_HH := Val;
-            when 'I' => Debug_Flag_Dot_II := Val;
-            when 'J' => Debug_Flag_Dot_JJ := Val;
-            when 'K' => Debug_Flag_Dot_KK := Val;
-            when 'L' => Debug_Flag_Dot_LL := Val;
-            when 'M' => Debug_Flag_Dot_MM := Val;
-            when 'N' => Debug_Flag_Dot_NN := Val;
-            when 'O' => Debug_Flag_Dot_OO := Val;
-            when 'P' => Debug_Flag_Dot_PP := Val;
-            when 'Q' => Debug_Flag_Dot_QQ := Val;
-            when 'R' => Debug_Flag_Dot_RR := Val;
-            when 'S' => Debug_Flag_Dot_SS := Val;
-            when 'T' => Debug_Flag_Dot_TT := Val;
-            when 'U' => Debug_Flag_Dot_UU := Val;
-            when 'V' => Debug_Flag_Dot_VV := Val;
-            when 'W' => Debug_Flag_Dot_WW := Val;
-            when 'X' => Debug_Flag_Dot_XX := Val;
-            when 'Y' => Debug_Flag_Dot_YY := Val;
-            when 'Z' => Debug_Flag_Dot_ZZ := Val;
+            when 'A' =>
+               Debug_Flag_Dot_AA := Val;
+            when 'B' =>
+               Debug_Flag_Dot_BB := Val;
+            when 'C' =>
+               Debug_Flag_Dot_CC := Val;
+            when 'D' =>
+               Debug_Flag_Dot_DD := Val;
+            when 'E' =>
+               Debug_Flag_Dot_EE := Val;
+            when 'F' =>
+               Debug_Flag_Dot_FF := Val;
+            when 'G' =>
+               Debug_Flag_Dot_GG := Val;
+            when 'H' =>
+               Debug_Flag_Dot_HH := Val;
+            when 'I' =>
+               Debug_Flag_Dot_II := Val;
+            when 'J' =>
+               Debug_Flag_Dot_JJ := Val;
+            when 'K' =>
+               Debug_Flag_Dot_KK := Val;
+            when 'L' =>
+               Debug_Flag_Dot_LL := Val;
+            when 'M' =>
+               Debug_Flag_Dot_MM := Val;
+            when 'N' =>
+               Debug_Flag_Dot_NN := Val;
+            when 'O' =>
+               Debug_Flag_Dot_OO := Val;
+            when 'P' =>
+               Debug_Flag_Dot_PP := Val;
+            when 'Q' =>
+               Debug_Flag_Dot_QQ := Val;
+            when 'R' =>
+               Debug_Flag_Dot_RR := Val;
+            when 'S' =>
+               Debug_Flag_Dot_SS := Val;
+            when 'T' =>
+               Debug_Flag_Dot_TT := Val;
+            when 'U' =>
+               Debug_Flag_Dot_UU := Val;
+            when 'V' =>
+               Debug_Flag_Dot_VV := Val;
+            when 'W' =>
+               Debug_Flag_Dot_WW := Val;
+            when 'X' =>
+               Debug_Flag_Dot_XX := Val;
+            when 'Y' =>
+               Debug_Flag_Dot_YY := Val;
+            when 'Z' =>
+               Debug_Flag_Dot_ZZ := Val;
          end case;
 
       else
          case LLet (C) is
-            when 'a' => Debug_Flag_Dot_A := Val;
-            when 'b' => Debug_Flag_Dot_B := Val;
-            when 'c' => Debug_Flag_Dot_C := Val;
-            when 'd' => Debug_Flag_Dot_D := Val;
-            when 'e' => Debug_Flag_Dot_E := Val;
-            when 'f' => Debug_Flag_Dot_F := Val;
-            when 'g' => Debug_Flag_Dot_G := Val;
-            when 'h' => Debug_Flag_Dot_H := Val;
-            when 'i' => Debug_Flag_Dot_I := Val;
-            when 'j' => Debug_Flag_Dot_J := Val;
-            when 'k' => Debug_Flag_Dot_K := Val;
-            when 'l' => Debug_Flag_Dot_L := Val;
-            when 'm' => Debug_Flag_Dot_M := Val;
-            when 'n' => Debug_Flag_Dot_N := Val;
-            when 'o' => Debug_Flag_Dot_O := Val;
-            when 'p' => Debug_Flag_Dot_P := Val;
-            when 'q' => Debug_Flag_Dot_Q := Val;
-            when 'r' => Debug_Flag_Dot_R := Val;
-            when 's' => Debug_Flag_Dot_S := Val;
-            when 't' => Debug_Flag_Dot_T := Val;
-            when 'u' => Debug_Flag_Dot_U := Val;
-            when 'v' => Debug_Flag_Dot_V := Val;
-            when 'w' => Debug_Flag_Dot_W := Val;
-            when 'x' => Debug_Flag_Dot_X := Val;
-            when 'y' => Debug_Flag_Dot_Y := Val;
-            when 'z' => Debug_Flag_Dot_Z := Val;
+            when 'a' =>
+               Debug_Flag_Dot_A := Val;
+            when 'b' =>
+               Debug_Flag_Dot_B := Val;
+            when 'c' =>
+               Debug_Flag_Dot_C := Val;
+            when 'd' =>
+               Debug_Flag_Dot_D := Val;
+            when 'e' =>
+               Debug_Flag_Dot_E := Val;
+            when 'f' =>
+               Debug_Flag_Dot_F := Val;
+            when 'g' =>
+               Debug_Flag_Dot_G := Val;
+            when 'h' =>
+               Debug_Flag_Dot_H := Val;
+            when 'i' =>
+               Debug_Flag_Dot_I := Val;
+            when 'j' =>
+               Debug_Flag_Dot_J := Val;
+            when 'k' =>
+               Debug_Flag_Dot_K := Val;
+            when 'l' =>
+               Debug_Flag_Dot_L := Val;
+            when 'm' =>
+               Debug_Flag_Dot_M := Val;
+            when 'n' =>
+               Debug_Flag_Dot_N := Val;
+            when 'o' =>
+               Debug_Flag_Dot_O := Val;
+            when 'p' =>
+               Debug_Flag_Dot_P := Val;
+            when 'q' =>
+               Debug_Flag_Dot_Q := Val;
+            when 'r' =>
+               Debug_Flag_Dot_R := Val;
+            when 's' =>
+               Debug_Flag_Dot_S := Val;
+            when 't' =>
+               Debug_Flag_Dot_T := Val;
+            when 'u' =>
+               Debug_Flag_Dot_U := Val;
+            when 'v' =>
+               Debug_Flag_Dot_V := Val;
+            when 'w' =>
+               Debug_Flag_Dot_W := Val;
+            when 'x' =>
+               Debug_Flag_Dot_X := Val;
+            when 'y' =>
+               Debug_Flag_Dot_Y := Val;
+            when 'z' =>
+               Debug_Flag_Dot_Z := Val;
          end case;
       end if;
    end Set_Dotted_Debug_Flag;

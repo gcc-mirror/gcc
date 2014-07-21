@@ -320,6 +320,18 @@ package body Makeutl is
                   end;
                end if;
 
+               --  Check that a dependent source for a unit that is from a
+               --  project is indeed a source of this unit.
+
+               Unit_Name := SD.Unit_Name;
+
+               if Unit_Name /= No_Name
+                 and then not Fname.Is_Internal_File_Name (SD.Sfile)
+                 and then File_Not_A_Source_Of (Tree, Unit_Name, SD.Sfile)
+               then
+                  return No_Name;
+               end if;
+
             else
                --  For separates, the file is no longer associated with the
                --  unit ("proc-sep.adb" is not associated with unit "proc.sep")

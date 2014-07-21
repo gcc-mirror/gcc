@@ -458,6 +458,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (pointer, target);
   conf (pointer, intrinsic);
   conf (pointer, elemental);
+  conf (pointer, codimension);
   conf (allocatable, elemental);
 
   conf (target, external);
@@ -534,8 +535,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (cray_pointer, entry);
 
   conf (cray_pointee, allocatable);
-  conf (cray_pointer, contiguous);
-  conf (cray_pointer, codimension);
+  conf (cray_pointee, contiguous);
+  conf (cray_pointee, codimension);
   conf (cray_pointee, intent);
   conf (cray_pointee, optional);
   conf (cray_pointee, dummy);

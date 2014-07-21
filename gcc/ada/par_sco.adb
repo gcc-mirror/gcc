@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,10 +100,10 @@ package body Par_SCO is
    --  contains a logical operator in its subtree).
 
    function Is_Logical_Operator (N : Node_Id) return Boolean;
-   --  N is the node for a subexpression. This procedure just tests N to see
-   --  if it is a logical operator (including short circuit conditions, but
-   --  excluding OR and AND) and returns True if so, False otherwise, it does
-   --  no other processing.
+   --  N is the node for a subexpression. This procedure determines whether N
+   --  a logical operator (including short circuit conditions, but excluding
+   --  OR and AND) and returns True if so. Note that in cases where True is
+   --  returned, callers assume Nkind (N) in N_Op.
 
    function To_Source_Location (S : Source_Ptr) return Source_Location;
    --  Converts Source_Ptr value to Source_Location (line/col) format
@@ -307,6 +307,9 @@ package body Par_SCO is
    function Has_Decision (N : Node_Id) return Boolean is
 
       function Check_Node (N : Node_Id) return Traverse_Result;
+      --  Determine if Nkind (N) indicates the presence of a decision (i.e.
+      --  N is a logical operator, which is a decision in itself, or an
+      --  IF-expression whose Condition attribute is a decision).
 
       ----------------
       -- Check_Node --
@@ -314,7 +317,7 @@ package body Par_SCO is
 
       function Check_Node (N : Node_Id) return Traverse_Result is
       begin
-         if Is_Logical_Operator (N) then
+         if Is_Logical_Operator (N) or else Nkind (N) = N_If_Expression then
             return Abandon;
          else
             return OK;
@@ -346,7 +349,8 @@ package body Par_SCO is
    begin
       SCO_Unit_Number_Table.Init;
 
-      --  Set dummy 0'th entry in place for sort
+      --  The SCO_Unit_Number_Table entry with index 0 is intentionally set
+      --  aside to be used as temporary for sorting.
 
       SCO_Unit_Number_Table.Increment_Last;
    end Initialize;
@@ -456,7 +460,8 @@ package body Par_SCO is
 
                if Nkind_In (N, N_Op_Or, N_Or_Else) then
                   C := '|';
-               else
+
+               else pragma Assert (Nkind_In (N, N_Op_And, N_And_Then));
                   C := '&';
                end if;
             end if;
@@ -995,10 +1000,11 @@ package body Par_SCO is
       --  name and dependency numbers later.
 
       SCO_Unit_Table.Append (
-        (Dep_Num   => 0,
-         File_Name => null,
-         From      => From,
-         To        => SCO_Table.Last));
+        (Dep_Num    => 0,
+         File_Name  => null,
+         File_Index => Get_Source_File_Index (Sloc (Lu)),
+         From       => From,
+         To         => SCO_Table.Last));
 
       SCO_Unit_Number_Table.Append (U);
    end SCO_Record;

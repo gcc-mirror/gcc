@@ -7700,8 +7700,9 @@ cp_parser_delete_expression (cp_parser* parser)
 			tf_warning_or_error);
 }
 
-/* Returns 1 if TOKEN may start a cast-expression and, in C++11,
-   isn't '[', -1 if TOKEN is '[' in C++11, 0 otherwise.  */
+/* Returns 1 if TOKEN may start a cast-expression and isn't '++', '--',
+   neither '[' in C++11; -1 if TOKEN is '++', '--', or '[' in C++11;
+   0 otherwise.  */
 
 static int
 cp_parser_tokens_start_cast_expression (cp_parser *parser)
@@ -7755,12 +7756,25 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
       return cp_lexer_peek_nth_token (parser->lexer, 2)->type
 	     != CPP_CLOSE_PAREN;
 
+    case CPP_OPEN_SQUARE:
       /* '[' may start a primary-expression in obj-c++ and in C++11,
 	 as a lambda-expression, eg, '(void)[]{}'.  */
-    case CPP_OPEN_SQUARE:
       if (cxx_dialect >= cxx11)
 	return -1;
       return c_dialect_objc ();
+
+    case CPP_PLUS_PLUS:
+    case CPP_MINUS_MINUS:
+      /* '++' and '--' may or may not start a cast-expression:
+
+	 struct T { void operator++(int); };
+	 void f() { (T())++; }
+
+	 vs
+
+	 int a;
+	 (int)++a;  */
+      return -1;
 
     default:
       return 1;
@@ -7874,8 +7888,8 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	 function returning T.  */
       if (!cp_parser_error_occurred (parser))
 	{
-	  /* Only commit if the cast-expression doesn't start with '[' in
-	     C++11, which may or may not start a lambda-expression.  */
+	  /* Only commit if the cast-expression doesn't start with
+	     '++', '--', or '[' in C++11.  */
 	  if (cast_expression > 0)
 	    cp_parser_commit_to_topmost_tentative_parse (parser);
 

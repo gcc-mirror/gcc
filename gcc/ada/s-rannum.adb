@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,7 +103,7 @@ package body System.Random_Numbers is
    -- Algorithmic Parameters --
    ----------------------------
 
-   Lower_Mask : constant := 2**31-1;
+   Lower_Mask : constant := 2**31 - 1;
    Upper_Mask : constant := 2**31;
 
    Matrix_A   : constant array (State_Val range 0 .. 1) of State_Val

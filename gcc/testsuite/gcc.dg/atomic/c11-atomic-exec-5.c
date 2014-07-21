@@ -4,7 +4,9 @@
    get properly cleared).  */
 /* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors -pthread -D_POSIX_C_SOURCE=200809L" } */
-/* { dg-additional-options "-D_XOPEN_SOURCE=600" { target *-*-solaris2.1[0-9]* } }
+/* { dg-add-options ieee } */
+/* { dg-additional-options "-mfp-trap-mode=sui" { target alpha*-*-* } } */
+/* { dg-additional-options "-D_XOPEN_SOURCE=600" { target *-*-solaris2.1[0-9]* } } */
 /* { dg-require-effective-target fenv_exceptions } */
 /* { dg-require-effective-target pthread } */
 
@@ -21,7 +23,11 @@
 			 | FE_OVERFLOW		\
 			 | FE_UNDERFLOW)
 
-#define ITER_COUNT 10000
+#if defined __alpha__
+  #define ITER_COUNT 100
+#else
+  #define ITER_COUNT 10000
+#endif
 
 static volatile _Atomic bool thread_ready, thread_stop;
 

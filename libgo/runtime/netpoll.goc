@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris windows
+// +build darwin dragonfly freebsd linux nacl netbsd openbsd solaris windows
 
 package net
 
@@ -63,6 +63,7 @@ struct PollDesc
 	G*	wg;	// READY, WAIT, G waiting for write or nil
 	Timer	wt;	// write deadline timer
 	int64	wd;	// write deadline
+	void*	user;	// user settable cookie
 };
 
 static struct
@@ -87,6 +88,11 @@ static intgo	checkerr(PollDesc *pd, int32 mode);
 static FuncVal deadlineFn	= {(void(*)(void))deadline};
 static FuncVal readDeadlineFn	= {(void(*)(void))readDeadline};
 static FuncVal writeDeadlineFn	= {(void(*)(void))writeDeadline};
+
+// runtimeNano returns the current value of the runtime clock in nanoseconds.
+func runtimeNano() (ns int64) {
+	ns = runtime_nanotime();
+}
 
 func runtime_pollServerInit() {
 	runtime_netpollinit();
@@ -141,7 +147,7 @@ func runtime_pollWait(pd *PollDesc, mode int) (err int) {
 	if(err == 0) {
 		// As for now only Solaris uses level-triggered IO.
 		if(Solaris)
-			runtime_netpollarm(pd->fd, mode);
+			runtime_netpollarm(pd, mode);
 		while(!netpollblock(pd, mode, false)) {
 			err = checkerr(pd, mode);
 			if(err != 0)
@@ -254,6 +260,30 @@ uintptr
 runtime_netpollfd(PollDesc *pd)
 {
 	return pd->fd;
+}
+
+void**
+runtime_netpolluser(PollDesc *pd)
+{
+	return &pd->user;
+}
+
+bool
+runtime_netpollclosing(PollDesc *pd)
+{
+	return pd->closing;
+}
+
+void
+runtime_netpolllock(PollDesc *pd)
+{
+	runtime_lock(pd);
+}
+
+void
+runtime_netpollunlock(PollDesc *pd)
+{
+	runtime_unlock(pd);
 }
 
 // make pd ready, newly runnable goroutines (if any) are enqueued info gpp list

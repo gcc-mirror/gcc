@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -107,6 +107,8 @@ extern void   __gnat_current_time_string           (char *);
 extern void   __gnat_to_gm_time			   (OS_Time *, int *, int *,
 				                    int *, int *,
 				                    int *, int *);
+extern void   __gnat_to_os_time                    (OS_Time *, int, int, int,
+                                                    int, int, int);
 extern int    __gnat_get_maximum_file_name_length  (void);
 extern int    __gnat_get_switches_case_sensitive   (void);
 extern int    __gnat_get_file_names_case_sensitive (void);
@@ -183,7 +185,7 @@ extern int    __gnat_is_symbolic_link_attr   (char *, struct file_attributes *);
 
 extern void   __gnat_set_non_writable              (char *name);
 extern void   __gnat_set_writable                  (char *name);
-extern void   __gnat_set_executable                (char *name);
+extern void   __gnat_set_executable                (char *name, int);
 extern void   __gnat_set_readable                  (char *name);
 extern void   __gnat_set_non_readable              (char *name);
 extern int    __gnat_is_symbolic_link		   (char *name);
@@ -242,6 +244,7 @@ extern int    __gnat_pipe			   (int *);
 extern int    __gnat_expect_poll		   (int *, int, int, int *);
 extern void   __gnat_set_binary_mode		   (int);
 extern void   __gnat_set_text_mode		   (int);
+extern void   __gnat_set_mode			   (int,int);
 extern char  *__gnat_ttyname			   (int);
 extern int    __gnat_lseek			   (int, long, int);
 extern int    __gnat_set_close_on_exec		   (int, int);

@@ -135,3 +135,19 @@ func SetMaxStack(bytes int) int {
 func SetMaxThreads(threads int) int {
 	return setMaxThreads(threads)
 }
+
+// SetPanicOnFault controls the runtime's behavior when a program faults
+// at an unexpected (non-nil) address. Such faults are typically caused by
+// bugs such as runtime memory corruption, so the default response is to crash
+// the program. Programs working with memory-mapped files or unsafe
+// manipulation of memory may cause faults at non-nil addresses in less
+// dramatic situations; SetPanicOnFault allows such programs to request
+// that the runtime trigger only a panic, not a crash.
+// SetPanicOnFault applies only to the current goroutine.
+// It returns the previous setting.
+func SetPanicOnFault(enabled bool) bool
+
+// WriteHeapDump writes a description of the heap and the objects in
+// it to the given file descriptor.
+// The heap dump format is defined at http://golang.org/s/go13heapdump.
+func WriteHeapDump(fd uintptr)

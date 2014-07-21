@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -892,7 +892,7 @@ package body Ada.Wide_Text_IO is
       Standard_Err.Is_Regular_File   := is_regular_file (fileno (stderr)) /= 0;
       Standard_Err.Is_Temporary_File := False;
       Standard_Err.Is_System_File    := True;
-      Standard_Err.Is_Text_File      := True;
+      Standard_Err.Text_Encoding     := Default_Text;
       Standard_Err.Access_Method     := 'T';
       Standard_Err.Self              := Standard_Err;
       Standard_Err.WC_Method         := Default_WCEM;
@@ -904,7 +904,7 @@ package body Ada.Wide_Text_IO is
       Standard_In.Is_Regular_File    := is_regular_file (fileno (stdin)) /= 0;
       Standard_In.Is_Temporary_File  := False;
       Standard_In.Is_System_File     := True;
-      Standard_In.Is_Text_File       := True;
+      Standard_In.Text_Encoding      := Default_Text;
       Standard_In.Access_Method      := 'T';
       Standard_In.Self               := Standard_In;
       Standard_In.WC_Method          := Default_WCEM;
@@ -916,7 +916,7 @@ package body Ada.Wide_Text_IO is
       Standard_Out.Is_Regular_File   := is_regular_file (fileno (stdout)) /= 0;
       Standard_Out.Is_Temporary_File := False;
       Standard_Out.Is_System_File    := True;
-      Standard_Out.Is_Text_File      := True;
+      Standard_Out.Text_Encoding     := Default_Text;
       Standard_Out.Access_Method     := 'T';
       Standard_Out.Self              := Standard_Out;
       Standard_Out.WC_Method         := Default_WCEM;
@@ -1082,13 +1082,20 @@ package body Ada.Wide_Text_IO is
       FIO.Check_Write_Status (AP (File));
 
       for K in 1 .. Spacing loop
-         Putc (LM, File);
+
+         --  We use Put here (rather than Putc) so that we get the proper
+         --  behavior on windows for output of Wide_String to the console.
+
+         Put (File, Wide_Character'Val (LM));
+
          File.Line := File.Line + 1;
 
-         if File.Page_Length /= 0
-           and then File.Line > File.Page_Length
-         then
-            Putc (PM, File);
+         if File.Page_Length /= 0 and then File.Line > File.Page_Length then
+
+            --  Same situation as above, use Put instead of Putc
+
+            Put (File, Wide_Character'Val (PM));
+
             File.Line := 1;
             File.Page := File.Page + 1;
          end if;
@@ -1220,6 +1227,14 @@ package body Ada.Wide_Text_IO is
      (File : File_Type;
       Item : Wide_Character)
    is
+      wide_text_translation_required : Integer;
+      pragma Import
+        (C, wide_text_translation_required,
+         "__gnat_wide_text_translation_required");
+      --  Text translation is required on Windows only. This means that the
+      --  console is doing translation and we do not want to do any encoding
+      --  here. If this variable is not 0 we output the character via fputwc.
+
       procedure Out_Char (C : Character);
       --  Procedure to output one character of a wide character sequence
 
@@ -1234,11 +1249,22 @@ package body Ada.Wide_Text_IO is
          Putc (Character'Pos (C), File);
       end Out_Char;
 
+      Discard : int;
+
    --  Start of processing for Put
 
    begin
       FIO.Check_Write_Status (AP (File));
-      WC_Out (Item, File.WC_Method);
+
+      if wide_text_translation_required /= 0
+        or else File.Text_Encoding in Non_Default_Text_Content_Encoding
+      then
+         set_mode (fileno (File.Stream), File.Text_Encoding);
+         Discard := fputwc (Wide_Character'Pos (Item), File.Stream);
+      else
+         WC_Out (Item, File.WC_Method);
+      end if;
+
       File.Col := File.Col + 1;
    end Put;
 

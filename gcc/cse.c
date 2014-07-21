@@ -2687,6 +2687,13 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 	     the same attributes share the same mem_attrs data structure.  */
 	  if (MEM_ATTRS (x) != MEM_ATTRS (y))
 	    return 0;
+
+	  /* If we are handling exceptions, we cannot consider two expressions
+	     with different trapping status as equivalent, because simple_mem
+	     might accept one and reject the other.  */
+	  if (cfun->can_throw_non_call_exceptions
+	      && (MEM_NOTRAP_P (x) != MEM_NOTRAP_P (y)))
+	    return 0;
 	}
       break;
 

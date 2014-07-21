@@ -419,6 +419,24 @@ package body Checks is
       end if;
    end Alignment_Checks_Suppressed;
 
+   ----------------------------------
+   -- Allocation_Checks_Suppressed --
+   ----------------------------------
+
+   --  Note: at the current time there are no calls to this function, because
+   --  the relevant check is in the run-time, so it is not a check that the
+   --  compiler can suppress anyway, but we still have to recognize the check
+   --  name Allocation_Check since it is part of the standard.
+
+   function Allocation_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Allocation_Check);
+      else
+         return Scope_Suppress.Suppress (Allocation_Check);
+      end if;
+   end Allocation_Checks_Suppressed;
+
    -------------------------
    -- Append_Range_Checks --
    -------------------------
@@ -4603,6 +4621,19 @@ package body Checks is
       end if;
    end Division_Checks_Suppressed;
 
+   --------------------------------------
+   -- Duplicated_Tag_Checks_Suppressed --
+   --------------------------------------
+
+   function Duplicated_Tag_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Duplicated_Tag_Check);
+      else
+         return Scope_Suppress.Suppress (Duplicated_Tag_Check);
+      end if;
+   end Duplicated_Tag_Checks_Suppressed;
+
    -----------------------------------
    -- Elaboration_Checks_Suppressed --
    -----------------------------------
@@ -5276,7 +5307,7 @@ package body Checks is
       --  so they are also always valid (in particular, the unused bits can be
       --  random rubbish without affecting the validity of the array value).
 
-      if not Is_Scalar_Type (Typ) or else Is_Packed_Array_Type (Typ) then
+      if not Is_Scalar_Type (Typ) or else Is_Packed_Array_Impl_Type (Typ) then
          return True;
 
       --  If no validity checking, then everything is considered valid
@@ -6431,6 +6462,17 @@ package body Checks is
          return;
       end if;
 
+      --  If the expression is a packed component of a modular type of the
+      --  right size, the data is always valid.
+
+      if Nkind (Expr) = N_Selected_Component
+        and then Present (Component_Clause (Entity (Selector_Name (Expr))))
+        and then Is_Modular_Integer_Type (Typ)
+        and then Modulus (Typ) = 2 ** Esize (Entity (Selector_Name (Expr)))
+      then
+         return;
+      end if;
+
       --  If we have a checked conversion, then validity check applies to
       --  the expression inside the conversion, not the result, since if
       --  the expression inside is valid, then so is the conversion result.
@@ -6454,20 +6496,29 @@ package body Checks is
 
          --  Force evaluation to avoid multiple reads for atomic/volatile
 
+         --  Note: we set Name_Req to False. We used to set it to True, with
+         --  the thinking that a name is required as the prefix of the 'Valid
+         --  call, but in fact the check that the prefix of an attribute is
+         --  a name is in the parser, and we just don't require it here.
+         --  Moreover, when we set Name_Req to True, that interfered with the
+         --  checking for Volatile, since we couldn't just capture the value.
+
          if Is_Entity_Name (Exp)
            and then Is_Volatile (Entity (Exp))
          then
-            Force_Evaluation (Exp, Name_Req => True);
+            --  Same reasoning as above for setting Name_Req to False
+
+            Force_Evaluation (Exp, Name_Req => False);
          end if;
 
          --  Build the prefix for the 'Valid call
 
-         PV := Duplicate_Subexpr_No_Checks (Exp, Name_Req => True);
+         PV := Duplicate_Subexpr_No_Checks (Exp, Name_Req => False);
 
-         --  A rather specialized kludge. If PV is an analyzed expression
-         --  which is an indexed component of a packed array that has not
-         --  been properly expanded, turn off its Analyzed flag to make sure
-         --  it gets properly reexpanded.
+         --  A rather specialized test. If PV is an analyzed expression which
+         --  is an indexed component of a packed array that has not been
+         --  properly expanded, turn off its Analyzed flag to make sure it
+         --  gets properly reexpanded.
 
          --  The reason this arises is that Duplicate_Subexpr_No_Checks did
          --  an analyze with the old parent pointer. This may point e.g. to
@@ -6475,12 +6526,14 @@ package body Checks is
 
          if Analyzed (PV)
            and then Nkind (PV) = N_Indexed_Component
-           and then Present (Packed_Array_Type (Etype (Prefix (PV))))
+           and then Present (Packed_Array_Impl_Type (Etype (Prefix (PV))))
          then
             Set_Analyzed (PV, False);
          end if;
 
-         --  Build the raise CE node to check for validity
+         --  Build the raise CE node to check for validity. We build a type
+         --  qualification for the prefix, since it may not be of the form of
+         --  a name, and we don't care in this context!
 
          CE :=
             Make_Raise_Constraint_Error (Loc,

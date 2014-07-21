@@ -38,6 +38,12 @@ extern void __go_print_string (struct String);
 
 extern struct __go_empty_interface __go_recover (void);
 
+extern _Bool __go_can_recover (const void *);
+
+extern void __go_makefunc_can_recover (const void *retaddr);
+
+extern void __go_makefunc_returning (void);
+
 extern void __go_unwind_stack (void);
 
 #endif /* !defined(LIBGO_GO_PANIC_H) */

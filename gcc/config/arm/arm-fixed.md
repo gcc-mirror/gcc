@@ -26,7 +26,7 @@
   "add%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_sreg")])
 
 (define_insn "add<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
@@ -36,7 +36,7 @@
   "sadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_dsp_reg")])
 
 (define_insn "usadd<mode>3"
   [(set (match_operand:UQADDSUB 0 "s_register_operand" "=r")
@@ -46,7 +46,7 @@
   "uqadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_dsp_reg")])
 
 (define_insn "ssadd<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
@@ -56,7 +56,7 @@
   "qadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_dsp_reg")])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:FIXED 0 "s_register_operand" "=l,r")
@@ -66,7 +66,7 @@
   "sub%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_sreg")])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
@@ -76,7 +76,7 @@
   "ssub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_dsp_reg")])
 
 (define_insn "ussub<mode>3"
   [(set (match_operand:UQADDSUB 0 "s_register_operand" "=r")
@@ -87,7 +87,7 @@
   "uqsub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_dsp_reg")])
 
 (define_insn "sssub<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
@@ -97,7 +97,7 @@
   "qsub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "alu_reg")])
+   (set_attr "type" "alu_dsp_reg")])
 
 ;; Fractional multiplies.
 

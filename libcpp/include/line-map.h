@@ -315,6 +315,10 @@ struct GTY(()) line_maps {
   line_map_round_alloc_size_func round_alloc_size;
 
   struct location_adhoc_data_map location_adhoc_data_map;
+
+  /* The special location value that is used as spelling location for
+     built-in tokens.  */
+  source_location builtin_location;
 };
 
 /* Returns the pointer to the memory region where information about
@@ -447,8 +451,12 @@ extern source_location get_location_from_adhoc_loc (struct line_maps *,
 
 extern void rebuild_location_adhoc_htab (struct line_maps *);
 
-/* Initialize a line map set.  */
-extern void linemap_init (struct line_maps *);
+/* Initialize a line map set.  SET is the line map set to initialize
+   and BUILTIN_LOCATION is the special location value to be used as
+   spelling location for built-in tokens.  This BUILTIN_LOCATION has
+   to be strictly less than RESERVED_LOCATION_COUNT.  */
+extern void linemap_init (struct line_maps *set,
+			  source_location builtin_location);
 
 /* Check for and warn about line_maps entered but not exited.  */
 

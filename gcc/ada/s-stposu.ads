@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -95,16 +95,16 @@ package System.Storage_Pools.Subpools is
      (Pool    : in out Root_Storage_Pool_With_Subpools;
       Subpool : in out Subpool_Handle)
    is abstract;
+   --  This precondition causes errors in simple tests, disabled for now???
+   --  with Pre'Class => Pool_Of_Subpool (Subpool) = Pool'Access;
 
-   --  ??? This precondition causes errors in simple tests, disabled for now
-
-   --      with Pre'Class => Pool_Of_Subpool (Subpool) = Pool'Access;
    --  This routine requires implementation. Reclaim the storage a particular
    --  subpool occupies in a pool_with_subpools. This routine is called by
    --  Ada.Unchecked_Deallocate_Subpool.
 
    function Default_Subpool_For_Pool
-     (Pool : Root_Storage_Pool_With_Subpools) return not null Subpool_Handle;
+     (Pool : in out Root_Storage_Pool_With_Subpools)
+      return not null Subpool_Handle;
    --  Return a common subpool which is used for object allocations without a
    --  Subpool_Handle_name in the allocator. The default implementation of this
    --  routine raises Program_Error.

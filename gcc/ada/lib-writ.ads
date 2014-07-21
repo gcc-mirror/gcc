@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,7 +116,7 @@ package Lib.Writ is
    --  -- M  Main Program --
    --  ---------------------
 
-   --    M type [priority] [T=time-slice] [AB] [C=cpu] W=?
+   --    M type [priority] [T=time-slice] [C=cpu] W=?
 
    --      This line appears only if the main unit for this file is suitable
    --      for use as a main program. The parameters are:
@@ -140,14 +140,6 @@ package Lib.Writ is
    --          range 0 .. 10**9 giving the time slice value in units of
    --          milliseconds. The actual significance of this parameter is
    --          target dependent.
-
-   --        AB
-
-   --          Present if there is an allocator in the body of the procedure
-   --          after the BEGIN. This will be a violation of the restriction
-   --          No_Allocators_After_Elaboration if it is present, and this
-   --          unit is used as a main program (only the binder can find the
-   --          violation, since only the binder knows the main program).
 
    --        C=cpu
 
@@ -775,7 +767,7 @@ package Lib.Writ is
    --  units depend. This is used by the binder for consistency checking.
    --  These lines are also referenced by the cross-reference information.
 
-   --    D source-name time-stamp checksum [subunit-name] line:file-name
+   --    D source-name time-stamp checksum (sub)unit-name line:file-name
 
    --      source-name also includes preprocessing data file and preprocessing
    --      definition file. These preprocessing files may be given as full
@@ -790,9 +782,10 @@ package Lib.Writ is
    --      The checksum is an 8-hex digit representation of the source file
    --      checksum, with letters given in lower case.
 
-   --      The subunit name is present only if the dependency line is for a
-   --      subunit. It contains the fully qualified name of the subunit in all
-   --      lower case letters.
+   --      If the unit is not a subunit, the (sub)unit name is the unit name in
+   --      internal format, as described in package Uname. If the unit is a
+   --      subunit, the (sub)unit name is the fully qualified name of the
+   --      subunit in all lower case letters.
 
    --      The line:file-name entry is present only if a Source_Reference
    --      pragma appeared in the source file identified by source-name. In

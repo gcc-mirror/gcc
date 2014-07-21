@@ -154,6 +154,30 @@ runtime_dopanic(int32 unused __attribute__ ((unused)))
 	runtime_exit(2);
 }
 
+bool
+runtime_canpanic(G *gp)
+{
+	M *m = runtime_m();
+	byte g;
+
+	USED(&g);  // don't use global g, it points to gsignal
+
+	// Is it okay for gp to panic instead of crashing the program?
+	// Yes, as long as it is running Go code, not runtime code,
+	// and not stuck in a system call.
+	if(gp == nil || gp != m->curg)
+		return false;
+	if(m->locks-m->softfloat != 0 || m->mallocing != 0 || m->throwing != 0 || m->gcing != 0 || m->dying != 0)
+		return false;
+	if(gp->status != Grunning)
+		return false;
+#ifdef GOOS_windows
+	if(m->libcallsp != 0)
+		return false;
+#endif
+	return true;
+}
+
 void
 runtime_throw(const char *s)
 {
@@ -182,6 +206,10 @@ runtime_panicstring(const char *s)
 		runtime_printf("panic: %s\n", s);
 		runtime_throw("panic during gc");
 	}
+	if(runtime_m()->locks) {
+		runtime_printf("panic: %s\n", s);
+		runtime_throw("panic holding locks");
+	}
 	runtime_newErrorCString(s, &err);
 	runtime_panic(err);
 }
@@ -193,4 +221,10 @@ runtime_Goexit(void)
 {
 	rundefer();
 	runtime_goexit();
+}
+
+void
+runtime_panicdivide(void)
+{
+	runtime_panicstring("integer divide by zero");
 }

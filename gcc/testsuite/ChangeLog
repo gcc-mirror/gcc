@@ -1,3 +1,150 @@
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
+	* gcc.target/i386/fuse-caller-save-rec.c: Allow underscore prefix to bar
+	symbol in scan-assembler-times call check.
+
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
+	* gcc.target/i386/fuse-caller-save-xmm.c: Allow LC0 without dot prefix
+	for darwin in scan-assembler-times check.
+	* gcc.target/i386/fuse-caller-save.c: Remove cfi-related
+	scan-assembler-not checks.  Add checks for insns.
+	(main): Remove.
+	* gcc.target/i386/fuse-caller-save-rec.c: Remove cfi-related
+	scan-assembler-not checks.  Copy checks from i386/fuse-caller-save.c.
+	(main): Remove.
+
+2014-07-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/61827
+	* gcc.target/i386/fuse-caller-save-xmm.c: Add -fomit-frame-pointer to
+	dg-options.  Add checks for insns with xmm registers.  Remove
+	cfi_def_cfa_offset checks.  Generalize checks containing %rsp.
+	(main): Remove.
+
+2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61855
+	* gcc.target/i386/pr61855.c: New test.
+
+2014-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack20.ad[sb]: New test.
+	* gnat.dg/pack20_pkg.ads: New helper.
+
+2014-07-20  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Support multiple files in one
+	package for compiledir tests.
+
+2014-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61852
+	* gcc.dg/pr61852.c: New test.
+
+2014-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/stack-usage-2.c: Adjust.
+
+2014-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/61794
+	* gcc.target/i386/pr61794.c: New test.
+
+2014-07-17  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/umips-lwp-1.c (foo): Use a shift/add sequence
+	involving both inputs rather than a multiplication involving one.
+	* gcc.target/mips/umips-lwp-2.c (foo): Likewise.
+	* gcc.target/mips/umips-lwp-3.c (foo): Likewise.
+	* gcc.target/mips/umips-lwp-4.c (foo): Likewise.
+
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50961
+	* g++.dg/template/operator13.C: New.
+
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vfma_f64.c: New test.
+	* gcc.target/aarch64/simd/vmla_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vfms_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vmls_f64.c: Likewise.
+
+2014-07-17  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/ubsan/bounds-2.c: Change output pattern.
+	* c-c++-common/ubsan/bounds-5.c: Likewise.
+	* c-c++-common/ubsan/bounds-6.c: Likewise.
+	* c-c++-common/ubsan/bounds-7.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-1.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-10.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-2.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-3.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-4.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-5.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-6.c: Likewise.
+	* c-c++-common/ubsan/float-cast-overflow-8.c: Likewise.
+	* gcc.dg/ubsan/float-cast-overflow-bf.c: Likewise.
+	* g++.dg/ubsan/float-cast-overflow-bf.C: Likewise.
+
+2014-07-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vcaled_f64.c: Mark expected value volatile.
+	* gcc.target/aarch64/simd/vcales_f32.c: Likewise.
+	* gcc.target/aarch64/simd/vcaltd_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcalts_f32.c: Likewise.
+
+2014-07-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/atomic/c11-atomic-exec-5.c (dg-additional-options): Use
+	-mfp-trap-mode=sui instead of -mieee-with-inexact for alpha*-*-*.
+	* gfortran.dg/ieee/ieee_1.F90 (dg-additional-options): Ditto.
+
+2014-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61804
+	* g++.dg/parse/pr61804.C: New.
+
+2014-07-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.db/specs/alignment2.ads, gnat.db/specs/size_clause1.ads,
+	gnat.db/specs/size_clause2.ads: Update test case.
+
+2014-07-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/60723 - missing system-ness marks for macro tokens
+	* gcc.dg/cpp/syshdr{4,5}.{c,h}: New test files.
+
+2014-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/ieee/rounding_1.f90: Rename from ieee_rounding_1.f90.
+	* gfortran.dg/ieee/ieee_1.F90 (dg-additional-options): Add
+	-mieee-with-inexact for alpha*-*-*.
+
+2014-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_fenv_exceptions):
+	Add IEEE options to compile flags.
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Ditto.  Add -mieee-with-inexact
+	additional option and lower ITER_COUNT to 100 for alpha*-*-* targets.
+
+2014-07-15  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/61772
+	* gcc.dg/torture/pr61772.c: New test.
+
+2014-07-15  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/ubsan/bounds-1.c: New test.
+
+2014-06-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_34.f90: New.
+	* gfortran.dg/coarray_6.f90: Update test case.
+
 2014-07-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61779
@@ -53,8 +200,7 @@
 
 2014-07-13  Tobias Burnus  <burnus@net-b.de>
 
-	* gfortran.dg/coarray_atomic_4.f90: Avoid using a kind=16
-	integer.
+	* gfortran.dg/coarray_atomic_4.f90: Avoid using a kind=16 integer.
 
 2014-07-12  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -274,7 +420,7 @@
 	* c-c++-common/sizeof-array-argument.c: New test.
 	* gcc.dg/vla-5.c: Add dg-warnings.
 
-2014-07-05  Jan Hubicka   <hubicka@ucw.cz>
+2014-07-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-26.C: Update testcase.
 	* g++.dg/ipa/imm-devirt-1.C: Update testcase.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -666,10 +666,15 @@ begin
       Display_Version ("GNATBIND", "1995");
    end if;
 
-   --  Output usage information if no files
+   --  Output usage information if no arguments
 
    if not More_Lib_Files then
-      Bindusg.Display;
+      if Argument_Count = 0 then
+         Bindusg.Display;
+      else
+         Write_Line ("try ""gnatbind --help"" for more information.");
+      end if;
+
       Exit_Program (E_Fatal);
    end if;
 
@@ -913,7 +918,8 @@ begin
                   --------------------
 
                   function Put_In_Sources
-                    (S : File_Name_Type) return Boolean is
+                    (S : File_Name_Type) return Boolean
+                  is
                   begin
                      for J in 1 .. Closure_Sources.Last loop
                         if Closure_Sources.Table (J) = S then
@@ -939,11 +945,14 @@ begin
                   for J in reverse Elab_Order.First .. Elab_Order.Last loop
                      Source := Units.Table (Elab_Order.Table (J)).Sfile;
 
-                     --  Do not include the sources of the runtime and do not
-                     --  include the same source several times.
+                     --  Do not include same source more than once
 
                      if Put_In_Sources (Source)
-                       and then not Is_Internal_File_Name (Source)
+
+                       --  Do not include run-time units unless -Ra switch set
+
+                       and then (List_Closure_All
+                                  or else not Is_Internal_File_Name (Source))
                      then
                         if not Zero_Formatting then
                            Write_Str ("   ");

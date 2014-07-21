@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  modular integer types up to Size Modular'Size, and also for conversion
+--  modular integer types up to size Unsigned'Size, and also for conversion
 --  operations required in Text_IO.Modular_IO for such types.
 
 with System.Unsigned_Types;
@@ -43,9 +43,9 @@ package System.Img_Uns is
       S : in out String;
       P : out Natural);
    pragma Inline (Image_Unsigned);
-   --  Computes Unsigned'Image (V) and stores the result in S (1 .. P)
-   --  setting the resulting value of P. The caller guarantees that S
-   --  is long enough to hold the result, and that S'First is 1.
+   --  Computes Unsigned'Image (V) and stores the result in S (1 .. P) setting
+   --  the resulting value of P. The caller guarantees that S is long enough to
+   --  hold the result, and that S'First is 1.
 
    procedure Set_Image_Unsigned
      (V : System.Unsigned_Types.Unsigned;

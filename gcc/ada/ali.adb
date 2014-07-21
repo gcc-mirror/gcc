@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -894,7 +894,6 @@ package body ALI is
         Sfile                        => No_File,
         Task_Dispatching_Policy      => ' ',
         Time_Slice_Value             => -1,
-        Allocator_In_Body            => False,
         WC_Encoding                  => 'b',
         Unit_Exception_Table         => False,
         Ver                          => (others => ' '),
@@ -973,14 +972,6 @@ package body ALI is
                   P := P + 1;
                   Checkc ('=');
                   ALIs.Table (Id).Time_Slice_Value := Get_Nat;
-               end if;
-
-               Skip_Space;
-
-               if Nextc = 'A' then
-                  P := P + 1;
-                  Checkc ('B');
-                  ALIs.Table (Id).Allocator_In_Body := True;
                end if;
 
                Skip_Space;
@@ -2326,9 +2317,10 @@ package body ALI is
                end if;
             end;
 
-            --  Acquire subunit and reference file name entries
+            --  Acquire (sub)unit and reference file name entries
 
             Sdep.Table (Sdep.Last).Subunit_Name := No_Name;
+            Sdep.Table (Sdep.Last).Unit_Name    := No_Name;
             Sdep.Table (Sdep.Last).Rfile        :=
               Sdep.Table (Sdep.Last).Sfile;
             Sdep.Table (Sdep.Last).Start_Line   := 1;
@@ -2336,7 +2328,7 @@ package body ALI is
             if not At_Eol then
                Skip_Space;
 
-               --  Here for subunit name
+               --  Here for (sub)unit name
 
                if Nextc not in '0' .. '9' then
                   Name_Len := 0;
@@ -2344,11 +2336,18 @@ package body ALI is
                      Add_Char_To_Name_Buffer (Getc);
                   end loop;
 
-                  --  Set the subunit name. Note that we use Name_Find rather
+                  --  Set the (sub)unit name. Note that we use Name_Find rather
                   --  than Name_Enter here as the subunit name may already
                   --  have been put in the name table by the Project Manager.
 
-                  Sdep.Table (Sdep.Last).Subunit_Name := Name_Find;
+                  if Name_Len <= 2
+                    or else Name_Buffer (Name_Len - 1) /= '%'
+                  then
+                     Sdep.Table (Sdep.Last).Subunit_Name := Name_Find;
+                  else
+                     Name_Len := Name_Len - 2;
+                     Sdep.Table (Sdep.Last).Unit_Name := Name_Find;
+                  end if;
 
                   Skip_Space;
                end if;

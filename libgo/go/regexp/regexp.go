@@ -11,6 +11,14 @@
 // For an overview of the syntax, run
 //   godoc regexp/syntax
 //
+// The regexp implementation provided by this package is
+// guaranteed to run in time linear in the size of the input.
+// (This is a property not guaranteed by most open source
+// implementations of regular expressions.) For more information
+// about this property, see
+//	http://swtch.com/~rsc/regexp/regexp1.html
+// or any book about automata theory.
+//
 // All characters are UTF-8-encoded code points.
 //
 // There are 16 methods of Regexp that match a regular expression and identify
@@ -75,10 +83,12 @@ type Regexp struct {
 	// read-only after Compile
 	expr           string         // as passed to Compile
 	prog           *syntax.Prog   // compiled program
+	onepass        *onePassProg   // onpass program or nil
 	prefix         string         // required prefix in unanchored matches
 	prefixBytes    []byte         // prefix, as a []byte
 	prefixComplete bool           // prefix is the entire regexp
 	prefixRune     rune           // first rune in prefix
+	prefixEnd      uint32         // pc for last rune in prefix
 	cond           syntax.EmptyOp // empty-width conditions required at start of match
 	numSubexp      int
 	subexpNames    []string
@@ -155,12 +165,17 @@ func compile(expr string, mode syntax.Flags, longest bool) (*Regexp, error) {
 	regexp := &Regexp{
 		expr:        expr,
 		prog:        prog,
+		onepass:     compileOnePass(prog),
 		numSubexp:   maxCap,
 		subexpNames: capNames,
 		cond:        prog.StartCond(),
 		longest:     longest,
 	}
-	regexp.prefix, regexp.prefixComplete = prog.Prefix()
+	if regexp.onepass == notOnePass {
+		regexp.prefix, regexp.prefixComplete = prog.Prefix()
+	} else {
+		regexp.prefix, regexp.prefixComplete, regexp.prefixEnd = onePassPrefix(prog)
+	}
 	if regexp.prefix != "" {
 		// TODO(rsc): Remove this allocation by adding
 		// IndexString to package bytes.
@@ -182,7 +197,7 @@ func (re *Regexp) get() *machine {
 		return z
 	}
 	re.mu.Unlock()
-	z := progMachine(re.prog)
+	z := progMachine(re.prog, re.onepass)
 	z.re = re
 	return z
 }

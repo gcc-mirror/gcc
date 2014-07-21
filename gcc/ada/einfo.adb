@@ -101,7 +101,6 @@ package body Einfo is
    --    Entry_Component                 Node11
    --    Enumeration_Pos                 Uint11
    --    Generic_Homonym                 Node11
-   --    Last_Aggregate_Assignment       Node11
    --    Protected_Body_Subprogram       Node11
    --    Block_Node                      Node11
 
@@ -211,7 +210,7 @@ package body Einfo is
    --    Generic_Renamings               Elist23
    --    Inner_Instances                 Elist23
    --    Limited_View                    Node23
-   --    Packed_Array_Type               Node23
+   --    Packed_Array_Impl_Type          Node23
    --    Protection_Object               Node23
    --    Stored_Constraint               Elist23
 
@@ -246,6 +245,7 @@ package body Einfo is
    --    Subprograms_For_Type            Node29
 
    --    Corresponding_Equality          Node30
+   --    Last_Aggregate_Assignment       Node30
    --    Static_Initialization           Node30
 
    --    Thunk_Entity                    Node31
@@ -384,7 +384,7 @@ package body Einfo is
    --    Is_Private_Composite            Flag107
    --    Default_Expressions_Processed   Flag108
    --    Is_Non_Static_Subtype           Flag109
-   --    Has_External_Tag_Rep_Clause     Flag110
+   --    Has_Out_Or_In_Out_Parameter     Flag110
 
    --    Is_Formal_Subprogram            Flag111
    --    Is_Renaming_Of_Object           Flag112
@@ -415,7 +415,7 @@ package body Einfo is
    --    Has_Aliased_Components          Flag135
    --    No_Strict_Aliasing              Flag136
    --    Is_Machine_Code_Subprogram      Flag137
-   --    Is_Packed_Array_Type            Flag138
+   --    Is_Packed_Array_Impl_Type       Flag138
    --    Has_Biased_Representation       Flag139
    --    Has_Complex_Representation      Flag140
 
@@ -559,13 +559,12 @@ package body Einfo is
    --    SPARK_Aux_Pragma_Inherited      Flag266
    --    Has_Shift_Operator              Flag267
    --    Is_Independent                  Flag268
+   --    Has_Static_Predicate            Flag269
+   --    Stores_Attribute_Old_Prefix     Flag270
 
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
-
-   --    (unused)                        Flag269
-   --    (unused)                        Flag270
 
    --    (unused)                        Flag271
    --    (unused)                        Flag272
@@ -1443,12 +1442,6 @@ package body Einfo is
       return Flag47 (Id);
    end Has_Exit;
 
-   function Has_External_Tag_Rep_Clause (Id : E) return B is
-   begin
-      pragma Assert (Is_Tagged_Type (Id));
-      return Flag110 (Id);
-   end Has_External_Tag_Rep_Clause;
-
    function Has_Forward_Instantiation (Id : E) return B is
    begin
       return Flag175 (Id);
@@ -1536,6 +1529,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag172 (Id);
    end Has_Object_Size_Clause;
+
+   function Has_Out_Or_In_Out_Parameter (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Generic_Function));
+      return Flag110 (Id);
+   end Has_Out_Or_In_Out_Parameter;
 
    function Has_Per_Object_Constraint (Id : E) return B is
    begin
@@ -1718,6 +1717,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag211 (Id);
    end Has_Static_Discriminants;
+
+   function Has_Static_Predicate (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag269 (Id);
+   end Has_Static_Predicate;
 
    function Has_Static_Predicate_Aspect (Id : E) return B is
    begin
@@ -2201,10 +2206,10 @@ package body Einfo is
       return Flag51 (Implementation_Base_Type (Id));
    end Is_Packed;
 
-   function Is_Packed_Array_Type (Id : E) return B is
+   function Is_Packed_Array_Impl_Type (Id : E) return B is
    begin
       return Flag138 (Id);
-   end Is_Packed_Array_Type;
+   end Is_Packed_Array_Impl_Type;
 
    function Is_Potentially_Use_Visible (Id : E) return B is
    begin
@@ -2428,8 +2433,8 @@ package body Einfo is
 
    function Last_Aggregate_Assignment (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      return Node11 (Id);
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      return Node30 (Id);
    end Last_Aggregate_Assignment;
 
    function Last_Assignment (Id : E) return N is
@@ -2656,11 +2661,11 @@ package body Einfo is
       return Node26 (Id);
    end Package_Instantiation;
 
-   function Packed_Array_Type (Id : E) return E is
+   function Packed_Array_Impl_Type (Id : E) return E is
    begin
       pragma Assert (Is_Array_Type (Id));
       return Node23 (Id);
-   end Packed_Array_Type;
+   end Packed_Array_Impl_Type;
 
    function Parent_Subtype (Id : E) return E is
    begin
@@ -2997,6 +3002,11 @@ package body Einfo is
         (Is_Composite_Type (Id) and then not Is_Array_Type (Id));
       return Elist23 (Id);
    end Stored_Constraint;
+
+   function Stores_Attribute_Old_Prefix (Id : E) return B is
+   begin
+      return Flag270 (Id);
+   end Stores_Attribute_Old_Prefix;
 
    function Strict_Alignment (Id : E) return B is
    begin
@@ -4150,12 +4160,6 @@ package body Einfo is
       Set_Flag47 (Id, V);
    end Set_Has_Exit;
 
-   procedure Set_Has_External_Tag_Rep_Clause (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Tagged_Type (Id));
-      Set_Flag110 (Id, V);
-   end Set_Has_External_Tag_Rep_Clause;
-
    procedure Set_Has_Forward_Instantiation (Id : E; V : B := True) is
    begin
       Set_Flag175 (Id, V);
@@ -4251,6 +4255,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag172 (Id, V);
    end Set_Has_Object_Size_Clause;
+
+   procedure Set_Has_Out_Or_In_Out_Parameter (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Generic_Function));
+      Set_Flag110 (Id, V);
+   end Set_Has_Out_Or_In_Out_Parameter;
 
    procedure Set_Has_Per_Object_Constraint (Id : E; V : B := True) is
    begin
@@ -4435,6 +4445,12 @@ package body Einfo is
    begin
       Set_Flag211 (Id, V);
    end Set_Has_Static_Discriminants;
+
+   procedure Set_Has_Static_Predicate (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag269 (Id, V);
+   end Set_Has_Static_Predicate;
 
    procedure Set_Has_Static_Predicate_Aspect (Id : E; V : B := True) is
    begin
@@ -4946,10 +4962,10 @@ package body Einfo is
       Set_Flag51 (Id, V);
    end Set_Is_Packed;
 
-   procedure Set_Is_Packed_Array_Type (Id : E; V : B := True) is
+   procedure Set_Is_Packed_Array_Impl_Type (Id : E; V : B := True) is
    begin
       Set_Flag138 (Id, V);
-   end Set_Is_Packed_Array_Type;
+   end Set_Is_Packed_Array_Impl_Type;
 
    procedure Set_Is_Potentially_Use_Visible (Id : E; V : B := True) is
    begin
@@ -5179,8 +5195,8 @@ package body Einfo is
 
    procedure Set_Last_Aggregate_Assignment (Id : E; V : N) is
    begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      Set_Node11 (Id, V);
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      Set_Node30 (Id, V);
    end Set_Last_Aggregate_Assignment;
 
    procedure Set_Last_Assignment (Id : E; V : N) is
@@ -5414,11 +5430,11 @@ package body Einfo is
       Set_Node26 (Id, V);
    end Set_Package_Instantiation;
 
-   procedure Set_Packed_Array_Type (Id : E; V : E) is
+   procedure Set_Packed_Array_Impl_Type (Id : E; V : E) is
    begin
       pragma Assert (Is_Array_Type (Id));
       Set_Node23 (Id, V);
-   end Set_Packed_Array_Type;
+   end Set_Packed_Array_Impl_Type;
 
    procedure Set_Parent_Subtype (Id : E; V : E) is
    begin
@@ -5736,11 +5752,7 @@ package body Einfo is
 
    procedure Set_Static_Predicate (Id : E; V : S) is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Enumeration_Subtype,
-                       E_Modular_Integer_Subtype,
-                       E_Signed_Integer_Subtype)
-          and then Has_Predicates (Id));
+      pragma Assert (Is_Discrete_Type (Id) and then Has_Predicates (Id));
       Set_List25 (Id, V);
    end Set_Static_Predicate;
 
@@ -5775,6 +5787,12 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       Set_Elist23 (Id, V);
    end Set_Stored_Constraint;
+
+   procedure Set_Stores_Attribute_Old_Prefix (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Constant);
+      Set_Flag270 (Id, V);
+   end Set_Stores_Attribute_Old_Prefix;
 
    procedure Set_Strict_Alignment (Id : E; V : B := True) is
    begin
@@ -7021,6 +7039,15 @@ package body Einfo is
         Ekind (Id) = E_Abstract_State and then Nkind (Parent (Id)) = N_Null;
    end Is_Null_State;
 
+   ---------------------
+   -- Is_Packed_Array --
+   ---------------------
+
+   function Is_Packed_Array (Id : E) return B is
+   begin
+      return Is_Array_Type (Id) and then Is_Packed (Id);
+   end Is_Packed_Array;
+
    -----------------------------------
    -- Is_Package_Or_Generic_Package --
    -----------------------------------
@@ -8188,7 +8215,6 @@ package body Einfo is
       W ("Has_Dynamic_Predicate_Aspect",    Flag258 (Id));
       W ("Has_Enumeration_Rep_Clause",      Flag66  (Id));
       W ("Has_Exit",                        Flag47  (Id));
-      W ("Has_External_Tag_Rep_Clause",     Flag110 (Id));
       W ("Has_Forward_Instantiation",       Flag175 (Id));
       W ("Has_Fully_Qualified_Name",        Flag173 (Id));
       W ("Has_Gigi_Rep_Item",               Flag82  (Id));
@@ -8204,6 +8230,7 @@ package body Einfo is
       W ("Has_Missing_Return",              Flag142 (Id));
       W ("Has_Nested_Block_With_Handler",   Flag101 (Id));
       W ("Has_Non_Standard_Rep",            Flag75  (Id));
+      W ("Has_Out_Or_In_Out_Parameter",     Flag110 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
       W ("Has_Per_Object_Constraint",       Flag154 (Id));
       W ("Has_Postconditions",              Flag240 (Id));
@@ -8238,6 +8265,7 @@ package body Einfo is
       W ("Has_Specified_Stream_Read",       Flag192 (Id));
       W ("Has_Specified_Stream_Write",      Flag193 (Id));
       W ("Has_Static_Discriminants",        Flag211 (Id));
+      W ("Has_Static_Predicate",            Flag269 (Id));
       W ("Has_Static_Predicate_Aspect",     Flag259 (Id));
       W ("Has_Storage_Size_Clause",         Flag23  (Id));
       W ("Has_Stream_Size_Clause",          Flag184 (Id));
@@ -8320,7 +8348,7 @@ package body Einfo is
       W ("Is_Optional_Parameter",           Flag134 (Id));
       W ("Is_Package_Body_Entity",          Flag160 (Id));
       W ("Is_Packed",                       Flag51  (Id));
-      W ("Is_Packed_Array_Type",            Flag138 (Id));
+      W ("Is_Packed_Array_Impl_Type",       Flag138 (Id));
       W ("Is_Potentially_Use_Visible",      Flag9   (Id));
       W ("Is_Predicate_Function",           Flag255 (Id));
       W ("Is_Predicate_Function_M",         Flag256 (Id));
@@ -8395,6 +8423,7 @@ package body Einfo is
       W ("SPARK_Aux_Pragma_Inherited",      Flag266 (Id));
       W ("SPARK_Pragma_Inherited",          Flag265 (Id));
       W ("Static_Elaboration_Desired",      Flag77  (Id));
+      W ("Stores_Attribute_Old_Prefix",     Flag270 (Id));
       W ("Strict_Alignment",                Flag145 (Id));
       W ("Suppress_Elaboration_Warnings",   Flag148 (Id));
       W ("Suppress_Initialization",         Flag105 (Id));
@@ -8697,9 +8726,6 @@ package body Einfo is
 
          when E_Generic_Package                            =>
             Write_Str ("Generic_Homonym");
-
-         when E_Variable                                   =>
-            Write_Str ("Last_Aggregate_Assignment");
 
          when E_Function                                   |
               E_Procedure                                  |
@@ -9272,7 +9298,7 @@ package body Einfo is
             Write_Str ("Inner_Instances");
 
          when Array_Kind                                   =>
-            Write_Str ("Packed_Array_Type");
+            Write_Str ("Packed_Array_Impl_Type");
 
          when Entry_Kind                                   =>
             Write_Str ("Protection_Object");
@@ -9361,7 +9387,9 @@ package body Einfo is
               E_Entry_Family                               =>
             Write_Str ("PPC_Wrapper");
 
-         when E_Enumeration_Subtype                        |
+         when E_Enumeration_Type                           |
+              E_Enumeration_Subtype                        |
+              E_Modular_Integer_Type                       |
               E_Modular_Integer_Subtype                    |
               E_Signed_Integer_Subtype                     =>
             Write_Str ("Static_Predicate");
@@ -9494,6 +9522,10 @@ package body Einfo is
       case Ekind (Id) is
          when E_Function                                   =>
             Write_Str ("Corresponding_Equality");
+
+         when E_Constant                                   |
+              E_Variable                                   =>
+            Write_Str ("Last_Aggregate_Assignment");
 
          when E_Procedure                                  =>
             Write_Str ("Static_Initialization");

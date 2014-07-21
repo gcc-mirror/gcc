@@ -226,6 +226,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatw.Y        ^ /WARNINGS=NOWHY_SPEC_NEEDS_BODY
 -gnatwz         ^ /WARNINGS=UNCHECKED_CONVERSIONS
 -gnatwZ         ^ /WARNINGS=NOUNCHECKED_CONVERSIONS
+-gnatw.z        ^ /WARNINGS=SIZE_ALIGNMENT
+-gnatw.Z        ^ /WARNINGS=NOSIZE_ALIGNMENT
 -gnatW8         ^ /WIDE_CHARACTER_ENCODING=UTF8
 -gnatW?         ^ /WIDE_CHARACTER_ENCODING=?
 -gnaty          ^ /STYLE_CHECKS

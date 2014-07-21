@@ -780,7 +780,7 @@ package body Sem_Eval is
       --  We do not attempt comparisons for packed arrays arrays represented as
       --  modular types, where the semantics of comparison is quite different.
 
-      elsif Is_Packed_Array_Type (Ltyp)
+      elsif Is_Packed_Array_Impl_Type (Ltyp)
         and then Is_Modular_Integer_Type (Ltyp)
       then
          return Unknown;
@@ -1317,7 +1317,7 @@ package body Sem_Eval is
             --  We might want to try to evaluate these at compile time one
             --  day, but we do not make that attempt now.
 
-            if Is_Packed_Array_Type (Etype (Op)) then
+            if Is_Packed_Array_Impl_Type (Etype (Op)) then
                return False;
             end if;
 
@@ -3306,28 +3306,42 @@ package body Sem_Eval is
       Typ : Entity_Id) return Boolean
    is
       Loc  : constant Source_Ptr := Sloc (N);
-      Pred : constant List_Id := Static_Predicate (Typ);
-      Test : Node_Id;
 
    begin
-      if No (Pred) then
+      --  Discrete type case
+
+      if Is_Discrete_Type (Typ) then
+         declare
+            Pred : constant List_Id := Static_Predicate (Typ);
+            Test : Node_Id;
+
+         begin
+            pragma Assert (Present (Pred));
+
+            --  The static predicate is a list of alternatives in the proper
+            --  format for an Ada 2012 membership test. If the argument is a
+            --  literal, the membership test can be evaluated statically. This
+            --  is easier than running a full intepretation of the predicate
+            --  expression, and more efficient in some cases.
+
+            Test :=
+              Make_In (Loc,
+                Left_Opnd    => New_Copy_Tree (N),
+                Right_Opnd   => Empty,
+                Alternatives => Pred);
+            Analyze_And_Resolve (Test, Standard_Boolean);
+
+            return Nkind (Test) = N_Identifier
+              and then Entity (Test) = Standard_True;
+         end;
+
+      --  Real type case
+
+      else
+         pragma Assert (Is_Real_Type (Typ));
+         Error_Msg_N ("??real predicate not applied", N);
          return True;
       end if;
-
-      --  The static predicate is a list of alternatives in the proper format
-      --  for an Ada 2012 membership test. If the argument is a literal, the
-      --  membership test can be evaluated statically. The caller transforms
-      --  a result of False into a static contraint error.
-
-      Test :=
-        Make_In (Loc,
-          Left_Opnd    => New_Copy_Tree (N),
-          Right_Opnd   => Empty,
-          Alternatives => Pred);
-      Analyze_And_Resolve (Test, Standard_Boolean);
-
-      return Nkind (Test) = N_Identifier
-        and then Entity (Test) = Standard_True;
    end Eval_Static_Predicate_Check;
 
    -------------------------
@@ -4620,7 +4634,7 @@ package body Sem_Eval is
       then
          if Nkind (Parent (N)) = N_Defining_Identifier
            and then Is_Array_Type (Parent (N))
-           and then Present (Packed_Array_Type (Parent (N)))
+           and then Present (Packed_Array_Impl_Type (Parent (N)))
            and then Present (First_Rep_Item (Parent (N)))
          then
             Error_Msg_N

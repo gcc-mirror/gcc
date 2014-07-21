@@ -73,6 +73,7 @@ with Ada.Directories;
 with Ada.Exceptions;            use Ada.Exceptions;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
+with GNAT.Command_Line;         use GNAT.Command_Line;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;      use GNAT.Dynamic_HTables;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
@@ -5856,9 +5857,14 @@ package body Make is
 
             Targparm.Get_Target_Parameters;
 
-            --  Output usage information if no files to compile
+            --  Output usage information if no argument on the command line
 
-            Usage;
+            if Argument_Count = 0 then
+               Usage;
+            else
+               Try_Help;
+            end if;
+
             Finish_Program (Project_Tree, E_Success);
          end if;
       end if;
@@ -6671,13 +6677,15 @@ package body Make is
 
          Fname.UF.Initialize;
 
-         begin
-            Fname.SF.Read_Source_File_Name_Pragmas;
+         if Config_File then
+            begin
+               Fname.SF.Read_Source_File_Name_Pragmas;
 
-         exception
-            when Err : SFN_Scan.Syntax_Error_In_GNAT_ADC =>
-               Make_Failed (Exception_Message (Err));
-         end;
+            exception
+               when Err : SFN_Scan.Syntax_Error_In_GNAT_ADC =>
+                  Make_Failed (Exception_Message (Err));
+            end;
+         end if;
       end if;
 
       --  Make sure no project object directory is recorded
@@ -7906,6 +7914,12 @@ package body Make is
                Do_Bind_Step := False;
                Do_Link_Step := False;
             end if;
+
+         --  If -gnatA is specified, make sure that gnat.adc is never read
+
+         elsif Argv'Length >= 6 and then Argv (2 .. 6) = "gnatA" then
+            Add_Switch (Argv, Compiler, And_Save => And_Save);
+            Opt.Config_File := False;
 
          elsif Argv (2 .. Argv'Last) = "nostdlib" then
 

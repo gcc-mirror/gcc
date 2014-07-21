@@ -124,6 +124,8 @@ package System.Rident is
       No_Local_Allocators,                       -- (RM H.4(8))
       No_Local_Timing_Events,                    -- (RM D.7(10.2/2))
       No_Local_Protected_Objects,                -- Ada 2012 (D.7(10/1.3))
+      No_Long_Long_Integers,                     -- GNAT
+      No_Multiple_Elaboration,                   -- GNAT
       No_Nested_Finalization,                    -- (RM D.7(4))
       No_Protected_Type_Allocators,              -- Ada 2012 (D.7 (10.3/2))
       No_Protected_Types,                        -- (RM H.4(5))

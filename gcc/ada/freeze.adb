@@ -64,6 +64,7 @@ with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
+with Warnsw;   use Warnsw;
 
 package body Freeze is
 
@@ -603,7 +604,9 @@ package body Freeze is
                end if;
             end;
 
-            Rewrite (Addr, Make_Null_Statement (Sloc (E)));
+            --  And now remove the address clause
+
+            Kill_Rep_Clause (Addr);
 
          elsif not Error_Posted (Expr)
            and then not Needs_Finalization (Typ)
@@ -915,7 +918,7 @@ package body Freeze is
                   --  directly, where all the information is at hand ???
 
                   if Is_Array_Type (Etype (Comp))
-                    and then Present (Packed_Array_Type (Etype (Comp)))
+                    and then Present (Packed_Array_Impl_Type (Etype (Comp)))
                   then
                      declare
                         Ocomp  : constant Entity_Id :=
@@ -972,9 +975,10 @@ package body Freeze is
 
                      if Is_Elementary_Type (Ctyp)
                        or else (Is_Array_Type (Ctyp)
-                                 and then Present (Packed_Array_Type (Ctyp))
+                                 and then Present
+                                            (Packed_Array_Impl_Type (Ctyp))
                                  and then Is_Modular_Integer_Type
-                                            (Packed_Array_Type (Ctyp)))
+                                            (Packed_Array_Impl_Type (Ctyp)))
                      then
                         --  Packed size unknown if we have an atomic type
                         --  or a by reference type, since the back end
@@ -1083,7 +1087,7 @@ package body Freeze is
       Err_Node  : Node_Id;
 
       Comp_Byte_Aligned : Boolean;
-      --  Set True for the record case, when Comp starts on a byte boundary
+      --  Set for the record case, True if Comp starts on a byte boundary
       --  (in which case it is allowed to have different storage order).
 
       Comp_SSO_Differs  : Boolean;
@@ -1104,10 +1108,17 @@ package body Freeze is
             Component_Aliased := False;
 
          else
-            Comp_Byte_Aligned :=
-              Present (Component_Clause (Comp))
-                and then
-                  Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+            --  If a component clause is present, check if the component starts
+            --  on a storage element boundary. Otherwise conservatively assume
+            --  it does so only in the case where the record is not packed.
+
+            if Present (Component_Clause (Comp)) then
+               Comp_Byte_Aligned :=
+                 Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+            else
+               Comp_Byte_Aligned := not Is_Packed (Encl_Type);
+            end if;
+
             Component_Aliased := Is_Aliased (Comp);
          end if;
 
@@ -1117,7 +1128,6 @@ package body Freeze is
          Err_Node  := Encl_Type;
          Comp_Type := Component_Type (Encl_Type);
 
-         Comp_Byte_Aligned := False;
          Component_Aliased := Has_Aliased_Components (Encl_Type);
       end if;
 
@@ -1130,24 +1140,15 @@ package body Freeze is
                      Attribute_Scalar_Storage_Order);
       Comp_ADC_Present := Present (Comp_ADC);
 
-      --  Case of enclosing type not having explicit SSO: component cannot
-      --  have it either.
+      --  Case of record or array component: check storage order compatibility
 
-      if No (ADC) then
-         if Comp_ADC_Present then
-            Error_Msg_N
-              ("composite type must have explicit scalar storage order",
-               Err_Node);
-         end if;
-
-      --  Case of enclosing type having explicit SSO: check compatible
-      --  attribute on Comp_Type if composite.
-
-      elsif Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
+      if Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
          Comp_SSO_Differs :=
            Reverse_Storage_Order (Encl_Type)
              /=
            Reverse_Storage_Order (Comp_Type);
+
+         --  Parent and extension must have same storage order
 
          if Present (Comp) and then Chars (Comp) = Name_uParent then
             if Comp_SSO_Differs then
@@ -1156,9 +1157,15 @@ package body Freeze is
                   & "parent", Err_Node);
             end if;
 
-         elsif No (Comp_ADC) then
+         --  If enclosing composite has explicit SSO then nested composite must
+         --  have explicit SSO as well.
+
+         elsif Present (ADC) and then No (Comp_ADC) then
             Error_Msg_N ("nested composite must have explicit scalar "
                          & "storage order", Err_Node);
+
+         --  If component and composite SSO differs, check that component
+         --  falls on byte boundaries and isn't packed.
 
          elsif Comp_SSO_Differs then
 
@@ -1167,24 +1174,33 @@ package body Freeze is
             --  Reject if component is a packed array, as it may be represented
             --  as a scalar internally.
 
-            if Is_Packed (Comp_Type) then
+            if Is_Packed_Array (Comp_Type) then
                Error_Msg_N
                  ("type of packed component must have same scalar "
                   & "storage order as enclosing composite", Err_Node);
 
+            --  Reject if composite is a packed array, as it may be rewritten
+            --  into an array of scalars.
+
+            elsif Is_Packed_Array (Encl_Type) then
+               Error_Msg_N ("type of packed array must have same scalar "
+                  & "storage order as component", Err_Node);
+
             --  Reject if not byte aligned
 
-            elsif not Comp_Byte_Aligned then
+            elsif Is_Record_Type (Encl_Type)
+                    and then not Comp_Byte_Aligned
+            then
                Error_Msg_N
                  ("type of non-byte-aligned component must have same scalar "
                   & "storage order as enclosing composite", Err_Node);
             end if;
          end if;
 
-      --  Enclosing type has explicit SSO, non-composite component must not
+      --  Enclosing type has explicit SSO: non-composite component must not
       --  be aliased.
 
-      elsif Component_Aliased then
+      elsif Present (ADC) and then Component_Aliased then
          Error_Msg_N
            ("aliased component not permitted for type with "
             & "explicit Scalar_Storage_Order", Err_Node);
@@ -1364,6 +1380,30 @@ package body Freeze is
          return False;
       end if;
    end Is_Atomic_Aggregate;
+
+   -----------------------------------------------
+   -- Explode_Initialization_Compound_Statement --
+   -----------------------------------------------
+
+   procedure Explode_Initialization_Compound_Statement (E : Entity_Id) is
+      Init_Stmts : constant Node_Id := Initialization_Statements (E);
+
+   begin
+      if Present (Init_Stmts)
+        and then Nkind (Init_Stmts) = N_Compound_Statement
+      then
+         Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
+
+         --  Note that we rewrite Init_Stmts into a NULL statement, rather than
+         --  just removing it, because Freeze_All may rely on this particular
+         --  Node_Id still being present in the enclosing list to know where to
+         --  stop freezing.
+
+         Rewrite (Init_Stmts, Make_Null_Statement (Sloc (Init_Stmts)));
+
+         Set_Initialization_Statements (E, Empty);
+      end if;
+   end Explode_Initialization_Compound_Statement;
 
    ----------------
    -- Freeze_All --
@@ -2484,27 +2524,27 @@ package body Freeze is
          if Is_Packed (Arr)
            and then Ekind (Arr) /= E_String_Literal_Subtype
          then
-            Create_Packed_Array_Type (Arr);
-            Freeze_And_Append (Packed_Array_Type (Arr), N, Result);
+            Create_Packed_Array_Impl_Type (Arr);
+            Freeze_And_Append (Packed_Array_Impl_Type (Arr), N, Result);
 
             --  Size information of packed array type is copied to the array
             --  type, since this is really the representation. But do not
             --  override explicit existing size values. If the ancestor subtype
-            --  is constrained the packed_array_type will be inherited from it,
-            --  but the size may have been provided already, and must not be
-            --  overridden either.
+            --  is constrained the Packed_Array_Impl_Type will be inherited
+            --  from it, but the size may have been provided already, and
+            --  must not be overridden either.
 
             if not Has_Size_Clause (Arr)
               and then
                 (No (Ancestor_Subtype (Arr))
                   or else not Has_Size_Clause (Ancestor_Subtype (Arr)))
             then
-               Set_Esize     (Arr, Esize     (Packed_Array_Type (Arr)));
-               Set_RM_Size   (Arr, RM_Size   (Packed_Array_Type (Arr)));
+               Set_Esize     (Arr, Esize     (Packed_Array_Impl_Type (Arr)));
+               Set_RM_Size   (Arr, RM_Size   (Packed_Array_Impl_Type (Arr)));
             end if;
 
             if not Has_Alignment_Clause (Arr) then
-               Set_Alignment (Arr, Alignment (Packed_Array_Type (Arr)));
+               Set_Alignment (Arr, Alignment (Packed_Array_Impl_Type (Arr)));
             end if;
          end if;
 
@@ -2914,12 +2954,12 @@ package body Freeze is
                   S              : Entity_Id;
 
                begin
-                  --  We have a pretty bad kludge here. Suppose Rec is subtype
-                  --  being defined in a subprogram that's created as part of
-                  --  the freezing of Rec'Base. In that case, we know that
-                  --  Comp'Base must have already been frozen by the time we
-                  --  get to elaborate this because Gigi doesn't elaborate any
-                  --  bodies until it has elaborated all of the declarative
+                  --  We have a difficult case to handle here. Suppose Rec is
+                  --  subtype being defined in a subprogram that's created as
+                  --  part of the freezing of Rec'Base. In that case, we know
+                  --  that Comp'Base must have already been frozen by the time
+                  --  we get to elaborate this because Gigi doesn't elaborate
+                  --  any bodies until it has elaborated all of the declarative
                   --  part. But Is_Frozen will not be set at this point because
                   --  we are processing code in lexical order.
 
@@ -4313,36 +4353,15 @@ package body Freeze is
                Layout_Object (E);
             end if;
 
-            --  If initialization statements were captured in an expression
-            --  with actions with null expression, and the object does not
-            --  have delayed freezing, move them back now directly within the
-            --  enclosing statement sequence.
+            --  For an object that does not have delayed freezing, and whose
+            --  initialization actions have been captured in a compound
+            --  statement, move them back now directly within the enclosing
+            --  statement sequence.
 
             if Ekind_In (E, E_Constant, E_Variable)
               and then not Has_Delayed_Freeze (E)
             then
-               declare
-                  Init_Stmts : constant Node_Id :=
-                                 Initialization_Statements (E);
-               begin
-                  if Present (Init_Stmts)
-                    and then Nkind (Init_Stmts) = N_Expression_With_Actions
-                    and then Nkind (Expression (Init_Stmts)) = N_Null_Statement
-                  then
-                     Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
-
-                     --  Note that we rewrite Init_Stmts into a NULL statement,
-                     --  rather than just removing it, because Freeze_All may
-                     --  depend on this particular Node_Id still being present
-                     --  in the enclosing list to signal where to stop
-                     --  freezing.
-
-                     Rewrite (Init_Stmts,
-                       Make_Null_Statement (Sloc (Init_Stmts)));
-
-                     Set_Initialization_Statements (E, Empty);
-                  end if;
-               end;
+               Explode_Initialization_Compound_Statement (E);
             end if;
          end if;
 
@@ -4552,6 +4571,55 @@ package body Freeze is
             --  declaration of the derived type (RM 13.1(15)).
 
             Inherit_Aspects_At_Freeze_Point (E);
+         end if;
+
+         --  Check for incompatible size and alignment for record type
+
+         if Warn_On_Size_Alignment
+           and then Is_Record_Type (E)
+           and then Has_Size_Clause (E) and then Has_Alignment_Clause (E)
+
+           --  If explicit Object_Size clause given assume that the programmer
+           --  knows what he is doing, and expects the compiler behavior.
+
+           and then not Has_Object_Size_Clause (E)
+
+           --  Check for size not a multiple of alignment
+
+           and then RM_Size (E) mod (Alignment (E) * System_Storage_Unit) /= 0
+         then
+            declare
+               SC    : constant Node_Id := Size_Clause (E);
+               AC    : constant Node_Id := Alignment_Clause (E);
+               Loc   : Node_Id;
+               Abits : constant Uint := Alignment (E) * System_Storage_Unit;
+
+            begin
+               if Present (SC) and then Present (AC) then
+
+                  --  Give a warning
+
+                  if Sloc (SC) > Sloc (AC) then
+                     Loc := SC;
+                     Error_Msg_NE
+                       ("??size is not a multiple of alignment for &", Loc, E);
+                     Error_Msg_Sloc := Sloc (AC);
+                     Error_Msg_Uint_1 := Alignment (E);
+                     Error_Msg_N ("\??alignment of ^ specified #", Loc);
+
+                  else
+                     Loc := AC;
+                     Error_Msg_NE
+                       ("??size is not a multiple of alignment for &", Loc, E);
+                     Error_Msg_Sloc := Sloc (SC);
+                     Error_Msg_Uint_1 := RM_Size (E);
+                     Error_Msg_N ("\??size of ^ specified #", Loc);
+                  end if;
+
+                  Error_Msg_Uint_1 := ((RM_Size (E) / Abits) + 1) * Abits;
+                  Error_Msg_N ("\??Object_Size will be increased to ^", Loc);
+               end if;
+            end;
          end if;
 
          --  Array type
@@ -7112,7 +7180,7 @@ package body Freeze is
       --  Since we don't want T to have a Freeze_Node, we don't want its
       --  Full_View or Corresponding_Record_Type to have one either.
 
-      --  ??? Fundamentally, this whole handling is a kludge. What we really
+      --  ??? Fundamentally, this whole handling is unpleasant. What we really
       --  want is to be sure that for an Itype that's part of record R and is a
       --  subtype of type T, that it's frozen after the later of the freeze
       --  points of R and T. We have no way of doing that directly, so what we
@@ -7254,7 +7322,7 @@ package body Freeze is
                   then
                      exit;
                   elsif Is_Array_Type (Etype (Comp))
-                     and then Present (Packed_Array_Type (Etype (Comp)))
+                     and then Present (Packed_Array_Impl_Type (Etype (Comp)))
                   then
                      Error_Msg_NE
                        ("\packed array component& " &

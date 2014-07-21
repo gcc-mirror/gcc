@@ -72,7 +72,7 @@ package Restrict is
    --  restriction to the binder.
 
    --  The following declarations establish a mapping between restriction
-   --  identifiers, and the names of corresponding restriction library units.
+   --  identifiers, and the names of corresponding restricted library units.
 
    type Unit_Entry is record
       Res_Id : Restriction_Id;
@@ -129,6 +129,8 @@ package Restrict is
       No_Implicit_Loops                  => True,
       No_Initialize_Scalars              => True,
       No_Local_Protected_Objects         => True,
+      No_Long_Long_Integers              => True,
+      No_Multiple_Elaboration            => True,
       No_Protected_Type_Allocators       => True,
       No_Relative_Delay                  => True,
       No_Requeue_Statements              => True,

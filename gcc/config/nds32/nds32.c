@@ -18,7 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-
+/* ------------------------------------------------------------------------ */
 
 #include "config.h"
 #include "system.h"
@@ -1195,7 +1195,8 @@ nds32_register_priority (int hard_regno)
 
 /* -- Eliminating Frame Pointer and Arg Pointer.  */
 
-static bool nds32_can_eliminate (const int from_reg, const int to_reg)
+static bool
+nds32_can_eliminate (const int from_reg, const int to_reg)
 {
   if (from_reg == ARG_POINTER_REGNUM && to_reg == STACK_POINTER_REGNUM)
     return true;
@@ -1795,9 +1796,10 @@ nds32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 
 /* Describing Relative Costs of Operations.  */
 
-static int nds32_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-				     reg_class_t from,
-				     reg_class_t to)
+static int
+nds32_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  reg_class_t from,
+			  reg_class_t to)
 {
   if (from == HIGH_REGS || to == HIGH_REGS)
     return 6;
@@ -1805,9 +1807,10 @@ static int nds32_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
   return 2;
 }
 
-static int nds32_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-				   reg_class_t rclass ATTRIBUTE_UNUSED,
-				   bool in ATTRIBUTE_UNUSED)
+static int
+nds32_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			reg_class_t rclass ATTRIBUTE_UNUSED,
+			bool in ATTRIBUTE_UNUSED)
 {
   return 8;
 }
@@ -1827,10 +1830,11 @@ nds32_rtx_costs (rtx x,
   return nds32_rtx_costs_impl (x, code, outer_code, opno, total, speed);
 }
 
-static int nds32_address_cost (rtx address,
-			       enum machine_mode mode,
-			       addr_space_t as,
-			       bool speed)
+static int
+nds32_address_cost (rtx address,
+		    enum machine_mode mode,
+		    addr_space_t as,
+		    bool speed)
 {
   return nds32_address_cost_impl (address, mode, as, speed);
 }

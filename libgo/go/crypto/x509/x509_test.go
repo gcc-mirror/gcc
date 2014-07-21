@@ -22,6 +22,7 @@ import (
 	"net"
 	"os/exec"
 	"reflect"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -395,7 +396,7 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 		}
 
 		if cert.SignatureAlgorithm != test.sigAlgo {
-			t.Errorf("%s: SignatureAlgorithm wasn't copied from template. Got %s, want %s", test.name, cert.SignatureAlgorithm, test.sigAlgo)
+			t.Errorf("%s: SignatureAlgorithm wasn't copied from template. Got %v, want %v", test.name, cert.SignatureAlgorithm, test.sigAlgo)
 		}
 
 		if !reflect.DeepEqual(cert.ExtKeyUsage, testExtKeyUsage) {
@@ -728,6 +729,10 @@ func TestParsePEMCRL(t *testing.T) {
 
 func TestImports(t *testing.T) {
 	t.Skip("gccgo does not have a go command")
+	if runtime.GOOS == "nacl" {
+		t.Skip("skipping on nacl")
+	}
+
 	if err := exec.Command("go", "run", "x509_test_import.go").Run(); err != nil {
 		t.Errorf("failed to run x509_test_import.go: %s", err)
 	}

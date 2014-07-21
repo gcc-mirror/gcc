@@ -279,9 +279,9 @@ package Lib is
    --      This is the number of the unit within the generated dependency
    --      lines (D lines in the ALI file) which are sorted into alphabetical
    --      order. The number is ones origin, so a value of 2 refers to the
-   --      second generated D line. The Dependency_Number values are set
-   --      as the D lines are generated, and are used to generate proper
-   --      unit references in the generated xref information and SCO output.
+   --      second generated D line. The Dependency_Num values are set as the
+   --      D lines are generated, and are used to generate proper unit
+   --      references in the generated xref information and SCO output.
 
    --    Dynamic_Elab
    --      A flag indicating if this unit was compiled with dynamic elaboration
@@ -315,10 +315,6 @@ package Lib is
    --      This flag is set True for all units in the current file for which
    --      code is to be generated. This includes the unit explicitly compiled,
    --      together with its specification, and any subunits.
-
-   --    Has_Allocator
-   --      This flag is set if a subprogram unit has an allocator after the
-   --      BEGIN (it is used to set the AB flag in the M ALI line).
 
    --    Has_RACW
    --      A Boolean flag, initially set to False when a unit entry is created,
@@ -409,7 +405,6 @@ package Lib is
    function Fatal_Error       (U : Unit_Number_Type) return Boolean;
    function Generate_Code     (U : Unit_Number_Type) return Boolean;
    function Ident_String      (U : Unit_Number_Type) return Node_Id;
-   function Has_Allocator     (U : Unit_Number_Type) return Boolean;
    function Has_RACW          (U : Unit_Number_Type) return Boolean;
    function Loading           (U : Unit_Number_Type) return Boolean;
    function Main_CPU          (U : Unit_Number_Type) return Int;
@@ -428,7 +423,6 @@ package Lib is
    procedure Set_Fatal_Error       (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Generate_Code     (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Has_RACW          (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Has_Allocator     (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Ident_String      (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Loading           (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Main_CPU          (U : Unit_Number_Type; P : Int);
@@ -726,7 +720,6 @@ private
    pragma Inline (Dependency_Num);
    pragma Inline (Fatal_Error);
    pragma Inline (Generate_Code);
-   pragma Inline (Has_Allocator);
    pragma Inline (Has_RACW);
    pragma Inline (Increment_Serial_Number);
    pragma Inline (Loading);
@@ -738,7 +731,6 @@ private
    pragma Inline (Set_Cunit_Entity);
    pragma Inline (Set_Fatal_Error);
    pragma Inline (Set_Generate_Code);
-   pragma Inline (Set_Has_Allocator);
    pragma Inline (Set_Has_RACW);
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_CPU);
@@ -770,7 +762,6 @@ private
       Dynamic_Elab      : Boolean;
       Filler            : Boolean;
       Loading           : Boolean;
-      Has_Allocator     : Boolean;
       OA_Setting        : Character;
       SPARK_Mode_Pragma : Node_Id;
    end record;
@@ -798,10 +789,9 @@ private
       Generate_Code     at 57 range 0 ..  7;
       Has_RACW          at 58 range 0 ..  7;
       Dynamic_Elab      at 59 range 0 ..  7;
-      Filler            at 60 range 0 ..  7;
-      OA_Setting        at 61 range 0 ..  7;
-      Loading           at 62 range 0 ..  7;
-      Has_Allocator     at 63 range 0 ..  7;
+      Filler            at 60 range 0 ..  15;
+      OA_Setting        at 62 range 0 ..  7;
+      Loading           at 63 range 0 ..  7;
       SPARK_Mode_Pragma at 64 range 0 .. 31;
    end record;
 

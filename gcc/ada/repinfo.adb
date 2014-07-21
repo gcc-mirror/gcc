@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -946,11 +946,11 @@ package body Repinfo is
             UI_Write (Fbit);
             Write_Str (" .. ");
 
-            --  Allowing Uint_0 here is a kludge, really this should be a
-            --  fine Esize value but currently it means unknown, except that
-            --  we know after gigi has back annotated that a size of zero is
-            --  real, since otherwise gigi back annotates using No_Uint as
-            --  the value to indicate unknown).
+            --  Allowing Uint_0 here is an annoying special case. Really this
+            --  should be a fine Esize value but currently it means unknown,
+            --  except that we know after gigi has back annotated that a size
+            --  of zero is real, since otherwise gigi back annotates using
+            --  No_Uint as the value to indicate unknown).
 
             if (Esize (Comp) = Uint_0 or else Known_Static_Esize (Comp))
               and then Known_Static_Normalized_First_Bit (Comp)
@@ -963,10 +963,11 @@ package body Repinfo is
 
                UI_Write (Lbit);
 
-            --  The test for Esize (Comp) not being Uint_0 here is a kludge.
-            --  Officially a value of zero for Esize means unknown, but here
-            --  we use the fact that we know that gigi annotates Esize with
-            --  No_Uint, not Uint_0. Really everyone should use No_Uint???
+            --  The test for Esize (Comp) not Uint_0 here is an annoying
+            --  special case. Officially a value of zero for Esize means
+            --  unknown, but here we use the fact that we know that gigi
+            --  annotates Esize with No_Uint, not Uint_0. Really everyone
+            --  should use No_Uint???
 
             elsif List_Representation_Info < 3
               or else (Esize (Comp) /= Uint_0 and then Unknown_Esize (Comp))

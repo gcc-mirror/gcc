@@ -1,3 +1,47 @@
+2014-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SDT_H): Replace AC_MSG_RESULT with
+	AC_MSG_CHECKING.
+
+2014-07-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61835
+	* python/libstdcxx/v6/printers.py (TemplateTypePrinter): Use
+	raw string.
+	(SingleObjContainerPrinter): Check if type printers are in use.
+
+2014-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/random: Minor formatting and cosmetic tweaks.
+	(uniform_on_sphere_distribution<>::operator==
+	(const uniform_on_sphere_distribution&,
+	const uniform_on_sphere_distribution&)): Compare the _M_nds.
+	(uniform_on_sphere_distribution<>::reset): Reset _M_nd.
+	(operator!=(const uniform_on_sphere_distribution&,
+	const uniform_on_sphere_distribution&)): Adjust.
+	* include/ext/random.tcc: Minor cosmetc tweaks.
+
+2014-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (TemplateTypePrinter): Add type
+	printer for class templates.
+	(register_type_printers): Use TemplateTypePrinter for containers
+	and other class templates with default template arguments.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Test new recognizers.
+
+	* python/libstdcxx/v6/printers.py (SingleObjContainerPrinter): New
+	base class for experimental::any and experimental::optional printers.
+	(StdExpAnyPrinter, StdExpOptionalPrinter, StdExpStringViewPrinter):
+	New printers for Fundamentals TS types.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: New.
+
+2014-07-15  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/61720
+	* include/bits/regex_executor.tcc (_Executor<>::_M_main_dispatch):
+	Clear match queue for next use.
+	* testsuite/28_regex/algorithms/regex_search/61720.cc: New file.
+
 2014-07-14  Ulrich Drepper  <drepper@gmail.com>
 
 	* include/ext/random.tcc: Unfortunately more fixes for

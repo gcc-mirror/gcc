@@ -794,6 +794,12 @@ struct cum_args {int regs;};
     }									\
   while (0)
 
+/* The mode argument to cris_legitimate_constant_p isn't used, so just
+   pass a cheap dummy.  N.B. we have to cast away const from the
+   parameter rather than adjust the parameter, as it's type is mandated
+   by the TARGET_LEGITIMATE_CONSTANT_P target hook interface.  */
+#define CRIS_CONSTANT_P(X) \
+  (CONSTANT_P (X) && cris_legitimate_constant_p (VOIDmode, CONST_CAST_RTX (X)))
 
 /* Node: Condition Code */
 
@@ -833,13 +839,14 @@ struct cum_args {int regs;};
 
 /* Helper type.  */
 
-enum cris_pic_symbol_type
+enum cris_symbol_type
   {
     cris_no_symbol = 0,
     cris_got_symbol = 1,
     cris_rel_symbol = 2,
     cris_got_symbol_needing_fixup = 3,
-    cris_invalid_pic_symbol = 4
+    cris_unspec = 7,
+    cris_offsettable_symbol = 8
   };
 
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? CRIS_GOT_REGNUM : INVALID_REGNUM)

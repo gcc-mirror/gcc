@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,8 @@ with Stringt;  use Stringt;
 with Switch;   use Switch;
 with Types;    use Types;
 
-with Ada.Text_IO;     use Ada.Text_IO;
+with Ada.Command_Line; use Ada.Command_Line;
+with Ada.Text_IO;      use Ada.Text_IO;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Command_Line;
@@ -205,14 +206,19 @@ package body GPrep is
 
          --  No input file specified, just output the usage and exit
 
-         Usage;
+         if Argument_Count = 0 then
+            Usage;
+         else
+            GNAT.Command_Line.Try_Help;
+         end if;
+
          return;
 
       elsif Outfile_Name = No_Name then
 
-         --  No output file specified, just output the usage and exit
+         --  No output file specified, exit
 
-         Usage;
+         GNAT.Command_Line.Try_Help;
          return;
       end if;
 
@@ -767,7 +773,7 @@ package body GPrep is
             when GNAT.Command_Line.Invalid_Switch =>
                Write_Str ("Invalid Switch: -");
                Write_Line (GNAT.Command_Line.Full_Switch);
-               Usage;
+               GNAT.Command_Line.Try_Help;
                OS_Exit (1);
          end;
       end loop;

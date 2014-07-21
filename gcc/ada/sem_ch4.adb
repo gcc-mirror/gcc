@@ -400,6 +400,7 @@ package body Sem_Ch4 is
       Type_Id  : Entity_Id;
       P        : Node_Id;
       C        : Node_Id;
+      Onode    : Node_Id;
 
    begin
       Check_SPARK_Restriction ("allocator is not allowed", N);
@@ -408,7 +409,7 @@ package body Sem_Ch4 is
 
       --  In accordance with H.4(7), the No_Allocators restriction only applies
       --  to user-written allocators. The same consideration applies to the
-      --  No_Allocators_Before_Elaboration restriction.
+      --  No_Standard_Allocators_Before_Elaboration restriction.
 
       if Comes_From_Source (N) then
          Check_Restriction (No_Allocators, N);
@@ -420,32 +421,40 @@ package body Sem_Ch4 is
          P := Parent (C);
          while Present (P) loop
 
-            --  In both cases we need a handled sequence of statements, where
-            --  the occurrence of the allocator is within the statements.
+            --  For the task case we need a handled sequence of statements,
+            --  where the occurrence of the allocator is within the statements
+            --  and the parent is a task body
 
             if Nkind (P) = N_Handled_Sequence_Of_Statements
               and then Is_List_Member (C)
               and then List_Containing (C) = Statements (P)
             then
-               --  Check for allocator within task body, this is a definite
-               --  violation of No_Allocators_After_Elaboration we can detect.
+               Onode := Original_Node (Parent (P));
 
-               if Nkind (Original_Node (Parent (P))) = N_Task_Body then
+               --  Check for allocator within task body, this is a definite
+               --  violation of No_Allocators_After_Elaboration we can detect
+               --  at compile time.
+
+               if Nkind (Onode) = N_Task_Body then
                   Check_Restriction
                     (No_Standard_Allocators_After_Elaboration, N);
                   exit;
                end if;
+            end if;
 
-               --  The other case is appearance in a subprogram body. This may
-               --  be a violation if this is a library level subprogram, and it
-               --  turns out to be used as the main program, but only the
-               --  binder knows that, so just record the occurrence.
+            --  The other case is appearance in a subprogram body. This is
+            --  a violation if this is a library level subprogram with no
+            --  parameters. Note that this is now a static error even if the
+            --  subprogram is not the main program (this is a change, in an
+            --  earlier version only the main program was affected, and the
+            --  check had to be done in the binder.
 
-               if Nkind (Original_Node (Parent (P))) = N_Subprogram_Body
-                 and then Nkind (Parent (Parent (P))) = N_Compilation_Unit
-               then
-                  Set_Has_Allocator (Current_Sem_Unit);
-               end if;
+            if Nkind (P) = N_Subprogram_Body
+              and then Nkind (Parent (P)) = N_Compilation_Unit
+              and then No (Parameter_Specifications (Specification (P)))
+            then
+               Check_Restriction
+                 (No_Standard_Allocators_After_Elaboration, N);
             end if;
 
             C := P;
@@ -1322,9 +1331,6 @@ package body Sem_Ch4 is
    -----------------------------
 
    procedure Analyze_Case_Expression (N : Node_Id) is
-      function Has_Static_Predicate (Subtyp : Entity_Id) return Boolean;
-      --  Determine whether subtype Subtyp has aspect Static_Predicate
-
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
       --  the case expression has a non static choice.
@@ -1340,28 +1346,6 @@ package body Sem_Ch4 is
            Process_Non_Static_Choice => Non_Static_Choice_Error,
            Process_Associated_Node   => No_OP);
       use Case_Choices_Checking;
-
-      --------------------------
-      -- Has_Static_Predicate --
-      --------------------------
-
-      function Has_Static_Predicate (Subtyp : Entity_Id) return Boolean is
-         Item : Node_Id;
-
-      begin
-         Item := First_Rep_Item (Subtyp);
-         while Present (Item) loop
-            if Nkind (Item) = N_Aspect_Specification
-              and then Chars (Identifier (Item)) = Name_Static_Predicate
-            then
-               return True;
-            end if;
-
-            Next_Rep_Item (Item);
-         end loop;
-
-         return False;
-      end Has_Static_Predicate;
 
       -----------------------------
       -- Non_Static_Choice_Error --
@@ -1484,7 +1468,7 @@ package body Sem_Ch4 is
       --  to bogus errors.
 
       if Is_Static_Subtype (Exp_Type)
-        and then Has_Static_Predicate (Exp_Type)
+        and then Has_Static_Predicate_Aspect (Exp_Type)
         and then In_Spec_Expression
       then
          null;
@@ -2040,17 +2024,8 @@ package body Sem_Ch4 is
          Next (A);
       end loop;
 
-      --  We currently hijack Expression_With_Actions with a VOID type and
-      --  a NULL statement in the Expression. This will ultimately be replaced
-      --  by a proper separate N_Compound_Statement node, at which point the
-      --  test below can go away???
-
-      if Nkind (Expression (N)) = N_Null_Statement then
-         Set_Etype (N, Standard_Void_Type);
-      else
-         Analyze_Expression (Expression (N));
-         Set_Etype (N, Etype (Expression (N)));
-      end if;
+      Analyze_Expression (Expression (N));
+      Set_Etype (N, Etype (Expression (N)));
    end Analyze_Expression_With_Actions;
 
    ---------------------------
@@ -6716,10 +6691,10 @@ package body Sem_Ch4 is
    --------------------------------
 
    procedure Remove_Abstract_Operations (N : Node_Id) is
-      Abstract_Op    : Entity_Id := Empty;
-      Address_Kludge : Boolean := False;
-      I              : Interp_Index;
-      It             : Interp;
+      Abstract_Op        : Entity_Id := Empty;
+      Address_Descendent : Boolean := False;
+      I                  : Interp_Index;
+      It                 : Interp;
 
       --  AI-310: If overloaded, remove abstract non-dispatching operations. We
       --  activate this if either extensions are enabled, or if the abstract
@@ -6755,7 +6730,7 @@ package body Sem_Ch4 is
                end if;
 
                if Is_Descendent_Of_Address (Etype (Formal)) then
-                  Address_Kludge := True;
+                  Address_Descendent := True;
                   Remove_Interp (I);
                end if;
 
@@ -6783,7 +6758,7 @@ package body Sem_Ch4 is
                Abstract_Op := It.Nam;
 
                if Is_Descendent_Of_Address (It.Typ) then
-                  Address_Kludge := True;
+                  Address_Descendent := True;
                   Remove_Interp (I);
                   exit;
 
@@ -6952,9 +6927,7 @@ package body Sem_Ch4 is
             --  predefined operators when addresses are involved since this
             --  case is handled separately.
 
-            elsif Ada_Version >= Ada_2005
-              and then not Address_Kludge
-            then
+            elsif Ada_Version >= Ada_2005 and then not Address_Descendent then
                while Present (It.Nam) loop
                   if Is_Numeric_Type (It.Typ)
                     and then Scope (It.Typ) = Standard_Standard
@@ -7022,6 +6995,27 @@ package body Sem_Ch4 is
          else
             return False;
          end if;
+
+      --  If the container type is derived from another container type, the
+      --  value of the inherited aspect is the Reference operation declared
+      --  for the parent type.
+
+      --  However, Reference is also a primitive operation of the type, and
+      --  the inherited operation has a different signature. We retrieve the
+      --  right one from the list of primitive operations of the derived type.
+
+      --  Note that predefined containers are typically all derived from one
+      --  of the Controlled types. The code below is motivated by containers
+      --  that are derived from other types with a Reference aspect.
+
+      --  Additional machinery may be needed for types that have several user-
+      --  defined Reference operations with different signatures ???
+
+      elsif Is_Derived_Type (Etype (Prefix))
+        and then Etype (First_Formal (Entity (Func_Name))) /= Etype (Prefix)
+      then
+         Func := Find_Prim_Op (Etype (Prefix), Chars (Func_Name));
+         Func_Name := New_Occurrence_Of (Func, Loc);
       end if;
 
       Assoc := New_List (Relocate_Node (Prefix));

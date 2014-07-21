@@ -651,13 +651,17 @@ proc go-gc-tests { } {
 	    set runtests "go-test.exp"
 	    set dg-do-what-default "assemble"
 	    set dir "[file rootname $test].dir"
-	    set del {}
-	    foreach f [lsort [glob "$dir/*.go"]] {
-		dg-test -keep-output $f "-O" "-w $DEFAULT_GOCFLAGS"
-		lappend del "[file rootname [file tail $f]].o"
-	    }
-	    foreach f $del {
-		file delete $f
+	    set files [lsort [glob "$dir/*.go"]]
+	    set packages [go-find-packages $test $name $files]
+	    if { [llength $packages] > 0 } {
+		set del [list]
+		foreach p $packages {
+		    dg-test -keep-output [lindex $p 1] "[lrange $p 2 end] -O" "-w $DEFAULT_GOCFLAGS"
+		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
+		}
+		foreach f $del {
+		    file delete $f
+		}
 	    }
 	    set runtests $hold_runtests
 	} elseif { $test_line == "// rundir" } {

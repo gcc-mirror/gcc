@@ -486,7 +486,7 @@ package Opt is
 
    Do_Not_Execute : Boolean := False;
    --  GNATMAKE
-   --  Set to True if no actual compilations should be undertaken.
+   --  Set to True if no actual compilations should be undertaken
 
    Dump_Source_Text : Boolean := False;
    --  GNAT
@@ -775,7 +775,7 @@ package Opt is
    Init_Or_Norm_Scalars : Boolean := False;
    --  GNAT, GANTBIND
    --  Set True if a pragma Initialize_Scalars applies to the current unit.
-   --  Also set True if a pragma Normalize_Scalars applies.
+   --  Also set True if a pragma Restriction (Normalize_Scalars) applies.
 
    Initialize_Scalars : Boolean := False;
    --  GNAT
@@ -885,7 +885,12 @@ package Opt is
 
    List_Closure : Boolean := False;
    --  GNATBIND
-   --  List all sources in the closure of a main (-R gnatbind switch)
+   --  List all sources in the closure of a main (-R or -Ra gnatbind switch)
+
+   List_Closure_All : Boolean := False;
+   --  GNATBIND
+   --  List all sources in closure of main including run-time units (-Ra
+   --  gnatbind switch).
 
    List_Dependencies : Boolean := False;
    --  GNATMAKE
@@ -1030,8 +1035,7 @@ package Opt is
 
    No_Backup : Boolean := False;
    --  GNATNAME
-   --  Set by switch --no-backup.
-   --  Do not create backup copies of project files.
+   --  Do not create backup copies of project files. Set by switch --no-backup.
 
    No_Deletion : Boolean := False;
    --  GNATPREP
@@ -1052,20 +1056,20 @@ package Opt is
    No_Split_Units : Boolean := False;
    --  GPRBUILD
    --  Set to True with switch --no-split-units. When True, unit sources, spec,
-   --  body and subunits, must all be in the same project.This is checked after
-   --  each compilation.
+   --  body and subunits, must all be in the same project. This is checked
+   --  after each compilation.
 
    No_Stdinc : Boolean := False;
    --  GNAT, GNATBIND, GNATMAKE, GNATFIND, GNATXREF
-   --  Set to True if no default source search dirs added to search list
+   --  Set to True if no default source search dirs added to search list.
 
    No_Stdlib : Boolean := False;
    --  GNATMAKE, GNATBIND, GNATFIND, GNATXREF
-   --  Set to True if no default library search dirs added to search list
+   --  Set to True if no default library search dirs added to search list.
 
    No_Strict_Aliasing : Boolean := False;
    --  GNAT
-   --  Set True if pragma No_Strict_Aliasing with no parameters encountered
+   --  Set True if pragma No_Strict_Aliasing with no parameters encountered.
 
    Normalize_Scalars : Boolean := False;
    --  GNAT, GNATBIND
@@ -1241,7 +1245,7 @@ package Opt is
 
    Replace_In_Comments : Boolean := False;
    --  GNATPREP
-   --  Set to True if -C switch used
+   --  Set to True if -C switch used.
 
    RTS_Lib_Path_Name : String_Ptr := null;
    RTS_Src_Path_Name : String_Ptr := null;
@@ -1296,7 +1300,7 @@ package Opt is
 
    SPARK_Mode : SPARK_Mode_Type := None;
    --  GNAT
-   --  Current SPARK mode setting
+   --  Current SPARK mode setting.
 
    SPARK_Mode_Pragma : Node_Id := Empty;
    --  GNAT

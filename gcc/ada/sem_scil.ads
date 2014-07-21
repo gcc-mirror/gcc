@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,20 @@ with Types; use Types;
 
 package Sem_SCIL is
 
-   --  Here would be a good place to document what SCIL is all about ???
+   --  SCIL (Statically Checkable Intermediate Language) is produced by the
+   --  CodePeer back end (aka gnat2scil). For some constructs (tagged type
+   --  declarations, dispatching calls, classwide membership tests), the
+   --  CodePeer back end needs to locate certain nodes in the tree. To allow
+   --  CodePeer to do this without introducing unwanted dependencies on the
+   --  details of the FE's expansion strategies, SCIL_Nodes are generated.
+
+   --  For example, a dispatching call in the Ada source will, if CodePeer mode
+   --  is enabled, result in the FE's generation of an N_Scil_Dispatching_Call
+   --  node decorated with semantic attributes which identify the call itself,
+   --  the primitive operation being called, the tagged type to which the
+   --  operation belongs, and the controlling tag value of the call. If the FE
+   --  implements some new expansion strategy for dispatching calls but this
+   --  interface is preserved, the CodePeer back end should be unaffected.
 
    function Check_SCIL_Node (N : Node_Id) return Traverse_Result;
    --  Process a single node during the tree traversal. Done to verify that

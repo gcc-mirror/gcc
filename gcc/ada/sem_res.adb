@@ -1564,9 +1564,13 @@ package body Sem_Res is
       --  the call has already been constant-folded, nothing to do. We
       --  relocate the operand nodes rather than copy them, to preserve
       --  original_node pointers, given that the operands themselves may
-      --  have been rewritten.
+      --  have been rewritten. If the call was itself a rewriting of an
+      --  operator node, nothing to do.
 
-      if ASIS_Mode and then Nkind (N) in N_Op then
+      if ASIS_Mode
+        and then Nkind (N) in N_Op
+        and then Nkind (Original_Node (N)) = N_Function_Call
+      then
          if Is_Binary then
             Rewrite (First (Parameter_Associations (Original_Node (N))),
                Relocate_Node (Left_Opnd (N)));
@@ -2453,8 +2457,8 @@ package body Sem_Res is
             --  the allocator.
 
             elsif Nkind (N) = N_Allocator
-              and then Ekind (Typ) in Access_Kind
-              and then Ekind (Etype (N)) in Access_Kind
+              and then Is_Access_Type (Typ)
+              and then Is_Access_Type (Etype (N))
               and then Designated_Type (Etype (N)) = Typ
             then
                Wrong_Type (Expression (N), Designated_Type (Typ));
@@ -5601,9 +5605,8 @@ package body Sem_Res is
 
                      Index_Node :=
                        Make_Indexed_Component (Loc,
-                         Prefix =>
-                           Make_Function_Call (Loc,
-                             Name => New_Subp),
+                         Prefix      =>
+                           Make_Function_Call (Loc, Name => New_Subp),
                          Expressions => Parameter_Associations (N));
                   else
                      --  An Ada 2005 prefixed call to a primitive operation
@@ -5614,9 +5617,9 @@ package body Sem_Res is
 
                      Index_Node :=
                         Make_Indexed_Component (Loc,
-                          Prefix =>
+                          Prefix       =>
                             Make_Function_Call (Loc,
-                               Name => New_Subp,
+                               Name                   => New_Subp,
                                Parameter_Associations =>
                                  New_List
                                    (Remove_Head (Parameter_Associations (N)))),
@@ -5745,9 +5748,8 @@ package body Sem_Res is
                         begin
                            P := Prev (N);
                            while Present (P) loop
-                              if not Nkind_In (P,
-                                N_Assignment_Statement,
-                                N_Raise_Constraint_Error)
+                              if not Nkind_In (P, N_Assignment_Statement,
+                                                  N_Raise_Constraint_Error)
                               then
                                  exit Scope_Loop;
                               end if;
@@ -6097,6 +6099,18 @@ package body Sem_Res is
                     Reason => PE_Explicit_Raise));
             end if;
          end;
+      end if;
+
+      --  Check for calling a function with OUT or IN OUT parameter when the
+      --  calling context (us right now) is not Ada 2012, so does not allow
+      --  OUT or IN OUT parameters in function calls.
+
+      if Ada_Version < Ada_2012
+        and then Ekind (Nam) = E_Function
+        and then Has_Out_Or_In_Out_Parameter (Nam)
+      then
+         Error_Msg_NE ("& has at least one OUT or `IN OUT` parameter", N, Nam);
+         Error_Msg_N ("\call to this function only allowed in Ada 2012", N);
       end if;
 
       --  Check the dimensions of the actuals in the call. For function calls,
@@ -11799,7 +11813,12 @@ package body Sem_Res is
       --  after the return.
 
       elsif Is_Access_Subprogram_Type (Target_Type)
-        and then No (Corresponding_Remote_Type (Opnd_Type))
+
+        --  Note: this test of Opnd_Type is there to prevent entering this
+        --  branch in the case of a remote access to subprogram type, which
+        --  is internally represented as an E_Record_Type.
+
+        and then Is_Access_Type (Opnd_Type)
       then
          if Ekind (Base_Type (Opnd_Type)) = E_Anonymous_Access_Subprogram_Type
            and then Is_Entity_Name (Operand)
@@ -11864,13 +11883,22 @@ package body Sem_Res is
 
          return True;
 
-      --  Remote subprogram access types
+      --  Remote access to subprogram types
 
       elsif Is_Remote_Access_To_Subprogram_Type (Target_Type)
         and then Is_Remote_Access_To_Subprogram_Type (Opnd_Type)
       then
          --  It is valid to convert from one RAS type to another provided
          --  that their specification statically match.
+
+         --  Note: at this point, remote access to subprogram types have been
+         --  expanded to their E_Record_Type representation, and we need to
+         --  go back to the original access type definition using the
+         --  Corresponding_Remote_Type attribute in order to check that the
+         --  designated profiles match.
+
+         pragma Assert (Ekind (Target_Type) = E_Record_Type);
+         pragma Assert (Ekind (Opnd_Type) = E_Record_Type);
 
          Check_Subtype_Conformant
            (New_Id  =>

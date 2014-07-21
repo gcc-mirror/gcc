@@ -4388,7 +4388,6 @@ build_clone (tree fn, tree name)
   clone = copy_decl (fn);
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
-  SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   /* Remember where this function came from.  */
   DECL_ABSTRACT_ORIGIN (clone) = fn;
   /* Make it easy to find the CLONE given the FN.  */
@@ -4406,6 +4405,7 @@ build_clone (tree fn, tree name)
       return clone;
     }
 
+  SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   DECL_CLONED_FUNCTION (clone) = fn;
   /* There's no pending inline data for this function.  */
   DECL_PENDING_INLINE_INFO (clone) = NULL;
@@ -6694,6 +6694,28 @@ finish_struct (tree t, tree attributes)
     }
   else
     finish_struct_1 (t);
+
+  if (is_std_init_list (t))
+    {
+      /* People keep complaining that the compiler crashes on an invalid
+	 definition of initializer_list, so I guess we should explicitly
+	 reject it.  What the compiler internals care about is that it's a
+	 template and has a pointer field followed by an integer field.  */
+      bool ok = false;
+      if (processing_template_decl)
+	{
+	  tree f = next_initializable_field (TYPE_FIELDS (t));
+	  if (f && TREE_CODE (TREE_TYPE (f)) == POINTER_TYPE)
+	    {
+	      f = next_initializable_field (DECL_CHAIN (f));
+	      if (f && TREE_CODE (TREE_TYPE (f)) == INTEGER_TYPE)
+		ok = true;
+	    }
+	}
+      if (!ok)
+	fatal_error ("definition of std::initializer_list does not match "
+		     "#include <initializer_list>");
+    }
 
   input_location = saved_loc;
 

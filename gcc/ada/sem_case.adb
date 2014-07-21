@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -645,10 +645,10 @@ package body Sem_Case is
 
       Bounds_Hi     : constant Node_Id := Type_High_Bound (Bounds_Type);
       Bounds_Lo     : constant Node_Id := Type_Low_Bound  (Bounds_Type);
+      Num_Choices   : constant Nat     := Choice_Table'Last;
       Has_Predicate : constant Boolean :=
                         Is_Static_Subtype (Bounds_Type)
                           and then Present (Static_Predicate (Bounds_Type));
-      Num_Choices   : constant Nat     := Choice_Table'Last;
 
       Choice      : Node_Id;
       Choice_Hi   : Uint;
@@ -662,6 +662,15 @@ package body Sem_Case is
    --  Start of processing for Check_Choice_Set
 
    begin
+      --  If the case is part of a predicate aspect specification, do not
+      --  recheck it against itself.
+
+      if Present (Parent (Case_Node))
+        and then Nkind (Parent (Case_Node)) = N_Aspect_Specification
+      then
+         return;
+      end if;
+
       --  Choice_Table must start at 0 which is an unused location used by the
       --  sorting algorithm. However the first valid position for a discrete
       --  choice is 1.
@@ -684,6 +693,13 @@ package body Sem_Case is
       --  The type covered by the list of choices is actually a static subtype
       --  subject to a static predicate. The predicate defines subsets of legal
       --  values and requires finer grained analysis.
+
+      --  Note that in GNAT the predicate is considered static if the predicate
+      --  expression is static, independently of whether the aspect mentions
+      --  Static explicitly.  It is unclear whether this is RM-conforming, but
+      --  it's certainly useful, and GNAT source make use of this. The downside
+      --  is that currently case expressions cannot appear in predicates that
+      --  are not static.  ???
 
       if Has_Predicate then
          Pred    := First (Static_Predicate (Bounds_Type));

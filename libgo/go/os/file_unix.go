@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris
+// +build darwin dragonfly freebsd linux nacl netbsd openbsd solaris
 
 package os
 
@@ -80,12 +80,7 @@ func OpenFile(name string, flag int, perm FileMode) (file *File, err error) {
 
 	// There's a race here with fork/exec, which we are
 	// content to live with.  See ../syscall/exec_unix.go.
-	// On OS X 10.6, the O_CLOEXEC flag is not respected.
-	// On OS X 10.7, the O_CLOEXEC flag works.
-	// Without a cheap & reliable way to detect 10.6 vs 10.7 at
-	// runtime, we just always call syscall.CloseOnExec on Darwin.
-	// Once >=10.7 is prevalent, this extra call can removed.
-	if syscall.O_CLOEXEC == 0 || runtime.GOOS == "darwin" { // O_CLOEXEC not supported
+	if !supportsCloseOnExec {
 		syscall.CloseOnExec(r)
 	}
 
@@ -188,16 +183,31 @@ func (f *File) readdir(n int) (fi []FileInfo, err error) {
 	return fi, err
 }
 
+// Darwin and FreeBSD can't read or write 2GB+ at a time,
+// even on 64-bit systems. See golang.org/issue/7812.
+// Use 1GB instead of, say, 2GB-1, to keep subsequent
+// reads aligned.
+const (
+	needsMaxRW = runtime.GOOS == "darwin" || runtime.GOOS == "freebsd"
+	maxRW      = 1 << 30
+)
+
 // read reads up to len(b) bytes from the File.
 // It returns the number of bytes read and an error, if any.
 func (f *File) read(b []byte) (n int, err error) {
+	if needsMaxRW && len(b) > maxRW {
+		b = b[:maxRW]
+	}
 	return syscall.Read(f.fd, b)
 }
 
 // pread reads len(b) bytes from the File starting at byte offset off.
 // It returns the number of bytes read and the error, if any.
-// EOF is signaled by a zero count with err set to 0.
+// EOF is signaled by a zero count with err set to nil.
 func (f *File) pread(b []byte, off int64) (n int, err error) {
+	if needsMaxRW && len(b) > maxRW {
+		b = b[:maxRW]
+	}
 	return syscall.Pread(f.fd, b, off)
 }
 
@@ -205,13 +215,22 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 // It returns the number of bytes written and an error, if any.
 func (f *File) write(b []byte) (n int, err error) {
 	for {
-		m, err := syscall.Write(f.fd, b)
+		bcap := b
+		if needsMaxRW && len(bcap) > maxRW {
+			bcap = bcap[:maxRW]
+		}
+		m, err := syscall.Write(f.fd, bcap)
 		n += m
 
 		// If the syscall wrote some data but not all (short write)
 		// or it returned EINTR, then assume it stopped early for
 		// reasons that are uninteresting to the caller, and try again.
-		if 0 < m && m < len(b) || err == syscall.EINTR {
+		if 0 < m && m < len(bcap) || err == syscall.EINTR {
+			b = b[m:]
+			continue
+		}
+
+		if needsMaxRW && len(bcap) != len(b) && err == nil {
 			b = b[m:]
 			continue
 		}
@@ -223,6 +242,9 @@ func (f *File) write(b []byte) (n int, err error) {
 // pwrite writes len(b) bytes to the File starting at byte offset off.
 // It returns the number of bytes written and an error, if any.
 func (f *File) pwrite(b []byte, off int64) (n int, err error) {
+	if needsMaxRW && len(b) > maxRW {
+		b = b[:maxRW]
+	}
 	return syscall.Pwrite(f.fd, b, off)
 }
 

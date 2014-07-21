@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2013, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -367,7 +367,8 @@ package body System.Tasking.Rendezvous is
       if System.Tasking.Detect_Blocking
         and then STPO.Self.Common.Protected_Action_Nesting > 0
       then
-         raise Program_Error with "potentially blocking operation";
+         raise Program_Error with
+           "potentially blocking operation";
       end if;
 
       Call_Synchronous
@@ -1012,7 +1013,8 @@ package body System.Tasking.Rendezvous is
                end if;
 
                Initialization.Undefer_Abort (Self_Id);
-               raise Program_Error with "Entry call not a delay mode";
+               raise Program_Error with
+                 "entry call not a delay mode";
             end if;
       end case;
 
@@ -1316,7 +1318,8 @@ package body System.Tasking.Rendezvous is
       if System.Tasking.Detect_Blocking
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
-         raise Program_Error with "potentially blocking operation";
+         raise Program_Error with
+           "potentially blocking operation";
       end if;
 
       if Parameters.Runtime_Traces then
@@ -1688,7 +1691,8 @@ package body System.Tasking.Rendezvous is
       if System.Tasking.Detect_Blocking
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
-         raise Program_Error with "potentially blocking operation";
+         raise Program_Error with
+           "potentially blocking operation";
       end if;
 
       Initialization.Defer_Abort (Self_Id);

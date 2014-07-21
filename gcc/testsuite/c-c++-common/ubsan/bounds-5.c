@@ -110,4 +110,4 @@ main (void)
 /* { dg-output "\[^\n\r]*index 1 out of bounds for type 'char \\\[1\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 1 out of bounds for type 'char \\\[1\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*index 1 out of bounds for type 'char \\\[1\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*index 1 out of bounds for type 'char \\\[1\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*index 1 out of bounds for type 'char \\\[1\\\]'" } */

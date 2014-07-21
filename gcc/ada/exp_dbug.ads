@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1206,7 +1206,7 @@ package Exp_Dbug is
    -- Subprograms for Handling Packed Array Type Names --
    ------------------------------------------------------
 
-   function Make_Packed_Array_Type_Name
+   function Make_Packed_Array_Impl_Type_Name
      (Typ   : Entity_Id;
       Csize : Uint)
       return  Name_Id;

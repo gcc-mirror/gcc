@@ -1,3 +1,9 @@
+2014-07-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61852
+	* c-decl.c (implicit_decl_warning): Add location_t parameter.  Use it.
+	(implicitly_declare): Pass location to implicit_decl_warning.
+
 2014-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/61294
