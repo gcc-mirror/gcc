@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse -fuse-caller-save -fomit-frame-pointer" } */
+/* { dg-options "-O2 -msse2 -mno-avx -fuse-caller-save -fomit-frame-pointer" } */
 
 typedef double v2df __attribute__((vector_size (16)));
 
