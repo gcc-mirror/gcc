@@ -92,5 +92,5 @@ int main (int argc, char *argv[])
 }
 
 /* We fold into thunk of C. Eventually we should inline the thunk.  */
-/* { dg-final { scan-tree-dump "C::_ZThn24_N1C3fooEi \\(" "einline"  } } */
+/* { dg-final { scan-tree-dump "C::_ZThn\[0-9\]+_N1C3fooEi \\(" "einline"  } } */
 /* { dg-final { cleanup-tree-dump "einline" } } */
