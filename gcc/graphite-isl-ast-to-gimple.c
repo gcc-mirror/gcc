@@ -51,6 +51,8 @@ extern "C" {
 #include "sese.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-scalar-evolution.h"
+#include "gimple-ssa.h"
+#include "tree-into-ssa.h"
 #include <map>
 
 #ifdef HAVE_cloog
@@ -547,6 +549,73 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
   return last_e;
 }
 
+/* Inserts in iv_map a tuple (OLD_LOOP->num, NEW_NAME) for the induction
+   variables of the loops around GBB in SESE.
+ 
+   FIXME: Instead of using a vec<tree> that maps each loop id to a possible
+   chrec, we could consider using a map<int, tree> that maps loop ids to the
+   corresponding tree expressions.  */
+
+static void
+build_iv_mapping (vec<tree> iv_map, gimple_bb_p gbb,
+		  __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
+		  sese region)
+{
+  gcc_assert (isl_ast_expr_get_type (user_expr) == isl_ast_expr_op &&
+              isl_ast_expr_get_op_type (user_expr) == isl_ast_op_call);
+  int i;
+  isl_ast_expr *arg_expr;
+  for (i = 1; i < isl_ast_expr_get_op_n_arg (user_expr); i++)
+    {
+      arg_expr = isl_ast_expr_get_op_arg (user_expr, i);
+      tree type =
+        build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+      tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
+      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
+      iv_map[old_loop->num] = t;
+    }
+
+}
+
+/* Translates an isl_ast_node_user to Gimple.
+
+   FIXME: We should remove iv_map.create (loop->num + 1), if it is possible.  */
+
+static edge
+translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
+			     edge next_e, ivs_params &ip)
+{
+  gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_user);
+  isl_ast_expr *user_expr = isl_ast_node_user_get_expr (node);
+  isl_ast_expr *name_expr = isl_ast_expr_get_op_arg (user_expr, 0);
+  gcc_assert (isl_ast_expr_get_type (name_expr) == isl_ast_expr_id);
+  isl_id *name_id = isl_ast_expr_get_id (name_expr);
+  poly_bb_p pbb = (poly_bb_p) isl_id_get_user (name_id);
+  gcc_assert (pbb);
+  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+  vec<tree> iv_map;
+  isl_ast_expr_free (name_expr);
+  isl_id_free (name_id);
+
+  gcc_assert (GBB_BB (gbb) != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
+	      "The entry block should not even appear within a scop");
+
+  loop_p loop = gbb_loop (gbb);
+  iv_map.create (loop->num + 1);
+  iv_map.safe_grow_cleared (loop->num + 1);
+
+  build_iv_mapping (iv_map, gbb, user_expr, ip, SCOP_REGION (pbb->scop));
+  isl_ast_expr_free (user_expr);
+  next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb),
+					   SCOP_REGION (pbb->scop), next_e,
+					   iv_map,
+					   &graphite_regenerate_error);
+  iv_map.release ();
+  mark_virtual_operands_for_renaming (cfun);
+  update_ssa (TODO_update_ssa);
+  return next_e;
+}
+
 /* Translates an ISL AST node NODE to GCC representation in the
    context of a SESE.  */
 
@@ -567,7 +636,7 @@ translate_isl_ast (loop_p context_loop, __isl_keep isl_ast_node *node,
       return next_e;
 
     case isl_ast_node_user:
-      return next_e;
+      return translate_isl_ast_node_user (node, next_e, ip);
 
     case isl_ast_node_block:
       return next_e;

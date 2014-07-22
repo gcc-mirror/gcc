@@ -1,3 +1,17 @@
+2014-07-22  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	Add inclusion of gimple-ssa.h, tree-into-ssa.h.
+	(ivs_params_clear):
+	(build_iv_mapping): New function.
+	(translate_isl_ast_node_user): Likewise.
+	(translate_isl_ast): Add calling of translate_isl_ast_node_user.
+
+	testsuite/gcc.dg/graphite/
+	* isl-ast-gen-single-loop-1.c: New testcase.
+	* isl-ast-gen-single-loop-2.c: New testcase.
+	* isl-ast-gen-single-loop-3.c: New testcase.
+
 2014-07-21  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/55701
