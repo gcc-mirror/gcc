@@ -1,5 +1,10 @@
 2014-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/fuse-caller-save-xmm.c (dg-options): Use
+	-msse2 -mno-avx instead of -msse.
+
+2014-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	* g++.dg/ipa/imm-devirt-2.C (dg-final): Improve einline dump string.
 	* gcc.dg/pr44024.c (dg-options): Add -O1.
 	(dg-final): Check for the condition.
