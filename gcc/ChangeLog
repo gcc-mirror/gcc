@@ -1,5 +1,10 @@
 2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.md: Delete UNSPEC_CLS.
+	(clrsb<mode>2): Use clrsb RTL code instead of UNSPEC_CLS.
+
+2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/arm_neon.h (vbsl_f64): New intrinsic.
 
 2014-07-22  Roman Gareev  <gareevroman@gmail.com>

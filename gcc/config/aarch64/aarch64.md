@@ -67,7 +67,6 @@
 
 (define_c_enum "unspec" [
     UNSPEC_CASESI
-    UNSPEC_CLS
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
     UNSPEC_CRC32CH
@@ -2863,7 +2862,7 @@
 
 (define_insn "clrsb<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_CLS))]
+        (clrsb:GPI (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "cls\\t%<w>0, %<w>1"
   [(set_attr "type" "clz")]
