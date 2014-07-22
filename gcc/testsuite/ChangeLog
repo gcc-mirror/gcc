@@ -1,3 +1,7 @@
+2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vbsl_f64_1.c: New test.
+
 2014-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/fuse-caller-save-xmm.c (dg-options): Use
