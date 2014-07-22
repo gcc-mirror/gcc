@@ -1,3 +1,12 @@
+2014-07-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/simd/vexts64_1.c: Remove #include, inline test body.
+	* gcc.target/arm/simd/vextu64_1.c: Likewise.
+	* gcc.target/aarch64/simd/ext_s64_1.c: Likewise.
+	* gcc.target/aarch64/simd/ext_u64_1.c: Likewise.
+	* gcc.target/aarch64/simd/ext_s64.x: Remove.
+	* gcc.target/aarch64/simd/ext_u64.x: Remove.
+
 2014-07-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/61822
