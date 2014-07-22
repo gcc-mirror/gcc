@@ -1,3 +1,7 @@
+2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vbsl_f64): New intrinsic.
+
 2014-07-22  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
