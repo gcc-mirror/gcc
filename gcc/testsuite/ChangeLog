@@ -1,3 +1,8 @@
+2014-07-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/61822
+	* gcc.dg/vect/cond-reduc-1.c: Add missed dg directive.
+
 2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/simd/vbsl_f64_1.c: New test.
