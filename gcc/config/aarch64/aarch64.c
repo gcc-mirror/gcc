@@ -5151,6 +5151,13 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 
       return false;
 
+    case CLRSB:
+    case CLZ:
+      if (speed)
+        *cost += extra_cost->alu.clz;
+
+      return false;
+
     case COMPARE:
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
@@ -5793,6 +5800,14 @@ cost_plus:
         {
           if (speed)
             *cost += extra_cost->fp[mode == DFmode].roundint;
+
+          return false;
+        }
+
+      if (XINT (x, 1) == UNSPEC_RBIT)
+        {
+          if (speed)
+            *cost += extra_cost->alu.rev;
 
           return false;
         }
