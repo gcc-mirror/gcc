@@ -1,3 +1,8 @@
+2014-07-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* pr61160-3.C (main): Return zero.
+
 2014-07-22  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/arm/simd/vexts64_1.c: Remove #include, inline test body.
