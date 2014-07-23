@@ -1,3 +1,7 @@
+2014-07-23  Host Schirmeier  <horst@schirmeier.com>
+
+	* doc/invoke.texi: -O3 enables -ftree-loop-distribute-patterns.
+
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/arm/arm.c (arm_get_frame_offsets): If both r3 and other
