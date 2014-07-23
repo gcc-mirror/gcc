@@ -1,6 +1,12 @@
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Remove base_rtx.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c
 	(aarch64_save_or_restore_callee_save_registers): Rename 'offset'
 	to 'start_offset'.  Remove local variable 'start_offset'.
 
