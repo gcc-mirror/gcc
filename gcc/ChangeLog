@@ -1,6 +1,16 @@
 2014-07-23  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
+	(translate_isl_ast_node_block): New function.
+	(translate_isl_ast): Add calling of translate_isl_ast_node_block.
+
+	testsuite/gcc.dg/graphite/
+	* isl-ast-gen-blocks-1.c: New testcase.
+	* isl-ast-gen-blocks-2.c: New testcase.
+
+2014-07-23  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
 	(get_max_schedule_dimensions): New function.
 	(extend_schedule): Likewise.
 	(generate_isl_schedule): Add calling of extend_schedule and
