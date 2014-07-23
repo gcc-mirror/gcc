@@ -1,5 +1,11 @@
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Deleted.
+	(aarch64_save_callee_saves): New function to handle reg save
+	for both core and vectore regs.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_gen_load_pair)
 	(aarch64_gen_store_pair): New helper function.
 	(aarch64_save_or_restore_callee_save_registers)
