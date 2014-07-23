@@ -1,3 +1,10 @@
+2014-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/61396
+	* config/rs6000/rs6000.c (paired_expand_vector_init): Only allow
+	constant numbers, not general constants.
+	(rs6000_expand_vector_init): Ditto.
+
 2014-07-23  Nathan Sidwell  <nathan@acm.org>
 
 	* gcov-tool.c (gcov_list): Declare here.
