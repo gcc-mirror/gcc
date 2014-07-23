@@ -1,3 +1,9 @@
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue)
+	(aarch64_save_or_restore_fprs)
+	(aarch64_save_or_restore_callee_save_registers): GNU-Stylize code.
+
 2014-07-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/t-rtems-eabi: Add

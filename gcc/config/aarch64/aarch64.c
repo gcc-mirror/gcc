@@ -1917,8 +1917,8 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
   unsigned regno;
   unsigned regno2;
   rtx insn;
-  rtx (*gen_mem_ref)(enum machine_mode, rtx)
-    = (frame_pointer_needed)? gen_frame_mem : gen_rtx_MEM;
+  rtx (*gen_mem_ref) (enum machine_mode, rtx)
+    = frame_pointer_needed ? gen_frame_mem : gen_rtx_MEM;
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
     {
@@ -1938,8 +1938,8 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
 	      /* Empty loop.  */
 	    }
 
-	  if (regno2 <= V31_REGNUM &&
-	      aarch64_register_saved_on_entry (regno2))
+	  if (regno2 <= V31_REGNUM
+	      && aarch64_register_saved_on_entry (regno2))
 	    {
 	      rtx mem2;
 
@@ -1952,15 +1952,15 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
 	      if (restore == false)
 		{
 		  insn = emit_insn
-		    ( gen_store_pairdf (mem, gen_rtx_REG (DFmode, regno),
-					mem2, gen_rtx_REG (DFmode, regno2)));
+		    (gen_store_pairdf (mem, gen_rtx_REG (DFmode, regno),
+				       mem2, gen_rtx_REG (DFmode, regno2)));
 
 		}
 	      else
 		{
 		  insn = emit_insn
-		    ( gen_load_pairdf (gen_rtx_REG (DFmode, regno), mem,
-				       gen_rtx_REG (DFmode, regno2), mem2));
+		    (gen_load_pairdf (gen_rtx_REG (DFmode, regno), mem,
+				      gen_rtx_REG (DFmode, regno2), mem2));
 
 		  add_reg_note (insn, REG_CFA_RESTORE,
 				gen_rtx_REG (DFmode, regno));
@@ -2004,8 +2004,9 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT offset,
   rtx base_rtx = stack_pointer_rtx;
   HOST_WIDE_INT start_offset = offset;
   HOST_WIDE_INT increment = UNITS_PER_WORD;
-  rtx (*gen_mem_ref)(enum machine_mode, rtx) = (frame_pointer_needed)? gen_frame_mem : gen_rtx_MEM;
-  unsigned limit = (frame_pointer_needed)? R28_REGNUM: R30_REGNUM;
+  rtx (*gen_mem_ref) (enum machine_mode, rtx) = (frame_pointer_needed
+						 ? gen_frame_mem : gen_rtx_MEM);
+  unsigned limit = frame_pointer_needed ? R28_REGNUM : R30_REGNUM;
   unsigned regno;
   unsigned regno2;
 
@@ -2026,8 +2027,8 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT offset,
 	    {
 	      /* Empty loop.  */
 	    }
-	  if (regno2 <= limit &&
-	      aarch64_register_saved_on_entry (regno2))
+	  if (regno2 <= limit
+	      && aarch64_register_saved_on_entry (regno2))
 	    {
 	      rtx mem2;
 
@@ -2040,18 +2041,20 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT offset,
 	      if (restore == false)
 		{
 		  insn = emit_insn
-		    ( gen_store_pairdi (mem, gen_rtx_REG (DImode, regno),
-					mem2, gen_rtx_REG (DImode, regno2)));
+		    (gen_store_pairdi (mem, gen_rtx_REG (DImode, regno),
+				       mem2, gen_rtx_REG (DImode, regno2)));
 
 		}
 	      else
 		{
 		  insn = emit_insn
-		    ( gen_load_pairdi (gen_rtx_REG (DImode, regno), mem,
-				     gen_rtx_REG (DImode, regno2), mem2));
+		    (gen_load_pairdi (gen_rtx_REG (DImode, regno), mem,
+				      gen_rtx_REG (DImode, regno2), mem2));
 
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, regno));
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, regno2));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DImode, regno));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DImode, regno2));
 		}
 
 	      /* The first part of a frame-related parallel insn is
@@ -2069,7 +2072,8 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT offset,
 	      else
 		{
 		  insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, regno));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DImode, regno));
 		}
 	      start_offset += increment;
 	    }
@@ -2473,10 +2477,10 @@ aarch64_expand_epilogue (bool for_sibcall)
 	    }
 	}
 
-        aarch64_set_frame_expr (gen_rtx_SET (Pmode, stack_pointer_rtx,
-					     plus_constant (Pmode,
-							    stack_pointer_rtx,
-							    offset)));
+      aarch64_set_frame_expr (gen_rtx_SET (Pmode, stack_pointer_rtx,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
+							  offset)));
     }
 
   emit_use (gen_rtx_REG (DImode, LR_REGNUM));
