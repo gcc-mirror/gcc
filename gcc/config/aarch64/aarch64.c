@@ -1922,6 +1922,7 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
     {
       if (aarch64_register_saved_on_entry (regno))
 	{
+	  rtx reg = gen_rtx_REG (DFmode, regno);
 	  rtx mem;
 
 	  HOST_WIDE_INT offset = start_offset
@@ -1940,6 +1941,7 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
 	  if (regno2 <= V31_REGNUM
 	      && aarch64_register_saved_on_entry (regno2))
 	    {
+	      rtx reg2 = gen_rtx_REG (DFmode, regno2);
 	      rtx mem2;
 
 	      offset = start_offset + cfun->machine->frame.reg_offset[regno2];
@@ -1947,22 +1949,12 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
 				  plus_constant (Pmode, stack_pointer_rtx,
 						 offset));
 	      if (restore == false)
-		{
-		  insn = emit_insn
-		    (gen_store_pairdf (mem, gen_rtx_REG (DFmode, regno),
-				       mem2, gen_rtx_REG (DFmode, regno2)));
-
-		}
+		insn = emit_insn (gen_store_pairdf (mem, reg, mem2, reg2));
 	      else
 		{
-		  insn = emit_insn
-		    (gen_load_pairdf (gen_rtx_REG (DFmode, regno), mem,
-				      gen_rtx_REG (DFmode, regno2), mem2));
-
-		  add_reg_note (insn, REG_CFA_RESTORE,
-				gen_rtx_REG (DFmode, regno));
-		  add_reg_note (insn, REG_CFA_RESTORE,
-				gen_rtx_REG (DFmode, regno2));
+		  insn = emit_insn (gen_load_pairdf (reg, mem, reg2, mem2));
+		  add_reg_note (insn, REG_CFA_RESTORE, reg);
+		  add_reg_note (insn, REG_CFA_RESTORE, reg2);
 		}
 
 	      /* The first part of a frame-related parallel insn is
@@ -1975,12 +1967,11 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
 	  else
 	    {
 	      if (restore == false)
-		insn = emit_move_insn (mem, gen_rtx_REG (DFmode, regno));
+		insn = emit_move_insn (mem, reg);
 	      else
 		{
-		  insn = emit_move_insn (gen_rtx_REG (DFmode, regno), mem);
-		  add_reg_note (insn, REG_CFA_RESTORE,
-				gen_rtx_REG (DFmode, regno));
+		  insn = emit_move_insn (reg, mem);
+		  add_reg_note (insn, REG_CFA_RESTORE, reg);
 		}
 	    }
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -2006,6 +1997,7 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
     {
       if (aarch64_register_saved_on_entry (regno))
 	{
+	  rtx reg = gen_rtx_REG (DImode, regno);
 	  rtx mem;
 
 	  HOST_WIDE_INT offset = start_offset
@@ -2026,6 +2018,7 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 	      && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
 		  == cfun->machine->frame.reg_offset[regno2]))
 	    {
+	      rtx reg2 = gen_rtx_REG (DImode, regno2);
 	      rtx mem2;
 
 	      offset = start_offset + cfun->machine->frame.reg_offset[regno2];
@@ -2033,22 +2026,12 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 				  plus_constant (Pmode, stack_pointer_rtx,
 						 offset));
 	      if (restore == false)
-		{
-		  insn = emit_insn
-		    (gen_store_pairdi (mem, gen_rtx_REG (DImode, regno),
-				       mem2, gen_rtx_REG (DImode, regno2)));
-
-		}
+		  insn = emit_insn (gen_store_pairdi (mem, reg, mem2, reg2));
 	      else
 		{
-		  insn = emit_insn
-		    (gen_load_pairdi (gen_rtx_REG (DImode, regno), mem,
-				      gen_rtx_REG (DImode, regno2), mem2));
-
-		  add_reg_note (insn, REG_CFA_RESTORE,
-				gen_rtx_REG (DImode, regno));
-		  add_reg_note (insn, REG_CFA_RESTORE,
-				gen_rtx_REG (DImode, regno2));
+		  insn = emit_insn (gen_load_pairdi (reg, mem, reg2, mem2));
+		  add_reg_note (insn, REG_CFA_RESTORE, reg);
+		  add_reg_note (insn, REG_CFA_RESTORE, reg2);
 		}
 
 	      /* The first part of a frame-related parallel insn is
@@ -2061,12 +2044,11 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 	  else
 	    {
 	      if (restore == false)
-		insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
+		insn = emit_move_insn (mem, reg);
 	      else
 		{
-		  insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
-		  add_reg_note (insn, REG_CFA_RESTORE,
-				gen_rtx_REG (DImode, regno));
+		  insn = emit_move_insn (reg, mem);
+		  add_reg_note (insn, REG_CFA_RESTORE, reg);
 		}
 	    }
 	  RTX_FRAME_RELATED_P (insn) = 1;
