@@ -616,6 +616,26 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   return next_e;
 }
 
+/* Translates an isl_ast_node_block to Gimple. */
+
+static edge
+translate_isl_ast_node_block (loop_p context_loop,
+			      __isl_keep isl_ast_node *node,
+			      edge next_e, ivs_params &ip)
+{
+  gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_block);
+  isl_ast_node_list *node_list = isl_ast_node_block_get_children (node);
+  int i;
+  for (i = 0; i < isl_ast_node_list_n_ast_node (node_list); i++)
+    {
+      isl_ast_node *tmp_node = isl_ast_node_list_get_ast_node (node_list, i);
+      next_e = translate_isl_ast (context_loop, tmp_node, next_e, ip);
+      isl_ast_node_free (tmp_node);
+    }
+  isl_ast_node_list_free (node_list);
+  return next_e;
+}
+
 /* Translates an ISL AST node NODE to GCC representation in the
    context of a SESE.  */
 
@@ -639,7 +659,8 @@ translate_isl_ast (loop_p context_loop, __isl_keep isl_ast_node *node,
       return translate_isl_ast_node_user (node, next_e, ip);
 
     case isl_ast_node_block:
-      return next_e;
+      return translate_isl_ast_node_block (context_loop, node,
+					   next_e, ip);
 
     default:
       gcc_unreachable ();
