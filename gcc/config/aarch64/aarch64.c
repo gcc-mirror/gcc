@@ -1908,6 +1908,13 @@ aarch64_register_saved_on_entry (int regno)
   return cfun->machine->frame.reg_offset[regno] >= 0;
 }
 
+static unsigned
+aarch64_next_callee_save (unsigned regno, unsigned limit)
+{
+  while (regno <= limit && !aarch64_register_saved_on_entry (regno))
+    regno ++;
+  return regno;
+}
 
 static void
 aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
@@ -1918,64 +1925,56 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
   rtx (*gen_mem_ref) (enum machine_mode, rtx)
     = frame_pointer_needed ? gen_frame_mem : gen_rtx_MEM;
 
-  for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
+
+  for (regno = aarch64_next_callee_save (V0_REGNUM, V31_REGNUM);
+       regno <= V31_REGNUM;
+       regno = aarch64_next_callee_save (regno + 1, V31_REGNUM))
     {
-      if (aarch64_register_saved_on_entry (regno))
+      rtx reg = gen_rtx_REG (DFmode, regno);
+      rtx mem;
+
+      HOST_WIDE_INT offset = start_offset
+			     + cfun->machine->frame.reg_offset[regno];
+      mem = gen_mem_ref (DFmode, plus_constant (Pmode, stack_pointer_rtx,
+						offset));
+
+      regno2 = aarch64_next_callee_save (regno + 1, V31_REGNUM);
+
+      if (regno2 <= V31_REGNUM)
 	{
-	  rtx reg = gen_rtx_REG (DFmode, regno);
-	  rtx mem;
+	  rtx reg2 = gen_rtx_REG (DFmode, regno2);
+	  rtx mem2;
 
-	  HOST_WIDE_INT offset = start_offset
-				 + cfun->machine->frame.reg_offset[regno];
-	  mem = gen_mem_ref (DFmode, plus_constant (Pmode, stack_pointer_rtx,
-						    offset));
-
-	  for (regno2 = regno + 1;
-	       regno2 <= V31_REGNUM
-		 && !aarch64_register_saved_on_entry (regno2);
-	       regno2++)
-	    {
-	      /* Empty loop.  */
-	    }
-
-	  if (regno2 <= V31_REGNUM
-	      && aarch64_register_saved_on_entry (regno2))
-	    {
-	      rtx reg2 = gen_rtx_REG (DFmode, regno2);
-	      rtx mem2;
-
-	      offset = start_offset + cfun->machine->frame.reg_offset[regno2];
-	      mem2 = gen_mem_ref (DFmode,
-				  plus_constant (Pmode, stack_pointer_rtx,
-						 offset));
-	      if (restore == false)
-		insn = emit_insn (gen_store_pairdf (mem, reg, mem2, reg2));
-	      else
-		{
-		  insn = emit_insn (gen_load_pairdf (reg, mem, reg2, mem2));
-		  add_reg_note (insn, REG_CFA_RESTORE, reg);
-		  add_reg_note (insn, REG_CFA_RESTORE, reg2);
-		}
-
-	      /* The first part of a frame-related parallel insn is
-		 always assumed to be relevant to the frame
-		 calculations; subsequent parts, are only
-		 frame-related if explicitly marked.  */
-	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
-	      regno = regno2;
-	    }
+	  offset = start_offset + cfun->machine->frame.reg_offset[regno2];
+	  mem2 = gen_mem_ref (DFmode,
+			      plus_constant (Pmode, stack_pointer_rtx, offset));
+	  if (restore == false)
+	    insn = emit_insn (gen_store_pairdf (mem, reg, mem2, reg2));
 	  else
 	    {
-	      if (restore == false)
-		insn = emit_move_insn (mem, reg);
-	      else
-		{
-		  insn = emit_move_insn (reg, mem);
-		  add_reg_note (insn, REG_CFA_RESTORE, reg);
-		}
+	      insn = emit_insn (gen_load_pairdf (reg, mem, reg2, mem2));
+	      add_reg_note (insn, REG_CFA_RESTORE, reg);
+	      add_reg_note (insn, REG_CFA_RESTORE, reg2);
 	    }
-	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  /* The first part of a frame-related parallel insn is
+	     always assumed to be relevant to the frame
+	     calculations; subsequent parts, are only
+	     frame-related if explicitly marked.  */
+	  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
+	  regno = regno2;
 	}
+      else
+	{
+	  if (restore == false)
+	    insn = emit_move_insn (mem, reg);
+	  else
+	    {
+	      insn = emit_move_insn (reg, mem);
+	      add_reg_note (insn, REG_CFA_RESTORE, reg);
+	    }
+	}
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 }
 
@@ -1993,68 +1992,59 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
   unsigned regno;
   unsigned regno2;
 
-  for (regno = R0_REGNUM; regno <= limit; regno++)
+  for (regno = aarch64_next_callee_save (R0_REGNUM, limit);
+       regno <= limit;
+       regno = aarch64_next_callee_save (regno + 1, limit))
     {
-      if (aarch64_register_saved_on_entry (regno))
+      rtx reg = gen_rtx_REG (DImode, regno);
+      rtx mem;
+
+      HOST_WIDE_INT offset = start_offset
+			     + cfun->machine->frame.reg_offset[regno];
+      mem = gen_mem_ref (Pmode, plus_constant (Pmode, stack_pointer_rtx,
+					       offset));
+
+      regno2 = aarch64_next_callee_save (regno + 1, limit);
+
+      if (regno2 <= limit
+	  && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
+	      == cfun->machine->frame.reg_offset[regno2]))
+
 	{
-	  rtx reg = gen_rtx_REG (DImode, regno);
-	  rtx mem;
+	  rtx reg2 = gen_rtx_REG (DImode, regno2);
+	  rtx mem2;
 
-	  HOST_WIDE_INT offset = start_offset
-				 + cfun->machine->frame.reg_offset[regno];
-	  mem = gen_mem_ref (Pmode, plus_constant (Pmode, stack_pointer_rtx,
-						   offset));
-
-	  for (regno2 = regno + 1;
-	       regno2 <= limit
-		 && !aarch64_register_saved_on_entry (regno2);
-	       regno2++)
-	    {
-	      /* Empty loop.  */
-	    }
-
-	  if (regno2 <= limit
-	      && aarch64_register_saved_on_entry (regno2)
-	      && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
-		  == cfun->machine->frame.reg_offset[regno2]))
-	    {
-	      rtx reg2 = gen_rtx_REG (DImode, regno2);
-	      rtx mem2;
-
-	      offset = start_offset + cfun->machine->frame.reg_offset[regno2];
-	      mem2 = gen_mem_ref (Pmode,
-				  plus_constant (Pmode, stack_pointer_rtx,
-						 offset));
-	      if (restore == false)
-		  insn = emit_insn (gen_store_pairdi (mem, reg, mem2, reg2));
-	      else
-		{
-		  insn = emit_insn (gen_load_pairdi (reg, mem, reg2, mem2));
-		  add_reg_note (insn, REG_CFA_RESTORE, reg);
-		  add_reg_note (insn, REG_CFA_RESTORE, reg2);
-		}
-
-	      /* The first part of a frame-related parallel insn is
-		 always assumed to be relevant to the frame
-		 calculations; subsequent parts, are only
-		 frame-related if explicitly marked.  */
-	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
-	      regno = regno2;
-	    }
+	  offset = start_offset + cfun->machine->frame.reg_offset[regno2];
+	  mem2 = gen_mem_ref (Pmode,
+			      plus_constant (Pmode, stack_pointer_rtx, offset));
+	  if (restore == false)
+	    insn = emit_insn (gen_store_pairdi (mem, reg, mem2, reg2));
 	  else
 	    {
-	      if (restore == false)
-		insn = emit_move_insn (mem, reg);
-	      else
-		{
-		  insn = emit_move_insn (reg, mem);
-		  add_reg_note (insn, REG_CFA_RESTORE, reg);
-		}
+	      insn = emit_insn (gen_load_pairdi (reg, mem, reg2, mem2));
+	      add_reg_note (insn, REG_CFA_RESTORE, reg);
+	      add_reg_note (insn, REG_CFA_RESTORE, reg2);
 	    }
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
-    }
 
+	  /* The first part of a frame-related parallel insn is
+	     always assumed to be relevant to the frame
+	     calculations; subsequent parts, are only
+	     frame-related if explicitly marked.  */
+	  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
+	  regno = regno2;
+	}
+      else
+	{
+	  if (restore == false)
+	    insn = emit_move_insn (mem, reg);
+	  else
+	    {
+	      insn = emit_move_insn (reg, mem);
+	      add_reg_note (insn, REG_CFA_RESTORE, reg);
+	    }
+	}
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
   aarch64_save_or_restore_fprs (start_offset, restore);
 }
 
