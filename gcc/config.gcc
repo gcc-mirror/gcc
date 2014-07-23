@@ -419,7 +419,7 @@ nds32*)
 nios2-*-*)
 	cpu_type=nios2
 	extra_options="${extra_options} g.opt"
-	;;	
+	;;
 picochip-*-*)
         cpu_type=picochip
         ;;
@@ -2135,6 +2135,10 @@ nios2-*-*)
 	nios2-*-elf*)
 		tm_file="${tm_file} newlib-stdint.h nios2/elf.h"
 		extra_options="${extra_options} nios2/elf.opt"
+		;;
+	nios2-*-rtems*)
+		tm_file="${tm_file} newlib-stdint.h nios2/rtems.h rtems.h"
+		tmake_file="${tmake_file} t-rtems nios2/t-rtems"
 		;;
         esac
 	;;
