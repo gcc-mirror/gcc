@@ -1052,6 +1052,22 @@
   [(set_attr "type" "store2")]
 )
 
+(define_insn "storewb_pair<GPF:mode>_<P:mode>"
+  [(parallel
+    [(set (match_operand:P 0 "register_operand" "=&k")
+          (plus:P (match_operand:P 1 "register_operand" "0")
+                  (match_operand:P 4 "const_int_operand" "n")))
+     (set (mem:GPF (plus:P (match_dup 0)
+                   (match_dup 4)))
+          (match_operand:GPF 2 "register_operand" "w"))
+     (set (mem:GPF (plus:P (match_dup 0)
+                   (match_operand:P 5 "const_int_operand" "n")))
+          (match_operand:GPF 3 "register_operand" "w"))])]
+  "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
+  "stp\\t%<w>2, %<w>3, [%0, %4]!"
+  [(set_attr "type" "neon_store1_2reg<q>")]
+)
+
 ;; -------------------------------------------------------------------
 ;; Sign/Zero extension
 ;; -------------------------------------------------------------------

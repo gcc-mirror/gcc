@@ -1917,6 +1917,41 @@ aarch64_next_callee_save (unsigned regno, unsigned limit)
 }
 
 static rtx
+aarch64_gen_storewb_pair (enum machine_mode mode, rtx base, rtx reg, rtx reg2,
+			  HOST_WIDE_INT adjustment)
+{
+  switch (mode)
+    {
+    case DImode:
+      return gen_storewb_pairdi_di (base, base, reg, reg2,
+				    GEN_INT (-adjustment),
+				    GEN_INT (UNITS_PER_WORD - adjustment));
+    case DFmode:
+      return gen_storewb_pairdf_di (base, base, reg, reg2,
+				    GEN_INT (-adjustment),
+				    GEN_INT (UNITS_PER_WORD - adjustment));
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+aarch64_pushwb_pair_reg (enum machine_mode mode, unsigned regno1,
+			 unsigned regno2, HOST_WIDE_INT adjustment)
+{
+  rtx insn;
+  rtx reg1 = gen_rtx_REG (mode, regno1);
+  rtx reg2 = gen_rtx_REG (mode, regno2);
+
+  insn = emit_insn (aarch64_gen_storewb_pair (mode, stack_pointer_rtx, reg1,
+					      reg2, adjustment));
+  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
+
+  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
+  RTX_FRAME_RELATED_P (insn) = 1;
+}
+
+static rtx
 aarch64_gen_store_pair (enum machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
 			rtx reg2)
 {
@@ -2183,8 +2218,6 @@ aarch64_expand_prologue (void)
 	 old frame pointer on the stack.  */
       if (frame_pointer_needed)
 	{
-	  rtx mem_fp, mem_lr;
-
 	  if (fp_offset)
 	    {
 	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
@@ -2195,38 +2228,12 @@ aarch64_expand_prologue (void)
 				       gen_rtx_MINUS (Pmode,
 						      stack_pointer_rtx,
 						      GEN_INT (offset))));
-	      mem_fp = gen_frame_mem (DImode,
-				      plus_constant (Pmode,
-						     stack_pointer_rtx,
-						     fp_offset));
-	      mem_lr = gen_frame_mem (DImode,
-				      plus_constant (Pmode,
-						     stack_pointer_rtx,
-						     fp_offset
-						     + UNITS_PER_WORD));
-	      insn = emit_insn (gen_store_pairdi (mem_fp,
-						  hard_frame_pointer_rtx,
-						  mem_lr,
-						  gen_rtx_REG (DImode,
-							       LR_REGNUM)));
+
+	      aarch64_save_callee_saves (DImode, fp_offset, R29_REGNUM,
+					 R30_REGNUM);
 	    }
 	  else
-	    {
-	      insn = emit_insn (gen_storewb_pairdi_di
-				(stack_pointer_rtx, stack_pointer_rtx,
-				 hard_frame_pointer_rtx,
-				 gen_rtx_REG (DImode, LR_REGNUM),
-				 GEN_INT (-offset),
-				 GEN_INT (GET_MODE_SIZE (DImode) - offset)));
-	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
-	    }
-
-	  /* The first part of a frame-related parallel insn is always
-	     assumed to be relevant to the frame calculations;
-	     subsequent parts, are only frame-related if explicitly
-	     marked.  */
-	  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	    aarch64_pushwb_pair_reg (DImode, R29_REGNUM, R30_REGNUM, offset);
 
 	  /* Set up frame pointer to point to the location of the
 	     previous frame pointer on the stack.  */
@@ -2241,17 +2248,18 @@ aarch64_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  insn = emit_insn (gen_stack_tie (stack_pointer_rtx,
 					   hard_frame_pointer_rtx));
+
+	  aarch64_save_callee_saves (DImode, fp_offset, R0_REGNUM, R28_REGNUM);
 	}
       else
 	{
 	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
 					   GEN_INT (-offset)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  aarch64_save_callee_saves (DImode, fp_offset, R0_REGNUM, R30_REGNUM);
 	}
 
-      aarch64_save_callee_saves (DImode, fp_offset, R0_REGNUM,
-				 frame_pointer_needed
-				 ? R28_REGNUM : R30_REGNUM);
       aarch64_save_callee_saves (DFmode, fp_offset, V0_REGNUM, V31_REGNUM);
     }
 
