@@ -1,3 +1,8 @@
+2014-07-23  Marius Cornea  <marius.cornea@intel.com>
+
+	PR libgcc/61685
+	* bid128_fma.c (rounding_correction): Remove redundant tests.
+
 2014-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* bid128_div.c (BID128_FUNCTION_ARG2): Remove unused variable 'Ql'.
