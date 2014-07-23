@@ -685,12 +685,57 @@ generate_isl_context (scop_p scop)
   return isl_ast_build_from_context (context_isl);
 }
 
+/* Get the maximal number of schedule dimensions in the scop SCOP.  */
+
+static
+int get_max_schedule_dimensions (scop_p scop)
+{
+  int i;
+  poly_bb_p pbb;
+  int schedule_dims = 0;
+
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+    {
+      int pbb_schedule_dims = isl_map_dim (pbb->transformed, isl_dim_out);
+      if (pbb_schedule_dims > schedule_dims)
+	schedule_dims = pbb_schedule_dims;
+    }
+
+  return schedule_dims;
+}
+
+/* Extend the schedule to NB_SCHEDULE_DIMS schedule dimensions.
+
+   For schedules with different dimensionality, the isl AST generator can not
+   define an order and will just randomly choose an order. The solution to this
+   problem is to extend all schedules to the maximal number of schedule
+   dimensions (using '0's for the remaining values).  */
+
+static __isl_give isl_map *
+extend_schedule (__isl_take isl_map *schedule, int nb_schedule_dims)
+{
+  int tmp_dims = isl_map_dim (schedule, isl_dim_out);
+  schedule =
+    isl_map_add_dims (schedule, isl_dim_out, nb_schedule_dims - tmp_dims);
+  isl_val *zero =
+    isl_val_int_from_si (isl_map_get_ctx (schedule), 0);
+  int i;
+  for (i = tmp_dims; i < nb_schedule_dims; i++)
+    {
+      schedule =
+        isl_map_fix_val (schedule, isl_dim_out, i, isl_val_copy (zero));
+    }
+  isl_val_free (zero);
+  return schedule;
+}
+
 /* Generates a schedule, which specifies an order used to
    visit elements in a domain.  */
 
 static __isl_give isl_union_map *
 generate_isl_schedule (scop_p scop)
 {
+  int nb_schedule_dims = get_max_schedule_dimensions (scop);
   int i;
   poly_bb_p pbb;
   isl_union_map *schedule_isl =
@@ -706,6 +751,7 @@ generate_isl_schedule (scop_p scop)
       isl_map *bb_schedule = isl_map_copy (pbb->transformed);
       bb_schedule = isl_map_intersect_domain (bb_schedule,
 					      isl_set_copy (pbb->domain));
+      bb_schedule = extend_schedule (bb_schedule, nb_schedule_dims);
       schedule_isl =
         isl_union_map_union (schedule_isl,
 			     isl_union_map_from_map (bb_schedule));
