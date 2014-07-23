@@ -1,3 +1,12 @@
+2014-07-23  Richard Biener  <rguenther@suse.de>
+
+	* params.def (PARAM_MAX_COMBINE_INSNS): New.
+	* combine.c: Include statistics.h and params.h.
+	(combine_instructions): Guard three and four insn combines
+	with max-combine-insns value.  Record statistics for combines
+	performed.
+	* doc/invoke.texi (max-combine-insns): Document new param.
+
 2014-07-23  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
