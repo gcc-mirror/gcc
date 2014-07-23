@@ -899,7 +899,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
                 raise ValueError("Unknown manager function in std::experimental::any")
 
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
-            mgrname = re.sub("std::string(?!\w)", gdb.lookup_type('std::string').strip_typedefs().name, m.group(1))
+            mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
             mgrtype = gdb.lookup_type(mgrname)
             self.contained_type = mgrtype.template_argument(0)
             valptr = None
