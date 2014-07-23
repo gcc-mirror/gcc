@@ -1,3 +1,9 @@
+2014-07-23  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov-tool.c (gcov_list): Declare here.
+	(set_gcov_list): Remove.
+	(gcov_output_files): Set gcov_list directly.
+
 2014-07-23  Host Schirmeier  <horst@schirmeier.com>
 
 	* doc/invoke.texi: -O3 enables -ftree-loop-distribute-patterns.
