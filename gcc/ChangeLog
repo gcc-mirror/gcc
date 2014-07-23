@@ -1,3 +1,11 @@
+2014-07-23  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(get_max_schedule_dimensions): New function.
+	(extend_schedule): Likewise.
+	(generate_isl_schedule): Add calling of extend_schedule and
+	get_max_schedule_dimensions.
+
 2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle CLRSB, CLZ.
