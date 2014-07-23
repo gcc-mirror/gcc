@@ -1,3 +1,9 @@
+2014-07-23  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov-driver.c (set_gcov_list): Remove.
+	(gcov_list): Make non-static in GCOV_TOOL.
+	* libgcov.h (GCOV_TOOL_LINKAGE): Remove unused #define.
+
 2014-07-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (__sync_lock_release_4): New.

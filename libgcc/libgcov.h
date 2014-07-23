@@ -111,12 +111,9 @@ typedef unsigned gcov_position_t;
 #define L_gcov_merge_ior 1
 #define L_gcov_merge_time_profile 1
 
-/* Make certian internal functions/variables in libgcov available for
-   gcov-tool access.  */
-#define GCOV_TOOL_LINKAGE 
-
 extern gcov_type gcov_read_counter_mem ();
 extern unsigned gcov_get_merge_weight ();
+extern struct gcov_info *gcov_list;
 
 #endif /* !IN_GCOV_TOOL */
 

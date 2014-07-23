@@ -54,7 +54,6 @@ extern void gcov_exit (void) ATTRIBUTE_HIDDEN;
 extern void set_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
 extern void reset_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
 extern int get_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
-extern void set_gcov_list (struct gcov_info *) ATTRIBUTE_HIDDEN;
 
 struct gcov_fn_buffer
 {
@@ -71,14 +70,11 @@ struct gcov_summary_buffer
 };
 
 /* Chain of per-object gcov structures.  */
-static struct gcov_info *gcov_list;
-
-/* Set the head of gcov_list.  */
-void
-set_gcov_list (struct gcov_info *head)
-{
-  gcov_list = head;
-}
+#ifndef IN_GCOV_TOOL
+/* We need to expose this static variable when compiling for gcov-tool.  */
+static
+#endif
+struct gcov_info *gcov_list;
 
 /* Size of the longest file name. */
 /* We need to expose this static variable when compiling for gcov-tool.  */
