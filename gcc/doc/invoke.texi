@@ -10006,6 +10006,10 @@ The maximum size measured as number of RTLs that can be recorded in an expressio
 in combiner for a pseudo register as last known value of that register.  The default
 is 10000.
 
+@item max-combine-insns
+The maximum number of instructions the RTL combiner tries to combine.
+The default value is 2 at @option{-Og} and 4 otherwise.
+
 @item integer-share-limit
 Small integer constants can use a shared data structure, reducing the
 compiler's memory usage and increasing its speed.  This sets the maximum
