@@ -1997,12 +1997,11 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, int increment,
 /* offset from the stack pointer of where the saves and
    restore's have to happen.  */
 static void
-aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT offset,
+aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 					       bool restore)
 {
   rtx insn;
   rtx base_rtx = stack_pointer_rtx;
-  HOST_WIDE_INT start_offset = offset;
   HOST_WIDE_INT increment = UNITS_PER_WORD;
   rtx (*gen_mem_ref) (enum machine_mode, rtx) = (frame_pointer_needed
 						 ? gen_frame_mem : gen_rtx_MEM);
