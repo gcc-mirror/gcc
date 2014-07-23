@@ -1,5 +1,12 @@
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_popwb_pair_reg)
+	(aarch64_gen_loadwb_pair): New helper function.
+	(aarch64_expand_epilogue): Simplify code using new helper functions.
+	* config/aarch64/aarch64.md (loadwb_pair<GPF:mode>_<P:mode>): Define.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_pushwb_pair_reg)
 	(aarch64_gen_storewb_pair): New helper function.
 	(aarch64_expand_prologue): Simplify code using new helper functions.
