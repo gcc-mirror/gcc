@@ -1925,10 +1925,11 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, int increment,
       if (aarch64_register_saved_on_entry (regno))
 	{
 	  rtx mem;
-	  mem = gen_mem_ref (DFmode,
-			     plus_constant (Pmode,
-					    stack_pointer_rtx,
-					    start_offset));
+
+	  HOST_WIDE_INT offset = start_offset
+				 + cfun->machine->frame.reg_offset[regno];
+	  mem = gen_mem_ref (DFmode, plus_constant (Pmode, stack_pointer_rtx,
+						    offset));
 
 	  for (regno2 = regno + 1;
 	       regno2 <= V31_REGNUM
@@ -1943,12 +1944,10 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, int increment,
 	    {
 	      rtx mem2;
 
-	      /* Next highest register to be saved.  */
+	      offset = start_offset + cfun->machine->frame.reg_offset[regno2];
 	      mem2 = gen_mem_ref (DFmode,
-				  plus_constant
-				  (Pmode,
-				   stack_pointer_rtx,
-				   start_offset + increment));
+				  plus_constant (Pmode, stack_pointer_rtx,
+						 offset));
 	      if (restore == false)
 		{
 		  insn = emit_insn
@@ -1974,7 +1973,6 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, int increment,
 		 frame-related if explicitly marked.  */
 	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
 	      regno = regno2;
-	      start_offset += increment * 2;
 	    }
 	  else
 	    {
@@ -1986,7 +1984,6 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, int increment,
 		  add_reg_note (insn, REG_CFA_RESTORE,
 				gen_rtx_REG (DFmode, regno));
 		}
-	      start_offset += increment;
 	    }
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -2013,10 +2010,11 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
       if (aarch64_register_saved_on_entry (regno))
 	{
 	  rtx mem;
-	  mem = gen_mem_ref (Pmode,
-			     plus_constant (Pmode,
-					    stack_pointer_rtx,
-					    start_offset));
+
+	  HOST_WIDE_INT offset = start_offset
+				 + cfun->machine->frame.reg_offset[regno];
+	  mem = gen_mem_ref (Pmode, plus_constant (Pmode, stack_pointer_rtx,
+						   offset));
 
 	  for (regno2 = regno + 1;
 	       regno2 <= limit
@@ -2025,17 +2023,18 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 	    {
 	      /* Empty loop.  */
 	    }
+
 	  if (regno2 <= limit
-	      && aarch64_register_saved_on_entry (regno2))
+	      && aarch64_register_saved_on_entry (regno2)
+	      && ((cfun->machine->frame.reg_offset[regno] + UNITS_PER_WORD)
+		  == cfun->machine->frame.reg_offset[regno2]))
 	    {
 	      rtx mem2;
 
-	      /* Next highest register to be saved.  */
+	      offset = start_offset + cfun->machine->frame.reg_offset[regno2];
 	      mem2 = gen_mem_ref (Pmode,
-				  plus_constant
-				  (Pmode,
-				   stack_pointer_rtx,
-				   start_offset + increment));
+				  plus_constant (Pmode, stack_pointer_rtx,
+						 offset));
 	      if (restore == false)
 		{
 		  insn = emit_insn
@@ -2061,7 +2060,6 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 		 frame-related if explicitly marked.  */
 	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
 	      regno = regno2;
-	      start_offset += increment * 2;
 	    }
 	  else
 	    {
@@ -2073,7 +2071,6 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 		  add_reg_note (insn, REG_CFA_RESTORE,
 				gen_rtx_REG (DImode, regno));
 		}
-	      start_offset += increment;
 	    }
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -2272,8 +2269,7 @@ aarch64_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
-      aarch64_save_or_restore_callee_save_registers
-	(fp_offset + cfun->machine->frame.hardfp_offset, 0);
+      aarch64_save_or_restore_callee_save_registers (fp_offset, 0);
     }
 
   /* when offset >= 512,
@@ -2344,8 +2340,7 @@ aarch64_expand_epilogue (bool for_sibcall)
       cfa_reg = stack_pointer_rtx;
     }
 
-  aarch64_save_or_restore_callee_save_registers
-    (fp_offset + cfun->machine->frame.hardfp_offset, 1);
+  aarch64_save_or_restore_callee_save_registers (fp_offset, 1);
 
   /* Restore the frame pointer and lr if the frame pointer is needed.  */
   if (offset > 0)
