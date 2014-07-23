@@ -1,5 +1,11 @@
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.md: (aarch64_save_or_restore_callee_saves):
+	Rename to aarch64_save_callee_saves, remove restore code.
+	(aarch64_restore_callee_saves): New function.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Deleted.
 	(aarch64_save_callee_saves): New function to handle reg save
 	for both core and vectore regs.
