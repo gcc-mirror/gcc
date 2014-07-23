@@ -1910,7 +1910,7 @@ aarch64_register_saved_on_entry (int regno)
 
 
 static void
-aarch64_save_or_restore_fprs (int start_offset, int increment,
+aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, int increment,
 			      bool restore, rtx base_rtx)
 
 {
