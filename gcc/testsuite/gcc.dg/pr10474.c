@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { x86_64-*-* && lp64 } || { powerpc*-*-* && lp64 } } } } */
+/* { dg-do compile { target { { x86_64-*-* && lp64 } || { { powerpc*-*-* && lp64 } || arm_nothumb } } } } */
 /* { dg-options "-O3 -fdump-rtl-pro_and_epilogue"  } */
 
 void f(int *i)
