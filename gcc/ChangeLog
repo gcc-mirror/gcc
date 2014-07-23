@@ -1,5 +1,12 @@
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_gen_load_pair)
+	(aarch64_gen_store_pair): New helper function.
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Use new helper functions.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_next_callee_save): New function.
 	(aarch64_save_or_restore_callee_save_registers)
 	(aarch64_save_or_restore_fprs): Use aarch64_next_callee_save.

@@ -1916,6 +1916,40 @@ aarch64_next_callee_save (unsigned regno, unsigned limit)
   return regno;
 }
 
+static rtx
+aarch64_gen_store_pair (enum machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
+			rtx reg2)
+{
+  switch (mode)
+    {
+    case DImode:
+      return gen_store_pairdi (mem1, reg1, mem2, reg2);
+
+    case DFmode:
+      return gen_store_pairdf (mem1, reg1, mem2, reg2);
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static rtx
+aarch64_gen_load_pair (enum machine_mode mode, rtx reg1, rtx mem1, rtx reg2,
+		       rtx mem2)
+{
+  switch (mode)
+    {
+    case DImode:
+      return gen_load_pairdi (reg1, mem1, reg2, mem2);
+
+    case DFmode:
+      return gen_load_pairdf (reg1, mem1, reg2, mem2);
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 static void
 aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
 {
@@ -1949,10 +1983,10 @@ aarch64_save_or_restore_fprs (HOST_WIDE_INT start_offset, bool restore)
 	  mem2 = gen_mem_ref (DFmode,
 			      plus_constant (Pmode, stack_pointer_rtx, offset));
 	  if (restore == false)
-	    insn = emit_insn (gen_store_pairdf (mem, reg, mem2, reg2));
+	    insn = emit_insn (aarch64_gen_store_pair (DFmode, mem, reg, mem2, reg2));
 	  else
 	    {
-	      insn = emit_insn (gen_load_pairdf (reg, mem, reg2, mem2));
+	      insn = emit_insn (aarch64_gen_load_pair (DFmode, reg, mem, reg2, mem2));
 	      add_reg_note (insn, REG_CFA_RESTORE, reg);
 	      add_reg_note (insn, REG_CFA_RESTORE, reg2);
 	    }
@@ -2018,10 +2052,10 @@ aarch64_save_or_restore_callee_save_registers (HOST_WIDE_INT start_offset,
 	  mem2 = gen_mem_ref (Pmode,
 			      plus_constant (Pmode, stack_pointer_rtx, offset));
 	  if (restore == false)
-	    insn = emit_insn (gen_store_pairdi (mem, reg, mem2, reg2));
+	    insn = emit_insn (aarch64_gen_store_pair (DImode, mem, reg, mem2, reg2));
 	  else
 	    {
-	      insn = emit_insn (gen_load_pairdi (reg, mem, reg2, mem2));
+	      insn = emit_insn (aarch64_gen_load_pair (DImode, reg, mem, reg2, mem2));
 	      add_reg_note (insn, REG_CFA_RESTORE, reg);
 	      add_reg_note (insn, REG_CFA_RESTORE, reg2);
 	    }
