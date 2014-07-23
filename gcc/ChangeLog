@@ -2,6 +2,12 @@
 
 	* config/aarch64/aarch64.c
 	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Remove 'increment'.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers)
 	(aarch64_save_or_restore_fprs): Use register offset in
 	cfun->machine->frame.reg_offset.
 
