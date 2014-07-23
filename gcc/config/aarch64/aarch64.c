@@ -1952,6 +1952,46 @@ aarch64_pushwb_pair_reg (enum machine_mode mode, unsigned regno1,
 }
 
 static rtx
+aarch64_gen_loadwb_pair (enum machine_mode mode, rtx base, rtx reg, rtx reg2,
+			 HOST_WIDE_INT adjustment)
+{
+  switch (mode)
+    {
+    case DImode:
+      return gen_loadwb_pairdi_di (base, base, reg, reg2, GEN_INT (adjustment),
+				   GEN_INT (adjustment + UNITS_PER_WORD));
+    case DFmode:
+      return gen_loadwb_pairdf_di (base, base, reg, reg2, GEN_INT (adjustment),
+				   GEN_INT (adjustment + UNITS_PER_WORD));
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+aarch64_popwb_pair_reg (enum machine_mode mode, unsigned regno1,
+			unsigned regno2, HOST_WIDE_INT adjustment, rtx cfa)
+{
+  rtx insn;
+  rtx reg1 = gen_rtx_REG (mode, regno1);
+  rtx reg2 = gen_rtx_REG (mode, regno2);
+
+  insn = emit_insn (aarch64_gen_loadwb_pair (mode, stack_pointer_rtx, reg1,
+					     reg2, adjustment));
+  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
+  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  if (cfa)
+    add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		  (gen_rtx_SET (Pmode, stack_pointer_rtx,
+				plus_constant (Pmode, cfa, adjustment))));
+
+  add_reg_note (insn, REG_CFA_RESTORE, reg1);
+  add_reg_note (insn, REG_CFA_RESTORE, reg2);
+}
+
+static rtx
 aarch64_gen_store_pair (enum machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
 			rtx reg2)
 {
@@ -2331,69 +2371,32 @@ aarch64_expand_epilogue (bool for_sibcall)
       cfa_reg = stack_pointer_rtx;
     }
 
-  aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM,
-				frame_pointer_needed ? R28_REGNUM : R30_REGNUM);
   aarch64_restore_callee_saves (DFmode, fp_offset, V0_REGNUM, V31_REGNUM);
 
-  /* Restore the frame pointer and lr if the frame pointer is needed.  */
   if (offset > 0)
     {
       if (frame_pointer_needed)
 	{
-	  rtx mem_fp, mem_lr;
-
 	  if (fp_offset)
 	    {
-	      mem_fp = gen_frame_mem (DImode,
-				      plus_constant (Pmode,
-						     stack_pointer_rtx,
-						     fp_offset));
-	      mem_lr = gen_frame_mem (DImode,
-				      plus_constant (Pmode,
-						     stack_pointer_rtx,
-						     fp_offset
-						     + UNITS_PER_WORD));
-	      insn = emit_insn (gen_load_pairdi (hard_frame_pointer_rtx,
-						 mem_fp,
-						 gen_rtx_REG (DImode,
-							      LR_REGNUM),
-						 mem_lr));
-	    }
-	  else
-	    {
-	      insn = emit_insn (gen_loadwb_pairdi_di
-				(stack_pointer_rtx,
-				 stack_pointer_rtx,
-				 hard_frame_pointer_rtx,
-				 gen_rtx_REG (DImode, LR_REGNUM),
-				 GEN_INT (offset),
-				 GEN_INT (GET_MODE_SIZE (DImode) + offset)));
-	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
-	      add_reg_note (insn, REG_CFA_ADJUST_CFA,
-			    (gen_rtx_SET (Pmode, stack_pointer_rtx,
-					  plus_constant (Pmode, cfa_reg,
-							 offset))));
-	    }
-
-	  /* The first part of a frame-related parallel insn
-	     is always assumed to be relevant to the frame
-	     calculations; subsequent parts, are only
-	     frame-related if explicitly marked.  */
-	  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx);
-	  add_reg_note (insn, REG_CFA_RESTORE,
-			gen_rtx_REG (DImode, LR_REGNUM));
-
-	  if (fp_offset)
-	    {
+	      aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM,
+					    R30_REGNUM);
 	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
 					       GEN_INT (offset)));
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
+	  else
+	    {
+	      aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM,
+					    R28_REGNUM);
+	      aarch64_popwb_pair_reg (DImode, R29_REGNUM, R30_REGNUM, offset,
+				      cfa_reg);
+	    }
 	}
       else
 	{
+	  aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM,
+					R30_REGNUM);
 	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
 					   GEN_INT (offset)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
