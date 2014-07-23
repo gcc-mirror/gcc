@@ -1,5 +1,11 @@
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers): Rename 'offset'
+	to 'start_offset'.  Remove local variable 'start_offset'.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Change
 	type to HOST_WIDE_INT.
 
