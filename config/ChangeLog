@@ -1,4 +1,10 @@
 2014-07-24  Martin Liska  <mliska@suse.cz>
+	* mips.c (mips_start_unique_function): Correct cgraph_node function
+	used.
+	* rs6000.c (call_ABI_of_interest): Likewise.
+	(rs6000_code_end): Likewise.
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
 
 	* rs6000.c (rs6000_xcoff_declare_function_name): Correct symtab_node
 	funtion used.

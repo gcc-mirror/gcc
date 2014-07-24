@@ -8967,9 +8967,9 @@ call_ABI_of_interest (tree fndecl)
 	return true;
 
       /* Interesting functions that we are emitting in this object file.  */
-      c_node = cgraph_get_node (fndecl);
-      c_node = cgraph_function_or_thunk_node (c_node, NULL);
-      return !cgraph_only_called_directly_p (c_node);
+      c_node = cgraph_node::get (fndecl);
+      c_node = c_node->ultimate_alias_target ();
+      return !c_node->only_called_directly_p ();
     }
   return false;
 }
@@ -32533,7 +32533,7 @@ rs6000_code_end (void)
 #if RS6000_WEAK
   if (USE_HIDDEN_LINKONCE)
     {
-      cgraph_create_node (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
+      cgraph_node::create (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
       targetm.asm_out.unique_section (decl, 0);
       switch_to_section (get_named_section (decl, NULL, 0));
       DECL_WEAK (decl) = 1;
