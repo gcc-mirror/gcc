@@ -1,3 +1,15 @@
+2014-07-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/61802
+	* varasm.c (bss_initializer_p): Handle offlined ctors.
+	(align_variable, get_variable_align): Likewise.
+	(make_decl_one_only): Likewise.
+	(default_binds_local_p_1): Likewise.
+	(decl_binds_to_current_def_p): Likewise.
+	(get_variable_section): Get constructor if it is offlined.
+	(assemble_variable_contents): Sanity check that the caller
+	streamed in the ctor in LTO.
+
 2014-07-24  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
