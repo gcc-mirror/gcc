@@ -1,3 +1,7 @@
+2014-07-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (extract_omp_for_data): Add missing break statement.
+
 2014-07-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-inline.h (estimate_move_cost): Add speed_p parameter.
