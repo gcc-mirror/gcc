@@ -4843,7 +4843,8 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
 
   /* Perform the same remapping to the comdat group.  */
   if (DECL_ONE_ONLY (new_decl))
-    varpool_get_node (new_decl)->set_comdat_group (tm_mangle (decl_comdat_group_id (old_decl)));
+    varpool_node::get (new_decl)->set_comdat_group
+      (tm_mangle (decl_comdat_group_id (old_decl)));
 
   new_node = cgraph_node::create_same_body_alias (new_decl, info->new_decl);
   new_node->tm_clone = true;
@@ -4883,7 +4884,8 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 
   /* Perform the same remapping to the comdat group.  */
   if (DECL_ONE_ONLY (new_decl))
-    varpool_get_node (new_decl)->set_comdat_group (tm_mangle (DECL_COMDAT_GROUP (old_decl)));
+    varpool_node::get (new_decl)->set_comdat_group
+      (tm_mangle (DECL_COMDAT_GROUP (old_decl)));
 
   gcc_assert (!old_node->ipa_transforms_to_apply.exists ());
   new_node = old_node->create_version_clone (new_decl, vNULL, NULL);

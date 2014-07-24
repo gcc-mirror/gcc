@@ -295,10 +295,10 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
 
   tree decl = decl_for_type_lookup (type);
   /* It is possible that some of the earlier created DECLs were found
-     unused, in that case they weren't emitted and varpool_get_node
+     unused, in that case they weren't emitted and varpool_node::get
      returns NULL node on them.  But now we really need them.  Thus,
      renew them here.  */
-  if (decl != NULL_TREE && varpool_get_node (decl))
+  if (decl != NULL_TREE && varpool_node::get (decl))
     return build_fold_addr_expr (decl);
 
   tree dtype = ubsan_type_descriptor_type ();
@@ -441,7 +441,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   TREE_CONSTANT (ctor) = 1;
   TREE_STATIC (ctor) = 1;
   DECL_INITIAL (decl) = ctor;
-  varpool_finalize_decl (decl);
+  varpool_node::finalize_decl (decl);
 
   /* Save the VAR_DECL into the hash table.  */
   decl_for_type_insert (type, decl);
@@ -553,7 +553,7 @@ ubsan_create_data (const char *name, const location_t *ploc,
   TREE_CONSTANT (ctor) = 1;
   TREE_STATIC (ctor) = 1;
   DECL_INITIAL (var) = ctor;
-  varpool_finalize_decl (var);
+  varpool_node::finalize_decl (var);
 
   return var;
 }

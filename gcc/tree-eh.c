@@ -2707,7 +2707,7 @@ tree_could_trap_p (tree expr)
 	  varpool_node *node;
 	  if (!DECL_EXTERNAL (expr))
 	    return false;
-	  node = varpool_variable_node (varpool_get_node (expr), NULL);
+	  node = varpool_node::get (expr)->ultimate_alias_target ();
 	  if (node && node->in_other_partition)
 	    return false;
 	  return true;

@@ -87,7 +87,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
-	  varpool_node *vnode = varpool_node_for_decl (decl);
+	  varpool_node *vnode = varpool_node::get_create (decl);
 	  ctx->varpool_node->add_reference (vnode, IPA_REF_ADDR);
 	}
       *walk_subtrees = 0;
@@ -124,7 +124,7 @@ record_type_list (struct cgraph_node *node, tree list)
 	  type = TREE_OPERAND (type, 0);
 	  if (TREE_CODE (type) == VAR_DECL)
 	    {
-	      varpool_node *vnode = varpool_node_for_decl (type);
+	      varpool_node *vnode = varpool_node::get_create (type);
 	      node->add_reference (vnode, IPA_REF_ADDR);
 	    }
 	}
@@ -230,7 +230,7 @@ mark_address (gimple stmt, tree addr, tree, void *data)
   else if (addr && TREE_CODE (addr) == VAR_DECL
 	   && (TREE_STATIC (addr) || DECL_EXTERNAL (addr)))
     {
-      varpool_node *vnode = varpool_node_for_decl (addr);
+      varpool_node *vnode = varpool_node::get_create (addr);
 
       ((symtab_node *)data)->add_reference (vnode, IPA_REF_ADDR, stmt);
     }
@@ -255,7 +255,7 @@ mark_load (gimple stmt, tree t, tree, void *data)
   else if (t && TREE_CODE (t) == VAR_DECL
 	   && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
-      varpool_node *vnode = varpool_node_for_decl (t);
+      varpool_node *vnode = varpool_node::get_create (t);
 
       ((symtab_node *)data)->add_reference (vnode, IPA_REF_LOAD, stmt);
     }
@@ -271,7 +271,7 @@ mark_store (gimple stmt, tree t, tree, void *data)
   if (t && TREE_CODE (t) == VAR_DECL
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
-      varpool_node *vnode = varpool_node_for_decl (t);
+      varpool_node *vnode = varpool_node::get_create (t);
 
       ((symtab_node *)data)->add_reference (vnode, IPA_REF_STORE, stmt);
      }
@@ -383,7 +383,7 @@ pass_build_cgraph_edges::execute (function *fun)
     if (TREE_CODE (decl) == VAR_DECL
 	&& (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
 	&& !DECL_HAS_VALUE_EXPR_P (decl))
-      varpool_finalize_decl (decl);
+      varpool_node::finalize_decl (decl);
   record_eh_tables (node, fun);
 
   pointer_set_destroy (visited_nodes);
@@ -406,7 +406,7 @@ void
 record_references_in_initializer (tree decl, bool only_vars)
 {
   struct pointer_set_t *visited_nodes = pointer_set_create ();
-  varpool_node *node = varpool_node_for_decl (decl);
+  varpool_node *node = varpool_node::get_create (decl);
   struct record_reference_ctx ctx = {false, NULL};
 
   ctx.varpool_node = node;

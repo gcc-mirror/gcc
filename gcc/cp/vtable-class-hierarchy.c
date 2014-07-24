@@ -799,7 +799,7 @@ insert_call_to_register_set (tree class_name,
   TREE_STATIC (initial) = 1;
   DECL_INITIAL (array_arg) = initial;
   relayout_decl (array_arg);
-  varpool_finalize_decl (array_arg);
+  varpool_node::finalize_decl (array_arg);
 
   arg3 = build1 (ADDR_EXPR, TYPE_POINTER_TO (TREE_TYPE (array_arg)), array_arg);
 
@@ -1253,7 +1253,7 @@ vtable_find_or_create_map_decl (tree base_type)
 
       comdat_linkage (var_decl);
 
-      varpool_finalize_decl (var_decl);
+      varpool_node::finalize_decl (var_decl);
       if (!vtable_map_node)
         vtable_map_node =
                    find_or_create_vtbl_map_node (TYPE_MAIN_VARIANT (base_type));

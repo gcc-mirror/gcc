@@ -2076,7 +2076,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       if (TREE_CODE (olddecl) == FUNCTION_DECL)
 	symbol = cgraph_node::get_create (newdecl);
       else
-	symbol = varpool_node_for_decl (newdecl);
+	symbol = varpool_node::get_create (newdecl);
       symbol->set_comdat_group (symtab_node::get
 	(olddecl)->get_comdat_group ());
     }

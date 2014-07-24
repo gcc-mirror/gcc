@@ -313,7 +313,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
   /* Mark variables that are obviously needed.  */
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    if (!varpool_can_remove_if_no_refs (vnode)
+    if (!vnode->can_remove_if_no_refs_p()
 	&& !vnode->in_other_partition)
       {
 	pointer_set_insert (reachable, vnode);
@@ -548,7 +548,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
 	  /* Keep body if it may be useful for constant folding.  */
 	  if ((init = ctor_for_folding (vnode->decl)) == error_mark_node)
-	    varpool_remove_initializer (vnode);
+	    vnode->remove_initializer ();
 	  else
 	    DECL_INITIAL (vnode->decl) = init;
 	  vnode->remove_all_references ();
@@ -611,7 +611,7 @@ process_references (varpool_node *vnode,
   int i;
   struct ipa_ref *ref;
 
-  if (!varpool_all_refs_explicit_p (vnode)
+  if (!vnode->all_refs_explicit_p ()
       || TREE_THIS_VOLATILE (vnode->decl))
     *explicit_refs = false;
 
@@ -702,7 +702,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	  {
 	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
-	    varpool_for_node_and_aliases (vnode, clear_addressable_bit, NULL, true);
+	    vnode->call_for_node_and_aliases (clear_addressable_bit, NULL, true);
 	  }
 	if (!address_taken && !written
 	    /* Making variable in explicit section readonly can cause section
@@ -712,13 +712,13 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	  {
 	    if (!TREE_READONLY (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (read-only)", vnode->name ());
-	    varpool_for_node_and_aliases (vnode, set_readonly_bit, NULL, true);
+	    vnode->call_for_node_and_aliases (set_readonly_bit, NULL, true);
 	  }
 	if (!vnode->writeonly && !read && !address_taken && written)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, " %s (write-only)", vnode->name ());
-	    varpool_for_node_and_aliases (vnode, set_writeonly_bit, NULL, true);
+	    vnode->call_for_node_and_aliases (set_writeonly_bit, NULL, true);
 	  }
       }
   if (dump_file)
@@ -1143,7 +1143,7 @@ propagate_single_user (varpool_node *vnode, cgraph_node *function,
 
   /* If node is an alias, first meet with its target.  */
   if (vnode->alias)
-    function = meet (function, varpool_alias_target (vnode), single_user_map);
+    function = meet (function, vnode->get_alias_target (), single_user_map);
 
   /* Check all users and see if they correspond to a single function.  */
   for (i = 0; vnode->iterate_referring (i, ref) && function != BOTTOM; i++)
@@ -1176,7 +1176,7 @@ ipa_single_use (void)
   hash_map<varpool_node *, cgraph_node *> single_user_map;
 
   FOR_EACH_DEFINED_VARIABLE (var)
-    if (!varpool_all_refs_explicit_p (var))
+    if (!var->all_refs_explicit_p ())
       var->aux = BOTTOM;
     else
       {

@@ -96,8 +96,8 @@ add_references_to_partition (ltrans_partition part, symtab_node *node)
        Recursively look into the initializers of the constant variable and add
        references, too.  */
     else if (is_a <varpool_node *> (ref->referred)
-	     && varpool_ctor_useable_for_folding_p
-	       (dyn_cast <varpool_node *> (ref->referred))
+	     && dyn_cast <varpool_node *> (ref->referred)
+	       ->ctor_useable_for_folding_p ()
 	     && !lto_symtab_encoder_in_partition_p (part->encoder, ref->referred))
       {
 	if (!part->initializers_visited)
@@ -203,7 +203,7 @@ contained_in_symbol (symtab_node *node)
       return cnode;
     }
   else if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
-    return varpool_variable_node (vnode, NULL);
+    return vnode->ultimate_alias_target ();
   return node;
 }
 
@@ -622,7 +622,7 @@ lto_balanced_map (int n_lto_partitions)
 		   to be removed.  Coupling with objects they refer to only helps to reduce
 		   number of symbols promoted to hidden.  */
 		if (!symbol_partitioned_p (vnode) && flag_toplevel_reorder
-		    && !varpool_can_remove_if_no_refs (vnode)
+		    && !vnode->can_remove_if_no_refs_p ()
 		    && vnode->get_partitioning_class () == SYMBOL_PARTITION)
 		  add_symbol_to_partition (partition, vnode);
 		index = lto_symtab_encoder_lookup (partition->encoder,

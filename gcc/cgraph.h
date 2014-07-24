@@ -363,8 +363,8 @@ public:
   /* True when symbol corresponds to a definition in current unit.
      set via cgraph_finalize_function or varpool_finalize_decl  */
   unsigned definition : 1;
-  /* True when symbol is an alias.  
-     Set by assemble_alias.  */
+  /* True when symbol is an alias.
+     Set by ssemble_alias.  */
   unsigned alias : 1;
   /* True when alias is a weakref.  */
   unsigned weakref : 1;
@@ -408,7 +408,7 @@ public:
 
   /* Set when variable is used from other LTRANS partition.  */
   unsigned used_from_other_partition : 1;
-  /* Set when function is available in the other LTRANS partition.  
+  /* Set when function is available in the other LTRANS partition.
      During WPA output it is used to mark nodes that are present in
      multiple partitions.  */
   unsigned in_other_partition : 1;
@@ -1336,6 +1336,103 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
 
 class GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node {
 public:
+  /* Dump given varpool node to F.  */
+  void dump (FILE *f);
+
+  /* Dump given varpool node to stderr.  */
+  void DEBUG_FUNCTION debug (void);
+
+  /* Remove variable from symbol table.  */
+  void remove (void);
+
+  /* Remove node initializer when it is no longer needed.  */
+  void remove_initializer (void);
+
+  void analyze (void);
+
+  /* Return variable availability.  */
+  availability get_availability (void);
+
+  /* When doing LTO, read variable's constructor from disk if
+     it is not already present.  */
+  tree get_constructor (void);
+
+  /* Return true if variable has constructor that can be used for folding.  */
+  bool ctor_useable_for_folding_p (void);
+
+  /* For given variable pool node, walk the alias chain to return the function
+     the variable is alias of. Do not walk through thunks.
+     When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+  inline varpool_node *ultimate_alias_target
+    (availability *availability = NULL);
+
+  /* Return node that alias is aliasing.  */
+  inline varpool_node *get_alias_target (void);
+
+  /* Output one variable, if necessary.  Return whether we output it.  */
+  bool assemble_decl (void);
+
+  /* For variables in named sections make sure get_variable_section
+     is called before we switch to those sections.  Then section
+     conflicts between read-only and read-only requiring relocations
+     sections can be resolved.  */
+  void finalize_named_section_flags (void);
+
+  /* Call calback on varpool symbol and aliases associated to varpool symbol.
+     When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+     skipped. */
+  bool call_for_node_and_aliases (bool (*callback) (varpool_node *, void *),
+				  void *data,
+				   bool include_overwritable);
+
+  /* Return true when variable should be considered externally visible.  */
+  bool externally_visible_p (void);
+
+  /* Return true when all references to variable must be visible
+     in ipa_ref_list.
+     i.e. if the variable is not externally visible or not used in some magic
+     way (asm statement or such).
+     The magic uses are all summarized in force_output flag.  */
+  inline bool all_refs_explicit_p ();
+
+  /* Return true when variable can be removed from variable pool
+     if all direct calls are eliminated.  */
+  inline bool can_remove_if_no_refs_p (void);
+
+  /* Return varpool node for given symbol and check it is a function. */
+  static inline varpool_node *get (const_tree decl);
+
+  /* Mark DECL as finalized.  By finalizing the declaration, frontend instruct
+     the middle end to output the variable to asm file, if needed or externally
+     visible.  */
+  static void finalize_decl (tree decl);
+
+  /* Output all variables enqueued to be assembled.  */
+  static bool output_variables (void);
+
+  /* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
+     Extra name aliases are output whenever DECL is output.  */
+  static varpool_node * create_extra_name_alias (tree alias, tree decl);
+
+  /* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
+     Extra name aliases are output whenever DECL is output.  */
+  static varpool_node * create_alias (tree, tree);
+
+  /* Dump the variable pool to F.  */
+  static void dump_varpool (FILE *f);
+
+  /* Dump the variable pool to stderr.  */
+  static void DEBUG_FUNCTION debug_varpool (void);
+
+  /* Allocate new callgraph node and insert it into basic data structures.  */
+  static varpool_node *create_empty (void);
+
+  /* Return varpool node assigned to DECL.  Create new one when needed.  */
+  static varpool_node *get_create (tree decl);
+
+  /* Given an assembler name, lookup node.  */
+  static varpool_node *get_for_asmname (tree asmname);
+
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
 
@@ -1351,11 +1448,9 @@ public:
      if we did not do any inter-procedural code movement.  */
   unsigned used_by_single_function : 1;
 
-  /* Dump given cgraph node to F.  */
-  void dump (FILE *f);
-
-  /* Remove variable from symbol table.  */
-  void remove (void);
+private:
+  /* Assemble thunks and aliases associated to varpool node.  */
+  void assemble_aliases (void);
 };
 
 /* Every top level asm statement is put into a asm_node.  */
@@ -1538,39 +1633,16 @@ void dump_varpool_node_set (FILE *, varpool_node_set);
 void debug_varpool_node_set (varpool_node_set);
 void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
-bool varpool_externally_visible_p (varpool_node *);
 
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
 
 /* In varpool.c  */
-varpool_node *varpool_create_empty_node (void);
-varpool_node *varpool_node_for_decl (tree);
-varpool_node *varpool_node_for_asm (tree asmname);
-void varpool_mark_needed_node (varpool_node *);
-void debug_varpool (void);
-void dump_varpool (FILE *);
-
-void varpool_finalize_decl (tree);
-enum availability cgraph_variable_initializer_availability (varpool_node *);
-
-void varpool_finalize_named_section_flags (varpool_node *node);
-bool varpool_output_variables (void);
-bool varpool_assemble_decl (varpool_node *node);
-void varpool_analyze_node (varpool_node *);
-varpool_node * varpool_extra_name_alias (tree, tree);
-varpool_node * varpool_create_variable_alias (tree, tree);
 void varpool_reset_queue (void);
-bool varpool_ctor_useable_for_folding_p (varpool_node *);
 tree ctor_for_folding (tree);
-bool varpool_for_node_and_aliases (varpool_node *,
-		                   bool (*) (varpool_node *, void *),
-			           void *, bool);
 void varpool_add_new_variable (tree);
 void symtab_initialize_asm_name_hash (void);
 void symtab_prevail_in_asm_name_hash (symtab_node *node);
-void varpool_remove_initializer (varpool_node *);
-tree varpool_get_constructor (struct varpool_node *node);
 
 /* In cgraph.c */
 extern void change_decl_assembler_name (tree, tree);
@@ -1647,8 +1719,8 @@ symtab_node::next_defined_symbol (void)
 }
 
 /* Return varpool node for given symbol and check it is a function. */
-static inline varpool_node *
-varpool_get_node (const_tree decl)
+inline varpool_node *
+varpool_node::get (const_tree decl)
 {
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
   return dyn_cast<varpool_node *> (symtab_node::get (decl));
@@ -2009,34 +2081,34 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 	  && !externally_visible);
 }
 
-/* Return true when function NODE can be removed from callgraph
+/* Return true when variable can be removed from variable pool
    if all direct calls are eliminated.  */
 
-static inline bool
-varpool_can_remove_if_no_refs (varpool_node *node)
+inline bool
+varpool_node::can_remove_if_no_refs_p (void)
 {
-  if (DECL_EXTERNAL (node->decl))
+  if (DECL_EXTERNAL (decl))
     return true;
-  return (!node->force_output && !node->used_from_other_partition
-  	  && ((DECL_COMDAT (node->decl)
-	       && !node->forced_by_abi
-	       && !node->used_from_object_file_p ())
-	      || !node->externally_visible
-	      || DECL_HAS_VALUE_EXPR_P (node->decl)));
+  return (!force_output && !used_from_other_partition
+	  && ((DECL_COMDAT (decl)
+	       && !forced_by_abi
+	       && !used_from_object_file_p ())
+	      || !externally_visible
+	      || DECL_HAS_VALUE_EXPR_P (decl)));
 }
 
-/* Return true when all references to VNODE must be visible in ipa_ref_list.
+/* Return true when all references to variable must be visible in ipa_ref_list.
    i.e. if the variable is not externally visible or not used in some magic
    way (asm statement or such).
    The magic uses are all summarized in force_output flag.  */
 
-static inline bool
-varpool_all_refs_explicit_p (varpool_node *vnode)
+inline bool
+varpool_node::all_refs_explicit_p ()
 {
-  return (vnode->definition
-	  && !vnode->externally_visible
-	  && !vnode->used_from_other_partition
-	  && !vnode->force_output);
+  return (definition
+	  && !externally_visible
+	  && !used_from_other_partition
+	  && !force_output);
 }
 
 /* Constant pool accessor function.  */
@@ -2050,10 +2122,12 @@ cgraph_node::get_alias_target (void)
   return dyn_cast <cgraph_node *> (symtab_node::get_alias_target ());
 }
 
-static inline varpool_node *
-varpool_alias_target (varpool_node *n)
+/* Return node that alias is aliasing.  */
+
+inline varpool_node *
+varpool_node::get_alias_target (void)
 {
-  return dyn_cast <varpool_node *> (n->get_alias_target ());
+  return dyn_cast <varpool_node *> (symtab_node::get_alias_target ());
 }
 
 /* Given function symbol, walk the alias chain to return the function node
@@ -2069,20 +2143,16 @@ cgraph_node::ultimate_alias_target (enum availability *availability)
     *availability = AVAIL_NOT_AVAILABLE;
   return n;
 }
-/* Given NODE, walk the alias chain to return the function NODE is alias of.
-   Do not walk through thunks.
+
+/* For given variable pool node, walk the alias chain to return the function
+   the variable is alias of. Do not walk through thunks.
    When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
 
-static inline varpool_node *
-varpool_variable_node (varpool_node *node,
-		       enum availability *availability = NULL)
+inline varpool_node *
+varpool_node::ultimate_alias_target (availability *availability)
 {
-  varpool_node *n;
-
-  if (node)
-    n = dyn_cast <varpool_node *> (node->ultimate_alias_target (availability));
-  else
-    n = NULL;
+  varpool_node *n = dyn_cast <varpool_node *>
+    (symtab_node::ultimate_alias_target (availability));
 
   if (!n && availability)
     *availability = AVAIL_NOT_AVAILABLE;

@@ -1,5 +1,38 @@
 2014-07-24  Martin Liska  <mliska@suse.cz>
 
+  * cgraph.h (varpool_node):
+  (availability get_availability (void)):
+    created from cgraph_variable_initializer_availability
+  (inline varpool_node *ultimate_alias_target (availability *availability = NULL)
+    creted from: cgraph_variable_initializer_availability
+  (inline varpool_node *get_alias_target (void)): created from varpool_alias_target
+  (void finalize_named_section_flags (void)):
+    created from varpool_finalize_named_section_flags
+  (bool assemble_decl (void)): created from varpool_assemble_decl
+  (void analyze (void)): created from varpool_analyze_node
+  (bool call_for_node_and_aliases (bool (*callback) (varpool_node *, void *),
+    void *data, bool include_overwritable)): created fromvarpool_for_node_and_aliases
+  (void remove_initializer (void)): created from varpool_remove_initializer
+  (tree get_constructor (void)): created from varpool_get_constructor
+  (bool externally_visible_p (void)): created from varpool_externally_visible_p
+  (bool ctor_useable_for_folding_p (void)): created from varpool_ctor_useable_for_folding_p
+  (inline bool all_refs_explicit_p ()): created from varpool_all_refs_explicit_p
+  (inline bool can_remove_if_no_refs_p (void)): created from varpool_can_remove_if_no_refs
+  (static inline varpool_node *get (const_tree decl)): created from varpool_get_node
+  (static void finalize_decl (tree decl)): created from varpool_finalize_decl
+  (static bool output_variables (void)): created from varpool_output_variables
+  (static varpool_node * create_extra_name_alias (tree alias, tree decl)):
+    created from varpool_extra_name_alias
+  (static varpool_node * create_alias (tree, tree)): created from varpool_create_variable_alias
+  (static void dump_varpool (FILE *f)): created from dump_varpool
+  (static void DEBUG_FUNCTION debug_varpool (void)): created from debug_varpool
+  (static varpool_node *create_empty (void)): created from varpool_create_empty_node
+  (static varpool_node *get_create (tree decl)): created from varpool_node_for_decl
+  (static varpool_node *get_for_asmname (tree asmname)): created from varpool_node_for_asm
+  (void assemble_aliases (void)): created from assemble_aliases
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
   * cgraph.h (symtab_node):
   (void register_symbol (void)): created from symtab_register_node
   (void remove (void)): created from symtab_remove_node

@@ -2931,10 +2931,10 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
   if (TREE_CODE (t) == VAR_DECL
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
-      varpool_node *node = varpool_get_node (t);
+      varpool_node *node = varpool_node::get (t);
       if (node && node->alias && node->analyzed)
 	{
-	  node = varpool_variable_node (node, NULL);
+	  node = node->ultimate_alias_target ();
 	  t = node->decl;
 	}
     }
@@ -5671,7 +5671,7 @@ create_variable_info_for_1 (tree decl, const char *name)
 	 in IPA mode.  Else we'd have to parse arbitrary initializers.  */
       && !(in_ipa_mode
 	   && is_global_var (decl)
-	   && varpool_get_constructor (varpool_get_node (decl))))
+	   && varpool_node::get (decl)->get_constructor ()))
     {
       fieldoff_s *fo = NULL;
       bool notokay = false;
@@ -5789,21 +5789,21 @@ create_variable_info_for (tree decl, const char *name)
 	 for it.  */
       else
 	{
-	  varpool_node *vnode = varpool_get_node (decl);
+	  varpool_node *vnode = varpool_node::get (decl);
 
 	  /* For escaped variables initialize them from nonlocal.  */
-	  if (!varpool_all_refs_explicit_p (vnode))
+	  if (!vnode->all_refs_explicit_p ())
 	    make_copy_constraint (vi, nonlocal_id);
 
 	  /* If this is a global variable with an initializer and we are in
 	     IPA mode generate constraints for it.  */
-	  if (varpool_get_constructor (vnode)
+	  if (vnode->get_constructor ()
 	      && vnode->definition)
 	    {
 	      auto_vec<ce_s> rhsc;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
-	      get_constraint_for_rhs (varpool_get_constructor (vnode), &rhsc);
+	      get_constraint_for_rhs (vnode->get_constructor (), &rhsc);
 	      lhs.var = vi->id;
 	      lhs.offset = 0;
 	      lhs.type = SCALAR;
@@ -5811,7 +5811,7 @@ create_variable_info_for (tree decl, const char *name)
 		process_constraint (new_constraint (lhs, *rhsp));
 	      /* If this is a variable that escapes from the unit
 		 the initializer escapes as well.  */
-	      if (!varpool_all_refs_explicit_p (vnode))
+	      if (!vnode->all_refs_explicit_p ())
 		{
 		  lhs.var = escaped_id;
 		  lhs.offset = 0;
