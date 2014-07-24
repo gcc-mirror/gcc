@@ -351,9 +351,8 @@
 	(translate_isl_ast_node_block): New function.
 	(translate_isl_ast): Add calling of translate_isl_ast_node_block.
 
-	testsuite/gcc.dg/graphite/
-	* isl-ast-gen-blocks-1.c: New testcase.
-	* isl-ast-gen-blocks-2.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-blocks-1.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-blocks-2.c: New testcase.
 
 2014-07-23  Roman Gareev  <gareevroman@gmail.com>
 
@@ -386,10 +385,9 @@
 	(translate_isl_ast_node_user): Likewise.
 	(translate_isl_ast): Add calling of translate_isl_ast_node_user.
 
-	testsuite/gcc.dg/graphite/
-	* isl-ast-gen-single-loop-1.c: New testcase.
-	* isl-ast-gen-single-loop-2.c: New testcase.
-	* isl-ast-gen-single-loop-3.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-1.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-2.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-3.c: New testcase.
 
 2014-07-21  Bin Cheng  <bin.cheng@arm.com>
 
