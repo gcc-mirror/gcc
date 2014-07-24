@@ -389,6 +389,10 @@ graphite_create_new_loop (edge entry_edge, __isl_keep isl_ast_node *node_for,
 
   isl_ast_expr *for_iterator = isl_ast_node_for_get_iterator (node_for);
   isl_id *id = isl_ast_expr_get_id (for_iterator);
+  std::map<isl_id *, tree>::iterator res;
+  res = ip.find (id);
+  if (ip.count (id))
+    isl_id_free (res->first);
   ip[id] = iv;
   isl_ast_expr_free (for_iterator);
   return loop;
