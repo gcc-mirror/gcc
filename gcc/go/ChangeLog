@@ -1,3 +1,8 @@
+2014-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* go-gcc.cc (Gcc_backend::global_variable_set_init): Rename
+	symtab_get_node to symtab_node::get.
+
 2014-06-13  Ian Lance Taylor  <iant@google.com>
 
 	PR go/61496
@@ -7,7 +12,7 @@
 
 2014-06-10  Jan Hubicka  <hubicka@ucw.cz>
 
-	* go/go-gcc.cc (Gcc_backend::global_variable_set_init): Use
+	* go-gcc.cc (Gcc_backend::global_variable_set_init): Use
 	symtab_get_node(var_decl)->implicit_section.
 
 2014-06-07  Jan Hubicka  <hubicka@ucw.cz>
