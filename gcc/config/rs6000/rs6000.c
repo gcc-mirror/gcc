@@ -29595,7 +29595,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
   fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", file);
   RS6000_OUTPUT_BASENAME (file, buffer);
   fputs (":\n", file);
-  symtab_for_node_and_aliases (symtab_get_node (decl), rs6000_declare_alias, &data, true);
+  symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias, &data, true);
   fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", file);
   RS6000_OUTPUT_BASENAME (file, buffer);
   fputs (", TOC[tc0], 0\n", file);
@@ -29605,7 +29605,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
   RS6000_OUTPUT_BASENAME (file, buffer);
   fputs (":\n", file);
   data.function_descriptor = true;
-  symtab_for_node_and_aliases (symtab_get_node (decl), rs6000_declare_alias, &data, true);
+  symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias, &data, true);
   if (write_symbols != NO_DEBUG && !DECL_IGNORED_P (decl))
     xcoffout_declare_function (file, decl, buffer);
   return;
@@ -29621,7 +29621,7 @@ rs6000_xcoff_declare_object_name (FILE *file, const char *name, tree decl)
   struct declare_alias_data data = {file, false};
   RS6000_OUTPUT_BASENAME (file, name);
   fputs (":\n", file);
-  symtab_for_node_and_aliases (symtab_get_node (decl), rs6000_declare_alias, &data, true);
+  symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias, &data, true);
 }
 
 #ifdef HAVE_AS_TLS

@@ -2246,7 +2246,7 @@ compile (void)
 	   (DECL_ASSEMBLER_NAME (node->decl)) = 1;
 	TREE_CHAIN (DECL_ASSEMBLER_NAME (node->decl))
 	   = (node->alias_target ? node->alias_target
-	      : DECL_ASSEMBLER_NAME (symtab_alias_target (node)->decl));
+	      : DECL_ASSEMBLER_NAME (node->get_alias_target ()->decl));
       }
 #endif
 
