@@ -1,5 +1,11 @@
 2014-07-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR rtl-optimization/61629
+	* reginfo.c (reinit_regs): Only call ira_init and recog_init if
+	they have already been initialized.
+
+2014-07-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR middle-end/61268
 	* function.c (assign_parm_setup_reg): Prevent invalid sharing of
 	DECL_INCOMING_RTL and entry_parm.
