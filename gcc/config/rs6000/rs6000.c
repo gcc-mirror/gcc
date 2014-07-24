@@ -5880,6 +5880,32 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
   return align;
 }
 
+/* Previous GCC releases forced all vector types to have 16-byte alignment.  */
+
+bool
+rs6000_special_adjust_field_align_p (tree field, unsigned int computed)
+{
+  if (TARGET_ALTIVEC && TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
+    {
+      if (computed != 128)
+	{
+	  static bool warned;
+	  if (!warned && warn_psabi)
+	    {
+	      warned = true;
+	      inform (input_location,
+		      "the layout of aggregates containing vectors with"
+		      " %d-byte alignment has changed in GCC 4.10",
+		      computed / BITS_PER_UNIT);
+	    }
+	}
+      /* In current GCC there is no special case.  */
+      return false;
+    }
+
+  return false;
+}
+
 /* AIX increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
 
