@@ -1,8 +1,12 @@
+2014-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* intrinsic.texi (Intrinsic Procedures) <ATOMIC_DEFINE>: Move to
+	correct menu position to match sectioning.
+
 2014-06-15  Tobias Burnus  <burnus@net-b.de>
 
 	* symbol.c (check_conflict): Add codimension conflict with
 	pointer; fix cray-pointee check.
-
 
 2014-06-14  Tobias Burnus  <burnus@net-b.de>
 
