@@ -1,3 +1,9 @@
+2014-07-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (stack_push): Adjust RTL to account for the fact
+	that operations are taking place in parallel.
+	* config/rx.h (FRAME_POINTER_CFA_OFFSET): Delete.
+
 2014-07-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-low.c (extract_omp_for_data): Add missing break statement.
