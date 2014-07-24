@@ -1,3 +1,11 @@
+2014-07-24  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(graphite_create_new_loop): Add calling of isl_id_free to properly
+	decrement reference counts.
+
+	* gcc.dg/graphite/isl-ast-gen-blocks-4.c: New testcase.
+
 2014-07-24  Martin Liska  <mliska@suse.cz>
 
 	* cgraphunit.c (compile): Correct function used.
