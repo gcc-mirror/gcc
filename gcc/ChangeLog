@@ -1,3 +1,10 @@
+2014-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/61823
+	* tree-ssa-structalias.c (create_variable_info_for_1):
+	Use varpool_get_constructor.
+	(create_variable_info_for): Likewise.
+
 2014-07-24  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Don't
