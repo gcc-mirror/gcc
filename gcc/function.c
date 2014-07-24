@@ -2662,13 +2662,14 @@ assign_parm_adjust_entry_rtl (struct assign_parm_data_one *data)
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The Irix 6 ABI has examples of this.  */
       if (GET_CODE (entry_parm) == PARALLEL)
-	emit_group_store (validize_mem (stack_parm), entry_parm,
+	emit_group_store (validize_mem (copy_rtx (stack_parm)), entry_parm,
 			  data->passed_type,
 			  int_size_in_bytes (data->passed_type));
       else
 	{
 	  gcc_assert (data->partial % UNITS_PER_WORD == 0);
-	  move_block_from_reg (REGNO (entry_parm), validize_mem (stack_parm),
+	  move_block_from_reg (REGNO (entry_parm),
+			       validize_mem (copy_rtx (stack_parm)),
 			       data->partial / UNITS_PER_WORD);
 	}
 
@@ -2837,7 +2838,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       else
 	gcc_assert (!size || !(PARM_BOUNDARY % BITS_PER_WORD));
 
-      mem = validize_mem (stack_parm);
+      mem = validize_mem (copy_rtx (stack_parm));
 
       /* Handle values in multiple non-contiguous locations.  */
       if (GET_CODE (entry_parm) == PARALLEL)
@@ -2972,7 +2973,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
      assign_parm_find_data_types and expand_expr_real_1.  */
 
   equiv_stack_parm = data->stack_parm;
-  validated_mem = validize_mem (data->entry_parm);
+  validated_mem = validize_mem (copy_rtx (data->entry_parm));
 
   need_conversion = (data->nominal_mode != data->passed_mode
 		     || promoted_nominal_mode != data->promoted_mode);
@@ -3228,7 +3229,7 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
       /* Conversion is required.  */
       rtx tempreg = gen_reg_rtx (GET_MODE (data->entry_parm));
 
-      emit_move_insn (tempreg, validize_mem (data->entry_parm));
+      emit_move_insn (tempreg, validize_mem (copy_rtx (data->entry_parm)));
 
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       to_conversion = true;
@@ -3265,8 +3266,8 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	  set_mem_attributes (data->stack_parm, parm, 1);
 	}
 
-      dest = validize_mem (data->stack_parm);
-      src = validize_mem (data->entry_parm);
+      dest = validize_mem (copy_rtx (data->stack_parm));
+      src = validize_mem (copy_rtx (data->entry_parm));
 
       if (MEM_P (src))
 	{
@@ -5261,7 +5262,7 @@ get_arg_pointer_save_area (void)
 	 generated stack slot may not be a valid memory address, so we
 	 have to check it and fix it if necessary.  */
       start_sequence ();
-      emit_move_insn (validize_mem (ret),
+      emit_move_insn (validize_mem (copy_rtx (ret)),
                       crtl->args.internal_arg_pointer);
       seq = get_insns ();
       end_sequence ();
