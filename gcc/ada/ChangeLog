@@ -1,3 +1,10 @@
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/trans.c (finalize_nrv): Correct cgraph_node (symtab_node)
+	function used.
+	* gcc-interface/utils.c (rest_of_subprog_body_compilation): Likewise.
+	(gnat_write_global_declarations): Likewise.
+
 2014-07-19  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* gnat_rm.texi: Clean up for makeinfo 5.2.
