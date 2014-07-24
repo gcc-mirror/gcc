@@ -10245,6 +10245,7 @@ rs6000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 	  rtx r, off;
 	  int i, k = 0;
 	  unsigned long n_fpreg = (GET_MODE_SIZE (elt_mode) + 7) >> 3;
+	  int fpr_words;
 
 	  /* Do we also need to pass this argument in the parameter
 	     save area?  */
@@ -10271,6 +10272,37 @@ rs6000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 	      r = gen_rtx_REG (fmode, cum->fregno + i * n_fpreg);
 	      off = GEN_INT (i * GET_MODE_SIZE (elt_mode));
 	      rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, off);
+	    }
+
+	  /* If there were not enough FPRs to hold the argument, the rest
+	     usually goes into memory.  However, if the current position
+	     is still within the register parameter area, a portion may
+	     actually have to go into GPRs.
+
+	     Note that it may happen that the portion of the argument
+	     passed in the first "half" of the first GPR was already
+	     passed in the last FPR as well.
+
+	     For unnamed arguments, we already set up GPRs to cover the
+	     whole argument in rs6000_psave_function_arg, so there is
+	     nothing further to do at this point.
+
+	     GCC 4.8/4.9 Note: This was implemented incorrectly in earlier
+	     GCC releases.  To avoid any ABI change on the release branch,
+	     we retain that original implementation here, but warn if we
+	     encounter a case where the ABI will change in the future.  */
+	  fpr_words = (i * GET_MODE_SIZE (elt_mode)) / (TARGET_32BIT ? 4 : 8);
+	  if (i < n_elts && align_words + fpr_words < GP_ARG_NUM_REG
+	      && cum->nargs_prototype > 0)
+            {
+	      static bool warned;
+	      if (!warned && warn_psabi)
+		{
+		  warned = true;
+		  inform (input_location,
+			  "the ABI of passing homogeneous float aggregates"
+			  " will change in a future GCC release");
+		}
 	    }
 
 	  return rs6000_finish_function_arg (mode, rvec, k);

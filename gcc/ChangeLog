@@ -1,3 +1,10 @@
+2014-07-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg): If a float argument
+	does not fit fully into floating-point registers, and there is still
+	space in the register parameter area, issue -Wpsabi note that the ABI
+	will change in a future GCC release.
+
 2014-07-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/t-rtems-eabi: Add
