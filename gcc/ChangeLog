@@ -1,5 +1,14 @@
 2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_function_arg_boundary): In the AIX
+	and ELFv2 ABI, do not use the "mode == BLKmode" check to test for
+	aggregate types.  Instead, *all* aggregate types, except for single-
+	element or homogeneous float/vector aggregates, are quadword-aligned
+	if required by their type alignment.  Issue -Wpsabi note when a type
+	is now treated differently than before.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/rs6000/rs6000.c (rs6000_function_arg): If a float argument
 	does not fit fully into floating-point registers, and there is still
 	space in the register parameter area, use GPRs to pass those parts

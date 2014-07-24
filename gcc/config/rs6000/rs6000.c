@@ -9184,14 +9184,48 @@ rs6000_function_arg_boundary (enum machine_mode mode, const_tree type)
 	   || (type && TREE_CODE (type) == VECTOR_TYPE
 	       && int_size_in_bytes (type) >= 16))
     return 128;
-  else if (((TARGET_MACHO && rs6000_darwin64_abi)
-	    || DEFAULT_ABI == ABI_ELFv2
-            || (DEFAULT_ABI == ABI_AIX && !rs6000_compat_align_parm))
- 	   && mode == BLKmode
-	   && type && TYPE_ALIGN (type) > 64)
+
+  /* Aggregate types that need > 8 byte alignment are quadword-aligned
+     in the parameter area in the ELFv2 ABI, and in the AIX ABI unless
+     -mcompat-align-parm is used.  */
+  if (((DEFAULT_ABI == ABI_AIX && !rs6000_compat_align_parm)
+       || DEFAULT_ABI == ABI_ELFv2)
+      && type && TYPE_ALIGN (type) > 64)
+    {
+      /* "Aggregate" means any AGGREGATE_TYPE except for single-element
+         or homogeneous float/vector aggregates here.  We already handled
+         vector aggregates above, but still need to check for float here. */
+      bool aggregate_p = (AGGREGATE_TYPE_P (type)
+			  && !SCALAR_FLOAT_MODE_P (elt_mode));
+
+      /* We used to check for BLKmode instead of the above aggregate type
+	 check.  Warn when this results in any difference to the ABI.  */
+      if (aggregate_p != (mode == BLKmode))
+	{
+	  static bool warned;
+	  if (!warned && warn_psabi)
+	    {
+	      warned = true;
+	      inform (input_location,
+		      "the ABI of passing aggregates with %d-byte alignment"
+		      " has changed in GCC 4.10",
+		      (int) TYPE_ALIGN (type) / BITS_PER_UNIT);
+	    }
+	}
+
+      if (aggregate_p)
+	return 128;
+    }
+
+  /* Similar for the Darwin64 ABI.  Note that for historical reasons we
+     implement the "aggregate type" check as a BLKmode check here; this
+     means certain aggregate types are in fact not aligned.  */
+  if (TARGET_MACHO && rs6000_darwin64_abi
+      && mode == BLKmode
+      && type && TYPE_ALIGN (type) > 64)
     return 128;
-  else
-    return PARM_BOUNDARY;
+
+  return PARM_BOUNDARY;
 }
 
 /* The offset in words to the start of the parameter save area.  */
