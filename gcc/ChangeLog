@@ -1,5 +1,16 @@
 2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/rs6000/rs6000-protos.h (rs6000_special_adjust_field_align_p):
+	Add prototype.
+	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align_p): New
+	function.  Issue -Wpsabi warning if future GCC releases will use
+	different field alignment rules for this type.
+	* config/rs6000/sysv4.h (ADJUST_FIELD_ALIGN): Call it.
+	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/freebsd64.h (ADJUST_FIELD_ALIGN): Likewise.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/rs6000/rs6000.c (rs6000_function_arg_boundary): Issue
 	-Wpsabi note when encountering a type where future GCC releases
 	will apply different alignment requirements.
