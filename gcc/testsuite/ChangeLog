@@ -1,5 +1,9 @@
 2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* gcc.target/powerpc/ppc64-abi-warn-1.c: New test.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* g++.dg/compat/struct-layout-1.exp: Load g++-dg.exp.
 
 2014-07-24  Jiong Wang  <jiong.wang@arm.com>
