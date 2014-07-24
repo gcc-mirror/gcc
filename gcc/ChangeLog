@@ -1,3 +1,9 @@
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.h (frame): New fields "wb_candidate1" and
+	"wb_candidate2".
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Initialize above.
+
 2014-07-24  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
