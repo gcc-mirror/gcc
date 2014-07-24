@@ -63,12 +63,12 @@ Some basic guidelines for editing this document:
 * @code{ATOMIC_ADD}:    ATOMIC_ADD, Atomic ADD operation
 * @code{ATOMIC_AND}:    ATOMIC_AND, Atomic bitwise AND operation
 * @code{ATOMIC_CAS}:    ATOMIC_CAS, Atomic compare and swap
+* @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_FETCH_ADD}: ATOMIC_FETCH_ADD, Atomic ADD operation with prior fetch
 * @code{ATOMIC_FETCH_AND}: ATOMIC_FETCH_AND, Atomic bitwise AND operation with prior fetch
 * @code{ATOMIC_FETCH_OR}: ATOMIC_FETCH_OR, Atomic bitwise OR operation with prior fetch
 * @code{ATOMIC_FETCH_XOR}: ATOMIC_FETCH_XOR, Atomic bitwise XOR operation with prior fetch
 * @code{ATOMIC_OR}:     ATOMIC_OR, Atomic bitwise OR operation
-* @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_REF}:    ATOMIC_REF, Obtaining the value of a variable atomically
 * @code{ATOMIC_XOR}:    ATOMIC_XOR, Atomic bitwise OR operation
 * @code{BACKTRACE}:     BACKTRACE, Show a backtrace
