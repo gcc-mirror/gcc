@@ -2517,7 +2517,6 @@ struct GTY(()) target_rtl {
 
   /* Track if RTL has been initialized.  */
   bool target_specific_initialized;
-  bool lang_dependent_initialized;
 };
 
 extern GTY(()) struct target_rtl default_target_rtl;
