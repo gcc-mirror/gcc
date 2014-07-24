@@ -1,3 +1,9 @@
+2014-07-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/61876
+	* convert.c (convert_to_integer): Do not convert BUILT_IN_ROUND and cast
+	when flag_errno_math is on.
+
 2014-07-24  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.h (varpool_node):
