@@ -1,3 +1,9 @@
+2014-07-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* g++.dg/ipa/pr61160-2.C (main): Return zero.
+	* g++.dg/ipa/pr61160-3.C (main): Likewise.
+
 2014-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
