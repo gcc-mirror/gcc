@@ -9188,7 +9188,7 @@ ix86_code_end (void)
 #endif
       if (USE_HIDDEN_LINKONCE)
 	{
-	  cgraph_create_node (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
+	  cgraph_node::create (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
 
 	  targetm.asm_out.unique_section (decl, 0);
 	  switch_to_section (get_named_section (decl, NULL, 0));
@@ -9554,7 +9554,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
            && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
     {
       int count = frame->nregs;
-      struct cgraph_node *node = cgraph_get_node (current_function_decl);
+      struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
       cfun->machine->use_fast_prologue_epilogue_nregs = count;
 
@@ -32028,10 +32028,10 @@ ix86_get_function_versions_dispatcher (void *decl)
  
   gcc_assert (fn != NULL && DECL_FUNCTION_VERSIONED (fn));
 
-  node = cgraph_get_node (fn);
+  node = cgraph_node::get (fn);
   gcc_assert (node != NULL);
 
-  node_v = get_cgraph_node_version (node);
+  node_v = node->function_version ();
   gcc_assert (node_v != NULL);
  
   if (node_v->dispatcher_resolver != NULL)
@@ -32078,11 +32078,11 @@ ix86_get_function_versions_dispatcher (void *decl)
       /* Right now, the dispatching is done via ifunc.  */
       dispatch_decl = make_dispatcher_decl (default_node->decl);
 
-      dispatcher_node = cgraph_get_create_node (dispatch_decl);
+      dispatcher_node = cgraph_node::get_create (dispatch_decl);
       gcc_assert (dispatcher_node != NULL);
       dispatcher_node->dispatcher_function = 1;
       dispatcher_version_info
-	= insert_new_cgraph_node_version (dispatcher_node);
+	= dispatcher_node->insert_new_function_version ();
       dispatcher_version_info->next = default_version_info;
       dispatcher_node->definition = 1;
 
@@ -32191,8 +32191,8 @@ make_resolver_func (const tree default_decl,
   push_cfun (DECL_STRUCT_FUNCTION (decl));
   *empty_bb = init_lowered_empty_function (decl, false);
 
-  cgraph_add_new_function (decl, true);
-  cgraph_call_function_insertion_hooks (cgraph_get_create_node (decl));
+  cgraph_node::add_new_function (decl, true);
+  cgraph_node::get_create (decl)->call_function_insertion_hooks ();
 
   pop_cfun ();
 
@@ -32203,7 +32203,7 @@ make_resolver_func (const tree default_decl,
 
   /* Create the alias for dispatch to resolver here.  */
   /*cgraph_create_function_alias (dispatch_decl, decl);*/
-  cgraph_same_body_alias (NULL, dispatch_decl, decl);
+  cgraph_node::create_same_body_alias (dispatch_decl, decl);
   XDELETEVEC (resolver_name);
   return decl;
 }
@@ -32227,7 +32227,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 
   node = (cgraph_node *)node_p;
 
-  node_version_info = get_cgraph_node_version (node);
+  node_version_info = node->function_version ();
   gcc_assert (node->dispatcher_function
 	      && node_version_info != NULL);
 

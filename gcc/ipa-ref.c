@@ -87,7 +87,7 @@ ipa_ref::remove_reference ()
 bool
 ipa_ref::cannot_lead_to_return ()
 {
-  return cgraph_node_cannot_return (dyn_cast <cgraph_node *> (referring));
+  return dyn_cast <cgraph_node *> (referring)->cannot_return_p ();
 }
 
 /* Return reference list this reference is in.  */

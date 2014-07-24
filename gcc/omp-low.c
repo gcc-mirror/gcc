@@ -1349,7 +1349,7 @@ new_omp_context (gimple stmt, omp_context *outer_ctx)
     {
       ctx->cb.src_fn = current_function_decl;
       ctx->cb.dst_fn = current_function_decl;
-      ctx->cb.src_node = cgraph_get_node (current_function_decl);
+      ctx->cb.src_node = cgraph_node::get (current_function_decl);
       gcc_checking_assert (ctx->cb.src_node);
       ctx->cb.dst_node = ctx->cb.src_node;
       ctx->cb.src_cfun = cfun;
@@ -1397,7 +1397,7 @@ finalize_task_copyfn (gimple task_stmt)
   pop_cfun ();
 
   /* Inform the callgraph about the new function.  */
-  cgraph_add_new_function (child_fn, false);
+  cgraph_node::add_new_function (child_fn, false);
 }
 
 /* Destroy a omp_context data structures.  Called through the splay tree
@@ -4903,7 +4903,7 @@ expand_omp_taskreg (struct omp_region *region)
 
       /* Inform the callgraph about the new function.  */
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
-      cgraph_add_new_function (child_fn, true);
+      cgraph_node::add_new_function (child_fn, true);
 
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */
@@ -8021,7 +8021,7 @@ expand_omp_target (struct omp_region *region)
 
       /* Inform the callgraph about the new function.  */
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
-      cgraph_add_new_function (child_fn, true);
+      cgraph_node::add_new_function (child_fn, true);
 
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */
@@ -9279,7 +9279,7 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
       memset (&tcctx, '\0', sizeof (tcctx));
       tcctx.cb.src_fn = ctx->cb.src_fn;
       tcctx.cb.dst_fn = child_fn;
-      tcctx.cb.src_node = cgraph_get_node (tcctx.cb.src_fn);
+      tcctx.cb.src_node = cgraph_node::get (tcctx.cb.src_fn);
       gcc_checking_assert (tcctx.cb.src_node);
       tcctx.cb.dst_node = tcctx.cb.src_node;
       tcctx.cb.src_cfun = ctx->cb.src_cfun;
@@ -11038,11 +11038,12 @@ simd_clone_create (struct cgraph_node *old_node)
   struct cgraph_node *new_node;
   if (old_node->definition)
     {
-      if (!cgraph_function_with_gimple_body_p (old_node))
+      if (!old_node->has_gimple_body_p ())
 	return NULL;
-      cgraph_get_body (old_node);
-      new_node = cgraph_function_versioning (old_node, vNULL, NULL, NULL,
-					     false, NULL, NULL, "simdclone");
+      old_node->get_body ();
+      new_node = old_node->create_version_clone_with_body (vNULL, NULL, NULL,
+							   false, NULL, NULL,
+							   "simdclone");
     }
   else
     {
@@ -11053,9 +11054,8 @@ simd_clone_create (struct cgraph_node *old_node)
       SET_DECL_RTL (new_decl, NULL);
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
       DECL_STATIC_DESTRUCTOR (new_decl) = 0;
-      new_node
-	= cgraph_copy_node_for_versioning (old_node, new_decl, vNULL, NULL);
-      cgraph_call_function_insertion_hooks (new_node);
+      new_node = old_node->create_version_clone (new_decl, vNULL, NULL);
+      new_node->call_function_insertion_hooks ();
     }
   if (new_node == NULL)
     return new_node;
@@ -11734,8 +11734,8 @@ simd_clone_adjust (struct cgraph_node *node)
 	    entry_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 	    int freq = compute_call_stmt_bb_frequency (current_function_decl,
 						       entry_bb);
-	    cgraph_create_edge (node, cgraph_get_create_node (fn),
-				call, entry_bb->count, freq);
+	    node->create_edge (cgraph_node::get_create (fn),
+			       call, entry_bb->count, freq);
 
 	    imm_use_iterator iter;
 	    use_operand_p use_p;

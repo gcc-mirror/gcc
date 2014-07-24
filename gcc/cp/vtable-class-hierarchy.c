@@ -1186,7 +1186,7 @@ vtv_generate_init_routine (void)
         DECL_STATIC_CONSTRUCTOR (vtv_fndecl) = 0;
 
       gimplify_function_tree (vtv_fndecl);
-      cgraph_add_new_function (vtv_fndecl, false);
+      cgraph_node::add_new_function (vtv_fndecl, false);
 
       cgraph_process_new_functions ();
 
@@ -1248,7 +1248,7 @@ vtable_find_or_create_map_decl (tree base_type)
          we can find and protect them.  */
 
       set_decl_section_name (var_decl, ".vtable_map_vars");
-      symtab_get_node (var_decl)->implicit_section = true;
+      symtab_node::get (var_decl)->implicit_section = true;
       DECL_INITIAL (var_decl) = initial_value;
 
       comdat_linkage (var_decl);

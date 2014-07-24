@@ -193,13 +193,13 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 	  if (targets.length () == 1)
 	    target = targets[0];
 	  else
-	    target = cgraph_get_create_node
+	    target = cgraph_node::get_create
 		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
 
 	  if (dump_enabled_p ())
             {
-              location_t locus = gimple_location_safe (edge->call_stmt);
-              dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
+	      location_t locus = gimple_location (edge->call_stmt);
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, locus,
                                "devirtualizing call in %s/%i to %s/%i\n",
                                edge->caller->name (), edge->caller->order,
                                target->name (),
@@ -301,7 +301,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       if (node->definition
 	  && !node->global.inlined_to
 	  && !node->in_other_partition
-	  && !cgraph_can_remove_if_no_direct_calls_and_refs_p (node))
+	  && !node->can_remove_if_no_direct_calls_and_refs_p ())
 	{
 	  gcc_assert (!node->global.inlined_to);
 	  pointer_set_insert (reachable, node);
@@ -338,7 +338,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      && DECL_ABSTRACT_ORIGIN (node->decl))
 	    {
 	      struct cgraph_node *origin_node
-	      = cgraph_get_create_node (DECL_ABSTRACT_ORIGIN (node->decl));
+	      = cgraph_node::get_create (DECL_ABSTRACT_ORIGIN (node->decl));
 	      origin_node->used_as_abstract_origin = true;
 	      enqueue_node (origin_node, &first, reachable);
 	    }
@@ -352,7 +352,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
-		if (!symtab_comdat_local_p (next)
+		if (!next->comdat_local_p ()
 		    && !pointer_set_insert (reachable, next))
 		  enqueue_node (next, &first, reachable);
 	    }
@@ -394,10 +394,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      if (DECL_EXTERNAL (e->callee->decl)
 			  && e->callee->alias
 			  && before_inlining_p)
-			{
-		          pointer_set_insert (reachable,
-					      cgraph_function_node (e->callee));
-			}
+			pointer_set_insert (reachable,
+					    e->callee->function_symbol ());
 		      pointer_set_insert (reachable, e->callee);
 		    }
 		  enqueue_node (e->callee, &first, reachable);
@@ -460,14 +458,14 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	{
 	  if (file)
 	    fprintf (file, " %s/%i", node->name (), node->order);
-	  cgraph_remove_node (node);
+	  node->remove ();
 	  changed = true;
 	}
       /* If node is unreachable, remove its body.  */
       else if (!pointer_set_contains (reachable, node))
         {
 	  if (!pointer_set_contains (body_needed_for_clonning, node->decl))
-	    cgraph_release_function_body (node);
+	    node->release_body ();
 	  else if (!node->clone_of)
 	    gcc_assert (in_lto_p || DECL_RESULT (node->decl));
 	  if (node->definition)
@@ -489,14 +487,14 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 				    DECL_ATTRIBUTES (node->decl));
 	      if (!node->in_other_partition)
 		node->local.local = false;
-	      cgraph_node_remove_callees (node);
-	      symtab_remove_from_same_comdat_group (node);
+	      node->remove_callees ();
+	      node->remove_from_same_comdat_group ();
 	      node->remove_all_references ();
 	      changed = true;
 	    }
 	}
       else
-	gcc_assert (node->clone_of || !cgraph_function_with_gimple_body_p (node)
+	gcc_assert (node->clone_of || !node->has_gimple_body_p ()
 		    || in_lto_p || DECL_RESULT (node->decl));
     }
 
@@ -529,7 +527,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	{
 	  if (file)
 	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
-	  varpool_remove_node (vnode);
+	  vnode->remove ();
 	  changed = true;
 	}
       else if (!pointer_set_contains (reachable, vnode))
@@ -546,7 +544,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  vnode->analyzed = false;
 	  vnode->aux = NULL;
 
-	  symtab_remove_from_same_comdat_group (vnode);
+	  vnode->remove_from_same_comdat_group ();
 
 	  /* Keep body if it may be useful for constant folding.  */
 	  if ((init = ctor_for_folding (vnode->decl)) == error_mark_node)
@@ -570,13 +568,14 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     if (node->address_taken
 	&& !node->used_from_other_partition)
       {
-	if (!cgraph_for_node_and_aliases (node, has_addr_references_p, NULL, true))
+	if (!node->call_for_symbol_thunks_and_aliases
+	  (has_addr_references_p, NULL, true))
 	  {
 	    if (file)
 	      fprintf (file, " %s", node->name ());
 	    node->address_taken = false;
 	    changed = true;
-	    if (cgraph_local_node_p (node))
+	    if (node->local_p ())
 	      {
 		node->local.local = true;
 		if (file)
@@ -588,7 +587,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     fprintf (file, "\n");
 
 #ifdef ENABLE_CHECKING
-  verify_symtab ();
+  symtab_node::verify_symtab_nodes ();
 #endif
 
   /* If we removed something, perhaps profile could be improved.  */
@@ -630,8 +629,8 @@ process_references (varpool_node *vnode,
 	*written = true;
 	break;
       case IPA_REF_ALIAS:
-	process_references (varpool (ref->referring), written, address_taken,
-			    read, explicit_refs);
+	process_references (dyn_cast<varpool_node *> (ref->referring), written,
+			    address_taken, read, explicit_refs);
 	break;
       }
 }
@@ -839,7 +838,7 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
 
   gimplify_function_tree (decl);
 
-  cgraph_add_new_function (decl, false);
+  cgraph_node::add_new_function (decl, false);
 
   set_cfun (NULL);
   current_function_decl = NULL;
@@ -875,7 +874,7 @@ record_cdtor_fn (struct cgraph_node *node)
     static_ctors.safe_push (node->decl);
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     static_dtors.safe_push (node->decl);
-  node = cgraph_get_node (node->decl);
+  node = cgraph_node::get (node->decl);
   DECL_DISREGARD_INLINE_LIMITS (node->decl) = 1;
 }
 
@@ -1147,9 +1146,7 @@ propagate_single_user (varpool_node *vnode, cgraph_node *function,
     function = meet (function, varpool_alias_target (vnode), single_user_map);
 
   /* Check all users and see if they correspond to a single function.  */
-  for (i = 0;
-       vnode->iterate_referring (i, ref)
-       && function != BOTTOM; i++)
+  for (i = 0; vnode->iterate_referring (i, ref) && function != BOTTOM; i++)
     {
       struct cgraph_node *cnode = dyn_cast <cgraph_node *> (ref->referring);
       if (cnode)
@@ -1215,8 +1212,7 @@ ipa_single_use (void)
 	  single_user_map.put (var, user);
 
 	  /* Enqueue all aliases for re-processing.  */
-	  for (i = 0;
-	       var->iterate_referring (i, ref); i++)
+	  for (i = 0; var->iterate_referring (i, ref); i++)
 	    if (ref->use == IPA_REF_ALIAS
 		&& !ref->referring->aux)
 	      {
@@ -1224,8 +1220,7 @@ ipa_single_use (void)
 		first = dyn_cast <varpool_node *> (ref->referring);
 	      }
 	  /* Enqueue all users for re-processing.  */
-	  for (i = 0;
-	       var->iterate_reference (i, ref); i++)
+	  for (i = 0; var->iterate_reference (i, ref); i++)
 	    if (!ref->referred->aux
 	        && ref->referred->definition
 		&& is_a <varpool_node *> (ref->referred))

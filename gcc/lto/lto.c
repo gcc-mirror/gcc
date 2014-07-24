@@ -205,7 +205,7 @@ lto_materialize_function (struct cgraph_node *node)
   decl = node->decl;
   /* Read in functions with body (analyzed nodes)
      and also functions that are needed to produce virtual clones.  */
-  if ((cgraph_function_with_gimple_body_p (node) && node->analyzed)
+  if ((node->has_gimple_body_p () && node->analyzed)
       || node->used_as_abstract_origin
       || has_analyzed_clone_p (node))
     {
@@ -3014,7 +3014,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Store resolutions into the symbol table.  */
 
   FOR_EACH_SYMBOL (snode)
-    if (symtab_real_symbol_p (snode)
+    if (snode->real_symbol_p ()
 	&& snode->lto_file_data
 	&& snode->lto_file_data->resolution_map
 	&& (res = pointer_map_contains (snode->lto_file_data->resolution_map,
@@ -3082,7 +3082,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Before merging:\n");
-      dump_symtab (cgraph_dump_file);
+      symtab_node::dump_table (cgraph_dump_file);
     }
   lto_symtab_merge_symbols ();
   /* Removal of unreacable symbols is needed to make verify_symtab to pass;
@@ -3240,7 +3240,7 @@ do_whole_program_analysis (void)
   cgraph_function_flags_ready = true;
 
   if (cgraph_dump_file)
-    dump_symtab (cgraph_dump_file);
+    symtab_node::dump_table (cgraph_dump_file);
   bitmap_obstack_initialize (NULL);
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
@@ -3250,10 +3250,10 @@ do_whole_program_analysis (void)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Optimized ");
-      dump_symtab (cgraph_dump_file);
+      symtab_node::dump_table (cgraph_dump_file);
     }
 #ifdef ENABLE_CHECKING
-  verify_symtab ();
+  symtab_node::verify_symtab_nodes ();
 #endif
   bitmap_obstack_release (NULL);
 

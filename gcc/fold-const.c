@@ -16037,7 +16037,7 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	  {
 	    struct symtab_node *symbol;
 
-	    symbol = symtab_get_node (base);
+	    symbol = symtab_node::get (base);
 	    if (symbol)
 	      return symbol->nonzero_address ();
 	    else

@@ -918,9 +918,8 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
          the corresponding call graph node.  */
       if (hist->type == HIST_TYPE_TIME_PROFILE)
         {
-          node = cgraph_get_node (hist->fun->decl);
-
-          node->tp_first_run = hist->hvalue.counters[0];
+	  node = cgraph_node::get (hist->fun->decl);
+	  node->tp_first_run = hist->hvalue.counters[0];
 
           if (dump_file)
             fprintf (dump_file, "Read tp_first_run: %d\n", node->tp_first_run);

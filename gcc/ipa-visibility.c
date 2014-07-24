@@ -86,11 +86,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
-static bool
-cgraph_non_local_node_p_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+bool
+cgraph_node::non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
    /* FIXME: Aliases can be local, but i386 gets thunks wrong then.  */
-   return !(cgraph_only_called_directly_or_aliased_p (node)
+   return !(node->only_called_directly_or_aliased_p ()
 	    && !node->has_aliases_p ()
 	    && node->definition
 	    && !DECL_EXTERNAL (node->decl)
@@ -102,27 +102,28 @@ cgraph_non_local_node_p_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED
 /* Return true when function can be marked local.  */
 
 bool
-cgraph_local_node_p (struct cgraph_node *node)
+cgraph_node::local_p (void)
 {
-   struct cgraph_node *n = cgraph_function_or_thunk_node (node, NULL);
+   cgraph_node *n = ultimate_alias_target ();
 
    /* FIXME: thunks can be considered local, but we need prevent i386
       from attempting to change calling convention of them.  */
    if (n->thunk.thunk_p)
      return false;
-   return !cgraph_for_node_and_aliases (n,
-					cgraph_non_local_node_p_1, NULL, true);
+   return !n->call_for_symbol_thunks_and_aliases (cgraph_node::non_local_p,
+						NULL, true);
 					
 }
 
 /* Return true when there is a reference to node and it is not vtable.  */
+
 bool
-address_taken_from_non_vtable_p (symtab_node *node)
+symtab_node::address_taken_from_non_vtable_p (void)
 {
   int i;
   struct ipa_ref *ref = NULL;
 
-  for (i = 0; node->iterate_referring (i, ref); i++)
+  for (i = 0; iterate_referring (i, ref); i++)
     if (ref->use == IPA_REF_ADDR)
       {
 	varpool_node *node;
@@ -150,7 +151,7 @@ comdat_can_be_unshared_p_1 (symtab_node *node)
       && (TREE_CODE (node->decl) != FUNCTION_DECL
 	  || (!DECL_CXX_CONSTRUCTOR_P (node->decl)
 	      && !DECL_CXX_DESTRUCTOR_P (node->decl)))
-      && address_taken_from_non_vtable_p (node))
+      && node->address_taken_from_non_vtable_p ())
     return false;
 
   /* If the symbol is used in some weird way, better to not touch it.  */
@@ -223,7 +224,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
     return true;
 
   /* If linker counts on us, we must preserve the function.  */
-  if (symtab_used_from_object_file_p (node))
+  if (node->used_from_object_file_p ())
     return true;
   if (DECL_PRESERVE_P (node->decl))
     return true;
@@ -274,7 +275,7 @@ varpool_externally_visible_p (varpool_node *vnode)
     return false;
 
   /* If linker counts on us, we must preserve the function.  */
-  if (symtab_used_from_object_file_p (vnode))
+  if (vnode->used_from_object_file_p ())
     return true;
 
   if (DECL_HARD_REGISTER (vnode->decl))
@@ -295,7 +296,7 @@ varpool_externally_visible_p (varpool_node *vnode)
      Even if the linker clams the symbol is unused, never bring internal
      symbols that are declared by user as used or externally visible.
      This is needed for i.e. references from asm statements.   */
-  if (symtab_used_from_object_file_p (vnode))
+  if (vnode->used_from_object_file_p ())
     return true;
   if (vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
@@ -340,9 +341,9 @@ varpool_externally_visible_p (varpool_node *vnode)
 bool
 can_replace_by_local_alias (symtab_node *node)
 {
-  return (symtab_node_availability (node) > AVAIL_OVERWRITABLE
+  return (node->get_availability () > AVAIL_INTERPOSABLE
 	  && !decl_binds_to_current_def_p (node->decl)
-	  && !symtab_can_be_discarded (node));
+	  && !node->can_be_discarded_p ());
 }
 
 /* Return true if we can replace refernece to NODE by local alias
@@ -366,8 +367,8 @@ update_vtable_references (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNU
   if (TREE_CODE (*tp) == VAR_DECL
       || TREE_CODE (*tp) == FUNCTION_DECL)
     {
-      if (can_replace_by_local_alias_in_vtable (symtab_get_node (*tp)))
-	*tp = symtab_nonoverwritable_alias (symtab_get_node (*tp))->decl;
+      if (can_replace_by_local_alias_in_vtable (symtab_node::get (*tp)))
+	*tp = symtab_node::get (*tp)->noninterposable_alias ()->decl;
       *walk_subtrees = 0;
     }
   else if (IS_TYPE_OR_DECL_P (*tp))
@@ -416,7 +417,7 @@ update_visibility_by_resolution_info (symtab_node * node)
   DECL_WEAK (node->decl) = false;
   if (!define)
     DECL_EXTERNAL (node->decl) = true;
-  symtab_dissolve_same_comdat_group_list (node);
+  node->dissolve_same_comdat_group_list ();
 }
 
 /* Decide on visibility of all symbols.  */
@@ -473,7 +474,7 @@ function_and_variable_visibility (bool whole_program)
 		 all of them have to be, otherwise it is a front-end bug.  */
 	      gcc_assert (DECL_EXTERNAL (n->decl));
 #endif
-	  symtab_dissolve_same_comdat_group_list (node);
+	  node->dissolve_same_comdat_group_list ();
 	}
       gcc_assert ((!DECL_WEAK (node->decl)
 		  && !DECL_COMDAT (node->decl))
@@ -514,7 +515,7 @@ function_and_variable_visibility (bool whole_program)
 		  next->set_comdat_group (NULL);
 		  if (!next->alias)
 		    next->set_section (NULL);
-		  symtab_make_decl_local (next->decl);
+		  next->make_decl_local ();
 		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
 					|| next->unique_name
 					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
@@ -524,13 +525,13 @@ function_and_variable_visibility (bool whole_program)
 	         in the group and they will all be made local.  We need to
 	         dissolve the group at once so that the predicate does not
 	         segfault though. */
-	      symtab_dissolve_same_comdat_group_list (node);
+	      node->dissolve_same_comdat_group_list ();
 	    }
 	  if (TREE_PUBLIC (node->decl))
 	    node->set_comdat_group (NULL);
 	  if (DECL_COMDAT (node->decl) && !node->alias)
 	    node->set_section (NULL);
-	  symtab_make_decl_local (node->decl);
+	  node->make_decl_local ();
 	}
 
       if (node->thunk.thunk_p
@@ -538,7 +539,7 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  struct cgraph_node *decl_node = node;
 
-	  decl_node = cgraph_function_node (decl_node->callees->callee, NULL);
+	  decl_node = decl_node->callees->callee->function_symbol ();
 
 	  /* Thunks have the same visibility as function they are attached to.
 	     Make sure the C++ front end set this up properly.  */
@@ -546,7 +547,7 @@ function_and_variable_visibility (bool whole_program)
 	    {
 	      gcc_checking_assert (DECL_COMDAT (node->decl)
 				   == DECL_COMDAT (decl_node->decl));
-	      gcc_checking_assert (symtab_in_same_comdat_p (node, decl_node));
+	      gcc_checking_assert (node->in_same_comdat_group_p (decl_node));
 	      gcc_checking_assert (node->same_comdat_group);
 	    }
 	  node->forced_by_abi = decl_node->forced_by_abi;
@@ -558,18 +559,19 @@ function_and_variable_visibility (bool whole_program)
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      node->local.local |= cgraph_local_node_p (node);
+      node->local.local |= node->local_p ();
 
       /* If we know that function can not be overwritten by a different semantics
 	 and moreover its section can not be discarded, replace all direct calls
-	 by calls to an nonoverwritable alias.  This make dynamic linking
+	 by calls to an noninterposable alias.  This make dynamic linking
 	 cheaper and enable more optimization.
 
 	 TODO: We can also update virtual tables.  */
       if (node->callers 
 	  && can_replace_by_local_alias (node))
 	{
-	  struct cgraph_node *alias = cgraph (symtab_nonoverwritable_alias (node));
+	  cgraph_node *alias = dyn_cast<cgraph_node *>
+	    (node->noninterposable_alias ());
 
 	  if (alias && alias != node)
 	    {
@@ -650,19 +652,19 @@ function_and_variable_visibility (bool whole_program)
 		  next->set_comdat_group (NULL);
 		  if (!next->alias)
 		    next->set_section (NULL);
-		  symtab_make_decl_local (next->decl);
+		  next->make_decl_local ();
 		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
 					|| next->unique_name
 					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
 				       && TREE_PUBLIC (next->decl));
 		}
-	      symtab_dissolve_same_comdat_group_list (vnode);
+	      vnode->dissolve_same_comdat_group_list ();
 	    }
 	  if (TREE_PUBLIC (vnode->decl))
 	    vnode->set_comdat_group (NULL);
 	  if (DECL_COMDAT (vnode->decl) && !vnode->alias)
 	    vnode->set_section (NULL);
-	  symtab_make_decl_local (vnode->decl);
+	  vnode->make_decl_local ();
 	  vnode->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	}
       update_visibility_by_resolution_info (vnode);

@@ -1147,7 +1147,7 @@ add_method (tree type, tree method, tree using_decl)
 		  if (DECL_ASSEMBLER_NAME_SET_P (method))
 		    mangle_decl (method);
 		}
-	      record_function_versions (fn, method);
+	      cgraph_node::record_function_versions (fn, method);
 	      continue;
 	    }
 	  if (DECL_INHERITED_CTOR_BASE (method))

@@ -1928,7 +1928,7 @@ mark_needed (tree decl)
 	 If we know a method will be emitted in other TU and no new
 	 functions can be marked reachable, just use the external
 	 definition.  */
-      struct cgraph_node *node = cgraph_get_create_node (decl);
+      struct cgraph_node *node = cgraph_node::get_create (decl);
       node->forced_by_abi = true;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
@@ -2055,7 +2055,7 @@ maybe_emit_vtables (tree ctype)
 	{
 	  current = varpool_node_for_decl (vtbl);
 	  if (last)
-	    symtab_add_to_same_comdat_group (current, last);
+	    current->add_to_same_comdat_group (last);
 	  last = current;
 	}
     }
@@ -2125,7 +2125,7 @@ constrain_visibility (tree decl, int visibility, bool tmpl)
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      || TREE_CODE (decl) == VAR_DECL)
 	    {
-	      struct symtab_node *snode = symtab_get_node (decl);
+	      struct symtab_node *snode = symtab_node::get (decl);
 
 	      if (snode)
 	        snode->set_comdat_group (NULL);
@@ -4252,8 +4252,8 @@ handle_tls_init (void)
 	  if (single_init_fn == NULL_TREE)
 	    continue;
 	  cgraph_node *alias
-	    = cgraph_same_body_alias (cgraph_get_create_node (fn),
-				      single_init_fn, fn);
+	    = cgraph_node::get_create (fn)->create_same_body_alias
+		(single_init_fn, fn);
 	  gcc_assert (alias != NULL);
 	}
 #endif
@@ -4521,21 +4521,21 @@ cp_write_global_declarations (void)
 	    {
 	      struct cgraph_node *node, *next;
 
-	      node = cgraph_get_node (decl);
+	      node = cgraph_node::get (decl);
 	      if (node->cpp_implicit_alias)
-		node = cgraph_alias_target (node);
+		node = node->get_alias_target ();
 
-	      cgraph_for_node_and_aliases (node, clear_decl_external,
-					   NULL, true);
+	      node->call_for_symbol_thunks_and_aliases (clear_decl_external,
+						      NULL, true);
 	      /* If we mark !DECL_EXTERNAL one of the symbols in some comdat
 		 group, we need to mark all symbols in the same comdat group
 		 that way.  */
 	      if (node->same_comdat_group)
-		for (next = cgraph (node->same_comdat_group);
+		for (next = dyn_cast<cgraph_node *> (node->same_comdat_group);
 		     next != node;
-		     next = cgraph (next->same_comdat_group))
-	          cgraph_for_node_and_aliases (next, clear_decl_external,
-					       NULL, true);
+		     next = dyn_cast<cgraph_node *> (next->same_comdat_group))
+		  next->call_for_symbol_thunks_and_aliases (clear_decl_external,
+							  NULL, true);
 	    }
 
 	  /* If we're going to need to write this function out, and
@@ -4545,7 +4545,7 @@ cp_write_global_declarations (void)
 	  if (!DECL_EXTERNAL (decl)
 	      && decl_needed_p (decl)
 	      && !TREE_ASM_WRITTEN (decl)
-	      && !cgraph_get_node (decl)->definition)
+	      && !cgraph_node::get (decl)->definition)
 	    {
 	      /* We will output the function; no longer consider it in this
 		 loop.  */

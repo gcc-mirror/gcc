@@ -1906,7 +1906,7 @@ java_mark_decl_local (tree decl)
   /* Double check that we didn't pass the function to the callgraph early.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      struct cgraph_node *node = cgraph_get_node (decl);
+      struct cgraph_node *node = cgraph_node::get (decl);
       gcc_assert (!node || !node->definition);
     }
 #endif

@@ -4800,7 +4800,7 @@ generate_coarray_init (gfc_namespace * ns __attribute((unused)))
   set_cfun (NULL);
 
   if (decl_function_context (fndecl))
-    (void) cgraph_create_node (fndecl);
+    (void) cgraph_node::create (fndecl);
   else
     cgraph_finalize_function (fndecl, true);
 
@@ -5893,7 +5893,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 	 function has already called cgraph_create_node, which also created
 	 the cgraph node for this function.  */
       if (!has_coarray_vars || gfc_option.coarray != GFC_FCOARRAY_LIB)
-	(void) cgraph_create_node (fndecl);
+	(void) cgraph_node::create (fndecl);
     }
   else
     cgraph_finalize_function (fndecl, true);

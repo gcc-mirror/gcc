@@ -440,8 +440,8 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
     {
       targetm.asm_out.unique_section (decl, reloc);
       if (DECL_SECTION_NAME (decl))
-        symtab_for_node_and_aliases (symtab_get_node (decl),
-				     set_implicit_section, NULL, true);
+	symtab_node::get (decl)->call_for_symbol_and_aliases
+	  (set_implicit_section, NULL, true);
     }
 }
 
@@ -521,7 +521,7 @@ get_named_text_section (tree decl,
 	  buffer = ACONCAT ((stripped_name, named_section_suffix, NULL));
 	  return get_named_section (decl, buffer, 0);
 	}
-      else if (symtab_get_node (decl)->implicit_section)
+      else if (symtab_node::get (decl)->implicit_section)
 	{
 	  const char *name;
 
@@ -550,7 +550,7 @@ default_function_section (tree decl, enum node_frequency freq,
   /* Old GNU linkers have buggy --gc-section support, which sometimes
      results in .gcc_except_table* sections being garbage collected.  */
   if (decl
-      && symtab_get_node (decl)->implicit_section)
+      && symtab_node::get (decl)->implicit_section)
     return NULL;
 #endif
 
@@ -606,7 +606,7 @@ function_section_1 (tree decl, bool force_cold)
 
   if (decl)
     {
-      struct cgraph_node *node = cgraph_get_node (decl);
+      struct cgraph_node *node = cgraph_node::get (decl);
 
       if (node)
 	{
@@ -1092,9 +1092,9 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 {
   addr_space_t as = ADDR_SPACE_GENERIC;
   int reloc;
-  symtab_node *snode = symtab_get_node (decl);
+  symtab_node *snode = symtab_node::get (decl);
   if (snode)
-    decl = symtab_alias_ultimate_target (snode)->decl;
+    decl = snode->ultimate_alias_target ()->decl;
 
   if (TREE_TYPE (decl) != error_mark_node)
     as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
@@ -1210,7 +1210,7 @@ use_blocks_for_decl_p (tree decl)
   /* If this decl is an alias, then we don't want to emit a
      definition.  */
   if (TREE_CODE (decl) == VAR_DECL
-      && (snode = symtab_get_node (decl)) != NULL
+      && (snode = symtab_node::get (decl)) != NULL
       && snode->alias)
     return false;
 
@@ -1600,7 +1600,7 @@ decide_function_section (tree decl)
 
  if (DECL_SECTION_NAME (decl))
     {
-      struct cgraph_node *node = cgraph_get_node (current_function_decl);
+      struct cgraph_node *node = cgraph_node::get (current_function_decl);
       /* Calls to function_section rely on first_function_block_is_cold
 	 being accurate.  */
       first_function_block_is_cold = (node
@@ -2387,10 +2387,10 @@ mark_decl_referenced (tree decl)
 	 If we know a method will be emitted in other TU and no new
 	 functions can be marked reachable, just use the external
 	 definition.  */
-      struct cgraph_node *node = cgraph_get_create_node (decl);
+      struct cgraph_node *node = cgraph_node::get_create (decl);
       if (!DECL_EXTERNAL (decl)
 	  && !node->definition)
-	cgraph_mark_force_output_node (node);
+	node->mark_force_output ();
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
@@ -5632,7 +5632,7 @@ assemble_alias (tree decl, tree target)
 
   /* Allow aliases to aliases.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    cgraph_get_create_node (decl)->alias = true;
+    cgraph_node::get_create (decl)->alias = true;
   else
     varpool_node_for_decl (decl)->alias = true;
 
@@ -5728,8 +5728,8 @@ dump_tm_clone_pairs (vec<tm_alias_pair> tm_alias_pairs)
     {
       tree src = p->from;
       tree dst = p->to;
-      struct cgraph_node *src_n = cgraph_get_node (src);
-      struct cgraph_node *dst_n = cgraph_get_node (dst);
+      struct cgraph_node *src_n = cgraph_node::get (src);
+      struct cgraph_node *dst_n = cgraph_node::get (dst);
 
       /* The function ipa_tm_create_version() marks the clone as needed if
 	 the original function was needed.  But we also mark the clone as
@@ -5880,7 +5880,7 @@ make_decl_one_only (tree decl, tree comdat_group)
   if (TREE_CODE (decl) == VAR_DECL)
     symbol = varpool_node_for_decl (decl);
   else
-    symbol = cgraph_get_create_node (decl);
+    symbol = cgraph_node::get_create (decl);
 
   if (SUPPORTS_ONE_ONLY)
     {
@@ -6701,7 +6701,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     }
   else if (TREE_CODE (exp) == FUNCTION_DECL && TREE_PUBLIC (exp))
     {
-      struct cgraph_node *node = cgraph_get_node (exp);
+      struct cgraph_node *node = cgraph_node::get (exp);
       if (node
 	  && (resolution_local_p (node->resolution) || node->in_other_partition))
 	resolved_locally = true;
@@ -6792,7 +6792,7 @@ decl_binds_to_current_def_p (const_tree decl)
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      struct cgraph_node *node = cgraph_get_node (decl);
+      struct cgraph_node *node = cgraph_node::get (decl);
       if (node
 	  && node->resolution != LDPR_UNKNOWN)
 	return resolution_to_local_definition_p (node->resolution);
@@ -7042,10 +7042,10 @@ place_block_symbol (rtx symbol)
       struct symtab_node *snode;
       decl = SYMBOL_REF_DECL (symbol);
 
-      snode = symtab_get_node (decl);
+      snode = symtab_node::get (decl);
       if (snode->alias)
 	{
-	  rtx target = DECL_RTL (symtab_alias_ultimate_target (snode)->decl);
+	  rtx target = DECL_RTL (snode->ultimate_alias_target ()->decl);
 
 	  place_block_symbol (target);
 	  SYMBOL_REF_BLOCK_OFFSET (symbol) = SYMBOL_REF_BLOCK_OFFSET (target);

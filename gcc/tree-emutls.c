@@ -71,7 +71,7 @@ along with GCC; see the file COPYING3.  If not see
    the index of a TLS variable equals the index of its control variable in
    the other vector.  */
 static varpool_node_set tls_vars;
-static vec<varpool_node_ptr> control_vars;
+static vec<varpool_node *> control_vars;
 
 /* For the current basic block, an SSA_NAME that has computed the address 
    of the TLS variable at the corresponding index.  */
@@ -448,8 +448,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
 
       gimple_seq_add_stmt (&d->seq, x);
 
-      cgraph_create_edge (d->cfun_node, d->builtin_node, x,
-                          d->bb->count, d->bb_freq);
+      d->cfun_node->create_edge (d->builtin_node, x, d->bb->count, d->bb_freq);
 
       /* We may be adding a new reference to a new variable to the function.
          This means we have to play with the ipa-reference web.  */
@@ -632,7 +631,7 @@ lower_emutls_function_body (struct cgraph_node *node)
   d.builtin_decl = builtin_decl_explicit (BUILT_IN_EMUTLS_GET_ADDRESS);
   /* This is where we introduce the declaration to the IL and so we have to
      create a node for it.  */
-  d.builtin_node = cgraph_get_create_node (d.builtin_decl);
+  d.builtin_node = cgraph_node::get_create (d.builtin_decl);
 
   FOR_EACH_BB_FN (d.bb, cfun)
     {

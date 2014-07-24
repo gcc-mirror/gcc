@@ -704,7 +704,7 @@ increase_alignment (void)
           DECL_USER_ALIGN (decl) = 1;
 	  if (TREE_STATIC (decl))
 	    {
-	      tree target = symtab_alias_ultimate_target (symtab_get_node (decl))->decl;
+	      tree target = symtab_node::get (decl)->ultimate_alias_target ()->decl;
               DECL_ALIGN (target) = TYPE_ALIGN (vectype);
               DECL_USER_ALIGN (target) = 1;
 	    }

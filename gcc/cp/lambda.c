@@ -1038,9 +1038,8 @@ maybe_add_lambda_conv_op (tree type)
   if (DECL_ONE_ONLY (statfn))
     {
       /* Put the thunk in the same comdat group as the call op.  */
-      symtab_add_to_same_comdat_group
-	 (cgraph_get_create_node (statfn),
-          cgraph_get_create_node (callop));
+      cgraph_node::get_create (statfn)->add_to_same_comdat_group
+	(cgraph_node::get_create (callop));
     }
   tree body = begin_function_body ();
   tree compound_stmt = begin_compound_stmt (0);

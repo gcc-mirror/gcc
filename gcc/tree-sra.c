@@ -4886,8 +4886,8 @@ convert_callers (struct cgraph_node *node, tree old_decl,
 {
   basic_block this_block;
 
-  cgraph_for_node_and_aliases (node, convert_callers_for_node,
-			       &adjustments, false);
+  node->call_for_symbol_thunks_and_aliases (convert_callers_for_node,
+					  &adjustments, false);
 
   if (!encountered_recursive_call)
     return;
@@ -4932,10 +4932,10 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   /* This must be done after rebuilding cgraph edges for node above.
      Otherwise any recursive calls to node that are recorded in
      redirect_callers will be corrupted.  */
-  vec<cgraph_edge_p> redirect_callers = collect_callers_of_node (node);
-  new_node = cgraph_function_versioning (node, redirect_callers,
-					 NULL,
-					 NULL, false, NULL, NULL, "isra");
+  vec<cgraph_edge *> redirect_callers = node->collect_callers ();
+  new_node = node->create_version_clone_with_body (redirect_callers, NULL,
+						   NULL, false, NULL, NULL,
+						   "isra");
   redirect_callers.release ();
 
   push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
@@ -4943,7 +4943,7 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   cfg_changed = ipa_sra_modify_function_body (adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
   convert_callers (new_node, node->decl, adjustments);
-  cgraph_make_node_local (new_node);
+  new_node->make_local ();
   return cfg_changed;
 }
 
@@ -4964,7 +4964,7 @@ has_caller_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 static bool
 ipa_sra_preliminary_function_checks (struct cgraph_node *node)
 {
-  if (!cgraph_node_can_be_local_p (node))
+  if (!node->can_be_local_p ())
     {
       if (dump_file)
 	fprintf (dump_file, "Function not local to this compilation unit.\n");
@@ -5008,7 +5008,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
-  if (!cgraph_for_node_and_aliases (node, has_caller_p, NULL, true))
+  if (!node->call_for_symbol_thunks_and_aliases (has_caller_p, NULL, true))
     {
       if (dump_file)
 	fprintf (dump_file,
@@ -5042,7 +5042,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
 static unsigned int
 ipa_early_sra (void)
 {
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  struct cgraph_node *node = cgraph_node::get (current_function_decl);
   ipa_parm_adjustment_vec adjustments;
   int ret = 0;
 
@@ -5059,9 +5059,8 @@ ipa_early_sra (void)
       goto simple_out;
     }
 
-  if (cgraph_for_node_and_aliases (node,
-				   some_callers_have_mismatched_arguments_p,
-				   NULL, true))
+  if (node->call_for_symbol_thunks_and_aliases
+       (some_callers_have_mismatched_arguments_p, NULL, true))
     {
       if (dump_file)
 	fprintf (dump_file, "There are callers with insufficient number of "

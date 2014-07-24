@@ -2691,7 +2691,7 @@ tree_could_trap_p (tree expr)
 	  struct cgraph_node *node;
 	  if (!DECL_EXTERNAL (expr))
 	    return false;
-	  node = cgraph_function_node (cgraph_get_node (expr), NULL);
+	  node = cgraph_node::get (expr)->function_symbol ();
 	  if (node && node->in_other_partition)
 	    return false;
 	  return true;

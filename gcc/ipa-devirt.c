@@ -1269,7 +1269,7 @@ build_type_inheritance_graph (void)
   FOR_EACH_SYMBOL (n)
     if (is_a <cgraph_node *> (n)
 	&& DECL_VIRTUAL_P (n->decl)
-	&& symtab_real_symbol_p (n))
+	&& n->real_symbol_p ())
       get_odr_type (TYPE_MAIN_VARIANT (method_class_type (TREE_TYPE (n->decl))),
 		    true);
 
@@ -1336,7 +1336,7 @@ referenced_from_vtable_p (struct cgraph_node *node)
   for (i = 0; node->iterate_referring (i, ref); i++)
 	
     if ((ref->use == IPA_REF_ALIAS
-	 && referenced_from_vtable_p (cgraph (ref->referring)))
+	 && referenced_from_vtable_p (dyn_cast<cgraph_node *> (ref->referring)))
 	|| (ref->use == IPA_REF_ADDR
 	    && TREE_CODE (ref->referring->decl) == VAR_DECL
 	    && DECL_VIRTUAL_P (ref->referring->decl)))
@@ -1382,16 +1382,16 @@ maybe_record_node (vec <cgraph_node *> &nodes,
   if (!target)
     return;
 
-  target_node = cgraph_get_node (target);
+  target_node = cgraph_node::get (target);
 
   /* Preffer alias target over aliases, so we do not get confused by
      fake duplicates.  */
   if (target_node)
     {
-      alias_target = cgraph_function_or_thunk_node (target_node, &avail);
+      alias_target = target_node->ultimate_alias_target (&avail);
       if (target_node != alias_target
 	  && avail >= AVAIL_AVAILABLE
-	  && cgraph_function_body_availability (target_node))
+	  && target_node->get_availability ())
 	target_node = alias_target;
     }
 
@@ -1417,10 +1417,10 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	   && (TREE_PUBLIC (target)
 	       || DECL_EXTERNAL (target)
 	       || target_node->definition)
-	   && symtab_real_symbol_p (target_node))
+	   && target_node->real_symbol_p ())
     {
       gcc_assert (!target_node->global.inlined_to);
-      gcc_assert (symtab_real_symbol_p (target_node));
+      gcc_assert (target_node->real_symbol_p ());
       if (!pointer_set_insert (inserted, target_node->decl))
 	{
 	  pointer_set_insert (cached_polymorphic_call_targets,
@@ -2672,7 +2672,7 @@ possible_polymorphic_call_target_p (tree otr_type,
     return true;
   targets = possible_polymorphic_call_targets (otr_type, otr_token, ctx, &final);
   for (i = 0; i < targets.length (); i++)
-    if (symtab_semantically_equivalent_p (n, targets[i]))
+    if (n->semantically_equivalent_p (targets[i]))
       return true;
 
   /* At a moment we allow middle end to dig out new external declarations
@@ -2700,7 +2700,7 @@ update_type_inheritance_graph (void)
   FOR_EACH_FUNCTION (n)
     if (DECL_VIRTUAL_P (n->decl)
 	&& !n->definition
-	&& symtab_real_symbol_p (n))
+	&& n->real_symbol_p ())
       get_odr_type (method_class_type (TYPE_MAIN_VARIANT (TREE_TYPE (n->decl))),
 				       true);
   timevar_pop (TV_IPA_INHERITANCE);
@@ -2827,8 +2827,8 @@ ipa_devirt (void)
 		struct cgraph_edge *e2;
 		struct ipa_ref *ref;
 		cgraph_speculative_call_info (e, e2, e, ref);
-		if (cgraph_function_or_thunk_node (e2->callee, NULL)
-		    == cgraph_function_or_thunk_node (likely_target, NULL))
+		if (e2->callee->ultimate_alias_target ()
+		    == likely_target->ultimate_alias_target ())
 		  {
 		    fprintf (dump_file, "We agree with speculation\n\n");
 		    nok++;
@@ -2860,7 +2860,7 @@ ipa_devirt (void)
 	      }
 	    /* Don't use an implicitly-declared destructor (c++/58678).  */
 	    struct cgraph_node *non_thunk_target
-	      = cgraph_function_node (likely_target);
+	      = likely_target->function_symbol ();
 	    if (DECL_ARTIFICIAL (non_thunk_target->decl)
 		&& DECL_COMDAT (non_thunk_target->decl))
 	      {
@@ -2869,9 +2869,8 @@ ipa_devirt (void)
 		nartificial++;
 		continue;
 	      }
-	    if (cgraph_function_body_availability (likely_target)
-		<= AVAIL_OVERWRITABLE
-		&& symtab_can_be_discarded (likely_target))
+	    if (likely_target->get_availability () <= AVAIL_INTERPOSABLE
+		&& likely_target->can_be_discarded_p ())
 	      {
 		if (dump_file)
 		  fprintf (dump_file, "Target is overwritable\n\n");
@@ -2889,11 +2888,10 @@ ipa_devirt (void)
                                      likely_target->name (),
                                      likely_target->order);
                   }
-		if (!symtab_can_be_discarded (likely_target))
+		if (!likely_target->can_be_discarded_p ())
 		  {
 		    cgraph_node *alias;
-		    alias = cgraph (symtab_nonoverwritable_alias
-				     (likely_target));
+		    alias = dyn_cast<cgraph_node *> (likely_target->noninterposable_alias ());
 		    if (alias)
 		      likely_target = alias;
 		  }

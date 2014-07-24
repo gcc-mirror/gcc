@@ -158,26 +158,27 @@ varpool_node_for_decl (tree decl)
 
   node = varpool_create_empty_node ();
   node->decl = decl;
-  symtab_register_node (node);
+  node->register_symbol ();
   return node;
 }
 
-/* Remove node from the varpool.  */
+/* Remove variable from symbol table.  */
+
 void
-varpool_remove_node (varpool_node *node)
+varpool_node::remove (void)
 {
-  varpool_call_node_removal_hooks (node);
-  symtab_unregister_node (node);
+  varpool_call_node_removal_hooks (this);
+  unregister ();
 
   /* When streaming we can have multiple nodes associated with decl.  */
   if (cgraph_state == CGRAPH_LTO_STREAMING)
     ;
   /* Keep constructor when it may be used for folding. We remove
      references to external variables before final compilation.  */
-  else if (DECL_INITIAL (node->decl) && DECL_INITIAL (node->decl) != error_mark_node
-	   && !varpool_ctor_useable_for_folding_p (node))
-    varpool_remove_initializer (node);
-  ggc_free (node);
+  else if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node
+	   && !varpool_ctor_useable_for_folding_p (this))
+    varpool_remove_initializer (this);
+  ggc_free (this);
 }
 
 /* Renove node initializer when it is no longer needed.  */
@@ -200,32 +201,32 @@ varpool_remove_initializer (varpool_node *node)
 
 /* Dump given cgraph node.  */
 void
-dump_varpool_node (FILE *f, varpool_node *node)
+varpool_node::dump (FILE *f)
 {
-  dump_symtab_base (f, node);
+  dump_base (f);
   fprintf (f, "  Availability: %s\n",
 	   cgraph_function_flags_ready
-	   ? cgraph_availability_names[cgraph_variable_initializer_availability (node)]
+	   ? cgraph_availability_names[cgraph_variable_initializer_availability (this)]
 	   : "not-ready");
   fprintf (f, "  Varpool flags:");
-  if (DECL_INITIAL (node->decl))
+  if (DECL_INITIAL (decl))
     fprintf (f, " initialized");
-  if (node->output)
+  if (output)
     fprintf (f, " output");
-  if (node->used_by_single_function)
+  if (used_by_single_function)
     fprintf (f, " used-by-single-function");
-  if (TREE_READONLY (node->decl))
+  if (TREE_READONLY (decl))
     fprintf (f, " read-only");
-  if (varpool_ctor_useable_for_folding_p (node))
+  if (varpool_ctor_useable_for_folding_p (this))
     fprintf (f, " const-value-known");
-  if (node->writeonly)
+  if (writeonly)
     fprintf (f, " write-only");
-  if (node->tls_model)
-    fprintf (f, " %s", tls_model_names [node->tls_model]);
+  if (tls_model)
+    fprintf (f, " %s", tls_model_names [tls_model]);
   fprintf (f, "\n");
 }
 
-/* Dump the variable pool.  */
+/* Dump the variable pool to F.  */
 void
 dump_varpool (FILE *f)
 {
@@ -233,7 +234,7 @@ dump_varpool (FILE *f)
 
   fprintf (f, "variable pool:\n\n");
   FOR_EACH_VARIABLE (node)
-    dump_varpool_node (f, node);
+    node->dump (f);
 }
 
 /* Dump the variable pool to stderr.  */
@@ -459,7 +460,7 @@ cgraph_variable_initializer_availability (varpool_node *node)
      used to share template instantiations in C++.  */
   if (decl_replaceable_p (node->decl)
       || DECL_EXTERNAL (node->decl))
-    return AVAIL_OVERWRITABLE;
+    return AVAIL_INTERPOSABLE;
   return AVAIL_AVAILABLE;
 }
 
@@ -479,8 +480,7 @@ varpool_analyze_node (varpool_node *node)
       align_variable (decl, 0);
     }
   if (node->alias)
-    symtab_resolve_alias
-       (node, varpool_get_node (node->alias_target));
+    node->resolve_alias (varpool_get_node (node->alias_target));
   else if (DECL_INITIAL (decl))
     record_references_in_initializer (decl, node->analyzed);
   node->analyzed = true;
@@ -607,7 +607,7 @@ varpool_remove_unreferenced_decls (void)
 	       next = next->same_comdat_group)
 	    {
 	      varpool_node *vnext = dyn_cast <varpool_node *> (next);
-	      if (vnext && vnext->analyzed && !symtab_comdat_local_p (next))
+	      if (vnext && vnext->analyzed && !next->comdat_local_p ())
 		enqueue_node (vnext, &first);
 	    }
 	}
@@ -636,7 +636,7 @@ varpool_remove_unreferenced_decls (void)
 	  if (pointer_set_contains (referenced, node))
 	    varpool_remove_initializer (node);
 	  else
-	    varpool_remove_node (node);
+	    node->remove ();
 	}
     }
   pointer_set_destroy (referenced);
@@ -745,8 +745,7 @@ varpool_extra_name_alias (tree alias, tree decl)
      This is unfortunate because they are not going through the
      standard channels.  Ensure they get output.  */
   if (cpp_implicit_aliases_done)
-    symtab_resolve_alias (alias_node,
-			  varpool_node_for_decl (decl));
+    alias_node->resolve_alias (varpool_node_for_decl (decl));
   return alias_node;
 }
 
@@ -769,7 +768,7 @@ varpool_for_node_and_aliases (varpool_node *node,
     {
       varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
       if (include_overwritable
-	  || cgraph_variable_initializer_availability (alias) > AVAIL_OVERWRITABLE)
+	  || cgraph_variable_initializer_availability (alias) > AVAIL_INTERPOSABLE)
 	if (varpool_for_node_and_aliases (alias, callback, data,
 					 include_overwritable))
 	  return true;

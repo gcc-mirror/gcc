@@ -7115,7 +7115,7 @@ ipa_pta_execute (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      dump_symtab (dump_file);
+      symtab_node::dump_table (dump_file);
       fprintf (dump_file, "\n");
     }
 
@@ -7126,15 +7126,16 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
+      if (!node->has_gimple_body_p () || node->clone_of)
 	continue;
-      cgraph_get_body (node);
+      node->get_body ();
 
       gcc_assert (!node->clone_of);
 
       vi = create_function_info_for (node->decl,
 			             alias_get_name (node->decl));
-      cgraph_for_node_and_aliases (node, associate_varinfo_to_alias, vi, true);
+      node->call_for_symbol_thunks_and_aliases
+	(associate_varinfo_to_alias, vi, true);
     }
 
   /* Create constraints for global variables and their initializers.  */
@@ -7161,7 +7162,7 @@ ipa_pta_execute (void)
       basic_block bb;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
+      if (!node->has_gimple_body_p () || node->clone_of)
 	continue;
 
       if (dump_file)
@@ -7265,7 +7266,7 @@ ipa_pta_execute (void)
       basic_block bb;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
+      if (!node->has_gimple_body_p () || node->clone_of)
 	continue;
 
       fn = DECL_STRUCT_FUNCTION (node->decl);

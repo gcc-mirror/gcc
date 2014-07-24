@@ -4371,7 +4371,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 				       "converting indirect call to "
 				       "function %s\n",
-				       cgraph_get_node (fn)->name ());
+				       cgraph_node::get (fn)->name ());
 		    }
 		  gimple_call_set_fndecl (stmt, fn);
 		  gimple_set_modified (stmt, true);

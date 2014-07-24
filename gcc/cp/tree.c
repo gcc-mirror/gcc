@@ -4031,7 +4031,7 @@ cp_fix_function_decl_p (tree decl)
       && !DECL_THUNK_P (decl)
       && !DECL_EXTERNAL (decl))
     {
-      struct cgraph_node *node = cgraph_get_node (decl);
+      struct cgraph_node *node = cgraph_node::get (decl);
 
       /* Don't fix same_body aliases.  Although they don't have their own
 	 CFG, they share it with what they alias to.  */
