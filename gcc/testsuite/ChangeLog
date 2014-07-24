@@ -1,3 +1,8 @@
+2014-07-24  Andreas Schwab  <schwab@suse.de>
+
+	* lib/target-supports.exp (check_effective_target_arm_nothumb):
+	Also check for __arm__.
+
 2014-07-24  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/test_frame_12.c: Match optimized instruction
@@ -33,7 +38,7 @@
 2014-07-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/bounds-2.c (fn4): Adjust to check the array size
-	in the structure. 
+	in the structure.
 
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 

@@ -2262,7 +2262,7 @@ proc check_effective_target_aarch64_little_endian { } {
     }]
 }
 
-# Return 1 is this is an arm target using 32-bit instructions
+# Return 1 if this is an arm target using 32-bit instructions
 proc check_effective_target_arm32 { } {
     return [check_no_compiler_messages arm32 assembly {
 	#if !defined(__arm__) || (defined(__thumb__) && !defined(__thumb2__))
@@ -2271,10 +2271,10 @@ proc check_effective_target_arm32 { } {
     }]
 }
 
-# Return 1 is this is an arm target not using Thumb
+# Return 1 if this is an arm target not using Thumb
 proc check_effective_target_arm_nothumb { } {
     return [check_no_compiler_messages arm_nothumb assembly {
-	#if (defined(__thumb__) || defined(__thumb2__))
+	#if !defined(__arm__) || (defined(__thumb__) || defined(__thumb2__))
 	#error FOO
 	#endif
     }]
