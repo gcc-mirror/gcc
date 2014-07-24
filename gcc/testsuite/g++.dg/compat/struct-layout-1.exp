@@ -89,6 +89,9 @@ proc compat-use-tst-compiler { } {
 # This must be done after the compat-use-*-compiler definitions.
 load_lib compat.exp
 
+# Provide the g++-dg-prune routine (gcc-dp.exp is loaded by compat.exp)
+load_lib g++-dg.exp
+
 g++_init
 
 # Save variables for the C++ compiler under test, which each test will
