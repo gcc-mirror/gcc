@@ -1,4 +1,10 @@
-2014-07-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg_boundary): Issue
+	-Wpsabi note when encountering a type where future GCC releases
+	will apply different alignment requirements.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_arg): If a float argument
 	does not fit fully into floating-point registers, and there is still
