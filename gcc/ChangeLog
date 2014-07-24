@@ -1,3 +1,12 @@
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg): If a float argument
+	does not fit fully into floating-point registers, and there is still
+	space in the register parameter area, use GPRs to pass those parts
+	of the argument.  Issue -Wpsabi note if any parameter is now treated
+	differently than before.
+	(rs6000_arg_partial_bytes): Update.
+
 2014-07-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/elf.h: Define TARGET_UNWIND_TABLES_DEFAULT.
