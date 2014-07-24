@@ -1,3 +1,9 @@
+2014-07-24  DJ Delorie  <dj@redhat.com>
+
+	* config/i386/cygming-crtbegin.c (deregister_frame_fn): Newly public.
+	(__gcc_deregister_frame): Move logic to detect deregister function to...
+	(__gcc_register_frame): here, so it's consistent with the register logic.
+
 2014-07-23  Nathan Sidwell  <nathan@acm.org>
 
 	* libgcov-driver.c (set_gcov_list): Remove.

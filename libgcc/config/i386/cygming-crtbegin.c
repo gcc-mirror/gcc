@@ -102,6 +102,7 @@ static struct object obj;
 
 /* Handle of libgcc's DLL reference.  */
 HANDLE hmod_libgcc;
+static void *  (*deregister_frame_fn) (const void *) == NULL;
 #endif
 
 #if TARGET_USE_JCR_SECTION
@@ -133,9 +134,14 @@ __gcc_register_frame (void)
       hmod_libgcc = LoadLibrary (LIBGCC_SONAME);
       register_frame_fn = (void (*) (const void *, struct object *))
 			  GetProcAddress (h, "__register_frame_info");
+      deregister_frame_fn = (void* (*) (const void *))
+	                    GetProcAddress (h, "__deregister_frame_info");
     }
-  else 
-    register_frame_fn = __register_frame_info;
+  else
+    {
+      register_frame_fn = __register_frame_info;
+      deregister_frame_fn = __deregister_frame_info;
+    }
   if (register_frame_fn)
      register_frame_fn (__EH_FRAME_BEGIN__, &obj);
 #endif
@@ -161,13 +167,6 @@ void
 __gcc_deregister_frame (void)
 {
 #if DWARF2_UNWIND_INFO
-  void *  (*deregister_frame_fn) (const void *);
-  HANDLE h = GetModuleHandle (LIBGCC_SONAME);
-  if (h)
-    deregister_frame_fn = (void* (*) (const void *))
-			  GetProcAddress (h, "__deregister_frame_info");
-  else 
-    deregister_frame_fn = __deregister_frame_info;
   if (deregister_frame_fn)
      deregister_frame_fn (__EH_FRAME_BEGIN__);
   if (hmod_libgcc)
