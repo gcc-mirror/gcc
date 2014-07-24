@@ -920,8 +920,7 @@ done:
    -march and -mtune "native" target and will leave to the newly
    built compiler to generate code for its default target.  */
 
-const char *host_detect_local_cpu (int argc ATTRIBUTE_UNUSED,
-				   const char **argv ATTRIBUTE_UNUSED)
+const char *host_detect_local_cpu (int, const char **)
 {
   return NULL;
 }

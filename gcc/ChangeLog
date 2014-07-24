@@ -1,3 +1,12 @@
+2014-07-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/driver-i386.c: Remove names of unused arguments and
+	unnecessary unused attributes.
+	* config/i386/host-mingw32.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/winnt-stubs.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+
 2014-07-23  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_popwb_pair_reg)
