@@ -2363,7 +2363,8 @@ aarch64_expand_epilogue (bool for_sibcall)
     {
       insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
 				       hard_frame_pointer_rtx,
-				       GEN_INT (- fp_offset)));
+				       GEN_INT (0)));
+      offset = offset - fp_offset;
       RTX_FRAME_RELATED_P (insn) = 1;
       /* As SP is set to (FP - fp_offset), according to the rules in
 	 dwarf2cfi.c:dwarf2out_frame_debug_expr, CFA should be calculated
@@ -2371,27 +2372,16 @@ aarch64_expand_epilogue (bool for_sibcall)
       cfa_reg = stack_pointer_rtx;
     }
 
-  aarch64_restore_callee_saves (DFmode, fp_offset, V0_REGNUM, V31_REGNUM);
+  aarch64_restore_callee_saves (DFmode, frame_pointer_needed ? 0 : fp_offset,
+				V0_REGNUM, V31_REGNUM);
 
   if (offset > 0)
     {
       if (frame_pointer_needed)
 	{
-	  if (fp_offset)
-	    {
-	      aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM,
-					    R30_REGNUM);
-	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
-					       GEN_INT (offset)));
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	    }
-	  else
-	    {
-	      aarch64_restore_callee_saves (DImode, fp_offset, R0_REGNUM,
-					    R28_REGNUM);
-	      aarch64_popwb_pair_reg (DImode, R29_REGNUM, R30_REGNUM, offset,
-				      cfa_reg);
-	    }
+	  aarch64_restore_callee_saves (DImode, 0, R0_REGNUM, R28_REGNUM);
+	  aarch64_popwb_pair_reg (DImode, R29_REGNUM, R30_REGNUM, offset,
+				  cfa_reg);
 	}
       else
 	{

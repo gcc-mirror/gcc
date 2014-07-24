@@ -1,3 +1,8 @@
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Don't
+	subtract outgoing area size when restoring stack_pointer_rtx.
+
 2014-07-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (stack_push): Adjust RTL to account for the fact
