@@ -1818,6 +1818,9 @@ aarch64_layout_frame (void)
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
 
+  cfun->machine->frame.wb_candidate1 = FIRST_PSEUDO_REGISTER;
+  cfun->machine->frame.wb_candidate2 = FIRST_PSEUDO_REGISTER;
+
   /* First mark all the registers that really need to be saved...  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     cfun->machine->frame.reg_offset[regno] = SLOT_NOT_REQUIRED;
@@ -1846,7 +1849,9 @@ aarch64_layout_frame (void)
     {
       /* FP and LR are placed in the linkage record.  */
       cfun->machine->frame.reg_offset[R29_REGNUM] = 0;
+      cfun->machine->frame.wb_candidate1 = R29_REGNUM;
       cfun->machine->frame.reg_offset[R30_REGNUM] = UNITS_PER_WORD;
+      cfun->machine->frame.wb_candidate2 = R30_REGNUM;
       cfun->machine->frame.hardfp_offset = 2 * UNITS_PER_WORD;
       offset += 2 * UNITS_PER_WORD;
     }
@@ -1856,6 +1861,10 @@ aarch64_layout_frame (void)
     if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	cfun->machine->frame.reg_offset[regno] = offset;
+	if (cfun->machine->frame.wb_candidate1 == FIRST_PSEUDO_REGISTER)
+	  cfun->machine->frame.wb_candidate1 = regno;
+	else if (cfun->machine->frame.wb_candidate2 == FIRST_PSEUDO_REGISTER)
+	  cfun->machine->frame.wb_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
 
@@ -1863,6 +1872,11 @@ aarch64_layout_frame (void)
     if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
       {
 	cfun->machine->frame.reg_offset[regno] = offset;
+	if (cfun->machine->frame.wb_candidate1 == FIRST_PSEUDO_REGISTER)
+	  cfun->machine->frame.wb_candidate1 = regno;
+	else if (cfun->machine->frame.wb_candidate2 == FIRST_PSEUDO_REGISTER
+		 && cfun->machine->frame.wb_candidate1 >= V0_REGNUM)
+	  cfun->machine->frame.wb_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
 
