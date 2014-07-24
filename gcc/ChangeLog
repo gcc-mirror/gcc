@@ -1,3 +1,7 @@
+2014-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/elf.h: Define TARGET_UNWIND_TABLES_DEFAULT.
+
 2014-07-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtl.h (target_rtl): Remove lang_dependent_initialized.
