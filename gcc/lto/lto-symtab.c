@@ -59,13 +59,13 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 
   /* Merge node flags.  */
   if (node->force_output)
-    cgraph_mark_force_output_node (prevailing_node);
+    prevailing_node->mark_force_output ();
   if (node->forced_by_abi)
     prevailing_node->forced_by_abi = true;
   if (node->address_taken)
     {
       gcc_assert (!prevailing_node->global.inlined_to);
-      cgraph_mark_address_taken_node (prevailing_node);
+      prevailing_node->mark_address_taken ();
     }
 
   /* Redirect all incoming edges.  */
@@ -90,10 +90,10 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   lto_free_function_in_decl_state_for_node (node);
 
   if (node->decl != prevailing_node->decl)
-    cgraph_release_function_body (node);
+    node->release_body ();
 
   /* Finally remove the replaced node.  */
-  cgraph_remove_node (node);
+  node->remove ();
 }
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
@@ -126,7 +126,7 @@ lto_varpool_replace_node (varpool_node *vnode,
 	      tls_model_names [prevailing_node->tls_model]);
     }
   /* Finally remove the replaced node.  */
-  varpool_remove_node (vnode);
+  vnode->remove ();
 }
 
 /* Merge two variable or function symbol table entries PREVAILING and ENTRY.
@@ -261,7 +261,7 @@ lto_symtab_symbol_p (symtab_node *e)
 {
   if (!TREE_PUBLIC (e->decl) && !DECL_EXTERNAL (e->decl))
     return false;
-  return symtab_real_symbol_p (e);
+  return e->real_symbol_p ();
 }
 
 /* Return true if the symtab entry E can be the prevailing one.  */
@@ -445,7 +445,7 @@ lto_symtab_merge_decls_1 (symtab_node *first)
 	       first->asm_name ());
       for (e = first; e; e = e->next_sharing_asm_name)
 	if (TREE_PUBLIC (e->decl))
-	  dump_symtab_node (cgraph_dump_file, e);
+	  e->dump (cgraph_dump_file);
     }
 
   /* Compute the symbol resolutions.  This is a no-op when using the
@@ -539,7 +539,7 @@ lto_symtab_merge_decls_1 (symtab_node *first)
     {
       fprintf (cgraph_dump_file, "After resolution:\n");
       for (e = prevailing; e; e = e->next_sharing_asm_name)
-	dump_symtab_node (cgraph_dump_file, e);
+	e->dump (cgraph_dump_file);
     }
 }
 
@@ -577,9 +577,9 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
 	continue;
       cgraph_node *ce = dyn_cast <cgraph_node *> (e);
       if (ce && !DECL_BUILT_IN (e->decl))
-	lto_cgraph_replace_node (ce, cgraph (prevailing));
+	lto_cgraph_replace_node (ce, dyn_cast<cgraph_node *> (prevailing));
       if (varpool_node *ve = dyn_cast <varpool_node *> (e))
-	lto_varpool_replace_node (ve, varpool (prevailing));
+	lto_varpool_replace_node (ve, dyn_cast<varpool_node *> (prevailing));
     }
 
   return;
@@ -620,7 +620,7 @@ lto_symtab_merge_symbols (void)
 	      symtab_node *tgt = symtab_node_for_asm (node->alias_target);
 	      gcc_assert (node->weakref);
 	      if (tgt)
-		symtab_resolve_alias (node, tgt);
+		node->resolve_alias (tgt);
 	    }
 	  node->aux = NULL;
 
@@ -632,7 +632,7 @@ lto_symtab_merge_symbols (void)
 		 possible that tree merging unified the declaration.  We
 		 do not want duplicate entries in symbol table.  */
 	      if (cnode && DECL_BUILT_IN (node->decl)
-		  && (cnode2 = cgraph_get_node (node->decl))
+		  && (cnode2 = cgraph_node::get (node->decl))
 		  && cnode2 != cnode)
 		lto_cgraph_replace_node (cnode2, cnode);
 
@@ -641,7 +641,7 @@ lto_symtab_merge_symbols (void)
 		 nodes if tree merging occured.  */
 	      if ((vnode = dyn_cast <varpool_node *> (node))
 		  && DECL_HARD_REGISTER (vnode->decl)
-		  && (node2 = symtab_get_node (vnode->decl))
+		  && (node2 = symtab_node::get (vnode->decl))
 		  && node2 != node)
 		lto_varpool_replace_node (dyn_cast <varpool_node *> (node2),
 					  vnode);
@@ -650,9 +650,9 @@ lto_symtab_merge_symbols (void)
 	      /* Abstract functions may have duplicated cgraph nodes attached;
 		 remove them.  */
 	      else if (cnode && DECL_ABSTRACT (cnode->decl)
-		       && (cnode2 = cgraph_get_node (node->decl))
+		       && (cnode2 = cgraph_node::get (node->decl))
 		       && cnode2 != cnode)
-		cgraph_remove_node (cnode2);
+		cnode2->remove ();
 
 	      node->decl->decl_with_vis.symtab_node = node;
 	    }

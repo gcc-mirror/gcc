@@ -2318,8 +2318,8 @@ write_symbol (struct streamer_tree_cache_d *cache,
       gcc_assert (alias || TREE_CODE (t) != VAR_DECL
 		  || varpool_get_node (t)->definition);
       gcc_assert (alias || TREE_CODE (t) != FUNCTION_DECL
-		  || (cgraph_get_node (t)
-		      && cgraph_get_node (t)->definition));
+		  || (cgraph_node::get (t)
+		      && cgraph_node::get (t)->definition));
     }
 
   /* Imitate what default_elf_asm_output_external do.
@@ -2377,7 +2377,7 @@ bool
 output_symbol_p (symtab_node *node)
 {
   struct cgraph_node *cnode;
-  if (!symtab_real_symbol_p (node))
+  if (!node->real_symbol_p ())
     return false;
   /* We keep external functions in symtab for sake of inlining
      and devirtualization.  We do not want to see them in symbol table as

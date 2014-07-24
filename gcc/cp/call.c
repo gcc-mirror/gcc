@@ -6848,13 +6848,13 @@ mark_versions_used (tree fn)
 
   gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
 
-  node = cgraph_get_node (fn);
+  node = cgraph_node::get (fn);
   if (node == NULL)
     return;
 
   gcc_assert (node->dispatcher_function);
 
-  node_v = get_cgraph_node_version (node);
+  node_v = node->function_version ();
   if (node_v == NULL)
     return;
 

@@ -2586,9 +2586,9 @@ duplicate_decls (tree newdecl, tree olddecl)
   if (TREE_CODE (newdecl) == FUNCTION_DECL
       || TREE_CODE (newdecl) == VAR_DECL)
     {
-      struct symtab_node *snode = symtab_get_node (newdecl);
+      struct symtab_node *snode = symtab_node::get (newdecl);
       if (snode)
-	symtab_remove_node (snode);
+	snode->remove ();
     }
   ggc_free (newdecl);
   return true;
@@ -8699,7 +8699,7 @@ finish_function (void)
 	     This should be cleaned up later and this conditional removed.  */
 	  if (cgraph_global_info_ready)
 	    {
-	      cgraph_add_new_function (fndecl, false);
+	      cgraph_node::add_new_function (fndecl, false);
 	      return;
 	    }
 	  cgraph_finalize_function (fndecl, false);
@@ -8709,7 +8709,7 @@ finish_function (void)
 	  /* Register this function with cgraph just far enough to get it
 	    added to our parent's nested function list.  Handy, since the
 	    C front end doesn't have such a list.  */
-	  (void) cgraph_get_create_node (fndecl);
+	  (void) cgraph_node::get_create (fndecl);
 	}
     }
 

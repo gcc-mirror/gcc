@@ -15371,7 +15371,7 @@ reference_to_unused (tree * tp, int * walk_subtrees,
          optimizing and gimplifying the CU by now.
 	 So if *TP has no call graph node associated
 	 to it, it means *TP will not be emitted.  */
-      if (!cgraph_get_node (*tp))
+      if (!cgraph_node::get (*tp))
 	return *tp;
     }
   else if (TREE_CODE (*tp) == STRING_CST && !TREE_ASM_WRITTEN (*tp))

@@ -113,7 +113,7 @@ static const struct predictor_info predictor_info[]= {
 static inline bool
 maybe_hot_frequency_p (struct function *fun, int freq)
 {
-  struct cgraph_node *node = cgraph_get_node (fun->decl);
+  struct cgraph_node *node = cgraph_node::get (fun->decl);
   if (!profile_info || !flag_branch_probabilities)
     {
       if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
@@ -275,7 +275,7 @@ probably_never_executed (struct function *fun,
       return true;
     }
   if ((!profile_info || !flag_branch_probabilities)
-      && (cgraph_get_node (fun->decl)->frequency
+      && (cgraph_node::get (fun->decl)->frequency
 	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return true;
   return false;
@@ -299,14 +299,14 @@ probably_never_executed_edge_p (struct function *fun, edge e)
   return probably_never_executed (fun, e->count, EDGE_FREQUENCY (e));
 }
 
-/* Return true if NODE should be optimized for size.  */
+/* Return true if function should be optimized for size.  */
 
 bool
-cgraph_optimize_for_size_p (struct cgraph_node *node)
+cgraph_node::optimize_for_size_p (void)
 {
   if (optimize_size)
     return true;
-  if (node && (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
+  if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return true;
   else
     return false;
@@ -321,7 +321,9 @@ optimize_function_for_size_p (struct function *fun)
     return true;
   if (!fun || !fun->decl)
     return false;
-  return cgraph_optimize_for_size_p (cgraph_get_node (fun->decl));
+
+  cgraph_node *n = cgraph_node::get (fun->decl);
+  return n && n->optimize_for_size_p ();
 }
 
 /* Return true when current function should always be optimized for speed.  */
@@ -2983,7 +2985,7 @@ void
 compute_function_frequency (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
   if (DECL_STATIC_CONSTRUCTOR (current_function_decl)
       || MAIN_NAME_P (DECL_NAME (current_function_decl)))

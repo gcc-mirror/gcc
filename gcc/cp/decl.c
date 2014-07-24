@@ -1072,7 +1072,7 @@ decls_match (tree newdecl, tree olddecl)
 	      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
 	       mangle_decl (olddecl);
 	    }
-	  record_function_versions (olddecl, newdecl);
+	  cgraph_node::record_function_versions (olddecl, newdecl);
 	  return 0;
 	}
     }
@@ -2074,10 +2074,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     {
       struct symtab_node *symbol;
       if (TREE_CODE (olddecl) == FUNCTION_DECL)
-	symbol = cgraph_get_create_node (newdecl);
+	symbol = cgraph_node::get_create (newdecl);
       else
 	symbol = varpool_node_for_decl (newdecl);
-      symbol->set_comdat_group (symtab_get_node (olddecl)->get_comdat_group ());
+      symbol->set_comdat_group (symtab_node::get
+	(olddecl)->get_comdat_group ());
     }
 
   DECL_DEFER_OUTPUT (newdecl) |= DECL_DEFER_OUTPUT (olddecl);
@@ -2382,13 +2383,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       DECL_FUNCTION_VERSIONED (newdecl) = 1;
       /* newdecl will be purged after copying to olddecl and is no longer
          a version.  */
-      delete_function_version (newdecl);
+      cgraph_node::delete_function_version (newdecl);
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       int function_size;
-      struct symtab_node *snode = symtab_get_node (olddecl);
+      struct symtab_node *snode = symtab_node::get (olddecl);
 
       function_size = sizeof (struct tree_decl_common);
 
@@ -2450,7 +2451,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
             if (TREE_CODE (olddecl) == VAR_DECL
 		&& (TREE_STATIC (olddecl) || TREE_PUBLIC (olddecl) || DECL_EXTERNAL (olddecl)))
-	      snode = symtab_get_node (olddecl);
+	      snode = symtab_node::get (olddecl);
 	    memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
 		    (char *) newdecl + sizeof (struct tree_decl_common),
 		    size - sizeof (struct tree_decl_common)
@@ -2502,9 +2503,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   if (TREE_CODE (newdecl) == FUNCTION_DECL
       || TREE_CODE (newdecl) == VAR_DECL)
     {
-      struct symtab_node *snode = symtab_get_node (newdecl);
+      struct symtab_node *snode = symtab_node::get (newdecl);
       if (snode)
-	symtab_remove_node (snode);
+	snode->remove ();
     }
   ggc_free (newdecl);
 

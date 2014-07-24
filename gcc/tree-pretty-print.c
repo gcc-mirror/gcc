@@ -3456,7 +3456,7 @@ void
 dump_function_header (FILE *dump_file, tree fdecl, int flags)
 {
   const char *dname, *aname;
-  struct cgraph_node *node = cgraph_get_node (fdecl);
+  struct cgraph_node *node = cgraph_node::get (fdecl);
   struct function *fun = DECL_STRUCT_FUNCTION (fdecl);
 
   dname = lang_hooks.decl_printable_name (fdecl, 2);

@@ -191,7 +191,7 @@ cdtor_comdat_group (tree complete, tree base)
 	diff_seen = true;
       }
   grp_name[idx] = '\0';
-  gcc_assert (diff_seen || symtab_get_node (complete)->alias);
+  gcc_assert (diff_seen || symtab_node::get (complete)->alias);
   return get_identifier (grp_name);
 }
 
@@ -287,16 +287,16 @@ maybe_thunk_body (tree fn, bool force)
   else if (HAVE_COMDAT_GROUP)
     {
       tree comdat_group = cdtor_comdat_group (fns[1], fns[0]);
-      cgraph_get_create_node (fns[0])->set_comdat_group (comdat_group);
-      symtab_add_to_same_comdat_group (cgraph_get_create_node (fns[1]),
-				       cgraph_get_create_node (fns[0]));
-      symtab_add_to_same_comdat_group (symtab_get_node (fn),
-				       symtab_get_node (fns[0]));
+      cgraph_node::get_create (fns[0])->set_comdat_group (comdat_group);
+      cgraph_node::get_create (fns[1])->add_to_same_comdat_group
+	(cgraph_node::get_create (fns[0]));
+      symtab_node::get (fn)->add_to_same_comdat_group
+	(symtab_node::get (fns[0]));
       if (fns[2])
 	/* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
 	   virtual, it goes into the same comdat group as well.  */
-	symtab_add_to_same_comdat_group (cgraph_get_create_node (fns[2]),
-					 symtab_get_node (fns[0]));
+	cgraph_node::get_create (fns[2])->add_to_same_comdat_group
+	  (symtab_node::get (fns[0]));
       TREE_PUBLIC (fn) = false;
       DECL_EXTERNAL (fn) = false;
       DECL_INTERFACE_KNOWN (fn) = true;
@@ -475,7 +475,7 @@ maybe_clone_body (tree fn)
 	 name of fn was corrupted by write_mangled_name by adding *INTERNAL*
 	 to it. By doing so, it also corrupted the comdat group. */
       if (DECL_ONE_ONLY (fn))
-	cgraph_get_create_node (clone)->set_comdat_group (cxx_comdat_group (clone));
+	cgraph_node::get_create (clone)->set_comdat_group (cxx_comdat_group (clone));
       DECL_USE_TEMPLATE (clone) = DECL_USE_TEMPLATE (fn);
       DECL_EXTERNAL (clone) = DECL_EXTERNAL (fn);
       DECL_INTERFACE_KNOWN (clone) = DECL_INTERFACE_KNOWN (fn);
@@ -542,8 +542,8 @@ maybe_clone_body (tree fn)
       if (can_alias
 	  && fns[0]
 	  && idx == 1
-	  && cgraph_same_body_alias (cgraph_get_create_node (fns[0]),
-				     clone, fns[0]))
+	  && cgraph_node::get_create (fns[0])->create_same_body_alias
+	       (clone, fns[0]))
 	{
 	  alias = true;
 	  if (DECL_ONE_ONLY (fns[0]))
@@ -552,11 +552,11 @@ maybe_clone_body (tree fn)
 		 into the same, *[CD]5* comdat group instead of
 		 *[CD][12]*.  */
 	      comdat_group = cdtor_comdat_group (fns[1], fns[0]);
-	      cgraph_get_create_node (fns[0])->set_comdat_group (comdat_group);
-	      if (symtab_get_node (clone)->same_comdat_group)
-		symtab_remove_from_same_comdat_group (symtab_get_node (clone));
-	      symtab_add_to_same_comdat_group (symtab_get_node (clone),
-					       symtab_get_node (fns[0]));
+	      cgraph_node::get_create (fns[0])->set_comdat_group (comdat_group);
+	      if (symtab_node::get (clone)->same_comdat_group)
+		symtab_node::get (clone)->remove_from_same_comdat_group ();
+	      symtab_node::get (clone)->add_to_same_comdat_group
+		(symtab_node::get (fns[0]));
 	    }
 	}
 
@@ -568,9 +568,8 @@ maybe_clone_body (tree fn)
 	  /* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
 	     virtual, it goes into the same comdat group as well.  */
 	  if (comdat_group)
-	    symtab_add_to_same_comdat_group
-	       (cgraph_get_create_node (clone),
-	        symtab_get_node (fns[0]));
+	    cgraph_node::get_create (clone)->add_to_same_comdat_group
+	      (symtab_node::get (fns[0]));
 	}
       else if (alias)
 	/* No need to populate body.  */ ;

@@ -8449,11 +8449,11 @@ execute_fixup_cfg (void)
   edge_iterator ei;
 
   count_scale
-      = GCOV_COMPUTE_SCALE (cgraph_get_node (current_function_decl)->count,
+      = GCOV_COMPUTE_SCALE (cgraph_node::get (current_function_decl)->count,
 			    ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
 
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
-			    cgraph_get_node (current_function_decl)->count;
+			    cgraph_node::get (current_function_decl)->count;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
 			    apply_scale (EXIT_BLOCK_PTR_FOR_FN (cfun)->count,
                                        count_scale);

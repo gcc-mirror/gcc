@@ -427,12 +427,12 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 void
 gimple_gen_ic_func_profiler (void)
 {
-  struct cgraph_node * c_node = cgraph_get_node (current_function_decl);
+  struct cgraph_node * c_node = cgraph_node::get (current_function_decl);
   gimple_stmt_iterator gsi;
   gimple stmt1, stmt2;
   tree tree_uid, cur_func, void0;
 
-  if (cgraph_only_called_directly_p (c_node))
+  if (c_node->only_called_directly_p ())
     return;
 
   gimple_init_edge_profiler ();
@@ -451,7 +451,7 @@ gimple_gen_ic_func_profiler (void)
 				       true, NULL_TREE,
 				       true, GSI_SAME_STMT);
   tree_uid = build_int_cst
-	      (gcov_type_node, cgraph_get_node (current_function_decl)->profile_id);
+	      (gcov_type_node, cgraph_node::get (current_function_decl)->profile_id);
   /* Workaround for binutils bug 14342.  Once it is fixed, remove lto path.  */
   if (flag_lto)
     {
@@ -615,8 +615,8 @@ tree_profiling (void)
       if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
 	continue;
 
-      cgraph_set_const_flag (node, false, false);
-      cgraph_set_pure_flag (node, false, false);
+      node->set_const_flag (false, false);
+      node->set_pure_flag (false, false);
     }
 
   /* Update call statements and rebuild the cgraph.  */

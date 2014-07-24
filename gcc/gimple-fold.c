@@ -99,7 +99,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 	 static objects are defined.  */
       if (cgraph_function_flags_ready)
 	return true;
-      snode = symtab_get_node (decl);
+      snode = symtab_node::get (decl);
       if (!snode || !snode->definition)
 	return false;
       node = dyn_cast <cgraph_node *> (snode);
@@ -124,7 +124,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   if (DECL_VISIBILITY_SPECIFIED (decl)
       && DECL_EXTERNAL (decl)
       && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT
-      && (!(snode = symtab_get_node (decl)) || !snode->in_other_partition))
+      && (!(snode = symtab_node::get (decl)) || !snode->in_other_partition))
     return false;
   /* When function is public, we always can introduce new reference.
      Exception are the COMDAT functions where introducing a direct
@@ -145,7 +145,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   if (!cgraph_function_flags_ready)
     return true;
 
-  snode = symtab_get_node (decl);
+  snode = symtab_node::get (decl);
   if (!snode
       || ((!snode->definition || DECL_EXTERNAL (decl))
 	  && (!snode->in_other_partition
@@ -201,7 +201,7 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 	  /* Make sure we create a cgraph node for functions we'll reference.
 	     They can be non-existent if the reference comes from an entry
 	     of an external vtable for example.  */
-	  cgraph_get_create_node (base);
+	  cgraph_node::get_create (base);
 	}
       /* Fixup types in global initializers.  */
       if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
@@ -1107,8 +1107,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	{
           if (dump_file && virtual_method_call_p (callee)
 	      && !possible_polymorphic_call_target_p
-		    (callee, cgraph_get_node (gimple_call_addr_fndecl
-                                                 (OBJ_TYPE_REF_EXPR (callee)))))
+		    (callee, cgraph_node::get (gimple_call_addr_fndecl
+					       (OBJ_TYPE_REF_EXPR (callee)))))
 	    {
 	      fprintf (dump_file,
 		       "Type inheritance inconsistent devirtualization of ");
@@ -3354,7 +3354,7 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   /* Make sure we create a cgraph node for functions we'll reference.
      They can be non-existent if the reference comes from an entry
      of an external vtable for example.  */
-  cgraph_get_create_node (fn);
+  cgraph_node::get_create (fn);
 
   return fn;
 }

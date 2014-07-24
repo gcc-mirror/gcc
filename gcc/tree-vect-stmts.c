@@ -2643,7 +2643,7 @@ vectorizable_simd_clone_call (gimple stmt, gimple_stmt_iterator *gsi,
   if (fndecl == NULL_TREE)
     return false;
 
-  struct cgraph_node *node = cgraph_get_node (fndecl);
+  struct cgraph_node *node = cgraph_node::get (fndecl);
   if (node == NULL || node->simd_clones == NULL)
     return false;
 
@@ -2726,7 +2726,7 @@ vectorizable_simd_clone_call (gimple stmt, gimple_stmt_iterator *gsi,
   unsigned int badness = 0;
   struct cgraph_node *bestn = NULL;
   if (STMT_VINFO_SIMD_CLONE_FNDECL (stmt_info))
-    bestn = cgraph_get_node (STMT_VINFO_SIMD_CLONE_FNDECL (stmt_info));
+    bestn = cgraph_node::get (STMT_VINFO_SIMD_CLONE_FNDECL (stmt_info));
   else
     for (struct cgraph_node *n = node->simd_clones; n != NULL;
 	 n = n->simdclone->next_clone)

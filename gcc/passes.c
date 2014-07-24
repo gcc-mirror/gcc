@@ -1080,7 +1080,7 @@ is_pass_explicitly_enabled_or_disabled (opt_pass *pass,
   if (!slot)
     return false;
 
-  cgraph_uid = func ? cgraph_get_node (func)->uid : 0;
+  cgraph_uid = func ? cgraph_node::get (func)->uid : 0;
   if (func && DECL_ASSEMBLER_NAME_SET_P (func))
     aname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func));
 
@@ -1488,7 +1488,7 @@ do_per_function (void (*callback) (function *, void *data), void *data)
    keep the array visible to garbage collector to avoid reading collected
    out nodes.  */
 static int nnodes;
-static GTY ((length ("nnodes"))) cgraph_node_ptr *order;
+static GTY ((length ("nnodes"))) cgraph_node **order;
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
@@ -1504,7 +1504,7 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
   else
     {
       gcc_assert (!order);
-      order = ggc_vec_alloc<cgraph_node_ptr> (cgraph_n_nodes);
+      order = ggc_vec_alloc<cgraph_node *> (cgraph_n_nodes);
       nnodes = ipa_reverse_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
         order[i]->process = 1;
@@ -1515,7 +1515,7 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
 	  /* Allow possibly removed nodes to be garbage collected.  */
 	  order[i] = NULL;
 	  node->process = 0;
-	  if (cgraph_function_with_gimple_body_p (node))
+	  if (node->has_gimple_body_p ())
 	    callback (DECL_STRUCT_FUNCTION (node->decl), data);
 	}
     }
@@ -1818,7 +1818,7 @@ execute_todo (unsigned int flags)
   if ((flags & TODO_dump_symtab) && dump_file && !current_function_decl)
     {
       gcc_assert (!cfun);
-      dump_symtab (dump_file);
+      symtab_node::dump_table (dump_file);
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
       fflush (dump_file);
@@ -2015,7 +2015,7 @@ execute_all_ipa_transforms (void)
   struct cgraph_node *node;
   if (!cfun)
     return;
-  node = cgraph_get_node (current_function_decl);
+  node = cgraph_node::get (current_function_decl);
 
   if (node->ipa_transforms_to_apply.exists ())
     {
@@ -2102,13 +2102,13 @@ execute_one_pass (opt_pass *pass)
       bool applied = false;
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->analyzed
-	    && cgraph_function_with_gimple_body_p (node)
+	    && node->has_gimple_body_p ()
 	    && (!node->clone_of || node->decl != node->clone_of->decl))
 	  {
 	    if (!node->global.inlined_to
 		&& node->ipa_transforms_to_apply.exists ())
 	      {
-		cgraph_get_body (node);
+		node->get_body ();
 		push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 		execute_all_ipa_transforms ();
 		rebuild_cgraph_edges ();
@@ -2320,7 +2320,7 @@ ipa_write_summaries (void)
     {
       struct cgraph_node *node = order[i];
 
-      if (cgraph_function_with_gimple_body_p (node))
+      if (node->has_gimple_body_p ())
 	{
 	  /* When streaming out references to statements as part of some IPA
 	     pass summary, the statements need to have uids assigned and the
@@ -2648,13 +2648,13 @@ bool
 function_called_by_processed_nodes_p (void)
 {
   struct cgraph_edge *e;
-  for (e = cgraph_get_node (current_function_decl)->callers;
+  for (e = cgraph_node::get (current_function_decl)->callers;
        e;
        e = e->next_caller)
     {
       if (e->caller->decl == current_function_decl)
         continue;
-      if (!cgraph_function_with_gimple_body_p (e->caller))
+      if (!e->caller->has_gimple_body_p ())
         continue;
       if (TREE_ASM_WRITTEN (e->caller->decl))
         continue;
@@ -2664,7 +2664,7 @@ function_called_by_processed_nodes_p (void)
   if (dump_file && e)
     {
       fprintf (dump_file, "Already processed call to:\n");
-      dump_cgraph_node (dump_file, e->caller);
+      e->caller->dump (dump_file);
     }
   return e != NULL;
 }

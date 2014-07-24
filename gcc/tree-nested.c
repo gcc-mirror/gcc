@@ -706,7 +706,7 @@ walk_all_functions (walk_stmt_fn callback_stmt, walk_tree_fn callback_op,
 static bool
 check_for_nested_with_variably_modified (tree fndecl, tree orig_fndecl)
 {
-  struct cgraph_node *cgn = cgraph_get_node (fndecl);
+  struct cgraph_node *cgn = cgraph_node::get (fndecl);
   tree arg;
 
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
@@ -2901,13 +2901,13 @@ finalize_nesting_tree (struct nesting_info *root)
 static void
 unnest_nesting_tree_1 (struct nesting_info *root)
 {
-  struct cgraph_node *node = cgraph_get_node (root->context);
+  struct cgraph_node *node = cgraph_node::get (root->context);
 
   /* For nested functions update the cgraph to reflect unnesting.
      We also delay finalizing of these functions up to this point.  */
   if (node->origin)
     {
-       cgraph_unnest_node (node);
+       node->unnest ();
        cgraph_finalize_function (root->context, true);
     }
 }
@@ -2961,7 +2961,7 @@ lower_nested_functions (tree fndecl)
   struct nesting_info *root;
 
   /* If there are no nested functions, there's nothing to do.  */
-  cgn = cgraph_get_node (fndecl);
+  cgn = cgraph_node::get (fndecl);
   if (!cgn->nested)
     return;
 
