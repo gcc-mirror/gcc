@@ -1930,6 +1930,22 @@ aarch64_next_callee_save (unsigned regno, unsigned limit)
   return regno;
 }
 
+static void
+aarch64_pushwb_single_reg (enum machine_mode mode, unsigned regno,
+			   HOST_WIDE_INT adjustment)
+ {
+  rtx base_rtx = stack_pointer_rtx;
+  rtx insn, reg, mem;
+
+  reg = gen_rtx_REG (mode, regno);
+  mem = gen_rtx_PRE_MODIFY (Pmode, base_rtx,
+			    plus_constant (Pmode, base_rtx, -adjustment));
+  mem = gen_rtx_MEM (mode, mem);
+
+  insn = emit_move_insn (mem, reg);
+  RTX_FRAME_RELATED_P (insn) = 1;
+}
+
 static rtx
 aarch64_gen_storewb_pair (enum machine_mode mode, rtx base, rtx reg, rtx reg2,
 			  HOST_WIDE_INT adjustment)
@@ -2279,11 +2295,10 @@ aarch64_expand_prologue (void)
     {
       bool skip_wb = false;
 
-      /* Save the frame pointer and lr if the frame pointer is needed
-	 first.  Make the frame pointer point to the location of the
-	 old frame pointer on the stack.  */
       if (frame_pointer_needed)
 	{
+	  skip_wb = true;
+
 	  if (fp_offset)
 	    {
 	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
@@ -2291,12 +2306,11 @@ aarch64_expand_prologue (void)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      aarch64_set_frame_expr (gen_rtx_SET
 				      (Pmode, stack_pointer_rtx,
-				       gen_rtx_MINUS (Pmode,
-						      stack_pointer_rtx,
+				       gen_rtx_MINUS (Pmode, stack_pointer_rtx,
 						      GEN_INT (offset))));
 
 	      aarch64_save_callee_saves (DImode, fp_offset, R29_REGNUM,
-					 R30_REGNUM, skip_wb);
+					 R30_REGNUM, false);
 	    }
 	  else
 	    aarch64_pushwb_pair_reg (DImode, R29_REGNUM, R30_REGNUM, offset);
@@ -2314,20 +2328,36 @@ aarch64_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  insn = emit_insn (gen_stack_tie (stack_pointer_rtx,
 					   hard_frame_pointer_rtx));
-
-	  aarch64_save_callee_saves (DImode, fp_offset, R0_REGNUM, R28_REGNUM,
-				     skip_wb);
 	}
       else
 	{
-	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
-					   GEN_INT (-offset)));
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	  unsigned reg1 = cfun->machine->frame.wb_candidate1;
+	  unsigned reg2 = cfun->machine->frame.wb_candidate2;
 
-	  aarch64_save_callee_saves (DImode, fp_offset, R0_REGNUM, R30_REGNUM,
-				     skip_wb);
+	  if (fp_offset
+	      || reg1 == FIRST_PSEUDO_REGISTER
+	      || (reg2 == FIRST_PSEUDO_REGISTER
+		  && offset >= 256))
+	    {
+	      insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
+					       GEN_INT (-offset)));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+	  else
+	    {
+	      enum machine_mode mode1 = (reg1 <= R30_REGNUM) ? DImode : DFmode;
+
+	      skip_wb = true;
+
+	      if (reg2 == FIRST_PSEUDO_REGISTER)
+		aarch64_pushwb_single_reg (mode1, reg1, offset);
+	      else
+		aarch64_pushwb_pair_reg (mode1, reg1, reg2, offset);
+	    }
 	}
 
+      aarch64_save_callee_saves (DImode, fp_offset, R0_REGNUM, R30_REGNUM,
+				 skip_wb);
       aarch64_save_callee_saves (DFmode, fp_offset, V0_REGNUM, V31_REGNUM,
 				 skip_wb);
     }
