@@ -204,7 +204,8 @@ ipa_populate_param_decls (struct cgraph_node *node,
   for (parm = fnargs; parm; parm = DECL_CHAIN (parm))
     {
       descriptors[param_num].decl = parm;
-      descriptors[param_num].move_cost = estimate_move_cost (TREE_TYPE (parm));
+      descriptors[param_num].move_cost = estimate_move_cost (TREE_TYPE (parm),
+							     true);
       param_num++;
     }
 }

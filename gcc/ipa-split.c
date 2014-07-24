@@ -488,13 +488,14 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 			       SSA_NAME_VERSION (ddef)))
 	    {
 	      if (!VOID_TYPE_P (TREE_TYPE (parm)))
-		call_overhead += estimate_move_cost (TREE_TYPE (parm));
+		call_overhead += estimate_move_cost (TREE_TYPE (parm), false);
 	      num_args++;
 	    }
 	}
     }
   if (!VOID_TYPE_P (TREE_TYPE (current_function_decl)))
-    call_overhead += estimate_move_cost (TREE_TYPE (current_function_decl));
+    call_overhead += estimate_move_cost (TREE_TYPE (current_function_decl),
+					 false);
 
   if (current->split_size <= call_overhead)
     {

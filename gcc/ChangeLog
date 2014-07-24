@@ -1,3 +1,14 @@
+2014-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.h (estimate_move_cost): Add speed_p parameter.
+	* tree-inline.c (estimate_move_cost): Add speed_p parameter
+	and adjust MOVE_RATIO query accordingly.
+	(estimate_num_insns): Adjust callers.
+	* ipa-prop.c (ipa_populate_param_decls): Likewise.
+	* ipa-cp.c (gather_context_independent_values,
+	estimate_local_effects): Likewise.
+	* ipa-split.c (consider_split): Likewise.
+
 2014-07-24  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* config/i386/driver-i386.c: Remove names of unused arguments and
