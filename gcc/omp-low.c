@@ -341,6 +341,7 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	    collapse_iter = &OMP_CLAUSE_COLLAPSE_ITERVAR (t);
 	    collapse_count = &OMP_CLAUSE_COLLAPSE_COUNT (t);
 	  }
+	break;
       default:
 	break;
       }
