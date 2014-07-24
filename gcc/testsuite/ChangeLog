@@ -1,5 +1,14 @@
 2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* gcc.target/powerpc/ppc64-abi-warn-3.c: New test.
+
+	* gcc.c-torture/execute/20050316-1.x: Add -Wno-psabi.
+	* gcc.c-torture/execute/20050604-1.x: Add -Wno-psabi.
+	* gcc.c-torture/execute/20050316-3.x: New file.  Add -Wno-psabi.
+	* gcc.c-torture/execute/pr23135.x: Likewise.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* gcc.target/powerpc/ppc64-abi-warn-2.c: New test.
 
 2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
