@@ -43,4 +43,6 @@
     }						\
   while (0)
 
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
 #endif  /* GCC_AARCH64_LINUX_H */
