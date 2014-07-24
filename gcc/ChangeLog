@@ -1,5 +1,11 @@
 2014-07-24  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_restore_callee_saves)
+	(aarch64_save_callee_saves): New parameter "skip_wb".
+	(aarch64_expand_prologue, aarch64_expand_epilogue): Update call site.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.h (frame): New fields "wb_candidate1" and
 	"wb_candidate2".
 	* config/aarch64/aarch64.c (aarch64_layout_frame): Initialize above.
