@@ -1,209 +1,209 @@
 2014-07-24  Martin Liska  <mliska@suse.cz>
 
-  * cgraph.h (varpool_node):
-  (availability get_availability (void)):
-    created from cgraph_variable_initializer_availability
-  (inline varpool_node *ultimate_alias_target (availability *availability = NULL)
-    creted from: cgraph_variable_initializer_availability
-  (inline varpool_node *get_alias_target (void)): created from varpool_alias_target
-  (void finalize_named_section_flags (void)):
-    created from varpool_finalize_named_section_flags
-  (bool assemble_decl (void)): created from varpool_assemble_decl
-  (void analyze (void)): created from varpool_analyze_node
-  (bool call_for_node_and_aliases (bool (*callback) (varpool_node *, void *),
-    void *data, bool include_overwritable)): created fromvarpool_for_node_and_aliases
-  (void remove_initializer (void)): created from varpool_remove_initializer
-  (tree get_constructor (void)): created from varpool_get_constructor
-  (bool externally_visible_p (void)): created from varpool_externally_visible_p
-  (bool ctor_useable_for_folding_p (void)): created from varpool_ctor_useable_for_folding_p
-  (inline bool all_refs_explicit_p ()): created from varpool_all_refs_explicit_p
-  (inline bool can_remove_if_no_refs_p (void)): created from varpool_can_remove_if_no_refs
-  (static inline varpool_node *get (const_tree decl)): created from varpool_get_node
-  (static void finalize_decl (tree decl)): created from varpool_finalize_decl
-  (static bool output_variables (void)): created from varpool_output_variables
-  (static varpool_node * create_extra_name_alias (tree alias, tree decl)):
-    created from varpool_extra_name_alias
-  (static varpool_node * create_alias (tree, tree)): created from varpool_create_variable_alias
-  (static void dump_varpool (FILE *f)): created from dump_varpool
-  (static void DEBUG_FUNCTION debug_varpool (void)): created from debug_varpool
-  (static varpool_node *create_empty (void)): created from varpool_create_empty_node
-  (static varpool_node *get_create (tree decl)): created from varpool_node_for_decl
-  (static varpool_node *get_for_asmname (tree asmname)): created from varpool_node_for_asm
-  (void assemble_aliases (void)): created from assemble_aliases
+	* cgraph.h (varpool_node):
+	(availability get_availability (void)):
+	created from cgraph_variable_initializer_availability
+	(inline varpool_node *ultimate_alias_target (availability *availability = NULL)
+	created from: cgraph_variable_initializer_availability
+	(inline varpool_node *get_alias_target (void)): created from varpool_alias_target
+	(void finalize_named_section_flags (void)):
+	created from varpool_finalize_named_section_flags
+	(bool assemble_decl (void)): created from varpool_assemble_decl
+	(void analyze (void)): created from varpool_analyze_node
+	(bool call_for_node_and_aliases (bool (*callback) (varpool_node *, void *),
+	void *data, bool include_overwritable)): created fromvarpool_for_node_and_aliases
+	(void remove_initializer (void)): created from varpool_remove_initializer
+	(tree get_constructor (void)): created from varpool_get_constructor
+	(bool externally_visible_p (void)): created from varpool_externally_visible_p
+	(bool ctor_useable_for_folding_p (void)): created from varpool_ctor_useable_for_folding_p
+	(inline bool all_refs_explicit_p ()): created from varpool_all_refs_explicit_p
+	(inline bool can_remove_if_no_refs_p (void)): created from varpool_can_remove_if_no_refs
+	(static inline varpool_node *get (const_tree decl)): created from varpool_get_node
+	(static void finalize_decl (tree decl)): created from varpool_finalize_decl
+	(static bool output_variables (void)): created from varpool_output_variables
+	(static varpool_node * create_extra_name_alias (tree alias, tree decl)):
+	created from varpool_extra_name_alias
+	(static varpool_node * create_alias (tree, tree)): created from varpool_create_variable_alias
+	(static void dump_varpool (FILE *f)): created from dump_varpool
+	(static void DEBUG_FUNCTION debug_varpool (void)): created from debug_varpool
+	(static varpool_node *create_empty (void)): created from varpool_create_empty_node
+	(static varpool_node *get_create (tree decl)): created from varpool_node_for_decl
+	(static varpool_node *get_for_asmname (tree asmname)): created from varpool_node_for_asm
+	(void assemble_aliases (void)): created from assemble_aliases
 
 2014-07-24  Martin Liska  <mliska@suse.cz>
 
-  * cgraph.h (symtab_node):
-  (void register_symbol (void)): created from symtab_register_node
-  (void remove (void)): created from symtab_remove_node
-  (void dump (FILE *f)): created from dump_symtab_node
-  (void DEBUG_FUNCTION debug (void)): created from debug_symtab_node
-  (void DEBUG_FUNCTION verify (void)): created from verify_symtab_node
-  (struct ipa_ref *add_reference (symtab_node *referred_node,
-    enum ipa_ref_use use_type)): created from add_reference 
-  (struct ipa_ref *add_reference (symtab_node *referred_node,
-    enum ipa_ref_use use_type, gimple stmt)): created from add_reference
-  (struct ipa_ref *maybe_add_reference (tree val, enum ipa_ref_use use_type,
-    gimple stmt)): created from maybe_add_reference
-  (bool semantically_equivalent_p (symtab_node *target)): created from
-    symtab_semantically_equivalent_p
-  (void remove_from_same_comdat_group (void)): created from
-    remove_from_same_comdat_group
-  (void add_to_same_comdat_group (symtab_node *old_node)): created from
-    symtab_add_to_same_comdat_group
-  (void dissolve_same_comdat_group_list (void)): created from
-    symtab_dissolve_same_comdat_group_list
-  (bool used_from_object_file_p (void)): created from symtab_used_from_object_file_p
-  (symtab_node *ultimate_alias_target (enum availability *avail = NULL)):
-    created from symtab_alias_ultimate_target
-  (inline symtab_node *next_defined_symbol (void)): created from
-    symtab_next_defined_symbol
-  (bool resolve_alias (symtab_node *target)): created from
-    symtab_resolve_alias
-  (bool call_for_symbol_and_aliases (bool (*callback) (symtab_node *, void *),
-    void *data, bool include_overwrite)): created from symtab_for_node_and_aliases
-  (symtab_node *noninterposable_alias (void)): created from symtab_nonoverwritable_alias
-  (inline symtab_node *get_alias_target (void)): created from symtab_alias_target
-  (void set_section (const char *section)): created from set_section_1 
-  (enum availability get_availability (void)): created from symtab_node_availability
-  (void make_decl_local (void)): created from symtab_make_decl_local
-  (bool real_symbol_p (void)): created from symtab_read_node
-  (can_be_discarded_p (void)): created from symtab_can_be_discarded
-  (inline bool comdat_local_p (void)): created from symtab_comdat_local_p
-  (inline bool in_same_comdat_group_p (symtab_node *target)): created from
-    symtab_in_same_comdat_p;
-  (bool address_taken_from_non_vtable_p (void)): created from
-    address_taken_from_non_vtable_p
-  (static inline symtab_node *get (const_tree decl)): created from symtab_get_node
-  (static void dump_table (FILE *)): created from dump_symtab
-  (static inline DEBUG_FUNCTION void debug_symtab (void)): created from debug_symtab
-  (static DEBUG_FUNCTION void verify_symtab_nodes (void)): created from verify_symtab
-  (static bool used_from_object_file_p_worker (symtab_node *node)): created from
-    symtab_used_from_object_file_p 
-  (void dump_base (FILE *)): created from dump_symtab_base
-  (bool DEBUG_FUNCTION verify_base (void)): created from verify_symtab_base
-  (void unregister (void)): created from symtab_unregister_node
-  (struct symbol_priority_map *priority_info (void)): created from symtab_priority_info
-  (static bool set_implicit_section (symtab_node *n, void *)): created from set_implicit_section
-  (static bool noninterposable_alias (symtab_node *node, void *data)): created from
-    symtab_nonoverwritable_alias_1
-  * cgraph.h (cgraph_node):
-  (bool remove_symbol_and_inline_clones (cgraph_node *forbidden_node = NULL)):
-    created from cgraph_remove_node_and_inline_clones
-  (void record_stmt_references (gimple stmt)): created from ipa_record_stmt_references
-  (void set_call_stmt_including_clones (gimple old_stmt, gimple new_stmt,
-    bool update_speculative = true)): created from cgraph_set_call_stmt_including_clones
-  (cgraph_node *function_symbol (enum availability *avail = NULL)):
-    created from cgraph_function_node
-  (cgraph_node *create_clone (tree decl, gcov_type count, int freq, bool update_original,
-    vec<cgraph_edge *> redirect_callers, bool call_duplication_hook,
-    struct cgraph_node *new_inlined_to, bitmap args_to_skip)):
-    created from cgraph_create_clone 
-  (cgraph_node *create_virtual_clone (vec<cgraph_edge *> redirect_callers,
-    vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip, const char * suffix)):
-    created from cgraph_create_virtual_clone
-  (cgraph_node *find_replacement (void)): created from cgraph_find_replacement_node
-  (cgraph_node *create_version_clone (tree new_decl, vec<cgraph_edge *> redirect_callers,
-    bitmap bbs_to_copy)): created from cgraph_copy_node_for_versioning
-  (cgraph_node *create_version_clone_with_body (vec<cgraph_edge *> redirect_callers,
-    vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip, bool skip_return,
-    bitmap bbs_to_copy, basic_block new_entry_block, const char *clone_name)):
-    created from cgraph_function_version_info
-  (struct cgraph_function_version_info *insert_new_function_version (void)):
-    created from insert_new_cgraph_node_version
-  (struct cgraph_function_version_info *function_version (void)): created from
-    get_cgraph_node_version
-  (void analyze (void)): created from analyze_function
-  (cgraph_node * create_thunk (tree alias, tree, bool this_adjusting,
-    HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value, tree virtual_offset,
-    tree real_alias) cgraph_add_thunk
-  (inline cgraph_node *get_alias_target (void)): created from cgraph_alias_target
-  (cgraph_node *ultimate_alias_target (availability *availability = NULL)):
-    created from cgraph_function_or_thunk_node
-  (bool expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)):
-    created from expand_thunk
-  (void reset (void)): created from cgraph_reset_node
-  (void create_wrapper (cgraph_node *target)): created from cgraph_make_wrapper
-  (void DEBUG_FUNCTION verify_node (void)): created from verify_cgraph_node
-  (void remove (void)): created from cgraph_remove_node
-  (void dump (FILE *f)): created from dump_cgraph_node
-  (void DEBUG_FUNCTION debug (void)): created from debug_cgraph_node
-  (bool get_body (void)): created from cgraph_get_body
-  (void release_body (void)): created from cgraph_release_function_body
-  (void unnest (void)): created from cgraph_unnest_node
-  (void make_local (void)): created from cgraph_make_node_local
-  (void mark_address_taken (void)): created from cgraph_mark_address_taken_node
-  (struct cgraph_edge *create_edge (cgraph_node *callee, gimple call_stmt,
-    gcov_type count, int freq)): created from cgraph_create_edge
-  (struct cgraph_edge *create_indirect_edge (gimple call_stmt, int ecf_flags,
-    gcov_type count, int freq)): created from cgraph_create_indirect_edge
-  (void create_edge_including_clones (struct cgraph_node *callee, gimple old_stmt,
-    gimple stmt, gcov_type count, int freq, cgraph_inline_failed_t reason)):
-    created from cgraph_create_edge_including_clones
-  (cgraph_edge *get_edge (gimple call_stmt)): created from cgraph_edge
-  (vec<cgraph_edge *> collect_callers (void)): created from collect_callers_of_node
-  (void remove_callers (void)): created from cgraph_node_remove_callers
-  (void remove_callees (void)): created from cgraph_node_remove_callees
-  (enum availability get_availability (void)): created from cgraph_function_body_availability
-  (void set_nothrow_flag (bool nothrow)): created from cgraph_set_nothrow_flag
-  (void set_const_flag (bool readonly, bool looping)): created from cgraph_set_const_flag
-  (void set_pure_flag (bool pure, bool looping)): created from cgraph_set_pure_flag
-  (void call_duplication_hooks (cgraph_node *node2)): created from
-    cgraph_call_node_duplication_hooks
-  (bool call_for_symbol_and_aliases (bool (*callback) (cgraph_node *, void *),
-    void *data, bool include_overwritable)): created from cgraph_for_node_and_aliases
-  (bool call_for_symbol_thunks_and_aliases (bool (*callback) (cgraph_node *node, void *data),
-    void *data, bool include_overwritable)): created from cgraph_for_node_thunks_and_aliases
-  (void call_function_insertion_hooks (void)):
-    created from cgraph_call_function_insertion_hooks
-  (inline void mark_force_output (void)): created from cgraph_mark_force_output_node
-  (bool local_p (void)): created from cgraph_local_node
-  (bool can_be_local_p (void)): created from cgraph_node_can_be_local_p
-  (bool cannot_return_p (void)): created from cgraph_node_cannot_return
-  (bool only_called_directly_p (void)): created from cgraph_only_called_directly_p
-  (inline bool only_called_directly_or_aliased_p (void)):
-    created from cgraph_only_called_directly_or_aliased_p
-  (bool will_be_removed_from_program_if_no_direct_calls_p (void)):
-    created from cgraph_will_be_removed_from_program_if_no_direct_calls
-  (bool can_remove_if_no_direct_calls_and_refs_p (void)):
-    created from cgraph_can_remove_if_no_direct_calls_and_refs_p
-  (bool can_remove_if_no_direct_calls_p (void)):
-    created from cgraph_can_remove_if_no_direct_calls_p
-  (inline bool has_gimple_body_p (void)):
-    created from cgraph_function_with_gimple_body_p
-  (bool optimize_for_size_p (void)): created from cgraph_optimize_for_size_p
-  (static void dump_cgraph (FILE *f)): created from dump_cgraph
-  (static inline void debug_cgraph (void)): created from debug_cgraph
-  (static void record_function_versions (tree decl1, tree decl2)):
-    created from record_function_versions
-  (static void delete_function_version (tree decl)):
-    created from delete_function_version
-  (static void add_new_function (tree fndecl, bool lowered)):
-    created from cgraph_add_new_function
-  (static inline cgraph_node *get (const_tree decl)): created from cgraph_get_node
-  (static cgraph_node * create (tree decl)): created from cgraph_create_node
-  (static cgraph_node * create_empty (void)): created from cgraph_create_empty_node
-  (static cgraph_node * get_create (tree)): created from cgraph_get_create_node
-  (static cgraph_node *get_for_asmname (tree asmname)):
-    created from cgraph_node_for_asm
-  (static cgraph_node * create_same_body_alias (tree alias, tree decl)):
-    created from cgraph_same_body_alias 
-  (static bool used_from_object_file_p_worker (cgraph_node *node,
-    void *): new function
-  (static bool non_local_p (cgraph_node *node, void *)):
-    created from cgraph_non_local_node_p_1
-  (static void DEBUG_FUNCTION verify_cgraph_nodes (void)):
-    created from verify_cgraph
-  (static bool make_local (cgraph_node *node, void *)):
-    created from cgraph_make_node_local
-  (static cgraph_node *create_alias (tree alias, tree target)):
-    created from cgraph_create_function_alias
-  (static cgraph_edge * create_edge (cgraph_node *caller, cgraph_node *callee,
-    gimple call_stmt, gcov_type count, int freq, bool indir_unknown_callee)):
-    created from cgraph_create_edge_1
-  * cgraph.h (varpool_node):
-  (void remove (void)): created from varpool_remove_node
-  (void dump (FILE *f)): created from dump_varpool_node
+	* cgraph.h (symtab_node):
+	(void register_symbol (void)): created from symtab_register_node
+	(void remove (void)): created from symtab_remove_node
+	(void dump (FILE *f)): created from dump_symtab_node
+	(void DEBUG_FUNCTION debug (void)): created from debug_symtab_node
+	(void DEBUG_FUNCTION verify (void)): created from verify_symtab_node
+	(struct ipa_ref *add_reference (symtab_node *referred_node,
+	enum ipa_ref_use use_type)): created from add_reference 
+	(struct ipa_ref *add_reference (symtab_node *referred_node,
+	enum ipa_ref_use use_type, gimple stmt)): created from add_reference
+	(struct ipa_ref *maybe_add_reference (tree val, enum ipa_ref_use use_type,
+	gimple stmt)): created from maybe_add_reference
+	(bool semantically_equivalent_p (symtab_node *target)): created from
+	symtab_semantically_equivalent_p
+	(void remove_from_same_comdat_group (void)): created from
+	remove_from_same_comdat_group
+	(void add_to_same_comdat_group (symtab_node *old_node)): created from
+	symtab_add_to_same_comdat_group
+	(void dissolve_same_comdat_group_list (void)): created from
+	symtab_dissolve_same_comdat_group_list
+	(bool used_from_object_file_p (void)): created from symtab_used_from_object_file_p
+	(symtab_node *ultimate_alias_target (enum availability *avail = NULL)):
+	created from symtab_alias_ultimate_target
+	(inline symtab_node *next_defined_symbol (void)): created from
+	symtab_next_defined_symbol
+	(bool resolve_alias (symtab_node *target)): created from
+	symtab_resolve_alias
+	(bool call_for_symbol_and_aliases (bool (*callback) (symtab_node *, void *),
+	void *data, bool include_overwrite)): created from symtab_for_node_and_aliases
+	(symtab_node *noninterposable_alias (void)): created from symtab_nonoverwritable_alias
+	(inline symtab_node *get_alias_target (void)): created from symtab_alias_target
+	(void set_section (const char *section)): created from set_section_1 
+	(enum availability get_availability (void)): created from symtab_node_availability
+	(void make_decl_local (void)): created from symtab_make_decl_local
+	(bool real_symbol_p (void)): created from symtab_read_node
+	(can_be_discarded_p (void)): created from symtab_can_be_discarded
+	(inline bool comdat_local_p (void)): created from symtab_comdat_local_p
+	(inline bool in_same_comdat_group_p (symtab_node *target)): created from
+	symtab_in_same_comdat_p;
+	(bool address_taken_from_non_vtable_p (void)): created from
+	address_taken_from_non_vtable_p
+	(static inline symtab_node *get (const_tree decl)): created from symtab_get_node
+	(static void dump_table (FILE *)): created from dump_symtab
+	(static inline DEBUG_FUNCTION void debug_symtab (void)): created from debug_symtab
+	(static DEBUG_FUNCTION void verify_symtab_nodes (void)): created from verify_symtab
+	(static bool used_from_object_file_p_worker (symtab_node *node)): created from
+	symtab_used_from_object_file_p 
+	(void dump_base (FILE *)): created from dump_symtab_base
+	(bool DEBUG_FUNCTION verify_base (void)): created from verify_symtab_base
+	(void unregister (void)): created from symtab_unregister_node
+	(struct symbol_priority_map *priority_info (void)): created from symtab_priority_info
+	(static bool set_implicit_section (symtab_node *n, void *)): created from set_implicit_section
+	(static bool noninterposable_alias (symtab_node *node, void *data)): created from
+	symtab_nonoverwritable_alias_1
+	* cgraph.h (cgraph_node):
+	(bool remove_symbol_and_inline_clones (cgraph_node *forbidden_node = NULL)):
+	created from cgraph_remove_node_and_inline_clones
+	(void record_stmt_references (gimple stmt)): created from ipa_record_stmt_references
+	(void set_call_stmt_including_clones (gimple old_stmt, gimple new_stmt,
+	bool update_speculative = true)): created from cgraph_set_call_stmt_including_clones
+	(cgraph_node *function_symbol (enum availability *avail = NULL)):
+	created from cgraph_function_node
+	(cgraph_node *create_clone (tree decl, gcov_type count, int freq, bool update_original,
+	vec<cgraph_edge *> redirect_callers, bool call_duplication_hook,
+	struct cgraph_node *new_inlined_to, bitmap args_to_skip)):
+	created from cgraph_create_clone 
+	(cgraph_node *create_virtual_clone (vec<cgraph_edge *> redirect_callers,
+	vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip, const char * suffix)):
+	created from cgraph_create_virtual_clone
+	(cgraph_node *find_replacement (void)): created from cgraph_find_replacement_node
+	(cgraph_node *create_version_clone (tree new_decl, vec<cgraph_edge *> redirect_callers,
+	bitmap bbs_to_copy)): created from cgraph_copy_node_for_versioning
+	(cgraph_node *create_version_clone_with_body (vec<cgraph_edge *> redirect_callers,
+	vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip, bool skip_return,
+	bitmap bbs_to_copy, basic_block new_entry_block, const char *clone_name)):
+	created from cgraph_function_version_info
+	(struct cgraph_function_version_info *insert_new_function_version (void)):
+	created from insert_new_cgraph_node_version
+	(struct cgraph_function_version_info *function_version (void)): created from
+	get_cgraph_node_version
+	(void analyze (void)): created from analyze_function
+	(cgraph_node * create_thunk (tree alias, tree, bool this_adjusting,
+	HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value, tree virtual_offset,
+	tree real_alias) cgraph_add_thunk
+	(inline cgraph_node *get_alias_target (void)): created from cgraph_alias_target
+	(cgraph_node *ultimate_alias_target (availability *availability = NULL)):
+	created from cgraph_function_or_thunk_node
+	(bool expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)):
+	created from expand_thunk
+	(void reset (void)): created from cgraph_reset_node
+	(void create_wrapper (cgraph_node *target)): created from cgraph_make_wrapper
+	(void DEBUG_FUNCTION verify_node (void)): created from verify_cgraph_node
+	(void remove (void)): created from cgraph_remove_node
+	(void dump (FILE *f)): created from dump_cgraph_node
+	(void DEBUG_FUNCTION debug (void)): created from debug_cgraph_node
+	(bool get_body (void)): created from cgraph_get_body
+	(void release_body (void)): created from cgraph_release_function_body
+	(void unnest (void)): created from cgraph_unnest_node
+	(void make_local (void)): created from cgraph_make_node_local
+	(void mark_address_taken (void)): created from cgraph_mark_address_taken_node
+	(struct cgraph_edge *create_edge (cgraph_node *callee, gimple call_stmt,
+	gcov_type count, int freq)): created from cgraph_create_edge
+	(struct cgraph_edge *create_indirect_edge (gimple call_stmt, int ecf_flags,
+	gcov_type count, int freq)): created from cgraph_create_indirect_edge
+	(void create_edge_including_clones (struct cgraph_node *callee, gimple old_stmt,
+	gimple stmt, gcov_type count, int freq, cgraph_inline_failed_t reason)):
+	created from cgraph_create_edge_including_clones
+	(cgraph_edge *get_edge (gimple call_stmt)): created from cgraph_edge
+	(vec<cgraph_edge *> collect_callers (void)): created from collect_callers_of_node
+	(void remove_callers (void)): created from cgraph_node_remove_callers
+	(void remove_callees (void)): created from cgraph_node_remove_callees
+	(enum availability get_availability (void)): created from cgraph_function_body_availability
+	(void set_nothrow_flag (bool nothrow)): created from cgraph_set_nothrow_flag
+	(void set_const_flag (bool readonly, bool looping)): created from cgraph_set_const_flag
+	(void set_pure_flag (bool pure, bool looping)): created from cgraph_set_pure_flag
+	(void call_duplication_hooks (cgraph_node *node2)): created from
+	cgraph_call_node_duplication_hooks
+	(bool call_for_symbol_and_aliases (bool (*callback) (cgraph_node *, void *),
+	void *data, bool include_overwritable)): created from cgraph_for_node_and_aliases
+	(bool call_for_symbol_thunks_and_aliases (bool (*callback) (cgraph_node *node, void *data),
+	void *data, bool include_overwritable)): created from cgraph_for_node_thunks_and_aliases
+	(void call_function_insertion_hooks (void)):
+	created from cgraph_call_function_insertion_hooks
+	(inline void mark_force_output (void)): created from cgraph_mark_force_output_node
+	(bool local_p (void)): created from cgraph_local_node
+	(bool can_be_local_p (void)): created from cgraph_node_can_be_local_p
+	(bool cannot_return_p (void)): created from cgraph_node_cannot_return
+	(bool only_called_directly_p (void)): created from cgraph_only_called_directly_p
+	(inline bool only_called_directly_or_aliased_p (void)):
+	created from cgraph_only_called_directly_or_aliased_p
+	(bool will_be_removed_from_program_if_no_direct_calls_p (void)):
+	created from cgraph_will_be_removed_from_program_if_no_direct_calls
+	(bool can_remove_if_no_direct_calls_and_refs_p (void)):
+	created from cgraph_can_remove_if_no_direct_calls_and_refs_p
+	(bool can_remove_if_no_direct_calls_p (void)):
+	created from cgraph_can_remove_if_no_direct_calls_p
+	(inline bool has_gimple_body_p (void)):
+	created from cgraph_function_with_gimple_body_p
+	(bool optimize_for_size_p (void)): created from cgraph_optimize_for_size_p
+	(static void dump_cgraph (FILE *f)): created from dump_cgraph
+	(static inline void debug_cgraph (void)): created from debug_cgraph
+	(static void record_function_versions (tree decl1, tree decl2)):
+	created from record_function_versions
+	(static void delete_function_version (tree decl)):
+	created from delete_function_version
+	(static void add_new_function (tree fndecl, bool lowered)):
+	created from cgraph_add_new_function
+	(static inline cgraph_node *get (const_tree decl)): created from cgraph_get_node
+	(static cgraph_node * create (tree decl)): created from cgraph_create_node
+	(static cgraph_node * create_empty (void)): created from cgraph_create_empty_node
+	(static cgraph_node * get_create (tree)): created from cgraph_get_create_node
+	(static cgraph_node *get_for_asmname (tree asmname)):
+	created from cgraph_node_for_asm
+	(static cgraph_node * create_same_body_alias (tree alias, tree decl)):
+	created from cgraph_same_body_alias 
+	(static bool used_from_object_file_p_worker (cgraph_node *node,
+	void *): new function
+	(static bool non_local_p (cgraph_node *node, void *)):
+	created from cgraph_non_local_node_p_1
+	(static void DEBUG_FUNCTION verify_cgraph_nodes (void)):
+	created from verify_cgraph
+	(static bool make_local (cgraph_node *node, void *)):
+	created from cgraph_make_node_local
+	(static cgraph_node *create_alias (tree alias, tree target)):
+	created from cgraph_create_function_alias
+	(static cgraph_edge * create_edge (cgraph_node *caller, cgraph_node *callee,
+	gimple call_stmt, gcov_type count, int freq, bool indir_unknown_callee)):
+	created from cgraph_create_edge_1
+	* cgraph.h (varpool_node):
+	(void remove (void)): created from varpool_remove_node
+	(void dump (FILE *f)): created from dump_varpool_node
 
 2014-07-24  Richard Biener  <rguenther@suse.de>
 
