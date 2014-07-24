@@ -1,3 +1,16 @@
+2014-07-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/61268
+	* function.c (assign_parm_setup_reg): Prevent invalid sharing of
+	DECL_INCOMING_RTL and entry_parm.
+	(get_arg_pointer_save_area): Likewise arg_pointer_save_area.
+	* calls.c (load_register_parameters): Likewise argument values.
+	(emit_library_call_value_1, store_one_arg): Likewise argument
+	save areas.
+	* config/i386/i386.c (assign_386_stack_local): Likewise the local
+	stack slot.
+	* explow.c (validize_mem): Modify the argument in-place.
+
 2014-07-24  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_popwb_single_reg): New function.

@@ -25061,7 +25061,7 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
   s->next = ix86_stack_locals;
   ix86_stack_locals = s;
-  return validize_mem (s->rtl);
+  return validize_mem (copy_rtx (s->rtl));
 }
 
 static void
