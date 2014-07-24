@@ -1,3 +1,8 @@
+2014-07-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61160
+	* g++.dg/ipa/pr61160-2.C (main): Always return zero.
+
 2014-07-24  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/61823
