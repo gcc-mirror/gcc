@@ -1,3 +1,12 @@
+2014-07-24  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(binary_op_to_tree): Add calling of translate_isl_ast_node_block.
+	(gcc_expression_from_isl_expr_op): Move isl_ast_op_pdiv_q,
+	isl_ast_op_pdiv_r to the different case.
+
+	* gcc.dg/graphite/isl-ast-gen-blocks-3.c: New testcase.
+
 2014-07-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/61876

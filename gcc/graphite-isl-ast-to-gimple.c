@@ -186,6 +186,12 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
     case isl_ast_op_div:
       return fold_build2 (EXACT_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
+    case isl_ast_op_pdiv_q:
+      return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
+
+    case isl_ast_op_pdiv_r:
+      return fold_build2 (TRUNC_MOD_EXPR, type, tree_lhs_expr, tree_rhs_expr);
+
     case isl_ast_op_fdiv_q:
       return fold_build2 (FLOOR_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
@@ -299,8 +305,6 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_call:
     case isl_ast_op_and_then:
     case isl_ast_op_or_else:
-    case isl_ast_op_pdiv_q:
-    case isl_ast_op_pdiv_r:
     case isl_ast_op_select:
       gcc_unreachable ();
 
@@ -312,6 +316,8 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_sub:
     case isl_ast_op_mul:
     case isl_ast_op_div:
+    case isl_ast_op_pdiv_q:
+    case isl_ast_op_pdiv_r:
     case isl_ast_op_fdiv_q:
     case isl_ast_op_and:
     case isl_ast_op_or:
