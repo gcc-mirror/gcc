@@ -956,7 +956,10 @@ bool
 bss_initializer_p (const_tree decl)
 {
   return (DECL_INITIAL (decl) == NULL
-	  || DECL_INITIAL (decl) == error_mark_node
+	  /* In LTO we have no errors in program; error_mark_node is used
+	     to mark offlined constructors.  */
+	  || (DECL_INITIAL (decl) == error_mark_node
+	      && !in_lto_p)
 	  || (flag_zero_initialized_in_bss
 	      /* Leave constant zeroes in .rodata so they
 		 can be shared.  */
@@ -1017,7 +1020,9 @@ align_variable (tree decl, bool dont_output_data)
 #endif
 #ifdef CONSTANT_ALIGNMENT
 	  if (DECL_INITIAL (decl) != 0
-	      && DECL_INITIAL (decl) != error_mark_node)
+	      /* In LTO we have no errors in program; error_mark_node is used
+		 to mark offlined constructors.  */
+	      && (in_lto_p || DECL_INITIAL (decl) != error_mark_node))
 	    {
 	      unsigned int const_align
 		= CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
@@ -1068,7 +1073,10 @@ get_variable_align (tree decl)
 	align = data_align;
 #endif
 #ifdef CONSTANT_ALIGNMENT
-      if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
+      if (DECL_INITIAL (decl) != 0
+	  /* In LTO we have no errors in program; error_mark_node is used
+	     to mark offlined constructors.  */
+	  && (in_lto_p || DECL_INITIAL (decl) != error_mark_node))
 	{
 	  unsigned int const_align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl),
 							 align);
@@ -1092,12 +1100,19 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 {
   addr_space_t as = ADDR_SPACE_GENERIC;
   int reloc;
-  symtab_node *snode = symtab_node::get (decl);
-  if (snode)
-    decl = snode->ultimate_alias_target ()->decl;
+  varpool_node *vnode = varpool_node::get (decl);
+  if (vnode)
+    {
+      vnode = vnode->ultimate_alias_target ();
+      decl = vnode->decl;
+    }
 
   if (TREE_TYPE (decl) != error_mark_node)
     as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
+
+  /* We need the constructor to figure out reloc flag.  */
+  if (vnode)
+    vnode->get_constructor ();
 
   if (DECL_COMMON (decl))
     {
@@ -1963,6 +1978,9 @@ assemble_variable_contents (tree decl, const char *name,
 
   if (!dont_output_data)
     {
+      /* Caller is supposed to use varpool_get_constructor when it wants
+	 to output the body.  */
+      gcc_assert (!in_lto_p || DECL_INITIAL (decl) != error_mark_node);
       if (DECL_INITIAL (decl)
 	  && DECL_INITIAL (decl) != error_mark_node
 	  && !initializer_zerop (DECL_INITIAL (decl)))
@@ -5890,7 +5908,8 @@ make_decl_one_only (tree decl, tree comdat_group)
       symbol->set_comdat_group (comdat_group);
     }
   else if (TREE_CODE (decl) == VAR_DECL
-      && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
+           && (DECL_INITIAL (decl) == 0
+	       || (!in_lto_p && DECL_INITIAL (decl) == error_mark_node)))
     DECL_COMMON (decl) = 1;
   else
     {
@@ -6752,7 +6771,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   else if (DECL_COMMON (exp)
 	   && !resolved_locally
 	   && (DECL_INITIAL (exp) == NULL
-	       || DECL_INITIAL (exp) == error_mark_node))
+	       || (!in_lto_p && DECL_INITIAL (exp) == error_mark_node)))
     local_p = false;
   /* Otherwise we're left with initialized (or non-common) global data
      which is of necessity defined locally.  */
@@ -6807,7 +6826,7 @@ decl_binds_to_current_def_p (const_tree decl)
     return false;
   if (DECL_COMMON (decl)
       && (DECL_INITIAL (decl) == NULL
-	  || DECL_INITIAL (decl) == error_mark_node))
+	  || (!in_lto_p && DECL_INITIAL (decl) == error_mark_node)))
     return false;
   if (DECL_EXTERNAL (decl))
     return false;
