@@ -3623,11 +3623,12 @@ tree_inlinable_function_p (tree fn)
   return inlinable;
 }
 
-/* Estimate the cost of a memory move.  Use machine dependent
-   word size and take possible memcpy call into account.  */
+/* Estimate the cost of a memory move of type TYPE.  Use machine dependent
+   word size and take possible memcpy call into account and return
+   cost based on whether optimizing for size or speed according to SPEED_P.  */
 
 int
-estimate_move_cost (tree type)
+estimate_move_cost (tree type, bool speed_p)
 {
   HOST_WIDE_INT size;
 
@@ -3645,7 +3646,7 @@ estimate_move_cost (tree type)
 
   size = int_size_in_bytes (type);
 
-  if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (!optimize_size))
+  if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (speed_p))
     /* Cost of a memcpy call, 3 arguments and the call.  */
     return 4;
   else
@@ -3847,9 +3848,9 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
       /* Account for the cost of moving to / from memory.  */
       if (gimple_store_p (stmt))
-	cost += estimate_move_cost (TREE_TYPE (lhs));
+	cost += estimate_move_cost (TREE_TYPE (lhs), weights->time_based);
       if (gimple_assign_load_p (stmt))
-	cost += estimate_move_cost (TREE_TYPE (rhs));
+	cost += estimate_move_cost (TREE_TYPE (rhs), weights->time_based);
 
       cost += estimate_operator_cost (gimple_assign_rhs_code (stmt), weights,
       				      gimple_assign_rhs1 (stmt),
@@ -3923,11 +3924,13 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
 	cost = decl ? weights->call_cost : weights->indirect_call_cost;
 	if (gimple_call_lhs (stmt))
-	  cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)));
+	  cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)),
+				      weights->time_based);
 	for (i = 0; i < gimple_call_num_args (stmt); i++)
 	  {
 	    tree arg = gimple_call_arg (stmt, i);
-	    cost += estimate_move_cost (TREE_TYPE (arg));
+	    cost += estimate_move_cost (TREE_TYPE (arg),
+					weights->time_based);
 	  }
 	break;
       }

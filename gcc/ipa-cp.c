@@ -1845,7 +1845,7 @@ gather_context_independent_values (struct ipa_node_params *info,
 	      (*known_csts)[i] = val->value;
 	      if (removable_params_cost)
 		*removable_params_cost
-		  += estimate_move_cost (TREE_TYPE (val->value));
+		  += estimate_move_cost (TREE_TYPE (val->value), false);
 	      ret = true;
 	    }
 	  else if (plats->virt_call)
@@ -1997,7 +1997,7 @@ estimate_local_effects (struct cgraph_node *node)
 	    {
 	      known_csts[i] = val->value;
 	      known_binfos[i] = NULL_TREE;
-	      emc = estimate_move_cost (TREE_TYPE (val->value));
+	      emc = estimate_move_cost (TREE_TYPE (val->value), true);
 	    }
 	  else if (plats->virt_call)
 	    {
