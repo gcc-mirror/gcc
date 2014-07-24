@@ -2,6 +2,17 @@
 
 	* gcc.target/aarch64/test_frame_1.c: Match optimized instruction
 	sequences.
+	* gcc.target/aarch64/test_frame_2.c: Likewise.
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+	* gcc.target/aarch64/test_frame_8.c: Likewise.
+	* gcc.target/aarch64/test_frame_10.c: Likewise.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/test_frame_1.c: Match optimized instruction
+	sequences.
 	* gcc.target/aarch64/test_frame_10.c: Likewise.
 	* gcc.target/aarch64/test_frame_2.c: Likewise.
 	* gcc.target/aarch64/test_frame_4.c: Likewise.

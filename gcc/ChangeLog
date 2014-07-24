@@ -1,5 +1,10 @@
 2014-07-24  Jiong Wang  <jiong.wang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_popwb_single_reg): New function.
+	(aarch64_expand_epilogue): Optimize epilogue when !frame_pointer_needed.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_pushwb_single_reg): New function.
 	(aarch64_expand_prologue): Optimize prologue when !frame_pointer_needed.
 
