@@ -6,4 +6,5 @@ if { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
 	set additional_flags "-mno-mmx"
 }
 
+set additional_flags "-Wno-psabi"
 return 0
