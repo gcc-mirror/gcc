@@ -1,3 +1,8 @@
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/test_frame_12.c: Match optimized instruction
+	sequences.
+
 2014-07-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/57653
