@@ -1,3 +1,8 @@
+2014-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/61823
+	* gcc.dg/torture/pr43879_1.c: Add -fno-inline.
+
 2014-07-24  Andreas Schwab  <schwab@suse.de>
 
 	* lib/target-supports.exp (check_effective_target_arm_nothumb):

@@ -5671,7 +5671,7 @@ create_variable_info_for_1 (tree decl, const char *name)
 	 in IPA mode.  Else we'd have to parse arbitrary initializers.  */
       && !(in_ipa_mode
 	   && is_global_var (decl)
-	   && DECL_INITIAL (decl)))
+	   && varpool_get_constructor (varpool_get_node (decl))))
     {
       fieldoff_s *fo = NULL;
       bool notokay = false;
@@ -5797,13 +5797,13 @@ create_variable_info_for (tree decl, const char *name)
 
 	  /* If this is a global variable with an initializer and we are in
 	     IPA mode generate constraints for it.  */
-	  if (DECL_INITIAL (decl)
+	  if (varpool_get_constructor (vnode)
 	      && vnode->definition)
 	    {
 	      auto_vec<ce_s> rhsc;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
-	      get_constraint_for_rhs (DECL_INITIAL (decl), &rhsc);
+	      get_constraint_for_rhs (varpool_get_constructor (vnode), &rhsc);
 	      lhs.var = vi->id;
 	      lhs.offset = 0;
 	      lhs.type = SCALAR;
