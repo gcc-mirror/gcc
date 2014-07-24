@@ -2394,7 +2394,7 @@ mark_decl_referenced (tree decl)
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      varpool_node *node = varpool_node_for_decl (decl);
+      varpool_node *node = varpool_node::get_create (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
       node->force_output = true;
@@ -3400,7 +3400,7 @@ tree_output_constant_def (tree exp)
     }
 
   decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
-  varpool_finalize_decl (decl);
+  varpool_node::finalize_decl (decl);
   return decl;
 }
 
@@ -5634,7 +5634,7 @@ assemble_alias (tree decl, tree target)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     cgraph_node::get_create (decl)->alias = true;
   else
-    varpool_node_for_decl (decl)->alias = true;
+    varpool_node::get_create (decl)->alias = true;
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
@@ -5878,7 +5878,7 @@ make_decl_one_only (tree decl, tree comdat_group)
   TREE_PUBLIC (decl) = 1;
 
   if (TREE_CODE (decl) == VAR_DECL)
-    symbol = varpool_node_for_decl (decl);
+    symbol = varpool_node::get_create (decl);
   else
     symbol = cgraph_node::get_create (decl);
 
@@ -6692,7 +6692,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   if (TREE_CODE (exp) == VAR_DECL && TREE_PUBLIC (exp)
       && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
     {
-      varpool_node *vnode = varpool_get_node (exp);
+      varpool_node *vnode = varpool_node::get (exp);
       if (vnode && (resolution_local_p (vnode->resolution) || vnode->in_other_partition))
 	resolved_locally = true;
       if (vnode
@@ -6785,7 +6785,7 @@ decl_binds_to_current_def_p (const_tree decl)
   if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
-      varpool_node *vnode = varpool_get_node (decl);
+      varpool_node *vnode = varpool_node::get (decl);
       if (vnode
 	  && vnode->resolution != LDPR_UNKNOWN)
 	return resolution_to_local_definition_p (vnode->resolution);

@@ -3491,7 +3491,7 @@ mangle_decl (const tree decl)
 	    n->create_same_body_alias (alias, decl);
 	}
       else
-	varpool_extra_name_alias (alias, decl);
+	varpool_node::create_extra_name_alias (alias, decl);
 #endif
     }
 }

@@ -1507,8 +1507,7 @@ enum availability symtab_node::get_availability (void)
   if (is_a <cgraph_node *> (this))
     return dyn_cast <cgraph_node *> (this)->get_availability ();
   else
-    return cgraph_variable_initializer_availability
-      (dyn_cast <varpool_node *> (this));
+    return dyn_cast <varpool_node *> (this)->get_availability ();;
 }
 
 
@@ -1790,7 +1789,7 @@ symtab_node::noninterposable_alias (void)
     {
       TREE_READONLY (new_decl) = TREE_READONLY (node->decl);
       DECL_INITIAL (new_decl) = error_mark_node;
-      new_node = varpool_create_variable_alias (new_decl, node->decl);
+      new_node = varpool_node::create_alias (new_decl, node->decl);
     }
   new_node->resolve_alias (node);
   gcc_assert (decl_binds_to_current_def_p (new_decl)

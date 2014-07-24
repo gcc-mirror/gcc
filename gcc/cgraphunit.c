@@ -686,7 +686,7 @@ cgraph_process_same_body_aliases (void)
     if (node->cpp_implicit_alias && !node->analyzed)
       node->resolve_alias
 	(TREE_CODE (node->alias_target) == VAR_DECL
-	 ? (symtab_node *)varpool_node_for_decl (node->alias_target)
+	 ? (symtab_node *)varpool_node::get_create (node->alias_target)
 	 : (symtab_node *)cgraph_node::get_create (node->alias_target));
   cpp_implicit_aliases_done = true;
 }
@@ -779,7 +779,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
       tree decl = vnode->decl;
       if (DECL_EXTERNAL (decl)
 	  && DECL_INITIAL (decl))
-	varpool_finalize_decl (decl);
+	varpool_node::finalize_decl (decl);
       if (DECL_PRESERVE_P (decl))
 	vnode->force_output = true;
       else if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
@@ -809,9 +809,9 @@ process_function_and_variable_attributes (struct cgraph_node *first,
    visible.  */
 
 void
-varpool_finalize_decl (tree decl)
+varpool_node::finalize_decl (tree decl)
 {
-  varpool_node *node = varpool_node_for_decl (decl);
+  varpool_node *node = varpool_node::get_create (decl);
 
   gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
 
@@ -831,12 +831,12 @@ varpool_finalize_decl (tree decl)
 	  || referred_to_p (node)))
     enqueue_node (node);
   if (cgraph_state >= CGRAPH_STATE_IPA_SSA)
-    varpool_analyze_node (node);
+    node->analyze ();
   /* Some frontends produce various interface variables after compilation
      finished.  */
   if (cgraph_state == CGRAPH_STATE_FINISHED
       || (!flag_toplevel_reorder && cgraph_state == CGRAPH_STATE_EXPANSION))
-    varpool_assemble_decl (node);
+    node->assemble_decl ();
 }
 
 /* EDGE is an polymorphic call.  Mark all possible targets as reachable
@@ -1055,7 +1055,7 @@ analyze_functions (void)
 	    {
 	      varpool_node *vnode = dyn_cast <varpool_node *> (node);
 	      if (vnode && vnode->definition && !vnode->analyzed)
-		varpool_analyze_node (vnode);
+		vnode->analyze ();
 	    }
 
 	  if (node->same_comdat_group)
@@ -1198,7 +1198,7 @@ handle_alias_pairs (void)
       else if (TREE_CODE (p->decl) == VAR_DECL
 	       && target_node && is_a <varpool_node *> (target_node))
 	{
-	  varpool_create_variable_alias (p->decl, target_node->decl);
+	  varpool_node::create_alias (p->decl, target_node->decl);
 	  alias_pairs->unordered_remove (i);
 	}
       else
@@ -2004,7 +2004,7 @@ output_in_order (void)
 
   for (i = 0; i < max; ++i)
     if (nodes[i].kind == ORDER_VAR)
-      varpool_finalize_named_section_flags (nodes[i].u.v);
+      nodes[i].u.v->finalize_named_section_flags ();
 
   for (i = 0; i < max; ++i)
     {
@@ -2016,7 +2016,7 @@ output_in_order (void)
 	  break;
 
 	case ORDER_VAR:
-	  varpool_assemble_decl (nodes[i].u.v);
+	  nodes[i].u.v->assemble_decl ();
 	  break;
 
 	case ORDER_ASM:
@@ -2259,7 +2259,7 @@ compile (void)
       output_asm_statements ();
 
       expand_all_functions ();
-      varpool_output_variables ();
+      varpool_node::output_variables ();
     }
 
   cgraph_process_new_functions ();

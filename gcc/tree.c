@@ -644,7 +644,7 @@ set_decl_section_name (tree node, const char *value)
 	return;
     }
   else if (TREE_CODE (node) == VAR_DECL)
-    snode = varpool_node_for_decl (node);
+    snode = varpool_node::get_create (node);
   else
     snode = cgraph_node::get_create (node);
   snode->set_section (value);
@@ -654,7 +654,7 @@ set_decl_section_name (tree node, const char *value)
 enum tls_model
 decl_tls_model (const_tree node)
 {
-  struct varpool_node *snode = varpool_get_node (node);
+  struct varpool_node *snode = varpool_node::get (node);
   if (!snode)
     return TLS_MODEL_NONE;
   return snode->tls_model;
@@ -668,12 +668,12 @@ set_decl_tls_model (tree node, enum tls_model model)
 
   if (model == TLS_MODEL_NONE)
     {
-      vnode = varpool_get_node (node);
+      vnode = varpool_node::get (node);
       if (!vnode)
 	return;
     }
   else
-    vnode = varpool_node_for_decl (node);
+    vnode = varpool_node::get_create (node);
   vnode->tls_model = model;
 }
 
@@ -6523,7 +6523,7 @@ decl_init_priority_insert (tree decl, priority_type priority)
 	return;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
-    snode = varpool_node_for_decl (decl);
+    snode = varpool_node::get_create (decl);
   else
     snode = cgraph_node::get_create (decl);
   snode->set_init_priority (priority);

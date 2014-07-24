@@ -8500,7 +8500,7 @@ execute_fixup_cfg (void)
 
 	      if (TREE_CODE (lhs) == VAR_DECL
 		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
-		  && varpool_get_node (lhs)->writeonly)
+		  && varpool_node::get (lhs)->writeonly)
 		{
 		  unlink_stmt_vdef (stmt);
 		  gsi_remove (&gsi, true);
@@ -8518,7 +8518,7 @@ execute_fixup_cfg (void)
 
 	      if (TREE_CODE (lhs) == VAR_DECL
 		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
-		  && varpool_get_node (lhs)->writeonly)
+		  && varpool_node::get (lhs)->writeonly)
 		{
 		  gimple_call_set_lhs (stmt, NULL);
 		  update_stmt (stmt);

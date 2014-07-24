@@ -393,7 +393,7 @@ wrapup_global_declaration_2 (tree decl)
     {
       varpool_node *node;
       bool needed = true;
-      node = varpool_get_node (decl);
+      node = varpool_node::get (decl);
 
       if (!node && flag_ltrans)
 	needed = false;

@@ -241,7 +241,7 @@ type_possibly_instantiated_p (tree t)
   vtable = BINFO_VTABLE (TYPE_BINFO (t));
   if (TREE_CODE (vtable) == POINTER_PLUS_EXPR)
     vtable = TREE_OPERAND (TREE_OPERAND (vtable, 0), 0);
-  vnode = varpool_get_node (vtable);
+  vnode = varpool_node::get (vtable);
   return vnode && vnode->definition;
 }
 
@@ -1512,7 +1512,7 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 
 	  if (TREE_CODE (vtable) == POINTER_PLUS_EXPR)
 	    vtable = TREE_OPERAND (TREE_OPERAND (vtable, 0), 0);
-	  vnode = varpool_get_node (vtable);
+	  vnode = varpool_node::get (vtable);
 	  if (!vnode || !vnode->definition)
 	    return;
 	}

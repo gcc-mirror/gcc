@@ -1804,7 +1804,7 @@ maybe_make_one_only (tree decl)
 
       if (VAR_P (decl))
 	{
-          varpool_node *node = varpool_node_for_decl (decl);
+	  varpool_node *node = varpool_node::get_create (decl);
 	  DECL_COMDAT (decl) = 1;
 	  /* Mark it needed so we don't forget to emit it.  */
           node->forced_by_abi = true;
@@ -1912,7 +1912,7 @@ import_export_class (tree ctype)
 static bool
 var_finalized_p (tree var)
 {
-  return varpool_node_for_decl (var)->definition;
+  return varpool_node::get_create (var)->definition;
 }
 
 /* DECL is a VAR_DECL or FUNCTION_DECL which, for whatever reason,
@@ -1933,7 +1933,7 @@ mark_needed (tree decl)
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      varpool_node *node = varpool_node_for_decl (decl);
+      varpool_node *node = varpool_node::get_create (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
       node->forced_by_abi = true;
@@ -2053,7 +2053,7 @@ maybe_emit_vtables (tree ctype)
 	TREE_ASM_WRITTEN (vtbl) = 1;
       else if (DECL_ONE_ONLY (vtbl))
 	{
-	  current = varpool_node_for_decl (vtbl);
+	  current = varpool_node::get_create (vtbl);
 	  if (last)
 	    current->add_to_same_comdat_group (last);
 	  last = current;
@@ -3661,7 +3661,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 	  finish_expr_stmt (init);
 	  if (flag_sanitize & SANITIZE_ADDRESS)
 	    {
-	      varpool_node *vnode = varpool_get_node (decl);
+	      varpool_node *vnode = varpool_node::get (decl);
 	      if (vnode)
 		vnode->dynamically_initialized = 1;
 	    }

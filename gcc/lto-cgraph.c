@@ -853,7 +853,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (DECL_ABSTRACT_ORIGIN (vnode->decl))
 	{
 	  varpool_node *origin_node
-	    = varpool_get_node (DECL_ABSTRACT_ORIGIN (vnode->decl));
+	    = varpool_node::get (DECL_ABSTRACT_ORIGIN (vnode->decl));
 	  lto_set_symtab_encoder_in_partition (encoder, origin_node);
 	}
     }
@@ -867,7 +867,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	{
 	  if (!lto_symtab_encoder_encode_initializer_p (encoder,
 							vnode)
-	      && varpool_ctor_useable_for_folding_p (vnode))
+	      && vnode->ctor_useable_for_folding_p ())
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      add_references (encoder, vnode);
@@ -1242,7 +1242,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   /* Declaration of functions can be already merged with a declaration
      from other input file.  We keep cgraph unmerged until after streaming
      of ipa passes is done.  Alays forcingly create a fresh node.  */
-  node = varpool_create_empty_node ();
+  node = varpool_node::create_empty ();
   node->decl = var_decl;
   node->register_symbol ();
 

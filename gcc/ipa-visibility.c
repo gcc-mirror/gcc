@@ -263,31 +263,31 @@ cgraph_externally_visible_p (struct cgraph_node *node,
   return false;
 }
 
-/* Return true when variable VNODE should be considered externally visible.  */
+/* Return true when variable should be considered externally visible.  */
 
 bool
-varpool_externally_visible_p (varpool_node *vnode)
+varpool_node::externally_visible_p (void)
 {
-  if (DECL_EXTERNAL (vnode->decl))
+  if (DECL_EXTERNAL (decl))
     return true;
 
-  if (!TREE_PUBLIC (vnode->decl))
+  if (!TREE_PUBLIC (decl))
     return false;
 
   /* If linker counts on us, we must preserve the function.  */
-  if (vnode->used_from_object_file_p ())
+  if (used_from_object_file_p ())
     return true;
 
-  if (DECL_HARD_REGISTER (vnode->decl))
+  if (DECL_HARD_REGISTER (decl))
     return true;
-  if (DECL_PRESERVE_P (vnode->decl))
+  if (DECL_PRESERVE_P (decl))
     return true;
   if (lookup_attribute ("externally_visible",
-			DECL_ATTRIBUTES (vnode->decl)))
+			DECL_ATTRIBUTES (decl)))
     return true;
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
       && lookup_attribute ("dllexport",
-			   DECL_ATTRIBUTES (vnode->decl)))
+			   DECL_ATTRIBUTES (decl)))
     return true;
 
   /* See if we have linker information about symbol not being used or
@@ -296,9 +296,9 @@ varpool_externally_visible_p (varpool_node *vnode)
      Even if the linker clams the symbol is unused, never bring internal
      symbols that are declared by user as used or externally visible.
      This is needed for i.e. references from asm statements.   */
-  if (vnode->used_from_object_file_p ())
+  if (used_from_object_file_p ())
     return true;
-  if (vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
+  if (resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
 
   /* As a special case, the COMDAT virtual tables can be unshared.
@@ -307,17 +307,17 @@ varpool_externally_visible_p (varpool_node *vnode)
      is faster for dynamic linking.  Also this match logic hidding vtables
      from LTO symbol tables.  */
   if ((in_lto_p || flag_whole_program)
-      && DECL_COMDAT (vnode->decl)
-      && comdat_can_be_unshared_p (vnode))
+      && DECL_COMDAT (decl)
+      && comdat_can_be_unshared_p (this))
     return false;
 
   /* When doing link time optimizations, hidden symbols become local.  */
   if (in_lto_p
-      && (DECL_VISIBILITY (vnode->decl) == VISIBILITY_HIDDEN
-	  || DECL_VISIBILITY (vnode->decl) == VISIBILITY_INTERNAL)
+      && (DECL_VISIBILITY (decl) == VISIBILITY_HIDDEN
+	  || DECL_VISIBILITY (decl) == VISIBILITY_INTERNAL)
       /* Be sure that node is defined in IR file, not in other object
 	 file.  In that case we don't set used_from_other_object_file.  */
-      && vnode->definition)
+      && definition)
     ;
   else if (!flag_whole_program)
     return true;
@@ -329,7 +329,7 @@ varpool_externally_visible_p (varpool_node *vnode)
      FIXME: We can do so for readonly vars with no address taken and
      possibly also for vtables since no direct pointer comparsion is done.
      It might be interesting to do so to reduce linking overhead.  */
-  if (DECL_COMDAT (vnode->decl) || DECL_WEAK (vnode->decl))
+  if (DECL_COMDAT (decl) || DECL_WEAK (decl))
     return true;
   return false;
 }
@@ -625,7 +625,7 @@ function_and_variable_visibility (bool whole_program)
     {
       if (!vnode->definition)
         continue;
-      if (varpool_externally_visible_p (vnode))
+      if (vnode->externally_visible_p ())
 	vnode->externally_visible = true;
       else
 	{
@@ -689,7 +689,7 @@ function_and_variable_visibility (bool whole_program)
 	    {
 	      struct pointer_set_t *visited_nodes = pointer_set_create ();
 
-	      varpool_get_constructor (vnode);
+	      vnode->get_constructor ();
 	      walk_tree (&DECL_INITIAL (vnode->decl),
 			 update_vtable_references, NULL, visited_nodes);
 	      pointer_set_destroy (visited_nodes);

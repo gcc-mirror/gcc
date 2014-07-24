@@ -239,7 +239,7 @@ rest_of_decl_compilation (tree decl,
 	  if (in_lto_p && !at_end)
 	    ;
 	  else if (finalize && TREE_CODE (decl) != FUNCTION_DECL)
-	    varpool_finalize_decl (decl);
+	    varpool_node::finalize_decl (decl);
 	}
 
 #ifdef ASM_FINISH_DECLARE_OBJECT
@@ -267,7 +267,7 @@ rest_of_decl_compilation (tree decl,
     ;
   else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl)
 	   && TREE_STATIC (decl))
-    varpool_node_for_decl (decl);
+    varpool_node::get_create (decl);
 }
 
 /* Called after finishing a record, union or enumeral type.  */

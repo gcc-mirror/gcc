@@ -1931,7 +1931,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 	{
 	  /* For static vars if they are known not to be dynamically
 	     initialized, they will be always accessible.  */
-	  varpool_node *vnode = varpool_get_node (inner);
+	  varpool_node *vnode = varpool_node::get (inner);
 	  if (vnode && !vnode->dynamically_initialized)
 	    return;
 	}
@@ -2383,7 +2383,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
 			  fold_convert (const_ptr_type_node, str_cst));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node, module_name_cst));
-  varpool_node *vnode = varpool_get_node (decl);
+  varpool_node *vnode = varpool_node::get (decl);
   int has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  build_int_cst (uptr, has_dynamic_init));
@@ -2595,7 +2595,7 @@ asan_finish_file (void)
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (var) = ctor;
-      varpool_finalize_decl (var);
+      varpool_node::finalize_decl (var);
 
       fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
       tree gcount_tree = build_int_cst (pointer_sized_int_node, gcount);
