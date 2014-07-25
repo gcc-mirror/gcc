@@ -97,6 +97,18 @@
 	* gcc.dg/graphite/isl-ast-gen-blocks-4.c: New testcase.
 
 2014-07-24  Martin Liska  <mliska@suse.cz>
+	* config/mips/mips.c (mips_start_unique_function): Correct cgraph_node
+	function used.
+	* config/rs6000/rs6000.c (call_ABI_of_interest): Likewise.
+	(rs6000_code_end): Likewise.
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_declare_function_name): Correct
+	symtab_node funtion used.
+	(rs6000_xcoff_declare_object_name): Likewise.
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
 
 	* cgraphunit.c (compile): Correct function used.
 
