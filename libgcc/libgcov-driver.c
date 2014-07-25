@@ -51,9 +51,6 @@ static int gcov_error (const char *, ...);
 /* The following functions can be called from outside of this file.  */
 extern void gcov_clear (void) ATTRIBUTE_HIDDEN;
 extern void gcov_exit (void) ATTRIBUTE_HIDDEN;
-extern void set_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
-extern void reset_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
-extern int get_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
 
 struct gcov_fn_buffer
 {
@@ -85,32 +82,6 @@ size_t gcov_max_filename = 0;
 
 /* Flag when the profile has already been dumped via __gcov_dump().  */
 static int gcov_dump_complete;
-
-/* A global function that get the vaule of gcov_dump_complete.  */
-
-int
-get_gcov_dump_complete (void)
-{
-  return gcov_dump_complete;
-}
-
-/* A global functino that set the vaule of gcov_dump_complete. Will
-   be used in __gcov_dump() in libgcov-interface.c.  */
-
-void
-set_gcov_dump_complete (void)
-{
-  gcov_dump_complete = 1;
-}
-
-/* A global functino that set the vaule of gcov_dump_complete. Will
-   be used in __gcov_reset() in libgcov-interface.c.  */
-
-void
-reset_gcov_dump_complete (void)
-{
-  gcov_dump_complete = 0;
-}
 
 static struct gcov_fn_buffer *
 free_fn_data (const struct gcov_info *gi_ptr, struct gcov_fn_buffer *buffer,
@@ -795,6 +766,8 @@ gcov_exit (void)
   if (gcov_dump_complete)
     return;
 
+  gcov_dump_complete = 1;
+  
   crc32 = gcov_exit_compute_summary (&this_prg);
 
   allocate_filename_struct (&gf);
@@ -818,6 +791,7 @@ gcov_clear (void)
 {
   const struct gcov_info *gi_ptr;
 
+  gcov_dump_complete = 0;
   for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
     {
       unsigned f_ix;
