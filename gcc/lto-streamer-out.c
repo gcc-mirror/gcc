@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "function.h"
 #include "diagnostic-core.h"
+#include "inchash.h"
 #include "except.h"
 #include "lto-symtab.h"
 #include "lto-streamer.h"

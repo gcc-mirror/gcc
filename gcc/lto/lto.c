@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "bitmap.h"
 #include "hash-map.h"
+#include "inchash.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"

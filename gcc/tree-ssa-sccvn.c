@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
+#include "inchash.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimple-expr.h"

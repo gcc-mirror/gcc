@@ -1,3 +1,21 @@
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.in (OBJS): Add inchash.o.
+	(PLUGIN_HEADERS): Add inchash.h.
+	* ipa-devirt.c: Include inchash.h.
+	* lto-streamer-out.c: Dito.
+	* tree-ssa-dom.c: Dito.
+	* tree-ssa-pre.c: Dito.
+	* tree-ssa-sccvn.c: Dito.
+	* tree-ssa-tail-merge.c: Dito.
+	* asan.c: Dito.
+	* tree.c (iterative_hash_hashval_t): Move to ...
+	(iterative_hash_host_wide_int): Move to ...
+	* inchash.c: Here. New file.
+	* tree.h (iterative_hash_hashval_t): Move to ...
+	(iterative_hash_host_wide_int): Move to ...
+	* inchash.h: Here. New file.
+
 2014-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/61762

@@ -1268,6 +1268,7 @@ OBJS = \
 	hwint.o \
 	ifcvt.o \
 	ree.o \
+	inchash.o \
 	incpath.o \
 	init-regs.o \
 	internal-fn.o \
@@ -3162,7 +3163,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   tree-parloops.h tree-ssa-address.h tree-ssa-coalesce.h tree-ssa-dom.h \
   tree-ssa-loop.h tree-ssa-loop-ivopts.h tree-ssa-loop-manip.h \
   tree-ssa-loop-niter.h tree-ssa-ter.h tree-ssa-threadedge.h \
-  tree-ssa-threadupdate.h
+  tree-ssa-threadupdate.h inchash.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
