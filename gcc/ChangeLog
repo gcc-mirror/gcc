@@ -1,5 +1,22 @@
 2014-07-25  Andi Kleen  <ak@linux.intel.com>
 
+	* tree.c (build_type_attribute_qual_variant): Use inchash.
+	(type_hash_list): Dito.
+	(attribute_hash_list): Dito
+	(iterative_hstate_expr): Dito.
+	(iterative_hash_expr): Dito.
+	(build_range_type_1): Dito.
+	(build_array_type_1): Dito.
+	(build_function_type): Dito.
+	(build_method_type_directly): Dito.
+	(build_offset_type): Dito.
+	(build_complex_type): Dito.
+	(make_vector_type): Dito.
+	* tree.h (iterative_hash_expr): Add compat wrapper.
+	(iterative_hstate_expr): Add.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
 	* Makefile.in (OBJS): Add inchash.o.
 	(PLUGIN_HEADERS): Add inchash.h.
 	* ipa-devirt.c: Include inchash.h.

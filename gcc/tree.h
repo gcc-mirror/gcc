@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-core.h"
 #include "wide-int.h"
+#include "inchash.h"
 
 /* These includes are required here because they provide declarations
    used by inline functions in this file.
@@ -4283,7 +4284,17 @@ extern int tree_log2 (const_tree);
 extern int tree_floor_log2 (const_tree);
 extern unsigned int tree_ctz (const_tree);
 extern int simple_cst_equal (const_tree, const_tree);
-extern hashval_t iterative_hash_expr (const_tree, hashval_t);
+extern void iterative_hstate_expr (const_tree, inchash &);
+
+/* Compat version until all callers are converted. Return hash for
+   TREE with SEED.  */
+static inline hashval_t iterative_hash_expr(const_tree tree, hashval_t seed)
+{
+  inchash hstate (seed);
+  iterative_hstate_expr (tree, hstate);
+  return hstate.end ();
+}
+
 extern int compare_tree_int (const_tree, unsigned HOST_WIDE_INT);
 extern int type_list_equal (const_tree, const_tree);
 extern int chain_member (const_tree, const_tree);

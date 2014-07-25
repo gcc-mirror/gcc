@@ -1,5 +1,9 @@
 2014-07-25  Andi Kleen  <ak@linux.intel.com>
 
+	* lto.c (hash_canonical_type): Call iterative_hstate_expr.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
 	* lto.c (hash_canonical_type): Convert to inchash.
 	(iterative_hash_canonical_type): Dito.
 
