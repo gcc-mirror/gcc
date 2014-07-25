@@ -1,3 +1,23 @@
+2014-07-25  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener <rguenther@suse.de>
+
+	* lto-streamer-out.c (struct sccs): Turn to ...
+	(class DFS): ... this one; refactor the DFS walk so it can
+	be re-done on per-SCC basis.
+	(DFS::DFS): New constructor.
+	(DFS::~DFS): New destructor.
+	(hash_tree): Add new MAP argument holding in-SCC hash values;
+	remove POINTER_TYPE hashing hack.
+	(scc_entry_compare): Rename to ...
+	(DFS::scc_entry_compare): ... this one.
+	(hash_scc): Rename to ...
+	(DFS::hash_scc): ... this one; pass output_block instead
+	of streamer_cache; work harder to get unique and stable SCC
+	hashes.
+	(DFS_write_tree): Rename to ...
+	(DFS::DFS_write_tree): ... this one; add SINGLE_P parameter.
+	(lto_output_tree): Update.
+
 2014-07-25  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-streamer-out.c (hash_tree): Convert to inchash.
