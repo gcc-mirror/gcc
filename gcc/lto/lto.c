@@ -327,11 +327,9 @@ hash_canonical_type (tree type)
       /* OMP lowering can introduce error_mark_node in place of
 	 random local decls in types.  */
       if (TYPE_MIN_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
-	hstate.add_int (iterative_hash_expr (TYPE_MIN_VALUE (
-					TYPE_DOMAIN (type)), 0));
+	iterative_hstate_expr (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), hstate);
       if (TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
-	hstate.add_int (iterative_hash_expr (TYPE_MAX_VALUE (
-					TYPE_DOMAIN (type)), 0));
+	iterative_hstate_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), hstate);
     }
 
   /* Recurse for aggregates with a single element type.  */
