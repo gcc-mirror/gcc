@@ -53,8 +53,7 @@ _ITM_beginTransaction:
 	bl	GTM_begin_transaction
 
 	/* Return; we don't need to restore any of the call-saved regs.  */
-	ldp	x29, x30, [sp]
-	add     sp, sp, #11*16
+	ldp	x29, x30, [sp], 11*16
 	cfi_adjust_cfa_offset(-11*16)
 	cfi_restore(x29)
 	cfi_restore(x30)
