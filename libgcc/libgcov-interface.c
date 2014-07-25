@@ -44,8 +44,6 @@ void __gcov_dump (void) {}
 
 extern void gcov_clear (void) ATTRIBUTE_HIDDEN;
 extern void gcov_exit (void) ATTRIBUTE_HIDDEN;
-extern void set_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
-extern void reset_gcov_dump_complete (void) ATTRIBUTE_HIDDEN;
 
 #ifdef L_gcov_flush
 
@@ -95,9 +93,6 @@ void
 __gcov_reset (void)
 {
   gcov_clear ();
-  /* Re-enable dumping to support collecting profile in multiple regions
-     of interest.  */
-  reset_gcov_dump_complete ();
 }
 
 #endif /* L_gcov_reset */
@@ -111,8 +106,6 @@ void
 __gcov_dump (void)
 {
   gcov_exit ();
-  /* Prevent profile from being dumped a second time on application exit.  */
-  set_gcov_dump_complete ();
 }
 
 #endif /* L_gcov_dump */
