@@ -1,3 +1,8 @@
+2014-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (estimate_move_cost): Mark speed_p argument
+	as possibly unused.
+
 2014-07-23  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Add __AVR_DEVICE_NAME__.
