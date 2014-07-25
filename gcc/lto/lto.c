@@ -267,7 +267,7 @@ static hash_map<const_tree, hashval_t> *canonical_type_hash_cache;
 static unsigned long num_canonical_type_hash_entries;
 static unsigned long num_canonical_type_hash_queries;
 
-static hashval_t iterative_hash_canonical_type (tree type, hashval_t val);
+static void iterative_hash_canonical_type (tree type, inchash &hstate);
 static hashval_t gimple_canonical_type_hash (const void *p);
 static void gimple_register_canonical_type_1 (tree t, hashval_t hash);
 
@@ -279,14 +279,14 @@ static void gimple_register_canonical_type_1 (tree t, hashval_t hash);
 static hashval_t
 hash_canonical_type (tree type)
 {
-  hashval_t v;
+  inchash hstate;
 
   /* Combine a few common features of types so that types are grouped into
      smaller sets; when searching for existing matching types to merge,
      only existing types having the same features as the new type will be
      checked.  */
-  v = iterative_hash_hashval_t (TREE_CODE (type), 0);
-  v = iterative_hash_hashval_t (TYPE_MODE (type), v);
+  hstate.add_int (TREE_CODE (type));
+  hstate.add_int (TYPE_MODE (type));
 
   /* Incorporate common features of numerical types.  */
   if (INTEGRAL_TYPE_P (type)
@@ -295,48 +295,50 @@ hash_canonical_type (tree type)
       || TREE_CODE (type) == OFFSET_TYPE
       || POINTER_TYPE_P (type))
     {
-      v = iterative_hash_hashval_t (TYPE_PRECISION (type), v);
-      v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
+      hstate.add_int (TYPE_UNSIGNED (type));
+      hstate.add_int (TYPE_PRECISION (type));
     }
 
   if (VECTOR_TYPE_P (type))
     {
-      v = iterative_hash_hashval_t (TYPE_VECTOR_SUBPARTS (type), v);
-      v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
+      hstate.add_int (TYPE_VECTOR_SUBPARTS (type));
+      hstate.add_int (TYPE_UNSIGNED (type));
     }
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
-    v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
+    hstate.add_int (TYPE_UNSIGNED (type));
 
   /* For pointer and reference types, fold in information about the type
      pointed to but do not recurse to the pointed-to type.  */
   if (POINTER_TYPE_P (type))
     {
-      v = iterative_hash_hashval_t (TYPE_ADDR_SPACE (TREE_TYPE (type)), v);
-      v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
+      hstate.add_int (TYPE_ADDR_SPACE (TREE_TYPE (type)));
+      hstate.add_int (TREE_CODE (TREE_TYPE (type)));
     }
 
   /* For integer types hash only the string flag.  */
   if (TREE_CODE (type) == INTEGER_TYPE)
-    v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
+    hstate.add_int (TYPE_STRING_FLAG (type));
 
   /* For array types hash the domain bounds and the string flag.  */
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
-      v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
+      hstate.add_int (TYPE_STRING_FLAG (type));
       /* OMP lowering can introduce error_mark_node in place of
 	 random local decls in types.  */
       if (TYPE_MIN_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
-	v = iterative_hash_expr (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), v);
+	hstate.add_int (iterative_hash_expr (TYPE_MIN_VALUE (
+					TYPE_DOMAIN (type)), 0));
       if (TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
-	v = iterative_hash_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), v);
+	hstate.add_int (iterative_hash_expr (TYPE_MAX_VALUE (
+					TYPE_DOMAIN (type)), 0));
     }
 
   /* Recurse for aggregates with a single element type.  */
   if (TREE_CODE (type) == ARRAY_TYPE
       || TREE_CODE (type) == COMPLEX_TYPE
       || TREE_CODE (type) == VECTOR_TYPE)
-    v = iterative_hash_canonical_type (TREE_TYPE (type), v);
+    iterative_hash_canonical_type (TREE_TYPE (type), hstate);
 
   /* Incorporate function return and argument types.  */
   if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
@@ -346,17 +348,17 @@ hash_canonical_type (tree type)
 
       /* For method types also incorporate their parent class.  */
       if (TREE_CODE (type) == METHOD_TYPE)
-	v = iterative_hash_canonical_type (TYPE_METHOD_BASETYPE (type), v);
+	iterative_hash_canonical_type (TYPE_METHOD_BASETYPE (type), hstate);
 
-      v = iterative_hash_canonical_type (TREE_TYPE (type), v);
+      iterative_hash_canonical_type (TREE_TYPE (type), hstate);
 
       for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
 	{
-	  v = iterative_hash_canonical_type (TREE_VALUE (p), v);
+	  iterative_hash_canonical_type (TREE_VALUE (p), hstate);
 	  na++;
 	}
 
-      v = iterative_hash_hashval_t (na, v);
+      hstate.add_int (na);
     }
 
   if (RECORD_OR_UNION_TYPE_P (type))
@@ -367,20 +369,20 @@ hash_canonical_type (tree type)
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	if (TREE_CODE (f) == FIELD_DECL)
 	  {
-	    v = iterative_hash_canonical_type (TREE_TYPE (f), v);
+	    iterative_hash_canonical_type (TREE_TYPE (f), hstate);
 	    nf++;
 	  }
 
-      v = iterative_hash_hashval_t (nf, v);
+      hstate.add_int (nf);
     }
 
-  return v;
+  return hstate.end();
 }
 
 /* Returning a hash value for gimple type TYPE combined with VAL.  */
 
-static hashval_t
-iterative_hash_canonical_type (tree type, hashval_t val)
+static void
+iterative_hash_canonical_type (tree type, inchash &hstate)
 {
   hashval_t v;
   /* An already processed type.  */
@@ -398,7 +400,7 @@ iterative_hash_canonical_type (tree type, hashval_t val)
       v = hash_canonical_type (type);
       gimple_register_canonical_type_1 (type, v);
     }
-  return iterative_hash_hashval_t (v, val);
+  hstate.add_int (v);
 }
 
 /* Returns the hash for a canonical type P.  */
