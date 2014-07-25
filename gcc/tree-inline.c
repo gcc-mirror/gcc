@@ -3628,7 +3628,7 @@ tree_inlinable_function_p (tree fn)
    cost based on whether optimizing for size or speed according to SPEED_P.  */
 
 int
-estimate_move_cost (tree type, bool speed_p)
+estimate_move_cost (tree type, bool ARG_UNUSED (speed_p))
 {
   HOST_WIDE_INT size;
 
