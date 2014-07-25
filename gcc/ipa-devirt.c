@@ -118,6 +118,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "target.h"
 #include "hash-table.h"
+#include "inchash.h"
 #include "tree-pretty-print.h"
 #include "ipa-utils.h"
 #include "tree-ssa-alias.h"
