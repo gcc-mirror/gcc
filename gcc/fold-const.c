@@ -7240,15 +7240,18 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
    upon failure.  */
 
 static int
-native_encode_int (const_tree expr, unsigned char *ptr, int len)
+native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
   int byte, offset, word, words;
   unsigned char value;
 
-  if (total_bytes > len)
+  if ((off == -1 && total_bytes > len)
+      || off >= total_bytes)
     return 0;
+  if (off == -1)
+    off = 0;
   words = total_bytes / UNITS_PER_WORD;
 
   for (byte = 0; byte < total_bytes; byte++)
@@ -7271,9 +7274,11 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len)
 	}
       else
 	offset = BYTES_BIG_ENDIAN ? (total_bytes - 1) - byte : byte;
-      ptr[offset] = value;
+      if (offset >= off
+	  && offset - off < len)
+	ptr[offset - off] = value;
     }
-  return total_bytes;
+  return MIN (len, total_bytes - off);
 }
 
 
@@ -7283,7 +7288,7 @@ native_encode_int (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_fixed (const_tree expr, unsigned char *ptr, int len)
+native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   enum machine_mode mode = TYPE_MODE (type);
@@ -7303,7 +7308,7 @@ native_encode_fixed (const_tree expr, unsigned char *ptr, int len)
   value = TREE_FIXED_CST (expr);
   i_value = double_int_to_tree (i_type, value.data);
 
-  return native_encode_int (i_value, ptr, len);
+  return native_encode_int (i_value, ptr, len, off);
 }
 
 
@@ -7313,7 +7318,7 @@ native_encode_fixed (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_real (const_tree expr, unsigned char *ptr, int len)
+native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
@@ -7325,8 +7330,11 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len)
      up to 192 bits.  */
   long tmp[6];
 
-  if (total_bytes > len)
+  if ((off == -1 && total_bytes > len)
+      || off >= total_bytes)
     return 0;
+  if (off == -1)
+    off = 0;
   words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
 
   real_to_target (tmp, TREE_REAL_CST_PTR (expr), TYPE_MODE (type));
@@ -7350,9 +7358,12 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len)
 	}
       else
 	offset = BYTES_BIG_ENDIAN ? 3 - byte : byte;
-      ptr[offset + ((bitpos / BITS_PER_UNIT) & ~3)] = value;
+      offset = offset + ((bitpos / BITS_PER_UNIT) & ~3);
+      if (offset >= off
+	  && offset - off < len)
+	ptr[offset - off] = value;
     }
-  return total_bytes;
+  return MIN (len, total_bytes - off);
 }
 
 /* Subroutine of native_encode_expr.  Encode the COMPLEX_CST
@@ -7361,18 +7372,22 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_complex (const_tree expr, unsigned char *ptr, int len)
+native_encode_complex (const_tree expr, unsigned char *ptr, int len, int off)
 {
   int rsize, isize;
   tree part;
 
   part = TREE_REALPART (expr);
-  rsize = native_encode_expr (part, ptr, len);
-  if (rsize == 0)
+  rsize = native_encode_expr (part, ptr, len, off);
+  if (off == -1
+      && rsize == 0)
     return 0;
   part = TREE_IMAGPART (expr);
-  isize = native_encode_expr (part, ptr+rsize, len-rsize);
-  if (isize != rsize)
+  if (off != -1)
+    off = MAX (0, off - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (part))));
+  isize = native_encode_expr (part, ptr+rsize, len-rsize, off);
+  if (off == -1
+      && isize != rsize)
     return 0;
   return rsize + isize;
 }
@@ -7384,7 +7399,7 @@ native_encode_complex (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_vector (const_tree expr, unsigned char *ptr, int len)
+native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 {
   unsigned i, count;
   int size, offset;
@@ -7396,10 +7411,21 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len)
   size = GET_MODE_SIZE (TYPE_MODE (itype));
   for (i = 0; i < count; i++)
     {
+      if (off >= size)
+	{
+	  off -= size;
+	  continue;
+	}
       elem = VECTOR_CST_ELT (expr, i);
-      if (native_encode_expr (elem, ptr+offset, len-offset) != size)
+      int res = native_encode_expr (elem, ptr+offset, len-offset, off);
+      if ((off == -1 && res != size)
+	  || res == 0)
 	return 0;
-      offset += size;
+      offset += res;
+      if (offset >= len)
+	return offset;
+      if (off != -1)
+	off = 0;
     }
   return offset;
 }
@@ -7411,7 +7437,7 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_string (const_tree expr, unsigned char *ptr, int len)
+native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
   HOST_WIDE_INT total_bytes;
@@ -7422,47 +7448,56 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len)
       || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
     return 0;
   total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (type));
-  if (total_bytes > len)
+  if ((off == -1 && total_bytes > len)
+      || off >= total_bytes)
     return 0;
-  if (TREE_STRING_LENGTH (expr) < total_bytes)
+  if (off == -1)
+    off = 0;
+  if (TREE_STRING_LENGTH (expr) - off < MIN (total_bytes, len))
     {
-      memcpy (ptr, TREE_STRING_POINTER (expr), TREE_STRING_LENGTH (expr));
-      memset (ptr + TREE_STRING_LENGTH (expr), 0,
-	      total_bytes - TREE_STRING_LENGTH (expr));
+      int written = 0;
+      if (off < TREE_STRING_LENGTH (expr))
+	{
+	  written = MIN (len, TREE_STRING_LENGTH (expr) - off);
+	  memcpy (ptr, TREE_STRING_POINTER (expr) + off, written);
+	}
+      memset (ptr + written, 0,
+	      MIN (total_bytes - written, len - written));
     }
   else
-    memcpy (ptr, TREE_STRING_POINTER (expr), total_bytes);
-  return total_bytes;
+    memcpy (ptr, TREE_STRING_POINTER (expr) + off, MIN (total_bytes, len));
+  return MIN (total_bytes - off, len);
 }
 
 
 /* Subroutine of fold_view_convert_expr.  Encode the INTEGER_CST,
    REAL_CST, COMPLEX_CST or VECTOR_CST specified by EXPR into the
-   buffer PTR of length LEN bytes.  Return the number of bytes
-   placed in the buffer, or zero upon failure.  */
+   buffer PTR of length LEN bytes.  If OFF is not -1 then start
+   the encoding at byte offset OFF and encode at most LEN bytes.
+   Return the number of bytes placed in the buffer, or zero upon failure.  */
 
 int
-native_encode_expr (const_tree expr, unsigned char *ptr, int len)
+native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
 {
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
-      return native_encode_int (expr, ptr, len);
+      return native_encode_int (expr, ptr, len, off);
 
     case REAL_CST:
-      return native_encode_real (expr, ptr, len);
+      return native_encode_real (expr, ptr, len, off);
 
     case FIXED_CST:
-      return native_encode_fixed (expr, ptr, len);
+      return native_encode_fixed (expr, ptr, len, off);
 
     case COMPLEX_CST:
-      return native_encode_complex (expr, ptr, len);
+      return native_encode_complex (expr, ptr, len, off);
 
     case VECTOR_CST:
-      return native_encode_vector (expr, ptr, len);
+      return native_encode_vector (expr, ptr, len, off);
 
     case STRING_CST:
-      return native_encode_string (expr, ptr, len);
+      return native_encode_string (expr, ptr, len, off);
 
     default:
       return 0;

@@ -2881,41 +2881,6 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
     }
 }
 
-/* CTOR is STRING_CST.  Fold reference of type TYPE and size SIZE
-   to the memory at bit OFFSET.
-
-   We do only simple job of folding byte accesses.  */
-
-static tree
-fold_string_cst_ctor_reference (tree type, tree ctor,
-				unsigned HOST_WIDE_INT offset,
-				unsigned HOST_WIDE_INT size)
-{
-  if (INTEGRAL_TYPE_P (type)
-      && (TYPE_MODE (type)
-	  == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-      && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-	  == MODE_INT)
-      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
-      && size == BITS_PER_UNIT
-      && !(offset % BITS_PER_UNIT))
-    {
-      offset /= BITS_PER_UNIT;
-      if (offset < (unsigned HOST_WIDE_INT) TREE_STRING_LENGTH (ctor))
-	return build_int_cst_type (type, (TREE_STRING_POINTER (ctor)
-				   [offset]));
-      /* Folding
-	 const char a[20]="hello";
-	 return a[10];
-
-	 might lead to offset greater than string length.  In this case we
-	 know value is either initialized to 0 or out of bounds.  Return 0
-	 in both cases.  */
-      return build_zero_cst (type);
-    }
-  return NULL_TREE;
-}
-
 /* CTOR is CONSTRUCTOR of an array type.  Fold reference of type TYPE and size
    SIZE to the memory at bit OFFSET.  */
 
@@ -3107,8 +3072,19 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
 	STRIP_NOPS (ret);
       return ret;
     }
-  if (TREE_CODE (ctor) == STRING_CST)
-    return fold_string_cst_ctor_reference (type, ctor, offset, size);
+  /* For constants and byte-aligned/sized reads try to go through
+     native_encode/interpret.  */
+  if (CONSTANT_CLASS_P (ctor)
+      && BITS_PER_UNIT == 8
+      && offset % BITS_PER_UNIT == 0
+      && size % BITS_PER_UNIT == 0
+      && size <= MAX_BITSIZE_MODE_ANY_MODE)
+    {
+      unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+      if (native_encode_expr (ctor, buf, size / BITS_PER_UNIT,
+			      offset / BITS_PER_UNIT) > 0)
+	return native_interpret_expr (type, buf, size / BITS_PER_UNIT);
+    }
   if (TREE_CODE (ctor) == CONSTRUCTOR)
     {
 

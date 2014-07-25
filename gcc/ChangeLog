@@ -1,5 +1,23 @@
 2014-07-25  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/61762
+	PR middle-end/61894
+	* fold-const.c (native_encode_int): Add and handle offset
+	parameter to do partial encodings of expr.
+	(native_encode_fixed): Likewise.
+	(native_encode_real): Likewise.
+	(native_encode_complex): Likewise.
+	(native_encode_vector): Likewise.
+	(native_encode_string): Likewise.
+	(native_encode_expr): Likewise.
+	* fold-const.c (native_encode_expr): Add offset parameter
+	defaulting to -1.
+	* gimple-fold.c (fold_string_cst_ctor_reference): Remove.
+	(fold_ctor_reference): Handle all reads from tcc_constant
+	ctors.
+
+2014-07-25  Richard Biener  <rguenther@suse.de>
+
 	* tree-inline.c (estimate_move_cost): Mark speed_p argument
 	as possibly unused.
 
