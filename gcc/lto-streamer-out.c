@@ -440,36 +440,71 @@ lto_output_tree_1 (struct output_block *ob, tree expr, hashval_t hash,
     }
 }
 
-struct sccs
+class DFS
 {
-  unsigned int dfsnum;
-  unsigned int low;
+public:
+  DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
+       bool single_p);
+  ~DFS ();
+
+  struct scc_entry
+  {
+    tree t;
+    hashval_t hash;
+  };
+  vec<scc_entry> sccstack;
+
+private:
+  struct sccs
+  {
+    unsigned int dfsnum;
+    unsigned int low;
+  };
+
+  static int scc_entry_compare (const void *, const void *);
+
+  void DFS_write_tree_body (struct output_block *ob,
+			    tree expr, sccs *expr_state, bool ref_p,
+			    bool single_p);
+
+  void DFS_write_tree (struct output_block *ob, sccs *from_state,
+		       tree expr, bool ref_p, bool this_ref_p,
+		       bool single_p);
+  hashval_t
+  hash_scc (struct output_block *ob, unsigned first, unsigned size);
+
+  unsigned int next_dfs_num;
+  struct pointer_map_t *sccstate;
+  struct obstack sccstate_obstack;
 };
 
-struct scc_entry
+DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
+	  bool single_p)
 {
-  tree t;
-  hashval_t hash;
-};
+  sccstack.create (0);
+  sccstate = pointer_map_create ();
+  gcc_obstack_init (&sccstate_obstack);
+  next_dfs_num = 1;
+  DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p, single_p);
+}
 
-static unsigned int next_dfs_num;
-static vec<scc_entry> sccstack;
-static struct pointer_map_t *sccstate;
-static struct obstack sccstate_obstack;
-
-static void
-DFS_write_tree (struct output_block *ob, sccs *from_state,
-		tree expr, bool ref_p, bool this_ref_p);
+DFS::~DFS ()
+{
+  sccstack.release ();
+  pointer_map_destroy (sccstate);
+  obstack_free (&sccstate_obstack, NULL);
+}
 
 /* Handle the tree EXPR in the DFS walk with SCC state EXPR_STATE and
    DFS recurse for all tree edges originating from it.  */
 
-static void
-DFS_write_tree_body (struct output_block *ob,
-		     tree expr, sccs *expr_state, bool ref_p)
+void
+DFS::DFS_write_tree_body (struct output_block *ob,
+			  tree expr, sccs *expr_state, bool ref_p,
+			  bool single_p)
 {
 #define DFS_follow_tree_edge(DEST) \
-  DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p)
+  DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p, single_p)
 
   enum tree_code code;
 
@@ -690,18 +725,26 @@ DFS_write_tree_body (struct output_block *ob,
 #undef DFS_follow_tree_edge
 }
 
-/* Return a hash value for the tree T.  */
+/* Return a hash value for the tree T.
+   CACHE holds hash values of trees outside current SCC.  MAP, if non-NULL,
+   may hold hash values if trees inside current SCC.  */
 
 static hashval_t
-hash_tree (struct streamer_tree_cache_d *cache, tree t)
+hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, tree t)
 {
   inchash hstate;
 
 #define visit(SIBLING) \
   do { \
     unsigned ix; \
-    if (SIBLING && streamer_tree_cache_lookup (cache, SIBLING, &ix)) \
+    if (!SIBLING) \
+      hstate.add_int (0); \
+    else if (streamer_tree_cache_lookup (cache, SIBLING, &ix)) \
       hstate.add_int (streamer_tree_cache_get_hash (cache, ix)); \
+    else if (map) \
+      hstate.add_int (*map->get (SIBLING)); \
+    else \
+      hstate.add_int (1); \
   } while (0)
 
   /* Hash TS_BASE.  */
@@ -905,23 +948,7 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
-      if (POINTER_TYPE_P (t))
-	{
-	  /* For pointers factor in the pointed-to type recursively as
-	     we cannot recurse through only pointers.
-	     ???  We can generalize this by keeping track of the
-	     in-SCC edges for each tree (or arbitrarily the first
-	     such edge) and hashing that in in a second stage
-	     (instead of the quadratic mixing of the SCC we do now).  */
-	  hashval_t x;
-	  unsigned ix;
-	  if (streamer_tree_cache_lookup (cache, TREE_TYPE (t), &ix))
-	    x = streamer_tree_cache_get_hash (cache, ix);
-	  else
-	    x = hash_tree (cache, TREE_TYPE (t));
-	  hstate.merge_hash (x);
-	}
-      else if (code != IDENTIFIER_NODE)
+      if (code != IDENTIFIER_NODE)
 	visit (TREE_TYPE (t));
     }
 
@@ -1116,8 +1143,8 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
 /* Compare two SCC entries by their hash value for qsorting them.  */
 
-static int
-scc_entry_compare (const void *p1_, const void *p2_)
+int
+DFS::scc_entry_compare (const void *p1_, const void *p2_)
 {
   const scc_entry *p1 = (const scc_entry *) p1_;
   const scc_entry *p2 = (const scc_entry *) p2_;
@@ -1131,40 +1158,159 @@ scc_entry_compare (const void *p1_, const void *p2_)
 /* Return a hash value for the SCC on the SCC stack from FIRST with
    size SIZE.  */
 
-static hashval_t
-hash_scc (struct streamer_tree_cache_d *cache, unsigned first, unsigned size)
+hashval_t
+DFS::hash_scc (struct output_block *ob,
+	       unsigned first, unsigned size)
 {
+  unsigned int last_classes = 0, iterations = 0;
+
   /* Compute hash values for the SCC members.  */
   for (unsigned i = 0; i < size; ++i)
-    sccstack[first+i].hash = hash_tree (cache, sccstack[first+i].t);
+    sccstack[first+i].hash = hash_tree (ob->writer_cache, NULL,
+					sccstack[first+i].t);
 
   if (size == 1)
     return sccstack[first].hash;
 
-  /* Sort the SCC of type, hash pairs so that when we mix in
-     all members of the SCC the hash value becomes independent on
-     the order we visited the SCC.  Produce hash of the whole SCC as
-     combination of hashes of individual elements.  Then combine that hash into
-     hash of each element, so othewise identically looking elements from two
-     different SCCs are distinguished.  */
-  qsort (&sccstack[first], size, sizeof (scc_entry), scc_entry_compare);
+  /* We aim to get unique hash for every tree within SCC and compute hash value
+     of the whole SCC by combing all values together in an stable (entry point
+     independent) order.  This guarantees that the same SCC regions within
+     different translation units will get the same hash values and therefore
+     will be merged at WPA time.
 
-  hashval_t scc_hash = sccstack[first].hash;
-  for (unsigned i = 1; i < size; ++i)
-    scc_hash = iterative_hash_hashval_t (scc_hash,
-					 sccstack[first+i].hash);
-  for (unsigned i = 0; i < size; ++i)
-    sccstack[first+i].hash = iterative_hash_hashval_t (sccstack[first+i].hash, scc_hash);
-  return scc_hash;
+     Often the hashes are already unique.  In that case we compute scc hash
+     by combining individual hash values in an increasing order.
+
+     If thre are duplicates we seek at least one tree with unique hash (and
+     pick one with minimal hash and this property).  Then we obtain stable
+     order by DFS walk starting from this unique tree and then use index
+     within this order to make individual hash values unique.
+
+     If there is no tree with unique hash, we iteratively propagate the hash
+     values across the internal edges of SCC.  This usually quickly leads
+     to unique hashes.  Consider, for example, an SCC containing two pointers
+     that are identical except for type they point and assume that these
+     types are also part of the SCC.
+     The propagation will add the points-to type information into their hash
+     values.  */
+  do
+    {
+      /* Sort the SCC so we can easily see check for uniqueness.  */
+      qsort (&sccstack[first], size, sizeof (scc_entry), scc_entry_compare);
+
+      unsigned int classes = 1;
+      int firstunique = -1;
+
+      /* Find tree with lowest unique hash (if it exists) and compute
+	 number of equivalence classes.  */
+      if (sccstack[first].hash != sccstack[first+1].hash)
+	firstunique = 0;
+      for (unsigned i = 1; i < size; ++i)
+	if (sccstack[first+i-1].hash != sccstack[first+i].hash)
+	  {
+	    classes++;
+	    if (firstunique == -1
+		&& (i == size - 1
+		    || sccstack[first+i+1].hash != sccstack[first+i].hash))
+	      firstunique = i;
+	  }
+
+      /* If we found tree with unique hash; stop the iteration.  */
+      if (firstunique != -1
+	  /* Also terminate if we run out of iterations or if the number of
+	     equivalence classes is no longer increasing.
+	     For example a cyclic list of trees that are all equivalent will
+	     never have unique entry point; we however do not build such SCCs
+	     in our IL.  */
+	  || classes <= last_classes || iterations > 16)
+	{
+          hashval_t scc_hash;
+
+	  /* If some hashes are not unique (CLASSES != SIZE), use the DFS walk
+	     starting from FIRSTUNIQUE to obstain stable order.  */
+	  if (classes != size && firstunique != -1)
+	    {
+	      hash_map <tree, hashval_t> map(size*2);
+
+	      /* Store hash values into a map, so we can associate them with
+		 reordered SCC.  */
+	      for (unsigned i = 0; i < size; ++i)
+		map.put (sccstack[first+i].t, sccstack[first+i].hash);
+
+	      DFS again (ob, sccstack[first+firstunique].t, false, false, true);
+	      gcc_assert (again.sccstack.length () == size);
+
+	      memcpy (sccstack.address () + first,
+		      again.sccstack.address (),
+		      sizeof (scc_entry) * size);
+
+	      /* Update hash values of individual members by hashing in the
+		 index within the stable order.  This ensures uniqueness.
+		 Also compute the scc_hash by mixing in all hash values in the
+		 stable order we obtained.  */
+	      sccstack[first].hash = *map.get (sccstack[first].t);
+	      scc_hash = sccstack[first].hash;
+	      for (unsigned i = 1; i < size; ++i)
+		{
+		  sccstack[first+i].hash
+		    = iterative_hash_hashval_t (i,
+						*map.get (sccstack[first+i].t));
+		  scc_hash = iterative_hash_hashval_t (scc_hash,
+						       sccstack[first+i].hash);
+		}
+	    }
+	  /* If we got unique hash values for each tree, then sort already
+	     ensured entry point independent order.  Only compute the final
+	     scc hash.
+
+	     If we failed to find the unique entry point, we go by the same
+	     route. We will eventually introduce unwanted hash conflicts.  */
+	  else
+	    {
+	      scc_hash = sccstack[first].hash;
+	      for (unsigned i = 1; i < size; ++i)
+		scc_hash = iterative_hash_hashval_t (scc_hash,
+						     sccstack[first+i].hash);
+	      /* We can not 100% guarantee that the hash will not conflict in
+		 in a way so the unique hash is not found.  This however
+		 should be extremely rare situation.  ICE for now so possible
+		 issues are found and evaulated.  */
+	      gcc_checking_assert (classes == size);
+	    }
+
+	  /* To avoid conflicts across SCCs iteratively hash the whole SCC
+	     hash into the hash of each of the elements.  */
+	  for (unsigned i = 0; i < size; ++i)
+	    sccstack[first+i].hash
+	      = iterative_hash_hashval_t (sccstack[first+i].hash, scc_hash);
+	  return scc_hash;
+	}
+
+      last_classes = classes;
+      iterations++;
+
+      /* We failed to identify the entry point; propagate hash values across
+	 the edges.  */
+      {
+	hash_map <tree, hashval_t> map(size*2);
+	for (unsigned i = 0; i < size; ++i)
+	  map.put (sccstack[first+i].t, sccstack[first+i].hash);
+
+	for (unsigned i = 0; i < size; i++)
+	  sccstack[first+i].hash = hash_tree (ob->writer_cache, &map,
+					      sccstack[first+i].t);
+      }
+    }
+  while (true);
 }
 
 /* DFS walk EXPR and stream SCCs of tree bodies if they are not
    already in the streamer cache.  Main routine called for
    each visit of EXPR.  */
 
-static void
-DFS_write_tree (struct output_block *ob, sccs *from_state,
-		tree expr, bool ref_p, bool this_ref_p)
+void
+DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
+		     tree expr, bool ref_p, bool this_ref_p, bool single_p)
 {
   unsigned ix;
   sccs **slot;
@@ -1196,10 +1342,10 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 	;
       else if (TREE_CODE (expr) == INTEGER_CST
 	       && !TREE_OVERFLOW (expr))
-	DFS_write_tree (ob, cstate, TREE_TYPE (expr), ref_p, ref_p);
+	DFS_write_tree (ob, cstate, TREE_TYPE (expr), ref_p, ref_p, single_p);
       else
 	{
-	  DFS_write_tree_body (ob, expr, cstate, ref_p);
+	  DFS_write_tree_body (ob, expr, cstate, ref_p, single_p);
 
 	  /* Walk any LTO-specific edges.  */
 	  if (DECL_P (expr)
@@ -1209,7 +1355,7 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 	      /* Handle DECL_INITIAL for symbols.  */
 	      tree initial = get_symbol_initial_value (ob->decl_state->symtab_node_encoder,
 						       expr);
-	      DFS_write_tree (ob, cstate, initial, ref_p, ref_p);
+	      DFS_write_tree (ob, cstate, initial, ref_p, ref_p, single_p);
 	    }
 	}
 
@@ -1218,6 +1364,11 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 	{
 	  unsigned first, size;
 	  tree x;
+
+	  /* If we are re-walking a single leaf-SCC just return and
+	     let the caller access the sccstack.  */
+	  if (single_p)
+	    return;
 
 	  /* Pop the SCC and compute its size.  */
 	  first = sccstack.length ();
@@ -1234,7 +1385,7 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 	  unsigned scc_entry_len = 0;
 	  if (!flag_wpa)
 	    {
-	      scc_hash = hash_scc (ob->writer_cache, first, size);
+	      scc_hash = hash_scc (ob, first, size);
 
 	      /* Put the entries with the least number of collisions first.  */
 	      unsigned entry_start = 0;
@@ -1257,6 +1408,18 @@ DFS_write_tree (struct output_block *ob, sccs *from_state,
 		  scc_entry tem = sccstack[first + i];
 		  sccstack[first + i] = sccstack[first + entry_start + i];
 		  sccstack[first + entry_start + i] = tem;
+		}
+
+	      if (scc_entry_len == 1)
+		; /* We already sorted SCC deterministically in hash_scc.  */
+	      else
+		/* Check that we have only one SCC.
+		   Naturally we may have conflicts if hash function is not
+ 		   strong enough.  Lets see how far this gets.  */
+		{
+#ifdef ENABLE_CHECKING
+		  gcc_unreachable ();
+#endif
 		}
 	    }
 
@@ -1377,13 +1540,7 @@ lto_output_tree (struct output_block *ob, tree expr,
       /* Save ob state ... */
       /* let's see ... */
       in_dfs_walk = true;
-      sccstate = pointer_map_create ();
-      gcc_obstack_init (&sccstate_obstack);
-      next_dfs_num = 1;
-      DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p);
-      sccstack.release ();
-      pointer_map_destroy (sccstate);
-      obstack_free (&sccstate_obstack, NULL);
+      DFS (ob, expr, ref_p, this_ref_p, false);
       in_dfs_walk = false;
 
       /* Finally append a reference to the tree we were writing.
