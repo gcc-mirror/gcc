@@ -1,3 +1,7 @@
+2014-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/elf.h: Define TARGET_UNWIND_TABLES_DEFAULT.
+
 2014-07-24  Kyle McMartin  <kyle@redhat.com>
 
         * config/aarch64/aarch64-linux.h (TARGET_ASM_FILE_END): Define.
