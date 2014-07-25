@@ -2151,6 +2151,8 @@ static tree cp_parser_class_head
   (cp_parser *, bool *);
 static enum tag_types cp_parser_class_key
   (cp_parser *);
+static void cp_parser_type_parameter_key
+  (cp_parser* parser);
 static void cp_parser_member_specification_opt
   (cp_parser *);
 static void cp_parser_member_declaration
@@ -2408,6 +2410,8 @@ static bool cp_parser_next_token_ends_template_argument_p
 static bool cp_parser_nth_token_starts_template_argument_list_p
   (cp_parser *, size_t);
 static enum tag_types cp_parser_token_is_class_key
+  (cp_token *);
+static enum tag_types cp_parser_token_is_type_parameter_key
   (cp_token *);
 static void cp_parser_check_class_key
   (enum tag_types, tree type);
@@ -13375,8 +13379,8 @@ cp_parser_type_parameter (cp_parser* parser, bool *is_parameter_pack)
 	cp_parser_template_parameter_list (parser);
 	/* Look for the `>'.  */
 	cp_parser_require (parser, CPP_GREATER, RT_GREATER);
-	/* Look for the `class' keyword.  */
-	cp_parser_require_keyword (parser, RID_CLASS, RT_CLASS);
+	/* Look for the `class' or 'typename' keywords.  */
+	cp_parser_type_parameter_key (parser);
         /* If the next token is an ellipsis, we have a template
            argument pack. */
         if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -20258,6 +20262,35 @@ cp_parser_class_key (cp_parser* parser)
   return tag_type;
 }
 
+/* Parse a type-parameter-key.
+
+   type-parameter-key:
+     class
+     typename
+ */
+
+static void
+cp_parser_type_parameter_key (cp_parser* parser)
+{
+  /* Look for the type-parameter-key.  */
+  enum tag_types tag_type = none_type;
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  if ((tag_type = cp_parser_token_is_type_parameter_key (token)) != none_type)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      if (pedantic && tag_type == typename_type && cxx_dialect < cxx1z)
+	/* typename is not allowed in a template template parameter
+	   by the standard until C++1Z.  */
+	pedwarn (token->location, OPT_Wpedantic, 
+		 "ISO C++ forbids typename key in template template parameter;"
+		 " use -std=c++1z or -std=gnu++1z");
+    }
+  else
+    cp_parser_error (parser, "expected %<class%> or %<typename%>");
+
+  return;
+}
+
 /* Parse an (optional) member-specification.
 
    member-specification:
@@ -24770,6 +24803,27 @@ cp_parser_token_is_class_key (cp_token* token)
       return record_type;
     case RID_UNION:
       return union_type;
+
+    default:
+      return none_type;
+    }
+}
+
+/* Returns the kind of tag indicated by TOKEN, if it is a type-parameter-key,
+   or none_type otherwise or if the token is null.  */
+
+static enum tag_types
+cp_parser_token_is_type_parameter_key (cp_token* token)
+{
+  if (!token)
+    return none_type;
+
+  switch (token->keyword)
+    {
+    case RID_CLASS:
+      return class_type;
+    case RID_TYPENAME:
+      return typename_type;
 
     default:
       return none_type;

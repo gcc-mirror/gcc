@@ -5707,7 +5707,16 @@ proc check_effective_target_c++1y_only { } {
     return [check-flags { { } { } { -std=c++1y -std=gnu++1y -std=c++14 -std=gnu++14 } }]
 }
 proc check_effective_target_c++1y { } {
-    return [check_effective_target_c++1y_only]
+    if [check_effective_target_c++1y_only] {
+	return 1
+    }
+    return [check_effective_target_c++1z]
+}
+proc check_effective_target_c++1y_down { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return ![check_effective_target_c++1z]
 }
 
 proc check_effective_target_c++98_only { } {
@@ -5715,6 +5724,16 @@ proc check_effective_target_c++98_only { } {
 	return 0
     }
     return ![check_effective_target_c++11]
+}
+
+proc check_effective_target_c++1z_only { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [check-flags { { } { } { -std=c++1z -std=gnu++1z } }]
+}
+proc check_effective_target_c++1z { } {
+    return [check_effective_target_c++1z_only]
 }
 
 # Return 1 if expensive testcases should be run.
