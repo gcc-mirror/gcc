@@ -1,5 +1,9 @@
 2014-07-25  Andi Kleen  <ak@linux.intel.com>
 
+	* lto-streamer-out.c (hash_tree): Convert to inchash.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
 	* tree.c (build_type_attribute_qual_variant): Use inchash.
 	(type_hash_list): Dito.
 	(attribute_hash_list): Dito
