@@ -1,3 +1,8 @@
+2014-07-25  Tobias Burnus  <burnus@net-b.de>
+
+	* simplify.c (gfc_simplify_storage_size): Use proper
+	integer kind for the returned value.
+
 2014-07-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* intrinsic.texi (Intrinsic Procedures) <ATOMIC_DEFINE>: Move to

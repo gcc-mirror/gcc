@@ -5841,11 +5841,9 @@ gfc_simplify_storage_size (gfc_expr *x,
   if (k == -1)
     return &gfc_bad_expr;
 
-  result = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
-				  &x->where);
+  result = gfc_get_constant_expr (BT_INTEGER, k, &x->where);
 
   mpz_set_si (result->value.integer, gfc_element_size (x));
-
   mpz_mul_ui (result->value.integer, result->value.integer, BITS_PER_UNIT);
 
   return range_check (result, "STORAGE_SIZE");
