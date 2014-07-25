@@ -1,5 +1,14 @@
 2014-07-25  Uros Bizjak  <ubizjak@gmail.com>
 
+	Backport from mainline
+	2014-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61656
+	* config/i386/i386.c (classify_argument): Don't merge classes above
+	number of words.
+
+2014-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/alpha/elf.h: Define TARGET_UNWIND_TABLES_DEFAULT.
 
 2014-07-24  Kyle McMartin  <kyle@redhat.com>
