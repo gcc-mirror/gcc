@@ -695,207 +695,213 @@ DFS_write_tree_body (struct output_block *ob,
 static hashval_t
 hash_tree (struct streamer_tree_cache_d *cache, tree t)
 {
+  inchash hstate;
+
 #define visit(SIBLING) \
   do { \
     unsigned ix; \
     if (SIBLING && streamer_tree_cache_lookup (cache, SIBLING, &ix)) \
-      v = iterative_hash_hashval_t (streamer_tree_cache_get_hash (cache, ix), v); \
+      hstate.add_int (streamer_tree_cache_get_hash (cache, ix)); \
   } while (0)
 
   /* Hash TS_BASE.  */
   enum tree_code code = TREE_CODE (t);
-  hashval_t v = iterative_hash_host_wide_int (code, 0);
+  hstate.add_int (code);
   if (!TYPE_P (t))
     {
-      v = iterative_hash_host_wide_int (TREE_SIDE_EFFECTS (t)
-					| (TREE_CONSTANT (t) << 1)
-					| (TREE_READONLY (t) << 2)
-					| (TREE_PUBLIC (t) << 3), v);
+      hstate.add_flag (TREE_SIDE_EFFECTS (t));
+      hstate.add_flag (TREE_CONSTANT (t));
+      hstate.add_flag (TREE_READONLY (t));
+      hstate.add_flag (TREE_PUBLIC (t));
     }
-  v = iterative_hash_host_wide_int (TREE_ADDRESSABLE (t)
-				    | (TREE_THIS_VOLATILE (t) << 1), v);
+  hstate.add_flag (TREE_ADDRESSABLE (t));
+  hstate.add_flag (TREE_THIS_VOLATILE (t));
   if (DECL_P (t))
-    v = iterative_hash_host_wide_int (DECL_UNSIGNED (t), v);
+    hstate.add_flag (DECL_UNSIGNED (t));
   else if (TYPE_P (t))
-    v = iterative_hash_host_wide_int (TYPE_UNSIGNED (t), v);
+    hstate.add_flag (TYPE_UNSIGNED (t));
   if (TYPE_P (t))
-    v = iterative_hash_host_wide_int (TYPE_ARTIFICIAL (t), v);
+    hstate.add_flag (TYPE_ARTIFICIAL (t));
   else
-    v = iterative_hash_host_wide_int (TREE_NO_WARNING (t), v);
-  v = iterative_hash_host_wide_int (TREE_NOTHROW (t)
-				    | (TREE_STATIC (t) << 1)
-				    | (TREE_PROTECTED (t) << 2)
-				    | (TREE_DEPRECATED (t) << 3), v);
+    hstate.add_flag (TREE_NO_WARNING (t));
+  hstate.add_flag (TREE_NOTHROW (t));
+  hstate.add_flag (TREE_STATIC (t));
+  hstate.add_flag (TREE_PROTECTED (t));
+  hstate.add_flag (TREE_DEPRECATED (t));
   if (code != TREE_BINFO)
-    v = iterative_hash_host_wide_int (TREE_PRIVATE (t), v);
+    hstate.add_flag (TREE_PRIVATE (t));
   if (TYPE_P (t))
-    v = iterative_hash_host_wide_int (TYPE_SATURATING (t)
-				      | (TYPE_ADDR_SPACE (t) << 1), v);
+    {
+      hstate.add_flag (TYPE_SATURATING (t));
+      hstate.add_flag (TYPE_ADDR_SPACE (t));
+    }
   else if (code == SSA_NAME)
-    v = iterative_hash_host_wide_int (SSA_NAME_IS_DEFAULT_DEF (t), v);
+    hstate.add_flag (SSA_NAME_IS_DEFAULT_DEF (t));
+  hstate.commit_flag ();
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
       int i;
-      v = iterative_hash_host_wide_int (TREE_INT_CST_NUNITS (t), v);
-      v = iterative_hash_host_wide_int (TREE_INT_CST_EXT_NUNITS (t), v);
+      hstate.add_wide_int (TREE_INT_CST_NUNITS (t));
+      hstate.add_wide_int (TREE_INT_CST_EXT_NUNITS (t));
       for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-	v = iterative_hash_host_wide_int (TREE_INT_CST_ELT (t, i), v);
+	hstate.add_wide_int (TREE_INT_CST_ELT (t, i));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
     {
       REAL_VALUE_TYPE r = TREE_REAL_CST (t);
-      v = iterative_hash_host_wide_int (r.cl, v);
-      v = iterative_hash_host_wide_int (r.decimal
-					| (r.sign << 1)
-					| (r.signalling << 2)
-					| (r.canonical << 3), v);
-      v = iterative_hash_host_wide_int (r.uexp, v);
-      for (unsigned i = 0; i < SIGSZ; ++i)
-	v = iterative_hash_host_wide_int (r.sig[i], v);
+      hstate.add_flag (r.cl);
+      hstate.add_flag (r.sign);
+      hstate.add_flag (r.signalling);
+      hstate.add_flag (r.canonical);
+      hstate.commit_flag ();
+      hstate.add_int (r.uexp);
+      hstate.add (r.sig, sizeof (r.sig));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
     {
       FIXED_VALUE_TYPE f = TREE_FIXED_CST (t);
-      v = iterative_hash_host_wide_int (f.mode, v);
-      v = iterative_hash_host_wide_int (f.data.low, v);
-      v = iterative_hash_host_wide_int (f.data.high, v);
+      hstate.add_int (f.mode);
+      hstate.add_int (f.data.low);
+      hstate.add_int (f.data.high);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      v = iterative_hash_host_wide_int (DECL_MODE (t), v);
-      v = iterative_hash_host_wide_int (DECL_NONLOCAL (t)
-					| (DECL_VIRTUAL_P (t) << 1)
-					| (DECL_IGNORED_P (t) << 2)
-					| (DECL_ABSTRACT (t) << 3)
-					| (DECL_ARTIFICIAL (t) << 4)
-					| (DECL_USER_ALIGN (t) << 5)
-					| (DECL_PRESERVE_P (t) << 6)
-					| (DECL_EXTERNAL (t) << 7)
-					| (DECL_GIMPLE_REG_P (t) << 8), v);
-      v = iterative_hash_host_wide_int (DECL_ALIGN (t), v);
+      hstate.add_wide_int (DECL_MODE (t));
+      hstate.add_flag (DECL_NONLOCAL (t));
+      hstate.add_flag (DECL_VIRTUAL_P (t));
+      hstate.add_flag (DECL_IGNORED_P (t));
+      hstate.add_flag (DECL_ABSTRACT (t));
+      hstate.add_flag (DECL_ARTIFICIAL (t));
+      hstate.add_flag (DECL_USER_ALIGN (t));
+      hstate.add_flag (DECL_PRESERVE_P (t));
+      hstate.add_flag (DECL_EXTERNAL (t));
+      hstate.add_flag (DECL_GIMPLE_REG_P (t));
+      hstate.commit_flag ();
+      hstate.add_int (DECL_ALIGN (t));
       if (code == LABEL_DECL)
 	{
-	  v = iterative_hash_host_wide_int (EH_LANDING_PAD_NR (t), v);
-	  v = iterative_hash_host_wide_int (LABEL_DECL_UID (t), v);
+          hstate.add_int (EH_LANDING_PAD_NR (t));
+	  hstate.add_int (LABEL_DECL_UID (t));
 	}
       else if (code == FIELD_DECL)
 	{
-	  v = iterative_hash_host_wide_int (DECL_PACKED (t)
-					    | (DECL_NONADDRESSABLE_P (t) << 1),
-					    v);
-	  v = iterative_hash_host_wide_int (DECL_OFFSET_ALIGN (t), v);
+	  hstate.add_flag (DECL_PACKED (t));
+	  hstate.add_flag (DECL_NONADDRESSABLE_P (t));
+	  hstate.add_int (DECL_OFFSET_ALIGN (t));
 	}
       else if (code == VAR_DECL)
 	{
-	  v = iterative_hash_host_wide_int (DECL_HAS_DEBUG_EXPR_P (t)
-					    | (DECL_NONLOCAL_FRAME (t) << 1),
-					    v);
+	  hstate.add_flag (DECL_HAS_DEBUG_EXPR_P (t));
+	  hstate.add_flag (DECL_NONLOCAL_FRAME (t));
 	}
       if (code == RESULT_DECL
 	  || code == PARM_DECL
 	  || code == VAR_DECL)
 	{
-	  v = iterative_hash_host_wide_int (DECL_BY_REFERENCE (t), v);
+	  hstate.add_flag (DECL_BY_REFERENCE (t));
 	  if (code == VAR_DECL
 	      || code == PARM_DECL)
-	    v = iterative_hash_host_wide_int (DECL_HAS_VALUE_EXPR_P (t), v);
+	    hstate.add_flag (DECL_HAS_VALUE_EXPR_P (t));
 	}
+      hstate.commit_flag ();
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    v = iterative_hash_host_wide_int (DECL_REGISTER (t), v);
+    hstate.add_int (DECL_REGISTER (t));
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
     {
-      v = iterative_hash_host_wide_int ((DECL_COMMON (t))
-					| (DECL_DLLIMPORT_P (t) << 1)
-					| (DECL_WEAK (t) << 2)
-					| (DECL_SEEN_IN_BIND_EXPR_P (t) << 3)
-					| (DECL_COMDAT (t) << 4)
-					| (DECL_VISIBILITY_SPECIFIED (t) << 6),
-					v);
-      v = iterative_hash_host_wide_int (DECL_VISIBILITY (t), v);
+      hstate.add_flag (DECL_COMMON (t));
+      hstate.add_flag (DECL_DLLIMPORT_P (t));
+      hstate.add_flag (DECL_WEAK (t));
+      hstate.add_flag (DECL_SEEN_IN_BIND_EXPR_P (t));
+      hstate.add_flag (DECL_COMDAT (t));
+      hstate.add_flag (DECL_VISIBILITY_SPECIFIED (t));
+      hstate.add_int (DECL_VISIBILITY (t));
       if (code == VAR_DECL)
 	{
 	  /* DECL_IN_TEXT_SECTION is set during final asm output only.  */
-	  v = iterative_hash_host_wide_int (DECL_HARD_REGISTER (t)
-					    | (DECL_IN_CONSTANT_POOL (t) << 1),
-					    v);
+	  hstate.add_flag (DECL_HARD_REGISTER (t));
+	  hstate.add_flag (DECL_IN_CONSTANT_POOL (t));
 	}
       if (TREE_CODE (t) == FUNCTION_DECL)
-	v = iterative_hash_host_wide_int (DECL_FINAL_P (t)
-					  | (DECL_CXX_CONSTRUCTOR_P (t) << 1)
-					  | (DECL_CXX_DESTRUCTOR_P (t) << 2),
-					  v);
+        {
+	  hstate.add_flag (DECL_FINAL_P (t));
+	  hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (t));
+	  hstate.add_flag (DECL_CXX_DESTRUCTOR_P (t));
+	}
+      hstate.commit_flag ();
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
-      v = iterative_hash_host_wide_int (DECL_BUILT_IN_CLASS (t), v);
-      v = iterative_hash_host_wide_int (DECL_STATIC_CONSTRUCTOR (t)
-					| (DECL_STATIC_DESTRUCTOR (t) << 1)
-					| (DECL_UNINLINABLE (t) << 2)
-					| (DECL_POSSIBLY_INLINED (t) << 3)
-					| (DECL_IS_NOVOPS (t) << 4)
-					| (DECL_IS_RETURNS_TWICE (t) << 5)
-					| (DECL_IS_MALLOC (t) << 6)
-					| (DECL_IS_OPERATOR_NEW (t) << 7)
-					| (DECL_DECLARED_INLINE_P (t) << 8)
-					| (DECL_STATIC_CHAIN (t) << 9)
-					| (DECL_NO_INLINE_WARNING_P (t) << 10)
-					| (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (t) << 11)
-					| (DECL_NO_LIMIT_STACK (t) << 12)
-					| (DECL_DISREGARD_INLINE_LIMITS (t) << 13)
-					| (DECL_PURE_P (t) << 14)
-					| (DECL_LOOPING_CONST_OR_PURE_P (t) << 15), v);
+      hstate.add_int (DECL_BUILT_IN_CLASS (t));
+      hstate.add_flag (DECL_STATIC_CONSTRUCTOR (t));
+      hstate.add_flag (DECL_STATIC_DESTRUCTOR (t));
+      hstate.add_flag (DECL_UNINLINABLE (t));
+      hstate.add_flag (DECL_POSSIBLY_INLINED (t));
+      hstate.add_flag (DECL_IS_NOVOPS (t));
+      hstate.add_flag (DECL_IS_RETURNS_TWICE (t));
+      hstate.add_flag (DECL_IS_MALLOC (t));
+      hstate.add_flag (DECL_IS_OPERATOR_NEW (t));
+      hstate.add_flag (DECL_DECLARED_INLINE_P (t));
+      hstate.add_flag (DECL_STATIC_CHAIN (t));
+      hstate.add_flag (DECL_NO_INLINE_WARNING_P (t));
+      hstate.add_flag (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (t));
+      hstate.add_flag (DECL_NO_LIMIT_STACK (t));
+      hstate.add_flag (DECL_DISREGARD_INLINE_LIMITS (t));
+      hstate.add_flag (DECL_PURE_P (t));
+      hstate.add_flag (DECL_LOOPING_CONST_OR_PURE_P (t));
+      hstate.commit_flag ();
       if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
-	v = iterative_hash_host_wide_int (DECL_FUNCTION_CODE (t), v);
+	hstate.add_int (DECL_FUNCTION_CODE (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      v = iterative_hash_host_wide_int (TYPE_MODE (t), v);
-      v = iterative_hash_host_wide_int (TYPE_STRING_FLAG (t)
-					| (TYPE_NO_FORCE_BLK (t) << 1)
-					| (TYPE_NEEDS_CONSTRUCTING (t) << 2)
-					| (TYPE_PACKED (t) << 3)
-					| (TYPE_RESTRICT (t) << 4)
-					| (TYPE_USER_ALIGN (t) << 5)
-					| (TYPE_READONLY (t) << 6), v);
+      hstate.add_wide_int (TYPE_MODE (t));
+      hstate.add_flag (TYPE_STRING_FLAG (t));
+      hstate.add_flag (TYPE_NO_FORCE_BLK (t));
+      hstate.add_flag (TYPE_NEEDS_CONSTRUCTING (t));
+      hstate.add_flag (TYPE_PACKED (t));
+      hstate.add_flag (TYPE_RESTRICT (t));
+      hstate.add_flag (TYPE_USER_ALIGN (t));
+      hstate.add_flag (TYPE_READONLY (t));
       if (RECORD_OR_UNION_TYPE_P (t))
 	{
-	  v = iterative_hash_host_wide_int (TYPE_TRANSPARENT_AGGR (t)
-					    | (TYPE_FINAL_P (t) << 1), v);
+	  hstate.add_flag (TYPE_TRANSPARENT_AGGR (t));
+	  hstate.add_flag (TYPE_FINAL_P (t));
 	}
       else if (code == ARRAY_TYPE)
-	v = iterative_hash_host_wide_int (TYPE_NONALIASED_COMPONENT (t), v);
-      v = iterative_hash_host_wide_int (TYPE_PRECISION (t), v);
-      v = iterative_hash_host_wide_int (TYPE_ALIGN (t), v);
-      v = iterative_hash_host_wide_int ((TYPE_ALIAS_SET (t) == 0
+	hstate.add_flag (TYPE_NONALIASED_COMPONENT (t));
+      hstate.commit_flag ();
+      hstate.add_int (TYPE_PRECISION (t));
+      hstate.add_int (TYPE_ALIGN (t));
+      hstate.add_int ((TYPE_ALIAS_SET (t) == 0
 					 || (!in_lto_p
 					     && get_alias_set (t) == 0))
-					? 0 : -1, v);
+					? 0 : -1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    v = iterative_hash (TRANSLATION_UNIT_LANGUAGE (t),
-			strlen (TRANSLATION_UNIT_LANGUAGE (t)), v);
+    hstate.add (TRANSLATION_UNIT_LANGUAGE (t),
+			strlen (TRANSLATION_UNIT_LANGUAGE (t)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     gcc_unreachable ();
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    v = iterative_hash (t, sizeof (struct cl_optimization), v);
+    hstate.add (t, sizeof (struct cl_optimization));
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
-    v = iterative_hash_host_wide_int (IDENTIFIER_HASH_VALUE (t), v);
+    hstate.merge_hash (IDENTIFIER_HASH_VALUE (t));
 
   if (CODE_CONTAINS_STRUCT (code, TS_STRING))
-    v = iterative_hash (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t), v);
+    hstate.add (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
@@ -913,7 +919,7 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 	    x = streamer_tree_cache_get_hash (cache, ix);
 	  else
 	    x = hash_tree (cache, TREE_TYPE (t));
-	  v = iterative_hash_hashval_t (x, v);
+	  hstate.merge_hash (x);
 	}
       else if (code != IDENTIFIER_NODE)
 	visit (TREE_TYPE (t));
@@ -1035,7 +1041,7 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
-      v = iterative_hash_host_wide_int (TREE_OPERAND_LENGTH (t), v);
+      hstate.add_wide_int (TREE_OPERAND_LENGTH (t));
       for (int i = 0; i < TREE_OPERAND_LENGTH (t); ++i)
 	visit (TREE_OPERAND (t, i));
     }
@@ -1059,7 +1065,7 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
     {
       unsigned i;
       tree index, value;
-      v = iterative_hash_host_wide_int (CONSTRUCTOR_NELTS (t), v);
+      hstate.add_wide_int (CONSTRUCTOR_NELTS (t));
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, index, value)
 	{
 	  visit (index);
@@ -1070,37 +1076,40 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
   if (code == OMP_CLAUSE)
     {
       int i;
+      HOST_WIDE_INT val;
 
-      v = iterative_hash_host_wide_int (OMP_CLAUSE_CODE (t), v);
+      hstate.add_wide_int (OMP_CLAUSE_CODE (t));
       switch (OMP_CLAUSE_CODE (t))
 	{
 	case OMP_CLAUSE_DEFAULT:
-	  v = iterative_hash_host_wide_int (OMP_CLAUSE_DEFAULT_KIND (t), v);
+	  val = OMP_CLAUSE_DEFAULT_KIND (t);
 	  break;
 	case OMP_CLAUSE_SCHEDULE:
-	  v = iterative_hash_host_wide_int (OMP_CLAUSE_SCHEDULE_KIND (t), v);
+	  val = OMP_CLAUSE_SCHEDULE_KIND (t);
 	  break;
 	case OMP_CLAUSE_DEPEND:
-	  v = iterative_hash_host_wide_int (OMP_CLAUSE_DEPEND_KIND (t), v);
+	  val = OMP_CLAUSE_DEPEND_KIND (t);
 	  break;
 	case OMP_CLAUSE_MAP:
-	  v = iterative_hash_host_wide_int (OMP_CLAUSE_MAP_KIND (t), v);
+	  val = OMP_CLAUSE_MAP_KIND (t);
 	  break;
 	case OMP_CLAUSE_PROC_BIND:
-	  v = iterative_hash_host_wide_int (OMP_CLAUSE_PROC_BIND_KIND (t), v);
+	  val = OMP_CLAUSE_PROC_BIND_KIND (t);
 	  break;
 	case OMP_CLAUSE_REDUCTION:
-	  v = iterative_hash_host_wide_int (OMP_CLAUSE_REDUCTION_CODE (t), v);
+	  val = OMP_CLAUSE_REDUCTION_CODE (t);
 	  break;
 	default:
+	  val = 0;
 	  break;
 	}
+      hstate.add_wide_int (val);
       for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (t)]; i++)
 	visit (OMP_CLAUSE_OPERAND (t, i));
       visit (OMP_CLAUSE_CHAIN (t));
     }
 
-  return v;
+  return hstate.end ();
 
 #undef visit
 }
