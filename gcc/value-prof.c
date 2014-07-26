@@ -1210,7 +1210,17 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   return true;
 }
 
-static pointer_map_t *cgraph_node_map;
+static pointer_map_t *cgraph_node_map = 0;
+
+/* Returns true if node graph is initialized. This
+   is used to test if profile_id has been created
+   for cgraph_nodes.  */
+
+bool
+coverage_node_map_initialized_p (void)
+{
+  return cgraph_node_map != 0;
+}
 
 /* Initialize map from PROFILE_ID to CGRAPH_NODE.
    When LOCAL is true, the PROFILE_IDs are computed.  when it is false we assume
@@ -1223,8 +1233,7 @@ init_node_map (bool local)
   cgraph_node_map = pointer_map_create ();
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    if (n->has_gimple_body_p ()
-	&& !n->only_called_directly_p ())
+    if (n->has_gimple_body_p ())
       {
 	void **val;
 	if (local)

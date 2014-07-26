@@ -9659,6 +9659,14 @@ Deeper chains are still handled by late inlining.
 Probability (in percent) that C++ inline function with comdat visibility
 are shared across multiple compilation units.  The default value is 20.
 
+@item profile-func-internal-id
+@itemx profile-func-internal-id
+A parameter to control whether to use function internal id in profile
+database lookup. If the value is 0, the compiler will use id that
+is based on function assembler name and filename, which makes old profile
+data more tolerant to source changes such as function reordering etc.
+The default value is 0.
+
 @item min-vect-loop-bound
 The minimum number of iterations under which loops are not vectorized
 when @option{-ftree-vectorize} is used.  The number of iterations after
