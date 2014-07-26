@@ -1,5 +1,16 @@
 2014-07-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/61881
+	PR fortran/61888
+	PR fortran/57305
+	* intrinsic.texi (SIZEOF): Document changed behavior
+	for polymorphic arrays.
+
+2014-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/61881
+	PR fortran/61888
+	PR fortran/57305
 	* check.c (gfc_check_sizeof): Permit for assumed type if and
 	only if it has an array descriptor.
 	* intrinsic.c (do_ts29113_check): Permit SIZEOF.
