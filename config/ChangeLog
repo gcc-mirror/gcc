@@ -1,3 +1,8 @@
+2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* mh-alpha-linux: New file.
+
 2014-05-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* mt-nios2-elf: New file.
