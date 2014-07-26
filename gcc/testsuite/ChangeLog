@@ -1,3 +1,8 @@
+2014-07-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61077
+	* gcc.dg/pr61077.c: Use \[^\n\]* instead of .* in the regexp.
+
 2014-07-26  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/sizeof_2.f90: Change dg-error.
