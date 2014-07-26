@@ -1,3 +1,17 @@
+2014-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_sizeof): Permit for assumed type if and
+	only if it has an array descriptor.
+	* intrinsic.c (do_ts29113_check): Permit SIZEOF.
+	(add_functions): SIZEOF is an Inquiry function.
+	* intrinsic.texi (SIZEOF): Add note that only contiguous
+	arrays are permitted.
+	* trans-expr.c (gfc_conv_intrinsic_to_class): Handle assumed
+	rank.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof): Handle
+	assumed type + array descriptor, CLASS and assumed rank.
+	(gfc_conv_intrinsic_storage_size): Handle class arrays.
+
 2014-07-25  Tobias Burnus  <burnus@net-b.de>
 
 	* simplify.c (gfc_simplify_storage_size): Use proper

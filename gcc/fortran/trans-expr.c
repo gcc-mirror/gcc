@@ -564,7 +564,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
   var = gfc_create_var (tmp, "class");
 
   /* Set the vptr.  */
-  ctree =  gfc_class_vptr_get (var);
+  ctree = gfc_class_vptr_get (var);
 
   vtab = gfc_find_vtab (&e->ts);
   gcc_assert (vtab);
@@ -573,7 +573,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 		  fold_convert (TREE_TYPE (ctree), tmp));
 
   /* Now set the data field.  */
-  ctree =  gfc_class_data_get (var);
+  ctree = gfc_class_data_get (var);
   if (parmse->ss && parmse->ss->info->useflags)
     {
       /* For an array reference in an elemental procedure call we need
@@ -589,7 +589,16 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	{
 	  parmse->ss = NULL;
 	  gfc_conv_expr_reference (parmse, e);
-	  tmp = fold_convert (TREE_TYPE (ctree), parmse->expr);
+	  if (class_ts.u.derived->components->as
+	      && class_ts.u.derived->components->as->type == AS_ASSUMED_RANK)
+	    {
+	      tmp = gfc_conv_scalar_to_descriptor (parmse, parmse->expr,
+						   gfc_expr_attr (e));
+	      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
+				     TREE_TYPE (ctree), tmp);
+	    }
+	  else
+	      tmp = fold_convert (TREE_TYPE (ctree), parmse->expr);
 	  gfc_add_modify (&parmse->pre, ctree, tmp);
 	}
       else
@@ -597,7 +606,14 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	  parmse->ss = ss;
 	  parmse->use_offset = 1;
 	  gfc_conv_expr_descriptor (parmse, e);
-	  gfc_add_modify (&parmse->pre, ctree, parmse->expr);
+	  if (class_ts.u.derived->components->as->rank != e->rank)
+	    {
+	      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
+				     TREE_TYPE (ctree), parmse->expr);
+	      gfc_add_modify (&parmse->pre, ctree, tmp);
+	    }
+	  else
+	    gfc_add_modify (&parmse->pre, ctree, parmse->expr);
 	}
     }
 

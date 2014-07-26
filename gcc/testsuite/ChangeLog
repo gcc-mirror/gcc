@@ -1,3 +1,10 @@
+2014-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/sizeof_2.f90: Change dg-error.
+	* gfortran.dg/sizeof_4.f90: New.
+	* gfortran.dg/storage_size_1.f08: Correct expected
+	value.
+
 2014-07-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR target/44551
