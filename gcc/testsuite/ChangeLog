@@ -5,6 +5,9 @@
 
 2014-07-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/61881
+	PR fortran/61888
+	PR fortran/57305
 	* gfortran.dg/sizeof_2.f90: Change dg-error.
 	* gfortran.dg/sizeof_4.f90: New.
 	* gfortran.dg/storage_size_1.f08: Correct expected
