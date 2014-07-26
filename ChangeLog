@@ -1,3 +1,9 @@
+2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* configure.ac (alpha*-*-linux*): Use mh-alpha-linux.
+	* configure: Regenerate.
+
 2014-07-24  James Norris  <jnorris@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
