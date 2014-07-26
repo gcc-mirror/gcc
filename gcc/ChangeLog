@@ -1,3 +1,14 @@
+2014-07-25  Xinliang David Li  <davidxl@google.com>
+
+	* params.def: New parameter.
+	* coverage.c (get_coverage_counts): Check new flag.
+	(coverage_compute_profile_id): Check new flag.
+	(coverage_begin_function): Check new flag.
+	(coverage_end_function): Check new flag.
+	* value-prof.c (coverage_node_map_initialized_p): New function.
+	(init_node_map): Populate map with all functions.
+	* doc/invoke.texi: Document new parameter.
+
 2014-07-25  Jan Hubicka  <hubicka@ucw.cz>
 	    Richard Biener <rguenther@suse.de>
 

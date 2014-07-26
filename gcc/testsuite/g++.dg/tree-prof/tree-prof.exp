@@ -42,8 +42,8 @@ set PROFOPT_OPTIONS [list {}]
 # These are globals used by profopt-execute.  The first is options
 # needed to generate profile data, the second is options to use the
 # profile data.
-set profile_option "-fprofile-generate"
-set feedback_option "-fprofile-use"
+set profile_option "-fprofile-generate -D_PROFILE_GENERATE"
+set feedback_option "-fprofile-use -D_PROFILE_USE"
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
     # If we're only testing specific files and this isn't one of them, skip it.

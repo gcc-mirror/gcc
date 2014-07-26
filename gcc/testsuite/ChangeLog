@@ -1,3 +1,11 @@
+2014-07-25  Xinliang David Li  <davidxl@google.com>
+
+	* g++.dg/tree-prof/tree-prof.exp: Define macros.
+	* g++.dg/tree-prof/reorder_class1.h: New file.
+	* g++.dg/tree-prof/reorder_class2.h: New file.
+	* g++.dg/tree-prof/reorder.C: New test.
+	* g++.dg/tree-prof/morefunc.C: New test.
+
 2014-07-25  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N4051 - Allow typename in a template template parameter
