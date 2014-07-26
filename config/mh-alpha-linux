@@ -1,0 +1,3 @@
+# Prevent GPREL16 relocation truncation
+LDFLAGS += -Wl,--no-relax
+BOOT_LDFLAGS += -Wl,--no-relax
