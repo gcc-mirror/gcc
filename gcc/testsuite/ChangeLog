@@ -1,3 +1,8 @@
+2014-07-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/44551
+	* gcc.target/i386/pr44551-1.c: New file.
+
 2014-07-25  Xinliang David Li  <davidxl@google.com>
 
 	* g++.dg/tree-prof/tree-prof.exp: Define macros.
