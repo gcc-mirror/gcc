@@ -5891,62 +5891,131 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   gfc_expr *arg;
   gfc_se argse;
   tree source_bytes;
-  tree type;
   tree tmp;
   tree lower;
   tree upper;
+  tree byte_size;
   int n;
 
+  gfc_init_se (&argse, NULL);
   arg = expr->value.function.actual->expr;
 
-  gfc_init_se (&argse, NULL);
+  if (arg->rank || arg->ts.type == BT_ASSUMED)
+    gfc_conv_expr_descriptor (&argse, arg);
+  else
+    gfc_conv_expr_reference (&argse, arg);
 
-  if (arg->rank == 0)
+  if (arg->ts.type == BT_ASSUMED)
     {
-      if (arg->ts.type == BT_CLASS)
-	gfc_add_data_component (arg);
-
-      gfc_conv_expr_reference (&argse, arg);
-
-      type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
-						 argse.expr));
-
-      /* Obtain the source word length.  */
-      if (arg->ts.type == BT_CHARACTER)
-	se->expr = size_of_string_in_bytes (arg->ts.kind,
-					    argse.string_length);
+      /* This only works if an array descriptor has been passed; thus, extract
+	  the size from the descriptor.  */
+      gcc_assert (TYPE_PRECISION (gfc_array_index_type)
+		  == TYPE_PRECISION (size_type_node));
+      tmp = arg->symtree->n.sym->backend_decl;
+      tmp = DECL_LANG_SPECIFIC (tmp)
+	    && GFC_DECL_SAVED_DESCRIPTOR (tmp) != NULL_TREE
+	    ? GFC_DECL_SAVED_DESCRIPTOR (tmp) : tmp;
+      if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+	tmp = build_fold_indirect_ref_loc (input_location, tmp);
+      tmp = fold_convert (size_type_node, gfc_conv_descriptor_dtype (tmp));
+      tmp = fold_build2_loc (input_location, RSHIFT_EXPR, TREE_TYPE (tmp), tmp,
+			     build_int_cst (TREE_TYPE (tmp),
+					    GFC_DTYPE_SIZE_SHIFT));
+      byte_size = fold_convert (gfc_array_index_type, tmp);
+    }
+  else if (arg->ts.type == BT_CLASS)
+    {
+      if (arg->rank)
+	byte_size = gfc_vtable_size_get (TREE_OPERAND (argse.expr, 0));
       else
-	se->expr = fold_convert (gfc_array_index_type, size_in_bytes (type)); 
+	byte_size = gfc_vtable_size_get (argse.expr);
     }
   else
     {
-      source_bytes = gfc_create_var (gfc_array_index_type, "bytes");
-      argse.want_pointer = 0;
-      gfc_conv_expr_descriptor (&argse, arg);
-      type = gfc_get_element_type (TREE_TYPE (argse.expr));
-
-      /* Obtain the argument's word length.  */
       if (arg->ts.type == BT_CHARACTER)
-	tmp = size_of_string_in_bytes (arg->ts.kind, argse.string_length);
+	byte_size = size_of_string_in_bytes (arg->ts.kind, argse.string_length);
       else
-	tmp = fold_convert (gfc_array_index_type,
-			    size_in_bytes (type)); 
-      gfc_add_modify (&argse.pre, source_bytes, tmp);
-
-      /* Obtain the size of the array in bytes.  */
-      for (n = 0; n < arg->rank; n++)
 	{
-	  tree idx;
-	  idx = gfc_rank_cst[n];
-	  lower = gfc_conv_descriptor_lbound_get (argse.expr, idx);
-	  upper = gfc_conv_descriptor_ubound_get (argse.expr, idx);
-	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 gfc_array_index_type, upper, lower);
-	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
-				 gfc_array_index_type, tmp, gfc_index_one_node);
+	  if (arg->rank == 0)
+	    byte_size = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
+								argse.expr));
+	  else
+	    byte_size = gfc_get_element_type (TREE_TYPE (argse.expr));
+	  byte_size = fold_convert (gfc_array_index_type,
+				    size_in_bytes (byte_size));
+	}
+    }
+
+  if (arg->rank == 0)
+    se->expr = byte_size;
+  else
+    {
+      source_bytes = gfc_create_var (gfc_array_index_type, "bytes");
+      gfc_add_modify (&argse.pre, source_bytes, byte_size);
+
+      if (arg->rank == -1)
+	{
+	  tree cond, loop_var, exit_label;
+          stmtblock_t body;
+
+	  tmp = fold_convert (gfc_array_index_type,
+			      gfc_conv_descriptor_rank (argse.expr));
+	  loop_var = gfc_create_var (gfc_array_index_type, "i");
+	  gfc_add_modify (&argse.pre, loop_var, gfc_index_zero_node);
+          exit_label = gfc_build_label_decl (NULL_TREE);
+
+	  /* Create loop:
+	     for (;;)
+		{
+		  if (i >= rank)
+		    goto exit;
+		  source_bytes = source_bytes * array.dim[i].extent;
+		  i = i + 1;
+		}
+	      exit:  */
+	  gfc_start_block (&body);
+	  cond = fold_build2_loc (input_location, GE_EXPR, boolean_type_node,
+				  loop_var, tmp);
+	  tmp = build1_v (GOTO_EXPR, exit_label);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp, build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&body, tmp);
+
+	  lower = gfc_conv_descriptor_lbound_get (argse.expr, loop_var);
+	  upper = gfc_conv_descriptor_ubound_get (argse.expr, loop_var);
+	  tmp = gfc_conv_array_extent_dim (lower, upper, NULL);
 	  tmp = fold_build2_loc (input_location, MULT_EXPR,
 				 gfc_array_index_type, tmp, source_bytes);
-	  gfc_add_modify (&argse.pre, source_bytes, tmp);
+	  gfc_add_modify (&body, source_bytes, tmp);
+
+	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
+				 gfc_array_index_type, loop_var,
+				 gfc_index_one_node);
+	  gfc_add_modify_loc (input_location, &body, loop_var, tmp);
+
+	  tmp = gfc_finish_block (&body);
+
+	  tmp = fold_build1_loc (input_location, LOOP_EXPR, void_type_node,
+				 tmp);
+	  gfc_add_expr_to_block (&argse.pre, tmp);
+
+	  tmp = build1_v (LABEL_EXPR, exit_label);
+	  gfc_add_expr_to_block (&argse.pre, tmp);
+	}
+      else
+	{
+	  /* Obtain the size of the array in bytes.  */
+	  for (n = 0; n < arg->rank; n++)
+	    {
+	      tree idx;
+	      idx = gfc_rank_cst[n];
+	      lower = gfc_conv_descriptor_lbound_get (argse.expr, idx);
+	      upper = gfc_conv_descriptor_ubound_get (argse.expr, idx);
+	      tmp = gfc_conv_array_extent_dim (lower, upper, NULL);
+	      tmp = fold_build2_loc (input_location, MULT_EXPR,
+				     gfc_array_index_type, tmp, source_bytes);
+	      gfc_add_modify (&argse.pre, source_bytes, tmp);
+	    }
 	}
       se->expr = source_bytes;
     }
@@ -5970,13 +6039,13 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
   if (arg->rank == 0)
     {
       if (arg->ts.type == BT_CLASS)
-      {
-	gfc_add_vptr_component (arg);
-	gfc_add_size_component (arg);
-	gfc_conv_expr (&argse, arg);
-	tmp = fold_convert (result_type, argse.expr);
-	goto done;
-      }
+	{
+	  gfc_add_vptr_component (arg);
+	  gfc_add_size_component (arg);
+	  gfc_conv_expr (&argse, arg);
+	  tmp = fold_convert (result_type, argse.expr);
+	  goto done;
+	}
 
       gfc_conv_expr_reference (&argse, arg);
       type = TREE_TYPE (build_fold_indirect_ref_loc (input_location, 
@@ -5986,6 +6055,12 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
     {
       argse.want_pointer = 0;
       gfc_conv_expr_descriptor (&argse, arg);
+      if (arg->ts.type == BT_CLASS)
+	{
+	  tmp = gfc_vtable_size_get (TREE_OPERAND (argse.expr, 0));
+	  tmp = fold_convert (result_type, tmp);
+	  goto done;
+	}
       type = gfc_get_element_type (TREE_TYPE (argse.expr));
     }
     

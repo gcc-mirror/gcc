@@ -3902,7 +3902,12 @@ gfc_check_sizeof (gfc_expr *arg)
       return false;
     }
 
-  if (arg->ts.type == BT_ASSUMED)
+  /* TYPE(*) is acceptable if and only if it uses an array descriptor.  */
+  if (arg->ts.type == BT_ASSUMED
+      && (arg->symtree->n.sym->as == NULL
+	  || (arg->symtree->n.sym->as->type != AS_ASSUMED_SHAPE
+	      && arg->symtree->n.sym->as->type != AS_DEFERRED
+	      && arg->symtree->n.sym->as->type != AS_ASSUMED_RANK)))
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be TYPE(*)",
 		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
