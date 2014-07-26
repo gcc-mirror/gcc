@@ -1,3 +1,9 @@
+2014-07-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/44551
+	* simplify-rtx.c (simplify_binary_operation_1) <VEC_SELECT>:
+	Optimize inverse of a VEC_CONCAT.
+
 2014-07-25  Xinliang David Li  <davidxl@google.com>
 
 	* params.def: New parameter.
