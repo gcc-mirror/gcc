@@ -1,3 +1,22 @@
+2014-07-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (tls_referenced_p): Declare.
+	* rtlanal.c (tls_referenced_p_1, tls_referenced_p): New functions.
+	* config/mips/mips.c (mips_tls_symbol_ref_1): Delete.
+	(mips_cannot_force_const_mem): Use tls_referenced_p.
+	* config/pa/pa-protos.h (pa_tls_referenced_p): Delete.
+	* config/pa/pa.h (CONSTANT_ADDRESS_P): Use tls_referenced_p
+	instead of pa_tls_referenced_p.
+	* config/pa/pa.c (hppa_legitimize_address, pa_cannot_force_const_mem)
+	(pa_emit_move_sequence, pa_emit_move_sequence): Likewise.
+	(pa_legitimate_constant_p): Likewise.
+	(pa_tls_symbol_ref_1, pa_tls_referenced_p): Delete.
+	* config/rs6000/rs6000.c (rs6000_tls_referenced_p): Delete.
+	(rs6000_cannot_force_const_mem, rs6000_emit_move)
+	(rs6000_address_for_altivec): Use tls_referenced_p instead of
+	rs6000_tls_referenced_p.
+	(rs6000_tls_symbol_ref_1): Delete.
+
 2014-07-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR target/44551

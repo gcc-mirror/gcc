@@ -797,7 +797,7 @@ extern int may_call_alloca;
   ((GET_CODE (X) == LABEL_REF 						\
    || (GET_CODE (X) == SYMBOL_REF && !SYMBOL_REF_TLS_MODEL (X))		\
    || GET_CODE (X) == CONST_INT						\
-   || (GET_CODE (X) == CONST && !pa_tls_referenced_p (X))		\
+   || (GET_CODE (X) == CONST && !tls_referenced_p (X))			\
    || GET_CODE (X) == HIGH) 						\
    && (reload_in_progress || reload_completed				\
        || ! pa_symbolic_expression_p (X)))
