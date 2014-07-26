@@ -1101,7 +1101,6 @@ static void is_altivec_return_reg (rtx, void *);
 int easy_vector_constant (rtx, enum machine_mode);
 static rtx rs6000_debug_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
-static int rs6000_tls_symbol_ref_1 (rtx *, void *);
 static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
 static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
 				       bool, bool);
@@ -7254,17 +7253,6 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
   return dest;
 }
 
-/* Return 1 if X contains a thread-local symbol.  */
-
-static bool
-rs6000_tls_referenced_p (rtx x)
-{
-  if (! TARGET_HAVE_TLS)
-    return false;
-
-  return for_each_rtx (&x, &rs6000_tls_symbol_ref_1, 0);
-}
-
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
@@ -7282,16 +7270,7 @@ rs6000_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
     return true;
 
   /* Do not place an ELF TLS symbol in the constant pool.  */
-  return TARGET_ELF && rs6000_tls_referenced_p (x);
-}
-
-/* Return 1 if *X is a thread-local symbol.  This is the same as
-   rs6000_tls_symbol_ref except for the type of the unused argument.  */
-
-static int
-rs6000_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  return RS6000_SYMBOL_REF_TLS_P (*x);
+  return TARGET_ELF && tls_referenced_p (x);
 }
 
 /* Return true iff the given SYMBOL_REF refers to a constant pool entry
@@ -8240,7 +8219,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 
   /* Recognize the case where operand[1] is a reference to thread-local
      data and load its address to a register.  */
-  if (rs6000_tls_referenced_p (operands[1]))
+  if (tls_referenced_p (operands[1]))
     {
       enum tls_model model;
       rtx tmp = operands[1];
@@ -32441,7 +32420,7 @@ rs6000_address_for_altivec (rtx x)
 static bool
 rs6000_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
-  if (TARGET_ELF && rs6000_tls_referenced_p (x))
+  if (TARGET_ELF && tls_referenced_p (x))
     return false;
 
   return ((GET_CODE (x) != CONST_DOUBLE && GET_CODE (x) != CONST_VECTOR)

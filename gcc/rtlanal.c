@@ -5960,3 +5960,22 @@ get_index_code (const struct address_info *info)
 
   return SCRATCH;
 }
+
+/* Return 1 if *X is a thread-local symbol.  */
+
+static int
+tls_referenced_p_1 (rtx *x, void *)
+{
+  return GET_CODE (*x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (*x) != 0;
+}
+
+/* Return true if X contains a thread-local symbol.  */
+
+bool
+tls_referenced_p (rtx x)
+{
+  if (!targetm.have_tls)
+    return false;
+
+  return for_each_rtx (&x, &tls_referenced_p_1, 0);
+}
