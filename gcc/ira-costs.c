@@ -1753,6 +1753,20 @@ find_costs_and_classes (FILE *dump_file)
 	  alt_class = ira_allocno_class_translate[alt_class];
 	  if (best_cost > i_mem_cost)
 	    regno_aclass[i] = NO_REGS;
+	  else if (!optimize && !targetm.class_likely_spilled_p (best))
+	    /* Registers in the alternative class are likely to need
+	       longer or slower sequences than registers in the best class.
+	       When optimizing we make some effort to use the best class
+	       over the alternative class where possible, but at -O0 we
+	       effectively give the alternative class equal weight.
+	       We then run the risk of using slower alternative registers
+	       when plenty of registers from the best class are still free.
+	       This is especially true because live ranges tend to be very
+	       short in -O0 code and so register pressure tends to be low.
+
+	       Avoid that by ignoring the alternative class if the best
+	       class has plenty of registers.  */
+	    regno_aclass[i] = best;
 	  else
 	    {
 	      /* Make the common class the biggest class of best and
