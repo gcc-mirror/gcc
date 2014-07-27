@@ -79,7 +79,6 @@ mcore port		Nick Clifton		nickc@redhat.com
 mep port		DJ Delorie		dj@redhat.com
 microblaze		Michael Eager		eager@eagercon.com
 mips port		Eric Christopher	echristo@gmail.com
-mips port		Richard Sandiford	rdsandiford@googlemail.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
