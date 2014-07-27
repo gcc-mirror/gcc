@@ -84,7 +84,7 @@ struct macro_arg_token_iter
 
 static int enter_macro_context (cpp_reader *, cpp_hashnode *,
 				const cpp_token *, source_location);
-static int builtin_macro (cpp_reader *, cpp_hashnode *);
+static int builtin_macro (cpp_reader *, cpp_hashnode *, source_location);
 static void push_ptoken_context (cpp_reader *, cpp_hashnode *, _cpp_buff *,
 				 const cpp_token **, unsigned int);
 static void push_extended_tokens_context (cpp_reader *, cpp_hashnode *,
@@ -399,9 +399,10 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 /* Convert builtin macros like __FILE__ to a token and push it on the
    context stack.  Also handles _Pragma, for which a new token may not
    be created.  Returns 1 if it generates a new token context, 0 to
-   return the token to the caller.  */
+   return the token to the caller.  LOC is the location of the expansion
+   point of the macro.  */
 static int
-builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
+builtin_macro (cpp_reader *pfile, cpp_hashnode *node, source_location loc)
 {
   const uchar *buf;
   size_t len;
@@ -429,6 +430,8 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
   cpp_token *token = _cpp_lex_direct (pfile);
+  /* We should point to the expansion point of the builtin macro.  */
+  token->src_loc = loc;
   if (pfile->context->tokens_kind == TOKENS_KIND_EXTENDED)
     {
       /* We are tracking tokens resulting from macro expansion.
@@ -1212,7 +1215,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
   pfile->about_to_expand_macro_p = false;
   /* Handle built-in macros and the _Pragma operator.  */
-  return builtin_macro (pfile, node);
+  return builtin_macro (pfile, node, location);
 }
 
 /* De-allocate the memory used by BUFF which is an array of instances
