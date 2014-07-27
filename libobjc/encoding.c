@@ -192,6 +192,7 @@ _darwin_rs6000_special_round_type_align (const char *struc, int comp, int spec)
    ? MAX (MAX (COMPUTED, SPECIFIED), 64)				\
    : MAX (COMPUTED, SPECIFIED));})
 
+#define rs6000_special_adjust_field_align_p(FIELD, COMPUTED) 0
 
 /* Skip a variable name, enclosed in quotes (").  */
 static inline
