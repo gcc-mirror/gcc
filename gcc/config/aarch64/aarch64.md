@@ -3390,7 +3390,7 @@
   [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
 			  (match_operand 1 "const_int_operand" "n")
 			  (const_int 0))
-	(zero_extract:GPI (match_operand:GPI 2 "register_operand" "+r")
+	(zero_extract:GPI (match_operand:GPI 2 "register_operand" "r")
 			  (match_dup 1)
 			  (match_operand 3 "const_int_operand" "n")))]
   "!(UINTVAL (operands[1]) == 0

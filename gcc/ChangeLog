@@ -1,3 +1,8 @@
+2014-07-26  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.md (*extr_insv_lower_reg<mode>): Remove +
+	from the read only register.
+
 2014-07-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira-costs.c (find_costs_and_classes): For -O0, use the best class
