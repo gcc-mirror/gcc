@@ -1,3 +1,8 @@
+2014-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61861
+	* gcc.dg/pr61861.c: New test.
+
 2014-07-27  Petr Murzin  <petr.murzin@intel.com>
 
 	* gcc.target/i386/avx512f-vbroadcastf64x4-2.c: Fix the uninitialized
