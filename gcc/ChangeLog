@@ -1,3 +1,8 @@
+2014-07-27  Anthony Green  <green@moxielogic.com>
+
+	* config.gcc: Add moxie-*-moxiebox* configuration.
+	* config/moxie/moxiebox.h: New file.
+
 2014-07-26  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.md (*extr_insv_lower_reg<mode>): Remove +

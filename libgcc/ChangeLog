@@ -1,3 +1,7 @@
+2014-07-27  Anthony Green  <green@moxielogic.com>
+
+	* config.host: Add moxiebox configuration suppport.
+
 2014-07-27  Nathan Sidwell  <nathan@acm.org>
 
 	* libgcov-driver.c (struct gcov_filename_aux): Rename ...
