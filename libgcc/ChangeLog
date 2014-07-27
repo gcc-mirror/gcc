@@ -1,3 +1,23 @@
+2014-07-27  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov-driver.c (struct gcov_filename_aux): Rename ...
+	(struct gcov_filename): ... here.  Include buffer and max length
+	fields.
+	(gcov_max_filename): Remove.
+	(gi_filename): Remove.
+	(gcov_exit_compute_summary): Compute max filename here.
+	(gcov_exit_merge_gcda): Add filename parm, adjust.
+	(gcov_exit_merge_summary): Likewise.
+	(gcov_exit_dump_gcov): Adjust for struct gcov_filename changes.
+	(gcov_exit): Likewise.
+	(__gcov_init): Don't calculate max length here.
+	* libgcov_util.c (max_filename_len): Remove.
+	(read_gcda_file): Don't calculate max length here.
+	(gcov_read_profile_dir): Don't propagate here.
+	* libgcov-driver-system.c (alloc_filename_struct): Adjust for
+	struct gcov_filename changes.
+	(gcov_exit_open_gcda_file): Likewise.
+
 2014-07-25  Nathan Sidwell  <nathan@acm.org>
 
 	* libgcov-driver.c (set_gcov_dump_complete,
