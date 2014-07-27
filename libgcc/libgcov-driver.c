@@ -66,19 +66,23 @@ struct gcov_summary_buffer
   struct gcov_summary summary;
 };
 
+/* A struct that bundles all the related information about the
+   gcda filename.  */
+
+struct gcov_filename
+{
+  char *filename;  /* filename buffer */
+  size_t max_length;  /* maximum filename length */
+  int strip; /* leading chars to strip from filename */
+  size_t prefix; /* chars to prepend to filename */
+};
+
 /* Chain of per-object gcov structures.  */
 #ifndef IN_GCOV_TOOL
 /* We need to expose this static variable when compiling for gcov-tool.  */
 static
 #endif
 struct gcov_info *gcov_list;
-
-/* Size of the longest file name. */
-/* We need to expose this static variable when compiling for gcov-tool.  */
-#ifndef IN_GCOV_TOOL
-static
-#endif
-size_t gcov_max_filename = 0;
 
 /* Flag when the profile has already been dumped via __gcov_dump().  */
 static int gcov_dump_complete;
@@ -275,8 +279,6 @@ gcov_compute_histogram (struct gcov_summary *sum)
     }
 }
 
-/* gcda filename.  */
-static char *gi_filename;
 /* buffer for the fn_data from another program.  */
 static struct gcov_fn_buffer *fn_buffer;
 /* buffer for summary from other programs to be written out. */
@@ -286,11 +288,13 @@ static struct gcov_summary_buffer *sum_buffer;
    functions executed once may mistakely become cold.  */
 static int run_accounted = 0;
 
-/* This funtions computes the program level summary and the histo-gram.
-   It computes and returns CRC32 and stored summary in THIS_PRG.  */
+/* This function computes the program level summary and the histo-gram.
+   It computes and returns CRC32 and stored summary in THIS_PRG.
+   Also determines the longest filename length of the info files.  */
 
 static gcov_unsigned_t
-gcov_exit_compute_summary (struct gcov_summary *this_prg)
+gcov_exit_compute_summary (struct gcov_summary *this_prg,
+			   size_t *max_length)
 {
   struct gcov_info *gi_ptr;
   const struct gcov_fn_info *gfi_ptr;
@@ -303,8 +307,13 @@ gcov_exit_compute_summary (struct gcov_summary *this_prg)
 
   /* Find the totals for this execution.  */
   memset (this_prg, 0, sizeof (*this_prg));
+  *max_length = 0;
   for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
     {
+      size_t len = strlen (gi_ptr->filename);
+      if (len > *max_length)
+	*max_length = len;
+      
       crc32 = crc32_unsigned (crc32, gi_ptr->stamp);
       crc32 = crc32_unsigned (crc32, gi_ptr->n_functions);
 
@@ -345,14 +354,6 @@ gcov_exit_compute_summary (struct gcov_summary *this_prg)
   return crc32;
 }
 
-/* A struct that bundles all the related information about the
-   gcda filename.  */
-struct gcov_filename_aux{
-  char *gi_filename_up;
-  int gcov_prefix_strip;
-  size_t prefix_length;
-};
-
 /* Including system dependent components. */
 #include "libgcov-driver-system.c"
 
@@ -361,7 +362,8 @@ struct gcov_filename_aux{
    Return -1 on error. In this case, caller will goto read_fatal.  */
 
 static int
-gcov_exit_merge_gcda (struct gcov_info *gi_ptr,
+gcov_exit_merge_gcda (const char *filename,
+		      struct gcov_info *gi_ptr,
                       struct gcov_summary *prg_p,
                       struct gcov_summary *this_prg,
                       gcov_position_t *summary_pos_p,
@@ -376,7 +378,7 @@ gcov_exit_merge_gcda (struct gcov_info *gi_ptr,
   struct gcov_summary_buffer **sum_tail = &sum_buffer;
 
   length = gcov_read_unsigned ();
-  if (!gcov_version (gi_ptr, length, gi_filename))
+  if (!gcov_version (gi_ptr, length, filename))
     return -1;
 
   length = gcov_read_unsigned ();
@@ -451,8 +453,7 @@ gcov_exit_merge_gcda (struct gcov_info *gi_ptr,
              it back out -- we'll be inserting data before
              this point, so cannot simply keep the data in the
              file.  */
-          fn_tail = buffer_fn_data (gi_filename,
-                                    gi_ptr, fn_tail, f_ix);
+          fn_tail = buffer_fn_data (filename, gi_ptr, fn_tail, f_ix);
           if (!fn_tail)
             goto read_mismatch;
           continue;
@@ -494,14 +495,14 @@ gcov_exit_merge_gcda (struct gcov_info *gi_ptr,
     {
     read_mismatch:;
       gcov_error ("profiling:%s:Merge mismatch for %s %u\n",
-                  gi_filename, f_ix >= 0 ? "function" : "summary",
+                  filename, f_ix >= 0 ? "function" : "summary",
                   f_ix < 0 ? -1 - f_ix : f_ix);
       return -1;
     }
   return 0;
 
 read_error:
-  gcov_error ("profiling:%s:%s merging\n", gi_filename,
+  gcov_error ("profiling:%s:%s merging\n", filename,
               error < 0 ? "Overflow": "Error");
   return -1;
 }
@@ -606,7 +607,8 @@ gcov_exit_write_gcda (const struct gcov_info *gi_ptr,
    Return -1 on error. Return 0 on success.  */
 
 static int
-gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *prg,
+gcov_exit_merge_summary (const char *filename,
+			 const struct gcov_info *gi_ptr, struct gcov_summary *prg,
                          struct gcov_summary *this_prg, gcov_unsigned_t crc32,
 			 struct gcov_summary *all_prg __attribute__ ((unused)))
 {
@@ -644,7 +646,7 @@ gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *pr
       else if (cs_prg->runs)
         {
           gcov_error ("profiling:%s:Merge mismatch for summary.\n",
-                      gi_filename);
+                      filename);
           return -1;
         }
 #if !GCOV_LOCKED
@@ -670,7 +672,7 @@ gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *pr
              {
                gcov_error ("profiling:%s:Data file mismatch - some "
                            "data files may have been concurrently "
-                           "updated without locking support\n", gi_filename);
+                           "updated without locking support\n", filename);
                all_prg->checksum = ~0u;
              }
 #endif
@@ -689,7 +691,7 @@ gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *pr
    summaries separate.  */
 
 static void
-gcov_exit_dump_gcov (struct gcov_info *gi_ptr, struct gcov_filename_aux *gf,
+gcov_exit_dump_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
 		     gcov_unsigned_t crc32, struct gcov_summary *all_prg,
                      struct gcov_summary *this_prg)
 {
@@ -712,11 +714,11 @@ gcov_exit_dump_gcov (struct gcov_info *gi_ptr, struct gcov_filename_aux *gf,
       /* Merge data from file.  */
       if (tag != GCOV_DATA_MAGIC)
         {
-          gcov_error ("profiling:%s:Not a gcov data file\n", gi_filename);
+          gcov_error ("profiling:%s:Not a gcov data file\n", gf->filename);
           goto read_fatal;
         }
-      error = gcov_exit_merge_gcda (gi_ptr, &prg, this_prg, &summary_pos, &eof_pos,
-				    crc32);
+      error = gcov_exit_merge_gcda (gf->filename, gi_ptr, &prg, this_prg,
+				    &summary_pos, &eof_pos, crc32);
       if (error == -1)
         goto read_fatal;
     }
@@ -729,7 +731,8 @@ gcov_exit_dump_gcov (struct gcov_info *gi_ptr, struct gcov_filename_aux *gf,
       summary_pos = eof_pos;
     }
 
-  error = gcov_exit_merge_summary (gi_ptr, &prg, this_prg, crc32, all_prg);
+  error = gcov_exit_merge_summary (gf->filename, gi_ptr, &prg, this_prg,
+				   crc32, all_prg);
   if (error == -1)
     goto read_fatal;
 
@@ -744,7 +747,7 @@ read_fatal:;
     gcov_error (error  < 0 ?
                 "profiling:%s:Overflow writing\n" :
                 "profiling:%s:Error writing\n",
-                gi_filename);
+                gf->filename);
 }
 
 
@@ -756,7 +759,7 @@ void
 gcov_exit (void)
 {
   struct gcov_info *gi_ptr;
-  struct gcov_filename_aux gf;
+  struct gcov_filename gf;
   gcov_unsigned_t crc32;
   struct gcov_summary all_prg;
   struct gcov_summary this_prg;
@@ -767,8 +770,8 @@ gcov_exit (void)
     return;
 
   gcov_dump_complete = 1;
-  
-  crc32 = gcov_exit_compute_summary (&this_prg);
+
+  crc32 = gcov_exit_compute_summary (&this_prg, &gf.max_length);
 
   allocate_filename_struct (&gf);
 #if !GCOV_LOCKED
@@ -780,8 +783,7 @@ gcov_exit (void)
     gcov_exit_dump_gcov (gi_ptr, &gf, crc32, &all_prg, &this_prg);
   run_accounted = 1;
 
-  if (gi_filename)
-    free (gi_filename);
+  free (gf.filename);
 }
 
 /* Reset all counters to zero.  */
@@ -826,12 +828,6 @@ __gcov_init (struct gcov_info *info)
     return;
   if (gcov_version (info, info->version, 0))
     {
-      size_t filename_length = strlen(info->filename);
-
-      /* Refresh the longest file name information */
-      if (filename_length > gcov_max_filename)
-        gcov_max_filename = filename_length;
-
       if (!gcov_list)
         atexit (gcov_exit);
 
