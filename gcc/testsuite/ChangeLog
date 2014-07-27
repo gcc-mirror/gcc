@@ -1,3 +1,8 @@
+2014-07-27  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/avx512f-vbroadcastf64x4-2.c: Fix the uninitialized
+	variable problem.
+
 2014-07-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/61926
