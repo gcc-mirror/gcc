@@ -1,3 +1,12 @@
+2014-07-28  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(graphite_create_new_guard): New function.
+	(translate_isl_ast_node_if): New function.
+	(translate_isl_ast): Add calling of translate_isl_ast_node_if.
+
+	* gcc.dg/graphite/isl-ast-gen-if-1.c: New testcase.
+
 2014-07-27  Anthony Green  <green@moxielogic.com>
 
 	* config.gcc: Add moxie-*-moxiebox* configuration.
