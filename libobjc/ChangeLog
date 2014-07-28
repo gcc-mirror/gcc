@@ -1,3 +1,9 @@
+2014-07-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR libobjc/61920
+	* encoding.c (rs6000_special_adjust_field_align_p): Use definition
+	that matches the 4.8 branch ABI.
+
 2014-07-27  Alan Modra  <amodra@gmail.com>
 	    Matthias Klose  <doko@ubuntu.com>
 
