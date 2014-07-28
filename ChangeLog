@@ -1,3 +1,8 @@
+2014-07-28  Anthony Green  <green@moxielogic.com>
+
+	Import from savannah.gnu.org:
+	* config.sub: Update to 2014-07-28 version.
+
 2014-07-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* MAINTAINERS: Remove my MIPS maintainer entry.
