@@ -1,3 +1,11 @@
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/52478
+	* optabs.c (gen_int_libfunc): For -ftrapv libfuncs make
+	sure to register SImode ones, not only >= word_mode ones.
+	* expr.c (expand_expr_real_2): When expanding -ftrapv
+	binops do not use OPTAB_LIB_WIDEN.
+
 2014-07-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/61919
