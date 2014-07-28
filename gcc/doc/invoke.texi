@@ -4927,11 +4927,11 @@ attribute.
 @opindex Woverflow
 Do not warn about compile-time overflow in constant expressions.
 
-@opindex Wodr
+@item -Wno-odr
 @opindex Wno-odr
 @opindex Wodr
-Warn about One Definition Rule violations during link time optimization.
-Require @option{-flto-odr-type-merging} to be enabled. Enabled by default
+Warn about One Definition Rule violations during link-time optimization.
+Requires @option{-flto-odr-type-merging} to be enabled.  Enabled by default.
 
 @item -Wopenmp-simd
 @opindex Wopenm-simd
