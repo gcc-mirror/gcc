@@ -1,7 +1,7 @@
 2014-07-28  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-linux*): Include gnu-user.h in tm_file.
-	* config/rs6000/sysv4.h (CC!_SPEC): Undefine it before defining it.
+	* config/rs6000/sysv4.h (CC1_SPEC): Undefine it before defining it.
 	* config/rs6000/linux.h (CPLUSPLUS_CPP_SPEC): Delete define.
 	(LINK_GCC_C_SEQUENCE_SPEC): Likewise.
 	(USE_LD_AS_NEEDED): Likewise.
