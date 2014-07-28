@@ -1,3 +1,7 @@
+2014-07-28  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi (-Wno-odr): Fix @item entry.  Tweak wording.
+
 2014-07-28  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-linux*): Include gnu-user.h in tm_file.
