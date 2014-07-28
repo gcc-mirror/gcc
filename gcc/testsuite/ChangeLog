@@ -1,3 +1,9 @@
+2014-07-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/fold-abs-5.c: New test.
+	* gcc.dg/Wstrict-overflow-25.c: XFAIL everywhere.
+	* gcc.dg/fold-compare-8.c: Likewise.
+
 2014-07-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/52478
