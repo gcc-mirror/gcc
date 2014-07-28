@@ -5650,6 +5650,7 @@ create_variable_info_for_1 (tree decl, const char *name)
   auto_vec<fieldoff_s> fieldstack;
   fieldoff_s *fo;
   unsigned int i;
+  varpool_node *vnode;
 
   if (!declsize
       || !tree_fits_uhwi_p (declsize))
@@ -5671,7 +5672,8 @@ create_variable_info_for_1 (tree decl, const char *name)
 	 in IPA mode.  Else we'd have to parse arbitrary initializers.  */
       && !(in_ipa_mode
 	   && is_global_var (decl)
-	   && varpool_node::get (decl)->get_constructor ()))
+	   && (vnode = varpool_node::get (decl))
+	   && vnode->get_constructor ()))
     {
       fieldoff_s *fo = NULL;
       bool notokay = false;
