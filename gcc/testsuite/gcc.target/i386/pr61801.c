@@ -13,7 +13,7 @@ void fn1 ()
 	   fn3 ();
 	   switch (0)
 	   default:
-	   asm volatile("" : "=a"(e) : "0"(a), ""(0));
+	   asm volatile("" : "=a"(e) : "0"(a), "i"(0));
 	   e;
 	   });
       d = b;
