@@ -737,7 +737,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
   l->can_throw = false;
   state_from_flags (&l->state_previously_known, &l->looping_previously_known,
 		    flags_from_decl_or_type (fn->decl),
-		    cgraph_node_cannot_return (fn));
+		    fn->cannot_return_p ());
 
   if (fn->thunk.thunk_p || fn->alias)
     {
@@ -840,14 +840,14 @@ end:
 static void
 add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
- if (cgraph_function_body_availability (node) < AVAIL_OVERWRITABLE)
+ if (node->get_availability () < AVAIL_INTERPOSABLE)
    return;
   /* There are some shared nodes, in particular the initializers on
      static declarations.  We do not need to scan them more than once
      since all we would be interested in are the addressof
      operations.  */
   visited_nodes = pointer_set_create ();
-  if (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE)
+  if (node->get_availability () > AVAIL_INTERPOSABLE)
     set_function_state (node, analyze_function (node, true));
   pointer_set_destroy (visited_nodes);
   visited_nodes = NULL;
@@ -920,12 +920,12 @@ pure_const_generate_summary (void)
 
   /* Process all of the functions.
 
-     We process AVAIL_OVERWRITABLE functions.  We can not use the results
+     We process AVAIL_INTERPOSABLE functions.  We can not use the results
      by default, but the info can be used at LTO with -fwhole-program or
      when function got cloned and the clone is AVAILABLE.  */
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+    if (node->get_availability () >= AVAIL_INTERPOSABLE)
       set_function_state (node, analyze_function (node, true));
 
   pointer_set_destroy (visited_nodes);
@@ -1025,7 +1025,8 @@ pure_const_read_summary (void)
 	      fs = XCNEW (struct funct_state_d);
 	      index = streamer_read_uhwi (ib);
 	      encoder = file_data->symtab_node_encoder;
-	      node = cgraph (lto_symtab_encoder_deref (encoder, index));
+	      node = dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder,
+									index));
 	      set_function_state (node, fs);
 
 	      /* Note that the flags must be read in the opposite
@@ -1088,7 +1089,7 @@ self_recursive_p (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
-    if (cgraph_function_node (e->callee, NULL) == node)
+    if (e->callee->function_symbol () == node)
       return true;
   return false;
 }
@@ -1110,7 +1111,7 @@ propagate_pure_const (void)
   order_pos = ipa_reduced_postorder (order, true, false, NULL);
   if (dump_file)
     {
-      dump_cgraph (dump_file);
+      cgraph_node::dump_cgraph (dump_file);
       ipa_print_order (dump_file, "reduced", order, order_pos);
     }
 
@@ -1155,7 +1156,7 @@ propagate_pure_const (void)
 	    break;
 
 	  /* For overwritable nodes we can not assume anything.  */
-	  if (cgraph_function_body_availability (w) == AVAIL_OVERWRITABLE)
+	  if (w->get_availability () == AVAIL_INTERPOSABLE)
 	    {
 	      worse_state (&pure_const_state, &looping,
 			   w_l->state_previously_known,
@@ -1182,7 +1183,7 @@ propagate_pure_const (void)
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
 	      enum availability avail;
-	      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
+	      struct cgraph_node *y = e->callee->function_symbol (&avail);
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
 
@@ -1193,7 +1194,7 @@ propagate_pure_const (void)
 			   e->callee->name (),
 			   e->callee->order);
 		}
-	      if (avail > AVAIL_OVERWRITABLE)
+	      if (avail > AVAIL_INTERPOSABLE)
 		{
 		  funct_state y_l = get_function_state (y);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1344,7 +1345,7 @@ propagate_pure_const (void)
 			       this_looping ? "looping " : "",
 			       w->name ());
 		  }
-		cgraph_set_const_flag (w, true, this_looping);
+		w->set_const_flag (true, this_looping);
 		break;
 
 	      case IPA_PURE:
@@ -1356,7 +1357,7 @@ propagate_pure_const (void)
 			       this_looping ? "looping " : "",
 			       w->name ());
 		  }
-		cgraph_set_pure_flag (w, true, this_looping);
+		w->set_pure_flag (true, this_looping);
 		break;
 
 	      default:
@@ -1388,7 +1389,7 @@ propagate_nothrow (void)
   order_pos = ipa_reduced_postorder (order, true, false, ignore_edge);
   if (dump_file)
     {
-      dump_cgraph (dump_file);
+      cgraph_node::dump_cgraph (dump_file);
       ipa_print_order (dump_file, "reduced for nothrow", order, order_pos);
     }
 
@@ -1412,7 +1413,7 @@ propagate_nothrow (void)
 	  funct_state w_l = get_function_state (w);
 
 	  if (w_l->can_throw
-	      || cgraph_function_body_availability (w) == AVAIL_OVERWRITABLE)
+	      || w->get_availability () == AVAIL_INTERPOSABLE)
 	    can_throw = true;
 
 	  if (can_throw)
@@ -1421,9 +1422,9 @@ propagate_nothrow (void)
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
 	      enum availability avail;
-	      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
+	      struct cgraph_node *y = e->callee->function_symbol (&avail);
 
-	      if (avail > AVAIL_OVERWRITABLE)
+	      if (avail > AVAIL_INTERPOSABLE)
 		{
 		  funct_state y_l = get_function_state (y);
 
@@ -1459,7 +1460,7 @@ propagate_nothrow (void)
 		 be different.  */
 	      if (!w->global.inlined_to)
 		{
-		  cgraph_set_nothrow_flag (w, true);
+		  w->set_nothrow_flag (true);
 		  if (dump_file)
 		    fprintf (dump_file, "Function found to be nothrow: %s\n",
 			     w->name ());
@@ -1569,7 +1570,7 @@ skip_function_for_local_pure_const (struct cgraph_node *node)
         fprintf (dump_file, "Function called in recursive cycle; ignoring\n");
       return true;
     }
-  if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
+  if (node->get_availability () <= AVAIL_INTERPOSABLE)
     {
       if (dump_file)
         fprintf (dump_file, "Function is not available or overwritable; not analyzing.\n");
@@ -1619,7 +1620,7 @@ pass_local_pure_const::execute (function *fun)
   bool skip;
   struct cgraph_node *node;
 
-  node = cgraph_get_node (current_function_decl);
+  node = cgraph_node::get (current_function_decl);
   skip = skip_function_for_local_pure_const (node);
   if (!warn_suggest_attribute_const
       && !warn_suggest_attribute_pure
@@ -1653,7 +1654,7 @@ pass_local_pure_const::execute (function *fun)
 	  warn_function_const (current_function_decl, !l->looping);
 	  if (!skip)
 	    {
-	      cgraph_set_const_flag (node, true, l->looping);
+	      node->set_const_flag (true, l->looping);
 	      changed = true;
 	    }
 	  if (dump_file)
@@ -1666,7 +1667,7 @@ pass_local_pure_const::execute (function *fun)
 	{
 	  if (!skip)
 	    {
-	      cgraph_set_const_flag (node, true, false);
+	      node->set_const_flag (true, false);
 	      changed = true;
 	    }
 	  if (dump_file)
@@ -1680,7 +1681,7 @@ pass_local_pure_const::execute (function *fun)
 	{
 	  if (!skip)
 	    {
-	      cgraph_set_pure_flag (node, true, l->looping);
+	      node->set_pure_flag (true, l->looping);
 	      changed = true;
 	    }
 	  warn_function_pure (current_function_decl, !l->looping);
@@ -1694,7 +1695,7 @@ pass_local_pure_const::execute (function *fun)
 	{
 	  if (!skip)
 	    {
-	      cgraph_set_pure_flag (node, true, false);
+	      node->set_pure_flag (true, false);
 	      changed = true;
 	    }
 	  if (dump_file)
@@ -1708,7 +1709,7 @@ pass_local_pure_const::execute (function *fun)
     }
   if (!l->can_throw && !TREE_NOTHROW (current_function_decl))
     {
-      cgraph_set_nothrow_flag (node, true);
+      node->set_nothrow_flag (true);
       changed = true;
       if (dump_file)
 	fprintf (dump_file, "Function found to be nothrow: %s\n",

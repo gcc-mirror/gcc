@@ -38,7 +38,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 extern gcov_position_t gcov_position();
 extern int gcov_is_error();
-extern size_t gcov_max_filename;
 
 /* Verbose mode for debug.  */
 static int verbose;
@@ -78,8 +77,6 @@ static int k_ctrs_mask[GCOV_COUNTERS];
 static struct gcov_ctr_info k_ctrs[GCOV_COUNTERS];
 /* Number of kind of counters that have been seen.  */
 static int k_ctrs_types;
-/* The longest length of all the filenames.  */
-static int max_filename_len;
 
 /* Merge functions for counters.  */
 #define DEF_GCOV_COUNTER(COUNTER, NAME, FN_TYPE) __gcov_merge ## FN_TYPE,
@@ -301,13 +298,11 @@ read_gcda_file (const char *filename)
   num_fn_info = 0;
   curr_fn_info = 0;
   {
-    char *str_dup = (char*) xmalloc (strlen (filename) + 1);
-    int len;
+    size_t len = strlen (filename) + 1;
+    char *str_dup = (char*) xmalloc (len);
 
-    strcpy (str_dup, filename);
+    memcpy (str_dup, filename, len);
     obj_info->filename = str_dup;
-    if ((len = strlen (filename)) > max_filename_len)
-      max_filename_len = len;
   }
 
   /* Read stamp.  */
@@ -433,8 +428,7 @@ read_profile_dir_init (void)
 
 /* Driver for read a profile directory and convert into gcov_info list in memory.
    Return NULL on error,
-   Return the head of gcov_info list on success.
-   Note the file static variable GCOV_MAX_FILENAME is also set.  */
+   Return the head of gcov_info list on success.  */
 
 struct gcov_info *
 gcov_read_profile_dir (const char* dir_name, int recompute_summary ATTRIBUTE_UNUSED)
@@ -461,11 +455,6 @@ gcov_read_profile_dir (const char* dir_name, int recompute_summary ATTRIBUTE_UNU
   ret = chdir (pwd);
   free (pwd);
 
-
-  /* gcov_max_filename is defined in libgcov.c that records the
-     max filename len. We need to set it here to allocate the
-     array for dumping.  */
-  gcov_max_filename = max_filename_len;
 
   return gcov_info_head;;
 }

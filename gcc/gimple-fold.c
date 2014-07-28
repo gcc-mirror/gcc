@@ -99,7 +99,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 	 static objects are defined.  */
       if (cgraph_function_flags_ready)
 	return true;
-      snode = symtab_get_node (decl);
+      snode = symtab_node::get (decl);
       if (!snode || !snode->definition)
 	return false;
       node = dyn_cast <cgraph_node *> (snode);
@@ -112,10 +112,10 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   if (!from_decl
       || TREE_CODE (from_decl) != VAR_DECL
       || (!DECL_EXTERNAL (from_decl)
-	  && (vnode = varpool_get_node (from_decl)) != NULL
+	  && (vnode = varpool_node::get (from_decl)) != NULL
 	  && vnode->definition)
       || (flag_ltrans
-	  && (vnode = varpool_get_node (from_decl)) != NULL
+	  && (vnode = varpool_node::get (from_decl)) != NULL
 	  && vnode->in_other_partition))
     return true;
   /* We are folding reference from external vtable.  The vtable may reffer
@@ -124,7 +124,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   if (DECL_VISIBILITY_SPECIFIED (decl)
       && DECL_EXTERNAL (decl)
       && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT
-      && (!(snode = symtab_get_node (decl)) || !snode->in_other_partition))
+      && (!(snode = symtab_node::get (decl)) || !snode->in_other_partition))
     return false;
   /* When function is public, we always can introduce new reference.
      Exception are the COMDAT functions where introducing a direct
@@ -145,7 +145,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   if (!cgraph_function_flags_ready)
     return true;
 
-  snode = symtab_get_node (decl);
+  snode = symtab_node::get (decl);
   if (!snode
       || ((!snode->definition || DECL_EXTERNAL (decl))
 	  && (!snode->in_other_partition
@@ -201,7 +201,7 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 	  /* Make sure we create a cgraph node for functions we'll reference.
 	     They can be non-existent if the reference comes from an entry
 	     of an external vtable for example.  */
-	  cgraph_get_create_node (base);
+	  cgraph_node::get_create (base);
 	}
       /* Fixup types in global initializers.  */
       if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
@@ -1107,8 +1107,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	{
           if (dump_file && virtual_method_call_p (callee)
 	      && !possible_polymorphic_call_target_p
-		    (callee, cgraph_get_node (gimple_call_addr_fndecl
-                                                 (OBJ_TYPE_REF_EXPR (callee)))))
+		    (callee, cgraph_node::get (gimple_call_addr_fndecl
+					       (OBJ_TYPE_REF_EXPR (callee)))))
 	    {
 	      fprintf (dump_file,
 		       "Type inheritance inconsistent devirtualization of ");
@@ -2881,41 +2881,6 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
     }
 }
 
-/* CTOR is STRING_CST.  Fold reference of type TYPE and size SIZE
-   to the memory at bit OFFSET.
-
-   We do only simple job of folding byte accesses.  */
-
-static tree
-fold_string_cst_ctor_reference (tree type, tree ctor,
-				unsigned HOST_WIDE_INT offset,
-				unsigned HOST_WIDE_INT size)
-{
-  if (INTEGRAL_TYPE_P (type)
-      && (TYPE_MODE (type)
-	  == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-      && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
-	  == MODE_INT)
-      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
-      && size == BITS_PER_UNIT
-      && !(offset % BITS_PER_UNIT))
-    {
-      offset /= BITS_PER_UNIT;
-      if (offset < (unsigned HOST_WIDE_INT) TREE_STRING_LENGTH (ctor))
-	return build_int_cst_type (type, (TREE_STRING_POINTER (ctor)
-				   [offset]));
-      /* Folding
-	 const char a[20]="hello";
-	 return a[10];
-
-	 might lead to offset greater than string length.  In this case we
-	 know value is either initialized to 0 or out of bounds.  Return 0
-	 in both cases.  */
-      return build_zero_cst (type);
-    }
-  return NULL_TREE;
-}
-
 /* CTOR is CONSTRUCTOR of an array type.  Fold reference of type TYPE and size
    SIZE to the memory at bit OFFSET.  */
 
@@ -3107,8 +3072,19 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
 	STRIP_NOPS (ret);
       return ret;
     }
-  if (TREE_CODE (ctor) == STRING_CST)
-    return fold_string_cst_ctor_reference (type, ctor, offset, size);
+  /* For constants and byte-aligned/sized reads try to go through
+     native_encode/interpret.  */
+  if (CONSTANT_CLASS_P (ctor)
+      && BITS_PER_UNIT == 8
+      && offset % BITS_PER_UNIT == 0
+      && size % BITS_PER_UNIT == 0
+      && size <= MAX_BITSIZE_MODE_ANY_MODE)
+    {
+      unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+      if (native_encode_expr (ctor, buf, size / BITS_PER_UNIT,
+			      offset / BITS_PER_UNIT) > 0)
+	return native_interpret_expr (type, buf, size / BITS_PER_UNIT);
+    }
   if (TREE_CODE (ctor) == CONSTRUCTOR)
     {
 
@@ -3354,7 +3330,7 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   /* Make sure we create a cgraph node for functions we'll reference.
      They can be non-existent if the reference comes from an entry
      of an external vtable for example.  */
-  cgraph_get_create_node (fn);
+  cgraph_node::get_create (fn);
 
   return fn;
 }

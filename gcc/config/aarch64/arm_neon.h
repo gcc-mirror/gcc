@@ -13657,6 +13657,13 @@ vbsl_f32 (uint32x2_t __a, float32x2_t __b, float32x2_t __c)
   return __builtin_aarch64_simd_bslv2sf_suss (__a, __b, __c);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vbsl_f64 (uint64x1_t __a, float64x1_t __b, float64x1_t __c)
+{
+  return (float64x1_t)
+    { __builtin_aarch64_simd_bsldf_suss (__a[0], __b[0], __c[0]) };
+}
+
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vbsl_p8 (uint8x8_t __a, poly8x8_t __b, poly8x8_t __c)
 {

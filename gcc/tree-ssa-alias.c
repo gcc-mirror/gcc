@@ -1710,7 +1710,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
       && TREE_CODE (base) == VAR_DECL
       && TREE_STATIC (base))
     {
-      struct cgraph_node *node = cgraph_get_node (callee);
+      struct cgraph_node *node = cgraph_node::get (callee);
       bitmap not_read;
 
       /* FIXME: Callee can be an OMP builtin that does not have a call graph
@@ -2078,7 +2078,7 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
       && TREE_CODE (base) == VAR_DECL
       && TREE_STATIC (base))
     {
-      struct cgraph_node *node = cgraph_get_node (callee);
+      struct cgraph_node *node = cgraph_node::get (callee);
       bitmap not_written;
 
       if (node

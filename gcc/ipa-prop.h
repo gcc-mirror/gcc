@@ -576,7 +576,7 @@ ipa_get_agg_replacements_for_node (struct cgraph_node *node)
 /* Function formal parameters related computations.  */
 void ipa_initialize_node_params (struct cgraph_node *node);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
-					vec<cgraph_edge_p> *new_edges);
+					vec<cgraph_edge *> *new_edges);
 
 /* Indirect edge and binfo processing.  */
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,

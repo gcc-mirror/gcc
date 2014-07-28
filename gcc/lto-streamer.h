@@ -1075,14 +1075,14 @@ lsei_node (lto_symtab_encoder_iterator lsei)
 static inline struct cgraph_node *
 lsei_cgraph_node (lto_symtab_encoder_iterator lsei)
 {
-  return cgraph (lsei.encoder->nodes[lsei.index].node);
+  return dyn_cast<cgraph_node *> (lsei.encoder->nodes[lsei.index].node);
 }
 
 /* Return the node pointed to by LSI.  */
 static inline varpool_node *
 lsei_varpool_node (lto_symtab_encoder_iterator lsei)
 {
-  return varpool (lsei.encoder->nodes[lsei.index].node);
+  return dyn_cast<varpool_node *> (lsei.encoder->nodes[lsei.index].node);
 }
 
 /* Return the cgraph node corresponding to REF using ENCODER.  */

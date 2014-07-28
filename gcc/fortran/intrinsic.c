@@ -204,6 +204,7 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	       && specific->id != GFC_ISYM_RANK
 	       && specific->id != GFC_ISYM_SHAPE
 	       && specific->id != GFC_ISYM_SIZE
+	       && specific->id != GFC_ISYM_SIZEOF
 	       && specific->id != GFC_ISYM_UBOUND
 	       && specific->id != GFC_ISYM_C_LOC)
 	{
@@ -2765,8 +2766,9 @@ add_functions (void)
 	     ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL);
   make_from_module();
 
-  add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER, ii,
-	     GFC_STD_GNU, gfc_check_sizeof, gfc_simplify_sizeof, NULL,
+  add_sym_1 ("sizeof", GFC_ISYM_SIZEOF, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_INTEGER, ii, GFC_STD_GNU,
+	     gfc_check_sizeof, gfc_simplify_sizeof, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);

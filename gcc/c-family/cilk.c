@@ -171,7 +171,7 @@ call_graph_add_fn (tree fndecl)
   gcc_assert (cfun->decl == outer);
 
   push_cfun (f);
-  cgraph_create_node (fndecl);
+  cgraph_node::create (fndecl);
   pop_cfun_to (outer);
 }
 

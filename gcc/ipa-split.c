@@ -488,13 +488,14 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 			       SSA_NAME_VERSION (ddef)))
 	    {
 	      if (!VOID_TYPE_P (TREE_TYPE (parm)))
-		call_overhead += estimate_move_cost (TREE_TYPE (parm));
+		call_overhead += estimate_move_cost (TREE_TYPE (parm), false);
 	      num_args++;
 	    }
 	}
     }
   if (!VOID_TYPE_P (TREE_TYPE (current_function_decl)))
-    call_overhead += estimate_move_cost (TREE_TYPE (current_function_decl));
+    call_overhead += estimate_move_cost (TREE_TYPE (current_function_decl),
+					 false);
 
   if (current->split_size <= call_overhead)
     {
@@ -1087,7 +1088,7 @@ split_function (struct split_point *split_point)
   bitmap args_to_skip;
   tree parm;
   int num = 0;
-  struct cgraph_node *node, *cur_node = cgraph_get_node (current_function_decl);
+  cgraph_node *node, *cur_node = cgraph_node::get (current_function_decl);
   basic_block return_bb = find_return_bb ();
   basic_block call_bb;
   gimple_stmt_iterator gsi;
@@ -1229,12 +1230,9 @@ split_function (struct split_point *split_point)
 
   /* Now create the actual clone.  */
   rebuild_cgraph_edges ();
-  node = cgraph_function_versioning (cur_node, vNULL,
-				     NULL,
-				     args_to_skip,
-				     !split_part_return_p,
-				     split_point->split_bbs,
-				     split_point->entry_bb, "part");
+  node = cur_node->create_version_clone_with_body
+    (vNULL, NULL, args_to_skip, !split_part_return_p, split_point->split_bbs,
+     split_point->entry_bb, "part");
 
   /* Let's take a time profile for splitted function.  */
   node->tp_first_run = cur_node->tp_first_run + 1;
@@ -1250,7 +1248,7 @@ split_function (struct split_point *split_point)
   /* If the original function is declared inline, there is no point in issuing
      a warning for the non-inlinable part.  */
   DECL_NO_INLINE_WARNING_P (node->decl) = 1;
-  cgraph_node_remove_callees (cur_node);
+  cur_node->remove_callees ();
   cur_node->remove_all_references ();
   if (!split_part_return_p)
     TREE_THIS_VOLATILE (node->decl) = 1;
@@ -1511,7 +1509,7 @@ execute_split_functions (void)
   basic_block bb;
   int overall_time = 0, overall_size = 0;
   int todo = 0;
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  struct cgraph_node *node = cgraph_node::get (current_function_decl);
 
   if (flags_from_decl_or_type (current_function_decl)
       & (ECF_NORETURN|ECF_MALLOC))

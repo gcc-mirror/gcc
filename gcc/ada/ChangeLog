@@ -1,3 +1,9 @@
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/trans.c (finalize_nrv): Adjust function call.
+	* gcc-interface/utils.c (rest_of_subprog_body_compilation): Likewise.
+	(gnat_write_global_declarations): Likewise.
+
 2014-07-19  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* gnat_rm.texi: Clean up for makeinfo 5.2.
@@ -92,6 +98,7 @@
 	* a-witeio.adb (Put): No 16-bit character output when text
 	translation is disabled.
 	* i-cstrea.ads: Code clean up.
+
 2014-07-18  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document that Wchar_T_Size and Word_Size are

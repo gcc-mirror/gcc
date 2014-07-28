@@ -38,12 +38,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <ftw.h>
 #include <getopt.h>
 
+extern struct gcov_info *gcov_list;
+
 extern int gcov_profile_merge (struct gcov_info*, struct gcov_info*, int, int);
 extern int gcov_profile_normalize (struct gcov_info*, gcov_type);
 extern int gcov_profile_scale (struct gcov_info*, float, int, int);
 extern struct gcov_info* gcov_read_profile_dir (const char*, int);
 extern void gcov_exit (void);
-extern void set_gcov_list (struct gcov_info *);
 extern void gcov_set_verbose (void);
 
 /* Set to verbose output mode.  */
@@ -109,7 +110,7 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   if (ret)
     fatal_error ("Cannot change directory to %s", out);
 
-  set_gcov_list (profile);
+  gcov_list = profile;
   gcov_exit ();
 
   ret = chdir (pwd);

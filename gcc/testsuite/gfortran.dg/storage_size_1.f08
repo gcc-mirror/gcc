@@ -25,7 +25,7 @@ if (storage_size(a)  /= 64) call abort()
 if (sizeof(b)        /= 24) call abort()
 if (storage_size(b)  /= 64) call abort()
 
-if (sizeof(cp)       /=  8) call abort()
+if (sizeof(cp)       /= 12) call abort()
 if (storage_size(cp) /= 96) call abort()
 
 end

@@ -18551,20 +18551,6 @@ output_move_neon (rtx *operands)
       /* FIXME: Not currently enabled in neon_vector_mem_operand.  */
       gcc_unreachable ();
 
-    case REG:
-      /* We have to use vldm / vstm for too-large modes.  */
-      if (nregs > 1)
-	{
-	  if (nregs > 4)
-	    templ = "v%smia%%?\t%%m0, %%h1";
-	  else
-	    templ = "v%s1.64\t%%h1, %%A0";
-
-	  ops[0] = mem;
-	  ops[1] = reg;
-	  break;
-	}
-      /* Fall through.  */
     case LABEL_REF:
     case PLUS:
       {
@@ -18598,7 +18584,14 @@ output_move_neon (rtx *operands)
       }
 
     default:
-      gcc_unreachable ();
+      /* We have to use vldm / vstm for too-large modes.  */
+      if (nregs > 4)
+	templ = "v%smia%%?\t%%m0, %%h1";
+      else
+	templ = "v%s1.64\t%%h1, %%A0";
+
+      ops[0] = mem;
+      ops[1] = reg;
     }
 
   sprintf (buff, templ, load ? "ld" : "st");
@@ -20788,30 +20781,47 @@ arm_get_frame_offsets (void)
 	{
 	  int reg = -1;
 
+	  /* Register r3 is caller-saved.  Normally it does not need to be
+	     saved on entry by the prologue.  However if we choose to save
+	     it for padding then we may confuse the compiler into thinking
+	     a prologue sequence is required when in fact it is not.  This
+	     will occur when shrink-wrapping if r3 is used as a scratch
+	     register and there are no other callee-saved writes.
+
+	     This situation can be avoided when other callee-saved registers
+	     are available and r3 is not mandatory if we choose a callee-saved
+	     register for padding.  */
+	  bool prefer_callee_reg_p = false;
+
 	  /* If it is safe to use r3, then do so.  This sometimes
 	     generates better code on Thumb-2 by avoiding the need to
 	     use 32-bit push/pop instructions.  */
           if (! any_sibcall_could_use_r3 ()
 	      && arm_size_return_regs () <= 12
 	      && (offsets->saved_regs_mask & (1 << 3)) == 0
-              && (TARGET_THUMB2
+	      && (TARGET_THUMB2
 		  || !(TARGET_LDRD && current_tune->prefer_ldrd_strd)))
 	    {
 	      reg = 3;
+	      if (!(TARGET_LDRD && current_tune->prefer_ldrd_strd))
+		prefer_callee_reg_p = true;
 	    }
-	  else
-	    for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
-	      {
-		/* Avoid fixed registers; they may be changed at
-		   arbitrary times so it's unsafe to restore them
-		   during the epilogue.  */
-		if (!fixed_regs[i]
-		    && (offsets->saved_regs_mask & (1 << i)) == 0)
-		  {
-		    reg = i;
-		    break;
-		  }
-	      }
+	  if (reg == -1
+	      || prefer_callee_reg_p)
+	    {
+	      for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
+		{
+		  /* Avoid fixed registers; they may be changed at
+		     arbitrary times so it's unsafe to restore them
+		     during the epilogue.  */
+		  if (!fixed_regs[i]
+		      && (offsets->saved_regs_mask & (1 << i)) == 0)
+		    {
+		      reg = i;
+		      break;
+		    }
+		}
+	    }
 
 	  if (reg != -1)
 	    {

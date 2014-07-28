@@ -1799,7 +1799,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      switch (id->transform_call_graph_edges)
 		{
 		case CB_CGE_DUPLICATE:
-		  edge = cgraph_edge (id->src_node, orig_stmt);
+		  edge = id->src_node->get_edge (orig_stmt);
 		  if (edge)
 		    {
 		      int edge_freq = edge->frequency;
@@ -1862,13 +1862,13 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		  break;
 
 		case CB_CGE_MOVE_CLONES:
-		  cgraph_set_call_stmt_including_clones (id->dst_node,
-							 orig_stmt, stmt);
-		  edge = cgraph_edge (id->dst_node, stmt);
+		  id->dst_node->set_call_stmt_including_clones (orig_stmt,
+								stmt);
+		  edge = id->dst_node->get_edge (stmt);
 		  break;
 
 		case CB_CGE_MOVE:
-		  edge = cgraph_edge (id->dst_node, orig_stmt);
+		  edge = id->dst_node->get_edge (orig_stmt);
 		  if (edge)
 		    cgraph_set_call_stmt (edge, stmt);
 		  break;
@@ -1885,7 +1885,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		  && id->dst_node->definition
 		  && (fn = gimple_call_fndecl (stmt)) != NULL)
 		{
-		  struct cgraph_node *dest = cgraph_get_node (fn);
+		  struct cgraph_node *dest = cgraph_node::get (fn);
 
 		  /* We have missing edge in the callgraph.  This can happen
 		     when previous inlining turned an indirect call into a
@@ -1898,13 +1898,13 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		  	      || !id->src_node->definition
 			      || !id->dst_node->definition);
 		  if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
-		    cgraph_create_edge_including_clones
-		      (id->dst_node, dest, orig_stmt, stmt, bb->count,
+		    id->dst_node->create_edge_including_clones
+		      (dest, orig_stmt, stmt, bb->count,
 		       compute_call_stmt_bb_frequency (id->dst_node->decl,
 		       				       copy_basic_block),
 		       CIF_ORIGINALLY_INDIRECT_CALL);
 		  else
-		    cgraph_create_edge (id->dst_node, dest, stmt,
+		    id->dst_node->create_edge (dest, stmt,
 					bb->count,
 					compute_call_stmt_bb_frequency
 					  (id->dst_node->decl,
@@ -2430,7 +2430,7 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
     {
       if (is_gimple_call (gsi_stmt (si)))
 	{
-	  struct cgraph_edge *edge = cgraph_edge (id->dst_node, gsi_stmt (si));
+	  struct cgraph_edge *edge = id->dst_node->get_edge (gsi_stmt (si));
 	  if (edge)
 	    cgraph_redirect_edge_call_stmt_to_callee (edge);
 	}
@@ -3623,11 +3623,12 @@ tree_inlinable_function_p (tree fn)
   return inlinable;
 }
 
-/* Estimate the cost of a memory move.  Use machine dependent
-   word size and take possible memcpy call into account.  */
+/* Estimate the cost of a memory move of type TYPE.  Use machine dependent
+   word size and take possible memcpy call into account and return
+   cost based on whether optimizing for size or speed according to SPEED_P.  */
 
 int
-estimate_move_cost (tree type)
+estimate_move_cost (tree type, bool ARG_UNUSED (speed_p))
 {
   HOST_WIDE_INT size;
 
@@ -3645,7 +3646,7 @@ estimate_move_cost (tree type)
 
   size = int_size_in_bytes (type);
 
-  if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (!optimize_size))
+  if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (speed_p))
     /* Cost of a memcpy call, 3 arguments and the call.  */
     return 4;
   else
@@ -3847,9 +3848,9 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
       /* Account for the cost of moving to / from memory.  */
       if (gimple_store_p (stmt))
-	cost += estimate_move_cost (TREE_TYPE (lhs));
+	cost += estimate_move_cost (TREE_TYPE (lhs), weights->time_based);
       if (gimple_assign_load_p (stmt))
-	cost += estimate_move_cost (TREE_TYPE (rhs));
+	cost += estimate_move_cost (TREE_TYPE (rhs), weights->time_based);
 
       cost += estimate_operator_cost (gimple_assign_rhs_code (stmt), weights,
       				      gimple_assign_rhs1 (stmt),
@@ -3888,7 +3889,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	    /* Do not special case builtins where we see the body.
 	       This just confuse inliner.  */
 	    struct cgraph_node *node;
-	    if (!(node = cgraph_get_node (decl))
+	    if (!(node = cgraph_node::get (decl))
 		|| node->definition)
 	      ;
 	    /* For buitins that are likely expanded to nothing or
@@ -3923,11 +3924,13 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
 	cost = decl ? weights->call_cost : weights->indirect_call_cost;
 	if (gimple_call_lhs (stmt))
-	  cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)));
+	  cost += estimate_move_cost (TREE_TYPE (gimple_call_lhs (stmt)),
+				      weights->time_based);
 	for (i = 0; i < gimple_call_num_args (stmt); i++)
 	  {
 	    tree arg = gimple_call_arg (stmt, i);
-	    cost += estimate_move_cost (TREE_TYPE (arg));
+	    cost += estimate_move_cost (TREE_TYPE (arg),
+					weights->time_based);
 	  }
 	break;
       }
@@ -4156,7 +4159,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   if (gimple_code (stmt) != GIMPLE_CALL)
     goto egress;
 
-  cg_edge = cgraph_edge (id->dst_node, stmt);
+  cg_edge = id->dst_node->get_edge (stmt);
   gcc_checking_assert (cg_edge);
   /* First, see if we can figure out what function is being called.
      If we cannot, then there is no hope of inlining the function.  */
@@ -4224,11 +4227,11 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       goto egress;
     }
   fn = cg_edge->callee->decl;
-  cgraph_get_body (cg_edge->callee);
+  cg_edge->callee->get_body ();
 
 #ifdef ENABLE_CHECKING
   if (cg_edge->callee->decl != id->dst_node->decl)
-    verify_cgraph_node (cg_edge->callee);
+    cg_edge->callee->verify ();
 #endif
 
   /* We will be inlining this callee.  */
@@ -4491,7 +4494,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
     (*debug_hooks->outlining_inline_function) (cg_edge->callee->decl);
 
   /* Update callgraph if needed.  */
-  cgraph_remove_node (cg_edge->callee);
+  cg_edge->callee->remove ();
 
   id->block = NULL_TREE;
   successfully_inlined = TRUE;
@@ -4626,7 +4629,7 @@ optimize_inline_calls (tree fn)
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
 
-  id.src_node = id.dst_node = cgraph_get_node (fn);
+  id.src_node = id.dst_node = cgraph_node::get (fn);
   gcc_assert (id.dst_node->definition);
   id.dst_fn = fn;
   /* Or any functions that aren't finished yet.  */
@@ -4665,7 +4668,7 @@ optimize_inline_calls (tree fn)
     {
       struct cgraph_edge *e;
 
-      verify_cgraph_node (id.dst_node);
+      id.dst_node->verify ();
 
       /* Double check that we inlined everything we are supposed to inline.  */
       for (e = id.dst_node->callees; e; e = e->next_callee)
@@ -4688,7 +4691,7 @@ optimize_inline_calls (tree fn)
 
   delete_unreachable_blocks_update_callgraph (&id);
 #ifdef ENABLE_CHECKING
-  verify_cgraph_node (id.dst_node);
+  id.dst_node->verify ();
 #endif
 
   /* It would be nice to check SSA/CFG/statement consistency here, but it is
@@ -5218,10 +5221,10 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 	      id->dst_node->remove_stmt_references (gsi_stmt (bsi));
 
 	      if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
-		  &&(e = cgraph_edge (id->dst_node, gsi_stmt (bsi))) != NULL)
+		  &&(e = id->dst_node->get_edge (gsi_stmt (bsi))) != NULL)
 		{
 		  if (!e->inline_failed)
-		    cgraph_remove_node_and_inline_clones (e->callee, id->dst_node);
+		    e->callee->remove_symbol_and_inline_clones (id->dst_node);
 		  else
 		    cgraph_remove_edge (e);
 		}
@@ -5231,10 +5234,10 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 		  {
 		    node->remove_stmt_references (gsi_stmt (bsi));
 		    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL
-			&& (e = cgraph_edge (node, gsi_stmt (bsi))) != NULL)
+			&& (e = node->get_edge (gsi_stmt (bsi))) != NULL)
 		      {
 			if (!e->inline_failed)
-			  cgraph_remove_node_and_inline_clones (e->callee, id->dst_node);
+			  e->callee->remove_symbol_and_inline_clones (id->dst_node);
 			else
 			  cgraph_remove_edge (e);
 		      }
@@ -5313,7 +5316,7 @@ update_clone_info (copy_body_data * id)
 */
 void
 tree_function_versioning (tree old_decl, tree new_decl,
-			  vec<ipa_replace_map_p, va_gc> *tree_map,
+			  vec<ipa_replace_map *, va_gc> *tree_map,
 			  bool update_clones, bitmap args_to_skip,
 			  bool skip_return, bitmap blocks_to_copy,
 			  basic_block new_entry)
@@ -5332,9 +5335,9 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
   DECL_POSSIBLY_INLINED (old_decl) = 1;
 
-  old_version_node = cgraph_get_node (old_decl);
+  old_version_node = cgraph_node::get (old_decl);
   gcc_checking_assert (old_version_node);
-  new_version_node = cgraph_get_node (new_decl);
+  new_version_node = cgraph_node::get (new_decl);
   gcc_checking_assert (new_version_node);
 
   /* Copy over debug args.  */

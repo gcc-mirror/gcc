@@ -533,8 +533,11 @@ reinit_regs (void)
   init_regs ();
   /* caller_save needs to be re-initialized.  */
   caller_save_initialized_p = false;
-  ira_init ();
-  recog_init ();
+  if (this_target_rtl->target_specific_initialized)
+    {
+      ira_init ();
+      recog_init ();
+    }
 }
 
 /* Initialize some fake stack-frame MEM references for use in

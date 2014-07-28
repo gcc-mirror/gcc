@@ -2262,7 +2262,7 @@ proc check_effective_target_aarch64_little_endian { } {
     }]
 }
 
-# Return 1 is this is an arm target using 32-bit instructions
+# Return 1 if this is an arm target using 32-bit instructions
 proc check_effective_target_arm32 { } {
     return [check_no_compiler_messages arm32 assembly {
 	#if !defined(__arm__) || (defined(__thumb__) && !defined(__thumb2__))
@@ -2271,10 +2271,10 @@ proc check_effective_target_arm32 { } {
     }]
 }
 
-# Return 1 is this is an arm target not using Thumb
+# Return 1 if this is an arm target not using Thumb
 proc check_effective_target_arm_nothumb { } {
     return [check_no_compiler_messages arm_nothumb assembly {
-	#if (defined(__thumb__) || defined(__thumb2__))
+	#if !defined(__arm__) || (defined(__thumb__) || defined(__thumb2__))
 	#error FOO
 	#endif
     }]
@@ -5736,7 +5736,16 @@ proc check_effective_target_c++1y_only { } {
     return [check-flags { { } { } { -std=c++1y -std=gnu++1y -std=c++14 -std=gnu++14 } }]
 }
 proc check_effective_target_c++1y { } {
-    return [check_effective_target_c++1y_only]
+    if [check_effective_target_c++1y_only] {
+	return 1
+    }
+    return [check_effective_target_c++1z]
+}
+proc check_effective_target_c++1y_down { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return ![check_effective_target_c++1z]
 }
 
 proc check_effective_target_c++98_only { } {
@@ -5744,6 +5753,16 @@ proc check_effective_target_c++98_only { } {
 	return 0
     }
     return ![check_effective_target_c++11]
+}
+
+proc check_effective_target_c++1z_only { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [check-flags { { } { } { -std=c++1z -std=gnu++1z } }]
+}
+proc check_effective_target_c++1z { } {
+    return [check_effective_target_c++1z_only]
 }
 
 # Return 1 if expensive testcases should be run.

@@ -1,3 +1,17 @@
+2014-07-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* MAINTAINERS: Remove my MIPS maintainer entry.
+
+2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* configure.ac (alpha*-*-linux*): Use mh-alpha-linux.
+	* configure: Regenerate.
+
+2014-07-24  James Norris  <jnorris@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-07-20  Roman Gareev  <gareevroman@gmail.com>
 
 	* configure.ac: Accept only CLooG 0.18.1.

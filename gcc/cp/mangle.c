@@ -3487,11 +3487,11 @@ mangle_decl (const tree decl)
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
 	  /* Don't create an alias to an unreferenced function.  */
-	  if (struct cgraph_node *n = cgraph_get_node (decl))
-	    cgraph_same_body_alias (n, alias, decl);
+	  if (struct cgraph_node *n = cgraph_node::get (decl))
+	    n->create_same_body_alias (alias, decl);
 	}
       else
-	varpool_extra_name_alias (alias, decl);
+	varpool_node::create_extra_name_alias (alias, decl);
 #endif
     }
 }

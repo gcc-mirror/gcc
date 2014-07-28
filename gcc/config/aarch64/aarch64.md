@@ -67,7 +67,6 @@
 
 (define_c_enum "unspec" [
     UNSPEC_CASESI
-    UNSPEC_CLS
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
     UNSPEC_CRC32CH
@@ -1035,6 +1034,22 @@
   [(set_attr "type" "load2")]
 )
 
+(define_insn "loadwb_pair<GPF:mode>_<P:mode>"
+  [(parallel
+    [(set (match_operand:P 0 "register_operand" "=k")
+          (plus:P (match_operand:P 1 "register_operand" "0")
+                  (match_operand:P 4 "const_int_operand" "n")))
+     (set (match_operand:GPF 2 "register_operand" "=w")
+          (mem:GPF (plus:P (match_dup 1)
+                   (match_dup 4))))
+     (set (match_operand:GPF 3 "register_operand" "=w")
+          (mem:GPF (plus:P (match_dup 1)
+                   (match_operand:P 5 "const_int_operand" "n"))))])]
+  "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
+  "ldp\\t%<w>2, %<w>3, [%1], %4"
+  [(set_attr "type" "neon_load1_2reg")]
+)
+
 ;; Store pair with writeback.  This is primarily used in function prologues
 ;; when saving [fp,lr]
 (define_insn "storewb_pair<GPI:mode>_<P:mode>"
@@ -1051,6 +1066,22 @@
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPI:MODE>mode)"
   "stp\\t%<w>2, %<w>3, [%0, %4]!"
   [(set_attr "type" "store2")]
+)
+
+(define_insn "storewb_pair<GPF:mode>_<P:mode>"
+  [(parallel
+    [(set (match_operand:P 0 "register_operand" "=&k")
+          (plus:P (match_operand:P 1 "register_operand" "0")
+                  (match_operand:P 4 "const_int_operand" "n")))
+     (set (mem:GPF (plus:P (match_dup 0)
+                   (match_dup 4)))
+          (match_operand:GPF 2 "register_operand" "w"))
+     (set (mem:GPF (plus:P (match_dup 0)
+                   (match_operand:P 5 "const_int_operand" "n")))
+          (match_operand:GPF 3 "register_operand" "w"))])]
+  "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
+  "stp\\t%<w>2, %<w>3, [%0, %4]!"
+  [(set_attr "type" "neon_store1_2reg<q>")]
 )
 
 ;; -------------------------------------------------------------------
@@ -2863,7 +2894,7 @@
 
 (define_insn "clrsb<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_CLS))]
+        (clrsb:GPI (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "cls\\t%<w>0, %<w>1"
   [(set_attr "type" "clz")]
@@ -3359,7 +3390,7 @@
   [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
 			  (match_operand 1 "const_int_operand" "n")
 			  (const_int 0))
-	(zero_extract:GPI (match_operand:GPI 2 "register_operand" "+r")
+	(zero_extract:GPI (match_operand:GPI 2 "register_operand" "r")
 			  (match_dup 1)
 			  (match_operand 3 "const_int_operand" "n")))]
   "!(UINTVAL (operands[1]) == 0

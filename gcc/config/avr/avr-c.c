@@ -299,7 +299,11 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (avr_current_arch->macro)
     cpp_define_formatted (pfile, "__AVR_ARCH__=%s", avr_current_arch->macro);
   if (avr_current_device->macro)
-    cpp_define (pfile, avr_current_device->macro);
+    {
+      cpp_define (pfile, avr_current_device->macro);
+      cpp_define_formatted (pfile, "__AVR_DEVICE_NAME__=%s",
+			    avr_current_device->name);
+    }
   if (AVR_HAVE_RAMPD)    cpp_define (pfile, "__AVR_HAVE_RAMPD__");
   if (AVR_HAVE_RAMPX)    cpp_define (pfile, "__AVR_HAVE_RAMPX__");
   if (AVR_HAVE_RAMPY)    cpp_define (pfile, "__AVR_HAVE_RAMPY__");

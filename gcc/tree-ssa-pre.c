@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
+#include "inchash.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -4371,7 +4372,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 				       "converting indirect call to "
 				       "function %s\n",
-				       cgraph_get_node (fn)->name ());
+				       cgraph_node::get (fn)->name ());
 		    }
 		  gimple_call_set_fndecl (stmt, fn);
 		  gimple_set_modified (stmt, true);

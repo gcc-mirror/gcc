@@ -1,3 +1,10 @@
+2014-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61861
+	* macro.c (builtin_macro): Add location parameter.  Set
+	location of builtin macro to the expansion point.
+	(enter_macro_context): Pass location to builtin_macro.
+
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 
 	Support location tracking for built-in macro tokens

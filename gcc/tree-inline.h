@@ -191,7 +191,7 @@ tree maybe_inline_call_in_expr (tree);
 bool tree_inlinable_function_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 tree copy_decl_no_change (tree decl, copy_body_data *id);
-int estimate_move_cost (tree type);
+int estimate_move_cost (tree type, bool);
 int estimate_num_insns (gimple, eni_weights *);
 int estimate_num_insns_fn (tree, eni_weights *);
 int count_insns_seq (gimple_seq, eni_weights *);

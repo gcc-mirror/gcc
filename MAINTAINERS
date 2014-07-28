@@ -79,7 +79,6 @@ mcore port		Nick Clifton		nickc@redhat.com
 mep port		DJ Delorie		dj@redhat.com
 microblaze		Michael Eager		eager@eagercon.com
 mips port		Eric Christopher	echristo@gmail.com
-mips port		Richard Sandiford	rdsandiford@googlemail.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
@@ -489,6 +488,7 @@ Quentin Neill					quentin.neill.gnu@gmail.com
 Adam Nemet					adambnemet@gmail.com
 Thomas Neumann					tneumann@users.sourceforge.net
 Dan Nicolaescu					dann@ics.uci.edu
+James Norris					jnorris@codesourcery.com
 Dorit Nuzman					dorit@il.ibm.com
 David O'Brien					obrien@FreeBSD.org
 Carlos O'Donell					carlos@redhat.com

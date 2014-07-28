@@ -588,7 +588,7 @@ Wmissing-noreturn
 Common Alias(Wsuggest-attribute=noreturn)
 
 Wodr
-Common Warning
+Common Var(warn_odr_violations) Warning
 Warn about some C++ One Definition Rule violations during link time optimization
 
 Woverflow

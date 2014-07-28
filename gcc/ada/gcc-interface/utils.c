@@ -2802,7 +2802,7 @@ rest_of_subprog_body_compilation (tree subprog_decl)
   else
     /* Register this function with cgraph just far enough to get it
        added to our parent's nested function list.  */
-    (void) cgraph_get_create_node (subprog_decl);
+    (void) cgraph_node::get_create (subprog_decl);
 }
 
 tree
@@ -5757,7 +5757,7 @@ gnat_write_global_declarations (void)
 		      void_type_node);
       DECL_HARD_REGISTER (dummy_global) = 1;
       TREE_STATIC (dummy_global) = 1;
-      node = varpool_node_for_decl (dummy_global);
+      node = varpool_node::get_create (dummy_global);
       node->definition = 1;
       node->force_output = 1;
 

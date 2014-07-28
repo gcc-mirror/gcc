@@ -5559,13 +5559,17 @@ gen_int_libfunc (optab optable, const char *opname, char suffix,
 		 enum machine_mode mode)
 {
   int maxsize = 2 * BITS_PER_WORD;
+  int minsize = BITS_PER_WORD;
 
   if (GET_MODE_CLASS (mode) != MODE_INT)
     return;
   if (maxsize < LONG_LONG_TYPE_SIZE)
     maxsize = LONG_LONG_TYPE_SIZE;
-  if (GET_MODE_CLASS (mode) != MODE_INT
-      || GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+  if (minsize > INT_TYPE_SIZE
+      && (trapv_binoptab_p (optable)
+	  || trapv_unoptab_p (optable)))
+    minsize = INT_TYPE_SIZE;
+  if (GET_MODE_BITSIZE (mode) < minsize
       || GET_MODE_BITSIZE (mode) > maxsize)
     return;
   gen_libfunc (optable, opname, suffix, mode);

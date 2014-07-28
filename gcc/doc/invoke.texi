@@ -7030,6 +7030,7 @@ Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-funswitch-loops}, @option{-fpredictive-commoning},
 @option{-fgcse-after-reload}, @option{-ftree-loop-vectorize},
+@option{-ftree-loop-distribute-patterns},
 @option{-ftree-slp-vectorize}, @option{-fvect-cost-model},
 @option{-ftree-partial-pre} and @option{-fipa-cp-clone} options.
 
@@ -9658,6 +9659,14 @@ Deeper chains are still handled by late inlining.
 Probability (in percent) that C++ inline function with comdat visibility
 are shared across multiple compilation units.  The default value is 20.
 
+@item profile-func-internal-id
+@itemx profile-func-internal-id
+A parameter to control whether to use function internal id in profile
+database lookup. If the value is 0, the compiler will use id that
+is based on function assembler name and filename, which makes old profile
+data more tolerant to source changes such as function reordering etc.
+The default value is 0.
+
 @item min-vect-loop-bound
 The minimum number of iterations under which loops are not vectorized
 when @option{-ftree-vectorize} is used.  The number of iterations after
@@ -10005,6 +10014,10 @@ generates.  The default value is 2.
 The maximum size measured as number of RTLs that can be recorded in an expression
 in combiner for a pseudo register as last known value of that register.  The default
 is 10000.
+
+@item max-combine-insns
+The maximum number of instructions the RTL combiner tries to combine.
+The default value is 2 at @option{-Og} and 4 otherwise.
 
 @item integer-share-limit
 Small integer constants can use a shared data structure, reducing the

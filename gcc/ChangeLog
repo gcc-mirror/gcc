@@ -1,3 +1,780 @@
+2014-07-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/61734
+	* fold-const.c (fold_comparison): Disable X - Y CMP 0 to X CMP Y for
+	operators other than the equality operators.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/52478
+	* optabs.c (gen_int_libfunc): For -ftrapv libfuncs make
+	sure to register SImode ones, not only >= word_mode ones.
+	* expr.c (expand_expr_real_2): When expanding -ftrapv
+	binops do not use OPTAB_LIB_WIDEN.
+
+2014-07-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/61919
+	* tree-outof-ssa.c (insert_partition_copy_on_edge)
+	(insert_value_copy_on_edge, insert_rtx_to_part_on_edge)
+	(insert_part_to_rtx_on_edge): Copy partition_to_pseudo rtxes before
+	inserting them in the insn stream.
+
+2014-07-28  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/61913
+	* common.opt (Wodr): Add Var.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61921
+	* tree-ssa-structalias.c (create_variable_info_for_1): Check
+	if there is a varpool node before dereferencing it.
+
+2014-07-28  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-sese-to-poly.c:
+	(new_pbb_from_pbb): Set a new id of pbb1->domain (instead of using the
+	id of the pbb), which contains pointer to the pbb1.
+
+	* gcc.dg/graphite/isl-ast-gen-if-2.c: New testcase.
+
+2014-07-28  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(graphite_create_new_guard): New function.
+	(translate_isl_ast_node_if): New function.
+	(translate_isl_ast): Add calling of translate_isl_ast_node_if.
+
+	* gcc.dg/graphite/isl-ast-gen-if-1.c: New testcase.
+
+2014-07-27  Anthony Green  <green@moxielogic.com>
+
+	* config.gcc: Add moxie-*-moxiebox* configuration.
+	* config/moxie/moxiebox.h: New file.
+
+2014-07-26  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.md (*extr_insv_lower_reg<mode>): Remove +
+	from the read only register.
+
+2014-07-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira-costs.c (find_costs_and_classes): For -O0, use the best class
+	as the allocation class if it isn't likely to be spilled.
+
+2014-07-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (tls_referenced_p): Declare.
+	* rtlanal.c (tls_referenced_p_1, tls_referenced_p): New functions.
+	* config/mips/mips.c (mips_tls_symbol_ref_1): Delete.
+	(mips_cannot_force_const_mem): Use tls_referenced_p.
+	* config/pa/pa-protos.h (pa_tls_referenced_p): Delete.
+	* config/pa/pa.h (CONSTANT_ADDRESS_P): Use tls_referenced_p
+	instead of pa_tls_referenced_p.
+	* config/pa/pa.c (hppa_legitimize_address, pa_cannot_force_const_mem)
+	(pa_emit_move_sequence, pa_emit_move_sequence): Likewise.
+	(pa_legitimate_constant_p): Likewise.
+	(pa_tls_symbol_ref_1, pa_tls_referenced_p): Delete.
+	* config/rs6000/rs6000.c (rs6000_tls_referenced_p): Delete.
+	(rs6000_cannot_force_const_mem, rs6000_emit_move)
+	(rs6000_address_for_altivec): Use tls_referenced_p instead of
+	rs6000_tls_referenced_p.
+	(rs6000_tls_symbol_ref_1): Delete.
+
+2014-07-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/44551
+	* simplify-rtx.c (simplify_binary_operation_1) <VEC_SELECT>:
+	Optimize inverse of a VEC_CONCAT.
+
+2014-07-25  Xinliang David Li  <davidxl@google.com>
+
+	* params.def: New parameter.
+	* coverage.c (get_coverage_counts): Check new flag.
+	(coverage_compute_profile_id): Check new flag.
+	(coverage_begin_function): Check new flag.
+	(coverage_end_function): Check new flag.
+	* value-prof.c (coverage_node_map_initialized_p): New function.
+	(init_node_map): Populate map with all functions.
+	* doc/invoke.texi: Document new parameter.
+
+2014-07-25  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener <rguenther@suse.de>
+
+	* lto-streamer-out.c (struct sccs): Turn to ...
+	(class DFS): ... this one; refactor the DFS walk so it can
+	be re-done on per-SCC basis.
+	(DFS::DFS): New constructor.
+	(DFS::~DFS): New destructor.
+	(hash_tree): Add new MAP argument holding in-SCC hash values;
+	remove POINTER_TYPE hashing hack.
+	(scc_entry_compare): Rename to ...
+	(DFS::scc_entry_compare): ... this one.
+	(hash_scc): Rename to ...
+	(DFS::hash_scc): ... this one; pass output_block instead
+	of streamer_cache; work harder to get unique and stable SCC
+	hashes.
+	(DFS_write_tree): Rename to ...
+	(DFS::DFS_write_tree): ... this one; add SINGLE_P parameter.
+	(lto_output_tree): Update.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
+	* lto-streamer-out.c (hash_tree): Convert to inchash.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
+	* tree.c (build_type_attribute_qual_variant): Use inchash.
+	(type_hash_list): Dito.
+	(attribute_hash_list): Dito
+	(iterative_hstate_expr): Dito.
+	(iterative_hash_expr): Dito.
+	(build_range_type_1): Dito.
+	(build_array_type_1): Dito.
+	(build_function_type): Dito.
+	(build_method_type_directly): Dito.
+	(build_offset_type): Dito.
+	(build_complex_type): Dito.
+	(make_vector_type): Dito.
+	* tree.h (iterative_hash_expr): Add compat wrapper.
+	(iterative_hstate_expr): Add.
+
+2014-07-25  Andi Kleen  <ak@linux.intel.com>
+
+	* Makefile.in (OBJS): Add inchash.o.
+	(PLUGIN_HEADERS): Add inchash.h.
+	* ipa-devirt.c: Include inchash.h.
+	* lto-streamer-out.c: Dito.
+	* tree-ssa-dom.c: Dito.
+	* tree-ssa-pre.c: Dito.
+	* tree-ssa-sccvn.c: Dito.
+	* tree-ssa-tail-merge.c: Dito.
+	* asan.c: Dito.
+	* tree.c (iterative_hash_hashval_t): Move to ...
+	(iterative_hash_host_wide_int): Move to ...
+	* inchash.c: Here. New file.
+	* tree.h (iterative_hash_hashval_t): Move to ...
+	(iterative_hash_host_wide_int): Move to ...
+	* inchash.h: Here. New file.
+
+2014-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61762
+	PR middle-end/61894
+	* fold-const.c (native_encode_int): Add and handle offset
+	parameter to do partial encodings of expr.
+	(native_encode_fixed): Likewise.
+	(native_encode_real): Likewise.
+	(native_encode_complex): Likewise.
+	(native_encode_vector): Likewise.
+	(native_encode_string): Likewise.
+	(native_encode_expr): Likewise.
+	* fold-const.c (native_encode_expr): Add offset parameter
+	defaulting to -1.
+	* gimple-fold.c (fold_string_cst_ctor_reference): Remove.
+	(fold_ctor_reference): Handle all reads from tcc_constant
+	ctors.
+
+2014-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (estimate_move_cost): Mark speed_p argument
+	as possibly unused.
+
+2014-07-23  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Add __AVR_DEVICE_NAME__.
+
+2014-07-24  Kyle McMartin  <kyle@redhat.com>
+
+	* config/aarch64/aarch64-linux.h (TARGET_ASM_FILE_END): Define.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_special_adjust_field_align_p):
+	Add prototype.
+	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align_p): New
+	function.
+	* config/rs6000/sysv4.h (ADJUST_FIELD_ALIGN): Call it.
+	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/freebsd64.h (ADJUST_FIELD_ALIGN): Likewise.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg_boundary): In the AIX
+	and ELFv2 ABI, do not use the "mode == BLKmode" check to test for
+	aggregate types.  Instead, *all* aggregate types, except for single-
+	element or homogeneous float/vector aggregates, are quadword-aligned
+	if required by their type alignment.  Issue -Wpsabi note when a type
+	is now treated differently than before.
+
+2014-07-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_arg): If a float argument
+	does not fit fully into floating-point registers, and there is still
+	space in the register parameter area, use GPRs to pass those parts
+	of the argument.  Issue -Wpsabi note if any parameter is now treated
+	differently than before.
+	(rs6000_arg_partial_bytes): Update.
+
+2014-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/elf.h: Define TARGET_UNWIND_TABLES_DEFAULT.
+
+2014-07-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (target_rtl): Remove lang_dependent_initialized.
+	* toplev.c (initialize_rtl): Don't use it.  Move previously
+	"language-dependent" calls to...
+	(backend_init): ...here.
+	(lang_dependent_init_target): Don't set lang_dependent_initialized.
+	Assert that RTL initialization hasn't happend yet.
+
+2014-07-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/61629
+	* reginfo.c (reinit_regs): Only call ira_init and recog_init if
+	they have already been initialized.
+
+2014-07-24  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/61268
+	* function.c (assign_parm_setup_reg): Prevent invalid sharing of
+	DECL_INCOMING_RTL and entry_parm.
+	(get_arg_pointer_save_area): Likewise arg_pointer_save_area.
+	* calls.c (load_register_parameters): Likewise argument values.
+	(emit_library_call_value_1, store_one_arg): Likewise argument
+	save areas.
+	* config/i386/i386.c (assign_386_stack_local): Likewise the local
+	stack slot.
+	* explow.c (validize_mem): Modify the argument in-place.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_popwb_single_reg): New function.
+	(aarch64_expand_epilogue): Optimize epilogue when !frame_pointer_needed.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_pushwb_single_reg): New function.
+	(aarch64_expand_prologue): Optimize prologue when !frame_pointer_needed.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_restore_callee_saves)
+	(aarch64_save_callee_saves): New parameter "skip_wb".
+	(aarch64_expand_prologue, aarch64_expand_epilogue): Update call site.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.h (frame): New fields "wb_candidate1" and
+	"wb_candidate2".
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Initialize above.
+
+2014-07-24  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(graphite_create_new_loop): Add calling of isl_id_free to properly
+	decrement reference counts.
+
+	* gcc.dg/graphite/isl-ast-gen-blocks-4.c: New testcase.
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
+	* config/mips/mips.c (mips_start_unique_function): Correct cgraph_node
+	function used.
+	* config/rs6000/rs6000.c (call_ABI_of_interest): Likewise.
+	(rs6000_code_end): Likewise.
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_declare_function_name): Correct
+	symtab_node funtion used.
+	(rs6000_xcoff_declare_object_name): Likewise.
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
+	* cgraphunit.c (compile): Correct function used.
+
+2014-07-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (tree_is_indexable): Consider IMPORTED_DECL
+	as non-indexable.
+
+2014-07-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/61802
+	* varasm.c (bss_initializer_p): Handle offlined ctors.
+	(align_variable, get_variable_align): Likewise.
+	(make_decl_one_only): Likewise.
+	(default_binds_local_p_1): Likewise.
+	(decl_binds_to_current_def_p): Likewise.
+	(get_variable_section): Get constructor if it is offlined.
+	(assemble_variable_contents): Sanity check that the caller
+	streamed in the ctor in LTO.
+
+2014-07-24  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(binary_op_to_tree): Add calling of translate_isl_ast_node_block.
+	(gcc_expression_from_isl_expr_op): Move isl_ast_op_pdiv_q,
+	isl_ast_op_pdiv_r to the different case.
+
+	* gcc.dg/graphite/isl-ast-gen-blocks-3.c: New testcase.
+
+2014-07-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/61876
+	* convert.c (convert_to_integer): Do not convert BUILT_IN_ROUND and cast
+	when flag_errno_math is on.
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h (varpool_node):
+	(availability get_availability (void)):
+	created from cgraph_variable_initializer_availability
+	(inline varpool_node *ultimate_alias_target (availability *availability = NULL)
+	created from: cgraph_variable_initializer_availability
+	(inline varpool_node *get_alias_target (void)): created from varpool_alias_target
+	(void finalize_named_section_flags (void)):
+	created from varpool_finalize_named_section_flags
+	(bool assemble_decl (void)): created from varpool_assemble_decl
+	(void analyze (void)): created from varpool_analyze_node
+	(bool call_for_node_and_aliases (bool (*callback) (varpool_node *, void *),
+	void *data, bool include_overwritable)): created fromvarpool_for_node_and_aliases
+	(void remove_initializer (void)): created from varpool_remove_initializer
+	(tree get_constructor (void)): created from varpool_get_constructor
+	(bool externally_visible_p (void)): created from varpool_externally_visible_p
+	(bool ctor_useable_for_folding_p (void)): created from varpool_ctor_useable_for_folding_p
+	(inline bool all_refs_explicit_p ()): created from varpool_all_refs_explicit_p
+	(inline bool can_remove_if_no_refs_p (void)): created from varpool_can_remove_if_no_refs
+	(static inline varpool_node *get (const_tree decl)): created from varpool_get_node
+	(static void finalize_decl (tree decl)): created from varpool_finalize_decl
+	(static bool output_variables (void)): created from varpool_output_variables
+	(static varpool_node * create_extra_name_alias (tree alias, tree decl)):
+	created from varpool_extra_name_alias
+	(static varpool_node * create_alias (tree, tree)): created from varpool_create_variable_alias
+	(static void dump_varpool (FILE *f)): created from dump_varpool
+	(static void DEBUG_FUNCTION debug_varpool (void)): created from debug_varpool
+	(static varpool_node *create_empty (void)): created from varpool_create_empty_node
+	(static varpool_node *get_create (tree decl)): created from varpool_node_for_decl
+	(static varpool_node *get_for_asmname (tree asmname)): created from varpool_node_for_asm
+	(void assemble_aliases (void)): created from assemble_aliases
+
+2014-07-24  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h (symtab_node):
+	(void register_symbol (void)): created from symtab_register_node
+	(void remove (void)): created from symtab_remove_node
+	(void dump (FILE *f)): created from dump_symtab_node
+	(void DEBUG_FUNCTION debug (void)): created from debug_symtab_node
+	(void DEBUG_FUNCTION verify (void)): created from verify_symtab_node
+	(struct ipa_ref *add_reference (symtab_node *referred_node,
+	enum ipa_ref_use use_type)): created from add_reference 
+	(struct ipa_ref *add_reference (symtab_node *referred_node,
+	enum ipa_ref_use use_type, gimple stmt)): created from add_reference
+	(struct ipa_ref *maybe_add_reference (tree val, enum ipa_ref_use use_type,
+	gimple stmt)): created from maybe_add_reference
+	(bool semantically_equivalent_p (symtab_node *target)): created from
+	symtab_semantically_equivalent_p
+	(void remove_from_same_comdat_group (void)): created from
+	remove_from_same_comdat_group
+	(void add_to_same_comdat_group (symtab_node *old_node)): created from
+	symtab_add_to_same_comdat_group
+	(void dissolve_same_comdat_group_list (void)): created from
+	symtab_dissolve_same_comdat_group_list
+	(bool used_from_object_file_p (void)): created from symtab_used_from_object_file_p
+	(symtab_node *ultimate_alias_target (enum availability *avail = NULL)):
+	created from symtab_alias_ultimate_target
+	(inline symtab_node *next_defined_symbol (void)): created from
+	symtab_next_defined_symbol
+	(bool resolve_alias (symtab_node *target)): created from
+	symtab_resolve_alias
+	(bool call_for_symbol_and_aliases (bool (*callback) (symtab_node *, void *),
+	void *data, bool include_overwrite)): created from symtab_for_node_and_aliases
+	(symtab_node *noninterposable_alias (void)): created from symtab_nonoverwritable_alias
+	(inline symtab_node *get_alias_target (void)): created from symtab_alias_target
+	(void set_section (const char *section)): created from set_section_1 
+	(enum availability get_availability (void)): created from symtab_node_availability
+	(void make_decl_local (void)): created from symtab_make_decl_local
+	(bool real_symbol_p (void)): created from symtab_read_node
+	(can_be_discarded_p (void)): created from symtab_can_be_discarded
+	(inline bool comdat_local_p (void)): created from symtab_comdat_local_p
+	(inline bool in_same_comdat_group_p (symtab_node *target)): created from
+	symtab_in_same_comdat_p;
+	(bool address_taken_from_non_vtable_p (void)): created from
+	address_taken_from_non_vtable_p
+	(static inline symtab_node *get (const_tree decl)): created from symtab_get_node
+	(static void dump_table (FILE *)): created from dump_symtab
+	(static inline DEBUG_FUNCTION void debug_symtab (void)): created from debug_symtab
+	(static DEBUG_FUNCTION void verify_symtab_nodes (void)): created from verify_symtab
+	(static bool used_from_object_file_p_worker (symtab_node *node)): created from
+	symtab_used_from_object_file_p 
+	(void dump_base (FILE *)): created from dump_symtab_base
+	(bool DEBUG_FUNCTION verify_base (void)): created from verify_symtab_base
+	(void unregister (void)): created from symtab_unregister_node
+	(struct symbol_priority_map *priority_info (void)): created from symtab_priority_info
+	(static bool set_implicit_section (symtab_node *n, void *)): created from set_implicit_section
+	(static bool noninterposable_alias (symtab_node *node, void *data)): created from
+	symtab_nonoverwritable_alias_1
+	* cgraph.h (cgraph_node):
+	(bool remove_symbol_and_inline_clones (cgraph_node *forbidden_node = NULL)):
+	created from cgraph_remove_node_and_inline_clones
+	(void record_stmt_references (gimple stmt)): created from ipa_record_stmt_references
+	(void set_call_stmt_including_clones (gimple old_stmt, gimple new_stmt,
+	bool update_speculative = true)): created from cgraph_set_call_stmt_including_clones
+	(cgraph_node *function_symbol (enum availability *avail = NULL)):
+	created from cgraph_function_node
+	(cgraph_node *create_clone (tree decl, gcov_type count, int freq, bool update_original,
+	vec<cgraph_edge *> redirect_callers, bool call_duplication_hook,
+	struct cgraph_node *new_inlined_to, bitmap args_to_skip)):
+	created from cgraph_create_clone 
+	(cgraph_node *create_virtual_clone (vec<cgraph_edge *> redirect_callers,
+	vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip, const char * suffix)):
+	created from cgraph_create_virtual_clone
+	(cgraph_node *find_replacement (void)): created from cgraph_find_replacement_node
+	(cgraph_node *create_version_clone (tree new_decl, vec<cgraph_edge *> redirect_callers,
+	bitmap bbs_to_copy)): created from cgraph_copy_node_for_versioning
+	(cgraph_node *create_version_clone_with_body (vec<cgraph_edge *> redirect_callers,
+	vec<ipa_replace_map *, va_gc> *tree_map, bitmap args_to_skip, bool skip_return,
+	bitmap bbs_to_copy, basic_block new_entry_block, const char *clone_name)):
+	created from cgraph_function_version_info
+	(struct cgraph_function_version_info *insert_new_function_version (void)):
+	created from insert_new_cgraph_node_version
+	(struct cgraph_function_version_info *function_version (void)): created from
+	get_cgraph_node_version
+	(void analyze (void)): created from analyze_function
+	(cgraph_node * create_thunk (tree alias, tree, bool this_adjusting,
+	HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value, tree virtual_offset,
+	tree real_alias) cgraph_add_thunk
+	(inline cgraph_node *get_alias_target (void)): created from cgraph_alias_target
+	(cgraph_node *ultimate_alias_target (availability *availability = NULL)):
+	created from cgraph_function_or_thunk_node
+	(bool expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)):
+	created from expand_thunk
+	(void reset (void)): created from cgraph_reset_node
+	(void create_wrapper (cgraph_node *target)): created from cgraph_make_wrapper
+	(void DEBUG_FUNCTION verify_node (void)): created from verify_cgraph_node
+	(void remove (void)): created from cgraph_remove_node
+	(void dump (FILE *f)): created from dump_cgraph_node
+	(void DEBUG_FUNCTION debug (void)): created from debug_cgraph_node
+	(bool get_body (void)): created from cgraph_get_body
+	(void release_body (void)): created from cgraph_release_function_body
+	(void unnest (void)): created from cgraph_unnest_node
+	(void make_local (void)): created from cgraph_make_node_local
+	(void mark_address_taken (void)): created from cgraph_mark_address_taken_node
+	(struct cgraph_edge *create_edge (cgraph_node *callee, gimple call_stmt,
+	gcov_type count, int freq)): created from cgraph_create_edge
+	(struct cgraph_edge *create_indirect_edge (gimple call_stmt, int ecf_flags,
+	gcov_type count, int freq)): created from cgraph_create_indirect_edge
+	(void create_edge_including_clones (struct cgraph_node *callee, gimple old_stmt,
+	gimple stmt, gcov_type count, int freq, cgraph_inline_failed_t reason)):
+	created from cgraph_create_edge_including_clones
+	(cgraph_edge *get_edge (gimple call_stmt)): created from cgraph_edge
+	(vec<cgraph_edge *> collect_callers (void)): created from collect_callers_of_node
+	(void remove_callers (void)): created from cgraph_node_remove_callers
+	(void remove_callees (void)): created from cgraph_node_remove_callees
+	(enum availability get_availability (void)): created from cgraph_function_body_availability
+	(void set_nothrow_flag (bool nothrow)): created from cgraph_set_nothrow_flag
+	(void set_const_flag (bool readonly, bool looping)): created from cgraph_set_const_flag
+	(void set_pure_flag (bool pure, bool looping)): created from cgraph_set_pure_flag
+	(void call_duplication_hooks (cgraph_node *node2)): created from
+	cgraph_call_node_duplication_hooks
+	(bool call_for_symbol_and_aliases (bool (*callback) (cgraph_node *, void *),
+	void *data, bool include_overwritable)): created from cgraph_for_node_and_aliases
+	(bool call_for_symbol_thunks_and_aliases (bool (*callback) (cgraph_node *node, void *data),
+	void *data, bool include_overwritable)): created from cgraph_for_node_thunks_and_aliases
+	(void call_function_insertion_hooks (void)):
+	created from cgraph_call_function_insertion_hooks
+	(inline void mark_force_output (void)): created from cgraph_mark_force_output_node
+	(bool local_p (void)): created from cgraph_local_node
+	(bool can_be_local_p (void)): created from cgraph_node_can_be_local_p
+	(bool cannot_return_p (void)): created from cgraph_node_cannot_return
+	(bool only_called_directly_p (void)): created from cgraph_only_called_directly_p
+	(inline bool only_called_directly_or_aliased_p (void)):
+	created from cgraph_only_called_directly_or_aliased_p
+	(bool will_be_removed_from_program_if_no_direct_calls_p (void)):
+	created from cgraph_will_be_removed_from_program_if_no_direct_calls
+	(bool can_remove_if_no_direct_calls_and_refs_p (void)):
+	created from cgraph_can_remove_if_no_direct_calls_and_refs_p
+	(bool can_remove_if_no_direct_calls_p (void)):
+	created from cgraph_can_remove_if_no_direct_calls_p
+	(inline bool has_gimple_body_p (void)):
+	created from cgraph_function_with_gimple_body_p
+	(bool optimize_for_size_p (void)): created from cgraph_optimize_for_size_p
+	(static void dump_cgraph (FILE *f)): created from dump_cgraph
+	(static inline void debug_cgraph (void)): created from debug_cgraph
+	(static void record_function_versions (tree decl1, tree decl2)):
+	created from record_function_versions
+	(static void delete_function_version (tree decl)):
+	created from delete_function_version
+	(static void add_new_function (tree fndecl, bool lowered)):
+	created from cgraph_add_new_function
+	(static inline cgraph_node *get (const_tree decl)): created from cgraph_get_node
+	(static cgraph_node * create (tree decl)): created from cgraph_create_node
+	(static cgraph_node * create_empty (void)): created from cgraph_create_empty_node
+	(static cgraph_node * get_create (tree)): created from cgraph_get_create_node
+	(static cgraph_node *get_for_asmname (tree asmname)):
+	created from cgraph_node_for_asm
+	(static cgraph_node * create_same_body_alias (tree alias, tree decl)):
+	created from cgraph_same_body_alias 
+	(static bool used_from_object_file_p_worker (cgraph_node *node,
+	void *): new function
+	(static bool non_local_p (cgraph_node *node, void *)):
+	created from cgraph_non_local_node_p_1
+	(static void DEBUG_FUNCTION verify_cgraph_nodes (void)):
+	created from verify_cgraph
+	(static bool make_local (cgraph_node *node, void *)):
+	created from cgraph_make_node_local
+	(static cgraph_node *create_alias (tree alias, tree target)):
+	created from cgraph_create_function_alias
+	(static cgraph_edge * create_edge (cgraph_node *caller, cgraph_node *callee,
+	gimple call_stmt, gcov_type count, int freq, bool indir_unknown_callee)):
+	created from cgraph_create_edge_1
+	* cgraph.h (varpool_node):
+	(void remove (void)): created from varpool_remove_node
+	(void dump (FILE *f)): created from dump_varpool_node
+
+2014-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/61823
+	* tree-ssa-structalias.c (create_variable_info_for_1):
+	Use varpool_get_constructor.
+	(create_variable_info_for): Likewise.
+
+2014-07-24  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Don't
+	subtract outgoing area size when restoring stack_pointer_rtx.
+
+2014-07-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (stack_push): Adjust RTL to account for the fact
+	that operations are taking place in parallel.
+	* config/rx.h (FRAME_POINTER_CFA_OFFSET): Delete.
+
+2014-07-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (extract_omp_for_data): Add missing break statement.
+
+2014-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.h (estimate_move_cost): Add speed_p parameter.
+	* tree-inline.c (estimate_move_cost): Add speed_p parameter
+	and adjust MOVE_RATIO query accordingly.
+	(estimate_num_insns): Adjust callers.
+	* ipa-prop.c (ipa_populate_param_decls): Likewise.
+	* ipa-cp.c (gather_context_independent_values,
+	estimate_local_effects): Likewise.
+	* ipa-split.c (consider_split): Likewise.
+
+2014-07-24  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/driver-i386.c: Remove names of unused arguments and
+	unnecessary unused attributes.
+	* config/i386/host-mingw32.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/winnt-stubs.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_popwb_pair_reg)
+	(aarch64_gen_loadwb_pair): New helper function.
+	(aarch64_expand_epilogue): Simplify code using new helper functions.
+	* config/aarch64/aarch64.md (loadwb_pair<GPF:mode>_<P:mode>): Define.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_pushwb_pair_reg)
+	(aarch64_gen_storewb_pair): New helper function.
+	(aarch64_expand_prologue): Simplify code using new helper functions.
+	* config/aarch64/aarch64.md (storewb_pair<GPF:mode>_<P:mode>): Define.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.md: (aarch64_save_or_restore_callee_saves):
+	Rename to aarch64_save_callee_saves, remove restore code.
+	(aarch64_restore_callee_saves): New function.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Deleted.
+	(aarch64_save_callee_saves): New function to handle reg save
+	for both core and vectore regs.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_gen_load_pair)
+	(aarch64_gen_store_pair): New helper function.
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Use new helper functions.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_next_callee_save): New function.
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Use aarch64_next_callee_save.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Hoist calculation of register rtx.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Remove 'increment'.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Use register offset in
+	cfun->machine->frame.reg_offset.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers)
+	(aarch64_save_or_restore_fprs): Remove base_rtx.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_save_or_restore_callee_save_registers): Rename 'offset'
+	to 'start_offset'.  Remove local variable 'start_offset'.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_save_or_restore_fprs): Change
+	type to HOST_WIDE_INT.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue)
+	(aarch64_save_or_restore_fprs)
+	(aarch64_save_or_restore_callee_save_registers): GNU-Stylize code.
+
+2014-07-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems-eabi: Add
+	mthumb/march=armv7-r/mfpu=vfpv3-d16/mfloat-abi=hard,
+	mthumb/march=armv7-m/mfpu=fpv4-sp-d16/mfloat-abi=hard,
+	mbig-endian/mthumb/march=armv7-r, and
+	mbig-endian/mthumb/march=armv7-r/mfpu=vfpv3-d16/mfloat-abi=hard
+	multilibs.
+
+2014-07-23  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	    Chris Johns <chrisj@rtems.org>
+	    Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config.gcc: Add nios2-*-rtems*.
+	* config/nios2/rtems.h: New file.
+	* gcc/config/nios2/t-rtems: New file.
+
+2014-07-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/61396
+	* config/rs6000/rs6000.c (paired_expand_vector_init): Only allow
+	constant numbers, not general constants.
+	(rs6000_expand_vector_init): Ditto.
+
+2014-07-23  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov-tool.c (gcov_list): Declare here.
+	(set_gcov_list): Remove.
+	(gcov_output_files): Set gcov_list directly.
+
+2014-07-23  Host Schirmeier  <horst@schirmeier.com>
+
+	* doc/invoke.texi: -O3 enables -ftree-loop-distribute-patterns.
+
+2014-07-23  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/arm.c (arm_get_frame_offsets): If both r3 and other
+	callee-saved registers are available for padding purpose
+	and r3 is not mandatory, then prefer use those callee-saved
+	instead of r3.
+
+2014-07-23  Richard Biener  <rguenther@suse.de>
+
+	* params.def (PARAM_MAX_COMBINE_INSNS): New.
+	* combine.c: Include statistics.h and params.h.
+	(combine_instructions): Guard three and four insn combines
+	with max-combine-insns value.  Record statistics for combines
+	performed.
+	* doc/invoke.texi (max-combine-insns): Document new param.
+
+2014-07-23  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(translate_isl_ast_node_block): New function.
+	(translate_isl_ast): Add calling of translate_isl_ast_node_block.
+
+	* gcc.dg/graphite/isl-ast-gen-blocks-1.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-blocks-2.c: New testcase.
+
+2014-07-23  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(get_max_schedule_dimensions): New function.
+	(extend_schedule): Likewise.
+	(generate_isl_schedule): Add calling of extend_schedule and
+	get_max_schedule_dimensions.
+
+2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle CLRSB, CLZ.
+	(case UNSPEC): Handle UNSPEC_RBIT.
+
+2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md: Delete UNSPEC_CLS.
+	(clrsb<mode>2): Use clrsb RTL code instead of UNSPEC_CLS.
+
+2014-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vbsl_f64): New intrinsic.
+
+2014-07-22  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	Add inclusion of gimple-ssa.h, tree-into-ssa.h.
+	(ivs_params_clear):
+	(build_iv_mapping): New function.
+	(translate_isl_ast_node_user): Likewise.
+	(translate_isl_ast): Add calling of translate_isl_ast_node_user.
+
+	* gcc.dg/graphite/isl-ast-gen-single-loop-1.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-2.c: New testcase.
+	* gcc.dg/graphite/isl-ast-gen-single-loop-3.c: New testcase.
+
+2014-07-21  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/55701
+	* config/arm/arm.md (setmem): New pattern.
+	* config/arm/arm-protos.h (struct tune_params): New fields.
+	(arm_gen_setmem): New prototype.
+	* config/arm/arm.c (arm_slowmul_tune): Initialize new fields.
+	(arm_fastmul_tune, arm_strongarm_tune, arm_xscale_tune): Ditto.
+	(arm_9e_tune, arm_v6t2_tune, arm_cortex_tune): Ditto.
+	(arm_cortex_a8_tune, arm_cortex_a7_tune): Ditto.
+	(arm_cortex_a15_tune, arm_cortex_a53_tune): Ditto.
+	(arm_cortex_a57_tune, arm_cortex_a5_tune): Ditto.
+	(arm_cortex_a9_tune, arm_cortex_a12_tune): Ditto.
+	(arm_v7m_tune, arm_v6m_tune, arm_fa726te_tune): Ditto.
+	(arm_const_inline_cost): New function.
+	(arm_block_set_max_insns): New function.
+	(arm_block_set_non_vect_profit_p): New function.
+	(arm_block_set_vect_profit_p): New function.
+	(arm_block_set_unaligned_vect): New function.
+	(arm_block_set_aligned_vect): New function.
+	(arm_block_set_unaligned_non_vect): New function.
+	(arm_block_set_aligned_non_vect): New function.
+	(arm_block_set_vect, arm_gen_setmem): New functions.
+
 2014-07-21  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/arm/arm.c (output_move_neon): Handle REG explicitly.

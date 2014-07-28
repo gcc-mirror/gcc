@@ -63,12 +63,12 @@ Some basic guidelines for editing this document:
 * @code{ATOMIC_ADD}:    ATOMIC_ADD, Atomic ADD operation
 * @code{ATOMIC_AND}:    ATOMIC_AND, Atomic bitwise AND operation
 * @code{ATOMIC_CAS}:    ATOMIC_CAS, Atomic compare and swap
+* @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_FETCH_ADD}: ATOMIC_FETCH_ADD, Atomic ADD operation with prior fetch
 * @code{ATOMIC_FETCH_AND}: ATOMIC_FETCH_AND, Atomic bitwise AND operation with prior fetch
 * @code{ATOMIC_FETCH_OR}: ATOMIC_FETCH_OR, Atomic bitwise OR operation with prior fetch
 * @code{ATOMIC_FETCH_XOR}: ATOMIC_FETCH_XOR, Atomic bitwise XOR operation with prior fetch
 * @code{ATOMIC_OR}:     ATOMIC_OR, Atomic bitwise OR operation
-* @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_REF}:    ATOMIC_REF, Obtaining the value of a variable atomically
 * @code{ATOMIC_XOR}:    ATOMIC_XOR, Atomic bitwise OR operation
 * @code{BACKTRACE}:     BACKTRACE, Show a backtrace
@@ -12204,8 +12204,10 @@ number of bytes occupied by the argument.  If the argument has the
 to is returned.  If the argument is of a derived type with @code{POINTER}
 or @code{ALLOCATABLE} components, the return value does not account for
 the sizes of the data pointed to by these components. If the argument is
-polymorphic, the size according to the declared type is returned. The argument
-may not be a procedure or procedure pointer.
+polymorphic, the size according to the dynamic type is returned. The argument
+may not be a procedure or procedure pointer. Note that the code assumes for
+arrays that those are contiguous; for contiguous arrays, it returns the
+storage or an array element multiplied by the size of the array.
 
 @item @emph{Example}:
 @smallexample

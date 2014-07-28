@@ -2931,10 +2931,10 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
   if (TREE_CODE (t) == VAR_DECL
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
-      varpool_node *node = varpool_get_node (t);
+      varpool_node *node = varpool_node::get (t);
       if (node && node->alias && node->analyzed)
 	{
-	  node = varpool_variable_node (node, NULL);
+	  node = node->ultimate_alias_target ();
 	  t = node->decl;
 	}
     }
@@ -5650,6 +5650,7 @@ create_variable_info_for_1 (tree decl, const char *name)
   auto_vec<fieldoff_s> fieldstack;
   fieldoff_s *fo;
   unsigned int i;
+  varpool_node *vnode;
 
   if (!declsize
       || !tree_fits_uhwi_p (declsize))
@@ -5671,7 +5672,8 @@ create_variable_info_for_1 (tree decl, const char *name)
 	 in IPA mode.  Else we'd have to parse arbitrary initializers.  */
       && !(in_ipa_mode
 	   && is_global_var (decl)
-	   && DECL_INITIAL (decl)))
+	   && (vnode = varpool_node::get (decl))
+	   && vnode->get_constructor ()))
     {
       fieldoff_s *fo = NULL;
       bool notokay = false;
@@ -5789,21 +5791,21 @@ create_variable_info_for (tree decl, const char *name)
 	 for it.  */
       else
 	{
-	  varpool_node *vnode = varpool_get_node (decl);
+	  varpool_node *vnode = varpool_node::get (decl);
 
 	  /* For escaped variables initialize them from nonlocal.  */
-	  if (!varpool_all_refs_explicit_p (vnode))
+	  if (!vnode->all_refs_explicit_p ())
 	    make_copy_constraint (vi, nonlocal_id);
 
 	  /* If this is a global variable with an initializer and we are in
 	     IPA mode generate constraints for it.  */
-	  if (DECL_INITIAL (decl)
+	  if (vnode->get_constructor ()
 	      && vnode->definition)
 	    {
 	      auto_vec<ce_s> rhsc;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
-	      get_constraint_for_rhs (DECL_INITIAL (decl), &rhsc);
+	      get_constraint_for_rhs (vnode->get_constructor (), &rhsc);
 	      lhs.var = vi->id;
 	      lhs.offset = 0;
 	      lhs.type = SCALAR;
@@ -5811,7 +5813,7 @@ create_variable_info_for (tree decl, const char *name)
 		process_constraint (new_constraint (lhs, *rhsp));
 	      /* If this is a variable that escapes from the unit
 		 the initializer escapes as well.  */
-	      if (!varpool_all_refs_explicit_p (vnode))
+	      if (!vnode->all_refs_explicit_p ())
 		{
 		  lhs.var = escaped_id;
 		  lhs.offset = 0;
@@ -7115,7 +7117,7 @@ ipa_pta_execute (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      dump_symtab (dump_file);
+      symtab_node::dump_table (dump_file);
       fprintf (dump_file, "\n");
     }
 
@@ -7126,15 +7128,16 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
+      if (!node->has_gimple_body_p () || node->clone_of)
 	continue;
-      cgraph_get_body (node);
+      node->get_body ();
 
       gcc_assert (!node->clone_of);
 
       vi = create_function_info_for (node->decl,
 			             alias_get_name (node->decl));
-      cgraph_for_node_and_aliases (node, associate_varinfo_to_alias, vi, true);
+      node->call_for_symbol_thunks_and_aliases
+	(associate_varinfo_to_alias, vi, true);
     }
 
   /* Create constraints for global variables and their initializers.  */
@@ -7161,7 +7164,7 @@ ipa_pta_execute (void)
       basic_block bb;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
+      if (!node->has_gimple_body_p () || node->clone_of)
 	continue;
 
       if (dump_file)
@@ -7265,7 +7268,7 @@ ipa_pta_execute (void)
       basic_block bb;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
+      if (!node->has_gimple_body_p () || node->clone_of)
 	continue;
 
       fn = DECL_STRUCT_FUNCTION (node->decl);

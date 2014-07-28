@@ -1,3 +1,21 @@
+2014-07-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2014-07-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/experimental/string_view: Make the literal operators
+	constexpr like the ctors they call.
+
+2014-07-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.
+
+2014-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Convert type
+	to string instead of using gdb.Type.name attribute.
+
 2014-07-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SDT_H): Replace AC_MSG_RESULT with

@@ -617,7 +617,7 @@
   [(set (reg:SI SP_REG)
 	(minus:SI (reg:SI SP_REG)
 		  (const_int 4)))
-   (set (mem:SI (reg:SI SP_REG))
+   (set (mem:SI (minus:SI (reg:SI SP_REG) (const_int 4)))
 	(match_operand:SI 0 "register_operand" "r"))]
   ""
   "push.l\t%0"

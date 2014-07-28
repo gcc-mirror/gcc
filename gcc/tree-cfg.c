@@ -8449,11 +8449,11 @@ execute_fixup_cfg (void)
   edge_iterator ei;
 
   count_scale
-      = GCOV_COMPUTE_SCALE (cgraph_get_node (current_function_decl)->count,
+      = GCOV_COMPUTE_SCALE (cgraph_node::get (current_function_decl)->count,
 			    ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
 
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
-			    cgraph_get_node (current_function_decl)->count;
+			    cgraph_node::get (current_function_decl)->count;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count =
 			    apply_scale (EXIT_BLOCK_PTR_FOR_FN (cfun)->count,
                                        count_scale);
@@ -8500,7 +8500,7 @@ execute_fixup_cfg (void)
 
 	      if (TREE_CODE (lhs) == VAR_DECL
 		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
-		  && varpool_get_node (lhs)->writeonly)
+		  && varpool_node::get (lhs)->writeonly)
 		{
 		  unlink_stmt_vdef (stmt);
 		  gsi_remove (&gsi, true);
@@ -8518,7 +8518,7 @@ execute_fixup_cfg (void)
 
 	      if (TREE_CODE (lhs) == VAR_DECL
 		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
-		  && varpool_get_node (lhs)->writeonly)
+		  && varpool_node::get (lhs)->writeonly)
 		{
 		  gimple_call_set_lhs (stmt, NULL);
 		  update_stmt (stmt);

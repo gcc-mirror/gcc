@@ -3361,7 +3361,7 @@ finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret
     return;
 
   /* Prune also the candidates that are referenced by nested functions.  */
-  node = cgraph_get_create_node (fndecl);
+  node = cgraph_node::get_create (fndecl);
   for (node = node->nested; node; node = node->next_nested)
     walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl), prune_nrv_r,
 				  &data);

@@ -54,7 +54,6 @@ extern void pa_output_global_address (FILE *, rtx, int);
 extern void pa_print_operand (FILE *, rtx, int);
 extern void pa_encode_label (rtx);
 extern int pa_symbolic_expression_p (rtx);
-extern bool pa_tls_referenced_p (rtx);
 extern int pa_adjust_insn_length (rtx, int);
 extern int pa_fmpyaddoperands (rtx *);
 extern int pa_fmpysuboperands (rtx *);

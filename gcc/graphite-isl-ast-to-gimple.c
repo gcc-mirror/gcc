@@ -51,6 +51,8 @@ extern "C" {
 #include "sese.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-scalar-evolution.h"
+#include "gimple-ssa.h"
+#include "tree-into-ssa.h"
 #include <map>
 
 #ifdef HAVE_cloog
@@ -184,6 +186,12 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
     case isl_ast_op_div:
       return fold_build2 (EXACT_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
+    case isl_ast_op_pdiv_q:
+      return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
+
+    case isl_ast_op_pdiv_r:
+      return fold_build2 (TRUNC_MOD_EXPR, type, tree_lhs_expr, tree_rhs_expr);
+
     case isl_ast_op_fdiv_q:
       return fold_build2 (FLOOR_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
@@ -297,8 +305,6 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_call:
     case isl_ast_op_and_then:
     case isl_ast_op_or_else:
-    case isl_ast_op_pdiv_q:
-    case isl_ast_op_pdiv_r:
     case isl_ast_op_select:
       gcc_unreachable ();
 
@@ -310,6 +316,8 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_sub:
     case isl_ast_op_mul:
     case isl_ast_op_div:
+    case isl_ast_op_pdiv_q:
+    case isl_ast_op_pdiv_r:
     case isl_ast_op_fdiv_q:
     case isl_ast_op_and:
     case isl_ast_op_or:
@@ -381,6 +389,10 @@ graphite_create_new_loop (edge entry_edge, __isl_keep isl_ast_node *node_for,
 
   isl_ast_expr *for_iterator = isl_ast_node_for_get_iterator (node_for);
   isl_id *id = isl_ast_expr_get_id (for_iterator);
+  std::map<isl_id *, tree>::iterator res;
+  res = ip.find (id);
+  if (ip.count (id))
+    isl_id_free (res->first);
   ip[id] = iv;
   isl_ast_expr_free (for_iterator);
   return loop;
@@ -547,6 +559,130 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
   return last_e;
 }
 
+/* Inserts in iv_map a tuple (OLD_LOOP->num, NEW_NAME) for the induction
+   variables of the loops around GBB in SESE.
+ 
+   FIXME: Instead of using a vec<tree> that maps each loop id to a possible
+   chrec, we could consider using a map<int, tree> that maps loop ids to the
+   corresponding tree expressions.  */
+
+static void
+build_iv_mapping (vec<tree> iv_map, gimple_bb_p gbb,
+		  __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
+		  sese region)
+{
+  gcc_assert (isl_ast_expr_get_type (user_expr) == isl_ast_expr_op &&
+              isl_ast_expr_get_op_type (user_expr) == isl_ast_op_call);
+  int i;
+  isl_ast_expr *arg_expr;
+  for (i = 1; i < isl_ast_expr_get_op_n_arg (user_expr); i++)
+    {
+      arg_expr = isl_ast_expr_get_op_arg (user_expr, i);
+      tree type =
+        build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+      tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
+      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
+      iv_map[old_loop->num] = t;
+    }
+
+}
+
+/* Translates an isl_ast_node_user to Gimple.
+
+   FIXME: We should remove iv_map.create (loop->num + 1), if it is possible.  */
+
+static edge
+translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
+			     edge next_e, ivs_params &ip)
+{
+  gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_user);
+  isl_ast_expr *user_expr = isl_ast_node_user_get_expr (node);
+  isl_ast_expr *name_expr = isl_ast_expr_get_op_arg (user_expr, 0);
+  gcc_assert (isl_ast_expr_get_type (name_expr) == isl_ast_expr_id);
+  isl_id *name_id = isl_ast_expr_get_id (name_expr);
+  poly_bb_p pbb = (poly_bb_p) isl_id_get_user (name_id);
+  gcc_assert (pbb);
+  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+  vec<tree> iv_map;
+  isl_ast_expr_free (name_expr);
+  isl_id_free (name_id);
+
+  gcc_assert (GBB_BB (gbb) != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
+	      "The entry block should not even appear within a scop");
+
+  loop_p loop = gbb_loop (gbb);
+  iv_map.create (loop->num + 1);
+  iv_map.safe_grow_cleared (loop->num + 1);
+
+  build_iv_mapping (iv_map, gbb, user_expr, ip, SCOP_REGION (pbb->scop));
+  isl_ast_expr_free (user_expr);
+  next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb),
+					   SCOP_REGION (pbb->scop), next_e,
+					   iv_map,
+					   &graphite_regenerate_error);
+  iv_map.release ();
+  mark_virtual_operands_for_renaming (cfun);
+  update_ssa (TODO_update_ssa);
+  return next_e;
+}
+
+/* Translates an isl_ast_node_block to Gimple. */
+
+static edge
+translate_isl_ast_node_block (loop_p context_loop,
+			      __isl_keep isl_ast_node *node,
+			      edge next_e, ivs_params &ip)
+{
+  gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_block);
+  isl_ast_node_list *node_list = isl_ast_node_block_get_children (node);
+  int i;
+  for (i = 0; i < isl_ast_node_list_n_ast_node (node_list); i++)
+    {
+      isl_ast_node *tmp_node = isl_ast_node_list_get_ast_node (node_list, i);
+      next_e = translate_isl_ast (context_loop, tmp_node, next_e, ip);
+      isl_ast_node_free (tmp_node);
+    }
+  isl_ast_node_list_free (node_list);
+  return next_e;
+}
+ 
+/* Creates a new if region corresponding to ISL's cond.  */
+
+static edge
+graphite_create_new_guard (edge entry_edge, __isl_take isl_ast_expr *if_cond,
+			   ivs_params &ip)
+{
+  tree type =
+    build_nonstandard_integer_type (graphite_expression_type_precision, 0);
+  tree cond_expr = gcc_expression_from_isl_expression (type, if_cond, ip);
+  edge exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
+  return exit_edge;
+}
+
+/* Translates an isl_ast_node_if to Gimple.  */
+
+static edge
+translate_isl_ast_node_if (loop_p context_loop,
+			   __isl_keep isl_ast_node *node,
+			   edge next_e, ivs_params &ip)
+{
+  gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_if);
+  isl_ast_expr *if_cond = isl_ast_node_if_get_cond (node);
+  edge last_e = graphite_create_new_guard (next_e, if_cond, ip);
+
+  edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  isl_ast_node *then_node = isl_ast_node_if_get_then (node);
+  translate_isl_ast (context_loop, then_node, true_e, ip);
+  isl_ast_node_free (then_node);
+
+  edge false_e = get_false_edge_from_guard_bb (next_e->dest);
+  isl_ast_node *else_node = isl_ast_node_if_get_else (node);
+  if (isl_ast_node_get_type (else_node) != isl_ast_node_error)
+    translate_isl_ast (context_loop, else_node, false_e, ip);
+  isl_ast_node_free (else_node);
+  return last_e;
+}
+
 /* Translates an ISL AST node NODE to GCC representation in the
    context of a SESE.  */
 
@@ -564,13 +700,15 @@ translate_isl_ast (loop_p context_loop, __isl_keep isl_ast_node *node,
 					 next_e, ip);
 
     case isl_ast_node_if:
-      return next_e;
+      return translate_isl_ast_node_if (context_loop, node,
+					next_e, ip);
 
     case isl_ast_node_user:
-      return next_e;
+      return translate_isl_ast_node_user (node, next_e, ip);
 
     case isl_ast_node_block:
-      return next_e;
+      return translate_isl_ast_node_block (context_loop, node,
+					   next_e, ip);
 
     default:
       gcc_unreachable ();
@@ -616,12 +754,57 @@ generate_isl_context (scop_p scop)
   return isl_ast_build_from_context (context_isl);
 }
 
+/* Get the maximal number of schedule dimensions in the scop SCOP.  */
+
+static
+int get_max_schedule_dimensions (scop_p scop)
+{
+  int i;
+  poly_bb_p pbb;
+  int schedule_dims = 0;
+
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
+    {
+      int pbb_schedule_dims = isl_map_dim (pbb->transformed, isl_dim_out);
+      if (pbb_schedule_dims > schedule_dims)
+	schedule_dims = pbb_schedule_dims;
+    }
+
+  return schedule_dims;
+}
+
+/* Extend the schedule to NB_SCHEDULE_DIMS schedule dimensions.
+
+   For schedules with different dimensionality, the isl AST generator can not
+   define an order and will just randomly choose an order. The solution to this
+   problem is to extend all schedules to the maximal number of schedule
+   dimensions (using '0's for the remaining values).  */
+
+static __isl_give isl_map *
+extend_schedule (__isl_take isl_map *schedule, int nb_schedule_dims)
+{
+  int tmp_dims = isl_map_dim (schedule, isl_dim_out);
+  schedule =
+    isl_map_add_dims (schedule, isl_dim_out, nb_schedule_dims - tmp_dims);
+  isl_val *zero =
+    isl_val_int_from_si (isl_map_get_ctx (schedule), 0);
+  int i;
+  for (i = tmp_dims; i < nb_schedule_dims; i++)
+    {
+      schedule =
+        isl_map_fix_val (schedule, isl_dim_out, i, isl_val_copy (zero));
+    }
+  isl_val_free (zero);
+  return schedule;
+}
+
 /* Generates a schedule, which specifies an order used to
    visit elements in a domain.  */
 
 static __isl_give isl_union_map *
 generate_isl_schedule (scop_p scop)
 {
+  int nb_schedule_dims = get_max_schedule_dimensions (scop);
   int i;
   poly_bb_p pbb;
   isl_union_map *schedule_isl =
@@ -637,6 +820,7 @@ generate_isl_schedule (scop_p scop)
       isl_map *bb_schedule = isl_map_copy (pbb->transformed);
       bb_schedule = isl_map_intersect_domain (bb_schedule,
 					      isl_set_copy (pbb->domain));
+      bb_schedule = extend_schedule (bb_schedule, nb_schedule_dims);
       schedule_isl =
         isl_union_map_union (schedule_isl,
 			     isl_union_map_from_map (bb_schedule));

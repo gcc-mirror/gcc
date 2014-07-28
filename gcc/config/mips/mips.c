@@ -2171,15 +2171,6 @@ mips_symbol_insns (enum mips_symbol_type type, enum machine_mode mode)
   return mips_symbol_insns_1 (type, mode) * (TARGET_MIPS16 ? 2 : 1);
 }
 
-/* A for_each_rtx callback.  Stop the search if *X references a
-   thread-local symbol.  */
-
-static int
-mips_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
-{
-  return mips_tls_symbol_p (*x);
-}
-
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
@@ -2223,7 +2214,7 @@ mips_cannot_force_const_mem (enum machine_mode mode, rtx x)
     }
 
   /* TLS symbols must be computed by mips_legitimize_move.  */
-  if (for_each_rtx (&x, &mips_tls_symbol_ref_1, NULL))
+  if (tls_referenced_p (x))
     return true;
 
   return false;
@@ -6286,7 +6277,7 @@ mips_start_unique_function (const char *name)
   TREE_PUBLIC (decl) = 1;
   TREE_STATIC (decl) = 1;
 
-  cgraph_create_node (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
+  cgraph_node::create (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
 
   targetm.asm_out.unique_section (decl, 0);
   switch_to_section (get_named_section (decl, NULL, 0));

@@ -71,7 +71,7 @@ along with GCC; see the file COPYING3.  If not see
    the index of a TLS variable equals the index of its control variable in
    the other vector.  */
 static varpool_node_set tls_vars;
-static vec<varpool_node_ptr> control_vars;
+static vec<varpool_node *> control_vars;
 
 /* For the current basic block, an SSA_NAME that has computed the address 
    of the TLS variable at the corresponding index.  */
@@ -270,7 +270,7 @@ get_emutls_init_templ_addr (tree decl)
   /* Create varpool node for the new variable and finalize it if it is
      not external one.  */
   if (DECL_EXTERNAL (to))
-    varpool_node_for_decl (to);
+    varpool_node::get_create (to);
   else
     varpool_add_new_variable (to);
   return build_fold_addr_expr (to);
@@ -340,13 +340,13 @@ new_emutls_decl (tree decl, tree alias_of)
   /* Create varpool node for the new variable and finalize it if it is
      not external one.  */
   if (DECL_EXTERNAL (to))
-    varpool_node_for_decl (to);
+    varpool_node::get_create (to);
   else if (!alias_of)
     varpool_add_new_variable (to);
   else 
-    varpool_create_variable_alias (to,
-				   varpool_node_for_asm
-				    (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)))->decl);
+    varpool_node::create_alias (to,
+				varpool_node::get_for_asmname
+				  (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)))->decl);
   return to;
 }
 
@@ -358,7 +358,7 @@ emutls_index (tree decl)
 {
   varpool_node_set_iterator i;
   
-  i = varpool_node_set_find (tls_vars, varpool_get_node (decl));
+  i = varpool_node_set_find (tls_vars, varpool_node::get (decl));
   gcc_assert (i.index != ~0u);
 
   return i.index;
@@ -448,8 +448,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
 
       gimple_seq_add_stmt (&d->seq, x);
 
-      cgraph_create_edge (d->cfun_node, d->builtin_node, x,
-                          d->bb->count, d->bb_freq);
+      d->cfun_node->create_edge (d->builtin_node, x, d->bb->count, d->bb_freq);
 
       /* We may be adding a new reference to a new variable to the function.
          This means we have to play with the ipa-reference web.  */
@@ -632,7 +631,7 @@ lower_emutls_function_body (struct cgraph_node *node)
   d.builtin_decl = builtin_decl_explicit (BUILT_IN_EMUTLS_GET_ADDRESS);
   /* This is where we introduce the declaration to the IL and so we have to
      create a node for it.  */
-  d.builtin_node = cgraph_get_create_node (d.builtin_decl);
+  d.builtin_node = cgraph_node::get_create (d.builtin_decl);
 
   FOR_EACH_BB_FN (d.bb, cfun)
     {
@@ -710,9 +709,9 @@ create_emultls_var (varpool_node *var, void *data)
 
   cdecl = new_emutls_decl (var->decl,
 			   var->alias && var->analyzed
-			   ? varpool_alias_target (var)->decl : NULL);
+			   ? var->get_alias_target ()->decl : NULL);
 
-  cvar = varpool_get_node (cdecl);
+  cvar = varpool_node::get (cdecl);
   control_vars.quick_push (cvar);
 
   if (!var->alias)
@@ -755,7 +754,7 @@ ipa_lower_emutls (void)
 			     || DECL_EXTERNAL (var->decl));
 	varpool_node_set_add (tls_vars, var);
 	if (var->alias && var->definition)
-	  varpool_node_set_add (tls_vars, varpool_variable_node (var, NULL));
+	  varpool_node_set_add (tls_vars, var->ultimate_alias_target ());
       }
 
   /* If we found no TLS variables, then there is no further work to do.  */
@@ -781,7 +780,7 @@ ipa_lower_emutls (void)
       if (var->alias && !var->analyzed)
 	any_aliases = true;
       else if (!var->alias)
-	varpool_for_node_and_aliases (var, create_emultls_var, &ctor_body, true);
+	var->call_for_node_and_aliases (create_emultls_var, &ctor_body, true);
     }
 
   /* If there were any aliases, then frob the alias_pairs vector.  */

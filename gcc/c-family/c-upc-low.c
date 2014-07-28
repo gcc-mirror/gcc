@@ -1392,7 +1392,7 @@ upc_genericize_fndecl (tree fndecl)
   struct cgraph_node *cgn;
   /* Lower this function and any nested functions.  */
   upc_genericize_function_tree (fndecl);
-  cgn = cgraph_get_create_node (fndecl);
+  cgn = cgraph_node::get_create (fndecl);
   for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
     upc_genericize_fndecl (cgn->decl);
 }

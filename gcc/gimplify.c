@@ -826,7 +826,7 @@ copy_if_shared (tree *tp, void *data)
 static void
 unshare_body (tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_get_node (fndecl);
+  struct cgraph_node *cgn = cgraph_node::get (fndecl);
   /* If the language requires deep unsharing, we need a pointer set to make
      sure we don't repeatedly unshare subtrees of unshareable nodes.  */
   struct pointer_set_t *visited
@@ -876,7 +876,7 @@ unmark_visited (tree *tp)
 static void
 unvisit_body (tree fndecl)
 {
-  struct cgraph_node *cgn = cgraph_get_node (fndecl);
+  struct cgraph_node *cgn = cgraph_node::get (fndecl);
 
   unmark_visited (&DECL_SAVED_TREE (fndecl));
   unmark_visited (&DECL_SIZE (DECL_RESULT (fndecl)));
@@ -8764,7 +8764,7 @@ gimplify_body (tree fndecl, bool do_parms)
   unshare_body (fndecl);
   unvisit_body (fndecl);
 
-  cgn = cgraph_get_node (fndecl);
+  cgn = cgraph_node::get (fndecl);
   if (cgn && cgn->origin)
     nonlocal_vlas = pointer_set_create ();
 

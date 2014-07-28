@@ -673,6 +673,11 @@ DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
 	 "The maximum number of RTL nodes that can be recorded as combiner's last value",
 	 10000, 0, 0)
 
+DEFPARAM(PARAM_MAX_COMBINE_INSNS,
+	 "max-combine-insns",
+	 "The maximum number of insns combine tries to combine",
+	 4, 2, 4)
+
 /* INTEGER_CST nodes are shared for values [{-1,0} .. N) for
    {signed,unsigned} integral types.  This determines N.
    Experimentation shows 251 to be a good value that generates the
@@ -868,6 +873,14 @@ DEFPARAM (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
 	  "loop-invariant-max-bbs-in-loop",
 	  "Max basic blocks number in loop for loop invariant motion",
 	  10000, 0, 0)
+
+/* When the parameter is 1, use the internal function id
+   to look up for profile data. Otherwise, use a more stable
+   external id based on assembler name and source location. */
+DEFPARAM (PARAM_PROFILE_FUNC_INTERNAL_ID,
+         "profile-func-internal-id",
+         "use internal function id in profile lookup",
+          0, 0, 1)
 
 /* Avoid SLP vectorization of large basic blocks.  */
 DEFPARAM (PARAM_SLP_MAX_INSNS_IN_BB,
