@@ -1,3 +1,8 @@
+2014-07-28  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* config/i386/i386.c (ix86_return_in_memory): replace one
+	ATTRIBUTE_UNUSED where the attribute can actually sometimes be unused.
+
 2014-07-28  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi (-Wno-odr): Fix @item entry.  Tweak wording.
