@@ -881,9 +881,9 @@ mmix-knuth-mmixware)
 mn10300-*-*)
 	tmake_file=t-fdpbit
 	;;
-moxie-*-elf | moxie-*-uclinux*)
+moxie-*-elf | moxie-*-moxiebox* | moxie-*-uclinux*)
 	tmake_file="moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
+	extra_parts="$extra_parts crti.o crtn.o crtbegin.o crtend.o"
 	;;
 moxie-*-rtems*)
 	tmake_file="$tmake_file moxie/t-moxie t-softfp-sfdf t-softfp-excl t-softfp"
