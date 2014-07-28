@@ -1,5 +1,10 @@
 2014-07-28  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/61921
+	* gfortran.dg/pr61921.f90: New testcase.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
 	PR rtl-optimization/61801
 	* gcc.target/i386/pr61801.c: New testcase.
 
