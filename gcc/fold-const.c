@@ -9026,9 +9026,13 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 
   /* Transform comparisons of the form X - Y CMP 0 to X CMP Y.  */
   if (TREE_CODE (arg0) == MINUS_EXPR
-      && (equality_code || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0)))
+      && equality_code
       && integer_zerop (arg1))
     {
+      /* ??? The transformation is valid for the other operators if overflow
+	 is undefined for the type, but performing it here badly interacts
+	 with the transformation in fold_cond_expr_with_comparison which
+	 attempts to synthetize ABS_EXPR.  */
       if (!equality_code)
 	fold_overflow_warning ("assuming signed overflow does not occur "
 			       "when changing X - Y cmp 0 to X cmp Y",
