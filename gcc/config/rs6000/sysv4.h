@@ -539,6 +539,7 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 #endif
 
 /* Pass -G xxx to the compiler.  */
+#undef CC1_SPEC
 #define	CC1_SPEC "%{G*} %(cc1_cpu)" \
 "%{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \
