@@ -2044,6 +2044,8 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
       break;
 
   pbb1->domain = isl_set_copy (pbb->domain);
+  pbb1->domain = isl_set_set_tuple_id (pbb1->domain,
+				       isl_id_for_pbb (scop, pbb1));
 
   GBB_PBB (gbb1) = pbb1;
   GBB_CONDITIONS (gbb1) = GBB_CONDITIONS (gbb).copy ();

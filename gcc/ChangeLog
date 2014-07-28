@@ -1,5 +1,13 @@
 2014-07-28  Roman Gareev  <gareevroman@gmail.com>
 
+	* graphite-sese-to-poly.c:
+	(new_pbb_from_pbb): Set a new id of pbb1->domain (instead of using the
+	id of the pbb), which contains pointer to the pbb1.
+
+	* gcc.dg/graphite/isl-ast-gen-if-2.c: New testcase.
+
+2014-07-28  Roman Gareev  <gareevroman@gmail.com>
+
 	* graphite-isl-ast-to-gimple.c:
 	(graphite_create_new_guard): New function.
 	(translate_isl_ast_node_if): New function.
