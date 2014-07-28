@@ -56,12 +56,6 @@
 #undef	CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
 
-/* The GNU C++ standard library currently requires _GNU_SOURCE being
-   defined on glibc-based systems. This temporary hack accomplishes this,
-   it should go away as soon as libstdc++-v3 has a real fix.  */
-#undef  CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
-
 #undef  LINK_SHLIB_SPEC
 #define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}}"
 
@@ -98,22 +92,6 @@
   %{rdynamic:-export-dynamic} \
   -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
 
-#define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
-
-/* Use --as-needed -lgcc_s for eh support.  */
-#ifdef HAVE_LD_AS_NEEDED
-#define USE_LD_AS_NEEDED 1
-#endif
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_ON
-#define ASM_APP_ON "#APP\n"
-
-/* Override rs6000.h definition.  */
-#undef  ASM_APP_OFF
-#define ASM_APP_OFF "#NO_APP\n"
-
 /* For backward compatibility, we must continue to use the AIX
    structure return convention.  */
 #undef  DRAFT_V4_STRUCT_RET
@@ -128,8 +106,6 @@
 #undef RELOCATABLE_NEEDS_FIXUP
 #define RELOCATABLE_NEEDS_FIXUP \
   (rs6000_isa_flags & rs6000_isa_flags_explicit & OPTION_MASK_RELOCATABLE)
-
-#define TARGET_POSIX_IO
 
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* ppc32 glibc provides __stack_chk_guard in -0x7008(2).  */

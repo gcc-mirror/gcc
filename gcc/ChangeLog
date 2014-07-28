@@ -1,3 +1,20 @@
+2014-07-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config.gcc (powerpc*-*-linux*): Include gnu-user.h in tm_file.
+	* config/rs6000/sysv4.h (CC!_SPEC): Undefine it before defining it.
+	* config/rs6000/linux.h (CPLUSPLUS_CPP_SPEC): Delete define.
+	(LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	(USE_LD_AS_NEEDED): Likewise.
+	(ASM_APP_ON): Likewise.
+	(ASM_APP_OFF): Likewise.
+	(TARGET_POSIX_IO): Likewise.
+	* config/rs6000/linux64.h (CPLUSPLUS_CPP_SPEC): Likewise.
+	(LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	(USE_LD_AS_NEEDED): Likewise.
+	(ASM_APP_ON): Likewise.
+	(ASM_APP_OFF): Likewise.
+	(TARGET_POSIX_IO): Likewise.
+
 2014-07-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/61734
