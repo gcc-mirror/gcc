@@ -562,12 +562,20 @@ package Sinfo is
    --  not make sense from a user point-of-view, and that cross-references that
    --  do not lead to data dependences for subprograms can be safely ignored.
 
-   --  In addition pragma Debug statements are removed from the tree (rewritten
-   --  to NULL stmt), since they should be ignored in formal verification.
+   --  GNATprove relies on the following frontend behaviors:
 
-   --  An error is also issued for missing subunits, similar to the warning
-   --  issued when generating code, to avoid formal verification of a partial
-   --  unit.
+   --    1. The first declarations in the list of visible declarations of
+   --       a package declaration for a generic instance, up to the first
+   --       declaration which comes from source, should correspond to
+   --       the "mappings nodes" between formal and actual generic parameters.
+
+   --    2. In addition pragma Debug statements are removed from the tree
+   --       (rewritten to NULL stmt), since they should be ignored in formal
+   --       verification.
+
+   --    3. An error is also issued for missing subunits, similar to the
+   --       warning issued when generating code, to avoid formal verification
+   --       of a partial unit.
 
    -----------------------
    -- Check Flag Fields --
