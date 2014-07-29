@@ -156,11 +156,12 @@ package body Errout is
    --  variables Msg_Buffer are set on return Msglen.
 
    procedure Set_Posted (N : Node_Id);
-   --  Sets the Error_Posted flag on the given node, and all its parents
-   --  that are subexpressions and then on the parent non-subexpression
-   --  construct that contains the original expression (this reduces the
-   --  number of cascaded messages). Note that this call only has an effect
-   --  for a serious error. For a non-serious error, it has no effect.
+   --  Sets the Error_Posted flag on the given node, and all its parents that
+   --  are subexpressions and then on the parent non-subexpression construct
+   --  that contains the original expression. If that parent is a named
+   --  association, the flag is further propagated to its parent. This is done
+   --  in order to guard against cascaded errors. Note that this call has an
+   --  effect for a serious error only.
 
    procedure Set_Qualification (N : Nat; E : Entity_Id);
    --  Outputs up to N levels of qualification for the given entity. For
@@ -3006,6 +3007,16 @@ package body Errout is
             Set_Error_Posted (P);
             exit when Nkind (P) not in N_Subexpr;
          end loop;
+
+         if Nkind_In (P,
+              N_Pragma_Argument_Association,
+              N_Component_Association,
+              N_Discriminant_Association,
+              N_Generic_Association,
+              N_Parameter_Association)
+         then
+            Set_Error_Posted (Parent (P));
+         end if;
 
          --  A special check, if we just posted an error on an attribute
          --  definition clause, then also set the entity involved as posted.
