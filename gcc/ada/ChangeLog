@@ -1,5 +1,18 @@
 2014-07-29  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Build body to
+	inline in GNATprove mode when subprogran is marked Inline_Always.
+	* sem_res.adb (Resolve_Call): Expand call in place in GNATProve
+	mode if body to inline is available.
+	* sem_prag.adb (Analyze_Pragma, case Inline_Always): Make pragma
+	effective in GNATprove mode.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Call
+	Check_Package_Body_For_Inlining in GNATprove mode, so that body
+	containing subprograms with Inline_Always can be available before
+	calls to them.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
 	* inline.ads, inline.adb, sem_ch10.adb: Rename Check_Body_For_Inlining
 	to Check_Package_Body_For_Inlining, to prevent confusion with other
 	inlining subprograms.

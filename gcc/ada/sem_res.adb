@@ -37,6 +37,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Inline;   use Inline;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
@@ -6122,6 +6123,17 @@ package body Sem_Res is
 
       Eval_Call (N);
       Check_Elab_Call (N);
+
+      --  In GNATprove_Mode expansion is disabled, but we want to inline
+      --  subprograms that are marked Inline_Always.
+
+      if GNATprove_Mode
+        and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
+        and then Present (Body_To_Inline (Unit_Declaration_Node (Nam)))
+      then
+         Expand_Inlined_Call (N, Nam, Nam);
+      end if;
+
       Warn_On_Overlapping_Actuals (Nam, N);
    end Resolve_Call;
 

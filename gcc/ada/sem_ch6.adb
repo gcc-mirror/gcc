@@ -3340,11 +3340,14 @@ package body Sem_Ch6 is
       --  Handle frontend inlining. There is no need to prepare us for inlining
       --  if we will not generate the code.
 
+      --  However, in GNATprove_Mode we want to expand calls in place
+      --  whenever possible, even with expansion desabled.
+
       --  Old semantics
 
       if not Debug_Flag_Dot_K then
          if Present (Spec_Id)
-           and then Expander_Active
+           and then (Expander_Active or else GNATprove_Mode)
            and then
              (Has_Pragma_Inline_Always (Spec_Id)
                or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
@@ -3354,7 +3357,7 @@ package body Sem_Ch6 is
 
       --  New semantics
 
-      elsif Expander_Active
+      elsif (Expander_Active or else GNATprove_Mode)
         and then Serious_Errors_Detected = 0
         and then Present (Spec_Id)
         and then Has_Pragma_Inline (Spec_Id)
