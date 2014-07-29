@@ -1,3 +1,19 @@
+2014-07-29  Jerome Lambourg  <lambourg@adacore.com>
+
+	* expect.c (__gnat_expect_poll): New parameter dead_process
+	used to return the dead process among the array of file
+	descriptors. The Windows, VMS and HPUX implementations now
+	properly report the dead process via this parameter. Other unixes
+	don't need it.
+	* g-expect.adb (Poll): Adapt to the C profile.
+	(Expect_Internal): Use the new parameter to properly close the
+	File Descriptor.  This then can be properly reported by the
+	function First_Dead_Process as is expected.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor clarification of -gnatQ switch.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb (Derived_Type_Link): New function
