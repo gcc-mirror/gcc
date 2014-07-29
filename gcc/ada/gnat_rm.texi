@@ -270,6 +270,7 @@ Implementation Defined Pragmas
 * Pragma Type_Invariant::
 * Pragma Type_Invariant_Class::
 * Pragma Unchecked_Union::
+* Pragma Unevaluated_Use_Of_Old::
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Aliasing ::
 * Pragma Universal_Data::
@@ -1119,6 +1120,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Type_Invariant::
 * Pragma Type_Invariant_Class::
 * Pragma Unchecked_Union::
+* Pragma Unevaluated_Use_Of_Old::
 * Pragma Unimplemented_Unit::
 * Pragma Universal_Aliasing ::
 * Pragma Universal_Data::
@@ -7241,6 +7243,59 @@ pragma in the GNAT Ada 95 mode. Ada 2005 includes an extended version of this
 pragma, making it language defined, and GNAT fully implements this extended
 version in all language modes (Ada 83, Ada 95, and Ada 2005). For full
 details, consult the Ada 2012 Reference Manual, section B.3.3.
+
+@node Pragma Unevaluated_Use_Of_Old
+@unnumberedsec Pragma Unevaluated_Use_Of_Old
+@cindex Attribute Old
+@cindex Attribute Loop_Entry
+@cindex Unevaluated_Use_Of_Old
+@findex Unevaluated_Use_Of_Old
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Unevaluated_Use_Of_Old (Error | Warn | Allow);
+@end smallexample
+
+@noindent
+This pragma controls the processing of attributes Old and Loop_Entry.
+If either of these attributes is used in a potentially unevaluated
+expression  (e.g. the then or else parts of an if expression), then
+normally this usage is considered illegal if the prefix of the attribute
+is other than an entity name. The language requires this
+behavior for Old, and GNAT copies the same rule for Loop_Entry.
+
+The reason for this rule is that otherwise, we can have a situation
+where we save the Old value, and this results in an exception, even
+though we might not evaluate the attribute. Consider this example:
+
+@smallexample @c ada
+package UnevalOld is
+   K : Character;
+   procedure U (A : String; C : Boolean)  -- ERROR
+     with Post => (if C then A(1)'Old = K else True);
+end;
+@end smallexample
+
+@noindent
+If procedure U is called with a string with a lower bound of 2, and
+C false, then an exception would be raised trying to evaluate A(1)
+on entry even though the value would not be actually used.
+
+Although the rule guarantees against this possibility, it is sometimes
+too restrictive. For example if we know that the string has a lower
+bound of 1, then we will never raise an exception.
+The pragma @code{Unevaluated_Use_Of_Old} can be
+used to modify this behavior. If the argument is @code{Error} then an
+error is given (this is the default RM behavior). If the argument is
+@code{Warn} then the usage is allowed as legal but with a warning
+that an exception might be raised. If the argument is @code{Allow}
+then the usage is allowed as legal without generating a warning.
+
+This pragma may appear as a configuration pragma, or in a declarative
+part or package specification. In the latter case it applies to
+uses up to the end of the corresponding statement sequence or
+sequence of package declarations.
 
 @node Pragma Unimplemented_Unit
 @unnumberedsec Pragma Unimplemented_Unit

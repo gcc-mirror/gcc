@@ -21182,6 +21182,30 @@ package body Sem_Prag is
             Ada_2005_Pragma;
             Process_Suppress_Unsuppress (False);
 
+         ----------------------------
+         -- Unevaluated_Use_Of_Old --
+         ----------------------------
+
+         --  pragma Unevaluated_Use_Of_Old (Error | Warn | Allow);
+
+         when Pragma_Unevaluated_Use_Of_Old =>
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_No_Identifiers;
+            Check_Arg_Is_One_Of (Arg1, Name_Error, Name_Warn, Name_Allow);
+
+            --  Suppress/Unsuppress can appear as a configuration pragma, or in
+            --  a declarative part or a package spec.
+
+            if not Is_Configuration_Pragma then
+               Check_Is_In_Decl_Part_Or_Package_Spec;
+            end if;
+
+            --  Store proper setting of Uneval_Old
+
+            Get_Name_String (Chars (Get_Pragma_Arg (Arg1)));
+            Uneval_Old := Fold_Upper (Name_Buffer (1));
+
          -------------------
          -- Use_VADS_Size --
          -------------------
@@ -25442,6 +25466,7 @@ package body Sem_Prag is
       Pragma_Unreferenced_Objects           => -1,
       Pragma_Unreserve_All_Interrupts       => -1,
       Pragma_Unsuppress                     =>  0,
+      Pragma_Unevaluated_Use_Of_Old         =>  0,
       Pragma_Use_VADS_Size                  => -1,
       Pragma_Validity_Checks                => -1,
       Pragma_Volatile                       =>  0,

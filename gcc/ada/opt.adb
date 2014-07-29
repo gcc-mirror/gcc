@@ -65,6 +65,7 @@ package body Opt is
       Short_Descriptors_Config              := Short_Descriptors;
       SPARK_Mode_Config                     := SPARK_Mode;
       SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
+      Uneval_Old_Config                     := Uneval_Old;
       Use_VADS_Size_Config                  := Use_VADS_Size;
       Warnings_As_Errors_Count_Config       := Warnings_As_Errors_Count;
 
@@ -103,6 +104,7 @@ package body Opt is
       Short_Descriptors              := Save.Short_Descriptors;
       SPARK_Mode                     := Save.SPARK_Mode;
       SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
+      Uneval_Old                     := Save.Uneval_Old;
       Use_VADS_Size                  := Save.Use_VADS_Size;
       Warnings_As_Errors_Count       := Save.Warnings_As_Errors_Count;
 
@@ -142,6 +144,7 @@ package body Opt is
       Save.Short_Descriptors              := Short_Descriptors;
       Save.SPARK_Mode                     := SPARK_Mode;
       Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
+      Save.Uneval_Old                     := Uneval_Old;
       Save.Use_VADS_Size                  := Use_VADS_Size;
       Save.Warnings_As_Errors_Count       := Warnings_As_Errors_Count;
    end Save_Opt_Config_Switches;
@@ -171,6 +174,7 @@ package body Opt is
          External_Name_Imp_Casing    := Lowercase;
          Optimize_Alignment          := 'O';
          Persistent_BSS_Mode         := False;
+         Uneval_Old                  := 'E';
          Use_VADS_Size               := False;
          Optimize_Alignment_Local    := True;
 
@@ -217,6 +221,7 @@ package body Opt is
          Persistent_BSS_Mode         := Persistent_BSS_Mode_Config;
          SPARK_Mode                  := SPARK_Mode_Config;
          SPARK_Mode_Pragma           := SPARK_Mode_Pragma_Config;
+         Uneval_Old                  := Uneval_Old_Config;
          Use_VADS_Size               := Use_VADS_Size_Config;
          Warnings_As_Errors_Count    := Warnings_As_Errors_Count_Config;
 

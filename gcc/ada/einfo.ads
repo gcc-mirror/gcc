@@ -1808,6 +1808,14 @@ package Einfo is
 --       indicate if a full type declaration is a completion. Used for semantic
 --       checks in E.4(18) and elsewhere.
 
+--    Has_Protected (Flag271) [base type only]
+--       Defined in all type entities. Set on protected types themselves, and
+--       also (recursively) on any composite type which has a component for
+--       which Has_Protected is set. The meaning is that an allocator for
+--       or declaration of such an object must create the required protected
+--       objects. Note: the flag is not set on access types, even if they
+--       designate an object that Has_Protected.
+
 --    Has_Qualified_Name (Flag161)
 --       Defined in all entities. Set if the name in the Chars field has
 --       been replaced by its qualified name, as used for debug output. See
@@ -5203,6 +5211,7 @@ package Einfo is
    --    Has_Pragma_Unreferenced_Objects     (Flag212)
    --    Has_Predicates                      (Flag250)
    --    Has_Primitive_Operations            (Flag120)  (base type only)
+   --    Has_Protected                       (Flag271)  (base type only)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Specified_Layout                (Flag100)  (base type only)
    --    Has_Specified_Stream_Input          (Flag190)
@@ -6551,6 +6560,7 @@ package Einfo is
    function Has_Primitive_Operations            (Id : E) return B;
    function Has_Private_Ancestor                (Id : E) return B;
    function Has_Private_Declaration             (Id : E) return B;
+   function Has_Protected                       (Id : E) return B;
    function Has_Qualified_Name                  (Id : E) return B;
    function Has_RACW                            (Id : E) return B;
    function Has_Record_Rep_Clause               (Id : E) return B;
@@ -7179,6 +7189,7 @@ package Einfo is
    procedure Set_Has_Primitive_Operations        (Id : E; V : B := True);
    procedure Set_Has_Private_Ancestor            (Id : E; V : B := True);
    procedure Set_Has_Private_Declaration         (Id : E; V : B := True);
+   procedure Set_Has_Protected                   (Id : E; V : B := True);
    procedure Set_Has_Qualified_Name              (Id : E; V : B := True);
    procedure Set_Has_RACW                        (Id : E; V : B := True);
    procedure Set_Has_Record_Rep_Clause           (Id : E; V : B := True);
@@ -7920,6 +7931,7 @@ package Einfo is
    pragma Inline (Has_Primitive_Operations);
    pragma Inline (Has_Private_Ancestor);
    pragma Inline (Has_Private_Declaration);
+   pragma Inline (Has_Protected);
    pragma Inline (Has_Qualified_Name);
    pragma Inline (Has_RACW);
    pragma Inline (Has_Record_Rep_Clause);
@@ -8395,6 +8407,7 @@ package Einfo is
    pragma Inline (Set_Has_Primitive_Operations);
    pragma Inline (Set_Has_Private_Ancestor);
    pragma Inline (Set_Has_Private_Declaration);
+   pragma Inline (Set_Has_Protected);
    pragma Inline (Set_Has_Qualified_Name);
    pragma Inline (Set_Has_RACW);
    pragma Inline (Set_Has_Record_Rep_Clause);

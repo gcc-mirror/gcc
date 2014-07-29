@@ -2369,11 +2369,14 @@ package body Sem_Ch7 is
 
          if Priv_Is_Base_Type then
             Set_Is_Controlled (Priv, Is_Controlled (Base_Type (Full)));
-            Set_Finalize_Storage_Only (Priv, Finalize_Storage_Only
-                                                           (Base_Type (Full)));
-            Set_Has_Task (Priv, Has_Task (Base_Type (Full)));
-            Set_Has_Controlled_Component (Priv, Has_Controlled_Component
-                                                           (Base_Type (Full)));
+            Set_Finalize_Storage_Only
+                              (Priv, Finalize_Storage_Only
+                                                   (Base_Type (Full)));
+            Set_Has_Task      (Priv, Has_Task      (Base_Type (Full)));
+            Set_Has_Protected (Priv, Has_Protected (Base_Type (Full)));
+            Set_Has_Controlled_Component
+                              (Priv, Has_Controlled_Component
+                                                   (Base_Type (Full)));
          end if;
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));

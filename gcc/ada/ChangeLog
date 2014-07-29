@@ -1,5 +1,20 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document pragma Unevaluated_Use_Of_Old.
+	* opt.adb: Handle Uneval_Old.
+	* opt.ads (Uneval_Old, Uneval_Old_Config): New variables.
+	* par-prag.adb: Add dummy entry for pragma Unevaluated_Use_Of_Old.
+	* sem.ads (Save_Uneval_Old): New field in Scope_Stack_Entry.
+	* sem_attr.adb (Uneval_Old_Msg): New procedure.
+	* sem_ch8.adb (Push_Scope): Save Uneval_Old.
+	(Pop_Scope): Restore Uneval_Old.
+	* sem_prag.adb (Analyze_Pragma, case Unevaluated_Use_Of_Old):
+	Implemented.
+	* snames.ads-tmpl: Add entries for pragma Unevaluated_Use_Of_Old
+	Add entries for Name_Warn, Name_Allow.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aggr.adb (Resolve_Array_Aggregate): Change Is_Static_Range
 	to Is_OK_Static_Range.
 	* sem_attr.adb (Eval_Attribute): Make sure we properly flag

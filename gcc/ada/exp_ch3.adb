@@ -6160,12 +6160,15 @@ package body Exp_Ch3 is
          --  If the component contains tasks, so does the array type. This may
          --  not be indicated in the array type because the component may have
          --  been a private type at the point of definition. Same if component
-         --  type is controlled.
+         --  type is controlled or contains protected objects.
 
-         Set_Has_Task (Base, Has_Task (Comp_Typ));
-         Set_Has_Controlled_Component (Base,
-           Has_Controlled_Component (Comp_Typ)
-             or else Is_Controlled (Comp_Typ));
+         Set_Has_Task       (Base, Has_Task      (Comp_Typ));
+         Set_Has_Protected  (Base, Has_Protected (Comp_Typ));
+         Set_Has_Controlled_Component
+                            (Base, Has_Controlled_Component
+                                                 (Comp_Typ)
+                                     or else
+                                   Is_Controlled (Comp_Typ));
 
          if No (Init_Proc (Base)) then
 
@@ -6719,9 +6722,9 @@ package body Exp_Ch3 is
          Check_Stream_Attributes (Def_Id);
       end if;
 
-      --  Update task and controlled component flags, because some of the
-      --  component types may have been private at the point of the record
-      --  declaration. Detect anonymous access-to-controlled components.
+      --  Update task, protected, and controlled component flags, because some
+      --  of the component types may have been private at the point of the
+      --  record declaration. Detect anonymous access-to-controlled components.
 
       Has_AACC := False;
 
@@ -6731,20 +6734,26 @@ package body Exp_Ch3 is
 
          if Has_Task (Comp_Typ) then
             Set_Has_Task (Def_Id);
+         end if;
+
+         if Has_Protected (Comp_Typ) then
+            Set_Has_Protected (Def_Id);
+         end if;
 
          --  Do not set Has_Controlled_Component on a class-wide equivalent
          --  type. See Make_CW_Equivalent_Type.
 
-         elsif not Is_Class_Wide_Equivalent_Type (Def_Id)
+         if not Is_Class_Wide_Equivalent_Type (Def_Id)
            and then (Has_Controlled_Component (Comp_Typ)
                       or else (Chars (Comp) /= Name_uParent
                                 and then Is_Controlled (Comp_Typ)))
          then
             Set_Has_Controlled_Component (Def_Id);
+         end if;
 
          --  Non-self-referential anonymous access-to-controlled component
 
-         elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
+         if Ekind (Comp_Typ) = E_Anonymous_Access_Type
            and then Needs_Finalization (Designated_Type (Comp_Typ))
            and then Designated_Type (Comp_Typ) /= Def_Id
          then

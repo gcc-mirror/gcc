@@ -644,7 +644,7 @@ package body Sem_Ch4 is
             --  a similar test should be applied to an allocator with a
             --  qualified expression ???
 
-            if Is_Protected_Type (Type_Id) then
+            if Has_Protected (Type_Id) then
                Check_Restriction (No_Protected_Type_Allocators, N);
             end if;
 
@@ -737,11 +737,8 @@ package body Sem_Ch4 is
 
       --  Check that an allocator of a nested access type doesn't create a
       --  protected object when restriction No_Local_Protected_Objects applies.
-      --  We don't have an equivalent to Has_Task for protected types, so only
-      --  cases where the designated type itself is a protected type are
-      --  currently checked. ???
 
-      if Is_Protected_Type (Designated_Type (Acc_Type))
+      if Has_Protected (Designated_Type (Acc_Type))
         and then not Is_Library_Level_Entity (Acc_Type)
       then
          Check_Restriction (No_Local_Protected_Objects, N);
