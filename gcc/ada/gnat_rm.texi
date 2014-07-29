@@ -8246,19 +8246,22 @@ between values in different systems. The MKS system is characterized by the
 following aspect:
 
 @smallexample @c ada
-   type Mks_Type is new Long_Long_Float
-     with
-      Dimension_System => (
-        (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
-        (Unit_Name => Kilogram, Unit_Symbol => "kg",  Dim_Symbol => 'M'),
-        (Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
-        (Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
-        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Theta"),
-        (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
-        (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
+   type Mks_Type is new Long_Long_Float with
+     Dimension_System => (
+       (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
+       (Unit_Name => Kilogram, Unit_Symbol => "kg",  Dim_Symbol => 'M'),
+       (Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
+       (Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
+       (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => '@'),
+       (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
+       (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
 @end smallexample
 
 @noindent
+Note that in the above type definition, we use the symbol @code{@@} to
+represent a theta character (avoiding the use of extended Latin-1
+characters in this context).
+
 See section ``Performing Dimensionality Analysis in GNAT'' in the GNAT Users
 Guide for detailed examples of use of the dimension system.
 
@@ -9325,13 +9328,13 @@ statically matching subtypes.
 @unnumberedsec Attribute Old
 @findex Old
 @noindent
-In addition to the usage of Old defined in the Ada 2012 RM (usage
+In addition to the usage of @code{Old} defined in the Ada 2012 RM (usage
 within @code{Post} aspect), GNAT also permits the use of this attribute
 in implementation defined pragmas @code{Postcondition},
-@code{Loop_Entry}, and @code{Contract_Cases}. Also usages of
+@code{Contract_Cases} and @code{Test_Case}. Also usages of
 @code{Old} which would be illegal according to the Ada 2012 RM
 definition are allowed under control of
-implementation defined pragma @code{Allow_Unevaluated_Use_Of_Old}.
+implementation defined pragma @code{Unevaluated_Use_Of_Old}.
 
 @node Attribute Passed_By_Reference
 @unnumberedsec Attribute Passed_By_Reference

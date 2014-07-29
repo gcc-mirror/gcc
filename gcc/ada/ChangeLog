@@ -1,3 +1,36 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Change theta to @ in documentation of aspect
+	Dimension_System.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Uneval_Old_Msg): Flags Uneval_Old_Accept/Warn
+	are now on pragma.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Remove setting
+	of Uneval_Old_*
+	* sem_prag.adb (Analyze_Pragma): Set Uneval_Old_* flags
+	* sinfo.ads, sinfo.adb: Move Uneval_Old_Accept/Warn to N_Pragma node.
+
+2014-07-29  Javier Miranda  <miranda@adacore.com>
+
+	* types.ads Update documentation on how to add new reason codes
+	for exceptions.
+	(RT_Exception_Code): Keep values ordered by their
+	reason code.  Required by the .NET backend.
+	(RT_CE_Exceptions): Subtype declaration removed.
+	(RT_PE_Exceptions): Subtype declaration removed.
+	(RT_SE_Exceptions): Subtype declaration removed.
+	(Kind): New mapping table of RT_Exception_Codes.
+	* exp_ch11.adb (Get_RT_Exception_Entity): Updated to use the
+	new mapping table.
+	* tbuild.adb (Make_Raise_Storage_Error): Updated to use the new
+	mapping table.	(Make_Raise_Program_Error): Updated to use the
+	new mapping table.
+	(Make_Raise_Storage_Error): Updated to use the new mapping table.
+	* a-except.adb Keep Rcheck_CE_xxx entities ordered according to
+	their reason code.
+
 2014-07-29  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat_rm.texi: Document internal attributes used for PolyORB/DSA

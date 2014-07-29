@@ -3168,15 +3168,15 @@ package body Sinfo is
      (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Aspect_Specification);
-      return Flag13 (N);
+        or else NT (N).Nkind = N_Pragma);
+      return Flag7 (N);
    end Uneval_Old_Accept;
 
    function Uneval_Old_Warn
      (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Aspect_Specification);
+        or else NT (N).Nkind = N_Pragma);
       return Flag18 (N);
    end Uneval_Old_Warn;
 
@@ -6367,15 +6367,15 @@ package body Sinfo is
      (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Aspect_Specification);
-      Set_Flag13 (N, Val);
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag7 (N, Val);
    end Set_Uneval_Old_Accept;
 
    procedure Set_Uneval_Old_Warn
      (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Aspect_Specification);
+        or else NT (N).Nkind = N_Pragma);
       Set_Flag18 (N, Val);
    end Set_Uneval_Old_Warn;
 
