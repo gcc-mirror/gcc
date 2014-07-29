@@ -86,7 +86,9 @@ package body Sem_Attr is
    --  used so that we can abandon the processing so we don't run into
    --  trouble with cascaded errors.
 
-   --  The following array is the list of attributes defined in the Ada 83 RM:
+   --  The following array is the list of attributes defined in the Ada 83 RM.
+   --  In Ada 83 mode, these are the only recognized attributes. In other Ada
+   --  modes all these attributes are recognized, even if removed in Ada 95.
 
    Attribute_83 : constant Attribute_Class_Array := Attribute_Class_Array'(
       Attribute_Address                      |
@@ -10565,11 +10567,18 @@ package body Sem_Attr is
                Set_Address_Taken (Entity (P));
             end if;
 
-            if Is_Entity_Name (P) then
+            --  Deal with possible elaboration check
+
+            if Is_Entity_Name (P) and then Is_Subprogram (Entity (P)) then
                declare
-                  E    : constant Entity_Id := Entity (P);
-                  Decl : Node_Id;
-                  Flag : Entity_Id;
+                  Subp_Id   : constant Entity_Id := Entity (P);
+                  Scop      : constant Entity_Id := Scope (Subp_Id);
+                  Subp_Decl : constant Node_Id   :=
+                                Unit_Declaration_Node (Subp_Id);
+
+                  Flag_Id : Entity_Id;
+                  HSS     : Node_Id;
+                  Stmt    : Node_Id;
 
                --  If the access has been taken and the body of the subprogram
                --  has not been see yet, indirect calls must be protected with
@@ -10578,40 +10587,67 @@ package body Sem_Attr is
                --  a subprogram the body will appear in the same declarative
                --  part, and we must insert a check in the eventual body itself
                --  using the elaboration flag that we generate now. The check
-               --  is then inserted when the body is expanded.
+               --  is then inserted when the body is expanded. This processing
+               --  is not needed for a stand alone expression function because
+               --  the internally generated spec and body are always inserted
+               --  as a pair in the same declarative list.
 
                begin
-                  if Is_Subprogram (E)
-                    and then Expander_Active
-                    and then Comes_From_Source (E)
+                  if Expander_Active
+                    and then Comes_From_Source (Subp_Id)
                     and then Comes_From_Source (N)
-                    and then In_Open_Scopes (Scope (E))
-                    and then
-                      Ekind_In (Scope (E), E_Block, E_Procedure, E_Function)
-                    and then not Has_Completion (E)
-                    and then No (Elaboration_Entity (E))
-                    and then Nkind (Unit_Declaration_Node (E)) =
-                                                  N_Subprogram_Declaration
+                    and then In_Open_Scopes (Scop)
+                    and then Ekind_In (Scop, E_Block, E_Procedure, E_Function)
+                    and then not Has_Completion (Subp_Id)
+                    and then No (Elaboration_Entity (Subp_Id))
+                    and then Nkind (Subp_Decl) = N_Subprogram_Declaration
+                    and then Nkind (Original_Node (Subp_Decl)) /=
+                                                       N_Expression_Function
                   then
                      --  Create elaboration variable for it
 
-                     Flag := Make_Temporary (Loc, 'E');
-                     Decl :=
-                       Make_Object_Declaration (Loc,
-                         Defining_Identifier => Flag,
-                         Object_Definition   =>
-                           New_Occurrence_Of (Standard_Short_Integer, Loc),
-                         Expression          =>
-                           Make_Integer_Literal (Loc, Uint_0));
-                     Set_Elaboration_Entity (E, Flag);
-                     Set_Is_Frozen (Flag);
+                     Flag_Id := Make_Temporary (Loc, 'E');
+                     Set_Elaboration_Entity (Subp_Id, Flag_Id);
+                     Set_Is_Frozen (Flag_Id);
 
                      --  Insert declaration for flag after subprogram
                      --  declaration. Note that attribute reference may
                      --  appear within a nested scope.
 
-                     Insert_After (Unit_Declaration_Node (E), Decl);
-                     Analyze (Decl);
+                     Insert_After_And_Analyze (Subp_Decl,
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Flag_Id,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Standard_Short_Integer, Loc),
+                         Expression          =>
+                           Make_Integer_Literal (Loc, Uint_0)));
+                  end if;
+
+                  --  Taking the 'Access of an expression function freezes its
+                  --  expression (RM 13.14 10.3/3). This does not apply to an
+                  --  expression function that acts as a completion because the
+                  --  generated body is immediately analyzed and the expression
+                  --  is automatically frozen.
+
+                  if Ekind (Subp_Id) = E_Function
+                    and then Nkind (Subp_Decl) = N_Subprogram_Declaration
+                    and then Nkind (Original_Node (Subp_Decl)) =
+                                                        N_Expression_Function
+                    and then Present (Corresponding_Body (Subp_Decl))
+                    and then not Analyzed (Corresponding_Body (Subp_Decl))
+                  then
+                     HSS :=
+                       Handled_Statement_Sequence
+                         (Unit_Declaration_Node
+                            (Corresponding_Body (Subp_Decl)));
+
+                     if Present (HSS) then
+                        Stmt := First (Statements (HSS));
+
+                        if Nkind (Stmt) = N_Simple_Return_Statement then
+                           Freeze_Expression (Expression (Stmt));
+                        end if;
+                     end if;
                   end if;
                end;
             end if;

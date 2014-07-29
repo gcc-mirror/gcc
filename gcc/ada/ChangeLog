@@ -1,5 +1,23 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* sem_util.adb, sem_util.ads, sem_res.adb, exp_ch6.adb: Invert
+	predicate No_Predicate_Test_On_Arguments, new name is
+	Predicate_Tests_On_Arguments (with the opposite sense).
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Clean up the code for
+	attribute 'Access. Do not generate an elaboration flag for a
+	stand alone expression function. The expression of an expression
+	function is now frozen when the expression function appears as
+	the prefix of attribute 'Access.
+	* sem_ch6.adb (Analyze_Expression_Function): Remove local
+	variable New_Decl and update all references to it after the
+	rewriting has taken place. Establish the linkages between the
+	generated spec and body.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb (ip, rv): Prevent from being optimized away.
 	* gnatls.adb (gnatls): Set E_Fatal exit status if ali file not found.
 	* s-imgllb.adb, s-imgllw.adb, s-imgwiu.adb, s-imgbiu.adb: Minor

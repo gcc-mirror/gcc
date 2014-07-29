@@ -1582,11 +1582,6 @@ package Sem_Util is
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
 
-   function No_Predicate_Test_On_Arguments (Subp : Entity_Id) return Boolean;
-   --  Subp is the entity for a subprogram call. This function returns True to
-   --  eliminate predicate tests on the input or output arguments in a call to
-   --  this subprogram. See body for exact cases currently covered.
-
    function No_Scalar_Parts (T : Entity_Id) return Boolean;
    --  Tests if type T can be determined at compile time to have no scalar
    --  parts in the sense of the Valid_Scalars attribute. Returns True if
@@ -1633,6 +1628,12 @@ package Sem_Util is
    --  the presence of 'Class, which results in one of the special names
    --  Name_uPre, Name_uPost, Name_uInvariant, or Name_uType_Invariant being
    --  returned to represent the corresponding aspects with x'Class names.
+
+   function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
+   --  Subp is the entity for a subprogram call. This function returns True if
+   --  predicate tests are required for the arguments in this call (this is the
+   --  normal case). It returns False for special cases where these predicate
+   --  tests should be skipped (see body for details).
 
    function Primitive_Names_Match (E1, E2 : Entity_Id) return Boolean;
    --  Returns True if the names of both entities correspond with matching

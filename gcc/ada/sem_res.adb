@@ -1974,7 +1974,7 @@ package body Sem_Res is
                   if Nkind (Decl) = N_Subprogram_Body then
                      Spec := Corresponding_Spec (Decl);
 
-                     if not No (Spec) then
+                     if Present (Spec) then
                         Decl := Unit_Declaration_Node (Spec);
                      end if;
                   end if;
@@ -4051,9 +4051,9 @@ package body Sem_Res is
                --  Apply predicate tests except in certain special cases. Note
                --  that it might be more consistent to apply these only when
                --  expansion is active (in Exp_Ch6.Expand_Actuals), as we do
-               --  for the outbound predicate tests.
+               --  for the outbound predicate tests ???
 
-               if not No_Predicate_Test_On_Arguments (Nam) then
+               if Predicate_Tests_On_Arguments (Nam) then
                   Apply_Predicate_Check (A, F_Typ);
                end if;
 
