@@ -227,6 +227,16 @@ package body Sem_Eval is
    --  this is an illegality if N is static, and should generate a warning
    --  otherwise.
 
+   function Real_Or_String_Static_Predicate_Matches
+     (Val : Node_Id;
+      Typ : Entity_Id) return Boolean;
+   --  This is the function used to evaluate real or string static predicates.
+   --  Val is an unanalyzed N_Real_Literal or N_String_Literal node, which
+   --  represents the value to be tested against the predicate. Typ is the
+   --  type with the predicate, from which the predicate expression can be
+   --  extracted. The result returned is True if the given value satisfies
+   --  the predicate.
+
    procedure Rewrite_In_Raise_CE (N : Node_Id; Exp : Node_Id);
    --  N and Exp are nodes representing an expression, Exp is known to raise
    --  CE. N is rewritten in term of Exp in the optimal way.
@@ -339,23 +349,36 @@ package body Sem_Eval is
       --  an explicitly specified Dynamic_Predicate whose expression met the
       --  rules for being predicate-static).
 
-      --  If we are not generating code, nothing more to do (why???)
+      --  Case of real static predicate
 
-      if Operating_Mode < Generate_Code then
-         return;
-      end if;
+      if Is_Real_Type (Typ) then
+         if Real_Or_String_Static_Predicate_Matches
+              (Val => Make_Real_Literal (Sloc (Expr), Expr_Value_R (Expr)),
+               Typ => Typ)
+         then
+            return;
+         end if;
 
-      --  If we have the real case, then for now, not implemented
+      --  Case of string static predicate
 
-      if not Is_Discrete_Type (Typ) then
-         Error_Msg_N ("??real predicate not applied", Expr);
-         return;
-      end if;
+      elsif Is_String_Type (Typ) then
+         if Real_Or_String_Static_Predicate_Matches
+           (Val => Expr_Value_S (Expr),
+            Typ => Typ)
+         then
+            return;
+         end if;
 
-      --  If static predicate matches, nothing to do
+      --  Case of discrete static predicate
 
-      if Choices_Match (Expr, Static_Discrete_Predicate (Typ)) = Match then
-         return;
+      else
+         pragma Assert (Is_Discrete_Type (Typ));
+
+         --  If static predicate matches, nothing to do
+
+         if Choices_Match (Expr, Static_Discrete_Predicate (Typ)) = Match then
+            return;
+         end if;
       end if;
 
       --  Here we know that the predicate will fail
@@ -3052,6 +3075,10 @@ package body Sem_Eval is
    --  both operands are static (RM 4.9(7), 4.9(20)), except that for strings,
    --  the result is never static, even if the operands are.
 
+   --  However, for internally generated nodes, we allow string equality and
+   --  inequality to be static. This is because we rewrite A in "ABC" as an
+   --  equality test A = "ABC", and the former is definitely static.
+
    procedure Eval_Relational_Op (N : Node_Id) is
       Left   : constant Node_Id   := Left_Opnd (N);
       Right  : constant Node_Id   := Right_Opnd (N);
@@ -3289,9 +3316,16 @@ package body Sem_Eval is
 
          --  Only comparisons of scalars can give static results. In
          --  particular, comparisons of strings never yield a static
-         --  result, even if both operands are static strings.
+         --  result, even if both operands are static strings, except that
+         --  as noted above, we allow equality/inequality for strings.
 
-         if not Is_Scalar_Type (Typ) then
+         if Is_String_Type (Typ)
+           and then not Comes_From_Source (N)
+           and then Nkind_In (N, N_Op_Eq, N_Op_Ne)
+         then
+            null;
+
+         elsif not Is_Scalar_Type (Typ) then
             Is_Static_Expression := False;
             Set_Is_Static_Expression (N, False);
          end if;
@@ -3307,9 +3341,8 @@ package body Sem_Eval is
             Otype := Find_Universal_Operator_Type (N);
          end if;
 
-         --  For static real type expressions, we cannot use
-         --  Compile_Time_Compare since it worries about run-time
-         --  results which are not exact.
+         --  For static real type expressions, do not use Compile_Time_Compare
+         --  since it worries about run-time results which are not exact.
 
          if Is_Static_Expression and then Is_Real_Type (Typ) then
             declare
@@ -5321,6 +5354,112 @@ package body Sem_Eval is
          pragma Warnings (On);
       end if;
    end Predicates_Match;
+
+   ---------------------------------------------
+   -- Real_Or_String_Static_Predicate_Matches --
+   ---------------------------------------------
+
+   function Real_Or_String_Static_Predicate_Matches
+     (Val : Node_Id;
+      Typ : Entity_Id) return Boolean
+   is
+      Expr : constant Node_Id := Static_Real_Or_String_Predicate (Typ);
+      --  The predicate expression from the type
+
+      Pfun : constant Entity_Id := Predicate_Function (Typ);
+      --  The entity for the predicate function
+
+      Ent_Name : constant Name_Id := Chars (First_Formal (Pfun));
+      --  The name of the formal of the predicate function. Occurrences of the
+      --  type name in Expr have been rewritten as references to this formal,
+      --  and it has a unique name, so we can identify references by this name.
+
+      Copy : Node_Id;
+      --  Copy of the predicate function tree
+
+      function Process (N : Node_Id) return Traverse_Result;
+      --  Function used to process nodes during the traversal in which we will
+      --  find occurrences of the entity name, and replace such occurrences
+      --  by a real literal with the value to be tested.
+
+      procedure Traverse is new Traverse_Proc (Process);
+      --  The actual traversal procedure
+
+      -------------
+      -- Process --
+      -------------
+
+      function Process (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Identifier and then Chars (N) = Ent_Name then
+            declare
+               Nod : constant Node_Id := New_Copy (Val);
+            begin
+               Set_Sloc (Nod, Sloc (N));
+               Rewrite (N, Nod);
+               return Skip;
+            end;
+
+         else
+            return OK;
+         end if;
+      end Process;
+
+   --  Start of processing for Real_Or_String_Static_Predicate_Matches
+
+   begin
+      --  First deal with special case of inherited predicate, where the
+      --  predicate expression looks like:
+
+      --     Expr and then xxPredicate (typ (Ent))
+
+      --  where Expr is the predicate expression for this level, and the
+      --  right operand is the call to evaluate the inherited predicate.
+
+      if Nkind (Expr) = N_And_Then
+        and then Nkind (Right_Opnd (Expr)) = N_Function_Call
+      then
+         --  OK we have the inherited case, so make a call to evaluate the
+         --  inherited predicate. If that fails, so do we!
+
+         if not
+           Real_Or_String_Static_Predicate_Matches
+             (Val => Val,
+              Typ => Etype (First_Formal (Entity (Name (Right_Opnd (Expr))))))
+         then
+            return False;
+         end if;
+
+         --  Use the left operand for the continued processing
+
+         Copy := Copy_Separate_Tree (Left_Opnd (Expr));
+
+      --  Case where call to predicate function appears on its own
+
+      elsif Nkind (Expr) =  N_Function_Call then
+
+         --  Here the result is just the result of calling the inner predicate
+
+         return
+           Real_Or_String_Static_Predicate_Matches
+             (Val => Val,
+              Typ => Etype (First_Formal (Entity (Name (Expr)))));
+
+      --  If no inherited predicate, copy whole expression
+
+      else
+         Copy := Copy_Separate_Tree (Expr);
+      end if;
+
+      --  Now we replace occurrences of the entity by the value
+
+      Traverse (Copy);
+
+      --  And analyze the resulting static expression to see if it is True
+
+      Analyze_And_Resolve (Copy, Standard_Boolean);
+      return Is_True (Expr_Value (Copy));
+   end Real_Or_String_Static_Predicate_Matches;
 
    -------------------------
    -- Rewrite_In_Raise_CE --
