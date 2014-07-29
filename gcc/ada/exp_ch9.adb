@@ -4768,6 +4768,12 @@ package body Exp_Ch9 is
                        Make_Assignment_Statement (Loc,
                          Name => N_Var,
                          Expression => Relocate_Node (Actual)));
+
+                     --  If actual is an out parameter of a null-excluding
+                     --  access type, there is access check on entry, so set
+                     --  Suppress_Assignment_Checks on the generated statement
+                     --  that assigns the actual to the parameter block
+
                      Set_Suppress_Assignment_Checks (Last (Stats));
                   end if;
 

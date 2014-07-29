@@ -2001,6 +2001,13 @@ package body Exp_Ch5 is
       if Is_Access_Type (Typ)
         and then Can_Never_Be_Null (Etype (Lhs))
         and then not Can_Never_Be_Null (Etype (Rhs))
+
+        --  If an actual is an out parameter of a null-excluding access
+        --  type, there is access check on entry, so we set the flag
+        --  Suppress_Assignment_Checks on the generated statement to
+        --  assign the actual to the parameter block, and we do not want
+        --  to generate an additional check at this point.
+
         and then not Suppress_Assignment_Checks (N)
       then
          Apply_Constraint_Check (Rhs, Etype (Lhs));

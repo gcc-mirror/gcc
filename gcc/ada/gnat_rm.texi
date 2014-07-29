@@ -1,4 +1,3 @@
-
 \input texinfo   @c -*-texinfo-*-
 
 @c %**start of header
@@ -308,6 +307,7 @@ Implementation Defined Aspects
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect Object_Size::
 * Aspect Part_Of::
@@ -369,8 +369,8 @@ Implementation Defined Attributes
 * Attribute Implicit_Dereference::
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
-* Attribute Iterator_Element::
 * Attribute Iterable::
+* Attribute Iterator_Element::
 * Attribute Large::
 * Attribute Library_Level::
 * Attribute Lock_Free::
@@ -4493,7 +4493,7 @@ end IO_Card;
 @end smallexample
 
 @node Pragma Lock_Free
-@unnumberedsec Pragma Locl_Free
+@unnumberedsec Pragma Lock_Free
 @findex Lock_Free
 @noindent
 Syntax:
@@ -8122,6 +8122,7 @@ clause.
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect Lock_Free::
 * Aspect Object_Size::
@@ -8343,6 +8344,12 @@ This aspect is equivalent to pragma @code{Inline_Always}.
 This aspect is equivalent to pragma @code{Invariant}. It is a
 synonym for the language defined aspect @code{Type_Invariant} except
 that it is separately controllable using pragma @code{Assertion_Policy}.
+
+@node Aspect Iterable
+@unnumberedsec Aspect Iterable
+@findex Iterable
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
 
 @node Aspect Linker_Section
 @unnumberedsec Aspect Linker_Section
