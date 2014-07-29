@@ -5003,7 +5003,7 @@ package body Exp_Aggr is
          begin
             Index := First_Index (Itype);
             while Present (Index) loop
-               if not Is_Static_Subtype (Etype (Index)) then
+               if not Is_OK_Static_Subtype (Etype (Index)) then
                   Needs_Type := True;
                   exit;
                else
@@ -6634,10 +6634,10 @@ package body Exp_Aggr is
          Get_Index_Bounds (First_Index (Typ), L1, H1);
          Get_Index_Bounds (First_Index (Obj_Type), L2, H2);
 
-         if not Is_Static_Expression (L1)
-           or else not Is_Static_Expression (L2)
-           or else not Is_Static_Expression (H1)
-           or else not Is_Static_Expression (H2)
+         if not Is_OK_Static_Expression (L1) or else
+            not Is_OK_Static_Expression (L2) or else
+            not Is_OK_Static_Expression (H1) or else
+            not Is_OK_Static_Expression (H2)
          then
             return False;
          else

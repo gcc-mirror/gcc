@@ -11675,7 +11675,7 @@ package body Exp_Ch9 is
       if Present (Taskdef)
         and then Has_Storage_Size_Pragma (Taskdef)
         and then
-          Is_Static_Expression
+          Is_OK_Static_Expression
             (Expression
                (First (Pragma_Argument_Associations
                          (Get_Rep_Pragma (TaskId, Name_Storage_Size)))))

@@ -300,7 +300,9 @@ package Tbuild is
    --  of the defining identifier which is passed as its argument. The Entity
    --  and Etype of the result are set from the given defining identifier as
    --  follows: Entity is simply a copy of Def_Id. Etype is a copy of Def_Id
-   --  for types, and a copy of the Etype of Def_Id for other entities.
+   --  for types, and a copy of the Etype of Def_Id for other entities. Note
+   --  that Is_Static_Expression is set if this call creates an occurrence of
+   --  an enumeration literal.
 
    function New_Suffixed_Name
      (Related_Id : Name_Id;

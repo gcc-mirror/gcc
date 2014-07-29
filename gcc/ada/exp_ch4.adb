@@ -1386,7 +1386,6 @@ package body Exp_Ch4 is
          Apply_Constraint_Check (Exp, T, No_Sliding => True);
 
          if Do_Range_Check (Exp) then
-            Set_Do_Range_Check (Exp, False);
             Generate_Range_Check (Exp, DesigT, CE_Range_Check_Failed);
          end if;
 
@@ -1402,7 +1401,6 @@ package body Exp_Ch4 is
               (Exp, DesigT, No_Sliding => False);
 
             if Do_Range_Check (Exp) then
-               Set_Do_Range_Check (Exp, False);
                Generate_Range_Check (Exp, DesigT, CE_Range_Check_Failed);
             end if;
          end if;
@@ -9650,7 +9648,7 @@ package body Exp_Ch4 is
                          Nkind (Parent (Entity (Dval))) = N_Object_Declaration
                        and then Present (Expression (Parent (Entity (Dval))))
                        and then not
-                         Is_Static_Expression
+                         Is_OK_Static_Expression
                            (Expression (Parent (Entity (Dval))))
                      then
                         exit Discr_Loop;
@@ -10946,6 +10944,7 @@ package body Exp_Ch4 is
                --  integer type.
 
                Set_Do_Overflow_Check (N, False);
+
                if not Is_Descendent_Of_Address (Etype (Expr))
                  and then not Is_Descendent_Of_Address (Target_Type)
                then

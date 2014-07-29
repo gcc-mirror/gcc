@@ -5249,7 +5249,7 @@ package body Sem_Ch6 is
 
                         elsif Is_Entity_Name (Orig_Expr)
                           and then Ekind (Entity (Orig_Expr)) = E_Constant
-                          and then Is_Static_Expression (Orig_Expr)
+                          and then Is_OK_Static_Expression (Orig_Expr)
                         then
                            return OK;
                         else

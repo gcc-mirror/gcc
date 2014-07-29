@@ -304,7 +304,8 @@ package body Sem_Ch9 is
 
                            if Is_Scalar_Type (Etype (Attr))
                              and then Is_Scalar_Type (Etype (Prefix (Attr)))
-                             and then Is_Static_Subtype (Etype (Prefix (Attr)))
+                             and then
+                               Is_OK_Static_Subtype (Etype (Prefix (Attr)))
                            then
                               Para := First (Expressions (Attr));
 
@@ -389,7 +390,7 @@ package body Sem_Ch9 is
                      --  static function restricted.
 
                      elsif Kind = N_Attribute_Reference
-                       and then not Is_Static_Expression (N)
+                       and then not Is_OK_Static_Expression (N)
                        and then not Is_Static_Function (N)
                      then
                         if Lock_Free_Given then
@@ -427,7 +428,7 @@ package body Sem_Ch9 is
                      --  Non-static function calls restricted
 
                      elsif Kind = N_Function_Call
-                       and then not Is_Static_Expression (N)
+                       and then not Is_OK_Static_Expression (N)
                      then
                         if Lock_Free_Given then
                            Error_Msg_N
@@ -1557,7 +1558,7 @@ package body Sem_Ch9 is
                goto Skip_LB;
             end if;
 
-            if Is_Static_Expression (LBR)
+            if Is_OK_Static_Expression (LBR)
               and then Expr_Value (LBR) < LB
             then
                Error_Msg_Uint_1 := LB;
@@ -1583,7 +1584,7 @@ package body Sem_Ch9 is
                goto Skip_UB;
             end if;
 
-            if Is_Static_Expression (UBR)
+            if Is_OK_Static_Expression (UBR)
               and then Expr_Value (UBR) > UB
             then
                Error_Msg_Uint_1 := UB;

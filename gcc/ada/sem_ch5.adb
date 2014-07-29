@@ -2317,11 +2317,11 @@ package body Sem_Ch5 is
          --  Propagate staticness to loop range itself, in case the
          --  corresponding subtype is static.
 
-         if New_Lo /= Lo and then Is_Static_Expression (New_Lo) then
+         if New_Lo /= Lo and then Is_OK_Static_Expression (New_Lo) then
             Rewrite (Low_Bound (R), New_Copy (New_Lo));
          end if;
 
-         if New_Hi /= Hi and then Is_Static_Expression (New_Hi) then
+         if New_Hi /= Hi and then Is_OK_Static_Expression (New_Hi) then
             Rewrite (High_Bound (R), New_Copy (New_Hi));
          end if;
       end Process_Bounds;

@@ -660,12 +660,19 @@ package Checks is
    --  The Reason parameter is the exception code to be used for the exception
    --  if raised.
    --
-   --  Note on the relation of this routine to the Do_Range_Check flag. Mostly
-   --  for historical reasons, we often set the Do_Range_Check flag and then
-   --  later we call Generate_Range_Check if this flag is set. Most probably we
-   --  could eliminate this intermediate setting of the flag (historically the
-   --  back end dealt with range checks, using this flag to indicate if a check
-   --  was required, then we moved checks into the front end).
+   --  Note: if the expander is not active, or if we are in GNATprove mode,
+   --  then we do not generate explicit range code. Instead we just turn the
+   --  Do_Range_Check flag on, since in these cases that's what we want to see
+   --  in the tree (GNATprove in particular depends on this flag being set). If
+   --  we generate the actual range check, then we make sure the flag is off,
+   --  since the code we generate takes complete care of the check.
+   --
+   --  Historical note: We used to just pass ono the Do_Range_Check flag to the
+   --  back end to generate the check, but now in code generation mode we never
+   --  have this flag set, since the front end takes care of the check. The
+   --  normal processing flow now is that the analyzer typically turns on the
+   --  Do_Range_Check flag, and if it is set, this routine is called, which
+   --  turns the flag off in code generation mode.
 
    procedure Generate_Index_Checks (N : Node_Id);
    --  This procedure is called to generate index checks on the subscripts for

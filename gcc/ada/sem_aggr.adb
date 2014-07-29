@@ -993,7 +993,7 @@ package body Sem_Aggr is
            and then not Is_Private_Composite (Typ)
            and then not Is_Bit_Packed_Array (Typ)
            and then Nkind (Original_Node (Parent (N))) /= N_String_Literal
-           and then Is_Static_Subtype (Component_Type (Typ))
+           and then Is_OK_Static_Subtype (Component_Type (Typ))
          then
             declare
                Expr : Node_Id;
@@ -1611,10 +1611,12 @@ package body Sem_Aggr is
          end if;
 
          --  If the expression has been marked as requiring a range check,
-         --  then generate it here.
+         --  then generate it here. It's a bit odd to be generating such
+         --  checks in the analyzer, but harmless since Generate_Range_Check
+         --  does nothing (other than making sure Do_Range_Check is set) if
+         --  the expander is not active.
 
          if Do_Range_Check (Expr) then
-            Set_Do_Range_Check (Expr, False);
             Generate_Range_Check (Expr, Component_Typ, CE_Range_Check_Failed);
          end if;
 
@@ -1899,9 +1901,9 @@ package body Sem_Aggr is
 
                      --  In SPARK, the choice must be static
 
-                     if not (Is_Static_Expression (Choice)
+                     if not (Is_OK_Static_Expression (Choice)
                               or else (Nkind (Choice) = N_Range
-                                        and then Is_Static_Range (Choice)))
+                                        and then Is_OK_Static_Range (Choice)))
                      then
                         Check_SPARK_Restriction
                           ("choice should be static", Choice);
@@ -3425,10 +3427,12 @@ package body Sem_Aggr is
          end if;
 
          --  If the expression has been marked as requiring a range check, then
-         --  generate it here.
+         --  generate it here. It's a bit odd to be generating such checks in
+         --  the analyzer, but harmless since Generate_Range_Check does nothing
+         --  (other than making sure Do_Range_Check is set) if the expander is
+         --  not active.
 
          if Do_Range_Check (Expr) then
-            Set_Do_Range_Check (Expr, False);
             Generate_Range_Check (Expr, Expr_Type, CE_Range_Check_Failed);
          end if;
 

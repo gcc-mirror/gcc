@@ -3154,7 +3154,7 @@ package body Sem_Ch3 is
             while Present (X) loop
                C := Etype (X);
 
-               if not Is_Static_Subtype (C) then
+               if not Is_OK_Static_Subtype (C) then
                   Check_Restriction (Max_Tasks, N);
                   return Uint_0;
                else
@@ -17370,7 +17370,7 @@ package body Sem_Ch3 is
          --  static, even if its bounds are static.
 
          if Nkind (I) = N_Subtype_Indication
-           and then not Is_Static_Subtype (Entity (Subtype_Mark (I)))
+           and then not Is_OK_Static_Subtype (Entity (Subtype_Mark (I)))
          then
             Set_Is_Non_Static_Subtype (Def_Id);
          end if;
@@ -18984,7 +18984,7 @@ package body Sem_Ch3 is
          --  discrete type definition of a loop parameter specification.
 
          if not In_Iter_Schm
-           and then not Is_Static_Range (R)
+           and then not Is_OK_Static_Range (R)
          then
             Check_SPARK_Restriction ("range should be static", R);
          end if;

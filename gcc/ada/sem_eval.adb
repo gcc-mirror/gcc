@@ -123,6 +123,11 @@ package body Sem_Eval is
       V : Uint;
    end record;
 
+   type Match_Result is (Match, No_Match, Non_Static);
+   --  Result returned from functions that test for a matching result. If the
+   --  operands are not OK_Static then Non_Static will be returned. Otherwise
+   --  Match/No_Match is returned depending on whether the match succeeds.
+
    type CV_Cache_Array is array (CV_Range) of CV_Entry;
 
    CV_Cache : CV_Cache_Array := (others => (Node_High_Bound, Uint_0));
@@ -137,12 +142,69 @@ package body Sem_Eval is
    -- Local Subprograms --
    -----------------------
 
+   function Choice_Matches
+     (Expr   : Node_Id;
+      Choice : Node_Id) return Match_Result;
+   --  Determines whether given value Expr matches the given Choice. The Expr
+   --  can be of discrete, real, or string type and must be a compile time
+   --  known value (it is an error to make the call if these conditions are
+   --  not met). The choice can be a range, subtype name, subtype indication,
+   --  or expression. The returned result is Non_Static if Choice is not
+   --  OK_Static, otherwise either Match or No_Match is returned depending
+   --  on whether Choice matches Expr. This is used for case expression
+   --  alternatives, and also for membership tests. In each case, more
+   --  possibilities are tested than the syntax allows (e.g. membership allows
+   --  subtype indications and non-discrete types, and case allows an OTHERS
+   --  choice), but it does not matter, since we have already done a full
+   --  semantic and syntax check of the construct, so the extra possibilities
+   --  just will not arise for correct expressions.
+   --
+   --  Note: if Choice_Matches finds that a choice raises Constraint_Error, e.g
+   --  a reference to a type, one of whose bounds raises Constraint_Error, then
+   --  it also sets the Raises_Constraint_Error flag on the Choice itself.
+
+   function Choices_Match
+     (Expr    : Node_Id;
+      Choices : List_Id) return Match_Result;
+   --  This function applies Choice_Matches to each element of Choices. If the
+   --  result is No_Match, then it continues and checks the next element. If
+   --  the result is Match or Non_Static, this result is immediately given
+   --  as the result without checking the rest of the list. Expr can be of
+   --  discrete, real, or string type and must be a compile time known value
+   --  (it is an error to make the call if these conditions are not met).
+
    function From_Bits (B : Bits; T : Entity_Id) return Uint;
    --  Converts a bit string of length B'Length to a Uint value to be used for
    --  a target of type T, which is a modular type. This procedure includes the
    --  necessary reduction by the modulus in the case of a non-binary modulus
    --  (for a binary modulus, the bit string is the right length any way so all
    --  is well).
+
+   function Is_Static_Choice (Choice : Node_Id) return Boolean;
+   --  Given a choice (from a case expression or membership test), returns
+   --  True if the choice is static. No test is made for raising of constraint
+   --  error, so this function is used only for legality tests.
+
+   function Is_Static_Choice_List (Choices : List_Id) return Boolean;
+   --  Given a choice list (from a case expression or membership test), return
+   --  True if all choices are static in the sense of Is_Static_Choice.
+
+   function Is_OK_Static_Choice (Choice : Node_Id) return Boolean;
+   --  Given a choice (from a case expression or membership test), returns
+   --  True if the choice is static and does not raise a Constraint_Error.
+
+   function Is_OK_Static_Choice_List (Choices : List_Id) return Boolean;
+   --  Given a choice list (from a case expression or membership test), return
+   --  True if all choices are static in the sense of Is_OK_Static_Choice.
+
+   function Is_Static_Range (N : Node_Id) return Boolean;
+   --  Determine if range is static, as defined in RM 4.9(26). The only allowed
+   --  argument is an N_Range node (but note that the semantic analysis of
+   --  equivalent range attribute references already turned them into the
+   --  equivalent range). This differs from Is_OK_Static_Range (which is what
+   --  must be used by clients) in that it does not care whether the bounds
+   --  raise Constraint_Error or not. Used for checking whether expressions are
+   --  static in the 4.9 sense (without worrying about exceptions).
 
    function Get_String_Val (N : Node_Id) return Node_Id;
    --  Given a tree node for a folded string or character value, returns the
@@ -254,6 +316,73 @@ package body Sem_Eval is
    procedure To_Bits (U : Uint; B : out Bits);
    --  Converts a Uint value to a bit string of length B'Length
 
+   -----------------------------------------------
+   -- Check_Expression_Against_Static_Predicate --
+   -----------------------------------------------
+
+   procedure Check_Expression_Against_Static_Predicate
+     (Expr : Node_Id;
+      Typ  : Entity_Id)
+   is
+   begin
+      --  Nothing to do if expression is not known at compile time, or the
+      --  type has no static predicate set (will be the case for all non-scalar
+      --  types, so no need to make a special test for that).
+
+      if not (Has_Static_Predicate (Typ)
+              and then Compile_Time_Known_Value (Expr))
+      then
+         return;
+      end if;
+
+      --  Here we have a static predicate (note that it could have arisen from
+      --  an explicitly specified Dynamic_Predicate whose expression met the
+      --  rules for being predicate-static).
+
+      --  If we are not generating code, nothing more to do (why???)
+
+      if Operating_Mode < Generate_Code then
+         return;
+      end if;
+
+      --  If we have the real case, then for now, not implemented
+
+      if not Is_Discrete_Type (Typ) then
+         Error_Msg_N ("??real predicate not applied", Expr);
+         return;
+      end if;
+
+      --  If static predicate matches, nothing to do
+
+      if Choices_Match (Expr, Static_Predicate (Typ)) = Match then
+         return;
+      end if;
+
+      --  Here we know that the predicate will fail
+
+      --  Special case of static expression failing a predicate (other than one
+      --  that was explicitly specified with a Dynamic_Predicate aspect). This
+      --  is the case where the expression is no longer considered static.
+
+      if Is_Static_Expression (Expr)
+        and then not Has_Dynamic_Predicate_Aspect (Typ)
+      then
+         Error_Msg_NE
+           ("??static expression fails static predicate check on &",
+            Expr, Typ);
+         Error_Msg_N
+           ("\??expression is no longer considered static", Expr);
+         Set_Is_Static_Expression (Expr, False);
+
+      --  In all other cases, this is just a warning that a test will fail.
+      --  It does not matter if the expression is static or not, or if the
+      --  predicate comes from a dynamic predicate aspect or not.
+
+      else
+         Error_Msg_NE
+           ("??expression fails predicate check on &", Expr, Typ);
+      end if;
+   end Check_Expression_Against_Static_Predicate;
    ------------------------------
    -- Check_Non_Static_Context --
    ------------------------------
@@ -420,6 +549,167 @@ package body Sem_Eval is
          end if;
       end if;
    end Check_String_Literal_Length;
+
+   --------------------
+   -- Choice_Matches --
+   --------------------
+
+   function Choice_Matches
+     (Expr   : Node_Id;
+      Choice : Node_Id) return Match_Result
+   is
+      Etyp : constant Entity_Id := Etype (Expr);
+      Val  : Uint;
+      ValR : Ureal;
+      ValS : Node_Id;
+
+   begin
+      pragma Assert (Compile_Time_Known_Value (Expr));
+      pragma Assert (Is_Scalar_Type (Etyp) or else Is_String_Type (Etyp));
+
+      if not Is_OK_Static_Choice (Choice) then
+         Set_Raises_Constraint_Error (Choice);
+         return Non_Static;
+
+      --  Discrete type case
+
+      elsif Is_Discrete_Type (Etype (Expr)) then
+         Val := Expr_Value (Expr);
+
+         if Nkind (Choice) = N_Range then
+            if Val >= Expr_Value (Low_Bound (Choice))
+                 and then
+               Val <= Expr_Value (High_Bound (Choice))
+            then
+               return Match;
+            else
+               return No_Match;
+            end if;
+
+         elsif Nkind (Choice) = N_Subtype_Indication
+           or else
+             (Is_Entity_Name (Choice) and then Is_Type (Entity (Choice)))
+         then
+            if Val >= Expr_Value (Type_Low_Bound  (Etype (Choice)))
+                 and then
+               Val <= Expr_Value (Type_High_Bound (Etype (Choice)))
+            then
+               return Match;
+            else
+               return No_Match;
+            end if;
+
+         elsif Nkind (Choice) = N_Others_Choice then
+            return Match;
+
+         else
+            if Val = Expr_Value (Choice) then
+               return Match;
+            else
+               return No_Match;
+            end if;
+         end if;
+
+         --  Real type case
+
+      elsif Is_Real_Type (Etype (Expr)) then
+         ValR := Expr_Value_R (Expr);
+
+         if Nkind (Choice) = N_Range then
+            if ValR >= Expr_Value_R (Low_Bound  (Choice))
+                 and then
+               ValR <= Expr_Value_R (High_Bound (Choice))
+            then
+               return Match;
+            else
+               return No_Match;
+            end if;
+
+         elsif Nkind (Choice) = N_Subtype_Indication
+           or else
+             (Is_Entity_Name (Choice) and then Is_Type (Entity (Choice)))
+         then
+            if ValR >= Expr_Value_R (Type_Low_Bound  (Etype (Choice)))
+                 and then
+               ValR <= Expr_Value_R (Type_High_Bound (Etype (Choice)))
+            then
+               return Match;
+            else
+               return No_Match;
+            end if;
+
+         else
+            if ValR = Expr_Value_R (Choice) then
+               return Match;
+            else
+               return No_Match;
+            end if;
+         end if;
+
+         --  String type cases
+
+      else
+         pragma Assert (Is_String_Type (Etype (Expr)));
+         ValS := Expr_Value_S (Expr);
+
+         if Nkind (Choice) = N_Subtype_Indication
+           or else
+             (Is_Entity_Name (Choice) and then Is_Type (Entity (Choice)))
+         then
+            if not Is_Constrained (Etype (Choice)) then
+               return Match;
+
+            else
+               declare
+                  Typlen : constant Uint :=
+                             String_Type_Len (Etype (Choice));
+                  Strlen : constant Uint :=
+                             UI_From_Int (String_Length (Strval (ValS)));
+               begin
+                  if Typlen = Strlen then
+                     return Match;
+                  else
+                     return No_Match;
+                  end if;
+               end;
+            end if;
+
+         else
+            if String_Equal (Strval (ValS), Strval (Expr_Value_S (Choice)))
+            then
+               return Match;
+            else
+               return No_Match;
+            end if;
+         end if;
+      end if;
+   end Choice_Matches;
+
+   -------------------
+   -- Choices_Match --
+   -------------------
+
+   function Choices_Match
+     (Expr    : Node_Id;
+      Choices : List_Id) return Match_Result
+   is
+      Choice : Node_Id;
+      Result : Match_Result;
+
+   begin
+      Choice := First (Choices);
+      while Present (Choice) loop
+         Result := Choice_Matches (Expr, Choice);
+
+         if Result /= No_Match then
+            return Result;
+         end if;
+
+         Next (Choice);
+      end loop;
+
+      return No_Match;
+   end Choices_Match;
 
    --------------------------
    -- Compile_Time_Compare --
@@ -747,9 +1037,9 @@ package body Sem_Eval is
       --  conditions when this is inappropriate.
 
       if not (Full_Analysis
-               or else (Is_Static_Expression (L)
+               or else (Is_OK_Static_Expression (L)
                           and then
-                        Is_Static_Expression (R)))
+                        Is_OK_Static_Expression (R)))
       then
          return Unknown;
       end if;
@@ -1565,7 +1855,10 @@ package body Sem_Eval is
                      Apply_Compile_Time_Constraint_Error
                        (N, "division by zero", CE_Divide_By_Zero,
                         Warn => not Stat);
+                     Set_Raises_Constraint_Error (N);
                      return;
+
+                  --  Otherwise we can do the division
 
                   else
                      Result := Left_Int / Right_Int;
@@ -1744,60 +2037,101 @@ package body Sem_Eval is
    --------------------------
 
    --  A conditional expression is static if all its conditions and dependent
-   --  expressions are static.
+   --  expressions are static. Note that we do not care if the dependent
+   --  expressions raise CE, except for the one that will be selected.
 
    procedure Eval_Case_Expression (N : Node_Id) is
-      Alt       : Node_Id;
-      Choice    : Node_Id;
-      Is_Static : Boolean;
-      Result    : Node_Id;
-      Val       : Uint;
+      Alt    : Node_Id;
+      Choice : Node_Id;
 
    begin
-      Result := Empty;
-      Is_Static := True;
+      Set_Is_Static_Expression (N, False);
 
-      if Is_Static_Expression (Expression (N)) then
-         Val := Expr_Value (Expression (N));
-      else
+      if not Is_Static_Expression (Expression (N)) then
          Check_Non_Static_Context (Expression (N));
-         Is_Static := False;
+         return;
       end if;
 
+      --  First loop, make sure all the alternatives are static expressions
+      --  none of which raise Constraint_Error. We make the constraint error
+      --  check because part of the legality condition for a correct static
+      --  case expression is that the cases are covered, like any other case
+      --  expression. And we can't do that if any of the conditions raise an
+      --  exception, so we don't even try to evaluate if that is the case.
+
       Alt := First (Alternatives (N));
+      while Present (Alt) loop
 
-      Search : while Present (Alt) loop
-         if not Is_Static
-           or else not Is_Static_Expression (Expression (Alt))
-         then
+         --  The expression must be static, but we don't care at this stage
+         --  if it raises Constraint_Error (the alternative might not match,
+         --  in which case the expression is statically unevaluated anyway).
+
+         if not Is_Static_Expression (Expression (Alt)) then
             Check_Non_Static_Context (Expression (Alt));
-            Is_Static := False;
+            return;
+         end if;
 
-         else
-            Choice := First (Discrete_Choices (Alt));
-            while Present (Choice) loop
-               if Nkind (Choice) = N_Others_Choice then
-                  Result := Expression (Alt);
-                  exit Search;
+         --  The choices of a case always have to be static, and cannot raise
+         --  an exception. If this condition is not met, then the expression
+         --  is plain illegal, so just abandon evaluation attempts. No need
+         --  to check non-static context when we have something illegal anyway.
 
-               elsif Expr_Value (Choice) = Val then
-                  Result := Expression (Alt);
-                  exit Search;
-
-               else
-                  Next (Choice);
-               end if;
-            end loop;
+         if not Is_OK_Static_Choice_List (Discrete_Choices (Alt)) then
+            return;
          end if;
 
          Next (Alt);
-      end loop Search;
+      end loop;
 
-      if Is_Static then
-         Rewrite (N, Relocate_Node (Result));
+      --  OK, if the above loop gets through it means that all choices are OK
+      --  static (don't raise exceptions), so the whole case is static, and we
+      --  can find the matching alternative.
+
+      Set_Is_Static_Expression (N);
+
+      --  Now to deal with propagating a possible constraint error
+
+      --  If the selecting expression raises CE, propagate and we are done
+
+      if Raises_Constraint_Error (Expression (N)) then
+         Set_Raises_Constraint_Error (N);
+
+      --  Otherwise we need to check the alternatives to find the matching
+      --  one. CE's in other than the matching one are not relevant. But we
+      --  do need to check the matching one. Unlike the first loop, we do not
+      --  have to go all the way through, when we find the matching one, quit.
 
       else
-         Set_Is_Static_Expression (N, False);
+         Alt := First (Alternatives (N));
+         Search : loop
+
+            --  We must find a match among the alternatives, If not this must
+            --  be due to other errors, so just ignore, leaving as non-static.
+
+            if No (Alt) then
+               Set_Is_Static_Expression (N, False);
+               return;
+            end if;
+
+            --  Otherwise loop through choices of this alternative
+
+            Choice := First (Discrete_Choices (Alt));
+            while Present (Choice) loop
+
+               --  If we find a matching choice, then the Expression of this
+               --  alternative replaces N (Raises_Constraint_Error flag is
+               --  included, so we don't have to special case that).
+
+               if Choice_Matches (Expression (N), Choice) = Match then
+                  Rewrite (N, Relocate_Node (Expression (Alt)));
+                  return;
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            Next (Alt);
+         end loop Search;
       end if;
    end Eval_Case_Expression;
 
@@ -2001,8 +2335,17 @@ package body Sem_Eval is
                 Is_Static_Expression (Then_Expr)
                   and then
                 Is_Static_Expression (Else_Expr);
+      --  True if result is static
 
    begin
+      --  If result not static, nothing to do, otherwise set static result
+
+      if not Rstat then
+         return;
+      else
+         Set_Is_Static_Expression (N);
+      end if;
+
       --  If any operand is Any_Type, just propagate to result and do not try
       --  to fold, this prevents cascaded errors.
 
@@ -2013,6 +2356,15 @@ package body Sem_Eval is
          Set_Etype (N, Any_Type);
          Set_Is_Static_Expression (N, False);
          return;
+      end if;
+
+      --  If condition raises constraint error then we have already signalled
+      --  an error, and we just propagate to the result and do not fold.
+
+      if Raises_Constraint_Error (Condition) then
+         Set_Raises_Constraint_Error (N);
+         return;
+      end if;
 
       --  Static case where we can fold. Note that we don't try to fold cases
       --  where the condition is known at compile time, but the result is
@@ -2020,43 +2372,31 @@ package body Sem_Eval is
       --  the expander puts in a redundant test and we remove it. Instead we
       --  deal with these cases in the expander.
 
-      elsif Rstat then
+      --  Select result operand
 
-         --  Select result operand
-
-         if Is_True (Expr_Value (Condition)) then
-            Result := Then_Expr;
-            Non_Result := Else_Expr;
-         else
-            Result := Else_Expr;
-            Non_Result := Then_Expr;
-         end if;
-
-         --  Note that it does not matter if the non-result operand raises a
-         --  Constraint_Error, but if the result raises constraint error then
-         --  we replace the node with a raise constraint error. This will
-         --  properly propagate Raises_Constraint_Error since this flag is
-         --  set in Result.
-
-         if Raises_Constraint_Error (Result) then
-            Rewrite_In_Raise_CE (N, Result);
-            Check_Non_Static_Context (Non_Result);
-
-         --  Otherwise the result operand replaces the original node
-
-         else
-            Rewrite (N, Relocate_Node (Result));
-         end if;
-
-      --  Case of condition not known at compile time
-
+      if Is_True (Expr_Value (Condition)) then
+         Result     := Then_Expr;
+         Non_Result := Else_Expr;
       else
-         Check_Non_Static_Context (Condition);
-         Check_Non_Static_Context (Then_Expr);
-         Check_Non_Static_Context (Else_Expr);
+         Result     := Else_Expr;
+         Non_Result := Then_Expr;
       end if;
 
-      Set_Is_Static_Expression (N, Rstat);
+      --  Note that it does not matter if the non-result operand raises a
+      --  Constraint_Error, but if the result raises constraint error then we
+      --  replace the node with a raise constraint error. This will properly
+      --  propagate Raises_Constraint_Error since this flag is set in Result.
+
+      if Raises_Constraint_Error (Result) then
+         Rewrite_In_Raise_CE (N, Result);
+         Check_Non_Static_Context (Non_Result);
+
+      --  Otherwise the result operand replaces the original node
+
+      else
+         Rewrite (N, Relocate_Node (Result));
+         Set_Is_Static_Expression (N);
+      end if;
    end Eval_If_Expression;
 
    ----------------------------
@@ -2356,132 +2696,78 @@ package body Sem_Eval is
    procedure Eval_Membership_Op (N : Node_Id) is
       Left   : constant Node_Id := Left_Opnd (N);
       Right  : constant Node_Id := Right_Opnd (N);
-      Def_Id : Entity_Id;
-      Lo     : Node_Id;
-      Hi     : Node_Id;
-      Result : Boolean;
-      Stat   : Boolean;
-      Fold   : Boolean;
+      Alts   : constant List_Id := Alternatives (N);
+      Result : Match_Result;
 
    begin
       --  Ignore if error in either operand, except to make sure that Any_Type
       --  is properly propagated to avoid junk cascaded errors.
 
-      if Etype (Left) = Any_Type or else Etype (Right) = Any_Type then
+      if Etype (Left) = Any_Type
+        or else (Present (Right) and then Etype (Right) = Any_Type)
+      then
          Set_Etype (N, Any_Type);
          return;
       end if;
 
       --  Ignore if types involved have predicates
+      --  Is this right for static predicates ???
+      --  And what about the alternatives ???
 
       if Present (Predicate_Function (Etype (Left)))
-           or else
-         Present (Predicate_Function (Etype (Right)))
+        or else (Present (Right)
+                  and then Present (Predicate_Function (Etype (Right))))
       then
          return;
       end if;
 
-      --  Case of right operand is a subtype name
+      --  If left operand non-static, then nothing to do
 
-      if Is_Entity_Name (Right) then
-         Def_Id := Entity (Right);
+      if not Is_Static_Expression (Left) then
+         return;
+      end if;
 
-         if (Is_Scalar_Type (Def_Id) or else Is_String_Type (Def_Id))
-           and then Is_OK_Static_Subtype (Def_Id)
-         then
-            Test_Expression_Is_Foldable (N, Left, Stat, Fold);
+      --  If choice is non-static, left operand is in non-static context
 
-            if not Fold or else not Stat then
-               return;
-            end if;
-         else
-            Check_Non_Static_Context (Left);
-            return;
-         end if;
+      if (Present (Right) and then not Is_Static_Choice (Right))
+        or else (Present (Alts) and then not Is_Static_Choice_List (Alts))
+      then
+         Check_Non_Static_Context (Left);
+         return;
+      end if;
 
-         --  For string membership tests we will check the length further on
+      --  Otherwise we definitely have a static expression
 
-         if not Is_String_Type (Def_Id) then
-            Lo := Type_Low_Bound (Def_Id);
-            Hi := Type_High_Bound (Def_Id);
-         else
-            Lo := Empty;
-            Hi := Empty;
-         end if;
+      Set_Is_Static_Expression (N);
 
-      --  Case of right operand is a range
+      --  If left operand raises constraint error, propagate and we are done
+
+      if Raises_Constraint_Error (Left) then
+         Set_Raises_Constraint_Error (N, True);
+
+      --  See if we match
 
       else
-         if Is_Static_Range (Right) then
-            Test_Expression_Is_Foldable (N, Left, Stat, Fold);
-
-            if not Fold or else not Stat then
-               return;
-
-            --  If one bound of range raises CE, then don't try to fold
-
-            elsif not Is_OK_Static_Range (Right) then
-               Check_Non_Static_Context (Left);
-               return;
-            end if;
-
+         if Present (Right) then
+            Result := Choice_Matches (Left, Right);
          else
-            Check_Non_Static_Context (Left);
-            return;
+            Result := Choices_Match (Left, Alts);
          end if;
 
-         --  Here we know range is an OK static range
+         --  If result is Non_Static, it means that we raise Constraint_Error,
+         --  since we already tested that the operands were themselves static.
 
-         Lo := Low_Bound (Right);
-         Hi := High_Bound (Right);
-      end if;
+         if Result = Non_Static then
+            Set_Raises_Constraint_Error (N);
 
-      --  For strings we check that the length of the string expression is
-      --  compatible with the string subtype if the subtype is constrained,
-      --  or if unconstrained then the test is always true.
-
-      if Is_String_Type (Etype (Right)) then
-         if not Is_Constrained (Etype (Right)) then
-            Result := True;
+         --  Otherwise we have our result (flipped if NOT IN case)
 
          else
-            declare
-               Typlen : constant Uint := String_Type_Len (Etype (Right));
-               Strlen : constant Uint :=
-                          UI_From_Int
-                            (String_Length (Strval (Get_String_Val (Left))));
-            begin
-               Result := (Typlen = Strlen);
-            end;
+            Fold_Uint
+              (N, Test ((Result = Match) xor (Nkind (N) = N_Not_In)), True);
+            Warn_On_Known_Condition (N);
          end if;
-
-      --  Fold the membership test. We know we have a static range and Lo and
-      --  Hi are set to the expressions for the end points of this range.
-
-      elsif Is_Real_Type (Etype (Right)) then
-         declare
-            Leftval : constant Ureal := Expr_Value_R (Left);
-         begin
-            Result := Expr_Value_R (Lo) <= Leftval
-                        and then Leftval <= Expr_Value_R (Hi);
-         end;
-
-      else
-         declare
-            Leftval : constant Uint := Expr_Value (Left);
-         begin
-            Result := Expr_Value (Lo) <= Leftval
-                        and then Leftval <= Expr_Value (Hi);
-         end;
       end if;
-
-      if Nkind (N) = N_Not_In then
-         Result := not Result;
-      end if;
-
-      Fold_Uint (N, Test (Result), True);
-
-      Warn_On_Known_Condition (N);
    end Eval_Membership_Op;
 
    ------------------------
@@ -3297,53 +3583,6 @@ package body Sem_Eval is
       end if;
    end Eval_Slice;
 
-   ---------------------------------
-   -- Eval_Static_Predicate_Check --
-   ---------------------------------
-
-   function Eval_Static_Predicate_Check
-     (N   : Node_Id;
-      Typ : Entity_Id) return Boolean
-   is
-      Loc  : constant Source_Ptr := Sloc (N);
-
-   begin
-      --  Discrete type case
-
-      if Is_Discrete_Type (Typ) then
-         declare
-            Pred : constant List_Id := Static_Predicate (Typ);
-            Test : Node_Id;
-
-         begin
-            pragma Assert (Present (Pred));
-
-            --  The static predicate is a list of alternatives in the proper
-            --  format for an Ada 2012 membership test. If the argument is a
-            --  literal, the membership test can be evaluated statically. This
-            --  is easier than running a full intepretation of the predicate
-            --  expression, and more efficient in some cases.
-
-            Test :=
-              Make_In (Loc,
-                Left_Opnd    => New_Copy_Tree (N),
-                Right_Opnd   => Empty,
-                Alternatives => Pred);
-            Analyze_And_Resolve (Test, Standard_Boolean);
-
-            return Nkind (Test) = N_Identifier
-              and then Entity (Test) = Standard_True;
-         end;
-
-      --  Real type case
-
-      else
-         pragma Assert (Is_Real_Type (Typ));
-         Error_Msg_N ("??real predicate not applied", N);
-         return True;
-      end if;
-   end Eval_Static_Predicate_Check;
-
    -------------------------
    -- Eval_String_Literal --
    -------------------------
@@ -4092,6 +4331,11 @@ package body Sem_Eval is
       Typ : constant Entity_Id  := Etype (N);
 
    begin
+      if Raises_Constraint_Error (N) then
+         Set_Is_Static_Expression (N, Static);
+         return;
+      end if;
+
       Rewrite (N, Make_String_Literal (Loc, Strval => Val));
 
       --  We now have the literal with the right value, both the actual type
@@ -4120,6 +4364,11 @@ package body Sem_Eval is
       Ent : Entity_Id;
 
    begin
+      if Raises_Constraint_Error (N) then
+         Set_Is_Static_Expression (N, Static);
+         return;
+      end if;
+
       --  If we are folding a named number, retain the entity in the literal,
       --  for ASIS use.
 
@@ -4177,6 +4426,11 @@ package body Sem_Eval is
       Ent : Entity_Id;
 
    begin
+      if Raises_Constraint_Error (N) then
+         Set_Is_Static_Expression (N, Static);
+         return;
+      end if;
+
       --  If we are folding a named number, retain the entity in the literal,
       --  for ASIS use.
 
@@ -4400,6 +4654,60 @@ package body Sem_Eval is
       end if;
    end Is_Null_Range;
 
+   -------------------------
+   -- Is_OK_Static_Choice --
+   -------------------------
+
+   function Is_OK_Static_Choice (Choice : Node_Id) return Boolean is
+   begin
+      --  Check various possibilities for choice
+
+      --  Note: for membership tests, we test more cases than are possible
+      --  (in particular subtype indication), but it doesn't matter because
+      --  it just won't occur (we have already done a syntax check).
+
+      if Nkind (Choice) = N_Others_Choice then
+         return True;
+
+      elsif Nkind (Choice) = N_Range then
+         return Is_OK_Static_Range (Choice);
+
+      elsif Nkind (Choice) = N_Subtype_Indication
+        or else
+          (Is_Entity_Name (Choice) and then Is_Type (Entity (Choice)))
+      then
+         return Is_OK_Static_Subtype (Etype (Choice));
+
+      else
+         return Is_OK_Static_Expression (Choice);
+      end if;
+   end Is_OK_Static_Choice;
+
+   ------------------------------
+   -- Is_OK_Static_Choice_List --
+   ------------------------------
+
+   function Is_OK_Static_Choice_List (Choices : List_Id) return Boolean is
+      Choice : Node_Id;
+
+   begin
+      if not Is_Static_Choice_List (Choices) then
+         return False;
+      end if;
+
+      Choice := First (Choices);
+      while Present (Choice) loop
+         if not Is_OK_Static_Choice (Choice) then
+            Set_Raises_Constraint_Error (Choice);
+            return False;
+         end if;
+
+         Next (Choice);
+      end loop;
+
+      return True;
+   end Is_OK_Static_Choice_List;
+
    -----------------------------
    -- Is_OK_Static_Expression --
    -----------------------------
@@ -4502,7 +4810,56 @@ package body Sem_Eval is
                                                                Out_Of_Range;
    end Is_Out_Of_Range;
 
-   ---------------------
+   ----------------------
+   -- Is_Static_Choice --
+   ----------------------
+
+   function Is_Static_Choice (Choice : Node_Id) return Boolean is
+   begin
+      --  Check various possibilities for choice
+
+      --  Note: for membership tests, we test more cases than are possible
+      --  (in particular subtype indication), but it doesn't matter because
+      --  it just won't occur (we have already done a syntax check).
+
+      if Nkind (Choice) = N_Others_Choice then
+         return True;
+
+      elsif Nkind (Choice) = N_Range then
+         return Is_Static_Range (Choice);
+
+      elsif Nkind (Choice) = N_Subtype_Indication
+        or else
+          (Is_Entity_Name (Choice) and then Is_Type (Entity (Choice)))
+      then
+         return Is_Static_Subtype (Etype (Choice));
+
+      else
+         return Is_Static_Expression (Choice);
+      end if;
+   end Is_Static_Choice;
+
+   ---------------------------
+   -- Is_Static_Choice_List --
+   ---------------------------
+
+   function Is_Static_Choice_List (Choices : List_Id) return Boolean is
+      Choice : Node_Id;
+
+   begin
+      Choice := First (Choices);
+      while Present (Choice) loop
+         if not Is_Static_Choice (Choice) then
+            return False;
+         end if;
+
+         Next (Choice);
+      end loop;
+
+      return True;
+   end Is_Static_Choice_List;
+
+---------------------
    -- Is_Static_Range --
    ---------------------
 
@@ -4513,7 +4870,7 @@ package body Sem_Eval is
 
    function Is_Static_Range (N : Node_Id) return Boolean is
    begin
-      return Is_Static_Expression (Low_Bound (N))
+      return Is_Static_Expression (Low_Bound  (N))
                and then
              Is_Static_Expression (High_Bound (N));
    end Is_Static_Range;
@@ -4574,6 +4931,272 @@ package body Sem_Eval is
          return False;
       end if;
    end Is_Static_Subtype;
+
+   -------------------------------
+   -- Is_Statically_Unevaluated --
+   -------------------------------
+
+   function Is_Statically_Unevaluated (Expr : Node_Id) return Boolean is
+      function Check_Case_Expr_Alternative
+        (CEA : Node_Id) return Match_Result;
+      --  We have a message emanating from the Expression of a case expression
+      --  alternative. We examine this alternative, as follows:
+      --
+      --  If the selecting expression of the parent case is non-static, or
+      --  if any of the discrete choices of the given case alternative are
+      --  non-static or raise Constraint_Error, return Non_Static.
+      --
+      --  Otherwise check if the selecting expression matches any of the given
+      --  discrete choices. If so the alternative is executed and we return
+      --  Open, otherwise, the alternative can never be executed, and so we
+      --  return Closed.
+
+      ---------------------------------
+      -- Check_Case_Expr_Alternative --
+      ---------------------------------
+
+      function Check_Case_Expr_Alternative
+        (CEA : Node_Id) return Match_Result
+      is
+         Case_Exp : constant Node_Id := Parent (CEA);
+         Choice   : Node_Id;
+         Prev_CEA : Node_Id;
+
+      begin
+         pragma Assert (Nkind (Case_Exp) = N_Case_Expression);
+
+         --  Check selecting expression is static
+
+         if not Is_OK_Static_Expression (Expression (Case_Exp)) then
+            return Non_Static;
+         end if;
+
+         if not Is_OK_Static_Choice_List (Discrete_Choices (CEA)) then
+            return Non_Static;
+         end if;
+
+         --  All choices are now known to be static. Now see if alternative
+         --  matches one of the choices.
+
+         Choice := First (Discrete_Choices (CEA));
+         while Present (Choice) loop
+
+            --  Check various possibilities for choice, returning Closed if we
+            --  find the selecting value matches any of the choices. Note that
+            --  we know we are the last choice, so we don't have to keep going.
+
+            if Nkind (Choice) = N_Others_Choice then
+
+               --  Others choice is a bit annoying, it matches if none of the
+               --  previous alternatives matches (note that we know we are the
+               --  last alternative in this case, so we can just go backwards
+               --  from us to see if any previous one matches).
+
+               Prev_CEA := Prev (CEA);
+               while Present (Prev_CEA) loop
+                  if Check_Case_Expr_Alternative (Prev_CEA) = Match then
+                     return No_Match;
+                  end if;
+
+                  Prev (Prev_CEA);
+               end loop;
+
+               return Match;
+
+            --  Else we have a normal static choice
+
+            elsif Choice_Matches (Expression (Case_Exp), Choice) = Match then
+               return Match;
+            end if;
+
+            --  If we fall through, it means that the discrete choice did not
+            --  match the selecting expression, so continue.
+
+            Next (Choice);
+         end loop;
+
+         --  If we get through that loop then all choices were static, and
+         --  none of them matched the selecting expression. So return Closed.
+
+         return No_Match;
+      end Check_Case_Expr_Alternative;
+
+      --  Local variables
+
+      P      : Node_Id;
+      OldP   : Node_Id;
+      Choice : Node_Id;
+
+   --  Start of processing for Is_Statically_Unevaluated
+
+   begin
+      --  The (32.x) references here are from RM section 4.9
+
+      --  (32.1) An expression is statically unevaluated if it is part of ...
+
+      --  This means we have to climb the tree looking for one of the cases
+
+      P := Expr;
+      loop
+         OldP := P;
+         P := Parent (P);
+
+         --  (32.2) The right operand of a static short-circuit control form
+         --  whose value is determined by its left operand.
+
+         --  AND THEN with False as left operand
+
+         if Nkind (P) = N_And_Then
+           and then Compile_Time_Known_Value (Left_Opnd (P))
+           and then Is_False (Expr_Value (Left_Opnd (P)))
+         then
+            return True;
+
+         --  OR ELSE with True as left operand
+
+         elsif Nkind (P) = N_Or_Else
+           and then Compile_Time_Known_Value (Left_Opnd (P))
+           and then Is_True (Expr_Value (Left_Opnd (P)))
+         then
+            return True;
+
+         --  (32.3) A dependent_expression of an if_expression whose associated
+         --  condition is static and equals False.
+
+         elsif Nkind (P) = N_If_Expression then
+            declare
+               Cond : constant Node_Id := First (Expressions (P));
+               Texp : constant Node_Id := Next (Cond);
+               Fexp : constant Node_Id := Next (Texp);
+
+            begin
+               if Compile_Time_Known_Value (Cond) then
+
+                  --  Condition is True and we are in the right operand
+
+                  if Is_True (Expr_Value (Cond)) and then OldP = Fexp then
+                     return True;
+
+                  --  Condition is False and we are in the left operand
+
+                  elsif Is_False (Expr_Value (Cond)) and then OldP = Texp then
+                     return True;
+                  end if;
+               end if;
+            end;
+
+         --  (32.4) A condition or dependent_expression of an if_expression
+         --  where the condition corresponding to at least one preceding
+         --  dependent_expression of the if_expression is static and equals
+         --  True.
+
+         --  This refers to cases like
+
+         --    (if 1 then 1 elsif 1/0=2 then 2 else 3)
+
+         --  But we expand elsif's out anyway, so the above looks like:
+
+         --    (if 1 then 1 else (if 1/0=2 then 2 else 3))
+
+         --  So for us this is caught by the above check for the 32.3 case.
+
+         --  (32.5) A dependent_expression of a case_expression whose
+         --  selecting_expression is static and whose value is not covered
+         --  by the corresponding discrete_choice_list.
+
+         elsif Nkind (P) = N_Case_Expression_Alternative then
+
+            --  First, we have to be in the expression to suppress messages.
+            --  If we are within one of the choices, we want the message.
+
+            if OldP = Expression (P) then
+
+               --  Statically unevaluated if alternative does not match
+
+               if Check_Case_Expr_Alternative (P) = No_Match then
+                  return True;
+               end if;
+            end if;
+
+         --  (32.6) A choice_expression (or a simple_expression of a range
+         --  that occurs as a membership_choice of a membership_choice_list)
+         --  of a static membership test that is preceded in the enclosing
+         --  membership_choice_list by another item whose individual
+         --  membership test (see (RM 4.5.2)) statically yields True.
+
+         elsif Nkind (P) in N_Membership_Test then
+
+            --  Only possibly unevaluated if simple expression is static
+
+            if not Is_OK_Static_Expression (Left_Opnd (P)) then
+               null;
+
+            --  All members of the choice list must be static
+
+            elsif (Present (Right_Opnd (P))
+                    and then not Is_OK_Static_Choice (Right_Opnd (P)))
+              or else (Present (Alternatives (P))
+                        and then
+                          not Is_OK_Static_Choice_List (Alternatives (P)))
+            then
+               null;
+
+            --  If expression is the one and only alternative, then it is
+            --  definitely not statically unevaluated, so we only have to
+            --  test the case where there are alternatives present.
+
+            elsif Present (Alternatives (P)) then
+
+               --  Look for previous matching Choice
+
+               Choice := First (Alternatives (P));
+               while Present (Choice) loop
+
+                  --  If we reached us and no previous choices matched, this
+                  --  is not the case where we are statically unevaluated.
+
+                  exit when OldP = Choice;
+
+                  --  If a previous choice matches, then that is the case where
+                  --  we know our choice is statically unevaluated.
+
+                  if Choice_Matches (Left_Opnd (P), Choice) = Match then
+                     return True;
+                  end if;
+
+                  Next (Choice);
+               end loop;
+
+               --  If we fall through the loop, we were not one of the choices,
+               --  we must have been the expression, so that is not covered by
+               --  this rule, and we keep going.
+
+               null;
+            end if;
+         end if;
+
+         --  OK, not statically unevaluated at this level, see if we should
+         --  keep climbing to look for a higher level reason.
+
+         --  Special case for component association in aggregates, where
+         --  we want to keep climbing up to the parent aggregate.
+
+         if Nkind (P) = N_Component_Association
+           and then Nkind (Parent (P)) = N_Aggregate
+         then
+            null;
+
+         --  All done if not still within subexpression
+
+         else
+            exit when Nkind (P) not in N_Subexpr;
+         end if;
+      end loop;
+
+      --  If we fall through the loop, not one of the cases covered!
+
+      return False;
+   end Is_Statically_Unevaluated;
 
    --------------------
    -- Not_Null_Range --
@@ -4703,14 +5326,19 @@ package body Sem_Eval is
    -------------------------
 
    procedure Rewrite_In_Raise_CE (N : Node_Id; Exp : Node_Id) is
-      Typ : constant Entity_Id := Etype (N);
+      Typ  : constant Entity_Id := Etype (N);
+      Stat : constant Boolean   := Is_Static_Expression (N);
 
    begin
-      --  If we want to raise CE in the condition of a N_Raise_CE node
-      --  we may as well get rid of the condition.
+      --  If we want to raise CE in the condition of a N_Raise_CE node, we
+      --  can just clear the condition if the reason is appropriate. We do
+      --  not do this operation if the parent has a reason other than range
+      --  check failed, because otherwise we would change the reason.
 
       if Present (Parent (N))
         and then Nkind (Parent (N)) = N_Raise_Constraint_Error
+        and then Reason (Parent (N)) =
+                   UI_From_Int (RT_Exception_Code'Pos (CE_Range_Check_Failed))
       then
          Set_Condition (Parent (N), Empty);
 
@@ -4721,7 +5349,7 @@ package body Sem_Eval is
          Rewrite (N, Exp);
          Set_Etype (N, Typ);
 
-      --  Else build an explcit N_Raise_CE
+      --  Else build an explicit N_Raise_CE
 
       else
          Rewrite (N,
@@ -4730,6 +5358,11 @@ package body Sem_Eval is
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Typ);
       end if;
+
+      --  Set proper flags in result
+
+      Set_Raises_Constraint_Error (N, True);
+      Set_Is_Static_Expression (N, Stat);
    end Rewrite_In_Raise_CE;
 
    ---------------------
@@ -4772,9 +5405,9 @@ package body Sem_Eval is
 
          --  If either subtype is nonstatic then they're not compatible
 
-         elsif not Is_Static_Subtype (T1)
+         elsif not Is_OK_Static_Subtype (T1)
                  or else
-               not Is_Static_Subtype (T2)
+               not Is_OK_Static_Subtype (T2)
          then
             return False;
 
@@ -4952,8 +5585,8 @@ package body Sem_Eval is
             --  Otherwise bounds must be static and identical value
 
             else
-               if not Is_Static_Subtype (T1)
-                 or else not Is_Static_Subtype (T2)
+               if not Is_OK_Static_Subtype (T1)
+                 or else not Is_OK_Static_Subtype (T2)
                then
                   return False;
 
@@ -5041,8 +5674,8 @@ package body Sem_Eval is
                      Expr2 : constant Node_Id := Node (DA2);
 
                   begin
-                     if not Is_Static_Expression (Expr1)
-                       or else not Is_Static_Expression (Expr2)
+                     if not Is_OK_Static_Expression (Expr1)
+                       or else not Is_OK_Static_Expression (Expr2)
                      then
                         return False;
 
@@ -5445,6 +6078,8 @@ package body Sem_Eval is
       N   : constant Node_Id   := Original_Node (Expr);
       Typ : Entity_Id;
       E   : Entity_Id;
+      Alt : Node_Id;
+      Exp : Node_Id;
 
       procedure Why_Not_Static_List (L : List_Id);
       --  A version that can be called on a list of expressions. Finds all
@@ -5488,6 +6123,76 @@ package body Sem_Eval is
          --  Test for constraint error raised
 
          if Raises_Constraint_Error (Expr) then
+
+            --  Special case membership to find out which piece to flag
+
+            if Nkind (N) in N_Membership_Test then
+               if Raises_Constraint_Error (Left_Opnd (N)) then
+                  Why_Not_Static (Left_Opnd (N));
+                  return;
+
+               elsif Present (Right_Opnd (N))
+                 and then Raises_Constraint_Error (Right_Opnd (N))
+               then
+                  Why_Not_Static (Right_Opnd (N));
+                  return;
+
+               else
+                  pragma Assert (Present (Alternatives (N)));
+
+                  Alt := First (Alternatives (N));
+                  while Present (Alt) loop
+                     if Raises_Constraint_Error (Alt) then
+                        Why_Not_Static (Alt);
+                        return;
+                     else
+                        Next (Alt);
+                     end if;
+                  end loop;
+               end if;
+
+            --  Special case a range to find out which bound to flag
+
+            elsif Nkind (N) = N_Range then
+               if Raises_Constraint_Error (Low_Bound (N)) then
+                  Why_Not_Static (Low_Bound (N));
+                  return;
+
+               elsif Raises_Constraint_Error (High_Bound (N)) then
+                  Why_Not_Static (High_Bound (N));
+                  return;
+               end if;
+
+            --  Special case attribute to see which part to flag
+
+            elsif Nkind (N) = N_Attribute_Reference then
+               if Raises_Constraint_Error (Prefix (N)) then
+                  Why_Not_Static (Prefix (N));
+                  return;
+               end if;
+
+               if Present (Expressions (N)) then
+                  Exp := First (Expressions (N));
+                  while Present (Exp) loop
+                     if Raises_Constraint_Error (Exp) then
+                        Why_Not_Static (Exp);
+                        return;
+                     end if;
+
+                     Next (Exp);
+                  end loop;
+               end if;
+
+            --  Special case a subtype name
+
+            elsif Is_Entity_Name (Expr) and then Is_Type (Entity (Expr)) then
+               Error_Msg_NE
+                 ("!& is not a static subtype (RM 4.9(26))", N, Entity (Expr));
+               return;
+            end if;
+
+            --  End of special cases
+
             Error_Msg_N
               ("!expression raises exception, cannot be static (RM 4.9(34))",
                N);
@@ -5584,6 +6289,10 @@ package body Sem_Eval is
                   end if;
                end Entity_Case;
 
+            elsif Is_Type (E) then
+               Error_Msg_NE
+                 ("!& is not a static subtype (RM 4.9(26))", N, E);
+
             else
                Error_Msg_NE
                  ("!& is not static constant or named number "
@@ -5653,7 +6362,7 @@ package body Sem_Eval is
                  ("!attribute of generic type is never static "
                   & "(RM 4.9(7,8))", N);
 
-            elsif Is_Static_Subtype (E) then
+            elsif Is_OK_Static_Subtype (E) then
                null;
 
             elsif Is_Scalar_Type (E) then
@@ -5747,7 +6456,7 @@ package body Sem_Eval is
             Why_Not_Static (Expression (N));
 
             if not Is_Scalar_Type (Entity (Subtype_Mark (N)))
-              or else not Is_Static_Subtype (Entity (Subtype_Mark (N)))
+              or else not Is_OK_Static_Subtype (Entity (Subtype_Mark (N)))
             then
                Error_Msg_N
                  ("!static conversion requires static scalar subtype result "

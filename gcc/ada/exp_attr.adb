@@ -6010,7 +6010,6 @@ package body Exp_Attr is
          --  it here.
 
          elsif Do_Range_Check (First (Exprs)) then
-            Set_Do_Range_Check (First (Exprs), False);
             Generate_Range_Check (First (Exprs), Etyp, CE_Range_Check_Failed);
          end if;
       end Val;

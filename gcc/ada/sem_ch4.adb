@@ -1467,7 +1467,7 @@ package body Sem_Ch4 is
       --  case expression has not been fully analyzed yet because this may lead
       --  to bogus errors.
 
-      if Is_Static_Subtype (Exp_Type)
+      if Is_OK_Static_Subtype (Exp_Type)
         and then Has_Static_Predicate_Aspect (Exp_Type)
         and then In_Spec_Expression
       then

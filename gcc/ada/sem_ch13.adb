@@ -1688,10 +1688,10 @@ package body Sem_Ch13 is
                   --  illegal specification of this aspect for a subtype now,
                   --  to prevent malformed rep_item chains.
 
-                  if (A_Id = Aspect_Input
-                       or else A_Id = Aspect_Output
-                       or else A_Id = Aspect_Read
-                       or else A_Id = Aspect_Write)
+                  if (A_Id = Aspect_Input  or else
+                      A_Id = Aspect_Output or else
+                      A_Id = Aspect_Read   or else
+                      A_Id = Aspect_Write)
                     and not Is_First_Subtype (E)
                   then
                      Error_Msg_N
@@ -1931,7 +1931,7 @@ package body Sem_Ch13 is
 
                      --  The expression must be static
 
-                     elsif not Is_Static_Expression (Expr) then
+                     elsif not Is_OK_Static_Expression (Expr) then
                         Flag_Non_Static_Expr
                           ("aspect requires static expression!", Expr);
 
@@ -4227,7 +4227,7 @@ package body Sem_Ch13 is
                if Etype (Expr) = Any_Type then
                   return;
 
-               elsif not Is_Static_Expression (Expr) then
+               elsif not Is_OK_Static_Expression (Expr) then
                   Flag_Non_Static_Expr
                     ("Bit_Order requires static expression!", Expr);
 
@@ -4367,7 +4367,7 @@ package body Sem_Ch13 is
                   Preanalyze_Spec_Expression (Expr, RTE (RE_CPU_Range));
                   Uninstall_Discriminants_And_Pop_Scope (U_Ent);
 
-                  if not Is_Static_Expression (Expr) then
+                  if not Is_OK_Static_Expression (Expr) then
                      Check_Restriction (Static_Priorities, Expr);
                   end if;
                end if;
@@ -4466,7 +4466,7 @@ package body Sem_Ch13 is
             else
                Analyze_And_Resolve (Expr, Standard_String);
 
-               if not Is_Static_Expression (Expr) then
+               if not Is_OK_Static_Expression (Expr) then
                   Flag_Non_Static_Expr
                     ("static string required for tag name!", Nam);
                end if;
@@ -4700,7 +4700,7 @@ package body Sem_Ch13 is
                   Preanalyze_Spec_Expression (Expr, Standard_Integer);
                   Uninstall_Discriminants_And_Pop_Scope (U_Ent);
 
-                  if not Is_Static_Expression (Expr) then
+                  if not Is_OK_Static_Expression (Expr) then
                      Check_Restriction (Static_Priorities, Expr);
                   end if;
                end if;
@@ -4741,7 +4741,7 @@ package body Sem_Ch13 is
                if Etype (Expr) = Any_Type then
                   return;
 
-               elsif not Is_Static_Expression (Expr) then
+               elsif not Is_OK_Static_Expression (Expr) then
                   Flag_Non_Static_Expr
                     ("Scalar_Storage_Order requires static expression!", Expr);
 
@@ -4896,7 +4896,7 @@ package body Sem_Ch13 is
             if Etype (Expr) = Any_Type then
                return;
 
-            elsif not Is_Static_Expression (Expr) then
+            elsif not Is_OK_Static_Expression (Expr) then
                Flag_Non_Static_Expr
                  ("small requires static expression!", Expr);
                return;
@@ -5567,7 +5567,7 @@ package body Sem_Ch13 is
                      --  ??? should allow static subtype with zero/one entry
 
                   elsif Etype (Choice) = Base_Type (Enumtype) then
-                     if not Is_Static_Expression (Choice) then
+                     if not Is_OK_Static_Expression (Choice) then
                         Flag_Non_Static_Expr
                           ("non-static expression used for choice!", Choice);
                         Err := True;
@@ -6737,7 +6737,7 @@ package body Sem_Ch13 is
                   while Present (Alt) loop
                      Dep := Expression (Alt);
 
-                     if not Is_Static_Expression (Dep) then
+                     if not Is_OK_Static_Expression (Dep) then
                         raise Non_Static;
 
                      elsif Is_True (Expr_Value (Dep)) then
@@ -6781,7 +6781,7 @@ package body Sem_Ch13 is
 
       function Hi_Val (N : Node_Id) return Uint is
       begin
-         if Is_Static_Expression (N) then
+         if Is_OK_Static_Expression (N) then
             return Expr_Value (N);
          else
             pragma Assert (Nkind (N) = N_Range);
@@ -6826,7 +6826,7 @@ package body Sem_Ch13 is
 
       function Lo_Val (N : Node_Id) return Uint is
       begin
-         if Is_Static_Expression (N) then
+         if Is_OK_Static_Expression (N) then
             return Expr_Value (N);
          else
             pragma Assert (Nkind (N) = N_Range);
@@ -6860,9 +6860,9 @@ package body Sem_Ch13 is
          --  Range case
 
          if Nkind (N) = N_Range then
-            if not Is_Static_Expression (Low_Bound  (N))
+            if not Is_OK_Static_Expression (Low_Bound  (N))
                  or else
-               not Is_Static_Expression (High_Bound (N))
+               not Is_OK_Static_Expression (High_Bound (N))
             then
                raise Non_Static;
             else
@@ -6873,7 +6873,7 @@ package body Sem_Ch13 is
 
          --  Static expression case
 
-         elsif Is_Static_Expression (N) then
+         elsif Is_OK_Static_Expression (N) then
             Val := Expr_Value (N);
             return RList'(1 => REnt'(Val, Val));
 
@@ -6892,7 +6892,7 @@ package body Sem_Ch13 is
 
                --  For static subtype without predicates, get range
 
-               elsif Is_Static_Subtype (Entity (N)) then
+               elsif Is_OK_Static_Subtype (Entity (N)) then
                   SLo := Expr_Value (Type_Low_Bound  (Entity (N)));
                   SHi := Expr_Value (Type_High_Bound (Entity (N)));
                   return RList'(1 => REnt'(SLo, SHi));
@@ -9606,7 +9606,7 @@ package body Sem_Ch13 is
                --  issued elsewhere, since sizes of non-static array types
                --  cannot be set implicitly or explicitly.
 
-               if not Is_Static_Subtype (Ityp) then
+               if not Is_OK_Static_Subtype (Ityp) then
                   return;
                end if;
 

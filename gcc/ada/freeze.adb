@@ -4241,12 +4241,12 @@ package body Freeze is
                      if Has_Default_Initialization
                        or else
                          (Has_Init_Expression (Decl)
-                            and then
-                             (No (Expression (Decl))
-                                or else not
-                                  (Is_Static_Expression (Expression (Decl))
-                                     or else
-                                   Nkind (Expression (Decl)) = N_Null)))
+                           and then
+                            (No (Expression (Decl))
+                              or else not
+                                (Is_OK_Static_Expression (Expression (Decl))
+                                  or else
+                                    Nkind (Expression (Decl)) = N_Null)))
                      then
                         Error_Msg_NE
                           ("Thread_Local_Storage variable& is "
@@ -5398,7 +5398,7 @@ package body Freeze is
                Analyze_And_Resolve (Exp, Typ);
 
                if Etype (Exp) /= Any_Type then
-                  if not Is_Static_Expression (Exp) then
+                  if not Is_OK_Static_Expression (Exp) then
                      Error_Msg_Name_1 := Nam;
                      Flag_Non_Static_Expr
                        ("aspect% requires static expression", Exp);
@@ -5647,21 +5647,21 @@ package body Freeze is
       --  expression, see section "Handling of Default Expressions" in the
       --  spec of package Sem for further details. Note that we have to make
       --  sure that we actually have a real expression (if we have a subtype
-      --  indication, we can't test Is_Static_Expression). However, we exclude
-      --  the case of the prefix of an attribute of a static scalar subtype
-      --  from this early return, because static subtype attributes should
-      --  always cause freezing, even in default expressions, but the attribute
-      --  may not have been marked as static yet (because in Resolve_Attribute,
-      --  the call to Eval_Attribute follows the call of Freeze_Expression on
-      --  the prefix).
+      --  indication, we can't test Is_OK_Static_Expression). However, we
+      --  exclude the case of the prefix of an attribute of a static scalar
+      --  subtype from this early return, because static subtype attributes
+      --  should always cause freezing, even in default expressions, but
+      --  the attribute may not have been marked as static yet (because in
+      --  Resolve_Attribute, the call to Eval_Attribute follows the call of
+      --  Freeze_Expression on the prefix).
 
       if In_Spec_Exp
         and then Nkind (N) in N_Subexpr
-        and then not Is_Static_Expression (N)
+        and then not Is_OK_Static_Expression (N)
         and then (Nkind (Parent (N)) /= N_Attribute_Reference
                    or else not (Is_Entity_Name (N)
                                  and then Is_Type (Entity (N))
-                                 and then Is_Static_Subtype (Entity (N))))
+                                 and then Is_OK_Static_Subtype (Entity (N))))
       then
          return;
       end if;
@@ -6607,7 +6607,7 @@ package body Freeze is
       begin
          Ensure_Type_Is_SA (Etype (N));
 
-         if Is_Static_Expression (N) then
+         if Is_OK_Static_Expression (N) then
             return;
 
          elsif Nkind (N) = N_Identifier then

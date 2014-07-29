@@ -355,7 +355,7 @@ package body Sem_Cat is
       loop
          if Present (Expression (Component_Decl))
            and then Nkind (Expression (Component_Decl)) /= N_Null
-           and then not Is_Static_Expression (Expression (Component_Decl))
+           and then not Is_OK_Static_Expression (Expression (Component_Decl))
          then
             Error_Msg_Sloc := Sloc (Component_Decl);
             Error_Msg_F
@@ -815,7 +815,8 @@ package body Sem_Cat is
       Discriminant_Spec := First (L);
       while Present (Discriminant_Spec) loop
          if Present (Expression (Discriminant_Spec))
-           and then not Is_Static_Expression (Expression (Discriminant_Spec))
+           and then
+             not Is_OK_Static_Expression (Expression (Discriminant_Spec))
          then
             return False;
          end if;

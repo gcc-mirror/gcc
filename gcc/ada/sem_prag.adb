@@ -1852,7 +1852,7 @@ package body Sem_Prag is
       if Present (Expr) then
          Analyze_And_Resolve (Expr, Standard_Boolean);
 
-         if Is_Static_Expression (Expr) then
+         if Is_OK_Static_Expression (Expr) then
             Expr_Val := Is_True (Expr_Value (Expr));
          else
             Error_Msg_Name_1 := Pragma_Name (N);
@@ -2890,14 +2890,15 @@ package body Sem_Prag is
       --  Check the specified argument Arg to make sure that it is a valid
       --  queuing policy name. If not give error and raise Pragma_Exit.
 
-      procedure Check_Arg_Is_Static_Expression
+      procedure Check_Arg_Is_OK_Static_Expression
         (Arg : Node_Id;
          Typ : Entity_Id := Empty);
       --  Check the specified argument Arg to make sure that it is a static
       --  expression of the given type (i.e. it will be analyzed and resolved
       --  using this type, which can be any valid argument to Resolve, e.g.
       --  Any_Integer is OK). If not, given error and raise Pragma_Exit. If
-      --  Typ is left Empty, then any static expression is allowed.
+      --  Typ is left Empty, then any static expression is allowed. Includes
+      --  checking that the argument does not raise Constraint_Error.
 
       procedure Check_Arg_Is_Task_Dispatching_Policy (Arg : Node_Id);
       --  Check the specified argument Arg to make sure that it is a valid task
@@ -2941,14 +2942,15 @@ package body Sem_Prag is
       --  This procedure checks for possible duplications if this is the export
       --  case, and if found, issues an appropriate error message.
 
-      procedure Check_Expr_Is_Static_Expression
+      procedure Check_Expr_Is_OK_Static_Expression
         (Expr : Node_Id;
          Typ  : Entity_Id := Empty);
       --  Check the specified expression Expr to make sure that it is a static
       --  expression of the given type (i.e. it will be analyzed and resolved
       --  using this type, which can be any valid argument to Resolve, e.g.
       --  Any_Integer is OK). If not, given error and raise Pragma_Exit. If
-      --  Typ is left Empty, then any static expression is allowed.
+      --  Typ is left Empty, then any static expression is allowed. Includes
+      --  checking that the expression does not raise Constraint_Error.
 
       procedure Check_First_Subtype (Arg : Node_Id);
       --  Checks that Arg, whose expression is an entity name, references a
@@ -3702,7 +3704,7 @@ package body Sem_Prag is
             --  Static expression that raises Constraint_Error. This has
             --  already been flagged, so just exit from pragma processing.
 
-            elsif Is_Static_Expression (Argx) then
+            elsif Is_OK_Static_Expression (Argx) then
                raise Pragma_Exit;
 
             --  Here we have a real error (non-static expression)
@@ -3987,17 +3989,17 @@ package body Sem_Prag is
          end if;
       end Check_Arg_Is_Queuing_Policy;
 
-      ------------------------------------
-      -- Check_Arg_Is_Static_Expression --
-      ------------------------------------
+      ---------------------------------------
+      -- Check_Arg_Is_OK_Static_Expression --
+      ---------------------------------------
 
-      procedure Check_Arg_Is_Static_Expression
+      procedure Check_Arg_Is_OK_Static_Expression
         (Arg : Node_Id;
          Typ : Entity_Id := Empty)
       is
       begin
-         Check_Expr_Is_Static_Expression (Get_Pragma_Arg (Arg), Typ);
-      end Check_Arg_Is_Static_Expression;
+         Check_Expr_Is_OK_Static_Expression (Get_Pragma_Arg (Arg), Typ);
+      end Check_Arg_Is_OK_Static_Expression;
 
       ------------------------------------------
       -- Check_Arg_Is_Task_Dispatching_Policy --
@@ -4341,11 +4343,11 @@ package body Sem_Prag is
          end if;
       end Check_Duplicated_Export_Name;
 
-      -------------------------------------
-      -- Check_Expr_Is_Static_Expression --
-      -------------------------------------
+      ----------------------------------------
+      -- Check_Expr_Is_OK_Static_Expression --
+      ----------------------------------------
 
-      procedure Check_Expr_Is_Static_Expression
+      procedure Check_Expr_Is_OK_Static_Expression
         (Expr : Node_Id;
          Typ  : Entity_Id := Empty)
       is
@@ -4376,7 +4378,7 @@ package body Sem_Prag is
          --  Static expression that raises Constraint_Error. This has already
          --  been flagged, so just exit from pragma processing.
 
-         elsif Is_Static_Expression (Expr) then
+         elsif Is_OK_Static_Expression (Expr) then
             raise Pragma_Exit;
 
          --  Finally, we have a real error
@@ -4388,7 +4390,7 @@ package body Sem_Prag is
                Expr);
             raise Pragma_Exit;
          end if;
-      end Check_Expr_Is_Static_Expression;
+      end Check_Expr_Is_OK_Static_Expression;
 
       -------------------------
       -- Check_First_Subtype --
@@ -5450,13 +5452,13 @@ package body Sem_Prag is
            ((Name_Name, Name_Mode, Name_Requires, Name_Ensures));
 
          Check_Optional_Identifier (Arg1, Name_Name);
-         Check_Arg_Is_Static_Expression (Arg1, Standard_String);
+         Check_Arg_Is_OK_Static_Expression (Arg1, Standard_String);
 
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
          if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
-            Check_Expr_Is_Static_Expression
+            Check_Expr_Is_OK_Static_Expression
               (Original_Node (Get_Pragma_Arg (Arg1)), Standard_String);
          end if;
 
@@ -6410,7 +6412,7 @@ package body Sem_Prag is
       begin
          Check_Arg_Count (2);
          Check_No_Identifiers;
-         Check_Arg_Is_Static_Expression (Arg2, Standard_String);
+         Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
          Analyze_And_Resolve (Arg1x, Standard_Boolean);
 
          if Compile_Time_Known_Value (Arg1x) then
@@ -7214,7 +7216,7 @@ package body Sem_Prag is
                   Arg_Code);
             end if;
 
-            Check_Arg_Is_Static_Expression (Arg_Code, Any_Integer);
+            Check_Arg_Is_OK_Static_Expression (Arg_Code, Any_Integer);
             Code_Val := Expr_Value (Arg_Code);
 
             if not UI_Is_In_Int_Range (Code_Val) then
@@ -8237,7 +8239,8 @@ package body Sem_Prag is
             else
                --  As only a string is allowed, Check_Arg_Is_External_Name
                --  isn't called.
-               Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+
+               Check_Arg_Is_OK_Static_Expression (Arg3, Standard_String);
             end if;
 
             if Present (Arg4) then
@@ -8256,7 +8259,7 @@ package body Sem_Prag is
          elsif Nkind (Parent (Def_Id)) = N_Incomplete_Type_Declaration then
             Check_No_Link_Name;
             Check_Arg_Count (3);
-            Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg3, Standard_String);
 
             Process_Import_Predefined_Type;
 
@@ -8749,7 +8752,7 @@ package body Sem_Prag is
          --  Check expressions for external name and link name are static
 
          if Present (Ext_Nam) then
-            Check_Arg_Is_Static_Expression (Ext_Nam, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Ext_Nam, Standard_String);
             Check_Form_Of_Interface_Name (Ext_Nam, Ext_Name_Case => True);
 
             --  Verify that external name is not the name of a local entity,
@@ -8794,7 +8797,7 @@ package body Sem_Prag is
          end if;
 
          if Present (Link_Nam) then
-            Check_Arg_Is_Static_Expression (Link_Nam, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Link_Nam, Standard_String);
             Check_Form_Of_Interface_Name (Link_Nam, Ext_Name_Case => False);
          end if;
 
@@ -10373,7 +10376,7 @@ package body Sem_Prag is
                   if Present (Expr) then
                      Analyze_And_Resolve (Expr, Standard_Boolean);
 
-                     if Is_Static_Expression (Expr) then
+                     if Is_OK_Static_Expression (Expr) then
                         Expr_Val := Is_True (Expr_Value (Expr));
                      else
                         SPARK_Msg_N
@@ -11897,7 +11900,7 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, "max_size");
 
             Arg := Get_Pragma_Arg (Arg1);
-            Check_Arg_Is_Static_Expression (Arg, Any_Integer);
+            Check_Arg_Is_OK_Static_Expression (Arg, Any_Integer);
 
             Val := Expr_Value (Arg);
 
@@ -12879,7 +12882,7 @@ package body Sem_Prag is
 
                --  Must be static
 
-               if not Is_Static_Expression (Arg) then
+               if not Is_OK_Static_Expression (Arg) then
                   Flag_Non_Static_Expr
                     ("main subprogram affinity is not static!", Arg);
                   raise Pragma_Exit;
@@ -13991,10 +13994,10 @@ package body Sem_Prag is
             Check_Arg_Count (2);
 
             Check_Optional_Identifier (Arg1, Name_Value);
-            Check_Arg_Is_Static_Expression (Arg1, Any_Integer);
+            Check_Arg_Is_OK_Static_Expression (Arg1, Any_Integer);
 
             Check_Optional_Identifier (Arg2, Name_Link_Name);
-            Check_Arg_Is_Static_Expression (Arg2, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
 
          -----------------------------
          -- Export_Valued_Procedure --
@@ -14478,7 +14481,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_Static_Expression (Arg1, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg1, Standard_String);
             Store_Note (N);
 
             --  For pragma Ident, preserve DEC compatibility by requiring the
@@ -15700,7 +15703,7 @@ package body Sem_Prag is
             --  expression of type Ada.Interrupts.Interrupt_ID.
 
             else
-               Check_Arg_Is_Static_Expression (Arg1, Any_Integer);
+               Check_Arg_Is_OK_Static_Expression (Arg1, Any_Integer);
                Int_Val := Expr_Value (Arg1X);
 
                if Int_Val < Expr_Value (Type_Low_Bound (Int_Id))
@@ -15787,7 +15790,7 @@ package body Sem_Prag is
 
             if Arg_Count = 3 then
                Check_Optional_Identifier (Arg3, Name_Message);
-               Check_Arg_Is_Static_Expression (Arg3, Standard_String);
+               Check_Arg_Is_OK_Static_Expression (Arg3, Standard_String);
             end if;
 
             Check_Arg_Is_Local_Name (Arg1);
@@ -16256,12 +16259,12 @@ package body Sem_Prag is
                Check_At_Least_N_Arguments (1);
                Check_No_Identifiers;
                Check_Is_In_Decl_Part_Or_Package_Spec;
-               Check_Arg_Is_Static_Expression (Arg1, Standard_String);
+               Check_Arg_Is_OK_Static_Expression (Arg1, Standard_String);
                Start_String;
 
                Arg := Arg1;
                while Present (Arg) loop
-                  Check_Arg_Is_Static_Expression (Arg, Standard_String);
+                  Check_Arg_Is_OK_Static_Expression (Arg, Standard_String);
 
                   --  Store argument, converting sequences of spaces to a
                   --  single null character (this is one of the differences
@@ -16336,7 +16339,7 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Optional_Identifier (Arg2, Name_Target);
             Check_Arg_Is_Library_Level_Local_Name (Arg1);
-            Check_Arg_Is_Static_Expression (Arg2, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
 
             --  The only processing required is to link this item on to the
             --  list of rep items for the given entity. This is accomplished
@@ -16409,12 +16412,12 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Count (1);
             Check_Is_In_Decl_Part_Or_Package_Spec;
-            Check_Arg_Is_Static_Expression (Arg1, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg1, Standard_String);
             Start_String (Strval (Expr_Value_S (Get_Pragma_Arg (Arg1))));
 
             Arg := Arg2;
             while Present (Arg) loop
-               Check_Arg_Is_Static_Expression (Arg, Standard_String);
+               Check_Arg_Is_OK_Static_Expression (Arg, Standard_String);
                Store_String_Char (ASCII.NUL);
                Store_String_Chars
                  (Strval (Expr_Value_S (Get_Pragma_Arg (Arg))));
@@ -16447,7 +16450,7 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Optional_Identifier (Arg2, Name_Section);
             Check_Arg_Is_Library_Level_Local_Name (Arg1);
-            Check_Arg_Is_Static_Expression (Arg2, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
 
             --  Check kind of entity
 
@@ -16743,7 +16746,7 @@ package body Sem_Prag is
 
             if Arg_Count = 3 then
                Check_Optional_Identifier (Arg3, Name_Info);
-               Check_Arg_Is_Static_Expression (Arg3);
+               Check_Arg_Is_OK_Static_Expression (Arg3);
             else
                Check_Arg_Count (2);
             end if;
@@ -16751,7 +16754,7 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Optional_Identifier (Arg2, Name_Attribute_Name);
             Check_Arg_Is_Local_Name (Arg1);
-            Check_Arg_Is_Static_Expression (Arg2, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
             Def_Id := Entity (Get_Pragma_Arg (Arg1));
 
             if Is_Access_Type (Def_Id) then
@@ -16803,12 +16806,12 @@ package body Sem_Prag is
 
             for J in 1 .. 2 loop
                if Present (Args (J)) then
-                  Check_Arg_Is_Static_Expression (Args (J), Any_Integer);
+                  Check_Arg_Is_OK_Static_Expression (Args (J), Any_Integer);
                end if;
             end loop;
 
             if Present (Args (3)) then
-               Check_Arg_Is_Static_Expression (Args (3), Standard_Boolean);
+               Check_Arg_Is_OK_Static_Expression (Args (3), Standard_Boolean);
             end if;
 
             Nod := Next (N);
@@ -16849,7 +16852,7 @@ package body Sem_Prag is
 
             for J in 1 .. 2 loop
                if Present (Args (J)) then
-                  Check_Arg_Is_Static_Expression (Args (J), Any_Integer);
+                  Check_Arg_Is_OK_Static_Expression (Args (J), Any_Integer);
                end if;
             end loop;
 
@@ -17143,7 +17146,7 @@ package body Sem_Prag is
 
                   --  Deal with static string argument
 
-                  Check_Arg_Is_Static_Expression (Arg1, Standard_String);
+                  Check_Arg_Is_OK_Static_Expression (Arg1, Standard_String);
                   S := Strval (Get_Pragma_Arg (Arg1));
 
                   for J in 1 .. String_Length (S) loop
@@ -18272,7 +18275,7 @@ package body Sem_Prag is
 
                --  Must be static
 
-               if not Is_Static_Expression (Arg) then
+               if not Is_OK_Static_Expression (Arg) then
                   Flag_Non_Static_Expr
                     ("main subprogram priority is not static!", Arg);
                   raise Pragma_Exit;
@@ -18383,11 +18386,11 @@ package body Sem_Prag is
             DP := Fold_Upper (Name_Buffer (1));
 
             Lower_Bound := Get_Pragma_Arg (Arg2);
-            Check_Arg_Is_Static_Expression (Lower_Bound, Standard_Integer);
+            Check_Arg_Is_OK_Static_Expression (Lower_Bound, Standard_Integer);
             Lower_Val := Expr_Value (Lower_Bound);
 
             Upper_Bound := Get_Pragma_Arg (Arg3);
-            Check_Arg_Is_Static_Expression (Upper_Bound, Standard_Integer);
+            Check_Arg_Is_OK_Static_Expression (Upper_Bound, Standard_Integer);
             Upper_Val := Expr_Value (Upper_Bound);
 
             --  It is not allowed to use Task_Dispatching_Policy and
@@ -20054,7 +20057,7 @@ package body Sem_Prag is
             Arg := Get_Pragma_Arg (Arg1);
             Preanalyze_Spec_Expression (Arg, Any_Integer);
 
-            if not Is_Static_Expression (Arg) then
+            if not Is_OK_Static_Expression (Arg) then
                Check_Restriction (Static_Storage_Size, Arg);
             end if;
 
@@ -20330,7 +20333,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Subtitle);
-            Check_Arg_Is_Static_Expression (Arg1, Standard_String);
+            Check_Arg_Is_OK_Static_Expression (Arg1, Standard_String);
             Store_Note (N);
 
          --------------
@@ -20622,7 +20625,7 @@ package body Sem_Prag is
                Error_Pragma_Arg
                  ("pragma% takes two arguments", Task_Type);
             else
-               Check_Arg_Is_Static_Expression (Top_Guard, Any_Integer);
+               Check_Arg_Is_OK_Static_Expression (Top_Guard, Any_Integer);
             end if;
 
             Check_First_Subtype (Task_Type);
@@ -20700,7 +20703,7 @@ package body Sem_Prag is
             Check_Arg_Count (1);
             Check_No_Identifiers;
             Check_In_Main_Program;
-            Check_Arg_Is_Static_Expression (Arg1, Standard_Duration);
+            Check_Arg_Is_OK_Static_Expression (Arg1, Standard_Duration);
 
             if not Error_Posted (Arg1) then
                Nod := Next (N);
@@ -20758,7 +20761,8 @@ package body Sem_Prag is
 
             for J in 1 .. 2 loop
                if Present (Args (J)) then
-                  Check_Arg_Is_Static_Expression (Args (J), Standard_String);
+                  Check_Arg_Is_OK_Static_Expression
+                    (Args (J), Standard_String);
                end if;
             end loop;
          end Title;

@@ -406,7 +406,8 @@ package body Sem_Attr is
       procedure Standard_Attribute (Val : Int);
       --  Used to process attributes whose prefix is package Standard which
       --  yield values of type Universal_Integer. The attribute reference
-      --  node is rewritten with an integer literal of the given value.
+      --  node is rewritten with an integer literal of the given value which
+      --  is marked as static.
 
       procedure Unexpected_Argument (En : Node_Id);
       --  Signal unexpected attribute argument (En is the argument)
@@ -1241,7 +1242,7 @@ package body Sem_Attr is
             Resolve (E1, Any_Integer);
             Set_Etype (E1, Standard_Integer);
 
-            if not Is_Static_Expression (E1)
+            if not Is_OK_Static_Expression (E1)
               or else Raises_Constraint_Error (E1)
             then
                Flag_Non_Static_Expr
@@ -1499,7 +1500,7 @@ package body Sem_Attr is
 
          --  Check non-static subtype
 
-         if not Is_Static_Subtype (P_Type) then
+         if not Is_OK_Static_Subtype (P_Type) then
             Error_Attr_P ("prefix of % attribute must be a static subtype");
          end if;
 
@@ -2260,6 +2261,7 @@ package body Sem_Attr is
          Check_Standard_Prefix;
          Rewrite (N, Make_Integer_Literal (Loc, Val));
          Analyze (N);
+         Set_Is_Static_Expression (N, True);
       end Standard_Attribute;
 
       -------------------------
@@ -2312,7 +2314,8 @@ package body Sem_Attr is
          end if;
       end if;
 
-      --  Deal with Ada 2005 attributes that are
+      --  Deal with Ada 2005 attributes that are implementation attributes
+      --  because they appear in a version of Ada before Ada 2005.
 
       if Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005 then
          Check_Restriction (No_Implementation_Attributes, N);
@@ -2998,6 +3001,7 @@ package body Sem_Attr is
          Check_Standard_Prefix;
          Rewrite (N, Make_String_Literal (Loc, "GNAT " & Gnat_Version_String));
          Analyze_And_Resolve (N, Standard_String);
+         Set_Is_Static_Expression (N, True);
 
       --------------------
       -- Component_Size --
@@ -3410,8 +3414,7 @@ package body Sem_Attr is
          else
             if not Is_Entity_Name (P)
               or else (not Is_Object (Entity (P))
-                         and then
-                       Ekind (Entity (P)) /= E_Enumeration_Literal)
+                        and then Ekind (Entity (P)) /= E_Enumeration_Literal)
             then
                Error_Attr_P
                  ("prefix of % attribute must be " &
@@ -4256,7 +4259,7 @@ package body Sem_Attr is
             Resolve (E1, Any_Integer);
             Set_Etype (E1, Standard_Integer);
 
-            if not Is_Static_Expression (E1) then
+            if not Is_OK_Static_Expression (E1) then
                Flag_Non_Static_Expr
                  ("expression for parameter number must be static!", E1);
                Error_Attr;
@@ -5870,6 +5873,7 @@ package body Sem_Attr is
            Make_String_Literal (Loc,
              Strval => TN (TN'First .. TL)));
          Analyze_And_Resolve (N, Standard_String);
+         Set_Is_Static_Expression (N, True);
       end Target_Name;
 
       ----------------
@@ -5897,7 +5901,11 @@ package body Sem_Attr is
          Analyze_And_Resolve (E1, Any_Integer);
          Set_Etype (N, RTE (RE_Address));
 
-         --  Static expression case, check range and set appropriate type
+         if Is_Static_Expression (E1) then
+            Set_Is_Static_Expression (N, True);
+         end if;
+
+         --  OK static expression case, check range and set appropriate type
 
          if Is_OK_Static_Expression (E1) then
             Val := Expr_Value (E1);
@@ -5927,6 +5935,8 @@ package body Sem_Attr is
                Set_Etype (E1, Standard_Unsigned_64);
             end if;
          end if;
+
+         Set_Is_Static_Expression (N, True);
       end To_Address;
 
       ------------
@@ -6047,6 +6057,7 @@ package body Sem_Attr is
          Check_Type;
          Check_Not_Incomplete_Type;
          Set_Etype (N, Standard_Boolean);
+         Set_Is_Static_Expression (N, True);
 
       ------------------------------
       -- Universal_Literal_String --
@@ -6111,6 +6122,7 @@ package body Sem_Attr is
                Rewrite (N,
                  Make_String_Literal (Loc, End_String));
                Analyze (N);
+               Set_Is_Static_Expression (N, True);
             end;
          end if;
       end Universal_Literal_String;
@@ -6764,7 +6776,11 @@ package body Sem_Attr is
       Static : Boolean;
       --  True if the result is Static. This is set by the general processing
       --  to true if the prefix is static, and all expressions are static. It
-      --  can be reset as processing continues for particular attributes
+      --  can be reset as processing continues for particular attributes. This
+      --  flag can still be True if the reference raises a constraint error.
+      --  Is_Static_Expression (N) is set to follow this value as it is set
+      --  and we could always reference this, but it is convenient to have a
+      --  simple short name to use, since it is frequently referenced.
 
       Lo_Bound, Hi_Bound : Node_Id;
       --  Expressions for low and high bounds of type or array index referenced
@@ -7098,8 +7114,16 @@ package body Sem_Attr is
          Lo_Bound := Type_Low_Bound (Ityp);
          Hi_Bound := Type_High_Bound (Ityp);
 
+         --  If subtype is non-static, result is definitely non-static
+
          if not Is_Static_Subtype (Ityp) then
             Static := False;
+            Set_Is_Static_Expression (N, False);
+
+         --  Subtype is static, does it raise CE?
+
+         elsif not Is_OK_Static_Subtype (Ityp) then
+            Set_Raises_Constraint_Error (N);
          end if;
       end Set_Bounds;
 
@@ -7125,6 +7149,11 @@ package body Sem_Attr is
    --  Start of processing for Eval_Attribute
 
    begin
+      --  Initialize result as non-static, will be reset if appropriate
+
+      Set_Is_Static_Expression (N, False);
+      Static := False;
+
       --  Acquire first two expressions (at the moment, no attributes take more
       --  than two expressions in any case).
 
@@ -7191,10 +7220,8 @@ package body Sem_Attr is
          --  the attribute to the type of the array, but we need a constrained
          --  type for this, so we use the actual subtype if available.
 
-         elsif Id = Attribute_First
-                 or else
-               Id = Attribute_Last
-                 or else
+         elsif Id = Attribute_First or else
+               Id = Attribute_Last  or else
                Id = Attribute_Length
          then
             declare
@@ -7234,7 +7261,7 @@ package body Sem_Attr is
             if Is_Entity_Name (P)
               and then Known_Alignment (Entity (P))
             then
-               Fold_Uint (N, Alignment (Entity (P)), False);
+               Fold_Uint (N, Alignment (Entity (P)), Static);
                return;
 
             else
@@ -7269,10 +7296,55 @@ package body Sem_Attr is
          P_Entity := Entity (P);
       end if;
 
+      --  If we are asked to evaluate an attribute where the prefix is a
+      --  non-frozen generic actual type whose RM_Size is still set to zero,
+      --  then abandon the effort. It seems wrong that this can ever happen,
+      --  but we see it happen, so this is a defense! ???
+
+      if Is_Type (P_Entity)
+        and then (not Is_Frozen (P_Entity)
+                   and then Is_Generic_Actual_Type (P_Entity)
+                   and then RM_Size (P_Entity) = 0)
+      then
+         return;
+      end if;
+
       --  At this stage P_Entity is the entity to which the attribute
       --  is to be applied. This is usually simply the entity of the
       --  prefix, except in some cases of attributes for objects, where
       --  as described above, we apply the attribute to the object type.
+
+      --  Here is where we make sure that static attributes are properly
+      --  marked as such. These are attributes whose prefix is a static
+      --  scalar subtype, whose result is scalar, and whose arguments, if
+      --  present, are static scalar expressions. Note that such references
+      --  are static expressions even if they raise Constraint_Error.
+
+      --  For example, Boolean'Pos (1/0 = 0) is a static expression, even
+      --  though evaluating it raises constraint error. This means that a
+      --  declaration like:
+
+      --    X : constant := (if True then 1 else Boolean'Pos (1/0 = 0));
+
+      --  is legal, since here this expression appears in a statically
+      --  unevaluated position, so it does not actually raise an exception.
+
+      if Is_Scalar_Type (P_Entity)
+        and then (not Is_Generic_Type (P_Entity))
+        and then Is_Static_Subtype (P_Entity)
+        and then Is_Scalar_Type (Etype (N))
+        and then
+          (No (E1)
+            or else (Is_Static_Expression (E1)
+                      and then Is_Scalar_Type (Etype (E1))))
+        and then
+          (No (E2)
+            or else (Is_Static_Expression (E2)
+                      and then Is_Scalar_Type (Etype (E1))))
+      then
+         Static := True;
+         Set_Is_Static_Expression (N, True);
+      end if;
 
       --  First foldable possibility is a scalar or array type (RM 4.9(7))
       --  that is not generic (generic types are eliminated by RM 4.9(25)).
@@ -7312,28 +7384,19 @@ package body Sem_Attr is
             end if;
          end if;
 
-      --  Definite must be folded if the prefix is not a generic type,
-      --  that is to say if we are within an instantiation. Same processing
-      --  applies to the GNAT attributes Atomic_Always_Lock_Free,
-      --  Has_Discriminants, Lock_Free, Type_Class, Has_Tagged_Value, and
-      --  Unconstrained_Array.
+      --  Definite must be folded if the prefix is not a generic type, that
+      --  is to say if we are within an instantiation. Same processing applies
+      --  to the GNAT attributes Atomic_Always_Lock_Free, Has_Discriminants,
+      --  Lock_Free, Type_Class, Has_Tagged_Value, and Unconstrained_Array.
 
-      elsif (Id = Attribute_Atomic_Always_Lock_Free
-               or else
-             Id = Attribute_Definite
-               or else
-             Id = Attribute_Has_Access_Values
-               or else
-             Id = Attribute_Has_Discriminants
-               or else
-             Id = Attribute_Has_Tagged_Values
-               or else
-             Id = Attribute_Lock_Free
-               or else
-             Id = Attribute_Type_Class
-               or else
-             Id = Attribute_Unconstrained_Array
-               or else
+      elsif (Id = Attribute_Atomic_Always_Lock_Free or else
+             Id = Attribute_Definite                or else
+             Id = Attribute_Has_Access_Values       or else
+             Id = Attribute_Has_Discriminants       or else
+             Id = Attribute_Has_Tagged_Values       or else
+             Id = Attribute_Lock_Free               or else
+             Id = Attribute_Type_Class              or else
+             Id = Attribute_Unconstrained_Array     or else
              Id = Attribute_Max_Alignment_For_Allocation)
         and then not Is_Generic_Type (P_Entity)
       then
@@ -7427,7 +7490,12 @@ package body Sem_Attr is
       end if;
 
       if Is_Scalar_Type (P_Type) then
-         Static := Is_OK_Static_Subtype (P_Type);
+         if not Is_Static_Subtype (P_Type) then
+            Static := False;
+            Set_Is_Static_Expression (N, False);
+         elsif not Is_OK_Static_Subtype (P_Type) then
+            Set_Raises_Constraint_Error (N);
+         end if;
 
       --  Array case. We enforce the constrained requirement of (RM 4.9(7-8))
       --  since we can't do anything with unconstrained arrays. In addition,
@@ -7443,25 +7511,18 @@ package body Sem_Attr is
       --  unconstrained arrays. Furthermore, it is essential to fold this
       --  in the packed case, since otherwise the value will be incorrect.
 
-      elsif Id = Attribute_Atomic_Always_Lock_Free
-              or else
-            Id = Attribute_Definite
-              or else
-            Id = Attribute_Has_Access_Values
-              or else
-            Id = Attribute_Has_Discriminants
-              or else
-            Id = Attribute_Has_Tagged_Values
-              or else
-            Id = Attribute_Lock_Free
-              or else
-            Id = Attribute_Type_Class
-              or else
-            Id = Attribute_Unconstrained_Array
-              or else
+      elsif Id = Attribute_Atomic_Always_Lock_Free or else
+            Id = Attribute_Definite                or else
+            Id = Attribute_Has_Access_Values       or else
+            Id = Attribute_Has_Discriminants       or else
+            Id = Attribute_Has_Tagged_Values       or else
+            Id = Attribute_Lock_Free               or else
+            Id = Attribute_Type_Class              or else
+            Id = Attribute_Unconstrained_Array     or else
             Id = Attribute_Component_Size
       then
          Static := False;
+         Set_Is_Static_Expression (N, False);
 
       elsif Id /= Attribute_Max_Alignment_For_Allocation then
          if not Is_Constrained (P_Type)
@@ -7486,14 +7547,15 @@ package body Sem_Attr is
          --  which might otherwise accept non-static constants in contexts
          --  where they are not legal.
 
-         Static := Ada_Version >= Ada_95
-                     and then Statically_Denotes_Entity (P);
+         Static :=
+           Ada_Version >= Ada_95 and then Statically_Denotes_Entity (P);
+         Set_Is_Static_Expression (N, Static);
 
          declare
-            N : Node_Id;
+            Nod : Node_Id;
 
          begin
-            N := First_Index (P_Type);
+            Nod := First_Index (P_Type);
 
             --  The expression is static if the array type is constrained
             --  by given bounds, and not by an initial expression. Constant
@@ -7502,21 +7564,28 @@ package body Sem_Attr is
             if Root_Type (P_Type) /= Standard_String then
                Static :=
                  Static and then not Is_Constr_Subt_For_U_Nominal (P_Type);
+               Set_Is_Static_Expression (N, Static);
+
             end if;
 
-            while Present (N) loop
-               Static := Static and then Is_Static_Subtype (Etype (N));
+            while Present (Nod) loop
+               if not Is_Static_Subtype (Etype (Nod)) then
+                  Static := False;
+                  Set_Is_Static_Expression (N, False);
+               elsif not Is_OK_Static_Subtype (Etype (Nod)) then
+                  Set_Raises_Constraint_Error (N);
+               end if;
 
                --  If however the index type is generic, or derived from
                --  one, attributes cannot be folded.
 
-               if Is_Generic_Type (Root_Type (Etype (N)))
+               if Is_Generic_Type (Root_Type (Etype (Nod)))
                  and then Id /= Attribute_Component_Size
                then
                   return;
                end if;
 
-               Next_Index (N);
+               Next_Index (Nod);
             end loop;
          end;
       end if;
@@ -7541,6 +7610,11 @@ package body Sem_Attr is
 
             if not Is_Static_Expression (E) then
                Static := False;
+               Set_Is_Static_Expression (N, False);
+            end if;
+
+            if Raises_Constraint_Error (E) then
+               Set_Raises_Constraint_Error (N);
             end if;
 
             --  If the result is not known at compile time, or is not of
@@ -7601,7 +7675,7 @@ package body Sem_Attr is
          Set_Raises_Constraint_Error (CE_Node);
          Check_Expressions;
          Rewrite (N, Relocate_Node (CE_Node));
-         Set_Is_Static_Expression (N, Static);
+         Set_Raises_Constraint_Error (N, True);
          return;
       end if;
 
@@ -7658,7 +7732,7 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Aft =>
-         Fold_Uint (N, Aft_Value (P_Type), True);
+         Fold_Uint (N, Aft_Value (P_Type), Static);
 
       ---------------
       -- Alignment --
@@ -7671,7 +7745,7 @@ package body Sem_Attr is
          --  Fold if alignment is set and not otherwise
 
          if Known_Alignment (P_TypeA) then
-            Fold_Uint (N, Alignment (P_TypeA), Is_Discrete_Type (P_TypeA));
+            Fold_Uint (N, Alignment (P_TypeA), Static);
          end if;
       end Alignment_Block;
 
@@ -7710,7 +7784,8 @@ package body Sem_Attr is
          --  static attribute in GNAT.
 
          Analyze_And_Resolve (N, Standard_Boolean);
-         Static := True;
+            Static := True;
+            Set_Is_Static_Expression (N, True);
       end Atomic_Always_Lock_Free;
 
       ---------
@@ -7745,7 +7820,7 @@ package body Sem_Attr is
 
       when Attribute_Component_Size =>
          if Known_Static_Component_Size (P_Type) then
-            Fold_Uint (N, Component_Size (P_Type), False);
+            Fold_Uint (N, Component_Size (P_Type), Static);
          end if;
 
       -------------
@@ -7801,7 +7876,7 @@ package body Sem_Attr is
 
       when Attribute_Denorm =>
          Fold_Uint
-           (N, UI_From_Int (Boolean'Pos (Has_Denormals (P_Type))), True);
+           (N, UI_From_Int (Boolean'Pos (Has_Denormals (P_Type))), Static);
 
       ---------------------
       -- Descriptor_Size --
@@ -7815,7 +7890,7 @@ package body Sem_Attr is
       ------------
 
       when Attribute_Digits =>
-         Fold_Uint (N, Digits_Value (P_Type), True);
+         Fold_Uint (N, Digits_Value (P_Type), Static);
 
       ----------
       -- Emax --
@@ -7827,7 +7902,7 @@ package body Sem_Attr is
 
          --    T'Emax = 4 * T'Mantissa
 
-         Fold_Uint (N, 4 * Mantissa, True);
+         Fold_Uint (N, 4 * Mantissa, Static);
 
       --------------
       -- Enum_Rep --
@@ -8153,7 +8228,8 @@ package body Sem_Attr is
          --  static attribute in GNAT.
 
          Analyze_And_Resolve (N, Standard_Boolean);
-         Static := True;
+            Static := True;
+            Set_Is_Static_Expression (N, True);
       end Lock_Free;
 
       ----------
@@ -8252,7 +8328,7 @@ package body Sem_Attr is
          then
             Fold_Uint (N,
               UI_Max (0, 1 + (Expr_Value (Hi_Bound) - Expr_Value (Lo_Bound))),
-              True);
+              Static);
          end if;
 
          --  One more case is where Hi_Bound and Lo_Bound are compile-time
@@ -8267,14 +8343,14 @@ package body Sem_Attr is
                 (Lo_Bound, Hi_Bound, Diff'Access, Assume_Valid => False)
             is
                when EQ =>
-                  Fold_Uint (N, Uint_1, False);
+                  Fold_Uint (N, Uint_1, Static);
 
                when GT =>
-                  Fold_Uint (N, Uint_0, False);
+                  Fold_Uint (N, Uint_0, Static);
 
                when LT =>
                   if Diff /= No_Uint then
-                     Fold_Uint (N, Diff + 1, False);
+                     Fold_Uint (N, Diff + 1, Static);
                   end if;
 
                when others =>
@@ -8336,14 +8412,14 @@ package body Sem_Attr is
          --  Always true for fixed-point
 
          if Is_Fixed_Point_Type (P_Type) then
-            Fold_Uint (N, True_Value, True);
+            Fold_Uint (N, True_Value, Static);
 
          --  Floating point case
 
          else
             Fold_Uint (N,
               UI_From_Int (Boolean'Pos (Machine_Overflows_On_Target)),
-              True);
+              Static);
          end if;
 
       -------------------
@@ -8355,15 +8431,15 @@ package body Sem_Attr is
             if Is_Decimal_Fixed_Point_Type (P_Type)
               and then Machine_Radix_10 (P_Type)
             then
-               Fold_Uint (N, Uint_10, True);
+               Fold_Uint (N, Uint_10, Static);
             else
-               Fold_Uint (N, Uint_2, True);
+               Fold_Uint (N, Uint_2, Static);
             end if;
 
          --  All floating-point type always have radix 2
 
          else
-            Fold_Uint (N, Uint_2, True);
+            Fold_Uint (N, Uint_2, Static);
          end if;
 
       ----------------------
@@ -8389,13 +8465,14 @@ package body Sem_Attr is
          --  Always False for fixed-point
 
          if Is_Fixed_Point_Type (P_Type) then
-            Fold_Uint (N, False_Value, True);
+            Fold_Uint (N, False_Value, Static);
 
          --  Else yield proper floating-point result
 
          else
             Fold_Uint
-              (N, UI_From_Int (Boolean'Pos (Machine_Rounds_On_Target)), True);
+              (N, UI_From_Int (Boolean'Pos (Machine_Rounds_On_Target)),
+               Static);
          end if;
 
       ------------------
@@ -8409,7 +8486,7 @@ package body Sem_Attr is
 
       begin
          if Known_Esize (P_TypeA) then
-            Fold_Uint (N, Esize (P_TypeA), True);
+            Fold_Uint (N, Esize (P_TypeA), Static);
          end if;
       end Machine_Size;
 
@@ -8482,7 +8559,7 @@ package body Sem_Attr is
                      Siz := Siz + 1;
                   end loop;
 
-                  Fold_Uint (N, Siz, True);
+                  Fold_Uint (N, Siz, Static);
                end;
 
             else
@@ -8495,7 +8572,7 @@ package body Sem_Attr is
          --  Floating-point Mantissa
 
          else
-            Fold_Uint (N, Mantissa, True);
+            Fold_Uint (N, Mantissa, Static);
          end if;
 
       ---------
@@ -8576,7 +8653,7 @@ package body Sem_Attr is
             end if;
 
             if Mech < 0 then
-               Fold_Uint (N, UI_From_Int (Int (-Mech)), True);
+               Fold_Uint (N, UI_From_Int (Int (-Mech)), Static);
             end if;
          end;
 
@@ -8644,7 +8721,7 @@ package body Sem_Attr is
       -------------
 
       when Attribute_Modulus =>
-         Fold_Uint (N, Modulus (P_Type), True);
+         Fold_Uint (N, Modulus (P_Type), Static);
 
       --------------------
       -- Null_Parameter --
@@ -8669,7 +8746,7 @@ package body Sem_Attr is
 
       begin
          if Known_Esize (P_TypeA) then
-            Fold_Uint (N, Esize (P_TypeA), True);
+            Fold_Uint (N, Esize (P_TypeA), Static);
          end if;
       end Object_Size;
 
@@ -8687,14 +8764,14 @@ package body Sem_Attr is
       --  Scalar types are never passed by reference
 
       when Attribute_Passed_By_Reference =>
-         Fold_Uint (N, False_Value, True);
+         Fold_Uint (N, False_Value, Static);
 
       ---------
       -- Pos --
       ---------
 
       when Attribute_Pos =>
-         Fold_Uint (N, Expr_Value (E1), True);
+         Fold_Uint (N, Expr_Value (E1), Static);
 
       ----------
       -- Pred --
@@ -8782,14 +8859,14 @@ package body Sem_Attr is
                 (Lo_Bound, Hi_Bound, Diff'Access, Assume_Valid => False)
             is
                when EQ =>
-                  Fold_Uint (N, Uint_1, False);
+                  Fold_Uint (N, Uint_1, Static);
 
                when GT =>
-                  Fold_Uint (N, Uint_0, False);
+                  Fold_Uint (N, Uint_0, Static);
 
                when LT =>
                   if Diff /= No_Uint then
-                     Fold_Uint (N, Diff + 1, False);
+                     Fold_Uint (N, Diff + 1, Static);
                   end if;
 
                when others =>
@@ -8802,7 +8879,7 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Ref =>
-         Fold_Uint (N, Expr_Value (E1), True);
+         Fold_Uint (N, Expr_Value (E1), Static);
 
       ---------------
       -- Remainder --
@@ -8924,7 +9001,7 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Scale =>
-         Fold_Uint (N, Scale_Value (P_Type), True);
+         Fold_Uint (N, Scale_Value (P_Type), Static);
 
       -------------
       -- Scaling --
@@ -8951,13 +9028,15 @@ package body Sem_Attr is
 
       --  Size attribute returns the RM size. All scalar types can be folded,
       --  as well as any types for which the size is known by the front end,
-      --  including any type for which a size attribute is specified.
+      --  including any type for which a size attribute is specified. This is
+      --  one of the places where it is annoying that a size of zero means two
+      --  things (zero size for scalars, unspecified size for non-scalars).
 
       when Attribute_Size | Attribute_VADS_Size => Size : declare
          P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
 
       begin
-         if RM_Size (P_TypeA) /= Uint_0 then
+         if Is_Scalar_Type (P_TypeA) or else RM_Size (P_TypeA) /= Uint_0 then
 
             --  VADS_Size case
 
@@ -8982,23 +9061,21 @@ package body Sem_Attr is
                   if Present (S)
                     and then Is_OK_Static_Expression (Expression (S))
                   then
-                     Fold_Uint (N, Expr_Value (Expression (S)), True);
+                     Fold_Uint (N, Expr_Value (Expression (S)), Static);
 
                   --  If no size is specified, then we simply use the object
                   --  size in the VADS_Size case (e.g. Natural'Size is equal
                   --  to Integer'Size, not one less).
 
                   else
-                     Fold_Uint (N, Esize (P_TypeA), True);
+                     Fold_Uint (N, Esize (P_TypeA), Static);
                   end if;
                end;
 
             --  Normal case (Size) in which case we want the RM_Size
 
             else
-               Fold_Uint (N,
-                 RM_Size (P_TypeA),
-                 Static and then Is_Discrete_Type (P_TypeA));
+               Fold_Uint (N, RM_Size (P_TypeA), Static);
             end if;
          end if;
       end Size;
@@ -9179,6 +9256,7 @@ package body Sem_Attr is
 
          Analyze_And_Resolve (N, Standard_Boolean);
          Static := True;
+         Set_Is_Static_Expression (N, True);
       end Unconstrained_Array;
 
       --  Attribute Update is never static
@@ -9219,15 +9297,16 @@ package body Sem_Attr is
       -- Value_Size --
       ----------------
 
-      --  The Value_Size attribute for a type returns the RM size of the
-      --  type. This an always be folded for scalar types, and can also
-      --  be folded for non-scalar types if the size is set.
+      --  The Value_Size attribute for a type returns the RM size of the type.
+      --  This an always be folded for scalar types, and can also be folded for
+      --  non-scalar types if the size is set. This is one of the places where
+      --  it is annoying that a size of zero means two things!
 
       when Attribute_Value_Size => Value_Size : declare
          P_TypeA : constant Entity_Id := Underlying_Type (P_Type);
       begin
-         if RM_Size (P_TypeA) /= Uint_0 then
-            Fold_Uint (N, RM_Size (P_TypeA), True);
+         if Is_Scalar_Type (P_TypeA) or else RM_Size (P_TypeA) /= Uint_0 then
+            Fold_Uint (N, RM_Size (P_TypeA), Static);
          end if;
       end Value_Size;
 
@@ -9293,7 +9372,7 @@ package body Sem_Attr is
                if Expr_Value_R (Type_High_Bound (P_Type)) <
                   Expr_Value_R (Type_Low_Bound (P_Type))
                then
-                  Fold_Uint (N, Uint_0, True);
+                  Fold_Uint (N, Uint_0, Static);
 
                else
                   --  For floating-point, we have +N.dddE+nnn where length
@@ -9318,7 +9397,7 @@ package body Sem_Attr is
                         Len := Len + 8;
                      end if;
 
-                     Fold_Uint (N, UI_From_Int (Len), True);
+                     Fold_Uint (N, UI_From_Int (Len), Static);
                   end;
                end if;
 
@@ -9331,7 +9410,7 @@ package body Sem_Attr is
                if Expr_Value (Type_High_Bound (P_Type)) <
                   Expr_Value (Type_Low_Bound  (P_Type))
                then
-                  Fold_Uint (N, Uint_0, True);
+                  Fold_Uint (N, Uint_0, Static);
 
                --  The non-null case depends on the specific real type
 
@@ -9340,7 +9419,7 @@ package body Sem_Attr is
 
                   Fold_Uint
                     (N, UI_From_Int (Fore_Value + 1) + Aft_Value (P_Type),
-                     True);
+                     Static);
                end if;
 
             --  Discrete types
@@ -9517,7 +9596,7 @@ package body Sem_Attr is
                      end loop;
                   end if;
 
-                  Fold_Uint (N, UI_From_Int (W), True);
+                  Fold_Uint (N, UI_From_Int (W), Static);
                end;
             end if;
          end if;
@@ -11034,15 +11113,12 @@ package body Sem_Attr is
 
    procedure Set_Boolean_Result (N : Node_Id; B : Boolean) is
       Loc : constant Source_Ptr := Sloc (N);
-
    begin
       if B then
          Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
       else
          Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
       end if;
-
-      Set_Is_Static_Expression (N);
    end Set_Boolean_Result;
 
    --------------------------------

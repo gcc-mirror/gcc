@@ -5336,9 +5336,8 @@ package body Sem_Ch12 is
                Expr2 := Expression (Parent (E2));
             end if;
 
-            if Is_Static_Expression (Expr1) then
-
-               if not Is_Static_Expression (Expr2) then
+            if Is_OK_Static_Expression (Expr1) then
+               if not Is_OK_Static_Expression (Expr2) then
                   Check_Mismatch (True);
 
                elsif Is_Discrete_Type (Etype (E1)) then

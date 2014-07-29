@@ -3401,7 +3401,7 @@ package body Sem_Res is
                      return Ekind (Ent) = E_Constant
                               and then Present (Constant_Value (Ent))
                               and then
-                                Is_Static_Expression (Constant_Value (Ent));
+                                Is_OK_Static_Expression (Constant_Value (Ent));
                   end;
 
                else
@@ -8145,7 +8145,7 @@ package body Sem_Res is
                Nalts := 0;
                Alt := First (Alternatives (N));
                while Present (Alt) loop
-                  if Is_Static_Expression (Alt)
+                  if Is_OK_Static_Expression (Alt)
                     and then (Nkind_In (Alt, N_Integer_Literal,
                                              N_Character_Literal)
                                or else Nkind (Alt) in N_Has_Entity)
@@ -8176,8 +8176,7 @@ package body Sem_Res is
 
       if Present (Alternatives (N)) then
          Resolve_Set_Membership;
-         Check_Function_Writable_Actuals (N);
-         return;
+         goto SM_Exit;
 
       elsif not Is_Overloaded (R)
         and then
@@ -8239,6 +8238,10 @@ package body Sem_Res is
          Resolve (R, T);
          Check_Unset_Reference (R);
       end if;
+
+      --  Here after resolving membership operation
+
+      <<SM_Exit>>
 
       Eval_Membership_Op (N);
       Check_Function_Writable_Actuals (N);
@@ -8502,7 +8505,7 @@ package body Sem_Res is
       --  separately on each final operand, past concatenation operations.
 
       if Is_Character_Type (Etype (Arg)) then
-         if not Is_Static_Expression (Arg) then
+         if not Is_OK_Static_Expression (Arg) then
             Check_SPARK_Restriction
               ("character operand for concatenation should be static", Arg);
          end if;
@@ -8510,7 +8513,7 @@ package body Sem_Res is
       elsif Is_String_Type (Etype (Arg)) then
          if not (Nkind_In (Arg, N_Identifier, N_Expanded_Name)
                   and then Is_Constant_Object (Entity (Arg)))
-           and then not Is_Static_Expression (Arg)
+           and then not Is_OK_Static_Expression (Arg)
          then
             Check_SPARK_Restriction
               ("string operand for concatenation should be static", Arg);
@@ -8966,11 +8969,11 @@ package body Sem_Res is
 
       if Is_Discrete_Type (Typ) and then Expander_Active then
          if Is_OK_Static_Expression (L) then
-            Fold_Uint  (L, Expr_Value (L), Is_Static_Expression (L));
+            Fold_Uint (L, Expr_Value (L), Is_OK_Static_Expression (L));
          end if;
 
          if Is_OK_Static_Expression (H) then
-            Fold_Uint  (H, Expr_Value (H), Is_Static_Expression (H));
+            Fold_Uint (H, Expr_Value (H), Is_OK_Static_Expression (H));
          end if;
       end if;
    end Resolve_Range;
@@ -9016,7 +9019,7 @@ package body Sem_Res is
 
                --  Generate a warning if literal from source
 
-               if Is_Static_Expression (N)
+               if Is_OK_Static_Expression (N)
                  and then Warn_On_Bad_Fixed_Value
                then
                   Error_Msg_N
@@ -9029,7 +9032,7 @@ package body Sem_Res is
                --  by truncation, since Machine_Rounds is false for all GNAT
                --  fixed-point types (RM 4.9(38)).
 
-               Stat := Is_Static_Expression (N);
+               Stat := Is_OK_Static_Expression (N);
                Rewrite (N,
                  Make_Real_Literal (Sloc (N),
                    Realval => Small_Value (Typ) * Cint));
