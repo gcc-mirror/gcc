@@ -1,3 +1,14 @@
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): If the target type
+	is a null-excluding access type, do not generate a constraint
+	check if Suppress_Assignment_Checks is set on assignment node.
+	* exp_ch9.adb (Build_Simple_Entry_Call): If actual is an out
+	parameter of a null-excluding access type, there is access check
+	on entry, so set Suppress_Assignment_Checks on generated statement
+	that assigns actual to parameter block.
+	* sinfo.ads: Document additional use of Suppress_Assignment_Checks.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Change theta to @ in documentation of aspect

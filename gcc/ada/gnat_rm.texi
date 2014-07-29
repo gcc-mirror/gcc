@@ -112,7 +112,7 @@ Implementation Defined Pragmas
 * Pragma Assertion_Policy::
 * Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
-* Pragma Ast_Entry::
+* Pragma AST_Entry::
 * Pragma Async_Readers::
 * Pragma Async_Writers::
 * Pragma Attribute_Definition::
@@ -196,6 +196,7 @@ Implementation Defined Pragmas
 * Pragma Linker_Constructor::
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
+* Pragma Lock_Free::
 * Pragma Long_Float::
 * Pragma Loop_Invariant::
 * Pragma Loop_Optimize::
@@ -234,6 +235,7 @@ Implementation Defined Pragmas
 * Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
+* Pragma Rational::
 * Pragma Ravenscar::
 * Pragma Refined_Depends::
 * Pragma Refined_Global::
@@ -976,7 +978,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assertion_Policy::
 * Pragma Assume::
 * Pragma Assume_No_Invalid_Values::
-* Pragma Ast_Entry::
+* Pragma AST_Entry::
 * Pragma Async_Readers::
 * Pragma Async_Writers::
 * Pragma Attribute_Definition::
@@ -1060,6 +1062,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Linker_Constructor::
 * Pragma Linker_Destructor::
 * Pragma Linker_Section::
+* Pragma Lock_Free::
 * Pragma Long_Float::
 * Pragma Loop_Invariant::
 * Pragma Loop_Optimize::
@@ -1098,6 +1101,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
+* Pragma Rational::
 * Pragma Ravenscar::
 * Pragma Refined_Depends::
 * Pragma Refined_Global::
@@ -1673,10 +1677,10 @@ section 7.1.2.
 For the description of this pragma, see SPARK 2014 Reference Manual,
 section 7.1.2.
 
-@node Pragma Ast_Entry
-@unnumberedsec Pragma Ast_Entry
+@node Pragma AST_Entry
+@unnumberedsec Pragma AST_Entry
 @cindex OpenVMS
-@findex Ast_Entry
+@findex AST_Entry
 @noindent
 Syntax:
 @smallexample @c ada
@@ -4488,6 +4492,13 @@ package IO_Card is
 end IO_Card;
 @end smallexample
 
+@node Pragma Lock_Free
+@unnumberedsec Pragma Locl_Free
+@findex Lock_Free
+@noindent
+Syntax:
+PLEASE ADD DOCUMENTATION HERE???
+
 @node Pragma Long_Float
 @unnumberedsec Pragma Long_Float
 @cindex OpenVMS
@@ -6088,6 +6099,24 @@ If pragma @code{Pure_Function} is applied to a library level function, the
 function is also considered pure from an optimization point of view, but the
 unit is not a Pure unit in the categorization sense. So for example, a function
 thus marked is free to @code{with} non-pure units.
+
+@node Pragma Rational
+@unnumberedsec Pragma Rational
+@findex Rational
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Rational;
+@end smallexample
+
+@noindent
+This pragma is considered obsolescent, but is retained for
+compatibility purposes. It is equivalent to:
+
+@smallexample @c ada
+pragma Profile (Rational);
+@end smallexample
 
 @node Pragma Ravenscar
 @unnumberedsec Pragma Ravenscar

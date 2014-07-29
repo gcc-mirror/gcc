@@ -2001,6 +2001,7 @@ package body Exp_Ch5 is
       if Is_Access_Type (Typ)
         and then Can_Never_Be_Null (Etype (Lhs))
         and then not Can_Never_Be_Null (Etype (Rhs))
+        and then not Suppress_Assignment_Checks (N)
       then
          Apply_Constraint_Check (Rhs, Etype (Lhs));
       end if;
