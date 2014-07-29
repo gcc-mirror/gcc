@@ -340,11 +340,14 @@ Implementation Defined Attributes
 * Attribute Asm_Input::
 * Attribute Asm_Output::
 * Attribute AST_Entry::
+* Attribute Atomic_Always_Lock_Free::
 * Attribute Bit::
 * Attribute Bit_Position::
-* Attribute Compiler_Version::
 * Attribute Code_Address::
+* Attribute Compiler_Version::
+* Attribute Constant_Indexing::
 * Attribute Default_Bit_Order::
+* Attribute Default_Iterator::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -355,14 +358,20 @@ Implementation Defined Attributes
 * Attribute Enum_Rep::
 * Attribute Enum_Val::
 * Attribute Epsilon::
+* Attribute Fast_Math::
 * Attribute Fixed_Value::
+* Attribute From_Any::
 * Attribute Has_Access_Values::
 * Attribute Has_Discriminants::
 * Attribute Img::
+* Attribute Implicit_Dereference::
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
+* Attribute Iterator_Element::
+* Attribute Iterable::
 * Attribute Large::
 * Attribute Library_Level::
+* Attribute Lock_Free::
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
@@ -370,6 +379,7 @@ Implementation Defined Attributes
 * Attribute Mechanism_Code::
 * Attribute Null_Parameter::
 * Attribute Object_Size::
+* Attribute Old::
 * Attribute Passed_By_Reference::
 * Attribute Pool_Address::
 * Attribute Range_Length::
@@ -378,6 +388,7 @@ Implementation Defined Attributes
 * Attribute Result::
 * Attribute Safe_Emax::
 * Attribute Safe_Large::
+* Attribute Safe_Small::
 * Attribute Scalar_Storage_Order::
 * Attribute Simple_Storage_Pool::
 * Attribute Small::
@@ -385,16 +396,18 @@ Implementation Defined Attributes
 * Attribute Stub_Type::
 * Attribute System_Allocator_Alignment::
 * Attribute Target_Name::
-* Attribute Tick::
 * Attribute To_Address::
+* Attribute To_Any::
 * Attribute Type_Class::
+* Attribute Type_Key::
+* Attribute TypeCode::
 * Attribute UET_Address::
 * Attribute Unconstrained_Array::
 * Attribute Universal_Literal_String::
 * Attribute Unrestricted_Access::
 * Attribute Update::
-* Attribute Valid_Scalars::
 * Attribute VADS_Size::
+* Attribute Valid_Scalars::
 * Attribute Value_Size::
 * Attribute Wchar_T_Size::
 * Attribute Word_Size::
@@ -8501,11 +8514,14 @@ consideration, you should minimize the use of these attributes.
 * Attribute Asm_Input::
 * Attribute Asm_Output::
 * Attribute AST_Entry::
+* Attribute Atomic_Always_Lock_Free::
 * Attribute Bit::
 * Attribute Bit_Position::
-* Attribute Compiler_Version::
 * Attribute Code_Address::
+* Attribute Compiler_Version::
+* Attribute Constant_Indexing::
 * Attribute Default_Bit_Order::
+* Attribute Default_Iterator::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -8516,14 +8532,20 @@ consideration, you should minimize the use of these attributes.
 * Attribute Enum_Rep::
 * Attribute Enum_Val::
 * Attribute Epsilon::
+* Attribute Fast_Math::
 * Attribute Fixed_Value::
+* Attribute From_Any::
 * Attribute Has_Access_Values::
 * Attribute Has_Discriminants::
 * Attribute Img::
+* Attribute Implicit_Dereference::
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
+* Attribute Iterator_Element::
+* Attribute Iterable::
 * Attribute Large::
 * Attribute Library_Level::
+* Attribute Lock_Free::
 * Attribute Loop_Entry::
 * Attribute Machine_Size::
 * Attribute Mantissa::
@@ -8531,6 +8553,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Mechanism_Code::
 * Attribute Null_Parameter::
 * Attribute Object_Size::
+* Attribute Old::
 * Attribute Passed_By_Reference::
 * Attribute Pool_Address::
 * Attribute Range_Length::
@@ -8539,6 +8562,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Result::
 * Attribute Safe_Emax::
 * Attribute Safe_Large::
+* Attribute Safe_Small::
 * Attribute Scalar_Storage_Order::
 * Attribute Simple_Storage_Pool::
 * Attribute Small::
@@ -8546,16 +8570,18 @@ consideration, you should minimize the use of these attributes.
 * Attribute Stub_Type::
 * Attribute System_Allocator_Alignment::
 * Attribute Target_Name::
-* Attribute Tick::
 * Attribute To_Address::
+* Attribute To_Any::
 * Attribute Type_Class::
+* Attribute Type_Key::
+* Attribute TypeCode::
 * Attribute UET_Address::
 * Attribute Unconstrained_Array::
 * Attribute Universal_Literal_String::
 * Attribute Unrestricted_Access::
 * Attribute Update::
-* Attribute Valid_Scalars::
 * Attribute VADS_Size::
+* Attribute Valid_Scalars::
 * Attribute Value_Size::
 * Attribute Wchar_T_Size::
 * Attribute Word_Size::
@@ -8625,6 +8651,12 @@ the name of an entry, it yields a value of the predefined type AST_Handler
 pragma @code{Extend_System (Aux_DEC)}).  This value enables the given entry to
 be called when an AST occurs.  For further details, refer to the @cite{DEC Ada
 Language Reference Manual}, section 9.12a.
+
+@node Attribute Atomic_Always_Lock_Free
+@unnumberedsec Attribute Atomic_Always_Lock_Free
+@findex Atomic_Always_Lock_Free
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Bit
 @unnumberedsec Attribute Bit
@@ -8713,6 +8745,21 @@ generated code of the specified subprogram, which may or may not be
 the same value as is returned by the corresponding @code{'Address}
 attribute.
 
+@node Attribute Compiler_Version
+@unnumberedsec Attribute Compiler_Version
+@findex Compiler_Version
+@noindent
+@code{Standard'Compiler_Version} (@code{Standard} is the only allowed
+prefix) yields a static string identifying the version of the compiler
+being used to compile the unit containing the attribute reference. A
+typical result would be something like "@value{EDITION} @value{gnat_version} (20090221)".
+
+@node Attribute Constant_Indexing
+@unnumberedsec Attribute Constant_Indexing
+@findex Constant_Indexing
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
+
 @node Attribute Default_Bit_Order
 @unnumberedsec Attribute Default_Bit_Order
 @cindex Big endian
@@ -8724,6 +8771,12 @@ permissible prefix), provides the value @code{System.Default_Bit_Order}
 as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @code{Low_Order_First}).  This is used to construct the definition of
 @code{Default_Bit_Order} in package @code{System}.
+
+@node Attribute Default_Iterator
+@unnumberedsec Attribute Default_Iterator
+@findex Default_Iterator
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Descriptor_Size
 @unnumberedsec Attribute Descriptor_Size
@@ -8893,6 +8946,12 @@ The @code{Epsilon} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
+@node Attribute Fast_Math
+@unnumberedsec Attribute Fast_Math
+@findex Fast_Math
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
+
 @node Attribute Fixed_Value
 @unnumberedsec Attribute Fixed_Value
 @findex Fixed_Value
@@ -8919,6 +8978,12 @@ conversion to the fixed-point type.  The difference is
 that there are full range checks, to ensure that the result is in range.
 This attribute is primarily intended for use in implementation of the
 input-output functions for fixed-point values.
+
+@node Attribute From_Any
+@unnumberedsec Attribute From_Any
+@findex From_Any
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Has_Access_Values
 @unnumberedsec Attribute Has_Access_Values
@@ -8973,6 +9038,12 @@ that returns the appropriate string when called. This means that
 @code{X'Img} can be renamed as a function-returning-string, or used
 in an instantiation as a function parameter.
 
+@node Attribute Implicit_Dereference
+@unnumberedsec Attribute Implicit_Dereference
+@findex Implicit_Dereference
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
+
 @node Attribute Integer_Value
 @unnumberedsec Attribute Integer_Value
 @findex Integer_Value
@@ -9012,6 +9083,18 @@ uninitialized value of the type if pragma Initialize_Scalars is used,
 including the ability to modify the value with the binder -Sxx flag and
 relevant environment variables at run time.
 
+@node Attribute Iterator_Element
+@unnumberedsec Attribute Iterator_Element
+@findex Iterator_Element
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
+
+@node Attribute Iterable
+@unnumberedsec Attribute Iterable
+@findex Iterable
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
+
 @node Attribute Large
 @unnumberedsec Attribute Large
 @cindex Ada 83 attributes
@@ -9044,6 +9127,12 @@ package Gen is
   ...
 end Gen;
 @end smallexample
+
+@node Attribute Lock_Free
+@unnumberedsec Attribute Lock_Free
+@findex Lock_Free
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Loop_Entry
 @unnumberedsec Attribute Loop_Entry
@@ -9229,6 +9318,12 @@ generates the diagnostic shown above.
 Similar additional checks are performed in other contexts requiring
 statically matching subtypes.
 
+@node Attribute Old
+@unnumberedsec Attribute Old
+@findex Old
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
+
 @node Attribute Passed_By_Reference
 @unnumberedsec Attribute Passed_By_Reference
 @cindex Parameters, when passed by reference
@@ -9368,6 +9463,15 @@ this attribute.
 @findex Safe_Large
 @noindent
 The @code{Safe_Large} attribute is provided for compatibility with Ada 83.  See
+the Ada 83 reference manual for an exact description of the semantics of
+this attribute.
+
+@node Attribute Safe_Small
+@unnumberedsec Attribute Safe_Small
+@cindex Ada 83 attributes
+@findex Safe_Small
+@noindent
+The @code{Safe_Small} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
@@ -9597,13 +9701,6 @@ for the current compilation. For GCC implementations, this is the
 standard gcc target name without the terminating slash (for
 example, GNAT 5.0 on windows yields "i586-pc-mingw32msv").
 
-@node Attribute Tick
-@unnumberedsec Attribute Tick
-@findex Tick
-@noindent
-@code{Standard'Tick} (@code{Standard} is the only permissible prefix)
-provides the same value as @code{System.Tick},
-
 @node Attribute To_Address
 @unnumberedsec Attribute To_Address
 @findex To_Address
@@ -9623,6 +9720,12 @@ argument is static). The argument must be in the range
 (typically 32 or 64). Negative values are intepreted in a
 modular manner (e.g. -1 means the same as 16#FFFF_FFFF# on
 a 32 bits machine).
+
+@node Attribute To_Any
+@unnumberedsec Attribute To_Any
+@findex To_Any
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Type_Class
 @unnumberedsec Attribute Type_Class
@@ -9651,6 +9754,18 @@ type Type_Class is
 Protected types yield the value @code{Type_Class_Task}, which thus
 applies to all concurrent types.  This attribute is designed to
 be compatible with the DEC Ada 83 attribute of the same name.
+
+@node Attribute Type_Key
+@unnumberedsec Attribute Type_Key
+@findex Type_Key
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
+
+@node Attribute TypeCode
+@unnumberedsec Attribute TypeCode
+@findex TypeCode
+@noindent
+PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute UET_Address
 @unnumberedsec Attribute UET_Address
