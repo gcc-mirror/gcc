@@ -1,5 +1,19 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (ip, rv): Prevent from being optimized away.
+	* gnatls.adb (gnatls): Set E_Fatal exit status if ali file not found.
+	* s-imgllb.adb, s-imgllw.adb, s-imgwiu.adb, s-imgbiu.adb: Minor
+	reformatting.
+
+2014-07-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-pp.adb: Minor comment update.
+	* frontend.adb: If a target dependency info file has been read
+	through switch -gnateT= add it to the dependencies of the source
+	being compiled.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, prj.adb: Minor reformatting.
 
 2014-07-29  Vincent Celier  <celier@adacore.com>

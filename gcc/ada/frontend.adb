@@ -314,6 +314,20 @@ begin
       Opt.Suppress_Options := Scope_Suppress;
    end;
 
+   --  If a target dependency info file has been read through switch -gnateT=,
+   --  add it to the dependencies.
+
+   if Target_Dependent_Info_Read_Name /= null then
+      declare
+         Index : Source_File_Index;
+      begin
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (Target_Dependent_Info_Read_Name.all);
+         Index := Load_Config_File (Name_Enter);
+         Prepcomp.Add_Dependency (Index);
+      end;
+   end if;
+
    --  This is where we can capture the value of the compilation unit specific
    --  restrictions that have been set by the config pragma files (or from
    --  Targparm), for later restoration when processing e.g. subunits.

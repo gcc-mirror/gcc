@@ -315,7 +315,19 @@ package body Sem_Prag is
    --  pragma. Entity name for unit and its parents is taken from item in
    --  previous with_clause that mentions the unit.
 
+   Dummy : Integer := 0;
+   pragma Volatile (Dummy);
+   --  Dummy volatile integer used in bodies of ip/rv to prevent optimization
+
+   procedure ip;
+   pragma No_Inline (ip);
+   --  A dummy procedure called when pragma Inspection_Point is analyzed. This
+   --  is just to help debugging the front end. If a pragma Inspection_Point
+   --  is added to a source program, then breaking on ip will get you to that
+   --  point in the program.
+
    procedure rv;
+   pragma No_Inline (rv);
    --  This is a dummy function called by the processing for pragma Reviewable.
    --  It is there for assisting front end debugging. By placing a Reviewable
    --  pragma in the source program, a breakpoint on rv catches this place in
@@ -15416,23 +15428,6 @@ package body Sem_Prag is
             Arg : Node_Id;
             Exp : Node_Id;
 
-            procedure ip;
-            --  A dummy procedure called when pragma Inspection_Point is
-            --  analyzed. This is just to help debugging the front end. If
-            --  a pragma Inspection_Point is added to a source program, then
-            --  breaking on ip will get you to that point in the program.
-
-            --------
-            -- ip --
-            --------
-
-            procedure ip is
-            begin
-               null;
-            end ip;
-
-         --  Start of processing for Inspection_Point
-
          begin
             ip;
 
@@ -25185,6 +25180,15 @@ package body Sem_Prag is
       Externals.Init;
    end Initialize;
 
+   --------
+   -- ip --
+   --------
+
+   procedure ip is
+   begin
+      Dummy := Dummy + 1;
+   end ip;
+
    -----------------------------
    -- Is_Config_Static_String --
    -----------------------------
@@ -26119,7 +26123,7 @@ package body Sem_Prag is
 
    procedure rv is
    begin
-      null;
+      Dummy := Dummy + 1;
    end rv;
 
    --------------------------------

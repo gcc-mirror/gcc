@@ -129,6 +129,9 @@ procedure Gnatls is
    RTS_Specified : String_Access := null;
    --  Used to detect multiple use of --RTS= switch
 
+   Exit_Status : Exit_Code_Type := E_Success;
+   --  Reset to E_Fatal if bad error found
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -1764,7 +1767,7 @@ begin
    Initialize_ALI;
    Initialize_ALI_Source;
 
-   --  Print out all library for which no ALI files can be located
+   --  Print out all libraries for which no ALI files can be located
 
    while More_Lib_Files loop
       Main_File := Next_Main_Lib_File;
@@ -1782,6 +1785,7 @@ begin
             Write_Str (Name_Buffer (1 .. Name_Len));
             Write_Char ('"'); -- "
             Write_Eol;
+            Exit_Status := E_Fatal;
          end if;
 
       else
@@ -1906,5 +1910,5 @@ begin
    --  All done. Set proper exit status
 
    Namet.Finalize;
-   Exit_Program (E_Success);
+   Exit_Program (Exit_Status);
 end Gnatls;
