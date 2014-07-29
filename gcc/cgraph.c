@@ -973,10 +973,15 @@ cgraph_node::create_indirect_edge (gimple call_stmt, int ecf_flags,
       edge->indirect_info->otr_token = otr_token;
       edge->indirect_info->otr_type = otr_type;
       edge->indirect_info->outer_type = context.outer_type;
+      edge->indirect_info->speculative_outer_type
+	 = context.speculative_outer_type;
       edge->indirect_info->offset = context.offset;
+      edge->indirect_info->speculative_offset = context.speculative_offset;
       edge->indirect_info->maybe_in_construction
 	 = context.maybe_in_construction;
       edge->indirect_info->maybe_derived_type = context.maybe_derived_type;
+      edge->indirect_info->speculative_maybe_derived_type
+	 = context.speculative_maybe_derived_type;
     }
 
   edge->next_callee = indirect_calls;
@@ -3043,12 +3048,9 @@ cgraph_node::get_body (void)
   data = lto_get_section_data (file_data, LTO_section_function_body,
 			       name, &len);
   if (!data)
-    {
-	debug ();
     fatal_error ("%s: section %s is missing",
 		 file_data->file_name,
 		 name);
-    }
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
