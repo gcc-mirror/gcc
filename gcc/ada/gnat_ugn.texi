@@ -4260,6 +4260,8 @@ Don't quit. Try semantics, even if parse errors.
 @item -gnatQ
 @cindex @option{-gnatQ} (@command{gcc})
 Don't quit. Generate @file{ALI} and tree files even if illegalities.
+Note that code generation is still suppressed in the presence of any
+errors, so even with @option{-gnatQ} no object file is generated.
 
 @item -gnatr
 @cindex @option{-gnatr} (@command{gcc})
