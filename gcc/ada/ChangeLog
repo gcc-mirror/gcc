@@ -1,3 +1,12 @@
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Move Build_Body_To_Inline,
+	Check_And_Buid_Body_To_Inline, and Cannot_Inline to package Inline.
+	* exp_ch6.adb: Mode Expand_Inlined_Body to package Inline.
+	* inline.ads, inline.adb: Package now contains subprograms that
+	implement front-end inlining.  No functional changes, no test
+	needed.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_dbug.adb, g-expect.adb, sem_elab.adb: Minor typo fix.
