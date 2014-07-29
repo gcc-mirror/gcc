@@ -1,5 +1,25 @@
 2014-07-29  Doug Rupp  <rupp@adacore.com>
 
+	* init.c: Complete previous change.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression): Deal with unconstrained
+	array case.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Access_Attribute): If the prefix is a subprogram
+	and the completion will appear in the same declarative part,
+	create elaboration flag.
+	* exp_util.adb (Set_Elaboration_Flag): If the subprogram body
+	is a completion of a declaration in the same declarative part,
+	and the subprogram has had its address taken, add elaboration
+	check inside the subprogram body, to detect elaboration errors
+	that may occur through indirect calls.
+
+2014-07-29  Doug Rupp  <rupp@adacore.com>
+
 	* sigtramp-armvxw.c: Enhance to handle RTP trampolining.
 	* init.c: Remove guard on sigtramp for ARM VxWorks RTP.
 
