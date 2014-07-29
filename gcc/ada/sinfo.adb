@@ -4238,7 +4238,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_If_Expression);
-      Set_List3 (N, Val); -- semantic field, no parent set
+      Set_List3_With_Parent (N, Val); -- semantic field, but needs parents
    end Set_Else_Actions;
 
    procedure Set_Else_Statements
@@ -6266,7 +6266,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_If_Expression);
-      Set_List2 (N, Val); -- semantic field, no parent set
+      Set_List2_With_Parent (N, Val); -- semantic field, but needs parents
    end Set_Then_Actions;
 
    procedure Set_Then_Statements

@@ -439,45 +439,45 @@ package body Sem_Aux is
    ---------------------
 
    function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind is
-      Name : constant String := Get_Name_String (Chars (Op));
    begin
-      if Name = "Oadd" then
-         return N_Op_Add;
-      elsif Name = "Oconcat" then
-         return N_Op_Concat;
-      elsif Name = "Oexpon" then
-         return N_Op_Expon;
-      elsif Name = "Osubtract" then
-         return N_Op_Subtract;
-      elsif Name = "Omod" then
-         return N_Op_Mod;
-      elsif Name = "Omultiply" then
-         return N_Op_Multiply;
-      elsif Name = "Odivide" then
-         return N_Op_Divide;
-      elsif Name = "Orem" then
-         return N_Op_Rem;
-      elsif Name = "Oand" then
-         return N_Op_And;
-      elsif Name = "Oeq" then
-         return N_Op_Eq;
-      elsif Name = "Oge" then
-         return N_Op_Ge;
-      elsif Name = "Ogt" then
-         return N_Op_Gt;
-      elsif Name = "Ole" then
-         return N_Op_Le;
-      elsif Name = "Olt" then
-         return N_Op_Lt;
-      elsif Name = "One" then
-         return N_Op_Ne;
-      elsif Name = "Oxor" then
-         return N_Op_Or;
-      elsif Name = "Oor" then
-         return N_Op_Xor;
-      else
-         raise Program_Error;
-      end if;
+      case Chars (Op) is
+         when Name_Op_Add =>
+            return N_Op_Add;
+         when Name_Op_Concat =>
+            return N_Op_Concat;
+         when Name_Op_Expon =>
+            return N_Op_Expon;
+         when Name_Op_Subtract =>
+            return N_Op_Subtract;
+         when Name_Op_Mod =>
+            return N_Op_Mod;
+         when Name_Op_Multiply =>
+            return N_Op_Multiply;
+         when Name_Op_Divide =>
+            return N_Op_Divide;
+         when Name_Op_Rem =>
+            return N_Op_Rem;
+         when Name_Op_And =>
+            return N_Op_And;
+         when Name_Op_Eq =>
+            return N_Op_Eq;
+         when Name_Op_Ge =>
+            return N_Op_Ge;
+         when Name_Op_Gt =>
+            return N_Op_Gt;
+         when Name_Op_Le =>
+            return N_Op_Le;
+         when Name_Op_Lt =>
+            return N_Op_Lt;
+         when Name_Op_Ne =>
+            return N_Op_Ne;
+         when Name_Op_Or =>
+            return N_Op_Or;
+         when Name_Op_Xor =>
+            return N_Op_Xor;
+         when others =>
+            raise Program_Error;
+      end case;
    end Get_Binary_Nkind;
 
    ------------------
@@ -652,19 +652,19 @@ package body Sem_Aux is
    ---------------------
 
    function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind is
-      Name : constant String := Get_Name_String (Chars (Op));
    begin
-      if Name = "Oabs" then
-         return N_Op_Abs;
-      elsif Name = "Osubtract" then
-         return N_Op_Minus;
-      elsif Name = "Onot" then
-         return N_Op_Not;
-      elsif Name = "Oadd" then
-         return N_Op_Plus;
-      else
-         raise Program_Error;
-      end if;
+      case Chars (Op) is
+         when Name_Op_Abs =>
+            return N_Op_Abs;
+         when Name_Op_Subtract =>
+            return N_Op_Minus;
+         when Name_Op_Not =>
+            return N_Op_Not;
+         when Name_Op_Add =>
+            return N_Op_Plus;
+         when others =>
+            raise Program_Error;
+      end case;
    end Get_Unary_Nkind;
 
    ---------------------------------
