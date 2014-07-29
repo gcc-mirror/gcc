@@ -1,3 +1,8 @@
+2014-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py
+	(SingleObjContainerPrinter._contained): Use compatibility mixin.
+
 2014-07-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/util/testsuite_allocator.h
