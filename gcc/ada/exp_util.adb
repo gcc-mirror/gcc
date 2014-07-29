@@ -1980,7 +1980,7 @@ package body Exp_Util is
             --  if the list is empty, corresponding to a False predicate, then
             --  no choices are inserted.
 
-            P := First (Static_Predicate (Entity (Choice)));
+            P := First (Static_Discrete_Predicate (Entity (Choice)));
             while Present (P) loop
 
                --  If low bound and high bounds are equal, copy simple choice

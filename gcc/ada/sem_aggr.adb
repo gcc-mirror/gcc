@@ -1721,11 +1721,11 @@ package body Sem_Aggr is
                         --  original choice with the list of individual values
                         --  covered by the predicate.
 
-                        if Present (Static_Predicate (E)) then
+                        if Present (Static_Discrete_Predicate (E)) then
                            Delete_Choice := True;
 
                            New_Cs := New_List;
-                           P := First (Static_Predicate (E));
+                           P := First (Static_Discrete_Predicate (E));
                            while Present (P) loop
                               C := New_Copy (P);
                               Set_Sloc (C, Sloc (Choice));

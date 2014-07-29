@@ -648,7 +648,7 @@ package body Sem_Case is
       Num_Choices   : constant Nat     := Choice_Table'Last;
       Has_Predicate : constant Boolean :=
                         Is_OK_Static_Subtype (Bounds_Type)
-                          and then Present (Static_Predicate (Bounds_Type));
+                          and then Has_Static_Predicate (Bounds_Type);
 
       Choice      : Node_Id;
       Choice_Hi   : Uint;
@@ -696,13 +696,10 @@ package body Sem_Case is
 
       --  Note that in GNAT the predicate is considered static if the predicate
       --  expression is static, independently of whether the aspect mentions
-      --  Static explicitly.  It is unclear whether this is RM-conforming, but
-      --  it's certainly useful, and GNAT source make use of this. The downside
-      --  is that currently case expressions cannot appear in predicates that
-      --  are not static.  ???
+      --  Static explicitly.
 
       if Has_Predicate then
-         Pred    := First (Static_Predicate (Bounds_Type));
+         Pred    := First (Static_Discrete_Predicate (Bounds_Type));
          Prev_Lo := Uint_Minus_1;
          Prev_Hi := Uint_Minus_1;
          Error   := False;
@@ -1387,7 +1384,7 @@ package body Sem_Case is
 
          if Is_OK_Static_Subtype (Subtyp) then
             if not Has_Predicates (Subtyp)
-              or else Present (Static_Predicate (Subtyp))
+              or else Has_Static_Predicate (Subtyp)
             then
                Bounds_Type := Subtyp;
             else
@@ -1464,7 +1461,7 @@ package body Sem_Case is
                            --  Use of non-static predicate is an error
 
                            if not Is_Discrete_Type (E)
-                             or else No (Static_Predicate (E))
+                             or else not Has_Static_Predicate (E)
                            then
                               Bad_Predicated_Subtype_Use
                                 ("cannot use subtype& with non-static "
@@ -1484,7 +1481,7 @@ package body Sem_Case is
                                  --  list is empty, corresponding to a False
                                  --  predicate, then no choices are checked.
 
-                                 P := First (Static_Predicate (E));
+                                 P := First (Static_Discrete_Predicate (E));
                                  while Present (P) loop
                                     C := New_Copy (P);
                                     Set_Sloc (C, Sloc (Choice));
