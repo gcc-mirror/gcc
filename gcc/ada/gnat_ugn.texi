@@ -4980,17 +4980,25 @@ This switch activates most optional warning messages.  See the remaining list
 in this section for details on optional warning messages that can be
 individually controlled.  The warnings that are not turned on by this
 switch are:
-@option{-gnatwd} (implicit dereferencing),
-@option{-gnatwh} (hiding),
+
+@itemize
+@option{-gnatwd} (implicit dereferencing)
 @option{-gnatw.d} (tag warnings with -gnatw switch)
-@option{-gnatw.h} (holes (gaps) in record layouts)
-@option{-gnatw.i} (overlapping actuals),
-@option{-gnatw.k} (redefinition of names in standard),
-@option{-gnatwl} (elaboration warnings),
-@option{-gnatw.l} (inherited aspects),
-@option{-gnatw.o} (warn on values set by out parameters ignored),
+@option{-gnatwh} (hiding)
+@option{-gnatw.h} (holes in record layouts)
+@option{-gnatw.k} (redefinition of names in standard)
+@option{-gnatwl} (elaboration warnings)
+@option{-gnatw.l} (inherited aspects)
+@option{-gnatw.n} (atomic synchronization)
+@option{-gnatwo} (address clause overlay)
+@option{-gnatw.o} (values set by out parameters ignored)
+@option{-gnatw.s} (overridden size clause)
 @option{-gnatwt} (tracking of deleted conditional code)
-and @option{-gnatw.u} (unordered enumeration),
+@option{-gnatw.u} (unordered enumeration)
+@option{-gnatw.w} (use of Warnings Off)
+@option{-gnatw.y} (reasons for package needing body)
+@end itemize
+
 All other optional warnings are turned on.
 
 @item -gnatwA
@@ -5102,8 +5110,6 @@ representation clause is present and has component clauses for the
 majority, but not all, of the components. A warning is given for each
 component for which no component clause is present.
 
-This warning can also be turned on using @option{-gnatwa}.
-
 @item -gnatw.C
 @emph{Suppress warnings on missing component clauses.}
 @cindex @option{-gnatwC} (@command{gcc})
@@ -5120,8 +5126,6 @@ enabled, access checks occur only at points where an explicit
 @code{.all} appears in the source code (assuming no warnings are
 generated as a result of this switch). The default is that such
 warnings are not generated.
-Note that @option{-gnatwa} does not affect the setting of
-this warning option.
 
 @item -gnatwD
 @emph{Suppress warnings on implicit dereferencing.}
@@ -5202,7 +5206,7 @@ been specifically designed according to specialized coding rules.
 @cindex Formals, unreferenced
 This switch causes a warning to be generated if a formal parameter
 is not referenced in the body of the subprogram. This warning can
-also be turned on using @option{-gnatwa} or @option{-gnatwu}. The
+also be turned on using @option{-gnatwu}. The
 default is that these warnings are not generated.
 
 @item -gnatwF
@@ -5220,8 +5224,7 @@ formals.
 @cindex Pragmas, unrecognized
 This switch causes a warning to be generated if an unrecognized
 pragma is encountered. Apart from issuing this warning, the
-pragma is ignored and has no effect. This warning can
-also be turned on using @option{-gnatwa}. The default
+pragma is ignored and has no effect. The default
 is that such warnings are issued (satisfying the Ada Reference
 Manual requirement that such warnings appear).
 
@@ -5247,7 +5250,6 @@ A declaration is considered hiding
 if it is for a non-overloadable entity, and it declares an entity with the
 same name as some other entity that is directly or use-visible. The default
 is that such warnings are not generated.
-Note that @option{-gnatwa} does not affect the setting of this warning option.
 
 @item -gnatwH
 @emph{Suppress warnings on hiding.}
@@ -5262,7 +5264,6 @@ This switch activates warnings on component clauses in record
 representation clauses that leave holes (gaps) in the record layout.
 If this warning option is active, then record representation clauses
 should specify a contiguous layout, adding unused fill fields if needed.
-Note that @option{-gnatwa} does not affect the setting of this warning option.
 
 @item -gnatw.H
 @emph{Suppress warnings on holes/gaps in records.}
@@ -5282,7 +5283,6 @@ documented in either the Ada Reference Manual or the GNAT
 Programmer's Reference Manual. Such units are intended only
 for internal implementation purposes and should not be @code{with}'ed
 by user programs. The default is that such warnings are generated
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwI
 @emph{Disable warnings on implementation units.}
@@ -5295,8 +5295,7 @@ implementation unit.
 @cindex @option{-gnatw.i} (@command{gcc})
 This switch enables a warning on statically detectable overlapping actuals in
 a subprogram call, when one of the actuals is an in-out parameter, and the
-types of the actuals are not by-copy types. The warning is off by default,
-and is not included under -gnatwa.
+types of the actuals are not by-copy types. This warning is off by default.
 
 @item -gnatw.I
 @emph{Disable warnings on overlapping actuals.}
@@ -5315,8 +5314,7 @@ case of Annex J, not all features are flagged. In particular use
 of the renamed packages (like @code{Text_IO}) and use of package
 @code{ASCII} are not flagged, since these are very common and
 would generate many annoying positive warnings. The default is that
-such warnings are not generated. This warning is also turned on by
-the use of @option{-gnatwa}.
+such warnings are not generated.
 
 In addition to the above cases, warnings are also generated for
 GNAT features that have been provided in past versions but which
@@ -5342,7 +5340,6 @@ This switch disables warnings on use of obsolescent features.
 This switch activates warnings for variables that are initialized but
 never modified, and then could be declared constants. The default is that
 such warnings are not given.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwK
 @emph{Suppress warnings on variables that could be constants.}
@@ -5358,8 +5355,6 @@ especially since the names in package Standard continue to be directly
 visible, meaning that use visibiliy on such redeclared names does not
 work as expected. Names of discriminants and components in records are
 not included in this check.
-This warning is not part of the warnings activated by @option{-gnatwa}.
-It must be explicitly activated.
 
 @item -gnatw.K
 @emph{Suppress warnings on variables that could be constants.}
@@ -5379,7 +5374,6 @@ dynamic elaboration model.
 See the section in this guide on elaboration checking for further details.
 The default is that such warnings
 are not generated.
-This warning is not automatically turned on by the use of @option{-gnatwa}.
 
 @item -gnatwL
 @emph{Suppress warnings for elaboration pragmas.}
@@ -5392,7 +5386,6 @@ This switch suppresses warnings for possible elaboration problems.
 This switch causes the compiler to list inherited invariants,
 preconditions, and postconditions from Type_Invariant'Class, Invariant'Class,
 Pre'Class, and Post'Class aspects. Also list inherited subtype predicates.
-These messages are not automatically turned on by the use of @option{-gnatwa}.
 
 @item -gnatw.L
 @emph{Suppress listing of inherited aspects.}
@@ -5407,7 +5400,6 @@ an initialization value or with one or more assignment statements) but
 whose value is never read. The warning is suppressed for volatile
 variables and also for variables that are renamings of other variables
 or for which an address clause is given.
-This warning can also be turned on using @option{-gnatwa}.
 The default is that these warnings are not given.
 
 @item -gnatwM
@@ -5449,9 +5441,7 @@ use of @option{-gnatg}.
 @cindex Atomic Synchronization, warnings
 This switch actives warnings when an access to an atomic variable
 requires the generation of atomic synchronization code. These
-warnings are off by default and this warning is not included
-in @code{-gnatwa}.
-
+warnings are off by default.
 @item -gnatw.N
 @emph{Suppress warnings on atomic synchronization.}
 @cindex @option{-gnatw.n} (@command{gcc})
@@ -5466,7 +5456,6 @@ requires the generation of atomic synchronization code.
 This switch activates warnings for possibly unintended initialization
 effects of defining address clauses that cause one variable to overlap
 another. The default is that such warnings are generated.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwO
 @emph{Suppress warnings on address clause overlays.}
@@ -5486,8 +5475,7 @@ mode formal, the warning is issued by default (controlled by -gnatwu).
 The warning is suppressed for volatile
 variables and also for variables that are renamings of other variables
 or for which an address clause is given.
-The default is that these warnings are not given. Note that this warning
-is not included in -gnatwa, it must be activated explicitly.
+The default is that these warnings are not given.
 
 @item -gnatw.O
 @emph{Disable warnings on modified but unreferenced out parameters.}
@@ -5505,7 +5493,6 @@ This switch activates warnings for failure of front end inlining
 many reasons for not being able to inline a call, including most
 commonly that the call is too complex to inline. The default is
 that such warnings are not given.
-This warning can also be turned on using @option{-gnatwa}.
 Warnings on ineffective inlining by the gcc back-end can be activated
 separately, using the gcc switch -Winline.
 
@@ -5526,9 +5513,7 @@ match the names of the formals, but are in a different order. The
 warning is suppressed if any use of named parameter notation is used,
 so this is the appropriate way to suppress a false positive (and
 serves to emphasize that the "misordering" is deliberate). The
-default is
-that such warnings are not given.
-This warning can also be turned on using @option{-gnatwa}.
+default is that such warnings are not given.
 
 @item -gnatw.P
 @emph{Suppress warnings on parameter ordering.}
@@ -5548,7 +5533,6 @@ quite likely ((-x) mod 5) was intended. In such situations it seems best to
 follow the rule of always parenthesizing to make the association clear, and
 this warning switch warns if such parentheses are not present. The default
 is that these warnings are given.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwQ
 @emph{Suppress warnings on questionable missing parentheses.}
@@ -5583,7 +5567,6 @@ to be non-negative
 Comparison of boolean expressions to an explicit True value.
 @end itemize
 
-This warning can also be turned on using @option{-gnatwa}.
 The default is that warnings for redundant constructs are not given.
 
 @item -gnatwR
@@ -5597,8 +5580,7 @@ This switch suppresses warnings for redundant constructs.
 This switch activates warnings for an object renaming that renames a
 function call, which is equivalent to a constant declaration (as
 opposed to renaming the function itself).  The default is that these
-warnings are given.  This warning can also be turned on using
-@option{-gnatwa}.
+warnings are given.
 
 @item -gnatw.R
 @emph{Suppress warnings for object renaming function.}
@@ -5631,7 +5613,6 @@ specified by an explicit size clause for the component type. A
 warning is similarly given in the array case if a specified
 component size overrides an explicit size clause for the array
 component type.
-Note that @option{-gnatwa} does not affect the setting of this warning option.
 
 @item -gnatw.S
 @emph{Suppress warnings on overridden size clauses.}
@@ -5647,8 +5628,7 @@ warnings when an array component size overrides a size clause.
 @cindex Deleted code, warnings
 This switch activates warnings for tracking of code in conditionals (IF and
 CASE statements) that is detected to be dead code which cannot be executed, and
-which is removed by the front end. This warning is off by default, and is not
-turned on by @option{-gnatwa}, it has to be turned on explicitly. This may be
+which is removed by the front end. This warning is off by default. This may be
 useful for detecting deactivated code in certified applications.
 
 @item -gnatwT
@@ -5667,7 +5647,7 @@ or contract case for this function mentions the result of the function.
 A procedure postcondition or contract case is suspicious when it only
 refers to the pre-state of the procedure, because in that case it should
 rather be expressed as a precondition. The default is that such warnings
-are not generated. This warning can also be turned on using @option{-gnatwa}.
+are not generated.
 
 @item -gnatw.T
 @emph{Suppress warnings on suspicious contracts.}
@@ -5694,7 +5674,6 @@ a warning is also generated, noting that the
 such warnings are not generated.
 This switch also activates warnings on unreferenced formals
 (it includes the effect of @option{-gnatwf}).
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwU
 @emph{Suppress warnings on unused entities.}
@@ -5715,7 +5694,6 @@ which the type is declared, or its body or subunits.) Please refer to
 the description of pragma @code{Ordered} in the
 @cite{@value{EDITION} Reference Manual} for further details.
 The default is that such warnings are not generated.
-This warning is not automatically turned on by the use of @option{-gnatwa}.
 
 @item -gnatw.U
 @emph{Deactivate warnings on unordered enumeration types.}
@@ -5730,7 +5708,6 @@ that no warnings are given for comparisons or subranges for any type.
 This switch activates warnings for access to variables which
 may not be properly initialized. The default is that
 such warnings are generated.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwV
 @emph{Suppress warnings on unassigned variables.}
@@ -5758,8 +5735,7 @@ just informational messages) about the effects of non-default bit-order
 on records to which a component clause is applied. The effect of specifying
 non-default bit ordering is a bit subtle (and changed with Ada 2005), so
 these messages, which are given by default, are useful in understanding the
-exact consequences of using this feature. These messages
-can also be turned on using @option{-gnatwa}
+exact consequences of using this feature.
 
 @item -gnatw.V
 @emph{Suppress info messages for non-default bit order.}
@@ -5775,7 +5751,6 @@ This switch activates warnings for indexing an unconstrained string parameter
 with a literal or S'Length. This is a case where the code is assuming that the
 low bound is one, which is in general not true (for example when a slice is
 passed). The default is that such warnings are generated.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwW
 @emph{Suppress warnings on wrong low bound assumption.}
@@ -5799,11 +5774,11 @@ as shown in the following example.
 This switch activates warnings for use of @code{pragma Warnings (Off, entity)}
 where either the pragma is entirely useless (because it suppresses no
 warnings), or it could be replaced by @code{pragma Unreferenced} or
-@code{pragma Unmodified}. The default is that these warnings are not given.
-Note that this warning is not included in -gnatwa, it must be
-activated explicitly. Also activates warnings for the case of
+@code{pragma Unmodified}.
+Also activates warnings for the case of
 Warnings (Off, String), where either there is no matching
 Warnings (On, String), or the Warnings (Off) did not suppress any warning.
+The default is that these warnings are not given.
 
 @item -gnatw.W
 @emph{Suppress warnings on unnecessary Warnings Off pragmas}
@@ -5821,7 +5796,6 @@ default parameters in a convention C procedure is dubious
 because the C compiler cannot supply the proper default, so
 a warning is issued. The default is that such warnings are
 generated.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwX
 @emph{Suppress warnings on Export/Import pragmas.}
@@ -5858,7 +5832,6 @@ switch activates several warnings to help in identifying
 and correcting such incompatibilities. The default is that
 these warnings are generated. Note that at one point Ada 2005
 was called Ada 0Y, hence the choice of character.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwY
 @emph{Disable warnings for Ada compatibility issues.}
@@ -5896,7 +5869,6 @@ sizes. The default
 is that such warnings are generated. Warnings are also
 generated for subprogram pointers with different conventions,
 and, on VMS only, for data pointers with different conventions.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwZ
 @emph{Suppress warnings on unchecked conversions.}
@@ -5914,7 +5886,6 @@ specified @code{Size} and @code{Alignment} attributes where the
 size is not a multiple of the alignment, resulting in an object
 size that is greater than the specified size. The default
 is that such warnings are generated.
-This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatw.Z
 @emph{Suppress warnings for size not a multiple of alignment.}

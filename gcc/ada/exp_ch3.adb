@@ -5252,8 +5252,10 @@ package body Exp_Ch3 is
             else
                --  Generate a dummy entity to ensure that the internal symbols
                --  are in sync when a unit is compiled with and without aborts.
+               --  The entity is a block with proper scope and type.
 
                Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+               Set_Etype (Dummy, Standard_Void_Type);
                Abrt_Stmts := Fin_Stmts;
             end if;
 
