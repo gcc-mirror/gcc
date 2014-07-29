@@ -3043,9 +3043,9 @@ enum assignment_mod_result { SRA_AM_NONE,       /* nothing done for the stmt */
    the same values as sra_modify_assign.  */
 
 static enum assignment_mod_result
-sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
+sra_modify_constructor_assign (gimple stmt, gimple_stmt_iterator *gsi)
 {
-  tree lhs = gimple_assign_lhs (*stmt);
+  tree lhs = gimple_assign_lhs (stmt);
   struct access *acc;
   location_t loc;
 
@@ -3053,23 +3053,23 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!acc)
     return SRA_AM_NONE;
 
-  if (gimple_clobber_p (*stmt))
+  if (gimple_clobber_p (stmt))
     {
       /* Remove clobbers of fully scalarized variables, otherwise
 	 do nothing.  */
       if (acc->grp_covered)
 	{
-	  unlink_stmt_vdef (*stmt);
+	  unlink_stmt_vdef (stmt);
 	  gsi_remove (gsi, true);
-	  release_defs (*stmt);
+	  release_defs (stmt);
 	  return SRA_AM_REMOVED;
 	}
       else
 	return SRA_AM_NONE;
     }
 
-  loc = gimple_location (*stmt);
-  if (vec_safe_length (CONSTRUCTOR_ELTS (gimple_assign_rhs1 (*stmt))) > 0)
+  loc = gimple_location (stmt);
+  if (vec_safe_length (CONSTRUCTOR_ELTS (gimple_assign_rhs1 (stmt))) > 0)
     {
       /* I have never seen this code path trigger but if it can happen the
 	 following should handle it gracefully.  */
@@ -3082,9 +3082,9 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   if (acc->grp_covered)
     {
       init_subtree_with_zero (acc, gsi, false, loc);
-      unlink_stmt_vdef (*stmt);
+      unlink_stmt_vdef (stmt);
       gsi_remove (gsi, true);
-      release_defs (*stmt);
+      release_defs (stmt);
       return SRA_AM_REMOVED;
     }
   else
@@ -3133,7 +3133,7 @@ contains_vce_or_bfcref_p (const_tree ref)
    copying.  */
 
 static enum assignment_mod_result
-sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
+sra_modify_assign (gimple stmt, gimple_stmt_iterator *gsi)
 {
   struct access *lacc, *racc;
   tree lhs, rhs;
@@ -3142,10 +3142,10 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   location_t loc;
   gimple_stmt_iterator orig_gsi = *gsi;
 
-  if (!gimple_assign_single_p (*stmt))
+  if (!gimple_assign_single_p (stmt))
     return SRA_AM_NONE;
-  lhs = gimple_assign_lhs (*stmt);
-  rhs = gimple_assign_rhs1 (*stmt);
+  lhs = gimple_assign_lhs (stmt);
+  rhs = gimple_assign_rhs1 (stmt);
 
   if (TREE_CODE (rhs) == CONSTRUCTOR)
     return sra_modify_constructor_assign (stmt, gsi);
@@ -3154,9 +3154,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       || TREE_CODE (rhs) == IMAGPART_EXPR || TREE_CODE (lhs) == IMAGPART_EXPR
       || TREE_CODE (rhs) == BIT_FIELD_REF || TREE_CODE (lhs) == BIT_FIELD_REF)
     {
-      modify_this_stmt = sra_modify_expr (gimple_assign_rhs1_ptr (*stmt),
+      modify_this_stmt = sra_modify_expr (gimple_assign_rhs1_ptr (stmt),
 					  gsi, false);
-      modify_this_stmt |= sra_modify_expr (gimple_assign_lhs_ptr (*stmt),
+      modify_this_stmt |= sra_modify_expr (gimple_assign_lhs_ptr (stmt),
 					   gsi, true);
       return modify_this_stmt ? SRA_AM_MODIFIED : SRA_AM_NONE;
     }
@@ -3166,11 +3166,11 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!lacc && !racc)
     return SRA_AM_NONE;
 
-  loc = gimple_location (*stmt);
+  loc = gimple_location (stmt);
   if (lacc && lacc->grp_to_be_replaced)
     {
       lhs = get_access_replacement (lacc);
-      gimple_assign_set_lhs (*stmt, lhs);
+      gimple_assign_set_lhs (stmt, lhs);
       modify_this_stmt = true;
       if (lacc->grp_partial_lhs)
 	force_gimple_rhs = true;
@@ -3206,7 +3206,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      && !contains_bitfld_component_ref_p (lhs))
 	    {
 	      lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
-	      gimple_assign_set_lhs (*stmt, lhs);
+	      gimple_assign_set_lhs (stmt, lhs);
 	    }
 	  else if (AGGREGATE_TYPE_P (TREE_TYPE (rhs))
 		   && !contains_vce_or_bfcref_p (rhs))
@@ -3238,7 +3238,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	    drhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR,
 				    TREE_TYPE (dlhs), drhs);
 	}
-      gimple ds = gimple_build_debug_bind (dlhs, drhs, *stmt);
+      gimple ds = gimple_build_debug_bind (dlhs, drhs, stmt);
       gsi_insert_before (gsi, ds, GSI_SAME_STMT);
     }
 
@@ -3276,10 +3276,10 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
      This is what the first branch does.  */
 
   if (modify_this_stmt
-      || gimple_has_volatile_ops (*stmt)
+      || gimple_has_volatile_ops (stmt)
       || contains_vce_or_bfcref_p (rhs)
       || contains_vce_or_bfcref_p (lhs)
-      || stmt_ends_bb_p (*stmt))
+      || stmt_ends_bb_p (stmt))
     {
       if (access_has_children_p (racc))
 	generate_subtree_copies (racc->first_child, rhs, racc->offset, 0, 0,
@@ -3287,7 +3287,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       if (access_has_children_p (lacc))
 	{
 	  gimple_stmt_iterator alt_gsi = gsi_none ();
-	  if (stmt_ends_bb_p (*stmt))
+	  if (stmt_ends_bb_p (stmt))
 	    {
 	      alt_gsi = gsi_start_edge (single_non_eh_succ (gsi_bb (*gsi)));
 	      gsi = &alt_gsi;
@@ -3303,11 +3303,11 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       if (force_gimple_rhs)
 	rhs = force_gimple_operand_gsi (&orig_gsi, rhs, true, NULL_TREE,
 					true, GSI_SAME_STMT);
-      if (gimple_assign_rhs1 (*stmt) != rhs)
+      if (gimple_assign_rhs1 (stmt) != rhs)
 	{
 	  modify_this_stmt = true;
 	  gimple_assign_set_rhs_from_tree (&orig_gsi, rhs);
-	  gcc_assert (*stmt == gsi_stmt (orig_gsi));
+	  gcc_assert (stmt == gsi_stmt (orig_gsi));
 	}
 
       return modify_this_stmt ? SRA_AM_MODIFIED : SRA_AM_NONE;
@@ -3330,7 +3330,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	  sad.top_racc = racc;
 	  sad.old_gsi = *gsi;
 	  sad.new_gsi = gsi;
-	  sad.loc = gimple_location (*stmt);
+	  sad.loc = gimple_location (stmt);
 	  sad.refreshed = SRA_UDH_NONE;
 
 	  if (lacc->grp_read && !lacc->grp_covered)
@@ -3340,9 +3340,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	  if (sad.refreshed != SRA_UDH_RIGHT)
 	    {
 	      gsi_next (gsi);
-	      unlink_stmt_vdef (*stmt);
+	      unlink_stmt_vdef (stmt);
 	      gsi_remove (&sad.old_gsi, true);
-	      release_defs (*stmt);
+	      release_defs (stmt);
 	      sra_stats.deleted++;
 	      return SRA_AM_REMOVED;
 	    }
@@ -3355,15 +3355,15 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Removing load: ");
-		  print_gimple_stmt (dump_file, *stmt, 0, 0);
+		  print_gimple_stmt (dump_file, stmt, 0, 0);
 		}
 	      generate_subtree_copies (racc->first_child, lhs,
 				       racc->offset, 0, 0, gsi,
 				       false, false, loc);
-	      gcc_assert (*stmt == gsi_stmt (*gsi));
-	      unlink_stmt_vdef (*stmt);
+	      gcc_assert (stmt == gsi_stmt (*gsi));
+	      unlink_stmt_vdef (stmt);
 	      gsi_remove (gsi, true);
-	      release_defs (*stmt);
+	      release_defs (stmt);
 	      sra_stats.deleted++;
 	      return SRA_AM_REMOVED;
 	    }
@@ -3414,7 +3414,7 @@ sra_modify_function_body (void)
 	      break;
 
 	    case GIMPLE_ASSIGN:
-	      assign_result = sra_modify_assign (&stmt, &gsi);
+	      assign_result = sra_modify_assign (stmt, &gsi);
 	      modified |= assign_result == SRA_AM_MODIFIED;
 	      deleted = assign_result == SRA_AM_REMOVED;
 	      break;
