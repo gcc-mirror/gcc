@@ -1,3 +1,8 @@
+2014-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/52478
+	* expr.c (expand_expr_real_2): Revert last change.
+
 2014-07-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::create_indirect_edge): Copy speculative data.

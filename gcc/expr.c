@@ -9212,9 +9212,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
   if (modifier == EXPAND_STACK_PARM)
     target = 0;
   temp = expand_binop (mode, this_optab, op0, op1, target,
-		       unsignedp,
-		       trapv_binoptab_p (this_optab)
-		       ? OPTAB_LIB : OPTAB_LIB_WIDEN);
+		       unsignedp, OPTAB_LIB_WIDEN);
   gcc_assert (temp);
   /* Bitwise operations do not need bitfield reduction as we expect their
      operands being properly truncated.  */
