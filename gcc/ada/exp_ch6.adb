@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -189,6 +188,9 @@ package body Exp_Ch6 is
    --
    --  For non-scalar objects that are possibly unaligned, add call by copy
    --  code (copy in for IN and IN OUT, copy out for OUT and IN OUT).
+   --
+   --  For OUT and IN OUT parameters, add predicate checks after the call
+   --  based on the predicates of the actual type.
    --
    --  The parameter N is IN OUT because in some cases, the expansion code
    --  rewrites the call as an expression actions with the call inside. In
@@ -1082,19 +1084,18 @@ package body Exp_Ch6 is
                Init := Empty;
                Indic :=
                  Make_Subtype_Indication (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (F_Typ, Loc),
+                   Subtype_Mark => New_Occurrence_Of (F_Typ, Loc),
                    Constraint   =>
                      Make_Index_Or_Discriminant_Constraint (Loc,
                        Constraints => New_List (
                          Make_Range (Loc,
                            Low_Bound  =>
                              Make_Attribute_Reference (Loc,
-                               Prefix => New_Occurrence_Of (Var, Loc),
+                               Prefix         => New_Occurrence_Of (Var, Loc),
                                Attribute_Name => Name_First),
                            High_Bound =>
                              Make_Attribute_Reference (Loc,
-                               Prefix => New_Occurrence_Of (Var, Loc),
+                               Prefix         => New_Occurrence_Of (Var, Loc),
                                Attribute_Name => Name_Last)))));
 
             else
@@ -1720,7 +1721,7 @@ package body Exp_Ch6 is
                Add_Call_By_Copy_Code;
             end if;
 
-            --  RM 3.2.4 (23/3) : A predicate is checked on in-out and out
+            --  RM 3.2.4 (23/3): A predicate is checked on in-out and out
             --  by-reference parameters on exit from the call. If the actual
             --  is a derived type and the operation is inherited, the body
             --  of the operation will not contain a call to the predicate
@@ -1732,28 +1733,33 @@ package body Exp_Ch6 is
             --  for subtype conversion on assignment, but we can generate the
             --  required check now.
 
-            --  Note that this is needed only if the subtype of the actual has
-            --  an explicit predicate aspect, not if it inherits them from a
-            --  base type or ancestor. The check is also superfluous if the
-            --  subtype is elaborated before the body of the subprogram, but
-            --  this is harder to verify, and there may be a redundant check.
-
             --  Note also that Subp may be either a subprogram entity for
             --  direct calls, or a type entity for indirect calls, which must
             --  be handled separately because the name does not denote an
             --  overloadable entity.
 
-            if not Is_Init_Proc (Subp)
-              and then (Has_Aspect (E_Actual, Aspect_Predicate)
-                          or else
-                        Has_Aspect (E_Actual, Aspect_Dynamic_Predicate)
-                          or else
-                        Has_Aspect (E_Actual, Aspect_Static_Predicate))
-              and then Present (Predicate_Function (E_Actual))
-            then
-               Append_To (Post_Call,
-                 Make_Predicate_Check (E_Actual, Actual));
-            end if;
+            declare
+               Aund : constant Entity_Id := Underlying_Type (E_Actual);
+               Atyp : Entity_Id;
+
+            begin
+               if No (Aund) then
+                  Atyp := E_Actual;
+               else
+                  Atyp := Aund;
+               end if;
+
+               if Has_Predicates (Atyp)
+                 and then Present (Predicate_Function (Atyp))
+
+                 --  Skip predicate checks for special cases
+
+                 and then not No_Predicate_Test_On_Arguments (Subp)
+               then
+                  Append_To (Post_Call,
+                    Make_Predicate_Check (Atyp, Actual));
+               end if;
+            end;
 
          --  Processing for IN parameters
 

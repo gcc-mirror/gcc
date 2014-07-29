@@ -1582,6 +1582,11 @@ package Sem_Util is
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
 
+   function No_Predicate_Test_On_Arguments (Subp : Entity_Id) return Boolean;
+   --  Subp is the entity for a subprogram call. This function returns True to
+   --  eliminate predicate tests on the input or output arguments in a call to
+   --  this subprogram. See body for exact cases currently covered.
+
    function No_Scalar_Parts (T : Entity_Id) return Boolean;
    --  Tests if type T can be determined at compile time to have no scalar
    --  parts in the sense of the Valid_Scalars attribute. Returns True if

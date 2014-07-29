@@ -12319,23 +12319,28 @@ directory is searched for a file whose name is @file{gnat.adc}. If
 this file is present, it is expected to contain one or more
 configuration pragmas that will be applied to the current compilation.
 However, if the switch @option{-gnatA} is used, @file{gnat.adc} is not
-considered.
+considered. When taken into account, @file{gnat.adc} is added to the
+dependencies, so that if @file{gnat.adc} is modified later, an invocation of
+@command{gnatmake} will recompile the source.
 
 Configuration pragmas may be entered into the @file{gnat.adc} file
 either by running @code{gnatchop} on a source file that consists only of
-configuration pragmas, or more conveniently  by
-direct editing of the @file{gnat.adc} file, which is a standard format
-source file.
+configuration pragmas, or more conveniently by direct editing of the
+@file{gnat.adc} file, which is a standard format source file.
 
 In addition to @file{gnat.adc}, additional files containing configuration
 pragmas may be applied to the current compilation using the switch
-@option{-gnatec}@var{path}. @var{path} must designate an existing file that
+@option{-gnatec=}@var{path}. @var{path} must designate an existing file that
 contains only configuration pragmas. These configuration pragmas are
 in addition to those found in @file{gnat.adc} (provided @file{gnat.adc}
 is present and switch @option{-gnatA} is not used).
 
-It is allowed to specify several switches @option{-gnatec}, all of which
+It is allowable to specify several switches @option{-gnatec=}, all of which
 will be taken into account.
+
+Files containing configuration pragmas specified with switches
+@option{-gnatec=} are added to the dependencies, unless they contain
+only pragmas Source_File_Name_Project.
 
 If you are using project file, a separate mechanism is provided using
 project attributes, see @ref{Specifying Configuration Pragmas} for more

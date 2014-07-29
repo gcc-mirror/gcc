@@ -1,3 +1,37 @@
+2014-07-29  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Document that configuration pragmas files are
+	added to the dependencies, unless they contain only pragmas
+	Source_File_Name_Project.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb: Minor reformatting.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Minor reformatting
+	(Expand_Actuals): Make sure predicate checks are properly applied
+	for the case of OUT or IN OUT parameters.
+	* sem_res.adb: Minor reformatting (Resolve_Actuals): Skip
+	predicate tests on arguments for Finalize
+	* sem_util.adb (No_Predicate_Test_On_Arguments): Returns True
+	if predicate tests on subprogram arguments should be skipped.
+	* sem_util.ads (No_Predicate_Test_On_Arguments): New function
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If there is an address
+	clause for the object and the expression is an aggregate, defer
+	resolution and expansion of the aggregate until the freeze point
+	of the entity.
+	* sem_aggr.adb (Resolve_Aggregate): An others_clause is legal if
+	the parent node is an N_Reference generated during expansion.
+
+2014-07-29  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Add_To_Buffer): Effectively double the size of the buffer.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* frontend.adb, inline.adb, sem_util.adb, sem_res.adb,

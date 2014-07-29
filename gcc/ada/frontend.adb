@@ -71,8 +71,8 @@ procedure Frontend is
    Config_Pragmas : List_Id;
    --  Gather configuration pragmas
 
-   function Need_To_Be_In_The_Dependencies (Pragma_List : List_Id)
-     return Boolean;
+   function Need_To_Be_In_The_Dependencies
+     (Pragma_List : List_Id) return Boolean;
    --  Check if a configuration pragmas file that contains the Pragma_List
    --  should be a dependency for the source being compiled. Returns
    --  False if Pragma_List is Error_List or contains only pragmas
@@ -82,11 +82,12 @@ procedure Frontend is
    -- Need_To_Be_In_The_Dependencies --
    ------------------------------------
 
-   function Need_To_Be_In_The_Dependencies (Pragma_List : List_Id)
-     return Boolean
+   function Need_To_Be_In_The_Dependencies
+     (Pragma_List : List_Id) return Boolean
    is
       Prag  : Node_Id;
       Pname : Name_Id;
+
    begin
       if Pragma_List /= Error_List then
          Prag := First (Pragma_List);
@@ -103,6 +104,8 @@ procedure Frontend is
 
       return False;
    end Need_To_Be_In_The_Dependencies;
+
+--  Start of processing for Frontend
 
 begin
    --  Carry out package initializations. These are initializations which might
@@ -272,7 +275,8 @@ begin
 
                declare
                   Pragma_List : constant List_Id :=
-                    Par (Configuration_Pragmas => True);
+                                  Par (Configuration_Pragmas => True);
+
                begin
                   if Need_To_Be_In_The_Dependencies (Pragma_List) then
                      Prepcomp.Add_Dependency (Source_Config_File);
