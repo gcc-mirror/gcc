@@ -3341,27 +3341,62 @@ package body Sem_Ch6 is
 
       --  Note: Normally we don't do any inlining if expansion is off, since
       --  we won't generate code in any case. An exception arises in GNATprove
-      --  mode where we want to expand calls in place whenever possible, even
-      --  with expansion disabled since the inlining eases proofs.
+      --  mode where we want to expand some calls in place, even with expansion
+      --  disabled, since the inlining eases formal verification.
 
       --  Old semantics
 
       if not Debug_Flag_Dot_K then
          if Present (Spec_Id)
-           and then (Expander_Active or else GNATprove_Mode)
+           and then Expander_Active
            and then
              (Has_Pragma_Inline_Always (Spec_Id)
-               or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
+              or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
+         then
+            Build_Body_To_Inline (N, Spec_Id);
+
+         --  In GNATprove mode, inline only when there is a separate subprogram
+         --  declaration for now, as inlining of subprogram bodies acting as
+         --  declarations, or subprogram stubs, are not supported by frontend
+         --  inlining. This inlining should occur after analysis of the body,
+         --  so that it is known whether the value of SPARK_Mode applicable to
+         --  the body, which can be defined by a pragma inside the body.
+
+         elsif GNATprove_Mode
+           and then Debug_Flag_QQ
+           and then Full_Analysis
+           and then not Inside_A_Generic
+           and then Present (Spec_Id)
+           and then
+             Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
+           and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
          then
             Build_Body_To_Inline (N, Spec_Id);
          end if;
 
       --  New semantics (enabled by debug flag gnatd.k for testing)
 
-      elsif (Expander_Active or else GNATprove_Mode)
+      elsif Expander_Active
         and then Serious_Errors_Detected = 0
         and then Present (Spec_Id)
         and then Has_Pragma_Inline (Spec_Id)
+      then
+         Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
+
+      --  In GNATprove mode, inline only when there is a separate subprogram
+      --  declaration for now, as inlining of subprogram bodies acting as
+      --  declarations, or subprogram stubs, are not supported by frontend
+      --  inlining. This inlining should occur after analysis of the body, so
+      --  that it is known whether the value of SPARK_Mode applicable to the
+      --  body, which can be defined by a pragma inside the body.
+
+      elsif GNATprove_Mode
+        and then Debug_Flag_QQ
+        and then Full_Analysis
+        and then not Inside_A_Generic
+        and then Present (Spec_Id)
+        and then Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
+        and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
       then
          Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
       end if;

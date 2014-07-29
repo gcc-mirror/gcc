@@ -1203,10 +1203,9 @@ package body Sem_Ch10 is
         and then Get_Cunit_Unit_Number (N) /= Main_Unit
 
         --  We don't need to do this if the Expander is not active, since there
-        --  is no code to inline. However an exception is that we do the call
-        --  in GNATprove mode, since the resulting inlining eases proofs.
+        --  is no code to inline.
 
-        and then (Expander_Active or GNATprove_Mode)
+        and then Expander_Active
       then
          declare
             Save_Style_Check : constant Boolean := Style_Check;

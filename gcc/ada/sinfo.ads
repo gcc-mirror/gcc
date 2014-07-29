@@ -817,7 +817,7 @@ package Sinfo is
    --    set, it means that the front end can assure no overlap of operands.
 
    --  Body_To_Inline (Node3-Sem)
-   --    present in subprogram declarations. Denotes analyzed but unexpanded
+   --    Present in subprogram declarations. Denotes analyzed but unexpanded
    --    body of subprogram, to be used when inlining calls. Present when the
    --    subprogram has an Inline pragma and inlining is enabled. If the
    --    declaration is completed by a renaming_as_body, and the renamed en-
