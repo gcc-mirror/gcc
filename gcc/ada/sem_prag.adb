@@ -16720,7 +16720,10 @@ package body Sem_Prag is
             Hint := First (Pragma_Argument_Associations (N));
             while Present (Hint) loop
                Check_Arg_Is_One_Of (Hint, Name_Ivdep,
-                 Name_No_Unroll, Name_Unroll, Name_No_Vector, Name_Vector);
+                                          Name_No_Unroll,
+                                          Name_Unroll,
+                                          Name_No_Vector,
+                                          Name_Vector);
                Next (Hint);
             end loop;
 

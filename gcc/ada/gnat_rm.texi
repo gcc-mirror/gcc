@@ -4573,7 +4573,9 @@ There are five supported optimization hints for a loop:
 @itemize @bullet
 @item Ivdep
 
-The programmer asserts that there are no loop-carried dependencies which would prevent consecutive iterations of the loop from being executed simultaneously.
+The programmer asserts that there are no loop-carried dependencies
+which would prevent consecutive iterations of the loop from being
+executed simultaneously.
 
 @item No_Unroll
 
@@ -4599,7 +4601,7 @@ unrolling, but there is no guarantee that the loop will be vectorized.
 
 @end itemize
 
-These hints do not void the need to pass the appropriate switches to the
+These hints do not remove the need to pass the appropriate switches to the
 compiler in order to enable the relevant optimizations, that is to say
 @option{-funroll-loops} for unrolling and @option{-ftree-vectorize} for
 vectorization.
@@ -8345,7 +8347,30 @@ that it is separately controllable using pragma @code{Assertion_Policy}.
 @unnumberedsec Aspect Iterable
 @findex Iterable
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+This aspect is used in the GNAT-defined formal container packages, to provide
+a light-weight mechanism for loops over such containers, without the overhead
+imposed by the tampering checks of standard Ada2012 iterators. The value of the
+aspect is a aggregate with four named  components: First, Next, Has_Element,
+and Element. The following is a typical example of use:
+
+@smallexample @c ada
+type List is private with
+    Iterable => (First        => First_Element,
+                 Next         => Advance,
+                 Has_Element  => Get_Element,
+                 Element      => List_Element);
+@end smallexample
+@itemize @bullet
+@item The value denoted by @code{First} must denote a primitive operation of
+the  container type that returns a Cursor, which must a be a type declared in
+the container package.
+@item The value of @code{Next} is a primitive operation of the container type
+that takes a cursor and yields a cursor.
+@item @code{Has_Element} is an operation that applies to a cursor a yields an
+element of the container.
+@item @code{Element} is the type of the elements of the container type, and
+thus the result of the function denoted by Has_Element.
+@end itemize
 
 @node Aspect Linker_Section
 @unnumberedsec Aspect Linker_Section
@@ -9107,7 +9132,7 @@ relevant environment variables at run time.
 @unnumberedsec Attribute Iterable
 @findex Iterable
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+Equivalent to Aspect Iterable.
 
 @node Attribute Large
 @unnumberedsec Attribute Large

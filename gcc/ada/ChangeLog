@@ -1,3 +1,22 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, sem_prag.adb: Minor reformatting.
+
+2014-07-29  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: gnatmetric: clarify documentation for cyclomatic
+	complexity metrics.
+
+2014-07-29  Thomas Quinot  <quinot@adacore.com>
+
+	PR ada/60652
+	* s-oscons-tmplt.c: For Linux, define _BSD_SOURCE in order for
+	CRTSCTS to be visible.
+
+2014-07-29  Bob Duff  <duff@adacore.com>
+
+	* g-trasym.adb, g-trasym.ads: Code cleanup.
+
 2014-07-29  Doug Rupp  <rupp@adacore.com>
 
 	* sigtramp-vxworks.c: Minor reformatting.
