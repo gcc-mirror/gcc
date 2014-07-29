@@ -1612,8 +1612,13 @@ package Sinfo is
    --    of an object allocated on the stack rather than the heap.
 
    --  Is_Static_Expression (Flag6-Sem)
-   --    Indicates that an expression is a static expression (RM 4.9). See spec
-   --    of package Sem_Eval for full details on the use of this flag.
+   --    Indicates that an expression is a static expression according to the
+   --    rules in (RM 4.9). Note that it is possible for this flag to be set
+   --    when Raises_Constraint_Error is also set. In practice almost all cases
+   --    where a static expression is required do not allow an expression which
+   --    raises Constraint_Error, so almost always, callers should call the
+   --    Is_Ok_Static_Exprression routine instead of testing this flag. See
+   --    spec of package Sem_Eval for full details on the use of this flag.
 
    --  Is_Subprogram_Descriptor (Flag16-Sem)
    --    Present in N_Object_Declaration, and set only for the object

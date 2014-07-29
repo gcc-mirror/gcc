@@ -1,3 +1,37 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Change Is_Static_Range
+	to Is_OK_Static_Range.
+	* sem_attr.adb (Eval_Attribute): Make sure we properly flag
+	static attributes (Eval_Attribute, case Size): Handle size of
+	zero properly (Eval_Attribute, case Value_Size): Handle size of
+	zero properly.
+	* sem_ch13.adb: Minor reformatting.
+	* sem_ch3.adb (Process_Range_Expr_In_Decl): Change
+	Is_Static_Range to Is_OK_Static_Range.
+	* sem_eval.adb (Eval_Case_Expression): Total rewrite, was
+	wrong in several ways (Is_Static_Range): Moved here from spec
+	(Is_Static_Subtype): Moved here from spec Change some incorrect
+	Is_Static_Subtype calls to Is_OK_Static_Subtype.
+	* sem_eval.ads: Add comments to section on
+	Is_Static_Expression/Raises_Constraint_Error (Is_OK_Static_Range):
+	Add clarifying comments (Is_Static_Range): Moved to body
+	(Is_Statically_Unevaluated): New function.
+	* sem_util.ads, sem_util.adb (Is_Preelaborable_Expression): Change
+	Is_Static_Range to Is_OK_Static_Range.
+	* sinfo.ads: Additional commments for Is_Static_Expression noting
+	that clients should almost always use Is_OK_Static_Expression
+	instead. Many other changes throughout front end units to obey
+	this rule.
+	* tbuild.ads, tbuild.adb (New_Occurrence_Of): Set Is_Static_Expression
+	for enumeration literal.
+	* exp_ch5.adb, sem_intr.adb, sem_ch5.adb, exp_attr.adb, exp_ch9.adb,
+	lib-writ.adb, sem_ch9.adb, einfo.ads, checks.adb, checks.ads,
+	sem_prag.adb, sem_ch12.adb, freeze.adb, sem_res.adb, exp_ch4.adb,
+	exp_ch6.adb, sem_ch4.adb, sem_ch6.adb, exp_aggr.adb, sem_cat.adb:
+	Replace all occurrences of Is_Static_Expression by
+	Is_OK_Static_Expression.
+
 2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Process_Transient_Object): Remove constant

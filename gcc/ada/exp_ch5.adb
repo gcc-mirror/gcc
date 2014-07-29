@@ -1734,7 +1734,6 @@ package body Exp_Ch5 is
          --  First deal with generation of range check if required
 
          if Do_Range_Check (Rhs) then
-            Set_Do_Range_Check (Rhs, False);
             Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
          end if;
 
@@ -4061,7 +4060,7 @@ package body Exp_Ch5 is
 
             function Hi_Val (N : Node_Id) return Node_Id is
             begin
-               if Is_Static_Expression (N) then
+               if Is_OK_Static_Expression (N) then
                   return New_Copy (N);
                else
                   pragma Assert (Nkind (N) = N_Range);
@@ -4075,7 +4074,7 @@ package body Exp_Ch5 is
 
             function Lo_Val (N : Node_Id) return Node_Id is
             begin
-               if Is_Static_Expression (N) then
+               if Is_OK_Static_Expression (N) then
                   return New_Copy (N);
                else
                   pragma Assert (Nkind (N) = N_Range);

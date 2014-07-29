@@ -1878,13 +1878,13 @@ package Einfo is
 --       include only the components corresponding to these discriminants.
 
 --    Has_Static_Predicate (Flag269)
---       Defined in all types and subtypes. Set if the type (which must be
---       a discrete, real, or string subtype) has a static predicate, i.e. a
---       predicate whose expression is predicate-static. This can result from
---       use of a Predicate, Static_Predicate, or Dynamic_Predicate aspect. We
---       can distinguish these cases by testing Has_Static_Predicate_Aspect
---       and Has_Dynamic_Predicate_Aspect. See description of the latter flag
---       for further information on dynamic predicates which are also static.
+--       Defined in all types and subtypes. Set if the type (which must be a
+--       scalar type) has a predicate whose expression is predicate-static.
+--       This can result from use of any of a Predicate, Static_Predicate, or
+--       Dynamic_Predicate aspect. We can distinguish these cases by testing
+--       Has_Static_Predicate_Aspect and Has_Dynamic_Predicate_Aspect. See
+--       description of the latter flag for further information on dynamic
+--       predicates which are also static.
 
 --    Has_Static_Predicate_Aspect (Flag259)
 --       Defined in all types and subtypes. Set if a Static_Predicate aspect

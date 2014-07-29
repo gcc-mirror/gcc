@@ -5722,13 +5722,18 @@ package body Exp_Ch3 is
                elsif Nkind (Expr) /= N_Error then
                   Apply_Constraint_Check (Expr, Typ);
 
-                  --  If the expression has been marked as requiring a range
-                  --  check, generate it now and reset the flag.
+                  --  Deal with possible range check
 
                   if Do_Range_Check (Expr) then
-                     Set_Do_Range_Check (Expr, False);
 
-                     if not Suppress_Assignment_Checks (N) then
+                     --  If assignment checks are suppressed, turn off flag
+
+                     if Suppress_Assignment_Checks (N) then
+                        Set_Do_Range_Check (Expr, False);
+
+                     --  Otherwise generate the range check
+
+                     else
                         Generate_Range_Check
                           (Expr, Typ, CE_Range_Check_Failed);
                      end if;

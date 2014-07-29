@@ -2753,7 +2753,6 @@ package body Exp_Ch6 is
          if Do_Range_Check (Actual)
            and then Ekind (Formal) = E_In_Parameter
          then
-            Set_Do_Range_Check (Actual, False);
             Generate_Range_Check
               (Actual, Etype (Formal), CE_Range_Check_Failed);
          end if;
@@ -3676,7 +3675,6 @@ package body Exp_Ch6 is
                      --  check, then generate it here.
 
                      if Do_Range_Check (Actual) then
-                        Set_Do_Range_Check (Actual, False);
                         Generate_Range_Check
                           (Actual, Etype (Formal), CE_Range_Check_Failed);
                      end if;

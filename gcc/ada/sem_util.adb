@@ -1684,55 +1684,6 @@ package body Sem_Util is
       end if;
    end Check_Dynamically_Tagged_Expression;
 
-   -----------------------------------------------
-   -- Check_Expression_Against_Static_Predicate --
-   -----------------------------------------------
-
-   procedure Check_Expression_Against_Static_Predicate
-     (Expr : Node_Id;
-      Typ  : Entity_Id)
-   is
-   begin
-      --  When the predicate is static and the value of the expression is known
-      --  at compile time, evaluate the predicate check. A type is non-static
-      --  when it has aspect Dynamic_Predicate, but if the dynamic predicate
-      --  was predicate-static, we still check it statically. After all this
-      --  is only a warning, not an error.
-
-      if Compile_Time_Known_Value (Expr)
-        and then Has_Predicates (Typ)
-        and then Has_Static_Predicate (Typ)
-      then
-         --  Either -gnatc is enabled or the expression is ok
-
-         if Operating_Mode < Generate_Code
-           or else Eval_Static_Predicate_Check (Expr, Typ)
-         then
-            null;
-
-         --  The expression is prohibited by the static predicate. There has
-         --  been some debate if this is an illegality (in the case where
-         --  the static predicate was explicitly given as such), but that
-         --  discussion decided this was not illegal, just a warning situation.
-
-         else
-            Error_Msg_NE
-              ("??static expression fails predicate check on &", Expr, Typ);
-
-            --  We now reset the static expression indication on the expression
-            --  since it is no longer static if it fails a predicate test. We
-            --  do not do this if the predicate was officially dynamic, since
-            --  dynamic predicates don't affect legality in this manner.
-
-            if not Has_Dynamic_Predicate_Aspect (Typ) then
-               Error_Msg_N
-                 ("\??expression is no longer considered static", Expr);
-               Set_Is_Static_Expression (Expr, False);
-            end if;
-         end if;
-      end if;
-   end Check_Expression_Against_Static_Predicate;
-
    --------------------------
    -- Check_Fully_Declared --
    --------------------------
@@ -1944,7 +1895,7 @@ package body Sem_Util is
             return;
          end if;
 
-         if Nkind (N) in N_Subexpr and then Is_Static_Expression (N) then
+         if Nkind (N) in N_Subexpr and then Is_OK_Static_Expression (N) then
             return;
          end if;
 
@@ -2209,7 +2160,7 @@ package body Sem_Util is
                            --  bounds.
 
                            else
-                              pragma Assert (Is_Static_Expression (Choice)
+                              pragma Assert (Is_OK_Static_Expression (Choice)
                                 or else Nkind (Choice) = N_Identifier
                                 or else Nkind (Choice) = N_Integer_Literal);
 
@@ -2280,7 +2231,7 @@ package body Sem_Util is
                if Present (Expressions (N)) then
                   Comp_Expr := First (Expressions (N));
                   while Present (Comp_Expr) loop
-                     if not Is_Static_Expression (Comp_Expr) then
+                     if not Is_OK_Static_Expression (Comp_Expr) then
                         Collect_Identifiers (Comp_Expr);
                      end if;
 
@@ -3602,10 +3553,9 @@ package body Sem_Util is
 
       Msgl : Natural;
       Wmsg : Boolean;
-      P    : Node_Id;
-      OldP : Node_Id;
-      Msgs : Boolean;
       Eloc : Source_Ptr;
+
+   --  Start of processing for Compile_Time_Constraint_Error
 
    begin
       --  If this is a warning, convert it into an error if we are in code
@@ -3677,82 +3627,12 @@ package body Sem_Util is
             Msgc (Msgl) := '!';
          end if;
 
-         --  Should we generate a warning? The answer is not quite yes. The
-         --  very annoying exception occurs in the case of a short circuit
-         --  operator where the left operand is static and decisive. Climb
-         --  parents to see if that is the case we have here. Conditional
-         --  expressions with decisive conditions are a similar situation.
+         --  One more test, skip the warning if the related expression is
+         --  statically unevaluated, since we don't want to warn about what
+         --  will happen when something is evaluated if it never will be
+         --  evaluated.
 
-         Msgs := True;
-         P := N;
-         loop
-            OldP := P;
-            P := Parent (P);
-
-            --  And then with False as left operand
-
-            if Nkind (P) = N_And_Then
-              and then Compile_Time_Known_Value (Left_Opnd (P))
-              and then Is_False (Expr_Value (Left_Opnd (P)))
-            then
-               Msgs := False;
-               exit;
-
-            --  OR ELSE with True as left operand
-
-            elsif Nkind (P) = N_Or_Else
-              and then Compile_Time_Known_Value (Left_Opnd (P))
-              and then Is_True (Expr_Value (Left_Opnd (P)))
-            then
-               Msgs := False;
-               exit;
-
-            --  If expression
-
-            elsif Nkind (P) = N_If_Expression then
-               declare
-                  Cond : constant Node_Id := First (Expressions (P));
-                  Texp : constant Node_Id := Next (Cond);
-                  Fexp : constant Node_Id := Next (Texp);
-
-               begin
-                  if Compile_Time_Known_Value (Cond) then
-
-                     --  Condition is True and we are in the right operand
-
-                     if Is_True (Expr_Value (Cond))
-                       and then OldP = Fexp
-                     then
-                        Msgs := False;
-                        exit;
-
-                     --  Condition is False and we are in the left operand
-
-                     elsif Is_False (Expr_Value (Cond))
-                       and then OldP = Texp
-                     then
-                        Msgs := False;
-                        exit;
-                     end if;
-                  end if;
-               end;
-
-            --  Special case for component association in aggregates, where
-            --  we want to keep climbing up to the parent aggregate.
-
-            elsif Nkind (P) = N_Component_Association
-              and then Nkind (Parent (P)) = N_Aggregate
-            then
-               null;
-
-            --  Keep going if within subexpression
-
-            else
-               exit when Nkind (P) not in N_Subexpr;
-            end if;
-         end loop;
-
-         if Msgs then
+         if not Is_Statically_Unevaluated (N) then
             Error_Msg_Warn := SPARK_Mode /= On;
 
             if Present (Ent) then
@@ -8034,7 +7914,7 @@ package body Sem_Util is
             Is_Array_Aggr : Boolean;
 
          begin
-            if Is_Static_Expression (N) then
+            if Is_OK_Static_Expression (N) then
                return True;
 
             elsif Nkind (N) = N_Null then
@@ -8124,11 +8004,11 @@ package body Sem_Util is
                            null;
 
                         elsif Nkind (Choice) = N_Range then
-                           if not Is_Static_Range (Choice) then
+                           if not Is_OK_Static_Range (Choice) then
                               return False;
                            end if;
 
-                        elsif not Is_Static_Expression (Choice) then
+                        elsif not Is_OK_Static_Expression (Choice) then
                            return False;
                         end if;
 
@@ -12528,8 +12408,9 @@ package body Sem_Util is
          L_Index := First_Index (L_Typ);
          Get_Index_Bounds (L_Index, L_Low, L_High);
 
-         if         Is_OK_Static_Expression (L_Low)
-           and then Is_OK_Static_Expression (L_High)
+         if Is_OK_Static_Expression (L_Low)
+              and then
+             Is_OK_Static_Expression (L_High)
          then
             if Expr_Value (L_High) < Expr_Value (L_Low) then
                L_Len := Uint_0;
@@ -12548,8 +12429,9 @@ package body Sem_Util is
          R_Index := First_Index (R_Typ);
          Get_Index_Bounds (R_Index, R_Low, R_High);
 
-         if         Is_OK_Static_Expression (R_Low)
-           and then Is_OK_Static_Expression (R_High)
+         if Is_OK_Static_Expression (R_Low)
+              and then
+            Is_OK_Static_Expression (R_High)
          then
             if Expr_Value (R_High) < Expr_Value (R_Low) then
                R_Len := Uint_0;
@@ -12561,8 +12443,9 @@ package body Sem_Util is
          end if;
       end if;
 
-      if         Is_OK_Static_Expression (L_Low)
-        and then Is_OK_Static_Expression (R_Low)
+      if (Is_OK_Static_Expression (L_Low)
+            and then
+          Is_OK_Static_Expression (R_Low))
         and then Expr_Value (L_Low) = Expr_Value (R_Low)
         and then L_Len = R_Len
       then
@@ -12580,12 +12463,13 @@ package body Sem_Util is
          Get_Index_Bounds (L_Index, L_Low, L_High);
          Get_Index_Bounds (R_Index, R_Low, R_High);
 
-         if         Is_OK_Static_Expression (L_Low)
-           and then Is_OK_Static_Expression (L_High)
-           and then Is_OK_Static_Expression (R_Low)
-           and then Is_OK_Static_Expression (R_High)
-           and then Expr_Value (L_Low)  = Expr_Value (R_Low)
-           and then Expr_Value (L_High) = Expr_Value (R_High)
+         if (Is_OK_Static_Expression (L_Low)  and then
+             Is_OK_Static_Expression (L_High) and then
+             Is_OK_Static_Expression (R_Low)  and then
+             Is_OK_Static_Expression (R_High))
+           and then (Expr_Value (L_Low)  = Expr_Value (R_Low)
+                       and then
+                     Expr_Value (L_High) = Expr_Value (R_High))
          then
             null;
          else
@@ -16467,7 +16351,7 @@ package body Sem_Util is
          return No_Uint;
       end if;
 
-      if Is_Static_Expression (N) then
+      if Is_OK_Static_Expression (N) then
          if not Raises_Constraint_Error (N) then
             return Expr_Value (N);
          else
@@ -16499,7 +16383,7 @@ package body Sem_Util is
          return No_Uint;
       end if;
 
-      if Is_Static_Expression (N) then
+      if Is_OK_Static_Expression (N) then
          if not Raises_Constraint_Error (N) then
             return Expr_Value (N);
          else
