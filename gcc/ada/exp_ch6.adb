@@ -3705,19 +3705,27 @@ package body Exp_Ch6 is
                         Resolve (Actual, Parent_Typ);
                      end if;
 
+                  --  If there is a change of representation, then generate a
+                  --  warning, and do the change of representation.
+
+                  elsif not Same_Representation (Formal_Typ, Parent_Typ) then
+                     Error_Msg_N
+                       ("??change of representation required", Actual);
+                     Convert (Actual, Parent_Typ);
+
                   --  For array and record types, the parent formal type and
                   --  derived formal type have different sizes or pragma Pack
                   --  status.
 
                   elsif ((Is_Array_Type (Formal_Typ)
-                            and then Is_Array_Type (Parent_Typ))
+                           and then Is_Array_Type (Parent_Typ))
                        or else
                          (Is_Record_Type (Formal_Typ)
-                            and then Is_Record_Type (Parent_Typ)))
+                           and then Is_Record_Type (Parent_Typ)))
                     and then
                       (Esize (Formal_Typ) /= Esize (Parent_Typ)
-                         or else Has_Pragma_Pack (Formal_Typ) /=
-                                 Has_Pragma_Pack (Parent_Typ))
+                        or else Has_Pragma_Pack (Formal_Typ) /=
+                                Has_Pragma_Pack (Parent_Typ))
                   then
                      Convert (Actual, Parent_Typ);
                   end if;

@@ -4564,25 +4564,11 @@ package body Sem_Attr is
 
             --  Ensure that the obtained expression is the consequence of a
             --  contract case as this is the only postcondition-like part of
-            --  the pragma.
+            --  the pragma. Otherwise, attribute 'Old appears in the condition
+            --  of a contract case. Emit an error since this is not a
+            --  postcondition-like context. (SPARK RM 6.1.3(2))
 
-            if Expr = Expression (Parent (Expr)) then
-
-               --  Warn that a potentially unevaluated prefix is always
-               --  evaluated when the corresponding consequence is selected.
-
-               if Is_Potentially_Unevaluated (P) then
-                  Error_Msg_Name_1 := Aname;
-                  Error_Msg_N
-                    ("??prefix of attribute % is always evaluated when "
-                     & "related consequence is selected", P);
-               end if;
-
-            --  Attribute 'Old appears in the condition of a contract case.
-            --  Emit an error since this is not a postcondition-like context.
-            --  (SPARK RM 6.1.3(2))
-
-            else
+            if Expr /= Expression (Parent (Expr)) then
                Error_Attr
                  ("attribute % cannot appear in the condition "
                   & "of a contract case", P);
@@ -4773,11 +4759,10 @@ package body Sem_Attr is
               ("??attribute Old applied to constant has no effect", P);
          end if;
 
-         --  Check that the prefix of 'Old is an entity, when it appears in
-         --  a postcondition and may be potentially unevaluated (6.1.1 (27/3)).
+         --  Check that the prefix of 'Old is an entity when it may be
+         --  potentially unevaluated (6.1.1 (27/3)).
 
          if Present (Prag)
-           and then Get_Pragma_Id (Prag) = Pragma_Postcondition
            and then Is_Potentially_Unevaluated (N)
            and then not Is_Entity_Name (P)
          then

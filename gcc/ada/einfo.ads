@@ -819,6 +819,28 @@ package Einfo is
 --       Defined in all type entities. Set if the type is private or if it
 --       depends on a private type.
 
+--    Derived_Type_Link (Node31)
+--       Defined in all type and subtype entries. Set in a base type if
+--       a derived type declaration is encountered which derives from
+--       this base type or one of its subtypes, and there are already
+--       primitive operations declared. In this case, it references the
+--       entity for the type declared by the derived type declaration.
+--       For example:
+--
+--          type R is ...
+--          subtype RS is R ...
+--          ...
+--          type G is new RS ...
+--
+--       In this case, if primitive operations have been declared for R, at
+--       the point of declaration of G, then the Derived_Type_Link of R is set
+--       to point to the entity for G. This is used to generate warnings for
+--       rep clauses that appear later on for R, which might result in an
+--       unexpected implicit conversion operation.
+--
+--       Note: if there is more than one such derived type, the link will point
+--       to the last one (this is only used in generating warning messages).
+
 --    Designated_Type (synthesized)
 --       Applies to access types. Returns the designated type. Differs from
 --       Directly_Designated_Type in that if the access type refers to an
@@ -5199,6 +5221,7 @@ package Einfo is
    --    Related_Expression                  (Node24)
    --    Current_Use_Clause                  (Node27)
    --    Subprograms_For_Type                (Node29)
+   --    Derived_Type_Link                   (Node31)
    --    Linker_Section_Pragma               (Node33)
 
    --    Depends_On_Private                  (Flag14)
@@ -6461,6 +6484,7 @@ package Einfo is
    function Delta_Value                         (Id : E) return R;
    function Dependent_Instances                 (Id : E) return L;
    function Depends_On_Private                  (Id : E) return B;
+   function Derived_Type_Link                   (Id : E) return E;
    function Digits_Value                        (Id : E) return U;
    function Direct_Primitive_Operations         (Id : E) return L;
    function Directly_Designated_Type            (Id : E) return E;
@@ -7095,6 +7119,7 @@ package Einfo is
    procedure Set_Delta_Value                     (Id : E; V : R);
    procedure Set_Dependent_Instances             (Id : E; V : L);
    procedure Set_Depends_On_Private              (Id : E; V : B := True);
+   procedure Set_Derived_Type_Link               (Id : E; V : E);
    procedure Set_Digits_Value                    (Id : E; V : U);
    procedure Set_Direct_Primitive_Operations     (Id : E; V : L);
    procedure Set_Directly_Designated_Type        (Id : E; V : E);
@@ -7841,6 +7866,7 @@ package Einfo is
    pragma Inline (Delta_Value);
    pragma Inline (Dependent_Instances);
    pragma Inline (Depends_On_Private);
+   pragma Inline (Derived_Type_Link);
    pragma Inline (Digits_Value);
    pragma Inline (Direct_Primitive_Operations);
    pragma Inline (Directly_Designated_Type);
@@ -8322,6 +8348,7 @@ package Einfo is
    pragma Inline (Set_Delta_Value);
    pragma Inline (Set_Dependent_Instances);
    pragma Inline (Set_Depends_On_Private);
+   pragma Inline (Set_Derived_Type_Link);
    pragma Inline (Set_Digits_Value);
    pragma Inline (Set_Direct_Primitive_Operations);
    pragma Inline (Set_Directly_Designated_Type);

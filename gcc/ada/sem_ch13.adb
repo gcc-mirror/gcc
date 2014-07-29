@@ -11074,6 +11074,9 @@ package body Sem_Ch13 is
       --  Note that neither of the above errors is considered a serious one,
       --  since the effect is simply that we ignore the representation clause
       --  in these cases.
+      --  Is this really true? In any case if we make this change we must
+      --  document the requirement in the spec of Rep_Item_Too_Late that
+      --  if True is returned, then the rep item must be completely ignored???
 
       ----------------------
       -- No_Type_Rep_Item --
@@ -11122,8 +11125,10 @@ package body Sem_Ch13 is
          S := First_Subtype (T);
 
          if Present (Freeze_Node (S)) then
-            Error_Msg_NE
-              ("??no more representation items for }", Freeze_Node (S), S);
+            if not Relaxed_RM_Semantics then
+               Error_Msg_NE
+                 ("??no more representation items for }", Freeze_Node (S), S);
+            end if;
          end if;
 
          return True;
@@ -11142,16 +11147,66 @@ package body Sem_Ch13 is
 
          if Has_Primitive_Operations (Parent_Type) then
             No_Type_Rep_Item;
-            Error_Msg_NE
-              ("\parent type & has primitive operations!", N, Parent_Type);
+
+            if not Relaxed_RM_Semantics then
+               Error_Msg_NE
+                 ("\parent type & has primitive operations!", N, Parent_Type);
+            end if;
+
             return True;
 
          elsif Is_By_Reference_Type (Parent_Type) then
             No_Type_Rep_Item;
-            Error_Msg_NE
-              ("\parent type & is a by reference type!", N, Parent_Type);
+
+            if not Relaxed_RM_Semantics then
+               Error_Msg_NE
+                 ("\parent type & is a by reference type!", N, Parent_Type);
+            end if;
+
             return True;
          end if;
+      end if;
+
+      --  No error, but one more warning to consider. The RM (surprisingly)
+      --  allows this pattern:
+
+      --    type S is ...
+      --    primitive operations for S
+      --    type R is new S;
+      --    rep clause for S
+
+      --  Meaning that calls on the primitive operations of S for values of
+      --  type R may require possibly expensive implicit conversion operations.
+      --  This is not an error, but is worth a warning.
+
+      if not Relaxed_RM_Semantics and then Is_Type (T) then
+         declare
+            DTL : constant Entity_Id := Derived_Type_Link (Base_Type (T));
+
+         begin
+            if Present (DTL)
+              and then Has_Primitive_Operations (Base_Type (T))
+
+              --  For now, do not generate this warning for the case of aspect
+              --  specification using Ada 2012 syntax, since we get wrong
+              --  messages we do not understand. The whole business of derived
+              --  types and rep items seems a bit confused when aspects are
+              --  used, since the aspects are not evaluated till freeze time.
+
+              and then not From_Aspect_Specification (N)
+            then
+               Error_Msg_Sloc := Sloc (DTL);
+               Error_Msg_N
+                 ("representation item for& appears after derived type "
+                  & "declaration#??", N);
+               Error_Msg_NE
+                 ("\may result in implicit conversions for primitive "
+                  & "operations of&??", N, T);
+               Error_Msg_NE
+                 ("\to change representations when called with arguments "
+                  & "of type&??", N, DTL);
+            end if;
+         end;
       end if;
 
       --  No error, link item into head of chain of rep items for the entity,

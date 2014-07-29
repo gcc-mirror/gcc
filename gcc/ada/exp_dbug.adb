@@ -306,6 +306,16 @@ package body Exp_Dbug is
       Obj : Entity_Id;
       Res : Node_Id;
 
+      Enable : Boolean := Nkind (N) = N_Package_Renaming_Declaration;
+      --  By default, we do not generate an encoding for renaming. This is
+      --  however done (in which case this is set to True) in a few cases:
+      --    - when a package is renamed,
+      --    - when the renaming involves a packed array,
+      --    - when the renaming involves a packed record.
+
+      procedure Enable_If_Packed_Array (N : Node_Id);
+      --  Enable encoding generation if N is a packed array
+
       function Output_Subscript (N : Node_Id; S : String) return Boolean;
       --  Outputs a single subscript value as ?nnn (subscript is compile time
       --  known value with value nnn) or as ?e (subscript is local constant
@@ -313,6 +323,21 @@ package body Exp_Dbug is
       --  Returns False if the subscript is not of an appropriate type to
       --  output in one of these two forms. The result is prepended to the
       --  name stored in Name_Buffer.
+
+      ----------------------------
+      -- Enable_If_Packed_Array --
+      ----------------------------
+
+      procedure Enable_If_Packed_Array (N : Node_Id) is
+         T : constant Entity_Id := Etype (N);
+      begin
+         Enable :=
+           (Enable
+               or else
+            (Ekind (T) in Array_Kind
+               and then
+             Present (Packed_Array_Impl_Type (T))));
+      end Enable_If_Packed_Array;
 
       ----------------------
       -- Output_Subscript --
@@ -372,6 +397,8 @@ package body Exp_Dbug is
                exit;
 
             when N_Selected_Component =>
+               Enable :=
+                 Enable or else Is_Packed (Etype (Prefix (Ren)));
                Prepend_String_To_Buffer
                  (Get_Name_String (Chars (Selector_Name (Ren))));
                Prepend_String_To_Buffer ("XR");
@@ -382,6 +409,7 @@ package body Exp_Dbug is
                   X : Node_Id := Last (Expressions (Ren));
 
                begin
+                  Enable_If_Packed_Array (Prefix (Ren));
                   while Present (X) loop
                      if not Output_Subscript (X, "XS") then
                         Set_Materialize_Entity (Ent);
@@ -396,6 +424,7 @@ package body Exp_Dbug is
 
             when N_Slice =>
 
+               Enable_If_Packed_Array (Prefix (Ren));
                Typ := Etype (First_Index (Etype (Nam)));
 
                if not Output_Subscript (Type_High_Bound (Typ), "XS") then
@@ -421,6 +450,13 @@ package body Exp_Dbug is
                return Empty;
          end case;
       end loop;
+
+      --  If we found no reason here to emit an encoding, stop now.
+
+      if not Enable then
+         Set_Materialize_Entity (Ent);
+         return Empty;
+      end if;
 
       Prepend_String_To_Buffer ("___XE");
 

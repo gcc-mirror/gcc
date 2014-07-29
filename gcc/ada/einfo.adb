@@ -249,6 +249,7 @@ package body Einfo is
    --    Last_Aggregate_Assignment       Node30
    --    Static_Initialization           Node30
 
+   --    Derived_Type_Link               Node31
    --    Thunk_Entity                    Node31
 
    --    SPARK_Pragma                    Node32
@@ -948,6 +949,12 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       return Flag14 (Id);
    end Depends_On_Private;
+
+   function Derived_Type_Link (Id : E) return E is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Node31 (Base_Type (Id));
+   end Derived_Type_Link;
 
    function Digits_Value (Id : E) return U is
    begin
@@ -3681,6 +3688,12 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       Set_Flag14 (Id, V);
    end Set_Depends_On_Private;
+
+   procedure Set_Derived_Type_Link (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Type (Id) and then Is_Base_Type (Id));
+      Set_Node31 (Id, V);
+   end Set_Derived_Type_Link;
 
    procedure Set_Digits_Value (Id : E; V : U) is
    begin
@@ -9595,6 +9608,9 @@ package body Einfo is
          when E_Procedure                                  |
               E_Function                                   =>
             Write_Str ("Thunk_Entity");
+
+         when Type_Kind                                    =>
+            Write_Str ("Derived_Type_Link");
 
          when others                                       =>
             Write_Str ("Field31??");

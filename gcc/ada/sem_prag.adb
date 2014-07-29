@@ -11022,7 +11022,9 @@ package body Sem_Prag is
 
             --  If Allow_Integer_Address is already set do nothing, otherwise
             --  calling RTE on RE_Address would cause a crash when loading
-            --  system.ads.
+            --  system.ads. ??? same will happen if Allow_Integer_Address is
+            --  not set actually, to be fixed and then the guard on
+            --  not Opt.Allow_Integer_Address should be removed.
 
             if not Opt.Allow_Integer_Address
               and then Is_Private_Type (RTE (RE_Address))
