@@ -180,9 +180,10 @@ __gnat_expect_poll (int *fd,
       for (i = 0; i < num_fd; i++)
         {
           if (!PeekNamedPipe (handles [i], NULL, 0, NULL, &avail, NULL))
-            *dead_process = i + 1;
-            return -1;
-
+            {
+              *dead_process = i + 1;
+              return -1;
+            }
           if (avail > 0)
             {
               is_set[i] = 1;
@@ -292,9 +293,9 @@ __gnat_expect_poll (int *fd,
 
 	  if ((status & 1) != 1)
 	    {
-	      ready = -1;
+              ready = -1;
               dead_process = i + 1;
-	      return ready;
+              return ready;
 	    }
 	}
     }

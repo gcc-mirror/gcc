@@ -1,5 +1,25 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma, case Allow_Integer_Address):
+	Fix incorrect RTE call which caused bomb if pragma was in
+	configuration pragma file.
+
+2014-07-29  Jerome Lambourg  <lambourg@adacore.com>
+
+	* expect.c (__gnat_expect_poll): Fix typo in previous change.
+	* g-expect.adb: Update comments.
+
+2014-07-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-parame-hpux.ads, s-parame-vms-ia64.ads, s-parame.ads
+	(Default_Attribute_Count): Bump to 16 on native platforms.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Add guard to front-end inlining for SPARK.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch10.adb, debug.adb, sem_prag.adb, sem_res.adb, sem_ch6.adb:
 	Minor reformatting.
 
