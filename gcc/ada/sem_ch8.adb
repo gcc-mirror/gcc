@@ -7533,6 +7533,7 @@ package body Sem_Ch8 is
       Default_Pool             := SST.Save_Default_Storage_Pool;
       SPARK_Mode               := SST.Save_SPARK_Mode;
       SPARK_Mode_Pragma        := SST.Save_SPARK_Mode_Pragma;
+      Default_SSO              := SST.Save_Default_SSO;
       Uneval_Old               := SST.Save_Uneval_Old;
 
       if Debug_Flag_W then
@@ -7606,6 +7607,7 @@ package body Sem_Ch8 is
          SST.Save_Default_Storage_Pool     := Default_Pool;
          SST.Save_SPARK_Mode               := SPARK_Mode;
          SST.Save_SPARK_Mode_Pragma        := SPARK_Mode_Pragma;
+         SST.Save_Default_SSO              := Default_SSO;
          SST.Save_Uneval_Old               := Uneval_Old;
 
          if Scope_Stack.Last > Scope_Stack.First then

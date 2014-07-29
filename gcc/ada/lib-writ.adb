@@ -1159,6 +1159,11 @@ package body Lib.Writ is
          Write_Info_Str (" NS");
       end if;
 
+      if Default_SSO_Config /= ' ' then
+         Write_Info_Str (" O");
+         Write_Info_Char (Default_SSO_Config);
+      end if;
+
       if Sec_Stack_Used then
          Write_Info_Str (" SS");
       end if;

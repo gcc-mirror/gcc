@@ -220,6 +220,12 @@ package Lib.Writ is
    --         NS   Normalize_Scalars pragma in effect for all units in
    --              this file.
 
+   --         OH   Pragma Default_Scalar_Storage_Order (High_Order_First) is
+   --              present in a configuration pragma file that applies.
+
+   --         OL   Pragma Default_Scalar_Storage_Order (Low_Order_First) is
+   --              present in a configuration pragma file that applies.
+
    --         Qx   A valid Queueing_Policy pragma applies to all the units
    --              in this file, where x is the first character (upper case)
    --              of the policy name (e.g. 'P' for Priority_Queueing).

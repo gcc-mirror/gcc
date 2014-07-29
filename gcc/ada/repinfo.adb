@@ -1092,10 +1092,14 @@ package body Repinfo is
    --  Start of processing for List_Scalar_Storage_Order
 
    begin
-      if Has_Rep_Item (Ent, Name_Scalar_Storage_Order) then
+      --  List info if set explicitly or by use of Default_Scalar_Storage_Order
 
-         --  For a record type with explicitly specified scalar storage order,
-         --  also display explicit Bit_Order.
+      if Has_Rep_Item (Ent, Name_Scalar_Storage_Order)
+        or else SSO_Set_Low_By_Default (Ent)
+        or else SSO_Set_High_By_Default (Ent)
+      then
+         --  For a record type with specified scalar storage order, also
+         --  display explicit Bit_Order.
 
          if Is_Record_Type (Ent) then
             List_Attr ("Bit_Order");

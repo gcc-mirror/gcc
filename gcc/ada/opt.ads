@@ -418,17 +418,26 @@ package Opt is
    --  to trigger the activation of the remote debugging interface.
    --  Is this still true ???
 
+   Default_Exit_Status : Int := 0;
+   --  GNATBIND
+   --  Set the default exit status value. Set by the -Xnnn switch for the
+   --  binder.
+
    Debug_Generated_Code : Boolean := False;
    --  GNAT
    --  Set True (-gnatD switch) to debug generated expanded code instead
    --  of the original source code. Causes debugging information to be
    --  written with respect to the generated code file that is written.
 
-   Default_Exit_Status : Int := 0;
-   --  GNATBIND
-   --  Set the default exit status value. Set by the -Xnnn switch for the
-   --  binder.
-
+   Default_Pool : Node_Id := Empty;
+   --  GNAT
+   --  Used to record the storage pool name (or null literal) that is the
+   --  argument of an applicable pragma Default_Storage_Pool.
+   --    Empty:       No pragma Default_Storage_Pool applies.
+   --    N_Null node: "pragma Default_Storage_Pool (null);" applies.
+   --    otherwise:   "pragma Default_Storage_Pool (X);" applies, and
+   --                 this points to the name X.
+   --  Push_Scope and Pop_Scope in Sem_Ch8 save and restore this value.
    Default_Stack_Size : Int := -1;
    --  GNATBIND
    --  Set to default primary stack size in units of bytes. Set by
@@ -442,15 +451,11 @@ package Opt is
    --  default was set by the binder, and that the default should be the
    --  initial value of System.Secondary_Stack.Default_Secondary_Stack_Size.
 
-   Default_Pool : Node_Id := Empty;
+   Default_SSO : Character := ' ';
    --  GNAT
-   --  Used to record the storage pool name (or null literal) that is the
-   --  argument of an applicable pragma Default_Storage_Pool.
-   --    Empty:       No pragma Default_Storage_Pool applies.
-   --    N_Null node: "pragma Default_Storage_Pool (null);" applies.
-   --    otherwise:   "pragma Default_Storage_Pool (X);" applies, and
-   --                 this points to the name X.
-   --  Push_Scope and Pop_Scope in Sem_Ch8 save and restore this value.
+   --  Set if a pragma Default_Scalar_Storage_Order has been given. The value
+   --  of ' ' indicates that no default has been set, otherwise the value is
+   --  either 'H' for High_Order_First or 'L' for Lower_Order_First.
 
    Detect_Blocking : Boolean := False;
    --  GNAT
@@ -1809,7 +1814,8 @@ package Opt is
    --  These are settings that are used to establish the mode at the start of
    --  each unit. The values defined below can be affected either by command
    --  line switches, or by the use of appropriate configuration pragmas in a
-   --  configuration pragma file.
+   --  configuration pragma file (but NOT by a local use of a configuration
+   --  pragma in a single file).
 
    Ada_Version_Config : Ada_Version_Type;
    --  GNAT
@@ -1862,6 +1868,12 @@ package Opt is
    --  GNAT
    --  Same as Default_Pool above, except this is only for Default_Storage_Pool
    --  pragmas that are configuration pragmas.
+
+   Default_SSO_Config : Character := ' ';
+   --  GNAT
+   --  Set if a pragma Default_Scalar_Storage_Order appears as a configuration
+   --  pragma. A value of ' ' means that no pragma was given, otherwise the
+   --  value is 'H' for High_Order_First or 'L' for Low_Order_First.
 
    Dynamic_Elaboration_Checks_Config : Boolean := False;
    --  GNAT
@@ -2116,6 +2128,7 @@ private
       Check_Float_Overflow           : Boolean;
       Check_Policy_List              : Node_Id;
       Default_Pool                   : Node_Id;
+      Default_SSO                    : Character;
       Dynamic_Elaboration_Checks     : Boolean;
       Exception_Locations_Suppressed : Boolean;
       Extensions_Allowed             : Boolean;

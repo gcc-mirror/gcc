@@ -699,6 +699,11 @@ package body Sem_Ch3 is
    --  scalar range. Subt provides the parent subtype to be used to analyze,
    --  resolve, and check the given range.
 
+   procedure Set_Default_SSO (T : Entity_Id);
+   --  T is the entity for an array or record being declared. This procedure
+   --  sets the flags SSO_Set_Low_By_Default/SSO_Set_High_By_Default according
+   --  to the setting of Opt.Default_SSO.
+
    procedure Signed_Integer_Type_Declaration (T : Entity_Id; Def : Node_Id);
    --  Create a new signed integer entity, and apply the constraint to obtain
    --  the required first named subtype of this type.
@@ -846,8 +851,7 @@ package body Sem_Ch3 is
             Set_Ekind
               (Anon_Type, E_Anonymous_Access_Protected_Subprogram_Type);
          else
-            Set_Ekind
-              (Anon_Type, E_Anonymous_Access_Subprogram_Type);
+            Set_Ekind (Anon_Type, E_Anonymous_Access_Subprogram_Type);
          end if;
 
          Set_Can_Use_Internal_Rep
@@ -4176,6 +4180,7 @@ package body Sem_Ch3 is
       Set_Scope            (T, Current_Scope);
       Set_Ekind            (T, E_Record_Type_With_Private);
       Init_Size_Align      (T);
+      Set_Default_SSO      (T);
 
       Set_Etype            (T,            Parent_Base);
       Set_Has_Task         (T, Has_Task  (Parent_Base));
@@ -5154,6 +5159,7 @@ package body Sem_Ch3 is
          Set_Etype              (Implicit_Base, Implicit_Base);
          Set_Scope              (Implicit_Base, Current_Scope);
          Set_Has_Delayed_Freeze (Implicit_Base);
+         Set_Default_SSO        (Implicit_Base);
 
          --  The constrained array type is a subtype of the unconstrained one
 
@@ -5201,6 +5207,7 @@ package body Sem_Ch3 is
                                           Is_Controlled (Element_Type));
          Set_Finalize_Storage_Only    (T, Finalize_Storage_Only
                                                         (Element_Type));
+         Set_Default_SSO              (T);
       end if;
 
       --  Common attributes for both cases
@@ -5680,8 +5687,8 @@ package body Sem_Ch3 is
          if Nkind (Indic) /= N_Subtype_Indication then
             Make_Implicit_Base;
 
-            Set_Ekind             (Derived_Type, Ekind (Parent_Type));
-            Set_Etype             (Derived_Type, Implicit_Base);
+            Set_Ekind                     (Derived_Type, Ekind (Parent_Type));
+            Set_Etype                     (Derived_Type, Implicit_Base);
             Copy_Array_Subtype_Attributes (Derived_Type, Parent_Type);
 
          else
@@ -6582,6 +6589,7 @@ package body Sem_Ch3 is
 
                Set_Ekind (Full_Der, E_Record_Type);
                Set_Is_Underlying_Record_View (Full_Der);
+               Set_Default_SSO (Full_Der);
 
                Analyze (Decl);
 
@@ -7496,6 +7504,7 @@ package body Sem_Ch3 is
       if Private_Extension then
          Type_Def := N;
          Set_Ekind (Derived_Type, E_Record_Type_With_Private);
+         Set_Default_SSO (Derived_Type);
 
       else
          Type_Def := Type_Definition (N);
@@ -7509,6 +7518,7 @@ package body Sem_Ch3 is
 
          if Present (Record_Extension_Part (Type_Def)) then
             Set_Ekind (Derived_Type, E_Record_Type);
+            Set_Default_SSO (Derived_Type);
 
             --  Create internal access types for components with anonymous
             --  access types.
@@ -7819,7 +7829,6 @@ package body Sem_Ch3 is
          else
             declare
                GB : constant Node_Id := Enclosing_Generic_Body (Derived_Type);
-
             begin
                if Present (GB)
                  and then GB /= Enclosing_Generic_Body (Parent_Base)
@@ -8471,6 +8480,15 @@ package body Sem_Ch3 is
       --  subtype until later, so we obtain the convention from the base type.
 
       Set_Convention     (Derived_Type, Convention     (Parent_Base));
+
+      --  Set SSO default for record or array type
+
+      if (Is_Array_Type (Derived_Type)
+          or else Is_Record_Type (Derived_Type))
+        and then Is_Base_Type (Derived_Type)
+      then
+         Set_Default_SSO (Derived_Type);
+      end if;
 
       --  Propagate invariant information. The new type has invariants if
       --  they are inherited from the parent type, and these invariants can
@@ -17087,6 +17105,7 @@ package body Sem_Ch3 is
       Set_Is_Abstract_Type            (CW_Type, False);
       Set_Is_Constrained              (CW_Type, False);
       Set_Is_First_Subtype            (CW_Type, Is_First_Subtype (T));
+      Set_Default_SSO                 (CW_Type);
 
       if Ekind (T) = E_Class_Wide_Subtype then
          Set_Etype             (CW_Type, Etype (Base_Type (T)));
@@ -20056,6 +20075,7 @@ package body Sem_Ch3 is
       Init_Size_Align       (T);
       Set_Interfaces        (T, No_Elist);
       Set_Stored_Constraint (T, No_Elist);
+      Set_Default_SSO       (T);
 
       --  Normal case
 
@@ -20420,6 +20440,24 @@ package body Sem_Ch3 is
          Set_Referenced (E);
       end if;
    end Set_Completion_Referenced;
+
+   ---------------------
+   -- Set_Default_SSO --
+   ---------------------
+
+   procedure Set_Default_SSO (T : Entity_Id) is
+   begin
+      case Opt.Default_SSO is
+         when ' ' =>
+            null;
+         when 'L' =>
+            Set_SSO_Set_Low_By_Default (T, True);
+         when 'H' =>
+            Set_SSO_Set_High_By_Default (T, True);
+         when others =>
+            raise Program_Error;
+      end case;
+   end Set_Default_SSO;
 
    ---------------------
    -- Set_Fixed_Range --
