@@ -1245,14 +1245,14 @@ package Einfo is
 --       all the extra formals (see description of Extra_Formals field).
 
 --    First_Index (Node17)
---       Defined in array types and subtypes and in string types and subtypes.
---       By introducing implicit subtypes for the index constraints, we have
---       the same structure for constrained and unconstrained arrays, subtype
---       marks and discrete ranges are both represented by a subtype. This
---       function returns the tree node corresponding to an occurrence of the
---       first index (NOT the entity for the type). Subsequent indices are
---       obtained using Next_Index. Note that this field is defined for the
---       case of string literal subtypes, but is always Empty.
+--       Defined in array types and subtypes. By introducing implicit subtypes
+--       for the index constraints, we have the same structure for constrained
+--       and unconstrained arrays, subtype marks and discrete ranges are
+--       both represented by a subtype. This function returns the tree node
+--       corresponding to an occurrence of the first index (NOT the entity for
+--       the type). Subsequent indices are obtained using Next_Index. Note that
+--       this field is defined for the case of string literal subtypes, but is
+--       always Empty.
 
 --    First_Literal (Node17)
 --       Defined in all enumeration types, including character and boolean
@@ -4519,12 +4519,9 @@ package Einfo is
       --  or the use of an anonymous array subtype.
 
       E_String_Type,
-      --  A string type, i.e. an array type whose component type is a character
-      --  type, and for which string literals can thus be written.
-
       E_String_Subtype,
-      --  A string subtype, created by an explicit subtype declaration for a
-      --  string type, or the use of an anonymous subtype of a string type,
+      --  These are obsolete and not used any more, they are retained to ease
+      --  transition in getting rid of these obsolete entries.
 
       E_String_Literal_Subtype,
       --  A special string subtype, used only to describe the type of a string
@@ -4758,8 +4755,6 @@ package Einfo is
    subtype Aggregate_Kind              is Entity_Kind range
        E_Array_Type ..
    --  E_Array_Subtype
-   --  E_String_Type
-   --  E_String_Subtype
    --  E_String_Literal_Subtype
    --  E_Class_Wide_Type
    --  E_Class_Wide_Subtype
@@ -4769,8 +4764,6 @@ package Einfo is
    subtype Array_Kind                  is Entity_Kind range
        E_Array_Type ..
    --  E_Array_Subtype
-   --  E_String_Type
-   --  E_String_Subtype
        E_String_Literal_Subtype;
 
    subtype Assignable_Kind             is Entity_Kind range
@@ -4785,8 +4778,6 @@ package Einfo is
    subtype Composite_Kind              is Entity_Kind range
        E_Array_Type ..
    --  E_Array_Subtype
-   --  E_String_Type
-   --  E_String_Subtype
    --  E_String_Literal_Subtype
    --  E_Class_Wide_Type
    --  E_Class_Wide_Subtype
@@ -5011,11 +5002,6 @@ package Einfo is
    --  E_Floating_Point_Type
        E_Floating_Point_Subtype;
 
-   subtype String_Kind                 is Entity_Kind range
-       E_String_Type ..
-   --  E_String_Subtype
-       E_String_Literal_Subtype;
-
    subtype Subprogram_Kind             is Entity_Kind range
        E_Function ..
    --  E_Operator
@@ -5054,8 +5040,6 @@ package Einfo is
    --  E_Anonymous_Access_Type
    --  E_Array_Type
    --  E_Array_Subtype
-   --  E_String_Type
-   --  E_String_Subtype
    --  E_String_Literal_Subtype
    --  E_Class_Wide_Subtype
    --  E_Class_Wide_Type
@@ -6083,18 +6067,6 @@ package Einfo is
    --    Has_Shift_Operator                  (Flag267)  (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
-   --    (plus type attributes)
-
-   --  E_String_Type
-   --  E_String_Subtype
-   --    First_Index                         (Node17)
-   --    Component_Type                      (Node20)   (base type only)
-   --    Static_Real_Or_String_Predicate     (Node25)
-   --    Is_Constrained                      (Flag12)
-   --    SSO_Set_High_By_Default             (Flag273)  (base type only)
-   --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
-   --    Next_Index                          (synth)
-   --    Number_Dimensions                   (synth)
    --    (plus type attributes)
 
    --  E_String_Literal_Subtype

@@ -4083,7 +4083,7 @@ package body Sprint is
 
                   --  Array types and string types
 
-                  when E_Array_Type | E_String_Type =>
+                  when E_Array_Type =>
                      Write_Header;
                      Write_Str ("array (");
 

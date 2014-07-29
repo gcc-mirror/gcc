@@ -1558,7 +1558,6 @@ package body Prj.Dect is
       if Token = Tok_Right_Paren then
          Scan (In_Tree);
       end if;
-
    end Parse_String_Type_Declaration;
 
    --------------------------------

@@ -5043,9 +5043,8 @@ package body Exp_Ch3 is
          Obj_Ref    : Node_Id;
 
          Dummy : Entity_Id;
-         pragma Unreferenced (Dummy);
-         --  This variable captures an unused dummy internal entity, see the
-         --  comment associated with its use.
+         --  This variable captures a dummy internal entity, see the comment
+         --  associated with its use.
 
       --  Start of processing for Default_Initialize_Object
 

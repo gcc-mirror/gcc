@@ -450,6 +450,9 @@ package body CStand is
       --  Creates entities for all predefined floating point types, and
       --  adds these to the Predefined_Float_Types list in package Standard.
 
+      procedure Make_Dummy_Index (E : Entity_Id);
+      --  Called to provide a dummy index field value for Any_Array/Any_String
+
       procedure Pack_String_Type (String_Type : Entity_Id);
       --  Generate proper tree for pragma Pack that applies to given type, and
       --  mark type as having the pragma.
@@ -552,6 +555,27 @@ package body CStand is
             end;
          end loop;
       end Create_Float_Types;
+
+      ----------------------
+      -- Make_Dummy_Index --
+      ----------------------
+
+      procedure Make_Dummy_Index (E : Entity_Id) is
+         Index : Node_Id;
+         Dummy : List_Id;
+
+      begin
+         Index :=
+           Make_Range (Sloc (E),
+             Low_Bound  => Make_Integer (Uint_0),
+             High_Bound => Make_Integer (Uint_2 ** Standard_Integer_Size));
+         Set_Etype (Index, Standard_Integer);
+         Set_First_Index (E, Index);
+
+         --  Make sure Index is a list as required, so Next_Index is Empty
+
+         Dummy := New_List (Index);
+      end Make_Dummy_Index;
 
       ----------------------
       -- Pack_String_Type --
@@ -907,7 +931,7 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_String), Tdef_Node);
 
-      Set_Ekind           (Standard_String, E_String_Type);
+      Set_Ekind           (Standard_String, E_Array_Type);
       Set_Etype           (Standard_String, Standard_String);
       Set_Component_Type  (Standard_String, Standard_Character);
       Set_Component_Size  (Standard_String, Uint_8);
@@ -926,8 +950,8 @@ package body CStand is
 
       --  Set index type of String
 
-      E_Id := First
-        (Subtype_Marks (Type_Definition (Parent (Standard_String))));
+      E_Id :=
+        First (Subtype_Marks (Type_Definition (Parent (Standard_String))));
       Set_First_Index (Standard_String, E_Id);
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
@@ -951,7 +975,7 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_Wide_String), Tdef_Node);
 
-      Set_Ekind           (Standard_Wide_String, E_String_Type);
+      Set_Ekind           (Standard_Wide_String, E_Array_Type);
       Set_Etype           (Standard_Wide_String, Standard_Wide_String);
       Set_Component_Type  (Standard_Wide_String, Standard_Wide_Character);
       Set_Component_Size  (Standard_Wide_String, Uint_16);
@@ -960,8 +984,9 @@ package body CStand is
 
       --  Set index type of Wide_String
 
-      E_Id := First
-        (Subtype_Marks (Type_Definition (Parent (Standard_Wide_String))));
+      E_Id :=
+        First
+          (Subtype_Marks (Type_Definition (Parent (Standard_Wide_String))));
       Set_First_Index (Standard_Wide_String, E_Id);
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
@@ -985,7 +1010,7 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_Wide_Wide_String), Tdef_Node);
 
-      Set_Ekind            (Standard_Wide_Wide_String, E_String_Type);
+      Set_Ekind            (Standard_Wide_Wide_String, E_Array_Type);
       Set_Etype            (Standard_Wide_Wide_String,
                             Standard_Wide_Wide_String);
       Set_Component_Type   (Standard_Wide_Wide_String,
@@ -997,8 +1022,10 @@ package body CStand is
 
       --  Set index type of Wide_Wide_String
 
-      E_Id := First
-        (Subtype_Marks (Type_Definition (Parent (Standard_Wide_Wide_String))));
+      E_Id :=
+        First
+         (Subtype_Marks
+            (Type_Definition (Parent (Standard_Wide_Wide_String))));
       Set_First_Index (Standard_Wide_Wide_String, E_Id);
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
@@ -1213,12 +1240,13 @@ package body CStand is
       Make_Name             (Any_Character, "a character type");
 
       Any_Array := New_Standard_Entity;
-      Set_Ekind             (Any_Array, E_String_Type);
+      Set_Ekind             (Any_Array, E_Array_Type);
       Set_Scope             (Any_Array, Standard_Standard);
       Set_Etype             (Any_Array, Any_Array);
       Set_Component_Type    (Any_Array, Any_Character);
       Init_Size_Align       (Any_Array);
       Make_Name             (Any_Array, "an array type");
+      Make_Dummy_Index      (Any_Array);
 
       Any_Boolean := New_Standard_Entity;
       Set_Ekind             (Any_Boolean, E_Enumeration_Type);
@@ -1305,24 +1333,13 @@ package body CStand is
       Make_Name             (Any_Scalar, "a scalar type");
 
       Any_String := New_Standard_Entity;
-      Set_Ekind             (Any_String, E_String_Type);
+      Set_Ekind             (Any_String, E_Array_Type);
       Set_Scope             (Any_String, Standard_Standard);
       Set_Etype             (Any_String, Any_String);
       Set_Component_Type    (Any_String, Any_Character);
       Init_Size_Align       (Any_String);
       Make_Name             (Any_String, "a string type");
-
-      declare
-         Index   : Node_Id;
-
-      begin
-         Index :=
-           Make_Range (Stloc,
-             Low_Bound  => Make_Integer (Uint_0),
-             High_Bound => Make_Integer (Uint_2 ** Standard_Integer_Size));
-         Set_Etype (Index, Standard_Integer);
-         Set_First_Index (Any_String, Index);
-      end;
+      Make_Dummy_Index      (Any_String);
 
       Raise_Type := New_Standard_Entity;
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
