@@ -86,65 +86,75 @@ package body Sem_Attr is
    --  used so that we can abandon the processing so we don't run into
    --  trouble with cascaded errors.
 
-   --  The following array is the list of attributes defined in the Ada 83 RM
-   --  that are not included in Ada 95, but still get recognized in GNAT.
+   --  The following array is the list of attributes defined in the Ada 83 RM:
 
    Attribute_83 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_Address                |
-      Attribute_Aft                    |
-      Attribute_Alignment              |
-      Attribute_Base                   |
-      Attribute_Callable               |
-      Attribute_Constrained            |
-      Attribute_Count                  |
-      Attribute_Delta                  |
-      Attribute_Digits                 |
-      Attribute_Emax                   |
-      Attribute_Epsilon                |
-      Attribute_First                  |
-      Attribute_First_Bit              |
-      Attribute_Fore                   |
-      Attribute_Image                  |
-      Attribute_Large                  |
-      Attribute_Last                   |
-      Attribute_Last_Bit               |
-      Attribute_Leading_Part           |
-      Attribute_Length                 |
-      Attribute_Machine_Emax           |
-      Attribute_Machine_Emin           |
-      Attribute_Machine_Mantissa       |
-      Attribute_Machine_Overflows      |
-      Attribute_Machine_Radix          |
-      Attribute_Machine_Rounds         |
-      Attribute_Mantissa               |
-      Attribute_Pos                    |
-      Attribute_Position               |
-      Attribute_Pred                   |
-      Attribute_Range                  |
-      Attribute_Safe_Emax              |
-      Attribute_Safe_Large             |
-      Attribute_Safe_Small             |
-      Attribute_Size                   |
-      Attribute_Small                  |
-      Attribute_Storage_Size           |
-      Attribute_Succ                   |
-      Attribute_Terminated             |
-      Attribute_Val                    |
-      Attribute_Value                  |
-      Attribute_Width                  => True,
-      others                           => False);
+      Attribute_Address                      |
+      Attribute_Aft                          |
+      Attribute_Alignment                    |
+      Attribute_Base                         |
+      Attribute_Callable                     |
+      Attribute_Constrained                  |
+      Attribute_Count                        |
+      Attribute_Delta                        |
+      Attribute_Digits                       |
+      Attribute_Emax                         |
+      Attribute_Epsilon                      |
+      Attribute_First                        |
+      Attribute_First_Bit                    |
+      Attribute_Fore                         |
+      Attribute_Image                        |
+      Attribute_Large                        |
+      Attribute_Last                         |
+      Attribute_Last_Bit                     |
+      Attribute_Leading_Part                 |
+      Attribute_Length                       |
+      Attribute_Machine_Emax                 |
+      Attribute_Machine_Emin                 |
+      Attribute_Machine_Mantissa             |
+      Attribute_Machine_Overflows            |
+      Attribute_Machine_Radix                |
+      Attribute_Machine_Rounds               |
+      Attribute_Mantissa                     |
+      Attribute_Pos                          |
+      Attribute_Position                     |
+      Attribute_Pred                         |
+      Attribute_Range                        |
+      Attribute_Safe_Emax                    |
+      Attribute_Safe_Large                   |
+      Attribute_Safe_Small                   |
+      Attribute_Size                         |
+      Attribute_Small                        |
+      Attribute_Storage_Size                 |
+      Attribute_Succ                         |
+      Attribute_Terminated                   |
+      Attribute_Val                          |
+      Attribute_Value                        |
+      Attribute_Width                        => True,
+      others                                 => False);
 
    --  The following array is the list of attributes defined in the Ada 2005
    --  RM which are not defined in Ada 95. These are recognized in Ada 95 mode,
    --  but in Ada 95 they are considered to be implementation defined.
 
    Attribute_05 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_Machine_Rounding       |
-      Attribute_Mod                    |
-      Attribute_Priority               |
-      Attribute_Stream_Size            |
-      Attribute_Wide_Wide_Width        => True,
-      others                           => False);
+      Attribute_Machine_Rounding             |
+      Attribute_Mod                          |
+      Attribute_Priority                     |
+      Attribute_Stream_Size                  |
+      Attribute_Wide_Wide_Width              => True,
+      others                                 => False);
+
+   --  The following array is the list of attributes defined in the Ada 2012
+   --  RM which are not defined in Ada 2005. These are recognized in Ada 95
+   --  and Ada 2005 modes, but are considered to be implementation defined.
+
+   Attribute_12 : constant Attribute_Class_Array := Attribute_Class_Array'(
+      Attribute_First_Valid                  |
+      Attribute_Has_Same_Storage             |
+      Attribute_Last_Valid                   |
+      Attribute_Max_Alignment_For_Allocation => True,
+      others                                 => False);
 
    --  The following array contains all attributes that imply a modification
    --  of their prefixes or result in an access value. Such prefixes can be
@@ -152,13 +162,13 @@ package body Sem_Attr is
 
    Attribute_Name_Implies_Lvalue_Prefix : constant Attribute_Class_Array :=
       Attribute_Class_Array'(
-      Attribute_Access                 |
-      Attribute_Address                |
-      Attribute_Input                  |
-      Attribute_Read                   |
-      Attribute_Unchecked_Access       |
-      Attribute_Unrestricted_Access    => True,
-      others                           => False);
+      Attribute_Access                       |
+      Attribute_Address                      |
+      Attribute_Input                        |
+      Attribute_Read                         |
+      Attribute_Unchecked_Access             |
+      Attribute_Unrestricted_Access          => True,
+      others                                 => False);
 
    -----------------------
    -- Local_Subprograms --
@@ -180,8 +190,7 @@ package body Sem_Attr is
 
    function Is_Anonymous_Tagged_Base
      (Anon : Entity_Id;
-      Typ  : Entity_Id)
-      return Boolean;
+      Typ  : Entity_Id) return Boolean;
    --  For derived tagged types that constrain parent discriminants we build
    --  an anonymous unconstrained base type. We need to recognize the relation
    --  between the two when analyzing an access attribute for a constrained
@@ -234,11 +243,6 @@ package body Sem_Attr is
       --  program error with an appropriate reason. No error message is given
       --  for internally generated uses of the attributes. This legality rule
       --  only applies to scalar types.
-
-      procedure Check_Ada_2012_Attribute;
-      --  Check that we are in Ada 2012 mode for an Ada 2012 attribute, and
-      --  issue appropriate messages if not (and return to caller even in
-      --  the error case).
 
       procedure Check_Array_Or_Scalar_Type;
       --  Common procedure used by First, Last, Range attribute to check
@@ -1083,16 +1087,6 @@ package body Sem_Attr is
          end if;
       end Bad_Attribute_For_Predicate;
 
-      ------------------------------
-      -- Check_Ada_2012_Attribute --
-      ------------------------------
-
-      procedure Check_Ada_2012_Attribute is
-      begin
-         Error_Msg_Name_1 := Aname;
-         Error_Msg_Ada_2012_Feature ("attribute %", Sloc (N));
-      end Check_Ada_2012_Attribute;
-
       --------------------------------
       -- Check_Array_Or_Scalar_Type --
       --------------------------------
@@ -1487,7 +1481,6 @@ package body Sem_Attr is
 
       procedure Check_First_Last_Valid is
       begin
-         Check_Ada_2012_Attribute;
          Check_Discrete_Type;
 
          --  Freeze the subtype now, so that the following test for predicates
@@ -2382,9 +2375,13 @@ package body Sem_Attr is
       end if;
 
       --  Deal with Ada 2005 attributes that are implementation attributes
-      --  because they appear in a version of Ada before Ada 2005.
+      --  because they appear in a version of Ada before Ada 2005, and
+      --  similarly for Ada 2012 attributes appearing in an earlier version.
 
-      if Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005 then
+      if (Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005)
+            or else
+         (Attribute_12 (Attr_Id) and then Ada_Version < Ada_2012)
+      then
          Check_Restriction (No_Implementation_Attributes, N);
       end if;
 
@@ -3646,7 +3643,6 @@ package body Sem_Attr is
       ----------------------
 
       when Attribute_Has_Same_Storage =>
-         Check_Ada_2012_Attribute;
          Check_E1;
 
          --  The arguments must be objects of any type
@@ -6335,7 +6331,6 @@ package body Sem_Attr is
 
       begin
          Check_E1;
-         Check_Ada_2012_Attribute;
 
          if not Is_Object_Reference (P) then
             Error_Attr_P ("prefix of attribute % must denote an object");
@@ -9766,8 +9761,7 @@ package body Sem_Attr is
 
    function Is_Anonymous_Tagged_Base
      (Anon : Entity_Id;
-      Typ  : Entity_Id)
-      return Boolean
+      Typ  : Entity_Id) return Boolean
    is
    begin
       return
