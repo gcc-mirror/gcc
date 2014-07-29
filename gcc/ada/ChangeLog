@@ -1,5 +1,11 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* types.ads (Mechanism_Type): Change range back to -18 .. Int'Last with
+	documentation that explains the need for this extended range
+	(use by C_Pass_By_Copy).
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi, sem_prag.adb: Minor reformatting.
 
 2014-07-29  Sergey Rybin  <rybin@adacore.com frybin>
