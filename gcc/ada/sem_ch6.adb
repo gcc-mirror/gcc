@@ -811,10 +811,9 @@ package body Sem_Ch6 is
                end if;
             end if;
 
-         elsif Etype (Base_Type (R_Type)) = R_Stm_Type
-           and then Is_Null_Extension (Base_Type (R_Type))
-         then
-            null;
+            --  Previous versions of this subprogram allowed the return value
+            --  to be the ancestor of the return type if the return type was
+            --  a null extension.  This was plainly incorrect.
 
          else
             Error_Msg_N
@@ -10631,7 +10630,6 @@ package body Sem_Ch6 is
       is
          AO : constant Entity_Id := Alias (Old_E);
          AN : constant Entity_Id := Alias (New_E);
-
       begin
          return Scope (AO) /= Scope (AN)
            or else No (DTC_Entity (AO))
@@ -10847,7 +10845,7 @@ package body Sem_Ch6 is
                             or else Is_Abstract_Subprogram (S)
                             or else
                               (Is_Dispatching_Operation (E)
-                                 and then Is_Overriding_Alias (E, S)))
+                                and then Is_Overriding_Alias (E, S)))
                  and then Ekind (E) /= E_Enumeration_Literal
                then
                   --  When an derived operation is overloaded it may be due to
@@ -11505,8 +11503,8 @@ package body Sem_Ch6 is
               and then Is_Access_Constant (Etype (Default))
             then
                Error_Msg_N
-                 ("formal that is access to variable cannot be initialized " &
-                    "with an access-to-constant expression", Default);
+                 ("formal that is access to variable cannot be initialized "
+                  & "with an access-to-constant expression", Default);
             end if;
 
             --  Check that the designated type of an access parameter's default
@@ -11700,11 +11698,11 @@ package body Sem_Ch6 is
    -------------------------
 
    procedure Set_Actual_Subtypes (N : Node_Id; Subp : Entity_Id) is
-      Decl           : Node_Id;
-      Formal         : Entity_Id;
-      T              : Entity_Id;
-      First_Stmt     : Node_Id := Empty;
-      AS_Needed      : Boolean;
+      Decl       : Node_Id;
+      Formal     : Entity_Id;
+      T          : Entity_Id;
+      First_Stmt : Node_Id := Empty;
+      AS_Needed  : Boolean;
 
    begin
       --  If this is an empty initialization procedure, no need to create
@@ -11991,7 +11989,6 @@ package body Sem_Ch6 is
       Result : Boolean;
    begin
       May_Hide_Profile := False;
-
       Check_Conformance
         (New_Id, Old_Id, Type_Conformant, False, Result,
          Skip_Controlling_Formals => Skip_Controlling_Formals);
@@ -12020,12 +12017,11 @@ package body Sem_Ch6 is
 
          --  For function instantiations that are operators, we must check
          --  separately that the corresponding generic only has in-parameters.
-         --  For subprogram declarations this is done in Set_Formal_Mode.
-         --  Such an error could not arise in earlier versions of the language.
+         --  For subprogram declarations this is done in Set_Formal_Mode. Such
+         --  an error could not arise in earlier versions of the language.
 
          elsif Ekind (F) /= E_In_Parameter then
-            Error_Msg_N
-              ("operators can only have IN parameters", F);
+            Error_Msg_N ("operators can only have IN parameters", F);
          end if;
 
          Next_Formal (F);
@@ -12058,7 +12054,7 @@ package body Sem_Ch6 is
         and then not Is_Intrinsic_Subprogram (Designator)
       then
          Error_Msg_N
-            ("explicit definition of inequality not allowed", Designator);
+           ("explicit definition of inequality not allowed", Designator);
       end if;
    end Valid_Operator_Definition;
 

@@ -1,3 +1,18 @@
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Reject a return
+	subtype indication in an extended return statement when the
+	return value is an ancestor of the return type of the function,
+	and that return type is a null record extension.
+
+2014-07-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Rep_Item_Too_Late): Specialize/clarify error
+	message produced for the case of a type-related representation
+	item that is made illegal by 13.10(1).
+	* gnat_rm.texi (Scalar_Storage_Order): Minor change in
+	documentation.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Add section on Wide_Wide_Character encodings.
