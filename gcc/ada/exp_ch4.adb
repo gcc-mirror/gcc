@@ -12616,9 +12616,6 @@ package body Exp_Ch4 is
       --  If False, call to finalizer includes a test of whether the hook
       --  pointer is null.
 
-      In_Cond_Expr : constant Boolean :=
-                       Within_Case_Or_If_Expression (Rel_Node);
-
    begin
       --  Step 0: determine where to attach finalization actions in the tree
 
@@ -12636,10 +12633,10 @@ package body Exp_Ch4 is
          --  conditional expression.
 
          Finalize_Always :=
-            not (In_Cond_Expr
-                  or else
-                    Nkind_In (Original_Node (Rel_Node), N_Case_Expression,
-                                                        N_If_Expression));
+           not Within_Case_Or_If_Expression (Rel_Node)
+             and then not Nkind_In
+                            (Original_Node (Rel_Node), N_Case_Expression,
+                                                       N_If_Expression);
 
          declare
             Loc  : constant Source_Ptr := Sloc (Rel_Node);

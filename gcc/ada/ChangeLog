@@ -1,3 +1,17 @@
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object): Remove constant
+	In_Cond_Expr, use its initialization expression in place.
+	* exp_ch7.adb (Process_Declarations): There is no need to check
+	that a transient object being hooked is controlled as it would
+	not have been hooked in the first place.
+	* exp_util.adb (Is_Aliased): 'Reference-d or renamed transient
+	objects are not considered aliased when the related context is
+	a Boolean expression_with_actions.
+	(Requires_Cleanup_Actions): There is no need to check that a transient
+	object being hooked is controlled as it would not have been hooked in
+	the first place.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb: Minor reformatting.
