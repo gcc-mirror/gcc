@@ -31,10 +31,9 @@ with Types; use Types;
 package Prepcomp is
 
    procedure Add_Dependency (S : Source_File_Index);
-   --  Add a dependency on a non-source file.
-   --  This is used internally for the preprocessing data file and the
-   --  preprocessing definition file, and also externally for non-temporary
-   --  configuration pragmas files.
+   --  Add a dependency on a non-source file. This is used internally for the
+   --  preprocessing data file and the preprocessing definition file, and also
+   --  externally for non-temporary configuration pragmas files.
 
    procedure Add_Dependencies;
    --  Add dependencies on the preprocessing data file and the preprocessing

@@ -7345,8 +7345,8 @@ package body Sem_Util is
    begin
       return Has_Discriminants (Typ)
        and then Present (First_Discriminant (Typ))
-       and then Present
-         (Discriminant_Default_Value (First_Discriminant (Typ)));
+       and then Present (Discriminant_Default_Value
+                           (First_Discriminant (Typ)));
    end Has_Defaulted_Discriminants;
 
    -------------------
