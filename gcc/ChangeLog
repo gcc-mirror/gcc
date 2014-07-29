@@ -1,3 +1,7 @@
+2014-07-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworksae.h (VXWORKS_OVERRIDE_OPTIONS): Define.
+
 2014-07-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/61914
