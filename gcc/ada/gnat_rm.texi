@@ -347,9 +347,7 @@ Implementation Defined Attributes
 * Attribute Bit_Position::
 * Attribute Code_Address::
 * Attribute Compiler_Version::
-* Attribute Constant_Indexing::
 * Attribute Default_Bit_Order::
-* Attribute Default_Iterator::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -370,7 +368,6 @@ Implementation Defined Attributes
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
 * Attribute Iterable::
-* Attribute Iterator_Element::
 * Attribute Large::
 * Attribute Library_Level::
 * Attribute Lock_Free::
@@ -8560,9 +8557,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Bit_Position::
 * Attribute Code_Address::
 * Attribute Compiler_Version::
-* Attribute Constant_Indexing::
 * Attribute Default_Bit_Order::
-* Attribute Default_Iterator::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -8582,7 +8577,6 @@ consideration, you should minimize the use of these attributes.
 * Attribute Implicit_Dereference::
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
-* Attribute Iterator_Element::
 * Attribute Iterable::
 * Attribute Large::
 * Attribute Library_Level::
@@ -8697,7 +8691,11 @@ Language Reference Manual}, section 9.12a.
 @unnumberedsec Attribute Atomic_Always_Lock_Free
 @findex Atomic_Always_Lock_Free
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+
+The prefix of the @code{Atomic_Always_Lock_Free} attribute is a type.
+The result is a Boolean value which is True if the type has discriminants,
+and False otherwise.  The result indicate whether atomic operations are
+supported by the target for the given type.
 
 @node Attribute Bit
 @unnumberedsec Attribute Bit
@@ -8795,12 +8793,6 @@ prefix) yields a static string identifying the version of the compiler
 being used to compile the unit containing the attribute reference. A
 typical result would be something like "@value{EDITION} @value{gnat_version} (20090221)".
 
-@node Attribute Constant_Indexing
-@unnumberedsec Attribute Constant_Indexing
-@findex Constant_Indexing
-@noindent
-PLEASE ADD DOCUMENTATION HERE???
-
 @node Attribute Default_Bit_Order
 @unnumberedsec Attribute Default_Bit_Order
 @cindex Big endian
@@ -8812,12 +8804,6 @@ permissible prefix), provides the value @code{System.Default_Bit_Order}
 as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @code{Low_Order_First}).  This is used to construct the definition of
 @code{Default_Bit_Order} in package @code{System}.
-
-@node Attribute Default_Iterator
-@unnumberedsec Attribute Default_Iterator
-@findex Default_Iterator
-@noindent
-PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Descriptor_Size
 @unnumberedsec Attribute Descriptor_Size
@@ -9124,12 +9110,6 @@ value returned is identical to the value used to initialize an otherwise
 uninitialized value of the type if pragma Initialize_Scalars is used,
 including the ability to modify the value with the binder -Sxx flag and
 relevant environment variables at run time.
-
-@node Attribute Iterator_Element
-@unnumberedsec Attribute Iterator_Element
-@findex Iterator_Element
-@noindent
-PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Iterable
 @unnumberedsec Attribute Iterable
