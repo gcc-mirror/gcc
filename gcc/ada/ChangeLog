@@ -1,5 +1,19 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_ugn.texi: Clean up and correct documentation of warnings.
+	* usage.adb: Minor corrections to make sure warnings are properly
+	documented.
+	* warnsw.adb (Set_Warning_Switch): Remove redundant return statement.
+	(WA_Warnings): Add Warn_On_Suspicious_Modulus_Value.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): The dummy block
+	created to match internal sequence numbers between compilations
+	with/without abort must have its type properly set.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* ali.adb (Initialize_ALI): Initialize SSO_Default_Specified
 	(Scan_ALI): Set SSO_Default in ALIs_Record (Scan_ALI): Set
 	SSO_Default_Specified.
