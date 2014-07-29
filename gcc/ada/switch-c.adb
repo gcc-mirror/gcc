@@ -38,6 +38,7 @@ with Warnsw;   use Warnsw;
 
 with Ada.Unchecked_Deallocation;
 with System.WCh_Con; use System.WCh_Con;
+with System.OS_Lib;
 
 package body Switch.C is
 
@@ -207,54 +208,70 @@ package body Switch.C is
               or else Switch_Chars (Ptr + 3) /= '='
             then
                Osint.Fail ("missing path for --RTS");
+
             else
-               --  Check that this is the first time --RTS is specified or if
-               --  it is not the first time, the same path has been specified.
+               declare
+                  Runtime_Dir : String_Access;
 
-               if RTS_Specified = null then
-                  RTS_Specified := new String'(Switch_Chars (Ptr + 4 .. Max));
+               begin
+                  if System.OS_Lib.Is_Absolute_Path
+                       (Switch_Chars (Ptr + 4 .. Max))
+                  then
+                     Runtime_Dir :=
+                       new String'
+                         (System.OS_Lib.Normalize_Pathname
+                            (Switch_Chars (Ptr + 4 .. Max)));
 
-               elsif
-                 RTS_Specified.all /= Switch_Chars (Ptr + 4 .. Max)
-               then
-                  Osint.Fail ("--RTS cannot be specified multiple times");
-               end if;
+                  else
+                     Runtime_Dir :=
+                       new String'(Switch_Chars (Ptr + 4 .. Max));
+                  end if;
 
-               --  Valid --RTS switch
+                  --  Check that this is the first time --RTS is specified
+                  --  or if it is not the first time, the same path has been
+                  --  specified.
 
-               Opt.No_Stdinc := True;
-               Opt.RTS_Switch := True;
+                  if RTS_Specified = null then
+                     RTS_Specified := Runtime_Dir;
 
-               RTS_Src_Path_Name :=
-                 Get_RTS_Search_Dir
-                   (Switch_Chars (Ptr + 4 .. Max), Include);
+                  elsif  RTS_Specified.all /= Runtime_Dir.all then
+                     Osint.Fail ("--RTS cannot be specified multiple times");
+                  end if;
 
-               RTS_Lib_Path_Name :=
-                 Get_RTS_Search_Dir
-                   (Switch_Chars (Ptr + 4 .. Max), Objects);
+                  --  Valid --RTS switch
 
-               if RTS_Src_Path_Name /= null
-                 and then RTS_Lib_Path_Name /= null
-               then
-                  --  Store the -fRTS switch (Note: Store_Compilation_Switch
-                  --  changes -fRTS back into --RTS for the actual output).
+                  Opt.No_Stdinc := True;
+                  Opt.RTS_Switch := True;
 
-                  Store_Compilation_Switch (Switch_Chars);
+                  RTS_Src_Path_Name :=
+                    Get_RTS_Search_Dir (Runtime_Dir.all, Include);
 
-               elsif RTS_Src_Path_Name = null
-                 and then RTS_Lib_Path_Name = null
-               then
-                  Osint.Fail ("RTS path not valid: missing " &
-                              "adainclude and adalib directories");
+                  RTS_Lib_Path_Name :=
+                    Get_RTS_Search_Dir (Runtime_Dir.all, Objects);
 
-               elsif RTS_Src_Path_Name = null then
-                  Osint.Fail ("RTS path not valid: missing " &
-                              "adainclude directory");
+                  if RTS_Src_Path_Name /= null
+                    and then RTS_Lib_Path_Name /= null
+                  then
+                     --  Store the -fRTS switch (Note: Store_Compilation_Switch
+                     --  changes -fRTS back into --RTS for the actual output).
 
-               elsif RTS_Lib_Path_Name = null then
-                  Osint.Fail ("RTS path not valid: missing " &
-                              "adalib directory");
-               end if;
+                     Store_Compilation_Switch (Switch_Chars);
+
+                  elsif RTS_Src_Path_Name = null
+                    and then RTS_Lib_Path_Name = null
+                  then
+                     Osint.Fail ("RTS path not valid: missing "
+                                 & "adainclude and adalib directories");
+
+                  elsif RTS_Src_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing "
+                                 & "adainclude directory");
+
+                  elsif RTS_Lib_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing "
+                                 & "adalib directory");
+                  end if;
+               end;
             end if;
 
             --  There are no other switches not starting with -gnat
@@ -363,7 +380,7 @@ package body Switch.C is
 
                         if C = 'b'
                           and then (Ptr /= First_Ptr + 1
-                                      or else not First_Switch)
+                                     or else not First_Switch)
                         then
                            Osint.Fail
                              ("-gnatd.b must be first if combined "

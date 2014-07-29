@@ -38,7 +38,12 @@
 
 #include <vxWorks.h>
 #include <arch/../regs.h>
+#ifndef __RTP__
 #include <sigLib.h>
+#else
+#include <signal.h>
+#include <base/b_ucontext_t.h>
+#endif
 
 /* ----------------------
    -- General comments --
@@ -47,29 +52,29 @@
    Stubs are generated from toplevel asms and .cfi directives, much simpler
    to use and check for correctness than manual encodings of CFI byte
    sequences.  The general idea is to establish CFA as sigcontext->sc_pregs
-   and state where to find the registers as offsets from there.
+   (for DKM) and mcontext (for RTP) and state where to find the registers as
+   offsets from there.
 
    As of today, we support a stub providing CFI info for common
    registers (GPRs, LR, ...). We might need variants with support for floating
    point or altivec registers as well at some point.
 
-   Checking which variant should apply and getting at sc_pregs is simpler
-   to express in C (we can't use offsetof in toplevel asms and hardcoding
-   constants is not workable with the flurry of VxWorks variants), so this
-   is the choice for our toplevel interface.
+   Checking which variant should apply and getting at sc_pregs / mcontext
+   is simpler to express in C (we can't use offsetof in toplevel asms and
+   hardcoding constants is not workable with the flurry of VxWorks variants),
+   so this is the choice for our toplevel interface.
 
    Note that the registers we "restore" here are those to which we have
    direct access through the system sigcontext structure, which includes
    only a partial set of the non-volatiles ABI-wise.  */
 
-/* -----------------------------------------
-   -- Protypes for our internal asm stubs --
-   -----------------------------------------
+/* -------------------------------------------
+   -- Prototypes for our internal asm stubs --
+   -------------------------------------------
 
-   SC_PREGS is always expected to be SIGCONTEXT->sc_pregs.  Eventhough our
-   symbols will remain local, the prototype claims "extern" and not
-   "static" to prevent compiler complaints about a symbol used but never
-   defined.  */
+   Eventhough our symbols will remain local, the prototype claims "extern"
+   and not "static" to prevent compiler complaints about a symbol used but
+   never defined.  */
 
 /* sigtramp stub providing CFI info for common registers.  */
 
@@ -91,9 +96,17 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 void __gnat_sigtramp (int signo, void *si, void *sc,
 		      __sigtramphandler_t * handler)
 {
+#ifdef __RTP__
+  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
+
+  /* Pass MCONTEXT in the fifth position so that the assembly code can find
+     it at the same stack location or in the same register as SC_PREGS.  */
+  __gnat_sigtramp_common (signo, si, mcontext, handler, mcontext);
+#else
   struct sigcontext * sctx = (struct sigcontext *) sc;
 
   __gnat_sigtramp_common (signo, si, sctx, handler, sctx->sc_pregs);
+#endif
 }
 
 
@@ -199,7 +212,7 @@ TCR("# Allocate frame and save the non-volatile") \
 TCR("# registers we're going to modify") \
 TCR("mov	ip, sp") \
 TCR("stmfd	sp!, {r"S(CFA_REG)", fp, ip, lr, pc}") \
-TCR("# Setup CFA_REG = sc_pregs, that we'll retrieve as our CFA value") \
+TCR("# Setup CFA_REG = context, which we'll retrieve as our CFA value") \
 TCR("ldr	r"S(CFA_REG)", [ip]") \
 TCR("")                 \
 TCR("# Call the real handler. The signo, siginfo and sigcontext") \
