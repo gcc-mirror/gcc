@@ -1,3 +1,8 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sinfo.ads, types.ads, sem_prag.adb, a-except-2005.adb,
+	sem_ch6.adb, par-ch3.adb: Minor reformatting.
+
 2014-07-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Check_Return_Subtype_Indication): Reject a return

@@ -3966,15 +3966,15 @@ package body Ch3 is
    begin
       if not Header_Already_Parsed then
 
-         --  not null access .. is a common form of access definition
-         --  access non null ..  is certainly rare, but syntactically legal.
-         --  not null access not null .. is rarer yet, and also legal.
+         --  NOT NULL ACCESS .. is a common form of access definition.
+         --  ACCESS NON NULL ..  is certainly rare, but syntactically legal.
+         --  NOT NULL ACCESS NOT NULL .. is rarer yet, and also legal.
          --  The last two cases are only meaningful if the following subtype
          --  indication denotes an access type (semantic check).
 
          Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
          Scan; -- past ACCESS
-         Not_Null_Subtype := P_Null_Exclusion;     --  Might also appear.
+         Not_Null_Subtype := P_Null_Exclusion;     --  Might also appear
       end if;
 
       if Token_Name = Name_Protected then

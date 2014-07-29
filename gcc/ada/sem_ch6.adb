@@ -811,9 +811,11 @@ package body Sem_Ch6 is
                end if;
             end if;
 
-            --  Previous versions of this subprogram allowed the return value
-            --  to be the ancestor of the return type if the return type was
-            --  a null extension.  This was plainly incorrect.
+         --  All remaining cases are illegal
+
+         --  Note: previous versions of this subprogram allowed the return
+         --  value to be the ancestor of the return type if the return type
+         --  was a null extension. This was plainly incorrect.
 
          else
             Error_Msg_N
