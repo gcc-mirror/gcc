@@ -3897,6 +3897,16 @@ package Einfo is
 --       case where there is a separate spec, where this field references
 --       the corresponding parameter entities in the spec.
 
+--    SSO_Set_High_By_Default (Flag273) [base type only]
+--       Defined for record and array types. Set in the base type if a pragma
+--       Default_Scalar_Storage_Order (High_Order_First) was active at the time
+--       the record or array was declared and therefore applies to it.
+
+--    SSO_Set_Low_By_Default (Flag272) [base type only]
+--       Defined for record and array types. Set in the base type if a pragma
+--       Default_Scalar_Storage_Order (High_Order_First) was active at the time
+--       the record or array was declared and therefore applies to it.
+
 --    Static_Discrete_Predicate (List25)
 --       Defined in discrete types/subtypes with static predicates (with the
 --       two flags Has_Predicates and Has_Static_Predicate set). Set if the
@@ -5367,6 +5377,8 @@ package Einfo is
    --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
    --    Is_Constrained                      (Flag12)
    --    Reverse_Storage_Order               (Flag93)   (base type only)
+   --    SSO_Set_High_By_Default             (Flag273)  (base type only)
+   --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
    --    Next_Index                          (synth)
    --    Number_Dimensions                   (synth)
    --    (plus type attributes)
@@ -5392,6 +5404,8 @@ package Einfo is
    --    First_Entity                        (Node17)
    --    Equivalent_Type                     (Node18)   (always Empty for type)
    --    Last_Entity                         (Node20)
+   --    SSO_Set_High_By_Default             (Flag273)  (base type only)
+   --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    (plus type attributes)
@@ -6023,6 +6037,8 @@ package Einfo is
    --    OK_To_Reorder_Components            (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    Reverse_Storage_Order               (Flag93)   (base type only)
+   --    SSO_Set_High_By_Default             (Flag273)  (base type only)
+   --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    (plus type attributes)
@@ -6049,6 +6065,8 @@ package Einfo is
    --    OK_To_Reorder_Components            (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    Reverse_Storage_Order               (Flag93)   (base type only)
+   --    SSO_Set_High_By_Default             (Flag273)  (base type only)
+   --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    (plus type attributes)
@@ -6073,6 +6091,8 @@ package Einfo is
    --    Component_Type                      (Node20)   (base type only)
    --    Static_Real_Or_String_Predicate     (Node25)
    --    Is_Constrained                      (Flag12)
+   --    SSO_Set_High_By_Default             (Flag273)  (base type only)
+   --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
    --    Next_Index                          (synth)
    --    Number_Dimensions                   (synth)
    --    (plus type attributes)
@@ -6812,6 +6832,8 @@ package Einfo is
    function SPARK_Pragma                        (Id : E) return N;
    function SPARK_Pragma_Inherited              (Id : E) return B;
    function Spec_Entity                         (Id : E) return E;
+   function SSO_Set_High_By_Default             (Id : E) return B;
+   function SSO_Set_Low_By_Default              (Id : E) return B;
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
    function Static_Discrete_Predicate           (Id : E) return S;
@@ -7447,6 +7469,8 @@ package Einfo is
    procedure Set_SPARK_Pragma                    (Id : E; V : N);
    procedure Set_SPARK_Pragma_Inherited          (Id : E; V : B := True);
    procedure Set_Spec_Entity                     (Id : E; V : E);
+   procedure Set_SSO_Set_High_By_Default         (Id : E; V : B := True);
+   procedure Set_SSO_Set_Low_By_Default          (Id : E; V : B := True);
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);
    procedure Set_Static_Discrete_Predicate       (Id : E; V : S);
@@ -8232,6 +8256,8 @@ package Einfo is
    pragma Inline (SPARK_Pragma);
    pragma Inline (SPARK_Pragma_Inherited);
    pragma Inline (Spec_Entity);
+   pragma Inline (SSO_Set_High_By_Default);
+   pragma Inline (SSO_Set_Low_By_Default);
    pragma Inline (Static_Elaboration_Desired);
    pragma Inline (Static_Initialization);
    pragma Inline (Static_Discrete_Predicate);
@@ -8666,6 +8692,8 @@ package Einfo is
    pragma Inline (Set_SPARK_Pragma);
    pragma Inline (Set_SPARK_Pragma_Inherited);
    pragma Inline (Set_Spec_Entity);
+   pragma Inline (Set_SSO_Set_High_By_Default);
+   pragma Inline (Set_SSO_Set_Low_By_Default);
    pragma Inline (Set_Static_Elaboration_Desired);
    pragma Inline (Set_Static_Initialization);
    pragma Inline (Set_Static_Discrete_Predicate);

@@ -1,5 +1,58 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* ali.adb (Initialize_ALI): Initialize SSO_Default_Specified
+	(Scan_ALI): Set SSO_Default in ALIs_Record (Scan_ALI): Set
+	SSO_Default_Specified.
+	* ali.ads (ALIs_Record): Add field SSO_Default
+	(SSO_Default_Specified): New global switch.
+	* bcheck.adb (Check_Consistent_SSO_Default): New procedure
+	(Check_Configuration_Consistency): Call this procedure
+	* einfo.adb (SSO_Set_High_By_Default): New
+	function (SSO_Set_Low_By_Default): New function
+	(Set_SSO_Set_High_By_Default): New procedure
+	(Set_SSO_Set_Low_By_Default): New procedure (Write_Entity_Flags):
+	List new flags
+	* einfo.ads (SSO_Set_Low_By_Default): New flag
+	(SSO_Set_High_By_Default): New flag
+	* freeze.adb (Set_SSO_From_Default): New procedure
+	(Freeze_Array_Type): Call Set_SSO_From_Default
+	(Freeze_Record_Type): Call Set_SSO_From_Default
+	* gnat_rm.texi: Document pragma Default_Scalar_Storage_Order
+	* lib-writ.adb (Write_ALI): Set OL/OH in P line as needed
+	* lib-writ.ads: Add OL/OH parameters to P line
+	* opt.adb: Set Default_SSO, Default_SSO_Config as appropriate
+	* opt.ads (Default_SSO): New global switch (Default_SSO_Config):
+	New global switch
+	* repinfo.adb (List_Scalar_Storage_Order): List SSO when it is
+	set by default using pragma Default_Scalar_Storage_Order.
+	* sem.ads (Scope_Stack_Entry): Add component Save_Default_SSO
+	* sem_ch13.adb (Inherit_Delayed_Rep_Aspects):
+	Clear SSO defaults when explicit SSO is inherited.
+	(Analyze_Attribute_Definition_Clause): Clear SSO defaults when
+	explicit SSO is specified.
+	(Inherit_Aspects_At_Freeze_Point):
+	Clear SSO default when inheriting SSO.
+	* sem_ch3.adb (Set_Default_SSO): New procedure
+	(Analyze_Private_Extension_Declaration): Set defualt SSO
+	(Array_Type_Declaration): ditto (Build_Derived_Array_Type): ditto
+	(Build_Derived_Private_Type): ditto (Build_Derived_Record_Type):
+	ditto (Build_Derived_Type): ditto (Make_Class_Wide_Type): ditto
+	(Record_Type_Declaration): ditto
+	* sem_ch8.adb (Pop_Scope): Restore Default_SSO (Push_Scope):
+	Save Default_SSO
+	* sem_prag.adb (Analyze_Pragma, case
+	Default_Scalar_Storage_Order): Set Default_SSO
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Valid_Operator_Definition): Verify that
+	all parameter have mode IN. This check must be done here for
+	subprogram instantiations that have operator names, because their
+	analysis does not follow the same path as that for subprogram
+	declarations.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb (Freeze_Entity, Concurrent_Type case): Add a guard
 	to make sure that the Etype of a component of the corresponding
 	record type is present before trying to freeze it.

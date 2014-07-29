@@ -180,6 +180,14 @@ package body Freeze is
    --  the flag if Debug_Info_Off is set. This procedure also ensures that
    --  subsidiary entities have the flag set as required.
 
+   procedure Set_SSO_From_Default (T : Entity_Id);
+   --  T is a record or array type that is being frozen. If it is a base type,
+   --  and if SSO_Set_Low/High_By_Default is set, then Reverse_Storage order
+   --  will be set appropriately. Note that an explicit occurrence of aspect
+   --  Scalar_Storage_Order or an explicit setting of this aspect with an
+   --  attribute definition clause occurs, then these two flags are reset in
+   --  any case, so call will have no effect.
+
    procedure Undelay_Type (T : Entity_Id);
    --  T is a type of a component that we know to be an Itype. We don't want
    --  this to have a Freeze_Node, so ensure it doesn't. Do the same for any
@@ -2074,7 +2082,11 @@ package body Freeze is
 
          --  Processing that is done only for base types
 
-         if Ekind (Arr) = E_Array_Type then
+         if Ekind (Arr) = E_Array_Type then  -- what about E_String_Type ???
+
+            --  Deal with default setting of reverse storage order
+
+            Set_SSO_From_Default (Arr);
 
             --  Propagate flags for component type
 
@@ -3090,6 +3102,12 @@ package body Freeze is
                Next_Component (Comp);
             end loop;
          end;
+
+         --  Deal with default setting of reverse storage order
+
+         Set_SSO_From_Default (Rec);
+
+         --  Now deal with reverse storage order/bit order issues
 
          if Present (SSO_ADC) then
 
@@ -4692,12 +4710,11 @@ package body Freeze is
          then
             Freeze_Record_Type (E);
 
-         --  For a concurrent type, freeze corresponding record type. This
-         --  does not correspond to any specific rule in the RM, but the
-         --  record type is essentially part of the concurrent type.
-         --  Freeze as well all local entities. This includes record types
-         --  created for entry parameter blocks, and whatever local entities
-         --  may appear in the private part.
+         --  For a concurrent type, freeze corresponding record type. This does
+         --  not correspond to any specific rule in the RM, but the record type
+         --  is essentially part of the concurrent type. Also freeze all local
+         --  entities. This includes record types created for entry parameter
+         --  blocks and whatever local entities may appear in the private part.
 
          elsif Is_Concurrent_Type (E) then
             if Present (Corresponding_Record_Type (E)) then
@@ -7173,6 +7190,29 @@ package body Freeze is
                   (Scope_Stack.Last).Component_Alignment_Default);
       end if;
    end Set_Component_Alignment_If_Not_Set;
+
+   --------------------------
+   -- Set_SSO_From_Default --
+   --------------------------
+
+   procedure Set_SSO_From_Default (T : Entity_Id) is
+   begin
+      if (Is_Record_Type (T) or else Is_Array_Type (T))
+        and then Is_Base_Type (T)
+      then
+         if (Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
+              or else
+            ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T))
+         then
+            --  If flags cause reverse storage order, then set the result. Note
+            --  that we would have ignored the pragma setting the non default
+            --  storage order in any case, hence the assertion at this point.
+
+            pragma Assert (Support_Nondefault_SSO_On_Target);
+            Set_Reverse_Storage_Order (T);
+         end if;
+      end if;
+   end Set_SSO_From_Default;
 
    ------------------
    -- Undelay_Type --

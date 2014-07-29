@@ -932,6 +932,12 @@ package body Sem_Ch13 is
                           and then Reverse_Storage_Order (P)
                         then
                            Set_Reverse_Storage_Order (Base_Type (E));
+
+                           --  Clear default SSO indications, since the aspect
+                           --  overrides the default.
+
+                           Set_SSO_Set_Low_By_Default  (Base_Type (E), False);
+                           Set_SSO_Set_High_By_Default (Base_Type (E), False);
                         end if;
 
                      --  Small
@@ -3272,6 +3278,18 @@ package body Sem_Ch13 is
 
                Typ := Etype (F);
 
+               --  If the attribute specification comes from an aspect
+               --  specification for a class-wide stream, the parameter
+               --  must be a class-wide type of the entity to which the
+               --  aspect applies.
+
+               if From_Aspect_Specification (N)
+                 and then Class_Present (Parent (N))
+                 and then Is_Class_Wide_Type (Typ)
+               then
+                  Typ := Etype (Typ);
+               end if;
+
             else
                Typ := Etype (Subp);
             end if;
@@ -4758,6 +4776,12 @@ package body Sem_Ch13 is
                         & "not supported on target", Expr);
                   end if;
                end if;
+
+               --  Clear SSO default indications since explicit setting of the
+               --  order overrides the defaults.
+
+               Set_SSO_Set_Low_By_Default  (Base_Type (U_Ent), False);
+               Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
          end Scalar_Storage_Order;
 
@@ -10311,6 +10335,12 @@ package body Sem_Ch13 is
                   Set_Reverse_Storage_Order (Bas_Typ,
                     Reverse_Storage_Order (Entity (Name
                       (Get_Rep_Item (Typ, Name_Scalar_Storage_Order)))));
+
+                  --  Clear default SSO indications, since the inherited aspect
+                  --  which was set explicitly overrides the default.
+
+                  Set_SSO_Set_Low_By_Default  (Bas_Typ, False);
+                  Set_SSO_Set_High_By_Default (Bas_Typ, False);
                end if;
             end if;
          end;

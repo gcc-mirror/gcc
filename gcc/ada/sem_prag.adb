@@ -13176,7 +13176,10 @@ package body Sem_Prag is
          --  pragma Default_Scalar_Storage_Order
          --           (High_Order_First | Low_Order_First);
 
-         when Pragma_Default_Scalar_Storage_Order =>
+         when Pragma_Default_Scalar_Storage_Order => DSSO : declare
+            Default : Character;
+
+         begin
             GNAT_Pragma;
             Check_Arg_Count (1);
 
@@ -13189,7 +13192,27 @@ package body Sem_Prag is
 
             Check_No_Identifiers;
             Check_Arg_Is_One_Of
-              (Arg1, Name_Low_Order_First, Name_High_Order_First);
+              (Arg1, Name_High_Order_First, Name_Low_Order_First);
+            Get_Name_String (Chars (Get_Pragma_Arg (Arg1)));
+            Default := Fold_Upper (Name_Buffer (1));
+
+            if not Support_Nondefault_SSO_On_Target
+              and then (Ttypes.Bytes_Big_Endian /= (Default = 'H'))
+            then
+               if Warn_On_Unrecognized_Pragma then
+                  Error_Msg_N
+                    ("non-default Scalar_Storage_Order not supported "
+                     & "on target?g?", N);
+                  Error_Msg_N
+                    ("\pragma Default_Scalar_Storage_Order ignored?g?", N);
+               end if;
+
+            --  Here set the specified default
+
+            else
+               Opt.Default_SSO := Default;
+            end if;
+         end DSSO;
 
          --------------------------
          -- Default_Storage_Pool --

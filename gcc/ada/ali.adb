@@ -115,6 +115,7 @@ package body ALI is
       Normalize_Scalars_Specified            := False;
       Partition_Elaboration_Policy_Specified := ' ';
       Queuing_Policy_Specified               := ' ';
+      SSO_Default_Specified                  := False;
       Static_Elaboration_Model_Used          := False;
       Task_Dispatching_Policy_Specified      := ' ';
       Unreserve_All_Interrupts_Specified     := False;
@@ -892,6 +893,7 @@ package body ALI is
         Restrictions                 => No_Restrictions,
         SAL_Interface                => False,
         Sfile                        => No_File,
+        SSO_Default                  => ' ',
         Task_Dispatching_Policy      => ' ',
         Time_Slice_Value             => -1,
         WC_Encoding                  => 'b',
@@ -1126,6 +1128,19 @@ package body ALI is
                   NS_Found := True;
 
                --  Invalid switch starting with N
+
+               else
+                  Fatal_Error_Ignore;
+               end if;
+
+            --  Processing for OH/OL
+
+            elsif C = 'O' then
+               C := Getc;
+
+               if C = 'L' or else C = 'H' then
+                  ALIs.Table (Id).SSO_Default := C;
+                  SSO_Default_Specified := True;
 
                else
                   Fatal_Error_Ignore;

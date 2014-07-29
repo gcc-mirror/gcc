@@ -564,13 +564,13 @@ package body Einfo is
    --    Stores_Attribute_Old_Prefix     Flag270
 
    --    (Has_Protected)                 Flag271
+   --    (SSO_Set_Low_By_Default)        Flag272
+   --    (SSO_Set_Low_By_Default)        Flag273
 
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag272
-   --    (unused)                        Flag273
    --    (unused)                        Flag274
    --    (unused)                        Flag275
    --    (unused)                        Flag276
@@ -2971,6 +2971,18 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Package_Body or else Is_Formal (Id));
       return Node19 (Id);
    end Spec_Entity;
+
+   function SSO_Set_High_By_Default (Id : E) return B is
+   begin
+      pragma Assert (Is_Record_Type (Id) or else Is_Array_Type (Id));
+      return Flag273 (Base_Type (Id));
+   end SSO_Set_High_By_Default;
+
+   function SSO_Set_Low_By_Default (Id : E) return B is
+   begin
+      pragma Assert (Is_Record_Type (Id) or else Is_Array_Type (Id));
+      return Flag272 (Base_Type (Id));
+   end SSO_Set_Low_By_Default;
 
    function Static_Discrete_Predicate (Id : E) return S is
    begin
@@ -5768,6 +5780,22 @@ package body Einfo is
       Set_Node19 (Id, V);
    end Set_Spec_Entity;
 
+   procedure Set_SSO_Set_High_By_Default (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Is_Base_Type (Id)
+         and then (Is_Record_Type (Id) or else Is_Array_Type (Id)));
+      Set_Flag273 (Id, V);
+   end Set_SSO_Set_High_By_Default;
+
+   procedure Set_SSO_Set_Low_By_Default (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Is_Base_Type (Id)
+         and then (Is_Record_Type (Id) or else Is_Array_Type (Id)));
+      Set_Flag272 (Id, V);
+   end Set_SSO_Set_Low_By_Default;
+
    procedure Set_Static_Discrete_Predicate (Id : E; V : S) is
    begin
       pragma Assert (Is_Discrete_Type (Id) and then Has_Predicates (Id));
@@ -8448,6 +8476,8 @@ package body Einfo is
       W ("Size_Known_At_Compile_Time",      Flag92  (Id));
       W ("SPARK_Aux_Pragma_Inherited",      Flag266 (Id));
       W ("SPARK_Pragma_Inherited",          Flag265 (Id));
+      W ("SSO_Set_High_By_Default",         Flag273 (Id));
+      W ("SSO_Set_Low_By_Default",          Flag272 (Id));
       W ("Static_Elaboration_Desired",      Flag77  (Id));
       W ("Stores_Attribute_Old_Prefix",     Flag270 (Id));
       W ("Strict_Alignment",                Flag145 (Id));

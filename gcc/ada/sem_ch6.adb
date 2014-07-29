@@ -12017,6 +12017,15 @@ package body Sem_Ch6 is
             Error_Msg_N
               ("default values not allowed for operator parameters",
                Parent (F));
+
+         --  For function instantiations that are operators, we must check
+         --  separately that the corresponding generic only has in-parameters.
+         --  For subprogram declarations this is done in Set_Formal_Mode.
+         --  Such an error could not arise in earlier versions of the language.
+
+         elsif Ekind (F) /= E_In_Parameter then
+            Error_Msg_N
+              ("operators can only have IN parameters", F);
          end if;
 
          Next_Formal (F);

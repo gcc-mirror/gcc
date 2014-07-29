@@ -52,6 +52,7 @@ package body Opt is
       Check_Float_Overflow_Config           := Check_Float_Overflow;
       Check_Policy_List_Config              := Check_Policy_List;
       Default_Pool_Config                   := Default_Pool;
+      Default_SSO_Config                    := Default_SSO;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
       Extensions_Allowed_Config             := Extensions_Allowed;
@@ -90,6 +91,7 @@ package body Opt is
       Check_Float_Overflow           := Save.Check_Float_Overflow;
       Check_Policy_List              := Save.Check_Policy_List;
       Default_Pool                   := Save.Default_Pool;
+      Default_SSO                    := Save.Default_SSO;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
       Extensions_Allowed             := Save.Extensions_Allowed;
@@ -130,6 +132,7 @@ package body Opt is
       Save.Check_Float_Overflow           := Check_Float_Overflow;
       Save.Check_Policy_List              := Check_Policy_List;
       Save.Default_Pool                   := Default_Pool;
+      Save.Default_SSO                    := Default_SSO;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
       Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
       Save.Extensions_Allowed             := Extensions_Allowed;
@@ -190,6 +193,7 @@ package body Opt is
             Assertions_Enabled       := Assertions_Enabled_Config;
             Assume_No_Invalid_Values := Assume_No_Invalid_Values_Config;
             Check_Policy_List        := Check_Policy_List_Config;
+            Default_SSO              := Default_SSO_Config;
             SPARK_Mode               := SPARK_Mode_Config;
             SPARK_Mode_Pragma        := SPARK_Mode_Pragma_Config;
          else
@@ -210,6 +214,7 @@ package body Opt is
          Assume_No_Invalid_Values    := Assume_No_Invalid_Values_Config;
          Check_Float_Overflow        := Check_Float_Overflow_Config;
          Check_Policy_List           := Check_Policy_List_Config;
+         Default_SSO                 := Default_SSO_Config;
          Dynamic_Elaboration_Checks  := Dynamic_Elaboration_Checks_Config;
          Extensions_Allowed          := Extensions_Allowed_Config;
          External_Name_Exp_Casing    := External_Name_Exp_Casing_Config;

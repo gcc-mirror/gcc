@@ -140,6 +140,7 @@ Implementation Defined Pragmas
 * Pragma CPU::
 * Pragma Debug::
 * Pragma Debug_Policy::
+* Pragma Default_Scalar_Storage_Order::
 * Pragma Default_Storage_Pool::
 * Pragma Depends::
 * Pragma Detect_Blocking::
@@ -990,6 +991,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma CPU::
 * Pragma Debug::
 * Pragma Debug_Policy::
+* Pragma Default_Scalar_Storage_Order::
 * Pragma Default_Storage_Pool::
 * Pragma Depends::
 * Pragma Detect_Blocking::
@@ -2507,8 +2509,79 @@ This pragma is equivalent to a corresponding @code{Check_Policy} pragma
 with a first argument of @code{Debug}. It is retained for historical
 compatibility reasons.
 
+@node Pragma Default_Scalar_Storage_Order
+@unnumberedsec Pragma Default_Scalar_Storage_Order
+@cindex Default_Scalar_Storage_Order
+@cindex Scalar_Storage_Order
+@findex Default_Scalar_Storage_Order
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Default_Scalar_Storage_Order (High_Order_First | Low_Order_First);
+@end smallexample
+
+@noindent
+Normally if no explicit @code{Scalar_Storage_Order} is given for a record
+type or array type, then the scalar storage order defaults to the ordinary
+default for the target. But this default may be overridden using this pragma.
+The pragma may appear as a configuration pragma, or locally within a package
+spec or declarative part. In the latter case, it applies to all subsequent
+types declared within that package spec or declarative part.
+
+If this pragma is used as a configuration pragma which appears within a
+configuration pragma file (as opposed to appearing explicitly at the start
+of a single unit), then the binder will require that all units in a partition
+be compiled in a similar manner, including all units in the run-time that
+are included in the partition.
+
+The following example shows the use of this pragma:
+
+@smallexample @c ada
+pragma Default_Scalar_Storage_Order (High_Order_First);
+with System; use System;
+package DSSO1 is
+   type H1 is record
+      a : Integer;
+   end record;
+
+   type L2 is record
+      a : Integer;
+   end record;
+   for L2'Scalar_Storage_Order use Low_Order_First;
+
+   type L2a is new L2;
+
+   package Inner is
+      type H3 is record
+         a : Integer;
+      end record;
+
+      pragma Default_Scalar_Storage_Order (Low_Order_First);
+
+      type L4 is record
+         a : Integer;
+      end record;
+   end Inner;
+
+   type H4a is new Inner.L4;
+
+   type H5 is record
+      a : Integer;
+   end record;
+end DSSO1;
+@end smallexample
+
+@noindent
+In this example record types L.. have @code{Low_Order_First} scalar
+storage order, and record types H.. have @code{High_Order_First}.
+Note that in the case of @code{H4a}, the order is not inherited
+from the parent type. Only an explicitly set @code{Scalar_Storage_Order}
+gets inherited on type derivation.
+
 @node Pragma Default_Storage_Pool
 @unnumberedsec Pragma Default_Storage_Pool
+@cindex Default_Storage_Pool
 @findex Default_Storage_Pool
 @noindent
 Syntax:
@@ -9306,7 +9379,9 @@ this attribute.
 @noindent
 For every array or record type @var{S}, the representation attribute
 @code{Scalar_Storage_Order} denotes the order in which storage elements
-that make up scalar components are ordered within S:
+that make up scalar components are ordered within S. The value given must
+be a static expression of type System.Bit_Order. The following is an example
+of the use of this feature:
 
 @smallexample @c ada
    --  Component type definitions
@@ -9340,6 +9415,7 @@ that make up scalar components are ordered within S:
    --  the former is used.
 @end smallexample
 
+@noindent
 Other properties are as for standard representation attribute @code{Bit_Order},
 as defined by Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
 
@@ -9349,10 +9425,12 @@ this means that if a @code{Scalar_Storage_Order} attribute definition
 clause is not confirming, then the type's @code{Bit_Order} shall be
 specified explicitly and set to the same value.
 
-For a record extension, the derived type shall have the same scalar storage
-order as the parent type.
+Derived types inherit an explicitly set scalar storage order from their parent
+types. This may be overridden for the derived type by giving an explicit scalar
+storage order for the derived type. For a record extension, the derived type
+must have the same scalar storage order as the parent type.
 
-If a component of @var{S} is of a record or array type, then that type shall
+If a component of @var{S} is of a record or array type, then that type must
 also have a @code{Scalar_Storage_Order} attribute definition clause.
 
 A component of a record or array type that is a packed array, or that
@@ -9391,6 +9469,11 @@ are relaxed. Instead, the following rules apply:
  scalar.
 
 @end itemize
+
+If no scalar storage order is specified for a type (either directly, or by
+inheritance in the case of a derived type), then the default is normally
+the native ordering of the target, but this default can be overridden using
+pragma @code{Default_Scalar_Storage_Order}.
 
 @node Attribute Simple_Storage_Pool
 @unnumberedsec Attribute Simple_Storage_Pool
