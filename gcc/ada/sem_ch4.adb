@@ -639,15 +639,6 @@ package body Sem_Ch4 is
                end;
             end if;
 
-            --  Check restriction against dynamically allocated protected
-            --  objects. Note that when limited aggregates are supported,
-            --  a similar test should be applied to an allocator with a
-            --  qualified expression ???
-
-            if Has_Protected (Type_Id) then
-               Check_Restriction (No_Protected_Type_Allocators, N);
-            end if;
-
             --  Check for missing initialization. Skip this check if we already
             --  had errors on analyzing the allocator, since in that case these
             --  are probably cascaded errors.
@@ -723,6 +714,12 @@ package body Sem_Ch4 is
          Check_Restriction (No_Tasking, N);
          Check_Restriction (Max_Tasks, N);
          Check_Restriction (No_Task_Allocators, N);
+      end if;
+
+      --  Check restriction against dynamically allocated protected objects
+
+      if Has_Protected (Designated_Type (Acc_Type)) then
+         Check_Restriction (No_Protected_Type_Allocators, N);
       end if;
 
       --  AI05-0013-1: No_Nested_Finalization forbids allocators if the access

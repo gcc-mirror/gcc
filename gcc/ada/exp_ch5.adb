@@ -3946,6 +3946,19 @@ package body Exp_Ch5 is
         and then Present (Iterator_Specification (Scheme))
       then
          Expand_Iterator_Loop (N);
+
+         --  An iterator loop may generate renaming declarations for elements
+         --  that require debug information. This is the case in particular
+         --  with element iterators, where debug information must be generated
+         --  for the temporary that holds the element value. These temporaries
+         --  are created within a transient block whose local declarations are
+         --  transferred to the loop, which now has non-trivial local objects.
+
+         if Nkind (N) = N_Loop_Statement
+           and then Present (Identifier (N))
+         then
+            Qualify_Entity_Names (N);
+         end if;
       end if;
 
       --  When the iteration scheme mentiones attribute 'Loop_Entry, the loop

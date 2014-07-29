@@ -1647,7 +1647,7 @@ package body Einfo is
 
    function Has_Protected (Id : E) return B is
    begin
-      return Flag271 (Id);
+      return Flag271 (Base_Type (Id));
    end Has_Protected;
 
    function Has_Qualified_Name (Id : E) return B is

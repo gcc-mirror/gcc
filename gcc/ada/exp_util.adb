@@ -5447,6 +5447,8 @@ package body Exp_Util is
             --  that it is common and reasonable for code to be deleted in
             --  instances for various reasons.
 
+            --  Could we use Is_Statically_Unevaluated here???
+
             if Nkind (Parent (N)) = N_If_Statement then
                declare
                   C : constant Node_Id := Condition (Parent (N));
@@ -5495,6 +5497,7 @@ package body Exp_Util is
 
             declare
                E : Entity_Id := First_Entity (Defining_Entity (N));
+
             begin
                while Present (E) loop
                   if Ekind (E) = E_Operator then
@@ -5510,7 +5513,7 @@ package body Exp_Util is
 
          elsif Nkind (N) = N_If_Statement then
             Kill_Dead_Code (Then_Statements (N));
-            Kill_Dead_Code (Elsif_Parts (N));
+            Kill_Dead_Code (Elsif_Parts     (N));
             Kill_Dead_Code (Else_Statements (N));
 
          elsif Nkind (N) = N_Loop_Statement then
@@ -5543,8 +5546,10 @@ package body Exp_Util is
    procedure Kill_Dead_Code (L : List_Id; Warn : Boolean := False) is
       N : Node_Id;
       W : Boolean;
+
    begin
       W := Warn;
+
       if Is_Non_Empty_List (L) then
          N := First (L);
          while Present (N) loop
@@ -6770,7 +6775,7 @@ package body Exp_Util is
                Analyze (Block);
             end if;
 
-         when others                       =>
+         when others =>
             null;
       end case;
    end Process_Statements_For_Controlled_Objects;
@@ -6782,6 +6787,7 @@ package body Exp_Util is
    function Power_Of_Two (N : Node_Id) return Nat is
       Typ : constant Entity_Id := Etype (N);
       pragma Assert (Is_Integer_Type (Typ));
+
       Siz : constant Nat := UI_To_Int (Esize (Typ));
       Val : Uint;
 
@@ -8703,7 +8709,6 @@ package body Exp_Util is
       Loc   : constant Source_Ptr := Sloc (N);
       Stseq : constant Node_Id    := Handled_Statement_Sequence (N);
       Stmts : constant List_Id    := Statements (Stseq);
-
    begin
       if Abort_Allowed then
          Prepend_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));

@@ -1,5 +1,23 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.adb (Has_Protected): Test base type.
+	* sem_ch4.adb (Analyze_Allocator): Reorganize code to make sure
+	that we always properly check No_Protected_Type_Allocators.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Defining_Entity):	Now applies to
+	loop declarations as well.
+	* exp_ch5.adb (Expand_Loop_Statement): Apply Qualify_Entity_Names
+	to an iterator loop, because it may contain local renaming
+	declarations that require debugging information.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads, exp_util.adb, sem_attr.adb: Minor reformatting.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, einfo.adb (Static_Real_Or_String_Predicate): New function
 	(Set_Static_Real_Or_String_Predicate): New procedure
 	* sem_ch13.adb (Build_Predicate_Functions): Accomodate static
