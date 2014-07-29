@@ -798,7 +798,7 @@ package body Sem_Util is
          --  Emit an optional suggestion on how to remedy the error if the
          --  context warrants it.
 
-         if Suggest_Static and then Present (Static_Predicate (Typ)) then
+         if Suggest_Static and then Has_Static_Predicate (Typ) then
             Error_Msg_FE ("\predicate of & should be marked static", N, Typ);
          end if;
       end if;

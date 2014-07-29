@@ -232,7 +232,7 @@ package Sem_Eval is
    --
    --  Implementation note: an attempt to include this Ada 2012 case failed,
    --  since it appears that this routine is called in some cases before the
-   --  Static_Predicate field is set ???
+   --  Static_Discrete_Predicate field is set ???
    --
    --  This differs from Is_OK_Static_Subtype (which is what must be used by
    --  clients) in that it does not care whether the bounds raise a constraint
@@ -250,7 +250,7 @@ package Sem_Eval is
    --
    --  Implementation note: an attempt to include this Ada 2012 case failed,
    --  since it appears that this routine is called in some cases before the
-   --  Static_Predicate field is set ???
+   --  Static_Discrete_Predicate field is set ???
    --
    --  This differs from Is_Static_Subtype in that it includes the constraint
    --  error checks, which are missing from Is_Static_Subtype.

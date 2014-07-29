@@ -1,5 +1,14 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aggr.adb, exp_ch5.adb, sem_ch5.adb, exp_util.adb, einfo.adb,
+	einfo.ads, sem_util.adb, sem_attr.adb, sem_case.adb, sem_eval.adb,
+	sem_eval.ads, sem_ch13.adb: General cleanup of static predicate
+	handling. Change name of Discrete_Predicate to
+	Discrete_Static_Predicate, and replace testing of the presence of this
+	field by testing the flag Has_Static_Expression.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document pragma Unevaluated_Use_Of_Old.
 	* opt.adb: Handle Uneval_Old.
 	* opt.ads (Uneval_Old, Uneval_Old_Config): New variables.

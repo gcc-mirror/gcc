@@ -97,8 +97,8 @@ package body Sem_Ch13 is
    --  name, which is unique, so any identifier with Chars matching Nam must be
    --  a reference to the type. If the predicate is non-static, this procedure
    --  returns doing nothing. If the predicate is static, then the predicate
-   --  list is stored in Static_Predicate (Typ), and the Expr is rewritten as
-   --  a canonicalized membership operation.
+   --  list is stored in Static_Discrete_Predicate (Typ), and the Expr is
+   --  rewritten as a canonicalized membership operation.
 
    procedure Build_Predicate_Functions (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ),
@@ -6266,13 +6266,13 @@ package body Sem_Ch13 is
 
       function Build_Val (V : Uint) return Node_Id;
       --  Return an analyzed N_Identifier node referencing this value, suitable
-      --  for use as an entry in the Static_Predicate list. This node is typed
-      --  with the base type.
+      --  for use as an entry in the Static_Discrte_Predicate list. This node
+      --  is typed with the base type.
 
       function Build_Range (Lo : Uint; Hi : Uint) return Node_Id;
       --  Return an analyzed N_Range node referencing this range, suitable for
-      --  use as an entry in the Static_Predicate list. This node is typed with
-      --  the base type.
+      --  use as an entry in the Static_Discrete_Predicate list. This node is
+      --  typed with the base type.
 
       function Get_RList (Exp : Node_Id) return RList;
       --  This is a recursive routine that converts the given expression into a
@@ -6295,12 +6295,14 @@ package body Sem_Ch13 is
       --  name appears in parens, this routine will return False.
 
       function Lo_Val (N : Node_Id) return Uint;
-      --  Given static expression or static range from a Static_Predicate list,
-      --  gets expression value or low bound of range.
+      --  Given an entry from a Static_Discrete_Predicate list that is either
+      --  a static expression or static range, gets either the expression value
+      --  or the low bound of the range.
 
       function Hi_Val (N : Node_Id) return Uint;
-      --  Given static expression or static range from a Static_Predicate list,
-      --  gets expression value of high bound of range.
+      --  Given an entry from a Static_Discrete_Predicate list that is either
+      --  a static expression or static range, gets either the expression value
+      --  or the high bound of the range.
 
       function Membership_Entry (N : Node_Id) return RList;
       --  Given a single membership entry (range, value, or subtype), returns
@@ -6920,18 +6922,19 @@ package body Sem_Ch13 is
       begin
          --  Not static if type does not have static predicates
 
-         if not Has_Predicates (Typ) or else No (Static_Predicate (Typ)) then
+         if not Has_Static_Predicate (Typ) then
             raise Non_Static;
          end if;
 
          --  Otherwise we convert the predicate list to a range list
 
          declare
-            Result : RList (1 .. List_Length (Static_Predicate (Typ)));
+            Spred  : constant List_Id := Static_Discrete_Predicate (Typ);
+            Result : RList (1 .. List_Length (Spred));
             P      : Node_Id;
 
          begin
-            P := First (Static_Predicate (Typ));
+            P := First (Static_Discrete_Predicate (Typ));
             for J in Result'Range loop
                Result (J) := REnt'(Lo_Val (P), Hi_Val (P));
                Next (P);
@@ -6999,7 +7002,7 @@ package body Sem_Ch13 is
          --  Processing was successful and all entries were static, so now we
          --  can store the result as the predicate list.
 
-         Set_Static_Predicate (Typ, Plist);
+         Set_Static_Discrete_Predicate (Typ, Plist);
 
          --  The processing for static predicates put the expression into
          --  canonical form as a series of ranges. It also eliminated
@@ -8027,7 +8030,7 @@ package body Sem_Ch13 is
                   --  dynamic. But if we do succeed in building the list, then
                   --  we mark the predicate as static.
 
-                  if No (Static_Predicate (Typ)) then
+                  if No (Static_Discrete_Predicate (Typ)) then
                      Set_Has_Static_Predicate (Typ, False);
                   end if;
                end if;

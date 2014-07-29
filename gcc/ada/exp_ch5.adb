@@ -3977,7 +3977,7 @@ package body Exp_Ch5 is
       LPS     : constant Node_Id    := Loop_Parameter_Specification (Isc);
       Loop_Id : constant Entity_Id  := Defining_Identifier (LPS);
       Ltype   : constant Entity_Id  := Etype (Loop_Id);
-      Stat    : constant List_Id    := Static_Predicate (Ltype);
+      Stat    : constant List_Id    := Static_Discrete_Predicate (Ltype);
       Stmts   : constant List_Id    := Statements (N);
 
    begin

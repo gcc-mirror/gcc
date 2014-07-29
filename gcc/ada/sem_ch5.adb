@@ -2480,8 +2480,8 @@ package body Sem_Ch5 is
          --  function only, look for a dynamic predicate aspect as well.
 
          if Is_Discrete_Type (Entity (DS))
-           and then Present (Predicate_Function (Entity (DS)))
-           and then (No (Static_Predicate (Entity (DS)))
+           and then Has_Predicates (Entity (DS))
+           and then (not Has_Static_Predicate (Entity (DS))
                       or else Has_Dynamic_Predicate_Aspect (Entity (DS)))
          then
             Bad_Predicated_Subtype_Use

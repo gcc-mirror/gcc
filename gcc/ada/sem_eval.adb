@@ -330,7 +330,7 @@ package body Sem_Eval is
       --  types, so no need to make a special test for that).
 
       if not (Has_Static_Predicate (Typ)
-              and then Compile_Time_Known_Value (Expr))
+               and then Compile_Time_Known_Value (Expr))
       then
          return;
       end if;
@@ -354,7 +354,7 @@ package body Sem_Eval is
 
       --  If static predicate matches, nothing to do
 
-      if Choices_Match (Expr, Static_Predicate (Typ)) = Match then
+      if Choices_Match (Expr, Static_Discrete_Predicate (Typ)) = Match then
          return;
       end if;
 
@@ -383,6 +383,7 @@ package body Sem_Eval is
            ("??expression fails predicate check on &", Expr, Typ);
       end if;
    end Check_Expression_Against_Static_Predicate;
+
    ------------------------------
    -- Check_Non_Static_Context --
    ------------------------------

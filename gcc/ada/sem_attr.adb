@@ -1498,7 +1498,7 @@ package body Sem_Attr is
          --  Now test for dynamic predicate
 
          if Has_Predicates (P_Type)
-           and then No (Static_Predicate (P_Type))
+           and then not (Has_Static_Predicate (P_Type))
          then
             Error_Attr_P
               ("prefix of % attribute may not have dynamic predicate");
@@ -1515,7 +1515,8 @@ package body Sem_Attr is
          if Expr_Value (Type_Low_Bound (P_Type)) >
             Expr_Value (Type_High_Bound (P_Type))
            or else (Has_Predicates (P_Type)
-                     and then Is_Empty_List (Static_Predicate (P_Type)))
+                     and then
+                       Is_Empty_List (Static_Discrete_Predicate (P_Type)))
          then
             Error_Attr_P
               ("prefix of % attribute must be subtype with "
@@ -8044,10 +8045,11 @@ package body Sem_Attr is
       when Attribute_First_Valid => First_Valid :
       begin
          if Has_Predicates (P_Type)
-           and then Present (Static_Predicate (P_Type))
+           and then Has_Static_Predicate (P_Type)
          then
             declare
-               FirstN : constant Node_Id := First (Static_Predicate (P_Type));
+               FirstN : constant Node_Id :=
+                          First (Static_Discrete_Predicate (P_Type));
             begin
                if Nkind (FirstN) = N_Range then
                   Fold_Uint (N, Expr_Value (Low_Bound (FirstN)), Static);
@@ -8296,10 +8298,11 @@ package body Sem_Attr is
       when Attribute_Last_Valid => Last_Valid :
       begin
          if Has_Predicates (P_Type)
-           and then Present (Static_Predicate (P_Type))
+           and then Has_Static_Predicate (P_Type)
          then
             declare
-               LastN : constant Node_Id := Last (Static_Predicate (P_Type));
+               LastN : constant Node_Id :=
+                         Last (Static_Discrete_Predicate (P_Type));
             begin
                if Nkind (LastN) = N_Range then
                   Fold_Uint (N, Expr_Value (High_Bound (LastN)), Static);
