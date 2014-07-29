@@ -1,3 +1,24 @@
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Perform various
+	volatility-related checks.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_eval.adb: Minor reformatting.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: sem_attr.adb (Access_Attribute): Handle properly
+	the case where the attribute reference appears in a nested scope
+	from that of the subprogram prefix.
+	* sem_attr.adb: Minor reformatting.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Clarify documentation of Initialize_Scalar
+	initialization options.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads: Minor comment addition.

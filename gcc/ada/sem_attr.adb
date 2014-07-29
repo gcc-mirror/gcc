@@ -10571,7 +10571,8 @@ package body Sem_Attr is
 
             if Is_Entity_Name (P) then
                declare
-                  E : constant Entity_Id := Entity (P);
+                  E    : constant Entity_Id := Entity (P);
+                  Decl : Node_Id;
                   Flag : Entity_Id;
 
                --  If the access has been taken and the body of the subprogram
@@ -10585,6 +10586,7 @@ package body Sem_Attr is
 
                begin
                   if Is_Subprogram (E)
+                    and then Expander_Active
                     and then Comes_From_Source (E)
                     and then Comes_From_Source (N)
                     and then In_Open_Scopes (Scope (E))
@@ -10592,22 +10594,28 @@ package body Sem_Attr is
                       Ekind_In (Scope (E), E_Block, E_Procedure, E_Function)
                     and then not Has_Completion (E)
                     and then No (Elaboration_Entity (E))
-                    and then Expander_Active
+                    and then Nkind (Unit_Declaration_Node (E)) =
+                                                  N_Subprogram_Declaration
                   then
                      --  Create elaboration variable for it
 
                      Flag := Make_Temporary (Loc, 'E');
-
-                     Set_Elaboration_Entity (E, Flag);
-
-                     Insert_Action (N,
+                     Decl :=
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Flag,
                          Object_Definition   =>
                            New_Occurrence_Of (Standard_Short_Integer, Loc),
                          Expression          =>
-                           Make_Integer_Literal (Loc, Uint_0)));
+                           Make_Integer_Literal (Loc, Uint_0));
+                     Set_Elaboration_Entity (E, Flag);
                      Set_Is_Frozen (Flag);
+
+                     --  Insert declaration for flag after subprogram
+                     --  declaration. Note that attribute reference may
+                     --  appear within a nested scope.
+
+                     Insert_After (Unit_Declaration_Node (E), Decl);
+                     Analyze (Decl);
                   end if;
                end;
             end if;

@@ -361,16 +361,13 @@ package body Sem_Ch3 is
       Related_Node    : Node_Id;
       Typ             : Entity_Id;
       Constraints     : Elist_Id) return Entity_Id;
-   --  Given a discriminated base type Typ, a list of discriminant constraint
-   --  Constraints for Typ and a component of Typ, with type Compon_Type,
-   --  create and return the type corresponding to Compon_type where all
-   --  discriminant references are replaced with the corresponding constraint.
-   --  If no discriminant references occur in Compon_Typ then return it as is.
-   --  Constrained_Typ is the final constrained subtype to which the
-   --  constrained Compon_Type belongs. Related_Node is the node where we will
-   --  attach all the itypes created.
-   --
-   --  Above description is confused, what is Compon_Type???
+   --  Given a discriminated base type Typ, a list of discriminant constraints,
+   --  Constraints, for Typ and a component Comp of Typ, create and return the
+   --  type corresponding to Etype (Comp) where all discriminant references
+   --  are replaced with the corresponding constraint. If Etype (Comp) contains
+   --  no discriminant references then it is returned as-is. Constrained_Typ
+   --  is the final constrained subtype to which the constrained component
+   --  belongs. Related_Node is the node where we attach all created itypes.
 
    procedure Constrain_Access
      (Def_Id      : in out Entity_Id;
