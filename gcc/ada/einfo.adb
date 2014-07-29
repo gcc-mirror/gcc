@@ -223,6 +223,7 @@ package body Einfo is
    --    PPC_Wrapper                     Node25
    --    Related_Array_Object            Node25
    --    Static_Discrete_Predicate       List25
+   --    Static_Real_Or_String_Predicate Node25
    --    Task_Body_Procedure             Node25
 
    --    Dispatch_Table_Wrappers         Elist26
@@ -2976,6 +2977,12 @@ package body Einfo is
       pragma Assert (Is_Discrete_Type (Id));
       return List25 (Id);
    end Static_Discrete_Predicate;
+
+   function Static_Real_Or_String_Predicate (Id : E) return N is
+   begin
+      pragma Assert (Is_Real_Type (Id) or else Is_String_Type (Id));
+      return Node25 (Id);
+   end Static_Real_Or_String_Predicate;
 
    function Status_Flag_Or_Transient_Decl (Id : E) return N is
    begin
@@ -5766,6 +5773,13 @@ package body Einfo is
       pragma Assert (Is_Discrete_Type (Id) and then Has_Predicates (Id));
       Set_List25 (Id, V);
    end Set_Static_Discrete_Predicate;
+
+   procedure Set_Static_Real_Or_String_Predicate (Id : E; V : N) is
+   begin
+      pragma Assert ((Is_Real_Type (Id) or else Is_String_Type (Id))
+                      and then Has_Predicates (Id));
+      Set_Node25 (Id, V);
+   end Set_Static_Real_Or_String_Predicate;
 
    procedure Set_Status_Flag_Or_Transient_Decl (Id : E; V : E) is
    begin
@@ -9399,12 +9413,11 @@ package body Einfo is
               E_Entry_Family                               =>
             Write_Str ("PPC_Wrapper");
 
-         when E_Enumeration_Type                           |
-              E_Enumeration_Subtype                        |
-              E_Modular_Integer_Type                       |
-              E_Modular_Integer_Subtype                    |
-              E_Signed_Integer_Subtype                     =>
+         when Discrete_Kind                                =>
             Write_Str ("Static_Discrete_Predicate");
+
+         when Real_Kind                                    =>
+            Write_Str ("Static_Real_Or_String_Predicate");
 
          when others                                       =>
             Write_Str ("Field25??");

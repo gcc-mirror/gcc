@@ -1,5 +1,18 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads, einfo.adb (Static_Real_Or_String_Predicate): New function
+	(Set_Static_Real_Or_String_Predicate): New procedure
+	* sem_ch13.adb (Build_Predicate_Functions): Accomodate static
+	string predicates (Is_Predicate_Static): Handle static string
+	predicates.
+	* sem_eval.adb (Real_Or_String_Static_Predicate_Matches):
+	New procedure (Check_Expression_Against_Static_Predicate):
+	Deal with static string predicates, now fully implemented
+	(Eval_Relational_Op): Allow string equality/inequality as static
+	if not comes from source.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_aggr.adb, exp_ch5.adb, sem_ch5.adb, exp_util.adb, einfo.adb,
 	einfo.ads, sem_util.adb, sem_attr.adb, sem_case.adb, sem_eval.adb,
 	sem_eval.ads, sem_ch13.adb: General cleanup of static predicate

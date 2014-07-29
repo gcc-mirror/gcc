@@ -3899,7 +3899,7 @@ package Einfo is
 
 --    Static_Discrete_Predicate (List25)
 --       Defined in discrete types/subtypes with static predicates (with the
---       two flags Has_Predicates set and Has_Static_Predicate set). Set if the
+--       two flags Has_Predicates and Has_Static_Predicate set). Set if the
 --       type/subtype has a static predicate. Points to a list of expression
 --       and N_Range nodes that represent the predicate in canonical form. The
 --       canonical form has entries sorted in ascending order, with duplicates
@@ -3907,6 +3907,26 @@ package Einfo is
 --       gap in the values between successive entries. The entries in this list
 --       are fully analyzed and typed with the base type of the subtype. Note
 --       that all entries are static and have values within the subtype range.
+
+--    Static_Real_Or_String_Predicate (Node25)
+--       Defined in real types/subtypes with static predicates (with the two
+--       flags Has_Predicates and Has_Static_Predicate set). Set if the type
+--       or subtype has a static predicate. Points to the return expression
+--       of the predicate function. This is the original expression given as
+--       the predicate except that occurrences of the type are replaced by
+--       occurrences of the formal parameter of the predicate function (note
+--       that the spec of this function including this formal parameter name)
+--       is available from the Subprograms_For_Type field (it can be accessed
+--       as Predicate_Function (typ). Also, in the case where a predicate is
+--       inherited, the expression is of the form:
+--
+--         expression AND THEN xxxPredicate (typ2 (ent))
+--
+--       where typ2 is the type from which the predicate is inherited, ent is
+--       the entity for the current predicate function, and xxxPredicate is the
+--       inherited predicate (from typ2). Finally for a predicate that inherits
+--       from another predicate but does not add a predicate of its own, the
+--       expression may consist of the above xxxPredicate call on its own.
 
 --    Status_Flag_Or_Transient_Decl (Node15)
 --       Defined in variables and constants. Applies to objects that require
@@ -5452,6 +5472,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Delta_Value                         (Ureal18)
    --    Small_Value                         (Ureal21)
+   --    Static_Real_Or_String_Predicate     (Node25)
    --    Has_Machine_Radix_Clause            (Flag83)
    --    Machine_Radix_10                    (Flag84)
    --    Aft_Value                           (synth)
@@ -5557,6 +5578,7 @@ package Einfo is
    --    Float_Rep                           (Uint10)   (Float_Rep_Kind)
    --    Default_Aspect_Value                (Node19)   (base type only)
    --    Scalar_Range                        (Node20)
+   --    Static_Real_Or_String_Predicate     (Node25)
    --    Machine_Emax_Value                  (synth)
    --    Machine_Emin_Value                  (synth)
    --    Machine_Mantissa_Value              (synth)
@@ -5777,6 +5799,7 @@ package Einfo is
    --    Delta_Value                         (Ureal18)
    --    Default_Aspect_Value                (Node19)   (base type only)
    --    Scalar_Range                        (Node20)
+   --    Static_Real_Or_String_Predicate     (Node25)
    --    Small_Value                         (Ureal21)
    --    Has_Small_Clause                    (Flag67)
    --    Aft_Value                           (synth)
@@ -6048,6 +6071,7 @@ package Einfo is
    --  E_String_Subtype
    --    First_Index                         (Node17)
    --    Component_Type                      (Node20)   (base type only)
+   --    Static_Real_Or_String_Predicate     (Node25)
    --    Is_Constrained                      (Flag12)
    --    Next_Index                          (synth)
    --    Number_Dimensions                   (synth)
@@ -6791,6 +6815,7 @@ package Einfo is
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
    function Static_Discrete_Predicate           (Id : E) return S;
+   function Static_Real_Or_String_Predicate     (Id : E) return N;
    function Status_Flag_Or_Transient_Decl       (Id : E) return E;
    function Storage_Size_Variable               (Id : E) return E;
    function Stored_Constraint                   (Id : E) return L;
@@ -7425,6 +7450,7 @@ package Einfo is
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);
    procedure Set_Static_Discrete_Predicate       (Id : E; V : S);
+   procedure Set_Static_Real_Or_String_Predicate (Id : E; V : N);
    procedure Set_Status_Flag_Or_Transient_Decl   (Id : E; V : E);
    procedure Set_Storage_Size_Variable           (Id : E; V : E);
    procedure Set_Stored_Constraint               (Id : E; V : L);
@@ -8209,6 +8235,7 @@ package Einfo is
    pragma Inline (Static_Elaboration_Desired);
    pragma Inline (Static_Initialization);
    pragma Inline (Static_Discrete_Predicate);
+   pragma Inline (Static_Real_Or_String_Predicate);
    pragma Inline (Status_Flag_Or_Transient_Decl);
    pragma Inline (Storage_Size_Variable);
    pragma Inline (Stored_Constraint);
@@ -8642,6 +8669,7 @@ package Einfo is
    pragma Inline (Set_Static_Elaboration_Desired);
    pragma Inline (Set_Static_Initialization);
    pragma Inline (Set_Static_Discrete_Predicate);
+   pragma Inline (Set_Static_Real_Or_String_Predicate);
    pragma Inline (Set_Status_Flag_Or_Transient_Decl);
    pragma Inline (Set_Storage_Size_Variable);
    pragma Inline (Set_Stored_Constraint);

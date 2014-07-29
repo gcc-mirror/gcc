@@ -8002,10 +8002,16 @@ package body Sem_Ch13 is
          --  yes even if we have an explicit Dynamic_Predicate present.
 
          declare
-            PS : constant Boolean := Is_Predicate_Static (Expr, Object_Name);
+            PS : Boolean;
             EN : Node_Id;
 
          begin
+            if not Is_Scalar_Type (Typ) and then not Is_String_Type (Typ) then
+               PS := False;
+            else
+               PS := Is_Predicate_Static (Expr, Object_Name);
+            end if;
+
             --  Case where we have a predicate-static aspect
 
             if PS then
@@ -8033,6 +8039,11 @@ package body Sem_Ch13 is
                   if No (Static_Discrete_Predicate (Typ)) then
                      Set_Has_Static_Predicate (Typ, False);
                   end if;
+
+               --  For real or string subtype, save predicate expression
+
+               elsif Is_Real_Type (Typ) or else Is_String_Type (Typ) then
+                  Set_Static_Real_Or_String_Predicate (Typ, Expr);
                end if;
 
             --  Case of dynamic predicate (expression is not predicate-static)
@@ -8060,14 +8071,13 @@ package body Sem_Ch13 is
                --  Now post appropriate message
 
                if Has_Static_Predicate_Aspect (Typ) then
-                  if Is_Scalar_Type (Typ) then
+                  if Is_Scalar_Type (Typ) or else Is_String_Type (Typ) then
                      Error_Msg_F
                        ("expression is not predicate-static (RM 4.3.2(16-22))",
                         EN);
                   else
-                     Error_Msg_FE
-                       ("static predicate not allowed for non-scalar type&",
-                        EN, Typ);
+                     Error_Msg_F
+                       ("static predicate requires scalar or string type", EN);
                   end if;
                end if;
             end if;
@@ -10362,6 +10372,9 @@ package body Sem_Ch13 is
    -- Is_Predicate_Static --
    -------------------------
 
+   --  Note: the basic legality of the expression has already been checked, so
+   --  we don't need to worry about cases or ranges on strings for example.
+
    function Is_Predicate_Static
      (Expr : Node_Id;
       Nam  : Name_Id) return Boolean
@@ -10462,12 +10475,6 @@ package body Sem_Ch13 is
    --  Start of processing for Is_Predicate_Static
 
    begin
-      --  Only scalar types can be predicate-static
-
-      if not Is_Scalar_Type (Etype (Expr)) then
-         return False;
-      end if;
-
       --  Predicate_Static means one of the following holds. Numbers are the
       --  corresponding paragraph numbers in (RM 3.2.4(16-22)).
 
@@ -10502,7 +10509,20 @@ package body Sem_Ch13 is
       --  operand is the current instance, and the other is a static
       --  expression.
 
+      --  Note: the RM is clearly wrong here in not excluding string types.
+      --  Without this exclusion, we would allow expressions like X > "ABC"
+      --  to be considered as predicate-static, which is clearly not intended,
+      --  since the idea is for predicate-static to be a subset of normal
+      --  static expressions (and "DEF" > "ABC" is not a static expression).
+
+      --  However, we do allow internally generated (not from source) equality
+      --  and inequality operations to be valid on strings (this helps deal
+      --  with cases where we transform A in "ABC" to A = "ABC).
+
       elsif Nkind (Expr) in N_Op_Compare
+        and then ((not Is_String_Type (Etype (Left_Opnd (Expr))))
+                    or else (Nkind_In (Expr, N_Op_Eq, N_Op_Ne)
+                              and then not Comes_From_Source (Expr)))
         and then ((Is_Type_Ref (Left_Opnd (Expr))
                     and then Is_OK_Static_Expression (Right_Opnd (Expr)))
                   or else
