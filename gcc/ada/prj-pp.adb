@@ -85,8 +85,7 @@ package body Prj.PP is
       --  Outputs the indentation at the beginning of the line
 
       procedure Output_Project_File (S : Name_Id);
-      --  Output a string for a project file name. No concatenation even if the
-      --  line is too long. What does that mean???
+      --  Output a project file name in one single string literal
 
       procedure Output_String (S : Name_Id; Indent : Natural);
       --  Outputs a string using the default output procedures
