@@ -1,3 +1,19 @@
+2014-07-29  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-armvxw.c: Enhance to handle RTP trampolining.
+	* init.c: Remove guard on sigtramp for ARM VxWorks RTP.
+
+2014-07-29  Vincent Celier  <celier@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Do not fail when two
+	runtime directorie specified with two switches --RTS= designate
+	the same directory, even when there are no literarily the same.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor documentation clarification.
+	* switch-c.adb: Minor reformatting.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Allow_Integer_Address):

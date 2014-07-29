@@ -8567,8 +8567,8 @@ objects with pragma Initialize_Scalars.
 The @var{xxx} ^string specified with the switch^option^ may be either
 @itemize @bullet
 @item ``@option{^in^INVALID^}'' requesting an invalid value where possible
-@item ``@option{^lo^LOW^}'' for the lowest possible value
-@item ``@option{^hi^HIGH^}'' for the highest possible value
+@item ``@option{^lo^LOW^}'' for the lowest possible value (all 0 bits)
+@item ``@option{^hi^HIGH^}'' for the highest possible value (all 1 bits)
 @item ``@option{@var{xx}}'' for a value consisting of repeated bytes with the
 value @code{16#@var{xx}#} (i.e., @var{xx} is a string of two hexadecimal digits).
 @end itemize

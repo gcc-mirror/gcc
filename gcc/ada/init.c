@@ -1703,7 +1703,9 @@ __gnat_install_handler ()
 #include <signal.h>
 #include <taskLib.h>
 
-#ifndef __RTP__
+#ifdef __RTP__
+#include <base/b_ucontext_t.h>
+#else
 #include <intLib.h>
 #include <iv.h>
 #endif
@@ -1911,7 +1913,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if (defined (__ARMEL__) || defined (__PPC__)) && defined(_WRS_KERNEL)
+#if defined (__ARMEL__) || (defined (__PPC__) && defined (_WRS_KERNEL))
   /* On PowerPC, kernel mode, we process signals through a Call Frame Info
      trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX
