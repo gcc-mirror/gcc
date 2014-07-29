@@ -4556,17 +4556,6 @@ package body Exp_Util is
       --  Start of processing for Is_Aliased
 
       begin
-         --  'Reference-d or renamed transient objects are not consider aliased
-         --  when the related context is a Boolean expression_with_actions. The
-         --  Boolean result is always known after the action list is evaluated,
-         --  therefore the transient objects must be finalized at that point.
-
-         if Nkind (Rel_Node) = N_Expression_With_Actions
-           and then Is_Boolean_Type (Etype (Rel_Node))
-         then
-            return False;
-         end if;
-
          Stmt := First_Stmt;
          while Present (Stmt) loop
             if Nkind (Stmt) = N_Object_Declaration then

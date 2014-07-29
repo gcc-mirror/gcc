@@ -2137,16 +2137,18 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("PE_Misaligned_Address_Value");
          when PE_Missing_Return =>
             Add_Str_To_Name_Buffer ("PE_Missing_Return");
+         when PE_Non_Transportable_Actual =>
+            Add_Str_To_Name_Buffer ("PE_Non_Transportable_Actual");
          when PE_Overlaid_Controlled_Object =>
             Add_Str_To_Name_Buffer ("PE_Overlaid_Controlled_Object");
          when PE_Potentially_Blocking_Operation =>
             Add_Str_To_Name_Buffer ("PE_Potentially_Blocking_Operation");
+         when PE_Stream_Operation_Not_Allowed =>
+            Add_Str_To_Name_Buffer ("PE_Stream_Operation_Not_Allowed");
          when PE_Stubbed_Subprogram_Called =>
             Add_Str_To_Name_Buffer ("PE_Stubbed_Subprogram_Called");
          when PE_Unchecked_Union_Restriction =>
             Add_Str_To_Name_Buffer ("PE_Unchecked_Union_Restriction");
-         when PE_Non_Transportable_Actual =>
-            Add_Str_To_Name_Buffer ("PE_Non_Transportable_Actual");
 
          when SE_Empty_Storage_Pool =>
             Add_Str_To_Name_Buffer ("SE_Empty_Storage_Pool");

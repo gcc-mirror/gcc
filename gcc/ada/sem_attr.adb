@@ -412,8 +412,7 @@ package body Sem_Attr is
       procedure Uneval_Old_Msg;
       --  Called when Loop_Entry or Old is used in a potentially unevaluated
       --  expression. Generates appropriate message or warning depending on
-      --  the setting of Opt.Uneval_Old. The caller has put the Name_Id of
-      --  the attribute in Error_Msg_Name_1 prior to the call.
+      --  the setting of Opt.Uneval_Old.
 
       procedure Unexpected_Argument (En : Node_Id);
       --  Signal unexpected attribute argument (En is the argument)
@@ -2284,9 +2283,10 @@ package body Sem_Attr is
                   & "unevaluated must denote an entity");
 
             when 'W' =>
-               Error_Attr_P
+               Error_Msg_Name_1 := Aname;
+               Error_Msg_F
                  ("??prefix of attribute % appears in potentially "
-                  & "unevaluated context, exception may be raised");
+                  & "unevaluated context, exception may be raised", P);
 
             when 'A' =>
                null;

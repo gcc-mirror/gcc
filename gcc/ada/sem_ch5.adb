@@ -3182,16 +3182,20 @@ package body Sem_Ch5 is
                   --  unreachable code, since it is useless and we don't
                   --  want to generate junk warnings.
 
-                  --  We skip this step if we are not in code generation mode.
+                  --  We skip this step if we are not in code generation mode
+                  --  or CodePeer mode.
                   --  This is the one case where we remove dead code in the
                   --  semantics as opposed to the expander, and we do not want
                   --  to remove code if we are not in code generation mode,
-                  --  since this messes up the ASIS trees.
+                  --  since this messes up the ASIS trees or loses useful
+                  --  information in the CodePeer tree.
 
                   --  Note that one might react by moving the whole circuit to
                   --  exp_ch5, but then we lose the warning in -gnatc mode.
 
-                  if Operating_Mode = Generate_Code then
+                  if Operating_Mode = Generate_Code
+                    and then not CodePeer_Mode
+                  then
                      loop
                         Nxt := Next (N);
 
