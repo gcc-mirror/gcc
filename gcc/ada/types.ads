@@ -855,17 +855,18 @@ package Types is
       CE_Length_Check_Failed,            -- 07
       CE_Null_Exception_Id,              -- 08
       CE_Null_Not_Allowed,               -- 09
+
       CE_Overflow_Check_Failed,          -- 10
       CE_Partition_Check_Failed,         -- 11
       CE_Range_Check_Failed,             -- 12
       CE_Tag_Check_Failed,               -- 13
-
       PE_Access_Before_Elaboration,      -- 14
       PE_Accessibility_Check_Failed,     -- 15
       PE_Address_Of_Intrinsic,           -- 16
       PE_Aliased_Parameters,             -- 17
       PE_All_Guards_Closed,              -- 18
       PE_Bad_Predicated_Generic_Type,    -- 19
+
       PE_Current_Task_In_Entry_Body,     -- 20
       PE_Duplicated_Entry_Address,       -- 21
       PE_Explicit_Raise,                 -- 22
@@ -876,60 +877,60 @@ package Types is
       PE_Overlaid_Controlled_Object,     -- 27
       PE_Potentially_Blocking_Operation, -- 28
       PE_Stubbed_Subprogram_Called,      -- 29
+
       PE_Unchecked_Union_Restriction,    -- 30
       PE_Non_Transportable_Actual,       -- 31
-
       SE_Empty_Storage_Pool,             -- 32
       SE_Explicit_Raise,                 -- 33
       SE_Infinite_Recursion,             -- 34
       SE_Object_Too_Large,               -- 35
-
       PE_Stream_Operation_Not_Allowed);  -- 36
 
    Last_Reason_Code : constant := 36;
    --  Last reason code
 
    type Reason_Kind is (CE_Reason, PE_Reason, SE_Reason);
+   --  Categorization of reason codes by exception raised
 
-   Kind : array (RT_Exception_Code range <>) of Reason_Kind :=
-     (CE_Access_Check_Failed            => CE_Reason,
-      CE_Access_Parameter_Is_Null       => CE_Reason,
-      CE_Discriminant_Check_Failed      => CE_Reason,
-      CE_Divide_By_Zero                 => CE_Reason,
-      CE_Explicit_Raise                 => CE_Reason,
-      CE_Index_Check_Failed             => CE_Reason,
-      CE_Invalid_Data                   => CE_Reason,
-      CE_Length_Check_Failed            => CE_Reason,
-      CE_Null_Exception_Id              => CE_Reason,
-      CE_Null_Not_Allowed               => CE_Reason,
-      CE_Overflow_Check_Failed          => CE_Reason,
-      CE_Partition_Check_Failed         => CE_Reason,
-      CE_Range_Check_Failed             => CE_Reason,
-      CE_Tag_Check_Failed               => CE_Reason,
+   Rkind : array (RT_Exception_Code range <>) of Reason_Kind :=
+             (CE_Access_Check_Failed            => CE_Reason,
+              CE_Access_Parameter_Is_Null       => CE_Reason,
+              CE_Discriminant_Check_Failed      => CE_Reason,
+              CE_Divide_By_Zero                 => CE_Reason,
+              CE_Explicit_Raise                 => CE_Reason,
+              CE_Index_Check_Failed             => CE_Reason,
+              CE_Invalid_Data                   => CE_Reason,
+              CE_Length_Check_Failed            => CE_Reason,
+              CE_Null_Exception_Id              => CE_Reason,
+              CE_Null_Not_Allowed               => CE_Reason,
+              CE_Overflow_Check_Failed          => CE_Reason,
+              CE_Partition_Check_Failed         => CE_Reason,
+              CE_Range_Check_Failed             => CE_Reason,
+              CE_Tag_Check_Failed               => CE_Reason,
 
-      PE_Access_Before_Elaboration      => PE_Reason,
-      PE_Accessibility_Check_Failed     => PE_Reason,
-      PE_Address_Of_Intrinsic           => PE_Reason,
-      PE_Aliased_Parameters             => PE_Reason,
-      PE_All_Guards_Closed              => PE_Reason,
-      PE_Bad_Predicated_Generic_Type    => PE_Reason,
-      PE_Current_Task_In_Entry_Body     => PE_Reason,
-      PE_Duplicated_Entry_Address       => PE_Reason,
-      PE_Explicit_Raise                 => PE_Reason,
-      PE_Finalize_Raised_Exception      => PE_Reason,
-      PE_Implicit_Return                => PE_Reason,
-      PE_Misaligned_Address_Value       => PE_Reason,
-      PE_Missing_Return                 => PE_Reason,
-      PE_Overlaid_Controlled_Object     => PE_Reason,
-      PE_Potentially_Blocking_Operation => PE_Reason,
-      PE_Stubbed_Subprogram_Called      => PE_Reason,
-      PE_Unchecked_Union_Restriction    => PE_Reason,
-      PE_Non_Transportable_Actual       => PE_Reason,
-      PE_Stream_Operation_Not_Allowed   => PE_Reason,
+              PE_Access_Before_Elaboration      => PE_Reason,
+              PE_Accessibility_Check_Failed     => PE_Reason,
+              PE_Address_Of_Intrinsic           => PE_Reason,
+              PE_Aliased_Parameters             => PE_Reason,
+              PE_All_Guards_Closed              => PE_Reason,
+              PE_Bad_Predicated_Generic_Type    => PE_Reason,
+              PE_Current_Task_In_Entry_Body     => PE_Reason,
+              PE_Duplicated_Entry_Address       => PE_Reason,
+              PE_Explicit_Raise                 => PE_Reason,
+              PE_Finalize_Raised_Exception      => PE_Reason,
+              PE_Implicit_Return                => PE_Reason,
+              PE_Misaligned_Address_Value       => PE_Reason,
+              PE_Missing_Return                 => PE_Reason,
+              PE_Overlaid_Controlled_Object     => PE_Reason,
+              PE_Potentially_Blocking_Operation => PE_Reason,
+              PE_Stubbed_Subprogram_Called      => PE_Reason,
+              PE_Unchecked_Union_Restriction    => PE_Reason,
+              PE_Non_Transportable_Actual       => PE_Reason,
+              PE_Stream_Operation_Not_Allowed   => PE_Reason,
 
-      SE_Empty_Storage_Pool             => SE_Reason,
-      SE_Explicit_Raise                 => SE_Reason,
-      SE_Infinite_Recursion             => SE_Reason,
-      SE_Object_Too_Large               => SE_Reason);
+              SE_Empty_Storage_Pool             => SE_Reason,
+              SE_Explicit_Raise                 => SE_Reason,
+              SE_Infinite_Recursion             => SE_Reason,
+              SE_Object_Too_Large               => SE_Reason);
 
 end Types;

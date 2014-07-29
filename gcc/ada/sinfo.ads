@@ -2052,7 +2052,9 @@ package Sinfo is
    --    and range checks in cases where the generated code knows that the
    --    value being assigned is in range and satisfies any predicate. Also
    --    can be set in N_Object_Declaration nodes, to similarly suppress any
-   --    checks on the initializing value.
+   --    checks on the initializing value. In assignment statements it also
+   --    suppresses access checks in the generated code for out- and in-out
+   --    parameters in entry calls.
 
    --  Suppress_Loop_Warnings (Flag17-Sem)
    --    Used in N_Loop_Statement node to indicate that warnings within the

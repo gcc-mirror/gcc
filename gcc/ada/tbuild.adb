@@ -434,7 +434,7 @@ package body Tbuild is
       Reason    : RT_Exception_Code) return Node_Id
    is
    begin
-      pragma Assert (Kind (Reason) = CE_Reason);
+      pragma Assert (Rkind (Reason) = CE_Reason);
       return
         Make_Raise_Constraint_Error (Sloc,
           Condition => Condition,
@@ -451,7 +451,7 @@ package body Tbuild is
       Reason    : RT_Exception_Code) return Node_Id
    is
    begin
-      pragma Assert (Kind (Reason) = PE_Reason);
+      pragma Assert (Rkind (Reason) = PE_Reason);
       return
         Make_Raise_Program_Error (Sloc,
           Condition => Condition,
@@ -468,7 +468,7 @@ package body Tbuild is
       Reason    : RT_Exception_Code) return Node_Id
    is
    begin
-      pragma Assert (Kind (Reason) = SE_Reason);
+      pragma Assert (Rkind (Reason) = SE_Reason);
       return
         Make_Raise_Storage_Error (Sloc,
           Condition => Condition,

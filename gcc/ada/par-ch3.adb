@@ -652,6 +652,10 @@ package body Ch3 is
 
                   Typedef_Node := P_Record_Definition;
                   Set_Limited_Present (Typedef_Node, True);
+                  End_Labl := Make_Identifier (Token_Ptr, Chars (Ident_Node));
+                  Set_Comes_From_Source (End_Labl, False);
+
+                  Set_End_Label (Typedef_Node, End_Labl);
 
                --  Ada 2005 (AI-251): LIMITED INTERFACE
 
