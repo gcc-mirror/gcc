@@ -1,3 +1,47 @@
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_BIP_Cleanup_Stmts): Remove
+	formal parameter Obj_Id and update the comment on usage. Renamed
+	Obj_Typ to Func_Typ and update all occurrences.
+	(Find_Last_Init): Remove formal parameter Decl and update the comment
+	on usage.
+	Remove local constants Obj_Id and Obj_Typ. Remove local variables
+	Init_Typ and Is_Conc. Remove the extraction of the initialization type.
+	(Find_Last_Init_In_Block): Remove formal parameter
+	Init_Typ and update the comment on usage.
+	(Is_Init_Call): Remove formal parameter Init_Typ and update the comment
+	on usage. Check whether the procedure call is an initialization
+	procedure of either the object type or the initialization type.
+	(Is_Init_Proc_Of): New routine.
+	(Process_Object_Declaration): Obj_Id and Obj_Typ are now global to this
+	routine. Add new variable Init_Typ. Add circuitry to extract the object
+	type as well as the initialization type.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_case.adb: Minor reformatting.
+	* sem_aux.ads: Minor reformatting.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.adb (Set_Else_Actions, Set_Then_Actions): Set parent
+	pointer on these fields, even though they are semantic, because
+	subsequent analysis and expansion of action nades may require
+	exploring the tree, for example to locate a node to be wrapped
+	when a function with controlled result is called.
+
+2014-07-29  Claire Dross  <dross@adacore.com>
+
+	* sem_aux.adb (Get_Binary_Nkind): Use case on
+	Name_Id instead of an intermediate string.
+	(Get_Unary_Nkind): Use case on Name_Id instead of an intermediate
+	string.
+
+2014-07-29  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi (gnatelim, gnatstub, gnatmetric): Add note
+	about processing sources with preprocessor directives.
+
 2014-07-24  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/trans.c (finalize_nrv): Adjust function call.

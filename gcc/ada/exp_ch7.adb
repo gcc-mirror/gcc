@@ -2066,13 +2066,20 @@ package body Exp_Ch7 is
          Has_No_Init  : Boolean := False;
          Is_Protected : Boolean := False)
       is
-         Loc : constant Source_Ptr := Sloc (Decl);
+         Loc    : constant Source_Ptr := Sloc (Decl);
+         Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
 
-         function Build_BIP_Cleanup_Stmts
-           (Func_Id : Entity_Id;
-            Obj_Id  : Entity_Id) return Node_Id;
-         --  Func_Id denotes a build-in-place function. Obj_Id is the return
-         --  object of Func_Id. Generate the following cleanup code:
+         Init_Typ : Entity_Id;
+         --  The initialization type of the related object declaration. Note
+         --  that this is not necessarely the same type as Obj_Typ because of
+         --  possible type derivations.
+
+         Obj_Typ : Entity_Id;
+         --  The type of the related object declaration
+
+         function Build_BIP_Cleanup_Stmts (Func_Id : Entity_Id) return Node_Id;
+         --  Func_Id denotes a build-in-place function. Generate the following
+         --  cleanup code:
          --
          --    if BIPallocfrom > Secondary_Stack'Pos
          --      and then BIPfinalizationmaster /= null
@@ -2090,27 +2097,25 @@ package body Exp_Ch7 is
          --  allocation which Obj_Id renames.
 
          procedure Find_Last_Init
-           (Decl        : Node_Id;
-            Last_Init   : out Node_Id;
+           (Last_Init   : out Node_Id;
             Body_Insert : out Node_Id);
          --  Find the last initialization call related to object declaration
          --  Decl. Last_Init denotes the last initialization call which follows
-         --  Decl. Body_Insert denotes the finalizer body could be potentially
-         --  inserted.
+         --  Decl. Body_Insert denotes a node where the finalizer body could be
+         --  potentially inserted after (if blocks are involved).
 
          -----------------------------
          -- Build_BIP_Cleanup_Stmts --
          -----------------------------
 
          function Build_BIP_Cleanup_Stmts
-           (Func_Id : Entity_Id;
-            Obj_Id  : Entity_Id) return Node_Id
+           (Func_Id : Entity_Id) return Node_Id
          is
             Decls      : constant List_Id := New_List;
             Fin_Mas_Id : constant Entity_Id :=
                            Build_In_Place_Formal
                              (Func_Id, BIP_Finalization_Master);
-            Obj_Typ    : constant Entity_Id := Etype (Func_Id);
+            Func_Typ   : constant Entity_Id := Etype (Func_Id);
             Temp_Id    : constant Entity_Id :=
                            Entity (Prefix (Name (Parent (Obj_Id))));
 
@@ -2146,7 +2151,7 @@ package body Exp_Ch7 is
             --  caller's finalization master.
 
             --  Generate:
-            --    type Ptr_Typ is access Obj_Typ;
+            --    type Ptr_Typ is access Func_Typ;
 
             Ptr_Typ := Make_Temporary (Loc, 'P');
 
@@ -2155,7 +2160,7 @@ package body Exp_Ch7 is
                 Defining_Identifier => Ptr_Typ,
                 Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
-                    Subtype_Indication => New_Occurrence_Of (Obj_Typ, Loc))));
+                    Subtype_Indication => New_Occurrence_Of (Func_Typ, Loc))));
 
             --  Perform minor decoration in order to set the master and the
             --  storage pool attributes.
@@ -2207,8 +2212,8 @@ package body Exp_Ch7 is
             --      and then BIPfinalizationmaster /= null
             --    then
 
-            if not Is_Constrained (Obj_Typ)
-              or else Is_Tagged_Type (Obj_Typ)
+            if not Is_Constrained (Func_Typ)
+              or else Is_Tagged_Type (Func_Typ)
             then
                declare
                   Alloc : constant Entity_Id :=
@@ -2244,21 +2249,16 @@ package body Exp_Ch7 is
          --------------------
 
          procedure Find_Last_Init
-           (Decl        : Node_Id;
-            Last_Init   : out Node_Id;
+           (Last_Init   : out Node_Id;
             Body_Insert : out Node_Id)
          is
-            function Find_Last_Init_In_Block
-              (Blk      : Node_Id;
-               Init_Typ : Entity_Id) return Node_Id;
+            function Find_Last_Init_In_Block (Blk : Node_Id) return Node_Id;
             --  Find the last initialization call within the statements of
-            --  block Blk. Init_Typ is type of the object being initialized.
+            --  block Blk.
 
-            function Is_Init_Call
-              (N        : Node_Id;
-               Init_Typ : Entity_Id) return Boolean;
+            function Is_Init_Call (N : Node_Id) return Boolean;
             --  Determine whether node N denotes one of the initialization
-            --  procedures of type Init_Typ.
+            --  procedures of types Init_Typ or Obj_Typ.
 
             function Next_Suitable_Statement (Stmt : Node_Id) return Node_Id;
             --  Given a statement which is part of a list, return the next
@@ -2268,10 +2268,7 @@ package body Exp_Ch7 is
             -- Find_Last_Init_In_Block --
             -----------------------------
 
-            function Find_Last_Init_In_Block
-              (Blk      : Node_Id;
-               Init_Typ : Entity_Id) return Node_Id
-            is
+            function Find_Last_Init_In_Block (Blk : Node_Id) return Node_Id is
                HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
                Stmt : Node_Id;
 
@@ -2286,9 +2283,9 @@ package body Exp_Ch7 is
                      --  Peek inside nested blocks in case aborts are allowed
 
                      if Nkind (Stmt) = N_Block_Statement then
-                        return Find_Last_Init_In_Block (Stmt, Init_Typ);
+                        return Find_Last_Init_In_Block (Stmt);
 
-                     elsif Is_Init_Call (Stmt, Init_Typ) then
+                     elsif Is_Init_Call (Stmt) then
                         return Stmt;
                      end if;
 
@@ -2303,33 +2300,38 @@ package body Exp_Ch7 is
             -- Is_Init_Call --
             ------------------
 
-            function Is_Init_Call
-              (N        : Node_Id;
-               Init_Typ : Entity_Id) return Boolean
-            is
-               Call_Id   : Entity_Id;
-               Deep_Init : Entity_Id := Empty;
-               Prim_Init : Entity_Id := Empty;
-               Type_Init : Entity_Id := Empty;
+            function Is_Init_Call (N : Node_Id) return Boolean is
+               function Is_Init_Proc_Of
+                 (Subp_Id : Entity_Id;
+                  Typ     : Entity_Id) return Boolean;
+               --  Determine whether subprogram Subp_Id is a valid init proc of
+               --  type Typ.
 
-            begin
-               if Nkind (N) = N_Procedure_Call_Statement
-                 and then Nkind (Name (N)) = N_Identifier
-               then
-                  Call_Id := Entity (Name (N));
+               ---------------------
+               -- Is_Init_Proc_Of --
+               ---------------------
 
-                  --  Obtain all possible initialization routines of the object
-                  --  type and try to match the procedure call against one of
-                  --  them.
+               function Is_Init_Proc_Of
+                 (Subp_Id : Entity_Id;
+                  Typ     : Entity_Id) return Boolean
+               is
+                  Deep_Init : Entity_Id := Empty;
+                  Prim_Init : Entity_Id := Empty;
+                  Type_Init : Entity_Id := Empty;
+
+               begin
+                  --  Obtain all possible initialization routines of the
+                  --  related type and try to match the subprogram entity
+                  --  against one of them.
 
                   --  Deep_Initialize
 
-                  Deep_Init := TSS (Init_Typ, TSS_Deep_Initialize);
+                  Deep_Init := TSS (Typ, TSS_Deep_Initialize);
 
                   --  Primitive Initialize
 
-                  if Is_Controlled (Init_Typ) then
-                     Prim_Init := Find_Prim_Op (Init_Typ, Name_Initialize);
+                  if Is_Controlled (Typ) then
+                     Prim_Init := Find_Prim_Op (Typ, Name_Initialize);
 
                      if Present (Prim_Init) then
                         Prim_Init := Ultimate_Alias (Prim_Init);
@@ -2338,16 +2340,37 @@ package body Exp_Ch7 is
 
                   --  Type initialization routine
 
-                  if Has_Non_Null_Base_Init_Proc (Init_Typ) then
-                     Type_Init := Base_Init_Proc (Init_Typ);
+                  if Has_Non_Null_Base_Init_Proc (Typ) then
+                     Type_Init := Base_Init_Proc (Typ);
                   end if;
 
                   return
-                    (Present (Deep_Init) and then Call_Id = Deep_Init)
+                    (Present (Deep_Init) and then Subp_Id = Deep_Init)
                       or else
-                    (Present (Prim_Init) and then Call_Id = Prim_Init)
+                    (Present (Prim_Init) and then Subp_Id = Prim_Init)
                       or else
-                    (Present (Type_Init) and then Call_Id = Type_Init);
+                    (Present (Type_Init) and then Subp_Id = Type_Init);
+               end Is_Init_Proc_Of;
+
+               --  Local variables
+
+               Call_Id : Entity_Id;
+
+            --  Start of processing for Is_Init_Call
+
+            begin
+               if Nkind (N) = N_Procedure_Call_Statement
+                 and then Nkind (Name (N)) = N_Identifier
+               then
+                  Call_Id := Entity (Name (N));
+
+                  --  Consider both the type of the object declaration and its
+                  --  related initialization type.
+
+                  return
+                    Is_Init_Proc_Of (Call_Id, Init_Typ)
+                      or else
+                    Is_Init_Proc_Of (Call_Id, Obj_Typ);
                end if;
 
                return False;
@@ -2374,13 +2397,9 @@ package body Exp_Ch7 is
 
             --  Local variables
 
-            Obj_Id   : constant Entity_Id := Defining_Entity (Decl);
-            Obj_Typ  : constant Entity_Id := Base_Type (Etype (Obj_Id));
-            Call     : Node_Id;
-            Init_Typ : Entity_Id := Obj_Typ;
-            Is_Conc  : Boolean   := False;
-            Stmt     : Node_Id;
-            Stmt_2   : Node_Id;
+            Call   : Node_Id;
+            Stmt   : Node_Id;
+            Stmt_2 : Node_Id;
 
          --  Start of processing for Find_Last_Init
 
@@ -2393,34 +2412,6 @@ package body Exp_Ch7 is
 
             if Has_No_Init then
                return;
-            end if;
-
-            --  Obtain the proper type of the object being initialized
-
-            loop
-               if Is_Concurrent_Type (Init_Typ)
-                 and then Present (Corresponding_Record_Type (Init_Typ))
-               then
-                  Is_Conc  := True;
-                  Init_Typ := Corresponding_Record_Type (Init_Typ);
-
-               elsif Is_Private_Type (Init_Typ)
-                  and then Present (Full_View (Init_Typ))
-               then
-                  Init_Typ := Full_View (Init_Typ);
-
-               elsif Is_Untagged_Derivation (Init_Typ)
-                 and then not Is_Conc
-               then
-                  Init_Typ := Root_Type (Init_Typ);
-
-               else
-                  exit;
-               end if;
-            end loop;
-
-            if Init_Typ /= Base_Type (Init_Typ) then
-               Init_Typ := Base_Type (Init_Typ);
             end if;
 
             Stmt := Next_Suitable_Statement (Decl);
@@ -2442,7 +2433,7 @@ package body Exp_Ch7 is
             --  In this scenario the declaration of the temporary acts as the
             --  last initialization statement.
 
-            if Is_Limited_Type (Init_Typ)
+            if Is_Limited_Type (Obj_Typ)
               and then Has_Init_Expression (Decl)
               and then No (Expression (Decl))
             then
@@ -2482,7 +2473,7 @@ package body Exp_Ch7 is
             --  within a block.
 
             elsif Nkind (Stmt) = N_Block_Statement then
-               Last_Init   := Find_Last_Init_In_Block (Stmt, Init_Typ);
+               Last_Init   := Find_Last_Init_In_Block (Stmt);
                Body_Insert := Stmt;
 
             --  Otherwise the initialization calls follow the related object
@@ -2496,14 +2487,14 @@ package body Exp_Ch7 is
 
                if Present (Stmt_2) then
                   if Nkind (Stmt_2) = N_Block_Statement then
-                     Call := Find_Last_Init_In_Block (Stmt_2, Init_Typ);
+                     Call := Find_Last_Init_In_Block (Stmt_2);
 
                      if Present (Call) then
                         Last_Init   := Call;
                         Body_Insert := Stmt_2;
                      end if;
 
-                  elsif Is_Init_Call (Stmt_2, Init_Typ) then
+                  elsif Is_Init_Call (Stmt_2) then
                      Last_Init   := Stmt_2;
                      Body_Insert := Last_Init;
                   end if;
@@ -2511,7 +2502,7 @@ package body Exp_Ch7 is
                --  If the object lacks a call to Deep_Initialize, then it must
                --  have a call to its related type init proc.
 
-               elsif Is_Init_Call (Stmt, Init_Typ) then
+               elsif Is_Init_Call (Stmt) then
                   Last_Init   := Stmt;
                   Body_Insert := Last_Init;
                end if;
@@ -2520,7 +2511,6 @@ package body Exp_Ch7 is
 
          --  Local variables
 
-         Obj_Id    : constant Entity_Id := Defining_Identifier (Decl);
          Body_Ins  : Node_Id;
          Count_Ins : Node_Id;
          Fin_Call  : Node_Id;
@@ -2529,22 +2519,59 @@ package body Exp_Ch7 is
          Label     : Node_Id;
          Label_Id  : Entity_Id;
          Obj_Ref   : Node_Id;
-         Obj_Typ   : Entity_Id;
 
       --  Start of processing for Process_Object_Declaration
 
       begin
+         --  Handle the object type and the reference to the object
+
          Obj_Ref := New_Occurrence_Of (Obj_Id, Loc);
          Obj_Typ := Base_Type (Etype (Obj_Id));
 
-         --  Handle access types
+         loop
+            if Is_Access_Type (Obj_Typ) then
+               Obj_Typ := Directly_Designated_Type (Obj_Typ);
+               Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
 
-         if Is_Access_Type (Obj_Typ) then
-            Obj_Ref := Make_Explicit_Dereference (Loc, Obj_Ref);
-            Obj_Typ := Directly_Designated_Type (Obj_Typ);
-         end if;
+            elsif Is_Concurrent_Type (Obj_Typ)
+              and then Present (Corresponding_Record_Type (Obj_Typ))
+            then
+               Obj_Typ := Corresponding_Record_Type (Obj_Typ);
+               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
+
+            elsif Is_Private_Type (Obj_Typ)
+              and then Present (Full_View (Obj_Typ))
+            then
+               Obj_Typ := Full_View (Obj_Typ);
+               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
+
+            elsif Obj_Typ /= Base_Type (Obj_Typ) then
+               Obj_Typ := Base_Type (Obj_Typ);
+               Obj_Ref := Unchecked_Convert_To (Obj_Typ, Obj_Ref);
+
+            else
+               exit;
+            end if;
+         end loop;
 
          Set_Etype (Obj_Ref, Obj_Typ);
+
+         --  Handle the initialization type of the object declaration
+
+         Init_Typ := Obj_Typ;
+         loop
+            if Is_Private_Type (Init_Typ)
+              and then Present (Full_View (Init_Typ))
+            then
+               Init_Typ := Full_View (Init_Typ);
+
+            elsif Is_Untagged_Derivation (Init_Typ) then
+               Init_Typ := Root_Type (Init_Typ);
+
+            else
+               exit;
+            end if;
+         end loop;
 
          --  Set a new value for the state counter and insert the statement
          --  after the object declaration. Generate:
@@ -2571,7 +2598,7 @@ package body Exp_Ch7 is
          --  either [Deep_]Initialize or the type specific init proc.
 
          else
-            Find_Last_Init (Decl, Count_Ins, Body_Ins);
+            Find_Last_Init (Count_Ins, Body_Ins);
          end if;
 
          Insert_After (Count_Ins, Inc_Decl);
@@ -2754,8 +2781,7 @@ package body Exp_Ch7 is
                   if Is_Build_In_Place_Function (Func_Id)
                     and then Needs_BIP_Finalization_Master (Func_Id)
                   then
-                     Append_To
-                       (Fin_Stmts, Build_BIP_Cleanup_Stmts (Func_Id, Obj_Id));
+                     Append_To (Fin_Stmts, Build_BIP_Cleanup_Stmts (Func_Id));
                   end if;
                end;
             end if;

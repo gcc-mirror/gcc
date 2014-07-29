@@ -647,7 +647,7 @@ package body Sem_Case is
       Bounds_Lo     : constant Node_Id := Type_Low_Bound  (Bounds_Type);
       Num_Choices   : constant Nat     := Choice_Table'Last;
       Has_Predicate : constant Boolean :=
-                        Is_Static_Subtype (Bounds_Type)
+                        Is_OK_Static_Subtype (Bounds_Type)
                           and then Present (Static_Predicate (Bounds_Type));
 
       Choice      : Node_Id;
@@ -977,7 +977,7 @@ package body Sem_Case is
          --  Special case: only an others case is present. The others case
          --  covers the full range of the type.
 
-         if Is_Static_Subtype (Choice_Type) then
+         if Is_OK_Static_Subtype (Choice_Type) then
             Choice := New_Occurrence_Of (Choice_Type, Loc);
          else
             Choice := New_Occurrence_Of (Base_Type (Choice_Type), Loc);
@@ -1268,9 +1268,9 @@ package body Sem_Case is
 
             --  Do not insert non static choices in the table to be sorted
 
-            elsif not Is_Static_Expression (Lo)
+            elsif not Is_OK_Static_Expression (Lo)
                     or else
-                  not Is_Static_Expression (Hi)
+                  not Is_OK_Static_Expression (Hi)
             then
                Process_Non_Static_Choice (Choice);
                return;
@@ -1498,7 +1498,7 @@ package body Sem_Case is
 
                         --  Not predicated subtype case
 
-                        elsif not Is_Static_Subtype (E) then
+                        elsif not Is_OK_Static_Subtype (E) then
                            Process_Non_Static_Choice (Choice);
                         else
                            Check
@@ -1522,7 +1522,7 @@ package body Sem_Case is
                         begin
                            E := Entity (Subtype_Mark (Choice));
 
-                           if not Is_Static_Subtype (E) then
+                           if not Is_OK_Static_Subtype (E) then
                               Process_Non_Static_Choice (Choice);
 
                            else

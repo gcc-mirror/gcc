@@ -152,6 +152,18 @@ package Sem_Aux is
    --  Typ must be a tagged record type. This function returns the Entity for
    --  the first _Tag field in the record type.
 
+   function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind;
+   --  Op must be an entity with an Ekind of E_Operator. This function returns
+   --  the Nkind value that would be used to construct a binary operator node
+   --  referencing this entity. It is an error to call this function if Ekind
+   --  (Op) /= E_Operator.
+
+   function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
+   --  Op must be an entity with an Ekind of E_Operator. This function returns
+   --  the Nkind value that would be used to construct a unary operator node
+   --  referencing this entity. It is an error to call this function if Ekind
+   --  (Op) /= E_Operator.
+
    function Get_Rep_Item
      (E             : Entity_Id;
       Nam           : Name_Id;
@@ -386,17 +398,4 @@ package Sem_Aux is
    --  package specification. Simplifies handling of child units, and better
    --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id)).
 
-   function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind;
-   --  Op must be an entity with an Ekind of E_Operator.
-   --  This function returns the Nkind value that would
-   --  be used to construct a binary operator node referencing
-   --  this entity. It is an error to call this function
-   --  if Ekind (Op) /= E_Operator.
-
-   function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
-   --  Op must be an entity with an Ekind of E_Operator.
-   --  This function returns the Nkind value that would
-   --  be used to construct a unary operator node referencing
-   --  this entity. It is an error to call this function
-   --  if Ekind (Op) /= E_Operator.
 end Sem_Aux;

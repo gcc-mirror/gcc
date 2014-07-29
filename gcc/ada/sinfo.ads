@@ -4262,7 +4262,11 @@ package Sinfo is
 
       --  Note: the Then_Actions and Else_Actions fields are always set to
       --  No_List in the tree passed to Gigi. These fields are used only
-      --  for temporary processing purposes in the expander.
+      --  for temporary processing purposes in the expander. Even though they
+      --  are semantic fields, their parent pointers are set because analysis
+      --  of actions nodes in those lists may generate additional actions that
+      --  need to know their insertion point (for example for the creation of
+      --  transient scopes).
 
       ----------------------------
       -- 4.5.7  Case Expression --
