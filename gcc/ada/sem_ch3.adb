@@ -35,7 +35,6 @@ with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
-with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -413,15 +412,14 @@ package body Sem_Ch3 is
    --    Def_Id is an in/out parameter).
    --
    --    Related_Nod gives the place where this type has to be inserted
-   --    in the tree
+   --    in the tree.
    --
    --  The last two arguments are used to create its external name if needed.
 
    function Constrain_Corresponding_Record
      (Prot_Subt   : Entity_Id;
       Corr_Rec    : Entity_Id;
-      Related_Nod : Node_Id;
-      Related_Id  : Entity_Id) return Entity_Id;
+      Related_Nod : Node_Id) return Entity_Id;
    --  When constraining a protected type or task type with discriminants,
    --  constrain the corresponding record with the same discriminant values.
 
@@ -10926,8 +10924,7 @@ package body Sem_Ch3 is
          then
             Set_Corresponding_Record_Type (Full,
               Constrain_Corresponding_Record
-                (Full, Corresponding_Record_Type (Full_Base),
-                  Related_Nod, Full_Base));
+                (Full, Corresponding_Record_Type (Full_Base), Related_Nod));
 
          else
             Set_Corresponding_Record_Type (Full,
@@ -11367,8 +11364,7 @@ package body Sem_Ch3 is
               or else Is_Protected_Type (Desig_Type))
         and then not Is_Constrained (Desig_Type)
       then
-         Constrain_Concurrent
-           (Desig_Subtype, S, Related_Nod, Desig_Type, ' ');
+         Constrain_Concurrent (Desig_Subtype, S, Related_Nod, Desig_Type, ' ');
 
       else
          Error_Msg_N ("invalid constraint on access type", S);
@@ -11563,7 +11559,6 @@ package body Sem_Ch3 is
    is
       Loc         : constant Source_Ptr := Sloc (Constrained_Typ);
       Compon_Type : constant Entity_Id := Etype (Comp);
-      Array_Comp  : Node_Id;
 
       function Build_Constrained_Array_Type
         (Old_Type : Entity_Id) return Entity_Id;
@@ -11961,22 +11956,7 @@ package body Sem_Ch3 is
          return Compon_Type;
 
       elsif Is_Array_Type (Compon_Type) then
-         Array_Comp := Build_Constrained_Array_Type (Compon_Type);
-
-         --  If the component of the parent is packed, and the record type is
-         --  already frozen, as is the case for an itype, the component type
-         --  itself will not be frozen, and the packed array type for it must
-         --  be constructed explicitly. Since the creation of packed types is
-         --  an expansion activity, we only do this if expansion is active.
-
-         if Expander_Active
-           and then Is_Packed (Compon_Type)
-           and then Is_Frozen (Current_Scope)
-         then
-            Create_Packed_Array_Impl_Type (Array_Comp);
-         end if;
-
-         return Array_Comp;
+         return Build_Constrained_Array_Type (Compon_Type);
 
       elsif Has_Discriminants (Compon_Type) then
          return Build_Constrained_Discriminated_Type (Compon_Type);
@@ -12027,8 +12007,7 @@ package body Sem_Ch3 is
 
          Set_Depends_On_Private (Def_Id, Has_Private_Component (Def_Id));
          Set_Corresponding_Record_Type (Def_Id,
-           Constrain_Corresponding_Record
-             (Def_Id, T_Val, Related_Nod, Related_Id));
+           Constrain_Corresponding_Record (Def_Id, T_Val, Related_Nod));
 
       else
          --  If there is no associated record, expansion is disabled and this
@@ -12050,11 +12029,10 @@ package body Sem_Ch3 is
    function Constrain_Corresponding_Record
      (Prot_Subt   : Entity_Id;
       Corr_Rec    : Entity_Id;
-      Related_Nod : Node_Id;
-      Related_Id  : Entity_Id) return Entity_Id
+      Related_Nod : Node_Id) return Entity_Id
    is
       T_Sub : constant Entity_Id :=
-                Create_Itype (E_Record_Subtype, Related_Nod, Related_Id, 'V');
+                Create_Itype (E_Record_Subtype, Related_Nod, Corr_Rec, 'C');
 
    begin
       Set_Etype             (T_Sub, Corr_Rec);
@@ -12062,16 +12040,6 @@ package body Sem_Ch3 is
       Set_Is_Constrained    (T_Sub, True);
       Set_First_Entity      (T_Sub, First_Entity (Corr_Rec));
       Set_Last_Entity       (T_Sub, Last_Entity  (Corr_Rec));
-
-      --  As elsewhere, we do not want to create a freeze node for this itype
-      --  if it is created for a constrained component of an enclosing record
-      --  because references to outer discriminants will appear out of scope.
-
-      if Ekind (Scope (Prot_Subt)) /= E_Record_Type then
-         Conditional_Delay (T_Sub, Corr_Rec);
-      else
-         Set_Is_Frozen (T_Sub);
-      end if;
 
       if Has_Discriminants (Prot_Subt) then -- False only if errors.
          Set_Discriminant_Constraint
@@ -12082,6 +12050,19 @@ package body Sem_Ch3 is
       end if;
 
       Set_Depends_On_Private      (T_Sub, Has_Private_Component (T_Sub));
+
+      if Ekind (Scope (Prot_Subt)) /= E_Record_Type then
+         Conditional_Delay (T_Sub, Corr_Rec);
+
+      else
+         --  This is a component subtype: it will be frozen in the context of
+         --  the enclosing record's init_proc, so that discriminant references
+         --  are resolved to discriminals. (Note: we used to skip freezing
+         --  altogether in that case, which caused errors downstream for
+         --  components of a bit packed array type).
+
+         Set_Has_Delayed_Freeze (T_Sub);
+      end if;
 
       return T_Sub;
    end Constrain_Corresponding_Record;
@@ -18622,6 +18603,7 @@ package body Sem_Ch3 is
 
       declare
          Priv_Elmt : Elmt_Id;
+         Priv_Scop : Entity_Id;
          Priv      : Entity_Id;
          Full      : Entity_Id;
 
@@ -18629,6 +18611,7 @@ package body Sem_Ch3 is
          Priv_Elmt := First_Elmt (Private_Dependents (Priv_T));
          while Present (Priv_Elmt) loop
             Priv := Node (Priv_Elmt);
+            Priv_Scop := Scope (Priv);
 
             if Ekind_In (Priv, E_Private_Subtype,
                                E_Limited_Private_Subtype,
@@ -18642,10 +18625,26 @@ package body Sem_Ch3 is
                --  Now we need to complete the private subtype, but since the
                --  base type has already been swapped, we must also swap the
                --  subtypes (and thus, reverse the arguments in the call to
-               --  Complete_Private_Subtype).
+               --  Complete_Private_Subtype). Also note that we may need to
+               --  re-establish the scope of the private subtype.
 
                Copy_And_Swap (Priv, Full);
+
+               if not In_Open_Scopes (Priv_Scop) then
+                  Push_Scope (Priv_Scop);
+
+               else
+                  --  Reset Priv_Scop to Empty to indicate no scope was pushed
+
+                  Priv_Scop := Empty;
+               end if;
+
                Complete_Private_Subtype (Full, Priv, Full_T, N);
+
+               if Present (Priv_Scop) then
+                  Pop_Scope;
+               end if;
+
                Replace_Elmt (Priv_Elmt, Full);
             end if;
 

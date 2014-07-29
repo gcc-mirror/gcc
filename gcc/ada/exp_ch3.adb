@@ -2818,6 +2818,14 @@ package body Exp_Ch3 is
             --  Regular component cases
 
             else
+               --  In the context of the init proc, references to discriminants
+               --  resolve to denote the discriminals: this is where we can
+               --  freeze discriminant dependent component subtypes.
+
+               if not Is_Frozen (Typ) then
+                  Append_List_To (Stmts, Freeze_Entity (Typ, N));
+               end if;
+
                --  Explicit initialization
 
                if Present (Expression (Decl)) then

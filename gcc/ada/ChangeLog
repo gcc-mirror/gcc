@@ -1,3 +1,27 @@
+2014-07-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Constrain_Corresponding_Record): For the case
+	of the subtype created for a record component, do not mark
+	the subtype as frozen. For one thing, this is anomalous (in
+	particular, the base type might not itself be frozen yet);
+	furthermore, proper freezing of the subtype must happen in any
+	case. So, we just mark the subtype as requiring delayed freezing
+	(and we'll actually freeze it when generating the init_proc of
+	the enclosing record).
+	Also change the name of the constrained record subtype (append a
+	'C' so that it is clearly different from the unconstrained record
+	type, "related_idV") to make debugging easier.
+	(Process_Full_View): When creating a full subtype for a pending
+	private subtype, re-establish the scope of the private subtype
+	so that we get proper visibility on outer discriminants.
+	* exp_ch3.adb (Build_Init_Statements): Freeze any component
+	subtype that is not frozen yet.
+
+2014-07-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Recursive_Process): Always initialize the
+	environment when the project is an aggregate project, even when
+	it is not the root tree.
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, exp_ch9.adb: Minor comment additions.

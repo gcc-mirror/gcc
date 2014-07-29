@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2898,7 +2898,7 @@ package body Prj.Proc is
 
             Process_Imported_Projects (Imported, Limited_With => False);
 
-            if Project.Qualifier = Aggregate and then In_Tree.Is_Root_Tree then
+            if Project.Qualifier = Aggregate then
                Initialize_And_Copy (Child_Env, Copy_From => Env);
 
             elsif Project.Qualifier = Aggregate_Library then
