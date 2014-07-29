@@ -48,10 +48,6 @@ static int gcov_error (const char *, ...);
 
 #include "gcov-io.c"
 
-/* The following functions can be called from outside of this file.  */
-extern void gcov_clear (void) ATTRIBUTE_HIDDEN;
-extern void gcov_exit (void) ATTRIBUTE_HIDDEN;
-
 struct gcov_fn_buffer
 {
   struct gcov_fn_buffer *next;
@@ -293,8 +289,8 @@ static int run_accounted = 0;
    Also determines the longest filename length of the info files.  */
 
 static gcov_unsigned_t
-gcov_exit_compute_summary (struct gcov_summary *this_prg,
-			   size_t *max_length)
+compute_summary (struct gcov_info *list, struct gcov_summary *this_prg,
+		 size_t *max_length)
 {
   struct gcov_info *gi_ptr;
   const struct gcov_fn_info *gfi_ptr;
@@ -308,7 +304,7 @@ gcov_exit_compute_summary (struct gcov_summary *this_prg,
   /* Find the totals for this execution.  */
   memset (this_prg, 0, sizeof (*this_prg));
   *max_length = 0;
-  for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
+  for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
     {
       size_t len = strlen (gi_ptr->filename);
       if (len > *max_length)
@@ -362,13 +358,13 @@ gcov_exit_compute_summary (struct gcov_summary *this_prg,
    Return -1 on error. In this case, caller will goto read_fatal.  */
 
 static int
-gcov_exit_merge_gcda (const char *filename,
-		      struct gcov_info *gi_ptr,
-                      struct gcov_summary *prg_p,
-                      struct gcov_summary *this_prg,
-                      gcov_position_t *summary_pos_p,
-                      gcov_position_t *eof_pos_p,
-		      gcov_unsigned_t crc32)
+merge_one_data (const char *filename,
+		struct gcov_info *gi_ptr,
+		struct gcov_summary *prg_p,
+		struct gcov_summary *this_prg,
+		gcov_position_t *summary_pos_p,
+		gcov_position_t *eof_pos_p,
+		gcov_unsigned_t crc32)
 {
   gcov_unsigned_t tag, length;
   unsigned t_ix;
@@ -512,10 +508,10 @@ read_error:
    We will write the file starting from SUMMAY_POS.  */
 
 static void
-gcov_exit_write_gcda (const struct gcov_info *gi_ptr,
-                      const struct gcov_summary *prg_p,
-                      const gcov_position_t eof_pos,
-                      const gcov_position_t summary_pos)
+write_one_data (const struct gcov_info *gi_ptr,
+		const struct gcov_summary *prg_p,
+		const gcov_position_t eof_pos,
+		const gcov_position_t summary_pos)
 {
   unsigned f_ix;
   struct gcov_summary_buffer *next_sum_buffer;
@@ -607,10 +603,10 @@ gcov_exit_write_gcda (const struct gcov_info *gi_ptr,
    Return -1 on error. Return 0 on success.  */
 
 static int
-gcov_exit_merge_summary (const char *filename,
-			 const struct gcov_info *gi_ptr, struct gcov_summary *prg,
-                         struct gcov_summary *this_prg, gcov_unsigned_t crc32,
-			 struct gcov_summary *all_prg __attribute__ ((unused)))
+merge_summary (const char *filename, int run_counted,
+	       const struct gcov_info *gi_ptr, struct gcov_summary *prg,
+	       struct gcov_summary *this_prg, gcov_unsigned_t crc32,
+	       struct gcov_summary *all_prg __attribute__ ((unused)))
 {
   struct gcov_ctr_summary *cs_prg, *cs_tprg;
   unsigned t_ix;
@@ -629,7 +625,7 @@ gcov_exit_merge_summary (const char *filename,
         {
 	  int first = !cs_prg->runs;
 
-	  if (!run_accounted)
+	  if (!run_counted)
 	    cs_prg->runs++;
           if (first)
             cs_prg->num = cs_tprg->num;
@@ -691,9 +687,10 @@ gcov_exit_merge_summary (const char *filename,
    summaries separate.  */
 
 static void
-gcov_exit_dump_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
-		     gcov_unsigned_t crc32, struct gcov_summary *all_prg,
-                     struct gcov_summary *this_prg)
+dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
+	       unsigned run_counted,
+	       gcov_unsigned_t crc32, struct gcov_summary *all_prg,
+	       struct gcov_summary *this_prg)
 {
   struct gcov_summary prg; /* summary for this object over all program.  */
   int error;
@@ -717,8 +714,8 @@ gcov_exit_dump_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
           gcov_error ("profiling:%s:Not a gcov data file\n", gf->filename);
           goto read_fatal;
         }
-      error = gcov_exit_merge_gcda (gf->filename, gi_ptr, &prg, this_prg,
-				    &summary_pos, &eof_pos, crc32);
+      error = merge_one_data (gf->filename, gi_ptr, &prg, this_prg,
+			      &summary_pos, &eof_pos, crc32);
       if (error == -1)
         goto read_fatal;
     }
@@ -731,12 +728,12 @@ gcov_exit_dump_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
       summary_pos = eof_pos;
     }
 
-  error = gcov_exit_merge_summary (gf->filename, gi_ptr, &prg, this_prg,
-				   crc32, all_prg);
+  error = merge_summary (gf->filename, run_counted, gi_ptr, &prg, this_prg,
+			 crc32, all_prg);
   if (error == -1)
     goto read_fatal;
 
-  gcov_exit_write_gcda (gi_ptr, &prg, eof_pos, summary_pos);
+  write_one_data (gi_ptr, &prg, eof_pos, summary_pos);
   /* fall through */
 
 read_fatal:;
@@ -755,8 +752,8 @@ read_fatal:;
    summary and then traverses gcov_list list and dumps the gcov_info
    objects one by one.  */
 
-void
-gcov_exit (void)
+void ATTRIBUTE_HIDDEN
+gcov_do_dump (struct gcov_info *list, int run_counted)
 {
   struct gcov_info *gi_ptr;
   struct gcov_filename gf;
@@ -764,14 +761,7 @@ gcov_exit (void)
   struct gcov_summary all_prg;
   struct gcov_summary this_prg;
 
-  /* Prevent the counters from being dumped a second time on exit when the
-     application already wrote out the profile using __gcov_dump().  */
-  if (gcov_dump_complete)
-    return;
-
-  gcov_dump_complete = 1;
-
-  crc32 = gcov_exit_compute_summary (&this_prg, &gf.max_length);
+  crc32 = compute_summary (list, &this_prg, &gf.max_length);
 
   allocate_filename_struct (&gf);
 #if !GCOV_LOCKED
@@ -779,11 +769,25 @@ gcov_exit (void)
 #endif
 
   /* Now merge each file.  */
-  for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
-    gcov_exit_dump_gcov (gi_ptr, &gf, crc32, &all_prg, &this_prg);
-  run_accounted = 1;
+  for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
+    dump_one_gcov (gi_ptr, &gf, run_counted, crc32, &all_prg, &this_prg);
 
   free (gf.filename);
+}
+
+void
+gcov_exit (void)
+{
+  /* Prevent the counters from being dumped a second time on exit when the
+     application already wrote out the profile using __gcov_dump().  */
+  if (gcov_dump_complete)
+    return;
+
+  gcov_dump_complete = 1;
+
+  gcov_do_dump (gcov_list, run_accounted);
+  
+  run_accounted = 1;
 }
 
 /* Reset all counters to zero.  */

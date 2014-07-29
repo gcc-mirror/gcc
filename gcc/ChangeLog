@@ -1,3 +1,10 @@
+2014-07-29  Nathan Sidwell  <nathan@acm.org>
+
+	* gcov-io.c (gcov_var): Make hidden.
+	* gcov-tool.c (gcov_list, gcov_exit): Remove declarations.
+	(gcov_do_dump): Declare.
+	(gcov_output_files): Call gcov_do_dump, not gcov_exit).
+
 2014-07-29  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (sra_modify_constructor_assign): Change type of stmt
@@ -25,8 +32,8 @@
 	(walk_ssa_copies): Break out from ...
 	(get_polymorphic_call_info): ... here; set speculative context
 	before giving up.
-	* ipa-prop.c (ipa_write_indirect_edge_info, ipa_read_indirect_edge_info):
-	Stream speculative context.
+	* ipa-prop.c (ipa_write_indirect_edge_info,
+	ipa_read_indirect_edge_info): Stream speculative context.
 	* ipa-utils.h (ipa_polymorphic_call_context): Add speculative info
 	(SPECULATIVE_OFFSET, SPECULATIVE_OUTER_TYPE,
 	SPECULATIVE_MAYBE_DERIVED_TYPE).
@@ -41,7 +48,7 @@
 
 2014-07-28  Trevor Saunders  <tsaunders@mozilla.com>
 
-	* config/i386/i386.c (ix86_return_in_memory): replace one
+	* config/i386/i386.c (ix86_return_in_memory): Replace one
 	ATTRIBUTE_UNUSED where the attribute can actually sometimes be unused.
 
 2014-07-28  Marek Polacek  <polacek@redhat.com>

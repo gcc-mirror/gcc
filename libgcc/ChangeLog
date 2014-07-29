@@ -1,3 +1,23 @@
+2014-07-29  Nathan Sidwell  <nathan@acm.org>
+
+	* libgcov.h: Move renaming of entry points to lib gcov specific
+	portion.
+	(gcov_do_dump): New rename.
+	(gcov_rewrite): Remove inline, make HIDDEN.
+	* libgcov-driver.c (gcov_clear, gcov_exit): Remove declarations.
+	(gcov_exit_compute_summary): Rename to ...
+	(compute_summary): ... here.  Add LIST argument.
+	(gcov_exit_merge_gcda): Rename to ...
+	(merge_one_data): ... here.
+	(gcov_exit_write_gcda): Rename to ...
+	(write_one_data): ... here.
+	(gcov_exit_merge_summary): Rename to ...
+	(merge_summary): Add RUN_COUNTED argument.
+	(gcov_exit_dump_gcov): Rename to ...
+	(dump_one_gcov): Add RUN_COUNTED argument.
+	(gcov_do_dump): New function, broken out of ...
+	(gcov_exit): ... here.  Call it.
+
 2014-07-27  Anthony Green  <green@moxielogic.com>
 
 	* config.host: Add moxiebox configuration suppport.
