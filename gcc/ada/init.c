@@ -1703,9 +1703,7 @@ __gnat_install_handler ()
 #include <signal.h>
 #include <taskLib.h>
 
-#ifdef __RTP__
-#include <base/b_ucontext_t.h>
-#else
+#ifndef __RTP__
 #include <intLib.h>
 #include <iv.h>
 #endif

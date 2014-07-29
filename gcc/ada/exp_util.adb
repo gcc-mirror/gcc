@@ -7920,6 +7920,50 @@ package body Exp_Util is
             --  pick up bogus indications of the wrong constant value.
 
             Set_Current_Value (Ent, Empty);
+
+            --  If the subprogram is in the current declarative part and
+            --  'access has been applied to it, generate an elaboration
+            --  check at the beginning of the declarations of the body.
+
+            if Nkind (N) = N_Subprogram_Body
+              and then Address_Taken (Spec_Id)
+              and then
+                Ekind_In (Scope (Spec_Id), E_Block, E_Procedure, E_Function)
+            then
+               declare
+                  Loc   : constant Source_Ptr := Sloc (N);
+                  Decls : constant List_Id    := Declarations (N);
+                  Chk   : Node_Id;
+
+               begin
+                  --  No need to generate this check if first entry in the
+                  --  declaration list is a raise of Program_Error now.
+
+                  if Present (Decls)
+                    and then Nkind (First (Decls)) = N_Raise_Program_Error
+                  then
+                     return;
+                  end if;
+
+                  --  Otherwise generate the check
+
+                  Chk :=
+                    Make_Raise_Program_Error (Loc,
+                      Condition =>
+                        Make_Op_Eq (Loc,
+                          Left_Opnd  => New_Occurrence_Of (Ent, Loc),
+                          Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
+                      Reason    => PE_Access_Before_Elaboration);
+
+                  if No (Decls) then
+                     Set_Declarations (N, New_List (Chk));
+                  else
+                     Prepend (Chk, Decls);
+                  end if;
+
+                  Analyze (Chk);
+               end;
+            end if;
          end if;
       end if;
    end Set_Elaboration_Flag;

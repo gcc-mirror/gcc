@@ -5278,11 +5278,9 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  If the type is limited or unconstrained, we expand as follows to
-      --  avoid any possibility of improper copies.
-
-      --  Note: it may be possible to avoid this special processing if the
-      --  back end uses its own mechanisms for handling by-reference types ???
+      --  If the type is limited, and the back end does not handle limited
+      --  types, then we expand as follows to avoid the possibility of
+      --  improper copying.
 
       --      type Ptr is access all Typ;
       --      Cnn : Ptr;
@@ -5369,6 +5367,38 @@ package body Exp_Ch4 is
          New_N :=
            Make_Explicit_Dereference (Loc,
              Prefix => New_Occurrence_Of (Cnn, Loc));
+
+      --  If the result is an unconstrained array and the if expression is in a
+      --  context other than the initializing expression of the declaration of
+      --  an object, then we pull out the if expression as follows:
+
+      --     Cnn : constant typ := if-expression
+
+      --  and then replace the if expression with an occurrence of Cnn. This
+      --  avoids the need in the back end to create on-the-fly variable length
+      --  temporaries (which it cannot do!)
+
+      --  Note that the test for being in an object declaration avoids doing an
+      --  unnecessary expansion, and also avoids infinite recursion.
+
+      elsif Is_Array_Type (Typ) and then not Is_Constrained (Typ)
+        and then (Nkind (Parent (N)) /= N_Object_Declaration
+                   or else Expression (Parent (N)) /= N)
+      then
+         declare
+            Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+         begin
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cnn,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                Expression          => Relocate_Node (N),
+                Has_Init_Expression => True));
+
+            Rewrite (N, New_Occurrence_Of (Cnn, Loc));
+            return;
+         end;
 
       --  For other types, we only need to expand if there are other actions
       --  associated with either branch.

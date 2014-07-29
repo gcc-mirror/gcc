@@ -10568,6 +10568,49 @@ package body Sem_Attr is
             if Is_Entity_Name (P) then
                Set_Address_Taken (Entity (P));
             end if;
+
+            if Is_Entity_Name (P) then
+               declare
+                  E : constant Entity_Id := Entity (P);
+                  Flag : Entity_Id;
+
+               --  If the access has been taken and the body of the subprogram
+               --  has not been see yet, indirect calls must be protected with
+               --  elaboration checks. We have the proper elaboration machinery
+               --  for subprograms declared in packages, but within a block or
+               --  a subprogram the body will appear in the same declarative
+               --  part, and we must insert a check in the eventual body itself
+               --  using the elaboration flag that we generate now. The check
+               --  is then inserted when the body is expanded.
+
+               begin
+                  if Is_Subprogram (E)
+                    and then Comes_From_Source (E)
+                    and then Comes_From_Source (N)
+                    and then In_Open_Scopes (Scope (E))
+                    and then
+                      Ekind_In (Scope (E), E_Block, E_Procedure, E_Function)
+                    and then not Has_Completion (E)
+                    and then No (Elaboration_Entity (E))
+                    and then Expander_Active
+                  then
+                     --  Create elaboration variable for it
+
+                     Flag := Make_Temporary (Loc, 'E');
+
+                     Set_Elaboration_Entity (E, Flag);
+
+                     Insert_Action (N,
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Flag,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Standard_Short_Integer, Loc),
+                         Expression          =>
+                           Make_Integer_Literal (Loc, Uint_0)));
+                     Set_Is_Frozen (Flag);
+                  end if;
+               end;
+            end if;
          end Access_Attribute;
 
          -------------
