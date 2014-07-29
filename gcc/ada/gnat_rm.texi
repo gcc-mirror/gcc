@@ -364,7 +364,6 @@ Implementation Defined Attributes
 * Attribute Has_Access_Values::
 * Attribute Has_Discriminants::
 * Attribute Img::
-* Attribute Implicit_Dereference::
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
 * Attribute Iterable::
@@ -8574,7 +8573,6 @@ consideration, you should minimize the use of these attributes.
 * Attribute Has_Access_Values::
 * Attribute Has_Discriminants::
 * Attribute Img::
-* Attribute Implicit_Dereference::
 * Attribute Integer_Value::
 * Attribute Invalid_Value::
 * Attribute Iterable::
@@ -9065,12 +9063,6 @@ Note that technically, in analogy to @code{Image},
 that returns the appropriate string when called. This means that
 @code{X'Img} can be renamed as a function-returning-string, or used
 in an instantiation as a function parameter.
-
-@node Attribute Implicit_Dereference
-@unnumberedsec Attribute Implicit_Dereference
-@findex Implicit_Dereference
-@noindent
-PLEASE ADD DOCUMENTATION HERE???
 
 @node Attribute Integer_Value
 @unnumberedsec Attribute Integer_Value

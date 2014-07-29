@@ -1,5 +1,23 @@
 2014-07-29  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat_rm.texi: No doc needed for Ada2012 aspect
+	Implicit_dereference.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Attribute_12): New array
+	(Analyze_Attribute): Check impl-defined Ada 2012 attributes.
+	(Check_Ada_2012_Attribute): Removed.
+
+2014-07-29  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (vxworks6): Call sigtramp for RTP (as well as DKM) for ARM,
+	PPC, and e500.
+	* sigtramp-vxworks.c: New file.
+	* sigtramp-armvxw.c, sigtramp-ppcvxw.c: removed files.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
 	* lib-xref.adb (Output_Refs, Check_Type_Reference): For a
 	derived array type, add information about component type, which
 	was previously missing in ali file.
