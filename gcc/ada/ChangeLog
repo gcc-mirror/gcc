@@ -1,3 +1,19 @@
+2014-07-29  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb Enable GNATprove inlining under debug flag -gnatdQ for now.
+	* inline.ads, inline.adb (Can_Be_Inlined_In_GNATprove_Mode): New
+	function to decide when a subprogram can be inlined in GNATprove mode.
+	(Check_And_Build_Body_To_Inline): Include GNATprove_Mode as a
+	condition for possible inlining.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Remove special case
+	for Inline_Always in GNATprove mode.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Build inlined
+	body for subprograms in GNATprove mode, under debug flag -gnatdQ.
+	* sem_prag.adb Minor change in comments.
+	* sem_res.adb (Resolve_Call): Only perform GNATprove inlining
+	inside subprograms marked as SPARK_Mode On.
+	* sinfo.ads: Minor typo fix.
+
 2014-07-29  Vincent Celier  <celier@adacore.com>
 
 	* frontend.adb: Add dependency on gnat.adc when taken into account

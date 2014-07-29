@@ -44,8 +44,10 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Uname;    use Uname;
@@ -1257,12 +1259,13 @@ package body Inline is
          end if;
       end if;
 
-      --  We do not inline a subprogram  that is too large, unless it is
-      --  marked Inline_Always. This pragma does not suppress the other
-      --  checks on inlining (forbidden declarations, handlers, etc).
+      --  We do not inline a subprogram that is too large, unless it is marked
+      --  Inline_Always or we are in GNATprove mode. This pragma does not
+      --  suppress the other checks on inlining (forbidden declarations,
+      --  handlers, etc).
 
       if Stat_Count > Max_Size
-        and then not Has_Pragma_Inline_Always (Subp)
+        and then not (Has_Pragma_Inline_Always (Subp) or else GNATprove_Mode)
       then
          Cannot_Inline ("cannot inline& (body too large)?", N, Subp);
          return;
@@ -1453,6 +1456,152 @@ package body Inline is
          null;
       end if;
    end Cannot_Inline;
+
+   --------------------------------------
+   -- Can_Be_Inlined_In_GNATprove_Mode --
+   --------------------------------------
+
+   function Can_Be_Inlined_In_GNATprove_Mode
+     (Spec_Id : Entity_Id;
+      Body_Id : Entity_Id) return Boolean
+   is
+      function Has_Some_Contract (Id : Entity_Id) return Boolean;
+      --  Returns True if subprogram Id has any contract (Pre, Post, Global,
+      --  Depends, etc.)
+
+      function In_Some_Private_Part (N : Node_Id) return Boolean;
+      --  Returns True if node N is defined in the private part of a package
+
+      function In_Unit_Body (N : Node_Id) return Boolean;
+      --  Returns True if node N is defined in the body of a unit
+
+      function Is_Expression_Function (Id : Entity_Id) return Boolean;
+      --  Returns True if subprogram Id was defined originally as an expression
+      --  function.
+
+      -----------------------
+      -- Has_Some_Contract --
+      -----------------------
+
+      function Has_Some_Contract (Id : Entity_Id) return Boolean is
+         Items : constant Node_Id := Contract (Id);
+      begin
+         return Present (Items)
+           and then (Present (Pre_Post_Conditions (Items))
+                       or else
+                     Present (Contract_Test_Cases (Items))
+                       or else
+                     Present (Classifications (Items)));
+      end Has_Some_Contract;
+
+      --------------------------
+      -- In_Some_Private_Part --
+      --------------------------
+
+      function In_Some_Private_Part (N : Node_Id) return Boolean is
+         P  : Node_Id := N;
+         PP : Node_Id;
+      begin
+         while Present (P)
+           and then Present (Parent (P))
+         loop
+            PP := Parent (P);
+
+            if Nkind (PP) = N_Package_Specification
+              and then List_Containing (P) = Private_Declarations (PP)
+            then
+               return True;
+            end if;
+
+            P := PP;
+         end loop;
+         return False;
+      end In_Some_Private_Part;
+
+      ------------------
+      -- In_Unit_Body --
+      ------------------
+
+      function In_Unit_Body (N : Node_Id) return Boolean is
+         CU : constant Node_Id := Enclosing_Comp_Unit_Node (N);
+      begin
+         return Present (CU)
+           and then Nkind_In (Unit (CU), N_Package_Body,
+                                         N_Subprogram_Body,
+                                         N_Subunit);
+      end In_Unit_Body;
+
+      ----------------------------
+      -- Is_Expression_Function --
+      ----------------------------
+
+      function Is_Expression_Function (Id : Entity_Id) return Boolean is
+         Decl : constant Node_Id := Parent (Parent (Id));
+      begin
+         return Nkind (Original_Node (Decl)) = N_Expression_Function;
+      end Is_Expression_Function;
+
+      Id : Entity_Id;  --  Procedure or function entity for the subprogram
+
+   --  Start of Can_Be_Inlined_In_GNATprove_Mode
+
+   begin
+      if Present (Spec_Id) then
+         Id := Spec_Id;
+      else
+         Id := Body_Id;
+      end if;
+
+      --  Do not inline unit-level subprograms
+
+      if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+         return False;
+
+      --  Do not inline subprograms declared in the visible part of a library
+      --  package.
+
+      elsif Is_Library_Level_Entity (Id)
+        and then not In_Unit_Body (Id)
+        and then not In_Some_Private_Part (Id)
+      then
+         return False;
+
+      --  Do not inline subprograms that have a contract on the spec or the
+      --  body. Use the contract(s) instead in GNATprove.
+
+      elsif (Present (Spec_Id) and then Has_Some_Contract (Spec_Id))
+        or else Has_Some_Contract (Body_Id)
+      then
+         return False;
+
+      --  Do not inline expression functions
+
+      elsif (Present (Spec_Id) and then Is_Expression_Function (Spec_Id))
+        or else Is_Expression_Function (Body_Id)
+      then
+         return False;
+
+      --  Only inline subprograms whose body is marked SPARK_Mode On
+
+      elsif No (SPARK_Pragma (Body_Id))
+        or else Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) /= On
+      then
+         return False;
+
+      --  Subprograms in generic instances are currently not inlined, to avoid
+      --  problems with inlining of standard library subprograms.
+
+      elsif Instantiation_Location (Sloc (Id)) /= No_Location then
+         return False;
+
+      --  Otherwise, this is a subprogram declared inside the private part of a
+      --  package, or inside a package body, or locally in a subprogram, and it
+      --  does not have any contract. Inline it.
+
+      else
+         return True;
+      end if;
+   end Can_Be_Inlined_In_GNATprove_Mode;
 
    ------------------------------------
    -- Check_And_Build_Body_To_Inline --
@@ -2009,7 +2158,8 @@ package body Inline is
 
          Decl       : constant Node_Id := Unit_Declaration_Node (Spec_Id);
          May_Inline : constant Boolean :=
-                        Has_Pragma_Inline_Always (Spec_Id)
+                        GNATprove_Mode
+                          or else Has_Pragma_Inline_Always (Spec_Id)
                           or else (Has_Pragma_Inline (Spec_Id)
                                     and then ((Optimization_Level > 0
                                                 and then Ekind (Spec_Id)

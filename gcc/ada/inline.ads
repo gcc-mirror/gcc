@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This module handles three kinds of inlining activity:
+--  This module handles four kinds of inlining activity:
 
 --  a) Instantiation of generic bodies. This is done unconditionally, after
 --  analysis and expansion of the main unit.
@@ -37,10 +37,12 @@
 
 --  c) Front-end inlining for Inline_Always subprograms. This is primarily an
 --  expansion activity that is performed for performance reasons, and when the
---  target does not use the gcc backend. Inline_Always can also be used in the
---  context of GNATprove, to perform source transformations to simplify proof
---  obligations. The machinery used in both cases is similar, but there are
---  fewer restrictions on the source of subprograms in the latter case.
+--  target does not use the gcc backend.
+
+--  d) Front-end inlining for GNATprove, to perform source transformations
+--  to simplify formal verification. The machinery used is the same than for
+--  Inline_Always subprograms, but there are fewer restrictions on the source
+--  of subprograms.
 
 with Alloc;
 with Opt;    use Opt;
@@ -232,5 +234,12 @@ package Inline is
    procedure Remove_Dead_Instance (N : Node_Id);
    --  If an instantiation appears in unreachable code, delete the pending
    --  body instance.
+
+   function Can_Be_Inlined_In_GNATprove_Mode
+     (Spec_Id : Entity_Id;
+      Body_Id : Entity_Id) return Boolean;
+   --  Returns True if the subprogram identified by Spec_Id (possibly Empty)
+   --  and Body_Id (not Empty) can be inlined in GNATprove mode. GNATprove
+   --  relies on this to adapt its treatment of the subprogram.
 
 end Inline;
