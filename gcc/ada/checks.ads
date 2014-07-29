@@ -245,8 +245,7 @@ package Checks is
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);
    --  N is an expression to which a predicate check may need to be applied
-   --  for Typ, if Typ has a predicate function. The check is applied only
-   --  if the type of N does not match Typ.
+   --  for Typ, if Typ has a predicate function.
 
    procedure Apply_Type_Conversion_Checks (N : Node_Id);
    --  N is an N_Type_Conversion node. A type conversion actually involves

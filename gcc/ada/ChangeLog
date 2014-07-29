@@ -1,3 +1,27 @@
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Complete_Object_Operation): If the type of the
+	candidate subprogram is a limited view, use non-limited view
+	when available.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor change in RM reference.
+	* sem_mech.ads: Minor reformatting.
+	* einfo.ads: Minor comment fix.
+	* types.ads: Minor correction to range given for Mechanism_Type.
+	* exp_ch6.adb (Add_Invariant_And_Predicate_Checks): Do not
+	check predicate on way out for OUT or IN OUT parameters.
+	* par-ch3.adb (P_Constraint_Opt): Handle missing RANGE keyword
+	better (P_Range_Constraint): Corresponding fix.
+	* checks.ads: Minor comment clarification.
+
+2014-07-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Set the Is_Volatile
+	and Treat_As_Volatile flags based on whether the renamed object
+	is a volatile object.
+
 2014-07-29  Olivier Hainque  <hainque@adacore.com>
 
 	* g-debpoo.adb

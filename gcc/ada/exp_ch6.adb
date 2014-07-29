@@ -8248,10 +8248,6 @@ package body Exp_Ch6 is
          --  subprogram Subp_Id must appear visible from the point of view of
          --  the type.
 
-         function Predicate_Checks_OK (Typ : Entity_Id) return Boolean;
-         --  Determine whether type Typ can benefit from predicate checks. To
-         --  qualify, the type must have at least one checked predicate.
-
          ---------------------------------
          -- Add_Invariant_Access_Checks --
          ---------------------------------
@@ -8414,57 +8410,6 @@ package body Exp_Ch6 is
                 and then Has_Public_Visibility_Of_Subprogram;
          end Invariant_Checks_OK;
 
-         -------------------------
-         -- Predicate_Checks_OK --
-         -------------------------
-
-         function Predicate_Checks_OK (Typ : Entity_Id) return Boolean is
-            function Has_Checked_Predicate return Boolean;
-            --  Determine whether type Typ has or inherits at least one
-            --  predicate aspect or pragma, for which the applicable policy is
-            --  Checked.
-
-            ---------------------------
-            -- Has_Checked_Predicate --
-            ---------------------------
-
-            function Has_Checked_Predicate return Boolean is
-               Anc  : Entity_Id;
-               Pred : Node_Id;
-
-            begin
-               --  Climb the ancestor type chain staring from the input. This
-               --  is done because the input type may lack aspect/pragma
-               --  predicate and simply inherit those from its ancestor.
-
-               --  Note that predicate pragmas correspond to all three cases
-               --  of predicate aspects (Predicate, Dynamic_Predicate, and
-               --  Static_Predicate), so this routine checks for all three
-               --  cases.
-
-               Anc := Typ;
-               while Present (Anc) loop
-                  Pred := Get_Pragma (Anc, Pragma_Predicate);
-
-                  if Present (Pred) and then not Is_Ignored (Pred) then
-                     return True;
-                  end if;
-
-                  Anc := Nearest_Ancestor (Anc);
-               end loop;
-
-               return False;
-            end Has_Checked_Predicate;
-
-         --  Start of processing for Predicate_Checks_OK
-
-         begin
-            return
-              Has_Predicates (Typ)
-                and then Present (Predicate_Function (Typ))
-                and then Has_Checked_Predicate;
-         end Predicate_Checks_OK;
-
          --  Local variables
 
          Loc : constant Source_Ptr := Sloc (N);
@@ -8529,12 +8474,11 @@ package body Exp_Ch6 is
 
                Add_Invariant_Access_Checks (Formal);
 
-               if Predicate_Checks_OK (Typ) then
-                  Append_Enabled_Item
-                    (Item => Make_Predicate_Check
-                                (Typ, New_Occurrence_Of (Formal, Loc)),
-                     List => Stmts);
-               end if;
+               --  Note: we used to add predicate checks for OUT and IN OUT
+               --  formals here, but that was misguided, since such checks are
+               --  performed on the caller side, based on the predicate of the
+               --  actual, rather than the predicate of the formal.
+
             end if;
 
             Next_Formal (Formal);

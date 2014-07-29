@@ -3172,9 +3172,9 @@ package Einfo is
 --    Mechanism (Uint8) (returned as Mechanism_Type)
 --       Defined in functions and non-generic formal parameters. Indicates
 --       the mechanism to be used for the function return or for the formal
---       parameter. See separate section on passing mechanisms. This field
---       is also set (to the default value of zero) in a subprogram body
---       entity but not used in this context.
+--       parameter. See full description in the spec of Sem_Mech. This field
+--       is also set (to the default value of zero = Default_Mechanism) in a
+--       subprogram body entity but not used in this context.
 
 --    Modulus (Uint17) [base type only]
 --       Defined in modular types. Contains the modulus. For the binary case,

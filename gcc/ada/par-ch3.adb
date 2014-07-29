@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1217,19 +1217,13 @@ package body Ch3 is
 
    function P_Constraint_Opt return Node_Id is
    begin
-      if Token = Tok_Range
-        or else Bad_Spelling_Of (Tok_Range)
-      then
+      if Token = Tok_Range or else Bad_Spelling_Of (Tok_Range) then
          return P_Range_Constraint;
 
-      elsif Token = Tok_Digits
-        or else Bad_Spelling_Of (Tok_Digits)
-      then
+      elsif Token = Tok_Digits or else Bad_Spelling_Of (Tok_Digits) then
          return P_Digits_Constraint;
 
-      elsif Token = Tok_Delta
-        or else Bad_Spelling_Of (Tok_Delta)
-      then
+      elsif Token = Tok_Delta or else Bad_Spelling_Of (Tok_Delta) then
          return P_Delta_Constraint;
 
       elsif Token = Tok_Left_Paren then
@@ -1238,6 +1232,31 @@ package body Ch3 is
       elsif Token = Tok_In then
          Ignore (Tok_In);
          return P_Constraint_Opt;
+
+      --  One more possibility is e.g. 1 .. 10 (i.e. missing RANGE keyword)
+
+      elsif Token = Tok_Identifier      or else
+            Token = Tok_Integer_Literal or else
+            Token = Tok_Real_Literal
+      then
+         declare
+            Scan_State : Saved_Scan_State;
+
+         begin
+            Save_Scan_State (Scan_State); -- at identifier or literal
+            Scan; -- past identifier or literal
+
+            if Token = Tok_Dot_Dot then
+               Restore_Scan_State (Scan_State);
+               Error_Msg_BC ("missing RANGE keyword");
+               return P_Range_Constraint;
+            else
+               Restore_Scan_State (Scan_State);
+               return Empty;
+            end if;
+         end;
+
+      --  Nothing worked, no constraint there
 
       else
          return Empty;
@@ -2033,7 +2052,9 @@ package body Ch3 is
 
    --  RANGE_CONSTRAINT ::= range RANGE
 
-   --  The caller has checked that the initial token is RANGE
+   --  The caller has checked that the initial token is RANGE or some
+   --  misspelling of it, or it may be absent completely (and a message
+   --  has already been issued).
 
    --  Error recovery: cannot raise Error_Resync
 
@@ -2042,7 +2063,13 @@ package body Ch3 is
 
    begin
       Range_Node := New_Node (N_Range_Constraint, Token_Ptr);
-      Scan; -- past RANGE
+
+      --  Skip range keyword if present
+
+      if Token = Tok_Range or else Bad_Spelling_Of (Tok_Range) then
+         Scan; -- past RANGE
+      end if;
+
       Set_Range_Expression (Range_Node, P_Range);
       return Range_Node;
    end P_Range_Constraint;

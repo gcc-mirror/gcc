@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ package Sem_Mech is
    -------------------------------------------------
 
    --  For parameters passed to subprograms, and for function return values,
-   --  as passing mechanism is defined. The entity attribute Mechanism returns
+   --  a passing mechanism is defined. The entity attribute Mechanism returns
    --  an indication of the mechanism, and Set_Mechanism can be used to set
    --  the mechanism. At the program level, there are three ways to explicitly
    --  set the mechanism:
@@ -87,14 +87,14 @@ package Sem_Mech is
    --  special information) is determined by the backend in accordance with
    --  requirements imposed by the ABI as interpreted for Ada.
 
-   By_Descriptor      : constant Mechanism_Type := -3;
-   By_Descriptor_UBS  : constant Mechanism_Type := -4;
-   By_Descriptor_UBSB : constant Mechanism_Type := -5;
-   By_Descriptor_UBA  : constant Mechanism_Type := -6;
-   By_Descriptor_S    : constant Mechanism_Type := -7;
-   By_Descriptor_SB   : constant Mechanism_Type := -8;
-   By_Descriptor_A    : constant Mechanism_Type := -9;
-   By_Descriptor_NCA  : constant Mechanism_Type := -10;
+   By_Descriptor            : constant Mechanism_Type := -3;
+   By_Descriptor_UBS        : constant Mechanism_Type := -4;
+   By_Descriptor_UBSB       : constant Mechanism_Type := -5;
+   By_Descriptor_UBA        : constant Mechanism_Type := -6;
+   By_Descriptor_S          : constant Mechanism_Type := -7;
+   By_Descriptor_SB         : constant Mechanism_Type := -8;
+   By_Descriptor_A          : constant Mechanism_Type := -9;
+   By_Descriptor_NCA        : constant Mechanism_Type := -10;
    By_Short_Descriptor      : constant Mechanism_Type := -11;
    By_Short_Descriptor_UBS  : constant Mechanism_Type := -12;
    By_Short_Descriptor_UBSB : constant Mechanism_Type := -13;
@@ -115,10 +115,13 @@ package Sem_Mech is
    --     A      contiguous array
    --     NCA    non-contiguous array
    --
-   --  Note: the form with no suffix is used if the Import/Export pragma
-   --  uses the simple form of the mechanism name where no descriptor
-   --  type is supplied. In this case the back end assigns a descriptor
-   --  type based on the Ada type in accordance with the OpenVMS ABI.
+   --  Note: the form with no suffix is used if the Import/Export pragma uses
+   --  the simple form of the mechanism name (no descriptor type is supplied).
+   --  In this case the back end assigns a descriptor type based on the Ada
+   --  type in accordance with the OpenVMS ABI.
+
+   pragma Assert (Mechanism_Type'First = -18);
+   --  Check definition in types is right!
 
    subtype Descriptor_Codes is Mechanism_Type
      range By_Short_Descriptor_NCA .. By_Descriptor;
