@@ -11252,24 +11252,6 @@ package body Sem_Ch3 is
       Desig_Subtype : Entity_Id := Create_Itype (E_Void, Related_Nod);
       Constraint_OK : Boolean := True;
 
-      function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean;
-      --  Simple predicate to test for defaulted discriminants
-      --  Shouldn't this be in sem_util???
-
-      ---------------------------------
-      -- Has_Defaulted_Discriminants --
-      ---------------------------------
-
-      function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean is
-      begin
-         return Has_Discriminants (Typ)
-          and then Present (First_Discriminant (Typ))
-          and then Present
-            (Discriminant_Default_Value (First_Discriminant (Typ)));
-      end Has_Defaulted_Discriminants;
-
-   --  Start of processing for Constrain_Access
-
    begin
       if Is_Array_Type (Desig_Type) then
          Constrain_Array (Desig_Subtype, S, Related_Nod, Def_Id, 'P');

@@ -1,3 +1,22 @@
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Move Has_Defaulted_Discriminants to sem_util.
+	* sem_ch4.adb (Analyze_Allocator): Defer resolution of expression
+	until context type is available.
+	* sem_res.adb (Resolve_Allocator): In the case of a qualified
+	expression, complete resolution of expression.
+	(Check_Aliased_Parameter): New procedure within Resolve_Actuals,
+	to apply Ada2012 checks on aliased formals, as well as
+	accesibility checks when the context of the call is an allocator
+	or a qualified expression.
+	* sem_util.ads, sem_util.adb (Has_Defaulted_Discriminants):
+	Moved here from sem_ch3.
+	(Object_Access_Level): Handle properly aliased formals and
+	aggregates.
+	* exp_ch6.adb (Expand_Call): Remove check on aliased parameters,
+	now properly performed in sem_res (Resolve_Actuals,
+	Check_Aliased_Parameter).
+
 2014-07-29  Yannick Moy  <moy@adacore.com>
 
 	* debug.adb Enable GNATprove inlining under debug flag -gnatdQ for now.

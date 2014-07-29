@@ -2976,6 +2976,10 @@ package body Sem_Res is
       Prev   : Node_Id := Empty;
       Orig_A : Node_Id;
 
+      procedure Check_Aliased_Parameter;
+      --  Check rules on aliased parameters and related accessibility rules
+      --  in (3.10.2 (10.2-10.4)).
+
       procedure Check_Argument_Order;
       --  Performs a check for the case where the actuals are all simple
       --  identifiers that correspond to the formal names, but in the wrong
@@ -3011,6 +3015,70 @@ package body Sem_Res is
       --  will be evaluated statically and does not need a transient scope.
       --  This must be determined before the actual is resolved and expanded
       --  because if needed the transient scope must be introduced earlier.
+
+      ------------------------------
+      --  Check_Aliased_Parameter --
+      ------------------------------
+
+      procedure Check_Aliased_Parameter is
+         Nominal_Subt : Entity_Id;
+
+      begin
+         if Is_Aliased (F) then
+            if Is_Tagged_Type (A_Typ) then
+               null;
+
+            elsif Is_Aliased_View (A) then
+               if Is_Constr_Subt_For_U_Nominal (A_Typ) then
+                  Nominal_Subt := Base_Type (A_Typ);
+               else
+                  Nominal_Subt := A_Typ;
+               end if;
+
+               if Subtypes_Statically_Match (F_Typ, Nominal_Subt) then
+                  null;
+
+               --  In a generic body assume the worst for generic formals:
+               --  they can have a constrained partial view (AI05-041).
+
+               elsif Has_Discriminants (F_Typ)
+                 and then not Is_Constrained (F_Typ)
+                 and then not Has_Constrained_Partial_View (F_Typ)
+                 and then not Is_Generic_Type (F_Typ)
+               then
+                  null;
+
+               else
+                  Error_Msg_NE ("untagged actual does not match "
+                    & "aliased formal&", A, F);
+               end if;
+
+            else
+               Error_Msg_NE ("actual for aliased formal& must be "
+                 & "aliased object", A, F);
+            end if;
+
+            if Ekind (Nam) = E_Procedure then
+               null;
+
+            elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type then
+               if Nkind (Parent (N)) = N_Type_Conversion
+                 and then Type_Access_Level (Etype (Parent (N)))
+                   < Object_Access_Level (A)
+               then
+                  Error_Msg_N ("aliased actual has wrong accessibility", A);
+               end if;
+
+            elsif Nkind (Parent (N)) = N_Qualified_Expression
+              and then Nkind (Parent (Parent (N))) = N_Allocator
+              and then Type_Access_Level (Etype (Parent (Parent (N))))
+                < Object_Access_Level (A)
+            then
+               Error_Msg_N
+                 ("Aliased actual in allocator has wrong accessibility", A);
+            end if;
+         end if;
+      end Check_Aliased_Parameter;
 
       --------------------------
       -- Check_Argument_Order --
@@ -4213,6 +4281,8 @@ package body Sem_Res is
                end if;
             end if;
 
+            Check_Aliased_Parameter;
+
             Eval_Actual (A);
 
             --  If it is a named association, treat the selector_name as a
@@ -4426,6 +4496,7 @@ package body Sem_Res is
          end if;
 
          Resolve (Expression (E), Etype (E));
+         Check_Non_Static_Context (Expression (E));
          Check_Unset_Reference (Expression (E));
 
          --  A qualified expression requires an exact match of the type.

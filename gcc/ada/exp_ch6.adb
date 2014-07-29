@@ -3138,18 +3138,6 @@ package body Exp_Ch6 is
             end if;
          end if;
 
-         --  For Ada 2012, if a parameter is aliased, the actual must be a
-         --  tagged type or an aliased view of an object.
-
-         if Is_Aliased (Formal)
-           and then not Is_Aliased_View (Actual)
-           and then not Is_Tagged_Type (Etype (Formal))
-         then
-            Error_Msg_NE
-              ("actual for aliased formal& must be aliased object",
-               Actual, Formal);
-         end if;
-
          --  For IN OUT and OUT parameters, ensure that subscripts are valid
          --  since this is a left side reference. We only do this for calls
          --  from the source program since we assume that compiler generated

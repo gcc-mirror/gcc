@@ -7337,6 +7337,18 @@ package body Sem_Util is
                                   N_Package_Specification);
    end Has_Declarations;
 
+   ---------------------------------
+   -- Has_Defaulted_Discriminants --
+   ---------------------------------
+
+   function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean is
+   begin
+      return Has_Discriminants (Typ)
+       and then Present (First_Discriminant (Typ))
+       and then Present
+         (Discriminant_Default_Value (First_Discriminant (Typ)));
+   end Has_Defaulted_Discriminants;
+
    -------------------
    -- Has_Denormals --
    -------------------
@@ -14414,7 +14426,15 @@ package body Sem_Util is
             return Type_Access_Level (Scope (E)) + 1;
 
          else
-            return Scope_Depth (Enclosing_Dynamic_Scope (E));
+            --  Aliased formals take their access level from the point of call.
+            --  This is smaller than the level of the subprogram itself.
+
+            if Is_Formal (E) and then Is_Aliased (E) then
+               return Type_Access_Level (Etype (E));
+
+            else
+               return Scope_Depth (Enclosing_Dynamic_Scope (E));
+            end if;
          end if;
 
       elsif Nkind (Obj) = N_Selected_Component then
@@ -14585,6 +14605,12 @@ package body Sem_Util is
 
       elsif Nkind (Obj) = N_Qualified_Expression then
          return Object_Access_Level (Expression (Obj));
+
+      --  Ditto for aggregates. They have the level of the temporary that
+      --  will hold their value.
+
+      elsif Nkind (Obj) = N_Aggregate then
+         return Object_Access_Level (Current_Scope);
 
       --  Otherwise return the scope level of Standard. (If there are cases
       --  that fall through to this point they will be treated as having
