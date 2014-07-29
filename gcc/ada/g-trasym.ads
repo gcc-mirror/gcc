@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2012, AdaCore                     --
+--                     Copyright (C) 1999-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,7 +84,7 @@
 --  Symbolic_Traceback return a list of addresses expressed as "0x..."
 --  separated by line feed.
 
-with Ada.Exceptions; use Ada.Exceptions;
+with Ada.Exceptions;
 
 package GNAT.Traceback.Symbolic is
    pragma Elaborate_Body;
@@ -94,7 +94,8 @@ package GNAT.Traceback.Symbolic is
    --  Note: This procedure may be installed by Set_Trace_Decorator, to get a
    --  symbolic traceback on all exceptions raised (see GNAT.Exception_Traces).
 
-   function Symbolic_Traceback (E : Exception_Occurrence) return String;
+   function Symbolic_Traceback
+     (E : Ada.Exceptions.Exception_Occurrence) return String;
    --  Build string containing symbolic traceback of given exception occurrence
 
 end GNAT.Traceback.Symbolic;

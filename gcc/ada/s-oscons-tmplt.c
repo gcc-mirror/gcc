@@ -86,10 +86,17 @@ pragma Style_Checks ("M32766");
  ** a number of non-POSIX but useful/required features.
  **/
 
-#if defined (__linux__) && !defined (_XOPEN_SOURCE)
-/* For Linux, define _XOPEN_SOURCE to get IOV_MAX */
-#define _XOPEN_SOURCE 500
-#endif
+#if defined (__linux__)
+
+/* Define _XOPEN_SOURCE to get IOV_MAX */
+# if !defined (_XOPEN_SOURCE)
+#  define _XOPEN_SOURCE 500
+# endif
+
+/* Define _BSD_SOURCE to get CRTSCTS */
+# define _BSD_SOURCE
+
+#endif /* defined (__linux__) */
 
 /* Include gsocket.h before any system header so it can redefine FD_SETSIZE */
 

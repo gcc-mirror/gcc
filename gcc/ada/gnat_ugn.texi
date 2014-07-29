@@ -16222,14 +16222,17 @@ and quantified expressions. For each body, we compute three metric values:
 @itemize @bullet
 @item
 the complexity introduced by control
-statements only, without taking into account short-circuit forms,
+statements only, without taking into account short-circuit forms
+(referred as @code{statement complexity} in @command{gnatmetric} output),
 
 @item
-the complexity introduced by short-circuit control forms only, and
+the complexity introduced by short-circuit control forms only
+(referred as @code{expression complexity} in @command{gnatmetric} output), and
 
 @item
 the total
-cyclomatic complexity, which is the sum of these two values.
+cyclomatic complexity, which is the sum of these two values
+(referred as @code{cyclomatic complexity} in @command{gnatmetric} output).
 @end itemize
 
 @noindent
@@ -19851,8 +19854,8 @@ Specifies whether or not passed tests should be shown. @var{val} can be either
 
 @item --tests-root=@var{dirname}
 @cindex @option{--tests-root} (@command{gnattest})
-The directory hierarchy of tested sources is recreated in the @var{dirname}
-directory, and test packages are placed in corresponding directories.
+The hierarchy of source directories, if any, is recreated in the @var{dirname}
+directory, with test packages placed in directories corresponding to those of the sources.
 If the @var{dirname} is a relative path, it is considered relative to the object
 directory of the project file. When all sources from all projects are taken
 recursively from all projects, directory hierarchies of tested sources are
@@ -19861,7 +19864,10 @@ placed accordingly.
 
 @item --subdir=@var{dirname}
 @cindex @option{--subdir} (@command{gnattest})
-Test packages are placed in subdirectories.
+Test packages are placed in a subdirectory of the corresponding source directory,
+with the name @var{dirname}. Thus, each set of unit tests is located in a subdirectory of the
+code under test.  If the sources are in separate directories, each source directory
+has a test subdirectory named @var{dirname}.
 
 @item --tests-dir=@var{dirname}
 @cindex @option{--tests-dir} (@command{gnattest})
