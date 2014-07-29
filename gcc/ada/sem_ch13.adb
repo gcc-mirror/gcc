@@ -1544,6 +1544,19 @@ package body Sem_Ch13 is
             Set_Entity (Aspect, E);
             Ent := New_Occurrence_Of (E, Sloc (Id));
 
+            --  Capture setting of Opt.Uneval_Old
+
+            case Opt.Uneval_Old is
+               when 'A' =>
+                  Set_Uneval_Old_Accept (Aspect);
+               when 'E' =>
+                  null;
+               when 'W' =>
+                  Set_Uneval_Old_Warn (Aspect);
+               when others =>
+                  raise Program_Error;
+            end case;
+
             --  Check for duplicate aspect. Note that the Comes_From_Source
             --  test allows duplicate Pre/Post's that we generate internally
             --  to escape being flagged here.

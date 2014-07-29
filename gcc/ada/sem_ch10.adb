@@ -1209,7 +1209,7 @@ package body Sem_Ch10 is
             Save_Style_Check_Options (Options);
             Reset_Style_Check_Options;
             Opt.Warning_Mode := Suppress;
-            Check_Body_For_Inlining (N, Defining_Entity (Unit_Node));
+            Check_Package_Body_For_Inlining (N, Defining_Entity (Unit_Node));
 
             Reset_Style_Check_Options;
             Set_Style_Check_Options (Options);

@@ -2559,11 +2559,11 @@ package body Inline is
       end if;
    end Check_And_Build_Body_To_Inline;
 
-   -----------------------------
-   -- Check_Body_For_Inlining --
-   -----------------------------
+   -------------------------------------
+   -- Check_Package_Body_For_Inlining --
+   -------------------------------------
 
-   procedure Check_Body_For_Inlining (N : Node_Id; P : Entity_Id) is
+   procedure Check_Package_Body_For_Inlining (N : Node_Id; P : Entity_Id) is
       Bname : Unit_Name_Type;
       E     : Entity_Id;
       OK    : Boolean;
@@ -2667,7 +2667,7 @@ package body Inline is
             Next_Entity (E);
          end loop;
       end if;
-   end Check_Body_For_Inlining;
+   end Check_Package_Body_For_Inlining;
 
    --------------------
    -- Cleanup_Scopes --

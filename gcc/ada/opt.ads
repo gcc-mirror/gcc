@@ -1495,7 +1495,8 @@ package Opt is
    Uneval_Old : Character := 'E';
    --  GNAT
    --  Set to 'E'/'W'/'A' for use of Error/Warn/Allow in a valid pragma
-   --  Unevaluated_Use_Of_Old.
+   --  Unevaluated_Use_Of_Old. Default in the absence of the pragma is 'E'
+   --  for the RM default behavior of giving an error.
 
    Unique_Error_Tag : Boolean := Tag_Errors;
    --  GNAT

@@ -3164,6 +3164,22 @@ package body Sinfo is
       return Node3 (N);
    end Type_Definition;
 
+   function Uneval_Old_Accept
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      return Flag13 (N);
+   end Uneval_Old_Accept;
+
+   function Uneval_Old_Warn
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      return Flag18 (N);
+   end Uneval_Old_Warn;
+
    function Unit
       (N : Node_Id) return Node_Id is
    begin
@@ -6346,6 +6362,22 @@ package body Sinfo is
         or else NT (N).Nkind = N_Freeze_Entity);
       Set_Elist3 (N, Val); -- semantic field, no parent set
    end Set_TSS_Elist;
+
+   procedure Set_Uneval_Old_Accept
+     (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      Set_Flag13 (N, Val);
+   end Set_Uneval_Old_Accept;
+
+   procedure Set_Uneval_Old_Warn
+     (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      Set_Flag18 (N, Val);
+   end Set_Uneval_Old_Warn;
 
    procedure Set_Type_Definition
       (N : Node_Id; Val : Node_Id) is

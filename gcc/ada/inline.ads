@@ -162,10 +162,11 @@ package Inline is
    --  If a subprogram has pragma Inline and inlining is active, use generic
    --  machinery to build an unexpanded body for the subprogram. This body is
    --  subsequently used for inline expansions at call sites. If subprogram can
-   --  be inlined (depending on size and nature of local declarations) this
-   --  function returns true. Otherwise subprogram body is treated normally.
-   --  If proper warnings are enabled and the subprogram contains a construct
-   --  that cannot be inlined, the offending construct is flagged accordingly.
+   --  be inlined (depending on size and nature of local declarations) the
+   --  template body is created. Otherwise subprogram body is treated normally
+   --  and calls are not inlined in the frontend.  If proper warnings are
+   --  enabled and the subprogram contains a construct that cannot be inlined,
+   --  the problematic construct is flagged accordingly.
 
    procedure Cannot_Inline
      (Msg        : String;
@@ -209,7 +210,7 @@ package Inline is
    --  cases documented in Check_Body_To_Inline) then build the body-to-inline
    --  associated with N and attach it to the declaration node of Spec_Id.
 
-   procedure Check_Body_For_Inlining (N : Node_Id; P : Entity_Id);
+   procedure Check_Package_Body_For_Inlining (N : Node_Id; P : Entity_Id);
    --  If front-end inlining is enabled and a package declaration contains
    --  inlined subprograms, load and compile the package body to collect the
    --  bodies of these subprograms, so they are available to inline calls.
