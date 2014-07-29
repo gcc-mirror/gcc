@@ -1851,7 +1851,9 @@ package Sinfo is
    --    to assist in detecting this illegal use of Unrestricted_Access.
 
    --  Null_Excluding_Subtype (Flag16)
-   --    ??? needs documentation ???
+   --   Present in N_Access_To_Object_Definition. Indicates that the subtype
+   --   indication carries a null-exclusion indicator, which is distinct from
+   --   the null-exclusion indicator that may precede the access keyword.
 
    --  Original_Discriminant (Node2-Sem)
    --    Present in identifiers. Used in references to discriminants that

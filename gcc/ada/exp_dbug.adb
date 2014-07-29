@@ -332,11 +332,8 @@ package body Exp_Dbug is
          T : constant Entity_Id := Etype (N);
       begin
          Enable :=
-           (Enable
-               or else
-            (Ekind (T) in Array_Kind
-               and then
-             Present (Packed_Array_Impl_Type (T))));
+           Enable or else (Ekind (T) in Array_Kind
+                            and then Present (Packed_Array_Impl_Type (T)));
       end Enable_If_Packed_Array;
 
       ----------------------
@@ -397,8 +394,7 @@ package body Exp_Dbug is
                exit;
 
             when N_Selected_Component =>
-               Enable :=
-                 Enable or else Is_Packed (Etype (Prefix (Ren)));
+               Enable := Enable or else Is_Packed (Etype (Prefix (Ren)));
                Prepend_String_To_Buffer
                  (Get_Name_String (Chars (Selector_Name (Ren))));
                Prepend_String_To_Buffer ("XR");
@@ -406,10 +402,12 @@ package body Exp_Dbug is
 
             when N_Indexed_Component =>
                declare
-                  X : Node_Id := Last (Expressions (Ren));
+                  X : Node_Id;
 
                begin
                   Enable_If_Packed_Array (Prefix (Ren));
+
+                  X := Last (Expressions (Ren));
                   while Present (X) loop
                      if not Output_Subscript (X, "XS") then
                         Set_Materialize_Entity (Ent);
@@ -423,7 +421,6 @@ package body Exp_Dbug is
                Ren := Prefix (Ren);
 
             when N_Slice =>
-
                Enable_If_Packed_Array (Prefix (Ren));
                Typ := Etype (First_Index (Etype (Nam)));
 
@@ -451,7 +448,7 @@ package body Exp_Dbug is
          end case;
       end loop;
 
-      --  If we found no reason here to emit an encoding, stop now.
+      --  If we found no reason here to emit an encoding, stop now
 
       if not Enable then
          Set_Materialize_Entity (Ent);
