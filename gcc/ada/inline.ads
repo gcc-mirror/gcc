@@ -35,12 +35,12 @@
 --  of them uses a workpile algorithm, but they are called independently from
 --  Frontend, and thus are not mutually recursive.
 
---  Front-end inlining for subprograms marked Inline_Always. This is primarily
---  an expansion activity that is performed for performance reasons, and when
---  the target does not use the gcc backend.  Inline_Always can also be used
---  in the context of GNATprove, to perform source transformations to simplify
---  proof obligations. The machinery used in both cases is similar, but there
---  are fewer restrictions on the source of subprograms in the latter case.
+--  c) Front-end inlining for Inline_Always subprograms. This is primarily an
+--  expansion activity that is performed for performance reasons, and when the
+--  target does not use the gcc backend. Inline_Always can also be used in the
+--  context of GNATprove, to perform source transformations to simplify proof
+--  obligations. The machinery used in both cases is similar, but there are
+--  fewer restrictions on the source of subprograms in the latter case.
 
 with Alloc;
 with Opt;    use Opt;
@@ -133,7 +133,7 @@ package Inline is
    Backend_Calls : Elist_Id := No_Elist;
    --  List of frontend inlined calls and inline calls passed to the backend
 
------------------
+   -----------------
    -- Subprograms --
    -----------------
 
@@ -168,7 +168,7 @@ package Inline is
    --  that cannot be inlined, the offending construct is flagged accordingly.
 
    procedure Cannot_Inline
-      (Msg        : String;
+     (Msg        : String;
       N          : Node_Id;
       Subp       : Entity_Id;
       Is_Serious : Boolean := False);

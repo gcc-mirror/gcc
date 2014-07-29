@@ -6317,14 +6317,6 @@ package body Sem_Prag is
             Set_Treat_As_Volatile (E);
             Set_Treat_As_Volatile (Underlying_Type (E));
 
-            --  The following check is only relevant when SPARK_Mode is on as
-            --  this is not a standard Ada legality rule. Volatile types are
-            --  not allowed (SPARK RM C.6(1)).
-
-            if SPARK_Mode = On and then Prag_Id = Pragma_Volatile then
-               Error_Msg_N ("volatile type not allowed", E);
-            end if;
-
          elsif K = N_Object_Declaration
            or else (K = N_Component_Declaration
                      and then Original_Record_Component (E) = E)

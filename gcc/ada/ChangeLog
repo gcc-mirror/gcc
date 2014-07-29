@@ -1,3 +1,21 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, inline.adb, inline.ads, sem_ch6.adb: Minor reformatting.
+	* snames.ads-tmpl: Minor reformatting.
+	* xsnamest.adb (XSnamesT): Remove special casing of Name_Error
+	to give <Error>.  Not clear why this was there, but the compiler
+	sources do not reference Name_Error, and this interfered with
+	the circuits for pragma Unevaluated_Use_Of_Old.
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Shared_Volatile): Allow volatile
+	types in SPARK 2014 (again).
+	* sem_res.adb (Is_OK_Volatile_Context): New routine.
+	(Resolve_Entity_Name): Ensure that a volatile object with
+	enabled properties Async_Writers or Effectire_Reads appears in
+	a non-interfering context.
+
 2014-07-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb: Move Build_Body_To_Inline,

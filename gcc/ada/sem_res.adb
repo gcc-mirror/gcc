@@ -6420,6 +6420,13 @@ package body Sem_Res is
       function Appears_In_Check (Nod : Node_Id) return Boolean;
       --  Denote whether an arbitrary node Nod appears in a check node
 
+      function Is_OK_Volatile_Context
+        (Context : Node_Id;
+         Obj_Ref : Node_Id) return Boolean;
+      --  Determine whether node Context denotes a "non-interfering context"
+      --  (as defined in SPARK RM 7.1.3(13)) where volatile reference Obj_Ref
+      --  can safely reside.
+
       ----------------------
       -- Appears_In_Check --
       ----------------------
@@ -6446,6 +6453,64 @@ package body Sem_Res is
 
          return False;
       end Appears_In_Check;
+
+      ----------------------------
+      -- Is_OK_Volatile_Context --
+      ----------------------------
+
+      function Is_OK_Volatile_Context
+        (Context : Node_Id;
+         Obj_Ref : Node_Id) return Boolean
+      is
+      begin
+         --  The volatile object appears on either side of an assignment
+
+         if Nkind (Context) = N_Assignment_Statement then
+            return True;
+
+         --  The volatile object is part of the initialization expression of
+         --  another object. Ensure that the climb of the parent chain came
+         --  from the expression side and not from the name side.
+
+         elsif Nkind (Context) = N_Object_Declaration
+           and then Present (Expression (Context))
+           and then Expression (Context) = Obj_Ref
+         then
+            return True;
+
+         --  The volatile object appears as an actual parameter in a call to an
+         --  instance of Unchecked_Conversion whose result is renamed.
+
+         elsif Nkind (Context) = N_Function_Call
+           and then Is_Unchecked_Conversion_Instance (Entity (Name (Context)))
+           and then Nkind (Parent (Context)) = N_Object_Renaming_Declaration
+         then
+            return True;
+
+         --  The volatile object appears as the prefix of a name occurring
+         --  in a non-interfering context.
+
+         elsif Nkind_In (Context, N_Attribute_Reference,
+                                  N_Indexed_Component,
+                                  N_Selected_Component,
+                                  N_Slice)
+           and then Prefix (Context) = Obj_Ref
+           and then Is_OK_Volatile_Context
+                      (Context => Parent (Context),
+                       Obj_Ref => Context)
+         then
+            return True;
+
+         --  Allow references to volatile objects in various checks. This is
+         --  not a direct SPARK 2014 requirement.
+
+         elsif Appears_In_Check (Context) then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_OK_Volatile_Context;
 
       --  Local variables
 
@@ -6568,28 +6633,10 @@ package body Sem_Res is
         and then
           (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
       then
-         --  The volatile object can appear on either side of an assignment
+         --  The volatile objects appears in a "non-interfering context" as
+         --  defined in SPARK RM 7.1.3(13).
 
-         if Nkind (Par) = N_Assignment_Statement then
-            null;
-
-         --  The volatile object is part of the initialization expression of
-         --  another object. Ensure that the climb of the parent chain came
-         --  from the expression side and not from the name side.
-
-         elsif Nkind (Par) = N_Object_Declaration
-           and then Present (Expression (Par))
-           and then N = Expression (Par)
-         then
-            null;
-
-         --  The volatile object appears as an actual parameter in a call to an
-         --  instance of Unchecked_Conversion whose result is renamed.
-
-         elsif Nkind (Par) = N_Function_Call
-           and then Is_Unchecked_Conversion_Instance (Entity (Name (Par)))
-           and then Nkind (Parent (Par)) = N_Object_Renaming_Declaration
-         then
+         if Is_OK_Volatile_Context (Par, N) then
             null;
 
          --  Assume that references to volatile objects that appear as actual
@@ -6599,10 +6646,8 @@ package body Sem_Res is
          elsif Nkind (Par) = N_Procedure_Call_Statement then
             null;
 
-         --  Allow references to volatile objects in various checks
-
-         elsif Appears_In_Check (Par) then
-            null;
+         --  Otherwise the context causes a side effect with respect to the
+         --  volatile object.
 
          else
             Error_Msg_N
