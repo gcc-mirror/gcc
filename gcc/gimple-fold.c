@@ -372,11 +372,11 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	    tree val = OBJ_TYPE_REF_EXPR (rhs);
 	    if (is_gimple_min_invariant (val))
 	      return val;
-	    else if (flag_devirtualize && virtual_method_call_p (val))
+	    else if (flag_devirtualize && virtual_method_call_p (rhs))
 	      {
 		bool final;
 		vec <cgraph_node *>targets
-		  = possible_polymorphic_call_targets (val, stmt, &final);
+		  = possible_polymorphic_call_targets (rhs, stmt, &final);
 		if (final && targets.length () <= 1 && dbg_cnt (devirt))
 		  {
 		    tree fndecl;
@@ -395,7 +395,8 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 					 ? targets[0]->name ()
 					 : "__builtin_unreachable");
 		      }
-		    val = fold_convert (TREE_TYPE (val), fndecl);
+		    val = fold_convert (TREE_TYPE (val),
+					build_fold_addr_expr_loc (loc, fndecl));
 		    STRIP_USELESS_TYPE_CONVERSION (val);
 		    return val;
 		  }
