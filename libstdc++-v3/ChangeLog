@@ -1,3 +1,11 @@
+2014-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61946
+	* include/ext/rope (rope::rope(char_producer<_CharT>*, size_t, bool,
+	const allocator_type&)): Pass non-const allocator to
+	_S_new_RopeFunction.
+	* testsuite/ext/rope/61946.cc: New.
+
 2014-07-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/60037 - SIGFPE in std::generate_canonical<unsigned int...>

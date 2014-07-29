@@ -1544,7 +1544,7 @@ protected:
       typedef typename _Base::allocator_type allocator_type;
       using _Base::_M_tree_ptr;
       using _Base::get_allocator;
-      using _Base::_M_get_allocator;      
+      using _Base::_M_get_allocator;
       typedef __GC_CONST _CharT* _Cstrptr;
       
       static _CharT _S_empty_c_str[1];
@@ -1876,8 +1876,9 @@ protected:
 	   const allocator_type& __a = allocator_type())
       : _Base(__a)
       {
-	this->_M_tree_ptr = (0 == __len) ?
-	  0 : _S_new_RopeFunction(__fn, __len, __delete_fn, __a);
+	this->_M_tree_ptr = (0 == __len)
+	  ? 0
+	  : _S_new_RopeFunction(__fn, __len, __delete_fn, _M_get_allocator());
       }
 
       rope(const rope& __x, const allocator_type& __a = allocator_type())
