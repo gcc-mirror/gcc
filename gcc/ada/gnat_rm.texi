@@ -9419,8 +9419,8 @@ of the use of this feature:
 Other properties are as for standard representation attribute @code{Bit_Order},
 as defined by Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
 
-For a record type @var{S}, if @code{@var{S}'Scalar_Storage_Order} is
-specified explicitly, it shall be equal to @code{@var{S}'Bit_Order}. Note:
+For a record type @var{T}, if @code{@var{T}'Scalar_Storage_Order} is
+specified explicitly, it shall be equal to @code{@var{T}'Bit_Order}. Note:
 this means that if a @code{Scalar_Storage_Order} attribute definition
 clause is not confirming, then the type's @code{Bit_Order} shall be
 specified explicitly and set to the same value.
@@ -9430,7 +9430,7 @@ types. This may be overridden for the derived type by giving an explicit scalar
 storage order for the derived type. For a record extension, the derived type
 must have the same scalar storage order as the parent type.
 
-If a component of @var{S} is of a record or array type, then that type must
+If a component of @var{T} is of a record or array type, then that type must
 also have a @code{Scalar_Storage_Order} attribute definition clause.
 
 A component of a record or array type that is a packed array, or that

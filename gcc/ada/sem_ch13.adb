@@ -11064,10 +11064,25 @@ package body Sem_Ch13 is
       S           : Entity_Id;
       Parent_Type : Entity_Id;
 
+      procedure No_Type_Rep_Item;
+      --  Output message indicating that no type-related aspects can be
+      --  specified due to some property of the parent type.
+
       procedure Too_Late;
-      --  Output the too late message. Note that this is not considered a
-      --  serious error, since the effect is simply that we ignore the
-      --  representation clause in this case.
+      --  Output message for an aspect being specified too late
+
+      --  Note that neither of the above errors is considered a serious one,
+      --  since the effect is simply that we ignore the representation clause
+      --  in these cases.
+
+      ----------------------
+      -- No_Type_Rep_Item --
+      ----------------------
+
+      procedure No_Type_Rep_Item is
+      begin
+         Error_Msg_N ("|type-related representation item not permitted!", N);
+      end No_Type_Rep_Item;
 
       --------------
       -- Too_Late --
@@ -11114,7 +11129,9 @@ package body Sem_Ch13 is
          return True;
 
       --  Check for case of non-tagged derived type whose parent either has
-      --  primitive operations, or is a by reference type (RM 13.1(10)).
+      --  primitive operations, or is a by reference type (RM 13.1(10)). In
+      --  this case we do not output a Too_Late message, since there is no
+      --  earlier point where the rep item could be placed to make it legal.
 
       elsif Is_Type (T)
         and then not FOnly
@@ -11124,15 +11141,15 @@ package body Sem_Ch13 is
          Parent_Type := Etype (Base_Type (T));
 
          if Has_Primitive_Operations (Parent_Type) then
-            Too_Late;
+            No_Type_Rep_Item;
             Error_Msg_NE
-              ("primitive operations already defined for&!", N, Parent_Type);
+              ("\parent type & has primitive operations!", N, Parent_Type);
             return True;
 
          elsif Is_By_Reference_Type (Parent_Type) then
-            Too_Late;
+            No_Type_Rep_Item;
             Error_Msg_NE
-              ("parent type & is a by reference type!", N, Parent_Type);
+              ("\parent type & is a by reference type!", N, Parent_Type);
             return True;
          end if;
       end if;
