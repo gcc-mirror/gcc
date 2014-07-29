@@ -1945,8 +1945,8 @@ package body Errout is
 
                         Err_Flag :=
                           E /= No_Error_Msg
-                          and then Errors.Table (E).Line = N
-                          and then Errors.Table (E).Sfile = Sfile;
+                            and then Errors.Table (E).Line = N
+                            and then Errors.Table (E).Sfile = Sfile;
 
                         Output_Source_Line (N, Sfile, Err_Flag);
 

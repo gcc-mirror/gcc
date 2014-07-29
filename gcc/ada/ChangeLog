@@ -1,3 +1,30 @@
+2014-07-29  Olivier Hainque  <hainque@adacore.com>
+
+	* g-debpoo.adb
+	(Default_Alignment): Rename as Storage_Alignment. This is not
+	a "default" that can be overriden. Augment comment to clarify
+	intent and document why we need to manage alignment padding.
+	(Header_Offset): Set to Header'Object_Size instead of 'Size
+	rounded up to Storage_Alignment. Storage_Alignment on the
+	allocation header is not required by our internals so was
+	overkill. 'Object_Size is enough to ensure proper alignment
+	of the header address when substracted from a storage address
+	aligned on Storage_Alignment.
+	(Minimum_Allocation): Rename as Extra_Allocation, conveying that
+	this is always added on top of the incoming allocation requests.
+	(Align): New function, to perform alignment rounding operations.
+	(Allocate): Add comments on the Storage_Address computation
+	scheme and adjust so that the alignment padding applies to that
+	(Storage_Address) only.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Remove incorrect
+	pragma Unreferenced.
+	* cstand.adb (Create_Standard): Use E_Array_Type for standard
+	string types. Make sure index of Any_String/Any_Array is in a list.
+	* errout.adb: Minor reformatting.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Clean up and correct documentation of warnings.

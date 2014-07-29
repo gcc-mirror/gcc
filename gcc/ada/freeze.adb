@@ -2082,7 +2082,7 @@ package body Freeze is
 
          --  Processing that is done only for base types
 
-         if Ekind (Arr) = E_Array_Type then  -- what about E_String_Type ???
+         if Ekind (Arr) = E_Array_Type then
 
             --  Deal with default setting of reverse storage order
 
@@ -2231,8 +2231,7 @@ package body Freeze is
 
                      if Has_Pragma_Pack (Arr)
                        and then not Present (Comp_Size_C)
-                       and then
-                         (Csiz = 7 or else Csiz = 15 or else Csiz = 31)
+                       and then (Csiz = 7 or else Csiz = 15 or else Csiz = 31)
                        and then Esize (Base_Type (Ctyp)) = Csiz + 1
                      then
                         Error_Msg_Uint_1 := Csiz;
@@ -2274,8 +2273,7 @@ package body Freeze is
                         if Known_Static_Esize (Component_Type (Arr))
                           and then Esize (Component_Type (Arr)) = Csiz
                         then
-                           Set_Has_Non_Standard_Rep
-                             (Base_Type (Arr), False);
+                           Set_Has_Non_Standard_Rep (Base_Type (Arr), False);
                         end if;
 
                         --  In all other cases, packing is indeed needed

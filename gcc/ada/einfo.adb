@@ -7185,11 +7185,10 @@ package body Einfo is
 
    function Is_String_Type (Id : E) return B is
    begin
-      return Ekind (Id) in String_Kind
-        or else (Is_Array_Type (Id)
-                  and then Id /= Any_Composite
-                  and then Number_Dimensions (Id) = 1
-                  and then Is_Character_Type (Component_Type (Id)));
+      return Is_Array_Type (Id)
+        and then Id /= Any_Composite
+        and then Number_Dimensions (Id) = 1
+        and then Is_Character_Type (Component_Type (Id));
    end Is_String_Type;
 
    -------------------------------
@@ -7555,7 +7554,7 @@ package body Einfo is
       T : Node_Id;
 
    begin
-      if Ekind (Id) in String_Kind then
+      if Ekind (Id) = E_String_Literal_Subtype then
          return 1;
 
       else
@@ -7563,7 +7562,7 @@ package body Einfo is
          T := First_Index (Id);
          while Present (T) loop
             N := N + 1;
-            T := Next (T);
+            Next_Index (T);
          end loop;
 
          return N;
@@ -8049,10 +8048,6 @@ package body Einfo is
          when E_Record_Type                  |
               E_Record_Subtype               =>
             Kind := E_Record_Subtype;
-
-         when E_String_Type                  |
-              E_String_Subtype               =>
-            Kind := E_String_Subtype;
 
          when Enumeration_Kind               =>
             Kind := E_Enumeration_Subtype;
