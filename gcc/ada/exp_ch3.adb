@@ -5031,6 +5031,7 @@ package body Exp_Ch3 is
 
          --  Local variables
 
+         Abrt_Blk   : Node_Id;
          Abrt_HSS   : Node_Id;
          Abrt_Id    : Entity_Id;
          Abrt_Stmts : List_Id;
@@ -5040,6 +5041,11 @@ package body Exp_Ch3 is
          Fin_Stmts  : List_Id := No_List;
          Obj_Init   : Node_Id := Empty;
          Obj_Ref    : Node_Id;
+
+         Dummy : Entity_Id;
+         pragma Unreferenced (Dummy);
+         --  This variable captures an unused dummy internal entity, see the
+         --  comment associated with its use.
 
       --  Start of processing for Default_Initialize_Object
 
@@ -5205,47 +5211,53 @@ package body Exp_Ch3 is
 
          --  Step 3b: Build the abort block (if applicable)
 
-         --  The abort block is required when aborts are allowed and there is
-         --  at least one initialization call that needs protection.
+         --  The abort block is required when aborts are allowed in order to
+         --  protect both initialization calls.
 
-         if Abort_Allowed
-           and then Present (Comp_Init)
-           and then Present (Obj_Init)
-         then
-            --  Generate:
-            --    Abort_Defer;
+         if Present (Comp_Init) and then Present (Obj_Init) then
+            if Abort_Allowed then
 
-            Prepend_To (Fin_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+               --  Generate:
+               --    Abort_Defer;
 
-            --  Generate:
-            --    begin
-            --       Abort_Defer;
-            --       <finalization statements>
-            --    at end
-            --       Abort_Undefer_Direct;
-            --    end;
+               Prepend_To
+                 (Fin_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
 
-            Abrt_Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
-            Set_Etype (Abrt_Id, Standard_Void_Type);
-            Set_Scope (Abrt_Id, Current_Scope);
+               --  Generate:
+               --    begin
+               --       Abort_Defer;
+               --       <finalization statements>
+               --    at end
+               --       Abort_Undefer_Direct;
+               --    end;
 
-            Abrt_HSS :=
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements  => Fin_Stmts,
-                At_End_Proc =>
-                  New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
+               Abrt_HSS :=
+                 Make_Handled_Sequence_Of_Statements (Loc,
+                   Statements  => Fin_Stmts,
+                   At_End_Proc =>
+                     New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
 
-            Abrt_Stmts := New_List (
-              Make_Block_Statement (Loc,
-                Identifier                 => New_Occurrence_Of (Abrt_Id, Loc),
-                Declarations               => No_List,
-                Handled_Statement_Sequence => Abrt_HSS));
+               Abrt_Blk :=
+                 Make_Block_Statement (Loc,
+                   Declarations               => No_List,
+                   Handled_Statement_Sequence => Abrt_HSS);
 
-            Expand_At_End_Handler (Abrt_HSS, Abrt_Id);
+               Add_Block_Identifier (Abrt_Blk, Abrt_Id);
+               Expand_At_End_Handler (Abrt_HSS, Abrt_Id);
 
-         --  Abort is not required, the construct from Step 3a is to be added
-         --  in the tree (either finalization block or single initialization
-         --  call).
+               Abrt_Stmts := New_List (Abrt_Blk);
+
+            --  Abort is not required
+
+            else
+               --  Generate a dummy entity to ensure that the internal symbols
+               --  are in sync when a unit is compiled with and without aborts.
+
+               Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+               Abrt_Stmts := Fin_Stmts;
+            end if;
+
+         --  No initialization calls present
 
          else
             Abrt_Stmts := Fin_Stmts;

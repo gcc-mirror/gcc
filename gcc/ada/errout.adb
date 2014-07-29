@@ -3008,12 +3008,11 @@ package body Errout is
             exit when Nkind (P) not in N_Subexpr;
          end loop;
 
-         if Nkind_In (P,
-              N_Pragma_Argument_Association,
-              N_Component_Association,
-              N_Discriminant_Association,
-              N_Generic_Association,
-              N_Parameter_Association)
+         if Nkind_In (P, N_Pragma_Argument_Association,
+                         N_Component_Association,
+                         N_Discriminant_Association,
+                         N_Generic_Association,
+                         N_Parameter_Association)
          then
             Set_Error_Posted (Parent (P));
          end if;

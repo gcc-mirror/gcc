@@ -479,6 +479,13 @@ package body Exp_Dbug is
 
       Set_Debug_Info_Needed (Obj);
 
+      --  The renamed entity may be a temporary, e.g. the result of an
+      --  implicit dereference in an iterator. Indicate that the temporary
+      --  itself requires debug information. If the renamed entity comes
+      --  from source this is a no-op.
+
+      Set_Debug_Info_Needed (Entity (Ren));
+
       --  Mark the object as internal so that it won't be initialized when
       --  pragma Initialize_Scalars or Normalize_Scalars is in use.
 
