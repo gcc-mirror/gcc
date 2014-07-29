@@ -1,3 +1,7 @@
+2014-07-29  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks.c: Minor reformatting.
+
 2014-07-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat_rm.texi: No doc needed for Ada2012 aspect

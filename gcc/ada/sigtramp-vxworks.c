@@ -188,7 +188,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 #define FUNCTION "%function"
 
 #else
-Not implemented;
+Not_implemented;
 #endif /* REGNO constants */
 
 
