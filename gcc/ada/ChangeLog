@@ -1,5 +1,12 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb (Freeze_Entity, Concurrent_Type case): Add a guard
+	to make sure that the Etype of a component of the corresponding
+	record type is present before trying to freeze it.
+	* sem_ch5.adb: Minor reformatting.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* exp_attr.adb, types.ads, types.h, exp_ch11.adb, a-except.adb,
 	a-except-2005.adb: Add new reason code PE_Stream_Operation_Not_Allowed,
 	and then use it when a stream operation is used from a library generic

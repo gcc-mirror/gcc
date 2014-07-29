@@ -3184,6 +3184,7 @@ package body Sem_Ch5 is
 
                   --  We skip this step if we are not in code generation mode
                   --  or CodePeer mode.
+
                   --  This is the one case where we remove dead code in the
                   --  semantics as opposed to the expander, and we do not want
                   --  to remove code if we are not in code generation mode,
