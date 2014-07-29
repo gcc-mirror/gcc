@@ -2106,7 +2106,7 @@ package body Exp_Ch6 is
 
          Append_To (Extra_Actuals,
            Make_Parameter_Association (Loc,
-             Selector_Name             => Make_Identifier (Loc, Chars (EF)),
+             Selector_Name             => New_Occurrence_Of (EF, Loc),
              Explicit_Actual_Parameter => Expr));
 
          Analyze_And_Resolve (Expr, Etype (EF));

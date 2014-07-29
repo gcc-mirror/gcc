@@ -3369,6 +3369,7 @@ package Sinfo is
       --  Sloc points to ACCESS
       --  All_Present (Flag15)
       --  Null_Exclusion_Present (Flag11)
+      --  Null_Excluding_Subtype (Flag16)
       --  Subtype_Indication (Node5)
       --  Constant_Present (Flag17)
 
@@ -9363,6 +9364,9 @@ package Sinfo is
    function Null_Present
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function Null_Excluding_Subtype
+     (N : Node_Id) return Boolean;    -- Flag16
+
    function Null_Exclusion_Present
      (N : Node_Id) return Boolean;    -- Flag11
 
@@ -10376,6 +10380,9 @@ package Sinfo is
 
    procedure Set_Null_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Null_Excluding_Subtype
+     (N : Node_Id; Val : Boolean := True);    -- Flag16
 
    procedure Set_Null_Exclusion_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag11
@@ -12652,6 +12659,7 @@ package Sinfo is
    pragma Inline (No_Truncation);
    pragma Inline (Non_Aliased_Prefix);
    pragma Inline (Null_Present);
+   pragma Inline (Null_Excluding_Subtype);
    pragma Inline (Null_Exclusion_Present);
    pragma Inline (Null_Exclusion_In_Return_Present);
    pragma Inline (Null_Record_Present);
@@ -12985,6 +12993,7 @@ package Sinfo is
    pragma Inline (Set_No_Minimize_Eliminate);
    pragma Inline (Set_No_Truncation);
    pragma Inline (Set_Non_Aliased_Prefix);
+   pragma Inline (Set_Null_Excluding_Subtype);
    pragma Inline (Set_Null_Exclusion_Present);
    pragma Inline (Set_Null_Exclusion_In_Return_Present);
    pragma Inline (Set_Null_Present);

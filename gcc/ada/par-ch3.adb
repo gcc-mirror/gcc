@@ -3930,6 +3930,7 @@ package body Ch3 is
       Access_Loc       : constant Source_Ptr := Token_Ptr;
       Prot_Flag        : Boolean;
       Not_Null_Present : Boolean := False;
+      Not_Null_Subtype : Boolean := False;
       Type_Def_Node    : Node_Id;
       Result_Not_Null  : Boolean;
       Result_Node      : Node_Id;
@@ -3964,8 +3965,16 @@ package body Ch3 is
 
    begin
       if not Header_Already_Parsed then
-         Not_Null_Present := P_Null_Exclusion;         --  Ada 2005 (AI-231)
+
+         --  not null access .. is a common form of access definition
+         --  access non null ..  is certainly rare, but syntactically legal.
+         --  not null access not null .. is rarer yet, and also legal.
+         --  The last two cases are only meaningful if the following subtype
+         --  indication denotes an access type (semantic check).
+
+         Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
          Scan; -- past ACCESS
+         Not_Null_Subtype := P_Null_Exclusion;     --  Might also appear.
       end if;
 
       if Token_Name = Name_Protected then
@@ -4040,6 +4049,7 @@ package body Ch3 is
          Type_Def_Node :=
            New_Node (N_Access_To_Object_Definition, Access_Loc);
          Set_Null_Exclusion_Present (Type_Def_Node, Not_Null_Present);
+         Set_Null_Excluding_Subtype (Type_Def_Node, Not_Null_Subtype);
 
          if Token = Tok_All or else Token = Tok_Constant then
             if Ada_Version = Ada_83 then
