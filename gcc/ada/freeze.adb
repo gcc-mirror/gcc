@@ -4710,13 +4710,19 @@ package body Freeze is
                   Freeze_And_Append (Comp, N, Result);
 
                elsif (Ekind (Comp)) /= E_Function then
-                  if Is_Itype (Etype (Comp))
-                    and then Underlying_Type (Scope (Etype (Comp))) = E
-                  then
-                     Undelay_Type (Etype (Comp));
-                  end if;
 
-                  Freeze_And_Append (Etype (Comp), N, Result);
+                  --  The guard on the presence of the Etype seems to be needed
+                  --  for some CodePeer (-gnatcC) cases, but not clear why???
+
+                  if Present (Etype (Comp)) then
+                     if Is_Itype (Etype (Comp))
+                       and then Underlying_Type (Scope (Etype (Comp))) = E
+                     then
+                        Undelay_Type (Etype (Comp));
+                     end if;
+
+                     Freeze_And_Append (Etype (Comp), N, Result);
+                  end if;
                end if;
 
                Next_Entity (Comp);
