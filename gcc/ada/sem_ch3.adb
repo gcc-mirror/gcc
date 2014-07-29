@@ -3504,7 +3504,6 @@ package body Sem_Ch3 is
            and then Nkind (E) = N_Aggregate
          then
             Set_Etype (E, T);
-
          else
             Resolve (E, T);
          end if;
