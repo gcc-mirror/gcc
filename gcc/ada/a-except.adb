@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -412,15 +412,17 @@ package body Ada.Exceptions is
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Missing_Return
      (File : System.Address; Line : Integer);
+   procedure Rcheck_PE_Non_Transportable_Actual
+     (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Overlaid_Controlled_Object
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Potentially_Blocking_Operation
      (File : System.Address; Line : Integer);
+   procedure Rcheck_PE_Stream_Operation_Not_Allowed
+     (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Stubbed_Subprogram_Called
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Unchecked_Union_Restriction
-     (File : System.Address; Line : Integer);
-   procedure Rcheck_PE_Non_Transportable_Actual
      (File : System.Address; Line : Integer);
    procedure Rcheck_SE_Empty_Storage_Pool
      (File : System.Address; Line : Integer);
@@ -492,16 +494,18 @@ package body Ada.Exceptions is
                   "__gnat_rcheck_PE_Misaligned_Address_Value");
    pragma Export (C, Rcheck_PE_Missing_Return,
                   "__gnat_rcheck_PE_Missing_Return");
+   pragma Export (C, Rcheck_PE_Non_Transportable_Actual,
+                  "__gnat_rcheck_PE_Non_Transportable_Actual");
    pragma Export (C, Rcheck_PE_Overlaid_Controlled_Object,
                   "__gnat_rcheck_PE_Overlaid_Controlled_Object");
    pragma Export (C, Rcheck_PE_Potentially_Blocking_Operation,
                   "__gnat_rcheck_PE_Potentially_Blocking_Operation");
+   pragma Export (C, Rcheck_PE_Stream_Operation_Not_Allowed,
+                  "__gnat_rcheck_PE_Stream_Operation_Not_Allowed");
    pragma Export (C, Rcheck_PE_Stubbed_Subprogram_Called,
                   "__gnat_rcheck_PE_Stubbed_Subprogram_Called");
    pragma Export (C, Rcheck_PE_Unchecked_Union_Restriction,
                   "__gnat_rcheck_PE_Unchecked_Union_Restriction");
-   pragma Export (C, Rcheck_PE_Non_Transportable_Actual,
-                  "__gnat_rcheck_PE_Non_Transportable_Actual");
    pragma Export (C, Rcheck_SE_Empty_Storage_Pool,
                   "__gnat_rcheck_SE_Empty_Storage_Pool");
    pragma Export (C, Rcheck_SE_Explicit_Raise,
@@ -542,10 +546,11 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_PE_Misaligned_Address_Value);
    pragma No_Return (Rcheck_PE_Missing_Return);
    pragma No_Return (Rcheck_PE_Overlaid_Controlled_Object);
+   pragma No_Return (Rcheck_PE_Non_Transportable_Actual);
    pragma No_Return (Rcheck_PE_Potentially_Blocking_Operation);
+   pragma No_Return (Rcheck_PE_Stream_Operation_Not_Allowed);
    pragma No_Return (Rcheck_PE_Stubbed_Subprogram_Called);
    pragma No_Return (Rcheck_PE_Unchecked_Union_Restriction);
-   pragma No_Return (Rcheck_PE_Non_Transportable_Actual);
    pragma No_Return (Rcheck_PE_Finalize_Raised_Exception);
    pragma No_Return (Rcheck_SE_Empty_Storage_Pool);
    pragma No_Return (Rcheck_SE_Explicit_Raise);
@@ -576,6 +581,7 @@ package body Ada.Exceptions is
    procedure Rcheck_19 (File : System.Address; Line : Integer);
    procedure Rcheck_20 (File : System.Address; Line : Integer);
    procedure Rcheck_21 (File : System.Address; Line : Integer);
+   procedure Rcheck_22 (File : System.Address; Line : Integer);
    procedure Rcheck_23 (File : System.Address; Line : Integer);
    procedure Rcheck_24 (File : System.Address; Line : Integer);
    procedure Rcheck_25 (File : System.Address; Line : Integer);
@@ -589,8 +595,7 @@ package body Ada.Exceptions is
    procedure Rcheck_33 (File : System.Address; Line : Integer);
    procedure Rcheck_34 (File : System.Address; Line : Integer);
    procedure Rcheck_35 (File : System.Address; Line : Integer);
-
-   procedure Rcheck_22 (File : System.Address; Line : Integer);
+   procedure Rcheck_36 (File : System.Address; Line : Integer);
 
    pragma Export (C, Rcheck_00, "__gnat_rcheck_00");
    pragma Export (C, Rcheck_01, "__gnat_rcheck_01");
@@ -628,6 +633,7 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_33, "__gnat_rcheck_33");
    pragma Export (C, Rcheck_34, "__gnat_rcheck_34");
    pragma Export (C, Rcheck_35, "__gnat_rcheck_35");
+   pragma Export (C, Rcheck_36, "__gnat_rcheck_36");
 
    --  None of these procedures ever returns (they raise an exception). By
    --  using pragma No_Return, we ensure that any junk code after the call,
@@ -668,6 +674,7 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_33);
    pragma No_Return (Rcheck_34);
    pragma No_Return (Rcheck_35);
+   pragma No_Return (Rcheck_36);
 
    ---------------------------------------------
    -- Reason Strings for Run-Time Check Calls --
@@ -718,6 +725,7 @@ package body Ada.Exceptions is
    Rmsg_33 : constant String := "explicit raise"                   & NUL;
    Rmsg_34 : constant String := "infinite recursion"               & NUL;
    Rmsg_35 : constant String := "object too large"                 & NUL;
+   Rmsg_36 : constant String := "stream operation not allowed"     & NUL;
 
    -----------------------
    -- Polling Interface --
@@ -1357,6 +1365,13 @@ package body Ada.Exceptions is
       Raise_Program_Error_Msg (File, Line, Rmsg_26'Address);
    end Rcheck_PE_Missing_Return;
 
+   procedure Rcheck_PE_Non_Transportable_Actual
+     (File : System.Address; Line : Integer)
+   is
+   begin
+      Raise_Program_Error_Msg (File, Line, Rmsg_31'Address);
+   end Rcheck_PE_Non_Transportable_Actual;
+
    procedure Rcheck_PE_Overlaid_Controlled_Object
      (File : System.Address; Line : Integer)
    is
@@ -1371,6 +1386,13 @@ package body Ada.Exceptions is
       Raise_Program_Error_Msg (File, Line, Rmsg_28'Address);
    end Rcheck_PE_Potentially_Blocking_Operation;
 
+   procedure Rcheck_PE_Stream_Operation_Not_Allowed
+     (File : System.Address; Line : Integer)
+   is
+   begin
+      Raise_Program_Error_Msg (File, Line, Rmsg_36'Address);
+   end Rcheck_PE_Stream_Operation_Not_Allowed;
+
    procedure Rcheck_PE_Stubbed_Subprogram_Called
      (File : System.Address; Line : Integer)
    is
@@ -1384,13 +1406,6 @@ package body Ada.Exceptions is
    begin
       Raise_Program_Error_Msg (File, Line, Rmsg_30'Address);
    end Rcheck_PE_Unchecked_Union_Restriction;
-
-   procedure Rcheck_PE_Non_Transportable_Actual
-     (File : System.Address; Line : Integer)
-   is
-   begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_31'Address);
-   end Rcheck_PE_Non_Transportable_Actual;
 
    procedure Rcheck_SE_Empty_Storage_Pool
      (File : System.Address; Line : Integer)
@@ -1483,6 +1498,8 @@ package body Ada.Exceptions is
      renames Rcheck_PE_Duplicated_Entry_Address;
    procedure Rcheck_22 (File : System.Address; Line : Integer)
      renames Rcheck_PE_Explicit_Raise;
+   procedure Rcheck_23 (File : System.Address; Line : Integer)
+     renames Rcheck_PE_Finalize_Raised_Exception;
    procedure Rcheck_24 (File : System.Address; Line : Integer)
      renames Rcheck_PE_Implicit_Return;
    procedure Rcheck_25 (File : System.Address; Line : Integer)
@@ -1507,9 +1524,8 @@ package body Ada.Exceptions is
      renames Rcheck_SE_Infinite_Recursion;
    procedure Rcheck_35 (File : System.Address; Line : Integer)
      renames Rcheck_SE_Object_Too_Large;
-
-   procedure Rcheck_23 (File : System.Address; Line : Integer)
-     renames Rcheck_PE_Finalize_Raised_Exception;
+   procedure Rcheck_36 (File : System.Address; Line : Integer)
+     renames Rcheck_PE_Stream_Operation_Not_Allowed;
 
    -------------
    -- Reraise --

@@ -1103,7 +1103,8 @@ package body Exp_Dbug is
 
       function Qualify_Needed (S : Entity_Id) return Boolean;
       --  Given a scope, determines if the scope is to be included in the
-      --  fully qualified name, True if so, False if not.
+      --  fully qualified name, True if so, False if not. Blocks and loops
+      --  are excluded from a qualified name.
 
       procedure Set_BNPE_Suffix (E : Entity_Id);
       --  Recursive routine to append the BNPE qualification suffix. Works
@@ -1218,6 +1219,7 @@ package body Exp_Dbug is
             return Is_Subprogram (Ent)
               or else Ekind (Ent) = E_Subprogram_Body
               or else (Ekind (S) /= E_Block
+                        and then Ekind (S) /= E_Loop
                         and then not Is_Dynamic_Scope (S));
          end if;
       end Qualify_Needed;

@@ -2399,6 +2399,9 @@ package body Exp_Ch7 is
             Stmt   : Node_Id;
             Stmt_2 : Node_Id;
 
+            Deep_Init_Found : Boolean := False;
+            --  A flag set when a call to [Deep_]Initialize has been found
+
          --  Start of processing for Find_Last_Init
 
          begin
@@ -2488,19 +2491,22 @@ package body Exp_Ch7 is
                      Call := Find_Last_Init_In_Block (Stmt_2);
 
                      if Present (Call) then
-                        Last_Init   := Call;
-                        Body_Insert := Stmt_2;
+                        Deep_Init_Found := True;
+                        Last_Init       := Call;
+                        Body_Insert     := Stmt_2;
                      end if;
 
                   elsif Is_Init_Call (Stmt_2) then
-                     Last_Init   := Stmt_2;
-                     Body_Insert := Last_Init;
+                     Deep_Init_Found := True;
+                     Last_Init       := Stmt_2;
+                     Body_Insert     := Last_Init;
                   end if;
+               end if;
 
                --  If the object lacks a call to Deep_Initialize, then it must
                --  have a call to its related type init proc.
 
-               elsif Is_Init_Call (Stmt) then
+               if not Deep_Init_Found and then Is_Init_Call (Stmt) then
                   Last_Init   := Stmt;
                   Body_Insert := Last_Init;
                end if;

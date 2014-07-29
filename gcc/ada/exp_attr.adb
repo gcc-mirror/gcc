@@ -3246,13 +3246,10 @@ package body Exp_Attr is
          --  container). In that case rewrite the attribute as a Raise to
          --  prevent any run-time use.
 
-         --  This is not an explicit raise, the Reason code is wrong, we most
-         --  likely need a new Reason code ???
-
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
          end if;
@@ -4248,7 +4245,7 @@ package body Exp_Attr is
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, Standard_Void_Type);
             return;
          end if;
@@ -4888,7 +4885,7 @@ package body Exp_Attr is
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
          end if;
@@ -6600,7 +6597,7 @@ package body Exp_Attr is
          if Restriction_Active (No_Streams) then
             Rewrite (N,
               Make_Raise_Program_Error (Sloc (N),
-                Reason => PE_Explicit_Raise));
+                Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, U_Type);
             return;
          end if;

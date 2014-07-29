@@ -1,5 +1,42 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb, types.ads, types.h, exp_ch11.adb, a-except.adb,
+	a-except-2005.adb: Add new reason code PE_Stream_Operation_Not_Allowed,
+	and then use it when a stream operation is used from a library generic
+	when the restriction (No_Streams) is active.
+
+2014-07-29  Thomas Quinot  <quinot@adacore.com>
+
+	* projects.texi: Fix minor typo.
+
+2014-07-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Fix generation of warning.
+
+2014-07-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch5.adb (Check_Unreachable_Code): Do not remove code in
+	CodePeer mode.
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Last_Init): Add local variable
+	Deep_Init_Found. Check the statement immediately following the
+	declaration if [Deep_]Initialization was not found.
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Aliased): It appears that
+	'reference-d and renamed objects still play some role in Boolean
+	expression with actions and cannot be finalized immediately.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_dbug.adb (Qualify_Needed):  For debugging purposes,
+	Loop names are not part of the full qualification of entity names.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.adb (Has_Protected): Test base type.
 	* sem_ch4.adb (Analyze_Allocator): Reorganize code to make sure
 	that we always properly check No_Protected_Type_Allocators.

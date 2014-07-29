@@ -823,12 +823,16 @@ package Types is
    --    1. Modify the type and subtype declarations below appropriately,
    --       keeping things in alphabetical order.
 
-   --    2. Modify the corresponding definitions in types.h, including the
+   --    2. Assign a new number to the reason. Do not renumber existing codes,
+   --       this causes compatibility/bootstrap issues. So always add the new
+   --       code at the end of the existing range.
+
+   --    3. Modify the corresponding definitions in types.h, including the
    --       definition of last_reason_code.
 
-   --    3. Add the name of the routines in exp_ch11.Get_RT_Exception_Name
+   --    4. Add the name of the routines in exp_ch11.Get_RT_Exception_Name
 
-   --    4. Add a new routine in Ada.Exceptions with the appropriate call and
+   --    5. Add a new routine in Ada.Exceptions with the appropriate call and
    --       static string constant. Note that there is more than one version
    --       of a-except.adb which must be modified.
 
@@ -861,16 +865,20 @@ package Types is
       PE_Implicit_Return,                -- 24
       PE_Misaligned_Address_Value,       -- 25
       PE_Missing_Return,                 -- 26
+      PE_Non_Transportable_Actual,       -- 31
       PE_Overlaid_Controlled_Object,     -- 27
       PE_Potentially_Blocking_Operation, -- 28
+      PE_Stream_Operation_Not_Allowed,   -- 36
       PE_Stubbed_Subprogram_Called,      -- 29
       PE_Unchecked_Union_Restriction,    -- 30
-      PE_Non_Transportable_Actual,       -- 31
 
       SE_Empty_Storage_Pool,             -- 32
       SE_Explicit_Raise,                 -- 33
       SE_Infinite_Recursion,             -- 34
       SE_Object_Too_Large);              -- 35
+
+   Last_Reason_Code : constant := 36;
+   --  Last reason code
 
    subtype RT_CE_Exceptions is RT_Exception_Code range
      CE_Access_Check_Failed ..
@@ -878,7 +886,7 @@ package Types is
 
    subtype RT_PE_Exceptions is RT_Exception_Code range
      PE_Access_Before_Elaboration ..
-     PE_Non_Transportable_Actual;
+     PE_Unchecked_Union_Restriction;
 
    subtype RT_SE_Exceptions is RT_Exception_Code range
      SE_Empty_Storage_Pool ..
