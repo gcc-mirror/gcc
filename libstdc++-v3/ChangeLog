@@ -1,3 +1,14 @@
+2014-07-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/60037 - SIGFPE in std::generate_canonical<unsigned int...>
+	* include/bits/random.h (_Adaptor): static_assert for non floating-point
+	result type.
+	* include/bits/random.tcc (generate_canonical): Ditto.
+	* include/ext/random.tcc (hypergeometric_distribution::operator()):
+	Use double as a rng result type.
+	* testsuite/26_numerics/random/pr60037-neg.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/pr60037.cc: New.
+
 2014-07-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
