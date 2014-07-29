@@ -2068,10 +2068,10 @@ package body Exp_Ch11 is
 
    function Get_RT_Exception_Entity (R : RT_Exception_Code) return Entity_Id is
    begin
-      case R is
-         when RT_CE_Exceptions => return Standard_Constraint_Error;
-         when RT_PE_Exceptions => return Standard_Program_Error;
-         when RT_SE_Exceptions => return Standard_Storage_Error;
+      case Kind (R) is
+         when CE_Reason => return Standard_Constraint_Error;
+         when PE_Reason => return Standard_Program_Error;
+         when SE_Reason => return Standard_Storage_Error;
       end case;
    end Get_RT_Exception_Entity;
 

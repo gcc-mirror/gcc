@@ -2098,20 +2098,19 @@ package Sinfo is
    --    if there are no type support subprograms for the type or if the freeze
    --    node is not for a type.
 
-   --  Uneval_Old_Accept (Flag13-Sem)
-   --    Present in N_Aspect_Specification nodes. Set if Opt.Uneval_Old is set
-   --    to 'A' (accept) at the point where the aspect specification node is
-   --    encountered. It is this setting that is relevant, rather than the
-   --    setting at the point where a contract is finally analyzed after the
-   --    usual delay till the freeze point.
+   --  Uneval_Old_Accept (Flag7-Sem)
+   --    Present in N_Pragma nodes. Set True if Opt.Uneval_Old is set to 'A'
+   --    (accept) at the point where the pragma is encountered (including the
+   --    case of a pragma generated from an aspect specification). It is this
+   --    setting that is relevant, rather than the setting at the point where
+   --    a contract is finally analyzed after the delay till the freeze point.
 
    --  Uneval_Old_Warn (Flag18-Sem)
-   --    Present in N_Aspect_Specification nodes. Set if Opt.Uneval_Old is set
-   --    to 'W' (warn) at the point where the aspect specification node is
-   --    encountered. It is this setting that is relevant, rather than the
-   --    setting at the point where a contract is finally analyzed after the
-   --    usual delay till the freeze point. If neither Uneval_Old_Accept nor
-   --    Uneval_Old_Warn is set, then the default Error mode applies.
+   --    Present in N_Pragma nodes. Set True if Opt.Uneval_Old is set to 'W'
+   --    (warn) at the point where the pragma is encountered (including the
+   --    case of a pragma generated from an aspect specification). It is this
+   --    setting that is relevant, rather than the setting at the point where
+   --    a contract is finally analyzed after the delay till the freeze point.
 
    --  Unreferenced_In_Spec (Flag7-Sem)
    --    Present in N_With_Clause nodes. Set if the with clause is on the
@@ -2405,6 +2404,8 @@ package Sinfo is
       --  Is_Checked (Flag11-Sem)
       --  Import_Interface_Present (Flag16-Sem)
       --  Split_PPC (Flag17) set if corresponding aspect had Split_PPC set
+      --  Uneval_Old_Accept (Flag7-Sem)
+      --  Uneval_Old_Warn (Flag18-Sem)
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma
@@ -7145,12 +7146,10 @@ package Sinfo is
       --  Class_Present (Flag6) Set if 'Class present
       --  Is_Ignored (Flag9-Sem)
       --  Is_Checked (Flag11-Sem)
-      --  Uneval_Old_Accept (Flag13-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Is_Disabled (Flag15-Sem)
       --  Is_Boolean_Aspect (Flag16-Sem)
       --  Split_PPC (Flag17) Set if split pre/post attribute
-      --  Uneval_Old_Warn (Flag18-Sem)
 
       --  Note: Aspect_Specification is an Ada 2012 feature
 
@@ -9640,7 +9639,7 @@ package Sinfo is
      (N : Node_Id) return Node_Id;    -- Node3
 
    function Uneval_Old_Accept
-     (N : Node_Id) return Boolean;    -- Flag13
+     (N : Node_Id) return Boolean;    -- Flag7
 
    function Uneval_Old_Warn
      (N : Node_Id) return Boolean;    -- Flag18
@@ -10663,7 +10662,7 @@ package Sinfo is
      (N : Node_Id; Val : Node_Id);            -- Node3
 
    procedure Set_Uneval_Old_Accept
-     (N : Node_Id; Val : Boolean := True);    -- Flag13
+     (N : Node_Id; Val : Boolean := True);    -- Flag7
 
    procedure Set_Uneval_Old_Warn
      (N : Node_Id; Val : Boolean := True);    -- Flag18

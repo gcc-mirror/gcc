@@ -820,12 +820,12 @@ package Types is
 
    --  To add a new code, you need to do the following:
 
-   --    1. Modify the type and subtype declarations below appropriately,
-   --       keeping things in alphabetical order.
+   --    1. Assign a new number to the reason. Do not renumber existing codes,
+   --       since this causes compatibility/bootstrap issues, and problems in
+   --       the CIL/JVM backends. So always add the new code at the end of the
+   --       list.
 
-   --    2. Assign a new number to the reason. Do not renumber existing codes,
-   --       this causes compatibility/bootstrap issues. So always add the new
-   --       code at the end of the existing range.
+   --    2. Update the contents of the array Kind
 
    --    3. Modify the corresponding definitions in types.h, including the
    --       definition of last_reason_code.
@@ -873,31 +873,63 @@ package Types is
       PE_Implicit_Return,                -- 24
       PE_Misaligned_Address_Value,       -- 25
       PE_Missing_Return,                 -- 26
-      PE_Non_Transportable_Actual,       -- 31
       PE_Overlaid_Controlled_Object,     -- 27
       PE_Potentially_Blocking_Operation, -- 28
-      PE_Stream_Operation_Not_Allowed,   -- 36
       PE_Stubbed_Subprogram_Called,      -- 29
       PE_Unchecked_Union_Restriction,    -- 30
+      PE_Non_Transportable_Actual,       -- 31
 
       SE_Empty_Storage_Pool,             -- 32
       SE_Explicit_Raise,                 -- 33
       SE_Infinite_Recursion,             -- 34
-      SE_Object_Too_Large);              -- 35
+      SE_Object_Too_Large,               -- 35
+
+      PE_Stream_Operation_Not_Allowed);  -- 36
 
    Last_Reason_Code : constant := 36;
    --  Last reason code
 
-   subtype RT_CE_Exceptions is RT_Exception_Code range
-     CE_Access_Check_Failed ..
-     CE_Tag_Check_Failed;
+   type Reason_Kind is (CE_Reason, PE_Reason, SE_Reason);
 
-   subtype RT_PE_Exceptions is RT_Exception_Code range
-     PE_Access_Before_Elaboration ..
-     PE_Unchecked_Union_Restriction;
+   Kind : array (RT_Exception_Code range <>) of Reason_Kind :=
+     (CE_Access_Check_Failed            => CE_Reason,
+      CE_Access_Parameter_Is_Null       => CE_Reason,
+      CE_Discriminant_Check_Failed      => CE_Reason,
+      CE_Divide_By_Zero                 => CE_Reason,
+      CE_Explicit_Raise                 => CE_Reason,
+      CE_Index_Check_Failed             => CE_Reason,
+      CE_Invalid_Data                   => CE_Reason,
+      CE_Length_Check_Failed            => CE_Reason,
+      CE_Null_Exception_Id              => CE_Reason,
+      CE_Null_Not_Allowed               => CE_Reason,
+      CE_Overflow_Check_Failed          => CE_Reason,
+      CE_Partition_Check_Failed         => CE_Reason,
+      CE_Range_Check_Failed             => CE_Reason,
+      CE_Tag_Check_Failed               => CE_Reason,
 
-   subtype RT_SE_Exceptions is RT_Exception_Code range
-     SE_Empty_Storage_Pool ..
-     SE_Object_Too_Large;
+      PE_Access_Before_Elaboration      => PE_Reason,
+      PE_Accessibility_Check_Failed     => PE_Reason,
+      PE_Address_Of_Intrinsic           => PE_Reason,
+      PE_Aliased_Parameters             => PE_Reason,
+      PE_All_Guards_Closed              => PE_Reason,
+      PE_Bad_Predicated_Generic_Type    => PE_Reason,
+      PE_Current_Task_In_Entry_Body     => PE_Reason,
+      PE_Duplicated_Entry_Address       => PE_Reason,
+      PE_Explicit_Raise                 => PE_Reason,
+      PE_Finalize_Raised_Exception      => PE_Reason,
+      PE_Implicit_Return                => PE_Reason,
+      PE_Misaligned_Address_Value       => PE_Reason,
+      PE_Missing_Return                 => PE_Reason,
+      PE_Overlaid_Controlled_Object     => PE_Reason,
+      PE_Potentially_Blocking_Operation => PE_Reason,
+      PE_Stubbed_Subprogram_Called      => PE_Reason,
+      PE_Unchecked_Union_Restriction    => PE_Reason,
+      PE_Non_Transportable_Actual       => PE_Reason,
+      PE_Stream_Operation_Not_Allowed   => PE_Reason,
+
+      SE_Empty_Storage_Pool             => SE_Reason,
+      SE_Explicit_Raise                 => SE_Reason,
+      SE_Infinite_Recursion             => SE_Reason,
+      SE_Object_Too_Large               => SE_Reason);
 
 end Types;

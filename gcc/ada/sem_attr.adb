@@ -2276,7 +2276,7 @@ package body Sem_Attr is
       --------------------
 
       procedure Uneval_Old_Msg is
-         Uneval_Old_Setting : Character := Opt.Uneval_Old;
+         Uneval_Old_Setting : Character;
          Prag               : Node_Id;
 
       begin
@@ -2293,18 +2293,20 @@ package body Sem_Attr is
             exit when No (Prag) or else Nkind (Prag) = N_Pragma;
          end loop;
 
-         --  If we did not find the pragma, that's odd, just consider it a
-         --  case where we use Opt.Uneval_Old for further processing. Perhaps
-         --  this can come from some previous error.
-
-         if Present (Prag) and then From_Aspect_Specification (Prag) then
-            if Uneval_Old_Accept (Corresponding_Aspect (Prag)) then
+         if Present (Prag) then
+            if Uneval_Old_Accept (Prag) then
                Uneval_Old_Setting := 'A';
-            elsif Uneval_Old_Warn (Corresponding_Aspect (Prag)) then
+            elsif Uneval_Old_Warn (Prag) then
                Uneval_Old_Setting := 'W';
             else
                Uneval_Old_Setting := 'E';
             end if;
+
+         --  If we did not find the pragma, that's odd, just use the setting
+         --  from Opt.Uneval_Old. Perhaps this is due to a previous error?
+
+         else
+            Uneval_Old_Setting := Opt.Uneval_Old;
          end if;
 
          --  Processing depends on the setting of Uneval_Old

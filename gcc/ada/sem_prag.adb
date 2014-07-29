@@ -10033,6 +10033,19 @@ package body Sem_Prag is
       Prag_Id := Get_Pragma_Id (Pname);
       Pname := Original_Aspect_Name (N);
 
+      --  Capture setting of Opt.Uneval_Old
+
+      case Opt.Uneval_Old is
+         when 'A' =>
+            Set_Uneval_Old_Accept (N);
+         when 'E' =>
+            null;
+         when 'W' =>
+            Set_Uneval_Old_Warn (N);
+         when others =>
+            raise Program_Error;
+      end case;
+
       --  Check applicable policy. We skip this if Is_Checked or Is_Ignored
       --  is already set, indicating that we have already checked the policy
       --  at the right point. This happens for example in the case of a pragma
