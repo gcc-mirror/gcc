@@ -1487,6 +1487,11 @@ package Opt is
    --  file for the compiler. Indicates that while preprocessing sources,
    --  symbols that are not defined have the value FALSE.
 
+   Uneval_Old : Character := 'E';
+   --  GNAT
+   --  Set to 'E'/'W'/'A' for use of Error/Warn/Allow in a valid pragma
+   --  Unevaluated_Use_Of_Old.
+
    Unique_Error_Tag : Boolean := Tag_Errors;
    --  GNAT
    --  Indicates if error messages are to be prefixed by the string error:
@@ -1952,6 +1957,10 @@ package Opt is
    --  If a SPARK_Mode pragma appeared in the configuration pragmas (setting
    --  SPARK_Mode_Config appropriately), then this points to the N_Pragma node.
 
+   Uneval_Old_Config : Character;
+   --  GNAT
+   --  The setting of Uneval_Old from configuration pragmas
+
    Use_VADS_Size_Config : Boolean;
    --  GNAT
    --  This is the value of the configuration switch that controls the use of
@@ -2122,6 +2131,7 @@ private
       Short_Descriptors              : Boolean;
       SPARK_Mode                     : SPARK_Mode_Type;
       SPARK_Mode_Pragma              : Node_Id;
+      Uneval_Old                     : Character;
       Use_VADS_Size                  : Boolean;
       Warnings_As_Errors_Count       : Natural;
    end record;

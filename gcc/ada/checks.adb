@@ -5973,13 +5973,18 @@ package body Checks is
       --  cases are like this. Notably conversions can involve two types.
 
       if Source_Base_Type = Target_Base_Type then
+
+         --  Insert the explicit range check. Note that we suppress checks for
+         --  this code, since we don't want a recursive range check popping up.
+
          Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
              Condition =>
                Make_Not_In (Loc,
                  Left_Opnd  => Duplicate_Subexpr (N),
                  Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
-             Reason => Reason));
+             Reason => Reason),
+           Suppress => All_Checks);
 
       --  Next test for the case where the target type is within the bounds
       --  of the base type of the source type, since in this case we can
@@ -5999,6 +6004,10 @@ package body Checks is
       --  itself does not require a check.
 
       elsif In_Subrange_Of (Target_Type, Source_Base_Type) then
+
+         --  Insert the explicit range check. Note that we suppress checks for
+         --  this code, since we don't want a recursive range check popping up.
+
          Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
              Condition =>
@@ -6020,7 +6029,8 @@ package body Checks is
                            Prefix =>
                              New_Occurrence_Of (Target_Type, Loc),
                            Attribute_Name => Name_Last)))),
-             Reason => Reason));
+             Reason => Reason),
+           Suppress => All_Checks);
 
       --  Note that at this stage we now that the Target_Base_Type is not in
       --  the range of the Source_Base_Type (since even the Target_Type itself
@@ -6040,6 +6050,9 @@ package body Checks is
          --     [constraint_error when Tnn not in Target_Type]
 
          --  Then the conversion itself is replaced by an occurrence of Tnn
+
+         --  Insert the explicit range check. Note that we suppress checks for
+         --  this code, since we don't want a recursive range check popping up.
 
          declare
             Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
@@ -6062,7 +6075,8 @@ package body Checks is
                     Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
                     Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
 
-                Reason => Reason)));
+                Reason => Reason)),
+              Suppress => All_Checks);
 
             Rewrite (N, New_Occurrence_Of (Tnn, Loc));
 

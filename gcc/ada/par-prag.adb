@@ -1337,6 +1337,7 @@ begin
            Pragma_Type_Invariant                 |
            Pragma_Type_Invariant_Class           |
            Pragma_Unchecked_Union                |
+           Pragma_Unevaluated_Use_Of_Old         |
            Pragma_Unimplemented_Unit             |
            Pragma_Universal_Aliasing             |
            Pragma_Universal_Data                 |

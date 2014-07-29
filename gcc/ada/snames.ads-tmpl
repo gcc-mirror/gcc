@@ -442,6 +442,7 @@ package Snames is
    Name_Suppress                       : constant Name_Id := N + $;
    Name_Suppress_Exception_Locations   : constant Name_Id := N + $; -- GNAT
    Name_Task_Dispatching_Policy        : constant Name_Id := N + $;
+   Name_Unevaluated_Use_Of_Old         : constant Name_Id := N + $; -- GNAT
    Name_Universal_Data                 : constant Name_Id := N + $; -- AAMP
    Name_Unsuppress                     : constant Name_Id := N + $; -- Ada 05
    Name_Use_VADS_Size                  : constant Name_Id := N + $; -- GNAT
@@ -687,6 +688,7 @@ package Snames is
 
    --  Other special names used in processing pragmas
 
+   Name_Allow                          : constant Name_Id := N + $;
    Name_Amount                         : constant Name_Id := N + $;
    Name_As_Is                          : constant Name_Id := N + $;
    Name_Assertion                      : constant Name_Id := N + $;
@@ -811,6 +813,7 @@ package Snames is
    Name_Vector                         : constant Name_Id := N + $;
    Name_VMS                            : constant Name_Id := N + $;
    Name_Vtable_Ptr                     : constant Name_Id := N + $;
+   Name_Warn                           : constant Name_Id := N + $;
    Name_Working_Storage                : constant Name_Id := N + $;
 
    --  Names of recognized attributes. The entries with the comment "Ada 83"
@@ -1791,6 +1794,7 @@ package Snames is
       Pragma_Suppress,
       Pragma_Suppress_Exception_Locations,
       Pragma_Task_Dispatching_Policy,
+      Pragma_Unevaluated_Use_Of_Old,
       Pragma_Universal_Data,
       Pragma_Unsuppress,
       Pragma_Use_VADS_Size,

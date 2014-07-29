@@ -1912,6 +1912,11 @@ package body Sem_Ch9 is
            or else Has_Task (Etype (E))
          then
             Set_Has_Task (Current_Scope);
+
+         elsif Is_Protected_Type (Etype (E))
+           or else Has_Protected (Etype (E))
+         then
+            Set_Has_Protected (Current_Scope);
          end if;
 
          Next_Entity (E);
@@ -1958,6 +1963,7 @@ package body Sem_Ch9 is
 
       Set_Ekind              (T, E_Protected_Type);
       Set_Is_First_Subtype   (T, True);
+      Set_Has_Protected      (T, True);
       Init_Size_Align        (T);
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);

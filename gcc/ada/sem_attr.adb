@@ -409,6 +409,12 @@ package body Sem_Attr is
       --  node is rewritten with an integer literal of the given value which
       --  is marked as static.
 
+      procedure Uneval_Old_Msg;
+      --  Called when Loop_Entry or Old is used in a potentially unevaluated
+      --  expression. Generates appropriate message or warning depending on
+      --  the setting of Opt.Uneval_Old. The caller has put the Name_Id of
+      --  the attribute in Error_Msg_Name_1 prior to the call.
+
       procedure Unexpected_Argument (En : Node_Id);
       --  Signal unexpected attribute argument (En is the argument)
 
@@ -2264,6 +2270,31 @@ package body Sem_Attr is
          Set_Is_Static_Expression (N, True);
       end Standard_Attribute;
 
+      --------------------
+      -- Uneval_Old_Msg --
+      --------------------
+
+      procedure Uneval_Old_Msg is
+      begin
+         case Uneval_Old is
+            when 'E' =>
+               Error_Attr_P
+                 ("prefix of attribute % that is potentially "
+                  & "unevaluated must denote an entity");
+
+            when 'W' =>
+               Error_Attr_P
+                 ("??prefix of attribute % appears in potentially "
+                  & "unevaluated context, exception may be raised");
+
+            when 'A' =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Uneval_Old_Msg;
+
       -------------------------
       -- Unexpected Argument --
       -------------------------
@@ -4108,9 +4139,7 @@ package body Sem_Attr is
                & "outer loop must denote an entity");
 
          elsif Is_Potentially_Unevaluated (P) then
-            Error_Attr_P
-              ("prefix of attribute % that is potentially "
-               & "unevaluated must denote an entity");
+            Uneval_Old_Msg;
          end if;
 
          --  Finally, if the Loop_Entry attribute appears within a pragma
@@ -4751,9 +4780,7 @@ package body Sem_Attr is
            and then Is_Potentially_Unevaluated (N)
            and then not Is_Entity_Name (P)
          then
-            Error_Attr_P
-              ("prefix of attribute % that is potentially unevaluated must "
-               & "denote an entity");
+            Uneval_Old_Msg;
          end if;
 
          --  The attribute appears within a pre/postcondition, but refers to

@@ -562,11 +562,12 @@ package body Einfo is
    --    Has_Static_Predicate            Flag269
    --    Stores_Attribute_Old_Prefix     Flag270
 
+   --    (Has_Protected)                 Flag271
+
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag271
    --    (unused)                        Flag272
    --    (unused)                        Flag273
    --    (unused)                        Flag274
@@ -1642,6 +1643,11 @@ package body Einfo is
    begin
       return Flag155 (Id);
    end Has_Private_Declaration;
+
+   function Has_Protected (Id : E) return B is
+   begin
+      return Flag271 (Id);
+   end Has_Protected;
 
    function Has_Qualified_Name (Id : E) return B is
    begin
@@ -4371,6 +4377,11 @@ package body Einfo is
    begin
       Set_Flag155 (Id, V);
    end Set_Has_Private_Declaration;
+
+   procedure Set_Has_Protected (Id : E; V : B := True) is
+   begin
+      Set_Flag271 (Id, V);
+   end Set_Has_Protected;
 
    procedure Set_Has_Qualified_Name (Id : E; V : B := True) is
    begin
@@ -8252,6 +8263,7 @@ package body Einfo is
       W ("Has_Primitive_Operations",        Flag120 (Id));
       W ("Has_Private_Ancestor",            Flag151 (Id));
       W ("Has_Private_Declaration",         Flag155 (Id));
+      W ("Has_Protected",                   Flag271 (Id));
       W ("Has_Qualified_Name",              Flag161 (Id));
       W ("Has_RACW",                        Flag214 (Id));
       W ("Has_Record_Rep_Clause",           Flag65  (Id));
