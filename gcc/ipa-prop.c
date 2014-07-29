@@ -4693,6 +4693,7 @@ ipa_write_indirect_edge_info (struct output_block *ob,
   bp_pack_value (&bp, ii->by_ref, 1);
   bp_pack_value (&bp, ii->maybe_in_construction, 1);
   bp_pack_value (&bp, ii->maybe_derived_type, 1);
+  bp_pack_value (&bp, ii->speculative_maybe_derived_type, 1);
   streamer_write_bitpack (&bp);
 
   if (ii->polymorphic)
@@ -4700,6 +4701,9 @@ ipa_write_indirect_edge_info (struct output_block *ob,
       streamer_write_hwi (ob, ii->otr_token);
       stream_write_tree (ob, ii->otr_type, true);
       stream_write_tree (ob, ii->outer_type, true);
+      stream_write_tree (ob, ii->speculative_outer_type, true);
+      if (ii->speculative_outer_type)
+        streamer_write_hwi (ob, ii->speculative_offset);
     }
 }
 
@@ -4723,11 +4727,15 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
   ii->by_ref = bp_unpack_value (&bp, 1);
   ii->maybe_in_construction = bp_unpack_value (&bp, 1);
   ii->maybe_derived_type = bp_unpack_value (&bp, 1);
+  ii->speculative_maybe_derived_type = bp_unpack_value (&bp, 1);
   if (ii->polymorphic)
     {
       ii->otr_token = (HOST_WIDE_INT) streamer_read_hwi (ib);
       ii->otr_type = stream_read_tree (ib, data_in);
       ii->outer_type = stream_read_tree (ib, data_in);
+      ii->speculative_outer_type = stream_read_tree (ib, data_in);
+      if (ii->speculative_outer_type)
+        ii->speculative_offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
     }
 }
 
