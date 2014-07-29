@@ -1198,7 +1198,7 @@ package body Sem_Ch10 is
 
       if Nkind (Unit_Node) = N_Package_Declaration
         and then Get_Cunit_Unit_Number (N) /= Main_Unit
-        and then Expander_Active
+        and then (Expander_Active or GNATprove_Mode)
       then
          declare
             Save_Style_Check : constant Boolean := Style_Check;
