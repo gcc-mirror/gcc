@@ -8759,15 +8759,6 @@ type @code{Universal_Integer}.  The value depends only on the field
 @var{C} and is independent of the alignment of
 the containing record @var{R}.
 
-@node Attribute Compiler_Version
-@unnumberedsec Attribute Compiler_Version
-@findex Compiler_Version
-@noindent
-@code{Standard'Compiler_Version} (@code{Standard} is the only allowed
-prefix) yields a static string identifying the version of the compiler
-being used to compile the unit containing the attribute reference. A
-typical result would be something like "@value{EDITION} @i{version} (20090221)".
-
 @node Attribute Code_Address
 @unnumberedsec Attribute Code_Address
 @findex Code_Address
