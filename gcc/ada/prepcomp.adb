@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@ with Scn;      use Scn;
 with Sinput.L; use Sinput.L;
 with Stringt;  use Stringt;
 with Table;
-with Types;    use Types;
 
 package body Prepcomp is
 
@@ -136,6 +135,16 @@ package body Prepcomp is
          Prep.Mapping.Table (Symbol_Id) := Command_Line_Symbols.Table (J);
       end loop;
    end Add_Command_Line_Symbols;
+
+   --------------------
+   -- Add_Dependency --
+   --------------------
+
+   procedure Add_Dependency (S : Source_File_Index) is
+   begin
+      Dependencies.Increment_Last;
+      Dependencies.Table (Dependencies.Last) := S;
+   end Add_Dependency;
 
    ----------------------
    -- Add_Dependencies --
@@ -543,9 +552,7 @@ package body Prepcomp is
 
       --  Record the dependency on the preprocessor data file
 
-      Dependencies.Increment_Last;
-      Dependencies.Table (Dependencies.Last) :=
-        Source_Index_Of_Preproc_Data_File;
+      Add_Dependency (Source_Index_Of_Preproc_Data_File);
    end Parse_Preprocessing_Data_File;
 
    ---------------------------
@@ -676,8 +683,7 @@ package body Prepcomp is
             end loop;
 
             if Add_Deffile then
-               Dependencies.Increment_Last;
-               Dependencies.Table (Dependencies.Last) := Deffile;
+               Add_Dependency (Deffile);
             end if;
          end;
 

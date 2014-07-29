@@ -1,3 +1,16 @@
+2014-07-29  Vincent Celier  <celier@adacore.com>
+
+	* frontend.adb: Add dependency on gnat.adc when taken into account
+	and on non-temporary configuration pragmas files specified in
+	switches -gnatec.
+	* prepcomp.ads, prepcomp.adb (Add_Dependency): New procedure to add
+	dependencies on configuration pragmas files.
+
+2014-07-29  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_ugn.texi: Minor clarification to the explanation for the
+	GNATtest -v switch.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* types.ads (Mechanism_Type): Change range back to -18 .. Int'Last with

@@ -144,6 +144,8 @@ begin
 
       Prag : Node_Id;
 
+      Temp_File : Boolean;
+
    begin
       --  We always analyze config files with style checks off, since
       --  we don't want a miscellaneous gnat.adc that is around to
@@ -167,6 +169,7 @@ begin
          if Source_gnat_adc /= No_Source_File then
             Initialize_Scanner (No_Unit, Source_gnat_adc);
             Config_Pragmas := Par (Configuration_Pragmas => True);
+            Prepcomp.Add_Dependency (Source_gnat_adc);
          else
             Config_Pragmas := Empty_List;
          end if;
@@ -196,12 +199,22 @@ begin
          for Index in Opt.Config_File_Names'Range loop
             Name_Len := Config_File_Names (Index)'Length;
             Name_Buffer (1 .. Name_Len) := Config_File_Names (Index).all;
+            Temp_File :=
+              Name_Len > 4
+              and then
+                (Name_Buffer (Name_Len - 3 .. Name_Len) = ".TMP"
+                 or else
+                 Name_Buffer (Name_Len - 3 .. Name_Len) = ".tmp");
+
             Source_Config_File := Load_Config_File (Name_Enter);
 
             if Source_Config_File = No_Source_File then
                Osint.Fail
                  ("cannot find configuration pragmas file "
                   & Config_File_Names (Index).all);
+
+            elsif not Temp_File then
+               Prepcomp.Add_Dependency (Source_Config_File);
             end if;
 
             Initialize_Scanner (No_Unit, Source_Config_File);

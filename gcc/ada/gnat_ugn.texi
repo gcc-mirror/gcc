@@ -10968,7 +10968,7 @@ in the loop.  Consider for example the procedure:
 @noindent
 By default, the compiler cannot unconditionally vectorize the loop because
 assigning to a component of the array designated by R in one iteration could
-change the value read from the components of the arrays designated by X or Y
+change the value read from the components of the array designated by X or Y
 in a later iteration.  As a result, the compiler will generate two versions
 of the loop in the object code, one vectorized and the other not vectorized,
 as well as a test to select the appropriate version at run time.  This can
@@ -19834,7 +19834,9 @@ Suppresses noncritical output messages.
 
 @item -v
 @cindex @option{-v} (@command{gnattest})
-Verbose mode: generates version information.
+Verbose mode: generates version information if specified by itself on the
+command line.  If specified via GNATtest_Switches, produces output
+about the execution of the tool.
 
 @item --validate-type-extensions
 @cindex @option{--validate-type-extensions} (@command{gnattest})
