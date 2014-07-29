@@ -2524,7 +2524,13 @@ package body Exp_Ch5 is
       if Compile_Time_Known_Value (Expr) then
          Alt := Find_Static_Alternative (N);
 
-         Process_Statements_For_Controlled_Objects (Alt);
+         --  Do not consider controlled objects found in a case statement which
+         --  actually models a case expression because their early finalization
+         --  will affect the result of the expression.
+
+         if not From_Conditional_Expression (N) then
+            Process_Statements_For_Controlled_Objects (Alt);
+         end if;
 
          --  Move statements from this alternative after the case statement.
          --  They are already analyzed, so will be skipped by the analyzer.
@@ -2603,10 +2609,16 @@ package body Exp_Ch5 is
             --  effects.
 
             Remove_Side_Effects (Expression (N));
-
             Alt := First (Alternatives (N));
 
-            Process_Statements_For_Controlled_Objects (Alt);
+            --  Do not consider controlled objects found in a case statement
+            --  which actually models a case expression because their early
+            --  finalization will affect the result of the expression.
+
+            if not From_Conditional_Expression (N) then
+               Process_Statements_For_Controlled_Objects (Alt);
+            end if;
+
             Insert_List_After (N, Statements (Alt));
 
             --  That leaves the case statement as a shell. The alternative that
@@ -2711,7 +2723,14 @@ package body Exp_Ch5 is
 
          Alt := First_Non_Pragma (Alternatives (N));
          while Present (Alt) loop
-            Process_Statements_For_Controlled_Objects (Alt);
+
+            --  Do not consider controlled objects found in a case statement
+            --  which actually models a case expression because their early
+            --  finalization will affect the result of the expression.
+
+            if not From_Conditional_Expression (N) then
+               Process_Statements_For_Controlled_Objects (Alt);
+            end if;
 
             if Has_SP_Choice (Alt) then
                Expand_Static_Predicates_In_Choices (Alt);
@@ -2914,7 +2933,13 @@ package body Exp_Ch5 is
       --  these warnings for expander generated code.
 
    begin
-      Process_Statements_For_Controlled_Objects (N);
+      --  Do not consider controlled objects found in an if statement which
+      --  actually models an if expression because their early finalization
+      --  will affect the result of the expression.
+
+      if not From_Conditional_Expression (N) then
+         Process_Statements_For_Controlled_Objects (N);
+      end if;
 
       Adjust_Condition (Condition (N));
 
@@ -3001,7 +3026,14 @@ package body Exp_Ch5 is
       if Present (Elsif_Parts (N)) then
          E := First (Elsif_Parts (N));
          while Present (E) loop
-            Process_Statements_For_Controlled_Objects (E);
+
+            --  Do not consider controlled objects found in an if statement
+            --  which actually models an if expression because their early
+            --  finalization will affect the result of the expression.
+
+            if not From_Conditional_Expression (N) then
+               Process_Statements_For_Controlled_Objects (E);
+            end if;
 
             Adjust_Condition (Condition (E));
 

@@ -10193,6 +10193,17 @@ package body Sem_Res is
             Target : Entity_Id := Target_Typ;
 
          begin
+            --  If the type of the operand is a limited view, use the non-
+            --  limited view when available.
+
+            if From_Limited_With (Opnd)
+              and then Ekind (Opnd) in Incomplete_Kind
+              and then Present (Non_Limited_View (Opnd))
+            then
+               Opnd := Non_Limited_View (Opnd);
+               Set_Etype (Expression (N), Opnd);
+            end if;
+
             if Is_Access_Type (Opnd) then
                Opnd := Designated_Type (Opnd);
             end if;

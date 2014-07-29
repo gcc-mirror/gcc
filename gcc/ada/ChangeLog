@@ -1,3 +1,42 @@
+2014-07-29  Thomas Quinot  <quinot@adacore.com>
+
+	* errout.adb (Set_Error_Posted): When propagating flag to
+	an enclosing named association, also propagate to the parent
+	of that node, so that named and positional associations are
+	treated consistently.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'Update):  Set
+	Do_Range_Check properly on array component expressions that
+	have a scalar type. In GNATprove mode, only checks on scalar
+	components must be marked by the front-end.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): If the type of the
+	expression is a limited view, use the non-limited view when
+	available.
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Mark the generated
+	case statement as coming from a conditional expression.
+	(Expand_N_If_Expression): Mark the generated if statement as
+	coming from a conditional expression.
+	* exp_ch5.adb (Expand_N_Case_Statement): Do not process controlled
+	objects found in case statement alternatives when the case
+	statement is actually a case expression.
+	(Expand_N_If_Statement):
+	Do not process controlled objects found in an if statement when
+	the if statement is actually an if expression.
+	* sinfo.adb (From_Conditional_Expression): New routine.
+	(Set_From_Conditional_Expression): New routine.
+	* sinfo.ads Add new semantic flag From_Conditional_Expression and
+	update related nodes.
+	(From_Conditional_Expression): New routine along with pragma Inline.
+	(Set_From_Conditional_Expression): New routine along with pragma Inline.
+
 2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Build_BIP_Cleanup_Stmts): Remove

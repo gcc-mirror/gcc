@@ -1400,6 +1400,15 @@ package body Sinfo is
       return Flag4 (N);
    end From_At_Mod;
 
+   function From_Conditional_Expression
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Case_Statement
+        or else NT (N).Nkind = N_If_Statement);
+      return Flag1 (N);
+   end From_Conditional_Expression;
+
    function From_Default
       (N : Node_Id) return Boolean is
    begin
@@ -4573,6 +4582,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Attribute_Definition_Clause);
       Set_Flag4 (N, Val);
    end Set_From_At_Mod;
+
+   procedure Set_From_Conditional_Expression
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Case_Statement
+        or else NT (N).Nkind = N_If_Statement);
+      Set_Flag1 (N, Val);
+   end Set_From_Conditional_Expression;
 
    procedure Set_From_Default
       (N : Node_Id; Val : Boolean := True) is

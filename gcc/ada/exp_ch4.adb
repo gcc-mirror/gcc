@@ -4991,6 +4991,13 @@ package body Exp_Ch4 is
           Expression   => Expression (N),
           Alternatives => New_List);
 
+      --  Preserve the original context for which the case statement is being
+      --  generated. This is needed by the finalization machinery to prevent
+      --  the premature finalization of controlled objects found within the
+      --  case statement.
+
+      Set_From_Conditional_Expression (Cstmt);
+
       Actions := New_List;
 
       --  Scalar case
@@ -5354,9 +5361,16 @@ package body Exp_Ch4 is
                      Prefix         => Relocate_Node (Elsex),
                      Attribute_Name => Name_Unrestricted_Access))));
 
-            New_N :=
-              Make_Explicit_Dereference (Loc,
-                Prefix => New_Occurrence_Of (Cnn, Loc));
+         --  Preserve the original context for which the if statement is being
+         --  generated. This is needed by the finalization machinery to prevent
+         --  the premature finalization of controlled objects found within the
+         --  if statement.
+
+         Set_From_Conditional_Expression (New_If);
+
+         New_N :=
+           Make_Explicit_Dereference (Loc,
+             Prefix => New_Occurrence_Of (Cnn, Loc));
 
       --  For other types, we only need to expand if there are other actions
       --  associated with either branch.
