@@ -4493,7 +4493,10 @@ end IO_Card;
 @findex Lock_Free
 @noindent
 Syntax:
-PLEASE ADD DOCUMENTATION HERE???
+This pragma may be specified for protected types or objects. It specifies that
+the implementation of protected operations must be implemented without locks.
+Compilation fails if the compiler cannot generate lock-free code for the
+operations.
 
 @node Pragma Long_Float
 @unnumberedsec Pragma Long_Float
@@ -8991,7 +8994,9 @@ this attribute.
 @unnumberedsec Attribute Fast_Math
 @findex Fast_Math
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+@code{Standard'Fast_Math} (@code{Standard} is the only allowed
+prefix) yields a static Boolean value that is True if pragma
+@code{Fast_Math} is active, and False otherwise.
 
 @node Attribute Fixed_Value
 @unnumberedsec Attribute Fixed_Value
@@ -9162,7 +9167,8 @@ end Gen;
 @unnumberedsec Attribute Lock_Free
 @findex Lock_Free
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+@code{P'Lock_Free}, where P is a protected object, returns True if a
+pragma @code{Lock_Free} applies to P.
 
 @node Attribute Loop_Entry
 @unnumberedsec Attribute Loop_Entry
