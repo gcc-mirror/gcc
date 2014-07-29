@@ -4044,34 +4044,28 @@ package body Sem_Res is
                return;
             end if;
 
-            --  Apply appropriate range checks for in, out, and in-out
-            --  parameters. Out and in-out parameters also need a separate
-            --  check, if there is a type conversion, to make sure the return
-            --  value meets the constraints of the variable before the
-            --  conversion.
-
-            --  Gigi looks at the check flag and uses the appropriate types.
-            --  For now since one flag is used there is an optimization which
-            --  might not be done in the In Out case since Gigi does not do
-            --  any analysis. More thought required about this ???
+            --  Apply appropriate constraint/predicate checks for IN [OUT] case
 
             if Ekind_In (F, E_In_Parameter, E_In_Out_Parameter) then
 
-               --  Apply predicate checks, unless this is a call to the
-               --  predicate check function itself, which would cause an
-               --  infinite recursion, or it is a call to an initialization
-               --  procedure whose operand is of course an unfinished object.
+               --  Apply predicate tests except in certain special cases. Note
+               --  that it might be more consistent to apply these only when
+               --  expansion is active (in Exp_Ch6.Expand_Actuals), as we do
+               --  for the outbound predicate tests.
 
-               if not (Ekind (Nam) = E_Function
-                        and then (Is_Predicate_Function (Nam)
-                                    or else
-                                  Is_Predicate_Function_M (Nam)))
-                 and then not Is_Init_Proc (Nam)
-               then
+               if not No_Predicate_Test_On_Arguments (Nam) then
                   Apply_Predicate_Check (A, F_Typ);
                end if;
 
                --  Apply required constraint checks
+
+               --  Gigi looks at the check flag and uses the appropriate types.
+               --  For now since one flag is used there is an optimization
+               --  which might not be done in the IN OUT case since Gigi does
+               --  not do any analysis. More thought required about this ???
+
+               --  In fact is this comment obsolete??? doesn't the expander now
+               --  generate all these tests anyway???
 
                if Is_Scalar_Type (Etype (A)) then
                   Apply_Scalar_Range_Check (A, F_Typ);
@@ -4138,7 +4132,13 @@ package body Sem_Res is
                end if;
             end if;
 
+            --  Checks for OUT parameters and IN OUT parameters
+
             if Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter) then
+
+               --  If there is a type conversion, to make sure the return value
+               --  meets the constraints of the variable before the conversion.
+
                if Nkind (A) = N_Type_Conversion then
                   if Is_Scalar_Type (A_Typ) then
                      Apply_Scalar_Range_Check
@@ -4147,6 +4147,9 @@ package body Sem_Res is
                      Apply_Range_Check
                        (Expression (A), Etype (Expression (A)), A_Typ);
                   end if;
+
+               --  If no conversion apply scalar range checks and length checks
+               --  base on the subtype of the actual (NOT that of the formal).
 
                else
                   if Is_Scalar_Type (F_Typ) then
@@ -4159,6 +4162,10 @@ package body Sem_Res is
                      Apply_Range_Check (A, A_Typ, F_Typ);
                   end if;
                end if;
+
+               --  Note: we do not apply the predicate checks for the case of
+               --  OUT and IN OUT parameters. They are instead applied in the
+               --  Expand_Actuals routine in Exp_Ch6.
             end if;
 
             --  An actual associated with an access parameter is implicitly

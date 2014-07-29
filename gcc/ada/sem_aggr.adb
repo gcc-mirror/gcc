@@ -1055,6 +1055,10 @@ package body Sem_Aggr is
             --  formal parameter. Consequently we also need to test for
             --  N_Procedure_Call_Statement or N_Function_Call.
 
+            --  The context may be an N_Reference node, created by expansion.
+            --  Legality of the others clause was established in the source,
+            --  so the context is legal.
+
             Set_Etype (N, Aggr_Typ);  --  May be overridden later on
 
             if Pkind = N_Assignment_Statement
@@ -1070,6 +1074,7 @@ package body Sem_Aggr is
                            Pkind = N_Component_Declaration     or else
                            Pkind = N_Parameter_Specification   or else
                            Pkind = N_Qualified_Expression      or else
+                           Pkind = N_Reference                 or else
                            Pkind = N_Aggregate                 or else
                            Pkind = N_Extension_Aggregate       or else
                            Pkind = N_Component_Association))

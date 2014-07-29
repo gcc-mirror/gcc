@@ -3493,7 +3493,21 @@ package body Sem_Ch3 is
          --  early usage within E is properly diagnosed.
 
          Set_Etype (Id, T);
-         Resolve (E, T);
+
+         --  If the expression is an aggregate we must look ahead to detect
+         --  the possible presence of an address clause, and defer resolution
+         --  and expansion of the aggregate to the freeze point of the entity.
+
+         if Comes_From_Source (N)
+           and then Expander_Active
+           and then Has_Following_Address_Clause (N)
+           and then Nkind (E) = N_Aggregate
+         then
+            Set_Etype (E, T);
+
+         else
+            Resolve (E, T);
+         end if;
 
          --  No further action needed if E is a call to an inlined function
          --  which returns an unconstrained type and it has been expanded into

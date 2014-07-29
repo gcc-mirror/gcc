@@ -13785,6 +13785,44 @@ package body Sem_Util is
       Actual_Id := Next_Actual (Actual_Id);
    end Next_Actual;
 
+   ------------------------------------
+   -- No_Predicate_Test_On_Arguments --
+   ------------------------------------
+
+   function No_Predicate_Test_On_Arguments (Subp : Entity_Id) return Boolean is
+   begin
+      --  Do not test predicates on call to generated default Finalize, since
+      --  we are not interested in whether something we are finalizing (and
+      --  typically destroying) satisfies its predicates.
+
+      if Chars (Subp) = Name_Finalize
+        and then not Comes_From_Source (Subp)
+      then
+         return True;
+
+      --  Do not test predicates on call to Init_Proc, since if needed the
+      --  predicate test will occur at some other point.
+
+      elsif Is_Init_Proc (Subp) then
+         return True;
+
+      --  Do not test predicates on call to predicate function, since this
+      --  would cause infinite recursion.
+
+      elsif Ekind (Subp) = E_Function
+        and then (Is_Predicate_Function (Subp)
+                    or else
+                  Is_Predicate_Function_M (Subp))
+      then
+         return True;
+
+      --  For now, no other cases
+
+      else
+         return False;
+      end if;
+   end No_Predicate_Test_On_Arguments;
+
    ---------------------
    -- No_Scalar_Parts --
    ---------------------

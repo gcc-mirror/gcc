@@ -141,7 +141,7 @@ package body Prj is
       while Last + S'Length > To'Last loop
          declare
             New_Buffer : constant  String_Access :=
-                           new String (1 .. 2 * Last);
+                           new String (1 .. 2 * To'Length);
 
          begin
             New_Buffer (1 .. Last) := To (1 .. Last);
