@@ -7579,7 +7579,7 @@ package body Sem_Ch13 is
 
       Object_Name : constant Name_Id := New_Internal_Name ('I');
       --  Name for argument of Predicate procedure. Note that we use the same
-      --  name for both predicate procedure. That way the reference within the
+      --  name for both predicate functions. That way the reference within the
       --  predicate expression is the same in both functions.
 
       Object_Entity : constant Entity_Id :=
@@ -10600,7 +10600,7 @@ package body Sem_Ch13 is
       --  all the cases above.
 
       --  One more test that is an implementation artifact caused by the fact
-      --  that we are analyzing not the original expresesion, but the generated
+      --  that we are analyzing not the original expression, but the generated
       --  expression in the body of the predicate function. This can include
       --  references to inherited predicates, so that the expression we are
       --  processing looks like:
@@ -10609,7 +10609,7 @@ package body Sem_Ch13 is
 
       --  Where the call is to a Predicate function for an inherited predicate.
       --  We simply ignore such a call (which could be to either a dynamic or
-      --  a static predicate, but remember that we can have Static_Predicate
+      --  a static predicate, but remember that we can have a Static_Predicate
       --  for a non-static subtype).
 
       elsif Nkind (Expr) = N_Function_Call
