@@ -194,7 +194,7 @@ package Aspects is
       Aspect_Volatile_Components,
 
       --  Aspects that have a static boolean value but don't correspond to
-      --  pragmas
+      --  pragmas with a single argument that it is the entity in question.
 
       Aspect_Lock_Free);                    -- GNAT
 
