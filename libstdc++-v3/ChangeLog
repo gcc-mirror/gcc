@@ -6,6 +6,13 @@
 	_S_new_RopeFunction.
 	* testsuite/ext/rope/61946.cc: New.
 
+	PR libstdc++/61947
+	* include/std/tuple (_Head_base): Use allocator_arg_t parameters to
+	disambiguate unary constructors.
+	(_Tuple_impl): Pass allocator_arg_t arguments.
+	* testsuite/20_util/tuple/61947.cc: New.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error line.
+
 2014-07-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/60037 - SIGFPE in std::generate_canonical<unsigned int...>
