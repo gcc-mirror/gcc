@@ -289,11 +289,6 @@ package body Exp_Aggr is
    --  If this transformation is not possible, N is unchanged and False is
    --  returned.
 
-   function Safe_Slice_Assignment (N : Node_Id) return Boolean;
-   --  If a slice assignment has an aggregate with a single others_choice,
-   --  the assignment can be done in place even if bounds are not static,
-   --  by converting it into a loop over the discrete range of the slice.
-
    function Two_Dim_Packed_Array_Handled (N : Node_Id) return Boolean;
    --  If the type of the aggregate is a two-dimensional bit_packed array
    --  it may be transformed into an array of bytes with constant values,
@@ -404,8 +399,8 @@ package body Exp_Aggr is
       elsif Restriction_Active (No_Elaboration_Code)
         or else Restriction_Active (No_Implicit_Loops)
         or else Is_Two_Dim_Packed_Array (Typ)
-        or else ((Ekind (Current_Scope) = E_Package
-                 and then Static_Elaboration_Desired (Current_Scope)))
+        or else (Ekind (Current_Scope) = E_Package
+                   and then Static_Elaboration_Desired (Current_Scope))
       then
          Max_Aggr_Size := 2 ** 24;
 
@@ -443,9 +438,7 @@ package body Exp_Aggr is
          --  is an object declaration with non-static bounds it will trip gcc;
          --  such an aggregate must be expanded into a single assignment.
 
-         if Hiv = Lov
-           and then Nkind (Parent (N)) = N_Object_Declaration
-         then
+         if Hiv = Lov and then Nkind (Parent (N)) = N_Object_Declaration then
             declare
                Index_Type : constant Entity_Id :=
                  Etype
@@ -454,8 +447,8 @@ package body Exp_Aggr is
 
             begin
                if not Compile_Time_Known_Value (Type_Low_Bound (Index_Type))
-                  or else not Compile_Time_Known_Value
-                                (Type_High_Bound (Index_Type))
+                 or else not Compile_Time_Known_Value
+                               (Type_High_Bound (Index_Type))
                then
                   if Present (Component_Associations (N)) then
                      Indx :=
@@ -603,7 +596,7 @@ package body Exp_Aggr is
             --  Recursion to following indexes for multiple dimension case
 
             if Present (Next_Index (Index))
-               and then not Component_Check (Expr, Next_Index (Index))
+              and then not Component_Check (Expr, Next_Index (Index))
             then
                return False;
             end if;
@@ -653,11 +646,11 @@ package body Exp_Aggr is
       end if;
 
       --  Checks 5 (if the component type is tagged, then we may need to do
-      --    tag adjustments. Perhaps this should be refined to check for any
-      --    component associations that actually need tag adjustment, similar
-      --    to the test in Component_Not_OK_For_Backend for record aggregates
-      --    with tagged components, but not clear whether it's worthwhile ???;
-      --    in the case of the JVM, object tags are handled implicitly)
+      --  tag adjustments. Perhaps this should be refined to check for any
+      --  component associations that actually need tag adjustment, similar
+      --  to the test in Component_Not_OK_For_Backend for record aggregates
+      --  with tagged components, but not clear whether it's worthwhile ???;
+      --  in the case of the JVM, object tags are handled implicitly)
 
       if Is_Tagged_Type (Component_Type (Typ))
         and then Tagged_Type_Expansion
@@ -934,7 +927,8 @@ package body Exp_Aggr is
             end case;
 
             if Local_Compile_Time_Known_Value (Low)
-              and then Local_Compile_Time_Known_Value (High)
+                 and then
+               Local_Compile_Time_Known_Value (High)
             then
                Is_Empty :=
                  UI_Gt (Local_Expr_Value (Low), Local_Expr_Value (High));
@@ -956,7 +950,8 @@ package body Exp_Aggr is
             return True;
 
          elsif Local_Compile_Time_Known_Value (L)
-           and then Local_Compile_Time_Known_Value (H)
+                 and then
+               Local_Compile_Time_Known_Value (H)
          then
             return UI_Eq (Local_Expr_Value (L), Local_Expr_Value (H));
          end if;
@@ -1053,9 +1048,7 @@ package body Exp_Aggr is
             Expr_Q := Expr;
          end if;
 
-         if Present (Etype (N))
-           and then Etype (N) /= Any_Composite
-         then
+         if Present (Etype (N)) and then Etype (N) /= Any_Composite then
             Comp_Type := Component_Type (Etype (N));
             pragma Assert (Comp_Type = Ctype); --  AI-287
 
@@ -1066,13 +1059,13 @@ package body Exp_Aggr is
             --  the formal parameter Ctype.
 
             --  ??? Some assert pragmas have been added to check if this new
-            --      formal can be used to replace this code in all cases.
+            --  formal can be used to replace this code in all cases.
 
             if Present (Expr) then
 
-               --  This is a multidimensional array. Recover the component
-               --  type from the outermost aggregate, because subaggregates
-               --  do not have an assigned type.
+               --  This is a multidimensional array. Recover the component type
+               --  from the outermost aggregate, because subaggregates do not
+               --  have an assigned type.
 
                declare
                   P : Node_Id;
@@ -1265,8 +1258,8 @@ package body Exp_Aggr is
               and then not Is_Limited_Type (Comp_Type)
               and then not
                 (Is_Array_Type (Comp_Type)
-                   and then Is_Controlled (Component_Type (Comp_Type))
-                   and then Nkind (Expr) = N_Aggregate)
+                  and then Is_Controlled (Component_Type (Comp_Type))
+                  and then Nkind (Expr) = N_Aggregate)
             then
                Append_To (L,
                  Make_Adjust_Call (
@@ -1621,9 +1614,7 @@ package body Exp_Aggr is
       --  entity in the current scope, because it will be needed if build-
       --  in-place functions are called in the expanded code.
 
-      if Nkind (Parent (N)) = N_Object_Declaration
-        and then Has_Task (Typ)
-      then
+      if Nkind (Parent (N)) = N_Object_Declaration and then Has_Task (Typ) then
          Build_Master_Entity (Defining_Identifier (Parent (N)));
       end if;
 
@@ -2189,9 +2180,7 @@ package body Exp_Aggr is
          --  proper scope is the scope of the target rather than the
          --  potentially transient current scope.
 
-         if Is_Controlled (Typ)
-           and then Ancestor_Is_Subtype_Mark
-         then
+         if Is_Controlled (Typ) and then Ancestor_Is_Subtype_Mark then
             Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
             Set_Assignment_OK (Ref);
 
@@ -2223,8 +2212,8 @@ package body Exp_Aggr is
            and then Present (Entity (Expr))
            and then Ekind (Entity (Expr)) = E_In_Parameter
            and then Present (Discriminal_Link (Entity (Expr)))
-           and then Scope (Discriminal_Link (Entity (Expr)))
-                      = Base_Type (Etype (N))
+           and then Scope (Discriminal_Link (Entity (Expr))) =
+                                                       Base_Type (Etype (N))
          then
             Rewrite (Expr,
               Make_Selected_Component (Loc,
@@ -2427,7 +2416,7 @@ package body Exp_Aggr is
 
             elsif Is_Limited_Type (Etype (Ancestor))
               and then Nkind_In (Unqualify (Ancestor), N_Aggregate,
-                                                    N_Extension_Aggregate)
+                                                       N_Extension_Aggregate)
             then
                Ancestor_Is_Expression := True;
 
@@ -2596,9 +2585,7 @@ package body Exp_Aggr is
       --  constructor to ensure the proper initialization of the _Tag
       --  component.
 
-      if Is_CPP_Class (Root_Type (Typ))
-        and then CPP_Num_Prims (Typ) > 0
-      then
+      if Is_CPP_Class (Root_Type (Typ)) and then CPP_Num_Prims (Typ) > 0 then
          Invoke_Constructor : declare
             CPP_Parent : constant Entity_Id := Enclosing_CPP_Parent (Typ);
 
@@ -2952,7 +2939,7 @@ package body Exp_Aggr is
                         if Nkind (Ass) = N_Assignment_Statement
                           and then Nkind (Name (Ass)) = N_Selected_Component
                           and then Chars (Selector_Name (Name (Ass))) =
-                             Chars (Disc)
+                                                                 Chars (Disc)
                         then
                            Set_Expression
                              (Ass, New_Copy_Tree (Expression (Comp)));
@@ -3382,7 +3369,7 @@ package body Exp_Aggr is
          --  known discriminants if available.
 
          if Has_Unknown_Discriminants (Typ)
-            and then Present (Underlying_Record_View (Typ))
+           and then Present (Underlying_Record_View (Typ))
          then
             T := Underlying_Record_View (Typ);
          else
@@ -3487,7 +3474,7 @@ package body Exp_Aggr is
                elsif Is_Entity_Name (Expression (Expr))
                  and then Present (Entity (Expression (Expr)))
                  and then Ekind (Entity (Expression (Expr))) =
-                   E_Enumeration_Literal
+                                                       E_Enumeration_Literal
                then
                   null;
 
@@ -3581,8 +3568,7 @@ package body Exp_Aggr is
          --  See ACATS c460010 for an example.
 
          if Hiv < Lov
-           or else (not Compile_Time_Known_Value (Blo)
-                     and then Others_Present)
+           or else (not Compile_Time_Known_Value (Blo) and then Others_Present)
          then
             return False;
          end if;
@@ -3636,7 +3622,7 @@ package body Exp_Aggr is
                if Present (Next_Index (Ix))
                  and then
                    not Flatten
-                        (Expression (Elmt), Next_Index (Ix), Next_Index (Ixb))
+                         (Expression (Elmt), Next_Index (Ix), Next_Index (Ixb))
                then
                   return False;
                end if;
@@ -3679,9 +3665,8 @@ package body Exp_Aggr is
                                 or else Restriction_Active (No_Implicit_Loops)
                                 or else
                                   (Ekind (Current_Scope) = E_Package
-                                    and then
-                                      Static_Elaboration_Desired
-                                        (Current_Scope))
+                                    and then Static_Elaboration_Desired
+                                               (Current_Scope))
                                 or else Is_Preelaborated (P)
                                 or else (Ekind (P) = E_Package_Body
                                           and then
@@ -3834,9 +3819,7 @@ package body Exp_Aggr is
          return;
       end if;
 
-      if Is_Bit_Packed_Array (Typ)
-        and then not Handle_Bit_Packed
-      then
+      if Is_Bit_Packed_Array (Typ) and then not Handle_Bit_Packed then
          return;
       end if;
 
@@ -4388,7 +4371,7 @@ package body Exp_Aggr is
                return Compile_Time_Known_Value (Comp)
 
                  or else (Is_Entity_Name (Comp)
-                           and then  Present (Entity (Comp))
+                           and then Present (Entity (Comp))
                            and then No (Renamed_Object (Entity (Comp))))
 
                  or else (Nkind (Comp) = N_Attribute_Reference
@@ -4749,8 +4732,7 @@ package body Exp_Aggr is
 
             elsif Nkind (Indx) = N_Function_Call
               and then Is_Entity_Name (Name (Indx))
-              and then
-                Has_Pragma_Pure_Function (Entity (Name (Indx)))
+              and then Has_Pragma_Pure_Function (Entity (Name (Indx)))
             then
                return True;
 
@@ -4777,8 +4759,7 @@ package body Exp_Aggr is
 
          elsif Nkind (N) = N_Indexed_Component
            and then Safe_Left_Hand_Side (Prefix (N))
-           and then
-             Is_Safe_Index (First (Expressions (N)))
+           and then Is_Safe_Index (First (Expressions (N)))
          then
             return True;
 
@@ -4968,9 +4949,7 @@ package body Exp_Aggr is
       --  that Convert_To_Positional succeeded and reanalyzed the rewritten
       --  aggregate.
 
-      elsif Analyzed (N)
-        and then N /= Original_Node (N)
-      then
+      elsif Analyzed (N) and then N /= Original_Node (N) then
          return;
       end if;
 
@@ -5165,13 +5144,21 @@ package body Exp_Aggr is
             end if;
          end if;
 
+      --  If a slice assignment has an aggregate with a single others_choice,
+      --  the assignment can be done in place even if bounds are not static,
+      --  by converting it into a loop over the discrete range of the slice.
+
       elsif Maybe_In_Place_OK
         and then Nkind (Name (Parent (N))) = N_Slice
-        and then Safe_Slice_Assignment (N)
+        and then Comes_From_Source (N)
+        and then Is_Others_Aggregate (N)
       then
-         --  Safe_Slice_Assignment rewrites assignment as a loop
+         Tmp := Name (Parent (N));
 
-         return;
+         --  Set type of aggregate to be type of lhs in assignment, in order
+         --  to suppress redundant length checks.
+
+         Set_Etype (N, Etype (Tmp));
 
       --  Step 5
 
@@ -5958,9 +5945,7 @@ package body Exp_Aggr is
             --  extension aggregate, the parent expr is replaced by an
             --  aggregate formed by selected components of this expr.
 
-            if Present (Parent_Expr)
-              and then Is_Empty_List (Comps)
-            then
+            if Present (Parent_Expr) and then Is_Empty_List (Comps) then
                Comp := First_Component_Or_Discriminant (Typ);
                while Present (Comp) loop
 
@@ -6026,8 +6011,10 @@ package body Exp_Aggr is
                   First_Comp := First (Component_Associations (N));
                   Parent_Comps := New_List;
                   while Present (First_Comp)
-                    and then Scope (Original_Record_Component (
-                            Entity (First (Choices (First_Comp))))) /= Base_Typ
+                    and then
+                      Scope (Original_Record_Component
+                               (Entity (First (Choices (First_Comp))))) /=
+                                                                    Base_Typ
                   loop
                      Comp := First_Comp;
                      Next (First_Comp);
@@ -6035,8 +6022,9 @@ package body Exp_Aggr is
                      Append (Comp, Parent_Comps);
                   end loop;
 
-                  Parent_Aggr := Make_Aggregate (Loc,
-                    Component_Associations => Parent_Comps);
+                  Parent_Aggr :=
+                    Make_Aggregate (Loc,
+                      Component_Associations => Parent_Comps);
                   Set_Etype (Parent_Aggr, Etype (Base_Type (Typ)));
 
                   --  Find the _parent component
@@ -6129,8 +6117,7 @@ package body Exp_Aggr is
          Expr := Expression (C);
 
          if Present (Expr)
-           and then
-             Nkind_In (Expr, N_Aggregate, N_Extension_Aggregate)
+           and then Nkind_In (Expr, N_Aggregate, N_Extension_Aggregate)
            and then Has_Default_Init_Comps (Expr)
          then
             return True;
@@ -6156,7 +6143,7 @@ package body Exp_Aggr is
          Kind := Nkind (Node);
       end if;
 
-      if Kind /= N_Aggregate and then Kind /= N_Extension_Aggregate then
+      if not Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate) then
          return False;
       else
          return Expansion_Delayed (Node);
@@ -6591,8 +6578,8 @@ package body Exp_Aggr is
         and then Number_Discriminants (Bas) /= Number_Discriminants (Par)
         and then Nkind (Decl) = N_Full_Type_Declaration
         and then Nkind (Type_Definition (Decl)) = N_Record_Definition
-        and then Present
-          (Variant_Part (Component_List (Type_Definition (Decl))))
+        and then
+          Present (Variant_Part (Component_List (Type_Definition (Decl))))
         and then Nkind (N) /= N_Extension_Aggregate
       then
 
@@ -6614,6 +6601,7 @@ package body Exp_Aggr is
       Typ      : Entity_Id) return Boolean
    is
       L1, L2, H1, H2 : Node_Id;
+
    begin
       --  No sliding if the type of the object is not established yet, if it is
       --  an unconstrained type whose actual subtype comes from the aggregate,
@@ -6648,70 +6636,6 @@ package body Exp_Aggr is
       end if;
    end Must_Slide;
 
-   ---------------------------
-   -- Safe_Slice_Assignment --
-   ---------------------------
-
-   function Safe_Slice_Assignment (N : Node_Id) return Boolean is
-      Loc        : constant Source_Ptr := Sloc (Parent (N));
-      Pref       : constant Node_Id    := Prefix (Name (Parent (N)));
-      Range_Node : constant Node_Id    := Discrete_Range (Name (Parent (N)));
-      Expr       : Node_Id;
-      L_J        : Entity_Id;
-      L_Iter     : Node_Id;
-      L_Body     : Node_Id;
-      Stat       : Node_Id;
-
-   begin
-      --  Generate: for J in Range loop Pref (J) := Expr; end loop;
-
-      if Comes_From_Source (N)
-        and then No (Expressions (N))
-        and then Nkind (First (Choices (First (Component_Associations (N)))))
-                   = N_Others_Choice
-      then
-         Expr := Expression (First (Component_Associations (N)));
-         L_J := Make_Temporary (Loc, 'J');
-
-         L_Iter :=
-           Make_Iteration_Scheme (Loc,
-             Loop_Parameter_Specification =>
-               Make_Loop_Parameter_Specification
-                 (Loc,
-                  Defining_Identifier         => L_J,
-                  Discrete_Subtype_Definition => Relocate_Node (Range_Node)));
-
-         L_Body :=
-           Make_Assignment_Statement (Loc,
-              Name =>
-                Make_Indexed_Component (Loc,
-                  Prefix      => Relocate_Node (Pref),
-                  Expressions => New_List (New_Occurrence_Of (L_J, Loc))),
-               Expression => Relocate_Node (Expr));
-
-         --  Construct the final loop
-
-         Stat :=
-           Make_Implicit_Loop_Statement
-             (Node             => Parent (N),
-              Identifier       => Empty,
-              Iteration_Scheme => L_Iter,
-              Statements       => New_List (L_Body));
-
-         --  Set type of aggregate to be type of lhs in assignment,
-         --  to suppress redundant length checks.
-
-         Set_Etype (N, Etype (Name (Parent (N))));
-
-         Rewrite (Parent (N), Stat);
-         Analyze (Parent (N));
-         return True;
-
-      else
-         return False;
-      end if;
-   end Safe_Slice_Assignment;
-
    ----------------------------------
    -- Two_Dim_Packed_Array_Handled --
    ----------------------------------
@@ -6724,10 +6648,10 @@ package body Exp_Aggr is
       Packed_Array : constant Entity_Id  :=
                        Packed_Array_Impl_Type (Base_Type (Typ));
 
-      One_Comp  : Node_Id;
+      One_Comp : Node_Id;
       --  Expression in original aggregate
 
-      One_Dim   : Node_Id;
+      One_Dim : Node_Id;
       --  One-dimensional subaggregate
 
    begin

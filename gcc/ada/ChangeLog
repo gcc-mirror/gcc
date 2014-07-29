@@ -1,3 +1,18 @@
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cbmutr.adb (Allocate_Node): Remove the two parameter version.
+	(Insert_Child): Add local variable First. Capture the index of the
+	first node being created to ensure correct cursor construction
+	later on. Use the three parameter version of Allocate_Node
+	when creating multiple children as this method allows aspect
+	Default_Value to take effect (if applicable).
+
+2014-07-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Safe_Slice_Assignment): Remove.
+	(Expand_Array_Aggregate): For a safe slice assignment, just set
+	the target and use the common code path.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, sem_util.ads, sem_res.adb, exp_ch6.adb: Invert
