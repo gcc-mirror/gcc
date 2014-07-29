@@ -3134,8 +3134,12 @@ package body Exp_Ch7 is
       Loc         : Source_Ptr;
       For_Package : Boolean := False)
    is
-      A_Expr : Node_Id;
-      E_Decl : Node_Id;
+      Decl : Node_Id;
+
+      Dummy : Entity_Id;
+      pragma Unreferenced (Dummy);
+      --  This variable captures an unused dummy internal entity, see the
+      --  comment associated with its use.
 
    begin
       pragma Assert (Decls /= No_List);
@@ -3164,56 +3168,61 @@ package body Exp_Ch7 is
       --  does not include routine Raise_From_Controlled_Operation which is the
       --  the sole user of flag Abort.
 
-      --  This is not needed for library-level finalizers as they are called
-      --  by the environment task and cannot be aborted.
+      --  This is not needed for library-level finalizers as they are called by
+      --  the environment task and cannot be aborted.
 
-      if Abort_Allowed
-        and then VM_Target = No_VM
-        and then not For_Package
-      then
-         Data.Abort_Id  := Make_Temporary (Loc, 'A');
+      if VM_Target = No_VM and then not For_Package then
+         if Abort_Allowed then
+            Data.Abort_Id := Make_Temporary (Loc, 'A');
 
-         A_Expr := New_Occurrence_Of (RTE (RE_Triggered_By_Abort), Loc);
+            --  Generate:
+            --    Abort_Id : constant Boolean := <A_Expr>;
 
-         --  Generate:
+            Append_To (Decls,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Data.Abort_Id,
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Boolean, Loc),
+                Expression          =>
+                  New_Occurrence_Of (RTE (RE_Triggered_By_Abort), Loc)));
 
-         --    Abort_Id : constant Boolean := <A_Expr>;
+         --  Abort is not required
 
-         Append_To (Decls,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Data.Abort_Id,
-             Constant_Present    => True,
-             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
-             Expression          => A_Expr));
+         else
+            --  Generate a dummy entity to ensure that the internal symbols are
+            --  in sync when a unit is compiled with and without aborts.
+
+            Dummy := Make_Temporary (Loc, 'A');
+            Data.Abort_Id := Empty;
+         end if;
+
+      --  .NET/JVM or library-level finalizers
 
       else
-         --  No abort, .NET/JVM or library-level finalizers
-
-         Data.Abort_Id  := Empty;
+         Data.Abort_Id := Empty;
       end if;
 
       if Exception_Extra_Info then
-         Data.E_Id      := Make_Temporary (Loc, 'E');
+         Data.E_Id := Make_Temporary (Loc, 'E');
 
          --  Generate:
-
          --    E_Id : Exception_Occurrence;
 
-         E_Decl :=
+         Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Data.E_Id,
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_Exception_Occurrence), Loc));
-         Set_No_Initialization (E_Decl);
+         Set_No_Initialization (Decl);
 
-         Append_To (Decls, E_Decl);
+         Append_To (Decls, Decl);
 
       else
-         Data.E_Id      := Empty;
+         Data.E_Id := Empty;
       end if;
 
       --  Generate:
-
       --    Raised_Id : Boolean := False;
 
       Append_To (Decls,

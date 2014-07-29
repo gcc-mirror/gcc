@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -914,6 +914,7 @@ package body Exp_Intr is
       Finalizer_Data  : Finalization_Exception_Data;
 
       Blk        : Node_Id := Empty;
+      Blk_Id     : Entity_Id;
       Deref      : Node_Id;
       Final_Code : List_Id;
       Free_Arg   : Node_Id;
@@ -925,6 +926,11 @@ package body Exp_Intr is
       --  we can avoid the test. The reason that we need to capture this is
       --  that we analyze some generated statements before properly attaching
       --  them to the tree, and that can disturb current value settings.
+
+      Dummy : Entity_Id;
+      pragma Unreferenced (Dummy);
+      --  This variable captures an unused dummy internal entity, see the
+      --  comment associated with its use.
 
    begin
       --  Nothing to do if we know the argument is null
@@ -1007,8 +1013,7 @@ package body Exp_Intr is
          --  protected by an abort defer/undefer pair.
 
          if Abort_Allowed then
-            Prepend_To (Final_Code,
-              Build_Runtime_Call (Loc, RE_Abort_Defer));
+            Prepend_To (Final_Code, Build_Runtime_Call (Loc, RE_Abort_Defer));
 
             Blk :=
               Make_Block_Statement (Loc, Handled_Statement_Sequence =>
@@ -1016,9 +1021,15 @@ package body Exp_Intr is
                   Statements  => Final_Code,
                   At_End_Proc =>
                     New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc)));
+            Add_Block_Identifier (Blk, Blk_Id);
 
             Append (Blk, Stmts);
+
          else
+            --  Generate a dummy entity to ensure that the internal symbols are
+            --  in sync when a unit is compiled with and without aborts.
+
+            Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
             Append_List_To (Stmts, Final_Code);
          end if;
       end if;

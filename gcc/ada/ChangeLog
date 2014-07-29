@@ -1,3 +1,28 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb: Minor reformatting.
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Add new variables
+	Abrt_Blk and Dummy. Generate a dummy temporary when aborts are
+	not allowed to ensure the symmetrical generation of symbols.
+	* exp_ch7.adb (Build_Object_Declarations): Remove variables A_Expr
+	and E_Decl. Add new variables Decl and Dummy. Generate a dummy
+	temporary when aborts are not allowed to ensure symmertrical
+	generation of symbols.
+	* exp_intr.adb (Expand_Unc_Deallocation): Add new variable
+	Dummy. Generate a dummy temporary when aborts are not allowed
+	to ensure symmertrical generation of symbols.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration): For an object
+	renaming, indicate that the renamed entity itself needs debug
+	information. This is necessary if that entity is a temporary,
+	e.g. part of the expansion of an explicit dereference in an
+	iterator.
+
 2014-07-29  Thomas Quinot  <quinot@adacore.com>
 
 	* errout.adb (Set_Error_Posted): When propagating flag to
