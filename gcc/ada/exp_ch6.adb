@@ -1754,7 +1754,7 @@ package body Exp_Ch6 is
 
                  --  Skip predicate checks for special cases
 
-                 and then not No_Predicate_Test_On_Arguments (Subp)
+                 and then Predicate_Tests_On_Arguments (Subp)
                then
                   Append_To (Post_Call,
                     Make_Predicate_Check (Atyp, Actual));

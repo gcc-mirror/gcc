@@ -266,7 +266,6 @@ package body Sem_Ch6 is
       --  declaration is completed. Def_Id is needed to analyze the spec.
 
       New_Body : Node_Id;
-      New_Decl : Node_Id;
       New_Spec : Node_Id;
       Ret      : Node_Id;
 
@@ -434,10 +433,7 @@ package body Sem_Ch6 is
               ("an expression function is not a legal protected operation", N);
          end if;
 
-         New_Decl :=
-           Make_Subprogram_Declaration (Loc, Specification => Spec);
-
-         Rewrite (N, New_Decl);
+         Rewrite (N, Make_Subprogram_Declaration (Loc, Specification => Spec));
 
          --  Correct the parent pointer of the aspect specification list to
          --  reference the rewritten node.
@@ -447,7 +443,15 @@ package body Sem_Ch6 is
          end if;
 
          Analyze (N);
-         Set_Is_Inlined (Defining_Entity (New_Decl));
+         Set_Is_Inlined (Defining_Entity (N));
+
+         --  Establish the linkages between the spec and the body. These are
+         --  used when the expression function acts as the prefix of attribute
+         --  'Access in order to freeze the original expression which has been
+         --  moved to the generated body.
+
+         Set_Corresponding_Body (N, Defining_Entity (New_Body));
+         Set_Corresponding_Spec (New_Body, Defining_Entity (N));
 
          --  To prevent premature freeze action, insert the new body at the end
          --  of the current declarations, or at the end of the package spec.
@@ -461,7 +465,7 @@ package body Sem_Ch6 is
          declare
             Decls : List_Id            := List_Containing (N);
             Par   : constant Node_Id   := Parent (Decls);
-            Id    : constant Entity_Id := Defining_Entity (New_Decl);
+            Id    : constant Entity_Id := Defining_Entity (N);
 
          begin
             if Nkind (Par) = N_Package_Specification
