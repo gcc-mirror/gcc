@@ -917,7 +917,7 @@ package Snames is
    Name_Overlaps_Storage               : constant Name_Id := N + $; -- GNAT
    Name_Partition_ID                   : constant Name_Id := N + $;
    Name_Passed_By_Reference            : constant Name_Id := N + $; -- GNAT
-   Name_Pool_Address                   : constant Name_Id := N + $;
+   Name_Pool_Address                   : constant Name_Id := N + $; -- GNAT
    Name_Pos                            : constant Name_Id := N + $;
    Name_Position                       : constant Name_Id := N + $;
    Name_Priority                       : constant Name_Id := N + $; -- Ada 05
@@ -937,7 +937,7 @@ package Snames is
    Name_Scaling                        : constant Name_Id := N + $;
    Name_Signed_Zeros                   : constant Name_Id := N + $;
    Name_Size                           : constant Name_Id := N + $;
-   Name_Small                          : constant Name_Id := N + $;
+   Name_Small                          : constant Name_Id := N + $; -- Ada 83
    Name_Storage_Size                   : constant Name_Id := N + $;
    Name_Storage_Unit                   : constant Name_Id := N + $; -- GNAT
    Name_Stream_Size                    : constant Name_Id := N + $; -- Ada 05
@@ -951,7 +951,7 @@ package Snames is
    Name_UET_Address                    : constant Name_Id := N + $; -- GNAT
    Name_Unbiased_Rounding              : constant Name_Id := N + $;
    Name_Unchecked_Access               : constant Name_Id := N + $;
-   Name_Unconstrained_Array            : constant Name_Id := N + $;
+   Name_Unconstrained_Array            : constant Name_Id := N + $; -- GNAT
    Name_Universal_Literal_String       : constant Name_Id := N + $; -- GNAT
    Name_Unrestricted_Access            : constant Name_Id := N + $; -- GNAT
    Name_Update                         : constant Name_Id := N + $; -- GNAT
@@ -1024,7 +1024,7 @@ package Snames is
    First_Type_Attribute_Name           : constant Name_Id := N + $;
    Name_Base                           : constant Name_Id := N + $;
    Name_Class                          : constant Name_Id := N + $;
-   Name_Stub_Type                      : constant Name_Id := N + $;
+   Name_Stub_Type                      : constant Name_Id := N + $; -- GNAT
    Last_Type_Attribute_Name            : constant Name_Id := N + $;
    Last_Entity_Attribute_Name          : constant Name_Id := N + $;
    Last_Attribute_Name                 : constant Name_Id := N + $;

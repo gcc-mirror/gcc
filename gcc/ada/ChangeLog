@@ -1,3 +1,12 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-except.adb: Minor comment clarification.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Complete list of implementation attributes.
+	* snames.ads-tmpl: Clean up list of impl-defined attributes.
+
 2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Perform various

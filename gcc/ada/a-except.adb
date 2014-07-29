@@ -371,6 +371,10 @@ package body Ada.Exceptions is
    --  which uses the exceptmsg.awk script to generate require exception data,
    --  and this script requires and expects that this ordering rule holds.
 
+   --  The one exception is that Rcheck_PE_Finalize_Raise_Exception is at the
+   --  end of the list (for reasons that are documented with this routine). The
+   --  script (exceptmsg.awk) has this special exception built in.
+
    procedure Rcheck_CE_Access_Check
      (File : System.Address; Line : Integer);
    procedure Rcheck_CE_Null_Access_Parameter
