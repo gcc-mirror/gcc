@@ -3435,9 +3435,8 @@ package body Exp_Util is
                    or else Etype (Assoc_Node) /= Standard_Void_Type)
         and then Nkind (Assoc_Node) /= N_Procedure_Call_Statement
         and then (Nkind (Assoc_Node) /= N_Attribute_Reference
-                   or else
-                     not Is_Procedure_Attribute_Name
-                           (Attribute_Name (Assoc_Node)))
+                   or else not Is_Procedure_Attribute_Name
+                                 (Attribute_Name (Assoc_Node)))
       then
          N := Assoc_Node;
          P := Parent (Assoc_Node);
@@ -4557,6 +4556,17 @@ package body Exp_Util is
       --  Start of processing for Is_Aliased
 
       begin
+         --  'Reference-d or renamed transient objects are not consider aliased
+         --  when the related context is a Boolean expression_with_actions. The
+         --  Boolean result is always known after the action list is evaluated,
+         --  therefore the transient objects must be finalized at that point.
+
+         if Nkind (Rel_Node) = N_Expression_With_Actions
+           and then Is_Boolean_Type (Etype (Rel_Node))
+         then
+            return False;
+         end if;
+
          Stmt := First_Stmt;
          while Present (Stmt) loop
             if Nkind (Stmt) = N_Object_Declaration then
@@ -4652,8 +4662,7 @@ package body Exp_Util is
                if Nkind (Stmt) = N_Object_Declaration
                  and then Present (Expression (Stmt))
                  and then Nkind (Expression (Stmt)) = N_Reference
-                 and then Nkind (Prefix (Expression (Stmt))) =
-                            N_Function_Call
+                 and then Nkind (Prefix (Expression (Stmt))) = N_Function_Call
                then
                   Call := Prefix (Expression (Stmt));
 
@@ -7441,9 +7450,7 @@ package body Exp_Util is
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
               and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                N_Object_Declaration
-              and then Is_Finalizable_Transient
-                         (Status_Flag_Or_Transient_Decl (Obj_Id), Decl)
+                                                        N_Object_Declaration
             then
                return True;
 
@@ -7464,9 +7471,8 @@ package body Exp_Util is
             --  treated as controlled since they require manual cleanup.
 
             elsif Ekind (Obj_Id) = E_Variable
-              and then
-                (Is_Simple_Protected_Type (Obj_Typ)
-                  or else Has_Simple_Protected_Object (Obj_Typ))
+              and then (Is_Simple_Protected_Type (Obj_Typ)
+                         or else Has_Simple_Protected_Object (Obj_Typ))
             then
                return True;
             end if;
@@ -7529,9 +7535,7 @@ package body Exp_Util is
                   and then not Is_Access_Subprogram_Type (Typ)
                   and then Needs_Finalization
                              (Available_View (Designated_Type (Typ))))
-               or else
-                (Is_Type (Typ)
-                  and then Needs_Finalization (Typ)))
+                or else (Is_Type (Typ) and then Needs_Finalization (Typ)))
               and then Requires_Cleanup_Actions
                          (Actions (Decl), Lib_Level, Nested_Constructs)
             then
@@ -7756,7 +7760,8 @@ package body Exp_Util is
       if Ialign /= No_Uint and then Ialign > Maximum_Alignment then
          return True;
 
-      elsif Ialign /= No_Uint and then Oalign /= No_Uint
+      elsif Ialign /= No_Uint
+        and then Oalign /= No_Uint
         and then Ialign <= Oalign
       then
          return True;
@@ -8327,7 +8332,7 @@ package body Exp_Util is
 
          when N_Range =>
             return Side_Effect_Free (Low_Bound (N),  Name_Req, Variable_Ref)
-                      and then
+                     and then
                    Side_Effect_Free (High_Bound (N), Name_Req, Variable_Ref);
 
          --  A slice is side effect free if it is a side effect free
