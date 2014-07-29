@@ -8097,7 +8097,7 @@ package body Sem_Ch13 is
                if Has_Static_Predicate_Aspect (Typ) then
                   if Is_Scalar_Type (Typ) or else Is_String_Type (Typ) then
                      Error_Msg_F
-                       ("expression is not predicate-static (RM 4.3.2(16-22))",
+                       ("expression is not predicate-static (RM 3.2.4(16-22))",
                         EN);
                   else
                      Error_Msg_F

@@ -795,7 +795,7 @@ package Types is
    --  mechanism. See specification of Sem_Mech for full details. The following
    --  subtype is used to represent values of this type:
 
-   subtype Mechanism_Type is Int range -18 .. Int'Last;
+   subtype Mechanism_Type is Int range -18 .. 0;
    --  Type used to represent a mechanism value. This is a subtype rather than
    --  a type to avoid some annoying processing problems with certain routines
    --  in Einfo (processing them to create the corresponding C).
