@@ -6127,8 +6127,10 @@ package body Sem_Res is
       --  In GNATprove_Mode expansion is disabled, but we want to inline
       --  subprograms that are marked Inline_Always, since the inlining
       --  is useful in making it easier to prove things about the inlined body.
+      --  Indirect calls, through a subprogram type, cannot be inlined.
 
       if GNATprove_Mode
+        and then Is_Overloadable (Nam)
         and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
         and then Present (Body_To_Inline (Unit_Declaration_Node (Nam)))
       then
