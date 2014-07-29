@@ -3173,7 +3173,7 @@ package body Exp_Ch3 is
 
       exception
          when RE_Not_Available =>
-         return Empty_List;
+            return Empty_List;
       end Build_Init_Statements;
 
       -------------------------

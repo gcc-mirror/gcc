@@ -8501,7 +8501,9 @@ In addition, Ada allows implementations to define additional
 attributes whose meaning is defined by the implementation.  GNAT provides
 a number of these implementation-dependent attributes which can be used
 to extend and enhance the functionality of the compiler.  This section of
-the GNAT reference manual describes these additional attributes.
+the GNAT reference manual describes these additional attributes.  It also
+describes additional implementation-dependent features of standard
+language-defined attributes.
 
 Note that any program using these attributes may not be portable to
 other compilers (although GNAT implements this set of attributes on all
@@ -8983,7 +8985,8 @@ input-output functions for fixed-point values.
 @unnumberedsec Attribute From_Any
 @findex From_Any
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+This internal attribute is used for the generation of remote subprogram
+stubs in the context of the Distributed Systems Annex.
 
 @node Attribute Has_Access_Values
 @unnumberedsec Attribute Has_Access_Values
@@ -9322,7 +9325,13 @@ statically matching subtypes.
 @unnumberedsec Attribute Old
 @findex Old
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+In addition to the usage of Old defined in the Ada 2012 RM (usage
+within @code{Post} aspect), GNAT also permits the use of this attribute
+in implementation defined pragmas @code{Postcondition},
+@code{Loop_Entry}, and @code{Contract_Cases}. Also usages of
+@code{Old} which would be illegal according to the Ada 2012 RM
+definition are allowed under control of
+implementation defined pragma @code{Allow_Unevaluated_Use_Of_Old}.
 
 @node Attribute Passed_By_Reference
 @unnumberedsec Attribute Passed_By_Reference
@@ -9725,7 +9734,8 @@ a 32 bits machine).
 @unnumberedsec Attribute To_Any
 @findex To_Any
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+This internal attribute is used for the generation of remote subprogram
+stubs in the context of the Distributed Systems Annex.
 
 @node Attribute Type_Class
 @unnumberedsec Attribute Type_Class
@@ -9759,13 +9769,17 @@ be compatible with the DEC Ada 83 attribute of the same name.
 @unnumberedsec Attribute Type_Key
 @findex Type_Key
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+The @code{Type_Key} attribute is applicable to a type or subtype and
+yields a value of type Standard.String containing encoded information
+about the type or subtype. This provides improved compatibility with
+other implementations that support this attribute.
 
 @node Attribute TypeCode
 @unnumberedsec Attribute TypeCode
 @findex TypeCode
 @noindent
-PLEASE ADD DOCUMENTATION HERE???
+This internal attribute is used for the generation of remote subprogram
+stubs in the context of the Distributed Systems Annex.
 
 @node Attribute UET_Address
 @unnumberedsec Attribute UET_Address

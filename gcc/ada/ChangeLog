@@ -1,3 +1,13 @@
+2014-07-29  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Document internal attributes used for PolyORB/DSA
+	distributed stubs generation.
+	* exp_ch3.adb: Minor reformatting.
+
+2014-07-29  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Document constraint between frontend and GNATprove.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* a-except.adb: Minor comment clarification.
