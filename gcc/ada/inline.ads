@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This module handles two kinds of inlining activity:
+--  This module handles three kinds of inlining activity:
 
 --  a) Instantiation of generic bodies. This is done unconditionally, after
 --  analysis and expansion of the main unit.
@@ -34,6 +34,13 @@
 --  generate another generic expansion and further inlined calls. For now each
 --  of them uses a workpile algorithm, but they are called independently from
 --  Frontend, and thus are not mutually recursive.
+
+--  Front-end inlining for subprograms marked Inline_Always. This is primarily
+--  an expansion activity that is performed for performance reasons, and when
+--  the target does not use the gcc backend.  Inline_Always can also be used
+--  in the context of GNATprove, to perform source transformations to simplify
+--  proof obligations. The machinery used in both cases is similar, but there
+--  are fewer restrictions on the source of subprograms in the latter case.
 
 with Alloc;
 with Opt;    use Opt;
@@ -122,7 +129,11 @@ package Inline is
      Table_Increment      => Alloc.Pending_Instantiations_Increment,
      Table_Name           => "Pending_Descriptor");
 
-   -----------------
+   Inlined_Calls : Elist_Id := No_Elist;
+   Backend_Calls : Elist_Id := No_Elist;
+   --  List of frontend inlined calls and inline calls passed to the backend
+
+-----------------
    -- Subprograms --
    -----------------
 
@@ -147,11 +158,75 @@ package Inline is
    --  At end of compilation, analyze the bodies of all units that contain
    --  inlined subprograms that are actually called.
 
+   procedure Build_Body_To_Inline (N : Node_Id; Subp : Entity_Id);
+   --  If a subprogram has pragma Inline and inlining is active, use generic
+   --  machinery to build an unexpanded body for the subprogram. This body is
+   --  subsequently used for inline expansions at call sites. If subprogram can
+   --  be inlined (depending on size and nature of local declarations) this
+   --  function returns true. Otherwise subprogram body is treated normally.
+   --  If proper warnings are enabled and the subprogram contains a construct
+   --  that cannot be inlined, the offending construct is flagged accordingly.
+
+   procedure Cannot_Inline
+      (Msg        : String;
+      N          : Node_Id;
+      Subp       : Entity_Id;
+      Is_Serious : Boolean := False);
+   --  This procedure is called if the node N, an instance of a call to
+   --  subprogram Subp, cannot be inlined. Msg is the message to be issued,
+   --  which ends with ? (it does not end with ?p?, this routine takes care of
+   --  the need to change ? to ?p?). Temporarily the behavior of this routine
+   --  depends on the value of -gnatd.k:
+   --
+   --    * If -gnatd.k is not set (ie. old inlining model) then if Subp has
+   --      a pragma Always_Inlined, then an error message is issued (by
+   --      removing the last character of Msg). If Subp is not Always_Inlined,
+   --      then a warning is issued if the flag Ineffective_Inline_Warnings
+   --      is set, adding ?p to the msg, and if not, the call has no effect.
+   --
+   --    * If -gnatd.k is set (ie. new inlining model) then:
+   --      - If Is_Serious is true, then an error is reported (by removing the
+   --        last character of Msg);
+   --
+   --      - otherwise:
+   --
+   --        * Compiling without optimizations if Subp has a pragma
+   --          Always_Inlined, then an error message is issued; if Subp is
+   --          not Always_Inlined, then a warning is issued if the flag
+   --          Ineffective_Inline_Warnings is set (adding p?), and if not,
+   --          the call has no effect.
+   --
+   --        * Compiling with optimizations then a warning is issued if the
+   --          flag Ineffective_Inline_Warnings is set (adding p?); otherwise
+   --          no effect since inlining may be performed by the backend.
+
+   procedure Check_And_Build_Body_To_Inline
+     (N       : Node_Id;
+      Spec_Id : Entity_Id;
+      Body_Id : Entity_Id);
+   --  Spec_Id and Body_Id are the entities of the specification and body of
+   --  the subprogram body N. If N can be inlined by the frontend (supported
+   --  cases documented in Check_Body_To_Inline) then build the body-to-inline
+   --  associated with N and attach it to the declaration node of Spec_Id.
+
    procedure Check_Body_For_Inlining (N : Node_Id; P : Entity_Id);
    --  If front-end inlining is enabled and a package declaration contains
    --  inlined subprograms, load and compile the package body to collect the
    --  bodies of these subprograms, so they are available to inline calls.
    --  N is the compilation unit for the package.
+
+   procedure Expand_Inlined_Call
+    (N         : Node_Id;
+     Subp      : Entity_Id;
+     Orig_Subp : Entity_Id);
+   --  If called subprogram can be inlined by the front-end, retrieve the
+   --  analyzed body, replace formals with actuals and expand call in place.
+   --  Generate thunks for actuals that are expressions, and insert the
+   --  corresponding constant declarations before the call. If the original
+   --  call is to a derived operation, the return type is the one of the
+   --  derived operation, but the body is that of the original, so return
+   --  expressions in the body must be converted to the desired type (which
+   --  is simply not noted in the tree without inline expansion).
 
    procedure Remove_Dead_Instance (N : Node_Id);
    --  If an instantiation appears in unreachable code, delete the pending
