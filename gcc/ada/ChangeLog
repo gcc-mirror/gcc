@@ -1,5 +1,53 @@
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.adb (Derived_Type_Link): New function
+	(Set_Derived_Type_Link): New procedure.
+	(Write_Field31_Name): Output Derived_Type_Link.
+	* einfo.ads: New field Derived_Type_Link.
+	* exp_ch6.adb (Expand_Call): Warn if change of representation
+	needed on call.
+	* sem_ch13.adb: Minor addition of ??? comment.
+	(Rep_Item_Too_Late): Warn on case that is legal but could cause an
+	expensive implicit conversion.
+	* sem_ch3.adb (Build_Derived_Type): Set Derived_Type_Link if needed.
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Procedure): Renamed Local_DF_Id
+	to DF_Id. Add new local variable DF_Call. Do not perform any
+	elaboration-related checks on the call to the partial finalization
+	routine within an init proc to avoid generating bogus elaboration
+	warnings on expansion-related code.
+	* sem_elab.adb (Check_A_Call): Move constant Access_Case to
+	the top level of the routine.  Ensure that Output_Calls takes
+	into account flags -gnatel and -gnatwl when emitting warnings
+	or info messages.
+	(Check_Internal_Call_Continue): Update the call to Output_Calls.
+	(Elab_Warning): Moved to the top level of routine Check_A_Call.
+	(Emit): New routines.
+	(Output_Calls): Add new formal parameter Check_Elab_Flag along with a
+	comment on usage. Output all warnings or info messages only when the
+	caller context demands it and the proper elaboration flag is set.
+
+2014-07-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute/Attribute_Old):
+	Check rule about Old appearing in potentially unevaluated
+	expression everywhere, not only in Post.
+
+2014-07-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb: Update comment.
+	* a-except.adb, a-except-2005.adb: Minor editing.
+
+2014-07-29  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration):
+	Do not create renaming entities for renamings of non-packed
+	objects and for exceptions.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sinfo.ads, types.ads, sem_prag.adb, a-except-2005.adb,
 	sem_ch6.adb, par-ch3.adb: Minor reformatting.
 

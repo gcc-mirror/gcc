@@ -8503,6 +8503,12 @@ package body Sem_Ch3 is
       Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
       Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
 
+      --  If the parent has primitive routines, set the derived type link
+
+      if Has_Primitive_Operations (Parent_Type) then
+         Set_Derived_Type_Link (Parent_Base, Derived_Type);
+      end if;
+
       --  If the parent type is a private subtype, the convention on the base
       --  type may be set in the private part, and not propagated to the
       --  subtype until later, so we obtain the convention from the base type.

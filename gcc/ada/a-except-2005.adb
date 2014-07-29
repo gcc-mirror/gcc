@@ -404,17 +404,6 @@ package body Ada.Exceptions is
    --  attached. The parameters are the file name and line number in each
    --  case. The names are defined by Exp_Ch11.Get_RT_Exception_Name.
 
-   --  Note on ordering of these routines. Normally in the Ada.Exceptions units
-   --  we don't care about the ordering of entries for Rcheck routines, and
-   --  the normal approach is to keep them in the same order as declarations
-   --  in Types.
-
-   --  This section is an IMPORTANT EXCEPTION. It is essential that the
-   --  routines in this section be declared in the same order as the Rmsg_xx
-   --  constants in the following section. This is required by the .Net runtime
-   --  which uses the exceptmsg.awk script to generate require exception data,
-   --  and this script requires and expects that this ordering rule holds.
-
    procedure Rcheck_CE_Access_Check
      (File : System.Address; Line : Integer);
    procedure Rcheck_CE_Null_Access_Parameter
