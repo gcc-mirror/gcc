@@ -271,7 +271,7 @@ package body Sem_Elab is
    --  are all continuation messages. The argument is the call node at which
    --  the messages are to be placed. When Check_Elab_Flag is set, calls are
    --  enumerated only when flag Elab_Warning is set for the dynamic case or
-   --  when flag Elab_Info_Messages is set for the statis case.
+   --  when flag Elab_Info_Messages is set for the static case.
 
    function Same_Elaboration_Scope (Scop1, Scop2 : Entity_Id) return Boolean;
    --  Given two scopes, determine whether they are the same scope from an

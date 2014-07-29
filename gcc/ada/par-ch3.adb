@@ -3967,10 +3967,12 @@ package body Ch3 is
       if not Header_Already_Parsed then
 
          --  NOT NULL ACCESS .. is a common form of access definition.
-         --  ACCESS NON NULL ..  is certainly rare, but syntactically legal.
+         --  ACCESS NOT NULL ..  is certainly rare, but syntactically legal.
          --  NOT NULL ACCESS NOT NULL .. is rarer yet, and also legal.
          --  The last two cases are only meaningful if the following subtype
-         --  indication denotes an access type (semantic check).
+         --  indication denotes an access type (semantic check). The flag
+         --  Not_Null_Subtype indicates that this second null exclusion is
+         --  present in the access type definition.
 
          Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
          Scan; -- past ACCESS

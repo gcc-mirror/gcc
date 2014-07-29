@@ -110,10 +110,9 @@ package body GNAT.Expect is
       Dead_Process : access Integer;
       Is_Set       : System.Address) return Integer;
    pragma Import (C, Poll, "__gnat_expect_poll");
-   --  Check whether there is any data waiting on the file descriptors
-   --  Fds, and wait if there is none, at most Timeout milliseconds
-   --  Returns -1 in case of error, 0 if the timeout expired before
-   --  data became available.
+   --  Check whether there is any data waiting on the file descriptors Fds, and
+   --  wait if there is none, at most Timeout milliseconds Returns -1 in case
+   --  of error, 0 if the timeout expired before data became available.
    --
    --  Is_Set is an array of the same size as FDs and elements are set to 1 if
    --  data is available for the corresponding File Descriptor, 0 otherwise.

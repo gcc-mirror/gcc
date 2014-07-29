@@ -1951,9 +1951,17 @@ package body Sem_Ch6 is
             then
                --  AI05-0151: Tagged incomplete types are allowed in all formal
                --  parts. Untagged incomplete types are not allowed in bodies.
+               --  As a consequence, limited views cannot appear in a basic
+               --  declaration that is itself within a body, because there is
+               --  no point at which the non-limited view will become visible.
 
                if Ada_Version >= Ada_2012 then
-                  if Is_Tagged_Type (Typ) then
+                  if From_Limited_With (Typ) and then In_Package_Body then
+                     Error_Msg_NE
+                       ("invalid use of incomplete type&",
+                          Result_Definition (N), Typ);
+
+                  elsif Is_Tagged_Type (Typ) then
                      null;
 
                   elsif Nkind (Parent (N)) = N_Subprogram_Body
@@ -11328,10 +11336,10 @@ package body Sem_Ch6 is
                --  dependents of the type.
 
                if Is_Tagged_Type (Formal_Type)
-                 or else Ada_Version >= Ada_2012
+                 or else (Ada_Version >= Ada_2012
+                           and then not From_Limited_With (Formal_Type))
                then
                   if Ekind (Scope (Current_Scope)) = E_Package
-                    and then not From_Limited_With (Formal_Type)
                     and then not Is_Generic_Type (Formal_Type)
                     and then not Is_Class_Wide_Type (Formal_Type)
                   then
@@ -11363,13 +11371,19 @@ package body Sem_Ch6 is
                then
                   --  AI05-0151: Tagged incomplete types are allowed in all
                   --  formal parts. Untagged incomplete types are not allowed
-                  --  in bodies.
+                  --  in bodies. Limited views of either kind are not allowed
+                  --  if there is no place at which the non-limited view can
+                  --  become available.
 
                   if Ada_Version >= Ada_2012 then
-                     if Is_Tagged_Type (Formal_Type) then
+                     if Is_Tagged_Type (Formal_Type)
+                       and then (not From_Limited_With (Formal_Type)
+                                  or else not In_Package_Body)
+                     then
                         null;
 
                      elsif Nkind_In (Parent (Parent (T)), N_Accept_Statement,
+                                                          N_Accept_Alternative,
                                                           N_Entry_Body,
                                                           N_Subprogram_Body)
                      then

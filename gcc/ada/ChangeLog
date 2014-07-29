@@ -1,3 +1,16 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_dbug.adb, g-expect.adb, sem_elab.adb: Minor typo fix.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Return_Type): Reject a return type that
+	is a limited view when the context is a package body, because
+	there is no subsequent place at which the non-limited view may
+	become visible.
+	(Process_Formals): Ditto.
+	* sinfo.ads, par-ch3.adb: Minor reformatting.
+
 2014-07-29  Jerome Lambourg  <lambourg@adacore.com>
 
 	* expect.c (__gnat_expect_poll): New parameter dead_process
