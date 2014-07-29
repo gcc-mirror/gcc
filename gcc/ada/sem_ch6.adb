@@ -1942,7 +1942,7 @@ package body Sem_Ch6 is
                   if From_Limited_With (Typ) and then In_Package_Body then
                      Error_Msg_NE
                        ("invalid use of incomplete type&",
-                          Result_Definition (N), Typ);
+                        Result_Definition (N), Typ);
 
                   elsif Is_Tagged_Type (Typ) then
                      null;
@@ -3960,7 +3960,8 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("interface procedure % must be abstract or null", N);
                else
-                  Error_Msg_N ("interface function % must be abstract", N);
+                  Error_Msg_N
+                    ("interface function % must be abstract", N);
                end if;
             end if;
          end;
@@ -4168,9 +4169,9 @@ package body Sem_Ch6 is
          --  the check is applied later (see Analyze_Subprogram_Declaration).
 
          if not Nkind_In (Original_Node (Parent (N)),
-                            N_Subprogram_Renaming_Declaration,
-                            N_Abstract_Subprogram_Declaration,
-                            N_Formal_Abstract_Subprogram_Declaration)
+                          N_Subprogram_Renaming_Declaration,
+                          N_Abstract_Subprogram_Declaration,
+                          N_Formal_Abstract_Subprogram_Declaration)
          then
             if Is_Abstract_Type (Etype (Designator))
               and then not Is_Interface (Etype (Designator))
@@ -4188,7 +4189,7 @@ package body Sem_Ch6 is
               and then Ada_Version >= Ada_2012
             then
                Error_Msg_N ("function whose access result designates "
-                 & "abstract type must be abstract", N);
+                            & "abstract type must be abstract", N);
             end if;
          end if;
       end if;

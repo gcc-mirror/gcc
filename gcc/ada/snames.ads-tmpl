@@ -56,8 +56,8 @@ package Snames is
 
    --  First we have the one character names used to optimize the lookup
    --  process for one character identifiers (to avoid the hashing in this
-   --  case) There are a full 256 of these, but only the entries for lower case
-   --  and upper case letters have identifiers
+   --  case) There are a full 256 of these, but only the entries for lower
+   --  case and upper case letters have identifiers
 
    --  The lower case letter entries are used for one character identifiers
    --  appearing in the source, for example in pragma Interface (C).

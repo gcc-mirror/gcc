@@ -108,9 +108,9 @@ package body Inline is
       Next : Succ_Index;
    end record;
 
-   --  The following table stores list elements for the successor lists.
-   --  These lists cannot be chained directly through entries in the Inlined
-   --  table, because a given subprogram can appear in several such lists.
+   --  The following table stores list elements for the successor lists. These
+   --  lists cannot be chained directly through entries in the Inlined table,
+   --  because a given subprogram can appear in several such lists.
 
    package Successors is new Table.Table (
       Table_Component_Type => Succ_Info,
@@ -143,8 +143,8 @@ package body Inline is
 
    function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id;
    pragma Inline (Get_Code_Unit_Entity);
-   --  Return the entity node for the unit containing E. Always return
-   --  the spec for a package.
+   --  Return the entity node for the unit containing E. Always return the spec
+   --  for a package.
 
    function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean;
    --  Return True if E is in the main unit or its spec or in a subunit
@@ -163,12 +163,11 @@ package body Inline is
    --  non-trivial initialization procedures, they are not worth inlining.
 
    function Is_Nested (E : Entity_Id) return Boolean;
-   --  If the function is nested inside some other function, it will
-   --  always be compiled if that function is, so don't add it to the
-   --  inline list. We cannot compile a nested function outside the
-   --  scope of the containing function anyway. This is also the case if
-   --  the function is defined in a task body or within an entry (for
-   --  example, an initialization procedure).
+   --  If the function is nested inside some other function, it will always
+   --  be compiled if that function is, so don't add it to the inline list.
+   --  We cannot compile a nested function outside the scope of the containing
+   --  function anyway. This is also the case if the function is defined in a
+   --  task body or within an entry (for example, an initialization procedure).
 
    procedure Add_Inlined_Subprogram (Index : Subp_Index);
    --  Add the subprogram to the list of inlined subprogram for the unit
@@ -178,12 +177,12 @@ package body Inline is
    ------------------------------
 
    --  The cleanup actions for scopes that contain instantiations is delayed
-   --  until after expansion of those instantiations, because they may
-   --  contain finalizable objects or tasks that affect the cleanup code.
-   --  A scope that contains instantiations only needs to be finalized once,
-   --  even if it contains more than one instance. We keep a list of scopes
-   --  that must still be finalized, and call cleanup_actions after all the
-   --  instantiations have been completed.
+   --  until after expansion of those instantiations, because they may contain
+   --  finalizable objects or tasks that affect the cleanup code. A scope
+   --  that contains instantiations only needs to be finalized once, even
+   --  if it contains more than one instance. We keep a list of scopes
+   --  that must still be finalized, and call cleanup_actions after all
+   --  the instantiations have been completed.
 
    To_Clean : Elist_Id;
 
@@ -299,9 +298,7 @@ package body Inline is
          while Scope (Scop) /= Standard_Standard
            and then not Is_Child_Unit (Scop)
          loop
-            if Is_Overloadable (Scop)
-              and then Is_Inlined (Scop)
-            then
+            if Is_Overloadable (Scop) and then Is_Inlined (Scop) then
                Add_Call (E, Scop);
 
                if Inline_Level = 1 then
@@ -430,9 +427,9 @@ package body Inline is
          end if;
 
          if Present
-          (Exception_Handlers
-            (Handled_Statement_Sequence
-              (Unit_Declaration_Node (Corresponding_Body (Decl)))))
+              (Exception_Handlers
+                 (Handled_Statement_Sequence
+                    (Unit_Declaration_Node (Corresponding_Body (Decl)))))
          then
             return True;
          end if;
@@ -462,8 +459,8 @@ package body Inline is
 
       if Is_Inlined (E)
         and then (Is_Inlined (Pack)
-                    or else Is_Generic_Instance (Pack)
-                    or else Is_Internal (E))
+                   or else Is_Generic_Instance (Pack)
+                   or else Is_Internal (E))
         and then not In_Main_Unit_Or_Subunit (E)
         and then not Is_Nested (E)
         and then not Has_Initialized_Type (E)
@@ -848,9 +845,9 @@ package body Inline is
       --  elementary statements, as a measure of acceptable size.
 
       function Has_Pending_Instantiation return Boolean;
-      --  If some enclosing body contains instantiations that appear before the
-      --  corresponding generic body, the enclosing body has a freeze node so
-      --  that it can be elaborated after the generic itself. This might
+      --  If some enclosing body contains instantiations that appear before
+      --  the corresponding generic body, the enclosing body has a freeze node
+      --  so that it can be elaborated after the generic itself. This might
       --  conflict with subsequent inlinings, so that it is unsafe to try to
       --  inline in such a case.
 
@@ -919,7 +916,7 @@ package body Inline is
          D := First (Decls);
          while Present (D) loop
             if (Nkind (D) = N_Function_Instantiation
-                  and then not Is_Unchecked_Conversion (D))
+                 and then not Is_Unchecked_Conversion (D))
               or else Nkind_In (D, N_Protected_Type_Declaration,
                                    N_Package_Declaration,
                                    N_Package_Instantiation,
@@ -972,10 +969,10 @@ package body Inline is
                elsif Present (Handled_Statement_Sequence (S))
                   and then
                     (Present
-                      (Exception_Handlers (Handled_Statement_Sequence (S)))
-                     or else
-                       Has_Excluded_Statement
-                         (Statements (Handled_Statement_Sequence (S))))
+                       (Exception_Handlers (Handled_Statement_Sequence (S)))
+                      or else
+                        Has_Excluded_Statement
+                          (Statements (Handled_Statement_Sequence (S))))
                then
                   return True;
                end if;
@@ -1019,9 +1016,10 @@ package body Inline is
 
             elsif Nkind (S) = N_Extended_Return_Statement then
                if Has_Excluded_Statement
-                  (Statements (Handled_Statement_Sequence (S)))
-                 or else Present
-                   (Exception_Handlers (Handled_Statement_Sequence (S)))
+                    (Statements (Handled_Statement_Sequence (S)))
+                 or else
+                   Present
+                     (Exception_Handlers (Handled_Statement_Sequence (S)))
                then
                   return True;
                end if;
@@ -1251,9 +1249,9 @@ package body Inline is
                First (Exception_Handlers (Handled_Statement_Sequence (N))),
                Subp);
             return;
+
          elsif
-           Has_Excluded_Statement
-             (Statements (Handled_Statement_Sequence (N)))
+           Has_Excluded_Statement (Statements (Handled_Statement_Sequence (N)))
          then
             return;
          end if;
@@ -1293,11 +1291,11 @@ package body Inline is
 
       --  We need to capture references to the formals in order to substitute
       --  the actuals at the point of inlining, i.e. instantiation. To treat
-      --  the formals as globals to the body to inline, we nest it within
-      --  a dummy parameterless subprogram, declared within the real one.
-      --  To avoid generating an internal name (which is never public, and
-      --  which affects serial numbers of other generated names), we use
-      --  an internal symbol that cannot conflict with user declarations.
+      --  the formals as globals to the body to inline, we nest it within a
+      --  dummy parameterless subprogram, declared within the real one. To
+      --  avoid generating an internal name (which is never public, and which
+      --  affects serial numbers of other generated names), we use an internal
+      --  symbol that cannot conflict with user declarations.
 
       Set_Parameter_Specifications (Specification (Original_Body), No_List);
       Set_Defining_Unit_Name
@@ -1421,7 +1419,7 @@ package body Inline is
                   Gen_P : constant Entity_Id := Generic_Parent (Parent (Subp));
                begin
                   if Is_Predefined_File_Name
-                    (Unit_File_Name (Get_Source_Unit (Gen_P)))
+                       (Unit_File_Name (Get_Source_Unit (Gen_P)))
                   then
                      Set_Is_Inlined (Subp, False);
                      Error_Msg_NE (Msg & "p?", N, Subp);
@@ -1681,7 +1679,7 @@ package body Inline is
             D := First (Decls);
             while Present (D) loop
                if (Nkind (D) = N_Function_Instantiation
-                   and then not Is_Unchecked_Conversion (D))
+                    and then not Is_Unchecked_Conversion (D))
                  or else Nkind_In (D, N_Protected_Type_Declaration,
                                    N_Package_Declaration,
                                    N_Package_Instantiation,
@@ -1734,17 +1732,17 @@ package body Inline is
 
                   elsif Present (Handled_Statement_Sequence (S)) then
                      if Present
-                       (Exception_Handlers (Handled_Statement_Sequence (S)))
+                          (Exception_Handlers (Handled_Statement_Sequence (S)))
                      then
                         Cannot_Inline
                           ("cannot inline& (exception handler)?",
                            First (Exception_Handlers
-                             (Handled_Statement_Sequence (S))),
+                                    (Handled_Statement_Sequence (S))),
                            Subp);
                         return True;
 
                      elsif Has_Excluded_Statement
-                       (Statements (Handled_Statement_Sequence (S)))
+                             (Statements (Handled_Statement_Sequence (S)))
                      then
                         return True;
                      end if;
@@ -1797,7 +1795,7 @@ package body Inline is
                   elsif Present (Handled_Statement_Sequence (S))
                     and then
                       Present (Exception_Handlers
-                               (Handled_Statement_Sequence (S)))
+                                (Handled_Statement_Sequence (S)))
                   then
                      Cannot_Inline
                        ("cannot inline& (exception handler)?",
@@ -1824,9 +1822,7 @@ package body Inline is
          begin
             S := Current_Scope;
             while Present (S) loop
-               if Is_Compilation_Unit (S)
-                 or else Is_Child_Unit (S)
-               then
+               if Is_Compilation_Unit (S) or else Is_Child_Unit (S) then
                   return False;
 
                elsif Ekind (S) = E_Package
@@ -1862,12 +1858,12 @@ package body Inline is
                   if Present (Expression (N)) then
                      declare
                         Orig_Expr : constant Node_Id :=
-                          Original_Node (Expression (N));
+                                      Original_Node (Expression (N));
 
                      begin
                         if Nkind_In (Orig_Expr, N_Integer_Literal,
-                                     N_Real_Literal,
-                                     N_Character_Literal)
+                                                N_Real_Literal,
+                                                N_Character_Literal)
                         then
                            return OK;
 
@@ -2060,14 +2056,12 @@ package body Inline is
             then
                Cannot_Inline
                  ("cannot inline& (exception handler)?",
-                  First
-                    (Exception_Handlers (Handled_Statement_Sequence (N))),
+                  First (Exception_Handlers (Handled_Statement_Sequence (N))),
                   Subp);
-
                return False;
 
             elsif Has_Excluded_Statement
-              (Statements (Handled_Statement_Sequence (N)))
+                    (Statements (Handled_Statement_Sequence (N)))
             then
                return False;
             end if;
@@ -2096,7 +2090,6 @@ package body Inline is
             Cannot_Inline
               ("cannot inline& (forward instance within enclosing body)?",
                N, Subp);
-
             return False;
          end if;
 
@@ -2318,21 +2311,26 @@ package body Inline is
          --  Build a procedure containing the statements found in the extended
          --  return statement of the unconstrained function body N.
 
+         ---------------------
+         -- Build_Procedure --
+         ---------------------
+
          procedure Build_Procedure
            (Proc_Id   : out Entity_Id;
             Decl_List : out List_Id)
          is
-            Formal      : Entity_Id;
-            Formal_List : constant List_Id := New_List;
-            Proc_Spec   : Node_Id;
-            Proc_Body   : Node_Id;
-            Subp_Name   : constant Name_Id := New_Internal_Name ('F');
+            Formal         : Entity_Id;
+            Formal_List    : constant List_Id := New_List;
+            Proc_Spec      : Node_Id;
+            Proc_Body      : Node_Id;
+            Subp_Name      : constant Name_Id := New_Internal_Name ('F');
             Body_Decl_List : List_Id := No_List;
-            Param_Type  : Node_Id;
+            Param_Type     : Node_Id;
 
          begin
             if Nkind (Object_Definition (Ret_Obj)) = N_Identifier then
-               Param_Type := New_Copy (Object_Definition (Ret_Obj));
+               Param_Type :=
+                 New_Copy (Object_Definition (Ret_Obj));
             else
                Param_Type :=
                  New_Copy (Subtype_Mark (Object_Definition (Ret_Obj)));
@@ -2340,39 +2338,38 @@ package body Inline is
 
             Append_To (Formal_List,
               Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
+                Defining_Identifier    =>
                   Make_Defining_Identifier (Loc,
                     Chars => Chars (Defining_Identifier (Ret_Obj))),
-                In_Present  => False,
-                Out_Present => True,
+                In_Present             => False,
+                Out_Present            => True,
                 Null_Exclusion_Present => False,
-                Parameter_Type => Param_Type));
+                Parameter_Type         => Param_Type));
 
             Formal := First_Formal (Spec_Id);
             while Present (Formal) loop
                Append_To (Formal_List,
                  Make_Parameter_Specification (Loc,
-                   Defining_Identifier =>
+                   Defining_Identifier    =>
                      Make_Defining_Identifier (Sloc (Formal),
                        Chars => Chars (Formal)),
-                   In_Present  => In_Present (Parent (Formal)),
-                   Out_Present => Out_Present (Parent (Formal)),
+                   In_Present             => In_Present (Parent (Formal)),
+                   Out_Present            => Out_Present (Parent (Formal)),
                    Null_Exclusion_Present =>
                      Null_Exclusion_Present (Parent (Formal)),
-                   Parameter_Type =>
+                   Parameter_Type         =>
                      New_Occurrence_Of (Etype (Formal), Loc),
-                   Expression =>
+                   Expression             =>
                      Copy_Separate_Tree (Expression (Parent (Formal)))));
 
                Next_Formal (Formal);
             end loop;
 
-            Proc_Id :=
-              Make_Defining_Identifier (Loc, Chars => Subp_Name);
+            Proc_Id := Make_Defining_Identifier (Loc, Chars => Subp_Name);
 
             Proc_Spec :=
               Make_Procedure_Specification (Loc,
-                Defining_Unit_Name => Proc_Id,
+                Defining_Unit_Name       => Proc_Id,
                 Parameter_Specifications => Formal_List);
 
             Decl_List := New_List;
@@ -2434,7 +2431,7 @@ package body Inline is
 
       begin
          --  Build the associated procedure, analyze it and insert it before
-         --  the function body N
+         --  the function body N.
 
          declare
             Scope     : constant Entity_Id := Current_Scope;
@@ -2468,7 +2465,7 @@ package body Inline is
 
             Proc_Call :=
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Occurrence_Of (Proc_Id, Loc),
+                Name                   => New_Occurrence_Of (Proc_Id, Loc),
                 Parameter_Associations => Actual_List);
          end;
 
@@ -2483,7 +2480,7 @@ package body Inline is
 
          Blk_Stmt :=
            Make_Block_Statement (Loc,
-             Declarations => New_List (New_Obj),
+             Declarations               => New_List (New_Obj),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
@@ -2501,14 +2498,14 @@ package body Inline is
    --  Start of processing for Check_And_Build_Body_To_Inline
 
    begin
-      --  Do not inline any subprogram that contains nested subprograms, since
-      --  the backend inlining circuit seems to generate uninitialized
+      --  Do not inline any subprogram that contains nested subprograms,
+      --  since the backend inlining circuit seems to generate uninitialized
       --  references in this case. We know this happens in the case of front
-      --  end ZCX support, but it also appears it can happen in other cases as
-      --  well. The backend often rejects attempts to inline in the case of
-      --  nested procedures anyway, so little if anything is lost by this.
-      --  Note that this is test is for the benefit of the back-end. There is
-      --  a separate test for front-end inlining that also rejects nested
+      --  end ZCX support, but it also appears it can happen in other cases
+      --  as well. The backend often rejects attempts to inline in the case
+      --  of nested procedures anyway, so little if anything is lost by this.
+      --  Note that this is test is for the benefit of the back-end. There
+      --  is a separate test for front-end inlining that also rejects nested
       --  subprograms.
 
       --  Do not do this test if errors have been detected, because in some
@@ -2517,7 +2514,7 @@ package body Inline is
 
       if Comes_From_Source (Body_Id)
         and then (Has_Pragma_Inline_Always (Spec_Id)
-                    or else Optimization_Level > 0)
+                   or else Optimization_Level > 0)
         and then Serious_Errors_Detected = 0
       then
          declare
@@ -2561,6 +2558,7 @@ package body Inline is
          end if;
       end if;
    end Check_And_Build_Body_To_Inline;
+
    -----------------------------
    -- Check_Body_For_Inlining --
    -----------------------------
@@ -2635,7 +2633,7 @@ package body Inline is
                                  Ent := First_Entity (P);
                                  while Present (Ent) loop
                                     if Is_Type (Ent)
-                                       and then Has_Completion_In_Body (Ent)
+                                      and then Has_Completion_In_Body (Ent)
                                     then
                                        Set_Full_View (Ent, Empty);
 
@@ -2692,12 +2690,12 @@ package body Inline is
            and then Is_Protected_Type (Scope (Scop))
            and then Present (Protected_Body_Subprogram (Scop))
          then
-            --  If a protected operation contains an instance, its
-            --  cleanup operations have been delayed, and the subprogram
-            --  has been rewritten in the expansion of the enclosing
-            --  protected body. It is the corresponding subprogram that
-            --  may require the cleanup operations, so propagate the
-            --  information that triggers cleanup activity.
+            --  If a protected operation contains an instance, its cleanup
+            --  operations have been delayed, and the subprogram has been
+            --  rewritten in the expansion of the enclosing protected body. It
+            --  is the corresponding subprogram that may require the cleanup
+            --  operations, so propagate the information that triggers cleanup
+            --  activity.
 
             Set_Uses_Sec_Stack
               (Protected_Body_Subprogram (Scop),
@@ -2712,9 +2710,9 @@ package body Inline is
          else
             Decl := Unit_Declaration_Node (Scop);
 
-            if Nkind (Decl) = N_Subprogram_Declaration
-              or else Nkind (Decl) = N_Task_Type_Declaration
-              or else Nkind (Decl) = N_Subprogram_Body_Stub
+            if Nkind_In (Decl, N_Subprogram_Declaration,
+                               N_Task_Type_Declaration,
+                               N_Subprogram_Body_Stub)
             then
                Decl := Unit_Declaration_Node (Corresponding_Body (Decl));
             end if;
@@ -2739,15 +2737,15 @@ package body Inline is
    is
       Loc       : constant Source_Ptr := Sloc (N);
       Is_Predef : constant Boolean :=
-                   Is_Predefined_File_Name
-                     (Unit_File_Name (Get_Source_Unit (Subp)));
+                    Is_Predefined_File_Name
+                      (Unit_File_Name (Get_Source_Unit (Subp)));
       Orig_Bod  : constant Node_Id :=
                     Body_To_Inline (Unit_Declaration_Node (Subp));
 
       Blk      : Node_Id;
       Decl     : Node_Id;
       Decls    : constant List_Id := New_List;
-      Exit_Lab : Entity_Id := Empty;
+      Exit_Lab : Entity_Id        := Empty;
       F        : Entity_Id;
       A        : Node_Id;
       Lab_Decl : Node_Id;
@@ -2823,8 +2821,8 @@ package body Inline is
             Exit_Lab := Make_Label (Loc, Lab_Id);
             Lab_Decl :=
               Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier  => Lab_Ent,
-                Label_Construct      => Exit_Lab);
+                Defining_Identifier => Lab_Ent,
+                Label_Construct     => Exit_Lab);
          end if;
       end Make_Exit_Label;
 
@@ -2922,7 +2920,7 @@ package body Inline is
                   Ret :=
                     Make_Qualified_Expression (Sloc (N),
                       Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
-                      Expression => Relocate_Node (Expression (N)));
+                      Expression   => Relocate_Node (Expression (N)));
                else
                   Ret :=
                     Unchecked_Convert_To
@@ -3333,7 +3331,7 @@ package body Inline is
             Bod := Copy_Generic_Node (Orig_Bod, Empty, Instantiating => True);
             Blk :=
               Make_Block_Statement (Loc,
-                Declarations => Declarations (Bod),
+                Declarations               => Declarations (Bod),
                 Handled_Statement_Sequence =>
                   Handled_Statement_Sequence (Bod));
 
@@ -3386,9 +3384,9 @@ package body Inline is
                  Copy_Generic_Node (Orig_Bod, Empty, Instantiating => True);
                Blk :=
                  Make_Block_Statement (Loc,
-                                       Declarations => Declarations (Bod),
-                                       Handled_Statement_Sequence =>
-                                         Handled_Statement_Sequence (Bod));
+                   Declarations               => Declarations (Bod),
+                   Handled_Statement_Sequence =>
+                     Handled_Statement_Sequence (Bod));
 
             --  Inline a call to a function that returns an unconstrained type.
             --  The semantic analyzer checked that frontend-inlined functions
@@ -3402,18 +3400,14 @@ package body Inline is
                pragma Assert
                  (Nkind
                    (First
-                     (Statements (Handled_Statement_Sequence (Orig_Bod))))
-                  = N_Block_Statement);
+                     (Statements (Handled_Statement_Sequence (Orig_Bod)))) =
+                                                         N_Block_Statement);
 
                declare
                   Blk_Stmt    : constant Node_Id :=
-                    First
-                      (Statements
-                        (Handled_Statement_Sequence (Orig_Bod)));
+                    First (Statements (Handled_Statement_Sequence (Orig_Bod)));
                   First_Stmt  : constant Node_Id :=
-                    First
-                      (Statements
-                        (Handled_Statement_Sequence (Blk_Stmt)));
+                    First (Statements (Handled_Statement_Sequence (Blk_Stmt)));
                   Second_Stmt : constant Node_Id := Next (First_Stmt);
 
                begin
@@ -3652,8 +3646,7 @@ package body Inline is
             --  eventually be possible to remove that temporary and use the
             --  result variable directly.
 
-            if Is_Unc
-              and then Nkind (Parent (N)) /= N_Assignment_Statement
+            if Is_Unc and then Nkind (Parent (N)) /= N_Assignment_Statement
             then
                Decl :=
                  Make_Object_Declaration (Loc,
@@ -3857,6 +3850,7 @@ package body Inline is
          Next_Formal (F);
       end loop;
    end Expand_Inlined_Call;
+
    --------------------------
    -- Get_Code_Unit_Entity --
    --------------------------
@@ -3887,7 +3881,6 @@ package body Inline is
       else
          Decl := First (Declarations (E_Body));
          while Present (Decl) loop
-
             if Nkind (Decl) = N_Full_Type_Declaration
               and then Present (Init_Proc (Defining_Identifier (Decl)))
             then
