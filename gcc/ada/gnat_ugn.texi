@@ -8564,13 +8564,40 @@ Require all source files to be present.
 @cindex @option{^-S^/INITIALIZE_SCALARS^} (@command{gnatbind})
 Specifies the value to be used when detecting uninitialized scalar
 objects with pragma Initialize_Scalars.
-The @var{xxx} ^string specified with the switch^option^ may be either
+The @var{xxx} ^string specified with the switch^option^ is one of:
 @itemize @bullet
-@item ``@option{^in^INVALID^}'' requesting an invalid value where possible
-@item ``@option{^lo^LOW^}'' for the lowest possible value (all 0 bits)
-@item ``@option{^hi^HIGH^}'' for the highest possible value (all 1 bits)
-@item ``@option{@var{xx}}'' for a value consisting of repeated bytes with the
-value @code{16#@var{xx}#} (i.e., @var{xx} is a string of two hexadecimal digits).
+
+@item ``@option{^in^INVALID^}'' for an invalid value
+If zero is invalid for the discrete type in question,
+then the scalar value is set to all zero bits.
+For signed discrete types, the largest possible negative value of
+the underlying scalar is set (i.e. a one bit followed by all zero bits).
+For unsigned discrete types, the underlying scalar value is set to all
+one bits. For floating-point types, a NaN value is set
+(see body of package System.Scalar_Values for exact values).
+
+@item ``@option{^lo^LOW^}'' for low value
+If zero is invalid for the discrete type in question,
+then the scalar value is set to all zero bits.
+For signed discrete types, the largest possible negative value of
+the underlying scalar is set (i.e. a one bit followed by all zero bits).
+For unsigned discrete types, the underlying scalar value is set to all
+zero bits. For floating-point, a small value is set
+(see body of package System.Scalar_Values for exact values).
+
+@item ``@option{^hi^HIGH^}'' for high value
+If zero is invalid for the discrete type in question,
+then the scalar value is set to all one bits.
+For signed discrete types, the largest possible positive value of
+the underlying scalar is set (i.e. a zero bit followed by all one bits).
+For unsigned discrete types, the underlying scalar value is set to all
+one bits. For floating-point, a large value is set
+(see body of package System.Scalar_Values for exact values).
+
+@item ``@option{@var{xx}}'' for hex value (two hex digits)
+The underlying scalar is set to a value consisting of repeated bytes, whose
+value corresponds to the given value. For example if @option{BF} is given,
+then a 32-bit scalar value will be set to the bit patterm 16#BFBFBFBF#.
 @end itemize
 
 In addition, you can specify @option{-Sev} to indicate that the value is

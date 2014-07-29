@@ -363,7 +363,7 @@ package body Sem_Eval is
 
       elsif Is_String_Type (Typ) then
          if Real_Or_String_Static_Predicate_Matches
-           (Val => Expr_Value_S (Expr), Typ => Typ)
+              (Val => Expr_Value_S (Expr), Typ => Typ)
          then
             return;
          end if;
