@@ -1378,7 +1378,8 @@ of the compiler (@pxref{Character Set Control}).
 @menu
 * Latin-1::
 * Other 8-Bit Codes::
-* Wide Character Encodings::
+* Wide_Character Encodings::
+* Wide_Wide_Character Encodings::
 @end menu
 
 @node Latin-1
@@ -1471,8 +1472,8 @@ equivalences that are recognized, see the file @file{csets.adb} in
 the GNAT compiler sources. You will need to obtain a full source release
 of GNAT to obtain this file.
 
-@node Wide Character Encodings
-@subsection Wide Character Encodings
+@node Wide_Character Encodings
+@subsection Wide_Character Encodings
 
 @noindent
 GNAT allows wide character codes to appear in character and string
@@ -1545,8 +1546,9 @@ where the @var{xxx} bits correspond to the left-padded bits of the
 are represented as ASCII bytes and all upper half characters and
 other wide characters are represented as sequences of upper-half
 (The full UTF-8 scheme allows for encoding 31-bit characters as
-6-byte sequences, but in this implementation, all UTF-8 sequences
-of four or more bytes length will be treated as illegal).
+6-byte sequences, and in the following section on wide wide
+characters, the use of these sequences is documented).
+
 @item Brackets Coding
 In this encoding, a wide character is represented by the following eight
 character sequence:
@@ -1564,8 +1566,8 @@ Brackets coding for upper half characters. For example, the code
 @code{16#A3#} can be represented as @code{[``A3'']}.
 
 This scheme is compatible with use of the full Wide_Character set,
-and is also the method used for wide character encoding in the standard
-ACVC (Ada Compiler Validation Capability) test suite distributions.
+and is also the method used for wide character encoding in some standard
+ACATS (Ada Conformity Assessment Test Suite) test suite distributions.
 
 @end table
 
@@ -1573,6 +1575,60 @@ ACVC (Ada Compiler Validation Capability) test suite distributions.
 Note: Some of these coding schemes do not permit the full use of the
 Ada character set. For example, neither Shift JIS, nor EUC allow the
 use of the upper half of the Latin-1 set.
+
+@node Wide_Wide_Character Encodings
+@subsection Wide_Wide_Character Encodings
+
+@noindent
+GNAT allows wide wide character codes to appear in character and string
+literals, and also optionally in identifiers, by means of the following
+possible encoding schemes:
+
+@table @asis
+
+@item UTF-8 Coding
+A wide character is represented using
+UCS Transformation Format 8 (UTF-8) as defined in Annex R of ISO
+10646-1/Am.2. Depending on the character value, the representation
+of character codes with values greater than 16#FFFF# is a
+is a four, five, or six byte sequence:
+
+@smallexample
+@iftex
+@leftskip=.7cm
+@end iftex
+16#01_0000#-16#10_FFFF#:     11110xxx 10xxxxxx 10xxxxxx
+                             10xxxxxx
+16#0020_0000#-16#03FF_FFFF#: 111110xx 10xxxxxx 10xxxxxx
+                             10xxxxxx 10xxxxxx
+16#0400_0000#-16#7FFF_FFFF#: 1111110x 10xxxxxx 10xxxxxx
+                             10xxxxxx 10xxxxxx 10xxxxxx
+@end smallexample
+
+@noindent
+where the @var{xxx} bits correspond to the left-padded bits of the
+32-bit character value.
+
+@item Brackets Coding
+In this encoding, a wide wide character is represented by the following ten or
+twelve byte character sequence:
+
+@smallexample
+[ " a b c d e f " ]
+[ " a b c d e f g h " ]
+@end smallexample
+
+@noindent
+Where @code{a-h} are the six or eight hexadecimal
+characters (using uppercase letters) of the wide wide character code. For
+example, ["1F4567"] is used to represent the wide wide character with code
+@code{16#001F_4567#}.
+
+This scheme is compatible with use of the full Wide_Wide_Character set,
+and is also the method used for wide wide character encoding in some standard
+ACATS (Ada Conformity Assessment Test Suite) test suite distributions.
+
+@end table
 
 @node File Naming Rules
 @section File Naming Rules
@@ -7222,7 +7278,7 @@ UTF-8 encoding (brackets encoding also recognized)
 Brackets encoding only (default value)
 @end table
 For full details on these encoding
-methods see @ref{Wide Character Encodings}.
+methods see @ref{Wide_Character Encodings}.
 Note that brackets coding is always accepted, even if one of the other
 options is specified, so for example @option{-gnatW8} specifies that both
 brackets and UTF-8 encodings will be recognized. The units that are

@@ -403,6 +403,9 @@ package body Ada.Exceptions is
    --  These routines raise a specific exception with a reason message
    --  attached. The parameters are the file name and line number in each
    --  case. The names are defined by Exp_Ch11.Get_RT_Exception_Name.
+   --  Note that these routines should be declared in the same order as the
+   --  corresponding Rmsg_xx constants below, this is needed by the
+   --  .NET runtime (see exceptmsg.awk script).
 
    procedure Rcheck_CE_Access_Check
      (File : System.Address; Line : Integer);
@@ -462,8 +465,6 @@ package body Ada.Exceptions is
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Potentially_Blocking_Operation
      (File : System.Address; Line : Integer);
-   procedure Rcheck_PE_Stream_Operation_Not_Allowed
-     (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Stubbed_Subprogram_Called
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Unchecked_Union_Restriction
@@ -475,6 +476,8 @@ package body Ada.Exceptions is
    procedure Rcheck_SE_Infinite_Recursion
      (File : System.Address; Line : Integer);
    procedure Rcheck_SE_Object_Too_Large
+     (File : System.Address; Line : Integer);
+   procedure Rcheck_PE_Stream_Operation_Not_Allowed
      (File : System.Address; Line : Integer);
 
    procedure Rcheck_CE_Access_Check_Ext

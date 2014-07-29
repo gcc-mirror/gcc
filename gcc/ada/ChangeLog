@@ -1,3 +1,35 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add section on Wide_Wide_Character encodings.
+	* erroutc.adb (Output_Error_Msgs): Take wide characters into
+	account in computing position of error flags.
+	* sinput.adb (Get_Column_Number): Take wide characters into
+	account.
+
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Access_Type_Definition): The subtype indication
+	in an access type definition can carry a null_exclusion indicator.
+	* sem_ch3.adb (Access_Type_Declaration): If the subtype indication
+	carries a null_exclusion indicator, verify that the subtype
+	indication denotes an access type, and create a null-excluding
+	subtype for it.
+	* sinfo.ads, sinfo.adb: New attribute Null_Excluding_Subtype,
+	defined on N_Access_To_Object_Definition to indicate that the
+	subtype indication carries a null_exclusion indicator.
+
+2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Add_Extra_Actual): Do not construct
+	the extra actual by name, generate a reference instead.
+
+2014-07-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Do not crash analyzing
+	Allow_Integer_Address if already set.
+	* a-except-2005.adb (Rcheck_PE_Stream_Operation_Not_Allowed):
+	Fix order, for consistency with Rmsg_xx declarations.
+
 2014-07-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Complete_Object_Operation): If the type of the

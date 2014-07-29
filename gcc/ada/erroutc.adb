@@ -42,6 +42,7 @@ with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Uintp;    use Uintp;
+with Widechar; use Widechar;
 
 package body Erroutc is
 
@@ -445,32 +446,75 @@ package body Erroutc is
            and then Errors.Table (T).Line = Errors.Table (E).Line
            and then Errors.Table (T).Sfile = Errors.Table (E).Sfile
          loop
-            --  Loop to output blanks till current flag position
+            declare
+               Src : Source_Buffer_Ptr
+                       renames Source_Text (Errors.Table (T).Sfile);
 
-            while P < Errors.Table (T).Sptr loop
-               if Source_Text (Errors.Table (T).Sfile) (P) = ASCII.HT then
-                  Write_Char (ASCII.HT);
-               else
-                  Write_Char (' ');
+            begin
+               --  Loop to output blanks till current flag position
+
+               while P < Errors.Table (T).Sptr loop
+
+                  --  Horizontal tab case, just echo the tab
+
+                  if Src (P) = ASCII.HT then
+                     Write_Char (ASCII.HT);
+                     P := P + 1;
+
+                  --  Deal with wide character case, but don't include brackets
+                  --  notation in this circuit, since we know that this will
+                  --  display unencoded (no one encodes brackets notation).
+
+                  elsif Src (P) /= '['
+                    and then Is_Start_Of_Wide_Char (Src, P)
+                  then
+                     Skip_Wide (Src, P);
+                     Write_Char (' ');
+
+                  --  Normal non-wide character case (or bracket)
+
+                  else
+                     P := P + 1;
+                     Write_Char (' ');
+                  end if;
+               end loop;
+
+               --  Output flag (unless already output, this happens if more
+               --  than one error message occurs at the same flag position).
+
+               if P = Errors.Table (T).Sptr then
+                  if (Flag_Num = 1 and then not Mult_Flags)
+                    or else Flag_Num > 9
+                  then
+                     Write_Char ('|');
+                  else
+                     Write_Char
+                       (Character'Val (Character'Pos ('0') + Flag_Num));
+                  end if;
+
+                  --  Skip past the corresponding source text character
+
+                  --  Horizontal tab case, we output a flag at the tab position
+                  --  so now we output a tab to match up with the text.
+
+                  if Src (P) = ASCII.HT then
+                     Write_Char (ASCII.HT);
+                     P := P + 1;
+
+                  --  Skip wide character other than left bracket
+
+                  elsif Src (P) /= '['
+                    and then Is_Start_Of_Wide_Char (Src, P)
+                  then
+                     Skip_Wide (Src, P);
+
+                  --  Skip normal non-wide character case (or bracket)
+
+                  else
+                     P := P + 1;
+                  end if;
                end if;
-
-               P := P + 1;
-            end loop;
-
-            --  Output flag (unless already output, this happens if more
-            --  than one error message occurs at the same flag position).
-
-            if P = Errors.Table (T).Sptr then
-               if (Flag_Num = 1 and then not Mult_Flags)
-                 or else Flag_Num > 9
-               then
-                  Write_Char ('|');
-               else
-                  Write_Char (Character'Val (Character'Pos ('0') + Flag_Num));
-               end if;
-
-               P := P + 1;
-            end if;
+            end;
 
             Set_Next_Non_Deleted_Msg (T);
             Flag_Num := Flag_Num + 1;

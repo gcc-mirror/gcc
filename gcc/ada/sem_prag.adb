@@ -11019,8 +11019,13 @@ package body Sem_Prag is
             --  integer address values. If Address is not private (e.g. on
             --  VMS, where it is an integer type), then this pragma has no
             --  purpose, so it is simply ignored.
+            --  If Allow_Integer_Address is already set do nothing, otherwise
+            --  calling RTE on RE_Address would cause a crash when loading
+            --  system.ads.
 
-            if Is_Private_Type (RTE (RE_Address)) then
+            if not Opt.Allow_Integer_Address
+              and then Is_Private_Type (RTE (RE_Address))
+            then
                Opt.Allow_Integer_Address := True;
             end if;
 

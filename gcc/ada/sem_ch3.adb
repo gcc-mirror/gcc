@@ -1337,6 +1337,34 @@ package body Sem_Ch3 is
               Process_Subtype (S, P, T, 'P'));
          end if;
 
+         --  If the access definition is of the form : access not null ..
+         --  the subtype indication must be of an access type. Create
+         --  a null-excluding subtype of it.
+
+         if Null_Excluding_Subtype (Def) then
+            if not Is_Access_Type (Entity (S)) then
+               Error_Msg_N ("null exclusion must apply to access type", Def);
+
+            else
+               declare
+                  Loc  : constant Source_Ptr := Sloc (S);
+                  Decl : Node_Id;
+                  Nam  : constant Entity_Id := Make_Temporary (Loc, 'S');
+
+               begin
+                  Decl :=
+                    Make_Subtype_Declaration (Loc,
+                      Defining_Identifier => Nam,
+                      Subtype_Indication =>
+                        New_Occurrence_Of (Entity (S), Loc));
+                  Set_Null_Exclusion_Present (Decl);
+                  Insert_Before (Parent (Def), Decl);
+                  Analyze (Decl);
+                  Set_Entity (S, Nam);
+               end;
+            end if;
+         end if;
+
       else
          Set_Directly_Designated_Type (T,
            Process_Subtype (S, P, T, 'P'));
