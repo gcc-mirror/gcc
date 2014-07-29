@@ -541,8 +541,9 @@ package body Debug is
    --       to the backend. This is useful to locate skipped calls that must be
    --       inlined by the frontend.
 
-   --  d.k  Enable new semantics of frontend inlining.  This is useful to test
-   --       this new feature in all the platforms.
+   --  d.k  Enable new semantics of frontend inlining. This is useful to test
+   --       this new feature in all the platforms. What *is* this new semantics
+   --       which doesn't seem to be documented anywhere???
 
    --  d.l  Use Ada 95 semantics for limited function returns. This may be
    --       used to work around the incompatibility introduced by AI-318-2.

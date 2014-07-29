@@ -6125,7 +6125,8 @@ package body Sem_Res is
       Check_Elab_Call (N);
 
       --  In GNATprove_Mode expansion is disabled, but we want to inline
-      --  subprograms that are marked Inline_Always.
+      --  subprograms that are marked Inline_Always, since the inlining
+      --  is useful in making it easier to prove things about the inlined body.
 
       if GNATprove_Mode
         and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration

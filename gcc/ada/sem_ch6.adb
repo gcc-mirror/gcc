@@ -3337,11 +3337,12 @@ package body Sem_Ch6 is
          return;
       end if;
 
-      --  Handle frontend inlining. There is no need to prepare us for inlining
-      --  if we will not generate the code.
+      --  Handle frontend inlining
 
-      --  However, in GNATprove_Mode we want to expand calls in place
-      --  whenever possible, even with expansion desabled.
+      --  Note: Normally we don't do any inlining if expansion is off, since
+      --  we won't generate code in any case. An exception arises in GNATprove
+      --  mode where we want to expand calls in place whenever possible, even
+      --  with expansion disabled since the inlining eases proofs.
 
       --  Old semantics
 
@@ -3355,7 +3356,7 @@ package body Sem_Ch6 is
             Build_Body_To_Inline (N, Spec_Id);
          end if;
 
-      --  New semantics
+      --  New semantics (enabled by debug flag gnatd.k for testing)
 
       elsif (Expander_Active or else GNATprove_Mode)
         and then Serious_Errors_Detected = 0
