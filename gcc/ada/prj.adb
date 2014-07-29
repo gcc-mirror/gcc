@@ -142,7 +142,6 @@ package body Prj is
          declare
             New_Buffer : constant  String_Access :=
                            new String (1 .. 2 * To'Length);
-
          begin
             New_Buffer (1 .. Last) := To (1 .. Last);
             Free (To);
