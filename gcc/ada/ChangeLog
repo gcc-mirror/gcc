@@ -1,3 +1,10 @@
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Output_Refs, Check_Type_Reference): For a
+	derived array type, add information about component type, which
+	was previously missing in ali file.
+	* gnat_rm.texi: Add documentation for Atomic_Always_Lock_Free.
+
 2014-07-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch3.adb (Constrain_Corresponding_Record): For the case
