@@ -3463,6 +3463,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __urng)
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
       const size_t __b
 	= std::min(static_cast<size_t>(std::numeric_limits<_RealType>::digits),
                    __bits);
