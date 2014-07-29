@@ -1337,7 +1337,7 @@ package body Sem_Ch3 is
               Process_Subtype (S, P, T, 'P'));
          end if;
 
-         --  If the access definition is of the form : access not null ..
+         --  If the access definition is of the form: ACCESS NOT NULL ..
          --  the subtype indication must be of an access type. Create
          --  a null-excluding subtype of it.
 
@@ -1355,7 +1355,7 @@ package body Sem_Ch3 is
                   Decl :=
                     Make_Subtype_Declaration (Loc,
                       Defining_Identifier => Nam,
-                      Subtype_Indication =>
+                      Subtype_Indication  =>
                         New_Occurrence_Of (Entity (S), Loc));
                   Set_Null_Exclusion_Present (Decl);
                   Insert_Before (Parent (Def), Decl);
@@ -1383,7 +1383,7 @@ package body Sem_Ch3 is
 
       --  In Ada 2005, the type may have a limited view through some unit in
       --  its own context, allowing the following circularity that cannot be
-      --  detected earlier
+      --  detected earlier.
 
       elsif Is_Class_Wide_Type (Full_Desig) and then Etype (Full_Desig) = T
       then

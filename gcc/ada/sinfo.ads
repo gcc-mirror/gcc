@@ -1850,6 +1850,9 @@ package Sinfo is
    --    expected type is a thin pointer to unconstrained array. This flag is
    --    to assist in detecting this illegal use of Unrestricted_Access.
 
+   --  Null_Excluding_Subtype (Flag16)
+   --    ??? needs documentation ???
+
    --  Original_Discriminant (Node2-Sem)
    --    Present in identifiers. Used in references to discriminants that
    --    appear in generic units. Because the names of the discriminants may be
