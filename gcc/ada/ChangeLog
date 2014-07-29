@@ -1,3 +1,12 @@
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb, inline.adb, sem_util.adb, sem_res.adb,
+	prepcomp.ads: Minor reformatting and code clean up.
+	* exp_ch6.adb (Expand_Actuals): Generate predicate test
+	unconditionally for case of OUT or IN OUT actual (before this
+	was generated only for certain subcases, which is wrong, the
+	test is always needed).
+
 2014-07-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb: Move Has_Defaulted_Discriminants to sem_util.

@@ -1499,12 +1499,12 @@ package body Inline is
       --------------------------
 
       function In_Some_Private_Part (N : Node_Id) return Boolean is
-         P  : Node_Id := N;
+         P  : Node_Id;
          PP : Node_Id;
+
       begin
-         while Present (P)
-           and then Present (Parent (P))
-         loop
+         P := N;
+         while Present (P) and then Present (Parent (P)) loop
             PP := Parent (P);
 
             if Nkind (PP) = N_Package_Specification
@@ -1515,6 +1515,7 @@ package body Inline is
 
             P := PP;
          end loop;
+
          return False;
       end In_Some_Private_Part;
 
@@ -1540,6 +1541,8 @@ package body Inline is
       begin
          return Nkind (Original_Node (Decl)) = N_Expression_Function;
       end Is_Expression_Function;
+
+      --  Local declarations
 
       Id : Entity_Id;  --  Procedure or function entity for the subprogram
 
@@ -2162,9 +2165,10 @@ package body Inline is
                           or else Has_Pragma_Inline_Always (Spec_Id)
                           or else (Has_Pragma_Inline (Spec_Id)
                                     and then ((Optimization_Level > 0
-                                                and then Ekind (Spec_Id)
-                                                             = E_Function)
+                                                and then Ekind (Spec_Id) =
+                                                                   E_Function)
                                                or else Front_End_Inlining));
+
          Body_To_Analyze : Node_Id;
 
       --  Start of processing for Check_Body_To_Inline

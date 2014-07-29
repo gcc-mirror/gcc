@@ -2978,7 +2978,7 @@ package body Sem_Res is
 
       procedure Check_Aliased_Parameter;
       --  Check rules on aliased parameters and related accessibility rules
-      --  in (3.10.2 (10.2-10.4)).
+      --  in (RM 3.10.2 (10.2-10.4)).
 
       procedure Check_Argument_Order;
       --  Performs a check for the case where the actuals are all simple
@@ -3050,12 +3050,12 @@ package body Sem_Res is
 
                else
                   Error_Msg_NE ("untagged actual does not match "
-                    & "aliased formal&", A, F);
+                                & "aliased formal&", A, F);
                end if;
 
             else
                Error_Msg_NE ("actual for aliased formal& must be "
-                 & "aliased object", A, F);
+                             & "aliased object", A, F);
             end if;
 
             if Ekind (Nam) = E_Procedure then
@@ -3063,19 +3063,19 @@ package body Sem_Res is
 
             elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type then
                if Nkind (Parent (N)) = N_Type_Conversion
-                 and then Type_Access_Level (Etype (Parent (N)))
-                   < Object_Access_Level (A)
+                 and then Type_Access_Level (Etype (Parent (N))) <
+                                                        Object_Access_Level (A)
                then
                   Error_Msg_N ("aliased actual has wrong accessibility", A);
                end if;
 
             elsif Nkind (Parent (N)) = N_Qualified_Expression
               and then Nkind (Parent (Parent (N))) = N_Allocator
-              and then Type_Access_Level (Etype (Parent (Parent (N))))
-                < Object_Access_Level (A)
+              and then Type_Access_Level (Etype (Parent (Parent (N)))) <
+                                                        Object_Access_Level (A)
             then
                Error_Msg_N
-                 ("Aliased actual in allocator has wrong accessibility", A);
+                 ("aliased actual in allocator has wrong accessibility", A);
             end if;
          end if;
       end Check_Aliased_Parameter;
