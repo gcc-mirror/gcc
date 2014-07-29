@@ -15379,10 +15379,15 @@ package body Sem_Prag is
          when Pragma_Inline_Always =>
             GNAT_Pragma;
 
-            --  Pragma always active unless in CodePeer mode,
-            --  since this causes walk order issues.
-            --  This was disabled as well in GNATprove_Mode, even though
-            --  walk order should not be an issue here. ???
+            --  Pragma always active unless in CodePeer mode. It is disabled
+            --  in CodePeer mode because inlining is not helpful, and enabling
+            --  if caused walk order issues.
+
+            --  Historical note: this pragma used to be disabled in GNATprove
+            --  mode as well, but that was odd since walk order shoult not be
+            --  an issue in that case. Furthermore, we now like to do as much
+            --  front-end inlining as possible in GNATprove mode since it makes
+            --  proving things easier.
 
             if not CodePeer_Mode then
                Process_Inline (Enabled);
