@@ -412,7 +412,8 @@ package body Sem_Attr is
       procedure Uneval_Old_Msg;
       --  Called when Loop_Entry or Old is used in a potentially unevaluated
       --  expression. Generates appropriate message or warning depending on
-      --  the setting of Opt.Uneval_Old.
+      --  the setting of Opt.Uneval_Old (or flags in an N_Aspect_Specification
+      --  node in the aspect case).
 
       procedure Unexpected_Argument (En : Node_Id);
       --  Signal unexpected attribute argument (En is the argument)
@@ -2275,8 +2276,40 @@ package body Sem_Attr is
       --------------------
 
       procedure Uneval_Old_Msg is
+         Uneval_Old_Setting : Character := Opt.Uneval_Old;
+         Prag               : Node_Id;
+
       begin
-         case Uneval_Old is
+         --  If from aspect, then Uneval_Old_Setting comes from flags in the
+         --  N_Aspect_Specification node that corresponds to the attribute.
+
+         --  First find the pragma in which we appear (note that at this stage,
+         --  even if we appeared originally within an aspect specification, we
+         --  are now within the corresponding pragma).
+
+         Prag := N;
+         loop
+            Prag := Parent (Prag);
+            exit when No (Prag) or else Nkind (Prag) = N_Pragma;
+         end loop;
+
+         --  If we did not find the pragma, that's odd, just consider it a
+         --  case where we use Opt.Uneval_Old for further processing. Perhaps
+         --  this can come from some previous error.
+
+         if Present (Prag) and then From_Aspect_Specification (Prag) then
+            if Uneval_Old_Accept (Corresponding_Aspect (Prag)) then
+               Uneval_Old_Setting := 'A';
+            elsif Uneval_Old_Warn (Corresponding_Aspect (Prag)) then
+               Uneval_Old_Setting := 'W';
+            else
+               Uneval_Old_Setting := 'E';
+            end if;
+         end if;
+
+         --  Processing depends on the setting of Uneval_Old
+
+         case Uneval_Old_Setting is
             when 'E' =>
                Error_Attr_P
                  ("prefix of attribute % that is potentially "

@@ -1,3 +1,21 @@
+2014-07-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.ads, inline.adb, sem_ch10.adb: Rename Check_Body_For_Inlining
+	to Check_Package_Body_For_Inlining, to prevent confusion with other
+	inlining subprograms.
+
+2014-07-29  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Minor comment update.
+	* sem_attr.adb (Uneval_Old_Msg): Deal with case of aspect, where
+	we want setting of Uneval_Old at time of encountering the aspect.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Capture setting
+	of Opt.Uneval_Old.
+	* sinfo.adb (Uneval_Old_Accept): New function (Uneval_Old_Warn):
+	New function (Set_Uneval_Old_Accept): New procedure.
+	(Set_Uneval_Old_Warn): New procedure.
+	* sinfo.ads: Uneval_Old_Accept: New flag Uneval_Old_Warn: New flag.
+
 2014-07-29  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads, inline.adb, inline.ads, sem_ch6.adb: Minor reformatting.

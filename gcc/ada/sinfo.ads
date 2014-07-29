@@ -2090,6 +2090,21 @@ package Sinfo is
    --    if there are no type support subprograms for the type or if the freeze
    --    node is not for a type.
 
+   --  Uneval_Old_Accept (Flag13-Sem)
+   --    Present in N_Aspect_Specification nodes. Set if Opt.Uneval_Old is set
+   --    to 'A' (accept) at the point where the aspect specification node is
+   --    encountered. It is this setting that is relevant, rather than the
+   --    setting at the point where a contract is finally analyzed after the
+   --    usual delay till the freeze point.
+
+   --  Uneval_Old_Warn (Flag18-Sem)
+   --    Present in N_Aspect_Specification nodes. Set if Opt.Uneval_Old is set
+   --    to 'W' (warn) at the point where the aspect specification node is
+   --    encountered. It is this setting that is relevant, rather than the
+   --    setting at the point where a contract is finally analyzed after the
+   --    usual delay till the freeze point. If neither Uneval_Old_Accept nor
+   --    Uneval_Old_Warn is set, then the default Error mode applies.
+
    --  Unreferenced_In_Spec (Flag7-Sem)
    --    Present in N_With_Clause nodes. Set if the with clause is on the
    --    package or subprogram spec where the main unit is the corresponding
@@ -7113,14 +7128,16 @@ package Sinfo is
       --  Aspect_Rep_Item (Node2-Sem)
       --  Expression (Node3) Aspect_Definition (set to Empty if none)
       --  Entity (Node4-Sem) entity to which the aspect applies
-      --  Class_Present (Flag6) Set if 'Class present
       --  Next_Rep_Item (Node5-Sem)
-      --  Split_PPC (Flag17) Set if split pre/post attribute
-      --  Is_Boolean_Aspect (Flag16-Sem)
+      --  Class_Present (Flag6) Set if 'Class present
+      --  Is_Ignored (Flag9-Sem)
       --  Is_Checked (Flag11-Sem)
+      --  Uneval_Old_Accept (Flag13-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Is_Disabled (Flag15-Sem)
-      --  Is_Ignored (Flag9-Sem)
+      --  Is_Boolean_Aspect (Flag16-Sem)
+      --  Split_PPC (Flag17) Set if split pre/post attribute
+      --  Uneval_Old_Warn (Flag18-Sem)
 
       --  Note: Aspect_Specification is an Ada 2012 feature
 
@@ -9609,6 +9626,12 @@ package Sinfo is
    function Type_Definition
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Uneval_Old_Accept
+     (N : Node_Id) return Boolean;    -- Flag13
+
+   function Uneval_Old_Warn
+     (N : Node_Id) return Boolean;    -- Flag18
+
    function Unit
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -10625,6 +10648,12 @@ package Sinfo is
 
    procedure Set_Type_Definition
      (N : Node_Id; Val : Node_Id);            -- Node3
+
+   procedure Set_Uneval_Old_Accept
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Uneval_Old_Warn
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Unit
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -12744,6 +12773,8 @@ package Sinfo is
    pragma Inline (Treat_Fixed_As_Integer);
    pragma Inline (TSS_Elist);
    pragma Inline (Type_Definition);
+   pragma Inline (Uneval_Old_Accept);
+   pragma Inline (Uneval_Old_Warn);
    pragma Inline (Unit);
    pragma Inline (Uninitialized_Variable);
    pragma Inline (Unknown_Discriminants_Present);
@@ -13077,6 +13108,8 @@ package Sinfo is
    pragma Inline (Set_Triggering_Alternative);
    pragma Inline (Set_Triggering_Statement);
    pragma Inline (Set_Type_Definition);
+   pragma Inline (Set_Uneval_Old_Accept);
+   pragma Inline (Set_Uneval_Old_Warn);
    pragma Inline (Set_Unit);
    pragma Inline (Set_Uninitialized_Variable);
    pragma Inline (Set_Unknown_Discriminants_Present);
