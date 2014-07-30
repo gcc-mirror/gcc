@@ -1,3 +1,14 @@
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Ineffective_Inline_Warnings to True in GNATprove mode.
+	* inline.adb (Cannot_Inline): Prepare new semantics for GNATprove
+	mode of inlining.
+	* opt.ads (Ineffective_Inline_Warnings): Add comment that
+	describes use in GNATprove mode.
+	* sem_prag.adb (Analyze_Pragma|SPARK_Mode): Ignore
+	pragma when applied to the special body created for inlining.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* inline.adb, exp_ch4.adb, sinput.adb, sem_ch6.adb, sem_ch13.adb:

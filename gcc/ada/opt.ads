@@ -772,10 +772,11 @@ package Opt is
    --  use of pragma Implicit_Packing.
 
    Ineffective_Inline_Warnings : Boolean := False;
-   --  GNAT
-   --  Set True to activate warnings if front-end inlining (-gnatN) is not
-   --  able to actually inline a particular call (or all calls). Can be
-   --  controlled by use of -gnatwp/-gnatwP.
+   --  GNAT Set True to activate warnings if front-end inlining (-gnatN) is
+   --  not able to actually inline a particular call (or all calls). Can be
+   --  controlled by use of -gnatwp/-gnatwP. Also set True to activate warnings
+   --  if frontend inlining is not able to inline a subprogram expected to be
+   --  inlined in GNATprove mode.
 
    Init_Or_Norm_Scalars : Boolean := False;
    --  GNAT, GANTBIND
