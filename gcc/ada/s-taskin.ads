@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,8 +86,10 @@ package System.Tasking is
 
    --  Sometimes we need to hold two ATCB locks at the same time. To allow us
    --  to order the locking, each ATCB is given a unique serial number. If one
-   --  needs to hold locks on several ATCBs at once, the locks with lower
-   --  serial numbers must be locked first.
+   --  needs to hold locks on two ATCBs at once, the lock with lower serial
+   --  number must be locked first. We avoid holding three or more ATCB locks,
+   --  because that can easily lead to complications that cause race conditions
+   --  and deadlocks.
 
    --  We don't always need to check the serial numbers, since the serial
    --  numbers are assigned sequentially, and so:

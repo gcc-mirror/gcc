@@ -1,3 +1,37 @@
+2014-07-30  Doug Rupp  <rupp@adacore.com>
+
+	* adaint.c (__gnat_tmp_name) [__ANDROID__]: Default to putting
+	temp files in /cache directory unless overridden by TMPDIR.
+
+2014-07-30  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-tassta.adb, s-tarest.adb (Initialize, Create_Task,
+	Create_Restricted_Task): Remove redundant check. Number_Of_CPUs returns
+	type CPU, so it can never be greater than CPU_Range'Last.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.ads: Minor comment fix.
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb: Remove now useless WITH, USE, and USE TYPE
+	clauses.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Free debug flag dQ used for frontend inlining in
+	GNATprove mode..
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Remove test of
+	debug flag..
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in: Remove generation of s-oscons.ads, only
+	generate the xoscons utility, in runtime-agnostic rules.
+	* gcc-interface/Makefile.in: Clean up rules. Remove VMS parts,
+	no longer supported.
+
 2014-07-30  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call): New
