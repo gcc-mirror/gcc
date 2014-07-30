@@ -1,5 +1,14 @@
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, sem_ch3.ads: Minor code reorganization.
+
+2014-07-30  Pascal Obry  <obry@adacore.com>
+
+	* clean.adb (Clean_Project): Properly check for directory
+	existence before trying to enter it.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.ads, prj.ads, prj-nmsc.adb: Minor reformatting.
 
 2014-07-30  Robert Dewar  <dewar@adacore.com>

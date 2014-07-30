@@ -17139,11 +17139,11 @@ package body Sem_Ch3 is
    ----------------
 
    procedure Make_Index
-     (I            : Node_Id;
+     (N            : Node_Id;
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id := Empty;
-      Suffix_Index : Nat := 1;
-      In_Iter_Schm : Boolean := False)
+      Suffix_Index : Nat       := 1;
+      In_Iter_Schm : Boolean   := False)
    is
       R      : Node_Id;
       T      : Entity_Id;
@@ -17164,13 +17164,13 @@ package body Sem_Ch3 is
       --  Character literals also have a universal type in the absence of
       --  of additional context,  and are resolved to Standard_Character.
 
-      if Nkind (I) = N_Range then
+      if Nkind (N) = N_Range then
 
          --  The index is given by a range constraint. The bounds are known
          --  to be of a consistent type.
 
-         if not Is_Overloaded (I) then
-            T := Etype (I);
+         if not Is_Overloaded (N) then
+            T := Etype (N);
 
             --  For universal bounds, choose the specific predefined type
 
@@ -17178,7 +17178,7 @@ package body Sem_Ch3 is
                T := Standard_Integer;
 
             elsif T = Any_Character then
-               Ambiguous_Character (Low_Bound (I));
+               Ambiguous_Character (Low_Bound (N));
 
                T := Standard_Character;
             end if;
@@ -17187,7 +17187,7 @@ package body Sem_Ch3 is
          --  are available, but if a universal interpretation exists it is
          --  also the selected one.
 
-         elsif Universal_Interpretation (I) = Universal_Integer then
+         elsif Universal_Interpretation (N) = Universal_Integer then
             T := Standard_Integer;
 
          else
@@ -17198,7 +17198,7 @@ package body Sem_Ch3 is
                It  : Interp;
 
             begin
-               Get_First_Interp (I, Ind, It);
+               Get_First_Interp (N, Ind, It);
                while Present (It.Typ) loop
                   if Is_Discrete_Type (It.Typ) then
 
@@ -17206,7 +17206,7 @@ package body Sem_Ch3 is
                        and then not Covers (It.Typ, T)
                        and then not Covers (T, It.Typ)
                      then
-                        Error_Msg_N ("ambiguous bounds in discrete range", I);
+                        Error_Msg_N ("ambiguous bounds in discrete range", N);
                         exit;
                      else
                         T := It.Typ;
@@ -17218,8 +17218,8 @@ package body Sem_Ch3 is
                end loop;
 
                if T = Any_Type then
-                  Error_Msg_N ("discrete type required for range", I);
-                  Set_Etype (I, Any_Type);
+                  Error_Msg_N ("discrete type required for range", N);
+                  Set_Etype (N, Any_Type);
                   return;
 
                elsif T = Universal_Integer then
@@ -17229,70 +17229,70 @@ package body Sem_Ch3 is
          end if;
 
          if not Is_Discrete_Type (T) then
-            Error_Msg_N ("discrete type required for range", I);
-            Set_Etype (I, Any_Type);
+            Error_Msg_N ("discrete type required for range", N);
+            Set_Etype (N, Any_Type);
             return;
          end if;
 
-         if Nkind (Low_Bound (I)) = N_Attribute_Reference
-           and then Attribute_Name (Low_Bound (I)) = Name_First
-           and then Is_Entity_Name (Prefix (Low_Bound (I)))
-           and then Is_Type (Entity (Prefix (Low_Bound (I))))
-           and then Is_Discrete_Type (Entity (Prefix (Low_Bound (I))))
+         if Nkind (Low_Bound (N)) = N_Attribute_Reference
+           and then Attribute_Name (Low_Bound (N)) = Name_First
+           and then Is_Entity_Name (Prefix (Low_Bound (N)))
+           and then Is_Type (Entity (Prefix (Low_Bound (N))))
+           and then Is_Discrete_Type (Entity (Prefix (Low_Bound (N))))
          then
             --  The type of the index will be the type of the prefix, as long
             --  as the upper bound is 'Last of the same type.
 
-            Def_Id := Entity (Prefix (Low_Bound (I)));
+            Def_Id := Entity (Prefix (Low_Bound (N)));
 
-            if Nkind (High_Bound (I)) /= N_Attribute_Reference
-              or else Attribute_Name (High_Bound (I)) /= Name_Last
-              or else not Is_Entity_Name (Prefix (High_Bound (I)))
-              or else Entity (Prefix (High_Bound (I))) /= Def_Id
+            if Nkind (High_Bound (N)) /= N_Attribute_Reference
+              or else Attribute_Name (High_Bound (N)) /= Name_Last
+              or else not Is_Entity_Name (Prefix (High_Bound (N)))
+              or else Entity (Prefix (High_Bound (N))) /= Def_Id
             then
                Def_Id := Empty;
             end if;
          end if;
 
-         R := I;
+         R := N;
          Process_Range_Expr_In_Decl (R, T, In_Iter_Schm => In_Iter_Schm);
 
-      elsif Nkind (I) = N_Subtype_Indication then
+      elsif Nkind (N) = N_Subtype_Indication then
 
          --  The index is given by a subtype with a range constraint
 
-         T :=  Base_Type (Entity (Subtype_Mark (I)));
+         T :=  Base_Type (Entity (Subtype_Mark (N)));
 
          if not Is_Discrete_Type (T) then
-            Error_Msg_N ("discrete type required for range", I);
-            Set_Etype (I, Any_Type);
+            Error_Msg_N ("discrete type required for range", N);
+            Set_Etype (N, Any_Type);
             return;
          end if;
 
-         R := Range_Expression (Constraint (I));
+         R := Range_Expression (Constraint (N));
 
          Resolve (R, T);
          Process_Range_Expr_In_Decl
-           (R, Entity (Subtype_Mark (I)), In_Iter_Schm => In_Iter_Schm);
+           (R, Entity (Subtype_Mark (N)), In_Iter_Schm => In_Iter_Schm);
 
-      elsif Nkind (I) = N_Attribute_Reference then
+      elsif Nkind (N) = N_Attribute_Reference then
 
          --  The parser guarantees that the attribute is a RANGE attribute
 
          --  If the node denotes the range of a type mark, that is also the
          --  resulting type, and we do no need to create an Itype for it.
 
-         if Is_Entity_Name (Prefix (I))
-           and then Comes_From_Source (I)
-           and then Is_Type (Entity (Prefix (I)))
-           and then Is_Discrete_Type (Entity (Prefix (I)))
+         if Is_Entity_Name (Prefix (N))
+           and then Comes_From_Source (N)
+           and then Is_Type (Entity (Prefix (N)))
+           and then Is_Discrete_Type (Entity (Prefix (N)))
          then
-            Def_Id := Entity (Prefix (I));
+            Def_Id := Entity (Prefix (N));
          end if;
 
-         Analyze_And_Resolve (I);
-         T := Etype (I);
-         R := I;
+         Analyze_And_Resolve (N);
+         T := Etype (N);
+         R := N;
 
       --  If none of the above, must be a subtype. We convert this to a
       --  range attribute reference because in the case of declared first
@@ -17306,9 +17306,9 @@ package body Sem_Ch3 is
       --  original index for instantiation purposes.
 
       else
-         if not Is_Entity_Name (I) or else not Is_Type (Entity (I)) then
-            Error_Msg_N ("invalid subtype mark in discrete range ", I);
-            Set_Etype (I, Any_Integer);
+         if not Is_Entity_Name (N) or else not Is_Type (Entity (N)) then
+            Error_Msg_N ("invalid subtype mark in discrete range ", N);
+            Set_Etype (N, Any_Integer);
             return;
 
          else
@@ -17316,31 +17316,31 @@ package body Sem_Ch3 is
             --  now that we can get the full view, previous analysis does
             --  not look specifically for a type mark.
 
-            Set_Entity (I, Get_Full_View (Entity (I)));
-            Set_Etype  (I, Entity (I));
-            Def_Id := Entity (I);
+            Set_Entity (N, Get_Full_View (Entity (N)));
+            Set_Etype  (N, Entity (N));
+            Def_Id := Entity (N);
 
             if not Is_Discrete_Type (Def_Id) then
-               Error_Msg_N ("discrete type required for index", I);
-               Set_Etype (I, Any_Type);
+               Error_Msg_N ("discrete type required for index", N);
+               Set_Etype (N, Any_Type);
                return;
             end if;
          end if;
 
          if Expander_Active then
-            Rewrite (I,
-              Make_Attribute_Reference (Sloc (I),
+            Rewrite (N,
+              Make_Attribute_Reference (Sloc (N),
                 Attribute_Name => Name_Range,
-                Prefix         => Relocate_Node (I)));
+                Prefix         => Relocate_Node (N)));
 
             --  The original was a subtype mark that does not freeze. This
             --  means that the rewritten version must not freeze either.
 
-            Set_Must_Not_Freeze (I);
-            Set_Must_Not_Freeze (Prefix (I));
-            Analyze_And_Resolve (I);
-            T := Etype (I);
-            R := I;
+            Set_Must_Not_Freeze (N);
+            Set_Must_Not_Freeze (Prefix (N));
+            Analyze_And_Resolve (N);
+            T := Etype (N);
+            R := N;
 
          --  If expander is inactive, type is legal, nothing else to construct
 
@@ -17350,12 +17350,12 @@ package body Sem_Ch3 is
       end if;
 
       if not Is_Discrete_Type (T) then
-         Error_Msg_N ("discrete type required for range", I);
-         Set_Etype (I, Any_Type);
+         Error_Msg_N ("discrete type required for range", N);
+         Set_Etype (N, Any_Type);
          return;
 
       elsif T = Any_Type then
-         Set_Etype (I, Any_Type);
+         Set_Etype (N, Any_Type);
          return;
       end if;
 
@@ -17401,8 +17401,8 @@ package body Sem_Ch3 is
          --  new subtype is non-static, then the subtype we create is non-
          --  static, even if its bounds are static.
 
-         if Nkind (I) = N_Subtype_Indication
-           and then not Is_OK_Static_Subtype (Entity (Subtype_Mark (I)))
+         if Nkind (N) = N_Subtype_Indication
+           and then not Is_OK_Static_Subtype (Entity (Subtype_Mark (N)))
          then
             Set_Is_Non_Static_Subtype (Def_Id);
          end if;
@@ -17410,7 +17410,7 @@ package body Sem_Ch3 is
 
       --  Final step is to label the index with this constructed type
 
-      Set_Etype (I, Def_Id);
+      Set_Etype (N, Def_Id);
    end Make_Index;
 
    ------------------------------
