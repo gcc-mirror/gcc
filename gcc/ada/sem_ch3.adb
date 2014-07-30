@@ -12390,7 +12390,7 @@ package body Sem_Ch3 is
          Set_Etype (S, T);
          R := S;
 
-         Process_Range_Expr_In_Decl (R, T, Empty_List);
+         Process_Range_Expr_In_Decl (R, T);
 
          if not Error_Posted (S)
            and then
@@ -19018,9 +19018,10 @@ package body Sem_Ch3 is
    procedure Process_Range_Expr_In_Decl
      (R            : Node_Id;
       T            : Entity_Id;
-      Check_List   : List_Id := Empty_List;
-      R_Check_Off  : Boolean := False;
-      In_Iter_Schm : Boolean := False)
+      Subtyp       : Entity_Id := Empty;
+      Check_List   : List_Id   := Empty_List;
+      R_Check_Off  : Boolean   := False;
+      In_Iter_Schm : Boolean   := False)
    is
       Lo, Hi      : Node_Id;
       R_Checks    : Check_Result;
@@ -19142,8 +19143,71 @@ package body Sem_Ch3 is
             --  not supposed to occur, e.g. on default parameters of a call.
 
             if Expander_Active or GNATprove_Mode then
-               Force_Evaluation (Lo);
-               Force_Evaluation (Hi);
+
+               --  If no subtype name, then just call Force_Evaluation to
+               --  create declarations as needed to deal with side effects.
+               --  Also ignore calls from within a record type, where we
+               --  have possible scoping issues.
+
+               if No (Subtyp) or else Is_Record_Type (Current_Scope) then
+                  Force_Evaluation (Lo);
+                  Force_Evaluation (Hi);
+
+               --  If a subtype is given, then we capture the bounds if they
+               --  are not known at compile time, using constant identifiers
+               --  xxxL and xxxH where xxx is the name of the subtype. No need
+               --  to do that if they are already references to constants.
+
+               --  Historical note: We used to just do Force_Evaluation calls
+               --  in all cases, but it is better to capture the bounds with
+               --  proper non-serialized names, since these will be accesse
+               --  from other units, and hence may be public, and also we can
+               --  then expand 'First and 'Last references to be references to
+               --  these special names.
+
+               else
+                  if not Compile_Time_Known_Value (Lo)
+                    and then not (Is_Entity_Name (Lo)
+                                   and then Is_Constant_Object (Entity (Lo)))
+                  then
+                     declare
+                        Loc : constant Source_Ptr := Sloc (Lo);
+                        Lov : constant Entity_Id  :=
+                          Make_Defining_Identifier (Loc,
+                            Chars => New_External_Name (Chars (Subtyp), 'L'));
+                     begin
+                        Insert_Action (R,
+                          Make_Object_Declaration (Loc,
+                            Defining_Identifier => Lov,
+                            Object_Definition   =>
+                              New_Occurrence_Of (Base_Type (T), Loc),
+                            Constant_Present    => True,
+                            Expression          => Relocate_Node (Lo)));
+                        Rewrite (Lo, New_Occurrence_Of (Lov, Loc));
+                     end;
+                  end if;
+
+                  if not Compile_Time_Known_Value (Hi)
+                    and then not (Is_Entity_Name (Hi)
+                                  and then Is_Constant_Object (Entity (Hi)))
+                  then
+                     declare
+                        Loc : constant Source_Ptr := Sloc (Hi);
+                        Hiv : constant Entity_Id  :=
+                          Make_Defining_Identifier (Loc,
+                            Chars => New_External_Name (Chars (Subtyp), 'H'));
+                     begin
+                        Insert_Action (R,
+                          Make_Object_Declaration (Loc,
+                            Defining_Identifier => Hiv,
+                            Object_Definition   =>
+                              New_Occurrence_Of (Base_Type (T), Loc),
+                            Constant_Present    => True,
+                            Expression          => Relocate_Node (Hi)));
+                        Rewrite (Hi, New_Occurrence_Of (Hiv, Loc));
+                     end;
+                  end if;
+               end if;
             end if;
 
             --  We use a flag here instead of suppressing checks on the
@@ -20567,7 +20631,7 @@ package body Sem_Ch3 is
       --  catch possible premature use in the bounds themselves.
 
       Set_Ekind (Def_Id, E_Void);
-      Process_Range_Expr_In_Decl (R, Subt);
+      Process_Range_Expr_In_Decl (R, Subt, Subtyp => Def_Id);
       Set_Ekind (Def_Id, Kind);
    end Set_Scalar_Range_For_Subtype;
 

@@ -1240,16 +1240,22 @@ package body Sem_Eval is
             return Unknown;
          end if;
 
-         --  Replace types by base types for the case of entities which are not
+         --  Replace types by base types for the case of values which are not
          --  known to have valid representations. This takes care of properly
          --  dealing with invalid representations.
 
-         if not Assume_Valid and then not Assume_No_Invalid_Values then
-            if Is_Entity_Name (L) and then not Is_Known_Valid (Entity (L)) then
+         if not Assume_Valid then
+            if not (Is_Entity_Name (L)
+                     and then (Is_Known_Valid (Entity (L))
+                                or else Assume_No_Invalid_Values))
+            then
                Ltyp := Underlying_Type (Base_Type (Ltyp));
             end if;
 
-            if Is_Entity_Name (R) and then not Is_Known_Valid (Entity (R)) then
+            if not (Is_Entity_Name (R)
+                     and then (Is_Known_Valid (Entity (R))
+                                or else Assume_No_Invalid_Values))
+            then
                Rtyp := Underlying_Type (Base_Type (Rtyp));
             end if;
          end if;

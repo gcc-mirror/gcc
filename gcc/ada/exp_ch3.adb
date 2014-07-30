@@ -3234,7 +3234,7 @@ package body Exp_Ch3 is
 
             begin
                if Nkind (S) = N_Range then
-                  Process_Range_Expr_In_Decl (S, T, Check_List);
+                  Process_Range_Expr_In_Decl (S, T, Check_List => Check_List);
                end if;
             end Constrain_Index;
 
@@ -5844,9 +5844,14 @@ package body Exp_Ch3 is
                return;
 
             --  For discrete types, set the Is_Known_Valid flag if the
-            --  initializing value is known to be valid.
+            --  initializing value is known to be valid. Only do this for
+            --  source assignments, since otherwise we can end up turning
+            --  on the known valid flag prematurely from inserted code.
 
-            elsif Is_Discrete_Type (Typ) and then Expr_Known_Valid (Expr) then
+            elsif Comes_From_Source (N)
+              and then Is_Discrete_Type (Typ)
+              and then Expr_Known_Valid (Expr)
+            then
                Set_Is_Known_Valid (Def_Id);
 
             elsif Is_Access_Type (Typ) then

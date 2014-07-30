@@ -264,9 +264,10 @@ package Sem_Ch3 is
    procedure Process_Range_Expr_In_Decl
      (R            : Node_Id;
       T            : Entity_Id;
-      Check_List   : List_Id := Empty_List;
-      R_Check_Off  : Boolean := False;
-      In_Iter_Schm : Boolean := False);
+      Subtyp       : Entity_Id := Empty;
+      Check_List   : List_Id   := Empty_List;
+      R_Check_Off  : Boolean   := False;
+      In_Iter_Schm : Boolean   := False);
    --  Process a range expression that appears in a declaration context. The
    --  range is analyzed and resolved with the base type of the given type, and
    --  an appropriate check for expressions in non-static contexts made on the
@@ -279,6 +280,9 @@ package Sem_Ch3 is
    --  package. R_Check_Off is set to True when the call to Range_Check is to
    --  be skipped. In_Iter_Schm is True if Process_Range_Expr_In_Decl is called
    --  on the discrete subtype definition in an iteration scheme.
+   --
+   --  If Subtyp is given, then the range is for the named subtype Subtyp, and
+   --  in this case the bounds are captured if necessary using this name.
 
    function Process_Subtype
      (S           : Node_Id;

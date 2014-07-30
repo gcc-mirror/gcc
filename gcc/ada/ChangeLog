@@ -1,5 +1,36 @@
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
+	* exp_aggr.adb: Update comments.
+	* a-chtgbo.adb, a-chtgbo.ads, a-cbhase.adb, a-cbhase.ads: Minor
+	reformatting.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (New_Standard_Entity): New version takes name
+	string to call Make_Name.
+	(Create_Standard): Use this routine to set name before setting other
+	fields.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute, case First): Rewrite simple
+	entity reference.
+	(Expand_Attribute, case Last): Ditto.
+	* exp_ch3.adb (Constrain_Index): New calling sequence for
+	Process_Range_Expr_In_Decl.
+	(Expand_N_Object_Declaration): Avoid setting Is_Known_Valid in one
+	problematical case.
+	* sem_ch3.adb (Constrain_Index): New calling sequence for
+	Process_Range_Expr_In_Decl.
+	(Set_Scalar_Range_For_Subtype): ditto.
+	(Process_Range_Expr_In_Decl): Create constants to hold bounds for
+	subtype.
+	* sem_ch3.ads (Process_Range_Expr_In_Decl): Add Subtyp parameter.
+	* sem_eval.adb (Compile_Time_Compare): Make sure we use base
+	types if we are not assuming no invalid values.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
 	* clean.adb: Minor reformatting.
 	* opt.ads: Minor fix to incorrect comment.
 

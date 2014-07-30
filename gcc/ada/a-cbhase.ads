@@ -456,12 +456,10 @@ package Ada.Containers.Bounded_Hashed_Sets is
          Old_Hash  : Hash_Type;
       end record;
 
-      overriding procedure
-         Adjust (Control : in out Reference_Control_Type);
+      overriding procedure Adjust (Control : in out Reference_Control_Type);
       pragma Inline (Adjust);
 
-      overriding procedure
-         Finalize (Control : in out Reference_Control_Type);
+      overriding procedure Finalize (Control : in out Reference_Control_Type);
       pragma Inline (Finalize);
 
       type Reference_Type (Element : not null access Element_Type) is record

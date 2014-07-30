@@ -2872,11 +2872,28 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Attribute_Name => Name_First,
-                Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
+                Prefix         =>
+                  New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
+
+         --  For access type, apply access check as needed
 
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
+
+         --  For scalar type, if low bound is a reference to an entity, just
+         --  replace with a direct reference. Note that we can only have a
+         --  reference to a constant entity at this stage, anything else would
+         --  have already been rewritten.
+
+         elsif Is_Scalar_Type (Ptyp) then
+            declare
+               Lo : constant Node_Id := Type_Low_Bound (Ptyp);
+            begin
+               if Is_Entity_Name (Lo) then
+                  Rewrite (N, New_Occurrence_Of (Entity (Lo), Loc));
+               end if;
+            end;
          end if;
 
       ---------------
@@ -3535,8 +3552,24 @@ package body Exp_Attr is
                 Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
 
+         --  For access type, apply access check as needed
+
          elsif Is_Access_Type (Ptyp) then
             Apply_Access_Check (N);
+
+         --  For scalar type, if low bound is a reference to an entity, just
+         --  replace with a direct reference. Note that we can only have a
+         --  reference to a constant entity at this stage, anything else would
+         --  have already been rewritten.
+
+         elsif Is_Scalar_Type (Ptyp) then
+            declare
+               Hi : constant Node_Id := Type_High_Bound (Ptyp);
+            begin
+               if Is_Entity_Name (Hi) then
+                  Rewrite (N, New_Occurrence_Of (Entity (Hi), Loc));
+               end if;
+            end;
          end if;
 
       --------------
