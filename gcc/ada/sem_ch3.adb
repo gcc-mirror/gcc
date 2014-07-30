@@ -19174,7 +19174,8 @@ package body Sem_Ch3 is
                         Loc : constant Source_Ptr := Sloc (Lo);
                         Lov : constant Entity_Id  :=
                           Make_Defining_Identifier (Loc,
-                            Chars => New_External_Name (Chars (Subtyp), 'L'));
+                            Chars =>
+                              New_External_Name (Chars (Subtyp), "_FIRST"));
                      begin
                         Insert_Action (R,
                           Make_Object_Declaration (Loc,
@@ -19195,7 +19196,8 @@ package body Sem_Ch3 is
                         Loc : constant Source_Ptr := Sloc (Hi);
                         Hiv : constant Entity_Id  :=
                           Make_Defining_Identifier (Loc,
-                            Chars => New_External_Name (Chars (Subtyp), 'H'));
+                            Chars =>
+                              New_External_Name (Chars (Subtyp), "_LAST"));
                      begin
                         Insert_Action (R,
                           Make_Object_Declaration (Loc,

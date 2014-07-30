@@ -250,14 +250,21 @@ package Tbuild is
    --  positive, or if Suffix_Index is negative 1, then a unique serialized
    --  suffix is added. If Suffix_Index is zero, then no index is appended.
 
-   --  Suffix is also a single upper case letter other than O,Q,U,W,X and is a
-   --  required parameter (T is permitted). The constructed name is stored
-   --  using Name_Find so that it can be located using a subsequent Name_Find
-   --  operation (i.e. it is properly hashed into the names table). The upper
-   --  case letter given as the Suffix argument ensures that the name does
-   --  not clash with any Ada identifier name. These generated names are
-   --  permitted, but not required, to be made public by setting the flag
-   --  Is_Public in the associated entity.
+   --  Suffix is also a single upper case letter other than O,Q,U,W,X (T is
+   --  allowed in this context), or a string of such upper case letters. In
+   --  the case of a string, an initial underscore may be given.
+   --
+   --  The constructed name is stored using Name_Find so that it can be located
+   --  using a subsequent Name_Find operation (i.e. it is properly hashed into
+   --  the names table). The upper case letter given as the Suffix argument
+   --  ensures that the name does not clash with any Ada identifier name. These
+   --  generated names are permitted, but not required, to be made public by
+   --  setting the flag Is_Public in the associated entity.
+   --
+   --  Note: it is dubious to make them public if they have serial numbers,
+   --  since we are counting on the serial numbers being the same for the
+   --  clients with'ing a package and the actual compilation of the package
+   --  with full expansion. This is a dubious assumption ???
 
    function New_External_Name
      (Suffix       : Character;
@@ -272,6 +279,11 @@ package Tbuild is
    --  not clash with any Ada identifier name. These generated names are
    --  permitted, but not required, to be made public by setting the flag
    --  Is_Public in the associated entity.
+   --
+   --  Note: it is dubious to make these public since they have serial numbers,
+   --  which means we are counting on the serial numbers being the same for the
+   --  clients with'ing a package and the actual compilation of the package
+   --  with full expansion. This is a dubious assumption ???
 
    function New_Internal_Name (Id_Char : Character) return Name_Id;
    --  Id_Char is an upper case letter other than O,Q,U,W (which are reserved
@@ -287,11 +299,17 @@ package Tbuild is
    --  the Name_Find procedure later on. Names created by New_Internal_Name
    --  are guaranteed to be consistent from one compilation to another (i.e.
    --  if the identical unit is compiled with a semantically consistent set
-   --  of sources, the numbers will be consistent. This means that it is fine
+   --  of sources, the numbers will be consistent). This means that it is fine
    --  to use these as public symbols.
    --
    --  Note: Nearly all uses of this function are via calls to Make_Temporary,
    --  but there are just a few cases where it is called directly.
+   --
+   --  Note: despite the guarantee of consistency stated above, it is dubious
+   --  to make these public since they have serial numbers, which means we are
+   --  counting on the serial numbers being the same for the clients with'ing
+   --  a package and the actual compilation of the package with full expansion.
+   --  This is a dubious assumption ???
 
    function New_Occurrence_Of
      (Def_Id : Entity_Id;

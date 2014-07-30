@@ -15269,6 +15269,7 @@ Ada source code into XML.
 * Switches for gnat2xml::
 * Other Programs::
 * Structure of the XML::
+* Generating Representation Clauses::
 @end menu
 
 @node Switches for gnat2xml
@@ -15323,12 +15324,15 @@ options:
       output.)
 
 -I <include-dir>
-    directories to search for dependencies
-    You can also set the ADA_INCLUDE_PATH environment variable for this.
+      directories to search for dependencies
+      You can also set the ADA_INCLUDE_PATH environment variable for this.
 
 --compact -- debugging version, with interspersed source, and a more
       compact representation of "sloc". This version does not conform
       to any schema.
+
+--rep-clauses -- generate representation clauses (see ``Generating
+      Representation Clauses'' below).
 
 -files=filename - the name of a text file containing a list
                   of Ada source files to process
@@ -15676,9 +15680,42 @@ formal_function
 formal_package
 formal_package_declaration_with_box
 @end smallexample
-@end ifclear
-@end ifclear
 
+@node Generating Representation Clauses
+@section Generating Representation Clauses
+
+@noindent
+If the @option{--rep-clauses} switch is given, @command{gnat2xml} will
+generate representation clauses for certain types showing the
+representation chosen by the compiler. The information is produced by
+the ASIS ``Data Decomposition'' facility --- see the
+@code{Asis.Data_Decomposition} package for details.
+
+Not all types are supported. For example, @code{Type_Model_Kind} must
+be @code{A_Simple_Static_Model}. Types declared within generic units
+have no representation. The clauses that are generated include
+@code{attribute_definition_clauses} for @code{Size} and
+@code{Component_Size}, as well as
+@code{record_representation_clauses}.
+
+There is no guarantee that the generated representation clauses could
+have actually come from legal Ada code; Ada has some restrictions that
+are not necessarily obeyed by the generated clauses.
+
+The representation clauses are surrounded by comment elements to
+indicate that they are automatically generated, something like this:
+
+@smallexample
+<comment text="--gen+">
+...
+<attribute_definition_clause>
+...
+<comment text="--gen-">
+...
+@end smallexample
+
+@end ifclear
+@end ifclear
 
 @ifclear FSFEDITION
 @c *********************************
