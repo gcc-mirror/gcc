@@ -1,3 +1,36 @@
+2014-07-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* set_targ.adb (Read_Target_Dependent_Values): New subprogram.
+	(elab body): Add provision for default target config file.
+	* get_targ.ads, get_targ.adb (Get_Back_End_Config_File): New subprogram.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbhase.adb (Delete): Raise Constraint_Error, not Program_Error,
+	when attempting to remove an element not in the set. This is
+	the given semantics for all set containers.
+	* a-cborse.adb (Delete): Attempt removal first, to check for
+	tampering, before checking whether this is an attempt to
+	delete a  non-existing element, and in fthe latter case raise
+	Constraint_Error.
+
+2014-07-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Recursive_Process): Do not create a new
+	Project_Id if the project is already in the list of projects of
+	the tree.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): Reject a return expression
+	whose type is an incomplete formal type.
+	(Analyze_Return_Type): Reject a return type that is an untagged
+	imcomplete formal type.
+	(Process_Formals): Reject a formal parameter whose type is an
+	untagged formal incomplete type.
+	* sem_res.adb (Resolve_Actuals): Reject an actual whose type is
+	an untagged formal incomplete type.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Minor spelling correction.

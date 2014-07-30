@@ -313,7 +313,7 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       Element_Keys.Delete_Key_Sans_Free (Container, Item, X);
 
       if X = 0 then
-         raise Program_Error with "attempt to delete element not in set";
+         raise Constraint_Error with "attempt to delete element not in set";
       end if;
 
       HT_Ops.Free (Container, X);

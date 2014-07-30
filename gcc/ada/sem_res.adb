@@ -3864,6 +3864,16 @@ package body Sem_Res is
             A_Typ := Etype (A);
             F_Typ := Etype (F);
 
+            --  An actual cannot be an untagged formal incomplete type
+
+            if Ekind (A_Typ) = E_Incomplete_Type
+              and then not Is_Tagged_Type (A_Typ)
+              and then Is_Generic_Type (A_Typ)
+            then
+               Error_Msg_N
+                 ("invalid use of untagged formal incomplete type", A);
+            end if;
+
             if Comes_From_Source (Original_Node (N))
               and then Nkind_In (Original_Node (N), N_Function_Call,
                                                     N_Procedure_Call_Statement)
