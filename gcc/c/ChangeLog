@@ -1,3 +1,12 @@
+2014-07-30  Tom Tromey  <tromey@redhat.com>
+
+	* c-typeck.c (struct constructor_stack) <designator_depth>: New
+	field.
+	(really_start_incremental_init, push_init_level): Initialize
+	designator_depth.
+	(pop_init_level): Set global designator_depth.
+	(process_init_element): Check for designated_init attribute.
+
 2014-07-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61852

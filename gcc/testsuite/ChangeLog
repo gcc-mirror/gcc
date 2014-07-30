@@ -1,3 +1,8 @@
+2014-07-30  Tom Tromey  <tromey@redhat.com>
+
+	PR c/59855
+	* gcc.dg/Wdesignated-init.c: New file.
+
 2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-34.C: New testcase.

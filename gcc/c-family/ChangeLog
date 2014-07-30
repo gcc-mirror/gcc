@@ -1,3 +1,10 @@
+2014-07-30  Tom Tromey  <tromey@redhat.com>
+
+	PR c/59855
+	* c.opt (Wdesignated-init): New option.
+	* c-common.c (c_common_attribute_table): Add "designated_init".
+	(handle_designated_init): New function.
+
 2014-07-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/57653

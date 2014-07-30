@@ -244,8 +244,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
--Wno-deprecated -Wno-deprecated-declarations -Wdisabled-optimization  @gol
--Wno-discarded-qualifiers @gol
+-Wno-deprecated -Wno-deprecated-declarations -Wno-designated-init @gol
+-Wdisabled-optimization -Wno-discarded-qualifiers @gol
 -Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
 -Wno-endif-labels -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
@@ -5180,6 +5180,12 @@ a suffix.  When used together with @option{-Wsystem-headers} it
 warns about such constants in system header files.  This can be useful
 when preparing code to use with the @code{FLOAT_CONST_DECIMAL64} pragma
 from the decimal floating-point extension to C99.
+
+@item -Wno-designated-init @r{(C and Objective-C only)}
+Suppress warnings when a positional initializer is used to initialize
+a structure that has been marked with the @code{designated_init}
+attribute.
+
 @end table
 
 @node Debugging Options
