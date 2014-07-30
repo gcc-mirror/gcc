@@ -3722,23 +3722,15 @@ decl_linkage (tree decl)
   if (TREE_CODE (decl) == CONST_DECL)
     return decl_linkage (TYPE_NAME (DECL_CONTEXT (decl)));
 
-  /* Some things that are not TREE_PUBLIC have external linkage, too.
-     For example, on targets that don't have weak symbols, we make all
-     template instantiations have internal linkage (in the object
-     file), but the symbols should still be treated as having external
-     linkage from the point of view of the language.  */
-  if (VAR_OR_FUNCTION_DECL_P (decl)
-      && DECL_COMDAT (decl))
-    return lk_external;
-
   /* Things in local scope do not have linkage, if they don't have
      TREE_PUBLIC set.  */
   if (decl_function_context (decl))
     return lk_none;
 
   /* Members of the anonymous namespace also have TREE_PUBLIC unset, but
-     are considered to have external linkage for language purposes.  DECLs
-     really meant to have internal linkage have DECL_THIS_STATIC set.  */
+     are considered to have external linkage for language purposes, as do
+     template instantiations on targets without weak symbols.  DECLs really
+     meant to have internal linkage have DECL_THIS_STATIC set.  */
   if (TREE_CODE (decl) == TYPE_DECL)
     return lk_external;
   if (VAR_OR_FUNCTION_DECL_P (decl))

@@ -2787,6 +2787,9 @@ check_explicit_specialization (tree declarator,
 	       It's just the name of an instantiation.  But, it's not
 	       a request for an instantiation, either.  */
 	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
+	  else
+	    /* A specialization is not necessarily COMDAT.  */
+	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
 
 	  /* Register this specialization so that we can find it
 	     again.  */
@@ -5016,6 +5019,13 @@ template arguments to %qD do not match original template %qD",
       if (DECL_LANG_SPECIFIC (decl))
 	DECL_TEMPLATE_INFO (decl) = info;
     }
+
+  if (flag_implicit_templates
+      && VAR_OR_FUNCTION_DECL_P (decl))
+    /* Set DECL_COMDAT on template instantiations; if we force
+       them to be emitted by explicit instantiation or -frepo,
+       mark_needed will tell cgraph to do the right thing.  */
+    DECL_COMDAT (decl) = true;
 
   return DECL_TEMPLATE_RESULT (tmpl);
 }

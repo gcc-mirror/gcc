@@ -1930,6 +1930,12 @@ mark_needed (tree decl)
 	 definition.  */
       struct cgraph_node *node = cgraph_node::get_create (decl);
       node->forced_by_abi = true;
+
+      /* #pragma interface and -frepo code can call mark_needed for
+          maybe-in-charge 'tors; mark the clones as well.  */
+      tree clone;
+      FOR_EACH_CLONE (clone, decl)
+	mark_needed (clone);
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
@@ -2728,17 +2734,7 @@ import_export_decl (tree decl)
     {
       /* The repository indicates that this entity should be defined
 	 here.  Make sure the back end honors that request.  */
-      if (VAR_P (decl))
-	mark_needed (decl);
-      else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
-	       || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
-	{
-	  tree clone;
-	  FOR_EACH_CLONE (clone, decl)
-	    mark_needed (clone);
-	}
-      else
-	mark_needed (decl);
+      mark_needed (decl);
       /* Output the definition as an ordinary strong definition.  */
       DECL_EXTERNAL (decl) = 0;
       DECL_INTERFACE_KNOWN (decl) = 1;
