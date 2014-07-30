@@ -4579,17 +4579,15 @@ replace_removed_params_ssa_names (gimple stmt,
   return true;
 }
 
-/* If the statement pointed to by STMT_PTR contains any expressions that need
-   to replaced with a different one as noted by ADJUSTMENTS, do so.  Handle any
-   potential type incompatibilities (GSI is used to accommodate conversion
-   statements and must point to the statement).  Return true iff the statement
-   was modified.  */
+/* If the statement STMT contains any expressions that need to replaced with a
+   different one as noted by ADJUSTMENTS, do so.  Handle any potential type
+   incompatibilities (GSI is used to accommodate conversion statements and must
+   point to the statement).  Return true iff the statement was modified.  */
 
 static bool
-sra_ipa_modify_assign (gimple *stmt_ptr, gimple_stmt_iterator *gsi,
+sra_ipa_modify_assign (gimple stmt, gimple_stmt_iterator *gsi,
 		       ipa_parm_adjustment_vec adjustments)
 {
-  gimple stmt = *stmt_ptr;
   tree *lhs_p, *rhs_p;
   bool any;
 
@@ -4676,7 +4674,7 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 	      break;
 
 	    case GIMPLE_ASSIGN:
-	      modified |= sra_ipa_modify_assign (&stmt, &gsi, adjustments);
+	      modified |= sra_ipa_modify_assign (stmt, &gsi, adjustments);
 	      modified |= replace_removed_params_ssa_names (stmt, adjustments);
 	      break;
 
