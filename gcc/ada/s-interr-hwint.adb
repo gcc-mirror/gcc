@@ -719,6 +719,11 @@ package body System.Interrupts is
    -----------------------
 
    task body Interrupt_Manager is
+      --  By making this task independent of any master, when the process goes
+      --  away, the Interrupt_Manager will terminate gracefully.
+
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+      pragma Unreferenced (Ignore);
 
       --------------------
       -- Local Routines --
@@ -907,11 +912,6 @@ package body System.Interrupts is
    --  Start of processing for Interrupt_Manager
 
    begin
-      --  By making this task independent of any master, when the process goes
-      --  away, the Interrupt_Manager will terminate gracefully.
-
-      System.Tasking.Utilities.Make_Independent;
-
       loop
          --  A block is needed to absorb Program_Error exception
 
@@ -1039,6 +1039,9 @@ package body System.Interrupts is
    --  Server task for vectored hardware interrupt handling
 
    task body Interrupt_Server_Task is
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+      pragma Unreferenced (Ignore);
+
       Self_Id         : constant Task_Id := Self;
       Tmp_Handler     : Parameterless_Handler;
       Tmp_ID          : Task_Id;
@@ -1046,7 +1049,6 @@ package body System.Interrupts is
       Status          : int;
 
    begin
-      System.Tasking.Utilities.Make_Independent;
       Semaphore_ID_Map (Interrupt) := Int_Sema;
 
       loop

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -48,6 +48,8 @@ package System.Traceback_Entries is
 
    Null_TB_Entry : constant Traceback_Entry := System.Null_Address;
    --  This is the value to be used when initializing an entry
+
+   type Tracebacks_Array is array (Positive range <>) of Traceback_Entry;
 
    function PC_For (TB_Entry : Traceback_Entry) return System.Address;
    pragma Inline (PC_For);

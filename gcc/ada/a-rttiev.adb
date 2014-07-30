@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2005-2011, Free Software Foundation, Inc.        --
+--           Copyright (C) 2005-2014, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,15 @@ package body Ada.Real_Time.Timing_Events is
    Event_Queue_Lock : aliased System.Task_Primitives.RTS_Lock;
    --  Used for mutually exclusive access to All_Events
 
+   --  We need to Initialize_Lock before Timer is activated. The purpose of the
+   --  Dummy package is to get around Ada's syntax rules.
+
+   package Dummy is end Dummy;
+   package body Dummy is
+   begin
+      Initialize_Lock (Event_Queue_Lock'Access, Level => PO_Level);
+   end Dummy;
+
    procedure Process_Queued_Events;
    --  Examine the queue of pending events for any that have timed out. For
    --  those that have timed out, remove them from the queue and invoke their
@@ -86,7 +95,6 @@ package body Ada.Real_Time.Timing_Events is
 
    task Timer is
       pragma Priority (System.Priority'Last);
-      entry Start;
    end Timer;
 
    task body Timer is
@@ -96,28 +104,15 @@ package body Ada.Real_Time.Timing_Events is
       --  requirements. Obviously a shorter period would give better resolution
       --  at the cost of more overhead.
 
-   begin
-      System.Tasking.Utilities.Make_Independent;
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+      pragma Unreferenced (Ignore);
 
+   begin
       --  Since this package may be elaborated before System.Interrupt,
       --  we need to call Setup_Interrupt_Mask explicitly to ensure that
       --  this task has the proper signal mask.
 
       System.Interrupt_Management.Operations.Setup_Interrupt_Mask;
-
-      --  We await the call to Start to ensure that Event_Queue_Lock has been
-      --  initialized by the package executable part prior to accessing it in
-      --  the loop. The task is activated before the first statement of the
-      --  executable part so it would otherwise be possible for the task to
-      --  call EnterCriticalSection in Process_Queued_Events before the
-      --  initialization.
-
-      --  We don't simply put the initialization here, prior to the loop,
-      --  because other application tasks could call the visible routines that
-      --  also call Enter/LeaveCriticalSection prior to this task doing the
-      --  initialization.
-
-      accept Start;
 
       loop
          Process_Queued_Events;
@@ -369,7 +364,4 @@ package body Ada.Real_Time.Timing_Events is
       Remove_From_Queue (This'Unchecked_Access);
    end Finalize;
 
-begin
-   Initialize_Lock (Event_Queue_Lock'Access, Level => PO_Level);
-   Timer.Start;
 end Ada.Real_Time.Timing_Events;
