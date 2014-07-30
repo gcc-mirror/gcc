@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    is
    begin
       --  Nothing to do if identical schemes, but for UTF_8 we need to
-      --  exclude overlong encodings, so need to do the full conversion.
+      --  handle overlong encodings, so need to do the full conversion.
 
       if Input_Scheme = Output_Scheme
         and then Input_Scheme /= UTF_8
@@ -50,7 +50,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          return Item;
 
       --  For remaining cases, one or other of the operands is UTF-16BE/LE
-      --  encoded, so go through UTF-16 intermediate.
+      --  encoded, or we have the UTF-8 to UTF-8 case where we must handle
+      --  overlong encodings. In all cases,  go through UTF-16 intermediate.
 
       else
          return Convert (UTF_16_Wide_String'(Convert (Item, Input_Scheme)),
@@ -159,7 +160,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          C := To_Unsigned_8 (Item (Iptr));
          Iptr := Iptr + 1;
 
-         --  Codes in the range 16#00# - 16#7F#
+         --  Codes in the range 16#00# .. 16#7F#
          --    UTF-8:  0xxxxxxx
          --    UTF-16: 00000000_0xxxxxxx
 
@@ -173,7 +174,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          elsif C <= 2#10_111111# then
             Raise_Encoding_Error (Iptr - 1);
 
-         --  Codes in the range 16#80# - 16#7FF#
+         --  Codes in the range 16#80# .. 16#7FF#
          --    UTF-8:  110yyyxx 10xxxxxx
          --    UTF-16: 00000yyy_xxxxxxxx
 
@@ -183,7 +184,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
             Len := Len + 1;
             Result (Len) := Wide_Character'Val (R);
 
-         --  Codes in the range 16#800# - 16#FFFF#
+         --  Codes in the range 16#800# .. 16#D7FF or 16#DF01# .. 16#FFFF#
          --    UTF-8:  1110yyyy 10yyyyxx 10xxxxxx
          --    UTF-16: yyyyyyyy_xxxxxxxx
 
@@ -201,7 +202,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                Raise_Encoding_Error (Iptr - 3);
             end if;
 
-         --  Codes in the range 16#10000# - 16#10FFFF#
+         --  Codes in the range 16#10000# .. 16#10FFFF#
          --    UTF-8:  11110zzz 10zzyyyy 10yyyyxx 10xxxxxx
          --    UTF-16: 110110zz_zzyyyyyy 110111yy_xxxxxxxx
          --    Note: zzzz in the output is input zzzzz - 1
@@ -212,24 +213,50 @@ package body Ada.Strings.UTF_Encoding.Conversions is
 
             --  R now has zzzzzyyyy
 
-            R := R - 2#0000_1_0000#;
+            --  At this stage, we check for the case where we have an overlong
+            --  encoding, and the encoded value in fact lies in the single word
+            --  range (16#800# .. 16#D7FF or 16#DF01# .. 16#FFFF#). This means
+            --  that the result fits in a single result word.
 
-            --  R now has zzzzyyyy (zzzz minus one for the output)
+            if R <= 2#1111# then
+               Get_Continuation;
+               Get_Continuation;
 
-            Get_Continuation;
+               --  Make sure we are not in the forbidden surrogate range
 
-            --  R now has zzzzyyyyyyyyxx
+               if R in 16#D800# .. 16#DF00# then
+                  Raise_Encoding_Error (Iptr - 3);
+               end if;
 
-            Len := Len + 1;
-            Result (Len) :=
-              Wide_Character'Val
-                (2#110110_00_0000_0000# or Shift_Right (R, 4));
+               --  Otherwise output a single UTF-16 value
 
-            R := R and 2#1111#;
-            Get_Continuation;
-            Len := Len + 1;
-            Result (Len) :=
-              Wide_Character'Val (2#110111_00_0000_0000# or R);
+               Len := Len + 1;
+               Result (Len) := Wide_Character'Val (R);
+
+            --  Here for normal case (code value > 16#FFFF and zzzzz non-zero)
+
+            else
+               --  Subtract 1 from input zzzzz value to get output zzzz value
+
+               R := R - 2#0000_1_0000#;
+
+               --  R now has zzzzyyyy (zzzz minus one for the output)
+
+               Get_Continuation;
+
+               --  R now has zzzzyy_yyyyyyxx
+
+               Len := Len + 1;
+               Result (Len) :=
+                 Wide_Character'Val
+                   (2#110110_00_0000_0000# or Shift_Right (R, 4));
+
+               R := R and 2#1111#;
+               Get_Continuation;
+               Len := Len + 1;
+               Result (Len) :=
+                 Wide_Character'Val (2#110111_00_0000_0000# or R);
+            end if;
 
          --  Any other code is an error
 

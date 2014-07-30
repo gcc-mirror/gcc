@@ -34,19 +34,21 @@ with System.Tasking.Initialization; use System.Tasking.Initialization;
 
 package body System.Tasking.Task_Attributes is
 
-   ----------------
-   -- Next_Index --
-   ----------------
-
    type Index_Info is record
-      Used, Require_Finalization : Boolean;
+      Used : Boolean;
+      --  Used is True if a given index is used by an instantiation of
+      --  Ada.Task_Attributes, False otherwise.
+
+      Require_Finalization : Boolean;
+      --  Require_Finalization is True if the attribute requires finalization
    end record;
-   --  Used is True if a given index is used by an instantiation of
-   --  Ada.Task_Attributes, False otherwise.
-   --  Require_Finalization is True if the attribute requires finalization.
 
    Index_Array : array (1 .. Max_Attribute_Count) of Index_Info :=
-     (others => (False, False));
+                   (others => (False, False));
+
+   --  Note that this package will use an efficient implementation with no
+   --  locks and no extra dynamic memory allocation if Attribute can fit in a
+   --  System.Address type and Initial_Value is 0 (or null for an access type).
 
    function Next_Index (Require_Finalization : Boolean) return Integer is
       Self_Id : constant Task_Id := Self;
@@ -78,6 +80,10 @@ package body System.Tasking.Task_Attributes is
       Index_Array (Index).Used := False;
       Task_Unlock (Self_Id);
    end Finalize;
+
+   --------------------------
+   -- Require_Finalization --
+   --------------------------
 
    function Require_Finalization (Index : Integer) return Boolean is
    begin

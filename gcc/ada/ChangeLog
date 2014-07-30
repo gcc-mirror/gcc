@@ -1,3 +1,12 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, s-tataat.adb, s-tataat.ads, s-parame-vms-alpha.ads,
+	inline.adb, s-parame-hpux.ads, exp_smem.adb, s-tasini.adb,
+	s-tasini.ads, s-parame-vms-ia64.ads, s-parame.ads, s-taskin.ads,
+	s-parame-vxworks.ads, a-tasatt.adb, a-tasatt.ads: Minor reformatting.
+	* a-suenco.adb (Convert): Handle overlong encodings in UTF8-UTF8
+	conversion.
+
 2014-07-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb: Improve error recovery.

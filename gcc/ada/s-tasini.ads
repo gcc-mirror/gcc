@@ -38,9 +38,9 @@ package System.Tasking.Initialization is
    --  Remove T from All_Tasks_List. Call this function with RTS_Lock taken
 
    procedure Finalize_Attributes (T : Task_Id);
-   --  Finalize all attributes from T
-   --  This is to be called just before the ATCB is deallocated.
-   --  It relies on the caller holding T.L write-lock on entry.
+   --  Finalize all attributes from T. This is to be called just before the
+   --  ATCB is deallocated. It relies on the caller holding T.L write-lock
+   --  on entry.
 
    ---------------------------------
    -- Tasking-Specific Soft Links --
