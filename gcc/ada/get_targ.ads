@@ -146,8 +146,8 @@ package Get_Targ is
    --  Calls the Call_Back function with information for each supported type
 
    function Get_Back_End_Config_File return String_Ptr;
-   --  Return the back end configuration file, or null if none.
-   --  If non null, this file should be used instead of calling the various
-   --  Get_xxx functions in this package.
+   --  Return the back end configuration file, or null if none. If non-null,
+   --  this file should be used instead of calling the various Get_xxx
+   --  functions in this package.
 
 end Get_Targ;

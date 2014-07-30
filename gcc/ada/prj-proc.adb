@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              P R J . P R O C                             --
+--                             P R J . P R O C                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -2848,6 +2848,7 @@ package body Prj.Proc is
             --  Check if the project is already in the tree
 
             Project := No_Project;
+
             declare
                List : Project_List := In_Tree.Projects;
                Path : constant Path_Name_Type :=

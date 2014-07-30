@@ -1,3 +1,27 @@
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-crdlli.ads: Place declaration of Empty_List after full type
+	declaration for Curosr, to prevent freezing error.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* get_targ.adb: Minor code reorganization.
+	* prj-proc.adb, prj-proc.ads, get_targ.ads, sem_ch6.adb: Minor
+	reformatting.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbhase.adb: a-cbhase.adb (Insert): Raise Constraint_Error,
+	not Program_Error, when attempting to remove an element not in
+	the set. This is the given semantics for all set containers.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-rbtgbo.adb: -rbtgbo.adb (Delete_Node_Sans_Free): If
+	element is not present in tree return rather than violating
+	an assertion. Constraint_Error will be raised in the caller if
+	element is not in the container.
+
 2014-07-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* set_targ.adb (Read_Target_Dependent_Values): New subprogram.

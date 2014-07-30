@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,7 +196,6 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       X, Y : Count_Type;
 
       Z : constant Count_Type := Node;
-      pragma Assert (Z /= 0);
 
       N : Nodes_Type renames Tree.Nodes;
 
@@ -204,6 +203,12 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
       if Tree.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with cursors (container is busy)";
+      end if;
+
+      --  If node is not present, return. Exception will be raised in caller.
+
+      if Z = 0 then
+         return;
       end if;
 
       pragma Assert (Tree.Length > 0);
