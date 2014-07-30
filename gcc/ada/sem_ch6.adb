@@ -2972,10 +2972,10 @@ package body Sem_Ch6 is
                then
                   declare
                      Body_Spec : constant Node_Id :=
-                       Copy_Separate_Tree (Specification (N));
+                                   Copy_Separate_Tree (Specification (N));
                      New_Decl : constant Node_Id :=
-                       Make_Subprogram_Declaration
-                        (Loc, Copy_Separate_Tree (Specification (N)));
+                                  Make_Subprogram_Declaration (Loc,
+                                    Copy_Separate_Tree (Specification (N)));
 
                   begin
                      Insert_Before (N, New_Decl);
