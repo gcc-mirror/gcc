@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2010, AdaCore                     --
+--                     Copyright (C) 2000-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,66 +31,9 @@
 
 --  This package provides an interface allowing to control *automatic* output
 --  to standard error upon exception occurrences (as opposed to explicit
---  generation of traceback information using GNAT.Traceback).
+--  generation of traceback information using System.Traceback).
 
---  This output includes the basic information associated with the exception
---  (name, message) as well as a backtrace of the call chain at the point
---  where the exception occurred. This backtrace is only output if the call
---  chain information is available, depending if the binder switch dedicated
---  to that purpose has been used or not.
+--  See file s-exctra.ads for full documentation of the interface
 
---  The default backtrace is in the form of absolute code locations which may
---  be converted to corresponding source locations using the addr2line utility
---  or from within GDB. Please refer to GNAT.Traceback for information about
---  what is necessary to be able to exploit this possibility.
-
---  The backtrace output can also be customized by way of a "decorator" which
---  may return any string output in association with a provided call chain.
---  The decorator replaces the default backtrace mentioned above.
-
-with GNAT.Traceback; use GNAT.Traceback;
-
-package GNAT.Exception_Traces is
-
-   --  The following defines the exact situations in which raises will
-   --  cause automatic output of trace information.
-
-   type Trace_Kind is
-     (Every_Raise,
-      --  Denotes the initial raise event for any exception occurrence, either
-      --  explicit or due to a specific language rule, within the context of a
-      --  task or not.
-
-      Unhandled_Raise
-      --  Denotes the raise events corresponding to exceptions for which there
-      --  is no user defined handler, in particular, when a task dies due to an
-      --  unhandled exception.
-     );
-
-   --  The following procedures can be used to activate and deactivate
-   --  traces identified by the above trace kind values.
-
-   procedure Trace_On (Kind : Trace_Kind);
-   --  Activate the traces denoted by Kind
-
-   procedure Trace_Off;
-   --  Stop the tracing requested by the last call to Trace_On.
-   --  Has no effect if no such call has ever occurred.
-
-   --  The following provide the backtrace decorating facilities
-
-   type Traceback_Decorator is access
-     function (Traceback : Tracebacks_Array) return String;
-   --  A backtrace decorator is a function which returns the string to be
-   --  output for a call chain provided by way of a tracebacks array.
-
-   procedure Set_Trace_Decorator (Decorator : Traceback_Decorator);
-   --  Set the decorator to be used for future automatic outputs. Restore
-   --  the default behavior (output of raw addresses) if the provided
-   --  access value is null.
-   --
-   --  Note: GNAT.Traceback.Symbolic.Symbolic_Traceback may be used as the
-   --  Decorator, to get a symbolic traceback. This will cause a significant
-   --  cpu and memory overhead.
-
-end GNAT.Exception_Traces;
+with System.Exception_Traces;
+package GNAT.Exception_Traces renames System.Exception_Traces;

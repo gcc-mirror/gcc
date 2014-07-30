@@ -1,3 +1,33 @@
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* g-exctra.adb, g-exctra.ads, s-exctra.adb, s-exctra.ads, Makefile.rtl,
+	g-trasym.adb, g-trasym.ads, s-trasym.adb, s-trasym.ads: Move
+	GNAT.Traceback.Symbolic and GNAT.Exception_Traces into the System
+	hierarchy (System.Traceback.Symbolic and System.Exception_Traces), so
+	we can call them from the runtimes. Leave renamings in place under GNAT.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Check_And_Build_Body_To_Inline): Include code for
+	inlining in GNATprove mode.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cohase.adb, a-cohase.ads (Generic_Keys): Add a
+	Reference_Control_Type to generic package, to keep additional
+	information for Reference_Types that manipulate keys. Add Adjust and
+	Finalize procedures for this type.
+	(Delete_Node): New procedure called when finalizing a
+	Reference_Control_Type, to remove a node whose element has been
+	improperly updated through a Reference.
+	(Insert): Detect tampering.
+	(Reference_Preserving_Key): Build proper Reference_Control_Type,
+	and update Busy and Lock bits to detect tampering.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* exp_intr.ads: Minor comment fix.
+
 2014-07-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_prag.adb, a-tags.ads: Minor typo fixes.
