@@ -1445,11 +1445,11 @@ package body Inline is
             null;
 
          --  In GNATprove mode, issue a warning, and indicate that the
-         --  subprogram is not always inlined by setting flag Is_Inlined
+         --  subprogram is not always inlined by setting flag Is_Inlined_Always
          --  to False.
 
          elsif GNATprove_Mode then
-            Set_Is_Inlined (Subp, False);
+            Set_Is_Inlined_Always (Subp, False);
             Error_Msg_NE (Msg & "p?", N, Subp);
 
          elsif Has_Pragma_Inline_Always (Subp) then
@@ -1474,10 +1474,10 @@ package body Inline is
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
       --  In GNATprove mode, issue a warning, and indicate that the subprogram
-      --  is not always inlined by setting flag Is_Inlined to False.
+      --  is not always inlined by setting flag Is_Inlined_Always to False.
 
       elsif GNATprove_Mode then
-         Set_Is_Inlined (Subp, False);
+         Set_Is_Inlined_Always (Subp, False);
          Error_Msg_NE (Msg & "p?", N, Subp);
 
       --  Do not issue errors/warnings when compiling with optimizations
@@ -1630,6 +1630,8 @@ package body Inline is
    --  Start of Can_Be_Inlined_In_GNATprove_Mode
 
    begin
+      pragma Assert (Present (Spec_Id) or else Present (Body_Id));
+
       if Present (Spec_Id) then
          Id := Spec_Id;
       else
@@ -1663,7 +1665,8 @@ package body Inline is
       --  body. Use the contract(s) instead in GNATprove.
 
       elsif (Present (Spec_Id) and then Has_Some_Contract (Spec_Id))
-        or else Has_Some_Contract (Body_Id)
+               or else
+            (Present (Body_Id) and then Has_Some_Contract (Body_Id))
       then
          return False;
 
@@ -1671,7 +1674,8 @@ package body Inline is
       --  prover level.
 
       elsif (Present (Spec_Id) and then Is_Expression_Function (Spec_Id))
-        or else Is_Expression_Function (Body_Id)
+              or else
+            (Present (Body_Id) and then Is_Expression_Function (Body_Id))
       then
          return False;
 
@@ -1684,8 +1688,10 @@ package body Inline is
       --  Only inline subprograms whose body is marked SPARK_Mode On. Other
       --  subprogram bodies should not be analyzed.
 
-      elsif No (SPARK_Pragma (Body_Id))
-        or else Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) /= On
+      elsif Present (Body_Id)
+        and then (No (SPARK_Pragma (Body_Id))
+                   or else
+                  Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) /= On)
       then
          return False;
 
@@ -2781,8 +2787,16 @@ package body Inline is
                if Is_Subprogram (P_Ent) then
                   Set_Is_Inlined (P_Ent, False);
 
+                  --  In GNATprove mode, issue a warning, and indicate that
+                  --  the subprogram is not always inlined by setting flag
+                  --  Is_Inlined_Always to False.
+
+                  if GNATprove_Mode then
+                     Set_Is_Inlined_Always (P_Ent, False);
+                  end if;
+
                   if Comes_From_Source (P_Ent)
-                    and then Has_Pragma_Inline (P_Ent)
+                    and then (Has_Pragma_Inline (P_Ent) or else GNATprove_Mode)
                   then
                      Cannot_Inline
                        ("cannot inline& (nested subprogram)?", N, P_Ent,
@@ -3519,6 +3533,15 @@ package body Inline is
       if In_Open_Scopes (Subp) then
          Error_Msg_N ("call to recursive subprogram cannot be inlined??", N);
          Set_Is_Inlined (Subp, False);
+
+         --  In GNATprove mode, issue a warning, and indicate that the
+         --  subprogram is not always inlined by setting flag Is_Inlined_Always
+         --  to False.
+
+         if GNATprove_Mode then
+            Set_Is_Inlined_Always (Subp, False);
+         end if;
+
          return;
 
       --  Skip inlining if this is not a true inlining since the attribute
@@ -3724,13 +3747,13 @@ package body Inline is
             --  inlining will not happen, and mark the subprogram as not always
             --  inlined.
 
-            if Expander_Active then
-               Error_Msg_N
-                 ("cannot inline call to recursive subprogram", N);
-            else
+            if GNATprove_Mode then
                Cannot_Inline
                  ("cannot inline call to recursive subprogram?", N, Subp);
-               Set_Is_Inlined (Subp, False);
+               Set_Is_Inlined_Always (Subp, False);
+            else
+               Error_Msg_N
+                 ("cannot inline call to recursive subprogram", N);
             end if;
 
             return;

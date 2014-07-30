@@ -6210,6 +6210,7 @@ package body Sem_Res is
       if GNATprove_Mode
         and then Is_Overloadable (Nam)
         and then SPARK_Mode = On
+        and then Full_Analysis
       then
          --  Retrieve the body to inline from the ultimate alias of Nam, if
          --  there is one, otherwise calls that should be inlined end up not
@@ -6220,13 +6221,22 @@ package body Sem_Res is
             Decl : constant Node_Id := Unit_Declaration_Node (Nam_Alias);
          begin
             if Nkind (Decl) = N_Subprogram_Declaration
+              and then Can_Be_Inlined_In_GNATprove_Mode (Nam_Alias, Empty)
+              and then No (Corresponding_Body (Decl))
+            then
+               Error_Msg_NE
+                 ("?cannot inline call to & (body not seen yet)", N, Nam);
+               Set_Is_Inlined_Always (Nam_Alias, False);
+
+            elsif Nkind (Decl) = N_Subprogram_Declaration
               and then Present (Body_To_Inline (Decl))
+              and then Is_Inlined (Nam_Alias)
             then
                if Is_Potentially_Unevaluated (N) then
                   Error_Msg_NE ("?cannot inline call to &", N, Nam);
                   Error_Msg_N
                     ("\call appears in potentially unevaluated context", N);
-                  Set_Is_Inlined (Nam, False);
+                  Set_Is_Inlined_Always (Nam_Alias, False);
                else
                   Expand_Inlined_Call (N, Nam_Alias, Nam);
                end if;

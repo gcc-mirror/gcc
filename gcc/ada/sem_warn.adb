@@ -128,6 +128,16 @@ package body Sem_Warn is
    --  If E is a parameter entity for a subprogram body, then this function
    --  returns the corresponding spec entity, if not, E is returned unchanged.
 
+   function Has_Junk_Name (E : Entity_Id) return Boolean;
+   --  Return True if the entity name contains any of the following substrings:
+   --    discard
+   --    dummy
+   --    ignore
+   --    junk
+   --    unused
+   --  Used to suppress warnings on names matching these patterns. The contents
+   --  of Name_Buffer and Name_Len are destroyed by this call.
+
    function Has_Pragma_Unmodified_Check_Spec (E : Entity_Id) return Boolean;
    --  Tests Has_Pragma_Unmodified flag for entity E. If E is not a formal,
    --  this is simply the setting of the flag Has_Pragma_Unmodified. If E is
@@ -1060,7 +1070,8 @@ package body Sem_Warn is
 
          --  We are only interested in source entities. We also don't issue
          --  warnings within instances, since the proper place for such
-         --  warnings is on the template when it is compiled.
+         --  warnings is on the template when it is compiled, and we don't
+         --  issue warnings for variables with names like Junk, Discard etc.
 
          if Comes_From_Source (E1)
            and then Instantiation_Location (Sloc (E1)) = No_Location
@@ -1145,7 +1156,9 @@ package body Sem_Warn is
                           and then not Has_Pragma_Unreferenced_Check_Spec (E1)
                           and then not Has_Pragma_Unmodified_Check_Spec (E1)
                         then
-                           if not Warnings_Off_E1 then
+                           if not Warnings_Off_E1
+                             and then not Has_Junk_Name (E1)
+                           then
                               Error_Msg_N -- CODEFIX
                                 ("?k?& is not modified, "
                                  & "could be declared constant!",
@@ -1267,7 +1280,11 @@ package body Sem_Warn is
                      --  the formal is not modified.
 
                      else
-                        In_Out_Warnings.Append (E1);
+                        --  Suppress the warnings for a junk name
+
+                        if not Has_Junk_Name (E1) then
+                           In_Out_Warnings.Append (E1);
+                        end if;
                      end if;
 
                   --  Other cases of formals
@@ -1277,6 +1294,7 @@ package body Sem_Warn is
                         if Referenced_Check_Spec (E1) then
                            if not Has_Pragma_Unmodified_Check_Spec (E1)
                              and then not Warnings_Off_E1
+                             and then not Has_Junk_Name (E1)
                            then
                               Output_Reference_Error
                                 ("?f?formal parameter& is read but "
@@ -1285,6 +1303,7 @@ package body Sem_Warn is
 
                         elsif not Has_Pragma_Unreferenced_Check_Spec (E1)
                           and then not Warnings_Off_E1
+                          and then not Has_Junk_Name (E1)
                         then
                            Output_Reference_Error
                              ("?f?formal parameter& is not referenced!");
@@ -1297,7 +1316,7 @@ package body Sem_Warn is
                      if Referenced (E1) then
                         if not Has_Unmodified (E1)
                           and then not Warnings_Off_E1
-                          and then not Is_Junk_Name (Chars (E1))
+                          and then not Has_Junk_Name (E1)
                         then
                            Output_Reference_Error
                              ("?v?variable& is read but never assigned!");
@@ -1306,7 +1325,7 @@ package body Sem_Warn is
 
                      elsif not Has_Unreferenced (E1)
                        and then not Warnings_Off_E1
-                       and then not Is_Junk_Name (Chars (E1))
+                       and then not Has_Junk_Name (E1)
                      then
                         Output_Reference_Error -- CODEFIX
                           ("?v?variable& is never read and never assigned!");
@@ -1373,7 +1392,9 @@ package body Sem_Warn is
                      if Nkind (UR) = N_Simple_Return_Statement
                        and then not Has_Pragma_Unmodified_Check_Spec (E1)
                      then
-                        if not Warnings_Off_E1 then
+                        if not Warnings_Off_E1
+                          and then not Has_Junk_Name (E1)
+                        then
                            Error_Msg_NE
                              ("?v?OUT parameter& not set before return",
                               UR, E1);
@@ -1593,7 +1614,9 @@ package body Sem_Warn is
                           (E1, Body_Formal (E1, Accept_Statement => Anod));
                      end if;
 
-                  elsif not Warnings_Off_E1 then
+                  elsif not Warnings_Off_E1
+                    and then not Has_Junk_Name (E1)
+                  then
                      Unreferenced_Entities.Append (E1);
                   end if;
                end if;
@@ -1609,7 +1632,7 @@ package body Sem_Warn is
               and then Instantiation_Depth (Sloc (E1)) = 0
               and then Warn_On_Redundant_Constructs
             then
-               if not Warnings_Off_E1 then
+               if not Warnings_Off_E1 and then not Has_Junk_Name (E1) then
                   Unreferenced_Entities.Append (E1);
 
                   --  Force warning on entity
@@ -1755,6 +1778,7 @@ package body Sem_Warn is
                                 (Sloc (N), Sloc (Unset_Reference (E))))
                  and then not Has_Pragma_Unmodified_Check_Spec (E)
                  and then not Warnings_Off_Check_Spec (E)
+                 and then not Has_Junk_Name (E)
                then
                   --  We may have an unset reference. The first test is whether
                   --  this is an access to a discriminant of a record or a
@@ -2659,6 +2683,44 @@ package body Sem_Warn is
          return E;
       end if;
    end Goto_Spec_Entity;
+
+   -------------------
+   -- Has_Junk_Name --
+   -------------------
+
+   function Has_Junk_Name (E : Entity_Id) return Boolean is
+      function Match (S : String) return Boolean;
+      --  Return true if substring S is found in Name_Buffer (1 .. Name_Len)
+
+      -----------
+      -- Match --
+      -----------
+
+      function Match (S : String) return Boolean is
+         Slen1 : constant Integer := S'Length - 1;
+
+      begin
+         for J in 1 .. Name_Len - S'Length + 1 loop
+            if Name_Buffer (J .. J + Slen1) = S then
+               return True;
+            end if;
+         end loop;
+
+         return False;
+      end Match;
+
+   --  Start of processing for Has_Junk_Name
+
+   begin
+      Get_Unqualified_Decoded_Name_String (Chars (E));
+
+      return
+        Match ("discard") or else
+        Match ("dummy")   or else
+        Match ("ignore")  or else
+        Match ("junk")    or else
+        Match ("unused");
+   end Has_Junk_Name;
 
    --------------------------------------
    -- Has_Pragma_Unmodified_Check_Spec --
@@ -3910,7 +3972,7 @@ package body Sem_Warn is
       if not Referenced_Check_Spec (E)
         and then not Has_Pragma_Unreferenced_Check_Spec (E)
         and then not Warnings_Off_Check_Spec (E)
-        and then not Is_Junk_Name (Chars (Spec_E))
+        and then not Has_Junk_Name (Spec_E)
       then
          case Ekind (E) is
             when E_Variable =>
@@ -4115,7 +4177,7 @@ package body Sem_Warn is
         and then not Is_Exported (Ent)
         and then Safe_To_Capture_Value (N, Ent)
         and then not Has_Pragma_Unreferenced_Check_Spec (Ent)
-        and then not Is_Junk_Name (Chars (Ent))
+        and then not Has_Junk_Name (Ent)
       then
          --  Before we issue the message, check covering exception handlers.
          --  Search up tree for enclosing statement sequences and handlers.

@@ -2476,10 +2476,12 @@ package Einfo is
 --       be compiled. Is_Inlined is also set on generic subprograms and is
 --       inherited by their instances. It is also set on the body entities
 --       of inlined subprograms. See also Has_Pragma_Inline.
---
---       Is_Inlined is also set for subprograms that are always inlined in
---       GNATprove mode. GNATprove uses this flag to know when a body does not
---       need to be analyzed.
+
+--    Is_Inlined_Always (Flag1)
+--       Defined in subprograms. Set for functions and procedures which are
+--       always inlined in GNATprove mode. GNATprove uses this flag to know
+--       when a body does not need to be analyzed. The value of this flag is
+--       only meaningful if Body_To_Inline is not Empty for the subprogram.
 
 --    Is_Instantiated (Flag126)
 --       Defined in generic packages and generic subprograms. Set if the unit
@@ -5673,6 +5675,7 @@ package Einfo is
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Eliminated                       (Flag124)
+   --    Is_Inlined_Always                   (Flag1)    (non-generic case only)
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
@@ -5964,6 +5967,7 @@ package Einfo is
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
    --    Is_Eliminated                       (Flag124)
+   --    Is_Inlined_Always                   (Flag1)    (non-generic case only)
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Interrupt_Handler                (Flag89)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -6683,6 +6687,7 @@ package Einfo is
    function Is_Imported                         (Id : E) return B;
    function Is_Independent                      (Id : E) return B;
    function Is_Inlined                          (Id : E) return B;
+   function Is_Inlined_Always                   (Id : E) return B;
    function Is_Instantiated                     (Id : E) return B;
    function Is_Interface                        (Id : E) return B;
    function Is_Internal                         (Id : E) return B;
@@ -7320,6 +7325,7 @@ package Einfo is
    procedure Set_Is_Imported                     (Id : E; V : B := True);
    procedure Set_Is_Independent                  (Id : E; V : B := True);
    procedure Set_Is_Inlined                      (Id : E; V : B := True);
+   procedure Set_Is_Inlined_Always               (Id : E; V : B := True);
    procedure Set_Is_Instantiated                 (Id : E; V : B := True);
    procedure Set_Is_Interface                    (Id : E; V : B := True);
    procedure Set_Is_Internal                     (Id : E; V : B := True);
@@ -8090,6 +8096,7 @@ package Einfo is
    pragma Inline (Is_Incomplete_Type);
    pragma Inline (Is_Independent);
    pragma Inline (Is_Inlined);
+   pragma Inline (Is_Inlined_Always);
    pragma Inline (Is_Instantiated);
    pragma Inline (Is_Integer_Type);
    pragma Inline (Is_Interface);
@@ -8545,6 +8552,7 @@ package Einfo is
    pragma Inline (Set_Is_Imported);
    pragma Inline (Set_Is_Independent);
    pragma Inline (Set_Is_Inlined);
+   pragma Inline (Set_Is_Inlined_Always);
    pragma Inline (Set_Is_Instantiated);
    pragma Inline (Set_Is_Interface);
    pragma Inline (Set_Is_Internal);

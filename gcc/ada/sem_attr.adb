@@ -7386,13 +7386,19 @@ package body Sem_Attr is
 
       --  If we are asked to evaluate an attribute where the prefix is a
       --  non-frozen generic actual type whose RM_Size is still set to zero,
-      --  then abandon the effort. It seems wrong that this can ever happen,
-      --  but we see it happen, so this is a defense! ???
+      --  then abandon the effort.
 
       if Is_Type (P_Entity)
         and then (not Is_Frozen (P_Entity)
                    and then Is_Generic_Actual_Type (P_Entity)
                    and then RM_Size (P_Entity) = 0)
+
+        --  However, the attribute Unconstrained_Array must be evaluated,
+        --  since it is documented to be a static attribute (and can for
+        --  example appear in a Compile_Time_Warning pragma). The frozen
+        --  status of the type does not affect its evaluation.
+
+        and then Id /= Attribute_Unconstrained_Array
       then
          return;
       end if;

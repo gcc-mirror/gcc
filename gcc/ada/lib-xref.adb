@@ -955,6 +955,14 @@ package body Lib.Xref is
          if Comes_From_Source (E) then
             Ent := E;
 
+         --  Because a declaration may be generated for a subprogram body
+         --  without declaration in GNATprove mode, for inlining, some
+         --  parameters may end up being marked as not coming from source
+         --  although they are. Take these into account specially.
+
+         elsif GNATprove_Mode and then Ekind (E) in Formal_Kind then
+            Ent := E;
+
          --  Entity does not come from source, but is a derived subprogram and
          --  the derived subprogram comes from source (after one or more
          --  derivations) in which case the reference is to parent subprogram.

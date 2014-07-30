@@ -10586,7 +10586,7 @@ statements (raise with no operand) are not permitted.
 [GNAT] This restriction ensures at compile time that no stream operations for
 types Exception_Id or Exception_Occurrence are used. This also makes it
 impossible to pass exceptions to or from a partition with this restriction
-in a distributed environment. If this exception is active, then the generated
+in a distributed environment. If this restriction is active, the generated
 code is simplified by omitting the otherwise-required global registration
 of exceptions when they are declared.
 

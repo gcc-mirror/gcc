@@ -112,7 +112,7 @@ package body Sem_Aggr is
    --  expressions allowed for a limited component association (namely, an
    --  aggregate, function call, or <> notation). Report error for violations.
    --  Expression is also OK in an instance or inlining context, because we
-   --  have already analyzed and checked it.
+   --  have already pre-analyzed and it is known to be type correct.
 
    procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id);
    --  Given aggregate Expr, check that sub-aggregates of Expr that are nested

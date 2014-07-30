@@ -2140,7 +2140,6 @@ package body Sem_Ch3 is
          Spec_Id   : Entity_Id;
 
          Dummy : Entity_Id;
-         pragma Unreferenced (Dummy);
          --  A dummy variable used to capture the unused result of subprogram
          --  spec analysis.
 

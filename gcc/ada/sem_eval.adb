@@ -2128,7 +2128,7 @@ package body Sem_Eval is
          Alt := First (Alternatives (N));
          Search : loop
 
-            --  We must find a match among the alternatives, If not this must
+            --  We must find a match among the alternatives. If not, this must
             --  be due to other errors, so just ignore, leaving as non-static.
 
             if No (Alt) then
@@ -2381,7 +2381,7 @@ package body Sem_Eval is
          return;
       end if;
 
-      --  If condition raises constraint error then we have already signalled
+      --  If condition raises constraint error then we have already signaled
       --  an error, and we just propagate to the result and do not fold.
 
       if Raises_Constraint_Error (Condition) then
@@ -4980,9 +4980,9 @@ package body Sem_Eval is
       --  non-static or raise Constraint_Error, return Non_Static.
       --
       --  Otherwise check if the selecting expression matches any of the given
-      --  discrete choices. If so the alternative is executed and we return
-      --  Open, otherwise, the alternative can never be executed, and so we
-      --  return Closed.
+      --  discrete choices. If so, the alternative is executed and we return
+      --  Match, otherwise, the alternative can never be executed, and so we
+      --  return No_Match.
 
       ---------------------------------
       -- Check_Case_Expr_Alternative --
@@ -4998,7 +4998,7 @@ package body Sem_Eval is
       begin
          pragma Assert (Nkind (Case_Exp) = N_Case_Expression);
 
-         --  Check selecting expression is static
+         --  Check that selecting expression is static
 
          if not Is_OK_Static_Expression (Expression (Case_Exp)) then
             return Non_Static;
@@ -5014,7 +5014,7 @@ package body Sem_Eval is
          Choice := First (Discrete_Choices (CEA));
          while Present (Choice) loop
 
-            --  Check various possibilities for choice, returning Closed if we
+            --  Check various possibilities for choice, returning Match if we
             --  find the selecting value matches any of the choices. Note that
             --  we know we are the last choice, so we don't have to keep going.
 
@@ -5048,8 +5048,8 @@ package body Sem_Eval is
             Next (Choice);
          end loop;
 
-         --  If we get through that loop then all choices were static, and
-         --  none of them matched the selecting expression. So return Closed.
+         --  If we get through that loop then all choices were static, and none
+         --  of them matched the selecting expression. So return No_Match.
 
          return No_Match;
       end Check_Case_Expr_Alternative;
@@ -5125,11 +5125,11 @@ package body Sem_Eval is
 
          --  This refers to cases like
 
-         --    (if 1 then 1 elsif 1/0=2 then 2 else 3)
+         --    (if True then 1 elsif 1/0=2 then 2 else 3)
 
          --  But we expand elsif's out anyway, so the above looks like:
 
-         --    (if 1 then 1 else (if 1/0=2 then 2 else 3))
+         --    (if True then 1 else (if 1/0=2 then 2 else 3))
 
          --  So for us this is caught by the above check for the 32.3 case.
 
@@ -5287,7 +5287,7 @@ package body Sem_Eval is
         and then not In_Inlined_Body
         and then Ada_Version >= Ada_95
       then
-         --  No message if we are staticallly unevaluated
+         --  No message if we are statically unevaluated
 
          if Is_Statically_Unevaluated (N) then
             null;

@@ -5694,13 +5694,11 @@ package body Sem_Ch10 is
             -------------------
 
             procedure Process_State (State : Node_Id) is
-               Loc  : constant Source_Ptr := Sloc (State);
-               Elmt : Node_Id;
-               Id   : Entity_Id;
-               Name : Name_Id;
-
+               Loc   : constant Source_Ptr := Sloc (State);
+               Elmt  : Node_Id;
+               Id    : Entity_Id;
+               Name  : Name_Id;
                Dummy : Entity_Id;
-               pragma Unreferenced (Dummy);
 
             begin
                --  Multiple abstract states appear as an aggregate
@@ -5709,9 +5707,9 @@ package body Sem_Ch10 is
                   Elmt := First (Expressions (State));
                   while Present (Elmt) loop
                      Process_State (Elmt);
-
                      Next (Elmt);
                   end loop;
+
                   return;
 
                --  A null state has no abstract view

@@ -3512,7 +3512,6 @@ package body Sem_Ch6 is
            and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
            and then not Body_Has_Contract
          then
-            Set_Is_Inlined (Spec_Id, True);
             Build_Body_To_Inline (N, Spec_Id);
          end if;
 
@@ -3540,7 +3539,6 @@ package body Sem_Ch6 is
         and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
         and then not Body_Has_Contract
       then
-         Set_Is_Inlined (Spec_Id, True);
          Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
       end if;
 
@@ -3675,7 +3673,7 @@ package body Sem_Ch6 is
         and then Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
       then
          Set_Body_To_Inline (Parent (Parent (Spec_Id)), Empty);
-         Set_Is_Inlined (Spec_Id, False);
+         Set_Is_Inlined_Always (Spec_Id, False);
       end if;
 
       --  Check completion, and analyze the statements
@@ -4266,6 +4264,14 @@ package body Sem_Ch6 is
       else
          Set_Ekind (Designator, E_Procedure);
          Set_Etype (Designator, Standard_Void_Type);
+      end if;
+
+      --  Flag Is_Inlined_Always is True by default, and reversed to False for
+      --  those subprograms which could be inlined in GNATprove mode (because
+      --  Body_To_Inline is non-Empty) but cannot be inlined.
+
+      if GNATprove_Mode then
+         Set_Is_Inlined_Always (Designator);
       end if;
 
       --  Introduce new scope for analysis of the formals and the return type

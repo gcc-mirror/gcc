@@ -1,3 +1,67 @@
+2014-07-30  Olivier Hainque  <hainque@adacore.com>
+
+	* vxworks-ppc-link.spec: New file. Extra link
+	instructions for ppc-vxworks.
+	* vxworks-crtbe-link.spec: Likewise, for ZCX related support.
+	* system-vxworks-ppc.ads: Adjust linker options to use spec files.
+	* system-vxworks-arm.ads: Likewise.
+	* gcc-interface/Makefile.in: Enable .spec files.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb: Minor comment reformatting.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_Junk_Name): Removed.
+	* sem_warn.adb (Has_Junk_Name): New function
+	(Check_References): Use Has_Junk_Name to delete junk warnings
+	(Check_Unset_Reference): ditto.
+	(Warn_On_Unreferenced_Entity): ditto.
+	(Warn_On_Useless_Assignment): ditto.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Do not check for the packed
+	array type of a prefix that is an access type.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Evaluate the GNAT attribute
+	Unconstrained_Array even if prefix is not frozen yet, as can
+	occur with a private subtype used as a generic actual.
+
+2014-07-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
+2014-07-30  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_rm.texi: Corrected minor wording error in description
+	of No_Exception_Registration.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* einfo.ads, einfo.adb: New flag Is_Inlined_Always for use in GNATprove
+	mode. Realphabetize two subprograms.
+	* inline.adb (Cannot_Inline): Use Is_Inlined_Always in GNATprove mode.
+	(Can_Be_Inlined_In_GNATprove_Mode): Adapt to possible Empty Body_Id.
+	(Check_And_Build_Body_To_Inline): Use Is_Inlined_Always in GNATprove
+	mode.
+	(Expand_Inline_Call): Use Is_Inlined_Always in GNATprove mode.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not use
+	Is_Inline in GNATprove mode.
+	(Analyze_Subprogram_Specification):
+	Set Is_Inlined_Always at subprogram entity creation.
+	* sem_res.adb (Resolve_Call): Do not deal with inlining during
+	pre-analysis.  Issue warning on call to possibly inlined
+	subprogram when body not seen.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Add special
+	case for compiler-generated formals in GNATprove mode.
+
 2014-07-30  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch6.adb: Add comments.
