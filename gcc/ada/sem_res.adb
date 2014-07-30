@@ -6209,11 +6209,22 @@ package body Sem_Res is
 
       if GNATprove_Mode
         and then Is_Overloadable (Nam)
-        and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
-        and then Present (Body_To_Inline (Unit_Declaration_Node (Nam)))
         and then SPARK_Mode = On
       then
-         Expand_Inlined_Call (N, Nam, Nam);
+         --  Retrieve the body to inline from the ultimate alias of Nam, if
+         --  there is one, otherwise calls that should be inlined end up not
+         --  being inlined.
+
+         declare
+            Nam_Alias : constant Entity_Id := Ultimate_Alias (Nam);
+            Decl : constant Node_Id := Unit_Declaration_Node (Nam_Alias);
+         begin
+            if Nkind (Decl) = N_Subprogram_Declaration
+              and then Present (Body_To_Inline (Decl))
+            then
+               Expand_Inlined_Call (N, Nam_Alias, Nam);
+            end if;
+         end;
       end if;
 
       Warn_On_Overlapping_Actuals (Nam, N);

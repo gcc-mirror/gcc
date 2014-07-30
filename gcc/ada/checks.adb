@@ -2402,13 +2402,18 @@ package body Checks is
          Nam   : Name_Id;
 
       begin
-         --  Pick the proper version of 'Valid depending on the type of the
-         --  context. If the context is not eligible for such a check, return.
+         --  For scalars, generate 'Valid test
 
          if Is_Scalar_Type (Typ) then
             Nam := Name_Valid;
-         elsif not No_Scalar_Parts (Typ) then
+
+         --  For any non-scalar with scalar parts, generate 'Valid_Scalars test
+
+         elsif Scalar_Part_Present (Typ) then
             Nam := Name_Valid_Scalars;
+
+         --  No test needed for other cases (no scalars to test)
+
          else
             return;
          end if;

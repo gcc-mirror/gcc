@@ -13818,34 +13818,6 @@ package body Sem_Util is
       Actual_Id := Next_Actual (Actual_Id);
    end Next_Actual;
 
-   ---------------------
-   -- No_Scalar_Parts --
-   ---------------------
-
-   function No_Scalar_Parts (T : Entity_Id) return Boolean is
-      C : Entity_Id;
-
-   begin
-      if Is_Scalar_Type (T) then
-         return False;
-
-      elsif Is_Array_Type (T) then
-         return No_Scalar_Parts (Component_Type (T));
-
-      elsif Is_Record_Type (T) or else Has_Discriminants (T) then
-         C := First_Component_Or_Discriminant (T);
-         while Present (C) loop
-            if not No_Scalar_Parts (Etype (C)) then
-               return False;
-            else
-               Next_Component_Or_Discriminant (C);
-            end if;
-         end loop;
-      end if;
-
-      return True;
-   end No_Scalar_Parts;
-
    -----------------------
    -- Normalize_Actuals --
    -----------------------
@@ -15804,6 +15776,34 @@ package body Sem_Util is
          SPARK_Mode := Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Context));
       end if;
    end Save_SPARK_Mode_And_Set;
+
+   -------------------------
+   -- Scalar_Part_Present --
+   -------------------------
+
+   function Scalar_Part_Present (T : Entity_Id) return Boolean is
+      C : Entity_Id;
+
+   begin
+      if Is_Scalar_Type (T) then
+         return True;
+
+      elsif Is_Array_Type (T) then
+         return Scalar_Part_Present (Component_Type (T));
+
+      elsif Is_Record_Type (T) or else Has_Discriminants (T) then
+         C := First_Component_Or_Discriminant (T);
+         while Present (C) loop
+            if Scalar_Part_Present (Etype (C)) then
+               return True;
+            else
+               Next_Component_Or_Discriminant (C);
+            end if;
+         end loop;
+      end if;
+
+      return False;
+   end Scalar_Part_Present;
 
    ------------------------
    -- Scope_Is_Transient --

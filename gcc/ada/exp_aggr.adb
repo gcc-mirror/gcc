@@ -4006,11 +4006,13 @@ package body Exp_Aggr is
 
       --    1. N consists of a single OTHERS choice, possibly recursively
 
-      --    2. The component type is discrete
+      --    2. The array type has no atomic components
 
-      --    3. The component size is a multiple of Storage_Unit
+      --    3. The component type is discrete
 
-      --    4. The component size is exactly Storage_Unit or the expression is
+      --    4. The component size is a multiple of Storage_Unit
+
+      --    5. The component size is exactly Storage_Unit or the expression is
       --       an integer whose unsigned value is the binary concatenation of
       --       K times its remainder modulo 2**Storage_Unit.
 
@@ -4035,6 +4037,10 @@ package body Exp_Aggr is
                return False;
             end if;
 
+            if Has_Atomic_Components (Ctyp) then
+               return False;
+            end if;
+
             Expr := Expression (First (Component_Associations (Expr)));
 
             for J in 1 .. Number_Dimensions (Ctyp) - 1 loop
@@ -4048,6 +4054,9 @@ package body Exp_Aggr is
             end loop;
 
             Ctyp := Component_Type (Ctyp);
+            if Is_Atomic (Ctyp) then
+               return False;
+            end if;
          end loop;
 
          if not Is_Discrete_Type (Ctyp)
