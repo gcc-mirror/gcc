@@ -2007,7 +2007,7 @@ package body Sem_Ch13 is
                      --  the supported profile) to make sure that one of these
                      --  packages is implicitly with'ed, since we need to have
                      --  the tasking run time active for the pragma Priority to
-                     --  have any effect. Previously with with'ed the package
+                     --  have any effect. Previously we with'ed the package
                      --  System.Tasking, but this package does not trigger the
                      --  required initialization of the run-time library.
 

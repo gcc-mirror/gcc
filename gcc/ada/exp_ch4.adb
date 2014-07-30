@@ -4529,7 +4529,7 @@ package body Exp_Ch4 is
       --  type of the access type is a task or contains tasks. In this case
       --  the call to Init (Temp.all ...) is replaced by code that ensures
       --  that tasks get activated (see Exp_Ch9.Build_Task_Allocate_Block
-      --  for details). In addition, if the type T is a task T, then the
+      --  for details). In addition, if the type T is a task type, then the
       --  first argument to Init must be converted to the task record type.
 
       declare
