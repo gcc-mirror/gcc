@@ -6262,7 +6262,7 @@ package body Sem_Res is
                --  expressions, that are not handled by GNATprove.
 
                elsif Is_Potentially_Unevaluated (N) then
-                  Error_Msg_NE ("?no contextual anlysis of &", N, Nam);
+                  Error_Msg_NE ("?no contextual analysis of &", N, Nam);
                   Error_Msg_N
                     ("\call appears in potentially unevaluated context", N);
                   Set_Is_Inlined_Always (Nam_UA, False);

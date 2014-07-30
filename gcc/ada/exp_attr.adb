@@ -2884,11 +2884,9 @@ package body Exp_Attr is
          --  For scalar type, if low bound is a reference to an entity, just
          --  replace with a direct reference. Note that we can only have a
          --  reference to a constant entity at this stage, anything else would
-         --  have already been rewritten. We do not do this rewriting if we
-         --  are in CodePeer mode, since CodePeer prefers to see the explicit
-         --  First attribute reference.
+         --  have already been rewritten.
 
-         elsif Is_Scalar_Type (Ptyp) and then not CodePeer_Mode then
+         elsif Is_Scalar_Type (Ptyp) then
             declare
                Lo : constant Node_Id := Type_Low_Bound (Ptyp);
             begin
@@ -3562,11 +3560,9 @@ package body Exp_Attr is
          --  For scalar type, if low bound is a reference to an entity, just
          --  replace with a direct reference. Note that we can only have a
          --  reference to a constant entity at this stage, anything else would
-         --  have already been rewritten. We do not do this rewriting if we
-         --  are in CodePeer mode, since CodePeer prefers to see the explicit
-         --  Last attribute reference.
+         --  have already been rewritten.
 
-         elsif Is_Scalar_Type (Ptyp) and then not CodePeer_Mode then
+         elsif Is_Scalar_Type (Ptyp) then
             declare
                Hi : constant Node_Id := Type_High_Bound (Ptyp);
             begin

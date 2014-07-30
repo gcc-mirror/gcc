@@ -489,8 +489,9 @@ package Makeutl is
          record
             case Format is
                when Format_Gprbuild =>
-                  Tree : Project_Tree_Ref := No_Project_Tree;
-                  Id   : Source_Id        := No_Source;
+                  Tree    : Project_Tree_Ref := No_Project_Tree;
+                  Id      : Source_Id        := No_Source;
+                  Closure : Boolean          := False;
 
                when Format_Gnatmake =>
                   File    : File_Name_Type := No_File;
@@ -504,7 +505,8 @@ package Makeutl is
       --  depends on the builder, and in particular whether it only supports
       --  project-based files (in which case we have a full Source_Id record).
 
-      No_Source_Info : constant Source_Info := (Format_Gprbuild, null, null);
+      No_Source_Info : constant Source_Info :=
+                                  (Format_Gprbuild, null, null, False);
 
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;

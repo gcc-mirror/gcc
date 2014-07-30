@@ -244,6 +244,18 @@ package Exp_Util is
    --  information for the tree and for error messages. The call node is not
    --  analyzed on return, the caller is responsible for analyzing it.
 
+   function Build_SS_Mark_Call
+     (Loc  : Source_Ptr;
+      Mark : Entity_Id) return Node_Id;
+   --  Build a call to routine System.Secondary_Stack.Mark. Mark denotes the
+   --  entity of the secondary stack mark.
+
+   function Build_SS_Release_Call
+     (Loc  : Source_Ptr;
+      Mark : Entity_Id) return Node_Id;
+   --  Build a call to routine System.Secondary_Stack.Release. Mark denotes the
+   --  entity of the secondary stack mark.
+
    function Build_Task_Image_Decls
      (Loc          : Source_Ptr;
       Id_Ref       : Node_Id;

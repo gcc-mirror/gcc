@@ -7477,22 +7477,12 @@ package body Checks is
    begin
       return
         Make_Block_Statement (Loc,
-          Declarations => New_List (
-            Make_Object_Declaration (Loc,
-              Defining_Identifier => M,
-              Object_Definition   =>
-                New_Occurrence_Of (RTE (RE_Mark_Id), Loc),
-              Expression          =>
-                Make_Function_Call (Loc,
-                  Name => New_Occurrence_Of (RTE (RE_SS_Mark), Loc)))),
+          Declarations               =>
+            New_List (Build_SS_Mark_Call (Loc, M)),
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (
-                Make_Procedure_Call_Statement (Loc,
-                  Name => New_Occurrence_Of (RTE (RE_SS_Release), Loc),
-                  Parameter_Associations => New_List (
-                    New_Occurrence_Of (M, Loc))))));
+              Statements => New_List (Build_SS_Release_Call (Loc, M))));
    end Make_Bignum_Block;
 
    ----------------------------------

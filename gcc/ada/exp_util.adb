@@ -1013,6 +1013,49 @@ package body Exp_Util is
       end if;
    end Build_Runtime_Call;
 
+   ------------------------
+   -- Build_SS_Mark_Call --
+   ------------------------
+
+   function Build_SS_Mark_Call
+     (Loc  : Source_Ptr;
+      Mark : Entity_Id) return Node_Id
+   is
+   begin
+      --  Generate:
+      --    Mark : constant Mark_Id := SS_Mark;
+
+      return
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Mark,
+          Constant_Present    => True,
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Mark_Id), Loc),
+          Expression          =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (RTE (RE_SS_Mark), Loc)));
+   end Build_SS_Mark_Call;
+
+   ---------------------------
+   -- Build_SS_Release_Call --
+   ---------------------------
+
+   function Build_SS_Release_Call
+     (Loc  : Source_Ptr;
+      Mark : Entity_Id) return Node_Id
+   is
+   begin
+      --  Generate:
+      --    SS_Release (Mark);
+
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_SS_Release), Loc),
+          Parameter_Associations => New_List (
+            New_Occurrence_Of (Mark, Loc)));
+   end Build_SS_Release_Call;
+
    ----------------------------
    -- Build_Task_Array_Image --
    ----------------------------

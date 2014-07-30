@@ -2754,9 +2754,10 @@ package body Makeutl is
                         Debug_Output
                           ("   -> ", Name_Id (Root_Source.Display_File));
                         Dummy := Queue.Insert_No_Roots
-                          (Source => (Format => Format_Gprbuild,
-                                      Tree   => Source.Tree,
-                                      Id     => Root_Source));
+                          (Source => (Format  => Format_Gprbuild,
+                                      Tree    => Source.Tree,
+                                      Id      => Root_Source,
+                                      Closure => False));
 
                         Initialize_Source_Record (Root_Source);
 
@@ -2926,8 +2927,10 @@ package body Makeutl is
             --  False, put the Ada sources only when they are in a library
             --  project.
 
-            Iter   : Source_Iterator;
-            Source : Prj.Source_Id;
+            Iter    : Source_Iterator;
+            Source  : Prj.Source_Id;
+            OK      : Boolean;
+            Closure : Boolean;
 
          begin
             --  Nothing to do when "-u" was specified and some files were
@@ -2971,10 +2974,46 @@ package body Makeutl is
                           or else Source.Project.Library)
                        and then not Is_Subunit (Source)
                      then
-                        Queue.Insert
-                          (Source => (Format => Format_Gprbuild,
-                                      Tree   => Tree,
-                                      Id     => Source));
+                        OK := True;
+                        Closure := False;
+
+                        if Source.Unit /= No_Unit_Index
+                          and then Source.Project.Library
+                          and then Source.Project.Standalone_Library /= No
+                        then
+                           --  Check if the unit is in the interface
+                           OK := False;
+
+                           declare
+                              List : String_List_Id :=
+                                Source.Project.Lib_Interface_ALIs;
+                              Element : String_Element;
+
+                           begin
+                              while List /= Nil_String loop
+                                 Element :=
+                                   Project_Tree.Shared.String_Elements.Table
+                                     (List);
+
+                                 if Element.Value = Name_Id (Source.Dep_Name)
+                                 then
+                                    OK := True;
+                                    Closure := True;
+                                    exit;
+                                 end if;
+
+                                 List := Element.Next;
+                              end loop;
+                           end;
+                        end if;
+
+                        if OK then
+                           Queue.Insert
+                             (Source => (Format  => Format_Gprbuild,
+                                         Tree    => Tree,
+                                         Id      => Source,
+                                         Closure => Closure));
+                        end if;
                      end if;
                   end if;
                end if;
@@ -3064,9 +3103,10 @@ package body Makeutl is
                                or else Src_Id.Project.Library_Kind = Static)
                   then
                      Queue.Insert
-                       (Source => (Format => Format_Gprbuild,
-                                   Tree   => Project_Tree,
-                                   Id     => Src_Id));
+                       (Source => (Format  => Format_Gprbuild,
+                                   Tree    => Project_Tree,
+                                   Id      => Src_Id,
+                                   Closure => True));
                   end if;
                end if;
             end loop;
@@ -3151,7 +3191,11 @@ package body Makeutl is
             Data.Need_Linking     := False;
 
          else
-            Data.Closure_Needed   := Has_Mains;
+            Data.Closure_Needed   :=
+              Has_Mains
+              or else
+                (Root_Project.Library
+                 and then Root_Project.Standalone_Library /= No);
             Data.Need_Compilation := All_Phases or Option_Compile_Only;
             Data.Need_Binding     := All_Phases or Option_Bind_Only;
             Data.Need_Linking     := (All_Phases or Option_Link_Only)
