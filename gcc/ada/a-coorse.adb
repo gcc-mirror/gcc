@@ -820,8 +820,8 @@ package body Ada.Containers.Ordered_Sets is
          if Control.Container /= null then
             declare
                Tree : Tree_Type renames Control.Container.Tree;
-               B : Natural renames Tree.Busy;
-               L : Natural renames Tree.Lock;
+               B    : Natural renames Tree.Busy;
+               L    : Natural renames Tree.Lock;
             begin
                B := B - 1;
                L := L - 1;

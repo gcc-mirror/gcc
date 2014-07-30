@@ -136,7 +136,6 @@ package body Ada.Containers.Hashed_Sets is
      (C    : in out Set;
       Indx : Hash_Type;
       X    : in out Node_Access);
-
    --  Delete a node whose bucket position is known. Used to remove a node
    --  whose element has been modified through a key_preserving reference.
    --  We cannot use the value of the element precisely because the current
@@ -878,7 +877,7 @@ package body Ada.Containers.Hashed_Sets is
 
       if HT.Busy > 0 then
          raise Program_Error with
-           "attempt tp tamper with cursors (set is busy)";
+           "attempt to tamper with cursors (set is busy)";
       end if;
 
       Local_Insert (HT, New_Item, Node, Inserted);
@@ -2140,7 +2139,7 @@ package body Ada.Containers.Hashed_Sets is
             if Hash (Key (Element (Control.Old_Pos))) /= Control.Old_Hash
             then
                Delete_Node
-                (Control.Container.all, Control.Index,  Control.Old_Pos.Node);
+                 (Control.Container.all, Control.Index,  Control.Old_Pos.Node);
                raise Program_Error with "key not preserved in reference";
             end if;
 
@@ -2245,22 +2244,22 @@ package body Ada.Containers.Hashed_Sets is
 
       begin
          if Node = null then
-            raise Constraint_Error with "Key not in set";
+            raise Constraint_Error with "key not in set";
          end if;
 
          declare
             HT : Hash_Table_Type renames Container.HT;
-            B : Natural renames HT.Busy;
-            L : Natural renames HT.Lock;
-            P : constant Cursor := Find (Container, Key);
+            B  : Natural renames HT.Busy;
+            L  : Natural renames HT.Lock;
+            P  : constant Cursor := Find (Container, Key);
          begin
             return R : constant Reference_Type :=
               (Element  => Node.Element'Access,
                Control  =>
                  (Controlled with
                    Container'Unrestricted_Access,
-                   Index  => HT_Ops.Index (HT, P.Node),
-                   Old_Pos => P,
+                   Index    => HT_Ops.Index (HT, P.Node),
+                   Old_Pos  => P,
                    Old_Hash => Hash (Key)))
             do
                B := B + 1;

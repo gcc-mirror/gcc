@@ -106,8 +106,8 @@ package body Ada.Task_Attributes is
 
    pragma Warnings (On);
 
-   function To_Task_Id is new Ada.Unchecked_Conversion
-     (Task_Identification.Task_Id, Task_Id);
+   function To_Task_Id is new
+     Ada.Unchecked_Conversion (Task_Identification.Task_Id, Task_Id);
    --  To access TCB of identified task
 
    procedure Free is new
@@ -119,8 +119,8 @@ package body Ada.Task_Attributes is
                    and then To_Address (Initial_Value) = 0;
    --  If the attribute fits in an Atomic_Address (both size and alignment)
    --  and Initial_Value is 0 (or null), then we will map the attribute
-   --  directly into ATCB.Attributes (Index), otherwise we will create a level
-   --  of indirection and instead use Attributes (Index) as a
+   --  directly into ATCB.Attributes (Index), otherwise we will create
+   --  a level of indirection and instead use Attributes (Index) as a
    --  Real_Attribute_Access.
 
    Index : constant Integer :=
