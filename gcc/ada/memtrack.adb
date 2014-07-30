@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package body System.Memory is
    Max_Call_Stack : constant := 200;
    --  Maximum number of frames supported
 
-   Tracebk   : aliased array (0 .. Max_Call_Stack) of Traceback_Entry;
+   Tracebk   : Tracebacks_Array (1 .. Max_Call_Stack);
    Num_Calls : aliased Integer := 0;
 
    Gmemfname : constant String := "gmem.out" & ASCII.NUL;
@@ -196,7 +196,7 @@ package body System.Memory is
          end if;
 
          Timestamp := System.OS_Primitives.Clock;
-         Call_Chain (Tracebk'Address, Max_Call_Stack, Num_Calls,
+         Call_Chain (Tracebk, Max_Call_Stack, Num_Calls,
                      Skip_Frames => 2);
          fputc (Character'Pos ('A'), Gmemfile);
          fwrite (Result'Address, Address_Size, 1, Gmemfile);
@@ -262,7 +262,7 @@ package body System.Memory is
             Gmem_Initialize;
          end if;
 
-         Call_Chain (Tracebk'Address, Max_Call_Stack, Num_Calls,
+         Call_Chain (Tracebk, Max_Call_Stack, Num_Calls,
                      Skip_Frames => 2);
          Timestamp := System.OS_Primitives.Clock;
          fputc (Character'Pos ('D'), Gmemfile);
@@ -345,7 +345,7 @@ package body System.Memory is
          if Needs_Init then
             Gmem_Initialize;
          end if;
-         Call_Chain (Tracebk'Address, Max_Call_Stack, Num_Calls,
+         Call_Chain (Tracebk, Max_Call_Stack, Num_Calls,
                      Skip_Frames => 2);
          Timestamp := System.OS_Primitives.Clock;
          fputc (Character'Pos ('D'), Gmemfile);

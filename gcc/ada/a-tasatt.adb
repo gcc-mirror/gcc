@@ -115,11 +115,13 @@ package body Ada.Task_Attributes is
 
    Fast_Path : constant Boolean :=
                  Attribute'Size <= Atomic_Address'Size
+                   and then Attribute'Alignment <= Atomic_Address'Alignment
                    and then To_Address (Initial_Value) = 0;
-   --  If the attribute fits in an Atomic_Address and Initial_Value is 0 (or
-   --  null), then we will map the attribute directly into
-   --  ATCB.Attributes (Index), otherwise we will create a level of indirection
-   --  and instead use Attributes (Index) as a Real_Attribute_Access.
+   --  If the attribute fits in an Atomic_Address (both size and alignment)
+   --  and Initial_Value is 0 (or null), then we will map the attribute
+   --  directly into ATCB.Attributes (Index), otherwise we will create a level
+   --  of indirection and instead use Attributes (Index) as a
+   --  Real_Attribute_Access.
 
    Index : constant Integer :=
              Next_Index (Require_Finalization => not Fast_Path);
@@ -203,7 +205,11 @@ package body Ada.Task_Attributes is
       end if;
 
       if Fast_Path then
+         --  Kill warning about possible alignment mismatch. If this happens,
+         --  Fast_Path will be False anyway
+         pragma Warnings (Off);
          return To_Handle (TT.Attributes (Index)'Address);
+         pragma Warnings (On);
       else
          Self_Id := STPO.Self;
          Task_Lock (Self_Id);

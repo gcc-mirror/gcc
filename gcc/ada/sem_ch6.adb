@@ -3104,6 +3104,13 @@ package body Sem_Ch6 is
 
                      Spec_Id := Defining_Entity (New_Decl);
 
+                     --  As Body_Id originally comes from source, mark the new
+                     --  Spec_Id as such, which is required so that calls to
+                     --  this subprogram are registered in the local effects
+                     --  stored in ALI files for GNATprove.
+
+                     Set_Comes_From_Source (Spec_Id, True);
+
                      --  If aspect SPARK_Mode was specified on the body, it
                      --  needs to be repeated on the generated decl and the
                      --  body. Since the original aspect was moved to the
