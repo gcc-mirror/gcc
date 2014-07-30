@@ -1,3 +1,7 @@
+2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-34.C: New testcase.
+
 2014-07-28  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/61801

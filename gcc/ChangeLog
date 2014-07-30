@@ -1,6 +1,5 @@
 2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
 
-	* g++.dg/ipa/devirt-34.C: New testcase.
 	* ipa-devirt.c (polymorphic_call_target_d): Rename nonconstruction_targets
 	to speculative_targets
 	(get_class_context): Fix handling of contextes without outer type;
