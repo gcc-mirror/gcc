@@ -61,7 +61,6 @@ with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
-with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
 package body Checks is
@@ -4076,18 +4075,20 @@ package body Checks is
    type Cache_Index is range 0 .. Cache_Size - 1;
    --  Determine size of below cache (power of 2 is more efficient)
 
-   Determine_Range_Cache_N  : array (Cache_Index) of Node_Id;
-   Determine_Range_Cache_V  : array (Cache_Index) of Boolean;
-   Determine_Range_Cache_Lo : array (Cache_Index) of Uint;
-   Determine_Range_Cache_Hi : array (Cache_Index) of Uint;
+   Determine_Range_Cache_N    : array (Cache_Index) of Node_Id;
+   Determine_Range_Cache_V    : array (Cache_Index) of Boolean;
+   Determine_Range_Cache_Lo   : array (Cache_Index) of Uint;
+   Determine_Range_Cache_Hi   : array (Cache_Index) of Uint;
+   Determine_Range_Cache_Lo_R : array (Cache_Index) of Ureal;
+   Determine_Range_Cache_Hi_R : array (Cache_Index) of Ureal;
    --  The above arrays are used to implement a small direct cache for
-   --  Determine_Range calls. Because of the way Determine_Range recursively
-   --  traces subexpressions, and because overflow checking calls the routine
-   --  on the way up the tree, a quadratic behavior can otherwise be
-   --  encountered in large expressions. The cache entry for node N is stored
-   --  in the (N mod Cache_Size) entry, and can be validated by checking the
-   --  actual node value stored there. The Range_Cache_V array records the
-   --  setting of Assume_Valid for the cache entry.
+   --  Determine_Range and Determine_Range_R calls. Because of the way these
+   --  subprograms recursively traces subexpressions, and because overflow
+   --  checking calls the routine on the way up the tree, a quadratic behavior
+   --  can otherwise be encountered in large expressions. The cache entry for
+   --  node N is stored in the (N mod Cache_Size) entry, and can be validated
+   --  by checking the actual node value stored there. The Range_Cache_V array
+   --  records the setting of Assume_Valid for the cache entry.
 
    procedure Determine_Range
      (N            : Node_Id;
@@ -4544,7 +4545,7 @@ package body Checks is
       if OK1 then
 
          --  If the refined value of the low bound is greater than the type
-         --  high bound, then reset it to the more restrictive value. However,
+         --  low bound, then reset it to the more restrictive value. However,
          --  we do NOT do this for the case of a modular type where the
          --  possible upper bound on the value is above the base type high
          --  bound, because that means the result could wrap.
@@ -4595,6 +4596,427 @@ package body Checks is
             return;
          end if;
    end Determine_Range;
+
+   -----------------------
+   -- Determine_Range_R --
+   -----------------------
+
+   procedure Determine_Range_R
+     (N            : Node_Id;
+      OK           : out Boolean;
+      Lo           : out Ureal;
+      Hi           : out Ureal;
+      Assume_Valid : Boolean := False)
+   is
+      Typ : Entity_Id := Etype (N);
+      --  Type to use, may get reset to base type for possibly invalid entity
+
+      Lo_Left : Ureal;
+      Hi_Left : Ureal;
+      --  Lo and Hi bounds of left operand
+
+      Lo_Right : Ureal;
+      Hi_Right : Ureal;
+      --  Lo and Hi bounds of right (or only) operand
+
+      Bound : Node_Id;
+      --  Temp variable used to hold a bound node
+
+      Hbound : Ureal;
+      --  High bound of base type of expression
+
+      Lor : Ureal;
+      Hir : Ureal;
+      --  Refined values for low and high bounds, after tightening
+
+      OK1 : Boolean;
+      --  Used in lower level calls to indicate if call succeeded
+
+      Cindex : Cache_Index;
+      --  Used to search cache
+
+      Btyp : Entity_Id;
+      --  Base type
+
+      function OK_Operands return Boolean;
+      --  Used for binary operators. Determines the ranges of the left and
+      --  right operands, and if they are both OK, returns True, and puts
+      --  the results in Lo_Right, Hi_Right, Lo_Left, Hi_Left.
+
+      function Round_Machine (B : Ureal) return Ureal;
+      --  B is a real bound. Round it using mode Round_Even.
+
+      -----------------
+      -- OK_Operands --
+      -----------------
+
+      function OK_Operands return Boolean is
+      begin
+         Determine_Range_R
+           (Left_Opnd  (N), OK1, Lo_Left,  Hi_Left, Assume_Valid);
+
+         if not OK1 then
+            return False;
+         end if;
+
+         Determine_Range_R
+           (Right_Opnd (N), OK1, Lo_Right, Hi_Right, Assume_Valid);
+         return OK1;
+      end OK_Operands;
+
+      -------------------
+      -- Round_Machine --
+      -------------------
+
+      function Round_Machine (B : Ureal) return Ureal is
+      begin
+         return Machine (Typ, B, Round_Even, N);
+      end Round_Machine;
+
+   --  Start of processing for Determine_Range_R
+
+   begin
+      --  Prevent junk warnings by initializing range variables
+
+      Lo  := No_Ureal;
+      Hi  := No_Ureal;
+      Lor := No_Ureal;
+      Hir := No_Ureal;
+
+      --  For temporary constants internally generated to remove side effects
+      --  we must use the corresponding expression to determine the range of
+      --  the expression. But note that the expander can also generate
+      --  constants in other cases, including deferred constants.
+
+      if Is_Entity_Name (N)
+        and then Nkind (Parent (Entity (N))) = N_Object_Declaration
+        and then Ekind (Entity (N)) = E_Constant
+        and then Is_Internal_Name (Chars (Entity (N)))
+      then
+         if Present (Expression (Parent (Entity (N)))) then
+            Determine_Range_R
+              (Expression (Parent (Entity (N))), OK, Lo, Hi, Assume_Valid);
+
+         elsif Present (Full_View (Entity (N))) then
+            Determine_Range_R
+              (Expression (Parent (Full_View (Entity (N)))),
+               OK, Lo, Hi, Assume_Valid);
+
+         else
+            OK := False;
+         end if;
+         return;
+      end if;
+
+      --  If type is not defined, we can't determine its range
+
+      if No (Typ)
+
+        --  We don't deal with anything except IEEE floating-point types
+
+        or else not Is_Floating_Point_Type (Typ)
+        or else Float_Rep (Typ) /= IEEE_Binary
+
+        --  Ignore type for which an error has been posted, since range in
+        --  this case may well be a bogosity deriving from the error. Also
+        --  ignore if error posted on the reference node.
+
+        or else Error_Posted (N) or else Error_Posted (Typ)
+      then
+         OK := False;
+         return;
+      end if;
+
+      --  For all other cases, we can determine the range
+
+      OK := True;
+
+      --  If value is compile time known, then the possible range is the one
+      --  value that we know this expression definitely has.
+
+      if Compile_Time_Known_Value (N) then
+         Lo := Expr_Value_R (N);
+         Hi := Lo;
+         return;
+      end if;
+
+      --  Return if already in the cache
+
+      Cindex := Cache_Index (N mod Cache_Size);
+
+      if Determine_Range_Cache_N (Cindex) = N
+           and then
+         Determine_Range_Cache_V (Cindex) = Assume_Valid
+      then
+         Lo := Determine_Range_Cache_Lo_R (Cindex);
+         Hi := Determine_Range_Cache_Hi_R (Cindex);
+         return;
+      end if;
+
+      --  Otherwise, start by finding the bounds of the type of the expression,
+      --  the value cannot be outside this range (if it is, then we have an
+      --  overflow situation, which is a separate check, we are talking here
+      --  only about the expression value).
+
+      --  First a check, never try to find the bounds of a generic type, since
+      --  these bounds are always junk values, and it is only valid to look at
+      --  the bounds in an instance.
+
+      if Is_Generic_Type (Typ) then
+         OK := False;
+         return;
+      end if;
+
+      --  First step, change to use base type unless we know the value is valid
+
+      if (Is_Entity_Name (N) and then Is_Known_Valid (Entity (N)))
+        or else Assume_No_Invalid_Values
+        or else Assume_Valid
+      then
+         null;
+      else
+         Typ := Underlying_Type (Base_Type (Typ));
+      end if;
+
+      --  Retrieve the base type. Handle the case where the base type is a
+      --  private type.
+
+      Btyp := Base_Type (Typ);
+
+      if Is_Private_Type (Btyp) and then Present (Full_View (Btyp)) then
+         Btyp := Full_View (Btyp);
+      end if;
+
+      --  We use the actual bound unless it is dynamic, in which case use the
+      --  corresponding base type bound if possible. If we can't get a bound
+      --  then we figure we can't determine the range (a peculiar case, that
+      --  perhaps cannot happen, but there is no point in bombing in this
+      --  optimization circuit).
+
+      --  First the low bound
+
+      Bound := Type_Low_Bound (Typ);
+
+      if Compile_Time_Known_Value (Bound) then
+         Lo := Expr_Value_R (Bound);
+
+      elsif Compile_Time_Known_Value (Type_Low_Bound (Btyp)) then
+         Lo := Expr_Value_R (Type_Low_Bound (Btyp));
+
+      else
+         OK := False;
+         return;
+      end if;
+
+      --  Now the high bound
+
+      Bound := Type_High_Bound (Typ);
+
+      --  We need the high bound of the base type later on, and this should
+      --  always be compile time known. Again, it is not clear that this
+      --  can ever be false, but no point in bombing.
+
+      if Compile_Time_Known_Value (Type_High_Bound (Btyp)) then
+         Hbound := Expr_Value_R (Type_High_Bound (Btyp));
+         Hi := Hbound;
+
+      else
+         OK := False;
+         return;
+      end if;
+
+      --  If we have a static subtype, then that may have a tighter bound so
+      --  use the upper bound of the subtype instead in this case.
+
+      if Compile_Time_Known_Value (Bound) then
+         Hi := Expr_Value_R (Bound);
+      end if;
+
+      --  We may be able to refine this value in certain situations. If any
+      --  refinement is possible, then Lor and Hir are set to possibly tighter
+      --  bounds, and OK1 is set to True.
+
+      case Nkind (N) is
+
+         --  For unary plus, result is limited by range of operand
+
+         when N_Op_Plus =>
+            Determine_Range_R
+              (Right_Opnd (N), OK1, Lor, Hir, Assume_Valid);
+
+         --  For unary minus, determine range of operand, and negate it
+
+         when N_Op_Minus =>
+            Determine_Range_R
+              (Right_Opnd (N), OK1, Lo_Right, Hi_Right, Assume_Valid);
+
+            if OK1 then
+               Lor := -Hi_Right;
+               Hir := -Lo_Right;
+            end if;
+
+         --  For binary addition, get range of each operand and do the
+         --  addition to get the result range.
+
+         when N_Op_Add =>
+            if OK_Operands then
+               Lor := Round_Machine (Lo_Left + Lo_Right);
+               Hir := Round_Machine (Hi_Left + Hi_Right);
+            end if;
+
+         --  For binary subtraction, get range of each operand and do the worst
+         --  case subtraction to get the result range.
+
+         when N_Op_Subtract =>
+            if OK_Operands then
+               Lor := Round_Machine (Lo_Left - Hi_Right);
+               Hir := Round_Machine (Hi_Left - Lo_Right);
+            end if;
+
+         --  For multiplication, get range of each operand and do the
+         --  four multiplications to get the result range.
+
+         when N_Op_Multiply =>
+            if OK_Operands then
+               declare
+                  M1 : constant Ureal := Round_Machine (Lo_Left * Lo_Right);
+                  M2 : constant Ureal := Round_Machine (Lo_Left * Hi_Right);
+                  M3 : constant Ureal := Round_Machine (Hi_Left * Lo_Right);
+                  M4 : constant Ureal := Round_Machine (Hi_Left * Hi_Right);
+               begin
+                  Lor := UR_Min (UR_Min (M1, M2), UR_Min (M3, M4));
+                  Hir := UR_Max (UR_Max (M1, M2), UR_Max (M3, M4));
+               end;
+            end if;
+
+         --  For division, consider separately the cases where the right
+         --  operand is positive or negative. Otherwise, the right operand
+         --  can be arbitrarily close to zero, so the result is likely to
+         --  be unbounded in one direction, do not attempt to compute it.
+
+         when N_Op_Divide =>
+            if OK_Operands then
+
+               --  Right operand is positive
+
+               if Lo_Right > Ureal_0 then
+
+                  --  If the low bound of the left operand is negative, obtain
+                  --  the overall low bound by dividing it by the smallest
+                  --  value of the right operand, and otherwise by the largest
+                  --  value of the right operand.
+
+                  if Lo_Left < Ureal_0 then
+                     Lor := Round_Machine (Lo_Left / Lo_Right);
+                  else
+                     Lor := Round_Machine (Lo_Left / Hi_Right);
+                  end if;
+
+                  --  If the high bound of the left operand is negative, obtain
+                  --  the overall high bound by dividing it by the largest
+                  --  value of the right operand, and otherwise by the
+                  --  smallest value of the right operand.
+
+                  if Hi_Left < Ureal_0 then
+                     Hir := Round_Machine (Hi_Left / Hi_Right);
+                  else
+                     Hir := Round_Machine (Hi_Left / Lo_Right);
+                  end if;
+
+               --  Right operand is negative
+
+               elsif Hi_Right < Ureal_0 then
+
+                  --  If the low bound of the left operand is negative, obtain
+                  --  the overall low bound by dividing it by the largest
+                  --  value of the right operand, and otherwise by the smallest
+                  --  value of the right operand.
+
+                  if Lo_Left < Ureal_0 then
+                     Lor := Round_Machine (Lo_Left / Hi_Right);
+                  else
+                     Lor := Round_Machine (Lo_Left / Lo_Right);
+                  end if;
+
+                  --  If the high bound of the left operand is negative, obtain
+                  --  the overall high bound by dividing it by the smallest
+                  --  value of the right operand, and otherwise by the
+                  --  largest value of the right operand.
+
+                  if Hi_Left < Ureal_0 then
+                     Hir := Round_Machine (Hi_Left / Lo_Right);
+                  else
+                     Hir := Round_Machine (Hi_Left / Hi_Right);
+                  end if;
+
+               else
+                  OK1 := False;
+               end if;
+            end if;
+
+         --  For type conversion from one floating-point type to another, we
+         --  can refine the range using the converted value.
+
+         when N_Type_Conversion =>
+            Determine_Range_R (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+         --  Nothing special to do for all other expression kinds
+
+         when others =>
+            OK1 := False;
+            Lor := No_Ureal;
+            Hir := No_Ureal;
+      end case;
+
+      --  At this stage, if OK1 is true, then we know that the actual result of
+      --  the computed expression is in the range Lor .. Hir. We can use this
+      --  to restrict the possible range of results.
+
+      if OK1 then
+
+         --  If the refined value of the low bound is greater than the type
+         --  low bound, then reset it to the more restrictive value.
+
+         if Lor > Lo then
+            Lo := Lor;
+         end if;
+
+         --  Similarly, if the refined value of the high bound is less than the
+         --  value so far, then reset it to the more restrictive value.
+
+         if Hir < Hi then
+            Hi := Hir;
+         end if;
+      end if;
+
+      --  Set cache entry for future call and we are all done
+
+      Determine_Range_Cache_N    (Cindex) := N;
+      Determine_Range_Cache_V    (Cindex) := Assume_Valid;
+      Determine_Range_Cache_Lo_R (Cindex) := Lo;
+      Determine_Range_Cache_Hi_R (Cindex) := Hi;
+      return;
+
+   --  If any exception occurs, it means that we have some bug in the compiler,
+   --  possibly triggered by a previous error, or by some unforeseen peculiar
+   --  occurrence. However, this is only an optimization attempt, so there is
+   --  really no point in crashing the compiler. Instead we just decide, too
+   --  bad, we can't figure out a range in this case after all.
+
+   exception
+      when others =>
+
+         --  Debug flag K disables this behavior (useful for debugging)
+
+         if Debug_Flag_K then
+            raise;
+         else
+            OK := False;
+            Lo := No_Ureal;
+            Hi := No_Ureal;
+            return;
+         end if;
+   end Determine_Range_R;
 
    ------------------------------------
    -- Discriminant_Checks_Suppressed --

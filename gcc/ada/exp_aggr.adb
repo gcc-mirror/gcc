@@ -5345,10 +5345,11 @@ package body Exp_Aggr is
          --  then we could go into an infinite recursion.
 
          if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
-           and then not AAMP_On_Target
            and then VM_Target = No_VM
+           and then not AAMP_On_Target
            and then not Generate_SCIL
            and then not Possible_Bit_Aligned_Component (Target)
+           and then not Is_Possibly_Unaligned_Slice (Target)
            and then Aggr_Assignment_OK_For_Backend (N)
          then
             if Maybe_In_Place_OK then

@@ -1,3 +1,61 @@
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-chtgop.ads, a-chtgop.adb (Delete_Node_At_Index): New
+	subprogram, used by all versions of hashed sets, to delete a node
+	whose element has been improperly updated through a Reference_
+	Preserving key.
+	* a-cohase.adb: Remove Delete_Node, use new common procedure
+	Delete_Node_At_Index.
+	* a-cihase.ads: Add Reference_Control_Type to package Generic_Keys.
+	* a-cihase.adb: Add Adjust and Finalize routines for
+	Reference_Control_Type.
+	(Reference_Preserving_Key): Build aggregate for
+	Reference_Control_Type
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb, checks.ads (Determine_Range_R): New procedure to
+	determine the possible range of a floating-point expression.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cborse.ads: Add Reference_Control_Type to package Generic_Keys.
+	* a-cborse.adb: Add Adjust and Finalize routines for
+	Reference_Control_Type.
+	(Reference_Preserving_Key): Build aggregate for
+	Reference_Control_Type.
+	(Delete): Check for tampering, and raise Program_Error (not
+	Constraint_Error) when attempting to delete an element not in
+	the set.
+	(Insert): Ditto.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* a-elchha.adb, a-except-2005.adb, a-except.adb, a-exexda.adb,
+	* a-exextr.adb, a-exstat.adb, exp_intr.ads, s-tassta.adb:
+	Exception_Information is used to produce useful debugging
+	information for the programmer. However, it was also used to
+	implement the stream attributes for type Exception_Occurrence. The
+	latter requires a stable and portable interface, which meant
+	that we couldn't include a symbolic traceback. A separate set of
+	routines was used to provide symbolic tracebacks under program
+	control (i.e. not automatically). The goal of this ticket is
+	to provide such automatic tracebacks, so the change here is to
+	split the two functionalities: Exception_Information gives the
+	maximally useful information for debugging (i.e. it now includes
+	a symbolic traceback when a decorator is set, and it can be
+	improved freely in the future without disturbing streaming).
+	Untailored_Exception_Information always uses hexadecimal addresses
+	in the traceback, has a stable and portable output, and is now
+	used for streaming.
+
+2014-07-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Add missing test
+	on the target of the assignment to find out whether it
+	can be directly done by the back-end.
+	* exp_util.adb (Is_Possibly_Unaligned_Slice): Remove obscure test.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* inline.adb, a-coorse.adb, a-coorse.ads, a-cohase.adb, a-cohase.ads,

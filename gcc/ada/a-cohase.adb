@@ -132,15 +132,6 @@ package body Ada.Containers.Hashed_Sets is
    procedure Write_Nodes is
       new HT_Ops.Generic_Write (Write_Node);
 
-   procedure Delete_Node
-     (C    : in out Set;
-      Indx : Hash_Type;
-      X    : in out Node_Access);
-   --  Delete a node whose bucket position is known. Used to remove a node
-   --  whose element has been modified through a key_preserving reference.
-   --  We cannot use the value of the element precisely because the current
-   --  value does not correspond to the hash code that determines the bucket.
-
    ---------
    -- "=" --
    ---------
@@ -336,48 +327,6 @@ package body Ada.Containers.Hashed_Sets is
       Free (Position.Node);
       Position.Container := null;
    end Delete;
-
-   procedure Delete_Node
-     (C    : in out Set;
-      Indx : Hash_Type;
-      X    : in out Node_Access)
-   is
-      HT   : Hash_Table_Type renames C.HT;
-      Prev : Node_Access;
-      Curr : Node_Access;
-
-   begin
-      Prev := HT.Buckets (Indx);
-      if Prev = X then
-         HT.Buckets (Indx) := Next (Prev);
-         HT.Length := HT.Length - 1;
-         Free (X);
-         return;
-      end if;
-
-      if HT.Length = 1 then
-         raise Program_Error with
-           "attempt to delete node not in its proper hash bucket";
-      end if;
-
-      loop
-         Curr := Next (Prev);
-
-         if Curr = null then
-            raise Program_Error with
-              "attempt to delete node not in its proper hash bucket";
-         end if;
-
-         if Curr = X then
-            Set_Next (Node => Prev, Next => Next (Curr));
-            HT.Length := HT.Length - 1;
-            Free (X);
-            return;
-         end if;
-         Prev := Curr;
-      end loop;
-
-   end Delete_Node;
 
    ----------------
    -- Difference --
@@ -2138,8 +2087,8 @@ package body Ada.Containers.Hashed_Sets is
 
             if Hash (Key (Element (Control.Old_Pos))) /= Control.Old_Hash
             then
-               Delete_Node
-                 (Control.Container.all, Control.Index,  Control.Old_Pos.Node);
+               HT_Ops.Delete_Node_At_Index
+                (Control.Container.HT, Control.Index,  Control.Old_Pos.Node);
                raise Program_Error with "key not preserved in reference";
             end if;
 
