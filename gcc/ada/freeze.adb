@@ -108,8 +108,8 @@ package body Freeze is
    procedure Check_Expression_Function (N : Node_Id; Nam : Entity_Id);
    --  When an expression function is frozen by a use of it, the expression
    --  itself is frozen. Check that the expression does not include references
-   --  to deferred constants without completion.  We report this at the
-   --  freeze point of the function, to provide a better error message.
+   --  to deferred constants without completion. We report this at the freeze
+   --  point of the function, to provide a better error message.
 
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
