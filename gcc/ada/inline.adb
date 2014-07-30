@@ -3620,13 +3620,13 @@ package body Inline is
       while Present (F) loop
          if Present (Renamed_Object (F)) then
 
-            --  If expander is active, it's an error to try to inline a
+            --  If expander is active, it is an error to try to inline a
             --  recursive program. In GNATprove mode, just indicate that
             --  the inlining will not happen.
 
             if Expander_Active then
-               Error_Msg_N ("cannot inline call to recursive subprogram", N);
-
+               Error_Msg_N
+                 ("cannot inline call to recursive subprogram", N);
             else
                Cannot_Inline
                  ("cannot inline call to recursive subprogram?", N, Subp);

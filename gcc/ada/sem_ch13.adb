@@ -1186,7 +1186,7 @@ package body Sem_Ch13 is
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
       procedure Decorate (Asp : Node_Id; Prag : Node_Id);
-      --  Establish the linkages between an aspect and its corresponding
+      --  Establish linkages between an aspect and its corresponding
       --  pragma.
 
       procedure Insert_After_SPARK_Mode
@@ -1195,9 +1195,8 @@ package body Sem_Ch13 is
          Decls   : List_Id);
       --  Subsidiary to the analysis of aspects Abstract_State, Initializes,
       --  Initial_Condition and Refined_State. Insert node Prag before node
-      --  Ins_Nod. If Ins_Nod denotes pragma SPARK_Mode, then SPARK_Mode is
-      --  skipped. Decls is the associated declarative list where Prag is to
-      --  reside.
+      --  Ins_Nod. If Ins_Nod is for pragma SPARK_Mode, then skip SPARK_Mode.
+      --  Decls is the associated declarative list where Prag is to reside.
 
       procedure Insert_Pragma (Prag : Node_Id);
       --  Subsidiary to the analysis of aspects Attach_Handler, Contract_Cases,

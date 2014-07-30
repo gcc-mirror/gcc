@@ -769,9 +769,8 @@ package body Exp_Ch4 is
                Obj_Ref :=
                  Unchecked_Convert_To (Etype (Obj_Ref),
                    Make_Function_Call (Loc,
-                     Name =>
-                       New_Occurrence_Of
-                         (RTE (RE_Base_Address), Loc),
+                     Name                   =>
+                       New_Occurrence_Of (RTE (RE_Base_Address), Loc),
                      Parameter_Associations => New_List (
                        Unchecked_Convert_To (RTE (RE_Address),
                          New_Copy_Tree (Obj_Ref)))));
