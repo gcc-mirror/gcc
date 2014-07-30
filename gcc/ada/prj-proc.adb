@@ -121,7 +121,9 @@ package body Prj.Proc is
      (Project      : Project_Id;
       With_Name    : Name_Id;
       No_Extending : Boolean := False) return Project_Id;
-   --  Find an imported or extended project of Project whose name is With_Name
+   --  Find an imported or extended project of Project whose name is With_Name.
+   --  When No_Extending is True, do not look for extending projects, returns
+   --  the exact project whose name is With_Name.
 
    function Package_From
      (Project   : Project_Id;
