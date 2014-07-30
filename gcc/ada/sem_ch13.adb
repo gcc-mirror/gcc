@@ -4293,7 +4293,7 @@ package body Sem_Ch13 is
 
                else
                   if (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
-                     Set_Reverse_Bit_Order (U_Ent, True);
+                     Set_Reverse_Bit_Order (Base_Type (U_Ent), True);
                   end if;
                end if;
             end if;
