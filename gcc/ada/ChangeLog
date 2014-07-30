@@ -1,3 +1,16 @@
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Check_Expression_Function): At the freeze point
+	of an expression function, verify that the expression in the
+	function does not contain references to any deferred constants
+	that have no completion yet.
+	(Freeze_Expression, Freeze_Before): call
+	Check_Expression_Function.
+	* a-ciorse.ads: Add Reference_Control_Type to detect tampering.
+	* a-ciorse.adb: Add Adjust and Finalize routines for
+	Reference_Control_Type. Use it in the construction of Reference
+	and Constant_Reference values.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* exp_aggr.adb: Update comments.
