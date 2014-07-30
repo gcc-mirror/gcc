@@ -1,3 +1,8 @@
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* a-except-2005.adb, a-except.adb: Remove obsolete comments.
+	* s-traceb.ads: Updagte comments.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb, a-cihase.adb, a-cihase.ads, a-chtgop.adb, a-chtgop.ads,
