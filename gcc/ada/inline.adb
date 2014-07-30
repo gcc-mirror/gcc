@@ -1940,8 +1940,8 @@ package body Inline is
 
          function Has_Single_Return_In_GNATprove_Mode return Boolean;
          --  This function is called only in GNATprove mode, and it returns
-         --  True if the subprogram has no or a single return statement as
-         --  last statement.
+         --  True if the subprogram has no return statement or a single return
+         --  statement as last statement.
 
          function Returns_Compile_Time_Constant (N : Node_Id) return Boolean;
          --  Return True if all the return statements of the function body N

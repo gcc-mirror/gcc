@@ -1,3 +1,12 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* inline.adb, a-coorse.adb, a-coorse.ads, a-cohase.adb, a-cohase.ads,
+	a-tasatt.adb: Minor reformatting.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
 2014-07-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* a-coorse.adb, a-coorse.ads (Generic_Keys): Add a

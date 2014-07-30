@@ -7364,10 +7364,10 @@ package body Exp_Ch4 is
 
                if Comes_From_Source (N) then
                   Error_Msg_N
-                    ("??Unchecked_Union discriminants cannot be determined",
+                    ("Unchecked_Union discriminants cannot be determined??",
                      N);
                   Error_Msg_N
-                    ("\Program_Error will be raised for equality operation",
+                    ("\Program_Error will be raised for equality operation??",
                      N);
                end if;
 
