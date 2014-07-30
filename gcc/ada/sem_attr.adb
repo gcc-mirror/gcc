@@ -6589,12 +6589,23 @@ package body Sem_Attr is
       when Attribute_Valid_Scalars =>
          Check_E0;
          Check_Object_Reference (P);
-
-         if not Scalar_Part_Present (P_Type) then
-            Error_Attr_P ("??attribute % always True, no scalars to check");
-         end if;
-
          Set_Etype (N, Standard_Boolean);
+
+         --  Following checks are only for source types
+
+         if Comes_From_Source (N) then
+            if not Scalar_Part_Present (P_Type) then
+               Error_Attr_P
+                 ("??attribute % always True, no scalars to check");
+            end if;
+
+            --  Not allowed for unchecked union type
+
+            if Has_Unchecked_Union (P_Type) then
+               Error_Attr_P
+                 ("attribute % not allowed for Unchecked_Union type");
+            end if;
+         end if;
 
       -----------
       -- Value --

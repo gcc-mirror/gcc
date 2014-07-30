@@ -147,7 +147,7 @@ package body Exp_Ch3 is
    --  The resulting operation is a TSS subprogram.
 
    procedure Build_Variant_Record_Equality (Typ  : Entity_Id);
-   --  Create An Equality function for the non-tagged variant record 'Typ'
+   --  Create An Equality function for the non-tagged variant record Typ
    --  and attach it to the TSS list
 
    procedure Check_Stream_Attributes (Typ : Entity_Id);
@@ -442,9 +442,7 @@ package body Exp_Ch3 is
 
          Ctyp := Etype (Comp);
 
-         if not Is_Array_Type (Ctyp)
-           or else Number_Dimensions (Ctyp) > 1
-         then
+         if not Is_Array_Type (Ctyp) or else Number_Dimensions (Ctyp) > 1 then
             goto Continue;
          end if;
 
@@ -4279,9 +4277,9 @@ package body Exp_Ch3 is
       end if;
    end Build_Untagged_Equality;
 
-   ------------------------------------
+   -----------------------------------
    -- Build_Variant_Record_Equality --
-   ------------------------------------
+   -----------------------------------
 
    --  Generates:
 
@@ -4289,13 +4287,13 @@ package body Exp_Ch3 is
    --    begin
    --       --  Compare discriminants
 
-   --       if False or else X.D1 /= Y.D1 or else X.D2 /= Y.D2 then
+   --       if X.D1 /= Y.D1 or else X.D2 /= Y.D2 or else ... then
    --          return False;
    --       end if;
 
    --       --  Compare components
 
-   --       if False or else X.C1 /= Y.C1 or else X.C2 /= Y.C2 then
+   --       if X.C1 /= Y.C1 or else X.C2 /= Y.C2 or else ... then
    --          return False;
    --       end if;
 
@@ -4303,12 +4301,12 @@ package body Exp_Ch3 is
 
    --       case X.D1 is
    --          when V1 =>
-   --             if False or else X.C2 /= Y.C2 or else X.C3 /= Y.C3 then
+   --             if X.C2 /= Y.C2 or else X.C3 /= Y.C3 or else ... then
    --                return False;
    --             end if;
    --          ...
    --          when Vn =>
-   --             if False or else X.Cn /= Y.Cn then
+   --             if X.Cn /= Y.Cn or else ... then
    --                return False;
    --             end if;
    --       end case;
@@ -4323,13 +4321,8 @@ package body Exp_Ch3 is
             Make_Defining_Identifier (Loc,
               Chars => Make_TSS_Name (Typ, TSS_Composite_Equality));
 
-      X : constant Entity_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => Name_X);
-
-      Y : constant Entity_Id :=
-            Make_Defining_Identifier (Loc,
-              Chars => Name_Y);
+      X : constant Entity_Id := Make_Defining_Identifier (Loc, Name_X);
+      Y : constant Entity_Id := Make_Defining_Identifier (Loc, Name_Y);
 
       Def    : constant Node_Id := Parent (Typ);
       Comps  : constant Node_Id := Component_List (Type_Definition (Def));
@@ -4357,7 +4350,6 @@ package body Exp_Ch3 is
          declare
             Parent_Eq : constant Entity_Id :=
                           TSS (Root_Type (Typ), TSS_Composite_Equality);
-
          begin
             if Present (Parent_Eq) then
                Copy_TSS (Parent_Eq, Typ);
@@ -8805,6 +8797,7 @@ package body Exp_Ch3 is
    ------------------
 
    --  <Make_Eq_If shared components>
+
    --  case X.D1 is
    --     when V1 => <Make_Eq_Case> on subcomponents
    --     ...

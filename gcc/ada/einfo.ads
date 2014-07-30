@@ -1955,9 +1955,9 @@ package Einfo is
 --       Defined in all type entities. Set on unchecked unions themselves
 --       and (recursively) on any composite type which has a component for
 --       which Has_Unchecked_Union is set. The meaning is that a comparison
---       operation for the type is not permitted. Note that the flag is not
---       set on access types, even if they designate an object that has
---       the flag Has_Unchecked_Union set.
+--       operation or 'Valid_Scalars reference for the type is not permitted.
+--       Note that the flag is not set on access types, even if they designate
+--       an object that has the flag Has_Unchecked_Union set.
 
 --    Has_Unknown_Discriminants (Flag72)
 --       Defined in all entities. Set for types with unknown discriminants.
