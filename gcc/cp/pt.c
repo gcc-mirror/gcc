@@ -5021,6 +5021,7 @@ template arguments to %qD do not match original template %qD",
     }
 
   if (flag_implicit_templates
+      && !is_friend
       && VAR_OR_FUNCTION_DECL_P (decl))
     /* Set DECL_COMDAT on template instantiations; if we force
        them to be emitted by explicit instantiation or -frepo,

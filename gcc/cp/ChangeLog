@@ -1,3 +1,9 @@
+2014-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR lto/53808
+	PR c++/61659
+	* pt.c (push_template_decl_real): Don't set DECL_COMDAT on friends.
+
 2014-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57397
