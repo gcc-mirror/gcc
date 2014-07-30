@@ -2905,10 +2905,46 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
+                  --  External property aspects are Boolean by nature, but
+                  --  their pragmas must contain two arguments, the second
+                  --  being the optional Boolean expression.
+
+                  if A_Id = Aspect_Async_Readers
+                    or else A_Id = Aspect_Async_Writers
+                    or else A_Id = Aspect_Effective_Reads
+                    or else A_Id = Aspect_Effective_Writes
+                  then
+                     declare
+                        Args : List_Id;
+
+                     begin
+                        --  The first argument of the external property pragma
+                        --  is the related object.
+
+                        Args := New_List (
+                          Make_Pragma_Argument_Association (Sloc (Ent),
+                            Expression => Ent));
+
+                        --  The second argument is the optional Boolean
+                        --  expression which must be propagated even if it
+                        --  evaluates to False as this has special semantic
+                        --  meaning.
+
+                        if Present (Expr) then
+                           Append_To (Args,
+                             Make_Pragma_Argument_Association (Loc,
+                               Expression => Relocate_Node (Expr)));
+                        end if;
+
+                        Make_Aitem_Pragma
+                          (Pragma_Argument_Associations => Args,
+                           Pragma_Name                  => Nam);
+                     end;
+
                   --  Cases where we do not delay, includes all cases where
                   --  the expression is missing other than the above cases.
 
-                  if not Delay_Required or else No (Expr) then
+                  elsif not Delay_Required or else No (Expr) then
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Sloc (Ent),
@@ -2918,7 +2954,7 @@ package body Sem_Ch13 is
 
                   --  In general cases, the corresponding pragma/attribute
                   --  definition clause will be inserted later at the freezing
-                  --  point, and we do not need to build it now
+                  --  point, and we do not need to build it now.
 
                   else
                      Aitem := Empty;

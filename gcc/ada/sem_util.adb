@@ -7423,10 +7423,11 @@ package body Sem_Util is
       Property : Name_Id) return Boolean
    is
       function State_Has_Enabled_Property return Boolean;
-      --  Determine whether a state denoted by Item_Id has the property
+      --  Determine whether a state denoted by Item_Id has the property enabled
 
       function Variable_Has_Enabled_Property return Boolean;
       --  Determine whether a variable denoted by Item_Id has the property
+      --  enabled.
 
       --------------------------------
       -- State_Has_Enabled_Property --
@@ -7528,6 +7529,44 @@ package body Sem_Util is
       -----------------------------------
 
       function Variable_Has_Enabled_Property return Boolean is
+         function Is_Enabled (Prag : Node_Id) return Boolean;
+         --  Determine whether property pragma Prag (if present) denotes an
+         --  enabled property.
+
+         ----------------
+         -- Is_Enabled --
+         ----------------
+
+         function Is_Enabled (Prag : Node_Id) return Boolean is
+            Arg2 : Node_Id;
+
+         begin
+            if Present (Prag) then
+               Arg2 := Next (First (Pragma_Argument_Associations (Prag)));
+
+               --  The pragma has an optional Boolean expression, the related
+               --  property is enabled only when the expression evaluates to
+               --  True.
+
+               if Present (Arg2) then
+                  return Is_True (Expr_Value (Get_Pragma_Arg (Arg2)));
+
+               --  Otherwise the lack of expression enables the property by
+               --  default.
+
+               else
+                  return True;
+               end if;
+
+            --  The property was never set in the first place
+
+            else
+               return False;
+            end if;
+         end Is_Enabled;
+
+         --  Local variables
+
          AR : constant Node_Id :=
                 Get_Pragma (Item_Id, Pragma_Async_Readers);
          AW : constant Node_Id :=
@@ -7536,6 +7575,9 @@ package body Sem_Util is
                 Get_Pragma (Item_Id, Pragma_Effective_Reads);
          EW : constant Node_Id :=
                 Get_Pragma (Item_Id, Pragma_Effective_Writes);
+
+      --  Start of processing for Variable_Has_Enabled_Property
+
       begin
          --  A non-volatile object can never possess external properties
 
@@ -7544,33 +7586,25 @@ package body Sem_Util is
 
          --  External properties related to variables come in two flavors -
          --  explicit and implicit. The explicit case is characterized by the
-         --  presence of a property pragma while the implicit case lacks all
-         --  such pragmas.
+         --  presence of a property pragma with an optional Boolean flag. The
+         --  property is enabled when the flag evaluates to True or the flag is
+         --  missing altogether.
 
-         elsif Property = Name_Async_Readers
-           and then
-             (Present (AR)
-                or else
-             (No (AW) and then No (ER) and then No (EW)))
-         then
+         elsif Property = Name_Async_Readers and then Is_Enabled (AR) then
             return True;
 
-         elsif Property = Name_Async_Writers
-           and then (Present (AW)
-                      or else (No (AR) and then No (ER) and then No (EW)))
-         then
+         elsif Property = Name_Async_Writers and then Is_Enabled (AW) then
             return True;
 
-         elsif Property = Name_Effective_Reads
-           and then (Present (ER)
-                      or else (No (AR) and then No (AW) and then No (EW)))
-         then
+         elsif Property = Name_Effective_Reads and then Is_Enabled (ER) then
             return True;
 
-         elsif Property = Name_Effective_Writes
-           and then (Present (EW)
-                      or else (No (AR) and then No (AW) and then No (ER)))
-         then
+         elsif Property = Name_Effective_Writes and then Is_Enabled (EW) then
+            return True;
+
+         --  The implicit case lacks all property pragmas
+
+         elsif No (AR) and then No (AW) and then No (ER) and then No (EW) then
             return True;
 
          else

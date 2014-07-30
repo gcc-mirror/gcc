@@ -594,6 +594,7 @@ The GNAT Library
 * GNAT.Expect (g-expect.ads)::
 * GNAT.Expect.TTY (g-exptty.ads)::
 * GNAT.Float_Control (g-flocon.ads)::
+* GNAT.Formatted_String (g-forstr.ads)::
 * GNAT.Heap_Sort (g-heasor.ads)::
 * GNAT.Heap_Sort_A (g-hesora.ads)::
 * GNAT.Heap_Sort_G (g-hesorg.ads)::
@@ -18934,6 +18935,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Expect (g-expect.ads)::
 * GNAT.Expect.TTY (g-exptty.ads)::
 * GNAT.Float_Control (g-flocon.ads)::
+* GNAT.Formatted_String (g-forstr.ads)::
 * GNAT.Heap_Sort (g-heasor.ads)::
 * GNAT.Heap_Sort_A (g-hesora.ads)::
 * GNAT.Heap_Sort_G (g-hesorg.ads)::
@@ -19859,6 +19861,18 @@ Provides an interface for resetting the floating-point processor into the
 mode required for correct semantic operation in Ada.  Some third party
 library calls may cause this mode to be modified, and the Reset procedure
 in this package can be used to reestablish the required mode.
+
+@node GNAT.Formatted_String (g-forstr.ads)
+@section @code{GNAT.Formatted_String} (@file{g-forstr.ads})
+@cindex @code{GNAT.Formatted_String} (@file{g-forstr.ads})
+@cindex Formatted String
+
+@noindent
+Provides support for C/C++ printf() formatted string. The format is
+copied from the printf() routine and should therefore gives identical
+output. Some generic routines are provided to be able to use types
+derived from Integer, Float or enumerations as values for the
+formatted string.
 
 @node GNAT.Heap_Sort (g-heasor.ads)
 @section @code{GNAT.Heap_Sort} (@file{g-heasor.ads})
