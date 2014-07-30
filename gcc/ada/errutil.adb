@@ -772,6 +772,15 @@ package body Errutil is
             P := P - 1;
             Set_Msg_Insertion_Reserved_Word (Text, P);
 
+         --  Tilde: just remove '~' and do not modify the message further
+
+         --  This is peculiar, incompatible with errout, and not documented ???
+
+         elsif C = '~' then
+            Set_Msg_Str
+              (Text (Text'First .. P - 2) & Text (P .. Text'Last));
+            exit;
+
          --  Normal character with no special treatment
 
          else

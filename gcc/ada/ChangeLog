@@ -1,3 +1,20 @@
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Minor doc fixes.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* a-rbtgbo.adb, sem_ch13.adb: Minor reformatting.
+
+2014-07-30  Vincent Celier  <celier@adacore.com>
+
+	* errutil.adb (Set_Msg_Text): Process tilde ('~'): no processing
+	of error message.
+	* prj-nmsc.adb (Locate_Directory): Use a tilde ('~') in the
+	message to report that a directory cannot be created, to avoid
+	processing of the directory path that may contains special
+	insertion characters.
+
 2014-07-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* a-crdlli.ads: Place declaration of Empty_List after full type
@@ -17,7 +34,7 @@
 
 2014-07-30  Ed Schonberg  <schonberg@adacore.com>
 
-	* a-rbtgbo.adb: -rbtgbo.adb (Delete_Node_Sans_Free): If
+	* a-rbtgbo.adb (Delete_Node_Sans_Free): If
 	element is not present in tree return rather than violating
 	an assertion. Constraint_Error will be raised in the caller if
 	element is not in the container.
