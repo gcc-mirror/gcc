@@ -1,3 +1,12 @@
+2014-07-30  Steve Baird  <baird@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Indexed_Component): Disable optimized handling
+	of A(I..J)(K) in CodePeer_Mode.
+
+2014-07-30  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
 2014-07-30  Thomas Quinot  <quinot@adacore.com>
 
 	* lib-writ.ads: document format change.

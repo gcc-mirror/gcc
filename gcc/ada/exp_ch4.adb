@@ -6164,8 +6164,11 @@ package body Exp_Ch4 is
       --  messing especially in the packed case, but more importantly bypasses
       --  some problems in handling this peculiar case, for example, the issue
       --  of dealing specially with object renamings.
+      --  This optimization is disabled for CodePeer because it can transform
+      --  an index-check constraint_error into a range-check constraint_error
+      --  and CodePeer cares about that distinction.
 
-      if Nkind (P) = N_Slice then
+      if Nkind (P) = N_Slice and then not CodePeer_Mode then
          Rewrite (N,
            Make_Indexed_Component (Loc,
              Prefix      => Prefix (P),
