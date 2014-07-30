@@ -19784,6 +19784,7 @@ is installed at its default location.
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+* Putting Tests under Version Control::
 @ifclear vms
 * Support for other platforms/run-times::
 @end ifclear
@@ -20344,8 +20345,8 @@ gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
 @end smallexample
 
-@node Putting tests under veesion control
-@section Putting tests under veesion control
+@node Putting Tests under Version Control
+@section Putting Tests under Version Control
 
 @noindent
 As has been stated earlier, @command{gnattest} generates two different types
