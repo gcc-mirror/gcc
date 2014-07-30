@@ -1,5 +1,28 @@
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
+	* clean.adb: Minor reformatting.
+	* opt.ads: Minor fix to incorrect comment.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-chtgbo.ads, a-chtgbo.adb (Delete_Node_At_Index): New
+	subprogram, used by bounded hashed sets, to delete a node at
+	a given index, whose element may have been improperly updated
+	through a Reference_Preserving key.
+	* a-cbhase.ads: Add Reference_Control_Type to package Generic_Keys.
+	* a-cbhase.adb: Add Adjust and Finalize routines for
+	Reference_Control_Type.
+	(Delete, Insert): Raise Program_Error, not Constraint_Error,
+	when operation is illegal.
+	(Reference_Preserving_Key): Build aggregate for Reference_Control_Type
+	* a-cmbutr.ads: Add Reference_Control_Type to detect tampering. Add
+	private with_clause for Ada.Finalization.
+	* a-cbmutr.adb: Add Adjust and Finalize routines for
+	Reference_Control_Type. Use it in the construction of Reference
+	and Constant_Reference values.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sem_ch3.ads: Minor code reorganization.
 
 2014-07-30  Pascal Obry  <obry@adacore.com>

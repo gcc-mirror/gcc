@@ -27,8 +27,6 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization; use Ada.Finalization;
-
 with System; use type System.Address;
 
 package body Ada.Containers.Bounded_Multiway_Trees is
@@ -236,6 +234,24 @@ package body Ada.Containers.Bounded_Multiway_Trees is
                 Right_Subtree => Root_Node (Right));
    end "=";
 
+   ------------
+   -- Adjust --
+   ------------
+
+   procedure Adjust (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Tree renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B + 1;
+            L := L + 1;
+         end;
+      end if;
+   end Adjust;
+
    -------------------
    -- Allocate_Node --
    -------------------
@@ -328,12 +344,6 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       if Position = No_Element then
          raise Constraint_Error with "Position cursor has no element";
       end if;
-
-      --  Commented-out pending ruling by ARG.  ???
-
-      --  if Position.Container /= Container'Unrestricted_Access then
-      --     raise Program_Error with "Position cursor not in container";
-      --  end if;
 
       --  AI-0136 says to raise PE if Position equals the root node. This does
       --  not seem correct, as this value is just the limiting condition of the
@@ -602,7 +612,20 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  pragma Assert (Vet (Position),
       --                 "Position cursor in Constant_Reference is bad");
 
-      return (Element => Container.Elements (Position.Node)'Access);
+      declare
+         C : Tree renames Position.Container.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+
+      begin
+         return R : constant Constant_Reference_Type :=
+           (Element => Container.Elements (Position.Node)'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
    end Constant_Reference;
 
    --------------
@@ -1268,6 +1291,22 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       B : Natural renames Object.Container.Busy;
    begin
       B := B - 1;
+   end Finalize;
+
+   procedure Finalize (Control : in out Reference_Control_Type) is
+   begin
+      if Control.Container /= null then
+         declare
+            C : Tree renames Control.Container.all;
+            B : Natural renames C.Busy;
+            L : Natural renames C.Lock;
+         begin
+            B := B - 1;
+            L := L - 1;
+         end;
+
+         Control.Container := null;
+      end if;
    end Finalize;
 
    ----------
@@ -2516,7 +2555,20 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  pragma Assert (Vet (Position),
       --                 "Position cursor in Constant_Reference is bad");
 
-      return (Element => Container.Elements (Position.Node)'Access);
+      declare
+         C : Tree renames Position.Container.all;
+         B : Natural renames C.Busy;
+         L : Natural renames C.Lock;
+      begin
+         return R : constant Reference_Type :=
+           (Element => Container.Elements (Position.Node)'Access,
+            Control => (Controlled with Position.Container))
+         do
+            B := B + 1;
+            L := L + 1;
+         end return;
+      end;
+
    end Reference;
 
    --------------------

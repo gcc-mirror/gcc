@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2011-2012, Free Software Foundation, Inc.      --
+--             Copyright (C) 2014, Free Software Foundation, Inc.           --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,6 +33,7 @@
 
 with Ada.Iterator_Interfaces;
 private with Ada.Streams;
+private with Ada.Finalization;
 
 generic
    type Element_Type is private;
@@ -137,33 +138,9 @@ package Ada.Containers.Bounded_Multiway_Trees is
      (Container : Tree;
       Item      : Element_Type) return Cursor;
 
-   --  This version of the AI:
-   --   10-06-02  AI05-0136-1/07
-   --  declares Find_In_Subtree this way:
-   --
-   --  function Find_In_Subtree
-   --    (Container : Tree;
-   --     Item      : Element_Type;
-   --     Position  : Cursor) return Cursor;
-   --
-   --  It seems that the Container parameter is there by mistake, but we need
-   --  an official ruling from the ARG. ???
-
    function Find_In_Subtree
      (Position : Cursor;
       Item     : Element_Type) return Cursor;
-
-   --  This version of the AI:
-   --   10-06-02  AI05-0136-1/07
-   --  declares Ancestor_Find this way:
-   --
-   --  function Ancestor_Find
-   --    (Container : Tree;
-   --     Item      : Element_Type;
-   --     Position  : Cursor) return Cursor;
-   --
-   --  It seems that the Container parameter is there by mistake, but we need
-   --  an official ruling from the ARG. ???
 
    function Ancestor_Find
      (Position : Cursor;
@@ -284,20 +261,6 @@ package Ada.Containers.Bounded_Multiway_Trees is
 
    procedure Previous_Sibling (Position : in out Cursor);
 
-   --  This version of the AI:
-
-   --   10-06-02  AI05-0136-1/07
-
-   --  declares Iterate_Children this way:
-
-   --  procedure Iterate_Children
-   --    (Container : Tree;
-   --     Parent    : Cursor;
-   --     Process   : not null access procedure (Position : Cursor));
-
-   --  It seems that the Container parameter is there by mistake, but we need
-   --  an official ruling from the ARG. ???
-
    procedure Iterate_Children
      (Parent  : Cursor;
       Process : not null access procedure (Position : Cursor));
@@ -308,6 +271,7 @@ package Ada.Containers.Bounded_Multiway_Trees is
 
 private
    use Ada.Streams;
+   use Ada.Finalization;
 
    No_Node : constant Count_Type'Base := -1;
    --  Need to document all global declarations such as this ???
@@ -368,8 +332,22 @@ private
       Position : Cursor);
    for Cursor'Write use Write;
 
+   type Reference_Control_Type is
+      new Controlled with record
+         Container : Tree_Access;
+      end record;
+
+   overriding procedure Adjust (Control : in out Reference_Control_Type);
+   pragma Inline (Adjust);
+
+   overriding procedure Finalize (Control : in out Reference_Control_Type);
+   pragma Inline (Finalize);
+
    type Constant_Reference_Type
-     (Element : not null access constant Element_Type) is null record;
+     (Element : not null access constant Element_Type) is
+      record
+         Control : Reference_Control_Type;
+      end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
@@ -382,7 +360,10 @@ private
    for Constant_Reference_Type'Read use Read;
 
    type Reference_Type
-     (Element : not null access Element_Type) is null record;
+     (Element : not null access Element_Type) is
+      record
+         Control : Reference_Control_Type;
+      end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;

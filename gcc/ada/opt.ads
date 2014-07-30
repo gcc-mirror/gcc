@@ -224,7 +224,7 @@ package Opt is
    --  GNAT Normally, in accordance with (RM 13.9.1 (9-11)) the front end
    --  assumes that values could have invalid representations, unless it can
    --  clearly prove that the values are valid. If this switch is set (by
-   --  pragma Assume_No_Invalid_Values (Off)), then the compiler assumes values
+   --  pragma Assume_No_Invalid_Values (On)), then the compiler assumes values
    --  are valid and in range of their representations. This feature is now
    --  fully enabled in the compiler.
 
