@@ -1185,45 +1185,42 @@ package body Sem_Ch13 is
    -----------------------------------
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
-      procedure Decorate_Aspect_And_Pragma
-        (Asp     : Node_Id;
-         Prag    : Node_Id;
-         Delayed : Boolean := False);
+      procedure Decorate (Asp : Node_Id; Prag : Node_Id);
       --  Establish the linkages between an aspect and its corresponding
-      --  pragma. Flag Delayed should be set when both constructs are delayed.
+      --  pragma.
 
       procedure Insert_After_SPARK_Mode
         (Prag    : Node_Id;
          Ins_Nod : Node_Id;
          Decls   : List_Id);
-      --  Subsidiary to the analysis of aspects Abstract_State, Initializes and
-      --  Initial_Condition. Insert node Prag before node Ins_Nod. If Ins_Nod
-      --  denotes pragma SPARK_Mode, then SPARK_Mode is skipped. Decls is the
-      --  associated declarative list where Prag is to reside.
+      --  Subsidiary to the analysis of aspects Abstract_State, Initializes,
+      --  Initial_Condition and Refined_State. Insert node Prag before node
+      --  Ins_Nod. If Ins_Nod denotes pragma SPARK_Mode, then SPARK_Mode is
+      --  skipped. Decls is the associated declarative list where Prag is to
+      --  reside.
 
-      procedure Insert_Delayed_Pragma (Prag : Node_Id);
-      --  Insert a postcondition-like pragma into the tree depending on the
-      --  context. Prag must denote one of the following: Pre, Post, Depends,
-      --  Global or Contract_Cases. This procedure is also used for the case
-      --  of Attach_Handler which has similar requirements for placement.
+      procedure Insert_Pragma (Prag : Node_Id);
+      --  Subsidiary to the analysis of aspects Attach_Handler, Contract_Cases,
+      --  Depends, Global, Post, Pre, Refined_Depends and Refined_Global.
+      --  Insert pragma Prag such that it mimics the placement of a source
+      --  pragma of the same kind.
+      --
+      --    procedure Proc (Formal : ...) with Global => ...;
+      --
+      --    procedure Proc (Formal : ...);
+      --    pragma Global (...);
 
-      --------------------------------
-      -- Decorate_Aspect_And_Pragma --
-      --------------------------------
+      --------------
+      -- Decorate --
+      --------------
 
-      procedure Decorate_Aspect_And_Pragma
-        (Asp     : Node_Id;
-         Prag    : Node_Id;
-         Delayed : Boolean := False)
-      is
+      procedure Decorate (Asp : Node_Id; Prag : Node_Id) is
       begin
          Set_Aspect_Rep_Item           (Asp,  Prag);
          Set_Corresponding_Aspect      (Prag, Asp);
          Set_From_Aspect_Specification (Prag);
-         Set_Is_Delayed_Aspect         (Prag, Delayed);
-         Set_Is_Delayed_Aspect         (Asp,  Delayed);
          Set_Parent                    (Prag, Asp);
-      end Decorate_Aspect_And_Pragma;
+      end Decorate;
 
       -----------------------------
       -- Insert_After_SPARK_Mode --
@@ -1256,12 +1253,13 @@ package body Sem_Ch13 is
          end if;
       end Insert_After_SPARK_Mode;
 
-      ---------------------------
-      -- Insert_Delayed_Pragma --
-      ---------------------------
+      -------------------
+      -- Insert_Pragma --
+      -------------------
 
-      procedure Insert_Delayed_Pragma (Prag : Node_Id) is
-         Aux : Node_Id;
+      procedure Insert_Pragma (Prag : Node_Id) is
+         Aux  : Node_Id;
+         Decl : Node_Id;
 
       begin
          --  When the context is a library unit, the pragma is added to the
@@ -1280,29 +1278,30 @@ package body Sem_Ch13 is
          --  declarative part.
 
          elsif Nkind (N) = N_Subprogram_Body then
-            if No (Declarations (N)) then
-               Set_Declarations (N, New_List (Prag));
-            else
-               declare
-                  D : Node_Id;
-               begin
+            if Present (Declarations (N)) then
 
-                  --  There may be several aspects associated with the body;
-                  --  preserve the ordering of the corresponding pragmas.
+               --  Skip other internally generated pragmas from aspects to find
+               --  the proper insertion point. As a result the order of pragmas
+               --  is the same as the order of aspects.
 
-                  D := First (Declarations (N));
-                  while Present (D) loop
-                     exit when Nkind (D) /= N_Pragma
-                       or else not From_Aspect_Specification (D);
-                     Next (D);
-                  end loop;
-
-                  if No (D) then
-                     Append (Prag, Declarations (N));
+               Decl := First (Declarations (N));
+               while Present (Decl) loop
+                  if Nkind (Decl) = N_Pragma
+                    and then From_Aspect_Specification (Decl)
+                  then
+                     Next (Decl);
                   else
-                     Insert_Before (D, Prag);
+                     exit;
                   end if;
-               end;
+               end loop;
+
+               if Present (Decl) then
+                  Insert_Before (Decl, Prag);
+               else
+                  Append (Prag, Declarations (N));
+               end if;
+            else
+               Set_Declarations (N, New_List (Prag));
             end if;
 
          --  Default
@@ -1310,7 +1309,7 @@ package body Sem_Ch13 is
          else
             Insert_After (N, Prag);
          end if;
-      end Insert_Delayed_Pragma;
+      end Insert_Pragma;
 
       --  Local variables
 
@@ -1757,7 +1756,7 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Implemented);
 
-               --  Attach Handler
+               --  Attach_Handler
 
                when Aspect_Attach_Handler =>
                   Make_Aitem_Pragma
@@ -1771,7 +1770,7 @@ package body Sem_Ch13 is
                   --  We need to insert this pragma into the tree to get proper
                   --  processing and to look valid from a placement viewpoint.
 
-                  Insert_Delayed_Pragma (Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
 
                --  Dynamic_Predicate, Predicate, Static_Predicate
@@ -2117,7 +2116,7 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Abstract_State);
-                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate (Aspect, Aitem);
 
                      Decls := Visible_Declarations (Specification (Context));
 
@@ -2176,10 +2175,12 @@ package body Sem_Ch13 is
 
                --  Depends
 
-               --  Aspect Depends must be delayed because it mentions names
-               --  of inputs and output that are classified by aspect Global.
-               --  The aspect and pragma are treated the same way as a post
-               --  condition.
+               --  Aspect Depends is never delayed because it is equivalent to
+               --  a source pragma which appears after the related subprogram.
+               --  To deal with forward references, the generated pragma is
+               --  stored in the contract of the related subprogram and later
+               --  analyzed at the end of the declarative region. See routine
+               --  Analyze_Depends_In_Decl_Part for details.
 
                when Aspect_Depends =>
                   Make_Aitem_Pragma
@@ -2188,17 +2189,18 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Depends);
 
-                  Decorate_Aspect_And_Pragma
-                    (Aspect, Aitem, Delayed => True);
-                  Insert_Delayed_Pragma (Aitem);
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
 
                --  Global
 
-               --  Aspect Global must be delayed because it can mention names
-               --  and benefit from the forward visibility rules applicable to
-               --  aspects of subprograms. The aspect and pragma are treated
-               --  the same way as a post condition.
+               --  Aspect Global is never delayed because it is equivalent to
+               --  a source pragma which appears after the related subprogram.
+               --  To deal with forward references, the generated pragma is
+               --  stored in the contract of the related subprogram and later
+               --  analyzed at the end of the declarative region. See routine
+               --  Analyze_Global_In_Decl_Part for details.
 
                when Aspect_Global =>
                   Make_Aitem_Pragma
@@ -2207,25 +2209,28 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Global);
 
-                  Decorate_Aspect_And_Pragma
-                    (Aspect, Aitem, Delayed => True);
-                  Insert_Delayed_Pragma (Aitem);
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
 
                --  Initial_Condition
 
-               --  Aspect Initial_Condition covers the visible declarations of
-               --  a package and all hidden states through functions. As such,
-               --  it must be evaluated at the end of the said declarations.
+               --  Aspect Initial_Condition is never delayed because it is
+               --  equivalent to a source pragma which appears after the
+               --  related package. To deal with forward references, the
+               --  generated pragma is stored in the contract of the related
+               --  package and later analyzed at the end of the declarative
+               --  region. See routine Analyze_Initial_Condition_In_Decl_Part
+               --  for details.
 
                when Aspect_Initial_Condition => Initial_Condition : declare
                   Context : Node_Id := N;
                   Decls   : List_Id;
 
                begin
-                  --  When aspect Abstract_State appears on a generic package,
-                  --  it is propageted to the package instance. The context in
-                  --  this case is the instance spec.
+                  --  When aspect Initial_Condition appears on a generic
+                  --  package, it is propageted to the package instance. The
+                  --  context in this case is the instance spec.
 
                   if Nkind (Context) = N_Package_Instantiation then
                      Context := Instance_Spec (Context);
@@ -2242,9 +2247,7 @@ package body Sem_Ch13 is
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  =>
                           Name_Initial_Condition);
-
-                     Decorate_Aspect_And_Pragma
-                       (Aspect, Aitem, Delayed => True);
+                     Decorate (Aspect, Aitem);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2272,9 +2275,12 @@ package body Sem_Ch13 is
 
                --  Initializes
 
-               --  Aspect Initializes coverts the visible declarations of a
-               --  package. As such, it must be evaluated at the end of the
-               --  said declarations.
+               --  Aspect Initializes is never delayed because it is equivalent
+               --  to a source pragma appearing after the related package. To
+               --  deal with forward references, the generated pragma is stored
+               --  in the contract of the related package and later analyzed at
+               --  the end of the declarative region. For details, see routine
+               --  Analyze_Initializes_In_Decl_Part.
 
                when Aspect_Initializes => Initializes : declare
                   Context : Node_Id := N;
@@ -2299,9 +2305,7 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Initializes);
-
-                     Decorate_Aspect_And_Pragma
-                       (Aspect, Aitem, Delayed => True);
+                     Decorate (Aspect, Aitem);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2362,7 +2366,7 @@ package body Sem_Ch13 is
                   --  emulate the behavior of a source pragma.
 
                   if Nkind (N) = N_Package_Body then
-                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate (Aspect, Aitem);
 
                      Decls := Declarations (N);
 
@@ -2379,7 +2383,7 @@ package body Sem_Ch13 is
                   --  declarations to emulate the behavior of a source pragma.
 
                   elsif Nkind (N) = N_Package_Declaration then
-                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate (Aspect, Aitem);
 
                      Decls := Visible_Declarations (Specification (N));
 
@@ -2395,10 +2399,13 @@ package body Sem_Ch13 is
 
                --  Refined_Depends
 
-               --  Aspect Refined_Depends must be delayed because it can
-               --  mention state refinements introduced by aspect Refined_State
-               --  and further classified by aspect Refined_Global. Since both
-               --  those aspects are delayed, so is Refined_Depends.
+               --  Aspect Refined_Depends is never delayed because it is
+               --  equivalent to a source pragma which appears in the
+               --  declarations of the related subprogram body. To deal with
+               --  forward references, the generated pragma is stored in the
+               --  contract of the related subprogram body and later analyzed
+               --  at the end of the declarative region. For details, see
+               --  routine Analyze_Refined_Depends_In_Decl_Part.
 
                when Aspect_Refined_Depends =>
                   Make_Aitem_Pragma
@@ -2407,17 +2414,19 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Depends);
 
-                  Decorate_Aspect_And_Pragma
-                    (Aspect, Aitem, Delayed => True);
-                  Insert_Delayed_Pragma (Aitem);
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
 
                --  Refined_Global
 
-               --  Aspect Refined_Global must be delayed because it can mention
-               --  state refinements introduced by aspect Refined_State. Since
-               --  Refined_State is already delayed due to forward references,
-               --  so is Refined_Global.
+               --  Aspect Refined_Global is never delayed because it is
+               --  equivalent to a source pragma which appears in the
+               --  declarations of the related subprogram body. To deal with
+               --  forward references, the generated pragma is stored in the
+               --  contract of the related subprogram body and later analyzed
+               --  at the end of the declarative region. For details, see
+               --  routine Analyze_Refined_Global_In_Decl_Part.
 
                when Aspect_Refined_Global =>
                   Make_Aitem_Pragma
@@ -2426,8 +2435,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Global);
 
-                  Decorate_Aspect_And_Pragma (Aspect, Aitem, Delayed => True);
-                  Insert_Delayed_Pragma (Aitem);
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
 
                --  Refined_Post
@@ -2442,7 +2451,6 @@ package body Sem_Ch13 is
                --  Refined_State
 
                when Aspect_Refined_State => Refined_State : declare
-                  Decl  : Node_Id;
                   Decls : List_Id;
 
                begin
@@ -2452,38 +2460,29 @@ package body Sem_Ch13 is
                   --  the pragma.
 
                   if Nkind (N) = N_Package_Body then
+                     Decls := Declarations (N);
+
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Refined_State);
-                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate (Aspect, Aitem);
 
-                     Decls := Declarations (N);
-
-                     --  When the package body is subject to pragma SPARK_Mode,
-                     --  insert pragma Refined_State after SPARK_Mode.
-
-                     if Present (Decls) then
-                        Decl := First (Decls);
-
-                        if Nkind (Decl) = N_Pragma
-                          and then Pragma_Name (Decl) = Name_SPARK_Mode
-                        then
-                           Insert_After (Decl, Aitem);
-
-                        --  The related package body lacks SPARK_Mode, the
-                        --  corresponding pragma must be the first declaration.
-
-                        else
-                           Prepend_To (Decls, Aitem);
-                        end if;
-
-                     --  Otherwise the pragma forms a new declarative list
-
-                     else
-                        Set_Declarations (N, New_List (Aitem));
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Declarations (N, Decls);
                      end if;
+
+                     --  Pragma Refined_State must be inserted after pragma
+                     --  SPARK_Mode in the tree. This ensures that any error
+                     --  messages dependent on SPARK_Mode will be properly
+                     --  enabled/suppressed.
+
+                     Insert_After_SPARK_Mode
+                       (Prag    => Aitem,
+                        Ins_Nod => First (Decls),
+                        Decls   => Decls);
 
                   else
                      Error_Msg_NE
@@ -2741,7 +2740,7 @@ package body Sem_Ch13 is
                   --  about delay issues, since the pragmas themselves deal
                   --  with delay of visibility for the expression analysis.
 
-                  Insert_Delayed_Pragma (Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
                end Pre_Post;
 
@@ -2821,9 +2820,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Nam);
 
-                  Decorate_Aspect_And_Pragma
-                    (Aspect, Aitem, Delayed => True);
-                  Insert_Delayed_Pragma (Aitem);
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
                   goto Continue;
 
                --  Case 5: Special handling for aspects with an optional
@@ -3022,7 +3020,7 @@ package body Sem_Ch13 is
             --  the aspect specification node.
 
             if Present (Aitem) then
-               Set_From_Aspect_Specification (Aitem, True);
+               Set_From_Aspect_Specification (Aitem);
             end if;
 
             --  In the context of a compilation unit, we directly put the
