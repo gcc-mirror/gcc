@@ -5,7 +5,7 @@ package body Case_Null is
    procedure P1 (X : T) is
    begin
       case X is
-         when S1 =>
+         when S1 =>  -- { dg-error "not.*static" }
            null;
          when e =>
            null;
