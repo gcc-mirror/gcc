@@ -1,3 +1,29 @@
+2014-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.ads Aspects Async_Readers, Async_Writers,
+	Effective_Reads and Effective_Writes do not need to be delayed.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Propagate the
+	optional Boolean expression when generating the corresponding
+	pragma for an external property aspect.
+	* sem_prag.adb (Analyze_External_Property_In_Decl_Part): Remove
+	local constant Obj. Add local constant Obj_Id. Reimplement the
+	check which ensures that the related variable is in fact volatile.
+	(Analyze_Pragma): Reimplement the analysis of external property pragmas.
+	* sem_util.adb (Is_Enabled): New routine.
+	(Variable_Has_Enabled_Property): Reimplement the detection of
+	an enabled external property.
+
+2014-07-30  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads: gnatstub: describe generating subunits
+	for body stubs.
+
+2014-07-30  Pascal Obry  <obry@adacore.com>
+
+	* g-forstr.adb, g-forstr.ads: New.
+	* gnat_rm.texi, impunit.adb Makefile.rtl: Add new unit
+	GNAT.Formatted_String.
+
 2014-07-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): New predicate.

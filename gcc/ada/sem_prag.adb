@@ -1834,29 +1834,28 @@ package body Sem_Prag is
      (N        : Node_Id;
       Expr_Val : out Boolean)
    is
-      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
-      Obj  : constant Node_Id := Get_Pragma_Arg (Arg1);
-      Expr : constant Node_Id := Get_Pragma_Arg (Next (Arg1));
+      Arg1   : constant Node_Id   := First (Pragma_Argument_Associations (N));
+      Obj_Id : constant Entity_Id := Entity (Get_Pragma_Arg (Arg1));
+      Expr   : constant Node_Id   := Get_Pragma_Arg (Next (Arg1));
 
    begin
       Error_Msg_Name_1 := Pragma_Name (N);
 
-      --  The Async / Effective pragmas must apply to a volatile object other
-      --  than a formal subprogram parameter (SPARK RM 7.1.3(2)).
+      --  An external property pragma must apply to a volatile object other
+      --  than a formal subprogram parameter (SPARK RM 7.1.3(2)). The check
+      --  is performed at the end of the declarative region due to a possible
+      --  out-of-order arrangement of pragmas:
+      --
+      --    Obj : ...;
+      --    pragma Async_Readers (Obj);
+      --    pragma Volatile (Obj);
 
-      if Is_SPARK_Volatile_Object (Obj) then
-         if Is_Entity_Name (Obj)
-           and then Present (Entity (Obj))
-           and then Is_Formal (Entity (Obj))
-         then
-            SPARK_Msg_N ("external property % cannot apply to parameter", N);
-         end if;
-      else
+      if not Is_SPARK_Volatile (Obj_Id) then
          SPARK_Msg_N
            ("external property % must apply to a volatile object", N);
       end if;
 
-      --  Ensure that the expression (if present) is static Boolean. A missing
+      --  Ensure that the Boolean expression (if present) is static. A missing
       --  argument defaults the value to True (SPARK RM 7.1.2(5)).
 
       Expr_Val := True;
@@ -1867,7 +1866,6 @@ package body Sem_Prag is
          if Is_OK_Static_Expression (Expr) then
             Expr_Val := Is_True (Expr_Value (Expr));
          else
-            Error_Msg_Name_1 := Pragma_Name (N);
             SPARK_Msg_N ("expression of % must be static", Expr);
          end if;
       end if;
@@ -11581,6 +11579,8 @@ package body Sem_Prag is
               Pragma_Effective_Writes =>
          Async_Effective : declare
             Duplic : Node_Id;
+            Expr   : Node_Id;
+            Obj    : Node_Id;
             Obj_Id : Entity_Id;
 
          begin
@@ -11589,48 +11589,47 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
             Check_At_Most_N_Arguments  (2);
             Check_Arg_Is_Local_Name (Arg1);
+            Error_Msg_Name_1 := Pname;
 
-            Arg1 := Get_Pragma_Arg (Arg1);
+            Obj  := Get_Pragma_Arg (Arg1);
+            Expr := Get_Pragma_Arg (Arg2);
 
             --  Perform minimal verification to ensure that the argument is at
             --  least a variable. Subsequent finer grained checks will be done
             --  at the end of the declarative region the contains the pragma.
 
-            if Is_Entity_Name (Arg1) and then Present (Entity (Arg1)) then
-               Obj_Id := Entity (Get_Pragma_Arg (Arg1));
+            if Is_Entity_Name (Obj)
+              and then Present (Entity (Obj))
+              and then Ekind (Entity (Obj)) = E_Variable
+            then
+               Obj_Id := Entity (Obj);
 
-               --  It is not efficient to examine preceding statements in order
-               --  to detect duplicate pragmas as Boolean aspects may appear
+               --  Detect a duplicate pragma. Note that it is not efficient to
+               --  examine preceding statements as Boolean aspects may appear
                --  anywhere between the related object declaration and its
                --  freeze point. As an alternative, inspect the contents of the
                --  variable contract.
 
-               if Ekind (Obj_Id) = E_Variable then
-                  Duplic := Get_Pragma (Obj_Id, Prag_Id);
+               Duplic := Get_Pragma (Obj_Id, Prag_Id);
 
-                  if Present (Duplic) then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_Sloc   := Sloc (Duplic);
-                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+               if Present (Duplic) then
+                  Error_Msg_Sloc := Sloc (Duplic);
+                  Error_Msg_N ("pragma % duplicates pragma declared #", N);
 
-                  --  Chain the pragma on the contract for further processing.
-                  --  This also aids in detecting duplicates.
+               --  No duplicate detected
 
-                  else
-                     Add_Contract_Item (N, Obj_Id);
+               else
+                  if Present (Expr) then
+                     Preanalyze_And_Resolve (Expr, Standard_Boolean);
                   end if;
 
-                  --  The minimum legality requirements have been met, do not
-                  --  fall through to the error message.
+                  --  Chain the pragma on the contract for further processing
 
-                  return;
+                  Add_Contract_Item (N, Obj_Id);
                end if;
+            else
+               Error_Pragma ("pragma % must apply to a volatile object");
             end if;
-
-            --  If we get here, then the pragma applies to a non-object
-            --  construct, issue a generic error (SPARK RM 7.1.3(2)).
-
-            Error_Pragma ("pragma % must apply to a volatile object");
          end Async_Effective;
 
          ------------------

@@ -411,6 +411,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-expect$(objext) \
   g-exptty$(objext) \
   g-flocon$(objext) \
+  g-forstr$(objext) \
   g-heasor$(objext) \
   g-hesora$(objext) \
   g-hesorg$(objext) \

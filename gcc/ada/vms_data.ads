@@ -7167,6 +7167,16 @@ package VMS_Data is
    --
    --   Look for source, library or object files in the default directory.
 
+   S_Stub_Dir      : aliased constant S := "/DIR=@"                        &
+                                            "--dir=@";
+
+   --        /DIR=dirname
+   --
+   --   The directory to place the generated source(s) into. If this switch is
+   --   omitted, the generated library unit body is placed in the current
+   --   directory, and the generated subunit(s) - in the directory where the
+   --   argument body file is located.
+
    S_Stub_Encoding : aliased constant S := "/RESULT_ENCODING="             &
                                             "BRACKETS "                    &
                                                "-Wb "                      &
@@ -7352,6 +7362,16 @@ package VMS_Data is
    --   of the directory specified in the project file. If the subdirectory
    --   does not exist, it is created automatically.
 
+   S_Stub_Subunits : aliased constant S := "/SUBUNITS "                    &
+                                           "--subunits";
+
+   --        /NOSUBUNITS (D)
+   --        /SUBUNITS
+   --
+   --   Generate subunits for body stubs. If this switch is set, a library
+   --   unit body is expected as a tool argument, otherwise a library unit
+   --   declaration is expected to generate a body for.
+
    S_Stub_Tree    : aliased constant S := "/TREE_FILE="                    &
                                             "OVERWRITE "                   &
                                                "-t "                       &
@@ -7395,6 +7415,7 @@ package VMS_Data is
                      (S_Stub_Add        'Access,
                       S_Stub_Config     'Access,
                       S_Stub_Current    'Access,
+                      S_Stub_Dir        'Access,
                       S_Stub_Encoding   'Access,
                       S_Stub_Ext        'Access,
                       S_Stub_Follow     'Access,
@@ -7412,6 +7433,7 @@ package VMS_Data is
                       S_Stub_Quiet      'Access,
                       S_Stub_Search     'Access,
                       S_Stub_Subdirs    'Access,
+                      S_Stub_Subunits   'Access,
                       S_Stub_Tree       'Access,
                       S_Stub_Verbose    'Access);
 
