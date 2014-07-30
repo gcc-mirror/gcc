@@ -740,11 +740,12 @@ package body Clean is
                      if Last > 4 and then Name (Last - 3 .. Last) = ".ali" then
                         declare
                            Unit : Unit_Index;
+
                         begin
                            --  Compare with ALI file names of the project
 
-                           Unit := Units_Htable.Get_First
-                             (Project_Tree.Units_HT);
+                           Unit :=
+                             Units_Htable.Get_First (Project_Tree.Units_HT);
                            while Unit /= No_Unit_Index loop
                               if Unit.File_Names (Impl) /= null
                                 and then Unit.File_Names (Impl).Project /=
@@ -756,9 +757,10 @@ package body Clean is
                                  then
                                     Get_Name_String
                                       (Unit.File_Names (Impl).File);
-                                    Name_Len := Name_Len -
-                                      File_Extension
-                                        (Name (1 .. Name_Len))'Length;
+                                    Name_Len :=
+                                      Name_Len -
+                                        File_Extension
+                                          (Name (1 .. Name_Len))'Length;
                                     if Name_Buffer (1 .. Name_Len) =
                                          Name (1 .. Last - 4)
                                     then
@@ -772,8 +774,7 @@ package body Clean is
                                            (Unit.File_Names (Spec).Project) =
                                                                     Project
                               then
-                                 Get_Name_String
-                                   (Unit.File_Names (Spec).File);
+                                 Get_Name_String (Unit.File_Names (Spec).File);
                                  Name_Len :=
                                    Name_Len -
                                      File_Extension
@@ -869,7 +870,7 @@ package body Clean is
 
          if Project.Object_Directory /= No_Path_Information
            and then Is_Directory
-             (Get_Name_String (Project.Object_Directory.Display_Name))
+                      (Get_Name_String (Project.Object_Directory.Display_Name))
          then
             declare
                Obj_Dir : constant String :=
@@ -904,8 +905,9 @@ package body Clean is
                              (Unit.File_Names (Impl).Project, Project))
                        or else
                          (Unit.File_Names (Spec) /= null
-                          and then In_Extension_Chain
-                            (Unit.File_Names (Spec).Project, Project))
+                           and then
+                             In_Extension_Chain
+                               (Unit.File_Names (Spec).Project, Project))
                      then
                         if Unit.File_Names (Impl) /= null then
                            File_Name1 := Unit.File_Names (Impl).File;
@@ -942,17 +944,17 @@ package body Clean is
 
                         declare
                            Asm : constant String :=
-                             Assembly_File_Name (Lib_File);
+                                   Assembly_File_Name (Lib_File);
                            ALI : constant String :=
-                             ALI_File_Name      (Lib_File);
+                                   ALI_File_Name      (Lib_File);
                            Obj : constant String :=
-                             Object_File_Name   (Lib_File);
+                                   Object_File_Name   (Lib_File);
                            Adt : constant String :=
-                             Tree_File_Name     (Lib_File);
+                                   Tree_File_Name     (Lib_File);
                            Deb : constant String :=
-                             Debug_File_Name    (File_Name1);
+                                   Debug_File_Name    (File_Name1);
                            Rep : constant String :=
-                             Repinfo_File_Name  (File_Name1);
+                                   Repinfo_File_Name  (File_Name1);
                            Del : Boolean := True;
 
                         begin
@@ -1199,8 +1201,9 @@ package body Clean is
                end if;
 
                if Project.Object_Directory /= No_Path_Information
-                 and then Is_Directory
-                   (Get_Name_String (Project.Object_Directory.Display_Name))
+                 and then
+                   Is_Directory
+                     (Get_Name_String (Project.Object_Directory.Display_Name))
                then
                   Delete_Binder_Generated_Files
                     (Get_Name_String (Project.Object_Directory.Display_Name),
@@ -1811,8 +1814,7 @@ package body Clean is
                            declare
                               Prj : constant String := Arg (3 .. Arg'Last);
                            begin
-                              if Prj'Length > 1 and then
-                                Prj (Prj'First) = '='
+                              if Prj'Length > 1 and then Prj (Prj'First) = '='
                               then
                                  Project_File_Name :=
                                    new String'
