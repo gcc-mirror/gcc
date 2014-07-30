@@ -130,10 +130,14 @@ package body Exp_Ch7 is
    --  pointers of N until it find the appropriate node to wrap. If it returns
    --  Empty, it means that no transient scope is needed in this context.
 
-   procedure Insert_Actions_In_Scope_Around (N : Node_Id; Clean : Boolean);
+   procedure Insert_Actions_In_Scope_Around
+     (N         : Node_Id;
+      Clean     : Boolean;
+      Manage_SS : Boolean);
    --  Insert the before-actions kept in the scope stack before N, and the
-   --  after-actions after N, which must be a member of a list. If Clean is
-   --  True, also insert the cleanup actions.
+   --  after-actions after N, which must be a member of a list. If flag Clean
+   --  is set, insert any cleanup actions. If flag Manage_SS is set, insert
+   --  calls to mark and release the secondary stack.
 
    function Make_Transient_Block
      (Loc    : Source_Ptr;
@@ -1477,12 +1481,7 @@ package body Exp_Ch7 is
          --  Release the secondary stack mark
 
          if Present (Mark_Id) then
-            Append_To (Finalizer_Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   =>
-                  New_Occurrence_Of (RTE (RE_SS_Release), Loc),
-                Parameter_Associations => New_List (
-                  New_Occurrence_Of (Mark_Id, Loc))));
+            Append_To (Finalizer_Stmts, Build_SS_Release_Call (Loc, Mark_Id));
          end if;
 
          --  Protect the statements with abort defer/undefer. This is only when
@@ -3963,15 +3962,7 @@ package body Exp_Ch7 is
          if Needs_Sec_Stack_Mark then
             Mark := Make_Temporary (Loc, 'M');
 
-            Append_To (New_Decls,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Mark,
-                Object_Definition   =>
-                  New_Occurrence_Of (RTE (RE_Mark_Id), Loc),
-                Expression          =>
-                  Make_Function_Call (Loc,
-                    Name => New_Occurrence_Of (RTE (RE_SS_Mark), Loc))));
-
+            Append_To (New_Decls, Build_SS_Mark_Call (Loc, Mark));
             Set_Uses_Sec_Stack (Scop, False);
          end if;
 
@@ -4590,7 +4581,11 @@ package body Exp_Ch7 is
    -- Insert_Actions_In_Scope_Around --
    ------------------------------------
 
-   procedure Insert_Actions_In_Scope_Around (N : Node_Id; Clean : Boolean) is
+   procedure Insert_Actions_In_Scope_Around
+     (N         : Node_Id;
+      Clean     : Boolean;
+      Manage_SS : Boolean)
+   is
       Act_Before  : constant List_Id :=
         Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (Before);
       Act_After   : constant List_Id :=
@@ -4952,6 +4947,15 @@ package body Exp_Ch7 is
          end if;
       end Process_Transient_Objects;
 
+      --  Local variables
+
+      Loc          : constant Source_Ptr := Sloc (N);
+      Node_To_Wrap : constant Node_Id    := Node_To_Be_Wrapped;
+      First_Obj    : Node_Id;
+      Last_Obj     : Node_Id;
+      Mark_Id      : Entity_Id;
+      Target       : Node_Id;
+
    --  Start of processing for Insert_Actions_In_Scope_Around
 
    begin
@@ -4959,79 +4963,85 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      declare
-         Node_To_Wrap : constant Node_Id := Node_To_Be_Wrapped;
-         First_Obj    : Node_Id;
-         Last_Obj     : Node_Id;
-         Target       : Node_Id;
+      --  If the node to be wrapped is the trigger of an asynchronous select,
+      --  it is not part of a statement list. The actions must be inserted
+      --  before the select itself, which is part of some list of statements.
+      --  Note that the triggering alternative includes the triggering
+      --  statement and an optional statement list. If the node to be wrapped
+      --  is part of that list, the normal insertion applies.
 
-      begin
-         --  If the node to be wrapped is the trigger of an asynchronous
-         --  select, it is not part of a statement list. The actions must be
-         --  inserted before the select itself, which is part of some list of
-         --  statements. Note that the triggering alternative includes the
-         --  triggering statement and an optional statement list. If the node
-         --  to be wrapped is part of that list, the normal insertion applies.
+      if Nkind (Parent (Node_To_Wrap)) = N_Triggering_Alternative
+        and then not Is_List_Member (Node_To_Wrap)
+      then
+         Target := Parent (Parent (Node_To_Wrap));
+      else
+         Target := N;
+      end if;
 
-         if Nkind (Parent (Node_To_Wrap)) = N_Triggering_Alternative
-           and then not Is_List_Member (Node_To_Wrap)
-         then
-            Target := Parent (Parent (Node_To_Wrap));
-         else
-            Target := N;
-         end if;
+      First_Obj := Target;
+      Last_Obj  := Target;
 
-         First_Obj := Target;
-         Last_Obj  := Target;
+      --  Add all actions associated with a transient scope into the main tree.
+      --  There are several scenarios here:
 
-         --  Add all actions associated with a transient scope into the main
-         --  tree. There are several scenarios here:
+      --       +--- Before ----+        +----- After ---+
+      --    1) First_Obj ....... Target ........ Last_Obj
 
-         --       +--- Before ----+        +----- After ---+
-         --    1) First_Obj ....... Target ........ Last_Obj
+      --    2) First_Obj ....... Target
 
-         --    2) First_Obj ....... Target
+      --    3)                   Target ........ Last_Obj
 
-         --    3)                   Target ........ Last_Obj
+      --  Flag declarations are inserted before the first object
 
-         if Present (Act_Before) then
+      if Present (Act_Before) then
+         First_Obj := First (Act_Before);
+         Insert_List_Before (Target, Act_Before);
+      end if;
 
-            --  Flag declarations are inserted before the first object
+      --  Finalization calls are inserted after the last object
 
-            First_Obj := First (Act_Before);
+      if Present (Act_After) then
+         Last_Obj := Last (Act_After);
+         Insert_List_After (Target, Act_After);
+      end if;
 
-            Insert_List_Before (Target, Act_Before);
-         end if;
+      --  Mark and release the secondary stack when the context warrants it
 
-         if Present (Act_After) then
+      if Manage_SS then
+         Mark_Id := Make_Temporary (Loc, 'M');
 
-            --  Finalization calls are inserted after the last object
+         --  Generate:
+         --    Mnn : constant Mark_Id := SS_Mark;
 
-            Last_Obj := Last (Act_After);
+         Insert_Before_And_Analyze
+           (First_Obj, Build_SS_Mark_Call (Loc, Mark_Id));
 
-            Insert_List_After (Target, Act_After);
-         end if;
+         --  Generate:
+         --    SS_Release (Mnn);
 
-         --  Check for transient controlled objects associated with Target and
-         --  generate the appropriate finalization actions for them.
+         Insert_After_And_Analyze
+           (Last_Obj, Build_SS_Release_Call (Loc, Mark_Id));
+      end if;
 
-         Process_Transient_Objects
-           (First_Object => First_Obj,
-            Last_Object  => Last_Obj,
-            Related_Node => Target);
+      --  Check for transient controlled objects associated with Target and
+      --  generate the appropriate finalization actions for them.
 
-         --  Reset the action lists
+      Process_Transient_Objects
+        (First_Object => First_Obj,
+         Last_Object  => Last_Obj,
+         Related_Node => Target);
 
+      --  Reset the action lists
+
+      Scope_Stack.Table
+        (Scope_Stack.Last).Actions_To_Be_Wrapped (Before) := No_List;
+      Scope_Stack.Table
+        (Scope_Stack.Last).Actions_To_Be_Wrapped (After)  := No_List;
+
+      if Clean then
          Scope_Stack.Table
-           (Scope_Stack.Last).Actions_To_Be_Wrapped (Before) := No_List;
-         Scope_Stack.Table
-           (Scope_Stack.Last).Actions_To_Be_Wrapped (After)  := No_List;
-
-         if Clean then
-            Scope_Stack.Table
-              (Scope_Stack.Last).Actions_To_Be_Wrapped (Cleanup) := No_List;
-         end if;
-      end;
+           (Scope_Stack.Last).Actions_To_Be_Wrapped (Cleanup) := No_List;
+      end if;
    end Insert_Actions_In_Scope_Around;
 
    ------------------------------
@@ -8019,7 +8029,8 @@ package body Exp_Ch7 is
       --  nodes needed by those actions. Do not insert cleanup actions here,
       --  they will be transferred to the newly created block.
 
-      Insert_Actions_In_Scope_Around (Action, Clean => False);
+      Insert_Actions_In_Scope_Around
+        (Action, Clean => False, Manage_SS => False);
 
       Insert := Prev (Action);
       if Present (Insert) then
@@ -8145,43 +8156,54 @@ package body Exp_Ch7 is
    --    [Deep_]Finalize (_v2);
 
    procedure Wrap_Transient_Declaration (N : Node_Id) is
-      Encl_S  : Entity_Id;
-      S       : Entity_Id;
-      Uses_SS : Boolean;
+      Curr_S : Entity_Id;
+      Encl_S : Entity_Id;
 
    begin
-      S := Current_Scope;
-      Encl_S := Scope (S);
+      Curr_S := Current_Scope;
+      Encl_S := Scope (Curr_S);
 
-      --  Insert Actions kept in the Scope stack. Since we are not generating
-      --  a block, we must also insert the cleanup actions in the tree now.
+      --  Insert all actions inluding cleanup generated while analyzing or
+      --  expanding the transient context back into the tree. Manage the
+      --  secondary stack when the object declaration appears in a library
+      --  level package [body]. This is not needed for .NET/JVM as those do
+      --  not support the secondary stack.
 
-      Insert_Actions_In_Scope_Around (N, Clean => True);
-
-      --  If the declaration is consuming some secondary stack, mark the
-      --  enclosing scope appropriately.
-
-      Uses_SS := Uses_Sec_Stack (S);
+      Insert_Actions_In_Scope_Around
+        (N         => N,
+         Clean     => True,
+         Manage_SS =>
+           VM_Target = No_VM
+             and then Uses_Sec_Stack (Curr_S)
+             and then Nkind (N) = N_Object_Declaration
+             and then Ekind_In (Encl_S, E_Package, E_Package_Body)
+             and then Is_Library_Level_Entity (Encl_S));
       Pop_Scope;
 
-      --  Put the local entities back in the enclosing scope, and set the
-      --  Is_Public flag appropriately.
+      --  Relocate local entities declared within the transient scope to the
+      --  enclosing scope. This action sets their Is_Public flag accordingly.
 
-      Transfer_Entities (S, Encl_S);
+      Transfer_Entities (Curr_S, Encl_S);
 
-      --  Mark the enclosing dynamic scope so that the sec stack will be
-      --  released upon its exit unless this is a function that returns on
-      --  the sec stack in which case this will be done by the caller.
+      --  Mark the enclosing dynamic scope to ensure that the secondary stack
+      --  is properly released upon exiting the said scope. This is not needed
+      --  for .NET/JVM as those do not support the secondary stack.
 
-      if VM_Target = No_VM and then Uses_SS then
-         S := Enclosing_Dynamic_Scope (S);
+      if VM_Target = No_VM and then Uses_Sec_Stack (Curr_S) then
+         Curr_S := Enclosing_Dynamic_Scope (Curr_S);
 
-         if Ekind (S) = E_Function
-           and then Requires_Transient_Scope (Etype (S))
+         --  Do not mark a function that returns on the secondary stack as the
+         --  reclamation is done by the caller.
+
+         if Ekind (Curr_S) = E_Function
+           and then Requires_Transient_Scope (Etype (Curr_S))
          then
             null;
+
+         --  Otherwise mark the enclosing dynamic scope
+
          else
-            Set_Uses_Sec_Stack (S);
+            Set_Uses_Sec_Stack (Curr_S);
             Check_Restriction (No_Secondary_Stack, N);
          end if;
       end if;
