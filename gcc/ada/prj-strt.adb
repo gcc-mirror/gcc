@@ -1182,7 +1182,11 @@ package body Prj.Strt is
 
                      exit when Present (Current_Variable);
 
-                     --  Please document this new test ???
+                     --  If the current project is a child project, check if
+                     --  the variable is declared in its parent. Otherwise, if
+                     --  the current project extends another project, check if
+                     --  the variable is declared in one of the projects the
+                     --  current project extends.
 
                      if No (Parent_Project_Of (Proj, In_Tree)) then
                         Proj :=
