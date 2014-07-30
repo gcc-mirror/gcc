@@ -2220,6 +2220,7 @@ package body Exp_Aggr is
                 Prefix        => New_Copy_Tree (Lhs),
                 Selector_Name => Make_Identifier (Loc, Chars (Expr))));
          end if;
+
          return OK;
       end Rewrite_Discriminant;
 
@@ -2834,6 +2835,39 @@ package body Exp_Aggr is
             else
                if Has_Discriminants (Typ) then
                   Replace_Discriminants (Expr_Q);
+
+                  --  If the component is an array type that depends on
+                  --  discriminants, and the expression is a single Others
+                  --  clause, create an explicit subtype for it because the
+                  --  backend has troubles recovering the actual bounds.
+
+                  if Nkind (Expr_Q) = N_Aggregate
+                    and then Is_Array_Type (Comp_Type)
+                    and then Present (Component_Associations (Expr_Q))
+                  then
+                     declare
+                        Assoc : constant Node_Id :=
+                           First (Component_Associations (Expr_Q));
+                        Decl  : Node_Id;
+
+                     begin
+                        if
+                          Nkind (First (Choices (Assoc))) = N_Others_Choice
+                        then
+                           Decl :=
+                             Build_Actual_Subtype_Of_Component
+                               (Comp_Type, Comp_Expr);
+
+                           --  If the component type does not in fact depend on
+                           --  discriminants, the subtype declaration is empty.
+
+                           if Present (Decl) then
+                              Append_To (L, Decl);
+                              Set_Etype (Comp_Expr, Defining_Entity (Decl));
+                           end if;
+                        end if;
+                     end;
+                  end if;
                end if;
 
                Instr :=

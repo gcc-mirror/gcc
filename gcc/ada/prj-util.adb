@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -467,7 +467,8 @@ package body Prj.Util is
          --  the interface for standalone libraries.
 
          if Sid.Kind = Spec
-           and then not Sid.Project.Externally_Built
+           and then (not Sid.Project.Externally_Built
+                      or else Sid.Project = Project)
            and then not Sid.Locally_Removed
            and then (Project.Standalone_Library = No
                       or else Sid.Declared_In_Interfaces)

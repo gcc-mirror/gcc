@@ -2910,13 +2910,21 @@ package body Makeutl is
          All_Projects   : Boolean;
          Unique_Compile : Boolean)
       is
-         procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref);
+
+         procedure Do_Insert
+           (Project    : Project_Id;
+            Tree       : Project_Tree_Ref;
+            Context    : Project_Context);
 
          ---------------
          -- Do_Insert --
          ---------------
 
-         procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref) is
+         procedure Do_Insert
+           (Project    : Project_Id;
+            Tree       : Project_Tree_Ref;
+            Context    : Project_Context)
+         is
             Unit_Based : constant Boolean :=
                            Unique_Compile
                              or else not Builder_Data (Tree).Closure_Needed;
@@ -2970,60 +2978,45 @@ package body Makeutl is
                      if (Unit_Based
                           or else Source.Unit = No_Unit_Index
                           or else Source.Project.Library
+                          or else Context.In_Aggregate_Lib
                           or else Project.Qualifier = Aggregate_Library)
                        and then not Is_Subunit (Source)
                      then
                         OK := True;
                         Closure := False;
 
-                        declare
-                           SAL_Project : Project_Id := No_Project;
+                        if Source.Unit /= No_Unit_Index
+                          and then
+                            (Source.Project.Library
+                             or else Project.Qualifier = Aggregate_Library
+                             or else Context.In_Aggregate_Lib)
+                          and then Source.Project.Standalone_Library /= No
+                        then
+                           --  Check if the unit is in the interface
+                           OK := False;
 
-                        begin
-                           if Project.Qualifier = Aggregate_Library
-                             and then Project.Standalone_Library /= No
-                           then
-                              if Source.Unit /= No_Unit_Index then
-                                 SAL_Project := Project;
-                              end if;
+                           declare
+                              List : String_List_Id :=
+                                Source.Project.Lib_Interface_ALIs;
+                              Element : String_Element;
 
-                           elsif Source.Unit /= No_Unit_Index
-                             and then Source.Project.Library
-                             and then Source.Project.Standalone_Library /= No
-                           then
-                              SAL_Project := Source.Project;
-                           end if;
+                           begin
+                              while List /= Nil_String loop
+                                 Element :=
+                                   Project_Tree.Shared.String_Elements.Table
+                                     (List);
 
-                           if SAL_Project /= No_Project then
+                                 if Element.Value = Name_Id (Source.Dep_Name)
+                                 then
+                                    OK := True;
+                                    Closure := True;
+                                    exit;
+                                 end if;
 
-                              --  Check if the unit is in the interface
-
-                              OK := False;
-
-                              declare
-                                 List    : String_List_Id :=
-                                             SAL_Project.Lib_Interface_ALIs;
-                                 Element : String_Element;
-
-                              begin
-                                 while List /= Nil_String loop
-                                    Element :=
-                                      Project_Tree.Shared.String_Elements.Table
-                                        (List);
-
-                                    if Element.Value =
-                                         Name_Id (Source.Dep_Name)
-                                    then
-                                       OK := True;
-                                       Closure := True;
-                                       exit;
-                                    end if;
-
-                                    List := Element.Next;
-                                 end loop;
-                              end;
-                           end if;
-                        end;
+                                 List := Element.Next;
+                              end loop;
+                           end;
+                        end if;
 
                         if OK then
                            Queue.Insert
@@ -3040,7 +3033,8 @@ package body Makeutl is
             end loop;
          end Do_Insert;
 
-         procedure Insert_All is new For_Project_And_Aggregated (Do_Insert);
+         procedure Insert_All is
+           new For_Project_And_Aggregated_Context (Do_Insert);
 
       begin
          Insert_All (Project, Project_Tree);

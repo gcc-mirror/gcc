@@ -19856,9 +19856,9 @@ doesn't exist already. By default, those separate test files are located in a
 "gnattest/tests" directory that is created in the object directory of
 corresponding project file. For example, if a source file my_unit.ads in
 directory src contains a visible subprogram Proc, then the corresponding unit
-test will be found in file src/tests/my_unit-test_data-tests-proc_<code>.adb.
-<code> is a signature encoding used to differentiate test names in case of
-overloading.
+test will be found in file src/tests/my_unit-test_data-tests.adb and will be
+called Test_Proc_<code>. <code> is a signature encoding used to differentiate
+test names in case of overloading.
 
 Note that if the project already has both my_unit.ads and my_unit-test_data.ads,
 this will cause a name conflict with the generated test package.
@@ -19968,6 +19968,11 @@ All matching test routines are overwritten with contents of corresponding
 separates. Note that if separate test routines had any manually added with
 clauses they will be moved to the test package body as is and have to be moved
 by hand.
+
+@item --omit-sloc
+@cindex @option{--omit-sloc} (@command{gnattest})
+Supresses comment line containing file name and line number of corresponding
+subprograms in test skeletons.
 
 @end table
 
@@ -20339,6 +20344,20 @@ gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
 @end smallexample
 
+@node Putting tests under veesion control
+@section Putting tests under veesion control
+
+@noindent
+As has been stated earlier, @command{gnattest} generates two different types
+of code, test skeletons and harness. The harness is generated completely
+automatically each time, does not require manual changes and therefore should
+not be put under version control.
+It makes sense to put under version control files containing test data packages,
+both specs and bodies, and files containing bodies of test packages. Note that
+test package specs are also generated automatically each time and should not be
+put under version control.
+Option @option{--omit-sloc} may be usefull when putting test packages under VCS.
+
 @ifclear vms
 @node Support for other platforms/run-times
 @section Support for other platforms/run-times
@@ -20370,7 +20389,7 @@ powerpc-elf-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
 The tool currently does not support following features:
 
 @itemize @bullet
-@item generic tests for generic packages and package instantiations
+@item generic tests for nested generic packages and their instantiations
 @item tests for protected subprograms and entries
 
 @end itemize
