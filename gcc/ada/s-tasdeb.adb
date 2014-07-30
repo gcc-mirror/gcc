@@ -77,10 +77,8 @@ package body System.Tasking.Debug is
    ------------------------
 
    procedure Continue_All_Tasks is
-      C : Task_Id;
-
+      C     : Task_Id;
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
 
    begin
       STPO.Lock_RTS;
@@ -218,7 +216,6 @@ package body System.Tasking.Debug is
    procedure Resume_All_Tasks (Thread_Self : OS_Interface.Thread_Id) is
       C     : Task_Id;
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
 
    begin
       STPO.Lock_RTS;
@@ -267,10 +264,8 @@ package body System.Tasking.Debug is
    --------------------
 
    procedure Stop_All_Tasks is
-      C : Task_Id;
-
+      C     : Task_Id;
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
 
    begin
       STPO.Lock_RTS;
@@ -300,7 +295,6 @@ package body System.Tasking.Debug is
    procedure Suspend_All_Tasks (Thread_Self : OS_Interface.Thread_Id) is
       C     : Task_Id;
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
 
    begin
       STPO.Lock_RTS;

@@ -6554,7 +6554,8 @@ package body Checks is
          --  A rather specialized test. If PV is an analyzed expression which
          --  is an indexed component of a packed array that has not been
          --  properly expanded, turn off its Analyzed flag to make sure it
-         --  gets properly reexpanded.
+         --  gets properly reexpanded. If the prefix is an access value,
+         --  the dereference will be added later.
 
          --  The reason this arises is that Duplicate_Subexpr_No_Checks did
          --  an analyze with the old parent pointer. This may point e.g. to
@@ -6562,6 +6563,7 @@ package body Checks is
 
          if Analyzed (PV)
            and then Nkind (PV) = N_Indexed_Component
+           and then Is_Array_Type (Etype (Prefix (PV)))
            and then Present (Packed_Array_Impl_Type (Etype (Prefix (PV))))
          then
             Set_Analyzed (PV, False);
@@ -8053,8 +8055,10 @@ package body Checks is
 
          if Vax_Float (E) then
             return True;
+
          elsif Kill_Range_Checks (E) then
             return True;
+
          elsif Checks_May_Be_Suppressed (E) then
             return Is_Check_Suppressed (E, Range_Check);
          end if;

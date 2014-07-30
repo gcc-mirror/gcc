@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (VxWorks 5 Version PPC)                          --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -115,14 +115,12 @@ package System is
 
 private
 
-   --  Note: we now more closely rely on the VxWorks mechanisms to register
-   --  exception tables for ZCX support in kernel mode, thanks to crt objects
-   --  featuring dedicated constructors triggered by linker options below.
+   pragma Linker_Options ("--specs=vxworks-crtbe-link.spec");
+   --  Pull in crtbegin/crtend objects and register exceptions for ZCX.
+   --  This is commented out by our Makefile for SJLJ runtimes.
 
-   --  Commenting the pragma for the sjlj runtimes is performed automatically
-   --  by our Makefiles, so this line needs to be manipulated with care.
-
-   pragma Linker_Options ("-crtbe" & ASCII.NUL & "-auto-register");
+   pragma Linker_Options ("--specs=vxworks-ppc-link.spec");
+   --  Setup proper set of -L's for this configuration
 
    type Address is mod Memory_Size;
    Null_Address : constant Address := 0;

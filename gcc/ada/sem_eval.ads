@@ -74,7 +74,7 @@ package Sem_Eval is
    --  definition, they are sometimes folded anyway, but of course in this case
    --  Is_Static_Expression is not set.
 
-   --  When we are analyzing and evaluating static expressions, we proopagate
+   --  When we are analyzing and evaluating static expressions, we propagate
    --  both flags accurately. Usually if a subexpression raises a constraint
    --  error, then so will its parent expression, and Raise_Constraint_Error
    --  will be propagated to this parent. The exception is conditional cases

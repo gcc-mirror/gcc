@@ -623,6 +623,9 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
   EXTRA_GNATRTL_TASKING_OBJS += s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
+
+  GCC_SPEC_FILES+=vxworks-$(ARCH_STR)-link.spec
+  GCC_SPEC_FILES+=vxworks-crtbe-link.spec
 endif
 
 # PowerPC and e500v2 VxWorks 653
@@ -1024,6 +1027,8 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
+
+  GCC_SPEC_FILES+=vxworks-crtbe-link.spec
 endif
 
 # MIPS VxWorks

@@ -1434,8 +1434,6 @@ package body Makeutl is
          In_Tree : Project_Tree_Ref;
          Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy);
-
          Linker_Package : Package_Id;
          Options        : Variable_Value;
 
@@ -2621,7 +2619,6 @@ package body Makeutl is
          Iter         : Source_Iterator;
 
          Dummy : Boolean;
-         pragma Unreferenced (Dummy);
 
       begin
          if not Insert_No_Roots (Source) then

@@ -320,7 +320,6 @@ package body System.AST_Handling is
 
    procedure Allocate_New_AST_Server is
       Dummy : AST_Server_Task_Ptr;
-      pragma Unreferenced (Dummy);
 
    begin
       if Num_AST_Servers = Max_AST_Servers then

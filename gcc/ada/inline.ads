@@ -238,8 +238,11 @@ package Inline is
    function Can_Be_Inlined_In_GNATprove_Mode
      (Spec_Id : Entity_Id;
       Body_Id : Entity_Id) return Boolean;
-   --  Returns True if the subprogram identified by Spec_Id (possibly Empty)
-   --  and Body_Id (not Empty) can be inlined in GNATprove mode. GNATprove
-   --  relies on this to adapt its treatment of the subprogram.
+   --  Returns True if the subprogram identified by Spec_Id and Body_Id can
+   --  be inlined in GNATprove mode. One but not both of Spec_Id and Body_Id
+   --  can be Empty. Body_Id is Empty when doing a partial check on a call
+   --  to a subprogram whose body has not been seen yet, to know whether this
+   --  subprogram could possibly be inlined. GNATprove relies on this to adapt
+   --  its treatment of the subprogram.
 
 end Inline;

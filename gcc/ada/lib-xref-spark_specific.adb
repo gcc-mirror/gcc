@@ -485,7 +485,6 @@ package body SPARK_Specific is
                   declare
                      Dummy : constant SPARK_Scope_Record :=
                                SPARK_Scope_Table.Table (Index);
-                     pragma Unreferenced (Dummy);
                   begin
                      return True;
                   end;

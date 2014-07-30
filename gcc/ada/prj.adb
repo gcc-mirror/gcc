@@ -1714,7 +1714,7 @@ package body Prj is
             Context : Project_Context;
             Dummy   : in out Boolean)
          is
-            pragma Unreferenced (Dummy, Tree);
+            pragma Unreferenced (Tree);
 
             List : Project_List;
             Prj2 : Project_Id;

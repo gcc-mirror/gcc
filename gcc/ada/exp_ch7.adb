@@ -3141,7 +3141,6 @@ package body Exp_Ch7 is
       Decl : Node_Id;
 
       Dummy : Entity_Id;
-      pragma Unreferenced (Dummy);
       --  This variable captures an unused dummy internal entity, see the
       --  comment associated with its use.
 

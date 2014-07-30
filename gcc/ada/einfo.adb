@@ -270,6 +270,7 @@ package body Einfo is
    --  sense for them to be set true for certain subsets of entity kinds. See
    --  the spec of Einfo for further details.
 
+   --    Is_Inlined_Always               Flag1
    --    Is_Frozen                       Flag4
    --    Has_Discriminants               Flag5
    --    Is_Dispatching_Operation        Flag6
@@ -568,7 +569,6 @@ package body Einfo is
    --    (SSO_Set_Low_By_Default)        Flag272
    --    (SSO_Set_Low_By_Default)        Flag273
 
-   --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
@@ -2107,6 +2107,12 @@ package body Einfo is
       return Flag11 (Id);
    end Is_Inlined;
 
+   function Is_Inlined_Always (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      return Flag1 (Id);
+   end Is_Inlined_Always;
+
    function Is_Interface (Id : E) return B is
    begin
       return Flag186 (Id);
@@ -3518,6 +3524,13 @@ package body Einfo is
       Set_Flag38 (Id, V);
    end Set_Can_Never_Be_Null;
 
+   procedure Set_Can_Use_Internal_Rep (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Is_Access_Subprogram_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag229 (Id, V);
+   end Set_Can_Use_Internal_Rep;
+
    procedure Set_Checks_May_Be_Suppressed (Id : E; V : B := True) is
    begin
       Set_Flag31 (Id, V);
@@ -3558,6 +3571,22 @@ package body Einfo is
       pragma Assert (Is_Array_Type (Id) and then Is_Base_Type (Id));
       Set_Node20 (Id, V);
    end Set_Component_Type;
+
+   procedure Set_Contract (Id : E; V : N) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Entry,
+         E_Entry_Family,
+         E_Generic_Package,
+         E_Package,
+         E_Package_Body,
+         E_Subprogram_Body,
+         E_Variable,
+         E_Void)
+         or else Is_Generic_Subprogram (Id)
+         or else Is_Subprogram (Id));
+      Set_Node34 (Id, V);
+   end Set_Contract;
 
    procedure Set_Corresponding_Concurrent_Type (Id : E; V : E) is
    begin
@@ -3849,22 +3878,6 @@ package body Einfo is
       Set_Node18 (Id, V);
    end Set_Entry_Index_Constant;
 
-   procedure Set_Contract (Id : E; V : N) is
-   begin
-      pragma Assert
-        (Ekind_In (Id, E_Entry,
-                       E_Entry_Family,
-                       E_Generic_Package,
-                       E_Package,
-                       E_Package_Body,
-                       E_Subprogram_Body,
-                       E_Variable,
-                       E_Void)
-          or else Is_Generic_Subprogram (Id)
-          or else Is_Subprogram (Id));
-      Set_Node34 (Id, V);
-   end Set_Contract;
-
    procedure Set_Entry_Parameters_Type (Id : E; V : E) is
    begin
       Set_Node15 (Id, V);
@@ -3950,13 +3963,6 @@ package body Einfo is
                                  E_Subprogram_Type));
       Set_Node28 (Id, V);
    end Set_Extra_Formals;
-
-   procedure Set_Can_Use_Internal_Rep (Id : E; V : B := True) is
-   begin
-      pragma Assert
-        (Is_Access_Subprogram_Type (Id) and then Is_Base_Type (Id));
-      Set_Flag229 (Id, V);
-   end Set_Can_Use_Internal_Rep;
 
    procedure Set_Finalization_Master (Id : E; V : E) is
    begin
@@ -4887,6 +4893,12 @@ package body Einfo is
    begin
       Set_Flag11 (Id, V);
    end Set_Is_Inlined;
+
+   procedure Set_Is_Inlined_Always (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      Set_Flag1 (Id, V);
+   end Set_Is_Inlined_Always;
 
    procedure Set_Is_Interface (Id : E; V : B := True) is
    begin
@@ -8389,6 +8401,7 @@ package body Einfo is
       W ("Is_Imported",                     Flag24  (Id));
       W ("Is_Independent",                  Flag268 (Id));
       W ("Is_Inlined",                      Flag11  (Id));
+      W ("Is_Inlined_Always",               Flag1   (Id));
       W ("Is_Instantiated",                 Flag126 (Id));
       W ("Is_Interface",                    Flag186 (Id));
       W ("Is_Internal",                     Flag17  (Id));
