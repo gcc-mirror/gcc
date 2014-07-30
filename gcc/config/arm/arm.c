@@ -20803,7 +20803,7 @@ arm_get_frame_offsets (void)
 		  || !(TARGET_LDRD && current_tune->prefer_ldrd_strd)))
 	    {
 	      reg = 3;
-	      if (!(TARGET_LDRD && current_tune->prefer_ldrd_strd))
+	      if (!TARGET_THUMB2)
 		prefer_callee_reg_p = true;
 	    }
 	  if (reg == -1

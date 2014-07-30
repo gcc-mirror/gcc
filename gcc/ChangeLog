@@ -1,3 +1,8 @@
+2014-07-30  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/arm/arm.c (arm_get_frame_offsets): Adjust condition for
+	Thumb2.
+
 2014-07-30  Tom Tromey  <tromey@redhat.com>
 
 	PR c/59855
