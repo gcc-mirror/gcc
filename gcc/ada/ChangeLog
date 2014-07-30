@@ -1,5 +1,22 @@
 2014-07-30  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Default_Value and
+	Default_Component_Value can only be specified for scalar type or
+	arrays of scalar types respectively.  This legality check must
+	be performed at the point the aspect is analyzed, in order to
+	reject aspect specifications that apply to a partial view.
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute, case First/Last): Don't expand in
+	codepeer mode.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
 	* freeze.adb (Check_Expression_Function): At the freeze point
 	of an expression function, verify that the expression in the
 	function does not contain references to any deferred constants

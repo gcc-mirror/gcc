@@ -2618,10 +2618,28 @@ package body Sem_Ch13 is
                --  Case 3a: The aspects listed below don't correspond to
                --  pragmas/attributes but do require delayed analysis.
 
-               --  Default_Value, Default_Component_Value
+               --  Default_Value can only apply to a scalar type
 
-               when Aspect_Default_Value           |
-                    Aspect_Default_Component_Value =>
+               when Aspect_Default_Value =>
+                  if not Is_Scalar_Type (E) then
+                     Error_Msg_N
+                       ("aspect Default_Value must apply to a scalar_Type", N);
+                  end if;
+
+                  Aitem := Empty;
+
+               --  Default_Component_Value can only apply to an array type
+               --  with scalar components.
+
+               when Aspect_Default_Component_Value =>
+                  if not (Is_Array_Type (E)
+                            and then
+                          Is_Scalar_Type (Component_Type (E)))
+                  then
+                     Error_Msg_N ("aspect Default_Component_Value can only "
+                       & "apply to an array of scalar components", N);
+                  end if;
+
                   Aitem := Empty;
 
                --  Case 3b: The aspects listed below don't correspond to
@@ -2692,7 +2710,7 @@ package body Sem_Ch13 is
                   --  or precondition error).
 
                   --  We do not do this for Pre'Class, since we have to put
-                  --  these conditions together in a complex OR expression
+                  --  these conditions together in a complex OR expression.
 
                   --  We do not do this in ASIS mode, as ASIS relies on the
                   --  original node representing the complete expression, when
@@ -2716,7 +2734,7 @@ package body Sem_Ch13 is
 
                   --  Build the precondition/postcondition pragma
 
-                  --  Add note about why we do NOT need Copy_Tree here ???
+                  --  Add note about why we do NOT need Copy_Tree here???
 
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
@@ -2776,9 +2794,9 @@ package body Sem_Ch13 is
                   end if;
 
                   --  Make pragma expressions refer to the original aspect
-                  --  expressions through the Original_Node link. This is
-                  --  used in semantic analysis for ASIS mode, so that the
-                  --  original expression also gets analyzed.
+                  --  expressions through the Original_Node link. This is used
+                  --  in semantic analysis for ASIS mode, so that the original
+                  --  expression also gets analyzed.
 
                   Comp_Expr := First (Expressions (Expr));
                   while Present (Comp_Expr) loop
@@ -2885,8 +2903,8 @@ package body Sem_Ch13 is
                      end if;
 
                      --  In older versions of Ada the corresponding pragmas
-                     --  specified a Convention. In Ada 2012 the convention
-                     --  is specified as a separate aspect, and it is optional,
+                     --  specified a Convention. In Ada 2012 the convention is
+                     --  specified as a separate aspect, and it is optional,
                      --  given that it defaults to Convention_Ada. The code
                      --  that verifed that there was a matching convention
                      --  is now obsolete.
@@ -2947,8 +2965,8 @@ package body Sem_Ch13 is
                            Pragma_Name                  => Nam);
                      end;
 
-                  --  Cases where we do not delay, includes all cases where
-                  --  the expression is missing other than the above cases.
+                  --  Cases where we do not delay, includes all cases where the
+                  --  expression is missing other than the above cases.
 
                   elsif not Delay_Required or else No (Expr) then
                      Make_Aitem_Pragma
@@ -2997,8 +3015,8 @@ package body Sem_Ch13 is
                                End_Label            => Empty));
                         end if;
 
-                        --  Create a pragma and put it at the start of the
-                        --  task definition for the task type declaration.
+                        --  Create a pragma and put it at the start of the task
+                        --  definition for the task type declaration.
 
                         Make_Aitem_Pragma
                           (Pragma_Argument_Associations => New_List (
@@ -3033,10 +3051,10 @@ package body Sem_Ch13 is
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the N_Compilation_Unit_Aux
             --  node (no delay is required here) except for aspects on a
-            --  subprogram body (see below) and a generic package, for which
-            --  we need to introduce the pragma before building the generic
-            --  copy (see sem_ch12), and for package instantiations, where
-            --  the library unit pragmas are better handled early.
+            --  subprogram body (see below) and a generic package, for which we
+            --  need to introduce the pragma before building the generic copy
+            --  (see sem_ch12), and for package instantiations, where the
+            --  library unit pragmas are better handled early.
 
             if Nkind (Parent (N)) = N_Compilation_Unit
               and then (Present (Aitem) or else Is_Boolean_Aspect (Aspect))
@@ -3233,12 +3251,12 @@ package body Sem_Ch13 is
 
       FOnly : Boolean := False;
       --  Reset to True for subtype specific attribute (Alignment, Size)
-      --  and for stream attributes, i.e. those cases where in the call
-      --  to Rep_Item_Too_Late, FOnly is set True so that only the freezing
-      --  rules are checked. Note that the case of stream attributes is not
-      --  clear from the RM, but see AI95-00137. Also, the RM seems to
-      --  disallow Storage_Size for derived task types, but that is also
-      --  clearly unintentional.
+      --  and for stream attributes, i.e. those cases where in the call to
+      --  Rep_Item_Too_Late, FOnly is set True so that only the freezing rules
+      --  are checked. Note that the case of stream attributes is not clear
+      --  from the RM, but see AI95-00137. Also, the RM seems to disallow
+      --  Storage_Size for derived task types, but that is also clearly
+      --  unintentional.
 
       procedure Analyze_Stream_TSS_Definition (TSS_Nam : TSS_Name_Type);
       --  Common processing for 'Read, 'Write, 'Input and 'Output attribute
@@ -3321,9 +3339,8 @@ package body Sem_Ch13 is
                Typ := Etype (F);
 
                --  If the attribute specification comes from an aspect
-               --  specification for a class-wide stream, the parameter
-               --  must be a class-wide type of the entity to which the
-               --  aspect applies.
+               --  specification for a class-wide stream, the parameter must be
+               --  a class-wide type of the entity to which the aspect applies.
 
                if From_Aspect_Specification (N)
                  and then Class_Present (Parent (N))
@@ -3336,8 +3353,8 @@ package body Sem_Ch13 is
                Typ := Etype (Subp);
             end if;
 
-            --  Verify that the prefix of the attribute and the local name
-            --  for the type of the formal match.
+            --  Verify that the prefix of the attribute and the local name for
+            --  the type of the formal match.
 
             if Base_Type (Typ) /= Base_Type (Ent)
               or else Present ((Next_Formal (F)))
@@ -3709,8 +3726,8 @@ package body Sem_Ch13 is
 
    begin
       --  The following code is a defense against recursion. Not clear that
-      --  this can happen legitimately, but perhaps some error situations
-      --  can cause it, and we did see this recursion during testing.
+      --  this can happen legitimately, but perhaps some error situations can
+      --  cause it, and we did see this recursion during testing.
 
       if Analyzed (N) then
          return;
@@ -3760,10 +3777,10 @@ package body Sem_Ch13 is
                return;
 
             --  The following should not be ignored, because in the first place
-            --  they are reasonably portable, and should not cause problems in
-            --  compiling code from another target, and also they do affect
-            --  legality, e.g. failing to provide a stream attribute for a
-            --  type may make a program illegal.
+            --  they are reasonably portable, and should not cause problems
+            --  in compiling code from another target, and also they do affect
+            --  legality, e.g. failing to provide a stream attribute for a type
+            --  may make a program illegal.
 
             when Attribute_External_Tag        |
                  Attribute_Input               |
