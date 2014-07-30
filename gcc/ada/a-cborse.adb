@@ -991,18 +991,17 @@ package body Ada.Containers.Bounded_Ordered_Sets is
             L : Natural renames Container.Lock;
          begin
             return R : constant Reference_Type :=
-                (Element  => N.Element'Access,
-                 Control =>
-                    (Controlled with
-                      Container => Container'Access,
-                      Pos       => Position,
-                      Old_Key   => new Key_Type'(Key (Position))))
+                         (Element => N.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container => Container'Access,
+                              Pos       => Position,
+                              Old_Key   => new Key_Type'(Key (Position))))
             do
                B := B + 1;
                L := L + 1;
             end return;
          end;
-
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key
@@ -1022,17 +1021,16 @@ package body Ada.Containers.Bounded_Ordered_Sets is
             L : Natural renames Container.Lock;
          begin
             return R : constant Reference_Type :=
-                (Element  => N.Element'Access,
-                 Control =>
-                    (Controlled with
-                      Container => Container'Access,
-                       Pos      => Find (Container, Key),
-                       Old_Key  => new Key_Type'(Key)))
+                         (Element => N.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container => Container'Access,
+                               Pos      => Find (Container, Key),
+                               Old_Key  => new Key_Type'(Key)))
             do
                B := B + 1;
                L := L + 1;
             end return;
-
          end;
       end Reference_Preserving_Key;
 

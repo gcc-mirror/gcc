@@ -209,6 +209,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
    begin
       Prev := HT.Buckets (Indx);
+
       if Prev = X then
          HT.Buckets (Indx) := Next (Prev);
          HT.Length := HT.Length - 1;
@@ -235,11 +236,11 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
             Free (X);
             return;
          end if;
+
          Prev := Curr;
       end loop;
+   end Delete_Node_At_Index;
 
-   end Delete_Node_At_Index
-;
    ---------------------------
    -- Delete_Node_Sans_Free --
    ---------------------------

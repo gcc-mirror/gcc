@@ -2078,8 +2078,8 @@ package body Ada.Containers.Hashed_Sets is
          if Control.Container /= null then
             declare
                HT : Hash_Table_Type renames Control.Container.all.HT;
-               B : Natural renames HT.Busy;
-               L : Natural renames HT.Lock;
+               B  : Natural renames HT.Busy;
+               L  : Natural renames HT.Lock;
             begin
                B := B - 1;
                L := L - 1;
@@ -2088,7 +2088,7 @@ package body Ada.Containers.Hashed_Sets is
             if Hash (Key (Element (Control.Old_Pos))) /= Control.Old_Hash
             then
                HT_Ops.Delete_Node_At_Index
-                (Control.Container.HT, Control.Index,  Control.Old_Pos.Node);
+                 (Control.Container.HT, Control.Index, Control.Old_Pos.Node);
                raise Program_Error with "key not preserved in reference";
             end if;
 
@@ -2106,13 +2106,12 @@ package body Ada.Containers.Hashed_Sets is
       is
          HT   : Hash_Table_Type renames Container'Unrestricted_Access.HT;
          Node : constant Node_Access := Key_Keys.Find (HT, Key);
-
       begin
          if Node = null then
             return No_Element;
+         else
+            return Cursor'(Container'Unrestricted_Access, Node);
          end if;
-
-         return Cursor'(Container'Unrestricted_Access, Node);
       end Find;
 
       ---------
@@ -2167,17 +2166,17 @@ package body Ada.Containers.Hashed_Sets is
 
          declare
             HT : Hash_Table_Type renames Position.Container.all.HT;
-            B : Natural renames HT.Busy;
-            L : Natural renames HT.Lock;
+            B  : Natural renames HT.Busy;
+            L  : Natural renames HT.Lock;
          begin
             return R : constant Reference_Type :=
-                (Element  => Position.Node.Element'Access,
-                  Control  =>
-                    (Controlled with
-                       Container'Unrestricted_Access,
-                       Index  => HT_Ops.Index (HT, Position.Node),
-                       Old_Pos => Position,
-                       Old_Hash => Hash (Key (Position))))
+                         (Element => Position.Node.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container'Unrestricted_Access,
+                              Index    => HT_Ops.Index (HT, Position.Node),
+                              Old_Pos  => Position,
+                              Old_Hash => Hash (Key (Position))))
             do
                B := B + 1;
                L := L + 1;
@@ -2203,13 +2202,13 @@ package body Ada.Containers.Hashed_Sets is
             P  : constant Cursor := Find (Container, Key);
          begin
             return R : constant Reference_Type :=
-              (Element  => Node.Element'Access,
-               Control  =>
-                 (Controlled with
-                   Container'Unrestricted_Access,
-                   Index    => HT_Ops.Index (HT, P.Node),
-                   Old_Pos  => P,
-                   Old_Hash => Hash (Key)))
+                         (Element => Node.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container'Unrestricted_Access,
+                              Index    => HT_Ops.Index (HT, P.Node),
+                              Old_Pos  => P,
+                              Old_Hash => Hash (Key)))
             do
                B := B + 1;
                L := L + 1;
