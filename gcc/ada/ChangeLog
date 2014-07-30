@@ -1,3 +1,23 @@
+2014-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.ads Add a comment explaining why SPARK 2014 aspects are
+	not delayed. Update the delay status of most SPARK 2014 aspects.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Update all calls
+	to Decorate_Aspect_And_Pragma and Insert_Delayed_Pragma to refert
+	to Decorate and Insert_Pragma. Add various comments concerning
+	the delay status of several SPARK 2014 aspects. The insertion
+	of Refined_State now uses routine Insert_After_SPARK_Mode.
+	(Decorate): New routine.
+	(Decorate_Aspect_And_Pragma): Removed.
+	(Insert_Delayed_Pragma): Removed.
+	(Insert_Pragma): New routine.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): In GNATprove mode, emit
+	only a warning, not an error on an attempt to inline a recursive
+	subprogram.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* g-forstr.adb: Minor code reorganization (use J rather than I
