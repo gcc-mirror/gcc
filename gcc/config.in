@@ -1468,6 +1468,12 @@
 #endif
 
 
+/* Define to 1 if you have the `popen' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_POPEN
+#endif
+
+
 /* Define to 1 if you have the `putchar_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_PUTCHAR_UNLOCKED
