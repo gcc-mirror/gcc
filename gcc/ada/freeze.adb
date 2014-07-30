@@ -105,6 +105,12 @@ package body Freeze is
    --  Comp_ADC_Present is set True if the component has a Scalar_Storage_Order
    --  attribute definition clause.
 
+   procedure Check_Expression_Function (N : Node_Id; Nam : Entity_Id);
+   --  When an expression function is frozen by a use of it, the expression
+   --  itself is frozen. Check that the expression does not include references
+   --  to deferred constants without completion.  We report this at the
+   --  freeze point of the function, to provide a better error message.
+
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
    --  or tagged or contains something this is aliased or tagged, set
@@ -1233,6 +1239,50 @@ package body Freeze is
       end if;
    end Check_Debug_Info_Needed;
 
+   -------------------------------
+   -- Check_Expression_Function --
+   -------------------------------
+
+   procedure Check_Expression_Function (N : Node_Id; Nam : Entity_Id) is
+      Decl : Node_Id;
+
+      function Find_Constant (Nod : Node_Id) return Traverse_Result;
+      --  Function to search for deferred constant
+
+      -------------------
+      -- Find_Constant --
+      -------------------
+
+      function Find_Constant (Nod : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (Nod)
+           and then Present (Entity (Nod))
+           and then Ekind (Entity (Nod)) = E_Constant
+           and then not Is_Imported (Entity (Nod))
+           and then not Has_Completion (Entity (Nod))
+           and then Scope (Entity (Nod)) = Current_Scope
+         then
+            Error_Msg_NE
+              ("premature use of& in call or instance", N, Entity (Nod));
+         end if;
+
+         return OK;
+      end Find_Constant;
+
+      procedure Check_Deferred is new Traverse_Proc (Find_Constant);
+
+   --  Start of processing for Check_Expression_Function
+
+   begin
+      Decl := Original_Node (Unit_Declaration_Node (Nam));
+
+      if Scope (Nam) = Current_Scope
+        and then Nkind (Decl) = N_Expression_Function
+      then
+         Check_Deferred (Expression (Decl));
+      end if;
+   end Check_Expression_Function;
+
    ----------------------------
    -- Check_Strict_Alignment --
    ----------------------------
@@ -1741,7 +1791,12 @@ package body Freeze is
 
    procedure Freeze_Before (N : Node_Id; T : Entity_Id) is
       Freeze_Nodes : constant List_Id := Freeze_Entity (T, N);
+
    begin
+      if Ekind (T) = E_Function then
+         Check_Expression_Function (N, T);
+      end if;
+
       if Is_Non_Empty_List (Freeze_Nodes) then
          Insert_Actions (N, Freeze_Nodes);
       end if;
@@ -5787,6 +5842,11 @@ package body Freeze is
                    or else not Comes_From_Source (Entity (N)))
       then
          Nam := Entity (N);
+
+         if Present (Nam) and then Ekind (Nam) = E_Function then
+            Check_Expression_Function (N, Nam);
+         end if;
+
       else
          Nam := Empty;
       end if;
