@@ -7698,8 +7698,7 @@ package body Sem_Util is
             or else (Present (Full_View (Etype (Typ)))
                       and then Full_View (Etype (Typ)) = Typ)
 
-            --  Protect the frontend against wrong source with cyclic
-            --  derivations
+            --  Protect frontend against wrong sources with cyclic derivations
 
             or else Etype (Typ) = T;
 

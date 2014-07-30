@@ -64,7 +64,7 @@ package body GNAT.Formatted_String is
 
    type F_Base is (None, C_Style, Ada_Style) with Default_Value => None;
 
-   Unset    : constant Integer := -1;
+   Unset : constant Integer := -1;
 
    type F_Data is record
       Kind         : F_Kind;
@@ -78,12 +78,16 @@ package body GNAT.Formatted_String is
    end record;
 
    procedure Next_Format
-     (Format : Formatted_String; F_Spec : out F_Data; Start : out Positive);
+     (Format : Formatted_String;
+      F_Spec : out F_Data;
+      Start  : out Positive);
    --  Parse the next format specifier, a format specifier has the following
    --  syntax: %[flags][width][.precision][length]specifier
 
    function Get_Formatted
-     (F_Spec : F_Data; Value : String; Len : Positive) return String;
+     (F_Spec : F_Data;
+      Value  : String;
+      Len    : Positive) return String;
    --  Returns Value formatted given the information in F_Spec
 
    procedure Raise_Wrong_Format (Format : Formatted_String) with No_Return;
@@ -98,7 +102,8 @@ package body GNAT.Formatted_String is
          Aft  : Text_IO.Field;
          Exp  : Text_IO.Field);
    function P_Flt_Format
-     (Format : Formatted_String; Var : Flt) return Formatted_String;
+     (Format : Formatted_String;
+      Var    : Flt) return Formatted_String;
    --  Generic routine which handles all floating point numbers
 
    generic
@@ -113,7 +118,8 @@ package body GNAT.Formatted_String is
          Item : Int;
          Base : Text_IO.Number_Base);
    function P_Int_Format
-     (Format : Formatted_String; Var : Int) return Formatted_String;
+     (Format : Formatted_String;
+      Var    : Int) return Formatted_String;
    --  Generic routine which handles all the integer numbers
 
    ---------
@@ -134,24 +140,25 @@ package body GNAT.Formatted_String is
 
    function "-" (Format : Formatted_String) return String is
       F : String renames Format.D.Format;
-      I : Natural renames Format.D.Index;
+      J : Natural renames Format.D.Index;
       R : Unbounded_String := Format.D.Result;
+
    begin
       --  Make sure we get the remaining character up to the next unhandled
       --  format specifier.
 
-      while (I <= F'Length and then F (I) /= '%')
-        or else (I < F'Length - 1 and then F (I + 1) = '%')
+      while (J <= F'Length and then F (J) /= '%')
+        or else (J < F'Length - 1 and then F (J + 1) = '%')
       loop
-         Append (R, F (I));
+         Append (R, F (J));
 
          --  If we have two consecutive %, skip the second one
 
-         if F (I) = '%' and then I < F'Length - 1 and then F (I + 1) = '%' then
-            I := I + 1;
+         if F (J) = '%' and then J < F'Length - 1 and then F (J + 1) = '%' then
+            J := J + 1;
          end if;
 
-         I := I + 1;
+         J := J + 1;
       end loop;
 
       return To_String (R);
@@ -167,6 +174,7 @@ package body GNAT.Formatted_String is
    is
       F     : F_Data;
       Start : Positive;
+
    begin
       Next_Format (Format, F, Start);
 
@@ -190,6 +198,7 @@ package body GNAT.Formatted_String is
    is
       F     : F_Data;
       Start : Positive;
+
    begin
       Next_Format (Format, F, Start);
 
@@ -282,6 +291,7 @@ package body GNAT.Formatted_String is
       A_Img : constant String := System.Address_Image (Var);
       F     : F_Data;
       Start : Positive;
+
    begin
       Next_Format (Format, F, Start);
 
@@ -337,11 +347,11 @@ package body GNAT.Formatted_String is
    --------------
 
    overriding procedure Finalize (F : in out Formatted_String) is
-
       procedure Unchecked_Free is
         new Unchecked_Deallocation (Data, Data_Access);
 
       D : Data_Access := F.D;
+
    begin
       F.D := null;
 
@@ -391,8 +401,9 @@ package body GNAT.Formatted_String is
 
       Res : Unbounded_String;
       S   : Positive := Value'First;
+
    begin
-      --  Let's hanfles the flags
+      --  Handle the flags
 
       if F_Spec.Kind in Is_Number then
          if F_Spec.Sign = Forced and then Value (Value'First) /= '-' then
@@ -442,10 +453,14 @@ package body GNAT.Formatted_String is
      (Format : Formatted_String;
       Var    : Int) return Formatted_String
    is
-      function Sign (Var : Int) return Sign_Kind
-      is (if Var < 0 then Neg elsif Var = 0 then Zero else Pos);
-      function To_Integer (Var : Int) return Integer is (Integer (Var));
+      function Sign (Var : Int) return Sign_Kind is
+        (if Var < 0 then Neg elsif Var = 0 then Zero else Pos);
+
+      function To_Integer (Var : Int) return Integer is
+        (Integer (Var));
+
       function Int_Format is new P_Int_Format (Int, To_Integer, Sign, Put);
+
    begin
       return Int_Format (Format, Var);
    end Int_Format;
@@ -458,10 +473,14 @@ package body GNAT.Formatted_String is
      (Format : Formatted_String;
       Var    : Int) return Formatted_String
    is
-      function Sign (Var : Int) return Sign_Kind
-        is (if Var < 0 then Neg elsif Var = 0 then Zero else Pos);
-      function To_Integer (Var : Int) return Integer is (Integer (Var));
+      function Sign (Var : Int) return Sign_Kind is
+        (if Var < 0 then Neg elsif Var = 0 then Zero else Pos);
+
+      function To_Integer (Var : Int) return Integer is
+        (Integer (Var));
+
       function Int_Format is new P_Int_Format (Int, To_Integer, Sign, Put);
+
    begin
       return Int_Format (Format, Var);
    end Mod_Format;
@@ -475,111 +494,119 @@ package body GNAT.Formatted_String is
       F_Spec : out F_Data;
       Start  : out Positive)
    is
-      F              : String renames Format.D.Format;
-      I              : Natural renames Format.D.Index;
+      F              : String  renames Format.D.Format;
+      J              : Natural renames Format.D.Index;
       S              : Natural;
       Width_From_Var : Boolean := False;
+
    begin
       Format.D.Current := Format.D.Current + 1;
       F_Spec.Value_Needed := 0;
 
       --  Got to next %
 
-      while (I <= F'Last and then F (I) /= '%')
-        or else (I < F'Last - 1 and then F (I + 1) = '%')
+      while (J <= F'Last and then F (J) /= '%')
+        or else (J < F'Last - 1 and then F (J + 1) = '%')
       loop
-         Append (Format.D.Result, F (I));
+         Append (Format.D.Result, F (J));
 
          --  If we have two consecutive %, skip the second one
 
-         if F (I) = '%' and then I < F'Last - 1 and then F (I + 1) = '%' then
-            I := I + 1;
+         if F (J) = '%' and then J < F'Last - 1 and then F (J + 1) = '%' then
+            J := J + 1;
          end if;
 
-         I := I + 1;
+         J := J + 1;
       end loop;
 
-      if F (I) /= '%' or else I = F'Last then
+      if F (J) /= '%' or else J = F'Last then
          raise Format_Error with "no format specifier found for parameter"
            & Positive'Image (Format.D.Current);
       end if;
 
-      Start := I;
+      Start := J;
 
-      I := I + 1;
+      J := J + 1;
 
       --  Check for any flags
 
-      Flags_Check : while I < F'Last loop
-         if F (I) = '-' then
+      Flags_Check : while J < F'Last loop
+         if F (J) = '-' then
             F_Spec.Left_Justify := True;
-         elsif F (I) = '+' then
-            F_Spec.Sign := Forced;
-         elsif F (I) = ' ' then
-            F_Spec.Sign := Space;
-         elsif F (I) = '#' then
-            F_Spec.Base := C_Style;
-         elsif F (I) = '~' then
-            F_Spec.Base := Ada_Style;
-         elsif F (I) = '0' then
-            F_Spec.Zero_Pad := True;
+         elsif F (J) = '+' then
+            F_Spec.Sign         := Forced;
+         elsif F (J) = ' ' then
+            F_Spec.Sign         := Space;
+         elsif F (J) = '#' then
+            F_Spec.Base         := C_Style;
+         elsif F (J) = '~' then
+            F_Spec.Base         := Ada_Style;
+         elsif F (J) = '0' then
+            F_Spec.Zero_Pad     := True;
          else
             exit Flags_Check;
          end if;
 
-         I := I + 1;
+         J := J + 1;
       end loop Flags_Check;
 
       --  Check width if any
 
-      if F (I) in '0' .. '9' then
+      if F (J) in '0' .. '9' then
+
          --  We have a width parameter
 
-         S := I;
+         S := J;
 
-         while I < F'Last and then F (I + 1) in '0' .. '9' loop
-            I := I + 1;
+         while J < F'Last and then F (J + 1) in '0' .. '9' loop
+            J := J + 1;
          end loop;
 
-         F_Spec.Width := Natural'Value (F (S .. I));
+         F_Spec.Width := Natural'Value (F (S .. J));
 
-         I := I + 1;
+         J := J + 1;
 
-      elsif F (I) = '*' then
+      elsif F (J) = '*' then
+
          --  The width will be taken from the integer parameter
 
          F_Spec.Value_Needed := 1;
          Width_From_Var := True;
 
-         I := I + 1;
+         J := J + 1;
       end if;
 
-      if F (I) = '.' then
+      if F (J) = '.' then
+
          --  We have a precision parameter
 
-         I := I + 1;
+         J := J + 1;
 
-         if F (I) in '0' .. '9' then
-            S := I;
+         if F (J) in '0' .. '9' then
+            S := J;
 
-            while I < F'Length and then F (I + 1) in '0' .. '9' loop
-               I := I + 1;
+            while J < F'Length and then F (J + 1) in '0' .. '9' loop
+               J := J + 1;
             end loop;
 
-            if F (I) = '.' then
+            if F (J) = '.' then
+
                --  No precision, 0 is assumed
+
                F_Spec.Precision := 0;
+
             else
-               F_Spec.Precision := Natural'Value (F (S .. I));
+               F_Spec.Precision := Natural'Value (F (S .. J));
             end if;
 
-            I := I + 1;
+            J := J + 1;
 
-         elsif F (I) = '*' then
+         elsif F (J) = '*' then
+
             --  The prevision will be taken from the integer parameter
 
             F_Spec.Value_Needed := F_Spec.Value_Needed + 1;
-            I := I + 1;
+            J := J + 1;
          end if;
       end if;
 
@@ -587,19 +614,19 @@ package body GNAT.Formatted_String is
       --  but yet for compatibility reason it is handled.
 
       Length_Check :
-      while I <= F'Last
-        and then F (I) in 'h' | 'l' | 'j' | 'z' | 't' | 'L'
+      while J <= F'Last
+        and then F (J) in 'h' | 'l' | 'j' | 'z' | 't' | 'L'
       loop
-         I := I + 1;
+         J := J + 1;
       end loop Length_Check;
 
-      if I > F'Last then
+      if J > F'Last then
          Raise_Wrong_Format (Format);
       end if;
 
       --  Read next character which should be the expected type
 
-      case F (I) is
+      case F (J) is
          when 'c'       => F_Spec.Kind := Char;
          when 's'       => F_Spec.Kind := Str;
          when 'd' | 'i' => F_Spec.Kind := Decimal_Int;
@@ -618,7 +645,7 @@ package body GNAT.Formatted_String is
               & Positive'Image (Format.D.Current);
       end case;
 
-      I := I + 1;
+      J := J + 1;
 
       if F_Spec.Value_Needed > 0
         and then F_Spec.Value_Needed = Format.D.Stored_Value
@@ -650,6 +677,7 @@ package body GNAT.Formatted_String is
       S, E   : Positive := 1;
       Start  : Positive;
       Aft    : Text_IO.Field;
+
    begin
       Next_Format (Format, F, Start);
 
@@ -682,6 +710,7 @@ package body GNAT.Formatted_String is
             end if;
 
          when Shortest_Decimal_Float | Shortest_Decimal_Float_Up =>
+
             --  Without exponent
 
             Put (Buffer, Var, Aft, Exp => 0);
@@ -693,6 +722,7 @@ package body GNAT.Formatted_String is
             declare
                Buffer2 : String (1 .. 50);
                S2, E2  : Positive;
+
             begin
                Put (Buffer2, Var, Aft, Exp => 3);
                S2 := Strings.Fixed.Index_Non_Blank (Buffer2);
@@ -717,7 +747,7 @@ package body GNAT.Formatted_String is
       end case;
 
       Append (Format.D.Result,
-              Get_Formatted (F, Buffer (S .. E), Buffer (S .. E)'Length));
+        Get_Formatted (F, Buffer (S .. E), Buffer (S .. E)'Length));
 
       return Format;
    end P_Flt_Format;
@@ -730,7 +760,6 @@ package body GNAT.Formatted_String is
      (Format : Formatted_String;
       Var    : Int) return Formatted_String
    is
-
       function Handle_Precision return Boolean;
       --  Return True if nothing else to do
 
@@ -760,6 +789,8 @@ package body GNAT.Formatted_String is
 
          return False;
       end Handle_Precision;
+
+   --  Start of processing for P_Int_Format
 
    begin
       Next_Format (Format, F, Start);
@@ -868,8 +899,7 @@ package body GNAT.Formatted_String is
       --  Then add base if needed
 
       declare
-         N : String :=
-               Get_Formatted (F, Buffer (S .. E), E - S + 1 + Len);
+         N : String := Get_Formatted (F, Buffer (S .. E), E - S + 1 + Len);
          P : constant Positive :=
                (if F.Left_Justify
                 then N'First
@@ -915,9 +945,8 @@ package body GNAT.Formatted_String is
                      N (N'First .. N'First + 1) := "8#";
                      N (N'Last) := '#';
 
-                  when Unsigned_Hexadecimal_Int
-                    | Unsigned_Hexadecimal_Int_Up
-                    =>
+                  when Unsigned_Hexadecimal_Int    |
+                       Unsigned_Hexadecimal_Int_Up =>
                      if F.Left_Justify then
                         N (N'First + 3 .. N'Last) := N (N'First .. N'Last - 3);
                      else
@@ -944,7 +973,8 @@ package body GNAT.Formatted_String is
 
    procedure Raise_Wrong_Format (Format : Formatted_String) is
    begin
-      raise Format_Error with "wrong format specified for parameter"
+      raise Format_Error with
+        "wrong format specified for parameter"
         & Positive'Image (Format.D.Current);
    end Raise_Wrong_Format;
 

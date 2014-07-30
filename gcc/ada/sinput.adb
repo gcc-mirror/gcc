@@ -302,6 +302,17 @@ package body Sinput is
       end case;
    end Check_For_BOM;
 
+   -----------------------------
+   -- Comes_From_Inlined_Body --
+   -----------------------------
+
+   function Comes_From_Inlined_Body (S : Source_Ptr) return Boolean is
+      SIE : Source_File_Record renames
+        Source_File.Table (Get_Source_File_Index (S));
+   begin
+      return SIE.Inlined_Body;
+   end Comes_From_Inlined_Body;
+
    -----------------------
    -- Get_Column_Number --
    -----------------------

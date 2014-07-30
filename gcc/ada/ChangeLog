@@ -1,3 +1,31 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* g-forstr.adb: Minor code reorganization (use J rather than I
+	as a variable name).
+	* gnat_rm.texi, sem_prag.adb, sem_util.adb, sem_ch13.adb,
+	g-forstr.ads: Minor reformatting.
+
+2014-07-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sprint.adb (Set_Debug_Sloc): Also reset the end location if
+	we are debugging the generated code.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* sinput.ads, sinput.adb (Comes_From_Inlined_Body): New function that
+	returns True for source pointer for an inlined body.
+
+2014-07-30  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Add
+	missing calls to Base_Address().
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Hanalyze_Subprogram_Body_Helper): In GNATprove
+	mode, subprogram bodies without a previous declaration are also
+	candidates for front-end inlining.
+
 2014-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.ads Aspects Async_Readers, Async_Writers,
