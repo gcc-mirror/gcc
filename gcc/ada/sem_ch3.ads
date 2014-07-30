@@ -193,7 +193,7 @@ package Sem_Ch3 is
    --  C is automatically visible.
 
    procedure Make_Index
-     (I            : Node_Id;
+     (N            : Node_Id;
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id := Empty;
       Suffix_Index : Nat       := 1;
