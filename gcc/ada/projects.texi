@@ -1767,6 +1767,10 @@ Other library-related attributes can be used to change the defaults:
   This attribute may be used to specify additional switches (last switches)
   when linking a shared library.
 
+  It may also be used to add foreign object files in a static library.
+  Each string in Library_Options is an absolute or relative path of an object
+  file. When a relative path, it is relative to the object directory.
+
 @item @b{Leading_Library_Options}:
 @cindex @code{Leading_Library_Options}
   This attribute, that is taken into account only by @command{gprbuild}, may be
@@ -2889,7 +2893,7 @@ static library named @file{libagg.a} into the @file{lagg}
 directory. An aggregate library project has the same set of
 restriction as a standard library project.
 
-Note that a shared aggregate library project cannot aggregates a
+Note that a shared aggregate library project cannot aggregate a
 static library project. In platforms where a compiler option is
 required to create relocatable object files, a Builder package in the
 aggregate library project may be used:

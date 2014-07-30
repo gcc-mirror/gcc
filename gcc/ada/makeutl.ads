@@ -506,7 +506,7 @@ package Makeutl is
       --  project-based files (in which case we have a full Source_Id record).
 
       No_Source_Info : constant Source_Info :=
-                                  (Format_Gprbuild, null, null, False);
+                         (Format_Gprbuild, null, null, False);
 
       procedure Initialize
         (Queue_Per_Obj_Dir : Boolean;

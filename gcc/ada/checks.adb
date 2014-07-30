@@ -7473,13 +7473,11 @@ package body Checks is
 
    function Make_Bignum_Block (Loc : Source_Ptr) return Node_Id is
       M : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uM);
-
    begin
       return
         Make_Block_Statement (Loc,
           Declarations               =>
             New_List (Build_SS_Mark_Call (Loc, M)),
-
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (Build_SS_Release_Call (Loc, M))));

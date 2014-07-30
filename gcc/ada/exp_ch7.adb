@@ -875,9 +875,7 @@ package body Exp_Ch7 is
       --  types where the designated type is explicitly derived from [Limited_]
       --  Controlled.
 
-      elsif VM_Target /= No_VM
-        and then not Is_Controlled (Desig_Typ)
-      then
+      elsif VM_Target /= No_VM and then not Is_Controlled (Desig_Typ) then
          return;
 
       --  Do not create finalization masters in SPARK mode because they result
@@ -1609,7 +1607,7 @@ package body Exp_Ch7 is
             --  When the finalizer acts solely as a clean up routine, the body
             --  is inserted right after the spec.
 
-            if Acts_As_Clean and then not Has_Ctrl_Objs then
+            if Acts_As_Clean and not Has_Ctrl_Objs then
                Insert_After (Fin_Spec, Fin_Body);
 
             --  In all other cases the body is inserted after either:
@@ -1817,7 +1815,7 @@ package body Exp_Ch7 is
                elsif Is_Access_Type (Obj_Typ)
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
                  and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                                   N_Object_Declaration
+                                                       N_Object_Declaration
                then
                   Processing_Actions (Has_No_Init => True);
 
@@ -1867,9 +1865,8 @@ package body Exp_Ch7 is
 
                elsif Ekind (Obj_Id) = E_Variable
                  and then not In_Library_Level_Package_Body (Obj_Id)
-                 and then
-                   (Is_Simple_Protected_Type (Obj_Typ)
-                     or else Has_Simple_Protected_Object (Obj_Typ))
+                 and then (Is_Simple_Protected_Type (Obj_Typ)
+                            or else Has_Simple_Protected_Object (Obj_Typ))
                then
                   Processing_Actions (Is_Protected => True);
                end if;
@@ -2205,7 +2202,7 @@ package body Exp_Ch7 is
 
             --  For constrained or tagged results escalate the condition to
             --  include the allocation format. Generate:
-            --
+
             --    if BIPallocform > Secondary_Stack'Pos
             --      and then BIPfinalizationmaster /= null
             --    then
@@ -2941,13 +2938,13 @@ package body Exp_Ch7 is
         and then
           (not Is_Library_Level_Entity (Spec_Id)
 
-             --  Nested packages are considered to be library level entities,
-             --  but do not need to be processed separately. True library level
-             --  packages have a scope value of 1.
+            --  Nested packages are considered to be library level entities,
+            --  but do not need to be processed separately. True library level
+            --  packages have a scope value of 1.
 
-             or else Scope_Depth_Value (Spec_Id) /= Uint_1
-             or else (Is_Generic_Instance (Spec_Id)
-                       and then Package_Instantiation (Spec_Id) /= N))
+            or else Scope_Depth_Value (Spec_Id) /= Uint_1
+            or else (Is_Generic_Instance (Spec_Id)
+                      and then Package_Instantiation (Spec_Id) /= N))
       then
          return;
       end if;
@@ -3456,8 +3453,7 @@ package body Exp_Ch7 is
    begin
       if Has_Discriminants (U_Typ)
         and then Nkind (Parent (U_Typ)) = N_Full_Type_Declaration
-        and then
-          Nkind (Type_Definition (Parent (U_Typ))) = N_Record_Definition
+        and then Nkind (Type_Definition (Parent (U_Typ))) = N_Record_Definition
         and then
           Present
             (Variant_Part (Component_List (Type_Definition (Parent (U_Typ)))))
@@ -4967,8 +4963,8 @@ package body Exp_Ch7 is
       --  it is not part of a statement list. The actions must be inserted
       --  before the select itself, which is part of some list of statements.
       --  Note that the triggering alternative includes the triggering
-      --  statement and an optional statement list. If the node to be wrapped
-      --  is part of that list, the normal insertion applies.
+      --  statement and an optional statement list. If the node to be
+      --  wrapped is part of that list, the normal insertion applies.
 
       if Nkind (Parent (Node_To_Wrap)) = N_Triggering_Alternative
         and then not Is_List_Member (Node_To_Wrap)
@@ -7004,9 +7000,7 @@ package body Exp_Ch7 is
 
          --    Deep_Finalize (Obj._parent, False);
 
-         if Is_Tagged_Type (Typ)
-           and then Is_Derived_Type (Typ)
-         then
+         if Is_Tagged_Type (Typ) and then Is_Derived_Type (Typ) then
             declare
                Par_Typ  : constant Entity_Id := Parent_Field_Type (Typ);
                Call     : Node_Id;
@@ -7061,9 +7055,7 @@ package body Exp_Ch7 is
          --  Finalize the object. This action must be performed first before
          --  all components have been finalized.
 
-         if Is_Controlled (Typ)
-           and then not Is_Local
-         then
+         if Is_Controlled (Typ) and then not Is_Local then
             declare
                Fin_Stmt : Node_Id;
                Proc     : Entity_Id;
@@ -7761,9 +7753,7 @@ package body Exp_Ch7 is
 
       --  Deal with non-tagged derivation of private views
 
-      if Is_Untagged_Derivation (Typ)
-        and then not Is_Conc
-      then
+      if Is_Untagged_Derivation (Typ) and then not Is_Conc then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
 
@@ -8226,11 +8216,11 @@ package body Exp_Ch7 is
       --    declare
       --       M : constant Mark_Id := SS_Mark;
       --       procedure Finalizer is ...  (See Build_Finalizer)
-      --
+
       --    begin
       --       Temp := <Expr>;                           --  general case
       --       Temp := (if <Expr> then True else False); --  boolean case
-      --
+
       --    at end
       --       Finalizer;
       --    end;
