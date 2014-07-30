@@ -1697,9 +1697,9 @@ package body Inline is
       --  is analyzed, as this is where a pragma SPARK_Mode might be inserted.
 
       elsif Present (Spec_Id)
-        and then (No (SPARK_Pragma (Spec_Id))
-                    or else
-                  Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) /= On)
+        and then
+          (No (SPARK_Pragma (Spec_Id))
+            or else Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) /= On)
       then
          return False;
 
@@ -1709,8 +1709,7 @@ package body Inline is
       elsif Instantiation_Location (Sloc (Id)) /= No_Location then
          return False;
 
-      --  Predicate functions are treated specially by GNATprove. Do not inline
-      --  them.
+      --  Don't inline predicate functions (treated specially by GNATprove)
 
       elsif Is_Predicate_Function (Id) then
          return False;

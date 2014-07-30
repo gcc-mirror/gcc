@@ -33,11 +33,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  The operations in this package provide the guarantee that all dispatching
---  calls on primitive operations of tagged types and interfaces take constant
---  time (in terms of source lines executed), that is to say, the cost of these
---  calls is independent of the number of primitives of the type or interface,
---  and independent of the number of ancestors or interface progenitors that a
+--  For performance analysis, take into account that the operations in this
+--  package provide the guarantee that all dispatching calls on primitive
+--  operations of tagged types and interfaces take constant time (in terms
+--  of source lines executed), that is to say, the cost of these calls is
+--  independent of the number of primitives of the type or interface, and
+--  independent of the number of ancestors or interface progenitors that a
 --  tagged type may have.
 
 --  The following subprograms of the public part of this package take constant
@@ -51,9 +52,17 @@
 --  The following subprograms of the public part of this package take non
 --  constant time (in terms of sources line executed):
 
---    Descendant_Tag (when used with a locally defined tagged type)
---    Internal_Tag (when used with a locally defined tagged type)
---    Interface_Ancestor_Tags
+--    Internal_Tag (when used with a locally defined tagged type), because in
+--    such case this routine processes the external tag, extract from it an
+--    address available there, and convert it into the tag value returned by
+--    this function. The number of instructions executed is not constant since
+--    it depends on the length of the external tag string.
+
+--    Descendant_Tag (when used with a locally defined tagged type), because
+--    it relies on the subprogram Internal_Tag() to provide its functionality.
+
+--    Interface_Ancestor_Tags, because this function returns a table whose
+--    length depends on the number of interfaces covered by a tagged type.
 
 with System.Storage_Elements;
 

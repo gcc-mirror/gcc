@@ -3070,12 +3070,13 @@ package body Sem_Ch6 is
                   declare
                      Body_Spec : constant Node_Id :=
                                    Copy_Separate_Tree (Specification (N));
-                     New_Decl : constant Node_Id :=
-                                  Make_Subprogram_Declaration (Loc,
-                                    Copy_Separate_Tree (Specification (N)));
+                     New_Decl  : constant Node_Id :=
+                                   Make_Subprogram_Declaration (Loc,
+                                     Copy_Separate_Tree (Specification (N)));
+
                      SPARK_Mode_Aspect : Node_Id;
-                     Aspects : List_Id;
-                     Prag, Aspect : Node_Id;
+                     Aspects           : List_Id;
+                     Prag, Aspect      : Node_Id;
 
                   begin
                      Insert_Before (N, New_Decl);
@@ -3093,8 +3094,7 @@ package body Sem_Ch6 is
                      Analyze (New_Decl);
 
                      --  The analysis of the generated subprogram declaration
-                     --  may have introduced pragmas, which need to be
-                     --  analyzed.
+                     --  may have introduced pragmas that need to be analyzed.
 
                      Prag := Next (New_Decl);
                      while Prag /= N loop
@@ -3113,8 +3113,7 @@ package body Sem_Ch6 is
                         SPARK_Mode_Aspect :=
                           New_Copy (Find_Aspect (Spec_Id, Aspect_SPARK_Mode));
                         Set_Analyzed (SPARK_Mode_Aspect, False);
-                        Aspects := New_List;
-                        Append (SPARK_Mode_Aspect, Aspects);
+                        Aspects := New_List (SPARK_Mode_Aspect);
                         Set_Aspect_Specifications (N, Aspects);
                      end if;
 

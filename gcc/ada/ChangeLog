@@ -1,3 +1,12 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb, sem_ch6.adb: Minor code reorganization.
+	* inline.adb: Minor reformatting.
+
+2014-07-30  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads: Add comments.
+
 2014-07-30  Pat Rogers  <rogers@adacore.com>
 
 	* gnat_rm.texi: Minor word error.
