@@ -54,17 +54,16 @@ package System.Traceback is
       Exclude_Min : System.Address := System.Null_Address;
       Exclude_Max : System.Address := System.Null_Address;
       Skip_Frames : Natural := 1);
-   --  Store up to Max_Len code locations in Traceback, corresponding to
-   --  the current call chain.
+   --  Store up to Max_Len code locations in Traceback, corresponding to the
+   --  current call chain.
    --
-   --    Traceback is the address of an array of addresses where the
-   --    result will be stored.
+   --    Traceback is an array of addresses where the result will be stored.
    --
    --    Max_Len is the length of the Traceback array. If the call chain is
    --    longer than this, then additional entries are discarded, and the
    --    traceback is missing some of the highest level entries.
    --
-   --    Len is the returned number of addresses stored in the Traceback array
+   --    Len is the number of addresses returned in the Traceback array
    --
    --    Exclude_Min/Exclude_Max, if non null, provide a range of addresses
    --    to ignore from the computation of the traceback.

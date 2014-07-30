@@ -137,8 +137,7 @@ package body Ada.Exceptions is
       --  The lines are separated by a ASCII.LF character.
       --  The nnnn is the partition Id given as decimal digits.
       --  The 0x... line represents traceback program counter locations, in
-      --  execution order with the first one being the exception location. It
-      --  is present only
+      --  execution order with the first one being the exception location.
       --
       --  The Exception_Name and Message lines are omitted in the abort
       --  signal case, since this is not really an exception.
@@ -146,15 +145,6 @@ package body Ada.Exceptions is
       --  Note: If the format of the generated string is changed, please note
       --  that an equivalent modification to the routine String_To_EO must be
       --  made to preserve proper functioning of the stream attributes.
-      --
-      --  What is automatically output when exception tracing is on is the
-      --  usual exception information with the call chain backtrace possibly
-      --  tailored by a backtrace decorator. Modifying Exception_Information
-      --  itself is not a good idea because the decorated output is completely
-      --  out of control and would break all our code related to the streaming
-      --  of exceptions. We then provide an alternative function to compute
-      --  the possibly tailored output, which is equivalent if no decorator is
-      --  currently set:
 
       function Exception_Information (X : Exception_Occurrence) return String;
       --  This is the implementation of Ada.Exceptions.Exception_Information,
