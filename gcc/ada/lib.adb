@@ -1047,6 +1047,7 @@ package body Lib is
 
    procedure Store_Note (N : Node_Id) is
       Sfile : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
+
    begin
       --  Notes for a generic are emitted when processing the template, never
       --  in instances.

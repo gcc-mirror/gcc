@@ -1,5 +1,40 @@
 2014-07-30  Thomas Quinot  <quinot@adacore.com>
 
+	* lib-writ.ads: document format change.
+
+2014-07-30  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.adb (For_Interface_Sources): Do not
+	include sources from withed externally built projects.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* lib.adb: Minor reformatting.
+	* prj-util.adb: Minor reformatting.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): For an array component
+	that depends on discriminants, and which is given by an others
+	clause, create an explicit subtype with the discriminant values
+	of the enclosing aggregate, because the backend cannot otherwise
+	retrieve the actual bounds of the array.
+
+2014-07-30  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Improve gnattest documentation.
+
+2014-07-30  Pascal Obry  <obry@adacore.com>
+
+	* makeutl.adb (Insert_Project_Sources): Properly handle sources
+	that are aggregated. We want to include sources not only part
+	of libraries but also if part of an aggregated project from an
+	aggregate library.
+	* prj.adb (For_Project_And_Aggregated_Context): Properly check
+	state of root project.
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
 	* lib-load.ads: Minor reformatting.
 	* sinfo.ads (Library_Unit): Update comment.
 	* lib.ads (Notes): Simplify. The Unit component in Notes_Entry

@@ -2101,7 +2101,7 @@ package body Prj is
 
          if Project.Qualifier in Aggregate_Project then
             Ctx :=
-              (In_Aggregate_Lib      => True,
+              (In_Aggregate_Lib      => Project.Qualifier = Aggregate_Library,
                From_Encapsulated_Lib =>
                  Context.From_Encapsulated_Lib
                    or else Project.Standalone_Library = Encapsulated);

@@ -724,7 +724,10 @@ package Lib.Writ is
    --        T  pragma Title
    --        S  pragma Subtitle
 
-   --      <sloc> is the source location of the pragma in line:col format
+   --      <sloc> is the source location of the pragma in line:col[:filename]
+   --      format. The file name is omitted if it is the same as the current
+   --      unit (it therefore appears explicitly in the case of pragmas
+   --      occurring in subunits, which do not have U sections of their own).
 
    --      Successive entries record the pragma_argument_associations.
 
