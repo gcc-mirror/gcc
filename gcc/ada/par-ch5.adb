@@ -699,6 +699,11 @@ package body Ch5 is
 
                      else
                         TF_Semicolon;
+
+                        --  Normal processing as though semicolon were present
+
+                        Change_Name_To_Procedure_Call_Statement (Name_Node);
+                        Append_To (Statement_List, Name_Node);
                         Statement_Required := False;
                      end if;
 

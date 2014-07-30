@@ -1,3 +1,15 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch5.adb (P_Sequence_Of_Statements): Properly handle
+	missing semicolon after name.
+
+2014-07-30  Pascal Obry  <obry@adacore.com>
+
+	* prj.ads (Gprinstall_Flags): New constant.
+	* prj-nmsc.adb (Check_Library_Attributes): Do not fails for
+	missing library dir if Directories_Must_Exist_In_Projects
+	is false.
+
 2014-07-30  Bob Duff  <duff@adacore.com>
 
 	* a-except-2005.adb, a-except.adb: Remove obsolete comments.

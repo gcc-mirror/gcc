@@ -1882,10 +1882,11 @@ package Prj is
    --       * user project also includes a "with" that can only be resolved
    --         once we have found the gnatls
 
-   Gprbuild_Flags : constant Processing_Flags;
-   Gprclean_Flags : constant Processing_Flags;
-   Gprexec_Flags  : constant Processing_Flags;
-   Gnatmake_Flags : constant Processing_Flags;
+   Gprbuild_Flags   : constant Processing_Flags;
+   Gprinstall_Flags : constant Processing_Flags;
+   Gprclean_Flags   : constant Processing_Flags;
+   Gprexec_Flags    : constant Processing_Flags;
+   Gnatmake_Flags   : constant Processing_Flags;
    --  Flags used by the various tools. They all display the error messages
    --  through Prj.Err.
 
@@ -2034,52 +2035,64 @@ private
       Ignore_Missing_With        : Boolean;
    end record;
 
-   Gprbuild_Flags : constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Warning,
-                       Require_Sources_Other_Lang => True,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => True,
-                       Error_On_Unknown_Language  => True,
-                       Require_Obj_Dirs           => Error,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Error,
-                       Ignore_Missing_With        => False);
+   Gprbuild_Flags   : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Warning,
+                         Require_Sources_Other_Lang => True,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => True,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Error,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
-   Gprclean_Flags : constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Warning,
-                       Require_Sources_Other_Lang => True,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => True,
-                       Error_On_Unknown_Language  => True,
-                       Require_Obj_Dirs           => Warning,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Error,
-                       Ignore_Missing_With        => False);
+   Gprinstall_Flags : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Warning,
+                         Require_Sources_Other_Lang => True,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => True,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Silent,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
-   Gprexec_Flags :  constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Silent,
-                       Require_Sources_Other_Lang => False,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => False,
-                       Error_On_Unknown_Language  => True,
-                       Require_Obj_Dirs           => Silent,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Silent,
-                       Ignore_Missing_With        => False);
+   Gprclean_Flags   : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Warning,
+                         Require_Sources_Other_Lang => True,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => True,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Warning,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
-   Gnatmake_Flags : constant Processing_Flags :=
-                      (Report_Error               => null,
-                       When_No_Sources            => Error,
-                       Require_Sources_Other_Lang => False,
-                       Allow_Duplicate_Basenames  => False,
-                       Compiler_Driver_Mandatory  => False,
-                       Error_On_Unknown_Language  => False,
-                       Require_Obj_Dirs           => Error,
-                       Allow_Invalid_External     => Error,
-                       Missing_Source_Files       => Error,
-                       Ignore_Missing_With        => False);
+   Gprexec_Flags    : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Silent,
+                         Require_Sources_Other_Lang => False,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => False,
+                         Error_On_Unknown_Language  => True,
+                         Require_Obj_Dirs           => Silent,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Silent,
+                         Ignore_Missing_With        => False);
+
+   Gnatmake_Flags   : constant Processing_Flags :=
+                        (Report_Error               => null,
+                         When_No_Sources            => Error,
+                         Require_Sources_Other_Lang => False,
+                         Allow_Duplicate_Basenames  => False,
+                         Compiler_Driver_Mandatory  => False,
+                         Error_On_Unknown_Language  => False,
+                         Require_Obj_Dirs           => Error,
+                         Allow_Invalid_External     => Error,
+                         Missing_Source_Files       => Error,
+                         Ignore_Missing_With        => False);
 
 end Prj;
