@@ -1211,7 +1211,7 @@ package Sem_Util is
    --    junk
    --    unused
    --  Used to suppress warnings on names matching these patterns. The contents
-   --  of Name_Buffer and Name_Len are desteoyed by this call.
+   --  of Name_Buffer and Name_Len are destroyed by this call.
 
    type Is_LHS_Result is (Yes, No, Unknown);
    function Is_LHS (N : Node_Id) return Is_LHS_Result;

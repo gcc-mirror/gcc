@@ -814,7 +814,6 @@ package body System.Tasking.Stages is
 
       Ignore_1 : Boolean;
       Ignore_2 : Boolean;
-      pragma Unreferenced (Ignore_1, Ignore_2);
 
       function State
         (Int : System.Interrupt_Management.Interrupt_ID) return Character;

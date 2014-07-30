@@ -1111,7 +1111,6 @@ package body GNAT.Expect is
       Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
 
       Discard : Natural;
-      pragma Unreferenced (Discard);
 
    begin
       if Empty_Buffer then

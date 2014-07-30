@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2011, AdaCore                     --
+--                     Copyright (C) 2000-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -929,7 +929,6 @@ package body GNAT.AWK is
          if Callbacks in Only .. Pass_Through then
             declare
                Discard : Boolean;
-               pragma Unreferenced (Discard);
             begin
                Discard := Apply_Filters (Session);
             end;

@@ -15804,9 +15804,7 @@ package body Sem_Prag is
             Type_Id : Node_Id;
             Typ     : Entity_Id;
             PDecl   : Node_Id;
-
             Discard : Boolean;
-            pragma Unreferenced (Discard);
 
          begin
             GNAT_Pragma;
@@ -18201,9 +18199,7 @@ package body Sem_Prag is
          when Pragma_Predicate => Predicate : declare
             Type_Id : Node_Id;
             Typ     : Entity_Id;
-
             Discard : Boolean;
-            pragma Unreferenced (Discard);
 
          begin
             GNAT_Pragma;

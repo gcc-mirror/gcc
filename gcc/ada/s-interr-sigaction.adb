@@ -617,7 +617,6 @@ package body System.Interrupts is
 
    task body Server_Task is
       Ignore : constant Boolean := Utilities.Make_Independent;
-      pragma Unreferenced (Ignore);
 
       Desc    : Handler_Desc renames Descriptors (Interrupt);
       Self_Id : constant Task_Id := STPO.Self;

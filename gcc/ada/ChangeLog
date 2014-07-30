@@ -1,3 +1,29 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* s-tasuti.adb, s-tasuti.ads, einfo.ads, sem_prag.adb, s-taasde.adb,
+	g-socthi-vms.adb, s-taprop-mingw.adb, s-interr.adb, s-interr-hwint.adb,
+	g-decstr.adb, s-tasdeb-vms.adb, g-expect-vms.adb, makeutl.adb,
+	s-interr-vms.adb, g-socthi.adb, exp_aggr.adb, s-tasdeb.adb,
+	g-awk.adb, gnatls.adb, s-taspri-posix.ads, g-catiio.adb,
+	s-interr-sigaction.adb, s-os_lib.adb, s-fileio.adb: Minor reformatting
+	& code reorganization.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* s-tassta.adb, sem_util.ads: Minor reformatting.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Build_Body_To_Inline): Detect when
+	subprogram has multiple returns, or not a single last return
+	statement, in GNATprove mode.
+	(Cannot_Inline): Simplify logic to handle case of GNATprove
+	inlining first.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Stubs are not subject to inlining.
+
 2014-07-30  Bob Duff  <duff@adacore.com>
 
 	* s-tasuti.ads, s-tasuti.adb (Make_Independent): Change this

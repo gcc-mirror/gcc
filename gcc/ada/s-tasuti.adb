@@ -322,7 +322,10 @@ package body System.Tasking.Utilities is
 
       Initialization.Undefer_Abort (Self_Id);
 
-      return True; -- return value doesn't matter
+      --  Return True. Actually the return value is junk, since we expect it
+      --  always to be ignored (see spec), but we have to return something!
+
+      return True;
    end Make_Independent;
 
    ------------------

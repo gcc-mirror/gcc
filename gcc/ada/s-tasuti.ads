@@ -70,7 +70,6 @@ package System.Tasking.Utilities is
    --     task body Some_Independent_Task is
    --        ...
    --        Ignore : constant Boolean := Make_Independent;
-   --        pragma Unreferenced (Ignore);
    --        ...
    --     begin
    --

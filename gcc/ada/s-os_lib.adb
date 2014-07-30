@@ -279,7 +279,6 @@ package body System.OS_Lib is
    procedure Close (FD : File_Descriptor) is
       use CRTL;
       Discard : constant int := close (int (FD));
-      pragma Unreferenced (Discard);
    begin
       null;
    end Close;

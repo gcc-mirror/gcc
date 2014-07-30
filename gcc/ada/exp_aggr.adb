@@ -4016,6 +4016,8 @@ package body Exp_Aggr is
       --       an integer whose unsigned value is the binary concatenation of
       --       K times its remainder modulo 2**Storage_Unit.
 
+      --  What on earth does 5 mean, incomprehensible???
+
       --  The ultimate goal is to generate a call to a fast memset routine
       --  specifically optimized for the target.
 
@@ -4054,6 +4056,7 @@ package body Exp_Aggr is
             end loop;
 
             Ctyp := Component_Type (Ctyp);
+
             if Is_Atomic (Ctyp) then
                return False;
             end if;
