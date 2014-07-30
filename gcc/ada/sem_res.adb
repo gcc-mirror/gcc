@@ -6210,7 +6210,6 @@ package body Sem_Res is
       if GNATprove_Mode
         and then Is_Overloadable (Nam)
         and then SPARK_Mode = On
-        and then Full_Analysis
       then
          --  Retrieve the body to inline from the ultimate alias of Nam, if
          --  there is one, otherwise calls that should be inlined end up not
@@ -6220,23 +6219,54 @@ package body Sem_Res is
             Nam_Alias : constant Entity_Id := Ultimate_Alias (Nam);
             Decl : constant Node_Id := Unit_Declaration_Node (Nam_Alias);
          begin
-            if Nkind (Decl) = N_Subprogram_Declaration
-              and then Can_Be_Inlined_In_GNATprove_Mode (Nam_Alias, Empty)
-              and then No (Corresponding_Body (Decl))
+            --  If the subprogram is not eligible for inlining in GNATprove
+            --  mode, do nothing.
+
+            if not Can_Be_Inlined_In_GNATprove_Mode (Nam_Alias, Empty)
+              or else Nkind (Decl) /= N_Subprogram_Declaration
+              or else not Is_Inlined_Always (Nam_Alias)
             then
-               Error_Msg_NE
-                 ("?cannot inline call to & (body not seen yet)", N, Nam);
+               null;
+
+            --  Calls cannot be inlined inside assertions, as GNATprove treats
+            --  assertions as logic expressions.
+
+            elsif In_Assertion_Expr /= 0 then
+               Error_Msg_NE ("?cannot inline call to &", N, Nam);
+               Error_Msg_N ("\call appears in assertion expression", N);
                Set_Is_Inlined_Always (Nam_Alias, False);
 
-            elsif Nkind (Decl) = N_Subprogram_Declaration
-              and then Present (Body_To_Inline (Decl))
-              and then Is_Inlined (Nam_Alias)
-            then
-               if Is_Potentially_Unevaluated (N) then
+            --  Inlining should not be performed during pre-analysis
+
+            elsif Full_Analysis then
+
+               --  With the one-pass inlining technique, a call cannot be
+               --  inlined if the corresponding body has not been seen yet.
+
+               if No (Corresponding_Body (Decl)) then
+                  Error_Msg_NE
+                    ("?cannot inline call to & (body not seen yet)", N, Nam);
+                  Set_Is_Inlined_Always (Nam_Alias, False);
+
+               --  Nothing to do if there is no body to inline, indicating that
+               --  the subprogram is not suitable for inlining in GNATprove
+               --  mode.
+
+               elsif No (Body_To_Inline (Decl)) then
+                  null;
+
+               --  Calls cannot be inlined inside potentially unevaluated
+               --  expressions, as this would create complex actions inside
+               --  expressions, that are not handled by GNATprove.
+
+               elsif Is_Potentially_Unevaluated (N) then
                   Error_Msg_NE ("?cannot inline call to &", N, Nam);
                   Error_Msg_N
                     ("\call appears in potentially unevaluated context", N);
                   Set_Is_Inlined_Always (Nam_Alias, False);
+
+               --  Otherwise, inline the call
+
                else
                   Expand_Inlined_Call (N, Nam_Alias, Nam);
                end if;

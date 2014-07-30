@@ -80,7 +80,7 @@ package body Debug is
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
-   --  dQ   Enable inlining of bodies-without-decl in GNATprove mode
+   --  dQ
    --  dR   Bypass check for correct version of s-rpc
    --  dS   Never convert numbers to machine numbers in Sem_Eval
    --  dT   Convert to machine numbers only for constant declarations
@@ -437,11 +437,6 @@ package body Debug is
    --       RM 10.2.1(9) forbids the use of library level controlled objects
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
-
-   --  dQ   Enable inlining of bodies-without-decl in GNATprove mode. A decl is
-   --       created by the frontend so that the usual frontend inlining
-   --       mechanism can be used for formal verification. Under a debug flag
-   --       until fully reliable.
 
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use

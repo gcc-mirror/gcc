@@ -3034,10 +3034,6 @@ package body Sem_Ch6 is
                if No (Spec_Id)
                  and then GNATprove_Mode
 
-                 --  Under a debug flag until remaining issues are fixed
-
-                 and then Debug_Flag_QQ
-
                  --  Inlining does not apply during pre-analysis of code
 
                  and then Full_Analysis
@@ -3077,12 +3073,50 @@ package body Sem_Ch6 is
                      New_Decl : constant Node_Id :=
                                   Make_Subprogram_Declaration (Loc,
                                     Copy_Separate_Tree (Specification (N)));
+                     SPARK_Mode_Aspect : Node_Id;
+                     Aspects : List_Id;
+                     Prag, Aspect : Node_Id;
 
                   begin
                      Insert_Before (N, New_Decl);
                      Move_Aspects (From => N, To => New_Decl);
+
+                     --  Mark the newly moved aspects as not analyzed, so that
+                     --  their effect on New_Decl is properly analyzed.
+
+                     Aspect := First (Aspect_Specifications (New_Decl));
+                     while Present (Aspect) loop
+                        Set_Analyzed (Aspect, False);
+                        Next (Aspect);
+                     end loop;
+
                      Analyze (New_Decl);
+
+                     --  The analysis of the generated subprogram declaration
+                     --  may have introduced pragmas, which need to be
+                     --  analyzed.
+
+                     Prag := Next (New_Decl);
+                     while Prag /= N loop
+                        Analyze (Prag);
+                        Next (Prag);
+                     end loop;
+
                      Spec_Id := Defining_Entity (New_Decl);
+
+                     --  If aspect SPARK_Mode was specified on the body, it
+                     --  needs to be repeated on the generated decl and the
+                     --  body. Since the original aspect was moved to the
+                     --  generated decl, copy it for the body.
+
+                     if Has_Aspect (Spec_Id, Aspect_SPARK_Mode) then
+                        SPARK_Mode_Aspect :=
+                          New_Copy (Find_Aspect (Spec_Id, Aspect_SPARK_Mode));
+                        Set_Analyzed (SPARK_Mode_Aspect, False);
+                        Aspects := New_List;
+                        Append (SPARK_Mode_Aspect, Aspects);
+                        Set_Aspect_Specifications (N, Aspects);
+                     end if;
 
                      Set_Specification (N, Body_Spec);
                      Body_Id := Analyze_Subprogram_Specification (Body_Spec);

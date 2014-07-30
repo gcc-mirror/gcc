@@ -1,3 +1,30 @@
+2014-07-30  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_rm.texi: Minor word error.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_prag.adb (Expand_Old): Insert declarationss of temporaries
+	created to capture the value of the prefix of 'Old at the
+	beginning of the current declarative part, to prevent data flow
+	anomalies in the postcondition procedure that will follow.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Retire debug flag -gnatdQ.
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Check SPARK_Mode
+	on decl, not on body.  Ignore predicate functions.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Remove use of
+	debug flag -gnatdQ.  Correctly analyze SPARK_Mode on decl and
+	body when generating a decl for a body on which SPARK_Mode aspect
+	is given.
+	* sem_prag.adb (Analyze_Pragma|SPARK_Mode): Reorder tests for
+	attaching pragma to entity, to account for declaration not coming
+	from source.
+	* sem_res.adb (Resolve_Call): Issue warning and flag subprogram
+	as not always inlined in GNATprove mode, when called in an
+	assertion context.
+
 2014-07-30  Vincent Celier  <celier@adacore.com>
 
 	* debug.adb: Minor comment update.

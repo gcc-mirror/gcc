@@ -7215,7 +7215,7 @@ The meaning of a test case is that there is at least one context where
 that context, then @code{Ensures} holds when the subprogram returns.
 Mode @code{Nominal} indicates that the input context should also satisfy the
 precondition of the subprogram, and the output context should also satisfy its
-postcondition. More @code{Robustness} indicates that the precondition and
+postcondition. Mode @code{Robustness} indicates that the precondition and
 postcondition of the subprogram should be ignored for this test case.
 
 @node Pragma Thread_Local_Storage
