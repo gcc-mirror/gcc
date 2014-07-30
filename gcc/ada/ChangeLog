@@ -1,3 +1,8 @@
+2014-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cbmutr.adb (Insert_Child): Use local variable First to keep
+	track of the initial element's index within the tree.
+
 2014-07-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* a-cbmutr.adb (Allocate_Node): Remove the two parameter version.
