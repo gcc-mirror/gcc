@@ -1,5 +1,10 @@
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document additional implementation-defined use
+	of Constrained.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
 	* prj-proc.adb, prj-strt.adb: Update comments.
 
 2014-07-30  Gary Dismukes  <dismukes@adacore.com>
