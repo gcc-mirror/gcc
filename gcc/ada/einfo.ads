@@ -2477,6 +2477,10 @@ package Einfo is
 --       inherited by their instances. It is also set on the body entities
 --       of inlined subprograms. See also Has_Pragma_Inline.
 
+--       Is_Inlined is also set for subprograms that are always inlined in
+--       GNATprove mode. GNATprove uses this flag to know when a body does not
+--       need to be analyzed.
+
 --    Is_Instantiated (Flag126)
 --       Defined in generic packages and generic subprograms. Set if the unit
 --       is instantiated from somewhere in the extended main source unit. This
