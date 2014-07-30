@@ -1182,11 +1182,12 @@ package body Prj.Strt is
 
                      exit when Present (Current_Variable);
 
+                     --  Please document this new test ???
+
                      if No (Parent_Project_Of (Proj, In_Tree)) then
                         Proj :=
                           Extended_Project_Of
                             (Project_Declaration_Of (Proj, In_Tree), In_Tree);
-
                      else
                         Proj := Parent_Project_Of (Proj, In_Tree);
                      end if;
