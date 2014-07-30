@@ -1,3 +1,10 @@
+2014-07-30  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(gcc_expression_from_isl_ast_expr_id): Add calling of fold_convert.
+	(gcc_expression_from_isl_expression): Pass type to
+	gcc_expression_from_isl_ast_expr_id.
+
 2014-07-30  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (lto_write_data): New function.
