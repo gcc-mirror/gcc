@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2005-2010, Free Software Foundation, Inc.          --
+--         Copyright (C) 2005-2014, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -337,7 +337,9 @@ package body GNAT.Traceback.Symbolic is
       return Res (1 .. Len);
    end Symbolic_Traceback;
 
-   function Symbolic_Traceback (E : Exception_Occurrence) return String is
+   function Symbolic_Traceback
+     (E : Ada.Exceptions.Exception_Occurrence) return String
+   is
    begin
       return Symbolic_Traceback (Tracebacks (E));
    end Symbolic_Traceback;
