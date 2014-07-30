@@ -777,6 +777,7 @@ extern void lto_value_range_error (const char *,
 /* In lto-section-out.c  */
 extern void lto_begin_section (const char *, bool);
 extern void lto_end_section (void);
+extern void lto_write_data (const void *, unsigned int);
 extern void lto_write_stream (struct lto_output_stream *);
 extern void lto_output_data_stream (struct lto_output_stream *, const void *,
 				    size_t);

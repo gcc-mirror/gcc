@@ -67,7 +67,6 @@ append_to_collect_gcc_options (struct obstack *ob,
 void
 lto_write_options (void)
 {
-  struct lto_output_stream stream;
   char *section_name;
   struct obstack temporary_obstack;
   unsigned int i, j;
@@ -76,7 +75,6 @@ lto_write_options (void)
 
   section_name = lto_get_section_name (LTO_section_opts, NULL, NULL);
   lto_begin_section (section_name, false);
-  memset (&stream, 0, sizeof (stream));
 
   obstack_init (&temporary_obstack);
 
@@ -170,9 +168,7 @@ lto_write_options (void)
     }
   obstack_grow (&temporary_obstack, "\0", 1);
   args = XOBFINISH (&temporary_obstack, char *);
-  lto_output_data_stream (&stream, args, strlen (args) + 1);
-
-  lto_write_stream (&stream);
+  lto_write_data (args, strlen (args) + 1);
   lto_end_section ();
 
   obstack_free (&temporary_obstack, NULL);
