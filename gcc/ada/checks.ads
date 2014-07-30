@@ -666,12 +666,12 @@ package Checks is
    --  we generate the actual range check, then we make sure the flag is off,
    --  since the code we generate takes complete care of the check.
    --
-   --  Historical note: We used to just pass ono the Do_Range_Check flag to the
-   --  back end to generate the check, but now in code generation mode we never
+   --  Historical note: We used to just pass on the Do_Range_Check flag to the
+   --  back end to generate the check, but now in code-generation mode we never
    --  have this flag set, since the front end takes care of the check. The
    --  normal processing flow now is that the analyzer typically turns on the
    --  Do_Range_Check flag, and if it is set, this routine is called, which
-   --  turns the flag off in code generation mode.
+   --  turns the flag off in code-generation mode.
 
    procedure Generate_Index_Checks (N : Node_Id);
    --  This procedure is called to generate index checks on the subscripts for

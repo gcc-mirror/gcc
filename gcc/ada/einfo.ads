@@ -1910,7 +1910,7 @@ package Einfo is
 --    Has_Static_Predicate (Flag269)
 --       Defined in all types and subtypes. Set if the type (which must be a
 --       scalar type) has a predicate whose expression is predicate-static.
---       This can result from use of any of a Predicate, Static_Predicate, or
+--       This can result from the use of any Predicate, Static_Predicate, or
 --       Dynamic_Predicate aspect. We can distinguish these cases by testing
 --       Has_Static_Predicate_Aspect and Has_Dynamic_Predicate_Aspect. See
 --       description of the latter flag for further information on dynamic

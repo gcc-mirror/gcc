@@ -1625,7 +1625,7 @@ package Sinfo is
    --    when Raises_Constraint_Error is also set. In practice almost all cases
    --    where a static expression is required do not allow an expression which
    --    raises Constraint_Error, so almost always, callers should call the
-   --    Is_Ok_Static_Exprression routine instead of testing this flag. See
+   --    Is_Ok_Static_Expression routine instead of testing this flag. See
    --    spec of package Sem_Eval for full details on the use of this flag.
 
    --  Is_Subprogram_Descriptor (Flag16-Sem)

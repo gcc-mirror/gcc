@@ -118,8 +118,9 @@ package body Prj.Proc is
    --  of an expression and return it as a Variable_Value.
 
    function Imported_Or_Extended_Project_From
-     (Project   : Project_Id;
-      With_Name : Name_Id) return Project_Id;
+     (Project      : Project_Id;
+      With_Name    : Name_Id;
+      No_Extending : Boolean := False) return Project_Id;
    --  Find an imported or extended project of Project whose name is With_Name
 
    function Package_From
@@ -705,8 +706,9 @@ package body Prj.Proc is
                      The_Name :=
                        Name_Of (Term_Project, From_Project_Node_Tree);
                      The_Project := Imported_Or_Extended_Project_From
-                                      (Project   => Project,
-                                       With_Name => The_Name);
+                                      (Project      => Project,
+                                       With_Name    => The_Name,
+                                       No_Extending => True);
                   end if;
 
                   if Present (Term_Package) then
@@ -1261,8 +1263,9 @@ package body Prj.Proc is
    ---------------------------------------
 
    function Imported_Or_Extended_Project_From
-     (Project   : Project_Id;
-      With_Name : Name_Id) return Project_Id
+     (Project      : Project_Id;
+      With_Name    : Name_Id;
+      No_Extending : Boolean := False) return Project_Id
    is
       List        : Project_List;
       Result      : Project_Id;
@@ -1304,7 +1307,12 @@ package body Prj.Proc is
             Proj := Result.Extends;
             while Proj /= No_Project loop
                if Proj.Name = With_Name then
-                  Temp_Result := Result;
+                  if No_Extending then
+                     Temp_Result := Proj;
+                  else
+                     Temp_Result := Result;
+                  end if;
+
                   exit;
                end if;
 

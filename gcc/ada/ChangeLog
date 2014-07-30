@@ -1,3 +1,19 @@
+2014-07-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sinfo.ads, einfo.ads, checks.ads: Minor typo fix and reformatting.
+
+2014-07-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Imported_Or_Extended_Project_From): New Boolean
+	parameter No_Extending, defaulted to False. When No_Extending
+	is True, do not look for an extending project.
+	(Expression): For a variable reference that is not for the current
+	project, get its Id calling Imported_Or_Extended_Project_From
+	with No_Extending set to True.
+	* prj-strt.adb (Parse_Variable_Reference): If a referenced
+	variable is not found in the current project, check if it is
+	defined in one of the projects it extends.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb (Predicate_Tests_On_Arguments): Omit tests for
