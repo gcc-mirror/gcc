@@ -98,6 +98,16 @@ lto_end_section (void)
   lang_hooks.lto.end_section ();
 }
 
+/* Write SIZE bytes starting at DATA to the assembler.  */
+
+void
+lto_write_data (const void *data, unsigned int size)
+{
+  if (compression_stream)
+    lto_compress_block (compression_stream, (const char *)data, size);
+  else
+    lang_hooks.lto.append_data ((const char *)data, size, NULL);
+}
 
 /* Write all of the chars in OBS to the assembler.  Recycle the blocks
    in obs as this is being done.  */
@@ -128,12 +138,10 @@ lto_write_stream (struct lto_output_stream *obs)
          blocks up output differently to the way it's blocked here.  So for
          now, we don't compress WPA output.  */
       if (compression_stream)
-	{
-	  lto_compress_block (compression_stream, base, num_chars);
-	  lang_hooks.lto.append_data (NULL, 0, block);
-	}
+	lto_compress_block (compression_stream, base, num_chars);
       else
 	lang_hooks.lto.append_data (base, num_chars, block);
+      free (block);
       block_size *= 2;
     }
 }
@@ -335,7 +343,6 @@ lto_destroy_simple_output_block (struct lto_simple_output_block *ob)
 {
   char *section_name;
   struct lto_simple_header header;
-  struct lto_output_stream *header_stream;
 
   section_name = lto_get_section_name (ob->section_type, NULL, NULL);
   lto_begin_section (section_name, !flag_wpa);
@@ -346,15 +353,9 @@ lto_destroy_simple_output_block (struct lto_simple_output_block *ob)
   memset (&header, 0, sizeof (struct lto_simple_header));
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
-
   header.compressed_size = 0;
-
   header.main_size = ob->main_stream->total_size;
-
-  header_stream = XCNEW (struct lto_output_stream);
-  lto_output_data_stream (header_stream, &header, sizeof header);
-  lto_write_stream (header_stream);
-  free (header_stream);
+  lto_write_data (&header, sizeof header);
 
   lto_write_stream (ob->main_stream);
 
