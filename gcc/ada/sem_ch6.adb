@@ -2167,6 +2167,10 @@ package body Sem_Ch6 is
       --  Analyze the aspect specifications of a subprogram body [stub]. It is
       --  assumed that N has aspects.
 
+      function Body_Has_Contract return Boolean;
+      --  Check whether unanalyzed body has an aspect or pragma that may
+      --  generate a SPARK contrac.
+
       procedure Check_Anonymous_Return;
       --  Ada 2005: if a function returns an access type that denotes a task,
       --  or a type that contains tasks, we must create a master entity for
@@ -2338,6 +2342,68 @@ package body Sem_Ch6 is
             Analyze_Aspect_Specifications (N, Body_Id);
          end if;
       end Analyze_Aspects_On_Body_Or_Stub;
+
+      -----------------------
+      -- Body_Has_Contract --
+      -----------------------
+
+      function Body_Has_Contract return Boolean is
+         Decls  : constant List_Id := Declarations (N);
+         A_Spec : Node_Id;
+         A      : Aspect_Id;
+         Decl   : Node_Id;
+         P_Id   : Pragma_Id;
+
+      begin
+         --  Check for unanalyzed aspects in the body that will
+         --  generate a contract.
+
+         if Present (Aspect_Specifications (N)) then
+            A_Spec := First (Aspect_Specifications (N));
+            while Present (A_Spec) loop
+               A := Get_Aspect_Id (Chars (Identifier (A_Spec)));
+
+               if A = Aspect_Contract_Cases
+                 or else A = Aspect_Depends
+                 or else A = Aspect_Global
+                 or else A = Aspect_Pre
+                 or else A = Aspect_Precondition
+                 or else A = Aspect_Post
+                 or else A = Aspect_Postcondition
+               then
+                  return True;
+               end if;
+
+               Next (A_Spec);
+            end loop;
+         end if;
+
+         --  Check for pragmas that may generate a contract.
+
+         if Present (Decls) then
+            Decl := First (Decls);
+            while Present (Decl) loop
+               if Nkind (Decl) = N_Pragma then
+                  P_Id := Get_Pragma_Id (Pragma_Name (Decl));
+
+                  if P_Id = Pragma_Contract_Cases
+                    or else P_Id = Pragma_Depends
+                    or else P_Id = Pragma_Global
+                    or else P_Id = Pragma_Pre
+                    or else P_Id = Pragma_Precondition
+                    or else P_Id = Pragma_Post
+                    or else P_Id = Pragma_Postcondition
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               Next (Decl);
+            end loop;
+         end if;
+
+         return False;
+      end Body_Has_Contract;
 
       ----------------------------
       -- Check_Anonymous_Return --
@@ -2969,6 +3035,7 @@ package body Sem_Ch6 is
                  and then Full_Analysis
                  and then Comes_From_Source (Body_Id)
                  and then Is_List_Member (N)
+                 and then not Body_Has_Contract
                then
                   declare
                      Body_Spec : constant Node_Id :=
@@ -3410,6 +3477,7 @@ package body Sem_Ch6 is
            and then
              Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
            and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
+           and then not Body_Has_Contract
          then
             Build_Body_To_Inline (N, Spec_Id);
          end if;
@@ -3437,6 +3505,7 @@ package body Sem_Ch6 is
         and then Present (Spec_Id)
         and then Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
         and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
+        and then not Body_Has_Contract
       then
          Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
       end if;

@@ -1778,6 +1778,15 @@ package body Sem_Ch13 is
                     Aspect_Predicate         |
                     Aspect_Static_Predicate  =>
 
+                  --  These aspects apply only to subtypes
+
+                  if not Is_Type (E) then
+                     Error_Msg_N
+                       ("predicate can only be specified for a subtype",
+                        Aspect);
+                     goto Continue;
+                  end if;
+
                   --  Construct the pragma (always a pragma Predicate, with
                   --  flags recording whether it is static/dynamic). We also
                   --  set flags recording this in the type itself.

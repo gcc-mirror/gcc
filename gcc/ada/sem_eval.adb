@@ -5280,15 +5280,22 @@ package body Sem_Eval is
       --  If we have the static expression case, then this is an illegality
       --  in Ada 95 mode, except that in an instance, we never generate an
       --  error (if the error is legitimate, it was already diagnosed in the
-      --  template). The expression to compute the length of a packed array is
-      --  attached to the array type itself, and deserves a separate message.
+      --  template).
 
       if Is_Static_Expression (N)
         and then not In_Instance
         and then not In_Inlined_Body
         and then Ada_Version >= Ada_95
       then
-         if Nkind (Parent (N)) = N_Defining_Identifier
+         --  No message if we are staticallly unevaluated
+
+         if Is_Statically_Unevaluated (N) then
+            null;
+
+         --  The expression to compute the length of a packed array is attached
+         --  to the array type itself, and deserves a separate message.
+
+         elsif Nkind (Parent (N)) = N_Defining_Identifier
            and then Is_Array_Type (Parent (N))
            and then Present (Packed_Array_Impl_Type (Parent (N)))
            and then Present (First_Rep_Item (Parent (N)))
@@ -5297,6 +5304,8 @@ package body Sem_Eval is
              ("length of packed array must not exceed Integer''Last",
               First_Rep_Item (Parent (N)));
             Rewrite (N, Make_Integer_Literal (Sloc (N), Uint_1));
+
+         --  All cases except the special array case
 
          else
             Apply_Compile_Time_Constraint_Error

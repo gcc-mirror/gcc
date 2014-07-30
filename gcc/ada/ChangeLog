@@ -1,5 +1,26 @@
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch4.adb (Analyze_If_Expression): Resolve condition before
+	analyzing branches.
+	* sem_eval.adb (Out_Of_Range): Check for statically unevaluated
+	expression case.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect, predicate cases): Diagnose use
+	of predicate aspect on entity other than a type.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Body_Has_Contract): New predicate to determine
+	when a subprogram body without a previous spec cannot be inlined
+	in GNATprove mode, because it includes aspects or pragmas that
+	generate a SPARK contract clause.
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): A subprogram
+	instance cannot be inlined.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
 	* debug.adb: Document that d7 suppresses compilation time output.
 	* errout.adb (Write_Header): Include compilation time in
 	header output.
