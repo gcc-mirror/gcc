@@ -10686,10 +10686,9 @@ package body Sem_Res is
       --  (In other contexts conversions cannot apply to literals).
 
       if In_Inlined_Body
-        and then
-          (Opnd_Type = Any_Character or else
-           Opnd_Type = Any_Integer   or else
-           Opnd_Type = Any_Real)
+        and then (Opnd_Type = Any_Character or else
+                  Opnd_Type = Any_Integer   or else
+                  Opnd_Type = Any_Real)
       then
          Set_Etype (Operand, Typ);
       end if;

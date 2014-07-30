@@ -1,3 +1,21 @@
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb: Add comments.
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-os_lib.ads (GM_Time_Of): Clarify documentation.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, sem_res.adb: Minor reformatting.
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	Bit_Order): Set Reverse_Bit_Order on the base type of the
+	specified first subtype.
+
 2014-07-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* inline.adb (Expand_Inlined_Call): Use a renaming declaration

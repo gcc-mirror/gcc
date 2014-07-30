@@ -160,8 +160,8 @@ package System.OS_Lib is
       Minute : Minute_Type;
       Second : Second_Type) return OS_Time;
    --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of time
-   --  component parts and returns an OS_Time. Returns Invalid_Time if the
-   --  creation fails.
+   --  component parts to be interpreted in the local time zone, and returns
+   --  an OS_Time. Returns Invalid_Time if the creation fails.
 
    function Current_Time_String return String;
    --  Returns current local time in the form YYYY-MM-DD HH:MM:SS. The result

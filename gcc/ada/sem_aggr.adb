@@ -111,7 +111,8 @@ package body Sem_Aggr is
    --  Check that Expr is either not limited or else is one of the cases of
    --  expressions allowed for a limited component association (namely, an
    --  aggregate, function call, or <> notation). Report error for violations.
-   --  Expression is also OK in an instance or inlining context.
+   --  Expression is also OK in an instance or inlining context, because we
+   --  have already analyzed and checked it.
 
    procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id);
    --  Given aggregate Expr, check that sub-aggregates of Expr that are nested
