@@ -1938,6 +1938,11 @@ package body Inline is
          --  Return True if some enclosing body contains instantiations that
          --  appear before the corresponding generic body.
 
+         function Has_Single_Return_In_GNATprove_Mode return Boolean;
+         --  This function is called only in GNATprove mode, and it returns
+         --  True if the subprogram has no or a single return statement as
+         --  last statement.
+
          function Returns_Compile_Time_Constant (N : Node_Id) return Boolean;
          --  Return True if all the return statements of the function body N
          --  are simple return statements and return a compile time constant
@@ -1999,18 +2004,48 @@ package body Inline is
          begin
             D := First (Decls);
             while Present (D) loop
-               if (Nkind (D) = N_Function_Instantiation
-                    and then not Is_Unchecked_Conversion (D))
-                 or else Nkind_In (D, N_Protected_Type_Declaration,
-                                   N_Package_Declaration,
-                                   N_Package_Instantiation,
-                                   N_Subprogram_Body,
-                                   N_Procedure_Instantiation,
-                                   N_Task_Type_Declaration)
+               if Nkind (D) = N_Function_Instantiation
+                 and then not Is_Unchecked_Conversion (D)
                then
                   Cannot_Inline
-                    ("cannot inline & (non-allowed declaration)?", D, Subp);
+                    ("cannot inline & (nested function instantiation)?",
+                     D, Subp);
+                  return True;
 
+               elsif Nkind (D) = N_Protected_Type_Declaration then
+                  Cannot_Inline
+                    ("cannot inline & (nested protected type declaration)?",
+                     D, Subp);
+                  return True;
+
+               elsif Nkind (D) = N_Package_Declaration then
+                  Cannot_Inline
+                    ("cannot inline & (nested package declaration)?",
+                     D, Subp);
+                  return True;
+
+               elsif Nkind (D) = N_Package_Instantiation then
+                  Cannot_Inline
+                    ("cannot inline & (nested package instantiation)?",
+                     D, Subp);
+                  return True;
+
+               elsif Nkind (D) = N_Subprogram_Body then
+                  Cannot_Inline
+                    ("cannot inline & (nested subprogram)?",
+                     D, Subp);
+                  return True;
+
+               elsif Nkind (D) = N_Procedure_Instantiation then
+                  Cannot_Inline
+                    ("cannot inline & (nested procedure instantiation)?",
+                     D, Subp);
+                  return True;
+
+               elsif Nkind (D) = N_Task_Type_Declaration then
+                  Cannot_Inline
+                    ("cannot inline & (nested task type declaration)?",
+                     D, Subp);
                   return True;
                end if;
 
@@ -2157,6 +2192,58 @@ package body Inline is
 
             return False;
          end Has_Pending_Instantiation;
+
+         -----------------------------------------
+         -- Has_Single_Return_In_GNATprove_Mode --
+         -----------------------------------------
+
+         function Has_Single_Return_In_GNATprove_Mode return Boolean is
+            Last_Statement : Node_Id := Empty;
+
+            function Check_Return (N : Node_Id) return Traverse_Result;
+            --  Returns OK on node N if this is not a return statement
+            --  different from the last statement in the subprogram.
+
+            ------------------
+            -- Check_Return --
+            ------------------
+
+            function Check_Return (N : Node_Id) return Traverse_Result is
+            begin
+               if Nkind_In (N, N_Simple_Return_Statement,
+                            N_Extended_Return_Statement)
+               then
+                  if N = Last_Statement then
+                     return OK;
+                  else
+                     return Abandon;
+                  end if;
+
+               else
+                  return OK;
+               end if;
+            end Check_Return;
+
+            function Check_All_Returns is new Traverse_Func (Check_Return);
+
+         --  Start of processing for Has_Single_Return_In_GNATprove_Mode
+
+         begin
+            --  Retrieve last statement inside possible block statements
+
+            Last_Statement :=
+              Last (Statements (Handled_Statement_Sequence (N)));
+
+            while Nkind (Last_Statement) = N_Block_Statement loop
+               Last_Statement := Last
+                 (Statements (Handled_Statement_Sequence (Last_Statement)));
+            end loop;
+
+            --  Check that the last statement is the only possible return
+            --  statement in the subprogram.
+
+            return Check_All_Returns (N) = OK;
+         end Has_Single_Return_In_GNATprove_Mode;
 
          ------------------------------------
          --  Returns_Compile_Time_Constant --
@@ -2356,6 +2443,16 @@ package body Inline is
          elsif Present (Body_To_Inline (Decl)) then
             return False;
 
+         --  Subprograms that have return statements in the middle of the
+         --  body are inlined with gotos. GNATprove does not currently
+         --  support gotos, so we prevent such inlining.
+
+         elsif GNATprove_Mode
+           and then not Has_Single_Return_In_GNATprove_Mode
+         then
+            Cannot_Inline ("cannot inline & (multiple returns)?", N, Subp);
+            return False;
+
          --  No action needed if the subprogram does not fulfill the minimum
          --  conditions to be inlined by the frontend
 
@@ -2396,7 +2493,8 @@ package body Inline is
          --  on inlining (forbidden declarations, handlers, etc).
 
          if Front_End_Inlining
-           and then not Has_Pragma_Inline_Always (Subp)
+           and then
+             not (Has_Pragma_Inline_Always (Subp) or else GNATprove_Mode)
            and then Stat_Count > Max_Size
          then
             Cannot_Inline ("cannot inline& (body too large)?", N, Subp);
