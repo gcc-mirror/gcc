@@ -151,7 +151,7 @@ package body Debug is
    --  d4   Inhibit automatic krunch of predefined library unit files
    --  d5   Debug output for tree read/write
    --  d6   Default access unconstrained to thin pointers
-   --  d7   Do not output version & file time stamp in -gnatv or -gnatl mode
+   --  d7   Suppress version/source stamp/compilation time for -gnatv/-gnatl
    --  d8   Force opposite endianness in packed stuff
    --  d9   Allow lock free implementation
 
@@ -721,10 +721,11 @@ package body Debug is
    --       implications of using thin pointers, and also to test that the
    --       compiler functions correctly with this choice.
 
-   --  d7   Normally a -gnatl or -gnatv listing includes the time stamp
-   --       of the source file. This debug flag suppresses this output,
-   --       and also suppresses the message with the version number.
-   --       This is useful in certain regression tests.
+   --  d7   Normally a -gnatl or -gnatv listing includes the time stamp of the
+   --       source file and the time of the compilation. This debug flag can
+   --       be used to suppress this output, and also suppresses the message
+   --       with the version of the compiler. This is useful for regression
+   --       tests which need to have consistent output.
 
    --  d8   This forces the packed stuff to generate code assuming the
    --       opposite endianness from the actual correct value. Useful in

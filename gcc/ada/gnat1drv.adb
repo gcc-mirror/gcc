@@ -82,6 +82,7 @@ with Usage;
 with Validsw;  use Validsw;
 
 with System.Assertions;
+with System.OS_Lib;
 
 --------------
 -- Gnat1drv --
@@ -837,6 +838,10 @@ begin
       Sem_Elim.Initialize;
       Sem_Eval.Initialize;
       Sem_Type.Init_Interp_Tables;
+
+      --  Capture compilation date and time
+
+      Opt.Compilation_Time := System.OS_Lib.Current_Time_String;
 
       --  Acquire target parameters from system.ads (source of package System)
 

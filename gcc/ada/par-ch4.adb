@@ -42,6 +42,7 @@ package body Ch4 is
       Attribute_Img          => True,
       Attribute_Loop_Entry   => True,
       Attribute_Old          => True,
+      Attribute_Result       => True,
       Attribute_Stub_Type    => True,
       Attribute_Version      => True,
       Attribute_Type_Key     => True,

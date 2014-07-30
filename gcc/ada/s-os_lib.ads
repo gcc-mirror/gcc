@@ -101,14 +101,14 @@ package System.OS_Lib is
    ---------------------
 
    type OS_Time is private;
-   --  The OS's notion of time is represented by the private type OS_Time.
-   --  This is the type returned by the File_Time_Stamp functions to obtain
-   --  the time stamp of a specified file. Functions and a procedure (modeled
-   --  after the similar subprograms in package Calendar) are provided for
-   --  extracting information from a value of this type. Although these are
-   --  called GM, the intention is not that they provide GMT times in all
-   --  cases but rather the actual (time-zone independent) time stamp of the
-   --  file (of course in Unix systems, this *is* in GMT form).
+   --  The OS's notion of time is represented by the private type OS_Time. This
+   --  is the type returned by the File_Time_Stamp functions to obtain the time
+   --  stamp of a specified file. Functions and a procedure (modeled after the
+   --  similar subprograms in package Calendar) are provided for extracting
+   --  information from a value of this type. Although these are called GM, the
+   --  intention in the case of time stamps is not that they provide GMT times
+   --  in all cases but rather the actual (time-zone independent) time stamp of
+   --  the file (of course in Unix systems, this *is* in GMT form).
 
    Invalid_Time : constant OS_Time;
    --  A special unique value used to flag an invalid time stamp value
@@ -130,7 +130,7 @@ package System.OS_Lib is
    function GM_Hour    (Date : OS_Time) return Hour_Type;
    function GM_Minute  (Date : OS_Time) return Minute_Type;
    function GM_Second  (Date : OS_Time) return Second_Type;
-   --  Functions to extract information from OS_Time value
+   --  Functions to extract information from OS_Time value in GMT form
 
    function "<"  (X, Y : OS_Time) return Boolean;
    function ">"  (X, Y : OS_Time) return Boolean;
@@ -162,6 +162,10 @@ package System.OS_Lib is
    --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of time
    --  component parts and returns an OS_Time. Returns Invalid_Time if the
    --  creation fails.
+
+   function Current_Time_String return String;
+   --  Returns current local time in the form YYYY-MM-DD HH:MM:SS. The result
+   --  has bounds 1 .. 19.
 
    ----------------
    -- File Stuff --

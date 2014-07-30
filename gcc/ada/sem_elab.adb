@@ -2253,13 +2253,15 @@ package body Sem_Elab is
 
                --  Create object declaration for elaboration entity, and put it
                --  just in front of the spec of the subprogram or generic unit,
-               --  in the same scope as this unit.
+               --  in the same scope as this unit. The subprogram may be over-
+               --  loaded, so make the name of elaboration entity unique by
+               --  means of a numeric suffix.
 
                declare
                   Loce : constant Source_Ptr := Sloc (E);
                   Ent  : constant Entity_Id  :=
                            Make_Defining_Identifier (Loc,
-                             Chars => New_External_Name (Chars (E), 'E'));
+                             Chars => New_External_Name (Chars (E), 'E', -1));
 
                begin
                   Set_Elaboration_Entity (E, Ent);

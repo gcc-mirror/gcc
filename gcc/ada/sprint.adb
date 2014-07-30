@@ -2269,6 +2269,7 @@ package body Sprint is
 
                   begin
                      if Nkind (Odef) = N_Identifier
+                       and then Present (Etype (Odef))
                        and then Is_Array_Type (Etype (Odef))
                        and then not Is_Constrained (Etype (Odef))
                        and then Present (Etype (Def_Id))

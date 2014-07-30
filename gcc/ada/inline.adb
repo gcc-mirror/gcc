@@ -1399,6 +1399,11 @@ package body Inline is
 
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
+      --  Do not issue errors/warnings when compiling with optimizations. Note
+      --  that GNATprove mode is only set when we are analyzing (not compiling)
+      --  the program, so in that case the value of optimization level does not
+      --  matter.
+
       elsif Optimization_Level = 0 or else GNATprove_Mode then
 
          --  Do not emit warning if this is a predefined unit which is not
