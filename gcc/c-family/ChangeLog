@@ -1,3 +1,10 @@
+2014-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61659
+	PR c++/61687
+	Revert:
+	* c.opt (-fuse-all-virtuals): New.
+
 2014-07-30  Tom Tromey  <tromey@redhat.com>
 
 	PR c/59855

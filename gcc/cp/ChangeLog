@@ -1,5 +1,14 @@
 2014-07-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61659
+	PR c++/61687
+	Revert:
+	* decl2.c (mark_all_virtuals): New variable.
+	(maybe_emit_vtables): Check it instead of flag_devirtualize.
+	(cp_write_global_declarations): Set it and give helpful diagnostic
+	if it introduces errors.
+	* class.c (finish_struct_1): Check it.
+
 	PR lto/53808
 	PR c++/61659
 	* pt.c (push_template_decl_real): Set DECL_COMDAT on templates.
