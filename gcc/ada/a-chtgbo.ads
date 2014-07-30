@@ -85,10 +85,9 @@ package Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
    --  table is busy.
 
    procedure Delete_Node_At_Index
-     (HT    : in out Hash_Table_Type'Class;
-      Indx  : Hash_Type;
-      X     : Count_Type);
-
+     (HT   : in out Hash_Table_Type'Class;
+      Indx : Hash_Type;
+      X    : Count_Type);
    --  Delete a node whose bucket position is known. extracted from following
    --  subprogram, but also used directly to remove a node whose element has
    --  been modified through a key_preserving reference: in that case we cannot

@@ -1,4 +1,4 @@
--------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
@@ -762,8 +762,7 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       Insert (Container, New_Item, Position, Inserted);
 
       if not Inserted then
-         raise Program_Error with
-           "attempt to insert element already in set";
+         raise Program_Error with "attempt to insert element already in set";
       end if;
    end Insert;
 
@@ -1649,11 +1648,11 @@ package body Ada.Containers.Bounded_Hashed_Sets is
 
       package Key_Keys is
          new Hash_Tables.Generic_Bounded_Keys
-          (HT_Types  => HT_Types,
-           Next      => Next,
-           Set_Next  => Set_Next,
-           Key_Type  => Key_Type,
-           Hash      => Hash,
+          (HT_Types        => HT_Types,
+           Next            => Next,
+           Set_Next        => Set_Next,
+           Key_Type        => Key_Type,
+           Hash            => Hash,
            Equivalent_Keys => Equivalent_Key_Node);
 
       ------------------------
@@ -1786,7 +1785,7 @@ package body Ada.Containers.Bounded_Hashed_Sets is
             if Hash (Key (Element (Control.Old_Pos))) /= Control.Old_Hash
             then
                HT_Ops.Delete_Node_At_Index
-                (Control.Container.all, Control.Index, Control.Old_Pos.Node);
+                 (Control.Container.all, Control.Index, Control.Old_Pos.Node);
                raise Program_Error with "key not preserved in reference";
             end if;
 
@@ -1865,15 +1864,14 @@ package body Ada.Containers.Bounded_Hashed_Sets is
 
          begin
             return R : constant Reference_Type :=
-                (Element  => N.Element'Unrestricted_Access,
-                  Control  =>
-                    (Controlled with
-                       Container'Unrestricted_Access,
-                       Index  =>
-                         Key_Keys.Index (Container, Key (Position)),
-                       Old_Pos => Position,
-                       Old_Hash => Hash (Key (Position))))
-            do
+              (Element  => N.Element'Unrestricted_Access,
+                Control =>
+                  (Controlled with
+                     Container'Unrestricted_Access,
+                     Index    => Key_Keys.Index (Container, Key (Position)),
+                     Old_Pos  => Position,
+                     Old_Hash => Hash (Key (Position))))
+         do
                B := B + 1;
                L := L + 1;
             end return;
@@ -1898,13 +1896,13 @@ package body Ada.Containers.Bounded_Hashed_Sets is
 
          begin
             return R : constant Reference_Type :=
-               (Element  => Container.Nodes (Node).Element'Unrestricted_Access,
-                  Control  =>
-                    (Controlled with
-                       Container'Unrestricted_Access,
-                       Index  => Key_Keys.Index (Container, Key),
-                       Old_Pos => P,
-                       Old_Hash => Hash (Key)))
+              (Element => Container.Nodes (Node).Element'Unrestricted_Access,
+               Control =>
+                 (Controlled with
+                    Container'Unrestricted_Access,
+                    Index  => Key_Keys.Index (Container, Key),
+                    Old_Pos => P,
+                    Old_Hash => Hash (Key)))
             do
                B := B + 1;
                L := L + 1;

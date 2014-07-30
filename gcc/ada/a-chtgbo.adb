@@ -86,9 +86,9 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
    --------------------------
 
    procedure Delete_Node_At_Index
-     (HT    : in out Hash_Table_Type'Class;
-      Indx  : Hash_Type;
-      X     : Count_Type)
+     (HT   : in out Hash_Table_Type'Class;
+      Indx : Hash_Type;
+      X    : Count_Type)
    is
       Prev : Count_Type;
       Curr : Count_Type;
@@ -106,6 +106,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          HT.Length := HT.Length - 1;
          return;
       end if;
+
       if HT.Length = 1 then
          raise Program_Error with
            "attempt to delete node not in its proper hash bucket";
