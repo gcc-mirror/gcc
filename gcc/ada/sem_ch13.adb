@@ -2013,7 +2013,6 @@ package body Sem_Ch13 is
 
                      declare
                         Discard : Entity_Id;
-                        pragma Warnings (Off, Discard);
                      begin
                         if Restricted_Profile then
                            Discard := RTE (RE_Activate_Restricted_Tasks);

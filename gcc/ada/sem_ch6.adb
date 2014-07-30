@@ -2169,7 +2169,7 @@ package body Sem_Ch6 is
 
       function Body_Has_Contract return Boolean;
       --  Check whether unanalyzed body has an aspect or pragma that may
-      --  generate a SPARK contrac.
+      --  generate a SPARK contract.
 
       procedure Check_Anonymous_Return;
       --  Ada 2005: if a function returns an access type that denotes a task,
@@ -2363,13 +2363,13 @@ package body Sem_Ch6 is
             while Present (A_Spec) loop
                A := Get_Aspect_Id (Chars (Identifier (A_Spec)));
 
-               if A = Aspect_Contract_Cases
-                 or else A = Aspect_Depends
-                 or else A = Aspect_Global
-                 or else A = Aspect_Pre
-                 or else A = Aspect_Precondition
-                 or else A = Aspect_Post
-                 or else A = Aspect_Postcondition
+               if A = Aspect_Contract_Cases or else
+                  A = Aspect_Depends        or else
+                  A = Aspect_Global         or else
+                  A = Aspect_Pre            or else
+                  A = Aspect_Precondition   or else
+                  A = Aspect_Post           or else
+                  A = Aspect_Postcondition
                then
                   return True;
                end if;
@@ -2378,7 +2378,7 @@ package body Sem_Ch6 is
             end loop;
          end if;
 
-         --  Check for pragmas that may generate a contract.
+         --  Check for pragmas that may generate a contract
 
          if Present (Decls) then
             Decl := First (Decls);
@@ -2386,13 +2386,13 @@ package body Sem_Ch6 is
                if Nkind (Decl) = N_Pragma then
                   P_Id := Get_Pragma_Id (Pragma_Name (Decl));
 
-                  if P_Id = Pragma_Contract_Cases
-                    or else P_Id = Pragma_Depends
-                    or else P_Id = Pragma_Global
-                    or else P_Id = Pragma_Pre
-                    or else P_Id = Pragma_Precondition
-                    or else P_Id = Pragma_Post
-                    or else P_Id = Pragma_Postcondition
+                  if P_Id = Pragma_Contract_Cases or else
+                     P_Id = Pragma_Depends        or else
+                     P_Id = Pragma_Global         or else
+                     P_Id = Pragma_Pre            or else
+                     P_Id = Pragma_Precondition   or else
+                     P_Id = Pragma_Post           or else
+                     P_Id = Pragma_Postcondition
                   then
                      return True;
                   end if;

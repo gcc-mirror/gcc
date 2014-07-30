@@ -125,7 +125,8 @@ package body Exp_Ch6 is
    procedure Add_Task_Actuals_To_Build_In_Place_Call
      (Function_Call : Node_Id;
       Function_Id   : Entity_Id;
-      Master_Actual : Node_Id);
+      Master_Actual : Node_Id;
+      Chain         : Node_Id := Empty);
    --  Ada 2005 (AI-318-02): For a build-in-place call, if the result type
    --  contains tasks, add two actual parameters: the master, and a pointer to
    --  the caller's activation chain. Master_Actual is the actual parameter
@@ -133,9 +134,11 @@ package body Exp_Ch6 is
    --  master (_master). The two exceptions are: If the function call is the
    --  initialization expression for an allocator, we pass the master of the
    --  access type. If the function call is the initialization expression for a
-   --  return object, we pass along the master passed in by the caller. The
-   --  activation chain to pass is always the local one. Note: Master_Actual
-   --  can be Empty, but only if there are no tasks.
+   --  return object, we pass along the master passed in by the caller. In most
+   --  contexts, the activation chain to pass is the local one, which is
+   --  indicated by No (Chain). However, in an allocator, the caller passes in
+   --  the activation Chain. Note: Master_Actual can be Empty, but only if
+   --  there are no tasks.
 
    procedure Check_Overriding_Operation (Subp : Entity_Id);
    --  Subp is a dispatching operation. Check whether it may override an
@@ -506,7 +509,8 @@ package body Exp_Ch6 is
    procedure Add_Task_Actuals_To_Build_In_Place_Call
      (Function_Call : Node_Id;
       Function_Id   : Entity_Id;
-      Master_Actual : Node_Id)
+      Master_Actual : Node_Id;
+      Chain         : Node_Id := Empty)
    is
       Loc           : constant Source_Ptr := Sloc (Function_Call);
       Result_Subt   : constant Entity_Id :=
@@ -554,10 +558,20 @@ package body Exp_Ch6 is
 
       --  Create the actual which is a pointer to the current activation chain
 
-      Chain_Actual :=
-        Make_Attribute_Reference (Loc,
-          Prefix         => Make_Identifier (Loc, Name_uChain),
-          Attribute_Name => Name_Unrestricted_Access);
+      if No (Chain) then
+         Chain_Actual :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => Make_Identifier (Loc, Name_uChain),
+             Attribute_Name => Name_Unrestricted_Access);
+
+      --  Allocator case; make a reference to the Chain passed in by the caller
+
+      else
+         Chain_Actual :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Occurrence_Of (Chain, Loc),
+             Attribute_Name => Name_Unrestricted_Access);
+      end if;
 
       Analyze_And_Resolve (Chain_Actual, Etype (Chain_Formal));
 
@@ -8499,10 +8513,16 @@ package body Exp_Ch6 is
       Acc_Type          : constant Entity_Id := Etype (Allocator);
       Loc               : Source_Ptr;
       Func_Call         : Node_Id := Function_Call;
+      Ref_Func_Call     : Node_Id;
       Function_Id       : Entity_Id;
       Result_Subt       : Entity_Id;
       New_Allocator     : Node_Id;
-      Return_Obj_Access : Entity_Id;
+      Return_Obj_Access : Entity_Id; -- temp for function result
+      Temp_Init         : Node_Id; -- initial value of Return_Obj_Access
+      Alloc_Form        : BIP_Allocation_Form;
+      Pool              : Node_Id; -- nonnull if Alloc_Form = User_Storage_Pool
+      Return_Obj_Actual : Node_Id; -- the temp.all, in caller-allocates case
+      Chain             : Entity_Id; -- activation chain, in case of tasks
 
    begin
       --  Step past qualification or unchecked conversion (the latter can occur
@@ -8541,14 +8561,16 @@ package body Exp_Ch6 is
 
       Result_Subt := Available_View (Etype (Function_Id));
 
-      --  Check whether return type includes tasks. This may not have been done
-      --  previously, if the type was a limited view.
+      --  Create a temp for the function result. In the caller-allocates case,
+      --  this will be initialized to the result of a new uninitialized
+      --  allocator. Note: we do not use Allocator as the Related_Node of
+      --  Return_Obj_Access in call to Make_Temporary below as this would
+      --  create a sort of infinite "recursion".
 
-      if Has_Task (Result_Subt) then
-         Build_Activation_Chain_Entity (Allocator);
-      end if;
+      Return_Obj_Access := Make_Temporary (Loc, 'R');
+      Set_Etype (Return_Obj_Access, Acc_Type);
 
-      --  When the result subtype is constrained, the return object must be
+      --  When the result subtype is constrained, the return object is
       --  allocated on the caller side, and access to it is passed to the
       --  function.
 
@@ -8580,57 +8602,29 @@ package body Exp_Ch6 is
 
          Rewrite (Allocator, New_Allocator);
 
-         --  Create a new access object and initialize it to the result of the
-         --  new uninitialized allocator. Note: we do not use Allocator as the
-         --  Related_Node of Return_Obj_Access in call to Make_Temporary below
-         --  as this would create a sort of infinite "recursion".
+         --  Initial value of the temp is the result of the uninitialized
+         --  allocator
 
-         Return_Obj_Access := Make_Temporary (Loc, 'R');
-         Set_Etype (Return_Obj_Access, Acc_Type);
+         Temp_Init := Relocate_Node (Allocator);
 
-         Insert_Action (Allocator,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Return_Obj_Access,
-             Object_Definition   => New_Occurrence_Of (Acc_Type, Loc),
-             Expression          => Relocate_Node (Allocator)));
+         --  Indicate that caller allocates, and pass in the return object
 
-         --  When the function has a controlling result, an allocation-form
-         --  parameter must be passed indicating that the caller is allocating
-         --  the result object. This is needed because such a function can be
-         --  called as a dispatching operation and must be treated similarly
-         --  to functions with unconstrained result subtypes.
-
-         Add_Unconstrained_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
-
-         Add_Finalization_Master_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Acc_Type);
-
-         Add_Task_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Master_Actual => Master_Id (Acc_Type));
-
-         --  Add an implicit actual to the function call that provides access
-         --  to the allocated object. An unchecked conversion to the (specific)
-         --  result subtype of the function is inserted to handle cases where
-         --  the access type of the allocator has a class-wide designated type.
-
-         Add_Access_Actual_To_Build_In_Place_Call
-           (Func_Call,
-            Function_Id,
-            Make_Unchecked_Type_Conversion (Loc,
-              Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
-              Expression   =>
-                Make_Explicit_Dereference (Loc,
-                  Prefix => New_Occurrence_Of (Return_Obj_Access, Loc))));
+         Alloc_Form := Caller_Allocation;
+         Pool := Make_Null (No_Location);
+         Return_Obj_Actual :=
+           Make_Unchecked_Type_Conversion (Loc,
+             Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
+             Expression   =>
+               Make_Explicit_Dereference (Loc,
+                 Prefix => New_Occurrence_Of (Return_Obj_Access, Loc)));
 
       --  When the result subtype is unconstrained, the function itself must
       --  perform the allocation of the return object, so we pass parameters
-      --  indicating that. We don't yet handle the case where the allocation
-      --  must be done in a user-defined storage pool, which will require
-      --  passing another actual or two to provide allocation/deallocation
-      --  operations. ???
+      --  indicating that.
 
       else
+         Temp_Init := Empty;
+
          --  Case of a user-defined storage pool. Pass an allocation parameter
          --  indicating that the function should allocate its result in the
          --  pool, and pass the pool. Use 'Unrestricted_Access because the
@@ -8639,35 +8633,102 @@ package body Exp_Ch6 is
          if VM_Target = No_VM
            and then Present (Associated_Storage_Pool (Acc_Type))
          then
-            Add_Unconstrained_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Alloc_Form => User_Storage_Pool,
-               Pool_Actual =>
-                 Make_Attribute_Reference (Loc,
-                   Prefix         =>
-                     New_Occurrence_Of
-                       (Associated_Storage_Pool (Acc_Type), Loc),
-                   Attribute_Name => Name_Unrestricted_Access));
+            Alloc_Form := User_Storage_Pool;
+            Pool :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of
+                    (Associated_Storage_Pool (Acc_Type), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
 
          --  No user-defined pool; pass an allocation parameter indicating that
          --  the function should allocate its result on the heap.
 
          else
-            Add_Unconstrained_Actuals_To_Build_In_Place_Call
-              (Func_Call, Function_Id, Alloc_Form => Global_Heap);
+            Alloc_Form := Global_Heap;
+            Pool := Make_Null (No_Location);
          end if;
-
-         Add_Finalization_Master_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Acc_Type);
-
-         Add_Task_Actuals_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Master_Actual => Master_Id (Acc_Type));
 
          --  The caller does not provide the return object in this case, so we
          --  have to pass null for the object access actual.
 
-         Add_Access_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Return_Object => Empty);
+         Return_Obj_Actual := Empty;
       end if;
+
+      --  Declare the temp object
+
+      Insert_Action (Allocator,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Return_Obj_Access,
+          Object_Definition   => New_Occurrence_Of (Acc_Type, Loc),
+          Expression          => Temp_Init));
+
+      Ref_Func_Call := Make_Reference (Loc, Func_Call);
+
+      --  Ada 2005 (AI-251): If the type of the allocator is an interface
+      --  then generate an implicit conversion to force displacement of the
+      --  "this" pointer.
+
+      if Is_Interface (Designated_Type (Acc_Type)) then
+         Rewrite
+           (Ref_Func_Call,
+            OK_Convert_To (Acc_Type, Ref_Func_Call));
+      end if;
+
+      declare
+         Assign : constant Node_Id :=
+           Make_Assignment_Statement (Loc,
+             Name       => New_Occurrence_Of (Return_Obj_Access, Loc),
+             Expression => Ref_Func_Call);
+         --  Assign the result of the function call into the temp. In the
+         --  caller-allocates case, this is overwriting the temp with its
+         --  initial value, which has no effect. In the callee-allocates case,
+         --  this is setting the temp to point to the object allocated by the
+         --  callee.
+
+         Actions : List_Id;
+         --  Actions to be inserted. If there are no tasks, this is just the
+         --  assignment statement. If the allocated object has tasks, we need
+         --  to wrap the assignment in a block that activates them. The
+         --  activation chain of that block must be passed to the function,
+         --  rather than some outer chain.
+      begin
+         if Has_Task (Result_Subt) then
+            Actions := New_List;
+            Build_Task_Allocate_Block_With_Init_Stmts
+              (Actions, Allocator, Init_Stmts => New_List (Assign));
+            Chain := Activation_Chain_Entity (Last (Actions));
+         else
+            Actions := New_List (Assign);
+            Chain   := Empty;
+         end if;
+
+         Insert_Actions (Allocator, Actions);
+      end;
+
+      --  When the function has a controlling result, an allocation-form
+      --  parameter must be passed indicating that the caller is allocating
+      --  the result object. This is needed because such a function can be
+      --  called as a dispatching operation and must be treated similarly
+      --  to functions with unconstrained result subtypes.
+
+      Add_Unconstrained_Actuals_To_Build_In_Place_Call
+        (Func_Call, Function_Id, Alloc_Form, Pool_Actual => Pool);
+
+      Add_Finalization_Master_Actual_To_Build_In_Place_Call
+        (Func_Call, Function_Id, Acc_Type);
+
+      Add_Task_Actuals_To_Build_In_Place_Call
+        (Func_Call, Function_Id, Master_Actual => Master_Id (Acc_Type),
+         Chain => Chain);
+
+      --  Add an implicit actual to the function call that provides access
+      --  to the allocated object. An unchecked conversion to the (specific)
+      --  result subtype of the function is inserted to handle cases where
+      --  the access type of the allocator has a class-wide designated type.
+
+      Add_Access_Actual_To_Build_In_Place_Call
+        (Func_Call, Function_Id, Return_Obj_Actual);
 
       --  If the build-in-place function call returns a controlled object,
       --  the finalization master will require a reference to routine
@@ -8696,19 +8757,9 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  Finally, replace the allocator node with a reference to the result
-      --  of the function call itself (which will effectively be an access
-      --  to the object created by the allocator).
+      --  Finally, replace the allocator node with a reference to the temp
 
-      Rewrite (Allocator, Make_Reference (Loc, Relocate_Node (Function_Call)));
-
-      --  Ada 2005 (AI-251): If the type of the allocator is an interface then
-      --  generate an implicit conversion to force displacement of the "this"
-      --  pointer.
-
-      if Is_Interface (Designated_Type (Acc_Type)) then
-         Rewrite (Allocator, Convert_To (Acc_Type, Relocate_Node (Allocator)));
-      end if;
+      Rewrite (Allocator, New_Occurrence_Of (Return_Obj_Access, Loc));
 
       Analyze_And_Resolve (Allocator, Acc_Type);
    end Make_Build_In_Place_Call_In_Allocator;
