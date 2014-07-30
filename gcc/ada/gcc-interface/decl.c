@@ -349,9 +349,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      || Is_Public (gnat_entity));
 
   /* Get the name of the entity and set up the line number and filename of
-     the original definition for use in any decl we make.  */
+     the original definition for use in any decl we make.  Make sure we do not
+     inherit another source location.  */
   gnu_entity_name = get_entity_name (gnat_entity);
-  Sloc_to_locus (Sloc (gnat_entity), &input_location);
+  if (Sloc (gnat_entity) != No_Location
+      && !renaming_from_generic_instantiation_p (gnat_entity))
+    Sloc_to_locus (Sloc (gnat_entity), &input_location);
 
   /* For cases when we are not defining (i.e., we are referencing from
      another compilation unit) public entities, show we are at global level
@@ -1988,7 +1991,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       maybe_present = true;
       break;
 
-      /* Array and String Types and Subtypes
+      /* Array Types and Subtypes
 
 	 Unconstrained array types are represented by E_Array_Type and
 	 constrained array types are represented by E_Array_Subtype.  There
@@ -2001,7 +2004,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		Number_Dimensions  Number of dimensions (an int).
 		First_Index	   Type of first index.  */
 
-    case E_String_Type:
     case E_Array_Type:
       {
 	const bool convention_fortran_p
@@ -2312,7 +2314,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       }
       break;
 
-    case E_String_Subtype:
     case E_Array_Subtype:
 
       /* This is the actual data type for array variables.  Multidimensional
