@@ -1796,7 +1796,6 @@ begin
 
             declare
                Discard : ALI_Id;
-               pragma Unreferenced (Discard);
             begin
                Discard :=
                  Scan_ALI

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -396,12 +396,12 @@ package body System.Tasking.Debug is
 
    procedure Write (Fd : Integer; S : String; Count : Integer) is
       Discard : System.CRTL.ssize_t;
-      pragma Unreferenced (Discard);
-   begin
-      Discard := System.CRTL.write (Fd, S'Address,
-                                    System.CRTL.size_t (Count));
       --  Ignore write errors here; this is just debugging output, and there's
       --  nothing to be done about errors anyway.
+   begin
+      Discard :=
+        System.CRTL.write
+          (Fd, S'Address, System.CRTL.size_t (Count));
    end Write;
 
 end System.Tasking.Debug;

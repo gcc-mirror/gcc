@@ -2811,7 +2811,6 @@ package body Makeutl is
          With_Roots : Boolean := False)
       is
          Discard : Boolean;
-         pragma Unreferenced (Discard);
       begin
          Discard := Insert (Source, With_Roots);
       end Insert;

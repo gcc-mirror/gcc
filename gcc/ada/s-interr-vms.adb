@@ -570,7 +570,6 @@ package body System.Interrupts is
       --  away, the Interrupt_Manager will terminate gracefully.
 
       Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
-      pragma Unreferenced (Ignore);
 
       --------------------
       -- Local Routines --
@@ -897,7 +896,6 @@ package body System.Interrupts is
       --  goes away, the Server_Task will terminate gracefully.
 
       Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
-      pragma Unreferenced (Ignore);
 
       Self_ID         : constant Task_Id := Self;
       Tmp_Handler     : Parameterless_Handler;
@@ -1010,10 +1008,10 @@ package body System.Interrupts is
             POP.Unlock_RTS;
          end if;
 
-         System.Tasking.Initialization.Undefer_Abort (Self_ID);
+         --  Undefer abort here to allow a window for this task to be aborted
+         --  at the time of system shutdown.
 
-         --  Undefer abort here to allow a window for this task
-         --  to be aborted  at the time of system shutdown.
+         System.Tasking.Initialization.Undefer_Abort (Self_ID);
       end loop;
    end Server_Task;
 

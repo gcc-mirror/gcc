@@ -685,7 +685,6 @@ package body System.Interrupts is
       --  goes away, the Interrupt_Manager will terminate gracefully.
 
       Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
-      pragma Unreferenced (Ignore);
 
       ---------------------
       -- Local Variables --
@@ -1241,7 +1240,6 @@ package body System.Interrupts is
       --  away, the Server_Task will terminate gracefully.
 
       Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
-      pragma Unreferenced (Ignore);
 
       Intwait_Mask    : aliased IMNG.Interrupt_Mask;
       Ret_Interrupt   : Interrupt_ID;
@@ -1307,7 +1305,7 @@ package body System.Interrupts is
 
          elsif Blocked (Interrupt) then
 
-            --  Interrupt is blocked. Stay here, so we won't catch it
+            --  Interrupt is blocked, stay here, so we won't catch it
 
             Self_ID.Common.State := Interrupt_Server_Blocked_Interrupt_Sleep;
             POP.Sleep (Self_ID, Interrupt_Server_Blocked_Interrupt_Sleep);

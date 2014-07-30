@@ -400,7 +400,6 @@ package body System.File_IO is
       Fptr2   : AFCB_Ptr;
 
       Discard : int;
-      pragma Unreferenced (Discard);
 
    begin
       --  Take a lock to protect global Open_Files data structure

@@ -3038,6 +3038,7 @@ package body Sem_Ch6 is
                  and then GNATprove_Mode
                  and then Debug_Flag_QQ
                  and then Full_Analysis
+                 and then Nkind (N) /= N_Subprogram_Body_Stub
                  and then Comes_From_Source (Body_Id)
                  and then Is_List_Member (N)
                  and then not Body_Has_Contract

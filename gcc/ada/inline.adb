@@ -860,6 +860,11 @@ package body Inline is
       --  function. In that case the call can be replaced by that local
       --  variable as is done for other inlined calls.
 
+      function Has_Single_Return_In_GNATprove_Mode return Boolean;
+      --  This function is called only in GNATprove mode, and it returns
+      --  True if the subprogram has no or a single return statement as
+      --  last statement.
+
       procedure Remove_Pragmas;
       --  A pragma Unreferenced or pragma Unmodified that mentions a formal
       --  parameter has no meaning when the body is inlined and the formals
@@ -1143,6 +1148,57 @@ package body Inline is
          end if;
       end Has_Single_Return;
 
+      -----------------------------------------
+      -- Has_Single_Return_In_GNATprove_Mode --
+      -----------------------------------------
+
+      function Has_Single_Return_In_GNATprove_Mode return Boolean is
+         Last_Statement : Node_Id := Empty;
+
+         function Check_Return (N : Node_Id) return Traverse_Result;
+         --  Returns OK on node N if this is not a return statement different
+         --  from the last statement in the subprogram.
+
+         ------------------
+         -- Check_Return --
+         ------------------
+
+         function Check_Return (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind_In (N, N_Simple_Return_Statement,
+                            N_Extended_Return_Statement)
+            then
+               if N = Last_Statement then
+                  return OK;
+               else
+                  return Abandon;
+               end if;
+
+            else
+               return OK;
+            end if;
+         end Check_Return;
+
+         function Check_All_Returns is new Traverse_Func (Check_Return);
+
+      --  Start of processing for Has_Single_Return_In_GNATprove_Mode
+
+      begin
+         --  Retrieve last statement inside possible block statements
+
+         Last_Statement := Last (Statements (Handled_Statement_Sequence (N)));
+
+         while Nkind (Last_Statement) = N_Block_Statement loop
+            Last_Statement :=
+              Last (Statements (Handled_Statement_Sequence (Last_Statement)));
+         end loop;
+
+         --  Check that the last statement is the only possible return
+         --  statement in the subprogram.
+
+         return Check_All_Returns (N) = OK;
+      end Has_Single_Return_In_GNATprove_Mode;
+
       --------------------
       -- Remove_Pragmas --
       --------------------
@@ -1209,6 +1265,16 @@ package body Inline is
       if Nkind (Decl) = N_Subprogram_Declaration
         and then Present (Body_To_Inline (Decl))
       then
+         return;
+
+      --  Subprograms that have return statements in the middle of the body are
+      --  inlined with gotos. GNATprove does not currently support gotos, so
+      --  we prevent such inlining.
+
+      elsif GNATprove_Mode
+        and then not Has_Single_Return_In_GNATprove_Mode
+      then
+         Cannot_Inline ("cannot inline & (multiple returns)?", N, Subp);
          return;
 
       --  Functions that return unconstrained composite types require
@@ -1378,6 +1444,14 @@ package body Inline is
          then
             null;
 
+         --  In GNATprove mode, issue a warning, and indicate that the
+         --  subprogram is not always inlined by setting flag Is_Inlined
+         --  to False.
+
+         elsif GNATprove_Mode then
+            Set_Is_Inlined (Subp, False);
+            Error_Msg_NE (Msg & "p?", N, Subp);
+
          elsif Has_Pragma_Inline_Always (Subp) then
 
             --  Remove last character (question mark) to make this into an
@@ -1399,12 +1473,16 @@ package body Inline is
 
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
-      --  Do not issue errors/warnings when compiling with optimizations. Note
-      --  that GNATprove mode is only set when we are analyzing (not compiling)
-      --  the program, so in that case the value of optimization level does not
-      --  matter.
+      --  In GNATprove mode, issue a warning, and indicate that the subprogram
+      --  is not always inlined by setting flag Is_Inlined to False.
 
-      elsif Optimization_Level = 0 or else GNATprove_Mode then
+      elsif GNATprove_Mode then
+         Set_Is_Inlined (Subp, False);
+         Error_Msg_NE (Msg & "p?", N, Subp);
+
+      --  Do not issue errors/warnings when compiling with optimizations
+
+      elsif Optimization_Level = 0 then
 
          --  Do not emit warning if this is a predefined unit which is not
          --  the main unit. This behavior is currently provided for backward
@@ -1441,7 +1519,7 @@ package body Inline is
 
             Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
-         else pragma Assert (Front_End_Inlining or GNATprove_Mode);
+         else pragma Assert (Front_End_Inlining);
             Set_Is_Inlined (Subp, False);
 
             --  When inlining cannot take place we must issue an error.

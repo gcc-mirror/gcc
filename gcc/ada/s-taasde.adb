@@ -283,7 +283,6 @@ package body System.Tasking.Async_Delays is
 
    task body Timer_Server is
       Ignore : constant Boolean := STU.Make_Independent;
-      pragma Unreferenced (Ignore);
 
       --  Local Declarations
 
