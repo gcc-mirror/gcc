@@ -35,6 +35,10 @@
 
 --  This is the Alpha/OpenVMS version of this package
 
+pragma Polling (Off);
+--  We must turn polling off for this unit, because otherwise we get
+--  elaboration circularities with Ada.Exceptions.
+
 package System.Traceback_Entries is
    pragma Preelaborate;
 

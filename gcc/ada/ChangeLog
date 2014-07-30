@@ -1,3 +1,28 @@
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* s-taasde.adb (Timer_Queue): Don't use a
+	build-in-place function call to initialize the Timer_Queue.
+	* s-traent.adb, s-traent.ads, s-traent-vms.adb, s-traent-vms.ads:
+	Turn off polling in these units, because otherwise we get
+	elaboration circularities with Ada.Exceptions when the -gnatP
+	switch is used.
+	* s-tassta.adb (Create_Task): Make sure independent tasks
+	are created with Parent = Environment_Task. This was not true,
+	for example, in s-interr.adb, when Interrupt_Manager does "new
+	Server_Task"; the Server_Task had Parent = Interrupt_Manager,
+	which is wrong because the master is determined by the access
+	type, which is at library level.
+	* s-tasuti.adb (Make_Independent): Avoid setting Parent; it is
+	now set correctly by Create_Task.
+	(Make_Passive): Remove the workaround for the race condition in
+	Make_Independent.
+	* frontend.adb (Frontend): Revert to previous method of detecting
+	temporary configuration pragma files, recognizing such files by
+	".tmp" in the name. This is more general than detecting pragmas
+	Source_File_Name_Project, because it allows any tool to use
+	this naming convention, no matter the content of the file.
+	* gnat_ugn.texi: Document this naming convention.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb, s-tataat.adb, s-tataat.ads, s-parame-vms-alpha.ads,
