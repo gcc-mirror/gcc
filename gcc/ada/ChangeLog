@@ -1,3 +1,23 @@
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-coorse.adb, a-coorse.ads (Generic_Keys): Add a
+	Reference_Control_Type to generic package, to keep additional
+	information for Reference_Types that manipulate keys. Add Adjust and
+	Finalize procedures for this type.
+	(Finalize): When finalizing a reference_preserving_key, verify
+	that the key of the new value is equivalent to the key of the
+	original element, raise Program_Error otherwise.
+	(Insert): Detect tampering.
+	(Reference_Preserving_Key): Build proper Reference_Control_Type,
+	and update Busy and Lock bits to detect tampering.
+	* a-cohase.ads: Keep with-clause private.
+
+2014-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Emit a warning when the operands
+	of an equality are of an Unchecked_Union type and lack inferable
+	discriminants.
+
 2014-07-30  Bob Duff  <duff@adacore.com>
 
 	* g-exctra.adb, g-exctra.ads, s-exctra.adb, s-exctra.ads, Makefile.rtl,

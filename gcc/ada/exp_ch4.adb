@@ -7357,12 +7357,25 @@ package body Exp_Ch4 is
                  Make_Raise_Program_Error (Loc,
                    Reason => PE_Unchecked_Union_Restriction));
 
+               --  Emit a warning on source equalities only, otherwise the
+               --  message may appear out of place due to internal use. The
+               --  warning is unconditional because it is required by the
+               --  language.
+
+               if Comes_From_Source (N) then
+                  Error_Msg_N
+                    ("??Unchecked_Union discriminants cannot be determined",
+                     N);
+                  Error_Msg_N
+                    ("\Program_Error will be raised for equality operation",
+                     N);
+               end if;
+
                --  Prevent Gigi from generating incorrect code by rewriting
                --  the equality as a standard False (documented where???).
 
                Rewrite (N,
                  New_Occurrence_Of (Standard_False, Loc));
-
             end if;
 
          --  If a type support function is present (for complex cases), use it

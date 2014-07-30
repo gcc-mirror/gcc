@@ -35,7 +35,7 @@ with Ada.Iterator_Interfaces;
 
 private with Ada.Containers.Hash_Tables;
 private with Ada.Streams;
-with Ada.Finalization;
+private with Ada.Finalization;
 
 generic
    type Element_Type is private;
