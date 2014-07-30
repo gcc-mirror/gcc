@@ -1,3 +1,24 @@
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* lib-load.ads: Minor reformatting.
+	* sinfo.ads (Library_Unit): Update comment.
+	* lib.ads (Notes): Simplify. The Unit component in Notes_Entry
+	is redundant. Instead used the pragma Node_Id directly as the
+	element type.
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* lib.adb (Store_Note): Store only notes that do not come from
+	an instance, and that are in the extended main source unit.
+	* lib-writ (Write_Unit_Information): Annotations from subunits
+	must be emitted along with those for the main unit, and they
+	must carry a specific file name.
+	* ali.ads (Notes_Record): Use a File_Name_Type instead of a
+	Unit_Id for the source file containing the pragma, as in the
+	case of annotations from subunits we might not have a readily
+	available unit id.
+	* ali.adb (Scan_ALI): Account for above change in data structure.
+
 2014-07-30  Vincent Celier  <celier@adacore.com>
 
 	* makeutl.adb (Insert_Project_Sources): When the library project

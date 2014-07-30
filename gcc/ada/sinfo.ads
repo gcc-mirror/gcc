@@ -1685,6 +1685,8 @@ package Sinfo is
    --
    --     For a subunit, Library_Unit points to the compilation unit node of
    --     the parent body.
+   --     ??? not (always) true, in (at least some, maybe all?) cases it points
+   --     to the corresponding spec for the parent body.
    --
    --    Note that this field is not used to hold the parent pointer for child
    --    unit (which might in any case need to use it for some other purpose as

@@ -647,13 +647,26 @@ package body Lib.Writ is
 
          for J in 1 .. Notes.Last loop
             declare
-               N : constant Node_Id          := Notes.Table (J).Pragma_Node;
+               N : constant Node_Id          := Notes.Table (J);
                L : constant Source_Ptr       := Sloc (N);
-               U : constant Unit_Number_Type := Notes.Table (J).Unit;
+               U : constant Unit_Number_Type :=
+                     Unit (Get_Source_File_Index (L));
                C : Character;
 
+               Note_Unit : Unit_Number_Type;
+               --  The unit in whose U section this note must be emitted:
+               --  notes for subunits are emitted along with the main unit;
+               --  all other notes are emitted as part of the enclosing
+               --  compilation unit.
+
             begin
-               if U = Unit_Num then
+               if Nkind (Unit (Cunit (U))) = N_Subunit then
+                  Note_Unit := Main_Unit;
+               else
+                  Note_Unit := U;
+               end if;
+
+               if Note_Unit = Unit_Num then
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
@@ -676,6 +689,15 @@ package body Lib.Writ is
                   Write_Info_Int (Int (Get_Logical_Line_Number (L)));
                   Write_Info_Char (':');
                   Write_Info_Int (Int (Get_Column_Number (L)));
+
+                  --  Indicate source file of annotation if different from
+                  --  compilation unit source file (case of annotation coming
+                  --  from a separate).
+
+                  if Get_Source_File_Index (L) /= Source_Index (Unit_Num) then
+                     Write_Info_Char (':');
+                     Write_Info_Name (File_Name (Get_Source_File_Index (L)));
+                  end if;
 
                   declare
                      A : Node_Id;

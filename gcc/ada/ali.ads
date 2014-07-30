@@ -669,8 +669,8 @@ package ALI is
       Pragma_Col : Nat;
       --  Column number of pragma
 
-      Unit : Unit_Id;
-      --  Unit_Id for the entry
+      Pragma_Source_File : File_Name_Type;
+      --  Source file of pragma
 
       Pragma_Args : Name_Id;
       --  Pragma arguments. No_Name if no arguments, otherwise a single

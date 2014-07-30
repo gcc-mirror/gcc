@@ -2185,20 +2185,30 @@ package body ALI is
                Notes.Table (Notes.Last).Pragma_Line := Get_Nat;
                Checkc (':');
                Notes.Table (Notes.Last).Pragma_Col  := Get_Nat;
-               Notes.Table (Notes.Last).Unit        := Units.Last;
+
+               if not At_Eol and then Nextc = ':' then
+                  Checkc (':');
+                  Notes.Table (Notes.Last).Pragma_Source_File :=
+                    Get_File_Name (Lower => True);
+               else
+                  Notes.Table (Notes.Last).Pragma_Source_File :=
+                    Units.Table (Units.Last).Sfile;
+               end if;
 
                if At_Eol then
                   Notes.Table (Notes.Last).Pragma_Args := No_Name;
 
                else
+                  --  Note: can't use Get_Name here as the remainder of the
+                  --  line is unstructured text whose syntax depends on the
+                  --  particular pragma used.
+
                   Checkc (' ');
 
                   Name_Len := 0;
                   while not At_Eol loop
                      Add_Char_To_Name_Buffer (Getc);
                   end loop;
-
-                  Notes.Table (Notes.Last).Pragma_Args := Name_Enter;
                end if;
 
                Skip_Eol;

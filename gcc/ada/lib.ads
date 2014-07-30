@@ -826,13 +826,8 @@ private
 
    --  The following table stores references to pragmas that generate Notes
 
-   type Notes_Entry is record
-      Pragma_Node : Node_Id;
-      Unit        : Unit_Number_Type;
-   end record;
-
    package Notes is new Table.Table (
-     Table_Component_Type => Notes_Entry,
+     Table_Component_Type => Node_Id,
      Table_Index_Type     => Integer,
      Table_Low_Bound      => 1,
      Table_Initial        => Alloc.Notes_Initial,
