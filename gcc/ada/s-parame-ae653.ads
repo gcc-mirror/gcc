@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,9 +182,8 @@ package System.Parameters is
    -- Task Attributes --
    ---------------------
 
-   Default_Attribute_Count : constant := 4;
-   --  Number of pre-allocated Address-sized task attributes stored in the
-   --  task control block.
+   Max_Attribute_Count : constant := 8;
+   --  Number of task attributes stored in the task control block
 
    --------------------
    -- Runtime Traces --
