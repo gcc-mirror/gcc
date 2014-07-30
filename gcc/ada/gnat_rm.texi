@@ -8821,9 +8821,9 @@ In addition to the usage of this attribute in the Ada RM, @code{GNAT}
 also permits the use of the @code{'Constrained} attribute
 in a generic template
 for any type, including types without discriminants. The value of this
-attribute in the generic instance when applied to a type without
-discriminants is always @code{True}. This usage is compatible with
-older Ada compilers, including notably DEC Ada.
+attribute in the generic instance when applied to a scalar type or a
+record type without discriminants is always @code{True}. This usage is
+compatible with older Ada compilers, including notably DEC Ada.
 
 @node Attribute Default_Bit_Order
 @unnumberedsec Attribute Default_Bit_Order

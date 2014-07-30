@@ -202,6 +202,11 @@ extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
 extern void Check_Elaboration_Code_Allowed (Node_Id);
 extern void Check_Implicit_Dynamic_Code_Allowed (Node_Id);
 
+/* sem_aggr:  */
+#define Is_Others_Aggregate    sem_aggr__is_others_aggregate
+
+extern Boolean Is_Others_Aggregate (Node_Id);
+
 /* sem_aux:  */
 
 #define Ancestor_Subtype               sem_aux__ancestor_subtype

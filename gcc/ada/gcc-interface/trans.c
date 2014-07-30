@@ -2400,9 +2400,11 @@ Case_Statement_to_gnu (Node_Id gnat_node)
       /* First compile all the different case choices for the current WHEN
 	 alternative.  */
       for (gnat_choice = First (Discrete_Choices (gnat_when));
-	   Present (gnat_choice); gnat_choice = Next (gnat_choice))
+	   Present (gnat_choice);
+	   gnat_choice = Next (gnat_choice))
 	{
 	  tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+	  tree label = create_artificial_label (input_location);
 
 	  switch (Nkind (gnat_choice))
 	    {
@@ -2426,8 +2428,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 		{
 		  tree gnu_type = get_unpadded_type (Entity (gnat_choice));
 
-		  gnu_low = fold (TYPE_MIN_VALUE (gnu_type));
-		  gnu_high = fold (TYPE_MAX_VALUE (gnu_type));
+		  gnu_low = TYPE_MIN_VALUE (gnu_type);
+		  gnu_high = TYPE_MAX_VALUE (gnu_type);
 		  break;
 		}
 
@@ -2445,20 +2447,13 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	      gcc_unreachable ();
 	    }
 
-	  /* If the case value is a subtype that raises Constraint_Error at
-	     run time because of a wrong bound, then gnu_low or gnu_high is
-	     not translated into an INTEGER_CST.  In such a case, we need
-	     to ensure that the when statement is not added in the tree,
-	     otherwise it will crash the gimplifier.  */
-	  if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
-	      && (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST))
-	    {
-	      add_stmt_with_node (build_case_label
-				  (gnu_low, gnu_high,
-				   create_artificial_label (input_location)),
-				  gnat_choice);
-	      choices_added_p = true;
-	    }
+	  /* Everything should be folded into constants at this point.  */
+	  gcc_assert (!gnu_low  || TREE_CODE (gnu_low)  == INTEGER_CST);
+	  gcc_assert (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST);
+
+	  add_stmt_with_node (build_case_label (gnu_low, gnu_high, label),
+			      gnat_choice);
+	  choices_added_p = true;
 	}
 
       /* This construct doesn't define a scope so we shouldn't push a binding
@@ -5713,16 +5708,27 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result = alloc_stmt_list ();
       break;
 
+    case N_Exception_Renaming_Declaration:
+      gnat_temp = Defining_Entity (gnat_node);
+      if (Renamed_Entity (gnat_temp) != Empty)
+        gnu_result
+          = gnat_to_gnu_entity (gnat_temp,
+                                gnat_to_gnu (Renamed_Entity (gnat_temp)), 1);
+      else
+        gnu_result = alloc_stmt_list ();
+      break;
+
     case N_Implicit_Label_Declaration:
       gnat_to_gnu_entity (Defining_Entity (gnat_node), NULL_TREE, 1);
       gnu_result = alloc_stmt_list ();
       break;
 
-    case N_Exception_Renaming_Declaration:
     case N_Number_Declaration:
-    case N_Package_Renaming_Declaration:
     case N_Subprogram_Renaming_Declaration:
+    case N_Package_Renaming_Declaration:
       /* These are fully handled in the front end.  */
+      /* ??? For package renamings, find a way to use GENERIC namespaces so
+	 that we get proper debug information for them.  */
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -6479,40 +6485,79 @@ gnat_to_gnu (Node_Id gnat_node)
 			 atomic_sync_required_p (Name (gnat_node)));
       else
 	{
-	  gnu_rhs
-	    = maybe_unconstrained_array (gnat_to_gnu (Expression (gnat_node)));
+	  const Node_Id gnat_expr = Expression (gnat_node);
+	  const Entity_Id gnat_type
+	    = Underlying_Type (Etype (Name (gnat_node)));
+	  const bool regular_array_type_p
+	    = (Is_Array_Type (gnat_type) && !Is_Bit_Packed_Array (gnat_type));
+	  const bool use_memset_p
+	    = (regular_array_type_p
+	       && Nkind (gnat_expr) == N_Aggregate
+	       && Is_Others_Aggregate (gnat_expr));
+
+	  /* If we'll use memset, we need to find the inner expression.  */
+	  if (use_memset_p)
+	    {
+	      Node_Id gnat_inner
+		= Expression (First (Component_Associations (gnat_expr)));
+	      while (Nkind (gnat_inner) == N_Aggregate
+		     && Is_Others_Aggregate (gnat_inner))
+		gnat_inner
+		  = Expression (First (Component_Associations (gnat_inner)));
+	      gnu_rhs = gnat_to_gnu (gnat_inner);
+	    }
+	  else
+	    gnu_rhs = maybe_unconstrained_array (gnat_to_gnu (gnat_expr));
 
 	  /* If range check is needed, emit code to generate it.  */
-	  if (Do_Range_Check (Expression (gnat_node)))
+	  if (Do_Range_Check (gnat_expr))
 	    gnu_rhs = emit_range_check (gnu_rhs, Etype (Name (gnat_node)),
 					gnat_node);
 
+	  /* If atomic synchronization is required, build an atomic store.  */
 	  if (atomic_sync_required_p (Name (gnat_node)))
 	    gnu_result = build_atomic_store (gnu_lhs, gnu_rhs);
+
+	  /* Or else, use memset when the conditions are met.  */
+	  else if (use_memset_p)
+	    {
+	      tree value = fold_convert (integer_type_node, gnu_rhs);
+	      tree to = gnu_lhs;
+	      tree type = TREE_TYPE (to);
+	      tree size
+	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), to);
+	      tree to_ptr = build_fold_addr_expr (to);
+	      tree t = builtin_decl_implicit (BUILT_IN_MEMSET);
+	      if (TREE_CODE (value) == INTEGER_CST)
+		{
+		  tree mask
+		    = build_int_cst (integer_type_node,
+				     ((HOST_WIDE_INT) 1 << BITS_PER_UNIT) - 1);
+		  value = int_const_binop (BIT_AND_EXPR, value, mask);
+		}
+	      gnu_result = build_call_expr (t, 3, to_ptr, value, size);
+	    }
+
+	  /* Otherwise build a regular assignment.  */
 	  else
 	    gnu_result
 	      = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
 
-	  /* If the type being assigned is an array type and the two sides are
+	  /* If the assignment type is a regular array and the two sides are
 	     not completely disjoint, play safe and use memmove.  But don't do
 	     it for a bit-packed array as it might not be byte-aligned.  */
 	  if (TREE_CODE (gnu_result) == MODIFY_EXPR
-	      && Is_Array_Type (Etype (Name (gnat_node)))
-	      && !Is_Bit_Packed_Array (Etype (Name (gnat_node)))
+	      && regular_array_type_p
 	      && !(Forwards_OK (gnat_node) && Backwards_OK (gnat_node)))
 	    {
-	      tree to, from, size, to_ptr, from_ptr, t;
-
-	      to = TREE_OPERAND (gnu_result, 0);
-	      from = TREE_OPERAND (gnu_result, 1);
-
-	      size = TYPE_SIZE_UNIT (TREE_TYPE (from));
-	      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, from);
-
-	      to_ptr = build_fold_addr_expr (to);
-	      from_ptr = build_fold_addr_expr (from);
-
-	      t = builtin_decl_implicit (BUILT_IN_MEMMOVE);
+	      tree to = TREE_OPERAND (gnu_result, 0);
+	      tree from = TREE_OPERAND (gnu_result, 1);
+	      tree type = TREE_TYPE (from);
+	      tree size
+	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), from);
+	      tree to_ptr = build_fold_addr_expr (to);
+	      tree from_ptr = build_fold_addr_expr (from);
+	      tree t = builtin_decl_implicit (BUILT_IN_MEMMOVE);
 	      gnu_result = build_call_expr (t, 3, to_ptr, from_ptr, size);
 	   }
 	}
@@ -7457,7 +7502,10 @@ add_stmt_force (tree gnu_stmt)
 void
 add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 {
-  if (Present (gnat_node))
+  /* Do not emit a location for renamings that come from generic instantiation,
+     they are likely to disturb debugging.  */
+  if (Present (gnat_node)
+      && !renaming_from_generic_instantiation_p (gnat_node))
     set_expr_location_from_node (gnu_stmt, gnat_node);
   add_stmt (gnu_stmt);
 }
