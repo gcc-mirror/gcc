@@ -1,3 +1,18 @@
+2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-34.C: New testcase.
+	* ipa-devirt.c (polymorphic_call_target_d): Rename nonconstruction_targets
+	to speculative_targets
+	(get_class_context): Fix handling of contextes without outer type;
+	avoid matching non-polymorphic types in LTO.
+	(possible_polymorphic_call_targets): Trun nonconstruction_targetsp
+	parameter to speculative_targetsp; handle speculation.
+	(dump_possible_polymorphic_call_targets): Update dumping.
+
+2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt (Wodr): Enable by default.
+
 2014-07-29  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxworksae.h (VXWORKS_OVERRIDE_OPTIONS): Define.
