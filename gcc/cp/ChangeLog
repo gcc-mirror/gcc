@@ -1,3 +1,17 @@
+2014-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR lto/53808
+	PR c++/61659
+	* pt.c (push_template_decl_real): Set DECL_COMDAT on templates.
+	(check_explicit_specialization): Clear it on specializations.
+	* decl.c (duplicate_decls, start_decl): Likewise.
+	(grokmethod, grokfndecl): Set DECL_COMDAT on inlines.
+	* method.c (implicitly_declare_fn): Set DECL_COMDAT.  Determine
+	linkage after setting the appropriate flags.
+	* tree.c (decl_linkage): Don't check DECL_COMDAT.
+	* decl2.c (mark_needed): Mark clones.
+	(import_export_decl): Not here.
+
 2014-07-25  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N4051 - Allow typename in a template template parameter

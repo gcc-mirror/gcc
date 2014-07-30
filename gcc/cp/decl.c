@@ -2197,6 +2197,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      olddecl);
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
+	  DECL_COMDAT (newdecl) = DECL_DECLARED_INLINE_P (olddecl);
 
 	  /* Don't propagate visibility from the template to the
 	     specialization here.  We'll do that in determine_visibility if
@@ -4683,6 +4684,10 @@ start_decl (const cp_declarator *declarator,
       if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
 	{
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
+	  else
+	    DECL_COMDAT (decl) = false;
 
 	  /* [temp.expl.spec] An explicit specialization of a static data
 	     member of a template is a definition if the declaration
@@ -7663,7 +7668,10 @@ grokfndecl (tree ctype,
 
   /* If the declaration was declared inline, mark it as such.  */
   if (inlinep)
-    DECL_DECLARED_INLINE_P (decl) = 1;
+    {
+      DECL_DECLARED_INLINE_P (decl) = 1;
+      DECL_COMDAT (decl) = 1;
+    }
   if (inlinep & 2)
     DECL_DECLARED_CONSTEXPR_P (decl) = true;
 
@@ -14223,6 +14231,7 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
   check_template_shadow (fndecl);
 
+  DECL_COMDAT (fndecl) = 1;
   DECL_DECLARED_INLINE_P (fndecl) = 1;
   DECL_NO_INLINE_WARNING_P (fndecl) = 1;
 
