@@ -10163,6 +10163,16 @@ be determined at compile time that the prefix of the attribute has no
 scalar parts (e.g., if the prefix is of an access type, an interface type,
 an undiscriminated task type, or an undiscriminated protected type).
 
+For scalar types, @code{Valid_Scalars} is equivalent to @code{Valid}. The use
+of this attribute is not permitted for @code{Unchecked_Union} types for which
+in general it is not possible to determine the values of the discriminants.
+
+Note: @code{Valid_Scalars} can generate a lot of code, especially in the case
+of a large variant record. If the attribute is called in many places in the
+same program applied to objects of the same type, it can reduce program size
+to write a function with a single use of the attribute, and then call that
+function from multiple places.
+
 @node Attribute VADS_Size
 @unnumberedsec Attribute VADS_Size
 @cindex @code{Size}, VADS compatibility

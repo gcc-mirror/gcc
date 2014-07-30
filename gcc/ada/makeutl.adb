@@ -2912,26 +2912,26 @@ package body Makeutl is
       is
 
          procedure Do_Insert
-           (Project    : Project_Id;
-            Tree       : Project_Tree_Ref;
-            Context    : Project_Context);
+           (Project : Project_Id;
+            Tree    : Project_Tree_Ref;
+            Context : Project_Context);
+         --  Local procedures must be commented ???
 
          ---------------
          -- Do_Insert --
          ---------------
 
          procedure Do_Insert
-           (Project    : Project_Id;
-            Tree       : Project_Tree_Ref;
-            Context    : Project_Context)
+           (Project : Project_Id;
+            Tree    : Project_Tree_Ref;
+            Context : Project_Context)
          is
             Unit_Based : constant Boolean :=
                            Unique_Compile
                              or else not Builder_Data (Tree).Closure_Needed;
-            --  When Unit_Based is True, put in the queue all compilable
-            --  sources including the unit based (Ada) one. When Unit_Based is
-            --  False, put the Ada sources only when they are in a library
-            --  project.
+            --  When Unit_Based is True, we enqueue all compilable sources
+            --  including the unit based (Ada) one. When Unit_Based is False,
+            --  put the Ada sources only when they are in a library project.
 
             Iter    : Source_Iterator;
             Source  : Prj.Source_Id;
@@ -2942,9 +2942,7 @@ package body Makeutl is
             --  Nothing to do when "-u" was specified and some files were
             --  specified on the command line
 
-            if Unique_Compile
-              and then Mains.Number_Of_Mains (Tree) > 0
-            then
+            if Unique_Compile and then Mains.Number_Of_Mains (Tree) > 0 then
                return;
             end if;
 
@@ -2955,16 +2953,13 @@ package body Makeutl is
 
                if Is_Allowed_Language (Source.Language.Name)
                  and then Is_Compilable (Source)
-                 and then
-                   (All_Projects
-                     or else Is_Extending (Project, Source.Project))
+                 and then (All_Projects
+                            or else Is_Extending (Project, Source.Project))
                  and then not Source.Locally_Removed
                  and then Source.Replaced_By = No_Source
-                 and then
-                   (not Source.Project.Externally_Built
-                     or else
-                       (Is_Extending (Project, Source.Project)
-                         and then not Project.Externally_Built))
+                 and then (not Source.Project.Externally_Built
+                            or else (Is_Extending (Project, Source.Project)
+                                      and then not Project.Externally_Built))
                  and then Source.Kind /= Sep
                  and then Source.Path /= No_Path_Information
                then
@@ -2988,19 +2983,20 @@ package body Makeutl is
                         if Source.Unit /= No_Unit_Index
                           and then
                             (Source.Project.Library
-                             or else Project.Qualifier = Aggregate_Library
-                             or else Context.In_Aggregate_Lib)
+                              or else Project.Qualifier = Aggregate_Library
+                              or else Context.In_Aggregate_Lib)
                           and then Source.Project.Standalone_Library /= No
                         then
                            --  Check if the unit is in the interface
+
                            OK := False;
 
                            declare
-                              List : String_List_Id :=
-                                Source.Project.Lib_Interface_ALIs;
+                              List    : String_List_Id;
                               Element : String_Element;
 
                            begin
+                              List := Source.Project.Lib_Interface_ALIs;
                               while List /= Nil_String loop
                                  Element :=
                                    Project_Tree.Shared.String_Elements.Table

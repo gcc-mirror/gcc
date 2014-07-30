@@ -2847,12 +2847,11 @@ package body Exp_Aggr is
                   then
                      declare
                         Assoc : constant Node_Id :=
-                           First (Component_Associations (Expr_Q));
+                                  First (Component_Associations (Expr_Q));
                         Decl  : Node_Id;
 
                      begin
-                        if
-                          Nkind (First (Choices (Assoc))) = N_Others_Choice
+                        if Nkind (First (Choices (Assoc))) = N_Others_Choice
                         then
                            Decl :=
                              Build_Actual_Subtype_Of_Component

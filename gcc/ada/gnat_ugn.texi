@@ -19972,7 +19972,7 @@ by hand.
 
 @item --omit-sloc
 @cindex @option{--omit-sloc} (@command{gnattest})
-Supresses comment line containing file name and line number of corresponding
+Suppresses comment line containing file name and line number of corresponding
 subprograms in test skeletons.
 
 @end table

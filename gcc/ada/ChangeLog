@@ -1,3 +1,22 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor spelling correction.
+	* makeutl.adb: Minor code reorganization.
+	* exp_ch4.adb, exp_aggr.adb, exp_ch3.adb: Minor reformatting.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads (Has_Unchecked_Union): Document that this is used
+	to check for illegal Valid_Scalars attribute references.
+	* exp_attr.adb (Build_Record_VS_Func): New function
+	(Expand_N_Attribute_Reference, case Valid_Scalars): Call this
+	function.
+	* gnat_rm.texi: Document 'Valid_Scalars cannot be applied to
+	Unchecked_Union Add note on 'Valid_Scalars generating a lot
+	of code.
+	* sem_attr.adb (Analyze_Attribute, case Valid_Scalars): Give
+	error on attempt to apply Valid_Scalars to Unchecked_Union type.
+
 2014-07-30  Steve Baird  <baird@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Indexed_Component): Disable optimized handling
