@@ -1624,6 +1624,7 @@ package body Sem_Ch10 is
                Set_Corresponding_Stub (Unit (Comp_Unit), N);
                Analyze_Subunit (Comp_Unit);
                Set_Library_Unit (N, Comp_Unit);
+               Set_Corresponding_Body (N, Defining_Entity (Unit (Comp_Unit)));
             end if;
 
          elsif Unum = No_Unit
@@ -1713,15 +1714,22 @@ package body Sem_Ch10 is
       --  should be ignored, except that if we are building trees for ASIS
       --  usage we want to annotate the stub properly. If the main unit is
       --  itself a subunit, another subunit is irrelevant unless it is a
-      --  subunit of the current one.
+      --  subunit of the current one, that is to say appears in the current
+      --  source tree.
 
       elsif Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
         and then Subunit_Name /= Unit_Name (Main_Unit)
       then
-         if ASIS_Mode
-           and then Scope (Defining_Entity (N)) = Cunit_Entity (Main_Unit)
-         then
-            Optional_Subunit;
+         if ASIS_Mode then
+            declare
+               PB : constant Node_Id := Proper_Body (Unit (Cunit (Main_Unit)));
+            begin
+               if Nkind_In (PB, N_Package_Body, N_Subprogram_Body)
+                 and then List_Containing (N) = Declarations (PB)
+               then
+                  Optional_Subunit;
+               end if;
+            end;
          end if;
 
          --  But before we return, set the flag for unloaded subunits. This
