@@ -3945,6 +3945,9 @@ package body Exp_Aggr is
       Aggr_Index_Typ : array (1 .. Aggr_Dimension) of Entity_Id;
       --  The type of each index
 
+      In_Place_Assign_OK_For_Declaration : Boolean := False;
+      --  True if we are to generate an in place assignment for a declaration
+
       Maybe_In_Place_OK : Boolean;
       --  If the type is neither controlled nor packed and the aggregate
       --  is the expression in an assignment, assignment in place may be
@@ -3954,6 +3957,9 @@ package body Exp_Aggr is
         (others => False);
       --  If Others_Present (J) is True, then there is an others choice
       --  in one of the sub-aggregates of N at dimension J.
+
+      function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean;
+      --  Returns true if an aggregate assignment can be done by the back end
 
       procedure Build_Constrained_Type (Positional : Boolean);
       --  If the subtype is not static or unconstrained, build a constrained
@@ -3990,6 +3996,108 @@ package body Exp_Aggr is
       --  In addition to Maybe_In_Place_OK, in order for an aggregate to be
       --  built directly into the target of the assignment it must be free
       --  of side-effects.
+
+      ------------------------------------
+      -- Aggr_Assignment_OK_For_Backend --
+      ------------------------------------
+
+      --  Backend processing by Gigi/gcc is possible only if all the following
+      --  conditions are met:
+
+      --    1. N consists of a single OTHERS choice, possibly recursively
+
+      --    2. The component type is discrete
+
+      --    3. The component size is a multiple of Storage_Unit
+
+      --    4. The component size is exactly Storage_Unit or the expression is
+      --       an integer whose unsigned value is the binary concatenation of
+      --       K times its remainder modulo 2**Storage_Unit.
+
+      --  The ultimate goal is to generate a call to a fast memset routine
+      --  specifically optimized for the target.
+
+      function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
+         Ctyp      : Entity_Id;
+         Expr      : Node_Id := N;
+         Remainder : Uint;
+         Value     : Uint;
+         Nunits    : Nat;
+
+      begin
+         --  Recurse as far as possible to find the innermost component type
+
+         Ctyp := Etype (N);
+         while Is_Array_Type (Ctyp) loop
+            if Nkind (Expr) /= N_Aggregate
+              or else not Is_Others_Aggregate (Expr)
+            then
+               return False;
+            end if;
+
+            Expr := Expression (First (Component_Associations (Expr)));
+
+            for J in 1 .. Number_Dimensions (Ctyp) - 1 loop
+               if Nkind (Expr) /= N_Aggregate
+                 or else not Is_Others_Aggregate (Expr)
+               then
+                  return False;
+               end if;
+
+               Expr := Expression (First (Component_Associations (Expr)));
+            end loop;
+
+            Ctyp := Component_Type (Ctyp);
+         end loop;
+
+         if not Is_Discrete_Type (Ctyp)
+           or else RM_Size (Ctyp) mod System_Storage_Unit /= 0
+         then
+            return False;
+         end if;
+
+         --  The expression needs to be analyzed if True is returned
+
+         Analyze_And_Resolve (Expr, Ctyp);
+
+         Nunits := UI_To_Int (RM_Size (Ctyp) / System_Storage_Unit);
+         if Nunits = 1 then
+            return True;
+         end if;
+
+         if not Compile_Time_Known_Value (Expr) then
+            return False;
+         end if;
+
+         Value := Expr_Value (Expr);
+
+         if Has_Biased_Representation (Ctyp) then
+            Value := Value - Expr_Value (Type_Low_Bound (Ctyp));
+         end if;
+
+         --  0 and -1 immediately satisfy check #4
+
+         if Value = Uint_0 or else Value = Uint_Minus_1 then
+            return True;
+         end if;
+
+         --  We need to work with an unsigned value
+
+         if Value < 0 then
+            Value := Value + 2**(System_Storage_Unit * Nunits);
+         end if;
+
+         Remainder := Value rem 2**System_Storage_Unit;
+         for I in 1 .. Nunits - 1 loop
+            Value := Value / 2**System_Storage_Unit;
+
+            if Value rem 2**System_Storage_Unit /= Remainder then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end Aggr_Assignment_OK_For_Backend;
 
       ----------------------------
       -- Build_Constrained_Type --
@@ -5065,7 +5173,6 @@ package body Exp_Aggr is
       else
          Maybe_In_Place_OK :=
           (Nkind (Parent (N)) = N_Assignment_Statement
-            and then Comes_From_Source (N)
             and then In_Place_Assign_OK)
 
           or else
@@ -5098,22 +5205,27 @@ package body Exp_Aggr is
          and then not Is_Bit_Packed_Array (Typ)
          and then not Has_Controlled_Component (Typ)
       then
+         In_Place_Assign_OK_For_Declaration := True;
          Tmp := Defining_Identifier (Parent (N));
          Set_No_Initialization (Parent (N));
          Set_Expression (Parent (N), Empty);
 
-         --  Set the type of the entity, for use in the analysis of the
-         --  subsequent indexed assignments. If the nominal type is not
+         --  Set kind and type of the entity, for use in the analysis
+         --  of the subsequent assignments. If the nominal type is not
          --  constrained, build a subtype from the known bounds of the
          --  aggregate. If the declaration has a subtype mark, use it,
          --  otherwise use the itype of the aggregate.
 
+         Set_Ekind (Tmp, E_Variable);
+
          if not Is_Constrained (Typ) then
             Build_Constrained_Type (Positional => False);
+
          elsif Is_Entity_Name (Object_Definition (Parent (N)))
            and then Is_Constrained (Entity (Object_Definition (Parent (N))))
          then
             Set_Etype (Tmp, Entity (Object_Definition (Parent (N))));
+
          else
             Set_Size_Known_At_Compile_Time (Typ, False);
             Set_Etype (Tmp, Typ);
@@ -5150,7 +5262,6 @@ package body Exp_Aggr is
 
       elsif Maybe_In_Place_OK
         and then Nkind (Name (Parent (N))) = N_Slice
-        and then Comes_From_Source (N)
         and then Is_Others_Aggregate (N)
       then
          Tmp := Name (Parent (N));
@@ -5214,12 +5325,38 @@ package body Exp_Aggr is
             Target := New_Copy (Tmp);
          end if;
 
-         Aggr_Code :=
-           Build_Array_Aggr_Code (N,
-             Ctype       => Ctyp,
-             Index       => First_Index (Typ),
-             Into        => Target,
-             Scalar_Comp => Is_Scalar_Type (Ctyp));
+         --  If we are to generate an in place assignment for a declaration or
+         --  an assignment statement, and the assignment can be done directly
+         --  by the back end, then do not expand further.
+
+         --  ??? We can also do that if in place expansion is not possible but
+         --  then we could go into an infinite recursion.
+
+         if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
+           and then not AAMP_On_Target
+           and then VM_Target = No_VM
+           and then not Generate_SCIL
+           and then not Possible_Bit_Aligned_Component (Target)
+           and then Aggr_Assignment_OK_For_Backend (N)
+         then
+            if Maybe_In_Place_OK then
+               return;
+            end if;
+
+            Aggr_Code :=
+              New_List (
+                Make_Assignment_Statement (Loc,
+                  Name       => Target,
+                  Expression => New_Copy (N)));
+         else
+
+            Aggr_Code :=
+              Build_Array_Aggr_Code (N,
+                Ctype       => Ctyp,
+                Index       => First_Index (Typ),
+                Into        => Target,
+                Scalar_Comp => Is_Scalar_Type (Ctyp));
+         end if;
 
          --  Save the last assignment statement associated with the aggregate
          --  when building a controlled object. This reference is utilized by

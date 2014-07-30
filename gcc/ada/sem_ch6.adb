@@ -3527,6 +3527,18 @@ package body Sem_Ch6 is
          end if;
       end if;
 
+      --  If SPARK_Mode for body is not On, disable frontend inlining for this
+      --  subprogram in GNATprove mode, as its body should not be analyzed.
+
+      if SPARK_Mode /= On
+        and then GNATprove_Mode
+        and then Debug_Flag_QQ
+        and then Present (Spec_Id)
+        and then Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
+      then
+         Set_Body_To_Inline (Parent (Parent (Spec_Id)), Empty);
+      end if;
+
       --  Check completion, and analyze the statements
 
       Check_Completion;
