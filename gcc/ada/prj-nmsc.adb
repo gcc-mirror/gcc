@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3243,9 +3243,6 @@ package body Prj.Nmsc is
                     (Data.Flags,
                      "library directory { does not exist",
                      Lib_Dir.Location, Project);
-
-               else
-                  Project.Library_Dir := No_Path_Information;
                end if;
 
             --  Checks for object/source directories
@@ -5514,9 +5511,6 @@ package body Prj.Nmsc is
                     (Data.Flags, Data.Flags.Require_Obj_Dirs,
                      "object directory { not found",
                      Project.Location, Project);
-
-               else
-                  Project.Object_Directory := No_Path_Information;
                end if;
             end if;
          end if;
