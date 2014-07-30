@@ -3470,7 +3470,6 @@ package body Sem_Ch6 is
          --  the body, which can be defined by a pragma inside the body.
 
          elsif GNATprove_Mode
-           and then Debug_Flag_QQ
            and then Full_Analysis
            and then not Inside_A_Generic
            and then Present (Spec_Id)
@@ -3499,7 +3498,6 @@ package body Sem_Ch6 is
       --  body, which can be defined by a pragma inside the body.
 
       elsif GNATprove_Mode
-        and then Debug_Flag_QQ
         and then Full_Analysis
         and then not Inside_A_Generic
         and then Present (Spec_Id)
@@ -3637,7 +3635,6 @@ package body Sem_Ch6 is
 
       if SPARK_Mode /= On
         and then GNATprove_Mode
-        and then Debug_Flag_QQ
         and then Present (Spec_Id)
         and then Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
       then

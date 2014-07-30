@@ -1361,14 +1361,18 @@ __gnat_tmp_name (char *tmp_filename)
   }
 
 #elif defined (linux) || defined (__FreeBSD__) || defined (__NetBSD__) \
-  || defined (__OpenBSD__) || defined(__GLIBC__)
+  || defined (__OpenBSD__) || defined(__GLIBC__) || defined (__ANDROID__)
 #define MAX_SAFE_PATH 1000
   char *tmpdir = getenv ("TMPDIR");
 
   /* If tmpdir is longer than MAX_SAFE_PATH, revert to default value to avoid
      a buffer overflow.  */
   if (tmpdir == NULL || strlen (tmpdir) > MAX_SAFE_PATH)
+#ifdef __ANDROID__
+    strcpy (tmp_filename, "/cache/gnat-XXXXXX");
+#else
     strcpy (tmp_filename, "/tmp/gnat-XXXXXX");
+#endif
   else
     sprintf (tmp_filename, "%s/gnat-XXXXXX", tmpdir);
 
