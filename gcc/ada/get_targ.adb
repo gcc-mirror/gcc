@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -292,6 +292,15 @@ package body Get_Targ is
    begin
       return C_Get_Double_Scalar_Alignment;
    end Get_Double_Scalar_Alignment;
+
+   ------------------------------
+   -- Get_Back_End_Config_File --
+   ------------------------------
+
+   function Get_Back_End_Config_File return String_Ptr is
+   begin
+      return null;
+   end Get_Back_End_Config_File;
 
    ----------------------
    -- Digits_From_Size --

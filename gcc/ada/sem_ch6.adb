@@ -981,6 +981,14 @@ package body Sem_Ch6 is
             then
                Error_Msg_N ("cannot return local access to subprogram", N);
             end if;
+
+         --  The expression cannot be of a formal incomplete type
+
+         elsif Ekind (Etype (Expr)) = E_Incomplete_Type
+           and then Is_Generic_Type (Etype (Expr))
+         then
+            Error_Msg_N
+              ("cannot return expression of a formal incomplete type", N);
          end if;
 
          --  If the result type is class-wide, then check that the return
@@ -1952,6 +1960,24 @@ package body Sem_Ch6 is
                      Error_Msg_NE
                        ("invalid use of incomplete type&",
                         Result_Definition (N), Typ);
+
+                  --  The return type of a subprogram body cannot be of a
+                  --  formal incomplete type.
+
+                  elsif Is_Generic_Type (Typ)
+                    and then Nkind (Parent (N)) = N_Subprogram_Body
+                  then
+                     Error_Msg_N
+                      ("return type cannot be a formal incomplete type",
+                        Result_Definition (N));
+
+                  elsif Is_Class_Wide_Type (Typ)
+                    and then Is_Generic_Type (Root_Type (Typ))
+                    and then Nkind (Parent (N)) = N_Subprogram_Body
+                  then
+                     Error_Msg_N
+                      ("return type cannot be a formal incomplete type",
+                        Result_Definition (N));
 
                   elsif Is_Tagged_Type (Typ) then
                      null;
@@ -9827,7 +9853,8 @@ package body Sem_Ch6 is
 
                if Is_Tagged_Type (Formal_Type)
                  or else (Ada_Version >= Ada_2012
-                           and then not From_Limited_With (Formal_Type))
+                           and then not From_Limited_With (Formal_Type)
+                           and then not Is_Generic_Type (Formal_Type))
                then
                   if Ekind (Scope (Current_Scope)) = E_Package
                     and then not Is_Generic_Type (Formal_Type)
@@ -9864,8 +9891,17 @@ package body Sem_Ch6 is
                   --  in bodies. Limited views of either kind are not allowed
                   --  if there is no place at which the non-limited view can
                   --  become available.
+                  --  Incomplete formal untagged types are not allowed in
+                  --  subprogram bodies (but are legal in their declarations).
 
-                  if Ada_Version >= Ada_2012 then
+                  if Is_Generic_Type (Formal_Type)
+                    and then not Is_Tagged_Type (Formal_Type)
+                    and then Nkind (Parent (Related_Nod)) = N_Subprogram_Body
+                  then
+                     Error_Msg_N
+                       ("invalid use of formal incomplete type", Param_Spec);
+
+                  elsif Ada_Version >= Ada_2012 then
                      if Is_Tagged_Type (Formal_Type)
                        and then (not From_Limited_With (Formal_Type)
                                   or else not In_Package_Body)

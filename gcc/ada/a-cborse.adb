@@ -500,11 +500,12 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       X : constant Count_Type := Element_Keys.Find (Container, Item);
 
    begin
+      Tree_Operations.Delete_Node_Sans_Free (Container, X);
+
       if X = 0 then
-         raise Program_Error with "attempt to delete element not in set";
+         raise Constraint_Error with "attempt to delete element not in set";
       end if;
 
-      Tree_Operations.Delete_Node_Sans_Free (Container, X);
       Tree_Operations.Free (Container, X);
    end Delete;
 

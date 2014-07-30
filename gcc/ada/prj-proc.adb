@@ -2845,20 +2845,42 @@ package body Prj.Proc is
                return;
             end if;
 
-            Project :=
-              new Project_Data'
-                (Empty_Project
-                  (Project_Qualifier_Of
-                    (From_Project_Node, From_Project_Node_Tree)));
+            --  Check if the project is already in the tree
 
-            --  Note that at this point we do not know yet if the project has
-            --  been withed from an encapsulated library or not.
+            Project := No_Project;
+            declare
+               List : Project_List := In_Tree.Projects;
+               Path : constant Path_Name_Type :=
+                        Path_Name_Of (From_Project_Node,
+                                      From_Project_Node_Tree);
 
-            In_Tree.Projects :=
-              new Project_List_Element'
-             (Project               => Project,
-              From_Encapsulated_Lib => False,
-              Next                  => In_Tree.Projects);
+            begin
+               while List /= null loop
+                  if List.Project.Path.Display_Name = Path then
+                     Project := List.Project;
+                     exit;
+                  end if;
+
+                  List := List.Next;
+               end loop;
+            end;
+
+            if Project = No_Project then
+               Project :=
+                 new Project_Data'
+                   (Empty_Project
+                      (Project_Qualifier_Of
+                         (From_Project_Node, From_Project_Node_Tree)));
+
+               --  Note that at this point we do not know yet if the project
+               --  has been withed from an encapsulated library or not.
+
+               In_Tree.Projects :=
+                 new Project_List_Element'
+                   (Project               => Project,
+                    From_Encapsulated_Lib => False,
+                    Next                  => In_Tree.Projects);
+            end if;
 
             --  Keep track of this point
 
