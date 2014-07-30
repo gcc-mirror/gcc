@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
+--            Copyright (C) 2014, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body Ada.Task_Attributes is
 
    type Attribute_Cleanup is new Limited_Controlled with null record;
    procedure Finalize (Cleanup : in out Attribute_Cleanup);
-   --  Finalize all tasks' attribute for this package
+   --  Finalize all tasks' attributes for this package
 
    Cleanup : Attribute_Cleanup;
    pragma Unreferenced (Cleanup);

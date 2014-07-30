@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
+--            Copyright (C) 2014, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package body System.Tasking.Task_Attributes is
    end record;
    --  Used is True if a given index is used by an instantiation of
    --  Ada.Task_Attributes, False otherwise.
-   --  Require_Finalization is True is the attribute requires finalization.
+   --  Require_Finalization is True if the attribute requires finalization.
 
    Index_Array : array (1 .. Max_Attribute_Count) of Index_Info :=
      (others => (False, False));

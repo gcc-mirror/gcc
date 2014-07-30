@@ -1,3 +1,12 @@
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* s-tataat.adb, s-tataat.ads, a-tasatt.adb: Minor comment fixes.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): If loop has a label,
+	verify that it is not hidden by an inner implicit declaration.
+
 2014-07-30  Thomas Quinot  <quinot@adacore.com>
 
 	* sem.ads (Scope_Table_Entry): New component Locked_Shared_Objects.
