@@ -796,9 +796,9 @@ package body Exp_Pakd is
       end if;
    end Convert_To_PAT_Type;
 
-   ------------------------------
+   -----------------------------------
    -- Create_Packed_Array_Impl_Type --
-   ------------------------------
+   -----------------------------------
 
    procedure Create_Packed_Array_Impl_Type (Typ : Entity_Id) is
       Loc      : constant Source_Ptr := Sloc (Typ);
@@ -1468,6 +1468,10 @@ package body Exp_Pakd is
       --  and Initialize_Scalars is enabled, each component assignment is an
       --  out-of-range value by design.  Compile this value without checks,
       --  because a call to the array init_proc must not raise an exception.
+
+      --  Condition is not consistent with description above, Within_Init_Proc
+      --  is True also when we are building the IP for a record or protected
+      --  type that has a packed array component???
 
       if Within_Init_Proc
         and then Initialize_Scalars
