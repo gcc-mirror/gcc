@@ -359,6 +359,10 @@ Wdeprecated
 C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
 
+Wdesignated-init
+C ObjC Var(warn_designated_init) Init(1) Warning
+Warn about positional initialization of structs requiring designated initializers
+
 Wdiscarded-qualifiers
 C ObjC Var(warn_discarded_qualifiers) Init(1) Warning
 Warn if type qualifiers on pointers are discarded

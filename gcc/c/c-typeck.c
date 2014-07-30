@@ -6956,6 +6956,7 @@ struct constructor_stack
   char outer;
   char incremental;
   char designated;
+  int designator_depth;
 };
 
 static struct constructor_stack *constructor_stack;
@@ -7127,6 +7128,7 @@ really_start_incremental_init (tree type)
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
+  p->designator_depth = designator_depth;
   p->next = 0;
   constructor_stack = p;
 
@@ -7276,6 +7278,7 @@ push_init_level (location_t loc, int implicit,
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
+  p->designator_depth = designator_depth;
   p->next = constructor_stack;
   p->range_stack = 0;
   constructor_stack = p;
@@ -7583,6 +7586,7 @@ pop_init_level (location_t loc, int implicit,
   constructor_erroneous = p->erroneous;
   constructor_incremental = p->incremental;
   constructor_designated = p->designated;
+  designator_depth = p->designator_depth;
   constructor_pending_elts = p->pending_elts;
   constructor_depth = p->depth;
   if (!p->implicit)
@@ -8651,6 +8655,15 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
      and has already been diagnosed.  */
   if (constructor_type == 0)
     return;
+
+  if (!implicit && warn_designated_init && !was_designated
+      && TREE_CODE (constructor_type) == RECORD_TYPE
+      && lookup_attribute ("designated_init",
+			   TYPE_ATTRIBUTES (constructor_type)))
+    warning_init (loc,
+		  OPT_Wdesignated_init,
+		  "positional initialization of field "
+		  "in %<struct%> declared with %<designated_init%> attribute");
 
   /* If we've exhausted any levels that didn't have braces,
      pop them now.  */
