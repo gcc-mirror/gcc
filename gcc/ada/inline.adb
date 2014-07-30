@@ -1339,7 +1339,7 @@ package body Inline is
          Restore_Env;
       end if;
 
-      --  If secondary stk used there is no point in inlining. We have
+      --  If secondary stack is used, there is no point in inlining. We have
       --  already issued the warning in this case, so nothing to do.
 
       if Uses_Secondary_Stack (Body_To_Analyze) then
@@ -1399,7 +1399,7 @@ package body Inline is
 
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
-      elsif Optimization_Level = 0 then
+      elsif Optimization_Level = 0 or else GNATprove_Mode then
 
          --  Do not emit warning if this is a predefined unit which is not
          --  the main unit. This behavior is currently provided for backward
@@ -1436,7 +1436,7 @@ package body Inline is
 
             Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
-         else pragma Assert (Front_End_Inlining);
+         else pragma Assert (Front_End_Inlining or GNATprove_Mode);
             Set_Is_Inlined (Subp, False);
 
             --  When inlining cannot take place we must issue an error.

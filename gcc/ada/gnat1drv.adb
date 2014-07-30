@@ -334,6 +334,12 @@ procedure Gnat1drv is
          Front_End_Inlining := False;
          Inline_Active      := False;
 
+         --  Issue warnings for failure to inline subprograms, as otherwise
+         --  expected in GNATprove mode for the local subprograms without
+         --  contracts.
+
+         Ineffective_Inline_Warnings := True;
+
          --  Disable front-end optimizations, to keep the tree as close to the
          --  source code as possible, and also to avoid inconsistencies between
          --  trees when using different optimization switches.

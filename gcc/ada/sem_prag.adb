@@ -19998,6 +19998,14 @@ package body Sem_Prag is
                   Spec_Id := Corresponding_Spec (Context);
                   Context := Specification (Context);
                   Body_Id := Defining_Entity (Context);
+
+                  --  Ignore pragma when applied to the special body created
+                  --  for inlining, recognized by its internal name _Parent.
+
+                  if Chars (Body_Id) = Name_uParent then
+                     return;
+                  end if;
+
                   Check_Library_Level_Entity (Body_Id);
 
                   if Present (Spec_Id) then
