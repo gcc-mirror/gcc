@@ -1,3 +1,10 @@
+2014-07-30  J. D. Johnston  <jjohnst@us.ibm.com>
+
+	* config/s390/tpf-unwind.h: Include <stdbool.h>.
+	(__tpf_eh_return): Add original return address as second parameter.
+	Handle cases where unwinder routines were called directly, instead
+	of from within the C++ library.
+
 2014-07-29  Nathan Sidwell  <nathan@acm.org>
 
 	* libgcov.h: Move renaming of entry points to lib gcov specific

@@ -10850,17 +10850,20 @@ static GTY(()) rtx s390_tpf_eh_return_symbol;
 void
 s390_emit_tpf_eh_return (rtx target)
 {
-  rtx insn, reg;
+  rtx insn, reg, orig_ra;
 
   if (!s390_tpf_eh_return_symbol)
     s390_tpf_eh_return_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tpf_eh_return");
 
   reg = gen_rtx_REG (Pmode, 2);
+  orig_ra = gen_rtx_REG (Pmode, 3);
 
   emit_move_insn (reg, target);
+  emit_move_insn (orig_ra, get_hard_reg_initial_val (Pmode, RETURN_REGNUM));
   insn = s390_emit_call (s390_tpf_eh_return_symbol, NULL_RTX, reg,
                                      gen_rtx_REG (Pmode, RETURN_REGNUM));
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), reg);
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), orig_ra);
 
   emit_move_insn (EH_RETURN_HANDLER_RTX, reg);
 }
