@@ -516,7 +516,7 @@ __gnat_to_os_time (OS_Time *p_time, int year, int month, int day,
   v.tm_hour  = hours;
   v.tm_min   = mins;
   v.tm_sec   = secs;
-  v.tm_isdst = 0;
+  v.tm_isdst = -1;
 
   /* returns -1 of failing, this is s-os_lib Invalid_Time */
 

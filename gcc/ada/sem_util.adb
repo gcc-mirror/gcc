@@ -17254,12 +17254,27 @@ package body Sem_Util is
       --  Similarly, full and partial views may be incorrect in the instance.
       --  There is no simple way to insure that it is consistent ???
 
-      elsif In_Instance then
+      --  A similar view discrepancy can happen in an inlined body, for the
+      --  same reason: inserted body may be outside of the original package
+      --  and only partial views are visible at the point of insertion.
+
+      elsif In_Instance or else In_Inlined_Body then
          if Etype (Etype (Expr)) = Etype (Expected_Type)
            and then
              (Has_Private_Declaration (Expected_Type)
                or else Has_Private_Declaration (Etype (Expr)))
            and then No (Parent (Expected_Type))
+         then
+            return;
+
+         elsif Nkind (Parent (Expr)) = N_Qualified_Expression
+           and then Entity (Subtype_Mark (Parent (Expr))) = Expected_Type
+         then
+            return;
+
+         elsif Is_Private_Type (Expected_Type)
+           and then Present (Full_View (Expected_Type))
+           and then Covers (Full_View (Expected_Type), Etype (Expr))
          then
             return;
          end if;

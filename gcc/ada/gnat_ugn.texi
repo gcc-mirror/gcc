@@ -5415,7 +5415,7 @@ work as expected. Names of discriminants and components in records are
 not included in this check.
 
 @item -gnatw.K
-@emph{Suppress warnings on variables that could be constants.}
+@emph{Suppress warnings on redefinition of names in standard.}
 @cindex @option{-gnatwK} (@command{gcc})
 This switch activates warnings for declarations that declare a name that
 is defined in package Standard.

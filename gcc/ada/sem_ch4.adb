@@ -4934,9 +4934,9 @@ package body Sem_Ch4 is
       --  error message. Conversely, constant-folding in the generic may
       --  transform the argument of a conversion into a string literal, which
       --  is legal. Therefore the following tests are not performed in an
-      --  instance.
+      --  instance. The same applies to an inlined body.
 
-      elsif In_Instance then
+      elsif In_Instance or In_Inlined_Body then
          return;
 
       elsif Nkind (Expr) = N_Null then

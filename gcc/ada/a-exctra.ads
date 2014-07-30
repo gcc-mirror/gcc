@@ -52,6 +52,9 @@ package Ada.Exceptions.Traceback is
    --  occurrence, and returns it formatted in the manner required for
    --  processing in GNAT.Traceback. See g-traceb.ads for further details.
 
+   function "=" (A, B : Tracebacks_Array) return Boolean renames STBE."=";
+   --  Make "=" operator visible directly
+
    function Get_PC (TBE : STBE.Traceback_Entry) return Code_Loc
      renames STBE.PC_For;
    --  Returns the code address held by a given traceback entry, typically the
