@@ -7646,6 +7646,7 @@ package body Sem_Ch8 is
          SST.First_Use_Clause               := Empty;
          SST.Is_Active_Stack_Base           := False;
          SST.Previous_Visibility            := False;
+         SST.Locked_Shared_Objects          := No_Elist;
       end;
 
       if Debug_Flag_W then

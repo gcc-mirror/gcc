@@ -182,9 +182,8 @@ package System.Parameters is
    -- Task Attributes --
    ---------------------
 
-   Default_Attribute_Count : constant := 16;
-   --  Number of pre-allocated Address-sized task attributes stored in the
-   --  task control block.
+   Max_Attribute_Count : constant := 32;
+   --  Number of task attributes stored in the task control block.
 
    --------------------
    -- Runtime Traces --

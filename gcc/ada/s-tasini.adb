@@ -45,6 +45,7 @@ with System.Task_Primitives.Operations;
 with System.Soft_Links;
 with System.Soft_Links.Tasking;
 with System.Tasking.Debug;
+with System.Tasking.Task_Attributes;
 with System.Parameters;
 
 with System.Secondary_Stack;
@@ -807,26 +808,22 @@ package body System.Tasking.Initialization is
       end if;
    end Wakeup_Entry_Caller;
 
-   -----------------------
-   -- Soft-Link Dummies --
-   -----------------------
-
-   --  These are dummies for subprograms that are only needed by certain
-   --  optional run-time system packages. If they are needed, the soft links
-   --  will be redirected to the real subprogram by elaboration of the
-   --  subprogram body where the real subprogram is declared.
+   -------------------------
+   -- Finalize_Attributes --
+   -------------------------
 
    procedure Finalize_Attributes (T : Task_Id) is
-      pragma Unreferenced (T);
+      Attr : Atomic_Address;
    begin
-      null;
-   end Finalize_Attributes;
+      for J in T.Attributes'Range loop
+         Attr := T.Attributes (J);
 
-   procedure Initialize_Attributes (T : Task_Id) is
-      pragma Unreferenced (T);
-   begin
-      null;
-   end Initialize_Attributes;
+         if Attr /= 0 and then Task_Attributes.Require_Finalization (J) then
+            Task_Attributes.To_Attribute (Attr).Free (Attr);
+            T.Attributes (J) := 0;
+         end if;
+      end loop;
+   end Finalize_Attributes;
 
 begin
    Init_RTS;
