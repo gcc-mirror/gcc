@@ -1558,9 +1558,14 @@ package body Inline is
          Id := Body_Id;
       end if;
 
-      --  General note. The following comments clearly say what cannot be
-      --  inlined, but they do not give any clue on the motivation for the
-      --  exclusion. It would be good to document the motivations ???
+      --  Only local subprograms without contracts are inlined in GNATprove
+      --  mode, as these are the subprograms which a user is not interested in
+      --  analyzing in isolation, but rather in the context of their call. This
+      --  is a convenient convention, that could be changed for an explicit
+      --  pragma/aspect one day.
+
+      --  In a number of special cases, inlining is not desirable or not
+      --  possible, see below.
 
       --  Do not inline unit-level subprograms
 
@@ -1584,19 +1589,22 @@ package body Inline is
       then
          return False;
 
-      --  Do not inline expression functions
+      --  Do not inline expression functions, which are directly inlined at the
+      --  prover level.
 
       elsif (Present (Spec_Id) and then Is_Expression_Function (Spec_Id))
         or else Is_Expression_Function (Body_Id)
       then
          return False;
 
-      --  Do not inline generic subprogram instances
+      --  Do not inline generic subprogram instances. The visibility rules of
+      --  generic instances plays badly with inlining.
 
       elsif Is_Generic_Instance (Spec_Id) then
          return False;
 
-      --  Only inline subprograms whose body is marked SPARK_Mode On
+      --  Only inline subprograms whose body is marked SPARK_Mode On. Other
+      --  subprogram bodies should not be analyzed.
 
       elsif No (SPARK_Pragma (Body_Id))
         or else Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) /= On
@@ -2952,11 +2960,11 @@ package body Inline is
       function Process_Sloc (Nod : Node_Id) return Traverse_Result;
       --  If the call being expanded is that of an internal subprogram, set the
       --  sloc of the generated block to that of the call itself, so that the
-      --  expansion is skipped by the "next" command in gdb.
-      --  Same processing for a subprogram in a predefined file, e.g.
-      --  Ada.Tags. If Debug_Generated_Code is true, suppress this change to
-      --  simplify our own development. Same in in GNATprove mode, to ensure
-      --  that warnings and diagnostics point to the proper location.
+      --  expansion is skipped by the "next" command in gdb. Same processing
+      --  for a subprogram in a predefined file, e.g. Ada.Tags. If
+      --  Debug_Generated_Code is true, suppress this change to simplify our
+      --  own development. Same in GNATprove mode, to ensure that warnings and
+      --  diagnostics point to the proper location.
 
       procedure Reset_Dispatching_Calls (N : Node_Id);
       --  In subtree N search for occurrences of dispatching calls that use the
@@ -3634,8 +3642,9 @@ package body Inline is
          if Present (Renamed_Object (F)) then
 
             --  If expander is active, it is an error to try to inline a
-            --  recursive program. In GNATprove mode, just indicate that
-            --  the inlining will not happen.
+            --  recursive program. In GNATprove mode, just indicate that the
+            --  inlining will not happen, and mark the subprogram as not always
+            --  inlined.
 
             if Expander_Active then
                Error_Msg_N
@@ -3643,6 +3652,7 @@ package body Inline is
             else
                Cannot_Inline
                  ("cannot inline call to recursive subprogram?", N, Subp);
+               Set_Is_Inlined (Subp, False);
             end if;
 
             return;

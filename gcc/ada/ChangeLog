@@ -1,3 +1,16 @@
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* einfo.ads (Is_Inlined): Document new use in GNATprove mode.
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Add comments
+	to explain rationale for inlining or not in GNATprove mode.
+	(Expand_Inlined_Call): In GNATprove mode, set Is_Inlined flag
+	to False when inlining is not possible.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Set Is_Inlined
+	flag to indicate that subprogram is fully inlined. To be reversed
+	if inlining problem is found.
+	* sem_res.adb (Resolve_Call): Set Is_Inlined flag to False when
+	call in potentially unevaluated context.
+
 2014-07-30  Jose Ruiz  <ruiz@adacore.com>
 
 	* s-tarest.adb, s-tarest.ads: Fix comments.

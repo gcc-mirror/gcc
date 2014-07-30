@@ -3483,6 +3483,7 @@ package body Sem_Ch6 is
            and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
            and then not Body_Has_Contract
          then
+            Set_Is_Inlined (Spec_Id, True);
             Build_Body_To_Inline (N, Spec_Id);
          end if;
 
@@ -3510,6 +3511,7 @@ package body Sem_Ch6 is
         and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
         and then not Body_Has_Contract
       then
+         Set_Is_Inlined (Spec_Id, True);
          Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
       end if;
 
@@ -3644,6 +3646,7 @@ package body Sem_Ch6 is
         and then Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
       then
          Set_Body_To_Inline (Parent (Parent (Spec_Id)), Empty);
+         Set_Is_Inlined (Spec_Id, False);
       end if;
 
       --  Check completion, and analyze the statements
