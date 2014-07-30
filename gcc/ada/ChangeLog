@@ -1,5 +1,9 @@
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.ads, prj.ads, prj-nmsc.adb: Minor reformatting.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch5.adb (P_Sequence_Of_Statements): Properly handle
 	missing semicolon after name.
 
