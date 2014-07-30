@@ -1,3 +1,9 @@
+2014-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57397
+	* g++.dg/cpp0x/vt-57397-1.C: New.
+	* g++.dg/cpp0x/vt-57397-2.C: Likewise.
+
 2014-07-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/case_null.adb, gnat.dg/specs/debug1.ads: Adjust tests.
@@ -11,7 +17,6 @@
 
 	* g++.dg/ipa/devirt-34.C: New testcase.
 
->>>>>>> .r213302
 2014-07-28  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/61801

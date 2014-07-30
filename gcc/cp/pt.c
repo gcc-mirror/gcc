@@ -5527,13 +5527,21 @@ unify_method_type_error (bool explain_p, tree arg)
 }
 
 static int
-unify_arity (bool explain_p, int have, int wanted)
+unify_arity (bool explain_p, int have, int wanted, bool least_p = false)
 {
   if (explain_p)
-    inform_n (input_location, wanted,
-	      "  candidate expects %d argument, %d provided",
-	      "  candidate expects %d arguments, %d provided",
-	      wanted, have);
+    {
+      if (least_p)
+	inform_n (input_location, wanted,
+		  "  candidate expects at least %d argument, %d provided",
+		  "  candidate expects at least %d arguments, %d provided",
+		  wanted, have);
+      else
+	inform_n (input_location, wanted,
+		  "  candidate expects %d argument, %d provided",
+		  "  candidate expects %d arguments, %d provided",
+		  wanted, have);
+    }
   return 1;
 }
 
@@ -5544,9 +5552,10 @@ unify_too_many_arguments (bool explain_p, int have, int wanted)
 }
 
 static int
-unify_too_few_arguments (bool explain_p, int have, int wanted)
+unify_too_few_arguments (bool explain_p, int have, int wanted,
+			 bool least_p = false)
 {
-  return unify_arity (explain_p, have, wanted);
+  return unify_arity (explain_p, have, wanted, least_p);
 }
 
 static int
@@ -16627,18 +16636,26 @@ type_unification_real (tree tparms,
      are present, and the parm list isn't variadic.  */
   if (ia < nargs && parms == void_list_node)
     return unify_too_many_arguments (explain_p, nargs, ia);
-  /* Fail if parms are left and they don't have default values.  */
+  /* Fail if parms are left and they don't have default values and
+     they aren't all deduced as empty packs (c++/57397).  This is
+     consistent with sufficient_parms_p.  */
   if (parms && parms != void_list_node
       && TREE_PURPOSE (parms) == NULL_TREE)
     {
       unsigned int count = nargs;
       tree p = parms;
-      while (p && p != void_list_node)
+      bool type_pack_p;
+      do
 	{
-	  count++;
+	  type_pack_p = TREE_CODE (TREE_VALUE (p)) == TYPE_PACK_EXPANSION;
+	  if (!type_pack_p)
+	    count++;
 	  p = TREE_CHAIN (p);
 	}
-      return unify_too_few_arguments (explain_p, ia, count);
+      while (p && p != void_list_node);
+      if (count != nargs)
+	return unify_too_few_arguments (explain_p, ia, count,
+					type_pack_p);
     }
 
   if (!subr)
