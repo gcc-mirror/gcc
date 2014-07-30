@@ -1692,13 +1692,14 @@ package body Inline is
       elsif Is_Generic_Instance (Spec_Id) then
          return False;
 
-      --  Only inline subprograms whose body is marked SPARK_Mode On. Other
-      --  subprogram bodies should not be analyzed.
+      --  Only inline subprograms whose spec is marked SPARK_Mode On. For
+      --  the subprogram body, a similar check is performed after the body
+      --  is analyzed, as this is where a pragma SPARK_Mode might be inserted.
 
-      elsif Present (Body_Id)
-        and then (No (SPARK_Pragma (Body_Id))
-                   or else
-                     Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) /= On)
+      elsif Present (Spec_Id)
+        and then (No (SPARK_Pragma (Spec_Id))
+                    or else
+                  Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) /= On)
       then
          return False;
 
@@ -1706,6 +1707,12 @@ package body Inline is
       --  problems with inlining of standard library subprograms.
 
       elsif Instantiation_Location (Sloc (Id)) /= No_Location then
+         return False;
+
+      --  Predicate functions are treated specially by GNATprove. Do not inline
+      --  them.
+
+      elsif Is_Predicate_Function (Id) then
          return False;
 
       --  Otherwise, this is a subprogram declared inside the private part of a

@@ -19830,11 +19830,6 @@ package body Sem_Prag is
                         raise Pragma_Exit;
                      end if;
 
-                  --  Skip internally generated code
-
-                  elsif not Comes_From_Source (Stmt) then
-                     null;
-
                   elsif Nkind (Stmt) in N_Generic_Declaration then
                      Error_Pragma
                        ("incorrect placement of pragma% on a generic");
@@ -19868,6 +19863,11 @@ package body Sem_Prag is
                      Set_SPARK_Pragma               (Spec_Id, N);
                      Set_SPARK_Pragma_Inherited     (Spec_Id, False);
                      return;
+
+                  --  Skip internally generated code
+
+                  elsif not Comes_From_Source (Stmt) then
+                     null;
 
                   --  The pragma does not apply to a legal construct, issue an
                   --  error and stop the analysis.

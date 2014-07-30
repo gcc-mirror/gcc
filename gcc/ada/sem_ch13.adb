@@ -1497,7 +1497,7 @@ package body Sem_Ch13 is
          --  Start of processing for Analyze_One_Aspect
 
          begin
-            --  Skip aspect if already analyzed (not clear if this is needed)
+            --  Skip aspect if already analyzed, to avoid looping in some cases
 
             if Analyzed (Aspect) then
                goto Continue;
