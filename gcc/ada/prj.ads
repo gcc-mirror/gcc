@@ -1952,7 +1952,6 @@ package Prj is
    --  indentation level only affects output done through Debug_Output.
 
 private
-
    All_Packages : constant String_List_Access := null;
 
    No_Project_Tree : constant Project_Tree_Ref := null;
@@ -1992,14 +1991,18 @@ private
       Last : in out Natural);
    --  Append a String to the Buffer
 
+   --  Table used to store the path name of all the created temporary files, so
+   --  that they can be deleted at the end, or when the program is interrupted.
+
    package Temp_Files_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Path_Name_Type,
       Table_Index_Type     => Integer,
       Table_Low_Bound      => 1,
       Table_Initial        => 10,
       Table_Increment      => 10);
-   --  Table to store the path name of all the created temporary files, so that
-   --  they can be deleted at the end, or when the program is interrupted.
+
+   --  The following type is used to represent the part of a project tree which
+   --  is private to the Project Manager.
 
    type Private_Project_Tree_Data is record
       Temp_Files   : Temp_Files_Table.Instance;
@@ -2017,10 +2020,10 @@ private
       --  Current value of project object path file env var. Used to avoid
       --  setting the env var to the same value.
       --  gnatmake only
-
    end record;
-   --  Type to represent the part of a project tree which is private to the
-   --  Project Manager.
+
+   --  The following type is used to hold processing flags which show what
+   --  functions are required for the various tools that are handled.
 
    type Processing_Flags is record
       Require_Sources_Other_Lang : Boolean;

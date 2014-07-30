@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,8 +196,8 @@ package Sem_Ch3 is
      (I            : Node_Id;
       Related_Nod  : Node_Id;
       Related_Id   : Entity_Id := Empty;
-      Suffix_Index : Nat := 1;
-      In_Iter_Schm : Boolean := False);
+      Suffix_Index : Nat       := 1;
+      In_Iter_Schm : Boolean   := False);
    --  Process an index that is given in an array declaration, an entry
    --  family declaration or a loop iteration. The index is given by an
    --  index declaration (a 'box'), or by a discrete range. The later can
