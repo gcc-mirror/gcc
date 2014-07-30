@@ -580,7 +580,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
-  if (Present (gnat_node))
+  if (Present (gnat_node) && !renaming_from_generic_instantiation_p (gnat_node))
     Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (decl));
 
   add_decl_expr (decl, gnat_node);
@@ -2548,6 +2548,37 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
             || value_factor_p (TREE_OPERAND (value, 1), factor));
 
   return false;
+}
+
+/* Return whether GNAT_NODE is a defining identifier for a renaming that comes
+   from the parameter association for the instantiation of a generic.  We do
+   not want to emit source location for them: the code generated for their
+   initialization is likely to disturb debugging.  */
+
+bool
+renaming_from_generic_instantiation_p (Node_Id gnat_node)
+{
+  if (Nkind (gnat_node) != N_Defining_Identifier
+      || !IN (Ekind (gnat_node), Object_Kind)
+      || Comes_From_Source (gnat_node)
+      || !Present (Renamed_Object (gnat_node)))
+    return false;
+
+  /* Get the object declaration of the renamed object, if any and if the
+     renamed object is a mere identifier.  */
+  gnat_node = Renamed_Object (gnat_node);
+  if (Nkind (gnat_node) != N_Identifier)
+    return false;
+
+  gnat_node = Entity (gnat_node);
+  if (!Present (Parent (gnat_node)))
+    return false;
+
+  gnat_node = Parent (gnat_node);
+  return
+   (Present (gnat_node)
+    && Nkind (gnat_node) == N_Object_Declaration
+    && Present (Corresponding_Generic_Association (gnat_node)));
 }
 
 /* Return VALUE scaled by the biggest power-of-2 factor of EXPR.  */

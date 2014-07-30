@@ -1017,6 +1017,12 @@ extern int fp_prec_to_size (int prec);
 /* Return the precision of the FP mode with size SIZE.  */
 extern int fp_size_to_prec (int size);
 
+/* Return whether GNAT_NODE is a defining identifier for a renaming that comes
+   from the parameter association for the instantiation of a generic.  We do
+   not want to emit source location for them: the code generated for their
+   initialization is likely to disturb debugging.  */
+extern bool renaming_from_generic_instantiation_p (Node_Id gnat_node);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
