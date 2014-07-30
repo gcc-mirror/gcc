@@ -44,7 +44,7 @@
 --  time (in terms of source lines executed):
 
 --    Expanded_Name, Wide_Expanded_Name, Wide_Wide_Expanded_Name, External_Tag,
---    Is_Descendant_At_Same_Level, Parent_Tag
+--    Is_Descendant_At_Same_Level, Parent_Tag, Type_Is_Abstract
 --    Descendant_Tag (when used with a library-level tagged type),
 --    Internal_Tag (when used with a library-level tagged type).
 
@@ -53,7 +53,7 @@
 
 --    Descendant_Tag (when used with a locally defined tagged type)
 --    Internal_Tag (when used with a locally defined tagged type)
---    Interface_Ancestor_Tagswith System
+--    Interface_Ancestor_Tags
 
 with System.Storage_Elements;
 

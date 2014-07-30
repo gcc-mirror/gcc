@@ -345,7 +345,6 @@ package body Impunit is
     ("i-cexten", F),  -- Interfaces.C.Extensions
     ("i-cil   ", F),  -- Interfaces.CIL
     ("i-cilobj", F),  -- Interfaces.CIL.Object
-    ("i-cpp   ", F),  -- Interfaces.CPP
     ("i-cstrea", F),  -- Interfaces.C.Streams
     ("i-java  ", F),  -- Interfaces.Java
     ("i-javjni", F),  -- Interfaces.Java.JNI

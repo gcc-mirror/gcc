@@ -650,7 +650,6 @@ The GNAT Library
 * GNAT.Wide_Wide_String_Split (g-zistsp.ads)::
 * Interfaces.C.Extensions (i-cexten.ads)::
 * Interfaces.C.Streams (i-cstrea.ads)::
-* Interfaces.CPP (i-cpp.ads)::
 * Interfaces.Packed_Decimal (i-pacdec.ads)::
 * Interfaces.VxWorks (i-vxwork.ads)::
 * Interfaces.VxWorks.IO (i-vxwoio.ads)::
@@ -12138,9 +12137,7 @@ convention.  Any declarations useful for interfacing to any language on
 the given hardware architecture should be provided directly in
 @code{Interfaces}.
 @end cartouche
-Followed. An additional package not defined
-in the Ada Reference Manual is @code{Interfaces.CPP}, used
-for interfacing to C++.
+Followed.
 
 @sp 1
 @cartouche
@@ -19015,7 +19012,6 @@ of GNAT, and will generate a warning message.
 * GNAT.Wide_Wide_String_Split (g-zistsp.ads)::
 * Interfaces.C.Extensions (i-cexten.ads)::
 * Interfaces.C.Streams (i-cstrea.ads)::
-* Interfaces.CPP (i-cpp.ads)::
 * Interfaces.Packed_Decimal (i-pacdec.ads)::
 * Interfaces.VxWorks (i-vxwork.ads)::
 * Interfaces.VxWorks.IO (i-vxwoio.ads)::
@@ -20462,17 +20458,6 @@ to C libraries.
 @noindent
 This package is a binding for the most commonly used operations
 on C streams.
-
-@node Interfaces.CPP (i-cpp.ads)
-@section @code{Interfaces.CPP} (@file{i-cpp.ads})
-@cindex @code{Interfaces.CPP} (@file{i-cpp.ads})
-@cindex  C++ interfacing
-@cindex  Interfacing, to C++
-
-@noindent
-This package provides facilities for use in interfacing to C++.  It
-is primarily intended to be used in connection with automated tools
-for the generation of C++ interfaces.
 
 @node Interfaces.Packed_Decimal (i-pacdec.ads)
 @section @code{Interfaces.Packed_Decimal} (@file{i-pacdec.ads})

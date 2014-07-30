@@ -1,3 +1,32 @@
+2014-07-30  Vincent Celier  <celier@adacore.com>
+
+	* debug.adb: Minor comment update.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* s-tasuti.adb, s-tassta.adb: Minor reformatting.
+	* sprint.adb (Sprint_Node): Handle N_Contract case.
+	* exp_prag.adb: Minor reformatting.
+	* freeze.adb (Freeze_Entity): Check useless postcondition for
+	No_Return subprogram.
+	* sem_prag.adb: Minor reformatting.
+
+2014-07-30  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads: Complete comments about performance.
+
+2014-07-30  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Adding description for --exit-status option to
+	gnattest section.  Fixing index entry of --passed-tests option
+	in gnattest section.
+
+2014-07-30  Javier Miranda  <miranda@adacore.com>
+
+	* Makefile.rtl, gnat_rm.texi, i-cpp.adb, i-cpp.ads, impunit.adb,
+	rtsfind.ads: Remove references to package Interfaces.CPP since this
+	package is no longer needed.
+
 2014-07-30  Bob Duff  <duff@adacore.com>
 
 	* s-taasde.adb (Timer_Queue): Don't use a

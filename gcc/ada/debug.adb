@@ -814,7 +814,9 @@ package body Debug is
    -- Documentation for gprbuild Debug Flags  --
    ---------------------------------------------
 
-   --  dn  Do not delete temporary files createed by gprbuild at the end
+   --  dm  Display the maximum number of simultaneous compilations.
+
+   --  dn  Do not delete temporary files created by gprbuild at the end
    --      of execution, such as temporary config pragma files, mapping
    --      files or project path files.
 

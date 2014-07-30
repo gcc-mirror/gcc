@@ -71,7 +71,8 @@ package Rtsfind is
    --    of Ada.Wide_Wide_Text_IO.
 
    --    Names of the form Interfaces_xxx are first level children of
-   --    Interfaces_CPP refers to package Interfaces.CPP
+   --    Interfaces. For example, the name Interfaces_Packed_Decimal refers to
+   --    package Interfaces.Packed_Decimal.
 
    --    Names of the form System_xxx are first level children of System, whose
    --    name is System.xxx. For example, the name System_Str_Concat refers to
@@ -202,7 +203,6 @@ package Rtsfind is
 
       --  Children of Interfaces
 
-      Interfaces_CPP,
       Interfaces_Packed_Decimal,
 
       --  Package System
@@ -466,7 +466,7 @@ package Rtsfind is
            Ada_Wide_Wide_Text_IO_Modular_IO;
 
    subtype Interfaces_Child is RTU_Id
-     range Interfaces_CPP .. Interfaces_Packed_Decimal;
+     range Interfaces_Packed_Decimal .. Interfaces_Packed_Decimal;
    --  Range of values for children of Interfaces
 
    subtype System_Child is RTU_Id

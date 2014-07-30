@@ -5258,9 +5258,7 @@ package body Sem_Prag is
             --  The copy is needed because the pragma is expanded into other
             --  constructs which are not acceptable in the N_Contract node.
 
-            if Acts_As_Spec (PO)
-              and then GNATprove_Mode
-            then
+            if Acts_As_Spec (PO) and then GNATprove_Mode then
                declare
                   Prag : constant Node_Id := New_Copy_Tree (N);
 
@@ -5269,7 +5267,7 @@ package body Sem_Prag is
 
                   Preanalyze_Assert_Expression
                     (Get_Pragma_Arg
-                      (First (Pragma_Argument_Associations (Prag))),
+                       (First (Pragma_Argument_Associations (Prag))),
                      Standard_Boolean);
 
                   --  Preanalyze the corresponding aspect (if any)
