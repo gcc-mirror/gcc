@@ -1046,8 +1046,16 @@ package body Lib is
    ----------------
 
    procedure Store_Note (N : Node_Id) is
+      Sfile : constant Source_File_Index := Get_Source_File_Index (Sloc (N));
    begin
-      Notes.Append ((Pragma_Node => N, Unit => Current_Sem_Unit));
+      --  Notes for a generic are emitted when processing the template, never
+      --  in instances.
+
+      if In_Extended_Main_Code_Unit (N)
+        and then Instance (Sfile) = No_Instance_Id
+      then
+         Notes.Append (N);
+      end if;
    end Store_Note;
 
    -------------------------------
