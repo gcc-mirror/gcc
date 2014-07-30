@@ -6,8 +6,8 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1991-1994, Florida State University             --
---                     Copyright (C) 1995-2011, AdaCore                     --
+--            Copyright (C) 1991-1914, Florida State University             --
+--                     Copyright (C) 1995-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,8 @@ package System.Task_Primitives is
 
    type RTS_Lock is limited private;
    --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the later one serves only as a semaphore so
-   --  that do not check for ceiling violations.
+   --  and the RTS_Lock is that the latter serves only as a semaphore so that
+   --  we do not check for ceiling violations.
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control

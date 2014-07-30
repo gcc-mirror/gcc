@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,9 +75,9 @@ package System.Interrupt_Management is
    --  used for that purpose. This is one of the reserved interrupts.
 
    Keep_Unmasked : Interrupt_Set := (others => False);
-   --  Keep_Unmasked (I) is true iff the interrupt I is one that must that
-   --  must be kept unmasked at all times, except (perhaps) for short critical
-   --  sections. This includes interrupts that are mapped to exceptions (see
+   --  Keep_Unmasked (I) is true iff the interrupt I is one that must be kept
+   --  unmasked at all times, except (perhaps) for short critical sections.
+   --  This includes interrupts that are mapped to exceptions (see
    --  System.Interrupt_Exceptions.Is_Exception), but may also include
    --  interrupts (e.g. timer) that need to be kept unmasked for other
    --  reasons. Where interrupts are implemented as OS signals, and signal

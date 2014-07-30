@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -348,13 +348,14 @@ package body System.AST_Handling is
 
       pragma Volatile (Param);
 
-   begin
       --  By making this task independent of master, when the environment
       --  task is finalizing, the AST_Server_Task will be notified that it
       --  should terminate.
 
-      STU.Make_Independent;
+      Ignore : constant Boolean := STU.Make_Independent;
+      pragma Unreferenced (Ignore);
 
+   begin
       --  Record our task Id for access by Process_AST
 
       AST_Task_Ids (Num) := Self_Id;

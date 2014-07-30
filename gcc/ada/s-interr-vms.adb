@@ -566,6 +566,11 @@ package body System.Interrupts is
    -----------------------
 
    task body Interrupt_Manager is
+      --  By making this task independent of master, when the process goes
+      --  away, the Interrupt_Manager will terminate gracefully.
+
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+      pragma Unreferenced (Ignore);
 
       --------------------
       -- Local Routines --
@@ -705,11 +710,6 @@ package body System.Interrupts is
    --  Start of processing for Interrupt_Manager
 
    begin
-      --  By making this task independent of master, when the process goes
-      --  away, the Interrupt_Manager will terminate gracefully.
-
-      System.Tasking.Utilities.Make_Independent;
-
       --  Environment task gets its own interrupt mask, saves it, and then
       --  masks all interrupts except the Keep_Unmasked set.
 
@@ -893,6 +893,12 @@ package body System.Interrupts is
    -----------------
 
    task body Server_Task is
+      --  By making this task independent of master, when the process
+      --  goes away, the Server_Task will terminate gracefully.
+
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+      pragma Unreferenced (Ignore);
+
       Self_ID         : constant Task_Id := Self;
       Tmp_Handler     : Parameterless_Handler;
       Tmp_ID          : Task_Id;
@@ -900,11 +906,6 @@ package body System.Interrupts is
       Intwait_Mask    : aliased IMNG.Interrupt_Mask;
 
    begin
-      --  By making this task independent of master, when the process
-      --  goes away, the Server_Task will terminate gracefully.
-
-      System.Tasking.Utilities.Make_Independent;
-
       --  Install default action in system level
 
       IMOP.Install_Default_Action (IMNG.Interrupt_ID (Interrupt));

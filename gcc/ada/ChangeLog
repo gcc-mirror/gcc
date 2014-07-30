@@ -1,3 +1,34 @@
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* s-tasuti.ads, s-tasuti.adb (Make_Independent): Change this
+	from a procedure to a function, so that it can more easily be
+	called before the "begin" of a task.
+	* s-taasde.ads (Delay_Block): Make this type immutably limited,
+	so we can use a build-in-place function call to initialize
+	Timer_Queue in the body.
+	* a-rttiev.adb, s-asthan-vms-alpha.adb, s-asthan-vms-ia64.adb,
+	* s-interr.adb, s-interr-hwint.adb, s-interr-sigaction.adb,
+	* s-interr-vms.adb, s-taasde.adb: Each independent task now calls
+	Make_Independent before reaching its "begin", to avoid race
+	conditions. This causes the activating task to wait until after
+	Make_Independent is complete before proceeding.  In addition,
+	we initialize data structures used by independent tasks before
+	activating those tasks, to avoid possible use of uninitialized data.
+	* s-interr.ads, s-intman.ads, s-taspri-posix.ads, s-tasdeb.ads:
+	Minor comment fixes.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* a-exctra.ads, s-traent-vms.ads, s-traent.ads (Tracebacks_Array): Move
+	the declaration of Tracebacks_Array from Ada.Exceptions.Traceback to
+	System.Traceback_Entries (s-traent.ads and s-traent-vms.ads).  Add
+	subtypes renaming Tracebacks_Array in Ada.Exceptions.Traceback.
+	* g-debpoo.adb: Refer to Tracebacks_Array in its new home.
+
+2014-07-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-tasatt.adb: Remove old comments.
+
 2014-07-30  Yannick Moy  <moy@adacore.com>
 
 	* einfo.ads (Is_Inlined): Document new use in GNATprove mode.
