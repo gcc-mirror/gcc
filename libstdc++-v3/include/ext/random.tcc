@@ -1314,7 +1314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
-	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	std::__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
 	result_type __a = __param.successful_size();
