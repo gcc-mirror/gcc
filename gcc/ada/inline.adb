@@ -923,17 +923,48 @@ package body Inline is
       begin
          D := First (Decls);
          while Present (D) loop
-            if (Nkind (D) = N_Function_Instantiation
-                 and then not Is_Unchecked_Conversion (D))
-              or else Nkind_In (D, N_Protected_Type_Declaration,
-                                   N_Package_Declaration,
-                                   N_Package_Instantiation,
-                                   N_Subprogram_Body,
-                                   N_Procedure_Instantiation,
-                                   N_Task_Type_Declaration)
+            if Nkind (D) = N_Function_Instantiation
+              and then not Is_Unchecked_Conversion (D)
             then
                Cannot_Inline
-                 ("cannot inline & (non-allowed declaration)?", D, Subp);
+                 ("cannot inline & (nested function instantiation)?",
+                  D, Subp);
+               return True;
+
+            elsif Nkind (D) = N_Protected_Type_Declaration then
+               Cannot_Inline
+                 ("cannot inline & (nested protected type declaration)?",
+                  D, Subp);
+               return True;
+
+            elsif Nkind (D) = N_Package_Declaration then
+               Cannot_Inline
+                 ("cannot inline & (nested package declaration)?",
+                  D, Subp);
+               return True;
+
+            elsif Nkind (D) = N_Package_Instantiation then
+               Cannot_Inline
+                 ("cannot inline & (nested package instantiation)?",
+                  D, Subp);
+               return True;
+
+            elsif Nkind (D) = N_Subprogram_Body then
+               Cannot_Inline
+                 ("cannot inline & (nested subprogram)?",
+                  D, Subp);
+               return True;
+
+            elsif Nkind (D) = N_Procedure_Instantiation then
+               Cannot_Inline
+                 ("cannot inline & (nested procedure instantiation)?",
+                  D, Subp);
+               return True;
+
+            elsif Nkind (D) = N_Task_Type_Declaration then
+               Cannot_Inline
+                 ("cannot inline & (nested task type declaration)?",
+                  D, Subp);
                return True;
             end if;
 
@@ -1435,6 +1466,27 @@ package body Inline is
       Is_Serious : Boolean := False)
    is
    begin
+      --  In GNATprove mode, inlining is the technical means by which the
+      --  higher-level goal of contextual analysis is reached, so issue
+      --  messages about failure to apply contextual analysis to a
+      --  subprogram, rather than failure to inline it.
+
+      if GNATprove_Mode
+        and then Msg (Msg'First .. Msg'First + 12) = "cannot inline"
+      then
+         declare
+            Len1 : constant Positive := 13;  --  "cannot inline"
+            Len2 : constant Positive := 25;  --  "no contextual analysis of"
+            New_Msg : String (1 .. Msg'Length + Len2 - Len1);
+         begin
+            New_Msg (1 .. Len2) := "no contextual analysis of";
+            New_Msg (Len2 + 1 .. Msg'Length + Len2 - Len1) :=
+              Msg (Msg'First + Len1 .. Msg'Last);
+            Cannot_Inline (New_Msg, N, Subp, Is_Serious);
+            return;
+         end;
+      end if;
+
       pragma Assert (Msg (Msg'Last) = '?');
 
       --  Old semantics

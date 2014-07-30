@@ -6233,7 +6233,7 @@ package body Sem_Res is
             --  assertions as logic expressions.
 
             elsif In_Assertion_Expr /= 0 then
-               Error_Msg_NE ("?cannot inline call to &", N, Nam);
+               Error_Msg_NE ("?no contextual analysis of &", N, Nam);
                Error_Msg_N ("\call appears in assertion expression", N);
                Set_Is_Inlined_Always (Nam_UA, False);
 
@@ -6246,7 +6246,8 @@ package body Sem_Res is
 
                if No (Corresponding_Body (Decl)) then
                   Error_Msg_NE
-                    ("?cannot inline call to & (body not seen yet)", N, Nam);
+                    ("?no contextual analysis of & (body not seen yet)",
+                     N, Nam);
                   Set_Is_Inlined_Always (Nam_UA, False);
 
                --  Nothing to do if there is no body to inline, indicating that
@@ -6261,7 +6262,7 @@ package body Sem_Res is
                --  expressions, that are not handled by GNATprove.
 
                elsif Is_Potentially_Unevaluated (N) then
-                  Error_Msg_NE ("?cannot inline call to &", N, Nam);
+                  Error_Msg_NE ("?no contextual anlysis of &", N, Nam);
                   Error_Msg_N
                     ("\call appears in potentially unevaluated context", N);
                   Set_Is_Inlined_Always (Nam_UA, False);
