@@ -2834,6 +2834,13 @@ package body Sem_Ch5 is
                raise Program_Error;
             end if;
 
+         --  Verify that the loop name is hot hidden by an unrelated
+         --  declaration in an inner scope.
+
+         elsif Ekind (Ent) /= E_Label and then Ekind (Ent) /= E_Loop  then
+            Error_Msg_Sloc := Sloc (Ent);
+            Error_Msg_N ("implicit label declaration for & is hidden#", Id);
+
          else
             Generate_Reference (Ent, N, ' ');
             Generate_Definition (Ent);

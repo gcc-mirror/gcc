@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
+--            Copyright (C) 2014, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ package System.Tasking.Task_Attributes is
    type Attribute_Record is record
       Free : Deallocator;
    end record;
-   --  The real type is declared in Ada.Task_Attributes body: Real_Attribute
+   --  The real type is declared in Ada.Task_Attributes body: Real_Attribute.
    --  As long as the first field is the deallocator we are good.
 
    type Attribute_Access is access all Attribute_Record;
