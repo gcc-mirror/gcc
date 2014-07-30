@@ -2952,6 +2952,42 @@ package body Sem_Ch6 is
                Spec_Id := Disambiguate_Spec;
             else
                Spec_Id := Find_Corresponding_Spec (N);
+
+               --  In GNATprove mode, if the body has no previous spec, create
+               --  one so that the inlining machinery can operate properly.
+               --  Transfer aspects, if any, to the new spec, so that they
+               --  are legal and can be processed ahead of the body.
+               --  We make two copies of the given spec, one for the new
+               --  declaration, and one for the body.
+
+               --  This cannot be done for a compilation unit, which is not
+               --  in a context where we can insert a new spec.
+
+               if No (Spec_Id)
+                 and then GNATprove_Mode
+                 and then Debug_Flag_QQ
+                 and then Full_Analysis
+                 and then Comes_From_Source (Body_Id)
+                 and then Is_List_Member (N)
+               then
+                  declare
+                     Body_Spec : constant Node_Id :=
+                       Copy_Separate_Tree (Specification (N));
+                     New_Decl : constant Node_Id :=
+                       Make_Subprogram_Declaration
+                        (Loc, Copy_Separate_Tree (Specification (N)));
+
+                  begin
+                     Insert_Before (N, New_Decl);
+                     Move_Aspects (From => N, To => New_Decl);
+                     Analyze (New_Decl);
+                     Spec_Id := Defining_Entity (New_Decl);
+
+                     Set_Specification (N, Body_Spec);
+                     Body_Id := Analyze_Subprogram_Specification (Body_Spec);
+                     Set_Corresponding_Spec (N, Spec_Id);
+                  end;
+               end if;
             end if;
 
             --  If this is a duplicate body, no point in analyzing it

@@ -758,6 +758,25 @@ package body Exp_Ch4 is
                Obj_Ref := New_Occurrence_Of (Ref, Loc);
             end if;
 
+            --  For access to interface types we must generate code to displace
+            --  the pointer to the base of the object since the subsequent code
+            --  references components located in the TSD of the object (which
+            --  is associated with the primary dispatch table --see a-tags.ads)
+            --  and also generates code invoking Free, which requires also a
+            --  reference to the base of the unallocated object.
+
+            if Is_Interface (DesigT) then
+               Obj_Ref :=
+                 Unchecked_Convert_To (Etype (Obj_Ref),
+                   Make_Function_Call (Loc,
+                     Name =>
+                       New_Occurrence_Of
+                         (RTE (RE_Base_Address), Loc),
+                     Parameter_Associations => New_List (
+                       Unchecked_Convert_To (RTE (RE_Address),
+                         New_Copy_Tree (Obj_Ref)))));
+            end if;
+
             --  Step 1: Create the object clean up code
 
             Stmts := New_List;
@@ -831,26 +850,13 @@ package body Exp_Ch4 is
 
             --  Step 2: Create the accessibility comparison
 
-            --  Reference the tag: for a renaming of an access to an interface
-            --  object Obj_Ref already references the tag of the secondary
-            --  dispatch table.
-
-            if Nkind (Obj_Ref) in N_Has_Entity
-              and then Present (Entity (Obj_Ref))
-              and then Present (Renamed_Object (Entity (Obj_Ref)))
-              and then Is_Interface (DesigT)
-            then
-               null;
-
             --  Generate:
             --    Ref'Tag
 
-            else
-               Obj_Ref :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => Obj_Ref,
-                   Attribute_Name => Name_Tag);
-            end if;
+            Obj_Ref :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => Obj_Ref,
+                Attribute_Name => Name_Tag);
 
             --  For tagged types, determine the accessibility level by looking
             --  at the type specific data of the dispatch table. Generate:

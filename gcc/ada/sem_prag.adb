@@ -1845,7 +1845,7 @@ package body Sem_Prag is
       --  than a formal subprogram parameter (SPARK RM 7.1.3(2)). The check
       --  is performed at the end of the declarative region due to a possible
       --  out-of-order arrangement of pragmas:
-      --
+
       --    Obj : ...;
       --    pragma Async_Readers (Obj);
       --    pragma Volatile (Obj);

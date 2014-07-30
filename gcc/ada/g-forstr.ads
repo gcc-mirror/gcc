@@ -30,9 +30,9 @@
 ------------------------------------------------------------------------------
 
 --  This package add support for formatted string as supported by C printf().
---
+
 --  A simple usage is:
---
+
 --     declare
 --        F : Formatted_String := +"['%c' ; %10d]";
 --        C : Character := 'v';
@@ -40,16 +40,14 @@
 --     begin
 --        F := F & C & I;
 --        Put_Line (-F);
---
 --     end;
---
+
 --  Which will display:
---
+
 --     ['v' ;         98]
---
---
+
 --  Each format specifier is: %[flags][width][.precision][length]specifier
---
+
 --  Specifiers:
 --    d or i    Signed decimal integer
 --    u         Unsigned decimal integer
@@ -66,29 +64,37 @@
 --    s         String of characters
 --    p         Pointer address
 --    %         A % followed by another % character will write a single %
---
+
 --  Flags:
+
 --    -         Left-justify within the given field width;
---              Right justification is the default
+--              Right justification is the default.
+
 --    +         Forces to preceed the result with a plus or minus sign (+ or -)
 --              even for positive numbers. By default, only negative numbers
 --              are preceded with a - sign.
+
 --    (space)   If no sign is going to be written, a blank space is inserted
 --              before the value.
+
 --    #         Used with o, x or X specifiers the value is preceeded with
 --              0, 0x or 0X respectively for values different than zero.
 --              Used with a, A, e, E, f, F, g or G it forces the written
 --              output to contain a decimal point even if no more digits
 --              follow. By default, if no digits follow, no decimal point is
 --              written.
+
 --    ~         As above, but using Ada style based <base>#<number>#
+
 --    0         Left-pads the number with zeroes (0) instead of spaces when
 --              padding is specified.
+
 --  Width:
 --    number    Minimum number of characters to be printed. If the value to
 --              be printed is shorter than this number, the result is padded
 --              with blank spaces. The value is not truncated even if the
 --              result is larger.
+
 --    *         The width is not specified in the format string, but as an
 --              additional integer value argument preceding the argument that
 --              has to be formatted.
@@ -99,15 +105,19 @@
 --              leading zeros. The value is not truncated even if the result
 --              is longer. A precision of 0 means that no character is written
 --              for the value 0.
+
 --              For e, E, f and F specifiers: this is the number of digits to
 --              be printed after the decimal point (by default, this is 6).
 --              For g and G specifiers: This is the maximum number of
 --              significant digits to be printed.
+
 --              For s: this is the maximum number of characters to be printed.
 --              By default all characters are printed until the ending null
 --              character is encountered.
+
 --              If the period is specified without an explicit value for
 --              precision, 0 is assumed.
+
 --    .*        The precision is not specified in the format string, but as an
 --              additional integer value argument preceding the argument that
 --              has to be formatted.
@@ -119,7 +129,6 @@ private with Ada.Finalization;
 private with Ada.Strings.Unbounded;
 
 package GNAT.Formatted_String is
-
    use Ada;
 
    type Formatted_String (<>) is private;
@@ -249,11 +258,11 @@ package GNAT.Formatted_String is
    generic
       type Enum is (<>);
    function Enum_Format
-     (Format : Formatted_String; Var : Enum) return Formatted_String;
+     (Format : Formatted_String;
+      Var    : Enum) return Formatted_String;
    --  As for String above, output the string representation of the enumeration
 
 private
-
    use Ada.Strings.Unbounded;
 
    type I_Vars is array (Positive range 1 .. 2) of Integer;

@@ -2909,10 +2909,10 @@ package body Sem_Ch13 is
                   --  their pragmas must contain two arguments, the second
                   --  being the optional Boolean expression.
 
-                  if A_Id = Aspect_Async_Readers
-                    or else A_Id = Aspect_Async_Writers
-                    or else A_Id = Aspect_Effective_Reads
-                    or else A_Id = Aspect_Effective_Writes
+                  if A_Id = Aspect_Async_Readers   or else
+                     A_Id = Aspect_Async_Writers   or else
+                     A_Id = Aspect_Effective_Reads or else
+                     A_Id = Aspect_Effective_Writes
                   then
                      declare
                         Args : List_Id;
@@ -2921,9 +2921,10 @@ package body Sem_Ch13 is
                         --  The first argument of the external property pragma
                         --  is the related object.
 
-                        Args := New_List (
-                          Make_Pragma_Argument_Association (Sloc (Ent),
-                            Expression => Ent));
+                        Args :=
+                          New_List (
+                            Make_Pragma_Argument_Association (Sloc (Ent),
+                              Expression => Ent));
 
                         --  The second argument is the optional Boolean
                         --  expression which must be propagated even if it

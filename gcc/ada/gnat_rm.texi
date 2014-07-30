@@ -19868,7 +19868,7 @@ in this package can be used to reestablish the required mode.
 @cindex Formatted String
 
 @noindent
-Provides support for C/C++ printf() formatted string. The format is
+Provides support for C/C++ printf() formatted strings. The format is
 copied from the printf() routine and should therefore gives identical
 output. Some generic routines are provided to be able to use types
 derived from Integer, Float or enumerations as values for the
