@@ -6214,7 +6214,7 @@ package body Prj.Nmsc is
                      when Use_Error =>
                         Error_Msg
                           (Data.Flags,
-                           "could not create " & Create &
+                           "~could not create " & Create &
                            " directory " & Full_Path_Name.all,
                            Location, Project);
                   end;

@@ -1566,12 +1566,12 @@ useful when the pragma or aspect argument references subprograms
 in a with'ed package which is replaced by a dummy package
 for the final build.
 
-The implementation defined policy @code{Assertions} applies to all
+The implementation defined assertion kind @code{Assertions} applies to all
 assertion kinds. The form with no assertion kind given implies this
 choice, so it applies to all assertion kinds (RM defined, and
 implementation defined).
 
-The implementation defined policy @code{Statement_Assertions}
+The implementation defined assertion kind @code{Statement_Assertions}
 applies to @code{Assert}, @code{Assert_And_Cut},
 @code{Assume}, @code{Loop_Invariant}, and @code{Loop_Variant}.
 
@@ -11111,16 +11111,16 @@ type @code{Character}).
 forbidden in SPARK 2005 are not present. Error messages related to
 SPARK restriction have the form:
 
+@smallexample
+violation of restriction "SPARK_05" at <source-location>
+ <error message>
+@end smallexample
+
 @findex SPARK
 The restriction @code{SPARK} is recognized as a
 synonym for @code{SPARK_05}. This is retained for historical
 compatibility purposes (and an unconditional warning will be generated
-for its use, advising replacement by @code{SPARK}.
-
-@smallexample
-violation of restriction "SPARK" at <file>
- <error message>
-@end smallexample
+for its use, advising replacement by @code{SPARK}).
 
 This is not a replacement for the semantic checks performed by the
 SPARK Examiner tool, as the compiler currently only deals with code,
