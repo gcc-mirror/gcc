@@ -557,14 +557,20 @@ package body System.Tasking.Stages is
             else System.Multiprocessors.CPU_Range (CPU));
       end if;
 
-      --  Find parent P of new Task, via master level number
+      --  Find parent P of new Task, via master level number. Independent tasks
+      --  should have Parent = Environment_Task, and all tasks created
+      --  by independent tasks are also independent. See, for example,
+      --  s-interr.adb, where Interrupt_Manager does "new Server_Task". The
+      --  access type is at library level, so the parent of the Server_Task
+      --  is Environment_Task.
 
       P := Self_ID;
 
-      if P /= null then
-         while P.Master_of_Task >= Master loop
+      if P.Master_of_Task <= Independent_Task_Level then
+         P := Environment_Task;
+      else
+         while P /= null and then P.Master_of_Task >= Master loop
             P := P.Common.Parent;
-            exit when P = null;
          end loop;
       end if;
 

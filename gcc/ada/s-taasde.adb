@@ -75,19 +75,22 @@ package body System.Tasking.Async_Delays is
    --  time, so that the ordered insertion will always stop searching when it
    --  gets back to the queue header block.
 
-   function Empty_Queue return Delay_Block;
-   --  Initial value for Timer_Queue
+   Timer_Queue : aliased Delay_Block;
 
-   function Empty_Queue return Delay_Block is
+   package Init_Timer_Queue is end Init_Timer_Queue;
+   pragma Unreferenced (Init_Timer_Queue);
+   --  Initialize the Timer_Queue. This is a package to work around the
+   --  fact that statements are syntactically illegal here. We want this
+   --  initialization to happen before the Timer_Server is activated. A
+   --  build-in-place function would also work, but that's not supported
+   --  on all platforms (e.g. cil).
+
+   package body Init_Timer_Queue is
    begin
-      return Result : aliased Delay_Block do
-         Result.Succ := Result'Unchecked_Access;
-         Result.Pred := Result'Unchecked_Access;
-         Result.Resume_Time := Duration'Last;
-      end return;
-   end Empty_Queue;
-
-   Timer_Queue : aliased Delay_Block := Empty_Queue;
+      Timer_Queue.Succ := Timer_Queue'Unchecked_Access;
+      Timer_Queue.Pred := Timer_Queue'Unchecked_Access;
+      Timer_Queue.Resume_Time := Duration'Last;
+   end Init_Timer_Queue;
 
    ------------------------
    -- Cancel_Async_Delay --

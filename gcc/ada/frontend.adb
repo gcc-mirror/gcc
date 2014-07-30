@@ -71,42 +71,6 @@ procedure Frontend is
    Config_Pragmas : List_Id;
    --  Gather configuration pragmas
 
-   function Need_To_Be_In_The_Dependencies
-     (Pragma_List : List_Id) return Boolean;
-   --  Check if a configuration pragmas file that contains the Pragma_List
-   --  should be a dependency for the source being compiled. Returns
-   --  False if Pragma_List is Error_List or contains only pragmas
-   --  Source_File_Name_Project, returns True otherwise.
-
-   ------------------------------------
-   -- Need_To_Be_In_The_Dependencies --
-   ------------------------------------
-
-   function Need_To_Be_In_The_Dependencies
-     (Pragma_List : List_Id) return Boolean
-   is
-      Prag  : Node_Id;
-      Pname : Name_Id;
-
-   begin
-      if Pragma_List /= Error_List then
-         Prag := First (Pragma_List);
-         while Present (Prag) loop
-            Pname := Pragma_Name (Prag);
-
-            if Pname /= Name_Source_File_Name_Project then
-               return True;
-            end if;
-
-            Next (Prag);
-         end loop;
-      end if;
-
-      return False;
-   end Need_To_Be_In_The_Dependencies;
-
---  Start of processing for Frontend
-
 begin
    --  Carry out package initializations. These are initializations which might
    --  logically be performed at elaboration time, were it not for the fact
@@ -179,6 +143,8 @@ begin
       --  Source reference for -gnatec configuration file
 
       Prag : Node_Id;
+
+      Temp_File : Boolean;
 
    begin
       --  We always analyze config files with style checks off, since
@@ -253,6 +219,13 @@ begin
 
             Name_Len := Config_File_Names (Index)'Length;
             Name_Buffer (1 .. Name_Len) := Config_File_Names (Index).all;
+            Temp_File :=
+              Name_Len > 4
+                and then
+                  (Name_Buffer (Name_Len - 3 .. Name_Len) = ".TMP"
+                     or else
+                   Name_Buffer (Name_Len - 3 .. Name_Len) = ".tmp");
+
             --  Load the file, error if we did not find it
 
             Source_Config_File := Load_Config_File (Name_Enter);
@@ -262,30 +235,20 @@ begin
                  ("cannot find configuration pragmas file "
                   & Config_File_Names (Index).all);
 
-            --  If we did find the file, and it contains pragmas other than
-            --  Source_File_Name_Project, then we unconditionally add a
-            --  compilation dependency for it so that if it changes, we force
-            --  a recompilation. This is a fairly recent (2014-03-28) change.
+            --  If we did find the file, and it is not a temporary file, then
+            --  we unconditionally add a compilation dependency for it so
+            --  that if it changes, we force a recompilation. This is a
+            --  fairly recent (2014-03-28) change.
 
-            else
-
-               --  Parse the config pragmas file, and accumulate results
-
-               Initialize_Scanner (No_Unit, Source_Config_File);
-
-               declare
-                  Pragma_List : constant List_Id :=
-                                  Par (Configuration_Pragmas => True);
-
-               begin
-                  if Need_To_Be_In_The_Dependencies (Pragma_List) then
-                     Prepcomp.Add_Dependency (Source_Config_File);
-                  end if;
-
-                  Append_List_To (Config_Pragmas, Pragma_List);
-               end;
+            elsif not Temp_File then
+               Prepcomp.Add_Dependency (Source_Config_File);
             end if;
 
+            --  Parse the config pragmas file, and accumulate results
+
+            Initialize_Scanner (No_Unit, Source_Config_File);
+            Append_List_To
+              (Config_Pragmas, Par (Configuration_Pragmas => True));
          end loop;
       end if;
 

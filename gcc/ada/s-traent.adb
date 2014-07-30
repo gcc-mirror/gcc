@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,10 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+pragma Polling (Off);
+--  We must turn polling off for this unit, because otherwise we get
+--  elaboration circularities with Ada.Exceptions.
 
 pragma Compiler_Unit_Warning;
 

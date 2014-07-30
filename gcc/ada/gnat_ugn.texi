@@ -12339,8 +12339,13 @@ It is allowable to specify several switches @option{-gnatec=}, all of which
 will be taken into account.
 
 Files containing configuration pragmas specified with switches
-@option{-gnatec=} are added to the dependencies, unless they contain
-only pragmas Source_File_Name_Project.
+@option{-gnatec=} are added to the dependencies, unless they are
+temporary files. A file is considered temporary if its name ends in
+@file{.tmp} or @file{.TMP}. Certain tools follow this naming
+convention because they pass information to @command{gcc} via
+temporary files that are immediately deleted; it doesn't make sense to
+depend on a file that no longer exists. Such tools include
+@command{gprbuild}, @command{gnatmake}, and @command{gnatcheck}.
 
 If you are using project file, a separate mechanism is provided using
 project attributes, see @ref{Specifying Configuration Pragmas} for more
