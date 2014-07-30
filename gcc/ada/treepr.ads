@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,20 +73,12 @@ package Treepr is
    --  the definition of Union_Id. Historically this was only for printing
    --  nodes, hence the name.
 
-   procedure pp (N : Union_Id);
-   pragma Export (Ada, pp);
-   --  Identical to pn, present for historical reasons
-
-   procedure ppp (N : Node_Id);
-   pragma Export (Ada, ppp);
-   --  Same as Print_Node_Subtree
-
-   --  The following are no longer really needed, now that pn will print
-   --  anything you throw at it.
-
-   procedure pe (E : Elist_Id);
-   pragma Export (Ada, pe);
-   --  Same as Print_Tree_Elist
+   procedure pt (N : Union_Id);
+   pragma Export (Ada, pt);
+   --  Same as pn, except prints subtrees. For Nodes, it is exactly the same
+   --  as Print_Node_Subtree. For Elists it is the same as Print_Elist_Subtree.
+   --  For Lists, it is the same as Print_Tree_List. If given anything other
+   --  than a Node, List, or Elist, same effect as pn.
 
    procedure pl (L : Int);
    pragma Export (Ada, pl);
@@ -95,8 +87,9 @@ package Treepr is
    --  on the left and add a minus sign. This just saves some typing in the
    --  debugger.
 
-   procedure pt (N : Node_Id);
-   pragma Export (Ada, pt);
-   --  Same as ppp
+   procedure pe  (N : Union_Id) renames pt;
+   procedure pp  (N : Union_Id) renames pn;
+   procedure ppp (N : Union_Id) renames pt;
+   --  Synonyms retained for historical reasons
 
 end Treepr;

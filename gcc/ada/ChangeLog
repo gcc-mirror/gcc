@@ -1,3 +1,10 @@
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* exp_ch9.ads, sem_prag.adb, exp_ch4.adb, sem_ch13.adb: Minor comment
+	fixes.
+	* treepr.ads, treepr.adb (ppp): Make this debugging routine
+	accept any type covered by Union_Id.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch4.adb (Analyze_If_Expression): Resolve condition before

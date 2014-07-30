@@ -237,15 +237,6 @@ package body Treepr is
    end p;
 
    --------
-   -- pe --
-   --------
-
-   procedure pe (E : Elist_Id) is
-   begin
-      Print_Tree_Elist (E);
-   end pe;
-
-   --------
    -- pl --
    --------
 
@@ -322,15 +313,6 @@ package body Treepr is
             Write_Eol;
       end case;
    end pn;
-
-   --------
-   -- pp --
-   --------
-
-   procedure pp (N : Union_Id) is
-   begin
-      pn (N);
-   end pp;
 
    ----------------
    -- Print_Char --
@@ -1583,19 +1565,19 @@ package body Treepr is
    -- pt --
    --------
 
-   procedure pt (N : Node_Id) is
+   procedure pt (N : Union_Id) is
    begin
-      Print_Node_Subtree (N);
+      case N is
+         when List_Low_Bound .. List_High_Bound - 1 =>
+            Print_List_Subtree (List_Id (N));
+         when Node_Range =>
+            Print_Node_Subtree (Node_Id (N));
+         when Elist_Range =>
+            Print_Elist_Subtree (Elist_Id (N));
+         when others =>
+            pp (N);
+      end case;
    end pt;
-
-   ---------
-   -- ppp --
-   ---------
-
-   procedure ppp (N : Node_Id) is
-   begin
-      pt (N);
-   end ppp;
 
    -------------------
    -- Serial_Number --

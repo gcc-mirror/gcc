@@ -18342,9 +18342,9 @@ package body Sem_Prag is
                --  supported profile) to make sure that one of these packages
                --  is implicitly with'ed, since we need to have the tasking
                --  run time active for the pragma Priority to have any effect.
-               --  Previously with with'ed the package System.Tasking, but
-               --  this package does not trigger the required initialization
-               --  of the run-time library.
+               --  Previously we with'ed the package System.Tasking, but this
+               --  package does not trigger the required initialization of the
+               --  run-time library.
 
                declare
                   Discard : Entity_Id;
