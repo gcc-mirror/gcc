@@ -25,6 +25,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 #include <stdlib.h>
+#include <errno.h>
+
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t)-1)
+#endif
 
 
 void *
@@ -44,12 +49,34 @@ xmalloc (size_t n)
 }
 
 
+void *
+xmallocarray (size_t nmemb, size_t size)
+{
+  void *p;
+
+  if (!nmemb || !size)
+    size = nmemb = 1;
+  else if (nmemb > SIZE_MAX / size)
+    {
+      errno = ENOMEM;
+      os_error ("Integer overflow in xmallocarray");
+    }
+
+  p = malloc (nmemb * size);
+
+  if (!p)
+    os_error ("Memory allocation failed in xmallocarray");
+
+  return p;
+}
+
+
 /* calloc wrapper that aborts on error.  */
 
 void *
 xcalloc (size_t nmemb, size_t size)
 {
-  if (nmemb * size == 0)
+  if (!nmemb || !size)
     nmemb = size = 1;
 
   void *p = calloc (nmemb, size);

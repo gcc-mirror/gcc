@@ -44,7 +44,7 @@ convert_char1_to_char4 (gfc_char4_t **dst, gfc_charlen_type len,
   gfc_charlen_type i, l;
 
   l = len > 0 ? len : 0;
-  *dst = xmalloc ((l + 1) * sizeof (gfc_char4_t));
+  *dst = xmallocarray ((l + 1), sizeof (gfc_char4_t));
 
   for (i = 0; i < l; i++)
     (*dst)[i] = src[i];
@@ -60,7 +60,7 @@ convert_char4_to_char1 (unsigned char **dst, gfc_charlen_type len,
   gfc_charlen_type i, l;
 
   l = len > 0 ? len : 0;
-  *dst = xmalloc ((l + 1) * sizeof (unsigned char));
+  *dst = xmalloc (l + 1);
 
   for (i = 0; i < l; i++)
     (*dst)[i] = src[i];

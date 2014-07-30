@@ -101,8 +101,8 @@ spread_c4 (gfc_array_c4 *ret, const gfc_array_c4 *source,
 	}
       ret->offset = 0;
 
-      /* xmalloc allocates a single byte for zero size.  */
-      ret->base_addr = xmalloc (rs * sizeof(GFC_COMPLEX_4));
+      /* xmallocarray allocates a single byte for zero size.  */
+      ret->base_addr = xmallocarray (rs, sizeof(GFC_COMPLEX_4));
       if (rs <= 0)
         return;
     }
@@ -244,7 +244,7 @@ spread_scalar_c4 (gfc_array_c4 *ret, const GFC_COMPLEX_4 *source,
 
   if (ret->base_addr == NULL)
     {
-      ret->base_addr = xmalloc (ncopies * sizeof (GFC_COMPLEX_4));
+      ret->base_addr = xmallocarray (ncopies, sizeof (GFC_COMPLEX_4));
       ret->offset = 0;
       GFC_DIMENSION_SET(ret->dim[0], 0, ncopies - 1, 1);
     }

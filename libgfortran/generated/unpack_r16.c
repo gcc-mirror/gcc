@@ -99,7 +99,7 @@ unpack0_r16 (gfc_array_r16 *ret, const gfc_array_r16 *vector,
 	  rs *= extent[n];
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * sizeof (GFC_REAL_16));
+      ret->base_addr = xmallocarray (rs, sizeof (GFC_REAL_16));
     }
   else
     {
@@ -244,7 +244,7 @@ unpack1_r16 (gfc_array_r16 *ret, const gfc_array_r16 *vector,
 	  rs *= extent[n];
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * sizeof (GFC_REAL_16));
+      ret->base_addr = xmallocarray (rs, sizeof (GFC_REAL_16));
     }
   else
     {

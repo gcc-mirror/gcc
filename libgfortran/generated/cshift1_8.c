@@ -80,7 +80,7 @@ cshift1 (gfc_array_char * const restrict ret,
     {
       int i;
 
-      ret->base_addr = xmalloc (size * arraysize);
+      ret->base_addr = xmallocarray (arraysize, size);
       ret->offset = 0;
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)

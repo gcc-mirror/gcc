@@ -99,7 +99,7 @@ unpack0_c10 (gfc_array_c10 *ret, const gfc_array_c10 *vector,
 	  rs *= extent[n];
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * sizeof (GFC_COMPLEX_10));
+      ret->base_addr = xmallocarray (rs, sizeof (GFC_COMPLEX_10));
     }
   else
     {
@@ -244,7 +244,7 @@ unpack1_c10 (gfc_array_c10 *ret, const gfc_array_c10 *vector,
 	  rs *= extent[n];
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * sizeof (GFC_COMPLEX_10));
+      ret->base_addr = xmallocarray (rs, sizeof (GFC_COMPLEX_10));
     }
   else
     {

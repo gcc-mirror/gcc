@@ -100,7 +100,7 @@ unpack0_'rtype_code` ('rtype` *ret, const 'rtype` *vector,
 	  rs *= extent[n];
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * sizeof ('rtype_name`));
+      ret->base_addr = xmallocarray (rs, sizeof ('rtype_name`));
     }
   else
     {
@@ -245,7 +245,7 @@ unpack1_'rtype_code` ('rtype` *ret, const 'rtype` *vector,
 	  rs *= extent[n];
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * sizeof ('rtype_name`));
+      ret->base_addr = xmallocarray (rs, sizeof ('rtype_name`));
     }
   else
     {

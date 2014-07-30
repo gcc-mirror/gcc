@@ -76,7 +76,7 @@ internal_pack_r10 (gfc_array_r10 * source)
     return source->base_addr;
 
   /* Allocate storage for the destination.  */
-  destptr = (GFC_REAL_10 *)xmalloc (ssize * sizeof (GFC_REAL_10));
+  destptr = xmallocarray (ssize, sizeof (GFC_REAL_10));
   dest = destptr;
   src = source->base_addr;
   stride0 = stride[0];

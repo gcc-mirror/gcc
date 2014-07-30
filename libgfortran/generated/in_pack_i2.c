@@ -76,7 +76,7 @@ internal_pack_2 (gfc_array_i2 * source)
     return source->base_addr;
 
   /* Allocate storage for the destination.  */
-  destptr = (GFC_INTEGER_2 *)xmalloc (ssize * sizeof (GFC_INTEGER_2));
+  destptr = xmallocarray (ssize, sizeof (GFC_INTEGER_2));
   dest = destptr;
   src = source->base_addr;
   stride0 = stride[0];

@@ -168,8 +168,8 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 
 	  ret->offset = 0;
 
-	  /* xmalloc allocates a single byte for zero size.  */
-	  ret->base_addr = xmalloc (sizeof ('rtype_name`) * total);
+	  /* xmallocarray allocates a single byte for zero size.  */
+	  ret->base_addr = xmallocarray (total, sizeof ('rtype_name`));
 
 	  if (total == 0)
 	    return;

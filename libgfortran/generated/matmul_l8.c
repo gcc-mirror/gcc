@@ -88,7 +88,7 @@ matmul_l8 (gfc_array_l8 * const restrict retarray,
         }
           
       retarray->base_addr
-	= xmalloc (sizeof (GFC_LOGICAL_8) * size0 ((array_t *) retarray));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_LOGICAL_8));
       retarray->offset = 0;
     }
     else if (unlikely (compile_options.bounds_check))

@@ -76,7 +76,7 @@ internal_pack_c4 (gfc_array_c4 * source)
     return source->base_addr;
 
   /* Allocate storage for the destination.  */
-  destptr = (GFC_COMPLEX_4 *)xmalloc (ssize * sizeof (GFC_COMPLEX_4));
+  destptr = xmallocarray (ssize, sizeof (GFC_COMPLEX_4));
   dest = destptr;
   src = source->base_addr;
   stride0 = stride[0];

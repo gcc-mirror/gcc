@@ -89,7 +89,7 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
         }
           
       retarray->base_addr
-	= xmalloc (sizeof ('rtype_name`) * size0 ((array_t *) retarray));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof ('rtype_name`));
       retarray->offset = 0;
     }
     else if (unlikely (compile_options.bounds_check))
