@@ -3834,8 +3834,12 @@ package body Inline is
             --  call will pass the parameter by reference, and thus the inlined
             --  code will have the same semantics.
 
+            --  Finally, we need a renaming declaration in the case of limited
+            --  types for which initialization cannot be by copy either.
+
             if Ekind (F) = E_In_Parameter
               and then not Is_By_Reference_Type (Etype (A))
+              and then not Is_Limited_Type (Etype (A))
               and then
                 (not Is_Array_Type (Etype (A))
                   or else not Is_Object_Reference (A)

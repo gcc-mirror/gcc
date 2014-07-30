@@ -1,3 +1,46 @@
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Use a renaming declaration
+	to capture the value of actuals of a limited type rather than
+	an object declaration, to prevent spurious errors when analyzing
+	the inlined body.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Type_Conversion): Treat an inlined body
+	as an instance, and inhibit semantic checks on already analyzed
+	code to prevent spurious errors.
+
+2014-07-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-exctra.ads ("="): New function, to restore compatibility.
+
+2014-07-30  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_to_os_time): Set isdst to -1 for the mktime
+	routine to use the OS dst setting.
+
+2014-07-30  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_ugn.texi: Minor correction to description of -gnatw.K.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Wrong_Type): Disable some checks equally within
+	instances and within inlined bodies, to suppress spurious type
+	errors on already analyzed code.
+	* sem_aggr.adb (Check_Expr_OK_In_Limited_Aggregate): Expression
+	is legal in an inlined body, juts as it is in an instance body.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Unchecked_Conversion): Within an inlined
+	body the operand of an unchecked conversion may be a literal, in
+	which case its type is the target type of the conversion. This
+	is in contrast to conversions in other contexts, where the
+	operand cannot be a literal and must be resolvable independent
+	of the context.
+
 2014-07-30  Pierre-Marie Derodat  <derodat@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Create a

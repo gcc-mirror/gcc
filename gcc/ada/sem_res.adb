@@ -10680,6 +10680,20 @@ package body Sem_Res is
       --  Resolve operand using its own type
 
       Resolve (Operand, Opnd_Type);
+
+      --  In an inlined context, the unchecked conversion may be applied
+      --  to a literal, in which case its type is the type of the context.
+      --  (In other contexts conversions cannot apply to literals).
+
+      if In_Inlined_Body
+        and then
+          (Opnd_Type = Any_Character or else
+           Opnd_Type = Any_Integer   or else
+           Opnd_Type = Any_Real)
+      then
+         Set_Etype (Operand, Typ);
+      end if;
+
       Analyze_Dimension (N);
       Eval_Unchecked_Conversion (N);
    end Resolve_Unchecked_Type_Conversion;

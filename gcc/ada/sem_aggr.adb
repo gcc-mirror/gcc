@@ -111,6 +111,7 @@ package body Sem_Aggr is
    --  Check that Expr is either not limited or else is one of the cases of
    --  expressions allowed for a limited component association (namely, an
    --  aggregate, function call, or <> notation). Report error for violations.
+   --  Expression is also OK in an instance or inlining context.
 
    procedure Check_Qualified_Aggregate (Level : Nat; Expr : Node_Id);
    --  Given aggregate Expr, check that sub-aggregates of Expr that are nested
@@ -687,10 +688,13 @@ package body Sem_Aggr is
    begin
       if Is_Limited_Type (Etype (Expr))
          and then Comes_From_Source (Expr)
-         and then not In_Instance_Body
       then
-         if not OK_For_Limited_Init (Etype (Expr), Expr) then
-            Error_Msg_N ("initialization not allowed for limited types", Expr);
+         if In_Instance_Body or else In_Inlined_Body then
+            null;
+
+         elsif not OK_For_Limited_Init (Etype (Expr), Expr) then
+            Error_Msg_N
+              ("initialization not allowed for limited types", Expr);
             Explain_Limited_Type (Etype (Expr), Expr);
          end if;
       end if;
