@@ -1,3 +1,11 @@
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Improve error recovery.
+	* inline.adb (Build_Body_To_Inline): Set Full_Analysis to false
+	before analyzing the body, so that in GNATprove mode there is
+	no light expansion. Whatever expansion is required by SPARK will
+	be performed when analysing the inlined code.
+
 2014-07-30  Bob Duff  <duff@adacore.com>
 
 	* s-tataat.adb, s-tataat.ads, a-tasatt.adb: Minor comment fixes.

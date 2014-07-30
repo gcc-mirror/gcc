@@ -833,6 +833,7 @@ package body Inline is
 
    procedure Build_Body_To_Inline (N : Node_Id; Subp : Entity_Id) is
       Decl            : constant Node_Id := Unit_Declaration_Node (Subp);
+      Analysis_Status : constant Boolean := Full_Analysis;
       Original_Body   : Node_Id;
       Body_To_Analyze : Node_Id;
       Max_Size        : constant := 10;
@@ -1388,7 +1389,12 @@ package body Inline is
          Append (Body_To_Analyze, Declarations (N));
       end if;
 
+      --  The body to inline is pre-analyzed.  In GNATprove mode we must
+      --  disable full analysis as well so that light expansion does not
+      --  take place either, and name resolution is unaffected.
+
       Expander_Mode_Save_And_Set (False);
+      Full_Analysis := False;
       Remove_Pragmas;
 
       Analyze (Body_To_Analyze);
@@ -1398,6 +1404,7 @@ package body Inline is
       Remove (Body_To_Analyze);
 
       Expander_Mode_Restore;
+      Full_Analysis := Analysis_Status;
 
       --  Restore environment if previously saved
 

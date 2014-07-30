@@ -2841,6 +2841,13 @@ package body Sem_Ch5 is
             Error_Msg_Sloc := Sloc (Ent);
             Error_Msg_N ("implicit label declaration for & is hidden#", Id);
 
+            if Present (Homonym (Ent))
+              and then Ekind (Homonym (Ent)) = E_Label
+            then
+               Set_Entity (Id, Ent);
+               Set_Ekind (Ent, E_Loop);
+            end if;
+
          else
             Generate_Reference (Ent, N, ' ');
             Generate_Definition (Ent);
