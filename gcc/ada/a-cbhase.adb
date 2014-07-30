@@ -762,7 +762,8 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       Insert (Container, New_Item, Position, Inserted);
 
       if not Inserted then
-         raise Program_Error with "attempt to insert element already in set";
+         raise Constraint_Error with
+           "attempt to insert element already in set";
       end if;
    end Insert;
 

@@ -9891,6 +9891,7 @@ package body Sem_Ch6 is
                   --  in bodies. Limited views of either kind are not allowed
                   --  if there is no place at which the non-limited view can
                   --  become available.
+
                   --  Incomplete formal untagged types are not allowed in
                   --  subprogram bodies (but are legal in their declarations).
 

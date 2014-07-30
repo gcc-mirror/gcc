@@ -308,19 +308,14 @@ package body Get_Targ is
 
    function Digits_From_Size (Size : Pos) return Pos is
    begin
-      if    Size =  32 then
-         return  6;
-      elsif Size =  48 then
-         return  9;
-      elsif Size =  64 then
-         return 15;
-      elsif Size =  96 then
-         return 18;
-      elsif Size = 128 then
-         return 18;
-      else
-         raise Program_Error;
-      end if;
+      case Size is
+         when  32    => return  6;
+         when  48    => return  9;
+         when  64    => return 15;
+         when  96    => return 18;
+         when 128    => return 18;
+         when others => raise Program_Error;
+      end case;
    end Digits_From_Size;
 
    -----------------------------
@@ -349,17 +344,13 @@ package body Get_Targ is
 
    function Width_From_Size  (Size : Pos) return Pos is
    begin
-      if    Size =  8 then
-         return  4;
-      elsif Size = 16 then
-         return  6;
-      elsif Size = 32 then
-         return 11;
-      elsif Size = 64 then
-         return 21;
-      else
-         raise Program_Error;
-      end if;
+      case Size is
+         when  8     => return  4;
+         when 16     => return  6;
+         when 32     => return 11;
+         when 64     => return 21;
+         when others => raise Program_Error;
+      end case;
    end Width_From_Size;
 
 end Get_Targ;
