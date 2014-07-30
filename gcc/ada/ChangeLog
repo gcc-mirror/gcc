@@ -1,3 +1,13 @@
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Build_Body_To_Inline): Issue more precise messages
+	for declarations that prevent inlining.
+	(Cannot_Inline): Change usual start of message to refer to contextual
+	analysis in GNATprove mode.
+	* sem_res.adb (Resolve_Call): Change usual start of message to
+	refer to contextual analysis in GNATprove mode, when inlining
+	not possible.
+
 2014-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb, sem_ch6.adb: Minor code reorganization.
