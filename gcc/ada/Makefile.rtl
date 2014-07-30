@@ -470,7 +470,6 @@ GNATRTL_NONTASKING_OBJS= \
   i-cexten$(objext) \
   i-cobol$(objext) \
   i-cpoint$(objext) \
-  i-cpp$(objext) \
   i-cstrea$(objext) \
   i-cstrin$(objext) \
   i-fortra$(objext) \

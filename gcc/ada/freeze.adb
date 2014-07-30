@@ -3145,10 +3145,8 @@ package body Freeze is
 
          if Present (ADC) and then Base_Type (Rec) = Rec then
             if not (Placed_Component
-                      or else
-                    Present (SSO_ADC)
-                      or else
-                    Is_Packed (Rec))
+                     or else Present (SSO_ADC)
+                     or else Is_Packed (Rec))
             then
                --  Warn if clause has no effect when no component clause is
                --  present, but suppress warning if the Bit_Order is required
@@ -3296,8 +3294,7 @@ package body Freeze is
             while Present (Comp) loop
                if Present (Component_Clause (Comp))
                  and then (Is_Fixed_Point_Type (Etype (Comp))
-                             or else
-                           Is_Bit_Packed_Array (Etype (Comp)))
+                            or else Is_Bit_Packed_Array (Etype (Comp)))
                then
                   Check_Size
                     (Component_Name (Component_Clause (Comp)),
@@ -4183,6 +4180,41 @@ package body Freeze is
               or else Is_Predefined_Dispatching_Operation (E)
             then
                Freeze_Subprogram (E);
+            end if;
+
+            --  If warning on suspicious contracts then check for the case of
+            --  a postcondition other than False for a No_Return subprogram.
+
+            if No_Return (E)
+              and then Warn_On_Suspicious_Contract
+              and then Present (Contract (E))
+            then
+               declare
+                  Prag : Node_Id := Pre_Post_Conditions (Contract (E));
+                  Exp  : Node_Id;
+
+               begin
+                  while Present (Prag) loop
+                     if Nam_In (Pragma_Name (Prag), Name_Post,
+                                                    Name_Postcondition,
+                                                    Name_Refined_Post)
+                     then
+                        Exp :=
+                          Expression
+                            (First (Pragma_Argument_Associations (Prag)));
+
+                        if Nkind (Exp) /= N_Identifier
+                          or else Chars (Exp) /= Name_False
+                        then
+                           Error_Msg_NE
+                             ("useless postcondition, & is marked "
+                              & "No_Return?T?", Exp, E);
+                        end if;
+                     end if;
+
+                     Prag := Next_Pragma (Prag);
+                  end loop;
+               end;
             end if;
 
          --  Here for other than a subprogram or type

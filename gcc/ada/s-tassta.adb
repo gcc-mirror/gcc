@@ -545,8 +545,8 @@ package body System.Tasking.Stages is
 
       else
          --  When the application code says nothing about the task affinity
-         --  (task without CPU aspect) then the compiler inserts the
-         --  Unspecified_CPU value which indicates to the run-time library that
+         --  (task without CPU aspect) then the compiler inserts the value
+         --  Unspecified_CPU which indicates to the run-time library that
          --  the task will activate and execute on the same processor as its
          --  activating task if the activating task is assigned a processor
          --  (RM D.16(14/3)).
@@ -557,8 +557,8 @@ package body System.Tasking.Stages is
             else System.Multiprocessors.CPU_Range (CPU));
       end if;
 
-      --  Find parent P of new Task, via master level number. Independent tasks
-      --  should have Parent = Environment_Task, and all tasks created
+      --  Find parent P of new Task, via master level number. Independent
+      --  tasks should have Parent = Environment_Task, and all tasks created
       --  by independent tasks are also independent. See, for example,
       --  s-interr.adb, where Interrupt_Manager does "new Server_Task". The
       --  access type is at library level, so the parent of the Server_Task

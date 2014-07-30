@@ -477,8 +477,7 @@ package body System.Tasking.Utilities is
             (Self_ID, "Make_Passive: Phase 1, parent waiting", 'M'));
 
          --  If parent is in Master_Completion_Sleep, it cannot be on a
-         --  terminate alternative, hence it cannot have Wait_Count of
-         --  zero.
+         --  terminate alternative, hence it cannot have Wait_Count of zero.
 
          pragma Assert (P.Common.Wait_Count > 0);
          P.Common.Wait_Count := P.Common.Wait_Count - 1;
@@ -489,8 +488,7 @@ package body System.Tasking.Utilities is
 
       else
          pragma Debug
-           (Debug.Trace
-             (Self_ID, "Make_Passive: Phase 1, parent awake", 'M'));
+           (Debug.Trace (Self_ID, "Make_Passive: Phase 1, parent awake", 'M'));
          null;
       end if;
 

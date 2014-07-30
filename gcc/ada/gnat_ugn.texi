@@ -19872,9 +19872,15 @@ Specifies the default behavior of generated skeletons. @var{val} can be either
 "fail" or "pass", "fail" being the default.
 
 @item --passed-tests=@var{val}
-@cindex @option{--skeleton-default} (@command{gnattest})
+@cindex @option{--passed-tests} (@command{gnattest})
 Specifies whether or not passed tests should be shown. @var{val} can be either
 "show" or "hide", "show" being the default.
+
+@item --exit-status=@var{val}
+@cindex @option{--exit-status} (@command{gnattest})
+Specifies whether or not generated test driver should return failure exit
+status if at least one test fails or crashes. @var{val} can be either
+"on" or "off", "off" being the default.
 
 
 @item --tests-root=@var{dirname}
