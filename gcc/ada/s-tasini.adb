@@ -814,6 +814,7 @@ package body System.Tasking.Initialization is
 
    procedure Finalize_Attributes (T : Task_Id) is
       Attr : Atomic_Address;
+
    begin
       for J in T.Attributes'Range loop
          Attr := T.Attributes (J);

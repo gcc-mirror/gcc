@@ -5022,13 +5022,14 @@ package body Exp_Ch7 is
 
          --  Reset the action lists
 
-         Scope_Stack.Table (Scope_Stack.Last).
-           Actions_To_Be_Wrapped (Before) := No_List;
-         Scope_Stack.Table (Scope_Stack.Last).
-           Actions_To_Be_Wrapped (After) := No_List;
+         Scope_Stack.Table
+           (Scope_Stack.Last).Actions_To_Be_Wrapped (Before) := No_List;
+         Scope_Stack.Table
+           (Scope_Stack.Last).Actions_To_Be_Wrapped (After)  := No_List;
+
          if Clean then
-            Scope_Stack.Table (Scope_Stack.Last).
-              Actions_To_Be_Wrapped (Cleanup) := No_List;
+            Scope_Stack.Table
+              (Scope_Stack.Last).Actions_To_Be_Wrapped (Cleanup) := No_List;
          end if;
       end;
    end Insert_Actions_In_Scope_Around;

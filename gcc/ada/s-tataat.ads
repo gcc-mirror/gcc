@@ -50,17 +50,16 @@ package System.Tasking.Task_Attributes is
      Ada.Unchecked_Conversion (Atomic_Address, Attribute_Access);
 
    function Next_Index (Require_Finalization : Boolean) return Integer;
-   --  Return the next attribute index available.
-   --  Require_Finalization is True if the attribute requires finalization
-   --  and in particular its deallocator (Free field in Attribute_Record)
-   --  should be called.
-   --  Raise Storage_Error if no index is available.
+   --  Return the next attribute index available. Require_Finalization is True
+   --  if the attribute requires finalization and in particular its deallocator
+   --  (Free field in Attribute_Record) should be called. Raise Storage_Error
+   --  if no index is available.
 
    function Require_Finalization (Index : Integer) return Boolean;
-   --  Return True if a given attribute index requires call to Free.
-   --  This call is not protected against concurrent access, should only
-   --  be called during finalization of the corresponding instantiation of
-   --  Ada.Task_Attributes, or during finalization of a task.
+   --  Return True if a given attribute index requires call to Free. This call
+   --  is not protected against concurrent access, should only be called during
+   --  finalization of the corresponding instantiation of Ada.Task_Attributes,
+   --  or during finalization of a task.
 
    procedure Finalize (Index : Integer);
    --  Finalize given Index, possibly allowing future reuse

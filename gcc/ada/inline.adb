@@ -1698,7 +1698,7 @@ package body Inline is
       elsif Present (Body_Id)
         and then (No (SPARK_Pragma (Body_Id))
                    or else
-                  Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) /= On)
+                     Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) /= On)
       then
          return False;
 

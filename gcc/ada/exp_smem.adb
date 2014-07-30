@@ -189,25 +189,24 @@ package body Exp_Smem is
       --  subtypes in transient scopes.
 
       Vid := Make_Temporary (Loc, 'N', Obj);
-      Vde := Make_Object_Declaration (Loc,
+      Vde :=
+        Make_Object_Declaration (Loc,
           Defining_Identifier => Vid,
           Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
           Expression          => Make_String_Literal (Loc, Vnm));
 
+      --  Already in a transient scope. Make sure that we insert Vde outside
+      --  that scope.
+
       if In_Transient then
-
-         --  Already in a transient scope: make sure we insert Vde outside
-         --  that scope.
-
          Insert_Before_And_Analyze (Node_To_Be_Wrapped, Vde);
 
+      --  Not in a transient scope yet: insert Vde as an action on N prior to
+      --  establishing one.
+
       else
-         --  Not in a transient scope yet: insert Vde as an action on N prio
-         --  to establishing one.
-
          Insert_Action (N, Vde);
-
          Establish_Transient_Scope (N, Sec_Stack => False);
       end if;
 
@@ -216,6 +215,7 @@ package body Exp_Smem is
       declare
          Locked_Shared_Objects : Elist_Id renames
            Scope_Stack.Table (Scope_Stack.Last).Locked_Shared_Objects;
+
       begin
          if Locked_Shared_Objects = No_Elist then
             Locked_Shared_Objects := New_Elmt_List;

@@ -184,7 +184,7 @@ package System.Parameters is
    ---------------------
 
    Max_Attribute_Count : constant := 32;
-   --  Number of task attributes stored in the task control block.
+   --  Number of task attributes stored in the task control block
 
    --------------------
    -- Runtime Traces --

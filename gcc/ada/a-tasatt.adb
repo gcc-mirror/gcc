@@ -70,13 +70,14 @@ package body Ada.Task_Attributes is
    --  Each value in the task control block's Attributes array is either
    --  mapped to the attribute value directly if Fast_Path is True, or
    --  is in effect a Real_Attribute_Access.
+   --
    --  Note: the Deallocator field must be first, for compatibility with
    --  System.Tasking.Task_Attributes.Attribute_Record and to allow unchecked
    --  conversions between Attribute_Access and Real_Attribute_Access.
 
    function New_Attribute (Val : Attribute) return Atomic_Address;
-   --  Create a new Real_Attribute using Val, and return its address.
-   --  The returned value can be converted via To_Real_Attribute.
+   --  Create a new Real_Attribute using Val, and return its address. The
+   --  returned value can be converted via To_Real_Attribute.
 
    procedure Deallocate (Ptr : Atomic_Address);
    --  Free memory associated with Ptr, a Real_Attribute_Access in reality
@@ -84,21 +85,25 @@ package body Ada.Task_Attributes is
    function To_Real_Attribute is new
      Ada.Unchecked_Conversion (Atomic_Address, Real_Attribute_Access);
 
-   --  Kill warning about possible size mismatch
    pragma Warnings (Off);
+   --  Kill warning about possible size mismatch
+
    function To_Address is new
      Ada.Unchecked_Conversion (Attribute, Atomic_Address);
    function To_Attribute is new
      Ada.Unchecked_Conversion (Atomic_Address, Attribute);
+
    pragma Warnings (On);
 
    function To_Address is new
      Ada.Unchecked_Conversion (Real_Attribute_Access, Atomic_Address);
 
-   --  Kill warning about possible aliasing
    pragma Warnings (Off);
+   --  Kill warning about possible aliasing
+
    function To_Handle is new
      Ada.Unchecked_Conversion (System.Address, Attribute_Handle);
+
    pragma Warnings (On);
 
    function To_Task_Id is new Ada.Unchecked_Conversion
@@ -109,15 +114,15 @@ package body Ada.Task_Attributes is
      Ada.Unchecked_Deallocation (Real_Attribute, Real_Attribute_Access);
 
    Fast_Path : constant Boolean :=
-     Attribute'Size <= Atomic_Address'Size and then
-     To_Address (Initial_Value) = 0;
+                 Attribute'Size <= Atomic_Address'Size
+                   and then To_Address (Initial_Value) = 0;
    --  If the attribute fits in an Atomic_Address and Initial_Value is 0 (or
    --  null), then we will map the attribute directly into
    --  ATCB.Attributes (Index), otherwise we will create a level of indirection
    --  and instead use Attributes (Index) as a Real_Attribute_Access.
 
    Index : constant Integer :=
-     Next_Index (Require_Finalization => not Fast_Path);
+             Next_Index (Require_Finalization => not Fast_Path);
    --  Index in the task control block's Attributes array
 
    --------------
@@ -126,11 +131,13 @@ package body Ada.Task_Attributes is
 
    procedure Finalize (Cleanup : in out Attribute_Cleanup) is
       pragma Unreferenced (Cleanup);
+
    begin
       STPO.Lock_RTS;
 
       declare
          C : System.Tasking.Task_Id := System.Tasking.All_Tasks_List;
+
       begin
          while C /= null loop
             STPO.Write_Lock (C);
@@ -168,9 +175,8 @@ package body Ada.Task_Attributes is
    function New_Attribute (Val : Attribute) return Atomic_Address is
       Tmp : Real_Attribute_Access;
    begin
-      Tmp := new Real_Attribute'
-        (Free  => Deallocate'Unrestricted_Access,
-         Value => Val);
+      Tmp := new Real_Attribute'(Free  => Deallocate'Unrestricted_Access,
+                                 Value => Val);
       return To_Address (Tmp);
    end New_Attribute;
 
@@ -184,7 +190,7 @@ package body Ada.Task_Attributes is
    is
       Self_Id       : Task_Id;
       TT            : constant Task_Id := To_Task_Id (T);
-      Error_Message : constant String  := "Trying to get the reference of a ";
+      Error_Message : constant String  := "trying to get the reference of a ";
       Result        : Attribute_Handle;
 
    begin
@@ -235,8 +241,11 @@ package body Ada.Task_Attributes is
       end if;
 
       if Fast_Path then
+
          --  No finalization needed, simply reset to Initial_Value
+
          TT.Attributes (Index) := To_Address (Initial_Value);
+
       else
          Self_Id := STPO.Self;
          Task_Lock (Self_Id);
@@ -264,7 +273,7 @@ package body Ada.Task_Attributes is
    is
       Self_Id       : Task_Id;
       TT            : constant Task_Id := To_Task_Id (T);
-      Error_Message : constant String  := "Trying to Set the Value of a ";
+      Error_Message : constant String  := "trying to set the value of a ";
 
    begin
       if TT = null then
@@ -276,14 +285,18 @@ package body Ada.Task_Attributes is
       end if;
 
       if Fast_Path then
+
          --  No finalization needed, simply set to Val
+
          TT.Attributes (Index) := To_Address (Val);
+
       else
          Self_Id := STPO.Self;
          Task_Lock (Self_Id);
 
          declare
             Attr : Atomic_Address renames TT.Attributes (Index);
+
          begin
             if Attr /= 0 then
                Deallocate (Attr);
@@ -306,7 +319,7 @@ package body Ada.Task_Attributes is
    is
       Self_Id       : Task_Id;
       TT            : constant Task_Id := To_Task_Id (T);
-      Error_Message : constant String  := "Trying to get the Value of a ";
+      Error_Message : constant String  := "trying to get the value of a ";
 
    begin
       if TT = null then
@@ -319,20 +332,23 @@ package body Ada.Task_Attributes is
 
       if Fast_Path then
          return To_Attribute (TT.Attributes (Index));
+
       else
          Self_Id := STPO.Self;
          Task_Lock (Self_Id);
 
          declare
             Attr : Atomic_Address renames TT.Attributes (Index);
+
          begin
             if Attr = 0 then
                Task_Unlock (Self_Id);
                return Initial_Value;
+
             else
                declare
                   Result : constant Attribute :=
-                    To_Real_Attribute (Attr).Value;
+                             To_Real_Attribute (Attr).Value;
                begin
                   Task_Unlock (Self_Id);
                   return Result;

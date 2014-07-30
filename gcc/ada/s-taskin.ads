@@ -942,9 +942,9 @@ package System.Tasking is
    pragma Atomic (Atomic_Address);
    type Attribute_Array is
      array (1 .. Parameters.Max_Attribute_Count) of Atomic_Address;
-   --  Array of task attributes.
-   --  The value (Atomic_Address) will either be converted to a task
-   --  attribute if it fits, or to a pointer to a record by Ada.Task_Attributes
+   --  Array of task attributes. The value (Atomic_Address) will either be
+   --  converted to a task attribute if it fits, or to a pointer to a record
+   --  by Ada.Task_Attributes.
 
    type Task_Serial_Number is mod 2 ** 64;
    --  Used to give each task a unique serial number
