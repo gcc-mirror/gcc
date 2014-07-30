@@ -5361,8 +5361,8 @@ package body Exp_Aggr is
                 Make_Assignment_Statement (Loc,
                   Name       => Target,
                   Expression => New_Copy (N)));
-         else
 
+         else
             Aggr_Code :=
               Build_Array_Aggr_Code (N,
                 Ctype       => Ctyp,

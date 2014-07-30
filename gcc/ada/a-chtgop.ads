@@ -129,10 +129,9 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
    --  deallocated. Program_Error is raised if the hash table is busy.
 
    procedure Delete_Node_At_Index
-     (HT    : in out Hash_Table_Type;
-      Indx  : Hash_Type;
-      X     : in out Node_Access);
-
+     (HT   : in out Hash_Table_Type;
+      Indx : Hash_Type;
+      X    : in out Node_Access);
    --  Delete a node whose bucket position is known. Used to remove a node
    --  whose element has been modified through a key_preserving reference.
    --  We cannot use the value of the element precisely because the current
@@ -173,8 +172,9 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
 
    generic
       use Ada.Streams;
-      with function New_Node (Stream : not null access Root_Stream_Type'Class)
-         return Node_Access;
+      with function New_Node
+             (Stream : not null access Root_Stream_Type'Class)
+              return Node_Access;
    procedure Generic_Read
      (Stream : not null access Root_Stream_Type'Class;
       HT     : out Hash_Table_Type);
@@ -184,7 +184,7 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
 
    function New_Buckets (Length : Hash_Type) return Buckets_Access;
    pragma Inline (New_Buckets);
-   --  Allocate a new Buckets_Type array with bounds 0..Length-1
+   --  Allocate a new Buckets_Type array with bounds 0 .. Length - 1
 
    procedure Free_Buckets (Buckets : in out Buckets_Access);
    pragma Inline (Free_Buckets);

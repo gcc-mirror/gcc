@@ -49,12 +49,16 @@ is
    pragma Import (Ada, Exception_Message_Length, "__gnat_exception_msg_len");
 
    procedure Append_Info_Exception_Message
-     (X : Exception_Occurrence; Info : in out String; Ptr : in out Natural);
+     (X    : Exception_Occurrence;
+      Info : in out String;
+      Ptr  : in out Natural);
    pragma Import
      (Ada, Append_Info_Exception_Message, "__gnat_append_info_e_msg");
 
    procedure Append_Info_Untailored_Exception_Information
-     (X : Exception_Occurrence; Info : in out String; Ptr : in out Natural);
+     (X    : Exception_Occurrence;
+      Info : in out String;
+      Ptr  : in out Natural);
    pragma Import
      (Ada, Append_Info_Untailored_Exception_Information,
       "__gnat_append_info_u_e_info");

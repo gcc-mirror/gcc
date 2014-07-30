@@ -4705,6 +4705,7 @@ package body Checks is
          else
             OK := False;
          end if;
+
          return;
       end if;
 
@@ -5100,7 +5101,7 @@ package body Checks is
    ---------------------------
 
    procedure Enable_Overflow_Check (N : Node_Id) is
-      Typ  : constant Entity_Id           := Base_Type (Etype (N));
+      Typ  : constant Entity_Id          := Base_Type (Etype (N));
       Mode : constant Overflow_Mode_Type := Overflow_Check_Mode;
       Chk  : Nat;
       OK   : Boolean;

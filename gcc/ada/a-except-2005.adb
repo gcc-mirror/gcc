@@ -74,14 +74,14 @@ package body Ada.Exceptions is
    --  These procedures are used to provide exclusion bounds in
    --  calls to Call_Chain at exception raise points from this unit. The
    --  purpose is to arrange for the exception tracebacks not to include
-   --  frames from routines involved in the raise process, as these are
+   --  frames from subprograms involved in the raise process, as these are
    --  meaningless from the user's standpoint.
    --
    --  For these bounds to be meaningful, we need to ensure that the object
-   --  code for the routines involved in processing a raise is located after
-   --  the object code Code_Address_For_AAA and before the object code
-   --  Code_Address_For_ZZZ. This will indeed be the case as long as the
-   --  following rules are respected:
+   --  code for the subprograms involved in processing a raise is located
+   --  after the object code Code_Address_For_AAA and before the object
+   --  code Code_Address_For_ZZZ. This will indeed be the case as long as
+   --  the following rules are respected:
    --
    --  1) The bodies of the subprograms involved in processing a raise
    --     are located after the body of Code_Address_For_AAA and before the
@@ -111,9 +111,9 @@ package body Ada.Exceptions is
 
    package Exception_Data is
 
-      ---------------------------------
-      -- Exception messages routines --
-      ---------------------------------
+      -----------------------------------
+      -- Exception Message Subprograms --
+      -----------------------------------
 
       procedure Set_Exception_C_Msg
         (Excep  : EOA;
@@ -139,7 +139,7 @@ package body Ada.Exceptions is
       --  which is generated as the exception message.
 
       ---------------------------------------
-      -- Exception information subprograms --
+      -- Exception Information Subprograms --
       ---------------------------------------
 
       function Untailored_Exception_Information
@@ -164,17 +164,17 @@ package body Ada.Exceptions is
       --
       --  The Exception_Name and Message lines are omitted in the abort
       --  signal case, since this is not really an exception.
-
+      --
       --  Note: If the format of the generated string is changed, please note
       --  that an equivalent modification to the routine String_To_EO must be
       --  made to preserve proper functioning of the stream attributes.
-
+      --
       --  What is automatically output when exception tracing is on is the
       --  usual exception information with the call chain backtrace possibly
       --  tailored by a backtrace decorator. Modifying Exception_Information
       --  itself is not a good idea because the decorated output is completely
       --  out of control and would break all our code related to the streaming
-      --  of exceptions.  We then provide an alternative function to compute
+      --  of exceptions. We then provide an alternative function to compute
       --  the possibly tailored output, which is equivalent if no decorator is
       --  currently set:
 
@@ -195,9 +195,9 @@ package body Ada.Exceptions is
 
    package Exception_Traces is
 
-      ----------------------------------------------
-      -- Run-Time Exception Notification Routines --
-      ----------------------------------------------
+      -------------------------------------------------
+      -- Run-Time Exception Notification Subprograms --
+      -------------------------------------------------
 
       --  These subprograms provide a common run-time interface to trigger the
       --  actions required when an exception is about to be propagated (e.g.
@@ -229,9 +229,9 @@ package body Ada.Exceptions is
 
    package Exception_Propagation is
 
-      ------------------------------------
-      -- Exception propagation routines --
-      ------------------------------------
+      ---------------------------------------
+      -- Exception Propagation Subprograms --
+      ---------------------------------------
 
       function Allocate_Occurrence return EOA;
       --  Allocate an exception occurence (as well as the machine occurence)
@@ -244,9 +244,9 @@ package body Ada.Exceptions is
 
    package Stream_Attributes is
 
-      --------------------------------
-      -- Stream attributes routines --
-      --------------------------------
+      ----------------------------------
+      -- Stream Attribute Subprograms --
+      ----------------------------------
 
       function EId_To_String (X : Exception_Id) return String;
       function String_To_EId (S : String) return Exception_Id;
@@ -392,11 +392,11 @@ package body Ada.Exceptions is
    --  Source as an exception to be propagated in the caller task. Target is
    --  expected to be a pointer to the fixed TSD occurrence for this task.
 
-   -----------------------------
-   -- Run-Time Check Routines --
-   -----------------------------
+   --------------------------------
+   -- Run-Time Check Subprograms --
+   --------------------------------
 
-   --  These routines raise a specific exception with a reason message
+   --  These subprograms raise a specific exception with a reason message
    --  attached. The parameters are the file name and line number in each
    --  case. The names are defined by Exp_Ch11.Get_RT_Exception_Name.
 
@@ -486,7 +486,7 @@ package body Ada.Exceptions is
    --  This routine is separated out because it has quite different behavior
    --  from the others. This is the "finalize/adjust raised exception". This
    --  subprogram is always called with abort deferred, unlike all other
-   --  Rcheck_* routines, it needs to call Raise_Exception_No_Defer.
+   --  Rcheck_* subprograms, it needs to call Raise_Exception_No_Defer.
 
    pragma Export (C, Rcheck_CE_Access_Check,
                   "__gnat_rcheck_CE_Access_Check");
@@ -1207,9 +1207,9 @@ package body Ada.Exceptions is
       Complete_And_Propagate_Occurrence (Excep);
    end Raise_With_Msg;
 
-   --------------------------------------
-   -- Calls to Run-Time Check Routines --
-   --------------------------------------
+   -----------------------------------------
+   -- Calls to Run-Time Check Subprograms --
+   -----------------------------------------
 
    procedure Rcheck_CE_Access_Check
      (File : System.Address; Line : Integer)
@@ -1474,9 +1474,9 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer)
    is
       Msg : constant String :=
-        Rmsg_05 (Rmsg_05'First .. Rmsg_05'Last - 1) & ASCII.LF &
-        "index " & Image (Index) & " not in " & Image (First) &
-        ".." & Image (Last) & ASCII.NUL;
+              Rmsg_05 (Rmsg_05'First .. Rmsg_05'Last - 1) & ASCII.LF
+              & "index " & Image (Index) & " not in " & Image (First)
+              & ".." & Image (Last) & ASCII.NUL;
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_CE_Index_Check_Ext;
@@ -1485,9 +1485,9 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer)
    is
       Msg : constant String :=
-        Rmsg_06 (Rmsg_06'First .. Rmsg_06'Last - 1) & ASCII.LF &
-        "value " & Image (Index) & " not in " & Image (First) &
-        ".." & Image (Last) & ASCII.NUL;
+              Rmsg_06 (Rmsg_06'First .. Rmsg_06'Last - 1) & ASCII.LF
+              & "value " & Image (Index) & " not in " & Image (First)
+              & ".." & Image (Last) & ASCII.NUL;
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_CE_Invalid_Data_Ext;
@@ -1496,9 +1496,9 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer)
    is
       Msg : constant String :=
-        Rmsg_12 (Rmsg_12'First .. Rmsg_12'Last - 1) & ASCII.LF &
-        "value " & Image (Index) & " not in " & Image (First) &
-        ".." & Image (Last) & ASCII.NUL;
+              Rmsg_12 (Rmsg_12'First .. Rmsg_12'Last - 1) & ASCII.LF
+              & "value " & Image (Index) & " not in " & Image (First)
+              & ".." & Image (Last) & ASCII.NUL;
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_CE_Range_Check_Ext;
@@ -1510,7 +1510,7 @@ package body Ada.Exceptions is
 
    begin
       --  This is "finalize/adjust raised exception". This subprogram is always
-      --  called with abort deferred, unlike all other Rcheck_* routines, it
+      --  called with abort deferred, unlike all other Rcheck_* subprograms, it
       --  needs to call Raise_Exception_No_Defer.
 
       --  This is consistent with Raise_From_Controlled_Operation
