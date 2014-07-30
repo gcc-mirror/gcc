@@ -1,3 +1,64 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document that d7 suppresses compilation time output.
+	* errout.adb (Write_Header): Include compilation time in
+	header output.
+	* exp_intr.adb (Expand_Intrinsic_Call): Add
+	Compilation_Date/Compilation_Time (Expand_Source_Info): Expand
+	Compilation_Date/Compilation_Time.
+	* g-souinf.ads (Compilation_Date): New function
+	(Compilation_Time): New function.
+	* gnat1drv.adb (Gnat1drv): Set Opt.Compilation_Time.
+	* gnat_rm.texi (Compilation_Date): New function
+	(Compilation_Time): New function.
+	* opt.ads (Compilation_Time): New variable.
+	* s-os_lib.ads, s-os_lib.adb (Current_Time_String): New function.
+	* sem_intr.adb (Compilation_Date): New function.
+	(Compilation_Time): New function.
+	* snames.ads-tmpl (Name_Compilation_Date): New entry.
+	(Name_Compilation_Time): New entry.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb: Add comment.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (Is_Parameterless_Attribute): 'Result is a
+	parameterless attribute, and a postondition can mention an
+	indexed component or a slice whose prefix is an attribute
+	reference F'Result.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual, case Object_Declaration):
+	Avoid bomb when printing package Standard.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): If an elaboration
+	entity is created at this point, ensure that the name of the
+	flag is unique, because the subprogram may be overloaded and
+	other homonyms may also have elaboration flags created on the fly.
+
+2014-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Array_Component_Update): New routine.
+	(Analyze_Attribute): Major cleanup of attribute
+	'Update. The logic is now split into two distinct routines
+	depending on the type of the prefix. The use of <> is now illegal
+	in attribute 'Update.
+	(Analyze_Record_Component_Update): New routine.
+	(Check_Component_Reference): Removed.
+	(Resolve_Attribute): Remove the return statement and ??? comment
+	following the processing for attribute 'Update. As a result,
+	the attribute now freezes its prefix.
+
+2014-07-30  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Do
+	not call Base_Address() in VM targets.
+
 2014-07-30  Yannick Moy  <moy@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Set

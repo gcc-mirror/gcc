@@ -14637,6 +14637,8 @@ There are no restrictions on pragma @code{Restrictions}.
 
 @menu
 * Intrinsic Operators::
+* Compilation_Date::
+* Compilation_Time::
 * Enclosing_Entity::
 * Exception_Information::
 * Exception_Message::
@@ -14694,12 +14696,34 @@ of the differing types @code{Int1} and @code{Int2}.
 It is also possible to specify such operators for private types, if the
 full views are appropriate arithmetic types.
 
+@node Compilation_Date
+@section Compilation_Date
+@cindex Compilation_Date
+@noindent
+This intrinsic subprogram is used in the implementation of the
+library package @code{GNAT.Source_Info}.  The only useful use of the
+intrinsic import in this case is the one in this unit, so an
+application program should simply call the function
+@code{GNAT.Source_Info.Compilation_Date} to obtain the date of
+the current compilation (in local time format MMM DD YYYY).
+
+@node Compilation_Time
+@section Compilation_Time
+@cindex Compilation_Time
+@noindent
+This intrinsic subprogram is used in the implementation of the
+library package @code{GNAT.Source_Info}.  The only useful use of the
+intrinsic import in this case is the one in this unit, so an
+application program should simply call the function
+@code{GNAT.Source_Info.Compilation_Time} to obtain the time of
+the current compilation (in local time format HH:MM:SS).
+
 @node Enclosing_Entity
 @section Enclosing_Entity
 @cindex Enclosing_Entity
 @noindent
 This intrinsic subprogram is used in the implementation of the
-library routine @code{GNAT.Source_Info}.  The only useful use of the
+library package @code{GNAT.Source_Info}.  The only useful use of the
 intrinsic import in this case is the one in this unit, so an
 application program should simply call the function
 @code{GNAT.Source_Info.Enclosing_Entity} to obtain the name of
@@ -14710,7 +14734,7 @@ the current subprogram, package, task, entry, or protected subprogram.
 @cindex Exception_Information'
 @noindent
 This intrinsic subprogram is used in the implementation of the
-library routine @code{GNAT.Current_Exception}.  The only useful
+library package @code{GNAT.Current_Exception}.  The only useful
 use of the intrinsic import in this case is the one in this unit,
 so an application program should simply call the function
 @code{GNAT.Current_Exception.Exception_Information} to obtain
@@ -14721,7 +14745,7 @@ the exception information associated with the current exception.
 @cindex Exception_Message
 @noindent
 This intrinsic subprogram is used in the implementation of the
-library routine @code{GNAT.Current_Exception}.  The only useful
+library package @code{GNAT.Current_Exception}.  The only useful
 use of the intrinsic import in this case is the one in this unit,
 so an application program should simply call the function
 @code{GNAT.Current_Exception.Exception_Message} to obtain
@@ -14732,7 +14756,7 @@ the message associated with the current exception.
 @cindex Exception_Name
 @noindent
 This intrinsic subprogram is used in the implementation of the
-library routine @code{GNAT.Current_Exception}.  The only useful
+library package @code{GNAT.Current_Exception}.  The only useful
 use of the intrinsic import in this case is the one in this unit,
 so an application program should simply call the function
 @code{GNAT.Current_Exception.Exception_Name} to obtain
@@ -14743,7 +14767,7 @@ the name of the current exception.
 @cindex File
 @noindent
 This intrinsic subprogram is used in the implementation of the
-library routine @code{GNAT.Source_Info}.  The only useful use of the
+library package @code{GNAT.Source_Info}.  The only useful use of the
 intrinsic import in this case is the one in this unit, so an
 application program should simply call the function
 @code{GNAT.Source_Info.File} to obtain the name of the current
@@ -14754,7 +14778,7 @@ file.
 @cindex Line
 @noindent
 This intrinsic subprogram is used in the implementation of the
-library routine @code{GNAT.Source_Info}.  The only useful use of the
+library package @code{GNAT.Source_Info}.  The only useful use of the
 intrinsic import in this case is the one in this unit, so an
 application program should simply call the function
 @code{GNAT.Source_Info.Line} to obtain the number of the current
@@ -20172,7 +20196,9 @@ for the LynxOS@ cross port.
 
 @noindent
 Provides subprograms that give access to source code information known at
-compile time, such as the current file name and line number.
+compile time, such as the current file name and line number. Also provides
+subprograms yielding the date and time of the current compilation (like the
+C macros @code{__DATE__} and @code{__TIME__})
 
 @node GNAT.Spelling_Checker (g-speche.ads)
 @section @code{GNAT.Spelling_Checker} (@file{g-speche.ads})

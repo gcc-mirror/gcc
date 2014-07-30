@@ -362,8 +362,12 @@ package body Sem_Intr is
 
       --  Source_Location and navigation functions
 
-      elsif Nam_In (Nam, Name_File, Name_Line, Name_Source_Location,
-                         Name_Enclosing_Entity)
+      elsif Nam_In (Nam, Name_File,
+                         Name_Line,
+                         Name_Source_Location,
+                         Name_Enclosing_Entity,
+                         Name_Compilation_Date,
+                         Name_Compilation_Time)
       then
          null;
 

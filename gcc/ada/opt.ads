@@ -366,14 +366,17 @@ package Opt is
    --  True if source lines removed by the preprocessor should be commented
    --  in the output file.
 
+   Compilation_Time : String (1 .. 19);
+   --  GNAT
+   --  Compilation date and time in form YYYY-MM-DD HH:MM:SS
+
    Compile_Only : Boolean := False;
    --  GNATMAKE, GNATCLEAN, GPRMAKE, GPBUILD, GPRCLEAN
    --  GNATMAKE, GPRMAKE, GPRMAKE:
-   --    set to True to skip bind and link steps (except when Bind_Only is
-   --    True).
+   --    set True to skip bind and link steps (except when Bind_Only is True)
    --  GNATCLEAN, GPRCLEAN:
-   --    set to True to delete only the files produced by the compiler but not
-   --    the library files or the executable files.
+   --    set True to delete only the files produced by the compiler but not the
+   --    library files or the executable files.
 
    Compiler_Unit : Boolean := False;
    --  GNAT1
@@ -772,11 +775,12 @@ package Opt is
    --  use of pragma Implicit_Packing.
 
    Ineffective_Inline_Warnings : Boolean := False;
-   --  GNAT Set True to activate warnings if front-end inlining (-gnatN) is
-   --  not able to actually inline a particular call (or all calls). Can be
-   --  controlled by use of -gnatwp/-gnatwP. Also set True to activate warnings
-   --  if frontend inlining is not able to inline a subprogram expected to be
-   --  inlined in GNATprove mode.
+   --  GNAT
+   --  Set True to activate warnings if front-end inlining (-gnatN) is not able
+   --  to actually inline a particular call (or all calls). Can be controlled
+   --  by use of -gnatwp/-gnatwP. Also set True to activate warnings if
+   --  frontend inlining is not able to inline a subprogram expected to
+   --  be inlined in GNATprove mode.
 
    Init_Or_Norm_Scalars : Boolean := False;
    --  GNAT, GANTBIND

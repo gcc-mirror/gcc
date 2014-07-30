@@ -6220,69 +6220,158 @@ package body Sem_Attr is
       ------------
 
       when Attribute_Update => Update : declare
+         Common_Typ : Entity_Id;
+         --  The common type of a multiple component update for a record
+
          Comps : Elist_Id := No_Elist;
-         Expr  : Node_Id;
+         --  A list used in the resolution of a record update. It contains the
+         --  entities of all record components processed so far.
 
-         procedure Check_Component_Reference
-           (Comp : Entity_Id;
-            Typ  : Entity_Id);
-         --  Comp is a record component (possibly a discriminant) and Typ is a
-         --  record type. Determine whether Comp is a legal component of Typ.
-         --  Emit an error if Comp mentions a discriminant or is not a unique
-         --  component reference in the update aggregate.
+         procedure Analyze_Array_Component_Update (Assoc : Node_Id);
+         --  Analyze and resolve array_component_association Assoc against the
+         --  index of array type P_Type.
 
-         -------------------------------
-         -- Check_Component_Reference --
-         -------------------------------
+         procedure Analyze_Record_Component_Update (Comp : Node_Id);
+         --  Analyze and resolve record_component_association Comp against
+         --  record type P_Type.
 
-         procedure Check_Component_Reference
-           (Comp : Entity_Id;
-            Typ  : Entity_Id)
-         is
-            Comp_Name : constant Name_Id := Chars (Comp);
+         ------------------------------------
+         -- Analyze_Array_Component_Update --
+         ------------------------------------
 
-            function Is_Duplicate_Component return Boolean;
-            --  Determine whether component Comp already appears in list Comps
+         procedure Analyze_Array_Component_Update (Assoc : Node_Id) is
+            Expr      : Node_Id;
+            High      : Node_Id;
+            Index     : Node_Id;
+            Index_Typ : Entity_Id;
+            Low       : Node_Id;
 
-            ----------------------------
-            -- Is_Duplicate_Component --
-            ----------------------------
+         begin
+            --  The current association contains a sequence of indexes denoting
+            --  an element of a multidimensional array:
 
-            function Is_Duplicate_Component return Boolean is
-               Comp_Elmt : Elmt_Id;
+            --    (Index_1, ..., Index_N)
 
-            begin
-               if Present (Comps) then
-                  Comp_Elmt := First_Elmt (Comps);
-                  while Present (Comp_Elmt) loop
-                     if Chars (Node (Comp_Elmt)) = Comp_Name then
-                        return True;
+            --  Examine each individual index and resolve it against the proper
+            --  index type of the array.
+
+            if Nkind (First (Choices (Assoc))) = N_Aggregate then
+               Expr := First (Choices (Assoc));
+               while Present (Expr) loop
+
+                  --  The use of others is illegal (SPARK RM 4.4.1(12))
+
+                  if Nkind (Expr) = N_Others_Choice then
+                     Error_Attr
+                       ("others choice not allowed in attribute %", Expr);
+
+                  --  Otherwise analyze and resolve all indexes
+
+                  else
+                     Index     := First (Expressions (Expr));
+                     Index_Typ := First_Index (P_Type);
+                     while Present (Index) and then Present (Index_Typ) loop
+                        Analyze_And_Resolve (Index, Etype (Index_Typ));
+                        Next (Index);
+                        Next_Index (Index_Typ);
+                     end loop;
+
+                     --  Detect a case where the association either lacks an
+                     --  index or contains an extra index.
+
+                     if Present (Index) or else Present (Index_Typ) then
+                        Error_Msg_N
+                          ("dimension mismatch in index list", Assoc);
                      end if;
+                  end if;
 
-                     Next_Elmt (Comp_Elmt);
-                  end loop;
+                  Next (Expr);
+               end loop;
+
+            --  The current association denotes either a single component or a
+            --  range of components of a one dimensional array:
+
+            --    1, 2 .. 5
+
+            --  Resolve the index or its high and low bounds (if range) against
+            --  the proper index type of the array.
+
+            else
+               Index     := First (Choices (Assoc));
+               Index_Typ := First_Index (P_Type);
+
+               if Present (Next_Index (Index_Typ)) then
+                  Error_Msg_N ("too few subscripts in array reference", Assoc);
                end if;
 
-               return False;
-            end Is_Duplicate_Component;
+               while Present (Index) loop
 
-            --  Local variables
+                  --  The use of others is illegal (SPARK RM 4.4.1(12))
 
+                  if Nkind (Index) = N_Others_Choice then
+                     Error_Attr
+                       ("others choice not allowed in attribute %", Index);
+
+                  --  The index denotes a range of elements
+
+                  elsif Nkind (Index) = N_Range then
+                     Low  := Low_Bound  (Index);
+                     High := High_Bound (Index);
+
+                     Analyze_And_Resolve (Low,  Etype (Index_Typ));
+                     Analyze_And_Resolve (High, Etype (Index_Typ));
+
+                     --  Add a range check to ensure that the bounds of the
+                     --  range are within the index type when this cannot be
+                     --  determined statically.
+
+                     if not Is_OK_Static_Expression (Low) then
+                        Set_Do_Range_Check (Low);
+                     end if;
+
+                     if not Is_OK_Static_Expression (High) then
+                        Set_Do_Range_Check (High);
+                     end if;
+
+                  --  Otherwise the index denotes a single element
+
+                  else
+                     Analyze_And_Resolve (Index, Etype (Index_Typ));
+
+                     --  Add a range check to ensure that the index is within
+                     --  the index type when it is not possible to determine
+                     --  this statically.
+
+                     if not Is_OK_Static_Expression (Index) then
+                        Set_Do_Range_Check (Index);
+                     end if;
+                  end if;
+
+                  Next (Index);
+               end loop;
+            end if;
+         end Analyze_Array_Component_Update;
+
+         -------------------------------------
+         -- Analyze_Record_Component_Update --
+         -------------------------------------
+
+         procedure Analyze_Record_Component_Update (Comp : Node_Id) is
+            Comp_Name     : constant Name_Id := Chars (Comp);
+            Base_Typ      : Entity_Id;
             Comp_Or_Discr : Entity_Id;
-
-         --  Start of processing for Check_Component_Reference
 
          begin
             --  Find the discriminant or component whose name corresponds to
             --  Comp. A simple character comparison is sufficient because all
             --  visible names within a record type are unique.
 
-            Comp_Or_Discr := First_Entity (Typ);
+            Comp_Or_Discr := First_Entity (P_Type);
             while Present (Comp_Or_Discr) loop
                if Chars (Comp_Or_Discr) = Comp_Name then
 
-                  --  Record component entity and type in the given aggregate
-                  --  choice, for subsequent resolution.
+                  --  Decorate the component reference by setting its entity
+                  --  and type for resolution purposes.
 
                   Set_Entity (Comp, Comp_Or_Discr);
                   Set_Etype  (Comp, Etype (Comp_Or_Discr));
@@ -6292,7 +6381,7 @@ package body Sem_Attr is
                Comp_Or_Discr := Next_Entity (Comp_Or_Discr);
             end loop;
 
-            --  Diagnose possible illegal references
+            --  Diagnose an illegal reference
 
             if Present (Comp_Or_Discr) then
                if Ekind (Comp_Or_Discr) = E_Discriminant then
@@ -6300,8 +6389,8 @@ package body Sem_Attr is
                     ("attribute % may not modify record discriminants", Comp);
 
                else pragma Assert (Ekind (Comp_Or_Discr) = E_Component);
-                  if Is_Duplicate_Component then
-                     Error_Msg_NE ("component & already updated", Comp, Comp);
+                  if Contains (Comps, Comp_Or_Discr) then
+                     Error_Msg_N ("component & already updated", Comp);
 
                   --  Mark this component as processed
 
@@ -6310,7 +6399,7 @@ package body Sem_Attr is
                         Comps := New_Elmt_List;
                      end if;
 
-                     Append_Elmt (Comp, Comps);
+                     Append_Elmt (Comp_Or_Discr, Comps);
                   end if;
                end if;
 
@@ -6318,16 +6407,34 @@ package body Sem_Attr is
             --  the record type.
 
             else
-               Error_Msg_NE
-                 ("& is not a component of aggregate subtype", Comp, Comp);
+               Error_Msg_N ("& is not a component of aggregate subtype", Comp);
             end if;
-         end Check_Component_Reference;
+
+            --  Verify the consistency of types when the current component is
+            --  part of a miltiple component update.
+
+            --    Comp_1, ..., Comp_N => <value>
+
+            if Present (Etype (Comp)) then
+               Base_Typ := Base_Type (Etype (Comp));
+
+               --  Save the type of the first component reference as the
+               --  remaning references (if any) must resolve to this type.
+
+               if No (Common_Typ) then
+                  Common_Typ := Base_Typ;
+
+               elsif Base_Typ /= Common_Typ then
+                  Error_Msg_N
+                    ("components in choice list must have same type", Comp);
+               end if;
+            end if;
+         end Analyze_Record_Component_Update;
 
          --  Local variables
 
-         Assoc     : Node_Id;
-         Comp      : Node_Id;
-         Comp_Type : Entity_Id;
+         Assoc : Node_Id;
+         Comp  : Node_Id;
 
       --  Start of processing for Update
 
@@ -6353,128 +6460,64 @@ package body Sem_Attr is
          --  choices. Perform the following checks:
 
          --    1) Legality of "others" in all cases
-         --    2) Component legality for records
+         --    2) Legality of <>
+         --    3) Component legality for arrays
+         --    4) Component legality for records
 
          --  The remaining checks are performed on the expanded attribute
 
          Assoc := First (Component_Associations (E1));
          while Present (Assoc) loop
-            Comp := First (Choices (Assoc));
-            Analyze (Expression (Assoc));
-            Comp_Type := Empty;
-            while Present (Comp) loop
-               if Nkind (Comp) = N_Others_Choice then
-                  Error_Attr
-                    ("others choice not allowed in attribute %", Comp);
 
-               elsif Is_Array_Type (P_Type) then
-                  declare
-                     Index      : Node_Id;
-                     Index_Type : Entity_Id;
-                     Lo, Hi     : Node_Id;
+            --  The use of <> is illegal (SPARK RM 4.4.1(1))
 
-                  begin
-                     if Nkind (First (Choices (Assoc))) /= N_Aggregate then
+            if Box_Present (Assoc) then
+               Error_Attr
+                 ("default initialization not allowed in attribute %", Assoc);
 
-                        --  Choices denote separate components of one-
-                        --  dimensional array.
+            --  Otherwise process the association
 
-                        Index_Type := First_Index (P_Type);
+            else
+               Analyze (Expression (Assoc));
 
-                        if Present (Next_Index (Index_Type)) then
-                           Error_Msg_N
-                             ("too few subscripts in array reference", Comp);
-                        end if;
-
-                        Index := First (Choices (Assoc));
-                        while Present (Index) loop
-                           if Nkind (Index) = N_Range then
-                              Lo := Low_Bound  (Index);
-                              Hi := High_Bound (Index);
-
-                              Analyze_And_Resolve (Lo, Etype (Index_Type));
-
-                              if not Is_OK_Static_Expression (Lo) then
-                                 Set_Do_Range_Check (Lo);
-                              end if;
-
-                              Analyze_And_Resolve (Hi, Etype (Index_Type));
-
-                              if not Is_OK_Static_Expression (Hi) then
-                                 Set_Do_Range_Check (Hi);
-                              end if;
-
-                           else
-                              Analyze_And_Resolve (Index, Etype (Index_Type));
-
-                              if not Is_OK_Static_Expression (Index) then
-                                 Set_Do_Range_Check (Index);
-                              end if;
-                           end if;
-
-                           Next (Index);
-                        end loop;
-
-                     --  Choice is a sequence of indexes for each dimension
-
-                     else
-                        Expr := First (Choices (Assoc));
-                        while Present (Expr) loop
-                           Index_Type := First_Index (P_Type);
-                           Index := First (Expressions (Expr));
-                           while Present (Index_Type)
-                             and then Present (Index)
-                           loop
-                              Analyze_And_Resolve (Index, Etype (Index_Type));
-                              Next_Index (Index_Type);
-                              Next (Index);
-                           end loop;
-
-                           if Present (Index) or else Present (Index_Type) then
-                              Error_Msg_N
-                                ("dimension mismatch in index list", Assoc);
-                           end if;
-
-                           Next (Expr);
-                        end loop;
-                     end if;
-                  end;
+               if Is_Array_Type (P_Type) then
+                  Analyze_Array_Component_Update (Assoc);
 
                elsif Is_Record_Type (P_Type) then
 
-                  --  Make sure we have an identifier. Old SPARK allowed
-                  --  a component selection e.g. A.B in the corresponding
-                  --  context, but we do not yet permit this for 'Update.
+                  --  Reset the common type used in a multiple component update
+                  --  as we are processing the contents of a new association.
 
-                  if Nkind (Comp) /= N_Identifier then
-                     Error_Msg_N ("name should be identifier or OTHERS", Comp);
-                  else
-                     Check_Component_Reference (Comp, P_Type);
+                  Common_Typ := Empty;
 
-                     --  Verify that all choices in an association denote
-                     --  components of the same type.
+                  Comp := First (Choices (Assoc));
+                  while Present (Comp) loop
+                     if Nkind (Comp) = N_Identifier then
+                        Analyze_Record_Component_Update (Comp);
 
-                     if No (Etype (Comp)) then
-                        null;
+                     --  The use of others is illegal (SPARK RM 4.4.1(5))
 
-                     elsif No (Comp_Type) then
-                        Comp_Type := Base_Type (Etype (Comp));
+                     elsif Nkind (Comp) = N_Others_Choice then
+                        Error_Attr
+                          ("others choice not allowed in attribute %", Comp);
 
-                     elsif Comp_Type /= Base_Type (Etype (Comp)) then
+                     --  The name of a record component cannot appear in any
+                     --  other form.
+
+                     else
                         Error_Msg_N
-                          ("components in choice list must have same type",
-                           Assoc);
+                          ("name should be identifier or OTHERS", Comp);
                      end if;
-                  end if;
-               end if;
 
-               Next (Comp);
-            end loop;
+                     Next (Comp);
+                  end loop;
+               end if;
+            end if;
 
             Next (Assoc);
          end loop;
 
-         --  The type of attribute Update is that of the prefix
+         --  The type of attribute 'Update is that of the prefix
 
          Set_Etype (N, P_Type);
       end Update;
@@ -11044,7 +11087,7 @@ package body Sem_Attr is
                if Is_Array_Type (Typ) then
                   Assoc := First (Component_Associations (Aggr));
                   while Present (Assoc) loop
-                     Expr  := Expression (Assoc);
+                     Expr := Expression (Assoc);
                      Resolve (Expr, Component_Type (Typ));
 
                      --  For scalar array components set Do_Range_Check when
@@ -11128,10 +11171,6 @@ package body Sem_Attr is
                   end loop;
                end if;
             end;
-
-            --  Premature return requires comment ???
-
-            return;
 
          ---------
          -- Val --

@@ -109,10 +109,12 @@ package body Exp_Intr is
    procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id);
    --  Rewrite the node by the appropriate string or positive constant.
    --  Nam can be one of the following:
-   --    Name_File             - expand string that is the name of source file
-   --    Name_Line             - expand integer line number
-   --    Name_Source_Location  - expand string of form file:line
-   --    Name_Enclosing_Entity - expand string  with name of enclosing entity
+   --    Name_File                  - expand string name of source file
+   --    Name_Line                  - expand integer line number
+   --    Name_Source_Location       - expand string of form file:line
+   --    Name_Enclosing_Entity      - expand string name of enclosing entity
+   --    Name_Compilation_Date      - expand string with compilation date
+   --    Name_Compilation_Time      - expand string with compilation time
 
    ---------------------------------
    -- Expand_Binary_Operator_Call --
@@ -557,7 +559,9 @@ package body Exp_Intr is
       elsif Nam_In (Nam, Name_File,
                          Name_Line,
                          Name_Source_Location,
-                         Name_Enclosing_Entity)
+                         Name_Enclosing_Entity,
+                         Name_Compilation_Date,
+                         Name_Compilation_Time)
       then
          Expand_Source_Info (N, Nam);
 
@@ -805,6 +809,35 @@ package body Exp_Intr is
                --  Ent now points to the relevant defining entity
 
                Write_Entity_Name (Ent);
+
+            when Name_Compilation_Date =>
+               declare
+                  subtype S13 is String (1 .. 3);
+                  Months : constant array (1 .. 12) of S13 :=
+                    ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+                  M1 : constant Character := Opt.Compilation_Time (6);
+                  M2 : constant Character := Opt.Compilation_Time (7);
+
+                  MM : constant Natural range 1 .. 12 :=
+                    (Character'Pos (M1) - Character'Pos ('0')) * 10 +
+                    (Character'Pos (M2) - Character'Pos ('0'));
+
+               begin
+                  --  Reformat ISO date into MMM DD YYYY (__DATE__) format
+
+                  Name_Buffer (1 .. 3)  := Months (MM);
+                  Name_Buffer (4)       := ' ';
+                  Name_Buffer (5 .. 6)  := Opt.Compilation_Time (9 .. 10);
+                  Name_Buffer (7)       := ' ';
+                  Name_Buffer (8 .. 11) := Opt.Compilation_Time (1 .. 4);
+                  Name_Len := 11;
+               end;
+
+            when Name_Compilation_Time =>
+               Name_Buffer (1 .. 8) := Opt.Compilation_Time (12 .. 19);
+               Name_Len := 8;
 
             when others =>
                raise Program_Error;

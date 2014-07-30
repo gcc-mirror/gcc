@@ -1761,9 +1761,11 @@ package body Errout is
             Write_Name (Full_File_Name (Sfile));
 
             if not Debug_Flag_7 then
-               Write_Str (" (source file time stamp: ");
+               Write_Eol;
+               Write_Str ("Source file time stamp: ");
                Write_Time_Stamp (Sfile);
-               Write_Char (')');
+               Write_Eol;
+               Write_Str ("Compiled at: " & Compilation_Time);
             end if;
 
             Write_Eol;
