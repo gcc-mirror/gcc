@@ -1,3 +1,46 @@
+2014-07-30  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-tarest.adb, s-tarest.ads: Fix comments.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, checks.adb, sem_util.adb, sem_util.ads, sem_attr.adb:
+	Change No_Scalar_Parts predicate to Scalar_Part_Present and
+	invert sense of test. This avoids the "not No_xxx" situation
+	which is always ugly.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): When generating code for
+	an internal subprogram the expansion uses the location of the
+	call, so that gdb can skip over it. In GNATprove mode we want to
+	preserve slocs of original subprogram when expanding an inlined
+	call, to obtain better warnings, even though subprogram appears
+	not to come from source if it is the inlining of a subprogram
+	body without a previous spec.
+
+2014-07-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Reject array
+	types with atomic components.
+
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in: Remove now unnecessary targets after s-oscons
+	reorg.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Use ultimate alias
+	of callee when available.
+
+2014-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): To check whether
+	an expression function is a completion, use the specification of
+	the previous declaration, not its entity, which may be internally
+	generated in an inlined context.
+
 2014-07-30  Doug Rupp  <rupp@adacore.com>
 
 	* adaint.c (__gnat_tmp_name) [__ANDROID__]: Default to putting

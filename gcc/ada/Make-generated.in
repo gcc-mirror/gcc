@@ -66,12 +66,6 @@ $(ADA_GEN_SUBDIR)/stamp-nmake: $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nma
 	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/nmake/nmake.adb $(ADA_GEN_SUBDIR)/nmake.adb
 	touch $(ADA_GEN_SUBDIR)/stamp-nmake
 
-$(ADA_GEN_SUBDIR)/bldtools/oscons/xoscons : $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
-	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/oscons
-	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/oscons/,$(notdir $^))
-	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/oscons
-	cd $(ADA_GEN_SUBDIR)/bldtools/oscons ; gnatmake -q xoscons
-
 $(ADA_GEN_SUBDIR)/sdefault.adb: $(ADA_GEN_SUBDIR)/stamp-sdefault ; @true
 $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb

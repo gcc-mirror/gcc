@@ -2955,7 +2955,8 @@ package body Inline is
       --  expansion is skipped by the "next" command in gdb.
       --  Same processing for a subprogram in a predefined file, e.g.
       --  Ada.Tags. If Debug_Generated_Code is true, suppress this change to
-      --  simplify our own development.
+      --  simplify our own development. Same in in GNATprove mode, to ensure
+      --  that warnings and diagnostics point to the proper location.
 
       procedure Reset_Dispatching_Calls (N : Node_Id);
       --  In subtree N search for occurrences of dispatching calls that use the
@@ -3932,7 +3933,10 @@ package body Inline is
       Replace_Formals (Blk);
       Set_Parent (Blk, N);
 
-      if not Comes_From_Source (Subp) or else Is_Predef then
+      if GNATprove_Mode then
+         null;
+
+      elsif not Comes_From_Source (Subp) or else Is_Predef then
          Reset_Slocs (Blk);
       end if;
 

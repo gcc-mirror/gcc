@@ -1582,11 +1582,6 @@ package Sem_Util is
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
 
-   function No_Scalar_Parts (T : Entity_Id) return Boolean;
-   --  Tests if type T can be determined at compile time to have no scalar
-   --  parts in the sense of the Valid_Scalars attribute. Returns True if
-   --  this is the case, meaning that the result of Valid_Scalars is True.
-
    procedure Normalize_Actuals
      (N       : Node_Id;
       S       : Entity_Id;
@@ -1773,6 +1768,12 @@ package Sem_Util is
    --  Save the current SPARK_Mode in effect in Mode. Establish the SPARK_Mode
    --  (if any) of a package or a subprogram denoted by Context. This routine
    --  must be used in tandem with Restore_SPARK_Mode.
+
+   function Scalar_Part_Present (T : Entity_Id) return Boolean;
+   --  Tests if type T can be determined at compile time to have at least one
+   --  scalar part in the sense of the Valid_Scalars attribute. Returns True if
+   --  this is the case, and False if no scalar parts are present (meaning that
+   --  the result of Valid_Scalars applied to T is always vacuously True).
 
    function Scope_Within_Or_Same (Scope1, Scope2 : Entity_Id) return Boolean;
    --  Determines if the entity Scope1 is the same as Scope2, or if it is

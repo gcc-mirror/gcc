@@ -6590,7 +6590,7 @@ package body Sem_Attr is
          Check_E0;
          Check_Object_Reference (P);
 
-         if No_Scalar_Parts (P_Type) then
+         if not Scalar_Part_Present (P_Type) then
             Error_Attr_P ("??attribute % always True, no scalars to check");
          end if;
 

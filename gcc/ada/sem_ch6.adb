@@ -353,7 +353,12 @@ package body Sem_Ch6 is
          Analyze (New_Body);
          Set_Is_Inlined (Prev);
 
-      elsif Present (Prev) and then Comes_From_Source (Prev) then
+      --  If the expression function is a completion, the previous declaration
+      --  must come from source. We know already that appears in the current
+      --  scope. The entity itself may be internally created if within a body
+      --  to be inlined.
+
+      elsif Present (Prev) and then Comes_From_Source (Parent (Prev)) then
          Set_Has_Completion (Prev, False);
 
          --  An expression function that is a completion freezes the

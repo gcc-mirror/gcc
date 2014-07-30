@@ -6358,7 +6358,7 @@ package body Exp_Attr is
          --  We only do this for arrays whose component type needs checking
 
          elsif Is_Array_Type (Ftyp)
-           and then not No_Scalar_Parts (Component_Type (Ftyp))
+           and then Scalar_Part_Present (Component_Type (Ftyp))
          then
             Rewrite (N,
               Make_Function_Call (Loc,
@@ -6372,7 +6372,7 @@ package body Exp_Attr is
          --  Valid_Scalars as appropriate to all relevant components.
 
          elsif (Is_Record_Type (Ptyp) or else Has_Discriminants (Ptyp))
-           and then not No_Scalar_Parts (Ptyp)
+           and then Scalar_Part_Present (Ptyp)
          then
             declare
                C : Entity_Id;
@@ -6383,7 +6383,7 @@ package body Exp_Attr is
                X := New_Occurrence_Of (Standard_True, Loc);
                C := First_Component_Or_Discriminant (Ptyp);
                while Present (C) loop
-                  if No_Scalar_Parts (Etype (C)) then
+                  if not Scalar_Part_Present (Etype (C)) then
                      goto Continue;
                   elsif Is_Scalar_Type (Etype (C)) then
                      A := Name_Valid;

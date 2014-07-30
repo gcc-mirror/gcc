@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,10 +196,9 @@ package System.Tasking.Restricted.Stages is
    --  This must be called to create a new task, when the sequential partition
    --  elaboration policy is used.
    --
-   --  The parameters are the same as Create_Restricted_Task_Concurrent,
-   --  except there is no Chain parameter (for the activation chain), as there
-   --  is only one global activation chain, which is declared in the body of
-   --  this package.
+   --  The parameters are the same as Create_Restricted_Task except there is
+   --  no Chain parameter (for the activation chain), as there is only one
+   --  global activation chain, which is declared in the body of this package.
 
    procedure Activate_Restricted_Tasks
      (Chain_Access : Activation_Chain_Access);
