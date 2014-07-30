@@ -49,7 +49,7 @@ shape_8 (gfc_array_i8 * const restrict ret,
     {
       GFC_DIMENSION_SET(ret->dim[0], 0, rank - 1, 1);
       ret->offset = 0;
-      ret->base_addr = xmalloc (sizeof (GFC_INTEGER_8) * rank);
+      ret->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_8));
     }
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);

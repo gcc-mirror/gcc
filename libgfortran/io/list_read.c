@@ -2407,7 +2407,7 @@ nml_touch_nodes (namelist_info * nl)
 {
   index_type len = strlen (nl->var_name) + 1;
   int dim;
-  char * ext_name = (char*)xmalloc (len + 1);
+  char * ext_name = xmalloc (len + 1);
   memcpy (ext_name, nl->var_name, len-1);
   memcpy (ext_name + len - 1, "%", 2);
   for (nl = nl->next; nl; nl = nl->next)

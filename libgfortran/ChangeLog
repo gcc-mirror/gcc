@@ -1,3 +1,57 @@
+2014-07-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from mainline
+	CVE-2014-5044
+        * libgfortran.h (xmallocarray): New prototype.
+        * runtime/memory.c (xmallocarray): New function.
+        (xcalloc): Check for nonzero separately instead of multiplying.
+        * generated/*.c: Regenerated.
+        * intrinsics/cshift0.c (cshift0): Call xmallocarray instead of
+        xmalloc.
+        * intrinsics/eoshift0.c (eoshift0): Likewise.
+        * intrinsics/eoshift2.c (eoshift2): Likewise.
+        * intrinsics/pack_generic.c (pack_internal): Likewise.
+        (pack_s_internal): Likewise.
+        * intrinsics/reshape_generic.c (reshape_internal): Likewise.
+        * intrinsics/spread_generic.c (spread_internal): Likewise.
+        (spread_internal_scalar): Likewise.
+        * intrinsics/string_intrinsics_inc.c (string_trim): Likewise.
+        (string_minmax): Likewise.
+        * intrinsics/transpose_generic.c (transpose_internal): Likewise.
+        * intrinsics/unpack_generic.c (unpack_internal): Likewise.
+        * io/list_read.c (nml_touch_nodes): Don't cast xmalloc return value.
+        * io/transfer.c (st_set_nml_var): Call xmallocarray instead of
+        xmalloc.
+        * io/unit.c (get_internal_unit): Likewise.
+        (filename_from_unit): Don't cast xmalloc return value.
+        * io/write.c (nml_write_obj): Likewise, formatting.
+        * m4/bessel.m4 (bessel_jn_r'rtype_kind`): Call xmallocarray
+        instead of xmalloc.
+        (besse_yn_r'rtype_kind`): Likewise.
+        * m4/cshift1.m4 (cshift1): Likewise.
+        * m4/eoshift1.m4 (eoshift1): Likewise.
+        * m4/eoshift3.m4 (eoshift3): Likewise.
+        * m4/iforeach.m4: Likewise.
+        * m4/ifunction.m4: Likewise.
+        * m4/ifunction_logical.m4 (name`'rtype_qual`_'atype_code):
+        Likewise.
+        * m4/in_pack.m4 (internal_pack_'rtype_ccode`): Likewise.
+        * m4/matmul.m4 (matmul_'rtype_code`): Likewise.
+        * m4/matmull.m4 (matmul_'rtype_code`): Likewise.
+        * m4/pack.m4 (pack_'rtype_code`): Likewise.
+        * m4/reshape.m4 (reshape_'rtype_ccode`): Likewise.
+        * m4/shape.m4 (shape_'rtype_kind`): Likewise.
+        * m4/spread.m4 (spread_'rtype_code`): Likewise.
+        (spread_scalar_'rtype_code`): Likewise.
+        * m4/transpose.m4 (transpose_'rtype_code`): Likewise.
+        * m4/unpack.m4 (unpack0_'rtype_code`): Likewise.
+        (unpack1_'rtype_code`): Likewise.
+        * runtime/convert_char.c (convert_char1_to_char4): Likewise.
+        (convert_char4_to_char1): Simplify.
+        * runtime/environ.c (init_unformatted): Call xmallocarray instead
+        of xmalloc.
+        * runtime/in_pack_generic.c (internal_pack): Likewise.
+
 2014-07-16  Release Manager
 
 	* GCC 4.9.1 released.

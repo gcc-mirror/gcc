@@ -125,7 +125,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 	  rs *= extent[n];
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * size);
+      ret->base_addr = xmallocarray (rs, size);
     }
   else
     {

@@ -100,7 +100,7 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 	  GFC_DIMENSION_SET(ret->dim[n], 0, ub, stride);
 	}
       ret->offset = 0;
-      ret->base_addr = xmalloc (rs * size);
+      ret->base_addr = xmallocarray (rs, size);
 
       if (rs <= 0)
 	return;
@@ -245,7 +245,7 @@ spread_internal_scalar (gfc_array_char *ret, const char *source,
 
   if (ret->base_addr == NULL)
     {
-      ret->base_addr = xmalloc (ncopies * size);
+      ret->base_addr = xmallocarray (ncopies, size);
       ret->offset = 0;
       GFC_DIMENSION_SET(ret->dim[0], 0, ncopies - 1, 1);
     }

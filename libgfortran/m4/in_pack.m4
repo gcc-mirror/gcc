@@ -79,7 +79,7 @@ internal_pack_'rtype_ccode` ('rtype` * source)
     return source->base_addr;
 
   /* Allocate storage for the destination.  */
-  destptr = ('rtype_name` *)xmalloc (ssize * sizeof ('rtype_name`));
+  destptr = xmallocarray (ssize, sizeof ('rtype_name`));
   dest = destptr;
   src = source->base_addr;
   stride0 = stride[0];

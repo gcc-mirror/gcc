@@ -167,8 +167,8 @@ pack_i1 (gfc_array_i1 *ret, const gfc_array_i1 *array,
 
 	  ret->offset = 0;
 
-	  /* xmalloc allocates a single byte for zero size.  */
-	  ret->base_addr = xmalloc (sizeof (GFC_INTEGER_1) * total);
+	  /* xmallocarray allocates a single byte for zero size.  */
+	  ret->base_addr = xmallocarray (total, sizeof (GFC_INTEGER_1));
 
 	  if (total == 0)
 	    return;
