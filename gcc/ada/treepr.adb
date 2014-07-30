@@ -236,6 +236,18 @@ package body Treepr is
       end case;
    end p;
 
+   ---------
+   -- par --
+   ---------
+
+   function par (N : Union_Id) return Node_Or_Entity_Id renames p;
+
+   --------
+   -- pe --
+   --------
+
+   procedure pe (N : Union_Id) renames pn;
+
    --------
    -- pl --
    --------
@@ -313,6 +325,18 @@ package body Treepr is
             Write_Eol;
       end case;
    end pn;
+
+   --------
+   -- pp --
+   --------
+
+   procedure pp (N : Union_Id) renames pn;
+
+   ---------
+   -- ppp --
+   ---------
+
+   procedure ppp (N : Union_Id) renames pt;
 
    ----------------
    -- Print_Char --

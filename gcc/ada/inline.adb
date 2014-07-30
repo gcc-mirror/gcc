@@ -1490,12 +1490,11 @@ package body Inline is
 
       function Has_Some_Contract (Id : Entity_Id) return Boolean is
          Items : constant Node_Id := Contract (Id);
-
       begin
          return Present (Items)
-           and then (Present (Pre_Post_Conditions (Items))
-                      or else Present (Contract_Test_Cases (Items))
-                      or else Present (Classifications (Items)));
+           and then (Present (Pre_Post_Conditions (Items)) or else
+                     Present (Contract_Test_Cases (Items)) or else
+                     Present (Classifications     (Items)));
       end Has_Some_Contract;
 
       --------------------------
@@ -1559,6 +1558,10 @@ package body Inline is
          Id := Body_Id;
       end if;
 
+      --  General note. The following comments clearly say what cannot be
+      --  inlined, but they do not give any clue on the motivation for the
+      --  exclusion. It would be good to document the motivations ???
+
       --  Do not inline unit-level subprograms
 
       if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
@@ -1587,6 +1590,8 @@ package body Inline is
         or else Is_Expression_Function (Body_Id)
       then
          return False;
+
+      --  Do not inline generic subprogram instances
 
       elsif Is_Generic_Instance (Spec_Id) then
          return False;

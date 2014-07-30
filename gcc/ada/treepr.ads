@@ -60,22 +60,33 @@ package Treepr is
    --  Prints the subtree consisting of the given element list and all its
    --  referenced descendants.
 
-   --  The following debugging procedures are intended to be called from gdb
+   --  The following debugging procedures are intended to be called from gdb.
+   --  Note that in several cases there are synonyms which represent historical
+   --  development, and we keep them because some people are used to them!
 
-   function p (N : Union_Id) return Node_Or_Entity_Id;
+   function p   (N : Union_Id) return Node_Or_Entity_Id;
+   function par (N : Union_Id) return Node_Or_Entity_Id;
    pragma Export (Ada, p);
-   --  Returns parent of a list or node (depending on the value of N). If N
+   pragma Export (Ada, par);
+   --  Return parent of a list or node (depending on the value of N). If N
    --  is neither a list nor a node id, then prints a message to that effect
    --  and returns Empty.
 
    procedure pn (N : Union_Id);
-   --  Prints a node, node list, uint, or anything else that falls under
+   procedure pp (N : Union_Id);
+   procedure pe (N : Union_Id);
+   pragma Export (Ada, pn);
+   pragma Export (Ada, pp);
+   pragma Export (Ada, pe);
+   --  Print a node, node list, uint, or anything else that falls under
    --  the definition of Union_Id. Historically this was only for printing
    --  nodes, hence the name.
 
-   procedure pt (N : Union_Id);
+   procedure pt  (N : Union_Id);
+   procedure ppp (N : Union_Id);
    pragma Export (Ada, pt);
-   --  Same as pn, except prints subtrees. For Nodes, it is exactly the same
+   pragma Export (Ada, ppp);
+   --  Same as pn/pp, except prints subtrees. For Nodes, it is exactly the same
    --  as Print_Node_Subtree. For Elists it is the same as Print_Elist_Subtree.
    --  For Lists, it is the same as Print_Tree_List. If given anything other
    --  than a Node, List, or Elist, same effect as pn.
@@ -86,10 +97,5 @@ package Treepr is
    --  -99999966. In other words for the positive case we fill out to 8 digits
    --  on the left and add a minus sign. This just saves some typing in the
    --  debugger.
-
-   procedure pe  (N : Union_Id) renames pt;
-   procedure pp  (N : Union_Id) renames pn;
-   procedure ppp (N : Union_Id) renames pt;
-   --  Synonyms retained for historical reasons
 
 end Treepr;

@@ -1,5 +1,21 @@
 2014-07-30  Bob Duff  <duff@adacore.com>
 
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call): New
+	parameter Chain to be used in the allocator case.
+	(Make_Build_In_Place_Call_In_Allocator): If the allocated object
+	has tasks, wrap the code in a block that will activate them,
+	including the usual finalization code to kill them off in case
+	of exception or abort.
+
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* treepr.adb, treepr.ads; Reorganize documentation for new pp routines
+	Remove renamings (don't work for gdb).
+	(par): New synonym for p (avoid gdb ambiguities).
+	* inline.adb, sem_ch6.adb, sem_ch13.adb: Minor reformatting.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
 	* exp_ch9.ads, sem_prag.adb, exp_ch4.adb, sem_ch13.adb: Minor comment
 	fixes.
 	* treepr.ads, treepr.adb (ppp): Make this debugging routine
