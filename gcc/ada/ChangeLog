@@ -1,3 +1,37 @@
+2014-07-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_prag.adb, a-tags.ads: Minor typo fixes.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* a-excach.adb, a-excach-cert.adb, a-except-2005.ads,
+	a-except.ads, g-traceb.adb, memtrack.adb,
+	s-traceb.adb, s-traceb.ads, s-traceb-hpux.adb, s-traceb-mastop.adb:
+	Cleanup: Make the three versions of System.Traceback.Call_Chain
+	have the same interface. Use an array for the Traceback parameter
+	instead of an Address.	This will enable reduction in code
+	duplication.
+
+2014-07-30  Pat Rogers  <rogers@adacore.com>
+
+	* gnat_ugn.texi: Corrected minor textual error in description
+	of switch -gnatwl.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* Makefile.rtl: Sort file names.
+
+2014-07-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-tasatt.adb: Complete previous change: kill spurious warning
+	on e.g. sparc, and make sure we only use the fast path when the
+	alignment is compatible.
+
+2014-07-30  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Mark new Spec_Id as
+	coming from source.
+
 2014-07-30  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Build_Body_To_Inline): Issue more precise messages

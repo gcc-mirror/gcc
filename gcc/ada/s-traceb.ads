@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,8 @@ pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with System.Exception_Tables.
 
+with System.Traceback_Entries;
+
 package System.Traceback is
 
    ----------------
@@ -46,7 +48,7 @@ package System.Traceback is
    ----------------
 
    procedure Call_Chain
-     (Traceback   : System.Address;
+     (Traceback   : in out System.Traceback_Entries.Tracebacks_Array;
       Max_Len     : Natural;
       Len         : out Natural;
       Exclude_Min : System.Address := System.Null_Address;

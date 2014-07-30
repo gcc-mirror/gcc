@@ -99,12 +99,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-calend$(objext) \
   a-calfor$(objext) \
   a-catizo$(objext) \
+  a-cbdlli$(objext) \
   a-cbhama$(objext) \
   a-cbhase$(objext) \
-  a-cborse$(objext) \
-  a-cbdlli$(objext) \
   a-cbmutr$(objext) \
   a-cborma$(objext) \
+  a-cborse$(objext) \
   a-cbprqu$(objext) \
   a-cbsyqu$(objext) \
   a-cdlili$(objext) \
@@ -121,8 +121,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-charac$(objext) \
   a-chlat1$(objext) \
   a-chlat9$(objext) \
-  a-chtgbo$(objext) \
   a-chtgbk$(objext) \
+  a-chtgbo$(objext) \
   a-chtgke$(objext) \
   a-chtgop$(objext) \
   a-chzla1$(objext) \
@@ -130,10 +130,13 @@ GNATRTL_NONTASKING_OBJS= \
   a-cidlli$(objext) \
   a-cihama$(objext) \
   a-cihase$(objext) \
+  a-cimutr$(objext) \
   a-ciorma$(objext) \
   a-ciormu$(objext) \
   a-ciorse$(objext) \
   a-clrefi$(objext) \
+  a-cobove$(objext) \
+  a-cofove$(objext) \
   a-cogeso$(objext) \
   a-cohama$(objext) \
   a-cohase$(objext) \
@@ -143,10 +146,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-colien$(objext) \
   a-colire$(objext) \
   a-comlin$(objext) \
+  a-comutr$(objext) \
   a-contai$(objext) \
   a-convec$(objext) \
-  a-cobove$(objext) \
-  a-cofove$(objext) \
   a-coorma$(objext) \
   a-coormu$(objext) \
   a-coorse$(objext) \
@@ -156,8 +158,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-crbtgk$(objext) \
   a-crbtgo$(objext) \
   a-crdlli$(objext) \
-  a-comutr$(objext) \
-  a-cimutr$(objext) \
   a-csquin$(objext) \
   a-cuprqu$(objext) \
   a-cusyqu$(objext) \
@@ -207,12 +207,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-nlcoar$(objext) \
   a-nlcoty$(objext) \
   a-nlelfu$(objext) \
-  a-nlrear$(objext) \
   a-nllcar$(objext) \
   a-nllcef$(objext) \
   a-nllcty$(objext) \
   a-nllefu$(objext) \
   a-nllrar$(objext) \
+  a-nlrear$(objext) \
   a-nscefu$(objext) \
   a-nscoty$(objext) \
   a-nselfu$(objext) \
@@ -224,8 +224,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-numaux$(objext) \
   a-numeri$(objext) \
   a-nurear$(objext) \
-  a-rbtgbo$(objext) \
   a-rbtgbk$(objext) \
+  a-rbtgbo$(objext) \
   a-rbtgso$(objext) \
   a-sbecin$(objext) \
   a-sbhcin$(objext) \
@@ -511,8 +511,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-crc32$(objext)  \
   s-crtl$(objext)   \
   s-diflio$(objext) \
-  s-dim$(objext)    \
   s-diinio$(objext) \
+  s-dim$(objext)    \
   s-dimkio$(objext) \
   s-dimmks$(objext) \
   s-direio$(objext) \

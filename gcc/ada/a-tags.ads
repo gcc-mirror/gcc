@@ -49,12 +49,12 @@
 --    Descendant_Tag (when used with a library-level tagged type),
 --    Internal_Tag (when used with a library-level tagged type).
 
---  The following subprograms of the public part of this package take non
---  constant time (in terms of sources line executed):
+--  The following subprograms of the public part of this package execute in
+--  time that is not constant (in terms of sources line executed):
 
 --    Internal_Tag (when used with a locally defined tagged type), because in
---    such case this routine processes the external tag, extract from it an
---    address available there, and convert it into the tag value returned by
+--    such cases this routine processes the external tag, extracts from it an
+--    address available there, and converts it into the tag value returned by
 --    this function. The number of instructions executed is not constant since
 --    it depends on the length of the external tag string.
 

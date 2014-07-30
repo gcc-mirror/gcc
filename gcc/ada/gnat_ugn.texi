@@ -5424,8 +5424,8 @@ is defined in package Standard.
 @emph{Activate warnings for elaboration pragmas.}
 @cindex @option{-gnatwl} (@command{gcc})
 @cindex Elaboration, warnings
-This switch activates warnings on missing
-for possible elaboration problems, including suspicious use
+This switch activates warnings for possible elaboration problems,
+including suspicious use
 of @code{Elaborate} pragmas, when using the static elaboration model, and
 possible situations that may raise @code{Program_Error} when using the
 dynamic elaboration model.
