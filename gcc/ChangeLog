@@ -1,3 +1,8 @@
+2014-07-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_tpf_eh_return): Pass original return
+	address as second parameter to __tpf_eh_return routine.
+
 2014-07-30  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/arm/arm.c (arm_get_frame_offsets): Adjust condition for
