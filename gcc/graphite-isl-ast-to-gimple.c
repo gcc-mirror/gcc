@@ -122,10 +122,16 @@ gcc_expression_from_isl_expression (tree type, __isl_take isl_ast_expr *,
 				    ivs_params &ip);
 
 /* Return the tree variable that corresponds to the given isl ast identifier
- expression (an isl_ast_expr of type isl_ast_expr_id).  */
+   expression (an isl_ast_expr of type isl_ast_expr_id).
+
+   FIXME: We should replace blind conversation of id's type with derivation
+   of the optimal type when we get the corresponding isl support. Blindly
+   converting type sizes may be problematic when we switch to smaller
+   types.  */
 
 static tree
-gcc_expression_from_isl_ast_expr_id (__isl_keep isl_ast_expr *expr_id,
+gcc_expression_from_isl_ast_expr_id (tree type,
+				     __isl_keep isl_ast_expr *expr_id,
 				     ivs_params &ip)
 {
   gcc_assert (isl_ast_expr_get_type (expr_id) == isl_ast_expr_id);
@@ -136,7 +142,7 @@ gcc_expression_from_isl_ast_expr_id (__isl_keep isl_ast_expr *expr_id,
   gcc_assert (res != ip.end () &&
               "Could not map isl_id to tree expression");
   isl_ast_expr_free (expr_id);
-  return res->second;
+  return fold_convert (type, res->second);
 }
 
 /* Converts an isl_ast_expr_int expression E to a GCC expression tree of
@@ -351,7 +357,7 @@ gcc_expression_from_isl_expression (tree type, __isl_take isl_ast_expr *expr,
   switch (isl_ast_expr_get_type (expr))
     {
     case isl_ast_expr_id:
-      return gcc_expression_from_isl_ast_expr_id (expr, ip);
+      return gcc_expression_from_isl_ast_expr_id (type, expr, ip);
 
     case isl_ast_expr_int:
       return gcc_expression_from_isl_expr_int (type, expr);
