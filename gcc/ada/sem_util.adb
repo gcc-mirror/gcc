@@ -16001,7 +16001,7 @@ package body Sem_Util is
          elsif Is_Scalar_Type (T) then
 
             --  If the subrange bounds are materialized by dedicated constant
-            --  objects, also include them to the debug info to make sure the
+            --  objects, also include them in the debug info to make sure the
             --  debugger can properly use them.
 
             if Present (Scalar_Range (T))
