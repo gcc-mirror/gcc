@@ -1,3 +1,15 @@
+2014-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Process_Range_Expr_In_Decl): Use _FIRST/_LAST
+	as name suffixes rather than L/H for subtype bounds.
+	* tbuild.ads: Minor comment improvements and fixes
+	(Make_External_Name): Document that suffix can start with an
+	underscore.
+
+2014-07-30  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Document --rep-clauses switch.
+
 2014-07-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Default_Value and
