@@ -228,7 +228,7 @@ DEBUG_FUNCTION void
 dot_rdg (struct graph *rdg)
 {
   /* When debugging, you may want to enable the following code.  */
-#if 1
+#ifdef HAVE_POPEN
   FILE *file = popen ("dot -Tx11", "w");
   if (!file)
     return;
