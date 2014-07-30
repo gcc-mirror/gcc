@@ -312,8 +312,10 @@ package Checks is
    --  Similar to Determine_Range, but for a node N of floating-point type. OK
    --  is True on return only for IEEE floating-point types and only if we do
    --  not have to worry about extended precision (i.e. on the x86, we must be
-   --  using -msse2 -mfpmath=sse. At the current time, this is used only in
+   --  using -msse2 -mfpmath=sse). At the current time, this is used only in
    --  GNATprove, though we could consider using it more generally in future.
+   --  For that to happen, the possibility of arguments of infinite or NaN
+   --  value should be taken into account, which is not the case currently.
 
    procedure Install_Null_Excluding_Check (N : Node_Id);
    --  Determines whether an access node requires a runtime access check and

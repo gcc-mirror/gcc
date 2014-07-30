@@ -624,13 +624,11 @@ package body Makeutl is
                   end if;
 
                elsif Sw'Length >= 4
-                 and then (Sw (2 .. 3) = "aL"
-                             or else
-                           Sw (2 .. 3) = "aO"
-                             or else
-                           Sw (2 .. 3) = "aI"
-                             or else
-                               (For_Gnatbind and then Sw (2 .. 3) = "A="))
+                 and then
+                   (Sw (2 .. 3) = "aL" or else
+                    Sw (2 .. 3) = "aO" or else
+                    Sw (2 .. 3) = "aI"
+                      or else (For_Gnatbind and then Sw (2 .. 3) = "A="))
                then
                   Start := 4;
 
@@ -2562,7 +2560,7 @@ package body Makeutl is
                if Source.Id.Path.Name = Q.Table (J).Info.Id.Path.Name
                  and then Source.Id.Index = Q.Table (J).Info.Id.Index
                  and then Source.Id.Project.Path.Name =
-                          Q.Table (J).Info.Id.Project.Path.Name
+                            Q.Table (J).Info.Id.Project.Path.Name
                then
                   --  No need to insert this source in the queue, but still
                   --  return True as we may need to insert its roots.
@@ -3193,9 +3191,8 @@ package body Makeutl is
          else
             Data.Closure_Needed   :=
               Has_Mains
-              or else
-                (Root_Project.Library
-                 and then Root_Project.Standalone_Library /= No);
+                or else (Root_Project.Library
+                          and then Root_Project.Standalone_Library /= No);
             Data.Need_Compilation := All_Phases or Option_Compile_Only;
             Data.Need_Binding     := All_Phases or Option_Bind_Only;
             Data.Need_Linking     := (All_Phases or Option_Link_Only)

@@ -15997,6 +15997,30 @@ package body Sem_Util is
 
          elsif Is_Protected_Type (T) then
             Set_Debug_Info_Needed_If_Not_Set (Corresponding_Record_Type (T));
+
+         elsif Is_Scalar_Type (T) then
+
+            --  If the subrange bounds are materialized by dedicated constant
+            --  objects, also include them to the debug info to make sure the
+            --  debugger can properly use them.
+
+            if Present (Scalar_Range (T))
+              and then Nkind (Scalar_Range (T)) = N_Range
+            then
+               declare
+                  Low_Bnd  : constant Node_Id := Type_Low_Bound (T);
+                  High_Bnd : constant Node_Id := Type_High_Bound (T);
+
+               begin
+                  if Is_Entity_Name (Low_Bnd) then
+                     Set_Debug_Info_Needed_If_Not_Set (Entity (Low_Bnd));
+                  end if;
+
+                  if Is_Entity_Name (High_Bnd) then
+                     Set_Debug_Info_Needed_If_Not_Set (Entity (High_Bnd));
+                  end if;
+               end;
+            end if;
          end if;
       end if;
    end Set_Debug_Info_Needed;
