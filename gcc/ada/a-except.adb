@@ -116,12 +116,17 @@ package body Ada.Exceptions is
       --  message. Message is a string which is generated as the exception
       --  message.
 
-      --------------------------------------
-      -- Exception information subprogram --
-      --------------------------------------
+      ---------------------------------------
+      -- Exception information subprograms --
+      ---------------------------------------
 
-      function Exception_Information (X : Exception_Occurrence) return String;
-      --  The format of the exception information is as follows:
+      function Untailored_Exception_Information
+        (X : Exception_Occurrence) return String;
+      --  This is used by Stream_Attributes.EO_To_String to convert an
+      --  Exception_Occurrence to a String for the stream attributes.
+      --  String_To_EO understands the format, as documented here.
+      --
+      --  The format of the string is as follows:
       --
       --    Exception_Name: <exception name> (as in Exception_Name)
       --    Message: <message> (only if Exception_Message is empty)
@@ -129,24 +134,18 @@ package body Ada.Exceptions is
       --    Call stack traceback locations:  (only if at least one location)
       --    <0xyyyyyyyy 0xyyyyyyyy ...>      (is recorded)
       --
-      --  The lines are separated by a ASCII.LF character
-      --
-      --  The nnnn is the partition Id given as decimal digits
-      --
+      --  The lines are separated by a ASCII.LF character.
+      --  The nnnn is the partition Id given as decimal digits.
       --  The 0x... line represents traceback program counter locations, in
       --  execution order with the first one being the exception location. It
       --  is present only
       --
-      --  The Exception_Name and Message lines are omitted in the abort signal
-      --  case, since this is not really an exception.
+      --  The Exception_Name and Message lines are omitted in the abort
+      --  signal case, since this is not really an exception.
 
       --  Note: If the format of the generated string is changed, please note
       --  that an equivalent modification to the routine String_To_EO must be
       --  made to preserve proper functioning of the stream attributes.
-
-      ---------------------------------------
-      -- Exception backtracing subprograms --
-      ---------------------------------------
 
       --  What is automatically output when exception tracing is on is the
       --  usual exception information with the call chain backtrace possibly
@@ -157,27 +156,22 @@ package body Ada.Exceptions is
       --  the possibly tailored output, which is equivalent if no decorator is
       --  currently set:
 
-      function Tailored_Exception_Information
-        (X : Exception_Occurrence) return String;
-      --  Exception information to be output in the case of automatic tracing
-      --  requested through GNAT.Exception_Traces.
+      function Exception_Information (X : Exception_Occurrence) return String;
+      --  This is the implementation of Ada.Exceptions.Exception_Information,
+      --  as defined in the Ada RM.
       --
-      --  This is the same as Exception_Information if no backtrace decorator
-      --  is currently in place. Otherwise, this is Exception_Information with
-      --  the call chain raw addresses replaced by the result of a call to the
-      --  current decorator provided with the call chain addresses.
-
-      pragma Export
-        (Ada, Tailored_Exception_Information,
-           "__gnat_tailored_exception_information");
-      --  This is currently used by System.Tasking.Stages
+      --  If no traceback decorator (see GNAT.Exception_Traces) is currently
+      --  in place, this is the same as Untailored_Exception_Information.
+      --  Otherwise, the decorator is used to produce a symbolic traceback
+      --  instead of hexadecimal addresses.
+      --
+      --  Note that unlike Untailored_Exception_Information, there is no need
+      --  to keep the output of Exception_Information stable for streaming
+      --  purposes, and in fact the output differs across platforms.
 
    end Exception_Data;
 
    package Exception_Traces is
-
-      use Exception_Data;
-      --  Imports Tailored_Exception_Information
 
       ----------------------------------------------
       -- Run-Time Exception Notification Routines --
@@ -774,7 +768,7 @@ package body Ada.Exceptions is
    ------------------
 
    --  We use the null string to represent the null occurrence, otherwise we
-   --  output the Exception_Information string for the occurrence.
+   --  output the Untailored_Exception_Information string for the occurrence.
 
    function EO_To_String (X : Exception_Occurrence) return String
      renames Stream_Attributes.EO_To_String;
@@ -806,9 +800,9 @@ package body Ada.Exceptions is
    begin
       if X.Id = Null_Id then
          raise Constraint_Error;
+      else
+         return Exception_Data.Exception_Information (X);
       end if;
-
-      return Exception_Data.Exception_Information (X);
    end Exception_Information;
 
    -----------------------

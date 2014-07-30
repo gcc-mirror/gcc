@@ -40,6 +40,7 @@ with Namet;  use Namet;
 with Table;
 with Types;  use Types;
 with Uintp;  use Uintp;
+with Urealp; use Urealp;
 
 package Checks is
 
@@ -301,6 +302,18 @@ package Checks is
    --  assume that values are in range of their subtypes. If it is set to True,
    --  then this assumption is valid, if False, then processing is done using
    --  base types to allow invalid values.
+
+   procedure Determine_Range_R
+     (N            : Node_Id;
+      OK           : out Boolean;
+      Lo           : out Ureal;
+      Hi           : out Ureal;
+      Assume_Valid : Boolean := False);
+   --  Similar to Determine_Range, but for a node N of floating-point type. OK
+   --  is True on return only for IEEE floating-point types and only if we do
+   --  not have to worry about extended precision (i.e. on the x86, we must be
+   --  using -msse2 -mfpmath=sse. At the current time, this is used only in
+   --  GNATprove, though we could consider using it more generally in future.
 
    procedure Install_Null_Excluding_Check (N : Node_Id);
    --  Determines whether an access node requires a runtime access check and

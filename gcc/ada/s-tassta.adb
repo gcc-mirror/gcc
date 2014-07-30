@@ -1524,12 +1524,6 @@ package body System.Tasking.Stages is
         Ada.Unchecked_Conversion
          (Task_Id, System.Task_Primitives.Task_Address);
 
-      function Tailored_Exception_Information
-        (E : Exception_Occurrence) return String;
-      pragma Import
-        (Ada, Tailored_Exception_Information,
-         "__gnat_tailored_exception_information");
-
       Excep : constant Exception_Occurrence_Access :=
                 SSL.Get_Current_Excep.all;
 
@@ -1553,7 +1547,7 @@ package body System.Tasking.Stages is
       To_Stderr (System.Address_Image (To_Address (Self_Id)));
       To_Stderr (" terminated by unhandled exception");
       To_Stderr ((1 => ASCII.LF));
-      To_Stderr (Tailored_Exception_Information (Excep.all));
+      To_Stderr (Exception_Information (Excep.all));
       Initialization.Task_Unlock (Self_Id);
    end Trace_Unhandled_Exception_In_Task;
 

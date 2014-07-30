@@ -5041,18 +5041,6 @@ package body Exp_Util is
          return False;
       end if;
 
-      --  Always assume the worst for a nested record component with a
-      --  component clause, which gigi/gcc does not appear to handle well.
-      --  It is not clear why this special test is needed at all ???
-
-      if Nkind (Prefix (N)) = N_Selected_Component
-        and then Nkind (Prefix (Prefix (N))) = N_Selected_Component
-        and then
-          Present (Component_Clause (Entity (Selector_Name (Prefix (N)))))
-      then
-         return True;
-      end if;
-
       --  We only need to worry if the target has strict alignment
 
       if not Target_Strict_Alignment then

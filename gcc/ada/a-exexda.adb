@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,39 +36,40 @@ package body Exception_Data is
 
    --  This unit implements the Exception_Information related services for
    --  both the Ada standard requirements and the GNAT.Exception_Traces
-   --  facility.
+   --  facility. This is also used by the implementation of the stream
+   --  attributes of types Exception_Id and Exception_Occurrence.
 
    --  There are common parts between the contents of Exception_Information
-   --  (the regular Ada interface) and Tailored_Exception_Information (what
-   --  the automatic backtracing output includes). The overall structure is
-   --  sketched below:
+   --  (the regular Ada interface) and Untailored_Exception_Information (used
+   --  for streaming, and when there is no symbolic traceback available) The
+   --  overall structure is sketched below:
 
    --
-   --                      Exception_Information
+   --                 Untailored_Exception_Information
    --                               |
    --                       +-------+--------+
    --                       |                |
-   --                Basic_Exc_Info & Basic_Exc_Tback
-   --                    (B_E_I)          (B_E_TB)
+   --                Basic_Exc_Info & Untailored_Exc_Tback
+   --                    (B_E_I)         (U_E_TB)
 
    --           o--
    --  (B_E_I)  |  Exception_Name: <exception name> (as in Exception_Name)
    --           |  Message: <message> (or a null line if no message)
    --           |  PID=nnnn (if != 0)
    --           o--
-   --  (B_E_TB) |  Call stack traceback locations:
+   --  (U_E_TB) |  Call stack traceback locations:
    --           |  <0xyyyyyyyy 0xyyyyyyyy ...>
    --           o--
 
-   --                  Tailored_Exception_Information
+   --                     Exception_Information
    --                               |
    --                    +----------+----------+
    --                    |                     |
-   --             Basic_Exc_Info    &  Tailored_Exc_Tback
+   --             Basic_Exc_Info    &      traceback
    --                                          |
    --                              +-----------+------------+
    --                              |                        |
-   --                       Basic_Exc_Tback    Or    Tback_Decorator
+   --                     Untailored_Exc_Tback    Or    Tback_Decorator
    --                     if no decorator set           otherwise
 
    --  Functions returning String imply secondary stack use, which is a heavy
@@ -81,8 +82,8 @@ package body Exception_Data is
 
    --  The procedural interface is composed of two major sections: a neutral
    --  section for basic types like Address, Character, Natural or String, and
-   --  an exception oriented section for the e.g. Basic_Exception_Information.
-   --  This is the Append_Info family of procedures below.
+   --  an exception oriented section for the exception names, messages, and
+   --  information. This is the Append_Info family of procedures below.
 
    --  Output to stderr is commanded by passing an empty buffer to update, and
    --  care is taken not to overflow otherwise.
@@ -140,12 +141,12 @@ package body Exception_Data is
       Info : in out String;
       Ptr  : in out Natural);
 
-   procedure Append_Info_Basic_Exception_Traceback
+   procedure Append_Info_Untailored_Exception_Traceback
      (X    : Exception_Occurrence;
       Info : in out String;
       Ptr  : in out Natural);
 
-   procedure Append_Info_Exception_Information
+   procedure Append_Info_Untailored_Exception_Information
      (X    : Exception_Occurrence;
       Info : in out String;
       Ptr  : in out Natural);
@@ -162,7 +163,7 @@ package body Exception_Data is
    function Basic_Exception_Info_Maxlength
      (X : Exception_Occurrence) return Natural;
 
-   function Basic_Exception_Tback_Maxlength
+   function Untailored_Exception_Traceback_Maxlength
      (X : Exception_Occurrence) return Natural;
 
    function Exception_Info_Maxlength
@@ -181,11 +182,11 @@ package body Exception_Data is
    -- Functional Interface --
    --------------------------
 
-   function Basic_Exception_Traceback
+   function Untailored_Exception_Traceback
      (X : Exception_Occurrence) return String;
    --  Returns an image of the complete call chain associated with an
    --  exception occurrence in its most basic form, that is as a raw sequence
-   --  of hexadecimal binary addresses.
+   --  of hexadecimal addresses.
 
    function Tailored_Exception_Traceback
      (X : Exception_Occurrence) return String;
@@ -201,7 +202,8 @@ package body Exception_Data is
      (Ada, Append_Info_Exception_Message, "__gnat_append_info_e_msg");
 
    pragma Export
-     (Ada, Append_Info_Exception_Information, "__gnat_append_info_e_info");
+     (Ada, Append_Info_Untailored_Exception_Information,
+      "__gnat_append_info_u_e_info");
 
    pragma Export
      (Ada, Exception_Message_Length, "__gnat_exception_msg_len");
@@ -375,16 +377,16 @@ package body Exception_Data is
         + BEI_PID_Header'Length + 15;
    end Basic_Exception_Info_Maxlength;
 
-   -------------------------------------------
-   -- Append_Info_Basic_Exception_Traceback --
-   -------------------------------------------
+   ------------------------------------------------
+   -- Append_Info_Untailored_Exception_Traceback --
+   ------------------------------------------------
 
    --  As for Basic_Exception_Information:
 
    BETB_Header : constant String := "Call stack traceback locations:";
    LDAD_Header : constant String := "Load address: ";
 
-   procedure Append_Info_Basic_Exception_Traceback
+   procedure Append_Info_Untailored_Exception_Traceback
      (X    : Exception_Occurrence;
       Info : in out String;
       Ptr  : in out Natural)
@@ -417,13 +419,13 @@ package body Exception_Data is
       end loop;
 
       Append_Info_NL (Info, Ptr);
-   end Append_Info_Basic_Exception_Traceback;
+   end Append_Info_Untailored_Exception_Traceback;
 
-   -----------------------------------------
-   -- Basic_Exception_Traceback_Maxlength --
-   -----------------------------------------
+   ----------------------------------------------
+   -- Untailored_Exception_Traceback_Maxlength --
+   ----------------------------------------------
 
-   function Basic_Exception_Tback_Maxlength
+   function Untailored_Exception_Traceback_Maxlength
      (X : Exception_Occurrence) return Natural
    is
       Space_Per_Address : constant := 2 + 16 + 1;
@@ -432,21 +434,21 @@ package body Exception_Data is
       return
         LDAD_Header'Length + Space_Per_Address + BETB_Header'Length + 1 +
           X.Num_Tracebacks * Space_Per_Address + 1;
-   end Basic_Exception_Tback_Maxlength;
+   end Untailored_Exception_Traceback_Maxlength;
 
-   ---------------------------------------
-   -- Append_Info_Exception_Information --
-   ---------------------------------------
+   --------------------------------------------------
+   -- Append_Info_Untailored_Exception_Information --
+   --------------------------------------------------
 
-   procedure Append_Info_Exception_Information
+   procedure Append_Info_Untailored_Exception_Information
      (X    : Exception_Occurrence;
       Info : in out String;
       Ptr  : in out Natural)
    is
    begin
       Append_Info_Basic_Exception_Information (X, Info, Ptr);
-      Append_Info_Basic_Exception_Traceback   (X, Info, Ptr);
-   end Append_Info_Exception_Information;
+      Append_Info_Untailored_Exception_Traceback (X, Info, Ptr);
+   end Append_Info_Untailored_Exception_Information;
 
    ------------------------------
    -- Exception_Info_Maxlength --
@@ -458,7 +460,7 @@ package body Exception_Data is
    begin
       return
         Basic_Exception_Info_Maxlength (X)
-        + Basic_Exception_Tback_Maxlength (X);
+        + Untailored_Exception_Traceback_Maxlength (X);
    end Exception_Info_Maxlength;
 
    -----------------------------------
@@ -546,32 +548,33 @@ package body Exception_Data is
    end Exception_Message_Length;
 
    -------------------------------
-   -- Basic_Exception_Traceback --
+   -- Untailored_Exception_Traceback --
    -------------------------------
 
-   function Basic_Exception_Traceback
+   function Untailored_Exception_Traceback
      (X : Exception_Occurrence) return String
    is
-      Info : aliased String (1 .. Basic_Exception_Tback_Maxlength (X));
+      Info : aliased String
+                       (1 .. Untailored_Exception_Traceback_Maxlength (X));
       Ptr  : Natural := Info'First - 1;
    begin
-      Append_Info_Basic_Exception_Traceback (X, Info, Ptr);
+      Append_Info_Untailored_Exception_Traceback (X, Info, Ptr);
       return Info (Info'First .. Ptr);
-   end Basic_Exception_Traceback;
+   end Untailored_Exception_Traceback;
 
-   ---------------------------
-   -- Exception_Information --
-   ---------------------------
+   --------------------------------------
+   -- Untailored_Exception_Information --
+   --------------------------------------
 
-   function Exception_Information
+   function Untailored_Exception_Information
      (X : Exception_Occurrence) return String
    is
       Info : String (1 .. Exception_Info_Maxlength (X));
       Ptr  : Natural := Info'First - 1;
    begin
-      Append_Info_Exception_Information (X, Info, Ptr);
+      Append_Info_Untailored_Exception_Information (X, Info, Ptr);
       return Info (Info'First .. Ptr);
-   end Exception_Information;
+   end Untailored_Exception_Information;
 
    -------------------------
    -- Set_Exception_C_Msg --
@@ -713,17 +716,17 @@ package body Exception_Data is
 
    begin
       if Wrapper = null then
-         return Basic_Exception_Traceback (X);
+         return Untailored_Exception_Traceback (X);
       else
          return Wrapper.all (X.Tracebacks'Address, X.Num_Tracebacks);
       end if;
    end Tailored_Exception_Traceback;
 
-   ------------------------------------
-   -- Tailored_Exception_Information --
-   ------------------------------------
+   ---------------------------
+   -- Exception_Information --
+   ---------------------------
 
-   function Tailored_Exception_Information
+   function Exception_Information
      (X : Exception_Occurrence) return String
    is
       --  The tailored exception information is the basic information
@@ -739,6 +742,6 @@ package body Exception_Data is
       Append_Info_Basic_Exception_Information (X, Info, Ptr);
       Append_Info_String (Tback_Info, Info, Ptr);
       return Info (Info'First .. Ptr);
-   end Tailored_Exception_Information;
+   end Exception_Information;
 
 end Exception_Data;
