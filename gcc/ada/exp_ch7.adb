@@ -130,9 +130,10 @@ package body Exp_Ch7 is
    --  pointers of N until it find the appropriate node to wrap. If it returns
    --  Empty, it means that no transient scope is needed in this context.
 
-   procedure Insert_Actions_In_Scope_Around (N : Node_Id);
+   procedure Insert_Actions_In_Scope_Around (N : Node_Id; Clean : Boolean);
    --  Insert the before-actions kept in the scope stack before N, and the
-   --  after-actions after N, which must be a member of a list.
+   --  after-actions after N, which must be a member of a list. If Clean is
+   --  True, also insert the cleanup actions.
 
    function Make_Transient_Block
      (Loc    : Source_Ptr;
@@ -4589,11 +4590,13 @@ package body Exp_Ch7 is
    -- Insert_Actions_In_Scope_Around --
    ------------------------------------
 
-   procedure Insert_Actions_In_Scope_Around (N : Node_Id) is
-      Act_After   : constant List_Id :=
-        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (After);
+   procedure Insert_Actions_In_Scope_Around (N : Node_Id; Clean : Boolean) is
       Act_Before  : constant List_Id :=
         Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (Before);
+      Act_After   : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (After);
+      Act_Cleanup : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped (Cleanup);
       --  Note: We used to use renamings of Scope_Stack.Table (Scope_Stack.
       --  Last), but this was incorrect as Process_Transient_Object may
       --  introduce new scopes and cause a reallocation of Scope_Stack.Table.
@@ -4930,6 +4933,14 @@ package body Exp_Ch7 is
             Next (Stmt);
          end loop;
 
+         if Clean then
+            if Present (Prev_Fin) then
+               Insert_List_Before_And_Analyze (Prev_Fin, Act_Cleanup);
+            else
+               Insert_List_After_And_Analyze (Fin_Insrt, Act_Cleanup);
+            end if;
+         end if;
+
          --  Generate:
          --    if Raised and then not Abort then
          --       Raise_From_Controlled_Operation (E);
@@ -4944,7 +4955,7 @@ package body Exp_Ch7 is
    --  Start of processing for Insert_Actions_In_Scope_Around
 
    begin
-      if No (Act_Before) and then No (Act_After) then
+      if No (Act_Before) and then No (Act_After) and then No (Act_Cleanup) then
          return;
       end if;
 
@@ -5011,14 +5022,13 @@ package body Exp_Ch7 is
 
          --  Reset the action lists
 
-         if Present (Act_Before) then
+         Scope_Stack.Table (Scope_Stack.Last).
+           Actions_To_Be_Wrapped (Before) := No_List;
+         Scope_Stack.Table (Scope_Stack.Last).
+           Actions_To_Be_Wrapped (After) := No_List;
+         if Clean then
             Scope_Stack.Table (Scope_Stack.Last).
-              Actions_To_Be_Wrapped (Before) := No_List;
-         end if;
-
-         if Present (Act_After) then
-            Scope_Stack.Table (Scope_Stack.Last).
-              Actions_To_Be_Wrapped (After) := No_List;
+              Actions_To_Be_Wrapped (Cleanup) := No_List;
          end if;
       end;
    end Insert_Actions_In_Scope_Around;
@@ -8005,9 +8015,10 @@ package body Exp_Ch7 is
       Set_Parent (Block, Par);
 
       --  Insert actions stuck in the transient scopes as well as all freezing
-      --  nodes needed by those actions.
+      --  nodes needed by those actions. Do not insert cleanup actions here,
+      --  they will be transferred to the newly created block.
 
-      Insert_Actions_In_Scope_Around (Action);
+      Insert_Actions_In_Scope_Around (Action, Clean => False);
 
       Insert := Prev (Action);
       if Present (Insert) then
@@ -8117,7 +8128,7 @@ package body Exp_Ch7 is
    --  declaration into a transient block as usual case, otherwise the object
    --  would be itself declared in the wrong scope. Therefore, all entities (if
    --  any) defined in the transient block are moved to the proper enclosing
-   --  scope, furthermore, if they are controlled variables they are finalized
+   --  scope. Furthermore, if they are controlled variables they are finalized
    --  right after the declaration. The finalization list of the transient
    --  scope is defined as a renaming of the enclosing one so during their
    --  initialization they will be attached to the proper finalization list.
@@ -8141,9 +8152,10 @@ package body Exp_Ch7 is
       S := Current_Scope;
       Encl_S := Scope (S);
 
-      --  Insert Actions kept in the Scope stack
+      --  Insert Actions kept in the Scope stack. Since we are not generating
+      --  a block, we must also insert the cleanup actions in the tree now.
 
-      Insert_Actions_In_Scope_Around (N);
+      Insert_Actions_In_Scope_Around (N, Clean => True);
 
       --  If the declaration is consuming some secondary stack, mark the
       --  enclosing scope appropriately.

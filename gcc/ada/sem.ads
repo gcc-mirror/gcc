@@ -538,6 +538,9 @@ package Sem is
       --  Standard_Standard can be pushed anew on the scope stack to start a
       --  new active section (see comment above).
 
+      Locked_Shared_Objects : Elist_Id;
+      --  List of shared passive protected objects that have been locked in
+      --  this transient scope (always No_Elist for non-transient scopes).
    end record;
 
    package Scope_Stack is new Table.Table (

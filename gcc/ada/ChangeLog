@@ -1,3 +1,37 @@
+2014-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* sem.ads (Scope_Table_Entry): New component Locked_Shared_Objects.
+	* sem_ch8.adb (Push_Scope): Initialize Locked_Shared_Objects.
+	* exp_smem.adb (Add_Shared_Var_Lock_Procs): Handle the case where
+	the call returns an unconstrained type: in this case there is
+	already a transient scope, and we should not establish a new one.
+	* exp_ch7.adb (Insert_Actions_In_Scope_Around): New formal Clean. If
+	True, also insert cleanup actions in the tree.
+	(Wrap_Transient_Declaration): Call Insert_Actions_In_Scope_Around
+	with Clean set True.
+
+2014-07-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taskin.ads (Direct_Index, Direct_Index_Range,
+	Direct_Attribute_Element, Direct_Attribute_Array,
+	Direct_Index_Vector, Direct_Attributes, Is_Defined,
+	Indirect_Attributes): Removed.	(Atomic_Address,
+	Attribute_Array, Attributes): New.
+	* s-tasini.ads, s-tasini.adb (Proc_T, Initialize_Attributes,
+	Finalize_Attributes_Link, Initialize_Attributes_Link): Removed.
+	(Finalize_Attributes): Reimplement.
+	* s-tassta.adb (Create_Task): Remove call to
+	Initialize_Attributes_Link (Free_Task, Vulnerable_Free_Task):
+	Replace Finalize_Attributes_Link by Finalize_Attributes.
+	* a-tasatt.ads, a-tasatt.adb, s-tataat.ads, s-tataat.adb:
+	Reimplement from scratch, using a simpler and more efficient
+	implementation.
+	* s-tporft.adb (Register_Foreign_Thread): Remove now obsolete comment.
+	* s-parame.ads, s-parame-hpux.ads,
+	* s-parame-vms-alpha.ads, s-parame-vms-ia64.ads,
+	* s-parame-vxworks.ads (Max_Attribute_Count): New, replace
+	Default_Attribute_Count.
+
 2014-07-30  Olivier Hainque  <hainque@adacore.com>
 
 	* vxworks-ppc-link.spec: New file. Extra link

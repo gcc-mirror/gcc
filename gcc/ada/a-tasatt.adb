@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2014, AdaCore                     --
+--          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,213 +29,189 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Storage_Elements;
-with System.Task_Primitives.Operations;
 with System.Tasking;
 with System.Tasking.Initialization;
 with System.Tasking.Task_Attributes;
+pragma Elaborate_All (System.Tasking.Task_Attributes);
 
-with Ada.Exceptions;
+with System.Task_Primitives.Operations;
+
+with Ada.Finalization; use Ada.Finalization;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
-pragma Elaborate_All (System.Tasking.Task_Attributes);
---  To ensure the initialization of object Local (below) will work
-
 package body Ada.Task_Attributes is
 
-   use System.Tasking.Initialization,
+   use System,
+       System.Tasking.Initialization,
        System.Tasking,
-       System.Tasking.Task_Attributes,
-       Ada.Exceptions;
+       System.Tasking.Task_Attributes;
 
-   package POP renames System.Task_Primitives.Operations;
+   package STPO renames System.Task_Primitives.Operations;
+
+   type Attribute_Cleanup is new Limited_Controlled with null record;
+   procedure Finalize (Cleanup : in out Attribute_Cleanup);
+   --  Finalize all tasks' attribute for this package
+
+   Cleanup : Attribute_Cleanup;
+   pragma Unreferenced (Cleanup);
+   --  Will call Finalize when this instantiation gets out of scope
 
    ---------------------------
    -- Unchecked Conversions --
    ---------------------------
 
-   --  The following type corresponds to Dummy_Wrapper, declared in
-   --  System.Tasking.Task_Attributes.
+   type Real_Attribute is record
+      Free  : Deallocator;
+      Value : Attribute;
+   end record;
+   type Real_Attribute_Access is access all Real_Attribute;
+   pragma No_Strict_Aliasing (Real_Attribute_Access);
+   --  Each value in the task control block's Attributes array is either
+   --  mapped to the attribute value directly if Fast_Path is True, or
+   --  is in effect a Real_Attribute_Access.
+   --  Note: the Deallocator field must be first, for compatibility with
+   --  System.Tasking.Task_Attributes.Attribute_Record and to allow unchecked
+   --  conversions between Attribute_Access and Real_Attribute_Access.
 
-   type Wrapper;
-   type Access_Wrapper is access all Wrapper;
+   function New_Attribute (Val : Attribute) return Atomic_Address;
+   --  Create a new Real_Attribute using Val, and return its address.
+   --  The returned value can be converted via To_Real_Attribute.
 
+   procedure Deallocate (Ptr : Atomic_Address);
+   --  Free memory associated with Ptr, a Real_Attribute_Access in reality
+
+   function To_Real_Attribute is new
+     Ada.Unchecked_Conversion (Atomic_Address, Real_Attribute_Access);
+
+   --  Kill warning about possible size mismatch
    pragma Warnings (Off);
-   --  We turn warnings off for the following To_Attribute_Handle conversions,
-   --  since these are used only for small attributes where we know that there
-   --  are no problems with alignment, but the compiler will generate warnings
-   --  for the occurrences in the large attribute case, even though they will
-   --  not actually be used.
-
-   function To_Attribute_Handle is new Ada.Unchecked_Conversion
-     (System.Address, Attribute_Handle);
-   function To_Direct_Attribute_Element is new Ada.Unchecked_Conversion
-     (System.Address, Direct_Attribute_Element);
-   --  For reference to directly addressed task attributes
-
-   type Access_Integer_Address is access all
-     System.Storage_Elements.Integer_Address;
-
-   function To_Attribute_Handle is new Ada.Unchecked_Conversion
-     (Access_Integer_Address, Attribute_Handle);
-   --  For reference to directly addressed task attributes
-
+   function To_Address is new
+     Ada.Unchecked_Conversion (Attribute, Atomic_Address);
+   function To_Attribute is new
+     Ada.Unchecked_Conversion (Atomic_Address, Attribute);
    pragma Warnings (On);
-   --  End warnings off region for directly addressed attribute conversions
 
-   function To_Access_Address is new Ada.Unchecked_Conversion
-     (Access_Node, Access_Address);
-   --  To store pointer to list of indirect attributes
+   function To_Address is new
+     Ada.Unchecked_Conversion (Real_Attribute_Access, Atomic_Address);
 
+   --  Kill warning about possible aliasing
    pragma Warnings (Off);
-   function To_Access_Wrapper is new Ada.Unchecked_Conversion
-     (Access_Dummy_Wrapper, Access_Wrapper);
+   function To_Handle is new
+     Ada.Unchecked_Conversion (System.Address, Attribute_Handle);
    pragma Warnings (On);
-   --  To fetch pointer to actual wrapper of attribute node. We turn off
-   --  warnings since this may generate an alignment warning. The warning can
-   --  be ignored since Dummy_Wrapper is only a non-generic standin for the
-   --  real wrapper type (we never actually allocate objects of type
-   --  Dummy_Wrapper).
-
-   function To_Access_Dummy_Wrapper is new Ada.Unchecked_Conversion
-     (Access_Wrapper, Access_Dummy_Wrapper);
-   --  To store pointer to actual wrapper of attribute node
 
    function To_Task_Id is new Ada.Unchecked_Conversion
      (Task_Identification.Task_Id, Task_Id);
    --  To access TCB of identified task
 
-   type Local_Deallocator is access procedure (P : in out Access_Node);
+   procedure Free is new
+     Ada.Unchecked_Deallocation (Real_Attribute, Real_Attribute_Access);
 
-   function To_Lib_Level_Deallocator is new Ada.Unchecked_Conversion
-     (Local_Deallocator, Deallocator);
-   --  To defeat accessibility check
+   Fast_Path : constant Boolean :=
+     Attribute'Size <= Atomic_Address'Size and then
+     To_Address (Initial_Value) = 0;
+   --  If the attribute fits in an Atomic_Address and Initial_Value is 0 (or
+   --  null), then we will map the attribute directly into
+   --  ATCB.Attributes (Index), otherwise we will create a level of indirection
+   --  and instead use Attributes (Index) as a Real_Attribute_Access.
 
-   ------------------------
-   -- Storage Management --
-   ------------------------
+   Index : constant Integer :=
+     Next_Index (Require_Finalization => not Fast_Path);
+   --  Index in the task control block's Attributes array
 
-   procedure Deallocate (P : in out Access_Node);
-   --  Passed to the RTS via unchecked conversion of a pointer to permit
-   --  finalization and deallocation of attribute storage nodes.
+   --------------
+   -- Finalize --
+   --------------
 
-   --------------------------
-   -- Instantiation Record --
-   --------------------------
-
-   Local : aliased Instance;
-   --  Initialized in package body
-
-   type Wrapper is record
-      Dummy_Node : aliased Node;
-
-      Value : aliased Attribute := Initial_Value;
-      --  The generic formal type, may be controlled
-   end record;
-
-   --  A number of unchecked conversions involving Wrapper_Access sources are
-   --  performed in this unit. We have to ensure that the designated object is
-   --  always strictly enough aligned.
-
-   for Wrapper'Alignment use Standard'Maximum_Alignment;
-
-   procedure Free is
-      new Ada.Unchecked_Deallocation (Wrapper, Access_Wrapper);
-
-   procedure Deallocate (P : in out Access_Node) is
-      T : Access_Wrapper := To_Access_Wrapper (P.Wrapper);
+   procedure Finalize (Cleanup : in out Attribute_Cleanup) is
+      pragma Unreferenced (Cleanup);
    begin
-      Free (T);
+      STPO.Lock_RTS;
+
+      declare
+         C : System.Tasking.Task_Id := System.Tasking.All_Tasks_List;
+      begin
+         while C /= null loop
+            STPO.Write_Lock (C);
+
+            if C.Attributes (Index) /= 0
+              and then Require_Finalization (Index)
+            then
+               Deallocate (C.Attributes (Index));
+               C.Attributes (Index) := 0;
+            end if;
+
+            STPO.Unlock (C);
+            C := C.Common.All_Tasks_Link;
+         end loop;
+      end;
+
+      Finalize (Index);
+      STPO.Unlock_RTS;
+   end Finalize;
+
+   ----------------
+   -- Deallocate --
+   ----------------
+
+   procedure Deallocate (Ptr : Atomic_Address) is
+      Obj : Real_Attribute_Access := To_Real_Attribute (Ptr);
+   begin
+      Free (Obj);
    end Deallocate;
+
+   -------------------
+   -- New_Attribute --
+   -------------------
+
+   function New_Attribute (Val : Attribute) return Atomic_Address is
+      Tmp : Real_Attribute_Access;
+   begin
+      Tmp := new Real_Attribute'
+        (Free  => Deallocate'Unrestricted_Access,
+         Value => Val);
+      return To_Address (Tmp);
+   end New_Attribute;
 
    ---------------
    -- Reference --
    ---------------
 
    function Reference
-     (T    : Task_Identification.Task_Id := Task_Identification.Current_Task)
+     (T : Task_Identification.Task_Id := Task_Identification.Current_Task)
       return Attribute_Handle
    is
+      Self_Id       : Task_Id;
       TT            : constant Task_Id := To_Task_Id (T);
       Error_Message : constant String  := "Trying to get the reference of a ";
+      Result        : Attribute_Handle;
 
    begin
       if TT = null then
-         Raise_Exception (Program_Error'Identity, Error_Message & "null task");
+         raise Program_Error with Error_Message & "null task";
       end if;
 
       if TT.Common.State = Terminated then
-         Raise_Exception (Tasking_Error'Identity,
-           Error_Message & "terminated task");
+         raise Tasking_Error with Error_Message & "terminated task";
       end if;
 
-      --  Directly addressed case
-
-      if Local.Index /= 0 then
-
-         --  Return the attribute handle. Warnings off because this return
-         --  statement generates alignment warnings for large attributes
-         --  (but will never be executed in this case anyway).
-
-         pragma Warnings (Off);
-         return
-           To_Attribute_Handle (TT.Direct_Attributes (Local.Index)'Address);
-         pragma Warnings (On);
-
-      --  Not directly addressed
-
+      if Fast_Path then
+         return To_Handle (TT.Attributes (Index)'Address);
       else
-         declare
-            P       : Access_Node := To_Access_Node (TT.Indirect_Attributes);
-            W       : Access_Wrapper;
-            Self_Id : constant Task_Id := POP.Self;
+         Self_Id := STPO.Self;
+         Task_Lock (Self_Id);
 
-         begin
-            Defer_Abort (Self_Id);
-            POP.Lock_RTS;
+         if TT.Attributes (Index) = 0 then
+            TT.Attributes (Index) := New_Attribute (Initial_Value);
+         end if;
 
-            while P /= null loop
-               if P.Instance = Access_Instance'(Local'Unchecked_Access) then
-                  POP.Unlock_RTS;
-                  Undefer_Abort (Self_Id);
-                  return To_Access_Wrapper (P.Wrapper).Value'Access;
-               end if;
+         Result := To_Handle
+           (To_Real_Attribute (TT.Attributes (Index)).Value'Address);
+         Task_Unlock (Self_Id);
 
-               P := P.Next;
-            end loop;
-
-            --  Unlock the RTS here to follow the lock ordering rule that
-            --  prevent us from using new (i.e the Global_Lock) while holding
-            --  any other lock.
-
-            POP.Unlock_RTS;
-            W := new Wrapper'
-                  ((null, Local'Unchecked_Access, null), Initial_Value);
-            POP.Lock_RTS;
-
-            P := W.Dummy_Node'Unchecked_Access;
-            P.Wrapper := To_Access_Dummy_Wrapper (W);
-            P.Next := To_Access_Node (TT.Indirect_Attributes);
-            TT.Indirect_Attributes := To_Access_Address (P);
-            POP.Unlock_RTS;
-            Undefer_Abort (Self_Id);
-            return W.Value'Access;
-
-         exception
-            when others =>
-               POP.Unlock_RTS;
-               Undefer_Abort (Self_Id);
-               raise;
-         end;
+         return Result;
       end if;
-
-   exception
-      when Tasking_Error | Program_Error =>
-         raise;
-
-      when others =>
-         raise Program_Error;
    end Reference;
 
    ------------------
@@ -246,68 +221,37 @@ package body Ada.Task_Attributes is
    procedure Reinitialize
      (T : Task_Identification.Task_Id := Task_Identification.Current_Task)
    is
+      Self_Id       : Task_Id;
       TT            : constant Task_Id := To_Task_Id (T);
       Error_Message : constant String  := "Trying to Reinitialize a ";
 
    begin
       if TT = null then
-         Raise_Exception (Program_Error'Identity, Error_Message & "null task");
+         raise Program_Error with Error_Message & "null task";
       end if;
 
       if TT.Common.State = Terminated then
-         Raise_Exception (Tasking_Error'Identity,
-           Error_Message & "terminated task");
+         raise Tasking_Error with Error_Message & "terminated task";
       end if;
 
-      if Local.Index /= 0 then
-         Set_Value (Initial_Value, T);
+      if Fast_Path then
+         --  No finalization needed, simply reset to Initial_Value
+         TT.Attributes (Index) := To_Address (Initial_Value);
       else
+         Self_Id := STPO.Self;
+         Task_Lock (Self_Id);
+
          declare
-            P, Q    : Access_Node;
-            W       : Access_Wrapper;
-            Self_Id : constant Task_Id := POP.Self;
-
+            Attr : Atomic_Address renames TT.Attributes (Index);
          begin
-            Defer_Abort (Self_Id);
-            POP.Lock_RTS;
-            Q := To_Access_Node (TT.Indirect_Attributes);
-
-            while Q /= null loop
-               if Q.Instance = Access_Instance'(Local'Unchecked_Access) then
-                  if P = null then
-                     TT.Indirect_Attributes := To_Access_Address (Q.Next);
-                  else
-                     P.Next := Q.Next;
-                  end if;
-
-                  W := To_Access_Wrapper (Q.Wrapper);
-                  Free (W);
-                  POP.Unlock_RTS;
-                  Undefer_Abort (Self_Id);
-                  return;
-               end if;
-
-               P := Q;
-               Q := Q.Next;
-            end loop;
-
-            POP.Unlock_RTS;
-            Undefer_Abort (Self_Id);
-
-         exception
-            when others =>
-               POP.Unlock_RTS;
-               Undefer_Abort (Self_Id);
-               raise;
+            if Attr /= 0 then
+               Deallocate (Attr);
+               Attr := 0;
+            end if;
          end;
+
+         Task_Unlock (Self_Id);
       end if;
-
-   exception
-      when Tasking_Error | Program_Error =>
-         raise;
-
-      when others =>
-         raise Program_Error;
    end Reinitialize;
 
    ---------------
@@ -318,85 +262,38 @@ package body Ada.Task_Attributes is
      (Val : Attribute;
       T   : Task_Identification.Task_Id := Task_Identification.Current_Task)
    is
+      Self_Id       : Task_Id;
       TT            : constant Task_Id := To_Task_Id (T);
       Error_Message : constant String  := "Trying to Set the Value of a ";
 
    begin
       if TT = null then
-         Raise_Exception (Program_Error'Identity, Error_Message & "null task");
+         raise Program_Error with Error_Message & "null task";
       end if;
 
       if TT.Common.State = Terminated then
-         Raise_Exception (Tasking_Error'Identity,
-           Error_Message & "terminated task");
+         raise Tasking_Error with Error_Message & "terminated task";
       end if;
 
-      --  Directly addressed case
+      if Fast_Path then
+         --  No finalization needed, simply set to Val
+         TT.Attributes (Index) := To_Address (Val);
+      else
+         Self_Id := STPO.Self;
+         Task_Lock (Self_Id);
 
-      if Local.Index /= 0 then
-
-         --  Set attribute handle, warnings off, because this code can generate
-         --  alignment warnings with large attributes (but of course will not
-         --  be executed in this case, since we never have direct addressing in
-         --  such cases).
-
-         pragma Warnings (Off);
-         To_Attribute_Handle
-            (TT.Direct_Attributes (Local.Index)'Address).all := Val;
-         pragma Warnings (On);
-         return;
-      end if;
-
-      --  Not directly addressed
-
-      declare
-         P       : Access_Node := To_Access_Node (TT.Indirect_Attributes);
-         W       : Access_Wrapper;
-         Self_Id : constant Task_Id := POP.Self;
-
-      begin
-         Defer_Abort (Self_Id);
-         POP.Lock_RTS;
-
-         while P /= null loop
-
-            if P.Instance = Access_Instance'(Local'Unchecked_Access) then
-               To_Access_Wrapper (P.Wrapper).Value := Val;
-               POP.Unlock_RTS;
-               Undefer_Abort (Self_Id);
-               return;
+         declare
+            Attr : Atomic_Address renames TT.Attributes (Index);
+         begin
+            if Attr /= 0 then
+               Deallocate (Attr);
             end if;
 
-            P := P.Next;
-         end loop;
+            Attr := New_Attribute (Val);
+         end;
 
-         --  Unlock RTS here to follow the lock ordering rule that prevent us
-         --  from using new (i.e the Global_Lock) while holding any other lock.
-
-         POP.Unlock_RTS;
-         W := new Wrapper'((null, Local'Unchecked_Access, null), Val);
-         POP.Lock_RTS;
-         P := W.Dummy_Node'Unchecked_Access;
-         P.Wrapper := To_Access_Dummy_Wrapper (W);
-         P.Next := To_Access_Node (TT.Indirect_Attributes);
-         TT.Indirect_Attributes := To_Access_Address (P);
-
-         POP.Unlock_RTS;
-         Undefer_Abort (Self_Id);
-
-      exception
-         when others =>
-            POP.Unlock_RTS;
-            Undefer_Abort (Self_Id);
-            raise;
-      end;
-
-   exception
-      when Tasking_Error | Program_Error =>
-         raise;
-
-      when others =>
-         raise Program_Error;
+         Task_Unlock (Self_Id);
+      end if;
    end Set_Value;
 
    -----------
@@ -407,167 +304,42 @@ package body Ada.Task_Attributes is
      (T : Task_Identification.Task_Id := Task_Identification.Current_Task)
       return Attribute
    is
+      Self_Id       : Task_Id;
       TT            : constant Task_Id := To_Task_Id (T);
       Error_Message : constant String  := "Trying to get the Value of a ";
 
    begin
       if TT = null then
-         Raise_Exception (Program_Error'Identity, Error_Message & "null task");
+         raise Program_Error with Error_Message & "null task";
       end if;
 
       if TT.Common.State = Terminated then
-         Raise_Exception
-           (Program_Error'Identity, Error_Message & "terminated task");
+         raise Tasking_Error with Error_Message & "terminated task";
       end if;
 
-      --  Directly addressed case
-
-      if Local.Index /= 0 then
-
-         --  Get value of attribute. We turn Warnings off, because for large
-         --  attributes, this code can generate alignment warnings. But of
-         --  course large attributes are never directly addressed so in fact
-         --  we will never execute the code in this case.
-
-         pragma Warnings (Off);
-         return To_Attribute_Handle
-           (TT.Direct_Attributes (Local.Index)'Address).all;
-         pragma Warnings (On);
-      end if;
-
-      --  Not directly addressed
-
-      declare
-         P       : Access_Node;
-         Result  : Attribute;
-         Self_Id : constant Task_Id := POP.Self;
-
-      begin
-         Defer_Abort (Self_Id);
-         POP.Lock_RTS;
-         P := To_Access_Node (TT.Indirect_Attributes);
-
-         while P /= null loop
-            if P.Instance = Access_Instance'(Local'Unchecked_Access) then
-               Result := To_Access_Wrapper (P.Wrapper).Value;
-               POP.Unlock_RTS;
-               Undefer_Abort (Self_Id);
-               return Result;
-            end if;
-
-            P := P.Next;
-         end loop;
-
-         POP.Unlock_RTS;
-         Undefer_Abort (Self_Id);
-         return Initial_Value;
-
-      exception
-         when others =>
-            POP.Unlock_RTS;
-            Undefer_Abort (Self_Id);
-            raise;
-      end;
-
-   exception
-      when Tasking_Error | Program_Error =>
-         raise;
-
-      when others =>
-         raise Program_Error;
-   end Value;
-
---  Start of elaboration code for package Ada.Task_Attributes
-
-begin
-   --  This unchecked conversion can give warnings when alignments are
-   --  incorrect, but they will not be used in such cases anyway, so the
-   --  warnings can be safely ignored.
-
-   pragma Warnings (Off);
-   Local.Deallocate := To_Lib_Level_Deallocator (Deallocate'Access);
-   pragma Warnings (On);
-
-   declare
-      Two_To_J : Direct_Index_Vector;
-      Self_Id  : constant Task_Id := POP.Self;
-   begin
-      Defer_Abort (Self_Id);
-
-      --  Need protection for updating links to per-task initialization and
-      --  finalization routines, in case some task is being created or
-      --  terminated concurrently.
-
-      POP.Lock_RTS;
-
-      --  Add this instantiation to the list of all instantiations
-
-      Local.Next := System.Tasking.Task_Attributes.All_Attributes;
-      System.Tasking.Task_Attributes.All_Attributes :=
-        Local'Unchecked_Access;
-
-      --  Try to find space for the attribute in the TCB
-
-      Local.Index := 0;
-      Two_To_J := 1;
-
-      if Attribute'Size <= System.Address'Size then
-         for J in Direct_Index_Range loop
-            if (Two_To_J and In_Use) = 0 then
-
-               --  Reserve location J for this attribute
-
-               In_Use := In_Use or Two_To_J;
-               Local.Index := J;
-
-               --  This unchecked conversion can give a warning when the
-               --  alignment is incorrect, but it will not be used in such
-               --  a case anyway, so the warning can be safely ignored.
-
-               pragma Warnings (Off);
-               To_Attribute_Handle (Local.Initial_Value'Access).all :=
-                 Initial_Value;
-               pragma Warnings (On);
-
-               exit;
-            end if;
-
-            Two_To_J := Two_To_J * 2;
-         end loop;
-      end if;
-
-      --  Attribute goes directly in the TCB
-
-      if Local.Index /= 0 then
-         --  Replace stub for initialization routine that is called at task
-         --  creation.
-
-         Initialization.Initialize_Attributes_Link :=
-           System.Tasking.Task_Attributes.Initialize_Attributes'Access;
-
-         --  Initialize the attribute, for all tasks
+      if Fast_Path then
+         return To_Attribute (TT.Attributes (Index));
+      else
+         Self_Id := STPO.Self;
+         Task_Lock (Self_Id);
 
          declare
-            C : System.Tasking.Task_Id := System.Tasking.All_Tasks_List;
+            Attr : Atomic_Address renames TT.Attributes (Index);
          begin
-            while C /= null loop
-               C.Direct_Attributes (Local.Index) :=
-                 To_Direct_Attribute_Element
-                   (System.Storage_Elements.To_Address (Local.Initial_Value));
-               C := C.Common.All_Tasks_Link;
-            end loop;
+            if Attr = 0 then
+               Task_Unlock (Self_Id);
+               return Initial_Value;
+            else
+               declare
+                  Result : constant Attribute :=
+                    To_Real_Attribute (Attr).Value;
+               begin
+                  Task_Unlock (Self_Id);
+                  return Result;
+               end;
+            end if;
          end;
-
-      --  Attribute goes into a node onto a linked list
-
-      else
-         --  Replace stub for finalization routine called at task termination
-
-         Initialization.Finalize_Attributes_Link :=
-           System.Tasking.Task_Attributes.Finalize_Attributes'Access;
       end if;
+   end Value;
 
-      POP.Unlock_RTS;
-      Undefer_Abort (Self_Id);
-   end;
 end Ada.Task_Attributes;

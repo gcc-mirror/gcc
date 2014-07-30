@@ -707,7 +707,6 @@ package body System.Tasking.Stages is
       SSL.Create_TSD (T.Common.Compiler_Data);
       T.Common.Activation_Link := Chain.T_ID;
       Chain.T_ID := T;
-      Initialization.Initialize_Attributes_Link.all (T);
       Created_Task := T;
       Initialization.Undefer_Abort_Nestable (Self_ID);
 
@@ -953,7 +952,7 @@ package body System.Tasking.Stages is
          Initialization.Task_Lock (Self_Id);
 
          Lock_RTS;
-         Initialization.Finalize_Attributes_Link.all (T);
+         Initialization.Finalize_Attributes (T);
          Initialization.Remove_From_All_Tasks_List (T);
          Unlock_RTS;
 
@@ -2076,7 +2075,7 @@ package body System.Tasking.Stages is
       end if;
 
       Write_Lock (T);
-      Initialization.Finalize_Attributes_Link.all (T);
+      Initialization.Finalize_Attributes (T);
       Unlock (T);
 
       if Single_Lock then
