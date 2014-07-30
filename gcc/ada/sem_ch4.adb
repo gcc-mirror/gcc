@@ -2046,7 +2046,18 @@ package body Sem_Ch4 is
          Check_Compiler_Unit ("if expression", N);
       end if;
 
+      --  Analyze and resolve the condition. We need to resolve this now so
+      --  that it gets folded to True/False if possible, before we analyze
+      --  the THEN/ELSE branches, because when analyzing these branches, we
+      --  may call Is_Statically_Unevaluated, which expects the condition of
+      --  an enclosing IF to have been analyze/resolved/evaluated.
+
       Analyze_Expression (Condition);
+      Resolve (Condition, Any_Boolean);
+
+      --  Analyze THEN expression and (if present) ELSE expression. For those
+      --  we delay resolution in the normal manner, because of overloading etc.
+
       Analyze_Expression (Then_Expr);
 
       if Present (Else_Expr) then

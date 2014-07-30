@@ -1490,13 +1490,12 @@ package body Inline is
 
       function Has_Some_Contract (Id : Entity_Id) return Boolean is
          Items : constant Node_Id := Contract (Id);
+
       begin
          return Present (Items)
            and then (Present (Pre_Post_Conditions (Items))
-                       or else
-                     Present (Contract_Test_Cases (Items))
-                       or else
-                     Present (Classifications (Items)));
+                      or else Present (Contract_Test_Cases (Items))
+                      or else Present (Classifications (Items)));
       end Has_Some_Contract;
 
       --------------------------
@@ -1587,6 +1586,9 @@ package body Inline is
       elsif (Present (Spec_Id) and then Is_Expression_Function (Spec_Id))
         or else Is_Expression_Function (Body_Id)
       then
+         return False;
+
+      elsif Is_Generic_Instance (Spec_Id) then
          return False;
 
       --  Only inline subprograms whose body is marked SPARK_Mode On
