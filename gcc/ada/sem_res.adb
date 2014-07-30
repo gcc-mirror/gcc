@@ -6216,15 +6216,16 @@ package body Sem_Res is
          --  being inlined.
 
          declare
-            Nam_Alias : constant Entity_Id := Ultimate_Alias (Nam);
-            Decl : constant Node_Id := Unit_Declaration_Node (Nam_Alias);
+            Nam_UA : constant Entity_Id := Ultimate_Alias (Nam);
+            Decl   : constant Node_Id   := Unit_Declaration_Node (Nam_UA);
+
          begin
             --  If the subprogram is not eligible for inlining in GNATprove
             --  mode, do nothing.
 
-            if not Can_Be_Inlined_In_GNATprove_Mode (Nam_Alias, Empty)
-              or else Nkind (Decl) /= N_Subprogram_Declaration
-              or else not Is_Inlined_Always (Nam_Alias)
+            if Nkind (Decl) /= N_Subprogram_Declaration
+              or else not Is_Inlined_Always (Nam_UA)
+              or else not Can_Be_Inlined_In_GNATprove_Mode (Nam_UA, Empty)
             then
                null;
 
@@ -6234,7 +6235,7 @@ package body Sem_Res is
             elsif In_Assertion_Expr /= 0 then
                Error_Msg_NE ("?cannot inline call to &", N, Nam);
                Error_Msg_N ("\call appears in assertion expression", N);
-               Set_Is_Inlined_Always (Nam_Alias, False);
+               Set_Is_Inlined_Always (Nam_UA, False);
 
             --  Inlining should not be performed during pre-analysis
 
@@ -6246,7 +6247,7 @@ package body Sem_Res is
                if No (Corresponding_Body (Decl)) then
                   Error_Msg_NE
                     ("?cannot inline call to & (body not seen yet)", N, Nam);
-                  Set_Is_Inlined_Always (Nam_Alias, False);
+                  Set_Is_Inlined_Always (Nam_UA, False);
 
                --  Nothing to do if there is no body to inline, indicating that
                --  the subprogram is not suitable for inlining in GNATprove
@@ -6263,12 +6264,12 @@ package body Sem_Res is
                   Error_Msg_NE ("?cannot inline call to &", N, Nam);
                   Error_Msg_N
                     ("\call appears in potentially unevaluated context", N);
-                  Set_Is_Inlined_Always (Nam_Alias, False);
+                  Set_Is_Inlined_Always (Nam_UA, False);
 
                --  Otherwise, inline the call
 
                else
-                  Expand_Inlined_Call (N, Nam_Alias, Nam);
+                  Expand_Inlined_Call (N, Nam_UA, Nam);
                end if;
             end if;
          end;
