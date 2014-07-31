@@ -106,6 +106,7 @@ GNATBIND_FLAGS = -static -x
 ADA_CFLAGS =
 ADAFLAGS = -W -Wall -gnatpg -gnata
 FORCE_DEBUG_ADAFLAGS = -g
+NO_INLINE_ADAFLAGS = -fno-inline
 NO_SIBLING_ADAFLAGS = -fno-optimize-sibling-calls
 NO_REORDER_ADAFLAGS = -fno-toplevel-reorder
 GNATLIBFLAGS = -W -Wall -gnatpg -nostdinc
@@ -2997,14 +2998,14 @@ ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 
 # force no sibling call optimization on s-traceb.o so the number of stack
 # frames to be skipped when computing a call chain is not modified by
-# optimization.
+# optimization. We don't want inlining, either.
 
 s-traceb.o  : s-traceb.adb s-traceb.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
+	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(NO_INLINE_ADAFLAGS) \
 	      $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-# force debugging information on s-tasdeb.o so that it is always
-# possible to set conditional breakpoints on tasks.
+# compile s-tasdeb.o without optimization and with debug info so that it is
+# always possible to set conditional breakpoints on tasks.
 
 s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \

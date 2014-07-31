@@ -80,6 +80,7 @@
 	* s-traceb.adb, s-traceb-hpux.adb, s-traceb-mastop.adb:
 	(Call_Chain): Add 1 to number of frames to skip, to account for
 	the fact that there's one more frame on the stack.
+	* gcc-interface/Makefile.in (s-traceb.o): Adjust rules.
 
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
