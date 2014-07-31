@@ -4146,7 +4146,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	enum inline_status_t inline_status
 	  = Has_Pragma_No_Inline (gnat_entity)
 	    ? is_suppressed
-	    : (Is_Inlined (gnat_entity) ? is_enabled : is_disabled);
+	    : Has_Pragma_Inline_Always (gnat_entity)
+	      ? is_required
+	      : (Is_Inlined (gnat_entity) ? is_enabled : is_disabled);
 	bool public_flag = Is_Public (gnat_entity) || imported_p;
 	bool extern_flag
 	  = (Is_Public (gnat_entity) && !definition) || imported_p;
@@ -4701,6 +4703,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 	else
 	  {
+	    /* ??? When only the spec of a package is provided, downgrade
+	       is_required to is_enabled to avoid issuing an error later.  */
+	    if (inline_status == is_required)
+	      {
+		Node_Id gnat_body = Parent (Declaration_Node (gnat_entity));
+		if (Nkind (gnat_body) != N_Subprogram_Body
+		    && No (Corresponding_Body (gnat_body)))
+		  inline_status = is_enabled;
+	      }
+
 	    if (has_stub)
 	      {
 		gnu_stub_name = gnu_ext_name;
@@ -5178,8 +5190,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 The language rules ensure the parent type is already frozen here.  */
       if (Is_Derived_Type (gnat_entity) && !type_annotate_only)
 	{
-	  tree gnu_parent_type = gnat_to_gnu_type (Etype (gnat_entity));
-	  relate_alias_sets (gnu_type, gnu_parent_type,
+	  Entity_Id gnat_parent_type = Underlying_Type (Etype (gnat_entity));
+	  /* For packed array subtypes, the implementation type is used.  */
+	  if (kind == E_Array_Subtype
+	      && Present (Packed_Array_Impl_Type (gnat_parent_type)))
+	    gnat_parent_type = Packed_Array_Impl_Type (gnat_parent_type);
+	  relate_alias_sets (gnu_type, gnat_to_gnu_type (gnat_parent_type),
 			     Is_Composite_Type (gnat_entity)
 			     ? ALIAS_SET_COPY : ALIAS_SET_SUPERSET);
 	}

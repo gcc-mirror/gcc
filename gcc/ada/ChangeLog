@@ -7,6 +7,7 @@
 	* gnat_ugn.texi: Document --test-duration option for gnattest.
 
 2014-07-31  Javier Miranda  <miranda@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* opt.ads (Back_End_Inlining): New variable which controls
 	activation of inlining by back-end expansion.
@@ -26,6 +27,8 @@
 	* fe.h Import Back_End_Inlining variable.
 	* gcc-interface/utils.c (create_subprog_decl): If Back_End_Inlining is
 	enabled then declare attribute "always inline"
+	* gcc-interface/decl.c, gcc-interface/trans.c,
+	gcc-interface/gigi.h: Add handling of Inline_Always pragma.
 
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
