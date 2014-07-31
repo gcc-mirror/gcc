@@ -1,3 +1,10 @@
+2014-07-31  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/61948
+	* config/arm/neon.md (ashldi3_neon): Don't emit arm_ashldi3_1bit unless
+	constraints are satisfied.
+	(<shift>di3_neon): Likewise.
+
 2014-07-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61964
