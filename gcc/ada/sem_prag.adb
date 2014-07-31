@@ -5721,6 +5721,9 @@ package body Sem_Prag is
          Comps : List_Id := No_List;
          Exprs : List_Id := No_List;
 
+         CFSD : constant Boolean := Get_Comes_From_Source_Default;
+         --  Used to restore Comes_From_Source_Default
+
       begin
          --  The argument is already in aggregate form, but the presence of a
          --  name causes this to be interpreted as a named association which in
@@ -5746,6 +5749,10 @@ package body Sem_Prag is
             return;
          end if;
 
+         --  Everything comes from source if the original comes from source
+
+         Set_Comes_From_Source_Default (Comes_From_Source (Arg));
+
          --  Positional argument is transformed into an aggregate with an
          --  Expressions list.
 
@@ -5760,7 +5767,6 @@ package body Sem_Prag is
               Make_Component_Association (Loc,
                 Choices    => New_List (Make_Identifier (Loc, Chars (Arg))),
                 Expression => Relocate_Node (Expr)));
-
          end if;
 
          --  Remove the pragma argument name as this information has been
@@ -5772,6 +5778,10 @@ package body Sem_Prag is
            Make_Aggregate (Loc,
              Component_Associations => Comps,
              Expressions            => Exprs));
+
+         --  Restore Comes_From_Source default
+
+         Set_Comes_From_Source_Default (CFSD);
       end Ensure_Aggregate_Form;
 
       ------------------
