@@ -196,8 +196,8 @@ package body System.Memory is
          end if;
 
          Timestamp := System.OS_Primitives.Clock;
-         Call_Chain (Tracebk, Max_Call_Stack, Num_Calls,
-                     Skip_Frames => 2);
+         Call_Chain
+           (Tracebk, Max_Call_Stack, Num_Calls, Skip_Frames => 2);
          fputc (Character'Pos ('A'), Gmemfile);
          fwrite (Result'Address, Address_Size, 1, Gmemfile);
          fwrite (Actual_Size'Address, size_t'Max_Size_In_Storage_Elements, 1,
@@ -262,8 +262,8 @@ package body System.Memory is
             Gmem_Initialize;
          end if;
 
-         Call_Chain (Tracebk, Max_Call_Stack, Num_Calls,
-                     Skip_Frames => 2);
+         Call_Chain
+           (Tracebk, Max_Call_Stack, Num_Calls, Skip_Frames => 2);
          Timestamp := System.OS_Primitives.Clock;
          fputc (Character'Pos ('D'), Gmemfile);
          fwrite (Addr'Address, Address_Size, 1, Gmemfile);
@@ -345,8 +345,8 @@ package body System.Memory is
          if Needs_Init then
             Gmem_Initialize;
          end if;
-         Call_Chain (Tracebk, Max_Call_Stack, Num_Calls,
-                     Skip_Frames => 2);
+         Call_Chain
+           (Tracebk, Max_Call_Stack, Num_Calls, Skip_Frames => 2);
          Timestamp := System.OS_Primitives.Clock;
          fputc (Character'Pos ('D'), Gmemfile);
          fwrite (Addr'Address, Address_Size, 1, Gmemfile);
