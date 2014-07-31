@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005,2009 Free Software Foundation, Inc.     --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,17 +32,14 @@
 --  This package contains an instantiation of the floating-point attribute
 --  runtime routines for VAX F-float for use on VMS targets.
 
+--  TO BE REMOVED ???
+
 with System.Fat_Gen;
 
 package System.Fat_VAX_G_Float is
    pragma Pure;
 
-   pragma Warnings (Off);
-   --  This unit is normally used only for VMS, but we compile it for other
-   --  targets for the convenience of testing vms code using -gnatdm.
-
    type Fat_VAX_G is digits 15;
-   pragma Float_Representation (VAX_Float, Fat_VAX_G);
 
    --  Note the only entity from this package that is accessed by Rtsfind
    --  is the name of the package instantiation. Entities within this package

@@ -3388,12 +3388,11 @@ package body Sem_Ch8 is
 
       --  This procedure is called in the context of subprogram renaming, and
       --  thus the attribute must be one that is a subprogram. All of those
-      --  have at least one formal parameter, with the exceptions of AST_Entry
-      --  (which is a real oddity, it is odd that this can be renamed at all)
-      --  and the GNAT attribute 'Img, which GNAT treats as renameable.
+      --  have at least one formal parameter, with the exceptions of the GNAT
+      --  attribute 'Img, which GNAT treats as renameable.
 
       if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
-         if Aname /= Name_AST_Entry and then Aname /= Name_Img then
+         if Aname /= Name_Img then
             Error_Msg_N
               ("subprogram renaming an attribute must have formals", N);
             return;
@@ -3463,46 +3462,18 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      --  AST_Entry is an odd case. It doesn't really make much sense to allow
-      --  it to be renamed, but that's the DEC rule, so we have to do it right.
-      --  The point is that the AST_Entry call should be made now, and what the
-      --  function will return is the returned value.
+      --  Rewrite attribute node to have a list of expressions corresponding to
+      --  the subprogram formals. A renaming declaration is not a freeze point,
+      --  and the analysis of the attribute reference should not freeze the
+      --  type of the prefix. We use the original node in the renaming so that
+      --  its source location is preserved, and checks on stream attributes are
+      --  properly applied.
 
-      --  Note that there is no Expr_List in this case anyway
+      Attr_Node := Relocate_Node (Nam);
+      Set_Expressions (Attr_Node, Expr_List);
 
-      if Aname = Name_AST_Entry then
-         declare
-            Ent  : constant Entity_Id := Make_Temporary (Loc, 'R', Nam);
-            Decl : Node_Id;
-
-         begin
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Ent,
-                Object_Definition   =>
-                  New_Occurrence_Of (RTE (RE_AST_Handler), Loc),
-                Expression          => Nam,
-                Constant_Present    => True);
-
-            Set_Assignment_OK (Decl, True);
-            Insert_Action (N, Decl);
-            Attr_Node := Make_Identifier (Loc, Chars (Ent));
-         end;
-
-      --  For all other attributes, we rewrite the attribute node to have
-      --  a list of expressions corresponding to the subprogram formals.
-      --  A renaming declaration is not a freeze point, and the analysis of
-      --  the attribute reference should not freeze the type of the prefix.
-      --  We use the original node in the renaming so that its source location
-      --  is preserved, and checks on stream attributes are properly applied.
-
-      else
-         Attr_Node := Relocate_Node (Nam);
-         Set_Expressions (Attr_Node, Expr_List);
-
-         Set_Must_Not_Freeze (Attr_Node);
-         Set_Must_Not_Freeze (Prefix (Nam));
-      end if;
+      Set_Must_Not_Freeze (Attr_Node);
+      Set_Must_Not_Freeze (Prefix (Nam));
 
       --  Case of renaming a function
 
@@ -3547,7 +3518,7 @@ package body Sem_Ch8 is
       --  In case of tagged types we add the body of the generated function to
       --  the freezing actions of the type (because in the general case such
       --  type is still not frozen). We exclude from this processing generic
-      --  formal subprograms found in instantiations and AST_Entry renamings.
+      --  formal subprograms found in instantiations.
 
       --  We must exclude VM targets and restricted run-time libraries because
       --  entity AST_Handler is defined in package System.Aux_Dec which is not

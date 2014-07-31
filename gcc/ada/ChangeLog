@@ -1,5 +1,14 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* cstand.adb, einfo.adb, einfo.ads, errout.adb, exp_attr.adb,
+	exp_prag.adb, frontend.adb, interfac.ads,
+	par-prag.adb, s-auxdec.ads, s-filofl.ads, s-fishfl.ads, s-fvadfl.ads,
+	s-fvaffl.ads, s-fvagfl.ads, s-vaflop.ads, sem_attr.adb, sem_attr.ads,
+	sem_ch13.adb, sem_ch3.adb, sem_ch8.adb, sem_prag.adb, snames.adb-tmpl,
+	snames.ads-tmpl: Remove obsolete VMS-specific code.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sem_ch13.adb: Minor reformatting.
 
 2014-07-31  Arnaud Charlet  <charlet@adacore.com>

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,34 +30,17 @@
 ------------------------------------------------------------------------------
 
 --  This package contains runtime routines for handling the non-IEEE
---  floating-point formats used on the Vax and the Alpha.
+--  floating-point formats used on the Vax.
+
+--  TO BE REMOVED ???
 
 package System.Vax_Float_Operations is
 
-   pragma Warnings (Off);
-   --  Suppress warnings if not on Alpha/VAX
-
    type D is digits 9;
-   pragma Float_Representation (VAX_Float, D);
-   --  D Float type on Vax
-
    type G is digits 15;
-   pragma Float_Representation (VAX_Float, G);
-   --  G Float type on Vax
-
    type F is digits 6;
-   pragma Float_Representation (VAX_Float, F);
-   --  F Float type on Vax
-
    type S is digits 6;
-   pragma Float_Representation (IEEE_Float, S);
-   --  IEEE short
-
    type T is digits 15;
-   pragma Float_Representation (IEEE_Float, T);
-   --  IEEE long
-
-   pragma Warnings (On);
 
    type Q is range -2 ** 63 .. +(2 ** 63 - 1);
    --  64-bit signed integer

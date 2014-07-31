@@ -405,13 +405,11 @@ package Snames is
    --  Fast_Math.
 
    Name_Favor_Top_Level                : constant Name_Id := N + $; -- GNAT
-   Name_Float_Representation           : constant Name_Id := N + $; -- GNAT
    Name_Implicit_Packing               : constant Name_Id := N + $; -- GNAT
    Name_Initialize_Scalars             : constant Name_Id := N + $; -- GNAT
    Name_Interrupt_State                : constant Name_Id := N + $; -- GNAT
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
-   Name_Long_Float                     : constant Name_Id := N + $; -- VMS
    Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
@@ -457,12 +455,6 @@ package Snames is
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
    Name_Abstract_State                 : constant Name_Id := N + $; -- GNAT
    Name_All_Calls_Remote               : constant Name_Id := N + $;
-
-   --  Note: AST_Entry is not in this list because its name matches the name of
-   --  the corresponding attribute. However, it is included in the definition
-   --  of the type Pragma_Id, and the functions Get_Pragma_Id and Is_Pragma_Id
-   --  correctly recognize and process Name_AST_Entry.
-
    Name_Assert                         : constant Name_Id := N + $; -- Ada 05
    Name_Assert_And_Cut                 : constant Name_Id := N + $; -- GNAT
    Name_Async_Readers                  : constant Name_Id := N + $; -- GNAT
@@ -499,7 +491,6 @@ package Snames is
    Name_Elaborate_All                  : constant Name_Id := N + $;
    Name_Elaborate_Body                 : constant Name_Id := N + $;
    Name_Export                         : constant Name_Id := N + $;
-   Name_Export_Exception               : constant Name_Id := N + $; -- VMS
    Name_Export_Function                : constant Name_Id := N + $; -- GNAT
    Name_Export_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Export_Procedure               : constant Name_Id := N + $; -- GNAT
@@ -512,7 +503,6 @@ package Snames is
    Name_Implementation_Defined         : constant Name_Id := N + $; -- GNAT
    Name_Implemented                    : constant Name_Id := N + $; -- Ada 12
    Name_Import                         : constant Name_Id := N + $;
-   Name_Import_Exception               : constant Name_Id := N + $; -- VMS
    Name_Import_Function                : constant Name_Id := N + $; -- GNAT
    Name_Import_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Import_Procedure               : constant Name_Id := N + $; -- GNAT
@@ -838,7 +828,6 @@ package Snames is
    Name_Alignment                      : constant Name_Id := N + $;
    Name_Asm_Input                      : constant Name_Id := N + $; -- GNAT
    Name_Asm_Output                     : constant Name_Id := N + $; -- GNAT
-   Name_AST_Entry                      : constant Name_Id := N + $; -- VMS
    Name_Atomic_Always_Lock_Free        : constant Name_Id := N + $; -- GNAT
    Name_Bit                            : constant Name_Id := N + $; -- GNAT
    Name_Bit_Order                      : constant Name_Id := N + $;
@@ -1468,7 +1457,6 @@ package Snames is
       Attribute_Alignment,
       Attribute_Asm_Input,
       Attribute_Asm_Output,
-      Attribute_AST_Entry,
       Attribute_Atomic_Always_Lock_Free,
       Attribute_Bit,
       Attribute_Bit_Order,
@@ -1761,13 +1749,11 @@ package Snames is
       Pragma_Extensions_Allowed,
       Pragma_External_Name_Casing,
       Pragma_Favor_Top_Level,
-      Pragma_Float_Representation,
       Pragma_Implicit_Packing,
       Pragma_Initialize_Scalars,
       Pragma_Interrupt_State,
       Pragma_License,
       Pragma_Locking_Policy,
-      Pragma_Long_Float,
       Pragma_Loop_Optimize,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
@@ -1841,7 +1827,6 @@ package Snames is
       Pragma_Elaborate_All,
       Pragma_Elaborate_Body,
       Pragma_Export,
-      Pragma_Export_Exception,
       Pragma_Export_Function,
       Pragma_Export_Object,
       Pragma_Export_Procedure,
@@ -1854,7 +1839,6 @@ package Snames is
       Pragma_Implementation_Defined,
       Pragma_Implemented,
       Pragma_Import,
-      Pragma_Import_Exception,
       Pragma_Import_Function,
       Pragma_Import_Object,
       Pragma_Import_Procedure,
@@ -1953,7 +1937,6 @@ package Snames is
       --  special processing required to deal with the fact that their names
       --  match existing attribute names.
 
-      Pragma_AST_Entry,
       Pragma_CPU,
       Pragma_Dispatching_Domain,
       Pragma_Fast_Math,
@@ -2046,12 +2029,12 @@ package Snames is
    --  Test to see if the name N is the name of an operator symbol
 
    function Is_Pragma_Name (N : Name_Id) return Boolean;
-   --  Test to see if the name N is the name of a recognized pragma. Note that
-   --  pragmas AST_Entry, CPU, Dispatching_Domain, Fast_Math,
-   --  Interrupt_Priority, Lock_Free, Priority, Storage_Size, and Storage_Unit
-   --  are recognized as pragmas by this function even though their names are
-   --  separate from the other pragma names. For this reason, clients should
-   --  always use this function, rather than do range tests on Name_Id values.
+   --  Test to see if the name N is the name of a recognized pragma. Note
+   --  that pragmas CPU, Dispatching_Domain, Fast_Math, Interrupt_Priority,
+   --  Lock_Free, Priority, Storage_Size, and Storage_Unit are recognized
+   --  as pragmas by this function even though their names are separate from
+   --  the other pragma names. For this reason, clients should always use
+   --  this function, rather than do range tests on Name_Id values.
 
    function Is_Configuration_Pragma_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized configuration
@@ -2091,10 +2074,8 @@ package Snames is
    --  Returns Id of pragma corresponding to given name. Returns Unknown_Pragma
    --  if N is not a name of a known (Ada defined or GNAT-specific) pragma.
    --  Note that the function also works correctly for names of pragmas that
-   --  are not included in the main list of pragma Names (AST_Entry, CPU,
-   --  Dispatching_Domain, Interrupt_Priority, Lock_Free, Priority,
-   --  Storage_Size, and Storage_Unit (e.g. Name_Storage_Size returns
-   --  Pragma_Storage_Size).
+   --  are not included in the main list of pragma Names (e.g. Name_CPU returns
+   --  Pragma_CPU).
 
    function Get_Queuing_Policy_Id (N : Name_Id) return Queuing_Policy_Id;
    --  Returns Id of queuing policy corresponding to given name. It is an error

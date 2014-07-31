@@ -2068,13 +2068,11 @@ package Einfo is
 --       access to subprograms (JGNAT only). Set to Empty unless an export,
 --       import, or interface name pragma has explicitly specified an external
 --       name, in which case it references an N_String_Literal node for the
---       specified external name. In the case of exceptions, the field is set
---       by Import_Exception/Export_Exception (which can be used in OpenVMS
---       versions only). Note that if this field is Empty, and Is_Imported
---       or Is_Exported is set, then the default interface name is the name
---       of the entity, cased in a manner that is appropriate to the system
---       in use. Note that Interface_Name is ignored if an address clause
---       is present (since it is meaningless in this case).
+--       specified external name. Note that if this field is Empty, and
+--       Is_Imported or Is_Exported is set, then the default interface name
+--       is the name of the entity, cased in a manner that is appropriate to
+--       the system in use. Note that Interface_Name is ignored if an address
+--       clause is present (since it is meaningless in this case).
 --
 --       An additional special case usage of this field is in JGNAT for
 --       E_Component and E_Discriminant. JGNAT allows these entities to be
@@ -6252,8 +6250,7 @@ package Einfo is
    -----------------------------------
 
    type Float_Rep_Kind is (
-      IEEE_Binary,  -- IEEE 754p conform binary format
-      VAX_Native,   -- VAX D, F, G or H format
+      IEEE_Binary,  -- IEEE 754p conforming binary format
       AAMP);        -- AAMP format
 
    ---------------

@@ -1151,7 +1151,6 @@ begin
            Pragma_Assertion_Policy               |
            Pragma_Assume                         |
            Pragma_Assume_No_Invalid_Values       |
-           Pragma_AST_Entry                      |
            Pragma_All_Calls_Remote               |
            Pragma_Allow_Integer_Address          |
            Pragma_Annotate                       |
@@ -1201,7 +1200,6 @@ begin
            Pragma_Elaboration_Checks             |
            Pragma_Enable_Atomic_Synchronization  |
            Pragma_Export                         |
-           Pragma_Export_Exception               |
            Pragma_Export_Function                |
            Pragma_Export_Object                  |
            Pragma_Export_Procedure               |
@@ -1213,14 +1211,12 @@ begin
            Pragma_Favor_Top_Level                |
            Pragma_Fast_Math                      |
            Pragma_Finalize_Storage_Only          |
-           Pragma_Float_Representation           |
            Pragma_Global                         |
            Pragma_Ident                          |
            Pragma_Implementation_Defined         |
            Pragma_Implemented                    |
            Pragma_Implicit_Packing               |
            Pragma_Import                         |
-           Pragma_Import_Exception               |
            Pragma_Import_Function                |
            Pragma_Import_Object                  |
            Pragma_Import_Procedure               |
@@ -1252,7 +1248,6 @@ begin
            Pragma_Linker_Section                 |
            Pragma_Lock_Free                      |
            Pragma_Locking_Policy                 |
-           Pragma_Long_Float                     |
            Pragma_Loop_Invariant                 |
            Pragma_Loop_Optimize                  |
            Pragma_Loop_Variant                   |
