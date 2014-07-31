@@ -5051,6 +5051,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   const bool body_p = (Nkind (gnat_unit) == N_Package_Body
 		       || Nkind (gnat_unit) == N_Subprogram_Body);
   const Entity_Id gnat_unit_entity = Defining_Entity (gnat_unit);
+  Entity_Id gnat_entity;
   Node_Id gnat_pragma;
   /* Make the decl for the elaboration procedure.  */
   tree gnu_elab_proc_decl
@@ -5099,33 +5100,31 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   /* Process the unit itself.  */
   add_stmt (gnat_to_gnu (gnat_unit));
 
-  /* If we can inline, generate code for all the inlined subprograms.  */
-  if (optimize)
+  /* Generate code for all the inlined subprograms.  */
+  for (gnat_entity = First_Inlined_Subprogram (gnat_node);
+       Present (gnat_entity);
+       gnat_entity = Next_Inlined_Subprogram (gnat_entity))
     {
-      Entity_Id gnat_entity;
+      Node_Id gnat_body;
 
-      for (gnat_entity = First_Inlined_Subprogram (gnat_node);
-	   Present (gnat_entity);
-	   gnat_entity = Next_Inlined_Subprogram (gnat_entity))
+      /* Without optimization, process only the required subprograms.  */
+      if (!optimize && !Has_Pragma_Inline_Always (gnat_entity))
+	continue;
+
+      gnat_body = Parent (Declaration_Node (gnat_entity));
+      if (Nkind (gnat_body) != N_Subprogram_Body)
 	{
-	  Node_Id gnat_body = Parent (Declaration_Node (gnat_entity));
+	  /* ??? This happens when only the spec of a package is provided.  */
+	  if (No (Corresponding_Body (gnat_body)))
+	    continue;
 
-	  if (Nkind (gnat_body) != N_Subprogram_Body)
-	    {
-	      /* ??? This really should always be present.  */
-	      if (No (Corresponding_Body (gnat_body)))
-		continue;
-	      gnat_body
-		= Parent (Declaration_Node (Corresponding_Body (gnat_body)));
-	    }
-
-	  if (Present (gnat_body))
-	    {
-	      /* Define the entity first so we set DECL_EXTERNAL.  */
-	      gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
-	      add_stmt (gnat_to_gnu (gnat_body));
-	    }
+	  gnat_body
+	    = Parent (Declaration_Node (Corresponding_Body (gnat_body)));
 	}
+
+      /* Define the entity first so we set DECL_EXTERNAL.  */
+      gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
+      add_stmt (gnat_to_gnu (gnat_body));
     }
 
   /* Process any pragmas and actions following the unit.  */
@@ -5818,8 +5817,18 @@ gnat_to_gnu (Node_Id gnat_node)
 		   TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type))),
 		   gnat_temp);
 
-	    gnu_result = build_binary_op (ARRAY_REF, NULL_TREE,
-					  gnu_result, gnu_expr);
+	    gnu_result
+	      = build_binary_op (ARRAY_REF, NULL_TREE, gnu_result, gnu_expr);
+
+	    /* Array accesses are bound-checked so they cannot trap, but this
+	       is valid only if they are not hoisted ahead of the check.  We
+	       need to mark them as no-trap to get decent loop optimizations
+	       in the presence of -fnon-call-exceptions, so we do it when we
+	       know that the original expression had no side-effects.  */
+	    if (TREE_CODE (gnu_result) == ARRAY_REF
+		&& !(Nkind (gnat_temp) == N_Identifier
+		     && Ekind (Entity (gnat_temp)) == E_Constant))
+	      TREE_THIS_NOTRAP (gnu_result) = 1;
 	  }
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
@@ -9349,6 +9358,7 @@ set_gnu_expr_location_from_node (tree node, Node_Id gnat_node)
     {
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
       break;
 
     case COMPOUND_EXPR:
