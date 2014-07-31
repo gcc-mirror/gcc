@@ -1268,7 +1268,6 @@ package body Sem is
            Next     => Suppress_Stack_Entries);
       Suppress_Stack_Entries := Global_Suppress_Stack_Top;
       return;
-
    end Push_Global_Suppress_Stack_Entry;
 
    -------------------------------------

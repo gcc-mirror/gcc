@@ -3503,6 +3503,7 @@ package body Sem_Ch3 is
            and then Nkind (E) = N_Aggregate
          then
             Set_Etype (E, T);
+
          else
             Resolve (E, T);
          end if;
@@ -8407,9 +8408,16 @@ package body Sem_Ch3 is
 
       elsif not Private_Extension then
 
-         --  Add the _parent field in the derived type
+         --  Add the _parent field in the derived type. In ASIS mode there is
+         --  not enough semantic information for full expansion, but set the
+         --  parent subtype to allow resolution of selected components in
+         --  instance bodies.
 
-         Expand_Record_Extension (Derived_Type, Type_Def);
+         if ASIS_Mode then
+            Set_Parent_Subtype (Derived_Type, Parent_Type);
+         else
+            Expand_Record_Extension (Derived_Type, Type_Def);
+         end if;
 
          --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
          --  implemented interfaces if we are in expansion mode

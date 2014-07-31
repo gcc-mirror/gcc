@@ -12067,11 +12067,24 @@ package body Sem_Ch13 is
             return;
          end if;
 
+         --  Case of component size is greater than or equal to 64 and the
+         --  alignment of the array is at least as large as the alignment
+         --  of the component. We are definitely OK in this situation.
+
+         if Known_Component_Size (Atyp)
+           and then Component_Size (Atyp) >= 64
+           and then Known_Alignment (Atyp)
+           and then Known_Alignment (Ctyp)
+           and then Alignment (Atyp) >= Alignment (Ctyp)
+         then
+            return;
+         end if;
+
          --  Check actual component size
 
          if not Known_Component_Size (Atyp)
            or else not (Addressable (Component_Size (Atyp))
-                          and then Component_Size (Atyp) < 64)
+                         and then Component_Size (Atyp) < 64)
            or else Component_Size (Atyp) mod Esize (Ctyp) /= 0
          then
             No_Independence;
