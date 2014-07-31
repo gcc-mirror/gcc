@@ -1,3 +1,33 @@
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* a-stream.ads (Stream_Element_Offset): Now a signed 64bit type.
+	* i-cstrea.ads, s-crtl.ads (fseek64): Offset is always a 64bit value.
+	(ftell64): Always returns a 64bit value.
+	* cstreams.c (int64): New definition.
+	(_FILE_OFFSET_BITS): Set to 64 to enable 64bit offset support.
+	(__gnat_ftell64): Always returns a 64bit value. The implemenation now
+	uses ftello() on UNIX.
+	(__gnat_fseek64): Offset is always a 64bit value. The
+	implementation now uses fseeko() on UNIX.
+	* a-ststio.adb, s-direio.adb (Set_Position): Simplify code,
+	always use fseek64 to set the offset.
+	(Size): Simplify code, always use fseek64/ftell64.
+	* s-direio.ads (Count): Now an int64.
+	* g-socket.ads (Vector_Element): Adjust definition for Length
+	to be a size_t. This matches the C definition and avoid using
+	a 64bit integer on 32bit platforms now that Count is always 64bit.
+	* g-socthi-mingw.adb (Ada.Streams): Removed as not used anymore.
+	(C_Recvmsg): Change some conversion to account for change in
+	Vector_Element.
+	(C_Sendmsg): Likewise.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (Create_Standard): Remove handling of -gnatdm flag.
+	* debug.adb: Remove documentation of -gnatdm flag.
+	* gnat1drv.adb (Adjust_Global_Switches): Remove handling of
+	-gnatdm flag.
+
 2014-07-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* lib-writ.adb (Write_Unit_Information): Fix case where U =

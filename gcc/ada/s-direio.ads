@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package System.Direct_IO is
    type Operation is (Op_Read, Op_Write, Op_Other);
    --  Type used to record last operation (to optimize sequential operations)
 
-   subtype Count is Interfaces.C_Streams.long;
+   subtype Count is Interfaces.C_Streams.int64;
    --  The Count type in each instantiation is derived from this type
 
    subtype Positive_Count is Count range 1 .. Count'Last;

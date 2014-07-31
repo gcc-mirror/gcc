@@ -797,7 +797,7 @@ package GNAT.Sockets is
 
    type Vector_Element is record
       Base   : Stream_Element_Reference;
-      Length : Ada.Streams.Stream_Element_Count;
+      Length : Interfaces.C.size_t;
    end record;
 
    type Vector_Type is array (Integer range <>) of Vector_Element;

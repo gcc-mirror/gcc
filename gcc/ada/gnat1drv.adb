@@ -38,7 +38,6 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Frontend;
 with Gnatvsn;  use Gnatvsn;
-with Hostparm;
 with Inline;
 with Lib;      use Lib;
 with Lib.Writ; use Lib.Writ;
@@ -477,16 +476,10 @@ procedure Gnat1drv is
          Ttypes.Bytes_Big_Endian := not Ttypes.Bytes_Big_Endian;
       end if;
 
-      --  Deal with forcing OpenVMS switches True if debug flag M is set, but
-      --  record the setting of Targparm.Open_VMS_On_Target in True_VMS_Target
-      --  before doing this, so we know if we are in real OpenVMS or not.
+      --  Temporarily set True_VMS_Target to OpenVMS_On_Target. This is just
+      --  temporary, we no longer deal with the debug flag -gnatdm here.
 
       Opt.True_VMS_Target := Targparm.OpenVMS_On_Target;
-
-      if Debug_Flag_M then
-         Targparm.OpenVMS_On_Target := True;
-         Hostparm.OpenVMS := True;
-      end if;
 
       --  Activate front end layout if debug flag -gnatdF is set
 
