@@ -1,3 +1,7 @@
+2014-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr51879-7.c: Remove superfluous declaration of bar.
+
 2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c (test_vpaddd_f64): New.
