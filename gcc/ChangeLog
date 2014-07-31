@@ -1,3 +1,9 @@
+2014-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61964
+	* tree-ssa-tail-merge.c (gimple_equal_p): Handle non-SSA LHS solely
+	by structural equality.
+
 2014-07-31  Yury Gribov  <y.gribov@samsung.com>
 
 	* doc/cpp.texi (__SANITIZE_ADDRESS__): Updated description.
