@@ -1,5 +1,12 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* bindgen.adb (Gen_Output_File_Ada): Generate pragma Suppress
+	(Overflow_Check).
+	* gnatlink.adb (Process_Args): Remove generation of -gnato0,
+	no longer needed.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_ugn.texi: Document new switch -gnato0.
 	* sem_ch3.ads: Minor reformatting.
 	* gnatlink.adb (Process_Args): Compile bind file with -gnato0
