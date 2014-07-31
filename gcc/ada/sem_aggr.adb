@@ -2229,7 +2229,18 @@ package body Sem_Aggr is
                            Hi_Val := Table (J - 1).Highest;
 
                            if Lo_Val > Hi_Val + 1 then
-                              Choice := Table (J).Lo;
+
+                              --  Set location for flag, if the choice is an
+                              --  explicit Range, then point to the low bound,
+                              --  otherwise just point to  the choice.
+
+                              Choice := Table (J).Choice;
+
+                              if Nkind (Choice) = N_Range then
+                                 Choice := Low_Bound (Choice);
+                              end if;
+
+                              --  Now post appropriate message
 
                               if Hi_Val + 1 = Lo_Val - 1 then
                                  Error_Msg_N

@@ -1,3 +1,25 @@
+2014-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb: Complete documentation of -gnatd.z.
+
+2014-07-31  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Minor doc fixes.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Fix posting of missing
+	index value.
+
+2014-07-31  Tristan Gingold  <gingold@adacore.com>
+
+	* s-unstyp.ads (Packed_Byte): Make this type universal aliasing.
+	(Packed_Bytes1): Make component aliased.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* s-unstyp.ads, s-fileio.adb: Minor reformatting.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* inline.adb, gnat1drv.adb, exp_ch6.adb, s-fileio.adb: Minor

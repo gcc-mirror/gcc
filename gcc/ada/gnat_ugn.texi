@@ -14869,7 +14869,10 @@ tool argument.
 Incremental processing on a per-file basis. Source files are only
 processed if they have been modified, or if files they depend on have
 been modified. This is similar to the way gnatmake/gprbuild only
-compiles files that need to be recompiled.
+compiles files that need to be recompiled. Note that in this mode
+@command{gnatpp} is acting in place of the compiler, so if a project
+file is used, the switches set for the compiler should not be set
+to switches recognized by @command{gcc}.
 
 @item --pp-off=@var{xxx}
 @cindex @option{--pp-off} @command{gnatpp}
@@ -15319,7 +15322,10 @@ options:
 --incremental -- incremental processing on a per-file basis. Source files are
       only processed if they have been modified, or if files they depend
       on have been modified. This is similar to the way gnatmake/gprbuild
-      only compiles files that need to be recompiled.
+      only compiles files that need to be recompiled. Note that in this mode
+      @command{gnat2xml} is acting in place of the compiler, so if a project
+      file is used, the switches set for the compiler should not be set
+      to switches recognized by @command{gcc}.
 
 -j@var{n} -- In @option{--incremental} mode, use @var{n} @command{gnat2xml}
       processes to perform XML generation in parallel. If @var{n} is 0, then

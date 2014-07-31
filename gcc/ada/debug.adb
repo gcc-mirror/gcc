@@ -594,7 +594,12 @@ package body Debug is
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
 
-   --  d.z  Need documentation of this flag ???
+   --  d.z  Enable back end inlining on targets that have the GCC backend (ie.
+   --       all targets except AAMP, .NET and JVM). This switch has no effect
+   --       under GNATprove to avoid confusing the formal verification output,
+   --       and it has no effect if the sources are compiled with frontend
+   --       inlining (ie. -gnatN). This switch is currently used to evaluate
+   --       the impact of back end inlining.
 
    --  d.A  There seems to be a problem with ASIS if we activate the circuit
    --       for reading and writing the aspect specification hash table, so

@@ -991,17 +991,15 @@ package body System.File_IO is
          --  Note that we cannot use an aggregate here as File_Ptr is a
          --  class-wide access to a limited type (Root_Stream_Type).
 
-         File_Ptr.Is_Regular_File   :=
-           (is_regular_file (fileno (Stream)) /= 0);
+         File_Ptr.Is_Regular_File   := is_regular_file (fileno (Stream)) /= 0;
          File_Ptr.Is_System_File    := False;
          File_Ptr.Text_Encoding     := Text_Encoding;
          File_Ptr.Shared_Status     := Shared;
          File_Ptr.Access_Method     := Amethod;
          File_Ptr.Stream            := Stream;
-         File_Ptr.Form              :=
-           new String'(Formstr);
-         File_Ptr.Name              :=
-           new String'(Fullname (1 .. Full_Name_Len));
+         File_Ptr.Form              := new String'(Formstr);
+         File_Ptr.Name              := new String'(Fullname
+                                                     (1 .. Full_Name_Len));
          File_Ptr.Mode              := Mode;
          File_Ptr.Is_Temporary_File := Tempfile;
          File_Ptr.Encoding          := Encoding;
