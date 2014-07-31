@@ -5932,6 +5932,32 @@ package body Sem_Util is
       end loop;
    end Find_Placement_In_State_Space;
 
+   ------------------------
+   -- Find_Specific_Type --
+   ------------------------
+
+   function Find_Specific_Type (CW : Entity_Id) return Entity_Id is
+      Typ : Entity_Id := Root_Type (CW);
+
+   begin
+      if Ekind (Typ) = E_Incomplete_Type then
+         if From_Limited_With (Typ) then
+            Typ := Non_Limited_View (Typ);
+         else
+            Typ := Full_View (Typ);
+         end if;
+      end if;
+
+      if Is_Private_Type (Typ)
+        and then not Is_Tagged_Type (Typ)
+        and then Present (Full_View (Typ))
+      then
+         return Full_View (Typ);
+      else
+         return Typ;
+      end if;
+   end Find_Specific_Type;
+
    -----------------------------
    -- Find_Static_Alternative --
    -----------------------------

@@ -5860,10 +5860,14 @@ package body Exp_Util is
 
       Set_Is_Class_Wide_Equivalent_Type (Equiv_Type);
 
+      --  A class_wide equivalent type does not require initialization
+
+      Set_Suppress_Initialization (Equiv_Type);
+
       if not Is_Interface (Root_Typ) then
          Append_To (Comp_List,
            Make_Component_Declaration (Loc,
-             Defining_Identifier =>
+             Defining_Identifier  =>
                Make_Defining_Identifier (Loc, Name_uParent),
              Component_Definition =>
                Make_Component_Definition (Loc,
@@ -5882,9 +5886,9 @@ package body Exp_Util is
       Append_To (List_Def,
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Equiv_Type,
-          Type_Definition =>
+          Type_Definition     =>
             Make_Record_Definition (Loc,
-              Component_List =>
+              Component_List  =>
                 Make_Component_List (Loc,
                   Component_Items => Comp_List,
                   Variant_Part    => Empty))));

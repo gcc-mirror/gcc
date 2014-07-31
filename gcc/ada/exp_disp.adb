@@ -75,12 +75,6 @@ package body Exp_Disp is
    --  Ada 2005 (AI-251): Returns the fixed position in the dispatch table
    --  of the default primitive operations.
 
-   function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
-   --  Find specific type of a class-wide type, and handle the case of an
-   --  incomplete type coming either from a limited_with clause or from an
-   --  incomplete type declaration. Shouldn't this be in Sem_Util? It seems
-   --  like a general purpose semantic routine ???
-
    function Has_DT (Typ : Entity_Id) return Boolean;
    pragma Inline (Has_DT);
    --  Returns true if we generate a dispatch table for tagged type Typ
@@ -1986,25 +1980,6 @@ package body Exp_Disp is
          end;
       end if;
    end Expand_Interface_Thunk;
-
-   ------------------------
-   -- Find_Specific_Type --
-   ------------------------
-
-   function Find_Specific_Type (CW : Entity_Id) return Entity_Id is
-      Typ : Entity_Id := Root_Type (CW);
-
-   begin
-      if Ekind (Typ) = E_Incomplete_Type then
-         if From_Limited_With (Typ) then
-            Typ := Non_Limited_View (Typ);
-         else
-            Typ := Full_View (Typ);
-         end if;
-      end if;
-
-      return Typ;
-   end Find_Specific_Type;
 
    --------------------------
    -- Has_CPP_Constructors --

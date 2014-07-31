@@ -1,3 +1,17 @@
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads (Find_Specific_Type): Moved here from exp_disp.adb.
+	* sem_util.adb (Find_Specific_Type): If type is untagged private,
+	retrieve full view so that primitive operations can be located.
+	* exp_disp.adb Move Find_Specific_Type to sem_util.
+	* exp_ch4.adb (Expand_N_Op_Eq): If operands are class-wide, use
+	Find_Specific_Type to locate primitive equality.
+	* exp_util.adb (Make_CW_Equivalent_Type): A class_wide equivalent
+	type does not require initialization.
+	* exp_attr.adb (Compile_Stream_Body_In_Scope): Within an instance
+	body all visibility is established, and the enclosing package
+	declarations must not be installed.
+
 2014-07-31  Yannick Moy  <moy@adacore.com>
 
 	* sem_parg.adb, sem_prag.ads (Collect_Subprogram_Inputs_Outputs):

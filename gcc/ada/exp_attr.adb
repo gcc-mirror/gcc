@@ -106,6 +106,8 @@ package body Exp_Attr is
    --  We suppress checks for array/record reads, since the rule is that these
    --  are like assignments, out of range values due to uninitialized storage,
    --  or other invalid values do NOT cause a Constraint_Error to be raised.
+   --  If we are within an instance body all visibility has been established
+   --  already and there is no need to install the package.
 
    procedure Expand_Access_To_Protected_Op
      (N    : Node_Id;
@@ -630,6 +632,11 @@ package body Exp_Attr is
       if Is_Hidden (Arr)
         and then not In_Open_Scopes (Scop)
         and then Ekind (Scop) = E_Package
+
+        --  If we are within an instance body, then all visibility has been
+        --  established already and there is no need to install the package.
+
+        and then not In_Instance_Body
       then
          Push_Scope (Scop);
          Install_Visible_Declarations (Scop);
