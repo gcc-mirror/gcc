@@ -1,3 +1,8 @@
+2014-07-31  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR lto/61868
+	* gcc.dg/pr61868.c: New test.
+
 2014-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57397

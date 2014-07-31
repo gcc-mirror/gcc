@@ -1,3 +1,10 @@
+2014-07-31  Bingfeng Mei <bmei@broadcom.com>
+
+	PR lto/61868
+	* toplev.c (init_random_seed): Move piece of code never called to
+	set_random_seed.
+	(set_random_seed): see above.
+
 2014-07-31  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-loop.c (pass_tree_loop_init::execute): Remove dead code.
