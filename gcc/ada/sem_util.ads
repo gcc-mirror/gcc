@@ -568,6 +568,12 @@ package Sem_Util is
    --  Call is set to the node for the corresponding call. If the node N is not
    --  an actual parameter then Formal and Call are set to Empty.
 
+   function Find_Specific_Type (CW : Entity_Id) return Entity_Id;
+   --  Find specific type of a class-wide type, and handle the case of an
+   --  incomplete type coming either from a limited_with clause or from an
+   --  incomplete type declaration. If resulting type is private return its
+   --  full view.
+
    function Find_Body_Discriminal
      (Spec_Discriminant : Entity_Id) return Entity_Id;
    --  Given a discriminant of the record type that implements a task or
