@@ -6055,7 +6055,7 @@ package body Checks is
 
       --  For an untagged derived type, use the discriminants of the parent
       --  which have been renamed in the derivation, possibly by a one-to-many
-      --  discriminant constraint. For non-tagged type, initially get the Etype
+      --  discriminant constraint. For untagged type, initially get the Etype
       --  of the prefix
 
       else

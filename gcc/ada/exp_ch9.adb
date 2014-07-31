@@ -2511,8 +2511,7 @@ package body Exp_Ch9 is
    --  Start of processing for Build_Wrapper_Spec
 
    begin
-      --  There is no point in building wrappers for non-tagged concurrent
-      --  types.
+      --  No point in building wrappers for untagged concurrent types
 
       pragma Assert (Is_Tagged_Type (Obj_Typ));
 

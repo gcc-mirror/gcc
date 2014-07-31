@@ -131,9 +131,9 @@ package body Exp_Strm is
    --      return V;
    --    end typSI[_nnn]
 
-   --  Note: the suffix [_nnn] is present for non-tagged types, where we
-   --  generate a local subprogram at the point of the occurrence of the
-   --  attribute reference, so the name must be unique.
+   --  Note: the suffix [_nnn] is present for untagged types, where we generate
+   --  a local subprogram at the point of the occurrence of the attribute
+   --  reference, so the name must be unique.
 
    procedure Build_Array_Input_Function
      (Loc  : Source_Ptr;

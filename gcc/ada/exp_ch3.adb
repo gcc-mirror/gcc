@@ -148,8 +148,8 @@ package body Exp_Ch3 is
    --  The resulting operation is a TSS subprogram.
 
    procedure Build_Variant_Record_Equality (Typ  : Entity_Id);
-   --  Create An Equality function for the non-tagged variant record Typ
-   --  and attach it to the TSS list
+   --  Create An Equality function for the untagged variant record Typ and
+   --  attach it to the TSS list
 
    procedure Check_Stream_Attributes (Typ : Entity_Id);
    --  Check that if a limited extension has a parent with user-defined stream
@@ -242,7 +242,7 @@ package body Exp_Ch3 is
       CL     : Node_Id;
       Discrs : Elist_Id := New_Elmt_List) return List_Id;
    --  Building block for variant record equality. Defined to share the code
-   --  between the tagged and non-tagged case. Given a Component_List node CL,
+   --  between the tagged and untagged case. Given a Component_List node CL,
    --  it generates an 'if' followed by a 'case' statement that compares all
    --  components of local temporaries named X and Y (that are declared as
    --  formals at some upper level). E provides the Sloc to be used for the
@@ -256,7 +256,7 @@ package body Exp_Ch3 is
      (E : Entity_Id;
       L : List_Id) return Node_Id;
    --  Building block for variant record equality. Defined to share the code
-   --  between the tagged and non-tagged case. Given the list of components
+   --  between the tagged and untagged case. Given the list of components
    --  (or discriminants) L, it generates a return statement that compares all
    --  components of local temporaries named X and Y (that are declared as
    --  formals at some upper level). E provides the Sloc to be used for the
@@ -1752,12 +1752,10 @@ package body Exp_Ch3 is
       --  objects on list Decls.
 
       function Build_Init_Call_Thru (Parameters : List_Id) return List_Id;
-      --  Given a non-tagged type-derivation that declares discriminants,
-      --  such as
+      --  Given a untagged type-derivation that declares discriminants, e.g.
       --
-      --  type R (R1, R2 : Integer) is record ... end record;
-      --
-      --  type D (D1 : Integer) is new R (1, D1);
+      --     type R (R1, R2 : Integer) is record ... end record;
+      --     type D (D1 : Integer) is new R (1, D1);
       --
       --  we make the _init_proc of D be
       --
@@ -5840,7 +5838,7 @@ package body Exp_Ch3 is
 
             --  Handle C++ constructor calls. Note that we do not check that
             --  Typ is a tagged type since the equivalent Ada type of a C++
-            --  class that has no virtual methods is a non-tagged limited
+            --  class that has no virtual methods is a untagged limited
             --  record type.
 
             elsif Is_CPP_Constructor_Call (Expr) then
@@ -6802,7 +6800,7 @@ package body Exp_Ch3 is
          Next_Component (Comp);
       end loop;
 
-      --  Handle constructors of non-tagged CPP_Class types
+      --  Handle constructors of untagged CPP_Class types
 
       if not Is_Tagged_Type (Def_Id) and then Is_CPP_Class (Def_Id) then
          Set_CPP_Constructors (Def_Id);
@@ -7019,7 +7017,7 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-      --  In the non-tagged case, ever since Ada 83 an equality function must
+      --  In the untagged case, ever since Ada 83 an equality function must
       --  be  provided for variant records that are not unchecked unions.
       --  In Ada 2012 the equality function composes, and thus must be built
       --  explicitly just as for tagged records.

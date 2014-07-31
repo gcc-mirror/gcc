@@ -169,10 +169,10 @@ package body Sem_Ch13 is
       Nam  : TSS_Name_Type);
    --  Create a subprogram renaming of a given stream attribute to the
    --  designated subprogram and then in the tagged case, provide this as a
-   --  primitive operation, or in the non-tagged case make an appropriate TSS
+   --  primitive operation, or in the untagged case make an appropriate TSS
    --  entry. This is more properly an expansion activity than just semantics,
-   --  but the presence of user-defined stream functions for limited types is a
-   --  legality check, which is why this takes place here rather than in
+   --  but the presence of user-defined stream functions for limited types
+   --  is a legality check, which is why this takes place here rather than in
    --  exp_ch13, where it was previously. Nam indicates the name of the TSS
    --  function to be generated.
    --
@@ -11206,7 +11206,7 @@ package body Sem_Ch13 is
 
          return True;
 
-      --  Check for case of non-tagged derived type whose parent either has
+      --  Check for case of untagged derived type whose parent either has
       --  primitive operations, or is a by reference type (RM 13.1(10)). In
       --  this case we do not output a Too_Late message, since there is no
       --  earlier point where the rep item could be placed to make it legal.

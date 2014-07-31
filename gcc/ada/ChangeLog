@@ -1,5 +1,12 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch5.adb, sem_ch3.adb, exp_ch7.adb, exp_util.adb, exp_ch9.adb,
+	sem_ch7.adb, checks.adb, s-exctra.adb, exp_ch6.adb, exp_disp.adb,
+	exp_dist.adb, sem_ch13.adb, exp_strm.adb, exp_ch3.adb: Minor
+	reformatting.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch13.adb: Minor reformatting.
 
 2014-07-31  Ed Schonberg  <schonberg@adacore.com>
