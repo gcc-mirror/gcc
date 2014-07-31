@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,7 @@ package Style is
      renames Style_Inst.Check_Apostrophe;
    --  Called after scanning an apostrophe to check spacing
 
-   procedure Check_Arrow
+   procedure Check_Arrow (Inside_Depends : Boolean := False)
      renames Style_Inst.Check_Arrow;
    --  Called after scanning out an arrow to check spacing
 
@@ -180,7 +180,7 @@ package Style is
    --  procedure is called only if THEN appears at the start of a line with
    --  Token_Ptr pointing to the THEN keyword.
 
-   procedure Check_Unary_Plus_Or_Minus
+   procedure Check_Unary_Plus_Or_Minus (Inside_Depends : Boolean := False)
      renames Style_Inst.Check_Unary_Plus_Or_Minus;
    --  Called after scanning a unary plus or minus to check spacing
 

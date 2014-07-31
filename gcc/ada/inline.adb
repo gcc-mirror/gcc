@@ -1828,6 +1828,10 @@ package body Inline is
       --    - functions that have exception handlers
       --    - functions that have some enclosing body containing instantiations
       --      that appear before the corresponding generic body.
+      --    - functions that have some of the following contracts (and the
+      --      sources are compiled with assertions enabled):
+      --         - Pre/post condition
+      --         - Contract cases
 
       procedure Generate_Body_To_Inline
         (N              : Node_Id;
@@ -1926,6 +1930,9 @@ package body Inline is
          Max_Size   : constant := 10;
          Stat_Count : Integer := 0;
 
+         function Has_Excluded_Contract return Boolean;
+         --  Check for contracts that cannot be inlined
+
          function Has_Excluded_Declaration (Decls : List_Id) return Boolean;
          --  Check for declarations that make inlining not worthwhile
 
@@ -1955,6 +1962,70 @@ package body Inline is
          --  If the body of the subprogram includes a call that returns an
          --  unconstrained type, the secondary stack is involved, and it
          --  is not worth inlining.
+
+         ---------------------------
+         -- Has_Excluded_Contract --
+         ---------------------------
+
+         function Has_Excluded_Contract return Boolean is
+
+            function Check_Excluded_Contracts (E : Entity_Id) return Boolean;
+            --  Return True if the subprogram E has unsupported contracts
+
+            function Check_Excluded_Contracts (E : Entity_Id) return Boolean is
+               Items : constant Node_Id := Contract (E);
+
+            begin
+               if Present (Items) then
+                  if Present (Pre_Post_Conditions (Items))
+                    or else Present (Contract_Test_Cases (Items))
+                  then
+                     Cannot_Inline
+                       ("cannot inline & (non-allowed contract)?",
+                        N, Subp);
+                     return True;
+                  end if;
+               end if;
+
+               return False;
+            end Check_Excluded_Contracts;
+
+            Decl : Node_Id;
+            P_Id : Pragma_Id;
+         begin
+            if Check_Excluded_Contracts (Spec_Id)
+              or else Check_Excluded_Contracts (Body_Id)
+            then
+               return True;
+            end if;
+
+            --  Check pragmas located in the body which may generate contracts
+
+            if Present (Declarations (N)) then
+               Decl := First (Declarations (N));
+               while Present (Decl) loop
+                  if Nkind (Decl) = N_Pragma then
+                     P_Id := Get_Pragma_Id (Pragma_Name (Decl));
+
+                     if P_Id = Pragma_Contract_Cases or else
+                        P_Id = Pragma_Pre            or else
+                        P_Id = Pragma_Precondition   or else
+                        P_Id = Pragma_Post           or else
+                        P_Id = Pragma_Postcondition
+                     then
+                        Cannot_Inline
+                          ("cannot inline & (non-allowed contract)?",
+                           N, Subp);
+                        return True;
+                     end if;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end if;
+
+            return False;
+         end Has_Excluded_Contract;
 
          ------------------------------
          -- Has_Excluded_Declaration --
@@ -2443,6 +2514,16 @@ package body Inline is
          elsif Present (Body_To_Inline (Decl)) then
             return False;
 
+         --  Cannot build the body to inline if the subprogram has unsupported
+         --  contracts that will be expanded into code (if assertions are not
+         --  enabled these pragmas will be removed by Generate_Body_To_Inline
+         --  to avoid reporting spurious errors).
+
+         elsif Assertions_Enabled
+           and then Has_Excluded_Contract
+         then
+            return False;
+
          --  Subprograms that have return statements in the middle of the
          --  body are inlined with gotos. GNATprove does not currently
          --  support gotos, so we prevent such inlining.
@@ -2660,7 +2741,10 @@ package body Inline is
                Nxt := Next (Decl);
 
                if Nkind (Decl) = N_Pragma
-                 and then Nam_In (Pragma_Name (Decl), Name_Unreferenced,
+                 and then Nam_In (Pragma_Name (Decl), Name_Contract_Cases,
+                                                      Name_Precondition,
+                                                      Name_Postcondition,
+                                                      Name_Unreferenced,
                                                       Name_Unmodified)
                then
                   Remove (Decl);

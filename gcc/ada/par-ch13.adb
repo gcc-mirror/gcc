@@ -170,6 +170,8 @@ package body Ch13 is
       Scan; -- past WITH
       Aspects := Empty_List;
 
+      --  Loop to scan aspects
+
       loop
          OK := True;
 
@@ -445,6 +447,12 @@ package body Ch13 is
                   end if;
                end if;
 
+               --  Note if inside Depends aspect
+
+               if A_Id = Aspect_Depends then
+                  Inside_Depends := True;
+               end if;
+
                --  Parse the aspect definition depening on the expected
                --  argument kind.
 
@@ -460,6 +468,10 @@ package body Ch13 is
                      Aspect_Argument (A_Id) = Optional_Expression);
                   Set_Expression (Aspect, P_Expression);
                end if;
+
+               --  Unconditionally reset flag for Inside_Depends
+
+               Inside_Depends := False;
             end if;
 
             --  Add the aspect to the resulting list only when it was properly

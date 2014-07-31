@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -298,13 +298,19 @@ package body Ch2 is
          Import_Check_Required    := False;
       end if;
 
+      --  Set global to indicate if we are within a Depends pragma
+
+      if Chars (Ident_Node) = Name_Depends then
+         Inside_Depends := True;
+      end if;
+
       --  Scan arguments. We assume that arguments are present if there is
       --  a left paren, or if a semicolon is missing and there is another
       --  token on the same line as the pragma name.
 
       if Token = Tok_Left_Paren
         or else (Token /= Tok_Semicolon
-                   and then not Token_Is_At_Start_Of_Line)
+                  and then not Token_Is_At_Start_Of_Line)
       then
          Set_Pragma_Argument_Associations (Prag_Node, New_List);
          T_Left_Paren;
@@ -348,6 +354,11 @@ package body Ch2 is
       end if;
 
       Semicolon_Loc := Token_Ptr;
+
+      --  Cancel indication of being within Depends pragm. Can be done
+      --  unconditionally, since quicker than doing a test.
+
+      Inside_Depends := False;
 
       --  Now we have two tasks left, we need to scan out the semicolon
       --  following the pragma, and we have to call Par.Prag to process
