@@ -18053,6 +18053,11 @@ pragma Linker_Options ("-lmy_lib");
 @end smallexample
 @end itemize
 
+Note that you may also load a library dynamically at
+run time given its filename, as illustrated in the GNAT ``plugins'' example
+in the directory @file{share/examples/gnat/plugins} within the GNAT
+install area.
+
 @node Stand-alone Ada Libraries
 @section Stand-alone Ada Libraries
 @cindex Stand-alone library, building, using

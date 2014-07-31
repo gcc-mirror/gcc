@@ -5973,12 +5973,12 @@ package body Freeze is
          return;
       end if;
 
-      --  Loop for looking at the right place to insert the freeze nodes,
-      --  exiting from the loop when it is appropriate to insert the freeze
-      --  node before the current node P.
-
-      --  Also checks some special exceptions to the freezing rules. These
-      --  cases result in a direct return, bypassing the freeze action.
+      --  Examine the enclosing context by climbing the parent chain. The
+      --  traversal serves two purposes - to detect scenarios where freezeing
+      --  is not needed and to find the proper insertion point for the freeze
+      --  nodes. Although somewhat similar to Insert_Actions, this traversal
+      --  is freezing semantics-sensitive. Inserting freeze nodes blindly in
+      --  the tree may result in types being frozen too early.
 
       P := N;
       loop

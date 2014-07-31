@@ -34,9 +34,9 @@ with Ada.IO_Exceptions;          use Ada.IO_Exceptions;
 with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
-with Interfaces.C_Streams; use Interfaces.C_Streams;
+with Interfaces.C_Streams;       use Interfaces.C_Streams;
 
-with System.Case_Util;    use System.Case_Util;
+with System.Case_Util;           use System.Case_Util;
 with System.CRTL;
 with System.OS_Lib;
 with System.Soft_Links;
@@ -120,12 +120,12 @@ package body System.File_IO is
       Creat   : Boolean;
       Amethod : Character;
       Fopstr  : out Fopen_String);
-   --  Determines proper open mode for a file to be opened in the given
-   --  Ada mode. Text is true for a text file and false otherwise, and
-   --  Creat is true for a create call, and False for an open call. The
-   --  value stored in Fopstr is a nul-terminated string suitable for a
-   --  call to fopen or freopen. Amethod is the character designating
-   --  the access method from the Access_Method field of the FCB.
+   --  Determines proper open mode for a file to be opened in the given Ada
+   --  mode. Text is true for a text file and false otherwise, and Creat is
+   --  true for a create call, and False for an open call. The value stored
+   --  in Fopstr is a nul-terminated string suitable for a call to fopen or
+   --  freopen. Amethod is the character designating the access method from
+   --  the Access_Method field of the FCB.
 
    function Errno_Message
      (Name  : String;
@@ -386,10 +386,6 @@ package body System.File_IO is
    --------------
    -- Finalize --
    --------------
-
-   --  Note: we do not need to worry about locking against multiple task access
-   --  in this routine, since it is called only from the environment task just
-   --  before terminating execution.
 
    procedure Finalize (V : in out File_IO_Clean_Up_Type) is
       pragma Warnings (Off, V);
