@@ -225,26 +225,8 @@ package body Set_Targ is
             Write_Str ("pragma Float_Representation (");
 
             case Float_Rep is
-               when IEEE_Binary =>
-                  Write_Str ("IEEE");
-
-               when VAX_Native =>
-                  case Digs is
-                     when  6 =>
-                        Write_Str ("VAXF");
-
-                     when  9 =>
-                        Write_Str ("VAXD");
-
-                     when 15 =>
-                        Write_Str ("VAXG");
-
-                     when others =>
-                        Write_Str ("VAX_");
-                        Write_Int (Int (Digs));
-                  end case;
-
-               when AAMP =>         Write_Str ("AAMP");
+               when IEEE_Binary => Write_Str ("IEEE");
+               when AAMP        => Write_Str ("AAMP");
             end case;
 
             Write_Line (", " & T (1 .. Last) & ");");
@@ -459,8 +441,6 @@ package body Set_Targ is
             case E.FLOAT_REP is
                when IEEE_Binary =>
                   AddC ('I');
-               when VAX_Native  =>
-                  AddC ('V');
                when AAMP        =>
                   AddC ('A');
             end case;
@@ -709,8 +689,6 @@ package body Set_Targ is
             case Buffer (N) is
                when 'I'    =>
                   E.FLOAT_REP := IEEE_Binary;
-               when 'V'    =>
-                  E.FLOAT_REP := VAX_Native;
                when 'A'    =>
                   E.FLOAT_REP := AAMP;
                when others =>

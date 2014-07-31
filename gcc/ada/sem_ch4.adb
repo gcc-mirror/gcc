@@ -74,17 +74,17 @@ package body Sem_Ch4 is
    --  operand has been analyzed. See Analyze_Concatenation for details.
 
    procedure Analyze_Expression (N : Node_Id);
-   --  For expressions that are not names, this is just a call to analyze.
-   --  If the expression is a name, it may be a call to a parameterless
-   --  function, and if so must be converted into an explicit call node
-   --  and analyzed as such. This deproceduring must be done during the first
-   --  pass of overload resolution, because otherwise a procedure call with
-   --  overloaded actuals may fail to resolve.
+   --  For expressions that are not names, this is just a call to analyze. If
+   --  the expression is a name, it may be a call to a parameterless function,
+   --  and if so must be converted into an explicit call node and analyzed as
+   --  such. This deproceduring must be done during the first pass of overload
+   --  resolution, because otherwise a procedure call with overloaded actuals
+   --  may fail to resolve.
 
    procedure Analyze_Operator_Call (N : Node_Id; Op_Id : Entity_Id);
-   --  Analyze a call of the form "+"(x, y), etc. The prefix of the call
-   --  is an operator name or an expanded name whose selector is an operator
-   --  name, and one possible interpretation is as a predefined operator.
+   --  Analyze a call of the form "+"(x, y), etc. The prefix of the call is an
+   --  operator name or an expanded name whose selector is an operator name,
+   --  and one possible interpretation is as a predefined operator.
 
    procedure Analyze_Overloaded_Selected_Component (N : Node_Id);
    --  If the prefix of a selected_component is overloaded, the proper
@@ -132,7 +132,7 @@ package body Sem_Ch4 is
    procedure Check_Misspelled_Selector
      (Prefix : Entity_Id;
       Sel    : Node_Id);
-   --  Give possible misspelling diagnostic if Sel is likely to be a mis-
+   --  Give possible misspelling message if Sel seems likely to be a mis-
    --  spelling of one of the selectors of the Prefix. This is called by
    --  Analyze_Selected_Component after producing an invalid selector error
    --  message.
@@ -147,16 +147,16 @@ package body Sem_Ch4 is
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  L and R are the operands of an arithmetic operator. Find
-   --  consistent pairs of interpretations for L and R that have a
-   --  numeric type consistent with the semantics of the operator.
+   --  L and R are the operands of an arithmetic operator. Find consistent
+   --  pairs of interpretations for L and R that have a numeric type consistent
+   --  with the semantics of the operator.
 
    procedure Find_Comparison_Types
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  L and R are operands of a comparison operator. Find consistent
-   --  pairs of interpretations for L and R.
+   --  L and R are operands of a comparison operator. Find consistent pairs of
+   --  interpretations for L and R.
 
    procedure Find_Concatenation_Types
      (L, R  : Node_Id;

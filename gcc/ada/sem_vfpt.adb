@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,6 @@ package body Sem_VFpt is
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), VAXDF_Digits);
-      Set_Float_Rep     (Base_Type (E), VAX_Native);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 64);
@@ -62,7 +61,6 @@ package body Sem_VFpt is
       Init_Size         (Base_Type (E), 32);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), VAXFF_Digits);
-      Set_Float_Rep     (Base_Type (E), VAX_Native);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 32);
@@ -82,7 +80,6 @@ package body Sem_VFpt is
       Init_Size         (Base_Type (E), 64);
       Init_Alignment    (Base_Type (E));
       Init_Digits_Value (Base_Type (E), VAXGF_Digits);
-      Set_Float_Rep     (Base_Type (E), VAX_Native);
       Set_Float_Bounds  (Base_Type (E));
 
       Init_Size         (E, 64);

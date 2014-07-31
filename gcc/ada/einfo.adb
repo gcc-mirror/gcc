@@ -8178,9 +8178,8 @@ package body Einfo is
             return Empty;
          end if;
 
-      --  For non-incomplete, non-private types, return the type itself
-      --  Also for entities that are not types at all return the entity
-      --  itself.
+      --  For non-incomplete, non-private types, return the type itself Also
+      --  for entities that are not types at all return the entity itself.
 
       else
          return Id;
@@ -8191,7 +8190,10 @@ package body Einfo is
    -- Vax_Float --
    ---------------
 
+   --  To be removed ???
+
    function Vax_Float (Id : E) return B is
+      pragma Unreferenced (Id);
    begin
       return False;
    end Vax_Float;
