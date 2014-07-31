@@ -146,7 +146,9 @@ package Checks is
    --  Always call this routine rather than calling Set_Do_Overflow_Check to
    --  set an explicit value of True, to ensure handling the local raise case.
    --  Note that this call has no effect for MOD, REM, and unary "+" for which
-   --  overflow is never possible in any case.
+   --  overflow is never possible in any case. In addition, we do not set the
+   --  flag for unconstrained floating-point type operations, since we want to
+   --  allow for the generation of IEEE infinities in such cases.
 
    procedure Activate_Range_Check (N : Node_Id);
    pragma Inline (Activate_Range_Check);

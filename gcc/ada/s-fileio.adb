@@ -29,19 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;  use Ada.Finalization;
-with Ada.IO_Exceptions; use Ada.IO_Exceptions;
+with Ada.Finalization;           use Ada.Finalization;
+with Ada.IO_Exceptions;          use Ada.IO_Exceptions;
+with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 
-with System.CRTL;
-
 with System.Case_Util;    use System.Case_Util;
+with System.CRTL;
 with System.OS_Lib;
 with System.Soft_Links;
-
-with Ada.Unchecked_Deallocation;
 
 package body System.File_IO is
 
@@ -49,8 +47,8 @@ package body System.File_IO is
 
    package SSL renames System.Soft_Links;
 
-   use type Interfaces.C.int;
    use type CRTL.size_t;
+   use type Interfaces.C.int;
 
    subtype String_Access is System.OS_Lib.String_Access;
    procedure Free (X : in out String_Access) renames System.OS_Lib.Free;
@@ -1162,6 +1160,17 @@ package body System.File_IO is
             To_Lower (Fullname (1 .. Full_Name_Len));
          end if;
 
+         --  We need to lock all tasks from this point. This is needed as in
+         --  the case of a shared file we want to ensure that the file is
+         --  inserted into the chain with the shared status. We must be sure
+         --  that this file won't be closed (and then the runtime file
+         --  descriptor removed from the chain and released) before we leave
+         --  this routine.
+
+         --  Take a task lock to protect Open_Files
+
+         SSL.Lock_Task.all;
+
          --  If Shared=None or Shared=Yes, then check for the existence of
          --  another file with exactly the same full name.
 
@@ -1170,10 +1179,6 @@ package body System.File_IO is
                P : AFCB_Ptr;
 
             begin
-               --  Take a task lock to protect Open_Files
-
-               SSL.Lock_Task.all;
-
                --  Search list of open files
 
                P := Open_Files;
@@ -1213,13 +1218,6 @@ package body System.File_IO is
 
                   P := P.Next;
                end loop;
-
-               SSL.Unlock_Task.all;
-
-            exception
-               when others =>
-                  SSL.Unlock_Task.all;
-                  raise;
             end;
          end if;
 
@@ -1314,6 +1312,16 @@ package body System.File_IO is
 
       Chain_File (File_Ptr);
       Append_Set (File_Ptr);
+
+      --  We can now safely release the global lock, as the File_Ptr is
+      --  inserted into the global file list.
+
+      SSL.Unlock_Task.all;
+
+   exception
+      when others =>
+         SSL.Unlock_Task.all;
+         raise;
    end Open;
 
    ------------------------
