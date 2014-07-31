@@ -4664,7 +4664,10 @@ package body Sem_Attr is
          --  process of being preanalyzed. Perform the semantic checks now
          --  before the pragma is relocated and/or expanded.
 
-         if In_Spec_Expression then
+         --  For a generic subprogram, postconditions are preanalyzed as well
+         --  for name capture, and still appear within an aspect spec.
+
+         if In_Spec_Expression or Inside_A_Generic then
             Prag := N;
             while Present (Prag)
                and then not Nkind_In (Prag, N_Aspect_Specification,
@@ -4677,10 +4680,11 @@ package body Sem_Attr is
             end loop;
 
             --  In ASIS mode, the aspect itself is analyzed, in addition to the
-            --  corresponding pragma. Do not issue errors when analyzing the
-            --  aspect.
+            --  corresponding pragma. Don't issue errors when analyzing aspect.
 
-            if Nkind (Prag) = N_Aspect_Specification then
+            if Nkind (Prag) = N_Aspect_Specification
+              and then Chars (Identifier (Prag)) = Name_Post
+            then
                null;
 
             --  In all other cases the related context must be a pragma
