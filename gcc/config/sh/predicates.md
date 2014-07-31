@@ -489,6 +489,10 @@
       rtx mem_rtx = MEM_P (op) ? op : SUBREG_REG (op);
       rtx x = XEXP (mem_rtx, 0);
 
+      if (! ALLOW_INDEXED_ADDRESS
+	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
+	return false;
+
       if ((mode == QImode || mode == HImode)
 	  && GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
@@ -566,6 +570,10 @@
     {
       rtx mem_rtx = MEM_P (op) ? op : SUBREG_REG (op);
       rtx x = XEXP (mem_rtx, 0);
+
+      if (! ALLOW_INDEXED_ADDRESS
+	  && GET_CODE (x) == PLUS && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1)))
+	return false;
 
       if ((mode == QImode || mode == HImode)
 	  && GET_CODE (x) == PLUS
