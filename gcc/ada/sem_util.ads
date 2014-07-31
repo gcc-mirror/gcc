@@ -1236,7 +1236,7 @@ package Sem_Util is
    --  Used to test if AV is an acceptable formal for an OUT or IN OUT formal.
    --  Note that the Is_Variable function is not quite the right test because
    --  this is a case in which conversions whose expression is a variable (in
-   --  the Is_Variable sense) with a non-tagged type target are considered view
+   --  the Is_Variable sense) with an untagged type target are considered view
    --  conversions and hence variables.
 
    function Is_Partially_Initialized_Type
@@ -1260,7 +1260,7 @@ package Sem_Util is
 
    function Is_Potentially_Persistent_Type (T : Entity_Id) return Boolean;
    --  Determines if type T is a potentially persistent type. A potentially
-   --  persistent type is defined (recursively) as a scalar type, a non-tagged
+   --  persistent type is defined (recursively) as a scalar type, an untagged
    --  record whose components are all of a potentially persistent type, or an
    --  array with all static constraints whose component type is potentially
    --  persistent. A private type is potentially persistent if the full type
@@ -1371,7 +1371,7 @@ package Sem_Util is
       Use_Original_Node : Boolean := True) return Boolean;
    --  Determines if the tree referenced by N represents a variable, i.e. can
    --  appear on the left side of an assignment. There is one situation (formal
-   --  parameters) in which non-tagged type conversions are also considered
+   --  parameters) in which untagged type conversions are also considered
    --  variables, but Is_Variable returns False for such cases, since it has
    --  no knowledge of the context. Note that this is the point at which
    --  Assignment_OK is checked, and True is returned for any tree thus marked.

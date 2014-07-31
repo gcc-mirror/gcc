@@ -6212,11 +6212,19 @@ package body Prj.Nmsc is
 
                   exception
                      when Use_Error =>
+
+                        --  Output message with name of directory. Note that we
+                        --  use the ~ insertion method here in case the name
+                        --  has special characters in it.
+
+                        Error_Msg_Strlen := Full_Path_Name'Length;
+                        Error_Msg_String (1 .. Error_Msg_Strlen) :=
+                          Full_Path_Name.all;
                         Error_Msg
                           (Data.Flags,
-                           "~could not create " & Create &
-                           " directory " & Full_Path_Name.all,
-                           Location, Project);
+                           "could not create " & Create & " directory ~",
+                           Location,
+                           Project);
                   end;
                end if;
             end if;

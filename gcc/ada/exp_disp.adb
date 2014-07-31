@@ -3678,7 +3678,7 @@ package body Exp_Disp is
       --  is frozen, enough must be known about it to build the activation
       --  record for it, which requires at least that the size of all
       --  parameters be known. Controlling arguments are by-reference,
-      --  and therefore the rule only applies to non-tagged types. Typical
+      --  and therefore the rule only applies to untagged types. Typical
       --  violation of the rule involves an object declaration that freezes a
       --  tagged type, when one of its primitive operations has a type in its
       --  profile whose full view has not been analyzed yet. More complex cases

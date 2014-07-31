@@ -352,7 +352,7 @@ package Einfo is
 --       defined primitives, and 6) secondary dispatch table with predefined
 --       primitives. The last entity of this list is an access type declaration
 --       used to expand dispatching calls through the primary dispatch table.
---       For a non-tagged record, contains No_Elist.
+--       For an untagged record, contains No_Elist.
 
 --    Actual_Subtype (Node17)
 --       Defined in variables, constants, and formal parameters. This is the
@@ -584,7 +584,7 @@ package Einfo is
 --    Class_Wide_Type (Node9)
 --       Defined in all type entities. For a tagged type or subtype, returns
 --       the corresponding implicitly declared class-wide type. For a
---       class-wide type, returns itself. Set to Empty for non-tagged types.
+--       class-wide type, returns itself. Set to Empty for untagged types.
 
 --    Cloned_Subtype (Node16)
 --       Defined in E_Record_Subtype and E_Class_Wide_Subtype entities.
@@ -937,7 +937,7 @@ package Einfo is
 --       Defined in E_Record_Type and E_Record_Subtype entities. Set in library
 --       level tagged type entities if we are generating statically allocated
 --       dispatch tables. Points to the list of dispatch table wrappers
---       associated with the tagged type. For a non-tagged record, contains
+--       associated with the tagged type. For an untagged record, contains
 --       No_Elist.
 
 --    DTC_Entity (Node16)
@@ -2795,7 +2795,7 @@ package Einfo is
 --    Is_Primitive (Flag218)
 --       Defined in overloadable entities and in generic subprograms. Set to
 --       indicate that this is a primitive operation of some type, which may
---       be a tagged type or a non-tagged type. Used to verify overriding
+--       be a tagged type or an untagged type. Used to verify overriding
 --       indicators in bodies.
 
 --    Is_Primitive_Wrapper (Flag195)
@@ -3474,7 +3474,7 @@ package Einfo is
 --
 --            Rec_Ext.Comp -> Rec_Ext.Parent. ... .Parent.Comp
 --
---       In base non-tagged types:
+--       In base untagged types:
 --         Always points to itself except for non-girder discriminants, where
 --         it points to the girder discriminant it renames.
 --

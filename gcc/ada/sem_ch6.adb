@@ -7062,8 +7062,8 @@ package body Sem_Ch6 is
       Obj_Decl : Node_Id;
 
    begin
-      --  This check applies only if we have a subprogram declaration with a
-      --  non-tagged record type.
+      --  This check applies only if we have a subprogram declaration with an
+      --  untagged record type.
 
       if Nkind (Decl) /= N_Subprogram_Declaration
         or else not Is_Record_Type (Typ)

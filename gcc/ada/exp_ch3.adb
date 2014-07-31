@@ -7271,8 +7271,20 @@ package body Exp_Ch3 is
       --  Check whether individual components have a defined invariant, and add
       --  the corresponding component invariant checks.
 
-      Insert_Component_Invariant_Checks
-        (N, Def_Id, Build_Record_Invariant_Proc (Def_Id, N));
+      --  Do not create an invariant procedure for some internally generated
+      --  subtypes, in particular those created for objects of a class-wide
+      --  type. Such types may have components to which invariant apply, but
+      --  the corresponding checks will be applied when an object of the parent
+      --  type is constructed.
+
+      --  Such objects will show up in a class-wide postcondition, and the
+      --  invariant will be checked, if necessary, upon return from the
+      --  enclosing subprogram.
+
+      if not Is_Class_Wide_Equivalent_Type (Def_Id) then
+         Insert_Component_Invariant_Checks
+           (N, Def_Id, Build_Record_Invariant_Proc (Def_Id, N));
+      end if;
    end Expand_Freeze_Record_Type;
 
    ------------------------------
