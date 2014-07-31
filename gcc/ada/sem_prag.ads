@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -169,6 +169,18 @@ package Sem_Prag is
    --  Determine whether the placement within the state space of an abstract
    --  state, variable or package instantiation denoted by Item_Id requires the
    --  use of indicator/option Part_Of. If this is the case, emit an error.
+
+   procedure Collect_Subprogram_Inputs_Outputs
+     (Subp_Id      : Entity_Id;
+      Subp_Inputs  : in out Elist_Id;
+      Subp_Outputs : in out Elist_Id;
+      Global_Seen  : out Boolean);
+   --  Used during the analysis of pragmas Depends, Global, Refined_Depends,
+   --  and Refined_Global. Also used by GNATprove. Gathers all inputs and
+   --  outputs of subprogram Subp_Id in lists Subp_Inputs and Subp_Outputs.
+   --  If subprogram has no inputs and/or outputs, then the returned list
+   --  is No_Elist. Global_Seen is set when the related subprogram has
+   --  pragma [Refined_]Global.
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;
    --  N is a pragma appearing in a configuration pragma file. Most such
