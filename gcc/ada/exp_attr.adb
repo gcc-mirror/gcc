@@ -38,7 +38,6 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Exp_VFpt; use Exp_VFpt;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Gnatvsn;  use Gnatvsn;
@@ -6401,12 +6400,6 @@ package body Exp_Attr is
             begin
                case Float_Rep (Btyp) is
 
-                  --  For vax fpt types, call appropriate routine in special
-                  --  vax floating point unit. No need to worry about loads in
-                  --  this case, since these types have no signalling NaN's.
-
-                  when VAX_Native => Expand_Vax_Valid (N);
-
                   --  The AAMP back end handles Valid for floating-point types
 
                   when AAMP =>
@@ -7392,78 +7385,36 @@ package body Exp_Attr is
       Fat_Type : out Entity_Id;
       Fat_Pkg  : out RE_Id)
    is
-      Btyp : constant Entity_Id := Base_Type (T);
       Rtyp : constant Entity_Id := Root_Type (T);
-      Digs : constant Nat       := UI_To_Int (Digits_Value (Btyp));
 
    begin
-      --  If the base type is VAX float, then get appropriate VAX float type
+      --  All we do is use the root type (historically this dealt with
+      --  VAX-float .. to be cleaned up further later ???)
 
-      if Vax_Float (Btyp) then
-         case Digs is
-            when 6 =>
-               Fat_Type := RTE (RE_Fat_VAX_F);
-               Fat_Pkg  := RE_Attr_VAX_F_Float;
+      Fat_Type := Rtyp;
 
-            when 9 =>
-               Fat_Type := RTE (RE_Fat_VAX_D);
-               Fat_Pkg  := RE_Attr_VAX_D_Float;
+      if Fat_Type = Standard_Short_Float then
+         Fat_Pkg := RE_Attr_Short_Float;
 
-            when 15 =>
-               Fat_Type := RTE (RE_Fat_VAX_G);
-               Fat_Pkg  := RE_Attr_VAX_G_Float;
+      elsif Fat_Type = Standard_Float then
+         Fat_Pkg := RE_Attr_Float;
 
-            when others =>
-               raise Program_Error;
-         end case;
+      elsif Fat_Type = Standard_Long_Float then
+         Fat_Pkg := RE_Attr_Long_Float;
 
-      --  If root type is VAX float, this is the case where the library has
-      --  been recompiled in VAX float mode, and we have an IEEE float type.
-      --  This is when we use the special IEEE Fat packages.
-
-      elsif Vax_Float (Rtyp) then
-         case Digs is
-            when 6 =>
-               Fat_Type := RTE (RE_Fat_IEEE_Short);
-               Fat_Pkg  := RE_Attr_IEEE_Short;
-
-            when 15 =>
-               Fat_Type := RTE (RE_Fat_IEEE_Long);
-               Fat_Pkg  := RE_Attr_IEEE_Long;
-
-            when others =>
-               raise Program_Error;
-         end case;
-
-      --  If neither the base type nor the root type is VAX_Native then VAX
-      --  float is out of the picture, and we can just use the root type.
-
-      else
-         Fat_Type := Rtyp;
-
-         if Fat_Type = Standard_Short_Float then
-            Fat_Pkg := RE_Attr_Short_Float;
-
-         elsif Fat_Type = Standard_Float then
-            Fat_Pkg := RE_Attr_Float;
-
-         elsif Fat_Type = Standard_Long_Float then
-            Fat_Pkg := RE_Attr_Long_Float;
-
-         elsif Fat_Type = Standard_Long_Long_Float then
-            Fat_Pkg := RE_Attr_Long_Long_Float;
+      elsif Fat_Type = Standard_Long_Long_Float then
+         Fat_Pkg := RE_Attr_Long_Long_Float;
 
          --  Universal real (which is its own root type) is treated as being
          --  equivalent to Standard.Long_Long_Float, since it is defined to
          --  have the same precision as the longest Float type.
 
-         elsif Fat_Type = Universal_Real then
-            Fat_Type := Standard_Long_Long_Float;
-            Fat_Pkg := RE_Attr_Long_Long_Float;
+      elsif Fat_Type = Universal_Real then
+         Fat_Type := Standard_Long_Long_Float;
+         Fat_Pkg := RE_Attr_Long_Long_Float;
 
-         else
-            raise Program_Error;
-         end if;
+      else
+         raise Program_Error;
       end if;
    end Find_Fat_Info;
 

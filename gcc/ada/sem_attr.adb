@@ -6926,11 +6926,9 @@ package body Sem_Attr is
       ------------------
 
       function Is_VAX_Float (Typ : Entity_Id) return Boolean is
+         pragma Unreferenced (Typ);
       begin
-         return
-           Is_Floating_Point_Type (Typ)
-             and then
-               (Float_Format = 'V' or else Float_Rep (Typ) = VAX_Native);
+         return False;
       end Is_VAX_Float;
 
       --------------

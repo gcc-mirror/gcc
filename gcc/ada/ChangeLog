@@ -1,5 +1,17 @@
 2014-07-31  Arnaud Charlet  <charlet@adacore.com>
 
+	* einfo.adb: Remove VMS specific code.
+	* exp_attr.adb: Remove VAX specific code.
+	* set_targ.adb: Remove handling of VAX_Float.
+	* sem_vfpt.adb: Remove references to Vax_Native.
+	* sem_attr.adb (Is_VAX_Float): Remove ref to VAX_Native.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2014-07-31  Arnaud Charlet  <charlet@adacore.com>
+
 	* gcc-interface/trans.c, gcc-interface/misc.c: Remove references
 	to VMS. Misc clean ups.
 

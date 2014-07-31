@@ -2161,29 +2161,6 @@ package body Exp_Ch11 is
       end case;
    end Get_RT_Exception_Name;
 
-   ----------------------
-   -- Is_Non_Ada_Error --
-   ----------------------
-
-   function Is_Non_Ada_Error (E : Entity_Id) return Boolean is
-   begin
-      if not OpenVMS_On_Target then
-         return False;
-      end if;
-
-      Get_Name_String (Chars (E));
-
-      --  Note: it is a little irregular for the body of exp_ch11 to know
-      --  the details of the encoding scheme for names, but on the other
-      --  hand, gigi knows them, and this is for gigi's benefit anyway.
-
-      if Name_Buffer (1 .. 30) /= "system__aux_dec__non_ada_error" then
-         return False;
-      end if;
-
-      return True;
-   end Is_Non_Ada_Error;
-
    ----------------------------
    -- Warn_If_No_Propagation --
    ----------------------------
