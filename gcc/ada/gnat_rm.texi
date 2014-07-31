@@ -490,6 +490,7 @@ Partition-Wide Restrictions
 Program Unit Level Restrictions
 
 * No_Elaboration_Code::
+* No_Elaboration_Code_All::
 * No_Entry_Queue::
 * No_Implementation_Aspect_Specifications::
 * No_Implementation_Attributes::
@@ -10964,6 +10965,7 @@ other compilation units in the partition.
 
 @menu
 * No_Elaboration_Code::
+* No_Elaboration_Code_All::
 * No_Entry_Queue::
 * No_Implementation_Aspect_Specifications::
 * No_Implementation_Attributes::
@@ -11023,6 +11025,22 @@ optimizer can figure this out.
 Note that this the implementation of this restriction requires full
 code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
+
+@node No_Elaboration_Code_All
+@unnumberedsubsec No_Elaboration_Code_All
+@findex No_Elaboration_Code_All
+
+This restriction is identical in semantic effects to
+@code{No_Elaboration_Code}, and
+for most purposes is treated simply as a synonym of @code{No_Elaboration_Code}.
+
+The difference is that if @code{No_Elaboration_Code_All} is used then it
+must appear within a package or subprogram spec. As is the case for
+@code{No_Elaboration_Code}, it also applies to the corresponding body if
+there is one. In addition, any with'ed unit must itself contain a
+@code{No_Elaboration_Code_All} restriction,
+thus allowing transitive enforcement of the requirement for no elaboration
+code to be generated.
 
 @node No_Entry_Queue
 @unnumberedsubsec No_Entry_Queue

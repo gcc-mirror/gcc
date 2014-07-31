@@ -146,6 +146,11 @@ package body Lib is
       return Units.Table (U).Munit_Index;
    end Munit_Index;
 
+   function No_Elab_Code (U : Unit_Number_Type) return No_Elab_Code_T is
+   begin
+      return Units.Table (U).No_Elab_Code;
+   end No_Elab_Code;
+
    function OA_Setting (U : Unit_Number_Type) return Character is
    begin
       return Units.Table (U).OA_Setting;
@@ -225,6 +230,11 @@ package body Lib is
    begin
       Units.Table (U).Main_Priority := P;
    end Set_Main_Priority;
+
+   procedure Set_No_Elab_Code (U : Unit_Number_Type; N : No_Elab_Code_T) is
+   begin
+      Units.Table (U).No_Elab_Code := N;
+   end Set_No_Elab_Code;
 
    procedure Set_OA_Setting (U : Unit_Number_Type; C : Character) is
    begin

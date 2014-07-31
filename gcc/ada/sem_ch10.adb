@@ -1333,18 +1333,47 @@ package body Sem_Ch10 is
            and then not Limited_Present (Item)
          then
             --  Skip analyzing with clause if no unit, nothing to do (this
-            --  happens for a with that references a non-existent unit). Skip
-            --  as well if this is a with_clause for the main unit, which
-            --  happens if a subunit has a useless with_clause on its parent.
+            --  happens for a with that references a non-existent unit).
 
             if Present (Library_Unit (Item)) then
+
+               --  Skip analyzing with clause if this is a with_clause for
+               --  the main unit, which happens if a subunit has a useless
+               --  with_clause on its parent.
+
                if Library_Unit (Item) /= Cunit (Current_Sem_Unit) then
                   Analyze (Item);
+
+                  --  This is the point at which we check for the case of an
+                  --  improper WITH from a unit with No_Elaboration_Code_All.
+
+                  if No_Elab_Code (Current_Sem_Unit) >=
+                       No_Elab_Code_All_Warn
+                  then
+                     if No_Elab_Code
+                          (Get_Source_Unit (Library_Unit (Item))) /=
+                             No_Elab_Code_All
+                     then
+                        Error_Msg_Warn :=
+                          No_Elab_Code (Current_Sem_Unit) =
+                            No_Elab_Code_All_Warn;
+                        Error_Msg_N
+                          ("<unit with No_Elaboration_Code_All has bad WITH",
+                           Item);
+                        Error_Msg_NE
+                          ("\<unit& does not have No_Elaboration_Code_All",
+                           Item, Entity (Name (Item)));
+                     end if;
+                  end if;
+
+               --  Here for the case of a useless with for the main unit
 
                else
                   Set_Entity (Name (Item), Cunit_Entity (Current_Sem_Unit));
                end if;
             end if;
+
+            --  Do version update (skipped for implicit with)
 
             if not Implicit_With (Item) then
                Version_Update (N, Library_Unit (Item));

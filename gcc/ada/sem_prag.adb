@@ -5479,7 +5479,7 @@ package body Sem_Prag is
          --  Test-case should only appear in package spec unit
 
          if Get_Source_Unit (N) = No_Unit
-           or else not Nkind_In (Sinfo.Unit (Cunit (Get_Source_Unit (N))),
+           or else not Nkind_In (Sinfo.Unit (Cunit (Current_Sem_Unit)),
                                  N_Package_Declaration,
                                  N_Generic_Package_Declaration)
          then
@@ -5857,8 +5857,8 @@ package body Sem_Prag is
          if Nkind (P) = N_Compilation_Unit then
             Unit_Kind := Nkind (Unit (P));
 
-            if Unit_Kind = N_Subprogram_Declaration
-              or else Unit_Kind = N_Package_Declaration
+            if Nkind_In (Unit_Kind, N_Subprogram_Declaration,
+                                    N_Package_Declaration)
               or else Unit_Kind in N_Generic_Declaration
             then
                Unit_Name := Defining_Entity (Unit (P));
@@ -8897,6 +8897,55 @@ package body Sem_Prag is
          while Present (Arg) loop
             Id := Chars (Arg);
             Expr := Get_Pragma_Arg (Arg);
+
+            --  Special handling for No_Elaboration_Code
+
+            if Nkind (Expr) = N_Identifier
+              and then Chars (Expr) = Name_No_Elaboration_Code
+            then
+               if No_Elab_Code (Current_Sem_Unit) < No_Elab_Code then
+                  Set_No_Elab_Code (Current_Sem_Unit, No_Elab_Code);
+               end if;
+            end if;
+
+            --  Special handling for No_Elaboration_Code_All
+
+            if Nkind (Expr) = N_Identifier
+              and then Chars (Expr) = Name_No_Elaboration_Code_All
+            then
+               --  Must appear within a spec
+
+               if not Nkind_In (Unit (Cunit (Current_Sem_Unit)),
+                                N_Package_Declaration,
+                                N_Subprogram_Declaration)
+               then
+                  Error_Msg_Name_1 := Id;
+                  Error_Msg_N
+                    ("restriction% can appear only in package or "
+                     & "subprogram spec", Arg);
+               end if;
+
+               --  Set special value in unit table
+
+               declare
+                  New_Val : No_Elab_Code_T;
+
+               begin
+                  if Warn then
+                     New_Val := No_Elab_Code_All_Warn;
+                  else
+                     New_Val := No_Elab_Code_All;
+                  end if;
+
+                  if No_Elab_Code (Current_Sem_Unit) < New_Val then
+                     Set_No_Elab_Code (Current_Sem_Unit, New_Val);
+                  end if;
+               end;
+
+               --  Note that in the code below, Process_Restriction_Synonym
+               --  will treat No_Elaboration_Code_All like No_Elaboration_Code.
+
+            end if;
 
             --  Case of no restriction identifier present
 

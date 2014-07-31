@@ -2728,7 +2728,7 @@ be ignored.
 Example:
 
 @smallexample @c projectfile
-for ^Switches^Switches^ (other) use ("-v", "-k", "-j8");
+for ^Switches^Switches^ (others) use ("-v", "-k", "-j8");
 @end smallexample
 
 These switches are only read from the main aggregate project (the

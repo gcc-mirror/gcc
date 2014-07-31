@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -1849,6 +1850,10 @@ package body Freeze is
       --  Freeze record type, including freezing component types, and freezing
       --  primitive operations if this is a tagged type.
 
+      function Has_Boolean_Aspect_Import (E : Entity_Id) return Boolean;
+      --  Determine whether an arbitrary entity is subject to Boolean aspect
+      --  Import and its value is specified as True.
+
       procedure Wrap_Imported_Subprogram (E : Entity_Id);
       --  If E is an entity for an imported subprogram with pre/post-conditions
       --  then this procedure will create a wrapper to ensure that proper run-
@@ -3548,6 +3553,39 @@ package body Freeze is
          end Check_Variant_Part;
       end Freeze_Record_Type;
 
+      -------------------------------
+      -- Has_Boolean_Aspect_Import --
+      -------------------------------
+
+      function Has_Boolean_Aspect_Import (E : Entity_Id) return Boolean is
+         Decl : constant Node_Id := Declaration_Node (E);
+         Asp  : Node_Id;
+         Expr : Node_Id;
+
+      begin
+         if Has_Aspects (Decl) then
+            Asp := First (Aspect_Specifications (Decl));
+            while Present (Asp) loop
+               Expr := Expression (Asp);
+
+               --  The value of aspect Import is True when the expression is
+               --  either missing or it is explicitly set to True.
+
+               if Get_Aspect_Id (Asp) = Aspect_Import
+                 and then (No (Expr)
+                            or else (Compile_Time_Known_Value (Expr)
+                                      and then Is_True (Expr_Value (Expr))))
+               then
+                  return True;
+               end if;
+
+               Next (Asp);
+            end loop;
+         end if;
+
+         return False;
+      end Has_Boolean_Aspect_Import;
+
       ------------------------------
       -- Wrap_Imported_Subprogram --
       ------------------------------
@@ -4454,6 +4492,7 @@ package body Freeze is
             if Ekind (E) = E_Constant
               and then (Has_Volatile_Components (E) or else Is_Volatile (E))
               and then not Is_Imported (E)
+              and then not Has_Boolean_Aspect_Import (E)
             then
                --  Make sure we actually have a pragma, and have not merely
                --  inherited the indication from elsewhere (e.g. an address
