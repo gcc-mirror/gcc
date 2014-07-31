@@ -3028,6 +3028,76 @@ package body Prj.Nmsc is
       procedure Check_Library (Proj : Project_Id; Extends : Boolean);
       --  Check if an imported or extended project if also a library project
 
+      procedure Check_Aggregate_Library_Dirs;
+
+      ----------------------------------
+      -- Check_Aggregate_Library_Dirs --
+      ----------------------------------
+
+      procedure Check_Aggregate_Library_Dirs is
+         procedure Process_Aggregate (Proj : Project_Id);
+
+         procedure Process_Aggregate (Proj : Project_Id) is
+
+            Agg : Aggregated_Project_List := Proj.Aggregated_Projects;
+
+         begin
+            while Agg /= null loop
+               Error_Msg_Name_1 := Agg.Project.Name;
+
+               if Agg.Project.Qualifier /= Aggregate_Library and then
+                 Project.Library_ALI_Dir.Name
+                 = Agg.Project.Object_Directory.Name
+               then
+                  Error_Msg
+                    (Data.Flags,
+                     "aggregate library 'A'L'I directory cannot be shared with"
+                     & " object directory of aggregated project %%",
+                     The_Lib_Kind.Location, Project);
+
+               elsif Project.Library_ALI_Dir.Name
+                 = Agg.Project.Library_Dir.Name
+               then
+                  Error_Msg
+                    (Data.Flags,
+                     "aggregate library 'A'L'I directory cannot be shared with"
+                     & " library directory of aggregated project %%",
+                     The_Lib_Kind.Location, Project);
+
+               elsif Agg.Project.Qualifier /= Aggregate_Library and then
+                 Project.Library_Dir.Name
+                 = Agg.Project.Object_Directory.Name
+               then
+                  Error_Msg
+                    (Data.Flags,
+                     "aggregate library directory cannot be shared with"
+                     & " object directory of aggregated project %%",
+                     The_Lib_Kind.Location, Project);
+
+               elsif Project.Library_Dir.Name
+                 = Agg.Project.Library_Dir.Name
+               then
+                  Error_Msg
+                    (Data.Flags,
+                     "aggregate library directory cannot be shared with"
+                     & " library directory of aggregated project %%",
+                     The_Lib_Kind.Location, Project);
+               end if;
+
+               if Agg.Project.Qualifier = Aggregate_Library then
+                  Process_Aggregate (Agg.Project);
+               end if;
+
+               Agg := Agg.Next;
+            end loop;
+         end Process_Aggregate;
+
+      begin
+         if Project.Qualifier = Aggregate_Library then
+            Process_Aggregate (Project);
+         end if;
+      end Check_Aggregate_Library_Dirs;
+
       -------------------
       -- Check_Library --
       -------------------
@@ -3743,6 +3813,13 @@ package body Prj.Nmsc is
               "standalone library project %% must be a shared library",
             Project.Location, Project);
          Continuation := Continuation_String'Access;
+      end if;
+
+      --  Check that aggregated libraries do not share the aggregate
+      --  Library_ALI_Dir.
+
+      if Project.Qualifier = Aggregate_Library then
+         Check_Aggregate_Library_Dirs;
       end if;
 
       if Project.Library and not Data.In_Aggregate_Lib then

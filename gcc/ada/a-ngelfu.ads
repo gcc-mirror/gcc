@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2012-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,8 +41,22 @@ package Ada.Numerics.Generic_Elementary_Functions is
 
    function Sqrt (X : Float_Type'Base) return Float_Type'Base with
      Post => Sqrt'Result >= 0.0
-               and then (if X = 0.0 then Sqrt'Result = 0.0)
-               and then (if X = 1.0 then Sqrt'Result = 1.0);
+
+       and then (if X = 0.0 then Sqrt'Result = 0.0)
+
+       and then (if X = 1.0 then Sqrt'Result = 1.0)
+
+       --  If X is positive, the result of Sqrt is positive. This property is
+       --  useful in particular for static analysis. The property that X is
+       --  positive is not expressed as (X > 0), as the value X may be held in
+       --  registers that have larger range and precision on some architecture
+
+       --  (for example, on x86 using x387 FPU, as opposed to SSE2). So, it
+       --  might be possible for X to be 2.0**(-5000) or so, which could cause
+       --  the number to compare as greater than 0, but Sqrt would still return
+       --  a zero result.
+
+       and then (if X >= Float_Type'Succ (0.0) then Sqrt'Result > 0.0);
 
    function Log (X : Float_Type'Base) return Float_Type'Base
    with
