@@ -131,7 +131,7 @@ package Sem_Aux is
    --  stored discriminants are the same as the actual discriminants of the
    --  type, and hence this function is the same as First_Discriminant.
    --
-   --  For derived non-tagged types that rename discriminants in the root type
+   --  For derived untagged types that rename discriminants in the root type
    --  this is the first of the discriminants that occur in the root type. To
    --  be precise, in this case stored discriminants are entities attached to
    --  the entity chain of the derived type which are a copy of the

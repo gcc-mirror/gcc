@@ -5330,7 +5330,7 @@ and whose type is potentially persistent. If no argument is given, then
 the pragma is a configuration pragma, and applies to all library level
 objects with no explicit initialization of potentially persistent types.
 
-A potentially persistent type is a scalar type, or a non-tagged,
+A potentially persistent type is a scalar type, or an untagged,
 non-discriminated record, all of whose components have no explicit
 initialization and are themselves of a potentially persistent type,
 or an array, all of whose constraints are static, and whose component
@@ -11136,7 +11136,7 @@ This restriction can be useful in providing an initial filter for code
 developed using SPARK 2005, or in examining legacy code to see how far
 it is from meeting SPARK restrictions.
 
-The list below summarises the checks that are performed when this
+The list below summarizes the checks that are performed when this
 restriction is in force:
 @itemize @bullet
 @item No block statements
@@ -11196,7 +11196,7 @@ restriction is in force:
 @item Modular type modulus must be power of 2
 @item Base not allowed on subtype mark
 @item Unary operators not allowed on modular types (except not)
-@item Non-tagged record cannot be null
+@item Untagged record cannot be null
 @item No class-wide operations
 @item Initialization expressions must respect SPARK restrictions
 @item Non-static ranges not allowed except in iteration schemes

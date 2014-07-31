@@ -1,3 +1,18 @@
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Do not build an
+	invariant procedure for an internally generated subtype that is
+	created for an object of a class-wide type.
+
+2014-07-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb, errutil.adb: Make code similar to Errout.
+
+2014-07-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_rm.texi, sem_aux.ads, einfo.ads, sem_util.ads, sem_ch6.adb,
+	exp_disp.adb: Minor reformatting.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_ch3.adb, exp_ch7.adb, exp_util.adb, exp_ch9.adb,
