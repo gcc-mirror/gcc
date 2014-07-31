@@ -201,24 +201,27 @@ package body Errutil is
 
       --  Otherwise build error message object for new message
 
-      Errors.Increment_Last;
-      Cur_Msg := Errors.Last;
-      Errors.Table (Cur_Msg).Text     := new String'(Msg_Buffer (1 .. Msglen));
-      Errors.Table (Cur_Msg).Next     := No_Error_Msg;
-      Errors.Table (Cur_Msg).Sptr     := Sptr;
-      Errors.Table (Cur_Msg).Optr     := Optr;
-      Errors.Table (Cur_Msg).Sfile    := Get_Source_File_Index (Sptr);
-      Errors.Table (Cur_Msg).Line     := Get_Physical_Line_Number (Sptr);
-      Errors.Table (Cur_Msg).Col      := Get_Column_Number (Sptr);
-      Errors.Table (Cur_Msg).Style    := Is_Style_Msg;
-      Errors.Table (Cur_Msg).Warn     := Is_Warning_Msg;
-      Errors.Table (Cur_Msg).Info     := Is_Info_Msg;
-      Errors.Table (Cur_Msg).Warn_Chr := Warning_Msg_Char;
-      Errors.Table (Cur_Msg).Serious  := Is_Serious_Error;
-      Errors.Table (Cur_Msg).Uncond   := Is_Unconditional_Msg;
-      Errors.Table (Cur_Msg).Msg_Cont := Continuation;
-      Errors.Table (Cur_Msg).Deleted  := False;
+      Errors.Append
+        (New_Val =>
+           (Text     => new String'(Msg_Buffer (1 .. Msglen)),
+            Next     => No_Error_Msg,
+            Prev     => No_Error_Msg,
+            Sfile    => Get_Source_File_Index (Sptr),
+            Sptr     => Sptr,
+            Optr     => Optr,
+            Line     => Get_Physical_Line_Number (Sptr),
+            Col      => Get_Column_Number (Sptr),
+            Warn     => Is_Warning_Msg,
+            Info     => Is_Info_Msg,
+            Warn_Err => Warning_Mode = Treat_As_Error,
+            Warn_Chr => Warning_Msg_Char,
+            Style    => Is_Style_Msg,
+            Serious  => Is_Serious_Error,
+            Uncond   => Is_Unconditional_Msg,
+            Msg_Cont => Continuation,
+            Deleted  => False));
 
+      Cur_Msg  := Errors.Last;
       Prev_Msg := No_Error_Msg;
       Next_Msg := First_Error_Msg;
 

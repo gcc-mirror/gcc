@@ -141,7 +141,7 @@ package body Debug is
    --  d.U  Ignore indirect calls for static elaboration
    --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X
+   --  d.X  Old treatment of indexing aspects
    --  d.Y
    --  d.Z
 
@@ -684,6 +684,12 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.
+
+   --  d.X  A previous version of GNAT allowed indexing aspects to be
+   --       redefined on derived container types, while the default iterator
+   --       was inherited from the aprent type. This non-standard extension
+   --       is preserved temporarily for use by the modelling project under
+   --       debug flag d.X.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

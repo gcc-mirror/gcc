@@ -6959,6 +6959,7 @@ package body Sem_Ch4 is
       Exprs  : List_Id) return Boolean
    is
       Loc       : constant Source_Ptr := Sloc (N);
+      C_Type    : Entity_Id;
       Assoc     : List_Id;
       Disc      : Entity_Id;
       Func      : Entity_Id;
@@ -6966,6 +6967,14 @@ package body Sem_Ch4 is
       Indexing  : Node_Id;
 
    begin
+      C_Type := Etype (Prefix);
+
+      --  If indexing a class-wide container, obtain indexing primitive
+      --  from specific type.
+
+      if Is_Class_Wide_Type (C_Type) then
+         C_Type := Etype (Base_Type (C_Type));
+      end if;
 
       --  Check whether type has a specified indexing aspect
 
@@ -7013,10 +7022,10 @@ package body Sem_Ch4 is
       --  Additional machinery may be needed for types that have several user-
       --  defined Reference operations with different signatures ???
 
-      elsif Is_Derived_Type (Etype (Prefix))
+      elsif Is_Derived_Type (C_Type)
         and then Etype (First_Formal (Entity (Func_Name))) /= Etype (Prefix)
       then
-         Func := Find_Prim_Op (Etype (Prefix), Chars (Func_Name));
+         Func := Find_Prim_Op (C_Type, Chars (Func_Name));
          Func_Name := New_Occurrence_Of (Func, Loc);
       end if;
 

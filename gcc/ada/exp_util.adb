@@ -786,7 +786,7 @@ package body Exp_Util is
          if Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ) then
             Append_To (Actuals, New_Occurrence_Of (Alig_Id, Loc));
 
-         --  For deallocation of class wide types we obtain the value of
+         --  For deallocation of class-wide types we obtain the value of
          --  alignment from the Type Specific Record of the deallocated object.
          --  This is needed because the frontend expansion of class-wide types
          --  into equivalent types confuses the backend.
@@ -5860,7 +5860,7 @@ package body Exp_Util is
 
       Set_Is_Class_Wide_Equivalent_Type (Equiv_Type);
 
-      --  A class_wide equivalent type does not require initialization
+      --  A class-wide equivalent type does not require initialization
 
       Set_Suppress_Initialization (Equiv_Type);
 
@@ -6097,7 +6097,7 @@ package body Exp_Util is
    --  2. If Expr is a unconstrained discriminated type expression, creates
    --    Unc_Type(Expr.Discr1, ... , Expr.Discr_n)
 
-   --  3. If Expr is class-wide, creates an implicit class wide subtype
+   --  3. If Expr is class-wide, creates an implicit class-wide subtype
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;
@@ -6186,8 +6186,8 @@ package body Exp_Util is
 
             if Expander_Active and then Tagged_Type_Expansion then
 
-               --  If this is the class_wide type of a completion that is a
-               --  record subtype, set the type of the class_wide type to be
+               --  If this is the class-wide type of a completion that is a
+               --  record subtype, set the type of the class-wide type to be
                --  the full base type, for use in the expanded code for the
                --  equivalent type. Should this be done earlier when the
                --  completion is analyzed ???
