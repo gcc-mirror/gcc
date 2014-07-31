@@ -3035,7 +3035,12 @@ package body Prj.Nmsc is
       ----------------------------------
 
       procedure Check_Aggregate_Library_Dirs is
+
          procedure Process_Aggregate (Proj : Project_Id);
+
+         -----------------------
+         -- Process_Aggregate --
+         -----------------------
 
          procedure Process_Aggregate (Proj : Project_Id) is
 

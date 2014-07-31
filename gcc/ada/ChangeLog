@@ -1,3 +1,7 @@
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting.
+
 2014-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Has_Preelaborable_Initialization): Check that
