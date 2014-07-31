@@ -1,3 +1,19 @@
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Invariant_Procedure): If body of procedure
+	is already present, nothing to do.
+	* exp_ch3.adb (Build_Component_Invariant_Call): For an access
+	component, check whether the access type has an invariant before
+	checking the designated type.
+	(Build_Record_Invariant_Proc): Change suffix of generated
+	name to prevent ambiguity when record type has invariants
+	in addition to those of components, and two subprograms are
+	constructed. Consistent with handling of array types.
+	(Insert_Component_Invariant_Checks): Build invariant procedure
+	body when one has not been created yet, in the case of composite
+	types that are completions and whose full declarations carry
+	invariants.
+
 2014-07-30  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat_rm.texi: Minor doc fixes.

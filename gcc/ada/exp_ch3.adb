@@ -56,6 +56,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -3704,8 +3705,21 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Comp, Loc));
 
          if Is_Access_Type (Typ) then
-            Sel_Comp := Make_Explicit_Dereference (Loc, Sel_Comp);
-            Typ := Designated_Type (Typ);
+
+            --  If the access component designates a type with an invariant,
+            --  the check applies to the designated object. The access type
+            --  itself may have an invariant, in which case it applies to the
+            --  access value directly.
+
+            --  Note: we are assuming that invariants will not occur on both
+            --  the access type and the type that it designates. This is not
+            --  really justified but it is hard to imagine that this case will
+            --  ever cause trouble ???
+
+            if not (Has_Invariants (Typ)) then
+               Sel_Comp := Make_Explicit_Dereference (Loc, Sel_Comp);
+               Typ := Designated_Type (Typ);
+            end if;
          end if;
 
          Call :=
@@ -3822,9 +3836,14 @@ package body Exp_Ch3 is
          return Empty;
       end if;
 
+      --  The name of the invariant procedure reflects the fact that the
+      --  checks correspond to invariants on the component types. The
+      --  record type itself may have invariants that will create a separate
+      --  procedure whose name carries the Invariant suffix.
+
       Proc_Id :=
         Make_Defining_Identifier (Loc,
-           Chars => New_External_Name (Chars (R_Type), "Invariant"));
+           Chars => New_External_Name (Chars (R_Type), "CInvariant"));
 
       Proc_Body :=
         Make_Subprogram_Body (Loc,
@@ -8045,14 +8064,15 @@ package body Exp_Ch3 is
 
          else
 
-            --  Find already created invariant body, insert body of component
-            --  invariant proc in it, and add call after other checks.
+            --  Find already created invariant subprogram, insert body of
+            --  component invariant proc in its body, and add call after
+            --  other checks.
 
             declare
                Bod : Node_Id;
                Inv_Id : constant Entity_Id := Invariant_Procedure (Typ);
                Call   : constant Node_Id :=
-                 Make_Procedure_Call_Statement (Loc,
+                 Make_Procedure_Call_Statement (Sloc (N),
                    Name => New_Occurrence_Of (Proc_Id, Loc),
                    Parameter_Associations =>
                      New_List
@@ -8070,8 +8090,22 @@ package body Exp_Ch3 is
                   Next (Bod);
                end loop;
 
+               --  If the body is not found, it is the case of an invariant
+               --  appearing on a full declaration in a private part, in
+               --  which case the type has been frozen but the invariant
+               --  procedure for the composite type not created yet. Create
+               --  body now.
+
+               if No (Bod) then
+                  Build_Invariant_Procedure (Typ, Parent (Current_Scope));
+                  Bod := Unit_Declaration_Node
+                    (Corresponding_Body (Unit_Declaration_Node (Inv_Id)));
+               end if;
+
                Append_To (Declarations (Bod), Proc);
                Append_To (Statements (Handled_Statement_Sequence (Bod)), Call);
+               Analyze (Proc);
+               Analyze (Call);
             end;
          end if;
       end if;
