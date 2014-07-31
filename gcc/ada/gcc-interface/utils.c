@@ -94,6 +94,7 @@ static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_always_inline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int, bool *);
@@ -124,6 +125,8 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "noreturn",     0, 0,  true,  false, false, handle_noreturn_attribute,
     false },
   { "leaf",         0, 0,  true,  false, false, handle_leaf_attribute,
+    false },
+  { "always_inline",0, 0,  true,  false, false, handle_always_inline_attribute,
     false },
   { "malloc",       0, 0,  true,  false, false, handle_malloc_attribute,
     false },
@@ -2714,6 +2717,14 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
 
     case is_disabled:
       break;
+
+    case is_required:
+      if (Back_End_Inlining)
+        decl_attributes (&subprog_decl,
+				  tree_cons (get_identifier ("always_inline"),
+                    NULL_TREE, NULL_TREE),
+              ATTR_FLAG_TYPE_IN_PLACE);
+      /* ... fall through ... */
 
     case is_enabled:
       DECL_DECLARED_INLINE_P (subprog_decl) = 1;
@@ -5790,6 +5801,7 @@ gnat_write_global_declarations (void)
       TREE_STATIC (dummy_global) = 1;
       node = varpool_node::get_create (dummy_global);
       node->definition = 1;
+      node->definition = 1;
       node->force_output = 1;
 
       while (!types_used_by_cur_var_decl->is_empty ())
@@ -6382,8 +6394,7 @@ handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
    struct attribute_spec.handler.  */
 
 static tree
-handle_leaf_attribute (tree *node, tree name,
-		       tree ARG_UNUSED (args),
+handle_leaf_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 		       int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
@@ -6394,6 +6405,27 @@ handle_leaf_attribute (tree *node, tree name,
   if (!TREE_PUBLIC (*node))
     {
       warning (OPT_Wattributes, "%qE attribute has no effect", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "always_inline" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_always_inline_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      /* Set the attribute and mark it for disregarding inline limits.  */
+      DECL_DISREGARD_INLINE_LIMITS (*node) = 1;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 

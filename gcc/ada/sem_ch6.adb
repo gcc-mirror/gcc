@@ -3553,7 +3553,19 @@ package body Sem_Ch6 is
       --  Old semantics
 
       if not Debug_Flag_Dot_K then
+
+         --  If the backend inlining is available then at this stage we only
+         --  have to mark the subprogram as inlined. The expander will take
+         --  care of registering it in the table of subprograms inlined by
+         --  the backend a part of processing calls to it (cf. Expand_Call)
+
          if Present (Spec_Id)
+           and then Expander_Active
+           and then Back_End_Inlining
+         then
+            Set_Is_Inlined (Spec_Id);
+
+         elsif Present (Spec_Id)
            and then Expander_Active
            and then
              (Has_Pragma_Inline_Always (Spec_Id)

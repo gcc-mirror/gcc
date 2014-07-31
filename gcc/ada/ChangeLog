@@ -1,5 +1,38 @@
 2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_util.adb (Is_Effectively_Volatile): New routine.
+
+2014-07-31  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Document --test-duration option for gnattest.
+
+2014-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* opt.ads (Back_End_Inlining): New variable which controls
+	activation of inlining by back-end expansion.
+	* gnat1drv.adb (Adjust_Global_Switches): Initialize Back_End_Inlining
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not build
+	the body to be inlined by the frontend if Back_End_Inlining
+	is enabled.
+	* exp_ch6.adb (Register_Backend_Call): Moved to inline.adb.
+	(Expand_Call): If backend inlining is enabled let the backend to
+	handle inlined subprograms.
+	* inline.ads (Register_Backend_Call): Moved here from exp_ch6
+	* inline.adb (Register_Backend_Call): Moved here from exp_ch6.
+	(Add_Inlined_Subprogram): Add subprograms when Back_End_Inlining is set.
+	(Must_Inline): Do not return Inline_Call if Back_End_Inlining is
+	enabled.
+	* debug.adb Document -gnatd.z
+	* fe.h Import Back_End_Inlining variable.
+	* gcc-interface/utils.c (create_subprog_decl): If Back_End_Inlining is
+	enabled then declare attribute "always inline"
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* a-ngelfu.ads: Minor comment fix.
+
+2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* freeze.adb (Freeze_Record_Type): Replace all calls to
 	Is_SPARK_Volatile with Is_Effectively_Volatile and update
 	related comments.

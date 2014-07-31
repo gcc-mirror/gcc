@@ -10150,7 +10150,10 @@ package body Sem_Util is
       --  Otherwise Id denotes an object
 
       else
-         return Is_Volatile (Id) or else Is_Effectively_Volatile (Etype (Id));
+         return
+           Is_Volatile (Id)
+             or else Has_Volatile_Components (Id)
+             or else Is_Effectively_Volatile (Etype (Id));
       end if;
    end Is_Effectively_Volatile;
 

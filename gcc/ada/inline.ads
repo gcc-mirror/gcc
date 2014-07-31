@@ -231,6 +231,9 @@ package Inline is
    --  expressions in the body must be converted to the desired type (which
    --  is simply not noted in the tree without inline expansion).
 
+   procedure Register_Backend_Call (N : Node_Id);
+   --  Append N to the list Backend_Calls
+
    procedure Remove_Dead_Instance (N : Node_Id);
    --  If an instantiation appears in unreachable code, delete the pending
    --  body instance.

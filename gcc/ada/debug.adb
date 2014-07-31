@@ -116,7 +116,7 @@ package body Debug is
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
    --  d.y
-   --  d.z
+   --  d.z  Enable new support for backend inlining
 
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
@@ -593,6 +593,8 @@ package body Debug is
    --       handlers to be eliminated from the generated code. They are still
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
+
+   --  d.z  Need documentation of this flag ???
 
    --  d.A  There seems to be a problem with ASIS if we activate the circuit
    --       for reading and writing the aspect specification hash table, so
