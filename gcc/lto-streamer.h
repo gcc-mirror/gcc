@@ -779,8 +779,6 @@ extern void lto_begin_section (const char *, bool);
 extern void lto_end_section (void);
 extern void lto_write_data (const void *, unsigned int);
 extern void lto_write_stream (struct lto_output_stream *);
-extern void lto_output_data_stream (struct lto_output_stream *, const void *,
-				    size_t);
 extern bool lto_output_decl_index (struct lto_output_stream *,
 			    struct lto_tree_ref_encoder *,
 			    tree, unsigned int *);

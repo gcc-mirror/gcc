@@ -70,6 +70,8 @@ void streamer_write_uhwi_stream (struct lto_output_stream *,
 				 unsigned HOST_WIDE_INT);
 void streamer_write_hwi_stream (struct lto_output_stream *, HOST_WIDE_INT);
 void streamer_write_gcov_count_stream (struct lto_output_stream *, gcov_type);
+void streamer_write_data_stream (struct lto_output_stream *, const void *,
+				 size_t);
 
 /* In data-streamer-in.c  */
 const char *string_for_index (struct data_in *, unsigned int, unsigned int *);
