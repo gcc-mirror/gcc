@@ -49,7 +49,7 @@ package Ada.Numerics.Generic_Elementary_Functions is
        --  and the sqrt of numbers less than 1 is greater than the argument).
 
        --  This property is useful in particular for static analysis. The
-       --  property that X is positive is not expressed as (X > 0), as
+       --  property that X is positive is not expressed as (X > 0.0), as
        --  the value X may be held in registers that have larger range and
        --  precision on some architecture (for example, on x86 using x387
        --  FPU, as opposed to SSE2). So, it might be possible for X to be

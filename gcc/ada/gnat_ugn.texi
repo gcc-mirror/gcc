@@ -19987,6 +19987,10 @@ by hand.
 Suppresses comment line containing file name and line number of corresponding
 subprograms in test skeletons.
 
+@item --test-duration
+@cindex @option{--test-duration} (@command{gnattest})
+Adds time measurements for each test in generated test driver.
+
 @end table
 
 @option{--tests_root}, @option{--subdir} and @option{--tests-dir} switches are

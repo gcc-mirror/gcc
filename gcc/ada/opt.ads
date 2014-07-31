@@ -246,6 +246,10 @@ package Opt is
    --  default can be modified using -gnatd.L (sets the flag True). This is
    --  used to test the possibility of having the backend handle this.
 
+   Back_End_Inlining : Boolean := False;
+   --  GNAT
+   --  Set True to activate inlining by back-end expansion
+
    Bind_Alternate_Main_Name : Boolean := False;
    --  GNATBIND
    --  True if main should be called Alternate_Main_Name.all.

@@ -2113,9 +2113,6 @@ package body Exp_Ch6 is
          --  then register the enclosing unit of Subp to Inlined_Bodies so that
          --  the body of Subp can be retrieved and analyzed by the backend.
 
-         procedure Register_Backend_Call (N : Node_Id);
-         --  Append N to the list Backend_Calls
-
          -----------------------
          -- Do_Backend_Inline --
          -----------------------
@@ -2173,19 +2170,6 @@ package body Exp_Ch6 is
                end;
             end if;
          end Do_Backend_Inline;
-
-         ---------------------------
-         -- Register_Backend_Call --
-         ---------------------------
-
-         procedure Register_Backend_Call (N : Node_Id) is
-         begin
-            if Backend_Calls = No_Elist then
-               Backend_Calls := New_Elmt_List;
-            end if;
-
-            Append_Elmt (N, To => Backend_Calls);
-         end Register_Backend_Call;
 
       --  Start of processing for Do_Inline
 
@@ -3846,9 +3830,17 @@ package body Exp_Ch6 is
             return;
          end if;
 
+         --  Back end inlining: let the back end handle it
+
+         if Back_End_Inlining
+           and then Is_Inlined (Subp)
+         then
+            Add_Inlined_Body (Subp);
+            Register_Backend_Call (Call_Node);
+
          --  Handle inlining (old semantics)
 
-         if Is_Inlined (Subp) and then not Debug_Flag_Dot_K then
+         elsif Is_Inlined (Subp) and then not Debug_Flag_Dot_K then
             Inlined_Subprogram : declare
                Bod         : Node_Id;
                Must_Inline : Boolean := False;

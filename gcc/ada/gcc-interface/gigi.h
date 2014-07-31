@@ -449,7 +449,9 @@ enum inline_status_t
   /* No inlining is requested for the subprogram.  */
   is_disabled,
   /* Inlining is requested for the subprogram.  */
-  is_enabled
+  is_enabled,
+  /* Inlining is required for the subprogram.  */
+  is_required
 };
 
 extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];

@@ -594,6 +594,17 @@ procedure Gnat1drv is
          end if;
       end if;
 
+      --  No backend inlining for AAMP, VM. Turn off inlining under GNATprove
+      --  mode which would confuse formal verification output. Turn off backend
+      --  inlining if the frontend inlining is enabled.
+
+      Back_End_Inlining :=
+        VM_Target = No_VM
+          and then not AAMP_On_Target
+          and then not GNATprove_Mode
+          and then not Front_End_Inlining
+          and then Debug_Flag_Dot_Z;
+
       --  Output warning if -gnateE specified and cannot be supported
 
       if Exception_Extra_Info
