@@ -8914,15 +8914,14 @@ package body Exp_Ch9 is
       -- Discriminated_Size --
       ------------------------
 
-      function Discriminated_Size (Comp : Entity_Id) return Boolean
-      is
+      function Discriminated_Size (Comp : Entity_Id) return Boolean is
          Typ   : constant Entity_Id := Etype (Comp);
          Index : Node_Id;
 
          function Non_Static_Bound (Bound : Node_Id) return Boolean;
-         --  Check whether the bound of an index is non-static and does
-         --  denote a discriminant, in which case any protected object of
-         --  the type will have a non-static size.
+         --  Check whether the bound of an index is non-static and does denote
+         --  a discriminant, in which case any protected object of the type
+         --  will have a non-static size.
 
          ----------------------
          -- Non_Static_Bound --
@@ -8934,7 +8933,7 @@ package body Exp_Ch9 is
                return False;
 
             elsif Is_Entity_Name (Bound)
-               and then Present (Discriminal_Link (Entity (Bound)))
+              and then Present (Discriminal_Link (Entity (Bound)))
             then
                return False;
 
@@ -8942,6 +8941,8 @@ package body Exp_Ch9 is
                return True;
             end if;
          end Non_Static_Bound;
+
+      --  Start of processing for Discriminated_Size
 
       begin
          if not Is_Array_Type (Typ) then

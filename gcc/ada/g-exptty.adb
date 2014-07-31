@@ -66,14 +66,14 @@ package body GNAT.Expect.TTY is
          Status := -1;
 
       else
-         --  Send a Ctrl-C to the process first. This way, if the
-         --  launched process is a "sh" or "cmd", the child processes
-         --  will get terminated as well. Otherwise, terminating the
-         --  main process brutally will leave the children running.
-         --
-         --  Note: special characters are sent to the terminal to generate
-         --  the signal, so this needs to be done while the file descriptors
-         --  are still open.
+         --  Send a Ctrl-C to the process first. This way, if the launched
+         --  process is a "sh" or "cmd", the child processes will get
+         --  terminated as well. Otherwise, terminating the main process
+         --  brutally will leave the children running.
+
+         --  Note: special characters are sent to the terminal to generate the
+         --  signal, so this needs to be done while the file descriptors are
+         --  still open (it used to be after the closes and that was wrong).
 
          Interrupt (Descriptor);
          delay (0.05);
