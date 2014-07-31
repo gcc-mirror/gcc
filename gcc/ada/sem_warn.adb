@@ -128,16 +128,6 @@ package body Sem_Warn is
    --  If E is a parameter entity for a subprogram body, then this function
    --  returns the corresponding spec entity, if not, E is returned unchanged.
 
-   function Has_Junk_Name (E : Entity_Id) return Boolean;
-   --  Return True if the entity name contains any of the following substrings:
-   --    discard
-   --    dummy
-   --    ignore
-   --    junk
-   --    unused
-   --  Used to suppress warnings on names matching these patterns. The contents
-   --  of Name_Buffer and Name_Len are destroyed by this call.
-
    function Has_Pragma_Unmodified_Check_Spec (E : Entity_Id) return Boolean;
    --  Tests Has_Pragma_Unmodified flag for entity E. If E is not a formal,
    --  this is simply the setting of the flag Has_Pragma_Unmodified. If E is
