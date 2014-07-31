@@ -1,3 +1,12 @@
+2014-07-31  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61844
+	* config/sh/sh.c (sh_legitimate_address_p,
+	sh_legitimize_reload_address): Handle reg+reg address modes when
+	ALLOW_INDEXED_ADDRESS is false.
+	* config/sh/predicates.md (general_movsrc_operand,
+	general_movdst_operand): Likewise.
+
 2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
