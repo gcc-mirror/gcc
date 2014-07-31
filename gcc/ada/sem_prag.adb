@@ -237,17 +237,6 @@ package body Sem_Prag is
    --  with visible refinement available in the corresponding mode. Flag
    --  Has_Null_State is set when at least state has a null refinement.
 
-   procedure Collect_Subprogram_Inputs_Outputs
-     (Subp_Id      : Entity_Id;
-      Subp_Inputs  : in out Elist_Id;
-      Subp_Outputs : in out Elist_Id;
-      Global_Seen  : out Boolean);
-   --  Subsidiary to the analysis of pragma Depends, Global, Refined_Depends
-   --  and Refined_Global. Gather all inputs and outputs of subprogram Subp_Id
-   --  in lists Subp_Inputs and Subp_Outputs. If the case where the subprogram
-   --  has no inputs and/oroutputs, the returned list is No_Elist. Global_Seen
-   --  is set when the related subprogram has pragma [Refined_]Global.
-
    function Find_Related_Subprogram_Or_Body
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
