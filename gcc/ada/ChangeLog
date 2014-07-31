@@ -1,3 +1,8 @@
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* inline.adb, gnat1drv.adb, exp_ch6.adb, s-fileio.adb: Minor
+	reformatting.
+
 2014-07-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c ((build_binary_op): Don't set TREE_THIS_NOTRAP

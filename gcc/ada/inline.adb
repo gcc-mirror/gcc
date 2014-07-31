@@ -380,9 +380,7 @@ package body Inline is
                --  If the backend takes care of inlining the call then we must
                --  ensure that it has available the body of the subprogram.
 
-               elsif Level = Inline_Call
-                 and then Back_End_Inlining
-               then
+               elsif Level = Inline_Call and then Back_End_Inlining then
                   Inlined_Bodies.Increment_Last;
                   Inlined_Bodies.Table (Inlined_Bodies.Last) := Pack;
                end if;

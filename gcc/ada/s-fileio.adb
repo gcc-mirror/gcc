@@ -980,13 +980,16 @@ package body System.File_IO is
       Encoding : CRTL.Filename_Encoding;
       --  Filename encoding specified into the form parameter
 
-      ------------------
-      --  Record_AFCB --
-      ------------------
+      -----------------
+      -- Record_AFCB --
+      -----------------
 
       procedure Record_AFCB is
       begin
          File_Ptr := AFCB_Allocate (Dummy_FCB);
+
+         --  Note that we cannot use an aggregate here as File_Ptr is a
+         --  class-wide access to a limited type (Root_Stream_Type).
 
          File_Ptr.Is_Regular_File   :=
            (is_regular_file (fileno (Stream)) /= 0);
@@ -1006,6 +1009,8 @@ package body System.File_IO is
          Chain_File (File_Ptr);
          Append_Set (File_Ptr);
       end Record_AFCB;
+
+   --  Start of processing for Open
 
    begin
       if File_Ptr /= null then

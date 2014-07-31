@@ -3832,9 +3832,7 @@ package body Exp_Ch6 is
 
          --  Back end inlining: let the back end handle it
 
-         if Back_End_Inlining
-           and then Is_Inlined (Subp)
-         then
+         if Back_End_Inlining and then Is_Inlined (Subp) then
             Add_Inlined_Body (Subp);
             Register_Backend_Call (Call_Node);
 
