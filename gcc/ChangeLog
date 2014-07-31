@@ -1,3 +1,7 @@
+2014-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-loop.c (pass_tree_loop_init::execute): Remove dead code.
+
 2014-07-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira.c (insn_contains_asm_1, insn_contains_asm): Delete.

@@ -168,7 +168,7 @@ public:
 }; // class pass_tree_loop_init
 
 unsigned int
-pass_tree_loop_init::execute (function *fun)
+pass_tree_loop_init::execute (function *fun ATTRIBUTE_UNUSED)
 {
   loop_optimizer_init (LOOPS_NORMAL
 		       | LOOPS_HAVE_RECORDED_EXITS);
@@ -177,9 +177,6 @@ pass_tree_loop_init::execute (function *fun)
   /* We might discover new loops, e.g. when turning irreducible
      regions into reducible.  */
   scev_initialize ();
-
-  if (number_of_loops (fun) <= 1)
-    return 0;
 
   return 0;
 }
