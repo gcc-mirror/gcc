@@ -2388,6 +2388,17 @@ package Einfo is
 --       Defined in all type and subtype entities. Set if type or subtype has
 --       been frozen.
 
+--    Is_Generic_Actual_Subprogram (Flag274)
+--       Defined on functions and procedures. Set on the entity of the renaming
+--       declaration created within an instance for an actual subprogram.
+--       Used to generate constraint checks on calls to these subprograms, even
+--       within an instance of a predefined run-time unit, in which checks
+--       are otherwise suppressed.
+--
+--       The flag is also set on the entity of the expression function created
+--       within an instance, for a function that has external axiomatization,
+--       for use in GNATprove mode.
+
 --    Is_Generic_Actual_Type (Flag94)
 --       Defined in all type and subtype entities. Set in the subtype
 --       declaration that renames the generic formal as a subtype of the
@@ -5674,6 +5685,7 @@ package Einfo is
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Eliminated                       (Flag124)
+   --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
    --    Is_Inlined_Always                   (Flag1)    (non-generic case only)
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -5968,6 +5980,7 @@ package Einfo is
    --    Is_Eliminated                       (Flag124)
    --    Is_Inlined_Always                   (Flag1)    (non-generic case only)
    --    Is_Instantiated                     (Flag126)  (generic case only)
+   --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
    --    Is_Interrupt_Handler                (Flag89)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
@@ -6905,6 +6918,7 @@ package Einfo is
    function Is_Formal                           (Id : E) return B;
    function Is_Formal_Object                    (Id : E) return B;
    function Is_Formal_Subprogram                (Id : E) return B;
+   function Is_Generic_Actual_Subprogram        (Id : E) return B;
    function Is_Generic_Actual_Type              (Id : E) return B;
    function Is_Generic_Unit                     (Id : E) return B;
    function Is_Generic_Type                     (Id : E) return B;
@@ -7314,6 +7328,7 @@ package Einfo is
    procedure Set_Is_For_Access_Subtype           (Id : E; V : B := True);
    procedure Set_Is_Formal_Subprogram            (Id : E; V : B := True);
    procedure Set_Is_Frozen                       (Id : E; V : B := True);
+   procedure Set_Is_Generic_Actual_Subprogram    (Id : E; V : B := True);
    procedure Set_Is_Generic_Actual_Type          (Id : E; V : B := True);
    procedure Set_Is_Generic_Instance             (Id : E; V : B := True);
    procedure Set_Is_Generic_Type                 (Id : E; V : B := True);
@@ -8081,6 +8096,7 @@ package Einfo is
    pragma Inline (Is_Formal_Object);
    pragma Inline (Is_Formal_Subprogram);
    pragma Inline (Is_Frozen);
+   pragma Inline (Is_Generic_Actual_Subprogram);
    pragma Inline (Is_Generic_Actual_Type);
    pragma Inline (Is_Generic_Instance);
    pragma Inline (Is_Generic_Subprogram);
@@ -8541,6 +8557,7 @@ package Einfo is
    pragma Inline (Set_Is_For_Access_Subtype);
    pragma Inline (Set_Is_Formal_Subprogram);
    pragma Inline (Set_Is_Frozen);
+   pragma Inline (Set_Is_Generic_Actual_Subprogram);
    pragma Inline (Set_Is_Generic_Actual_Type);
    pragma Inline (Set_Is_Generic_Instance);
    pragma Inline (Set_Is_Generic_Type);

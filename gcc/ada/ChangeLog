@@ -1,3 +1,35 @@
+2014-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-writ.adb (Write_Unit_Information): Fix case where U =
+	No_Unit.
+
+2014-07-31  Claire Dross  <dross@adacore.com>
+
+	* exp_util.adb, exp_util.ads
+	(Get_First_Parent_With_External_Axiomatization_For_Entity):
+	New routine to find the first parent of an entity with
+	a pragma Annotate (GNATprove, External_Axiomatization).
+	(Has_Annotate_Pragma_For_External_Axiomatization): New function
+	to check if a package has a pragma Annotate (GNATprove,
+	External_Axiomatization).
+	* einfo.ads, einfo.adb (Is_Generic_Actual_Subprogram): New
+	flag on the entity for the declaration created for a formal
+	subprogram in an instance. This is a renaming declaration,
+	or in GNATprove_Mode the declaration of an expression function
+	that captures the axiomatization of the actual.
+	* sem_ch6.adb (Analyze_Expression_Function): For a
+	Generic_Actual_Subprogram, place body immediately after the
+	declaration because it may be used in a subsequent declaration
+	in the instance.
+	* sem_ch12.adb (Build_Wrapper): Add code to handle instances where
+	the actual is a function, not an operator. Handle functions with
+	one and two parameters and binary and unary operators.
+
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* cstreams.c (__gnat_is_regular_file_fd): Removed.
+	* adaint.c (__gnat_is_regular_file_fd): Added.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* exp_strm.adb: Minor reformatting.

@@ -662,7 +662,9 @@ package body Lib.Writ is
                --  compilation unit.
 
             begin
-               if Nkind (Unit (Cunit (U))) = N_Subunit then
+               if U /= No_Unit
+                 and then Nkind (Unit (Cunit (U))) = N_Subunit
+               then
                   Note_Unit := Main_Unit;
                else
                   Note_Unit := U;

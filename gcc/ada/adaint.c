@@ -2024,6 +2024,16 @@ __gnat_is_regular_file (char *name)
 }
 
 int
+__gnat_is_regular_file_fd (int fd)
+{
+  int ret;
+  GNAT_STRUCT_STAT statbuf;
+
+  ret = GNAT_FSTAT (fd, &statbuf);
+  return (!ret && S_ISREG (statbuf.st_mode));
+}
+
+int
 __gnat_is_directory_attr (char* name, struct file_attributes* attr)
 {
    if (attr->directory == ATTR_UNSET)
