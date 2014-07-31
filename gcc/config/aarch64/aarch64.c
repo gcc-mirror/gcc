@@ -7900,21 +7900,79 @@ aarch64_simd_scalar_immediate_valid_for_move (rtx op, enum machine_mode mode)
   return aarch64_simd_valid_immediate (op_v, vmode, false, NULL);
 }
 
-/* Construct and return a PARALLEL RTX vector.  */
+/* Construct and return a PARALLEL RTX vector with elements numbering the
+   lanes of either the high (HIGH == TRUE) or low (HIGH == FALSE) half of
+   the vector - from the perspective of the architecture.  This does not
+   line up with GCC's perspective on lane numbers, so we end up with
+   different masks depending on our target endian-ness.  The diagram
+   below may help.  We must draw the distinction when building masks
+   which select one half of the vector.  An instruction selecting
+   architectural low-lanes for a big-endian target, must be described using
+   a mask selecting GCC high-lanes.
+
+                 Big-Endian             Little-Endian
+
+GCC             0   1   2   3           3   2   1   0
+              | x | x | x | x |       | x | x | x | x |
+Architecture    3   2   1   0           3   2   1   0
+
+Low Mask:         { 2, 3 }                { 0, 1 }
+High Mask:        { 0, 1 }                { 2, 3 }
+*/
+
 rtx
 aarch64_simd_vect_par_cnst_half (enum machine_mode mode, bool high)
 {
   int nunits = GET_MODE_NUNITS (mode);
   rtvec v = rtvec_alloc (nunits / 2);
-  int base = high ? nunits / 2 : 0;
+  int high_base = nunits / 2;
+  int low_base = 0;
+  int base;
   rtx t1;
   int i;
 
-  for (i=0; i < nunits / 2; i++)
+  if (BYTES_BIG_ENDIAN)
+    base = high ? low_base : high_base;
+  else
+    base = high ? high_base : low_base;
+
+  for (i = 0; i < nunits / 2; i++)
     RTVEC_ELT (v, i) = GEN_INT (base + i);
 
   t1 = gen_rtx_PARALLEL (mode, v);
   return t1;
+}
+
+/* Check OP for validity as a PARALLEL RTX vector with elements
+   numbering the lanes of either the high (HIGH == TRUE) or low lanes,
+   from the perspective of the architecture.  See the diagram above
+   aarch64_simd_vect_par_cnst_half for more details.  */
+
+bool
+aarch64_simd_check_vect_par_cnst_half (rtx op, enum machine_mode mode,
+				       bool high)
+{
+  rtx ideal = aarch64_simd_vect_par_cnst_half (mode, high);
+  HOST_WIDE_INT count_op = XVECLEN (op, 0);
+  HOST_WIDE_INT count_ideal = XVECLEN (ideal, 0);
+  int i = 0;
+
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  if (count_op != count_ideal)
+    return false;
+
+  for (i = 0; i < count_ideal; i++)
+    {
+      rtx elt_op = XVECEXP (op, 0, i);
+      rtx elt_ideal = XVECEXP (ideal, 0, i);
+
+      if (GET_CODE (elt_op) != CONST_INT
+	  || INTVAL (elt_ideal) != INTVAL (elt_op))
+	return false;
+    }
+  return true;
 }
 
 /* Bounds-check lanes.  Ensure OPERAND lies between LOW (inclusive) and
