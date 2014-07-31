@@ -1,3 +1,12 @@
+2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vpaddd_f64): New.
+	(test_vpaddd_s64): Likewise.
+	(test_vpaddd_s64): Likewise.
+	* gcc.target/aarch64/simd/vpaddd_f64: New.
+	* gcc.target/aarch64/simd/vpaddd_s64: New.
+	* gcc.target/aarch64/simd/vpaddd_u64: New.
+
 2014-07-31  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/61948

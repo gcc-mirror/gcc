@@ -9233,56 +9233,6 @@ vpadd_f32 (float32x2_t a, float32x2_t b)
   return result;
 }
 
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vpadd_s8 (int8x8_t __a, int8x8_t __b)
-{
-  return __builtin_aarch64_addpv8qi (__a, __b);
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vpadd_s16 (int16x4_t __a, int16x4_t __b)
-{
-  return __builtin_aarch64_addpv4hi (__a, __b);
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vpadd_s32 (int32x2_t __a, int32x2_t __b)
-{
-  return __builtin_aarch64_addpv2si (__a, __b);
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vpadd_u8 (uint8x8_t __a, uint8x8_t __b)
-{
-  return (uint8x8_t) __builtin_aarch64_addpv8qi ((int8x8_t) __a,
-						 (int8x8_t) __b);
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vpadd_u16 (uint16x4_t __a, uint16x4_t __b)
-{
-  return (uint16x4_t) __builtin_aarch64_addpv4hi ((int16x4_t) __a,
-						  (int16x4_t) __b);
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vpadd_u32 (uint32x2_t __a, uint32x2_t __b)
-{
-  return (uint32x2_t) __builtin_aarch64_addpv2si ((int32x2_t) __a,
-						  (int32x2_t) __b);
-}
-
-__extension__ static __inline float64_t __attribute__ ((__always_inline__))
-vpaddd_f64 (float64x2_t a)
-{
-  float64_t result;
-  __asm__ ("faddp %d0,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vpaddl_s8 (int8x8_t a)
 {
@@ -12561,12 +12511,6 @@ vaddlv_u32 (uint32x2_t a)
   uint64_t result;
   __asm__ ("uaddlp %0.1d, %1.2s" : "=w"(result) : "w"(a) : );
   return result;
-}
-
-__extension__ static __inline int64_t __attribute__ ((__always_inline__))
-vpaddd_s64 (int64x2_t __a)
-{
-  return __builtin_aarch64_addpdi (__a);
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
@@ -19228,6 +19172,65 @@ __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vnegq_s64 (int64x2_t __a)
 {
   return -__a;
+}
+
+/* vpadd  */
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vpadd_s8 (int8x8_t __a, int8x8_t __b)
+{
+  return __builtin_aarch64_addpv8qi (__a, __b);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vpadd_s16 (int16x4_t __a, int16x4_t __b)
+{
+  return __builtin_aarch64_addpv4hi (__a, __b);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vpadd_s32 (int32x2_t __a, int32x2_t __b)
+{
+  return __builtin_aarch64_addpv2si (__a, __b);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vpadd_u8 (uint8x8_t __a, uint8x8_t __b)
+{
+  return (uint8x8_t) __builtin_aarch64_addpv8qi ((int8x8_t) __a,
+						 (int8x8_t) __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vpadd_u16 (uint16x4_t __a, uint16x4_t __b)
+{
+  return (uint16x4_t) __builtin_aarch64_addpv4hi ((int16x4_t) __a,
+						  (int16x4_t) __b);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vpadd_u32 (uint32x2_t __a, uint32x2_t __b)
+{
+  return (uint32x2_t) __builtin_aarch64_addpv2si ((int32x2_t) __a,
+						  (int32x2_t) __b);
+}
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vpaddd_f64 (float64x2_t __a)
+{
+  return vgetq_lane_f64 (__builtin_aarch64_reduc_splus_v2df (__a), 0);
+}
+
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vpaddd_s64 (int64x2_t __a)
+{
+  return __builtin_aarch64_addpdi (__a);
+}
+
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
+vpaddd_u64 (uint64x2_t __a)
+{
+  return __builtin_aarch64_addpdi ((int64x2_t) __a);
 }
 
 /* vqabs */
