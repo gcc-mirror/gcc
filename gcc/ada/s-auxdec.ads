@@ -109,27 +109,15 @@ package System.Aux_DEC is
 
    --  Floating point type declarations for VAX floating point data types
 
-   pragma Warnings (Off);
-   --  ??? needs comment
-
    type F_Float is digits 6;
-   pragma Float_Representation (VAX_Float, F_Float);
-
    type D_Float is digits 9;
-   pragma Float_Representation (Vax_Float, D_Float);
-
    type G_Float is digits 15;
-   pragma Float_Representation (Vax_Float, G_Float);
+   --  We provide the type names, but these will be IEEE, not VMS format
 
    --  Floating point type declarations for IEEE floating point data types
 
    type IEEE_Single_Float is digits 6;
-   pragma Float_Representation (IEEE_Float, IEEE_Single_Float);
-
    type IEEE_Double_Float is digits 15;
-   pragma Float_Representation (IEEE_Float, IEEE_Double_Float);
-
-   pragma Warnings (On);
 
    Non_Ada_Error : exception;
 

@@ -37,7 +37,6 @@ with Einfo;    use Einfo;
 with Erroutc;  use Erroutc;
 with Fname;    use Fname;
 with Gnatvsn;  use Gnatvsn;
-with Hostparm; use Hostparm;
 with Lib;      use Lib;
 with Opt;      use Opt;
 with Nlists;   use Nlists;
@@ -189,14 +188,6 @@ package body Errout is
    --  The global variable Class_Flag is set to True if the resulting entity
    --  should have 'Class appended to its name (see Add_Class procedure), and
    --  is otherwise unchanged.
-
-   procedure VMS_Convert;
-   --  This procedure has no effect if called when the host is not OpenVMS. If
-   --  the host is indeed OpenVMS, then the error message stored in Msg_Buffer
-   --  is scanned for appearances of switch names which need converting to
-   --  corresponding VMS qualifier names. See Gnames/Vnames table in Errout
-   --  spec for precise definition of the conversion that is performed by this
-   --  routine in OpenVMS mode.
 
    function Warn_Insertion return String;
    --  This is called for warning messages only (so Warning_Msg_Char is set)
@@ -1678,11 +1669,6 @@ package body Errout is
          --  error to make sure that *something* appears on standard error in
          --  an error situation.
 
-         --  Formerly, only the "# errors" suffix was sent to stderr, whereas
-         --  "# lines:" appeared on stdout. This caused problems on VMS when
-         --  the stdout buffer was flushed, giving an extra line feed after
-         --  the prefix.
-
          if Total_Errors_Detected + Warnings_Detected /= 0
            and then not Brief_Output
            and then (Verbose_Mode or Full_List)
@@ -2331,9 +2317,7 @@ package body Errout is
       --  Loop through file names to find matching one. This is a bit slow, but
       --  we only do it in error situations so it is not so terrible. Note that
       --  if the loop does not exit, then the desired case will be left set to
-      --  Mixed_Case, this can happen if the name was not in canonical form,
-      --  and gets canonicalized on VMS. Possibly we could fix this by
-      --  unconditionally canonicalizing these names ???
+      --  Mixed_Case, this can happen if the name was not in canonical form.
 
       for J in 1 .. Last_Source_File loop
          Get_Name_String (Full_Debug_Name (J));
@@ -2980,8 +2964,6 @@ package body Errout is
                Set_Msg_Char (C);
          end case;
       end loop;
-
-      VMS_Convert;
    end Set_Msg_Text;
 
    ----------------
@@ -3291,55 +3273,6 @@ package body Errout is
          Set_Msg_Char ('"');
       end if;
    end Unwind_Internal_Type;
-
-   -----------------
-   -- VMS_Convert --
-   -----------------
-
-   procedure VMS_Convert is
-      P : Natural;
-      L : Natural;
-      N : Natural;
-
-   begin
-      if not OpenVMS then
-         return;
-      end if;
-
-      P := Msg_Buffer'First;
-      loop
-         if P >= Msglen then
-            return;
-         end if;
-
-         if Msg_Buffer (P) = '-' then
-            for G in Gnames'Range loop
-               L := Gnames (G)'Length;
-
-               --  See if we have "-ggg switch", where ggg is Gnames entry
-
-               if P + L + 7 <= Msglen
-                 and then Msg_Buffer (P + 1 .. P + L) = Gnames (G).all
-                 and then Msg_Buffer (P + L + 1 .. P + L + 7) = " switch"
-               then
-                  --  Replace by "/vvv qualifier", where vvv is Vnames entry
-
-                  N := Vnames (G)'Length;
-                  Msg_Buffer (P + N + 11 .. Msglen + N - L + 3) :=
-                    Msg_Buffer (P + L + 8 .. Msglen);
-                  Msg_Buffer (P) := '/';
-                  Msg_Buffer (P + 1 .. P + N) := Vnames (G).all;
-                  Msg_Buffer (P + N + 1 .. P + N + 10) := " qualifier";
-                  P := P + N + 10;
-                  Msglen := Msglen + N - L + 3;
-                  exit;
-               end if;
-            end loop;
-         end if;
-
-         P := P + 1;
-      end loop;
-   end VMS_Convert;
 
    --------------------
    -- Warn_Insertion --

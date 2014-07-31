@@ -2125,11 +2125,6 @@ package body CStand is
       Exponent    : constant Uint := Emax - Mantissa;
 
    begin
-      --  Note: for the call from Cstand to initially create the types in
-      --  Standard, Float_Rep will never be VAX_Native. Circuitry in Sem_Vfpt
-      --  will adjust these types appropriately VAX_Native if a pragma
-      --  Float_Representation (VAX_Float) is used.
-
       H := Make_Float_Literal (Stloc, Radix, Significand, Exponent);
       L := Make_Float_Literal (Stloc, Radix, -Significand, Exponent);
 

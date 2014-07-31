@@ -7367,13 +7367,6 @@ package body Einfo is
                when others => return No_Uint;
             end case;
 
-         when VAX_Native =>
-            case Digs is
-               when  1 ..  9 => return 2**7 - 1;
-               when 10 .. 15 => return 2**10 - 1;
-               when others => return No_Uint;
-            end case;
-
          when AAMP =>
             return Uint_2 ** Uint_7 - Uint_1;
       end case;
@@ -7387,7 +7380,6 @@ package body Einfo is
    begin
       case Float_Rep (Id) is
          when IEEE_Binary => return Uint_3 - Machine_Emax_Value (Id);
-         when VAX_Native  => return -Machine_Emax_Value (Id);
          when AAMP        => return -Machine_Emax_Value (Id);
       end case;
    end Machine_Emin_Value;
@@ -7410,14 +7402,6 @@ package body Einfo is
                when others => return No_Uint;
             end case;
 
-         when VAX_Native =>
-            case Digs is
-               when  1 ..  6 => return Uint_24;
-               when  7 ..  9 => return UI_From_Int (56);
-               when 10 .. 15 => return UI_From_Int (53);
-               when others => return No_Uint;
-            end case;
-
          when AAMP =>
             case Digs is
                when  1 ..  6 => return Uint_24;
@@ -7434,7 +7418,7 @@ package body Einfo is
    function Machine_Radix_Value (Id : E) return U is
    begin
       case Float_Rep (Id) is
-         when IEEE_Binary | VAX_Native | AAMP =>
+         when IEEE_Binary | AAMP =>
             return Uint_2;
       end case;
    end Machine_Radix_Value;
@@ -8209,7 +8193,7 @@ package body Einfo is
 
    function Vax_Float (Id : E) return B is
    begin
-      return Is_Floating_Point_Type (Id) and then Float_Rep (Id) = VAX_Native;
+      return False;
    end Vax_Float;
 
    ------------------------

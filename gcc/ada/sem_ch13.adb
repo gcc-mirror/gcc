@@ -10875,19 +10875,10 @@ package body Sem_Ch13 is
       then
          return 0;
 
-         --  Access types. Normally an access type cannot have a size smaller
-         --  than the size of System.Address. The exception is on VMS, where
-         --  we have short and long addresses, and it is possible for an access
-         --  type to have a short address size (and thus be less than the size
-         --  of System.Address itself). We simply skip the check for VMS, and
-         --  leave it to the back end to do the check.
+         --  Access types (cannot have size smaller than System.Address)
 
       elsif Is_Access_Type (T) then
-         if OpenVMS_On_Target then
-            return 0;
-         else
-            return System_Address_Size;
-         end if;
+         return System_Address_Size;
 
       --  Floating-point types
 
@@ -12588,13 +12579,10 @@ package body Sem_Ch13 is
         and then Convention (Target) /= Convention (Source)
         and then Warn_On_Unchecked_Conversion
       then
-         --  Give warnings for subprogram pointers only on most targets. The
-         --  exception is VMS, where data pointers can have different lengths
-         --  depending on the pointer convention.
+         --  Give warnings for subprogram pointers only on most targets
 
          if Is_Access_Subprogram_Type (Target)
            or else Is_Access_Subprogram_Type (Source)
-           or else OpenVMS_On_Target
          then
             Error_Msg_N
               ("?z?conversion between pointers with different conventions!",

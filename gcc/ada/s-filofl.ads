@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,13 +34,14 @@
 --  we can't just use Long_Float, since this may have been mapped to Vax_Float
 --  using a Float_Representation configuration pragma.
 
+--  TO BE RMOVED ???
+
 with System.Fat_Gen;
 
 package System.Fat_IEEE_Long_Float is
    pragma Pure;
 
    type Fat_IEEE_Long is digits 15;
-   pragma Float_Representation (IEEE_Float, Fat_IEEE_Long);
 
    --  Note the only entity from this package that is accessed by Rtsfind
    --  is the name of the package instantiation. Entities within this package

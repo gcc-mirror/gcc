@@ -16004,15 +16004,6 @@ package body Sem_Ch3 is
             return False;
          end if;
 
-         --  Avoid types not matching pragma Float_Representation, if present
-
-         if (Opt.Float_Format = 'I' and then Float_Rep (E) /= IEEE_Binary)
-              or else
-            (Opt.Float_Format = 'V' and then Float_Rep (E) /= VAX_Native)
-         then
-            return False;
-         end if;
-
          --  Check for matching range, if specified
 
          if Present (Spec) then
