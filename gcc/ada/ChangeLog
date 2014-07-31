@@ -1,3 +1,23 @@
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* s-fileio.adb: Remove obsolete comment.
+
+2014-07-31  Vincent Celier  <celier@adacore.com>
+
+	* a-strbou.ads ("=" (Bounded_String, Bounded_String): Add
+	overriding keyword before function to avoid error when compiler
+	is called with -gnatyO (check overriding indicators).
+
+2014-07-31  Tucker Taft  <taft@adacore.com>
+
+	* gnat_ugn.texi: Add a paragraph pointing the reader
+	to the "plugins" example.
+
+2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Document the
+	purpose of the parent chain traversal.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* checks.ads, checks.adb (Activate_Overflow_Check): Do not set flag for
