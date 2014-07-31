@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -143,26 +142,36 @@ package body Inline is
    -- Local Subprograms --
    -----------------------
 
-   function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id;
-   pragma Inline (Get_Code_Unit_Entity);
-   --  Return the entity node for the unit containing E. Always return the spec
-   --  for a package.
-
-   function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean;
-   --  Return True if E is in the main unit or its spec or in a subunit
-
    procedure Add_Call (Called : Entity_Id; Caller : Entity_Id := Empty);
    --  Make two entries in Inlined table, for an inlined subprogram being
    --  called, and for the inlined subprogram that contains the call. If
    --  the call is in the main compilation unit, Caller is Empty.
 
+   procedure Add_Inlined_Subprogram (Index : Subp_Index);
+   --  Add the subprogram to the list of inlined subprogram for the unit
+
    function Add_Subp (E : Entity_Id) return Subp_Index;
    --  Make entry in Inlined table for subprogram E, or return table index
    --  that already holds E.
 
+   function Get_Code_Unit_Entity (E : Entity_Id) return Entity_Id;
+   pragma Inline (Get_Code_Unit_Entity);
+   --  Return the entity node for the unit containing E. Always return the spec
+   --  for a package.
+
    function Has_Initialized_Type (E : Entity_Id) return Boolean;
    --  If a candidate for inlining contains type declarations for types with
    --  non-trivial initialization procedures, they are not worth inlining.
+
+   function Has_Single_Return (N : Node_Id) return Boolean;
+   --  In general we cannot inline functions that return unconstrained type.
+   --  However, we can handle such functions if all return statements return
+   --  a local variable that is the only declaration in the body of the
+   --  function. In that case the call can be replaced by that local
+   --  variable as is done for other inlined calls.
+
+   function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean;
+   --  Return True if E is in the main unit or its spec or in a subunit
 
    function Is_Nested (E : Entity_Id) return Boolean;
    --  If the function is nested inside some other function, it will always
@@ -171,8 +180,8 @@ package body Inline is
    --  function anyway. This is also the case if the function is defined in a
    --  task body or within an entry (for example, an initialization procedure).
 
-   procedure Add_Inlined_Subprogram (Index : Subp_Index);
-   --  Add the subprogram to the list of inlined subprogram for the unit
+   function Number_Of_Statements (Stats : List_Id) return Natural;
+   --  Return the number of statements in the list
 
    ------------------------------
    -- Deferred Cleanup Actions --
@@ -415,6 +424,13 @@ package body Inline is
       --
       --  This procedure must be carefully coordinated with the back end.
 
+      procedure Register_Backend_Inlined_Subprogram (Subp : Entity_Id);
+      --  Append Subp to the list of subprograms inlined by the backend
+
+      procedure Register_Backend_Not_Inlined_Subprogram (Subp : Entity_Id);
+      --  Append Subp to the list of subprograms that cannot be inlined by
+      --  the backend
+
       ----------------------------
       -- Back_End_Cannot_Inline --
       ----------------------------
@@ -461,6 +477,32 @@ package body Inline is
          return False;
       end Back_End_Cannot_Inline;
 
+      -----------------------------------------
+      -- Register_Backend_Inlined_Subprogram --
+      -----------------------------------------
+
+      procedure Register_Backend_Inlined_Subprogram (Subp : Entity_Id) is
+      begin
+         if Backend_Inlined_Subps = No_Elist then
+            Backend_Inlined_Subps := New_Elmt_List;
+         end if;
+
+         Append_Elmt (Subp, To => Backend_Inlined_Subps);
+      end Register_Backend_Inlined_Subprogram;
+
+      ---------------------------------------------
+      -- Register_Backend_Not_Inlined_Subprogram --
+      ---------------------------------------------
+
+      procedure Register_Backend_Not_Inlined_Subprogram (Subp : Entity_Id) is
+      begin
+         if Backend_Not_Inlined_Subps = No_Elist then
+            Backend_Not_Inlined_Subps := New_Elmt_List;
+         end if;
+
+         Append_Elmt (Subp, To => Backend_Not_Inlined_Subps);
+      end Register_Backend_Not_Inlined_Subprogram;
+
    --  Start of processing for Add_Inlined_Subprogram
 
    begin
@@ -480,8 +522,11 @@ package body Inline is
       then
          if Back_End_Cannot_Inline (E) then
             Set_Is_Inlined (E, False);
+            Register_Backend_Not_Inlined_Subprogram (E);
 
          else
+            Register_Backend_Inlined_Subprogram (E);
+
             if No (Last_Inlined) then
                Set_First_Inlined_Subprogram (Cunit (Main_Unit), E);
             else
@@ -490,6 +535,8 @@ package body Inline is
 
             Last_Inlined := E;
          end if;
+      else
+         Register_Backend_Not_Inlined_Subprogram (E);
       end if;
 
       Inlined.Table (Index).Listed := True;
@@ -850,9 +897,6 @@ package body Inline is
       Max_Size        : constant := 10;
       Stat_Count      : Integer := 0;
 
-      function Has_Excluded_Declaration (Decls : List_Id) return Boolean;
-      --  Check for declarations that make inlining not worthwhile
-
       function Has_Excluded_Statement   (Stats : List_Id) return Boolean;
       --  Check for statements that make inlining not worthwhile: any tasking
       --  statement, nested at any level. Keep track of total number of
@@ -864,13 +908,6 @@ package body Inline is
       --  so that it can be elaborated after the generic itself. This might
       --  conflict with subsequent inlinings, so that it is unsafe to try to
       --  inline in such a case.
-
-      function Has_Single_Return return Boolean;
-      --  In general we cannot inline functions that return unconstrained type.
-      --  However, we can handle such functions if all return statements return
-      --  a local variable that is the only declaration in the body of the
-      --  function. In that case the call can be replaced by that local
-      --  variable as is done for other inlined calls.
 
       function Has_Single_Return_In_GNATprove_Mode return Boolean;
       --  This function is called only in GNATprove mode, and it returns
@@ -887,103 +924,6 @@ package body Inline is
       --  If the body of the subprogram includes a call that returns an
       --  unconstrained type, the secondary stack is involved, and it
       --  is not worth inlining.
-
-      ------------------------------
-      -- Has_Excluded_Declaration --
-      ------------------------------
-
-      function Has_Excluded_Declaration (Decls : List_Id) return Boolean is
-         D : Node_Id;
-
-         function Is_Unchecked_Conversion (D : Node_Id) return Boolean;
-         --  Nested subprograms make a given body ineligible for inlining, but
-         --  we make an exception for instantiations of unchecked conversion.
-         --  The body has not been analyzed yet, so check the name, and verify
-         --  that the visible entity with that name is the predefined unit.
-
-         -----------------------------
-         -- Is_Unchecked_Conversion --
-         -----------------------------
-
-         function Is_Unchecked_Conversion (D : Node_Id) return Boolean is
-            Id   : constant Node_Id := Name (D);
-            Conv : Entity_Id;
-
-         begin
-            if Nkind (Id) = N_Identifier
-              and then Chars (Id) = Name_Unchecked_Conversion
-            then
-               Conv := Current_Entity (Id);
-
-            elsif Nkind_In (Id, N_Selected_Component, N_Expanded_Name)
-              and then Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
-            then
-               Conv := Current_Entity (Selector_Name (Id));
-            else
-               return False;
-            end if;
-
-            return Present (Conv)
-              and then Is_Predefined_File_Name
-                         (Unit_File_Name (Get_Source_Unit (Conv)))
-              and then Is_Intrinsic_Subprogram (Conv);
-         end Is_Unchecked_Conversion;
-
-      --  Start of processing for Has_Excluded_Declaration
-
-      begin
-         D := First (Decls);
-         while Present (D) loop
-            if Nkind (D) = N_Function_Instantiation
-              and then not Is_Unchecked_Conversion (D)
-            then
-               Cannot_Inline
-                 ("cannot inline & (nested function instantiation)?",
-                  D, Subp);
-               return True;
-
-            elsif Nkind (D) = N_Protected_Type_Declaration then
-               Cannot_Inline
-                 ("cannot inline & (nested protected type declaration)?",
-                  D, Subp);
-               return True;
-
-            elsif Nkind (D) = N_Package_Declaration then
-               Cannot_Inline
-                 ("cannot inline & (nested package declaration)?",
-                  D, Subp);
-               return True;
-
-            elsif Nkind (D) = N_Package_Instantiation then
-               Cannot_Inline
-                 ("cannot inline & (nested package instantiation)?",
-                  D, Subp);
-               return True;
-
-            elsif Nkind (D) = N_Subprogram_Body then
-               Cannot_Inline
-                 ("cannot inline & (nested subprogram)?",
-                  D, Subp);
-               return True;
-
-            elsif Nkind (D) = N_Procedure_Instantiation then
-               Cannot_Inline
-                 ("cannot inline & (nested procedure instantiation)?",
-                  D, Subp);
-               return True;
-
-            elsif Nkind (D) = N_Task_Type_Declaration then
-               Cannot_Inline
-                 ("cannot inline & (nested task type declaration)?",
-                  D, Subp);
-               return True;
-            end if;
-
-            Next (D);
-         end loop;
-
-         return False;
-      end Has_Excluded_Declaration;
 
       ----------------------------
       -- Has_Excluded_Statement --
@@ -1012,7 +952,7 @@ package body Inline is
 
             elsif Nkind (S) = N_Block_Statement then
                if Present (Declarations (S))
-                 and then Has_Excluded_Declaration (Declarations (S))
+                 and then Has_Excluded_Declaration (Subp, Declarations (S))
                then
                   return True;
 
@@ -1107,89 +1047,6 @@ package body Inline is
 
          return False;
       end Has_Pending_Instantiation;
-
-      ------------------------
-      --  Has_Single_Return --
-      ------------------------
-
-      function Has_Single_Return return Boolean is
-         Return_Statement : Node_Id := Empty;
-
-         function Check_Return (N : Node_Id) return Traverse_Result;
-
-         ------------------
-         -- Check_Return --
-         ------------------
-
-         function Check_Return (N : Node_Id) return Traverse_Result is
-         begin
-            if Nkind (N) = N_Simple_Return_Statement then
-               if Present (Expression (N))
-                 and then Is_Entity_Name (Expression (N))
-               then
-                  if No (Return_Statement) then
-                     Return_Statement := N;
-                     return OK;
-
-                  elsif Chars (Expression (N)) =
-                        Chars (Expression (Return_Statement))
-                  then
-                     return OK;
-
-                  else
-                     return Abandon;
-                  end if;
-
-               --  A return statement within an extended return is a noop
-               --  after inlining.
-
-               elsif No (Expression (N))
-                 and then Nkind (Parent (Parent (N))) =
-                                         N_Extended_Return_Statement
-               then
-                  return OK;
-
-               else
-                  --  Expression has wrong form
-
-                  return Abandon;
-               end if;
-
-            --  We can only inline a build-in-place function if
-            --  it has a single extended return.
-
-            elsif Nkind (N) = N_Extended_Return_Statement then
-               if No (Return_Statement) then
-                  Return_Statement := N;
-                  return OK;
-
-               else
-                  return Abandon;
-               end if;
-
-            else
-               return OK;
-            end if;
-         end Check_Return;
-
-         function Check_All_Returns is new Traverse_Func (Check_Return);
-
-      --  Start of processing for Has_Single_Return
-
-      begin
-         if Check_All_Returns (N) /= OK then
-            return False;
-
-         elsif Nkind (Return_Statement) = N_Extended_Return_Statement then
-            return True;
-
-         else
-            return Present (Declarations (N))
-              and then Present (First (Declarations (N)))
-              and then Chars (Expression (Return_Statement)) =
-                       Chars (Defining_Identifier (First (Declarations (N))));
-         end if;
-      end Has_Single_Return;
 
       -----------------------------------------
       -- Has_Single_Return_In_GNATprove_Mode --
@@ -1330,7 +1187,7 @@ package body Inline is
         and then not Is_Access_Type (Etype (Subp))
         and then not Is_Constrained (Etype (Subp))
       then
-         if not Has_Single_Return then
+         if not Has_Single_Return (N) then
             Cannot_Inline
               ("cannot inline & (unconstrained return type)?", N, Subp);
             return;
@@ -1348,7 +1205,7 @@ package body Inline is
       end if;
 
       if Present (Declarations (N))
-        and then Has_Excluded_Declaration (Declarations (N))
+        and then Has_Excluded_Declaration (Subp, Declarations (N))
       then
          return;
       end if;
@@ -1502,7 +1359,7 @@ package body Inline is
 
       --  Old semantics
 
-      if not Debug_Flag_Dot_K then
+      if not Back_End_Inlining then
 
          --  Do not emit warning if this is a predefined unit which is not
          --  the main unit. With validity checks enabled, some predefined
@@ -1939,18 +1796,9 @@ package body Inline is
          Subp : Entity_Id) return Boolean
       is
          Max_Size   : constant := 10;
-         Stat_Count : Integer := 0;
 
          function Has_Excluded_Contract return Boolean;
          --  Check for contracts that cannot be inlined
-
-         function Has_Excluded_Declaration (Decls : List_Id) return Boolean;
-         --  Check for declarations that make inlining not worthwhile
-
-         function Has_Excluded_Statement   (Stats : List_Id) return Boolean;
-         --  Check for statements that make inlining not worthwhile: any
-         --  tasking statement, nested at any level. Keep track of total
-         --  number of elementary statements, as a measure of acceptable size.
 
          function Has_Pending_Instantiation return Boolean;
          --  Return True if some enclosing body contains instantiations that
@@ -2045,218 +1893,6 @@ package body Inline is
 
             return False;
          end Has_Excluded_Contract;
-
-         ------------------------------
-         -- Has_Excluded_Declaration --
-         ------------------------------
-
-         function Has_Excluded_Declaration (Decls : List_Id) return Boolean is
-            D : Node_Id;
-
-            function Is_Unchecked_Conversion (D : Node_Id) return Boolean;
-            --  Nested subprograms make a given body ineligible for inlining,
-            --  but we make an exception for instantiations of unchecked
-            --  conversion. The body has not been analyzed yet, so check the
-            --  name, and verify that the visible entity with that name is the
-            --  predefined unit.
-
-            -----------------------------
-            -- Is_Unchecked_Conversion --
-            -----------------------------
-
-            function Is_Unchecked_Conversion (D : Node_Id) return Boolean is
-               Id   : constant Node_Id := Name (D);
-               Conv : Entity_Id;
-
-            begin
-               if Nkind (Id) = N_Identifier
-                 and then Chars (Id) = Name_Unchecked_Conversion
-               then
-                  Conv := Current_Entity (Id);
-
-               elsif Nkind_In (Id, N_Selected_Component, N_Expanded_Name)
-                 and then
-                   Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
-               then
-                  Conv := Current_Entity (Selector_Name (Id));
-               else
-                  return False;
-               end if;
-
-               return Present (Conv)
-                 and then Is_Predefined_File_Name
-                            (Unit_File_Name (Get_Source_Unit (Conv)))
-                 and then Is_Intrinsic_Subprogram (Conv);
-            end Is_Unchecked_Conversion;
-
-         --  Start of processing for Has_Excluded_Declaration
-
-         begin
-            D := First (Decls);
-            while Present (D) loop
-               if Nkind (D) = N_Function_Instantiation
-                 and then not Is_Unchecked_Conversion (D)
-               then
-                  Cannot_Inline
-                    ("cannot inline & (nested function instantiation)?",
-                     D, Subp);
-                  return True;
-
-               elsif Nkind (D) = N_Protected_Type_Declaration then
-                  Cannot_Inline
-                    ("cannot inline & (nested protected type declaration)?",
-                     D, Subp);
-                  return True;
-
-               elsif Nkind (D) = N_Package_Declaration then
-                  Cannot_Inline
-                    ("cannot inline & (nested package declaration)?",
-                     D, Subp);
-                  return True;
-
-               elsif Nkind (D) = N_Package_Instantiation then
-                  Cannot_Inline
-                    ("cannot inline & (nested package instantiation)?",
-                     D, Subp);
-                  return True;
-
-               elsif Nkind (D) = N_Subprogram_Body then
-                  Cannot_Inline
-                    ("cannot inline & (nested subprogram)?",
-                     D, Subp);
-                  return True;
-
-               elsif Nkind (D) = N_Procedure_Instantiation then
-                  Cannot_Inline
-                    ("cannot inline & (nested procedure instantiation)?",
-                     D, Subp);
-                  return True;
-
-               elsif Nkind (D) = N_Task_Type_Declaration then
-                  Cannot_Inline
-                    ("cannot inline & (nested task type declaration)?",
-                     D, Subp);
-                  return True;
-               end if;
-
-               Next (D);
-            end loop;
-
-            return False;
-         end Has_Excluded_Declaration;
-
-         ----------------------------
-         -- Has_Excluded_Statement --
-         ----------------------------
-
-         function Has_Excluded_Statement (Stats : List_Id) return Boolean is
-            S : Node_Id;
-            E : Node_Id;
-
-         begin
-            S := First (Stats);
-            while Present (S) loop
-               Stat_Count := Stat_Count + 1;
-
-               if Nkind_In (S, N_Abort_Statement,
-                            N_Asynchronous_Select,
-                            N_Conditional_Entry_Call,
-                            N_Delay_Relative_Statement,
-                            N_Delay_Until_Statement,
-                            N_Selective_Accept,
-                            N_Timed_Entry_Call)
-               then
-                  Cannot_Inline
-                    ("cannot inline & (non-allowed statement)?", S, Subp);
-                  return True;
-
-               elsif Nkind (S) = N_Block_Statement then
-                  if Present (Declarations (S))
-                    and then Has_Excluded_Declaration (Declarations (S))
-                  then
-                     return True;
-
-                  elsif Present (Handled_Statement_Sequence (S)) then
-                     if Present
-                          (Exception_Handlers (Handled_Statement_Sequence (S)))
-                     then
-                        Cannot_Inline
-                          ("cannot inline& (exception handler)?",
-                           First (Exception_Handlers
-                                    (Handled_Statement_Sequence (S))),
-                           Subp);
-                        return True;
-
-                     elsif Has_Excluded_Statement
-                             (Statements (Handled_Statement_Sequence (S)))
-                     then
-                        return True;
-                     end if;
-                  end if;
-
-               elsif Nkind (S) = N_Case_Statement then
-                  E := First (Alternatives (S));
-                  while Present (E) loop
-                     if Has_Excluded_Statement (Statements (E)) then
-                        return True;
-                     end if;
-
-                     Next (E);
-                  end loop;
-
-               elsif Nkind (S) = N_If_Statement then
-                  if Has_Excluded_Statement (Then_Statements (S)) then
-                     return True;
-                  end if;
-
-                  if Present (Elsif_Parts (S)) then
-                     E := First (Elsif_Parts (S));
-                     while Present (E) loop
-                        if Has_Excluded_Statement (Then_Statements (E)) then
-                           return True;
-                        end if;
-                        Next (E);
-                     end loop;
-                  end if;
-
-                  if Present (Else_Statements (S))
-                    and then Has_Excluded_Statement (Else_Statements (S))
-                  then
-                     return True;
-                  end if;
-
-               elsif Nkind (S) = N_Loop_Statement
-                 and then Has_Excluded_Statement (Statements (S))
-               then
-                  return True;
-
-               elsif Nkind (S) = N_Extended_Return_Statement then
-                  if Present (Handled_Statement_Sequence (S))
-                    and then
-                      Has_Excluded_Statement
-                        (Statements (Handled_Statement_Sequence (S)))
-                  then
-                     return True;
-
-                  elsif Present (Handled_Statement_Sequence (S))
-                    and then
-                      Present (Exception_Handlers
-                                (Handled_Statement_Sequence (S)))
-                  then
-                     Cannot_Inline
-                       ("cannot inline& (exception handler)?",
-                        First (Exception_Handlers
-                          (Handled_Statement_Sequence (S))),
-                        Subp);
-                     return True;
-                  end if;
-               end if;
-
-               Next (S);
-            end loop;
-
-            return False;
-         end Has_Excluded_Statement;
 
          -------------------------------
          -- Has_Pending_Instantiation --
@@ -2513,7 +2149,8 @@ package body Inline is
                                     and then ((Optimization_Level > 0
                                                 and then Ekind (Spec_Id) =
                                                                    E_Function)
-                                               or else Front_End_Inlining));
+                                               or else Front_End_Inlining
+                                               or else Back_End_Inlining));
 
          Body_To_Analyze : Node_Id;
 
@@ -2540,6 +2177,7 @@ package body Inline is
 
          elsif Assertions_Enabled
            and then Has_Excluded_Contract
+           and then not Back_End_Inlining
          then
             return False;
 
@@ -2563,7 +2201,7 @@ package body Inline is
          --  Check excluded declarations
 
          if Present (Declarations (N))
-           and then Has_Excluded_Declaration (Declarations (N))
+           and then Has_Excluded_Declaration (Subp, Declarations (N))
          then
             return False;
          end if;
@@ -2581,7 +2219,7 @@ package body Inline is
                return False;
 
             elsif Has_Excluded_Statement
-                    (Statements (Handled_Statement_Sequence (N)))
+                    (Subp, Statements (Handled_Statement_Sequence (N)))
             then
                return False;
             end if;
@@ -2595,7 +2233,8 @@ package body Inline is
          if Front_End_Inlining
            and then
              not (Has_Pragma_Inline_Always (Subp) or else GNATprove_Mode)
-           and then Stat_Count > Max_Size
+           and then Number_Of_Statements
+                      (Statements (Handled_Statement_Sequence (N))) > Max_Size
          then
             Cannot_Inline ("cannot inline& (body too large)?", N, Subp);
             return False;
@@ -2663,8 +2302,23 @@ package body Inline is
                return False;
 
             elsif Returns_Unconstrained_Type (Subp) then
-               Cannot_Inline
-                 ("cannot inline & (unconstrained return type)?", N, Subp);
+
+               if Back_End_Inlining
+                 and then Can_Split_Unconstrained_Function (N)
+               then
+                  return True;
+
+               elsif Has_Single_Return (N) then
+                  return True;
+
+               --  Otherwise the secondary stack is involved, and it is not
+               --  worth inlining.
+
+               else
+                  Cannot_Inline
+                    ("cannot inline & (unconstrained return type)?", N, Subp);
+               end if;
+
                return False;
             end if;
 
@@ -2680,7 +2334,7 @@ package body Inline is
             --  separately (see Can_Split_Unconstrained_Function).
 
             elsif Returns_Unconstrained_Type (Subp) then
-               null;
+               return True;
 
             --  Check supported cases
 
@@ -3084,7 +2738,7 @@ package body Inline is
                Build_Body_To_Inline (N, Spec_Id);
                Set_Is_Inlined (Spec_Id);
             end if;
-         else
+         elsif not Back_End_Inlining then
             Build_Body_To_Inline (N, Spec_Id);
             Set_Is_Inlined (Spec_Id);
          end if;
@@ -3678,14 +3332,14 @@ package body Inline is
             --  expanded into a procedure call which must be added after the
             --  object declaration.
 
-            if Is_Unc_Decl and then Debug_Flag_Dot_K then
+            if Is_Unc_Decl and then Back_End_Inlining then
                Insert_Action_After (Parent (N), Blk);
             else
                Set_Expression (Parent (N), Empty);
                Insert_After (Parent (N), Blk);
             end if;
 
-         elsif Is_Unc and then not Debug_Flag_Dot_K then
+         elsif Is_Unc and then not Back_End_Inlining then
             Insert_Before (Parent (N), Blk);
          end if;
       end Rewrite_Function_Call;
@@ -3780,7 +3434,7 @@ package body Inline is
    begin
       --  Initializations for old/new semantics
 
-      if not Debug_Flag_Dot_K then
+      if not Back_End_Inlining then
          Is_Unc      := Is_Array_Type (Etype (Subp))
                           and then not Is_Constrained (Etype (Subp));
          Is_Unc_Decl := False;
@@ -3824,7 +3478,7 @@ package body Inline is
         and then
           Nkind (First (Statements (Handled_Statement_Sequence (Orig_Bod))))
             = N_Extended_Return_Statement
-        and then not Debug_Flag_Dot_K
+        and then not Back_End_Inlining
       then
          return;
       end if;
@@ -3865,7 +3519,7 @@ package body Inline is
 
       --  Old semantics
 
-      if not Debug_Flag_Dot_K then
+      if not Back_End_Inlining then
          declare
             Bod : Node_Id;
 
@@ -4189,7 +3843,7 @@ package body Inline is
          --  of the result of a call to an inlined function that returns
          --  an unconstrained type
 
-         elsif Debug_Flag_Dot_K
+         elsif Back_End_Inlining
            and then Nkind (Parent (N)) = N_Object_Declaration
            and then Is_Unc
          then
@@ -4429,6 +4083,224 @@ package body Inline is
       return Unit;
    end Get_Code_Unit_Entity;
 
+   ------------------------------
+   -- Has_Excluded_Declaration --
+   ------------------------------
+
+   function Has_Excluded_Declaration
+     (Subp  : Entity_Id;
+      Decls : List_Id) return Boolean
+   is
+      D : Node_Id;
+
+      function Is_Unchecked_Conversion (D : Node_Id) return Boolean;
+      --  Nested subprograms make a given body ineligible for inlining, but
+      --  we make an exception for instantiations of unchecked conversion.
+      --  The body has not been analyzed yet, so check the name, and verify
+      --  that the visible entity with that name is the predefined unit.
+
+      -----------------------------
+      -- Is_Unchecked_Conversion --
+      -----------------------------
+
+      function Is_Unchecked_Conversion (D : Node_Id) return Boolean is
+         Id   : constant Node_Id := Name (D);
+         Conv : Entity_Id;
+
+      begin
+         if Nkind (Id) = N_Identifier
+           and then Chars (Id) = Name_Unchecked_Conversion
+         then
+            Conv := Current_Entity (Id);
+
+         elsif Nkind_In (Id, N_Selected_Component, N_Expanded_Name)
+           and then Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
+         then
+            Conv := Current_Entity (Selector_Name (Id));
+         else
+            return False;
+         end if;
+
+         return Present (Conv)
+           and then Is_Predefined_File_Name
+                      (Unit_File_Name (Get_Source_Unit (Conv)))
+           and then Is_Intrinsic_Subprogram (Conv);
+      end Is_Unchecked_Conversion;
+
+   --  Start of processing for Has_Excluded_Declaration
+
+   begin
+      D := First (Decls);
+      while Present (D) loop
+         if Nkind (D) = N_Subprogram_Body then
+            Cannot_Inline
+              ("cannot inline & (nested subprogram)?",
+               D, Subp);
+            return True;
+
+         elsif Nkind (D) = N_Task_Type_Declaration
+           or else Nkind (D) = N_Single_Task_Declaration
+         then
+            Cannot_Inline
+              ("cannot inline & (nested task type declaration)?",
+               D, Subp);
+            return True;
+
+         elsif Nkind (D) = N_Protected_Type_Declaration
+           or else Nkind (D) = N_Single_Protected_Declaration
+         then
+            Cannot_Inline
+              ("cannot inline & (nested protected type declaration)?",
+               D, Subp);
+            return True;
+
+         elsif Nkind (D) = N_Package_Declaration then
+            Cannot_Inline
+              ("cannot inline & (nested package declaration)?",
+               D, Subp);
+            return True;
+
+         elsif Nkind (D) = N_Function_Instantiation
+           and then not Is_Unchecked_Conversion (D)
+         then
+            Cannot_Inline
+              ("cannot inline & (nested function instantiation)?",
+               D, Subp);
+            return True;
+
+         elsif Nkind (D) = N_Procedure_Instantiation then
+            Cannot_Inline
+              ("cannot inline & (nested procedure instantiation)?",
+               D, Subp);
+            return True;
+
+         elsif Nkind (D) = N_Package_Instantiation then
+            Cannot_Inline
+              ("cannot inline & (nested package instantiation)?",
+               D, Subp);
+            return True;
+         end if;
+
+         Next (D);
+      end loop;
+
+      return False;
+   end Has_Excluded_Declaration;
+
+   ----------------------------
+   -- Has_Excluded_Statement --
+   ----------------------------
+
+   function Has_Excluded_Statement
+     (Subp  : Entity_Id;
+      Stats : List_Id) return Boolean
+   is
+      S : Node_Id;
+      E : Node_Id;
+
+   begin
+      S := First (Stats);
+      while Present (S) loop
+         if Nkind_In (S, N_Abort_Statement,
+                         N_Asynchronous_Select,
+                         N_Conditional_Entry_Call,
+                         N_Delay_Relative_Statement,
+                         N_Delay_Until_Statement,
+                         N_Selective_Accept,
+                         N_Timed_Entry_Call)
+         then
+            Cannot_Inline
+              ("cannot inline & (non-allowed statement)?", S, Subp);
+            return True;
+
+         elsif Nkind (S) = N_Block_Statement then
+            if Present (Declarations (S))
+              and then Has_Excluded_Declaration (Subp, Declarations (S))
+            then
+               return True;
+
+            elsif Present (Handled_Statement_Sequence (S)) then
+               if Present
+                    (Exception_Handlers (Handled_Statement_Sequence (S)))
+               then
+                  Cannot_Inline
+                    ("cannot inline& (exception handler)?",
+                     First (Exception_Handlers
+                              (Handled_Statement_Sequence (S))),
+                     Subp);
+                  return True;
+
+               elsif Has_Excluded_Statement
+                       (Subp, Statements (Handled_Statement_Sequence (S)))
+               then
+                  return True;
+               end if;
+            end if;
+
+         elsif Nkind (S) = N_Case_Statement then
+            E := First (Alternatives (S));
+            while Present (E) loop
+               if Has_Excluded_Statement (Subp, Statements (E)) then
+                  return True;
+               end if;
+
+               Next (E);
+            end loop;
+
+         elsif Nkind (S) = N_If_Statement then
+            if Has_Excluded_Statement (Subp, Then_Statements (S)) then
+               return True;
+            end if;
+
+            if Present (Elsif_Parts (S)) then
+               E := First (Elsif_Parts (S));
+               while Present (E) loop
+                  if Has_Excluded_Statement (Subp, Then_Statements (E)) then
+                     return True;
+                  end if;
+
+                  Next (E);
+               end loop;
+            end if;
+
+            if Present (Else_Statements (S))
+              and then Has_Excluded_Statement (Subp, Else_Statements (S))
+            then
+               return True;
+            end if;
+
+         elsif Nkind (S) = N_Loop_Statement
+           and then Has_Excluded_Statement (Subp, Statements (S))
+         then
+            return True;
+
+         elsif Nkind (S) = N_Extended_Return_Statement then
+            if Present (Handled_Statement_Sequence (S))
+              and then
+                Has_Excluded_Statement
+                  (Subp, Statements (Handled_Statement_Sequence (S)))
+            then
+               return True;
+
+            elsif Present (Handled_Statement_Sequence (S))
+              and then
+                Present (Exception_Handlers
+                          (Handled_Statement_Sequence (S)))
+            then
+               Cannot_Inline
+                 ("cannot inline& (exception handler)?",
+                  First (Exception_Handlers (Handled_Statement_Sequence (S))),
+                  Subp);
+               return True;
+            end if;
+         end if;
+
+         Next (S);
+      end loop;
+
+      return False;
+   end Has_Excluded_Statement;
+
    --------------------------
    -- Has_Initialized_Type --
    --------------------------
@@ -4456,6 +4328,89 @@ package body Inline is
 
       return False;
    end Has_Initialized_Type;
+
+   ------------------------
+   --  Has_Single_Return --
+   ------------------------
+
+   function Has_Single_Return (N : Node_Id) return Boolean is
+      Return_Statement : Node_Id := Empty;
+
+      function Check_Return (N : Node_Id) return Traverse_Result;
+
+      ------------------
+      -- Check_Return --
+      ------------------
+
+      function Check_Return (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Simple_Return_Statement then
+            if Present (Expression (N))
+              and then Is_Entity_Name (Expression (N))
+            then
+               if No (Return_Statement) then
+                  Return_Statement := N;
+                  return OK;
+
+               elsif Chars (Expression (N)) =
+                     Chars (Expression (Return_Statement))
+               then
+                  return OK;
+
+               else
+                  return Abandon;
+               end if;
+
+            --  A return statement within an extended return is a noop
+            --  after inlining.
+
+            elsif No (Expression (N))
+              and then
+                Nkind (Parent (Parent (N))) = N_Extended_Return_Statement
+            then
+               return OK;
+
+            else
+               --  Expression has wrong form
+
+               return Abandon;
+            end if;
+
+         --  We can only inline a build-in-place function if
+         --  it has a single extended return.
+
+         elsif Nkind (N) = N_Extended_Return_Statement then
+            if No (Return_Statement) then
+               Return_Statement := N;
+               return OK;
+
+            else
+               return Abandon;
+            end if;
+
+         else
+            return OK;
+         end if;
+      end Check_Return;
+
+      function Check_All_Returns is new Traverse_Func (Check_Return);
+
+   --  Start of processing for Has_Single_Return
+
+   begin
+      if Check_All_Returns (N) /= OK then
+         return False;
+
+      elsif Nkind (Return_Statement) = N_Extended_Return_Statement then
+         return True;
+
+      else
+         return Present (Declarations (N))
+           and then Present (First (Declarations (N)))
+           and then Chars (Expression (Return_Statement)) =
+                    Chars (Defining_Identifier (First (Declarations (N))));
+      end if;
+   end Has_Single_Return;
 
    -----------------------------
    -- In_Main_Unit_Or_Subunit --
@@ -4612,6 +4567,24 @@ package body Inline is
       Successors.Release;
       Inlined.Release;
    end Lock;
+
+   --------------------------
+   -- Number_Of_Statements --
+   --------------------------
+
+   function Number_Of_Statements (Stats : List_Id) return Natural is
+      Stat_Count : Integer := 0;
+      Stmt       : Node_Id;
+
+   begin
+      Stmt := First (Stats);
+      while Present (Stmt) loop
+         Stat_Count := Stat_Count + 1;
+         Next (Stmt);
+      end loop;
+
+      return Stat_Count;
+   end Number_Of_Statements;
 
    ---------------------------
    -- Register_Backend_Call --

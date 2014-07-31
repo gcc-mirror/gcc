@@ -132,8 +132,16 @@ package Inline is
      Table_Name           => "Pending_Descriptor");
 
    Inlined_Calls : Elist_Id := No_Elist;
+   --  List of frontend inlined calls
+
    Backend_Calls : Elist_Id := No_Elist;
-   --  List of frontend inlined calls and inline calls passed to the backend
+   --  List of inline calls passed to the backend
+
+   Backend_Inlined_Subps : Elist_Id := No_Elist;
+   --  List of subprograms inlined by the backend
+
+   Backend_Not_Inlined_Subps : Elist_Id := No_Elist;
+   --  List of subprograms that cannot be inlined by the backend
 
    -----------------
    -- Subprograms --
@@ -230,6 +238,17 @@ package Inline is
    --  derived operation, but the body is that of the original, so return
    --  expressions in the body must be converted to the desired type (which
    --  is simply not noted in the tree without inline expansion).
+
+   function Has_Excluded_Declaration
+     (Subp  : Entity_Id;
+      Decls : List_Id) return Boolean;
+   --  Check for declarations that make inlining not worthwhile inlining Subp
+
+   function Has_Excluded_Statement
+     (Subp  : Entity_Id;
+      Stats : List_Id) return Boolean;
+   --  Check for statements that make inlining not worthwhile: any tasking
+   --  statement, nested at any level.
 
    procedure Register_Backend_Call (N : Node_Id);
    --  Append N to the list Backend_Calls

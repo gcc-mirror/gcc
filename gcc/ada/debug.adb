@@ -101,7 +101,7 @@ package body Debug is
    --  d.h
    --  d.i  Ignore Warnings pragmas
    --  d.j  Generate listing of frontend inlined calls
-   --  d.k  Enable new support for frontend inlining
+   --  d.k
    --  d.l  Use Ada 95 semantics for limited function returns
    --  d.m  For -gnatl, print full source only for main unit
    --  d.n  Print source file names
@@ -532,10 +532,6 @@ package body Debug is
    --  d.j  Generate listing of frontend inlined calls and inline calls passed
    --       to the backend. This is useful to locate skipped calls that must be
    --       inlined by the frontend.
-
-   --  d.k  Enable new semantics of frontend inlining. This is useful to test
-   --       this new feature in all the platforms. What *is* this new semantics
-   --       which doesn't seem to be documented anywhere???
 
    --  d.l  Use Ada 95 semantics for limited function returns. This may be
    --       used to work around the incompatibility introduced by AI-318-2.

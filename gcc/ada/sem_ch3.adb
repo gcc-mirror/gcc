@@ -3514,7 +3514,7 @@ package body Sem_Ch3 is
          --  declaration without initializing expression and it has been
          --  analyzed (see Expand_Inlined_Call).
 
-         if Debug_Flag_Dot_K
+         if Back_End_Inlining
            and then Expander_Active
            and then Nkind (E) = N_Function_Call
            and then Nkind (Name (E)) in N_Has_Entity

@@ -1,3 +1,36 @@
+2014-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb Remove documentation of -gnatd.k (no longer needed).
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Code cleanup.
+	* inline.ads (Backend_Inlined_Subps): New
+	Elist.	(Backend_Not_Inlined_Subps): New Elist.
+	(Has_Excluded_Declaration): Declaration previously located in
+	* inline.adb (Has_Excluded_Statement): Declaration previously
+	located in inline.adb
+	* inline.adb (Has_Single_Return): Moved out of
+	Build_Body_To_Inline to avoid having duplicated code.
+	(Number_Of_Statements): New subprogram.
+	(Register_Backend_Inlined_Subprogram): New subprogram.
+	(Register_Backend_Not_Inlined_Subprogram): New subprogram.
+	(Add_Inlined_Subprogram): Register backend inlined subprograms and
+	also register subprograms that cannot be inlined by the backend.
+	(Has_Excluded_Declaration): Moved out of Build_Body_To_Inline
+	to avoid having duplicated code.  Replace occurrences of
+	Debug_Flag_Dot_K by Back_End_Inlining.
+	* sem_res.adb (Resolve_Call): Code cleanup.
+	* exp_ch6.adb (Expand_Call): Complete previous patch. Replace
+	occurrence of Debug_Flag_Dot_K by Back_End_Inlining.
+	(List_Inlining_Info): Add listing of subprograms passed to the
+	backend and listing of subprograms that cannot be inlined by
+	the backend.
+	* sem_ch12.adb, sem_ch3.adb Replace occurrences of
+	Debug_Flag_Dot_K by Back_End_Inlining.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* nlists.ads: Minor code fix (remove unwise Inline for
+	List_Length).
+
 2014-07-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* einfo.adb: Remove VMS specific code.
@@ -14,6 +47,7 @@
 
 	* gcc-interface/trans.c, gcc-interface/misc.c: Remove references
 	to VMS. Misc clean ups.
+	* gcc-interface/Makefile.in (gnatlib-shared-vms): Remove.
 
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 

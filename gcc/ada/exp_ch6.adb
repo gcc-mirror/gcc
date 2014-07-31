@@ -3830,15 +3830,14 @@ package body Exp_Ch6 is
             return;
          end if;
 
-         --  Back end inlining: let the back end handle it
+         --  Handle inlining. No action needed if the subprogram is not inlined
 
-         if Back_End_Inlining and then Is_Inlined (Subp) then
-            Add_Inlined_Body (Subp);
-            Register_Backend_Call (Call_Node);
+         if not Is_Inlined (Subp) then
+            null;
 
-         --  Handle inlining (old semantics)
+         --  Handle frontend inlining
 
-         elsif Is_Inlined (Subp) and then not Debug_Flag_Dot_K then
+         elsif not Back_End_Inlining then
             Inlined_Subprogram : declare
                Bod         : Node_Id;
                Must_Inline : Boolean := False;
@@ -3924,9 +3923,22 @@ package body Exp_Ch6 is
                end if;
             end Inlined_Subprogram;
 
-         --  Handle inlining (new semantics)
+         --  Back end inlining: let the back end handle it
 
-         elsif Is_Inlined (Subp) then
+         elsif No (Unit_Declaration_Node (Subp))
+           or else
+             Nkind (Unit_Declaration_Node (Subp)) /= N_Subprogram_Declaration
+           or else
+             No (Body_To_Inline (Unit_Declaration_Node (Subp)))
+         then
+            Add_Inlined_Body (Subp);
+            Register_Backend_Call (Call_Node);
+
+         --  Frontend expansion of supported functions returning unconstrained
+         --  types
+
+         else pragma Assert (Ekind (Subp) = E_Function
+                               and then Returns_Unconstrained_Type (Subp));
             declare
                Spec : constant Node_Id := Unit_Declaration_Node (Subp);
 
@@ -9716,6 +9728,70 @@ package body Exp_Ch6 is
                Write_Location (Sloc (Nod));
                Output.Write_Eol;
             end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Generate listing of subprograms passed to the backend
+
+      if Present (Backend_Inlined_Subps)
+        and then Back_End_Inlining
+      then
+         Count := 0;
+
+         Elmt := First_Elmt (Backend_Inlined_Subps);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            Count := Count + 1;
+
+            if Count = 1 then
+               Write_Str
+                 ("Listing of inlined subprograms passed to the backend");
+               Write_Eol;
+            end if;
+
+            Write_Str ("  ");
+            Write_Int (Count);
+            Write_Str (":");
+            Write_Name (Chars (Nod));
+            Write_Str (" (");
+            Write_Location (Sloc (Nod));
+            Write_Str (")");
+            Output.Write_Eol;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Generate listing of subprogram that cannot be inlined by the backend
+
+      if Present (Backend_Not_Inlined_Subps)
+        and then Back_End_Inlining
+      then
+         Count := 0;
+
+         Elmt := First_Elmt (Backend_Not_Inlined_Subps);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            Count := Count + 1;
+
+            if Count = 1 then
+               Write_Str
+                 ("Listing of subprograms that cannot inline the backend");
+               Write_Eol;
+            end if;
+
+            Write_Str ("  ");
+            Write_Int (Count);
+            Write_Str (":");
+            Write_Name (Chars (Nod));
+            Write_Str (" (");
+            Write_Location (Sloc (Nod));
+            Write_Str (")");
+            Output.Write_Eol;
 
             Next_Elmt (Elmt);
          end loop;

@@ -3561,56 +3561,75 @@ package body Sem_Ch6 is
       --  mode where we want to expand some calls in place, even with expansion
       --  disabled, since the inlining eases formal verification.
 
-      --  Old semantics
-
-      if not Debug_Flag_Dot_K then
-
-         --  If the backend inlining is available then at this stage we only
-         --  have to mark the subprogram as inlined. The expander will take
-         --  care of registering it in the table of subprograms inlined by
-         --  the backend a part of processing calls to it (cf. Expand_Call)
-
-         if Present (Spec_Id)
-           and then Expander_Active
-           and then Back_End_Inlining
-         then
-            Set_Is_Inlined (Spec_Id);
-
-         elsif Present (Spec_Id)
-           and then Expander_Active
-           and then
-             (Has_Pragma_Inline_Always (Spec_Id)
-              or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
-         then
-            Build_Body_To_Inline (N, Spec_Id);
-
-         --  In GNATprove mode, inline only when there is a separate subprogram
-         --  declaration for now, as inlining of subprogram bodies acting as
-         --  declarations, or subprogram stubs, are not supported by frontend
-         --  inlining. This inlining should occur after analysis of the body,
-         --  so that it is known whether the value of SPARK_Mode applicable to
-         --  the body, which can be defined by a pragma inside the body.
-
-         elsif GNATprove_Mode
-           and then Full_Analysis
-           and then not Inside_A_Generic
-           and then Present (Spec_Id)
-           and then
-             Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
-           and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
-           and then not Body_Has_Contract
-         then
-            Build_Body_To_Inline (N, Spec_Id);
-         end if;
-
-      --  New semantics (enabled by debug flag gnatd.k for testing)
-
-      elsif Expander_Active
+      if not GNATprove_Mode
+        and then Expander_Active
         and then Serious_Errors_Detected = 0
         and then Present (Spec_Id)
         and then Has_Pragma_Inline (Spec_Id)
       then
-         Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
+         --  Legacy implementation (relying on frontend inlining)
+
+         if not Back_End_Inlining then
+            if Has_Pragma_Inline_Always (Spec_Id)
+                 or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining)
+            then
+               Build_Body_To_Inline (N, Spec_Id);
+            end if;
+
+         --  New implementation (relying on backend inlining). Enabled by
+         --  debug flag gnatd.z for testing
+
+         else
+            if Has_Pragma_Inline_Always (Spec_Id)
+              or else Optimization_Level > 0
+            then
+               --  Handle function returning an unconstrained type
+
+               if Comes_From_Source (Body_Id)
+                 and then Ekind (Spec_Id) = E_Function
+                 and then Returns_Unconstrained_Type (Spec_Id)
+               then
+                  Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
+
+               else
+                  declare
+                     Body_Spec : constant Node_Id := Parent (Body_Id);
+                     Subp_Body : constant Node_Id := Parent (Body_Spec);
+                     Subp_Decl : constant List_Id := Declarations (Subp_Body);
+
+                  begin
+                     --  Do not pass inlining to the backend if the subprogram
+                     --  has declarations or statements which cannot be inlined
+                     --  by the backend. This check is done here to emit an
+                     --  error instead of the generic warning message reported
+                     --  by the GCC backend (ie. "function might not be
+                     --  inlinable").
+
+                     if Present (Subp_Decl)
+                       and then Has_Excluded_Declaration (Spec_Id, Subp_Decl)
+                     then
+                        null;
+
+                     elsif Has_Excluded_Statement
+                             (Spec_Id,
+                              Statements
+                                (Handled_Statement_Sequence (Subp_Body)))
+                     then
+                        null;
+
+                     --  If the backend inlining is available then at this
+                     --  stage we only have to mark the subprogram as inlined.
+                     --  The expander will take care of registering it in the
+                     --  table of subprograms inlined by the backend a part of
+                     --  processing calls to it (cf. Expand_Call)
+
+                     else
+                        Set_Is_Inlined (Spec_Id);
+                     end if;
+                  end;
+               end if;
+            end if;
+         end if;
 
       --  In GNATprove mode, inline only when there is a separate subprogram
       --  declaration for now, as inlining of subprogram bodies acting as
@@ -3627,7 +3646,7 @@ package body Sem_Ch6 is
         and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
         and then not Body_Has_Contract
       then
-         Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
+         Build_Body_To_Inline (N, Spec_Id);
       end if;
 
       --  Ada 2005 (AI-262): In library subprogram bodies, after the analysis
