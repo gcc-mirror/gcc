@@ -1,3 +1,15 @@
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_strm.adb: Minor reformatting.
+
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Wrapper): New procedure, subsidiary to
+	Analyze_Associations, to create a wrapper around operators that
+	are actuals to formal subprograms. This is done in GNATProve
+	mode in order to propagate the contracts of the operators to
+	the body of the instance.
+
 2014-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case 'Old):  The reference is

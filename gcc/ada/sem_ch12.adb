@@ -954,6 +954,11 @@ package body Sem_Ch12 is
       --  In Ada 2005, indicates partial parameterization of a formal
       --  package. As usual an other association must be last in the list.
 
+      function Build_Wrapper (Formal : Entity_Id) return Node_Id;
+      --  In GNATProve mode, create a wrapper function for actuals that are
+      --  operators, in order to propagate their contract to the renaming
+      --  declarations generated for them.
+
       procedure Check_Overloaded_Formal_Subprogram (Formal : Entity_Id);
       --  Apply RM 12.3 (9): if a formal subprogram is overloaded, the instance
       --  cannot have a named association for it. AI05-0025 extends this rule
@@ -1000,6 +1005,126 @@ package body Sem_Ch12 is
       --  correspondence between the two lists is not one-one. In addition to
       --  anonymous types, the presence a formal equality will introduce an
       --  implicit declaration for the corresponding inequality.
+
+      -------------------
+      -- Build_Wrapper --
+      -------------------
+
+      function Build_Wrapper (Formal : Entity_Id) return Node_Id is
+         Loc     : constant Source_Ptr := Sloc (I_Node);
+         Op_Name : constant Name_Id := Chars (Formal);
+         Typ     : constant Entity_Id := Etype (Formal);
+
+         Decl   : Node_Id;
+         Expr   : Node_Id;
+         F1, F2 : Entity_Id;
+         Func   : Entity_Id;
+         Spec   : Node_Id;
+
+         L, R   : Node_Id;
+
+      begin
+         --  Create entities for wrapper function and its formals
+
+         F1 := Make_Temporary (Loc, 'A');
+         F2 := Make_Temporary (Loc, 'B');
+         L  := New_Occurrence_Of (F1, Loc);
+         R  := New_Occurrence_Of (F2, Loc);
+
+         Func := Make_Temporary (Loc, 'F');
+
+         Spec := Make_Function_Specification (Loc,
+               Defining_Unit_Name => Func,
+
+            Parameter_Specifications => New_List (
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => F1,
+                Parameter_Type => Make_Identifier (Loc, Chars (Typ))),
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => F2,
+                Parameter_Type => Make_Identifier (Loc, Chars (Typ)))),
+
+            Result_Definition => Make_Identifier (Loc, Chars (Typ)));
+
+         --  Build expression as an operator node that corresponds to the
+         --  name of the actual, starting with binary operators.
+
+         if Op_Name = Name_Op_And then
+            Expr := Make_Op_And (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Or then
+            Expr := Make_Op_Or (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Xor then
+            Expr := Make_Op_Xor (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Eq then
+            Expr := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Ne then
+            Expr := Make_Op_Ne (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Le then
+            Expr := Make_Op_Le (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Gt then
+            Expr := Make_Op_Gt (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Ge then
+            Expr := Make_Op_Ge (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Lt then
+            Expr := Make_Op_Lt (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Add then
+            Expr := Make_Op_Add (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Subtract then
+            Expr := Make_Op_Subtract (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Concat then
+            Expr := Make_Op_Concat (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Multiply then
+            Expr := Make_Op_Multiply (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Divide then
+            Expr := Make_Op_Divide (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Mod then
+            Expr := Make_Op_Mod (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Rem then
+            Expr := Make_Op_Rem (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Expon then
+            Expr := Make_Op_Expon (Loc, Left_Opnd => L, Right_Opnd => R);
+
+         --  Unary operators.
+
+         elsif Op_Name = Name_Op_Add
+           and then No (Next_Formal (First_Formal (Actual)))
+         then
+            Expr := Make_Op_Plus (Loc, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Subtract
+           and then No (Next_Formal (First_Formal (Actual)))
+         then
+            Expr := Make_Op_Minus (Loc, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Abs then
+            Expr := Make_Op_Abs (Loc, Right_Opnd => R);
+
+         elsif Op_Name = Name_Op_Not then
+            Expr := Make_Op_Not (Loc, Right_Opnd => R);
+         end if;
+
+         Decl := Make_Expression_Function (Loc,
+                    Specification => Spec,
+                    Expression => Expr);
+
+         return Decl;
+      end Build_Wrapper;
 
       ----------------------------------------
       -- Check_Overloaded_Formal_Subprogram --
@@ -1520,6 +1645,22 @@ package body Sem_Ch12 is
                      Append_To (Assoc,
                        Instantiate_Formal_Subprogram
                          (Formal, Match, Analyzed_Formal));
+
+                     if GNATprove_Mode then
+                        if Nkind (Match) = N_Operator_Symbol then
+                           Append_To (Assoc,
+                             Build_Wrapper
+                               (Defining_Entity (Analyzed_Formal)));
+
+                        elsif Box_Present (Formal)
+                           and then Nkind (Defining_Entity (Analyzed_Formal))
+                             = N_Defining_Operator_Symbol
+                        then
+                           Append_To (Assoc,
+                             Build_Wrapper
+                               (Defining_Entity (Analyzed_Formal)));
+                        end if;
+                     end if;
 
                      --  An instantiation is a freeze point for the actuals,
                      --  unless this is a rewritten formal package.
