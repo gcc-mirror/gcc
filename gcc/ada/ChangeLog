@@ -1,3 +1,8 @@
+2014-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/trans.c, gcc-interface/misc.c: Remove references
+	to VMS. Misc clean ups.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* cstand.adb, einfo.adb, einfo.ads, errout.adb, exp_attr.adb,

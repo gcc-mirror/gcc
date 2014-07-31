@@ -4899,26 +4899,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 	       gnu_except_ptr_stack->last (),
 	       convert (TREE_TYPE (gnu_except_ptr_stack->last ()),
 			build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr)));
-
-	  /* If this is the distinguished exception "Non_Ada_Error" (and we are
-	     in VMS mode), also allow a non-Ada exception (a VMS condition) t
-	     match.  */
-	  if (Is_Non_Ada_Error (Entity (gnat_temp)))
-	    {
-	      tree gnu_comp
-		= build_component_ref
-		  (build_unary_op (INDIRECT_REF, NULL_TREE,
-				   gnu_except_ptr_stack->last ()),
-		   get_identifier ("lang"), NULL_TREE, false);
-
-	      this_choice
-		= build_binary_op
-		  (TRUTH_ORIF_EXPR, boolean_type_node,
-		   build_binary_op (EQ_EXPR, boolean_type_node, gnu_comp,
-				    build_int_cst (TREE_TYPE (gnu_comp), 'V')),
-		   this_choice);
-	    }
-	}
+}
       else
 	gcc_unreachable ();
 
@@ -8299,31 +8280,36 @@ static tree
 build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 		       tree right, Node_Id gnat_node)
 {
+  const unsigned int precision = TYPE_PRECISION (gnu_type);
   tree lhs = gnat_protect_expr (left);
   tree rhs = gnat_protect_expr (right);
   tree type_max = TYPE_MAX_VALUE (gnu_type);
   tree type_min = TYPE_MIN_VALUE (gnu_type);
-  tree gnu_expr;
-  tree tmp1, tmp2;
   tree zero = convert (gnu_type, integer_zero_node);
-  tree rhs_lt_zero;
-  tree check_pos;
-  tree check_neg;
-  tree check;
-  int precision = TYPE_PRECISION (gnu_type);
+  tree gnu_expr, rhs_lt_zero, tmp1, tmp2;
+  tree check_pos, check_neg, check;
 
-  gcc_assert (!(precision & (precision - 1))); /* ensure power of 2 */
+  /* Assert that the precision is a power of 2.  */
+  gcc_assert ((precision & (precision - 1)) == 0);
 
   /* Prefer a constant or known-positive rhs to simplify checks.  */
   if (!TREE_CONSTANT (rhs)
       && commutative_tree_code (code)
-      && (TREE_CONSTANT (lhs) || (!tree_expr_nonnegative_p (rhs)
-				  && tree_expr_nonnegative_p (lhs))))
+      && (TREE_CONSTANT (lhs)
+	  || (!tree_expr_nonnegative_p (rhs)
+	      && tree_expr_nonnegative_p (lhs))))
     {
       tree tmp = lhs;
       lhs = rhs;
       rhs = tmp;
     }
+
+  gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
+
+  /* If we can fold the expression to a constant, just return it.
+     The caller will deal with overflow, no need to generate a check.  */
+  if (TREE_CONSTANT (gnu_expr))
+    return gnu_expr;
 
   rhs_lt_zero = tree_expr_nonnegative_p (rhs)
 		? boolean_false_node
@@ -8341,7 +8327,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
   if (!TREE_CONSTANT (rhs))
     {
       /* Even for add/subtract double size to get another base type.  */
-      int needed_precision = precision * 2;
+      const unsigned int needed_precision = precision * 2;
 
       if (code == MULT_EXPR && precision == 64)
 	{
@@ -8352,49 +8338,45 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 						       convert (int_64, rhs)));
 	}
 
-      else if (needed_precision <= BITS_PER_WORD
-	       || (code == MULT_EXPR
-		   && needed_precision <= LONG_LONG_TYPE_SIZE))
+      if (needed_precision <= BITS_PER_WORD
+	  || (code == MULT_EXPR && needed_precision <= LONG_LONG_TYPE_SIZE))
 	{
 	  tree wide_type = gnat_type_for_size (needed_precision, 0);
-
 	  tree wide_result = build_binary_op (code, wide_type,
 					      convert (wide_type, lhs),
 					      convert (wide_type, rhs));
 
-	  tree check = build_binary_op
+	  check = build_binary_op
 	    (TRUTH_ORIF_EXPR, boolean_type_node,
 	     build_binary_op (LT_EXPR, boolean_type_node, wide_result,
 			      convert (wide_type, type_min)),
 	     build_binary_op (GT_EXPR, boolean_type_node, wide_result,
 			      convert (wide_type, type_max)));
 
-	  tree result = convert (gnu_type, wide_result);
-
 	  return
-	    emit_check (check, result, CE_Overflow_Check_Failed, gnat_node);
+	    emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 	}
 
-      else if (code == PLUS_EXPR || code == MINUS_EXPR)
+      if (code == PLUS_EXPR || code == MINUS_EXPR)
 	{
 	  tree unsigned_type = gnat_type_for_size (precision, 1);
-	  tree wrapped_expr = convert
-	    (gnu_type, build_binary_op (code, unsigned_type,
+	  tree wrapped_expr
+	    = convert (gnu_type,
+		       build_binary_op (code, unsigned_type,
 					convert (unsigned_type, lhs),
 					convert (unsigned_type, rhs)));
 
-	  tree result = convert
-	    (gnu_type, build_binary_op (code, gnu_type, lhs, rhs));
-
 	  /* Overflow when (rhs < 0) ^ (wrapped_expr < lhs)), for addition
 	     or when (rhs < 0) ^ (wrapped_expr > lhs) for subtraction.  */
-	  tree check = build_binary_op
-	    (TRUTH_XOR_EXPR, boolean_type_node, rhs_lt_zero,
-	     build_binary_op (code == PLUS_EXPR ? LT_EXPR : GT_EXPR,
-			      boolean_type_node, wrapped_expr, lhs));
+	  check
+	    = build_binary_op (TRUTH_XOR_EXPR, boolean_type_node, rhs_lt_zero,
+			       build_binary_op (code == PLUS_EXPR
+						? LT_EXPR : GT_EXPR,
+					        boolean_type_node,
+						wrapped_expr, lhs));
 
 	  return
-	    emit_check (check, result, CE_Overflow_Check_Failed, gnat_node);
+	    emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 	}
    }
 
@@ -8467,13 +8449,6 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
     default:
       gcc_unreachable();
     }
-
-  gnu_expr = build_binary_op (code, gnu_type, lhs, rhs);
-
-  /* If we can fold the expression to a constant, just return it.
-     The caller will deal with overflow, no need to generate a check.  */
-  if (TREE_CONSTANT (gnu_expr))
-    return gnu_expr;
 
   check = fold_build3 (COND_EXPR, boolean_type_node, rhs_lt_zero, check_neg,
 		       check_pos);
