@@ -1,3 +1,10 @@
+2014-07-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (lookup_and_insert_pad_type): New function
+        extracted from...
+        (maybe_pad_type): ...here.  Call it to canonicalize the pad type.
+	* gcc-interface/gigi.h: Update comment.
+
 2014-07-31  Javier Miranda  <miranda@adacore.com>
 
 	* debug.adb Remove documentation of -gnatd.k (no longer needed).
