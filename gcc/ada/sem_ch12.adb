@@ -25,7 +25,6 @@
 
 with Aspects;  use Aspects;
 with Atree;    use Atree;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -3877,7 +3876,7 @@ package body Sem_Ch12 is
               and then Might_Inline_Subp
               and then not Is_Actual_Pack
             then
-               if not Debug_Flag_Dot_K
+               if not Back_End_Inlining
                  and then Front_End_Inlining
                  and then (Is_In_Main_Unit (N)
                             or else In_Main_Context (Current_Scope))
@@ -3885,7 +3884,7 @@ package body Sem_Ch12 is
                then
                   Inline_Now := True;
 
-               elsif Debug_Flag_Dot_K
+               elsif Back_End_Inlining
                  and then Must_Inline_Subp
                  and then (Is_In_Main_Unit (N)
                             or else In_Main_Context (Current_Scope))
