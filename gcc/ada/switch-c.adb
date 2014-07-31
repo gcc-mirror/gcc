@@ -953,38 +953,57 @@ package body Switch.C is
 
             when 'o' =>
                Ptr := Ptr + 1;
-               Suppress_Options.Suppress (Overflow_Check) := False;
 
-               --  Case of no digits after the -gnato
+               --  Case of -gnato0 (overflow checking turned off)
 
-               if Ptr > Max or else Switch_Chars (Ptr) not in '1' .. '3' then
+               if Ptr <= Max and then Switch_Chars (Ptr) = '0' then
+                  Ptr := Ptr + 1;
+                  Suppress_Options.Suppress (Overflow_Check) := True;
+
+                  --  We set strict mode in case overflow checking is turned
+                  --  on locally (also records that we had a -gnato switch).
+
                   Suppress_Options.Overflow_Mode_General    := Strict;
                   Suppress_Options.Overflow_Mode_Assertions := Strict;
 
-               --  At least one digit after the -gnato
+               --  All cases other than -gnato0 (overflow checking turned on)
 
                else
-                  --  Handle first digit after -gnato
+                  Suppress_Options.Suppress (Overflow_Check) := False;
 
-                  Suppress_Options.Overflow_Mode_General :=
-                    Get_Overflow_Mode (Switch_Chars (Ptr));
-                  Ptr := Ptr + 1;
-
-                  --  Only one digit after -gnato, set assertions mode to
-                  --  be the same as general mode.
+                  --  Case of no digits after the -gnato
 
                   if Ptr > Max
                     or else Switch_Chars (Ptr) not in '1' .. '3'
                   then
-                     Suppress_Options.Overflow_Mode_Assertions :=
-                       Suppress_Options.Overflow_Mode_General;
+                     Suppress_Options.Overflow_Mode_General    := Strict;
+                     Suppress_Options.Overflow_Mode_Assertions := Strict;
 
-                  --  Process second digit after -gnato
+                  --  At least one digit after the -gnato
 
                   else
-                     Suppress_Options.Overflow_Mode_Assertions :=
+                     --  Handle first digit after -gnato
+
+                     Suppress_Options.Overflow_Mode_General :=
                        Get_Overflow_Mode (Switch_Chars (Ptr));
                      Ptr := Ptr + 1;
+
+                     --  Only one digit after -gnato, set assertions mode to be
+                     --  the same as general mode.
+
+                     if Ptr > Max
+                       or else Switch_Chars (Ptr) not in '1' .. '3'
+                     then
+                        Suppress_Options.Overflow_Mode_Assertions :=
+                          Suppress_Options.Overflow_Mode_General;
+
+                     --  Process second digit after -gnato
+
+                     else
+                        Suppress_Options.Overflow_Mode_Assertions :=
+                          Get_Overflow_Mode (Switch_Chars (Ptr));
+                        Ptr := Ptr + 1;
+                     end if;
                   end if;
                end if;
 
@@ -1026,6 +1045,13 @@ package body Switch.C is
 
                   Validity_Checks_On  := False;
                   Opt.Suppress_Checks := True;
+
+                  --  Set overflow mode checking to strict in case it gets
+                  --  turned on locally (also signals that overflow checking
+                  --  has been specifically turned off).
+
+                  Suppress_Options.Overflow_Mode_General    := Strict;
+                  Suppress_Options.Overflow_Mode_Assertions := Strict;
                end if;
 
             --  -gnatP (periodic poll)

@@ -106,7 +106,7 @@ package body Exp_Ch5 is
    --  using the standard Insert_Actions mechanism.
 
    procedure Expand_Assign_Record (N : Node_Id);
-   --  N is an assignment of a untagged record value. This routine handles
+   --  N is an assignment of an untagged record value. This routine handles
    --  the case where the assignment must be made component by component,
    --  either because the target is not byte aligned, or there is a change
    --  of representation, or when we have a tagged type with a representation

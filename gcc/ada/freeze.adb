@@ -4537,8 +4537,8 @@ package body Freeze is
             return No_List;
          end if;
 
-         --  Check for error of Type_Invariant'Class applied to a untagged type
-         --  (check delayed to freeze time when full type is available).
+         --  Check for error of Type_Invariant'Class applied to an untagged
+         --  type (check delayed to freeze time when full type is available).
 
          declare
             Prag : constant Node_Id := Get_Pragma (E, Pragma_Invariant);

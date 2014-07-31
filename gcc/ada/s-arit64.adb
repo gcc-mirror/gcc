@@ -259,8 +259,8 @@ package body System.Arith_64 is
          T2 := 0;
       end if;
 
-      --  Here we have T2 set to the contribution to the upper half
-      --  of the result from the upper halves of the input values.
+      --  Here we have T2 set to the contribution to the upper half of the
+      --  result from the upper halves of the input values.
 
       T1 := Xlo * Ylo;
       T2 := T2 + Hi (T1);
@@ -332,9 +332,9 @@ package body System.Arith_64 is
 
       Scale : Natural;
       --  Scaling factor used for multiple-precision divide. Dividend and
-      --  Divisor are multiplied by 2 ** Scale, and the final remainder
-      --  is divided by the scaling factor. The reason for this scaling
-      --  is to allow more accurate estimation of quotient digits.
+      --  Divisor are multiplied by 2 ** Scale, and the final remainder is
+      --  divided by the scaling factor. The reason for this scaling is to
+      --  allow more accurate estimation of quotient digits.
 
       T1, T2, T3 : Uns64;
       --  Temporary values
@@ -383,8 +383,8 @@ package body System.Arith_64 is
          D (1) := 0;
       end if;
 
-      --  Now it is time for the dreaded multiple precision division. First
-      --  an easy case, check for the simple case of a one digit divisor.
+      --  Now it is time for the dreaded multiple precision division. First an
+      --  easy case, check for the simple case of a one digit divisor.
 
       if Zhi = 0 then
          if D (1) /= 0 or else D (2) >= Zlo then
