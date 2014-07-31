@@ -1,3 +1,9 @@
+2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Update the loop in charge
+	of finding a proper insertion place for freeze nodes to handle
+	N_Expression_With_Actions nodes.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, a-ngelfu.ads, prj-nmsc.adb, prj-conf.adb: Minor
