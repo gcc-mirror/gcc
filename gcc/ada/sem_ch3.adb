@@ -17285,10 +17285,16 @@ package body Sem_Ch3 is
 
       elsif Nkind (N) = N_Attribute_Reference then
 
-         --  The parser guarantees that the attribute is a RANGE attribute
+         --  Catch beginner's error (use of attribute other than 'Range)
+
+         if Attribute_Name (N) /= Name_Range then
+            Error_Msg_N ("expect attribute ''Range", N);
+            Set_Etype (N, Any_Type);
+            return;
+         end if;
 
          --  If the node denotes the range of a type mark, that is also the
-         --  resulting type, and we do no need to create an Itype for it.
+         --  resulting type, and we do not need to create an Itype for it.
 
          if Is_Entity_Name (Prefix (N))
            and then Comes_From_Source (N)

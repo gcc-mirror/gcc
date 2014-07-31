@@ -1,3 +1,12 @@
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Make_Index): Reject properly the use of 'Length
+	in a discrete range, when 'range was probably intended.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb, sem_warn.ads (Has_Junk_Name): Moved from body to spec.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* frontend.adb: Minor reformatting.
