@@ -3470,8 +3470,8 @@ package body Sem_Ch13 is
          Indexing_Found : Boolean;
 
          procedure Check_One_Function (Subp : Entity_Id);
-         --  Check one possible interpretation. Sets Indexing_Found True if an
-         --  indexing function is found.
+         --  Check one possible interpretation. Sets Indexing_Found True if a
+         --  legal indexing function is found.
 
          procedure Illegal_Indexing (Msg : String);
          --  Diagnose illegal indexing function if not overloaded. In the
@@ -3490,9 +3490,15 @@ package body Sem_Ch13 is
                Illegal_Indexing ("illegal indexing function for type&");
                return;
 
-            elsif Scope (Subp) /= Current_Scope then
-               Illegal_Indexing
-                 ("indexing function must be declared in scope of type&");
+            elsif Scope (Subp) /= Scope (Ent) then
+               if Nkind (Expr) = N_Expanded_Name then
+
+                  --  Indexing function can't be declared elsewhere
+
+                  Illegal_Indexing
+                    ("indexing function must be declared in scope of type&");
+               end if;
+
                return;
 
             elsif No (First_Formal (Subp)) then
@@ -3521,18 +3527,52 @@ package body Sem_Ch13 is
                      Illegal_Indexing
                         ("indexing function already inherited "
                           & "from parent type");
+                     return;
                   end if;
-
-                  return;
                end if;
             end if;
 
             if not Check_Primitive_Function (Subp)
-              and then not Is_Overloaded (Expr)
             then
                Illegal_Indexing
                  ("Indexing aspect requires a function that applies to type&");
                return;
+            end if;
+
+            --  If partial declaration exists, verify that it is not tagged.
+
+            if Ekind (Current_Scope) = E_Package
+              and then Has_Private_Declaration (Ent)
+              and then From_Aspect_Specification (N)
+              and then List_Containing (Parent (Ent))
+                 = Private_Declarations
+                    (Specification (Unit_Declaration_Node (Current_Scope)))
+              and then Nkind (N) = N_Attribute_Definition_Clause
+            then
+               declare
+                  Decl : Node_Id;
+
+               begin
+                  Decl :=
+                     First (Visible_Declarations
+                      (Specification
+                        (Unit_Declaration_Node (Current_Scope))));
+
+                  while Present (Decl) loop
+                     if Nkind (Decl) = N_Private_Type_Declaration
+                       and then Ent = Full_View (Defining_Identifier (Decl))
+                       and then Tagged_Present (Decl)
+                       and then No (Aspect_Specifications (Decl))
+                     then
+                        Illegal_Indexing
+                          ("Indexing aspect cannot be specified on full view "
+                             & "if partial view is tagged");
+                        return;
+                     end if;
+
+                     Next (Decl);
+                  end loop;
+               end;
             end if;
 
             --  An indexing function must return either the default element of
@@ -3600,9 +3640,7 @@ package body Sem_Ch13 is
 
          procedure Illegal_Indexing (Msg : String) is
          begin
-            if not Is_Overloaded (Expr) then
-               Error_Msg_NE (Msg, N, Ent);
-            end if;
+            Error_Msg_NE (Msg, N, Ent);
          end Illegal_Indexing;
 
       --  Start of processing for Check_Indexing_Functions
@@ -3637,13 +3675,15 @@ package body Sem_Ch13 is
 
                   Get_Next_Interp (I, It);
                end loop;
-
-               if not Indexing_Found then
-                  Error_Msg_NE
-                    ("aspect Indexing requires a function that "
-                     & "applies to type&", Expr, Ent);
-               end if;
             end;
+         end if;
+
+         if not Indexing_Found
+           and then not Error_Posted (N)
+         then
+            Error_Msg_NE
+              ("aspect Indexing requires a local function that "
+               & "applies to type&", Expr, Ent);
          end if;
       end Check_Indexing_Functions;
 

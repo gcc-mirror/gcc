@@ -1,5 +1,19 @@
 2014-07-31  Javier Miranda  <miranda@adacore.com>
 
+	* gnat1drv.adb (Back_End_Inlining): Set to false if
+	Suppress_All_Inlining is set.
+	* debug.adb: Adding documentation for -gnatd.z.
+	* inline.adb (Add_Inlined_Body): Extend the -gnatn2
+	processing to -gnatn1 for calls to Inline_Always routines.
+	(Add_Inlined_Subprogram): Remove previous patch.
+
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_One_Function): Apply properly the static
+	semantic rules for indexing aspects and the functions they denote.
+
+2014-07-31  Javier Miranda  <miranda@adacore.com>
+
 	* debug.adb: Complete documentation of -gnatd.z.
 
 2014-07-31  Bob Duff  <duff@adacore.com>
