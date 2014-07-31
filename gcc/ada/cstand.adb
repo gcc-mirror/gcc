@@ -740,17 +740,8 @@ package body CStand is
       Build_Signed_Integer_Type
         (Standard_Integer, Standard_Integer_Size);
 
-      declare
-         LIS : Nat;
-      begin
-         if Debug_Flag_M then
-            LIS := 64;
-         else
-            LIS := Standard_Long_Integer_Size;
-         end if;
-
-         Build_Signed_Integer_Type (Standard_Long_Integer, LIS);
-      end;
+      Build_Signed_Integer_Type
+        (Standard_Long_Integer, Standard_Long_Integer_Size);
 
       Build_Signed_Integer_Type
         (Standard_Long_Long_Integer, Standard_Long_Long_Integer_Size);

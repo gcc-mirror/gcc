@@ -31,6 +31,12 @@
 
 /* Routines required for implementing routines in Interfaces.C.Streams.  */
 
+#define _FILE_OFFSET_BITS 64
+/* the define above will make off_t a 64bit type on GNU/Linux */
+
+#include <stdio.h>
+#include <sys/types.h>
+
 #ifdef __vxworks
 #include "vxWorks.h"
 #endif
@@ -247,8 +253,10 @@ __gnat_full_name (char *nam, char *buffer)
   return buffer;
 }
 
-#ifdef _WIN64
-  /* On Windows 64 we want to use the fseek/fteel supporting large files. This
+#define __int64 long long
+
+#ifdef _WIN32
+  /* On Windows we want to use the fseek/fteel supporting large files. This
      issue is due to the fact that a long on Win64 is still a 32 bits value */
 __int64
 __gnat_ftell64 (FILE *stream)
@@ -263,16 +271,22 @@ __gnat_fseek64 (FILE *stream, __int64 offset, int origin)
 }
 
 #else
-long
+__int64
 __gnat_ftell64 (FILE *stream)
 {
-  return ftell (stream);
+  return (__int64)ftello (stream);
 }
 
 int
-__gnat_fseek64 (FILE *stream, long offset, int origin)
+__gnat_fseek64 (FILE *stream, __int64 offset, int origin)
 {
-  return fseek (stream, offset, origin);
+  /* make sure that the offset is not bigger than the OS off_t, if so return
+     with error as this mean that we are trying to handle files larger than
+     2Gb on a patform not supporting it. */
+  if ((off_t)offset == offset)
+    return fseeko (stream, (off_t) offset, origin);
+  else
+    return -1;
 }
 #endif
 

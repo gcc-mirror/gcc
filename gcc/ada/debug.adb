@@ -49,7 +49,7 @@ package body Debug is
    --  dj   Suppress "junk null check" for access parameter values
    --  dk   Generate GNATBUG message on abort, even if previous errors
    --  dl   Generate unit load trace messages
-   --  dm   Allow VMS features even if not OpenVMS version
+   --  dm
    --  dn   Generate messages for node/list allocation
    --  do   Print source from tree (original code only)
    --  dp   Generate messages for parser scope stack push/pops
@@ -280,14 +280,6 @@ package body Debug is
    --  dl   Generate unit load trace messages. A line of traceback output is
    --       generated each time a request is made to the library manager to
    --       load a new unit.
-
-   --  dm   Some features are permitted only in OpenVMS ports of GNAT (e.g.
-   --       the specification of passing by descriptor). Normally any use
-   --       of these features will be flagged as an error, but this debug
-   --       flag allows acceptance of these features in non OpenVMS ports.
-   --       Of course they may not have any useful effect, and in particular
-   --       attempting to generate code with this flag set may blow up.
-   --       The flag also forces the use of 64-bits for Long_Integer.
 
    --  dn   Generate messages for node/list allocation. Each time a node or
    --       list header is allocated, a line of output is generated. Certain

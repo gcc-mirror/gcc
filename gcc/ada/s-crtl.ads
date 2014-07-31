@@ -62,6 +62,8 @@ package System.CRTL is
    type ssize_t is range -(2 ** (Standard'Address_Size - 1))
                       .. +(2 ** (Standard'Address_Size - 1)) - 1;
 
+   type int64 is range -(2 ** 63) .. (2 ** 63) - 1;
+
    type Filename_Encoding is (UTF8, ASCII_8bits, Unspecified);
    for Filename_Encoding use (UTF8 => 0, ASCII_8bits => 1, Unspecified => 2);
    pragma Convention (C, Filename_Encoding);
@@ -147,14 +149,14 @@ package System.CRTL is
 
    function fseek64
      (stream : FILEs;
-      offset : ssize_t;
+      offset : int64;
       origin : int) return int;
    pragma Import (C, fseek64, "__gnat_fseek64");
 
    function ftell (stream : FILEs) return long;
    pragma Import (C, ftell, "ftell");
 
-   function ftell64 (stream : FILEs) return ssize_t;
+   function ftell64 (stream : FILEs) return int64;
    pragma Import (C, ftell64, "__gnat_ftell64");
 
    function getenv (S : String) return System.Address;

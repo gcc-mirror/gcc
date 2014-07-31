@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -382,17 +382,10 @@ package body Ada.Streams.Stream_IO is
    ------------------
 
    procedure Set_Position (File : File_Type) is
-      use type System.CRTL.long;
-      use type System.CRTL.ssize_t;
+      use type System.CRTL.int64;
       R : int;
    begin
-      if Standard'Address_Size = 64 then
-         R := fseek64 (File.Stream,
-                       System.CRTL.ssize_t (File.Index) - 1, SEEK_SET);
-      else
-         R := fseek (File.Stream,
-                     System.CRTL.long (File.Index) - 1, SEEK_SET);
-      end if;
+      R := fseek64 (File.Stream, System.CRTL.int64 (File.Index) - 1, SEEK_SET);
 
       if R /= 0 then
          raise Use_Error;
@@ -410,14 +403,14 @@ package body Ada.Streams.Stream_IO is
       if File.File_Size = -1 then
          File.Last_Op := Op_Other;
 
-         if fseek (File.Stream, 0, SEEK_END) /= 0 then
+         if fseek64 (File.Stream, 0, SEEK_END) /= 0 then
             raise Device_Error;
          end if;
 
-         if Standard'Address_Size = 64 then
-            File.File_Size := Stream_Element_Offset (ftell64 (File.Stream));
-         else
-            File.File_Size := Stream_Element_Offset (ftell (File.Stream));
+         File.File_Size := Stream_Element_Offset (ftell64 (File.Stream));
+
+         if File.File_Size = -1 then
+            raise Use_Error;
          end if;
       end if;
 

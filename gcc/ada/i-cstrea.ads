@@ -43,6 +43,7 @@ package Interfaces.C_Streams is
    subtype long is System.CRTL.long;
    subtype size_t is System.CRTL.size_t;
    subtype ssize_t is System.CRTL.ssize_t;
+   subtype int64 is System.CRTL.int64;
    subtype voids is System.Address;
 
    NULL_Stream : constant FILEs;
@@ -159,14 +160,14 @@ package Interfaces.C_Streams is
 
    function fseek64
      (stream : FILEs;
-      offset : ssize_t;
+      offset : int64;
       origin : int) return int
      renames System.CRTL.fseek64;
 
    function ftell (stream : FILEs) return long
      renames System.CRTL.ftell;
 
-   function ftell64 (stream : FILEs) return ssize_t
+   function ftell64 (stream : FILEs) return int64
      renames System.CRTL.ftell64;
 
    function fwrite
