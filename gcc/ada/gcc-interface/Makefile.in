@@ -2890,35 +2890,6 @@ gnatlib-shared-darwin:
 	cd $(RTSDIR); dsymutil libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
 	cd $(RTSDIR); dsymutil libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext)
 
-gnatlib-shared-vms:
-	$(MAKE) $(FLAGS_TO_PASS) \
-             GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
-	     MULTISUBDIR="$(MULTISUBDIR)" \
-	     THREAD_KIND="$(THREAD_KIND)" \
-             gnatlib
-	$(RM) $(RTSDIR)/libgna*$(soext)
-	cd $(RTSDIR) && \
-	../../gnatsym -s SYMVEC_$$$$.opt \
-	$(LIBGNAT_OBJS) $(GNATRTL_NONTASKING_OBJS) && \
-	../../xgcc -g -B../../ -shared -shared-libgcc \
-	   -o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) libgnat.a \
-	   sys\$$library:trace.exe \
-	   --for-linker=/noinform \
-	   --for-linker=SYMVEC_$$$$.opt \
-	   --for-linker=gsmatch=equal,$(GSMATCH_VERSION)
-	cd $(RTSDIR) && \
-	../../gnatsym -s SYMVEC_$$$$.opt \
-	$(GNATRTL_TASKING_OBJS) && \
-	../../xgcc -g -B../../ -shared -shared-libgcc \
-	   -o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
-	   libgnarl.a libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
-	   sys\$$library:trace.exe \
-	   --for-linker=/noinform \
-	   --for-linker=SYMVEC_$$$$.opt \
-	   --for-linker=gsmatch=equal,$(GSMATCH_VERSION)
-
 gnatlib-shared:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
