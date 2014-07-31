@@ -78,10 +78,22 @@ package System.Traceback is
    --  number of stored entries. The first entry is the most recent call,
    --  and the last entry is the highest level call.
 
+   procedure Call_Chain
+     (Traceback   : System.Address;
+      Max_Len     : Natural;
+      Len         : out Natural;
+      Exclude_Min : System.Address := System.Null_Address;
+      Exclude_Max : System.Address := System.Null_Address;
+      Skip_Frames : Natural := 1);
+   --  Same as the previous version, but takes Traceback as an Address. The
+   --  previous version is preferred. ???This version should be removed from
+   --  this spec, and calls replaced with calls to the previous version. This
+   --  declaration can be moved to the bodies (s-traceb.adb, s-traceb-hpux.adb,
+   --  and s-traceb-mastop.adb), but it should not be visible to clients.
+
    function C_Call_Chain
      (Traceback : System.Address;
-      Max_Len   : Natural)
-      return      Natural;
+      Max_Len   : Natural) return Natural;
    pragma Export (C, C_Call_Chain, "system__traceback__c_call_chain");
    --  Version that can be used directly from C
 
