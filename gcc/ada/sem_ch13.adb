@@ -7485,8 +7485,22 @@ package body Sem_Ch13 is
          SId := Invariant_Procedure (Typ);
       end if;
 
+      --  If the body is already present, nothing to do. This will occur when
+      --  the type is already frozen, which is the case when the invariant
+      --  appears in a private part, and the freezing takes place before the
+      --  final pass over full declarations.
+      --  See exp_ch3.Insert_Component_Invariant_Checks for details.
+
       if Present (SId) then
          PDecl := Unit_Declaration_Node (SId);
+
+         if Present (PDecl)
+           and then Nkind (PDecl) = N_Subprogram_Declaration
+           and then Present (Corresponding_Body (PDecl))
+         then
+            return;
+         end if;
+
       else
          PDecl := Build_Invariant_Procedure_Declaration (Typ);
       end if;
