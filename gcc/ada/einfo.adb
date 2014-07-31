@@ -569,10 +569,11 @@ package body Einfo is
    --    (SSO_Set_Low_By_Default)        Flag272
    --    (SSO_Set_Low_By_Default)        Flag273
 
+   --    Is_Generic_Actual_Subprogram    Flag274
+
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag274
    --    (unused)                        Flag275
    --    (unused)                        Flag276
    --    (unused)                        Flag277
@@ -2052,6 +2053,12 @@ package body Einfo is
    begin
       return Flag4 (Id);
    end Is_Frozen;
+
+   function Is_Generic_Actual_Subprogram (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      return Flag274 (Id);
+   end Is_Generic_Actual_Subprogram;
 
    function Is_Generic_Actual_Type (Id : E) return B is
    begin
@@ -4839,6 +4846,12 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       Set_Flag4 (Id, V);
    end Set_Is_Frozen;
+
+   procedure Set_Is_Generic_Actual_Subprogram (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure);
+      Set_Flag274 (Id, V);
+   end Set_Is_Generic_Actual_Subprogram;
 
    procedure Set_Is_Generic_Actual_Type (Id : E; V : B := True) is
    begin
@@ -8391,6 +8404,7 @@ package body Einfo is
       W ("Is_For_Access_Subtype",           Flag118 (Id));
       W ("Is_Formal_Subprogram",            Flag111 (Id));
       W ("Is_Frozen",                       Flag4   (Id));
+      W ("Is_Generic_Actual_Subprogram",    Flag274 (Id));
       W ("Is_Generic_Actual_Type",          Flag94  (Id));
       W ("Is_Generic_Instance",             Flag130 (Id));
       W ("Is_Generic_Type",                 Flag13  (Id));

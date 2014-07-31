@@ -473,34 +473,45 @@ package body Sem_Ch6 is
             Id    : constant Entity_Id := Defining_Entity (N);
 
          begin
-            if Nkind (Par) = N_Package_Specification
-              and then Decls = Visible_Declarations (Par)
-              and then Present (Private_Declarations (Par))
-              and then not Is_Empty_List (Private_Declarations (Par))
+            --  If this is a wrapper created for in an instance for a formal
+            --  subprogram, insert body after declaration, to be analyzed when
+            --  the enclosing instance is analyzed.
+
+            if GNATprove_Mode
+              and then Is_Generic_Actual_Subprogram (Defining_Entity (N))
             then
-               Decls := Private_Declarations (Par);
-            end if;
+               Insert_After (N, New_Body);
 
-            Insert_After (Last (Decls), New_Body);
-            Push_Scope (Id);
-            Install_Formals (Id);
-
-            --  Preanalyze the expression for name capture, except in an
-            --  instance, where this has been done during generic analysis,
-            --  and will be redone when analyzing the body.
-
-            declare
-               Expr : constant Node_Id := Expression (Ret);
-
-            begin
-               Set_Parent (Expr, Ret);
-
-               if not In_Instance then
-                  Preanalyze_Spec_Expression (Expr, Etype (Id));
+            else
+               if Nkind (Par) = N_Package_Specification
+                 and then Decls = Visible_Declarations (Par)
+                 and then Present (Private_Declarations (Par))
+                 and then not Is_Empty_List (Private_Declarations (Par))
+               then
+                  Decls := Private_Declarations (Par);
                end if;
-            end;
 
-            End_Scope;
+               Insert_After (Last (Decls), New_Body);
+               Push_Scope (Id);
+               Install_Formals (Id);
+
+               --  Preanalyze the expression for name capture, except in an
+               --  instance, where this has been done during generic analysis,
+               --  and will be redone when analyzing the body.
+
+               declare
+                  Expr : constant Node_Id := Expression (Ret);
+
+               begin
+                  Set_Parent (Expr, Ret);
+
+                  if not In_Instance then
+                     Preanalyze_Spec_Expression (Expr, Etype (Id));
+                  end if;
+               end;
+
+               End_Scope;
+            end if;
          end;
       end if;
 

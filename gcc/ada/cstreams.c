@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -104,16 +104,6 @@ int
 __gnat_fileno (FILE *stream)
 {
    return (fileno (stream));
-}
-
-int
-__gnat_is_regular_file_fd (int fd)
-{
-  int ret;
-  GNAT_STRUCT_STAT statbuf;
-
-  ret = GNAT_FSTAT (fd, &statbuf);
-  return (!ret && S_ISREG (statbuf.st_mode));
 }
 
 /* on some systems, the constants for seek are not defined, if so, then

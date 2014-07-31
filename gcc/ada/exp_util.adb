@@ -3228,6 +3228,53 @@ package body Exp_Util is
       end;
    end Get_Current_Value_Condition;
 
+   --------------------------------------------------------------
+   -- Get_First_Parent_With_External_Axiomatization_For_Entity --
+   --------------------------------------------------------------
+
+   function Get_First_Parent_With_External_Axiomatization_For_Entity
+     (E : Entity_Id) return Entity_Id is
+
+      Decl : Node_Id;
+
+   begin
+      if Ekind (E) = E_Package then
+         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Parent (E));
+         else
+            Decl := Parent (E);
+         end if;
+      end if;
+
+      --  E is the package which is externally axiomatized
+
+      if Ekind (E) = E_Package
+        and then Has_Annotate_Pragma_For_External_Axiomatization (E)
+      then
+         return E;
+
+         --  E is a package instance, in which case it is axiomatized iff the
+         --  corresponding generic package is Axiomatized.
+
+      elsif Ekind (E) = E_Package
+        and then Present (Generic_Parent (Decl))
+      then
+         return Get_First_Parent_With_External_Axiomatization_For_Entity
+           (Generic_Parent (Decl));
+
+         --  Otherwise, look at E's scope instead if present
+
+      elsif Present (Scope (E)) then
+         return Get_First_Parent_With_External_Axiomatization_For_Entity
+             (Scope (E));
+
+         --  Else there is no such axiomatized package
+
+      else
+         return Empty;
+      end if;
+   end Get_First_Parent_With_External_Axiomatization_For_Entity;
+
    ---------------------
    -- Get_Stream_Size --
    ---------------------
@@ -3270,6 +3317,119 @@ package body Exp_Util is
          return False;
       end if;
    end Has_Access_Constraint;
+
+   -----------------------------------------------------
+   -- Has_Annotate_Pragma_For_External_Axiomatization --
+   -----------------------------------------------------
+
+   function Has_Annotate_Pragma_For_External_Axiomatization
+     (E : Entity_Id) return Boolean
+   is
+
+      function Is_Annotate_Pragma_For_External_Axiomatization
+        (N : Node_Id) return Boolean;
+      --  Returns whether N is
+      --    pragma Annotate (GNATprove, External_Axiomatization);
+
+      ----------------------------------------------------
+      -- Is_Annotate_Pragma_For_External_Axiomatization --
+      ----------------------------------------------------
+
+      --  The general form of pragma Annotate is
+
+      --    pragma Annotate (IDENTIFIER [, IDENTIFIER {, ARG}]);
+      --    ARG ::= NAME | EXPRESSION
+
+      --  The first two arguments are by convention intended to refer to an
+      --  external tool and a tool-specific function. These arguments are
+      --  not analyzed.
+
+      --  The following is used to annotate a package specification which
+      --  GNATprove should treat specially, because the axiomatization of
+      --  this unit is given by the user instead of being automatically
+      --  generated.
+
+      --    pragma Annotate (GNATprove, External_Axiomatization);
+
+      function Is_Annotate_Pragma_For_External_Axiomatization
+        (N : Node_Id) return Boolean is
+
+         -------------------
+         -- Special Names --
+         -------------------
+
+         Name_GNATprove : constant String := "gnatprove";
+         Name_External_Axiomatization : constant String :=
+           "external_axiomatization";
+      begin
+         if Nkind (N) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name (N)) = Pragma_Annotate
+           and then List_Length (Pragma_Argument_Associations (N)) = 2
+         then
+            declare
+               Arg1 : constant Node_Id :=
+                 First (Pragma_Argument_Associations (N));
+               Arg2 : constant Node_Id := Next (Arg1);
+               Nam1 : Name_Id;
+               Nam2 : Name_Id;
+            begin
+               --  Fill in Name_Buffer with Name_GNATprove first, and then with
+               --  Name_External_Axiomatization so that Name_Find returns the
+               --  corresponding name. This takes care of all possible casings.
+
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer (Name_GNATprove);
+               Nam1 := Name_Find;
+
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer (Name_External_Axiomatization);
+               Nam2 := Name_Find;
+
+               return Chars (Get_Pragma_Arg (Arg1)) = Nam1
+                 and then
+                   Chars (Get_Pragma_Arg (Arg2)) = Nam2;
+            end;
+
+         else
+            return False;
+         end if;
+      end Is_Annotate_Pragma_For_External_Axiomatization;
+
+      Decl : Node_Id;
+      Vis_Decls : List_Id;
+      N         : Node_Id;
+
+   begin
+      if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
+         Decl := Parent (Parent (E));
+      else
+         Decl := Parent (E);
+      end if;
+
+      Vis_Decls := Visible_Declarations (Decl);
+
+      N := First (Vis_Decls);
+      while Present (N) loop
+
+         --  Skip declarations generated by the frontend. Skip all pragmas
+         --  that are not the desired Annotate pragma. Stop the search on
+         --  the first non-pragma source declaration.
+
+         if Comes_From_Source (N) then
+            if Nkind (N) = N_Pragma then
+               if Is_Annotate_Pragma_For_External_Axiomatization (N) then
+                  return True;
+               end if;
+            else
+               return False;
+            end if;
+         end if;
+
+         Next (N);
+      end loop;
+
+      return False;
+   end Has_Annotate_Pragma_For_External_Axiomatization;
 
    ----------------------------------
    -- Has_Following_Address_Clause --
