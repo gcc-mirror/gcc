@@ -4537,6 +4537,24 @@ package body Freeze is
             return No_List;
          end if;
 
+         --  Check for error of Type_Invariant'Class applied to a untagged type
+         --  (check delayed to freeze time when full type is available).
+
+         declare
+            Prag : constant Node_Id := Get_Pragma (E, Pragma_Invariant);
+         begin
+            if Present (Prag)
+              and then Class_Present (Prag)
+              and then not Is_Tagged_Type (E)
+            then
+               Error_Msg_NE
+                 ("Type_Invariant''Class cannot be specified for &",
+                  Prag, E);
+               Error_Msg_N
+                 ("\can only be specified for a tagged type", Prag);
+            end if;
+         end;
+
          --  Deal with special cases of freezing for subtype
 
          if E /= Base_Type (E) then

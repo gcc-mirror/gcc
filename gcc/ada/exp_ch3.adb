@@ -3763,7 +3763,15 @@ package body Exp_Ch3 is
                if Has_Invariants (Etype (Id))
                  and then In_Open_Scopes (Scope (R_Type))
                then
-                  Append_To (Stmts, Build_Component_Invariant_Call (Id));
+                  if Has_Unchecked_Union (R_Type) then
+                     Error_Msg_NE
+                       ("invariants cannot be checked on components of "
+                         & "unchecked_union type&?", Decl, R_Type);
+                     return Empty_List;
+
+                  else
+                     Append_To (Stmts, Build_Component_Invariant_Call (Id));
+                  end if;
 
                elsif Is_Access_Type (Etype (Id))
                  and then not Is_Access_Constant (Etype (Id))

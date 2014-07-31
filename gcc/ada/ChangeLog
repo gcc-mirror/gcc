@@ -1,3 +1,21 @@
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Invariant_Checks): If the enclosing record
+	is an unchecked_union, warn that invariants will not be checked
+	on components that have them.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Check for error of
+	Type_Invariant'Class applied to a untagged type.
+	* sem_ch6.adb (Analyze_Null_Procedure): Unconditionally rewrite
+	as null body, so that we perform error checks even if expansion
+	is off.
+
 2014-07-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Build_Invariant_Procedure): If body of procedure

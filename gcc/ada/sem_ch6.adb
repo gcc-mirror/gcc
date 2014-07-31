@@ -1391,19 +1391,14 @@ package body Sem_Ch6 is
          end if;
 
       else
-         --  The null procedure is a completion
+         --  The null procedure is a completion. We unconditionally rewrite
+         --  this as a null body (even if expansion is not active), because
+         --  there are various error checks that are applied on this body
+         --  when it is analyzed (e.g. correct aspect placement).
 
          Is_Completion := True;
-
-         if Expander_Active then
-            Rewrite (N, Null_Body);
-            Analyze (N);
-
-         else
-            Designator := Analyze_Subprogram_Specification (Spec);
-            Set_Has_Completion (Designator);
-            Set_Has_Completion (Prev);
-         end if;
+         Rewrite (N, Null_Body);
+         Analyze (N);
       end if;
    end Analyze_Null_Procedure;
 
