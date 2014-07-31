@@ -1,3 +1,11 @@
+2014-07-31  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (struct output_block): Remove global.
+	(struct data_in): Remove labels, num_named_labels and
+	num_unnamed_labels.
+	* lto-streamer-in.c (lto_data_in_delete): Do not free labels.
+	* lto-streamer-out.c (produce_asm_for_decls): Do not set global.
+
 2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/60517

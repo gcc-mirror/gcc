@@ -696,9 +696,6 @@ struct output_block
   int current_line;
   int current_col;
 
-  /* True if writing globals and types.  */
-  bool global;
-
   /* Cache of nodes written in this section.  */
   struct streamer_tree_cache_d *writer_cache;
 
@@ -714,21 +711,11 @@ struct data_in
   /* The global decls and types.  */
   struct lto_file_decl_data *file_data;
 
-  /* All of the labels.  */
-  tree *labels;
-
   /* The string table.  */
   const char *strings;
 
   /* The length of the string table.  */
   unsigned int strings_len;
-
-  /* Number of named labels.  Used to find the index of unnamed labels
-     since they share space with the named labels.  */
-  unsigned int num_named_labels;
-
-  /* Number of unnamed labels.  */
-  unsigned int num_unnamed_labels;
 
   /* Maps each reference number to the resolution done by the linker. */
   vec<ld_plugin_symbol_resolution_t> globals_resolution;

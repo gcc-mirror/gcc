@@ -2632,7 +2632,6 @@ produce_asm_for_decls (void)
   int32_t num_decl_states;
 
   ob = create_output_block (LTO_section_decls);
-  ob->global = true;
 
   memset (&header, 0, sizeof (struct lto_decl_header));
 
