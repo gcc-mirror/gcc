@@ -1427,6 +1427,5 @@ lto_data_in_delete (struct data_in *data_in)
 {
   data_in->globals_resolution.release ();
   streamer_tree_cache_delete (data_in->reader_cache);
-  free (data_in->labels);
   free (data_in);
 }
