@@ -1,3 +1,12 @@
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting.
+
+2014-07-31  Bob Duff  <duff@adacore.com>
+
+	* s-tasdeb.adb (System.Tasking.Debug): Remove
+	all usage of the secondary stack from this package.
+
 2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Expression): Update the loop in charge
