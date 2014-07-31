@@ -1752,7 +1752,7 @@ package body Exp_Ch3 is
       --  objects on list Decls.
 
       function Build_Init_Call_Thru (Parameters : List_Id) return List_Id;
-      --  Given a untagged type-derivation that declares discriminants, e.g.
+      --  Given an untagged type-derivation that declares discriminants, e.g.
       --
       --     type R (R1, R2 : Integer) is record ... end record;
       --     type D (D1 : Integer) is new R (1, D1);
@@ -5838,7 +5838,7 @@ package body Exp_Ch3 is
 
             --  Handle C++ constructor calls. Note that we do not check that
             --  Typ is a tagged type since the equivalent Ada type of a C++
-            --  class that has no virtual methods is a untagged limited
+            --  class that has no virtual methods is an untagged limited
             --  record type.
 
             elsif Is_CPP_Constructor_Call (Expr) then

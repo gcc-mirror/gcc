@@ -511,9 +511,13 @@ procedure Gnat1drv is
       --  Otherwise set overflow mode defaults
 
       else
-         --  Otherwise set overflow checks off by default
+         --  Overflow checks are on by default (Suppress set False) except in
+         --  GNAT_Mode, where we want them off by default (we are not ready to
+         --  enable overflow checks in the compiler yet, for one thing the case
+         --  of 64-bit checks needs System.Arith_64 which is not a compiler
+         --  unit and it is a pain to try to include it in the compiler.
 
-         Suppress_Options.Suppress (Overflow_Check) := True;
+         Suppress_Options.Suppress (Overflow_Check) := GNAT_Mode;
 
          --  Set appropriate default overflow handling mode. Note: at present
          --  we set STRICT in all three of the following cases. They are
@@ -531,8 +535,8 @@ procedure Gnat1drv is
          --  flags set, so this was dead code anyway.
 
          elsif Targparm.Backend_Divide_Checks_On_Target
-           and
-             Targparm.Backend_Overflow_Checks_On_Target
+                 and
+               Targparm.Backend_Overflow_Checks_On_Target
          then
             Suppress_Options.Overflow_Mode_General    := Strict;
             Suppress_Options.Overflow_Mode_Assertions := Strict;
