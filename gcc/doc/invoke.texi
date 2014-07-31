@@ -13115,6 +13115,14 @@ the device name as from the AVR user manual. The difference between
 If @var{device} is not a device but only a core architecture like
 @code{avr51}, this macro will not be defined.
 
+@item   __AVR_DEVICE_NAME__
+Setting @code{-mmcu=@var{device}} defines this built-in macro to
+the device's name. For example, with @code{-mmcu=atmega8} the macro
+will be defined to @code{atmega8}.
+
+If @var{device} is not a device but only a core architecture like
+@code{avr51}, this macro will not be defined.
+
 @item __AVR_XMEGA__
 The device / architecture belongs to the XMEGA family of devices.
 

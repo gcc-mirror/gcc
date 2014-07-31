@@ -1,3 +1,8 @@
+2014-07-30  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* doc/invoke.texi (AVR Options): Add documentation about
+	__AVR_DEVICE_NAME__ built-in macro.
+
 2014-07-31  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/61948
