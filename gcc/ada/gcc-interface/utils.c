@@ -1037,8 +1037,39 @@ pad_type_hash_eq (const void *p1, const void *p2)
     && TYPE_ADA_SIZE (type1) == TYPE_ADA_SIZE (type2);
 }
 
+/* Look up the padded TYPE in the hash table and return its canonical version
+   if it exists; otherwise, insert it into the hash table.  */
+
+static tree
+lookup_and_insert_pad_type (tree type)
+{
+  hashval_t hashcode;
+  struct pad_type_hash in, *h;
+  void **loc;
+
+  hashcode
+    = iterative_hash_object (TYPE_HASH (TREE_TYPE (TYPE_FIELDS (type))), 0);
+  hashcode = iterative_hash_expr (TYPE_SIZE (type), hashcode);
+  hashcode = iterative_hash_hashval_t (TYPE_ALIGN (type), hashcode);
+  hashcode = iterative_hash_expr (TYPE_ADA_SIZE (type), hashcode);
+
+  in.hash = hashcode;
+  in.type = type;
+  h = (struct pad_type_hash *)
+	htab_find_with_hash (pad_type_hash_table, &in, hashcode);
+  if (h)
+    return h->type;
+
+  h = ggc_alloc<pad_type_hash> ();
+  h->hash = hashcode;
+  h->type = type;
+  loc = htab_find_slot_with_hash (pad_type_hash_table, h, hashcode, INSERT);
+  *loc = (void *)h;
+  return NULL_TREE;
+}
+
 /* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
-   if needed.  We have already verified that SIZE and TYPE are large enough.
+   if needed.  We have already verified that SIZE and ALIGN are large enough.
    GNAT_ENTITY is used to name the resulting record and to issue a warning.
    IS_COMPONENT_TYPE is true if this is being done for the component type of
    an array.  IS_USER_TYPE is true if the original type needs to be completed.
@@ -1158,39 +1189,19 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   /* Set the RM size if requested.  */
   if (set_rm_size)
     {
+      tree canonical_pad_type;
+
       SET_TYPE_ADA_SIZE (record, size ? size : orig_size);
 
       /* If the padded type is complete and has constant size, we canonicalize
 	 it by means of the hash table.  This is consistent with the language
 	 semantics and ensures that gigi and the middle-end have a common view
 	 of these padded types.  */
-      if (TREE_CONSTANT (TYPE_SIZE (record)))
+      if (TREE_CONSTANT (TYPE_SIZE (record))
+	  && (canonical_pad_type = lookup_and_insert_pad_type (record)))
 	{
-	  hashval_t hashcode;
-	  struct pad_type_hash in, *h;
-	  void **loc;
-
-	  hashcode = iterative_hash_object (TYPE_HASH (type), 0);
-	  hashcode = iterative_hash_expr (TYPE_SIZE (record), hashcode);
-	  hashcode = iterative_hash_hashval_t (TYPE_ALIGN (record), hashcode);
-	  hashcode = iterative_hash_expr (TYPE_ADA_SIZE (record), hashcode);
-
-	  in.hash = hashcode;
-	  in.type = record;
-	  h = (struct pad_type_hash *)
-		htab_find_with_hash (pad_type_hash_table, &in, hashcode);
-	  if (h)
-	    {
-	      record = h->type;
-	      goto built;
-	    }
-
-	  h = ggc_alloc<pad_type_hash> ();
-	  h->hash = hashcode;
-	  h->type = record;
-	  loc = htab_find_slot_with_hash (pad_type_hash_table, h, hashcode,
-					  INSERT);
-	  *loc = (void *)h;
+	  record = canonical_pad_type;
+	  goto built;
 	}
     }
 
