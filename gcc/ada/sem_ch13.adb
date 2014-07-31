@@ -1671,7 +1671,9 @@ package body Sem_Ch13 is
                     and then not (Is_Type (E)
                                    and then Is_Tagged_Type (E))
                   then
-                     Error_Msg_N ("indexing applies to a tagged type", N);
+                     Error_Msg_N
+                       ("indexing aspect can only apply to a tagged type",
+                         Aspect);
                      goto Continue;
                   end if;
 
@@ -3471,52 +3473,137 @@ package body Sem_Ch13 is
          --  Check one possible interpretation. Sets Indexing_Found True if an
          --  indexing function is found.
 
+         procedure Illegal_Indexing (Msg : String);
+         --  Diagnose illegal indexing function if not overloaded. In the
+         --  overloaded case indicate that no legal interpretation  exists.
+
          ------------------------
          -- Check_One_Function --
          ------------------------
 
          procedure Check_One_Function (Subp : Entity_Id) is
-            Default_Element : constant Node_Id :=
-                                Find_Value_Of_Aspect
-                                  (Etype (First_Formal (Subp)),
-                                   Aspect_Iterator_Element);
+            Default_Element : Node_Id;
+            Ret_Type        : constant Entity_Id := Etype (Subp);
 
          begin
+            if not Is_Overloadable (Subp) then
+               Illegal_Indexing ("illegal indexing function for type&");
+               return;
+
+            elsif Scope (Subp) /= Current_Scope then
+               Illegal_Indexing
+                 ("indexing function must be declared in scope of type&");
+               return;
+
+            elsif No (First_Formal (Subp)) then
+               Illegal_Indexing
+                 ("Indexing requires a function that applies to type&");
+               return;
+
+            elsif No (Next_Formal (First_Formal (Subp))) then
+               Illegal_Indexing
+                  ("indexing function must have at least two parameters");
+               return;
+
+            elsif Is_Derived_Type (Ent) then
+               if (Attr = Name_Constant_Indexing
+                    and then Present
+                      (Find_Aspect (Etype (Ent), Aspect_Constant_Indexing)))
+
+                 or else (Attr = Name_Variable_Indexing
+                    and then Present
+                      (Find_Aspect (Etype (Ent), Aspect_Variable_Indexing)))
+               then
+                  if Debug_Flag_Dot_XX then
+                     null;
+
+                  else
+                     Illegal_Indexing
+                        ("indexing function already inherited "
+                          & "from parent type");
+                  end if;
+
+                  return;
+               end if;
+            end if;
+
             if not Check_Primitive_Function (Subp)
               and then not Is_Overloaded (Expr)
             then
-               Error_Msg_NE
-                 ("aspect Indexing requires a function that applies to type&",
-                    Subp, Ent);
+               Illegal_Indexing
+                 ("Indexing aspect requires a function that applies to type&");
+               return;
             end if;
 
             --  An indexing function must return either the default element of
             --  the container, or a reference type. For variable indexing it
             --  must be the latter.
 
+            Default_Element :=
+              Find_Value_Of_Aspect
+               (Etype (First_Formal (Subp)), Aspect_Iterator_Element);
+
             if Present (Default_Element) then
                Analyze (Default_Element);
 
                if Is_Entity_Name (Default_Element)
-                 and then Covers (Entity (Default_Element), Etype (Subp))
+                 and then not Covers (Entity (Default_Element), Ret_Type)
+                 and then False
                then
-                  Indexing_Found := True;
+                  Illegal_Indexing
+                    ("wrong return type for indexing function");
                   return;
                end if;
             end if;
 
             --  For variable_indexing the return type must be a reference type
 
-            if Attr = Name_Variable_Indexing
-              and then not Has_Implicit_Dereference (Etype (Subp))
-            then
-               Error_Msg_N
-                 ("function for indexing must return a reference type", Subp);
+            if Attr = Name_Variable_Indexing then
+               if not Has_Implicit_Dereference (Ret_Type) then
+                  Illegal_Indexing
+                     ("variable indexing must return a reference type");
+                  return;
+
+               elsif Is_Access_Constant (Etype (First_Discriminant (Ret_Type)))
+               then
+                  Illegal_Indexing
+                    ("variable indexing must return an access to variable");
+                  return;
+               end if;
 
             else
-               Indexing_Found := True;
+               if  Has_Implicit_Dereference (Ret_Type)
+                 and then not
+                   Is_Access_Constant (Etype (First_Discriminant (Ret_Type)))
+               then
+                  Illegal_Indexing
+                    ("constant indexing must return an access to constant");
+                  return;
+
+               elsif Is_Access_Type (Etype (First_Formal (Subp)))
+                 and then not Is_Access_Constant (Etype (First_Formal (Subp)))
+               then
+                  Illegal_Indexing
+                    ("constant indexing must apply to an access to constant");
+                  return;
+               end if;
             end if;
+
+            --  All checks succeeded.
+
+            Indexing_Found := True;
          end Check_One_Function;
+
+         -----------------------
+         --  Illegal_Indexing --
+         -----------------------
+
+         procedure Illegal_Indexing (Msg : String) is
+         begin
+            if not Is_Overloaded (Expr) then
+               Error_Msg_NE (Msg, N, Ent);
+            end if;
+         end Illegal_Indexing;
 
       --  Start of processing for Check_Indexing_Functions
 

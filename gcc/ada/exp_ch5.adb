@@ -28,6 +28,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
@@ -58,6 +59,7 @@ with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
+with Uintp;    use Uintp;
 with Validsw;  use Validsw;
 
 package body Exp_Ch5 is
@@ -3292,17 +3294,90 @@ package body Exp_Ch5 is
          --  type of the iterator must be obtained from the aspect.
 
          if Of_Present (I_Spec) then
-            declare
-               Default_Iter : constant Entity_Id :=
-                                Entity
-                                  (Find_Value_Of_Aspect
-                                    (Etype (Container),
-                                     Aspect_Default_Iterator));
-
+            Handle_Of : declare
+               Default_Iter  : Entity_Id;
                Container_Arg : Node_Id;
                Ent           : Entity_Id;
 
+               function Get_Default_Iterator
+                 (T : Entity_Id) return Entity_Id;
+               --  If the container is a derived type, the aspect holds the
+               --  parent operation. The required one is a primitive of the
+               --  derived type and is either inherited or overridden.
+
+               --------------------------
+               -- Get_Default_Iterator --
+               --------------------------
+
+               function Get_Default_Iterator
+                 (T : Entity_Id) return Entity_Id
+               is
+                  Iter : constant Entity_Id :=
+                    Entity (Find_Value_Of_Aspect (T, Aspect_Default_Iterator));
+                  Prim : Elmt_Id;
+                  Op   : Entity_Id;
+
+               begin
+                  Container_Arg := New_Copy_Tree (Container);
+
+                  --  A previous version of GNAT allowed indexing aspects to
+                  --  be redefined on derived container types, while the
+                  --  default iterator was inherited from the aprent type.
+                  --  This non-standard extension is preserved temporarily for
+                  --  use by the modelling project under debug flag d.X.
+
+                  if Debug_Flag_Dot_XX then
+                     if Base_Type (Etype (Container)) /=
+                        Base_Type (Etype (First_Formal (Iter)))
+                     then
+                        Container_Arg :=
+                          Make_Type_Conversion (Loc,
+                            Subtype_Mark =>
+                              New_Occurrence_Of
+                                (Etype (First_Formal (Iter)), Loc),
+                            Expression   => Container_Arg);
+                     end if;
+
+                     return Iter;
+
+                  elsif Is_Derived_Type (T) then
+
+                     --  The default iterator must be a primitive operation
+                     --  of the type, at the same dispatch slot position.
+
+                     Prim := First_Elmt (Primitive_Operations (T));
+                     while Present (Prim) loop
+                        Op := Node (Prim);
+
+                        if Chars (Op) = Chars (Iter)
+                          and then DT_Position (Op) = DT_Position (Iter)
+                        then
+                           return Op;
+                        end if;
+
+                        Next_Elmt (Prim);
+                     end loop;
+
+                     --  default iterator must exist.
+
+                     pragma Assert (False);
+
+                  else              --  not a derived type
+                     return Iter;
+                  end if;
+               end Get_Default_Iterator;
+
+            --  Start of processing for Handle_Of
+
             begin
+               if Is_Class_Wide_Type (Container_Typ) then
+                  Default_Iter :=
+                    Get_Default_Iterator (Etype (Base_Type (Container_Typ)));
+
+               else
+                  Default_Iter := Get_Default_Iterator (Etype (Container));
+               end if;
+
                Cursor := Make_Temporary (Loc, 'C');
 
                --  For an container element iterator, the iterator type
@@ -3320,24 +3395,7 @@ package body Exp_Ch5 is
                Pack := Scope (Root_Type (Etype (Iter_Type)));
 
                --  Rewrite domain of iteration as a call to the default
-               --  iterator for the container type. If the container is
-               --  a derived type and the aspect is inherited, convert
-               --  container to parent type. The Cursor type is also
-               --  inherited from the scope of the parent.
-
-               if Base_Type (Etype (Container)) =
-                  Base_Type (Etype (First_Formal (Default_Iter)))
-               then
-                  Container_Arg := New_Copy_Tree (Container);
-
-               else
-                  Container_Arg :=
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark =>
-                        New_Occurrence_Of
-                          (Etype (First_Formal (Default_Iter)), Loc),
-                      Expression => New_Copy_Tree (Container));
-               end if;
+               --  iterator for the container type.
 
                Rewrite (Name (I_Spec),
                  Make_Function_Call (Loc,
@@ -3367,9 +3425,9 @@ package body Exp_Ch5 is
                Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
-                   Subtype_Mark     =>
+                   Subtype_Mark        =>
                      New_Occurrence_Of (Element_Type, Loc),
-                   Name             =>
+                   Name                =>
                      Make_Indexed_Component (Loc,
                        Prefix      => Relocate_Node (Container_Arg),
                        Expressions =>
@@ -3415,7 +3473,7 @@ package body Exp_Ch5 is
                else
                   Prepend_To (Stats, Decl);
                end if;
-            end;
+            end Handle_Of;
 
          --  X in Iterate (S) : type of iterator is type of explicitly
          --  given Iterate function, and the loop variable is the cursor.
