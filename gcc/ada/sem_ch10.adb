@@ -5695,10 +5695,10 @@ package body Sem_Ch10 is
 
             procedure Process_State (State : Node_Id) is
                Loc   : constant Source_Ptr := Sloc (State);
+               Decl  : Node_Id;
+               Dummy : Entity_Id;
                Elmt  : Node_Id;
                Id    : Entity_Id;
-               Name  : Name_Id;
-               Dummy : Entity_Id;
 
             begin
                --  Multiple abstract states appear as an aggregate
@@ -5721,12 +5721,12 @@ package body Sem_Ch10 is
                --  extension aggregate.
 
                elsif Nkind (State) = N_Extension_Aggregate then
-                  Name := Chars (Ancestor_Part (State));
+                  Decl := Ancestor_Part (State);
 
                --  Simple state declaration
 
                elsif Nkind (State) = N_Identifier then
-                  Name := Chars (State);
+                  Decl := State;
 
                --  Possibly an illegal state declaration
 
@@ -5734,14 +5734,26 @@ package body Sem_Ch10 is
                   return;
                end if;
 
-               --  Construct a dummy state for the purposes of establishing a
-               --  non-limited => limited view relation. Note that the dummy
-               --  state is not added to list Abstract_States to avoid multiple
-               --  definitions.
+               --  Abstract states are elaborated when the related pragma is
+               --  elaborated. Since the withed package is not analyzed yet,
+               --  the entities of the abstract states are not available. To
+               --  overcome this complication, create the entities now and
+               --  store them in their respective declarations. The entities
+               --  are later used by routine Create_Abstract_State to declare
+               --  and enter the states into visibility.
 
-               Id := Make_Defining_Identifier (Loc, New_External_Name (Name));
-               Set_Parent     (Id, State);
-               Decorate_State (Id, Scop);
+               if No (Entity (Decl)) then
+                  Id := Make_Defining_Identifier (Loc, Chars (Decl));
+
+                  Set_Entity     (Decl, Id);
+                  Set_Parent     (Id, State);
+                  Decorate_State (Id, Scop);
+
+               --  Otherwise the package was previously withed
+
+               else
+                  Id := Entity (Decl);
+               end if;
 
                Build_Shadow_Entity (Id, Scop, Dummy);
             end Process_State;

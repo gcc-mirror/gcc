@@ -10519,10 +10519,23 @@ package body Sem_Prag is
                   Is_Null : Boolean)
                is
                begin
-                  --  The generated state abstraction reuses the same chars
-                  --  from the original state declaration. Decorate the entity.
+                  --  The abstract state may be semi-declared when the related
+                  --  package was withed through a limited with clause. In that
+                  --  case reuse the entity to fully declare the state.
 
-                  State_Id := Make_Defining_Identifier (Loc, Nam);
+                  if Present (Decl) and then Present (Entity (Decl)) then
+                     State_Id := Entity (Decl);
+
+                  --  Otherwise the elaboration of pragma Abstract_State
+                  --  declares the state.
+
+                  else
+                     State_Id := Make_Defining_Identifier (Loc, Nam);
+
+                     if Present (Decl) then
+                        Set_Entity (Decl, State_Id);
+                     end if;
+                  end if;
 
                   --  Null states never come from source
 

@@ -1,5 +1,23 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb (Enable_Overflow_Check): More precise setting of
+	Do_Overflow_Check flag for division.
+
+2014-07-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Reject packed
+	array types with implementation type.
+
+2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Process_State): Remove local variable Name. Add
+	local variable Decl. Partially declare an abstract state by
+	generating an entity and storing it in the state declaration.
+	* sem_prag.adb (Create_Abstract_State): Fully declare a
+	semi-declared abstract state.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* prj-nmsc.adb: Minor reformatting.
 
 2014-07-31  Bob Duff  <duff@adacore.com>
