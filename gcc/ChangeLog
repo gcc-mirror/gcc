@@ -1,3 +1,8 @@
+2014-07-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.c (insn_contains_asm_1, insn_contains_asm): Delete.
+	(compute_regs_asm_clobbered): Use extract_asm_operands instead.
+
 2014-07-31  Richard Biener  <rguenther@suse.de>
 
 	* data-streamer.h (streamer_write_data_stream): Declare here,
