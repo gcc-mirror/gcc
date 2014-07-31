@@ -488,7 +488,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     comdat = IDENTIFIER_POINTER (group);
   else
     comdat = "";
-  lto_output_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
+  streamer_write_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
 
   if (group)
     {
@@ -546,7 +546,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN, node->resolution);
   streamer_write_bitpack (&bp);
-  lto_output_data_stream (ob->main_stream, section, strlen (section) + 1);
+  streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
   if (node->thunk.thunk_p && !boundary_p)
     {
@@ -622,7 +622,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
     comdat = IDENTIFIER_POINTER (group);
   else
     comdat = "";
-  lto_output_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
+  streamer_write_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
 
   if (group)
     {
@@ -640,7 +640,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   section = node->get_section ();
   if (!section)
     section = "";
-  lto_output_data_stream (ob->main_stream, section, strlen (section) + 1);
+  streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
   streamer_write_enum (ob->main_stream, ld_plugin_symbol_resolution,
 		       LDPR_NUM_KNOWN, node->resolution);

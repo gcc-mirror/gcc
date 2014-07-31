@@ -1,3 +1,15 @@
+2014-07-31  Richard Biener  <rguenther@suse.de>
+
+	* data-streamer.h (streamer_write_data_stream): Declare here,
+	renamed from ...
+	* lto-streamer.h (lto_output_data_stream): ... this.  Remove.
+	* lto-cgraph.c (lto_output_node): Adjust.
+	(lto_output_varpool_node): Likewise.
+	* data-streamer-out.c (streamer_string_index): Likewise.
+	(streamer_write_data_stream, lto_append_block): Move from ...
+	* lto-section-out.c (lto_output_data_stream,
+	lto_append_block): ... here.
+
 2014-07-30  Mike Stump  <mikestump@comcast.net>
 
 	* configure.ac: Also check for popen.
