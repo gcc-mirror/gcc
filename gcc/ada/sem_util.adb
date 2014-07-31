@@ -16459,7 +16459,6 @@ package body Sem_Util is
          Stmt := Original_Node (N);
       end if;
 
-      --    and then Ekind (Entity (Identifier (Stmt))) = E_Loop
       return
         Nkind (Stmt) = N_Loop_Statement
           and then Present (Identifier (Stmt))
