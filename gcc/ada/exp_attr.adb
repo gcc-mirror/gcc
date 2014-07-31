@@ -1120,7 +1120,13 @@ package body Exp_Attr is
 
          --  While loops are transformed into:
 
-         --    if <Condition> then
+         --    function Fnn return Boolean is
+         --    begin
+         --       <condition actions>
+         --       return <condition>;
+         --    end Fnn;
+
+         --    if Fnn then
          --       declare
          --          Temp1 : constant <type of Pref1> := <Pref1>;
          --          . . .
@@ -1128,7 +1134,7 @@ package body Exp_Attr is
          --       begin
          --          loop
          --             <original source statements with attribute rewrites>
-         --             exit when not <Condition>;
+         --             exit when not Fnn;
          --          end loop;
          --       end;
          --    end if;
@@ -1138,23 +1144,81 @@ package body Exp_Attr is
 
          elsif Present (Condition (Scheme)) then
             declare
-               Cond : constant Node_Id := Condition (Scheme);
+               Func_Decl : Node_Id;
+               Func_Id   : Entity_Id;
+               Stmts     : List_Id;
 
             begin
+               --  Wrap the condition of the while loop in a Boolean function.
+               --  This avoids the duplication of the same code which may lead
+               --  to gigi issues with respect to multiple declaration of the
+               --  same entity in the presence of side effects or checks. Note
+               --  that the condition actions must also be relocated to the
+               --  wrapping function.
+
+               --  Generate:
+               --    <condition actions>
+               --    return <condition>;
+
+               if Present (Condition_Actions (Scheme)) then
+                  Stmts := Condition_Actions (Scheme);
+               else
+                  Stmts := New_List;
+               end if;
+
+               Append_To (Stmts,
+                 Make_Simple_Return_Statement (Loc,
+                   Expression => Relocate_Node (Condition (Scheme))));
+
+               --  Generate:
+               --    function Fnn return Boolean is
+               --    begin
+               --       <Stmts>
+               --    end Fnn;
+
+               Func_Id   := Make_Temporary (Loc, 'F');
+               Func_Decl :=
+                 Make_Subprogram_Body (Loc,
+                   Specification              =>
+                     Make_Function_Specification (Loc,
+                       Defining_Unit_Name => Func_Id,
+                       Result_Definition  =>
+                         New_Occurrence_Of (Standard_Boolean, Loc)),
+                   Declarations               => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => Stmts));
+
+               --  The function is inserted before the related loop. Make sure
+               --  to analyze it in the context of the loop's enclosing scope.
+
+               Push_Scope (Scope (Loop_Id));
+               Insert_Action (Loop_Stmt, Func_Decl);
+               Pop_Scope;
+
                --  Transform the original while loop into an infinite loop
                --  where the last statement checks the negated condition. This
                --  placement ensures that the condition will not be evaluated
                --  twice on the first iteration.
 
+               Set_Iteration_Scheme (Loop_Stmt, Empty);
+               Scheme := Empty;
+
                --  Generate:
-               --    exit when not <Cond>:
+               --    exit when not Fnn;
 
                Append_To (Statements (Loop_Stmt),
                  Make_Exit_Statement (Loc,
-                   Condition => Make_Op_Not (Loc, New_Copy_Tree (Cond))));
+                   Condition =>
+                     Make_Op_Not (Loc,
+                       Right_Opnd =>
+                         Make_Function_Call (Loc,
+                           Name => New_Occurrence_Of (Func_Id, Loc)))));
 
                Build_Conditional_Block (Loc,
-                 Cond      => Relocate_Node (Cond),
+                 Cond      =>
+                   Make_Function_Call (Loc,
+                     Name => New_Occurrence_Of (Func_Id, Loc)),
                  Loop_Stmt => Relocate_Node (Loop_Stmt),
                  If_Stmt   => Result,
                  Blk_Stmt  => Blk);
@@ -1289,8 +1353,6 @@ package body Exp_Attr is
 
       --  Step 4: Analyze all bits
 
-      Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
-
       Installed := Current_Scope = Scope (Loop_Id);
 
       --  Depending on the pracement of attribute 'Loop_Entry relative to the
@@ -1305,19 +1367,6 @@ package body Exp_Attr is
 
       if Present (Result) then
          Rewrite (Loop_Stmt, Result);
-
-         --  The insertion of condition actions associated with an iteration
-         --  scheme is usually done by the expansion of loop statements. The
-         --  expansion of Loop_Entry however reuses the iteration scheme to
-         --  build an if statement. As a result any condition actions must be
-         --  inserted before the if statement to avoid references before
-         --  declaration.
-
-         if Present (Scheme) and then Present (Condition_Actions (Scheme)) then
-            Insert_Actions (Loop_Stmt, Condition_Actions (Scheme));
-            Set_Condition_Actions (Scheme, No_List);
-         end if;
-
          Analyze (Loop_Stmt);
 
       --  The conditional block was analyzed when a previous 'Loop_Entry was
@@ -1328,6 +1377,7 @@ package body Exp_Attr is
          Analyze (Temp_Decl);
       end if;
 
+      Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
       Analyze (N);
 
       if not Installed then

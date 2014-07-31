@@ -433,9 +433,10 @@ package body Sem_Case is
                   Error := True;
 
                --  The previous choice covered part of the static predicate set
+               --  but there is a gap after Prev_Hi.
 
                else
-                  Missing_Choice (Prev_Hi, Choice_Lo - 1);
+                  Missing_Choice (Prev_Hi + 1, Choice_Lo - 1);
                   Error := True;
                end if;
             end if;
@@ -1462,6 +1463,7 @@ package body Sem_Case is
 
                            if not Is_Discrete_Type (E)
                              or else not Has_Static_Predicate (E)
+                             or else Has_Dynamic_Predicate_Aspect (E)
                            then
                               Bad_Predicated_Subtype_Use
                                 ("cannot use subtype& with non-static "

@@ -253,8 +253,6 @@ __gnat_full_name (char *nam, char *buffer)
   return buffer;
 }
 
-#define __int64 long long
-
 #ifdef _WIN32
   /* On Windows we want to use the fseek/fteel supporting large files. This
      issue is due to the fact that a long on Win64 is still a 32 bits value */

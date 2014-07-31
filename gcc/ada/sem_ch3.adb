@@ -4514,6 +4514,8 @@ package body Sem_Ch3 is
 
             when Enumeration_Kind =>
                Set_Ekind                (Id, E_Enumeration_Subtype);
+               Set_Has_Dynamic_Predicate_Aspect (Id,
+                                   Has_Dynamic_Predicate_Aspect (T));
                Set_First_Literal        (Id, First_Literal (Base_Type (T)));
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Character_Type    (Id, Is_Character_Type  (T));

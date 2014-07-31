@@ -1018,17 +1018,17 @@ package body Sem_Ch12 is
         (Formal : Entity_Id;
          Actual : Entity_Id := Empty) return Node_Id
       is
-         Loc     : constant Source_Ptr := Sloc (I_Node);
-         Typ     : constant Entity_Id := Etype (Formal);
+         Loc       : constant Source_Ptr := Sloc (I_Node);
+         Typ       : constant Entity_Id := Etype (Formal);
          Is_Binary : constant Boolean :=
-                        Present (Next_Formal (First_Formal (Formal)));
+                       Present (Next_Formal (First_Formal (Formal)));
 
-         Decl   : Node_Id;
-         Expr   : Node_Id;
-         F1, F2 : Entity_Id;
-         Func   : Entity_Id;
+         Decl    : Node_Id;
+         Expr    : Node_Id;
+         F1, F2  : Entity_Id;
+         Func    : Entity_Id;
          Op_Name : Name_Id;
-         Spec   : Node_Id;
+         Spec    : Node_Id;
 
          L, R   : Node_Id;
 
@@ -1050,23 +1050,24 @@ package body Sem_Ch12 is
          Set_Ekind (Func, E_Function);
          Set_Is_Generic_Actual_Subprogram (Func);
 
-         Spec := Make_Function_Specification (Loc,
-            Defining_Unit_Name => Func,
-
-            Parameter_Specifications => New_List (
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => F1,
-                Parameter_Type => Make_Identifier
-                  (Loc, Chars (Etype (First_Formal (Formal)))))),
-
-            Result_Definition => Make_Identifier (Loc, Chars (Typ)));
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => Func,
+             Parameter_Specifications => New_List (
+               Make_Parameter_Specification (Loc,
+                  Defining_Identifier => F1,
+                  Parameter_Type      =>
+                    Make_Identifier (Loc,
+                      Chars => Chars (Etype (First_Formal (Formal)))))),
+             Result_Definition        => Make_Identifier (Loc, Chars (Typ)));
 
          if Is_Binary then
             Append_To (Parameter_Specifications (Spec),
                Make_Parameter_Specification (Loc,
                  Defining_Identifier => F2,
-                 Parameter_Type => Make_Identifier (Loc,
-                   Chars (Etype (Next_Formal (First_Formal (Formal)))))));
+                 Parameter_Type =>
+                   Make_Identifier (Loc,
+                     Chars (Etype (Next_Formal (First_Formal (Formal)))))));
          end if;
 
          --  Build expression as a function call, or as an operator node
@@ -1074,86 +1075,73 @@ package body Sem_Ch12 is
          --  operators.
 
          if Present (Actual) and then Op_Name not in Any_Operator_Name then
-            Expr := Make_Function_Call (Loc,
-                      Name => New_Occurrence_Of (Entity (Actual), Loc),
-                      Parameter_Associations => New_List (L));
+            Expr :=
+              Make_Function_Call (Loc,
+                Name                   =>
+                  New_Occurrence_Of (Entity (Actual), Loc),
+                Parameter_Associations => New_List (L));
 
             if Is_Binary then
                Append_To (Parameter_Associations (Expr), R);
             end if;
 
+         --  Binary operators
+
          elsif Is_Binary then
             if Op_Name = Name_Op_And then
                Expr := Make_Op_And (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Or then
                Expr := Make_Op_Or (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Xor then
                Expr := Make_Op_Xor (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Eq then
                Expr := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Ne then
                Expr := Make_Op_Ne (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Le then
                Expr := Make_Op_Le (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Gt then
                Expr := Make_Op_Gt (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Ge then
                Expr := Make_Op_Ge (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Lt then
                Expr := Make_Op_Lt (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Add then
                Expr := Make_Op_Add (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Subtract then
                Expr := Make_Op_Subtract (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Concat then
                Expr := Make_Op_Concat (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Multiply then
                Expr := Make_Op_Multiply (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Divide then
                Expr := Make_Op_Divide (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Mod then
                Expr := Make_Op_Mod (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Rem then
                Expr := Make_Op_Rem (Loc, Left_Opnd => L, Right_Opnd => R);
-
             elsif Op_Name = Name_Op_Expon then
                Expr := Make_Op_Expon (Loc, Left_Opnd => L, Right_Opnd => R);
             end if;
 
-         else    --  Unary operators.
+         --  Unary operators
 
+         else
             if Op_Name = Name_Op_Add then
                Expr := Make_Op_Plus (Loc, Right_Opnd => L);
-
             elsif Op_Name = Name_Op_Subtract then
                Expr := Make_Op_Minus (Loc, Right_Opnd => L);
-
             elsif Op_Name = Name_Op_Abs then
                Expr := Make_Op_Abs (Loc, Right_Opnd => L);
-
             elsif Op_Name = Name_Op_Not then
                Expr := Make_Op_Not (Loc, Right_Opnd => L);
             end if;
          end if;
 
-         Decl := Make_Expression_Function (Loc,
-                    Specification => Spec,
-                    Expression => Expr);
+         Decl :=
+           Make_Expression_Function (Loc,
+             Specification => Spec,
+             Expression    => Expr);
 
          return Decl;
       end Build_Wrapper;

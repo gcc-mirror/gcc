@@ -282,8 +282,9 @@ package body System.Direct_IO is
    procedure Set_Position (File : File_Type) is
       R : int;
    begin
-      R := fseek64
-        (File.Stream, int64 (File.Bytes) * int64 (File.Index - 1), SEEK_SET);
+      R :=
+        fseek64
+          (File.Stream, int64 (File.Bytes) * int64 (File.Index - 1), SEEK_SET);
 
       if R /= 0 then
          raise Use_Error;
@@ -296,6 +297,7 @@ package body System.Direct_IO is
 
    function Size (File : File_Type) return Count is
       Pos : int64;
+
    begin
       FIO.Check_File_Open (AP (File));
       File.Last_Op := Op_Other;
