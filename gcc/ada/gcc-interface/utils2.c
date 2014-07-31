@@ -1177,7 +1177,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
     ;
   else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
     {
-      TREE_THIS_NOTRAP (result) = 1;
       if (TYPE_VOLATILE (operation_type))
 	TREE_THIS_VOLATILE (result) = 1;
     }

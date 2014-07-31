@@ -1,3 +1,8 @@
+2014-07-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c ((build_binary_op): Don't set TREE_THIS_NOTRAP
+	on array references here, now done more selectively in trans.c.
+
 2014-07-31  Doug Rupp  <rupp@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init_gcc_fp(): Set flag_errno_math to 0.
