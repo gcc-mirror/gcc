@@ -1191,6 +1191,19 @@ package body Exp_Disp is
          end if;
 
          return;
+
+      --  A static conversion to an interface type that is not classwide is
+      --  curious but legal if the interface operation is a null procedure.
+      --  If the operation is abstract it will be rejected later.
+
+      elsif Is_Static
+        and then Is_Interface (Etype (N))
+        and then not Is_Class_Wide_Type (Etype (N))
+        and then Comes_From_Source (N)
+      then
+         Rewrite (N, Unchecked_Convert_To (Etype (N), N));
+         Analyze (N);
+         return;
       end if;
 
       if not Is_Static then

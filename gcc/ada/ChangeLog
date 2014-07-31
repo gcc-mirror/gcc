@@ -1,5 +1,27 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* frontend.adb: Minor reformatting.
+	* sem.adb: Minor reformatting.
+	* sem_ch6.adb (Analyze_Null_Procedure): Set proper sloc for
+	identifiers on rewrite.
+	* par.adb: Minor comment updates.
+	* a-ngelfu.adb (Cos): Minor simplification.
+	* par-ch13.adb (Get_Aspect_Specifications): Improve messages
+	and recovery for bad aspect.
+	* exp_ch3.adb: Code clean up.
+	* sem_util.ads: Minor comment correction.
+	* sem_ch13.adb (Check_Array_Type): Properly handle large types.
+	* sem_ch3.adb: Code clean up.
+	* binderr.ads: Minor comment correction.
+
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Conversion): A call whose
+	prefix is a static conversion to an interface type that is not
+	class-wide is not dispatching.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* inline.adb, s-traceb.adb, s-traceb-hpux.adb, memtrack.adb,
 	s-traceb-mastop.adb: Minor reformatting.
 

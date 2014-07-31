@@ -106,7 +106,7 @@ package body Sem_Ch6 is
    procedure Analyze_Null_Procedure
      (N             : Node_Id;
       Is_Completion : out Boolean);
-   --  A null procedure can be a declaration or (Ada 2012) a completion.
+   --  A null procedure can be a declaration or (Ada 2012) a completion
 
    procedure Analyze_Return_Statement (N : Node_Id);
    --  Common processing for simple and extended return statements
@@ -1310,12 +1310,16 @@ package body Sem_Ch6 is
       --  Create new entities for body and formals
 
       Set_Defining_Unit_Name (Specification (Null_Body),
-        Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))));
+        Make_Defining_Identifier
+          (Sloc (Defining_Entity (N)),
+           Chars (Defining_Entity (N))));
 
       Form := First (Parameter_Specifications (Specification (Null_Body)));
       while Present (Form) loop
          Set_Defining_Identifier (Form,
-           Make_Defining_Identifier (Loc, Chars (Defining_Identifier (Form))));
+           Make_Defining_Identifier
+             (Sloc (Defining_Identifier (Form)),
+              Chars (Defining_Identifier (Form))));
          Next (Form);
       end loop;
 

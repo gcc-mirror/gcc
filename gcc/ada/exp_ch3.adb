@@ -4589,9 +4589,9 @@ package body Exp_Ch3 is
       --  Expand_Record_Extension is called directly from the semantics, so
       --  we must check to see whether expansion is active before proceeding
       --  Because this affects the visibility of selected components in bodies
-      --  of instances, it must also be called in ASIS mode.
+      --  of instances.
 
-      if not (Expander_Active or ASIS_Mode) then
+      if not Expander_Active then
          return;
       end if;
 

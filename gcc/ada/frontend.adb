@@ -147,10 +147,10 @@ begin
       Temp_File : Boolean;
 
    begin
-      --  We always analyze config files with style checks off, since
-      --  we don't want a miscellaneous gnat.adc that is around to
-      --  discombobulate intended -gnatg or -gnaty compilations. We
-      --  also disconnect checking for maximum line length.
+      --  We always analyze config files with style checks off, since we
+      --  don't want a miscellaneous gnat.adc that is around to discombobulate
+      --  intended -gnatg or -gnaty compilations. We also disconnect checking
+      --  for maximum line length.
 
       Opt.Style_Check := False;
       Style_Check := False;
