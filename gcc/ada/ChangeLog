@@ -1,3 +1,26 @@
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Has_Preelaborable_Initialization): Check that
+	type is tagged before checking whether a user-defined Initialize
+	procedure is present.
+
+2014-07-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-ngelfu.ads (Sqrt): Augment postcondition.
+
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes): An aggegate library
+	directory and ALI directory must be different than all object
+	and library directories of aggregated projects.
+
+2014-07-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-pars.adb, prj-conf.ads, prj-conf.adb (Locate_Runtime): Move spec
+	to package body, as it is not called from outside. Remove argument
+	Project_Tree, no longer used. When runtime cannot be found,
+	call Raise_Invalid_Config instead of failing the program.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* bindgen.adb (Gen_Output_File_Ada): Generate pragma Suppress

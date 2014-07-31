@@ -8189,10 +8189,13 @@ package body Sem_Util is
          end if;
 
          --  Check specifically for 10.2.1(11.4/2) exception: a controlled type
-         --  with a user defined Initialize procedure does not have PI.
+         --  with a user defined Initialize procedure does not have PI. If
+         --  the type is untagged, the control primitives come from a component
+         --  that has already been checked.
 
          if Has_PE
            and then Is_Controlled (E)
+           and then Is_Tagged_Type (E)
            and then Has_Overriding_Initialize (E)
          then
             Has_PE := False;
@@ -16456,6 +16459,7 @@ package body Sem_Util is
          Stmt := Original_Node (N);
       end if;
 
+      --    and then Ekind (Entity (Identifier (Stmt))) = E_Loop
       return
         Nkind (Stmt) = N_Loop_Statement
           and then Present (Identifier (Stmt))

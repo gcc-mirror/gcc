@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,8 +103,8 @@ package body Prj.Pars is
             Success := The_Project /= No_Project;
 
          exception
-            when Invalid_Config =>
-               Success := False;
+            when E : Invalid_Config =>
+               Osint.Fail (Exception_Message (E));
          end;
 
          Prj.Err.Finalize;
