@@ -50,10 +50,13 @@ package System.Unsigned_Types is
    --  Used in the implementation of Is_Negative intrinsic (see Exp_Intr)
 
    type Packed_Byte is mod 2 ** 8;
+   pragma Universal_Aliasing (Packed_Byte);
    for Packed_Byte'Size use 8;
-   --  Component type for Packed_Bytes array
+   --  Component type for Packed_Bytes1, Packed_Bytes2 and Packed_Byte4 arrays.
+   --  As this type is used by the compiler to implement operations on user
+   --  packed array, it needs to be able to alias any type.
 
-   type Packed_Bytes1 is array (Natural range <>) of Packed_Byte;
+   type Packed_Bytes1 is array (Natural range <>) of aliased Packed_Byte;
    for Packed_Bytes1'Alignment use 1;
    for Packed_Bytes1'Component_Size use Packed_Byte'Size;
    --  This is the type used to implement packed arrays where no alignment
