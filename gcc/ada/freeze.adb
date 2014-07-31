@@ -6143,13 +6143,26 @@ package body Freeze is
 
                exit when Is_List_Member (P);
 
-            --  Note: The N_Loop_Statement is a special case. A type that
-            --  appears in the source can never be frozen in a loop (this
-            --  occurs only because of a loop expanded by the expander), so we
-            --  keep on going. Otherwise we terminate the search. Same is true
-            --  of any entity which comes from source. (if they have predefined
-            --  type, that type does not appear to come from source, but the
-            --  entity should not be frozen here).
+            --  Freeze nodes produced by an expression coming from the Actions
+            --  list of a N_Expression_With_Actions node must remain within the
+            --  Actions list. Inserting the freeze nodes further up the tree
+            --  may lead to use before declaration issues in the case of array
+            --  types.
+
+            when N_Expression_With_Actions =>
+               if Is_List_Member (P)
+                 and then List_Containing (P) = Actions (Parent_P)
+               then
+                  exit;
+               end if;
+
+            --  Note: N_Loop_Statement is a special case. A type that appears
+            --  in the source can never be frozen in a loop (this occurs only
+            --  because of a loop expanded by the expander), so we keep on
+            --  going. Otherwise we terminate the search. Same is true of any
+            --  entity which comes from source. (if they have predefined type,
+            --  that type does not appear to come from source, but the entity
+            --  should not be frozen here).
 
             when N_Loop_Statement =>
                exit when not Comes_From_Source (Etype (N))

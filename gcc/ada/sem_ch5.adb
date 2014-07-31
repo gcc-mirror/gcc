@@ -1750,11 +1750,33 @@ package body Sem_Ch5 is
         and then not ASIS_Mode
       then
          declare
-            Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
-            Decl : Node_Id;
+            Id    : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
+            Decl  : Node_Id;
+            Act_S : Node_Id;
 
          begin
-            Typ := Etype (Iter_Name);
+
+            --  If the domain of iteration is an array component that depends
+            --  on a discriminant, create actual subtype for it. Pre-analysis
+            --  does not generate the actual subtype of a selected component.
+
+            if Nkind (Iter_Name) = N_Selected_Component
+              and then Is_Array_Type (Etype (Iter_Name))
+            then
+               Act_S :=
+                 Build_Actual_Subtype_Of_Component
+                   (Etype (Selector_Name (Iter_Name)), Iter_Name);
+               Insert_Action (N, Act_S);
+
+               if Present (Act_S) then
+                  Typ := Defining_Identifier (Act_S);
+               else
+                  Typ := Etype (Iter_Name);
+               end if;
+
+            else
+               Typ := Etype (Iter_Name);
+            end if;
 
             --  Protect against malformed iterator
 
