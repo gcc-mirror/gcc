@@ -56,7 +56,7 @@ static tree pointer_diff (tree, tree, tree, tsubst_flags_t);
 static tree get_delta_difference (tree, tree, bool, bool, tsubst_flags_t);
 static void casts_away_constness_r (tree *, tree *, tsubst_flags_t);
 static bool casts_away_constness (tree, tree, tsubst_flags_t);
-static void maybe_warn_about_returning_address_of_local (tree);
+static bool maybe_warn_about_returning_address_of_local (tree);
 static tree lookup_destructor (tree, tree, tree, tsubst_flags_t);
 static void warn_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
@@ -8296,9 +8296,9 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 }
 
 /* If RETVAL is the address of, or a reference to, a local variable or
-   temporary give an appropriate warning.  */
+   temporary give an appropriate warning and return true.  */
 
-static void
+static bool
 maybe_warn_about_returning_address_of_local (tree retval)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
@@ -8316,7 +8316,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
     }
 
   if (TREE_CODE (whats_returned) != ADDR_EXPR)
-    return;
+    return false;
   whats_returned = TREE_OPERAND (whats_returned, 0);
 
   while (TREE_CODE (whats_returned) == COMPONENT_REF
@@ -8329,14 +8329,14 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	  || TREE_CODE (whats_returned) == TARGET_EXPR)
 	{
 	  warning (OPT_Wreturn_local_addr, "returning reference to temporary");
-	  return;
+	  return true;
 	}
       if (VAR_P (whats_returned)
 	  && DECL_NAME (whats_returned)
 	  && TEMP_NAME_P (DECL_NAME (whats_returned)))
 	{
 	  warning (OPT_Wreturn_local_addr, "reference to non-lvalue returned");
-	  return;
+	  return true;
 	}
     }
 
@@ -8356,8 +8356,10 @@ maybe_warn_about_returning_address_of_local (tree retval)
       else
 	warning (OPT_Wreturn_local_addr, "address of local variable %q+D "
 		 "returned", whats_returned);
-      return;
+      return true;
     }
+
+  return false;
 }
 
 /* Check that returning RETVAL from the current function is valid.
@@ -8650,8 +8652,9 @@ check_return_expr (tree retval, bool *no_warning)
 	       && TREE_CODE (TREE_OPERAND (retval, 1)) == AGGR_INIT_EXPR)
 	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			 TREE_OPERAND (retval, 0));
-      else
-	maybe_warn_about_returning_address_of_local (retval);
+      else if (maybe_warn_about_returning_address_of_local (retval))
+	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
+			 build_zero_cst (TREE_TYPE (retval)));
     }
 
   /* Actually copy the value returned into the appropriate location.  */

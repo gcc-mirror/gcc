@@ -9350,8 +9350,12 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 		    warning_at (loc, OPT_Wreturn_local_addr,
 				"function returns address of label");
 		  else
-		    warning_at (loc, OPT_Wreturn_local_addr,
-				"function returns address of local variable");
+		    {
+		      warning_at (loc, OPT_Wreturn_local_addr,
+				  "function returns address of local variable");
+		      tree zero = build_zero_cst (TREE_TYPE (res));
+		      t = build2 (COMPOUND_EXPR, TREE_TYPE (res), t, zero);
+		    }
 		}
 	      break;
 

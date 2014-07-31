@@ -1,3 +1,11 @@
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* typeck.c (maybe_warn_about_returning_address_of_local): Return
+	whether it is returning the address of a local variable.
+	(check_return_expr): Return 0 instead of the address of a local
+	variable.
+
 2014-07-30  Jason Merrill  <jason@redhat.com>
 
 	PR lto/53808

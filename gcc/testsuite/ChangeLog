@@ -1,3 +1,9 @@
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* c-c++-common/addrtmp.c: New file.
+	* c-c++-common/uninit-G.c: Adapt.
+
 2014-07-31  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR lto/61868
