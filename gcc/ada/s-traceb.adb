@@ -38,14 +38,15 @@ pragma Compiler_Unit_Warning;
 
 package body System.Traceback is
 
-   procedure Call_Chain
-     (Traceback   : System.Address;
-      Max_Len     : Natural;
-      Len         : out Natural;
-      Exclude_Min : System.Address := System.Null_Address;
-      Exclude_Max : System.Address := System.Null_Address;
-      Skip_Frames : Natural := 1);
-   --  Same as the exported version, but takes Traceback as an Address
+--   procedure Call_Chain
+--     (Traceback   : System.Address;
+--      Max_Len     : Natural;
+--      Len         : out Natural;
+--      Exclude_Min : System.Address := System.Null_Address;
+--      Exclude_Max : System.Address := System.Null_Address;
+--      Skip_Frames : Natural := 1);
+--   --  Same as the exported version, but takes Traceback as an Address
+--  ???See declaration in the spec for why this is temporarily commented out.
 
    ------------------
    -- C_Call_Chain --
@@ -53,11 +54,9 @@ package body System.Traceback is
 
    function C_Call_Chain
      (Traceback : System.Address;
-      Max_Len   : Natural)
-      return      Natural
+      Max_Len   : Natural) return Natural
    is
       Val : Natural;
-
    begin
       Call_Chain (Traceback, Max_Len, Val);
       return Val;
@@ -110,7 +109,8 @@ package body System.Traceback is
    begin
       Call_Chain
         (Traceback'Address, Max_Len, Len,
-         Exclude_Min, Exclude_Max, Skip_Frames);
+         Exclude_Min, Exclude_Max, Skip_Frames + 1);
+      --  Skip one extra frame so we skip the other Call_Chain as well
    end Call_Chain;
 
 end System.Traceback;

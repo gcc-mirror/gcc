@@ -1,5 +1,34 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch13.adb (Get_Aspect_Specifications): Set Inside_Depends.
+	* par-ch2.adb (P_Pragma): Set Inside_Depends.
+	* par-ch4.adb (P_Simple_Expression): Pass Inside_Depends to
+	Check_Unary_Plus_Or_Minus.
+	* scans.ads (Inside_Depends): New flag.
+	* scng.adb (Scan): Pass Inside_Depends to Check_Arrow.
+	* style.ads: Add Inside_Depends parameter to Check_Arrow Add
+	Inside_Depends parameter to Check_Unary_Plus_Or_Minus.
+	* styleg.adb (Check_Arrow): Handle Inside_Depends case.
+	(Check_Unary_Plus_Or_Minus): Handle Inside_Depends case.
+	* styleg.ads: Add Inside_Depends parameter to Check_Arrow Add.
+	Inside_Depends parameter to Check_Unary_Plus_Or_Minus.
+
+2014-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* s-vaflop.adb Move the body of function T_To_G before
+	T_To_D. Required for frontend inlining.
+	* inline.adb (Has_Excluded_Contract): New subprogram used to
+	check if a subprogram inlined by the frontend has contracts
+	which cannot be inlined.
+
+2014-07-31  Bob Duff  <duff@adacore.com>
+
+	* s-traceb.adb, s-traceb-hpux.adb, s-traceb-mastop.adb:
+	(Call_Chain): Add 1 to number of frames to skip, to account for
+	the fact that there's one more frame on the stack.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Enable_Overflow_Check): More precise setting of
 	Do_Overflow_Check flag for division.
 
