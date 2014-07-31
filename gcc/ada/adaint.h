@@ -72,6 +72,8 @@ typedef long long OS_Time;
 typedef long OS_Time;
 #endif
 
+#define __int64 long long
+
 /* A lazy cache for the attributes of a file. On some systems, a single call to
    stat() will give all this information, so it is better than doing a system
    call every time. On other systems this require several system calls.
@@ -250,6 +252,10 @@ extern int    __gnat_lseek			   (int, long, int);
 extern int    __gnat_set_close_on_exec		   (int, int);
 extern int    __gnat_dup			   (int);
 extern int    __gnat_dup2			   (int, int);
+
+/* large file support */
+extern __int64 __gnat_ftell64                      (FILE *);
+extern int     __gnat_fseek64                      (FILE *, __int64, int);
 
 extern int    __gnat_number_of_cpus                (void);
 

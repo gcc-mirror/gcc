@@ -1787,6 +1787,11 @@ package body Sem_Ch13 is
                        ("predicate can only be specified for a subtype",
                         Aspect);
                      goto Continue;
+
+                  elsif Is_Incomplete_Type (E) then
+                     Error_Msg_N
+                       ("predicate cannot apply to incomplete view", Aspect);
+                     goto Continue;
                   end if;
 
                   --  Construct the pragma (always a pragma Predicate, with
@@ -3544,8 +3549,9 @@ package body Sem_Ch13 is
             if Ekind (Current_Scope) = E_Package
               and then Has_Private_Declaration (Ent)
               and then From_Aspect_Specification (N)
-              and then List_Containing (Parent (Ent))
-                 = Private_Declarations
+              and then
+                List_Containing (Parent (Ent)) =
+                  Private_Declarations
                     (Specification (Unit_Declaration_Node (Current_Scope)))
               and then Nkind (N) = N_Attribute_Definition_Clause
             then
@@ -3555,8 +3561,8 @@ package body Sem_Ch13 is
                begin
                   Decl :=
                      First (Visible_Declarations
-                      (Specification
-                        (Unit_Declaration_Node (Current_Scope))));
+                              (Specification
+                                 (Unit_Declaration_Node (Current_Scope))));
 
                   while Present (Decl) loop
                      if Nkind (Decl) = N_Private_Type_Declaration
@@ -3566,7 +3572,7 @@ package body Sem_Ch13 is
                      then
                         Illegal_Indexing
                           ("Indexing aspect cannot be specified on full view "
-                             & "if partial view is tagged");
+                           & "if partial view is tagged");
                         return;
                      end if;
 
@@ -3678,9 +3684,7 @@ package body Sem_Ch13 is
             end;
          end if;
 
-         if not Indexing_Found
-           and then not Error_Posted (N)
-         then
+         if not Indexing_Found and then not Error_Posted (N) then
             Error_Msg_NE
               ("aspect Indexing requires a local function that "
                & "applies to type&", Expr, Ent);
@@ -10618,6 +10622,8 @@ package body Sem_Ch13 is
       --  Returns true if all elements of the list are OK static choices
       --  as defined below for Is_Static_Choice. Used for case expression
       --  alternatives and for the right operand of a membership test.
+      --  An others_choice is static if the corresponding expression is static.
+      --  The staticness of the bounds is checked separately.
 
       function Is_Static_Choice (N : Node_Id) return Boolean;
       --  Returns True if N represents a static choice (static subtype, or
@@ -10683,7 +10689,8 @@ package body Sem_Ch13 is
 
       function Is_Static_Choice (N : Node_Id) return Boolean is
       begin
-         return Is_OK_Static_Expression (N)
+         return Nkind (N) = N_Others_Choice
+           or else Is_OK_Static_Expression (N)
            or else (Is_Entity_Name (N) and then Is_Type (Entity (N))
                      and then Is_OK_Static_Subtype (Entity (N)))
            or else (Nkind (N) = N_Subtype_Indication

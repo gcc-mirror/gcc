@@ -1,3 +1,41 @@
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, lib-writ.adb, sem_ch12.adb, s-direio.adb: Minor
+	reformatting.
+
+2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Update the comment
+	which demonstrates the expansion of while loops subject to
+	attribute 'Loop_Entry. The condition of a while loop along with
+	related condition actions is now wrapped in a function.  Instead
+	of repeating the condition, the expansion now calls the function.
+
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Check_Against_Predicate): Correct off-by-one
+	error when reporting of missing values in a case statement for
+	a type with a static predicate.
+	(Check_Choices): Reject a choice given by a subtype to which a
+	Dynamic_Predicate applies.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Inherit
+	Has_Dynamic_Predicate_Aspect flag from parent.
+
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): A predicate
+	cannot apply to a subtype of an incomplete type.
+	(Is_Static_Choice): Treat an Others_Clause as static. The
+	staticness of the expression and of the range are checked
+	elsewhere.
+
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h (__gnat_ftell64): Added.
+	(__gnat_fseek64): Added.
+	(__int64): Added.
+	* cstreams.c (__int64): Removed.
+
 2014-07-31  Pascal Obry  <obry@adacore.com>
 
 	* a-stream.ads (Stream_Element_Offset): Now a signed 64bit type.

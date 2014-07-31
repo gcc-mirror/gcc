@@ -3325,7 +3325,6 @@ package body Exp_Util is
    function Has_Annotate_Pragma_For_External_Axiomatization
      (E : Entity_Id) return Boolean
    is
-
       function Is_Annotate_Pragma_For_External_Axiomatization
         (N : Node_Id) return Boolean;
       --  Returns whether N is
@@ -3352,15 +3351,14 @@ package body Exp_Util is
       --    pragma Annotate (GNATprove, External_Axiomatization);
 
       function Is_Annotate_Pragma_For_External_Axiomatization
-        (N : Node_Id) return Boolean is
-
-         -------------------
-         -- Special Names --
-         -------------------
-
-         Name_GNATprove : constant String := "gnatprove";
+        (N : Node_Id) return Boolean
+      is
+         Name_GNATprove               : constant String :=
+                                          "gnatprove";
          Name_External_Axiomatization : constant String :=
-           "external_axiomatization";
+                                          "external_axiomatization";
+         --  Special names
+
       begin
          if Nkind (N) = N_Pragma
            and then Get_Pragma_Id (Pragma_Name (N)) = Pragma_Annotate
@@ -3368,10 +3366,11 @@ package body Exp_Util is
          then
             declare
                Arg1 : constant Node_Id :=
-                 First (Pragma_Argument_Associations (N));
+                        First (Pragma_Argument_Associations (N));
                Arg2 : constant Node_Id := Next (Arg1);
                Nam1 : Name_Id;
                Nam2 : Name_Id;
+
             begin
                --  Fill in Name_Buffer with Name_GNATprove first, and then with
                --  Name_External_Axiomatization so that Name_Find returns the
@@ -3386,8 +3385,8 @@ package body Exp_Util is
                Nam2 := Name_Find;
 
                return Chars (Get_Pragma_Arg (Arg1)) = Nam1
-                 and then
-                   Chars (Get_Pragma_Arg (Arg2)) = Nam2;
+                         and then
+                      Chars (Get_Pragma_Arg (Arg2)) = Nam2;
             end;
 
          else
@@ -3395,9 +3394,13 @@ package body Exp_Util is
          end if;
       end Is_Annotate_Pragma_For_External_Axiomatization;
 
-      Decl : Node_Id;
+      --  Local variables
+
+      Decl      : Node_Id;
       Vis_Decls : List_Id;
       N         : Node_Id;
+
+   --  Start of processing for Has_Annotate_Pragma_For_External_Axiomatization
 
    begin
       if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
