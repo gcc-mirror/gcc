@@ -1890,7 +1890,7 @@ package body Sem_Ch7 is
                end if;
 
             else
-               --  Non-tagged type, scan forward to locate inherited hidden
+               --  For untagged type, scan forward to locate inherited hidden
                --  operations.
 
                Prim_Op := Next_Entity (E);

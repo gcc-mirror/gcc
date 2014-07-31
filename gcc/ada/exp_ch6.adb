@@ -2016,7 +2016,7 @@ package body Exp_Ch6 is
       --  entity and Orig_Subp is the entity of the call node N.
 
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
-      --  Within an instance, a type derived from a non-tagged formal derived
+      --  Within an instance, a type derived from an untagged formal derived
       --  type inherits from the original parent, not from the actual. The
       --  current derivation mechanism has the derived type inherit from the
       --  actual, which is only correct outside of the instance. If the

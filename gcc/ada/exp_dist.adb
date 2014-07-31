@@ -9465,7 +9465,7 @@ package body Exp_Dist is
 
             elsif Is_Derived_Type (Typ) and then not Is_Tagged_Type (Typ) then
 
-               --  Non-tagged derived type: convert to root type
+               --  Untagged derived type: convert to root type
 
                declare
                   Rt_Type : constant Entity_Id := Root_Type (Typ);
@@ -9480,7 +9480,7 @@ package body Exp_Dist is
 
             elsif Is_Record_Type (Typ) and then not Is_Tagged_Type (Typ) then
 
-               --  Non-tagged record type
+               --  Untagged record type
 
                if Nkind (Declaration_Node (Typ)) = N_Subtype_Declaration then
                   declare

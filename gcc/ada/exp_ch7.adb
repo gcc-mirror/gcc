@@ -5079,7 +5079,7 @@ package body Exp_Ch7 is
       Utyp := Underlying_Type (Base_Type (Utyp));
       Set_Assignment_OK (Ref);
 
-      --  Deal with non-tagged derivation of private views
+      --  Deal with untagged derivation of private views
 
       if Is_Untagged_Derivation (Typ) then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
@@ -7284,7 +7284,7 @@ package body Exp_Ch7 is
       Utyp := Underlying_Type (Base_Type (Utyp));
       Set_Assignment_OK (Ref);
 
-      --  Deal with non-tagged derivation of private views. If the parent type
+      --  Deal with untagged derivation of private views. If the parent type
       --  is a protected type, Deep_Finalize is found on the corresponding
       --  record of the ancestor.
 
@@ -7751,7 +7751,7 @@ package body Exp_Ch7 is
 
       Utyp := Underlying_Type (Base_Type (Utyp));
 
-      --  Deal with non-tagged derivation of private views
+      --  Deal with untagged derivation of private views
 
       if Is_Untagged_Derivation (Typ) and then not Is_Conc then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
@@ -7878,7 +7878,7 @@ package body Exp_Ch7 is
 
       Utyp := Underlying_Type (Base_Type (Utyp));
 
-      --  Deal with non-tagged derivation of private views. If the parent is
+      --  Deal with untagged derivation of private views. If the parent is
       --  now known to be protected, the finalization routine is the one
       --  defined on the corresponding record of the ancestor (corresponding
       --  records do not automatically inherit operations, but maybe they

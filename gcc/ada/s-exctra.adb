@@ -29,6 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
+
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links;       use System.Soft_Links;
 
@@ -67,16 +69,19 @@ package body System.Exception_Traces is
      (Traceback : System.Address;
       Len       : Natural) return String
    is
-      Decorator_Traceback : Traceback_Entries.Tracebacks_Array (1 .. Len);
-      for Decorator_Traceback'Address use Traceback;
+      --  Note: do not use an address clause, which is not supported under .NET
 
-      --  Handle the "transition" from the array stored in the exception
-      --  occurrence to the array expected by the decorator.
+      subtype Trace_Array is Traceback_Entries.Tracebacks_Array (1 .. Len);
+      type Trace_Array_Access is access all Trace_Array;
 
-      pragma Import (Ada, Decorator_Traceback);
+      function To_Trace_Array is new
+        Ada.Unchecked_Conversion (Address, Trace_Array_Access);
+
+      Decorator_Traceback : constant Trace_Array_Access :=
+                              To_Trace_Array (Traceback);
 
    begin
-      return Current_Decorator.all (Decorator_Traceback);
+      return Current_Decorator.all (Decorator_Traceback.all);
    end Decorator_Wrapper;
 
    -------------------------

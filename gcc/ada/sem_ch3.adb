@@ -20398,7 +20398,7 @@ package body Sem_Ch3 is
         or else Null_Present (Component_List (Def))
       then
          if not Is_Tagged_Type (T) then
-            Check_SPARK_Restriction ("non-tagged record cannot be null", Def);
+            Check_SPARK_Restriction ("untagged record cannot be null", Def);
          end if;
 
       else

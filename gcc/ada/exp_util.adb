@@ -461,7 +461,7 @@ package body Exp_Util is
 
          Utyp := Underlying_Type (Base_Type (Utyp));
 
-         --  Deal with non-tagged derivation of private views. If the parent is
+         --  Deal with untagged derivation of private views. If the parent is
          --  now known to be protected, the finalization routine is the one
          --  defined on the corresponding record of the ancestor (corresponding
          --  records do not automatically inherit operations, but maybe they

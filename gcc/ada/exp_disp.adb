@@ -3672,18 +3672,17 @@ package body Exp_Disp is
         (Subp        : Entity_Id;
          Tagged_Type : Entity_Id;
          Typ         : Entity_Id);
-      --  Verify that all non-tagged types in the profile of a subprogram
-      --  are frozen at the point the subprogram is frozen. This enforces
-      --  the rule on RM 13.14 (14) as modified by AI05-019. At the point a
-      --  subprogram is frozen, enough must be known about it to build the
-      --  activation record for it, which requires at least that the size of
-      --  all parameters be known. Controlling arguments are by-reference,
-      --  and therefore the rule only applies to non-tagged types.
-      --  Typical violation of the rule involves an object declaration that
-      --  freezes a tagged type, when one of its primitive operations has a
-      --  type in its profile whose full view has not been analyzed yet.
-      --  More complex cases involve composite types that have one private
-      --  unfrozen subcomponent.
+      --  Verify that all untagged types in the profile of a subprogram are
+      --  frozen at the point the subprogram is frozen. This enforces the rule
+      --  on RM 13.14 (14) as modified by AI05-019. At the point a subprogram
+      --  is frozen, enough must be known about it to build the activation
+      --  record for it, which requires at least that the size of all
+      --  parameters be known. Controlling arguments are by-reference,
+      --  and therefore the rule only applies to non-tagged types. Typical
+      --  violation of the rule involves an object declaration that freezes a
+      --  tagged type, when one of its primitive operations has a type in its
+      --  profile whose full view has not been analyzed yet. More complex cases
+      --  involve composite types that have one private unfrozen subcomponent.
 
       procedure Export_DT (Typ : Entity_Id; DT : Entity_Id; Index : Nat := 0);
       --  Export the dispatch table DT of tagged type Typ. Required to generate
@@ -8438,10 +8437,10 @@ package body Exp_Disp is
               Make_Defining_Identifier (Loc,
                 Chars => Make_Init_Proc_Name (Typ));
 
-            --  Case 1: Constructor of non-tagged type
+            --  Case 1: Constructor of untagged type
 
             --  If the C++ class has no virtual methods then the matching Ada
-            --  type is a non-tagged record type. In such case there is no need
+            --  type is an untagged record type. In such case there is no need
             --  to generate a wrapper of the C++ constructor because the _tag
             --  component is not available.
 
