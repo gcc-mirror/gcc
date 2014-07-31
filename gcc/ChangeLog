@@ -1,3 +1,17 @@
+2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_vect_par_cnst_half): Vary
+	the generated mask based on BYTES_BIG_ENDIAN.
+	(aarch64_simd_check_vect_par_cnst_half): New.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_simd_check_vect_par_cnst_half): New.
+	* config/aarch64/predicates.md (vect_par_cnst_hi_half): Refactor
+	the check out to aarch64_simd_check_vect_par_cnst_half.
+	(vect_par_cnst_lo_half): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_move_hi_quad_<mode>): Always use vec_par_cnst_lo_half.
+	(move_hi_quad_<mode>): Always generate a low mask.
+
 2014-07-30  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* doc/invoke.texi (AVR Options): Add documentation about

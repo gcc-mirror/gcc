@@ -207,61 +207,14 @@
 (define_special_predicate "vect_par_cnst_hi_half"
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  int nunits = GET_MODE_NUNITS (mode);
-  int i;
-
-  if (count < 1
-      || count != nunits / 2)
-    return false;
- 
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  for (i = 0; i < count; i++)
-   {
-     rtx elt = XVECEXP (op, 0, i);
-     int val;
-
-     if (GET_CODE (elt) != CONST_INT)
-       return false;
-
-     val = INTVAL (elt);
-     if (val != (nunits / 2) + i)
-       return false;
-   }
-  return true;
+  return aarch64_simd_check_vect_par_cnst_half (op, mode, true);
 })
 
 (define_special_predicate "vect_par_cnst_lo_half"
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  int nunits = GET_MODE_NUNITS (mode);
-  int i;
-
-  if (count < 1
-      || count != nunits / 2)
-    return false;
-
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  for (i = 0; i < count; i++)
-   {
-     rtx elt = XVECEXP (op, 0, i);
-     int val;
-
-     if (GET_CODE (elt) != CONST_INT)
-       return false;
-
-     val = INTVAL (elt);
-     if (val != i)
-       return false;
-   }
-  return true;
+  return aarch64_simd_check_vect_par_cnst_half (op, mode, false);
 })
-
 
 (define_special_predicate "aarch64_simd_lshift_imm"
   (match_code "const_vector")
