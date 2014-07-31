@@ -114,8 +114,11 @@ package body System.Traceback is
    begin
       Call_Chain
         (Traceback'Address, Max_Len, Len,
-         Exclude_Min, Exclude_Max, Skip_Frames + 1);
-      --  Skip one extra frame so we skip the other Call_Chain as well
+         Exclude_Min, Exclude_Max,
+
+         --  Skip one extra frame to skip the other Call_Chain entry as well
+
+         Skip_Frames => Skip_Frames + 1);
    end Call_Chain;
 
    ------------------

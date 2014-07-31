@@ -1968,9 +1968,12 @@ package body Inline is
          ---------------------------
 
          function Has_Excluded_Contract return Boolean is
-
             function Check_Excluded_Contracts (E : Entity_Id) return Boolean;
             --  Return True if the subprogram E has unsupported contracts
+
+            ------------------------------
+            -- Check_Excluded_Contracts --
+            ------------------------------
 
             function Check_Excluded_Contracts (E : Entity_Id) return Boolean is
                Items : constant Node_Id := Contract (E);
@@ -1990,8 +1993,13 @@ package body Inline is
                return False;
             end Check_Excluded_Contracts;
 
+            --  Local declarations
+
             Decl : Node_Id;
             P_Id : Pragma_Id;
+
+         --  Start of processing for Has_Excluded_Contract
+
          begin
             if Check_Excluded_Contracts (Spec_Id)
               or else Check_Excluded_Contracts (Body_Id)
