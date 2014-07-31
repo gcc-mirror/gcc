@@ -4894,7 +4894,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		      {
 			saved_suffix
 			  = XNEWVEC (char, suffix_length
-				     + strlen (TARGET_OBJECT_SUFFIX));
+				     + strlen (TARGET_OBJECT_SUFFIX) + 1);
 			strncpy (saved_suffix, suffix, suffix_length);
 			strcpy (saved_suffix + suffix_length,
 				TARGET_OBJECT_SUFFIX);
