@@ -1,5 +1,34 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, sem_ch13.adb: Minor reformatting.
+
+2014-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-intnam-linux.ads: Minor: update obsolete comments.
+	* s-taasde.adb: Minor: fix comment header.
+
+2014-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-auxdec-vms-ia64.adb, s-parame-vms-alpha.ads, s-asthan-vms-alpha.adb,
+	s-tpopde-vms.adb, s-mastop-vms.adb, s-tpopde-vms.ads, s-taprop-vms.adb,
+	mlib-tgt-vms_common.adb, mlib-tgt-vms_common.ads, s-inmaop-vms.adb,
+	g-enblsp-vms-alpha.adb, s-ransee-vms.adb, s-osprim-vms.adb,
+	s-osprim-vms.ads, g-socthi-vms.adb, g-socthi-vms.ads, system-vms_64.ads,
+	s-osinte-vms.adb, s-osinte-vms.ads, g-eacodu-vms.adb,
+	s-vaflop-vms-alpha.adb, s-parame-vms-ia64.ads, a-dirval-vms.adb,
+	a-caldel-vms.adb, mlib-tgt-specific-vms-alpha.adb, s-tasdeb-vms.adb,
+	symbols-vms.adb, a-intnam-vms.ads, g-expect-vms.adb,
+	symbols-processing-vms-alpha.adb, mlib-tgt-specific-vms-ia64.adb,
+	s-traent-vms.adb, s-traent-vms.ads, i-cstrea-vms.adb, a-numaux-vms.ads,
+	symbols-processing-vms-ia64.adb, s-interr-vms.adb, s-memory-vms_64.adb,
+	s-memory-vms_64.ads, g-enblsp-vms-ia64.adb, s-taspri-vms.ads,
+	s-auxdec-vms_64.ads, s-intman-vms.adb, s-intman-vms.ads,
+	s-tpopsp-vms.adb, s-asthan-vms-ia64.adb, a-calend-vms.adb,
+	a-calend-vms.ads, system-vms-ia64.ads, s-auxdec-vms-alpha.adb: Removed.
+	* namet.h (Is_Non_Ada_Error): Remove.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb, lib-writ.adb, sem_ch12.adb, s-direio.adb: Minor
 	reformatting.
 
