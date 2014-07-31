@@ -155,7 +155,6 @@ package body Exp_Strm is
       Decls := New_List;
       Ranges := New_List;
       Indx  := First_Index (Typ);
-
       for J in 1 .. Dim loop
          Lnam := New_External_Name ('L', J);
          Hnam := New_External_Name ('H', J);
@@ -435,7 +434,6 @@ package body Exp_Strm is
       Pnam : out Entity_Id)
    is
       Loc : constant Source_Ptr := Sloc (Nod);
-
    begin
       Pnam :=
         Make_Defining_Identifier (Loc,
@@ -636,6 +634,7 @@ package body Exp_Strm is
                  Relocate_Node (Strm))));
 
          Set_Do_Range_Check (Res);
+
          if Base_Type (P_Type) /= Base_Type (U_Type) then
             Res := Unchecked_Convert_To (Base_Type (P_Type), Res);
          end if;
