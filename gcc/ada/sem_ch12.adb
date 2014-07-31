@@ -9905,13 +9905,13 @@ package body Sem_Ch12 is
            ("actual must exclude null to match generic formal#", Actual);
       end if;
 
-      --  A volatile object cannot be used as an actual in a generic instance.
-      --  The following check is only relevant when SPARK_Mode is on as it is
-      --  not a standard Ada legality rule.
+      --  An effectively volatile object cannot be used as an actual in
+      --  a generic instance. The following check is only relevant when
+      --  SPARK_Mode is on as it is not a standard Ada legality rule.
 
       if SPARK_Mode = On
         and then Present (Actual)
-        and then Is_SPARK_Volatile_Object (Actual)
+        and then Is_Effectively_Volatile_Object (Actual)
       then
          Error_Msg_N
            ("volatile object cannot act as actual in generic instantiation "

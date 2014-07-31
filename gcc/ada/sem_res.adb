@@ -4329,18 +4329,19 @@ package body Sem_Res is
             --  they are not standard Ada legality rule.
 
             if SPARK_Mode = On
-              and then Is_SPARK_Volatile_Object (A)
+              and then Is_Effectively_Volatile_Object (A)
             then
-               --  A volatile object may act as an actual parameter when the
-               --  corresponding formal is of a non-scalar volatile type.
+               --  An effectively volatile object may act as an actual
+               --  parameter when the corresponding formal is of a non-scalar
+               --  volatile type.
 
                if Is_Volatile (Etype (F))
                  and then not Is_Scalar_Type (Etype (F))
                then
                   null;
 
-               --  A volatile object may act as an actual parameter in a call
-               --  to an instance of Unchecked_Conversion.
+               --  An effectively volatile object may act as an actual
+               --  parameter in a call to an instance of Unchecked_Conversion.
 
                elsif Is_Unchecked_Conversion_Instance (Nam) then
                   null;
@@ -6785,33 +6786,33 @@ package body Sem_Res is
          Eval_Entity_Name (N);
       end if;
 
-      --  A volatile object subject to enabled properties Async_Writers or
-      --  Effective_Reads must appear in a specific context. The following
-      --  checks are only relevant when SPARK_Mode is on as they are not
-      --  standard Ada legality rules.
+      --  An effectively volatile object subject to enabled properties
+      --  Async_Writers or Effective_Reads must appear in a specific context.
+      --  The following checks are only relevant when SPARK_Mode is on as they
+      --  are not standard Ada legality rules.
 
       if SPARK_Mode = On
         and then Is_Object (E)
-        and then Is_SPARK_Volatile (E)
+        and then Is_Effectively_Volatile (E)
         and then Comes_From_Source (E)
         and then
           (Async_Writers_Enabled (E) or else Effective_Reads_Enabled (E))
       then
-         --  The volatile objects appears in a "non-interfering context" as
-         --  defined in SPARK RM 7.1.3(13).
+         --  The effectively volatile objects appears in a "non-interfering
+         --  context" as defined in SPARK RM 7.1.3(13).
 
          if Is_OK_Volatile_Context (Par, N) then
             null;
 
-         --  Assume that references to volatile objects that appear as actual
-         --  parameters in a procedure call are always legal. The full legality
-         --  check is done when the actuals are resolved.
+         --  Assume that references to effectively volatile objects that appear
+         --  as actual parameters in a procedure call are always legal. The
+         --  full legality check is done when the actuals are resolved.
 
          elsif Nkind (Par) = N_Procedure_Call_Statement then
             null;
 
          --  Otherwise the context causes a side effect with respect to the
-         --  volatile object.
+         --  effectively volatile object.
 
          else
             Error_Msg_N

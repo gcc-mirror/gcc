@@ -3018,13 +3018,13 @@ package body Sem_Ch3 is
    begin
       if Ekind (Obj_Id) = E_Constant then
 
-         --  A constant cannot be volatile. This check is only relevant when
-         --  SPARK_Mode is on as it is not standard Ada legality rule. Do not
-         --  flag internally-generated constants that map generic formals to
-         --  actuals in instantiations (SPARK RM 7.1.3(6)).
+         --  A constant cannot be effectively volatile. This check is only
+         --  relevant with SPARK_Mode on as it is not a standard Ada legality
+         --  rule. Do not flag internally-generated constants that map generic
+         --  formals to actuals in instantiations (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
-           and then Is_SPARK_Volatile (Obj_Id)
+           and then Is_Effectively_Volatile (Obj_Id)
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
          then
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
@@ -3036,37 +3036,37 @@ package body Sem_Ch3 is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
-            if Is_SPARK_Volatile (Obj_Id) then
+            if Is_Effectively_Volatile (Obj_Id) then
 
-               --  The declaration of a volatile object must appear at the
-               --  library level (SPARK RM 7.1.3(7), C.6(6)).
+               --  The declaration of an effectively volatile object must
+               --  appear at the library level (SPARK RM 7.1.3(7), C.6(6)).
 
                if not Is_Library_Level_Entity (Obj_Id) then
                   Error_Msg_N
                     ("volatile variable & must be declared at library level",
                      Obj_Id);
 
-               --  An object of a discriminated type cannot be volatile
-               --  (SPARK RM C.6(4)).
+               --  An object of a discriminated type cannot be effectively
+               --  volatile (SPARK RM C.6(4)).
 
                elsif Has_Discriminants (Obj_Typ) then
                   Error_Msg_N
                     ("discriminated object & cannot be volatile", Obj_Id);
 
-               --  An object of a tagged type cannot be volatile
+               --  An object of a tagged type cannot be effectively volatile
                --  (SPARK RM C.6(5)).
 
                elsif Is_Tagged_Type (Obj_Typ) then
                   Error_Msg_N ("tagged object & cannot be volatile", Obj_Id);
                end if;
 
-            --  The object is not volatile
+            --  The object is not effectively volatile
 
             else
-               --  A non-volatile object cannot have volatile components
-               --  (SPARK RM 7.1.3(7)).
+               --  A non-effectively volatile object cannot have effectively
+               --  volatile components (SPARK RM 7.1.3(7)).
 
-               if not Is_SPARK_Volatile (Obj_Id)
+               if not Is_Effectively_Volatile (Obj_Id)
                  and then Has_Volatile_Component (Obj_Typ)
                then
                   Error_Msg_N
@@ -18123,12 +18123,12 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  A discriminant cannot be volatile. This check is only relevant
-         --  when SPARK_Mode is on as it is not standard Ada legality rule
-         --  (SPARK RM 7.1.3(6)).
+         --  A discriminant cannot be effectively volatile. This check is only
+         --  relevant when SPARK_Mode is on as it is not standard Ada legality
+         --  rule (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
-           and then Is_SPARK_Volatile (Defining_Identifier (Discr))
+           and then Is_Effectively_Volatile (Defining_Identifier (Discr))
          then
             Error_Msg_N ("discriminant cannot be volatile", Discr);
          end if;

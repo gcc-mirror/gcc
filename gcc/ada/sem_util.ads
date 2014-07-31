@@ -1171,6 +1171,15 @@ package Sem_Util is
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
 
+   function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
+   --  The SPARK property "effectively volatile" applies to both types and
+   --  objects. To qualify as such, an entity must be either volatile or be
+   --  (of) an array type subject to aspect Volatile_Components.
+
+   function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean;
+   --  Determine whether an arbitrary node denotes an effectively volatile
+   --  object.
+
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
    --  Predicate to determine whether a scope entity comes from a rewritten
    --  expression function call, and should be inlined unconditionally. Also
@@ -1309,18 +1318,6 @@ package Sem_Util is
 
    function Is_SPARK_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object in SPARK
-
-   function Is_SPARK_Volatile (Id : Entity_Id) return Boolean;
-   --  This routine is similar to predicate Is_Volatile, but it takes SPARK
-   --  semantics into account. In SPARK volatile components to not render a
-   --  type volatile.
-
-   function Is_SPARK_Volatile_Object (N : Node_Id) return Boolean;
-   --  Determine whether an arbitrary node denotes a volatile object reference
-   --  according to the semantics of SPARK. To qualify as volatile, an object
-   --  must be subject to aspect/pragma Volatile or Atomic, or have a [sub]type
-   --  subject to the same attributes. Note that volatile components do not
-   --  render an object volatile.
 
    function Is_Statement (N : Node_Id) return Boolean;
    pragma Inline (Is_Statement);
