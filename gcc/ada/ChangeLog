@@ -1,3 +1,11 @@
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Process_Range_Expr_In_Decl): Add comments on
+	generation of _FIRST and _LAST variables even in GNATprove_Mode.
+	* gnat_ugn.texi: Minor editing.
+	* sem_prag.adb (Ensure_Aggregate_Form): Make sure generated
+	aggregate is marked Comes_From_Source if argument is CFS.
+
 2014-07-31  Pascal Obry  <obry@adacore.com>
 
 	* s-fileio.adb: Remove obsolete comment.

@@ -19169,18 +19169,26 @@ package body Sem_Ch3 is
 
                --  If a subtype is given, then we capture the bounds if they
                --  are not known at compile time, using constant identifiers
-               --  xxxL and xxxH where xxx is the name of the subtype. No need
-               --  to do that if they are already references to constants.
+               --  xxx_FIRST and xxx_LAST where xxx is the name of the subtype.
+
+               --  Note: we do this transformation even if expansion is not
+               --  active, and in particular we do it in GNATprove_Mode since
+               --  the transformation is in general required to ensure that the
+               --  resulting tree has proper Ada semantics.
 
                --  Historical note: We used to just do Force_Evaluation calls
                --  in all cases, but it is better to capture the bounds with
-               --  proper non-serialized names, since these will be accesse
+               --  proper non-serialized names, since these will be accessed
                --  from other units, and hence may be public, and also we can
                --  then expand 'First and 'Last references to be references to
                --  these special names.
 
                else
                   if not Compile_Time_Known_Value (Lo)
+
+                    --  No need to capture bounds if they already are
+                    --  references to constants.
+
                     and then not (Is_Entity_Name (Lo)
                                    and then Is_Constant_Object (Entity (Lo)))
                   then
