@@ -1,3 +1,15 @@
+2014-07-31  Alan Modra  <amodra@gmail.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/ibm-ldouble.c (typedef union longDblUnion): Delete.
+	(pack_ldouble): New function.
+	(__gcc_qadd): Use it.
+	(__gcc_qmul): Likewise.
+	(__gcc_qdiv): Likewise.
+	(__gcc_qneg): Likewise.
+	(__gcc_stoq): Likewise.
+	(__gcc_dtoq): Likewise.
+
 2014-07-30  J. D. Johnston  <jjohnst@us.ibm.com>
 
 	* config/s390/tpf-unwind.h: Include <stdbool.h>.
