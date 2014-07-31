@@ -607,6 +607,10 @@ Wpedantic
 Common Var(pedantic) Warning
 Issue warnings needed for strict compliance to the standard
 
+Wreturn-local-addr
+Common Var(warn_return_local_addr) Init(1) Warning
+Warn about returning a pointer/reference to a local or temporary variable.
+
 Wshadow
 Common Var(warn_shadow) Warning
 Warn when one local variable shadows another

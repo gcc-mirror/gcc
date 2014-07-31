@@ -1,3 +1,13 @@
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* common.opt (-Wreturn-local-addr): Moved from c.opt.
+	* gimple-ssa-isolate-paths.c: Include diagnostic-core.h and intl.h.
+	(isolate_path): New argument to avoid inserting a trap.
+	(find_implicit_erroneous_behaviour): Handle returning the address
+	of a local variable.
+	(find_explicit_erroneous_behaviour): Likewise.
+
 2014-07-31  Bingfeng Mei <bmei@broadcom.com>
 
 	PR lto/61868

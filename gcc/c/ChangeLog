@@ -1,3 +1,9 @@
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* c-typeck.c (c_finish_return): Return 0 instead of the address of
+	a local variable.
+
 2014-07-30  Tom Tromey  <tromey@redhat.com>
 
 	* c-typeck.c (struct constructor_stack) <designator_depth>: New
