@@ -774,11 +774,6 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 
 	  else
 	    gcc_unreachable();
-
-	  if (fmt == &vax_f_format
-	      || fmt == &vax_d_format
-	      || fmt == &vax_g_format)
-	    float_rep = VAX_Native;
 	}
 
       /* First register any C types for this mode that the front end
