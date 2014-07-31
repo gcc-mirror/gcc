@@ -153,9 +153,9 @@ package body System.Tasking.Async_Delays is
       STI.Undefer_Abort_Nestable (D.Self_Id);
    end Cancel_Async_Delay;
 
-   ---------------------------
-   -- Enqueue_Time_Duration --
-   ---------------------------
+   ----------------------
+   -- Enqueue_Duration --
+   ----------------------
 
    function Enqueue_Duration
      (T : Duration;
