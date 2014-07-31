@@ -65,8 +65,8 @@ package body Prj.Conf is
    --  set from a --RTS command line option.
 
    procedure Locate_Runtime
-     (Language     : Name_Id;
-      Env          : Prj.Tree.Environment);
+     (Language : Name_Id;
+      Env      : Prj.Tree.Environment);
    --  If RTS_Name is a base name (a name without path separator), then
    --  do nothing. Otherwise, convert it to an absolute path (possibly by
    --  searching it in the project path) and call Set_Runtime_For with the
@@ -1525,8 +1525,8 @@ package body Prj.Conf is
    --------------------
 
    procedure Locate_Runtime
-     (Language     : Name_Id;
-      Env          : Prj.Tree.Environment)
+     (Language : Name_Id;
+      Env      : Prj.Tree.Environment)
    is
       function Is_Base_Name (Path : String) return Boolean;
       --  Returns True if Path has no directory separator

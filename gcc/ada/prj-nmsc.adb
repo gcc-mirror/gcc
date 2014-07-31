@@ -3029,30 +3029,34 @@ package body Prj.Nmsc is
       --  Check if an imported or extended project if also a library project
 
       procedure Check_Aggregate_Library_Dirs;
+      --  Check that the library directory and the library ALI directory of
+      --  an aggregate library project are not the same as the object directory
+      --  or the library directory of any of its aggregated projects.
 
       ----------------------------------
       -- Check_Aggregate_Library_Dirs --
       ----------------------------------
 
       procedure Check_Aggregate_Library_Dirs is
-
          procedure Process_Aggregate (Proj : Project_Id);
+         --  Recursive procedure to check the aggregated projects, as they may
+         --  also be aggregated library projects.
 
          -----------------------
          -- Process_Aggregate --
          -----------------------
 
          procedure Process_Aggregate (Proj : Project_Id) is
-
-            Agg : Aggregated_Project_List := Proj.Aggregated_Projects;
+            Agg : Aggregated_Project_List;
 
          begin
+            Agg := Proj.Aggregated_Projects;
             while Agg /= null loop
                Error_Msg_Name_1 := Agg.Project.Name;
 
-               if Agg.Project.Qualifier /= Aggregate_Library and then
-                 Project.Library_ALI_Dir.Name
-                 = Agg.Project.Object_Directory.Name
+               if Agg.Project.Qualifier /= Aggregate_Library
+                 and then Project.Library_ALI_Dir.Name =
+                                        Agg.Project.Object_Directory.Name
                then
                   Error_Msg
                     (Data.Flags,
@@ -3060,8 +3064,8 @@ package body Prj.Nmsc is
                      & " object directory of aggregated project %%",
                      The_Lib_Kind.Location, Project);
 
-               elsif Project.Library_ALI_Dir.Name
-                 = Agg.Project.Library_Dir.Name
+               elsif Project.Library_ALI_Dir.Name =
+                                        Agg.Project.Library_Dir.Name
                then
                   Error_Msg
                     (Data.Flags,
@@ -3069,9 +3073,9 @@ package body Prj.Nmsc is
                      & " library directory of aggregated project %%",
                      The_Lib_Kind.Location, Project);
 
-               elsif Agg.Project.Qualifier /= Aggregate_Library and then
-                 Project.Library_Dir.Name
-                 = Agg.Project.Object_Directory.Name
+               elsif Agg.Project.Qualifier /= Aggregate_Library
+                 and then Project.Library_Dir.Name =
+                                        Agg.Project.Object_Directory.Name
                then
                   Error_Msg
                     (Data.Flags,
@@ -3079,8 +3083,8 @@ package body Prj.Nmsc is
                      & " object directory of aggregated project %%",
                      The_Lib_Kind.Location, Project);
 
-               elsif Project.Library_Dir.Name
-                 = Agg.Project.Library_Dir.Name
+               elsif Project.Library_Dir.Name =
+                                        Agg.Project.Library_Dir.Name
                then
                   Error_Msg
                     (Data.Flags,
@@ -3096,6 +3100,8 @@ package body Prj.Nmsc is
                Agg := Agg.Next;
             end loop;
          end Process_Aggregate;
+
+      --  Start of processing for Check_Aggregate_Library_Dirs
 
       begin
          if Project.Qualifier = Aggregate_Library then
