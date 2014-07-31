@@ -37,8 +37,14 @@
 --  Do not add any dependency to GNARL packages since this package is used
 --  in both normal and restricted (ravenscar) environments.
 
-with System.Address_Image;
+pragma Restriction_Warnings (No_Secondary_Stack);
+--  We wish to avoid secondary stack usage here, because (e.g.) Trace is called
+--  at delicate times, such as during task termination after the secondary
+--  stack has been deallocated. It's just a warning, so we don't require
+--  partition-wide consistency.
+
 with System.CRTL;
+with System.Storage_Elements; use System.Storage_Elements;
 with System.Task_Primitives;
 with System.Task_Primitives.Operations;
 
@@ -66,11 +72,11 @@ package body System.Tasking.Debug is
    procedure Put_Line (S : String := "");
    --  Display S on standard error with an additional line terminator
 
-   function Task_Image (T : Task_Id) return String;
-   --  Return the relevant characters from T.Common.Task_Image
+   procedure Put_Task_Image (T : Task_Id);
+   --  Display relevant characters from T.Common.Task_Image on standard error
 
-   function Task_Id_Image (T : Task_Id) return String;
-   --  Return the address in hexadecimal form
+   procedure Put_Task_Id_Image (T : Task_Id);
+   --  Display address in hexadecimal form on standard error
 
    ------------------------
    -- Continue_All_Tasks --
@@ -109,7 +115,6 @@ package body System.Tasking.Debug is
       C : Task_Id;
    begin
       C := All_Tasks_List;
-
       while C /= null loop
          Print_Task_Info (C);
          C := C.Common.All_Tasks_Link;
@@ -139,13 +144,15 @@ package body System.Tasking.Debug is
          return;
       end if;
 
-      Put (Task_Image (T) & ": " & Task_States'Image (T.Common.State));
+      Put_Task_Image (T);
+      Put (": " & Task_States'Image (T.Common.State));
       Parent := T.Common.Parent;
 
       if Parent = null then
          Put (", parent: <none>");
       else
-         Put (", parent: " & Task_Image (Parent));
+         Put (", parent: ");
+         Put_Task_Image (Parent);
       end if;
 
       Put (", prio:" & T.Common.Current_Priority'Img);
@@ -167,7 +174,7 @@ package body System.Tasking.Debug is
          Put (", serving:");
 
          while Entry_Call /= null loop
-            Put (Task_Id_Image (Entry_Call.Self));
+            Put_Task_Id_Image (Entry_Call.Self);
             Entry_Call := Entry_Call.Acceptor_Prev_Call;
          end loop;
       end if;
@@ -209,6 +216,66 @@ package body System.Tasking.Debug is
       Write (Stderr_Fd, S & ASCII.LF, S'Length + 1);
    end Put_Line;
 
+   -----------------------
+   -- Put_Task_Id_Image --
+   -----------------------
+
+   procedure Put_Task_Id_Image (T : Task_Id) is
+      Address_Image_Length : constant :=
+        13 + (if Standard'Address_Size = 64 then 10 else 0);
+      --  Length of string to be printed for address of task
+
+      H : constant array (0 .. 15) of Character := "0123456789ABCDEF";
+      --  Table of hex digits
+
+      S : String (1 .. Address_Image_Length);
+      P : Natural;
+      N : Integer_Address;
+      U : Natural := 0;
+
+   begin
+      if T = null then
+         Put ("Null_Task_Id");
+
+      else
+         S (S'Last) := '#';
+         P := Address_Image_Length - 1;
+         N := To_Integer (T.all'Address);
+         while P > 3 loop
+            if U = 4 then
+               S (P) := '_';
+               P := P - 1;
+               U := 1;
+            else
+               U := U + 1;
+            end if;
+
+            S (P) := H (Integer (N mod 16));
+            P := P - 1;
+            N := N / 16;
+         end loop;
+
+         S (1 .. 3) := "16#";
+         Put (S);
+      end if;
+   end Put_Task_Id_Image;
+
+   --------------------
+   -- Put_Task_Image --
+   --------------------
+
+   procedure Put_Task_Image (T : Task_Id) is
+   begin
+      --  In case T.Common.Task_Image_Len is uninitialized junk, we check that
+      --  it is in range, to make this more robust.
+
+      if T.Common.Task_Image_Len in T.Common.Task_Image'Range then
+         Put (T.Common.Task_Image (1 .. T.Common.Task_Image_Len));
+      else
+         Put (T.Common.Task_Image);
+      end if;
+   end Put_Task_Image;
+
    ----------------------
    -- Resume_All_Tasks --
    ----------------------
@@ -219,8 +286,8 @@ package body System.Tasking.Debug is
 
    begin
       STPO.Lock_RTS;
-      C := All_Tasks_List;
 
+      C := All_Tasks_List;
       while C /= null loop
          Dummy := STPO.Resume_Task (C, Thread_Self);
          C := C.Common.All_Tasks_Link;
@@ -298,8 +365,8 @@ package body System.Tasking.Debug is
 
    begin
       STPO.Lock_RTS;
-      C := All_Tasks_List;
 
+      C := All_Tasks_List;
       while C /= null loop
          Dummy := STPO.Suspend_Task (C, Thread_Self);
          C := C.Common.All_Tasks_Link;
@@ -320,35 +387,6 @@ package body System.Tasking.Debug is
    begin
       null;
    end Task_Creation_Hook;
-
-   ----------------
-   -- Task_Id_Image --
-   ----------------
-
-   function Task_Id_Image (T : Task_Id) return String is
-   begin
-      if T = null then
-         return "Null_Task_Id";
-      else
-         return Address_Image (T.all'Address);
-      end if;
-   end Task_Id_Image;
-
-   ----------------
-   -- Task_Image --
-   ----------------
-
-   function Task_Image (T : Task_Id) return String is
-   begin
-      --  In case T.Common.Task_Image_Len is uninitialized junk, we check that
-      --  it is in range, to make this more robust.
-
-      if T.Common.Task_Image_Len in T.Common.Task_Image'Range then
-         return T.Common.Task_Image (1 .. T.Common.Task_Image_Len);
-      else
-         return T.Common.Task_Image;
-      end if;
-   end Task_Image;
 
    ---------------------------
    -- Task_Termination_Hook --
@@ -371,13 +409,14 @@ package body System.Tasking.Debug is
    is
    begin
       if Trace_On (Flag) then
-         Put (Task_Id_Image (Self_Id) &
-              ':' & Flag & ':' &
-              Task_Image (Self_Id) &
-              ':');
+         Put_Task_Id_Image (Self_Id);
+         Put (":" & Flag & ":");
+         Put_Task_Image (Self_Id);
+         Put (":");
 
          if Other_Id /= null then
-            Put (Task_Id_Image (Other_Id) & ':');
+            Put_Task_Id_Image (Other_Id);
+            Put (":");
          end if;
 
          Put_Line (Msg);

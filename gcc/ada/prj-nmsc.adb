@@ -3029,9 +3029,9 @@ package body Prj.Nmsc is
       --  Check if an imported or extended project if also a library project
 
       procedure Check_Aggregate_Library_Dirs;
-      --  Check that the library directory and the library ALI directory of
-      --  an aggregate library project are not the same as the object directory
-      --  or the library directory of any of its aggregated projects.
+      --  Check that the library directory and the library ALI directory of an
+      --  aggregate library project are not the same as the object directory or
+      --  the library directory of any of its aggregated projects.
 
       ----------------------------------
       -- Check_Aggregate_Library_Dirs --
