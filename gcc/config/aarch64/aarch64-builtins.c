@@ -1383,6 +1383,20 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree call = gimple_call_fn (stmt);
   tree fndecl;
   gimple new_stmt = NULL;
+
+  /* The operations folded below are reduction operations.  These are
+     defined to leave their result in the 0'th element (from the perspective
+     of GCC).  The architectural instruction we are folding will leave the
+     result in the 0'th element (from the perspective of the architecture).
+     For big-endian systems, these perspectives are not aligned.
+
+     It is therefore wrong to perform this fold on big-endian.  There
+     are some tricks we could play with shuffling, but the mid-end is
+     inconsistent in the way it treats reduction operations, so we will
+     end up in difficulty.  Until we fix the ambiguity - just bail out.  */
+  if (BYTES_BIG_ENDIAN)
+    return false;
+
   if (call)
     {
       fndecl = gimple_call_fndecl (stmt);
