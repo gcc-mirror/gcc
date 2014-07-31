@@ -1,3 +1,14 @@
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, checks.adb (Activate_Overflow_Check): Do not set flag for
+	unconstrained fpt ops.
+
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* s-fileio.adb (Open): Make sure a shared file gets inserted into
+	the global list atomically. This ensures that the file descriptor
+	won't be freed because another tasks is closing the file.
+
 2014-07-31  Vincent Celier  <celier@adacore.com>
 
 	* projects.texi: Minor spelling error fix.

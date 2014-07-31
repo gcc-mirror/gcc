@@ -389,10 +389,31 @@ package body Checks is
 
    procedure Activate_Overflow_Check (N : Node_Id) is
    begin
-      if not Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
-         Set_Do_Overflow_Check (N, True);
-         Possible_Local_Raise (N, Standard_Constraint_Error);
+      --  Nothing to do for unconstrained floating-point types (the test for
+      --  Etype (N) being present seems necessary in some cases, should be
+      --  tracked down, but for now just ignore the check in this case ???)
+
+      if Present (Etype (N))
+        and then Is_Floating_Point_Type (Etype (N))
+        and then not Is_Constrained (Etype (N))
+
+        --  But do the check after all if float overflow checking enforced
+
+        and then not Check_Float_Overflow
+      then
+         return;
       end if;
+
+      --  Nothing to do for Rem/Mod/Plus (overflow not possible)
+
+      if Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
+         return;
+      end if;
+
+      --  Otherwise set the flag
+
+      Set_Do_Overflow_Check (N, True);
+      Possible_Local_Raise (N, Standard_Constraint_Error);
    end Activate_Overflow_Check;
 
    --------------------------
