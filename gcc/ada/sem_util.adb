@@ -7605,9 +7605,10 @@ package body Sem_Util is
       --  Start of processing for Variable_Has_Enabled_Property
 
       begin
-         --  A non-volatile object can never possess external properties
+         --  A non-effectively volatile object can never possess external
+         --  properties.
 
-         if not Is_SPARK_Volatile (Item_Id) then
+         if not Is_Effectively_Volatile (Item_Id) then
             return False;
 
          --  External properties related to variables come in two flavors -
@@ -7650,10 +7651,11 @@ package body Sem_Util is
       elsif Ekind (Item_Id) = E_Variable then
          return Variable_Has_Enabled_Property;
 
-      --  Otherwise a property is enabled when the related object is volatile
+      --  Otherwise a property is enabled when the related item is effectively
+      --  volatile.
 
       else
-         return Is_SPARK_Volatile (Item_Id);
+         return Is_Effectively_Volatile (Item_Id);
       end if;
    end Has_Enabled_Property;
 
@@ -10117,6 +10119,67 @@ package body Sem_Util is
       end if;
    end Is_Descendent_Of;
 
+   -----------------------------
+   -- Is_Effectively_Volatile --
+   -----------------------------
+
+   function Is_Effectively_Volatile (Id : Entity_Id) return Boolean is
+   begin
+      if Is_Type (Id) then
+
+         --  An arbitrary type is effectively volatile when it is subject to
+         --  pragma Atomic or Volatile.
+
+         if Is_Volatile (Id) then
+            return True;
+
+         --  An array type is effectively volatile when it is subject to pragma
+         --  Atomic_Components or Volatile_Components or its compolent type is
+         --  effectively volatile.
+
+         elsif Is_Array_Type (Id) then
+            return
+              Has_Volatile_Components (Id)
+                or else
+              Is_Effectively_Volatile (Component_Type (Base_Type (Id)));
+
+         else
+            return False;
+         end if;
+
+      --  Otherwise Id denotes an object
+
+      else
+         return Is_Volatile (Id) or else Is_Effectively_Volatile (Etype (Id));
+      end if;
+   end Is_Effectively_Volatile;
+
+   ------------------------------------
+   -- Is_Effectively_Volatile_Object --
+   ------------------------------------
+
+   function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean is
+   begin
+      if Is_Entity_Name (N) then
+         return Is_Effectively_Volatile (Entity (N));
+
+      elsif Nkind (N) = N_Expanded_Name then
+         return Is_Effectively_Volatile (Entity (N));
+
+      elsif Nkind (N) = N_Indexed_Component then
+         return Is_Effectively_Volatile_Object (Prefix (N));
+
+      elsif Nkind (N) = N_Selected_Component then
+         return
+           Is_Effectively_Volatile_Object (Prefix (N))
+             or else
+           Is_Effectively_Volatile_Object (Selector_Name (N));
+
+      else
+         return False;
+      end if;
+   end Is_Effectively_Volatile_Object;
+
    ----------------------------
    -- Is_Expression_Function --
    ----------------------------
@@ -11490,41 +11553,6 @@ package body Sem_Util is
          end case;
       end if;
    end Is_SPARK_Object_Reference;
-
-   -----------------------
-   -- Is_SPARK_Volatile --
-   -----------------------
-
-   function Is_SPARK_Volatile (Id : Entity_Id) return Boolean is
-   begin
-      return Is_Volatile (Id) or else Is_Volatile (Etype (Id));
-   end Is_SPARK_Volatile;
-
-   ------------------------------
-   -- Is_SPARK_Volatile_Object --
-   ------------------------------
-
-   function Is_SPARK_Volatile_Object (N : Node_Id) return Boolean is
-   begin
-      if Is_Entity_Name (N) then
-         return Is_SPARK_Volatile (Entity (N));
-
-      elsif Nkind (N) = N_Expanded_Name then
-         return Is_SPARK_Volatile (Entity (N));
-
-      elsif Nkind (N) = N_Indexed_Component then
-         return Is_SPARK_Volatile_Object (Prefix (N));
-
-      elsif Nkind (N) = N_Selected_Component then
-         return
-           Is_SPARK_Volatile_Object (Prefix (N))
-             or else
-           Is_SPARK_Volatile_Object (Selector_Name (N));
-
-      else
-         return False;
-      end if;
-   end Is_SPARK_Volatile_Object;
 
    ------------------
    -- Is_Statement --

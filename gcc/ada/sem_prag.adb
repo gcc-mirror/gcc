@@ -1830,16 +1830,16 @@ package body Sem_Prag is
    begin
       Error_Msg_Name_1 := Pragma_Name (N);
 
-      --  An external property pragma must apply to a volatile object other
-      --  than a formal subprogram parameter (SPARK RM 7.1.3(2)). The check
-      --  is performed at the end of the declarative region due to a possible
-      --  out-of-order arrangement of pragmas:
+      --  An external property pragma must apply to an effectively volatile
+      --  object other than a formal subprogram parameter (SPARK RM 7.1.3(2)).
+      --  The check is performed at the end of the declarative region due to a
+      --  possible out-of-order arrangement of pragmas:
 
       --    Obj : ...;
       --    pragma Async_Readers (Obj);
       --    pragma Volatile (Obj);
 
-      if not Is_SPARK_Volatile (Obj_Id) then
+      if not Is_Effectively_Volatile (Obj_Id) then
          SPARK_Msg_N
            ("external property % must apply to a volatile object", N);
       end if;
@@ -2021,10 +2021,11 @@ package body Sem_Prag is
                --  SPARK_Mode is on as they are not standard Ada legality
                --  rules.
 
-               elsif SPARK_Mode = On and then Is_SPARK_Volatile (Item_Id) then
-
-                  --  A volatile object cannot appear as a global item of a
-                  --  function (SPARK RM 7.1.3(9)).
+               elsif SPARK_Mode = On
+                 and then Is_Effectively_Volatile (Item_Id)
+               then
+                  --  An effectively volatile object cannot appear as a global
+                  --  item of a function (SPARK RM 7.1.3(9)).
 
                   if Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
                      Error_Msg_NE
@@ -2032,8 +2033,9 @@ package body Sem_Prag is
                         & "function", Item, Item_Id);
                      return;
 
-                  --  A volatile object with property Effective_Reads set to
-                  --  True must have mode Output or In_Out.
+                  --  An effectively volatile object with external property
+                  --  Effective_Reads set to True must have mode Output or
+                  --  In_Out.
 
                   elsif Effective_Reads_Enabled (Item_Id)
                     and then Global_Mode = Name_Input

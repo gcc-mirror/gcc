@@ -933,6 +933,11 @@ package body System.File_IO is
       pragma Import (C, Get_Case_Sensitive,
                      "__gnat_get_file_names_case_sensitive");
 
+      procedure Record_AFCB;
+      --  Create and record new AFCB into the runtime, note that the
+      --  implementation uses the variables below which corresponds to the
+      --  status of the opened file.
+
       File_Names_Case_Sensitive : constant Boolean := Get_Case_Sensitive /= 0;
       --  Set to indicate whether the operating system convention is for file
       --  names to be case sensitive (e.g., in Unix, set True), or not case
@@ -974,6 +979,33 @@ package body System.File_IO is
 
       Encoding : CRTL.Filename_Encoding;
       --  Filename encoding specified into the form parameter
+
+      ------------------
+      --  Record_AFCB --
+      ------------------
+
+      procedure Record_AFCB is
+      begin
+         File_Ptr := AFCB_Allocate (Dummy_FCB);
+
+         File_Ptr.Is_Regular_File   :=
+           (is_regular_file (fileno (Stream)) /= 0);
+         File_Ptr.Is_System_File    := False;
+         File_Ptr.Text_Encoding     := Text_Encoding;
+         File_Ptr.Shared_Status     := Shared;
+         File_Ptr.Access_Method     := Amethod;
+         File_Ptr.Stream            := Stream;
+         File_Ptr.Form              :=
+           new String'(Formstr);
+         File_Ptr.Name              :=
+           new String'(Fullname (1 .. Full_Name_Len));
+         File_Ptr.Mode              := Mode;
+         File_Ptr.Is_Temporary_File := Tempfile;
+         File_Ptr.Encoding          := Encoding;
+
+         Chain_File (File_Ptr);
+         Append_Set (File_Ptr);
+      end Record_AFCB;
 
    begin
       if File_Ptr /= null then
@@ -1156,17 +1188,6 @@ package body System.File_IO is
             To_Lower (Fullname (1 .. Full_Name_Len));
          end if;
 
-         --  We need to lock all tasks from this point. This is needed as in
-         --  the case of a shared file we want to ensure that the file is
-         --  inserted into the chain with the shared status. We must be sure
-         --  that this file won't be closed (and then the runtime file
-         --  descriptor removed from the chain and released) before we leave
-         --  this routine.
-
-         --  Take a task lock to protect Open_Files
-
-         SSL.Lock_Task.all;
-
          --  If Shared=None or Shared=Yes, then check for the existence of
          --  another file with exactly the same full name.
 
@@ -1175,6 +1196,10 @@ package body System.File_IO is
                P : AFCB_Ptr;
 
             begin
+               --  Take a task lock to protect Open_Files
+
+               SSL.Lock_Task.all;
+
                --  Search list of open files
 
                P := Open_Files;
@@ -1198,6 +1223,9 @@ package body System.File_IO is
                        and then P.Shared_Status = Yes
                      then
                         Stream := P.Stream;
+
+                        Record_AFCB;
+
                         exit;
 
                      --  Otherwise one of the files has Shared=Yes and one has
@@ -1214,12 +1242,23 @@ package body System.File_IO is
 
                   P := P.Next;
                end loop;
+
+               SSL.Unlock_Task.all;
+
+            exception
+               when others =>
+                  SSL.Unlock_Task.all;
+                  raise;
             end;
          end if;
 
-         --  Open specified file if we did not find an existing stream
+         --  Open specified file if we did not find an existing stream,
+         --  otherwise we just return as there is nothing more to be done.
 
-         if Stream = NULL_Stream then
+         if Stream /= NULL_Stream then
+            return;
+
+         else
             Fopen_Mode
               (Mode, Text_Encoding in Text_Content_Encoding,
                Creat, Amethod, Fopstr);
@@ -1292,32 +1331,7 @@ package body System.File_IO is
       --  committed to completing the opening of the file. Allocate block on
       --  heap and fill in its fields.
 
-      File_Ptr := AFCB_Allocate (Dummy_FCB);
-
-      File_Ptr.Is_Regular_File   := (is_regular_file (fileno (Stream)) /= 0);
-      File_Ptr.Is_System_File    := False;
-      File_Ptr.Text_Encoding     := Text_Encoding;
-      File_Ptr.Shared_Status     := Shared;
-      File_Ptr.Access_Method     := Amethod;
-      File_Ptr.Stream            := Stream;
-      File_Ptr.Form              := new String'(Formstr);
-      File_Ptr.Name              := new String'(Fullname (1 .. Full_Name_Len));
-      File_Ptr.Mode              := Mode;
-      File_Ptr.Is_Temporary_File := Tempfile;
-      File_Ptr.Encoding          := Encoding;
-
-      Chain_File (File_Ptr);
-      Append_Set (File_Ptr);
-
-      --  We can now safely release the global lock, as the File_Ptr is
-      --  inserted into the global file list.
-
-      SSL.Unlock_Task.all;
-
-   exception
-      when others =>
-         SSL.Unlock_Task.all;
-         raise;
+      Record_AFCB;
    end Open;
 
    ------------------------

@@ -1,3 +1,46 @@
+2014-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Replace all calls to
+	Is_SPARK_Volatile with Is_Effectively_Volatile and update
+	related comments.
+	* sem_ch3.adb (Analyze_Object_Contract, Process_Discriminants):
+	Replace all calls to Is_SPARK_Volatile with
+	Is_Effectively_Volatile and update related comments.
+	* sem_ch5.adb (Analyze_Iterator_Specification,
+	Analyze_Loop_Parameter_Specification): Replace all calls to
+	Is_SPARK_Volatile with Is_Effectively_Volatile and update
+	related comments.
+	* sem_ch6.adb (Process_Formals): Replace all calls to
+	Is_SPARK_Volatile with Is_Effectively_Volatile and update
+	related comments.
+	* sem_ch12.adb (Instantiate_Object): Replace the call to
+	Is_SPARK_Volatile_Object with Is_Effectively_Volatile_Object
+	and update related comment.
+	* sem_prag.adb (Analyze_External_Property_In_Decl_Part,
+	Analyze_Global_Item): Replace all calls to Is_SPARK_Volatile
+	with Is_Effectively_Volatile and update related comments.
+	* sem_res.adb (Resolve_Actuals, Resolve_Entity_Name): Replace
+	all calls to Is_SPARK_Volatile with Is_Effectively_Volatile and
+	update related comments.
+	* sem_util.adb (Has_Enabled_Property,
+	Variable_Has_Enabled_Property): Replace all calls
+	to Is_SPARK_Volatile with Is_Effectively_Volatile and
+	update related comments.
+	(Is_Effectively_Volatile): New routine.
+	(Is_Effectively_Volatile_Object): New routine.
+	(Is_SPARK_Volatile): Removed.
+	(Is_SPARK_Volatile_Object): Removed.
+	* sem_util.ads (Is_Effectively_Volatile): New routine.
+	(Is_Effectively_Volatile_Object): New routine.
+	(Is_SPARK_Volatile): Removed.
+	(Is_SPARK_Volatile_Object): Removed.
+
+2014-07-31  Pascal Obry  <obry@adacore.com>
+
+	* s-fileio.adb (Open): Make sure a shared file gets inserted into
+	the global list atomically. This ensures that the file descriptor
+	won't be freed because another tasks is closing the file.
+
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb (Process_Range_Expr_In_Decl): Add comments on

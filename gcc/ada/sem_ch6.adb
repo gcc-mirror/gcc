@@ -10095,21 +10095,22 @@ package body Sem_Ch6 is
                     ("function cannot have parameter of mode `OUT` or "
                      & "`IN OUT`", Formal);
 
-               --  A function cannot have a volatile formal parameter
-               --  (SPARK RM 7.1.3(10)).
+               --  A function cannot have an effectively volatile formal
+               --  parameter (SPARK RM 7.1.3(10)).
 
-               elsif Is_SPARK_Volatile (Formal) then
+               elsif Is_Effectively_Volatile (Formal) then
                   Error_Msg_N
                     ("function cannot have a volatile formal parameter",
                      Formal);
                end if;
 
-            --  A procedure cannot have a formal parameter of mode IN because
-            --  it behaves as a constant (SPARK RM 7.1.3(6)).
+            --  A procedure cannot have an effectively volatile formal
+            --  parameter of mode IN because it behaves as a constant
+            --  (SPARK RM 7.1.3(6)).
 
             elsif Ekind (Scope (Formal)) = E_Procedure
               and then Ekind (Formal) = E_In_Parameter
-              and then Is_SPARK_Volatile (Formal)
+              and then Is_Effectively_Volatile (Formal)
             then
                Error_Msg_N
                  ("formal parameter of mode `IN` cannot be volatile", Formal);
