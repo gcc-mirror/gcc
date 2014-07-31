@@ -47,10 +47,10 @@ package Einfo is
 --  and they correspond to conventional symbol table information. Other
 --  attributes include sets of meanings for overloaded names, possible
 --  types for overloaded expressions, flags to indicate deferred constants,
---  incomplete types, etc. These attributes are stored in available fields
---  in tree nodes (i.e. fields not used by the parser, as defined by the
---  Sinfo package specification), and accessed by means of a set of
---  subprograms which define an abstract interface.
+--  incomplete types, etc. These attributes are stored in available fields in
+--  tree nodes (i.e. fields not used by the parser, as defined by the Sinfo
+--  package specification), and accessed by means of a set of subprograms
+--  which define an abstract interface.
 
 --  There are two kinds of semantic information
 
@@ -82,10 +82,9 @@ package Einfo is
 --------------------------------
 
 --  XEINFO is a utility program which automatically produces a C header file,
---  einfo.h from the spec and body of package Einfo. It reads the input
---  files einfo.ads and einfo.adb and produces the output file einfo.h.
---  XEINFO is run automatically by the build scripts when you do a full
---  bootstrap.
+--  einfo.h from the spec and body of package Einfo. It reads the input files
+--  einfo.ads and einfo.adb and produces the output file einfo.h. XEINFO is run
+--  automatically by the build scripts when you do a full bootstrap.
 
 --  In order for this utility program to operate correctly, the form of the
 --  einfo.ads and einfo.adb files must meet certain requirements and be laid
@@ -302,13 +301,13 @@ package Einfo is
 --  access functions and set procedures to set the corresponding values, while
 --  synthesized attributes have only access functions.
 
---  Note: in the case of Node, Uint, or Elist fields, there are cases where
---  the same physical field is used for different purposes in different
---  entities, so these access functions should only be referenced for the
---  class of entities in which they are defined as being present. Flags are
---  not overlapped in this way, but nevertheless as a matter of style and
---  abstraction (which may or may not be checked by assertions in the body),
---  this restriction should be observed for flag fields as well.
+--  Note: in the case of Node, Uint, or Elist fields, there are cases where the
+--  same physical field is used for different purposes in different entities,
+--  so these access functions should only be referenced for the class of
+--  entities in which they are defined as being present. Flags are not
+--  overlapped in this way, but nevertheless as a matter of style and
+--  abstraction (which may or may not be checked by assertions in the
+--  body), this restriction should be observed for flag fields as well.
 
 --  Note: certain of the attributes on types apply only to base types, and
 --  are so noted by the notation [base type only]. These are cases where the
@@ -390,8 +389,8 @@ package Einfo is
 --       case of subprograms to control output of certain warnings.
 
 --    Aft_Value (synthesized)
---       Applies to fixed and decimal types. Computes a universal integer
---       that holds value of the Aft attribute for the type.
+--       Applies to fixed and decimal types. Computes a universal integer that
+--       holds value of the Aft attribute for the type.
 
 --    Alias (Node18)
 --       Defined in overloadable entities (literals, subprograms, entries) and

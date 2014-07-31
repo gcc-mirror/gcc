@@ -50,18 +50,18 @@ package Sem_Ch3 is
      (Related_Nod : Node_Id;
       N           : Node_Id) return Entity_Id;
    --  An access definition defines a general access type for a formal
-   --  parameter. The procedure is called when processing formals, when
-   --  the current scope is the subprogram. The Implicit type is attached
-   --  to the Related_Nod put into the enclosing scope, so that the only
-   --  entities defined in the spec are the formals themselves.
+   --  parameter. The procedure is called when processing formals, when the
+   --  current scope is the subprogram. The Implicit type is attached to the
+   --  Related_Nod put into the enclosing scope, so that the only entities
+   --  defined in the spec are the formals themselves.
 
    procedure Access_Subprogram_Declaration
      (T_Name : Entity_Id;
       T_Def  : Node_Id);
    --  The subprogram specification yields the signature of an implicit
-   --  type, whose Ekind is Access_Subprogram_Type. This implicit type is
-   --  the designated type of the declared access type. In subprogram calls,
-   --  the signature of the implicit type works like the profile of a regular
+   --  type, whose Ekind is Access_Subprogram_Type. This implicit type is the
+   --  designated type of the declared access type. In subprogram calls, the
+   --  signature of the implicit type works like the profile of a regular
    --  subprogram.
 
    procedure Add_Internal_Interface_Entities (Tagged_Type : Entity_Id);
@@ -94,8 +94,8 @@ package Sem_Ch3 is
    --  enclosing declaration that generated Ityp.
    --
    --  A related mechanism is used during expansion, for itypes created in
-   --  branches of conditionals. See Ensure_Defined in exp_util.
-   --  Could both mechanisms be merged ???
+   --  branches of conditionals. See Ensure_Defined in exp_util. Could both
+   --  mechanisms be merged ???
 
    procedure Check_Abstract_Overriding (T : Entity_Id);
    --  Check that all abstract subprograms inherited from T's parent type have
@@ -126,11 +126,11 @@ package Sem_Ch3 is
       Parent_Type  : Entity_Id;
       Actual_Subp  : Entity_Id := Empty);
    --  Derive the subprogram Parent_Subp from Parent_Type, and replace the
-   --  subsidiary subtypes with the derived type to build the specification
-   --  of the inherited subprogram (returned in New_Subp). For tagged types,
-   --  the derived subprogram is aliased to that of the actual (in the
-   --  case where Actual_Subp is nonempty) rather than to the corresponding
-   --  subprogram of the parent type.
+   --  subsidiary subtypes with the derived type to build the specification of
+   --  the inherited subprogram (returned in New_Subp). For tagged types, the
+   --  derived subprogram is aliased to that of the actual (in the case where
+   --  Actual_Subp is nonempty) rather than to the corresponding subprogram of
+   --  the parent type.
 
    procedure Derive_Subprograms
      (Parent_Type    : Entity_Id;
@@ -183,10 +183,10 @@ package Sem_Ch3 is
      (C : Entity_Id;
       N : Node_Id := Empty) return Boolean;
    --  Determines if a record component C is visible in the present context.
-   --  Note that even though component C could appear in the entity chain
-   --  of a record type, C may not be visible in the current context. For
-   --  instance, C may be a component inherited in the full view of a private
-   --  extension which is not visible in the current context.
+   --  Note that even though component C could appear in the entity chain of a
+   --  record type, C may not be visible in the current context. For instance,
+   --  C may be a component inherited in the full view of a private extension
+   --  which is not visible in the current context.
    --
    --  If present, N is the selected component of which C is the selector. If
    --  the prefix of N is a type conversion inserted for a discriminant check,
@@ -199,9 +199,9 @@ package Sem_Ch3 is
       Suffix_Index : Nat       := 1;
       In_Iter_Schm : Boolean   := False);
    --  Process an index that is given in an array declaration, an entry
-   --  family declaration or a loop iteration. The index is given by an
-   --  index declaration (a 'box'), or by a discrete range. The later can
-   --  be the name of a discrete type, or a subtype indication.
+   --  family declaration or a loop iteration. The index is given by an index
+   --  declaration (a 'box'), or by a discrete range. The later can be the name
+   --  of a discrete type, or a subtype indication.
    --
    --  Related_Nod is the node where the potential generated implicit types
    --  will be inserted. The next last parameters are used for creating the
@@ -257,9 +257,9 @@ package Sem_Ch3 is
    --  primitive operations of the private view (in the tagged case).
    --  N is the N_Full_Type_Declaration node.
    --
-   --    Full_T is the full view of the type whose full declaration is in N.
+   --  Full_T is the full view of the type whose full declaration is in N.
    --
-   --    Priv_T is the private view of the type whose full declaration is in N.
+   --  Priv_T is the private view of the type whose full declaration is in N.
 
    procedure Process_Range_Expr_In_Decl
      (R            : Node_Id;
@@ -298,12 +298,12 @@ package Sem_Ch3 is
      (N    : Node_Id;
       Prev : Entity_Id := Empty);
    --  Process the discriminants contained in an N_Full_Type_Declaration or
-   --  N_Incomplete_Type_Decl node N. If the declaration is a completion,
-   --  Prev is entity on the partial view, on which references are posted.
-   --  However, note that Process_Discriminants is called for a completion only
-   --  if partial view had no discriminants (else we just check conformance
-   --  between the two views and do not call Process_Discriminants again for
-   --  the completion).
+   --  N_Incomplete_Type_Decl node N. If the declaration is a completion, Prev
+   --  is entity on the partial view, on which references are posted. However,
+   --  note that Process_Discriminants is called for a completion only if
+   --  partial view had no discriminants (else we just check conformance
+   --  between the two views and do not call Process_Discriminants again
+   --  for the completion).
 
    function Replace_Anonymous_Access_To_Protected_Subprogram
      (N : Node_Id) return Entity_Id;

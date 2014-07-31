@@ -1,5 +1,14 @@
 2014-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_ugn.texi: Document new switch -gnato0.
+	* sem_ch3.ads: Minor reformatting.
+	* gnatlink.adb (Process_Args): Compile bind file with -gnato0
+	(we do not want overflow checks when incrementing elaboration
+	counters).
+	* einfo.ads: Minor reformatting.
+
+2014-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch5.adb, freeze.adb, exp_ch3.adb: Minor comment correction.
 	* s-arit64.adb: Minor reformatting.
 

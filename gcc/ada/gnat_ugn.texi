@@ -4201,6 +4201,13 @@ of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
 Historically front end inlining was more extensive than the gcc back end
 inlining, but that is no longer the case.
 
+@item -gnato0
+@cindex @option{-gnato0} (@command{gcc})
+Suppresses overflow checking. This causes the behavior of the compiler to
+match the default for older versions where overflow checking was suppressed
+by default. This is equivalent to having
+@code{pragma Suppress (Overflow_Mode)} in a configuration pragma file.
+
 @item -gnato??
 @cindex @option{-gnato??} (@command{gcc})
 Set default mode for handling generation of code to avoid intermediate
@@ -4226,11 +4233,11 @@ If no digits follow the @option{-gnato}, then it is equivalent to
 causing all intermediate overflows to be handled in strict mode.
 
 This switch also causes arithmetic overflow checking to be performed
-(as though pragma @code{Unsuppress (Overflow_Mode)} has been specified.
+(as though @code{pragma Unsuppress (Overflow_Mode)} had been specified.
 
 The default if no option @option{-gnato} is given is that overflow handling
 is in @code{STRICT} mode (computations done using the base type), and that
-overflow checking is suppressed.
+overflow checking is enabled.
 
 Note that division by zero is a separate check that is not
 controlled by this switch (division by zero checking is on by default).
