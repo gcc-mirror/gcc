@@ -4039,13 +4039,15 @@ package body Exp_Aggr is
 
       --    1. N consists of a single OTHERS choice, possibly recursively
 
-      --    2. The array type has no atomic components
+      --    2. The array type is not packed
 
-      --    3. The component type is discrete
+      --    3. The array type has no atomic components
 
-      --    4. The component size is a multiple of Storage_Unit
+      --    4. The component type is discrete
 
-      --    5. The component size is Storage_Unit or the value is of the form
+      --    5. The component size is a multiple of Storage_Unit
+
+      --    6. The component size is Storage_Unit or the value is of the form
       --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
       --       and M in 1 .. A-1. This can also be viewed as K occurrences of
       --       the 8-bit value M, concatenated together.
@@ -4068,6 +4070,10 @@ package body Exp_Aggr is
             if Nkind (Expr) /= N_Aggregate
               or else not Is_Others_Aggregate (Expr)
             then
+               return False;
+            end if;
+
+            if Present (Packed_Array_Impl_Type (Ctyp)) then
                return False;
             end if;
 
@@ -4119,7 +4125,7 @@ package body Exp_Aggr is
             Value := Value - Expr_Value (Type_Low_Bound (Ctyp));
          end if;
 
-         --  0 and -1 immediately satisfy check #5
+         --  0 and -1 immediately satisfy the last check
 
          if Value = Uint_0 or else Value = Uint_Minus_1 then
             return True;

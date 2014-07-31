@@ -1795,6 +1795,8 @@ package body Checks is
          if Do_Overflow_Check (N)
            and then not Overflow_Checks_Suppressed (Etype (N))
          then
+            Set_Do_Overflow_Check (N, False);
+
             --  Test for extremely annoying case of xxx'First divided by -1
             --  for division of signed integer types (only overflow case).
 
@@ -1855,6 +1857,8 @@ package body Checks is
          --  it is a Division_Check and not an Overflow_Check.
 
          if Do_Division_Check (N) then
+            Set_Do_Division_Check (N, False);
+
             if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
                Insert_Action (N,
                  Make_Raise_Constraint_Error (Loc,
@@ -5110,6 +5114,8 @@ package body Checks is
       Lo   : Uint;
       Hi   : Uint;
 
+      Do_Ovflow_Check : Boolean;
+
    begin
       if Debug_Flag_CC then
          w ("Enable_Overflow_Check for node ", Int (N));
@@ -5187,15 +5193,52 @@ package body Checks is
          --   c) The alternative is a lot of special casing in this routine
          --      which would partially duplicate Determine_Range processing.
 
-         if OK
-           and then Lo > Expr_Value (Type_Low_Bound  (Typ))
-           and then Hi < Expr_Value (Type_High_Bound (Typ))
-         then
-            if Debug_Flag_CC then
-               w ("No overflow check required");
+         if OK then
+            Do_Ovflow_Check := True;
+
+            --  Note that the following checks are quite deliberately > and <
+            --  rather than >= and <= as explained above.
+
+            if  Lo > Expr_Value (Type_Low_Bound  (Typ))
+                  and then
+                Hi < Expr_Value (Type_High_Bound (Typ))
+            then
+               Do_Ovflow_Check := False;
+
+            --  Despite the comments above, it is worth dealing specially with
+            --  division specially. The only case where integer division can
+            --  overflow is (largest negative number) / (-1). So we will do
+            --  an extra range analysis to see if this is possible.
+
+            elsif Nkind (N) = N_Op_Divide then
+               Determine_Range
+                 (Left_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
+
+               if OK and then Lo > Expr_Value (Type_Low_Bound (Typ)) then
+                  Do_Ovflow_Check := False;
+
+               else
+                  Determine_Range
+                    (Right_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
+
+                  if OK and then (Lo > Uint_Minus_1
+                                    or else
+                                  Hi < Uint_Minus_1)
+                  then
+                     Do_Ovflow_Check := False;
+                  end if;
+               end if;
             end if;
 
-            return;
+            --  If no overflow check required, we are done
+
+            if not Do_Ovflow_Check then
+               if Debug_Flag_CC then
+                  w ("No overflow check required");
+               end if;
+
+               return;
+            end if;
          end if;
       end if;
 
