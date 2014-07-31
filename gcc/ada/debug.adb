@@ -598,8 +598,12 @@ package body Debug is
    --       all targets except AAMP, .NET and JVM). This switch has no effect
    --       under GNATprove to avoid confusing the formal verification output,
    --       and it has no effect if the sources are compiled with frontend
-   --       inlining (ie. -gnatN). This switch is currently used to evaluate
-   --       the impact of back end inlining.
+   --       inlining (ie. -gnatN). This switch is used to evaluate the impact
+   --       of back end inlining since the GCC backend has now more support for
+   --       inlining than before, and hence most of the inlinings that are
+   --       currently handled by the frontend can be done by the backend with
+   --       the extra benefit of supporting cases which are currently rejected
+   --       by GNAT.
 
    --  d.A  There seems to be a problem with ASIS if we activate the circuit
    --       for reading and writing the aspect specification hash table, so

@@ -598,9 +598,13 @@ procedure Gnat1drv is
 
       Back_End_Inlining :=
 
+        --  No back end inlining if inlining is suppressed
+
+        not Suppress_All_Inlining
+
         --  No back end inlining available for VM targets
 
-        VM_Target = No_VM
+        and then VM_Target = No_VM
 
         --  No back end inlining available on AAMP
 
