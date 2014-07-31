@@ -2493,6 +2493,14 @@ package body Bindgen is
            ", Body_File_Name => """ &
            Name_Buffer (1 .. Name_Len + 3));
 
+      --  Generate pragma Suppress (Overflow_Check). This is needed for recent
+      --  versions of the compiler which have overflow checks on by default.
+      --  We do not want overflow checking enabled for the increments of the
+      --  elaboration variables (since this can cause an unwanted reference to
+      --  the last chance exception handler for limited run-times).
+
+      WBI ("pragma Suppress (Overflow_Check);");
+
       --  Generate with of System.Restrictions to initialize
       --  Run_Time_Restrictions.
 

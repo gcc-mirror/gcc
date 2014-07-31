@@ -676,12 +676,6 @@ procedure Gnatlink is
       Binder_Options.Increment_Last;
       Binder_Options.Table (Binder_Options.Last) := new String'("-gnatws");
 
-      --  Also suppress overflow checks (needed now that we have them on by
-      --  default, we want checks off when incrementing elaboration counters).
-
-      Binder_Options.Increment_Last;
-      Binder_Options.Table (Binder_Options.Last) := new String'("-gnato0");
-
       --  If we did not get an ali file at all, and we had at least one
       --  linker option, then assume that was the intended ali file after
       --  all, so that we get a nicer message later on.
