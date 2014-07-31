@@ -1,5 +1,11 @@
 2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_gimple_fold_builtin): Don't fold reduction operations for
+	BYTES_BIG_ENDIAN.
+
+2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_simd_vect_par_cnst_half): Vary
 	the generated mask based on BYTES_BIG_ENDIAN.
 	(aarch64_simd_check_vect_par_cnst_half): New.
