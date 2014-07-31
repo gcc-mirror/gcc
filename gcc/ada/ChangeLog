@@ -1,5 +1,17 @@
 2014-07-31  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): New
+	predicate Discriminated_Size, to distinguish between private
+	components that depend on discriminants from those whose size
+	depends on some other non-static expression.
+
+2014-07-31  Nicolas Setton  <setton@adacore.com>
+
+	* g-exptty.adb (Close): Fix binding to Waitpid: use the
+	tty version.
+
+2014-07-31  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Make_Index): Reject properly the use of 'Length
 	in a discrete range, when 'range was probably intended.
 
