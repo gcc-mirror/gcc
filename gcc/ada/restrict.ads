@@ -336,6 +336,7 @@ package Restrict is
    --  Id is a node whose Chars field contains the name of a restriction.
    --  If it is one of synonyms that we allow for historical purposes (for
    --  list see System.Rident), then the proper official name is returned.
+   --  In addition, No_Elaboration_Code_All returns Name_No_Elaboration_Code.
    --  Otherwise the Chars field of the argument is returned unchanged.
 
    function Restriction_Active (R : All_Restrictions) return Boolean;

@@ -347,6 +347,35 @@ package Lib is
    --      The index of the unit within the file for multiple unit per file
    --      mode. Set to zero in normal single unit per file mode.
 
+   --    No_Elab_Code
+   --      A value set when a pragma Restriction or Restriction_Warning for
+   --      No_Elaboration_Code_All or No_Elaboration_Code is encountered. This
+   --      is used to implement the transitive WITH rules (and for no other
+   --      purpose). The possible values are:
+
+   type No_Elab_Code_T is
+      (None,
+       --  The unit contains no Elaboration_Code[_All} restrictions
+
+       No_Elab_Code,
+       --  The unit contains a pragma Restrictions or Restriction_Warnings
+       --  for No_Elaboration_Code, but does not contain either pragma for
+       --  No_Elaboration_Code_All. Note: this setting is not currently used,
+       --  but we maintain it for possible future use (e.g. if we decide after
+       --  all that No_Elaboration_Code is good enough to satisfy the rule for
+       --  transitive with's for No_Elaborate_Code_All.
+
+       No_Elab_Code_All_Warn,
+       --  The unit contains a pragma Restrictions_Warning for restriction
+       --  No_Elaboration_Code_All (but does not contain a pragma Restrictions
+       --  for this restriction).
+
+       No_Elab_Code_All);
+       --  The unit contains a pragma Restrictions (No_Elaboration_Code_All)
+
+   pragma Ordered (No_Elab_Code_T);
+   --  This set of values is ordered, we record the highest value seen
+
    --    OA_Setting
    --      This is a character field containing L if Optimize_Alignment mode
    --      was set locally, and O/T/S for Off/Time/Space default if not.
@@ -410,6 +439,7 @@ package Lib is
    function Main_CPU          (U : Unit_Number_Type) return Int;
    function Main_Priority     (U : Unit_Number_Type) return Int;
    function Munit_Index       (U : Unit_Number_Type) return Nat;
+   function No_Elab_Code      (U : Unit_Number_Type) return No_Elab_Code_T;
    function OA_Setting        (U : Unit_Number_Type) return Character;
    function Source_Index      (U : Unit_Number_Type) return Source_File_Index;
    function Unit_File_Name    (U : Unit_Number_Type) return File_Name_Type;
@@ -426,6 +456,7 @@ package Lib is
    procedure Set_Ident_String      (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Loading           (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Main_CPU          (U : Unit_Number_Type; P : Int);
+   procedure Set_No_Elab_Code      (U : Unit_Number_Type; N : No_Elab_Code_T);
    procedure Set_Main_Priority     (U : Unit_Number_Type; P : Int);
    procedure Set_OA_Setting        (U : Unit_Number_Type; C : Character);
    procedure Set_Unit_Name         (U : Unit_Number_Type; N : Unit_Name_Type);
@@ -726,6 +757,7 @@ private
    pragma Inline (Main_CPU);
    pragma Inline (Main_Priority);
    pragma Inline (Munit_Index);
+   pragma Inline (No_Elab_Code);
    pragma Inline (OA_Setting);
    pragma Inline (Set_Cunit);
    pragma Inline (Set_Cunit_Entity);
@@ -735,6 +767,7 @@ private
    pragma Inline (Set_Loading);
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
+   pragma Inline (Set_No_Elab_Code);
    pragma Inline (Set_OA_Setting);
    pragma Inline (Set_Unit_Name);
    pragma Inline (Source_Index);
@@ -760,6 +793,7 @@ private
       Generate_Code     : Boolean;
       Has_RACW          : Boolean;
       Dynamic_Elab      : Boolean;
+      No_Elab_Code      : No_Elab_Code_T;
       Filler            : Boolean;
       Loading           : Boolean;
       OA_Setting        : Character;
@@ -789,7 +823,8 @@ private
       Generate_Code     at 57 range 0 ..  7;
       Has_RACW          at 58 range 0 ..  7;
       Dynamic_Elab      at 59 range 0 ..  7;
-      Filler            at 60 range 0 ..  15;
+      No_Elab_Code      at 60 range 0 ..  7;
+      Filler            at 61 range 0 ..  7;
       OA_Setting        at 62 range 0 ..  7;
       Loading           at 63 range 0 ..  7;
       SPARK_Mode_Pragma at 64 range 0 .. 31;

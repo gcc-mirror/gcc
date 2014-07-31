@@ -4043,9 +4043,10 @@ package body Exp_Aggr is
 
       --    3. The array type has no atomic components
 
-      --    4. The component type is discrete
+      --    4. The array type has no null ranges (the purpose of this is to
+      --       avoid a bogus warning for an out-of-range value).
 
-      --    5. The component size is a multiple of Storage_Unit
+      --    5. The component type is discrete
 
       --    6. The component size is Storage_Unit or the value is of the form
       --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
@@ -4057,7 +4058,10 @@ package body Exp_Aggr is
 
       function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
          Ctyp      : Entity_Id;
+         Index     : Entity_Id;
          Expr      : Node_Id := N;
+         Low       : Node_Id;
+         High      : Node_Id;
          Remainder : Uint;
          Value     : Uint;
          Nunits    : Nat;
@@ -4081,6 +4085,17 @@ package body Exp_Aggr is
                return False;
             end if;
 
+            Index := First_Index (Ctyp);
+            while Present (Index) loop
+               Get_Index_Bounds (Index, Low, High);
+
+               if Is_Null_Range (Low, High) then
+                  return False;
+               end if;
+
+               Next_Index (Index);
+            end loop;
+
             Expr := Expression (First (Component_Associations (Expr)));
 
             for J in 1 .. Number_Dimensions (Ctyp) - 1 loop
@@ -4100,9 +4115,7 @@ package body Exp_Aggr is
             end if;
          end loop;
 
-         if not Is_Discrete_Type (Ctyp)
-           or else RM_Size (Ctyp) mod System_Storage_Unit /= 0
-         then
+         if not Is_Discrete_Type (Ctyp) then
             return False;
          end if;
 
@@ -4110,7 +4123,10 @@ package body Exp_Aggr is
 
          Analyze_And_Resolve (Expr, Ctyp);
 
-         Nunits := UI_To_Int (RM_Size (Ctyp) / System_Storage_Unit);
+         --  The back end uses the Esize as the precision of the type
+
+         Nunits := UI_To_Int (Esize (Ctyp)) / System_Storage_Unit;
+
          if Nunits = 1 then
             return True;
          end if;
@@ -4125,7 +4141,7 @@ package body Exp_Aggr is
             Value := Value - Expr_Value (Type_Low_Bound (Ctyp));
          end if;
 
-         --  0 and -1 immediately satisfy the last check
+         --  Values 0 and -1 immediately satisfy the last check
 
          if Value = Uint_0 or else Value = Uint_Minus_1 then
             return True;
