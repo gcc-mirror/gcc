@@ -1,7 +1,37 @@
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task_depend_entry): Add redundant_out field.
+	(struct gomp_taskwait): New type.
+	(struct gomp_task): Add taskwait and parent_depends_on, remove
+	in_taskwait and taskwait_sem fields.
+	(gomp_finish_task): Don't destroy taskwait_sem.
+	* task.c (gomp_init_task): Don't init in_taskwait, instead init
+	taskwait and parent_depends_on.
+	(GOMP_task): For if (0) tasks with depend clause that depend on
+	earlier tasks don't defer them, instead call
+	gomp_task_maybe_wait_for_dependencies to wait for the dependencies.
+	Initialize redundant_out field, for redundant out entries just
+	move them at the end of linked list instead of removing them
+	completely, and set redundant_out flag instead of redundant.
+	(gomp_task_run_pre): Update last_parent_depends_on if scheduling
+	that task.
+	(gomp_task_run_post_handle_dependers): If parent is in
+	gomp_task_maybe_wait_for_dependencies and newly runnable task
+	is not parent_depends_on, queue it in parent->children linked
+	list after all runnable tasks with parent_depends_on set.
+	Adjust for addition of taskwait indirection.
+	(gomp_task_run_post_remove_parent): If parent is in
+	gomp_task_maybe_wait_for_dependencies and task to be removed
+	is parent_depends_on, decrement n_depend and if needed awake
+	parent.  Adjust for addition of taskwait indirection.
+	(GOMP_taskwait): Adjust for addition of taskwait indirection.
+	(gomp_task_maybe_wait_for_dependencies): New function.
+	* testsuite/libgomp.c/depend-5.c: New test.
+
 2014-07-13  Tobias Burnus  <burnus@net-b.de>
 
 	* testsuite/libgomp.fortran/pr34020.f90: Make compile
-	with TS 18508/Fortran 2015
+	with TS 18508/Fortran 2015.
 
 2014-07-06  Marek Polacek  <polacek@redhat.com>
 
