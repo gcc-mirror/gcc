@@ -1,5 +1,10 @@
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
+	* ipa-devirt.c (polymorphic_call_target_hasher::hash):
+	Convert to inchash.
+
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
 	* asan.c (asan_mem_ref_hasher::hash): Convert to inchash.
 
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
