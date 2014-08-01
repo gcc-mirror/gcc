@@ -1,3 +1,10 @@
+2014-08-01  Jiong Wang <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.md (loadwb_pair<GPI:mode>_<P:mode>): Fix
+	offset.
+	(loadwb_pair<GPI:mode>_<P:mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_gen_loadwb_pair): Likewise.
+
 2014-08-01  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips.h (REGISTER_PREFIX): Define macro.
