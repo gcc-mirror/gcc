@@ -1,3 +1,7 @@
+2014-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (lookup_template_class_1): Use DECL_TYPE_TEMPLATE_P.
+
 2014-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cp_genericize_r): For -fsanitize=null and/or

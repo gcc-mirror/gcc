@@ -7414,9 +7414,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       templ = TYPE_TI_TEMPLATE (d1);
       d1 = DECL_NAME (templ);
     }
-  else if (TREE_CODE (d1) == TEMPLATE_DECL
-           && DECL_TEMPLATE_RESULT (d1)
-	   && TREE_CODE (DECL_TEMPLATE_RESULT (d1)) == TYPE_DECL)
+  else if (DECL_TYPE_TEMPLATE_P (d1))
     {
       templ = d1;
       d1 = DECL_NAME (templ);
