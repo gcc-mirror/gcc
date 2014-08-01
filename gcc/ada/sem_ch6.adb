@@ -3593,8 +3593,8 @@ package body Sem_Ch6 is
 
                else
                   declare
-                     Body_Spec : constant Node_Id := Parent (Body_Id);
-                     Subp_Body : constant Node_Id := Parent (Body_Spec);
+                     Subp_Body : constant Node_Id :=
+                                   Unit_Declaration_Node (Body_Id);
                      Subp_Decl : constant List_Id := Declarations (Subp_Body);
 
                   begin

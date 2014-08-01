@@ -1102,7 +1102,10 @@ package body Sem_Res is
                end if;
             end if;
 
-            Nam := New_Copy (N);
+            --  The node is the name of the parameterless call. Preserve its
+            --  descendants, which may be complex expressions.
+
+            Nam := Relocate_Node (N);
 
             --  If overloaded, overload set belongs to new copy
 

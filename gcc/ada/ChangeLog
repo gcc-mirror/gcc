@@ -1,3 +1,21 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Check_Parameterless_Call): Use Relocate_Node
+	to create the name of the parameterless call, rather than
+	New_Copy, to preserve the tree structure when the name is a
+	complex expression, e.g. a selected component that denotes a
+	protected operation, whose prefix is itself a selected component.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Use
+	Unit_Declaration_Node to retrieve body when inlining, to handle
+	properly subprogram child units.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
 2014-08-01  Vincent Celier  <celier@adacore.com>
 
 	* debug.adb: Minor documentation addition for -dn switch.
