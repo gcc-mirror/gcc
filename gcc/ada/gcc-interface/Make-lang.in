@@ -89,7 +89,7 @@ ADA_FLAGS_TO_PASS = \
 
 # List of Ada tools to build and install
 ADA_TOOLS=gnatbind gnatchop gnat gnatkr gnatlink gnatls gnatmake \
-          gnatname gnatprep gnatxref gnatfind gnatclean gnatsym
+          gnatname gnatprep gnatxref gnatfind gnatclean
 
 # Say how to compile Ada programs.
 .SUFFIXES: .ada .adb .ads
@@ -763,8 +763,7 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # or from the --target option if the former is not specified.
 # Do the same for the rest of the Ada tools (gnatchop, gnat, gnatkr,
 # gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
-# gnatclean, gnatsym).
-# gnatsym is only built on some platforms, including VMS.
+# gnatclean).
 # gnatdll is only used on Windows.
 # vxaddr2line is only used for cross VxWorks ports (it calls the underlying
 # cross addr2line).
@@ -840,7 +839,6 @@ ada.distclean:
 	-$(RM) gnatfind$(exeext)
 	-$(RM) gnatxref$(exeext)
 	-$(RM) gnatclean$(exeext)
-	-$(RM) gnatsym$(exeext)
 	-$(RM) ada/rts/*
 	-$(RMDIR) ada/rts
 	-$(RM) ada/tools/*

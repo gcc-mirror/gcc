@@ -1941,7 +1941,7 @@ package Opt is
    No_Exit_Message : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set with switch --no-exit-message. When True, if there are compilation
-   --  failure, the builder does not issue an exit error message.
+   --  failures, the builder does not issue an exit error message.
 
    Optimize_Alignment_Config : Character;
    --  GNAT

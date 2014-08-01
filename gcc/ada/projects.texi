@@ -41,7 +41,7 @@ project files allow you to specify:
 @item The directory in which the compiler's output
   (@file{ALI} files, object files, tree files, etc.) is to be placed
 @item The directory in which the executable programs are to be placed
-@item ^Switch^Switch^ settings for any of the project-enabled tools;
+@item Switch settings for any of the project-enabled tools;
   you can apply these settings either globally or to individual compilation units.
 @item The source files containing the main subprogram(s) to be built
 @item The source programming language(s)
@@ -68,7 +68,7 @@ Subsystems}).
   More generally, the Project Manager lets you structure large development
   efforts into hierarchical subsystems, where build decisions are delegated
   to the subsystem level, and thus different compilation environments
-  (^switch^switch^ settings) used for different subsystems.
+  (switch settings) used for different subsystems.
 @item You can organize GNAT projects in a hierarchy: a child project
   can extend a parent project, inheriting the parent's source files and
   optionally overriding any of them with alternative versions
@@ -80,8 +80,8 @@ Subsystems}).
 Several tools support project files, generally in addition to specifying
 the information on the command line itself). They share common switches
 to control the loading of the project (in particular
-@option{^-P^/PROJECT_FILE=^@emph{projectfile}} and
-@option{^-X^/EXTERNAL_REFERENCE=^@emph{vbl}=@emph{value}}).
+@option{-P@emph{projectfile}} and
+@option{-X@emph{vbl}=@emph{value}}).
 
 The Project Manager supports a wide range of development strategies,
 for systems of all sizes.  Here are some typical practices that are
@@ -89,7 +89,7 @@ easily handled:
 
 @itemize @bullet
 @item Using a common set of source files and generating object files in different
-  directories via different ^switch^switch^ settings. It can be used for instance, for
+  directories via different switch settings. It can be used for instance, for
   generating separate sets of object files for debugging and for production.
 @item Using a mostly-shared set of source files with different versions of
   some units or subunits. It can be used for instance, for grouping and hiding
@@ -185,19 +185,19 @@ following examples.
 The Ada source files @file{pack.ads}, @file{pack.adb}, and @file{proc.adb} are in
 the @file{common/} directory. The file @file{proc.adb} contains an Ada main
 subprogram @code{Proc} that @code{with}s package @code{Pack}. We want to compile
-these source files with the ^switch^switch^
-@option{^-O2^-O2^}, and put the resulting files in
+these source files with the switch
+@option{-O2}, and put the resulting files in
 the directory @file{obj/}.
 
 @smallexample
 @group
-^common/^[COMMON]^
+common/
   pack.ads
   pack.adb
   proc.adb
 @end group
 @group
-^common/release/^[COMMON.RELEASE]^
+common/release/
   proc.ali, proc.o pack.ali, pack.o
 @end group
 @end smallexample
@@ -450,7 +450,7 @@ Its value is the path to the object directory, either absolute or
 relative to the directory containing the project file. This
 directory must already exist and be readable and writable, although
 some tools have a switch to create the directory if needed (See
-the switch @code{^-p^/CREATE_MISSING_DIRS^} for @command{gnatmake}
+the switch @code{-p} for @command{gnatmake}
 and @command{gprbuild}).
 
 If the attribute @code{Object_Dir} is not specified, it defaults to
@@ -540,7 +540,7 @@ If this attribute is defined in the project, then spawning the builder
 with a command such as
 
 @smallexample
-   gnatmake ^-Pbuild^/PROJECT_FILE=build^
+   gnatmake -Pbuild
 @end smallexample
 
 @noindent
@@ -617,13 +617,13 @@ packages would be involved in the build process.
 
 @noindent
 Let's first examine the compiler switches. As stated in the initial description
-of the example, we want to compile all files with @option{^-O2^-O2^}. This is a
+of the example, we want to compile all files with @option{-O2}. This is a
 compiler switch, although it is usual, on the command line, to pass it to the
 builder which then passes it to the compiler. It is recommended to use directly
 the right package, which will make the setup easier to understand for other
 people.
 
-Several attributes can be used to specify the ^switches^switches^:
+Several attributes can be used to specify the switches:
 
 @table @asis
 @item @b{Default_Switches}:
@@ -636,22 +636,22 @@ Several attributes can be used to specify the ^switches^switches^:
   likely be used for each language, and each compiler has its own set of
   switches). The value of the attribute is a list of switches.
 
-  In this example, we want to compile all Ada source files with the ^switch^switch^
-  @option{^-O2^-O2^}, and the resulting project file is as follows
+  In this example, we want to compile all Ada source files with the switch
+  @option{-O2}, and the resulting project file is as follows
   (only the @code{Compiler} package is shown):
 
   @smallexample
   @b{package} Compiler @b{is}
-    @b{for} Default_Switches ("Ada") @b{use} ("^-O2^-O2^");
+    @b{for} Default_Switches ("Ada") @b{use} ("-O2");
   @b{end} Compiler;
   @end smallexample
 
-@item @b{^Switches^Switches^}:
-@cindex @code{^Switches^Switches^}
-  in some cases, we might want to use specific ^switches^switches^
+@item @b{Switches}:
+@cindex @code{Switches}
+  in some cases, we might want to use specific switches
   for one or more files. For instance, compiling @file{proc.adb} might not be
   possible at high level of optimization because of a compiler issue.
-  In such a case, the @emph{^Switches^Switches^}
+  In such a case, the @emph{Switches}
   attribute (indexed on the file name) can be used and will override the
   switches defined by @emph{Default_Switches}. Our project file would
   become:
@@ -659,30 +659,30 @@ Several attributes can be used to specify the ^switches^switches^:
   @smallexample
   package Compiler is
      for Default_Switches ("Ada")
-         use ("^-O2^-O2^");
-     for ^Switches^Switches^ ("proc.adb")
-         use ("^-O0^-O0^");
+         use ("-O2");
+     for Switches ("proc.adb")
+         use ("-O0");
   end Compiler;
   @end smallexample
 
   @noindent
-  @code{^Switches^Switches^} may take a pattern as an index, such as in:
+  @code{Switches} may take a pattern as an index, such as in:
 
   @smallexample
   package Compiler is
     for Default_Switches ("Ada")
-        use ("^-O2^-O2^");
-    for ^Switches^Switches^ ("pkg*")
-        use ("^-O0^-O0^");
+        use ("-O2");
+    for Switches ("pkg*")
+        use ("-O0");
   end Compiler;
   @end smallexample
 
   @noindent
-  Sources @file{pkg.adb} and @file{pkg-child.adb} would be compiled with ^-O0^-O0^,
-  not ^-O2^-O2^.
+  Sources @file{pkg.adb} and @file{pkg-child.adb} would be compiled with -O0,
+  not -O2.
 
   @noindent
-  @code{^Switches^Switches^} can also be given a language name as index instead of a file
+  @code{Switches} can also be given a language name as index instead of a file
   name in which case it has the same semantics as @emph{Default_Switches}.
   However, indexes with wild cards are never valid for language name.
 
@@ -696,7 +696,7 @@ Several attributes can be used to specify the ^switches^switches^:
 @end table
 
 The switches for the other tools are defined in a similar manner through the
-@b{Default_Switches} and @b{^Switches^Switches^} attributes, respectively in the
+@b{Default_Switches} and @b{Switches} attributes, respectively in the
 @emph{Builder} package (for @command{gnatmake} and @command{gprbuild}),
 the @emph{Binder} package (binding Ada executables) and the @emph{Linker}
 package (for linking executables).
@@ -711,7 +711,7 @@ Now that our project files are written, let's build our executable.
 Here is the command we would use from the command line:
 
 @smallexample
-   gnatmake ^-Pbuild^/PROJECT_FILE=build^
+   gnatmake -Pbuild
 @end smallexample
 
 @noindent
@@ -727,7 +727,7 @@ same way: create the file @file{utils.c} in the @file{common} directory,
 set the attribute @emph{Languages} to @code{"(Ada, C)"}, and run
 
 @smallexample
-   gprbuild ^-Pbuild^/PROJECT_FILE=build^
+   gprbuild -Pbuild
 @end smallexample
 
 @noindent
@@ -784,12 +784,12 @@ on Windows), we could configure our project file to build "proc1"
 (resp proc1.exe) with the following addition:
 
 @smallexample @c projectfile
-   project Build is
-      ...  --  same as before
-      package Builder is
-         for Executable ("proc.adb") use "proc1";
-      end Builder
-   end Build;
+   @b{project} Build @b{is}
+      ...  --@i{  same as before}
+      @b{package} Builder @b{is}
+         @b{for} Executable ("proc.adb") @b{use} "proc1";
+      @b{end} Builder
+   @b{end} Build;
 @end smallexample
 
 @noindent
@@ -815,18 +815,18 @@ To illustrate some other project capabilities, here is a slightly more complex
 project using similar sources and a main program in C:
 
 @smallexample @c projectfile
-project C_Main is
-   for Languages    use ("Ada", "C");
-   for Source_Dirs  use ("common");
-   for Object_Dir   use  "obj";
-   for Main         use ("main.c");
-   package Compiler is
+@b{project} C_Main @b{is}
+   @b{for} Languages    @b{use} ("Ada", "C");
+   @b{for} Source_Dirs  @b{use} ("common");
+   @b{for} Object_Dir   @b{use}  "obj";
+   @b{for} Main         @b{use} ("main.c");
+   @b{package} Compiler @b{is}
       C_Switches := ("-pedantic");
-      for Default_Switches ("C")   use C_Switches;
-      for Default_Switches ("Ada") use ("^-gnaty^-gnaty^");
-      for ^Switches^Switches^ ("main.c") use C_Switches & ("-g");
-   end Compiler;
-end C_Main;
+      @b{for} Default_Switches ("C")   @b{use} C_Switches;
+      @b{for} Default_Switches ("Ada") @b{use} ("-gnaty");
+      @b{for} Switches ("main.c") @b{use} C_Switches & ("-g");
+   @b{end} Compiler;
+@b{end} C_Main;
 @end smallexample
 
 @noindent
@@ -848,7 +848,7 @@ In this specific situation the use of a variable could have been
 replaced by a reference to the @code{Default_Switches} attribute:
 
 @smallexample @c projectfile
-   for ^Switches^Switches^ ("c_main.c") use Compiler'Default_Switches ("C") & ("-g");
+   @b{for} Switches ("c_main.c") @b{use} Compiler'Default_Switches ("C") & ("-g");
 @end smallexample
 
 @noindent
@@ -940,7 +940,7 @@ The following attributes can be defined in package @code{Naming}:
   @code{Specification_Exceptions}.
 
   If @code{Spec_Suffix ("Ada")} is not specified, then the default is
-  @code{"^.ads^.ADS^"}.
+  @code{".ads"}.
 
   A non empty value must satisfy the following requirements:
 
@@ -969,7 +969,7 @@ The following attributes can be defined in package @code{Naming}:
   In addition, they must be different from any of the values in
   @code{Spec_Suffix}.
   If @code{Body_Suffix ("Ada")} is not specified, then the default is
-  @code{"^.adb^.ADB^"}.
+  @code{".adb"}.
 
   If @code{Body_Suffix ("Ada")} and @code{Spec_Suffix ("Ada")} end with the
   same string, then a file name that ends with the longest of these two
@@ -1029,39 +1029,20 @@ The following attributes can be defined in package @code{Naming}:
 
 @end table
 
-@ifclear vms
+@set unw
 For example, the following package models the Apex file naming rules:
 
 @smallexample @c projectfile
 @group
-  package Naming is
-    for Casing               use "lowercase";
-    for Dot_Replacement      use ".";
-    for Spec_Suffix ("Ada")  use ".1.ada";
-    for Body_Suffix ("Ada")  use ".2.ada";
-  end Naming;
-@end group
-@end smallexample
-@end ifclear
-
-@ifset vms
-For example, the following package models the DEC Ada file naming rules:
-
-@smallexample @c projectfile
-@group
-  package Naming is
-    for Casing               use "lowercase";
-    for Dot_Replacement      use "__";
-    for Spec_Suffix ("Ada")  use "_.ada";
-    for Body_Suffix ("Ada")  use ".ada";
-  end Naming;
+  @b{package} Naming @b{is}
+    @b{for} Casing               @b{use} "lowercase";
+    @b{for} Dot_Replacement      @b{use} ".";
+    @b{for} Spec_Suffix ("Ada")  @b{use} ".1.ada";
+    @b{for} Body_Suffix ("Ada")  @b{use} ".2.ada";
+  @b{end} Naming;
 @end group
 @end smallexample
 
-@noindent
-(Note that @code{Casing} is @code{"lowercase"} because GNAT gets the file
-names in lower case)
-@end ifset
 
 @c ---------------------------------------------
 @node Installation
@@ -1186,11 +1167,11 @@ This is easily solved by adding the following @b{with} clauses at the beginning
 of our project:
 
 @smallexample @c projectfile
-  with "gtkada.gpr";
-  with "a/b/logging.gpr";
-  project Build is
-     ...  --  as before
-  end Build;
+  @b{with} "gtkada.gpr";
+  @b{with} "a/b/logging.gpr";
+  @b{project} Build @b{is}
+     ...  --@i{  as before}
+  @b{end} Build;
 @end smallexample
 
 @noindent
@@ -1219,7 +1200,7 @@ project files rather than packages.
 Each literal string after @code{with} is the path
 (absolute or relative) to a project file. The @code{.gpr} extension is
 optional, although we recommend adding it. If no extension is specified,
-and no project file with the @file{^.gpr^.GPR^} extension is found, then
+and no project file with the @file{.gpr} extension is found, then
 the file is searched for exactly as written in the @code{with} clause,
 that is with no extension.
 
@@ -1245,7 +1226,7 @@ the search stops:
 @cindex @code{GPR_PROJECT_PATH}
 @cindex @code{ADA_PROJECT_PATH}
   Then it is searched relative to all the directories specified in the
-  ^environment variables^logical names^ @b{GPR_PROJECT_PATH_FILE},
+  environment variables @b{GPR_PROJECT_PATH_FILE},
   @b{GPR_PROJECT_PATH} and @b{ADA_PROJECT_PATH} (in that order) if they exist.
   The value of @b{GPR_PROJECT_PATH_FILE}, when defined, is the path name of
   a text file that contains project directory path names, one per line.
@@ -1371,11 +1352,11 @@ There are two main approaches to avoiding this duplication:
   @smallexample @c projectfile
   project Logging is
      package Compiler is
-        for ^Switches^Switches^ ("Ada")
-            use ("^-O2^-O2^");
+        for Switches ("Ada")
+            use ("-O2");
      end Compiler;
      package Binder is
-        for ^Switches^Switches^ ("Ada")
+        for Switches ("Ada")
             use ("-E");
      end Binder;
   end Logging;
@@ -1384,7 +1365,7 @@ There are two main approaches to avoiding this duplication:
   project Build is
      package Compiler renames Logging.Compiler;
      package Binder is
-        for ^Switches^Switches^ ("Ada") use Logging.Binder'Switches ("Ada");
+        for Switches ("Ada") use Logging.Binder'Switches ("Ada");
      end Binder;
   end Build;
   @end smallexample
@@ -1416,8 +1397,8 @@ There are two main approaches to avoiding this duplication:
   abstract project Shared is
      for Source_Files use ();   --  no sources
      package Compiler is
-        for ^Switches^Switches^ ("Ada")
-            use ("^-O2^-O2^");
+        for Switches ("Ada")
+            use ("-O2");
      end Compiler;
   end Shared;
 
@@ -1503,7 +1484,7 @@ information, when the second will focus on improving code optimization).
 
 Let's enhance our example to support a debug and a release modes.The issue is to
 let the user choose what kind of system he is building:
-use @option{-g} as compiler switches in debug mode and @option{^-O2^-O2^}
+use @option{-g} as compiler switches in debug mode and @option{-O2}
 in release mode. We will also setup the projects so that we do not share the
 same object directory in both modes, otherwise switching from one to the other
 might trigger more recompilations than needed or mix objects from the 2 modes.
@@ -1532,10 +1513,10 @@ order of priority):
    or  gnatmake -Pbuild.gpr -Xmode=release
   @end smallexample
 
-@item @b{^Environment variables^Logical names^}:
+@item @b{Environment variables}:
   When the external value does not come from the command line, it can come from
-  the value of ^environment variables^logical names^ of the appropriate name.
-  In our case, if ^an environment variable^a logical name^ called "mode"
+  the value of environment variables of the appropriate name.
+  In our case, if an environment variable called "mode"
   exist, its value will be taken into account.
 
 @item @b{External function second parameter}
@@ -1549,10 +1530,10 @@ the external. For instance, we could setup the object directory to point to
 either @file{obj/debug} or @file{obj/release} by changing our project to
 
 @smallexample @c projectfile
-   project Build is
-       for Object_Dir use "obj/" & external ("mode", "debug");
-       ... --  as before
-   end Build;
+   @b{project} Build @b{is}
+       @b{for} Object_Dir @b{use} "obj/" & @b{external} ("mode", "debug");
+       ... --@i{  as before}
+   @b{end} Build;
 @end smallexample
 
 @noindent
@@ -1570,21 +1551,21 @@ Such a variable can then be used in a @b{case construction} and create condition
 sections in the project. The following example shows how this can be done:
 
 @smallexample @c projectfile
-   project Build is
-      type Mode_Type is ("debug", "release");  --  all possible values
-      Mode : Mode_Type := external ("mode", "debug"); -- a typed variable
+   @b{project} Build @b{is}
+      @b{type} Mode_Type @b{is} ("debug", "release");  --@i{  all possible values}
+      Mode : Mode_Type := @b{external} ("mode", "debug"); --@i{ a typed variable}
 
-      package Compiler is
-         case Mode is
-            when "debug" =>
-               for ^Switches^Switches^ ("Ada")
-                   use ("-g");
-            when "release" =>
-               for ^Switches^Switches^ ("Ada")
-                   use ("^-O2^-O2^");
-         end case;
-      end Compiler;
-   end Build;
+      @b{package} Compiler @b{is}
+         @b{case} Mode @b{is}
+            @b{when} "debug" =>
+               @b{for} Switches ("Ada")
+                   @b{use} ("-g");
+            @b{when} "release" =>
+               @b{for} Switches ("Ada")
+                   @b{use} ("-O2");
+         @b{end} @b{case};
+      @b{end} Compiler;
+   @b{end} Build;
 @end smallexample
 
 @noindent
@@ -1684,11 +1665,11 @@ front of the @code{project} keyword.
 Here is the new version of @file{logging.gpr} that makes it a library:
 
 @smallexample @c projectfile
-library project Logging is          --  "library" is optional
-   for Library_Name use "logging";  --  will create "liblogging.a" on Unix
-   for Object_Dir   use "obj";
-   for Library_Dir  use "lib";      --  different from object_dir
-end Logging;
+library @b{project} Logging @b{is}          --@i{  "library" is optional}
+   @b{for} Library_Name @b{use} "logging";  --@i{  will create "liblogging.a" on Unix}
+   @b{for} Object_Dir   @b{use} "obj";
+   @b{for} Library_Dir  @b{use} "lib";      --@i{  different from object_dir}
+@b{end} Logging;
 @end smallexample
 
 @noindent
@@ -1740,13 +1721,13 @@ Other library-related attributes can be used to change the defaults:
 
 @smallexample @c projectfile
 @group
-  project Logging is
+  @b{project} Logging @b{is}
      Version := "1";
-     for Library_Dir use "lib";
-     for Library_Name use "logging";
-     for Library_Kind use "dynamic";
-     for Library_Version use "liblogging.so." & Version;
-  end Logging;
+     @b{for} Library_Dir @b{use} "lib";
+     @b{for} Library_Name @b{use} "logging";
+     @b{for} Library_Kind @b{use} "dynamic";
+     @b{for} Library_Version @b{use} "liblogging.so." & Version;
+  @b{end} Logging;
 @end group
 @end smallexample
 
@@ -1840,21 +1821,20 @@ All @file{ALI} files will also be copied from the object directory to the
 library directory. To build executables, @command{gnatmake} will use the
 library rather than the individual object files.
 
-@ifclear vms
 Library projects can also be useful to describe a library that need to be used
 but, for some reason, cannot be rebuilt. For instance, it is the case when some
 of the library sources are not available. Such library projects need simply to
 use the @code{Externally_Built} attribute as in the example below:
 
 @smallexample @c projectfile
-library project Extern_Lib is
-   for Languages    use ("Ada", "C");
-   for Source_Dirs  use ("lib_src");
-   for Library_Dir  use "lib2";
-   for Library_Kind use "dynamic";
-   for Library_Name use "l2";
-   for Externally_Built use "true";  --  <<<<
-end Extern_Lib;
+library @b{project} Extern_Lib @b{is}
+   @b{for} Languages    @b{use} ("Ada", "C");
+   @b{for} Source_Dirs  @b{use} ("lib_src");
+   @b{for} Library_Dir  @b{use} "lib2";
+   @b{for} Library_Kind @b{use} "dynamic";
+   @b{for} Library_Name @b{use} "l2";
+   @b{for} Externally_Built @b{use} "true";  --@i{  <<<<}
+@b{end} Extern_Lib;
 @end smallexample
 
 @noindent
@@ -1874,7 +1854,6 @@ In such a situation, it is better to use the externally built library project
 so that all other subsystems depending on it can declare this dependency thanks
 to a project @code{with} clause, which in turn will trigger the builder to find
 the proper order of libraries in the final link command.
-@end ifclear
 
 @c ---------------------------------------------
 @node Stand-alone Library Projects
@@ -1914,9 +1893,9 @@ language and takes a list of sources as parameter.
 
 @smallexample @c projectfile
 @group
-     for Library_Dir use "lib";
-     for Library_Name use "loggin";
-     for Library_Interface use ("lib1", "lib2");  --  unit names
+     @b{for} Library_Dir @b{use} "lib";
+     @b{for} Library_Name @b{use} "loggin";
+     @b{for} Library_Interface @b{use} ("lib1", "lib2");  --@i{  unit names}
 @end group
 @end smallexample
 
@@ -1944,11 +1923,11 @@ language and takes a list of sources as parameter.
 
 @smallexample @c projectfile
 @group
-     for Library_Dir use "lib";
-     for Library_Name use "loggin";
-     for Library_Kind use "dynamic";
-     for Library_Interface use ("lib1", "lib2");  --  unit names
-     for Library_Standalone use "encapsulated";
+     @b{for} Library_Dir @b{use} "lib";
+     @b{for} Library_Name @b{use} "loggin";
+     @b{for} Library_Kind @b{use} "dynamic";
+     @b{for} Library_Interface @b{use} ("lib1", "lib2");  --@i{  unit names}
+     @b{for} Library_Standalone @b{use} "encapsulated";
 @end group
 @end smallexample
 
@@ -1956,7 +1935,7 @@ language and takes a list of sources as parameter.
 
 In order to include the elaboration code in the stand-alone library, the binder
 is invoked on the closure of the library units creating a package whose name
-depends on the library name (^b~logging.ads/b^B$LOGGING.ADS/B^ in the example).
+depends on the library name (b~logging.ads/b in the example).
 This binder-generated package includes @b{initialization} and @b{finalization}
 procedures whose names depend on the library name (@code{logginginit} and
 @code{loggingfinal} in the example). The object corresponding to this package is
@@ -2125,8 +2104,8 @@ ones is also possible. Here is an example on how to extend the project
 @code{Build} from previous examples:
 
 @smallexample @c projectfile
-   project Work extends "../bld/build.gpr" is
-   end Work;
+   @b{project} Work @b{extends} "../bld/build.gpr" @b{is}
+   @b{end} Work;
 @end smallexample
 
 @noindent
@@ -2240,18 +2219,18 @@ create several extending projects:
 
 @noindent
 @smallexample @c projectfile
-   project A_Ext extends "a.gpr" is
-      for Source_Files use ("a1.adb", "a1.ads");
-   end A_Ext;
+   @b{project} A_Ext @b{extends} "a.gpr" @b{is}
+      @b{for} Source_Files @b{use} ("a1.adb", "a1.ads");
+   @b{end} A_Ext;
 
-   with "a_ext.gpr";
-   project B_Ext extends "b.gpr" is
-   end B_Ext;
+   @b{with} "a_ext.gpr";
+   @b{project} B_Ext @b{extends} "b.gpr" @b{is}
+   @b{end} B_Ext;
 
-   with "b_ext.gpr";
-   project C_Ext extends "c.gpr" is
-      for Source_Files use ("c1.adb");
-   end C_Ext;
+   @b{with} "b_ext.gpr";
+   @b{project} C_Ext @b{extends} "c.gpr" @b{is}
+      @b{for} Source_Files @b{use} ("c1.adb");
+   @b{end} C_Ext;
 @end smallexample
 
 @noindent
@@ -2292,14 +2271,14 @@ Thus, in our example we could create the following projects instead:
 
 @noindent
 @smallexample @c projectfile
-   project A_Ext extends "a.gpr" is
-      for Source_Files use ("a1.adb", "a1.ads");
-   end A_Ext;
+   @b{project} A_Ext @b{extends} "a.gpr" @b{is}
+      @b{for} Source_Files @b{use} ("a1.adb", "a1.ads");
+   @b{end} A_Ext;
 
-   with "a_ext.gpr";
-   project C_Ext extends all "c.gpr" is
-     for Source_Files use ("c1.adb");
-   end C_Ext;
+   @b{with} "a_ext.gpr";
+   @b{project} C_Ext @b{extends} @b{all} "c.gpr" @b{is}
+     @b{for} Source_Files @b{use} ("c1.adb");
+   @b{end} C_Ext;
 @end smallexample
 
 @noindent
@@ -2369,9 +2348,9 @@ and C. Then, when you build with
 this will build all mains from A, B and C.
 
 @smallexample @c projectfile
-   aggregate project Agg is
-      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
-   end Agg;
+   aggregate @b{project} Agg @b{is}
+      @b{for} Project_Files @b{use} ("a.gpr", "b.gpr", "c.gpr");
+   @b{end} Agg;
 @end smallexample
 
 If B or C do not define any main program (through their Main
@@ -2442,25 +2421,25 @@ make sure all your user have a consistent environment when
 building. The syntax looks like
 
 @smallexample @c projectfile
-   aggregate project Agg is
-      for Project_Files use ("A.gpr", "B.gpr");
-      for Project_Path use ("../dir1", "../dir1/dir2");
-      for External ("BUILD") use "PRODUCTION";
+   aggregate @b{project} Agg @b{is}
+      @b{for} Project_Files @b{use} ("A.gpr", "B.gpr");
+      @b{for} Project_Path @b{use} ("../dir1", "../dir1/dir2");
+      @b{for} External ("BUILD") @b{use} "PRODUCTION";
 
-      package Builder is
-         for ^Switches^Switches^ ("Ada") use ("-q");
-      end Builder;
-   end Agg;
+      @b{package} Builder @b{is}
+         @b{for} Switches ("Ada") @b{use} ("-q");
+      @b{end} Builder;
+   @b{end} Agg;
 @end smallexample
 
 One of the often requested features in projects is to be able to
 reference external variables in @code{with} statements, as in
 
 @smallexample @c projectfile
-  with external("SETUP") & "path/prj.gpr";   --  ILLEGAL
-  project MyProject is
+  @b{with} @b{external}("SETUP") & "path/prj.gpr";   --@i{  ILLEGAL}
+  @b{project} MyProject @b{is}
      ...
-  end MyProject;
+  @b{end} MyProject;
 @end smallexample
 
 For various reasons, this isn't authorized. But using aggregate
@@ -2468,15 +2447,15 @@ projects provide an elegant solution. For instance, you could
 use a project file like:
 
 @smallexample @c projectfile
-aggregate project Agg is
-    for Project_Path use (external("SETUP") & "path");
-    for Project_Files use ("myproject.gpr");
-end Agg;
+aggregate @b{project} Agg @b{is}
+    @b{for} Project_Path @b{use} (@b{external}("SETUP") & "path");
+    @b{for} Project_Files @b{use} ("myproject.gpr");
+@b{end} Agg;
 
-with "prj.gpr";  --  searched on Agg'Project_Path
-project MyProject is
+@b{with} "prj.gpr";  --@i{  searched on Agg'Project_Path}
+@b{project} MyProject @b{is}
    ...
-end MyProject;
+@b{end} MyProject;
 @end smallexample
 
 @c --------------------------------------------
@@ -2586,11 +2565,11 @@ number of system calls that are needed.
 Here are a few valid examples:
 
 @smallexample @c projectfile
-    for Project_Files use ("a.gpr", "subdir/b.gpr");
-    --  two specific projects relative to the directory of agg.gpr
+    @b{for} Project_Files @b{use} ("a.gpr", "subdir/b.gpr");
+    --@i{  two specific projects relative to the directory of agg.gpr}
 
-    for Project_Files use ("**/*.gpr");
-    --  all projects recursively
+    @b{for} Project_Files @b{use} ("**/*.gpr");
+    --@i{  all projects recursively}
 @end smallexample
 
 @item @b{Project_Path}:
@@ -2660,7 +2639,7 @@ Directories are relative to the location of the aggregate project file.
 Here are a few valid examples:
 
 @smallexample @c projectfile
-   for Project_Path use ("/usr/local/gpr", "gpr/");
+   @b{for} Project_Path @b{use} ("/usr/local/gpr", "gpr/");
 @end smallexample
 
 @item @b{External}:
@@ -2718,8 +2697,8 @@ an aggregate project. In this package, only the following attributes
 are valid:
 
 @table @asis
-@item @b{^Switches^Switches^}:
-@cindex @code{^Switches^Switches^}
+@item @b{Switches}:
+@cindex @code{Switches}
 This attribute gives the list of switches to use for @command{gprbuild}.
 Because no mains can be specified for aggregate projects, the only possible
 index for attribute @code{Switches} is @code{others}. All other indexes will
@@ -2728,7 +2707,7 @@ be ignored.
 Example:
 
 @smallexample @c projectfile
-for ^Switches^Switches^ (others) use ("-v", "-k", "-j8");
+@b{for} Switches (@b{others}) @b{use} ("-v", "-k", "-j8");
 @end smallexample
 
 These switches are only read from the main aggregate project (the
@@ -2744,8 +2723,8 @@ This attribute gives the list of compiler switches for the various
 languages. For instance,
 
 @smallexample @c projectfile
-for Global_Compilation_Switches ("Ada") use ("^O1^-O1^", "-g");
-for Global_Compilation_Switches ("C")   use ("^-O2^-O2^");
+@b{for} Global_Compilation_Switches ("Ada") @b{use} ("O1", "-g");
+@b{for} Global_Compilation_Switches ("C")   @b{use} ("-O2");
 @end smallexample
 
 This attribute is only taken into account in the aggregate project
@@ -2764,57 +2743,57 @@ instance, aggregate project Agg groups the projects A and B, that
 both depend on C. Here is an extra for all of these projects:
 
 @smallexample @c projectfile
-      aggregate project Agg is
-          for Project_Files use ("a.gpr", "b.gpr");
-          package Builder is
-             for Global_Compilation_Switches ("Ada") use ("^-O2^-O2^");
-          end Builder;
-      end Agg;
+      aggregate @b{project} Agg @b{is}
+          @b{for} Project_Files @b{use} ("a.gpr", "b.gpr");
+          @b{package} Builder @b{is}
+             @b{for} Global_Compilation_Switches ("Ada") @b{use} ("-O2");
+          @b{end} Builder;
+      @b{end} Agg;
 
-      with "c.gpr";
-      project A is
-          package Builder is
-             for Global_Compilation_Switches ("Ada") use ("^-O1^-O1^");
-             --  ignored
-          end Builder;
+      @b{with} "c.gpr";
+      @b{project} A @b{is}
+          @b{package} Builder @b{is}
+             @b{for} Global_Compilation_Switches ("Ada") @b{use} ("-O1");
+             --@i{  ignored}
+          @b{end} Builder;
 
-          package Compiler is
-             for Default_Switches ("Ada")
-                 use ("^-O1^-O1^", "-g");
-             for ^Switches^Switches^ ("a_file1.adb")
-                 use ("^-O0^-O0^");
-          end Compiler;
-      end A;
+          @b{package} Compiler @b{is}
+             @b{for} Default_Switches ("Ada")
+                 @b{use} ("-O1", "-g");
+             @b{for} Switches ("a_file1.adb")
+                 @b{use} ("-O0");
+          @b{end} Compiler;
+      @b{end} A;
 
-      with "c.gpr";
-      project B is
-          package Compiler is
-             for Default_Switches ("Ada") use ("^-O0^-O0^");
-          end Compiler;
-      end B;
+      @b{with} "c.gpr";
+      @b{project} B @b{is}
+          @b{package} Compiler @b{is}
+             @b{for} Default_Switches ("Ada") @b{use} ("-O0");
+          @b{end} Compiler;
+      @b{end} B;
 
-      project C is
-          package Compiler is
-             for Default_Switches ("Ada")
-                 use ("^-O3^-O3^",
-                      "^-gnatn^-gnatn^");
-             for ^Switches^Switches^ ("c_file1.adb")
-                 use ("^-O0^-O0^", "-g");
-          end Compiler;
-      end C;
+      @b{project} C @b{is}
+          @b{package} Compiler @b{is}
+             @b{for} Default_Switches ("Ada")
+                 @b{use} ("-O3",
+                      "-gnatn");
+             @b{for} Switches ("c_file1.adb")
+                 @b{use} ("-O0", "-g");
+          @b{end} Compiler;
+      @b{end} C;
 @end smallexample
 
 then the following switches are used:
 
 @itemize @bullet
 @item all files from project A except a_file1.adb are compiled
-      with "^-O2^-O2^ -g", since the aggregate project has priority.
+      with "-O2 -g", since the aggregate project has priority.
 @item the file a_file1.adb is compiled with
-      "^-O0^-O0^", since the Compiler.Switches has priority
+      "-O0", since the Compiler.Switches has priority
 @item all files from project B are compiled with
-      "^-O2^-O2^", since the aggregate project has priority
-@item all files from C are compiled with "^-O2^-O2^ -gnatn", except for
-      c_file1.adb which is compiled with "^-O0^-O0^ -g"
+      "-O2", since the aggregate project has priority
+@item all files from C are compiled with "-O2 -gnatn", except for
+      c_file1.adb which is compiled with "-O0 -g"
 @end itemize
 
 Even though C is seen through two paths (through A and through
@@ -2875,11 +2854,11 @@ For example, we can define an aggregate project Agg that groups A, B
 and C:
 
 @smallexample @c projectfile
-   aggregate library project Agg is
-      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
-      for Library_Name use ("agg");
-      for Library_Dir use ("lagg");
-   end Agg;
+   aggregate library @b{project} Agg @b{is}
+      @b{for} Project_Files @b{use} ("a.gpr", "b.gpr", "c.gpr");
+      @b{for} Library_Name @b{use} ("agg");
+      @b{for} Library_Dir @b{use} ("lagg");
+   @b{end} Agg;
 @end smallexample
 
 Then, when you build with:
@@ -2899,16 +2878,16 @@ required to create relocatable object files, a Builder package in the
 aggregate library project may be used:
 
 @smallexample @c projectfile
-   aggregate library project Agg is
-      for Project_Files use ("a.gpr", "b.gpr", "c.gpr");
-      for Library_Name use ("agg");
-      for Library_Dir use ("lagg");
-      for Library_Kind use "relocatable";
+   aggregate library @b{project} Agg @b{is}
+      @b{for} Project_Files @b{use} ("a.gpr", "b.gpr", "c.gpr");
+      @b{for} Library_Name @b{use} ("agg");
+      @b{for} Library_Dir @b{use} ("lagg");
+      @b{for} Library_Kind @b{use} "relocatable";
 
-      package Builder is
-         for Global_Compilation_Switches ("Ada") use ("-fPIC");
-      end Builder;
-   end Agg;
+      @b{package} Builder @b{is}
+         @b{for} Global_Compilation_Switches ("Ada") @b{use} ("-fPIC");
+      @b{end} Builder;
+   @b{end} Agg;
 @end smallexample
 
 With the above aggregate library Builder package, the @code{-fPIC}
@@ -2991,8 +2970,8 @@ Project files have an Ada-like syntax. The minimal project file is:
 
 @smallexample @c projectfile
 @group
-project Empty is
-end Empty;
+@b{project} Empty @b{is}
+@b{end} Empty;
 @end group
 @end smallexample
 
@@ -3059,9 +3038,9 @@ in the cycle is a @b{limited with}.
 @c ??? Need more details here
 
 @smallexample @c projectfile
-with "other_project.gpr";
-project My_Project extends "extended.gpr" is
-end My_Project;
+@b{with} "other_project.gpr";
+@b{project} My_Project @b{extends} "extended.gpr" @b{is}
+@b{end} My_Project;
 @end smallexample
 
 @noindent
@@ -3196,28 +3175,28 @@ The following packages are currently supported in project files
 @item Cross_Reference
   This package specifies the options used when calling the library tool
   @command{gnatxref} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
+  @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
 @ifclear FSFEDITION
 @item Eliminate
   This package specifies the options used when calling the tool
   @command{gnatelim} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
+  @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
 @end ifclear
 @item Finder
   This package specifies the options used when calling the search tool
   @command{gnatfind} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
+  @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
-@item ^Gnatls^Gnatls^
+@item Gnatls
   This package specifies the options to use when invoking @command{gnatls}
   via the @command{gnat} driver.
 @ifclear FSFEDITION
-@item ^Gnatstub^Gnatstub^
+@item Gnatstub
   This package specifies the options used when calling the tool
   @command{gnatstub} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
+  @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
 @end ifclear
 @item IDE
@@ -3233,7 +3212,7 @@ The following packages are currently supported in project files
 @item Metrics
   This package specifies the options used when calling the tool
   @command{gnatmetric} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
+  @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
 @end ifclear
 @item Naming
@@ -3246,7 +3225,7 @@ The following packages are currently supported in project files
 @item Pretty_Printer
   This package specifies the options used when calling the formatting tool
   @command{gnatpp} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
+  @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
 @end ifclear
 @item Remote
@@ -3255,7 +3234,7 @@ The following packages are currently supported in project files
 @item Stack
   This package specifies the options used when calling the tool
   @command{gnatstack} via the @command{gnat} driver. Its attributes
-  @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
+  @b{Default_Switches} and @b{Switches} have the same semantics as for the
   package @code{Builder}.
 @item Synchronize
   This package specifies the options used when calling the tool
@@ -3267,10 +3246,10 @@ In its simplest form, a package may be empty:
 
 @smallexample @c projectfile
 @group
-project Simple is
-  package Builder is
-  end Builder;
-end Simple;
+@b{project} Simple @b{is}
+  @b{package} Builder @b{is}
+  @b{end} Builder;
+@b{end} Simple;
 @end group
 @end smallexample
 
@@ -3376,9 +3355,9 @@ strings is involved, the result of the concatenation is a list of strings. The
 following Ada declarations show the existing operators:
 
 @smallexample @c ada
-  function "&" (X : String;      Y : String)      return String;
-  function "&" (X : String_List; Y : String)      return String_List;
-  function "&" (X : String_List; Y : String_List) return String_List;
+  @b{function} "&" (X : String;      Y : String)      @b{return} String;
+  @b{function} "&" (X : String_List; Y : String)      @b{return} String_List;
+  @b{function} "&" (X : String_List; Y : String_List) @b{return} String_List;
 @end smallexample
 
 @noindent
@@ -3386,10 +3365,10 @@ Here are some specific examples:
 
 @smallexample @c projectfile
 @group
-   List := () & File_Name; --  One string in this list
-   List2 := List & (File_Name & ".orig"); -- Two strings
-   Big_List := List & Lists2;  --  Three strings
-   Illegal := "gnat.adc" & List2;  --  Illegal, must start with list
+   List := () & File_Name; --@i{  One string in this list}
+   List2 := List & (File_Name & ".orig"); --@i{ Two strings}
+   Big_List := List & Lists2;  --@i{  Three strings}
+   Illegal := "gnat.adc" & List2;  --@i{  Illegal, must start with list}
 @end group
 @end smallexample
 
@@ -3419,9 +3398,9 @@ if present, is the default to use if there is no specification for this
 external value either on the command line or in the environment.
 
 Typically, the external value will either exist in the
-^environment variables^logical name^
+environment variables
 or be specified on the command line through the
-@option{^-X^/EXTERNAL_REFERENCE=^@emph{vbl}=@emph{value}} switch. If both
+@option{-X@emph{vbl}=@emph{value}} switch. If both
 are specified, then the command line value is used, so that a user can more
 easily override the value.
 
@@ -3464,14 +3443,14 @@ last separator and the end are components of the string list.
 @end smallexample
 
 @noindent
-If the external value is "^-O2^-O2^,-g",
-the result is ("^-O2^-O2^", "-g").
+If the external value is "-O2,-g",
+the result is ("-O2", "-g").
 
-If the external value is ",^-O2^-O2^,-g,",
-the result is also ("^-O2^-O2^", "-g").
+If the external value is ",-O2,-g,",
+the result is also ("-O2", "-g").
 
-if the external value is "^-gnatv^-gnatv^",
-the result is ("^-gnatv^-gnatv^").
+if the external value is "-gnatv",
+the result is ("-gnatv").
 
 If the external value is ",,", the result is ("").
 
@@ -3500,7 +3479,7 @@ They may include any graphic characters allowed in Ada, including spaces.
 Here is an example of a string type declaration:
 
 @smallexample @c projectfile
-   type OS is ("NT", "nt", "Unix", "GNU/Linux", "other OS");
+   @b{type} OS @b{is} ("NT", "nt", "Unix", "GNU/Linux", "other OS");
 @end smallexample
 
 @noindent
@@ -3555,8 +3534,8 @@ Here are some examples of variable declarations:
 
 @smallexample @c projectfile
 @group
-   This_OS : OS := external ("OS"); --  a typed variable declaration
-   That_OS := "GNU/Linux";          --  an untyped variable declaration
+   This_OS : OS := @b{external} ("OS"); --@i{  a typed variable declaration}
+   That_OS := "GNU/Linux";          --@i{  an untyped variable declaration}
 
    Name      := "readme.txt";
    Save_Name := Name & ".saved";
@@ -3641,23 +3620,23 @@ Here is a typical example:
 
 @smallexample @c projectfile
 @group
-project MyProj is
-   type OS_Type is ("GNU/Linux", "Unix", "NT", "VMS");
-   OS : OS_Type := external ("OS", "GNU/Linux");
+@b{project} MyProj @b{is}
+   @b{type} OS_Type @b{is} ("GNU/Linux", "Unix", "NT", "VMS");
+   OS : OS_Type := @b{external} ("OS", "GNU/Linux");
 
-   package Compiler is
-     case OS is
-       when "GNU/Linux" | "Unix" =>
-         for ^Switches^Switches^ ("Ada")
-             use ("-gnath");
-       when "NT" =>
-         for ^Switches^Switches^ ("Ada")
-             use ("^-gnatP^-gnatP^");
-       when others =>
-         null;
-     end case;
-   end Compiler;
-end MyProj;
+   @b{package} Compiler @b{is}
+     @b{case} OS @b{is}
+       @b{when} "GNU/Linux" | "Unix" =>
+         @b{for} Switches ("Ada")
+             @b{use} ("-gnath");
+       @b{when} "NT" =>
+         @b{for} Switches ("Ada")
+             @b{use} ("-gnatP");
+       @b{when} @b{others} =>
+         @b{null};
+     @b{end} @b{case};
+   @b{end} Compiler;
+@b{end} MyProj;
 @end group
 @end smallexample
 
@@ -3680,9 +3659,9 @@ end MyProj;
 * Package Eliminate Attributes::
 @end ifclear
 * Package Finder Attributes::
-* Package ^gnatls^gnatls^ Attributes::
+* Package gnatls Attributes::
 @ifclear FSFEDITION
-* Package ^gnatstub^gnatstub^ Attributes::
+* Package gnatstub Attributes::
 @end ifclear
 * Package IDE Attributes::
 * Package Install Attributes::
@@ -3735,20 +3714,20 @@ attribute, and replaces the previous setting.
 Here are some examples of attribute declarations:
 
 @smallexample @c projectfile
-   --  simple attributes
-   for Object_Dir use "objects";
-   for Source_Dirs use ("units", "test/drivers");
+   --@i{  simple attributes}
+   @b{for} Object_Dir @b{use} "objects";
+   @b{for} Source_Dirs @b{use} ("units", "test/drivers");
 
-   --  indexed attributes
-   for Body ("main") use "Main.ada";
-   for ^Switches^Switches^ ("main.ada")
-       use ("-v", "^-gnatv^-gnatv^");
-   for ^Switches^Switches^ ("main.ada") use Builder'Switches ("main.ada") & "-g";
+   --@i{  indexed attributes}
+   @b{for} Body ("main") @b{use} "Main.ada";
+   @b{for} Switches ("main.ada")
+       @b{use} ("-v", "-gnatv");
+   @b{for} Switches ("main.ada") @b{use} Builder'Switches ("main.ada") & "-g";
 
-   --  indexed attributes copy (from package Builder in project Default)
-   --  The package name must always be specified, even if it is the current
-   --  package.
-   for Default_Switches use Default.Builder'Default_Switches;
+   --@i{  indexed attributes copy (from package Builder in project Default)}
+   --@i{  The package name must always be specified, even if it is the current}
+   --@i{  package.}
+   @b{for} Default_Switches @b{use} Default.Builder'Default_Switches;
 @end smallexample
 
 @noindent
@@ -3769,7 +3748,7 @@ attribute_prefix ::= @i{project}
 Examples are:
 
 @smallexample @c projectfile
-  project'Object_Dir
+  @b{project}'Object_Dir
   Naming'Dot_Replacement
   Imported_Project'Source_Dirs
   Imported_Project.Naming'Casing
@@ -4248,9 +4227,9 @@ sources of runtime libraries are located.
 @item @b{Default_Switches}: list, indexed, case-insensitive index
 
 Index is a language name. Value is the list of switches to be used when binding
-code of the language, if there is no applicable attribute ^Switches^Switches^.
+code of the language, if there is no applicable attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed,
+@item @b{Switches}: list, optional index, indexed,
                     case-insensitive index, others allowed
 
 Index is either a language name or a source file name. Value is the list of
@@ -4305,7 +4284,7 @@ Index is a language name. Value is the list of builder switches to be used when
 building an executable of the language, if there is no applicable attribute
 Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is either a language name or a source file name. Value is the list of
@@ -4352,9 +4331,9 @@ project tree.
 
 Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatcheck} for a source of the language, if there is no applicable
-attribute ^Switches^Switches^.
+attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4368,7 +4347,7 @@ invoking @code{gnatcheck} for the source.
 
 @itemize @bullet
 
-@item @b{^Switches^Switches^}: list
+@item @b{Switches}: list
 
 Value is a list of switches to be used by the cleaning application.
 
@@ -4411,7 +4390,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 the compiler for the language for a source of the project, if there is no
 applicable attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name or a language name. Value is the list of switches
@@ -4645,7 +4624,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatxref} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4665,7 +4644,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatelim} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4685,7 +4664,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatfind} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4693,20 +4672,20 @@ invoking @code{gnatfind} for the source.
 
 @end itemize
 
-@node Package ^gnatls^gnatls^ Attributes
-@subsubsection Package ^gnatls^gnatls^ Attributes
+@node Package gnatls Attributes
+@subsubsection Package gnatls Attributes
 
 @itemize @bullet
 
-@item @b{^Switches^Switches^}: list
+@item @b{Switches}: list
 
 Value is a list of switches to be used when invoking @code{gnatls}.
 
 @end itemize
 
 @ifclear FSFEDITION
-@node Package ^gnatstub^gnatstub^ Attributes
-@subsubsection Package ^gnatstub^gnatstub^ Attributes
+@node Package gnatstub Attributes
+@subsubsection Package gnatstub Attributes
 
 @itemize @bullet
 
@@ -4714,9 +4693,9 @@ Value is a list of switches to be used when invoking @code{gnatls}.
 
 Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatstub} for a source of the language, if there is no applicable
-attribute ^Switches^Switches^.
+attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -4764,11 +4743,11 @@ the handling of switches.
 Value is a string that specifies the name of the debugger to be used, such as
 gdb, powerpc-wrs-vxworks-gdb or gdb-4.
 
-@item @b{^gnatlist^gnatlist^}: single
+@item @b{gnatlist}: single
 
-Value is a string that specifies the name of the @command{^gnatls^gnatls^} utility
+Value is a string that specifies the name of the @command{gnatls} utility
 to be used to retrieve information about the predefined path; for example,
-@code{"^gnatls^gnatls^"}, @code{"powerpc-wrs-vxworks-gnatls"}.
+@code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
 
 @item @b{VCS_Kind}: single
 
@@ -4854,7 +4833,7 @@ Index is a source file name or a language name. Value is the list of switches
 to be used at the beginning of the command line when invoking the linker to
 build an executable for the source or for its language.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name or a language name. Value is the list of switches
@@ -4928,7 +4907,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatmetric} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -5018,7 +4997,7 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatpp} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
@@ -5063,7 +5042,7 @@ Value is the root directory used by the slave machines.
 
 @itemize @bullet
 
-@item @b{^Switches^Switches^}: list
+@item @b{Switches}: list
 
 Value is the list of switches to be used when invoking @code{gnatstack}.
 
@@ -5080,11 +5059,10 @@ Index is a language name. Value is a list of switches to be used when invoking
 @code{gnatsync} for a source of the language, if there is no applicable
 attribute Switches.
 
-@item @b{^Switches^Switches^}: list, optional index, indexed, case-insensitive index,
+@item @b{Switches}: list, optional index, indexed, case-insensitive index,
                     others allowed
 
 Index is a source file name. Value is the list of switches to be used when
 invoking @code{gnatsync} for the source.
 
 @end itemize
-

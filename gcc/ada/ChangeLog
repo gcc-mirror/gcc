@@ -1,3 +1,19 @@
+2014-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* makeutl.ads, opt.ads: Minor grammar fixes.
+	* makeutl.adb: Minor code reorganization.
+
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in,
+	gnatsym.adb: Remove gnatsym (VMS only tool).
+
+2014-08-01  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi, projects.texi, xgnatugn.adb: Removed all VMS
+	conditionalization from gnat_ugn.texi and projects.texi, and updated
+	(considerably simplified) xgnatugn.adb, to be removed soon.
+
 2014-08-01  Vincent Celier  <celier@adacore.com>
 
 	* debug.adb: Remove doc for gnatmake/gprbuild switch -ds.

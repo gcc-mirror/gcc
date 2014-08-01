@@ -2544,11 +2544,6 @@ common-tools: ../stamp-tools
 	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../gnatsym$(exeext): ../stamp-tools
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatsym --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatsym
-	$(GNATLINK) -v gnatsym -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
 ../../gnatdll$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
