@@ -1,3 +1,14 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb: Minor comment addition.
+
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-crtl.ads, i-cstrea.ads, adaint.c, adaint.h, osint.adb,
+	s-fileio.adb (__gnat_fopen, __gnat_freopen): Remove vms_form parameter,
+	no longer used.
+	* s-os_lib.ads: Minor reformatting.
+
 2014-08-01  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Restore more

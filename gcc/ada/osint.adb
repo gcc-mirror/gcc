@@ -1276,21 +1276,6 @@ package body Osint is
       --  Command_Name(Cindex1 .. Cindex2) is now the equivalent of the
       --  POSIX command "basename argv[0]"
 
-      --  Strip off any versioning information found on some systems. This
-      --  would take the form of TOOL.exe followed by a ";" or "." and a
-      --  sequence of one or more numbers.
-
-      if Command_Name (Cindex2) in '0' .. '9' then
-         for J in reverse Cindex1 .. Cindex2 loop
-            if Command_Name (J) = '.' or else Command_Name (J) = ';' then
-               Cindex2 := J - 1;
-               exit;
-            end if;
-
-            exit when Command_Name (J) not in '0' .. '9';
-         end loop;
-      end if;
-
       --  Strip off any executable extension (usually nothing or .exe)
       --  but formally reported by autoconf in the variable EXEEXT
 

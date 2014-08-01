@@ -108,9 +108,8 @@ package Interfaces.C_Streams is
    function fopen
      (filename : chars;
       mode     : chars;
-      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8;
-      vms_form : chars := System.Null_Address) return FILEs
-     renames System.CRTL.fopen;
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
+     return FILEs renames System.CRTL.fopen;
    --  Note: to maintain target independence, use text_translation_required,
    --  a boolean variable defined in sysdep.c to deal with the target
    --  dependent text translation requirement. If this variable is set,
@@ -148,9 +147,8 @@ package Interfaces.C_Streams is
      (filename : chars;
       mode     : chars;
       stream   : FILEs;
-      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8;
-      vms_form : chars := System.Null_Address) return FILEs
-     renames System.CRTL.freopen;
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
+     return FILEs renames System.CRTL.freopen;
 
    function fseek
      (stream : FILEs;
