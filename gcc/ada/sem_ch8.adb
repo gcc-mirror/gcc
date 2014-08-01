@@ -6236,6 +6236,25 @@ package body Sem_Ch8 is
             Write_Entity_Info (P_Type, "      "); Write_Eol;
          end if;
 
+         --  The designated type may be a limited view with no components.
+         --  Check whether the non-limited view is available, because in some
+         --  cases this will not be set when instlling the context.
+
+         if Is_Access_Type (P_Type) then
+            declare
+               D : constant Entity_Id := Directly_Designated_Type (P_Type);
+            begin
+               if Is_Incomplete_Type (D)
+                 and then not Is_Class_Wide_Type (D)
+                 and then From_Limited_With (D)
+                 and then Present (Non_Limited_View (D))
+                 and then not Is_Class_Wide_Type (Non_Limited_View (D))
+               then
+                  Set_Directly_Designated_Type (P_Type,  Non_Limited_View (D));
+               end if;
+            end;
+         end if;
+
          --  First check for components of a record object (not the
          --  result of a call, which is handled below).
 

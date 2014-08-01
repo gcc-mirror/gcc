@@ -1331,9 +1331,23 @@ package body Sem_Ch3 is
 
          if Ekind (Root_Type (Entity (S))) = E_Incomplete_Type then
             Set_Directly_Designated_Type (T, Entity (S));
+
+            --  If the designated type is a limited view, we cannot tell if
+            --  the full view contains tasks, and there is no way to handle
+            --  that full view in a client. We create a master entity for the
+            --  scope, which will be used when a client determines that one
+            --  is needed.
+
+            if From_Limited_With (Entity (S))
+              and then not Is_Class_Wide_Type (Entity (S))
+            then
+               Set_Ekind (T, E_Access_Type);
+               Build_Master_Entity (T);
+               Build_Master_Renaming (T);
+            end if;
+
          else
-            Set_Directly_Designated_Type (T,
-              Process_Subtype (S, P, T, 'P'));
+            Set_Directly_Designated_Type (T, Process_Subtype (S, P, T, 'P'));
          end if;
 
          --  If the access definition is of the form: ACCESS NOT NULL ..
