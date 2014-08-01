@@ -368,7 +368,7 @@ package System.OS_Lib is
    --  effect of "cp -p" on Unix systems, and None corresponds to the typical
    --  effect of "cp" on Unix systems.
 
-   --  Note: Time_Stamps and Full are not supported on VMS and VxWorks 5
+   --  Note: Time_Stamps and Full are not supported on VxWorks 5
 
    procedure Copy_File
      (Name     : String;
@@ -384,20 +384,14 @@ package System.OS_Lib is
    --  True or False indicating if the copy is successful (depending on the
    --  specified Mode).
    --
-   --  Note: this procedure is only supported to a very limited extent on VMS.
-   --  The only supported mode is Overwrite, and the only supported value for
-   --  Preserve is None, resulting in the default action which for Overwrite
-   --  is to leave attributes unchanged. Furthermore, the copy only works for
-   --  simple text files.
-
    procedure Copy_Time_Stamps (Source, Dest : String; Success : out Boolean);
    --  Copy Source file time stamps (last modification and last access time
    --  stamps) to Dest file. Source and Dest must be valid filenames,
    --  furthermore Dest must be writable. Success will be set to True if the
    --  operation was successful and False otherwise.
    --
-   --  Note: this procedure is not supported on VMS and VxWorks 5. On these
-   --  platforms, Success is always set to False.
+   --  Note: this procedure is not supported on VxWorks 5. On this platform,
+   --  Success is always set to False.
 
    procedure Set_File_Last_Modify_Time_Stamp (Name : String; Time : OS_Time);
    --  Given the name of a file or directory, Name, set the last modification
@@ -484,17 +478,13 @@ package System.OS_Lib is
    --  e.g. A is a symbolic link for B, and B is a symbolic link for A), then
    --  Normalize_Pathname returns an empty string.
    --
-   --  In VMS, if Name follows the VMS syntax file specification, it is first
-   --  converted into Unix syntax. If the conversion fails, Normalize_Pathname
-   --  returns an empty string.
-   --
    --  For case-sensitive file systems, the value of Case_Sensitive parameter
    --  is ignored. For file systems that are not case-sensitive, such as
-   --  Windows and OpenVMS, if this parameter is set to False, then the file
-   --  and directory names are folded to lower case. This allows checking
-   --  whether two files are the same by applying this function to their names
-   --  and comparing the results. If Case_Sensitive is set to True, this
-   --  function does not change the casing of file and directory names.
+   --  Windows, if this parameter is set to False, then the file and directory
+   --  names are folded to lower case. This allows checking whether two files
+   --  are the same by applying this function to their names and comparing the
+   --  results. If Case_Sensitive is set to True, this function does not change
+   --  the casing of file and directory names.
 
    function Is_Absolute_Path (Name : String) return Boolean;
    --  Returns True if Name is an absolute path name, i.e. it designates a
@@ -894,7 +884,7 @@ package System.OS_Lib is
 
    --     On Solaris: fork1, followed in the child process by execv
 
-   --     On other Unix-like systems, and on VMS: fork, followed in the child
+   --     On other Unix-like systems: fork, followed in the child
    --     process by execv.
 
    --     On vxworks, nucleus, and RTX, spawning of processes is not supported
@@ -960,7 +950,7 @@ package System.OS_Lib is
    --  set an explicit null as the value, or to remove the entry, this is
    --  operating system dependent). Note that any following calls to Spawn
    --  will pass an environment to the spawned process that includes the
-   --  changes made by Setenv calls. This procedure is not available on VMS.
+   --  changes made by Setenv calls.
 
    procedure OS_Exit (Status : Integer);
    pragma No_Return (OS_Exit);

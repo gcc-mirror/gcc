@@ -192,18 +192,6 @@ package Lib.Writ is
    --              the units in this file, where x is the first character
    --              (upper case) of the policy name (e.g. 'C' for Concurrent).
 
-   --         FD   Configuration pragmas apply to all the units in this file
-   --              specifying a possibly non-standard floating point format
-   --              (VAX float with Long_Float using D_Float).
-
-   --         FG   Configuration pragmas apply to all the units in this file
-   --              specifying a possibly non-standard floating point format
-   --              (VAX float with Long_Float using G_Float).
-
-   --         FI   Configuration pragmas apply to all the units in this file
-   --              specifying a possibly non-standard floating point format
-   --              (IEEE Float).
-
    --         Lx   A valid Locking_Policy pragma applies to all the units in
    --              this file, where x is the first character (upper case) of
    --              the policy name (e.g. 'C' for Ceiling_Locking).
