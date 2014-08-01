@@ -1,5 +1,11 @@
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aggr.adb, exp_atag.adb, layout.adb, nlists.adb, nlists.ads,
+	exp_attr.adb, exp_ch9.adb, par-ch12.adb, exp_aggr.adb,
+	exp_ch3.adb: Minor reformatting & code reorganization.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Remove VMS specific rules for pragma Ident.
 	* Makefile.rtl, adaint.c, gnat_rm.texi, s-asthan.adb, s-asthan.ads,
 	s-filofl.ads, s-fishfl.ads, s-fvadfl.ads, s-fvaffl.ads, s-fvagfl.ads,

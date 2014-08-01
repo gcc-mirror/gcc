@@ -225,9 +225,9 @@ package Nlists is
 
    procedure Append (Node : Node_Or_Entity_Id; To : List_Id);
    --  Appends Node at the end of node list To. Node must be a non-empty node
-   --  that is not already a member of a node list, and To must be a
-   --  node list. An attempt to append an error node is ignored without
-   --  complaint and the list is unchanged.
+   --  that is not already a member of a node list, and To must be a node list.
+   --  An attempt to append an error node is ignored without complaint and the
+   --  list is unchanged.
 
    procedure Append_To (To : List_Id; Node : Node_Or_Entity_Id);
    pragma Inline (Append_To);

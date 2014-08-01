@@ -2195,13 +2195,12 @@ package body Layout is
                            D_List := New_List;
                            D_Entity := First_Discriminant (E);
                            while Present (D_Entity) loop
-                              Append (
+                              Append_To (D_List,
                                 Make_Selected_Component (Loc,
                                   Prefix        =>
                                     Make_Identifier (Loc, Vname),
                                   Selector_Name =>
-                                    New_Occurrence_Of (D_Entity, Loc)),
-                                D_List);
+                                    New_Occurrence_Of (D_Entity, Loc)));
 
                               D_Entity := Next_Discriminant (D_Entity);
                            end loop;

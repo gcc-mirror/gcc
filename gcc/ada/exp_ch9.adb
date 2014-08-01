@@ -10624,14 +10624,13 @@ package body Exp_Ch9 is
          Params : constant List_Id := New_List;
 
       begin
-         Append (
+         Append_To (Params,
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Qnam, Loc),
-             Attribute_Name => Name_Unchecked_Access),
-           Params);
-         Append (Select_Mode,                  Params);
-         Append (New_Occurrence_Of (Ann, Loc),  Params);
-         Append (New_Occurrence_Of (Xnam, Loc), Params);
+             Attribute_Name => Name_Unchecked_Access));
+         Append_To (Params, Select_Mode);
+         Append_To (Params, New_Occurrence_Of (Ann, Loc));
+         Append_To (Params, New_Occurrence_Of (Xnam, Loc));
 
          return
            Make_Procedure_Call_Statement (Loc,
@@ -11351,6 +11350,7 @@ package body Exp_Ch9 is
             Append (Cases, Stats);
          end;
       end if;
+
       Append (End_Lab, Stats);
 
       --  Replace accept statement with appropriate block

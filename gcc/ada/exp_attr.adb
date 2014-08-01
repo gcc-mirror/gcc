@@ -459,14 +459,14 @@ package body Exp_Attr is
             Append_To (Alt_List,
               Make_Case_Statement_Alternative (Loc,
                 Discrete_Choices => New_Copy_List (Discrete_Choices (Variant)),
-                Statements =>
+                Statements       =>
                   Make_VS_Case (E, Component_List (Variant), Discrs)));
             Next_Non_Pragma (Variant);
          end loop;
 
          Append_To (Result,
            Make_Case_Statement (Loc,
-             Expression =>
+             Expression   =>
                Make_Selected_Component (Loc,
                  Prefix        => Make_Identifier (Loc, Name_X),
                  Selector_Name => New_Copy (Name (Variant_Part (CL)))),
