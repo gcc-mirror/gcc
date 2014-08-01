@@ -1,3 +1,7 @@
+2014-08-01  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (dup_lane, get_lane): Delete.
+
 2014-08-01  Jiong Wang <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_address): Accept all offset
