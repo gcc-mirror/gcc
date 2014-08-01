@@ -775,6 +775,7 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
   free (gf.filename);
 }
 
+#if !IN_GCOV_TOOL
 void
 gcov_exit (void)
 {
@@ -840,6 +841,6 @@ __gcov_init (struct gcov_info *info)
     }
   info->version = 0;
 }
-
+#endif /* !IN_GCOV_TOOL */
 #endif /* L_gcov */
 #endif /* inhibit_libc */

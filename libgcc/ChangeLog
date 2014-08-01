@@ -1,3 +1,12 @@
+2014-08-01  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (LIBGCOV_MERGE, LIBGCOV_PROFILER,
+	LIBGCOV_INTERFACE): Reformat.
+	* libgcov-driver.c (gcov_exit, __gcov_init): Disable when
+	IN_GCOV_TOOL.
+	* libgcov-interface.c: Reformat some comments.
+	(__gcov_flush_mx): Add declaration.  Tidy up definition.
+
 2014-07-31  Alan Modra  <amodra@gmail.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
