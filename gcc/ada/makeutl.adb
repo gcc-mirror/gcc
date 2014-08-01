@@ -777,7 +777,7 @@ package body Makeutl is
       Flush_Messages : Boolean := True)
    is
    begin
-      if Flush_Messages and then not No_Exit_Message then
+      if Flush_Messages and not No_Exit_Message then
          if Total_Errors_Detected /= 0 or else Warnings_Detected /= 0 then
             Errutil.Finalize;
          end if;
