@@ -116,7 +116,7 @@ package body Debug is
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
    --  d.y
-   --  d.z  Disable support for back end inlining
+   --  d.z  Restore previous support for frontend handling of Inline_Always
 
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
@@ -582,14 +582,12 @@ package body Debug is
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
 
-   --  d.z  Disable back end inlining. Back end inlining is enabled by default
-   --       on targets that have the GCC backend (ie. all targets except AAMP,
-   --       .NET and JVM). Back end inlining has no effect under GNATprove to
-   --       avoid confusing the formal verification output, and it is disabled
-   --       if the sources are compiled with frontend inlining (ie. -gnatN) to
-   --       minimize the output differences to customers still using this
-   --       deprecated switch. The flag .z facilitates disabling the back end
-   --       inlining in case of unexpected problems.
+   --  d.z  Restore previous front-end support for Inline_Always. In default
+   --       mode, for targets that use the GCC back end (i.e. currently all
+   --       targets except AAMP, .NET, JVM, and GNATprove), Inline_Always is
+   --       handled by the back end. Use of this switch restores the previous
+   --       handling of Inline_Always by the front end on such targets. For the
+   --       targets that do not use the GCC back end, this switch is ignored.
 
    --  d.A  There seems to be a problem with ASIS if we activate the circuit
    --       for reading and writing the aspect specification hash table, so

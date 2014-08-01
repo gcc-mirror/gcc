@@ -248,7 +248,10 @@ package Opt is
 
    Back_End_Inlining : Boolean := False;
    --  GNAT
-   --  Set True to activate inlining by back-end expansion
+   --  Set True to activate inlining by back-end expansion. This is the normal
+   --  default mode for gcc targets, so it is True on such targets unless the
+   --  switches -gnatN or -gnatd.z are used. See circuitry in gnat1drv for the
+   --  exact conditions for setting this switch.
 
    Bind_Alternate_Main_Name : Boolean := False;
    --  GNATBIND
@@ -823,7 +826,10 @@ package Opt is
 
    Front_End_Inlining : Boolean := False;
    --  GNAT
-   --  Set True to activate inlining by front-end expansion
+   --  Set True to activate inlining by front-end expansion (even on GCC
+   --  targets, where inlining is normally handled by the back end). Set by
+   --  the flag -gnatN (which is now considered obsolescent, since the GCC
+   --  back end can do a better job of inlining than the front end these days.
 
    Inline_Processing_Required : Boolean := False;
    --  GNAT

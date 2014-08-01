@@ -1584,15 +1584,12 @@ begin
    Rules_Switches.Init;
    Rules_Switches.Set_Last (0);
 
-   --  Add the default search directories, to be able to find system.ads in the
-   --  subsequent call to Targparm.Get_Target_Parameters.
+   --  Set AAMP_On_Target from the command name, for testing in
+   --  Osint.Program_Name to handle the mapping of GNAAMP tool names. We don't
+   --  extract it from system.ads, has there may be no default runtime.
 
-   Add_Default_Search_Dirs;
-
-   --  Get target parameters so that AAMP_On_Target will be set, for testing in
-   --  Osint.Program_Name to handle the mapping of GNAAMP tool names.
-
-   Targparm.Get_Target_Parameters;
+   Find_Program_Name;
+   AAMP_On_Target := Name_Buffer (1 .. Name_Len) = "gnaampcmd";
 
    --  Put the command line in environment variable GNAT_DRIVER_COMMAND_LINE,
    --  so that the spawned tool may know the way the GNAT driver was invoked.
