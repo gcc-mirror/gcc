@@ -1047,7 +1047,7 @@ analyze_functions (void)
 	      if (DECL_ABSTRACT_ORIGIN (decl))
 		{
 		  struct cgraph_node *origin_node
-	    	  = cgraph_node::get (DECL_ABSTRACT_ORIGIN (decl));
+		    = cgraph_node::get_create (DECL_ABSTRACT_ORIGIN (decl));
 		  origin_node->used_as_abstract_origin = true;
 		}
 	    }
