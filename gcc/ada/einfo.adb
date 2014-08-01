@@ -270,6 +270,8 @@ package body Einfo is
    --  the spec of Einfo for further details.
 
    --    Is_Inlined_Always               Flag1
+   --    Is_Hidden_Non_Overridden_Subprogram
+   --                                    Flag2
    --    Is_Frozen                       Flag4
    --    Has_Discriminants               Flag5
    --    Is_Dispatching_Operation        Flag6
@@ -569,7 +571,6 @@ package body Einfo is
    --    No_Predicate_On_Actual          Flag275
    --    No_Dynamic_Predicate_On_Actual  Flag276
 
-   --    (unused)                        Flag2
    --    (unused)                        Flag3
 
    --    (unused)                        Flag132
@@ -2071,6 +2072,12 @@ package body Einfo is
    begin
       return Flag57 (Id);
    end Is_Hidden;
+
+   function Is_Hidden_Non_Overridden_Subprogram (Id : E) return B is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      return Flag2 (Id);
+   end Is_Hidden_Non_Overridden_Subprogram;
 
    function Is_Hidden_Open_Scope (Id : E) return B is
    begin
@@ -4853,6 +4860,12 @@ package body Einfo is
    begin
       Set_Flag57 (Id, V);
    end Set_Is_Hidden;
+
+   procedure Set_Is_Hidden_Non_Overridden_Subprogram (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
+      Set_Flag2 (Id, V);
+   end Set_Is_Hidden_Non_Overridden_Subprogram;
 
    procedure Set_Is_Hidden_Open_Scope (Id : E; V : B := True) is
    begin
@@ -8373,6 +8386,8 @@ package body Einfo is
       W ("Is_Generic_Instance",             Flag130 (Id));
       W ("Is_Generic_Type",                 Flag13  (Id));
       W ("Is_Hidden",                       Flag57  (Id));
+      W ("Is_Hidden_Non_Overridden_Subprogram",
+                                            Flag2   (Id));
       W ("Is_Hidden_Open_Scope",            Flag171 (Id));
       W ("Is_Immediately_Visible",          Flag7   (Id));
       W ("Is_Implementation_Defined",       Flag254 (Id));

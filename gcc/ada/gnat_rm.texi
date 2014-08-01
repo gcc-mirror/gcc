@@ -3762,6 +3762,7 @@ MECHANISM_ASSOCIATION ::=
   [formal_parameter_NAME =>] MECHANISM_NAME
 
 MECHANISM_NAME ::= Value | Reference
+@end smallexample
 
 @noindent
 This pragma is identical to @code{Import_Procedure} except that the

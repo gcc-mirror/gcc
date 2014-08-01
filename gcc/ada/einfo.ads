@@ -2429,6 +2429,12 @@ package Einfo is
 --       child unit, and when compiling a private child unit (see Install_
 --       Private_Declaration in sem_ch7).
 
+--    Is_Hidden_Non_Overridden_Subprogram (Flag2)
+--       Defined in all entities. Set for implicitly declared non-generic
+--       subprograms that require overriding or are null procedures, and are
+--       hidden by a non-conformant homograph with the same characteristics
+--       (Ada RM 8.3 12.3/2).
+
 --    Is_Hidden_Open_Scope (Flag171)
 --       Defined in all entities. Set for a scope that contains the
 --       instantiation of a child unit, and whose entities are not visible
@@ -5666,6 +5672,7 @@ package Einfo is
    --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Eliminated                       (Flag124)
    --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
+   --    Is_Hidden_Non_Overridden_Subprogram (Flag2)    (non-generic case only)
    --    Is_Inlined_Always                   (Flag1)    (non-generic case only)
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -5959,9 +5966,10 @@ package Einfo is
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
    --    Is_Eliminated                       (Flag124)
+   --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
+   --    Is_Hidden_Non_Overridden_Subprogram (Flag2)    (non-generic case only)
    --    Is_Inlined_Always                   (Flag1)    (non-generic case only)
    --    Is_Instantiated                     (Flag126)  (generic case only)
-   --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
    --    Is_Interrupt_Handler                (Flag89)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Invariant_Procedure              (Flag257)  (non-generic case only)
@@ -6673,6 +6681,7 @@ package Einfo is
    function Is_Frozen                           (Id : E) return B;
    function Is_Generic_Instance                 (Id : E) return B;
    function Is_Hidden                           (Id : E) return B;
+   function Is_Hidden_Non_Overridden_Subprogram (Id : E) return B;
    function Is_Hidden_Open_Scope                (Id : E) return B;
    function Is_Immediately_Visible              (Id : E) return B;
    function Is_Implementation_Defined           (Id : E) return B;
@@ -7311,6 +7320,8 @@ package Einfo is
    procedure Set_Is_Generic_Instance             (Id : E; V : B := True);
    procedure Set_Is_Generic_Type                 (Id : E; V : B := True);
    procedure Set_Is_Hidden                       (Id : E; V : B := True);
+   procedure Set_Is_Hidden_Non_Overridden_Subprogram
+                                                 (Id : E; V : B := True);
    procedure Set_Is_Hidden_Open_Scope            (Id : E; V : B := True);
    procedure Set_Is_Immediately_Visible          (Id : E; V : B := True);
    procedure Set_Is_Implementation_Defined       (Id : E; V : B := True);
@@ -8079,6 +8090,7 @@ package Einfo is
    pragma Inline (Is_Generic_Type);
    pragma Inline (Is_Generic_Unit);
    pragma Inline (Is_Hidden);
+   pragma Inline (Is_Hidden_Non_Overridden_Subprogram);
    pragma Inline (Is_Hidden_Open_Scope);
    pragma Inline (Is_Immediately_Visible);
    pragma Inline (Is_Implementation_Defined);
@@ -8536,6 +8548,7 @@ package Einfo is
    pragma Inline (Set_Is_Generic_Instance);
    pragma Inline (Set_Is_Generic_Type);
    pragma Inline (Set_Is_Hidden);
+   pragma Inline (Set_Is_Hidden_Non_Overridden_Subprogram);
    pragma Inline (Set_Is_Hidden_Open_Scope);
    pragma Inline (Set_Is_Immediately_Visible);
    pragma Inline (Set_Is_Implementation_Defined);

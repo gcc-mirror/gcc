@@ -4015,14 +4015,16 @@ package body Sem_Warn is
                end if;
 
             when E_Constant =>
-               if Present (Renamed_Object (E))
-                 and then Comes_From_Source (Renamed_Object (E))
-               then
-                  Error_Msg_N -- CODEFIX
-                    ("?u?renamed constant & is not referenced!", E);
-               else
-                  Error_Msg_N -- CODEFIX
-                    ("?u?constant & is not referenced!", E);
+               if not Has_Pragma_Unreferenced_Objects (Etype (E)) then
+                  if Present (Renamed_Object (E))
+                    and then Comes_From_Source (Renamed_Object (E))
+                  then
+                     Error_Msg_N -- CODEFIX
+                       ("?u?renamed constant & is not referenced!", E);
+                  else
+                     Error_Msg_N -- CODEFIX
+                       ("?u?constant & is not referenced!", E);
+                  end if;
                end if;
 
             when E_In_Parameter     |

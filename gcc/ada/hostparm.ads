@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,13 +41,8 @@ package Hostparm is
    -- HOST Parameters --
    ---------------------
 
-   Gnat_VMSp : Integer;
-   pragma Import (C, Gnat_VMSp, "__gnat_vmsp");
-
-   OpenVMS : Boolean := Gnat_VMSp /= 0;
-   --  Set True for OpenVMS host. See also OpenVMS target boolean in
-   --  system-vms.ads and system-vms_64.ads and OpenVMS_On_Target boolean in
-   --  Targparm. This is not a constant, because it can be modified by -gnatdm.
+   OpenVMS : Boolean := False;
+   --  Set True for OpenVMS host
 
    Direct_Separator : constant Character;
    pragma Import (C, Direct_Separator, "__gnat_dir_separator");

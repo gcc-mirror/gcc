@@ -2047,8 +2047,8 @@ package body Prj.Env is
                            Normalize_Pathname
                              (Name_Buffer (First .. Last),
                               Resolve_Links => Opt.Follow_Links_For_Dirs);
-               New_Len  : Natural;
-               New_Last : Natural;
+               New_Len  : Positive;
+               New_Last : Positive;
 
             begin
                --  If the absolute path was resolved and is different from
