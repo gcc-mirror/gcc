@@ -1478,7 +1478,7 @@ do_per_function (void (*callback) (function *, void *data), void *data)
     {
       struct cgraph_node *node;
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (node->analyzed && gimple_has_body_p (node->decl)
+	if (node->analyzed && (gimple_has_body_p (node->decl) && !in_lto_p)
 	    && (!node->clone_of || node->decl != node->clone_of->decl))
 	  callback (DECL_STRUCT_FUNCTION (node->decl), data);
     }

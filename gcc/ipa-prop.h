@@ -529,6 +529,7 @@ void ipa_free_all_edge_args (void);
 void ipa_free_all_structures_after_ipa_cp (void);
 void ipa_free_all_structures_after_iinln (void);
 void ipa_register_cgraph_hooks (void);
+int count_formal_params (tree fndecl);
 
 /* This function ensures the array of node param infos is big enough to
    accommodate a structure for all nodes and reallocates it if not.  */

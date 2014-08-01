@@ -212,7 +212,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
 
 /* Return how many formal parameters FNDECL has.  */
 
-static inline int
+int
 count_formal_params (tree fndecl)
 {
   tree parm;
