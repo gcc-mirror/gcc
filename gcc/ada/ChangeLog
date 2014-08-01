@@ -1,3 +1,17 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* restrict.adb (Update_Restrictions): For restrictions with a
+	maximum parameter (e.g. number of protected entries in Ravenscar)
+	do not compute the maximum of the violation over several objects,
+	because the restriction is per-object.
+	(Check_Restriction): After possible message, reset the value
+	of of a checked max_parameter restriction to zero, to prevent
+	cascaded errors.
+	* sem_ch3.adb (Build_Derived_Private_Type): Use base of parent
+	(sub)type to determine whether derived type should be on the
+	list of private dependents of a type whose full view may become
+	visible subsequently.
+
 2014-08-01  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/Make-lang.in (ADA_TOOLS_FLAGS_TO_PASS, native): use

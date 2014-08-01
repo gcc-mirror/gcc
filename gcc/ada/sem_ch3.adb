@@ -6540,13 +6540,14 @@ package body Sem_Ch3 is
       Is_Completion : Boolean;
       Derive_Subps  : Boolean := True)
    is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Der_Base    : Entity_Id;
-      Discr       : Entity_Id;
-      Full_Der    : Entity_Id;
-      Full_P      : Entity_Id;
-      Last_Discr  : Entity_Id;
-      Par_Scope   : constant Entity_Id := Scope (Base_Type (Parent_Type));
+      Loc        : constant Source_Ptr := Sloc (N);
+      Par_Base   : constant Entity_Id  := Base_Type (Parent_Type);
+      Par_Scope  : constant Entity_Id  := Scope (Par_Base);
+      Der_Base   : Entity_Id;
+      Discr      : Entity_Id;
+      Full_Der   : Entity_Id;
+      Full_P     : Entity_Id;
+      Last_Discr : Entity_Id;
 
       procedure Build_Full_Derivation;
       --  Build full derivation, i.e. derive from the full view
@@ -6984,10 +6985,12 @@ package body Sem_Ch3 is
          Set_Private_Dependents (Derived_Type, New_Elmt_List);
       end if;
 
-      if Is_Private_Type (Parent_Type)
-        and then Base_Type (Parent_Type) = Parent_Type
-        and then In_Open_Scopes (Scope (Parent_Type))
-      then
+      --  If the parent base type is in scope, add the derived type to its
+      --  list of private dependents, because its full view may become
+      --  visible subsequently (in a nested private part, a body, or in a
+      --  further child unit).
+
+      if Is_Private_Type (Par_Base) and then In_Open_Scopes (Par_Scope) then
          Append_Elmt (Derived_Type, Private_Dependents (Parent_Type));
 
          --  Check for unusual case where a type completed by a private
@@ -7008,9 +7011,9 @@ package body Sem_Ch3 is
          then
             --  In this case, the full view of the parent type will become
             --  visible in the body of the enclosing child, and only then will
-            --  the current type be possibly non-private. We build an
-            --  underlying full view that will be installed when the enclosing
-            --  child body is compiled.
+            --  the current type be possibly non-private. Build an underlying
+            --  full view that will be installed when the enclosing child body
+            --  is compiled.
 
             if Present (Underlying_Full_View (Derived_Type)) then
                Full_Der := Underlying_Full_View (Derived_Type);
