@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-dom.h"
+#include "inchash.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -557,45 +558,42 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
 }
 
 /* Generate a hash value for a pair of expressions.  This can be used
-   iteratively by passing a previous result as the VAL argument.
+   iteratively by passing a previous result in HSTATE.
 
    The same hash value is always returned for a given pair of expressions,
    regardless of the order in which they are presented.  This is useful in
    hashing the operands of commutative functions.  */
 
-static hashval_t
-iterative_hash_exprs_commutative (const_tree t1,
-                                  const_tree t2, hashval_t val)
+namespace inchash
 {
-  hashval_t one = iterative_hash_expr (t1, 0);
-  hashval_t two = iterative_hash_expr (t2, 0);
-  hashval_t t;
 
-  if (one > two)
-    t = one, one = two, two = t;
-  val = iterative_hash_hashval_t (one, val);
-  val = iterative_hash_hashval_t (two, val);
+static void
+add_expr_commutative (const_tree t1, const_tree t2, hash &hstate)
+{
+  hash one, two;
 
-  return val;
+  inchash::add_expr (t1, one);
+  inchash::add_expr (t2, two);
+  hstate.add_commutative (one, two);
 }
 
 /* Compute a hash value for a hashable_expr value EXPR and a
    previously accumulated hash value VAL.  If two hashable_expr
    values compare equal with hashable_expr_equal_p, they must
    hash to the same value, given an identical value of VAL.
-   The logic is intended to follow iterative_hash_expr in tree.c.  */
+   The logic is intended to follow inchash::add_expr in tree.c.  */
 
-static hashval_t
-iterative_hash_hashable_expr (const struct hashable_expr *expr, hashval_t val)
+static void
+add_hashable_expr (const struct hashable_expr *expr, hash &hstate)
 {
   switch (expr->kind)
     {
     case EXPR_SINGLE:
-      val = iterative_hash_expr (expr->ops.single.rhs, val);
+      inchash::add_expr (expr->ops.single.rhs, hstate);
       break;
 
     case EXPR_UNARY:
-      val = iterative_hash_object (expr->ops.unary.op, val);
+      hstate.add_object (expr->ops.unary.op);
 
       /* Make sure to include signedness in the hash computation.
          Don't hash the type, that can lead to having nodes which
@@ -603,34 +601,34 @@ iterative_hash_hashable_expr (const struct hashable_expr *expr, hashval_t val)
          have different hash codes.  */
       if (CONVERT_EXPR_CODE_P (expr->ops.unary.op)
           || expr->ops.unary.op == NON_LVALUE_EXPR)
-        val += TYPE_UNSIGNED (expr->type);
+        hstate.add_int (TYPE_UNSIGNED (expr->type));
 
-      val = iterative_hash_expr (expr->ops.unary.opnd, val);
+      inchash::add_expr (expr->ops.unary.opnd, hstate);
       break;
 
     case EXPR_BINARY:
-      val = iterative_hash_object (expr->ops.binary.op, val);
+      hstate.add_object (expr->ops.binary.op);
       if (commutative_tree_code (expr->ops.binary.op))
-	val = iterative_hash_exprs_commutative (expr->ops.binary.opnd0,
-						expr->ops.binary.opnd1, val);
+	inchash::add_expr_commutative (expr->ops.binary.opnd0,
+					  expr->ops.binary.opnd1, hstate);
       else
         {
-          val = iterative_hash_expr (expr->ops.binary.opnd0, val);
-          val = iterative_hash_expr (expr->ops.binary.opnd1, val);
+          inchash::add_expr (expr->ops.binary.opnd0, hstate);
+          inchash::add_expr (expr->ops.binary.opnd1, hstate);
         }
       break;
 
     case EXPR_TERNARY:
-      val = iterative_hash_object (expr->ops.ternary.op, val);
+      hstate.add_object (expr->ops.ternary.op);
       if (commutative_ternary_tree_code (expr->ops.ternary.op))
-	val = iterative_hash_exprs_commutative (expr->ops.ternary.opnd0,
-						expr->ops.ternary.opnd1, val);
+	inchash::add_expr_commutative (expr->ops.ternary.opnd0,
+					  expr->ops.ternary.opnd1, hstate);
       else
         {
-          val = iterative_hash_expr (expr->ops.ternary.opnd0, val);
-          val = iterative_hash_expr (expr->ops.ternary.opnd1, val);
+          inchash::add_expr (expr->ops.ternary.opnd0, hstate);
+          inchash::add_expr (expr->ops.ternary.opnd1, hstate);
         }
-      val = iterative_hash_expr (expr->ops.ternary.opnd2, val);
+      inchash::add_expr (expr->ops.ternary.opnd2, hstate);
       break;
 
     case EXPR_CALL:
@@ -639,15 +637,14 @@ iterative_hash_hashable_expr (const struct hashable_expr *expr, hashval_t val)
         enum tree_code code = CALL_EXPR;
         gimple fn_from;
 
-        val = iterative_hash_object (code, val);
+        hstate.add_object (code);
         fn_from = expr->ops.call.fn_from;
         if (gimple_call_internal_p (fn_from))
-          val = iterative_hash_hashval_t
-            ((hashval_t) gimple_call_internal_fn (fn_from), val);
+          hstate.merge_hash ((hashval_t) gimple_call_internal_fn (fn_from));
         else
-          val = iterative_hash_expr (gimple_call_fn (fn_from), val);
+          inchash::add_expr (gimple_call_fn (fn_from), hstate);
         for (i = 0; i < expr->ops.call.nargs; i++)
-          val = iterative_hash_expr (expr->ops.call.args[i], val);
+          inchash::add_expr (expr->ops.call.args[i], hstate);
       }
       break;
 
@@ -656,15 +653,15 @@ iterative_hash_hashable_expr (const struct hashable_expr *expr, hashval_t val)
         size_t i;
 
         for (i = 0; i < expr->ops.phi.nargs; i++)
-          val = iterative_hash_expr (expr->ops.phi.args[i], val);
+          inchash::add_expr (expr->ops.phi.args[i], hstate);
       }
       break;
 
     default:
       gcc_unreachable ();
     }
+}
 
-  return val;
 }
 
 /* Print a diagnostic dump of an expression hash table entry.  */
@@ -2599,24 +2596,24 @@ avail_expr_hash (const void *p)
   gimple stmt = ((const struct expr_hash_elt *)p)->stmt;
   const struct hashable_expr *expr = &((const struct expr_hash_elt *)p)->expr;
   tree vuse;
-  hashval_t val = 0;
+  inchash::hash hstate;
 
-  val = iterative_hash_hashable_expr (expr, val);
+  inchash::add_hashable_expr (expr, hstate);
 
   /* If the hash table entry is not associated with a statement, then we
      can just hash the expression and not worry about virtual operands
      and such.  */
   if (!stmt)
-    return val;
+    return hstate.end ();
 
   /* Add the SSA version numbers of the vuse operand.  This is important
      because compound variables like arrays are not renamed in the
      operands.  Rather, the rename is done on the virtual variable
      representing all the elements of the array.  */
   if ((vuse = gimple_vuse (stmt)))
-    val = iterative_hash_expr (vuse, val);
+    inchash::add_expr (vuse, hstate);
 
-  return val;
+  return hstate.end ();
 }
 
 /* PHI-ONLY copy and constant propagation.  This pass is meant to clean
