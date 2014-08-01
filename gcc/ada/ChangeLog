@@ -1,3 +1,16 @@
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Alphabetize
+	globals and move certain variables to the "local
+	variable" section. Call Build_Class_Wide_Wrapper when
+	renaming a default actual subprogram with a class-wide actual.
+	(Build_Class_Wide_Wrapper): New routine.
+	(Check_Class_Wide_Actual): Removed.
+	(Find_Renamed_Entity): Code reformatting.
+	(Has_Class_Wide_Actual): Alphabetize. Change the
+	logic of the predicate as the renamed name may not necessarely
+	denote the correct subprogram.
+
 2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch7.adb: Fix minor oversight in condition.
