@@ -51,7 +51,6 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
-with Output;   use Output;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -69,7 +68,6 @@ with Sem_Res;  use Sem_Res;
 with Sem_SCIL; use Sem_SCIL;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -9646,140 +9644,5 @@ package body Exp_Ch6 is
          return False;
       end if;
    end Needs_Result_Accessibility_Level;
-
-   ------------------------
-   -- List_Inlining_Info --
-   ------------------------
-
-   procedure List_Inlining_Info is
-      Elmt  : Elmt_Id;
-      Nod   : Node_Id;
-      Count : Nat;
-
-   begin
-      if not Debug_Flag_Dot_J then
-         return;
-      end if;
-
-      --  Generate listing of calls inlined by the frontend
-
-      if Present (Inlined_Calls) then
-         Count := 0;
-         Elmt  := First_Elmt (Inlined_Calls);
-         while Present (Elmt) loop
-            Nod := Node (Elmt);
-
-            if In_Extended_Main_Code_Unit (Nod) then
-               Count := Count + 1;
-
-               if Count = 1 then
-                  Write_Str ("Listing of frontend inlined calls");
-                  Write_Eol;
-               end if;
-
-               Write_Str ("  ");
-               Write_Int (Count);
-               Write_Str (":");
-               Write_Location (Sloc (Nod));
-               Write_Str (":");
-               Output.Write_Eol;
-            end if;
-
-            Next_Elmt (Elmt);
-         end loop;
-      end if;
-
-      --  Generate listing of calls passed to the backend
-
-      if Present (Backend_Calls) then
-         Count := 0;
-
-         Elmt := First_Elmt (Backend_Calls);
-         while Present (Elmt) loop
-            Nod := Node (Elmt);
-
-            if In_Extended_Main_Code_Unit (Nod) then
-               Count := Count + 1;
-
-               if Count = 1 then
-                  Write_Str ("Listing of inlined calls passed to the backend");
-                  Write_Eol;
-               end if;
-
-               Write_Str ("  ");
-               Write_Int (Count);
-               Write_Str (":");
-               Write_Location (Sloc (Nod));
-               Output.Write_Eol;
-            end if;
-
-            Next_Elmt (Elmt);
-         end loop;
-      end if;
-
-      --  Generate listing of subprograms passed to the backend
-
-      if Present (Backend_Inlined_Subps)
-        and then Back_End_Inlining
-      then
-         Count := 0;
-
-         Elmt := First_Elmt (Backend_Inlined_Subps);
-         while Present (Elmt) loop
-            Nod := Node (Elmt);
-
-            Count := Count + 1;
-
-            if Count = 1 then
-               Write_Str
-                 ("Listing of inlined subprograms passed to the backend");
-               Write_Eol;
-            end if;
-
-            Write_Str ("  ");
-            Write_Int (Count);
-            Write_Str (":");
-            Write_Name (Chars (Nod));
-            Write_Str (" (");
-            Write_Location (Sloc (Nod));
-            Write_Str (")");
-            Output.Write_Eol;
-
-            Next_Elmt (Elmt);
-         end loop;
-      end if;
-
-      --  Generate listing of subprogram that cannot be inlined by the backend
-
-      if Present (Backend_Not_Inlined_Subps)
-        and then Back_End_Inlining
-      then
-         Count := 0;
-
-         Elmt := First_Elmt (Backend_Not_Inlined_Subps);
-         while Present (Elmt) loop
-            Nod := Node (Elmt);
-
-            Count := Count + 1;
-
-            if Count = 1 then
-               Write_Str
-                 ("Listing of subprograms that cannot inline the backend");
-               Write_Eol;
-            end if;
-
-            Write_Str ("  ");
-            Write_Int (Count);
-            Write_Str (":");
-            Write_Name (Chars (Nod));
-            Write_Str (" (");
-            Write_Location (Sloc (Nod));
-            Write_Str (")");
-            Output.Write_Eol;
-
-            Next_Elmt (Elmt);
-         end loop;
-      end if;
-   end List_Inlining_Info;
 
 end Exp_Ch6;

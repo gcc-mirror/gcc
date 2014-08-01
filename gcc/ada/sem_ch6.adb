@@ -3589,7 +3589,7 @@ package body Sem_Ch6 is
                  and then Ekind (Spec_Id) = E_Function
                  and then Returns_Unconstrained_Type (Spec_Id)
                then
-                  Check_And_Build_Body_To_Inline (N, Spec_Id, Body_Id);
+                  Check_And_Split_Unconstrained_Function (N, Spec_Id, Body_Id);
 
                else
                   declare

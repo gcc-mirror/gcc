@@ -1,3 +1,66 @@
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_vfpt.adb, exp_vfpt.ads: Removed, no longer used.
+	* gcc-interface/Make-lang.in: Remove exp_vfpt.o
+
+2014-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* inline.ads (Inlined_Calls, Backend_Calls,
+	Backend_Inlined_Subps, Backend_Not_Inlined_Subps): Declarations
+	moved to inline.adb (Cannot_Inline): Update documentation.
+	(Check_And_Build_Body_To_Inline): Renamed.
+	(List_Inlining_Info): Subprogram moved here from package exp_ch6.
+	* inline.adb (Check_Inlining_Restrictions): New local variable.
+	(Inlined_Calls, Backend_Calls, Backend_Inlined_Subps,
+	Backend_Not_Inlined_Subps): Declarations moved here
+	from inline.ads (Number_Of_Statements): Removed.
+	(Remove_Pragmas): Avoid duplicated version of this subprogram.
+	(Build_Body_To_Inline): Code cleanup.
+	(Build_Body_To_Inline.Has_Excluded_Statament): Removed.
+	(Check_And_Build_Body_To_Inline): Renamed. Code cleanup.
+	(Check_Body_To_Inline): Removed.
+	(Generate_Body_To_Inline): Renamed as Generate_Subprogram_Body.
+	(Has_Excluded_Declaration): No action if not
+	Check_Inlining_Restrictions.
+	(Has_Excluded_Statement): No action if not Check_Inlining_Restrictions.
+	(Initialize): Initialize the lists of inlined calls and subprograms.
+	(List_Inlining_Info): Subprogram moved here from package exp_ch6.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Update call
+	to Check_And_Build_Body_To_Inline since it has been renamed as
+	Check_And_Split_Unconstrained_Function
+	* exp_ch6.ad[sb] (List_Inlining_Info): Subprogram moved to
+	package inline.
+	* gnat1drv.adb Update call to Inline.List_Inlining_Info.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* debug.adb: Add documentation for new debug switch -ds.
+	* make.adb (List_Bad_Compilations): Do not issue any message
+	when switch -ds is specified.
+	* makeutl.adb (Fail_Program): Do not issue any message when
+	-ds is specified.
+	(Finish_Program): Ditto.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* s-exnint.adb, s-exnint.ads, s-wwdwch.ads, s-carsi8.ads,
+	s-casi32.ads, indepsw.adb, a-timoau.ads, s-explli.adb, s-explli.ads,
+	s-casi16.ads, s-powtab.ads, g-wistsp.ads, a-ztmoau.adb,
+	indepsw-gnu.adb, s-imgllb.ads, types.adb, gnat.ads, s-proinf.adb,
+	indepsw-aix.adb, s-caun64.ads, s-imgllw.ads, s-traces-default.adb,
+	s-vxwork-x86.ads, s-expllu.adb, s-exnlli.adb, s-exnlli.ads,
+	s-traces.adb, widechar.ads, stand.adb, s-expint.adb,
+	s-tratas-default.adb, s-expint.ads, s-geveop.ads, s-caun32.ads,
+	s-expuns.adb, s-mantis.adb, s-mantis.ads, s-caun16.ads, s-tasinf.adb,
+	s-memcop.ads, s-dsaser.ads, s-imgbiu.ads, a-szmzco.ads, g-strspl.ads,
+	s-casi64.ads, g-zstspl.ads, indepsw-mingw.adb, tree_io.adb,
+	s-boarop.ads, uname.ads, s-fore.adb, s-fore.ads, g-timsta.adb,
+	g-timsta.ads, s-assert.adb, s-vector.ads, s-tratas.adb,
+	s-tratas.ads: Minor fix to copyright notices.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads: Remove long obsolete comment.
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb: Add guard to setting of No_Predicate_On_Actual.

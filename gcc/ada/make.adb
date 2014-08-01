@@ -6948,15 +6948,17 @@ package body Make is
 
    procedure List_Bad_Compilations is
    begin
-      for J in Bad_Compilation.First .. Bad_Compilation.Last loop
-         if Bad_Compilation.Table (J).File = No_File then
-            null;
-         elsif not Bad_Compilation.Table (J).Found then
-            Inform (Bad_Compilation.Table (J).File, "not found");
-         else
-            Inform (Bad_Compilation.Table (J).File, "compilation error");
-         end if;
-      end loop;
+      if not Debug.Debug_Flag_S then
+         for J in Bad_Compilation.First .. Bad_Compilation.Last loop
+            if Bad_Compilation.Table (J).File = No_File then
+               null;
+            elsif not Bad_Compilation.Table (J).Found then
+               Inform (Bad_Compilation.Table (J).File, "not found");
+            else
+               Inform (Bad_Compilation.Table (J).File, "compilation error");
+            end if;
+         end loop;
+      end if;
    end List_Bad_Compilations;
 
    -----------------
