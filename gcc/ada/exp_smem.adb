@@ -212,17 +212,9 @@ package body Exp_Smem is
 
       --  Mark object as locked in the current (transient) scope
 
-      declare
-         Locked_Shared_Objects : Elist_Id renames
-           Scope_Stack.Table (Scope_Stack.Last).Locked_Shared_Objects;
-
-      begin
-         if Locked_Shared_Objects = No_Elist then
-            Locked_Shared_Objects := New_Elmt_List;
-         end if;
-
-         Append_Elmt (Obj, To => Locked_Shared_Objects);
-      end;
+      Append_New_Elmt
+        (Obj,
+         To => Scope_Stack.Table (Scope_Stack.Last).Locked_Shared_Objects);
 
       --  First insert the Lock call before
 

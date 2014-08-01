@@ -2883,13 +2883,7 @@ MECHANISM ::=
 MECHANISM_ASSOCIATION ::=
   [formal_parameter_NAME =>] MECHANISM_NAME
 
-MECHANISM_NAME ::=
-  Value
-| Reference
-| Descriptor [([Class =>] CLASS_NAME)]
-| Short_Descriptor [([Class =>] CLASS_NAME)]
-
-CLASS_NAME ::= ubs | ubsb | uba | s | sb | a
+MECHANISM_NAME ::= Value | Reference
 @end smallexample
 
 @noindent
@@ -2916,13 +2910,6 @@ exactly match the subtypes in the corresponding function specification,
 using positional notation to match parameters with subtype marks.
 The form with an @code{'Access} attribute can be used to match an
 anonymous access parameter.
-
-@cindex OpenVMS
-@cindex Passing by descriptor
-Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
-The default behavior for Export_Function is to accept either 64bit or
-32bit descriptors unless short_descriptor is specified, then only 32bit
-descriptors are accepted.
 
 @cindex Suppressing external name
 Special treatment is given if the EXTERNAL is an explicit null
@@ -2988,13 +2975,7 @@ MECHANISM ::=
 MECHANISM_ASSOCIATION ::=
   [formal_parameter_NAME =>] MECHANISM_NAME
 
-MECHANISM_NAME ::=
-  Value
-| Reference
-| Descriptor [([Class =>] CLASS_NAME)]
-| Short_Descriptor [([Class =>] CLASS_NAME)]
-
-CLASS_NAME ::= ubs | ubsb | uba | s | sb | a
+MECHANISM_NAME ::= Value | Reference
 @end smallexample
 
 @noindent
@@ -3006,13 +2987,6 @@ present, @code{Convention Ada} is assumed, which is usually
 not what is wanted, so it is usually appropriate to use this
 pragma in conjunction with a @code{Export} or @code{Convention}
 pragma that specifies the desired foreign convention.
-
-@cindex OpenVMS
-@cindex Passing by descriptor
-Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
-The default behavior for Export_Procedure is to accept either 64bit or
-32bit descriptors unless short_descriptor is specified, then only 32bit
-descriptors are accepted.
 
 @cindex Suppressing external name
 Special treatment is given if the EXTERNAL is an explicit null
@@ -3074,13 +3048,7 @@ MECHANISM ::=
 MECHANISM_ASSOCIATION ::=
   [formal_parameter_NAME =>] MECHANISM_NAME
 
-MECHANISM_NAME ::=
-  Value
-| Reference
-| Descriptor [([Class =>] CLASS_NAME)]
-| Short_Descriptor [([Class =>] CLASS_NAME)]
-
-CLASS_NAME ::= ubs | ubsb | uba | s | sb | a
+MECHANISM_NAME ::= Value | Reference
 @end smallexample
 
 @noindent
@@ -3097,13 +3065,6 @@ not what is wanted since the whole point of this pragma is to interface
 with foreign language functions, so it is usually appropriate to use this
 pragma in conjunction with a @code{Export} or @code{Convention}
 pragma that specifies the desired foreign convention.
-
-@cindex OpenVMS
-@cindex Passing by descriptor
-Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
-The default behavior for Export_Valued_Procedure is to accept either 64bit or
-32bit descriptors unless short_descriptor is specified, then only 32bit
-descriptors are accepted.
 
 @cindex Suppressing external name
 Special treatment is given if the EXTERNAL is an explicit null
@@ -3608,8 +3569,7 @@ pragma Import_Function (
   [, [Parameter_Types          =>] PARAMETER_TYPES]
   [, [Result_Type              =>] SUBTYPE_MARK]
   [, [Mechanism                =>] MECHANISM]
-  [, [Result_Mechanism         =>] MECHANISM_NAME]
-  [, [First_Optional_Parameter =>] IDENTIFIER]);
+  [, [Result_Mechanism         =>] MECHANISM_NAME]);
 
 EXTERNAL_SYMBOL ::=
   IDENTIFIER
@@ -3698,8 +3658,7 @@ pragma Import_Procedure (
      [Internal                 =>] LOCAL_NAME
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
-  [, [Mechanism                =>] MECHANISM]
-  [, [First_Optional_Parameter =>] IDENTIFIER]);
+  [, [Mechanism                =>] MECHANISM]);
 
 EXTERNAL_SYMBOL ::=
   IDENTIFIER
@@ -3739,8 +3698,7 @@ pragma Import_Valued_Procedure (
      [Internal                 =>] LOCAL_NAME
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
-  [, [Mechanism                =>] MECHANISM]
-  [, [First_Optional_Parameter =>] IDENTIFIER]);
+  [, [Mechanism                =>] MECHANISM]);
 
 EXTERNAL_SYMBOL ::=
   IDENTIFIER
@@ -6405,11 +6363,8 @@ pragma Short_Descriptors
 @end smallexample
 
 @noindent
-In VMS versions of the compiler, this configuration pragma causes all
-occurrences of the mechanism types Descriptor[_xxx] to be treated as
-Short_Descriptor[_xxx]. This is helpful in porting legacy applications from a
-32-bit environment to a 64-bit environment. This pragma is ignored for non-VMS
-versions.
+This pragma is provided for compatibility with other Ada implementations. It
+is recognized but ignored by all current versions of GNAT.
 
 @node Pragma Simple_Storage_Pool_Type
 @unnumberedsec Pragma Simple_Storage_Pool_Type

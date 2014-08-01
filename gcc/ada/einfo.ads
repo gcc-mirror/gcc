@@ -1278,13 +1278,6 @@ package Einfo is
 --       Note that this field is set in enumeration subtypes, but it still
 --       points to the first literal of the base type in this case.
 
---    First_Optional_Parameter (Node14)
---       Defined in (non-generic) function and procedure entities. Set to a
---       non-null value only if a pragma Import_Function, Import_Procedure
---       or Import_Valued_Procedure specifies a First_Optional_Parameter
---       argument, in which case this field points to the parameter entity
---       corresponding to the specified parameter.
-
 --    First_Private_Entity (Node16)
 --       Defined in all entities containing private parts (packages, protected
 --       types and subtypes, task types and subtypes). The entities on the
@@ -5615,7 +5608,6 @@ package Einfo is
    --    Safe_Last_Value                     (synth)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
-   --    Vax_Float                           (synth)
    --    (plus type attributes)
 
    --  E_Function
@@ -5626,7 +5618,6 @@ package Einfo is
    --    Protected_Body_Subprogram           (Node11)
    --    Next_Inlined_Subprogram             (Node12)
    --    Elaboration_Entity                  (Node13)   (not implicit /=)
-   --    First_Optional_Parameter            (Node14)   (non-generic case only)
    --    DT_Position                         (Uint15)
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
@@ -5926,7 +5917,6 @@ package Einfo is
    --    Protected_Body_Subprogram           (Node11)
    --    Next_Inlined_Subprogram             (Node12)
    --    Elaboration_Entity                  (Node13)
-   --    First_Optional_Parameter            (Node14)   (non-generic case only)
    --    DT_Position                         (Uint15)
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
@@ -6537,7 +6527,6 @@ package Einfo is
    function First_Exit_Statement                (Id : E) return N;
    function First_Index                         (Id : E) return N;
    function First_Literal                       (Id : E) return E;
-   function First_Optional_Parameter            (Id : E) return E;
    function First_Private_Entity                (Id : E) return E;
    function First_Rep_Item                      (Id : E) return N;
    function Float_Rep                           (Id : E) return F;
@@ -6866,7 +6855,6 @@ package Einfo is
    function Used_As_Generic_Actual              (Id : E) return B;
    function Uses_Lock_Free                      (Id : E) return B;
    function Uses_Sec_Stack                      (Id : E) return B;
-   function Vax_Float                           (Id : E) return B;
    function Warnings_Off                        (Id : E) return B;
    function Warnings_Off_Used                   (Id : E) return B;
    function Warnings_Off_Used_Unmodified        (Id : E) return B;
@@ -7172,7 +7160,6 @@ package Einfo is
    procedure Set_First_Exit_Statement            (Id : E; V : N);
    procedure Set_First_Index                     (Id : E; V : N);
    procedure Set_First_Literal                   (Id : E; V : E);
-   procedure Set_First_Optional_Parameter        (Id : E; V : E);
    procedure Set_First_Private_Entity            (Id : E; V : E);
    procedure Set_First_Rep_Item                  (Id : E; V : N);
    procedure Set_Float_Rep                       (Id : E; V : F);
@@ -7921,7 +7908,6 @@ package Einfo is
    pragma Inline (First_Exit_Statement);
    pragma Inline (First_Index);
    pragma Inline (First_Literal);
-   pragma Inline (First_Optional_Parameter);
    pragma Inline (First_Private_Entity);
    pragma Inline (First_Rep_Item);
    pragma Inline (Freeze_Node);
@@ -8402,7 +8388,6 @@ package Einfo is
    pragma Inline (Set_First_Exit_Statement);
    pragma Inline (Set_First_Index);
    pragma Inline (Set_First_Literal);
-   pragma Inline (Set_First_Optional_Parameter);
    pragma Inline (Set_First_Private_Entity);
    pragma Inline (Set_First_Rep_Item);
    pragma Inline (Set_Freeze_Node);

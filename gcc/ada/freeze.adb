@@ -7233,9 +7233,8 @@ package body Freeze is
               or else Nkind_In (Dcopy, N_Expanded_Name,
                                        N_Integer_Literal,
                                        N_Character_Literal,
-                                       N_String_Literal)
-              or else (Nkind (Dcopy) = N_Real_Literal
-                        and then not Vax_Float (Etype (Dcopy)))
+                                       N_String_Literal,
+                                       N_Real_Literal)
               or else (Nkind (Dcopy) = N_Attribute_Reference
                         and then Attribute_Name (Dcopy) = Name_Null_Parameter)
               or else Known_Null (Dcopy)

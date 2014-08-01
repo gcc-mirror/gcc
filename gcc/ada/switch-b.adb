@@ -262,20 +262,6 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Usage_Requested := True;
 
-         --  Processing for H switch
-
-         when 'H' =>
-            if Ptr = Max then
-               Bad_Switch (Switch_Chars);
-            end if;
-
-            Ptr := Ptr + 1;
-            Scan_Nat (Switch_Chars, Max, Ptr, Heap_Size, C);
-
-            if Heap_Size /= 32 and then Heap_Size /= 64 then
-               Bad_Switch (Switch_Chars);
-            end if;
-
          --  Processing for i switch
 
          when 'i' =>

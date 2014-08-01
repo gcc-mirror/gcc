@@ -518,11 +518,7 @@ package body Inline is
 
       procedure Register_Backend_Inlined_Subprogram (Subp : Entity_Id) is
       begin
-         if Backend_Inlined_Subps = No_Elist then
-            Backend_Inlined_Subps := New_Elmt_List;
-         end if;
-
-         Append_Elmt (Subp, To => Backend_Inlined_Subps);
+         Append_New_Elmt (Subp, To => Backend_Inlined_Subps);
       end Register_Backend_Inlined_Subprogram;
 
       ---------------------------------------------
@@ -531,11 +527,7 @@ package body Inline is
 
       procedure Register_Backend_Not_Inlined_Subprogram (Subp : Entity_Id) is
       begin
-         if Backend_Not_Inlined_Subps = No_Elist then
-            Backend_Not_Inlined_Subps := New_Elmt_List;
-         end if;
-
-         Append_Elmt (Subp, To => Backend_Not_Inlined_Subps);
+         Append_New_Elmt (Subp, To => Backend_Not_Inlined_Subps);
       end Register_Backend_Not_Inlined_Subprogram;
 
    --  Start of processing for Add_Inlined_Subprogram
@@ -2802,11 +2794,7 @@ package body Inline is
 
       --  Register the call in the list of inlined calls
 
-      if Inlined_Calls = No_Elist then
-         Inlined_Calls := New_Elmt_List;
-      end if;
-
-      Append_Elmt (N, To => Inlined_Calls);
+      Append_New_Elmt (N, To => Inlined_Calls);
 
       --  Use generic machinery to copy body of inlined subprogram, as if it
       --  were an instantiation, resetting source locations appropriately, so
@@ -4027,11 +4015,7 @@ package body Inline is
 
    procedure Register_Backend_Call (N : Node_Id) is
    begin
-      if Backend_Calls = No_Elist then
-         Backend_Calls := New_Elmt_List;
-      end if;
-
-      Append_Elmt (N, To => Backend_Calls);
+      Append_New_Elmt (N, To => Backend_Calls);
    end Register_Backend_Call;
 
    --------------------------

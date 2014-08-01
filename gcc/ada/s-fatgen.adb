@@ -756,12 +756,7 @@ package body System.Fat_Gen is
    -- Valid --
    -----------
 
-   --  Note: this routine does not work for VAX float. We compensate for this
-   --  in Exp_Attr by using the Valid functions in Vax_Float_Operations rather
-   --  than the corresponding instantiation of this function.
-
    function Valid (X : not null access T) return Boolean is
-
       IEEE_Emin : constant Integer := T'Machine_Emin - 1;
       IEEE_Emax : constant Integer := T'Machine_Emax - 1;
 

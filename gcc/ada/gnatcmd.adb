@@ -1180,7 +1180,7 @@ procedure GNATCmd is
 
       for C in Command_List'Range loop
 
-         --  No usage for VMS only command or for Sync
+         --  No usage for Sync
 
          if C /= Sync then
             if Targparm.AAMP_On_Target then
