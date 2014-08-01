@@ -56,6 +56,8 @@ pragma Compiler_Unit_Warning;
 with System;
 with System.Strings;
 
+with System.CRTL;
+
 package System.OS_Lib is
    pragma Preelaborate;
 
@@ -432,7 +434,7 @@ package System.OS_Lib is
    --  to the current position (origin = SEEK_CUR), end of file (origin =
    --  SEEK_END), or start of file (origin = SEEK_SET).
 
-   function File_Length (FD : File_Descriptor) return Long_Integer;
+   function File_Length (FD : File_Descriptor) return CRTL.size_t;
    pragma Import (C, File_Length, "__gnat_file_length");
    --  Get length of file from file descriptor FD
 

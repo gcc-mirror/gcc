@@ -1,5 +1,17 @@
 2014-08-01  Pascal Obry  <obry@adacore.com>
 
+	* adaint.h, adaint.c (__gnat_file_length): Returns an __int64.
+	(__gnat_named_file_length): Likewise.
+	(__gnat_file_length_attr): Likewise.
+	* a-direct.adb (C_Size): Use size_t as returned type.
+	* osint.adb (File_Length): Adjust spec for Internal routine
+	(returns size_t).
+	* s-os_lib.adb (File_Length): Now returns a CRTL.size_t.
+	(System.CRTL): With claused moved to spec.
+	* s-os_lib.ads (System.CRTL): With clause moved to here.
+
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
 	* adaint.h, adaint.c (__gnat_open): Added.
 	* s-crtl.ads (open): Import __gnat_open for large file support.
 

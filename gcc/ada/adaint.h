@@ -98,7 +98,7 @@ struct file_attributes {
   unsigned char directory;
 
   OS_Time timestamp;
-  long file_length;
+  __int64 file_length;
 };
 /* WARNING: changing the size here might require changing the constant
  * File_Attributes_Size in osint.ads (which should be big enough to
@@ -151,8 +151,8 @@ extern int    __gnat_create_output_file            (char *);
 extern int    __gnat_create_output_file_new        (char *);
 
 extern int    __gnat_open_append                   (char *, int);
-extern long   __gnat_file_length                   (int);
-extern long   __gnat_named_file_length             (char *);
+extern __int64 __gnat_file_length                  (int);
+extern __int64 __gnat_named_file_length            (char *);
 extern void   __gnat_tmp_name			   (char *);
 extern DIR   *__gnat_opendir                       (char *);
 extern char  *__gnat_readdir                       (DIR *, char *, int *);
@@ -177,7 +177,7 @@ extern int    __gnat_is_executable_file      (char *name);
 
 extern void   __gnat_reset_attributes (struct file_attributes *);
 extern int    __gnat_error_attributes (struct file_attributes *);
-extern long   __gnat_file_length_attr        (int, char *, struct file_attributes *);
+extern __int64 __gnat_file_length_attr       (int, char *, struct file_attributes *);
 extern OS_Time __gnat_file_time_name_attr    (char *, struct file_attributes *);
 extern OS_Time __gnat_file_time_fd_attr      (int,    struct file_attributes *);
 extern int    __gnat_file_exists_attr        (char *, struct file_attributes *);
