@@ -1256,12 +1256,19 @@ package body Freeze is
 
       function Find_Constant (Nod : Node_Id) return Traverse_Result is
       begin
+         --  When a constant is initialized with the result of a dispatching
+         --  call, the constant declaration is rewritten as a renaming of the
+         --  displaced function result. This scenario is not a premature use of
+         --  a constant even though the Has_Completion flag is not set.
+
          if Is_Entity_Name (Nod)
            and then Present (Entity (Nod))
            and then Ekind (Entity (Nod)) = E_Constant
+           and then Scope (Entity (Nod)) = Current_Scope
+           and then Nkind (Declaration_Node (Entity (Nod))) =
+                                                         N_Object_Declaration
            and then not Is_Imported (Entity (Nod))
            and then not Has_Completion (Entity (Nod))
-           and then Scope (Entity (Nod)) = Current_Scope
          then
             Error_Msg_NE
               ("premature use of& in call or instance", N, Entity (Nod));

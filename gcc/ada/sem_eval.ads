@@ -52,7 +52,12 @@ package Sem_Eval is
    --    Is_Static_Expression
 
    --      This flag is set on any expression that is static according to the
-   --      rules in (RM 4.9(3-32)).
+   --      rules in (RM 4.9(3-32)). This flag should be tested during testing
+   --      of legality of parts of a larger static expression. For all other
+   --      contexts that require static expressions, use the separate predicate
+   --      Is_OK_Static_Expression, since an expression that meets the RM 4.9
+   --      requirements, but raises a constraint error when evaluated in a non-
+   --      static context does not meet the legality requirements.
 
    --    Raises_Constraint_Error
 

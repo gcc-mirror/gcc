@@ -814,7 +814,7 @@ package body Sem_Util is
 
             if Nkind (Parent (N)) = N_Loop_Parameter_Specification
               and then not Has_Dynamic_Predicate_Aspect (Typ)
-              and then Is_Static_Subtype (Typ)
+              and then Is_OK_Static_Subtype (Typ)
             then
                return;
             end if;

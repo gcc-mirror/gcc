@@ -1,3 +1,23 @@
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* debug.adb: Minor documentation addition for -dn switch.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, exp_ch9.adb, sem_prag.adb, sem_util.adb,
+	sem_attr.adb, sem_eval.ads, sem_cat.adb, sem_ch13.adb: Improve
+	documentation of Is_Static_Expression vs Is_OK_Static_Expression.
+	In several places, use the Is_OK version as suggested by the spec.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Revert last change which was not correct.
+
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Find_Constant): Ensure that the constant being
+	inspected is still an object declaration (i.e. not a renaming).
+
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): a)
