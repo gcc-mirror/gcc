@@ -2923,7 +2923,7 @@ package body Sem_Ch3 is
          if Has_Dynamic_Predicate_Aspect (T) then
             Error_Msg_N
               ("subtype has dynamic predicate, "
-                 & "not allowed in number declaration", N);
+               & "not allowed in number declaration", N);
          end if;
 
       else

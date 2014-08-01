@@ -9819,10 +9819,9 @@ package body Sem_Res is
 
       begin
          if Nkind (Drange) = N_Subtype_Indication
-            and then Has_Predicates (Entity (Subtype_Mark (Drange)))
+           and then Has_Predicates (Entity (Subtype_Mark (Drange)))
          then
             Subt := Entity (Subtype_Mark (Drange));
-
          else
             Subt := Etype (Drange);
          end if;

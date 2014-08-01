@@ -784,7 +784,6 @@ package body Sem_Util is
       Gen            : Entity_Id;
 
    begin
-
       --  Avoid cascaded errors
 
       if Error_Posted (N) then

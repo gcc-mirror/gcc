@@ -793,6 +793,9 @@ package body Switch.M is
          elsif Switch_Chars = Makeutl.No_Exit_Message_Option then
             Opt.No_Exit_Message := True;
 
+         elsif Switch_Chars = Makeutl.Keep_Temp_Files_Option then
+            Opt.Keep_Temporary_Files := True;
+
          elsif Switch_Chars (Ptr) = '-' then
             Bad_Switch (Switch_Chars);
 

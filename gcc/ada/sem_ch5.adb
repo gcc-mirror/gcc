@@ -2210,9 +2210,9 @@ package body Sem_Ch5 is
                       or else Has_Dynamic_Predicate_Aspect (T))
          then
             Bad_Predicated_Subtype_Use
-              ("cannot use subtype& with non-static predicate for loop " &
-               "iteration", Discrete_Subtype_Definition (N),
-                  T, Suggest_Static => True);
+              ("cannot use subtype& with non-static predicate for loop "
+               & "iteration", Discrete_Subtype_Definition (N),
+               T, Suggest_Static => True);
 
          elsif Inside_A_Generic and then Is_Generic_Formal (T) then
             Set_No_Dynamic_Predicate_On_Actual (T);

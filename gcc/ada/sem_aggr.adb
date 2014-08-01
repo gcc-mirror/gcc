@@ -1728,12 +1728,14 @@ package body Sem_Aggr is
                         Freeze_Before (N, E);
 
                         if Has_Dynamic_Predicate_Aspect (E) then
-                           Error_Msg_NE ("subtype& has dynamic predicate,"
-                             & "not allowed in aggregate choice", Choice, E);
+                           Error_Msg_NE
+                             ("subtype& has dynamic predicate, not allowed "
+                              & "in aggregate choice", Choice, E);
 
                         elsif not Is_Static_Subtype (E) then
-                           Error_Msg_NE ("non-static subtype& has predicate,"
-                             & "not allowed in aggregate choice", Choice, E);
+                           Error_Msg_NE
+                             ("non-static subtype& has predicate, not allowed "
+                              & "in aggregate choice", Choice, E);
                         end if;
 
                         --  If the subtype has a static predicate, replace the
