@@ -2230,30 +2230,37 @@ package body Sem_Aggr is
 
                            if Lo_Val > Hi_Val + 1 then
 
-                              --  Set location for flag, if the choice is an
-                              --  explicit Range, then point to the low bound,
-                              --  otherwise just point to  the choice.
+                              declare
+                                 Error_Node : Node_Id;
 
-                              Choice := Table (J).Choice;
+                              begin
+                                 --  If the choice is the bound of a range in
+                                 --  a subtype indication, it is not in the
+                                 --  source lists for the aggregate itself, so
+                                 --  post the error on the aggregate. Otherwise
+                                 --  post it on choice itself.
 
-                              if Nkind (Choice) = N_Range then
-                                 Choice := Low_Bound (Choice);
-                              end if;
+                                 Choice := Table (J).Choice;
 
-                              --  Now post appropriate message
+                                 if Is_List_Member (Choice) then
+                                    Error_Node := Choice;
+                                 else
+                                    Error_Node := N;
+                                 end if;
 
-                              if Hi_Val + 1 = Lo_Val - 1 then
-                                 Error_Msg_N
-                                   ("missing index value in array aggregate!",
-                                    Choice);
-                              else
-                                 Error_Msg_N
-                                   ("missing index values in array aggregate!",
-                                    Choice);
-                              end if;
+                                 if Hi_Val + 1 = Lo_Val - 1 then
+                                    Error_Msg_N
+                                      ("missing index value "
+                                       & "in array aggregate!", Error_Node);
+                                 else
+                                    Error_Msg_N
+                                      ("missing index values "
+                                       & "in array aggregate!", Error_Node);
+                                 end if;
 
-                              Output_Bad_Choices
-                                (Hi_Val + 1, Lo_Val - 1, Choice);
+                                 Output_Bad_Choices
+                                   (Hi_Val + 1, Lo_Val - 1, Error_Node);
+                              end;
                            end if;
                         end loop;
                      end if;

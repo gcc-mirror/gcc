@@ -190,6 +190,7 @@ AdaCore@*
 * Overflow Check Handling in GNAT::
 * Conditional Compilation::
 * Inline Assembler::
+* Writing Portable Fixed-Point Declarations::
 * Compatibility and Porting Guide::
 * Microsoft Windows Topics::
 * Mac OS Topics::
@@ -425,6 +426,10 @@ both with Ada in general and with GNAT facilities in particular.
 @item
 @ref{Inline Assembler}, shows how to use the inline assembly facility
 in an Ada program.
+
+@item
+@ref{Writing Portable Fixed-Point Declarations}, gives some guidance on
+defining portable fixed-point types.
 
 @item
 @ref{Compatibility and Porting Guide}, contains sections on compatibility
@@ -26409,6 +26414,146 @@ to @code{True} only if the compiler's optimizations have created
 problems.
 @c END OF INLINE ASSEMBLER CHAPTER
 @c ===============================
+
+
+@c *****************************************
+@c Writing Portable Fixed-Point Declarations
+@c *****************************************
+@node Writing Portable Fixed-Point Declarations
+@appendix Writing Portable Fixed-Point Declarations
+@cindex Fixed-point types (writing portable declarations)
+
+@noindent
+The Ada Reference Manual gives an implementation freedom to choose bounds
+that are narrower by @code{Small} from the given bounds.
+For example, if we write
+
+@smallexample @c ada
+   type F1 is delta 1.0 range -128.0 .. +128.0;
+@end smallexample
+
+@noindent
+then the implementation is allowed to choose -128.0 .. +127.0 if it
+likes, but is not required to do so.
+
+This leads to possible portability problems, so let's have a closer
+look at this, and figure out how to avoid these problems.
+
+First, why does this freedom exist, and why would an implementation
+take advantage of it? To answer this, take a closer look at the type
+declaration for @code{F1} above. If the compiler uses the given bounds,
+it would need 9 bits to hold the largest positive value (and typically
+that means 16 bits on all machines). But if the implementation chooses
+the +127.0 bound then it can fit values of the type in 8 bits.
+
+Why not make the user write +127.0 if that's what is wanted?
+The rationale is that if you are thinking of fixed point
+as a kind of ``poor man's floating-point'', then you don't want
+to be thinking about the scaled integers that are used in its
+representation. Let's take another example:
+
+@smallexample @c ada
+   type F2 is delta 2.0**(-15) range -1.0 .. +1.0;
+@end smallexample
+
+@noindent
+Looking at this declaration, it seems casually as though
+it should fit in 16 bits, but again that extra positive value
++1.0 has the scaled integer equivalent of 2**15 which is one too
+big for signed 16 bits. The implementation can treat this as:
+
+@smallexample @c ada
+   type F2 is delta 2.0**(-15) range -1.0 .. +1.0-(2.0**(-15));
+@end smallexample
+
+@noindent
+and the Ada language design team felt that this was too annoying
+to require. We don't need to debate this decision at this point,
+since it is well established (the rule about narrowing the ranges
+dates to Ada 83).
+
+But the important point is that an implementation is not required
+to do this narrowing, so we have a potential portability problem.
+We could imagine three types of implementation:
+
+@enumerate a
+@item
+those that narrow the range automatically if they can figure
+out that the narrower range will allow storage in a smaller machine unit,
+
+@item
+those that will narrow only if forced to by a @code{'Size} clause, and
+
+@item
+those that will never narrow.
+@end enumerate
+
+@noindent
+Now if we are language theoreticians, we can imagine a fourth
+approach: is to narrow all the time, e.g. to treat
+
+@smallexample @c ada
+   type F3 is delta 1.0 range -10.0 .. +23.0;
+@end smallexample
+
+@noindent
+as though it had been written:
+
+@smallexample @c ada
+   type F3 is delta 1.0 range -9.0 .. +22.0;
+@end smallexample
+
+@noindent
+But although technically allowed, such a behavior would be hostile and silly,
+and no real compiler would do this. All real compilers will fall into one of
+the categories (a), (b) or (c) above.
+
+So, how do you get the compiler to do what you want? The answer is give the
+actual bounds you want, and then use a @code{'Small} clause and a
+@code{'Size} clause to absolutely pin down what the compiler does.
+E.g., for @code{F2} above, we will write:
+
+@smallexample @c ada
+@group
+   My_Small : constant := 2.0**(-15);
+   My_First : constant := -1.0;
+   My_Last  : constant := +1.0 - My_Small;
+
+   type F2 is delta My_Small range My_First .. My_Last;
+@end group
+@end smallexample
+
+@noindent
+and then add
+
+@smallexample @c ada
+@group
+   for F2'Small use my_Small;
+   for F2'Size  use 16;
+@end group
+@end smallexample
+
+@noindent
+In practice all compilers will do the same thing here and will give you
+what you want, so the above declarations are fully portable. If you really
+want to play language lawyer and guard against ludicrous behavior by the
+compiler you could add
+
+@smallexample @c ada
+@group
+   Test1 : constant := 1 / Boolean'Pos (F2'First = My_First);
+   Test2 : constant := 1 / Boolean'Pos (F2'Last  = My_Last);
+@end group
+@end smallexample
+
+@noindent
+One or other or both are allowed to be illegal if the compiler is
+behaving in a silly manner, but at least the silly compiler will not
+get away with silently messing with your (very clear) intentions.
+
+If you follow this scheme you will be guaranteed that your fixed-point
+types will be portable.
+
 
 @c ***********************************
 @c * Compatibility and Porting Guide *

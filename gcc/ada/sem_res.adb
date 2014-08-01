@@ -4325,10 +4325,12 @@ package body Sem_Res is
             end if;
 
             --  The following checks are only relevant when SPARK_Mode is on as
-            --  they are not standard Ada legality rule.
+            --  they are not standard Ada legality rule. Internally generated
+            --  temporaries are ignored.
 
             if SPARK_Mode = On
               and then Is_Effectively_Volatile_Object (A)
+              and then Comes_From_Source (A)
             then
                --  An effectively volatile object may act as an actual
                --  parameter when the corresponding formal is of a non-scalar
@@ -4353,9 +4355,9 @@ package body Sem_Res is
 
                --  Detect an external variable with an enabled property that
                --  does not match the mode of the corresponding formal in a
-               --  procedure call.
-
-               --  why only procedure calls ???
+               --  procedure call. Functions are not considered because they
+               --  cannot have effectively volatile formal parameters in the
+               --  first place.
 
                if Ekind (Nam) = E_Procedure
                  and then Is_Entity_Name (A)

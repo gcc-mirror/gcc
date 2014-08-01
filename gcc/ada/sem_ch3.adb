@@ -3037,9 +3037,10 @@ package body Sem_Ch3 is
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
 
          --  The following checks are only relevant when SPARK_Mode is on as
-         --  they are not standard Ada legality rules.
+         --  they are not standard Ada legality rules. Internally generated
+         --  temporaries are ignored.
 
-         if SPARK_Mode = On then
+         if SPARK_Mode = On and then Comes_From_Source (Obj_Id) then
             if Is_Effectively_Volatile (Obj_Id) then
 
                --  The declaration of an effectively volatile object must
