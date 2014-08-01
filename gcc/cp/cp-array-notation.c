@@ -607,7 +607,7 @@ expand_an_in_modify_expr (location_t location, tree lhs,
     
   if (lhs_rank == 0 && rhs_rank != 0)
     {
-      error_at (location, "%qD cannot be scalar when %qD is not", lhs, rhs);
+      error_at (location, "%qE cannot be scalar when %qE is not", lhs, rhs);
       return error_mark_node;
     }
   if (lhs_rank != 0 && rhs_rank != 0 && lhs_rank != rhs_rank)
