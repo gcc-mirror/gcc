@@ -1,3 +1,9 @@
+2014-07-08  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* c-c++-common/cilk-plus/AN/pr61455.c: New test.
+	* c-c++-common/cilk-plus/AN/pr61455-2.c: Likewise.
+
 2014-08-01  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/legitimize_stack_var_before_reload_1.c: New
