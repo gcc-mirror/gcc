@@ -29,7 +29,6 @@ with Debug;
 with Err_Vars; use Err_Vars;
 with Errutil;
 with Fname;
-with Hostparm;
 with Osint;    use Osint;
 with Output;   use Output;
 with Opt;      use Opt;
@@ -740,12 +739,6 @@ package body Makeutl is
    --  Beginning of Executable_Prefix_Path
 
    begin
-      --  For VMS, the path returned is always /gnu/
-
-      if Hostparm.OpenVMS then
-         return "/gnu/";
-      end if;
-
       --  First determine if a path prefix was placed in front of the
       --  executable name.
 

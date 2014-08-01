@@ -64,15 +64,12 @@ package body Clean is
    ALI_Suffix      : constant String := ".ali";
    Tree_Suffix     : constant String := ".adt";
    Object_Suffix   : constant String := Get_Target_Object_Suffix.all;
-   Debug_Suffix    : String          := ".dg";
-   --  Changed to "_dg" for VMS in the body of the package
+   Debug_Suffix    : constant String := ".dg";
+   Repinfo_Suffix  : constant String := ".rep";
+   --  Suffix of representation info files.
 
-   Repinfo_Suffix  : String := ".rep";
-   --  Changed to "_rep" for VMS in the body of the package
-
-   B_Start : String_Ptr := new String'("b~");
+   B_Start : constant String := "b~";
    --  Prefix of binder generated file, and number of actual characters used.
-   --  Changed to "b__" for VMS in the body of the package.
 
    Project_Tree : constant Project_Tree_Ref :=
      new Project_Tree_Data (Is_Root_Tree => True);
@@ -1266,27 +1263,7 @@ package body Clean is
            or else Is_Writable_File (Full_Name (1 .. Last))
            or else Is_Symbolic_Link (Full_Name (1 .. Last))
          then
-            --  On VMS, we have to delete all versions of the file
-
-            if OpenVMS_On_Target then
-               declare
-                  Host_Full_Name : constant String_Access :=
-                    To_Host_File_Spec (Full_Name (1 .. Last));
-               begin
-                  if Host_Full_Name = null
-                    or else Host_Full_Name'Length = 0
-                  then
-                     Success := False;
-                  else
-                     Delete_File (Host_Full_Name.all & ";*", Success);
-                  end if;
-               end;
-
-            --  Otherwise just delete the specified file
-
-            else
-               Delete_File (Full_Name (1 .. Last), Success);
-            end if;
+            Delete_File (Full_Name (1 .. Last), Success);
 
          --  Here if no deletion required
 
@@ -1327,7 +1304,7 @@ package body Clean is
 
       --  Build the file name (before the extension)
 
-      File_Name (1 .. B_Start'Length) := B_Start.all;
+      File_Name (1 .. B_Start'Length) := B_Start;
       File_Name (B_Start'Length + 1 .. Last) := Source_Name;
 
       --  Spec
@@ -1590,16 +1567,7 @@ package body Clean is
          Prj.Tree.Initialize (Project_Node_Tree);
 
          Prj.Initialize (Project_Tree);
-
-         --  Check if the platform is VMS and, if it is, change some variables
-
          Targparm.Get_Target_Parameters;
-
-         if OpenVMS_On_Target then
-            Debug_Suffix (Debug_Suffix'First) := '_';
-            Repinfo_Suffix (Repinfo_Suffix'First) := '_';
-            B_Start := new String'("b__");
-         end if;
       end if;
 
       --  Reset global variables

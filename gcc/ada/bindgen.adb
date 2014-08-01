@@ -52,10 +52,6 @@ package body Bindgen is
    Last : Natural := 0;
    --  Last location in Statement_Buffer currently set
 
-   With_DECGNAT : Boolean := False;
-   --  Flag which indicates whether the program uses the DECGNAT library
-   --  (presence of the unit DEC).
-
    With_GNARL : Boolean := False;
    --  Flag which indicates whether the program uses the GNARL library
    --  (presence of the unit System.OS_Interface)
@@ -325,9 +321,7 @@ package body Bindgen is
    --  Move routine for sorting linker options
 
    procedure Resolve_Binder_Options;
-   --  Set the value of With_GNARL and With_DECGNAT. The latter only on VMS
-   --  since it tests for a package named "dec" which might cause a conflict
-   --  on non-VMS systems.
+   --  Set the value of With_GNARL.
 
    procedure Set_Char (C : Character);
    --  Set given character in Statement_Buffer at the Last + 1 position
@@ -659,36 +653,6 @@ package body Bindgen is
                  """__gnat_finalize_library_objects"");");
          end if;
 
-         --  Import entry point for environment feature enable/disable
-         --  routine, and indication that it's been called previously.
-
-         if OpenVMS_On_Target then
-            WBI ("");
-            WBI ("      procedure Set_Features;");
-            WBI ("      pragma Import (C, Set_Features, " &
-                 """__gnat_set_features"");");
-            WBI ("");
-            WBI ("      Features_Set : Integer;");
-            WBI ("      pragma Import (C, Features_Set, " &
-                 """__gnat_features_set"");");
-
-            if Opt.Heap_Size /= 0 then
-               WBI ("");
-               WBI ("      Heap_Size : Integer;");
-               WBI ("      pragma Import (C, Heap_Size, " &
-                    """__gl_heap_size"");");
-
-               Write_Statement_Buffer;
-            end if;
-
-            WBI ("");
-            WBI ("      Float_Format : Character;");
-            WBI ("      pragma Import (C, Float_Format, " &
-                    """__gl_float_format"");");
-
-            Write_Statement_Buffer;
-         end if;
-
          --  Initialize stack limit variable of the environment task if the
          --  stack check method is stack limit and stack check is enabled.
 
@@ -885,44 +849,6 @@ package body Bindgen is
             WBI ("      if Handler_Installed = 0 then");
             WBI ("         Install_Handler;");
             WBI ("      end if;");
-         end if;
-
-         --  Generate call to Set_Features
-
-         if OpenVMS_On_Target then
-
-            --  Set_Features will call IEEE$SET_FP_CONTROL appropriately
-            --  depending on the setting of Float_Format.
-
-            WBI ("");
-            Set_String ("      Float_Format := '");
-
-            if Float_Format_Specified = 'G'
-                 or else
-               Float_Format_Specified = 'D'
-            then
-               Set_Char ('V');
-            else
-               Set_Char ('I');
-            end if;
-
-            Set_String ("';");
-            Write_Statement_Buffer;
-
-            WBI ("");
-            WBI ("      if Features_Set = 0 then");
-            WBI ("         Set_Features;");
-            WBI ("      end if;");
-
-            --  Features_Set may twiddle the heap size according to a logical
-            --  name, but the binder switch must override.
-
-            if Opt.Heap_Size /= 0 then
-               Set_String ("      Heap_Size := ");
-               Set_Int (Opt.Heap_Size);
-               Set_Char   (';');
-               Write_Statement_Buffer;
-            end if;
          end if;
       end if;
 
@@ -2138,18 +2064,6 @@ package body Bindgen is
 
          WBI ("   --   " & Name_Buffer (1 .. Name_Len));
 
-         if With_DECGNAT then
-            Name_Len := 0;
-
-            if Opt.Shared_Libgnat then
-               Add_Str_To_Name_Buffer (Shared_Lib ("decgnat"));
-            else
-               Add_Str_To_Name_Buffer ("-ldecgnat");
-            end if;
-
-            Write_Linker_Option;
-         end if;
-
          if With_GNARL then
             Name_Len := 0;
 
@@ -3024,12 +2938,6 @@ package body Bindgen is
          --  application.
 
          Check_Package (With_GNARL, "system.os_interface%s");
-
-         --  Ditto for declib and the "dec" package
-
-         if OpenVMS_On_Target then
-            Check_Package (With_DECGNAT, "dec%s");
-         end if;
 
          --  Ditto for the use of restricted tasking
 

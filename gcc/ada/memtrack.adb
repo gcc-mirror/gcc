@@ -60,7 +60,6 @@
 --    GNU/Linux
 --    HP-UX
 --    Solaris
---    Alpha OpenVMS
 
 --  NOTE FOR FUTURE PLATFORMS SUPPORT: It is assumed that type Duration is
 --  64 bit. If the need arises to support architectures where this assumption

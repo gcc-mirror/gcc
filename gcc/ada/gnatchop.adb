@@ -36,7 +36,6 @@ with GNAT.OS_Lib;                use GNAT.OS_Lib;
 with GNAT.Heap_Sort_G;
 with GNAT.Table;
 
-with Hostparm;
 with Switch;                     use Switch;
 with Types;
 
@@ -273,10 +272,7 @@ procedure Gnatchop is
       Success  : out Boolean);
    --  Reads file associated with FS into the newly allocated
    --  string Contents.
-   --  [VMS] Success is true iff the number of bytes read is less than or
-   --   equal to the file size.
-   --  [Other] Success is true iff the number of bytes read is equal to
-   --   the file size.
+   --  Success is true iff the number of bytes read is equal to the file size.
 
    function Report_Duplicate_Units return Boolean;
    --  Output messages about duplicate units in the input files in Unit.Table
@@ -387,15 +383,8 @@ procedure Gnatchop is
 
             begin
                if Is_Writable_File (Info.File_Name.all) then
-                  if Hostparm.OpenVMS then
-                     Error_Msg
-                       (Info.File_Name.all
-                        & " already exists, use /OVERWRITE to overwrite");
-                  else
-                     Error_Msg (Info.File_Name.all
-                                 & " already exists, use -w to overwrite");
-                  end if;
-
+                  Error_Msg (Info.File_Name.all
+                              & " already exists, use -w to overwrite");
                   Exists := True;
                end if;
             end;
@@ -1018,15 +1007,7 @@ procedure Gnatchop is
          Free (Buffer);
       end if;
 
-      --  Things aren't simple on VMS due to the plethora of file types and
-      --  organizations. It seems clear that there shouldn't be more bytes
-      --  read than are contained in the file though.
-
-      if Hostparm.OpenVMS then
-         Success := Read_Ptr <= Length + 1;
-      else
-         Success := Read_Ptr = Length + 1;
-      end if;
+      Success := Read_Ptr = Length + 1;
    end Read_File;
 
    ----------------------------
@@ -1083,12 +1064,7 @@ procedure Gnatchop is
       end loop;
 
       if Duplicates and not Overwrite_Files then
-         if Hostparm.OpenVMS then
-            Put_Line
-              ("use /OVERWRITE to overwrite files and keep last version");
-         else
-            Put_Line ("use -w to overwrite files and keep last version");
-         end if;
+         Put_Line ("use -w to overwrite files and keep last version");
       end if;
 
       return Duplicates;
@@ -1136,23 +1112,13 @@ procedure Gnatchop is
                   if Param.all /= "" then
                      for J in Param'Range loop
                         if Param (J) not in '0' .. '9' then
-                           if Hostparm.OpenVMS then
-                              Error_Msg ("/FILE_NAME_MAX_LENGTH=nnn" &
-                                         " requires numeric parameter");
-                           else
-                              Error_Msg ("-k# requires numeric parameter");
-                           end if;
-
+                           Error_Msg ("-k# requires numeric parameter");
                            return False;
                         end if;
                      end loop;
 
                   else
-                     if Hostparm.OpenVMS then
-                        Param := new String'("39");
-                     else
-                        Param := new String'("8");
-                     end if;
+                     Param := new String'("8");
                   end if;
 
                   Gnat_Args :=
@@ -1273,13 +1239,7 @@ procedure Gnatchop is
          return False;
 
       when Invalid_Parameter =>
-         if Hostparm.OpenVMS then
-            Error_Msg ("/FILE_NAME_MAX_LENGTH=nnn qualifier" &
-                       " requires numeric parameter");
-         else
-            Error_Msg ("-k switch requires numeric parameter");
-         end if;
-
+         Error_Msg ("-k switch requires numeric parameter");
          return False;
    end Scan_Arguments;
 
@@ -1770,33 +1730,30 @@ procedure Gnatchop is
 
 begin
    --  Add the directory where gnatchop is invoked in front of the path, if
-   --  gnatchop is invoked with directory information. Only do this if the
-   --  platform is not VMS, where the notion of path does not really exist.
+   --  gnatchop is invoked with directory information.
 
-   if not Hostparm.OpenVMS then
-      declare
-         Command : constant String := Command_Name;
+   declare
+      Command : constant String := Command_Name;
 
-      begin
-         for Index in reverse Command'Range loop
-            if Command (Index) = Directory_Separator then
-               declare
-                  Absolute_Dir : constant String :=
-                                   Normalize_Pathname
-                                     (Command (Command'First .. Index));
-                  PATH         : constant String :=
-                                   Absolute_Dir
-                                   & Path_Separator
-                                   & Getenv ("PATH").all;
-               begin
-                  Setenv ("PATH", PATH);
-               end;
+   begin
+      for Index in reverse Command'Range loop
+         if Command (Index) = Directory_Separator then
+            declare
+               Absolute_Dir : constant String :=
+                                Normalize_Pathname
+                                  (Command (Command'First .. Index));
+               PATH         : constant String :=
+                                Absolute_Dir
+                                & Path_Separator
+                                & Getenv ("PATH").all;
+            begin
+               Setenv ("PATH", PATH);
+            end;
 
-               exit;
-            end if;
-         end loop;
-      end;
-   end if;
+            exit;
+         end if;
+      end loop;
+   end;
 
    --  Process command line options and initialize global variables
 
