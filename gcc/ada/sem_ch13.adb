@@ -9936,7 +9936,8 @@ package body Sem_Ch13 is
    procedure Freeze_Entity_Checks (N : Node_Id) is
       procedure Hide_Non_Overridden_Subprograms (Typ : Entity_Id);
       --  Inspect the primitive operations of type Typ and hide all pairs of
-      --  implicitly declared non-overridden homographs (Ada RM 8.3 12.3/2).
+      --  implicitly declared non-overridden non-fully conformant homographs
+      --  (Ada RM 8.3 12.3/2).
 
       -------------------------------------
       -- Hide_Non_Overridden_Subprograms --
@@ -9947,9 +9948,9 @@ package body Sem_Ch13 is
            (Subp_Id    : Entity_Id;
             Start_Elmt : Elmt_Id);
          --  Inspect a list of primitive operations starting with Start_Elmt
-         --  and find matching implicitly declared non-overridden homographs
-         --  of Subp_Id. If found, all matches along with Subp_Id are hidden
-         --  from all visibility.
+         --  and find matching implicitly declared non-overridden non-fully
+         --  conformant homographs of Subp_Id. If found, all matches along
+         --  with Subp_Id are hidden from all visibility.
 
          function Is_Non_Overridden_Or_Null_Procedure
            (Subp_Id : Entity_Id) return Boolean;
@@ -9973,11 +9974,12 @@ package body Sem_Ch13 is
                Prim := Node (Prim_Elmt);
 
                --  The current primitive is implicitly declared non-overridden
-               --  homograph of Subp_Id. Hide both subprograms from visibility.
+               --  non-fully conformant homograph of Subp_Id. Both subprograms
+               --  must be hidden from visibility.
 
                if Chars (Prim) = Chars (Subp_Id)
-                 and then Ekind (Prim) = Ekind (Subp_Id)
                  and then Is_Non_Overridden_Or_Null_Procedure (Prim)
+                 and then not Fully_Conformant (Prim, Subp_Id)
                then
                   Set_Is_Hidden_Non_Overridden_Subprogram (Prim);
                   Set_Is_Immediately_Visible              (Prim, False);
@@ -10034,8 +10036,8 @@ package body Sem_Ch13 is
       --  Start of processing for Hide_Non_Overridden_Subprograms
 
       begin
-         --  Inspect the list of primitives looking for a non-overriding
-         --  inherited null procedure.
+         --  Inspect the list of primitives looking for non-overridden
+         --  subprograms.
 
          if Present (Prim_Ops) then
             Prim_Elmt := First_Elmt (Prim_Ops);
@@ -10106,7 +10108,7 @@ package body Sem_Ch13 is
       --  abstract subprograms, null procedures and subprograms that require
       --  overriding. If this set contains fully conformat homographs, then one
       --  is chosen arbitrarily (already done during resolution), otherwise all
-      --  remaining non-conformant homographs must be hidden from visibility
+      --  remaining non-fully conformant homographs are hidden from visibility
       --  (Ada RM 8.3 12.3/2).
 
       if Is_Tagged_Type (E) then

@@ -2423,9 +2423,9 @@ package Einfo is
 --       Private_Declaration in sem_ch7).
 
 --    Is_Hidden_Non_Overridden_Subprogram (Flag2)
---       Defined in all entities. Set for implicitly declared non-generic
---       subprograms that require overriding or are null procedures, and are
---       hidden by a non-conformant homograph with the same characteristics
+--       Defined in all entities. Set for implicitly declared subprograms
+--       that require overriding or are null procedures, and are hidden by
+--       a non-fully conformant homograph with the same characteristics
 --       (Ada RM 8.3 12.3/2).
 
 --    Is_Hidden_Open_Scope (Flag171)

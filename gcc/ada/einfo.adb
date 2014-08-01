@@ -2068,7 +2068,6 @@ package body Einfo is
 
    function Is_Hidden_Non_Overridden_Subprogram (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       return Flag2 (Id);
    end Is_Hidden_Non_Overridden_Subprogram;
 
@@ -4850,7 +4849,6 @@ package body Einfo is
 
    procedure Set_Is_Hidden_Non_Overridden_Subprogram (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
       Set_Flag2 (Id, V);
    end Set_Is_Hidden_Non_Overridden_Subprogram;
 
