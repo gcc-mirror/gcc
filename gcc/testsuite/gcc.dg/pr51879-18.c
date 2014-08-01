@@ -13,5 +13,5 @@ void bar (int c, int *p)
     *q = foo ();
 }
 
-/* { dg-final { scan-tree-dump-times "foo \\(" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "foo \\(" 1 "pre" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

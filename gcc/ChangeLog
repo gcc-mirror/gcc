@@ -1,3 +1,9 @@
+2014-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61964
+	* tree-ssa-tail-merge.c (gimple_equal_p): Handle non-SSA LHS solely
+	by structural equality.
+
 2014-07-31  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
