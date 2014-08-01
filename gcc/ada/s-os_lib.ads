@@ -208,14 +208,22 @@ package System.OS_Lib is
    function Open_Read
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
-   --  Open file Name for reading, returning file descriptor File descriptor
-   --  returned is Invalid_FD if file cannot be opened.
+   --  Open file Name for reading, returning its file descriptor. File
+   --  descriptor returned is Invalid_FD if the file cannot be opened.
 
    function Open_Read_Write
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
-   --  Open file Name for both reading and writing, returning file descriptor.
-   --  File descriptor returned is Invalid_FD if file cannot be opened.
+   --  Open file Name for both reading and writing, returning its file
+   --  descriptor. File descriptor returned is Invalid_FD if the file
+   --  cannot be opened.
+
+   function Open_Append
+     (Name  : String;
+      Fmode : Mode) return File_Descriptor;
+   --  Opens file Name for appending, returning its file descriptor. File
+   --  descriptor returned is Invalid_FD if the file cannot be successfully
+   --  opened.
 
    function Create_File
      (Name  : String;
@@ -639,6 +647,10 @@ package System.OS_Lib is
       Fmode : Mode) return File_Descriptor;
 
    function Open_Read_Write
+     (Name  : C_File_Name;
+      Fmode : Mode) return File_Descriptor;
+
+   function Open_Append
      (Name  : C_File_Name;
       Fmode : Mode) return File_Descriptor;
 

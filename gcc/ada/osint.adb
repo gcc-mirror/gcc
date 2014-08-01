@@ -722,6 +722,23 @@ package body Osint is
       end if;
    end Create_File_And_Check;
 
+   -----------------------------------
+   -- Open_File_To_Append_And_Check --
+   -----------------------------------
+
+   procedure Open_File_To_Append_And_Check
+     (Fdesc : out File_Descriptor;
+      Fmode : Mode)
+   is
+   begin
+      Output_File_Name := Name_Enter;
+      Fdesc := Open_Append (Name_Buffer'Address, Fmode);
+
+      if Fdesc = Invalid_FD then
+         Fail ("Cannot create: " & Name_Buffer (1 .. Name_Len));
+      end if;
+   end Open_File_To_Append_And_Check;
+
    ------------------------
    -- Current_File_Index --
    ------------------------

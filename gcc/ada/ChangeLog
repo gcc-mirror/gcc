@@ -1,3 +1,22 @@
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Code
+	reformatting. Store the generated pragma Import in the related
+	subprogram as routine Wrap_Imported_Subprogram will need it later.
+	* sem_prag.adb (Is_Unconstrained_Or_Tagged_Item): An item of
+	a private type with discriminants is considered to fall in the
+	category of unconstrained or tagged items.
+
+2014-08-01  Arnaud charlet  <charlet@adacore.com>
+
+	* s-os_lib.adb (Open_Append): New functions to open a file for
+	appending. This binds to the already existing (but not used)
+	__gnat_open_append.
+	* osint.ads, osint.adb (Open_File_To_Append_And_Check): New procedure
+	to open a file for appending.
+	* osint-c.ads, osint-c.adb (Open_Output_Library_Info): New procedure
+	to open the ALI file for appending.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb: Minor reformatting.
