@@ -204,6 +204,7 @@ Implementation Defined Pragmas
 * Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
+* Pragma No_Elaboration_Code_All::
 * Pragma No_Inline::
 * Pragma No_Return::
 * Pragma No_Run_Time::
@@ -309,6 +310,7 @@ Implementation Defined Aspects
 * Aspect Invariant::
 * Aspect Iterable::
 * Aspect Linker_Section::
+* Aspect No_Elaboration_Code_All::
 * Aspect Object_Size::
 * Aspect Part_Of::
 * Aspect Persistent_BSS::
@@ -490,7 +492,6 @@ Partition-Wide Restrictions
 Program Unit Level Restrictions
 
 * No_Elaboration_Code::
-* No_Elaboration_Code_All::
 * No_Entry_Queue::
 * No_Implementation_Aspect_Specifications::
 * No_Implementation_Attributes::
@@ -1069,6 +1070,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
+* Pragma No_Elaboration_Code_All::
 * Pragma No_Inline::
 * Pragma No_Return::
 * Pragma No_Run_Time::
@@ -4668,6 +4670,24 @@ such a way that a body needed before is no longer needed. The provision of a
 dummy body with a No_Body pragma ensures that there is no interference from
 earlier versions of the package body.
 
+@node Pragma No_Elaboration_Code_All
+@unnumberedsec Pragma No_Elaboration_Code_All
+@findex No_Elaboration_Code_All
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma No_Elaboration_Code_All [(program_unit_NAME)];
+@end smallexample
+
+@noindent
+This is a program unit pragma (there is also an equivalent aspect of the
+same name) that establishes the restriction @code{No_Elaboration_Code} for
+the current unit and any extended main source units (body and subunits.
+It also has has the effect of enforcing a transitive application of this
+aspect, so that if any unit is implicitly or explicitly WITH'ed by the
+current unit, it must also have the No_Elaboration_Code_All aspect set.
+
 @node Pragma No_Inline
 @unnumberedsec Pragma No_Inline
 @findex No_Inline
@@ -8043,6 +8063,7 @@ clause.
 * Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect Lock_Free::
+* Aspect No_Elaboration_Code_All::
 * Aspect Object_Size::
 * Aspect Part_Of::
 * Aspect Persistent_BSS::
@@ -8303,6 +8324,13 @@ This aspect is equivalent to an @code{Linker_Section} pragma.
 @findex Lock_Free
 @noindent
 This aspect is equivalent to pragma @code{Lock_Free}.
+
+@node Aspect No_Elaboration_Code_All
+@unnumberedsec Aspect No_Elaboration_Code_All
+@findex No_Elaboration_Code_All
+@noindent
+This aspect is equivalent to a @code{pragma No_Elaboration_Code_All}
+statement for a program unit.
 
 @node Aspect Object_Size
 @unnumberedsec Aspect Object_Size
@@ -10860,7 +10888,6 @@ other compilation units in the partition.
 
 @menu
 * No_Elaboration_Code::
-* No_Elaboration_Code_All::
 * No_Entry_Queue::
 * No_Implementation_Aspect_Specifications::
 * No_Implementation_Attributes::
@@ -10920,22 +10947,6 @@ optimizer can figure this out.
 Note that this the implementation of this restriction requires full
 code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
-
-@node No_Elaboration_Code_All
-@unnumberedsubsec No_Elaboration_Code_All
-@findex No_Elaboration_Code_All
-
-This restriction is identical in semantic effects to
-@code{No_Elaboration_Code}, and
-for most purposes is treated simply as a synonym of @code{No_Elaboration_Code}.
-
-The difference is that if @code{No_Elaboration_Code_All} is used then it
-must appear within a package or subprogram spec. As is the case for
-@code{No_Elaboration_Code}, it also applies to the corresponding body if
-there is one. In addition, any with'ed unit must itself contain a
-@code{No_Elaboration_Code_All} restriction,
-thus allowing transitive enforcement of the requirement for no elaboration
-code to be generated.
 
 @node No_Entry_Queue
 @unnumberedsubsec No_Entry_Queue

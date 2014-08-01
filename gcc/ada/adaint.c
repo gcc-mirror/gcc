@@ -2968,7 +2968,7 @@ __gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
     flags |= FD_CLOEXEC;
   else
     flags &= ~FD_CLOEXEC;
-  return fcntl (fd, F_SETFD, flags | FD_CLOEXEC);
+  return fcntl (fd, F_SETFD, flags);
 #elif defined(_WIN32)
   HANDLE h = (HANDLE) _get_osfhandle (fd);
   if (h == (HANDLE) -1)

@@ -549,6 +549,7 @@ package Snames is
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
    Name_Memory_Size                    : constant Name_Id := N + $; -- Ada 83
    Name_No_Body                        : constant Name_Id := N + $; -- GNAT
+   Name_No_Elaboration_Code_All        : constant Name_Id := N + $; -- GNAT
    Name_No_Inline                      : constant Name_Id := N + $; -- GNAT
    Name_No_Return                      : constant Name_Id := N + $; -- Ada 05
    Name_Obsolescent                    : constant Name_Id := N + $; -- GNAT
@@ -738,7 +739,6 @@ package Snames is
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
    Name_No_Elaboration_Code            : constant Name_Id := N + $;
-   Name_No_Elaboration_Code_All        : constant Name_Id := N + $;
    Name_No_Implementation_Extensions   : constant Name_Id := N + $;
    Name_No_Obsolescent_Features        : constant Name_Id := N + $;
    Name_No_Requeue                     : constant Name_Id := N + $;
@@ -1861,6 +1861,7 @@ package Snames is
       Pragma_Main_Storage,
       Pragma_Memory_Size,
       Pragma_No_Body,
+      Pragma_No_Elaboration_Code_All,
       Pragma_No_Inline,
       Pragma_No_Return,
       Pragma_Obsolescent,

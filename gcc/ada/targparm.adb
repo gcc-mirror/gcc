@@ -212,6 +212,16 @@ package body Targparm is
 
       Opt.Address_Is_Private := False;
 
+      --  Loop through source lines
+
+      --  Note: in the case or pragmas, we are only interested in pragmas that
+      --  appear as configuration pragmas. These are left justified, so they
+      --  do not have three spaces at the start. Pragmas appearing within the
+      --  package (like Pure and No_Elaboration_Code_All) will have the three
+      --  spaces at the start and so will be ignored.
+
+      --  For a special exception, see processing for pragma Pure below
+
       P := Source_First;
       Line_Loop : while System_Text (P .. P + 10) /= "end System;" loop
 
@@ -461,12 +471,6 @@ package body Targparm is
             Opt.Polling_Required := True;
             goto Line_Loop_Continue;
 
-         --  Ignore pragma Pure (System)
-
-         elsif System_Text (P .. P + 20) = "pragma Pure (System);" then
-            P := P + 21;
-            goto Line_Loop_Continue;
-
          --  Queuing Policy
 
          elsif System_Text (P .. P + 22) = "pragma Queuing_Policy (" then
@@ -494,9 +498,20 @@ package body Targparm is
             Opt.Task_Dispatching_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
-         --  No other pragmas are permitted
+         --  No other configuration pragmas are permitted
 
          elsif System_Text (P .. P + 6) = "pragma " then
+
+            --  Special exception, we allow pragma Pure (System) appearing in
+            --  column one. This is an obsolete usage which may show up in old
+            --  tests with an obsolete version of system.ads, so we recognize
+            --  and ignore it to make life easier in handling such tests.
+
+            if System_Text (P .. P + 20) = "pragma Pure (System);" then
+               P := P + 21;
+               goto Line_Loop_Continue;
+            end if;
+
             Set_Standard_Error;
             Write_Line ("unrecognized line in system.ads: ");
 

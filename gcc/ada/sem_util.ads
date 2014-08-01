@@ -833,6 +833,13 @@ package Sem_Util is
    --  Return the Name component of Test_Case pragma N
    --  Bad name now that this no longer applies to Contract_Case ???
 
+   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id;
+   --  Get defining entity of parent unit of a child unit. In most cases this
+   --  is the defining entity of the unit, but for a child instance whose
+   --  parent needs a body for inlining, the instantiation node of the parent
+   --  has not yet been rewritten as a package declaration, and the entity has
+   --  to be retrieved from the Instance_Spec of the unit.
+
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
    --  Obtains the Pragma_Id from the Chars field of Pragma_Identifier (N)

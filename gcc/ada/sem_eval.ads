@@ -454,20 +454,20 @@ package Sem_Eval is
       Assume_Valid : Boolean := False;
       Fixed_Int    : Boolean := False;
       Int_Real     : Boolean := False) return Boolean;
-   --  Returns True if it can be guaranteed at compile time that expression is
-   --  known to be in range of the subtype Typ. A result of False does not mean
-   --  that the expression is out of range, merely that it cannot be determined
-   --  at compile time that it is in range. If Typ is a floating point type or
-   --  Int_Real is set, any integer value is treated as though it was a real
-   --  value (i.e. the underlying real value is used). In this case we use the
-   --  corresponding real value, both for the bounds of Typ, and for the value
-   --  of the expression N. If Typ is a fixed type or a discrete type and
-   --  Int_Real is False but flag Fixed_Int is True then any fixed-point value
-   --  is treated as though it was discrete value (i.e. the underlying integer
-   --  value is used). In this case we use the corresponding integer value,
-   --  both for the bounds of Typ, and for the value of the expression N. If
-   --  Typ is a discrete type and Fixed_Int as well as Int_Real are false,
-   --  integer values are used throughout.
+   --  Returns True if it can be guaranteed at compile time that expression
+   --  N is known to be in range of the subtype Typ. A result of False does
+   --  not mean that the expression is out of range, merely that it cannot be
+   --  determined at compile time that it is in range. If Typ is a floating
+   --  point type or Int_Real is set, any integer value is treated as though it
+   --  was a real value (i.e. the underlying real value is used). In this case
+   --  we use the corresponding real value, both for the bounds of Typ, and for
+   --  the value of the expression N. If Typ is a fixed type or a discrete type
+   --  and Int_Real is False but flag Fixed_Int is True then any fixed-point
+   --  value is treated as though it was discrete value (i.e. the underlying
+   --  integer value is used). In this case we use the corresponding integer
+   --  value, both for the bounds of Typ, and for the value of the expression
+   --  N. If Typ is a discrete type and Fixed_Int as well as Int_Real are
+   --  false, integer values are used throughout.
    --
    --  If Assume_Valid is set True, then N is always assumed to contain a valid
    --  value. If Assume_Valid is set False, then N may be invalid (unless there

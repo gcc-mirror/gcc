@@ -145,6 +145,7 @@ package Aspects is
 
       Aspect_All_Calls_Remote,
       Aspect_Elaborate_Body,
+      Aspect_No_Elaboration_Code_All,       -- GNAT
       Aspect_Preelaborate,
       Aspect_Pure,
       Aspect_Remote_Call_Interface,
@@ -426,6 +427,7 @@ package Aspects is
       Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
       Aspect_Machine_Radix                => Name_Machine_Radix,
+      Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
       Aspect_No_Return                    => Name_No_Return,
       Aspect_Object_Size                  => Name_Object_Size,
       Aspect_Output                       => Name_Output,
@@ -681,6 +683,7 @@ package Aspects is
       Aspect_Global                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
+      Aspect_No_Elaboration_Code_All      => Never_Delay,
       Aspect_Part_Of                      => Never_Delay,
       Aspect_Refined_Depends              => Never_Delay,
       Aspect_Refined_Global               => Never_Delay,

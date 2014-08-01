@@ -6791,6 +6791,23 @@ package body Sem_Util is
       return Strval (Expr_Value_S (Arg));
    end Get_Name_From_CTC_Pragma;
 
+   -----------------------
+   -- Get_Parent_Entity --
+   -----------------------
+
+   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id is
+   begin
+      if Nkind (Unit) = N_Package_Body
+        and then Nkind (Original_Node (Unit)) = N_Package_Instantiation
+      then
+         return Defining_Entity
+                  (Specification (Instance_Spec (Original_Node (Unit))));
+      elsif Nkind (Unit) = N_Package_Instantiation then
+         return Defining_Entity (Specification (Instance_Spec (Unit)));
+      else
+         return Defining_Entity (Unit);
+      end if;
+   end Get_Parent_Entity;
    -------------------
    -- Get_Pragma_Id --
    -------------------

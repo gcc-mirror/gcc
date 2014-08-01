@@ -543,6 +543,7 @@ package body Aspects is
     Aspect_Linker_Section               => Aspect_Linker_Section,
     Aspect_Lock_Free                    => Aspect_Lock_Free,
     Aspect_Machine_Radix                => Aspect_Machine_Radix,
+    Aspect_No_Elaboration_Code_All      => Aspect_No_Elaboration_Code_All,
     Aspect_No_Return                    => Aspect_No_Return,
     Aspect_Object_Size                  => Aspect_Object_Size,
     Aspect_Output                       => Aspect_Output,

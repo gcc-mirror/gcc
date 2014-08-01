@@ -93,11 +93,10 @@ easily handled:
   generating separate sets of object files for debugging and for production.
 @item Using a mostly-shared set of source files with different versions of
   some units or subunits. It can be used for instance, for grouping and hiding
+  all OS dependencies in a small number of implementation units.
 @end itemize
 
 @noindent
-all OS dependencies in a small number of implementation units.
-
 Project files can be used to achieve some of the effects of a source
 versioning system (for example, defining separate projects for
 the different sets of sources that comprise different releases) but the
@@ -174,7 +173,6 @@ detailed later in this documentation. They are summarized here as a reference.
   @b{Object_Dir} attribute. In order to store objects in
   two or more object directories, the system must be split into
   distinct subsystems with their own project file.
-/first exam
 
 @end table
 
@@ -197,7 +195,7 @@ common/
   proc.adb
 @end group
 @group
-common/release/
+common/obj/
   proc.ali, proc.o pack.ali, pack.o
 @end group
 @end smallexample
@@ -238,12 +236,12 @@ should contain the following code:
 
 @noindent
 When you create a new project, the first thing to describe is how to find the
-corresponding source files. This is the only settings that are needed by all
+corresponding source files. These are the only settings that are needed by all
 the tools that will use this project (builder, compiler, binder and linker for
 the compilation, IDEs to edit the source files,@dots{}).
 
 @cindex Source directories
-First step is to declare the source directories, which are the directories
+The first step is to declare the source directories, which are the directories
 to be searched to find source files. In the case of the example,
 the @file{common} directory is the only source directory.
 
@@ -266,15 +264,16 @@ There are several ways of defining source directories:
 @cindex portability
   The syntax for directories is platform specific. For portability, however,
   the project manager will always properly translate UNIX-like path names to
-  the native format of specific platform. For instance, when the same project
-  file is to be used both on Unix and Windows, "/" should be used as the
-  directory separator rather than "\".
+  the native format of the specific platform. For instance, when the same
+  project file is to be used both on Unix and Windows, "/" should be used as
+  the directory separator rather than "\".
 
 @item The attribute @b{Source_Dirs} can automatically include subdirectories
-  using a special syntax inspired by some UNIX shells. If any of the path in
-  the list ends with @emph{"**"}, then that path and all its subdirectories
+  using a special syntax inspired by some UNIX shells. If any of the paths in
+  the list ends with "@file{**}", then that path and all its subdirectories
   (recursively) are included in the list of source directories. For instance,
-  @file{**} and @file{./**} represent the complete directory tree rooted at ".".
+  @file{**} and @file{./**} represent the complete directory tree rooted at
+  the directory in which the project file resides.
 @cindex Source directories, recursive
 
 @cindex @code{Excluded_Source_Dirs}
@@ -321,7 +320,7 @@ their absolute or relative path names. The project manager is in charge of
 locating the specified source files in the specified source directories.
 
 @itemize @bullet
-@item By default, the project manager  search for all source files of all
+@item By default, the project manager searches for all source files of all
   specified languages in all the source directories.
 
   Since the project manager was initially developed for Ada environments, the
@@ -415,15 +414,14 @@ to it and this is not explicitly indicated in the project file.
 @noindent
 If the order of the source directories is known statically, that is if
 @code{"/**"} is not used in the string list @code{Source_Dirs}, then there may
-be several files with the same source file name sitting in different
-directories of the project. In this case, only the file in the first directory
-is considered as a source of the project and the others are hidden. If
-@code{"/**"} is used in the string list @code{Source_Dirs}, it is an error
-to have several files with the same source file name in the same directory
-@code{"/**"} subtree, since there would be an ambiguity as to which one should
-be used. However, two files with the same source file name may exist in two
-single directories or directory subtrees. In this case, the one in the first
-directory or directory subtree is a source of the project.
+be several files with the same name sitting in different directories of the
+project. In this case, only the file in the first directory is considered as a
+source of the project and the others are hidden. If @code{"/**"} is used in the
+string list @code{Source_Dirs}, it is an error to have several files with the
+same name in the same directory @code{"/**"} subtree, since there would be an
+ambiguity as to which one should be used. However, two files with the same name
+may exist in two single directories or directory subtrees. In this case, the
+one in the first directory or directory subtree is a source of the project.
 
 If there are two sources in different directories of the same @code{"/**"}
 subtree, one way to resolve the problem is to exclude the directory of the
@@ -467,11 +465,11 @@ For our example, we can specify the object dir in this way:
 
 @noindent
 As mentioned earlier, there is a single object directory per project. As a
-result, if you have an existing system where the object files are spread in
+result, if you have an existing system where the object files are spread across
 several directories, you can either move all of them into the same directory if
 you want to build it with a single project file, or study the section on
 subsystems (@pxref{Organizing Projects into Subsystems}) to see how each
-separate object directory can be associated with one of the subsystem
+separate object directory can be associated with one of the subsystems
 constituting the application.
 
 When the @command{linker} is called, it usually creates an executable. By
@@ -506,7 +504,7 @@ the project file is now
 @noindent
 In the previous section, executables were mentioned. The project manager needs
 to be taught what they are. In a project file, an executable is indicated by
-pointing to source file of the main subprogram. In C this is the file that
+pointing to the source file of a main subprogram. In C this is the file that
 contains the @code{main} function, and in Ada the file that contains the main
 unit.
 
@@ -515,8 +513,8 @@ several executables can be built in the context of a single project file. Of
 course, one given executable might not (and in fact will not) need all the
 source files referenced by the project. As opposed to other build environments
 such as @command{makefile}, one does not need to specify the list of
-dependencies of each executable, the project-aware builders knows enough of the
-semantics of the languages to build ands link only the necessary elements.
+dependencies of each executable, the project-aware builder knows enough of the
+semantics of the languages to build and link only the necessary elements.
 
 @cindex @code{Main}
 The list of main files is specified via the @b{Main} attribute. It contains
@@ -540,7 +538,7 @@ If this attribute is defined in the project, then spawning the builder
 with a command such as
 
 @smallexample
-   gnatmake -Pbuild
+   gprbuild -Pbuild
 @end smallexample
 
 @noindent
@@ -555,32 +553,31 @@ or more executables on the command line to build a subset of them.
 
 @noindent
 We now have a project file that fully describes our environment, and can be
-used to build the application with a simple @command{gnatmake} command as seen
+used to build the application with a simple @command{gprbuild} command as seen
 in the previous section. In fact, the empty project we showed immediately at
 the beginning (with no attribute at all) could already fulfill that need if it
 was put in the @file{common} directory.
 
-Of course, we always want more control. This section will show you how to
-specify the compilation switches that the various tools involved in the
-building of the executable should use.
+Of course, we might want more control. This section shows you how to specify
+the compilation switches that the various tools involved in the building of the
+executable should use.
 
 @cindex command line length
-Since source names and locations are described into the project file, it is not
+Since source names and locations are described in the project file, it is not
 necessary to use switches on the command line for this purpose (switches such
 as -I for gcc). This removes a major source of command line length overflow.
 Clearly, the builders will have to communicate this information one way or
 another to the underlying compilers and tools they call but they usually use
-response files for this and thus should not be subject to command line
-overflows.
+response files for this and thus are not subject to command line overflows.
 
-Several tools are participating to the creation of an executable: the compiler
+Several tools participate to the creation of an executable: the compiler
 produces object files from the source files; the binder (in the Ada case)
-creates an source file that takes care, among other things, of elaboration
-issues and global variables initialization; and the linker gathers everything
-into a single executable that users can execute. All these tools are known by
+creates a "source" file that takes care, among other things, of elaboration
+issues and global variable initialization; and the linker gathers everything
+into a single executable that users can execute. All these tools are known to
 the project manager and will be called with user defined switches from the
 project files. However, we need to introduce a new project file concept to
-express which switches to be used for any of the tools involved in the build.
+express the switches to be used for any of the tools involved in the build.
 
 @cindex project file packages
 A project file is subdivided into zero or more @b{packages}, each of which
@@ -796,7 +793,7 @@ on Windows), we could configure our project file to build "proc1"
 @cindex @code{Executable_Suffix}
 Attribute @b{Executable_Suffix}, when specified, may change the suffix
 of the executable files, when no attribute @code{Executable} applies:
-its value replace the platform-specific executable suffix.
+its value replaces the platform-specific executable suffix.
 The default executable suffix is empty on UNIX and ".exe" on Windows.
 
 It is also possible to change the name of the produced executable by using the
@@ -1163,8 +1160,8 @@ so far in @file{build.gpr}, building the application would fail with an error
 indicating that the gtkada and logging units that are relied upon by the sources
 of this project cannot be found.
 
-This is easily solved by adding the following @b{with} clauses at the beginning
-of our project:
+This is solved by adding the following @b{with} clauses at the beginning of our
+project:
 
 @smallexample @c projectfile
   @b{with} "gtkada.gpr";
@@ -1176,16 +1173,16 @@ of our project:
 
 @noindent
 @cindex @code{Externally_Built}
-When such a project is compiled, @command{gnatmake} will automatically
-check the other projects and recompile their sources when needed. It will also
+When such a project is compiled, @command{gprbuild} will automatically check
+the other projects and recompile their sources when needed. It will also
 recompile the sources from @code{Build} when needed, and finally create the
 executable. In some cases, the implementation units needed to recompile a
-project are not available, or come from some third-party and you do not want to
-recompile it yourself. In this case, the attribute @b{Externally_Built} to
-"true" can be set, indicating to the builder that this project can be assumed
-to be up-to-date, and should not be considered for recompilation. In Ada, if
-the sources of this externally built project were compiled with another version
-of the compiler or with incompatible options, the binder will issue an error.
+project are not available, or come from some third party and you do not want to
+recompile it yourself. In this case, set the attribute @b{Externally_Built} to
+"true", indicating to the builder that this project can be assumed to be
+up-to-date, and should not be considered for recompilation. In Ada, if the
+sources of this externally built project were compiled with another version of
+the compiler or with incompatible options, the binder will issue an error.
 
 The project's @code{with} clause has several effects. It provides source
 visibility between projects during the compilation process. It also guarantees
@@ -1214,8 +1211,7 @@ A solution if you need something like this is to use aggregate projects
 When a relative path or a base name is used, the
 project files are searched relative to each of the directories in the
 @b{project path}. This path includes all the directories found with the
-following algorithm, in that order, as soon as a matching file is found,
-the search stops:
+following algorithm, in this order; the first matching file is used:
 
 @itemize @bullet
 @item First, the file is searched relative to the directory that contains the
@@ -1236,8 +1232,8 @@ the search stops:
   use @b{GPR_PROJECT_PATH_FILE} or @b{GPR_PROJECT_PATH}.
 
 @item Finally, it is searched relative to the default project directories.
-  Such directories depends on the tool used. The different locations searched
-  in the specified order are:
+  Such directories depend on the tool used. The locations searched in the
+  specified order are:
 
   @itemize @bullet
   @item @file{<prefix>/<target>/lib/gnat}
@@ -1388,7 +1384,7 @@ There are two main approaches to avoiding this duplication:
   @end smallexample
 
 @item The second approach is to define the switches in a third project.
-  That project is setup without any sources (so that, as opposed to
+  That project is set up without any sources (so that, as opposed to
   the first example, none of the project plays a special role), and
   will only be used to define the attributes. Such a project is
   typically called @file{shared.gpr}.
@@ -1480,21 +1476,21 @@ Various aspects of the projects can be modified based on @b{scenarios}. These
 are user-defined modes that change the behavior of a project. Typical
 examples are the setup of platform-specific compiler options, or the use of
 a debug and a release mode (the former would activate the generation of debug
-information, when the second will focus on improving code optimization).
+information, while the second will focus on improving code optimization).
 
-Let's enhance our example to support a debug and a release modes.The issue is to
-let the user choose what kind of system he is building:
-use @option{-g} as compiler switches in debug mode and @option{-O2}
-in release mode. We will also setup the projects so that we do not share the
-same object directory in both modes, otherwise switching from one to the other
-might trigger more recompilations than needed or mix objects from the 2 modes.
+Let's enhance our example to support debug and release modes. The issue is to
+let the user choose what kind of system he is building: use @option{-g} as
+compiler switches in debug mode and @option{-O2} in release mode. We will also
+set up the projects so that we do not share the same object directory in both
+modes; otherwise switching from one to the other might trigger more
+recompilations than needed or mix objects from the two modes.
 
 One naive approach is to create two different project files, say
 @file{build_debug.gpr} and @file{build_release.gpr}, that set the appropriate
-attributes as explained in previous sections. This solution does not scale well,
-because in presence of multiple projects depending on each other,
-you will also have to duplicate the complete hierarchy and adapt the project
-files to point to the right copies.
+attributes as explained in previous sections. This solution does not scale
+well, because in the presence of multiple projects depending on each other, you
+will also have to duplicate the complete hierarchy and adapt the project files
+to point to the right copies.
 
 @cindex scenarios
 Instead, project files support the notion of scenarios controlled
@@ -1517,16 +1513,16 @@ order of priority):
   When the external value does not come from the command line, it can come from
   the value of environment variables of the appropriate name.
   In our case, if an environment variable called "mode"
-  exist, its value will be taken into account.
+  exists, its value will be taken into account.
 
-@item @b{External function second parameter}
+@item @b{External function second parameter}.
 
 @end table
 
 @cindex @code{external}
 We now need to get that value in the project. The general form is to use
 the predefined function @b{external} which returns the current value of
-the external. For instance, we could setup the object directory to point to
+the external. For instance, we could set up the object directory to point to
 either @file{obj/debug} or @file{obj/release} by changing our project to
 
 @smallexample @c projectfile
@@ -1580,7 +1576,7 @@ force the user to define the value. Finally, we can use a case construction to s
 switches depending on the scenario the user has chosen.
 
 Most aspects of the projects can depend on scenarios. The notable exception
-are project dependencies (@code{with} clauses), which may not depend on a scenario.
+are project dependencies (@code{with} clauses), which cannot depend on a scenario.
 
 Scenarios work the same way with @b{project hierarchies}: you can either
 duplicate a variable similar to @code{Mode} in each of the project (as long
@@ -1601,7 +1597,7 @@ using system-specific means such as archives or windows DLLs.
 
 Library projects provide a system- and language-independent way of building both @b{static}
 and @b{dynamic} libraries. They also support the concept of @b{standalone
-libraries} (SAL) which offers two significant properties: the elaboration
+libraries} (SAL) which offer two significant properties: the elaboration
 (e.g. initialization) of the library is either automatic or very simple;
 a change in the
 implementation part of the library implies minimal post-compilation actions on
@@ -1632,12 +1628,12 @@ installation of the library (i.e., copying associated source, object and
 
 @noindent
 Let's enhance our example and transform the @code{logging} subsystem into a
-library.  In order to do so, a few changes need to be made to @file{logging.gpr}.
-A number of specific attributes needs to be defined: at least @code{Library_Name}
-and @code{Library_Dir}; in addition, a number of other attributes can be used
-to specify specific aspects of the library. For readability, it is also
-recommended (although not mandatory), to use the qualifier @code{library} in
-front of the @code{project} keyword.
+library.  In order to do so, a few changes need to be made to
+@file{logging.gpr}.  Some attributes need to be defined: at least
+@code{Library_Name} and @code{Library_Dir}; in addition, some other attributes
+can be used to specify specific aspects of the library. For readability, it is
+also recommended (although not mandatory), to use the qualifier @code{library}
+in front of the @code{project} keyword.
 
 @table @asis
 @item @b{Library_Name}:
@@ -1645,7 +1641,7 @@ front of the @code{project} keyword.
   This attribute is the name of the library to be built. There is no
   restriction on the name of a library imposed by the project manager, except
   for stand-alone libraries whose names must follow the syntax of Ada
-  identifiers; however, there may be system specific restrictions on the name.
+  identifiers; however, there may be system-specific restrictions on the name.
   In general, it is recommended to stick to alphanumeric characters (and
   possibly single underscores) to help portability.
 
@@ -1656,7 +1652,7 @@ front of the @code{project} keyword.
   the sources are compiled, the object files end up  in the explicit or
   implicit @code{Object_Dir} directory. When all sources of a library
   are compiled, some of the compilation artifacts, including the library itself,
-  are copied to the library_dir directory. This directory must exists and be
+  are copied to the library_dir directory. This directory must exist and be
   writable. It must also be different from the object directory so that cleanup
   activities in the Library_Dir do not affect recompilation needs.
 
@@ -1694,11 +1690,10 @@ Other library-related attributes can be used to change the defaults:
   a library on different operating systems.
 
   If you need to build both a static and a dynamic library, it is recommended
-  use two different object directories, since in some cases some extra code
-  needs to be generated for the latter. For such cases, one can
-  either define two different project files, or a single one which uses scenarios
-  to indicate the various kinds of library to be built and their
-  corresponding object_dir.
+  to use two different object directories, since in some cases some extra code
+  needs to be generated for the latter. For such cases, one can either define
+  two different project files, or a single one that uses scenarios to indicate
+  the various kinds of library to be built and their corresponding object_dir.
 
 @cindex @code{Library_ALI_Dir}
 @item @b{Library_ALI_Dir}:
@@ -1711,7 +1706,7 @@ Other library-related attributes can be used to change the defaults:
 
 @cindex @code{Library_Version}
 @item @b{Library_Version}:
-  This attribute is platform dependent, and has no effect on VMS and Windows.
+  This attribute is platform dependent, and has no effect on Windows.
   On Unix, it is used only for dynamic libraries as the internal
   name of the library (the @code{"soname"}). If the library file name (built
   from the @code{Library_Name}) is different from the @code{Library_Version},
@@ -1740,7 +1735,7 @@ Other library-related attributes can be used to change the defaults:
 @item @b{Library_GCC}:
   This attribute is the name of the tool to use instead of "gcc" to link shared
   libraries. A common use of this attribute is to define a wrapper script that
-  accomplishes specific actions before calling gcc (which itself is calling the
+  accomplishes specific actions before calling gcc (which itself calls the
   linker to build the library image).
 
 @item @b{Library_Options}:
@@ -1748,7 +1743,7 @@ Other library-related attributes can be used to change the defaults:
   This attribute may be used to specify additional switches (last switches)
   when linking a shared library.
 
-  It may also be used to add foreign object files in a static library.
+  It may also be used to add foreign object files to a static library.
   Each string in Library_Options is an absolute or relative path of an object
   file. When a relative path, it is relative to the object directory.
 
@@ -1797,11 +1792,10 @@ corresponding to the sources of the project.
 
 A non-library project can import a library project. When the builder is invoked
 on the former, the library of the latter is only rebuilt when absolutely
-necessary. For instance, if a unit of the
-library is not up-to-date but non of the executables need this unit, then the
-unit is not recompiled and the library is not reassembled.
-For instance, let's assume in our example that logging has the following
-sources: @file{log1.ads}, @file{log1.adb}, @file{log2.ads} and
+necessary. For instance, if a unit of the library is not up-to-date but none of
+the executables need this unit, then the unit is not recompiled and the library
+is not reassembled.  For instance, let's assume in our example that logging has
+the following sources: @file{log1.ads}, @file{log1.adb}, @file{log2.ads} and
 @file{log2.adb}. If @file{log1.adb} has been modified, then the library
 @file{liblogging} will be rebuilt when compiling all the sources of
 @code{Build} only if @file{proc.ads}, @file{pack.ads} or @file{pack.adb}
@@ -1809,7 +1803,7 @@ include a @code{"with Log1"}.
 
 To ensure that all the sources in the @code{Logging} library are
 up to date, and that all the sources of @code{Build} are also up to date,
-the following two commands needs to be used:
+the following two commands need to be used:
 
 @smallexample
 gnatmake -Plogging.gpr
@@ -1821,10 +1815,10 @@ All @file{ALI} files will also be copied from the object directory to the
 library directory. To build executables, @command{gnatmake} will use the
 library rather than the individual object files.
 
-Library projects can also be useful to describe a library that need to be used
+Library projects can also be useful to describe a library that needs to be used
 but, for some reason, cannot be rebuilt. For instance, it is the case when some
-of the library sources are not available. Such library projects need simply to
-use the @code{Externally_Built} attribute as in the example below:
+of the library sources are not available. Such library projects need to use the
+@code{Externally_Built} attribute as in the example below:
 
 @smallexample @c projectfile
 library @b{project} Extern_Lib @b{is}
@@ -1894,7 +1888,7 @@ language and takes a list of sources as parameter.
 @smallexample @c projectfile
 @group
      @b{for} Library_Dir @b{use} "lib";
-     @b{for} Library_Name @b{use} "loggin";
+     @b{for} Library_Name @b{use} "logging";
      @b{for} Library_Interface @b{use} ("lib1", "lib2");  --@i{  unit names}
 @end group
 @end smallexample
@@ -1914,7 +1908,7 @@ language and takes a list of sources as parameter.
   build. Values are either @code{standard} (the default), @code{no} or
   @code{encapsulated}. When @code{standard} is used the code to elaborate and
   finalize the library is embedded, when @code{encapsulated} is used the
-  library can furthermore only depends on static libraries (including
+  library can furthermore depend only on static libraries (including
   the GNAT runtime). This attribute can be set to @code{no} to make it clear
   that the library should not be standalone in which case the
   @code{Library_Interface} should not defined. Note that this attribute
@@ -1924,7 +1918,7 @@ language and takes a list of sources as parameter.
 @smallexample @c projectfile
 @group
      @b{for} Library_Dir @b{use} "lib";
-     @b{for} Library_Name @b{use} "loggin";
+     @b{for} Library_Name @b{use} "logging";
      @b{for} Library_Kind @b{use} "dynamic";
      @b{for} Library_Interface @b{use} ("lib1", "lib2");  --@i{  unit names}
      @b{for} Library_Standalone @b{use} "encapsulated";
@@ -1949,7 +1943,7 @@ included in the library.
   platform and if attribute @b{Library_Auto_Init} is not specified or
   is specified with the value "true". A static Stand-alone Library is never
   automatically initialized. Specifying "false" for this attribute
-  prevent automatic initialization.
+  prevents automatic initialization.
 
   When a non-automatically initialized stand-alone library is used in an
   executable, its initialization procedure must be called before any service of
@@ -1975,11 +1969,11 @@ included in the library.
   This attribute defines the location (absolute or relative to the project
   directory) where the sources of the interface units are copied at
   installation time.
-  These sources includes the specs of the interface units along with the closure
-  of sources necessary to compile them successfully. That may include bodies and
-  subunits, when pragmas @code{Inline} are used, or when there is a generic
-  units in the spec. This directory cannot point to the object directory or
-  one of the source directories, but it can point to the library directory,
+  These sources includes the specs of the interface units along with the
+  closure of sources necessary to compile them successfully. That may include
+  bodies and subunits, when pragmas @code{Inline} are used, or when there are
+  generic units in specs. This directory cannot point to the object directory
+  or one of the source directories, but it can point to the library directory,
   which is the default value for this attribute.
 
 @item @b{Library_Symbol_Policy}:
@@ -2049,9 +2043,9 @@ a project file slightly different from the one used to build the library, by
 using the @code{externally_built} attribute. @ref{Using Library Projects}
 
 Another option is to use @command{gprinstall} to install the library in a
-different context than the build location. A project to use this library is
-generated automatically by @command{gprinstall} which also copy, in the install
-location, the minimum set of sources needed to use the library.
+different context than the build location. @command{gprinstall} automatically
+generates a project to use this library, and also copies the minimum set of
+sources needed to use the library to the install location.
 @ref{Installation}
 
 @c ---------------------------------------------
@@ -2065,7 +2059,7 @@ modified versions of some of the source files, without changing the original
 sources. This can be achieved through the @b{project extension} facility.
 
 Suppose for instance that our example @code{Build} project is built every night
-for the whole team, in some shared directory. A developer usually need to work
+for the whole team, in some shared directory. A developer usually needs to work
 on a small part of the system, and might not want to have a copy of all the
 sources and all the object files (mostly because that would require too much
 disk space, time to recompile everything). He prefers to be able to override
@@ -2075,7 +2069,7 @@ object files generated at night.
 Another example can be taken from large software systems, where it is common to have
 multiple implementations of a common interface; in Ada terms, multiple
 versions of a package body for the same spec.  For example, one implementation
-might be safe for use in tasking programs, while another might only be used
+might be safe for use in tasking programs, while another might be used only
 in sequential applications.  This can be modeled in GNAT using the concept
 of @emph{project extension}.  If one project (the ``child'') @emph{extends}
 another project (the ``parent'') then by default all source files of the
@@ -2096,12 +2090,12 @@ Project extensions provide a flexible solution to create a new version
 of a subsystem while sharing and reusing as much as possible from the original
 one.
 
-A project extension inherits implicitly all the sources and objects from the
+A project extension implicitly inherits all the sources and objects from the
 project it extends. It is possible to create a new version of some of the
-sources in one of the additional source dirs of the extending project. Those new
-versions hide the original versions. Adding new sources or removing existing
-ones is also possible. Here is an example on how to extend the project
-@code{Build} from previous examples:
+sources in one of the additional source directories of the extending
+project. Those new versions hide the original versions. Adding new sources or
+removing existing ones is also possible. Here is an example on how to extend
+the project @code{Build} from previous examples:
 
 @smallexample @c projectfile
    @b{project} Work @b{extends} "../bld/build.gpr" @b{is}
@@ -2112,12 +2106,12 @@ ones is also possible. Here is an example on how to extend the project
 The project after @b{extends} is the one being extended. As usual, it can be
 specified using an absolute path, or a path relative to any of the directories
 in the project path (@pxref{Project Dependencies}). This project does not
-specify source or object directories, so the default value for these attribute
-will be used that is to say the current directory (where project @code{Work} is
-placed). We can already compile that project with
+specify source or object directories, so the default values for these
+attributes will be used that is to say the current directory (where project
+@code{Work} is placed). We can compile that project with
 
 @smallexample
-   gnatmake -Pwork
+   gprbuild -Pwork
 @end smallexample
 
 @noindent
@@ -2127,14 +2121,14 @@ sources it inherited from @code{Build}, therefore all the object files
 in @code{Build} and its dependencies are still valid and are reused
 automatically.
 
-Suppose we now want to supply an alternate version of @file{pack.adb}
-but use the existing versions of @file{pack.ads} and @file{proc.adb}.
-We can create the new file Work's current directory  (likely
-by copying the one from the @code{Build} project and making changes to
-it. If new packages are needed at the same time, we simply create
-new files in the source directory of the extending project.
+Suppose we now want to supply an alternate version of @file{pack.adb} but use
+the existing versions of @file{pack.ads} and @file{proc.adb}.  We can create
+the new file in Work's current directory (likely by copying the one from the
+@code{Build} project and making changes to it. If new packages are needed at
+the same time, we simply create new files in the source directory of the
+extending project.
 
-When we recompile, @command{gnatmake} will now automatically recompile
+When we recompile, @command{gprbuild} will now automatically recompile
 this file (thus creating @file{pack.o} in the current directory) and
 any file that depends on it (thus creating @file{proc.o}). Finally, the
 executable is also linked locally.
@@ -2183,7 +2177,7 @@ extended.
 At the project level, if they are not declared in the extending project, some
 attributes are inherited from the project being extended. They are:
 @code{Languages}, @code{Main} (for a root non library project) and
-@code{Library_Name} (for a project extending a library project)
+@code{Library_Name} (for a project extending a library project).
 
 @menu
 * Project Hierarchy Extension::
@@ -2242,7 +2236,7 @@ import @file{b.gpr} which itself knows nothing about @file{a_ext.gpr}.
 When extending a large system spanning multiple projects, it is often
 inconvenient to extend every project in the hierarchy that is impacted by a
 small change introduced in a low layer. In such cases, it is possible to create
-an @b{implicit extension} of entire hierarchy using @b{extends all}
+an @b{implicit extension} of an entire hierarchy using @b{extends all}
 relationship.
 
 When the project is extended using @code{extends all} inheritance, all projects
@@ -2259,7 +2253,7 @@ projects with the explicit ones.
 
 When building such a project hierarchy extension, the project manager will
 ensure that both modified sources and sources in implicit extending projects
-that depend on them, are recompiled.
+that depend on them are recompiled.
 
 Thus, in our example we could create the following projects instead:
 
@@ -2363,7 +2357,7 @@ aggregate project, you will need to add "p.gpr" in the list of project
 files for the aggregate project, or the main will not be built when
 building the aggregate project.
 
-Aggregate projects are only supported with @command{gprbuild}, but not with
+Aggregate projects are supported only with @command{gprbuild}, not with
 @command{gnatmake}.
 
 @c ---------------------------------------------------------
@@ -2442,9 +2436,8 @@ reference external variables in @code{with} statements, as in
   @b{end} MyProject;
 @end smallexample
 
-For various reasons, this isn't authorized. But using aggregate
-projects provide an elegant solution. For instance, you could
-use a project file like:
+For various reasons, this is not allowed. But using aggregate projects provide
+an elegant solution. For instance, you could use a project file like:
 
 @smallexample @c projectfile
 aggregate @b{project} Agg @b{is}
@@ -2466,7 +2459,7 @@ aggregate @b{project} Agg @b{is}
 The loading of aggregate projects is optimized in @command{gprbuild},
 so that all files are searched for only once on the disk
 (thus reducing the number of system calls and contributing to faster
-compilation times especially on systems with sources on remote
+compilation times, especially on systems with sources on remote
 servers). As part of the loading, @command{gprbuild}
 computes how and where a source file should be compiled, and even if it is
 found several times in the aggregated projects it will be compiled only
@@ -2517,12 +2510,9 @@ attributes and packages are forbidden in an aggregate project. Here is the
 
 The only package that is authorized (albeit optional) is
 Builder. Other packages (in particular Compiler, Binder and Linker)
-are forbidden. It is an error to have any of these
-(and such an error prevents the proper loading of the aggregate
-project).
+are forbidden.
 
-Three new attributes have been created, which can only be used in the
-context of aggregate projects:
+The following three attributes can be used only in an aggregate project:
 
 @table @asis
 @item @b{Project_Files}:
@@ -2578,16 +2568,17 @@ Here are a few valid examples:
 This attribute can be used to specify a list of directories in
 which to look for project files in @code{with} statements.
 
-When you specify a project in Project_Files
-say @code{"x/y/a.gpr"}), and this projects imports a project "b.gpr", only
-b.gpr is searched in the project path. a.gpr must be exactly at
-<dir of the aggregate>/x/y/a.gpr.
+When you specify a project in Project_Files (say @code{x/y/a.gpr}), and
+@code{a.gpr} imports a project @code{b.gpr}, only @code{b.gpr} is searched in
+the project path. @code{a.gpr} must be exactly at
+@code{<dir of the aggregate>/x/y/a.gpr}.
 
 This attribute, however, does not affect the search for the aggregated
 project files specified with @code{Project_Files}.
 
-Each aggregate project has its own (that is if agg1.gpr includes
-agg2.gpr, they can potentially both have a different project path).
+Each aggregate project has its own @code{Project_Path} (that is if
+@code{agg1.gpr} includes @code{agg2.gpr}, they can potentially both have a
+different @code{Project_Path}).
 
 This project path is defined as the concatenation, in that order, of:
 
@@ -2636,7 +2627,7 @@ this will be reported as an error by the builder.
 
 Directories are relative to the location of the aggregate project file.
 
-Here are a few valid examples:
+Example:
 
 @smallexample @c projectfile
    @b{for} Project_Path @b{use} ("/usr/local/gpr", "gpr/");
@@ -2665,7 +2656,7 @@ sources (each level overrides the previous levels):
 
 These override the value given by the attribute, so that
 users can override the value set in the (presumably shared
-with others in his team) aggregate project.
+with others team members) aggregate project.
 
 @item The -X command line switch to @command{gprbuild}
 
@@ -2868,7 +2859,7 @@ Then, when you build with:
 @end smallexample
 
 This will build all units from projects A, B and C and will create a
-static library named @file{libagg.a} into the @file{lagg}
+static library named @file{libagg.a} in the @file{lagg}
 directory. An aggregate library project has the same set of
 restriction as a standard library project.
 
@@ -3025,7 +3016,7 @@ GPR_PROJECT_PATH. Path names are case sensitive if file names in the host
 operating system are case sensitive. As a special case, the directory
 separator can always be "/" even on Windows systems, so that project files
 can be made portable across architectures.
-The syntax of the environment variable ADA_PROJECT_PATH and
+The syntax of the environment variables ADA_PROJECT_PATH and
 GPR_PROJECT_PATH is a list of directory names separated by colons on UNIX and
 semicolons on Windows.
 
@@ -3033,7 +3024,7 @@ A given project name can appear only once in a context clause.
 
 It is illegal for a project imported by a context clause to refer, directly
 or indirectly, to the project in which this context clause appears (the
-dependency graph cannot contain cycles), except when one of the with clause
+dependency graph cannot contain cycles), except when one of the with clauses
 in the cycle is a @b{limited with}.
 @c ??? Need more details here
 
@@ -3045,15 +3036,14 @@ in the cycle is a @b{limited with}.
 
 @noindent
 These dependencies form a @b{directed graph}, potentially cyclic when using
-@b{limited with}. The subprogram reflecting the @b{extends} relations is a
-tree.
+@b{limited with}. The subgraph reflecting the @b{extends} relations is a tree.
 
 A project's @b{immediate sources} are the source files directly defined by
 that project, either implicitly by residing in the project source directories,
 or explicitly through any of the source-related attributes.
-More generally, a project sources are the immediate sources of the project
-together with the immediate sources (unless overridden) of any
-project on which it depends directly or indirectly.
+More generally, a project's @b{sources} are the immediate sources of the
+project together with the immediate sources (unless overridden) of any project
+on which it depends directly or indirectly.
 
 A @b{project hierarchy} can be created, where projects are children of
 other projects. The name of such a child project must be @code{Parent.Child},
@@ -3737,7 +3727,8 @@ has not been set in a given package or project, its value defaults to the
 empty string or the empty list.
 
 @smallexample
-attribute_reference ::= attribute_prefix ' @i{<simple_attribute>_}simple_name [ (string_literal) ]
+attribute_reference ::=
+  attribute_prefix ' @i{<simple_attribute>_}simple_name [ (string_literal) ]
 attribute_prefix ::= @i{project}
   | @i{<project_>}simple_name
   | package_identifier
@@ -3774,8 +3765,8 @@ In the following sections, all predefined attributes are succinctly described,
 first the project level attributes, that is those attributes that are not in a
 package, then the attributes in the different packages.
 
-It is possible for different tools to create dynamically new packages with
-attributes, or new attribute in predefined packages. These attributes are
+It is possible for different tools to dynamically create new packages with
+attributes, or new attributes in predefined packages. These attributes are
 not documented here.
 
 The attributes under Configuration headings are usually found only in
@@ -4083,9 +4074,9 @@ directory in the run path options.
 
 @item @b{Separate_Run_Path_Options}: single
 
-Indicates if there may be or not several run path options specified when
-linking an executable. Only authorized case-insensitive b=values are "true" or
-"false" (the default).
+Indicates if there may be several run path options specified when linking an
+executable. Only authorized case-insensitive values are "true" or "false" (the
+default).
 
 @item @b{Toolchain_Version}: single, indexed, case-insensitive index
 

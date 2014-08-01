@@ -1,5 +1,49 @@
 2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_ch7.adb: Fix minor oversight in condition.
+
+2014-08-01  Bob Duff  <duff@adacore.com>
+
+	* projects.texi: Minor documentation improvements.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add aspect No_Elaboration_Code_All.
+	* gnat_rm.texi: Document No_Elaboration_Code_All pragma and aspect.
+	* lib-load.adb: Initialize No_Elab_Code_All field.
+	* lib-writ.adb: Initialize No_Elab_Code_All.
+	* lib.ads, lib.adb: New field No_Elab_Code_All.
+	* par-prag.adb: Add dummy entry for pragma No_Elaboration_Code_All.
+	* restrict.ads, restrict.adb: Restriction No_Elaboration_Code_All no
+	longer exists.
+	* sem_ch10.adb (Analyze_Context): Processing for
+	No_Elaboration_Code_All removed.
+	(Generate_Parent_References): Moved to Sem_Util.
+	* sem_prag.adb: Add processing for pragma No_Elaboration_Code_All.
+	* sem_util.ads, sem_util.adb (Get_Parent_Entity): Moved here from
+	Sem_Ch10.
+	* snames.ads-tmpl: Add entry for pragma No_Elaboration_Code_All.
+	* targparm.adb: Minor comment updates Add comments on ignoring
+	pragma No_Elaboration_Code_All.
+
+2014-08-01  Nicolas Roche  <roche@adacore.com>
+
+	* adaint.c (__gnat_set_close_on_exec): Ensure that
+	we can unset "close_on_exec" flag.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Build_Wrapper_Spec, Replicate_Formals): When building
+	the parameter specs of the wrapper program for a primitive operation
+	of a synchronized type that implements an interface, copy the
+	null_exclusion indicator as well.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.ads: Minor reformatting.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_ch3.adb (Build_Initialization_Call): Call Underlying_Type
 	to go down the chain of private derivations.
 	* freeze.adb (Freeze_Entity): Fix typo in comment.

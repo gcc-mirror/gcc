@@ -858,8 +858,8 @@ package body Restrict is
    -- Process_Restriction_Synonyms --
    ----------------------------------
 
-   --  Note: body of this function must be coordinated with list of
-   --  renaming declarations in System.Rident.
+   --  Note: body of this function must be coordinated with list of renaming
+   --  declarations in System.Rident.
 
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id
    is
@@ -882,11 +882,6 @@ package body Restrict is
 
          when Name_No_Task_Attributes =>
             New_Name := Name_No_Task_Attributes_Package;
-
-         --  No_Elaboration_Code_All is special, no warning needed
-
-         when Name_No_Elaboration_Code_All =>
-            return Name_No_Elaboration_Code;
 
          --  SPARK is special in that we unconditionally warn
 
