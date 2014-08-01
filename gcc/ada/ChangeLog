@@ -1,3 +1,13 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Type_Declaration): If designated type is
+	a limited view, create a master entity (as is already done for
+	class-wide types) in case the full view designates a type that
+	contains tasks.
+	* sem_ch8.adb (Find_Selected_Component): If prefix is a dereference
+	and the designated type is a limited view, use the non-limited
+	view if available.
+
 2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (DECL_BY_DESCRIPTOR_P): Delete.
