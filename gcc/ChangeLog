@@ -1,3 +1,9 @@
+2014-08-01  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi (Options That Control Optimization): Documentation
+	for -foptimize-strlen introduced. Optimization levels default options
+	fixed.
+
 2014-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* opts.c (common_handle_option): Handle -fsanitize=alignment.
