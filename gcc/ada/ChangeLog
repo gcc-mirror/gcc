@@ -1,3 +1,19 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, case Aspect_Import):
+	Set Is_Imported flag at once, to simplify subsequent legality
+	checks. Reject the aspect on an object whose declaration has an
+	explicit initial value.
+	* sem_prag.adb (Process_Import_Or_Interface): Use original node
+	to check legality of an initial value for an imported entity.
+	Set Is_Imported flag in case of error to prevent cascaded errors.
+	Do not set the Is_Imported flag if the pragma comes from an
+	aspect, because it is already done when analyzing the aspect.
+
+2014-08-01  Emmanuel Briot  <briot@adacore.com>
+
+	* g-regpat.adb (Parse): Add support for non-capturing parenthesis.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch7.adb, einfo.adb, einfo.ads, sem_ch13.adb: Minor change of

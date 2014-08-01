@@ -7838,8 +7838,14 @@ package body Sem_Prag is
             --  the code generator making an implicit initialization explicit.
 
             elsif Present (Expression (Parent (Def_Id)))
-              and then Comes_From_Source (Expression (Parent (Def_Id)))
+              and then Comes_From_Source
+                         (Original_Node (Expression (Parent (Def_Id))))
             then
+
+               --  Set imported flag to prevent cascaded errors.
+
+               Set_Is_Imported (Def_Id);
+
                Error_Msg_Sloc := Sloc (Def_Id);
                Error_Pragma_Arg
                  ("no initialization allowed for declaration of& #",
@@ -7847,7 +7853,13 @@ package body Sem_Prag is
                   Arg2);
 
             else
-               Set_Imported (Def_Id);
+               --  If the pragma comes from an aspect specification the
+               --  Is_Imported flag has already been set.
+
+               if not From_Aspect_Specification (N) then
+                  Set_Imported (Def_Id);
+               end if;
+
                Process_Interface_Name (Def_Id, Arg3, Arg4);
 
                --  Note that we do not set Is_Public here. That's because we
@@ -7922,7 +7934,12 @@ package body Sem_Prag is
                   exit;
 
                else
-                  Set_Imported (Def_Id);
+                  --  If the pragma comes from an aspect specification the
+                  --  Is_Imported flag has already been set.
+
+                  if not From_Aspect_Specification (N) then
+                     Set_Imported (Def_Id);
+                  end if;
 
                   --  Reject an Import applied to an abstract subprogram
 
