@@ -3701,8 +3701,7 @@ package body Freeze is
 
             --  Acquire copy of Inline pragma
 
-            Iprag :=
-              Copy_Separate_Tree (Import_Pragma (E));
+            Iprag := Copy_Separate_Tree (Import_Pragma (E));
 
             --  Fix up spec to be not imported any more
 

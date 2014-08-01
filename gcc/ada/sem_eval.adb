@@ -6079,9 +6079,18 @@ package body Sem_Eval is
       --  to get the information in the variable case as well.
 
    begin
+      --  Expression that raises constraint error is an odd case. We certainly
+      --  do not want to consider it to be in range. It might make sense to
+      --  consider it always out of range, but this causes incorrect error
+      --  messages about static expressions out of range. So we just return
+      --  Unknown, which is always safe.
+
+      if Raises_Constraint_Error (N) then
+         return Unknown;
+
       --  Universal types have no range limits, so always in range
 
-      if Typ = Universal_Integer or else Typ = Universal_Real then
+      elsif Typ = Universal_Integer or else Typ = Universal_Real then
          return In_Range;
 
       --  Never known if not scalar type. Don't know if this can actually
@@ -6099,14 +6108,10 @@ package body Sem_Eval is
       elsif Is_Generic_Type (Typ) then
          return Unknown;
 
-      --  Never known unless we have a compile time known value
+      --  Case of a known compile time value, where we can check if it is in
+      --  the bounds of the given type.
 
-      elsif not Compile_Time_Known_Value (N) then
-         return Unknown;
-
-      --  General processing with a known compile time value
-
-      else
+      elsif Compile_Time_Known_Value (N) then
          declare
             Lo       : Node_Id;
             Hi       : Node_Id;
@@ -6172,6 +6177,20 @@ package body Sem_Eval is
                end if;
             end if;
          end;
+
+      --  Here for value not known at compile time. Case of expression subtype
+      --  is Typ or is a subtype of Typ, and we can assume expression is valid.
+      --  In this case we know it is in range without knowing its value.
+
+      elsif Assume_Valid
+        and then (Etype (N) = Typ or else Is_Subtype_Of (Etype (N), Typ))
+      then
+         return In_Range;
+
+      --  For all other cases, result is unknown
+
+      else
+         return Unknown;
       end if;
    end Test_In_Range;
 

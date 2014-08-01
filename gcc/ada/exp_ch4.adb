@@ -10835,60 +10835,78 @@ package body Exp_Ch4 is
 
       --  The only remaining step is to generate a range check if we still have
       --  a type conversion at this stage and Do_Range_Check is set. For now we
-      --  do this only for conversions of discrete types.
+      --  do this only for conversions of discrete types and for floating-point
+      --  conversions where the base types of source and target are the same.
 
-      if Nkind (N) = N_Type_Conversion
-        and then Is_Discrete_Type (Etype (N))
-      then
-         declare
-            Expr : constant Node_Id := Expression (N);
-            Ftyp : Entity_Id;
-            Ityp : Entity_Id;
+      if Nkind (N) = N_Type_Conversion then
 
-         begin
-            if Do_Range_Check (Expr)
-              and then Is_Discrete_Type (Etype (Expr))
+         --  For now we only support floating-point cases where the base types
+         --  of the target type and source expression are the same, so there's
+         --  potentially only a range check. Conversions where the source and
+         --  target have different base types are still TBD. ???
+
+         if Is_Floating_Point_Type (Etype (N))
+           and then
+             Base_Type (Etype (N)) = Base_Type (Etype (Expression (N)))
+         then
+            if Do_Range_Check (Expression (N))
+              and then Is_Floating_Point_Type (Target_Type)
             then
-               Set_Do_Range_Check (Expr, False);
+               Generate_Range_Check
+                 (Expression (N), Target_Type, CE_Range_Check_Failed);
+            end if;
 
-               --  Before we do a range check, we have to deal with treating a
-               --  fixed-point operand as an integer. The way we do this is
-               --  simply to do an unchecked conversion to an appropriate
-               --  integer type large enough to hold the result.
+         elsif Is_Discrete_Type (Etype (N)) then
+            declare
+               Expr : constant Node_Id := Expression (N);
+               Ftyp : Entity_Id;
+               Ityp : Entity_Id;
 
-               --  This code is not active yet, because we are only dealing
-               --  with discrete types so far ???
-
-               if Nkind (Expr) in N_Has_Treat_Fixed_As_Integer
-                 and then Treat_Fixed_As_Integer (Expr)
+            begin
+               if Do_Range_Check (Expr)
+                 and then Is_Discrete_Type (Etype (Expr))
                then
-                  Ftyp := Base_Type (Etype (Expr));
+                  Set_Do_Range_Check (Expr, False);
 
-                  if Esize (Ftyp) >= Esize (Standard_Integer) then
-                     Ityp := Standard_Long_Long_Integer;
-                  else
-                     Ityp := Standard_Integer;
+                  --  Before we do a range check, we have to deal with treating
+                  --  a fixed-point operand as an integer. The way we do this
+                  --  is simply to do an unchecked conversion to an appropriate
+                  --  integer type large enough to hold the result.
+
+                  --  This code is not active yet, because we are only dealing
+                  --  with discrete types so far ???
+
+                  if Nkind (Expr) in N_Has_Treat_Fixed_As_Integer
+                    and then Treat_Fixed_As_Integer (Expr)
+                  then
+                     Ftyp := Base_Type (Etype (Expr));
+
+                     if Esize (Ftyp) >= Esize (Standard_Integer) then
+                        Ityp := Standard_Long_Long_Integer;
+                     else
+                        Ityp := Standard_Integer;
+                     end if;
+
+                     Rewrite (Expr, Unchecked_Convert_To (Ityp, Expr));
                   end if;
 
-                  Rewrite (Expr, Unchecked_Convert_To (Ityp, Expr));
+                  --  Reset overflow flag, since the range check will include
+                  --  dealing with possible overflow, and generate the check.
+                  --  If Address is either a source type or target type,
+                  --  suppress range check to avoid typing anomalies when
+                  --  it is a visible integer type.
+
+                  Set_Do_Overflow_Check (N, False);
+
+                  if not Is_Descendent_Of_Address (Etype (Expr))
+                    and then not Is_Descendent_Of_Address (Target_Type)
+                  then
+                     Generate_Range_Check
+                       (Expr, Target_Type, CE_Range_Check_Failed);
+                  end if;
                end if;
-
-               --  Reset overflow flag, since the range check will include
-               --  dealing with possible overflow, and generate the check. If
-               --  Address is either a source type or target type, suppress
-               --  range check to avoid typing anomalies when it is a visible
-               --  integer type.
-
-               Set_Do_Overflow_Check (N, False);
-
-               if not Is_Descendent_Of_Address (Etype (Expr))
-                 and then not Is_Descendent_Of_Address (Target_Type)
-               then
-                  Generate_Range_Check
-                    (Expr, Target_Type, CE_Range_Check_Failed);
-               end if;
-            end if;
-         end;
+            end;
+         end if;
       end if;
 
       --  Here at end of processing

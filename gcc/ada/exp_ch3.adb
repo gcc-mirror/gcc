@@ -5068,6 +5068,16 @@ package body Exp_Ch3 is
       --  Start of processing for Default_Initialize_Object
 
       begin
+         --  Default initialization is suppressed for objects that are already
+         --  known to be imported (i.e. whose declaration specifies the Import
+         --  aspect). Note that for objects with a pragma Import, we generate
+         --  initialization here, and then remove it downstream when processing
+         --  the pragma.
+
+         if Is_Imported (Def_Id) then
+            return;
+         end if;
+
          --  Step 1: Initialize the object
 
          if Needs_Finalization (Typ) and then not No_Initialization (N) then

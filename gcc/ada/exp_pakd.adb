@@ -1727,6 +1727,7 @@ package body Exp_Pakd is
             Set_nn  : Entity_Id;
             Subscr  : Node_Id;
             Atyp    : Entity_Id;
+            Rev_SSO : Node_Id;
 
          begin
             if No (Bits_nn) then
@@ -1752,6 +1753,12 @@ package body Exp_Pakd is
             Atyp := Etype (Obj);
             Compute_Linear_Subscript (Atyp, Lhs, Subscr);
 
+            --  Set indication of whether the packed array has reverse SSO
+
+            Rev_SSO :=
+              New_Occurrence_Of
+                (Boolean_Literals (Reverse_Storage_Order (Atyp)), Loc);
+
             --  Below we must make the assumption that Obj is
             --  at least byte aligned, since otherwise its address
             --  cannot be taken. The assumption holds since the
@@ -1767,8 +1774,8 @@ package body Exp_Pakd is
                       Prefix         => Obj,
                       Attribute_Name => Name_Address),
                     Subscr,
-                    Unchecked_Convert_To (Bits_nn,
-                      Convert_To (Ctyp, Rhs)))));
+                    Unchecked_Convert_To (Bits_nn, Convert_To (Ctyp, Rhs)),
+                    Rev_SSO)));
 
          end;
       end if;
@@ -2127,8 +2134,11 @@ package body Exp_Pakd is
          --  where Subscr is the computed linear subscript
 
          declare
-            Get_nn : Entity_Id;
-            Subscr : Node_Id;
+            Get_nn  : Entity_Id;
+            Subscr  : Node_Id;
+            Rev_SSO : constant Node_Id :=
+              New_Occurrence_Of
+                (Boolean_Literals (Reverse_Storage_Order (Atyp)), Loc);
 
          begin
             --  Acquire proper Get entity. We use the aligned or unaligned
@@ -2158,12 +2168,12 @@ package body Exp_Pakd is
                     Make_Attribute_Reference (Loc,
                       Prefix         => Obj,
                       Attribute_Name => Name_Address),
-                    Subscr))));
+                    Subscr,
+                    Rev_SSO))));
          end;
       end if;
 
       Analyze_And_Resolve (N, Ctyp, Suppress => All_Checks);
-
    end Expand_Packed_Element_Reference;
 
    ----------------------
