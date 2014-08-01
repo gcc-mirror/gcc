@@ -1,3 +1,20 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+	* s-regpat.adb: Minor reformatting.
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not set
+	Treat_As_Volatile on constants.
+
+2014-08-01  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Make_Task_Create_Call): Improve error message.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): Do not place a
+	warning on a with_clause created for the renaming of a parent
+	unit in an explicit with_clause.
+
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications, case Aspect_Import):

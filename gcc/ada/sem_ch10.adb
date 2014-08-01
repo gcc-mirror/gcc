@@ -242,7 +242,7 @@ package body Sem_Ch10 is
    --  on the context. Note that in contrast with the handling of private
    --  types, the limited view and the non-limited view of a type are treated
    --  as separate entities, and no entity exchange needs to take place, which
-   --  makes the implementation must simpler than could be feared.
+   --  makes the implementation much simpler than could be feared.
 
    ------------------------------
    -- Analyze_Compilation_Unit --
@@ -507,11 +507,15 @@ package body Sem_Ch10 is
 
             --  Avoid checking implicitly generated with clauses, limited with
             --  clauses or withs that have pragma Elaborate or Elaborate_All.
+            --  With_clauses introduced for renamings of parent clauses are not
+            --  marked implicit because they need to be properly installed, but
+            --  they do not come from source and do not require warnings.
 
             if Nkind (Clause) = N_With_Clause
               and then not Implicit_With (Clause)
               and then not Limited_Present (Clause)
               and then not Elaborate_Present (Clause)
+              and then Comes_From_Source (Clause)
             then
                --  Package body-to-spec check
 

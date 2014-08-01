@@ -3923,10 +3923,13 @@ package body Sem_Ch3 is
 
       Set_Etype (Id, Act_T);
 
-      --  Object is marked to be treated as volatile if type is volatile and
-      --  we clear the Current_Value setting that may have been set above.
+      --  Non-constant object is marked to be treated as volatile if type is
+      --  volatile and we clear the Current_Value setting that may have been
+      --  set above. Doing so for constants isn't required and might interfere
+      --  with possible uses of the object as a static expression in contexts
+      --  incompatible with volatility (e.g. as a case-statement alternative).
 
-      if Treat_As_Volatile (Etype (Id)) then
+      if Ekind (Id) /= E_Constant and then Treat_As_Volatile (Etype (Id)) then
          Set_Treat_As_Volatile (Id);
          Set_Current_Value (Id, Empty);
       end if;

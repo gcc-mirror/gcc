@@ -7841,8 +7841,7 @@ package body Sem_Prag is
               and then Comes_From_Source
                          (Original_Node (Expression (Parent (Def_Id))))
             then
-
-               --  Set imported flag to prevent cascaded errors.
+               --  Set imported flag to prevent cascaded errors
 
                Set_Is_Imported (Def_Id);
 

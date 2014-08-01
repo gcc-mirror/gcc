@@ -414,9 +414,9 @@ package body System.Regpat is
          Flags         : out Expression_Flags;
          IP            : out Pointer);
       --  Parse regular expression, i.e. main body or parenthesized thing
-      --  Caller must absorb opening parenthesis.
-      --  Capturing should be set to True when we have an open parenthesis
-      --  from which we want the user to extra text.
+      --  Caller must absorb opening parenthesis. Capturing should be set to
+      --  True when we have an open parenthesis from which we want the user
+      --  to extra text.
 
       procedure Parse_Branch
         (Flags         : out Expression_Flags;
@@ -920,10 +920,13 @@ package body System.Regpat is
                Ender := Emit_Node (CLOSE);
                Emit (Character'Val (Par_No));
                Link_Tail (IP, Ender);
+
             else
-               --  need to keep looking after the closing parenthesis
+               --  Need to keep looking after the closing parenthesis
+
                null;
             end if;
+
          else
             Ender := Emit_Node (EOP);
             Link_Tail (IP, Ender);
@@ -1012,14 +1015,18 @@ package body System.Regpat is
 
                begin
                   if Parse_Pos <= Parse_End - 1
-                     and then Expression (Parse_Pos) = '?'
-                     and then Expression (Parse_Pos + 1) = ':'
+                    and then Expression (Parse_Pos) = '?'
+                    and then Expression (Parse_Pos + 1) = ':'
                   then
                      Parse_Pos := Parse_Pos + 2;
-                     --  non-capturing parenthesis
+
+                     --  Non-capturing parenthesis
+
                      Parse (True, False, New_Flags, IP);
+
                   else
-                     --  capturing parenthesis
+                     --  Capturing parenthesis
+
                      Parse (True, True, New_Flags, IP);
                      Expr_Flags.Has_Width :=
                        Expr_Flags.Has_Width or else New_Flags.Has_Width;
