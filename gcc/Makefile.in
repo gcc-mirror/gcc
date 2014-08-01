@@ -1350,6 +1350,7 @@ OBJS = \
 	resource.o \
 	rtl-error.o \
 	rtl.o \
+	rtlhash.o \
 	rtlanal.o \
 	rtlhooks.o \
 	sbitmap.o \
