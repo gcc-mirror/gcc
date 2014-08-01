@@ -1706,14 +1706,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	;
       else if (TREE_CODE (olddecl) == FUNCTION_DECL)
 	{
-	  tree t1 = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
-	  tree t2 = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
+	  tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
+	  tree t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
 	  int i = 1;
 
-	  if (TREE_CODE (TREE_TYPE (newdecl)) == METHOD_TYPE)
-	    t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2);
-
-	  if (TREE_CODE (TREE_TYPE (newdecl)) == METHOD_TYPE
+	  if (DECL_FUNCTION_MEMBER_P (newdecl)
 	      && CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (newdecl)))
 	    {
 	      /* C++11 8.3.6/6.
