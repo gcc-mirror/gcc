@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "realmpfr.h"
 #include "dfp.h"
+#include "builtins.h"
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -586,7 +587,7 @@ is_ubsan_builtin_p (tree t)
 
 /* Expand the UBSAN_BOUNDS special builtin function.  */
 
-void
+bool
 ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
@@ -645,20 +646,51 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
 
   /* Point GSI to next logical statement.  */
   *gsi = gsi_start_bb (fallthru_bb);
+  return true;
 }
 
-/* Expand UBSAN_NULL internal call.  */
+/* Expand UBSAN_NULL internal call.  The type is kept on the ckind
+   argument which is a constant, because the middle-end treats pointer
+   conversions as useless and therefore the type of the first argument
+   could be changed to any other pointer type.  */
 
-void
-ubsan_expand_null_ifn (gimple_stmt_iterator gsi)
+bool
+ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 {
+  gimple_stmt_iterator gsi = *gsip;
   gimple stmt = gsi_stmt (gsi);
   location_t loc = gimple_location (stmt);
-  gcc_assert (gimple_call_num_args (stmt) == 2);
+  gcc_assert (gimple_call_num_args (stmt) == 3);
   tree ptr = gimple_call_arg (stmt, 0);
   tree ckind = gimple_call_arg (stmt, 1);
+  tree align = gimple_call_arg (stmt, 2);
+  tree check_align = NULL_TREE;
+  bool check_null;
 
   basic_block cur_bb = gsi_bb (gsi);
+
+  gimple g;
+  if (!integer_zerop (align))
+    {
+      unsigned int ptralign = get_pointer_alignment (ptr) / BITS_PER_UNIT;
+      if (compare_tree_int (align, ptralign) == 1)
+	{
+	  check_align = make_ssa_name (pointer_sized_int_node, NULL);
+	  g = gimple_build_assign_with_ops (NOP_EXPR, check_align,
+					    ptr, NULL_TREE);
+	  gimple_set_location (g, loc);
+	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	}
+    }
+  check_null = (flag_sanitize & SANITIZE_NULL) != 0;
+
+  if (check_align == NULL_TREE && !check_null)
+    {
+      gsi_remove (gsip, true);
+      /* Unlink the UBSAN_NULLs vops before replacing it.  */
+      unlink_stmt_vdef (stmt);
+      return true;
+    }
 
   /* Split the original block holding the pointer dereference.  */
   edge e = split_block (cur_bb, stmt);
@@ -689,12 +721,11 @@ ubsan_expand_null_ifn (gimple_stmt_iterator gsi)
 
   /* Update dominance info for the newly created then_bb; note that
      fallthru_bb's dominance info has already been updated by
-     split_bock.  */
+     split_block.  */
   if (dom_info_available_p (CDI_DOMINATORS))
     set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
 
   /* Put the ubsan builtin call into the newly created BB.  */
-  gimple g;
   if (flag_sanitize_undefined_trap_on_error)
     g = gimple_build_call (builtin_decl_implicit (BUILT_IN_TRAP), 0);
   else
@@ -705,54 +736,115 @@ ubsan_expand_null_ifn (gimple_stmt_iterator gsi)
 	  : BUILT_IN_UBSAN_HANDLE_TYPE_MISMATCH_ABORT;
       tree fn = builtin_decl_implicit (bcode);
       const struct ubsan_mismatch_data m
-	= { build_zero_cst (pointer_sized_int_node), ckind };
+	= { align, fold_convert (unsigned_char_type_node, ckind) };
       tree data
 	= ubsan_create_data ("__ubsan_null_data", &loc, &m,
-			     ubsan_type_descriptor (TREE_TYPE (ptr),
+			     ubsan_type_descriptor (TREE_TYPE (ckind),
 						    UBSAN_PRINT_POINTER),
 			     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
       g = gimple_build_call (fn, 2, data,
-			     build_zero_cst (pointer_sized_int_node));
+			     check_align ? check_align
+			     : build_zero_cst (pointer_sized_int_node));
     }
-  gimple_set_location (g, loc);
   gimple_stmt_iterator gsi2 = gsi_start_bb (then_bb);
+  gimple_set_location (g, loc);
   gsi_insert_after (&gsi2, g, GSI_NEW_STMT);
 
   /* Unlink the UBSAN_NULLs vops before replacing it.  */
   unlink_stmt_vdef (stmt);
 
-  g = gimple_build_cond (EQ_EXPR, ptr, build_int_cst (TREE_TYPE (ptr), 0),
-			 NULL_TREE, NULL_TREE);
-  gimple_set_location (g, loc);
+  if (check_null)
+    {
+      g = gimple_build_cond (EQ_EXPR, ptr, build_int_cst (TREE_TYPE (ptr), 0),
+			     NULL_TREE, NULL_TREE);
+      gimple_set_location (g, loc);
 
-  /* Replace the UBSAN_NULL with a GIMPLE_COND stmt.  */
-  gsi_replace (&gsi, g, false);
+      /* Replace the UBSAN_NULL with a GIMPLE_COND stmt.  */
+      gsi_replace (&gsi, g, false);
+    }
+
+  if (check_align)
+    {
+      if (check_null)
+	{
+	  /* Split the block with the condition again.  */
+	  e = split_block (cond_bb, stmt);
+	  basic_block cond1_bb = e->src;
+	  basic_block cond2_bb = e->dest;
+
+	  /* Make an edge coming from the 'cond1 block' into the 'then block';
+	     this edge is unlikely taken, so set up the probability
+	     accordingly.  */
+	  e = make_edge (cond1_bb, then_bb, EDGE_TRUE_VALUE);
+	  e->probability = PROB_VERY_UNLIKELY;
+
+	  /* Set up the fallthrough basic block.  */
+	  e = find_edge (cond1_bb, cond2_bb);
+	  e->flags = EDGE_FALSE_VALUE;
+	  e->count = cond1_bb->count;
+	  e->probability = REG_BR_PROB_BASE - PROB_VERY_UNLIKELY;
+
+	  /* Update dominance info.  */
+	  if (dom_info_available_p (CDI_DOMINATORS))
+	    {
+	      set_immediate_dominator (CDI_DOMINATORS, fallthru_bb, cond1_bb);
+	      set_immediate_dominator (CDI_DOMINATORS, then_bb, cond1_bb);
+	    }
+
+	  gsi2 = gsi_start_bb (cond2_bb);
+	}
+
+      tree mask = build_int_cst (pointer_sized_int_node,
+				 tree_to_uhwi (align) - 1);
+      g = gimple_build_assign_with_ops (BIT_AND_EXPR,
+					make_ssa_name (pointer_sized_int_node,
+						       NULL),
+					check_align, mask);
+      gimple_set_location (g, loc);
+      if (check_null)
+	gsi_insert_after (&gsi2, g, GSI_NEW_STMT);
+      else
+	gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+
+      g = gimple_build_cond (NE_EXPR, gimple_assign_lhs (g),
+			     build_int_cst (pointer_sized_int_node, 0),
+			     NULL_TREE, NULL_TREE);
+      gimple_set_location (g, loc);
+      if (check_null)
+	gsi_insert_after (&gsi2, g, GSI_NEW_STMT);
+      else
+	/* Replace the UBSAN_NULL with a GIMPLE_COND stmt.  */
+	gsi_replace (&gsi, g, false);
+    }
+  return false;
 }
 
-/* Instrument a member call.  We check whether 'this' is NULL.  */
-
-static void
-instrument_member_call (gimple_stmt_iterator *iter)
-{
-  tree this_parm = gimple_call_arg (gsi_stmt (*iter), 0);
-  tree kind = build_int_cst (unsigned_char_type_node, UBSAN_MEMBER_CALL);
-  gimple g = gimple_build_call_internal (IFN_UBSAN_NULL, 2, this_parm, kind);
-  gimple_set_location (g, gimple_location (gsi_stmt (*iter)));
-  gsi_insert_before (iter, g, GSI_SAME_STMT);
-}
-
-/* Instrument a memory reference.  T is the pointer, IS_LHS says
+/* Instrument a memory reference.  BASE is the base of MEM, IS_LHS says
    whether the pointer is on the left hand side of the assignment.  */
 
 static void
-instrument_mem_ref (tree t, gimple_stmt_iterator *iter, bool is_lhs)
+instrument_mem_ref (tree mem, tree base, gimple_stmt_iterator *iter,
+		    bool is_lhs)
 {
   enum ubsan_null_ckind ikind = is_lhs ? UBSAN_STORE_OF : UBSAN_LOAD_OF;
-  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_TYPE (t))))
+  unsigned int align = 0;
+  if (flag_sanitize & SANITIZE_ALIGNMENT)
+    {
+      align = min_align_of_type (TREE_TYPE (base));
+      if (align <= 1)
+	align = 0;
+    }
+  if (align == 0 && (flag_sanitize & SANITIZE_NULL) == 0)
+    return;
+  tree t = TREE_OPERAND (base, 0);
+  if (!POINTER_TYPE_P (TREE_TYPE (t)))
+    return;
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_TYPE (t))) && mem != base)
     ikind = UBSAN_MEMBER_ACCESS;
-  tree kind = build_int_cst (unsigned_char_type_node, ikind);
-  gimple g = gimple_build_call_internal (IFN_UBSAN_NULL, 2, t, kind);
+  tree kind = build_int_cst (TREE_TYPE (t), ikind);
+  tree alignt = build_int_cst (pointer_sized_int_node, align);
+  gimple g = gimple_build_call_internal (IFN_UBSAN_NULL, 3, t, kind, alignt);
   gimple_set_location (g, gimple_location (gsi_stmt (*iter)));
   gsi_insert_before (iter, g, GSI_SAME_STMT);
 }
@@ -764,15 +856,11 @@ instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
 {
   gimple stmt = gsi_stmt (gsi);
   tree t = is_lhs ? gimple_get_lhs (stmt) : gimple_assign_rhs1 (stmt);
-  t = get_base_address (t);
-  const enum tree_code code = TREE_CODE (t);
+  tree base = get_base_address (t);
+  const enum tree_code code = TREE_CODE (base);
   if (code == MEM_REF
-      && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
-    instrument_mem_ref (TREE_OPERAND (t, 0), &gsi, is_lhs);
-  else if (code == ADDR_EXPR
-	   && POINTER_TYPE_P (TREE_TYPE (t))
-	   && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == METHOD_TYPE)
-    instrument_member_call (&gsi);
+      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+    instrument_mem_ref (t, base, &gsi, is_lhs);
 }
 
 /* Build an ubsan builtin call for the signed-integer-overflow
@@ -1147,7 +1235,8 @@ public:
   virtual bool gate (function *)
     {
       return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW
-			      | SANITIZE_BOOL | SANITIZE_ENUM)
+			      | SANITIZE_BOOL | SANITIZE_ENUM
+			      | SANITIZE_ALIGNMENT)
 	     && current_function_decl != NULL_TREE
 	     && !lookup_attribute ("no_sanitize_undefined",
 				   DECL_ATTRIBUTES (current_function_decl));
@@ -1180,7 +1269,7 @@ pass_ubsan::execute (function *fun)
 	      && is_gimple_assign (stmt))
 	    instrument_si_overflow (gsi);
 
-	  if (flag_sanitize & SANITIZE_NULL)
+	  if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
 	    {
 	      if (gimple_store_p (stmt))
 		instrument_null (gsi, true);

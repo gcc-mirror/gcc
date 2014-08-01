@@ -5463,7 +5463,8 @@ instead.
 This option enables pointer checking.  Particularly, the application
 built with this option turned on will issue an error message when it
 tries to dereference a NULL pointer, or if a reference (possibly an
-rvalue reference) is bound to a NULL pointer.
+rvalue reference) is bound to a NULL pointer, or if a method is invoked
+on an object pointed by a NULL pointer.
 
 @item -fsanitize=return
 @opindex fsanitize=return
@@ -5489,6 +5490,13 @@ a++;
 This option enables instrumentation of array bounds.  Various out of bounds
 accesses are detected.  Flexible array members and initializers of variables
 with static storage are not instrumented.
+
+@item -fsanitize=alignment
+@opindex fsanitize=alignment
+
+This option enables checking of alignment of pointers when they are
+dereferenced, or when a reference is bound to insufficiently aligned target,
+or when a method or constructor is invoked on insufficiently aligned object.
 
 @item -fsanitize=float-divide-by-zero
 @opindex fsanitize=float-divide-by-zero

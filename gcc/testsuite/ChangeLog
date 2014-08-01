@@ -1,3 +1,18 @@
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/align-1.c: New test.
+	* c-c++-common/ubsan/align-2.c: New test.
+	* c-c++-common/ubsan/align-3.c: New test.
+	* c-c++-common/ubsan/align-4.c: New test.
+	* c-c++-common/ubsan/align-5.c: New test.
+	* c-c++-common/ubsan/attrib-4.c: New test.
+	* g++.dg/ubsan/align-1.C: New test.
+	* g++.dg/ubsan/align-2.C: New test.
+	* g++.dg/ubsan/align-3.C: New test.
+	* g++.dg/ubsan/attrib-1.C: New test.
+	* g++.dg/ubsan/null-1.C: New test.
+	* g++.dg/ubsan/null-2.C: New test.
+
 2014-08-01  Tom de Vries  <tom@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_glibc)

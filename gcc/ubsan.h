@@ -27,7 +27,8 @@ enum ubsan_null_ckind {
   UBSAN_STORE_OF,
   UBSAN_REF_BINDING,
   UBSAN_MEMBER_ACCESS,
-  UBSAN_MEMBER_CALL
+  UBSAN_MEMBER_CALL,
+  UBSAN_CTOR_CALL
 };
 
 /* This controls how ubsan prints types.  Used in ubsan_type_descriptor.  */
@@ -43,8 +44,8 @@ struct ubsan_mismatch_data {
   tree ckind;
 };
 
-extern void ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
-extern void ubsan_expand_null_ifn (gimple_stmt_iterator);
+extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
+extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
 extern tree ubsan_instrument_unreachable (location_t);
 extern tree ubsan_create_data (const char *, const location_t *,
 			       const struct ubsan_mismatch_data *, ...);
