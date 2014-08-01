@@ -116,7 +116,7 @@ package body Debug is
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
    --  d.y
-   --  d.z  Enable new support for backend inlining
+   --  d.z  Disable support for back end inlining
 
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
@@ -582,16 +582,14 @@ package body Debug is
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
 
-   --  d.z  Enable back end inlining on targets that have the GCC backend (ie.
-   --       all targets except AAMP, .NET and JVM). This switch has no effect
-   --       under GNATprove to avoid confusing the formal verification output,
-   --       and it has no effect if the sources are compiled with frontend
-   --       inlining (ie. -gnatN). This switch is used to evaluate the impact
-   --       of back end inlining since the GCC backend has now more support for
-   --       inlining than before, and hence most of the inlinings that are
-   --       currently handled by the frontend can be done by the backend with
-   --       the extra benefit of supporting cases which are currently rejected
-   --       by GNAT.
+   --  d.z  Disable back end inlining. Back end inlining is enabled by default
+   --       on targets that have the GCC backend (ie. all targets except AAMP,
+   --       .NET and JVM). Back end inlining has no effect under GNATprove to
+   --       avoid confusing the formal verification output, and it is disabled
+   --       if the sources are compiled with frontend inlining (ie. -gnatN) to
+   --       minimize the output differences to customers still using this
+   --       deprecated switch. The flag .z facilitates disabling the back end
+   --       inlining in case of unexpected problems.
 
    --  d.A  There seems to be a problem with ASIS if we activate the circuit
    --       for reading and writing the aspect specification hash table, so

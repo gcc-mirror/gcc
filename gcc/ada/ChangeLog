@@ -1,3 +1,10 @@
+2014-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Reverse meaning of
+	-gnatd.z.
+	* debug.adb: Updating documentation.
+	* exp_ch6.adb (Expand_Call): Remove assertion.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb, sem_ch3.adb, sem_ch5.adb, sem_util.adb,

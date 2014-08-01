@@ -602,13 +602,16 @@ procedure Gnat1drv is
 
         and then not GNATprove_Mode
 
-        --  No back end inlining if front end inlining explicitly enabled?
+        --  No back end inlining if front end inlining explicitly enabled.
+        --  Done to minimize the output differences to customers still using
+        --  this deprecated switch; in addition, this behavior reduces the
+        --  output differences in old tests.
 
         and then not Front_End_Inlining
 
-        --  For now, we only enable back end inlining if debug flag .z is set
+        --  Back end inlining is disabled if debug flag .z is set
 
-        and then Debug_Flag_Dot_Z;
+        and then not Debug_Flag_Dot_Z;
 
       --  Output warning if -gnateE specified and cannot be supported
 
