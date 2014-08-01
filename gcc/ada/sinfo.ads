@@ -1259,8 +1259,6 @@ package Sinfo is
    --  Float_Truncate (Flag11-Sem)
    --    A flag present in type conversion nodes. This is used for float to
    --    integer conversions where truncation is required rather than rounding.
-   --    Note that Gigi does not handle type conversions from real to integer
-   --    with rounding (see Expand_N_Type_Conversion).
 
    --  Forwards_OK (Flag5-Sem)
    --    A flag present in the N_Assignment_Statement node. It is used only

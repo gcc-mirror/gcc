@@ -139,10 +139,6 @@ package Exp_Ch6 is
    --  Predicate to recognize stubbed procedures and null procedures, which
    --  can be inlined unconditionally in all cases.
 
-   procedure List_Inlining_Info;
-   --  Generate listing of calls inlined by the frontend plus listing of
-   --  calls to inline subprograms passed to the backend.
-
    procedure Make_Build_In_Place_Call_In_Allocator
      (Allocator     : Node_Id;
       Function_Call : Node_Id);

@@ -281,7 +281,6 @@ GNAT_ADA_OBJS =	\
  ada/exp_strm.o	\
  ada/exp_tss.o	\
  ada/exp_util.o	\
- ada/exp_vfpt.o	\
  ada/expander.o	\
  ada/fmap.o	\
  ada/fname-uf.o	\

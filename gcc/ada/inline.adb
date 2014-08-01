@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -38,11 +39,11 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
+with Output;   use Output;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
-with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -50,10 +51,41 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Uname;    use Uname;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 
 package body Inline is
+
+   Check_Inlining_Restrictions : constant Boolean := True;
+   --  In the following cases the frontend rejects inlining because they
+   --  are not handled well by the backend. This variable facilitates
+   --  disabling these restrictions to evaluate future versions of the
+   --  GCC backend in which some of the restrictions may be supported.
+   --
+   --   - subprograms that have:
+   --      - nested subprograms
+   --      - instantiations
+   --      - package declarations
+   --      - task or protected object declarations
+   --      - some of the following statements:
+   --          - abort
+   --          - asynchronous-select
+   --          - conditional-entry-call
+   --          - delay-relative
+   --          - delay-until
+   --          - selective-accept
+   --          - timed-entry-call
+
+   Inlined_Calls : Elist_Id;
+   --  List of frontend inlined calls
+
+   Backend_Calls : Elist_Id;
+   --  List of inline calls passed to the backend
+
+   Backend_Inlined_Subps : Elist_Id;
+   --  List of subprograms inlined by the backend
+
+   Backend_Not_Inlined_Subps : Elist_Id;
+   --  List of subprograms that cannot be inlined by the backend
 
    --------------------
    -- Inlined Bodies --
@@ -180,8 +212,11 @@ package body Inline is
    --  function anyway. This is also the case if the function is defined in a
    --  task body or within an entry (for example, an initialization procedure).
 
-   function Number_Of_Statements (Stats : List_Id) return Natural;
-   --  Return the number of statements in the list
+   procedure Remove_Pragmas (Bod : Node_Id);
+   --  A pragma Unreferenced or pragma Unmodified that mentions a formal
+   --  parameter has no meaning when the body is inlined and the formals
+   --  are rewritten. Remove it from body to inline. The analysis of the
+   --  non-inlined body will handle the pragma properly.
 
    ------------------------------
    -- Deferred Cleanup Actions --
@@ -889,18 +924,12 @@ package body Inline is
    -- Build_Body_To_Inline --
    --------------------------
 
-   procedure Build_Body_To_Inline (N : Node_Id; Subp : Entity_Id) is
-      Decl            : constant Node_Id := Unit_Declaration_Node (Subp);
+   procedure Build_Body_To_Inline (N : Node_Id; Spec_Id : Entity_Id) is
+      Decl            : constant Node_Id := Unit_Declaration_Node (Spec_Id);
       Analysis_Status : constant Boolean := Full_Analysis;
       Original_Body   : Node_Id;
       Body_To_Analyze : Node_Id;
       Max_Size        : constant := 10;
-      Stat_Count      : Integer := 0;
-
-      function Has_Excluded_Statement   (Stats : List_Id) return Boolean;
-      --  Check for statements that make inlining not worthwhile: any tasking
-      --  statement, nested at any level. Keep track of total number of
-      --  elementary statements, as a measure of acceptable size.
 
       function Has_Pending_Instantiation return Boolean;
       --  If some enclosing body contains instantiations that appear before
@@ -911,115 +940,13 @@ package body Inline is
 
       function Has_Single_Return_In_GNATprove_Mode return Boolean;
       --  This function is called only in GNATprove mode, and it returns
-      --  True if the subprogram has no or a single return statement as
-      --  last statement.
-
-      procedure Remove_Pragmas;
-      --  A pragma Unreferenced or pragma Unmodified that mentions a formal
-      --  parameter has no meaning when the body is inlined and the formals
-      --  are rewritten. Remove it from body to inline. The analysis of the
-      --  non-inlined body will handle the pragma properly.
+      --  True if the subprogram has no return statement or a single return
+      --  statement as last statement.
 
       function Uses_Secondary_Stack (Bod : Node_Id) return Boolean;
       --  If the body of the subprogram includes a call that returns an
       --  unconstrained type, the secondary stack is involved, and it
       --  is not worth inlining.
-
-      ----------------------------
-      -- Has_Excluded_Statement --
-      ----------------------------
-
-      function Has_Excluded_Statement (Stats : List_Id) return Boolean is
-         S : Node_Id;
-         E : Node_Id;
-
-      begin
-         S := First (Stats);
-         while Present (S) loop
-            Stat_Count := Stat_Count + 1;
-
-            if Nkind_In (S, N_Abort_Statement,
-                            N_Asynchronous_Select,
-                            N_Conditional_Entry_Call,
-                            N_Delay_Relative_Statement,
-                            N_Delay_Until_Statement,
-                            N_Selective_Accept,
-                            N_Timed_Entry_Call)
-            then
-               Cannot_Inline
-                 ("cannot inline & (non-allowed statement)?", S, Subp);
-               return True;
-
-            elsif Nkind (S) = N_Block_Statement then
-               if Present (Declarations (S))
-                 and then Has_Excluded_Declaration (Subp, Declarations (S))
-               then
-                  return True;
-
-               elsif Present (Handled_Statement_Sequence (S))
-                  and then
-                    (Present
-                       (Exception_Handlers (Handled_Statement_Sequence (S)))
-                      or else
-                        Has_Excluded_Statement
-                          (Statements (Handled_Statement_Sequence (S))))
-               then
-                  return True;
-               end if;
-
-            elsif Nkind (S) = N_Case_Statement then
-               E := First (Alternatives (S));
-               while Present (E) loop
-                  if Has_Excluded_Statement (Statements (E)) then
-                     return True;
-                  end if;
-
-                  Next (E);
-               end loop;
-
-            elsif Nkind (S) = N_If_Statement then
-               if Has_Excluded_Statement (Then_Statements (S)) then
-                  return True;
-               end if;
-
-               if Present (Elsif_Parts (S)) then
-                  E := First (Elsif_Parts (S));
-                  while Present (E) loop
-                     if Has_Excluded_Statement (Then_Statements (E)) then
-                        return True;
-                     end if;
-
-                     Next (E);
-                  end loop;
-               end if;
-
-               if Present (Else_Statements (S))
-                 and then Has_Excluded_Statement (Else_Statements (S))
-               then
-                  return True;
-               end if;
-
-            elsif Nkind (S) = N_Loop_Statement
-              and then Has_Excluded_Statement (Statements (S))
-            then
-               return True;
-
-            elsif Nkind (S) = N_Extended_Return_Statement then
-               if Has_Excluded_Statement
-                    (Statements (Handled_Statement_Sequence (S)))
-                 or else
-                   Present
-                     (Exception_Handlers (Handled_Statement_Sequence (S)))
-               then
-                  return True;
-               end if;
-            end if;
-
-            Next (S);
-         end loop;
-
-         return False;
-      end Has_Excluded_Statement;
 
       -------------------------------
       -- Has_Pending_Instantiation --
@@ -1099,30 +1026,6 @@ package body Inline is
          return Check_All_Returns (N) = OK;
       end Has_Single_Return_In_GNATprove_Mode;
 
-      --------------------
-      -- Remove_Pragmas --
-      --------------------
-
-      procedure Remove_Pragmas is
-         Decl : Node_Id;
-         Nxt  : Node_Id;
-
-      begin
-         Decl := First (Declarations (Body_To_Analyze));
-         while Present (Decl) loop
-            Nxt := Next (Decl);
-
-            if Nkind (Decl) = N_Pragma
-              and then Nam_In (Pragma_Name (Decl), Name_Unreferenced,
-                                                   Name_Unmodified)
-            then
-               Remove (Decl);
-            end if;
-
-            Decl := Nxt;
-         end loop;
-      end Remove_Pragmas;
-
       --------------------------
       -- Uses_Secondary_Stack --
       --------------------------
@@ -1144,7 +1047,7 @@ package body Inline is
             then
                Cannot_Inline
                  ("cannot inline & (call returns unconstrained type)?",
-                  N, Subp);
+                  N, Spec_Id);
                return Abandon;
             else
                return OK;
@@ -1174,7 +1077,7 @@ package body Inline is
       elsif GNATprove_Mode
         and then not Has_Single_Return_In_GNATprove_Mode
       then
-         Cannot_Inline ("cannot inline & (multiple returns)?", N, Subp);
+         Cannot_Inline ("cannot inline & (multiple returns)?", N, Spec_Id);
          return;
 
       --  Functions that return unconstrained composite types require
@@ -1182,30 +1085,30 @@ package body Inline is
       --  all return statements return a local variable that is the first
       --  local declaration in the body.
 
-      elsif Ekind (Subp) = E_Function
-        and then not Is_Scalar_Type (Etype (Subp))
-        and then not Is_Access_Type (Etype (Subp))
-        and then not Is_Constrained (Etype (Subp))
+      elsif Ekind (Spec_Id) = E_Function
+        and then not Is_Scalar_Type (Etype (Spec_Id))
+        and then not Is_Access_Type (Etype (Spec_Id))
+        and then not Is_Constrained (Etype (Spec_Id))
       then
          if not Has_Single_Return (N) then
             Cannot_Inline
-              ("cannot inline & (unconstrained return type)?", N, Subp);
+              ("cannot inline & (unconstrained return type)?", N, Spec_Id);
             return;
          end if;
 
       --  Ditto for functions that return controlled types, where controlled
       --  actions interfere in complex ways with inlining.
 
-      elsif Ekind (Subp) = E_Function
-        and then Needs_Finalization (Etype (Subp))
+      elsif Ekind (Spec_Id) = E_Function
+        and then Needs_Finalization (Etype (Spec_Id))
       then
          Cannot_Inline
-           ("cannot inline & (controlled return type)?", N, Subp);
+           ("cannot inline & (controlled return type)?", N, Spec_Id);
          return;
       end if;
 
       if Present (Declarations (N))
-        and then Has_Excluded_Declaration (Subp, Declarations (N))
+        and then Has_Excluded_Declaration (Spec_Id, Declarations (N))
       then
          return;
       end if;
@@ -1215,11 +1118,11 @@ package body Inline is
             Cannot_Inline
               ("cannot inline& (exception handler)?",
                First (Exception_Handlers (Handled_Statement_Sequence (N))),
-               Subp);
+               Spec_Id);
             return;
 
-         elsif
-           Has_Excluded_Statement (Statements (Handled_Statement_Sequence (N)))
+         elsif Has_Excluded_Statement
+                 (Spec_Id, Statements (Handled_Statement_Sequence (N)))
          then
             return;
          end if;
@@ -1230,17 +1133,18 @@ package body Inline is
       --  suppress the other checks on inlining (forbidden declarations,
       --  handlers, etc).
 
-      if Stat_Count > Max_Size
-        and then not (Has_Pragma_Inline_Always (Subp) or else GNATprove_Mode)
+      if not (Has_Pragma_Inline_Always (Spec_Id) or else GNATprove_Mode)
+        and then List_Length
+                   (Statements (Handled_Statement_Sequence (N))) > Max_Size
       then
-         Cannot_Inline ("cannot inline& (body too large)?", N, Subp);
+         Cannot_Inline ("cannot inline& (body too large)?", N, Spec_Id);
          return;
       end if;
 
       if Has_Pending_Instantiation then
          Cannot_Inline
            ("cannot inline& (forward instance within enclosing body)?",
-             N, Subp);
+             N, Spec_Id);
          return;
       end if;
 
@@ -1277,9 +1181,9 @@ package body Inline is
       --  Set return type of function, which is also global and does not need
       --  to be resolved.
 
-      if Ekind (Subp) = E_Function then
+      if Ekind (Spec_Id) = E_Function then
          Set_Result_Definition (Specification (Body_To_Analyze),
-           New_Occurrence_Of (Etype (Subp), Sloc (N)));
+           New_Occurrence_Of (Etype (Spec_Id), Sloc (N)));
       end if;
 
       if No (Declarations (N)) then
@@ -1294,7 +1198,7 @@ package body Inline is
 
       Expander_Mode_Save_And_Set (False);
       Full_Analysis := False;
-      Remove_Pragmas;
+      Remove_Pragmas (Body_To_Analyze);
 
       Analyze (Body_To_Analyze);
       Push_Scope (Defining_Entity (Body_To_Analyze));
@@ -1319,8 +1223,8 @@ package body Inline is
       end if;
 
       Set_Body_To_Inline (Decl, Original_Body);
-      Set_Ekind (Defining_Entity (Original_Body), Ekind (Subp));
-      Set_Is_Inlined (Subp);
+      Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
+      Set_Is_Inlined (Spec_Id);
    end Build_Body_To_Inline;
 
    -------------------
@@ -1357,7 +1261,7 @@ package body Inline is
 
       pragma Assert (Msg (Msg'Last) = '?');
 
-      --  Old semantics
+      --  Legacy front end inlining model
 
       if not Back_End_Inlining then
 
@@ -1643,11 +1547,11 @@ package body Inline is
       end if;
    end Can_Be_Inlined_In_GNATprove_Mode;
 
-   ------------------------------------
-   -- Check_And_Build_Body_To_Inline --
-   ------------------------------------
+   --------------------------------------------
+   -- Check_And_Split_Unconstrained_Function --
+   --------------------------------------------
 
-   procedure Check_And_Build_Body_To_Inline
+   procedure Check_And_Split_Unconstrained_Function
      (N       : Node_Id;
       Spec_Id : Entity_Id;
       Body_Id : Entity_Id)
@@ -1661,47 +1565,7 @@ package body Inline is
       --  body N has no local declarations and its unique statement is a single
       --  extended return statement with a handled statements sequence.
 
-      function Check_Body_To_Inline
-        (N    : Node_Id;
-         Subp : Entity_Id) return Boolean;
-      --  N is the N_Subprogram_Body of Subp. Return true if Subp can be
-      --  inlined by the frontend. These are the rules:
-      --    * At -O0 use fe inlining when inline_always is specified except if
-      --      the function returns a controlled type.
-      --    * At other optimization levels use the fe inlining for both inline
-      --      and inline_always in the following cases:
-      --       - function returning a known at compile time constant
-      --       - function returning a call to an intrinsic function
-      --       - function returning an unconstrained type (see Can_Split
-      --         Unconstrained_Function).
-      --       - function returning a call to a frontend-inlined function
-      --      Use the back-end mechanism otherwise
-      --
-      --  In addition, in the following cases the function cannot be inlined by
-      --  the frontend:
-      --    - functions that uses the secondary stack
-      --    - functions that have declarations of:
-      --         - Concurrent types
-      --         - Packages
-      --         - Instantiations
-      --         - Subprograms
-      --    - functions that have some of the following statements:
-      --         - abort
-      --         - asynchronous-select
-      --         - conditional-entry-call
-      --         - delay-relative
-      --         - delay-until
-      --         - selective-accept
-      --         - timed-entry-call
-      --    - functions that have exception handlers
-      --    - functions that have some enclosing body containing instantiations
-      --      that appear before the corresponding generic body.
-      --    - functions that have some of the following contracts (and the
-      --      sources are compiled with assertions enabled):
-      --         - Pre/post condition
-      --         - Contract cases
-
-      procedure Generate_Body_To_Inline
+      procedure Generate_Subprogram_Body
         (N              : Node_Id;
          Body_To_Inline : out Node_Id);
       --  Generate a parameterless duplicate of subprogram body N. Occurrences
@@ -1750,7 +1614,7 @@ package body Inline is
          --  inline, we nest it within a dummy parameterless subprogram,
          --  declared within the real one.
 
-         Generate_Body_To_Inline (N, Original_Body);
+         Generate_Subprogram_Body (N, Original_Body);
          Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
 
          --  Set return type of function, which is also global and does not
@@ -1786,568 +1650,6 @@ package body Inline is
          Set_Body_To_Inline (Decl, Original_Body);
          Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
       end Build_Body_To_Inline;
-
-      --------------------------
-      -- Check_Body_To_Inline --
-      --------------------------
-
-      function Check_Body_To_Inline
-        (N    : Node_Id;
-         Subp : Entity_Id) return Boolean
-      is
-         Max_Size   : constant := 10;
-
-         function Has_Excluded_Contract return Boolean;
-         --  Check for contracts that cannot be inlined
-
-         function Has_Pending_Instantiation return Boolean;
-         --  Return True if some enclosing body contains instantiations that
-         --  appear before the corresponding generic body.
-
-         function Has_Single_Return_In_GNATprove_Mode return Boolean;
-         --  This function is called only in GNATprove mode, and it returns
-         --  True if the subprogram has no return statement or a single return
-         --  statement as last statement.
-
-         function Returns_Compile_Time_Constant (N : Node_Id) return Boolean;
-         --  Return True if all the return statements of the function body N
-         --  are simple return statements and return a compile time constant
-
-         function Returns_Intrinsic_Function_Call (N : Node_Id) return Boolean;
-         --  Return True if all the return statements of the function body N
-         --  are simple return statements and return an intrinsic function call
-
-         function Uses_Secondary_Stack (N : Node_Id) return Boolean;
-         --  If the body of the subprogram includes a call that returns an
-         --  unconstrained type, the secondary stack is involved, and it
-         --  is not worth inlining.
-
-         ---------------------------
-         -- Has_Excluded_Contract --
-         ---------------------------
-
-         function Has_Excluded_Contract return Boolean is
-            function Check_Excluded_Contracts (E : Entity_Id) return Boolean;
-            --  Return True if the subprogram E has unsupported contracts
-
-            ------------------------------
-            -- Check_Excluded_Contracts --
-            ------------------------------
-
-            function Check_Excluded_Contracts (E : Entity_Id) return Boolean is
-               Items : constant Node_Id := Contract (E);
-
-            begin
-               if Present (Items) then
-                  if Present (Pre_Post_Conditions (Items))
-                    or else Present (Contract_Test_Cases (Items))
-                  then
-                     Cannot_Inline
-                       ("cannot inline & (non-allowed contract)?",
-                        N, Subp);
-                     return True;
-                  end if;
-               end if;
-
-               return False;
-            end Check_Excluded_Contracts;
-
-            --  Local declarations
-
-            Decl : Node_Id;
-            P_Id : Pragma_Id;
-
-         --  Start of processing for Has_Excluded_Contract
-
-         begin
-            if Check_Excluded_Contracts (Spec_Id)
-              or else Check_Excluded_Contracts (Body_Id)
-            then
-               return True;
-            end if;
-
-            --  Check pragmas located in the body which may generate contracts
-
-            if Present (Declarations (N)) then
-               Decl := First (Declarations (N));
-               while Present (Decl) loop
-                  if Nkind (Decl) = N_Pragma then
-                     P_Id := Get_Pragma_Id (Pragma_Name (Decl));
-
-                     if P_Id = Pragma_Contract_Cases or else
-                        P_Id = Pragma_Pre            or else
-                        P_Id = Pragma_Precondition   or else
-                        P_Id = Pragma_Post           or else
-                        P_Id = Pragma_Postcondition
-                     then
-                        Cannot_Inline
-                          ("cannot inline & (non-allowed contract)?",
-                           N, Subp);
-                        return True;
-                     end if;
-                  end if;
-
-                  Next (Decl);
-               end loop;
-            end if;
-
-            return False;
-         end Has_Excluded_Contract;
-
-         -------------------------------
-         -- Has_Pending_Instantiation --
-         -------------------------------
-
-         function Has_Pending_Instantiation return Boolean is
-            S : Entity_Id;
-
-         begin
-            S := Current_Scope;
-            while Present (S) loop
-               if Is_Compilation_Unit (S) or else Is_Child_Unit (S) then
-                  return False;
-
-               elsif Ekind (S) = E_Package
-                 and then Has_Forward_Instantiation (S)
-               then
-                  return True;
-               end if;
-
-               S := Scope (S);
-            end loop;
-
-            return False;
-         end Has_Pending_Instantiation;
-
-         -----------------------------------------
-         -- Has_Single_Return_In_GNATprove_Mode --
-         -----------------------------------------
-
-         function Has_Single_Return_In_GNATprove_Mode return Boolean is
-            Last_Statement : Node_Id := Empty;
-
-            function Check_Return (N : Node_Id) return Traverse_Result;
-            --  Returns OK on node N if this is not a return statement
-            --  different from the last statement in the subprogram.
-
-            ------------------
-            -- Check_Return --
-            ------------------
-
-            function Check_Return (N : Node_Id) return Traverse_Result is
-            begin
-               if Nkind_In (N, N_Simple_Return_Statement,
-                            N_Extended_Return_Statement)
-               then
-                  if N = Last_Statement then
-                     return OK;
-                  else
-                     return Abandon;
-                  end if;
-
-               else
-                  return OK;
-               end if;
-            end Check_Return;
-
-            function Check_All_Returns is new Traverse_Func (Check_Return);
-
-         --  Start of processing for Has_Single_Return_In_GNATprove_Mode
-
-         begin
-            --  Retrieve last statement inside possible block statements
-
-            Last_Statement :=
-              Last (Statements (Handled_Statement_Sequence (N)));
-
-            while Nkind (Last_Statement) = N_Block_Statement loop
-               Last_Statement := Last
-                 (Statements (Handled_Statement_Sequence (Last_Statement)));
-            end loop;
-
-            --  Check that the last statement is the only possible return
-            --  statement in the subprogram.
-
-            return Check_All_Returns (N) = OK;
-         end Has_Single_Return_In_GNATprove_Mode;
-
-         ------------------------------------
-         --  Returns_Compile_Time_Constant --
-         ------------------------------------
-
-         function Returns_Compile_Time_Constant (N : Node_Id) return Boolean is
-
-            function Check_Return (N : Node_Id) return Traverse_Result;
-
-            ------------------
-            -- Check_Return --
-            ------------------
-
-            function Check_Return (N : Node_Id) return Traverse_Result is
-            begin
-               if Nkind (N) = N_Extended_Return_Statement then
-                  return Abandon;
-
-               elsif Nkind (N) = N_Simple_Return_Statement then
-                  if Present (Expression (N)) then
-                     declare
-                        Orig_Expr : constant Node_Id :=
-                                      Original_Node (Expression (N));
-
-                     begin
-                        if Nkind_In (Orig_Expr, N_Integer_Literal,
-                                                N_Real_Literal,
-                                                N_Character_Literal)
-                        then
-                           return OK;
-
-                        elsif Is_Entity_Name (Orig_Expr)
-                          and then Ekind (Entity (Orig_Expr)) = E_Constant
-                          and then Is_OK_Static_Expression (Orig_Expr)
-                        then
-                           return OK;
-                        else
-                           return Abandon;
-                        end if;
-                     end;
-
-                  --  Expression has wrong form
-
-                  else
-                     return Abandon;
-                  end if;
-
-               --  Continue analyzing statements
-
-               else
-                  return OK;
-               end if;
-            end Check_Return;
-
-            function Check_All_Returns is new Traverse_Func (Check_Return);
-
-            --  Start of processing for Returns_Compile_Time_Constant
-
-         begin
-            return Check_All_Returns (N) = OK;
-         end Returns_Compile_Time_Constant;
-
-         --------------------------------------
-         --  Returns_Intrinsic_Function_Call --
-         --------------------------------------
-
-         function Returns_Intrinsic_Function_Call
-           (N : Node_Id) return Boolean
-         is
-            function Check_Return (N : Node_Id) return Traverse_Result;
-
-            ------------------
-            -- Check_Return --
-            ------------------
-
-            function Check_Return (N : Node_Id) return Traverse_Result is
-            begin
-               if Nkind (N) = N_Extended_Return_Statement then
-                  return Abandon;
-
-               elsif Nkind (N) = N_Simple_Return_Statement then
-                  if Present (Expression (N)) then
-                     declare
-                        Orig_Expr : constant Node_Id :=
-                                      Original_Node (Expression (N));
-
-                     begin
-                        if Nkind (Orig_Expr) in N_Op
-                          and then Is_Intrinsic_Subprogram (Entity (Orig_Expr))
-                        then
-                           return OK;
-
-                        elsif Nkind (Orig_Expr) in N_Has_Entity
-                          and then Present (Entity (Orig_Expr))
-                          and then Ekind (Entity (Orig_Expr)) = E_Function
-                          and then Is_Inlined (Entity (Orig_Expr))
-                        then
-                           return OK;
-
-                        elsif Nkind (Orig_Expr) in N_Has_Entity
-                          and then Present (Entity (Orig_Expr))
-                          and then Is_Intrinsic_Subprogram (Entity (Orig_Expr))
-                        then
-                           return OK;
-
-                        else
-                           return Abandon;
-                        end if;
-                     end;
-
-                  --  Expression has wrong form
-
-                  else
-                     return Abandon;
-                  end if;
-
-               --  Continue analyzing statements
-
-               else
-                  return OK;
-               end if;
-            end Check_Return;
-
-            function Check_All_Returns is new Traverse_Func (Check_Return);
-
-         --  Start of processing for Returns_Intrinsic_Function_Call
-
-         begin
-            return Check_All_Returns (N) = OK;
-         end Returns_Intrinsic_Function_Call;
-
-         --------------------------
-         -- Uses_Secondary_Stack --
-         --------------------------
-
-         function Uses_Secondary_Stack (N : Node_Id) return Boolean is
-
-            function Check_Call (N : Node_Id) return Traverse_Result;
-            --  Look for function calls that return an unconstrained type
-
-            ----------------
-            -- Check_Call --
-            ----------------
-
-            function Check_Call (N : Node_Id) return Traverse_Result is
-            begin
-               if Nkind (N) = N_Function_Call
-                 and then Is_Entity_Name (Name (N))
-                 and then Is_Composite_Type (Etype (Entity (Name (N))))
-                 and then not Is_Constrained (Etype (Entity (Name (N))))
-               then
-                  Cannot_Inline
-                    ("cannot inline & (call returns unconstrained type)?",
-                     N, Subp);
-
-                  return Abandon;
-               else
-                  return OK;
-               end if;
-            end Check_Call;
-
-            function Check_Calls is new Traverse_Func (Check_Call);
-
-         --  Start of processing for Uses_Secondary_Stack
-
-         begin
-            return Check_Calls (N) = Abandon;
-         end Uses_Secondary_Stack;
-
-         --  Local variables
-
-         Decl       : constant Node_Id := Unit_Declaration_Node (Spec_Id);
-         May_Inline : constant Boolean :=
-                        GNATprove_Mode
-                          or else Has_Pragma_Inline_Always (Spec_Id)
-                          or else (Has_Pragma_Inline (Spec_Id)
-                                    and then ((Optimization_Level > 0
-                                                and then Ekind (Spec_Id) =
-                                                                   E_Function)
-                                               or else Front_End_Inlining
-                                               or else Back_End_Inlining));
-
-         Body_To_Analyze : Node_Id;
-
-      --  Start of processing for Check_Body_To_Inline
-
-      begin
-         --  No action needed in stubs since the attribute Body_To_Inline
-         --  is not available
-
-         if Nkind (Decl) = N_Subprogram_Body_Stub then
-            return False;
-
-         --  Cannot build the body to inline if the attribute is already set.
-         --  This attribute may have been set if this is a subprogram renaming
-         --  declarations (see Freeze.Build_Renamed_Body).
-
-         elsif Present (Body_To_Inline (Decl)) then
-            return False;
-
-         --  Cannot build the body to inline if the subprogram has unsupported
-         --  contracts that will be expanded into code (if assertions are not
-         --  enabled these pragmas will be removed by Generate_Body_To_Inline
-         --  to avoid reporting spurious errors).
-
-         elsif Assertions_Enabled
-           and then Has_Excluded_Contract
-           and then not Back_End_Inlining
-         then
-            return False;
-
-         --  Subprograms that have return statements in the middle of the
-         --  body are inlined with gotos. GNATprove does not currently
-         --  support gotos, so we prevent such inlining.
-
-         elsif GNATprove_Mode
-           and then not Has_Single_Return_In_GNATprove_Mode
-         then
-            Cannot_Inline ("cannot inline & (multiple returns)?", N, Subp);
-            return False;
-
-         --  No action needed if the subprogram does not fulfill the minimum
-         --  conditions to be inlined by the frontend
-
-         elsif not May_Inline then
-            return False;
-         end if;
-
-         --  Check excluded declarations
-
-         if Present (Declarations (N))
-           and then Has_Excluded_Declaration (Subp, Declarations (N))
-         then
-            return False;
-         end if;
-
-         --  Check excluded statements
-
-         if Present (Handled_Statement_Sequence (N)) then
-            if Present
-                 (Exception_Handlers (Handled_Statement_Sequence (N)))
-            then
-               Cannot_Inline
-                 ("cannot inline& (exception handler)?",
-                  First (Exception_Handlers (Handled_Statement_Sequence (N))),
-                  Subp);
-               return False;
-
-            elsif Has_Excluded_Statement
-                    (Subp, Statements (Handled_Statement_Sequence (N)))
-            then
-               return False;
-            end if;
-         end if;
-
-         --  For backward compatibility, compiling under -gnatN we do not
-         --  inline a subprogram that is too large, unless it is marked
-         --  Inline_Always. This pragma does not suppress the other checks
-         --  on inlining (forbidden declarations, handlers, etc).
-
-         if Front_End_Inlining
-           and then
-             not (Has_Pragma_Inline_Always (Subp) or else GNATprove_Mode)
-           and then Number_Of_Statements
-                      (Statements (Handled_Statement_Sequence (N))) > Max_Size
-         then
-            Cannot_Inline ("cannot inline& (body too large)?", N, Subp);
-            return False;
-         end if;
-
-         --  If some enclosing body contains instantiations that appear before
-         --  the corresponding generic body, the enclosing body has a freeze
-         --  node so that it can be elaborated after the generic itself. This
-         --  might conflict with subsequent inlinings, so that it is unsafe to
-         --  try to inline in such a case.
-
-         if Has_Pending_Instantiation then
-            Cannot_Inline
-              ("cannot inline& (forward instance within enclosing body)?",
-               N, Subp);
-            return False;
-         end if;
-
-         --  Generate and preanalyze the body to inline (needed to perform
-         --  the rest of the checks)
-
-         Generate_Body_To_Inline (N, Body_To_Analyze);
-
-         if Ekind (Subp) = E_Function then
-            Set_Result_Definition (Specification (Body_To_Analyze),
-              New_Occurrence_Of (Etype (Subp), Sloc (N)));
-         end if;
-
-         --  Nest the body to analyze within the real one
-
-         if No (Declarations (N)) then
-            Set_Declarations (N, New_List (Body_To_Analyze));
-         else
-            Append_To (Declarations (N), Body_To_Analyze);
-         end if;
-
-         Preanalyze (Body_To_Analyze);
-         Remove (Body_To_Analyze);
-
-         --  Keep separate checks needed when compiling without optimizations
-
-         if Optimization_Level = 0
-
-           --  AAMP and VM targets have no support for inlining in the backend
-           --  and hence we use frontend inlining at all optimization levels.
-
-           or else AAMP_On_Target
-           or else VM_Target /= No_VM
-         then
-            --  Cannot inline functions whose body has a call that returns an
-            --  unconstrained type since the secondary stack is involved, and
-            --  it is not worth inlining.
-
-            if Uses_Secondary_Stack (Body_To_Analyze) then
-               return False;
-
-            --  Cannot inline functions that return controlled types since
-            --  controlled actions interfere in complex ways with inlining.
-
-            elsif Ekind (Subp) = E_Function
-              and then Needs_Finalization (Etype (Subp))
-            then
-               Cannot_Inline
-                 ("cannot inline & (controlled return type)?", N, Subp);
-               return False;
-
-            elsif Returns_Unconstrained_Type (Subp) then
-
-               if Back_End_Inlining
-                 and then Can_Split_Unconstrained_Function (N)
-               then
-                  return True;
-
-               elsif Has_Single_Return (N) then
-                  return True;
-
-               --  Otherwise the secondary stack is involved, and it is not
-               --  worth inlining.
-
-               else
-                  Cannot_Inline
-                    ("cannot inline & (unconstrained return type)?", N, Subp);
-               end if;
-
-               return False;
-            end if;
-
-         --  Compiling with optimizations enabled
-
-         else
-            --  Procedures are never frontend inlined in this case
-
-            if Ekind (Subp) /= E_Function then
-               return False;
-
-            --  Functions returning unconstrained types are tested
-            --  separately (see Can_Split_Unconstrained_Function).
-
-            elsif Returns_Unconstrained_Type (Subp) then
-               return True;
-
-            --  Check supported cases
-
-            elsif not Returns_Compile_Time_Constant (Body_To_Analyze)
-              and then Convention (Subp) /= Convention_Intrinsic
-              and then not Returns_Intrinsic_Function_Call (Body_To_Analyze)
-            then
-               return False;
-            end if;
-         end if;
-
-         return True;
-      end Check_Body_To_Inline;
 
       --------------------------------------
       -- Can_Split_Unconstrained_Function --
@@ -2391,44 +1693,10 @@ package body Inline is
       -- Generate_Body_To_Inline --
       -----------------------------
 
-      procedure Generate_Body_To_Inline
+      procedure Generate_Subprogram_Body
         (N              : Node_Id;
          Body_To_Inline : out Node_Id)
       is
-         procedure Remove_Pragmas (N : Node_Id);
-         --  Remove occurrences of pragmas that may reference the formals of
-         --  N. The analysis of the non-inlined body will handle these pragmas
-         --  properly.
-
-         --------------------
-         -- Remove_Pragmas --
-         --------------------
-
-         procedure Remove_Pragmas (N : Node_Id) is
-            Decl : Node_Id;
-            Nxt  : Node_Id;
-
-         begin
-            Decl := First (Declarations (N));
-            while Present (Decl) loop
-               Nxt := Next (Decl);
-
-               if Nkind (Decl) = N_Pragma
-                 and then Nam_In (Pragma_Name (Decl), Name_Contract_Cases,
-                                                      Name_Precondition,
-                                                      Name_Postcondition,
-                                                      Name_Unreferenced,
-                                                      Name_Unmodified)
-               then
-                  Remove (Decl);
-               end if;
-
-               Decl := Nxt;
-            end loop;
-         end Remove_Pragmas;
-
-      --  Start of processing for Generate_Body_To_Inline
-
       begin
          --  Within an instance, the body to inline must be treated as a nested
          --  generic, so that the proper global references are preserved.
@@ -2467,7 +1735,7 @@ package body Inline is
          Set_Defining_Unit_Name (Specification (Body_To_Inline),
             Make_Defining_Identifier (Sloc (N), New_Internal_Name ('P')));
          Set_Corresponding_Spec (Body_To_Inline, Empty);
-      end Generate_Body_To_Inline;
+      end Generate_Subprogram_Body;
 
       ----------------------------------
       -- Split_Unconstrained_Function --
@@ -2673,9 +1941,31 @@ package body Inline is
          Rewrite (Ret_Node, Blk_Stmt);
       end Split_Unconstrained_Function;
 
-   --  Start of processing for Check_And_Build_Body_To_Inline
+      --  Local variables
+
+      Decl : constant Node_Id := Unit_Declaration_Node (Spec_Id);
+
+   --  Start of processing for Check_And_Split_Unconstrained_Function
 
    begin
+      pragma Assert (Back_End_Inlining
+        and then Ekind (Spec_Id) = E_Function
+        and then Returns_Unconstrained_Type (Spec_Id)
+        and then Comes_From_Source (Body_Id)
+        and then (Has_Pragma_Inline_Always (Spec_Id)
+                    or else Optimization_Level > 0));
+
+      --  This routine must not be used in GNATprove mode since GNATprove
+      --  relies on frontend inlining
+
+      pragma Assert (not GNATprove_Mode);
+
+      --  No need to split the function if we cannot generate the code
+
+      if Serious_Errors_Detected /= 0 then
+         return;
+      end if;
+
       --  Do not inline any subprogram that contains nested subprograms,
       --  since the backend inlining circuit seems to generate uninitialized
       --  references in this case. We know this happens in the case of front
@@ -2690,60 +1980,68 @@ package body Inline is
       --  error cases, this code blows up, and we don't need it anyway if
       --  there have been errors, since we won't get to the linker anyway.
 
-      if Comes_From_Source (Body_Id)
-        and then (Has_Pragma_Inline_Always (Spec_Id)
-                   or else Optimization_Level > 0)
-        and then Serious_Errors_Detected = 0
-      then
-         declare
-            P_Ent : Node_Id;
+      declare
+         P_Ent : Node_Id;
 
-         begin
-            P_Ent := Body_Id;
-            loop
-               P_Ent := Scope (P_Ent);
-               exit when No (P_Ent) or else P_Ent = Standard_Standard;
+      begin
+         P_Ent := Body_Id;
+         loop
+            P_Ent := Scope (P_Ent);
+            exit when No (P_Ent) or else P_Ent = Standard_Standard;
 
-               if Is_Subprogram (P_Ent) then
-                  Set_Is_Inlined (P_Ent, False);
+            if Is_Subprogram (P_Ent) then
+               Set_Is_Inlined (P_Ent, False);
 
-                  --  In GNATprove mode, issue a warning, and indicate that
-                  --  the subprogram is not always inlined by setting flag
-                  --  Is_Inlined_Always to False.
-
-                  if GNATprove_Mode then
-                     Set_Is_Inlined_Always (P_Ent, False);
-                  end if;
-
-                  if Comes_From_Source (P_Ent)
-                    and then (Has_Pragma_Inline (P_Ent) or else GNATprove_Mode)
-                  then
-                     Cannot_Inline
-                       ("cannot inline& (nested subprogram)?", N, P_Ent,
-                        Is_Serious => True);
-                  end if;
+               if Comes_From_Source (P_Ent)
+                 and then (Has_Pragma_Inline (P_Ent))
+               then
+                  Cannot_Inline
+                    ("cannot inline& (nested subprogram)?", N, P_Ent,
+                     Is_Serious => True);
+                  return;
                end if;
-            end loop;
-         end;
+            end if;
+         end loop;
+      end;
+
+      --  No action needed in stubs since the attribute Body_To_Inline
+      --  is not available
+
+      if Nkind (Decl) = N_Subprogram_Body_Stub then
+         return;
+
+      --  Cannot build the body to inline if the attribute is already set.
+      --  This attribute may have been set if this is a subprogram renaming
+      --  declarations (see Freeze.Build_Renamed_Body).
+
+      elsif Present (Body_To_Inline (Decl)) then
+         return;
+
+      --  Check excluded declarations
+
+      elsif Present (Declarations (N))
+        and then Has_Excluded_Declaration (Spec_Id, Declarations (N))
+      then
+         return;
+
+      --  Check excluded statements. There is no need to protect us against
+      --  exception handlers since they are supported by the GCC backend.
+
+      elsif Present (Handled_Statement_Sequence (N))
+        and then Has_Excluded_Statement
+                   (Spec_Id, Statements (Handled_Statement_Sequence (N)))
+      then
+         return;
       end if;
 
       --  Build the body to inline only if really needed
 
-      if Check_Body_To_Inline (N, Spec_Id)
-        and then Serious_Errors_Detected = 0
-      then
-         if Returns_Unconstrained_Type (Spec_Id) then
-            if Can_Split_Unconstrained_Function (N) then
-               Split_Unconstrained_Function (N, Spec_Id);
-               Build_Body_To_Inline (N, Spec_Id);
-               Set_Is_Inlined (Spec_Id);
-            end if;
-         elsif not Back_End_Inlining then
-            Build_Body_To_Inline (N, Spec_Id);
-            Set_Is_Inlined (Spec_Id);
-         end if;
+      if Can_Split_Unconstrained_Function (N) then
+         Split_Unconstrained_Function (N, Spec_Id);
+         Build_Body_To_Inline (N, Spec_Id);
+         Set_Is_Inlined (Spec_Id);
       end if;
-   end Check_And_Build_Body_To_Inline;
+   end Check_And_Split_Unconstrained_Function;
 
    -------------------------------------
    -- Check_Package_Body_For_Inlining --
@@ -4130,6 +3428,12 @@ package body Inline is
    --  Start of processing for Has_Excluded_Declaration
 
    begin
+      --  No action needed if the check is not needed
+
+      if not Check_Inlining_Restrictions then
+         return False;
+      end if;
+
       D := First (Decls);
       while Present (D) loop
          if Nkind (D) = N_Subprogram_Body then
@@ -4199,6 +3503,12 @@ package body Inline is
       E : Node_Id;
 
    begin
+      --  No action needed if the check is not needed
+
+      if not Check_Inlining_Restrictions then
+         return False;
+      end if;
+
       S := First (Stats);
       while Present (S) loop
          if Nkind_In (S, N_Abort_Statement,
@@ -4220,8 +3530,10 @@ package body Inline is
                return True;
 
             elsif Present (Handled_Statement_Sequence (S)) then
-               if Present
-                    (Exception_Handlers (Handled_Statement_Sequence (S)))
+               if not Back_End_Inlining
+                 and then
+                   Present
+                     (Exception_Handlers (Handled_Statement_Sequence (S)))
                then
                   Cannot_Inline
                     ("cannot inline& (exception handler)?",
@@ -4282,7 +3594,8 @@ package body Inline is
             then
                return True;
 
-            elsif Present (Handled_Statement_Sequence (S))
+            elsif not Back_End_Inlining
+              and then Present (Handled_Statement_Sequence (S))
               and then
                 Present (Exception_Handlers
                           (Handled_Statement_Sequence (S)))
@@ -4449,6 +3762,11 @@ package body Inline is
       for J in Hash_Headers'Range loop
          Hash_Headers (J) := No_Subp;
       end loop;
+
+      Inlined_Calls := No_Elist;
+      Backend_Calls := No_Elist;
+      Backend_Inlined_Subps := No_Elist;
+      Backend_Not_Inlined_Subps := No_Elist;
    end Initialize;
 
    ------------------------
@@ -4552,6 +3870,141 @@ package body Inline is
       return False;
    end Is_Nested;
 
+   ------------------------
+   -- List_Inlining_Info --
+   ------------------------
+
+   procedure List_Inlining_Info is
+      Elmt  : Elmt_Id;
+      Nod   : Node_Id;
+      Count : Nat;
+
+   begin
+      if not Debug_Flag_Dot_J then
+         return;
+      end if;
+
+      --  Generate listing of calls inlined by the frontend
+
+      if Present (Inlined_Calls) then
+         Count := 0;
+         Elmt  := First_Elmt (Inlined_Calls);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            if In_Extended_Main_Code_Unit (Nod) then
+               Count := Count + 1;
+
+               if Count = 1 then
+                  Write_Str ("Listing of frontend inlined calls");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Location (Sloc (Nod));
+               Write_Str (":");
+               Output.Write_Eol;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Generate listing of calls passed to the backend
+
+      if Present (Backend_Calls) then
+         Count := 0;
+
+         Elmt := First_Elmt (Backend_Calls);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            if In_Extended_Main_Code_Unit (Nod) then
+               Count := Count + 1;
+
+               if Count = 1 then
+                  Write_Str ("Listing of inlined calls passed to the backend");
+                  Write_Eol;
+               end if;
+
+               Write_Str ("  ");
+               Write_Int (Count);
+               Write_Str (":");
+               Write_Location (Sloc (Nod));
+               Output.Write_Eol;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Generate listing of subprograms passed to the backend
+
+      if Present (Backend_Inlined_Subps)
+        and then Back_End_Inlining
+      then
+         Count := 0;
+
+         Elmt := First_Elmt (Backend_Inlined_Subps);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            Count := Count + 1;
+
+            if Count = 1 then
+               Write_Str
+                 ("Listing of inlined subprograms passed to the backend");
+               Write_Eol;
+            end if;
+
+            Write_Str ("  ");
+            Write_Int (Count);
+            Write_Str (":");
+            Write_Name (Chars (Nod));
+            Write_Str (" (");
+            Write_Location (Sloc (Nod));
+            Write_Str (")");
+            Output.Write_Eol;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Generate listing of subprogram that cannot be inlined by the backend
+
+      if Present (Backend_Not_Inlined_Subps)
+        and then Back_End_Inlining
+      then
+         Count := 0;
+
+         Elmt := First_Elmt (Backend_Not_Inlined_Subps);
+         while Present (Elmt) loop
+            Nod := Node (Elmt);
+
+            Count := Count + 1;
+
+            if Count = 1 then
+               Write_Str
+                 ("Listing of subprograms that cannot inline the backend");
+               Write_Eol;
+            end if;
+
+            Write_Str ("  ");
+            Write_Int (Count);
+            Write_Str (":");
+            Write_Name (Chars (Nod));
+            Write_Str (" (");
+            Write_Location (Sloc (Nod));
+            Write_Str (")");
+            Output.Write_Eol;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+   end List_Inlining_Info;
+
    ----------
    -- Lock --
    ----------
@@ -4567,26 +4020,6 @@ package body Inline is
       Successors.Release;
       Inlined.Release;
    end Lock;
-
-   --------------------------
-   -- Number_Of_Statements --
-   --------------------------
-
-   --  Why not List_Length???
-
-   function Number_Of_Statements (Stats : List_Id) return Natural is
-      Stat_Count : Integer := 0;
-      Stmt       : Node_Id;
-
-   begin
-      Stmt := First (Stats);
-      while Present (Stmt) loop
-         Stat_Count := Stat_Count + 1;
-         Next (Stmt);
-      end loop;
-
-      return Stat_Count;
-   end Number_Of_Statements;
 
    ---------------------------
    -- Register_Backend_Call --
@@ -4619,5 +4052,32 @@ package body Inline is
          J := J + 1;
       end loop;
    end Remove_Dead_Instance;
+
+   --------------------
+   -- Remove_Pragmas --
+   --------------------
+
+   procedure Remove_Pragmas (Bod : Node_Id) is
+      Decl : Node_Id;
+      Nxt  : Node_Id;
+
+   begin
+      Decl := First (Declarations (Bod));
+      while Present (Decl) loop
+         Nxt := Next (Decl);
+
+         if Nkind (Decl) = N_Pragma
+           and then Nam_In (Pragma_Name (Decl), Name_Contract_Cases,
+                                                Name_Precondition,
+                                                Name_Postcondition,
+                                                Name_Unreferenced,
+                                                Name_Unmodified)
+         then
+            Remove (Decl);
+         end if;
+
+         Decl := Nxt;
+      end loop;
+   end Remove_Pragmas;
 
 end Inline;

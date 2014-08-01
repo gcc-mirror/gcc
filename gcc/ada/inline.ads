@@ -134,18 +134,6 @@ package Inline is
    --  The following should be initialized in an init call in Frontend, we
    --  have thoughts of making the frontend reusable in future ???
 
-   Inlined_Calls : Elist_Id := No_Elist;
-   --  List of frontend inlined calls
-
-   Backend_Calls : Elist_Id := No_Elist;
-   --  List of inline calls passed to the backend
-
-   Backend_Inlined_Subps : Elist_Id := No_Elist;
-   --  List of subprograms inlined by the backend
-
-   Backend_Not_Inlined_Subps : Elist_Id := No_Elist;
-   --  List of subprograms that cannot be inlined by the backend
-
    -----------------
    -- Subprograms --
    -----------------
@@ -171,7 +159,7 @@ package Inline is
    --  At end of compilation, analyze the bodies of all units that contain
    --  inlined subprograms that are actually called.
 
-   procedure Build_Body_To_Inline (N : Node_Id; Subp : Entity_Id);
+   procedure Build_Body_To_Inline (N : Node_Id; Spec_Id : Entity_Id);
    --  If a subprogram has pragma Inline and inlining is active, use generic
    --  machinery to build an unexpanded body for the subprogram. This body is
    --  subsequently used for inline expansions at call sites. If subprogram can
@@ -189,16 +177,17 @@ package Inline is
    --  This procedure is called if the node N, an instance of a call to
    --  subprogram Subp, cannot be inlined. Msg is the message to be issued,
    --  which ends with ? (it does not end with ?p?, this routine takes care of
-   --  the need to change ? to ?p?). Temporarily the behavior of this routine
-   --  depends on the value of -gnatd.k:
+   --  the need to change ? to ?p?). The behavior of this routine depends on
+   --  the value of Back_End_Inlining:
    --
-   --    * If -gnatd.k is not set (ie. old inlining model) then if Subp has
-   --      a pragma Always_Inlined, then an error message is issued (by
-   --      removing the last character of Msg). If Subp is not Always_Inlined,
-   --      then a warning is issued if the flag Ineffective_Inline_Warnings
-   --      is set, adding ?p to the msg, and if not, the call has no effect.
+   --    * If Back_End_Inlining is not set (ie. legacy frontend inlining model)
+   --      then if Subp has a pragma Always_Inlined, then an error message is
+   --      issued (by removing the last character of Msg). If Subp is not
+   --      Always_Inlined, then a warning is issued if the flag Ineffective_
+   --      Inline_Warnings is set, adding ?p to the msg, and if not, the call
+   --      has no effect.
    --
-   --    * If -gnatd.k is set (ie. new inlining model) then:
+   --    * If Back_End_Inlining is set then:
    --      - If Is_Serious is true, then an error is reported (by removing the
    --        last character of Msg);
    --
@@ -214,7 +203,7 @@ package Inline is
    --          flag Ineffective_Inline_Warnings is set (adding p?); otherwise
    --          no effect since inlining may be performed by the backend.
 
-   procedure Check_And_Build_Body_To_Inline
+   procedure Check_And_Split_Unconstrained_Function
      (N       : Node_Id;
       Spec_Id : Entity_Id;
       Body_Id : Entity_Id);
@@ -253,6 +242,10 @@ package Inline is
       Stats : List_Id) return Boolean;
    --  Check a list of statements, Stats, that make inlining of Subp not
    --  worthwhile, including any tasking statement, nested at any level.
+
+   procedure List_Inlining_Info;
+   --  Generate listing of calls inlined by the frontend plus listing of
+   --  calls to inline subprograms passed to the backend.
 
    procedure Register_Backend_Call (N : Node_Id);
    --  Append N to the list Backend_Calls

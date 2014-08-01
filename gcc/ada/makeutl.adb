@@ -777,7 +777,7 @@ package body Makeutl is
       Flush_Messages : Boolean := True)
    is
    begin
-      if Flush_Messages then
+      if Flush_Messages and then not Debug.Debug_Flag_S then
          if Total_Errors_Detected /= 0 or else Warnings_Detected /= 0 then
             Errutil.Finalize;
          end if;
@@ -806,8 +806,13 @@ package body Makeutl is
 
       if S'Length > 0 then
          if Exit_Code /= E_Success then
-            Osint.Fail (S);
-         else
+            if Debug.Debug_Flag_S then
+               Osint.Exit_Program (E_Fatal);
+            else
+               Osint.Fail (S);
+            end if;
+
+         elsif not Debug.Debug_Flag_S then
             Write_Str (S);
          end if;
       end if;
