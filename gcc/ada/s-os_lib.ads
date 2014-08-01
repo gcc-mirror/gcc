@@ -434,7 +434,7 @@ package System.OS_Lib is
    --  to the current position (origin = SEEK_CUR), end of file (origin =
    --  SEEK_END), or start of file (origin = SEEK_SET).
 
-   function File_Length (FD : File_Descriptor) return CRTL.size_t;
+   function File_Length (FD : File_Descriptor) return CRTL.int64;
    pragma Import (C, File_Length, "__gnat_file_length");
    --  Get length of file from file descriptor FD
 
