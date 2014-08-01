@@ -1,3 +1,8 @@
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Revert to
+	previous state in CodePeer_Mode.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* hostparm.ads: Put back definition of OpenVMS as False to aid
