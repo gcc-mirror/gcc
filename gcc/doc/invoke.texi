@@ -6959,25 +6959,31 @@ compilation time.
 @option{-O} turns on the following optimization flags:
 @gccoptlist{
 -fauto-inc-dec @gol
+-fbranch-count-reg @gol
+-fcombine-stack-adjustments @gol
 -fcompare-elim @gol
 -fcprop-registers @gol
 -fdce @gol
 -fdefer-pop @gol
 -fdelayed-branch @gol
 -fdse @gol
+-fforward-propagate @gol
 -fguess-branch-probability @gol
 -fif-conversion2 @gol
 -fif-conversion @gol
+-finline-functions-called-once @gol
 -fipa-pure-const @gol
 -fipa-profile @gol
 -fipa-reference @gol
--fmerge-constants
+-fmerge-constants @gol
+-fmove-loop-invariants @gol
+-fshrink-wrap @gol
 -fsplit-wide-types @gol
 -ftree-bit-ccp @gol
--ftree-builtin-call-dce @gol
 -ftree-ccp @gol
 -fssa-phiopt @gol
 -ftree-ch @gol
+-ftree-copy-prop @gol
 -ftree-copyrename @gol
 -ftree-dce @gol
 -ftree-dominator-opts @gol
@@ -6985,6 +6991,7 @@ compilation time.
 -ftree-forwprop @gol
 -ftree-fre @gol
 -ftree-phiprop @gol
+-ftree-sink @gol
 -ftree-slsr @gol
 -ftree-sra @gol
 -ftree-pta @gol
@@ -7016,19 +7023,23 @@ also turns on the following optimization flags:
 -fhoist-adjacent-loads @gol
 -finline-small-functions @gol
 -findirect-inlining @gol
+-fipa-cp @gol
 -fipa-sra @gol
 -fisolate-erroneous-paths-dereference @gol
 -foptimize-sibling-calls @gol
+-foptimize-strlen @gol
 -fpartial-inlining @gol
 -fpeephole2 @gol
--freorder-blocks  -freorder-functions @gol
+-freorder-blocks -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop  @gol
 -fsched-interblock  -fsched-spec @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fstrict-aliasing -fstrict-overflow @gol
+-ftree-builtin-call-dce @gol
 -ftree-switch-conversion -ftree-tail-merge @gol
 -ftree-pre @gol
--ftree-vrp}
+-ftree-vrp @gol
+-fuse-caller-save}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -7151,6 +7162,14 @@ Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 Optimize sibling and tail recursive calls.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -foptimize-strlen
+@opindex foptimize-strlen
+Optimize various standard C string functions (e.g. @code{strlen},
+@code{strchr} or @code{strcpy}) and
+their _FORTIFY_SOURCE counterparts into faster alternatives.
+
+Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -fno-inline
 @opindex fno-inline
@@ -7316,6 +7335,8 @@ but instead generate a sequence of instructions that decrement a
 register, compare it against zero, then branch based upon the result.
 This option is only meaningful on architectures that support such
 instructions, which include x86, PowerPC, IA-64 and S/390.
+
+Enabled by default at -O1 and higher.
 
 The default is @option{-fbranch-count-reg}.
 
