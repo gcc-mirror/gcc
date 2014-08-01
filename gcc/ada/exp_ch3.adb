@@ -2350,8 +2350,7 @@ package body Exp_Ch3 is
 
             if not Null_Present (Type_Definition (N)) then
                Append_List_To (Body_Stmts,
-                 Build_Init_Statements (
-                   Component_List (Type_Definition (N))));
+                 Build_Init_Statements (Component_List (Type_Definition (N))));
             end if;
 
          --  N is a Derived_Type_Definition with a possible non-empty
@@ -4459,8 +4458,7 @@ package body Exp_Ch3 is
             --  the case statement switch. Their value is added when an
             --  equality call on unchecked unions is expanded.
 
-            Append_List_To (Stmts,
-              Make_Eq_Case (Typ, Comps, New_Discrs));
+            Append_List_To (Stmts, Make_Eq_Case (Typ, Comps, New_Discrs));
          end;
 
       --  Normal case (not unchecked union)

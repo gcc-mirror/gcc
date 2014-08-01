@@ -4355,13 +4355,12 @@ package body Sem_Aggr is
                            end if;
 
                            if Needs_Box then
-                              Append
-                                (Make_Component_Association (Loc,
-                                   Choices     =>
-                                     New_List (Make_Others_Choice (Loc)),
-                                   Expression  => Empty,
-                                      Box_Present => True),
-                                 Component_Associations (Aggr));
+                              Append_To (Component_Associations (Aggr),
+                                Make_Component_Association (Loc,
+                                  Choices     =>
+                                    New_List (Make_Others_Choice (Loc)),
+                                  Expression  => Empty,
+                                  Box_Present => True));
                            end if;
                         end Propagate_Discriminants;
 
@@ -4400,14 +4399,14 @@ package body Sem_Aggr is
                               while Present (Comp) loop
                                  if Ekind (Comp) = E_Component then
                                     if not Is_Record_Type (Etype (Comp)) then
-                                       Append
-                                         (Make_Component_Association (Loc,
+                                       Append_To
+                                         (Component_Associations (Expr),
+                                          Make_Component_Association (Loc,
                                             Choices     =>
                                               New_List
                                                (Make_Others_Choice (Loc)),
                                             Expression  => Empty,
-                                               Box_Present => True),
-                                          Component_Associations (Expr));
+                                               Box_Present => True));
                                     end if;
                                     exit;
                                  end if;
