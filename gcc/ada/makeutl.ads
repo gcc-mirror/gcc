@@ -87,7 +87,7 @@ package Makeutl is
 
    Keep_Temp_Files_Option : constant String := "--keep-temp-files";
    --  Switch to suppress deletion of temp files created by the builder.
-   --  Equivallent of -dn.
+   --  Note that debug switch -gnatdn also has this effect.
 
    Load_Standard_Base : Boolean := True;
    --  False when gprbuild is called with --db-
