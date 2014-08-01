@@ -6079,13 +6079,19 @@ package body Sem_Eval is
       --  to get the information in the variable case as well.
 
    begin
+      --  If an error was posted on expression, then return Unknown, we do not
+      --  want cascaded errors based on some false analysis of a junk node.
+
+      if Error_Posted (N) then
+         return Unknown;
+
       --  Expression that raises constraint error is an odd case. We certainly
       --  do not want to consider it to be in range. It might make sense to
       --  consider it always out of range, but this causes incorrect error
       --  messages about static expressions out of range. So we just return
       --  Unknown, which is always safe.
 
-      if Raises_Constraint_Error (N) then
+      elsif Raises_Constraint_Error (N) then
          return Unknown;
 
       --  Universal types have no range limits, so always in range

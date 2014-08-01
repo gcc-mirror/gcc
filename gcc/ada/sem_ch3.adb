@@ -6614,21 +6614,38 @@ package body Sem_Ch3 is
             Full_Parent := Underlying_Full_View (Full_Parent);
          end if;
 
+         --  For record, access and most enumeration types, derivation from
+         --  the full view requires a fully-fledged declaration. In the other
+         --  cases, just use an itype.
+
          if Ekind (Full_Parent) in Record_Kind
+           or else Ekind (Full_Parent) in Access_Kind
            or else
              (Ekind (Full_Parent) in Enumeration_Kind
                and then not Is_Standard_Character_Type (Full_Parent)
                and then not Is_Generic_Type (Root_Type (Full_Parent)))
          then
-            --  Copy declaration to provide a completion for what is a private
-            --  declaration. Indicate that full view is internally generated.
+            --  Copy and adjust declaration to provide a completion for what
+            --  is originally a private declaration. Indicate that full view
+            --  is internally generated.
 
             Full_N := New_Copy_Tree (N);
             Full_Der := New_Copy (Derived_Type);
             Set_Comes_From_Source (Full_N, False);
             Set_Comes_From_Source (Full_Der, False);
-            Set_Defining_Identifier (Full_N, Full_Der);
             Set_Parent (Full_Der, Full_N);
+            Set_Defining_Identifier (Full_N, Full_Der);
+
+            --  If there are no constraints, adjust the subtype mark
+
+            if Nkind (Subtype_Indication (Type_Definition (Full_N))) /=
+                                                       N_Subtype_Indication
+            then
+               Set_Subtype_Indication
+                 (Type_Definition (Full_N),
+                  New_Occurrence_Of (Full_Parent, Sloc (Full_N)));
+            end if;
+
             Insert_After (N, Full_N);
 
             --  Build full view of derived type from full view of parent which
@@ -6649,7 +6666,8 @@ package body Sem_Ch3 is
                end if;
 
             else
-               Build_Derived_Enumeration_Type (Full_N, Full_Parent, Full_Der);
+               Build_Derived_Type
+                 (Full_N, Full_Parent, Full_Der, True, Derive_Subps => False);
             end if;
 
             --  The full declaration has been introduced into the tree and

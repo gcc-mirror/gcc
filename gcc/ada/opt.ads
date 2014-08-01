@@ -705,10 +705,6 @@ package Opt is
    --  True if a pragma Discard_Names appeared as a configuration pragma for
    --  the current compilation unit.
 
-   GNAT_Mode : Boolean := False;
-   --  GNAT
-   --  True if compiling in GNAT system mode (-gnatg switch)
-
    Identifier_Character_Set : Character;
    --  GNAT
    --  This variable indicates the character set to be used for identifiers.
@@ -1041,6 +1037,11 @@ package Opt is
    --  Set by preprocessor switch -a. Do not eliminate any source text. Implies
    --  Undefined_Symbols_Are_False. Useful to perform a syntax check on all
    --  branches of #if constructs.
+
+   No_Elab_Code_All_Pragma : Node_Id := Empty;
+   --  Set to point to a No_Elaboration_Code_All pragma or aspect encountered
+   --  in the spec of the extended main unit. Used to determine if we need to
+   --  do special tests for violation of this aspect.
 
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND
@@ -2088,6 +2089,70 @@ package Opt is
    --  appropriately licensed unit to declare this as a Table failed with
    --  various elaboration circularities. Memory is getting cheap these days!
 
+   ---------------
+   -- GNAT_Mode --
+   ---------------
+
+   GNAT_Mode : Boolean := False;
+   --  GNAT
+   --  True if compiling in GNAT system mode (-gnatg switch)
+
+   --  Setting this switch has the following effects
+
+   --    The identifier character set is set to 'n' (7-bit ASCII)
+
+   --    Pragma Extend_System is ignored
+
+   --    Warning_Mode is set to Treat_As_Error (-gnatwe)
+
+   --    Standard style checks are set (See Set_GNAT_Style_Check_Options)
+
+   --    Standard warnings are turned on (see Set_GNAT_Mode_Warnings)
+
+   --    The Ada version is set to Ada 2012
+
+   --    Task priorities are always allowed to be in the range Any_Priority
+
+   --    Overflow checks are suppressed, overflow checking set to strict mode
+
+   --    ALI files are always generated for predefined generic packages
+
+   --    Obsolescent feature warnings are suppressed
+
+   --    Recompilation of children of GNAT, System, Ada, Interfaces is allowed
+
+   --    The Scalar_Storage_Order attribute applies to generic types
+
+   --    Categorization errors are treated as warnings rather than errors
+
+   --    Statements in preelaborated units give warnings rather than errors
+
+   --    Private objects are allowed in preelaborated units
+
+   --    Non-static constants in preelaborated units give warnings not errors
+
+   --    The warning about component size being ignored is suppressed
+
+   --    The warning about size clauses being ignored is suppressed
+
+   --    Initializing limited types gives a warning rather than an error
+
+   --    Copying of limited objects is allowed
+
+   --    Returning objects of limited types is allowed
+
+   --    All entities are considered known to Known_But_Invisible
+
+   --    Non-static call in preelaborated unit give a warning, not an error
+
+   --    Warnings on possible elaboration errors are suppressed
+
+   --    Warning about packing being ignored is suppressed
+
+   --    Warnings in internal units are not suppressed (they normally are)
+
+   --    The only special comment sequence allowed is --!
+
    --------------------------
    -- Private Declarations --
    --------------------------
@@ -2146,4 +2211,7 @@ private
    --  Indicates which version of gcc is in use (3 = 3.x, 4 = 4.x). Note that
    --  gcc 2.8.1 (which used to be a value of 2) is no longer supported.
 
+   -------------------------
+   -- Effect of GNAT_Mode --
+   -------------------------
 end Opt;

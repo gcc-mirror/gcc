@@ -16284,9 +16284,6 @@ package body Sem_Prag is
          --  pragma No_Elaboration_Code_All;
 
          when Pragma_No_Elaboration_Code_All => NECA : declare
-            CL : constant List_Id := Context_Items (Cunit (Current_Sem_Unit));
-            CI : Node_Id;
-
          begin
             GNAT_Pragma;
             Check_Valid_Library_Unit_Pragma;
@@ -16318,25 +16315,11 @@ package body Sem_Prag is
             Set_Restriction (No_Elaboration_Code, N);
             Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
 
-            --  Here is where we check that the context clause for the current
-            --  unit does not have any bad with's with respect to NECA rules.
+            --  If in main extended unit, activate transitive with test
 
-            CI := First (CL);
-            while Present (CI) loop
-               if Nkind (CI) = N_With_Clause
-                 and then not
-                   No_Elab_Code_All (Get_Source_Unit (Library_Unit (CI)))
-               then
-                  Error_Msg_Sloc := Sloc (CI);
-                  Error_Msg_N
-                    ("violation of No_Elaboration_Code_All#", N);
-                  Error_Msg_NE
-                    ("\unit& does not have No_Elaboration_Code_All",
-                     N, Entity (Name (CI)));
-               end if;
-
-               Next (CI);
-            end loop;
+            if In_Extended_Main_Source_Unit (N) then
+               Opt.No_Elab_Code_All_Pragma := N;
+            end if;
          end NECA;
 
          ---------------

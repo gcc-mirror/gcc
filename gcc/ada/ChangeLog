@@ -1,5 +1,25 @@
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* opt.ads (No_Elab_Code_All_Pragma): New global variable.
+	* sem_ch10.adb (Check_No_Elab_Code_All): New procedure
+	(Analyze_Compilation_Unit): Call Check_No_Elab_Code_All
+	(Analyze_Subunit_Context): Call Check_No_Elab_Code_All.
+	* sem_prag.adb (Analyze_Pragma, case No_Elaboration_Code_All):
+	Remove code for checking with's, now in sem_ch10.adb, set
+	Opt.No_Elab_Code_All_Pragma.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Copy_And_Build): Copy the declaration for
+	access types as well and adjust the subtype mark if there are
+	no constraints.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Test_In_Range): Return Unknown if error posted.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, einfo.ads, exp_ch4.adb: Code clean ups.
 
 2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>

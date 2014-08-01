@@ -87,6 +87,10 @@ package body Sem_Ch10 is
    --  Check whether the source for the body of a compilation unit must be
    --  included in a standalone library.
 
+   procedure Check_No_Elab_Code_All (N : Node_Id);
+   --  Carries out possible tests for violation of No_Elab_Code all for withed
+   --  units in the Context_Items of unit N.
+
    procedure Check_Private_Child_Unit (N : Node_Id);
    --  If a with_clause mentions a private child unit, the compilation unit
    --  must be a member of the same family, as described in 10.1.2.
@@ -1279,6 +1283,13 @@ package body Sem_Ch10 is
 
          Pop_Scope;
       end if;
+
+      --  If No_Elaboration_Code_All was encountered, this is where we do the
+      --  transitive test of with'ed units to make sure they have the aspect.
+      --  This is delayed till the end of analyzing the compilation unit to
+      --  ensure that the pragma/aspect, if present, has been analyzed.
+
+      Check_No_Elab_Code_All (N);
    end Analyze_Compilation_Unit;
 
    ---------------------
@@ -2061,6 +2072,7 @@ package body Sem_Ch10 is
 
       begin
          Analyze_Context (N);
+         Check_No_Elab_Code_All (N);
 
          --  Make withed units immediately visible. If child unit, make the
          --  ultimate parent immediately visible.
@@ -6054,6 +6066,41 @@ package body Sem_Ch10 is
       Set_First_Private_Entity (Shadow_Pack, Private_Shadow);
       Set_Limited_View_Installed (Spec);
    end Build_Limited_Views;
+
+   ----------------------------
+   -- Check_No_Elab_Code_All --
+   ----------------------------
+
+   procedure Check_No_Elab_Code_All (N : Node_Id) is
+   begin
+      if Present (No_Elab_Code_All_Pragma)
+        and then In_Extended_Main_Source_Unit (N)
+        and then Present (Context_Items (N))
+      then
+         declare
+            CL : constant List_Id := Context_Items (N);
+            CI : Node_Id;
+
+         begin
+            CI := First (CL);
+            while Present (CI) loop
+               if Nkind (CI) = N_With_Clause
+                 and then not
+                   No_Elab_Code_All (Get_Source_Unit (Library_Unit (CI)))
+               then
+                  Error_Msg_Sloc := Sloc (No_Elab_Code_All_Pragma);
+                  Error_Msg_N
+                    ("violation of No_Elaboration_Code_All#", CI);
+                  Error_Msg_NE
+                    ("\unit& does not have No_Elaboration_Code_All",
+                     CI, Entity (Name (CI)));
+               end if;
+
+               Next (CI);
+            end loop;
+         end;
+      end if;
+   end Check_No_Elab_Code_All;
 
    -------------------------------
    -- Check_Body_Needed_For_SAL --
