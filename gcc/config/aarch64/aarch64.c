@@ -3193,8 +3193,8 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
   return false;
 }
 
-static inline bool
-offset_7bit_signed_scaled_p (enum machine_mode mode, HOST_WIDE_INT offset)
+bool
+aarch64_offset_7bit_signed_scaled_p (enum machine_mode mode, HOST_WIDE_INT offset)
 {
   return (offset >= -64 * GET_MODE_SIZE (mode)
 	  && offset < 64 * GET_MODE_SIZE (mode)
@@ -3266,12 +3266,12 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     We conservatively require an offset representable in either mode.
 	   */
 	  if (mode == TImode || mode == TFmode)
-	    return (offset_7bit_signed_scaled_p (mode, offset)
+	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
 		    && offset_9bit_signed_unscaled_p (mode, offset));
 
 	  if (outer_code == PARALLEL)
 	    return ((GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
-		    && offset_7bit_signed_scaled_p (mode, offset));
+		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return (offset_9bit_signed_unscaled_p (mode, offset)
 		    || offset_12bit_unsigned_scaled_p (mode, offset));
@@ -3326,12 +3326,12 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     We conservatively require an offset representable in either mode.
 	   */
 	  if (mode == TImode || mode == TFmode)
-	    return (offset_7bit_signed_scaled_p (mode, offset)
+	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
 		    && offset_9bit_signed_unscaled_p (mode, offset));
 
 	  if (outer_code == PARALLEL)
 	    return ((GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
-		    && offset_7bit_signed_scaled_p (mode, offset));
+		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
 	    return offset_9bit_signed_unscaled_p (mode, offset);
 	}

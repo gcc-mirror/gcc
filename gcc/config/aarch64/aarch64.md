@@ -1022,7 +1022,7 @@
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=k")
           (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "const_int_operand" "n")))
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
      (set (match_operand:GPI 2 "register_operand" "=r")
           (mem:GPI (match_dup 1)))
      (set (match_operand:GPI 3 "register_operand" "=r")
@@ -1037,7 +1037,7 @@
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=k")
           (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "const_int_operand" "n")))
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
      (set (match_operand:GPF 2 "register_operand" "=w")
           (mem:GPF (match_dup 1)))
      (set (match_operand:GPF 3 "register_operand" "=w")
@@ -1054,7 +1054,7 @@
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=&k")
           (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "const_int_operand" "n")))
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
      (set (mem:GPI (plus:P (match_dup 0)
                    (match_dup 4)))
           (match_operand:GPI 2 "register_operand" "r"))
@@ -1070,7 +1070,7 @@
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=&k")
           (plus:P (match_operand:P 1 "register_operand" "0")
-                  (match_operand:P 4 "const_int_operand" "n")))
+                  (match_operand:P 4 "aarch64_mem_pair_offset" "n")))
      (set (mem:GPF (plus:P (match_dup 0)
                    (match_dup 4)))
           (match_operand:GPF 2 "register_operand" "w"))
