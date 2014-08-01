@@ -1,5 +1,18 @@
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* debug.adb: Document debug switch -gnatd.Z.
+	* sem.adb (Semantics): Force expansion on in no or configurable
+	run time mode.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): An
+	unchecked conversion denotes an iterator specification. Such a
+	conversion will be inserted in the context of an inlined call
+	when needed, and its argument is always an object.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* make.adb, makeutl.ads: Minor reformatting.
 	* debug.adb, opt.ads: Clarify documentation of Front_End_Inlining and
 	Back_End_Inlining.

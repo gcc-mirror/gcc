@@ -143,7 +143,7 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Old treatment of indexing aspects
    --  d.Y
-   --  d.Z
+   --  d.Z  Do not enable expansion in configurable run-time mode
 
    --  d1   Error msgs have node numbers where possible
    --  d2   Eliminate error flags in verbose form error messages
@@ -685,6 +685,12 @@ package body Debug is
    --       was inherited from the aprent type. This non-standard extension
    --       is preserved temporarily for use by the modelling project under
    --       debug flag d.X.
+
+   --  d.Z  Normally we always enable expansion in configurable run-time mode
+   --       to make sure we get error messages about unsupported features even
+   --       when compiling in -gnatc mode. But expansion is turned off in this
+   --       case if debug flag -gnatd.Z is used. This is to deal with the case
+   --       where we discover difficulties in this new processing.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
