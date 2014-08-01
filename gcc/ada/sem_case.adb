@@ -456,12 +456,33 @@ package body Sem_Case is
             return;
          end if;
 
-         --  Case of only one value that is missing
+         --  Case of only one value that is duplicated
 
          if Lo = Hi then
+
+            --  Integer type
+
             if Is_Integer_Type (Bounds_Type) then
-               Error_Msg_Uint_1 := Lo;
-               Error_Msg_N ("duplication of choice value: ^#!", C);
+
+               --  We have an integer value, Lo, but if the given choice
+               --  placement is a constant with that value, then use the
+               --  name of that constant instead in the message:
+
+               if Nkind (C) = N_Identifier
+                 and then Compile_Time_Known_Value (C)
+                 and then Expr_Value (C) = Lo
+               then
+                  Error_Msg_N ("duplication of choice value: &#!", C);
+
+               --  Not that special case, so just output the integer value
+
+               else
+                  Error_Msg_Uint_1 := Lo;
+                  Error_Msg_N ("duplication of choice value: ^#!", C);
+               end if;
+
+            --  Enumeration type
+
             else
                Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
                Error_Msg_N ("duplication of choice value: %#!", C);
@@ -470,10 +491,38 @@ package body Sem_Case is
          --  More than one choice value, so print range of values
 
          else
+            --  Integer type
+
             if Is_Integer_Type (Bounds_Type) then
-               Error_Msg_Uint_1 := Lo;
-               Error_Msg_Uint_2 := Hi;
-               Error_Msg_N ("duplication of choice values: ^ .. ^#!", C);
+
+               --  Similar to the above, if C is a range of known values which
+               --  match Lo and Hi, then use the names. We have to go to the
+               --  original nodes, since the values will have been rewritten
+               --  to their integer values.
+
+               if Nkind (C) = N_Range
+                 and then Nkind (Original_Node (Low_Bound  (C))) = N_Identifier
+                 and then Nkind (Original_Node (High_Bound (C))) = N_Identifier
+                 and then Compile_Time_Known_Value (Low_Bound (C))
+                 and then Compile_Time_Known_Value (High_Bound (C))
+                 and then Expr_Value (Low_Bound (C))  = Lo
+                 and then Expr_Value (High_Bound (C)) = Hi
+               then
+                  Error_Msg_Node_2 := Original_Node (High_Bound (C));
+                  Error_Msg_N
+                    ("duplication of choice values: & .. &#!",
+                     Original_Node (Low_Bound (C)));
+
+               --  Not that special case, output integer values
+
+               else
+                  Error_Msg_Uint_1 := Lo;
+                  Error_Msg_Uint_2 := Hi;
+                  Error_Msg_N ("duplication of choice values: ^ .. ^#!", C);
+               end if;
+
+            --  Enumeration type
+
             else
                Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
                Error_Msg_Name_2 := Choice_Image (Hi, Bounds_Type);

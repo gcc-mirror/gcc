@@ -1007,7 +1007,7 @@ __gnat_open_read (char *path, int fmode)
    fd = _topen (wpath, O_RDONLY | o_fmode, 0444);
  }
 #else
-  fd = open (path, O_RDONLY | o_fmode);
+  fd = GNAT_OPEN (path, O_RDONLY | o_fmode);
 #endif
 
   return fd < 0 ? -1 : fd;
@@ -1048,7 +1048,7 @@ __gnat_open_rw (char *path, int fmode)
     fd = _topen (wpath, O_RDWR | o_fmode, PERM);
   }
 #else
-  fd = open (path, O_RDWR | o_fmode, PERM);
+  fd = GNAT_OPEN (path, O_RDWR | o_fmode, PERM);
 #endif
 
   return fd < 0 ? -1 : fd;
@@ -1074,7 +1074,7 @@ __gnat_open_create (char *path, int fmode)
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_TRUNC | o_fmode, PERM);
   }
 #else
-  fd = open (path, O_WRONLY | O_CREAT | O_TRUNC | o_fmode, PERM);
+  fd = GNAT_OPEN (path, O_WRONLY | O_CREAT | O_TRUNC | o_fmode, PERM);
 #endif
 
   return fd < 0 ? -1 : fd;
@@ -1096,7 +1096,7 @@ __gnat_create_output_file (char *path)
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, PERM);
   }
 #else
-  fd = open (path, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, PERM);
+  fd = GNAT_OPEN (path, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT, PERM);
 #endif
 
   return fd < 0 ? -1 : fd;
@@ -1118,7 +1118,7 @@ __gnat_create_output_file_new (char *path)
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT | O_EXCL, PERM);
   }
 #else
-  fd = open (path, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT | O_EXCL, PERM);
+  fd = GNAT_OPEN (path, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT | O_EXCL, PERM);
 #endif
 
   return fd < 0 ? -1 : fd;
@@ -1144,7 +1144,7 @@ __gnat_open_append (char *path, int fmode)
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_APPEND | o_fmode, PERM);
   }
 #else
-  fd = open (path, O_WRONLY | O_CREAT | O_APPEND | o_fmode, PERM);
+  fd = GNAT_OPEN (path, O_WRONLY | O_CREAT | O_APPEND | o_fmode, PERM);
 #endif
 
   return fd < 0 ? -1 : fd;
@@ -1172,7 +1172,7 @@ __gnat_open_new (char *path, int fmode)
     fd = _topen (wpath, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM);
   }
 #else
-  fd = open (path, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM);
+  fd = GNAT_OPEN (path, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM);
 #endif
 
   return fd < 0 ? -1 : fd;
@@ -1213,7 +1213,7 @@ __gnat_open_new_temp (char *path, int fmode)
              fmode ? "rfm=stmlf" : "rfm=udf", "ctx=rec", "rat=none",
              "shr=del,get,put,upd", "mbc=16", "deq=64", "fop=tef");
 #else
-  fd = open (path, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM);
+  fd = GNAT_OPEN (path, O_WRONLY | O_CREAT | O_EXCL | o_fmode, PERM);
 #endif
 
   return fd < 0 ? -1 : fd;

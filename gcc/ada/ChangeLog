@@ -1,3 +1,16 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_case.adb (Dup_Choice): Improve message for integer constants.
+
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatlink.adb: Remove special handling of VMS, RTX and JVM.
+
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h (GNAT_OPEN): Defines as open64 where supported.
+	* adaint.c (GNAT_OPEN): Uses new macro where needed.
+
 2014-07-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (lookup_and_insert_pad_type): New function
