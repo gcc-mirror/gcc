@@ -143,6 +143,7 @@ extern FILE  *__gnat_fopen			   (char *, char *, int,
 						    char *);
 extern FILE  *__gnat_freopen			   (char *, char *, FILE *,
 				                    int, char *);
+extern int    __gnat_open                          (char *, int);
 extern int    __gnat_open_read                     (char *, int);
 extern int    __gnat_open_rw                       (char *, int);
 extern int    __gnat_open_create                   (char *, int);

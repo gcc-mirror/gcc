@@ -1219,6 +1219,27 @@ __gnat_open_new_temp (char *path, int fmode)
   return fd < 0 ? -1 : fd;
 }
 
+int
+__gnat_open (char *path, int fmode)
+{
+  int fd;
+
+#if defined (VMS)
+  fd = open (path, fmode, PERM, "mbc=16", "deq=64", "fop=tef");
+#elif defined (__MINGW32__)
+  {
+    TCHAR wpath[GNAT_MAX_PATH_LEN];
+
+    S2WSC (wpath, path, GNAT_MAX_PATH_LEN);
+    fd = _topen (wpath, fmode, PERM);
+  }
+#else
+  fd = GNAT_OPEN (path, fmode, PERM);
+#endif
+
+  return fd < 0 ? -1 : fd;
+}
+
 /****************************************************************
  ** Perform a call to GNAT_STAT or GNAT_FSTAT, and extract as much information
  ** as possible from it, storing the result in a cache for later reuse

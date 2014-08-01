@@ -1,3 +1,8 @@
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h, adaint.c (__gnat_open): Added.
+	* s-crtl.ads (open): Import __gnat_open for large file support.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_case.adb (Dup_Choice): Improve message for integer constants.

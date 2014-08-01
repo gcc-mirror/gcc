@@ -224,7 +224,7 @@ package System.CRTL is
    pragma Import (C, unlink, "__gnat_unlink");
 
    function open (filename : chars; oflag : int) return int;
-   pragma Import (C, open, "open");
+   pragma Import (C, open, "__gnat_open");
 
    function close (fd : int) return int;
    pragma Import (C, close, "close");
