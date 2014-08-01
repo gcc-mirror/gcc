@@ -2983,9 +2983,7 @@ package body Sem_Attr is
             --  because it was valid in the generic unit. Ditto if this is
             --  an inlining of a function declared in an instance.
 
-            if In_Instance
-              or else In_Inlined_Body
-            then
+            if In_Instance or else In_Inlined_Body then
                return;
 
             --  For sure OK if we have a real private type itself, but must
@@ -3130,12 +3128,10 @@ package body Sem_Attr is
                   --  The prefix denotes either the task type, or else a
                   --  single task whose task type is being analyzed.
 
-                  if (Is_Type (Tsk)
-                      and then Tsk = S)
-
+                  if (Is_Type (Tsk) and then Tsk = S)
                     or else (not Is_Type (Tsk)
-                      and then Etype (Tsk) = S
-                      and then not (Comes_From_Source (S)))
+                              and then Etype (Tsk) = S
+                              and then not (Comes_From_Source (S)))
                   then
                      null;
                   else
@@ -3166,7 +3162,6 @@ package body Sem_Attr is
 
             begin
                Get_First_Interp (P, Index, It);
-
                while Present (It.Nam) loop
                   if It.Nam = Ent then
                      null;
@@ -3241,9 +3236,7 @@ package body Sem_Attr is
       when Attribute_Descriptor_Size =>
          Check_E0;
 
-         if not Is_Entity_Name (P)
-           or else not Is_Type (Entity (P))
-         then
+         if not Is_Entity_Name (P) or else not Is_Type (Entity (P)) then
             Error_Attr_P ("prefix of attribute % must denote a type");
          end if;
 
@@ -3547,8 +3540,8 @@ package body Sem_Attr is
          if Etype (P) =  Standard_Exception_Type then
             Set_Etype (N, RTE (RE_Exception_Id));
 
-         --  Ada 2005 (AI-345): Attribute 'Identity may be applied to
-         --  task interface class-wide types.
+         --  Ada 2005 (AI-345): Attribute 'Identity may be applied to task
+         --  interface class-wide types.
 
          elsif Is_Task_Type (Etype (P))
            or else (Is_Access_Type (Etype (P))
