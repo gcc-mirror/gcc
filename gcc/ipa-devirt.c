@@ -1635,25 +1635,22 @@ struct polymorphic_call_target_hasher
 inline hashval_t
 polymorphic_call_target_hasher::hash (const value_type *odr_query)
 {
-  hashval_t hash;
+  inchash::hash hstate (odr_query->otr_token);
 
-  hash = iterative_hash_host_wide_int
-	  (odr_query->otr_token,
-	   odr_query->type->id);
-  hash = iterative_hash_hashval_t (TYPE_UID (odr_query->context.outer_type),
-				   hash);
-  hash = iterative_hash_host_wide_int (odr_query->context.offset, hash);
+  hstate.add_wide_int (odr_query->type->id);
+  hstate.merge_hash (TYPE_UID (odr_query->context.outer_type));
+  hstate.add_wide_int (odr_query->context.offset);
+
   if (odr_query->context.speculative_outer_type)
     {
-      hash = iterative_hash_hashval_t
-	       (TYPE_UID (odr_query->context.speculative_outer_type), hash);
-      hash = iterative_hash_host_wide_int (odr_query->context.speculative_offset,
-					   hash);
+      hstate.merge_hash (TYPE_UID (odr_query->context.speculative_outer_type));
+      hstate.add_wide_int (odr_query->context.speculative_offset);
     }
-  return iterative_hash_hashval_t
-	    (((int)odr_query->context.maybe_in_construction << 2)
-	     | ((int)odr_query->context.speculative_maybe_derived_type << 1)
-	     | (int)odr_query->context.maybe_derived_type, hash);
+  hstate.add_flag (odr_query->context.maybe_in_construction);
+  hstate.add_flag (odr_query->context.maybe_derived_type);
+  hstate.add_flag (odr_query->context.speculative_maybe_derived_type);
+  hstate.commit_flag ();
+  return hstate.end ();
 }
 
 /* Compare cache entries T1 and T2.  */
