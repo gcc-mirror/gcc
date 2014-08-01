@@ -5752,6 +5752,20 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 			SUBREG_REG (SET_SRC (set)) = SET_SRC (prev_set);
 		      else
 			SET_SRC (set) = SET_SRC (prev_set);
+		      /* As we are finishing with processing the insn
+			 here, check the destination too as it might
+			 inheritance pseudo for another pseudo.  */
+		      if (bitmap_bit_p (remove_pseudos, dregno)
+			  && bitmap_bit_p (&lra_inheritance_pseudos, dregno)
+			  && (restore_regno
+			      = lra_reg_info[dregno].restore_regno) >= 0)
+			{
+			  if (GET_CODE (SET_DEST (set)) == SUBREG)
+			    SUBREG_REG (SET_DEST (set))
+			      = regno_reg_rtx[restore_regno];
+			  else
+			    SET_DEST (set) = regno_reg_rtx[restore_regno];
+			}
 		      lra_push_insn_and_update_insn_regno_info (curr_insn);
 		      lra_set_used_insn_alternative_by_uid
 			(INSN_UID (curr_insn), -1);
