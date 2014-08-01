@@ -1,5 +1,13 @@
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
+	* tree-ssa-dom.c (iterative_hash_exprs_commutative):
+	Rename to inchash:add_expr_commutative. Convert to inchash.
+	(iterative_hash_hashable_expr): Rename to
+	inchash:add_hashable_expr. Convert to inchash.
+	(avail_expr_hash): Dito.
+
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
 	* ipa-devirt.c (polymorphic_call_target_hasher::hash):
 	Convert to inchash.
 
