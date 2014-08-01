@@ -1,3 +1,24 @@
+2014-08-01  Gary Funck  <gary@intrepid.com>
+
+	* configure.ac (GUPCR_PORTALS_RUNTIME): New AC_DEFINE().
+	* config.h.in: Re-generate.
+	* configure: Re-generate.
+	* libgupc.spec.in: Fix comment.
+	* testsuite/lib/libgupc-dg.exp
+	(libgupc_load): Simplify logic.
+	(upc_run_cmd): Rename from run_command.
+	(upc_portals): Use newly added GUPCR_PORTALS_RUNTIME config. variable.
+	(upc_runtime_yod):  Make compile-only.
+	* testsuite/lib/libgupc.exp: Bring in line with gomp's libgomp.exp.
+	(libgupc_target_compile): Simplify logic.
+	* testsuite/libgupc.upc/upc.exp:
+	Bring in line with gomp's libgomp.c/c.exp.
+	* testsuite/libgupc.upc/intrepid/test07.upc
+	* testsuite/libgupc.upc/intrepid/test07_sep.upc
+	* testsuite/libgupc.upc/intrepid/test08.upc
+	* testsuite/libgupc.upc/intrepid/test08_sep.upc
+	Add dg-options to properly support separate compilation.
+
 2014-07-16  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* portals4/gupcr_lock.upc (upc_lock): Add upc_fence to flush

@@ -1,9 +1,0 @@
-2011-06-06  Nenad Vukicevic <nenad@intrepid.com>
-
-	Adding dg files for GUPC testsuite.
-	* ../lib/upc.exp: New.
-	* ../lib/upc-dg.exp: New.
-	* compile/compile.exp: New.
-	* execute/execute.exp: New.
-	* noncompile/noncompile.exp: New.
-

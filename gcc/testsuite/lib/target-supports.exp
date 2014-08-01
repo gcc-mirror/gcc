@@ -729,6 +729,15 @@ proc check_effective_target_fopenmp {} {
     } "-fopenmp"]
 }
 
+# Return 1 if compilation with -fupc is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_fupc {} {
+    return [check_no_compiler_messages fupc object {
+	void foo (void) { }
+    } "-fupc -fno-upc-pre-include"]
+}
+
 # Return 1 if compilation with -fgnu-tm is error-free for trivial
 # code, 0 otherwise.
 
@@ -5379,22 +5388,20 @@ proc add_options_for_upc_library_calls { flags } {
 
 proc check_effective_target_upc_struct_pts { } {
     return [check_no_compiler_messages upc_struct_pts object {
-	#include <upc.h>
 	#ifndef __UPC_PTS_STRUCT_REP__
 	#  error struct PTS is not supported
 	#endif
-    }]
+    } "-fupc -fno-upc-pre-include" ]
 }
 
 # Check if UPC packed pts build
 
 proc check_effective_target_upc_packed_pts { } {
     return [check_no_compiler_messages upc_packed_pts object {
-	#include <upc.h>
 	#ifndef __UPC_PTS_PACKED_REP__
 	#  error packed PTS is not supported
 	#endif
-    }]
+    } "-fupc -fno-upc-pre-include" ]
 }
 
 # Return 1 if the target provides a full C99 runtime.

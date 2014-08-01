@@ -17739,6 +17739,10 @@ fi
 
 
 
+
+$as_echo "#define GUPCR_PORTALS_RUNTIME 1" >>confdefs.h
+
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC runtime Portals4 PTE base index" >&5
 $as_echo_n "checking for UPC runtime Portals4 PTE base index... " >&6; }
 

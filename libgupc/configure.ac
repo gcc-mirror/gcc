@@ -980,6 +980,9 @@ if test "$upc_runtime_model" = "portals4"; then
   AC_SUBST(portals4libs)
   AC_SUBST(portals4inc)
 
+  AC_DEFINE(GUPCR_PORTALS_RUNTIME, 1,
+  [Define to 1 if UPC runtime is based on Portals4.])
+
   AC_MSG_CHECKING([for UPC runtime Portals4 PTE base index])
   AC_ARG_WITH(upc-runtime-pte-base,
   [AS_HELP_STRING([--with-upc-runtime-pte-base=BASE],

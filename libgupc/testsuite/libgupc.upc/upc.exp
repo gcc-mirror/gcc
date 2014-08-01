@@ -5,19 +5,26 @@ if [info exists lang_library_path] then {
 if [info exists lang_test_file] then {
     unset lang_test_file
 }
+if [info exists lang_include_flags] then {
+    unset lang_include_flags
+}
 
 load_lib libgupc-dg.exp
+load_gcc_lib gcc-dg.exp
 
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS "-O2 -fupc-threads-2"
+    set DEFAULT_CFLAGS "-O2 -fupc-threads=2"
 }
 
 # Initialize dg.
 dg-init
 
+# Turn on UPC.
+lappend ALWAYS_CFLAGS "additional_flags=-fupc"
+
 # Gather a list of all tests.
-set tests [lsort [find $srcdir/$subdir test??.upc]]
+set tests [lsort [find $srcdir/$subdir *.upc]]
 
 set ld_library_path $always_ld_library_path
 append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]

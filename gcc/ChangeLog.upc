@@ -1,3 +1,20 @@
+2014-08-01  Gary Funck  <gary@intrepid.com>
+
+	* testsuite/gcc.dg/gupc: New.
+	Add compile-only tests which check for semantic errors/warnings
+	and verify that UPC constructs generate expected UPC runtime calls.
+	* testsuite/upc.dg: Removed.
+	* testsuite/lib/upc-dg.exp: Removed.
+	* testsuite/lib/upc.exp: Removed. 
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_fupc): New.
+	(check_effective_target_upc_struct_pts,
+	check_effective_target_upc_packed_pts):
+	Pass "-fupc -fno-upc-pre-include".
+	* testsuite/gcc.dg/gupc/gupc.exp: Moved from
+	testsuite/upc.dg/compile/compile.exp and modified to
+	work under gcc.dg.
+
 2014-07-28  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 213118 into gupc branch.

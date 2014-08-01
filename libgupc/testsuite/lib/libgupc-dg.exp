@@ -7,20 +7,19 @@ proc libgupc-dg-prune { system text } {
 }
 
 # Check for portals runtime
-set upc_portals [check_no_compiler_messages portals executable {
-    #include <upc.h>
-    extern void PtlInit ();
-    int main () { PtlInit(); }
+set upc_portals [check_no_compiler_messages portals object {
+    #include "config.h"
+    #ifndef GUPCR_PORTALS_RUNTIME
+    #  error UPC runtime is not configured for Portals4
+    #endif
   } ]
 
 # Check if YOD is supported for UPC program launching
-set upc_runtime_yod [check_no_compiler_messages yod executable {
-	#include <upc.h>
-	#include "config.h"
-	#ifndef GUPCR_JOB_LAUNCHER_YOD
-	#  error YOD is not supported
-	#endif
-        int main () {}
+set upc_runtime_yod [check_no_compiler_messages yod object {
+    #include "config.h"
+    #ifndef GUPCR_JOB_LAUNCHER_YOD
+    #  error YOD is not supported
+    #endif
     } ]
 
 # Find YOD if portals runtime is used
@@ -35,50 +34,44 @@ if { $upc_portals } {
     }
     # Environment variable set?
     if { [info exists ::env($env_var)] } {
-        set run_cmd $::env($env_var)
+        set upc_run_cmd $::env($env_var)
     } else {
         # Find run command on the exec path
         set path [split $::env(PATH) ":"]
         foreach d $path {
-	    set run_cmd [file join $d "$run_var"]
+	    set upc_run_cmd [file join $d "$run_var"]
             verbose "UPC checking for $env_var: $run_var in dir: $d" 2
-            if [file executable $run_cmd] {
+            if [file executable $upc_run_cmd] {
 	        break
 	    }
         }
-        if { [string compare $run_cmd ""] == 0 } {
+        if { [string compare $upc_run_cmd ""] == 0 } {
 	    error "UPC: Portals4 run command ($run_var) cannot be found."
         }
-        verbose "UPC using run command: $run_cmd" 2
+        verbose "UPC using run command: $upc_run_cmd" 2
     }
 }
 
-# upc_load -- wrapper around default upc_load to pass an extra
-# argument for dynamic UPC tests OR use a job scheduler to execute
-# tests
+# libgupc_load -- wrapper around default libupc_load to pass an extra
+# argument for dynamic threads UPC tests.
+# For the Portals4 based runtime, use a job scheduler to execute tests.
 
 if { [info procs libgupc_load] != [list] \
-    && [info procs prev_upc_load] == [list] } {
+     && [info procs prev_libgupc_load] == [list] } {
     rename libgupc_load prev_libgupc_load
 
     proc libgupc_load { program args } {
-        global upc_run_arguments
         global upc_portals
-	global run_cmd
+        global upc_run_arguments
+	global upc_run_cmd
 
         if { $upc_portals } {
-            set runcmd $run_cmd
-	    set pargs { "$upc_run_arguments $program" }
+	    set args [concat $upc_run_arguments $program $args]
+            set program $upc_run_cmd
 	} else {
-            set pargs { $upc_run_arguments }
-            set runcmd $program
+            set args [concat $upc_run_arguments $args]
         }
-	# Add other arguments
-	if { [llength $args] > 0 } {
-	    lappend pargs [lindex $args 0]
-	}
 
-	set result [eval [list prev_libgupc_load $runcmd] $pargs]
-	return $result
+	return [prev_libgupc_load $program $args]
     }
 }

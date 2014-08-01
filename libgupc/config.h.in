@@ -86,6 +86,9 @@
 /* Define to 1 if UPC node local access uses Posix shared memory. */
 #undef GUPCR_NODE_LOCAL_MEM_POSIX
 
+/* Define to 1 if UPC runtime is based on Portals4. */
+#undef GUPCR_PORTALS_RUNTIME
+
 /* Portals4 PTE base index. */
 #undef GUPCR_PTE_BASE
 

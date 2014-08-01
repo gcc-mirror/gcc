@@ -1,4 +1,3 @@
-/* { dg-additional-sources "test08_sep.upc" } */
 /* Copyright (C) 2001-2014 Free Software Foundation, Inc.
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -24,6 +23,8 @@ You should have received a copy of the GNU General Public License and
 a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
+
+/* { dg-additional-sources "test08_sep.upc" } */
 
 #include <upc_strict.h>
 #include <stdio.h>

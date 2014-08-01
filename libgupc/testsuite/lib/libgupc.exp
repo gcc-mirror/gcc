@@ -9,29 +9,32 @@ proc load_gcc_lib { filename } {
 }
 
 load_lib dg.exp
-load_gcc_lib file-format.exp
+
+# Required to use gcc-dg.exp - however, the latter should NOT be
+# loaded until ${tool}_target_compile is defined since it uses that
+# to determine default LTO options.
+
+load_gcc_lib prune.exp
+load_gcc_lib target-libpath.exp
+load_gcc_lib wrapper.exp
+load_gcc_lib gcc-defs.exp
+load_gcc_lib timeout.exp
 load_gcc_lib target-supports.exp
+load_gcc_lib file-format.exp
 load_gcc_lib target-supports-dg.exp
 load_gcc_lib scanasm.exp
 load_gcc_lib scandump.exp
 load_gcc_lib scanrtl.exp
 load_gcc_lib scantree.exp
 load_gcc_lib scanipa.exp
-load_gcc_lib prune.exp
-load_gcc_lib target-libpath.exp
-load_gcc_lib wrapper.exp
-load_gcc_lib gcc-defs.exp
-load_gcc_lib torture-options.exp
-load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
+load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
-load_gcc_lib gcc-dg.exp
-load_gcc_lib gfortran-dg.exp
 
 set dg-do-what-default run
 
 #
-# GUPC_UNDER_TEST is the compiler under test.
+# GCC_UNDER_TEST is the compiler under test.
 #
 
 set libgupc_compile_options ""
@@ -55,7 +58,7 @@ proc libgupc_init { args } {
     global ALWAYS_CFLAGS
     global CFLAGS
     global TOOL_EXECUTABLE TOOL_OPTIONS
-    global GUPC_UNDER_TEST
+    global GCC_UNDER_TEST
     global TESTING_IN_BUILD_TREE
     global target_triplet
     global always_ld_library_path
@@ -74,21 +77,12 @@ proc libgupc_init { args } {
       setenv LANG C.ASCII
     }
 
-    if ![info exists GUPC_UNDER_TEST] then {
-        if [info exists TOOL_EXECUTABLE] {
-            set GUPC_UNDER_TEST $TOOL_EXECUTABLE
-        } else {
-            set file [lookfor_file $tool_root_dir gupc]
-            if { $file == "" } {
-              set file [lookfor_file $tool_root_dir gcc/gupc]
-            }
-            if { $file != "" } {
-	      set tooldir [file dirname $file]
-              set GUPC_UNDER_TEST "$file -B$tooldir/"
-            } else {
-              set GUPC_UNDER_TEST [transform upc]
-            }
-        }
+    if ![info exists GCC_UNDER_TEST] then {
+	if [info exists TOOL_EXECUTABLE] {
+	    set GCC_UNDER_TEST $TOOL_EXECUTABLE
+	} else {
+	    set GCC_UNDER_TEST "[find_gcc]"
+	}
     }
 
     if ![info exists tmpdir] {
@@ -120,7 +114,7 @@ proc libgupc_init { args } {
 	    append always_ld_library_path ":${gccdir}/pthread"
 	}
 	append always_ld_library_path ":${gccdir}"
-	set compiler [lindex $GUPC_UNDER_TEST 0]
+	set compiler [lindex $GCC_UNDER_TEST 0]
 
 	if { [is_remote host] == 0 && [which $compiler] != 0 } {
 	  foreach i "[exec $compiler --print-multi-lib]" {
@@ -139,20 +133,20 @@ proc libgupc_init { args } {
 
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
-	# Added -I for gcc-upc.h
-        lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../include"
-	# Added -I for gcc-upc-lib.h
-        lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
-	# Add -B for libgupc.spec 
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
-	# Added -L for libgupc.a
+        # targets that use libgupc.a%s in their specs need a -B option
+        # for uninstalled testing.
+        lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
+        lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
+	# Add -I of source include directory for upc.h, gcc-upc.h, etc.
+        lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../include"
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 
     # We use atomic operations in the testcases to validate results.
     if { ([istarget i?86-*-*] || [istarget x86_64-*-*])
-	 && [check_effective_target_ilp32] } {
+	 && [check_effective_target_ia32] } {
 	lappend ALWAYS_CFLAGS "additional_flags=-march=i486"
     }
 
@@ -172,6 +166,11 @@ proc libgupc_init { args } {
     # error-message parsing machinery.
     lappend ALWAYS_CFLAGS "additional_flags=-fmessage-length=0"
 
+    # Disable caret
+    lappend ALWAYS_CFLAGS "additional_flags=-fno-diagnostics-show-caret"
+
+    # Disable color diagnostics
+    lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
 }
 
 #
@@ -183,10 +182,12 @@ proc libgupc_target_compile { source dest type options } {
     global libgupc_compile_options
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
-    global GUPC_UNDER_TEST
+    global GCC_UNDER_TEST
     global lang_test_file
     global lang_library_path
     global lang_link_flags
+    global lang_include_flags
+    global lang_source_re
     global upc_run_arguments
     global upc_portals
 
@@ -201,6 +202,10 @@ proc libgupc_target_compile { source dest type options } {
             lappend options "ldflags=-L${blddir}/${lang_library_path}"
         }
         lappend options "ldflags=${lang_link_flags}"
+	if { [info exists lang_include_flags] \
+	     && [regexp ${lang_source_re} ${source}] } {
+	    lappend options "additional_flags=${lang_include_flags}"
+	}
     }
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
@@ -210,7 +215,7 @@ proc libgupc_target_compile { source dest type options } {
 
     lappend options "additional_flags=[libio_include_flags]"
     lappend options "timeout=[timeout_value]"
-    lappend options "compiler=$GUPC_UNDER_TEST"
+    lappend options "compiler=$GCC_UNDER_TEST"
 
     set options [concat $libgupc_compile_options $options]
 
@@ -220,29 +225,13 @@ proc libgupc_target_compile { source dest type options } {
 
     set options [dg-additional-files-options $options $source]
 
-    # Check for number of specified threads
-    # Set 4 threads as a default for portals.
-    # NOTE: To detect upc portals support we compile a small
-    #       program. Make sure that upc_portals exists too.
-    set upc_run_arguments ""
-    if { [info exists upc_portals] } {
-	if { $upc_portals } {
-	    set upc_run_arguments "-n 4"
-	}
-    }
+    # Set the default number of threads to 4.
+    set threads 4
+    # If the number of threads was given at compile time, use that.
+    regexp ".*-fupc-threads\[-=](\\d+)" \
+	       $compile_flags "" threads
+    set upc_run_arguments "-n $threads"
 
-    # Find if static threads compilation
-    set flags [split [join $compile_flags] " "]
-    foreach opt $flags {
-        if { [string match *fupc-threads* $opt] } {
-	    set path [split $opt "-"]
-	    set threads [lindex $path end]
-	    if { $upc_portals } {
-	        set upc_run_arguments "-n $threads"
-	    }
-	}
-    }
-    
     set result [target_compile $source $dest $type $options]
 
     return $result
@@ -264,4 +253,3 @@ proc libgupc_option_proc { option } {
 	return 0
     }
 }
-
