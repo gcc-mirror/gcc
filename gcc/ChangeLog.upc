@@ -5,7 +5,7 @@
 	and verify that UPC constructs generate expected UPC runtime calls.
 	* testsuite/upc.dg: Removed.
 	* testsuite/lib/upc-dg.exp: Removed.
-	* testsuite/lib/upc.exp: Removed. 
+	* testsuite/lib/upc.exp: Removed.
 	* testsuite/lib/target-supports.exp
 	(check_effective_target_fupc): New.
 	(check_effective_target_upc_struct_pts,
@@ -237,7 +237,7 @@
 	Define UPC-specific hooks.
 	* c/c-objc-common.c (upc_types_compatible_p): Move to here.
 	(c_types_compatible_p): Call upc_types_compatible_p().
-	* c/c-parser.c (upc_affinity_test): Move to here. 
+	* c/c-parser.c (upc_affinity_test): Move to here.
 	(upc_build_sync_stmt): Move to here.
 	* c/c-typeck.c: #include c-family/c-upc-low.h.
 	* c/config-lang.in (gtfiles): Add UPC gt files.
@@ -718,7 +718,7 @@
 
 2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
 
-	Remove unused --upc-pthreads-per-process compile switch. 
+	Remove unused --upc-pthreads-per-process compile switch.
 	* upc/upc-act.c (upc_handle_option): Ditto.
 	(upc_cpp_builtins): Ditto.
 	* upc/upc-lang.c (upc_init_options): Ditto.

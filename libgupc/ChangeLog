@@ -8,7 +8,7 @@
 	(libgupc_load): Simplify logic.
 	(upc_run_cmd): Rename from run_command.
 	(upc_portals): Use newly added GUPCR_PORTALS_RUNTIME config. variable.
-	(upc_runtime_yod):  Make compile-only.
+	(upc_runtime_yod): Make compile-only.
 	* testsuite/lib/libgupc.exp: Bring in line with gomp's libgomp.exp.
 	(libgupc_target_compile): Simplify logic.
 	* testsuite/libgupc.upc/upc.exp:
@@ -1006,7 +1006,7 @@
 
 2012-01-09  Gary Funck  <gary@intrepid.com>
 
-	* smp/upc_pgm_info.c (__upc_validate_pgm_info):  Ignore intervening
+	* smp/upc_pgm_info.c (__upc_validate_pgm_info): Ignore intervening
 	null bytes in the UPC program information section, to ensure that
 	all configuration information strings are processed.  Allow
 	static THREADS compilations to be mixed with dynamic THREADS
