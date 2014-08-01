@@ -1830,28 +1830,28 @@ package body Sem_Ch8 is
       --  type with unknown discriminants and a generic primitive operation of
       --  the said type with a box require special processing when the actual
       --  is a class-wide type:
-
+      --
       --    generic
       --       type Formal_Typ (<>) is private;
       --       with procedure Prim_Op (Param : Formal_Typ) is <>;
       --    package Gen is ...
-
+      --
       --    package Inst is new Gen (Actual_Typ'Class);
-
+      --
       --  In this case the general renaming mechanism used in the prologue of
       --  an instance no longer applies:
-
+      --
       --    procedure Prim_Op (Param : Formal_Typ) renames Prim_Op;
-
+      --
       --  The above is replaced the following wrapper/renaming combination:
-
+      --
       --    procedure Prim_Op (Param : Formal_Typ) is  --  wrapper
       --    begin
       --       Prim_Op (Param);                        --  primitive
       --    end Wrapper;
-
+      --
       --    procedure Dummy (Param : Formal_Typ) renames Prim_Op;
-
+      --
       --  This transformation applies only if there is no explicit visible
       --  class-wide operation at the point of the instantiation. Ren_Id is
       --  the entity of the renaming declaration. Wrap_Id is the entity of
@@ -1937,7 +1937,6 @@ package body Sem_Ch8 is
             while Present (Formal) loop
                Append_To (Actuals,
                  Make_Identifier (Loc, Chars (Defining_Identifier (Formal))));
-
                Next (Formal);
             end loop;
 
