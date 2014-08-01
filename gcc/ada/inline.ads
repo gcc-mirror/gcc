@@ -131,6 +131,9 @@ package Inline is
      Table_Increment      => Alloc.Pending_Instantiations_Increment,
      Table_Name           => "Pending_Descriptor");
 
+   --  The following should be initialized in an init call in Frontend, we
+   --  have thoughts of making the frontend reusable in future ???
+
    Inlined_Calls : Elist_Id := No_Elist;
    --  List of frontend inlined calls
 
@@ -242,13 +245,14 @@ package Inline is
    function Has_Excluded_Declaration
      (Subp  : Entity_Id;
       Decls : List_Id) return Boolean;
-   --  Check for declarations that make inlining not worthwhile inlining Subp
+   --  Check a list of declarations, Decls, that make the inlining of Subp not
+   --  worthwhile
 
    function Has_Excluded_Statement
      (Subp  : Entity_Id;
       Stats : List_Id) return Boolean;
-   --  Check for statements that make inlining not worthwhile: any tasking
-   --  statement, nested at any level.
+   --  Check a list of statements, Stats, that make inlining of Subp not
+   --  worthwhile, including any tasking statement, nested at any level.
 
    procedure Register_Backend_Call (N : Node_Id);
    --  Append N to the list Backend_Calls

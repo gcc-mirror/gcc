@@ -150,9 +150,9 @@ procedure Gnatls is
       Stamp    : Time_Stamp_Type;
       Checksum : Word;
       Status   : out File_Status);
-   --  Determine the file status (Status) of the file represented by FS
-   --  with the expected Stamp and checksum given as argument. FS will be
-   --  updated to the full file name if available.
+   --  Determine the file status (Status) of the file represented by FS with
+   --  the expected Stamp and checksum given as argument. FS will be updated
+   --  to the full file name if available.
 
    function Corresponding_Sdep_Entry (A : ALI_Id; U : Unit_Id) return Sdep_Id;
    --  Give the Sdep entry corresponding to the unit U in ali record A
@@ -175,7 +175,7 @@ procedure Gnatls is
    --  Reset Print flags properly when selective output is chosen
 
    procedure Scan_Ls_Arg (Argv : String);
-   --  Scan and process lser specific arguments. Argv is a single argument
+   --  Scan and process user specific arguments (Argv is a single argument)
 
    procedure Search_RTS (Name : String);
    --  Find include and objects path for the RTS name.
@@ -184,16 +184,14 @@ procedure Gnatls is
    --  Print usage message
 
    procedure Output_License_Information;
-   --  Output license statement, and if not found, output reference to
-   --  COPYING.
+   --  Output license statement, and if not found, output reference to COPYING
 
    function Image (Restriction : Restriction_Id) return String;
    --  Returns the capitalized image of Restriction
 
    function Normalize (Path : String) return String;
-   --  Returns a normalized path name.
-   --  On Windows, the directory separators are set to '\' in
-   --  Normalize_Pathname.
+   --  Returns a normalized path name. On Windows, the directory separators are
+   --  set to '\' in Normalize_Pathname.
 
    ------------------------------------------
    -- GNATDIST specific output subprograms --

@@ -46,7 +46,6 @@ with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
-with Uintp;    use Uintp;
 
 package body Sem_Ch11 is
 
@@ -61,7 +60,6 @@ package body Sem_Ch11 is
       Generate_Definition         (Id);
       Enter_Name                  (Id);
       Set_Ekind                   (Id, E_Exception);
-      Set_Exception_Code          (Id, Uint_0);
       Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);

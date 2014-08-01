@@ -195,7 +195,6 @@ package body Einfo is
    --    Component_Size                  Uint22
    --    Corresponding_Remote_Type       Node22
    --    Enumeration_Rep_Expr            Node22
-   --    Exception_Code                  Uint22
    --    Original_Record_Component       Node22
    --    Private_View                    Node22
    --    Protected_Formal                Node22
@@ -412,8 +411,6 @@ package body Einfo is
    --    Is_Generic_Instance             Flag130
 
    --    No_Pool_Assigned                Flag131
-   --    Is_AST_Entry                    Flag132
-   --    Is_VMS_Exception                Flag133
    --    Is_Optional_Parameter           Flag134
    --    Has_Aliased_Components          Flag135
    --    No_Strict_Aliasing              Flag136
@@ -573,6 +570,9 @@ package body Einfo is
 
    --    (unused)                        Flag2
    --    (unused)                        Flag3
+
+   --    (unused)                        Flag132
+   --    (unused)                        Flag133
 
    --    (unused)                        Flag275
    --    (unused)                        Flag276
@@ -1181,12 +1181,6 @@ package body Einfo is
    begin
       return Uint12 (Id);
    end Esize;
-
-   function Exception_Code (Id : E) return Uint is
-   begin
-      pragma Assert (Ekind (Id) = E_Exception);
-      return Uint22 (Id);
-   end Exception_Code;
 
    function Extra_Accessibility (Id : E) return E is
    begin
@@ -1901,12 +1895,6 @@ package body Einfo is
       return Flag15 (Id);
    end Is_Aliased;
 
-   function Is_AST_Entry (Id : E) return B is
-   begin
-      pragma Assert (Is_Entry (Id));
-      return Flag132 (Id);
-   end Is_AST_Entry;
-
    function Is_Asynchronous (Id : E) return B is
    begin
       pragma Assert (Ekind (Id) = E_Procedure or else Is_Type (Id));
@@ -2419,11 +2407,6 @@ package body Einfo is
    begin
       return Flag116 (Id);
    end Is_Visible_Lib_Unit;
-
-   function Is_VMS_Exception (Id : E) return B is
-   begin
-      return Flag133 (Id);
-   end Is_VMS_Exception;
 
    function Is_Volatile (Id : E) return B is
    begin
@@ -3931,12 +3914,6 @@ package body Einfo is
       Set_Uint12 (Id, V);
    end Set_Esize;
 
-   procedure Set_Exception_Code (Id : E; V : U) is
-   begin
-      pragma Assert (Ekind (Id) = E_Exception);
-      Set_Uint22 (Id, V);
-   end Set_Exception_Code;
-
    procedure Set_Extra_Accessibility (Id : E; V : E) is
    begin
       pragma Assert
@@ -4677,12 +4654,6 @@ package body Einfo is
       Set_Flag15 (Id, V);
    end Set_Is_Aliased;
 
-   procedure Set_Is_AST_Entry (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Entry (Id));
-      Set_Flag132 (Id, V);
-   end Set_Is_AST_Entry;
-
    procedure Set_Is_Asynchronous (Id : E; V : B := True) is
    begin
       pragma Assert
@@ -5226,12 +5197,6 @@ package body Einfo is
    begin
       Set_Flag116 (Id, V);
    end Set_Is_Visible_Lib_Unit;
-
-   procedure Set_Is_VMS_Exception (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind (Id) = E_Exception);
-      Set_Flag133 (Id, V);
-   end Set_Is_VMS_Exception;
 
    procedure Set_Is_Volatile (Id : E; V : B := True) is
    begin
@@ -8353,7 +8318,6 @@ package body Einfo is
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
       W ("In_Use",                          Flag8   (Id));
-      W ("Is_AST_Entry",                    Flag132 (Id));
       W ("Is_Abstract_Subprogram",          Flag19  (Id));
       W ("Is_Abstract_Type",                Flag146  (Id));
       W ("Is_Local_Anonymous_Access",       Flag194 (Id));
@@ -8454,7 +8418,6 @@ package body Einfo is
       W ("Is_Unchecked_Union",              Flag117 (Id));
       W ("Is_Underlying_Record_View",       Flag246 (Id));
       W ("Is_Unsigned_Type",                Flag144 (Id));
-      W ("Is_VMS_Exception",                Flag133 (Id));
       W ("Is_Valued_Procedure",             Flag127 (Id));
       W ("Is_Visible_Formal",               Flag206 (Id));
       W ("Is_Visible_Lib_Unit",             Flag116 (Id));
@@ -9306,9 +9269,6 @@ package body Einfo is
 
          when E_Enumeration_Literal                        =>
             Write_Str ("Enumeration_Rep_Expr");
-
-         when E_Exception                                  =>
-            Write_Str ("Exception_Code");
 
          when E_Record_Type_With_Private                   |
               E_Record_Subtype_With_Private                |

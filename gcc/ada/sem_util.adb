@@ -2986,18 +2986,6 @@ package body Sem_Util is
       end if;
    end Check_Unprotected_Access;
 
-   ---------------
-   -- Check_VMS --
-   ---------------
-
-   procedure Check_VMS (Construct : Node_Id) is
-   begin
-      if not OpenVMS_On_Target then
-         Error_Msg_N
-           ("this construct is allowed only in Open'V'M'S", Construct);
-      end if;
-   end Check_VMS;
-
    ------------------------
    -- Collect_Interfaces --
    ------------------------

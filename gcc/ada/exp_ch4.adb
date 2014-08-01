@@ -42,7 +42,6 @@ with Exp_Intr; use Exp_Intr;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Exp_VFpt; use Exp_VFpt;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
 with Lib;      use Lib;
@@ -6446,12 +6445,6 @@ package body Exp_Ch4 is
                      Attribute_Name => Name_First)),
              Reason => CE_Overflow_Check_Failed));
       end if;
-
-      --  Vax floating-point types case
-
-      if Vax_Float (Etype (N)) then
-         Expand_Vax_Arith (N);
-      end if;
    end Expand_N_Op_Abs;
 
    ---------------------
@@ -6493,11 +6486,6 @@ package body Exp_Ch4 is
       if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
          Apply_Arithmetic_Overflow_Check (N);
          return;
-
-      --  Vax floating-point types case
-
-      elsif Vax_Float (Typ) then
-         Expand_Vax_Arith (N);
       end if;
    end Expand_N_Op_Add;
 
@@ -6706,12 +6694,6 @@ package body Exp_Ch4 is
 
       elsif Is_Integer_Type (Typ) then
          Apply_Divide_Checks (N);
-
-      --  Deal with Vax_Float
-
-      elsif Vax_Float (Typ) then
-         Expand_Vax_Arith (N);
-         return;
       end if;
    end Expand_N_Op_Divide;
 
@@ -7432,13 +7414,6 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
-      --  If we still have comparison for Vax_Float, process it
-
-      if Vax_Float (Typl) and then Nkind (N) in N_Op_Compare  then
-         Expand_Vax_Comparison (N);
-         return;
-      end if;
-
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Eq;
 
@@ -7843,13 +7818,6 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
-      --  If we still have comparison, and Vax_Float type, process it
-
-      if Vax_Float (Typ1) and then Nkind (N) in N_Op_Compare then
-         Expand_Vax_Comparison (N);
-         return;
-      end if;
-
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Ge;
 
@@ -7892,13 +7860,6 @@ package body Exp_Ch4 is
       end if;
 
       Rewrite_Comparison (N);
-
-      --  If we still have comparison, and Vax_Float type, process it
-
-      if Vax_Float (Typ1) and then Nkind (N) in N_Op_Compare then
-         Expand_Vax_Comparison (N);
-         return;
-      end if;
 
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Gt;
@@ -7943,13 +7904,6 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
-      --  If we still have comparison, and Vax_Float type, process it
-
-      if Vax_Float (Typ1) and then Nkind (N) in N_Op_Compare then
-         Expand_Vax_Comparison (N);
-         return;
-      end if;
-
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Le;
 
@@ -7993,13 +7947,6 @@ package body Exp_Ch4 is
 
       Rewrite_Comparison (N);
 
-      --  If we still have comparison, and Vax_Float type, process it
-
-      if Vax_Float (Typ1) and then Nkind (N) in N_Op_Compare then
-         Expand_Vax_Comparison (N);
-         return;
-      end if;
-
       Optimize_Length_Comparison (N);
    end Expand_N_Op_Lt;
 
@@ -8033,11 +7980,6 @@ package body Exp_Ch4 is
              Right_Opnd => Right_Opnd (N)));
 
          Analyze_And_Resolve (N, Typ);
-
-      --  Vax floating-point types case
-
-      elsif Vax_Float (Etype (N)) then
-         Expand_Vax_Arith (N);
       end if;
    end Expand_N_Op_Minus;
 
@@ -8510,12 +8452,6 @@ package body Exp_Ch4 is
 
       elsif Is_Signed_Integer_Type (Etype (N)) then
          Apply_Arithmetic_Overflow_Check (N);
-
-      --  Deal with VAX float case
-
-      elsif Vax_Float (Typ) then
-         Expand_Vax_Arith (N);
-         return;
       end if;
    end Expand_N_Op_Multiply;
 
@@ -8553,13 +8489,6 @@ package body Exp_Ch4 is
          end if;
 
          Rewrite_Comparison (N);
-
-         --  If we still have comparison for Vax_Float, process it
-
-         if Vax_Float (Typ) and then Nkind (N) in N_Op_Compare  then
-            Expand_Vax_Comparison (N);
-            return;
-         end if;
 
       --  For all cases other than elementary types, we rewrite node as the
       --  negation of an equality operation, and reanalyze. The equality to be
@@ -9290,11 +9219,6 @@ package body Exp_Ch4 is
 
       if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
          Apply_Arithmetic_Overflow_Check (N);
-
-      --  VAX floating-point types case
-
-      elsif Vax_Float (Typ) then
-         Expand_Vax_Arith (N);
       end if;
    end Expand_N_Op_Subtract;
 
@@ -11007,16 +10931,6 @@ package body Exp_Ch4 is
                end if;
             end if;
          end;
-      end if;
-
-      --  Final step, if the result is a type conversion involving Vax_Float
-      --  types, then it is subject for further special processing.
-
-      if Nkind (N) = N_Type_Conversion
-        and then (Vax_Float (Operand_Type) or else Vax_Float (Target_Type))
-      then
-         Expand_Vax_Conversion (N);
-         goto Done;
       end if;
 
       --  Here at end of processing

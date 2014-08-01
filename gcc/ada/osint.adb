@@ -1078,10 +1078,12 @@ package body Osint is
          N : C_File_Name;
          A : System.Address) return size_t;
       pragma Import (C, Internal, "__gnat_file_length_attr");
+
    begin
       --  The conversion from size_t to Long_Integer is ok here as this
       --  routine is only to be used by the compiler and we do not expect
       --  a unit to be larger than a 32bit integer.
+
       return Long_Integer (Internal (-1, Name, Attr.all'Address));
    end File_Length;
 

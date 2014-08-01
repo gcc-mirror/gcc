@@ -165,10 +165,10 @@ package body Inline is
 
    function Has_Single_Return (N : Node_Id) return Boolean;
    --  In general we cannot inline functions that return unconstrained type.
-   --  However, we can handle such functions if all return statements return
-   --  a local variable that is the only declaration in the body of the
-   --  function. In that case the call can be replaced by that local
-   --  variable as is done for other inlined calls.
+   --  However, we can handle such functions if all return statements return a
+   --  local variable that is the only declaration in the body of the function.
+   --  In that case the call can be replaced by that local variable as is done
+   --  for other inlined calls.
 
    function In_Main_Unit_Or_Subunit (E : Entity_Id) return Boolean;
    --  Return True if E is in the main unit or its spec or in a subunit
@@ -429,7 +429,7 @@ package body Inline is
 
       procedure Register_Backend_Not_Inlined_Subprogram (Subp : Entity_Id);
       --  Append Subp to the list of subprograms that cannot be inlined by
-      --  the backend
+      --  the backend.
 
       ----------------------------
       -- Back_End_Cannot_Inline --
@@ -3332,7 +3332,7 @@ package body Inline is
             --  expanded into a procedure call which must be added after the
             --  object declaration.
 
-            if Is_Unc_Decl and then Back_End_Inlining then
+            if Is_Unc_Decl and Back_End_Inlining then
                Insert_Action_After (Parent (N), Blk);
             else
                Set_Expression (Parent (N), Empty);
@@ -4329,9 +4329,9 @@ package body Inline is
       return False;
    end Has_Initialized_Type;
 
-   ------------------------
-   --  Has_Single_Return --
-   ------------------------
+   -----------------------
+   -- Has_Single_Return --
+   -----------------------
 
    function Has_Single_Return (N : Node_Id) return Boolean is
       Return_Statement : Node_Id := Empty;
@@ -4376,8 +4376,8 @@ package body Inline is
                return Abandon;
             end if;
 
-         --  We can only inline a build-in-place function if
-         --  it has a single extended return.
+         --  We can only inline a build-in-place function if it has a single
+         --  extended return.
 
          elsif Nkind (N) = N_Extended_Return_Statement then
             if No (Return_Statement) then
@@ -4571,6 +4571,8 @@ package body Inline is
    --------------------------
    -- Number_Of_Statements --
    --------------------------
+
+   --  Why not List_Length???
 
    function Number_Of_Statements (Stats : List_Id) return Natural is
       Stat_Count : Integer := 0;

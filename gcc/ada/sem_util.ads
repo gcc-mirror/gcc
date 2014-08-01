@@ -319,12 +319,6 @@ package Sem_Util is
    --  and the context is external to the protected operation, to warn against
    --  a possible unlocked access to data.
 
-   procedure Check_VMS (Construct : Node_Id);
-   --  Check that this the target is OpenVMS, and if so, return with no effect,
-   --  otherwise post an error noting this can only be used with OpenVMS ports.
-   --  The argument is the construct in question and is used to post the error
-   --  message.
-
    procedure Collect_Interfaces
      (T               : Entity_Id;
       Ifaces_List     : out Elist_Id;

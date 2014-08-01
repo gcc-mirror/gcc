@@ -1,3 +1,16 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* gnatchop.adb, gnatcmd.adb, make.adb, mlib-prj.adb, bindgen.adb,
+	mlib.ads, butil.adb, clean.adb, binde.adb, gnatls.adb, gnatname.adb,
+	osint.adb, krunch.adb: Minor reformatting.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* inline.adb, inline.ads, fe.h, einfo.adb, einfo.ads, sem_util.adb,
+	sem_util.ads, exp_ch4.adb, exp_ch11.adb, exp_ch6.adb, cstand.adb,
+	sem_mech.adb, sem_ch6.adb, sem_ch8.adb, sem_ch11.adb, snames.ads-tmpl:
+	Remove VMS-specific code.
+
 2014-08-01  Arnaud Charlet  <charlet@adacore.com>
 
 	* binde.adb, bindgen.adb, butil.adb, clean.adb, gnatbind.adb,

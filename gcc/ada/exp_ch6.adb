@@ -43,7 +43,6 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Exp_VFpt; use Exp_VFpt;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
@@ -3926,19 +3925,19 @@ package body Exp_Ch6 is
          --  Back end inlining: let the back end handle it
 
          elsif No (Unit_Declaration_Node (Subp))
-           or else
-             Nkind (Unit_Declaration_Node (Subp)) /= N_Subprogram_Declaration
-           or else
-             No (Body_To_Inline (Unit_Declaration_Node (Subp)))
+           or else Nkind (Unit_Declaration_Node (Subp)) /=
+                                                 N_Subprogram_Declaration
+           or else No (Body_To_Inline (Unit_Declaration_Node (Subp)))
          then
             Add_Inlined_Body (Subp);
             Register_Backend_Call (Call_Node);
 
-         --  Frontend expansion of supported functions returning unconstrained
-         --  types
+         --  Frontend expands supported functions returning unconstrained types
 
-         else pragma Assert (Ekind (Subp) = E_Function
-                               and then Returns_Unconstrained_Type (Subp));
+         else
+            pragma Assert (Ekind (Subp) = E_Function
+              and then Returns_Unconstrained_Type (Subp));
+
             declare
                Spec : constant Node_Id := Unit_Declaration_Node (Subp);
 
@@ -5201,21 +5200,6 @@ package body Exp_Ch6 is
    procedure Expand_N_Function_Call (N : Node_Id) is
    begin
       Expand_Call (N);
-
-      --  If the return value of a foreign compiled function is VAX Float, then
-      --  expand the return (adjusts the location of the return value on
-      --  Alpha/VMS, no-op everywhere else).
-      --  Comes_From_Source intercepts recursive expansion.
-
-      if Nkind (N) = N_Function_Call
-        and then Vax_Float (Etype (N))
-        and then Present (Name (N))
-        and then Present (Entity (Name (N)))
-        and then Has_Foreign_Convention (Entity (Name (N)))
-        and then Comes_From_Source (Parent (N))
-      then
-         Expand_Vax_Foreign_Return (N);
-      end if;
    end Expand_N_Function_Call;
 
    ---------------------------------------

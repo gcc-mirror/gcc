@@ -154,11 +154,6 @@ extern void Get_External_Name	(Entity_Id, Boolean, String_Pointer);
 
 extern Boolean Is_Fully_Repped_Tagged_Type      (Entity_Id);
 
-/* exp_vfpt: */
-
-#define Get_Vax_Real_Literal_As_Signed exp_vfpt__get_vax_real_literal_as_signed
-extern Ureal Get_Vax_Real_Literal_As_Signed (Node_Id);
-
 /* lib: */
 
 #define Cunit 				lib__cunit
