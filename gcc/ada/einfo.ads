@@ -3347,12 +3347,20 @@ package Einfo is
 --       interpreted as true. Currently this is set for derived Boolean
 --       types which have a convention of C, C++ or Fortran.
 
+--    No_Dynamic_Predicate_On_Actual (Flag276)
+--       Defined on generic formal types that are used in loops and quantified
+--       expressions. The corresponing actual cannot have dynamic predicates.
+
 --    No_Pool_Assigned (Flag131) [root type only]
 --       Defined in access types. Set if a storage size clause applies to the
 --       variable with a static expression value of zero. This flag is used to
 --       generate errors if any attempt is made to allocate or free an instance
 --       of such an access type. This is set only in the root type, since
 --       derived types must have the same pool.
+
+--    No_Predicate_On_Actual (Flag275)
+--       Defined on generic formal types that are used in the spec of a generic
+--       package, in constructs that forbid discrete types with predicates.
 
 --    No_Return (Flag113)
 --       Defined in all entities. Always false except in the case of procedures
@@ -5566,6 +5574,8 @@ package Einfo is
    --    Has_Enumeration_Rep_Clause          (Flag66)
    --    Has_Pragma_Ordered                  (Flag198)  (base type only)
    --    Nonzero_Is_True                     (Flag162)  (base type only)
+   --    No_Predicate_On_Actual              (Flag275)
+   --    No_Dynamic_Predicate_On_Actual      (Flag276)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -5780,6 +5790,8 @@ package Einfo is
    --    Non_Binary_Modulus                  (Flag58)   (base type only)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Shift_Operator                  (Flag267)  (base type only)
+   --    No_Predicate_On_Actual              (Flag275)
+   --    No_Dynamic_Predicate_On_Actual      (Flag276)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -6082,6 +6094,8 @@ package Einfo is
    --    Static_Discrete_Predicate           (List25)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Shift_Operator                  (Flag267)  (base type only)
+   --    No_Predicate_On_Actual              (Flag275)
+   --    No_Dynamic_Predicate_On_Actual      (Flag276)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -6751,7 +6765,9 @@ package Einfo is
    function Needs_No_Actuals                    (Id : E) return B;
    function Never_Set_In_Source                 (Id : E) return B;
    function Next_Inlined_Subprogram             (Id : E) return E;
+   function No_Dynamic_Predicate_On_Actual      (Id : E) return B;
    function No_Pool_Assigned                    (Id : E) return B;
+   function No_Predicate_On_Actual              (Id : E) return B;
    function No_Return                           (Id : E) return B;
    function No_Strict_Aliasing                  (Id : E) return B;
    function Non_Binary_Modulus                  (Id : E) return B;
@@ -7389,7 +7405,9 @@ package Einfo is
    procedure Set_Needs_No_Actuals                (Id : E; V : B := True);
    procedure Set_Never_Set_In_Source             (Id : E; V : B := True);
    procedure Set_Next_Inlined_Subprogram         (Id : E; V : E);
+   procedure Set_No_Dynamic_Predicate_On_Actual  (Id : E; V : B := True);
    procedure Set_No_Pool_Assigned                (Id : E; V : B := True);
+   procedure Set_No_Predicate_On_Actual          (Id : E; V : B := True);
    procedure Set_No_Return                       (Id : E; V : B := True);
    procedure Set_No_Strict_Aliasing              (Id : E; V : B := True);
    procedure Set_Non_Binary_Modulus              (Id : E; V : B := True);
@@ -8175,7 +8193,9 @@ package Einfo is
    pragma Inline (Next_Index);
    pragma Inline (Next_Inlined_Subprogram);
    pragma Inline (Next_Literal);
+   pragma Inline (No_Dynamic_Predicate_On_Actual);
    pragma Inline (No_Pool_Assigned);
+   pragma Inline (No_Predicate_On_Actual);
    pragma Inline (No_Return);
    pragma Inline (No_Strict_Aliasing);
    pragma Inline (Non_Binary_Modulus);
@@ -8612,7 +8632,9 @@ package Einfo is
    pragma Inline (Set_Needs_No_Actuals);
    pragma Inline (Set_Never_Set_In_Source);
    pragma Inline (Set_Next_Inlined_Subprogram);
+   pragma Inline (Set_No_Dynamic_Predicate_On_Actual);
    pragma Inline (Set_No_Pool_Assigned);
+   pragma Inline (Set_No_Predicate_On_Actual);
    pragma Inline (Set_No_Return);
    pragma Inline (Set_No_Strict_Aliasing);
    pragma Inline (Set_Non_Binary_Modulus);

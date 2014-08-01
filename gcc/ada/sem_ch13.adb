@@ -8255,6 +8255,15 @@ package body Sem_Ch13 is
                --  For discrete subtype, build the static predicate list
 
                if Is_Discrete_Type (Typ) then
+                  if not Is_Static_Subtype (Typ) then
+
+                     --  This can only happen in the presence of previous
+                     --  semantic errors.
+
+                     pragma Assert (Serious_Errors_Detected > 0);
+                     return;
+                  end if;
+
                   Build_Discrete_Static_Predicate (Typ, Expr, Object_Name);
 
                   --  If we don't get a static predicate list, it means that we
@@ -10123,7 +10132,7 @@ package body Sem_Ch13 is
       end if;
 
       --  For a record type, deal with variant parts. This has to be delayed
-      --  to this point, because of the issue of statically precicated
+      --  to this point, because of the issue of statically predicated
       --  subtypes, which we have to ensure are frozen before checking
       --  choices, since we need to have the static choice list set.
 

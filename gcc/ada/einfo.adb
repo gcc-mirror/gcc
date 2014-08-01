@@ -567,15 +567,12 @@ package body Einfo is
    --    (SSO_Set_Low_By_Default)        Flag273
 
    --    Is_Generic_Actual_Subprogram    Flag274
+   --    No_Predicate_On_Actual          Flag275
+   --    No_Dynamic_Predicate_On_Actual  Flag276
 
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag132
-   --    (unused)                        Flag133
-
-   --    (unused)                        Flag275
-   --    (unused)                        Flag276
    --    (unused)                        Flag277
    --    (unused)                        Flag278
    --    (unused)                        Flag279
@@ -2557,11 +2554,23 @@ package body Einfo is
       return Node12 (Id);
    end Next_Inlined_Subprogram;
 
+   function No_Dynamic_Predicate_On_Actual (Id : E) return Boolean is
+   begin
+      pragma Assert (Is_Discrete_Type (Id));
+      return Flag276 (Id);
+   end No_Dynamic_Predicate_On_Actual;
+
    function No_Pool_Assigned (Id : E) return B is
    begin
       pragma Assert (Is_Access_Type (Id));
       return Flag131 (Root_Type (Id));
    end No_Pool_Assigned;
+
+   function No_Predicate_On_Actual (Id : E) return Boolean is
+   begin
+      pragma Assert (Is_Discrete_Type (Id));
+      return Flag275 (Id);
+   end No_Predicate_On_Actual;
 
    function No_Return (Id : E) return B is
    begin
@@ -5344,11 +5353,23 @@ package body Einfo is
       Set_Node12 (Id, V);
    end Set_Next_Inlined_Subprogram;
 
+   procedure Set_No_Dynamic_Predicate_On_Actual (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Discrete_Type (Id));
+      Set_Flag276 (Id, V);
+   end Set_No_Dynamic_Predicate_On_Actual;
+
    procedure Set_No_Pool_Assigned (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
       Set_Flag131 (Id, V);
    end Set_No_Pool_Assigned;
+
+   procedure Set_No_Predicate_On_Actual (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Discrete_Type (Id));
+      Set_Flag275 (Id, V);
+   end Set_No_Predicate_On_Actual;
 
    procedure Set_No_Return (Id : E; V : B := True) is
    begin
@@ -8435,7 +8456,9 @@ package body Einfo is
       W ("Needs_Debug_Info",                Flag147 (Id));
       W ("Needs_No_Actuals",                Flag22  (Id));
       W ("Never_Set_In_Source",             Flag115 (Id));
+      W ("No_Dynamic_Predicate_On_actual",  Flag276 (Id));
       W ("No_Pool_Assigned",                Flag131 (Id));
+      W ("No_Predicate_On_actual",          Flag275 (Id));
       W ("No_Return",                       Flag113 (Id));
       W ("No_Strict_Aliasing",              Flag136 (Id));
       W ("Non_Binary_Modulus",              Flag58  (Id));

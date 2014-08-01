@@ -1,3 +1,28 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb New flags No_Predicate_On_Actual and
+	No_Dynamic_Predicate_On_Actual, to enforce the generic contract
+	on generic units that contain constructs that forbid subtypes
+	with predicates.
+	* sem_ch3.adb (Analyze_Subtype_Declaration, Process_Subtype):
+	Inherit flags indicating the presence of predicates in subtype
+	declarations with and without constraints.
+	(Inherit_Predicate_Flags): Utility for the above.
+	* sem_util.adb (Bad_Predicated_Subtype_Use): In a generic context,
+	indicate that the actual cannot have predicates, and preserve
+	warning. In an instance, report error if actual has predicates
+	and the construct appears in a package declaration.
+	* sem_ch12.adb (Diagnose_Predicated_Actual): Report error
+	for an actual with predicates, if the corresponding formal
+	carries No_Predicate_On_Actual or (in the case of a loop)
+	No_Dynamic_Predicate_On_Actual.
+	* sem_ch13.adb (Build_Predicate_Functions); Do not build a
+	Static_Predicate function if the type is non-static (in the
+	presence of previous errors),
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Set flag
+	No_Dynamic_Predicate_On_Actual in a generic context, to enforce
+	generic contract on actuals that cannot have predicates.
+
 2014-08-01  Pascal Obry  <obry@adacore.com>
 
 	* a-direct.adb (C_Size): Returns an int64.
