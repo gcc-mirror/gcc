@@ -2915,6 +2915,21 @@ package body Sem_Ch13 is
                      --  that verifed that there was a matching convention
                      --  is now obsolete.
 
+                     if A_Id = Aspect_Import then
+                        Set_Is_Imported (E);
+
+                        --  An imported entity cannot have an explicit
+                        --  initialization.
+
+                        if Nkind (N) = N_Object_Declaration
+                          and then Present (Expression (N))
+                        then
+                           Error_Msg_N
+                             ("imported entities cannot be initialized "
+                              & "(RM B.1(24))", Expression (N));
+                        end if;
+                     end if;
+
                      goto Continue;
                   end if;
 
@@ -2930,7 +2945,7 @@ package body Sem_Ch13 is
                     and then Nkind (Parent (N)) /= N_Compilation_Unit
                   then
                      Error_Msg_N
-                        ("incorrect context for library unit aspect&", Id);
+                       ("incorrect context for library unit aspect&", Id);
                      goto Continue;
                   end if;
 
