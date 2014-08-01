@@ -1,3 +1,75 @@
+2014-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+
+2014-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Do not generate
+	default initialization for an imported object.
+
+2014-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* seh_init.c (__gnat_map_SEH): Cast argument of IsBadCodePtr
+	to the expected FARPROC type instead of void *.
+	* adaint.c (f2t): Expect __time64_t * as second argument, in line with
+	other datastructures.
+	(__gnat_file_time_name_attr): Adjust accordingly.
+	(__gnat_check_OWNER_ACL): Declare pSD as PSECURITY_DESCRIPTOR,
+	in line with uses.
+	(__gnat_check_OWNER_ACL): Declare AccessMode
+	parameter as ACCESS_MODE instead of DWORD, in line with callers
+	and uses.
+	(__gnat_set_executable): Add ATTRIBUTE_UNUSED on mode,
+	unused on win32.  Correct cast of "args" on call to spawnvp.
+	(add_handle): Cast realloc calls into their destination types.
+	(win32_wait): Remove declaration and initialization of unused variable.
+	(__gnat_locate_exec_on_path): Cast alloca calls
+	into their destination types.
+	* initialize.c (append_arg, __gnat_initialize): Cast xmalloc calls into
+	their destination types.
+
+2014-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Expand
+	range checks for conversions between floating-point subtypes
+	when the target and source types are the same.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Check_Indexing_Functions): Initialize
+	Indexing_Found.
+
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): In gnatprove mode, we now write the
+	ALI file before we call the backend (so that gnat2why can append
+	to it).
+
+2014-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set,
+	Expand_Packed_Element_Reference): Pass additional Rev_SSO
+	parameter indicating whether the packed array type has reverse
+	scalar storage order to the s-pack* Set/Get routines.
+	* s-pack*.ad* (Get, Set, GetU, SetU): New formal Rev_SSO
+	indicating reverse scalar storage order.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Check_Initialization): Set Do_Range_Check
+	for initial component value in -gnatc or GNATprove mode.
+	(Process_Discriminants): Same fix for default discriminant values.
+	* sem_eval.adb (Test_In_Range): Improve accuracy of results by
+	checking subtypes.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Minor comment clarification.
+
 2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Code

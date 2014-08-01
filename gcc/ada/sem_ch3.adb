@@ -10323,6 +10323,8 @@ package body Sem_Ch3 is
 
    procedure Check_Initialization (T : Entity_Id; Exp : Node_Id) is
    begin
+      --  Special processing for limited types
+
       if Is_Limited_Type (T)
         and then not In_Instance
         and then not In_Inlined_Body
@@ -10375,6 +10377,16 @@ package body Sem_Ch3 is
                end if;
             end if;
          end if;
+      end if;
+
+      --  In gnatc or gnatprove mode, make sure set Do_Range_Check flag gets
+      --  set unless we can be sure that no range check is required.
+
+      if (not Expander_Active and not GNATprove_Mode)
+        and then Is_Scalar_Type (T)
+        and then not Is_In_Range (Exp, T, Assume_Valid => True)
+      then
+         Set_Do_Range_Check (Exp);
       end if;
    end Check_Initialization;
 
@@ -18034,6 +18046,8 @@ package body Sem_Ch3 is
          if Present (Expression (Discr)) then
             Preanalyze_Spec_Expression (Expression (Discr), Discr_Type);
 
+            --  Legaity checks
+
             if Nkind (N) = N_Formal_Type_Declaration then
                Error_Msg_N
                  ("discriminant defaults not allowed for formal type",
@@ -18077,6 +18091,19 @@ package body Sem_Ch3 is
                Set_Discriminant_Default_Value
                  (Defining_Identifier (Discr), Expression (Discr));
             end if;
+
+            --  In gnatc or gnatprove mode, make sure set Do_Range_Check flag
+            --  gets set unless we can be sure that no range check is required.
+
+            if (not Expander_Active and not GNATprove_Mode)
+              and then not
+                Is_In_Range
+                  (Expression (Discr), Discr_Type, Assume_Valid => True)
+            then
+               Set_Do_Range_Check (Expression (Discr));
+            end if;
+
+         --  No default discriminant value given
 
          else
             Default_Not_Present := True;

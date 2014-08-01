@@ -1061,7 +1061,9 @@ package Sinfo is
    --      Initialization expression for the initial value in an object
    --      declaration. In this case the Do_Range_Check flag is set on
    --      the initialization expression, and the check is against the
-   --      range of the type of the object being declared.
+   --      range of the type of the object being declared. This includes the
+   --      cases of expressions providing default discriminant values, and
+   --      expressions used to initialize record components.
 
    --      The expression of a type conversion. In this case the range check is
    --      against the target type of the conversion. See also the use of

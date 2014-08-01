@@ -2114,17 +2114,18 @@ package body Exp_Aggr is
          Discr_Val   : Elmt_Id;
 
       begin
+         --  The constraints on the hidden discriminants, if present, are kept
+         --  in the Stored_Constraint list of the type itself, or in that of
+         --  the base type.
+
          Btype := Base_Type (Typ);
-
-         --  The constraints on the hidden discriminants, if present, are
-         --  kep in the Stored_Constraint list of the type itself, or in
-         --  that of the base type.
-
          while Is_Derived_Type (Btype)
            and then (Present (Stored_Constraint (Btype))
-             or else Present (Stored_Constraint (Typ)))
+                       or else
+                     Present (Stored_Constraint (Typ)))
          loop
             Parent_Type := Etype (Btype);
+
             if not Has_Discriminants (Parent_Type) then
                return;
             end if;
