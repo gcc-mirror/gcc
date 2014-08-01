@@ -3929,12 +3929,11 @@ package body Exp_Ch6 is
             Add_Inlined_Body (Subp);
             Register_Backend_Call (Call_Node);
 
-         --  Frontend expands supported functions returning unconstrained types
+         --  Frontend expansion of supported functions returning unconstrained
+         --  types and simple renamings inlined by the frontend (see Freeze.
+         --  Build_Renamed_Entity).
 
          else
-            pragma Assert (Ekind (Subp) = E_Function
-              and then Returns_Unconstrained_Type (Subp));
-
             declare
                Spec : constant Node_Id := Unit_Declaration_Node (Subp);
 
