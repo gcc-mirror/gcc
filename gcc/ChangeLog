@@ -1,3 +1,11 @@
+2014-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61964
+	* tree-ssa-tail-merge.c (gimple_operand_equal_value_p): New
+	function merged from trunk.
+	(gimple_equal_p): Handle non-SSA LHS solely by structural
+	equality.
+
 2014-07-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/elf.h: Define TARGET_UNWIND_TABLES_DEFAULT.
