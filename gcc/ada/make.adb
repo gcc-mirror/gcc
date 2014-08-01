@@ -2257,6 +2257,7 @@ package body Make is
       Args           : Argument_List)
    is
       pragma Unreferenced (Is_Main_Source);
+
    begin
       Arguments_Project := No_Project;
       Last_Argument := 0;
@@ -6413,8 +6414,8 @@ package body Make is
          if Prefix'Length > 0 then
             declare
                PATH : constant String :=
-                 Prefix & Directory_Separator & "bin" & Path_Separator &
-                   Getenv ("PATH").all;
+                        Prefix & Directory_Separator & "bin" & Path_Separator
+                        & Getenv ("PATH").all;
             begin
                Setenv ("PATH", PATH);
             end;

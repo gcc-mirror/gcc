@@ -89,8 +89,7 @@ package MLib is
    --  for each directory in the rpath.
 
 private
-
    Preserve : Attribute := Time_Stamps;
-   --  Used by Copy_ALI_Files.
+   --  Used by Copy_ALI_Files
 
 end MLib;

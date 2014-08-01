@@ -255,23 +255,22 @@ procedure Gnatchop is
    procedure Parse_Offset_Info
      (Chop_File : File_Num;
       Source    : not null access String);
-   --  Parses the output of the compiler indicating the offsets
-   --  and names of the compilation units in Chop_File.
+   --  Parses the output of the compiler indicating the offsets and names of
+   --  the compilation units in Chop_File.
 
    procedure Parse_Token
      (Source    : not null access String;
       Ptr       : in out Positive;
       Token_Ptr : out Positive);
    --  Skips any separators and stores the start of the token in Token_Ptr.
-   --  Then stores the position of the next separator in Ptr.
-   --  On return Source (Token_Ptr .. Ptr - 1) is the token.
+   --  Then stores the position of the next separator in Ptr. On return
+   --  Source (Token_Ptr .. Ptr - 1) is the token.
 
    procedure Read_File
      (FD       : File_Descriptor;
       Contents : out String_Access;
       Success  : out Boolean);
-   --  Reads file associated with FS into the newly allocated
-   --  string Contents.
+   --  Reads file associated with FS into the newly allocated string Contents.
    --  Success is true iff the number of bytes read is equal to the file size.
 
    function Report_Duplicate_Units return Boolean;
@@ -293,17 +292,17 @@ procedure Gnatchop is
    --  Write all units that result from chopping the Input file
 
    procedure Write_Config_File (Input : File_Num; U : Unit_Num);
-   --  Call to write configuration pragmas (append them to gnat.adc)
-   --  Input is the file number for the chop file and U identifies the
-   --  unit entry for the configuration pragmas.
+   --  Call to write configuration pragmas (append them to gnat.adc). Input is
+   --  the file number for the chop file and U identifies the unit entry for
+   --  the configuration pragmas.
 
    function Get_Config_Pragmas
      (Input : File_Num;
       U     : Unit_Num) return String_Access;
-   --  Call to read configuration pragmas from given unit entry, and
-   --  return a buffer containing the pragmas to be appended to
-   --  following units. Input is the file number for the chop file and
-   --  U identifies the unit entry for the configuration pragmas.
+   --  Call to read configuration pragmas from given unit entry, and return a
+   --  buffer containing the pragmas to be appended to following units. Input
+   --  is the file number for the chop file and U identifies the unit entry for
+   --  the configuration pragmas.
 
    procedure Write_Source_Reference_Pragma
      (Info    : Unit_Info;

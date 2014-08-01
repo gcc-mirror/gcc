@@ -191,7 +191,7 @@ procedure GNATCmd is
    --  The index of the command in the arguments of the GNAT driver
 
    My_Exit_Status : Exit_Status := Success;
-   --  The exit status of the spawned tool.
+   --  The exit status of the spawned tool
 
    Current_Work_Dir : constant String := Get_Current_Dir;
    --  The path of the working directory
@@ -1429,6 +1429,7 @@ begin
 
    declare
       Command : constant String := Command_Name;
+
    begin
       for Index in reverse Command'Range loop
          if Command (Index) = Directory_Separator then

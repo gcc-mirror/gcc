@@ -551,6 +551,7 @@ begin
 
    declare
       Command : constant String := Command_Name;
+
    begin
       for Index in reverse Command'Range loop
          if Command (Index) = Directory_Separator then
@@ -579,12 +580,12 @@ begin
    declare
       New_Arguments : Argument_Data;
       pragma Warnings (Off, New_Arguments);
-      --  Declaring this defaulted initialized object ensures
-      --  that the new allocated component of table Arguments
-      --  is correctly initialized.
+      --  Declaring this defaulted initialized object ensures that the new
+      --  allocated component of table Arguments is correctly initialized.
    begin
       Arguments.Append (New_Arguments);
    end;
+
    Patterns.Init (Arguments.Table (1).Directories);
    Patterns.Set_Last (Arguments.Table (1).Directories, 0);
    Patterns.Init (Arguments.Table (1).Name_Patterns);

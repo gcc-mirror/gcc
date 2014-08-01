@@ -321,16 +321,16 @@ package body Bindgen is
    --  Move routine for sorting linker options
 
    procedure Resolve_Binder_Options;
-   --  Set the value of With_GNARL.
+   --  Set the value of With_GNARL
 
    procedure Set_Char (C : Character);
    --  Set given character in Statement_Buffer at the Last + 1 position
    --  and increment Last by one to reflect the stored character.
 
    procedure Set_Int (N : Int);
-   --  Set given value in decimal in Statement_Buffer with no spaces
-   --  starting at the Last + 1 position, and updating Last past the value.
-   --  A minus sign is output for a negative value.
+   --  Set given value in decimal in Statement_Buffer with no spaces starting
+   --  at the Last + 1 position, and updating Last past the value. A minus sign
+   --  is output for a negative value.
 
    procedure Set_Boolean (B : Boolean);
    --  Set given boolean value in Statement_Buffer at the Last + 1 position
@@ -340,9 +340,9 @@ package body Bindgen is
    --  Initializes contents of IS_Pragma_Settings table from ALI table
 
    procedure Set_Main_Program_Name;
-   --  Given the main program name in Name_Buffer (length in Name_Len)
-   --  generate the name of the routine to be used in the call. The name
-   --  is generated starting at Last + 1, and Last is updated past it.
+   --  Given the main program name in Name_Buffer (length in Name_Len) generate
+   --  the name of the routine to be used in the call. The name is generated
+   --  starting at Last + 1, and Last is updated past it.
 
    procedure Set_Name_Buffer;
    --  Set the value stored in positions 1 .. Name_Len of the Name_Buffer
@@ -355,9 +355,9 @@ package body Bindgen is
    --  Last + 1 position, and updating last past the string value.
 
    procedure Set_String_Replace (S : String);
-   --  Replaces the last S'Length characters in the Statement_Buffer with
-   --  the characters of S. The caller must ensure that these characters do
-   --  in fact exist in the Statement_Buffer.
+   --  Replaces the last S'Length characters in the Statement_Buffer with the
+   --  characters of S. The caller must ensure that these characters do in fact
+   --  exist in the Statement_Buffer.
 
    type Qualification_Mode is (Dollar_Sign, Dot, Double_Underscores);
 
@@ -368,9 +368,9 @@ package body Bindgen is
    --  underscores (__), a dollar sign ($) or left as is.
 
    procedure Set_Unit_Number (U : Unit_Id);
-   --  Sets unit number (first unit is 1, leading zeroes output to line
-   --  up all output unit numbers nicely as required by the value, and
-   --  by the total number of units.
+   --  Sets unit number (first unit is 1, leading zeroes output to line up all
+   --  output unit numbers nicely as required by the value, and by the total
+   --  number of units.
 
    procedure Write_Statement_Buffer;
    --  Write out contents of statement buffer up to Last, and reset Last to 0

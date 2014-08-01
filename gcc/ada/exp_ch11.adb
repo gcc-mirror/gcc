@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Casing;   use Casing;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -1685,59 +1684,17 @@ package body Exp_Ch11 is
 
             Str := String_From_Name_Buffer;
 
-            --  For VMS exceptions, convert the raise into a call to
-            --  lib$stop so it will be handled by __gnat_error_handler.
+            --  Convert raise to call to the Raise_Exception routine
 
-            if Is_VMS_Exception (Id) then
-               declare
-                  Excep_Image : String_Id;
-                  Cond        : Node_Id;
-
-               begin
-                  if Present (Interface_Name (Id)) then
-                     Excep_Image := Strval (Interface_Name (Id));
-                  else
-                     Get_Name_String (Chars (Id));
-                     Set_All_Upper_Case;
-                     Excep_Image := String_From_Name_Buffer;
-                  end if;
-
-                  if Exception_Code (Id) /= No_Uint then
-                     Cond :=
-                       Make_Integer_Literal (Loc, Exception_Code (Id));
-                  else
-                     Cond :=
-                       Unchecked_Convert_To (Standard_Integer,
-                         Make_Function_Call (Loc,
-                           Name => New_Occurrence_Of
-                             (RTE (RE_Import_Value), Loc),
-                           Parameter_Associations => New_List
-                             (Make_String_Literal (Loc,
-                               Strval => Excep_Image))));
-                  end if;
-
-                  Rewrite (N,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Occurrence_Of (RTE (RE_Lib_Stop), Loc),
-                      Parameter_Associations => New_List (Cond)));
-                        Analyze_And_Resolve (Cond, Standard_Integer);
-               end;
-
-            --  Not VMS exception case, convert raise to call to the
-            --  Raise_Exception routine.
-
-            else
-               Rewrite (N,
-                 Make_Procedure_Call_Statement (Loc,
-                    Name => New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
-                    Parameter_Associations => New_List (
-                      Make_Attribute_Reference (Loc,
-                        Prefix => Name (N),
-                        Attribute_Name => Name_Identity),
-                      Make_String_Literal (Loc,
-                        Strval => Str))));
-            end if;
+            Rewrite (N,
+              Make_Procedure_Call_Statement (Loc,
+                 Name                   =>
+                   New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
+                 Parameter_Associations => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => Name (N),
+                     Attribute_Name => Name_Identity),
+                   Make_String_Literal (Loc, Strval => Str))));
          end;
 
       --  Case of no name present (reraise). We rewrite the raise to:

@@ -3571,7 +3571,7 @@ package body Sem_Ch6 is
 
          if not Back_End_Inlining then
             if Has_Pragma_Inline_Always (Spec_Id)
-                 or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining)
+              or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining)
             then
                Build_Body_To_Inline (N, Spec_Id);
             end if;

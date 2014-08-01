@@ -1085,8 +1085,7 @@ package body Binde is
 
       --  Output warning if -p used with no -gnatE units
 
-      if Pessimistic_Elab_Order
-        and not Dynamic_Elaboration_Checks_Specified
+      if Pessimistic_Elab_Order and not Dynamic_Elaboration_Checks_Specified
       then
          Error_Msg ("?use of -p switch questionable");
          Error_Msg ("?since all units compiled with static elaboration model");
@@ -1105,7 +1104,6 @@ package body Binde is
       --  Initialize the no predecessor list
 
       No_Pred := No_Unit_Id;
-
       for U in UNR.First .. UNR.Last loop
          if UNR.Table (U).Num_Pred = 0 then
             UNR.Table (U).Nextnp := No_Pred;
@@ -1216,8 +1214,7 @@ package body Binde is
          --  interfaces to stand-alone libraries.
 
          if not Units.Table (U).SAL_Interface then
-            for
-              W in Units.Table (U).First_With .. Units.Table (U).Last_With
+            for W in Units.Table (U).First_With .. Units.Table (U).Last_With
             loop
                if Withs.Table (W).Sfile /= No_File
                  and then (not Withs.Table (W).SAL_Interface)

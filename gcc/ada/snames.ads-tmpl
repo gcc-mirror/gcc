@@ -697,7 +697,6 @@ package Snames is
    Name_Copy                           : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
    Name_Decreases                      : constant Name_Id := N + $;
-   Name_Descriptor                     : constant Name_Id := N + $;
    Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
    Name_Dynamic                        : constant Name_Id := N + $;
@@ -775,7 +774,6 @@ package Snames is
    Name_Secondary_Stack_Size           : constant Name_Id := N + $;
    Name_Section                        : constant Name_Id := N + $;
    Name_Semaphore                      : constant Name_Id := N + $;
-   Name_Short_Descriptor               : constant Name_Id := N + $;
    Name_Simple_Barriers                : constant Name_Id := N + $;
    Name_SPARK                          : constant Name_Id := N + $;
    Name_SPARK_05                       : constant Name_Id := N + $;

@@ -498,6 +498,7 @@ package body MLib.Prj is
 
       begin
          if Libgnarl_Needed /= Yes then
+
             --  Scan the ALI file
 
             Name_Len := ALI_File'Length;

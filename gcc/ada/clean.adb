@@ -55,8 +55,8 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 package body Clean is
 
    Initialized : Boolean := False;
-   --  Set to True by the first call to Initialize.
-   --  To avoid reinitialization of some packages.
+   --  Set to True by the first call to Initialize to avoid reinitialization
+   --  of some packages.
 
    --  Suffixes of various files
 
@@ -66,10 +66,10 @@ package body Clean is
    Object_Suffix   : constant String := Get_Target_Object_Suffix.all;
    Debug_Suffix    : constant String := ".dg";
    Repinfo_Suffix  : constant String := ".rep";
-   --  Suffix of representation info files.
+   --  Suffix of representation info files
 
    B_Start : constant String := "b~";
-   --  Prefix of binder generated file, and number of actual characters used.
+   --  Prefix of binder generated file, and number of actual characters used
 
    Project_Tree : constant Project_Tree_Ref :=
      new Project_Tree_Data (Is_Root_Tree => True);

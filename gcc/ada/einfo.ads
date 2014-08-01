@@ -1148,13 +1148,6 @@ package Einfo is
 --       Note one obscure case: for pragma Default_Storage_Pool (null), the
 --       Etype of the N_Null node is Empty.
 
---    Exception_Code (Uint22)
---       Defined in exception entities. Set to zero unless either an
---       Import_Exception or Export_Exception pragma applies to the
---       pragma and specifies a Code value. See description of these
---       pragmas for details. Note that this field is relevant only if
---       Is_VMS_Exception is set.
-
 --    Extra_Formal (Node15)
 --       Defined in formal parameters in the non-generic case. Certain
 --       parameters require extra implicit information to be passed (e.g. the
@@ -2146,13 +2139,6 @@ package Einfo is
 --       carry the keyword aliased, and on record components that have the
 --       keyword. For Ada 2012, also applies to formal parameters.
 
---    Is_AST_Entry (Flag132)
---       Defined in entry entities. Set if a valid pragma AST_Entry applies
---       to the entry. This flag can only be set in OpenVMS versions of GNAT.
---       Note: we also allow the flag to appear in entry families, but given
---       the current implementation of the pragma AST_Entry, this flag will
---       always be False in entry families.
-
 --    Is_Atomic (Flag85)
 --       Defined in all type entities, and also in constants, components and
 --       variables. Set if a pragma Atomic or Shared applies to the entity.
@@ -3059,12 +3045,6 @@ package Einfo is
 --       library units remain chained to the entities in the parent scope, and
 --       a separate flag must be used to indicate whether the names are visible
 --       by selected notation, or not.
-
---    Is_VMS_Exception (Flag133)
---       Defined in all entities. Set only for exception entities where the
---       exception was specified in an Import_Exception or Export_Exception
---       pragma with the VMS option for Form. See description of these pragmas
---       for details. This flag can only be set in OpenVMS versions of GNAT.
 
 --    Is_Volatile (Flag16)
 --       Defined in all type entities, and also in constants, components and
@@ -5193,7 +5173,6 @@ package Einfo is
    --    Is_Trivial_Subprogram               (Flag235)
    --    Is_Unchecked_Union                  (Flag117)
    --    Is_Visible_Formal                   (Flag206)
-   --    Is_VMS_Exception                    (Flag133)
    --    Kill_Elaboration_Checks             (Flag32)
    --    Kill_Range_Checks                   (Flag33)
    --    Low_Bound_Tested                    (Flag205)
@@ -5552,7 +5531,6 @@ package Einfo is
    --    Contract                            (Node34)
    --    Default_Expressions_Processed       (Flag108)
    --    Entry_Accepted                      (Flag152)
-   --    Is_AST_Entry                        (Flag132)  (for entry only)
    --    Needs_No_Actuals                    (Flag22)
    --    Sec_Stack_Needed_For_Return         (Flag167)
    --    Uses_Sec_Stack                      (Flag95)
@@ -5598,9 +5576,7 @@ package Einfo is
    --    Renamed_Entity                      (Node18)
    --    Register_Exception_Call             (Node20)
    --    Interface_Name                      (Node21)
-   --    Exception_Code                      (Uint22)
    --    Discard_Names                       (Flag88)
-   --    Is_VMS_Exception                    (Flag133)
    --    Is_Raised                           (Flag224)
 
    --  E_Exception_Type
@@ -6532,7 +6508,6 @@ package Einfo is
    function Enumeration_Rep_Expr                (Id : E) return N;
    function Equivalent_Type                     (Id : E) return E;
    function Esize                               (Id : E) return U;
-   function Exception_Code                      (Id : E) return U;
    function Extra_Accessibility                 (Id : E) return E;
    function Extra_Accessibility_Of_Result       (Id : E) return E;
    function Extra_Constrained                   (Id : E) return E;
@@ -6654,7 +6629,6 @@ package Einfo is
    function Interface_Alias                     (Id : E) return E;
    function Interface_Name                      (Id : E) return N;
    function Interfaces                          (Id : E) return L;
-   function Is_AST_Entry                        (Id : E) return B;
    function Is_Abstract_Subprogram              (Id : E) return B;
    function Is_Abstract_Type                    (Id : E) return B;
    function Is_Access_Constant                  (Id : E) return B;
@@ -6749,7 +6723,6 @@ package Einfo is
    function Is_Unchecked_Union                  (Id : E) return B;
    function Is_Underlying_Record_View           (Id : E) return B;
    function Is_Unsigned_Type                    (Id : E) return B;
-   function Is_VMS_Exception                    (Id : E) return B;
    function Is_Valued_Procedure                 (Id : E) return B;
    function Is_Visible_Formal                   (Id : E) return B;
    function Is_Visible_Lib_Unit                 (Id : E) return B;
@@ -7168,7 +7141,6 @@ package Einfo is
    procedure Set_Enumeration_Rep_Expr            (Id : E; V : N);
    procedure Set_Equivalent_Type                 (Id : E; V : E);
    procedure Set_Esize                           (Id : E; V : U);
-   procedure Set_Exception_Code                  (Id : E; V : U);
    procedure Set_Extra_Accessibility             (Id : E; V : E);
    procedure Set_Extra_Accessibility_Of_Result   (Id : E; V : E);
    procedure Set_Extra_Constrained               (Id : E; V : E);
@@ -7289,7 +7261,6 @@ package Einfo is
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
    procedure Set_Interfaces                      (Id : E; V : L);
-   procedure Set_Is_AST_Entry                    (Id : E; V : B := True);
    procedure Set_Is_Abstract_Subprogram          (Id : E; V : B := True);
    procedure Set_Is_Abstract_Type                (Id : E; V : B := True);
    procedure Set_Is_Access_Constant              (Id : E; V : B := True);
@@ -7390,7 +7361,6 @@ package Einfo is
    procedure Set_Is_Unchecked_Union              (Id : E; V : B := True);
    procedure Set_Is_Underlying_Record_View       (Id : E; V : B := True);
    procedure Set_Is_Unsigned_Type                (Id : E; V : B := True);
-   procedure Set_Is_VMS_Exception                (Id : E; V : B := True);
    procedure Set_Is_Valued_Procedure             (Id : E; V : B := True);
    procedure Set_Is_Visible_Formal               (Id : E; V : B := True);
    procedure Set_Is_Visible_Lib_Unit             (Id : E; V : B := True);
@@ -7918,7 +7888,6 @@ package Einfo is
    pragma Inline (Enumeration_Rep_Expr);
    pragma Inline (Equivalent_Type);
    pragma Inline (Esize);
-   pragma Inline (Exception_Code);
    pragma Inline (Extra_Accessibility);
    pragma Inline (Extra_Accessibility_Of_Result);
    pragma Inline (Extra_Constrained);
@@ -8036,7 +8005,6 @@ package Einfo is
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
    pragma Inline (Interfaces);
-   pragma Inline (Is_AST_Entry);
    pragma Inline (Is_Abstract_Subprogram);
    pragma Inline (Is_Abstract_Type);
    pragma Inline (Is_Access_Constant);
@@ -8178,7 +8146,6 @@ package Einfo is
    pragma Inline (Is_Unchecked_Union);
    pragma Inline (Is_Underlying_Record_View);
    pragma Inline (Is_Unsigned_Type);
-   pragma Inline (Is_VMS_Exception);
    pragma Inline (Is_Valued_Procedure);
    pragma Inline (Is_Visible_Formal);
    pragma Inline (Is_Visible_Lib_Unit);
@@ -8400,7 +8367,6 @@ package Einfo is
    pragma Inline (Set_Enumeration_Rep_Expr);
    pragma Inline (Set_Equivalent_Type);
    pragma Inline (Set_Esize);
-   pragma Inline (Set_Exception_Code);
    pragma Inline (Set_Extra_Accessibility);
    pragma Inline (Set_Extra_Accessibility_Of_Result);
    pragma Inline (Set_Extra_Constrained);
@@ -8518,7 +8484,6 @@ package Einfo is
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
    pragma Inline (Set_Interfaces);
-   pragma Inline (Set_Is_AST_Entry);
    pragma Inline (Set_Is_Abstract_Subprogram);
    pragma Inline (Set_Is_Abstract_Type);
    pragma Inline (Set_Is_Access_Constant);
@@ -8619,7 +8584,6 @@ package Einfo is
    pragma Inline (Set_Is_Unchecked_Union);
    pragma Inline (Set_Is_Underlying_Record_View);
    pragma Inline (Set_Is_Unsigned_Type);
-   pragma Inline (Set_Is_VMS_Exception);
    pragma Inline (Set_Is_Valued_Procedure);
    pragma Inline (Set_Is_Visible_Formal);
    pragma Inline (Set_Is_Visible_Lib_Unit);

@@ -558,7 +558,6 @@ package body Sem_Ch8 is
       Analyze (Nam);
 
       Set_Ekind          (Id, E_Exception);
-      Set_Exception_Code (Id, Uint_0);
       Set_Etype          (Id, Standard_Exception_Type);
       Set_Is_Pure        (Id, Is_Pure (Current_Scope));
 
