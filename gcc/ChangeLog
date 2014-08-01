@@ -1,3 +1,9 @@
+2014-08-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR regression/61510
+	* cgraphunit.c (analyze_functions): Use get_create rather than get
+	for decls which are clones of abstract functions.
+
 2014-08-01  Martin Liska  <mliska@suse.cz>
 
 	* gimple-iterator.h (gsi_next_nonvirtual_phi): New function.
