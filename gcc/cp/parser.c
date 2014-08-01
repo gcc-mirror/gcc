@@ -6306,7 +6306,7 @@ cp_parser_array_notation (location_t loc, cp_parser *parser, tree *init_index,
   parser->colon_corrects_to_scope_p = saved_colon_corrects;
 
   if (*init_index == error_mark_node || length_index == error_mark_node
-      || stride == error_mark_node)
+      || stride == error_mark_node || array_type == error_mark_node)
     {
       if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_SQUARE)
 	cp_lexer_consume_token (parser->lexer);

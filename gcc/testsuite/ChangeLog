@@ -1,5 +1,10 @@
 2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
 
+	PR other/61963
+	* c-c++-common/cilk-plus/AN/pr61963.c: New test.
+
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
 	PR middle-end/61455
 	* c-c++-common/cilk-plus/AN/pr61455.c: New test.
 	* c-c++-common/cilk-plus/AN/pr61455-2.c: Likewise.
