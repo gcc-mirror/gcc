@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (C Library Version, VxWorks)                       --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,22 +30,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides the basic computational interface for the generic
---  elementary functions. The C library version interfaces with the routines
---  in the C mathematical library, and is thus quite portable, although it may
---  not necessarily meet the requirements for accuracy in the numerics annex.
---  One advantage of using this package is that it will interface directly to
---  hardware instructions, such as the those provided on the Intel x86.
-
---  Note: there are two versions of this package. One using the normal IEEE
---  64-bit double format (which is this version), and one using 80-bit x86
---  long double (see file 4onumaux.ads).
+--  Version for use on VxWorks (where we have no libm.a library), so the pragma
+--  Linker_Options ("-lm") is omitted in this version.
 
 package Ada.Numerics.Aux is
    pragma Pure;
-
-   --  This version omits the pragma linker_options ("-lm") since there is
-   --  no libm.a library for VxWorks.
 
    type Double is digits 15;
    --  Type Double is the type used to call the C routines

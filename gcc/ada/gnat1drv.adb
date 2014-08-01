@@ -475,11 +475,6 @@ procedure Gnat1drv is
          Ttypes.Bytes_Big_Endian := not Ttypes.Bytes_Big_Endian;
       end if;
 
-      --  Temporarily set True_VMS_Target to OpenVMS_On_Target. This is just
-      --  temporary, we no longer deal with the debug flag -gnatdm here.
-
-      Opt.True_VMS_Target := Targparm.OpenVMS_On_Target;
-
       --  Activate front end layout if debug flag -gnatdF is set
 
       if Debug_Flag_FF then

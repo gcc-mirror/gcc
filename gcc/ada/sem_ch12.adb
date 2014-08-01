@@ -1751,9 +1751,7 @@ package body Sem_Ch12 is
                   --  If this is a nested generic, preserve default for later
                   --  instantiations.
 
-                  if No (Match)
-                    and then Box_Present (Formal)
-                  then
+                  if No (Match) and then Box_Present (Formal) then
                      Append_Elmt
                        (Defining_Unit_Name (Specification (Last (Assoc))),
                         Default_Actuals);
@@ -8919,12 +8917,7 @@ package body Sem_Ch12 is
            and then Remove_Suffix (Prim_A, 'P') = Chars (Prim_G)
          then
             Set_Chars (Prim_A, Chars (Prim_G));
-
-            if List = No_Elist then
-               List := New_Elmt_List;
-            end if;
-
-            Append_Elmt (Prim_A, List);
+            Append_New_Elmt (Prim_A, To => List);
          end if;
 
          Next_Elmt (Prim_A_Elmt);

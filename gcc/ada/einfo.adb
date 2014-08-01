@@ -115,7 +115,6 @@ package body Einfo is
    --    RM_Size                         Uint13
 
    --    Alignment                       Uint14
-   --    First_Optional_Parameter        Node14
    --    Normalized_Position             Uint14
    --    Shadow_Entities                 List14
 
@@ -1265,12 +1264,6 @@ package body Einfo is
       pragma Assert (Is_Enumeration_Type (Id));
       return Node17 (Id);
    end First_Literal;
-
-   function First_Optional_Parameter (Id : E) return E is
-   begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
-      return Node14 (Id);
-   end First_Optional_Parameter;
 
    function First_Private_Entity (Id : E) return E is
    begin
@@ -4003,12 +3996,6 @@ package body Einfo is
       pragma Assert (Is_Enumeration_Type (Id));
       Set_Node17 (Id, V);
    end Set_First_Literal;
-
-   procedure Set_First_Optional_Parameter (Id : E; V : E) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Procedure));
-      Set_Node14 (Id, V);
-   end Set_First_Optional_Parameter;
 
    procedure Set_First_Private_Entity (Id : E; V : E) is
    begin
@@ -8178,18 +8165,6 @@ package body Einfo is
       end if;
    end Underlying_Type;
 
-   ---------------
-   -- Vax_Float --
-   ---------------
-
-   --  To be removed ???
-
-   function Vax_Float (Id : E) return B is
-      pragma Unreferenced (Id);
-   begin
-      return False;
-   end Vax_Float;
-
    ------------------------
    -- Write_Entity_Flags --
    ------------------------
@@ -8890,10 +8865,6 @@ package body Einfo is
               E_Variable                                   |
               E_Loop_Parameter                             =>
             Write_Str ("Alignment");
-
-         when E_Function                                   |
-              E_Procedure                                  =>
-            Write_Str ("First_Optional_Parameter");
 
          when E_Component                                  |
               E_Discriminant                               =>

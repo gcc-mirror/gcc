@@ -418,12 +418,9 @@ package Opt is
 
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
-   --  GNATBIND
    --  The value given to the -g parameter. The default value for -g with
-   --  no value is 2. This is usually ignored by GNATBIND, except in the
-   --  VMS version where it is passed as an argument to __gnat_initialize
-   --  to trigger the activation of the remote debugging interface.
-   --  Is this still true ???
+   --  no value is 2. This is not currently used but is retained for possible
+   --  future use.
 
    Default_Exit_Status : Int := 0;
    --  GNATBIND
@@ -708,11 +705,6 @@ package Opt is
    GNAT_Mode : Boolean := False;
    --  GNAT
    --  True if compiling in GNAT system mode (-gnatg switch)
-
-   Heap_Size : Nat := 0;
-   --  GNATBIND
-   --  Heap size for memory allocations. Valid values are 32 and 64. Only
-   --  available on VMS.
 
    Identifier_Character_Set : Character;
    --  GNAT
@@ -1291,10 +1283,6 @@ package Opt is
    --  GNAT
    --  Set True if a pragma Short_Circuit_And_Or applies to the current unit.
 
-   Short_Descriptors : Boolean := False;
-   --  GNAT
-   --  Set True if a pragma Short_Descriptors applies to the current unit.
-
    type SPARK_Mode_Type is (None, Off, On);
    --  Possible legal modes that can be set by aspect/pragma SPARK_Mode, as
    --  well as the value None, which indicates no such pragma/aspect applies.
@@ -1462,12 +1450,6 @@ package Opt is
    Tree_Output : Boolean := False;
    --  GNAT
    --  Set to True (-gnatt) to generate output tree file
-
-   True_VMS_Target : Boolean := False;
-   --  Set True if we are on a VMS target. The setting of this flag reflects
-   --  the true state of the compile, unlike Targparm.OpenVMS_On_Target which
-   --  can also be true when debug flag m is set (-gnatdm). This is used in the
-   --  few cases where we do NOT want -gnatdm to trigger the VMS behavior.
 
    Try_Semantics : Boolean := False;
    --  GNAT
@@ -1955,14 +1937,6 @@ package Opt is
    --  flag is used to set the initial value for Polling_Required at the start
    --  of analyzing each unit.
 
-   Short_Descriptors_Config : Boolean;
-   --  GNAT
-   --  This is the value of the configuration switch that controls the use of
-   --  Short_Descriptors for setting descriptor default sizes. It can be set
-   --  True by the use of the pragma Short_Descriptors in the gnat.adc file.
-   --  This flag is used to set the initial value for Short_Descriptors at the
-   --  start of analyzing each unit.
-
    SPARK_Mode_Config : SPARK_Mode_Type := None;
    --  GNAT
    --  The setting of SPARK_Mode from configuration pragmas
@@ -2143,7 +2117,6 @@ private
       Optimize_Alignment_Local       : Boolean;
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
-      Short_Descriptors              : Boolean;
       SPARK_Mode                     : SPARK_Mode_Type;
       SPARK_Mode_Pragma              : Node_Id;
       Uneval_Old                     : Character;

@@ -8524,14 +8524,7 @@ package body Checks is
    function Range_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
       if Present (E) then
-
-         --  Note: for now we always suppress range checks on Vax float types,
-         --  since Gigi does not know how to generate these checks.
-
-         if Vax_Float (E) then
-            return True;
-
-         elsif Kill_Range_Checks (E) then
+         if Kill_Range_Checks (E) then
             return True;
 
          elsif Checks_May_Be_Suppressed (E) then
@@ -8576,9 +8569,7 @@ package body Checks is
       declare
          Typ : constant Entity_Id := Etype (Expr);
       begin
-         if Vax_Float (Typ) then
-            return True;
-         elsif Checks_May_Be_Suppressed (Typ)
+         if Checks_May_Be_Suppressed (Typ)
            and then (Is_Check_Suppressed (Typ, Range_Check)
                        or else
                      Is_Check_Suppressed (Typ, Validity_Check))

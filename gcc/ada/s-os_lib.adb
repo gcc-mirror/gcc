@@ -1851,6 +1851,7 @@ package body System.OS_Lib is
         (Host_File : System.Address) return System.Address;
       pragma Import
         (C, To_Canonical_File_Spec, "__gnat_to_canonical_file_spec");
+      --  Convert possible foreign file syntax to canonical form
 
       The_Name : String (1 .. Name'Length + 1);
       Canonical_File_Addr : System.Address;
@@ -1978,19 +1979,19 @@ package body System.OS_Lib is
          return "";
       end if;
 
-      --  First, convert VMS file spec to Unix file spec.
-      --  If Name is not in VMS syntax, then this is equivalent
-      --  to put Name at the beginning of Path_Buffer.
+      --  First, convert possible foreign file spec to Unix file spec. If no
+      --  conversion is required, all this does is put Name at the beginning
+      --  of Path_Buffer unchanged.
 
-      VMS_Conversion : begin
+      File_Name_Conversion : begin
          The_Name (1 .. Name'Length) := Name;
          The_Name (The_Name'Last) := ASCII.NUL;
 
          Canonical_File_Addr := To_Canonical_File_Spec (The_Name'Address);
          Canonical_File_Len  := Integer (CRTL.strlen (Canonical_File_Addr));
 
-         --  If VMS syntax conversion has failed, return an empty string
-         --  to indicate the failure.
+         --  If syntax conversion has failed, return an empty string to
+         --  indicate the failure.
 
          if Canonical_File_Len = 0 then
             return "";
@@ -2007,7 +2008,7 @@ package body System.OS_Lib is
             End_Path := Canonical_File_Len;
             Last := 1;
          end;
-      end VMS_Conversion;
+      end File_Name_Conversion;
 
       --  Replace all '/' by Directory Separators (this is for Windows)
 

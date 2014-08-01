@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -137,6 +137,19 @@ package body Elists is
          Write_Eol;
       end if;
    end Append_Elmt;
+
+   ---------------------
+   -- Append_New_Elmt --
+   ---------------------
+
+   procedure Append_New_Elmt (N : Node_Or_Entity_Id; To : in out Elist_Id) is
+   begin
+      if To = No_Elist then
+         To := New_Elmt_List;
+      end if;
+
+      Append_Elmt (N, To);
+   end Append_New_Elmt;
 
    ------------------------
    -- Append_Unique_Elmt --

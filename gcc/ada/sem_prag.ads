@@ -262,13 +262,11 @@ package Sem_Prag is
    --  dealing with subprogram body stubs or expression functions.
 
    procedure Set_Encoded_Interface_Name (E : Entity_Id; S : Node_Id);
-   --  This routine is used to set an encoded interface name. The node S is an
-   --  N_String_Literal node for the external name to be set, and E is an
+   --  This routine is used to set an encoded interface name. The node S is
+   --  an N_String_Literal node for the external name to be set, and E is an
    --  entity whose Interface_Name field is to be set. In the normal case where
    --  S contains a name that is a valid C identifier, then S is simply set as
-   --  the value of the Interface_Name. Otherwise it is encoded. See the body
-   --  for details of the encoding. This encoding is only done on VMS systems,
-   --  since it seems pretty silly, but is needed to pass some dubious tests in
-   --  the test suite.
+   --  the value of the Interface_Name. Otherwise it is encoded as needed by
+   --  particular operating systems. See the body for details of the encoding.
 
 end Sem_Prag;

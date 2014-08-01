@@ -604,20 +604,6 @@ package body Exp_Dbug is
             Add_Real_To_Buffer (Small_Value (E));
          end if;
 
-      --  Vax floating-point case
-
-      elsif Vax_Float (E) then
-         if Digits_Value (Base_Type (E)) = 6 then
-            Get_External_Name (E, True, "XFF");
-
-         elsif Digits_Value (Base_Type (E)) = 9 then
-            Get_External_Name (E, True, "XFF");
-
-         else
-            pragma Assert (Digits_Value (Base_Type (E)) = 15);
-            Get_External_Name (E, True, "XFG");
-         end if;
-
       --  Discrete case where bounds do not match size
 
       elsif Is_Discrete_Type (E)

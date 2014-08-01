@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,14 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides the basic computational interface for the generic
---  elementary functions. This implementation is based on the glibc assembly
---  sources for the x86 glibc math library.
-
---  Note: there are two versions of this package. One using the 80-bit x86
---  long double format (which is this version), and one using 64-bit IEEE
---  double (see file a-numaux.ads). The latter version imports the C
---  routines directly.
+--  Version for the x86, using 64-bit IEEE format with inline asm statements
 
 package Ada.Numerics.Aux is
    pragma Pure;

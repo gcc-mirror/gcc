@@ -326,11 +326,7 @@ package body Sem_Prag is
 
    procedure Add_Item (Item : Entity_Id; To_List : in out Elist_Id) is
    begin
-      if No (To_List) then
-         To_List := New_Elmt_List;
-      end if;
-
-      Append_Elmt (Item, To_List);
+      Append_New_Elmt (Item, To => To_List);
    end Add_Item;
 
    -------------------------------
@@ -3248,8 +3244,7 @@ package body Sem_Prag is
          Arg_Parameter_Types          : Node_Id;
          Arg_Result_Type              : Node_Id := Empty;
          Arg_Mechanism                : Node_Id;
-         Arg_Result_Mechanism         : Node_Id := Empty;
-         Arg_First_Optional_Parameter : Node_Id := Empty);
+         Arg_Result_Mechanism         : Node_Id := Empty);
       --  Common processing for all extended Import and Export pragmas applying
       --  to subprograms. The caller omits any arguments that do not apply to
       --  the pragma in question (for example, Arg_Result_Type can be non-Empty
@@ -7309,13 +7304,8 @@ package body Sem_Prag is
          Arg_Parameter_Types          : Node_Id;
          Arg_Result_Type              : Node_Id := Empty;
          Arg_Mechanism                : Node_Id;
-         Arg_Result_Mechanism         : Node_Id := Empty;
-         Arg_First_Optional_Parameter : Node_Id := Empty)
+         Arg_Result_Mechanism         : Node_Id := Empty)
       is
-         pragma Unreferenced (Arg_First_Optional_Parameter);
-         --  We ignore the First_Optional_Parameter argument. It was only
-         --  relevant for VMS anyway, and otherwise ignored.
-
          Ent       : Entity_Id;
          Def_Id    : Entity_Id;
          Hom_Id    : Entity_Id;
@@ -9317,9 +9307,9 @@ package body Sem_Prag is
                if Warn_On_Export_Import
 
                  --  Only do this for something that was in the source. Not
-                 --  clear if this can be False now (there used for sure to
-                 --  be cases on VMS where it was False), but anyway the test
-                 --  is harmless if not needed, so it is retained.
+                 --  clear if this can be False now (there used for sure to be
+                 --  cases on some systems where it was False), but anyway the
+                 --  test is harmless if not needed, so it is retained.
 
                  and then Comes_From_Source (Arg)
                then
@@ -13535,9 +13525,6 @@ package body Sem_Prag is
          --  MECHANISM_NAME ::=
          --    Value
          --  | Reference
-         --  | Descriptor [([Class =>] CLASS_NAME)]
-
-         --  CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
          when Pragma_Export_Function => Export_Function : declare
             Args  : Args_List (1 .. 6);
@@ -13599,9 +13586,6 @@ package body Sem_Prag is
          --  MECHANISM_NAME ::=
          --    Value
          --  | Reference
-         --  | Descriptor [([Class =>] CLASS_NAME)]
-
-         --  CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
          when Pragma_Export_Object => Export_Object : declare
             Args  : Args_List (1 .. 3);
@@ -13655,9 +13639,6 @@ package body Sem_Prag is
          --  MECHANISM_NAME ::=
          --    Value
          --  | Reference
-         --  | Descriptor [([Class =>] CLASS_NAME)]
-
-         --  CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
          when Pragma_Export_Procedure => Export_Procedure : declare
             Args  : Args_List (1 .. 4);
@@ -13733,9 +13714,6 @@ package body Sem_Prag is
          --  MECHANISM_NAME ::=
          --    Value
          --  | Reference
-         --  | Descriptor [([Class =>] CLASS_NAME)]
-
-         --  CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
          when Pragma_Export_Valued_Procedure =>
          Export_Valued_Procedure : declare
@@ -14071,10 +14049,8 @@ package body Sem_Prag is
 
          --  pragma Ident (static_string_EXPRESSION)
 
-         --  Note: pragma Comment shares this processing. Pragma Comment is
-         --  identical to Ident, except that the restriction of the argument to
-         --  31 characters and the placement restrictions are not enforced for
-         --  pragma Comment.
+         --  Note: pragma Comment shares this processing. Pragma Ident is
+         --  identical in effect to pragma Commment.
 
          when Pragma_Ident | Pragma_Comment => Ident : declare
             Str : Node_Id;
@@ -14085,13 +14061,6 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Is_OK_Static_Expression (Arg1, Standard_String);
             Store_Note (N);
-
-            --  For pragma Ident, preserve DEC compatibility by requiring the
-            --  pragma to appear in a declarative part or package spec.
-
-            if Prag_Id = Pragma_Ident then
-               Check_Is_In_Decl_Part_Or_Package_Spec;
-            end if;
 
             Str := Expr_Value_S (Get_Pragma_Arg (Arg1));
 
@@ -14116,15 +14085,10 @@ package body Sem_Prag is
 
                   if Present (CS) then
 
-                     --  For Ident, we do not permit multiple instances
+                     --  If we have multiple instances, concatenate them, but
+                     --  not in ASIS, where we want the original tree.
 
-                     if Prag_Id = Pragma_Ident then
-                        Error_Pragma ("duplicate% pragma not permitted");
-
-                     --  For Comment, we concatenate the string, unless we want
-                     --  to preserve the tree structure for ASIS.
-
-                     elsif not ASIS_Mode then
+                     if not ASIS_Mode then
                         Start_String (Strval (CS));
                         Store_String_Char (' ');
                         Store_String_Chars (Strval (Str));
@@ -14141,15 +14105,6 @@ package body Sem_Prag is
 
                elsif Nkind (GP) = N_Subunit then
                   null;
-
-               --  Otherwise we have a misplaced pragma Ident, but we ignore
-               --  this if we are in an instantiation, since it comes from
-               --  a generic, and has no relevance to the instantiation.
-
-               elsif Prag_Id = Pragma_Ident then
-                  if Instantiation_Location (Loc) = No_Location then
-                     Error_Pragma ("pragma% only allowed at outer level");
-                  end if;
                end if;
             end;
          end Ident;
@@ -14338,8 +14293,7 @@ package body Sem_Prag is
          --     [, [Parameter_Types          =>] (PARAMETER_TYPES)]
          --     [, [Result_Type              =>] SUBTYPE_MARK]
          --     [, [Mechanism                =>] MECHANISM]
-         --     [, [Result_Mechanism         =>] MECHANISM_NAME]
-         --     [, [First_Optional_Parameter =>] IDENTIFIER]);
+         --     [, [Result_Mechanism         =>] MECHANISM_NAME]);
 
          --  EXTERNAL_SYMBOL ::=
          --    IDENTIFIER
@@ -14363,20 +14317,16 @@ package body Sem_Prag is
          --  MECHANISM_NAME ::=
          --    Value
          --  | Reference
-         --  | Descriptor [([Class =>] CLASS_NAME)]
-
-         --  CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
          when Pragma_Import_Function => Import_Function : declare
-            Args  : Args_List (1 .. 7);
-            Names : constant Name_List (1 .. 7) := (
+            Args  : Args_List (1 .. 6);
+            Names : constant Name_List (1 .. 6) := (
                       Name_Internal,
                       Name_External,
                       Name_Parameter_Types,
                       Name_Result_Type,
                       Name_Mechanism,
-                      Name_Result_Mechanism,
-                      Name_First_Optional_Parameter);
+                      Name_Result_Mechanism);
 
             Internal                 : Node_Id renames Args (1);
             External                 : Node_Id renames Args (2);
@@ -14384,7 +14334,6 @@ package body Sem_Prag is
             Result_Type              : Node_Id renames Args (4);
             Mechanism                : Node_Id renames Args (5);
             Result_Mechanism         : Node_Id renames Args (6);
-            First_Optional_Parameter : Node_Id renames Args (7);
 
          begin
             GNAT_Pragma;
@@ -14395,8 +14344,7 @@ package body Sem_Prag is
               Arg_Parameter_Types          => Parameter_Types,
               Arg_Result_Type              => Result_Type,
               Arg_Mechanism                => Mechanism,
-              Arg_Result_Mechanism         => Result_Mechanism,
-              Arg_First_Optional_Parameter => First_Optional_Parameter);
+              Arg_Result_Mechanism         => Result_Mechanism);
          end Import_Function;
 
          -------------------
@@ -14440,8 +14388,7 @@ package body Sem_Prag is
          --        [Internal                 =>] LOCAL_NAME
          --     [, [External                 =>] EXTERNAL_SYMBOL]
          --     [, [Parameter_Types          =>] (PARAMETER_TYPES)]
-         --     [, [Mechanism                =>] MECHANISM]
-         --     [, [First_Optional_Parameter =>] IDENTIFIER]);
+         --     [, [Mechanism                =>] MECHANISM]);
 
          --  EXTERNAL_SYMBOL ::=
          --    IDENTIFIER
@@ -14465,24 +14412,19 @@ package body Sem_Prag is
          --  MECHANISM_NAME ::=
          --    Value
          --  | Reference
-         --  | Descriptor [([Class =>] CLASS_NAME)]
-
-         --  CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
          when Pragma_Import_Procedure => Import_Procedure : declare
-            Args  : Args_List (1 .. 5);
-            Names : constant Name_List (1 .. 5) := (
+            Args  : Args_List (1 .. 4);
+            Names : constant Name_List (1 .. 4) := (
                       Name_Internal,
                       Name_External,
                       Name_Parameter_Types,
-                      Name_Mechanism,
-                      Name_First_Optional_Parameter);
+                      Name_Mechanism);
 
             Internal                 : Node_Id renames Args (1);
             External                 : Node_Id renames Args (2);
             Parameter_Types          : Node_Id renames Args (3);
             Mechanism                : Node_Id renames Args (4);
-            First_Optional_Parameter : Node_Id renames Args (5);
 
          begin
             GNAT_Pragma;
@@ -14491,8 +14433,7 @@ package body Sem_Prag is
               Arg_Internal                 => Internal,
               Arg_External                 => External,
               Arg_Parameter_Types          => Parameter_Types,
-              Arg_Mechanism                => Mechanism,
-              Arg_First_Optional_Parameter => First_Optional_Parameter);
+              Arg_Mechanism                => Mechanism);
          end Import_Procedure;
 
          -----------------------------
@@ -14503,8 +14444,7 @@ package body Sem_Prag is
          --        [Internal                 =>] LOCAL_NAME
          --     [, [External                 =>] EXTERNAL_SYMBOL]
          --     [, [Parameter_Types          =>] (PARAMETER_TYPES)]
-         --     [, [Mechanism                =>] MECHANISM]
-         --     [, [First_Optional_Parameter =>] IDENTIFIER]);
+         --     [, [Mechanism                =>] MECHANISM]);
 
          --  EXTERNAL_SYMBOL ::=
          --    IDENTIFIER
@@ -14528,25 +14468,20 @@ package body Sem_Prag is
          --  MECHANISM_NAME ::=
          --    Value
          --  | Reference
-         --  | Descriptor [([Class =>] CLASS_NAME)]
-
-         --  CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
          when Pragma_Import_Valued_Procedure =>
          Import_Valued_Procedure : declare
-            Args  : Args_List (1 .. 5);
-            Names : constant Name_List (1 .. 5) := (
+            Args  : Args_List (1 .. 4);
+            Names : constant Name_List (1 .. 4) := (
                       Name_Internal,
                       Name_External,
                       Name_Parameter_Types,
-                      Name_Mechanism,
-                      Name_First_Optional_Parameter);
+                      Name_Mechanism);
 
             Internal                 : Node_Id renames Args (1);
             External                 : Node_Id renames Args (2);
             Parameter_Types          : Node_Id renames Args (3);
             Mechanism                : Node_Id renames Args (4);
-            First_Optional_Parameter : Node_Id renames Args (5);
 
          begin
             GNAT_Pragma;
@@ -14555,8 +14490,7 @@ package body Sem_Prag is
               Arg_Internal                 => Internal,
               Arg_External                 => External,
               Arg_Parameter_Types          => Parameter_Types,
-              Arg_Mechanism                => Mechanism,
-              Arg_First_Optional_Parameter => First_Optional_Parameter);
+              Arg_Mechanism                => Mechanism);
          end Import_Valued_Procedure;
 
          -----------------
@@ -18910,11 +18844,12 @@ package body Sem_Prag is
 
          --  pragma Short_Descriptors;
 
+         --  Recognize and validate, but otherwise ignore
+
          when Pragma_Short_Descriptors =>
             GNAT_Pragma;
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
-            Short_Descriptors := True;
 
          ------------------------------
          -- Simple_Storage_Pool_Type --
@@ -25354,7 +25289,7 @@ package body Sem_Prag is
                   Set_Body_References (State_Id, New_Elmt_List);
                end if;
 
-               Append_Elmt (Ref, Body_References (State_Id));
+               Append_Elmt (Ref, To => Body_References (State_Id));
                exit;
             end if;
          end if;

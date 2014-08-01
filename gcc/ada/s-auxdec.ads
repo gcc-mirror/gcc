@@ -39,13 +39,7 @@ package System.Aux_DEC is
    pragma Preelaborate;
 
    subtype Short_Address is Address;
-   --  In some versions of System.Aux_DEC, notably that for VMS on IA64, there
-   --  are two address types (64-bit and 32-bit), and the name Short_Address
-   --  is used for the short address form. To avoid difficulties (in regression
-   --  tests and elsewhere) with units that reference Short_Address, it is
-   --  provided for other targets as a synonym for the normal Address type,
-   --  and, as in the case where the lengths are different, Address and
-   --  Short_Address can be freely inter-converted.
+   --  For compatibility with systems having short and long addresses
 
    type Integer_8  is range -2 **  (8 - 1) .. +2 **  (8 - 1) - 1;
    for Integer_8'Size  use  8;
@@ -112,7 +106,7 @@ package System.Aux_DEC is
    type F_Float is digits 6;
    type D_Float is digits 9;
    type G_Float is digits 15;
-   --  We provide the type names, but these will be IEEE, not VMS format
+   --  We provide the type names, but these will be IEEE format, not VAX format
 
    --  Floating point type declarations for IEEE floating point data types
 

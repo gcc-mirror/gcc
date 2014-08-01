@@ -63,7 +63,6 @@ package body Opt is
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
-      Short_Descriptors_Config              := Short_Descriptors;
       SPARK_Mode_Config                     := SPARK_Mode;
       SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
       Uneval_Old_Config                     := Uneval_Old;
@@ -103,7 +102,6 @@ package body Opt is
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
-      Short_Descriptors              := Save.Short_Descriptors;
       SPARK_Mode                     := Save.SPARK_Mode;
       SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
       Uneval_Old                     := Save.Uneval_Old;
@@ -144,7 +142,6 @@ package body Opt is
       Save.Optimize_Alignment_Local       := Optimize_Alignment_Local;
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
-      Save.Short_Descriptors              := Short_Descriptors;
       Save.SPARK_Mode                     := SPARK_Mode;
       Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
       Save.Uneval_Old                     := Uneval_Old;
@@ -244,7 +241,6 @@ package body Opt is
       Fast_Math                      := Fast_Math_Config;
       Optimize_Alignment             := Optimize_Alignment_Config;
       Polling_Required               := Polling_Required_Config;
-      Short_Descriptors              := Short_Descriptors_Config;
    end Set_Opt_Config_Switches;
 
    ---------------

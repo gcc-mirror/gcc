@@ -38,9 +38,12 @@
 --  hardware instructions, such as the those provided on the Intel x86.
 
 --  This version here is for use with normal Unix math functions. Alternative
---  packages are used VxWorks (no need for the -lm Linker_Options), and on the
---  x86 (where we have two versions one using inline ASM, and one importing
---  from the C long routines that take 80-bit arguments).
+--  versions are provided for special situations:
+
+--    a-numaux-darwin    For OS/X (special handling of sin/cos for accuracy)
+--    a-numaux-libc-x86  For the x86, using 80-bit long double format
+--    a-numaux-x86       For the x86, using 64-bit IEEE (inline asm statements)
+--    a-numaux-vxworks   For use on VxWorks (where we have no libm.a library)
 
 package Ada.Numerics.Aux is
    pragma Pure;

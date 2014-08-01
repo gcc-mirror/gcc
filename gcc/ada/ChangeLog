@@ -1,3 +1,17 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* a-numaux-vxworks.ads, a-numaux-x86.adb, a-numaux-x86.ads,
+	a-numaux-darwin.adb, a-numaux-darwin.ads, a-numaux.ads,
+	a-numaux-libc-x86.ads: Fix bad package header comments.
+	* elists.ads, elists.adb (Append_New_Elmt): New procedure.
+	* gnat_rm.texi, a-calend.adb, gnatcmd.adb, einfo.adb, einfo.ads,
+	checks.adb, sem_prag.adb, sem_prag.ads, rtsfind.ads, freeze.adb,
+	sem_util.adb, sem_attr.adb, exp_dbug.adb, exp_dbug.ads, gnat1drv.adb,
+	targparm.adb, targparm.ads, exp_ch6.adb, switch-b.adb, s-shasto.ads,
+	stand.ads, s-auxdec.ads, opt.adb, opt.ads, mlib-tgt.ads, s-fatgen.adb,
+	s-fatgen.ads, system.ads, snames.ads-tmpl, s-stalib.ads,
+	s-os_lib.adb: Remove VMS-specific code.
+
 2014-08-01  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Revert to
