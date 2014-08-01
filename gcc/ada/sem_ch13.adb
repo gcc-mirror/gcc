@@ -1283,10 +1283,19 @@ package body Sem_Ch13 is
                --  the proper insertion point. As a result the order of pragmas
                --  is the same as the order of aspects.
 
+               --  As precondition pragmas generated from conjuncts in the
+               --  precondition aspect are presented in reverse order to
+               --  Insert_Pragma, insert them in the correct order here by not
+               --  skipping previously inserted precondition pragmas when the
+               --  current pragma is a precondition.
+
                Decl := First (Declarations (N));
                while Present (Decl) loop
                   if Nkind (Decl) = N_Pragma
                     and then From_Aspect_Specification (Decl)
+                    and then not (Get_Pragma_Id (Decl) = Pragma_Precondition
+                                    and then
+                                  Get_Pragma_Id (Prag) = Pragma_Precondition)
                   then
                      Next (Decl);
                   else

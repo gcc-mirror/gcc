@@ -1,3 +1,23 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+
+2014-08-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Insert_Pragma): Add special case for precondition
+	pragmas from aspects, which need to be inserted in proper order.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate, Init_Hidden_Discriminants):
+	Handle properly a type extension that constrains a discriminated
+	derived type that renames other discriminants of an ancestor.
+
+2014-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* s-pack06.adb, s-pack10.adb, s-pack03.ads, s-pack12.adb, s-pack14.ads,
+	s-pack25.adb: Fix minor inconsistencies and typos.
+
 2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): Alphabetize

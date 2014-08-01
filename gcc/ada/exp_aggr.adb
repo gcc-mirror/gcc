@@ -1845,7 +1845,9 @@ package body Exp_Aggr is
       procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id);
       --  If Typ is derived, and constrains discriminants of the parent type,
       --  these discriminants are not components of the aggregate, and must be
-      --  initialized. The assignments are appended to List.
+      --  initialized. The assignments are appended to List. The same is done
+      --  if Typ derives fron an already constrained subtype of a discriminated
+      --  parent type.
 
       function Get_Explicit_Discriminant_Value (D : Entity_Id) return Node_Id;
       --  If the ancestor part is an unconstrained type and further ancestors
@@ -2113,13 +2115,30 @@ package body Exp_Aggr is
 
       begin
          Btype := Base_Type (Typ);
+
+         --  The constraints on the hidden discriminants, if present, are
+         --  kep in the Stored_Constraint list of the type itself, or in
+         --  that of the base type.
+
          while Is_Derived_Type (Btype)
-           and then Present (Stored_Constraint (Btype))
+           and then (Present (Stored_Constraint (Btype))
+             or else Present (Stored_Constraint (Typ)))
          loop
             Parent_Type := Etype (Btype);
+            if not Has_Discriminants (Parent_Type) then
+               return;
+            end if;
 
             Disc := First_Discriminant (Parent_Type);
-            Discr_Val := First_Elmt (Stored_Constraint (Base_Type (Typ)));
+
+            --  We know that one of the stored-constraint lists is present.
+
+            if Present (Stored_Constraint (Btype)) then
+               Discr_Val := First_Elmt (Stored_Constraint (Btype));
+            else
+               Discr_Val := First_Elmt (Stored_Constraint (Typ));
+            end if;
+
             while Present (Discr_Val) loop
 
                --  Only those discriminants of the parent that are not
