@@ -23,11 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with CStand;   use CStand;
-with Einfo;    use Einfo;
-with Opt;      use Opt;
-with Stand;    use Stand;
-with Targparm; use Targparm;
+with CStand; use CStand;
+with Einfo;  use Einfo;
+with Stand;  use Stand;
 
 package body Sem_VFpt is
 
@@ -134,32 +132,9 @@ package body Sem_VFpt is
 
    procedure Set_Standard_Fpt_Formats is
    begin
-      --  IEEE case
-
-      if Opt.Float_Format = 'I' then
-         Set_IEEE_Short (Standard_Float);
-         Set_IEEE_Long  (Standard_Long_Float);
-         Set_IEEE_Long  (Standard_Long_Long_Float);
-
-      --  Vax float case
-
-      else
-         Set_F_Float (Standard_Float);
-
-         if Opt.Float_Format_Long = 'D' then
-            Set_D_Float (Standard_Long_Float);
-         else
-            Set_G_Float (Standard_Long_Float);
-         end if;
-
-         --  Note: Long_Long_Float gets set only in the real VMS case,
-         --  because this gives better results for testing out the use
-         --  of VAX float on non-VMS environments with the -gnatdm switch.
-
-         if OpenVMS_On_Target then
-            Set_G_Float (Standard_Long_Long_Float);
-         end if;
-      end if;
+      Set_IEEE_Short (Standard_Float);
+      Set_IEEE_Long  (Standard_Long_Float);
+      Set_IEEE_Long  (Standard_Long_Long_Float);
    end Set_Standard_Fpt_Formats;
 
 end Sem_VFpt;

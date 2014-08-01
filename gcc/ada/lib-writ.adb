@@ -1133,20 +1133,6 @@ package body Lib.Writ is
          Write_Info_Str (" DB");
       end if;
 
-      if Opt.Float_Format /= ' ' then
-         Write_Info_Str (" F");
-
-         if Opt.Float_Format = 'I' then
-            Write_Info_Char ('I');
-
-         elsif Opt.Float_Format_Long = 'D' then
-            Write_Info_Char ('D');
-
-         else
-            Write_Info_Char ('G');
-         end if;
-      end if;
-
       if Tasking_Used
         and then not Is_Predefined_File_Name (Unit_File_Name (Main_Unit))
       then

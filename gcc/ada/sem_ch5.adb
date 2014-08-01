@@ -1753,8 +1753,9 @@ package body Sem_Ch5 is
          if not Is_Array_Type (Etype (Iter_Name)) then
             declare
                Iterator : constant Entity_Id :=
-                  Find_Value_Of_Aspect
-                    (Etype (Iter_Name), Aspect_Default_Iterator);
+                            Find_Value_Of_Aspect
+                              (Etype (Iter_Name), Aspect_Default_Iterator);
+
                I  : Interp_Index;
                It : Interp;
 
@@ -1852,11 +1853,11 @@ package body Sem_Ch5 is
 
             --  The name in the renaming declaration may be a function call.
             --  Indicate that it does not come from source, to suppress
-            --  spurious warnings on renamings of parameterless functions,
-            --  a common enough idiom in user-defined iterators.
-            --  The entity of the renaming must be a variable, because user-
-            --  defined Iterate function may have in-out parameters, even
-            --  if predefined ones do not.
+            --  spurious warnings on renamings of parameterless functions, a
+            --  common enough idiom in user-defined iterators. The entity of
+            --  the renaming must be a variable, because user- defined Iterate
+            --  function may have in-out parameters, even if predefined ones do
+            --  not.
 
             Decl :=
               Make_Object_Renaming_Declaration (Loc,

@@ -1418,7 +1418,7 @@ package body Prj.Conf is
 
          --  This might raise an Invalid_Config exception
 
-            Do_Autoconf;
+         Do_Autoconf;
 
       --  If the config file is not auto-generated, warn if there is any --RTS
       --  switch, but not when the config file is generated in memory.

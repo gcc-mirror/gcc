@@ -96,8 +96,8 @@ package body System.OS_Lib is
       Stdout : Boolean);
    --  Internal routine to implement two Create_Temp_File routines. If Stdout
    --  is set to True the created descriptor is stdout-compatible, otherwise
-   --  it might not be depending on the OS (VMS is one example). The first two
-   --  parameters are as in Create_Temp_File.
+   --  it might not be depending on the OS. The first two parameters are as
+   --  in Create_Temp_File.
 
    function C_String_Length (S : Address) return Integer;
    --  Returns the length of C (null-terminated) string at S, or 0 for
@@ -416,8 +416,8 @@ package body System.OS_Lib is
          loop
             R := Read (From, Buffer (1)'Address, Buf_Size);
 
-            --  For VMS, the buffer may not be full. So, we need to try again
-            --  until there is nothing to read.
+            --  On some systems, the buffer may not be full. So, we need to try
+            --  again until there is nothing to read.
 
             exit when R = 0;
 
@@ -2019,12 +2019,7 @@ package body System.OS_Lib is
          end loop;
       end if;
 
-      --  Resolve directory names for Windows (formerly also VMS)
-
-      --  On VMS, if we have a Unix path such as /temp/..., and TEMP is a
-      --  logical name, we must not try to resolve this logical name, because
-      --  it may have multiple equivalences and if resolved we will only
-      --  get the first one.
+      --  Resolve directory names for Windows
 
       if On_Windows then
 

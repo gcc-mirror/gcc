@@ -47,7 +47,6 @@ package body Bcheck is
 
    procedure Check_Consistent_Dispatching_Policy;
    procedure Check_Consistent_Dynamic_Elaboration_Checking;
-   procedure Check_Consistent_Floating_Point_Format;
    procedure Check_Consistent_Interrupt_States;
    procedure Check_Consistent_Locking_Policy;
    procedure Check_Consistent_Normalize_Scalars;
@@ -73,10 +72,6 @@ package body Bcheck is
 
    procedure Check_Configuration_Consistency is
    begin
-      if Float_Format_Specified /= ' ' then
-         Check_Consistent_Floating_Point_Format;
-      end if;
-
       if Queuing_Policy_Specified /= ' ' then
          Check_Consistent_Queuing_Policy;
       end if;
@@ -525,41 +520,6 @@ package body Bcheck is
          end loop;
       end if;
    end Check_Consistent_Dynamic_Elaboration_Checking;
-
-   --------------------------------------------
-   -- Check_Consistent_Floating_Point_Format --
-   --------------------------------------------
-
-   --  The rule is that all files must be compiled with the same setting
-   --  for the floating-point format.
-
-   procedure Check_Consistent_Floating_Point_Format is
-   begin
-      --  First search for a unit specifying a floating-point format and then
-      --  check all remaining units against it.
-
-      Find_Format : for A1 in ALIs.First .. ALIs.Last loop
-         if ALIs.Table (A1).Float_Format /= ' ' then
-            Check_Format : declare
-               Format : constant Character := ALIs.Table (A1).Float_Format;
-            begin
-               for A2 in A1 + 1 .. ALIs.Last loop
-                  if ALIs.Table (A2).Float_Format /= Format then
-                     Error_Msg_File_1 := ALIs.Table (A1).Sfile;
-                     Error_Msg_File_2 := ALIs.Table (A2).Sfile;
-
-                     Consistency_Error_Msg
-                       ("{ and { compiled with different " &
-                        "floating-point representations");
-                     exit Find_Format;
-                  end if;
-               end loop;
-            end Check_Format;
-
-            exit Find_Format;
-         end if;
-      end loop Find_Format;
-   end Check_Consistent_Floating_Point_Format;
 
    ---------------------------------------
    -- Check_Consistent_Interrupt_States --

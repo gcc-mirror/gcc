@@ -2040,6 +2040,32 @@ package body Prj.Env is
             --  directory correctly.
 
             Last := Last - 1;
+
+         else
+            declare
+               New_Dir : constant String :=
+                           Normalize_Pathname
+                             (Name_Buffer (First .. Last),
+                              Resolve_Links => Opt.Follow_Links_For_Dirs);
+               New_Len  : Natural;
+               New_Last : Natural;
+
+            begin
+               --  If the absolute path was resolved and is different from
+               --  the original, replace original with the resolved path.
+
+               if New_Dir /= Name_Buffer (First .. Last)
+                 and then New_Dir'Length /= 0
+               then
+                  New_Len := Name_Len + New_Dir'Length - (Last - First + 1);
+                  New_Last := First + New_Dir'Length - 1;
+                  Name_Buffer (New_Last + 1 .. New_Len) :=
+                    Name_Buffer (Last + 1 .. Name_Len);
+                  Name_Buffer (First .. New_Last) := New_Dir;
+                  Name_Len := New_Len;
+                  Last := New_Last;
+               end if;
+            end;
          end if;
 
          First := Last + 1;

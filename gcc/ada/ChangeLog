@@ -1,3 +1,16 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* snames.ads-tmpl, s-os_lib.adb, s-os_lib.ads, s-fileio.adb: Remove
+	VMS-specific code.
+	* prj-conf.adb: Minor reformatting.
+	* xr_tabls.adb (Read_File): Restore code which was enabled on
+	non VMS platforms before.
+	* prj-env.adb (Initialize_Default_Project_Path): Ditto.
+	* sem_ch5.adb: Minor reformatting.
+	* lib-writ.adb, lib-writ.ads, bindgen.adb, sem_vfpt.adb,
+	sem_vfpt.ads, ali.adb, ali.ads, opt.ads, bcheck.adb, exp_strm.adb:
+	Remove VMS-specific code.
+
 2014-08-01  Vincent Celier  <celier@adacore.com>
 
 	* make.adb (Await_Compile): Remove loop that was only needed

@@ -159,10 +159,6 @@ package body Bindgen is
    --  A value of zero indicates that time slicing should be suppressed. If no
    --  pragma is present, and no -T switch was used, the value is -1.
 
-   --  Float_Format is the float representation in use. Currently the only
-   --  valid value is 'I' for IEEE. We needed this field in the past for other
-   --  floating-point formats, and it is retained for possible future use.
-
    --  WC_Encoding shows the wide character encoding method used for the main
    --  program. This is one of the encoding letters defined in
    --  System.WCh_Con.WC_Encoding_Letters.

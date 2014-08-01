@@ -176,10 +176,6 @@ package ALI is
       --  always be set as well in this case. Not set if 'P' appears in
       --  Ignore_Lines.
 
-      Float_Format : Character;
-      --  Set to float format (set to I if no float-format given). Not set if
-      --  'P' appears in Ignore_Lines.
-
       No_Object : Boolean;
       --  Set to True if no object file generated. Not set if 'P' appears in
       --  Ignore_Lines.
@@ -468,11 +464,6 @@ package ALI is
    Dynamic_Elaboration_Checks_Specified : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if Scan_ALI reads
    --  a unit for which dynamic elaboration checking is enabled.
-
-   Float_Format_Specified : Character := ' ';
-   --  Set to blank by Initialize_ALI. Set to appropriate float format
-   --  character (V or I, see Opt.Float_Format) if an ali file that
-   --  is read contains an F line setting the floating point format.
 
    Initialize_Scalars_Used : Boolean := False;
    --  Set True if an ali file contains the Initialize_Scalars flag

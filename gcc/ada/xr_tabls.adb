@@ -1135,6 +1135,11 @@ package body Xr_Tabls is
 
          Buffer (Read_Ptr) := EOF;
          Contents := new String'(Buffer (1 .. Read_Ptr));
+
+         if Read_Ptr /= Length + 1 then
+            raise Ada.Text_IO.End_Error;
+         end if;
+
          Close (FD);
       end;
    end Read_File;
