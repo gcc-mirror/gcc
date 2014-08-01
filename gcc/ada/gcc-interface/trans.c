@@ -5484,13 +5484,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gcc_assert (!TREE_OVERFLOW (gnu_result));
 	}
 
-      /* Convert the Ureal to a vax float (represented on a signed type).  */
-      else if (Vax_Float (Underlying_Type (Etype (gnat_node))))
-	{
-	  gnu_result = UI_To_gnu (Get_Vax_Real_Literal_As_Signed (gnat_node),
-				  gnu_result_type);
-	}
-
       else
 	{
 	  Ureal ur_realval = Realval (gnat_node);
