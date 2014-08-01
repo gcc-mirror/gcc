@@ -7955,8 +7955,16 @@ package body Exp_Attr is
       Id : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
    begin
+      --  Machine and Model can be expanded by the backend, but in CodePeer
+      --  mode, we prefer the front end to do the expansion, because CodePeer
+      --  is not prepared to handle these attributes.
+
       if Id = Attribute_Machine or else Id = Attribute_Model then
-         return True;
+         return not CodePeer_Mode;
+
+      --  Remaining cases handled by the back end are Rounding and Truncatation
+      --  when appearing as the operand of a conversion to some integer type.
+      --  CodePeer can handle these cases fine.
 
       elsif Nkind (Parent (N)) /= N_Type_Conversion
         or else not Is_Integer_Type (Etype (Parent (N)))
@@ -7964,8 +7972,11 @@ package body Exp_Attr is
          return False;
       end if;
 
-      --  Should also support 'Machine_Rounding and 'Unbiased_Rounding, but
-      --  required back end support has not been implemented yet ???
+      --  Here we are in the integer conversion context
+
+      --  Very probably we should also recognize the cases of Machine_Rounding
+      --  and unbiased rounding in this conversion context, but the back end is
+      --  not yet prepared to handle these cases ???
 
       return Id = Attribute_Rounding or else Id = Attribute_Truncation;
    end Is_Inline_Floating_Point_Attribute;
