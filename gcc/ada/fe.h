@@ -173,6 +173,7 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 #define Exception_Locations_Suppressed opt__exception_locations_suppressed
 #define Exception_Mechanism            opt__exception_mechanism
 #define Generate_SCO_Instance_Table    opt__generate_sco_instance_table
+#define GNAT_Mode		       opt__gnat_mode
 #define Float_Format                   opt__float_format
 #define List_Representation_Info       opt__list_representation_info
 
@@ -183,6 +184,7 @@ extern Boolean Exception_Extra_Info;
 extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;
 extern Boolean Generate_SCO_Instance_Table;
+extern Boolean GNAT_Mode;
 extern Char Float_Format;
 extern Int List_Representation_Info;
 

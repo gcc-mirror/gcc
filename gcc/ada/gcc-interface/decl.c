@@ -2916,7 +2916,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type = make_node (tree_code_for_record_type (gnat_entity));
 	TYPE_NAME (gnu_type) = gnu_entity_name;
 	TYPE_PACKED (gnu_type) = (packed != 0) || has_rep;
-	if (Reverse_Storage_Order (gnat_entity))
+
+	if (Reverse_Storage_Order (gnat_entity) && !GNAT_Mode)
 	  sorry ("non-default Scalar_Storage_Order");
 	process_attributes (&gnu_type, &attr_list, true, gnat_entity);
 

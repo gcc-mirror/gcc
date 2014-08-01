@@ -1,3 +1,9 @@
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* fe.h (GNAT_Mode): New.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not error out on
+	reverse SSO in GNAT mode.
+
 2014-08-01  Thomas Quinot  <quinot@adacore.com>
 
 	* freeze.adb: Minor reformatting.
