@@ -14013,6 +14013,20 @@ package body Exp_Ch9 is
       Ttyp := Corresponding_Concurrent_Type (Task_Rec);
       Tnam := Chars (Ttyp);
 
+      --  The sequential partition elaboration policy is supported only in the
+      --  restricted profile.
+
+      --  This test should be in sem_ch9, not here ???
+
+      if Partition_Elaboration_Policy = 'S'
+        and then not Restricted_Profile
+      then
+         Error_Msg_N
+           ("sequential elaboration supported only in restricted profile",
+            Task_Rec);
+         return Make_Null_Statement (Loc);
+      end if;
+
       --  Get task declaration. In the case of a task type declaration, this is
       --  simply the parent of the task type entity. In the single task
       --  declaration, this parent will be the implicit type, and we can find
