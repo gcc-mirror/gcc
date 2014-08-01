@@ -1749,6 +1749,8 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	  size = TYPE_PRECISION (n->type);
 	  if (size % BITS_PER_UNIT != 0)
 	    return NULL_TREE;
+	  if (size > HOST_BITS_PER_WIDEST_INT)
+	    return NULL_TREE;
 	  size /= BITS_PER_UNIT;
 	  n->n = (sizeof (HOST_WIDEST_INT) < 8 ? 0 :
 		  (unsigned HOST_WIDEST_INT)0x08070605 << 32 | 0x04030201);
@@ -1791,6 +1793,8 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	    type = gimple_expr_type (stmt);
 	    type_size = TYPE_PRECISION (type);
 	    if (type_size % BITS_PER_UNIT != 0)
+	      return NULL_TREE;
+	    if (type_size > (int) HOST_BITS_PER_WIDEST_INT)
 	      return NULL_TREE;
 
 	    /* Sign extension: result is dependent on the value.  */
@@ -1932,7 +1936,7 @@ execute_optimize_bswap (void)
   bool changed = false;
   tree bswap16_type = NULL_TREE, bswap32_type = NULL_TREE, bswap64_type = NULL_TREE;
 
-  if (BITS_PER_UNIT != 8)
+  if (BITS_PER_UNIT != 8 || CHAR_BIT != 8)
     return 0;
 
   if (sizeof (HOST_WIDEST_INT) < 8)
