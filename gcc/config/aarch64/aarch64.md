@@ -1016,20 +1016,19 @@
   [(set_attr "type" "neon_store1_2reg<q>")]
 )
 
-;; Load pair with writeback.  This is primarily used in function epilogues
-;; when restoring [fp,lr]
+;; Load pair with post-index writeback.  This is primarily used in function
+;; epilogues.
 (define_insn "loadwb_pair<GPI:mode>_<P:mode>"
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=k")
           (plus:P (match_operand:P 1 "register_operand" "0")
                   (match_operand:P 4 "const_int_operand" "n")))
      (set (match_operand:GPI 2 "register_operand" "=r")
-          (mem:GPI (plus:P (match_dup 1)
-                   (match_dup 4))))
+          (mem:GPI (match_dup 1)))
      (set (match_operand:GPI 3 "register_operand" "=r")
           (mem:GPI (plus:P (match_dup 1)
                    (match_operand:P 5 "const_int_operand" "n"))))])]
-  "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPI:MODE>mode)"
+  "INTVAL (operands[5]) == GET_MODE_SIZE (<GPI:MODE>mode)"
   "ldp\\t%<w>2, %<w>3, [%1], %4"
   [(set_attr "type" "load2")]
 )
@@ -1040,18 +1039,17 @@
           (plus:P (match_operand:P 1 "register_operand" "0")
                   (match_operand:P 4 "const_int_operand" "n")))
      (set (match_operand:GPF 2 "register_operand" "=w")
-          (mem:GPF (plus:P (match_dup 1)
-                   (match_dup 4))))
+          (mem:GPF (match_dup 1)))
      (set (match_operand:GPF 3 "register_operand" "=w")
           (mem:GPF (plus:P (match_dup 1)
                    (match_operand:P 5 "const_int_operand" "n"))))])]
-  "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
+  "INTVAL (operands[5]) == GET_MODE_SIZE (<GPF:MODE>mode)"
   "ldp\\t%<w>2, %<w>3, [%1], %4"
   [(set_attr "type" "neon_load1_2reg")]
 )
 
-;; Store pair with writeback.  This is primarily used in function prologues
-;; when saving [fp,lr]
+;; Store pair with pre-index writeback.  This is primarily used in function
+;; prologues.
 (define_insn "storewb_pair<GPI:mode>_<P:mode>"
   [(parallel
     [(set (match_operand:P 0 "register_operand" "=&k")

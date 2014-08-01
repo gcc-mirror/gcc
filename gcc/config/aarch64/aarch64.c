@@ -2006,10 +2006,10 @@ aarch64_gen_loadwb_pair (enum machine_mode mode, rtx base, rtx reg, rtx reg2,
     {
     case DImode:
       return gen_loadwb_pairdi_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (adjustment + UNITS_PER_WORD));
+				   GEN_INT (UNITS_PER_WORD));
     case DFmode:
       return gen_loadwb_pairdf_di (base, base, reg, reg2, GEN_INT (adjustment),
-				   GEN_INT (adjustment + UNITS_PER_WORD));
+				   GEN_INT (UNITS_PER_WORD));
     default:
       gcc_unreachable ();
     }
