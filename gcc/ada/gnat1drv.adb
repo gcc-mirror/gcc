@@ -872,7 +872,6 @@ begin
       if Operating_Mode /= Check_Syntax then
 
          --  Acquire target parameters from system.ads (package System source)
-         --  System).
 
          Targparm_Acquire : declare
             use Sinput;

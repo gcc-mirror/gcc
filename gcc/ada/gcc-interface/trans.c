@@ -7893,10 +7893,20 @@ process_freeze_entity (Node_Id gnat_node)
   if (gnu_old)
     {
       save_gnu_tree (gnat_entity, NULL_TREE, false);
+
       if (IN (kind, Incomplete_Or_Private_Kind)
-	  && Present (Full_View (gnat_entity))
-	  && present_gnu_tree (Full_View (gnat_entity)))
-	save_gnu_tree (Full_View (gnat_entity), NULL_TREE, false);
+	  && Present (Full_View (gnat_entity)))
+	{
+	  Entity_Id full_view = Full_View (gnat_entity);
+
+          if (IN (Ekind (full_view), Private_Kind)
+	      && Present (Underlying_Full_View (full_view)))
+	    full_view = Underlying_Full_View (full_view);
+
+	  if (present_gnu_tree (full_view))
+	    save_gnu_tree (full_view, NULL_TREE, false);
+	}
+
       if (IN (kind, Type_Kind)
 	  && Present (Class_Wide_Type (gnat_entity))
 	  && Root_Type (Class_Wide_Type (gnat_entity)) == gnat_entity)
@@ -7906,17 +7916,23 @@ process_freeze_entity (Node_Id gnat_node)
   if (IN (kind, Incomplete_Or_Private_Kind)
       && Present (Full_View (gnat_entity)))
     {
-      gnu_new = gnat_to_gnu_entity (Full_View (gnat_entity), NULL_TREE, 1);
+      Entity_Id full_view = Full_View (gnat_entity);
+
+      if (IN (Ekind (full_view), Private_Kind)
+	  && Present (Underlying_Full_View (full_view)))
+	full_view = Underlying_Full_View (full_view);
+
+      gnu_new = gnat_to_gnu_entity (full_view, NULL_TREE, 1);
 
       /* Propagate back-annotations from full view to partial view.  */
       if (Unknown_Alignment (gnat_entity))
-	Set_Alignment (gnat_entity, Alignment (Full_View (gnat_entity)));
+	Set_Alignment (gnat_entity, Alignment (full_view));
 
       if (Unknown_Esize (gnat_entity))
-	Set_Esize (gnat_entity, Esize (Full_View (gnat_entity)));
+	Set_Esize (gnat_entity, Esize (full_view));
 
       if (Unknown_RM_Size (gnat_entity))
-	Set_RM_Size (gnat_entity, RM_Size (Full_View (gnat_entity)));
+	Set_RM_Size (gnat_entity, RM_Size (full_view));
 
       /* The above call may have defined this entity (the simplest example
 	 of this is when we have a private enumeral type since the bounds

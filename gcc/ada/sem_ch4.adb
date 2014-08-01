@@ -1441,6 +1441,8 @@ package body Sem_Ch4 is
       if Exp_Btype = Any_Discrete or else Exp_Btype = Any_Type then
          return;
 
+      --  Special casee message for character literal
+
       elsif Exp_Btype = Any_Character then
          Error_Msg_N
            ("character literal as case expression is ambiguous", Expr);
@@ -1448,8 +1450,9 @@ package body Sem_Ch4 is
       end if;
 
       if Etype (N) = Any_Type and then Present (Wrong_Alt) then
-         Error_Msg_N ("type incompatible with that of previous alternatives",
-           Expression (Wrong_Alt));
+         Error_Msg_N
+           ("type incompatible with that of previous alternatives",
+            Expression (Wrong_Alt));
          return;
       end if;
 

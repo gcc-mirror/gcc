@@ -4654,7 +4654,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    ? Non_Limited_View (gnat_entity)
 	    : Present (Full_View (gnat_entity))
 	      ? Full_View (gnat_entity)
-	      : Underlying_Full_View (gnat_entity);
+	      : IN (kind, Private_Kind)
+		? Underlying_Full_View (gnat_entity)
+		: Empty;
 
 	/* If this is an incomplete type with no full view, it must be a Taft
 	   Amendment type, in which case we return a dummy type.  Otherwise,

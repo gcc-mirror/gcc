@@ -4977,7 +4977,7 @@ package body Freeze is
          --  view, we can retrieve the full view, but not the reverse).
          --  However, in order to freeze correctly, we need to freeze the full
          --  view. If we are freezing at the end of a scope (or within the
-         --  scope of the private type), the partial and full views will have
+         --  scope) of the private type, the partial and full views will have
          --  been swapped, the full view appears first in the entity chain and
          --  the swapping mechanism ensures that the pointers are properly set
          --  (on scope exit).
@@ -4986,6 +4986,11 @@ package body Freeze is
          --  freezing from another scope), we freeze the full view, and then
          --  set the pointers appropriately since we cannot rely on swapping to
          --  fix things up (subtypes in an outer scope might not get swapped).
+
+         --  If the full view is itself private, the above requirements apply
+         --  to the underlying full view instead of the full view. But there is
+         --  no swapping mechanism for the underlying full view so we need to
+         --  set the pointers appropriately in both cases.
 
          elsif Is_Incomplete_Or_Private_Type (E)
            and then not Is_Generic_Type (E)
@@ -5025,27 +5030,43 @@ package body Freeze is
                if Is_Frozen (Full_View (E)) then
                   Set_Has_Delayed_Freeze (E, False);
                   Set_Freeze_Node (E, Empty);
-                  Check_Debug_Info_Needed (E);
 
                --  Otherwise freeze full view and patch the pointers so that
-               --  the freeze node will elaborate both views in the back-end.
+               --  the freeze node will elaborate both views in the back end.
+               --  However, if full view is itself private, freeze underlying
+               --  full view instead and patch the pointer so that the freeze
+               --  node will elaborate the three views in the back end.
 
                else
                   declare
-                     Full : constant Entity_Id := Full_View (E);
+                     Full : Entity_Id := Full_View (E);
 
                   begin
                      if Is_Private_Type (Full)
                        and then Present (Underlying_Full_View (Full))
                      then
-                        Freeze_And_Append
-                          (Underlying_Full_View (Full), N, Result);
+                        Full := Underlying_Full_View (Full);
                      end if;
 
                      Freeze_And_Append (Full, N, Result);
 
-                     if Has_Delayed_Freeze (E) then
+                     if Full /= Full_View (E)
+                       and then Has_Delayed_Freeze (Full_View (E))
+                     then
                         F_Node := Freeze_Node (Full);
+
+                        if Present (F_Node) then
+                           Set_Freeze_Node (Full_View (E), F_Node);
+                           Set_Entity (F_Node, Full_View (E));
+
+                        else
+                           Set_Has_Delayed_Freeze (Full_View (E), False);
+                           Set_Freeze_Node (Full_View (E), Empty);
+                        end if;
+                     end if;
+
+                     if Has_Delayed_Freeze (E) then
+                        F_Node := Freeze_Node (Full_View (E));
 
                         if Present (F_Node) then
                            Set_Freeze_Node (E, F_Node);
@@ -5060,9 +5081,9 @@ package body Freeze is
                         end if;
                      end if;
                   end;
-
-                  Check_Debug_Info_Needed (E);
                end if;
+
+               Check_Debug_Info_Needed (E);
 
                --  AI-117 requires that the convention of a partial view be the
                --  same as the convention of the full view. Note that this is a
@@ -5087,6 +5108,35 @@ package body Freeze is
                   Set_Size_Info (E, Full_View (E));
                   Set_RM_Size   (E, RM_Size (Full_View (E)));
                end if;
+
+               return Result;
+
+            --  Case of underlying full view present
+
+            elsif Is_Private_Type (E)
+              and then Present (Underlying_Full_View (E))
+            then
+               if not Is_Frozen (Underlying_Full_View (E)) then
+                  Freeze_And_Append (Underlying_Full_View (E), N, Result);
+               end if;
+
+               --  Patch the pointers so that the freeze node will elaborate
+               --  both views in the back end.
+
+               if Has_Delayed_Freeze (E) then
+                  F_Node := Freeze_Node (Underlying_Full_View (E));
+
+                  if Present (F_Node) then
+                     Set_Freeze_Node (E, F_Node);
+                     Set_Entity (F_Node, E);
+
+                  else
+                     Set_Has_Delayed_Freeze (E, False);
+                     Set_Freeze_Node (E, Empty);
+                  end if;
+               end if;
+
+               Check_Debug_Info_Needed (E);
 
                return Result;
 

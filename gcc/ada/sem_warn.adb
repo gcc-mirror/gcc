@@ -820,9 +820,9 @@ package body Sem_Warn is
          raise Program_Error;
       end Body_Formal;
 
-      -----------------------------------
-      --   May_Need_Initialized_Actual --
-      -----------------------------------
+      ---------------------------------
+      -- May_Need_Initialized_Actual --
+      ---------------------------------
 
       procedure May_Need_Initialized_Actual (Ent : Entity_Id) is
          T   : constant Entity_Id := Etype (Ent);

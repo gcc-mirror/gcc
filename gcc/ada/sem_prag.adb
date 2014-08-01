@@ -10926,20 +10926,17 @@ package body Sem_Prag is
               Pragma_Assume         |
               Pragma_Loop_Invariant =>
          Assert : declare
-            Expr : Node_Id;
-            Newa : List_Id;
-
-            Has_Loop_Entry : Boolean;
-            --  Set True by
-
-            function Contains_Loop_Entry return Boolean;
-            --  Tests if Expr contains a Loop_Entry attribute reference
+            function Contains_Loop_Entry (Expr : Node_Id) return Boolean;
+            --  Determine whether expression Expr contains a Loop_Entry
+            --  attribute reference.
 
             -------------------------
             -- Contains_Loop_Entry --
             -------------------------
 
-            function Contains_Loop_Entry return Boolean is
+            function Contains_Loop_Entry (Expr : Node_Id) return Boolean is
+               Has_Loop_Entry : Boolean := False;
+
                function Process (N : Node_Id) return Traverse_Result;
                --  Process function for traversal to look for Loop_Entry
 
@@ -10964,10 +10961,14 @@ package body Sem_Prag is
             --  Start of processing for Contains_Loop_Entry
 
             begin
-               Has_Loop_Entry := False;
                Traverse (Expr);
                return Has_Loop_Entry;
             end Contains_Loop_Entry;
+
+            --  Local variables
+
+            Expr : Node_Id;
+            Newa : List_Id;
 
          --  Start of processing for Assert
 
@@ -10989,17 +10990,19 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Check);
             Expr := Get_Pragma_Arg (Arg1);
 
-            --  Special processing for Loop_Invariant or for other cases if
-            --  a Loop_Entry attribute is present.
+            --  Special processing for Loop_Invariant, Loop_Variant or for
+            --  other cases where a Loop_Entry attribute is present. If the
+            --  assertion pragma contains attribute Loop_Entry, ensure that
+            --  the related pragma is within a loop.
 
             if Prag_Id = Pragma_Loop_Invariant
-              or else Contains_Loop_Entry
+              or else Prag_Id = Pragma_Loop_Variant
+              or else Contains_Loop_Entry (Expr)
             then
-               --  Check restricted placement, must be within a loop
-
                Check_Loop_Pragma_Placement;
 
-               --  Do preanalyze to deal with embedded Loop_Entry attribute
+               --  Perform preanalysis to deal with embedded Loop_Entry
+               --  attributes.
 
                Preanalyze_Assert_Expression (Expression (Arg1), Any_Boolean);
             end if;
