@@ -30,16 +30,15 @@
 $username = $ENV{'USER'};
 $name = `finger $username | grep -o 'Name: .*'`;
 @n = split(/: /, $name);
-$name = @n[1]; chop($name);
+$name = $n[1]; chop($name);
 $addr = $username . "\@my.domain.org";
 $date = `date +%Y-%m-%d`; chop ($date);
 
 $gcc_root = $0;
 $gcc_root =~ s/[^\\\/]+$/../;
-chdir $gcc_root;
 
 # if this is a git tree then take name and email from the git configuration
-if (-d .git) {
+if (-d "$gcc_root/.git") {
   $gitname = `git config user.name`;
   chomp($gitname);
   if ($gitname) {
@@ -80,7 +79,7 @@ sub get_clname ($) {
 	my $dirname = $_[0];
 	while ($dirname) {
 		my $clname = "$dirname/ChangeLog";
-		if (-f $clname) {
+		if (-f "$gcc_root/$clname") {
 			my $relname = substr ($_[0], length ($dirname) + 1);
 			return ($clname, $relname);
 		} else {
