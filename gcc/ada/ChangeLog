@@ -1,3 +1,12 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Entry_Call): When an entry has
+	preconditions, the entry call is wrapped in a procedure call
+	that incorporates the precondition checks. To prevent a double
+	expansion, with possible duplication of extra formals, that
+	procedure call must only be pre-analyzed and resolved. Expansion
+	takes place upon return to the caller Resolve_Call.
+
 2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Resolve_Call): Do not perform
