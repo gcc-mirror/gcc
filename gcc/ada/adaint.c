@@ -1308,7 +1308,7 @@ __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr)
  ** Return the number of bytes in the specified file
  ****************************************************************/
 
-long
+__int64
 __gnat_file_length_attr (int fd, char* name, struct file_attributes* attr)
 {
   if (attr->file_length == -1) {
@@ -1318,7 +1318,7 @@ __gnat_file_length_attr (int fd, char* name, struct file_attributes* attr)
   return attr->file_length;
 }
 
-long
+__int64
 __gnat_file_length (int fd)
 {
   struct file_attributes attr;
@@ -1326,7 +1326,7 @@ __gnat_file_length (int fd)
   return __gnat_file_length_attr (fd, NULL, &attr);
 }
 
-long
+__int64
 __gnat_named_file_length (char *name)
 {
   struct file_attributes attr;

@@ -35,7 +35,6 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System; use System;
 with System.Case_Util;
-with System.CRTL;
 with System.Soft_Links;
 
 package body System.OS_Lib is
