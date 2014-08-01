@@ -1491,14 +1491,20 @@ package body Exp_Ch3 is
          return Empty_List;
       end if;
 
-      --  Go to full view if private type. In the case of successive
-      --  private derivations, this can require more than one step.
+      --  Go to full view or underlying full view if private type. In the case
+      --  of successive private derivations, this can require two steps.
 
-      while Is_Private_Type (Full_Type)
+      if Is_Private_Type (Full_Type)
         and then Present (Full_View (Full_Type))
-      loop
+      then
          Full_Type := Full_View (Full_Type);
-      end loop;
+      end if;
+
+      if Is_Private_Type (Full_Type)
+        and then Present (Underlying_Full_View (Full_Type))
+      then
+         Full_Type := Underlying_Full_View (Full_Type);
+      end if;
 
       --  If Typ is derived, the procedure is the initialization procedure for
       --  the root type. Wrap the argument in an conversion to make it type
@@ -1583,12 +1589,6 @@ package body Exp_Ch3 is
             begin
                if Is_Protected_Type (T) then
                   T := Corresponding_Record_Type (T);
-
-               elsif Is_Private_Type (T)
-                 and then Present (Underlying_Full_View (T))
-                 and then Is_Protected_Type (Underlying_Full_View (T))
-               then
-                  T := Corresponding_Record_Type (Underlying_Full_View (T));
                end if;
 
                Arg :=

@@ -5034,7 +5034,7 @@ package body Freeze is
                --  Otherwise freeze full view and patch the pointers so that
                --  the freeze node will elaborate both views in the back end.
                --  However, if full view is itself private, freeze underlying
-               --  full view instead and patch the pointer so that the freeze
+               --  full view instead and patch the pointers so that the freeze
                --  node will elaborate the three views in the back end.
 
                else
