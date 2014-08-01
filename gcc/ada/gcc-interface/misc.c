@@ -407,10 +407,8 @@ gnat_init_gcc_fp (void)
     flag_signed_zeros = 0;
 
   /* Assume that FP operations can trap if S'Machine_Overflow is true,
-     but don't override the user if not.
-
-     ??? Alpha/VMS enables FP traps without declaring it.  */
-  if (Machine_Overflows_On_Target || TARGET_ABI_OPEN_VMS)
+     but don't override the user if not.  */
+  if (Machine_Overflows_On_Target)
     flag_trapping_math = 1;
   else if (!global_options_set.x_flag_trapping_math)
     flag_trapping_math = 0;
@@ -469,8 +467,6 @@ gnat_print_type (FILE *file, tree node, int indent)
       else if (TYPE_HAS_ACTUAL_BOUNDS_P (node))
 	print_node (file, "actual bounds", TYPE_ACTUAL_BOUNDS (node),
 		    indent + 4);
-      else if (TYPE_VAX_FLOATING_POINT_P (node))
-	;
       else
 	print_node (file, "index type", TYPE_INDEX_TYPE (node), indent + 4);
 

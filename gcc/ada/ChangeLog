@@ -1,3 +1,119 @@
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_BY_DESCRIPTOR_P): Delete.
+	(DECL_FUNCTION_STUB): Likewise.
+	(SET_DECL_FUNCTION_STUB): Likewise.
+	(DECL_PARM_ALT_TYPE): Likewise.
+	(SET_DECL_PARM_ALT_TYPE): Likewise.
+	(TYPE_VAX_FLOATING_POINT_P): Delete.
+	(TYPE_DIGITS_VALUE): Likewise.
+	(SET_TYPE_DIGITS_VALUE): Likewise.
+	* gcc-interface/gigi.h (standard_datatypes): Remove ADT_malloc32_decl.
+	(malloc32_decl): Delete.
+	(build_vms_descriptor): Likewise.
+	(build_vms_descriptor32): Likewise.
+	(fill_vms_descriptor): Likewise.
+	(convert_vms_descriptor): Likewise.
+	(TARGET_ABI_OPEN_VMS): Likewise.
+	(TARGET_MALLOC64): Likewise.
+	* gcc-interface/decl.c (add_parallel_type_for_packed_array): New.
+	(gnat_to_gnu_entity): Call it to add the original type as a parallel
+	type to the implementation type of a packed array type.
+	<E_Procedure>: Remove now obsolete kludge.
+	<E_Exception>: Delete obsolete comment.
+	<object>: Small tweak.
+	<E_Subprogram_Type>: Remove support for stub subprograms, as well as
+	for the descriptor passing mechanism.
+	(gnat_to_gnu_param): Likewise.
+	* gcc-interface/misc.c (gnat_init_gcc_fp): Remove special case.
+	(gnat_print_type): Adjust.
+	* gcc-interface/trans.c (gigi): Remove obsolete initializations.
+	(vms_builtin_establish_handler_decl): Delete.
+	(gnat_vms_condition_handler_decl): Likewise.
+	(establish_gnat_vms_condition_handler): Likewise.
+	(build_function_stub): Likewise.
+	(Subprogram_Body_to_gnu): Do not call above functions.
+	(Call_to_gnu): Remove support for the descriptor passing mechanism.
+	* gcc-interface/utils.c (make_descriptor_field): Delete.
+	(build_vms_descriptor32): Likewise.
+	(build_vms_descriptor): Likewise.
+	(fill_vms_descriptor): Likewise.
+	(convert_vms_descriptor64): Likewise.
+	(convert_vms_descriptor32): Likewise.
+	(convert_vms_descriptor): Likewise.
+	* gcc-interface/utils.c (unchecked_convert): Likewise.
+	* gcc-interface/utils2.c (maybe_wrap_malloc): Remove obsolete stuff.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Use gnat_to_gnu_type for the exception
+	type and get_unpadded_type for the longest FP type.
+	(Attribute_to_gnu) <Machine>: Compare the precision of the types.
+	(convert_with_check): Adjust formatting and remove FIXME.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
+	Do not convert the RM bounds to the base type.
+	(E_Floating_Point_Subtype): Likewise.
+	(E_Array_Subtype): Convert the bounds to the base type.
+	* gcc-interface/trans.c (get_type_length): New function.
+	(Attribute_to_gnu) <Range_Length>: Call it.
+	<Length>: Likewise.
+	(Loop_Statement_to_gnu): Convert the bounds to the base type.
+	(gnat_to_gnu) <N_In>: Likewise.
+	* gcc-interface/utils.c (make_type_from_size): Do not convert the RM
+	bounds to the base type.
+	(create_range_type): Likewise.
+	(convert): Convert the bounds to the base type for biased types.
+	* gcc-interface/utils2.c (compare_arrays): Convert the bounds to the
+	base type.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Selected_Component>: Remove
+	incorrect implicit type derivation.
+	* gcc-interface/utils.c (max_size) <tcc_reference>: Convert the bounds
+	to the base type.
+
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Preanalyze and resolve the
+	prefix of attribute Loop_Entry.
+	* sem_prag.adb (Analyze_Pragma): Verify the placement of pragma
+	Loop_Variant with respect to an enclosing loop (if any).
+	(Contains_Loop_Entry): Update the parameter profile and all
+	calls to this routine.
+	* sem_res.adb (Resolve_Call): Code reformatting. Do not ask
+	for the corresponding body before determining the nature of the
+	ultimate alias's declarative node.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb, sem_ch4.adb: Minor reformatting.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Rewrite_In_Raise_CE): Don't try to reuse inner
+	constraint error node since it is a list member.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb: Minor reformatting.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.adb (Underlying_Type): Return the underlying full view
+	of a private type if present.
+	* freeze.adb (Freeze_Entity):
+	Build a single freeze node for partial, full and underlying full
+	views, if any.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Private_Type>: Add a
+	missing guard before the access to the Underlying_Full_View.
+	* gcc-interface/trans.c (process_freeze_entity): Deal with underlying
+	full view if present.
+	* gcc-interface/utils.c (make_dummy_type): Avoid superfluous work.
+
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Entry_Call): When an entry has
