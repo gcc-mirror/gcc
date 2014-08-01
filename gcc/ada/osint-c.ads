@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,6 +126,12 @@ package Osint.C is
    --  Creates the output library information file for the source file which
    --  is currently being compiled (i.e. the file which was most recently
    --  returned by Next_Main_Source).
+
+   procedure Open_Output_Library_Info;
+   --  Opens the output library information file for the source file which
+   --  is currently being compiled (i.e. the file which was most recently
+   --  returned by Next_Main_Source) for appending. This is used to append
+   --  the globals computed in flow analysis in gnatprove mode.
 
    procedure Write_Library_Info (Info : String);
    --  Writes the contents of the referenced string to the library information

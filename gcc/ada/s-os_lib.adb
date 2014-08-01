@@ -2257,6 +2257,33 @@ package body System.OS_Lib is
       return "";
    end Normalize_Pathname;
 
+   -----------------
+   -- Open_Append --
+   -----------------
+
+   function Open_Append
+     (Name  : C_File_Name;
+      Fmode : Mode) return File_Descriptor
+   is
+      function C_Open_Append
+        (Name  : C_File_Name;
+         Fmode : Mode) return File_Descriptor;
+      pragma Import (C, C_Open_Append, "__gnat_open_append");
+   begin
+      return C_Open_Append (Name, Fmode);
+   end Open_Append;
+
+   function Open_Append
+     (Name  : String;
+      Fmode : Mode) return File_Descriptor
+   is
+      C_Name : String (1 .. Name'Length + 1);
+   begin
+      C_Name (1 .. Name'Length) := Name;
+      C_Name (C_Name'Last)      := ASCII.NUL;
+      return Open_Append (C_Name (C_Name'First)'Address, Fmode);
+   end Open_Append;
+
    ---------------
    -- Open_Read --
    ---------------

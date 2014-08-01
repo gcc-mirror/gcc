@@ -25104,6 +25104,9 @@ package body Sem_Prag is
             return Has_Unconstrained_Component (Typ);
          end if;
 
+      elsif Is_Private_Type (Typ) and then Has_Discriminants (Typ) then
+         return True;
+
       else
          return False;
       end if;

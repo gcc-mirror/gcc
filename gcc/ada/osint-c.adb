@@ -197,6 +197,16 @@ package body Osint.C is
       Create_File_And_Check (Output_FD, Text);
    end Create_Output_Library_Info;
 
+   ------------------------------
+   -- Open_Output_Library_Info --
+   ------------------------------
+
+   procedure Open_Output_Library_Info is
+   begin
+      Set_Library_Info_Name;
+      Open_File_To_Append_And_Check (Output_FD, Text);
+   end Open_Output_Library_Info;
+
    -------------------------
    -- Create_Repinfo_File --
    -------------------------
