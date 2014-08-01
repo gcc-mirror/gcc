@@ -2097,7 +2097,12 @@ package Opt is
    --  GNAT
    --  True if compiling in GNAT system mode (-gnatg switch)
 
-   --  Setting this switch has the following effects
+   --  Setting this switch has the following effects on the language that is
+   --  accepted. Note that several of the following have the effect of changing
+   --  an error to a warning. But warnings are usually treated as fatal errors
+   --  in -gnatg mode, so to actually take advantage of such a change, it is
+   --  necessary to add an explicit pragma Warnings (Off) in the source and
+   --  this requires clear documentation of why this is necessary.
 
    --    The identifier character set is set to 'n' (7-bit ASCII)
 
@@ -2141,13 +2146,11 @@ package Opt is
 
    --    Returning objects of limited types is allowed
 
-   --    All entities are considered known to Known_But_Invisible
-
    --    Non-static call in preelaborated unit give a warning, not an error
 
    --    Warnings on possible elaboration errors are suppressed
 
-   --    Warning about packing being ignored is suppressed
+   --    Warnings about packing being ignored are suppressed
 
    --    Warnings in internal units are not suppressed (they normally are)
 
