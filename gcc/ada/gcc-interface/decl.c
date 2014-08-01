@@ -1432,15 +1432,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_expr = convert (gnu_type, gnu_expr);
 
 	/* If this name is external or there was a name specified, use it,
-	   unless this is a VMS exception object since this would conflict
-	   with the symbol we need to export in addition.  Don't use the
-	   Interface_Name if there is an address clause (see CD30005).  */
-	if (!Is_VMS_Exception (gnat_entity)
-	    && ((Present (Interface_Name (gnat_entity))
-		 && No (Address_Clause (gnat_entity)))
-		|| (Is_Public (gnat_entity)
-		    && (!Is_Imported (gnat_entity)
-			|| Is_Exported (gnat_entity)))))
+	   Don't use the Interface_Name if there is an address clause
+	   (see CD30005).  */
+	if ((Present (Interface_Name (gnat_entity))
+	     && No (Address_Clause (gnat_entity)))
+	    || (Is_Public (gnat_entity)
+		&& (!Is_Imported (gnat_entity)
+	            || Is_Exported (gnat_entity))))
 	  gnu_ext_name = create_concat_name (gnat_entity, NULL);
 
 	/* If this is an aggregate constant initialized to a constant, force it
