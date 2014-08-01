@@ -335,6 +335,9 @@ extern int double_float_alignment;
    types whose size is greater or equal to 64 bits, or 0 if this alignment
    is not specifically capped.  */
 extern int double_scalar_alignment;
+
+/* True if floating-point arithmetics may use wider intermediate results.  */
+extern bool fp_arith_may_widen;
 
 /* Data structures used to represent attributes.  */
 

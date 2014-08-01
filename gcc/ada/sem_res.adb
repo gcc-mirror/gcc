@@ -259,7 +259,7 @@ package body Sem_Res is
    procedure Simplify_Type_Conversion (N : Node_Id);
    --  Called after N has been resolved and evaluated, but before range checks
    --  have been applied. Currently simplifies a combination of floating-point
-   --  to integer conversion and Truncation attribute.
+   --  to integer conversion and Rounding or Truncation attribute.
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
    --  A universal_fixed expression in an universal context is unambiguous if
@@ -11082,29 +11082,36 @@ package body Sem_Res is
             Opnd_Typ   : constant Entity_Id := Etype (Operand);
 
          begin
+            --  Special processing if the conversion is the expression of a
+            --  Rounding or Truncation attribute reference. In this case we
+            --  replace:
+
+            --     ityp (ftyp'Rounding (x)) or ityp (ftyp'Truncation (x))
+
+            --  by
+
+            --     ityp (x)
+
+            --  with the Float_Truncate flag set to False or True respectively,
+            --  which is more efficient.
+
             if Is_Floating_Point_Type (Opnd_Typ)
               and then
                 (Is_Integer_Type (Target_Typ)
                    or else (Is_Fixed_Point_Type (Target_Typ)
                               and then Conversion_OK (N)))
               and then Nkind (Operand) = N_Attribute_Reference
-              and then Attribute_Name (Operand) = Name_Truncation
-
-            --  Special processing required if the conversion is the expression
-            --  of a Truncation attribute reference. In this case we replace:
-
-            --     ityp (ftyp'Truncation (x))
-
-            --  by
-
-            --     ityp (x)
-
-            --  with the Float_Truncate flag set, which is more efficient.
-
+              and then (Attribute_Name (Operand) = Name_Rounding
+                          or else Attribute_Name (Operand) = Name_Truncation)
             then
-               Rewrite (Operand,
-                 Relocate_Node (First (Expressions (Operand))));
-               Set_Float_Truncate (N, True);
+               declare
+                  Truncate : constant Boolean :=
+                    Attribute_Name (Operand) = Name_Truncation;
+               begin
+                  Rewrite (Operand,
+                    Relocate_Node (First (Expressions (Operand))));
+                  Set_Float_Truncate (N, Truncate);
+               end;
             end if;
          end;
       end if;

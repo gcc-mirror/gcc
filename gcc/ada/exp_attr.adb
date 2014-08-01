@@ -4068,10 +4068,13 @@ package body Exp_Attr is
       -------------
 
       --  Transforms 'Machine into a call to the floating-point attribute
-      --  function Machine in Fat_xxx (where xxx is the root type)
+      --  function Machine in Fat_xxx (where xxx is the root type).
+      --  Expansion is avoided for cases the back end can handle directly.
 
       when Attribute_Machine =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       ----------------------
       -- Machine_Rounding --
@@ -4335,10 +4338,13 @@ package body Exp_Attr is
       -----------
 
       --  Transforms 'Model into a call to the floating-point attribute
-      --  function Model in Fat_xxx (where xxx is the root type)
+      --  function Model in Fat_xxx (where xxx is the root type).
+      --  Expansion is avoided for cases the back end can handle directly.
 
       when Attribute_Model =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       -----------------
       -- Object_Size --
@@ -5411,9 +5417,12 @@ package body Exp_Attr is
 
       --  Transforms 'Rounding into a call to the floating-point attribute
       --  function Rounding in Fat_xxx (where xxx is the root type)
+      --  Expansion is avoided for cases the back end can handle directly.
 
       when Attribute_Rounding =>
-         Expand_Fpt_Attribute_R (N);
+         if not Is_Inline_Floating_Point_Attribute (N) then
+            Expand_Fpt_Attribute_R (N);
+         end if;
 
       -------------
       -- Scaling --
@@ -7946,7 +7955,10 @@ package body Exp_Attr is
       Id : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
    begin
-      if Nkind (Parent (N)) /= N_Type_Conversion
+      if Id = Attribute_Machine or else Id = Attribute_Model then
+         return True;
+
+      elsif Nkind (Parent (N)) /= N_Type_Conversion
         or else not Is_Integer_Type (Etype (Parent (N)))
       then
          return False;
@@ -7955,7 +7967,7 @@ package body Exp_Attr is
       --  Should also support 'Machine_Rounding and 'Unbiased_Rounding, but
       --  required back end support has not been implemented yet ???
 
-      return Id = Attribute_Truncation;
+      return Id = Attribute_Rounding or else Id = Attribute_Truncation;
    end Is_Inline_Floating_Point_Attribute;
 
 end Exp_Attr;
