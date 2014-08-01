@@ -1,5 +1,9 @@
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
+	* asan.c (asan_mem_ref_hasher::hash): Convert to inchash.
+
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
 	* Makefile.in (OBJS): Add rtlhash.o
 	* dwarf2out.c (addr_table_entry_do_hash): Convert to inchash.
 	(loc_checksum): Dito.
