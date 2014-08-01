@@ -594,17 +594,16 @@ value_id_constant_p (unsigned int v)
 
 /* Compute the hash for a reference operand VRO1.  */
 
-static hashval_t
-vn_reference_op_compute_hash (const vn_reference_op_t vro1, hashval_t result)
+static void
+vn_reference_op_compute_hash (const vn_reference_op_t vro1, inchash::hash &hstate)
 {
-  result = iterative_hash_hashval_t (vro1->opcode, result);
+  hstate.add_int (vro1->opcode);
   if (vro1->op0)
-    result = iterative_hash_expr (vro1->op0, result);
+    inchash::add_expr (vro1->op0, hstate);
   if (vro1->op1)
-    result = iterative_hash_expr (vro1->op1, result);
+    inchash::add_expr (vro1->op1, hstate);
   if (vro1->op2)
-    result = iterative_hash_expr (vro1->op2, result);
-  return result;
+    inchash::add_expr (vro1->op2, hstate);
 }
 
 /* Compute a hash for the reference operation VR1 and return it.  */
@@ -612,7 +611,8 @@ vn_reference_op_compute_hash (const vn_reference_op_t vro1, hashval_t result)
 hashval_t
 vn_reference_compute_hash (const vn_reference_t vr1)
 {
-  hashval_t result = 0;
+  inchash::hash hstate;
+  hashval_t result;
   int i;
   vn_reference_op_t vro;
   HOST_WIDE_INT off = -1;
@@ -634,7 +634,7 @@ vn_reference_compute_hash (const vn_reference_t vr1)
 	{
 	  if (off != -1
 	      && off != 0)
-	    result = iterative_hash_hashval_t (off, result);
+	    hstate.add_int (off);
 	  off = -1;
 	  if (deref
 	      && vro->opcode == ADDR_EXPR)
@@ -642,14 +642,16 @@ vn_reference_compute_hash (const vn_reference_t vr1)
 	      if (vro->op0)
 		{
 		  tree op = TREE_OPERAND (vro->op0, 0);
-		  result = iterative_hash_hashval_t (TREE_CODE (op), result);
-		  result = iterative_hash_expr (op, result);
+		  hstate.add_int (TREE_CODE (op));
+		  inchash::add_expr (op, hstate);
 		}
 	    }
 	  else
-	    result = vn_reference_op_compute_hash (vro, result);
+	    vn_reference_op_compute_hash (vro, hstate);
 	}
     }
+  result = hstate.end ();
+  /* ??? We would ICE later if we hash instead of adding that in. */
   if (vr1->vuse)
     result += SSA_NAME_VERSION (vr1->vuse);
 
@@ -2236,7 +2238,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
 hashval_t
 vn_nary_op_compute_hash (const vn_nary_op_t vno1)
 {
-  hashval_t hash;
+  inchash::hash hstate;
   unsigned i;
 
   for (i = 0; i < vno1->length; ++i)
@@ -2252,11 +2254,11 @@ vn_nary_op_compute_hash (const vn_nary_op_t vno1)
       vno1->op[1] = temp;
     }
 
-  hash = iterative_hash_hashval_t (vno1->opcode, 0);
+  hstate.add_int (vno1->opcode);
   for (i = 0; i < vno1->length; ++i)
-    hash = iterative_hash_expr (vno1->op[i], hash);
+    inchash::add_expr (vno1->op[i], hstate);
 
-  return hash;
+  return hstate.end ();
 }
 
 /* Compare nary operations VNO1 and VNO2 and return true if they are
@@ -2536,26 +2538,24 @@ vn_nary_op_insert_stmt (gimple stmt, tree result)
 static inline hashval_t
 vn_phi_compute_hash (vn_phi_t vp1)
 {
-  hashval_t result;
+  inchash::hash hstate (vp1->block->index);
   int i;
   tree phi1op;
   tree type;
 
-  result = vp1->block->index;
-
   /* If all PHI arguments are constants we need to distinguish
      the PHI node via its type.  */
   type = vp1->type;
-  result += vn_hash_type (type);
+  hstate.merge_hash (vn_hash_type (type));
 
   FOR_EACH_VEC_ELT (vp1->phiargs, i, phi1op)
     {
       if (phi1op == VN_TOP)
 	continue;
-      result = iterative_hash_expr (phi1op, result);
+      inchash::add_expr (phi1op, hstate);
     }
 
-  return result;
+  return hstate.end ();
 }
 
 /* Compare two phi entries for equality, ignoring VN_TOP arguments.  */
