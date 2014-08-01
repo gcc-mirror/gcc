@@ -6948,7 +6948,7 @@ package body Make is
 
    procedure List_Bad_Compilations is
    begin
-      if not Debug.Debug_Flag_S then
+      if not No_Exit_Message then
          for J in Bad_Compilation.First .. Bad_Compilation.Last loop
             if Bad_Compilation.Table (J).File = No_File then
                null;
