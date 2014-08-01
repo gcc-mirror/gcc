@@ -4027,24 +4027,24 @@ package body Sem_Attr is
            and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
          then
             Error_Attr_P
-              ("prefix of attribute % that applies to "
-               & "outer loop must denote an entity");
+              ("prefix of attribute % that applies to outer loop must denote "
+               & "an entity");
 
          elsif Is_Potentially_Unevaluated (P) then
             Uneval_Old_Msg;
          end if;
 
-         --  Finally, if the Loop_Entry attribute appears within a pragma
-         --  that is ignored, we replace P'Loop_Entity by P to avoid useless
-         --  generation of the loop entity variable. Note that in this case
-         --  the expression won't be executed anyway, and this substitution
-         --  keeps types happy!
-
-         --  We should really do this in the expander, but it's easier here
+         --  Replace the Loop_Entry attribute reference by its prefix if the
+         --  related pragma is ignored. This transformation is OK with respect
+         --  to typing because Loop_Entry's type is that of its prefix. This
+         --  early transformation also avoids the generation of a useless loop
+         --  entry constant.
 
          if Is_Ignored (Enclosing_Pragma) then
             Rewrite (N, Relocate_Node (P));
          end if;
+
+         Preanalyze_And_Resolve (P);
       end Loop_Entry;
 
       -------------

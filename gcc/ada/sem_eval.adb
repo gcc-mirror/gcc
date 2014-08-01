@@ -5465,13 +5465,6 @@ package body Sem_Eval is
       then
          Set_Condition (Parent (N), Empty);
 
-      --  If the expression raising CE is a N_Raise_CE node, we can use that
-      --  one. We just preserve the type of the context.
-
-      elsif Nkind (Exp) = N_Raise_Constraint_Error then
-         Rewrite (N, Exp);
-         Set_Etype (N, Typ);
-
       --  Else build an explicit N_Raise_CE
 
       else

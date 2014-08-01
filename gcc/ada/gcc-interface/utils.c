@@ -328,35 +328,31 @@ present_gnu_tree (Entity_Id gnat_entity)
 tree
 make_dummy_type (Entity_Id gnat_type)
 {
-  Entity_Id gnat_underlying = Gigi_Equivalent_Type (gnat_type);
+  Entity_Id gnat_equiv = Gigi_Equivalent_Type (Underlying_Type (gnat_type));
   tree gnu_type;
-
-  /* If there is an equivalent type, get its underlying type.  */
-  if (Present (gnat_underlying))
-    gnat_underlying = Gigi_Equivalent_Type (Underlying_Type (gnat_underlying));
 
   /* If there was no equivalent type (can only happen when just annotating
      types) or underlying type, go back to the original type.  */
-  if (No (gnat_underlying))
-    gnat_underlying = gnat_type;
+  if (No (gnat_equiv))
+    gnat_equiv = gnat_type;
 
   /* If it there already a dummy type, use that one.  Else make one.  */
-  if (PRESENT_DUMMY_NODE (gnat_underlying))
-    return GET_DUMMY_NODE (gnat_underlying);
+  if (PRESENT_DUMMY_NODE (gnat_equiv))
+    return GET_DUMMY_NODE (gnat_equiv);
 
   /* If this is a record, make a RECORD_TYPE or UNION_TYPE; else make
      an ENUMERAL_TYPE.  */
-  gnu_type = make_node (Is_Record_Type (gnat_underlying)
-			? tree_code_for_record_type (gnat_underlying)
+  gnu_type = make_node (Is_Record_Type (gnat_equiv)
+			? tree_code_for_record_type (gnat_equiv)
 			: ENUMERAL_TYPE);
   TYPE_NAME (gnu_type) = get_entity_name (gnat_type);
   TYPE_DUMMY_P (gnu_type) = 1;
   TYPE_STUB_DECL (gnu_type)
     = create_type_stub_decl (TYPE_NAME (gnu_type), gnu_type);
-  if (Is_By_Reference_Type (gnat_underlying))
+  if (Is_By_Reference_Type (gnat_equiv))
     TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
-  SET_DUMMY_NODE (gnat_underlying, gnu_type);
+  SET_DUMMY_NODE (gnat_equiv, gnu_type);
 
   return gnu_type;
 }

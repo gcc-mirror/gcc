@@ -8118,7 +8118,7 @@ package body Einfo is
       elsif Ekind (Id) in Incomplete_Or_Private_Kind then
 
          --  If we have an incomplete or private type with a full view,
-         --  then we return the Underlying_Type of this full view
+         --  then we return the Underlying_Type of this full view.
 
          if Present (Full_View (Id)) then
             if Id = Full_View (Id) then
@@ -8130,6 +8130,14 @@ package body Einfo is
             else
                return Underlying_Type (Full_View (Id));
             end if;
+
+         --  If we have a private type with an underlying full view, then we
+         --  return the Underlying_Type of this underlying full view.
+
+         elsif Ekind (Id) in Private_Kind
+           and then Present (Underlying_Full_View (Id))
+         then
+            return Underlying_Type (Underlying_Full_View (Id));
 
          --  If we have an incomplete entity that comes from the limited
          --  view then we return the Underlying_Type of its non-limited
