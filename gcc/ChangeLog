@@ -1,5 +1,19 @@
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
+	* Makefile.in (OBJS): Add rtlhash.o
+	* dwarf2out.c (addr_table_entry_do_hash): Convert to inchash.
+	(loc_checksum): Dito.
+	(loc_checksum_ordered): Dito.
+	(hash_loc_operands): Dito.
+	(hash_locs): Dito.
+	(hash_loc_list): Dito.
+	* rtl.c (iterative_hash_rtx): Moved to rtlhash.c
+	* rtl.h (iterative_hash_rtx): Moved to rtlhash.h
+	* rtlhash.c: New file.
+	* rtlhash.h: New file.
+
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
 	* inchash.h (inchash): Change inchash class to namespace.
 	(class hash): ... Rename from inchash.
 	(add_object): Move from macro to class template.

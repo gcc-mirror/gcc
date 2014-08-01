@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef GENERATOR_FILE
 # include "errors.h"
 #else
+# include "rtlhash.h"
 # include "diagnostic-core.h"
 #endif
 
@@ -652,84 +653,6 @@ rtx_equal_p (const_rtx x, const_rtx y)
 	}
     }
   return 1;
-}
-
-/* Iteratively hash rtx X.  */
-
-hashval_t
-iterative_hash_rtx (const_rtx x, hashval_t hash)
-{
-  enum rtx_code code;
-  enum machine_mode mode;
-  int i, j;
-  const char *fmt;
-
-  if (x == NULL_RTX)
-    return hash;
-  code = GET_CODE (x);
-  hash = iterative_hash_object (code, hash);
-  mode = GET_MODE (x);
-  hash = iterative_hash_object (mode, hash);
-  switch (code)
-    {
-    case REG:
-      i = REGNO (x);
-      return iterative_hash_object (i, hash);
-    case CONST_INT:
-      return iterative_hash_object (INTVAL (x), hash);
-    case CONST_WIDE_INT:
-      for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
-	hash = iterative_hash_object (CONST_WIDE_INT_ELT (x, i), hash);
-      return hash;
-    case SYMBOL_REF:
-      if (XSTR (x, 0))
-	return iterative_hash (XSTR (x, 0), strlen (XSTR (x, 0)) + 1,
-			       hash);
-      return hash;
-    case LABEL_REF:
-    case DEBUG_EXPR:
-    case VALUE:
-    case SCRATCH:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case DEBUG_IMPLICIT_PTR:
-    case DEBUG_PARAMETER_REF:
-      return hash;
-    default:
-      break;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    switch (fmt[i])
-      {
-      case 'w':
-	hash = iterative_hash_object (XWINT (x, i), hash);
-	break;
-      case 'n':
-      case 'i':
-	hash = iterative_hash_object (XINT (x, i), hash);
-	break;
-      case 'V':
-      case 'E':
-	j = XVECLEN (x, i);
-	hash = iterative_hash_object (j, hash);
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  hash = iterative_hash_rtx (XVECEXP (x, i, j), hash);
-	break;
-      case 'e':
-	hash = iterative_hash_rtx (XEXP (x, i), hash);
-	break;
-      case 'S':
-      case 's':
-	if (XSTR (x, i))
-	  hash = iterative_hash (XSTR (x, 0), strlen (XSTR (x, 0)) + 1,
-				 hash);
-	break;
-      default:
-	break;
-      }
-  return hash;
 }
 
 void
