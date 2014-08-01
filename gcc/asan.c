@@ -348,9 +348,10 @@ struct asan_mem_ref_hasher
 inline hashval_t
 asan_mem_ref_hasher::hash (const asan_mem_ref *mem_ref)
 {
-  hashval_t h = iterative_hash_expr (mem_ref->start, 0);
-  h = iterative_hash_host_wide_int (mem_ref->access_size, h);
-  return h;
+  inchash::hash hstate;
+  inchash::add_expr (mem_ref->start, hstate);
+  hstate.add_wide_int (mem_ref->access_size);
+  return hstate.end ();
 }
 
 /* Compare two memory references.  We accept the length of either
