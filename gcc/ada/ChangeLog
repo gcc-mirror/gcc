@@ -1,3 +1,7 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, einfo.ads, exp_ch4.adb: Code clean ups.
+
 2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads (Has_Private_Ancestor): Remove obsolete usage.
