@@ -2509,6 +2509,9 @@ package body Sem_Ch5 is
             Bad_Predicated_Subtype_Use
               ("cannot use subtype& with non-static predicate for loop " &
                "iteration", DS, Entity (DS), Suggest_Static => True);
+
+         elsif Inside_A_Generic and then Is_Generic_Formal (Entity (DS)) then
+            Set_No_Dynamic_Predicate_On_Actual (Entity (DS));
          end if;
       end if;
 
