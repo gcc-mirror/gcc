@@ -405,6 +405,7 @@ ctor_for_folding (tree decl)
   if (decl != real_decl)
     {
       gcc_assert (!DECL_INITIAL (decl)
+		  || (node->alias && node->get_alias_target () == real_node)
 		  || DECL_INITIAL (decl) == error_mark_node);
       if (node->weakref)
 	{

@@ -1,5 +1,17 @@
 2014-08-01  Martin Liska  <mliska@suse.cz>
 
+	* gimple-iterator.h (gsi_next_nonvirtual_phi): New function.
+	* ipa-prop.h (count_formal_params): Global function created from static.
+	* ipa-prop.c (count_formal_params): Likewise.
+	* ipa-utils.c (ipa_merge_profiles): Be more tolerant if we merge
+	profiles for semantically equivalent functions.
+	* passes.c (do_per_function): If we load body of a function
+	during WPA, this condition should behave same.
+	* varpool.c (ctor_for_folding): More tolerant assert for variable
+	aliases created during WPA.
+
+2014-08-01  Martin Liska  <mliska@suse.cz>
+
 	* doc/invoke.texi (Options That Control Optimization): Documentation
 	for -foptimize-strlen introduced. Optimization levels default options
 	fixed.
