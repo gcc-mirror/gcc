@@ -3788,7 +3788,7 @@ package body Make is
 
       --  Delete any temporary configuration pragma file
 
-      if not Debug.Debug_Flag_N then
+      if not Keep_Temporary_Files then
          Delete_Temp_Config_Files (Project_Tree);
       end if;
    end Compile_Sources;
@@ -3966,7 +3966,7 @@ package body Make is
                --  created when using a project file.
 
                if Main_Project = No_Project
-                 or else Debug.Debug_Flag_N
+                 or else Opt.Keep_Temporary_Files
                  or else Args (J)'Length < 8
                  or else
                    Args (J) (Args (J)'First .. Args (J)'First + 6) /= "-gnatem"
@@ -3977,7 +3977,7 @@ package body Make is
                   --  Reset Temporary_Config_File to False so that the eventual
                   --  other -gnatec switches will be displayed.
 
-                  if (not Debug.Debug_Flag_N)
+                  if (not Opt.Keep_Temporary_Files)
                     and then Temporary_Config_File
                     and then Args (J)'Length > 7
                     and then Args (J) (Args (J)'First .. Args (J)'First + 6)
@@ -3988,7 +3988,7 @@ package body Make is
                      --  Do not display the -F=mapping_file switch for gnatbind
                      --  if -dn is not specified.
 
-                  elsif Debug.Debug_Flag_N
+                  elsif Opt.Keep_Temporary_Files
                     or else Args (J)'Length < 4
                     or else
                       Args (J) (Args (J)'First .. Args (J)'First + 2) /= "-F="
@@ -6650,6 +6650,9 @@ package body Make is
 
       Project_Of_Current_Object_Directory := No_Project;
 
+      if Debug.Debug_Flag_N then
+         Opt.Keep_Temporary_Files := True;
+      end if;
    end Initialize;
 
    ----------------------------

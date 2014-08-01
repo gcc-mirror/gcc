@@ -85,6 +85,10 @@ package Makeutl is
    --  the builder and does not want to pollute its output with error messages
    --  coming from the builder. This is an internal switch.
 
+   Keep_Temp_Files_Option : constant String := "--keep-temp-files";
+   --  Switch to suppress deletion of temp files created by the builder.
+   --  Equivallent of -dn.
+
    Load_Standard_Base : Boolean := True;
    --  False when gprbuild is called with --db-
 

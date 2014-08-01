@@ -1,3 +1,18 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, sem_ch3.adb, sem_ch5.adb, sem_util.adb,
+	sem_res.adb: Minor reformatting.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Initialize): Set Keep_Temporary_Files to True when
+	-dn is specified.
+	* makeusg.adb: Add line for new switch --keep-temp-files.
+	* makeutl.ads (Keep_Temp_Files_Option): New constant String.
+	* opt.ads (Keep_Temporary_Files): Document that it is also used
+	by gnatmake and gprbuild.
+	* switch-m.adb: Recognize new switch --keep-temp-files.
+
 2014-08-01  Tristan Gingold  <gingold@adacore.com>
 
 	* sem_ch9.adb (Analyze_Task_Type_Declaration): Move code from ...

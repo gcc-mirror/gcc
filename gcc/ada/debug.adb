@@ -789,6 +789,7 @@ package body Debug is
 
    --  dm  Issue a message indicating the maximum number of simultaneous
    --      compilations.
+   --      Equivalent to --keep-temp-files.
 
    --  dn  Do not delete temporary files created by gnatmake at the end
    --      of execution, such as temporary config pragma files, mapping
@@ -796,6 +797,7 @@ package body Debug is
 
    --  dp  Prints the Q used by routine Make.Compile_Sources every time
    --      we go around the main compile loop of Make.Compile_Sources
+   --      Equivalent to --keep-temp-files.
 
    --  dq  Prints source files as they are enqueued and dequeued in the Q
    --      used by routine Make.Compile_Sources. Useful to figure out the
