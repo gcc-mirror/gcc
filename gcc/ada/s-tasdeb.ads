@@ -145,4 +145,21 @@ package System.Tasking.Debug is
    --  Enable or disable tracing for Flag. By default, flags in the range
    --  'A' .. 'Z' are disabled, others are enabled.
 
+   ---------------------------------
+   -- Hooks for Valgrind/Helgrind --
+   ---------------------------------
+
+   procedure Master_Hook
+     (Dependent    : Task_Id;
+      Parent       : Task_Id;
+      Master_Level : Integer);
+   --  Indicate to Valgrind/Helgrind that the master of Dependent
+   --  is Parent + Master_Level.
+
+   procedure Master_Completed_Hook
+     (Self_ID      : Task_Id;
+      Master_Level : Integer);
+   --  Indicate to Valgrind/Helgrind that Self_ID has completed
+   --  the master Master_Level.
+
 end System.Tasking.Debug;

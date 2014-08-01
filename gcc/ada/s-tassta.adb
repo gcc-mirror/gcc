@@ -1119,6 +1119,9 @@ package body System.Tasking.Stages is
    begin
       pragma Assert (Self_ID.Deferral_Level = 1);
 
+      Debug.Master_Hook
+        (Self_ID, Self_ID.Common.Parent, Self_ID.Master_of_Task);
+
       --  Assume a size of the stack taken at this stage
 
       if not Parameters.Sec_Stack_Dynamic then
@@ -1985,6 +1988,8 @@ package body System.Tasking.Stages is
       --  since the value is only updated by each task for itself.
 
       Self_ID.Master_Within := CM - 1;
+
+      Debug.Master_Completed_Hook (Self_ID, CM);
    end Vulnerable_Complete_Master;
 
    ------------------------------

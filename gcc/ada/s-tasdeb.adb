@@ -437,4 +437,34 @@ package body System.Tasking.Debug is
           (Fd, S'Address, System.CRTL.size_t (Count));
    end Write;
 
+   -----------------
+   -- Master_Hook --
+   -----------------
+
+   procedure Master_Hook
+     (Dependent    : Task_Id;
+      Parent       : Task_Id;
+      Master_Level : Integer)
+   is
+      pragma Inspection_Point (Dependent);
+      pragma Inspection_Point (Parent);
+      pragma Inspection_Point (Master_Level);
+   begin
+      null;
+   end Master_Hook;
+
+   ---------------------------
+   -- Master_Completed_Hook --
+   ---------------------------
+
+   procedure Master_Completed_Hook
+     (Self_ID      : Task_Id;
+      Master_Level : Integer)
+   is
+      pragma Inspection_Point (Self_ID);
+      pragma Inspection_Point (Master_Level);
+   begin
+      null;
+   end Master_Completed_Hook;
+
 end System.Tasking.Debug;

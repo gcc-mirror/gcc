@@ -1239,10 +1239,14 @@ package body Inline is
         and then Msg (Msg'First .. Msg'First + 12) = "cannot inline"
       then
          declare
-            Len1 : constant Positive := 13;  --  length of "cannot inline"
+            Len1 : constant Positive := 13;
+            --  Length of "cannot inline"
+
             Len2 : constant Positive := 31;
-            --  lenth of "info: no contextual analysis of"
+            --  Length of "info: no contextual analysis of"
+
             New_Msg : String (1 .. Msg'Length + Len2 - Len1);
+
          begin
             New_Msg (1 .. Len2) := "info: no contextual analysis of";
             New_Msg (Len2 + 1 .. Msg'Length + Len2 - Len1) :=
