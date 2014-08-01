@@ -716,13 +716,6 @@ package body Targparm is
          end if;
       end loop Line_Loop;
 
-      --  Now that OpenVMS_On_Target has been given its definitive value,
-      --  change the multi-unit index character from '~' to '$' for OpenVMS.
-
-      if OpenVMS_On_Target then
-         Multi_Unit_Index_Character := '$';
-      end if;
-
       if Fatal then
          raise Unrecoverable_Error;
       end if;

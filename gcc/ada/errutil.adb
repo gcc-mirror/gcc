@@ -502,10 +502,10 @@ package body Errutil is
          --  error to make sure that *something* appears on standard error in
          --  an error situation.
 
-         --  Formerly, only the "# errors" suffix was sent to stderr, whereas
-         --  "# lines:" appeared on stdout. This caused problems on VMS when
-         --  the stdout buffer was flushed, giving an extra line feed after
-         --  the prefix.
+         --  Historical note: Formerly, only the "# errors" suffix was sent
+         --  to stderr, whereas "# lines:" appeared on stdout. This caused
+         --  some problems on now-obsolete ports, but there seems to be no
+         --  reason to revert this page since it would be incompatible.
 
          if Total_Errors_Detected + Warnings_Detected /= 0
            and then not Brief_Output

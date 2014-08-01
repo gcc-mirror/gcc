@@ -1564,9 +1564,7 @@ begin
                --  mode, check that language-defined units are compiled in GNAT
                --  mode. For this purpose we do NOT consider renamings in annex
                --  J as predefined. That allows users to compile their own
-               --  versions of these files, and in particular, in the VMS
-               --  implementation, the DEC versions can be substituted for the
-               --  standard Ada 95 versions. Another exception is System.RPC
+               --  versions of these files. Another exception is System.RPC
                --  and its children. This allows a user to supply their own
                --  communication layer.
 

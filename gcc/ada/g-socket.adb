@@ -172,8 +172,7 @@ package body GNAT.Sockets is
    --  Conversion function
 
    function Value (S : System.Address) return String;
-   --  Same as Interfaces.C.Strings.Value but taking a System.Address (on VMS,
-   --  chars_ptr is a 32-bit pointer, and here we need a 64-bit version).
+   --  Same as Interfaces.C.Strings.Value but taking a System.Address
 
    function To_Timeval (Val : Timeval_Duration) return Timeval;
    --  Separate Val in seconds and microseconds

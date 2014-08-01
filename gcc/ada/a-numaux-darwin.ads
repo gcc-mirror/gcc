@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (Apple OS X Version)                            --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,11 @@
 ------------------------------------------------------------------------------
 
 --  This version is for use with normal Unix math functions, except for
---  sine/cosine which have been implemented directly in Ada to get
---  the required accuracy in OS X.  Alternative packages are used
---  on OpenVMS (different import names), VxWorks (no need for the
---  -lm Linker_Options), and on the x86 (where we have two
---  versions one using inline ASM, and one importing from the C long
---  routines that take 80-bit arguments).
+--  sine/cosine which have been implemented directly in Ada to get the required
+--  accuracy in OS X. Alternative packages are used on VxWorks (no need for the
+--  -lm Linker_Options), and on the x86 (where we have two versions one using
+--  inline ASM, and one importing from the C long routines that take 80-bit
+--  arguments).
 
 package Ada.Numerics.Aux is
    pragma Pure;

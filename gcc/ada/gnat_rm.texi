@@ -3633,10 +3633,6 @@ MECHANISM_ASSOCIATION ::=
 MECHANISM_NAME ::=
   Value
 | Reference
-| Descriptor [([Class =>] CLASS_NAME)]
-| Short_Descriptor [([Class =>] CLASS_NAME)]
-
-CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 @end smallexample
 
 @noindent
@@ -3664,21 +3660,6 @@ applies to all parameters.  Otherwise you may specify a mechanism on a
 parameter by parameter basis using either positional or named
 notation.  If the mechanism is not specified, the default mechanism
 is used.
-
-@cindex OpenVMS
-@cindex Passing by descriptor
-Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
-The default behavior for Import_Function is to pass a 64bit descriptor
-unless short_descriptor is specified, then a 32bit descriptor is passed.
-
-@code{First_Optional_Parameter} applies only to OpenVMS ports of GNAT@.
-It specifies that the designated parameter and all following parameters
-are optional, meaning that they are not passed at the generated code
-level (this is distinct from the notion of optional parameters in Ada
-where the parameters are passed anyway with the designated optional
-parameters).  All optional parameters must be of mode @code{IN} and have
-default parameter values that are either known at compile time
-expressions, or uses of the @code{'Null_Parameter} attribute.
 
 @node Pragma Import_Object
 @unnumberedsec Pragma Import_Object
@@ -3739,13 +3720,7 @@ MECHANISM ::=
 MECHANISM_ASSOCIATION ::=
   [formal_parameter_NAME =>] MECHANISM_NAME
 
-MECHANISM_NAME ::=
-  Value
-| Reference
-| Descriptor [([Class =>] CLASS_NAME)]
-| Short_Descriptor [([Class =>] CLASS_NAME)]
-
-CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
+MECHANISM_NAME ::= Value | Reference
 @end smallexample
 
 @noindent
@@ -3786,14 +3761,7 @@ MECHANISM ::=
 MECHANISM_ASSOCIATION ::=
   [formal_parameter_NAME =>] MECHANISM_NAME
 
-MECHANISM_NAME ::=
-  Value
-| Reference
-| Descriptor [([Class =>] CLASS_NAME)]
-| Short_Descriptor [([Class =>] CLASS_NAME)]
-
-CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
-@end smallexample
+MECHANISM_NAME ::= Value | Reference
 
 @noindent
 This pragma is identical to @code{Import_Procedure} except that the
@@ -9260,27 +9228,7 @@ meaning the first parameter) of @var{subprogram}.  The code returned is:
 by copy (value)
 @item 2
 by reference
-@item 3
-by descriptor (default descriptor class)
-@item 4
-by descriptor (UBS: unaligned bit string)
-@item 5
-by descriptor (UBSB: aligned bit string with arbitrary bounds)
-@item 6
-by descriptor (UBA: unaligned bit array)
-@item 7
-by descriptor (S: string, also scalar access type parameter)
-@item 8
-by descriptor (SB: string with arbitrary bounds)
-@item 9
-by descriptor (A: contiguous array)
-@item 10
-by descriptor (NCA: non-contiguous array)
 @end table
-
-@noindent
-Values from 3 through 10 are only relevant to Digital OpenVMS implementations.
-@cindex OpenVMS
 
 @node Attribute Null_Parameter
 @unnumberedsec Attribute Null_Parameter

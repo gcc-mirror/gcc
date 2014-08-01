@@ -1140,9 +1140,7 @@ package body Sem_Ch12 is
          --  Propagate visible entity to operator node, either from a
          --  given actual or from a default.
 
-         if Is_Entity_Name (Actual)
-           and then Nkind (Expr) in N_Op
-         then
+         if Is_Entity_Name (Actual) and then Nkind (Expr) in N_Op then
             Set_Entity (Expr, Entity (Actual));
          end if;
 
@@ -1681,7 +1679,6 @@ package body Sem_Ch12 is
                         if Present (Match)
                           and then Nkind (Match) = N_Operator_Symbol
                         then
-
                            --  If the name is a default, find its visible
                            --  entity at the point of instantiation.
 
@@ -10400,8 +10397,7 @@ package body Sem_Ch12 is
             --  to be compiled with checks off.
 
             --  Note that we do NOT apply this criterion to children of GNAT
-            --  (or on VMS, children of DEC). The latter units must suppress
-            --  checks explicitly if this is needed.
+            --  The latter units must suppress checks explicitly if needed.
 
             if Is_Predefined_File_Name
                  (Unit_File_Name (Get_Source_Unit (Gen_Decl)))

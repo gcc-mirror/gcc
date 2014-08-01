@@ -630,8 +630,7 @@ procedure Gnatlink is
                   Linker_Objects.Table (Linker_Objects.Last) :=
                     new String'(Arg);
 
-               --  If host object file, record object file e.g. accept foo.o
-               --  as well as foo.obj on VMS target.
+               --  If host object file, record object file
 
                elsif Arg'Length > Get_Object_Suffix.all'Length
                  and then Arg
@@ -730,18 +729,17 @@ procedure Gnatlink is
       --  Save state of -shared option
 
       Xlinker_Was_Previous : Boolean := False;
-      --  Indicate that "-Xlinker" was the option preceding the current
-      --  option. If True, then the current option is never suppressed.
+      --  Indicate that "-Xlinker" was the option preceding the current option.
+      --  If True, then the current option is never suppressed.
 
       --  Rollback data
 
-      --  These data items are used to store current binder file context.
-      --  The context is composed of the file descriptor position and the
-      --  current line together with the slice indexes (first and last
-      --  position) for this line. The rollback data are used by the
-      --  Store_File_Context and Rollback_File_Context routines below.
-      --  The file context mechanism interact only with the Get_Next_Line
-      --  call. For example:
+      --  These data items are used to store current binder file context. The
+      --  context is composed of the file descriptor position and the current
+      --  line together with the slice indexes (first and last position) for
+      --  this line. The rollback data are used by the Store_File_Context and
+      --  Rollback_File_Context routines below. The file context mechanism
+      --  interact only with the Get_Next_Line call. For example:
 
       --     Store_File_Context;
       --     Get_Next_Line;
@@ -772,7 +770,7 @@ procedure Gnatlink is
       pragma Import
         (C, Object_Library_Ext_Ptr, "__gnat_object_library_extension");
       --  Pointer to string specifying the default extension for
-      --  object libraries, e.g. Unix uses ".a", VMS uses ".olb".
+      --  object libraries, e.g. Unix uses ".a".
 
       Separate_Run_Path_Options : Boolean;
       for Separate_Run_Path_Options'Size use Character'Size;

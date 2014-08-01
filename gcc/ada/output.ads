@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,11 +209,8 @@ private
 
    Buffer : String (1 .. Buffer_Max + 1) := (others => '*');
    for Buffer'Alignment use 4;
-   --  Buffer used to build output line. We do line buffering because it
-   --  is needed for the support of the debug-generated-code option (-gnatD).
-   --  Historically it was first added because on VMS, line buffering is
-   --  needed with certain file formats. So in any case line buffering must
-   --  be retained for this purpose, even if other reasons disappear. Note
+   --  Buffer used to build output line. We do line buffering because it is
+   --  needed for the support of the debug-generated-code option (-gnatD). Note
    --  any attempt to write more output to a line than can fit in the buffer
    --  will be silently ignored. The alignment clause improves the efficiency
    --  of the save/restore procedures.

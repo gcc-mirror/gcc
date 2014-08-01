@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Hostparm;
 with Makeutl;  use Makeutl;
 with MLib.Tgt;
 with Opt;      use Opt;
@@ -1416,18 +1415,10 @@ package body Prj.Conf is
       <<Process_Config_File>>
 
       if Automatically_Generated then
-         if Hostparm.OpenVMS then
 
-            --  There is no gprconfig on VMS
-
-            Raise_Invalid_Config
-              ("could not locate any configuration project file");
-
-         else
-            --  This might raise an Invalid_Config exception
+         --  This might raise an Invalid_Config exception
 
             Do_Autoconf;
-         end if;
 
       --  If the config file is not auto-generated, warn if there is any --RTS
       --  switch, but not when the config file is generated in memory.

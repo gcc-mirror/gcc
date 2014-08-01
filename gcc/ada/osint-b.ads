@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,17 +44,15 @@ package Osint.B is
    -- Binder Output --
    -------------------
 
-   --  These routines are used by the binder to generate the C or Ada source
-   --  files containing the binder output. The format of these files is
-   --  described in package Bindgen.
+   --  These routines are used by the binder to generate the Ada source files
+   --  containing the binder output. The format of these files is described in
+   --  package Bindgen.
 
    procedure Create_Binder_Output
      (Output_File_Name : String;
       Typ              : Character;
       Bfile            : out Name_Id);
    --  Creates the binder output file. Typ is one of
-   --
-   --    'c'   create output file for case of generating C
    --    'b'   create body file for case of generating Ada
    --    's'   create spec file for case of generating Ada
    --

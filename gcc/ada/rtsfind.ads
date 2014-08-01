@@ -376,7 +376,6 @@ package Rtsfind is
       System_Val_WChar,
       System_Vax_Float_Operations,
       System_Version_Control,
-      System_VMS_Exception_Table,
       System_WCh_StW,
       System_WCh_WtS,
       System_Wid_Bool,
@@ -1690,8 +1689,6 @@ package Rtsfind is
      RE_Version_String,                  -- System.Version_Control
      RE_Get_Version_String,              -- System.Version_Control
 
-     RE_Register_VMS_Exception,          -- System.VMS_Exception_Table
-
      RE_String_To_Wide_String,           -- System.WCh_StW
      RE_String_To_Wide_Wide_String,      -- System.WCh_StW
 
@@ -2976,8 +2973,6 @@ package Rtsfind is
 
      RE_Version_String                   => System_Version_Control,
      RE_Get_Version_String               => System_Version_Control,
-
-     RE_Register_VMS_Exception           => System_VMS_Exception_Table,
 
      RE_String_To_Wide_String            => System_WCh_StW,
      RE_String_To_Wide_Wide_String       => System_WCh_StW,

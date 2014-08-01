@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,10 +100,9 @@ package body Lib.Util is
 
    procedure Write_Info_EOL is
    begin
-      if Hostparm.OpenVMS
-        or else Info_Buffer_Len + Max_Line + 1 > Max_Buffer
-      then
+      if Info_Buffer_Len + Max_Line + 1 > Max_Buffer then
          Write_Info_Terminate;
+
       else
          --  Delete any trailing blanks
 

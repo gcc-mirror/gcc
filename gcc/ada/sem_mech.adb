@@ -23,16 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Namet;    use Namet;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Targparm; use Targparm;
+with Atree;   use Atree;
+with Einfo;   use Einfo;
+with Errout;  use Errout;
+with Namet;   use Namet;
+with Sem;     use Sem;
+with Sem_Aux; use Sem_Aux;
+with Sinfo;   use Sinfo;
+with Snames;  use Snames;
 
 package body Sem_Mech is
 
@@ -93,18 +91,10 @@ package body Sem_Mech is
       Mech : Mechanism_Type;
       Enod : Node_Id)
    is
+      pragma Unreferenced (Enod);
+
    begin
-      --  Right now we only do some checks for functions returning arguments
-      --  by descriptor. Probably mode checks need to be added here ???
-
-      if Mech in Descriptor_Codes and then not Is_Formal (Ent) then
-         if Is_Record_Type (Etype (Ent)) then
-            Error_Msg_N ("??records cannot be returned by Descriptor", Enod);
-            return;
-         end if;
-      end if;
-
-      --  If we fall through, all checks have passed
+      --  Right now we don't do any checks, should we do more ???
 
       Set_Mechanism (Ent, Mech);
    end Set_Mechanism_With_Checks;
@@ -314,23 +304,10 @@ package body Sem_Mech is
 
                when Convention_Fortran =>
 
-                  --  In OpenVMS, pass character and string types using
-                  --  Short_Descriptor(S)
-
-                  if OpenVMS_On_Target
-                    and then (Root_Type (Typ) = Standard_Character
-                               or else
-                                 (Is_Array_Type (Typ)
-                                   and then
-                                     Root_Type (Component_Type (Typ)) =
-                                                     Standard_Character))
-                  then
-                     Set_Mechanism (Formal, By_Short_Descriptor_S);
-
                   --  Access types are passed by default (presumably this
                   --  will mean they are passed by copy)
 
-                  elsif Is_Access_Type (Typ) then
+                  if Is_Access_Type (Typ) then
                      null;
 
                   --  For now, we pass all other parameters by reference.

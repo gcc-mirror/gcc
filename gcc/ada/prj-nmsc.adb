@@ -34,7 +34,6 @@ with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
-with Targparm; use Targparm;
 
 with Ada;                        use Ada;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
@@ -5221,22 +5220,6 @@ package body Prj.Nmsc is
 
       Name_Len := The_Name'Length;
       Name_Buffer (1 .. Name_Len) := The_Name;
-
-      --  Special cases of children of packages A, G, I and S on VMS
-
-      if OpenVMS_On_Target
-        and then Name_Len > 3
-        and then Name_Buffer (2 .. 3) = "__"
-        and then
-          (Name_Buffer (1) = 'a' or else
-           Name_Buffer (1) = 'g' or else
-           Name_Buffer (1) = 'i' or else
-           Name_Buffer (1) = 's')
-      then
-         Name_Buffer (2) := '.';
-         Name_Buffer (3 .. Name_Len - 1) := Name_Buffer (4 .. Name_Len);
-         Name_Len := Name_Len - 1;
-      end if;
 
       Real_Name := Name_Find;
 

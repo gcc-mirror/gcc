@@ -1477,30 +1477,6 @@ package body Repinfo is
          when -2 =>
             Write_Str ("reference");
 
-         when -3 =>
-            Write_Str ("descriptor");
-
-         when -4 =>
-            Write_Str ("descriptor (UBS)");
-
-         when -5 =>
-            Write_Str ("descriptor (UBSB)");
-
-         when -6 =>
-            Write_Str ("descriptor (UBA)");
-
-         when -7 =>
-            Write_Str ("descriptor (S)");
-
-         when -8 =>
-            Write_Str ("descriptor (SB)");
-
-         when -9 =>
-            Write_Str ("descriptor (A)");
-
-         when -10 =>
-            Write_Str ("descriptor (NCA)");
-
          when others =>
             raise Program_Error;
       end case;

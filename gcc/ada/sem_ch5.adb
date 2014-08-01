@@ -1698,6 +1698,28 @@ package body Sem_Ch5 is
       Typ : Entity_Id;
       Bas : Entity_Id;
 
+      procedure Check_Reverse_Iteration (Typ : Entity_Id);
+      --  For an iteration over a container, if the loop carries the Reverse
+      --  indicator, verify that the container type has an Iterate aspect that
+      --  implements the reversible iterator interface.
+
+      -----------------------------
+      -- Check_Reverse_Iteration --
+      -----------------------------
+
+      procedure Check_Reverse_Iteration (Typ : Entity_Id) is
+      begin
+         if Reverse_Present (N)
+           and then not Is_Array_Type (Typ)
+           and then not Is_Reversible_Iterator (Typ)
+         then
+            Error_Msg_NE
+              ("container type does not support reverse iteration", N, Typ);
+         end if;
+      end Check_Reverse_Iteration;
+
+   --   Start of processing for  Analyze_iterator_Specification
+
    begin
       Enter_Name (Def_Id);
 
@@ -1725,6 +1747,45 @@ package body Sem_Ch5 is
 
       if Of_Present (N) then
          Set_Related_Expression (Def_Id, Iter_Name);
+
+         --  For a container, the iterator is specified through the aspect.
+
+         if not Is_Array_Type (Etype (Iter_Name)) then
+            declare
+               Iterator : constant Entity_Id :=
+                  Find_Value_Of_Aspect
+                    (Etype (Iter_Name), Aspect_Default_Iterator);
+               I  : Interp_Index;
+               It : Interp;
+
+            begin
+               if No (Iterator) then
+                  null;   --  error reported below.
+
+               elsif not Is_Overloaded (Iterator) then
+                  Check_Reverse_Iteration (Etype (Iterator));
+
+               --  If Iterator is overloaded, use reversible iterator if
+               --  one is available.
+
+               elsif Is_Overloaded (Iterator) then
+                  Get_First_Interp (Iterator, I, It);
+                  while Present (It.Nam) loop
+                     if Ekind (It.Nam) = E_Function
+                       and then Is_Reversible_Iterator (Etype (It.Nam))
+                     then
+                        Set_Etype (Iterator, It.Typ);
+                        Set_Entity (Iterator, It.Nam);
+                        exit;
+                     end if;
+
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+                  Check_Reverse_Iteration (Etype (Iterator));
+               end if;
+            end;
+         end if;
       end if;
 
       --  If the domain of iteration is an expression, create a declaration for
@@ -1785,10 +1846,17 @@ package body Sem_Ch5 is
                return;
             end if;
 
+            if not Of_Present (N) then
+               Check_Reverse_Iteration (Typ);
+            end if;
+
             --  The name in the renaming declaration may be a function call.
             --  Indicate that it does not come from source, to suppress
             --  spurious warnings on renamings of parameterless functions,
             --  a common enough idiom in user-defined iterators.
+            --  The entity of the renaming must be a variable, because user-
+            --  defined Iterate function may have in-out parameters, even
+            --  if predefined ones do not.
 
             Decl :=
               Make_Object_Renaming_Declaration (Loc,
@@ -1801,6 +1869,7 @@ package body Sem_Ch5 is
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));
             Set_Etype (Id, Typ);
             Set_Etype (Name (N), Typ);
+            Set_Ekind (Id, E_Variable);
          end;
 
       --  Container is an entity or an array with uncontrolled components, or
@@ -1845,6 +1914,10 @@ package body Sem_Ch5 is
 
          else
             Resolve (Iter_Name, Etype (Iter_Name));
+         end if;
+
+         if not Of_Present (N) then
+            Check_Reverse_Iteration (Etype (Iter_Name));
          end if;
       end if;
 

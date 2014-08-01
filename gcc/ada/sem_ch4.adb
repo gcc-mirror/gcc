@@ -3187,10 +3187,9 @@ package body Sem_Ch4 is
             then
                --  The actual can be compatible with the formal, but we must
                --  also check that the context is not an address type that is
-               --  visibly an integer type, as is the case in VMS_64. In this
-               --  case the use of literals is illegal, except in the body of
-               --  descendents of system, where arithmetic operations on
-               --  address are of course used.
+               --  visibly an integer type. In this case the use of literals is
+               --  illegal, except in the body of descendents of system, where
+               --  arithmetic operations on address are of course used.
 
                if Has_Compatible_Type (Actual, Etype (Formal))
                  and then
@@ -6807,9 +6806,8 @@ package body Sem_Ch4 is
             --  Remove interpretations that treat literals as addresses. This
             --  is never appropriate, even when Address is defined as a visible
             --  Integer type. The reason is that we would really prefer Address
-            --  to behave as a private type, even in this case, which is there
-            --  only to accommodate oddities of VMS address sizes. If Address
-            --  is a visible integer type, we get lots of overload ambiguities.
+            --  to behave as a private type, even in this case. If Address is a
+            --  visible integer type, we get lots of overload ambiguities.
 
             if Nkind (N) in N_Binary_Op then
                declare

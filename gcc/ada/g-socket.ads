@@ -39,9 +39,6 @@
 --       feature, so it is not available if Multicast is not supported, or not
 --       installed.
 
---       The VMS implementation was implemented using the DECC RTL Socket API,
---       and is thus subject to limitations in the implementation of this API.
-
 --     VxWorks cross ports fully implement this package
 
 --     This package is not yet implemented on LynxOS or other cross ports

@@ -2488,15 +2488,6 @@ package body Sinfo is
       return List3 (N);
    end Parameter_Associations;
 
-   function Parameter_List_Truncated
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Function_Call
-        or else NT (N).Nkind = N_Procedure_Call_Statement);
-      return Flag17 (N);
-   end Parameter_List_Truncated;
-
    function Parameter_Specifications
       (N : Node_Id) return List_Id is
    begin
@@ -5694,15 +5685,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Procedure_Call_Statement);
       Set_List3_With_Parent (N, Val);
    end Set_Parameter_Associations;
-
-   procedure Set_Parameter_List_Truncated
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Function_Call
-        or else NT (N).Nkind = N_Procedure_Call_Statement);
-      Set_Flag17 (N, Val);
-   end Set_Parameter_List_Truncated;
 
    procedure Set_Parameter_Specifications
       (N : Node_Id; Val : List_Id) is

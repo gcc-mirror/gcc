@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,10 +37,6 @@
 
 --  See also child package GNAT.Directory_Operations.Iteration
 
---  Note: support on OpenVMS is limited to the support of Unix-style
---  directory names (OpenVMS native directory format is not supported).
---  Read individual entries for more specific notes on OpenVMS support.
-
 with System;
 with Ada.Strings.Maps;
 
@@ -54,8 +50,6 @@ package GNAT.Directory_Operations is
    --  '\' character. It can also include drive letters if the operating
    --  system provides for this. The final '/' or '\' in a Dir_Name_Str is
    --  optional when passed as a procedure or function in parameter.
-   --  On OpenVMS, only Unix style path names are supported, not VMS style,
-   --  but the directory and file names are not case sensitive.
 
    type Dir_Type is limited private;
    --  A value used to reference a directory. Conceptually this value includes
@@ -117,7 +111,7 @@ package GNAT.Directory_Operations is
    --  returned. Note that the contents of Path is case-sensitive on
    --  systems that have case-sensitive file names (like Unix), and
    --  non-case-sensitive on systems where the file system is also non-
-   --  case-sensitive (such as Windows, and OpenVMS).
+   --  case-sensitive (such as Windows).
 
    function Base_Name
      (Path   : Path_Name;
@@ -133,8 +127,8 @@ package GNAT.Directory_Operations is
    --    'Path' and 'Dir_Name (Path) & Dir_Separator & Base_Name (Path)'
    --    represent the same file.
    --
-   --  The comparison of Suffix is case-insensitive on systems such as Windows
-   --  and VMS where the file search is case-insensitive (e.g. on such systems,
+   --  The comparison of Suffix is case-insensitive on systems like Windows
+   --  where the file search is case-insensitive (e.g. on such systems,
    --  Base_Name ("/Users/AdaCore/BB12.patch", ".Patch") returns "BB12").
    --
    --  Note that the index bounds of the result match the corresponding indexes
@@ -165,12 +159,11 @@ package GNAT.Directory_Operations is
    --
    --  The Style argument indicates the syntax to be used for path names:
    --
-   --    UNIX
-   --      Use '/' as the directory separator. The default on Unix systems
-   --      and on OpenVMS.
-   --
    --    DOS
-   --      Use '\' as the directory separator. The default on Windows.
+   --      Use '\' as the directory separator (default on Windows)
+   --
+   --    UNIX
+   --      Use '/' as the directory separator (default on all other systems)
    --
    --    System_Default
    --      Use the default style for the current system
@@ -179,24 +172,24 @@ package GNAT.Directory_Operations is
    function Expand_Path
      (Path : Path_Name;
       Mode : Environment_Style := System_Default) return Path_Name;
-   --  Returns Path with environment variables (or logical names on OpenVMS)
-   --  replaced by the current environment variable value. For example,
-   --  $HOME/mydir will be replaced by /home/joe/mydir if $HOME environment
-   --  variable is set to /home/joe and Mode is UNIX. If an environment
-   --  variable does not exists the variable will be replaced by the empty
-   --  string. Two dollar or percent signs are replaced by a single
-   --  dollar/percent sign. Note that a variable must start with a letter.
+   --  Returns Path with environment variables replaced by the current
+   --  environment variable value. For example, $HOME/mydir will be replaced
+   --  by /home/joe/mydir if $HOME environment variable is set to /home/joe and
+   --  Mode is UNIX. If an environment variable does not exists the variable
+   --  will be replaced by the empty string. Two dollar or percent signs are
+   --  replaced by a single dollar/percent sign. Note that a variable must
+   --  start with a letter.
    --
    --  The Mode argument indicates the recognized syntax for environment
    --  variables as follows:
    --
    --    UNIX
-   --      Environment variables and OpenVMS logical names use $ as prefix and
-   --      can use curly brackets as in ${HOME}/mydir. If there is no closing
-   --      curly bracket for an opening one then no translation is done, so for
-   --      example ${VAR/toto is returned as ${VAR/toto. The use of {} brackets
-   --      is required if the environment variable name contains other than
-   --      alphanumeric characters.
+   --      Environment variables use $ as prefix and can use curly brackets
+   --      as in ${HOME}/mydir. If there is no closing curly bracket for an
+   --      opening one then no translation is done, so for example ${VAR/toto
+   --      is returned as ${VAR/toto. The use of {} brackets is required if
+   --      the environment variable name contains other than alphanumeric
+   --      characters.
    --
    --    DOS
    --      Environment variables uses % as prefix and suffix (e.g. %HOME%/dir).
@@ -207,8 +200,8 @@ package GNAT.Directory_Operations is
    --      Recognize both forms described above.
    --
    --    System_Default
-   --      Uses either UNIX on Unix and OpenVMS systems, or DOS on Windows,
-   --      depending on the running environment. What about other OS's???
+   --      Uses either DOS on Windows, and UNIX on all other systems, depending
+   --      on the running environment.
 
    ---------------
    -- Iterators --

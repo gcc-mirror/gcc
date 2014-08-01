@@ -109,14 +109,12 @@ package System.Parameters is
 
    long_bits : constant := Long_Integer'Size;
    --  Number of bits in type long and unsigned_long. The normal convention
-   --  is that this is the same as type Long_Integer, but this is not true
-   --  of all targets. For example, in OpenVMS long /= Long_Integer.
+   --  is that this is the same as type Long_Integer, but this may not be true
+   --  of all targets.
 
    ptr_bits  : constant := Standard'Address_Size;
    subtype C_Address is System.Address;
-   --  Number of bits in Interfaces.C pointers, normally a standard address,
-   --  except on 64-bit VMS where they are 32-bit addresses, for compatibility
-   --  with legacy code.
+   --  Number of bits in Interfaces.C pointers, normally a standard address
 
    C_Malloc_Linkname : constant String := "__gnat_malloc";
    --  Name of runtime function used to allocate such a pointer

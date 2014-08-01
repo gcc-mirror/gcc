@@ -205,8 +205,11 @@ package body MLib is
 
                         S := new String (1 .. Len + 3);
 
-                        --  Read the file. Note that the loop is not necessary
-                        --  since the whole file is read at once except on VMS.
+                        --  Read the file. This loop is probably not necessary
+                        --  since on most (all?) targets, the whole file is
+                        --  read in at once, but we have encountered systems
+                        --  in the past where this was not true, and we retain
+                        --  this loop in case we encounter that in the future.
 
                         Curr := S'First;
                         while Curr <= Len loop

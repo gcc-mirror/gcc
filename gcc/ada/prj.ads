@@ -441,10 +441,8 @@ package Prj is
    No_Source : constant Source_Id := null;
 
    type Path_Syntax_Kind is
-     (Canonical,
-      --  Unix style
-      Host);
-      --  Host specific syntax, for example on VMS (the default)
+     (Canonical, -- Unix style
+      Host);     -- Host specific syntax
 
    --  The following record describes the configuration of a language
 
@@ -484,8 +482,7 @@ package Prj is
       --  unit in a multi-source file, in the object file name.
 
       Path_Syntax : Path_Syntax_Kind := Host;
-      --  Value may be Canonical (Unix style) or Host (host syntax, for example
-      --  on VMS for DEC C).
+      --  Value may be Canonical (Unix style) or Host (host syntax)
 
       Source_File_Switches : Name_List_Index := No_Name_List;
       --  Optional switches to be put before the source file. The source file
@@ -2012,9 +2009,8 @@ private
       Current_Source_Path_File : Path_Name_Type := No_Path;
       --  Current value of project source path file env var. Used to avoid
       --  setting the env var to the same value. When different from No_Path,
-      --  this indicates that logical names (VMS) or environment variables were
-      --  created and should be deassigned to avoid polluting the environment
-      --  on VMS. This is for gnatmake only.
+      --  this indicates that environment variables were created and should be
+      --  deassigned to avoid polluting the environment. For gnatmake only.
 
       Current_Object_Path_File : Path_Name_Type := No_Path;
       --  Current value of project object path file env var. Used to avoid

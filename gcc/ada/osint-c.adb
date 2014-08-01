@@ -23,9 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Hostparm;
-with Opt;      use Opt;
-with Tree_IO;  use Tree_IO;
+with Opt;     use Opt;
+with Tree_IO; use Tree_IO;
 
 package body Osint.C is
 
@@ -127,12 +126,7 @@ package body Osint.C is
    begin
       Get_Name_String (Src);
 
-      if Hostparm.OpenVMS then
-         Name_Buffer (Name_Len + 1) := '_';
-      else
-         Name_Buffer (Name_Len + 1) := '.';
-      end if;
-
+      Name_Buffer (Name_Len + 1) := '.';
       Name_Len := Name_Len + 1;
       Name_Buffer (Name_Len + 1 .. Name_Len + Suffix'Length) := Suffix;
       Name_Len := Name_Len + Suffix'Length;

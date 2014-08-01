@@ -1701,18 +1701,6 @@ package body Exp_Ch3 is
          end if;
       end if;
 
-      --  When the object is either protected or a task, create static strings
-      --  which denote the names of entries and families. Associate the strings
-      --  with the concurrent object's Protection_Entries or ATCB. This is a
-      --  VMS Debug feature.
-
-      if OpenVMS_On_Target
-        and then Is_Concurrent_Type (Typ)
-        and then Entry_Names_OK
-      then
-         Build_Entry_Names (Id_Ref, Typ, Res);
-      end if;
-
       return Res;
 
    exception
@@ -7212,8 +7200,8 @@ package body Exp_Ch3 is
                         --  All anonymous access-to-controlled types allocate
                         --  on the global pool.
 
-                        Set_Associated_Storage_Pool (Comp_Typ,
-                          Get_Global_Pool_For_Access_Type (Comp_Typ));
+                        Set_Associated_Storage_Pool
+                          (Comp_Typ, RTE (RE_Global_Pool_Object));
 
                         Build_Finalization_Master
                           (Typ        => Comp_Typ,
@@ -7229,8 +7217,8 @@ package body Exp_Ch3 is
                         --  All anonymous access-to-controlled types allocate
                         --  on the global pool.
 
-                        Set_Associated_Storage_Pool (Comp_Typ,
-                          Get_Global_Pool_For_Access_Type (Comp_Typ));
+                        Set_Associated_Storage_Pool
+                          (Comp_Typ, RTE (RE_Global_Pool_Object));
 
                         --  Shared the master among multiple components
 

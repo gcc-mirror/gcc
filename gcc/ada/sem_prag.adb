@@ -7312,13 +7312,16 @@ package body Sem_Prag is
          Arg_Result_Mechanism         : Node_Id := Empty;
          Arg_First_Optional_Parameter : Node_Id := Empty)
       is
+         pragma Unreferenced (Arg_First_Optional_Parameter);
+         --  We ignore the First_Optional_Parameter argument. It was only
+         --  relevant for VMS anyway, and otherwise ignored.
+
          Ent       : Entity_Id;
          Def_Id    : Entity_Id;
          Hom_Id    : Entity_Id;
          Formal    : Entity_Id;
          Ambiguous : Boolean;
          Match     : Boolean;
-         Dval      : Node_Id;
 
          function Same_Base_Type
           (Ptype  : Node_Id;
@@ -7698,63 +7701,6 @@ package body Sem_Prag is
                   end if;
                end if;
             end;
-         end if;
-
-         --  Process First_Optional_Parameter argument if present. We have
-         --  already checked that this is only allowed for the Import case.
-
-         if Present (Arg_First_Optional_Parameter) then
-            if Nkind (Arg_First_Optional_Parameter) /= N_Identifier then
-               Error_Pragma_Arg
-                 ("first optional parameter must be formal parameter name",
-                  Arg_First_Optional_Parameter);
-            end if;
-
-            Formal := First_Formal (Ent);
-            loop
-               if No (Formal) then
-                  Error_Pragma_Arg
-                    ("specified formal parameter& not found",
-                     Arg_First_Optional_Parameter);
-               end if;
-
-               exit when Chars (Formal) =
-                         Chars (Arg_First_Optional_Parameter);
-
-               Next_Formal (Formal);
-            end loop;
-
-            Set_First_Optional_Parameter (Ent, Formal);
-
-            --  Check specified and all remaining formals have right form
-
-            while Present (Formal) loop
-               if Ekind (Formal) /= E_In_Parameter then
-                  Error_Msg_NE
-                    ("optional formal& is not of mode in!",
-                     Arg_First_Optional_Parameter, Formal);
-
-               else
-                  Dval := Default_Value (Formal);
-
-                  if No (Dval) then
-                     Error_Msg_NE
-                       ("optional formal& does not have default value!",
-                        Arg_First_Optional_Parameter, Formal);
-
-                  elsif Compile_Time_Known_Value_Or_Aggr (Dval) then
-                     null;
-
-                  else
-                     Error_Msg_FE
-                       ("default value for optional formal& is non-static!",
-                        Arg_First_Optional_Parameter, Formal);
-                  end if;
-               end if;
-
-               Set_Is_Optional_Parameter (Formal);
-               Next_Formal (Formal);
-            end loop;
          end if;
       end Process_Extended_Import_Export_Subprogram_Pragma;
 
@@ -10847,10 +10793,9 @@ package body Sem_Prag is
             Check_Arg_Count (0);
 
             --  If Address is a private type, then set the flag to allow
-            --  integer address values. If Address is not private, then
-            --  this pragma has no purpose, so it is simply ignored. Not
-            --  clear if there are any such targets now (VMS used to be
-            --  one such, but leave test in for the future anyway).
+            --  integer address values. If Address is not private, then this
+            --  pragma has no purpose, so it is simply ignored. Not clear if
+            --  there are any such targets now.
 
             if Opt.Address_Is_Private then
                Opt.Allow_Integer_Address := True;

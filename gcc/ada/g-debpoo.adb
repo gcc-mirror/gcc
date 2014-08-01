@@ -305,8 +305,8 @@ package body GNAT.Debug_Pools is
    Code_Address_For_Deallocate_End  : System.Address;
    Code_Address_For_Dereference_End : System.Address;
    --  Taking the address of the above procedures will not work on some
-   --  architectures (HPUX and VMS for instance). Thus we do the same thing
-   --  that is done in a-except.adb, and get the address of labels instead
+   --  architectures (HPUX for instance). Thus we do the same thing that
+   --  is done in a-except.adb, and get the address of labels instead.
 
    procedure Skip_Levels
      (Depth               : Natural;

@@ -1359,10 +1359,6 @@ package Sem_Util is
    function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 
-   function Is_VMS_Operator (Op : Entity_Id) return Boolean;
-   --  Determine whether an operator is one of the intrinsics defined
-   --  in the DEC system extension.
-
    function Is_Variable
      (N                 : Node_Id;
       Use_Original_Node : Boolean := True) return Boolean;

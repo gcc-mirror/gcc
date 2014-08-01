@@ -982,7 +982,6 @@ package body Ada.Directories is
       Hour   : Hour_Type;
       Minute : Minute_Type;
       Second : Second_Type;
-      Result : Time;
 
    begin
       --  First, the invalid cases
@@ -999,25 +998,11 @@ package body Ada.Directories is
 
          GM_Split (Date, Year, Month, Day, Hour, Minute, Second);
 
-         --  On OpenVMS, the resulting time value must be in the local time
-         --  zone. Ada.Calendar.Time_Of is exactly what we need. Note that
-         --  in both cases, the sub seconds are set to zero (0.0) because the
-         --  time stamp does not store them in its value.
-
-         if OpenVMS then
-            Result :=
-              Ada.Calendar.Time_Of
-                (Year, Month, Day, Seconds_Of (Hour, Minute, Second, 0.0));
-
-         --  On Unix and Windows, the result must be in GMT. Ada.Calendar.
+         --  The result must be in GMT. Ada.Calendar.
          --  Formatting.Time_Of with default time zone of zero (0) is the
          --  routine of choice.
 
-         else
-            Result := Time_Of (Year, Month, Day, Hour, Minute, Second, 0.0);
-         end if;
-
-         return Result;
+         return Time_Of (Year, Month, Day, Hour, Minute, Second, 0.0);
       end if;
    end Modification_Time;
 
