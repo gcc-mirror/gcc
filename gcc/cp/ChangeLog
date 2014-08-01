@@ -1,3 +1,8 @@
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/61963
+	* parser.c (cp_parser_array_notation): Added check for array_type.
+
 2014-07-08  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/61455
