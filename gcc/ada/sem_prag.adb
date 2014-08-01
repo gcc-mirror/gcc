@@ -8783,55 +8783,6 @@ package body Sem_Prag is
             Id := Chars (Arg);
             Expr := Get_Pragma_Arg (Arg);
 
-            --  Special handling for No_Elaboration_Code
-
-            if Nkind (Expr) = N_Identifier
-              and then Chars (Expr) = Name_No_Elaboration_Code
-            then
-               if No_Elab_Code (Current_Sem_Unit) < No_Elab_Code then
-                  Set_No_Elab_Code (Current_Sem_Unit, No_Elab_Code);
-               end if;
-            end if;
-
-            --  Special handling for No_Elaboration_Code_All
-
-            if Nkind (Expr) = N_Identifier
-              and then Chars (Expr) = Name_No_Elaboration_Code_All
-            then
-               --  Must appear within a spec
-
-               if not Nkind_In (Unit (Cunit (Current_Sem_Unit)),
-                                N_Package_Declaration,
-                                N_Subprogram_Declaration)
-               then
-                  Error_Msg_Name_1 := Id;
-                  Error_Msg_N
-                    ("restriction% can appear only in package or "
-                     & "subprogram spec", Arg);
-               end if;
-
-               --  Set special value in unit table
-
-               declare
-                  New_Val : No_Elab_Code_T;
-
-               begin
-                  if Warn then
-                     New_Val := No_Elab_Code_All_Warn;
-                  else
-                     New_Val := No_Elab_Code_All;
-                  end if;
-
-                  if No_Elab_Code (Current_Sem_Unit) < New_Val then
-                     Set_No_Elab_Code (Current_Sem_Unit, New_Val);
-                  end if;
-               end;
-
-               --  Note that in the code below, Process_Restriction_Synonym
-               --  will treat No_Elaboration_Code_All like No_Elaboration_Code.
-
-            end if;
-
             --  Case of no restriction identifier present
 
             if Id = No_Name then
@@ -8911,10 +8862,10 @@ package body Sem_Prag is
                        ("\unless also specified in body or spec", N);
                      return;
 
-                  --  If we have a No_Elaboration_Code pragma that we
-                  --  accept, then it needs to be added to the configuration
-                  --  restrcition set so that we get proper application to
-                  --  other units in the main extended source as required.
+                  --  If we accept a No_Elaboration_Code restriction, then it
+                  --  needs to be added to the configuration restriction set so
+                  --  that we get proper application to other units in the main
+                  --  extended source as required.
 
                   else
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
@@ -16325,6 +16276,68 @@ package body Sem_Prag is
          when Pragma_No_Body =>
             GNAT_Pragma;
             Pragma_Misplaced;
+
+         -----------------------------
+         -- No_Elaboration_Code_All --
+         -----------------------------
+
+         --  pragma No_Elaboration_Code_All;
+
+         when Pragma_No_Elaboration_Code_All => NECA : declare
+            CL : constant List_Id := Context_Items (Cunit (Current_Sem_Unit));
+            CI : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Valid_Library_Unit_Pragma;
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
+
+            --  Must appear for a spec
+
+            if not Nkind_In (Unit (Cunit (Current_Sem_Unit)),
+                             N_Package_Declaration,
+                             N_Subprogram_Declaration)
+            then
+               Error_Pragma
+                 (Fix_Error
+                    ("pragma% can only occur for package "
+                     & "or subprogram spec"));
+            end if;
+
+            --  Set flag in unit table
+
+            Set_No_Elab_Code_All (Current_Sem_Unit);
+
+            --  Set restriction No_Elaboration_Code, including adding it to the
+            --  set of configuration restrictions so it will apply to all units
+            --  in the extended main source.
+
+            Set_Restriction (No_Elaboration_Code, N);
+            Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
+
+            --  Here is where we check that the context clause for the current
+            --  unit does not have any bad with's with respect to NECA rules.
+
+            CI := First (CL);
+            while Present (CI) loop
+               if Nkind (CI) = N_With_Clause
+                 and then not
+                   No_Elab_Code_All (Get_Source_Unit (Library_Unit (CI)))
+               then
+                  Error_Msg_Sloc := Sloc (CI);
+                  Error_Msg_N
+                    ("violation of No_Elaboration_Code_All#", N);
+                  Error_Msg_NE
+                    ("\unit& does not have No_Elaboration_Code_All",
+                     N, Entity (Name (CI)));
+               end if;
+
+               Next (CI);
+            end loop;
+         end NECA;
 
          ---------------
          -- No_Inline --
@@ -24797,6 +24810,7 @@ package body Sem_Prag is
       Pragma_Memory_Size                    => -1,
       Pragma_No_Return                      =>  0,
       Pragma_No_Body                        =>  0,
+      Pragma_No_Elaboration_Code_All        => -1,
       Pragma_No_Inline                      =>  0,
       Pragma_No_Run_Time                    => -1,
       Pragma_No_Strict_Aliasing             => -1,

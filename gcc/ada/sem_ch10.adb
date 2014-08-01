@@ -3,7 +3,7 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             S E M _ C H 1 0                              --
---     s                                                                     --
+--                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
@@ -108,13 +108,6 @@ package body Sem_Ch10 is
    --  Generate cross-reference information for the parents of child units
    --  and of subunits. N is a defining_program_unit_name, and P_Id is the
    --  immediate parent scope.
-
-   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id;
-   --  Get defining entity of parent unit of a child unit. In most cases this
-   --  is the defining entity of the unit, but for a child instance whose
-   --  parent needs a body for inlining, the instantiation node of the parent
-   --  has not yet been rewritten as a package declaration, and the entity has
-   --  to be retrieved from the Instance_Spec of the unit.
 
    function Has_With_Clause
      (C_Unit     : Node_Id;
@@ -1327,7 +1320,7 @@ package body Sem_Ch10 is
 
       --  a) The first pass analyzes non-limited with-clauses and also any
       --     configuration pragmas (we need to get the latter analyzed right
-      --     away, since they can affect processing of subsequent items.
+      --     away, since they can affect processing of subsequent items).
 
       --  b) The second pass analyzes limited_with clauses (Ada 2005: AI-50217)
 
@@ -1350,28 +1343,6 @@ package body Sem_Ch10 is
 
                if Library_Unit (Item) /= Cunit (Current_Sem_Unit) then
                   Analyze (Item);
-
-                  --  This is the point at which we check for the case of an
-                  --  improper WITH from a unit with No_Elaboration_Code_All.
-
-                  if No_Elab_Code (Current_Sem_Unit) >=
-                       No_Elab_Code_All_Warn
-                  then
-                     if No_Elab_Code
-                          (Get_Source_Unit (Library_Unit (Item))) /=
-                             No_Elab_Code_All
-                     then
-                        Error_Msg_Warn :=
-                          No_Elab_Code (Current_Sem_Unit) =
-                            No_Elab_Code_All_Warn;
-                        Error_Msg_N
-                          ("<unit with No_Elaboration_Code_All has bad WITH",
-                           Item);
-                        Error_Msg_NE
-                          ("\<unit& does not have No_Elaboration_Code_All",
-                           Item, Entity (Name (Item)));
-                     end if;
-                  end if;
 
                --  Here for the case of a useless with for the main unit
 
@@ -3149,24 +3120,6 @@ package body Sem_Ch10 is
          Style.Check_Identifier (Pref, P_Name);
       end if;
    end Generate_Parent_References;
-
-   -----------------------
-   -- Get_Parent_Entity --
-   -----------------------
-
-   function Get_Parent_Entity (Unit : Node_Id) return Entity_Id is
-   begin
-      if Nkind (Unit) = N_Package_Body
-        and then Nkind (Original_Node (Unit)) = N_Package_Instantiation
-      then
-         return Defining_Entity
-                  (Specification (Instance_Spec (Original_Node (Unit))));
-      elsif Nkind (Unit) = N_Package_Instantiation then
-         return Defining_Entity (Specification (Instance_Spec (Unit)));
-      else
-         return Defining_Entity (Unit);
-      end if;
-   end Get_Parent_Entity;
 
    ---------------------
    -- Has_With_Clause --

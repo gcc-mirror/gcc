@@ -2078,8 +2078,8 @@ package body Sem_Ch7 is
       Id := First_Entity (P);
       while Present (Id) and then Id /= First_Private_Entity (P) loop
          if Is_Private_Base_Type (Id)
-           and then Comes_From_Source (Full_View (Id))
            and then Present (Full_View (Id))
+           and then Comes_From_Source (Full_View (Id))
            and then Scope (Full_View (Id)) = Scope (Id)
            and then Ekind (Full_View (Id)) /= E_Incomplete_Type
          then
