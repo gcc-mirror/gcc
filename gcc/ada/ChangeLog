@@ -1,3 +1,20 @@
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Private_Ancestor): Remove obsolete usage.
+	* exp_ch4.adb (Expand_Composite_Equality): Add conversion
+	of the actuals in the case of untagged record types too.
+	* sem_ch3.adb (Build_Full_Derivation): New procedure to create the
+	full derivation of a derived private type, extracted from...
+	(Copy_And_Build): In the case of record types and most
+	enumeration types, copy the original declaration.  Build the
+	full derivation according to the approach extracted from...
+	(Build_Derived_Private_Type): ...here.	Call Build_Full_Derivation
+	to create the full derivation in all existing cases and also
+	create it in the no-discriminants/discriminants case instead of
+	deriving directly from the full view.
+	(Is_Visible_Component): Remove obsolete code.
+	* sem_aggr.adb (Resolve_Record_Aggregate): Likewise.
+
 2014-08-01  Arnaud Charlet  <charlet@adacore.com>
 
 	* fe.h (GNAT_Mode): New.
