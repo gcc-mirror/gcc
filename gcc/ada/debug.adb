@@ -791,15 +791,15 @@ package body Debug is
 
    --  dm  Issue a message indicating the maximum number of simultaneous
    --      compilations.
-   --      Equivalent to --keep-temp-files.
 
    --  dn  Do not delete temporary files created by gnatmake at the end
    --      of execution, such as temporary config pragma files, mapping
-   --      files or project path files.
+   --      files or project path files. This debug switch is equivalent to
+   --      the standard switch --keep-temp-files. We retain the debug switch
+   --      for back compatibility with past usage.
 
    --  dp  Prints the Q used by routine Make.Compile_Sources every time
    --      we go around the main compile loop of Make.Compile_Sources
-   --      Equivalent to --keep-temp-files.
 
    --  dq  Prints source files as they are enqueued and dequeued in the Q
    --      used by routine Make.Compile_Sources. Useful to figure out the
@@ -822,7 +822,9 @@ package body Debug is
 
    --  dn  Do not delete temporary files created by gprbuild at the end
    --      of execution, such as temporary config pragma files, mapping
-   --      files or project path files.
+   --      files or project path files. This debug switch is equivalent to
+   --      the standard switch --keep-temp-files. We retain the debug switch
+   --      for back compatibility with past usage.
 
    --  dt  When a time stamp mismatch has been found for an ALI file,
    --      display the source file name, the time stamp expected and

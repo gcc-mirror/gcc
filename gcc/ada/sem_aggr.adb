@@ -1732,7 +1732,7 @@ package body Sem_Aggr is
                              ("subtype& has dynamic predicate, not allowed "
                               & "in aggregate choice", Choice, E);
 
-                        elsif not Is_Static_Subtype (E) then
+                        elsif not Is_OK_Static_Subtype (E) then
                            Error_Msg_NE
                              ("non-static subtype& has predicate, not allowed "
                               & "in aggregate choice", Choice, E);

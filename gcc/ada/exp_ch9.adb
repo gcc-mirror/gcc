@@ -8929,7 +8929,7 @@ package body Exp_Ch9 is
 
          function Non_Static_Bound (Bound : Node_Id) return Boolean is
          begin
-            if Is_Static_Expression (Bound) then
+            if Is_OK_Static_Expression (Bound) then
                return False;
 
             elsif Is_Entity_Name (Bound)
