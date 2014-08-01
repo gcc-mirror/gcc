@@ -1938,6 +1938,11 @@ package Opt is
    --  This switch is not set when the pragma appears ahead of a given
    --  unit, so it does not affect the compilation of other units.
 
+   No_Exit_Message : Boolean := False;
+   --  GNATMAKE, GPRBUILD
+   --  Set with switch --no-exit-message. When True, if there are compilation
+   --  failure, the builder does not issue an exit error message.
+
    Optimize_Alignment_Config : Character;
    --  GNAT
    --  This is the value of the configuration switch that controls the

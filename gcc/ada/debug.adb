@@ -214,7 +214,7 @@ package body Debug is
    --  dp  Prints the contents of the Q used by Make.Compile_Sources
    --  dq  Prints source files as they are enqueued and dequeued
    --  dr
-   --  ds  Suppress exit message when compilation fails
+   --  ds
    --  dt  Display time stamps when there is a mismatch
    --  du  List units as their ali files are acquired
    --  dv
@@ -801,10 +801,6 @@ package body Debug is
    --      used by routine Make.Compile_Sources. Useful to figure out the
    --      order in which sources are recompiled.
 
-   --  ds  When one or more compilations compilation fail, gnatmake does not
-   --      issue an error message such as:
-   --         gnatmake: "/path/to/main.adb" compilation error
-
    --  dt  When a time stamp mismatch has been found for an ALI file,
    --      display the source file name, the time stamp expected and
    --      the time stamp found.
@@ -823,10 +819,6 @@ package body Debug is
    --  dn  Do not delete temporary files created by gprbuild at the end
    --      of execution, such as temporary config pragma files, mapping
    --      files or project path files.
-
-   --  ds  When one or more compilations compilation fail, gprbuild does not
-   --      issue the error message:
-   --         gprbuild: *** compilation phase failed
 
    --  dt  When a time stamp mismatch has been found for an ALI file,
    --      display the source file name, the time stamp expected and
