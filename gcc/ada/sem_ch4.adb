@@ -4646,6 +4646,7 @@ package body Sem_Ch4 is
                end loop;
 
                if Present (Par) and then Is_Generic_Actual_Type (Par) then
+
                   --  Now look for component in ancestor types
 
                   Par := Generic_Parent_Type (Declaration_Node (Par));
@@ -4655,6 +4656,14 @@ package body Sem_Ch4 is
                        or else Par = Etype (Par);
                      Par := Etype (Par);
                   end loop;
+
+               --  In ASIS mode the generic parent type may be absent. Examine
+               --  the parent type directly for a component that may have been
+               --  visible in a parent generic unit.
+
+               elsif Is_Derived_Type (Prefix_Type) then
+                  Par := Etype (Prefix_Type);
+                  Find_Component_In_Instance (Par);
                end if;
             end;
 
@@ -4664,6 +4673,7 @@ package body Sem_Ch4 is
             if No (Entity (Sel)) then
                raise Program_Error;
             end if;
+
             return;
 
          --  Component not found, specialize error message when appropriate

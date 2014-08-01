@@ -8418,17 +8418,11 @@ package body Sem_Ch3 is
       --  STEP 5c: Process the record extension for non private tagged types
 
       elsif not Private_Extension then
+         Expand_Record_Extension (Derived_Type, Type_Def);
 
-         --  Add the _parent field in the derived type. In ASIS mode there is
-         --  not enough semantic information for full expansion, but set the
-         --  parent subtype to allow resolution of selected components in
-         --  instance bodies.
-
-         if ASIS_Mode then
-            Set_Parent_Subtype (Derived_Type, Parent_Type);
-         else
-            Expand_Record_Extension (Derived_Type, Type_Def);
-         end if;
+         --  Note : previously in ASIS mode we set the Parent_Subtype of the
+         --  derived type to propagate some semantic information. This led
+         --  to other ASIS failures and has been removed.
 
          --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
          --  implemented interfaces if we are in expansion mode
