@@ -39,6 +39,7 @@ with Unchecked_Conversion;
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
 with System.Case_Util; use System.Case_Util;
+with System.CRTL;
 pragma Warnings (On);
 
 with GNAT.HTable;
@@ -1076,11 +1077,11 @@ package body Osint is
       function Internal
         (F : Integer;
          N : C_File_Name;
-         A : System.Address) return size_t;
+         A : System.Address) return CRTL.int64;
       pragma Import (C, Internal, "__gnat_file_length_attr");
 
    begin
-      --  The conversion from size_t to Long_Integer is ok here as this
+      --  The conversion from int64 to Long_Integer is ok here as this
       --  routine is only to be used by the compiler and we do not expect
       --  a unit to be larger than a 32bit integer.
 

@@ -1250,7 +1250,7 @@ package body Ada.Directories is
    function Size (Name : String) return File_Size is
       C_Name : String (1 .. Name'Length + 1);
 
-      function C_Size (Name : Address) return size_t;
+      function C_Size (Name : Address) return int64;
       pragma Import (C, C_Size, "__gnat_named_file_length");
 
    begin

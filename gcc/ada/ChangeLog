@@ -1,3 +1,10 @@
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
+	* a-direct.adb (C_Size): Returns an int64.
+	* osint.adb (System.CRTL): New with clause.
+	(File_Length.Internal): Returns an int64.
+	* s-os_lib.ads (File_Length): Returns an int64.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* gnatchop.adb, gnatcmd.adb, make.adb, mlib-prj.adb, bindgen.adb,
