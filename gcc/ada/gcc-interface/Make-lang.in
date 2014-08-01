@@ -414,7 +414,6 @@ GNAT_ADA_OBJS =	\
  ada/sem_smem.o	\
  ada/sem_type.o	\
  ada/sem_util.o	\
- ada/sem_vfpt.o	\
  ada/sem_warn.o	\
  ada/set_targ.o \
  ada/sinfo-cn.o	\

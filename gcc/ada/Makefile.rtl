@@ -44,7 +44,6 @@ GNATRTL_TASKING_OBJS= \
   g-signal$(objext) \
   g-tastus$(objext) \
   g-thread$(objext) \
-  s-asthan$(objext) \
   s-inmaop$(objext) \
   s-interr$(objext) \
   s-intman$(objext) \
@@ -540,15 +539,10 @@ GNATRTL_NONTASKING_OBJS= \
   s-ficobl$(objext) \
   s-filatt$(objext) \
   s-fileio$(objext) \
-  s-filofl$(objext) \
   s-finmas$(objext) \
   s-finroo$(objext) \
-  s-fishfl$(objext) \
   s-flocon$(objext) \
   s-fore$(objext)   \
-  s-fvadfl$(objext) \
-  s-fvaffl$(objext) \
-  s-fvagfl$(objext) \
   s-gearop$(objext) \
   s-geveop$(objext) \
   s-gloloc$(objext) \
@@ -674,7 +668,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-traent$(objext) \
   s-unstyp$(objext) \
   s-utf_32$(objext) \
-  s-vaflop$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
   s-valdec$(objext) \
@@ -690,7 +683,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-veboop$(objext) \
   s-vector$(objext) \
   s-vercon$(objext) \
-  s-vmexta$(objext) \
   s-wchcnv$(objext) \
   s-wchcon$(objext) \
   s-wchjis$(objext) \

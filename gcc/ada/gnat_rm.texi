@@ -3387,17 +3387,8 @@ pragma Ident (static_string_EXPRESSION);
 @end smallexample
 
 @noindent
-This pragma provides a string identification in the generated object file,
-if the system supports the concept of this kind of identification string.
-This pragma is allowed only in the outermost declarative part or
-declarative items of a compilation unit. If more than one @code{Ident}
-pragma is given, only the last one processed is effective.
-@cindex OpenVMS
-On OpenVMS systems, the effect of the pragma is identical to the effect of
-the DEC Ada 83 pragma of the same name. Note that in DEC Ada 83, the
-maximum allowed length is 31 characters, so if it is important to
-maintain compatibility with this compiler, you should obey this length
-limit.
+This pragma is identical in effect to pragma @code{Comment}. It is provided
+for compatibility with other Ada compilers providing this pragma.
 
 @node Pragma Implementation_Defined
 @unnumberedsec Pragma Implementation_Defined
