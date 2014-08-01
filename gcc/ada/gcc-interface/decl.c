@@ -5190,6 +5190,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   if (!saved)
     save_gnu_tree (gnat_entity, gnu_decl, false);
 
+  /* Now we are sure gnat_entity has a corresponding ..._DECL node,
+     eliminate as many deferred computations as possible.  */
+  process_deferred_decl_context (false);
+
   /* If this is an enumeration or floating-point type, we were not able to set
      the bounds since they refer to the type.  These are always static.  */
   if ((kind == E_Enumeration_Type && Present (First_Literal (gnat_entity)))
@@ -6184,14 +6188,30 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
   /* Now create it, possibly only for debugging purposes.  */
   if (use_variable || need_debug)
     {
+      /* The following variable creation can happen when processing the body of
+	 subprograms that are defined out of the extended main unit and
+	 inlined. In this case, we are not at the global scope, and thus the
+	 new variable must not be tagged "external", as we used to do here as
+	 long as definition == 0.  */
+      const bool external_flag = !definition && expr_global_p;
       tree gnu_decl
 	= create_var_decl_1
 	  (create_concat_name (gnat_entity, IDENTIFIER_POINTER (gnu_name)),
 	   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr, true, expr_public_p,
-	   !definition, expr_global_p, !need_debug, NULL, gnat_entity);
+	   external_flag, expr_global_p, !need_debug, NULL, gnat_entity);
 
       DECL_ARTIFICIAL (gnu_decl) = 1;
-      if (use_variable)
+
+      /* Using this variable at debug time (if need_debug is true) requires a
+	 proper location.  The back-end will compute a location for this
+	 variable only if the variable is used by the generated code.
+	 Returning the variable ensures the caller will use it in generated
+	 code.  Note that there is no need for a location if the debug info
+	 contains an integer constant.
+	 FIXME: when the encoding-based debug scheme is dropped, move this
+	 condition to the top-level IF block: we will not need to create a
+	 variable anymore in such cases, then.  */
+      if (use_variable || (need_debug && !TREE_CONSTANT (gnu_expr)))
 	return gnu_decl;
     }
 

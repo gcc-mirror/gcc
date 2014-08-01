@@ -1975,8 +1975,16 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
 
 	/* When not optimizing, look up the slot associated with the parameter
-	   and the dimension in the cache and create a new one on failure.  */
-	if (!optimize && Present (gnat_param))
+	   and the dimension in the cache and create a new one on failure.
+	   Don't do this when the actual subtype needs debug info (this happens
+	   with -gnatD): in elaborate_expression_1, we create variables that
+	   hold the bounds, so caching attributes isn't very interesting and
+	   causes dependency issues between these variables and cached
+	   expressions.  */
+	if (!optimize
+	    && Present (gnat_param)
+	    && !(Present (Actual_Subtype (gnat_param))
+		 && Needs_Debug_Info (Actual_Subtype (gnat_param))))
 	  {
 	    FOR_EACH_VEC_SAFE_ELT (f_parm_attr_cache, i, pa)
 	      if (pa->id == gnat_param && pa->dim == Dimension)
@@ -4978,6 +4986,9 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
      stabilization of the renamed entities may create SAVE_EXPRs which
      have been tied to a specific elaboration routine just above.  */
   invalidate_global_renaming_pointers ();
+
+  /* Force the processing for all nodes that remain in the queue.  */
+  process_deferred_decl_context (true);
 }
 
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Raise_xxx_Error,

@@ -1,3 +1,35 @@
+2014-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/Make-lang.in (ADA_TOOLS_FLAGS_TO_PASS, native): use
+	$(CXX) instead of ../../xg++ to feed CXX.
+	(CXX_LFLAGS): Remove. Now unused as the proper flags
+	are expected to be included in the CXX variable.
+
+2014-08-01  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* gcc-interface/decl.c (elaborate_expression_1): Return the new
+	variable when debug info is needed and the expression is not
+	constant.  Tag as external only new variables that are global.
+	(gnat_to_gnu_entity): Call it after the GNU declaration is saved.
+	* gcc-interface/trans.c (Attribute_to_gnu): Do not cache
+	attributes for IN array parameters when their actual subtype
+	needs debug info.
+	(Compilation_Unit_to_gnu): Call it to process all remaining nodes.
+	* gcc-interface/gigi.h (process_deferred_decl_context): New.
+	* gcc-interface/utils.c (gnat_write_global_declarations): Do not
+	emit debug info for ignored global declarations.
+	(struct deferred_decl_context_node,
+	add_deferred_decl_context, add_deferred_type_context,
+	compute_deferred_decl_context, defer_or_set_type_context,
+	deferred_decl_context_queue, get_debug_scope,
+	get_global_context, process_deferred_decl_context): New.
+	(gnat_pushdecl): Re-implement the DECL_CONTEXT and TYPE_CONTEXT
+	computation machinery to rely on the GNAT Scope attribute.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (build_simple_component_ref): Add guard.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb, opt.ads Minor comment updates.

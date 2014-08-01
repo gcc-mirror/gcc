@@ -999,6 +999,12 @@ extern int fp_size_to_prec (int size);
    initialization is likely to disturb debugging.  */
 extern bool renaming_from_generic_instantiation_p (Node_Id gnat_node);
 
+/* Try to process all nodes in the deferred context queue.  Keep in the queue
+   the ones that cannot be processed yet, remove the other ones.  If FORCE is
+   true, force the processing for all nodes, use the global context when nodes
+   don't have a GNU translation.  */
+extern void process_deferred_decl_context (bool force);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
