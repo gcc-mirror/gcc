@@ -1,3 +1,13 @@
+2014-08-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2014-06-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/61375
+	* tree-ssa-math-opts.c (find_bswap_or_nop_1): Cancel optimization if
+	symbolic number cannot be represented in an unsigned HOST_WIDE_INT.
+	(execute_optimize_bswap): Cancel optimization if CHAR_BIT != 8.
+
 2014-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/61964
