@@ -1,9 +1,14 @@
 2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
 
+	* cp-array-notation.c (expand_an_in_modify_expr): Fix the misprint
+	in error output.
+
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
 	PR other/61963
 	* parser.c (cp_parser_array_notation): Added check for array_type.
 
-2014-07-08  Igor Zamyatin  <igor.zamyatin@intel.com>
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/61455
 	* cp-array-notation.c (expand_array_notation_exprs): Handling of
