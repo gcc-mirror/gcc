@@ -528,23 +528,23 @@ package body Exp_Dist is
       RACW_Type                 : Entity_Id := Empty;
       Nod                       : Node_Id);
    --  Build calling stubs for general purpose. The parameters are:
-   --    Decls             : a place to put declarations
-   --    Statements        : a place to put statements
-   --    Target            : PCS-specific target information (see details
-   --                        in RPC_Target declaration).
-   --    Subprogram_Id     : a node containing the subprogram ID
+   --    Decls             : A place to put declarations
+   --    Statements        : A place to put statements
+   --    Target            : PCS-specific target information (see details in
+   --                        RPC_Target declaration).
+   --    Subprogram_Id     : A node containing the subprogram ID
    --    Asynchronous      : True if an APC must be made instead of an RPC.
    --                        The value needs not be supplied if one of the
    --                        Is_Known_... is True.
    --    Is_Known_Async... : True if we know that this is asynchronous
    --    Is_Known_Non_A... : True if we know that this is not asynchronous
-   --    Spec              : a node with a Parameter_Specifications and
-   --                        a Result_Definition if applicable
-   --    Stub_Type         : in case of RACW stubs, parameters of type access
-   --                        to Stub_Type will be marshalled using the
+   --    Spec              : Node with a Parameter_Specifications and a
+   --                        Result_Definition if applicable
+   --    Stub_Type         : For case of RACW stubs, parameters of type access
+   --                        to Stub_Type will be marshalled using the address
    --                        address of the object (the addr field) rather
    --                        than using the 'Write on the stub itself
-   --    Nod               : used to provide sloc for generated code
+   --    Nod               : Used to provide sloc for generated code
 
    function Specific_Build_Stub_Target
      (Loc                   : Source_Ptr;

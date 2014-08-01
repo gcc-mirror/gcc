@@ -11404,7 +11404,7 @@ package body Sem_Ch12 is
                  ("actual for & cannot be a class-wide type", Actual, Gen_T);
                Abandon_Instantiation (Actual);
 
-            --  Otherwise, the formal and actual shall have the same number
+            --  Otherwise, the formal and actual must have the same number
             --  of discriminants and each discriminant of the actual must
             --  correspond to a discriminant of the formal.
 

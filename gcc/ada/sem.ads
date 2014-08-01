@@ -651,16 +651,18 @@ package Sem is
    --  external (more global) to it.
 
    procedure Enter_Generic_Scope (S : Entity_Id);
-   --  Shall be called each time a Generic subprogram or package scope is
-   --  entered. S is the entity of the scope.
+   --  Called each time a Generic subprogram or package scope is entered. S is
+   --  the entity of the scope.
+   --
    --  ??? At the moment, only called for package specs because this mechanism
    --  is only used for avoiding freezing of external references in generics
    --  and this can only be an issue if the outer generic scope is a package
    --  spec (otherwise all external entities are already frozen)
 
    procedure Exit_Generic_Scope  (S : Entity_Id);
-   --  Shall be called each time a Generic subprogram or package scope is
-   --  exited. S is the entity of the scope.
+   --  Called each time a Generic subprogram or package scope is exited. S is
+   --  the entity of the scope.
+   --
    --  ??? At the moment, only called for package specs exit.
 
    function Explicit_Suppress (E : Entity_Id; C : Check_Id) return Boolean;

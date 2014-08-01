@@ -3421,9 +3421,9 @@ package body Sem_Ch3 is
       --  is considered, so that the Object_Definition node is still the same
       --  as in source code.
 
-      --  In SPARK, the nominal subtype shall be given by a subtype mark and
-      --  shall not be unconstrained. (The only exception to this is the
-      --  admission of declarations of constants of type String.)
+      --  In SPARK, the nominal subtype is always given by a subtype mark
+      --  and must not be unconstrained. (The only exception to this is the
+      --  acceptance of declarations of constants of type String.)
 
       if not
         Nkind_In (Object_Definition (N), N_Identifier, N_Expanded_Name)
@@ -7073,10 +7073,10 @@ package body Sem_Ch3 is
 
    --  Furthermore if a KNOWN_DISCRIMINANT_PART is provided, then [3.7(13-18)]:
 
-   --  o The parent subtype shall be constrained;
+   --  o The parent subtype must be constrained;
 
    --  o If the parent type is not a tagged type, then each discriminant of
-   --    the derived type shall be used in the constraint defining a parent
+   --    the derived type must be used in the constraint defining a parent
    --    subtype. [Implementation note: This ensures that the new discriminant
    --    can share storage with an existing discriminant.]
 
@@ -7333,8 +7333,8 @@ package body Sem_Ch3 is
    --  [7.3(10-13)]:
 
    --  o If a private extension inherits known discriminants from the ancestor
-   --    subtype, then the full view shall also inherit its discriminants from
-   --    the ancestor subtype and the parent subtype of the full view shall be
+   --    subtype, then the full view must also inherit its discriminants from
+   --    the ancestor subtype and the parent subtype of the full view must be
    --    constrained if and only if the ancestor subtype is constrained.
 
    --  o If a partial view has unknown discriminants, then the full view may
@@ -7342,10 +7342,10 @@ package body Sem_Ch3 is
    --    discriminants.
 
    --  o If a partial view has neither known nor unknown discriminants, then
-   --    the full view shall define a definite subtype.
+   --    the full view must define a definite subtype.
 
    --  o If the ancestor subtype of a private extension has constrained
-   --    discriminants, then the parent subtype of the full view shall impose a
+   --    discriminants, then the parent subtype of the full view must impose a
    --    statically matching constraint on those discriminants.
 
    --  This means that only the following forms of private extensions are

@@ -1007,10 +1007,10 @@ package body Sem_Ch8 is
 
          Resolve (Nam, T);
 
-         --  Ada 2005 (AI-231): "In the case where the type is defined by an
+         --  Ada 2005 (AI-231): In the case where the type is defined by an
          --  access_definition, the renamed entity shall be of an access-to-
          --  constant type if and only if the access_definition defines an
-         --  access-to-constant type" ARM 8.5.1(4)
+         --  access-to-constant type. ARM 8.5.1(4)
 
          if Constant_Present (Access_Definition (N))
            and then not Is_Access_Constant (Etype (Nam))

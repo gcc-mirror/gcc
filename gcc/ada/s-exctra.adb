@@ -39,12 +39,12 @@ package body System.Exception_Traces is
    --  Calling the decorator directly from where it is needed would require
    --  introducing nasty dependencies upon the spec of this package (typically
    --  in a-except.adb). We also have to deal with the fact that the traceback
-   --  array within an exception occurrence and the one the decorator shall
-   --  accept are of different types. These are two reasons for which a wrapper
-   --  with a System.Address argument is indeed used to call the decorator
-   --  provided by the user of this package. This wrapper is called via a
-   --  soft-link, which either is null when no decorator is in place or "points
-   --  to" the following function otherwise.
+   --  array within an exception occurrence and the one the decorator accepts
+   --  are of different types. These are two reasons for which a wrapper with
+   --  a System.Address argument is indeed used to call the decorator provided
+   --  by the user of this package. This wrapper is called via a soft-link,
+   --  which either is null when no decorator is in place or "points to" the
+   --  following function otherwise.
 
    function Decorator_Wrapper
      (Traceback : System.Address;

@@ -300,7 +300,7 @@ package System.Soft_Links is
    --  Wrapper to the possible user specified traceback decorator to be
    --  called during automatic output of exception data.
 
-   --  The nullity of this wrapper shall correspond to the nullity of the
+   --  The null value of this wrapper correspond sto the null value of the
    --  current actual decorator. This is ensured first by the null initial
    --  value of the corresponding variables, and then by Set_Trace_Decorator
    --  in g-exctra.adb.
