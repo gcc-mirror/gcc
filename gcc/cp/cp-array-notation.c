@@ -1148,13 +1148,13 @@ expand_array_notation_exprs (tree t)
     case PARM_DECL:
     case NON_LVALUE_EXPR:
     case NOP_EXPR:
-    case INIT_EXPR:
     case ADDR_EXPR:
     case ARRAY_REF:
     case BIT_FIELD_REF:
     case VECTOR_CST:
     case COMPLEX_CST:
       return t;
+    case INIT_EXPR:
     case MODIFY_EXPR:
       if (contains_array_notation_expr (t))
 	t = expand_an_in_modify_expr (loc, TREE_OPERAND (t, 0), NOP_EXPR, 
@@ -1176,13 +1176,24 @@ expand_array_notation_exprs (tree t)
 	return t;
       }
     case DECL_EXPR:
-      {
-	tree x = DECL_EXPR_DECL (t);
-	if (t && TREE_CODE (x) != FUNCTION_DECL)
+      if (contains_array_notation_expr (t))
+	{
+	  tree x = DECL_EXPR_DECL (t);
 	  if (DECL_INITIAL (x))
-	    t = expand_unary_array_notation_exprs (t);
+	    {
+	      location_t loc = DECL_SOURCE_LOCATION (x);
+	      tree lhs = x;
+	      tree rhs = DECL_INITIAL (x);
+	      DECL_INITIAL (x) = NULL;
+	      tree new_modify_expr = build_modify_expr (loc, lhs,
+							TREE_TYPE (lhs),
+							NOP_EXPR,
+							loc, rhs,
+							TREE_TYPE(rhs));
+	      t = expand_array_notation_exprs (new_modify_expr);
+	    }
+	}
       return t;
-      }
     case STATEMENT_LIST:
       {
 	tree_stmt_iterator i;

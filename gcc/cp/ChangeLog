@@ -1,3 +1,9 @@
+2014-07-08  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* cp-array-notation.c (expand_array_notation_exprs): Handling of
+	DECL_EXPR improved. Changed handling for INIT_EXPR.
+
 2014-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (lookup_template_class_1): Use DECL_TYPE_TEMPLATE_P.
