@@ -1265,6 +1265,25 @@ expand_array_notations (tree *tp, int *walk_subtrees, void *)
 					 rhs_loc, rhs, TREE_TYPE (rhs));
       }
       break;
+    case DECL_EXPR:
+      {
+	tree x = DECL_EXPR_DECL (*tp);
+	if (DECL_INITIAL (x))
+	  {
+	    location_t loc = DECL_SOURCE_LOCATION (x);
+	    tree lhs = x;
+	    tree rhs = DECL_INITIAL (x);
+	    DECL_INITIAL (x) = NULL;
+	    tree new_modify_expr = build_modify_expr (loc, lhs,
+						      TREE_TYPE (lhs),
+						      NOP_EXPR,
+						      loc, rhs,
+						      TREE_TYPE(rhs));
+	    expand_array_notations (&new_modify_expr, walk_subtrees, NULL);
+	    *tp = new_modify_expr;
+	  }
+      }
+      break;
     case CALL_EXPR:
       *tp = fix_array_notation_call_expr (*tp);
       break;

@@ -1,3 +1,9 @@
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* array-notation-common.c (extract_array_notation_exprs): Handling
+	of DECL_EXPR added.
+
 2014-07-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

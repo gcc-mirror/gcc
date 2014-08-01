@@ -1,3 +1,9 @@
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* c-c++-common/cilk-plus/AN/pr61455.c: New test.
+	* c-c++-common/cilk-plus/AN/pr61455-2.c: Likewise.
+
 2014-08-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline

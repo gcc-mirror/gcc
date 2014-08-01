@@ -1,3 +1,9 @@
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* c-array-notation.c (expand_array_notations): Handling
+	of DECL_EXPR added.
+
 2014-07-16  Release Manager
 
 	* GCC 4.9.1 released.
