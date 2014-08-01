@@ -3248,6 +3248,21 @@ aarch64_classify_address (struct aarch64_address_info *info,
     case PLUS:
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
+
+      if (! strict_p
+	  && GET_CODE (op0) == REG
+	  && (op0 == virtual_stack_vars_rtx
+	      || op0 == frame_pointer_rtx
+	      || op0 == arg_pointer_rtx)
+	  && GET_CODE (op1) == CONST_INT)
+	{
+	  info->type = ADDRESS_REG_IMM;
+	  info->base = op0;
+	  info->offset = op1;
+
+	  return true;
+	}
+
       if (GET_MODE_SIZE (mode) != 0
 	  && CONST_INT_P (op1)
 	  && aarch64_base_register_rtx_p (op0, strict_p))
