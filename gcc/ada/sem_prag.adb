@@ -20715,6 +20715,8 @@ package body Sem_Prag is
          -- Warning_As_Error --
          ----------------------
 
+         --  pragma Warning_As_Error (static_string_EXPRESSION);
+
          when Pragma_Warning_As_Error =>
             GNAT_Pragma;
             Check_Arg_Count (1);

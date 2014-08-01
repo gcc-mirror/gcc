@@ -2523,8 +2523,10 @@ package body Sem_Ch5 is
            or else (Is_Entity_Name (DS_Copy)
                      and then not Is_Type (Entity (DS_Copy)))
            or else (Nkind (DS_Copy) = N_Attribute_Reference
-                     and then Attribute_Name (DS_Copy) = Name_Old)
+                     and then Nam_In (Attribute_Name (DS_Copy),
+                                      Name_Old, Name_Loop_Entry))
            or else Nkind (DS_Copy) = N_Unchecked_Type_Conversion
+           or else Has_Aspect (Etype (DS_Copy), Aspect_Iterable)
          then
             --  This is an iterator specification. Rewrite it as such and
             --  analyze it to capture function calls that may require

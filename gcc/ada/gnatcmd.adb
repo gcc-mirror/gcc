@@ -47,7 +47,6 @@ with Snames;   use Snames;
 with Stringt;
 with Switch;   use Switch;
 with Table;
-with Targparm; use Targparm;
 with Tempdir;
 with Types;    use Types;
 
@@ -58,6 +57,9 @@ with Ada.Text_IO;             use Ada.Text_IO;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure GNATCmd is
+
+   AAMP_On_Target : Boolean := False;
+
    Normal_Exit : exception;
    --  Raise this exception for normal program termination
 
@@ -1183,7 +1185,7 @@ procedure GNATCmd is
          --  No usage for Sync
 
          if C /= Sync then
-            if Targparm.AAMP_On_Target then
+            if AAMP_On_Target then
                Put ("gnaampcmd ");
             else
                Put ("gnat ");
@@ -1584,12 +1586,11 @@ begin
    Rules_Switches.Init;
    Rules_Switches.Set_Last (0);
 
-   --  Set AAMP_On_Target from the command name, for testing in
-   --  Osint.Program_Name to handle the mapping of GNAAMP tool names. We don't
-   --  extract it from system.ads, has there may be no default runtime.
+   --  Set AAMP_On_Target from command name, for testing in Osint.Program_Name
+   --  to handle the mapping of GNAAMP tool names. We don't extract it from
+   --  system.ads, as there may be no default runtime.
 
-   Find_Program_Name;
-   AAMP_On_Target := Name_Buffer (1 .. Name_Len) = "gnaampcmd";
+   AAMP_On_Target := To_Lower (Command_Name) = "gnaampcmd";
 
    --  Put the command line in environment variable GNAT_DRIVER_COMMAND_LINE,
    --  so that the spawned tool may know the way the GNAT driver was invoked.

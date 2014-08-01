@@ -4995,6 +4995,8 @@ treated as errors.
 The warning string still appears, but the warning messages are counted
 as errors, and prevent the generation of an object file. Note that this
 is the only -gnatw switch that affects the handling of style check messages.
+Note also that this switch has no effect on info (information) messages, which
+are not treated as errors if this switch is present.
 
 @item -gnatw.e
 @emph{Activate every optional warning}

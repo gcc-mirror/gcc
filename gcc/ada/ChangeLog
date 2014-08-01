@@ -1,3 +1,36 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): a)
+	An attribute_reference to Loop_Entry denotes an iterator
+	specification: its prefix is an object, as is the case for 'Old.
+	b) If the domain of iteration is an expression whose type has
+	the Iterable aspect defined, this is an iterator specification.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb: Minor reformatting.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads (Info_Messages): New counter.
+	* err_vars.ads: Minor comment update.
+	* errout.adb (Delete_Warning_And_Continuations): Deal
+	with new Info_Messages counter.
+	(Error_Msg_Internal): ditto.
+	(Delete_Warning): ditto.
+	(Initialize): ditto.
+	(Write_Error_Summary): ditto.
+	(Output_Messages): ditto.
+	(To_Be_Removed): ditto.
+	* erroutc.adb (Delete_Msg): Deal with Info_Messages counter.
+	(Compilation_Errors): ditto.
+	* errutil.adb (Error_Msg): Deal with Info_Messages counter.
+	(Finalize): ditto.
+	(Initialize): ditto.
+	* sem_prag.adb (Analyze_Pragma): Minor comment addition.
+	* gnat_ugn.texi: Document that -gnatwe does not affect info
+	messages.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* debug.adb: Document debug switch -gnatd.Z.
