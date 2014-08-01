@@ -793,7 +793,9 @@ package body Sem_Util is
             return;
          end if;
 
-         if Is_Generic_Formal (Typ) then
+         if Is_Generic_Formal (Typ)
+           and then Is_Discrete_Type (Typ)
+         then
             Set_No_Predicate_On_Actual (Typ);
          end if;
 
@@ -821,9 +823,11 @@ package body Sem_Util is
                Error_Msg_Warn := SPARK_Mode /= On;
                Error_Msg_FE (Msg & "<<", N, Typ);
                Error_Msg_F ("\Program_Error [<<", N);
+
                Insert_Action (N,
                  Make_Raise_Program_Error (Sloc (N),
                    Reason => PE_Bad_Predicated_Generic_Type));
+
             else
                Error_Msg_FE (Msg & "<<", N, Typ);
             end if;
@@ -6018,7 +6022,8 @@ package body Sem_Util is
                --  be a static subtype, since otherwise it would have
                --  been diagnosed as illegal.
 
-               elsif Is_Entity_Name (Choice) and then Is_Type (Entity (Choice))
+               elsif Is_Entity_Name (Choice) and then
+                     Is_Type (Entity (Choice))
                then
                   exit Search when Is_In_Range (Expr, Etype (Choice),
                                                 Assume_Valid => False);

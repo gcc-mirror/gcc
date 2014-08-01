@@ -16804,10 +16804,10 @@ package body Sem_Ch3 is
 
    procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id) is
    begin
-      Set_Has_Static_Predicate_Aspect (Subt,
-          Has_Static_Predicate_Aspect (Par));
-      Set_Has_Dynamic_Predicate_Aspect (Subt,
-          Has_Dynamic_Predicate_Aspect (Par));
+      Set_Has_Static_Predicate_Aspect
+        (Subt, Has_Static_Predicate_Aspect (Par));
+      Set_Has_Dynamic_Predicate_Aspect
+        (Subt, Has_Dynamic_Predicate_Aspect (Par));
    end Inherit_Predicate_Flags;
 
    -----------------------
