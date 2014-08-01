@@ -1946,7 +1946,8 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
   f2t (&fad.ftLastWriteTime, &statbuf->st_mtime);
   f2t (&fad.ftLastAccessTime, &statbuf->st_atime);
 
-  statbuf->st_size = (off_t)fad.nFileSizeLow;
+  statbuf->st_size =
+    (__int64)fad.nFileSizeLow | (__int64)fad.nFileSizeHigh << 32;
 
   /* We do not have the S_IEXEC attribute, but this is not used on GNAT.  */
   statbuf->st_mode = S_IREAD;

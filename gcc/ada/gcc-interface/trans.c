@@ -76,18 +76,6 @@ static location_t block_end_locus_sink;
 #define BLOCK_SOURCE_END_LOCATION(BLOCK) block_end_locus_sink
 #endif
 
-/* For efficient float-to-int rounding, it is necessary to know whether
-   floating-point arithmetic may use wider intermediate results.  When
-   FP_ARITH_MAY_WIDEN is not defined, be conservative and only assume
-   that arithmetic does not widen if double precision is emulated.  */
-#ifndef FP_ARITH_MAY_WIDEN
-#if defined(HAVE_extendsfdf2)
-#define FP_ARITH_MAY_WIDEN HAVE_extendsfdf2
-#else
-#define FP_ARITH_MAY_WIDEN 0
-#endif
-#endif
-
 /* Pointers to front-end tables accessed through macros.  */
 struct Node *Nodes_Ptr;
 struct Flags *Flags_Ptr;
@@ -804,12 +792,15 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
     case Attr_Object_Size:
     case Attr_Value_Size:
     case Attr_Component_Size:
+    case Attr_Descriptor_Size:
     case Attr_Max_Size_In_Storage_Elements:
     case Attr_Min:
     case Attr_Max:
     case Attr_Null_Parameter:
     case Attr_Passed_By_Reference:
     case Attr_Mechanism_Code:
+    case Attr_Machine:
+    case Attr_Model:
       return 0;
 
     case Attr_Address:
@@ -2334,6 +2325,54 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       }
       break;
 
+    case Attr_Model:
+      /* We treat Model as identical to Machine.  This is true for at least
+	 IEEE and some other nice floating-point systems.  */
+
+      /* ... fall through ... */
+
+    case Attr_Machine:
+      /* The trick is to force the compiler to store the result in memory so
+	 that we do not have extra precision used.  But do this only when this
+	 is necessary, i.e. for a type that is not the longest floating-point
+	 type and if FP_ARITH_MAY_WIDEN is true.  */
+      prefix_unused = true;
+      gnu_expr = gnat_to_gnu (First (Expressions (gnat_node)));
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      gnu_result = convert (gnu_result_type, gnu_expr);
+
+      if (gnu_result_type != longest_float_type_node && fp_arith_may_widen)
+	{
+	  tree rec_type = make_node (RECORD_TYPE);
+	  tree field
+	    = create_field_decl (get_identifier ("OBJ"), gnu_result_type,
+				 rec_type, NULL_TREE, NULL_TREE, 0, 0);
+	  tree rec_val, asm_expr;
+
+	  finish_record_type (rec_type, field, 0, false);
+
+	  rec_val = build_constructor_single (rec_type, field, gnu_result);
+	  rec_val = save_expr (rec_val);
+
+	  asm_expr
+	    = build5 (ASM_EXPR, void_type_node,
+		      build_string (0, ""),
+		      tree_cons (build_tree_list (NULL_TREE,
+						  build_string (2, "=m")),
+				 rec_val, NULL_TREE),
+		      tree_cons (build_tree_list (NULL_TREE,
+						  build_string (1, "m")),
+				 rec_val, NULL_TREE),
+		      NULL_TREE, NULL_TREE);
+	  ASM_VOLATILE_P (asm_expr) = 1;
+
+	  gnu_result
+	    = build_compound_expr (gnu_result_type, asm_expr,
+				   build_component_ref (rec_val, NULL_TREE,
+							field, false));
+	}
+      break;
+
     default:
       /* This abort means that we have an unimplemented attribute.  */
       gcc_unreachable ();
@@ -2347,7 +2386,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       && TREE_SIDE_EFFECTS (gnu_prefix)
       && !Is_Entity_Name (gnat_prefix))
     gnu_result
-      = build_compound_expr  (TREE_TYPE (gnu_result), gnu_prefix, gnu_result);
+      = build_compound_expr (TREE_TYPE (gnu_result), gnu_prefix, gnu_result);
 
   *gnu_result_type_p = gnu_result_type;
   return gnu_result;
@@ -8675,7 +8714,8 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 
   /* Now convert to the result base type.  If this is a non-truncating
      float-to-integer conversion, round.  */
-  if (INTEGRAL_TYPE_P (gnu_base_type) && FLOAT_TYPE_P (gnu_in_basetype)
+  if (INTEGRAL_TYPE_P (gnu_base_type)
+      && FLOAT_TYPE_P (gnu_in_basetype)
       && !truncatep)
     {
       REAL_VALUE_TYPE half_minus_pred_half, pred_half;
@@ -8684,11 +8724,11 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
       const struct real_format *fmt;
 
       /* The following calculations depend on proper rounding to even
-	 of each arithmetic operation. In order to prevent excess
+	 of each arithmetic operation.  In order to prevent excess
 	 precision from spoiling this property, use the widest hardware
 	 floating-point type if FP_ARITH_MAY_WIDEN is true.  */
       calc_type
-	= FP_ARITH_MAY_WIDEN ? longest_float_type_node : gnu_in_basetype;
+	= fp_arith_may_widen ? longest_float_type_node : gnu_in_basetype;
 
       /* FIXME: Should not have padding in the first place.  */
       if (TYPE_IS_PADDING_P (calc_type))

@@ -58,6 +58,15 @@ extern "C" {
 #define GNAT_FSTAT fstat64
 #define GNAT_LSTAT lstat64
 #define GNAT_STRUCT_STAT struct stat64
+
+#elif defined(_WIN32)
+#define GNAT_FOPEN fopen64
+#define GNAT_OPEN open
+#define GNAT_STAT stat64
+#define GNAT_FSTAT fstat64
+#define GNAT_LSTAT lstat
+#define GNAT_STRUCT_STAT struct stat64
+
 #else
 #define GNAT_FOPEN fopen
 #define GNAT_OPEN open

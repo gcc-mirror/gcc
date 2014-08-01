@@ -76,6 +76,9 @@ int double_float_alignment;
    is not specifically capped.  */
 int double_scalar_alignment;
 
+/* True if floating-point arithmetics may use wider intermediate results.  */
+bool fp_arith_may_widen = true;
+
 /* Tree nodes for the various types and decls we create.  */
 tree gnat_std_decls[(int) ADT_LAST];
 

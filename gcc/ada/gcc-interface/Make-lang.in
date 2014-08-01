@@ -654,26 +654,7 @@ ada.tags: force
 
 # Generate documentation.
 
-ada/doctools/xgnatugn$(build_exeext): ada/xgnatugn.adb
-	-$(MKDIR) ada/doctools
-	$(CP) $^ ada/doctools
-	cd ada/doctools && gnatmake -q xgnatugn
-
-# Note that doc/gnat_ugn.texi and doc/projects.texi do not depend on
-# xgnatugn being built so we can distribute a pregenerated doc/gnat_ugn.info
-
-doc/gnat_ugn.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words \
-   doc/projects.texi $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	$(MAKE) ada/doctools/xgnatugn$(build_exeext)
-	ada/doctools/xgnatugn unw $(srcdir)/ada/gnat_ugn.texi \
-	   $(srcdir)/ada/ug_words doc/gnat_ugn.texi
-
-doc/projects.texi: $(srcdir)/ada/projects.texi
-	$(MAKE) ada/doctools/xgnatugn$(build_exeext)
-	ada/doctools/xgnatugn unw $(srcdir)/ada/projects.texi \
-	   $(srcdir)/ada/ug_words doc/projects.texi
-
-doc/gnat_ugn.info: doc/gnat_ugn.texi			\
+doc/gnat_ugn.info: ada/gnat_ugn.texi ada/projects.texi \
    $(gcc_docdir)/include/fdl.texi $(gcc_docdir)/include/gcc-common.texi	\
    gcc-vers.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
@@ -698,8 +679,7 @@ doc/gnat-style.info: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi	\
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-ADA_INFOFILES = doc/gnat_ugn.info doc/gnat_ugn.texi \
-                doc/gnat_rm.info doc/gnat-style.info
+ADA_INFOFILES = doc/gnat_ugn.info doc/gnat_rm.info doc/gnat-style.info
 
 ada.info: $(ADA_INFOFILES)
 
@@ -732,7 +712,8 @@ ada.html:
 
 ada.install-html:
 
-doc/gnat_ugn.dvi: doc/gnat_ugn.texi $(gcc_docdir)/include/fdl.texi	\
+doc/gnat_ugn.dvi: ada/gnat_ugn.texi ada/projects.texi \
+	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
@@ -743,7 +724,8 @@ doc/gnat_rm.dvi: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 doc/gnat-style.dvi: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
-doc/gnat_ugn.pdf: doc/gnat_ugn.texi $(gcc_docdir)/include/fdl.texi	\
+doc/gnat_ugn.pdf: ada/gnat_ugn.texi ada/projects.texi \
+	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
 

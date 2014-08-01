@@ -18,7 +18,7 @@
 #<http://www.gnu.org/licenses/>.
 
 # This makefile fragment is included in the ada Makefile (both Unix
-# and NT and VMS versions).
+# and Windows).
 
 # Its purpose is to allow the separate maintainence of the list of
 # GNATRTL objects, which frequently changes.

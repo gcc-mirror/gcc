@@ -1,3 +1,46 @@
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* ug_words, xgnatugn.adb, gcc-interface/Make-lang.in: Remove
+	xgnatugn.adb and ug_words.
+
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Check whether
+	expansion can be avoid for Machine, Model and Rounding.
+	(Is_Inline_Floating_Point_Attribute): Return true for Machine
+	& Model, as well as Rounding if wrapped in a conversion to an
+	integer type.
+	* sem_res.adb (Simplify_Type_Conversion): Deal with Rounding as well.
+	* gcc-interface/gigi.h (fp_arith_may_widen): Declare.
+	* gcc-interface/utils.c (fp_arith_may_widen): New global variable.
+	* gcc-interface/misc.c (enumerate_modes): Compute it.
+	* gcc-interface/trans.c (FP_ARITH_MAY_WIDEN): Delete.
+	(lvalue_required_for_attribute_p): Deal with Descriptor_Size,
+	Machine and Model.
+	(Attribute_to_gnu) <Attr_Model>: New case.
+	<Attr_Machine>): Likewise.
+	(convert_with_check): Test
+	fp_arith_may_widen variable.
+
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h (GNAT_FOPEN): New definition for Windows.
+	(GNAT_OPEN): Likewise.
+	(GNAT_STAT): Likewise.
+	(GNAT_FSTAT): Likewise.
+	(GNAT_LSTAT): Likewise.
+	(GNAT_STRUCT_STAT): Likewise.
+	* adaint.c (__gnat_stat): Fix computation of file size for
+	Windows.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* Makefile.rtl: Minor comment update.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* Make-generated.in: Remove dependencies for vms-help.
+
 2014-08-01  Gary Dismukes  <dismukes@adacore.com>
 
 	* makeutl.ads, opt.ads: Minor grammar fixes.

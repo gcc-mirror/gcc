@@ -717,6 +717,9 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
     = { "float", "double", "long double" };
   int iloop;
 
+  /* We are going to compute it below.  */
+  fp_arith_may_widen = false;
+
   for (iloop = 0; iloop < NUM_MACHINE_MODES; iloop++)
     {
       enum machine_mode i = (enum machine_mode) iloop;
@@ -765,6 +768,15 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 	  /* ??? Cope with the ghost XFmode of the ARM port.  */
 	  if (!fmt)
 	    continue;
+
+	  /* Be conservative and consider that floating-point arithmetics may
+	     use wider intermediate results as soon as there is an extended
+	     Motorola or Intel mode supported by the machine.  */
+	  if (fmt == &ieee_extended_motorola_format
+	      || fmt == &ieee_extended_intel_96_format
+	      || fmt == &ieee_extended_intel_96_round_53_format
+	      || fmt == &ieee_extended_intel_128_format)
+	    fp_arith_may_widen = true;
 
 	  if (fmt->b == 2)
 	    digs = (fmt->p - 1) * 1233 / 4096; /* scale by log (2) */
