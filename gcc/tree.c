@@ -231,8 +231,8 @@ static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
 static int type_hash_marked_p (const void *);
-static void type_hash_list (const_tree, inchash &);
-static void attribute_hash_list (const_tree, inchash &);
+static void type_hash_list (const_tree, inchash::hash &);
+static void attribute_hash_list (const_tree, inchash::hash &);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -4593,7 +4593,7 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 {
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
-      inchash hstate;
+      inchash::hash hstate;
       tree ntype;
       int i;
       tree t;
@@ -6631,7 +6631,7 @@ decl_debug_args_insert (tree from)
    of the individual types.  */
 
 static void
-type_hash_list (const_tree list, inchash &hstate)
+type_hash_list (const_tree list, inchash::hash &hstate)
 {
   const_tree tail;
 
@@ -6866,7 +6866,7 @@ print_type_hash_statistics (void)
    by adding the hash codes of the individual attributes.  */
 
 static void
-attribute_hash_list (const_tree list, inchash &hstate)
+attribute_hash_list (const_tree list, inchash::hash &hstate)
 {
   const_tree tail;
 
@@ -7384,13 +7384,16 @@ commutative_ternary_tree_code (enum tree_code code)
   return false;
 }
 
+namespace inchash
+{
+
 /* Generate a hash value for an expression.  This can be used iteratively
    by passing a previous result as the HSTATE argument.
 
    This function is intended to produce the same hash for expressions which
    would compare equal using operand_equal_p.  */
 void
-iterative_hstate_expr (const_tree t, inchash &hstate)
+add_expr (const_tree t, inchash::hash &hstate)
 {
   int i;
   enum tree_code code;
@@ -7431,14 +7434,14 @@ iterative_hstate_expr (const_tree t, inchash &hstate)
       hstate.add ((const void *) TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
       return;
     case COMPLEX_CST:
-      iterative_hstate_expr (TREE_REALPART (t), hstate);
-      iterative_hstate_expr (TREE_IMAGPART (t), hstate);
+      inchash::add_expr (TREE_REALPART (t), hstate);
+      inchash::add_expr (TREE_IMAGPART (t), hstate);
       return;
     case VECTOR_CST:
       {
 	unsigned i;
 	for (i = 0; i < VECTOR_CST_NELTS (t); ++i)
-	  iterative_hstate_expr (VECTOR_CST_ELT (t, i), hstate);
+	  inchash::add_expr (VECTOR_CST_ELT (t, i), hstate);
 	return;
       }
     case SSA_NAME:
@@ -7452,7 +7455,7 @@ iterative_hstate_expr (const_tree t, inchash &hstate)
       /* A list of expressions, for a CALL_EXPR or as the elements of a
 	 VECTOR_CST.  */
       for (; t; t = TREE_CHAIN (t))
-	iterative_hstate_expr (TREE_VALUE (t), hstate);
+	inchash::add_expr (TREE_VALUE (t), hstate);
       return;
     case CONSTRUCTOR:
       {
@@ -7460,8 +7463,8 @@ iterative_hstate_expr (const_tree t, inchash &hstate)
 	tree field, value;
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
 	  {
-	    iterative_hstate_expr (field, hstate);
-	    iterative_hstate_expr (value, hstate);
+	    inchash::add_expr (field, hstate);
+	    inchash::add_expr (value, hstate);
 	  }
 	return;
       }
@@ -7500,7 +7503,7 @@ iterative_hstate_expr (const_tree t, inchash &hstate)
 	    {
 	      /* Make sure to include signness in the hash computation.  */
 	      hstate.add_int (TYPE_UNSIGNED (TREE_TYPE (t)));
-	      iterative_hstate_expr (TREE_OPERAND (t, 0), hstate);
+	      inchash::add_expr (TREE_OPERAND (t, 0), hstate);
 	    }
 
 	  else if (commutative_tree_code (code))
@@ -7509,17 +7512,19 @@ iterative_hstate_expr (const_tree t, inchash &hstate)
 		 however it appears.  We do this by first hashing both operands
 		 and then rehashing based on the order of their independent
 		 hashes.  */
-	      inchash one, two;
-	      iterative_hstate_expr (TREE_OPERAND (t, 0), one);
-	      iterative_hstate_expr (TREE_OPERAND (t, 1), two);
+	      inchash::hash one, two;
+	      inchash::add_expr (TREE_OPERAND (t, 0), one);
+	      inchash::add_expr (TREE_OPERAND (t, 1), two);
 	      hstate.add_commutative (one, two);
 	    }
 	  else
 	    for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
-	      iterative_hstate_expr (TREE_OPERAND (t, i), hstate);
+	      inchash::add_expr (TREE_OPERAND (t, i), hstate);
 	}
       return;
     }
+}
+
 }
 
 /* Constructors for pointer, array and function types.
@@ -7711,7 +7716,7 @@ static tree
 build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
 {
   tree itype = make_node (INTEGER_TYPE);
-  inchash hstate;
+  inchash::hash hstate;
 
   TREE_TYPE (itype) = type;
 
@@ -7739,8 +7744,8 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
       return itype;
     }
 
-  iterative_hstate_expr (TYPE_MIN_VALUE (itype), hstate);
-  iterative_hstate_expr (TYPE_MAX_VALUE (itype), hstate);
+  inchash::add_expr (TYPE_MIN_VALUE (itype), hstate);
+  inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
   hstate.merge_hash (TYPE_HASH (type));
   itype = type_hash_canon (hstate.end (), itype);
 
@@ -7847,7 +7852,7 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
 
   if (shared)
     {
-      inchash hstate;
+      inchash::hash hstate;
       hstate.add_object (TYPE_HASH (elt_type));
       if (index_type)
 	hstate.add_object (TYPE_HASH (index_type));
@@ -7991,7 +7996,7 @@ tree
 build_function_type (tree value_type, tree arg_types)
 {
   tree t;
-  inchash hstate;
+  inchash::hash hstate;
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
@@ -8146,7 +8151,7 @@ build_method_type_directly (tree basetype,
 {
   tree t;
   tree ptype;
-  inchash hstate;
+  inchash::hash hstate;
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
@@ -8214,7 +8219,7 @@ tree
 build_offset_type (tree basetype, tree type)
 {
   tree t;
-  inchash hstate;
+  inchash::hash hstate;
 
   /* Make a node of the sort we want.  */
   t = make_node (OFFSET_TYPE);
@@ -8251,7 +8256,7 @@ tree
 build_complex_type (tree component_type)
 {
   tree t;
-  inchash hstate;
+  inchash::hash hstate;
 
   gcc_assert (INTEGRAL_TYPE_P (component_type)
 	      || SCALAR_FLOAT_TYPE_P (component_type)
@@ -9403,7 +9408,7 @@ static tree
 make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 {
   tree t;
-  inchash hstate;
+  inchash::hash hstate;
 
   t = make_node (VECTOR_TYPE);
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (innertype);

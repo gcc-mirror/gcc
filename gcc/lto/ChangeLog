@@ -1,3 +1,9 @@
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
+	* lto.c (hash_canonical_type): Use inchash::hash
+	and use inchash::add_expr.
+	(iterative_hash_canonical_type): Dito.
+
 2014-07-30  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (lto_write_data): New function.

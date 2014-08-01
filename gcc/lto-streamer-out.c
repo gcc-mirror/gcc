@@ -732,7 +732,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 static hashval_t
 hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, tree t)
 {
-  inchash hstate;
+  inchash::hash hstate;
 
 #define visit(SIBLING) \
   do { \
