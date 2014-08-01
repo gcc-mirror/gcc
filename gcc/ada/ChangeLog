@@ -1,3 +1,34 @@
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Remove the VMS specific stuff.  Integrate in
+	procedure GNATCmd the relevant declarations from packages VMS_Cmds
+	and VMS_Conv.
+	* gnatcmd.ads: Update comments to remove any trace of VMS
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: sem_ch12.adb (Build_Wrapper): Capture entity for
+	defaulted actual that is an operator, before building wrapper
+	for it in GNATprove mode. Restrict construction of wrapper to
+	actuals that are operators.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* vms_conv.adb, vms_conv.ads, vms_data.ads, vms_cmds.ads: Remove VMS
+	specific packages no longer needed.
+
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.ads (System.CRTL): Move with clause to body.
+	(File_Size): New type.
+	(File_Length64): Use it.
+	(File_Length): Restore previous spec returning a Long_Integer.
+	* s-os_lib.adb (System.CRTL): Move with clause here.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* mlib-prj.adb: Update comments to remove any mention of VMS.
+
 2014-08-01  Arnaud Charlet  <charlet@adacore.com>
 
 	* ug_words, xgnatugn.adb, gcc-interface/Make-lang.in: Remove

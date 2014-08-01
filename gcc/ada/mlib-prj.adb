@@ -837,7 +837,7 @@ package body MLib.Prj is
                Arguments := new String_List (1 .. Initial_Argument_Max);
             end if;
 
-            --  Add "-n -o b~<lib>.adb (b__<lib>.adb on VMS) -L<lib>_"
+            --  Add "-n -o b~<lib>.adb -L<lib>_"
 
             Argument_Number := 2;
             Arguments (1) := No_Main;
@@ -1726,10 +1726,8 @@ package body MLib.Prj is
          Argument_Number := 0;
 
          --  If we have a standalone library, gather all the interface ALI.
-         --  They are passed to Build_Dynamic_Library, where they are used by
-         --  some platforms (VMS, for example) to decide what symbols should be
-         --  exported. They are also flagged as Interface when we copy them to
-         --  the library directory (by Copy_ALI_Files, below).
+         --  They are flagged as Interface when we copy them to the library
+         --  directory (by Copy_ALI_Files, below).
 
          if Standalone then
             Current_Proj := For_Project;
@@ -2400,9 +2398,8 @@ package body MLib.Prj is
 
             --  Also ignore the shared libraries which are :
 
-            --  UNIX / Windows    VMS
-            --  -lgnat-<version>  -lgnat_<version>  (7 + version'length chars)
-            --  -lgnarl-<version> -lgnarl_<version> (8 + version'length chars)
+            --  -lgnat-<version>  (7 + version'length chars)
+            --  -lgnarl-<version> (8 + version'length chars)
 
             if Next_Line (1 .. Nlast) /= "-static" and then
                Next_Line (1 .. Nlast) /= "-shared" and then

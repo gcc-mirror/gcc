@@ -1326,6 +1326,14 @@ __gnat_file_length (int fd)
   return __gnat_file_length_attr (fd, NULL, &attr);
 }
 
+long
+__gnat_file_length_long (int fd)
+{
+  struct file_attributes attr;
+  __gnat_reset_attributes (&attr);
+  return (long)__gnat_file_length_attr (fd, NULL, &attr);
+}
+
 __int64
 __gnat_named_file_length (char *name)
 {

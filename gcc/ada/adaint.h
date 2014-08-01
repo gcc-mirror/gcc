@@ -160,6 +160,7 @@ extern int    __gnat_create_output_file            (char *);
 extern int    __gnat_create_output_file_new        (char *);
 
 extern int    __gnat_open_append                   (char *, int);
+extern long   __gnat_file_length_long              (int);
 extern __int64 __gnat_file_length                  (int);
 extern __int64 __gnat_named_file_length            (char *);
 extern void   __gnat_tmp_name			   (char *);
