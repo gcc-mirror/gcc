@@ -31,11 +31,18 @@
 
 /* Routines required for implementing routines in Interfaces.C.Streams.  */
 
+#define _LARGEFILE_SOURCE
 #define _FILE_OFFSET_BITS 64
 /* the define above will make off_t a 64bit type on GNU/Linux */
 
 #include <stdio.h>
 #include <sys/types.h>
+
+#ifdef _AIX
+/* needed to avoid conflicting declarations */
+#include <unistd.h>
+#include <sys/mman.h>
+#endif
 
 #ifdef __vxworks
 #include "vxWorks.h"
@@ -268,7 +275,10 @@ __gnat_fseek64 (FILE *stream, __int64 offset, int origin)
   return _fseeki64 (stream, offset, origin);
 }
 
-#else
+#elif defined(linux) || defined(sun) \
+  || defined (__FreeBSD__) || defined(__APPLE__)
+/* section for platforms having ftello/fseeko */
+
 __int64
 __gnat_ftell64 (FILE *stream)
 {
@@ -283,6 +293,26 @@ __gnat_fseek64 (FILE *stream, __int64 offset, int origin)
      2Gb on a patform not supporting it. */
   if ((off_t)offset == offset)
     return fseeko (stream, (off_t) offset, origin);
+  else
+    return -1;
+}
+
+#else
+
+__int64
+__gnat_ftell64 (FILE *stream)
+{
+  return (__int64)ftell (stream);
+}
+
+int
+__gnat_fseek64 (FILE *stream, __int64 offset, int origin)
+{
+  /* make sure that the offset is not bigger than the OS off_t, if so return
+     with error as this mean that we are trying to handle files larger than
+     2Gb on a patform not supporting it. */
+  if ((off_t)offset == offset)
+    return fseek (stream, (off_t) offset, origin);
   else
     return -1;
 }

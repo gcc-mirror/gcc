@@ -1,3 +1,8 @@
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
+	* cstreams.c: Only enable large file support on know supported
+	platforms. Add missing defines/includes.
+
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb New flags No_Predicate_On_Actual and
