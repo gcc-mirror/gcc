@@ -1,3 +1,11 @@
+2014-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60241
+	* pt.c (lookup_template_class_1): Update DECL_TEMPLATE_INSTANTIATIONS
+	of the partial instantiation, not the most general template.
+	(maybe_process_partial_specialization): Reassign everything on
+	that list.
+
 2014-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60361
