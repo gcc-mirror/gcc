@@ -1,5 +1,9 @@
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
+	* tree-ssa-tail-merge.c (same_succ_hash): Convert to inchash.
+
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
 	* tree-ssa-sccvn.c (vn_reference_op_compute_hash): Convert to
 	inchash.
 	(vn_reference_compute_hash): Dito.

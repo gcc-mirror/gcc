@@ -451,7 +451,7 @@ stmt_update_dep_bb (gimple stmt)
 static hashval_t
 same_succ_hash (const_same_succ e)
 {
-  hashval_t hashval = bitmap_hash (e->succs);
+  inchash::hash hstate (bitmap_hash (e->succs));
   int flags;
   unsigned int i;
   unsigned int first = bitmap_first_set_bit (e->bbs);
@@ -472,37 +472,35 @@ same_succ_hash (const_same_succ e)
 	continue;
       size++;
 
-      hashval = iterative_hash_hashval_t (gimple_code (stmt), hashval);
+      hstate.add_int (gimple_code (stmt));
       if (is_gimple_assign (stmt))
-	hashval = iterative_hash_hashval_t (gimple_assign_rhs_code (stmt),
-					    hashval);
+	hstate.add_int (gimple_assign_rhs_code (stmt));
       if (!is_gimple_call (stmt))
 	continue;
       if (gimple_call_internal_p (stmt))
-	hashval = iterative_hash_hashval_t
-	  ((hashval_t) gimple_call_internal_fn (stmt), hashval);
+        hstate.add_int (gimple_call_internal_fn (stmt));
       else
 	{
-	  hashval = iterative_hash_expr (gimple_call_fn (stmt), hashval);
+	  inchash::add_expr (gimple_call_fn (stmt), hstate);
 	  if (gimple_call_chain (stmt))
-	    hashval = iterative_hash_expr (gimple_call_chain (stmt), hashval);
+	    inchash::add_expr (gimple_call_chain (stmt), hstate);
 	}
       for (i = 0; i < gimple_call_num_args (stmt); i++)
 	{
 	  arg = gimple_call_arg (stmt, i);
 	  arg = vn_valueize (arg);
-	  hashval = iterative_hash_expr (arg, hashval);
+	  inchash::add_expr (arg, hstate);
 	}
     }
 
-  hashval = iterative_hash_hashval_t (size, hashval);
+  hstate.add_int (size);
   BB_SIZE (bb) = size;
 
   for (i = 0; i < e->succ_flags.length (); ++i)
     {
       flags = e->succ_flags[i];
       flags = flags & ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      hashval = iterative_hash_hashval_t (flags, hashval);
+      hstate.add_int (flags);
     }
 
   EXECUTE_IF_SET_IN_BITMAP (e->succs, 0, s, bs)
@@ -521,7 +519,7 @@ same_succ_hash (const_same_succ e)
 	}
     }
 
-  return hashval;
+  return hstate.end ();
 }
 
 /* Returns true if E1 and E2 have 2 successors, and if the successor flags
