@@ -257,6 +257,12 @@ begin
    Write_Eol;
    Write_Eol;
 
+   --  Line for -dn
+
+   Write_Str ("  -dn      Do not delete temporary files");
+   Write_Eol;
+   Write_Eol;
+
    Write_Str ("  --create-map-file   Create map file mainprog.map");
    Write_Eol;
 

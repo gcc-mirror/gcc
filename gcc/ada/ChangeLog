@@ -1,5 +1,35 @@
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch10.adb: Minor reformatting.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Same_Generic_Actual): Make function symmetric,
+	because either type may be a subtype of the other.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* makeusg.adb: Add documentation for debug switch -dn.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Process_Minus, Process_Divide): Label dimension
+	expression with standard operator and type, for pretty-printing
+	use, when in ASIS_Mode. When generating code dimensional analysis
+	is not involved and dimension expressions are handled statically,
+	and other operators are resolved in the usual way.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Remove setting of
+	Parent_Subtype in ASIS mode, leads to several failures.
+	* sem_ch4.adb (Analyze_Selected_Component): In an instance,
+	if the prefix is a type extension, check whether component is
+	declared in the parent type, possibly in a parent unit. Needed
+	in ASIS mode when Parent_Subtype is not set.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb: Minor reformatting.
 	* s-regpat.adb: Minor reformatting.
 	* sem_ch3.adb (Analyze_Object_Declaration): Do not set

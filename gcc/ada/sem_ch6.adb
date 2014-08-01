@@ -7274,21 +7274,38 @@ package body Sem_Ch6 is
          --  Check that the types of corresponding formals have the same
          --  generic actual if any. We have to account for subtypes of a
          --  generic formal, declared between a spec and a body, which may
-         --  appear distinct in an instance but matched in the generic.
+         --  appear distinct in an instance but matched in the generic, and
+         --  the subtype may be used either in the spec or the body of the
+         --  subprogram being checked.
 
          -------------------------
          -- Same_Generic_Actual --
          -------------------------
 
          function Same_Generic_Actual (T1, T2 : Entity_Id) return Boolean is
+
+            function Is_Declared_Subtype (S1, S2 : Entity_Id) return Boolean;
+            --  Predicate to check whether S1 is a subtype of S2 in the source
+            --  of the instance.
+
+            -------------------------
+            -- Is_Declared_Subtype --
+            -------------------------
+
+            function Is_Declared_Subtype (S1, S2 : Entity_Id) return Boolean is
+            begin
+               return Comes_From_Source (Parent (S1))
+                 and then Nkind (Parent (S1)) = N_Subtype_Declaration
+                 and then Is_Entity_Name (Subtype_Indication (Parent (S1)))
+                 and then Entity (Subtype_Indication (Parent (S1))) = S2;
+            end Is_Declared_Subtype;
+
+         --  Start of processing for Same_Generic_Actual
+
          begin
             return Is_Generic_Actual_Type (T1) = Is_Generic_Actual_Type (T2)
-              or else
-                (Present (Parent (T1))
-                  and then Comes_From_Source (Parent (T1))
-                  and then Nkind (Parent (T1)) = N_Subtype_Declaration
-                  and then Is_Entity_Name (Subtype_Indication (Parent (T1)))
-                  and then Entity (Subtype_Indication (Parent (T1))) = T2);
+              or else Is_Declared_Subtype (T1, T2)
+              or else Is_Declared_Subtype (T2, T1);
          end Same_Generic_Actual;
 
       --  Start of processing for Different_Generic_Profile
