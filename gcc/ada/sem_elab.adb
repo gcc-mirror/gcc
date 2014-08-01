@@ -2429,8 +2429,8 @@ package body Sem_Elab is
                       Decl);
                   Error_Msg_N ("\Program_Error [<<", Decl);
 
-               elsif
-                 Present (Corresponding_Body (Unit_Declaration_Node (Proc)))
+               elsif Present
+                       (Corresponding_Body (Unit_Declaration_Node (Proc)))
                then
                   Append_Elmt (Proc, Intra_Procs);
                end if;

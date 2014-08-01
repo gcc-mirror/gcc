@@ -620,14 +620,11 @@ package body Exp_Strm is
       --  and we are in the body of the default implementation of a 'Read
       --  attribute, set target type to force a constraint check (13.13.2(35)).
       --  If the type of the discriminant is currently private, add another
-      --  unchecked conversion from the full view. We also do this check if
-      --  this is an elementary read call in the source program (as opposed
-      --  to one generated as part of a composite read).
+      --  unchecked conversion from the full view.
 
-      if (Nkind (Targ) = N_Identifier
-           and then Is_Internal_Name (Chars (Targ))
-           and then Is_TSS (Scope (Entity (Targ)), TSS_Stream_Read))
-        or else Comes_From_Source (N)
+      if Nkind (Targ) = N_Identifier
+        and then Is_Internal_Name (Chars (Targ))
+        and then Is_TSS (Scope (Entity (Targ)), TSS_Stream_Read)
       then
          Res :=
            Unchecked_Convert_To (Base_Type (U_Type),

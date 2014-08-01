@@ -9934,6 +9934,128 @@ package body Sem_Ch13 is
    --------------------------
 
    procedure Freeze_Entity_Checks (N : Node_Id) is
+      procedure Hide_Non_Overridden_Subprograms (Typ : Entity_Id);
+      --  Inspect the primitive operations of type Typ and hide all pairs of
+      --  implicitly declared non-overridden homographs (Ada RM 8.3 12.3/2).
+
+      -------------------------------------
+      -- Hide_Non_Overridden_Subprograms --
+      -------------------------------------
+
+      procedure Hide_Non_Overridden_Subprograms (Typ : Entity_Id) is
+         procedure Hide_Matching_Homographs
+           (Subp_Id    : Entity_Id;
+            Start_Elmt : Elmt_Id);
+         --  Inspect a list of primitive operations starting with Start_Elmt
+         --  and find matching implicitly declared non-overridden homographs
+         --  of Subp_Id. If found, all matches along with Subp_Id are hidden
+         --  from all visibility.
+
+         function Is_Non_Overridden_Or_Null_Procedure
+           (Subp_Id : Entity_Id) return Boolean;
+         --  Determine whether subprogram Subp_Id is implicitly declared non-
+         --  overridden subprogram or an implicitly declared null procedure.
+
+         ------------------------------
+         -- Hide_Matching_Homographs --
+         ------------------------------
+
+         procedure Hide_Matching_Homographs
+           (Subp_Id    : Entity_Id;
+            Start_Elmt : Elmt_Id)
+         is
+            Prim      : Entity_Id;
+            Prim_Elmt : Elmt_Id;
+
+         begin
+            Prim_Elmt := Start_Elmt;
+            while Present (Prim_Elmt) loop
+               Prim := Node (Prim_Elmt);
+
+               --  The current primitive is implicitly declared non-overridden
+               --  homograph of Subp_Id. Hide both subprograms from visibility.
+
+               if Chars (Prim) = Chars (Subp_Id)
+                 and then Ekind (Prim) = Ekind (Subp_Id)
+                 and then Is_Non_Overridden_Or_Null_Procedure (Prim)
+               then
+                  Set_Is_Hidden_Non_Overridden_Subprogram (Prim);
+                  Set_Is_Immediately_Visible              (Prim, False);
+                  Set_Is_Potentially_Use_Visible          (Prim, False);
+
+                  Set_Is_Hidden_Non_Overridden_Subprogram (Subp_Id);
+                  Set_Is_Immediately_Visible              (Subp_Id, False);
+                  Set_Is_Potentially_Use_Visible          (Subp_Id, False);
+               end if;
+
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end Hide_Matching_Homographs;
+
+         -----------------------------------------
+         -- Is_Non_Overridden_Or_Null_Procedure --
+         -----------------------------------------
+
+         function Is_Non_Overridden_Or_Null_Procedure
+           (Subp_Id : Entity_Id) return Boolean
+         is
+            Alias_Id : Entity_Id;
+
+         begin
+            --  The subprogram is inherited (implicitly declared), it does not
+            --  override and does not cover a primitive of an interface.
+
+            if Ekind_In (Subp_Id, E_Function, E_Procedure)
+              and then Present (Alias (Subp_Id))
+              and then No (Interface_Alias (Subp_Id))
+              and then No (Overridden_Operation (Subp_Id))
+            then
+               Alias_Id := Alias (Subp_Id);
+
+               if Requires_Overriding (Alias_Id) then
+                  return True;
+
+               elsif Nkind (Parent (Alias_Id)) = N_Procedure_Specification
+                 and then Null_Present (Parent (Alias_Id))
+               then
+                  return True;
+               end if;
+            end if;
+
+            return False;
+         end Is_Non_Overridden_Or_Null_Procedure;
+
+         --  Local variables
+
+         Prim_Ops  : constant Elist_Id := Direct_Primitive_Operations (Typ);
+         Prim      : Entity_Id;
+         Prim_Elmt : Elmt_Id;
+
+      --  Start of processing for Hide_Non_Overridden_Subprograms
+
+      begin
+         --  Inspect the list of primitives looking for a non-overriding
+         --  inherited null procedure.
+
+         if Present (Prim_Ops) then
+            Prim_Elmt := First_Elmt (Prim_Ops);
+            while Present (Prim_Elmt) loop
+               Prim := Node (Prim_Elmt);
+               Next_Elmt (Prim_Elmt);
+
+               if Is_Non_Overridden_Or_Null_Procedure (Prim) then
+                  Hide_Matching_Homographs
+                    (Subp_Id    => Prim,
+                     Start_Elmt => Prim_Elmt);
+               end if;
+            end loop;
+         end if;
+      end Hide_Non_Overridden_Subprograms;
+
+      ---------------------
+      -- Local variables --
+      ---------------------
+
       E : constant Entity_Id := Entity (N);
 
       Non_Generic_Case : constant Boolean := Nkind (N) = N_Freeze_Entity;
@@ -9941,6 +10063,9 @@ package body Sem_Ch13 is
       --  for the generic case since it is not needed. Basically in the
       --  generic case, we only need to do stuff that might generate error
       --  messages or warnings.
+
+   --  Start of processing for Freeze_Entity_Checks
+
    begin
       --  Remember that we are processing a freezing entity. Required to
       --  ensure correct decoration of internal entities associated with
@@ -9974,6 +10099,18 @@ package body Sem_Ch13 is
          --  spurious errors in case of late overriding.
 
          Add_Internal_Interface_Entities (E);
+      end if;
+
+      --  After all forms of overriding have been resolved, a tagged type may
+      --  be left with a set of implicitly declared and possibly erroneous
+      --  abstract subprograms, null procedures and subprograms that require
+      --  overriding. If this set contains fully conformat homographs, then one
+      --  is chosen arbitrarily (already done during resolution), otherwise all
+      --  remaining non-conformant homographs must be hidden from visibility
+      --  (Ada RM 8.3 12.3/2).
+
+      if Is_Tagged_Type (E) then
+         Hide_Non_Overridden_Subprograms (E);
       end if;
 
       --  Check CPP types

@@ -1,5 +1,41 @@
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* hostparm.ads: Put back definition of OpenVMS as False to aid
+	the transition process.
+	* sem_ch7.adb: Minor reformatting.
+	* prj-env.adb: Minor code fix.
+	* gnat_rm.texi: Complete previous change.
+	* sem_ch3.adb: Minor reformatting.
+	* sem_ch6.adb: Minor reformatting.
+	* sem_elab.adb: Minor reformatting.
+	* exp_strm.adb: Complete previous change.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Do not issue a
+	warning when a constant is unreferenced and its type has pragma
+	Unreferenced_Objects.
+
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag2 is now known as
+	Is_Hidden_Non_Overridden_Subprogram.
+	(Is_Hidden_Non_Overridden_Subprogram): New routine.
+	(Set_Is_Hidden_Non_Overridden_Subprogram): New routine.
+	(Write_Entity_Fields): Output Flag2.
+	* einfo.ads: New attribute Is_Hidden_Non_Overridden_Subprogram
+	along with occurrences in entities.
+	(Is_Hidden_Non_Overridden_Subprogram): New routine and pragma Inline.
+	(Set_Is_Hidden_Non_Overridden_Subprogram): New routine
+	and pragma Inline.
+	* sem_ch7.adb (Install_Package_Entity): Do not enter implicitly
+	declared non-overriden homographs into visibility.
+	* sem_ch13.adb (Freeze_Entity_Checks): Hide all
+	implicitly declared non-overriden homographs.
+	(Hide_Non_Overridden_Subprograms): New routine.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* snames.ads-tmpl, s-os_lib.adb, s-os_lib.ads, s-fileio.adb: Remove
 	VMS-specific code.
 	* prj-conf.adb: Minor reformatting.
