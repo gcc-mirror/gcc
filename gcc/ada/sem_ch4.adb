@@ -1363,6 +1363,9 @@ package body Sem_Ch4 is
       Others_Present : Boolean;
       --  Indicates if Others was present
 
+      Wrong_Alt : Node_Id;
+      --  For error reporting
+
    --  Start of processing for Analyze_Case_Expression
 
    begin
@@ -1415,6 +1418,9 @@ package body Sem_Ch4 is
 
                if No (Alt) then
                   Add_One_Interp (N, It.Typ, It.Typ);
+
+               else
+                  Wrong_Alt := Alt;
                end if;
 
                Get_Next_Interp (I, It);
@@ -1438,6 +1444,12 @@ package body Sem_Ch4 is
       elsif Exp_Btype = Any_Character then
          Error_Msg_N
            ("character literal as case expression is ambiguous", Expr);
+         return;
+      end if;
+
+      if Etype (N) = Any_Type and then Present (Wrong_Alt) then
+         Error_Msg_N ("type incompatible with that of previous alternatives",
+           Expression (Wrong_Alt));
          return;
       end if;
 

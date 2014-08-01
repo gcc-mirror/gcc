@@ -1,3 +1,14 @@
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Do not perform
+	GNATprove-specific inlining while within a generic.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Case_Expression): Handle properly a
+	case expression with incompatible alternatives, when the first
+	alternative is overloaded.
+
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Check_Parameterless_Call): Use Relocate_Node
