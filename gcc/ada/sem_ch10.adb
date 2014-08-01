@@ -3,7 +3,7 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             S E M _ C H 1 0                              --
---                                                                          --
+--     s                                                                     --
 --                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
@@ -3636,7 +3636,7 @@ package body Sem_Ch10 is
       procedure Check_Private_Limited_Withed_Unit (Item : Node_Id);
       --  Check that if a limited_with clause of a given compilation_unit
       --  mentions a descendant of a private child of some library unit, then
-      --  the given compilation_unit shall be the declaration of a private
+      --  the given compilation_unit must be the declaration of a private
       --  descendant of that library unit, or a public descendant of such. The
       --  code is analogous to that of Check_Private_Child_Unit but we cannot
       --  use entities on the limited with_clauses because their units have not

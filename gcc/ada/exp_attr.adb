@@ -7954,17 +7954,30 @@ package body Exp_Attr is
    function Is_Inline_Floating_Point_Attribute (N : Node_Id) return Boolean is
       Id : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
+      function Is_GCC_Target return Boolean;
+      --  Return True if we are using a GCC target/back-end
+      --  ??? Note: the implementation is kludgy/fragile
+
+      -------------------
+      -- Is_GCC_Target --
+      -------------------
+
+      function Is_GCC_Target return Boolean is
+      begin
+         return VM_Target = No_VM and then not CodePeer_Mode
+           and then not AAMP_On_Target;
+      end Is_GCC_Target;
+
+   --  Start of processing for Exp_Attr
+
    begin
-      --  Machine and Model can be expanded by the backend, but in CodePeer
-      --  mode, we prefer the front end to do the expansion, because CodePeer
-      --  is not prepared to handle these attributes.
+      --  Machine and Model can be expanded by the GCC backend only
 
       if Id = Attribute_Machine or else Id = Attribute_Model then
-         return not CodePeer_Mode;
+         return Is_GCC_Target;
 
-      --  Remaining cases handled by the back end are Rounding and Truncatation
+      --  Remaining cases handled by all back ends are Rounding and Truncation
       --  when appearing as the operand of a conversion to some integer type.
-      --  CodePeer can handle these cases fine.
 
       elsif Nkind (Parent (N)) /= N_Type_Conversion
         or else not Is_Integer_Type (Etype (Parent (N)))

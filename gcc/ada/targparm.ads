@@ -203,15 +203,6 @@ package Targparm is
    AAMP_On_Target : Boolean := False;
    --  Set to True if target is AAMP
 
-   OpenVMS_On_Target : Boolean := False;
-   --  Set to True if target is OpenVMS
-
-   VAX_Float_On_Target : Boolean := False;
-   --  Set to True if target float format is VAX Float
-
-   RTX_RTSS_Kernel_Module_On_Target : Boolean := False;
-   --  Set to True if target is RTSS module for RTX
-
    type Virtual_Machine_Kind is (No_VM, JVM_Target, CLI_Target);
    VM_Target : Virtual_Machine_Kind := No_VM;
    --  Kind of virtual machine targetted

@@ -5224,7 +5224,7 @@ package body Sem_Res is
       Eval_Arithmetic_Op (N);
 
       --  In SPARK, a multiplication or division with operands of fixed point
-      --  types shall be qualified or explicitly converted to identify the
+      --  types must be qualified or explicitly converted to identify the
       --  result type.
 
       if (Is_Fixed_Point_Type (Etype (L))

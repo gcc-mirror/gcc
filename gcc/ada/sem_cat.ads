@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,7 +110,7 @@ package Sem_Cat is
    --  the checks cannot be made before knowing if the object is imported.
 
    procedure Validate_RCI_Declarations (P : Entity_Id);
-   --  Apply semantic checks given in  E2.3(10-14)
+   --  Apply semantic checks given in E2.3(10-14)
 
    procedure Validate_RCI_Subprogram_Declaration (N : Node_Id);
    --  Check RCI subprogram declarations for illegal inlining and formals not
@@ -118,10 +118,10 @@ package Sem_Cat is
 
    procedure Validate_Remote_Access_To_Class_Wide_Type (N : Node_Id);
    --  Checks that Storage_Pool and Storage_Size attribute references are
-   --  not applied to remote access-to-class-wide types. And the expected
-   --  type for an allocator shall not be a remote access-to-class-wide
-   --  type. And a remote access-to-class-wide type shall not be an actual
-   --  parameter for a generic formal access type. RM E.2.3(22).
+   --  not applied to remote access-to-class-wide types. Also checks that the
+   --  expected type for an allocator cannot be a remote access-to-class-wide
+   --  type. ALso checks that a remote access-to-class-wide type cannot be an
+   --  actual parameter for a generic formal access type. RM E.2.3(22).
 
    procedure Validate_RT_RAT_Component (N : Node_Id);
    --  Given N, the package library unit declaration node, we should check

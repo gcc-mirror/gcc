@@ -1,3 +1,23 @@
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Restore more
+	completely previous code since only GCC back-ends are prepared
+	to handle e.g. 'Machine attribute.
+	* targparm.adb, targparm.ads: Remove remaining refs and
+	handling of OpenVMS_On_Target, VAX_Float_On_Target and
+	RTX_RTSS_Kernel_Module_On_Target.
+	* hostparm.ads (OpenVMS, Max_Debug_Name_Length): Removed,
+	no longer used.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* exp_dist.adb, exp_attr.adb: Minor reformatting.
+	* sem_ch3.adb, mlib-tgt-specific-hpux.adb, a-direct.ads,
+	a-synbar-posix.adb, exp_ch9.adb, sem_ch10.adb, sem_prag.adb,
+	sem_ch12.adb, sem.ads, sem_res.adb, s-exctra.adb, s-soflin.ads,
+	g-alveop.ads, sem_ch8.adb, vxaddr2line.adb, sem_cat.ads: Remove
+	improper use of shall.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb, exp_atag.adb, layout.adb, nlists.adb, nlists.ads,

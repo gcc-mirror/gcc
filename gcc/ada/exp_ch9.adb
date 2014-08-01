@@ -2425,7 +2425,7 @@ package body Exp_Ch9 is
 
          --  If an inherited subprogram is implemented by a protected procedure
          --  or an entry, then the first parameter of the inherited subprogram
-         --  shall be of mode OUT or IN OUT, or access-to-variable parameter.
+         --  must be of mode OUT or IN OUT, or access-to-variable parameter.
 
          if Ekind (Iface_Op) = E_Procedure
            and then Present (Parameter_Specifications (Iface_Op_Spec))

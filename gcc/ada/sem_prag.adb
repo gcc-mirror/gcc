@@ -3466,14 +3466,14 @@ package body Sem_Prag is
               and then Is_Private_Descendant (Pack_Id)
             then
                --  A variable or state abstraction which is part of the
-               --  visible state of a private child unit (or a public
-               --  descendant thereof) shall have its Part_Of indicator
-               --  specified; the Part_Of indicator shall denote a state
-               --  abstraction declared by either the parent unit of the
-               --  private unit or by a public descendant of that parent unit.
+               --  visible state of a private child unit (or one of its public
+               --  descendants) must have its Part_Of indicator specified. The
+               --  Part_Of indicator must denote a state abstraction declared
+               --  by either the parent unit of the private unit or by a public
+               --  descendant of that parent unit.
 
-               --  Find nearest nearest private ancestor (which can be the
-               --  current unit itself).
+               --  Find nearest private ancestor (which can be the current unit
+               --  itself).
 
                Parent_Unit := Pack_Id;
                while Present (Parent_Unit) loop

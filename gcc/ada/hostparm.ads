@@ -41,9 +41,6 @@ package Hostparm is
    -- HOST Parameters --
    ---------------------
 
-   OpenVMS : Boolean := False;
-   --  Set True for OpenVMS host
-
    Direct_Separator : constant Character;
    pragma Import (C, Direct_Separator, "__gnat_dir_separator");
    Normalized_CWD : constant String := "." & Direct_Separator;
@@ -72,10 +69,5 @@ package Hostparm is
    Exclude_Missing_Objects : constant Boolean := True;
    --  If set to true, gnatbind will exclude from consideration all
    --  non-existent .o files.
-
-   Max_Debug_Name_Length : constant := 256;
-   --  If a generated qualified debug name exceeds this length, then it
-   --  is automatically compressed, regardless of the setting of the
-   --  Compress_Debug_Names switch controlled by -gnatC.
 
 end Hostparm;
