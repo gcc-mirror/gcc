@@ -1,3 +1,9 @@
+2014-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Call Underlying_Type
+	to go down the chain of private derivations.
+	* freeze.adb (Freeze_Entity): Fix typo in comment.
+
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Access_Type_Declaration): If designated type is
