@@ -1,3 +1,38 @@
+2014-08-01  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_ch9.adb (Analyze_Task_Type_Declaration): Move code from ...
+	* exp_ch9.adb (Make_Task_Create_Call): ... here.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
+	* gnat1drv.adb: Do not try to get the target parameters when
+	invoked with -gnats.
+
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Find_Last_Init): Nothing to do for an object
+	declaration subject to No_Initialization.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Reject choice that
+	is a subtype with dynamic predicates, or a non-static subtype
+	with predicates.
+	* sem_ch3.adb (Analyze_Number_Declaration): Reject qualified
+	expression if subtype has a dynamic predicate.
+	(Constrain_Index): Reject subtype indication if subtype mark
+	has predicates.
+	(Inerit_Predicate_Flags): Inherit Has_Predicates as well.
+	(Make_Index): If index is a subtype indication, itype inhereits
+	predicate flags for subsequent testing.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): New
+	procedure Check_Predicate_Use, to reject illegal uses of domains
+	of iteration that have dynamic predicates.
+	* sem_res.adb (Resolve_Slice): Reject slices given by a subtype
+	indication to which a predicate applies.
+	* sem_util.adb (Bad_Predicated_Subtype_Use): Add guard to
+	prevent cascaded errors when subtype is invalid.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch10.adb: Minor reformatting.

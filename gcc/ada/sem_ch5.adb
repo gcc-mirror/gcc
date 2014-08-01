@@ -2134,6 +2134,12 @@ package body Sem_Ch5 is
       --  to capture the bounds, so that the function result can be finalized
       --  in timely fashion.
 
+      procedure Check_Predicate_Use (T : Entity_Id);
+      --  Diagnose Attempt to iterate through non-static predicate. Note that
+      --  a type with inherited predicates may have both static and dynamic
+      --  forms. In this case it is not sufficent to check the static predicate
+      --  function only, look for a dynamic predicate aspect as well.
+
       function Has_Call_Using_Secondary_Stack (N : Node_Id) return Boolean;
       --  N is the node for an arbitrary construct. This function searches the
       --  construct N to see if any expressions within it contain function
@@ -2191,6 +2197,27 @@ package body Sem_Ch5 is
             end;
          end if;
       end Check_Controlled_Array_Attribute;
+
+      -------------------------
+      -- Check_Predicate_Use --
+      -------------------------
+
+      procedure Check_Predicate_Use (T : Entity_Id) is
+      begin
+         if Is_Discrete_Type (T)
+           and then Has_Predicates (T)
+           and then (not Has_Static_Predicate (T)
+                      or else Has_Dynamic_Predicate_Aspect (T))
+         then
+            Bad_Predicated_Subtype_Use
+              ("cannot use subtype& with non-static predicate for loop " &
+               "iteration", Discrete_Subtype_Definition (N),
+                  T, Suggest_Static => True);
+
+         elsif Inside_A_Generic and then Is_Generic_Formal (T) then
+            Set_No_Dynamic_Predicate_On_Actual (T);
+         end if;
+      end Check_Predicate_Use;
 
       ------------------------------------
       -- Has_Call_Using_Secondary_Stack --
@@ -2566,23 +2593,7 @@ package body Sem_Ch5 is
             Set_Etype  (DS, Entity (DS));
          end if;
 
-         --  Attempt to iterate through non-static predicate. Note that a type
-         --  with inherited predicates may have both static and dynamic forms.
-         --  In this case it is not sufficent to check the static predicate
-         --  function only, look for a dynamic predicate aspect as well.
-
-         if Is_Discrete_Type (Entity (DS))
-           and then Has_Predicates (Entity (DS))
-           and then (not Has_Static_Predicate (Entity (DS))
-                      or else Has_Dynamic_Predicate_Aspect (Entity (DS)))
-         then
-            Bad_Predicated_Subtype_Use
-              ("cannot use subtype& with non-static predicate for loop " &
-               "iteration", DS, Entity (DS), Suggest_Static => True);
-
-         elsif Inside_A_Generic and then Is_Generic_Formal (Entity (DS)) then
-            Set_No_Dynamic_Predicate_On_Actual (Entity (DS));
-         end if;
+         Check_Predicate_Use (Entity (DS));
       end if;
 
       --  Error if not discrete type
@@ -2593,6 +2604,10 @@ package body Sem_Ch5 is
       end if;
 
       Check_Controlled_Array_Attribute (DS);
+
+      if Nkind (DS) = N_Subtype_Indication then
+         Check_Predicate_Use (Entity (Subtype_Mark (DS)));
+      end if;
 
       Make_Index (DS, N, In_Iter_Schm => True);
       Set_Ekind (Id, E_Loop_Parameter);

@@ -9814,14 +9814,28 @@ package body Sem_Res is
 
       --  Check bad use of type with predicates
 
-      if Has_Predicates (Etype (Drange)) then
-         Bad_Predicated_Subtype_Use
-           ("subtype& has predicate, not allowed in slice",
-            Drange, Etype (Drange));
+      declare
+         Subt : Entity_Id;
+
+      begin
+         if Nkind (Drange) = N_Subtype_Indication
+            and then Has_Predicates (Entity (Subtype_Mark (Drange)))
+         then
+            Subt := Entity (Subtype_Mark (Drange));
+
+         else
+            Subt := Etype (Drange);
+         end if;
+
+         if Has_Predicates (Subt) then
+            Bad_Predicated_Subtype_Use
+              ("subtype& has predicate, not allowed in slice", Drange, Subt);
+         end if;
+      end;
 
       --  Otherwise here is where we check suspicious indexes
 
-      elsif Nkind (Drange) = N_Range then
+      if Nkind (Drange) = N_Range then
          Warn_On_Suspicious_Index (Name, Low_Bound  (Drange));
          Warn_On_Suspicious_Index (Name, High_Bound (Drange));
       end if;

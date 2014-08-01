@@ -2449,6 +2449,15 @@ package body Exp_Ch7 is
                   Next (Stmt);
                end loop;
 
+            --  Nothing to do for an object with supporessed initialization.
+            --  Note that this check is not performed at the beginning of the
+            --  routine because a declaration marked with No_Initialization
+            --  may still be initialized by a build-in-place call (the case
+            --  above).
+
+            elsif No_Initialization (Decl) then
+               return;
+
             --  In all other cases the initialization calls follow the related
             --  object. The general structure of object initialization built by
             --  routine Default_Initialize_Object is as follows:

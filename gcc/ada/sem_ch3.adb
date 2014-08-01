@@ -2920,6 +2920,11 @@ package body Sem_Ch3 is
 
       if not Is_Overloaded (E) then
          T := Etype (E);
+         if Has_Dynamic_Predicate_Aspect (T) then
+            Error_Msg_N
+              ("subtype has dynamic predicate, "
+                 & "not allowed in number declaration", N);
+         end if;
 
       else
          T := Any_Type;
@@ -12424,6 +12429,10 @@ package body Sem_Ch3 is
          --  The parser has verified that this is a discrete indication
 
          Resolve_Discrete_Subtype_Indication (S, T);
+         Bad_Predicated_Subtype_Use
+           ("subtype& has predicate, not allowed in index constraint",
+            S, Entity (Subtype_Mark (S)));
+
          R := Range_Expression (Constraint (S));
 
          --  Capture values of bounds and generate temporaries for them if
@@ -16802,6 +16811,7 @@ package body Sem_Ch3 is
 
    procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id) is
    begin
+      Set_Has_Predicates (Subt, Has_Predicates (Par));
       Set_Has_Static_Predicate_Aspect
         (Subt, Has_Static_Predicate_Aspect (Par));
       Set_Has_Dynamic_Predicate_Aspect
@@ -17418,6 +17428,10 @@ package body Sem_Ch3 is
 
          Set_Scalar_Range   (Def_Id, R);
          Conditional_Delay  (Def_Id, T);
+
+         if Nkind (N) = N_Subtype_Indication then
+            Inherit_Predicate_Flags (Def_Id, Entity (Subtype_Mark (N)));
+         end if;
 
          --  In the subtype indication case, if the immediate parent of the
          --  new subtype is non-static, then the subtype we create is non-
