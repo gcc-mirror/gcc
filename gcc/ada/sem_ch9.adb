@@ -2896,6 +2896,17 @@ package body Sem_Ch9 is
    begin
       Check_Restriction (No_Tasking, N);
       Tasking_Used := True;
+
+      --  The sequential partition elaboration policy is supported only in the
+      --  restricted profile.
+
+      if Partition_Elaboration_Policy = 'S'
+        and then not Restricted_Profile
+      then
+         Error_Msg_N
+           ("sequential elaboration supported only in restricted profile", N);
+      end if;
+
       T := Find_Type_Name (N);
       Generate_Definition (T);
 

@@ -1727,6 +1727,15 @@ package body Sem_Aggr is
                      if Is_Type (E) and then Has_Predicates (E) then
                         Freeze_Before (N, E);
 
+                        if Has_Dynamic_Predicate_Aspect (E) then
+                           Error_Msg_NE ("subtype& has dynamic predicate,"
+                             & "not allowed in aggregate choice", Choice, E);
+
+                        elsif not Is_Static_Subtype (E) then
+                           Error_Msg_NE ("non-static subtype& has predicate,"
+                             & "not allowed in aggregate choice", Choice, E);
+                        end if;
+
                         --  If the subtype has a static predicate, replace the
                         --  original choice with the list of individual values
                         --  covered by the predicate.
@@ -1881,6 +1890,14 @@ package body Sem_Aggr is
 
                   elsif Nkind (Choice) = N_Subtype_Indication then
                      Resolve_Discrete_Subtype_Indication (Choice, Index_Base);
+
+                     if Has_Dynamic_Predicate_Aspect
+                       (Entity (Subtype_Mark (Choice)))
+                     then
+                        Error_Msg_NE ("subtype& has dynamic predicate, "
+                          & "not allowed in aggregate choice",
+                            Choice, Entity (Subtype_Mark (Choice)));
+                     end if;
 
                      --  Does the subtype indication evaluation raise CE?
 

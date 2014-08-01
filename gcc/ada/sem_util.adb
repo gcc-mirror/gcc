@@ -782,7 +782,15 @@ package body Sem_Util is
       Suggest_Static : Boolean := False)
    is
       Gen            : Entity_Id;
+
    begin
+
+      --  Avoid cascaded errors
+
+      if Error_Posted (N) then
+         return;
+      end if;
+
       if Inside_A_Generic then
          Gen := Current_Scope;
          while Present (Gen) and then  Ekind (Gen) /= E_Generic_Package loop

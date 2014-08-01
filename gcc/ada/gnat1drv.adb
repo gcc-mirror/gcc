@@ -863,53 +863,65 @@ begin
 
       Opt.Compilation_Time := System.OS_Lib.Current_Time_String;
 
-      --  Acquire target parameters from system.ads (source of package System)
+      --  Get the target parameters only when -gnats is not used, to avoid
+      --  failing when there is no default runtime.
 
-      Targparm_Acquire : declare
-         use Sinput;
+      if Operating_Mode /= Check_Syntax then
 
-         S : Source_File_Index;
-         N : File_Name_Type;
+         --  Acquire target parameters from system.ads (package System source)
+         --  System).
 
-      begin
-         Name_Buffer (1 .. 10) := "system.ads";
-         Name_Len := 10;
-         N := Name_Find;
-         S := Load_Source_File (N);
+         Targparm_Acquire : declare
+            use Sinput;
 
-         if S = No_Source_File then
-            Write_Line
-              ("fatal error, run-time library not installed correctly");
-            Write_Line ("cannot locate file system.ads");
-            raise Unrecoverable_Error;
+            S : Source_File_Index;
+            N : File_Name_Type;
 
-         --  Remember source index of system.ads (which was read successfully)
+         begin
+            Name_Buffer (1 .. 10) := "system.ads";
+            Name_Len := 10;
+            N := Name_Find;
+            S := Load_Source_File (N);
 
-         else
-            System_Source_File_Index := S;
-         end if;
+            --  Failed to read system.ads, fatal error
 
-         Targparm.Get_Target_Parameters
-           (System_Text  => Source_Text  (S),
-            Source_First => Source_First (S),
-            Source_Last  => Source_Last  (S),
-            Make_Id      => Tbuild.Make_Id'Access,
-            Make_SC      => Tbuild.Make_SC'Access,
-            Set_RND      => Tbuild.Set_RND'Access);
+            if S = No_Source_File then
+               Write_Line
+                 ("fatal error, run-time library not installed correctly");
+               Write_Line ("cannot locate file system.ads");
+               raise Unrecoverable_Error;
 
-         --  Acquire configuration pragma information from Targparm
+            --  Read system.ads successfully, remember its source index
 
-         Restrict.Restrictions := Targparm.Restrictions_On_Target;
-      end Targparm_Acquire;
+            else
+               System_Source_File_Index := S;
+            end if;
+
+            Targparm.Get_Target_Parameters
+              (System_Text  => Source_Text  (S),
+               Source_First => Source_First (S),
+               Source_Last  => Source_Last  (S),
+               Make_Id      => Tbuild.Make_Id'Access,
+               Make_SC      => Tbuild.Make_SC'Access,
+               Set_RND      => Tbuild.Set_RND'Access);
+
+            --  Acquire configuration pragma information from Targparm
+
+            Restrict.Restrictions := Targparm.Restrictions_On_Target;
+         end Targparm_Acquire;
+      end if;
 
       --  Perform various adjustments and settings of global switches
 
       Adjust_Global_Switches;
 
       --  Output copyright notice if full list mode unless we have a list
-      --  file, in which case we defer this so that it is output in the file
+      --  file, in which case we defer this so that it is output in the file.
 
       if (Verbose_Mode or else (Full_List and then Full_List_File_Name = null))
+
+        --  Debug flag gnatd7 suppresses this copyright notice
+
         and then not Debug_Flag_7
       then
          Write_Eol;
