@@ -2510,16 +2510,21 @@ package body Sem_Ch5 is
          --  a)  a function call,
          --  b)  an identifier that is not a type,
          --  c)  an attribute reference 'Old (within a postcondition)
+         --  d)  an unchecked conversion
 
          --  then it is an iteration over a container. It was classified as
          --  a loop specification by the parser, and must be rewritten now
-         --  to activate container iteration.
+         --  to activate container iteration. The last case will occur within
+         --  an expanded inlined call, where the expansion wraps an actual in
+         --  an unchecked conversion when needed. The expression of the
+         --  conversion is always an object.
 
          if Nkind (DS_Copy) = N_Function_Call
            or else (Is_Entity_Name (DS_Copy)
                      and then not Is_Type (Entity (DS_Copy)))
            or else (Nkind (DS_Copy) = N_Attribute_Reference
                      and then Attribute_Name (DS_Copy) = Name_Old)
+           or else Nkind (DS_Copy) = N_Unchecked_Type_Conversion
          then
             --  This is an iterator specification. Rewrite it as such and
             --  analyze it to capture function calls that may require
