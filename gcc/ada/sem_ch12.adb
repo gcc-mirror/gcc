@@ -1137,6 +1137,15 @@ package body Sem_Ch12 is
             end if;
          end if;
 
+         --  Propagate visible entity to operator node, either from a
+         --  given actual or from a default.
+
+         if Is_Entity_Name (Actual)
+           and then Nkind (Expr) in N_Op
+         then
+            Set_Entity (Expr, Entity (Actual));
+         end if;
+
          Decl :=
            Make_Expression_Function (Loc,
              Specification => Spec,
@@ -1669,7 +1678,19 @@ package body Sem_Ch12 is
                         --  If actual is an entity (function or operator),
                         --  build wrapper for it.
 
-                        if Present (Match) and then Is_Entity_Name (Match) then
+                        if Present (Match)
+                          and then Nkind (Match) = N_Operator_Symbol
+                        then
+
+                           --  If the name is a default, find its visible
+                           --  entity at the point of instantiation.
+
+                           if Is_Entity_Name (Match)
+                             and then No (Entity (Match))
+                           then
+                              Find_Direct_Name (Match);
+                           end if;
+
                            Append_To (Assoc,
                              Build_Wrapper
                                (Defining_Entity (Analyzed_Formal), Match));
@@ -1679,7 +1700,6 @@ package body Sem_Ch12 is
                         elsif Box_Present (Formal)
                            and then Nkind (Defining_Entity (Analyzed_Formal))
                              = N_Defining_Operator_Symbol
-
                         then
                            Append_To (Assoc,
                              Build_Wrapper

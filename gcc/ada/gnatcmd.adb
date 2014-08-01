@@ -26,6 +26,7 @@
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Csets;
+with Gnatvsn;
 with Makeutl;  use Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
@@ -46,11 +47,9 @@ with Snames;   use Snames;
 with Stringt;
 with Switch;   use Switch;
 with Table;
-with Targparm;
+with Targparm; use Targparm;
 with Tempdir;
 with Types;    use Types;
-with VMS_Conv; use VMS_Conv;
-with VMS_Cmds; use VMS_Cmds;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line;        use Ada.Command_Line;
@@ -59,6 +58,49 @@ with Ada.Text_IO;             use Ada.Text_IO;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure GNATCmd is
+   Normal_Exit : exception;
+   --  Raise this exception for normal program termination
+
+   Error_Exit : exception;
+   --  Raise this exception if error detected
+
+   type Command_Type is
+     (Bind,
+      Chop,
+      Clean,
+      Compile,
+      Check,
+      Sync,
+      Elim,
+      Find,
+      Krunch,
+      Link,
+      List,
+      Make,
+      Metric,
+      Name,
+      Preprocess,
+      Pretty,
+      Stack,
+      Stub,
+      Test,
+      Xref,
+      Undefined);
+
+   subtype Real_Command_Type is Command_Type range Bind .. Xref;
+   --  All real command types (excludes only Undefined).
+
+   type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
+   --  Alternate command label
+
+   Corresponding_To : constant array (Alternate_Command) of Command_Type :=
+     (Comp  => Compile,
+      Ls    => List,
+      Kr    => Krunch,
+      Prep  => Preprocess,
+      Pp    => Pretty);
+   --  Mapping of alternate commands to commands
+
    Project_Node_Tree : Project_Node_Tree_Ref;
    Project_File      : String_Access;
    Project           : Prj.Project_Id;
@@ -66,7 +108,7 @@ procedure GNATCmd is
    Tool_Package_Name : Name_Id       := No_Name;
 
    B_Start : constant String := "b~";
-   --  Prefix of binder generated file, changed to b__ for gprbuild
+   --  Prefix of binder generated file
 
    Project_Tree : constant Project_Tree_Ref :=
                     new Project_Tree_Data (Is_Root_Tree => True);
@@ -118,6 +160,14 @@ procedure GNATCmd is
      Table_Initial        => 20,
      Table_Increment      => 100,
      Table_Name           => "Make.Library_Path");
+
+   package Last_Switches is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 20,
+      Table_Increment      => 100,
+      Table_Name           => "Gnatcmd.Last_Switches");
 
    --  Packages of project files to pass to Prj.Pars.Parse, depending on the
    --  tool. We allocate objects because we cannot declare aliased objects
@@ -201,6 +251,121 @@ procedure GNATCmd is
    --  indicate that the underlying tool (gnatcheck, gnatpp or gnatmetric)
    --  should be invoked for all sources of all projects.
 
+   type Command_Entry is record
+      Cname : String_Access;
+      --  Command name for GNAT xxx command
+
+      Unixcmd : String_Access;
+      --  Corresponding Unix command
+
+      Unixsws : Argument_List_Access;
+      --  List of switches to be used with the Unix command
+   end record;
+
+   Command_List : constant array (Real_Command_Type) of Command_Entry :=
+     (Bind =>
+        (Cname    => new String'("BIND"),
+         Unixcmd  => new String'("gnatbind"),
+         Unixsws  => null),
+
+      Chop =>
+        (Cname    => new String'("CHOP"),
+         Unixcmd  => new String'("gnatchop"),
+         Unixsws  => null),
+
+      Clean =>
+        (Cname    => new String'("CLEAN"),
+         Unixcmd  => new String'("gnatclean"),
+         Unixsws  => null),
+
+      Compile =>
+        (Cname    => new String'("COMPILE"),
+         Unixcmd  => new String'("gnatmake"),
+         Unixsws  => new Argument_List'(1 => new String'("-f"),
+                                        2 => new String'("-u"),
+                                        3 => new String'("-c"))),
+
+      Check =>
+        (Cname    => new String'("CHECK"),
+         Unixcmd  => new String'("gnatcheck"),
+         Unixsws  => null),
+
+      Sync =>
+        (Cname    => new String'("SYNC"),
+         Unixcmd  => new String'("gnatsync"),
+         Unixsws  => null),
+
+      Elim =>
+        (Cname    => new String'("ELIM"),
+         Unixcmd  => new String'("gnatelim"),
+         Unixsws  => null),
+
+      Find =>
+        (Cname    => new String'("FIND"),
+         Unixcmd  => new String'("gnatfind"),
+         Unixsws  => null),
+
+      Krunch =>
+        (Cname    => new String'("KRUNCH"),
+         Unixcmd  => new String'("gnatkr"),
+         Unixsws  => null),
+
+      Link =>
+        (Cname    => new String'("LINK"),
+         Unixcmd  => new String'("gnatlink"),
+         Unixsws  => null),
+
+      List =>
+        (Cname    => new String'("LIST"),
+         Unixcmd  => new String'("gnatls"),
+         Unixsws  => null),
+
+      Make =>
+        (Cname    => new String'("MAKE"),
+         Unixcmd  => new String'("gnatmake"),
+         Unixsws  => null),
+
+      Metric =>
+        (Cname    => new String'("METRIC"),
+         Unixcmd  => new String'("gnatmetric"),
+         Unixsws  => null),
+
+      Name =>
+        (Cname    => new String'("NAME"),
+         Unixcmd  => new String'("gnatname"),
+         Unixsws  => null),
+
+      Preprocess =>
+        (Cname    => new String'("PREPROCESS"),
+         Unixcmd  => new String'("gnatprep"),
+         Unixsws  => null),
+
+      Pretty =>
+        (Cname    => new String'("PRETTY"),
+         Unixcmd  => new String'("gnatpp"),
+         Unixsws  => null),
+
+      Stack =>
+        (Cname    => new String'("STACK"),
+         Unixcmd  => new String'("gnatstack"),
+         Unixsws  => null),
+
+      Stub =>
+        (Cname    => new String'("STUB"),
+         Unixcmd  => new String'("gnatstub"),
+         Unixsws  => null),
+
+      Test =>
+        (Cname    => new String'("TEST"),
+         Unixcmd  => new String'("gnattest"),
+         Unixsws  => null),
+
+      Xref =>
+        (Cname    => new String'("XREF"),
+         Unixcmd  => new String'("gnatxref"),
+         Unixsws  => null)
+     );
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -258,8 +423,11 @@ procedure GNATCmd is
    --  (GNAT STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric
    --  (GNAT METRIC).
 
-   procedure Non_VMS_Usage;
-   --  Display usage for platforms other than VMS
+   procedure Output_Version;
+   --  Output the version of this program
+
+   procedure Usage;
+   --  Display usage
 
    procedure Process_Link;
    --  Process GNAT LINK, when there is a project file specified
@@ -854,8 +1022,7 @@ procedure GNATCmd is
 
       Prj.Env.Create_Temp_File (Project_Tree.Shared, FD, Name, "files");
 
-      --  And close it, because on VMS Spawn with a file descriptor created
-      --  with Create_Temp_File does not redirect output.
+      --  And close it
 
       Close (FD);
 
@@ -982,11 +1149,29 @@ procedure GNATCmd is
       return Result;
    end Mapping_File;
 
-   -------------------
-   -- Non_VMS_Usage --
-   -------------------
+   --------------------
+   -- Output_Version --
+   --------------------
 
-   procedure Non_VMS_Usage is
+   procedure Output_Version is
+   begin
+      if AAMP_On_Target then
+         Put ("GNAAMP ");
+      else
+         Put ("GNAT ");
+      end if;
+
+      Put_Line (Gnatvsn.Gnat_Version_String);
+      Put_Line ("Copyright 1996-" &
+                Gnatvsn.Current_Year &
+                ", Free Software Foundation, Inc.");
+   end Output_Version;
+
+   -----------
+   -- Usage --
+   -----------
+
+   procedure Usage is
    begin
       Output_Version;
       New_Line;
@@ -997,7 +1182,7 @@ procedure GNATCmd is
 
          --  No usage for VMS only command or for Sync
 
-         if not Command_List (C).VMS_Only and then C /= Sync then
+         if C /= Sync then
             if Targparm.AAMP_On_Target then
                Put ("gnaampcmd ");
             else
@@ -1034,7 +1219,7 @@ procedure GNATCmd is
       Put_Line ("All commands except chop, krunch and preprocess " &
                 "accept project file switches -vPx, -Pprj and -Xnam=val");
       New_Line;
-   end Non_VMS_Usage;
+   end Usage;
 
    ------------------
    -- Process_Link --
@@ -1367,7 +1552,7 @@ procedure GNATCmd is
    end Set_Library_For;
 
    procedure Check_Version_And_Help is
-     new Check_Version_And_Help_G (Non_VMS_Usage);
+     new Check_Version_And_Help_G (Usage);
 
 --  Start of processing for GNATCmd
 
@@ -1398,8 +1583,6 @@ begin
    Carg_Switches.Set_Last (0);
    Rules_Switches.Init;
    Rules_Switches.Set_Last (0);
-
-   VMS_Conv.Initialize;
 
    --  Add the default search directories, to be able to find system.ads in the
    --  subsequent call to Targparm.Get_Target_Parameters.
@@ -1478,19 +1661,11 @@ begin
       --  If there is no command, just output the usage
 
       if Command_Arg > Argument_Count then
-         Non_VMS_Usage;
+         Usage;
          return;
       end if;
 
       The_Command := Real_Command_Type'Value (Argument (Command_Arg));
-
-      if Command_List (The_Command).VMS_Only then
-         Non_VMS_Usage;
-         Fail
-           ("command """
-            & Command_List (The_Command).Cname.all
-            & """ can only be used on VMS");
-      end if;
 
    exception
       when Constraint_Error =>
@@ -1507,7 +1682,7 @@ begin
 
          exception
             when Constraint_Error =>
-               Non_VMS_Usage;
+               Usage;
                Fail ("unknown command: " & Argument (Command_Arg));
          end;
    end;
@@ -2632,22 +2807,6 @@ begin
             Arg_Num := Arg_Num + 1;
             The_Args (Arg_Num) := Rules_Switches.Table (J);
          end loop;
-
-         --  If Display_Command is on, only display the generated command
-
-         if Display_Command then
-            Put (Standard_Error, "generated command -->");
-            Put (Standard_Error, Exec_Path.all);
-
-            for Arg in The_Args'Range loop
-               Put (Standard_Error, " ");
-               Put (Standard_Error, The_Args (Arg).all);
-            end loop;
-
-            Put (Standard_Error, "<--");
-            New_Line (Standard_Error);
-            raise Normal_Exit;
-         end if;
 
          if Verbose_Mode then
             Output.Write_Str (Exec_Path.all);
