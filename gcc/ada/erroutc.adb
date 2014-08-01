@@ -143,7 +143,7 @@ package body Erroutc is
 
                if Errors.Table (D).Warn_Err then
                   Warnings_Treated_As_Errors :=
-                    Warnings_Treated_As_Errors + 1;
+                    Warnings_Treated_As_Errors - 1;
                end if;
 
             else
@@ -233,7 +233,7 @@ package body Erroutc is
    function Compilation_Errors return Boolean is
    begin
       return Total_Errors_Detected /= 0
-        or else (Warnings_Detected /= 0
+        or else (Warnings_Detected - Info_Messages /= 0
                   and then Warning_Mode = Treat_As_Error)
         or else Warnings_Treated_As_Errors /= 0;
    end Compilation_Errors;

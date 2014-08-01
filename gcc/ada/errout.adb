@@ -261,8 +261,12 @@ package body Errout is
                M.Deleted := True;
                Warnings_Detected := Warnings_Detected - 1;
 
+               if M.Info then
+                  Info_Messages := Info_Messages - 1;
+               end if;
+
                if M.Warn_Err then
-                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
                end if;
             end if;
 
@@ -1132,6 +1136,10 @@ package body Errout is
       if Errors.Table (Cur_Msg).Warn or else Errors.Table (Cur_Msg).Style then
          Warnings_Detected := Warnings_Detected + 1;
 
+         if Errors.Table (Cur_Msg).Info then
+            Info_Messages := Info_Messages + 1;
+         end if;
+
       else
          Total_Errors_Detected := Total_Errors_Detected + 1;
 
@@ -1340,8 +1348,12 @@ package body Errout is
             Errors.Table (E).Deleted := True;
             Warnings_Detected := Warnings_Detected - 1;
 
+            if Errors.Table (E).Info then
+               Info_Messages := Info_Messages - 1;
+            end if;
+
             if Errors.Table (E).Warn_Err then
-               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
             end if;
          end if;
       end Delete_Warning;
@@ -1566,6 +1578,7 @@ package body Errout is
       Total_Errors_Detected := 0;
       Warnings_Treated_As_Errors := 0;
       Warnings_Detected := 0;
+      Info_Messages := 0;
       Warnings_As_Errors_Count := 0;
       Cur_Msg := No_Error_Msg;
       List_Pragmas.Init;
@@ -1656,8 +1669,7 @@ package body Errout is
       begin
          --  Extra blank line if error messages or source listing were output
 
-         if Total_Errors_Detected + Warnings_Detected > 0
-           or else Full_List
+         if Total_Errors_Detected + Warnings_Detected > 0 or else Full_List
          then
             Write_Eol;
          end if;
@@ -1666,8 +1678,8 @@ package body Errout is
          --  This normally goes to Standard_Output. The exception is when brief
          --  mode is not set, verbose mode (or full list mode) is set, and
          --  there are errors. In this case we send the message to standard
-         --  error to make sure that *something* appears on standard error in
-         --  an error situation.
+         --  error to make sure that *something* appears on standard error
+         --  in an error situation.
 
          if Total_Errors_Detected + Warnings_Detected /= 0
            and then not Brief_Output
@@ -1702,12 +1714,12 @@ package body Errout is
             Write_Str (" errors");
          end if;
 
-         if Warnings_Detected /= 0 then
+         if Warnings_Detected - Info_Messages /= 0 then
             Write_Str (", ");
             Write_Int (Warnings_Detected);
             Write_Str (" warning");
 
-            if Warnings_Detected /= 1 then
+            if Warnings_Detected - Info_Messages /= 1 then
                Write_Char ('s');
             end if;
 
@@ -1724,6 +1736,16 @@ package body Errout is
                Write_Str (" (");
                Write_Int (Warnings_Treated_As_Errors);
                Write_Str (" treated as errors)");
+            end if;
+         end if;
+
+         if Info_Messages /= 0 then
+            Write_Str (", ");
+            Write_Int (Info_Messages);
+            Write_Str (" info message");
+
+            if Info_Messages > 1 then
+               Write_Char ('s');
             end if;
          end if;
 
@@ -2027,8 +2049,9 @@ package body Errout is
       Write_Max_Errors;
 
       if Warning_Mode = Treat_As_Error then
-         Total_Errors_Detected := Total_Errors_Detected + Warnings_Detected;
-         Warnings_Detected := 0;
+         Total_Errors_Detected :=
+           Total_Errors_Detected + Warnings_Detected - Info_Messages;
+         Warnings_Detected := Info_Messages;
       end if;
    end Output_Messages;
 
@@ -2200,6 +2223,11 @@ package body Errout is
                and then not Errors.Table (E).Uncond
             then
                Warnings_Detected := Warnings_Detected - 1;
+
+               if Errors.Table (E).Info then
+                  Info_Messages := Info_Messages - 1;
+               end if;
+
                return True;
 
             --  No removal required
