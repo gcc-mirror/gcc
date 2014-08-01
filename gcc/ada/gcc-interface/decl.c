@@ -1921,18 +1921,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Floating_Point_Type:
-      /* If this is a VAX floating-point type, use an integer of the proper
-	 size.  All the operations will be handled with ASM statements.  */
-      if (Vax_Float (gnat_entity))
-	{
-	  gnu_type = make_signed_type (esize);
-	  TYPE_VAX_FLOATING_POINT_P (gnu_type) = 1;
-	  SET_TYPE_DIGITS_VALUE (gnu_type,
-				 UI_To_gnu (Digits_Value (gnat_entity),
-					    sizetype));
-	  break;
-	}
-
       /* The type of the Low and High bounds can be our type if this is
 	 a type from Standard, so set them at the end of the function.  */
       gnu_type = make_node (REAL_TYPE);
@@ -1941,12 +1929,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Floating_Point_Subtype:
-      if (Vax_Float (gnat_entity))
-	{
-	  gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
-	  break;
-	}
-
       /* See the E_Signed_Integer_Subtype case for the rationale.  */
       if (!definition
 	  && Present (Ancestor_Subtype (gnat_entity))
@@ -5296,7 +5278,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   /* If this is an enumeration or floating-point type, we were not able to set
      the bounds since they refer to the type.  These are always static.  */
   if ((kind == E_Enumeration_Type && Present (First_Literal (gnat_entity)))
-      || (kind == E_Floating_Point_Type && !Vax_Float (gnat_entity)))
+      || (kind == E_Floating_Point_Type))
     {
       tree gnu_scalar_type = gnu_type;
       tree gnu_low_bound, gnu_high_bound;

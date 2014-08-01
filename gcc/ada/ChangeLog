@@ -1,5 +1,20 @@
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Remove VMS specific rules for pragma Ident.
+	* Makefile.rtl, adaint.c, gnat_rm.texi, s-asthan.adb, s-asthan.ads,
+	s-filofl.ads, s-fishfl.ads, s-fvadfl.ads, s-fvaffl.ads, s-fvagfl.ads,
+	s-po32gl.adb, s-po32gl.ads, s-vaflop.adb, s-vaflop.ads, s-vmexta.adb,
+	s-vmexta.ads, sem_vfpt.adb, sem_vfpt.ads, socket.c: Remove VMS specific
+	code.
+	* gcc-interface/decl.c, gcc-interface/Makefile.in,
+	gcc-interface/Make-lang.in: Ditto. Also remove refs to rTX.
+
+2014-08-01  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.ads: Rename File_Size to Large_File_Size.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* a-numaux-vxworks.ads, a-numaux-x86.adb, a-numaux-x86.ads,
 	a-numaux-darwin.adb, a-numaux-darwin.ads, a-numaux.ads,
 	a-numaux-libc-x86.ads: Fix bad package header comments.
