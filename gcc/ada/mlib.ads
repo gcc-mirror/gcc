@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2009, AdaCore                     --
+--                     Copyright (C) 1999-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,6 @@ package MLib is
 private
 
    Preserve : Attribute := Time_Stamps;
-   --  Used by Copy_ALI_Files. Changed to None for OpenVMS, because
-   --  Copy_Attributes always fails on VMS.
+   --  Used by Copy_ALI_Files.
 
 end MLib;

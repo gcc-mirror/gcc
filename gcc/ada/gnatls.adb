@@ -191,9 +191,9 @@ procedure Gnatls is
    --  Returns the capitalized image of Restriction
 
    function Normalize (Path : String) return String;
-   --  Returns a normalized path name, except on VMS where the argument Path
-   --  is returned, to keep the host pathname syntax. On Windows, the directory
-   --  separators are set to '\' in Normalize_Pathname.
+   --  Returns a normalized path name.
+   --  On Windows, the directory separators are set to '\' in
+   --  Normalize_Pathname.
 
    ------------------------------------------
    -- GNATDIST specific output subprograms --
@@ -839,11 +839,7 @@ procedure Gnatls is
 
    function Normalize (Path : String) return String is
    begin
-      if OpenVMS_On_Target then
-         return Path;
-      else
-         return Normalize_Pathname (Path);
-      end if;
+      return Normalize_Pathname (Path);
    end Normalize;
 
    --------------------------------
@@ -1632,8 +1628,8 @@ begin
 
    Osint.Add_Default_Search_Dirs;
 
-   --  Get the target parameters to know if the target is OpenVMS, but only if
-   --  switch -nostdinc was not specified.
+   --  Get the target parameters, but only if switch -nostdinc was not
+   --  specified. Likely not strictly needed now that VMS is baselined???
 
    if not Opt.No_Stdinc then
       Get_Target_Parameters;

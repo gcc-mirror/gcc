@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2009, AdaCore                     --
+--                     Copyright (C) 1999-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,6 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Interfaces.C.Strings;
 with System;
 
-with Hostparm;
 with Opt;
 with Output; use Output;
 
@@ -459,12 +458,4 @@ package body MLib is
       return Separate_Paths;
    end Separate_Run_Path_Options;
 
---  Package elaboration
-
-begin
-   --  Copy_Attributes always fails on VMS
-
-   if Hostparm.OpenVMS then
-      Preserve := None;
-   end if;
 end MLib;

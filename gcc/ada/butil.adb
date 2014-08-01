@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Output;   use Output;
-with Targparm; use Targparm;
+with Output; use Output;
 
 package body Butil is
 
@@ -41,14 +40,7 @@ package body Butil is
         or else (Name_Len > 4
                    and then (Name_Buffer (1 .. 5) = "gnat%"
                                or else
-                             Name_Buffer (1 .. 5) = "gnat."))
-        or else
-          (OpenVMS_On_Target
-           and then Name_Len > 3
-           and then (Name_Buffer (1 .. 4) = "dec%"
-                      or else
-                     Name_Buffer (1 .. 4) = "dec."));
-
+                             Name_Buffer (1 .. 5) = "gnat."));
    end Is_Internal_Unit;
 
    ------------------------

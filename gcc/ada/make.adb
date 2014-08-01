@@ -2256,6 +2256,7 @@ package body Make is
       Is_Main_Source : Boolean;
       Args           : Argument_List)
    is
+      pragma Unreferenced (Is_Main_Source);
    begin
       Arguments_Project := No_Project;
       Last_Argument := 0;
@@ -2422,29 +2423,6 @@ package body Make is
                end case;
             end if;
          end;
-      end if;
-
-      --  For VMS, when compiling the main source, add switch
-      --  -mdebug-main=_ada_ so that the executable can be debugged
-      --  by the standard VMS debugger.
-
-      if not No_Main_Subprogram
-        and then Targparm.OpenVMS_On_Target
-        and then Is_Main_Source
-      then
-         --  First, check if compilation will be invoked with -g
-
-         for J in 1 .. Last_Argument loop
-            if Arguments (J)'Length >= 2
-              and then Arguments (J) (1 .. 2) = "-g"
-              and then (Arguments (J)'Length < 5
-                        or else Arguments (J) (1 .. 5) /= "-gnat")
-            then
-               Add_Arguments
-                 ((1 => new String'("-mdebug-main=_ada_")));
-               exit;
-            end if;
-         end loop;
       end if;
 
       --  Set Output_Is_Object, depending if there is a -S switch.
@@ -2650,8 +2628,8 @@ package body Make is
          --  The loop here is a work-around for a problem on VMS; in some
          --  circumstances (shared library and several executables, for
          --  example), there are child processes other than compilation
-         --  processes that are received. Until this problem is resolved,
-         --  we will ignore such processes.
+         --  processes that are received. ??? Revisit now that VMS is no
+         --  longer supported.
 
          loop
             Wait_Process (Pid, OK);
@@ -4231,9 +4209,7 @@ package body Make is
                if
                  Library_Projs.Table (Index).Extended_By = No_Project
                then
-                  if Library_Projs.Table (Index).Library_Kind = Static
-                    and then not Targparm.OpenVMS_On_Target
-                  then
+                  if Library_Projs.Table (Index).Library_Kind = Static then
                      Linker_Switches.Increment_Last;
                      Linker_Switches.Table (Linker_Switches.Last) :=
                        new String'
@@ -5826,17 +5802,6 @@ package body Make is
 
             Osint.Add_Default_Search_Dirs;
 
-            --  Get the target parameters, so that the correct binder generated
-            --  files are generated if OpenVMS is the target.
-
-            begin
-               Targparm.Get_Target_Parameters;
-
-            exception
-               when Unrecoverable_Error =>
-                  Make_Failed ("*** make failed.");
-            end;
-
             --  And bind and or link the library
 
             MLib.Prj.Build_Library
@@ -6438,45 +6403,42 @@ package body Make is
 
       --  Add the directory where gnatmake is invoked in front of the path,
       --  if gnatmake is invoked from a bin directory or with directory
-      --  information. Only do this if the platform is not VMS, where the
-      --  notion of path does not really exist.
+      --  information.
 
-      if not OpenVMS then
-         declare
-            Prefix  : constant String := Executable_Prefix_Path;
-            Command : constant String := Command_Name;
+      declare
+         Prefix  : constant String := Executable_Prefix_Path;
+         Command : constant String := Command_Name;
 
-         begin
-            if Prefix'Length > 0 then
-               declare
-                  PATH : constant String :=
-                    Prefix & Directory_Separator & "bin" & Path_Separator &
-                      Getenv ("PATH").all;
-               begin
-                  Setenv ("PATH", PATH);
-               end;
+      begin
+         if Prefix'Length > 0 then
+            declare
+               PATH : constant String :=
+                 Prefix & Directory_Separator & "bin" & Path_Separator &
+                   Getenv ("PATH").all;
+            begin
+               Setenv ("PATH", PATH);
+            end;
 
-            else
-               for Index in reverse Command'Range loop
-                  if Command (Index) = Directory_Separator then
-                     declare
-                        Absolute_Dir : constant String :=
-                                         Normalize_Pathname
-                                           (Command (Command'First .. Index));
-                        PATH         : constant String :=
-                                         Absolute_Dir &
-                                         Path_Separator &
-                                         Getenv ("PATH").all;
-                     begin
-                        Setenv ("PATH", PATH);
-                     end;
+         else
+            for Index in reverse Command'Range loop
+               if Command (Index) = Directory_Separator then
+                  declare
+                     Absolute_Dir : constant String :=
+                                      Normalize_Pathname
+                                        (Command (Command'First .. Index));
+                     PATH         : constant String :=
+                                      Absolute_Dir &
+                                      Path_Separator &
+                                      Getenv ("PATH").all;
+                  begin
+                     Setenv ("PATH", PATH);
+                  end;
 
-                     exit;
-                  end if;
-               end loop;
-            end if;
-         end;
-      end if;
+                  exit;
+               end if;
+            end loop;
+         end if;
+      end;
 
       --  Scan the switches and arguments
 

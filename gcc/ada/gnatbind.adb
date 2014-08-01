@@ -77,8 +77,6 @@ procedure Gnatbind is
    Output_File_Name_Seen : Boolean := False;
    Output_File_Name      : String_Ptr := new String'("");
 
-   L_Switch_Seen : Boolean := False;
-
    Mapping_File : String_Ptr := null;
 
    package Closure_Sources is new Table.Table
@@ -337,12 +335,6 @@ procedure Gnatbind is
 
          elsif Argv (2) = 'L' then
             if Argv'Length >= 3 then
-
-               --  Remember that the -L switch was specified, so that if this
-               --  is on OpenVMS, the export names are put in uppercase.
-               --  This is not known before the target parameters are read.
-
-               L_Switch_Seen := True;
 
                Opt.Bind_For_Library := True;
                Opt.Ada_Init_Name :=
@@ -641,17 +633,6 @@ begin
    --  accumulate additional restrictions specified in other files.
 
    Cumulative_Restrictions := Targparm.Restrictions_On_Target;
-
-   --  On OpenVMS, when -L is used, all external names used in pragmas Export
-   --  are in upper case. The reason is that on OpenVMS, the macro-assembler
-   --  MACASM-32, used to build Stand-Alone Libraries, only understands
-   --  uppercase.
-
-   if L_Switch_Seen and then OpenVMS_On_Target then
-      To_Upper (Opt.Ada_Init_Name.all);
-      To_Upper (Opt.Ada_Final_Name.all);
-      To_Upper (Opt.Ada_Main_Name.all);
-   end if;
 
    --  Acquire configurable run-time mode
 

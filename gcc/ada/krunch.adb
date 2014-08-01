@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,8 +28,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-with Hostparm;
 
 procedure Krunch
   (Buffer        : in out String;
@@ -128,9 +126,7 @@ begin
      and then (B1 = 'a' or else B1 = 'g' or else B1 = 'i' or else B1 = 's')
      and then Len <= Maxlen
    then
-      --  When VMS is the host, it is always also the target
-
-      if Hostparm.OpenVMS or else VMS_On_Target then
+      if VMS_On_Target then
          Len := Len + 1;
          Buffer (4 .. Len) := Buffer (3 .. Len - 1);
          Buffer (2) := '_';

@@ -1,3 +1,10 @@
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* binde.adb, bindgen.adb, butil.adb, clean.adb, gnatbind.adb,
+	gnatchop.adb, gnatcmd.adb, gnatls.adb, gnatname.adb, krunch.adb,
+	make.adb, makeutl.adb, memtrack.adb, mlib-prj.adb, mlib.adb,
+	mlib.ads, tempdir.adb: Remove VMS handling.
+
 2014-08-01  Pascal Obry  <obry@adacore.com>
 
 	* adaint.h, adaint.c (__gnat_file_length): Returns an __int64.

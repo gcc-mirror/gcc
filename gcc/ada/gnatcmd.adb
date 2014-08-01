@@ -26,7 +26,6 @@
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Csets;
-with Hostparm; use Hostparm;
 with Makeutl;  use Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
@@ -66,8 +65,8 @@ procedure GNATCmd is
    Current_Verbosity : Prj.Verbosity := Prj.Default;
    Tool_Package_Name : Name_Id       := No_Name;
 
-   B_Start : String_Ptr    := new String'("b~");
-   --  Prefix of binder generated file, changed to b__ for VMS
+   B_Start : constant String := "b~";
+   --  Prefix of binder generated file, changed to b__ for gprbuild
 
    Project_Tree : constant Project_Tree_Ref :=
                     new Project_Tree_Data (Is_Root_Tree => True);
@@ -192,8 +191,7 @@ procedure GNATCmd is
    --  The index of the command in the arguments of the GNAT driver
 
    My_Exit_Status : Exit_Status := Success;
-   --  The exit status of the spawned tool. Used to set the correct VMS
-   --  exit status.
+   --  The exit status of the spawned tool.
 
    Current_Work_Dir : constant String := Get_Current_Dir;
    --  The path of the working directory
@@ -202,9 +200,6 @@ procedure GNATCmd is
    --  Flag used for GNAT CHECK, GNAT PRETTY, GNAT METRIC, and GNAT STACK to
    --  indicate that the underlying tool (gnatcheck, gnatpp or gnatmetric)
    --  should be invoked for all sources of all projects.
-
-   Max_OpenVMS_Logical_Length : constant Integer := 255;
-   --  The maximum length of OpenVMS logicals
 
    -----------------------
    -- Local Subprograms --
@@ -452,7 +447,7 @@ procedure GNATCmd is
                            Add_To_Response_File
                              (Get_Name_String
                                 (Proj.Project.Object_Directory.Name) &
-                              B_Start.all                            &
+                              B_Start                                &
                               MLib.Fil.Ext_To
                                 (Get_Name_String
                                    (Project_Tree.Shared.String_Elements.Table
@@ -465,7 +460,6 @@ procedure GNATCmd is
                            --  such files.
 
                            if not Is_Regular_File (Name_Buffer (1 .. Name_Len))
-                             and then B_Start.all /= "b__"
                            then
                               Add_To_Response_File
                                 (Get_Name_String
@@ -491,7 +485,7 @@ procedure GNATCmd is
                            Add_To_Response_File
                              (Get_Name_String
                                 (Proj.Project.Object_Directory.Name)      &
-                              B_Start.all                                 &
+                              B_Start                                     &
                               Get_Name_String (Proj.Project.Library_Name) &
                               ".ci");
 
@@ -501,7 +495,6 @@ procedure GNATCmd is
                            --  such files.
 
                            if not Is_Regular_File (Name_Buffer (1 .. Name_Len))
-                               and then B_Start.all /= "b__"
                            then
                               Add_To_Response_File
                                 (Get_Name_String
@@ -1429,179 +1422,154 @@ begin
       Add_Str_To_Name_Buffer (Argument (J));
    end loop;
 
-   --  On OpenVMS, setenv creates a logical whose length is limited to
-   --  255 bytes.
-
-   if OpenVMS and then Name_Len > Max_OpenVMS_Logical_Length then
-      Name_Buffer (Max_OpenVMS_Logical_Length - 2
-                     .. Max_OpenVMS_Logical_Length) := "...";
-      Name_Len := Max_OpenVMS_Logical_Length;
-   end if;
-
    Setenv ("GNAT_DRIVER_COMMAND_LINE", Name_Buffer (1 .. Name_Len));
 
    --  Add the directory where the GNAT driver is invoked in front of the path,
-   --  if the GNAT driver is invoked with directory information. Do not do this
-   --  for VMS, where the notion of path does not really exist.
+   --  if the GNAT driver is invoked with directory information.
 
-   if not OpenVMS then
-      declare
-         Command : constant String := Command_Name;
-
-      begin
-         for Index in reverse Command'Range loop
-            if Command (Index) = Directory_Separator then
-               declare
-                  Absolute_Dir : constant String :=
-                                   Normalize_Pathname
-                                     (Command (Command'First .. Index));
-
-                  PATH : constant String :=
-                           Absolute_Dir & Path_Separator & Getenv ("PATH").all;
-
-               begin
-                  Setenv ("PATH", PATH);
-               end;
-
-               exit;
-            end if;
-         end loop;
-      end;
-   end if;
-
-   --  If on VMS, or if VMS emulation is on, convert VMS style /qualifiers,
-   --  filenames and pathnames to Unix style.
-
-   if Hostparm.OpenVMS
-     or else To_Lower (Getenv ("EMULATE_VMS").all) = "true"
-   then
-      VMS_Conversion (The_Command);
-
-      B_Start := new String'("b__");
-
-   --  If not on VMS, scan the command line directly
-
-   else
-      --  First, scan to detect --version and/or --help
-
-      Check_Version_And_Help ("GNAT", "1996");
-
-      begin
-         loop
-            if Command_Arg <= Argument_Count
-              and then Argument (Command_Arg) = "-v"
-            then
-               Verbose_Mode := True;
-               Command_Arg := Command_Arg + 1;
-
-            elsif Command_Arg <= Argument_Count
-              and then Argument (Command_Arg) = "-dn"
-            then
-               Keep_Temporary_Files := True;
-               Command_Arg := Command_Arg + 1;
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         --  If there is no command, just output the usage
-
-         if Command_Arg > Argument_Count then
-            Non_VMS_Usage;
-            return;
-         end if;
-
-         The_Command := Real_Command_Type'Value (Argument (Command_Arg));
-
-         if Command_List (The_Command).VMS_Only then
-            Non_VMS_Usage;
-            Fail
-              ("command """
-               & Command_List (The_Command).Cname.all
-               & """ can only be used on VMS");
-         end if;
-
-      exception
-         when Constraint_Error =>
-
-            --  Check if it is an alternate command
-
+   declare
+      Command : constant String := Command_Name;
+   begin
+      for Index in reverse Command'Range loop
+         if Command (Index) = Directory_Separator then
             declare
-               Alternate : Alternate_Command;
+               Absolute_Dir : constant String :=
+                                Normalize_Pathname
+                                  (Command (Command'First .. Index));
+
+               PATH : constant String :=
+                        Absolute_Dir & Path_Separator & Getenv ("PATH").all;
 
             begin
-               Alternate := Alternate_Command'Value
-                              (Argument (Command_Arg));
-               The_Command := Corresponding_To (Alternate);
-
-            exception
-               when Constraint_Error =>
-                  Non_VMS_Usage;
-                  Fail ("unknown command: " & Argument (Command_Arg));
+               Setenv ("PATH", PATH);
             end;
-      end;
 
-      --  Get the arguments from the command line and from the eventual
-      --  argument file(s) specified on the command line.
+            exit;
+         end if;
+      end loop;
+   end;
 
-      for Arg in Command_Arg + 1 .. Argument_Count loop
+   --  Scan the command line
+
+   --  First, scan to detect --version and/or --help
+
+   Check_Version_And_Help ("GNAT", "1996");
+
+   begin
+      loop
+         if Command_Arg <= Argument_Count
+           and then Argument (Command_Arg) = "-v"
+         then
+            Verbose_Mode := True;
+            Command_Arg := Command_Arg + 1;
+
+         elsif Command_Arg <= Argument_Count
+           and then Argument (Command_Arg) = "-dn"
+         then
+            Keep_Temporary_Files := True;
+            Command_Arg := Command_Arg + 1;
+
+         else
+            exit;
+         end if;
+      end loop;
+
+      --  If there is no command, just output the usage
+
+      if Command_Arg > Argument_Count then
+         Non_VMS_Usage;
+         return;
+      end if;
+
+      The_Command := Real_Command_Type'Value (Argument (Command_Arg));
+
+      if Command_List (The_Command).VMS_Only then
+         Non_VMS_Usage;
+         Fail
+           ("command """
+            & Command_List (The_Command).Cname.all
+            & """ can only be used on VMS");
+      end if;
+
+   exception
+      when Constraint_Error =>
+
+         --  Check if it is an alternate command
+
          declare
-            The_Arg : constant String := Argument (Arg);
+            Alternate : Alternate_Command;
 
          begin
-            --  Check if an argument file is specified
+            Alternate := Alternate_Command'Value
+                           (Argument (Command_Arg));
+            The_Command := Corresponding_To (Alternate);
 
-            if The_Arg (The_Arg'First) = '@' then
-               declare
-                  Arg_File : Ada.Text_IO.File_Type;
-                  Line     : String (1 .. 256);
-                  Last     : Natural;
+         exception
+            when Constraint_Error =>
+               Non_VMS_Usage;
+               Fail ("unknown command: " & Argument (Command_Arg));
+         end;
+   end;
+
+   --  Get the arguments from the command line and from the eventual
+   --  argument file(s) specified on the command line.
+
+   for Arg in Command_Arg + 1 .. Argument_Count loop
+      declare
+         The_Arg : constant String := Argument (Arg);
+
+      begin
+         --  Check if an argument file is specified
+
+         if The_Arg (The_Arg'First) = '@' then
+            declare
+               Arg_File : Ada.Text_IO.File_Type;
+               Line     : String (1 .. 256);
+               Last     : Natural;
+
+            begin
+               --  Open the file and fail if the file cannot be found
 
                begin
-                  --  Open the file and fail if the file cannot be found
+                  Open
+                    (Arg_File, In_File,
+                     The_Arg (The_Arg'First + 1 .. The_Arg'Last));
 
-                  begin
-                     Open
-                       (Arg_File, In_File,
-                        The_Arg (The_Arg'First + 1 .. The_Arg'Last));
-
-                  exception
-                     when others =>
-                        Put (Standard_Error, "Cannot open argument file """);
-                        Put (Standard_Error,
-                             The_Arg (The_Arg'First + 1 .. The_Arg'Last));
-                        Put_Line (Standard_Error, """");
-                        raise Error_Exit;
-                  end;
-
-                  --  Read line by line and put the content of each non-
-                  --  empty line in the Last_Switches table.
-
-                  while not End_Of_File (Arg_File) loop
-                     Get_Line (Arg_File, Line, Last);
-
-                     if Last /= 0 then
-                        Last_Switches.Increment_Last;
-                        Last_Switches.Table (Last_Switches.Last) :=
-                          new String'(Line (1 .. Last));
-                     end if;
-                  end loop;
-
-                  Close (Arg_File);
+               exception
+                  when others =>
+                     Put (Standard_Error, "Cannot open argument file """);
+                     Put (Standard_Error,
+                          The_Arg (The_Arg'First + 1 .. The_Arg'Last));
+                     Put_Line (Standard_Error, """");
+                     raise Error_Exit;
                end;
 
-            else
-               --  It is not an argument file; just put the argument in
-               --  the Last_Switches table.
+               --  Read line by line and put the content of each non-
+               --  empty line in the Last_Switches table.
 
-               Last_Switches.Increment_Last;
-               Last_Switches.Table (Last_Switches.Last) :=
-                 new String'(The_Arg);
-            end if;
-         end;
-      end loop;
-   end if;
+               while not End_Of_File (Arg_File) loop
+                  Get_Line (Arg_File, Line, Last);
+
+                  if Last /= 0 then
+                     Last_Switches.Increment_Last;
+                     Last_Switches.Table (Last_Switches.Last) :=
+                       new String'(Line (1 .. Last));
+                  end if;
+               end loop;
+
+               Close (Arg_File);
+            end;
+
+         else
+            --  It is not an argument file; just put the argument in
+            --  the Last_Switches table.
+
+            Last_Switches.Increment_Last;
+            Last_Switches.Table (Last_Switches.Last) :=
+              new String'(The_Arg);
+         end if;
+      end;
+   end loop;
 
    declare
       Program   : String_Access;
@@ -2618,20 +2586,6 @@ begin
          if ASIS_Main /= null then
             Get_Closure;
 
-            --  On VMS, set up the env var again for source dirs file. This is
-            --  because the call to gnatmake has set this env var to another
-            --  file that has now been deleted.
-
-            if Hostparm.OpenVMS then
-
-               --  First make sure that the recorded file names are empty
-
-               Prj.Env.Initialize (Project_Tree);
-
-               Prj.Env.Set_Ada_Paths
-                 (Project, Project_Tree, Including_Libraries => False);
-            end if;
-
          --  For gnat check, gnat sync, gnat pretty, gnat metric, gnat list,
          --  and gnat stack, if no file has been put on the command line, call
          --  tool with all the sources of the main project.
@@ -2726,14 +2680,5 @@ exception
          Delete_Temp_Config_Files;
       end if;
 
-      --  Since GNATCmd is normally called from DCL (the VMS shell), it must
-      --  return an understandable VMS exit status. However the exit status
-      --  returned *to* GNATCmd is a Posix style code, so we test it and return
-      --  just a simple success or failure on VMS.
-
-      if Hostparm.OpenVMS and then My_Exit_Status /= Success then
-         Set_Exit_Status (Failure);
-      else
-         Set_Exit_Status (My_Exit_Status);
-      end if;
+      Set_Exit_Status (My_Exit_Status);
 end GNATCmd;
