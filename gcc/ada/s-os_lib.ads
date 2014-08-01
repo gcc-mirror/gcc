@@ -426,7 +426,9 @@ package System.OS_Lib is
    --  to the current position (origin = SEEK_CUR), end of file (origin =
    --  SEEK_END), or start of file (origin = SEEK_SET).
 
-   type Large_File_Size is range -2 ** 63 .. 2 ** 63 - 1;
+   type Large_File_Size is range -2**63 .. 2**63 - 1;
+   --  Maximum supported size for a file (8 exabytes = 8 million terabytes,
+   --  should be enough to accomodate all possible needs for quite a while).
 
    function File_Length (FD : File_Descriptor) return Long_Integer;
    pragma Import (C, File_Length, "__gnat_file_length_long");

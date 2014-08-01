@@ -1,3 +1,13 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* inline.adb, s-os_lib.ads: Minor reformatting.
+
+2014-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tasdeb.ads, s-tasdeb.adb (Master_Hook, Master_Completed_Hook): New.
+	* s-tassta.adb (Task_Wrapper, Vulnerable_Complete_Master): Call new
+	hooks.
+
 2014-08-01  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb (Cannot_Inline): Issue info message instead of
