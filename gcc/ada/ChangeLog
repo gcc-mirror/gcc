@@ -1,3 +1,18 @@
+2014-08-01  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Cannot_Inline): Issue info message instead of
+	warning for subprograms not inlined in GNATprove mode.
+	* sem_res.adb (Resolve_Call): Take body into account for deciding
+	whether subprogram can be inlined in GNATprove mode or not.
+
+2014-08-01  Claire Dross  <dross@adacore.com>
+
+	* exp_util.ads (Get_First_Parent_With_Ext_Axioms_For_Entity): Renaming
+	of Get_First_Parent_With_External_Axiomatization_For_Entity for
+	shorter.
+	* sem_ch12.adb (Analyze_Associations): Only call Build_Wrapper
+	for parameters of packages with external axiomatization.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb: Minor comment addition.

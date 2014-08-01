@@ -525,7 +525,7 @@ package Exp_Util is
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
 
-   function Get_First_Parent_With_External_Axiomatization_For_Entity
+   function Get_First_Parent_With_Ext_Axioms_For_Entity
      (E : Entity_Id) return Entity_Id;
    --  Returns the package entity with an external axiomatization containing E,
    --  if any, or Empty if none.

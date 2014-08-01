@@ -3228,11 +3228,11 @@ package body Exp_Util is
       end;
    end Get_Current_Value_Condition;
 
-   --------------------------------------------------------------
-   -- Get_First_Parent_With_External_Axiomatization_For_Entity --
-   --------------------------------------------------------------
+   -------------------------------------------------
+   -- Get_First_Parent_With_Ext_Axioms_For_Entity --
+   -------------------------------------------------
 
-   function Get_First_Parent_With_External_Axiomatization_For_Entity
+   function Get_First_Parent_With_Ext_Axioms_For_Entity
      (E : Entity_Id) return Entity_Id is
 
       Decl : Node_Id;
@@ -3259,13 +3259,13 @@ package body Exp_Util is
       elsif Ekind (E) = E_Package
         and then Present (Generic_Parent (Decl))
       then
-         return Get_First_Parent_With_External_Axiomatization_For_Entity
+         return Get_First_Parent_With_Ext_Axioms_For_Entity
            (Generic_Parent (Decl));
 
          --  Otherwise, look at E's scope instead if present
 
       elsif Present (Scope (E)) then
-         return Get_First_Parent_With_External_Axiomatization_For_Entity
+         return Get_First_Parent_With_Ext_Axioms_For_Entity
              (Scope (E));
 
          --  Else there is no such axiomatized package
@@ -3273,7 +3273,7 @@ package body Exp_Util is
       else
          return Empty;
       end if;
-   end Get_First_Parent_With_External_Axiomatization_For_Entity;
+   end Get_First_Parent_With_Ext_Axioms_For_Entity;
 
    ---------------------
    -- Get_Stream_Size --

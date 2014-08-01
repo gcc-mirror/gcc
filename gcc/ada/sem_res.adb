@@ -6217,8 +6217,9 @@ package body Sem_Res is
          --  being inlined.
 
          declare
-            Nam_UA : constant Entity_Id := Ultimate_Alias (Nam);
-            Decl   : constant Node_Id   := Unit_Declaration_Node (Nam_UA);
+            Nam_UA  : constant Entity_Id := Ultimate_Alias (Nam);
+            Decl    : constant Node_Id   := Unit_Declaration_Node (Nam_UA);
+            Body_Id : constant Entity_Id := Corresponding_Body (Decl);
 
          begin
             --  If the subprogram is not eligible for inlining in GNATprove
@@ -6226,7 +6227,7 @@ package body Sem_Res is
 
             if Nkind (Decl) /= N_Subprogram_Declaration
               or else not Is_Inlined_Always (Nam_UA)
-              or else not Can_Be_Inlined_In_GNATprove_Mode (Nam_UA, Empty)
+              or else not Can_Be_Inlined_In_GNATprove_Mode (Nam_UA, Body_Id)
             then
                null;
 
@@ -6245,7 +6246,7 @@ package body Sem_Res is
                --  With the one-pass inlining technique, a call cannot be
                --  inlined if the corresponding body has not been seen yet.
 
-               if No (Corresponding_Body (Decl)) then
+               if No (Body_Id) then
                   Error_Msg_NE
                     ("?no contextual analysis of & (body not seen yet)",
                      N, Nam);

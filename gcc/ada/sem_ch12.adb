@@ -30,6 +30,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Disp; use Exp_Disp;
+with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
@@ -1669,7 +1670,11 @@ package body Sem_Ch12 is
 
                   else
                      if GNATprove_Mode
-                        and then Ekind (Defining_Entity (Analyzed_Formal))
+                       and then
+                         Present
+                           (Get_First_Parent_With_Ext_Axioms_For_Entity
+                              (Defining_Entity (Analyzed_Formal)))
+                       and then Ekind (Defining_Entity (Analyzed_Formal))
                           = E_Function
                      then
 
