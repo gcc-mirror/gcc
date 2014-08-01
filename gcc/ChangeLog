@@ -1,3 +1,24 @@
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
+	* inchash.h (inchash): Change inchash class to namespace.
+	(class hash): ... Rename from inchash.
+	(add_object): Move from macro to class template.
+	* lto-streamer-out.c (hash_tree): Change inchash
+	to inchash::hash.
+	* tree.c (build_type_attribute_qual_variant): Dito.
+	(type_hash_list): Dito.
+	(attribute_hash_list): Dito.
+	(iterative_hstate_expr): Rename to inchash::add_expr
+	(build_range_type_1): Change inchash to inchash::hash
+	and use hash::add_expr.
+	(build_array_type_1): Dito.
+	(build_function_type): Dito
+	(build_method_type_directly): Dito.
+	(build_offset_type): Dito.
+	(build_complex_type): Dito.
+	(make_vector_type): Dito.
+	* tree.h (iterative_hash_expr): Dito.
+
 2014-07-31  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* gcc.c (do_spec_1): Allocate enough space for saved_suffix.

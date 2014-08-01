@@ -35,12 +35,15 @@ along with GCC; see the file COPYING3.  If not see
 extern hashval_t iterative_hash_host_wide_int (HOST_WIDE_INT, hashval_t);
 extern hashval_t iterative_hash_hashval_t (hashval_t, hashval_t);
 
-class inchash
+namespace inchash
+{
+
+class hash
 {
  public:
 
   /* Start incremential hashing, optionally with SEED.  */
-  inchash (hashval_t seed = 0)
+  hash (hashval_t seed = 0)
   {
     val = seed;
     bits = 0;
@@ -83,9 +86,14 @@ class inchash
   }
 
   /* Hash in state from other inchash OTHER.  */
-  void merge (inchash &other)
+  void merge (hash &other)
   {
     merge_hash (other.val);
+  }
+
+  template<class T> void add_object(T &obj)
+  {
+    add (&obj, sizeof(T));
   }
 
   /* Support for accumulating boolean flags */
@@ -105,7 +113,7 @@ class inchash
      based on their value. This is useful for hashing commutative
      expressions, so that A+B and B+A get the same hash.  */
 
-  void add_commutative (inchash &a, inchash &b)
+  void add_commutative (hash &a, hash &b)
   {
     if (a.end() > b.end())
       {
@@ -124,6 +132,6 @@ class inchash
   unsigned bits;
 };
 
-#define add_object(o) add (&(o), sizeof (o))
+}
 
 #endif
