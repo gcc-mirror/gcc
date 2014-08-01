@@ -244,6 +244,32 @@ static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static unsigned int scale_by_factor_of (tree, unsigned int);
 static bool potential_alignment_gap (tree, tree, tree);
+
+/* A linked list used as a queue to defer the initialization of the
+   DECL_CONTEXT attribute of ..._DECL nodes and of the TYPE_CONTEXT attribute
+   of ..._TYPE nodes.  */
+struct deferred_decl_context_node
+{
+  tree decl;		    /* The ..._DECL node to work on.  */
+  Entity_Id gnat_scope;     /* The corresponding entity's Scope attribute.  */
+  int force_global;	    /* force_global value when pushing DECL. */
+  vec<tree, va_heap, vl_ptr> types;	    /* A list of ..._TYPE nodes to propagate the
+			       context to.  */
+  struct deferred_decl_context_node *next;  /* The next queue item.  */
+};
+
+static struct deferred_decl_context_node *deferred_decl_context_queue = NULL;
+
+/* Defer the initialization of DECL's DECL_CONTEXT attribute, scheduling to
+   feed it with the elaboration of GNAT_SCOPE.  */
+static struct deferred_decl_context_node *
+add_deferred_decl_context (tree decl, Entity_Id gnat_scope, int force_global);
+
+/* Defer the initialization of TYPE's TYPE_CONTEXT attribute, scheduling to
+   feed it with the DECL_CONTEXT computed as part of N as soon as it is
+   computed.  */
+static void add_deferred_type_context (struct deferred_decl_context_node *n,
+				       tree type);
 
 /* Initialize data structures of the utils.c module.  */
 
@@ -554,30 +580,138 @@ gnat_set_type_context (tree type, tree context)
     }
 }
 
+/* Return the innermost scope, starting at GNAT_NODE, we are be interested in
+   the debug info, or Empty if there is no such scope.  If not NULL, set
+   IS_SUBPROGRAM to whether the returned entity is a subprogram.  */
+
+static Entity_Id
+get_debug_scope (Node_Id gnat_node, bool *is_subprogram)
+{
+  Entity_Id gnat_entity;
+
+  if (is_subprogram)
+    *is_subprogram = false;
+
+  if (Nkind (gnat_node) == N_Defining_Identifier)
+    gnat_entity = Scope (gnat_node);
+  else
+    return Empty;
+
+  while (Present (gnat_entity))
+    {
+      switch (Ekind (gnat_entity))
+	{
+	case E_Function:
+	case E_Procedure:
+	  if (Present (Protected_Body_Subprogram (gnat_entity)))
+	    gnat_entity = Protected_Body_Subprogram (gnat_entity);
+
+	  /* If the scope is a subprogram, then just rely on
+	     current_function_decl, so that we don't have to defer
+	     anything.  This is needed because other places rely on the
+	     validity of the DECL_CONTEXT attribute of FUNCTION_DECL nodes. */
+	  if (is_subprogram)
+	    *is_subprogram = true;
+	  return gnat_entity;
+
+	case E_Record_Type:
+	case E_Record_Subtype:
+	  return gnat_entity;
+
+	default:
+	  /* By default, we are not interested in this particular scope: go to
+	     the outer one.  */
+	  break;
+	}
+      gnat_entity = Scope (gnat_entity);
+    }
+  return Empty;
+}
+
+/* If N is NULL, set TYPE's context to CONTEXT. Defer this to the processing of
+   N otherwise.  */
+
+static void
+defer_or_set_type_context (tree type,
+			   tree context,
+			   struct deferred_decl_context_node *n)
+{
+  if (n)
+    add_deferred_type_context (n, type);
+  else
+    gnat_set_type_context (type, context);
+}
+
+/* Return global_context.  Create it if needed, first.  */
+
+static tree
+get_global_context (void)
+{
+  if (!global_context)
+    global_context = build_translation_unit_decl (NULL_TREE);
+  return global_context;
+}
+
 /* Record DECL as belonging to the current lexical scope and use GNAT_NODE
    for location information and flag propagation.  */
 
 void
 gnat_pushdecl (tree decl, Node_Id gnat_node)
 {
-  /* If DECL is public external or at top level, it has global context.  */
-  if ((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || global_bindings_p ())
-    {
-      if (!global_context)
-	global_context = build_translation_unit_decl (NULL_TREE);
-      DECL_CONTEXT (decl) = global_context;
-   }
-  else
-    {
-      DECL_CONTEXT (decl) = current_function_decl;
+  tree context = NULL_TREE;
+  struct deferred_decl_context_node *deferred_decl_context = NULL;
 
-      /* Functions imported in another function are not really nested.
-	 For really nested functions mark them initially as needing
-	 a static chain for uses of that flag before unnesting;
-	 lower_nested_functions will then recompute it.  */
-      if (TREE_CODE (decl) == FUNCTION_DECL && !TREE_PUBLIC (decl))
-	DECL_STATIC_CHAIN (decl) = 1;
+  /* If explicitely asked to make DECL global or if it's an imported nested
+     object, short-circuit the regular Scope-based context computation.  */
+  if (!((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || force_global == 1))
+    {
+      /* Rely on the GNAT scope, or fallback to the current_function_decl if
+	 the GNAT scope reached the global scope, if it reached a subprogram
+	 or the declaration is a subprogram or a variable (for them we skip
+	 intermediate context types because the subprogram body elaboration
+	 machinery and the inliner both expect a subprogram context).
+
+	 Falling back to current_function_decl is necessary for implicit
+	 subprograms created by gigi, such as the elaboration subprograms.  */
+      bool context_is_subprogram = false;
+      const Entity_Id gnat_scope
+        = get_debug_scope (gnat_node, &context_is_subprogram);
+
+      if (Present (gnat_scope)
+	  && !context_is_subprogram
+	  && TREE_CODE (decl) != FUNCTION_DECL
+	  && TREE_CODE (decl) != VAR_DECL)
+	/* Always assume the scope has not been elaborated, thus defer the
+	   context propagation to the time its elaboration will be
+	   available.  */
+	deferred_decl_context
+	  = add_deferred_decl_context (decl, gnat_scope, force_global);
+
+      /* External declarations (when force_global > 0) may not be in a
+	 local context.  */
+      else if (current_function_decl != NULL_TREE && force_global == 0)
+	context = current_function_decl;
     }
+
+  /* If either we are forced to be in global mode or if both the GNAT scope and
+     the current_function_decl did not help determining the context, use the
+     global scope.  */
+  if (!deferred_decl_context && context == NULL_TREE)
+    context = get_global_context ();
+
+  /* Functions imported in another function are not really nested.
+     For really nested functions mark them initially as needing
+     a static chain for uses of that flag before unnesting;
+     lower_nested_functions will then recompute it.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && !TREE_PUBLIC (decl)
+      && context != NULL_TREE
+      && (TREE_CODE (context) == FUNCTION_DECL
+	  || decl_function_context (context) != NULL_TREE))
+    DECL_STATIC_CHAIN (decl) = 1;
+
+  if (!deferred_decl_context)
+    DECL_CONTEXT (decl) = context;
 
   TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
 
@@ -635,7 +769,9 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	      if (TREE_CODE (t) == POINTER_TYPE)
 		TYPE_NEXT_PTR_TO (t) = tt;
 	      TYPE_NAME (tt) = DECL_NAME (decl);
-	      gnat_set_type_context (tt, DECL_CONTEXT (decl));
+	      defer_or_set_type_context (tt,
+					 DECL_CONTEXT (decl),
+					 deferred_decl_context);
 	      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (t);
 	      DECL_ORIGINAL_TYPE (decl) = tt;
 	    }
@@ -645,7 +781,9 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  /* We need a variant for the placeholder machinery to work.  */
 	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
-	  gnat_set_type_context (tt, DECL_CONTEXT (decl));
+	  defer_or_set_type_context (tt,
+				     DECL_CONTEXT (decl),
+				     deferred_decl_context);
 	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
 	  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
@@ -667,7 +805,9 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	    {
 	      TYPE_NAME (t) = decl;
-	      gnat_set_type_context (t, DECL_CONTEXT (decl));
+	      defer_or_set_type_context (t,
+					 DECL_CONTEXT (decl),
+					 deferred_decl_context);
 	    }
     }
 }
@@ -2589,6 +2729,146 @@ renaming_from_generic_instantiation_p (Node_Id gnat_node)
     && Nkind (gnat_node) == N_Object_Declaration
     && Present (Corresponding_Generic_Association (gnat_node)));
 }
+
+/* Defer the initialization of DECL's DECL_CONTEXT attribute, scheduling to
+   feed it with the elaboration of GNAT_SCOPE.  */
+
+static struct deferred_decl_context_node *
+add_deferred_decl_context (tree decl, Entity_Id gnat_scope, int force_global)
+{
+  struct deferred_decl_context_node *new_node;
+
+  new_node
+    = (struct deferred_decl_context_node * ) xmalloc (sizeof (*new_node));
+  new_node->decl = decl;
+  new_node->gnat_scope = gnat_scope;
+  new_node->force_global = force_global;
+  new_node->types.create (1);
+  new_node->next = deferred_decl_context_queue;
+  deferred_decl_context_queue = new_node;
+  return new_node;
+}
+
+/* Defer the initialization of TYPE's TYPE_CONTEXT attribute, scheduling to
+   feed it with the DECL_CONTEXT computed as part of N as soon as it is
+   computed.  */
+
+static void
+add_deferred_type_context (struct deferred_decl_context_node *n, tree type)
+{
+  n->types.safe_push (type);
+}
+
+/* Get the GENERIC node corresponding to GNAT_SCOPE, if available.  Return
+   NULL_TREE if it is not available.  */
+
+static tree
+compute_deferred_decl_context (Entity_Id gnat_scope)
+{
+  tree context;
+
+  if (present_gnu_tree (gnat_scope))
+    context = get_gnu_tree (gnat_scope);
+  else
+    return NULL_TREE;
+
+  if (TREE_CODE (context) == TYPE_DECL)
+    {
+      const tree context_type = TREE_TYPE (context);
+
+      /* Skip dummy types: only the final ones can appear in the context
+	 chain.  */
+      if (TYPE_DUMMY_P (context_type))
+	return NULL_TREE;
+
+      /* ..._TYPE nodes are more useful than TYPE_DECL nodes in the context
+	 chain.  */
+      else
+	context = context_type;
+    }
+
+  return context;
+}
+
+/* Try to process all deferred nodes in the queue.  Keep in the queue the ones
+   that cannot be processed yet, remove the other ones.  If FORCE is true,
+   force the processing for all nodes, use the global context when nodes don't
+   have a GNU translation.  */
+
+void
+process_deferred_decl_context (bool force)
+{
+  struct deferred_decl_context_node **it = &deferred_decl_context_queue;
+  struct deferred_decl_context_node *node;
+
+  while (*it != NULL)
+    {
+      bool processed = false;
+      tree context = NULL_TREE;
+      Entity_Id gnat_scope;
+
+      node = *it;
+
+      /* If FORCE, get the innermost elaborated scope. Otherwise, just try to
+	 get the first scope.  */
+      gnat_scope = node->gnat_scope;
+      while (Present (gnat_scope))
+	{
+	  context = compute_deferred_decl_context (gnat_scope);
+	  if (!force || context != NULL_TREE)
+	    break;
+	  gnat_scope = get_debug_scope (gnat_scope, NULL);
+	}
+
+      /* Imported declarations must not be in a local context (i.e. not inside
+	 a function).  */
+      if (context != NULL_TREE && node->force_global > 0)
+	{
+	  tree ctx = context;
+
+	  while (ctx != NULL_TREE)
+	    {
+	      gcc_assert (TREE_CODE (ctx) != FUNCTION_DECL);
+	      ctx = (DECL_P (ctx))
+		    ? DECL_CONTEXT (ctx)
+		    : TYPE_CONTEXT (ctx);
+	    }
+	}
+
+      /* If FORCE, we want to get rid of all nodes in the queue: in case there
+	 was no elaborated scope, use the global context.  */
+      if (force && context == NULL_TREE)
+	context = get_global_context ();
+
+      if (context != NULL_TREE)
+	{
+	  tree t;
+	  int i;
+
+	  DECL_CONTEXT (node->decl) = context;
+
+	  /* Propagate it to the TYPE_CONTEXT attributes of the requested
+	     ..._TYPE nodes.  */
+	  FOR_EACH_VEC_ELT (node->types, i, t)
+	    {
+	      TYPE_CONTEXT (t) = context;
+	    }
+	  processed = true;
+	}
+
+      /* If this node has been successfuly processed, remove it from the
+	 queue.  Then move to the next node.  */
+      if (processed)
+	{
+	  *it = node->next;
+	  node->types.release ();
+	  free (node);
+	}
+      else
+	it = &node->next;
+    }
+}
+
 
 /* Return VALUE scaled by the biggest power-of-2 factor of EXPR.  */
 
@@ -4868,7 +5148,7 @@ gnat_write_global_declarations (void)
      for example pointers to Taft amendment types, have their compilation
      finalized in the right context.  */
   FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
-    if (TREE_CODE (iter) == TYPE_DECL)
+    if (TREE_CODE (iter) == TYPE_DECL && !DECL_IGNORED_P (iter))
       debug_hooks->global_decl (iter);
 
   /* Proceed to optimize and emit assembly. */
@@ -4880,7 +5160,7 @@ gnat_write_global_declarations (void)
     {
       timevar_push (TV_SYMOUT);
       FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
-	if (TREE_CODE (iter) != TYPE_DECL)
+	if (TREE_CODE (iter) != TYPE_DECL && !DECL_IGNORED_P (iter))
 	  debug_hooks->global_decl (iter);
       timevar_pop (TV_SYMOUT);
     }

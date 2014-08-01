@@ -2002,7 +2002,8 @@ build_simple_component_ref (tree record_variable, tree component, tree field,
 
       /* Look through a conversion between original and packable version, but
 	 the field needs to be adjusted in this case.  */
-      else if (TYPE_NAME (inner_type) == TYPE_NAME (record_type))
+      else if (RECORD_OR_UNION_TYPE_P (inner_type)
+	       && TYPE_NAME (inner_type) == TYPE_NAME (record_type))
 	{
 	  tree new_field;
 
