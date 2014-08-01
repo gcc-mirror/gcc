@@ -1803,8 +1803,8 @@ package Einfo is
 --       private type, making some components invisible and aggregates illegal.
 --       This flag is set at the point of derivation. The legality of the
 --       aggregate must be rechecked because it also depends on the visibility
---       at the point the aggregate is resolved. See sem_aggr.adb.
---       This is part of AI05-0115.
+--       at the point the aggregate is resolved. See sem_aggr.adb. This is part
+--       of AI05-0115.
 
 --    Has_Private_Declaration (Flag155)
 --       Defined in all entities. Set if it is the defining entity of a private

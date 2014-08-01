@@ -2828,14 +2828,16 @@ package body Exp_Ch4 is
                            Rhs_Discr_Val));
                   end;
 
+               --  All cases other than comparing Unchecked_Union types
+
                else
                   declare
                      T : constant Entity_Id := Etype (First_Formal (Eq_Op));
-
                   begin
                      return
                        Make_Function_Call (Loc,
-                         Name => New_Occurrence_Of (Eq_Op, Loc),
+                         Name                   =>
+                           New_Occurrence_Of (Eq_Op, Loc),
                          Parameter_Associations => New_List (
                            OK_Convert_To (T, Lhs),
                            OK_Convert_To (T, Rhs)));

@@ -6606,6 +6606,14 @@ package body Sem_Ch3 is
             Full_Parent := Full_View (Full_Parent);
          end if;
 
+         --  And its underlying full view if necessary
+
+         if Is_Private_Type (Full_Parent)
+           and then Present (Underlying_Full_View (Full_Parent))
+         then
+            Full_Parent := Underlying_Full_View (Full_Parent);
+         end if;
+
          if Ekind (Full_Parent) in Record_Kind
            or else
              (Ekind (Full_Parent) in Enumeration_Kind
@@ -6628,15 +6636,16 @@ package body Sem_Ch3 is
             --  view, the completion does not derive them anew.
 
             if Ekind (Full_Parent) in Record_Kind then
+
                --  If parent type is tagged, the completion inherits the proper
                --  primitive operations.
 
                if Is_Tagged_Type (Parent_Type) then
-                  Build_Derived_Record_Type (
-                    Full_N, Full_Parent, Full_Der, Derive_Subps);
+                  Build_Derived_Record_Type
+                    (Full_N, Full_Parent, Full_Der, Derive_Subps);
                else
-                  Build_Derived_Record_Type (
-                    Full_N, Full_Parent, Full_Der, Derive_Subps => False);
+                  Build_Derived_Record_Type
+                    (Full_N, Full_Parent, Full_Der, Derive_Subps => False);
                end if;
 
             else
@@ -6653,13 +6662,13 @@ package body Sem_Ch3 is
 
          else
             Full_Der :=
-              Make_Defining_Identifier
-                (Sloc (Derived_Type), Chars (Derived_Type));
+              Make_Defining_Identifier (Sloc (Derived_Type),
+                Chars => Chars (Derived_Type));
             Set_Is_Itype (Full_Der);
             Set_Associated_Node_For_Itype (Full_Der, N);
             Set_Parent (Full_Der, N);
-            Build_Derived_Type (
-              N, Full_Parent, Full_Der, True, Derive_Subps => False);
+            Build_Derived_Type
+              (N, Full_Parent, Full_Der, True, Derive_Subps => False);
          end if;
 
          Set_Has_Private_Declaration (Full_Der);
@@ -17876,11 +17885,19 @@ package body Sem_Ch3 is
       Related_Nod : Node_Id)
    is
       Id_B   : constant Entity_Id := Base_Type (Id);
-      Full_B : constant Entity_Id := Full_View (Id_B);
+      Full_B : Entity_Id := Full_View (Id_B);
       Full   : Entity_Id;
 
    begin
       if Present (Full_B) then
+
+         --  Get to the underlying full view if necessary
+
+         if Is_Private_Type (Full_B)
+           and then Present (Underlying_Full_View (Full_B))
+         then
+            Full_B := Underlying_Full_View (Full_B);
+         end if;
 
          --  The Base_Type is already completed, we can complete the subtype
          --  now. We have to create a new entity with the same name, Thus we
