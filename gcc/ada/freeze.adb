@@ -2667,10 +2667,10 @@ package body Freeze is
       ------------------------
 
       procedure Freeze_Record_Type (Rec : Entity_Id) is
+         ADC  : Node_Id;
          Comp : Entity_Id;
          IR   : Node_Id;
          Prev : Entity_Id;
-         ADC  : Node_Id;
 
          Junk : Boolean;
          pragma Warnings (Off, Junk);
@@ -3123,18 +3123,56 @@ package body Freeze is
             then
                Check_Itype (Etype (Comp));
 
+            --  Freeze the designated type when initializing a component with
+            --  an aggregate in case the aggregate contains allocators.
+
+            --     type T is ...;
+            --     type T_Ptr is access all T;
+            --     type T_Array is array ... of T_Ptr;
+
+            --     type Rec is record
+            --        Comp : T_Array := (others => ...);
+            --     end record;
+
             elsif Is_Array_Type (Etype (Comp))
               and then Is_Access_Type (Component_Type (Etype (Comp)))
-              and then Present (Parent (Comp))
-              and then Nkind (Parent (Comp)) = N_Component_Declaration
-              and then Present (Expression (Parent (Comp)))
-              and then Nkind (Expression (Parent (Comp))) = N_Aggregate
-              and then Is_Fully_Defined
-                         (Designated_Type (Component_Type (Etype (Comp))))
             then
-               Freeze_And_Append
-                 (Designated_Type
-                    (Component_Type (Etype (Comp))), N, Result);
+               declare
+                  Comp_Par  : constant Node_Id   := Parent (Comp);
+                  Desig_Typ : constant Entity_Id :=
+                                Designated_Type
+                                  (Component_Type (Etype (Comp)));
+
+               begin
+                  --  The only case when this sort of freezing is not done is
+                  --  when the designated type is class-wide and the root type
+                  --  is the record owning the component. This scenario results
+                  --  in a circularity because the class-wide type requires
+                  --  primitives that have not been created yet as the root
+                  --  type is in the process of being frozen.
+
+                  --     type Rec is tagged;
+                  --     type Rec_Ptr is access all Rec'Class;
+                  --     type Rec_Array is array ... of Rec_Ptr;
+
+                  --     type Rec is record
+                  --        Comp : Rec_Array := (others => ...);
+                  --     end record;
+
+                  if Is_Class_Wide_Type (Desig_Typ)
+                    and then Root_Type (Desig_Typ) = Rec
+                  then
+                     null;
+
+                  elsif Is_Fully_Defined (Desig_Typ)
+                    and then Present (Comp_Par)
+                    and then Nkind (Comp_Par) = N_Component_Declaration
+                    and then Present (Expression (Comp_Par))
+                    and then Nkind (Expression (Comp_Par)) = N_Aggregate
+                  then
+                     Freeze_And_Append (Desig_Typ, N, Result);
+                  end if;
+               end;
             end if;
 
             Prev := Comp;

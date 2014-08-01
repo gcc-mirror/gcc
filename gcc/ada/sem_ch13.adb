@@ -9981,13 +9981,13 @@ package body Sem_Ch13 is
                  and then Is_Non_Overridden_Or_Null_Procedure (Prim)
                  and then not Fully_Conformant (Prim, Subp_Id)
                then
-                  Set_Is_Hidden_Non_Overridden_Subprogram (Prim);
-                  Set_Is_Immediately_Visible              (Prim, False);
-                  Set_Is_Potentially_Use_Visible          (Prim, False);
+                  Set_Is_Hidden_Non_Overridden_Subpgm (Prim);
+                  Set_Is_Immediately_Visible          (Prim, False);
+                  Set_Is_Potentially_Use_Visible      (Prim, False);
 
-                  Set_Is_Hidden_Non_Overridden_Subprogram (Subp_Id);
-                  Set_Is_Immediately_Visible              (Subp_Id, False);
-                  Set_Is_Potentially_Use_Visible          (Subp_Id, False);
+                  Set_Is_Hidden_Non_Overridden_Subpgm (Subp_Id);
+                  Set_Is_Immediately_Visible          (Subp_Id, False);
+                  Set_Is_Potentially_Use_Visible      (Subp_Id, False);
                end if;
 
                Next_Elmt (Prim_Elmt);

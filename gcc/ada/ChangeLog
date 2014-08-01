@@ -1,3 +1,36 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb, einfo.adb, einfo.ads, sem_ch13.adb: Minor change of
+	identifier name.
+
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Contract): Enable the volatility
+	checks when the related variable comes from source.
+	* sem_res.adb (Resolve_Actuals): Enable the volatility checks
+	when the related actual parameter comes from source. Update comment.
+	* freeze.adb (Freeze_Record_Type): Do not freeze the designated
+	type of an array of pointers when the designated type is
+	class-wide and its root type is the record being currently frozen.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Preserve Ekind
+	of renaming declaration created for domain of iteration.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Better placement
+	for error messages on aggregates whose index subtypes have
+	predicates. The new placement avoids posting messages on previous
+	subtype declarations rather than on the aggregate itself.
+	* sem_disp.adb (Is_Inherited_Public_Operation): New predicate for
+	Add_Dispatching_Operation, to handle properly the overriding of
+	the predefined operations on controlled types, when the partial
+	view of a type is not visibly controlled.
+
+2014-08-01  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Add tutorial on portable fixed-point types as an
+	appendix.
+
 2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Is_Hidden_Non_Overridden_Subprogram): Remove the

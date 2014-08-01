@@ -1853,11 +1853,8 @@ package body Sem_Ch5 is
 
             --  The name in the renaming declaration may be a function call.
             --  Indicate that it does not come from source, to suppress
-            --  spurious warnings on renamings of parameterless functions, a
-            --  common enough idiom in user-defined iterators. The entity of
-            --  the renaming must be a variable, because user- defined Iterate
-            --  function may have in-out parameters, even if predefined ones do
-            --  not.
+            --  spurious warnings on renamings of parameterless functions,
+            --  a common enough idiom in user-defined iterators.
 
             Decl :=
               Make_Object_Renaming_Declaration (Loc,
@@ -1870,7 +1867,6 @@ package body Sem_Ch5 is
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));
             Set_Etype (Id, Typ);
             Set_Etype (Name (N), Typ);
-            Set_Ekind (Id, E_Variable);
          end;
 
       --  Container is an entity or an array with uncontrolled components, or
