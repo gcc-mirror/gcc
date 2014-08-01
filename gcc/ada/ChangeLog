@@ -1,3 +1,16 @@
+2014-08-01  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Minor updates.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* atree.adb: Minor reformatting.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Init_Hidden_Discriminants): If some ancestor is a
+	private extension, get stored constraint, if any, from full view.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads (No_Elab_Code_All_Pragma): New global variable.
