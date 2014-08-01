@@ -1986,9 +1986,7 @@ package body Sem_Ch7 is
          --  a tagged type back into visibility if they have non-conformant
          --  homographs (Ada RM 8.3 12.3/2).
 
-         elsif Ekind_In (Id, E_Function, E_Procedure)
-           and then Is_Hidden_Non_Overridden_Subprogram (Id)
-         then
+         elsif Is_Hidden_Non_Overridden_Subprogram (Id) then
             null;
 
          else

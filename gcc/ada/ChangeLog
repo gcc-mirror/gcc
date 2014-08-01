@@ -1,3 +1,23 @@
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_Hidden_Non_Overridden_Subprogram): Remove the
+	assertion check as the attribute is defined for all entities.
+	(Set_Is_Hidden_Non_Overridden_Subprogram): Remove the assertion
+	check as the attribute is defined for all entities.
+	* einfo.ads Update the documentation of attribute
+	Is_Hidden_Non_Overridden_Subprogram.
+	* sem_ch7.adb (Install_Package_Entity): No need to check the
+	entity kind of the Id.
+	* sem_ch13.adb (Hide_Matching_Homograph): Update the comment on
+	usage. Ensure that the homographs are of the same entity kind
+	and not fully conformant.
+	(Hide_Non_Overridden_Subprograms): Update the comment on usage.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* inline.adb: Minor code reorganization.
+	* sem_ch12.adb, s-tasdeb.ads: Minor reformatting.
+
 2014-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* inline.adb, s-os_lib.ads: Minor reformatting.

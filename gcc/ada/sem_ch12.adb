@@ -1674,10 +1674,9 @@ package body Sem_Ch12 is
                          Present
                            (Get_First_Parent_With_Ext_Axioms_For_Entity
                               (Defining_Entity (Analyzed_Formal)))
-                       and then Ekind (Defining_Entity (Analyzed_Formal))
-                          = E_Function
+                       and then Ekind (Defining_Entity (Analyzed_Formal)) =
+                                                                    E_Function
                      then
-
                         --  If actual is an entity (function or operator),
                         --  build wrapper for it.
 
@@ -1700,8 +1699,8 @@ package body Sem_Ch12 is
                         --  Ditto if formal is an operator with a default.
 
                         elsif Box_Present (Formal)
-                           and then Nkind (Defining_Entity (Analyzed_Formal))
-                             = N_Defining_Operator_Symbol
+                           and then Nkind (Defining_Entity (Analyzed_Formal)) =
+                                                    N_Defining_Operator_Symbol
                         then
                            Append_To (Assoc,
                              Build_Wrapper
