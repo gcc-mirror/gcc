@@ -6208,14 +6208,15 @@ package body Sem_Res is
       Eval_Call (N);
       Check_Elab_Call (N);
 
-      --  In GNATprove mode, expansion is disabled, but we want to inline
-      --  some subprograms to facilitate formal verification. Indirect calls,
-      --  through a subprogram type, cannot be inlined. Inlining is only
-      --  performed for calls for which SPARK_Mode is On.
+      --  In GNATprove mode, expansion is disabled, but we want to inline some
+      --  subprograms to facilitate formal verification. Indirect calls through
+      --  a subprogram type or within a generic cannot be inlined. Inlining is
+      --  performed only for calls subject to SPARK_Mode on.
 
       if GNATprove_Mode
-        and then Is_Overloadable (Nam)
         and then SPARK_Mode = On
+        and then Is_Overloadable (Nam)
+        and then not Inside_A_Generic
       then
          --  Retrieve the body to inline from the ultimate alias of Nam, if
          --  there is one, otherwise calls that should be inlined end up not
