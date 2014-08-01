@@ -1,3 +1,15 @@
+2014-08-01  Renlin Li <renlin.li@arm.com>
+2014-08-01  Jiong Wang <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (offset_7bit_signed_scaled_p): Rename to
+	aarch64_offset_7bit_signed_scaled_p, remove static and use it.
+	* config/aarch64/aarch64-protos.h (aarch64_offset_7bit_signed_scaled_p):
+	Declaration.
+	* config/aarch64/predicates.md (aarch64_mem_pair_offset): Define new
+	predicate.
+	* config/aarch64/aarch64.md (loadwb_pair, storewb_pair): Use
+	aarch64_mem_pair_offset.
+
 2014-08-01  Jiong Wang <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.md (loadwb_pair<GPI:mode>_<P:mode>): Fix
