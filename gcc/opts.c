@@ -1492,6 +1492,7 @@ common_handle_option (struct gcc_options *opts,
 	      { "float-cast-overflow", SANITIZE_FLOAT_CAST,
 		sizeof "float-cast-overflow" - 1 },
 	      { "bounds", SANITIZE_BOUNDS, sizeof "bounds" - 1 },
+	      { "alignment", SANITIZE_ALIGNMENT, sizeof "alignment" - 1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;

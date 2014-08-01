@@ -2390,6 +2390,27 @@ layout_type (tree type)
     gcc_assert (!TYPE_ALIAS_SET_KNOWN_P (type));
 }
 
+/* Return the least alignment required for type TYPE.  */
+
+unsigned int
+min_align_of_type (tree type)
+{
+  unsigned int align = TYPE_ALIGN (type);
+  align = MIN (align, BIGGEST_ALIGNMENT);
+#ifdef BIGGEST_FIELD_ALIGNMENT
+  align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
+#endif
+  unsigned int field_align = align;
+#ifdef ADJUST_FIELD_ALIGN
+  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
+			   type);
+  field_align = ADJUST_FIELD_ALIGN (field, field_align);
+  ggc_free (field);
+#endif
+  align = MIN (align, field_align);
+  return align / BITS_PER_UNIT;
+}
+
 /* Vector types need to re-check the target flags each time we report
    the machine mode.  We need to do this because attribute target can
    change the result of vector_mode_supported_p and have_regs_of_mode

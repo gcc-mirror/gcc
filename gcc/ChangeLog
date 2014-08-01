@@ -1,3 +1,34 @@
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* opts.c (common_handle_option): Handle -fsanitize=alignment.
+	* ubsan.h (enum ubsan_null_ckind): Add UBSAN_CTOR_CALL.
+	(ubsan_expand_bounds_ifn, ubsan_expand_null_ifn): Change return
+	type to bool.
+	* stor-layout.h (min_align_of_type): New prototype.
+	* asan.c (pass_sanopt::execute): Don't perform gsi_next if
+	ubsan_expand* told us not to do it.  Remove the extra gsi_end_p
+	check.
+	* ubsan.c: Include builtins.h.
+	(ubsan_expand_bounds_ifn): Change return type to bool,
+	always return true.
+	(ubsan_expand_null_ifn): Change return type to bool, change
+	argument to gimple_stmt_iterator *.  Handle both null and alignment
+	sanitization, take type from ckind argument's type rather than
+	first argument.
+	(instrument_member_call): Removed.
+	(instrument_mem_ref): Remove t argument, add mem and base arguments.
+	Handle both null and alignment sanitization, don't say whole
+	struct access is member access.  Build 3 argument IFN_UBSAN_NULL
+	call instead of 2 argument.
+	(instrument_null): Adjust instrument_mem_ref caller.  Don't
+	instrument calls here.
+	(pass_ubsan::gate, pass_ubsan::execute): Handle SANITIZE_ALIGNMENT
+	like SANITIZE_NULL.
+	* stor-layout.c (min_align_of_type): New function.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_ALIGNMENT.
+	Or it into SANITIZE_UNDEFINED.
+	* doc/invoke.texi (-fsanitize=alignment): Document.
+
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
 	* tree-ssa-tail-merge.c (same_succ_hash): Convert to inchash.

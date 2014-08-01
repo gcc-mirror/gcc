@@ -1,3 +1,10 @@
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): For -fsanitize=null and/or
+	-fsanitize=alignment call ubsan_maybe_instrument_reference
+	for casts to REFERENCE_TYPE and ubsan_maybe_instrument_member_call
+	for calls to member functions.
+
 2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/60517

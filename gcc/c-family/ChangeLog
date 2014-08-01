@@ -1,3 +1,14 @@
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (min_align_of_type): Removed prototype.
+	* c-common.c (min_align_of_type): Removed.
+	* c-ubsan.h (ubsan_maybe_instrument_reference,
+	ubsan_maybe_instrument_member_call): New prototypes.
+	* c-ubsan.c: Include stor-layout.h and builtins.h.
+	(ubsan_maybe_instrument_reference_or_call,
+	ubsan_maybe_instrument_reference, ubsan_maybe_instrument_call): New
+	functions.
+
 2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/60517
