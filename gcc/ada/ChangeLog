@@ -1,3 +1,8 @@
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb: Add guard to setting of No_Predicate_On_Actual.
+	* sem_ch3.adb: Minor reformatting.
+
 2014-08-01  Pascal Obry  <obry@adacore.com>
 
 	* cstreams.c: Only enable large file support on know supported
