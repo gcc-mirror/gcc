@@ -1,5 +1,14 @@
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
+	* tree-ssa-sccvn.c (vn_reference_op_compute_hash): Convert to
+	inchash.
+	(vn_reference_compute_hash): Dito.
+	(vn_nary_op_compute_hash): Dito.
+	(vn_phi_compute_hash): Dito.
+	* tree-ssa-sccvn.h (vn_hash_constant_with_type): Dito.
+
+2014-07-31  Andi Kleen  <ak@linux.intel.com>
+
 	* tree-ssa-dom.c (iterative_hash_exprs_commutative):
 	Rename to inchash:add_expr_commutative. Convert to inchash.
 	(iterative_hash_hashable_expr): Rename to
