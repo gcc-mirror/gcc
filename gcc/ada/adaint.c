@@ -744,8 +744,7 @@ __gnat_fputwc(int c, FILE *stream)
 }
 
 FILE *
-__gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED,
-              char *vms_form ATTRIBUTE_UNUSED)
+__gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
@@ -771,8 +770,7 @@ FILE *
 __gnat_freopen (char *path,
 		char *mode,
 		FILE *stream,
-		int encoding ATTRIBUTE_UNUSED,
-                char *vms_form ATTRIBUTE_UNUSED)
+		int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
   TCHAR wpath[GNAT_MAX_PATH_LEN];

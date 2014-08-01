@@ -1068,7 +1068,7 @@ package body System.File_IO is
             --  may have changed and we do not want to delete a different file.
 
             Stream :=
-              fopen (Namestr'Address, Fopstr'Address, Encoding, Null_Address);
+              fopen (Namestr'Address, Fopstr'Address, Encoding);
 
             if Stream = NULL_Stream then
 
@@ -1222,7 +1222,7 @@ package body System.File_IO is
 
          File.Stream := freopen
            (File.Name.all'Address, Fopstr'Address, File.Stream,
-            File.Encoding, Null_Address);
+            File.Encoding);
 
          if File.Stream = NULL_Stream then
             Close (File_Ptr);

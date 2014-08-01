@@ -11512,7 +11512,15 @@ package body Sem_Res is
                      Remove_Interp (I);
                   end if;
 
-                  if Present (System_Aux_Id)
+                  --  When compiling for a system where Address is of a visible
+                  --  integer type, spurious ambiguities can be produced when
+                  --  arithmetic operations have a literal operand and return
+                  --  System.Address or a descendant of it. These ambiguities
+                  --  are usually resolved by the context, but for conversions
+                  --  there is no context type and the removal of the spurious
+                  --  operations must be done explicitly here.
+
+                  if not Address_Is_Private
                     and then Is_Descendent_Of_Address (It.Typ)
                   then
                      Remove_Interp (I);
