@@ -53,12 +53,14 @@ extern "C" {
 
 #if defined (__GLIBC__) || defined (sun)
 #define GNAT_FOPEN fopen64
+#define GNAT_OPEN open64
 #define GNAT_STAT stat64
 #define GNAT_FSTAT fstat64
 #define GNAT_LSTAT lstat64
 #define GNAT_STRUCT_STAT struct stat64
 #else
 #define GNAT_FOPEN fopen
+#define GNAT_OPEN open
 #define GNAT_STAT stat
 #define GNAT_FSTAT fstat
 #define GNAT_LSTAT lstat
