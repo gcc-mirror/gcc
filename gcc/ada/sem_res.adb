@@ -225,8 +225,7 @@ package body Sem_Res is
    --  operators, not ones that are intrinsic imports of back-end builtins.
 
    procedure Resolve_Intrinsic_Unary_Operator (N : Node_Id; Typ : Entity_Id);
-   --  Ditto, for unary operators (arithmetic ones and "not" on signed
-   --  integer types for VMS).
+   --  Ditto, for arithmetic unary operators
 
    procedure Rewrite_Operator_As_Call (N : Node_Id; Nam : Entity_Id);
    --  If an operator node resolves to a call to a user-defined operator,
@@ -7990,11 +7989,10 @@ package body Sem_Res is
    --------------------------------
 
    procedure Resolve_Intrinsic_Operator  (N : Node_Id; Typ : Entity_Id) is
-      Btyp    : constant Entity_Id := Base_Type (Underlying_Type (Typ));
-      Op      : Entity_Id;
-      Orig_Op : constant Entity_Id := Entity (N);
-      Arg1    : Node_Id;
-      Arg2    : Node_Id;
+      Btyp : constant Entity_Id := Base_Type (Underlying_Type (Typ));
+      Op   : Entity_Id;
+      Arg1 : Node_Id;
+      Arg2 : Node_Id;
 
       function Convert_Operand (Opnd : Node_Id) return Node_Id;
       --  If the operand is a literal, it cannot be the expression in a
@@ -8074,31 +8072,19 @@ package body Sem_Res is
         or else Typ /= Etype (Right_Opnd (N))
       then
          --  Add explicit conversion where needed, and save interpretations in
-         --  case operands are overloaded. If the context is a VMS operation,
-         --  assert that the conversion is legal (the operands have the proper
-         --  types to select the VMS intrinsic). Note that in rare cases the
-         --  VMS operators may be visible, but the default System is being used
-         --  and Address is a private type.
+         --  case operands are overloaded.
 
          Arg1 := Convert_To (Typ, Left_Opnd  (N));
          Arg2 := Convert_To (Typ, Right_Opnd (N));
 
          if Nkind (Arg1) = N_Type_Conversion then
             Save_Interps (Left_Opnd (N), Expression (Arg1));
-
-            if Is_VMS_Operator (Orig_Op) then
-               Set_Conversion_OK (Arg1);
-            end if;
          else
             Save_Interps (Left_Opnd (N), Arg1);
          end if;
 
          if Nkind (Arg2) = N_Type_Conversion then
             Save_Interps (Right_Opnd (N), Expression (Arg2));
-
-            if Is_VMS_Operator (Orig_Op) then
-               Set_Conversion_OK (Arg2);
-            end if;
          else
             Save_Interps (Right_Opnd (N), Arg2);
          end if;
@@ -8170,18 +8156,13 @@ package body Sem_Res is
          B_Typ := Base_Type (Typ);
       end if;
 
-      --  OK if this is a VMS-specific intrinsic operation
-
-      if Is_VMS_Operator (Entity (N)) then
-         null;
-
       --  The following test is required because the operands of the operation
       --  may be literals, in which case the resulting type appears to be
       --  compatible with a signed integer type, when in fact it is compatible
       --  only with modular types. If the context itself is universal, the
       --  operation is illegal.
 
-      elsif not Valid_Boolean_Arg (Typ) then
+      if not Valid_Boolean_Arg (Typ) then
          Error_Msg_N ("invalid context for logical operation", N);
          Set_Etype (N, Any_Type);
          return;
@@ -8934,12 +8915,9 @@ package body Sem_Res is
          B_Typ := Base_Type (Typ);
       end if;
 
-      if Is_VMS_Operator (Entity (N)) then
-         null;
-
       --  Straightforward case of incorrect arguments
 
-      elsif not Valid_Boolean_Arg (Typ) then
+      if not Valid_Boolean_Arg (Typ) then
          Error_Msg_N ("invalid operand type for operator&", N);
          Set_Etype (N, Any_Type);
          return;
@@ -11098,15 +11076,15 @@ package body Sem_Res is
             if Is_Floating_Point_Type (Opnd_Typ)
               and then
                 (Is_Integer_Type (Target_Typ)
-                   or else (Is_Fixed_Point_Type (Target_Typ)
-                              and then Conversion_OK (N)))
+                  or else (Is_Fixed_Point_Type (Target_Typ)
+                            and then Conversion_OK (N)))
               and then Nkind (Operand) = N_Attribute_Reference
-              and then (Attribute_Name (Operand) = Name_Rounding
-                          or else Attribute_Name (Operand) = Name_Truncation)
+              and then Nam_In (Attribute_Name (Operand), Name_Rounding,
+                                                         Name_Truncation)
             then
                declare
                   Truncate : constant Boolean :=
-                    Attribute_Name (Operand) = Name_Truncation;
+                               Attribute_Name (Operand) = Name_Truncation;
                begin
                   Rewrite (Operand,
                     Relocate_Node (First (Expressions (Operand))));
@@ -11514,13 +11492,6 @@ package body Sem_Res is
             --  Remove procedure calls, which syntactically cannot appear in
             --  this context, but which cannot be removed by type checking,
             --  because the context does not impose a type.
-
-            --  When compiling for VMS, spurious ambiguities can be produced
-            --  when arithmetic operations have a literal operand and return
-            --  System.Address or a descendant of it. These ambiguities are
-            --  otherwise resolved by the context, but for conversions there
-            --  is no context type and the removal of the spurious operations
-            --  must be done explicitly here.
 
             --  The node may be labelled overloaded, but still contain only one
             --  interpretation because others were discarded earlier. If this

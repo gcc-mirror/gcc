@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,8 @@ package body System.Storage_Elements is
 
    --  Conversion to/from address
 
-   --  Note qualification below of To_Address to avoid ambiguities on VMS
+   --  Note qualification below of To_Address to avoid ambiguities systems
+   --  where Address is a visible integer type.
 
    function To_Address is
      new Ada.Unchecked_Conversion (Storage_Offset, Address);

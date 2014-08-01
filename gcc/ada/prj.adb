@@ -276,8 +276,7 @@ package body Prj is
 
       --  If any of the environment variables ADA_PRJ_INCLUDE_FILE or
       --  ADA_PRJ_OBJECTS_FILE has been set, then reset their value to
-      --  the empty string. On VMS, this has the effect of deassigning
-      --  the logical names.
+      --  the empty string.
 
       if Shared.Private_Part.Current_Source_Path_File /= No_Path then
          Setenv (Project_Include_Path_File, "");

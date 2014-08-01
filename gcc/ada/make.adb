@@ -2626,65 +2626,58 @@ package body Make is
          Data := No_Compilation_Data;
          OK   := False;
 
-         --  The loop here is a work-around for a problem on VMS; in some
-         --  circumstances (shared library and several executables, for
-         --  example), there are child processes other than compilation
-         --  processes that are received. ??? Revisit now that VMS is no
-         --  longer supported.
+         Wait_Process (Pid, OK);
 
-         loop
-            Wait_Process (Pid, OK);
+         if Pid = Invalid_Pid then
+            return;
+         end if;
 
-            if Pid = Invalid_Pid then
-               return;
-            end if;
+         --  Look into the running compilation processes for this PID
 
-            for J in Running_Compile'First .. Outstanding_Compiles loop
-               if Pid = Running_Compile (J).Pid then
-                  Data    := Running_Compile (J);
-                  Project := Running_Compile (J).Project;
+         for J in Running_Compile'First .. Outstanding_Compiles loop
+            if Pid = Running_Compile (J).Pid then
+               Data    := Running_Compile (J);
+               Project := Running_Compile (J).Project;
 
-                  if Project /= No_Project then
-                     Queue.Set_Obj_Dir_Free (Project.Object_Directory.Name);
-                  end if;
-
-                  --  If a mapping file was used by this compilation, get its
-                  --  file name for reuse by a subsequent compilation.
-
-                  if Running_Compile (J).Mapping_File /= No_Mapping_File then
-                     Comp_Data :=
-                       Project_Compilation_Htable.Get
-                         (Project_Compilation, Project);
-                     Comp_Data.Last_Free_Indexes :=
-                       Comp_Data.Last_Free_Indexes + 1;
-                     Comp_Data.Free_Mapping_File_Indexes
-                       (Comp_Data.Last_Free_Indexes) :=
-                         Running_Compile (J).Mapping_File;
-                  end if;
-
-                  --  To actually remove this Pid and related info from
-                  --  Running_Compile replace its entry with the last valid
-                  --  entry in Running_Compile.
-
-                  if J = Outstanding_Compiles then
-                     null;
-                  else
-                     Running_Compile (J) :=
-                       Running_Compile (Outstanding_Compiles);
-                  end if;
-
-                  Outstanding_Compiles := Outstanding_Compiles - 1;
-                  return;
+               if Project /= No_Project then
+                  Queue.Set_Obj_Dir_Free (Project.Object_Directory.Name);
                end if;
-            end loop;
 
-            --  This child process was not one of our compilation processes;
-            --  just ignore it for now.
+               --  If a mapping file was used by this compilation, get its file
+               --  name for reuse by a subsequent compilation.
 
-            --  Why is this commented out code sitting here???
+               if Running_Compile (J).Mapping_File /= No_Mapping_File then
+                  Comp_Data :=
+                    Project_Compilation_Htable.Get
+                      (Project_Compilation, Project);
+                  Comp_Data.Last_Free_Indexes :=
+                    Comp_Data.Last_Free_Indexes + 1;
+                  Comp_Data.Free_Mapping_File_Indexes
+                    (Comp_Data.Last_Free_Indexes) :=
+                    Running_Compile (J).Mapping_File;
+               end if;
 
-            --  raise Program_Error;
+               --  To actually remove this Pid and related info from
+               --  Running_Compile replace its entry with the last valid
+               --  entry in Running_Compile.
+
+               if J = Outstanding_Compiles then
+                  null;
+               else
+                  Running_Compile (J) :=
+                    Running_Compile (Outstanding_Compiles);
+               end if;
+
+               Outstanding_Compiles := Outstanding_Compiles - 1;
+               exit;
+            end if;
          end loop;
+
+         --  If the PID was not found, return with OK set to False
+
+         if Data = No_Compilation_Data then
+            OK := False;
+         end if;
       end Await_Compile;
 
       ---------------------------
@@ -4638,11 +4631,13 @@ package body Make is
          Library_Projs.Table (Current) := Proj;
       end Add_To_Library_Projs;
 
+   --  Start of processing for Library_Phase
+
    begin
       Library_Projs.Init;
 
-      --  Put in Library_Projs table all library project file
-      --  ids when the library need to be rebuilt.
+      --  Put in Library_Projs table all library project file ids when the
+      --  library need to be rebuilt.
 
       Proj1 := Project_Tree.Projects;
       while Proj1 /= null loop

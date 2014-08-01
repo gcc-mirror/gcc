@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (C Library Version, non-x86)                       --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,10 @@
 --  One advantage of using this package is that it will interface directly to
 --  hardware instructions, such as the those provided on the Intel x86.
 
---  This version is for use with normal Unix math functions. Alternative
---  packages are used on OpenVMS (different import names), VxWorks (no
---  need for the -lm Linker_Options), and on the x86 (where we have two
---  versions one using inline ASM, and one importing from the C long
---  routines that take 80-bit arguments).
+--  This version here is for use with normal Unix math functions. Alternative
+--  packages are used VxWorks (no need for the -lm Linker_Options), and on the
+--  x86 (where we have two versions one using inline ASM, and one importing
+--  from the C long routines that take 80-bit arguments).
 
 package Ada.Numerics.Aux is
    pragma Pure;

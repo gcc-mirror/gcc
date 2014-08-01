@@ -823,8 +823,7 @@ package body System.Fat_Gen is
       Most_Significant_Word : constant Rep_Index :=
                                 Rep_Last * Standard'Default_Bit_Order;
       --  Finding the location of the Exponent_Word is a bit tricky. In general
-      --  we assume Word_Order = Bit_Order. This expression needs to be refined
-      --  for VMS.
+      --  we assume Word_Order = Bit_Order.
 
       Exponent_Factor : constant Float_Word :=
                           2**(Float_Word'Size - 1) /

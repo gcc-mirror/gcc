@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@ with Krunch;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Table;
-with Targparm; use Targparm;
 with Uname;    use Uname;
 with Widechar; use Widechar;
 
@@ -410,8 +409,7 @@ package body Fname.UF is
                           (Name_Buffer,
                            Name_Len,
                            Integer (Maximum_File_Name_Length),
-                           Debug_Flag_4,
-                           OpenVMS_On_Target);
+                           Debug_Flag_4);
 
                         --  Replace extension
 

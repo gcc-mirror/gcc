@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,10 +91,9 @@ package Symbols is
 
    package Processing is
 
-   --  This package, containing a single visible procedure Process, exists so
-   --  that it can be a subunits, for some platforms (such as VMS Alpha and
-   --  IA64), the body of package Symbols is common, while the subunit
-   --  Processing is not.
+   --  This package, containing a single visible procedure Process, exists
+   --  so that it can be a subunits, for some platforms, the body of package
+   --  Symbols is common, while the subunit Processing is not.
 
       procedure Process
         (Object_File : String;

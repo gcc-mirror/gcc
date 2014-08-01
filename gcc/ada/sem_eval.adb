@@ -1668,13 +1668,6 @@ package body Sem_Eval is
                          N_Null)
          then
             return True;
-
-         --  Any reference to Null_Parameter is known at compile time. No
-         --  other attribute references (that have not already been folded)
-         --  are known at compile time.
-
-         elsif K = N_Attribute_Reference then
-            return Attribute_Name (Op) = Name_Null_Parameter;
          end if;
       end if;
 
@@ -2657,11 +2650,7 @@ package body Sem_Eval is
          Right_Int : constant Uint := Expr_Value (Right);
 
       begin
-         --  VMS includes bitwise operations on signed types
-
-         if Is_Modular_Integer_Type (Etype (N))
-           or else Is_VMS_Operator (Entity (N))
-         then
+         if Is_Modular_Integer_Type (Etype (N)) then
             declare
                Left_Bits  : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
                Right_Bits : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
@@ -4035,13 +4024,6 @@ package body Sem_Eval is
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
          return Corresponding_Integer_Value (N);
 
-      --  Peculiar VMS case, if we have xxx'Null_Parameter, return zero
-
-      elsif Kind = N_Attribute_Reference
-        and then Attribute_Name (N) = Name_Null_Parameter
-      then
-         return Uint_0;
-
       --  Otherwise must be character literal
 
       else
@@ -4114,13 +4096,6 @@ package body Sem_Eval is
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
          Val := Corresponding_Integer_Value (N);
 
-      --  Peculiar VMS case, if we have xxx'Null_Parameter, return zero
-
-      elsif Kind = N_Attribute_Reference
-        and then Attribute_Name (N) = Name_Null_Parameter
-      then
-         Val := Uint_0;
-
       --  Otherwise must be character literal
 
       else
@@ -4182,18 +4157,12 @@ package body Sem_Eval is
       elsif Kind = N_Integer_Literal then
          return UR_From_Uint (Expr_Value (N));
 
-      --  Peculiar VMS case, if we have xxx'Null_Parameter, return 0.0
+      --  Here, we have a node that cannot be interpreted as a compile time
+      --  constant. That is definitely an error.
 
-      elsif Kind = N_Attribute_Reference
-        and then Attribute_Name (N) = Name_Null_Parameter
-      then
-         return Ureal_0;
+      else
+         raise Program_Error;
       end if;
-
-      --  If we fall through, we have a node that cannot be interpreted as a
-      --  compile time constant. That is definitely an error.
-
-      raise Program_Error;
    end Expr_Value_R;
 
    ------------------

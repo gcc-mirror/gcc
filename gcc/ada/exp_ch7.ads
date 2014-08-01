@@ -151,11 +151,6 @@ package Exp_Ch7 is
    --  when pragma Restrictions (No_Finalization) applies, in which case we
    --  know that class-wide objects do not contain controlled parts.
 
-   function Get_Global_Pool_For_Access_Type (T : Entity_Id) return Entity_Id;
-   --  Return the pool id for access type T.  This is generally the node
-   --  corresponding to System.Global_Pool.Global_Pool_Object except on
-   --  VMS if the access size is 32.
-
    function Has_New_Controlled_Component (E : Entity_Id) return Boolean;
    --  E is a type entity. Give the same result as Has_Controlled_Component
    --  except for tagged extensions where the result is True only if the

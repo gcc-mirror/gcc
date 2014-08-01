@@ -64,13 +64,8 @@ package System.Task_Primitives is
    --  Ada_Task_Control_Block.
 
    subtype Task_Address is System.Address;
-   --  In some versions of Task_Primitives, notably for VMS, Task_Address is
-   --  the short version of address defined in System.Aux_DEC. To avoid
-   --  dragging Aux_DEC into tasking packages a tasking specific subtype is
-   --  defined here.
-
    Task_Address_Size : constant := Standard'Address_Size;
-   --  The size of Task_Address
+   --  Type used for task addresses and its size
 
    Alternate_Stack_Size : constant := System.OS_Interface.Alternate_Stack_Size;
    --  Import value from System.OS_Interface

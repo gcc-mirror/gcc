@@ -159,12 +159,9 @@ package body Bindgen is
    --  A value of zero indicates that time slicing should be suppressed. If no
    --  pragma is present, and no -T switch was used, the value is -1.
 
-   --  Heap_Size is the heap to use for memory allocations set by use of a
-   --  -Hnn parameter for the binder or by the GNAT$NO_MALLOC_64 logical.
-   --  Valid values are 32 and 64. This switch is only effective on VMS.
-
-   --  Float_Format is the float representation in use. Valid values are
-   --  'I' for IEEE and 'V' for VAX Float. This is only for VMS.
+   --  Float_Format is the float representation in use. Currently the only
+   --  valid value is 'I' for IEEE. We needed this field in the past for other
+   --  floating-point formats, and it is retained for possible future use.
 
    --  WC_Encoding shows the wide character encoding method used for the main
    --  program. This is one of the encoding letters defined in
@@ -2046,10 +2043,10 @@ package body Bindgen is
       --  files. The reason for this decision is that libraries referenced
       --  by internal routines may reference these standard library entries.
 
-      --  Note that we do not insert anything when pragma No_Run_Time has been
-      --  specified or when the standard libraries are not to be used,
-      --  otherwise on some platforms, such as VMS, we may get duplicate
-      --  symbols when linking.
+      --  Note that we do not insert anything when pragma No_Run_Time has
+      --  been specified or when the standard libraries are not to be used,
+      --  otherwise on some platforms, we may get duplicate symbols when
+      --  linking (not clear if this is still the case, but it is harmless).
 
       if not (Opt.No_Run_Time_Mode or else Opt.No_Stdlib) then
          Name_Len := 0;
@@ -2212,8 +2209,7 @@ package body Bindgen is
 
       Resolve_Binder_Options;
 
-      --  Usually, adafinal is called using a pragma Import C. Since Import C
-      --  doesn't have the same semantics for VMs or CodePeer use standard Ada.
+      --  Generate standard with's
 
       if not Suppress_Standard_Library_On_Target then
          if CodePeer_Mode then

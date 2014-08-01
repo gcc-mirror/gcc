@@ -1627,7 +1627,7 @@ begin
    Osint.Add_Default_Search_Dirs;
 
    --  Get the target parameters, but only if switch -nostdinc was not
-   --  specified. Likely not strictly needed now that VMS is baselined???
+   --  specified. May not be needed any more, but is harmless.
 
    if not Opt.No_Stdinc then
       Get_Target_Parameters;

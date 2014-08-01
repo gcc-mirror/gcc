@@ -411,7 +411,6 @@ package body Einfo is
    --    Is_Generic_Instance             Flag130
 
    --    No_Pool_Assigned                Flag131
-   --    Is_Optional_Parameter           Flag134
    --    Has_Aliased_Components          Flag135
    --    No_Strict_Aliasing              Flag136
    --    Is_Machine_Code_Subprogram      Flag137
@@ -573,6 +572,12 @@ package body Einfo is
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
+   --    (unused)                        Flag132
+   --    (unused)                        Flag133
+   --    (unused)                        Flag134
+
+   --    (unused)                        Flag275
+   --    (unused)                        Flag276
    --    (unused)                        Flag277
    --    (unused)                        Flag278
    --    (unused)                        Flag279
@@ -2201,12 +2206,6 @@ package body Einfo is
       pragma Assert (Is_Formal (Id));
       return Flag226 (Id);
    end Is_Only_Out_Parameter;
-
-   function Is_Optional_Parameter (Id : E) return B is
-   begin
-      pragma Assert (Is_Formal (Id));
-      return Flag134 (Id);
-   end Is_Optional_Parameter;
 
    function Is_Package_Body_Entity (Id : E) return B is
    begin
@@ -4992,12 +4991,6 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Out_Parameter);
       Set_Flag226 (Id, V);
    end Set_Is_Only_Out_Parameter;
-
-   procedure Set_Is_Optional_Parameter (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Formal (Id));
-      Set_Flag134 (Id, V);
-   end Set_Is_Optional_Parameter;
 
    procedure Set_Is_Package_Body_Entity (Id : E; V : B := True) is
    begin
@@ -8405,7 +8398,6 @@ package body Einfo is
       W ("Is_Null_Init_Proc",               Flag178 (Id));
       W ("Is_Obsolescent",                  Flag153 (Id));
       W ("Is_Only_Out_Parameter",           Flag226 (Id));
-      W ("Is_Optional_Parameter",           Flag134 (Id));
       W ("Is_Package_Body_Entity",          Flag160 (Id));
       W ("Is_Packed",                       Flag51  (Id));
       W ("Is_Packed_Array_Impl_Type",       Flag138 (Id));

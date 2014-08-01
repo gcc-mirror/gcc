@@ -6022,8 +6022,7 @@ package body Sem_Util is
                --  be a static subtype, since otherwise it would have
                --  been diagnosed as illegal.
 
-               elsif Is_Entity_Name (Choice) and then
-                     Is_Type (Entity (Choice))
+               elsif Is_Entity_Name (Choice) and then Is_Type (Entity (Choice))
                then
                   exit Search when Is_In_Range (Expr, Etype (Choice),
                                                 Assume_Valid => False);
@@ -11797,25 +11796,6 @@ package body Sem_Util is
 
       return False;
    end Is_Variable_Size_Record;
-
-   ---------------------
-   -- Is_VMS_Operator --
-   ---------------------
-
-   function Is_VMS_Operator (Op : Entity_Id) return Boolean is
-   begin
-      --  The VMS operators are declared in a child of System that is loaded
-      --  through pragma Extend_System. In some rare cases a program is run
-      --  with this extension but without indicating that the target is VMS.
-
-      return Ekind (Op) = E_Function
-        and then Is_Intrinsic_Subprogram (Op)
-        and then
-          ((Present_System_Aux and then Scope (Op) = System_Aux_Id)
-             or else
-              (True_VMS_Target
-                and then Scope (Scope (Op)) = RTU_Entity (System)));
-   end Is_VMS_Operator;
 
    -----------------
    -- Is_Variable --

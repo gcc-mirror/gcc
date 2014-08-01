@@ -7038,11 +7038,7 @@ package body Freeze is
       else
          Set_Mechanisms (E);
 
-         --  For foreign conventions, warn about return of an
-         --  unconstrained array.
-
-         --  Note: we *do* allow a return by descriptor for the VMS case,
-         --  though here there is probably more to be done ???
+         --  For foreign conventions, warn about return of unconstrained array
 
          if Ekind (E) = E_Function then
             Retype := Underlying_Type (Etype (E));
@@ -7064,11 +7060,6 @@ package body Freeze is
 
             elsif Is_Array_Type (Retype)
               and then not Is_Constrained (Retype)
-
-              --  Exclude cases where descriptor mechanism is set, since the
-              --  VMS descriptor mechanisms allow such unconstrained returns.
-
-              and then Mechanism (E) not in Descriptor_Codes
 
                --  Check appropriate warning is enabled (should we check for
                --  Warnings (Off) on specific entities here, probably so???)
@@ -7100,39 +7091,6 @@ package body Freeze is
                   Error_Msg_N
                     ("?x?parameter cannot be defaulted in non-Ada call",
                      Default_Value (F));
-               end if;
-
-               Next_Formal (F);
-            end loop;
-         end if;
-      end if;
-
-      --  For VMS, descriptor mechanisms for parameters are allowed only for
-      --  imported/exported subprograms. Moreover, the NCA descriptor is not
-      --  allowed for parameters of exported subprograms.
-
-      if OpenVMS_On_Target then
-         if Is_Exported (E) then
-            F := First_Formal (E);
-            while Present (F) loop
-               if Mechanism (F) = By_Descriptor_NCA then
-                  Error_Msg_N
-                    ("'N'C'A' descriptor for parameter not permitted", F);
-                  Error_Msg_N
-                    ("\can only be used for imported subprogram", F);
-               end if;
-
-               Next_Formal (F);
-            end loop;
-
-         elsif not Is_Imported (E) then
-            F := First_Formal (E);
-            while Present (F) loop
-               if Mechanism (F) in Descriptor_Codes then
-                  Error_Msg_N
-                    ("descriptor mechanism for parameter not permitted", F);
-                  Error_Msg_N
-                    ("\can only be used for imported/exported subprogram", F);
                end if;
 
                Next_Formal (F);

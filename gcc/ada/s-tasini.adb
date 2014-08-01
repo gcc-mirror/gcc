@@ -510,7 +510,7 @@ package body System.Tasking.Initialization is
 
             --  The task is blocked on a system call waiting for the
             --  completion event. In this case Abort_Task may need to take
-            --  special action in order to succeed. Example system: VMS.
+            --  special action in order to succeed.
 
          then
             Abort_Task (T);

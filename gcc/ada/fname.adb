@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,9 +30,8 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Hostparm; use Hostparm;
 with Table;
-with Types;    use Types;
+with Types; use Types;
 
 package body Fname is
 
@@ -75,13 +74,6 @@ package body Fname is
 
       elsif Name_Buffer (1 .. 2) = "g-"
         or else Name_Buffer (1 .. 8) = "gnat    "
-      then
-         return True;
-
-      elsif OpenVMS
-        and then
-          (Name_Buffer (1 .. 4) = "dec-"
-             or else Name_Buffer (1 .. 8) = "dec     ")
       then
          return True;
 

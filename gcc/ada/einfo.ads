@@ -2328,7 +2328,7 @@ package Einfo is
 --       Defined in all entities. Set if the entity is exported. For now we
 --       only allow the export of constants, exceptions, functions, procedures
 --       and variables, but that may well change later on. Exceptions can only
---       be exported in the OpenVMS and Java VM implementations of GNAT.
+--       be exported in the Java VM implementation of GNAT.
 
 --    Is_External_State (synthesized)
 --       Applies to all entities, true for abstract states that are subject to
@@ -2447,9 +2447,8 @@ package Einfo is
 --    Is_Imported (Flag24)
 --       Defined in all entities. Set if the entity is imported. For now we
 --       only allow the import of exceptions, functions, procedures, packages.
---       and variables. Exceptions can only be imported in the OpenVMS and
---       Java VM implementations of GNAT. Packages and types can only be
---       imported in the Java VM implementation.
+--       and variables. Exceptions, packages and types can only be imported in
+--       the Java VM implementation.
 
 --    Is_Incomplete_Or_Private_Type (synthesized)
 --       Applies to all entities, true for private and incomplete types
@@ -2696,11 +2695,6 @@ package Einfo is
 --       only OUT parameter for this formal part. If there is more than one
 --       out parameter, or if there is some other IN OUT parameter then this
 --       flag is not set in any of them. Used in generation of warnings.
-
---    Is_Optional_Parameter (Flag134)
---       Defined in parameter entities. Set if the parameter is specified as
---       optional by use of a First_Optional_Parameter argument to one of the
---       extended Import pragmas. Can only be set for OpenVMS versions of GNAT.
 
 --    Is_Ordinary_Fixed_Point_Type (synthesized)
 --       Applies to all entities, true for ordinary fixed point types and
@@ -3348,8 +3342,9 @@ package Einfo is
 --       types which have a convention of C, C++ or Fortran.
 
 --    No_Dynamic_Predicate_On_Actual (Flag276)
---       Defined on generic formal types that are used in loops and quantified
---       expressions. The corresponing actual cannot have dynamic predicates.
+--       Defined in discrete types. Set for generic formal types that are used
+--       in loops and quantified expressions. The corresponing actual cannot
+--       have dynamic predicates.
 
 --    No_Pool_Assigned (Flag131) [root type only]
 --       Defined in access types. Set if a storage size clause applies to the
@@ -3359,8 +3354,9 @@ package Einfo is
 --       derived types must have the same pool.
 
 --    No_Predicate_On_Actual (Flag275)
---       Defined on generic formal types that are used in the spec of a generic
---       package, in constructs that forbid discrete types with predicates.
+--       Defined in discrete types. Set for generic formal types that are used
+--       in the spec of a generic package, in constructs that forbid discrete
+--       types with predicates.
 
 --    No_Return (Flag113)
 --       Defined in all entities. Always false except in the case of procedures
@@ -5751,7 +5747,6 @@ package Einfo is
    --    Has_Initial_Value                   (Flag219)
    --    Is_Controlling_Formal               (Flag97)
    --    Is_Only_Out_Parameter               (Flag226)
-   --    Is_Optional_Parameter               (Flag134)
    --    Low_Bound_Tested                    (Flag205)
    --    Is_Return_Object                    (Flag209)
    --    Parameter_Mode                      (synth)
@@ -6703,7 +6698,6 @@ package Einfo is
    function Is_Null_Init_Proc                   (Id : E) return B;
    function Is_Obsolescent                      (Id : E) return B;
    function Is_Only_Out_Parameter               (Id : E) return B;
-   function Is_Optional_Parameter               (Id : E) return B;
    function Is_Package_Body_Entity              (Id : E) return B;
    function Is_Packed                           (Id : E) return B;
    function Is_Packed_Array_Impl_Type           (Id : E) return B;
@@ -7343,7 +7337,6 @@ package Einfo is
    procedure Set_Is_Null_Init_Proc               (Id : E; V : B := True);
    procedure Set_Is_Obsolescent                  (Id : E; V : B := True);
    procedure Set_Is_Only_Out_Parameter           (Id : E; V : B := True);
-   procedure Set_Is_Optional_Parameter           (Id : E; V : B := True);
    procedure Set_Is_Package_Body_Entity          (Id : E; V : B := True);
    procedure Set_Is_Packed                       (Id : E; V : B := True);
    procedure Set_Is_Packed_Array_Impl_Type       (Id : E; V : B := True);
@@ -8119,7 +8112,6 @@ package Einfo is
    pragma Inline (Is_Object);
    pragma Inline (Is_Obsolescent);
    pragma Inline (Is_Only_Out_Parameter);
-   pragma Inline (Is_Optional_Parameter);
    pragma Inline (Is_Ordinary_Fixed_Point_Type);
    pragma Inline (Is_Overloadable);
    pragma Inline (Is_Package_Body_Entity);
@@ -8570,7 +8562,6 @@ package Einfo is
    pragma Inline (Set_Is_Null_Init_Proc);
    pragma Inline (Set_Is_Obsolescent);
    pragma Inline (Set_Is_Only_Out_Parameter);
-   pragma Inline (Set_Is_Optional_Parameter);
    pragma Inline (Set_Is_Package_Body_Entity);
    pragma Inline (Set_Is_Packed);
    pragma Inline (Set_Is_Packed_Array_Impl_Type);

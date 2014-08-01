@@ -672,24 +672,23 @@ package body Ada.Exceptions is
    --  perform periodic but not systematic operations.
 
    procedure Poll is separate;
-   --  The actual polling routine is separate, so that it can easily
-   --  be replaced with a target dependent version.
+   --  The actual polling routine is separate, so that it can easily be
+   --  replaced with a target dependent version.
 
    --------------------------
    -- Code_Address_For_AAA --
    --------------------------
 
-   --  This function gives us the start of the PC range for addresses
-   --  within the exception unit itself. We hope that gigi/gcc keep all the
-   --  procedures in their original order.
+   --  This function gives us the start of the PC range for addresses within
+   --  the exception unit itself. We hope that gigi/gcc keep all the procedures
+   --  in their original order.
 
    function Code_Address_For_AAA return System.Address is
    begin
-      --  We are using a label instead of merely using
-      --  Code_Address_For_AAA'Address because on some platforms the latter
-      --  does not yield the address we want, but the address of a stub or of
-      --  a descriptor instead. This is the case at least on Alpha-VMS and
-      --  PA-HPUX.
+      --  We are using a label instead of Code_Address_For_AAA'Address because
+      --  on some platforms the latter does not yield the address we want, but
+      --  the address of a stub or of a descriptor instead. This is the case at
+      --  least on PA-HPUX.
 
       <<Start_Of_AAA>>
       return Start_Of_AAA'Address;

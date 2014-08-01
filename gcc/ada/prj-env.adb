@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Fmap;
-with Hostparm;
 with Makeutl;  use Makeutl;
 with Opt;
 with Osint;    use Osint;
@@ -1905,8 +1904,6 @@ package body Prj.Env is
       Add_Default_Dir : Boolean := True;
       First           : Positive;
       Last            : Positive;
-      New_Len         : Positive;
-      New_Last        : Positive;
 
       Ada_Project_Path      : constant String := "ADA_PROJECT_PATH";
       Gpr_Project_Path      : constant String := "GPR_PROJECT_PATH";
@@ -2043,35 +2040,6 @@ package body Prj.Env is
             --  directory correctly.
 
             Last := Last - 1;
-
-         elsif not Hostparm.OpenVMS
-           or else not Is_Absolute_Path (Name_Buffer (First .. Last))
-         then
-            --  On VMS, only expand relative path names, as absolute paths
-            --  may correspond to multi-valued VMS logical names.
-
-            declare
-               New_Dir : constant String :=
-                           Normalize_Pathname
-                             (Name_Buffer (First .. Last),
-                              Resolve_Links => Opt.Follow_Links_For_Dirs);
-
-            begin
-               --  If the absolute path was resolved and is different from
-               --  the original, replace original with the resolved path.
-
-               if New_Dir /= Name_Buffer (First .. Last)
-                 and then New_Dir'Length /= 0
-               then
-                  New_Len := Name_Len + New_Dir'Length - (Last - First + 1);
-                  New_Last := First + New_Dir'Length - 1;
-                  Name_Buffer (New_Last + 1 .. New_Len) :=
-                    Name_Buffer (Last + 1 .. Name_Len);
-                  Name_Buffer (First .. New_Last) := New_Dir;
-                  Name_Len := New_Len;
-                  Last := New_Last;
-               end if;
-            end;
          end if;
 
          First := Last + 1;

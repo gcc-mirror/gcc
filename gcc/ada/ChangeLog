@@ -1,5 +1,44 @@
 2014-08-01  Vincent Celier  <celier@adacore.com>
 
+	* make.adb (Await_Compile): Remove loop that was only needed
+	for VMS.
+
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* a-calcon.ads, a-direct.adb, a-dirval-mingw.adb, a-dirval.adb,
+	a-dirval.ads, a-except-2005.adb, a-excpol-abort.adb,
+	a-numaux-darwin.ads, a-numaux.ads, bindgen.adb, bindusg.adb,
+	einfo.adb, einfo.ads, err_vars.ads, errout.ads, errutil.adb,
+	exp_ch3.adb, exp_ch4.adb, exp_ch7.adb, exp_ch7.ads, fname-uf.adb,
+	fname.adb, fname.ads, freeze.adb, g-debpoo.adb, g-dirope.ads,
+	g-excact.ads, g-expect.ads, g-socket.adb, g-socket.ads, g-sothco.ads,
+	g-traceb.ads, gnat_rm.texi, gnatlink.adb, gnatls.adb, i-cstrea.adb,
+	krunch.adb, krunch.ads, layout.adb, lib-util.adb, make.adb,
+	mlib.adb, osint-b.adb, osint-b.ads, osint-c.adb, osint.adb,
+	osint.ads, output.ads, par.adb, prj-conf.adb, prj-env.adb,
+	prj-makr.adb, prj-nmsc.adb, prj.adb, prj.ads, repinfo.adb, rtsfind.adb,
+	rtsfind.ads, s-excmac-gcc.ads, s-fatgen.adb, s-mastop.ads,
+	s-parame-ae653.ads, s-parame-hpux.ads, s-parame-vxworks.ads,
+	s-parame.ads, s-soflin.ads, s-stoele.adb, s-tasini.adb,
+	s-taspri-dummy.ads, s-taspri-hpux-dce.ads, s-taspri-mingw.ads,
+	s-taspri-posix-noaltstack.ads, s-taspri-posix.ads,
+	s-taspri-solaris.ads, s-taspri-vxworks.ads, s-trasym.ads,
+	sem_ch12.adb, sem_ch4.adb, sem_eval.adb, sem_intr.adb, sem_mech.adb,
+	sem_mech.ads, sem_prag.adb, sem_res.adb, sem_util.adb, sem_util.ads,
+	sinfo.adb, sinfo.ads, sinput-c.adb, symbols.ads, targparm.adb,
+	treepr.adb, types.ads, xr_tabls.adb, xr_tabls.ads: Remove VMS
+	specific code and comments.
+
+2014-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): New procedure
+	Check_Reverse_Iteration, to verify the legality of the Reverse
+	indicator on various container types, and to detect illegal
+	reverse iterations on containers that only supoort forward
+	iteration.
+
+2014-08-01  Vincent Celier  <celier@adacore.com>
+
 	* gnatcmd.adb: Remove the VMS specific stuff.  Integrate in
 	procedure GNATCmd the relevant declarations from packages VMS_Cmds
 	and VMS_Conv.

@@ -4313,11 +4313,11 @@ package body Exp_Ch4 is
 
          if No (Associated_Storage_Pool (PtrT)) and then VM_Target = No_VM then
             if Present (Rel_Typ) then
-               Set_Associated_Storage_Pool (PtrT,
-                 Associated_Storage_Pool (Rel_Typ));
+               Set_Associated_Storage_Pool
+                 (PtrT, Associated_Storage_Pool (Rel_Typ));
             else
-               Set_Associated_Storage_Pool (PtrT,
-                 Get_Global_Pool_For_Access_Type (PtrT));
+               Set_Associated_Storage_Pool
+                 (PtrT, RTE (RE_Global_Pool_Object));
             end if;
          end if;
 
@@ -8537,17 +8537,18 @@ package body Exp_Ch4 is
    ---------------------
 
    --  If the argument is other than a Boolean array type, there is no special
-   --  expansion required, except for VMS operations on signed integers.
+   --  expansion required, except for dealing with validity checks, and non-
+   --  standard boolean representations.
 
-   --  For the packed case, we call the special routine in Exp_Pakd, except
-   --  that if the component size is greater than one, we use the standard
-   --  routine generating a gruesome loop (it is so peculiar to have packed
-   --  arrays with non-standard Boolean representations anyway, so it does not
-   --  matter that we do not handle this case efficiently).
+   --  For the packed array case, we call the special routine in Exp_Pakd,
+   --  except that if the component size is greater than one, we use the
+   --  standard routine generating a gruesome loop (it is so peculiar to have
+   --  packed arrays with non-standard Boolean representations anyway, so it
+   --  does not matter that we do not handle this case efficiently).
 
-   --  For the unpacked case (and for the special packed case where we have non
-   --  standard Booleans, as discussed above), we generate and insert into the
-   --  tree the following function definition:
+   --  For the unpacked array case (and for the special packed case where we
+   --  have non standard Booleans, as discussed above), we generate and insert
+   --  into the tree the following function definition:
 
    --     function Nnnn (A : arr) is
    --       B : arr;
@@ -8585,49 +8586,6 @@ package body Exp_Ch4 is
          Set_Etype (N, Standard_Boolean);
          Adjust_Result_Type (N, Typ);
          return;
-      end if;
-
-      --  For the VMS "not" on signed integer types, use conversion to and from
-      --  a predefined modular type.
-
-      if Is_VMS_Operator (Entity (N)) then
-         declare
-            Rtyp : Entity_Id;
-            Utyp : Entity_Id;
-
-         begin
-            --  If this is a derived type, retrieve original VMS type so that
-            --  the proper sized type is used for intermediate values.
-
-            if Is_Derived_Type (Typ) then
-               Rtyp := First_Subtype (Etype (Typ));
-            else
-               Rtyp := Typ;
-            end if;
-
-            --  The proper unsigned type must have a size compatible with the
-            --  operand, to prevent misalignment.
-
-            if RM_Size (Rtyp) <= 8 then
-               Utyp := RTE (RE_Unsigned_8);
-
-            elsif RM_Size (Rtyp) <= 16 then
-               Utyp := RTE (RE_Unsigned_16);
-
-            elsif RM_Size (Rtyp) = RM_Size (Standard_Unsigned) then
-               Utyp := RTE (RE_Unsigned_32);
-
-            else
-               Utyp := RTE (RE_Long_Long_Unsigned);
-            end if;
-
-            Rewrite (N,
-              Unchecked_Convert_To (Typ,
-                Make_Op_Not (Loc,
-                  Unchecked_Convert_To (Utyp, Right_Opnd (N)))));
-            Analyze_And_Resolve (N, Typ);
-            return;
-         end;
       end if;
 
       --  Only array types need any other processing
