@@ -1,3 +1,25 @@
+2014-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb, opt.ads Minor comment updates.
+
+2014-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_intr.adb (Expand_Unc_Deallocation): Request a renaming
+	from the side effects removal machinery.
+	* exp_util.adb (Duplicate_Subexpr): Add formal parameter
+	Renaming_Req. Update the nested call to Remove_Side_Effects.
+	(Duplicate_Subexpr_No_Checks): Add formal parameter
+	Renaming_Req. Update the nested call to Remove_Side_Effects.
+	(Duplicate_Subexpr_Move_Checks): Add formal parameter
+	Renaming_Req. Update the nested call to Remove_Side_Effects.
+	(Remove_Side_Effects): Add formal parameter Renaming_Req. Generate
+	an object renaming declaration when the caller requests it.
+	* exp_util.ads (Duplicate_Subexpr): Add formal
+	parameter Renaming_Req. Update comment on usage.
+	(Duplicate_Subexpr_No_Checks): Add formal parameter Renaming_Req.
+	(Duplicate_Subexpr_Move_Checks): Add formal parameter
+	Renaming_Req.
+
 2014-08-01  Bob Duff  <duff@adacore.com>
 
 	* gnat_ugn.texi: Minor updates.

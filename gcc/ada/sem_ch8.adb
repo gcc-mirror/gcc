@@ -4462,14 +4462,14 @@ package body Sem_Ch8 is
       --  for that processing
 
       function Known_But_Invisible (E : Entity_Id) return Boolean;
-      --  This function determines whether the entity E (which is not
-      --  visible) can reasonably be considered to be known to the writer
-      --  of the reference. This is a heuristic test, used only for the
-      --  purposes of figuring out whether we prefer to complain that an
-      --  entity is undefined or invisible (and identify the declaration
-      --  of the invisible entity in the latter case). The point here is
-      --  that we don't want to complain that something is invisible and
-      --  then point to something entirely mysterious to the writer.
+      --  This function determines whether a reference to the entity E, which
+      --  is not visible, can reasonably be considered to be known to the
+      --  writer of the reference. This is a heuristic test, used only for
+      --  the purposes of figuring out whether we prefer to complain that an
+      --  entity is undefined or invisible (and identify the declaration of
+      --  the invisible entity in the latter case). The point here is that we
+      --  don't want to complain that something is invisible and then point to
+      --  something entirely mysterious to the writer.
 
       procedure Nvis_Messages;
       --  Called if there are no visible entries for N, but there is at least
@@ -4608,7 +4608,12 @@ package body Sem_Ch8 is
          elsif not Comes_From_Source (E) then
             return False;
 
-         --  In gnat internal mode, we consider all entities known
+         --  In gnat internal mode, we consider all entities known. The
+         --  historical reason behind this discrepancy is not known??? But the
+         --  only effect is to modify the error message given, so it is not
+         --  critical. Since it only affects the exact wording of error
+         --  messages in illegal programs, we do not mention this as an
+         --  effect of -gnatg, since it is not a language modification.
 
          elsif GNAT_Mode then
             return True;
