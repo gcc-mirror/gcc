@@ -1,3 +1,8 @@
+2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/15339
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Fix.
+
 2014-08-01  Zifei Tong  <zifeitong@gmail.com>
 
 	* libsupc++/atexit_thread.cc (HAVE___CXA_THREAD_ATEXIT_IMPL): Add
