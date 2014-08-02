@@ -1,3 +1,10 @@
+2014-08-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60417
+	* init.c (build_vec_init): Set CONSTRUCTOR_IS_DIRECT_INIT on
+	init-list for trailing elements.
+	* typeck2.c (process_init_constructor_array): Likewise.
+
 2014-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 217 again
