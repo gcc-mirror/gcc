@@ -845,7 +845,7 @@ varpool_node::finalize_decl (tree decl)
    avoid udplicate work.  */
 
 static void
-walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
+walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 			       struct cgraph_edge *edge)
 {
   unsigned int i;
@@ -855,8 +855,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
     = possible_polymorphic_call_targets
 	(edge, &final, &cache_token);
 
-  if (!pointer_set_insert (reachable_call_targets,
-			   cache_token))
+  if (!reachable_call_targets->add (cache_token))
     {
       if (cgraph_dump_file)
 	dump_possible_polymorphic_call_targets 
@@ -936,7 +935,7 @@ analyze_functions (void)
   struct cgraph_node *first_handled = first_analyzed;
   static varpool_node *first_analyzed_var;
   varpool_node *first_handled_var = first_analyzed_var;
-  struct pointer_set_t *reachable_call_targets = pointer_set_create ();
+  hash_set<void *> reachable_call_targets;
 
   symtab_node *node;
   symtab_node *next;
@@ -1035,7 +1034,7 @@ analyze_functions (void)
 		    {
 		      next = edge->next_callee;
 		      if (edge->indirect_info->polymorphic)
-			walk_polymorphic_call_targets (reachable_call_targets,
+			walk_polymorphic_call_targets (&reachable_call_targets,
 						       edge);
 		    }
 		}
@@ -1123,7 +1122,6 @@ analyze_functions (void)
       symtab_node::dump_table (cgraph_dump_file);
     }
   bitmap_obstack_release (NULL);
-  pointer_set_destroy (reachable_call_targets);
   ggc_collect ();
   /* Initialize assembler name hash, in particular we want to trigger C++
      mangling and same body alias creation before we free DECL_ARGUMENTS

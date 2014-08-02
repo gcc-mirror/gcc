@@ -66,7 +66,7 @@ free_ltrans_partitions (void)
   for (idx = 0; ltrans_partitions.iterate (idx, &part); idx++)
     {
       if (part->initializers_visited)
-	pointer_set_destroy (part->initializers_visited);
+	delete part->initializers_visited;
       /* Symtab encoder is freed after streaming.  */
       free (part);
     }
@@ -101,8 +101,8 @@ add_references_to_partition (ltrans_partition part, symtab_node *node)
 	     && !lto_symtab_encoder_in_partition_p (part->encoder, ref->referred))
       {
 	if (!part->initializers_visited)
-	  part->initializers_visited = pointer_set_create ();
-	if (!pointer_set_insert (part->initializers_visited, ref->referred))
+	  part->initializers_visited = new hash_set<symtab_node *>;
+	if (!part->initializers_visited->add (ref->referred))
 	  add_references_to_partition (part, ref->referred);
       }
 }
@@ -250,7 +250,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
 
       /* After UNDO we no longer know what was visited.  */
       if (partition->initializers_visited)
-	pointer_set_destroy (partition->initializers_visited);
+	delete partition->initializers_visited;
       partition->initializers_visited = NULL;
 
       if (!node->alias && (cnode = dyn_cast <cgraph_node *> (node)))

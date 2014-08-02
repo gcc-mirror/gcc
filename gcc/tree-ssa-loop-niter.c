@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "intl.h"
+#include "hash-set.h"
 #include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -3281,7 +3282,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 static void
 maybe_lower_iteration_bound (struct loop *loop)
 {
-  pointer_set_t *not_executed_last_iteration = NULL;
+  hash_set<gimple> *not_executed_last_iteration = NULL;
   struct nb_iter_bound *elt;
   bool found_exit = false;
   vec<basic_block> queue = vNULL;
@@ -3300,8 +3301,8 @@ maybe_lower_iteration_bound (struct loop *loop)
 	  && wi::ltu_p (elt->bound, loop->nb_iterations_upper_bound))
 	{
 	  if (!not_executed_last_iteration)
-	    not_executed_last_iteration = pointer_set_create ();
-	  pointer_set_insert (not_executed_last_iteration, elt->stmt);
+	    not_executed_last_iteration = new hash_set<gimple>;
+	  not_executed_last_iteration->add (elt->stmt);
 	}
     }
   if (!not_executed_last_iteration)
@@ -3327,7 +3328,7 @@ maybe_lower_iteration_bound (struct loop *loop)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
-	  if (pointer_set_contains (not_executed_last_iteration, stmt))
+	  if (not_executed_last_iteration->contains (stmt))
 	    {
 	      stmt_found = true;
 	      break;
@@ -3376,7 +3377,7 @@ maybe_lower_iteration_bound (struct loop *loop)
     }
   BITMAP_FREE (visited);
   queue.release ();
-  pointer_set_destroy (not_executed_last_iteration);
+  delete not_executed_last_iteration;
 }
 
 /* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P

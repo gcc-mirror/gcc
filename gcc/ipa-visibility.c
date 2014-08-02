@@ -687,12 +687,11 @@ function_and_variable_visibility (bool whole_program)
 	      }
 	  if (found)
 	    {
-	      struct pointer_set_t *visited_nodes = pointer_set_create ();
+	      hash_set<tree> visited_nodes;
 
 	      vnode->get_constructor ();
 	      walk_tree (&DECL_INITIAL (vnode->decl),
-			 update_vtable_references, NULL, visited_nodes);
-	      pointer_set_destroy (visited_nodes);
+			 update_vtable_references, NULL, &visited_nodes);
 	      vnode->remove_all_references ();
 	      record_references_in_initializer (vnode->decl, false);
 	    }

@@ -65,8 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "intl.h"
 #include "opts.h"
-
-static struct pointer_set_t *visited_nodes;
+#include "hash-set.h"
 
 /* Lattice values for const and pure functions.  Everything starts out
    being const, then may drop to pure and then neither depending on
@@ -133,13 +132,13 @@ function_always_visible_to_compiler_p (tree decl)
 
 /* Emit suggestion about attribute ATTRIB_NAME for DECL.  KNOWN_FINITE
    is true if the function is known to be finite.  The diagnostic is
-   controlled by OPTION.  WARNED_ABOUT is a pointer_set unique for
+   controlled by OPTION.  WARNED_ABOUT is a hash_set<tree> unique for
    OPTION, this function may initialize it and it is always returned
    by the function.  */
 
-static struct pointer_set_t *
+static hash_set<tree> *
 suggest_attribute (int option, tree decl, bool known_finite,
-		   struct pointer_set_t *warned_about,
+		   hash_set<tree> *warned_about,
 		   const char * attrib_name)
 {
   if (!option_enabled (option, &global_options))
@@ -149,10 +148,10 @@ suggest_attribute (int option, tree decl, bool known_finite,
     return warned_about;
 
   if (!warned_about)
-    warned_about = pointer_set_create (); 
-  if (pointer_set_contains (warned_about, decl))
+    warned_about = new hash_set<tree>;
+  if (warned_about->contains (decl))
     return warned_about;
-  pointer_set_insert (warned_about, decl);
+  warned_about->add (decl);
   warning_at (DECL_SOURCE_LOCATION (decl),
 	      option,
 	      known_finite
@@ -168,7 +167,7 @@ suggest_attribute (int option, tree decl, bool known_finite,
 static void
 warn_function_pure (tree decl, bool known_finite)
 {
-  static struct pointer_set_t *warned_about;
+  static hash_set<tree> *warned_about;
 
   warned_about 
     = suggest_attribute (OPT_Wsuggest_attribute_pure, decl,
@@ -181,7 +180,7 @@ warn_function_pure (tree decl, bool known_finite)
 static void
 warn_function_const (tree decl, bool known_finite)
 {
-  static struct pointer_set_t *warned_about;
+  static hash_set<tree> *warned_about;
   warned_about 
     = suggest_attribute (OPT_Wsuggest_attribute_const, decl,
 			 known_finite, warned_about, "const");
@@ -190,7 +189,7 @@ warn_function_const (tree decl, bool known_finite)
 static void
 warn_function_noreturn (tree decl)
 {
-  static struct pointer_set_t *warned_about;
+  static hash_set<tree> *warned_about;
   if (!lang_hooks.missing_noreturn_ok_p (decl)
       && targetm.warn_func_return (decl))
     warned_about 
@@ -846,11 +845,8 @@ add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
      static declarations.  We do not need to scan them more than once
      since all we would be interested in are the addressof
      operations.  */
-  visited_nodes = pointer_set_create ();
   if (node->get_availability () > AVAIL_INTERPOSABLE)
     set_function_state (node, analyze_function (node, true));
-  pointer_set_destroy (visited_nodes);
-  visited_nodes = NULL;
 }
 
 /* Called when new clone is inserted to callgraph late.  */
@@ -912,12 +908,6 @@ pure_const_generate_summary (void)
 
   register_hooks ();
 
-  /* There are some shared nodes, in particular the initializers on
-     static declarations.  We do not need to scan them more than once
-     since all we would be interested in are the addressof
-     operations.  */
-  visited_nodes = pointer_set_create ();
-
   /* Process all of the functions.
 
      We process AVAIL_INTERPOSABLE functions.  We can not use the results
@@ -927,9 +917,6 @@ pure_const_generate_summary (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->get_availability () >= AVAIL_INTERPOSABLE)
       set_function_state (node, analyze_function (node, true));
-
-  pointer_set_destroy (visited_nodes);
-  visited_nodes = NULL;
 }
 
 

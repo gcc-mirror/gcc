@@ -147,7 +147,7 @@ static tree convert_nontype_argument (tree, tree, tsubst_flags_t);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
 static int for_each_template_parm (tree, tree_fn_t, void*,
-				   struct pointer_set_t*, bool);
+				   hash_set<tree> *, bool);
 static tree expand_template_argument_pack (tree);
 static tree build_template_parm_index (int, int, int, tree, tree);
 static bool inline_needs_template_parms (tree, bool);
@@ -3083,7 +3083,7 @@ struct find_parameter_pack_data
   tree* parameter_packs;
 
   /* Set of AST nodes that have been visited by the traversal.  */
-  struct pointer_set_t *visited;
+  hash_set<tree> *visited;
 };
 
 /* Identifies all of the argument packs that occur in a template
@@ -3246,9 +3246,9 @@ uses_parameter_packs (tree t)
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
   return parameter_packs != NULL_TREE;
 }
 
@@ -3295,7 +3295,7 @@ make_pack_expansion (tree arg)
 
       /* Determine which parameter packs will be used by the base
          class expansion.  */
-      ppd.visited = pointer_set_create ();
+      ppd.visited = new hash_set<tree>;
       ppd.parameter_packs = &parameter_packs;
       cp_walk_tree (&TREE_PURPOSE (arg), &find_parameter_packs_r, 
                     &ppd, ppd.visited);
@@ -3303,7 +3303,7 @@ make_pack_expansion (tree arg)
       if (parameter_packs == NULL_TREE)
         {
           error ("base initializer expansion %<%T%> contains no parameter packs", arg);
-          pointer_set_destroy (ppd.visited);
+          delete ppd.visited;
           return error_mark_node;
         }
 
@@ -3320,7 +3320,7 @@ make_pack_expansion (tree arg)
             }
         }
 
-      pointer_set_destroy (ppd.visited);
+      delete ppd.visited;
 
       /* Create the pack expansion type for the base type.  */
       purpose = cxx_make_type (TYPE_PACK_EXPANSION);
@@ -3355,9 +3355,9 @@ make_pack_expansion (tree arg)
 
   /* Determine which parameter packs will be expanded.  */
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
   cp_walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
 
   /* Make sure we found some parameter packs.  */
   if (parameter_packs == NULL_TREE)
@@ -3402,9 +3402,9 @@ check_for_bare_parameter_packs (tree t)
     t = TREE_TYPE (t);
 
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
 
   if (parameter_packs) 
     {
@@ -4384,11 +4384,11 @@ fixed_parameter_pack_p (tree parm)
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
 
   fixed_parameter_pack_p_1 (parm, &ppd);
 
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
   return parameter_packs;
 }
 
@@ -7925,7 +7925,7 @@ struct pair_fn_data
   /* True when we should also visit template parameters that occur in
      non-deduced contexts.  */
   bool include_nondeduced_p;
-  struct pointer_set_t *visited;
+  hash_set<tree> *visited;
 };
 
 /* Called from for_each_template_parm via walk_tree.  */
@@ -8125,7 +8125,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 
 static int
 for_each_template_parm (tree t, tree_fn_t fn, void* data,
-			struct pointer_set_t *visited,
+			hash_set<tree> *visited,
 			bool include_nondeduced_p)
 {
   struct pair_fn_data pfd;
@@ -8144,7 +8144,7 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
   if (visited)
     pfd.visited = visited;
   else
-    pfd.visited = pointer_set_create ();
+    pfd.visited = new hash_set<tree>;
   result = cp_walk_tree (&t,
 		         for_each_template_parm_r,
 		         &pfd,
@@ -8153,7 +8153,7 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
   /* Clean up.  */
   if (!visited)
     {
-      pointer_set_destroy (pfd.visited);
+      delete pfd.visited;
       pfd.visited = 0;
     }
 

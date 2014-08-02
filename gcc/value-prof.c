@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "builtins.h"
 #include "tree-nested.h"
+#include "hash-set.h"
 
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
@@ -515,10 +516,10 @@ static bool error_found = false;
 static int
 visit_hist (void **slot, void *data)
 {
-  struct pointer_set_t *visited = (struct pointer_set_t *) data;
+  hash_set<histogram_value> *visited = (hash_set<histogram_value> *) data;
   histogram_value hist = *(histogram_value *) slot;
 
-  if (!pointer_set_contains (visited, hist)
+  if (!visited->contains (hist)
       && hist->type != HIST_TYPE_TIME_PROFILE)
     {
       error ("dead histogram");
@@ -538,10 +539,9 @@ verify_histograms (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
   histogram_value hist;
-  struct pointer_set_t *visited_hists;
 
   error_found = false;
-  visited_hists = pointer_set_create ();
+  hash_set<histogram_value> visited_hists;
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
@@ -558,12 +558,11 @@ verify_histograms (void)
 		dump_histogram_value (stderr, hist);
 		error_found = true;
 	      }
-            pointer_set_insert (visited_hists, hist);
+            visited_hists.add (hist);
 	  }
       }
   if (VALUE_HISTOGRAMS (cfun))
-    htab_traverse (VALUE_HISTOGRAMS (cfun), visit_hist, visited_hists);
-  pointer_set_destroy (visited_hists);
+    htab_traverse (VALUE_HISTOGRAMS (cfun), visit_hist, &visited_hists);
   if (error_found)
     internal_error ("verify_histograms failed");
 }

@@ -1,3 +1,8 @@
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto-partition.c, lto-partition.h: Use hash_set instead of
+	pointer_set.
+
 2014-07-31  Andi Kleen  <ak@linux.intel.com>
 
 	* lto.c (hash_canonical_type): Use inchash::hash

@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "hash-table.h"
 #include "langhooks-def.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "plugin.h"
 #include "c-family/c-ada-spec.h"
 #include "cilk.h"
@@ -7221,17 +7221,17 @@ warn_cxx_compat_finish_struct (tree fieldlist)
   if (!struct_parse_info->typedefs_seen.is_empty ()
       && fieldlist != NULL_TREE)
     {
-      /* Use a pointer_set using the name of the typedef.  We can use
-	 a pointer_set because identifiers are interned.  */
-      struct pointer_set_t *tset = pointer_set_create ();
+      /* Use a hash_set<tree> using the name of the typedef.  We can use
+	 a hash_set<tree> because identifiers are interned.  */
+      hash_set<tree> tset;
 
       FOR_EACH_VEC_ELT (struct_parse_info->typedefs_seen, ix, x)
-	pointer_set_insert (tset, DECL_NAME (x));
+	tset.add (DECL_NAME (x));
 
       for (x = fieldlist; x != NULL_TREE; x = DECL_CHAIN (x))
 	{
 	  if (DECL_NAME (x) != NULL_TREE
-	      && pointer_set_contains (tset, DECL_NAME (x)))
+	      && tset.contains (DECL_NAME (x)))
 	    {
 	      warning_at (DECL_SOURCE_LOCATION (x), OPT_Wc___compat,
 			  ("using %qD as both field and typedef name is "
@@ -7241,8 +7241,6 @@ warn_cxx_compat_finish_struct (tree fieldlist)
 		 the typedef name is used.  */
 	    }
 	}
-
-      pointer_set_destroy (tset);
     }
 
   /* For each field which has a binding and which was not defined in
@@ -8189,7 +8187,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
   struct c_binding *b;
   tree parm, decl, last;
   tree parmids = arg_info->parms;
-  struct pointer_set_t *seen_args = pointer_set_create ();
+  hash_set<tree> seen_args;
 
   if (!in_system_header_at (input_location))
     warning_at (DECL_SOURCE_LOCATION (fndecl),
@@ -8220,7 +8218,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 		      "%qD declared as a non-parameter", decl);
 	  /* If the declaration is already marked, we have a duplicate
 	     name.  Complain and ignore the duplicate.  */
-	  else if (pointer_set_contains (seen_args, decl))
+	  else if (seen_args.contains (decl))
 	    {
 	      error_at (DECL_SOURCE_LOCATION (decl),
 			"multiple parameters named %qD", decl);
@@ -8269,7 +8267,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	}
 
       TREE_PURPOSE (parm) = decl;
-      pointer_set_insert (seen_args, decl);
+      seen_args.add (decl);
     }
 
   /* Now examine the parms chain for incomplete declarations
@@ -8289,7 +8287,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	  TREE_TYPE (parm) = error_mark_node;
 	}
 
-      if (!pointer_set_contains (seen_args, parm))
+      if (!seen_args.contains (parm))
 	{
 	  error_at (DECL_SOURCE_LOCATION (parm),
 		    "declaration for parameter %qD but no such parameter",
@@ -8323,8 +8321,6 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	  }
       DECL_CHAIN (last) = 0;
     }
-
-  pointer_set_destroy (seen_args);
 
   /* If there was a previous prototype,
      set the DECL_ARG_TYPE of each argument according to

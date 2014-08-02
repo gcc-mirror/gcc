@@ -1480,7 +1480,7 @@ maybe_explain_implicit_delete (tree decl)
   if (DECL_DEFAULTED_FN (decl))
     {
       /* Not marked GTY; it doesn't need to be GC'd or written to PCH.  */
-      static struct pointer_set_t *explained;
+      static hash_set<tree> *explained;
 
       special_function_kind sfk;
       location_t loc;
@@ -1488,8 +1488,8 @@ maybe_explain_implicit_delete (tree decl)
       tree ctype;
 
       if (!explained)
-	explained = pointer_set_create ();
-      if (pointer_set_insert (explained, decl))
+	explained = new hash_set<tree>;
+      if (explained->add (decl))
 	return true;
 
       sfk = special_function_p (decl);

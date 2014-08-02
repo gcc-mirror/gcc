@@ -115,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "expr.h"
 #include "tree-pass.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "target.h"
 #include "hash-table.h"
 #include "inchash.h"
@@ -134,7 +134,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "intl.h"
 
-static bool odr_types_equivalent_p (tree, tree, bool, bool *, pointer_set_t *);
+static bool odr_types_equivalent_p (tree, tree, bool, bool *,
+				    hash_set<tree> *);
 
 static bool odr_violation_reported = false;
 
@@ -144,7 +145,7 @@ const ipa_polymorphic_call_context ipa_dummy_polymorphic_call_context
    = {0, 0, NULL, NULL, false, true, true};
 
 /* Pointer set of all call targets appearing in the cache.  */
-static pointer_set_t *cached_polymorphic_call_targets;
+static hash_set<cgraph_node *> *cached_polymorphic_call_targets;
 
 /* The node of type inheritance graph.  For each type unique in
    One Defintion Rule (ODR) sense, we produce one node linking all 
@@ -163,7 +164,7 @@ struct GTY(()) odr_type_d
   /* All equivalent types, if more than one.  */
   vec<tree, va_gc> *types;
   /* Set of all equivalent types, if NON-NULL.  */
-  pointer_set_t * GTY((skip)) types_set;
+  hash_set<tree> * GTY((skip)) types_set;
 
   /* Unique ID indexing the type in odr_types array.  */
   int id;
@@ -411,7 +412,7 @@ odr_hasher::remove (value_type *v)
   v->bases.release ();
   v->derived_types.release ();
   if (v->types_set)
-    pointer_set_destroy (v->types_set);
+    delete v->types_set;
   ggc_free (v);
 }
 
@@ -441,7 +442,7 @@ set_type_binfo (tree type, tree binfo)
 /* Compare T2 and T2 based on name or structure.  */
 
 static bool
-odr_subtypes_equivalent_p (tree t1, tree t2, pointer_set_t *visited)
+odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<tree> *visited)
 {
   bool an1, an2;
 
@@ -475,7 +476,7 @@ odr_subtypes_equivalent_p (tree t1, tree t2, pointer_set_t *visited)
       /* This should really be a pair hash, but for the moment we do not need
 	 100% reliability and it would be better to compare all ODR types so
 	 recursion here is needed only for component types.  */
-      if (pointer_set_insert (visited, t1))
+      if (visited->add (t1))
 	return true;
       return odr_types_equivalent_p (t1, t2, false, NULL, visited);
     }
@@ -564,7 +565,7 @@ warn_types_mismatch (tree t1, tree t2)
    gimple_canonical_types_compatible_p.  */
 
 static bool
-odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, pointer_set_t *visited)
+odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<tree> *visited)
 {
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
@@ -940,7 +941,7 @@ add_type_duplicate (odr_type val, tree type)
 {
   bool build_bases = false;
   if (!val->types_set)
-    val->types_set = pointer_set_create ();
+    val->types_set = new hash_set<tree>;
 
   /* Always prefer complete type to be the leader.  */
   if (!COMPLETE_TYPE_P (val->type)
@@ -954,20 +955,20 @@ add_type_duplicate (odr_type val, tree type)
     }
 
   /* See if this duplicate is new.  */
-  if (!pointer_set_insert (val->types_set, type))
+  if (!val->types_set->add (type))
     {
       bool merge = true;
       bool base_mismatch = false;
       unsigned int i,j;
       bool warned = false;
-      pointer_set_t *visited = pointer_set_create ();
+      hash_set<tree> visited;
 
       gcc_assert (in_lto_p);
       vec_safe_push (val->types, type);
 
       /* First we compare memory layout.  */
       if (!odr_types_equivalent_p (val->type, type, !flag_ltrans && !val->odr_violated,
-				   &warned, visited))
+				   &warned, &visited))
 	{
 	  merge = false;
 	  odr_violation_reported = true;
@@ -982,7 +983,6 @@ add_type_duplicate (odr_type val, tree type)
 	      putc ('\n',cgraph_dump_file);
 	    }
 	}
-      pointer_set_destroy (visited);
 
       /* Next sanity check that bases are the same.  If not, we will end
 	 up producing wrong answers.  */
@@ -1358,7 +1358,7 @@ referenced_from_vtable_p (struct cgraph_node *node)
 
 static void
 maybe_record_node (vec <cgraph_node *> &nodes,
-		   tree target, pointer_set_t *inserted,
+		   tree target, hash_set<tree> *inserted,
 		   bool can_refer,
 		   bool *completep)
 {
@@ -1424,10 +1424,9 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     {
       gcc_assert (!target_node->global.inlined_to);
       gcc_assert (target_node->real_symbol_p ());
-      if (!pointer_set_insert (inserted, target_node->decl))
+      if (!inserted->add (target))
 	{
-	  pointer_set_insert (cached_polymorphic_call_targets,
-			      target_node);
+	  cached_polymorphic_call_targets->add (target_node);
 	  nodes.safe_push (target_node);
 	}
     }
@@ -1467,8 +1466,8 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 			  HOST_WIDE_INT otr_token,
 			  tree outer_type,
 			  HOST_WIDE_INT offset,
-			  pointer_set_t *inserted,
-			  pointer_set_t *matched_vtables,
+			  hash_set<tree> *inserted,
+			  hash_set<tree> *matched_vtables,
 			  bool anonymous,
 			  bool *completep)
 {
@@ -1521,8 +1520,8 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 	}
       gcc_assert (inner_binfo);
       if (bases_to_consider
-	  ? !pointer_set_contains (matched_vtables, BINFO_VTABLE (inner_binfo))
-	  : !pointer_set_insert (matched_vtables, BINFO_VTABLE (inner_binfo)))
+	  ? !matched_vtables->contains (BINFO_VTABLE (inner_binfo))
+	  : !matched_vtables->add (BINFO_VTABLE (inner_binfo)))
 	{
 	  bool can_refer;
 	  tree target = gimple_get_virt_method_for_binfo (otr_token,
@@ -1561,8 +1560,8 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 
 static void
 possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
-				     pointer_set_t *inserted,
-				     pointer_set_t *matched_vtables,
+				     hash_set<tree> *inserted,
+				     hash_set<tree> *matched_vtables,
 				     tree otr_type,
 				     odr_type type,
 				     HOST_WIDE_INT otr_token,
@@ -1695,7 +1694,7 @@ free_polymorphic_call_targets_hash ()
     {
       delete polymorphic_call_target_hash;
       polymorphic_call_target_hash = NULL;
-      pointer_set_destroy (cached_polymorphic_call_targets);
+      delete cached_polymorphic_call_targets;
       cached_polymorphic_call_targets = NULL;
     }
 }
@@ -1706,7 +1705,7 @@ static void
 devirt_node_removal_hook (struct cgraph_node *n, void *d ATTRIBUTE_UNUSED)
 {
   if (cached_polymorphic_call_targets
-      && pointer_set_contains (cached_polymorphic_call_targets, n))
+      && cached_polymorphic_call_targets->contains (n))
     free_polymorphic_call_targets_hash ();
 }
 
@@ -2436,8 +2435,8 @@ record_targets_from_bases (tree otr_type,
 			   tree outer_type,
 			   HOST_WIDE_INT offset,
 			   vec <cgraph_node *> &nodes,
-			   pointer_set_t *inserted,
-			   pointer_set_t *matched_vtables,
+			   hash_set<tree> *inserted,
+			   hash_set<tree> *matched_vtables,
 			   bool *completep)
 {
   while (true)
@@ -2478,7 +2477,7 @@ record_targets_from_bases (tree otr_type,
 	  return;
 	}
       gcc_assert (base_binfo);
-      if (!pointer_set_insert (matched_vtables, BINFO_VTABLE (base_binfo)))
+      if (!matched_vtables->add (BINFO_VTABLE (base_binfo)))
 	{
 	  bool can_refer;
 	  tree target = gimple_get_virt_method_for_binfo (otr_token,
@@ -2486,7 +2485,7 @@ record_targets_from_bases (tree otr_type,
 							  &can_refer);
 	  if (!target || ! DECL_CXX_DESTRUCTOR_P (target))
 	    maybe_record_node (nodes, target, inserted, can_refer, completep);
-	  pointer_set_insert (matched_vtables, BINFO_VTABLE (base_binfo));
+	  matched_vtables->add (BINFO_VTABLE (base_binfo));
 	}
     }
 }
@@ -2537,8 +2536,6 @@ possible_polymorphic_call_targets (tree otr_type,
 				   int *speculative_targetsp)
 {
   static struct cgraph_node_hook_list *node_removal_hook_holder;
-  pointer_set_t *inserted;
-  pointer_set_t *matched_vtables;
   vec <cgraph_node *> nodes = vNULL;
   vec <tree> bases_to_consider = vNULL;
   odr_type type, outer_type;
@@ -2617,7 +2614,7 @@ possible_polymorphic_call_targets (tree otr_type,
   /* Initialize query cache.  */
   if (!cached_polymorphic_call_targets)
     {
-      cached_polymorphic_call_targets = pointer_set_create ();
+      cached_polymorphic_call_targets = new hash_set<cgraph_node *>;
       polymorphic_call_target_hash
        	= new polymorphic_call_target_hash_type (23);
       if (!node_removal_hook_holder)
@@ -2657,8 +2654,8 @@ possible_polymorphic_call_targets (tree otr_type,
   (*slot)->context = context;
   (*slot)->speculative_targets = 0;
 
-  inserted = pointer_set_create ();
-  matched_vtables = pointer_set_create ();
+  hash_set<tree> inserted;
+  hash_set<tree> matched_vtables;
 
   if (context.speculative_outer_type)
     {
@@ -2682,9 +2679,9 @@ possible_polymorphic_call_targets (tree otr_type,
 	    context.speculative_maybe_derived_type = false;
 	}
       if (type_possibly_instantiated_p (speculative_outer_type->type))
-	maybe_record_node (nodes, target, inserted, can_refer, &complete);
+	maybe_record_node (nodes, target, &inserted, can_refer, &complete);
       if (binfo)
-	pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
+	matched_vtables.add (BINFO_VTABLE (binfo));
       /* Next walk recursively all derived types.  */
       if (context.speculative_maybe_derived_type)
 	{
@@ -2693,8 +2690,8 @@ possible_polymorphic_call_targets (tree otr_type,
 	  if (!type->all_derivations_known)
 	    complete = false;
 	  for (i = 0; i < speculative_outer_type->derived_types.length(); i++)
-	    possible_polymorphic_call_targets_1 (nodes, inserted,
-						 matched_vtables,
+	    possible_polymorphic_call_targets_1 (nodes, &inserted,
+						 &matched_vtables,
 						 otr_type,
 						 speculative_outer_type->derived_types[i],
 						 otr_token, speculative_outer_type->type,
@@ -2733,7 +2730,7 @@ possible_polymorphic_call_targets (tree otr_type,
 
   /* If OUTER_TYPE is abstract, we know we are not seeing its instance.  */
   if (type_possibly_instantiated_p (outer_type->type))
-    maybe_record_node (nodes, target, inserted, can_refer, &complete);
+    maybe_record_node (nodes, target, &inserted, can_refer, &complete);
   else
     {
       skipped = true;
@@ -2741,7 +2738,7 @@ possible_polymorphic_call_targets (tree otr_type,
     }
 
   if (binfo)
-    pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
+    matched_vtables.add (BINFO_VTABLE (binfo));
 
   /* Next walk recursively all derived types.  */
   if (context.maybe_derived_type)
@@ -2751,8 +2748,8 @@ possible_polymorphic_call_targets (tree otr_type,
       if (!type->all_derivations_known)
 	complete = false;
       for (i = 0; i < outer_type->derived_types.length(); i++)
-	possible_polymorphic_call_targets_1 (nodes, inserted,
-					     matched_vtables,
+	possible_polymorphic_call_targets_1 (nodes, &inserted,
+					     &matched_vtables,
 					     otr_type,
 					     outer_type->derived_types[i],
 					     otr_token, outer_type->type,
@@ -2779,12 +2776,12 @@ possible_polymorphic_call_targets (tree otr_type,
 	      || (context.maybe_derived_type
 	          && !type_all_derivations_known_p (outer_type->type))))
 	record_targets_from_bases (otr_type, otr_token, outer_type->type,
-				   context.offset, nodes, inserted,
-				   matched_vtables, &complete);
+				   context.offset, nodes, &inserted,
+				   &matched_vtables, &complete);
       if (skipped)
-        maybe_record_node (nodes, target, inserted, can_refer, &complete);
+        maybe_record_node (nodes, target, &inserted, can_refer, &complete);
       for (i = 0; i < bases_to_consider.length(); i++)
-        maybe_record_node (nodes, bases_to_consider[i], inserted, can_refer, &complete);
+        maybe_record_node (nodes, bases_to_consider[i], &inserted, can_refer, &complete);
     }
   bases_to_consider.release();
 
@@ -2795,8 +2792,6 @@ possible_polymorphic_call_targets (tree otr_type,
   if (speculative_targetsp)
     *speculative_targetsp = (*slot)->speculative_targets;
 
-  pointer_set_destroy (inserted);
-  pointer_set_destroy (matched_vtables);
   timevar_pop (TV_IPA_VIRTUAL_CALL);
   return nodes;
 }
@@ -2959,7 +2954,7 @@ static unsigned int
 ipa_devirt (void)
 {
   struct cgraph_node *n;
-  struct pointer_set_t *bad_call_targets = pointer_set_create ();
+  hash_set<void *> bad_call_targets;
   struct cgraph_edge *e;
 
   int npolymorphic = 0, nspeculated = 0, nconverted = 0, ncold = 0;
@@ -3007,8 +3002,7 @@ ipa_devirt (void)
 		if (!dump_file)
 		  continue;
 	      }
-	    if (pointer_set_contains (bad_call_targets,
-				      cache_token))
+	    if (bad_call_targets.contains (cache_token))
 	      {
 		if (dump_file)
 		  fprintf (dump_file, "Target list is known to be useless\n\n");
@@ -3033,7 +3027,7 @@ ipa_devirt (void)
 		}
 	    if (!likely_target)
 	      {
-		pointer_set_insert (bad_call_targets, cache_token);
+		bad_call_targets.add (cache_token);
 	        continue;
 	      }
 	    /* This is reached only when dumping; check if we agree or disagree
@@ -3120,7 +3114,6 @@ ipa_devirt (void)
       if (update)
 	inline_update_overall_summary (n);
     }
-  pointer_set_destroy (bad_call_targets);
 
   if (dump_file)
     fprintf (dump_file,

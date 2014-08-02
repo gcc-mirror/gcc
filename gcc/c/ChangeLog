@@ -1,3 +1,7 @@
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-decl.c: Use hash_set instead of pointer_set.
+
 2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/61455

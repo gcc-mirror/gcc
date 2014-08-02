@@ -3485,7 +3485,7 @@ cxx_type_hash_eq (const_tree typea, const_tree typeb)
 
 tree
 cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
-		  void *data, struct pointer_set_t *pset)
+		  void *data, hash_set<tree> *pset)
 {
   enum tree_code code = TREE_CODE (*tp);
   tree result;
