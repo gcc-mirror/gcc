@@ -1,4 +1,11 @@
-2014-08-01  Jan Hubicka  <hubicka@ucw.cz>
+2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/15339
+	* g++.dg/other/default9.C: New.
+	* g++.dg/other/default10.C: Likewise.
+	* g++.dg/other/default3.C: Remove xfail.
+
+2014-08-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/warn/Wsuggest-final.C: New testcase.
 	* g++.dg/ipa/devirt-34.C: Fix.

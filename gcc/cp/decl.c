@@ -1236,6 +1236,27 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
   return true;
 }
 
+/* DECL is a redeclaration of a function or function template.  If
+   it does have default arguments issue a diagnostic.  Note: this
+   function is used to enforce the requirements in C++11 8.3.6 about
+   no default arguments in redeclarations.  */
+
+static void
+check_redeclaration_no_default_args (tree decl)
+{
+  gcc_assert (DECL_DECLARES_FUNCTION_P (decl));
+
+  for (tree t = FUNCTION_FIRST_USER_PARMTYPE (decl);
+       t && t != void_list_node; t = TREE_CHAIN (t))
+    if (TREE_PURPOSE (t))
+      {
+	permerror (input_location,
+		   "redeclaration of %q#D may not have default "
+		   "arguments", decl);
+	return;
+      }
+}
+
 #define GNU_INLINE_P(fn) (DECL_DECLARED_INLINE_P (fn)			\
 			  && lookup_attribute ("gnu_inline",		\
 					       DECL_ATTRIBUTES (fn)))
@@ -1706,28 +1727,23 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	;
       else if (TREE_CODE (olddecl) == FUNCTION_DECL)
 	{
-	  tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
-	  tree t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
-	  int i = 1;
-
-	  if (DECL_FUNCTION_MEMBER_P (newdecl)
-	      && CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (newdecl)))
-	    {
-	      /* C++11 8.3.6/6.
-		 Default arguments for a member function of a class template
-		 shall be specified on the initial declaration of the member
-		 function within the class template.  */
-	      for (; t2 && t2 != void_list_node; t2 = TREE_CHAIN (t2))
-		if (TREE_PURPOSE (t2))
-		  {
-		    permerror (input_location,
-			       "redeclaration of %q#D may not have default "
-			       "arguments", newdecl);
-		    break;
-		  }
-	    }
+	  /* Note: free functions, as TEMPLATE_DECLs, are handled below.  */
+	  if (DECL_FUNCTION_MEMBER_P (olddecl)
+	      && (/* grokfndecl passes member function templates too
+		     as FUNCTION_DECLs.  */
+		  DECL_TEMPLATE_INFO (olddecl)
+		  /* C++11 8.3.6/6.
+		     Default arguments for a member function of a class
+		     template shall be specified on the initial declaration
+		     of the member function within the class template.  */
+		  || CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (olddecl))))
+	    check_redeclaration_no_default_args (newdecl);
 	  else
 	    {
+	      tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
+	      tree t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
+	      int i = 1;
+
 	      for (; t1 && t1 != void_list_node;
 		   t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2), i++)
 		if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
@@ -1864,6 +1880,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
       if (DECL_FUNCTION_TEMPLATE_P (newdecl))
 	{
+	  /* Per C++11 8.3.6/4, default arguments cannot be added in later
+	     declarations of a function template.  */
+	  check_redeclaration_no_default_args (newdecl);
+
+	  check_default_args (newdecl);
+
 	  if (GNU_INLINE_P (old_result) != GNU_INLINE_P (new_result)
 	      && DECL_INITIAL (new_result))
 	    {
