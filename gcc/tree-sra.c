@@ -74,11 +74,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "alloc-pool.h"
 #include "tm.h"
 #include "tree.h"
-#include "pointer-set.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -290,7 +290,7 @@ struct assign_link
 static alloc_pool link_pool;
 
 /* Base (tree) -> Vector (vec<access_p> *) map.  */
-static struct pointer_map_t *base_access_vec;
+static hash_map<tree, auto_vec<access_p> > *base_access_vec;
 
 /* Candidate hash table helpers.  */
 
@@ -518,13 +518,7 @@ access_has_replacements_p (struct access *acc)
 static vec<access_p> *
 get_base_access_vector (tree base)
 {
-  void **slot;
-
-  slot = pointer_map_contains (base_access_vec, base);
-  if (!slot)
-    return NULL;
-  else
-    return *(vec<access_p> **) slot;
+  return base_access_vec->get (base);
 }
 
 /* Find an access with required OFFSET and SIZE in a subtree of accesses rooted
@@ -667,22 +661,11 @@ sra_initialize (void)
   gcc_obstack_init (&name_obstack);
   access_pool = create_alloc_pool ("SRA accesses", sizeof (struct access), 16);
   link_pool = create_alloc_pool ("SRA links", sizeof (struct assign_link), 16);
-  base_access_vec = pointer_map_create ();
+  base_access_vec = new hash_map<tree, auto_vec<access_p> >;
   memset (&sra_stats, 0, sizeof (sra_stats));
   encountered_apply_args = false;
   encountered_recursive_call = false;
   encountered_unchangable_recursive_call = false;
-}
-
-/* Hook fed to pointer_map_traverse, deallocate stored vectors.  */
-
-static bool
-delete_base_accesses (const void *key ATTRIBUTE_UNUSED, void **value,
-		     void *data ATTRIBUTE_UNUSED)
-{
-  vec<access_p> *access_vec = (vec<access_p> *) *value;
-  vec_free (access_vec);
-  return true;
 }
 
 /* Deallocate all general structures.  */
@@ -699,8 +682,7 @@ sra_deinitialize (void)
   free_alloc_pool (link_pool);
   obstack_free (&name_obstack, NULL);
 
-  pointer_map_traverse (base_access_vec, delete_base_accesses, NULL);
-  pointer_map_destroy (base_access_vec);
+  delete base_access_vec;
 }
 
 /* Remove DECL from candidates for SRA and write REASON to the dump file if
@@ -849,9 +831,7 @@ mark_parm_dereference (tree base, HOST_WIDE_INT dist, gimple stmt)
 static struct access *
 create_access_1 (tree base, HOST_WIDE_INT offset, HOST_WIDE_INT size)
 {
-  vec<access_p> *v;
   struct access *access;
-  void **slot;
 
   access = (struct access *) pool_alloc (access_pool);
   memset (access, 0, sizeof (struct access));
@@ -859,16 +839,7 @@ create_access_1 (tree base, HOST_WIDE_INT offset, HOST_WIDE_INT size)
   access->offset = offset;
   access->size = size;
 
-  slot = pointer_map_contains (base_access_vec, base);
-  if (slot)
-    v = (vec<access_p> *) *slot;
-  else
-    vec_alloc (v, 32);
-
-  v->safe_push (access);
-
-  *((vec<access_p> **)
-	pointer_map_insert (base_access_vec, base)) = v;
+  base_access_vec->get_or_insert (base).safe_push (access);
 
   return access;
 }

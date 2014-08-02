@@ -319,7 +319,7 @@ static inline bool type_can_have_subvars (const_tree);
 static alloc_pool variable_info_pool;
 
 /* Map varinfo to final pt_solution.  */
-static pointer_map_t *final_solutions;
+static hash_map<varinfo_t, pt_solution *> *final_solutions;
 struct obstack final_solutions_obstack;
 
 /* Table of variable info structures for constraint variables.
@@ -393,19 +393,19 @@ new_var_info (tree t, const char *name)
 
 /* A map mapping call statements to per-stmt variables for uses
    and clobbers specific to the call.  */
-static struct pointer_map_t *call_stmt_vars;
+static hash_map<gimple, varinfo_t> *call_stmt_vars;
 
 /* Lookup or create the variable for the call statement CALL.  */
 
 static varinfo_t
 get_call_vi (gimple call)
 {
-  void **slot_p;
   varinfo_t vi, vi2;
 
-  slot_p = pointer_map_insert (call_stmt_vars, call);
-  if (*slot_p)
-    return (varinfo_t) *slot_p;
+  bool existed;
+  varinfo_t *slot_p = &call_stmt_vars->get_or_insert (call, &existed);
+  if (existed)
+    return *slot_p;
 
   vi = new_var_info (NULL_TREE, "CALLUSED");
   vi->offset = 0;
@@ -421,7 +421,7 @@ get_call_vi (gimple call)
 
   vi->next = vi2->id;
 
-  *slot_p = (void *) vi;
+  *slot_p = vi;
   return vi;
 }
 
@@ -431,11 +431,9 @@ get_call_vi (gimple call)
 static varinfo_t
 lookup_call_use_vi (gimple call)
 {
-  void **slot_p;
-
-  slot_p = pointer_map_contains (call_stmt_vars, call);
+  varinfo_t *slot_p = call_stmt_vars->get (call);
   if (slot_p)
-    return (varinfo_t) *slot_p;
+    return *slot_p;
 
   return NULL;
 }
@@ -2794,7 +2792,7 @@ solve_graph (constraint_graph_t graph)
 }
 
 /* Map from trees to variable infos.  */
-static struct pointer_map_t *vi_for_tree;
+static hash_map<tree, varinfo_t> *vi_for_tree;
 
 
 /* Insert ID as the variable id for tree T in the vi_for_tree map.  */
@@ -2802,10 +2800,8 @@ static struct pointer_map_t *vi_for_tree;
 static void
 insert_vi_for_tree (tree t, varinfo_t vi)
 {
-  void **slot = pointer_map_insert (vi_for_tree, t);
   gcc_assert (vi);
-  gcc_assert (*slot == NULL);
-  *slot = vi;
+  gcc_assert (!vi_for_tree->put (t, vi));
 }
 
 /* Find the variable info for tree T in VI_FOR_TREE.  If T does not
@@ -2814,11 +2810,11 @@ insert_vi_for_tree (tree t, varinfo_t vi)
 static varinfo_t
 lookup_vi_for_tree (tree t)
 {
-  void **slot = pointer_map_contains (vi_for_tree, t);
+  varinfo_t *slot = vi_for_tree->get (t);
   if (slot == NULL)
     return NULL;
 
-  return (varinfo_t) *slot;
+  return *slot;
 }
 
 /* Return a printable name for DECL  */
@@ -2876,11 +2872,11 @@ alias_get_name (tree decl)
 static varinfo_t
 get_vi_for_tree (tree t)
 {
-  void **slot = pointer_map_contains (vi_for_tree, t);
+  varinfo_t *slot = vi_for_tree->get (t);
   if (slot == NULL)
     return get_varinfo (create_variable_info_for (t, alias_get_name (t)));
 
-  return (varinfo_t) *slot;
+  return *slot;
 }
 
 /* Get a scalar constraint expression for a new temporary variable.  */
@@ -6077,7 +6073,6 @@ find_what_var_points_to (varinfo_t orig_vi)
   bitmap finished_solution;
   bitmap result;
   varinfo_t vi;
-  void **slot;
   struct pt_solution *pt;
 
   /* This variable may have been collapsed, let's get the real
@@ -6085,9 +6080,9 @@ find_what_var_points_to (varinfo_t orig_vi)
   vi = get_varinfo (find (orig_vi->id));
 
   /* See if we have already computed the solution and return it.  */
-  slot = pointer_map_insert (final_solutions, vi);
+  pt_solution **slot = &final_solutions->get_or_insert (vi);
   if (*slot != NULL)
-    return *(struct pt_solution *)*slot;
+    return **slot;
 
   *slot = pt = XOBNEW (&final_solutions_obstack, struct pt_solution);
   memset (pt, 0, sizeof (struct pt_solution));
@@ -6687,8 +6682,8 @@ init_alias_vars (void)
 					  sizeof (struct variable_info), 30);
   constraints.create (8);
   varmap.create (8);
-  vi_for_tree = pointer_map_create ();
-  call_stmt_vars = pointer_map_create ();
+  vi_for_tree = new hash_map<tree, varinfo_t>;
+  call_stmt_vars = new hash_map<gimple, varinfo_t>;
 
   memset (&stats, 0, sizeof (stats));
   shared_bitmap_table = new hash_table<shared_bitmap_hasher> (511);
@@ -6696,7 +6691,7 @@ init_alias_vars (void)
 
   gcc_obstack_init (&fake_var_decl_obstack);
 
-  final_solutions = pointer_map_create ();
+  final_solutions = new hash_map<varinfo_t, pt_solution *>;
   gcc_obstack_init (&final_solutions_obstack);
 }
 
@@ -6945,8 +6940,8 @@ delete_points_to_sets (void)
     fprintf (dump_file, "Points to sets created:%d\n",
 	     stats.points_to_sets_created);
 
-  pointer_map_destroy (vi_for_tree);
-  pointer_map_destroy (call_stmt_vars);
+  delete vi_for_tree;
+  delete call_stmt_vars;
   bitmap_obstack_release (&pta_obstack);
   constraints.release ();
 
@@ -6967,7 +6962,7 @@ delete_points_to_sets (void)
 
   obstack_free (&fake_var_decl_obstack, NULL);
 
-  pointer_map_destroy (final_solutions);
+  delete final_solutions;
   obstack_free (&final_solutions_obstack, NULL);
 }
 

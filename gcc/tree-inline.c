@@ -135,7 +135,7 @@ static tree declare_return_variable (copy_body_data *, tree, tree, basic_block);
 static void remap_block (tree *, copy_body_data *);
 static void copy_bind_expr (tree *, int *, copy_body_data *);
 static void declare_inline_vars (tree, tree);
-static void remap_save_expr (tree *, void *, int *);
+static void remap_save_expr (tree *, hash_map<tree, tree> *, int *);
 static void prepend_lexical_block (tree current_block, tree new_block);
 static tree copy_decl_to_var (tree, copy_body_data *);
 static tree copy_result_decl_to_var (tree, copy_body_data *);
@@ -149,12 +149,12 @@ static bool delete_unreachable_blocks_update_callgraph (copy_body_data *id);
 void
 insert_decl_map (copy_body_data *id, tree key, tree value)
 {
-  *pointer_map_insert (id->decl_map, key) = value;
+  id->decl_map->put (key, value);
 
   /* Always insert an identity map as well.  If we see this same new
      node again, we won't want to duplicate it a second time.  */
   if (key != value)
-    *pointer_map_insert (id->decl_map, value) = value;
+    id->decl_map->put (value, value);
 }
 
 /* Insert a tree->tree mapping for ID.  This is only used for
@@ -176,9 +176,9 @@ insert_debug_decl_map (copy_body_data *id, tree key, tree value)
   gcc_assert (TREE_CODE (value) == VAR_DECL);
 
   if (!id->debug_map)
-    id->debug_map = pointer_map_create ();
+    id->debug_map = new hash_map<tree, tree>;
 
-  *pointer_map_insert (id->debug_map, key) = value;
+  id->debug_map->put (key, value);
 }
 
 /* If nonzero, we're remapping the contents of inlined debug
@@ -197,7 +197,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
-  n = (tree *) pointer_map_contains (id->decl_map, name);
+  n = id->decl_map->get (name);
   if (n)
     return unshare_expr (*n);
 
@@ -213,7 +213,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  gimple_stmt_iterator gsi;
 	  tree val = SSA_NAME_VAR (name);
 
-	  n = (tree *) pointer_map_contains (id->decl_map, val);
+	  n = id->decl_map->get (val);
 	  if (n != NULL)
 	    val = *n;
 	  if (TREE_CODE (val) != PARM_DECL)
@@ -342,7 +342,7 @@ remap_decl (tree decl, copy_body_data *id)
 
   /* See if we have remapped this declaration.  */
 
-  n = (tree *) pointer_map_contains (id->decl_map, decl);
+  n = id->decl_map->get (decl);
 
   if (!n && processing_debug_stmt)
     {
@@ -562,7 +562,7 @@ remap_type (tree type, copy_body_data *id)
     return type;
 
   /* See if we have remapped this type.  */
-  node = (tree *) pointer_map_contains (id->decl_map, type);
+  node = id->decl_map->get (type);
   if (node)
     return *node;
 
@@ -887,7 +887,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
     {
       /* If the enclosing record type is variably_modified_type_p, the field
 	 has already been remapped.  Otherwise, it need not be.  */
-      tree *n = (tree *) pointer_map_contains (id->decl_map, *tp);
+      tree *n = id->decl_map->get (*tp);
       if (n)
 	*tp = *n;
       *walk_subtrees = 0;
@@ -981,8 +981,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
       if (old_block)
 	{
 	  tree *n;
-	  n = (tree *) pointer_map_contains (id->decl_map,
-					     TREE_BLOCK (*tp));
+	  n = id->decl_map->get (TREE_BLOCK (*tp));
 	  if (n)
 	    new_block = *n;
 	}
@@ -1108,7 +1107,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  tree decl = TREE_OPERAND (*tp, 0), value;
 	  tree *n;
 
-	  n = (tree *) pointer_map_contains (id->decl_map, decl);
+	  n = id->decl_map->get (decl);
 	  if (n)
 	    {
 	      value = *n;
@@ -1125,7 +1124,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  /* Get rid of *& from inline substitutions that can happen when a
 	     pointer argument is an ADDR_EXPR.  */
 	  tree decl = TREE_OPERAND (*tp, 0);
-	  tree *n = (tree *) pointer_map_contains (id->decl_map, decl);
+	  tree *n = id->decl_map->get (decl);
 	  if (n)
 	    {
 	      /* If we happen to get an ADDR_EXPR in n->value, strip
@@ -1206,8 +1205,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  if (TREE_BLOCK (*tp))
 	    {
 	      tree *n;
-	      n = (tree *) pointer_map_contains (id->decl_map,
-						 TREE_BLOCK (*tp));
+	      n = id->decl_map->get (TREE_BLOCK (*tp));
 	      if (n)
 		new_block = *n;
 	    }
@@ -1261,11 +1259,9 @@ static int
 remap_eh_region_nr (int old_nr, copy_body_data *id)
 {
   eh_region old_r, new_r;
-  void **slot;
 
   old_r = get_eh_region_from_number_fn (id->src_cfun, old_nr);
-  slot = pointer_map_contains (id->eh_map, old_r);
-  new_r = (eh_region) *slot;
+  new_r = static_cast<eh_region> (*id->eh_map->get (old_r));
 
   return new_r->index;
 }
@@ -1483,7 +1479,7 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	  tree decl = gimple_assign_lhs (stmt), value;
 	  tree *n;
 
-	  n = (tree *) pointer_map_contains (id->decl_map, decl);
+	  n = id->decl_map->get (decl);
 	  if (n)
 	    {
 	      value = *n;
@@ -1597,7 +1593,7 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
   if (gimple_block (copy))
     {
       tree *n;
-      n = (tree *) pointer_map_contains (id->decl_map, gimple_block (copy));
+      n = id->decl_map->get (gimple_block (copy));
       gcc_assert (n);
       gimple_set_block (copy, *n);
     }
@@ -2191,8 +2187,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 	      if (LOCATION_BLOCK (locus))
 		{
 		  tree *n;
-		  n = (tree *) pointer_map_contains (id->decl_map,
-			LOCATION_BLOCK (locus));
+		  n = id->decl_map->get (LOCATION_BLOCK (locus));
 		  gcc_assert (n);
 		  if (*n)
 		    locus = COMBINE_LOCATION_DATA (line_table, locus, *n);
@@ -2638,7 +2633,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 
   if (id->eh_map)
     {
-      pointer_map_destroy (id->eh_map);
+      delete id->eh_map;
       id->eh_map = NULL;
     }
 
@@ -2659,7 +2654,7 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
 
   if (gimple_block (stmt))
     {
-      n = (tree *) pointer_map_contains (id->decl_map, gimple_block (stmt));
+      n = id->decl_map->get (gimple_block (stmt));
       gimple_set_block (stmt, n ? *n : id->block);
     }
 
@@ -2675,14 +2670,14 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
     t = gimple_debug_bind_get_var (stmt);
 
   if (TREE_CODE (t) == PARM_DECL && id->debug_map
-      && (n = (tree *) pointer_map_contains (id->debug_map, t)))
+      && (n = id->debug_map->get (t)))
     {
       gcc_assert (TREE_CODE (*n) == VAR_DECL);
       t = *n;
     }
   else if (TREE_CODE (t) == VAR_DECL
 	   && !is_global_var (t)
-	   && !pointer_map_contains (id->decl_map, t))
+	   && !id->decl_map->get (t))
     /* T is a non-localized variable.  */;
   else
     walk_tree (&t, remap_gimple_op_r, &wi, NULL);
@@ -3076,7 +3071,7 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
      parameter following the array.  */
   for (p = parms, i = 0; p; p = DECL_CHAIN (p), i++)
     {
-      tree *varp = (tree *) pointer_map_contains (id->decl_map, p);
+      tree *varp = id->decl_map->get (p);
       if (varp
 	  && TREE_CODE (*varp) == VAR_DECL)
 	{
@@ -3089,7 +3084,7 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
 	     by the parameter setup.  */
 	  if (def)
 	    {
-	      tree *defp = (tree *) pointer_map_contains (id->decl_map, def);
+	      tree *defp = id->decl_map->get (def);
 	      if (defp
 		  && TREE_CODE (*defp) == SSA_NAME
 		  && SSA_NAME_VAR (*defp) == var)
@@ -4135,7 +4130,8 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 {
   tree use_retvar;
   tree fn;
-  struct pointer_map_t *st, *dst;
+  hash_map<tree, tree> *dst;
+  hash_map<tree, tree> *st = NULL;
   tree return_slot;
   tree modify_dest;
   location_t saved_location;
@@ -4291,7 +4287,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   /* Local declarations will be replaced by their equivalents in this
      map.  */
   st = id->decl_map;
-  id->decl_map = pointer_map_create ();
+  id->decl_map = new hash_map<tree, tree>;
   dst = id->debug_map;
   id->debug_map = NULL;
 
@@ -4415,10 +4411,10 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   /* Clean up.  */
   if (id->debug_map)
     {
-      pointer_map_destroy (id->debug_map);
+      delete id->debug_map;
       id->debug_map = dst;
     }
-  pointer_map_destroy (id->decl_map);
+  delete id->decl_map;
   id->decl_map = st;
 
   /* Unlink the calls virtual operands before replacing it.  */
@@ -4772,14 +4768,13 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
    the function into which the copy will be placed.  */
 
 static void
-remap_save_expr (tree *tp, void *st_, int *walk_subtrees)
+remap_save_expr (tree *tp, hash_map<tree, tree> *st, int *walk_subtrees)
 {
-  struct pointer_map_t *st = (struct pointer_map_t *) st_;
   tree *n;
   tree t;
 
   /* See if we already encountered this SAVE_EXPR.  */
-  n = (tree *) pointer_map_contains (st, *tp);
+  n = st->get (*tp);
 
   /* If we didn't already remap this SAVE_EXPR, do so now.  */
   if (!n)
@@ -4787,9 +4782,9 @@ remap_save_expr (tree *tp, void *st_, int *walk_subtrees)
       t = copy_node (*tp);
 
       /* Remember this SAVE_EXPR.  */
-      *pointer_map_insert (st, *tp) = t;
+      st->put (*tp, t);
       /* Make sure we don't remap an already-remapped SAVE_EXPR.  */
-      *pointer_map_insert (st, t) = t;
+      st->put (t, t);
     }
   else
     {
@@ -4836,7 +4831,7 @@ replace_locals_op (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info*) data;
   copy_body_data *id = (copy_body_data *) wi->info;
-  struct pointer_map_t *st = id->decl_map;
+  hash_map<tree, tree> *st = id->decl_map;
   tree *n;
   tree expr = *tp;
 
@@ -4846,7 +4841,7 @@ replace_locals_op (tree *tp, int *walk_subtrees, void *data)
       || TREE_CODE (expr) == LABEL_DECL)
     {
       /* Lookup the declaration.  */
-      n = (tree *) pointer_map_contains (st, expr);
+      n = st->get (expr);
 
       /* If it's there, remap it.  */
       if (n)
@@ -4928,7 +4923,7 @@ copy_gimple_seq_and_replace_locals (gimple_seq seq)
   memset (&id, 0, sizeof (id));
   id.src_fn = current_function_decl;
   id.dst_fn = current_function_decl;
-  id.decl_map = pointer_map_create ();
+  id.decl_map = new hash_map<tree, tree>;
   id.debug_map = NULL;
 
   id.copy_decl = copy_decl_no_change;
@@ -4953,9 +4948,9 @@ copy_gimple_seq_and_replace_locals (gimple_seq seq)
   walk_gimple_seq (copy, replace_locals_stmt, replace_locals_op, &wi);
 
   /* Clean up.  */
-  pointer_map_destroy (id.decl_map);
+  delete id.decl_map;
   if (id.debug_map)
-    pointer_map_destroy (id.debug_map);
+    delete id.debug_map;
 
   return copy;
 }
@@ -5145,7 +5140,7 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
         *parg = new_tree;
 	parg = &DECL_CHAIN (new_tree);
       }
-    else if (!pointer_map_contains (id->decl_map, arg))
+    else if (!id->decl_map->get (arg))
       {
 	/* Make an equivalent VAR_DECL.  If the argument was used
 	   as temporary variable later in function, the uses will be
@@ -5368,7 +5363,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   /* Generate a new name for the new version. */
   id.statements_to_fold = new hash_set<gimple>;
 
-  id.decl_map = pointer_map_create ();
+  id.decl_map = new hash_map<tree, tree>;
   id.debug_map = NULL;
   id.src_fn = old_decl;
   id.dst_fn = new_decl;
@@ -5530,9 +5525,9 @@ tree_function_versioning (tree old_decl, tree new_decl,
     }
 
   /* Clean up.  */
-  pointer_map_destroy (id.decl_map);
+  delete id.decl_map;
   if (id.debug_map)
-    pointer_map_destroy (id.debug_map);
+    delete id.debug_map;
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
@@ -5587,22 +5582,22 @@ maybe_inline_call_in_expr (tree exp)
   /* We can only try to inline "const" functions.  */
   if (fn && TREE_READONLY (fn) && DECL_SAVED_TREE (fn))
     {
-      struct pointer_map_t *decl_map = pointer_map_create ();
       call_expr_arg_iterator iter;
       copy_body_data id;
       tree param, arg, t;
+      hash_map<tree, tree> decl_map;
 
       /* Remap the parameters.  */
       for (param = DECL_ARGUMENTS (fn), arg = first_call_expr_arg (exp, &iter);
 	   param;
 	   param = DECL_CHAIN (param), arg = next_call_expr_arg (&iter))
-	*pointer_map_insert (decl_map, param) = arg;
+	decl_map.put (param, arg);
 
       memset (&id, 0, sizeof (id));
       id.src_fn = fn;
       id.dst_fn = current_function_decl;
       id.src_cfun = DECL_STRUCT_FUNCTION (fn);
-      id.decl_map = decl_map;
+      id.decl_map = &decl_map;
 
       id.copy_decl = copy_decl_no_change;
       id.transform_call_graph_edges = CB_CGE_DUPLICATE;
@@ -5620,7 +5615,6 @@ maybe_inline_call_in_expr (tree exp)
       id.eh_lp_nr = 0;
 
       t = copy_tree_body (&id);
-      pointer_map_destroy (decl_map);
 
       /* We can only return something suitable for use in a GENERIC
 	 expression tree.  */
@@ -5642,15 +5636,15 @@ build_duplicate_type (tree type)
   id.src_fn = current_function_decl;
   id.dst_fn = current_function_decl;
   id.src_cfun = cfun;
-  id.decl_map = pointer_map_create ();
+  id.decl_map = new hash_map<tree, tree>;
   id.debug_map = NULL;
   id.copy_decl = copy_decl_no_change;
 
   type = remap_type_1 (type, &id);
 
-  pointer_map_destroy (id.decl_map);
+  delete id.decl_map;
   if (id.debug_map)
-    pointer_map_destroy (id.debug_map);
+    delete id.debug_map;
 
   TYPE_CANONICAL (type) = type;
 

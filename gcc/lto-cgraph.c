@@ -93,7 +93,7 @@ lto_symtab_encoder_new (bool for_input)
   lto_symtab_encoder_t encoder = XCNEW (struct lto_symtab_encoder_d);
 
   if (!for_input)
-    encoder->map = pointer_map_create ();
+    encoder->map = new hash_map<symtab_node *, size_t>;
   encoder->nodes.create (0);
   return encoder;
 }
@@ -106,7 +106,7 @@ lto_symtab_encoder_delete (lto_symtab_encoder_t encoder)
 {
    encoder->nodes.release ();
    if (encoder->map)
-     pointer_map_destroy (encoder->map);
+     delete encoder->map;
    free (encoder);
 }
 
@@ -120,7 +120,6 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
 			   symtab_node *node)
 {
   int ref;
-  void **slot;
 
   if (!encoder->map)
     {
@@ -131,18 +130,17 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
       return ref;
     }
 
-  slot = pointer_map_contains (encoder->map, node);
+  size_t *slot = encoder->map->get (node);
   if (!slot || !*slot)
     {
       lto_encoder_entry entry = {node, false, false, false};
       ref = encoder->nodes.length ();
       if (!slot)
-        slot = pointer_map_insert (encoder->map, node);
-      *slot = (void *) (intptr_t) (ref + 1);
+        encoder->map->put (node, ref + 1);
       encoder->nodes.safe_push (entry);
     }
   else
-    ref = (size_t) *slot - 1;
+    ref = *slot - 1;
 
   return ref;
 }
@@ -153,15 +151,14 @@ bool
 lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
 			        symtab_node *node)
 {
-  void **slot, **last_slot;
   int index;
   lto_encoder_entry last_node;
 
-  slot = pointer_map_contains (encoder->map, node);
+  size_t *slot = encoder->map->get (node);
   if (slot == NULL || !*slot)
     return false;
 
-  index = (size_t) *slot - 1;
+  index = *slot - 1;
   gcc_checking_assert (encoder->nodes[index].node == node);
 
   /* Remove from vector. We do this by swapping node with the last element
@@ -169,16 +166,14 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
   last_node = encoder->nodes.pop ();
   if (last_node.node != node)
     {
-      last_slot = pointer_map_contains (encoder->map, last_node.node);
-      gcc_checking_assert (last_slot && *last_slot);
-      *last_slot = (void *)(size_t) (index + 1);
+      gcc_assert (encoder->map->put (last_node.node, index + 1));
 
       /* Move the last element to the original spot of NODE.  */
       encoder->nodes[index] = last_node;
     }
 
   /* Remove element from hash table.  */
-  *slot = NULL;
+  encoder->map->remove (node);
   return true;
 }
 

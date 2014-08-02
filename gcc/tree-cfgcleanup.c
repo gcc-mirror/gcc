@@ -865,16 +865,14 @@ remove_forwarder_block_with_phi (basic_block bb)
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {
-	      edge_var_map_vector *head;
-	      edge_var_map *vm;
-	      size_t i;
-
 	      /* If DEF is one of the results of PHI nodes removed during
 		 redirection, replace it with the PHI argument that used
 		 to be on E.  */
-	      head = redirect_edge_var_map_vector (e);
-	      FOR_EACH_VEC_SAFE_ELT (head, i, vm)
+	      vec<edge_var_map> *head = redirect_edge_var_map_vector (e);
+	      size_t length = head ? head->length () : 0;
+	      for (size_t i = 0; i < length; i++)
 		{
+		  edge_var_map *vm = &(*head)[i];
 		  tree old_arg = redirect_edge_var_map_result (vm);
 		  tree new_arg = redirect_edge_var_map_def (vm);
 

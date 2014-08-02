@@ -406,7 +406,7 @@ struct leh_tf_state
   size_t goto_queue_active;
 
   /* Pointer map to help in searching goto_queue when it is large.  */
-  struct pointer_map_t *goto_queue_map;
+  hash_map<gimple, goto_queue_node *> *goto_queue_map;
 
   /* The set of unique labels seen as entries in the goto queue.  */
   vec<tree> dest_array;
@@ -441,7 +441,6 @@ static gimple_seq
 find_goto_replacement (struct leh_tf_state *tf, treemple stmt)
 {
   unsigned int i;
-  void **slot;
 
   if (tf->goto_queue_active < LARGE_GOTO_QUEUE)
     {
@@ -456,19 +455,18 @@ find_goto_replacement (struct leh_tf_state *tf, treemple stmt)
 
   if (!tf->goto_queue_map)
     {
-      tf->goto_queue_map = pointer_map_create ();
+      tf->goto_queue_map = new hash_map<gimple, goto_queue_node *>;
       for (i = 0; i < tf->goto_queue_active; i++)
 	{
-	  slot = pointer_map_insert (tf->goto_queue_map,
-                                     tf->goto_queue[i].stmt.g);
-          gcc_assert (*slot == NULL);
-	  *slot = &tf->goto_queue[i];
+	  bool existed = tf->goto_queue_map->put (tf->goto_queue[i].stmt.g,
+						  &tf->goto_queue[i]);
+	  gcc_assert (!existed);
 	}
     }
 
-  slot = pointer_map_contains (tf->goto_queue_map, stmt.g);
+  goto_queue_node **slot = tf->goto_queue_map->get (stmt.g);
   if (slot != NULL)
-    return (((struct goto_queue_node *) *slot)->repl_stmt);
+    return ((*slot)->repl_stmt);
 
   return NULL;
 }
@@ -1372,7 +1370,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   tree tmp;
   gimple switch_stmt;
   gimple_seq finally;
-  struct pointer_map_t *cont_map = NULL;
+  hash_map<tree, gimple> *cont_map = NULL;
   /* The location of the TRY_FINALLY stmt.  */
   location_t tf_loc = gimple_location (tf->try_finally_expr);
   /* The location of the finally block.  */
@@ -1511,32 +1509,27 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       if (case_label_vec.length () <= case_index || !case_label_vec[case_index])
         {
           tree case_lab;
-          void **slot;
 	  tmp = build_int_cst (integer_type_node, switch_id);
           case_lab = build_case_label (tmp, NULL,
 				       create_artificial_label (tf_loc));
           /* We store the cont_stmt in the pointer map, so that we can recover
              it in the loop below.  */
           if (!cont_map)
-            cont_map = pointer_map_create ();
-          slot = pointer_map_insert (cont_map, case_lab);
-          *slot = q->cont_stmt;
+            cont_map = new hash_map<tree, gimple>;
+          cont_map->put (case_lab, q->cont_stmt);
           case_label_vec.quick_push (case_lab);
         }
     }
   for (j = last_case_index; j < last_case_index + nlabels; j++)
     {
       gimple cont_stmt;
-      void **slot;
 
       last_case = case_label_vec[j];
 
       gcc_assert (last_case);
       gcc_assert (cont_map);
 
-      slot = pointer_map_contains (cont_map, last_case);
-      gcc_assert (slot);
-      cont_stmt = *(gimple *) slot;
+      cont_stmt = *cont_map->get (last_case);
 
       x = gimple_build_label (CASE_LABEL (last_case));
       gimple_seq_add_stmt (&switch_body, x);
@@ -1544,7 +1537,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       maybe_record_in_goto_queue (state, cont_stmt);
     }
   if (cont_map)
-    pointer_map_destroy (cont_map);
+    delete cont_map;
 
   replace_goto_queue (tf);
 
@@ -1734,7 +1727,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
   this_tf.dest_array.release ();
   free (this_tf.goto_queue);
   if (this_tf.goto_queue_map)
-    pointer_map_destroy (this_tf.goto_queue_map);
+    delete this_tf.goto_queue_map;
 
   /* If there was an old (aka outer) eh_seq, append the current eh_seq.
      If there was no old eh_seq, then the append is trivially already done.  */
@@ -2921,10 +2914,10 @@ maybe_clean_or_replace_eh_stmt (gimple old_stmt, gimple new_stmt)
 bool
 maybe_duplicate_eh_stmt_fn (struct function *new_fun, gimple new_stmt,
 			    struct function *old_fun, gimple old_stmt,
-			    struct pointer_map_t *map, int default_lp_nr)
+			    hash_map<void *, void *> *map,
+			    int default_lp_nr)
 {
   int old_lp_nr, new_lp_nr;
-  void **slot;
 
   if (!stmt_could_throw_p (new_stmt))
     return false;
@@ -2941,8 +2934,7 @@ maybe_duplicate_eh_stmt_fn (struct function *new_fun, gimple new_stmt,
       eh_landing_pad old_lp, new_lp;
 
       old_lp = (*old_fun->eh->lp_array)[old_lp_nr];
-      slot = pointer_map_contains (map, old_lp);
-      new_lp = (eh_landing_pad) *slot;
+      new_lp = static_cast<eh_landing_pad> (*map->get (old_lp));
       new_lp_nr = new_lp->index;
     }
   else
@@ -2950,8 +2942,7 @@ maybe_duplicate_eh_stmt_fn (struct function *new_fun, gimple new_stmt,
       eh_region old_r, new_r;
 
       old_r = (*old_fun->eh->region_array)[-old_lp_nr];
-      slot = pointer_map_contains (map, old_r);
-      new_r = (eh_region) *slot;
+      new_r = static_cast<eh_region> (*map->get (old_r));
       new_lp_nr = -new_r->index;
     }
 
@@ -3154,7 +3145,7 @@ make_pass_refactor_eh (gcc::context *ctxt)
 /* At the end of gimple optimization, we can lower RESX.  */
 
 static bool
-lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
+lower_resx (basic_block bb, gimple stmt, hash_map<eh_region, tree> *mnt_map)
 {
   int lp_nr;
   eh_region src_r, dst_r;
@@ -3199,14 +3190,13 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
       if (lp_nr < 0)
 	{
 	  basic_block new_bb;
-	  void **slot;
 	  tree lab;
 
 	  /* We are resuming into a MUST_NOT_CALL region.  Expand a call to
 	     the failure decl into a new block, if needed.  */
 	  gcc_assert (dst_r->type == ERT_MUST_NOT_THROW);
 
-	  slot = pointer_map_contains (mnt_map, dst_r);
+	  tree *slot = mnt_map->get (dst_r);
 	  if (slot == NULL)
 	    {
 	      gimple_stmt_iterator gsi2;
@@ -3221,12 +3211,11 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	      gimple_set_location (x, dst_r->u.must_not_throw.failure_loc);
 	      gsi_insert_after (&gsi2, x, GSI_CONTINUE_LINKING);
 
-	      slot = pointer_map_insert (mnt_map, dst_r);
-	      *slot = lab;
+	      mnt_map->put (dst_r, lab);
 	    }
 	  else
 	    {
-	      lab = (tree) *slot;
+	      lab = *slot;
 	      new_bb = label_to_block (lab);
 	    }
 
@@ -3334,23 +3323,20 @@ unsigned
 pass_lower_resx::execute (function *fun)
 {
   basic_block bb;
-  struct pointer_map_t *mnt_map;
   bool dominance_invalidated = false;
   bool any_rewritten = false;
 
-  mnt_map = pointer_map_create ();
+  hash_map<eh_region, tree> mnt_map;
 
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple last = last_stmt (bb);
       if (last && is_gimple_resx (last))
 	{
-	  dominance_invalidated |= lower_resx (bb, last, mnt_map);
+	  dominance_invalidated |= lower_resx (bb, last, &mnt_map);
 	  any_rewritten = true;
 	}
     }
-
-  pointer_map_destroy (mnt_map);
 
   if (dominance_invalidated)
     {

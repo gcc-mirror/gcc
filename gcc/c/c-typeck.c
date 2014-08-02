@@ -11800,15 +11800,15 @@ c_clone_omp_udr (tree stmt, tree omp_decl1, tree omp_decl2,
 		 tree decl, tree placeholder)
 {
   copy_body_data id;
-  struct pointer_map_t *decl_map = pointer_map_create ();
+  hash_map<tree, tree> decl_map;
 
-  *pointer_map_insert (decl_map, omp_decl1) = placeholder;
-  *pointer_map_insert (decl_map, omp_decl2) = decl;
+  decl_map.put (omp_decl1, placeholder);
+  decl_map.put (omp_decl2, decl);
   memset (&id, 0, sizeof (id));
   id.src_fn = DECL_CONTEXT (omp_decl1);
   id.dst_fn = current_function_decl;
   id.src_cfun = DECL_STRUCT_FUNCTION (id.src_fn);
-  id.decl_map = decl_map;
+  id.decl_map = &decl_map;
 
   id.copy_decl = copy_decl_no_change;
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
@@ -11817,7 +11817,6 @@ c_clone_omp_udr (tree stmt, tree omp_decl1, tree omp_decl2,
   id.transform_lang_insert_block = NULL;
   id.eh_lp_nr = 0;
   walk_tree (&stmt, copy_tree_body_r, &id, NULL);
-  pointer_map_destroy (decl_map);
   return stmt;
 }
 

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cfgloop.h"
 #include "pointer-set.h"
+#include "hash-map.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -490,11 +491,6 @@ rtl_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
   return false;
 }
 
-/* This map contains for a basic block the list of predictions for the
-   outgoing edges.  */
-
-static struct pointer_map_t *bb_predictions;
-
 /*  Structure representing predictions in tree level. */
 
 struct edge_prediction {
@@ -504,6 +500,11 @@ struct edge_prediction {
     int ep_probability;
 };
 
+/* This map contains for a basic block the list of predictions for the
+   outgoing edges.  */
+
+static hash_map<const_basic_block, edge_prediction *> *bb_predictions;
+
 /* Return true if the one of outgoing edges is already predicted by
    PREDICTOR.  */
 
@@ -511,12 +512,12 @@ bool
 gimple_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 {
   struct edge_prediction *i;
-  void **preds = pointer_map_contains (bb_predictions, bb);
+  edge_prediction **preds = bb_predictions->get (bb);
 
   if (!preds)
     return false;
 
-  for (i = (struct edge_prediction *) *preds; i; i = i->ep_next)
+  for (i = *preds; i; i = i->ep_next)
     if (i->ep_predictor == predictor)
       return true;
   return false;
@@ -618,10 +619,10 @@ gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
       && flag_guess_branch_prob && optimize)
     {
       struct edge_prediction *i = XNEW (struct edge_prediction);
-      void **preds = pointer_map_insert (bb_predictions, e->src);
+      edge_prediction *&preds = bb_predictions->get_or_insert (e->src);
 
-      i->ep_next = (struct edge_prediction *) *preds;
-      *preds = i;
+      i->ep_next = preds;
+      preds = i;
       i->ep_probability = probability;
       i->ep_predictor = predictor;
       i->ep_edge = e;
@@ -633,16 +634,14 @@ gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
 void
 remove_predictions_associated_with_edge (edge e)
 {
-  void **preds;
-
   if (!bb_predictions)
     return;
 
-  preds = pointer_map_contains (bb_predictions, e->src);
+  edge_prediction **preds = bb_predictions->get (e->src);
 
   if (preds)
     {
-      struct edge_prediction **prediction = (struct edge_prediction **) preds;
+      struct edge_prediction **prediction = preds;
       struct edge_prediction *next;
 
       while (*prediction)
@@ -664,13 +663,13 @@ remove_predictions_associated_with_edge (edge e)
 static void
 clear_bb_predictions (basic_block bb)
 {
-  void **preds = pointer_map_contains (bb_predictions, bb);
+  edge_prediction **preds = bb_predictions->get (bb);
   struct edge_prediction *pred, *next;
 
   if (!preds)
     return;
 
-  for (pred = (struct edge_prediction *) *preds; pred; pred = next)
+  for (pred = *preds; pred; pred = next)
     {
       next = pred->ep_next;
       free (pred);
@@ -903,7 +902,6 @@ combine_predictions_for_bb (basic_block bb)
   int nedges = 0;
   edge e, first = NULL, second = NULL;
   edge_iterator ei;
-  void **preds;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
@@ -935,12 +933,12 @@ combine_predictions_for_bb (basic_block bb)
   if (dump_file)
     fprintf (dump_file, "Predictions for bb %i\n", bb->index);
 
-  preds = pointer_map_contains (bb_predictions, bb);
+  edge_prediction **preds = bb_predictions->get (bb);
   if (preds)
     {
       /* We implement "first match" heuristics and use probability guessed
 	 by predictor with smallest index.  */
-      for (pred = (struct edge_prediction *) *preds; pred; pred = pred->ep_next)
+      for (pred = *preds; pred; pred = pred->ep_next)
 	{
 	  enum br_predictor predictor = pred->ep_predictor;
 	  int probability = pred->ep_probability;
@@ -2243,14 +2241,14 @@ tree_bb_level_predictions (void)
 
 #ifdef ENABLE_CHECKING
 
-/* Callback for pointer_map_traverse, asserts that the pointer map is
+/* Callback for hash_map::traverse, asserts that the pointer map is
    empty.  */
 
-static bool
-assert_is_empty (const void *key ATTRIBUTE_UNUSED, void **value,
-		 void *data ATTRIBUTE_UNUSED)
+bool
+assert_is_empty (const_basic_block const &, edge_prediction *const &value,
+		 void *)
 {
-  gcc_assert (!*value);
+  gcc_assert (!value);
   return false;
 }
 #endif
@@ -2375,7 +2373,7 @@ tree_estimate_probability (void)
   create_preheaders (CP_SIMPLE_PREHEADERS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
-  bb_predictions = pointer_map_create ();
+  bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
   tree_bb_level_predictions ();
   record_loop_exits ();
 
@@ -2389,9 +2387,9 @@ tree_estimate_probability (void)
     combine_predictions_for_bb (bb);
 
 #ifdef ENABLE_CHECKING
-  pointer_map_traverse (bb_predictions, assert_is_empty, NULL);
+  bb_predictions->traverse<void *, assert_is_empty> (NULL);
 #endif
-  pointer_map_destroy (bb_predictions);
+  delete bb_predictions;
   bb_predictions = NULL;
 
   estimate_bb_frequencies (false);

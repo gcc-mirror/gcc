@@ -1,5 +1,19 @@
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* hash-map.h (default_hashmap_traits::mark_key_deleted):
+	Fix cast.
+	(hash_map::remove): New method.
+(hash_map::traverse): New method.
+	* cgraph.h, except.c, except.h, gimple-ssa-strength-reduction.c,
+	ipa-utils.c, lto-cgraph.c, lto-streamer.h, omp-low.c, predict.c,
+	tree-cfg.c, tree-cfgcleanup.c, tree-eh.c, tree-eh.h, tree-inline.c,
+	tree-inline.h, tree-nested.c, tree-sra.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivopts.c, tree-ssa-reassoc.c, tree-ssa-structalias.c,
+	tree-ssa.c, tree-ssa.h, var-tracking.c: Use hash_map instead of
+ pointer_map.
+
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* hash-set.h: new File.
 	* cfgexpand.c, cfgloop.c, cgraph.c, cgraphbuild.c, cgraphunit.c,
 	cprop.c, cse.c, gimple-walk.c, gimple-walk.h, gimplify.c, godump.c,

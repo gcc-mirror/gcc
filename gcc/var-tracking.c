@@ -94,6 +94,7 @@
 #include "varasm.h"
 #include "stor-layout.h"
 #include "pointer-set.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "basic-block.h"
 #include "tm_p.h"
@@ -2019,12 +2020,12 @@ vt_get_canonicalize_base (rtx loc)
 
 /* This caches canonicalized addresses for VALUEs, computed using
    information in the global cselib table.  */
-static struct pointer_map_t *global_get_addr_cache;
+static hash_map<rtx, rtx> *global_get_addr_cache;
 
 /* This caches canonicalized addresses for VALUEs, computed using
    information from the global cache and information pertaining to a
    basic block being analyzed.  */
-static struct pointer_map_t *local_get_addr_cache;
+static hash_map<rtx, rtx> *local_get_addr_cache;
 
 static rtx vt_canonicalize_addr (dataflow_set *, rtx);
 
@@ -2036,13 +2037,13 @@ static rtx
 get_addr_from_global_cache (rtx const loc)
 {
   rtx x;
-  void **slot;
 
   gcc_checking_assert (GET_CODE (loc) == VALUE);
   
-  slot = pointer_map_insert (global_get_addr_cache, loc);
-  if (*slot)
-    return (rtx)*slot;
+  bool existed;
+  rtx *slot = &global_get_addr_cache->get_or_insert (loc, &existed);
+  if (existed)
+    return *slot;
 
   x = canon_rtx (get_addr (loc));
 
@@ -2056,8 +2057,7 @@ get_addr_from_global_cache (rtx const loc)
 	{
 	  /* The table may have moved during recursion, recompute
 	     SLOT.  */
-	  slot = pointer_map_contains (global_get_addr_cache, loc);
-	  *slot = x = nx;
+	  *global_get_addr_cache->get (loc) = x = nx;
 	}
     }
 
@@ -2072,16 +2072,16 @@ static rtx
 get_addr_from_local_cache (dataflow_set *set, rtx const loc)
 {
   rtx x;
-  void **slot;
   decl_or_value dv;
   variable var;
   location_chain l;
 
   gcc_checking_assert (GET_CODE (loc) == VALUE);
   
-  slot = pointer_map_insert (local_get_addr_cache, loc);
-  if (*slot)
-    return (rtx)*slot;
+  bool existed;
+  rtx *slot = &local_get_addr_cache->get_or_insert (loc, &existed);
+  if (existed)
+    return *slot;
 
   x = get_addr_from_global_cache (loc);
   
@@ -2095,7 +2095,7 @@ get_addr_from_local_cache (dataflow_set *set, rtx const loc)
       rtx nx = vt_canonicalize_addr (set, x);
       if (nx != x)
 	{
-	  slot = pointer_map_contains (local_get_addr_cache, loc);
+	  slot = local_get_addr_cache->get (loc);
 	  *slot = x = nx;
 	}
       return x;
@@ -2116,7 +2116,7 @@ get_addr_from_local_cache (dataflow_set *set, rtx const loc)
 	  rtx nx = vt_canonicalize_addr (set, l->loc);
 	  if (x != nx)
 	    {
-	      slot = pointer_map_contains (local_get_addr_cache, loc);
+	      slot = local_get_addr_cache->get (loc);
 	      *slot = x = nx;
 	    }
 	  break;
@@ -2503,11 +2503,10 @@ val_store (dataflow_set *set, rtx val, rtx loc, rtx insn, bool modified)
 
 /* Clear (canonical address) slots that reference X.  */
 
-static bool
-local_get_addr_clear_given_value (const void *v ATTRIBUTE_UNUSED,
-				  void **slot, void *x)
+bool
+local_get_addr_clear_given_value (rtx const &, rtx *slot, rtx x)
 {
-  if (vt_get_canonicalize_base ((rtx)*slot) == x)
+  if (vt_get_canonicalize_base (*slot) == x)
     *slot = NULL;
   return true;
 }
@@ -2530,11 +2529,10 @@ val_reset (dataflow_set *set, decl_or_value dv)
   if (var->onepart == ONEPART_VALUE)
     {
       rtx x = dv_as_value (dv);
-      void **slot;
       
       /* Relationships in the global cache don't change, so reset the
 	 local cache entry only.  */
-      slot = pointer_map_contains (local_get_addr_cache, x);
+      rtx *slot = local_get_addr_cache->get (x);
       if (slot)
 	{
 	  /* If the value resolved back to itself, odds are that other
@@ -2543,8 +2541,8 @@ val_reset (dataflow_set *set, decl_or_value dv)
 	     old X but resolved to something else remain ok as long as
 	     that something else isn't also reset.  */
 	  if (*slot == x)
-	    pointer_map_traverse (local_get_addr_cache,
-				  local_get_addr_clear_given_value, x);
+	    local_get_addr_cache
+	      ->traverse<rtx, local_get_addr_clear_given_value> (x);
 	  *slot = NULL;
 	}
     }
@@ -6660,7 +6658,7 @@ compute_bb_dataflow (basic_block bb)
   dataflow_set_copy (out, in);
 
   if (MAY_HAVE_DEBUG_INSNS)
-    local_get_addr_cache = pointer_map_create ();
+    local_get_addr_cache = new hash_map<rtx, rtx>;
 
   FOR_EACH_VEC_ELT (VTI (bb)->mos, i, mo)
     {
@@ -6943,7 +6941,7 @@ compute_bb_dataflow (basic_block bb)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
-      pointer_map_destroy (local_get_addr_cache);
+      delete local_get_addr_cache;
       local_get_addr_cache = NULL;
 
       dataflow_set_equiv_regs (out);
@@ -9477,13 +9475,13 @@ vt_emit_notes (void)
       emit_notes_for_differences (BB_HEAD (bb), &cur, &VTI (bb)->in);
 
       if (MAY_HAVE_DEBUG_INSNS)
-	local_get_addr_cache = pointer_map_create ();
+	local_get_addr_cache = new hash_map<rtx, rtx>;
 
       /* Emit the notes for the changes in the basic block itself.  */
       emit_notes_in_bb (bb, &cur);
 
       if (MAY_HAVE_DEBUG_INSNS)
-	pointer_map_destroy (local_get_addr_cache);
+	delete local_get_addr_cache;
       local_get_addr_cache = NULL;
 
       /* Free memory occupied by the in hash table, we won't need it
@@ -9916,7 +9914,7 @@ vt_initialize (void)
       valvar_pool = create_alloc_pool ("small variable_def pool",
 				       sizeof (struct variable_def), 256);
       preserved_values.create (256);
-      global_get_addr_cache = pointer_map_create ();
+      global_get_addr_cache = new hash_map<rtx, rtx>;
     }
   else
     {
@@ -10263,7 +10261,7 @@ vt_finalize (void)
   if (MAY_HAVE_DEBUG_INSNS)
     {
       if (global_get_addr_cache)
-	pointer_map_destroy (global_get_addr_cache);
+	delete global_get_addr_cache;
       global_get_addr_cache = NULL;
       if (loc_exp_dep_pool)
 	free_alloc_pool (loc_exp_dep_pool);

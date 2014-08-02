@@ -93,7 +93,7 @@ private:
   static void
   mark_key_deleted (T *&k)
     {
-      k = static_cast<T *> (1);
+      k = reinterpret_cast<T *> (1);
     }
 
   template<typename T>
@@ -185,6 +185,11 @@ public:
       return e->m_value;
     }
 
+  void remove (const Key &k)
+    {
+      m_table.remove_elt_with_hash (k, Traits::hash (k));
+    }
+
   /* Call the call back on each pair of key and value with the passed in
      arg.  */
 
@@ -194,6 +199,15 @@ public:
       for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();
 	   iter != m_table.end (); ++iter)
 	f ((*iter).m_key, (*iter).m_value, a);
+    }
+
+  template<typename Arg, bool (*f)(const Key &, Value *, Arg)>
+  void traverse (Arg a) const
+    {
+      for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();
+	   iter != m_table.end (); ++iter)
+	if (!f ((*iter).m_key, &(*iter).m_value, a))
+	  break;
     }
 
 private:

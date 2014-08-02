@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
-#include "pointer-set.h"
+#include "hash-map.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-fold.h"
@@ -216,7 +216,7 @@ static int next_operand_entry_id;
 static long *bb_rank;
 
 /* Operand->rank hashtable.  */
-static struct pointer_map_t *operand_rank;
+static hash_map<tree, long> *operand_rank;
 
 /* Forward decls.  */
 static long get_rank (tree);
@@ -362,8 +362,8 @@ propagate_rank (long rank, tree op)
 static inline long
 find_operand_rank (tree e)
 {
-  void **slot = pointer_map_contains (operand_rank, e);
-  return slot ? (long) (intptr_t) *slot : -1;
+  long *slot = operand_rank->get (e);
+  return slot ? *slot : -1;
 }
 
 /* Insert {E,RANK} into the operand rank hashtable.  */
@@ -371,11 +371,8 @@ find_operand_rank (tree e)
 static inline void
 insert_operand_rank (tree e, long rank)
 {
-  void **slot;
   gcc_assert (rank > 0);
-  slot = pointer_map_insert (operand_rank, e);
-  gcc_assert (!*slot);
-  *slot = (void *) (intptr_t) rank;
+  gcc_assert (!operand_rank->put (e, rank));
 }
 
 /* Given an expression E, return the rank of the expression.  */
@@ -4635,7 +4632,7 @@ init_reassoc (void)
      deeper loops come later.  */
   pre_and_rev_post_order_compute (NULL, bbs, false);
   bb_rank = XCNEWVEC (long, last_basic_block_for_fn (cfun));
-  operand_rank = pointer_map_create ();
+  operand_rank = new hash_map<tree, long>;
 
   /* Give each default definition a distinct rank.  This includes
      parameters and the static chain.  Walk backwards over all
@@ -4676,7 +4673,7 @@ fini_reassoc (void)
   statistics_counter_event (cfun, "Built-in powi calls created",
 			    reassociate_stats.pows_created);
 
-  pointer_map_destroy (operand_rank);
+  delete operand_rank;
   free_alloc_pool (operand_entry_pool);
   free (bb_rank);
   plus_negates.release ();
