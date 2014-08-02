@@ -651,6 +651,14 @@ Wsuggest-attribute=noreturn
 Common Var(warn_suggest_attribute_noreturn) Warning
 Warn about functions which might be candidates for __attribute__((noreturn))
 
+Wsuggest-final-types
+Common Var(warn_suggest_final_types) Warning
+Warn about C++ polymorphic types where adding final keyword would improve code quality
+
+Wsuggest-final-methods
+Common Var(warn_suggest_final_methods) Warning
+Warn about C++ virtual methods where adding final keyword would improve code quality
+
 Wsystem-headers
 Common Var(warn_system_headers) Warning
 Do not suppress warnings from system headers

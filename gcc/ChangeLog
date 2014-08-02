@@ -1,3 +1,24 @@
+2014-08-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi (Wsuggest-final-types, Wsuggest-final-methods): Document.
+	* ipa-devirt.c: Include hash-map.h
+	(struct polymorphic_call_target_d): Add type_warning and decl_warning.
+	(clear_speculation): Break out of ...
+	(get_class_context): ... here; speed up handling obviously useless
+	speculations.
+	(odr_type_warn_count, decl_warn_count): New structures.
+	(final_warning_record): New structure.
+	(final_warning_records): New static variable.
+	(possible_polymorphic_call_targets): Cleanup handling of speculative info;
+	do not build speculation when user do not care; record info about warnings
+	when asked for.
+	(add_decl_warning): New function.
+	(type_warning_cmp): New function.
+	(decl_warning_cmp): New function.
+	(ipa_devirt): Handle -Wsuggest-final-methods and -Wsuggest-final-types.
+	(gate): Enable pass when warnings are requested.
+	* common.opt (Wsuggest-final-types, Wsuggest-final-methods): New options.
+
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* hash-map.h (default_hashmap_traits::mark_key_deleted):

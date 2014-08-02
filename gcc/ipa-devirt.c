@@ -133,6 +133,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "stor-layout.h"
 #include "intl.h"
+#include "hash-map.h"
 
 static bool odr_types_equivalent_p (tree, tree, bool, bool *,
 				    hash_set<tree> *);
@@ -1616,6 +1617,8 @@ struct polymorphic_call_target_d
   vec <cgraph_node *> targets;
   int speculative_targets;
   bool complete;
+  int type_warning;
+  tree decl_warning;
 };
 
 /* Polymorphic call target cache helpers.  */
@@ -1734,6 +1737,16 @@ contains_polymorphic_type_p (const_tree type)
   return false;
 }
 
+/* Clear speculative info from CONTEXT.  */
+
+static void
+clear_speculation (ipa_polymorphic_call_context *context)
+{
+  context->speculative_outer_type = NULL;
+  context->speculative_offset = 0;
+  context->speculative_maybe_derived_type = false;
+}
+
 /* CONTEXT->OUTER_TYPE is a type of memory object where object of EXPECTED_TYPE
    is contained at CONTEXT->OFFSET.  Walk the memory representation of
    CONTEXT->OUTER_TYPE and find the outermost class type that match
@@ -1769,6 +1782,16 @@ get_class_context (ipa_polymorphic_call_context *context,
      type = context->outer_type = expected_type;
      context->offset = offset = 0;
    }
+
+ if (context->speculative_outer_type == context->outer_type
+     && (!context->maybe_derived_type
+	 || context->speculative_maybe_derived_type))
+   {
+      context->speculative_outer_type = NULL;
+      context->speculative_offset = 0;
+      context->speculative_maybe_derived_type = false;
+   }
+
   /* See if speculative type seem to be derrived from outer_type.
      Then speculation is valid only if it really is a derivate and derived types
      are allowed.  
@@ -1785,11 +1808,7 @@ get_class_context (ipa_polymorphic_call_context *context,
 			  context->outer_type))
     speculation_valid = context->maybe_derived_type;
   else
-    {
-      context->speculative_outer_type = NULL;
-      context->speculative_offset = 0;
-      context->speculative_maybe_derived_type = false;
-    }
+    clear_speculation (context);
 			       
   /* Find the sub-object the constant actually refers to and mark whether it is
      an artificial one (as opposed to a user-defined one).
@@ -1820,10 +1839,7 @@ get_class_context (ipa_polymorphic_call_context *context,
 					  context->outer_type)
 		      && (context->maybe_derived_type
 			  == context->speculative_maybe_derived_type)))
-		{
-		  context->speculative_outer_type = NULL;
-		  context->speculative_offset = 0;
-		}
+		clear_speculation (context);
 	      return true;
 	    }
 	  else
@@ -1841,8 +1857,7 @@ get_class_context (ipa_polymorphic_call_context *context,
 	      if (!speculation_valid
 		  || !context->maybe_derived_type)
 		{
-		  context->speculative_outer_type = NULL;
-		  context->speculative_offset = 0;
+		  clear_speculation (context);
 	          return true;
 		}
 	      /* Otherwise look into speculation now.  */
@@ -1925,9 +1940,7 @@ get_class_context (ipa_polymorphic_call_context *context,
   /* If we failed to find subtype we look for, give up and fall back to the
      most generic query.  */
 give_up:
-  context->speculative_outer_type = NULL;
-  context->speculative_offset = 0;
-  context->speculative_maybe_derived_type = false;
+  clear_speculation (context);
   if (valid)
     return true;
   context->outer_type = expected_type;
@@ -2502,6 +2515,30 @@ devirt_variable_node_removal_hook (varpool_node *n,
     free_polymorphic_call_targets_hash ();
 }
 
+/* Record about how many calls would benefit from given type to be final.  */
+struct odr_type_warn_count
+{
+  int count;
+  gcov_type dyn_count;
+};
+
+/* Record about how many calls would benefit from given method to be final.  */
+struct decl_warn_count
+{
+  tree decl;
+  int count;
+  gcov_type dyn_count;
+};
+
+/* Information about type and decl warnings.  */
+struct final_warning_record
+{
+  gcov_type dyn_count;
+  vec<odr_type_warn_count> type_warnings;
+  hash_map<tree, decl_warn_count> decl_warnings;
+};
+struct final_warning_record *final_warning_records;
+
 /* Return vector containing possible targets of polymorphic call of type
    OTR_TYPE caling method OTR_TOKEN within type of OTR_OUTER_TYPE and OFFSET.
    If INCLUDE_BASES is true, walk also base types of OUTER_TYPES containig
@@ -2573,6 +2610,10 @@ possible_polymorphic_call_targets (tree otr_type,
       return nodes;
     }
 
+  /* Do not bother to compute speculative info when user do not asks for it.  */
+  if (!speculative_targetsp || !context.speculative_outer_type)
+    clear_speculation (&context);
+
   type = get_odr_type (otr_type, true);
 
   /* Recording type variants would wast results cache.  */
@@ -2639,6 +2680,19 @@ possible_polymorphic_call_targets (tree otr_type,
 	*completep = (*slot)->complete;
       if (speculative_targetsp)
 	*speculative_targetsp = (*slot)->speculative_targets;
+      if ((*slot)->type_warning && final_warning_records)
+	{
+	  final_warning_records->type_warnings[(*slot)->type_warning - 1].count++;
+	  final_warning_records->type_warnings[(*slot)->type_warning - 1].dyn_count
+	    += final_warning_records->dyn_count;
+	}
+      if ((*slot)->decl_warning && final_warning_records)
+	{
+	  struct decl_warn_count *c =
+	     final_warning_records->decl_warnings.get ((*slot)->decl_warning);
+	  c->count++;
+	  c->dyn_count += final_warning_records->dyn_count;
+	}
       return (*slot)->targets;
     }
 
@@ -2657,9 +2711,13 @@ possible_polymorphic_call_targets (tree otr_type,
   hash_set<tree> inserted;
   hash_set<tree> matched_vtables;
 
+  /* First insert targets we speculatively identified as likely.  */
   if (context.speculative_outer_type)
     {
       odr_type speculative_outer_type;
+      bool speculation_complete = true;
+
+      /* First insert target from type itself and check if it may have derived types.  */
       speculative_outer_type = get_odr_type (context.speculative_outer_type, true);
       if (TYPE_FINAL_P (speculative_outer_type->type))
 	context.speculative_maybe_derived_type = false;
@@ -2671,35 +2729,27 @@ possible_polymorphic_call_targets (tree otr_type,
       else
 	target = NULL;
 
-      if (target)
-	{
-	  /* In the case we get complete method, we don't need 
-	     to walk derivations.  */
-	  if (DECL_FINAL_P (target))
-	    context.speculative_maybe_derived_type = false;
-	}
+      /* In the case we get complete method, we don't need 
+	 to walk derivations.  */
+      if (target && DECL_FINAL_P (target))
+	context.speculative_maybe_derived_type = false;
       if (type_possibly_instantiated_p (speculative_outer_type->type))
-	maybe_record_node (nodes, target, &inserted, can_refer, &complete);
+	maybe_record_node (nodes, target, &inserted, can_refer, &speculation_complete);
       if (binfo)
 	matched_vtables.add (BINFO_VTABLE (binfo));
+
       /* Next walk recursively all derived types.  */
       if (context.speculative_maybe_derived_type)
-	{
-	  /* For anonymous namespace types we can attempt to build full type.
-	     All derivations must be in this unit (unless we see partial unit).  */
-	  if (!type->all_derivations_known)
-	    complete = false;
-	  for (i = 0; i < speculative_outer_type->derived_types.length(); i++)
-	    possible_polymorphic_call_targets_1 (nodes, &inserted,
-						 &matched_vtables,
-						 otr_type,
-						 speculative_outer_type->derived_types[i],
-						 otr_token, speculative_outer_type->type,
-						 context.speculative_offset, &complete,
-						 bases_to_consider,
-						 false);
-	}
-      /* Finally walk bases, if asked to.  */
+	for (i = 0; i < speculative_outer_type->derived_types.length(); i++)
+	  possible_polymorphic_call_targets_1 (nodes, &inserted,
+					       &matched_vtables,
+					       otr_type,
+					       speculative_outer_type->derived_types[i],
+					       otr_token, speculative_outer_type->type,
+					       context.speculative_offset,
+					       &speculation_complete,
+					       bases_to_consider,
+					       false);
       (*slot)->speculative_targets = nodes.length();
     }
 
@@ -2743,10 +2793,6 @@ possible_polymorphic_call_targets (tree otr_type,
   /* Next walk recursively all derived types.  */
   if (context.maybe_derived_type)
     {
-      /* For anonymous namespace types we can attempt to build full type.
-	 All derivations must be in this unit (unless we see partial unit).  */
-      if (!type->all_derivations_known)
-	complete = false;
       for (i = 0; i < outer_type->derived_types.length(); i++)
 	possible_polymorphic_call_targets_1 (nodes, &inserted,
 					     &matched_vtables,
@@ -2756,6 +2802,51 @@ possible_polymorphic_call_targets (tree otr_type,
 					     context.offset, &complete,
 					     bases_to_consider,
 					     context.maybe_in_construction);
+
+      if (!outer_type->all_derivations_known)
+	{
+	  if (final_warning_records)
+	    {
+	      if (complete
+		  && nodes.length () == 1
+		  && warn_suggest_final_types
+		  && !outer_type->derived_types.length ())
+		{
+		  if (outer_type->id >= (int)final_warning_records->type_warnings.length ())
+	            final_warning_records->type_warnings.safe_grow_cleared
+		      (odr_types.length ());
+		  final_warning_records->type_warnings[outer_type->id].count++;
+		  final_warning_records->type_warnings[outer_type->id].dyn_count
+		    += final_warning_records->dyn_count;
+		  (*slot)->type_warning = outer_type->id + 1;
+		}
+	      if (complete
+		  && warn_suggest_final_methods
+		  && nodes.length () == 1
+		  && types_same_for_odr (DECL_CONTEXT (nodes[0]->decl),
+					 outer_type->type))
+		{
+		  bool existed;
+		  struct decl_warn_count &c =
+		     final_warning_records->decl_warnings.get_or_insert
+			(nodes[0]->decl, &existed);
+
+		  if (existed)
+		    {
+		      c.count++;
+		      c.dyn_count += final_warning_records->dyn_count;
+		    }
+		  else
+		    {
+		      c.count = 1;
+		      c.dyn_count = final_warning_records->dyn_count;
+		      c.decl = nodes[0]->decl;
+		    }
+		  (*slot)->decl_warning = nodes[0]->decl;
+		}
+	    }
+	  complete = false;
+	}
     }
 
   /* Finally walk bases, if asked to.  */
@@ -2794,6 +2885,14 @@ possible_polymorphic_call_targets (tree otr_type,
 
   timevar_pop (TV_IPA_VIRTUAL_CALL);
   return nodes;
+}
+
+bool
+add_decl_warning (const tree &key ATTRIBUTE_UNUSED, const decl_warn_count &value,
+		  vec<const decl_warn_count*> *vec)
+{
+  vec->safe_push (&value);
+  return true;
 }
 
 /* Dump all possible targets of a polymorphic call.  */
@@ -2946,6 +3045,38 @@ likely_target_p (struct cgraph_node *n)
   return true;
 }
 
+/* Compare type warning records P1 and P2 and chose one with larger count;
+   helper for qsort.  */
+
+int
+type_warning_cmp (const void *p1, const void *p2)
+{
+  const odr_type_warn_count *t1 = (const odr_type_warn_count *)p1;
+  const odr_type_warn_count *t2 = (const odr_type_warn_count *)p2;
+
+  if (t1->dyn_count < t2->dyn_count)
+   return 1;
+  if (t1->dyn_count > t2->dyn_count)
+   return -1;
+  return t2->count - t1->count;
+}
+
+/* Compare decl warning records P1 and P2 and chose one with larger count;
+   helper for qsort.  */
+
+int
+decl_warning_cmp (const void *p1, const void *p2)
+{
+  const decl_warn_count *t1 = *(const decl_warn_count * const *)p1;
+  const decl_warn_count *t2 = *(const decl_warn_count * const *)p2;
+
+  if (t1->dyn_count < t2->dyn_count)
+   return 1;
+  if (t1->dyn_count > t2->dyn_count)
+   return -1;
+  return t2->count - t1->count;
+}
+
 /* The ipa-devirt pass.
    When polymorphic call has only one likely target in the unit,
    turn it into speculative call.  */
@@ -2961,6 +3092,19 @@ ipa_devirt (void)
   int nmultiple = 0, noverwritable = 0, ndevirtualized = 0, nnotdefined = 0;
   int nwrong = 0, nok = 0, nexternal = 0, nartificial = 0;
 
+  /* We can output -Wsuggest-final-methods and -Wsuggest-final-types warnings.
+     This is implemented by setting up final_warning_records that are updated
+     by get_polymorphic_call_targets.
+     We need to clear cache in this case to trigger recomputation of all
+     entries.  */
+  if (warn_suggest_final_methods || warn_suggest_final_types)
+    {
+      final_warning_records = new (final_warning_record);
+      final_warning_records->type_warnings = vNULL;
+      final_warning_records->type_warnings.safe_grow_cleared (odr_types.length ());
+      free_polymorphic_call_targets_hash ();
+    }
+
   FOR_EACH_DEFINED_FUNCTION (n)
     {	
       bool update = false;
@@ -2974,6 +3118,10 @@ ipa_devirt (void)
 	    void *cache_token;
 	    bool final;
 	    int speculative_targets;
+
+	    if (final_warning_records)
+	      final_warning_records->dyn_count = e->count;
+
 	    vec <cgraph_node *>targets
 	       = possible_polymorphic_call_targets
 		    (e, &final, &cache_token, &speculative_targets);
@@ -2984,6 +3132,9 @@ ipa_devirt (void)
 		(dump_file, e);
 
 	    npolymorphic++;
+
+	    if (!flag_devirtualize_speculatively)
+	      continue;
 
 	    if (!cgraph_maybe_hot_edge_p (e))
 	      {
@@ -3114,6 +3265,55 @@ ipa_devirt (void)
       if (update)
 	inline_update_overall_summary (n);
     }
+  if (warn_suggest_final_methods || warn_suggest_final_types)
+    {
+      if (warn_suggest_final_types)
+	{
+	  final_warning_records->type_warnings.qsort (type_warning_cmp);
+	  for (unsigned int i = 0;
+	       i < final_warning_records->type_warnings.length (); i++)
+	    if (final_warning_records->type_warnings[i].count)
+	      {
+		odr_type type = odr_types[i];
+		warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type->type)),
+			    OPT_Wsuggest_final_types,
+			    "Declaring type %qD final "
+			    "would enable devirtualization of %i calls",
+			    type->type,
+			    final_warning_records->type_warnings[i].count);
+	      }
+	}
+
+      if (warn_suggest_final_methods)
+	{
+	  vec<const decl_warn_count*> decl_warnings_vec = vNULL;
+
+	  final_warning_records->decl_warnings.traverse
+	    <vec<const decl_warn_count *> *, add_decl_warning> (&decl_warnings_vec);
+	  decl_warnings_vec.qsort (decl_warning_cmp);
+	  for (unsigned int i = 0; i < decl_warnings_vec.length (); i++)
+	    {
+	      tree decl = decl_warnings_vec[i]->decl;
+	      int count = decl_warnings_vec[i]->count;
+
+	      if (DECL_CXX_DESTRUCTOR_P (decl))
+		warning_at (DECL_SOURCE_LOCATION (decl),
+			    OPT_Wsuggest_final_methods,
+			    "Declaring virtual destructor of %qD final "
+			    "would enable devirtualization of %i calls",
+			    DECL_CONTEXT (decl), count);
+	      else
+		warning_at (DECL_SOURCE_LOCATION (decl),
+			    OPT_Wsuggest_final_methods,
+			    "Declaring method %qD final "
+			    "would enable devirtualization of %i calls",
+			    decl, count);
+	    }
+	}
+	
+      delete (final_warning_records);
+      final_warning_records = 0;
+    }
 
   if (dump_file)
     fprintf (dump_file,
@@ -3163,7 +3363,9 @@ public:
   virtual bool gate (function *)
     {
       return (flag_devirtualize
-	      && flag_devirtualize_speculatively
+	      && (flag_devirtualize_speculatively
+		  || (warn_suggest_final_methods
+		      || warn_suggest_final_types))
 	      && optimize);
     }
 

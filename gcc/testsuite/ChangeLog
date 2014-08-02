@@ -1,3 +1,8 @@
+2014-08-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/warn/Wsuggest-final.C: New testcase.
+	* g++.dg/ipa/devirt-34.C: Fix.
+
 2014-08-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59855
