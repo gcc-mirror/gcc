@@ -2,6 +2,9 @@
 /* { dg-options "-O2 -fdump-ipa-devirt"  } */
 struct A {virtual int t(){return 42;}};
 struct B:A {virtual int t(){return 1;}};
+
+struct A aa;
+struct B bb;
 int
 t(struct B *b)
 {
