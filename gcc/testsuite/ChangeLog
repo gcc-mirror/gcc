@@ -1,3 +1,8 @@
+2014-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59855
+	* gcc.dg/Wdesignated-init-2.c: New test.
+
 2014-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	DR 217 again
