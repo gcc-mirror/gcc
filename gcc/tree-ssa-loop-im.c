@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "pointer-set.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -103,7 +104,7 @@ struct lim_aux_data
 
 /* Maps statements to their lim_aux_data.  */
 
-static struct pointer_map_t *lim_aux_data_map;
+static hash_map<gimple, lim_aux_data *> *lim_aux_data_map;
 
 /* Description of a memory reference location.  */
 
@@ -225,20 +226,20 @@ static bool ref_indep_loop_p (struct loop *, mem_ref_p);
 static struct lim_aux_data *
 init_lim_data (gimple stmt)
 {
-  void **p = pointer_map_insert (lim_aux_data_map, stmt);
+  lim_aux_data *p = XCNEW (struct lim_aux_data);
+  lim_aux_data_map->put (stmt, p);
 
-  *p = XCNEW (struct lim_aux_data);
-  return (struct lim_aux_data *) *p;
+  return p;
 }
 
 static struct lim_aux_data *
 get_lim_data (gimple stmt)
 {
-  void **p = pointer_map_contains (lim_aux_data_map, stmt);
+  lim_aux_data **p = lim_aux_data_map->get (stmt);
   if (!p)
     return NULL;
 
-  return (struct lim_aux_data *) *p;
+  return *p;
 }
 
 /* Releases the memory occupied by DATA.  */
@@ -253,11 +254,11 @@ free_lim_aux_data (struct lim_aux_data *data)
 static void
 clear_lim_data (gimple stmt)
 {
-  void **p = pointer_map_contains (lim_aux_data_map, stmt);
+  lim_aux_data **p = lim_aux_data_map->get (stmt);
   if (!p)
     return;
 
-  free_lim_aux_data ((struct lim_aux_data *) *p);
+  free_lim_aux_data (*p);
   *p = NULL;
 }
 
@@ -2429,7 +2430,7 @@ tree_ssa_lim_initialize (void)
 
   bitmap_obstack_initialize (&lim_bitmap_obstack);
   gcc_obstack_init (&mem_ref_obstack);
-  lim_aux_data_map = pointer_map_create ();
+  lim_aux_data_map = new hash_map<gimple, lim_aux_data *>;
 
   if (flag_tm)
     compute_transaction_bits ();
@@ -2484,7 +2485,7 @@ tree_ssa_lim_finalize (void)
     SET_ALWAYS_EXECUTED_IN (bb, NULL);
 
   bitmap_obstack_release (&lim_bitmap_obstack);
-  pointer_map_destroy (lim_aux_data_map);
+  delete lim_aux_data_map;
 
   delete memory_accesses.refs;
   memory_accesses.refs = NULL;

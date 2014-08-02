@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
+#include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
 #include "vec.h"
@@ -1204,7 +1205,7 @@ public:
    can appear in multiple sets.  */
 struct cgraph_node_set_def
 {
-  struct pointer_map_t *map;
+  hash_map<cgraph_node *, size_t> *map;
   vec<cgraph_node *> nodes;
 };
 
@@ -1217,7 +1218,7 @@ class varpool_node;
    can appear in multiple sets.  */
 struct varpool_node_set_def
 {
-  struct pointer_map_t * map;
+  hash_map<varpool_node *, size_t> * map;
   vec<varpool_node *> nodes;
 };
 

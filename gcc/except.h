@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #  define GCC_EXCEPT_H
 #endif
 
+#include "hash-map.h"
 #include "hashtab.h"
 
 struct function;
@@ -249,7 +250,7 @@ extern rtx expand_builtin_extend_pointer (tree);
 extern void expand_dw2_landing_pad_for_region (eh_region);
 
 typedef tree (*duplicate_eh_regions_map) (tree, void *);
-extern struct pointer_map_t *duplicate_eh_regions
+extern hash_map<void *, void *> *duplicate_eh_regions
   (struct function *, eh_region, int, duplicate_eh_regions_map, void *);
 
 extern void sjlj_emit_function_exit_after (rtx);

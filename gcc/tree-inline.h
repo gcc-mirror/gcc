@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_INLINE_H
 #define GCC_TREE_INLINE_H
 
+#include "hash-map.h"
 #include "hash-set.h"
 
 struct cgraph_edge;
@@ -64,7 +65,7 @@ struct copy_body_data
 
   /* The map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined.  */
-  struct pointer_map_t *decl_map;
+  hash_map<tree, tree> *decl_map;
 
   /* Create a new decl to replace DECL in the destination function.  */
   tree (*copy_decl) (tree, struct copy_body_data *);
@@ -81,7 +82,7 @@ struct copy_body_data
 
   /* Maps region and landing pad structures from the function being copied
      to duplicates created within the function we inline into.  */
-  struct pointer_map_t *eh_map;
+  hash_map<void *, void *> *eh_map;
 
   /* We use the same mechanism do all sorts of different things.  Rather
      than enumerating the different cases, we categorize the behavior
@@ -132,7 +133,7 @@ struct copy_body_data
      equivalents in the function into which it is being inlined, where
      the originals have been mapped to a value rather than to a
      variable.  */
-  struct pointer_map_t *debug_map;
+  hash_map<tree, tree> *debug_map;
  
   /* Cilk keywords currently need to replace some variables that
      ordinary nested functions do not.  */ 

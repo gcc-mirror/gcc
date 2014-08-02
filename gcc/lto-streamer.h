@@ -443,7 +443,7 @@ struct lto_encoder_entry
 struct lto_symtab_encoder_d
 {
   vec<lto_encoder_entry> nodes;
-  pointer_map_t *map;
+  hash_map<symtab_node *, size_t> *map;
 };
 
 typedef struct lto_symtab_encoder_d *lto_symtab_encoder_t;
@@ -1032,8 +1032,8 @@ static inline int
 lto_symtab_encoder_lookup (lto_symtab_encoder_t encoder,
 			   symtab_node *node)
 {
-  void **slot = pointer_map_contains (encoder->map, node);
-  return (slot && *slot ? (size_t) *(slot) - 1 : LCC_NOT_FOUND);
+  size_t *slot = encoder->map->get (node);
+  return (slot && *slot ? *(slot) - 1 : LCC_NOT_FOUND);
 }
 
 /* Return true if iterator LSE points to nothing.  */

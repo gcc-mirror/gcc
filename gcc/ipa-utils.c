@@ -389,7 +389,7 @@ cgraph_node_set_new (void)
   cgraph_node_set new_node_set;
 
   new_node_set = XCNEW (struct cgraph_node_set_def);
-  new_node_set->map = pointer_map_create ();
+  new_node_set->map = new hash_map<cgraph_node *, size_t>;
   new_node_set->nodes.create (0);
   return new_node_set;
 }
@@ -400,19 +400,17 @@ cgraph_node_set_new (void)
 void
 cgraph_node_set_add (cgraph_node_set set, struct cgraph_node *node)
 {
-  void **slot;
+  bool existed_p;
+  size_t &index = set->map->get_or_insert (node, &existed_p);
 
-  slot = pointer_map_insert (set->map, node);
-
-  if (*slot)
+  if (existed_p)
     {
-      int index = (size_t) *slot - 1;
       gcc_checking_assert ((set->nodes[index]
 		           == node));
       return;
     }
 
-  *slot = (void *)(size_t) (set->nodes.length () + 1);
+  index = set->nodes.length () + 1;
 
   /* Insert into node vector.  */
   set->nodes.safe_push (node);
@@ -424,15 +422,14 @@ cgraph_node_set_add (cgraph_node_set set, struct cgraph_node *node)
 void
 cgraph_node_set_remove (cgraph_node_set set, struct cgraph_node *node)
 {
-  void **slot, **last_slot;
   int index;
   struct cgraph_node *last_node;
 
-  slot = pointer_map_contains (set->map, node);
+  size_t *slot = set->map->get (node);
   if (slot == NULL || !*slot)
     return;
 
-  index = (size_t) *slot - 1;
+  index = *slot - 1;
   gcc_checking_assert (set->nodes[index]
 	      	       == node);
 
@@ -441,16 +438,16 @@ cgraph_node_set_remove (cgraph_node_set set, struct cgraph_node *node)
   last_node = set->nodes.pop ();
   if (last_node != node)
     {
-      last_slot = pointer_map_contains (set->map, last_node);
+      size_t *last_slot = set->map->get (last_node);
       gcc_checking_assert (last_slot && *last_slot);
-      *last_slot = (void *)(size_t) (index + 1);
+      *last_slot = index + 1;
 
       /* Move the last element to the original spot of NODE.  */
       set->nodes[index] = last_node;
     }
 
   /* Remove element from hash table.  */
-  *slot = NULL;
+  set->map->remove (node);
 }
 
 
@@ -460,14 +457,14 @@ cgraph_node_set_remove (cgraph_node_set set, struct cgraph_node *node)
 cgraph_node_set_iterator
 cgraph_node_set_find (cgraph_node_set set, struct cgraph_node *node)
 {
-  void **slot;
+  size_t *slot;
   cgraph_node_set_iterator csi;
 
-  slot = pointer_map_contains (set->map, node);
+  slot = set->map->get (node);
   if (slot == NULL || !*slot)
     csi.index = (unsigned) ~0;
   else
-    csi.index = (size_t)*slot - 1;
+    csi.index = *slot - 1;
   csi.set = set;
 
   return csi;
@@ -505,7 +502,7 @@ void
 free_cgraph_node_set (cgraph_node_set set)
 {
   set->nodes.release ();
-  pointer_map_destroy (set->map);
+  delete set->map;
   free (set);
 }
 
@@ -518,7 +515,7 @@ varpool_node_set_new (void)
   varpool_node_set new_node_set;
 
   new_node_set = XCNEW (struct varpool_node_set_def);
-  new_node_set->map = pointer_map_create ();
+  new_node_set->map = new hash_map<varpool_node *, size_t>;
   new_node_set->nodes.create (0);
   return new_node_set;
 }
@@ -529,19 +526,18 @@ varpool_node_set_new (void)
 void
 varpool_node_set_add (varpool_node_set set, varpool_node *node)
 {
-  void **slot;
+  bool existed;
+  size_t &slot = set->map->get_or_insert (node, &existed);
 
-  slot = pointer_map_insert (set->map, node);
-
-  if (*slot)
+  if (existed)
     {
-      int index = (size_t) *slot - 1;
+      int index = slot - 1;
       gcc_checking_assert ((set->nodes[index]
 		           == node));
       return;
     }
 
-  *slot = (void *)(size_t) (set->nodes.length () + 1);
+  slot = set->nodes.length () + 1;
 
   /* Insert into node vector.  */
   set->nodes.safe_push (node);
@@ -553,15 +549,14 @@ varpool_node_set_add (varpool_node_set set, varpool_node *node)
 void
 varpool_node_set_remove (varpool_node_set set, varpool_node *node)
 {
-  void **slot, **last_slot;
   int index;
   varpool_node *last_node;
 
-  slot = pointer_map_contains (set->map, node);
+  size_t *slot = set->map->get (node);
   if (slot == NULL || !*slot)
     return;
 
-  index = (size_t) *slot - 1;
+  index = *slot - 1;
   gcc_checking_assert (set->nodes[index]
 	      	       == node);
 
@@ -570,16 +565,16 @@ varpool_node_set_remove (varpool_node_set set, varpool_node *node)
   last_node = set->nodes.pop ();
   if (last_node != node)
     {
-      last_slot = pointer_map_contains (set->map, last_node);
+      size_t *last_slot = set->map->get (last_node);
       gcc_checking_assert (last_slot && *last_slot);
-      *last_slot = (void *)(size_t) (index + 1);
+      *last_slot = index + 1;
 
       /* Move the last element to the original spot of NODE.  */
       set->nodes[index] = last_node;
     }
 
   /* Remove element from hash table.  */
-  *slot = NULL;
+  set->map->remove (node);
 }
 
 
@@ -589,14 +584,13 @@ varpool_node_set_remove (varpool_node_set set, varpool_node *node)
 varpool_node_set_iterator
 varpool_node_set_find (varpool_node_set set, varpool_node *node)
 {
-  void **slot;
   varpool_node_set_iterator vsi;
 
-  slot = pointer_map_contains (set->map, node);
+  size_t *slot = set->map->get (node);
   if (slot == NULL || !*slot)
     vsi.index = (unsigned) ~0;
   else
-    vsi.index = (size_t)*slot - 1;
+    vsi.index = *slot - 1;
   vsi.set = set;
 
   return vsi;
@@ -625,7 +619,7 @@ void
 free_varpool_node_set (varpool_node_set set)
 {
   set->nodes.release ();
-  pointer_map_destroy (set->map);
+  delete set->map;
   free (set);
 }
 

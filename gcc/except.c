@@ -527,7 +527,7 @@ struct duplicate_eh_regions_data
 {
   duplicate_eh_regions_map label_map;
   void *label_map_data;
-  struct pointer_map_t *eh_map;
+  hash_map<void *, void *> *eh_map;
 };
 
 static void
@@ -536,12 +536,9 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
 {
   eh_landing_pad old_lp, new_lp;
   eh_region new_r;
-  void **slot;
 
   new_r = gen_eh_region (old_r->type, outer);
-  slot = pointer_map_insert (data->eh_map, (void *)old_r);
-  gcc_assert (*slot == NULL);
-  *slot = (void *)new_r;
+  gcc_assert (!data->eh_map->put (old_r, new_r));
 
   switch (old_r->type)
     {
@@ -586,9 +583,7 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
 	continue;
 
       new_lp = gen_eh_landing_pad (new_r);
-      slot = pointer_map_insert (data->eh_map, (void *)old_lp);
-      gcc_assert (*slot == NULL);
-      *slot = (void *)new_lp;
+      gcc_assert (!data->eh_map->put (old_lp, new_lp));
 
       new_lp->post_landing_pad
 	= data->label_map (old_lp->post_landing_pad, data->label_map_data);
@@ -609,7 +604,7 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
    that allows the caller to remap uses of both EH regions and
    EH landing pads.  */
 
-struct pointer_map_t *
+hash_map<void *, void *> *
 duplicate_eh_regions (struct function *ifun,
 		      eh_region copy_region, int outer_lp,
 		      duplicate_eh_regions_map map, void *map_data)
@@ -623,7 +618,7 @@ duplicate_eh_regions (struct function *ifun,
 
   data.label_map = map;
   data.label_map_data = map_data;
-  data.eh_map = pointer_map_create ();
+  data.eh_map = new hash_map<void *, void *>;
 
   outer_region = get_eh_region_from_lp_number (outer_lp);
 

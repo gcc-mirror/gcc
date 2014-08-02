@@ -1,5 +1,9 @@
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
+	* optimize.c, semantics.c: Use hash_map instead of pointer_map.
+
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
 	* class.c, cp-gimplify.c, cp-tree.h, decl.c, decl2.c, error.c,
 	method.c, name-lookup.c, pt.c, semantics.c, tree.c: Use hash_set
 	instead of pointer_set.
