@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "targhooks.h"
 #include "cgraph.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "asan.h"
 #include "basic-block.h"
 
@@ -2249,7 +2249,7 @@ static bool pending_assemble_externals_processed;
 
 /* Avoid O(external_decls**2) lookups in the pending_assemble_externals
    TREE_LIST in assemble_external.  */
-static struct pointer_set_t *pending_assemble_externals_set;
+static hash_set<tree> *pending_assemble_externals_set;
 
 /* True if DECL is a function decl for which no out-of-line copy exists.
    It is assumed that DECL's assembler name has been set.  */
@@ -2303,7 +2303,7 @@ process_pending_assemble_externals (void)
 
   pending_assemble_externals = 0;
   pending_assemble_externals_processed = true;
-  pointer_set_destroy (pending_assemble_externals_set);
+  delete pending_assemble_externals_set;
 #endif
 }
 
@@ -2361,7 +2361,7 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
       return;
     }
 
-  if (! pointer_set_insert (pending_assemble_externals_set, decl))
+  if (! pending_assemble_externals_set->add (decl))
     pending_assemble_externals = tree_cons (NULL, decl,
 					    pending_assemble_externals);
 #endif
@@ -5991,7 +5991,7 @@ init_varasm_once (void)
     readonly_data_section = text_section;
 
 #ifdef ASM_OUTPUT_EXTERNAL
-  pending_assemble_externals_set = pointer_set_create ();
+  pending_assemble_externals_set = new hash_set<tree>;
 #endif
 }
 

@@ -1788,7 +1788,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	     expensive, copy_body can be told to watch for nontrivial
 	     changes.  */
 	  if (id->statements_to_fold)
-	    pointer_set_insert (id->statements_to_fold, stmt);
+	    id->statements_to_fold->add (stmt);
 
 	  /* We're duplicating a CALL_EXPR.  Find any corresponding
 	     callgraph edges and update or duplicate them.  */
@@ -3507,7 +3507,6 @@ inline_forbidden_p (tree fndecl)
 {
   struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
   struct walk_stmt_info wi;
-  struct pointer_set_t *visited_nodes;
   basic_block bb;
   bool forbidden_p = false;
 
@@ -3518,10 +3517,10 @@ inline_forbidden_p (tree fndecl)
 
   /* Next, walk the statements of the function looking for
      constraucts we can't handle, or are non-optimal for inlining.  */
-  visited_nodes = pointer_set_create ();
+  hash_set<tree> visited_nodes;
   memset (&wi, 0, sizeof (wi));
   wi.info = (void *) fndecl;
-  wi.pset = visited_nodes;
+  wi.pset = &visited_nodes;
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -3533,7 +3532,6 @@ inline_forbidden_p (tree fndecl)
 	break;
     }
 
-  pointer_set_destroy (visited_nodes);
   return forbidden_p;
 }
 
@@ -4531,7 +4529,7 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
    in the STATEMENTS pointer set.  */
 
 static void
-fold_marked_statements (int first, struct pointer_set_t *statements)
+fold_marked_statements (int first, hash_set<gimple> *statements)
 {
   for (; first < n_basic_blocks_for_fn (cfun); first++)
     if (BASIC_BLOCK_FOR_FN (cfun, first))
@@ -4541,7 +4539,7 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 	for (gsi = gsi_start_bb (BASIC_BLOCK_FOR_FN (cfun, first));
 	     !gsi_end_p (gsi);
 	     gsi_next (&gsi))
-	  if (pointer_set_contains (statements, gsi_stmt (gsi)))
+	  if (statements->contains (gsi_stmt (gsi)))
 	    {
 	      gimple old_stmt = gsi_stmt (gsi);
 	      tree old_decl = is_gimple_call (old_stmt) ? gimple_call_fndecl (old_stmt) : 0;
@@ -4642,7 +4640,7 @@ optimize_inline_calls (tree fn)
   id.transform_return_to_modify = true;
   id.transform_parameter = true;
   id.transform_lang_insert_block = NULL;
-  id.statements_to_fold = pointer_set_create ();
+  id.statements_to_fold = new hash_set<gimple>;
 
   push_gimplify_context ();
 
@@ -4678,7 +4676,7 @@ optimize_inline_calls (tree fn)
 
   /* Fold queued statements.  */
   fold_marked_statements (last, id.statements_to_fold);
-  pointer_set_destroy (id.statements_to_fold);
+  delete id.statements_to_fold;
 
   gcc_assert (!id.debug_stmts.exists ());
 
@@ -4920,7 +4918,6 @@ copy_gimple_seq_and_replace_locals (gimple_seq seq)
 {
   copy_body_data id;
   struct walk_stmt_info wi;
-  struct pointer_set_t *visited;
   gimple_seq copy;
 
   /* There's nothing to do for NULL_TREE.  */
@@ -4943,11 +4940,10 @@ copy_gimple_seq_and_replace_locals (gimple_seq seq)
 
   /* Walk the tree once to find local labels.  */
   memset (&wi, 0, sizeof (wi));
-  visited = pointer_set_create ();
+  hash_set<tree> visited;
   wi.info = &id;
-  wi.pset = visited;
+  wi.pset = &visited;
   walk_gimple_seq (seq, mark_local_labels_stmt, NULL, &wi);
-  pointer_set_destroy (visited);
 
   copy = gimple_seq_copy (seq);
 
@@ -5370,7 +5366,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   memset (&id, 0, sizeof (id));
 
   /* Generate a new name for the new version. */
-  id.statements_to_fold = pointer_set_create ();
+  id.statements_to_fold = new hash_set<gimple>;
 
   id.decl_map = pointer_map_create ();
   id.debug_map = NULL;
@@ -5541,7 +5537,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   free_dominance_info (CDI_POST_DOMINATORS);
 
   fold_marked_statements (0, id.statements_to_fold);
-  pointer_set_destroy (id.statements_to_fold);
+  delete id.statements_to_fold;
   fold_cond_expr_cond ();
   delete_unreachable_blocks_update_callgraph (&id);
   if (id.dst_node->definition)

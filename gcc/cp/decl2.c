@@ -3920,11 +3920,11 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
    supported, collect and return all the functions for which we should
    emit a hidden alias.  */
 
-static struct pointer_set_t *
+static hash_set<tree> *
 collect_candidates_for_java_method_aliases (void)
 {
   struct cgraph_node *node;
-  struct pointer_set_t *candidates = NULL;
+  hash_set<tree> *candidates = NULL;
 
 #ifndef HAVE_GAS_HIDDEN
   return candidates;
@@ -3939,8 +3939,8 @@ collect_candidates_for_java_method_aliases (void)
 	  && TARGET_USE_LOCAL_THUNK_ALIAS_P (fndecl))
 	{
 	  if (candidates == NULL)
-	    candidates = pointer_set_create ();
-	  pointer_set_insert (candidates, fndecl);
+	    candidates = new hash_set<tree>;
+	  candidates->add (fndecl);
 	}
     }
 
@@ -3955,7 +3955,7 @@ collect_candidates_for_java_method_aliases (void)
    by collect_candidates_for_java_method_aliases.  */
 
 static void
-build_java_method_aliases (struct pointer_set_t *candidates)
+build_java_method_aliases (hash_set<tree> *candidates)
 {
   struct cgraph_node *node;
 
@@ -3968,7 +3968,7 @@ build_java_method_aliases (struct pointer_set_t *candidates)
       tree fndecl = node->decl;
 
       if (TREE_ASM_WRITTEN (fndecl)
-	  && pointer_set_contains (candidates, fndecl))
+	  && candidates->contains (fndecl))
 	{
 	  /* Mangle the name in a predictable way; we need to reference
 	     this from a java compiled object file.  */
@@ -4278,7 +4278,7 @@ cp_write_global_declarations (void)
   unsigned ssdf_count = 0;
   int retries = 0;
   tree decl;
-  struct pointer_set_t *candidates;
+  hash_set<tree> *candidates;
 
   locus = input_location;
   at_eof = 1;
@@ -4672,7 +4672,7 @@ cp_write_global_declarations (void)
   if (candidates)
     {
       build_java_method_aliases (candidates);
-      pointer_set_destroy (candidates);
+      delete candidates;
     }
 
   finish_repo ();

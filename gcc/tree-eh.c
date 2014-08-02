@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "except.h"
+#include "hash-set.h"
 #include "pointer-set.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
@@ -3578,7 +3579,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	eh_catch c;
 	edge_iterator ei;
 	edge e;
-	struct pointer_set_t *seen_values = pointer_set_create ();
+	hash_set<tree> seen_values;
 
 	/* Collect the labels for a switch.  Zero the post_landing_pad
 	   field becase we'll no longer have anything keeping these labels
@@ -3605,12 +3606,12 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 		   attached to the handler anymore, we remove 
 		   the corresponding edge and then we delete unreachable 
 		   blocks at the end of this pass.  */
-		if (! pointer_set_contains (seen_values, TREE_VALUE (flt_node)))
+		if (! seen_values.contains (TREE_VALUE (flt_node)))
 		  {
 		    tree t = build_case_label (TREE_VALUE (flt_node),
 					       NULL, lab);
 		    labels.safe_push (t);
-		    pointer_set_insert (seen_values, TREE_VALUE (flt_node));
+		    seen_values.add (TREE_VALUE (flt_node));
 		    have_label = true;
 		  }
 
@@ -3662,7 +3663,6 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	    x = gimple_build_switch (filter, default_label, labels);
 	    gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 	  }
-	pointer_set_destroy (seen_values);
       }
       break;
 

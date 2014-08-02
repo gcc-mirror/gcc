@@ -4691,7 +4691,7 @@ tree_node_can_be_shared (tree t)
 static tree
 verify_node_sharing_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct pointer_set_t *visited = (struct pointer_set_t *) data;
+  hash_set<void *> *visited = (hash_set<void *> *) data;
 
   if (tree_node_can_be_shared (*tp))
     {
@@ -4699,7 +4699,7 @@ verify_node_sharing_1 (tree *tp, int *walk_subtrees, void *data)
       return NULL;
     }
 
-  if (pointer_set_insert (visited, *tp))
+  if (visited->add (*tp))
     return *tp;
 
   return NULL;
@@ -4719,9 +4719,9 @@ static int
 verify_eh_throw_stmt_node (void **slot, void *data)
 {
   struct throw_stmt_node *node = (struct throw_stmt_node *)*slot;
-  struct pointer_set_t *visited = (struct pointer_set_t *) data;
+  hash_set<void *> *visited = (hash_set<void *> *) data;
 
-  if (!pointer_set_contains (visited, node->stmt))
+  if (!visited->contains (node->stmt))
     {
       error ("dead STMT in EH table");
       debug_gimple_stmt (node->stmt);
@@ -4733,11 +4733,11 @@ verify_eh_throw_stmt_node (void **slot, void *data)
 /* Verify if the location LOCs block is in BLOCKS.  */
 
 static bool
-verify_location (pointer_set_t *blocks, location_t loc)
+verify_location (hash_set<tree> *blocks, location_t loc)
 {
   tree block = LOCATION_BLOCK (loc);
   if (block != NULL_TREE
-      && !pointer_set_contains (blocks, block))
+      && !blocks->contains (block))
     {
       error ("location references block not in block tree");
       return true;
@@ -4770,7 +4770,7 @@ verify_expr_no_block (tree *tp, int *walk_subtrees, void *)
 static tree
 verify_expr_location_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct pointer_set_t *blocks = (struct pointer_set_t *) data;
+  hash_set<tree> *blocks = (hash_set<tree> *) data;
 
   if (TREE_CODE (*tp) == VAR_DECL
       && DECL_HAS_DEBUG_EXPR_P (*tp))
@@ -4816,12 +4816,12 @@ verify_expr_location (tree *tp, int *walk_subtrees, void *data)
 /* Insert all subblocks of BLOCK into BLOCKS and recurse.  */
 
 static void
-collect_subblocks (pointer_set_t *blocks, tree block)
+collect_subblocks (hash_set<tree> *blocks, tree block)
 {
   tree t;
   for (t = BLOCK_SUBBLOCKS (block); t; t = BLOCK_CHAIN (t))
     {
-      pointer_set_insert (blocks, t);
+      blocks->add (t);
       collect_subblocks (blocks, t);
     }
 }
@@ -4833,18 +4833,17 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 {
   basic_block bb;
   bool err = false;
-  struct pointer_set_t *visited, *visited_stmts, *blocks;
 
   timevar_push (TV_TREE_STMT_VERIFY);
-  visited = pointer_set_create ();
-  visited_stmts = pointer_set_create ();
+  hash_set<void *> visited;
+  hash_set<gimple> visited_stmts;
 
   /* Collect all BLOCKs referenced by the BLOCK tree of FN.  */
-  blocks = pointer_set_create ();
+  hash_set<tree> blocks;
   if (DECL_INITIAL (fn->decl))
     {
-      pointer_set_insert (blocks, DECL_INITIAL (fn->decl));
-      collect_subblocks (blocks, DECL_INITIAL (fn->decl));
+      blocks.add (DECL_INITIAL (fn->decl));
+      collect_subblocks (&blocks, DECL_INITIAL (fn->decl));
     }
 
   FOR_EACH_BB_FN (bb, fn)
@@ -4857,7 +4856,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	  bool err2 = false;
 	  unsigned i;
 
-	  pointer_set_insert (visited_stmts, phi);
+	  visited_stmts.add (phi);
 
 	  if (gimple_bb (phi) != bb)
 	    {
@@ -4878,7 +4877,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
 	      tree addr = walk_tree (&arg, verify_node_sharing_1,
-				     visited, NULL);
+				     &visited, NULL);
 	      if (addr)
 		{
 		  error ("incorrect sharing of tree nodes");
@@ -4892,13 +4891,13 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 		  error ("virtual PHI with argument locations");
 		  err2 = true;
 		}
-	      addr = walk_tree (&arg, verify_expr_location_1, blocks, NULL);
+	      addr = walk_tree (&arg, verify_expr_location_1, &blocks, NULL);
 	      if (addr)
 		{
 		  debug_generic_expr (addr);
 		  err2 = true;
 		}
-	      err2 |= verify_location (blocks, loc);
+	      err2 |= verify_location (&blocks, loc);
 	    }
 
 	  if (err2)
@@ -4914,7 +4913,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	  tree addr;
 	  int lp_nr;
 
-	  pointer_set_insert (visited_stmts, stmt);
+	  visited_stmts.add (stmt);
 
 	  if (gimple_bb (stmt) != bb)
 	    {
@@ -4923,10 +4922,10 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	    }
 
 	  err2 |= verify_gimple_stmt (stmt);
-	  err2 |= verify_location (blocks, gimple_location (stmt));
+	  err2 |= verify_location (&blocks, gimple_location (stmt));
 
 	  memset (&wi, 0, sizeof (wi));
-	  wi.info = (void *) visited;
+	  wi.info = (void *) &visited;
 	  addr = walk_gimple_op (stmt, verify_node_sharing, &wi);
 	  if (addr)
 	    {
@@ -4936,7 +4935,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	    }
 
 	  memset (&wi, 0, sizeof (wi));
-	  wi.info = (void *) blocks;
+	  wi.info = (void *) &blocks;
 	  addr = walk_gimple_op (stmt, verify_expr_location, &wi);
 	  if (addr)
 	    {
@@ -4992,14 +4991,11 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
   if (get_eh_throw_stmt_table (cfun))
     htab_traverse (get_eh_throw_stmt_table (cfun),
 		   verify_eh_throw_stmt_node,
-		   visited_stmts);
+		   &visited_stmts);
 
   if (err || eh_error_found)
     internal_error ("verify_gimple failed");
 
-  pointer_set_destroy (visited);
-  pointer_set_destroy (visited_stmts);
-  pointer_set_destroy (blocks);
   verify_histograms ();
   timevar_pop (TV_TREE_STMT_VERIFY);
 }

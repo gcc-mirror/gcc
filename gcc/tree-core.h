@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_CORE_H
 
 #include "hashtab.h"
+#include "hash-set.h"
 #include "machmode.h"
 #include "input.h"
 #include "statistics.h"
@@ -45,7 +46,6 @@ struct fixed_value;
 struct ptr_info_def;
 struct range_info_def;
 struct die_struct;
-struct pointer_set_t;
 
 
 /*---------------------------------------------------------------------------
@@ -692,7 +692,7 @@ typedef tree (*walk_tree_fn) (tree *, int *, void *);
 
 /* The type of a callback function that represents a custom walk_tree.  */
 typedef tree (*walk_tree_lh) (tree *, int *, tree (*) (tree *, int *, void *),
-			      void *, struct pointer_set_t*);
+			      void *, hash_set<tree> *);
 
 
 /*---------------------------------------------------------------------------

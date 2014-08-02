@@ -5143,7 +5143,7 @@ struct free_lang_data_d
   vec<tree> worklist;
 
   /* Set of traversed objects.  Used to avoid duplicate visits.  */
-  struct pointer_set_t *pset;
+  hash_set<tree> *pset;
 
   /* Array of symbols to process with free_lang_data_in_decl.  */
   vec<tree> decls;
@@ -5208,7 +5208,7 @@ add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
 static inline void
 fld_worklist_push (tree t, struct free_lang_data_d *fld)
 {
-  if (t && !is_lang_specific (t) && !pointer_set_contains (fld->pset, t))
+  if (t && !is_lang_specific (t) && !fld->pset->contains (t))
     fld->worklist.safe_push ((t));
 }
 
@@ -5374,7 +5374,7 @@ find_decls_types (tree t, struct free_lang_data_d *fld)
 {
   while (1)
     {
-      if (!pointer_set_contains (fld->pset, t))
+      if (!fld->pset->contains (t))
 	walk_tree (&t, find_decls_types_r, fld, fld->pset);
       if (fld->worklist.is_empty ())
 	break;
@@ -5584,7 +5584,7 @@ free_lang_data_in_cgraph (void)
   alias_pair *p;
 
   /* Initialize sets and arrays to store referenced decls and types.  */
-  fld.pset = pointer_set_create ();
+  fld.pset = new hash_set<tree>;
   fld.worklist.create (0);
   fld.decls.create (100);
   fld.types.create (100);
@@ -5614,7 +5614,7 @@ free_lang_data_in_cgraph (void)
   FOR_EACH_VEC_ELT (fld.types, i, t)
     free_lang_data_in_type (t);
 
-  pointer_set_destroy (fld.pset);
+  delete fld.pset;
   fld.worklist.release ();
   fld.decls.release ();
   fld.types.release ();
@@ -10824,7 +10824,7 @@ num_ending_zeros (const_tree x)
 
 static tree
 walk_type_fields (tree type, walk_tree_fn func, void *data,
-		  struct pointer_set_t *pset, walk_tree_lh lh)
+		  hash_set<tree> *pset, walk_tree_lh lh)
 {
   tree result = NULL_TREE;
 
@@ -10906,7 +10906,7 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
 
 tree
 walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
-	     struct pointer_set_t *pset, walk_tree_lh lh)
+	     hash_set<tree> *pset, walk_tree_lh lh)
 {
   enum tree_code code;
   int walk_subtrees;
@@ -10927,7 +10927,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 
   /* Don't walk the same tree twice, if the user has requested
      that we avoid doing so.  */
-  if (pset && pointer_set_insert (pset, *tp))
+  if (pset && pset->add (*tp))
     return NULL_TREE;
 
   /* Call the function.  */
@@ -11242,11 +11242,9 @@ walk_tree_without_duplicates_1 (tree *tp, walk_tree_fn func, void *data,
 				walk_tree_lh lh)
 {
   tree result;
-  struct pointer_set_t *pset;
 
-  pset = pointer_set_create ();
-  result = walk_tree_1 (tp, func, data, pset, lh);
-  pointer_set_destroy (pset);
+  hash_set<tree> pset;
+  result = walk_tree_1 (tp, func, data, &pset, lh);
   return result;
 }
 

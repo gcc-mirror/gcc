@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "input.h"
 #include "hashtab.h"
+#include "hash-set.h"
 #include "langhooks.h"
 #include "bitmap.h"
 #include "function.h"
@@ -819,7 +820,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
   int i;
   lto_symtab_encoder_t encoder;
   lto_symtab_encoder_iterator lsei;
-  struct pointer_set_t *reachable_call_targets = pointer_set_create ();
+  hash_set<void *> reachable_call_targets;
 
   encoder = lto_symtab_encoder_new (false);
 
@@ -902,8 +903,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      vec <cgraph_node *>targets
 		= possible_polymorphic_call_targets
 		    (edge, &final, &cache_token);
-	      if (!pointer_set_insert (reachable_call_targets,
-				       cache_token))
+	      if (!reachable_call_targets.add (cache_token))
 		{
 		  for (i = 0; i < targets.length (); i++)
 		    {
@@ -923,7 +923,6 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	    }
     }
   lto_symtab_encoder_delete (in_encoder);
-  pointer_set_destroy (reachable_call_targets);
   return encoder;
 }
 

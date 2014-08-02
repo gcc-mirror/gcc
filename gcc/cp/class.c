@@ -5359,15 +5359,15 @@ finalize_literal_type_property (tree t)
 void
 explain_non_literal_class (tree t)
 {
-  static struct pointer_set_t *diagnosed;
+  static hash_set<tree> *diagnosed;
 
   if (!CLASS_TYPE_P (t))
     return;
   t = TYPE_MAIN_VARIANT (t);
 
   if (diagnosed == NULL)
-    diagnosed = pointer_set_create ();
-  if (pointer_set_insert (diagnosed, t) != 0)
+    diagnosed = new hash_set<tree>;
+  if (diagnosed->add (t))
     /* Already explained.  */
     return;
 

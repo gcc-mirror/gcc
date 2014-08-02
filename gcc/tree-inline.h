@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_INLINE_H
 #define GCC_TREE_INLINE_H
 
+#include "hash-set.h"
+
 struct cgraph_edge;
 
 /* Indicate the desired behavior wrt call graph edges.  We can either
@@ -114,7 +116,7 @@ struct copy_body_data
   void (*transform_lang_insert_block) (tree);
 
   /* Statements that might be possibly folded.  */
-  struct pointer_set_t *statements_to_fold;
+  hash_set<gimple> *statements_to_fold;
 
   /* Entry basic block to currently copied body.  */
   basic_block entry_bb;

@@ -8031,7 +8031,7 @@ register_constexpr_fundef (tree fun, tree body)
 void
 explain_invalid_constexpr_fn (tree fun)
 {
-  static struct pointer_set_t *diagnosed;
+  static hash_set<tree> *diagnosed;
   tree body;
   location_t save_loc;
   /* Only diagnose defaulted functions or instantiations.  */
@@ -8039,8 +8039,8 @@ explain_invalid_constexpr_fn (tree fun)
       && !is_instantiation_of_constexpr (fun))
     return;
   if (diagnosed == NULL)
-    diagnosed = pointer_set_create ();
-  if (pointer_set_insert (diagnosed, fun) != 0)
+    diagnosed = new hash_set<tree>;
+  if (diagnosed->add (fun))
     /* Already explained.  */
     return;
 

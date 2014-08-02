@@ -95,7 +95,7 @@ struct nesting_info
 
   struct pointer_map_t *field_map;
   struct pointer_map_t *var_map;
-  struct pointer_set_t *mem_refs;
+  hash_set<tree *> *mem_refs;
   bitmap suppress_expansion;
 
   tree context;
@@ -732,7 +732,7 @@ create_nesting_tree (struct cgraph_node *cgn)
   struct nesting_info *info = XCNEW (struct nesting_info);
   info->field_map = pointer_map_create ();
   info->var_map = pointer_map_create ();
-  info->mem_refs = pointer_set_create ();
+  info->mem_refs = new hash_set<tree *>;
   info->suppress_expansion = BITMAP_ALLOC (&nesting_info_bitmap_obstack);
   info->context = cgn->decl;
 
@@ -1651,7 +1651,7 @@ convert_local_reference_op (tree *tp, int *walk_subtrees, void *data)
 	 fold here, as the chain record type is not yet finalized.  */
       if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
 	  && !DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-	pointer_set_insert (info->mem_refs, tp);
+	info->mem_refs->add (tp);
       wi->val_only = save_val_only;
       break;
 
@@ -2655,8 +2655,8 @@ remap_vla_decls (tree block, struct nesting_info *root)
 }
 
 /* Fold the MEM_REF *E.  */
-static bool
-fold_mem_refs (const void *e, void *data ATTRIBUTE_UNUSED)
+bool
+fold_mem_refs (tree *const &e, void *data ATTRIBUTE_UNUSED)
 {
   tree *ref_p = CONST_CAST2 (tree *, const tree *, (const tree *)e);
   *ref_p = fold (*ref_p);
@@ -2878,7 +2878,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
     }
 
   /* Fold the rewritten MEM_REF trees.  */
-  pointer_set_traverse (root->mem_refs, fold_mem_refs, NULL);
+  root->mem_refs->traverse<void *, fold_mem_refs> (NULL);
 
   /* Dump the translated tree function.  */
   if (dump_file)
@@ -2933,7 +2933,7 @@ free_nesting_tree (struct nesting_info *root)
       next = iter_nestinfo_next (node);
       pointer_map_destroy (node->var_map);
       pointer_map_destroy (node->field_map);
-      pointer_set_destroy (node->mem_refs);
+      delete node->mem_refs;
       free (node);
       node = next;
     }

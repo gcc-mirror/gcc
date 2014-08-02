@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "langhooks.h"
 #include "bitmap.h"
+#include "hash-set.h"
 #include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -594,7 +595,7 @@ stack_var_cmp (const void *a, const void *b)
 static void
 add_partitioned_vars_to_ptset (struct pt_solution *pt,
 			       struct pointer_map_t *decls_to_partitions,
-			       struct pointer_set_t *visited, bitmap temp)
+			       hash_set<bitmap> *visited, bitmap temp)
 {
   bitmap_iterator bi;
   unsigned i;
@@ -604,7 +605,7 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
       || pt->vars == NULL
       /* The pointed-to vars bitmap is shared, it is enough to
 	 visit it once.  */
-      || pointer_set_insert (visited, pt->vars))
+      || visited->add (pt->vars))
     return;
 
   bitmap_clear (temp);
@@ -684,7 +685,7 @@ update_alias_info_with_stack_vars (void)
   if (decls_to_partitions)
     {
       unsigned i;
-      struct pointer_set_t *visited = pointer_set_create ();
+      hash_set<bitmap> visited;
       bitmap temp = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 
       for (i = 1; i < num_ssa_names; i++)
@@ -696,13 +697,12 @@ update_alias_info_with_stack_vars (void)
 	      && POINTER_TYPE_P (TREE_TYPE (name))
 	      && ((pi = SSA_NAME_PTR_INFO (name)) != NULL))
 	    add_partitioned_vars_to_ptset (&pi->pt, decls_to_partitions,
-					   visited, temp);
+					   &visited, temp);
 	}
 
       add_partitioned_vars_to_ptset (&cfun->gimple_df->escaped,
-				     decls_to_partitions, visited, temp);
+				     decls_to_partitions, &visited, temp);
 
-      pointer_set_destroy (visited);
       pointer_map_destroy (decls_to_partitions);
       BITMAP_FREE (temp);
     }

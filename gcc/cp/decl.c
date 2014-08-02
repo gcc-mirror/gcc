@@ -8203,7 +8203,7 @@ check_static_variable_definition (tree decl, tree type)
 static tree
 stabilize_save_expr_r (tree *expr_p, int *walk_subtrees, void *data)
 {
-  struct pointer_set_t *pset = (struct pointer_set_t *)data;
+  hash_set<tree> *pset = (hash_set<tree> *)data;
   tree expr = *expr_p;
   if (TREE_CODE (expr) == SAVE_EXPR)
     {
@@ -8223,10 +8223,9 @@ stabilize_save_expr_r (tree *expr_p, int *walk_subtrees, void *data)
 static void
 stabilize_vla_size (tree size)
 {
-  struct pointer_set_t *pset = pointer_set_create ();
+  hash_set<tree> pset;
   /* Break out any function calls into temporary variables.  */
-  cp_walk_tree (&size, stabilize_save_expr_r, pset, pset);
-  pointer_set_destroy (pset);
+  cp_walk_tree (&size, stabilize_save_expr_r, &pset, &pset);
 }
 
 /* Helper function for compute_array_index_type.  Look for SIZEOF_EXPR

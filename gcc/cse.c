@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "dbgcnt.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -2906,7 +2906,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 		      enum machine_mode *pmode1, enum machine_mode *pmode2)
 {
   rtx arg1, arg2;
-  struct pointer_set_t *visited = NULL;
+  hash_set<rtx> *visited = NULL;
   /* Set nonzero when we find something of interest.  */
   rtx x = NULL;
 
@@ -2923,8 +2923,8 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
       if (x)
 	{
 	  if (!visited)
-	    visited = pointer_set_create ();
-	  pointer_set_insert (visited, x);
+	    visited = new hash_set<rtx>;
+	  visited->add (x);
 	  x = 0;
 	}
 
@@ -3005,7 +3005,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	    continue;
 
 	  /* If it's a comparison we've used before, skip it.  */
-	  if (visited && pointer_set_contains (visited, p->exp))
+	  if (visited && visited->contains (p->exp))
 	    continue;
 
 	  if (GET_CODE (p->exp) == COMPARE
@@ -3087,7 +3087,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
   *parg1 = fold_rtx (arg1, 0), *parg2 = fold_rtx (arg2, 0);
 
   if (visited)
-    pointer_set_destroy (visited);
+    delete visited;
   return code;
 }
 

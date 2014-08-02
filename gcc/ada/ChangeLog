@@ -1,3 +1,7 @@
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* gcc-interface/trans.c: Use hash_set instead of pointer_set.
+
 2014-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* restrict.adb (Update_Restrictions): For restrictions with a

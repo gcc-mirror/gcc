@@ -36,7 +36,7 @@
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
 #include "bitmap.h"
@@ -3008,7 +3008,7 @@ struct nrv_data
   bitmap nrv;
   tree result;
   Node_Id gnat_ret;
-  struct pointer_set_t *visited;
+  hash_set<tree> *visited;
 };
 
 /* Return true if T is a Named Return Value.  */
@@ -3142,7 +3142,7 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
   /* Avoid walking into the same tree more than once.  Unfortunately, we
      can't just use walk_tree_without_duplicates because it would only
      call us for the first occurrence of NRVs in the function body.  */
-  if (pointer_set_insert (dp->visited, *tp))
+  if (dp->visited->add (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;
@@ -3282,7 +3282,7 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
   /* Avoid walking into the same tree more than once.  Unfortunately, we
      can't just use walk_tree_without_duplicates because it would only
      call us for the first occurrence of NRVs in the function body.  */
-  if (pointer_set_insert (dp->visited, *tp))
+  if (dp->visited->add (*tp))
     *walk_subtrees = 0;
 
   return NULL_TREE;
@@ -3330,13 +3330,13 @@ finalize_nrv (tree fndecl, bitmap nrv, vec<tree, va_gc> *other, Node_Id gnat_ret
   data.nrv = nrv;
   data.result = DECL_RESULT (fndecl);
   data.gnat_ret = gnat_ret;
-  data.visited = pointer_set_create ();
+  data.visited = new hash_set<tree>;
   if (TYPE_RETURN_UNCONSTRAINED_P (TREE_TYPE (fndecl)))
     func = finalize_nrv_unc_r;
   else
     func = finalize_nrv_r;
   walk_tree (&DECL_SAVED_TREE (fndecl), func, &data, NULL);
-  pointer_set_destroy (data.visited);
+  delete data.visited;
 }
 
 /* Return true if RET_VAL can be used as a Named Return Value for the
