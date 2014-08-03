@@ -2518,6 +2518,7 @@ devirt_variable_node_removal_hook (varpool_node *n,
 /* Record about how many calls would benefit from given type to be final.  */
 struct odr_type_warn_count
 {
+  tree type;
   int count;
   gcov_type dyn_count;
 };
@@ -2738,6 +2739,7 @@ possible_polymorphic_call_targets (tree otr_type,
       if (binfo)
 	matched_vtables.add (BINFO_VTABLE (binfo));
 
+
       /* Next walk recursively all derived types.  */
       if (context.speculative_maybe_derived_type)
 	for (i = 0; i < speculative_outer_type->derived_types.length(); i++)
@@ -2818,6 +2820,8 @@ possible_polymorphic_call_targets (tree otr_type,
 		  final_warning_records->type_warnings[outer_type->id].count++;
 		  final_warning_records->type_warnings[outer_type->id].dyn_count
 		    += final_warning_records->dyn_count;
+		  final_warning_records->type_warnings[outer_type->id].type
+		    = outer_type->type;
 		  (*slot)->type_warning = outer_type->id + 1;
 		}
 	      if (complete
@@ -3274,12 +3278,12 @@ ipa_devirt (void)
 	       i < final_warning_records->type_warnings.length (); i++)
 	    if (final_warning_records->type_warnings[i].count)
 	      {
-		odr_type type = odr_types[i];
-		warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type->type)),
+	        tree type = final_warning_records->type_warnings[i].type;
+		warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)),
 			    OPT_Wsuggest_final_types,
 			    "Declaring type %qD final "
 			    "would enable devirtualization of %i calls",
-			    type->type,
+			    type,
 			    final_warning_records->type_warnings[i].count);
 	      }
 	}

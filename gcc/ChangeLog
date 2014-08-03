@@ -1,5 +1,11 @@
 2014-08-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (odr_type_warn_count): Add type.
+	(possible_polymorphic_call_targets): Set it.
+	(ipa_devirt): Use it.
+
+2014-08-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* doc/invoke.texi (Wsuggest-final-types, Wsuggest-final-methods): Document.
 	* ipa-devirt.c: Include hash-map.h
 	(struct polymorphic_call_target_d): Add type_warning and decl_warning.
@@ -24,14 +30,14 @@
 	* hash-map.h (default_hashmap_traits::mark_key_deleted):
 	Fix cast.
 	(hash_map::remove): New method.
-(hash_map::traverse): New method.
+	(hash_map::traverse): New method.
 	* cgraph.h, except.c, except.h, gimple-ssa-strength-reduction.c,
 	ipa-utils.c, lto-cgraph.c, lto-streamer.h, omp-low.c, predict.c,
 	tree-cfg.c, tree-cfgcleanup.c, tree-eh.c, tree-eh.h, tree-inline.c,
 	tree-inline.h, tree-nested.c, tree-sra.c, tree-ssa-loop-im.c,
 	tree-ssa-loop-ivopts.c, tree-ssa-reassoc.c, tree-ssa-structalias.c,
 	tree-ssa.c, tree-ssa.h, var-tracking.c: Use hash_map instead of
- pointer_map.
+	pointer_map.
 
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
