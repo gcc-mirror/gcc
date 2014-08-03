@@ -1,3 +1,8 @@
+2014-08-03  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (check_case_value):  Add location_t parameter.  Use it.
+	(c_add_case_label): Pass loc to check_case_value.
+
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* cilk.c: Use hash_map instead of pointer_map.

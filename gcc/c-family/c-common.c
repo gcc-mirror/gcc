@@ -300,7 +300,7 @@ const struct fname_var_t fname_vars[] =
 struct visibility_flags visibility_options;
 
 static tree c_fully_fold_internal (tree expr, bool, bool *, bool *);
-static tree check_case_value (tree);
+static tree check_case_value (location_t, tree);
 static bool check_case_bounds (location_t, tree, tree, tree *, tree *);
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
@@ -3349,7 +3349,7 @@ verify_sequence_points (tree expr)
 /* Validate the expression after `case' and apply default promotions.  */
 
 static tree
-check_case_value (tree value)
+check_case_value (location_t loc, tree value)
 {
   if (value == NULL_TREE)
     return value;
@@ -3359,7 +3359,7 @@ check_case_value (tree value)
     value = perform_integral_promotions (value);
   else if (value != error_mark_node)
     {
-      error ("case label does not reduce to an integer constant");
+      error_at (loc, "case label does not reduce to an integer constant");
       value = error_mark_node;
     }
 
@@ -5993,14 +5993,14 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
   type = TREE_TYPE (cond);
   if (low_value)
     {
-      low_value = check_case_value (low_value);
+      low_value = check_case_value (loc, low_value);
       low_value = convert_and_check (loc, type, low_value);
       if (low_value == error_mark_node)
 	goto error_out;
     }
   if (high_value)
     {
-      high_value = check_case_value (high_value);
+      high_value = check_case_value (loc, high_value);
       high_value = convert_and_check (loc, type, high_value);
       if (high_value == error_mark_node)
 	goto error_out;
