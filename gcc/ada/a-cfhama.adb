@@ -33,9 +33,10 @@ pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
 
 with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
-with System;  use type System.Address;
+with System; use type System.Address;
 
 package body Ada.Containers.Formal_Hashed_Maps is
+   pragma SPARK_Mode (Off);
 
    -----------------------
    -- Local Subprograms --

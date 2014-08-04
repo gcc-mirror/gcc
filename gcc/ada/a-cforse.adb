@@ -36,9 +36,10 @@ with Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations;
 pragma Elaborate_All
   (Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations);
 
-with System;  use type System.Address;
+with System; use type System.Address;
 
 package body Ada.Containers.Formal_Ordered_Sets is
+   pragma SPARK_Mode (Off);
 
    ------------------------------
    -- Access to Fields of Node --

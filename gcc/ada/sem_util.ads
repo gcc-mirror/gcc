@@ -1837,11 +1837,6 @@ package Sem_Util is
    --    If restriction No_Implementation_Identifiers is set, then it checks
    --    that the entity is not implementation defined.
 
-   procedure Set_Ignore_Pragma_SPARK_Mode (N : Node_Id);
-   --  Determine whether [the enclosing context of] package or subprogram N is
-   --  subject to pragma SPARK_Mode with mode "off". If this is the case, set
-   --  global flag Ignore_Pragma_SPARK_Mode to True.
-
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);
    --  Sets the Entity_Id value associated with the given name, which is the
