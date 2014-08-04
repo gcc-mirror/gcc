@@ -3929,6 +3929,18 @@ package body Exp_Ch6 is
             Add_Inlined_Body (Subp);
             Register_Backend_Call (Call_Node);
 
+            --  If the call is to a function in a run-time unit that is marked
+            --  Inline_Always, we must suppress debugging information on it,
+            --  so that the code that is eventually inlined will not affect
+            --  debugging of the user program.
+
+            if Is_Predefined_File_Name
+                 (Unit_File_Name (Get_Source_Unit (Sloc (Subp))))
+              and then In_Extended_Main_Source_Unit (N)
+            then
+               Set_Needs_Debug_Info (Subp, False);
+            end if;
+
          --  Frontend expansion of supported functions returning unconstrained
          --  types and simple renamings inlined by the frontend (see Freeze.
          --  Build_Renamed_Entity).

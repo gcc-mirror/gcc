@@ -113,7 +113,6 @@ package body Sem_Case is
       Subtyp         : Entity_Id;
       Others_Present : Boolean;
       Case_Node      : Node_Id)
-
    is
       Predicate_Error : Boolean;
       --  Flag to prevent cascaded errors when a static predicate is known to
@@ -616,6 +615,10 @@ package body Sem_Case is
          Missing_Choice (Value1, Expr_Value (Value2));
       end Missing_Choice;
 
+      --------------------
+      -- Missing_Choice --
+      --------------------
+
       procedure Missing_Choice (Value1 : Uint; Value2 : Uint) is
          Msg_Sloc : constant Source_Ptr := Sloc (Case_Node);
 
@@ -781,6 +784,7 @@ package body Sem_Case is
 
             if Error then
                Predicate_Error := True;
+
                if not All_Errors_Mode then
                   return;
                end if;

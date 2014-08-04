@@ -12819,6 +12819,14 @@ package body Exp_Ch9 is
          Ename   := Selector_Name (Prefix (Nam));
          Index   := First (Expressions (Nam));
       end if;
+
+      --  Through indirection, the type may actually be a limited view of a
+      --  concurrent type. When compiling a call, the non-limited view of the
+      --  type is visible.
+
+      if From_Limited_With (Etype (Concval)) then
+         Set_Etype (Concval, Non_Limited_View (Etype (Concval)));
+      end if;
    end Extract_Entry;
 
    -------------------

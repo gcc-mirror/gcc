@@ -1,5 +1,22 @@
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
+	* sem_util.adb, sem_case.adb: Minor reformatting.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Extract_Entry): If the synchronized object is a
+	limited view, replace with non-limited view, which is available
+	at the point of an entry call.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): If the call is to a function in
+	a run-time unit that is marked Inline_Always, we must suppress
+	debugging information on it, so that the code that is eventually
+	inlined will not affect debugging of the user program.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
 	* inline.adb, einfo.ads, s-tassta.adb, s-tarest.adb: Minor comment
 	fixes.
 
