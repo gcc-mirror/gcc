@@ -19353,6 +19353,16 @@ package body Sem_Prag is
                         raise Pragma_Exit;
                      end if;
 
+                  --  Skip internally generated code, but consider subprogram
+                  --  instantiations housed within their wrapper packages.
+
+                  elsif not Comes_From_Source (Stmt)
+                    and then
+                      (Nkind (Stmt) /= N_Subprogram_Declaration
+                         or else No (Generic_Parent (Specification (Stmt))))
+                  then
+                     null;
+
                   --  The pragma is associated with a package or subprogram
                   --  instantiation that does not act as a compilation unit.
 
@@ -19374,12 +19384,15 @@ package body Sem_Prag is
                      Set_SPARK_Pragma_Inherited (Inst_Id, False);
                      return;
 
-                  --  The pragma applies to a subprogram declaration
+                  --  The pragma applies to a [generic] subprogram declaration
 
+                  --    [generic]
                   --    procedure Proc ...;
                   --    pragma SPARK_Mode ..;
 
-                  elsif Nkind (Stmt) = N_Subprogram_Declaration then
+                  elsif Nkind_In (Stmt, N_Generic_Subprogram_Declaration,
+                                        N_Subprogram_Declaration)
+                  then
                      Spec_Id := Defining_Entity (Stmt);
                      Check_Library_Level_Entity (Spec_Id);
                      Check_Pragma_Conformance
@@ -19387,14 +19400,9 @@ package body Sem_Prag is
                         Entity_Pragma  => Empty,
                         Entity         => Empty);
 
-                     Set_SPARK_Pragma               (Spec_Id, N);
-                     Set_SPARK_Pragma_Inherited     (Spec_Id, False);
+                     Set_SPARK_Pragma           (Spec_Id, N);
+                     Set_SPARK_Pragma_Inherited (Spec_Id, False);
                      return;
-
-                  --  Skip internally generated code
-
-                  elsif not Comes_From_Source (Stmt) then
-                     null;
 
                   --  Otherwise the pragma does not apply to a legal construct
                   --  or it does not appear at the top of a declarative or a
@@ -19405,7 +19413,7 @@ package body Sem_Prag is
                      exit;
                   end if;
 
-                  Stmt := Prev (Stmt);
+                  Prev (Stmt);
                end loop;
 
                --  The pragma appears within package declarations
