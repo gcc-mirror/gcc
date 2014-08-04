@@ -1,3 +1,11 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sem_ch5.adb, einfo.ads: Minor reformatting.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): Refine previous change.
+
 2014-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_scil.ads: Improve comments.

@@ -6446,14 +6446,6 @@ package body Sem_Ch4 is
                   return;
                end if;
 
-            elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
-               if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
-                  Rewrite (R,
-                    Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
-                  Analyze_Equality_Op (N);
-                  return;
-               end if;
-
             --  For an arithmetic operator or comparison operator, if one
             --  of the operands is numeric, then we know the other operand
             --  is not the same numeric type. If it is a non-numeric type,
@@ -6608,6 +6600,14 @@ package body Sem_Ch4 is
                end if;
 
                return;
+
+            elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
+               if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
+                  Rewrite (R,
+                    Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
+                  Analyze_Equality_Op (N);
+                  return;
+               end if;
             end if;
 
             --  If we fall through then just give general message. Note that in
