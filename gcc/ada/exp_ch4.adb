@@ -6496,6 +6496,10 @@ package body Exp_Ch4 is
          Apply_Arithmetic_Overflow_Check (N);
          return;
       end if;
+
+      --  Overflow checks for floating-point if -gnateF mode active
+
+      Check_Float_Op_Overflow (N);
    end Expand_N_Op_Add;
 
    ---------------------
@@ -6704,6 +6708,10 @@ package body Exp_Ch4 is
       elsif Is_Integer_Type (Typ) then
          Apply_Divide_Checks (N);
       end if;
+
+      --  Overflow checks for floating-point if -gnateF mode active
+
+      Check_Float_Op_Overflow (N);
    end Expand_N_Op_Divide;
 
    --------------------
@@ -8462,6 +8470,10 @@ package body Exp_Ch4 is
       elsif Is_Signed_Integer_Type (Etype (N)) then
          Apply_Arithmetic_Overflow_Check (N);
       end if;
+
+      --  Overflow checks for floating-point if -gnateF mode active
+
+      Check_Float_Op_Overflow (N);
    end Expand_N_Op_Multiply;
 
    --------------------
@@ -9187,6 +9199,10 @@ package body Exp_Ch4 is
       if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
          Apply_Arithmetic_Overflow_Check (N);
       end if;
+
+      --  Overflow checks for floating-point if -gnateF mode active
+
+      Check_Float_Op_Overflow (N);
    end Expand_N_Op_Subtract;
 
    ---------------------

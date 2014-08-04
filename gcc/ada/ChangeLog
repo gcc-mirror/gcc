@@ -1,3 +1,8 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+	* exp_attr.adb: Minor reformatting.
+
 2014-08-04  Thomas Quinot  <quinot@adacore.com>
 
 	* s-fatgen.ads, s-fatgen.adb (S, P): New visible type declarations

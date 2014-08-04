@@ -6403,7 +6403,7 @@ package body Exp_Attr is
          --  code in the floating-point attribute run-time library.
 
          if Is_Floating_Point_Type (Ptyp) then
-            declare
+            Float_Valid : declare
                Pkg : RE_Id;
                Ftp : Entity_Id;
 
@@ -6423,6 +6423,8 @@ package body Exp_Attr is
                   Find_Selected_Component (Exp_Name);
                   return Entity (Exp_Name);
                end Get_Fat_Entity;
+
+            --  Start of processing for Float_Valid
 
             begin
                case Float_Rep (Btyp) is
@@ -6463,11 +6465,11 @@ package body Exp_Attr is
                            --  Access to Fat_S
 
                            Decl : constant Node_Id :=
-                             Make_Object_Declaration (Loc,
-                               Defining_Identifier => Temp,
-                               Aliased_Present     => True,
-                               Object_Definition   =>
-                                 New_Occurrence_Of (Ptyp, Loc));
+                                    Make_Object_Declaration (Loc,
+                                      Defining_Identifier => Temp,
+                                      Aliased_Present     => True,
+                                      Object_Definition   =>
+                                        New_Occurrence_Of (Ptyp, Loc));
 
                         begin
                            Set_Aspect_Specifications (Decl, New_List (
@@ -6492,6 +6494,7 @@ package body Exp_Attr is
                                  Expression =>
                                    Unchecked_Convert_To (Fat_S,
                                      Relocate_Node (Pref)))),
+
                              Suppress => All_Checks);
 
                            Rewrite (Pref, New_Occurrence_Of (Temp, Loc));
@@ -6525,7 +6528,7 @@ package body Exp_Attr is
                           Left_Opnd  => Convert_To (Btyp, Pref),
                           Right_Opnd => New_Occurrence_Of (Ptyp, Loc))));
                end if;
-            end;
+            end Float_Valid;
 
          --  Enumeration type with holes
 
