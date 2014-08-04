@@ -632,8 +632,8 @@ package body Sem_Ch6 is
               and then not GNAT_Mode
             then
                Error_Msg_N
-                 ("(Ada 2005) cannot copy object of a limited type " &
-                  "(RM-2005 6.5(5.5/2))", Expr);
+                 ("(Ada 2005) cannot copy object of a limited type "
+                  & "(RM-2005 6.5(5.5/2))", Expr);
 
                if Is_Limited_View (R_Type) then
                   Error_Msg_N
@@ -723,7 +723,7 @@ package body Sem_Ch6 is
             if not Predicates_Match (R_Stm_Type, R_Type) then
                Error_Msg_Node_2 := R_Type;
                Error_Msg_NE
-                 ("\predicate of & does not match predicate of &",
+                 ("\predicate of& does not match predicate of&",
                   N, R_Stm_Type);
             end if;
          end Error_No_Match;
@@ -774,8 +774,8 @@ package body Sem_Ch6 is
          elsif R_Stm_Type_Is_Anon_Access
            and then not R_Type_Is_Anon_Access
          then
-            Error_Msg_N ("anonymous access not allowed for function with " &
-                         "named access result", Subtype_Ind);
+            Error_Msg_N ("anonymous access not allowed for function with "
+                         & "named access result", Subtype_Ind);
 
          --  Subtype indication case: check that the return object's type is
          --  covered by the result type, and that the subtypes statically match
@@ -942,8 +942,8 @@ package body Sem_Ch6 is
                      & "in Ada 2012??", N);
 
                elsif not Is_Limited_View (R_Type) then
-                  Error_Msg_N ("aliased only allowed for limited"
-                     & " return objects", N);
+                  Error_Msg_N
+                    ("aliased only allowed for limited return objects", N);
                end if;
             end if;
          end;
@@ -1013,8 +1013,8 @@ package body Sem_Ch6 is
                  Subprogram_Access_Level (Scope_Id)
             then
                Error_Msg_N
-                 ("level of return expression type is deeper than " &
-                  "class-wide function!", Expr);
+                 ("level of return expression type is deeper than "
+                  & "class-wide function!", Expr);
             end if;
          end if;
 
@@ -1807,8 +1807,8 @@ package body Sem_Ch6 is
 
             else
                Error_Msg_N
-                 ("return nested in extended return statement cannot return " &
-                  "value (use `RETURN;`)", N);
+                 ("return nested in extended return statement cannot return "
+                  & "value (use `RETURN;`)", N);
             end if;
          end if;
 
@@ -2128,7 +2128,7 @@ package body Sem_Ch6 is
            and then Contains_Refined_State (Prag)
          then
             Error_Msg_NE
-              ("body of subprogram & requires global refinement",
+              ("body of subprogram& requires global refinement",
                Body_Decl, Spec_Id);
          end if;
       end if;
@@ -2151,7 +2151,7 @@ package body Sem_Ch6 is
            and then Contains_Refined_State (Prag)
          then
             Error_Msg_NE
-              ("body of subprogram & requires dependance refinement",
+              ("body of subprogram& requires dependance refinement",
                Body_Decl, Spec_Id);
          end if;
       end if;
@@ -2952,7 +2952,7 @@ package body Sem_Ch6 is
               and then  Operator_Matches_Spec (Spec_Id, Spec_Id)
             then
                Error_Msg_NE
-                 ("subprogram & overrides predefined operator ",
+                 ("subprogram& overrides predefined operator ",
                     Body_Spec, Spec_Id);
 
             --  Overriding indicators aren't allowed for protected subprogram
@@ -2963,18 +2963,16 @@ package body Sem_Ch6 is
                Error_Msg_Warn := Error_To_Warning;
 
                Error_Msg_N
-                 ("<<overriding indicator not allowed " &
-                  "for protected subprogram body",
-                  Body_Spec);
+                 ("<<overriding indicator not allowed "
+                  & "for protected subprogram body", Body_Spec);
 
             --  If this is not a primitive operation, then the overriding
             --  indicator is altogether illegal.
 
             elsif not Is_Primitive (Spec_Id) then
                Error_Msg_N
-                 ("overriding indicator only allowed " &
-                  "if subprogram is primitive",
-                  Body_Spec);
+                 ("overriding indicator only allowed "
+                  & "if subprogram is primitive", Body_Spec);
             end if;
 
          --  If checking the style rule and the operation overrides, then
@@ -3764,7 +3762,7 @@ package body Sem_Ch6 is
 
          else
             Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
-            Error_Msg_N ("incorrect application of SPARK_Mode#", N);
+            Error_Msg_N ("incorrect application of SPARK_Mode #", N);
             Error_Msg_Sloc := Sloc (Spec_Id);
             Error_Msg_NE
               ("\no value was set for SPARK_Mode on & #", N, Spec_Id);
@@ -4746,7 +4744,7 @@ package body Sem_Ch6 is
             --  this before checking that the types of the formals match.
 
             if Chars (Old_Formal) /= Chars (New_Formal) then
-               Conformance_Error ("\name & does not match!", New_Formal);
+               Conformance_Error ("\name& does not match!", New_Formal);
 
                --  Set error posted flag on new formal as well to stop
                --  junk cascaded messages in some cases.
@@ -4769,7 +4767,7 @@ package body Sem_Ch6 is
                   Comes_From_Source (New_Formal)
                then
                   Conformance_Error
-                    ("\null exclusion for & does not match", New_Formal);
+                    ("\null exclusion for& does not match", New_Formal);
 
                   --  Mark error posted on the new formal to avoid duplicated
                   --  complaint about types not matching.
@@ -4905,8 +4903,7 @@ package body Sem_Ch6 is
                   declare
                      T : constant  Entity_Id := Find_Dispatching_Type (New_Id);
                   begin
-                     if Is_Protected_Type
-                          (Corresponding_Concurrent_Type (T))
+                     if Is_Protected_Type (Corresponding_Concurrent_Type (T))
                      then
                         Error_Msg_PT (T, New_Id);
                      else
@@ -4979,9 +4976,9 @@ package body Sem_Ch6 is
                      if Is_Controlling_Formal (New_Formal) then
                         Error_Msg_Node_2 := Scope (New_Formal);
                         Conformance_Error
-                         ("\controlling formal& of& excludes null, "
-                           & "declaration must exclude null as well",
-                            New_Formal);
+                         ("\controlling formal & of & excludes null, "
+                          & "declaration must exclude null as well",
+                          New_Formal);
 
                      --  Normal case (couldn't we give more detail here???)
 
@@ -5175,23 +5172,21 @@ package body Sem_Ch6 is
                         Error_Msg_N ("\\primitive % defined #", Typ);
                      else
                         Error_Msg_N
-                          ("\\overriding operation % with " &
-                           "convention % defined #", Typ);
+                          ("\\overriding operation % with "
+                           & "convention % defined #", Typ);
                      end if;
 
                   else pragma Assert (Present (Alias (Op)));
                      Error_Msg_Sloc := Sloc (Alias (Op));
-                     Error_Msg_N
-                       ("\\inherited operation % with " &
-                        "convention % defined #", Typ);
+                     Error_Msg_N ("\\inherited operation % with "
+                                  & "convention % defined #", Typ);
                   end if;
 
                   Error_Msg_Name_1 := Chars (Op);
                   Error_Msg_Name_2 := Get_Convention_Name (Iface_Conv);
                   Error_Msg_Sloc   := Sloc (Iface_Prim);
-                  Error_Msg_N
-                    ("\\overridden operation % with " &
-                     "convention % defined #", Typ);
+                  Error_Msg_N ("\\overridden operation % with "
+                               & "convention % defined #", Typ);
 
                   --  Avoid cascading errors
 
@@ -5722,9 +5717,8 @@ package body Sem_Ch6 is
             if not Is_Primitive
               and then Ekind (Scope (Subp)) /= E_Protected_Type
             then
-               Error_Msg_N
-                 ("overriding indicator only allowed "
-                  & "if subprogram is primitive", Subp);
+               Error_Msg_N ("overriding indicator only allowed "
+                            & "if subprogram is primitive", Subp);
 
             elsif Can_Override_Operator (Subp) then
                Error_Msg_NE
@@ -7085,7 +7079,7 @@ package body Sem_Ch6 is
             then
                if Scope (E) /= Standard_Standard then
                   Error_Msg_Sloc := Sloc (E);
-                  Error_Msg_N ("declaration of & hides one#?h?", S);
+                  Error_Msg_N ("declaration of & hides one #?h?", S);
 
                elsif Nkind (S) = N_Defining_Operator_Symbol
                  and then
@@ -7159,7 +7153,7 @@ package body Sem_Ch6 is
          else
             if Ada_Version >= Ada_2012 then
                Error_Msg_NE
-                 ("equality operator must be declared before type& is "
+                 ("equality operator must be declared before type & is "
                   & "frozen (RM 4.5.2 (9.8)) (Ada 2012)<<", Eq_Op, Typ);
 
                --  In Ada 2012 mode with error turned to warning, output one
@@ -8395,8 +8389,8 @@ package body Sem_Ch6 is
                then
                   Error_Msg_Node_2 := F_Typ;
                   Error_Msg_NE
-                    ("private operation& in generic unit does not override " &
-                     "any primitive operation of& (RM 12.3 (18))??",
+                    ("private operation& in generic unit does not override "
+                     & "any primitive operation of& (RM 12.3 (18))??",
                      New_E, New_E);
                end if;
 
@@ -8429,13 +8423,11 @@ package body Sem_Ch6 is
 
                   if Class_Present (P) and then not Split_PPC (P) then
                      if Pragma_Name (P) = Name_Precondition then
-                        Error_Msg_N
-                          ("info: & inherits `Pre''Class` aspect from #?L?",
-                           E);
+                        Error_Msg_N ("info: & inherits `Pre''Class` aspect "
+                                     & "from #?L?", E);
                      else
-                        Error_Msg_N
-                          ("info: & inherits `Post''Class` aspect from #?L?",
-                           E);
+                        Error_Msg_N ("info: & inherits `Post''Class` aspect "
+                                     & "from #?L?", E);
                      end if;
                   end if;
 
@@ -8663,18 +8655,15 @@ package body Sem_Ch6 is
                  and then (not Is_Overriding
                             or else not Is_Abstract_Subprogram (E))
                then
-                  Error_Msg_N
-                    ("abstract subprograms must be visible "
-                     & "(RM 3.9.3(10))!", S);
+                  Error_Msg_N ("abstract subprograms must be visible "
+                               & "(RM 3.9.3(10))!", S);
 
                elsif Ekind (S) = E_Function and then not Is_Overriding then
                   if Is_Tagged_Type (T) and then T = Base_Type (Etype (S)) then
-                     Error_Msg_N
-                       ("private function with tagged result must"
-                        & " override visible-part function", S);
-                     Error_Msg_N
-                       ("\move subprogram to the visible part"
-                        & " (RM 3.9.3(10))", S);
+                     Error_Msg_N ("private function with tagged result must"
+                                  & " override visible-part function", S);
+                     Error_Msg_N ("\move subprogram to the visible part"
+                                  & " (RM 3.9.3(10))", S);
 
                   --  AI05-0073: extend this test to the case of a function
                   --  with a controlling access result.
@@ -8687,10 +8676,10 @@ package body Sem_Ch6 is
                   then
                      Error_Msg_N
                        ("private function with controlling access result "
-                          & "must override visible-part function", S);
+                        & "must override visible-part function", S);
                      Error_Msg_N
                        ("\move subprogram to the visible part"
-                          & " (RM 3.9.3(10))", S);
+                        & " (RM 3.9.3(10))", S);
                   end if;
                end if;
             end if;

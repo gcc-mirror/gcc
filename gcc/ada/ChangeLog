@@ -1,3 +1,18 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Minor reformatting.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Assert and related pragmas):
+	Before normalizing these pragmas into a pragma Check, preanalyze
+	the optional Message argument, (which is subsequently copied)
+	so that it has the proper semantic information for ASIS use.
+	* sem_case.adb: Initialize flag earlier.
+	* osint.adb, osint.ads (Find_File): Add parameter Full_Name, used when
+	the full source path of a configuration file is requested.
+	(Read_Source_File): Use Full_Name parameter..
+
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* opt.ads Alphabetize various global flags. New flag
