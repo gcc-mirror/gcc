@@ -1,3 +1,18 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, osint.adb, osint.ads: Minor reformatting.
+
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Derive_Type_Declaration,
+	Process_Discriminants): Remove SPARK-specific legality checks.
+
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sechas.ads, g-sechas.adb (HMAC_Initial_Context): New subprogram.
+	* gnat_rm.texi (GNAT.MD5/SHA1/SHA224/SHA256/SHA512): Document support
+	for HMAC.
+
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch7.adb (Analyze_Package_Body_Helper): When verifying the

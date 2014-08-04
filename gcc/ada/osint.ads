@@ -77,6 +77,7 @@ package Osint is
    --  set and the file name ends in ".dg", in which case we look for the
    --  generated file only in the current directory, since that is where it is
    --  always built.
+   --
    --  In the case of configuration files, full path names are needed for some
    --  ASIS queries. The flag Full_Name indicates that the name of the file
    --  should be normalized to include a full path.
