@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -590,6 +590,12 @@ package Prj.Tree is
    --  Only valid for N_Variable_Reference or N_Attribute_Reference nodes.
    --  May return Empty_Node.
 
+   function Default_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref) return Attribute_Default_Value;
+   pragma Inline (Default_Of);
+   --  Only valid for N_Attribute_Reference nodes
+
    function String_Type_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref) return Project_Node_Id;
@@ -1068,7 +1074,14 @@ package Prj.Tree is
       In_Tree : Project_Node_Tree_Ref;
       To      : Project_Node_Id);
    pragma Inline (Set_Package_Node_Of);
-   --  Only valid for N_Variable_Reference or N_Attribute_Reference nodes.
+   --  Only valid for N_Variable_Reference or N_Attribute_Reference nodes
+
+   procedure Set_Default_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref;
+      To      : Attribute_Default_Value);
+   pragma Inline (Set_Default_Of);
+   --  Only valid for N_Attribute_Reference nodes
 
    procedure Set_String_Type_Of
      (Node    : Project_Node_Id;
@@ -1178,6 +1191,9 @@ package Prj.Tree is
 
          Value : Name_Id := No_Name;
          --  See below for what Project_Node_Kind it is used
+
+         Default : Attribute_Default_Value := Empty_Value;
+         --  Only used in N_Attribute_Reference
 
          Field1 : Project_Node_Id := Empty_Node;
          --  See below the meaning for each Project_Node_Kind

@@ -122,6 +122,7 @@ package body Prj.Tree is
             Src_Index => 0,
             Path_Name => No_Path,
             Value     => No_Name,
+            Default   => Empty_Value,
             Field1    => Empty_Node,
             Field2    => Empty_Node,
             Field3    => Empty_Node,
@@ -172,6 +173,7 @@ package body Prj.Tree is
                Src_Index        => 0,
                Path_Name        => No_Path,
                Value            => Comments.Table (J).Value,
+               Default          => Empty_Value,
                Field1           => Empty_Node,
                Field2           => Empty_Node,
                Field3           => Empty_Node,
@@ -340,6 +342,7 @@ package body Prj.Tree is
          Src_Index        => 0,
          Path_Name        => No_Path,
          Value            => No_Name,
+         Default          => Empty_Value,
          Field1           => Empty_Node,
          Field2           => Empty_Node,
          Field3           => Empty_Node,
@@ -385,6 +388,22 @@ package body Prj.Tree is
       return In_Tree.Project_Nodes.Table (Node).Field1;
    end Current_Term;
 
+   ----------------
+   -- Default_Of --
+   ----------------
+
+   function Default_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref) return Attribute_Default_Value
+   is
+   begin
+      pragma Assert
+        (Present (Node)
+          and then
+            In_Tree.Project_Nodes.Table (Node).Kind = N_Attribute_Reference);
+      return In_Tree.Project_Nodes.Table (Node).Default;
+   end Default_Of;
+
    --------------------------
    -- Default_Project_Node --
    --------------------------
@@ -416,6 +435,7 @@ package body Prj.Tree is
          Src_Index        => 0,
          Path_Name        => No_Path,
          Value            => No_Name,
+         Default          => Empty_Value,
          Field1           => Empty_Node,
          Field2           => Empty_Node,
          Field3           => Empty_Node,
@@ -452,6 +472,7 @@ package body Prj.Tree is
                Src_Index        => 0,
                Path_Name        => No_Path,
                Value            => No_Name,
+               Default          => Empty_Value,
                Field1           => Empty_Node,
                Field2           => Empty_Node,
                Field3           => Empty_Node,
@@ -486,6 +507,7 @@ package body Prj.Tree is
                   Src_Index        => 0,
                   Path_Name        => No_Path,
                   Value            => Comments.Table (J).Value,
+                  Default          => Empty_Value,
                   Field1           => Empty_Node,
                   Field2           => Empty_Node,
                   Field3           => Empty_Node,
@@ -1866,6 +1888,23 @@ package body Prj.Tree is
             In_Tree.Project_Nodes.Table (Node).Kind = N_Term);
       In_Tree.Project_Nodes.Table (Node).Field1 := To;
    end Set_Current_Term;
+
+   --------------------
+   -- Set_Default_Of --
+   --------------------
+
+   procedure Set_Default_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref;
+      To      : Attribute_Default_Value)
+   is
+   begin
+      pragma Assert
+        (Present (Node)
+          and then
+            In_Tree.Project_Nodes.Table (Node).Kind = N_Attribute_Reference);
+      In_Tree.Project_Nodes.Table (Node).Default := To;
+   end Set_Default_Of;
 
    ----------------------
    -- Set_Directory_Of --

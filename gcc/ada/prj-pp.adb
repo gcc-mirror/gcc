@@ -403,7 +403,7 @@ package body Prj.PP is
                         Write_String ("library ", Indent);
                      when Configuration =>
                         Write_String ("configuration ", Indent);
-                     when Dry =>
+                     when Abstract_Project =>
                         Write_String ("abstract ", Indent);
                   end case;
 

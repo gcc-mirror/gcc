@@ -371,9 +371,11 @@ procedure Gnat1drv is
 
          --  Detect overflow on unconstrained floating-point types, such as
          --  the predefined types Float, Long_Float and Long_Long_Float from
-         --  package Standard.
+         --  package Standard. Not necessary if float overflows are checked
+         --  (Machine_Overflow true), since appropriate Do_Overflow_Check flags
+         --  will be set in any case.
 
-         Check_Float_Overflow := True;
+         Check_Float_Overflow := not Machine_Overflows_On_Target;
 
          --  Set STRICT mode for overflow checks if not set explicitly. This
          --  prevents suppressing of overflow checks by default, in code down

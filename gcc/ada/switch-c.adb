@@ -32,11 +32,13 @@ with Lib;      use Lib;
 with Osint;    use Osint;
 with Opt;      use Opt;
 with Stylesw;  use Stylesw;
+with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Validsw;  use Validsw;
 with Warnsw;   use Warnsw;
 
 with Ada.Unchecked_Deallocation;
+
 with System.WCh_Con; use System.WCh_Con;
 with System.OS_Lib;
 
@@ -572,7 +574,7 @@ package body Switch.C is
 
                   when 'F' =>
                      Ptr := Ptr + 1;
-                     Check_Float_Overflow := True;
+                     Check_Float_Overflow := not Machine_Overflows_On_Target;
 
                   --  -gnateG (save preprocessor output)
 
