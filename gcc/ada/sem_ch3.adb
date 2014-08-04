@@ -92,8 +92,8 @@ package body Sem_Ch3 is
    --  record type.
 
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of object Obj_Id as
-   --  if they appeared at the end of the declarative region. The aspects to be
+   --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
+   --  if they appeared at the end of the declarative region. The pragmas to be
    --  considered are:
    --    Async_Readers
    --    Async_Writers
@@ -8508,6 +8508,23 @@ package body Sem_Ch3 is
       end if;
 
       Check_Function_Writable_Actuals (N);
+
+      --  Propagate the attributes related to pragma Default_Initial_Condition
+      --  from the parent type to the private extension. A derived type always
+      --  inherits the default initial condition flag from the parent type. If
+      --  the derived type carries its own Default_Initial_Condition pragma,
+      --  the flag is later reset in Analyze_Pragma. Note that both flags are
+      --  mutually exclusive.
+
+      if Has_Inherited_Default_Init_Cond (Parent_Type)
+        or else Present (Get_Pragma
+                  (Parent_Type, Pragma_Default_Initial_Condition))
+      then
+         Set_Has_Inherited_Default_Init_Cond (Derived_Type);
+
+      elsif Has_Default_Init_Cond (Parent_Type) then
+         Set_Has_Default_Init_Cond (Derived_Type);
+      end if;
    end Build_Derived_Record_Type;
 
    ------------------------
@@ -18943,6 +18960,21 @@ package body Sem_Ch3 is
 
       if Has_Specified_Stream_Output (Priv_T) then
          Set_Has_Specified_Stream_Output (Full_T);
+      end if;
+
+      --  Propagate the attributes related to pragma Default_Initial_Condition
+      --  from the private to the full view. Note that both flags are mutually
+      --  exclusive.
+
+      if Has_Inherited_Default_Init_Cond (Priv_T) then
+         Set_Has_Inherited_Default_Init_Cond (Full_T);
+         Set_Default_Init_Cond_Procedure
+           (Full_T, Default_Init_Cond_Procedure (Priv_T));
+
+      elsif Has_Default_Init_Cond (Priv_T) then
+         Set_Has_Default_Init_Cond (Full_T);
+         Set_Default_Init_Cond_Procedure
+           (Full_T, Default_Init_Cond_Procedure (Priv_T));
       end if;
 
       --  Propagate invariants to full type

@@ -182,17 +182,6 @@ package body Sem_Ch13 is
    --  renaming_as_body. For tagged types, the specification is one of the
    --  primitive specs.
 
-   generic
-      with procedure Replace_Type_Reference (N : Node_Id);
-   procedure Replace_Type_References_Generic (N : Node_Id; T : Entity_Id);
-   --  This is used to scan an expression for a predicate or invariant aspect
-   --  replacing occurrences of the name of the subtype to which the aspect
-   --  applies with appropriate references to the parameter of the predicate
-   --  function or invariant procedure. The procedure passed as a generic
-   --  parameter does the actual replacement of node N, which is either a
-   --  simple direct reference to T, or a selected component that represents
-   --  an appropriately qualified occurrence of T.
-
    procedure Resolve_Iterable_Operation
      (N      : Node_Id;
       Cursor : Entity_Id;
@@ -2220,6 +2209,26 @@ package body Sem_Ch13 is
 
                   goto Continue;
                end Abstract_State;
+
+               --  Aspect Default_Internal_Condition is never delayed because
+               --  it is equivalent to a source pragma which appears after the
+               --  related private type. To deal with forward references, the
+               --  generated pragma is stored in the rep chain of the related
+               --  private type as types do not carry contracts. The pragma is
+               --  wrapped inside of a procedure at the freeze point of the
+               --  private type's full view.
+
+               when Aspect_Default_Initial_Condition =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  =>
+                       Name_Default_Initial_Condition);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Depends
 
@@ -8737,25 +8746,26 @@ package body Sem_Ch13 is
 
          --  Here is the list of aspects that don't require delay analysis
 
-         when Aspect_Abstract_State       |
-              Aspect_Annotate             |
-              Aspect_Contract_Cases       |
-              Aspect_Dimension            |
-              Aspect_Dimension_System     |
-              Aspect_Implicit_Dereference |
-              Aspect_Initial_Condition    |
-              Aspect_Initializes          |
-              Aspect_Part_Of              |
-              Aspect_Post                 |
-              Aspect_Postcondition        |
-              Aspect_Pre                  |
-              Aspect_Precondition         |
-              Aspect_Refined_Depends      |
-              Aspect_Refined_Global       |
-              Aspect_Refined_Post         |
-              Aspect_Refined_State        |
-              Aspect_SPARK_Mode           |
-              Aspect_Test_Case            =>
+         when Aspect_Abstract_State            |
+              Aspect_Annotate                  |
+              Aspect_Contract_Cases            |
+              Aspect_Default_Initial_Condition |
+              Aspect_Dimension                 |
+              Aspect_Dimension_System          |
+              Aspect_Implicit_Dereference      |
+              Aspect_Initial_Condition         |
+              Aspect_Initializes               |
+              Aspect_Part_Of                   |
+              Aspect_Post                      |
+              Aspect_Postcondition             |
+              Aspect_Pre                       |
+              Aspect_Precondition              |
+              Aspect_Refined_Depends           |
+              Aspect_Refined_Global            |
+              Aspect_Refined_Post              |
+              Aspect_Refined_State             |
+              Aspect_SPARK_Mode                |
+              Aspect_Test_Case                 =>
             raise Program_Error;
 
       end case;
@@ -10555,9 +10565,10 @@ package body Sem_Ch13 is
         (Rep_Item : Node_Id) return Boolean
       is
       begin
-         return Nkind (Rep_Item) = N_Pragma
-           or else Present_In_Rep_Item
-                     (Entity (Rep_Item), Aspect_Rep_Item (Rep_Item));
+         return
+           Nkind (Rep_Item) = N_Pragma
+             or else Present_In_Rep_Item
+                       (Entity (Rep_Item), Aspect_Rep_Item (Rep_Item));
       end Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item;
 
    --  Start of processing for Inherit_Aspects_At_Freeze_Point
@@ -11746,7 +11757,7 @@ package body Sem_Ch13 is
                end loop;
             end if;
 
-            --  Continue for any other node kind
+         --  Continue for any other node kind
 
          else
             return OK;

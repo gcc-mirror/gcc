@@ -295,16 +295,17 @@ package body Prj.Strt is
    ---------------------------
 
    procedure End_Case_Construction
-     (Check_All_Labels   : Boolean;
-      Case_Location      : Source_Ptr;
-      Flags              : Processing_Flags;
-      String_Type        : Boolean)
+     (Check_All_Labels : Boolean;
+      Case_Location    : Source_Ptr;
+      Flags            : Processing_Flags;
+      String_Type      : Boolean)
    is
-      Non_Used : Natural := 0;
+      Non_Used       : Natural := 0;
       First_Non_Used : Choice_Node_Id := First_Choice_Node_Id;
+
    begin
-      --  First, if Check_All_Labels is True, check if all values
-      --  of the string type have been used.
+      --  First, if Check_All_Labels is True, check if all values of the string
+      --  type have been used.
 
       if Check_All_Labels then
          if String_Type then
@@ -325,8 +326,7 @@ package body Prj.Strt is
                Error_Msg
                  (Flags, "?value %% is not used as label", Case_Location);
 
-               --  If several are not used, report a warning for each one of
-               --  them.
+            --  If several are not used, report a warning for each one of them
 
             elsif Non_Used > 1 then
                Error_Msg
@@ -355,18 +355,15 @@ package body Prj.Strt is
          Choices.Set_Last (First_Choice_Node_Id);
          Choice_First := 0;
 
+      --  Second case construction, set the tables to the first
+
       elsif Choice_Lasts.Last = 2 then
-
-         --  This is the second case construction, set the tables to the first
-
          Choice_Lasts.Set_Last (1);
          Choices.Set_Last (Choice_Lasts.Table (1));
          Choice_First := 1;
 
+      --  Third or more case construction, set the tables to the previous one
       else
-         --  This is the 3rd or more case construction, set the tables to the
-         --  previous one.
-
          Choice_Lasts.Decrement_Last;
          Choices.Set_Last (Choice_Lasts.Table (Choice_Lasts.Last));
          Choice_First := Choice_Lasts.Table (Choice_Lasts.Last - 1) + 1;
@@ -440,7 +437,6 @@ package body Prj.Strt is
          Scan (In_Tree);
 
          case Token is
-
             when Tok_Right_Paren =>
                if Ext_List then
                   Error_Msg (Flags, "`,` expected", Token_Ptr);
@@ -529,6 +525,7 @@ package body Prj.Strt is
          Set_String_Value_Of (Current_Choice, In_Tree, To => Choice_String);
 
          if String_Type then
+
             --  Check if the label is part of the string type and if it has not
             --  been already used.
 

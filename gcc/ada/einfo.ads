@@ -772,6 +772,16 @@ package Einfo is
 --       default expressions (see Freeze.Process_Default_Expressions), which
 --       would not only waste time, but also generate false error messages.
 
+--    Default_Init_Cond_Procedure (synthesized)
+--       Defined in all types. Set for private [sub]types subject to pragma
+--       Default_Initial_Condition, their corresponding full views and derived
+--       types with at least one parent subject to the pragma. Contains the
+--       entity of the procedure which takes a single argument of the given
+--       type and verifies the assumption of the pragma.
+--
+--       Note: the reason this is marked as a synthesized attribute is that the
+--       way this is stored is as an element of the Subprograms_For_Type field.
+
 --    Default_Value (Node20)
 --       Defined in formal parameters. Points to the node representing the
 --       expression for the default value for the parameter. Empty if the
@@ -1474,6 +1484,17 @@ package Einfo is
 --       Convention, Import, or Export has been given. Used to prevent more
 --       than one such pragma appearing for a given entity (RM B.1(45)).
 
+--    Has_Default_Aspect (Flag39) [base type only]
+--       Defined in entities for types and subtypes, set for scalar types with
+--       a Default_Value aspect and array types with a Default_Component_Value
+--       apsect. If this flag is set, then a corresponding aspect specification
+--       node will be present on the rep item chain for the entity.
+
+--    Has_Default_Init_Cond (Flag3)
+--       Defined in type and subtype entities. Set if pragma Default_Initial_
+--       Condition applies to the type or subtype. This flag must be mutually
+--       exclusive with Has_Inherited_Default_Init_Cond.
+
 --    Has_Delayed_Aspects (Flag200)
 --      Defined in all entities. Set if the Rep_Item chain for the entity has
 --      one or more N_Aspect_Definition nodes chained which are not to be
@@ -1485,12 +1506,6 @@ package Einfo is
 --       Defined in all entities. Set to indicate that an explicit freeze
 --       node must be generated for the entity at its freezing point. See
 --       separate section ("Delayed Freezing and Elaboration") for details.
-
---    Has_Default_Aspect (Flag39) [base type only]
---       Defined in entities for types and subtypes, set for scalar types with
---       a Default_Value aspect and array types with a Default_Component_Value
---       apsect. If this flag is set, then a corresponding aspect specification
---       node will be present on the rep item chain for the entity.
 
 --    Has_Delayed_Rep_Aspects (Flag261)
 --       Defined in all type and subtypes. This flag is set if there is at
@@ -1604,6 +1619,11 @@ package Einfo is
 --       set in the corresponding full types. Note that it might be the full
 --       type which has inheritable invariants, and in this case the flag will
 --       also be set in the private type.
+
+--    Has_Inherited_Default_Init_Cond (Flag133)
+--       Defined in type and subtype entities. Set if a derived type inherits
+--       pragma Default_Initial_Condition from its parent type. This flag must
+--       be mutually exclusive with Had_Default_Init_Cond.
 
 --    Has_Initial_Value (Flag219)
 --       Defined in entities for variables and out parameters. Set if there
@@ -2254,6 +2274,10 @@ package Einfo is
 --    Is_Decimal_Fixed_Point_Type (synthesized)
 --       Applies to all type entities, true for decimal fixed point
 --       types and subtypes.
+
+--    Is_Default_Init_Cond_Procedure (Flag132)
+--       Defined in functions and procedures. Set for a generated procedure
+--       which verifies the assumption of pragma Default_Initial_Condition.
 
 --    Is_Descendent_Of_Address (Flag223)
 --       Defined in all entities. True if the entity is type System.Address,
@@ -5230,11 +5254,13 @@ package Einfo is
    --    Has_Constrained_Partial_View        (Flag187)
    --    Has_Controlled_Component            (Flag43)   (base type only)
    --    Has_Default_Aspect                  (Flag39)   (base type only)
+   --    Has_Default_Init_Cond               (Flag3)
    --    Has_Delayed_Rep_Aspects             (Flag261)
    --    Has_Discriminants                   (Flag5)
    --    Has_Dynamic_Predicate_Aspect        (Flag258)
    --    Has_Independent_Components          (Flag34)   (base type only)
    --    Has_Inheritable_Invariants          (Flag248)
+   --    Has_Inherited_Default_Init_Cond     (Flag133)
    --    Has_Invariants                      (Flag232)
    --    Has_Non_Standard_Rep                (Flag75)   (base type only)
    --    Has_Object_Size_Clause              (Flag172)
@@ -5286,6 +5312,7 @@ package Einfo is
 
    --    Alignment_Clause                    (synth)
    --    Base_Type                           (synth)
+   --    Default_Init_Cond_Procedure         (synth)
    --    Implementation_Base_Type            (synth)
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
@@ -5953,6 +5980,7 @@ package Einfo is
    --    Is_Asynchronous                     (Flag81)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
+   --    Is_Default_Init_Cond_Procedure      (Flag132)  (non-generic case only)
    --    Is_Eliminated                       (Flag124)
    --    Is_Generic_Actual_Subprogram        (Flag274)  (non-generic case only)
    --    Is_Hidden_Non_Overridden_Subpgm     (Flag2)    (non-generic case only)
@@ -6550,6 +6578,7 @@ package Einfo is
    function Has_Controlling_Result              (Id : E) return B;
    function Has_Convention_Pragma               (Id : E) return B;
    function Has_Default_Aspect                  (Id : E) return B;
+   function Has_Default_Init_Cond               (Id : E) return B;
    function Has_Delayed_Aspects                 (Id : E) return B;
    function Has_Delayed_Freeze                  (Id : E) return B;
    function Has_Delayed_Rep_Aspects             (Id : E) return B;
@@ -6565,6 +6594,7 @@ package Einfo is
    function Has_Implicit_Dereference            (Id : E) return B;
    function Has_Independent_Components          (Id : E) return B;
    function Has_Inheritable_Invariants          (Id : E) return B;
+   function Has_Inherited_Default_Init_Cond     (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
    function Has_Interrupt_Handler               (Id : E) return B;
    function Has_Invariants                      (Id : E) return B;
@@ -6655,6 +6685,7 @@ package Einfo is
    function Is_Constructor                      (Id : E) return B;
    function Is_Controlled                       (Id : E) return B;
    function Is_Controlling_Formal               (Id : E) return B;
+   function Is_Default_Init_Cond_Procedure      (Id : E) return B;
    function Is_Descendent_Of_Address            (Id : E) return B;
    function Is_Discrim_SO_Function              (Id : E) return B;
    function Is_Discriminant_Check_Function      (Id : E) return B;
@@ -7183,6 +7214,7 @@ package Einfo is
    procedure Set_Has_Controlling_Result          (Id : E; V : B := True);
    procedure Set_Has_Convention_Pragma           (Id : E; V : B := True);
    procedure Set_Has_Default_Aspect              (Id : E; V : B := True);
+   procedure Set_Has_Default_Init_Cond           (Id : E; V : B := True);
    procedure Set_Has_Delayed_Aspects             (Id : E; V : B := True);
    procedure Set_Has_Delayed_Freeze              (Id : E; V : B := True);
    procedure Set_Has_Delayed_Rep_Aspects         (Id : E; V : B := True);
@@ -7198,6 +7230,7 @@ package Einfo is
    procedure Set_Has_Implicit_Dereference        (Id : E; V : B := True);
    procedure Set_Has_Independent_Components      (Id : E; V : B := True);
    procedure Set_Has_Inheritable_Invariants      (Id : E; V : B := True);
+   procedure Set_Has_Inherited_Default_Init_Cond (Id : E; V : B := True);
    procedure Set_Has_Initial_Value               (Id : E; V : B := True);
    procedure Set_Has_Invariants                  (Id : E; V : B := True);
    procedure Set_Has_Loop_Entry_Attributes       (Id : E; V : B := True);
@@ -7288,6 +7321,7 @@ package Einfo is
    procedure Set_Is_Constructor                  (Id : E; V : B := True);
    procedure Set_Is_Controlled                   (Id : E; V : B := True);
    procedure Set_Is_Controlling_Formal           (Id : E; V : B := True);
+   procedure Set_Is_Default_Init_Cond_Procedure  (Id : E; V : B := True);
    procedure Set_Is_Descendent_Of_Address        (Id : E; V : B := True);
    procedure Set_Is_Discrim_SO_Function          (Id : E; V : B := True);
    procedure Set_Is_Discriminant_Check_Function  (Id : E; V : B := True);
@@ -7502,10 +7536,12 @@ package Einfo is
    -- Access to Subprograms in Subprograms_For_Type --
    ---------------------------------------------------
 
-   function Invariant_Procedure                 (Id : E) return N;
-   function Predicate_Function                  (Id : E) return N;
-   function Predicate_Function_M                (Id : E) return N;
+   function Default_Init_Cond_Procedure         (Id : E) return E;
+   function Invariant_Procedure                 (Id : E) return E;
+   function Predicate_Function                  (Id : E) return E;
+   function Predicate_Function_M                (Id : E) return E;
 
+   procedure Set_Default_Init_Cond_Procedure    (Id : E; V : E);
    procedure Set_Invariant_Procedure            (Id : E; V : E);
    procedure Set_Predicate_Function             (Id : E; V : E);
    procedure Set_Predicate_Function_M           (Id : E; V : E);
@@ -7929,6 +7965,7 @@ package Einfo is
    pragma Inline (Has_Controlling_Result);
    pragma Inline (Has_Convention_Pragma);
    pragma Inline (Has_Default_Aspect);
+   pragma Inline (Has_Default_Init_Cond);
    pragma Inline (Has_Delayed_Aspects);
    pragma Inline (Has_Delayed_Freeze);
    pragma Inline (Has_Delayed_Rep_Aspects);
@@ -7944,6 +7981,7 @@ package Einfo is
    pragma Inline (Has_Implicit_Dereference);
    pragma Inline (Has_Independent_Components);
    pragma Inline (Has_Inheritable_Invariants);
+   pragma Inline (Has_Inherited_Default_Init_Cond);
    pragma Inline (Has_Initial_Value);
    pragma Inline (Has_Invariants);
    pragma Inline (Has_Loop_Entry_Attributes);
@@ -8044,6 +8082,7 @@ package Einfo is
    pragma Inline (Is_Controlled);
    pragma Inline (Is_Controlling_Formal);
    pragma Inline (Is_Decimal_Fixed_Point_Type);
+   pragma Inline (Is_Default_Init_Cond_Procedure);
    pragma Inline (Is_Descendent_Of_Address);
    pragma Inline (Is_Digits_Type);
    pragma Inline (Is_Discrete_Or_Fixed_Point_Type);
@@ -8409,6 +8448,7 @@ package Einfo is
    pragma Inline (Set_Has_Controlling_Result);
    pragma Inline (Set_Has_Convention_Pragma);
    pragma Inline (Set_Has_Default_Aspect);
+   pragma Inline (Set_Has_Default_Init_Cond);
    pragma Inline (Set_Has_Delayed_Aspects);
    pragma Inline (Set_Has_Delayed_Freeze);
    pragma Inline (Set_Has_Delayed_Rep_Aspects);
@@ -8424,6 +8464,7 @@ package Einfo is
    pragma Inline (Set_Has_Implicit_Dereference);
    pragma Inline (Set_Has_Independent_Components);
    pragma Inline (Set_Has_Inheritable_Invariants);
+   pragma Inline (Set_Has_Inherited_Default_Init_Cond);
    pragma Inline (Set_Has_Initial_Value);
    pragma Inline (Set_Has_Invariants);
    pragma Inline (Set_Has_Loop_Entry_Attributes);
@@ -8513,6 +8554,7 @@ package Einfo is
    pragma Inline (Set_Is_Constructor);
    pragma Inline (Set_Is_Controlled);
    pragma Inline (Set_Is_Controlling_Formal);
+   pragma Inline (Set_Is_Default_Init_Cond_Procedure);
    pragma Inline (Set_Is_Descendent_Of_Address);
    pragma Inline (Set_Is_Discrim_SO_Function);
    pragma Inline (Set_Is_Discriminant_Check_Function);
