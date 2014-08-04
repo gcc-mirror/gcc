@@ -6402,6 +6402,59 @@ package body Checks is
       Source_Base_Type : constant Entity_Id  := Base_Type (Source_Type);
       Target_Base_Type : constant Entity_Id  := Base_Type (Target_Type);
 
+      procedure Convert_And_Check_Range;
+      --  Convert the conversion operand to the target base type and save in
+      --  a temporary. Then check the converted value against the range of the
+      --  target subtype.
+
+      procedure Convert_And_Check_Range is
+         --  To what does the following comment belong???
+         --  We make a temporary to hold the value of the converted value
+         --  (converted to the base type), and then we will do the test against
+         --  this temporary.
+         --
+         --     Tnn : constant Target_Base_Type := Target_Base_Type (N);
+         --     [constraint_error when Tnn not in Target_Type]
+         --
+         --  The conversion itself is replaced by an occurrence of Tnn
+
+         Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+
+         --  To what does the following comment belong???
+         --  Follow the conversion with the explicit range check. Note that we
+         --  suppress checks for this code, since we don't want a recursive
+         --  range check popping up.
+
+      begin
+         Insert_Actions (N, New_List (
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Tnn,
+             Object_Definition   => New_Occurrence_Of (Target_Base_Type, Loc),
+             Constant_Present    => True,
+             Expression          =>
+               Make_Type_Conversion (Loc,
+                 Subtype_Mark => New_Occurrence_Of (Target_Base_Type, Loc),
+                 Expression   => Duplicate_Subexpr (N))),
+
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Not_In (Loc,
+                 Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                 Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
+             Reason => Reason)),
+           Suppress => All_Checks);
+
+         Rewrite (N, New_Occurrence_Of (Tnn, Loc));
+
+         --  Set the type of N, because the declaration for Tnn might not
+         --  be analyzed yet, as is the case if N appears within a record
+         --  declaration, as a discriminant constraint or expression.
+
+         Set_Etype (N, Target_Base_Type);
+      end Convert_And_Check_Range;
+
+   --  Start of processing for Generate_Range_Check
+
    begin
       --  First special case, if the source type is already within the range
       --  of the target type, then no check is needed (probably we should have
@@ -6500,29 +6553,44 @@ package body Checks is
          --  Insert the explicit range check. Note that we suppress checks for
          --  this code, since we don't want a recursive range check popping up.
 
-         Insert_Action (N,
-           Make_Raise_Constraint_Error (Loc,
-             Condition =>
-               Make_Not_In (Loc,
-                 Left_Opnd  => Duplicate_Subexpr (N),
+         if Is_Discrete_Type (Source_Base_Type)
+              and then
+            Is_Discrete_Type (Target_Base_Type)
+         then
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Not_In (Loc,
+                    Left_Opnd  => Duplicate_Subexpr (N),
 
-                 Right_Opnd =>
-                   Make_Range (Loc,
-                     Low_Bound =>
-                       Unchecked_Convert_To (Source_Base_Type,
-                         Make_Attribute_Reference (Loc,
-                           Prefix =>
-                             New_Occurrence_Of (Target_Type, Loc),
-                           Attribute_Name => Name_First)),
+                    Right_Opnd =>
+                      Make_Range (Loc,
+                        Low_Bound  =>
+                          Unchecked_Convert_To (Source_Base_Type,
+                            Make_Attribute_Reference (Loc,
+                              Prefix         =>
+                                New_Occurrence_Of (Target_Type, Loc),
+                              Attribute_Name => Name_First)),
 
-                     High_Bound =>
-                       Unchecked_Convert_To (Source_Base_Type,
-                         Make_Attribute_Reference (Loc,
-                           Prefix =>
-                             New_Occurrence_Of (Target_Type, Loc),
-                           Attribute_Name => Name_Last)))),
-             Reason => Reason),
-           Suppress => All_Checks);
+                        High_Bound =>
+                          Unchecked_Convert_To (Source_Base_Type,
+                            Make_Attribute_Reference (Loc,
+                              Prefix         =>
+                                New_Occurrence_Of (Target_Type, Loc),
+                              Attribute_Name => Name_Last)))),
+                Reason    => Reason),
+              Suppress => All_Checks);
+
+         --  For conversions involving at least one type that is not discrete,
+         --  first convert to target type and then generate the range check.
+         --  This avoids problems with values that are close to a bound of the
+         --  target type that would fail a range check when done in a larger
+         --  source type before converting but would pass if converted with
+         --  rounding and then checked (such as in float-to-float conversions).
+
+         else
+            Convert_And_Check_Range;
+         end if;
 
       --  Note that at this stage we now that the Target_Base_Type is not in
       --  the range of the Source_Base_Type (since even the Target_Type itself
@@ -6533,51 +6601,7 @@ package body Checks is
       --  and then test the target result against the bounds.
 
       elsif In_Subrange_Of (Source_Type, Target_Base_Type) then
-
-         --  We make a temporary to hold the value of the converted value
-         --  (converted to the base type), and then we will do the test against
-         --  this temporary.
-
-         --     Tnn : constant Target_Base_Type := Target_Base_Type (N);
-         --     [constraint_error when Tnn not in Target_Type]
-
-         --  Then the conversion itself is replaced by an occurrence of Tnn
-
-         --  Insert the explicit range check. Note that we suppress checks for
-         --  this code, since we don't want a recursive range check popping up.
-
-         declare
-            Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
-
-         begin
-            Insert_Actions (N, New_List (
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Tnn,
-                Object_Definition   =>
-                  New_Occurrence_Of (Target_Base_Type, Loc),
-                Constant_Present    => True,
-                Expression          =>
-                  Make_Type_Conversion (Loc,
-                    Subtype_Mark => New_Occurrence_Of (Target_Base_Type, Loc),
-                    Expression   => Duplicate_Subexpr (N))),
-
-              Make_Raise_Constraint_Error (Loc,
-                Condition =>
-                  Make_Not_In (Loc,
-                    Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
-                    Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
-
-                Reason => Reason)),
-              Suppress => All_Checks);
-
-            Rewrite (N, New_Occurrence_Of (Tnn, Loc));
-
-            --  Set the type of N, because the declaration for Tnn might not
-            --  be analyzed yet, as is the case if N appears within a record
-            --  declaration, as a discriminant constraint or expression.
-
-            Set_Etype (N, Target_Base_Type);
-         end;
+         Convert_And_Check_Range;
 
       --  At this stage, we know that we have two scalar types, which are
       --  directly convertible, and where neither scalar type has a base
