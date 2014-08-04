@@ -10416,18 +10416,22 @@ package body Exp_Ch4 is
          --  If the level of the operand type is statically deeper than the
          --  level of the target type, then force Program_Error. Note that this
          --  can only occur for cases where the attribute is within the body of
-         --  an instantiation (otherwise the conversion will already have been
-         --  rejected as illegal). (Note: warnings are issued by the analyzer
-         --  for the instance cases.) The case where the target type is an
-         --  anonymous access type of a discriminant is excluded, because the
-         --  level of such a type depends on the context and currently the
-         --  level returned for such types is zero, resulting in warnings about
-         --  about check failures in certain legal cases involving class-wide
-         --  interfaces as the designated type (some cases, such as return
-         --  statements, are checked at run time, but not clear if these are
-         --  handled right in general, see 3.10.2(12/2-12.5/3) ???).
+         --  an instantiation, otherwise the conversion will already have been
+         --  rejected as illegal.
+
+         --  Note: warnings are issued by the analyzer for the instance cases
 
          elsif In_Instance_Body
+
+           --  The case where the target type is an anonymous access type of
+           --  a discriminant is excluded, because the level of such a type
+           --  depends on the context and currently the level returned for such
+           --  types is zero, resulting in warnings about about check failures
+           --  in certain legal cases involving class-wide interfaces as the
+           --  designated type (some cases, such as return statements, are
+           --  checked at run time, but not clear if these are handled right
+           --  in general, see 3.10.2(12/2-12.5/3) ???).
+
            and then
              not (Ekind (Target_Type) = E_Anonymous_Access_Type
                    and then Present (Associated_Node_For_Itype (Target_Type))

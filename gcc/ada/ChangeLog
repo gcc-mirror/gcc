@@ -1,3 +1,37 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2014-08-04  Olivier Hainque  <hainque@adacore.com>
+
+	* link.c: remove const on __gnat_objlist_file_supported for AIX
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads: Minor addition of comment.
+
+2014-08-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-dect.adb (Check_Package_Allowed): Allow package IDE in
+	all projects, including aggregate and aggregate library projects.
+
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* back_end.adb (Call_Back_End): Do not call gigi in GNATprove mode.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Test_In_Range): Always in range for
+	Is_Known_Valid target type, where input type has smaller or
+	equal size and does not have biased rep.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Constrained is not treated as
+	a static attribute, and the Static flag must not be set on it
+	during resolution. It may be constant-folded during expansion,
+	but if expansion is disabled it is not a static expression.
+
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch8.adb (Build_Class_Wide_Wrapper): Mark the primitive as

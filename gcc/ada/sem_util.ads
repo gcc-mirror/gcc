@@ -1318,7 +1318,8 @@ package Sem_Util is
    --  declaration.
 
    function Is_SPARK_Object_Reference (N : Node_Id) return Boolean;
-   --  Determines if the tree referenced by N represents an object in SPARK
+   --  Determines if the tree referenced by N represents an object in SPARK.
+   --  This differs from Is_Object_Reference in that ???
 
    function Is_Statement (N : Node_Id) return Boolean;
    pragma Inline (Is_Statement);
