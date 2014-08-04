@@ -1115,18 +1115,26 @@ GOMP_taskgroup_end (void)
       if (taskgroup->children == NULL)
 	{
 	  if (taskgroup->num_children)
-	    goto do_wait;
-	  gomp_mutex_unlock (&team->task_lock);
-	  if (to_free)
 	    {
-	      gomp_finish_task (to_free);
-	      free (to_free);
+	      if (task->children == NULL)
+		goto do_wait;
+	      child_task = task->children;
+            }
+          else
+	    {
+	      gomp_mutex_unlock (&team->task_lock);
+	      if (to_free)
+		{
+		  gomp_finish_task (to_free);
+		  free (to_free);
+		}
+	      goto finish;
 	    }
-	  goto finish;
 	}
-      if (taskgroup->children->kind == GOMP_TASK_WAITING)
+      else
+	child_task = taskgroup->children;
+      if (child_task->kind == GOMP_TASK_WAITING)
 	{
-	  child_task = taskgroup->children;
 	  cancelled
 	    = gomp_task_run_pre (child_task, child_task->parent, taskgroup,
 				 team);
@@ -1143,6 +1151,7 @@ GOMP_taskgroup_end (void)
 	}
       else
 	{
+	  child_task = NULL;
 	 do_wait:
 	  /* All tasks we are waiting for are already running
 	     in other threads.  Wait for them.  */
@@ -1174,20 +1183,9 @@ GOMP_taskgroup_end (void)
 	 finish_cancelled:;
 	  size_t new_tasks
 	    = gomp_task_run_post_handle_depend (child_task, team);
-	  child_task->prev_taskgroup->next_taskgroup
-	    = child_task->next_taskgroup;
-	  child_task->next_taskgroup->prev_taskgroup
-	    = child_task->prev_taskgroup;
-	  --taskgroup->num_children;
-	  if (taskgroup->children == child_task)
-	    {
-	      if (child_task->next_taskgroup != child_task)
-		taskgroup->children = child_task->next_taskgroup;
-	      else
-		taskgroup->children = NULL;
-	    }
 	  gomp_task_run_post_remove_parent (child_task);
 	  gomp_clear_parent (child_task->children);
+	  gomp_task_run_post_remove_taskgroup (child_task);
 	  to_free = child_task;
 	  child_task = NULL;
 	  team->task_count--;
