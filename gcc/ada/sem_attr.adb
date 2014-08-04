@@ -7775,6 +7775,12 @@ package body Sem_Attr is
       --  could be handled at compile time. To be looked at later.
 
       when Attribute_Constrained =>
+
+         --  The expander might fold it and set the static flag accordingly,
+         --  but with expansion disabled (as in ASIS), it remains as an
+         --  attribute reference, and this reference is not static.
+
+         Set_Is_Static_Expression (N, False);
          null;
 
       ---------------

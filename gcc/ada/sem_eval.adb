@@ -6193,6 +6193,18 @@ package body Sem_Eval is
       then
          return In_Range;
 
+      --  Another special case. For signed integer types, if the target type
+      --  has Is_Known_Valid set, and the source type does not have a larger
+      --  size, then the source value must be in range. We exclude biased
+      --  types, because they bizarrely can generate out of range values.
+
+      elsif Is_Signed_Integer_Type (Etype (N))
+        and then Is_Known_Valid (Typ)
+        and then Esize (Etype (N)) <= Esize (Typ)
+        and then not Has_Biased_Representation (Etype (N))
+      then
+         return In_Range;
+
       --  For all other cases, result is unknown
 
       else
