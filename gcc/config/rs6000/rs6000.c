@@ -1221,7 +1221,12 @@ char rs6000_reg_names[][8] =
       /* Soft frame pointer.  */
       "sfp",
       /* HTM SPR registers.  */
-      "tfhar", "tfiar", "texasr"
+      "tfhar", "tfiar", "texasr",
+      /* SPE High registers.  */
+      "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+      "8",  "9", "10", "11", "12", "13", "14", "15",
+     "16", "17", "18", "19", "20", "21", "22", "23",
+     "24", "25", "26", "27", "28", "29", "30", "31"
 };
 
 #ifdef TARGET_REGNAMES
@@ -1249,7 +1254,12 @@ static const char alt_reg_names[][8] =
   /* Soft frame pointer.  */
   "sfp",
   /* HTM SPR registers.  */
-  "tfhar", "tfiar", "texasr"
+  "tfhar", "tfiar", "texasr",
+  /* SPE High registers.  */
+  "%rh0",  "%rh1",  "%rh2",  "%rh3",  "%rh4",  "%rh5",  "%rh6",   "%rh7",
+  "%rh8",  "%rh9",  "%rh10", "%r11",  "%rh12", "%rh13", "%rh14", "%rh15",
+  "%rh16", "%rh17", "%rh18", "%rh19", "%rh20", "%rh21", "%rh22", "%rh23",
+  "%rh24", "%rh25", "%rh26", "%rh27", "%rh28", "%rh29", "%rh30", "%rh31"
 };
 #endif
 
@@ -31171,13 +31181,13 @@ rs6000_dwarf_register_span (rtx reg)
     {
       if (BYTES_BIG_ENDIAN)
 	{
-	  parts[2 * i] = gen_rtx_REG (SImode, regno + 1200);
+	  parts[2 * i] = gen_rtx_REG (SImode, regno + FIRST_SPE_HIGH_REGNO);
 	  parts[2 * i + 1] = gen_rtx_REG (SImode, regno);
 	}
       else
 	{
 	  parts[2 * i] = gen_rtx_REG (SImode, regno);
-	  parts[2 * i + 1] = gen_rtx_REG (SImode, regno + 1200);
+	  parts[2 * i + 1] = gen_rtx_REG (SImode, regno + FIRST_SPE_HIGH_REGNO);
 	}
     }
 
@@ -31197,11 +31207,11 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
       rtx mem = gen_rtx_MEM (BLKmode, addr);
       rtx value = gen_int_mode (4, mode);
 
-      for (i = 1201; i < 1232; i++)
+      for (i = FIRST_SPE_HIGH_REGNO; i < LAST_SPE_HIGH_REGNO+1; i++)
 	{
-	  int column = DWARF_REG_TO_UNWIND_COLUMN (i);
-	  HOST_WIDE_INT offset
-	    = DWARF_FRAME_REGNUM (column) * GET_MODE_SIZE (mode);
+	  int column = DWARF_REG_TO_UNWIND_COLUMN
+		(DWARF2_FRAME_REG_OUT (DWARF_FRAME_REGNUM (i), true));
+	  HOST_WIDE_INT offset = column * GET_MODE_SIZE (mode);
 
 	  emit_move_insn (adjust_address (mem, mode, offset), value);
 	}
@@ -31220,9 +31230,9 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
 
       for (i = FIRST_ALTIVEC_REGNO; i < LAST_ALTIVEC_REGNO+1; i++)
 	{
-	  int column = DWARF_REG_TO_UNWIND_COLUMN (i);
-	  HOST_WIDE_INT offset
-	    = DWARF_FRAME_REGNUM (column) * GET_MODE_SIZE (mode);
+	  int column = DWARF_REG_TO_UNWIND_COLUMN
+		(DWARF2_FRAME_REG_OUT (DWARF_FRAME_REGNUM (i), true));
+	  HOST_WIDE_INT offset = column * GET_MODE_SIZE (mode);
 
 	  emit_move_insn (adjust_address (mem, mode, offset), value);
 	}
@@ -31254,9 +31264,8 @@ rs6000_dbx_register_number (unsigned int regno)
     return 99;
   if (regno == SPEFSCR_REGNO)
     return 612;
-  /* SPE high reg number.  We get these values of regno from
-     rs6000_dwarf_register_span.  */
-  gcc_assert (regno >= 1200 && regno < 1232);
+  if (SPE_HIGH_REGNO_P (regno))
+    return regno - FIRST_SPE_HIGH_REGNO + 1200;
   return regno;
 }
 

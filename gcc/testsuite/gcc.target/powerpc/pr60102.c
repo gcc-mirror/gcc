@@ -1,0 +1,11 @@
+/* { dg-do compile } */
+/* { dg-skip-if "not an SPE target" { ! powerpc_spe_nocache } { "*" } { "" } } */
+/* { dg-options "-mcpu=8548 -mspe -mabi=spe -g -mfloat-gprs=double" } */
+
+double
+pr60102 (double x, int m)
+{
+  double y;
+  y =  m % 2 ? x : 1;
+  return y;
+}
