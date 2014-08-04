@@ -439,7 +439,7 @@ package body Sem_Ch7 is
 
       --  Verify that the SPARK_Mode of the body agrees with that of its spec
 
-      if not Inside_A_Generic and then Present (SPARK_Pragma (Body_Id)) then
+      if Present (SPARK_Pragma (Body_Id)) then
          if Present (SPARK_Aux_Pragma (Spec_Id)) then
             if Get_SPARK_Mode_From_Pragma (SPARK_Aux_Pragma (Spec_Id)) = Off
                  and then

@@ -1,3 +1,25 @@
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cfhama.ads, a-cfhase.ads, a-cforma.ads, a-cforse.ads Add
+	SPARK_Mode pragmas to the public and private part of the unit.
+	* sem_ch3.adb (Derive_Type_Declaration): Ensure that a derived
+	type cannot have discriminants if the parent type already has
+	discriminants.
+	(Process_Discriminants): Ensure that the type of a discriminant is
+	discrete.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): The check on
+	SPARK_Mode compatibility between a spec and a body can now be
+	safely performed while processing a generic.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): The check on
+	SPARK_Mode compatibility between a spec and a body can now be
+	safely performed while processing a generic.
+	* sem_prag.adb (Analyze_Pragma): Pragma SPARK_Mode can now be
+	safely analyzed when processing a generic.
+
+2014-08-04  Nicolas Roche  <roche@adacore.com>
+
+	* g-dirope.adb: Minor reformating.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb: Minor reformatting.

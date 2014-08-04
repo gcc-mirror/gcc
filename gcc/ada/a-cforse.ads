@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -67,6 +67,7 @@ generic
 package Ada.Containers.Formal_Ordered_Sets is
    pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
+   pragma SPARK_Mode (On);
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean
    with
@@ -347,9 +348,9 @@ package Ada.Containers.Formal_Ordered_Sets is
    --  scanned yet.
 
 private
-
    pragma Inline (Next);
    pragma Inline (Previous);
+   pragma SPARK_Mode (Off);
 
    type Node_Type is record
       Has_Element : Boolean := False;

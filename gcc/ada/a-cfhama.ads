@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -68,6 +68,7 @@ generic
 package Ada.Containers.Formal_Hashed_Maps is
    pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
+   pragma SPARK_Mode (On);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is private with
      Iterable => (First       => First,
@@ -276,6 +277,7 @@ private
    pragma Inline (Has_Element);
    pragma Inline (Equivalent_Keys);
    pragma Inline (Next);
+   pragma SPARK_Mode (Off);
 
    type Node_Type is record
       Key         : Key_Type;
@@ -285,11 +287,10 @@ private
    end record;
 
    package HT_Types is new
-     Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types
-       (Node_Type);
+     Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is
-      new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
 
    use HT_Types;
 

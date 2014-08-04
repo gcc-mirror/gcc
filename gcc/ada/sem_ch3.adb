@@ -15046,7 +15046,7 @@ package body Sem_Ch3 is
       end if;
 
       --  Only composite types other than array types are allowed to have
-      --  discriminants. In SPARK, no types are allowed to have discriminants.
+      --  discriminants.
 
       if Present (Discriminant_Specifications (N)) then
          if (Is_Elementary_Type (Parent_Type)
@@ -15057,8 +15057,22 @@ package body Sem_Ch3 is
               ("elementary or array type cannot have discriminants",
                Defining_Identifier (First (Discriminant_Specifications (N))));
             Set_Has_Discriminants (T, False);
+
+         --  The type is allowed to have discriminants
+
          else
             Check_SPARK_05_Restriction ("discriminant type is not allowed", N);
+
+            --  The following check is only relevant when SPARK_Mode is on as
+            --  it is not a standard Ada legality rule. A derived type cannot
+            --  have discriminants if the parent type is discriminated.
+
+            if SPARK_Mode = On and then Has_Discriminants (Parent_Type) then
+               SPARK_Msg_N
+                 ("discriminants not allowed if parent type is discriminated",
+                  Defining_Identifier
+                    (First (Discriminant_Specifications (N))));
+            end if;
          end if;
       end if;
 
@@ -18024,24 +18038,44 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         if Is_Access_Type (Discr_Type) then
+         --  The following checks are only relevant when SPARK_Mode is on as
+         --  they are not standard Ada legality rules.
 
-            --  Ada 2005 (AI-230): Access discriminant allowed in non-limited
-            --  record types
+         if SPARK_Mode = On then
+            if Is_Access_Type (Discr_Type) then
+               SPARK_Msg_N
+                 ("discriminant cannot have an access type",
+                  Discriminant_Type (Discr));
 
-            if Ada_Version < Ada_2005 then
-               Check_Access_Discriminant_Requires_Limited
-                 (Discr, Discriminant_Type (Discr));
+            elsif not Is_Discrete_Type (Discr_Type) then
+               SPARK_Msg_N
+                 ("discriminant must have a discrete type",
+                  Discriminant_Type (Discr));
             end if;
 
-            if Ada_Version = Ada_83 and then Comes_From_Source (Discr) then
+         --  Normal Ada rules
+
+         else
+            if Is_Access_Type (Discr_Type) then
+
+               --  Ada 2005 (AI-230): Access discriminant allowed in non-
+               --  limited record types
+
+               if Ada_Version < Ada_2005 then
+                  Check_Access_Discriminant_Requires_Limited
+                    (Discr, Discriminant_Type (Discr));
+               end if;
+
+               if Ada_Version = Ada_83 and then Comes_From_Source (Discr) then
+                  Error_Msg_N
+                    ("(Ada 83) access discriminant not allowed", Discr);
+               end if;
+
+            elsif not Is_Discrete_Type (Discr_Type) then
                Error_Msg_N
-                 ("(Ada 83) access discriminant not allowed", Discr);
+                 ("discriminants must have a discrete or access type",
+                  Discriminant_Type (Discr));
             end if;
-
-         elsif not Is_Discrete_Type (Discr_Type) then
-            Error_Msg_N ("discriminants must have a discrete or access type",
-              Discriminant_Type (Discr));
          end if;
 
          Set_Etype (Defining_Identifier (Discr), Discr_Type);
