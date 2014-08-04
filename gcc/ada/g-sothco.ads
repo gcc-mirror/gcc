@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2012, AdaCore                     --
+--                     Copyright (C) 2008-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -211,11 +211,6 @@ package GNAT.Sockets.Thin_Common is
    type Hostent_Access is access all Hostent;
    pragma Convention (C, Hostent_Access);
    --  Access to host entry
-
-   --  Note: the hostent and servent accessors that return char*
-   --  values are compiled with GCC, and on VMS they always return
-   --  64-bit pointers, so we can't use C.Strings.chars_ptr, which
-   --  on VMS is 32 bits.
 
    function Hostent_H_Name
      (E : Hostent_Access) return System.Address;

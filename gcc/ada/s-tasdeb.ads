@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1997-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,25 +105,25 @@ package System.Tasking.Debug is
 
    procedure Suspend_All_Tasks (Thread_Self : OS_Interface.Thread_Id);
    --  Suspend all the tasks except the one whose associated thread is
-   --  Thread_Self by traversing All_Tasks_Lists and calling
+   --  Thread_Self by traversing All_Tasks_List and calling
    --  System.Task_Primitives.Operations.Suspend_Task.
 
    procedure Resume_All_Tasks (Thread_Self : OS_Interface.Thread_Id);
    --  Resume all the tasks except the one whose associated thread is
-   --  Thread_Self by traversing All_Tasks_Lists and calling
+   --  Thread_Self by traversing All_Tasks_List and calling
    --  System.Task_Primitives.Operations.Continue_Task.
 
    procedure Stop_All_Tasks_Handler;
-   --  Stop all the tasks by traversing All_Tasks_Lists and calling
+   --  Stop all the tasks by traversing All_Tasks_List and calling
    --  System.Task_Primitives.Operations.Stop_All_Task. This function
    --  can be used in an interrupt handler.
 
    procedure Stop_All_Tasks;
-   --  Stop all the tasks by traversing All_Tasks_Lists and calling
+   --  Stop all the tasks by traversing All_Tasks_List and calling
    --  System.Task_Primitives.Operations.Stop_Task.
 
    procedure Continue_All_Tasks;
-   --  Continue all the tasks by traversing All_Tasks_Lists and calling
+   --  Continue all the tasks by traversing All_Tasks_List and calling
    --  System.Task_Primitives.Operations.Continue_Task.
 
    -------------------------------
@@ -144,5 +144,22 @@ package System.Tasking.Debug is
       Value : Boolean := True);
    --  Enable or disable tracing for Flag. By default, flags in the range
    --  'A' .. 'Z' are disabled, others are enabled.
+
+   ---------------------------------
+   -- Hooks for Valgrind/Helgrind --
+   ---------------------------------
+
+   procedure Master_Hook
+     (Dependent    : Task_Id;
+      Parent       : Task_Id;
+      Master_Level : Integer);
+   --  Indicate to Valgrind/Helgrind that the master of Dependent is
+   --  Parent + Master_Level.
+
+   procedure Master_Completed_Hook
+     (Self_ID      : Task_Id;
+      Master_Level : Integer);
+   --  Indicate to Valgrind/Helgrind that Self_ID has completed the master
+   --  Master_Level.
 
 end System.Tasking.Debug;

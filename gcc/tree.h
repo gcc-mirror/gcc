@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_H
 
 #include "tree-core.h"
+#include "hash-set.h"
 #include "wide-int.h"
 #include "inchash.h"
 
@@ -4362,14 +4363,20 @@ extern int tree_log2 (const_tree);
 extern int tree_floor_log2 (const_tree);
 extern unsigned int tree_ctz (const_tree);
 extern int simple_cst_equal (const_tree, const_tree);
-extern void iterative_hstate_expr (const_tree, inchash &);
+
+namespace inchash
+{
+
+extern void add_expr (const_tree, hash &);
+
+}
 
 /* Compat version until all callers are converted. Return hash for
    TREE with SEED.  */
 static inline hashval_t iterative_hash_expr(const_tree tree, hashval_t seed)
 {
-  inchash hstate (seed);
-  iterative_hstate_expr (tree, hstate);
+  inchash::hash hstate (seed);
+  inchash::add_expr (tree, hstate);
   return hstate.end ();
 }
 
@@ -4406,7 +4413,7 @@ extern void using_eh_for_cleanups (void);
 extern bool using_eh_for_cleanups_p (void);
 extern const char *get_tree_code_name (enum tree_code);
 extern void set_call_expr_flags (tree, int);
-extern tree walk_tree_1 (tree*, walk_tree_fn, void*, struct pointer_set_t*,
+extern tree walk_tree_1 (tree*, walk_tree_fn, void*, hash_set<tree>*,
 			 walk_tree_lh);
 extern tree walk_tree_without_duplicates_1 (tree*, walk_tree_fn, void*,
 					    walk_tree_lh);

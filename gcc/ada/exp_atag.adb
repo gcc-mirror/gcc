@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,10 +99,11 @@ package body Exp_Atag is
 
       Append_To (Stmts,
         Make_Assignment_Statement (Loc,
-          Name => Make_Identifier (Loc, Name_uC),
+          Name       => Make_Identifier (Loc, Name_uC),
           Expression =>
             Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (RTE (RE_Get_Prim_Op_Kind), Loc),
+              Name                   =>
+                New_Occurrence_Of (RTE (RE_Get_Prim_Op_Kind), Loc),
               Parameter_Associations => New_List (
                 Tag_Node,
                 Make_Identifier (Loc, Name_uS)))));
@@ -415,9 +416,9 @@ package body Exp_Atag is
 
             Append_To (Result,
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name      =>
                   Make_Indexed_Component (Loc,
-                    Prefix =>
+                    Prefix      =>
                       Make_Explicit_Dereference (Loc,
                         Unchecked_Convert_To
                           (Node (Last_Elmt (Access_Disp_Table (Typ))),
@@ -428,7 +429,7 @@ package body Exp_Atag is
                Expression =>
                  Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                    Make_Attribute_Reference (Loc,
-                     Prefix => New_Occurrence_Of (E, Loc),
+                     Prefix         => New_Occurrence_Of (E, Loc),
                      Attribute_Name => Name_Unrestricted_Access))));
          end if;
 
@@ -455,7 +456,7 @@ package body Exp_Atag is
          if not CPP_Table (J) then
             Prepend_To (Result,
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name       =>
                   Make_Explicit_Dereference (Loc,
                     Unchecked_Convert_To
                       (Node (Last_Elmt (Access_Disp_Table (CPP_Typ))),
@@ -550,14 +551,14 @@ package body Exp_Atag is
 
                         Append_To (Result,
                           Make_Assignment_Statement (Loc,
-                            Name =>
+                            Name       =>
                               Make_Indexed_Component (Loc,
-                                Prefix =>
+                                Prefix      =>
                                   Make_Explicit_Dereference (Loc,
                                     Unchecked_Convert_To
                                       (Node
                                         (Last_Elmt
-                                          (Access_Disp_Table (Iface))),
+                                           (Access_Disp_Table (Iface))),
                                        New_Occurrence_Of (Typ_Tag, Loc))),
                                 Expressions =>
                                    New_List
@@ -566,7 +567,7 @@ package body Exp_Atag is
                             Expression =>
                               Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                                 Make_Attribute_Reference (Loc,
-                                  Prefix => New_Occurrence_Of (E, Loc),
+                                  Prefix         => New_Occurrence_Of (E, Loc),
                                   Attribute_Name =>
                                     Name_Unrestricted_Access))));
                      end if;
@@ -584,7 +585,7 @@ package body Exp_Atag is
                      if not Prims_Table (J) then
                         Insert_After (Last_Nod,
                           Make_Assignment_Statement (Loc,
-                            Name =>
+                            Name       =>
                               Make_Explicit_Dereference (Loc,
                                 Unchecked_Convert_To
                                  (Node (Last_Elmt (Access_Disp_Table (Iface))),

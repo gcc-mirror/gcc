@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
-#include "pointer-set.h"
+#include "hash-map.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -293,7 +293,7 @@ struct ivopts_data
   struct loop *current_loop;
 
   /* Numbers of iterations for all exits of the current loop.  */
-  struct pointer_map_t *niters;
+  hash_map<edge, tree_niter_desc *> *niters;
 
   /* Number of registers used in it.  */
   unsigned regs_used;
@@ -814,15 +814,15 @@ static struct tree_niter_desc *
 niter_for_exit (struct ivopts_data *data, edge exit)
 {
   struct tree_niter_desc *desc;
-  void **slot;
+  tree_niter_desc **slot;
 
   if (!data->niters)
     {
-      data->niters = pointer_map_create ();
+      data->niters = new hash_map<edge, tree_niter_desc *>;
       slot = NULL;
     }
   else
-    slot = pointer_map_contains (data->niters, exit);
+    slot = data->niters->get (exit);
 
   if (!slot)
     {
@@ -837,11 +837,10 @@ niter_for_exit (struct ivopts_data *data, edge exit)
 	  XDELETE (desc);
 	  desc = NULL;
 	}
-      slot = pointer_map_insert (data->niters, exit);
-      *slot = desc;
+      data->niters->put (exit, desc);
     }
   else
-    desc = (struct tree_niter_desc *) *slot;
+    desc = *slot;
 
   return desc;
 }
@@ -6704,15 +6703,12 @@ remove_unused_ivs (struct ivopts_data *data)
 }
 
 /* Frees memory occupied by struct tree_niter_desc in *VALUE. Callback
-   for pointer_map_traverse.  */
+   for hash_map::traverse.  */
 
-static bool
-free_tree_niter_desc (const void *key ATTRIBUTE_UNUSED, void **value,
-                      void *data ATTRIBUTE_UNUSED)
+bool
+free_tree_niter_desc (edge const &, tree_niter_desc *const &value, void *)
 {
-  struct tree_niter_desc *const niter = (struct tree_niter_desc *) *value;
-
-  free (niter);
+  free (value);
   return true;
 }
 
@@ -6727,8 +6723,8 @@ free_loop_data (struct ivopts_data *data)
 
   if (data->niters)
     {
-      pointer_map_traverse (data->niters, free_tree_niter_desc, NULL);
-      pointer_map_destroy (data->niters);
+      data->niters->traverse<void *, free_tree_niter_desc> (NULL);
+      delete data->niters;
       data->niters = NULL;
     }
 

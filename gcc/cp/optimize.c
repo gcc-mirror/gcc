@@ -86,7 +86,7 @@ clone_body (tree clone, tree fn, void *arg_map)
   id.src_fn = fn;
   id.dst_fn = clone;
   id.src_cfun = DECL_STRUCT_FUNCTION (fn);
-  id.decl_map = (struct pointer_map_t *) arg_map;
+  id.decl_map = static_cast<hash_map<tree, tree> *> (arg_map);
 
   id.copy_decl = copy_decl_no_change;
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
@@ -527,7 +527,7 @@ maybe_clone_body (tree fn)
       tree parm;
       tree clone_parm;
       int parmno;
-      struct pointer_map_t *decl_map;
+      hash_map<tree, tree> *decl_map;
       bool alias = false;
 
       clone = fns[idx];
@@ -587,7 +587,7 @@ maybe_clone_body (tree fn)
 	    }
 
           /* Remap the parameters.  */
-          decl_map = pointer_map_create ();
+          decl_map = new hash_map<tree, tree>;
           for (parmno = 0,
                 parm = DECL_ARGUMENTS (fn),
                 clone_parm = DECL_ARGUMENTS (clone);
@@ -600,7 +600,7 @@ maybe_clone_body (tree fn)
                 {
                   tree in_charge;
                   in_charge = in_charge_arg_for_name (DECL_NAME (clone));
-                  *pointer_map_insert (decl_map, parm) = in_charge;
+                  decl_map->put (parm, in_charge);
                 }
               else if (DECL_ARTIFICIAL (parm)
                        && DECL_NAME (parm) == vtt_parm_identifier)
@@ -611,19 +611,22 @@ maybe_clone_body (tree fn)
                   if (DECL_HAS_VTT_PARM_P (clone))
                     {
                       DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
-                      *pointer_map_insert (decl_map, parm) = clone_parm;
+                      decl_map->put (parm, clone_parm);
                       clone_parm = DECL_CHAIN (clone_parm);
                     }
                   /* Otherwise, map the VTT parameter to `NULL'.  */
                   else
-                    *pointer_map_insert (decl_map, parm)
-                       = fold_convert (TREE_TYPE (parm), null_pointer_node);
+		    {
+		      tree t
+			= fold_convert (TREE_TYPE (parm), null_pointer_node);
+		      decl_map->put (parm, t);
+		    }
                 }
               /* Map other parameters to their equivalents in the cloned
                  function.  */
               else
                 {
-                  *pointer_map_insert (decl_map, parm) = clone_parm;
+                  decl_map->put (parm, clone_parm);
                   clone_parm = DECL_CHAIN (clone_parm);
                 }
             }
@@ -632,14 +635,14 @@ maybe_clone_body (tree fn)
             {
               parm = DECL_RESULT (fn);
               clone_parm = DECL_RESULT (clone);
-              *pointer_map_insert (decl_map, parm) = clone_parm;
+              decl_map->put (parm, clone_parm);
             }
 
           /* Clone the body.  */
           clone_body (clone, fn, decl_map);
 
           /* Clean up.  */
-          pointer_map_destroy (decl_map);
+          delete decl_map;
         }
 
       /* The clone can throw iff the original function can throw.  */

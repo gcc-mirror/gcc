@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Fmap;
-with Hostparm;
 with Makeutl;  use Makeutl;
 with Opt;
 with Osint;    use Osint;
@@ -131,7 +130,6 @@ package body Prj.Env is
          In_Tree : Project_Tree_Ref;
          Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy);
       begin
          Add_To_Path
            (Project.Source_Dirs, In_Tree.Shared, Buffer, Buffer_Last);
@@ -201,7 +199,7 @@ package body Prj.Env is
          In_Tree : Project_Tree_Ref;
          Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy, In_Tree);
+         pragma Unreferenced (In_Tree);
 
          Path : constant Path_Name_Type :=
                   Get_Object_Directory
@@ -1259,7 +1257,7 @@ package body Prj.Env is
          Tree  : Project_Tree_Ref;
          Dummy : in out Integer)
       is
-         pragma Unreferenced (Dummy, Tree);
+         pragma Unreferenced (Tree);
 
       begin
          --  ??? Set_Ada_Paths has a different behavior for library project
@@ -1304,8 +1302,6 @@ package body Prj.Env is
          In_Tree : Project_Tree_Ref;
          Dummy   : in out Integer)
       is
-         pragma Unreferenced (Dummy);
-
          Current    : String_List_Id := Prj.Source_Dirs;
          The_String : String_Element;
 
@@ -1676,7 +1672,7 @@ package body Prj.Env is
          In_Tree : Project_Tree_Ref;
          Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy, In_Tree);
+         pragma Unreferenced (In_Tree);
 
          Path : Path_Name_Type;
 
@@ -1908,8 +1904,6 @@ package body Prj.Env is
       Add_Default_Dir : Boolean := True;
       First           : Positive;
       Last            : Positive;
-      New_Len         : Positive;
-      New_Last        : Positive;
 
       Ada_Project_Path      : constant String := "ADA_PROJECT_PATH";
       Gpr_Project_Path      : constant String := "GPR_PROJECT_PATH";
@@ -2047,17 +2041,14 @@ package body Prj.Env is
 
             Last := Last - 1;
 
-         elsif not Hostparm.OpenVMS
-           or else not Is_Absolute_Path (Name_Buffer (First .. Last))
-         then
-            --  On VMS, only expand relative path names, as absolute paths
-            --  may correspond to multi-valued VMS logical names.
-
+         else
             declare
                New_Dir : constant String :=
                            Normalize_Pathname
                              (Name_Buffer (First .. Last),
                               Resolve_Links => Opt.Follow_Links_For_Dirs);
+               New_Len  : Positive;
+               New_Last : Positive;
 
             begin
                --  If the absolute path was resolved and is different from

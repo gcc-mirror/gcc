@@ -147,7 +147,7 @@ static tree convert_nontype_argument (tree, tree, tsubst_flags_t);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
 static int for_each_template_parm (tree, tree_fn_t, void*,
-				   struct pointer_set_t*, bool);
+				   hash_set<tree> *, bool);
 static tree expand_template_argument_pack (tree);
 static tree build_template_parm_index (int, int, int, tree, tree);
 static bool inline_needs_template_parms (tree, bool);
@@ -2787,6 +2787,9 @@ check_explicit_specialization (tree declarator,
 	       It's just the name of an instantiation.  But, it's not
 	       a request for an instantiation, either.  */
 	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
+	  else
+	    /* A specialization is not necessarily COMDAT.  */
+	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
 
 	  /* Register this specialization so that we can find it
 	     again.  */
@@ -3080,7 +3083,7 @@ struct find_parameter_pack_data
   tree* parameter_packs;
 
   /* Set of AST nodes that have been visited by the traversal.  */
-  struct pointer_set_t *visited;
+  hash_set<tree> *visited;
 };
 
 /* Identifies all of the argument packs that occur in a template
@@ -3243,9 +3246,9 @@ uses_parameter_packs (tree t)
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
   return parameter_packs != NULL_TREE;
 }
 
@@ -3292,7 +3295,7 @@ make_pack_expansion (tree arg)
 
       /* Determine which parameter packs will be used by the base
          class expansion.  */
-      ppd.visited = pointer_set_create ();
+      ppd.visited = new hash_set<tree>;
       ppd.parameter_packs = &parameter_packs;
       cp_walk_tree (&TREE_PURPOSE (arg), &find_parameter_packs_r, 
                     &ppd, ppd.visited);
@@ -3300,7 +3303,7 @@ make_pack_expansion (tree arg)
       if (parameter_packs == NULL_TREE)
         {
           error ("base initializer expansion %<%T%> contains no parameter packs", arg);
-          pointer_set_destroy (ppd.visited);
+          delete ppd.visited;
           return error_mark_node;
         }
 
@@ -3317,7 +3320,7 @@ make_pack_expansion (tree arg)
             }
         }
 
-      pointer_set_destroy (ppd.visited);
+      delete ppd.visited;
 
       /* Create the pack expansion type for the base type.  */
       purpose = cxx_make_type (TYPE_PACK_EXPANSION);
@@ -3352,9 +3355,9 @@ make_pack_expansion (tree arg)
 
   /* Determine which parameter packs will be expanded.  */
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
   cp_walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
 
   /* Make sure we found some parameter packs.  */
   if (parameter_packs == NULL_TREE)
@@ -3399,9 +3402,9 @@ check_for_bare_parameter_packs (tree t)
     t = TREE_TYPE (t);
 
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
 
   if (parameter_packs) 
     {
@@ -4381,11 +4384,11 @@ fixed_parameter_pack_p (tree parm)
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
-  ppd.visited = pointer_set_create ();
+  ppd.visited = new hash_set<tree>;
 
   fixed_parameter_pack_p_1 (parm, &ppd);
 
-  pointer_set_destroy (ppd.visited);
+  delete ppd.visited;
   return parameter_packs;
 }
 
@@ -5017,6 +5020,14 @@ template arguments to %qD do not match original template %qD",
 	DECL_TEMPLATE_INFO (decl) = info;
     }
 
+  if (flag_implicit_templates
+      && !is_friend
+      && VAR_OR_FUNCTION_DECL_P (decl))
+    /* Set DECL_COMDAT on template instantiations; if we force
+       them to be emitted by explicit instantiation or -frepo,
+       mark_needed will tell cgraph to do the right thing.  */
+    DECL_COMDAT (decl) = true;
+
   return DECL_TEMPLATE_RESULT (tmpl);
 }
 
@@ -5517,13 +5528,21 @@ unify_method_type_error (bool explain_p, tree arg)
 }
 
 static int
-unify_arity (bool explain_p, int have, int wanted)
+unify_arity (bool explain_p, int have, int wanted, bool least_p = false)
 {
   if (explain_p)
-    inform_n (input_location, wanted,
-	      "  candidate expects %d argument, %d provided",
-	      "  candidate expects %d arguments, %d provided",
-	      wanted, have);
+    {
+      if (least_p)
+	inform_n (input_location, wanted,
+		  "  candidate expects at least %d argument, %d provided",
+		  "  candidate expects at least %d arguments, %d provided",
+		  wanted, have);
+      else
+	inform_n (input_location, wanted,
+		  "  candidate expects %d argument, %d provided",
+		  "  candidate expects %d arguments, %d provided",
+		  wanted, have);
+    }
   return 1;
 }
 
@@ -5534,9 +5553,10 @@ unify_too_many_arguments (bool explain_p, int have, int wanted)
 }
 
 static int
-unify_too_few_arguments (bool explain_p, int have, int wanted)
+unify_too_few_arguments (bool explain_p, int have, int wanted,
+			 bool least_p = false)
 {
-  return unify_arity (explain_p, have, wanted);
+  return unify_arity (explain_p, have, wanted, least_p);
 }
 
 static int
@@ -7394,9 +7414,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       templ = TYPE_TI_TEMPLATE (d1);
       d1 = DECL_NAME (templ);
     }
-  else if (TREE_CODE (d1) == TEMPLATE_DECL
-           && DECL_TEMPLATE_RESULT (d1)
-	   && TREE_CODE (DECL_TEMPLATE_RESULT (d1)) == TYPE_DECL)
+  else if (DECL_TYPE_TEMPLATE_P (d1))
     {
       templ = d1;
       d1 = DECL_NAME (templ);
@@ -7907,7 +7925,7 @@ struct pair_fn_data
   /* True when we should also visit template parameters that occur in
      non-deduced contexts.  */
   bool include_nondeduced_p;
-  struct pointer_set_t *visited;
+  hash_set<tree> *visited;
 };
 
 /* Called from for_each_template_parm via walk_tree.  */
@@ -8107,7 +8125,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 
 static int
 for_each_template_parm (tree t, tree_fn_t fn, void* data,
-			struct pointer_set_t *visited,
+			hash_set<tree> *visited,
 			bool include_nondeduced_p)
 {
   struct pair_fn_data pfd;
@@ -8126,7 +8144,7 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
   if (visited)
     pfd.visited = visited;
   else
-    pfd.visited = pointer_set_create ();
+    pfd.visited = new hash_set<tree>;
   result = cp_walk_tree (&t,
 		         for_each_template_parm_r,
 		         &pfd,
@@ -8135,7 +8153,7 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
   /* Clean up.  */
   if (!visited)
     {
-      pointer_set_destroy (pfd.visited);
+      delete pfd.visited;
       pfd.visited = 0;
     }
 
@@ -16617,18 +16635,26 @@ type_unification_real (tree tparms,
      are present, and the parm list isn't variadic.  */
   if (ia < nargs && parms == void_list_node)
     return unify_too_many_arguments (explain_p, nargs, ia);
-  /* Fail if parms are left and they don't have default values.  */
+  /* Fail if parms are left and they don't have default values and
+     they aren't all deduced as empty packs (c++/57397).  This is
+     consistent with sufficient_parms_p.  */
   if (parms && parms != void_list_node
       && TREE_PURPOSE (parms) == NULL_TREE)
     {
       unsigned int count = nargs;
       tree p = parms;
-      while (p && p != void_list_node)
+      bool type_pack_p;
+      do
 	{
-	  count++;
+	  type_pack_p = TREE_CODE (TREE_VALUE (p)) == TYPE_PACK_EXPANSION;
+	  if (!type_pack_p)
+	    count++;
 	  p = TREE_CHAIN (p);
 	}
-      return unify_too_few_arguments (explain_p, ia, count);
+      while (p && p != void_list_node);
+      if (count != nargs)
+	return unify_too_few_arguments (explain_p, ia, count,
+					type_pack_p);
     }
 
   if (!subr)

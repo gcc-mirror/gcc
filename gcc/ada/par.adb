@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -947,12 +947,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  for aspects so it does not matter whether the aspect specifications
       --  are terminated by semicolon or some other character.
 
-      function Get_Aspect_Specifications
-        (Semicolon : Boolean := True) return List_Id;
-      --  Parse a list of aspects but do not attach them to a declaration node.
-      --  Subsidiary to the following procedure. Used when parsing a subprogram
-      --  specification that may be a declaration or a body.
-
       procedure P_Aspect_Specifications
         (Decl      : Node_Id;
          Semicolon : Boolean := True);
@@ -976,6 +970,13 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  permitted here. If Decl is Empty, then scanned aspect specifications
       --  are also ignored, but no error message is given (this is used when
       --  the caller has already taken care of the error message).
+
+      function Get_Aspect_Specifications
+        (Semicolon : Boolean := True) return List_Id;
+      --  Parse a list of aspects but do not attach them to a declaration node.
+      --  Subsidiary to P_Aspect_Specifications procedure. Used when parsing
+      --  a subprogram specification that may be a declaration or a body.
+      --  Semicolon has the same meaning as for P_Aspect_Specifications above.
 
       function P_Code_Statement (Subtype_Mark : Node_Id) return Node_Id;
       --  Function to parse a code statement. The caller has scanned out
@@ -1563,9 +1564,7 @@ begin
                --  mode, check that language-defined units are compiled in GNAT
                --  mode. For this purpose we do NOT consider renamings in annex
                --  J as predefined. That allows users to compile their own
-               --  versions of these files, and in particular, in the VMS
-               --  implementation, the DEC versions can be substituted for the
-               --  standard Ada 95 versions. Another exception is System.RPC
+               --  versions of these files. Another exception is System.RPC
                --  and its children. This allows a user to supply their own
                --  communication layer.
 

@@ -482,6 +482,11 @@ package body Ada.Containers.Bounded_Ordered_Sets is
          raise Program_Error with "Position cursor designates wrong set";
       end if;
 
+      if Container.Busy > 0 then
+         raise Program_Error with
+           "attempt to tamper with cursors (set is busy)";
+      end if;
+
       pragma Assert (Vet (Container, Position.Node),
                      "bad cursor in Delete");
 
@@ -495,11 +500,12 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       X : constant Count_Type := Element_Keys.Find (Container, Item);
 
    begin
+      Tree_Operations.Delete_Node_Sans_Free (Container, X);
+
       if X = 0 then
          raise Constraint_Error with "attempt to delete element not in set";
       end if;
 
-      Tree_Operations.Delete_Node_Sans_Free (Container, X);
       Tree_Operations.Free (Container, X);
    end Delete;
 
@@ -734,6 +740,23 @@ package body Ada.Containers.Bounded_Ordered_Sets is
            Is_Less_Key_Node    => Is_Less_Key_Node,
            Is_Greater_Key_Node => Is_Greater_Key_Node);
 
+      ------------
+      -- Adjust --
+      ------------
+
+      procedure Adjust (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               B : Natural renames Control.Container.Busy;
+               L : Natural renames Control.Container.Lock;
+            begin
+               B := B + 1;
+               L := L + 1;
+            end;
+         end if;
+      end Adjust;
+
       -------------
       -- Ceiling --
       -------------
@@ -842,6 +865,30 @@ package body Ada.Containers.Bounded_Ordered_Sets is
          end if;
       end Exclude;
 
+      --------------
+      -- Finalize --
+      --------------
+
+      procedure Finalize (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               B : Natural renames Control.Container.Busy;
+               L : Natural renames Control.Container.Lock;
+            begin
+               B := B - 1;
+               L := L - 1;
+            end;
+
+            if not (Key (Control.Pos) = Control.Old_Key.all) then
+               Delete (Control.Container.all, Key (Control.Pos));
+               raise Program_Error;
+            end if;
+
+            Control.Container := null;
+         end if;
+      end Finalize;
+
       ----------
       -- Find --
       ----------
@@ -939,14 +986,22 @@ package body Ada.Containers.Bounded_Ordered_Sets is
            (Vet (Container, Position.Node),
             "bad cursor in function Reference_Preserving_Key");
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Position has
-         --  not changed.  ???
-
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
+            B : Natural renames Container.Busy;
+            L : Natural renames Container.Lock;
          begin
-            return (Element => N.Element'Access);
+            return R : constant Reference_Type :=
+                         (Element => N.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container => Container'Access,
+                              Pos       => Position,
+                              Old_Key   => new Key_Type'(Key (Position))))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
          end;
       end Reference_Preserving_Key;
 
@@ -963,8 +1018,20 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
          declare
             N : Node_Type renames Container.Nodes (Node);
+            B : Natural renames Container.Busy;
+            L : Natural renames Container.Lock;
          begin
-            return (Element => N.Element'Access);
+            return R : constant Reference_Type :=
+                         (Element => N.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container => Container'Access,
+                               Pos      => Find (Container, Key),
+                               Old_Key  => new Key_Type'(Key)))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
          end;
       end Reference_Preserving_Key;
 
@@ -1181,6 +1248,11 @@ package body Ada.Containers.Bounded_Ordered_Sets is
    --  Start of processing for Insert_Sans_Hint
 
    begin
+      if Container.Busy > 0 then
+         raise Program_Error with
+           "attemot to tamper with cursors (set is busy)";
+      end if;
+
       Conditional_Insert_Sans_Hint
         (Container,
          New_Item,

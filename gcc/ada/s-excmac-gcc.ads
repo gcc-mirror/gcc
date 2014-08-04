@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2013, Free Software Foundation, Inc.            --
+--          Copyright (C) 2013-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,8 +147,7 @@ package System.Exceptions.Machine is
    --  maintain anyway.
 
    type GCC_Exception_Access is access all Unwind_Exception;
-   --  Pointer to a GCC exception. Do not use convention C as on VMS this
-   --  would imply the use of 32-bits pointers.
+   --  Pointer to a GCC exception
 
    procedure Unwind_DeleteException (Excp : not null GCC_Exception_Access);
    pragma Import (C, Unwind_DeleteException, "_Unwind_DeleteException");

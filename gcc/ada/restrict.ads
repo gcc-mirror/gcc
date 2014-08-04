@@ -258,7 +258,7 @@ package Restrict is
    --  elaboration routine. If elaboration code is not allowed, an error
    --  message is posted on the node given as argument.
 
-   procedure Check_SPARK_Restriction
+   procedure Check_SPARK_05_Restriction
      (Msg   : String;
       N     : Node_Id;
       Force : Boolean := False);
@@ -267,9 +267,9 @@ package Restrict is
    --  the SPARK_05 restriction is set, then an error is issued on N. Msg
    --  is appended to the restriction failure message.
 
-   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id);
-   --  Same as Check_SPARK_Restriction except there is a continuation message
-   --  Msg2 following the initial message Msg1.
+   procedure Check_SPARK_05_Restriction (Msg1, Msg2 : String; N : Node_Id);
+   --  Same as Check_SPARK_05_Restriction except there is a continuation
+   --  message Msg2 following the initial message Msg1.
 
    procedure Check_No_Implicit_Aliasing (Obj : Node_Id);
    --  Obj is a node for which Is_Aliased_View is True, which is being used in
@@ -336,7 +336,6 @@ package Restrict is
    --  Id is a node whose Chars field contains the name of a restriction.
    --  If it is one of synonyms that we allow for historical purposes (for
    --  list see System.Rident), then the proper official name is returned.
-   --  Otherwise the Chars field of the argument is returned unchanged.
 
    function Restriction_Active (R : All_Restrictions) return Boolean;
    pragma Inline (Restriction_Active);

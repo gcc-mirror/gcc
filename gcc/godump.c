@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree.h"
 #include "ggc.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "obstack.h"
 #include "debug.h"
 #include "wide-int-print.h"
@@ -525,11 +525,11 @@ go_type_decl (tree decl, int local)
 struct godump_container
 {
   /* DECLs that we have already seen.  */
-  struct pointer_set_t *decls_seen;
+  hash_set<tree> decls_seen;
 
   /* Types which may potentially have to be defined as dummy
      types.  */
-  struct pointer_set_t *pot_dummy_types;
+  hash_set<const char *> pot_dummy_types;
 
   /* Go keywords.  */
   htab_t keyword_hash;
@@ -569,8 +569,8 @@ go_format_type (struct godump_container *container, tree type,
   ob = &container->type_obstack;
 
   if (TYPE_NAME (type) != NULL_TREE
-      && (pointer_set_contains (container->decls_seen, type)
-	  || pointer_set_contains (container->decls_seen, TYPE_NAME (type)))
+      && (container->decls_seen.contains (type)
+	  || container->decls_seen.contains (TYPE_NAME (type)))
       && (AGGREGATE_TYPE_P (type)
 	  || POINTER_TYPE_P (type)
 	  || TREE_CODE (type) == FUNCTION_TYPE))
@@ -590,7 +590,7 @@ go_format_type (struct godump_container *container, tree type,
       return ret;
     }
 
-  pointer_set_insert (container->decls_seen, type);
+  container->decls_seen.add (type);
 
   switch (TREE_CODE (type))
     {
@@ -697,8 +697,7 @@ go_format_type (struct godump_container *container, tree type,
 	     definition.  So this struct or union is a potential dummy
 	     type.  */
 	  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
-	    pointer_set_insert (container->pot_dummy_types,
-				IDENTIFIER_POINTER (name));
+	    container->pot_dummy_types.add (IDENTIFIER_POINTER (name));
 
 	  return ret;
         }
@@ -948,10 +947,10 @@ go_output_typedef (struct godump_container *container, tree decl)
      separately.  */
   if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
       && TYPE_SIZE (TREE_TYPE (decl)) != 0
-      && !pointer_set_contains (container->decls_seen, TREE_TYPE (decl))
+      && !container->decls_seen.contains (TREE_TYPE (decl))
       && (TYPE_CANONICAL (TREE_TYPE (decl)) == NULL_TREE
-	  || !pointer_set_contains (container->decls_seen,
-				    TYPE_CANONICAL (TREE_TYPE (decl)))))
+	  || !container->decls_seen.contains
+				    (TYPE_CANONICAL (TREE_TYPE (decl)))))
     {
       tree element;
 
@@ -988,10 +987,9 @@ go_output_typedef (struct godump_container *container, tree decl)
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;
 	}
-      pointer_set_insert (container->decls_seen, TREE_TYPE (decl));
+      container->decls_seen.add (TREE_TYPE (decl));
       if (TYPE_CANONICAL (TREE_TYPE (decl)) != NULL_TREE)
-	pointer_set_insert (container->decls_seen,
-			    TYPE_CANONICAL (TREE_TYPE (decl)));
+	container->decls_seen.add (TYPE_CANONICAL (TREE_TYPE (decl)));
     }
 
   if (DECL_NAME (decl) != NULL_TREE)
@@ -1027,7 +1025,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 		     size);
 	}
 
-      pointer_set_insert (container->decls_seen, decl);
+      container->decls_seen.add (decl);
     }
   else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
     {
@@ -1072,11 +1070,11 @@ go_output_var (struct godump_container *container, tree decl)
 {
   bool is_valid;
 
-  if (pointer_set_contains (container->decls_seen, decl)
-      || pointer_set_contains (container->decls_seen, DECL_NAME (decl)))
+  if (container->decls_seen.contains (decl)
+      || container->decls_seen.contains (DECL_NAME (decl)))
     return;
-  pointer_set_insert (container->decls_seen, decl);
-  pointer_set_insert (container->decls_seen, DECL_NAME (decl));
+  container->decls_seen.add (decl);
+  container->decls_seen.add (DECL_NAME (decl));
 
   is_valid = go_format_type (container, TREE_TYPE (decl), true, false);
   if (is_valid
@@ -1103,11 +1101,10 @@ go_output_var (struct godump_container *container, tree decl)
     {
       tree type_name = TYPE_NAME (TREE_TYPE (decl));
       if (TREE_CODE (type_name) == IDENTIFIER_NODE)
-	pointer_set_insert (container->pot_dummy_types,
-			    IDENTIFIER_POINTER (type_name));
+	container->pot_dummy_types.add (IDENTIFIER_POINTER (type_name));
       else if (TREE_CODE (type_name) == TYPE_DECL)
-	pointer_set_insert (container->pot_dummy_types,
-			    IDENTIFIER_POINTER (DECL_NAME (type_name)));
+	container->pot_dummy_types.add
+			    (IDENTIFIER_POINTER (DECL_NAME (type_name)));
     }
 }
 
@@ -1147,10 +1144,10 @@ keyword_hash_init (struct godump_container *container)
 
 /* Traversing the pot_dummy_types and seeing which types are present
    in the global types hash table and creating dummy definitions if
-   not found.  This function is invoked by pointer_set_traverse.  */
+   not found.  This function is invoked by hash_set::traverse.  */
 
-static bool
-find_dummy_types (const void *ptr, void *adata)
+bool
+find_dummy_types (const char *const &ptr, godump_container *adata)
 {
   struct godump_container *data = (struct godump_container *) adata;
   const char *type = (const char *) ptr;
@@ -1175,8 +1172,6 @@ go_finish (const char *filename)
 
   real_debug_hooks->finish (filename);
 
-  container.decls_seen = pointer_set_create ();
-  container.pot_dummy_types = pointer_set_create ();
   container.type_hash = htab_create (100, htab_hash_string,
                                      string_hash_eq, NULL);
   container.invalid_hash = htab_create (10, htab_hash_string,
@@ -1211,11 +1206,9 @@ go_finish (const char *filename)
   htab_traverse_noresize (macro_hash, go_print_macro, NULL);
 
   /* To emit dummy definitions.  */
-  pointer_set_traverse (container.pot_dummy_types, find_dummy_types,
-                        (void *) &container);
+  container.pot_dummy_types.traverse<godump_container *, find_dummy_types>
+                        (&container);
 
-  pointer_set_destroy (container.decls_seen);
-  pointer_set_destroy (container.pot_dummy_types);
   htab_delete (container.type_hash);
   htab_delete (container.invalid_hash);
   htab_delete (container.keyword_hash);

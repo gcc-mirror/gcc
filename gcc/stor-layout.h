@@ -59,6 +59,9 @@ extern void layout_decl (tree, unsigned);
    node, does nothing except for the first time.  */
 extern void layout_type (tree);
 
+/* Return the least alignment in bytes required for type TYPE.  */
+extern unsigned int min_align_of_type (tree);
+
 /* Construct various nodes representing fract or accum data types.  */
 extern tree make_fract_type (int, int, int);
 extern tree make_accum_type (int, int, int);

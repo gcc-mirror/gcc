@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,7 +50,7 @@ package body Ada.Synchronous_Barriers is
    pragma Import (C, pthread_barrier_init, "pthread_barrier_init");
    --  Initialize barrier with the attributes in attr. The barrier is opened
    --  when count waiters arrived. If attr is null the default barrier
-   --  attributes shall be used.
+   --  attributes are used.
 
    function pthread_barrier_destroy
      (barrier : not null access pthread_barrier_t) return int;
@@ -76,10 +76,11 @@ package body Ada.Synchronous_Barriers is
    overriding procedure Initialize (Barrier : in out Synchronous_Barrier) is
       Result : int;
    begin
-      Result := pthread_barrier_init
-        (barrier => Barrier.POSIX_Barrier'Access,
-         attr    => System.Null_Address,
-         count   => unsigned (Barrier.Release_Threshold));
+      Result :=
+        pthread_barrier_init
+          (barrier => Barrier.POSIX_Barrier'Access,
+           attr    => System.Null_Address,
+           count   => unsigned (Barrier.Release_Threshold));
       pragma Assert (Result = 0);
    end Initialize;
 
@@ -98,8 +99,9 @@ package body Ada.Synchronous_Barriers is
       --  the barrier open.
 
    begin
-      Result := pthread_barrier_wait
-        (barrier => The_Barrier.POSIX_Barrier'Access);
+      Result :=
+        pthread_barrier_wait
+          (barrier => The_Barrier.POSIX_Barrier'Access);
       pragma Assert
         (Result = 0 or else Result = PTHREAD_BARRIER_SERIAL_THREAD);
 

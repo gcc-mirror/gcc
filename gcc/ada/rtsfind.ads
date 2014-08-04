@@ -71,7 +71,8 @@ package Rtsfind is
    --    of Ada.Wide_Wide_Text_IO.
 
    --    Names of the form Interfaces_xxx are first level children of
-   --    Interfaces_CPP refers to package Interfaces.CPP
+   --    Interfaces. For example, the name Interfaces_Packed_Decimal refers to
+   --    package Interfaces.Packed_Decimal.
 
    --    Names of the form System_xxx are first level children of System, whose
    --    name is System.xxx. For example, the name System_Str_Concat refers to
@@ -202,7 +203,6 @@ package Rtsfind is
 
       --  Children of Interfaces
 
-      Interfaces_CPP,
       Interfaces_Packed_Decimal,
 
       --  Package System
@@ -374,9 +374,7 @@ package Rtsfind is
       System_Val_Real,
       System_Val_Uns,
       System_Val_WChar,
-      System_Vax_Float_Operations,
       System_Version_Control,
-      System_VMS_Exception_Table,
       System_WCh_StW,
       System_WCh_WtS,
       System_Wid_Bool,
@@ -466,7 +464,7 @@ package Rtsfind is
            Ada_Wide_Wide_Text_IO_Modular_IO;
 
    subtype Interfaces_Child is RTU_Id
-     range Interfaces_CPP .. Interfaces_Packed_Decimal;
+     range Interfaces_Packed_Decimal .. Interfaces_Packed_Decimal;
    --  Range of values for children of Interfaces
 
    subtype System_Child is RTU_Id
@@ -1637,60 +1635,8 @@ package Rtsfind is
      RE_Value_Wide_Character,            -- System.Val_WChar
      RE_Value_Wide_Wide_Character,       -- System.Val_WChar
 
-     RE_D,                               -- System.Vax_Float_Operations
-     RE_F,                               -- System.Vax_Float_Operations
-     RE_G,                               -- System.Vax_Float_Operations
-     RE_Q,                               -- System.Vax_Float_Operations
-     RE_S,                               -- System.Vax_Float_Operations
-     RE_T,                               -- System.Vax_Float_Operations
-
-     RE_D_To_G,                          -- System.Vax_Float_Operations
-     RE_F_To_G,                          -- System.Vax_Float_Operations
-     RE_F_To_Q,                          -- System.Vax_Float_Operations
-     RE_F_To_S,                          -- System.Vax_Float_Operations
-     RE_G_To_D,                          -- System.Vax_Float_Operations
-     RE_G_To_F,                          -- System.Vax_Float_Operations
-     RE_G_To_Q,                          -- System.Vax_Float_Operations
-     RE_G_To_T,                          -- System.Vax_Float_Operations
-     RE_Q_To_F,                          -- System.Vax_Float_Operations
-     RE_Q_To_G,                          -- System.Vax_Float_Operations
-     RE_S_To_F,                          -- System.Vax_Float_Operations
-     RE_T_To_D,                          -- System.Vax_Float_Operations
-     RE_T_To_G,                          -- System.Vax_Float_Operations
-
-     RE_Abs_F,                           -- System.Vax_Float_Operations
-     RE_Abs_G,                           -- System.Vax_Float_Operations
-     RE_Add_F,                           -- System.Vax_Float_Operations
-     RE_Add_G,                           -- System.Vax_Float_Operations
-     RE_Div_F,                           -- System.Vax_Float_Operations
-     RE_Div_G,                           -- System.Vax_Float_Operations
-     RE_Mul_F,                           -- System.Vax_Float_Operations
-     RE_Mul_G,                           -- System.Vax_Float_Operations
-     RE_Neg_F,                           -- System.Vax_Float_Operations
-     RE_Neg_G,                           -- System.Vax_Float_Operations
-     RE_Return_D,                        -- System.Vax_Float_Operations
-     RE_Return_F,                        -- System.Vax_Float_Operations
-     RE_Return_G,                        -- System.Vax_Float_Operations
-     RE_Sub_F,                           -- System.Vax_Float_Operations
-     RE_Sub_G,                           -- System.Vax_Float_Operations
-
-     RE_Eq_F,                            -- System.Vax_Float_Operations
-     RE_Eq_G,                            -- System.Vax_Float_Operations
-     RE_Le_F,                            -- System.Vax_Float_Operations
-     RE_Le_G,                            -- System.Vax_Float_Operations
-     RE_Lt_F,                            -- System.Vax_Float_Operations
-     RE_Lt_G,                            -- System.Vax_Float_Operations
-     RE_Ne_F,                            -- System.Vax_Float_Operations
-     RE_Ne_G,                            -- System.Vax_Float_Operations
-
-     RE_Valid_D,                         -- System.Vax_Float_Operations
-     RE_Valid_F,                         -- System.Vax_Float_Operations
-     RE_Valid_G,                         -- System.Vax_Float_Operations
-
      RE_Version_String,                  -- System.Version_Control
      RE_Get_Version_String,              -- System.Version_Control
-
-     RE_Register_VMS_Exception,          -- System.VMS_Exception_Table
 
      RE_String_To_Wide_String,           -- System.WCh_StW
      RE_String_To_Wide_Wide_String,      -- System.WCh_StW
@@ -2924,60 +2870,8 @@ package Rtsfind is
      RE_Value_Wide_Character             => System_Val_WChar,
      RE_Value_Wide_Wide_Character        => System_Val_WChar,
 
-     RE_D                                => System_Vax_Float_Operations,
-     RE_F                                => System_Vax_Float_Operations,
-     RE_G                                => System_Vax_Float_Operations,
-     RE_Q                                => System_Vax_Float_Operations,
-     RE_S                                => System_Vax_Float_Operations,
-     RE_T                                => System_Vax_Float_Operations,
-
-     RE_D_To_G                           => System_Vax_Float_Operations,
-     RE_F_To_G                           => System_Vax_Float_Operations,
-     RE_F_To_Q                           => System_Vax_Float_Operations,
-     RE_F_To_S                           => System_Vax_Float_Operations,
-     RE_G_To_D                           => System_Vax_Float_Operations,
-     RE_G_To_F                           => System_Vax_Float_Operations,
-     RE_G_To_Q                           => System_Vax_Float_Operations,
-     RE_G_To_T                           => System_Vax_Float_Operations,
-     RE_Q_To_F                           => System_Vax_Float_Operations,
-     RE_Q_To_G                           => System_Vax_Float_Operations,
-     RE_S_To_F                           => System_Vax_Float_Operations,
-     RE_T_To_D                           => System_Vax_Float_Operations,
-     RE_T_To_G                           => System_Vax_Float_Operations,
-
-     RE_Abs_F                            => System_Vax_Float_Operations,
-     RE_Abs_G                            => System_Vax_Float_Operations,
-     RE_Add_F                            => System_Vax_Float_Operations,
-     RE_Add_G                            => System_Vax_Float_Operations,
-     RE_Div_F                            => System_Vax_Float_Operations,
-     RE_Div_G                            => System_Vax_Float_Operations,
-     RE_Mul_F                            => System_Vax_Float_Operations,
-     RE_Mul_G                            => System_Vax_Float_Operations,
-     RE_Neg_F                            => System_Vax_Float_Operations,
-     RE_Neg_G                            => System_Vax_Float_Operations,
-     RE_Return_D                         => System_Vax_Float_Operations,
-     RE_Return_F                         => System_Vax_Float_Operations,
-     RE_Return_G                         => System_Vax_Float_Operations,
-     RE_Sub_F                            => System_Vax_Float_Operations,
-     RE_Sub_G                            => System_Vax_Float_Operations,
-
-     RE_Eq_F                             => System_Vax_Float_Operations,
-     RE_Eq_G                             => System_Vax_Float_Operations,
-     RE_Le_F                             => System_Vax_Float_Operations,
-     RE_Le_G                             => System_Vax_Float_Operations,
-     RE_Lt_F                             => System_Vax_Float_Operations,
-     RE_Lt_G                             => System_Vax_Float_Operations,
-     RE_Ne_F                             => System_Vax_Float_Operations,
-     RE_Ne_G                             => System_Vax_Float_Operations,
-
-     RE_Valid_D                          => System_Vax_Float_Operations,
-     RE_Valid_F                          => System_Vax_Float_Operations,
-     RE_Valid_G                          => System_Vax_Float_Operations,
-
      RE_Version_String                   => System_Version_Control,
      RE_Get_Version_String               => System_Version_Control,
-
-     RE_Register_VMS_Exception           => System_VMS_Exception_Table,
 
      RE_String_To_Wide_String            => System_WCh_StW,
      RE_String_To_Wide_Wide_String       => System_WCh_StW,

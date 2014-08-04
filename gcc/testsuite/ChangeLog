@@ -1,3 +1,147 @@
+2014-08-04  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/cproj-fails-with-broken-glibc.c: Use xfail for broken glibc
+	version instead of required-target.
+	* lib/target-supports.exp
+	(check_effective_target_not_glibc_2_11_or_earlier): Replace by ...
+	(check_effective_target_glibc_2_11_or_earlier): ... this.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/discr6.adb, gnat.dg/discr6_pkg.ads: Removed, no longer
+	relevant.
+	* gnat.dg/debug1.ads: Adjust.
+	* gnat.dg/formal_type.ads: Fix error in test.
+
+2014-08-03  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/case-bogus-1.c: New test.
+
+2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/15339
+	* g++.dg/other/default9.C: New.
+	* g++.dg/other/default10.C: Likewise.
+	* g++.dg/other/default3.C: Remove xfail.
+
+2014-08-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/warn/Wsuggest-final.C: New testcase.
+	* g++.dg/ipa/devirt-34.C: Fix.
+
+2014-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59855
+	* gcc.dg/Wdesignated-init-2.c: New test.
+
+2014-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 217 again
+	* g++.dg/tc1/dr217-2.C: New.
+
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/61963
+	* c-c++-common/cilk-plus/AN/pr61963.c: New test.
+
+2014-07-08  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* c-c++-common/cilk-plus/AN/pr61455.c: New test.
+	* c-c++-common/cilk-plus/AN/pr61455-2.c: Likewise.
+
+2014-08-01  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/legitimize_stack_var_before_reload_1.c: New
+	testcase.
+
+2014-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/61762
+	* gcc.dg/pr61762.c: Align the string to make the testcase work
+	on strict-align targets.
+
+2014-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/align-1.c: New test.
+	* c-c++-common/ubsan/align-2.c: New test.
+	* c-c++-common/ubsan/align-3.c: New test.
+	* c-c++-common/ubsan/align-4.c: New test.
+	* c-c++-common/ubsan/align-5.c: New test.
+	* c-c++-common/ubsan/attrib-4.c: New test.
+	* g++.dg/ubsan/align-1.C: New test.
+	* g++.dg/ubsan/align-2.C: New test.
+	* g++.dg/ubsan/align-3.C: New test.
+	* g++.dg/ubsan/attrib-1.C: New test.
+	* g++.dg/ubsan/null-1.C: New test.
+	* g++.dg/ubsan/null-2.C: New test.
+
+2014-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_glibc)
+	(check_effective_target_glibc_2_12_or_later)
+	(check_effective_target_not_glibc_2_11_or_earlier): New proc.
+	* gcc.dg/cproj-fails-with-broken-glibc.c: Require effective target
+	not_glibc_2_11_or_earlier.
+
+2014-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr51879-7.c: Remove superfluous declaration of bar.
+
+2014-07-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vpaddd_f64): New.
+	(test_vpaddd_s64): Likewise.
+	(test_vpaddd_s64): Likewise.
+	* gcc.target/aarch64/simd/vpaddd_f64: New.
+	* gcc.target/aarch64/simd/vpaddd_s64: New.
+	* gcc.target/aarch64/simd/vpaddd_u64: New.
+
+2014-07-31  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/61948
+	* gcc.target/arm/pr61948.c: New test case.
+
+2014-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61964
+	* gcc.dg/torture/pr61964.c: New testcase.
+
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* c-c++-common/addrtmp.c: New file.
+	* c-c++-common/uninit-G.c: Adapt.
+
+2014-07-31  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR lto/61868
+	* gcc.dg/pr61868.c: New test.
+
+2014-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57397
+	* g++.dg/cpp0x/vt-57397-1.C: New.
+	* g++.dg/cpp0x/vt-57397-2.C: Likewise.
+
+2014-07-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/case_null.adb, gnat.dg/specs/debug1.ads: Adjust tests.
+
+2014-07-30  Tom Tromey  <tromey@redhat.com>
+
+	PR c/59855
+	* gcc.dg/Wdesignated-init.c: New file.
+
+2014-07-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-34.C: New testcase.
+
+2014-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/61801
+	* gcc.target/i386/pr61801.c: Fix testcase.
+
 2014-07-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/fold-abs-5.c: New test.

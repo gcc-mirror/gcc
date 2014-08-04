@@ -584,7 +584,6 @@ package body GNAT.Command_Line is
       Parser      : Opt_Parser := Command_Line_Parser) return Character
    is
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
 
    begin
       <<Restart>>

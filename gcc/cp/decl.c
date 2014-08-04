@@ -1236,6 +1236,27 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
   return true;
 }
 
+/* DECL is a redeclaration of a function or function template.  If
+   it does have default arguments issue a diagnostic.  Note: this
+   function is used to enforce the requirements in C++11 8.3.6 about
+   no default arguments in redeclarations.  */
+
+static void
+check_redeclaration_no_default_args (tree decl)
+{
+  gcc_assert (DECL_DECLARES_FUNCTION_P (decl));
+
+  for (tree t = FUNCTION_FIRST_USER_PARMTYPE (decl);
+       t && t != void_list_node; t = TREE_CHAIN (t))
+    if (TREE_PURPOSE (t))
+      {
+	permerror (input_location,
+		   "redeclaration of %q#D may not have default "
+		   "arguments", decl);
+	return;
+      }
+}
+
 #define GNU_INLINE_P(fn) (DECL_DECLARED_INLINE_P (fn)			\
 			  && lookup_attribute ("gnu_inline",		\
 					       DECL_ATTRIBUTES (fn)))
@@ -1706,31 +1727,23 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	;
       else if (TREE_CODE (olddecl) == FUNCTION_DECL)
 	{
-	  tree t1 = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
-	  tree t2 = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
-	  int i = 1;
-
-	  if (TREE_CODE (TREE_TYPE (newdecl)) == METHOD_TYPE)
-	    t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2);
-
-	  if (TREE_CODE (TREE_TYPE (newdecl)) == METHOD_TYPE
-	      && CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (newdecl)))
-	    {
-	      /* C++11 8.3.6/6.
-		 Default arguments for a member function of a class template
-		 shall be specified on the initial declaration of the member
-		 function within the class template.  */
-	      for (; t2 && t2 != void_list_node; t2 = TREE_CHAIN (t2))
-		if (TREE_PURPOSE (t2))
-		  {
-		    permerror (input_location,
-			       "redeclaration of %q#D may not have default "
-			       "arguments", newdecl);
-		    break;
-		  }
-	    }
+	  /* Note: free functions, as TEMPLATE_DECLs, are handled below.  */
+	  if (DECL_FUNCTION_MEMBER_P (olddecl)
+	      && (/* grokfndecl passes member function templates too
+		     as FUNCTION_DECLs.  */
+		  DECL_TEMPLATE_INFO (olddecl)
+		  /* C++11 8.3.6/6.
+		     Default arguments for a member function of a class
+		     template shall be specified on the initial declaration
+		     of the member function within the class template.  */
+		  || CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (olddecl))))
+	    check_redeclaration_no_default_args (newdecl);
 	  else
 	    {
+	      tree t1 = FUNCTION_FIRST_USER_PARMTYPE (olddecl);
+	      tree t2 = FUNCTION_FIRST_USER_PARMTYPE (newdecl);
+	      int i = 1;
+
 	      for (; t1 && t1 != void_list_node;
 		   t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2), i++)
 		if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
@@ -1867,6 +1880,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
       if (DECL_FUNCTION_TEMPLATE_P (newdecl))
 	{
+	  /* Per C++11 8.3.6/4, default arguments cannot be added in later
+	     declarations of a function template.  */
+	  check_redeclaration_no_default_args (newdecl);
+
+	  check_default_args (newdecl);
+
 	  if (GNU_INLINE_P (old_result) != GNU_INLINE_P (new_result)
 	      && DECL_INITIAL (new_result))
 	    {
@@ -2197,6 +2216,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		      olddecl);
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
+	  DECL_COMDAT (newdecl) = DECL_DECLARED_INLINE_P (olddecl);
 
 	  /* Don't propagate visibility from the template to the
 	     specialization here.  We'll do that in determine_visibility if
@@ -4683,6 +4703,10 @@ start_decl (const cp_declarator *declarator,
       if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
 	{
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
+	  else
+	    DECL_COMDAT (decl) = false;
 
 	  /* [temp.expl.spec] An explicit specialization of a static data
 	     member of a template is a definition if the declaration
@@ -7663,7 +7687,10 @@ grokfndecl (tree ctype,
 
   /* If the declaration was declared inline, mark it as such.  */
   if (inlinep)
-    DECL_DECLARED_INLINE_P (decl) = 1;
+    {
+      DECL_DECLARED_INLINE_P (decl) = 1;
+      DECL_COMDAT (decl) = 1;
+    }
   if (inlinep & 2)
     DECL_DECLARED_CONSTEXPR_P (decl) = true;
 
@@ -8198,7 +8225,7 @@ check_static_variable_definition (tree decl, tree type)
 static tree
 stabilize_save_expr_r (tree *expr_p, int *walk_subtrees, void *data)
 {
-  struct pointer_set_t *pset = (struct pointer_set_t *)data;
+  hash_set<tree> *pset = (hash_set<tree> *)data;
   tree expr = *expr_p;
   if (TREE_CODE (expr) == SAVE_EXPR)
     {
@@ -8218,10 +8245,9 @@ stabilize_save_expr_r (tree *expr_p, int *walk_subtrees, void *data)
 static void
 stabilize_vla_size (tree size)
 {
-  struct pointer_set_t *pset = pointer_set_create ();
+  hash_set<tree> pset;
   /* Break out any function calls into temporary variables.  */
-  cp_walk_tree (&size, stabilize_save_expr_r, pset, pset);
-  pointer_set_destroy (pset);
+  cp_walk_tree (&size, stabilize_save_expr_r, &pset, &pset);
 }
 
 /* Helper function for compute_array_index_type.  Look for SIZEOF_EXPR
@@ -14223,6 +14249,7 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
   check_template_shadow (fndecl);
 
+  DECL_COMDAT (fndecl) = 1;
   DECL_DECLARED_INLINE_P (fndecl) = 1;
   DECL_NO_INLINE_WARNING_P (fndecl) = 1;
 

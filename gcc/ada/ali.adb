@@ -108,13 +108,13 @@ package body ALI is
       --  ALI files that are read for a given processing run in gnatbind.
 
       Dynamic_Elaboration_Checks_Specified   := False;
-      Float_Format_Specified                 := ' ';
       Locking_Policy_Specified               := ' ';
       No_Normalize_Scalars_Specified         := False;
       No_Object_Specified                    := False;
       Normalize_Scalars_Specified            := False;
       Partition_Elaboration_Policy_Specified := ' ';
       Queuing_Policy_Specified               := ' ';
+      SSO_Default_Specified                  := False;
       Static_Elaboration_Model_Used          := False;
       Task_Dispatching_Policy_Specified      := ' ';
       Unreserve_All_Interrupts_Specified     := False;
@@ -875,7 +875,6 @@ package body ALI is
         First_Sdep                   => No_Sdep_Id,
         First_Specific_Dispatching   => Specific_Dispatching.Last + 1,
         First_Unit                   => No_Unit_Id,
-        Float_Format                 => 'I',
         Last_Interrupt_State         => Interrupt_States.Last,
         Last_Sdep                    => No_Sdep_Id,
         Last_Specific_Dispatching    => Specific_Dispatching.Last,
@@ -892,6 +891,7 @@ package body ALI is
         Restrictions                 => No_Restrictions,
         SAL_Interface                => False,
         Sfile                        => No_File,
+        SSO_Default                  => ' ',
         Task_Dispatching_Policy      => ' ',
         Time_Slice_Value             => -1,
         WC_Encoding                  => 'b',
@@ -1089,12 +1089,6 @@ package body ALI is
                ALIs.Table (Id).Partition_Elaboration_Policy :=
                  Partition_Elaboration_Policy_Specified;
 
-            --  Processing for FD/FG/FI
-
-            elsif C = 'F' then
-               Float_Format_Specified := Getc;
-               ALIs.Table (Id).Float_Format := Float_Format_Specified;
-
             --  Processing for Lx
 
             elsif C = 'L' then
@@ -1126,6 +1120,19 @@ package body ALI is
                   NS_Found := True;
 
                --  Invalid switch starting with N
+
+               else
+                  Fatal_Error_Ignore;
+               end if;
+
+            --  Processing for OH/OL
+
+            elsif C = 'O' then
+               C := Getc;
+
+               if C = 'L' or else C = 'H' then
+                  ALIs.Table (Id).SSO_Default := C;
+                  SSO_Default_Specified := True;
 
                else
                   Fatal_Error_Ignore;
@@ -2170,20 +2177,30 @@ package body ALI is
                Notes.Table (Notes.Last).Pragma_Line := Get_Nat;
                Checkc (':');
                Notes.Table (Notes.Last).Pragma_Col  := Get_Nat;
-               Notes.Table (Notes.Last).Unit        := Units.Last;
+
+               if not At_Eol and then Nextc = ':' then
+                  Checkc (':');
+                  Notes.Table (Notes.Last).Pragma_Source_File :=
+                    Get_File_Name (Lower => True);
+               else
+                  Notes.Table (Notes.Last).Pragma_Source_File :=
+                    Units.Table (Units.Last).Sfile;
+               end if;
 
                if At_Eol then
                   Notes.Table (Notes.Last).Pragma_Args := No_Name;
 
                else
+                  --  Note: can't use Get_Name here as the remainder of the
+                  --  line is unstructured text whose syntax depends on the
+                  --  particular pragma used.
+
                   Checkc (' ');
 
                   Name_Len := 0;
                   while not At_Eol loop
                      Add_Char_To_Name_Buffer (Getc);
                   end loop;
-
-                  Notes.Table (Notes.Last).Pragma_Args := Name_Enter;
                end if;
 
                Skip_Eol;

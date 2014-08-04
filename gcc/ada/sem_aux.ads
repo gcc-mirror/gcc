@@ -131,7 +131,7 @@ package Sem_Aux is
    --  stored discriminants are the same as the actual discriminants of the
    --  type, and hence this function is the same as First_Discriminant.
    --
-   --  For derived non-tagged types that rename discriminants in the root type
+   --  For derived untagged types that rename discriminants in the root type
    --  this is the first of the discriminants that occur in the root type. To
    --  be precise, in this case stored discriminants are entities attached to
    --  the entity chain of the derived type which are a copy of the
@@ -151,6 +151,18 @@ package Sem_Aux is
    function First_Tag_Component (Typ : Entity_Id) return Entity_Id;
    --  Typ must be a tagged record type. This function returns the Entity for
    --  the first _Tag field in the record type.
+
+   function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind;
+   --  Op must be an entity with an Ekind of E_Operator. This function returns
+   --  the Nkind value that would be used to construct a binary operator node
+   --  referencing this entity. It is an error to call this function if Ekind
+   --  (Op) /= E_Operator.
+
+   function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
+   --  Op must be an entity with an Ekind of E_Operator. This function returns
+   --  the Nkind value that would be used to construct a unary operator node
+   --  referencing this entity. It is an error to call this function if Ekind
+   --  (Op) /= E_Operator.
 
    function Get_Rep_Item
      (E             : Entity_Id;
@@ -386,17 +398,4 @@ package Sem_Aux is
    --  package specification. Simplifies handling of child units, and better
    --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id)).
 
-   function Get_Binary_Nkind (Op : Entity_Id) return Node_Kind;
-   --  Op must be an entity with an Ekind of E_Operator.
-   --  This function returns the Nkind value that would
-   --  be used to construct a binary operator node referencing
-   --  this entity. It is an error to call this function
-   --  if Ekind (Op) /= E_Operator.
-
-   function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
-   --  Op must be an entity with an Ekind of E_Operator.
-   --  This function returns the Nkind value that would
-   --  be used to construct a unary operator node referencing
-   --  this entity. It is an error to call this function
-   --  if Ekind (Op) /= E_Operator.
 end Sem_Aux;

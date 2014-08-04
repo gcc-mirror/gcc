@@ -179,13 +179,13 @@ package Targparm is
 
    --  The default values here are used if no value is found in system.ads.
    --  This should normally happen if the special version of system.ads used
-   --  by the compiler itself is in use or if the value is only relevant to
-   --  a particular target (e.g. OpenVMS, AAMP). The default values are
-   --  suitable for use in normal environments. This approach allows the
-   --  possibility of new versions of the compiler (possibly with new system
-   --  parameters added) being used to compile older versions of the compiler
-   --  sources, as well as avoiding duplicating values in all system-*.ads
-   --  files for flags that are used on a few platforms only.
+   --  by the compiler itself is in use or if the value is only relevant to a
+   --  particular target (e.g. AAMP). The default values are suitable for use
+   --  in normal environments. This approach allows the possibility of new
+   --  versions of the compiler (possibly with new system parameters added)
+   --  being used to compile older versions of the compiler sources, as well as
+   --  avoiding duplicating values in all system-*.ads files for flags that are
+   --  used on a few platforms only.
 
    --  All these parameters should be regarded as read only by all clients
    --  of the package. The only way they get modified is by calling the
@@ -202,15 +202,6 @@ package Targparm is
 
    AAMP_On_Target : Boolean := False;
    --  Set to True if target is AAMP
-
-   OpenVMS_On_Target : Boolean := False;
-   --  Set to True if target is OpenVMS
-
-   VAX_Float_On_Target : Boolean := False;
-   --  Set to True if target float format is VAX Float
-
-   RTX_RTSS_Kernel_Module_On_Target : Boolean := False;
-   --  Set to True if target is RTSS module for RTX
 
    type Virtual_Machine_Kind is (No_VM, JVM_Target, CLI_Target);
    VM_Target : Virtual_Machine_Kind := No_VM;

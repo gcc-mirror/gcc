@@ -44,6 +44,7 @@ with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Scn;      use Scn;
+with Sem_Eval; use Sem_Eval;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
@@ -89,6 +90,7 @@ package body Lib.Writ is
          Main_Priority     => -1,
          Main_CPU          => -1,
          Munit_Index       => 0,
+         No_Elab_Code_All  => False,
          Serial_Number     => 0,
          Version           => 0,
          Error_Location    => No_Location,
@@ -146,6 +148,7 @@ package body Lib.Writ is
         Main_Priority     => -1,
         Main_CPU          => -1,
         Munit_Index       => 0,
+        No_Elab_Code_All  => False,
         Serial_Number     => 0,
         Version           => 0,
         Error_Location    => No_Location,
@@ -646,13 +649,27 @@ package body Lib.Writ is
 
          for J in 1 .. Notes.Last loop
             declare
-               N : constant Node_Id          := Notes.Table (J).Pragma_Node;
+               N : constant Node_Id          := Notes.Table (J);
                L : constant Source_Ptr       := Sloc (N);
-               U : constant Unit_Number_Type := Notes.Table (J).Unit;
+               U : constant Unit_Number_Type :=
+                     Unit (Get_Source_File_Index (L));
                C : Character;
 
+               Note_Unit : Unit_Number_Type;
+               --  The unit in whose U section this note must be emitted:
+               --  notes for subunits are emitted along with the main unit;
+               --  all other notes are emitted as part of the enclosing
+               --  compilation unit.
+
             begin
-               if U = Unit_Num then
+               if U /= No_Unit and then Nkind (Unit (Cunit (U))) = N_Subunit
+               then
+                  Note_Unit := Main_Unit;
+               else
+                  Note_Unit := U;
+               end if;
+
+               if Note_Unit = Unit_Num then
                   Write_Info_Initiate ('N');
                   Write_Info_Char (' ');
 
@@ -676,6 +693,15 @@ package body Lib.Writ is
                   Write_Info_Char (':');
                   Write_Info_Int (Int (Get_Column_Number (L)));
 
+                  --  Indicate source file of annotation if different from
+                  --  compilation unit source file (case of annotation coming
+                  --  from a separate).
+
+                  if Get_Source_File_Index (L) /= Source_Index (Unit_Num) then
+                     Write_Info_Char (':');
+                     Write_Info_Name (File_Name (Get_Source_File_Index (L)));
+                  end if;
+
                   declare
                      A : Node_Id;
 
@@ -697,12 +723,12 @@ package body Lib.Writ is
                               Write_Info_Name (Chars (Expr));
 
                            elsif Nkind (Expr) = N_Integer_Literal
-                             and then Is_Static_Expression (Expr)
+                             and then Is_OK_Static_Expression (Expr)
                            then
                               Write_Info_Uint (Intval (Expr));
 
                            elsif Nkind (Expr) = N_String_Literal
-                             and then Is_Static_Expression (Expr)
+                             and then Is_OK_Static_Expression (Expr)
                            then
                               Write_Info_Slit (Strval (Expr));
 
@@ -1107,20 +1133,6 @@ package body Lib.Writ is
          Write_Info_Str (" DB");
       end if;
 
-      if Opt.Float_Format /= ' ' then
-         Write_Info_Str (" F");
-
-         if Opt.Float_Format = 'I' then
-            Write_Info_Char ('I');
-
-         elsif Opt.Float_Format_Long = 'D' then
-            Write_Info_Char ('D');
-
-         else
-            Write_Info_Char ('G');
-         end if;
-      end if;
-
       if Tasking_Used
         and then not Is_Predefined_File_Name (Unit_File_Name (Main_Unit))
       then
@@ -1156,6 +1168,11 @@ package body Lib.Writ is
 
       if Normalize_Scalars then
          Write_Info_Str (" NS");
+      end if;
+
+      if Default_SSO_Config /= ' ' then
+         Write_Info_Str (" O");
+         Write_Info_Char (Default_SSO_Config);
       end if;
 
       if Sec_Stack_Used then

@@ -281,8 +281,7 @@ package body Sem_Ch7 is
       else
          Spec_Id := Current_Entity_In_Scope (Defining_Entity (N));
 
-         if Present (Spec_Id)
-           and then Is_Package_Or_Generic_Package (Spec_Id)
+         if Present (Spec_Id) and then Is_Package_Or_Generic_Package (Spec_Id)
          then
             Pack_Decl := Unit_Declaration_Node (Spec_Id);
 
@@ -701,8 +700,7 @@ package body Sem_Ch7 is
                         --  of accessing global entities.
 
                         if Has_Pragma_Inline (E) then
-                           if Outer
-                             and then Check_Subprogram_Refs (D) = OK
+                           if Outer and then Check_Subprogram_Refs (D) = OK
                            then
                               Has_Referencer_Except_For_Subprograms := True;
                            else
@@ -724,8 +722,7 @@ package body Sem_Ch7 is
                            end if;
 
                            if Has_Pragma_Inline (E) or else Is_Inlined (E) then
-                              if Outer
-                                and then Check_Subprogram_Refs (D) = OK
+                              if Outer and then Check_Subprogram_Refs (D) = OK
                               then
                                  Has_Referencer_Except_For_Subprograms := True;
                               else
@@ -1096,7 +1093,7 @@ package body Sem_Ch7 is
 
                   else
                      Error_Msg_Sloc := Sloc (Previous);
-                     Check_SPARK_Restriction
+                     Check_SPARK_05_Restriction
                        ("at most one tagged type or type extension allowed",
                         "\\ previous declaration#",
                         Decl);
@@ -1890,7 +1887,7 @@ package body Sem_Ch7 is
                end if;
 
             else
-               --  Non-tagged type, scan forward to locate inherited hidden
+               --  For untagged type, scan forward to locate inherited hidden
                --  operations.
 
                Prim_Op := Next_Entity (E);
@@ -1982,10 +1979,19 @@ package body Sem_Ch7 is
             Write_Eol;
          end if;
 
-         if not Is_Child_Unit (Id) then
+         if Is_Child_Unit (Id) then
+            null;
+
+         --  Do not enter implicitly inherited non-overridden subprograms of
+         --  a tagged type back into visibility if they have non-conformant
+         --  homographs (Ada RM 8.3 12.3/2).
+
+         elsif Is_Hidden_Non_Overridden_Subpgm (Id) then
+            null;
+
+         else
             Set_Is_Immediately_Visible (Id);
          end if;
-
       end if;
    end Install_Package_Entity;
 
@@ -2022,8 +2028,7 @@ package body Sem_Ch7 is
             --  field. This field will be empty if the entity has already been
             --  installed due to a previous call.
 
-            if Present (Full_View (Priv))
-              and then Is_Visible_Dependent (Priv)
+            if Present (Full_View (Priv)) and then Is_Visible_Dependent (Priv)
             then
                if Is_Private_Type (Priv) then
                   Deps := Private_Dependents (Priv);
@@ -2073,8 +2078,8 @@ package body Sem_Ch7 is
       Id := First_Entity (P);
       while Present (Id) and then Id /= First_Private_Entity (P) loop
          if Is_Private_Base_Type (Id)
-           and then Comes_From_Source (Full_View (Id))
            and then Present (Full_View (Id))
+           and then Comes_From_Source (Full_View (Id))
            and then Scope (Full_View (Id)) = Scope (Id)
            and then Ekind (Full_View (Id)) /= E_Incomplete_Type
          then
@@ -2369,11 +2374,14 @@ package body Sem_Ch7 is
 
          if Priv_Is_Base_Type then
             Set_Is_Controlled (Priv, Is_Controlled (Base_Type (Full)));
-            Set_Finalize_Storage_Only (Priv, Finalize_Storage_Only
-                                                           (Base_Type (Full)));
-            Set_Has_Task (Priv, Has_Task (Base_Type (Full)));
-            Set_Has_Controlled_Component (Priv, Has_Controlled_Component
-                                                           (Base_Type (Full)));
+            Set_Finalize_Storage_Only
+                              (Priv, Finalize_Storage_Only
+                                                   (Base_Type (Full)));
+            Set_Has_Task      (Priv, Has_Task      (Base_Type (Full)));
+            Set_Has_Protected (Priv, Has_Protected (Base_Type (Full)));
+            Set_Has_Controlled_Component
+                              (Priv, Has_Controlled_Component
+                                                   (Base_Type (Full)));
          end if;
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
@@ -2457,9 +2465,9 @@ package body Sem_Ch7 is
               or else Type_In_Use (Etype (Id))
               or else Type_In_Use (Etype (First_Formal (Id)))
               or else (Present (Next_Formal (First_Formal (Id)))
-                         and then
-                           Type_In_Use
-                             (Etype (Next_Formal (First_Formal (Id))))));
+                        and then
+                          Type_In_Use
+                            (Etype (Next_Formal (First_Formal (Id))))));
          else
             if In_Use (P) and then not Is_Hidden (Id) then
 
@@ -2640,7 +2648,7 @@ package body Sem_Ch7 is
             --  The following test may be redundant, as this is already
             --  diagnosed in sem_ch3. ???
 
-            if  Is_Indefinite_Subtype (Full)
+            if Is_Indefinite_Subtype (Full)
               and then not Is_Indefinite_Subtype (Id)
             then
                Error_Msg_Sloc := Sloc (Parent (Id));
@@ -2815,8 +2823,7 @@ package body Sem_Ch7 is
       elsif Ekind_In (P, E_Generic_Package, E_Package)
         and then not Ignore_Abstract_State
         and then Present (Abstract_States (P))
-        and then
-            not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+        and then not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
       then
          return True;
       end if;
@@ -2943,8 +2950,7 @@ package body Sem_Ch7 is
 
       elsif Ekind_In (P, E_Generic_Package, E_Package)
         and then Present (Abstract_States (P))
-        and then
-          not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
+        and then not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
       then
          Error_Msg_N
            ("info: & requires body (non-null abstract state aspect)?Y?", P);
@@ -3006,12 +3012,10 @@ package body Sem_Ch7 is
            or else
              (Is_Generic_Subprogram (E)
                and then not Has_Completion (E))
-
          then
             Error_Msg_Node_2 := E;
             Error_Msg_NE
-              ("info: & requires body (& requires completion)?Y?",
-               E, P);
+              ("info: & requires body (& requires completion)?Y?", E, P);
 
          --  Entity that does not require completion
 

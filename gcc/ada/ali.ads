@@ -176,10 +176,6 @@ package ALI is
       --  always be set as well in this case. Not set if 'P' appears in
       --  Ignore_Lines.
 
-      Float_Format : Character;
-      --  Set to float format (set to I if no float-format given). Not set if
-      --  'P' appears in Ignore_Lines.
-
       No_Object : Boolean;
       --  Set to True if no object file generated. Not set if 'P' appears in
       --  Ignore_Lines.
@@ -187,6 +183,12 @@ package ALI is
       Normalize_Scalars : Boolean;
       --  Set to True if file was compiled with Normalize_Scalars. Not set if
       --  'P' appears in Ignore_Lines.
+
+      SSO_Default : Character;
+      --  Set to 'H' or 'L' if file was compiled with a configuration pragma
+      --  file containing Default_Scalar_Storage_Order (High/Low_Order_First).
+      --  Set to ' ' if neither pragma was present. Not set if 'P' appears in
+      --  Ignore_Lines.
 
       Unit_Exception_Table : Boolean;
       --  Set to True if unit exception table pointer generated. Not set if 'P'
@@ -463,11 +465,6 @@ package ALI is
    --  Set to False by Initialize_ALI. Set to True if Scan_ALI reads
    --  a unit for which dynamic elaboration checking is enabled.
 
-   Float_Format_Specified : Character := ' ';
-   --  Set to blank by Initialize_ALI. Set to appropriate float format
-   --  character (V or I, see Opt.Float_Format) if an ali file that
-   --  is read contains an F line setting the floating point format.
-
    Initialize_Scalars_Used : Boolean := False;
    --  Set True if an ali file contains the Initialize_Scalars flag
 
@@ -500,6 +497,11 @@ package ALI is
    --  This variable records the cumulative contributions of R lines in all
    --  ali files, showing whether a restriction pragma exists anywhere, and
    --  accumulating the aggregate knowledge of violations.
+
+   SSO_Default_Specified : Boolean := False;
+   --  Set to True if at least one ALI file contains an OH/OL flag indicating
+   --  that it was compiled with a configuration pragmas file containing the
+   --  pragma Default_Scalar_Storage_Order (OH/OL present in ALI file P line).
 
    Stack_Check_Switch_Set : Boolean := False;
    --  Set to True if at least one ALI file contains '-fstack-check' in its
@@ -658,8 +660,8 @@ package ALI is
       Pragma_Col : Nat;
       --  Column number of pragma
 
-      Unit : Unit_Id;
-      --  Unit_Id for the entry
+      Pragma_Source_File : File_Name_Type;
+      --  Source file of pragma
 
       Pragma_Args : Name_Id;
       --  Pragma arguments. No_Name if no arguments, otherwise a single

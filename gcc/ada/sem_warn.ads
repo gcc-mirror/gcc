@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,5 +238,19 @@ package Sem_Warn is
    --  Called at the end of a block or subprogram. Scans the entities of the
    --  block or subprogram to see if there are any variables for which useless
    --  assignments were made (assignments whose values were never read).
+
+   ----------------------
+   -- Utility Routines --
+   ----------------------
+
+   function Has_Junk_Name (E : Entity_Id) return Boolean;
+   --  Return True if the entity name contains any of the following substrings:
+   --    discard
+   --    dummy
+   --    ignore
+   --    junk
+   --    unused
+   --  Used to suppress warnings on names matching these patterns. The contents
+   --  of Name_Buffer and Name_Len are destroyed by this call.
 
 end Sem_Warn;

@@ -47,8 +47,6 @@
   VAR1 (UNOP, addp, 0, di)
   BUILTIN_VDQ_BHSI (UNOP, clz, 2)
 
-  BUILTIN_VALL (GETLANE, get_lane, 0)
-  VAR1 (GETLANE, get_lane, 0, di)
   BUILTIN_VALL (GETLANE, be_checked_get_lane, 0)
 
   VAR1 (REINTERP_SS, reinterpretdi, 0, v1df)
@@ -74,7 +72,6 @@
   VAR1 (REINTERP_PS, reinterpretv2si, 0, v1df)
   VAR1 (REINTERP_PS, reinterpretv2sf, 0, v1df)
 
-  BUILTIN_VDQ_I (BINOP, dup_lane, 0)
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0)
   BUILTIN_VSDQ_I (BINOP_UUS, uqshl, 0)

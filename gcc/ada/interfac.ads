@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -152,19 +152,12 @@ package Interfaces is
    pragma Import (Intrinsic, Rotate_Left);
    pragma Import (Intrinsic, Rotate_Right);
 
-   --  IEEE Floating point types. Note that the form of these definitions
-   --  ensures that the work on VMS, even if the standard library is compiled
-   --  using a Float_Representation pragma for Vax_Float.
-
-   pragma Warnings (Off);
-   --  Turn off warnings for targets not providing IEEE floating-point types
+   --  IEEE Floating point types
 
    type IEEE_Float_32 is digits 6;
-   pragma Float_Representation (IEEE_Float, IEEE_Float_32);
    for IEEE_Float_32'Size use 32;
 
    type IEEE_Float_64 is digits 15;
-   pragma Float_Representation (IEEE_Float, IEEE_Float_64);
    for IEEE_Float_64'Size use 64;
 
    --  If there is an IEEE extended float available on the machine, we assume

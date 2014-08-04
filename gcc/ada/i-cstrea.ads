@@ -43,6 +43,7 @@ package Interfaces.C_Streams is
    subtype long is System.CRTL.long;
    subtype size_t is System.CRTL.size_t;
    subtype ssize_t is System.CRTL.ssize_t;
+   subtype int64 is System.CRTL.int64;
    subtype voids is System.Address;
 
    NULL_Stream : constant FILEs;
@@ -107,9 +108,8 @@ package Interfaces.C_Streams is
    function fopen
      (filename : chars;
       mode     : chars;
-      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8;
-      vms_form : chars := System.Null_Address) return FILEs
-     renames System.CRTL.fopen;
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
+     return FILEs renames System.CRTL.fopen;
    --  Note: to maintain target independence, use text_translation_required,
    --  a boolean variable defined in sysdep.c to deal with the target
    --  dependent text translation requirement. If this variable is set,
@@ -147,9 +147,8 @@ package Interfaces.C_Streams is
      (filename : chars;
       mode     : chars;
       stream   : FILEs;
-      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8;
-      vms_form : chars := System.Null_Address) return FILEs
-     renames System.CRTL.freopen;
+      encoding : System.CRTL.Filename_Encoding := System.CRTL.UTF8)
+     return FILEs renames System.CRTL.freopen;
 
    function fseek
      (stream : FILEs;
@@ -159,14 +158,14 @@ package Interfaces.C_Streams is
 
    function fseek64
      (stream : FILEs;
-      offset : ssize_t;
+      offset : int64;
       origin : int) return int
      renames System.CRTL.fseek64;
 
    function ftell (stream : FILEs) return long
      renames System.CRTL.ftell;
 
-   function ftell64 (stream : FILEs) return ssize_t
+   function ftell64 (stream : FILEs) return int64
      renames System.CRTL.ftell64;
 
    function fwrite

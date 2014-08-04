@@ -126,7 +126,8 @@ package body Back_End is
            Nat (Physical_To_Logical (Last_Source_Line (J), J));
       end loop;
 
-      --  Deal with case of generating SCIL, we should not be here!
+      --  Deal with case of generating SCIL, we should not be here unless
+      --  debugging CodePeer mode in GNAT.
 
       if Generate_SCIL then
          Error_Msg_N ("'S'C'I'L generation not available", Cunit (Main_Unit));
@@ -137,6 +138,14 @@ package body Back_End is
          then
             return;
          end if;
+      end if;
+
+      --  We should be here in GNATprove mode only when debugging GNAT. Do not
+      --  call gigi in that case, as it is not prepared to handle the special
+      --  form of the tree obtained in GNATprove mode.
+
+      if GNATprove_Mode then
+         return;
       end if;
 
       --  The actual call to the back end

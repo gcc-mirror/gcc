@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,11 +29,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
---  File a-numaux.adb <- 86numaux.adb
-
---  This version of Numerics.Aux is for the IEEE Double Extended floating
---  point format on x86.
 
 with System.Machine_Code; use System.Machine_Code;
 

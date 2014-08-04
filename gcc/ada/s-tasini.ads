@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,26 +37,14 @@ package System.Tasking.Initialization is
    procedure Remove_From_All_Tasks_List (T : Task_Id);
    --  Remove T from All_Tasks_List. Call this function with RTS_Lock taken
 
+   procedure Finalize_Attributes (T : Task_Id);
+   --  Finalize all attributes from T. This is to be called just before the
+   --  ATCB is deallocated. It relies on the caller holding T.L write-lock
+   --  on entry.
+
    ---------------------------------
    -- Tasking-Specific Soft Links --
    ---------------------------------
-
-   --  These permit us to leave out certain portions of the tasking
-   --  run-time system if they are not used.  They are only used internally
-   --  by the tasking run-time system.
-
-   --  So far, the only example is support for Ada.Task_Attributes
-
-   type Proc_T is access procedure (T : Task_Id);
-
-   procedure Finalize_Attributes (T : Task_Id);
-   procedure Initialize_Attributes (T : Task_Id);
-
-   Finalize_Attributes_Link : Proc_T := Finalize_Attributes'Access;
-   --  should be called with abort deferred and T.L write-locked
-
-   Initialize_Attributes_Link : Proc_T := Initialize_Attributes'Access;
-   --  should be called with abort deferred, but holding no locks
 
    -------------------------
    -- Abort Defer/Undefer --

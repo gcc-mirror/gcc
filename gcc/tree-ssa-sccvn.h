@@ -140,8 +140,10 @@ vn_hash_type (tree type)
 static inline hashval_t
 vn_hash_constant_with_type (tree constant)
 {
-  return (iterative_hash_expr (constant, 0)
-	  + vn_hash_type (TREE_TYPE (constant)));
+  inchash::hash hstate;
+  inchash::add_expr (constant, hstate);
+  hstate.merge_hash (vn_hash_type (TREE_TYPE (constant)));
+  return hstate.end ();
 }
 
 /* Compare the constants C1 and C2 with distinguishing type incompatible

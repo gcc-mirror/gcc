@@ -52,6 +52,7 @@ package body Opt is
       Check_Float_Overflow_Config           := Check_Float_Overflow;
       Check_Policy_List_Config              := Check_Policy_List;
       Default_Pool_Config                   := Default_Pool;
+      Default_SSO_Config                    := Default_SSO;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
       Extensions_Allowed_Config             := Extensions_Allowed;
@@ -62,9 +63,9 @@ package body Opt is
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
-      Short_Descriptors_Config              := Short_Descriptors;
       SPARK_Mode_Config                     := SPARK_Mode;
       SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
+      Uneval_Old_Config                     := Uneval_Old;
       Use_VADS_Size_Config                  := Use_VADS_Size;
       Warnings_As_Errors_Count_Config       := Warnings_As_Errors_Count;
 
@@ -89,6 +90,7 @@ package body Opt is
       Check_Float_Overflow           := Save.Check_Float_Overflow;
       Check_Policy_List              := Save.Check_Policy_List;
       Default_Pool                   := Save.Default_Pool;
+      Default_SSO                    := Save.Default_SSO;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
       Extensions_Allowed             := Save.Extensions_Allowed;
@@ -100,9 +102,9 @@ package body Opt is
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
-      Short_Descriptors              := Save.Short_Descriptors;
       SPARK_Mode                     := Save.SPARK_Mode;
       SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
+      Uneval_Old                     := Save.Uneval_Old;
       Use_VADS_Size                  := Save.Use_VADS_Size;
       Warnings_As_Errors_Count       := Save.Warnings_As_Errors_Count;
 
@@ -128,6 +130,7 @@ package body Opt is
       Save.Check_Float_Overflow           := Check_Float_Overflow;
       Save.Check_Policy_List              := Check_Policy_List;
       Save.Default_Pool                   := Default_Pool;
+      Save.Default_SSO                    := Default_SSO;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
       Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
       Save.Extensions_Allowed             := Extensions_Allowed;
@@ -139,9 +142,9 @@ package body Opt is
       Save.Optimize_Alignment_Local       := Optimize_Alignment_Local;
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
-      Save.Short_Descriptors              := Short_Descriptors;
       Save.SPARK_Mode                     := SPARK_Mode;
       Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
+      Save.Uneval_Old                     := Uneval_Old;
       Save.Use_VADS_Size                  := Use_VADS_Size;
       Save.Warnings_As_Errors_Count       := Warnings_As_Errors_Count;
    end Save_Opt_Config_Switches;
@@ -171,6 +174,7 @@ package body Opt is
          External_Name_Imp_Casing    := Lowercase;
          Optimize_Alignment          := 'O';
          Persistent_BSS_Mode         := False;
+         Uneval_Old                  := 'E';
          Use_VADS_Size               := False;
          Optimize_Alignment_Local    := True;
 
@@ -186,6 +190,7 @@ package body Opt is
             Assertions_Enabled       := Assertions_Enabled_Config;
             Assume_No_Invalid_Values := Assume_No_Invalid_Values_Config;
             Check_Policy_List        := Check_Policy_List_Config;
+            Default_SSO              := Default_SSO_Config;
             SPARK_Mode               := SPARK_Mode_Config;
             SPARK_Mode_Pragma        := SPARK_Mode_Pragma_Config;
          else
@@ -206,6 +211,7 @@ package body Opt is
          Assume_No_Invalid_Values    := Assume_No_Invalid_Values_Config;
          Check_Float_Overflow        := Check_Float_Overflow_Config;
          Check_Policy_List           := Check_Policy_List_Config;
+         Default_SSO                 := Default_SSO_Config;
          Dynamic_Elaboration_Checks  := Dynamic_Elaboration_Checks_Config;
          Extensions_Allowed          := Extensions_Allowed_Config;
          External_Name_Exp_Casing    := External_Name_Exp_Casing_Config;
@@ -217,6 +223,7 @@ package body Opt is
          Persistent_BSS_Mode         := Persistent_BSS_Mode_Config;
          SPARK_Mode                  := SPARK_Mode_Config;
          SPARK_Mode_Pragma           := SPARK_Mode_Pragma_Config;
+         Uneval_Old                  := Uneval_Old_Config;
          Use_VADS_Size               := Use_VADS_Size_Config;
          Warnings_As_Errors_Count    := Warnings_As_Errors_Count_Config;
 
@@ -234,7 +241,6 @@ package body Opt is
       Fast_Math                      := Fast_Math_Config;
       Optimize_Alignment             := Optimize_Alignment_Config;
       Polling_Required               := Polling_Required_Config;
-      Short_Descriptors              := Short_Descriptors_Config;
    end Set_Opt_Config_Switches;
 
    ---------------

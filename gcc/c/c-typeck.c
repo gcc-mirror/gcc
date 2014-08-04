@@ -7212,6 +7212,7 @@ struct constructor_stack
   char outer;
   char incremental;
   char designated;
+  int designator_depth;
 };
 
 static struct constructor_stack *constructor_stack;
@@ -7383,6 +7384,7 @@ really_start_incremental_init (tree type)
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
+  p->designator_depth = designator_depth;
   p->next = 0;
   constructor_stack = p;
 
@@ -7535,6 +7537,7 @@ push_init_level (location_t loc, int implicit,
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->designated = constructor_designated;
+  p->designator_depth = designator_depth;
   p->next = constructor_stack;
   p->range_stack = 0;
   constructor_stack = p;
@@ -7842,6 +7845,7 @@ pop_init_level (location_t loc, int implicit,
   constructor_erroneous = p->erroneous;
   constructor_incremental = p->incremental;
   constructor_designated = p->designated;
+  designator_depth = p->designator_depth;
   constructor_pending_elts = p->pending_elts;
   constructor_depth = p->depth;
   if (!p->implicit)
@@ -8911,6 +8915,15 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
   if (constructor_type == 0)
     return;
 
+  if (!implicit && warn_designated_init && !was_designated
+      && TREE_CODE (constructor_type) == RECORD_TYPE
+      && lookup_attribute ("designated_init",
+			   TYPE_ATTRIBUTES (constructor_type)))
+    warning_init (loc,
+		  OPT_Wdesignated_init,
+		  "positional initialization of field "
+		  "in %<struct%> declared with %<designated_init%> attribute");
+
   /* If we've exhausted any levels that didn't have braces,
      pop them now.  */
   while (constructor_stack->implicit)
@@ -9596,8 +9609,12 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 		    warning_at (loc, OPT_Wreturn_local_addr,
 				"function returns address of label");
 		  else
-		    warning_at (loc, OPT_Wreturn_local_addr,
-				"function returns address of local variable");
+		    {
+		      warning_at (loc, OPT_Wreturn_local_addr,
+				  "function returns address of local variable");
+		      tree zero = build_zero_cst (TREE_TYPE (res));
+		      t = build2 (COMPOUND_EXPR, TREE_TYPE (res), t, zero);
+		    }
 		}
 	      break;
 
@@ -12120,15 +12137,15 @@ c_clone_omp_udr (tree stmt, tree omp_decl1, tree omp_decl2,
 		 tree decl, tree placeholder)
 {
   copy_body_data id;
-  struct pointer_map_t *decl_map = pointer_map_create ();
+  hash_map<tree, tree> decl_map;
 
-  *pointer_map_insert (decl_map, omp_decl1) = placeholder;
-  *pointer_map_insert (decl_map, omp_decl2) = decl;
+  decl_map.put (omp_decl1, placeholder);
+  decl_map.put (omp_decl2, decl);
   memset (&id, 0, sizeof (id));
   id.src_fn = DECL_CONTEXT (omp_decl1);
   id.dst_fn = current_function_decl;
   id.src_cfun = DECL_STRUCT_FUNCTION (id.src_fn);
-  id.decl_map = decl_map;
+  id.decl_map = &decl_map;
 
   id.copy_decl = copy_decl_no_change;
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
@@ -12137,7 +12154,6 @@ c_clone_omp_udr (tree stmt, tree omp_decl1, tree omp_decl2,
   id.transform_lang_insert_block = NULL;
   id.eh_lp_nr = 0;
   walk_tree (&stmt, copy_tree_body_r, &id, NULL);
-  pointer_map_destroy (decl_map);
   return stmt;
 }
 

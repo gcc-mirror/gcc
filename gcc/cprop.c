@@ -167,7 +167,7 @@ reg_available_p (const_rtx x, const_rtx insn ATTRIBUTE_UNUSED)
    ??? May need to make things more elaborate.  Later, as necessary.  */
 
 static unsigned int
-hash_set (int regno, int hash_table_size)
+hash_mod (int regno, int hash_table_size)
 {
   return (unsigned) regno % hash_table_size;
 }
@@ -187,7 +187,7 @@ insert_set_in_table (rtx dest, rtx src, rtx insn, struct hash_table_d *table,
   struct expr *cur_expr, *last_expr = NULL;
   struct occr *cur_occr;
 
-  hash = hash_set (REGNO (dest), table->size);
+  hash = hash_mod (REGNO (dest), table->size);
 
   for (cur_expr = table->table[hash]; cur_expr;
        cur_expr = cur_expr->next_same_hash)
@@ -483,7 +483,7 @@ compute_hash_table (struct hash_table_d *table)
 static struct expr *
 lookup_set (unsigned int regno, struct hash_table_d *table)
 {
-  unsigned int hash = hash_set (regno, table->size);
+  unsigned int hash = hash_mod (regno, table->size);
   struct expr *expr;
 
   expr = table->table[hash];

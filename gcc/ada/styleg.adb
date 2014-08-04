@@ -126,13 +126,32 @@ package body Styleg is
    -- Check_Arrow --
    -----------------
 
-   --  In check tokens mode (-gnatys), arrow must be surrounded by spaces
+   --  In check tokens mode (-gnatys), arrow must be surrounded by spaces,
+   --  except that within the argument of a Depends macro the required format
+   --  is =>+ rather than => +).
 
-   procedure Check_Arrow is
+   procedure Check_Arrow (Inside_Depends : Boolean := False) is
    begin
       if Style_Check_Tokens then
          Require_Preceding_Space;
-         Require_Following_Space;
+
+         if not Inside_Depends then
+            Require_Following_Space;
+
+         --  Special handling for Inside_Depends
+
+         else
+            if Source (Scan_Ptr) = ' '
+              and then Source (Scan_Ptr + 1) = '+'
+            then
+               Error_Space_Not_Allowed (Scan_Ptr);
+
+            elsif Source (Scan_Ptr) /= ' '
+              and then Source (Scan_Ptr) /= '+'
+            then
+               Require_Following_Space;
+            end if;
+         end if;
       end if;
    end Check_Arrow;
 
@@ -1032,10 +1051,17 @@ package body Styleg is
    --  In check token mode (-gnatyt), unary plus or minus must not be
    --  followed by a space.
 
-   procedure Check_Unary_Plus_Or_Minus is
+   --  Annoying exception: if we have the sequence =>+ within a Depends pragma
+   --  or aspect, then we insist on a space rather than forbidding it.
+
+   procedure Check_Unary_Plus_Or_Minus (Inside_Depends : Boolean := False) is
    begin
       if Style_Check_Tokens then
-         Check_No_Space_After;
+         if not Inside_Depends then
+            Check_No_Space_After;
+         else
+            Require_Following_Space;
+         end if;
       end if;
    end Check_Unary_Plus_Or_Minus;
 

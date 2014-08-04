@@ -1,3 +1,32 @@
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-typeck.c: Use hash_map instead of pointer_map.
+
+2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-decl.c: Use hash_set instead of pointer_set.
+
+2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR middle-end/61455
+	* c-array-notation.c (expand_array_notations): Handling
+	of DECL_EXPR added.
+
+2014-07-31  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/60517
+	* c-typeck.c (c_finish_return): Return 0 instead of the address of
+	a local variable.
+
+2014-07-30  Tom Tromey  <tromey@redhat.com>
+
+	* c-typeck.c (struct constructor_stack) <designator_depth>: New
+	field.
+	(really_start_incremental_init, push_init_level): Initialize
+	designator_depth.
+	(pop_init_level): Set global designator_depth.
+	(process_init_element): Check for designated_init attribute.
+
 2014-07-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61852

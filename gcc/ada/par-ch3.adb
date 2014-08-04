@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -652,6 +652,10 @@ package body Ch3 is
 
                   Typedef_Node := P_Record_Definition;
                   Set_Limited_Present (Typedef_Node, True);
+                  End_Labl := Make_Identifier (Token_Ptr, Chars (Ident_Node));
+                  Set_Comes_From_Source (End_Labl, False);
+
+                  Set_End_Label (Typedef_Node, End_Labl);
 
                --  Ada 2005 (AI-251): LIMITED INTERFACE
 
@@ -1217,19 +1221,13 @@ package body Ch3 is
 
    function P_Constraint_Opt return Node_Id is
    begin
-      if Token = Tok_Range
-        or else Bad_Spelling_Of (Tok_Range)
-      then
+      if Token = Tok_Range or else Bad_Spelling_Of (Tok_Range) then
          return P_Range_Constraint;
 
-      elsif Token = Tok_Digits
-        or else Bad_Spelling_Of (Tok_Digits)
-      then
+      elsif Token = Tok_Digits or else Bad_Spelling_Of (Tok_Digits) then
          return P_Digits_Constraint;
 
-      elsif Token = Tok_Delta
-        or else Bad_Spelling_Of (Tok_Delta)
-      then
+      elsif Token = Tok_Delta or else Bad_Spelling_Of (Tok_Delta) then
          return P_Delta_Constraint;
 
       elsif Token = Tok_Left_Paren then
@@ -1238,6 +1236,31 @@ package body Ch3 is
       elsif Token = Tok_In then
          Ignore (Tok_In);
          return P_Constraint_Opt;
+
+      --  One more possibility is e.g. 1 .. 10 (i.e. missing RANGE keyword)
+
+      elsif Token = Tok_Identifier      or else
+            Token = Tok_Integer_Literal or else
+            Token = Tok_Real_Literal
+      then
+         declare
+            Scan_State : Saved_Scan_State;
+
+         begin
+            Save_Scan_State (Scan_State); -- at identifier or literal
+            Scan; -- past identifier or literal
+
+            if Token = Tok_Dot_Dot then
+               Restore_Scan_State (Scan_State);
+               Error_Msg_BC ("missing RANGE keyword");
+               return P_Range_Constraint;
+            else
+               Restore_Scan_State (Scan_State);
+               return Empty;
+            end if;
+         end;
+
+      --  Nothing worked, no constraint there
 
       else
          return Empty;
@@ -2033,7 +2056,9 @@ package body Ch3 is
 
    --  RANGE_CONSTRAINT ::= range RANGE
 
-   --  The caller has checked that the initial token is RANGE
+   --  The caller has checked that the initial token is RANGE or some
+   --  misspelling of it, or it may be absent completely (and a message
+   --  has already been issued).
 
    --  Error recovery: cannot raise Error_Resync
 
@@ -2042,7 +2067,13 @@ package body Ch3 is
 
    begin
       Range_Node := New_Node (N_Range_Constraint, Token_Ptr);
-      Scan; -- past RANGE
+
+      --  Skip range keyword if present
+
+      if Token = Tok_Range or else Bad_Spelling_Of (Tok_Range) then
+         Scan; -- past RANGE
+      end if;
+
       Set_Range_Expression (Range_Node, P_Range);
       return Range_Node;
    end P_Range_Constraint;
@@ -3903,6 +3934,7 @@ package body Ch3 is
       Access_Loc       : constant Source_Ptr := Token_Ptr;
       Prot_Flag        : Boolean;
       Not_Null_Present : Boolean := False;
+      Not_Null_Subtype : Boolean := False;
       Type_Def_Node    : Node_Id;
       Result_Not_Null  : Boolean;
       Result_Node      : Node_Id;
@@ -3937,8 +3969,18 @@ package body Ch3 is
 
    begin
       if not Header_Already_Parsed then
-         Not_Null_Present := P_Null_Exclusion;         --  Ada 2005 (AI-231)
+
+         --  NOT NULL ACCESS .. is a common form of access definition.
+         --  ACCESS NOT NULL ..  is certainly rare, but syntactically legal.
+         --  NOT NULL ACCESS NOT NULL .. is rarer yet, and also legal.
+         --  The last two cases are only meaningful if the following subtype
+         --  indication denotes an access type (semantic check). The flag
+         --  Not_Null_Subtype indicates that this second null exclusion is
+         --  present in the access type definition.
+
+         Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
          Scan; -- past ACCESS
+         Not_Null_Subtype := P_Null_Exclusion;     --  Might also appear
       end if;
 
       if Token_Name = Name_Protected then
@@ -4013,6 +4055,7 @@ package body Ch3 is
          Type_Def_Node :=
            New_Node (N_Access_To_Object_Definition, Access_Loc);
          Set_Null_Exclusion_Present (Type_Def_Node, Not_Null_Present);
+         Set_Null_Excluding_Subtype (Type_Def_Node, Not_Null_Subtype);
 
          if Token = Tok_All or else Token = Tok_Constant then
             if Ada_Version = Ada_83 then

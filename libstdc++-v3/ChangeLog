@@ -1,3 +1,71 @@
+2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/15339
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Fix.
+
+2014-08-01  Zifei Tong  <zifeitong@gmail.com>
+
+	* libsupc++/atexit_thread.cc (HAVE___CXA_THREAD_ATEXIT_IMPL): Add
+	_GLIBCXX_ prefix to macro.
+
+2014-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py
+	(SingleObjContainerPrinter._contained): Use compatibility mixin.
+
+2014-07-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_allocator.h
+	(tracker_allocator_counter::allocate): Remove new invocation, only
+	collect information.
+	(tracker_allocator_counter::deallocate): Remove delete invocation, only
+	collect information.
+	(check_inconsistent_alloc_value_type): New.
+	(tracker_allocator): Transform as a facade for any allocator type.
+	(uneq_allocator): Likewise.
+	(propagating_allocator): Likewise.
+	* testsuite/23_containers/forward_list/debug/move_assign_neg.cc: Use an
+	explicitly non propagating allocator.
+	* testsuite/23_containers/map/debug/move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/move_assign_neg.cc: likewise.
+	* testsuite/23_containers/multiset/debug/move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/move_assign_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/move_assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/debug/move_assign_neg.cc: Likewise.
+
+2014-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61946
+	* include/ext/rope (rope::rope(char_producer<_CharT>*, size_t, bool,
+	const allocator_type&)): Pass non-const allocator to
+	_S_new_RopeFunction.
+	* testsuite/ext/rope/61946.cc: New.
+
+	PR libstdc++/61947
+	* include/std/tuple (_Head_base): Use allocator_arg_t parameters to
+	disambiguate unary constructors.
+	(_Tuple_impl): Pass allocator_arg_t arguments.
+	* testsuite/20_util/tuple/61947.cc: New.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error line.
+
+2014-07-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/60037 - SIGFPE in std::generate_canonical<unsigned int...>
+	* include/bits/random.h (_Adaptor): static_assert for non floating-point
+	result type.
+	* include/bits/random.tcc (generate_canonical): Ditto.
+	* include/ext/random.tcc (hypergeometric_distribution::operator()):
+	Use double as a rng result type.
+	* testsuite/26_numerics/random/pr60037-neg.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/pr60037.cc: New.
+
 2014-07-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.

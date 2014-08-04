@@ -282,16 +282,7 @@ init_local_tick (void)
 static void
 init_random_seed (void)
 {
-  if (flag_random_seed)
-    {
-      char *endp;
-
-      /* When the driver passed in a hex number don't crc it again */
-      random_seed = strtoul (flag_random_seed, &endp, 0);
-      if (!(endp > flag_random_seed && *endp == 0))
-        random_seed = crc32_string (0, flag_random_seed);
-    }
-  else if (!random_seed)
+  if (!random_seed)
     random_seed = local_tick ^ getpid ();  /* Old racey fallback method */
 }
 
@@ -314,6 +305,15 @@ set_random_seed (const char *val)
 {
   const char *old = flag_random_seed;
   flag_random_seed = val;
+  if (flag_random_seed)
+    {
+      char *endp;
+
+      /* When the driver passed in a hex number don't crc it again */
+      random_seed = strtoul (flag_random_seed, &endp, 0);
+      if (!(endp > flag_random_seed && *endp == 0))
+        random_seed = crc32_string (0, flag_random_seed);
+    }
   return old;
 }
 
@@ -1555,9 +1555,18 @@ process_options (void)
     warn_stack_protect = 0;
 
   /* Address Sanitizer needs porting to each target architecture.  */
+
   if ((flag_sanitize & SANITIZE_ADDRESS)
-      && (targetm.asan_shadow_offset == NULL
-	  || !FRAME_GROWS_DOWNWARD))
+      && !FRAME_GROWS_DOWNWARD)
+    {
+      warning (0,
+	       "-fsanitize=address and -fsanitize=kernel-address "
+	       "are not supported for this target");
+      flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  if ((flag_sanitize & SANITIZE_USER_ADDRESS)
+      && targetm.asan_shadow_offset == NULL)
     {
       warning (0, "-fsanitize=address not supported for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;

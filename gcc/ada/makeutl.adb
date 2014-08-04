@@ -29,7 +29,6 @@ with Debug;
 with Err_Vars; use Err_Vars;
 with Errutil;
 with Fname;
-with Hostparm;
 with Osint;    use Osint;
 with Output;   use Output;
 with Opt;      use Opt;
@@ -624,13 +623,11 @@ package body Makeutl is
                   end if;
 
                elsif Sw'Length >= 4
-                 and then (Sw (2 .. 3) = "aL"
-                             or else
-                           Sw (2 .. 3) = "aO"
-                             or else
-                           Sw (2 .. 3) = "aI"
-                             or else
-                               (For_Gnatbind and then Sw (2 .. 3) = "A="))
+                 and then
+                   (Sw (2 .. 3) = "aL" or else
+                    Sw (2 .. 3) = "aO" or else
+                    Sw (2 .. 3) = "aI"
+                      or else (For_Gnatbind and then Sw (2 .. 3) = "A="))
                then
                   Start := 4;
 
@@ -742,12 +739,6 @@ package body Makeutl is
    --  Beginning of Executable_Prefix_Path
 
    begin
-      --  For VMS, the path returned is always /gnu/
-
-      if Hostparm.OpenVMS then
-         return "/gnu/";
-      end if;
-
       --  First determine if a path prefix was placed in front of the
       --  executable name.
 
@@ -786,7 +777,7 @@ package body Makeutl is
       Flush_Messages : Boolean := True)
    is
    begin
-      if Flush_Messages then
+      if Flush_Messages and not No_Exit_Message then
          if Total_Errors_Detected /= 0 or else Warnings_Detected /= 0 then
             Errutil.Finalize;
          end if;
@@ -815,8 +806,13 @@ package body Makeutl is
 
       if S'Length > 0 then
          if Exit_Code /= E_Success then
-            Osint.Fail (S);
-         else
+            if No_Exit_Message then
+               Osint.Exit_Program (E_Fatal);
+            else
+               Osint.Fail (S);
+            end if;
+
+         elsif not No_Exit_Message then
             Write_Str (S);
          end if;
       end if;
@@ -1434,8 +1430,6 @@ package body Makeutl is
          In_Tree : Project_Tree_Ref;
          Dummy   : in out Boolean)
       is
-         pragma Unreferenced (Dummy);
-
          Linker_Package : Package_Id;
          Options        : Variable_Value;
 
@@ -2564,7 +2558,7 @@ package body Makeutl is
                if Source.Id.Path.Name = Q.Table (J).Info.Id.Path.Name
                  and then Source.Id.Index = Q.Table (J).Info.Id.Index
                  and then Source.Id.Project.Path.Name =
-                          Q.Table (J).Info.Id.Project.Path.Name
+                            Q.Table (J).Info.Id.Project.Path.Name
                then
                   --  No need to insert this source in the queue, but still
                   --  return True as we may need to insert its roots.
@@ -2621,7 +2615,6 @@ package body Makeutl is
          Iter         : Source_Iterator;
 
          Dummy : Boolean;
-         pragma Unreferenced (Dummy);
 
       begin
          if not Insert_No_Roots (Source) then
@@ -2757,9 +2750,10 @@ package body Makeutl is
                         Debug_Output
                           ("   -> ", Name_Id (Root_Source.Display_File));
                         Dummy := Queue.Insert_No_Roots
-                          (Source => (Format => Format_Gprbuild,
-                                      Tree   => Source.Tree,
-                                      Id     => Root_Source));
+                          (Source => (Format  => Format_Gprbuild,
+                                      Tree    => Source.Tree,
+                                      Id      => Root_Source,
+                                      Closure => False));
 
                         Initialize_Source_Record (Root_Source);
 
@@ -2811,7 +2805,6 @@ package body Makeutl is
          With_Roots : Boolean := False)
       is
          Discard : Boolean;
-         pragma Unreferenced (Discard);
       begin
          Discard := Insert (Source, With_Roots);
       end Insert;
@@ -2915,31 +2908,39 @@ package body Makeutl is
          All_Projects   : Boolean;
          Unique_Compile : Boolean)
       is
-         procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref);
+
+         procedure Do_Insert
+           (Project : Project_Id;
+            Tree    : Project_Tree_Ref;
+            Context : Project_Context);
+         --  Local procedures must be commented ???
 
          ---------------
          -- Do_Insert --
          ---------------
 
-         procedure Do_Insert (Project : Project_Id; Tree : Project_Tree_Ref) is
+         procedure Do_Insert
+           (Project : Project_Id;
+            Tree    : Project_Tree_Ref;
+            Context : Project_Context)
+         is
             Unit_Based : constant Boolean :=
                            Unique_Compile
                              or else not Builder_Data (Tree).Closure_Needed;
-            --  When Unit_Based is True, put in the queue all compilable
-            --  sources including the unit based (Ada) one. When Unit_Based is
-            --  False, put the Ada sources only when they are in a library
-            --  project.
+            --  When Unit_Based is True, we enqueue all compilable sources
+            --  including the unit based (Ada) one. When Unit_Based is False,
+            --  put the Ada sources only when they are in a library project.
 
-            Iter   : Source_Iterator;
-            Source : Prj.Source_Id;
+            Iter    : Source_Iterator;
+            Source  : Prj.Source_Id;
+            OK      : Boolean;
+            Closure : Boolean;
 
          begin
             --  Nothing to do when "-u" was specified and some files were
             --  specified on the command line
 
-            if Unique_Compile
-              and then Mains.Number_Of_Mains (Tree) > 0
-            then
+            if Unique_Compile and then Mains.Number_Of_Mains (Tree) > 0 then
                return;
             end if;
 
@@ -2950,16 +2951,13 @@ package body Makeutl is
 
                if Is_Allowed_Language (Source.Language.Name)
                  and then Is_Compilable (Source)
-                 and then
-                   (All_Projects
-                     or else Is_Extending (Project, Source.Project))
+                 and then (All_Projects
+                            or else Is_Extending (Project, Source.Project))
                  and then not Source.Locally_Removed
                  and then Source.Replaced_By = No_Source
-                 and then
-                   (not Source.Project.Externally_Built
-                     or else
-                       (Is_Extending (Project, Source.Project)
-                         and then not Project.Externally_Built))
+                 and then (not Source.Project.Externally_Built
+                            or else (Is_Extending (Project, Source.Project)
+                                      and then not Project.Externally_Built))
                  and then Source.Kind /= Sep
                  and then Source.Path /= No_Path_Information
                then
@@ -2972,13 +2970,55 @@ package body Makeutl is
                   then
                      if (Unit_Based
                           or else Source.Unit = No_Unit_Index
-                          or else Source.Project.Library)
+                          or else Source.Project.Library
+                          or else Context.In_Aggregate_Lib
+                          or else Project.Qualifier = Aggregate_Library)
                        and then not Is_Subunit (Source)
                      then
-                        Queue.Insert
-                          (Source => (Format => Format_Gprbuild,
-                                      Tree   => Tree,
-                                      Id     => Source));
+                        OK := True;
+                        Closure := False;
+
+                        if Source.Unit /= No_Unit_Index
+                          and then
+                            (Source.Project.Library
+                              or else Project.Qualifier = Aggregate_Library
+                              or else Context.In_Aggregate_Lib)
+                          and then Source.Project.Standalone_Library /= No
+                        then
+                           --  Check if the unit is in the interface
+
+                           OK := False;
+
+                           declare
+                              List    : String_List_Id;
+                              Element : String_Element;
+
+                           begin
+                              List := Source.Project.Lib_Interface_ALIs;
+                              while List /= Nil_String loop
+                                 Element :=
+                                   Project_Tree.Shared.String_Elements.Table
+                                     (List);
+
+                                 if Element.Value = Name_Id (Source.Dep_Name)
+                                 then
+                                    OK := True;
+                                    Closure := True;
+                                    exit;
+                                 end if;
+
+                                 List := Element.Next;
+                              end loop;
+                           end;
+                        end if;
+
+                        if OK then
+                           Queue.Insert
+                             (Source => (Format  => Format_Gprbuild,
+                                         Tree    => Tree,
+                                         Id      => Source,
+                                         Closure => Closure));
+                        end if;
                      end if;
                   end if;
                end if;
@@ -2987,7 +3027,8 @@ package body Makeutl is
             end loop;
          end Do_Insert;
 
-         procedure Insert_All is new For_Project_And_Aggregated (Do_Insert);
+         procedure Insert_All is
+           new For_Project_And_Aggregated_Context (Do_Insert);
 
       begin
          Insert_All (Project, Project_Tree);
@@ -3068,9 +3109,10 @@ package body Makeutl is
                                or else Src_Id.Project.Library_Kind = Static)
                   then
                      Queue.Insert
-                       (Source => (Format => Format_Gprbuild,
-                                   Tree   => Project_Tree,
-                                   Id     => Src_Id));
+                       (Source => (Format  => Format_Gprbuild,
+                                   Tree    => Project_Tree,
+                                   Id      => Src_Id,
+                                   Closure => True));
                   end if;
                end if;
             end loop;
@@ -3155,7 +3197,10 @@ package body Makeutl is
             Data.Need_Linking     := False;
 
          else
-            Data.Closure_Needed   := Has_Mains;
+            Data.Closure_Needed   :=
+              Has_Mains
+                or else (Root_Project.Library
+                          and then Root_Project.Standalone_Library /= No);
             Data.Need_Compilation := All_Phases or Option_Compile_Only;
             Data.Need_Binding     := All_Phases or Option_Bind_Only;
             Data.Need_Linking     := (All_Phases or Option_Link_Only)

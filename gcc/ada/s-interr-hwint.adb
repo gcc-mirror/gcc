@@ -31,7 +31,7 @@
 
 --  Invariants:
 
---  All user-handleable signals are masked at all times in all tasks/threads
+--  All user-handlable signals are masked at all times in all tasks/threads
 --  except possibly for the Interrupt_Manager task.
 
 --  When a user task wants to have the effect of masking/unmasking an signal,
@@ -123,8 +123,11 @@ package body System.Interrupts is
    end Interrupt_Manager;
 
    task type Interrupt_Server_Task
-     (Interrupt : Interrupt_ID; Int_Sema : Binary_Semaphore_Id) is
+     (Interrupt : Interrupt_ID;
+      Int_Sema  : Binary_Semaphore_Id)
+   is
       --  Server task for vectored hardware interrupt handling
+
       pragma Interrupt_Priority (System.Interrupt_Priority'First + 2);
    end Interrupt_Server_Task;
 
@@ -152,7 +155,7 @@ package body System.Interrupts is
    --  is specified through the pragma Attach_Handler.
 
    User_Entry : array (Interrupt_ID) of Entry_Assoc :=
-     (others => (T => Null_Task, E => Null_Task_Entry));
+                  (others => (T => Null_Task, E => Null_Task_Entry));
    pragma Volatile_Components (User_Entry);
    --  Holds the task and entry index (if any) for each interrupt / signal
 
@@ -172,19 +175,18 @@ package body System.Interrupts is
    Registered_Handler_Tail : R_Link := null;
 
    Server_ID : array (Interrupt_ID) of System.Tasking.Task_Id :=
-     (others => System.Tasking.Null_Task);
+                 (others => System.Tasking.Null_Task);
    pragma Atomic_Components (Server_ID);
    --  Holds the Task_Id of the Server_Task for each interrupt / signal.
    --  Task_Id is needed to accomplish locking per interrupt base. Also
    --  is needed to determine whether to create a new Server_Task.
 
    Semaphore_ID_Map : array
-     (Interrupt_ID range 0 .. System.OS_Interface.Max_HW_Interrupt)
-      of Binary_Semaphore_Id := (others => 0);
+     (Interrupt_ID range 0 .. System.OS_Interface.Max_HW_Interrupt) of
+        Binary_Semaphore_Id := (others => 0);
    --  Array of binary semaphores associated with vectored interrupts. Note
    --  that the last bound should be Max_HW_Interrupt, but this will raise
-   --  Storage_Error if Num_HW_Interrupts is null, so use an extra 4 bytes
-   --  instead.
+   --  Storage_Error if Num_HW_Interrupts is null so use extra 4 bytes instead.
 
    Interrupt_Access_Hold : Interrupt_Task_Access;
    --  Variable for allocating an Interrupt_Server_Task
@@ -719,6 +721,11 @@ package body System.Interrupts is
    -----------------------
 
    task body Interrupt_Manager is
+      --  By making this task independent of any master, when the process goes
+      --  away, the Interrupt_Manager will terminate gracefully.
+
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+      pragma Unreferenced (Ignore);
 
       --------------------
       -- Local Routines --
@@ -907,11 +914,6 @@ package body System.Interrupts is
    --  Start of processing for Interrupt_Manager
 
    begin
-      --  By making this task independent of any master, when the process goes
-      --  away, the Interrupt_Manager will terminate gracefully.
-
-      System.Tasking.Utilities.Make_Independent;
-
       loop
          --  A block is needed to absorb Program_Error exception
 
@@ -1039,6 +1041,8 @@ package body System.Interrupts is
    --  Server task for vectored hardware interrupt handling
 
    task body Interrupt_Server_Task is
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+
       Self_Id         : constant Task_Id := Self;
       Tmp_Handler     : Parameterless_Handler;
       Tmp_ID          : Task_Id;
@@ -1046,12 +1050,11 @@ package body System.Interrupts is
       Status          : int;
 
    begin
-      System.Tasking.Utilities.Make_Independent;
       Semaphore_ID_Map (Interrupt) := Int_Sema;
 
       loop
-         --  Pend on semaphore that will be triggered by the
-         --  umbrella handler when the associated interrupt comes in
+         --  Pend on semaphore that will be triggered by the umbrella handler
+         --  when the associated interrupt comes in.
 
          Status := Binary_Semaphore_Obtain (Int_Sema);
          pragma Assert (Status = 0);
@@ -1073,8 +1076,8 @@ package body System.Interrupts is
               (Tmp_ID, Tmp_Entry_Index, System.Null_Address);
 
          else
-            --  Semaphore has been flushed by an unbind operation in
-            --  the Interrupt_Manager. Terminate the server task.
+            --  Semaphore has been flushed by an unbind operation in the
+            --  Interrupt_Manager. Terminate the server task.
 
             --  Wait for the Interrupt_Manager to complete its work
 

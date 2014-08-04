@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,12 +26,19 @@
 --  This package stores all preprocessing data for the compiler
 
 with Namet; use Namet;
+with Types; use Types;
 
 package Prepcomp is
 
+   procedure Add_Dependency (S : Source_File_Index);
+   --  Add a dependency on a non-source file. This is used internally for the
+   --  preprocessing data file and the preprocessing definition file, and also
+   --  externally for non-temporary configuration pragmas files.
+
    procedure Add_Dependencies;
    --  Add dependencies on the preprocessing data file and the preprocessing
-   --  definition files, if any.
+   --  definition files, if any, and the non-temporary configuration pragmas
+   --  files, if any.
 
    procedure Check_Symbols;
    --  Check if there are preprocessing symbols on the command line and set

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2012, AdaCore                     --
+--                     Copyright (C) 2000-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,17 +104,22 @@ package body GNAT.Expect is
    pragma Import (C, Create_Pipe, "__gnat_pipe");
 
    function Poll
-     (Fds     : System.Address;
-      Num_Fds : Integer;
-      Timeout : Integer;
-      Is_Set  : System.Address) return Integer;
+     (Fds          : System.Address;
+      Num_Fds      : Integer;
+      Timeout      : Integer;
+      Dead_Process : access Integer;
+      Is_Set       : System.Address) return Integer;
    pragma Import (C, Poll, "__gnat_expect_poll");
-   --  Check whether there is any data waiting on the file descriptor
-   --  Out_fd, and wait if there is none, at most Timeout milliseconds
+   --  Check whether there is any data waiting on the file descriptors
+   --  Fds, and wait if there is none, at most Timeout milliseconds
    --  Returns -1 in case of error, 0 if the timeout expired before
    --  data became available.
    --
-   --  Out_Is_Set is set to 1 if data was available, 0 otherwise.
+   --  Is_Set is an array of the same size as FDs and elements are set to 1 if
+   --  data is available for the corresponding File Descriptor, 0 otherwise.
+   --
+   --  If a process dies, then Dead_Process is set to the index of the
+   --  corresponding file descriptor.
 
    function Waitpid (Pid : Process_Id) return Integer;
    pragma Import (C, Waitpid, "__gnat_waitpid");
@@ -632,7 +637,7 @@ package body GNAT.Expect is
          --  Buffer used for input. This is allocated only once, not for
          --  every iteration of the loop
 
-         D : Integer;
+         D : aliased Integer;
          --  Index in Descriptors
 
       begin
@@ -640,7 +645,7 @@ package body GNAT.Expect is
 
          loop
             Num_Descriptors :=
-              Poll (Fds'Address, Fds_Count, Timeout, Is_Set'Address);
+              Poll (Fds'Address, Fds_Count, Timeout, D'Access, Is_Set'Address);
 
             case Num_Descriptors is
 
@@ -648,6 +653,12 @@ package body GNAT.Expect is
 
                when -1 =>
                   Result := Expect_Internal_Error;
+
+                  if D /= 0 then
+                     Close (Descriptors (D).Input_Fd);
+                     Descriptors (D).Input_Fd := Invalid_FD;
+                  end if;
+
                   return;
 
                --  Timeout?
@@ -813,7 +824,7 @@ package body GNAT.Expect is
    is
       Buffer_Size     : constant Integer := 8192;
       Num_Descriptors : Integer;
-      N               : Integer;
+      N               : aliased Integer;
       Is_Set          : aliased Integer;
       Buffer          : aliased String (1 .. Buffer_Size);
 
@@ -827,7 +838,11 @@ package body GNAT.Expect is
 
       loop
          Num_Descriptors :=
-           Poll (Descriptor.Output_Fd'Address, 1, Timeout, Is_Set'Address);
+           Poll (Descriptor.Output_Fd'Address,
+                 1,
+                 Timeout,
+                 N'Access,
+                 Is_Set'Address);
 
          case Num_Descriptors is
 

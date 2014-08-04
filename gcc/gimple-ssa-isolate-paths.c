@@ -42,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "tree-cfg.h"
+#include "diagnostic-core.h"
+#include "intl.h"
 
 
 static bool cfg_altered;
@@ -132,13 +134,15 @@ insert_trap_and_remove_trailing_statements (gimple_stmt_iterator *si_p, tree op)
    Optimization is simple as well.  Replace STMT in BB' with an
    unconditional trap and remove all outgoing edges from BB'.
 
+   If RET_ZERO, do not trap, only return NULL.
+
    DUPLICATE is a pre-existing duplicate, use it as BB' if it exists.
 
    Return BB'.  */
 
 basic_block
 isolate_path (basic_block bb, basic_block duplicate,
-	      edge e, gimple stmt, tree op)
+	      edge e, gimple stmt, tree op, bool ret_zero)
 {
   gimple_stmt_iterator si, si2;
   edge_iterator ei;
@@ -151,8 +155,9 @@ isolate_path (basic_block bb, basic_block duplicate,
   if (!duplicate)
     {
       duplicate = duplicate_block (bb, NULL, NULL);
-      for (ei = ei_start (duplicate->succs); (e2 = ei_safe_edge (ei)); )
-	remove_edge (e2);
+      if (!ret_zero)
+	for (ei = ei_start (duplicate->succs); (e2 = ei_safe_edge (ei)); )
+	  remove_edge (e2);
     }
 
   /* Complete the isolation step by redirecting E to reach DUPLICATE.  */
@@ -197,7 +202,17 @@ isolate_path (basic_block bb, basic_block duplicate,
      SI2 points to the duplicate of STMT in DUPLICATE.  Insert a trap
      before SI2 and remove SI2 and all trailing statements.  */
   if (!gsi_end_p (si2))
-    insert_trap_and_remove_trailing_statements (&si2, op);
+    {
+      if (ret_zero)
+	{
+	  gimple ret = gsi_stmt (si2);
+	  tree zero = build_zero_cst (TREE_TYPE (gimple_return_retval (ret)));
+	  gimple_return_set_retval (ret, zero);
+	  update_stmt (ret);
+	}
+      else
+	insert_trap_and_remove_trailing_statements (&si2, op);
+    }
 
   return duplicate;
 }
@@ -255,15 +270,48 @@ find_implicit_erroneous_behaviour (void)
 	       i = next_i)
 	    {
 	      tree op = gimple_phi_arg_def (phi, i);
-
-	      next_i = i + 1;
-
-	      if (!integer_zerop (op))
-		continue;
-
 	      edge e = gimple_phi_arg_edge (phi, i);
 	      imm_use_iterator iter;
 	      gimple use_stmt;
+
+	      next_i = i + 1;
+
+	      if (TREE_CODE (op) == ADDR_EXPR)
+		{
+		  tree valbase = get_base_address (TREE_OPERAND (op, 0));
+		  if ((TREE_CODE (valbase) == VAR_DECL
+		       && !is_global_var (valbase))
+		      || TREE_CODE (valbase) == PARM_DECL)
+		    {
+		      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+			{
+			  if (gimple_code (use_stmt) != GIMPLE_RETURN
+			      || gimple_return_retval (use_stmt) != lhs)
+			    continue;
+
+			  if (warning_at (gimple_location (use_stmt),
+					  OPT_Wreturn_local_addr,
+					  "function may return address "
+					  "of local variable"))
+			    inform (DECL_SOURCE_LOCATION(valbase),
+				    "declared here");
+
+			  if (gimple_bb (use_stmt) == bb)
+			    {
+			      duplicate = isolate_path (bb, duplicate, e,
+							use_stmt, lhs, true);
+
+			      /* When we remove an incoming edge, we need to
+				 reprocess the Ith element.  */
+			      next_i = i;
+			      cfg_altered = true;
+			    }
+			}
+		    }
+		}
+
+	      if (!integer_zerop (op))
+		continue;
 
 	      /* We've got a NULL PHI argument.  Now see if the
  	         PHI's result is dereferenced within BB.  */
@@ -280,8 +328,8 @@ find_implicit_erroneous_behaviour (void)
 					   flag_isolate_erroneous_paths_attribute))
 
 		    {
-		      duplicate = isolate_path (bb, duplicate,
-						e, use_stmt, lhs);
+		      duplicate = isolate_path (bb, duplicate, e,
+						use_stmt, lhs, false);
 
 		      /* When we remove an incoming edge, we need to
 			 reprocess the Ith element.  */
@@ -347,9 +395,45 @@ find_explicit_erroneous_behaviour (void)
 	      cfg_altered = true;
 	      break;
 	    }
+
+	  /* Detect returning the address of a local variable.  This only
+	     becomes undefined behavior if the result is used, so we do not
+	     insert a trap and only return NULL instead.  */
+	  if (gimple_code (stmt) == GIMPLE_RETURN)
+	    {
+	      tree val = gimple_return_retval (stmt);
+	      if (val && TREE_CODE (val) == ADDR_EXPR)
+		{
+		  tree valbase = get_base_address (TREE_OPERAND (val, 0));
+		  if ((TREE_CODE (valbase) == VAR_DECL
+		       && !is_global_var (valbase))
+		      || TREE_CODE (valbase) == PARM_DECL)
+		    {
+		      /* We only need it for this particular case.  */
+		      calculate_dominance_info (CDI_POST_DOMINATORS);
+		      const char* msg;
+		      bool always_executed = dominated_by_p
+			(CDI_POST_DOMINATORS,
+			 single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)), bb);
+		      if (always_executed)
+			msg = N_("function returns address of local variable");
+		      else
+			msg = N_("function may return address of "
+				 "local variable");
+
+		      if (warning_at (gimple_location (stmt),
+				      OPT_Wreturn_local_addr, msg))
+			inform (DECL_SOURCE_LOCATION(valbase), "declared here");
+		      tree zero = build_zero_cst (TREE_TYPE (val));
+		      gimple_return_set_retval (stmt, zero);
+		      update_stmt (stmt);
+		    }
+		}
+	    }
 	}
     }
 }
+
 /* Search the function for statements which, if executed, would cause
    the program to fault such as a dereference of a NULL pointer.
 

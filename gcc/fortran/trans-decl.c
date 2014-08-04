@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "debug.h"
 #include "gfortran.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 #include "constructor.h"
 #include "trans.h"
 #include "trans-types.h"
@@ -63,7 +63,7 @@ static GTY(()) tree parent_fake_result_decl;
 static GTY(()) tree saved_function_decls;
 static GTY(()) tree saved_parent_function_decls;
 
-static struct pointer_set_t *nonlocal_dummy_decl_pset;
+static hash_set<tree> *nonlocal_dummy_decl_pset;
 static GTY(()) tree nonlocal_dummy_decls;
 
 /* Holds the variable DECLs that are locals.  */
@@ -1094,9 +1094,9 @@ gfc_nonlocal_dummy_array_decl (gfc_symbol *sym)
   tree decl, dummy;
 
   if (! nonlocal_dummy_decl_pset)
-    nonlocal_dummy_decl_pset = pointer_set_create ();
+    nonlocal_dummy_decl_pset = new hash_set<tree>;
 
-  if (pointer_set_insert (nonlocal_dummy_decl_pset, sym->backend_decl))
+  if (nonlocal_dummy_decl_pset->add (sym->backend_decl))
     return;
 
   dummy = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
@@ -5861,7 +5861,7 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       BLOCK_VARS (DECL_INITIAL (fndecl))
 	= chainon (BLOCK_VARS (DECL_INITIAL (fndecl)), nonlocal_dummy_decls);
-      pointer_set_destroy (nonlocal_dummy_decl_pset);
+      delete nonlocal_dummy_decl_pset;
       nonlocal_dummy_decls = NULL;
       nonlocal_dummy_decl_pset = NULL;
     }

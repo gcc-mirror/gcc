@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,6 @@ with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;
 with Output;   use Output;
-with Targparm; use Targparm;
 
 with System.Case_Util; use System.Case_Util;
 
@@ -1086,15 +1085,9 @@ package body Binde is
 
       --  Output warning if -p used with no -gnatE units
 
-      if Pessimistic_Elab_Order
-        and not Dynamic_Elaboration_Checks_Specified
+      if Pessimistic_Elab_Order and not Dynamic_Elaboration_Checks_Specified
       then
-         if OpenVMS_On_Target then
-            Error_Msg ("?use of /PESSIMISTIC_ELABORATION questionable");
-         else
-            Error_Msg ("?use of -p switch questionable");
-         end if;
-
+         Error_Msg ("?use of -p switch questionable");
          Error_Msg ("?since all units compiled with static elaboration model");
       end if;
 
@@ -1111,7 +1104,6 @@ package body Binde is
       --  Initialize the no predecessor list
 
       No_Pred := No_Unit_Id;
-
       for U in UNR.First .. UNR.Last loop
          if UNR.Table (U).Num_Pred = 0 then
             UNR.Table (U).Nextnp := No_Pred;
@@ -1222,8 +1214,7 @@ package body Binde is
          --  interfaces to stand-alone libraries.
 
          if not Units.Table (U).SAL_Interface then
-            for
-              W in Units.Table (U).First_With .. Units.Table (U).Last_With
+            for W in Units.Table (U).First_With .. Units.Table (U).Last_With
             loop
                if Withs.Table (W).Sfile /= No_File
                  and then (not Withs.Table (W).SAL_Interface)

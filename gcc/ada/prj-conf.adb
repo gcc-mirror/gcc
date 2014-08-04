@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Hostparm;
 with Makeutl;  use Makeutl;
 with MLib.Tgt;
 with Opt;      use Opt;
@@ -63,6 +62,14 @@ package body Prj.Conf is
       Equal      => "=");
    --  Stores the runtime names for the various languages. This is in general
    --  set from a --RTS command line option.
+
+   procedure Locate_Runtime
+     (Language : Name_Id;
+      Env      : Prj.Tree.Environment);
+   --  If RTS_Name is a base name (a name without path separator), then
+   --  do nothing. Otherwise, convert it to an absolute path (possibly by
+   --  searching it in the project path) and call Set_Runtime_For with the
+   --  absolute path. Raise Invalid_Config if the path does not exist.
 
    -----------------------
    -- Local_Subprograms --
@@ -721,7 +728,7 @@ package body Prj.Conf is
                               Set_Runtime_For
                                 (Name_Ada,
                                  Name_Buffer (7 .. Name_Len));
-                              Locate_Runtime (Name_Ada, Project_Tree, Env);
+                              Locate_Runtime (Name_Ada, Env);
                            end if;
 
                         elsif Name_Len > 7
@@ -748,7 +755,7 @@ package body Prj.Conf is
 
                                  if not Runtime_Name_Set_For (Lang) then
                                     Set_Runtime_For (Lang, RTS);
-                                    Locate_Runtime (Lang, Project_Tree, Env);
+                                    Locate_Runtime (Lang, Env);
                                  end if;
                               end;
                            end if;
@@ -1408,18 +1415,10 @@ package body Prj.Conf is
       <<Process_Config_File>>
 
       if Automatically_Generated then
-         if Hostparm.OpenVMS then
 
-            --  There is no gprconfig on VMS
+         --  This might raise an Invalid_Config exception
 
-            Raise_Invalid_Config
-              ("could not locate any configuration project file");
-
-         else
-            --  This might raise an Invalid_Config exception
-
-            Do_Autoconf;
-         end if;
+         Do_Autoconf;
 
       --  If the config file is not auto-generated, warn if there is any --RTS
       --  switch, but not when the config file is generated in memory.
@@ -1517,9 +1516,8 @@ package body Prj.Conf is
    --------------------
 
    procedure Locate_Runtime
-     (Language     : Name_Id;
-      Project_Tree : Prj.Project_Tree_Ref;
-      Env          : Prj.Tree.Environment)
+     (Language : Name_Id;
+      Env      : Prj.Tree.Environment)
    is
       function Is_Base_Name (Path : String) return Boolean;
       --  Returns True if Path has no directory separator
@@ -1555,7 +1553,7 @@ package body Prj.Conf is
            Find_Rts_In_Path (Env.Project_Path, RTS_Name);
 
          if Full_Path = null then
-            Fail_Program (Project_Tree, "cannot find RTS " & RTS_Name);
+            Raise_Invalid_Config ("cannot find RTS " & RTS_Name);
          end if;
 
          Set_Runtime_For (Language, Normalize_Pathname (Full_Path.all));

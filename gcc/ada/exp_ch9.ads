@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,7 +173,8 @@ package Exp_Ch9 is
    --  allocated aggregates with default initialized components. Init_Stmts
    --  contains the list of statements required to initialize the allocated
    --  aggregate. It replaces the call to Init (Args) done by
-   --  Build_Task_Allocate_Block.
+   --  Build_Task_Allocate_Block. Also used to expand allocators containing
+   --  build-in-place function calls.
 
    function Build_Wrapper_Spec
      (Subp_Id : Entity_Id;

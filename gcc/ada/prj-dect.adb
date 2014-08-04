@@ -214,10 +214,12 @@ package body Prj.Dect is
                  Project_Qualifier_Of (Project, In_Tree);
       Name   : constant Name_Id := Name_Of (Current_Package, In_Tree);
    begin
-      if (Qualif = Aggregate and then Name /= Snames.Name_Builder)
-        or else (Qualif = Aggregate_Library
-                  and then Name /= Snames.Name_Builder
-                  and then Name /= Snames.Name_Install)
+      if Name /= Snames.Name_Ide
+        and then
+          ((Qualif = Aggregate         and then Name /= Snames.Name_Builder)
+              or else
+           (Qualif = Aggregate_Library and then Name /= Snames.Name_Builder
+                                       and then Name /= Snames.Name_Install))
       then
          Error_Msg_Name_1 := Name;
          Error_Msg
@@ -1558,7 +1560,6 @@ package body Prj.Dect is
       if Token = Tok_Right_Paren then
          Scan (In_Tree);
       end if;
-
    end Parse_String_Type_Declaration;
 
    --------------------------------

@@ -55,7 +55,6 @@ package body Targparm is
       MOV,  --   Machine_Overflows
       MRN,  --   Machine_Rounds
       PAS,  --   Preallocated_Stacks
-      RTX,  --   RTX_RTSS_Kernel_Module
       SAG,  --   Support_Aggregates
       SAP,  --   Support_Atomic_Primitives
       SCA,  --   Support_Composite_Assign
@@ -67,8 +66,6 @@ package body Targparm is
       SNZ,  --   Signed_Zeros
       SSL,  --   Suppress_Standard_Library
       UAM,  --   Use_Ada_Main_Program_Name
-      VMS,  --   OpenVMS
-      VXF,  --   VAX Float
       ZCD); --   ZCX_By_Default
 
    Targparm_Flags : array (Targparm_Tags) of Boolean := (others => False);
@@ -93,7 +90,6 @@ package body Targparm is
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
    MRN_Str : aliased constant Source_Buffer := "Machine_Rounds";
    PAS_Str : aliased constant Source_Buffer := "Preallocated_Stacks";
-   RTX_Str : aliased constant Source_Buffer := "RTX_RTSS_Kernel_Module";
    SAG_Str : aliased constant Source_Buffer := "Support_Aggregates";
    SAP_Str : aliased constant Source_Buffer := "Support_Atomic_Primitives";
    SCA_Str : aliased constant Source_Buffer := "Support_Composite_Assign";
@@ -105,8 +101,6 @@ package body Targparm is
    SNZ_Str : aliased constant Source_Buffer := "Signed_Zeros";
    SSL_Str : aliased constant Source_Buffer := "Suppress_Standard_Library";
    UAM_Str : aliased constant Source_Buffer := "Use_Ada_Main_Program_Name";
-   VMS_Str : aliased constant Source_Buffer := "OpenVMS";
-   VXF_Str : aliased constant Source_Buffer := "VAX_Float";
    ZCD_Str : aliased constant Source_Buffer := "ZCX_By_Default";
 
    --  The following defines a set of pointers to the above strings,
@@ -131,7 +125,6 @@ package body Targparm is
       MOV_Str'Access,
       MRN_Str'Access,
       PAS_Str'Access,
-      RTX_Str'Access,
       SAG_Str'Access,
       SAP_Str'Access,
       SCA_Str'Access,
@@ -143,8 +136,6 @@ package body Targparm is
       SNZ_Str'Access,
       SSL_Str'Access,
       UAM_Str'Access,
-      VMS_Str'Access,
-      VXF_Str'Access,
       ZCD_Str'Access);
 
    -----------------------
@@ -220,6 +211,16 @@ package body Targparm is
       end if;
 
       Opt.Address_Is_Private := False;
+
+      --  Loop through source lines
+
+      --  Note: in the case or pragmas, we are only interested in pragmas that
+      --  appear as configuration pragmas. These are left justified, so they
+      --  do not have three spaces at the start. Pragmas appearing within the
+      --  package (like Pure and No_Elaboration_Code_All) will have the three
+      --  spaces at the start and so will be ignored.
+
+      --  For a special exception, see processing for pragma Pure below
 
       P := Source_First;
       Line_Loop : while System_Text (P .. P + 10) /= "end System;" loop
@@ -470,12 +471,6 @@ package body Targparm is
             Opt.Polling_Required := True;
             goto Line_Loop_Continue;
 
-         --  Ignore pragma Pure (System)
-
-         elsif System_Text (P .. P + 20) = "pragma Pure (System);" then
-            P := P + 21;
-            goto Line_Loop_Continue;
-
          --  Queuing Policy
 
          elsif System_Text (P .. P + 22) = "pragma Queuing_Policy (" then
@@ -503,9 +498,20 @@ package body Targparm is
             Opt.Task_Dispatching_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
-         --  No other pragmas are permitted
+         --  No other configuration pragmas are permitted
 
          elsif System_Text (P .. P + 6) = "pragma " then
+
+            --  Special exception, we allow pragma Pure (System) appearing in
+            --  column one. This is an obsolete usage which may show up in old
+            --  tests with an obsolete version of system.ads, so we recognize
+            --  and ignore it to make life easier in handling such tests.
+
+            if System_Text (P .. P + 20) = "pragma Pure (System);" then
+               P := P + 21;
+               goto Line_Loop_Continue;
+            end if;
+
             Set_Standard_Error;
             Write_Line ("unrecognized line in system.ads: ");
 
@@ -666,7 +672,6 @@ package body Targparm is
                      when MOV => Machine_Overflows_On_Target         := Result;
                      when MRN => Machine_Rounds_On_Target            := Result;
                      when PAS => Preallocated_Stacks_On_Target       := Result;
-                     when RTX => RTX_RTSS_Kernel_Module_On_Target    := Result;
                      when SAG => Support_Aggregates_On_Target        := Result;
                      when SAP => Support_Atomic_Primitives_On_Target := Result;
                      when SCA => Support_Composite_Assign_On_Target  := Result;
@@ -678,8 +683,6 @@ package body Targparm is
                      when SSL => Suppress_Standard_Library_On_Target := Result;
                      when SNZ => Signed_Zeros_On_Target              := Result;
                      when UAM => Use_Ada_Main_Program_Name_On_Target := Result;
-                     when VMS => OpenVMS_On_Target                   := Result;
-                     when VXF => VAX_Float_On_Target                 := Result;
                      when ZCD => ZCX_By_Default_On_Target            := Result;
 
                      goto Line_Loop_Continue;
@@ -715,13 +718,6 @@ package body Targparm is
             raise Unrecoverable_Error;
          end if;
       end loop Line_Loop;
-
-      --  Now that OpenVMS_On_Target has been given its definitive value,
-      --  change the multi-unit index character from '~' to '$' for OpenVMS.
-
-      if OpenVMS_On_Target then
-         Multi_Unit_Index_Character := '$';
-      end if;
 
       if Fatal then
          raise Unrecoverable_Error;

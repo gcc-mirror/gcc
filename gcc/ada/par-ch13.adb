@@ -170,6 +170,8 @@ package body Ch13 is
       Scan; -- past WITH
       Aspects := Empty_List;
 
+      --  Loop to scan aspects
+
       loop
          OK := True;
 
@@ -195,7 +197,7 @@ package body Ch13 is
          --  The aspect mark is not recognized
 
          if A_Id = No_Aspect then
-            Error_Msg_SC ("aspect identifier expected");
+            Error_Msg_N ("& is not a valid aspect identifier", Token_Node);
             OK := False;
 
             --  Check bad spelling
@@ -203,8 +205,8 @@ package body Ch13 is
             for J in Aspect_Id_Exclude_No_Aspect loop
                if Is_Bad_Spelling_Of (Token_Name, Aspect_Names (J)) then
                   Error_Msg_Name_1 := Aspect_Names (J);
-                  Error_Msg_SC -- CODEFIX
-                    ("\possible misspelling of%");
+                  Error_Msg_N -- CODEFIX
+                    ("\possible misspelling of%", Token_Node);
                   exit;
                end if;
             end loop;
@@ -223,9 +225,13 @@ package body Ch13 is
                Scan; -- past arrow
                Set_Expression (Aspect, P_Expression);
 
-            --  The aspect may behave as a boolean aspect
+            --  If we have a correct terminator (comma or semicolon, or a
+            --  reasonable likely missing comma), then just proceed.
 
-            elsif Token = Tok_Comma then
+            elsif Token = Tok_Comma     or else
+                  Token = Tok_Semicolon or else
+                  Token = Tok_Identifier
+            then
                null;
 
             --  Otherwise the aspect contains a junk definition
@@ -445,6 +451,12 @@ package body Ch13 is
                   end if;
                end if;
 
+               --  Note if inside Depends aspect
+
+               if A_Id = Aspect_Depends then
+                  Inside_Depends := True;
+               end if;
+
                --  Parse the aspect definition depening on the expected
                --  argument kind.
 
@@ -460,6 +472,10 @@ package body Ch13 is
                      Aspect_Argument (A_Id) = Optional_Expression);
                   Set_Expression (Aspect, P_Expression);
                end if;
+
+               --  Unconditionally reset flag for Inside_Depends
+
+               Inside_Depends := False;
             end if;
 
             --  Add the aspect to the resulting list only when it was properly
@@ -468,24 +484,61 @@ package body Ch13 is
             if OK then
                Append (Aspect, Aspects);
             end if;
+         end if;
 
-            --  The aspect specification list contains more than one aspect
+         --  Merge here after good or bad aspect (we should be at a comma
+         --  or a semicolon, but there might be other possible errors).
 
-            if Token = Tok_Comma then
-               Scan; -- past comma
-               goto Continue;
+         --  The aspect specification list contains more than one aspect
 
-            --  Check for a missing comma between two aspects. Emit an error
-            --  and proceed to the next aspect.
+         if Token = Tok_Comma then
+            Scan; -- past comma
+            goto Continue;
 
-            elsif Token = Tok_Identifier
-              and then Get_Aspect_Id (Token_Name) /= No_Aspect
-            then
-               declare
-                  Scan_State : Saved_Scan_State;
+         --  Check for a missing comma between two aspects. Emit an error
+         --  and proceed to the next aspect.
 
-               begin
-                  Save_Scan_State (Scan_State);
+         elsif Token = Tok_Identifier
+           and then Get_Aspect_Id (Token_Name) /= No_Aspect
+         then
+            declare
+               Scan_State : Saved_Scan_State;
+
+            begin
+               Save_Scan_State (Scan_State);
+               Scan; -- past identifier
+
+               --  Attempt to detect ' or => following a potential aspect
+               --  mark.
+
+               if Token = Tok_Apostrophe or else Token = Tok_Arrow then
+                  Restore_Scan_State (Scan_State);
+                  Error_Msg_AP -- CODEFIX
+                    ("|missing "",""");
+                  goto Continue;
+
+               --  The construct following the current aspect is not an
+               --  aspect.
+
+               else
+                  Restore_Scan_State (Scan_State);
+               end if;
+            end;
+
+         --  Check for a mistyped semicolon in place of a comma between two
+         --  aspects. Emit an error and proceed to the next aspect.
+
+         elsif Token = Tok_Semicolon then
+            declare
+               Scan_State : Saved_Scan_State;
+
+            begin
+               Save_Scan_State (Scan_State);
+               Scan; -- past semicolon
+
+               if Token = Tok_Identifier
+                 and then Get_Aspect_Id (Token_Name) /= No_Aspect
+               then
                   Scan; -- past identifier
 
                   --  Attempt to detect ' or => following a potential aspect
@@ -493,64 +546,30 @@ package body Ch13 is
 
                   if Token = Tok_Apostrophe or else Token = Tok_Arrow then
                      Restore_Scan_State (Scan_State);
-                     Error_Msg_AP -- CODEFIX
-                       ("|missing "",""");
+                     Error_Msg_SC -- CODEFIX
+                       ("|"";"" should be "",""");
+                     Scan; -- past semicolon
                      goto Continue;
-
-                  --  The construct following the current aspect is not an
-                  --  aspect.
-
-                  else
-                     Restore_Scan_State (Scan_State);
                   end if;
-               end;
+               end if;
 
-            --  Check for a mistyped semicolon in place of a comma between two
-            --  aspects. Emit an error and proceed to the next aspect.
+               --  The construct following the current aspect is not an
+               --  aspect.
 
-            elsif Token = Tok_Semicolon then
-               declare
-                  Scan_State : Saved_Scan_State;
-
-               begin
-                  Save_Scan_State (Scan_State);
-                  Scan; -- past semicolon
-
-                  if Token = Tok_Identifier
-                    and then Get_Aspect_Id (Token_Name) /= No_Aspect
-                  then
-                     Scan; -- past identifier
-
-                     --  Attempt to detect ' or => following a potential aspect
-                     --  mark.
-
-                     if Token = Tok_Apostrophe or else Token = Tok_Arrow then
-                        Restore_Scan_State (Scan_State);
-                        Error_Msg_SC -- CODEFIX
-                          ("|"";"" should be "",""");
-                        Scan; -- past semicolon
-                        goto Continue;
-                     end if;
-                  end if;
-
-                  --  The construct following the current aspect is not an
-                  --  aspect.
-
-                  Restore_Scan_State (Scan_State);
-               end;
-            end if;
-
-            --  Must be terminator character
-
-            if Semicolon then
-               T_Semicolon;
-            end if;
-
-            exit;
-
-         <<Continue>>
-            null;
+               Restore_Scan_State (Scan_State);
+            end;
          end if;
+
+         --  Must be terminator character
+
+         if Semicolon then
+            T_Semicolon;
+         end if;
+
+         exit;
+
+      <<Continue>>
+         null;
       end loop;
 
       return Aspects;

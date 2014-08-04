@@ -236,14 +236,17 @@ package body Treepr is
       end case;
    end p;
 
+   ---------
+   -- par --
+   ---------
+
+   function par (N : Union_Id) return Node_Or_Entity_Id renames p;
+
    --------
    -- pe --
    --------
 
-   procedure pe (E : Elist_Id) is
-   begin
-      Print_Tree_Elist (E);
-   end pe;
+   procedure pe (N : Union_Id) renames pn;
 
    --------
    -- pl --
@@ -327,10 +330,13 @@ package body Treepr is
    -- pp --
    --------
 
-   procedure pp (N : Union_Id) is
-   begin
-      pn (N);
-   end pp;
+   procedure pp (N : Union_Id) renames pn;
+
+   ---------
+   -- ppp --
+   ---------
+
+   procedure ppp (N : Union_Id) renames pt;
 
    ----------------
    -- Print_Char --
@@ -597,49 +603,18 @@ package body Treepr is
 
             begin
                case M is
-                  when Default_Mechanism
-                                    => Write_Str ("Default");
-                  when By_Copy
-                                    => Write_Str ("By_Copy");
-                  when By_Reference
-                                    => Write_Str ("By_Reference");
-                  when By_Descriptor
-                                    => Write_Str ("By_Descriptor");
-                  when By_Descriptor_UBS
-                                    => Write_Str ("By_Descriptor_UBS");
-                  when By_Descriptor_UBSB
-                                    => Write_Str ("By_Descriptor_UBSB");
-                  when By_Descriptor_UBA
-                                    => Write_Str ("By_Descriptor_UBA");
-                  when By_Descriptor_S
-                                    => Write_Str ("By_Descriptor_S");
-                  when By_Descriptor_SB
-                                    => Write_Str ("By_Descriptor_SB");
-                  when By_Descriptor_A
-                                    => Write_Str ("By_Descriptor_A");
-                  when By_Descriptor_NCA
-                                    => Write_Str ("By_Descriptor_NCA");
-                  when By_Short_Descriptor
-                                    => Write_Str ("By_Short_Descriptor");
-                  when By_Short_Descriptor_UBS
-                                    => Write_Str ("By_Short_Descriptor_UBS");
-                  when By_Short_Descriptor_UBSB
-                                    => Write_Str ("By_Short_Descriptor_UBSB");
-                  when By_Short_Descriptor_UBA
-                                    => Write_Str ("By_Short_Descriptor_UBA");
-                  when By_Short_Descriptor_S
-                                    => Write_Str ("By_Short_Descriptor_S");
-                  when By_Short_Descriptor_SB
-                                    => Write_Str ("By_Short_Descriptor_SB");
-                  when By_Short_Descriptor_A
-                                    => Write_Str ("By_Short_Descriptor_A");
-                  when By_Short_Descriptor_NCA
-                                    => Write_Str ("By_Short_Descriptor_NCA");
+                  when Default_Mechanism        =>
+                     Write_Str ("Default");
+
+                  when By_Copy                  =>
+                     Write_Str ("By_Copy");
+
+                  when By_Reference             =>
+                     Write_Str ("By_Reference");
 
                   when 1 .. Mechanism_Type'Last =>
                      Write_Str ("By_Copy if size <= ");
                      Write_Int (Int (M));
-
                end case;
             end;
 
@@ -1583,19 +1558,19 @@ package body Treepr is
    -- pt --
    --------
 
-   procedure pt (N : Node_Id) is
+   procedure pt (N : Union_Id) is
    begin
-      Print_Node_Subtree (N);
+      case N is
+         when List_Low_Bound .. List_High_Bound - 1 =>
+            Print_List_Subtree (List_Id (N));
+         when Node_Range =>
+            Print_Node_Subtree (Node_Id (N));
+         when Elist_Range =>
+            Print_Elist_Subtree (Elist_Id (N));
+         when others =>
+            pp (N);
+      end case;
    end pt;
-
-   ---------
-   -- ppp --
-   ---------
-
-   procedure ppp (N : Node_Id) is
-   begin
-      pt (N);
-   end ppp;
 
    -------------------
    -- Serial_Number --

@@ -3545,19 +3545,11 @@ build_vec_init (tree base, tree maxindex, tree init,
       try_block = begin_try_block ();
     }
 
-  /* If the initializer is {}, then all elements are initialized from {}.
-     But for non-classes, that's the same as value-initialization.  */
+  bool empty_list = false;
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CONSTRUCTOR_NELTS (init) == 0)
-    {
-      if (CLASS_TYPE_P (type))
-	/* Leave init alone.  */;
-      else
-	{
-	  init = NULL_TREE;
-	  explicit_value_init_p = true;
-	}
-    }
+    /* Skip over the handling of non-empty init lists.  */
+    empty_list = true;
 
   /* Maybe pull out constant value when from_array? */
 
@@ -3677,14 +3669,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    vec_free (new_vec);
 	}
 
-      /* Any elements without explicit initializers get {}.  */
-      if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
-	init = build_constructor (init_list_type_node, NULL);
-      else
-	{
-	  init = NULL_TREE;
-	  explicit_value_init_p = true;
-	}
+      /* Any elements without explicit initializers get T{}.  */
+      empty_list = true;
     }
   else if (from_array)
     {
@@ -3696,6 +3682,26 @@ build_vec_init (tree base, tree maxindex, tree init,
           if (complain & tf_error)
             error ("initializer ends prematurely");
 	  errors = true;
+	}
+    }
+
+  /* If the initializer is {}, then all elements are initialized from T{}.
+     But for non-classes, that's the same as value-initialization.  */
+  if (empty_list)
+    {
+      if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
+	{
+	  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+	      && CONSTRUCTOR_NELTS (init) == 0)
+	    /* Reuse it.  */;
+	  else
+	    init = build_constructor (init_list_type_node, NULL);
+	  CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
+	}
+      else
+	{
+	  init = NULL_TREE;
+	  explicit_value_init_p = true;
 	}
     }
 

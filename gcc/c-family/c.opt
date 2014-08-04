@@ -359,6 +359,10 @@ Wdeprecated
 C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
 
+Wdesignated-init
+C ObjC Var(warn_designated_init) Init(1) Warning
+Warn about positional initialization of structs requiring designated initializers
+
 Wdiscarded-qualifiers
 C ObjC Var(warn_discarded_qualifiers) Init(1) Warning
 Warn if type qualifiers on pointers are discarded
@@ -704,10 +708,6 @@ Warn about multiple declarations of the same object
 Wreorder
 C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code
-
-Wreturn-local-addr
-C ObjC C++ ObjC++ Var(warn_return_local_addr) Init(1) Warning
-Warn about returning a pointer/reference to a local or temporary variable.
 
 Wreturn-type
 C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1314,10 +1314,6 @@ Instrument UPC shared accesses and library calls, using GASP tool support
 fupc-instrument-functions
 C Var(flag_upc_instrument_functions)
 Instrument functions calls, using GASP tool support (implies -fupc-instrument)
-
-fuse-all-virtuals
-C++ ObjC++ Var(flag_use_all_virtuals) Init(1)
-Treat all virtual functions as odr-used
 
 fuse-cxa-atexit
 C++ ObjC++ Var(flag_use_cxa_atexit) Init(DEFAULT_USE_CXA_ATEXIT)

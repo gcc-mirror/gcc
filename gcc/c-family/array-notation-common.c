@@ -329,6 +329,14 @@ extract_array_notation_exprs (tree node, bool ignore_builtin_fn,
       vec_safe_push (*array_list, node);
       return;
     }
+  if (TREE_CODE (node) == DECL_EXPR)
+    {
+      tree x = DECL_EXPR_DECL (node);
+      if (DECL_INITIAL (x))
+	extract_array_notation_exprs (DECL_INITIAL (x),
+				      ignore_builtin_fn,
+				      array_list);
+    }
   else if (TREE_CODE (node) == STATEMENT_LIST)
     {
       tree_stmt_iterator ii_tsi;

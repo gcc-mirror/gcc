@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,8 +121,7 @@ procedure Krunch
   (Buffer        : in out String;
    Len           : in out Natural;
    Maxlen        : Natural;
-   No_Predef     : Boolean;
-   VMS_On_Target : Boolean := False);
+   No_Predef     : Boolean);
 pragma Elaborate_Body (Krunch);
 --  The full file name is stored in Buffer (1 .. Len) on entry. The file
 --  name is crunched in place and on return Len is updated, so that the
@@ -131,8 +130,6 @@ pragma Elaborate_Body (Krunch);
 --  case it may be possible that Krunch does not modify Buffer. The fourth
 --  parameter, No_Predef, is a switch which, if set to True, disables the
 --  normal special treatment of predefined library unit file names.
---  VMS_On_Target, when True, indicates to Krunch to apply the VMS treatment
---  to the children of package A, G,I or S.
 --
 --  Note: the string Buffer must have a lower bound of 1, and may not
 --  contain any blanks (in particular, it must not have leading blanks).

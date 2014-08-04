@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -194,6 +194,52 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          end;
       end loop;
    end Clear;
+
+   --------------------------
+   -- Delete_Node_At_Index --
+   --------------------------
+
+   procedure Delete_Node_At_Index
+     (HT   : in out Hash_Table_Type;
+      Indx : Hash_Type;
+      X    : in out Node_Access)
+   is
+      Prev : Node_Access;
+      Curr : Node_Access;
+
+   begin
+      Prev := HT.Buckets (Indx);
+
+      if Prev = X then
+         HT.Buckets (Indx) := Next (Prev);
+         HT.Length := HT.Length - 1;
+         Free (X);
+         return;
+      end if;
+
+      if HT.Length = 1 then
+         raise Program_Error with
+           "attempt to delete node not in its proper hash bucket";
+      end if;
+
+      loop
+         Curr := Next (Prev);
+
+         if Curr = null then
+            raise Program_Error with
+              "attempt to delete node not in its proper hash bucket";
+         end if;
+
+         if Curr = X then
+            Set_Next (Node => Prev, Next => Next (Curr));
+            HT.Length := HT.Length - 1;
+            Free (X);
+            return;
+         end if;
+
+         Prev := Curr;
+      end loop;
+   end Delete_Node_At_Index;
 
    ---------------------------
    -- Delete_Node_Sans_Free --

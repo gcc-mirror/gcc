@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived for use with GNAT from AI-00248,  which is --
 -- expected to be a part of a future expected revised Ada Reference Manual. --
@@ -81,7 +81,7 @@ package Ada.Directories is
 
    function Current_Directory return String;
    --  Returns the full directory name for the current default directory. The
-   --  name returned shall be suitable for a future call to Set_Directory.
+   --  name returned must be suitable for a future call to Set_Directory.
    --  The exception Use_Error is propagated if a default directory is not
    --  supported by the external environment.
 
@@ -121,15 +121,15 @@ package Ada.Directories is
    --  Creates zero or more directories with name New_Directory. Each
    --  non-existent directory named by New_Directory is created. For example,
    --  on a typical Unix system, Create_Path ("/usr/me/my"); would create
-   --  directory "me" in directory "usr", then create directory "my" in
-   --  directory "me". The Form can be used to give system-dependent
+   --  directory "me" in directory "usr", then create directory "my"
+   --  in directory "me". The Form can be used to give system-dependent
    --  characteristics of the directory; the interpretation of the Form
    --  parameter is implementation-defined. A null string for Form specifies
    --  the use of the default options of the implementation of the new
    --  directory. The exception Name_Error is propagated if the string given
-   --  as New_Directory does not allow the identification of any directory.
-   --  The exception Use_Error is propagated if the external environment does
-   --  not support the creation of any directories with the given name (in the
+   --  as New_Directory does not allow the identification of any directory. The
+   --  exception Use_Error is propagated if the external environment does not
+   --  support the creation of any directories with the given name (in the
    --  absence of Name_Error) and form.
    --
    --  The Form parameter is ignored
@@ -139,9 +139,9 @@ package Ada.Directories is
    --  all of its contents (possibly including other directories) are deleted.
    --  The exception Name_Error is propagated if the string given as Directory
    --  does not identify an existing directory. The exception Use_Error is
-   --  propagated if the external environment does not support the deletion of
-   --  the directory or some portion of its contents with the given name (in
-   --  the absence of Name_Error). If Use_Error is propagated, it is
+   --  propagated if the external environment does not support the deletion
+   --  of the directory or some portion of its contents with the given name
+   --  (in the absence of Name_Error). If Use_Error is propagated, it is
    --  unspecified if a portion of the contents of the directory are deleted.
 
    procedure Delete_File (Name : String);

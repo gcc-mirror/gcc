@@ -194,12 +194,15 @@ bool aarch64_modes_tieable_p (enum machine_mode mode1,
 bool aarch64_move_imm (HOST_WIDE_INT, enum machine_mode);
 bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
 			    enum machine_mode);
+bool aarch64_offset_7bit_signed_scaled_p (enum machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, enum machine_mode);
 char *aarch64_output_simd_mov_immediate (rtx, enum machine_mode, unsigned);
 bool aarch64_pad_arg_upward (enum machine_mode, const_tree);
 bool aarch64_pad_reg_upward (enum machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);
 bool aarch64_regno_ok_for_index_p (int, bool);
+bool aarch64_simd_check_vect_par_cnst_half (rtx op, enum machine_mode mode,
+					    bool high);
 bool aarch64_simd_imm_scalar_p (rtx x, enum machine_mode mode);
 bool aarch64_simd_imm_zero_p (rtx, enum machine_mode);
 bool aarch64_simd_scalar_immediate_valid_for_move (rtx, enum machine_mode);

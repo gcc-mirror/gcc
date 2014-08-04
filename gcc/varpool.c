@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "gimple.h"
 #include "lto-streamer.h"
+#include "hash-set.h"
 
 const char * const tls_model_names[]={"none", "tls-emulated", "tls-real",
 				      "tls-global-dynamic", "tls-local-dynamic",
@@ -339,8 +340,16 @@ varpool_node::ctor_useable_for_folding_p (void)
 
   /* Variables declared 'const' without an initializer
      have zero as the initializer if they may not be
-     overridden at link or run time.  */
-  if (!DECL_INITIAL (real_node->decl)
+     overridden at link or run time.
+
+     It is actually requirement for C++ compiler to optimize const variables
+     consistently. As a GNU extension, do not enfore this rule for user defined
+     weak variables, so we support interposition on:
+     static const int dummy = 0;
+     extern const int foo __attribute__((__weak__, __alias__("dummy"))); 
+   */
+  if ((!DECL_INITIAL (real_node->decl)
+       || (DECL_WEAK (decl) && !DECL_COMDAT (decl)))
       && (DECL_EXTERNAL (decl) || decl_replaceable_p (decl)))
     return false;
 
@@ -405,6 +414,7 @@ ctor_for_folding (tree decl)
   if (decl != real_decl)
     {
       gcc_assert (!DECL_INITIAL (decl)
+		  || (node->alias && node->get_alias_target () == real_node)
 		  || DECL_INITIAL (decl) == error_mark_node);
       if (node->weakref)
 	{
@@ -576,7 +586,7 @@ varpool_remove_unreferenced_decls (void)
   varpool_node *first = (varpool_node *)(void *)1;
   int i;
   struct ipa_ref *ref = NULL;
-  struct pointer_set_t *referenced = pointer_set_create ();
+  hash_set<varpool_node *> referenced;
 
   if (seen_error ())
     return;
@@ -623,7 +633,7 @@ varpool_remove_unreferenced_decls (void)
 	      && vnode->analyzed)
 	    enqueue_node (vnode, &first);
 	  else
-	    pointer_set_insert (referenced, node);
+	    referenced.add (node);
 	}
     }
   if (cgraph_dump_file)
@@ -635,13 +645,13 @@ varpool_remove_unreferenced_decls (void)
 	{
           if (cgraph_dump_file)
 	    fprintf (cgraph_dump_file, " %s", node->asm_name ());
-	  if (pointer_set_contains (referenced, node))
+	  if (referenced.contains (node))
 	    node->remove_initializer ();
 	  else
 	    node->remove ();
 	}
     }
-  pointer_set_destroy (referenced);
+
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "\n");
 }

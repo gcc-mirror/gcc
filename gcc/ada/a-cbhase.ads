@@ -444,8 +444,27 @@ package Ada.Containers.Bounded_Hashed_Sets is
          Key       : Key_Type) return Reference_Type;
 
    private
-      type Reference_Type (Element : not null access Element_Type) is
-        null record;
+      type Set_Access is access all Set;
+      for Set_Access'Storage_Size use 0;
+
+      type Reference_Control_Type is
+         new Ada.Finalization.Controlled with
+      record
+         Container : Set_Access;
+         Index     : Hash_Type;
+         Old_Pos   : Cursor;
+         Old_Hash  : Hash_Type;
+      end record;
+
+      overriding procedure Adjust (Control : in out Reference_Control_Type);
+      pragma Inline (Adjust);
+
+      overriding procedure Finalize (Control : in out Reference_Control_Type);
+      pragma Inline (Finalize);
+
+      type Reference_Type (Element : not null access Element_Type) is record
+         Control  : Reference_Control_Type;
+      end record;
 
       use Ada.Streams;
 

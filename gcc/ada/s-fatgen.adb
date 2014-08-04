@@ -401,21 +401,36 @@ package body System.Fat_Gen is
    -- Pred --
    ----------
 
-   --  Subtract from the given number a number equivalent to the value of its
-   --  least significant bit. Given that the most significant bit represents
-   --  a value of 1.0 * radix ** (exp - 1), the value we want is obtained by
-   --  shifting this by (mantissa-1) bits to the right, i.e. decreasing the
-   --  exponent by that amount.
-
-   --  Zero has to be treated specially, since its exponent is zero
-
    function Pred (X : T) return T is
       X_Frac : T;
       X_Exp  : UI;
 
    begin
+      --  Zero has to be treated specially, since its exponent is zero
+
       if X = 0.0 then
          return -Succ (X);
+
+      --  Special treatment for most negative number
+
+      elsif X = T'First then
+
+         --  If not generating infinities, we raise a constraint error
+
+         if T'Machine_Overflows then
+            raise Constraint_Error with "Pred of largest negative number";
+
+         --  Otherwise generate a negative infinity
+
+         else
+            return X / (X - X);
+         end if;
+
+      --  Subtract from the given number a number equivalent to the value
+      --  of its least significant bit. Given that the most significant bit
+      --  represents a value of 1.0 * radix ** (exp - 1), the value we want
+      --  is obtained by shifting this by (mantissa-1) bits to the right,
+      --  i.e. decreasing the exponent by that amount.
 
       else
          Decompose (X, X_Frac, X_Exp);
@@ -624,17 +639,14 @@ package body System.Fat_Gen is
    -- Succ --
    ----------
 
-   --  Similar computation to that of Pred: find value of least significant
-   --  bit of given number, and add. Zero has to be treated specially since
-   --  the exponent can be zero, and also we want the smallest denormal if
-   --  denormals are supported.
-
    function Succ (X : T) return T is
       X_Frac : T;
       X_Exp  : UI;
       X1, X2 : T;
 
    begin
+      --  Treat zero specially since it has a zero exponent
+
       if X = 0.0 then
          X1 := 2.0 ** T'Machine_Emin;
 
@@ -647,6 +659,27 @@ package body System.Fat_Gen is
          end loop;
 
          return X1;
+
+      --  Special treatment for largest positive number
+
+      elsif X = T'Last then
+
+         --  If not generating infinities, we raise a constraint error
+
+         if T'Machine_Overflows then
+            raise Constraint_Error with "Succ of largest negative number";
+
+         --  Otherwise generate a positive infinity
+
+         else
+            return X / (X - X);
+         end if;
+
+      --  Add to the given number a number equivalent to the value
+      --  of its least significant bit. Given that the most significant bit
+      --  represents a value of 1.0 * radix ** (exp - 1), the value we want
+      --  is obtained by shifting this by (mantissa-1) bits to the right,
+      --  i.e. decreasing the exponent by that amount.
 
       else
          Decompose (X, X_Frac, X_Exp);
@@ -756,12 +789,7 @@ package body System.Fat_Gen is
    -- Valid --
    -----------
 
-   --  Note: this routine does not work for VAX float. We compensate for this
-   --  in Exp_Attr by using the Valid functions in Vax_Float_Operations rather
-   --  than the corresponding instantiation of this function.
-
    function Valid (X : not null access T) return Boolean is
-
       IEEE_Emin : constant Integer := T'Machine_Emin - 1;
       IEEE_Emax : constant Integer := T'Machine_Emax - 1;
 
@@ -823,8 +851,7 @@ package body System.Fat_Gen is
       Most_Significant_Word : constant Rep_Index :=
                                 Rep_Last * Standard'Default_Bit_Order;
       --  Finding the location of the Exponent_Word is a bit tricky. In general
-      --  we assume Word_Order = Bit_Order. This expression needs to be refined
-      --  for VMS.
+      --  we assume Word_Order = Bit_Order.
 
       Exponent_Factor : constant Float_Word :=
                           2**(Float_Word'Size - 1) /
@@ -890,31 +917,5 @@ package body System.Fat_Gen is
       return (E in IEEE_Emin .. IEEE_Emax) or else
          ((E = IEEE_Emin - 1) and then abs To_Float (SR) = 1.0);
    end Valid;
-
-   ---------------------
-   -- Unaligned_Valid --
-   ---------------------
-
-   function Unaligned_Valid (A : System.Address) return Boolean is
-      subtype FS is String (1 .. T'Size / Character'Size);
-      type FSP is access FS;
-
-      function To_FSP is new Ada.Unchecked_Conversion (Address, FSP);
-
-      Local_T : aliased T;
-
-   begin
-      --  Note that we have to be sure that we do not load the value into a
-      --  floating-point register, since a signalling NaN may cause a trap.
-      --  The following assignment is what does the actual alignment, since
-      --  we know that the target Local_T is aligned.
-
-      To_FSP (Local_T'Address).all := To_FSP (A).all;
-
-      --  Now that we have an aligned value, we can use the normal aligned
-      --  version of Valid to obtain the required result.
-
-      return Valid (Local_T'Access);
-   end Unaligned_Valid;
 
 end System.Fat_Gen;

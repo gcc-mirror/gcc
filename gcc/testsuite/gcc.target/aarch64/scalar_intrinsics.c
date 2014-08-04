@@ -293,11 +293,26 @@ test_vtstd_u64 (uint64_t a, uint64_t b)
   return res;
 }
 
-/* { dg-final { scan-assembler-times "\\taddp\\td\[0-9\]+, v\[0-9\]+\.2d" 1 } } */
+/* { dg-final { scan-assembler-times "\\tfaddp\\td\[0-9\]+, v\[0-9\]+\.2d" 1 } } */
 
+float64_t
+test_vpaddd_f64 (float64x2_t a)
+{
+  return vpaddd_f64 (a);
+}
+
+/* { dg-final { scan-assembler-times "\\taddp\\td\[0-9\]+, v\[0-9\]+\.2d" 2 } } */
+
+int64_t
 test_vpaddd_s64 (int64x2_t a)
 {
   return vpaddd_s64 (a);
+}
+
+uint64_t
+test_vpaddd_u64 (uint64x2_t a)
+{
+  return vpaddd_u64 (a);
 }
 
 /* { dg-final { scan-assembler-times "\\tuqadd\\td\[0-9\]+" 1 } } */

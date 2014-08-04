@@ -52,10 +52,6 @@ package body Bindgen is
    Last : Natural := 0;
    --  Last location in Statement_Buffer currently set
 
-   With_DECGNAT : Boolean := False;
-   --  Flag which indicates whether the program uses the DECGNAT library
-   --  (presence of the unit DEC).
-
    With_GNARL : Boolean := False;
    --  Flag which indicates whether the program uses the GNARL library
    --  (presence of the unit System.OS_Interface)
@@ -162,13 +158,6 @@ package body Bindgen is
    --  are present, the binder value overrides). The value is in milliseconds.
    --  A value of zero indicates that time slicing should be suppressed. If no
    --  pragma is present, and no -T switch was used, the value is -1.
-
-   --  Heap_Size is the heap to use for memory allocations set by use of a
-   --  -Hnn parameter for the binder or by the GNAT$NO_MALLOC_64 logical.
-   --  Valid values are 32 and 64. This switch is only effective on VMS.
-
-   --  Float_Format is the float representation in use. Valid values are
-   --  'I' for IEEE and 'V' for VAX Float. This is only for VMS.
 
    --  WC_Encoding shows the wide character encoding method used for the main
    --  program. This is one of the encoding letters defined in
@@ -325,18 +314,16 @@ package body Bindgen is
    --  Move routine for sorting linker options
 
    procedure Resolve_Binder_Options;
-   --  Set the value of With_GNARL and With_DECGNAT. The latter only on VMS
-   --  since it tests for a package named "dec" which might cause a conflict
-   --  on non-VMS systems.
+   --  Set the value of With_GNARL
 
    procedure Set_Char (C : Character);
    --  Set given character in Statement_Buffer at the Last + 1 position
    --  and increment Last by one to reflect the stored character.
 
    procedure Set_Int (N : Int);
-   --  Set given value in decimal in Statement_Buffer with no spaces
-   --  starting at the Last + 1 position, and updating Last past the value.
-   --  A minus sign is output for a negative value.
+   --  Set given value in decimal in Statement_Buffer with no spaces starting
+   --  at the Last + 1 position, and updating Last past the value. A minus sign
+   --  is output for a negative value.
 
    procedure Set_Boolean (B : Boolean);
    --  Set given boolean value in Statement_Buffer at the Last + 1 position
@@ -346,9 +333,9 @@ package body Bindgen is
    --  Initializes contents of IS_Pragma_Settings table from ALI table
 
    procedure Set_Main_Program_Name;
-   --  Given the main program name in Name_Buffer (length in Name_Len)
-   --  generate the name of the routine to be used in the call. The name
-   --  is generated starting at Last + 1, and Last is updated past it.
+   --  Given the main program name in Name_Buffer (length in Name_Len) generate
+   --  the name of the routine to be used in the call. The name is generated
+   --  starting at Last + 1, and Last is updated past it.
 
    procedure Set_Name_Buffer;
    --  Set the value stored in positions 1 .. Name_Len of the Name_Buffer
@@ -361,9 +348,9 @@ package body Bindgen is
    --  Last + 1 position, and updating last past the string value.
 
    procedure Set_String_Replace (S : String);
-   --  Replaces the last S'Length characters in the Statement_Buffer with
-   --  the characters of S. The caller must ensure that these characters do
-   --  in fact exist in the Statement_Buffer.
+   --  Replaces the last S'Length characters in the Statement_Buffer with the
+   --  characters of S. The caller must ensure that these characters do in fact
+   --  exist in the Statement_Buffer.
 
    type Qualification_Mode is (Dollar_Sign, Dot, Double_Underscores);
 
@@ -374,9 +361,9 @@ package body Bindgen is
    --  underscores (__), a dollar sign ($) or left as is.
 
    procedure Set_Unit_Number (U : Unit_Id);
-   --  Sets unit number (first unit is 1, leading zeroes output to line
-   --  up all output unit numbers nicely as required by the value, and
-   --  by the total number of units.
+   --  Sets unit number (first unit is 1, leading zeroes output to line up all
+   --  output unit numbers nicely as required by the value, and by the total
+   --  number of units.
 
    procedure Write_Statement_Buffer;
    --  Write out contents of statement buffer up to Last, and reset Last to 0
@@ -659,36 +646,6 @@ package body Bindgen is
                  """__gnat_finalize_library_objects"");");
          end if;
 
-         --  Import entry point for environment feature enable/disable
-         --  routine, and indication that it's been called previously.
-
-         if OpenVMS_On_Target then
-            WBI ("");
-            WBI ("      procedure Set_Features;");
-            WBI ("      pragma Import (C, Set_Features, " &
-                 """__gnat_set_features"");");
-            WBI ("");
-            WBI ("      Features_Set : Integer;");
-            WBI ("      pragma Import (C, Features_Set, " &
-                 """__gnat_features_set"");");
-
-            if Opt.Heap_Size /= 0 then
-               WBI ("");
-               WBI ("      Heap_Size : Integer;");
-               WBI ("      pragma Import (C, Heap_Size, " &
-                    """__gl_heap_size"");");
-
-               Write_Statement_Buffer;
-            end if;
-
-            WBI ("");
-            WBI ("      Float_Format : Character;");
-            WBI ("      pragma Import (C, Float_Format, " &
-                    """__gl_float_format"");");
-
-            Write_Statement_Buffer;
-         end if;
-
          --  Initialize stack limit variable of the environment task if the
          --  stack check method is stack limit and stack check is enabled.
 
@@ -885,44 +842,6 @@ package body Bindgen is
             WBI ("      if Handler_Installed = 0 then");
             WBI ("         Install_Handler;");
             WBI ("      end if;");
-         end if;
-
-         --  Generate call to Set_Features
-
-         if OpenVMS_On_Target then
-
-            --  Set_Features will call IEEE$SET_FP_CONTROL appropriately
-            --  depending on the setting of Float_Format.
-
-            WBI ("");
-            Set_String ("      Float_Format := '");
-
-            if Float_Format_Specified = 'G'
-                 or else
-               Float_Format_Specified = 'D'
-            then
-               Set_Char ('V');
-            else
-               Set_Char ('I');
-            end if;
-
-            Set_String ("';");
-            Write_Statement_Buffer;
-
-            WBI ("");
-            WBI ("      if Features_Set = 0 then");
-            WBI ("         Set_Features;");
-            WBI ("      end if;");
-
-            --  Features_Set may twiddle the heap size according to a logical
-            --  name, but the binder switch must override.
-
-            if Opt.Heap_Size /= 0 then
-               Set_String ("      Heap_Size := ");
-               Set_Int (Opt.Heap_Size);
-               Set_Char   (';');
-               Write_Statement_Buffer;
-            end if;
          end if;
       end if;
 
@@ -2120,10 +2039,10 @@ package body Bindgen is
       --  files. The reason for this decision is that libraries referenced
       --  by internal routines may reference these standard library entries.
 
-      --  Note that we do not insert anything when pragma No_Run_Time has been
-      --  specified or when the standard libraries are not to be used,
-      --  otherwise on some platforms, such as VMS, we may get duplicate
-      --  symbols when linking.
+      --  Note that we do not insert anything when pragma No_Run_Time has
+      --  been specified or when the standard libraries are not to be used,
+      --  otherwise on some platforms, we may get duplicate symbols when
+      --  linking (not clear if this is still the case, but it is harmless).
 
       if not (Opt.No_Run_Time_Mode or else Opt.No_Stdlib) then
          Name_Len := 0;
@@ -2137,18 +2056,6 @@ package body Bindgen is
          --  Write directly to avoid -K output (why???)
 
          WBI ("   --   " & Name_Buffer (1 .. Name_Len));
-
-         if With_DECGNAT then
-            Name_Len := 0;
-
-            if Opt.Shared_Libgnat then
-               Add_Str_To_Name_Buffer (Shared_Lib ("decgnat"));
-            else
-               Add_Str_To_Name_Buffer ("-ldecgnat");
-            end if;
-
-            Write_Linker_Option;
-         end if;
 
          if With_GNARL then
             Name_Len := 0;
@@ -2298,8 +2205,7 @@ package body Bindgen is
 
       Resolve_Binder_Options;
 
-      --  Usually, adafinal is called using a pragma Import C. Since Import C
-      --  doesn't have the same semantics for VMs or CodePeer use standard Ada.
+      --  Generate standard with's
 
       if not Suppress_Standard_Library_On_Target then
          if CodePeer_Mode then
@@ -2492,6 +2398,14 @@ package body Bindgen is
            Ada_Main &
            ", Body_File_Name => """ &
            Name_Buffer (1 .. Name_Len + 3));
+
+      --  Generate pragma Suppress (Overflow_Check). This is needed for recent
+      --  versions of the compiler which have overflow checks on by default.
+      --  We do not want overflow checking enabled for the increments of the
+      --  elaboration variables (since this can cause an unwanted reference to
+      --  the last chance exception handler for limited run-times).
+
+      WBI ("pragma Suppress (Overflow_Check);");
 
       --  Generate with of System.Restrictions to initialize
       --  Run_Time_Restrictions.
@@ -3016,12 +2930,6 @@ package body Bindgen is
          --  application.
 
          Check_Package (With_GNARL, "system.os_interface%s");
-
-         --  Ditto for declib and the "dec" package
-
-         if OpenVMS_On_Target then
-            Check_Package (With_DECGNAT, "dec%s");
-         end if;
 
          --  Ditto for the use of restricted tasking
 

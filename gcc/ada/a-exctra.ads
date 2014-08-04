@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -44,13 +44,16 @@ package Ada.Exceptions.Traceback is
    subtype Code_Loc is System.Address;
    --  Code location in executing program
 
-   type Tracebacks_Array is array (Positive range <>) of STBE.Traceback_Entry;
+   subtype Tracebacks_Array is STBE.Tracebacks_Array;
    --  A traceback array is an array of traceback entries
 
    function Tracebacks (E : Exception_Occurrence) return Tracebacks_Array;
    --  This function extracts the traceback information from an exception
    --  occurrence, and returns it formatted in the manner required for
    --  processing in GNAT.Traceback. See g-traceb.ads for further details.
+
+   function "=" (A, B : Tracebacks_Array) return Boolean renames STBE."=";
+   --  Make "=" operator visible directly
 
    function Get_PC (TBE : STBE.Traceback_Entry) return Code_Loc
      renames STBE.PC_For;

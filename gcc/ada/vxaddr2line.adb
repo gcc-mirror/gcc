@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2013, AdaCore                     --
+--                     Copyright (C) 2002-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,18 +41,18 @@
 --    selects the target architecture. In the absence of this parameter the
 --    default variant is chosen based on the Detect_Arch result. Generally,
 --    this parameter will only be used if vxaddr2line is recompiled manually.
---    Otherwise, the command name will always be of the form
---    <target>-vxaddr2line where there is no ambiguity on the target's
---    architecture.
+--    Otherwise, the command name will always be of the form:
+--      <target>-vxaddr2line
+--    where there is no ambiguity on the target's architecture.
 
 --  <exe_file> :
 --    The name of the partially linked binary file for the application.
 
 --  <ref_address> :
---    Runtime address (on the target) of a reference symbol you choose,
---    which name shall match the value of the Ref_Symbol variable declared
---    below. A symbol with a small offset from the beginning of the text
---    segment is better, so "adainit" is a good choice.
+--    Runtime address (on the target) of a reference symbol you choose. This
+--    name must match the value of the Ref_Symbol variable declared below.
+--    A symbol with a small offset from the beginning of the text segment is
+--    better, so "adainit" is a good choice.
 
 --  <backtrace addresses> :
 --    The call chain addresses you obtained at run time on the target and
@@ -78,7 +78,7 @@ procedure VxAddr2Line is
    --  Instantiate Modular_IO to have Put
 
    Ref_Symbol : constant String := "adainit";
-   --  This is the name of the reference symbol which runtime address shall
+   --  This is the name of the reference symbol whose runtime address must
    --  be provided as the <ref_address> argument.
 
    --  All supported architectures

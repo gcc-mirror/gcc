@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "hashtab.h"
+#include "hash-set.h"
 #include "toplev.h"
 #include "flags.h"
 #include "debug.h"
@@ -973,10 +974,15 @@ cgraph_node::create_indirect_edge (gimple call_stmt, int ecf_flags,
       edge->indirect_info->otr_token = otr_token;
       edge->indirect_info->otr_type = otr_type;
       edge->indirect_info->outer_type = context.outer_type;
+      edge->indirect_info->speculative_outer_type
+	 = context.speculative_outer_type;
       edge->indirect_info->offset = context.offset;
+      edge->indirect_info->speculative_offset = context.speculative_offset;
       edge->indirect_info->maybe_in_construction
 	 = context.maybe_in_construction;
       edge->indirect_info->maybe_derived_type = context.maybe_derived_type;
+      edge->indirect_info->speculative_maybe_derived_type
+	 = context.speculative_maybe_derived_type;
     }
 
   edge->next_callee = indirect_calls;
@@ -2871,7 +2877,7 @@ cgraph_node::verify_node (void)
     {
       if (this_cfun->cfg)
 	{
-	  pointer_set_t *stmts = pointer_set_create ();
+	  hash_set<gimple> stmts;
 	  int i;
 	  struct ipa_ref *ref = NULL;
 
@@ -2881,13 +2887,13 @@ cgraph_node::verify_node (void)
 	    {
 	      for (gsi = gsi_start_phis (this_block);
 		   !gsi_end_p (gsi); gsi_next (&gsi))
-		pointer_set_insert (stmts, gsi_stmt (gsi));
+		stmts.add (gsi_stmt (gsi));
 	      for (gsi = gsi_start_bb (this_block);
 		   !gsi_end_p (gsi);
 		   gsi_next (&gsi))
 		{
 		  gimple stmt = gsi_stmt (gsi);
-		  pointer_set_insert (stmts, stmt);
+		  stmts.add (stmt);
 		  if (is_gimple_call (stmt))
 		    {
 		      struct cgraph_edge *e = get_edge (stmt);
@@ -2931,13 +2937,12 @@ cgraph_node::verify_node (void)
 		}
 	      }
 	    for (i = 0; iterate_reference (i, ref); i++)
-	      if (ref->stmt && !pointer_set_contains (stmts, ref->stmt))
+	      if (ref->stmt && !stmts.contains (ref->stmt))
 		{
 		  error ("reference to dead statement");
 		  cgraph_debug_gimple_stmt (this_cfun, ref->stmt);
 		  error_found = true;
 		}
-	    pointer_set_destroy (stmts);
 	}
       else
 	/* No CFG available?!  */
@@ -3043,12 +3048,9 @@ cgraph_node::get_body (void)
   data = lto_get_section_data (file_data, LTO_section_function_body,
 			       name, &len);
   if (!data)
-    {
-	debug ();
     fatal_error ("%s: section %s is missing",
 		 file_data->file_name,
 		 name);
-    }
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 

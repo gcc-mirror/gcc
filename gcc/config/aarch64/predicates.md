@@ -123,6 +123,10 @@
        (match_test "INTVAL (op) != 0
 		    && (unsigned) exact_log2 (INTVAL (op)) < 64")))
 
+(define_predicate "aarch64_mem_pair_offset"
+  (and (match_code "const_int")
+       (match_test "aarch64_offset_7bit_signed_scaled_p (mode, INTVAL (op))")))
+
 (define_predicate "aarch64_mem_pair_operand"
   (and (match_code "mem")
        (match_test "aarch64_legitimate_address_p (mode, XEXP (op, 0), PARALLEL,
@@ -207,61 +211,14 @@
 (define_special_predicate "vect_par_cnst_hi_half"
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  int nunits = GET_MODE_NUNITS (mode);
-  int i;
-
-  if (count < 1
-      || count != nunits / 2)
-    return false;
- 
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  for (i = 0; i < count; i++)
-   {
-     rtx elt = XVECEXP (op, 0, i);
-     int val;
-
-     if (GET_CODE (elt) != CONST_INT)
-       return false;
-
-     val = INTVAL (elt);
-     if (val != (nunits / 2) + i)
-       return false;
-   }
-  return true;
+  return aarch64_simd_check_vect_par_cnst_half (op, mode, true);
 })
 
 (define_special_predicate "vect_par_cnst_lo_half"
   (match_code "parallel")
 {
-  HOST_WIDE_INT count = XVECLEN (op, 0);
-  int nunits = GET_MODE_NUNITS (mode);
-  int i;
-
-  if (count < 1
-      || count != nunits / 2)
-    return false;
-
-  if (!VECTOR_MODE_P (mode))
-    return false;
-
-  for (i = 0; i < count; i++)
-   {
-     rtx elt = XVECEXP (op, 0, i);
-     int val;
-
-     if (GET_CODE (elt) != CONST_INT)
-       return false;
-
-     val = INTVAL (elt);
-     if (val != i)
-       return false;
-   }
-  return true;
+  return aarch64_simd_check_vect_par_cnst_half (op, mode, false);
 })
-
 
 (define_special_predicate "aarch64_simd_lshift_imm"
   (match_code "const_vector")

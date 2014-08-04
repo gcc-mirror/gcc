@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,10 +40,10 @@ with System.Storage_Elements;
 package System.Machine_State_Operations is
 
    subtype Code_Loc is System.Address;
-   --  Code location used in building exception tables and for call
-   --  addresses when propagating an exception (also traceback table)
-   --  Values of this type are created by using Label'Address or
-   --  extracted from machine states using Get_Code_Loc.
+   --  Code location used in building exception tables and for call addresses
+   --  when propagating an exception (also traceback table) Values of this
+   --  type are created by using Label'Address or extracted from machine
+   --  states using Get_Code_Loc.
 
    type Machine_State is new System.Address;
    --  The table based exception handling approach (see a-except.adb) isolates
@@ -66,30 +66,27 @@ package System.Machine_State_Operations is
 
    --  The initial value of type Machine_State is created by the low level
    --  routine that actually raises an exception using the special builtin
-   --  _builtin_machine_state. This value will typically encode the value
-   --  of the program counter, and relevant registers. The following
-   --  operations are defined on Machine_State values:
+   --  _builtin_machine_state. This value will typically encode the value of
+   --  the program counter, and relevant registers. The following operations
+   --  are defined on Machine_State values:
 
    function Get_Code_Loc (M : Machine_State) return Code_Loc;
-   --  This function extracts the program counter value from a machine
-   --  state, which the caller uses for searching the exception tables,
-   --  and also for recording entries in the traceback table. The call
-   --  returns a value of Null_Loc if the machine state represents the
-   --  outer level, or some other frame for which no information can be
-   --  provided.
+   --  This function extracts the program counter value from a machine state,
+   --  which the caller uses for searching the exception tables, and also for
+   --  recording entries in the traceback table. The call returns a value of
+   --  Null_Loc if the machine state represents the outer level, or some other
+   --  frame for which no information can be provided.
 
    procedure Pop_Frame (M : Machine_State);
    --  This procedure pops the machine state M so that it represents the
-   --  call point, as though the current subprogram had returned. It
-   --  changes only the value referenced by M, and does not affect
-   --  the current stack environment.
+   --  call point, as though the current subprogram had returned. It changes
+   --  only the value referenced by M, and does not affect the current stack
+   --  environment.
 
    function Fetch_Code (Loc : Code_Loc) return Code_Loc;
-   --  Some architectures (notably VMS) use a descriptor to describe
-   --  a subprogram address. This function computes the actual starting
+   --  Some architectures (notably HPUX) use a descriptor to describe a
+   --  subprogram address. This function computes the actual starting
    --  address of the code from Loc.
-   --
-   --  ??? This function will go away when 'Code_Address is fixed on VMS.
    --
    --  Do not add pragma Inline to this function: there is a curious
    --  interaction between rtsfind and front-end inlining. The exception
@@ -98,10 +95,10 @@ package System.Machine_State_Operations is
    --  compile the corresponding bodies so that inlining can take place. One
    --  of these packages is s-mastop, which depends on s-auxdec, which is still
    --  being compiled: we have not seen all the declarations in it yet, so we
-   --  get confused semantic errors.
+   --  get confused semantic errors ???
 
    procedure Set_Machine_State (M : Machine_State);
-   --  This routine sets M from the current machine state. It is called
-   --  when an exception is initially signalled to initialize the state.
+   --  This routine sets M from the current machine state. It is called when an
+   --  exception is initially signalled to initialize the state.
 
 end System.Machine_State_Operations;

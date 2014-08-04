@@ -812,16 +812,14 @@ is_reference (tree decl)
 static inline tree
 lookup_decl (tree var, omp_context *ctx)
 {
-  tree *n;
-  n = (tree *) pointer_map_contains (ctx->cb.decl_map, var);
+  tree *n = ctx->cb.decl_map->get (var);
   return *n;
 }
 
 static inline tree
 maybe_lookup_decl (const_tree var, omp_context *ctx)
 {
-  tree *n;
-  n = (tree *) pointer_map_contains (ctx->cb.decl_map, var);
+  tree *n = ctx->cb.decl_map->get (const_cast<tree> (var));
   return n ? *n : NULL_TREE;
 }
 
@@ -1359,7 +1357,7 @@ new_omp_context (gimple stmt, omp_context *outer_ctx)
       ctx->depth = 1;
     }
 
-  ctx->cb.decl_map = pointer_map_create ();
+  ctx->cb.decl_map = new hash_map<tree, tree>;
 
   return ctx;
 }
@@ -1408,7 +1406,7 @@ delete_omp_context (splay_tree_value value)
 {
   omp_context *ctx = (omp_context *) value;
 
-  pointer_map_destroy (ctx->cb.decl_map);
+  delete ctx->cb.decl_map;
 
   if (ctx->field_map)
     splay_tree_delete (ctx->field_map);
@@ -6541,7 +6539,6 @@ expand_omp_for_static_chunk (struct omp_region *region,
       gimple_stmt_iterator psi;
       gimple phi;
       edge re, ene;
-      edge_var_map_vector *head;
       edge_var_map *vm;
       size_t i;
 
@@ -6552,7 +6549,7 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	 appropriate phi nodes in iter_part_bb instead.  */
       se = single_pred_edge (fin_bb);
       re = single_succ_edge (trip_update_bb);
-      head = redirect_edge_var_map_vector (re);
+      vec<edge_var_map> *head = redirect_edge_var_map_vector (re);
       ene = single_succ_edge (entry_bb);
 
       psi = gsi_start_phis (fin_bb);
@@ -9219,7 +9216,7 @@ task_copyfn_remap_type (struct omp_taskcopy_context *tcctx, tree orig_type)
       walk_tree (&DECL_FIELD_OFFSET (new_f), copy_tree_body_r,
 		 &tcctx->cb, NULL);
       new_fields = new_f;
-      *pointer_map_insert (tcctx->cb.decl_map, f) = new_f;
+      tcctx->cb.decl_map->put (f, new_f);
     }
   TYPE_FIELDS (type) = nreverse (new_fields);
   layout_type (type);
@@ -9286,7 +9283,7 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
       tcctx.cb.copy_decl = task_copyfn_copy_decl;
       tcctx.cb.eh_lp_nr = 0;
       tcctx.cb.transform_call_graph_edges = CB_CGE_MOVE;
-      tcctx.cb.decl_map = pointer_map_create ();
+      tcctx.cb.decl_map = new hash_map<tree, tree>;
       tcctx.ctx = ctx;
 
       if (record_needs_remap)
@@ -9311,12 +9308,12 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
 	  tree *p;
 
 	  decl = OMP_CLAUSE_DECL (c);
-	  p = (tree *) pointer_map_contains (tcctx.cb.decl_map, decl);
+	  p = tcctx.cb.decl_map->get (decl);
 	  if (p == NULL)
 	    continue;
 	  n = splay_tree_lookup (ctx->sfield_map, (splay_tree_key) decl);
 	  sf = (tree) n->value;
-	  sf = *(tree *) pointer_map_contains (tcctx.cb.decl_map, sf);
+	  sf = *tcctx.cb.decl_map->get (sf);
 	  src = build_simple_mem_ref_loc (loc, sarg);
 	  src = omp_build_component_ref (src, sf);
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (*p), *p, src);
@@ -9335,11 +9332,11 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
 	  break;
 	f = (tree) n->value;
 	if (tcctx.cb.decl_map)
-	  f = *(tree *) pointer_map_contains (tcctx.cb.decl_map, f);
+	  f = *tcctx.cb.decl_map->get (f);
 	n = splay_tree_lookup (ctx->sfield_map, (splay_tree_key) decl);
 	sf = (tree) n->value;
 	if (tcctx.cb.decl_map)
-	  sf = *(tree *) pointer_map_contains (tcctx.cb.decl_map, sf);
+	  sf = *tcctx.cb.decl_map->get (sf);
 	src = build_simple_mem_ref_loc (loc, sarg);
 	src = omp_build_component_ref (src, sf);
 	dst = build_simple_mem_ref_loc (loc, arg);
@@ -9356,13 +9353,13 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
 	  break;
 	f = (tree) n->value;
 	if (tcctx.cb.decl_map)
-	  f = *(tree *) pointer_map_contains (tcctx.cb.decl_map, f);
+	  f = *tcctx.cb.decl_map->get (f);
 	n = splay_tree_lookup (ctx->sfield_map, (splay_tree_key) decl);
 	if (n != NULL)
 	  {
 	    sf = (tree) n->value;
 	    if (tcctx.cb.decl_map)
-	      sf = *(tree *) pointer_map_contains (tcctx.cb.decl_map, sf);
+	      sf = *tcctx.cb.decl_map->get (sf);
 	    src = build_simple_mem_ref_loc (loc, sarg);
 	    src = omp_build_component_ref (src, sf);
 	    if (use_pointer_for_field (decl, NULL) || is_reference (decl))
@@ -9382,13 +9379,13 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
 	n = splay_tree_lookup (ctx->field_map, (splay_tree_key) decl);
 	f = (tree) n->value;
 	if (tcctx.cb.decl_map)
-	  f = *(tree *) pointer_map_contains (tcctx.cb.decl_map, f);
+	  f = *tcctx.cb.decl_map->get (f);
 	n = splay_tree_lookup (ctx->sfield_map, (splay_tree_key) decl);
 	if (n != NULL)
 	  {
 	    sf = (tree) n->value;
 	    if (tcctx.cb.decl_map)
-	      sf = *(tree *) pointer_map_contains (tcctx.cb.decl_map, sf);
+	      sf = *tcctx.cb.decl_map->get (sf);
 	    src = build_simple_mem_ref_loc (loc, sarg);
 	    src = omp_build_component_ref (src, sf);
 	    if (use_pointer_for_field (decl, NULL))
@@ -9419,7 +9416,7 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
 	  if (n == NULL)
 	    continue;
 	  f = (tree) n->value;
-	  f = *(tree *) pointer_map_contains (tcctx.cb.decl_map, f);
+	  f = *tcctx.cb.decl_map->get (f);
 	  gcc_assert (DECL_HAS_VALUE_EXPR_P (decl));
 	  ind = DECL_VALUE_EXPR (decl);
 	  gcc_assert (TREE_CODE (ind) == INDIRECT_REF);
@@ -9427,7 +9424,7 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
 	  n = splay_tree_lookup (ctx->sfield_map,
 				 (splay_tree_key) TREE_OPERAND (ind, 0));
 	  sf = (tree) n->value;
-	  sf = *(tree *) pointer_map_contains (tcctx.cb.decl_map, sf);
+	  sf = *tcctx.cb.decl_map->get (sf);
 	  src = build_simple_mem_ref_loc (loc, sarg);
 	  src = omp_build_component_ref (src, sf);
 	  src = build_simple_mem_ref_loc (loc, src);
@@ -9438,7 +9435,7 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
 	  n = splay_tree_lookup (ctx->field_map,
 				 (splay_tree_key) TREE_OPERAND (ind, 0));
 	  df = (tree) n->value;
-	  df = *(tree *) pointer_map_contains (tcctx.cb.decl_map, df);
+	  df = *tcctx.cb.decl_map->get (df);
 	  ptr = build_simple_mem_ref_loc (loc, arg);
 	  ptr = omp_build_component_ref (ptr, df);
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (ptr), ptr,
@@ -9450,7 +9447,7 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
   append_to_statement_list (t, &list);
 
   if (tcctx.cb.decl_map)
-    pointer_map_destroy (tcctx.cb.decl_map);
+    delete tcctx.cb.decl_map;
   pop_gimplify_context (NULL);
   BIND_EXPR_BODY (bind) = list;
   pop_cfun ();

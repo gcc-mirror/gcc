@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "input.h"
 #include "hashtab.h"
+#include "hash-set.h"
 #include "langhooks.h"
 #include "bitmap.h"
 #include "function.h"
@@ -92,7 +93,7 @@ lto_symtab_encoder_new (bool for_input)
   lto_symtab_encoder_t encoder = XCNEW (struct lto_symtab_encoder_d);
 
   if (!for_input)
-    encoder->map = pointer_map_create ();
+    encoder->map = new hash_map<symtab_node *, size_t>;
   encoder->nodes.create (0);
   return encoder;
 }
@@ -105,7 +106,7 @@ lto_symtab_encoder_delete (lto_symtab_encoder_t encoder)
 {
    encoder->nodes.release ();
    if (encoder->map)
-     pointer_map_destroy (encoder->map);
+     delete encoder->map;
    free (encoder);
 }
 
@@ -119,7 +120,6 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
 			   symtab_node *node)
 {
   int ref;
-  void **slot;
 
   if (!encoder->map)
     {
@@ -130,18 +130,17 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
       return ref;
     }
 
-  slot = pointer_map_contains (encoder->map, node);
+  size_t *slot = encoder->map->get (node);
   if (!slot || !*slot)
     {
       lto_encoder_entry entry = {node, false, false, false};
       ref = encoder->nodes.length ();
       if (!slot)
-        slot = pointer_map_insert (encoder->map, node);
-      *slot = (void *) (intptr_t) (ref + 1);
+        encoder->map->put (node, ref + 1);
       encoder->nodes.safe_push (entry);
     }
   else
-    ref = (size_t) *slot - 1;
+    ref = *slot - 1;
 
   return ref;
 }
@@ -152,15 +151,14 @@ bool
 lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
 			        symtab_node *node)
 {
-  void **slot, **last_slot;
   int index;
   lto_encoder_entry last_node;
 
-  slot = pointer_map_contains (encoder->map, node);
+  size_t *slot = encoder->map->get (node);
   if (slot == NULL || !*slot)
     return false;
 
-  index = (size_t) *slot - 1;
+  index = *slot - 1;
   gcc_checking_assert (encoder->nodes[index].node == node);
 
   /* Remove from vector. We do this by swapping node with the last element
@@ -168,16 +166,14 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
   last_node = encoder->nodes.pop ();
   if (last_node.node != node)
     {
-      last_slot = pointer_map_contains (encoder->map, last_node.node);
-      gcc_checking_assert (last_slot && *last_slot);
-      *last_slot = (void *)(size_t) (index + 1);
+      gcc_assert (encoder->map->put (last_node.node, index + 1));
 
       /* Move the last element to the original spot of NODE.  */
       encoder->nodes[index] = last_node;
     }
 
   /* Remove element from hash table.  */
-  *slot = NULL;
+  encoder->map->remove (node);
   return true;
 }
 
@@ -488,7 +484,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     comdat = IDENTIFIER_POINTER (group);
   else
     comdat = "";
-  lto_output_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
+  streamer_write_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
 
   if (group)
     {
@@ -546,7 +542,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN, node->resolution);
   streamer_write_bitpack (&bp);
-  lto_output_data_stream (ob->main_stream, section, strlen (section) + 1);
+  streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
   if (node->thunk.thunk_p && !boundary_p)
     {
@@ -622,7 +618,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
     comdat = IDENTIFIER_POINTER (group);
   else
     comdat = "";
-  lto_output_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
+  streamer_write_data_stream (ob->main_stream, comdat, strlen (comdat) + 1);
 
   if (group)
     {
@@ -640,7 +636,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   section = node->get_section ();
   if (!section)
     section = "";
-  lto_output_data_stream (ob->main_stream, section, strlen (section) + 1);
+  streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
   streamer_write_enum (ob->main_stream, ld_plugin_symbol_resolution,
 		       LDPR_NUM_KNOWN, node->resolution);
@@ -819,7 +815,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
   int i;
   lto_symtab_encoder_t encoder;
   lto_symtab_encoder_iterator lsei;
-  struct pointer_set_t *reachable_call_targets = pointer_set_create ();
+  hash_set<void *> reachable_call_targets;
 
   encoder = lto_symtab_encoder_new (false);
 
@@ -902,8 +898,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      vec <cgraph_node *>targets
 		= possible_polymorphic_call_targets
 		    (edge, &final, &cache_token);
-	      if (!pointer_set_insert (reachable_call_targets,
-				       cache_token))
+	      if (!reachable_call_targets.add (cache_token))
 		{
 		  for (i = 0; i < targets.length (); i++)
 		    {
@@ -923,7 +918,6 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	    }
     }
   lto_symtab_encoder_delete (in_encoder);
-  pointer_set_destroy (reachable_call_targets);
   return encoder;
 }
 

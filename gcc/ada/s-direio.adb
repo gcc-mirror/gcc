@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package body System.Direct_IO is
    subtype AP is FCB.AFCB_Ptr;
    use type FCB.Shared_Status_Type;
 
-   use type System.CRTL.long;
+   use type System.CRTL.int64;
    use type System.CRTL.size_t;
 
    -----------------------
@@ -280,18 +280,11 @@ package body System.Direct_IO is
    ------------------
 
    procedure Set_Position (File : File_Type) is
-      use type System.CRTL.ssize_t;
       R : int;
    begin
-      if Standard'Address_Size = 64 then
-         R := fseek64
-           (File.Stream, ssize_t (File.Bytes) *
-              ssize_t (File.Index - 1), SEEK_SET);
-      else
-         R := fseek
-           (File.Stream, long (File.Bytes) *
-              long (File.Index - 1), SEEK_SET);
-      end if;
+      R :=
+        fseek64
+          (File.Stream, int64 (File.Bytes) * int64 (File.Index - 1), SEEK_SET);
 
       if R /= 0 then
          raise Use_Error;
@@ -303,20 +296,23 @@ package body System.Direct_IO is
    ----------
 
    function Size (File : File_Type) return Count is
-      use type System.CRTL.ssize_t;
+      Pos : int64;
+
    begin
       FIO.Check_File_Open (AP (File));
       File.Last_Op := Op_Other;
 
-      if fseek (File.Stream, 0, SEEK_END) /= 0 then
+      if fseek64 (File.Stream, 0, SEEK_END) /= 0 then
          raise Device_Error;
       end if;
 
-      if Standard'Address_Size = 64 then
-         return Count (ftell64 (File.Stream) / ssize_t (File.Bytes));
-      else
-         return Count (ftell (File.Stream) / long (File.Bytes));
+      Pos := ftell64 (File.Stream);
+
+      if Pos = -1 then
+         raise Use_Error;
       end if;
+
+      return Count (Pos / int64 (File.Bytes));
    end Size;
 
    -----------

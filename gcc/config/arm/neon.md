@@ -1041,7 +1041,9 @@
       }
     else
       {
-	if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 1)
+	if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 1
+	    && (!reg_overlap_mentioned_p (operands[0], operands[1])
+		|| REGNO (operands[0]) == REGNO (operands[1])))
 	  /* This clobbers CC.  */
 	  emit_insn (gen_arm_ashldi3_1bit (operands[0], operands[1]));
 	else
@@ -1141,7 +1143,9 @@
       }
     else
       {
-	if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 1)
+	if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 1
+	    && (!reg_overlap_mentioned_p (operands[0], operands[1])
+		|| REGNO (operands[0]) == REGNO (operands[1])))
 	  /* This clobbers CC.  */
 	  emit_insn (gen_arm_<shift>di3_1bit (operands[0], operands[1]));
 	else

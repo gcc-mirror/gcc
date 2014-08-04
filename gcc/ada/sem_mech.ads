@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ package Sem_Mech is
    -------------------------------------------------
 
    --  For parameters passed to subprograms, and for function return values,
-   --  as passing mechanism is defined. The entity attribute Mechanism returns
+   --  a passing mechanism is defined. The entity attribute Mechanism returns
    --  an indication of the mechanism, and Set_Mechanism can be used to set
    --  the mechanism. At the program level, there are three ways to explicitly
    --  set the mechanism:
@@ -87,42 +87,8 @@ package Sem_Mech is
    --  special information) is determined by the backend in accordance with
    --  requirements imposed by the ABI as interpreted for Ada.
 
-   By_Descriptor      : constant Mechanism_Type := -3;
-   By_Descriptor_UBS  : constant Mechanism_Type := -4;
-   By_Descriptor_UBSB : constant Mechanism_Type := -5;
-   By_Descriptor_UBA  : constant Mechanism_Type := -6;
-   By_Descriptor_S    : constant Mechanism_Type := -7;
-   By_Descriptor_SB   : constant Mechanism_Type := -8;
-   By_Descriptor_A    : constant Mechanism_Type := -9;
-   By_Descriptor_NCA  : constant Mechanism_Type := -10;
-   By_Short_Descriptor      : constant Mechanism_Type := -11;
-   By_Short_Descriptor_UBS  : constant Mechanism_Type := -12;
-   By_Short_Descriptor_UBSB : constant Mechanism_Type := -13;
-   By_Short_Descriptor_UBA  : constant Mechanism_Type := -14;
-   By_Short_Descriptor_S    : constant Mechanism_Type := -15;
-   By_Short_Descriptor_SB   : constant Mechanism_Type := -16;
-   By_Short_Descriptor_A    : constant Mechanism_Type := -17;
-   By_Short_Descriptor_NCA  : constant Mechanism_Type := -18;
-   --  These values are used only in OpenVMS ports of GNAT. Pass by descriptor
-   --  is forced, as described in the OpenVMS ABI. The suffix indicates the
-   --  descriptor type:
-   --
-   --     UBS    unaligned bit string
-   --     UBSB   aligned bit string with arbitrary bounds
-   --     UBA    unaligned bit array
-   --     S      string, also a scalar or access type parameter
-   --     SB     string with arbitrary bounds
-   --     A      contiguous array
-   --     NCA    non-contiguous array
-   --
-   --  Note: the form with no suffix is used if the Import/Export pragma
-   --  uses the simple form of the mechanism name where no descriptor
-   --  type is supplied. In this case the back end assigns a descriptor
-   --  type based on the Ada type in accordance with the OpenVMS ABI.
-
-   subtype Descriptor_Codes is Mechanism_Type
-     range By_Short_Descriptor_NCA .. By_Descriptor;
-   --  Subtype including all descriptor mechanisms
+   pragma Assert (Mechanism_Type'First = -2);
+   --  Check definition in types is right!
 
    --  All the above special values are non-positive. Positive values for
    --  Mechanism_Type values have a special meaning. They are used only in

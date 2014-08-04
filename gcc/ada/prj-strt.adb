@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1162,7 +1162,7 @@ package body Prj.Strt is
 
             --  If we have not found the variable in the package, check if the
             --  variable has been declared in the project, or in any of its
-            --  ancestors.
+            --  ancestors, or in any of the project it extends.
 
             if No (Current_Variable) then
                declare
@@ -1182,7 +1182,19 @@ package body Prj.Strt is
 
                      exit when Present (Current_Variable);
 
-                     Proj := Parent_Project_Of (Proj, In_Tree);
+                     --  If the current project is a child project, check if
+                     --  the variable is declared in its parent. Otherwise, if
+                     --  the current project extends another project, check if
+                     --  the variable is declared in one of the projects the
+                     --  current project extends.
+
+                     if No (Parent_Project_Of (Proj, In_Tree)) then
+                        Proj :=
+                          Extended_Project_Of
+                            (Project_Declaration_Of (Proj, In_Tree), In_Tree);
+                     else
+                        Proj := Parent_Project_Of (Proj, In_Tree);
+                     end if;
 
                      Set_Project_Node_Of (Variable, In_Tree, To => Proj);
 

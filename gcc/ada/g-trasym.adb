@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2012, AdaCore                     --
+--                     Copyright (C) 1999-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,49 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the default implementation for platforms where the full capability
---  is not supported. It returns tracebacks as lists of LF separated strings of
---  the form "0x..." corresponding to the addresses.
+--  This package does not require a body, since it is a package renaming. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
-with System.Address_Image;
-
-package body GNAT.Traceback.Symbolic is
-
-   ------------------------
-   -- Symbolic_Traceback --
-   ------------------------
-
-   function Symbolic_Traceback (Traceback : Tracebacks_Array) return String is
-   begin
-      if Traceback'Length = 0 then
-         return "";
-
-      else
-         declare
-            Img : String := System.Address_Image (Traceback (Traceback'First));
-
-            Result : String (1 .. (Img'Length + 3) * Traceback'Length);
-            Last   : Natural := 0;
-
-         begin
-            for J in Traceback'Range loop
-               Img := System.Address_Image (Traceback (J));
-               Result (Last + 1 .. Last + 2) := "0x";
-               Last := Last + 2;
-               Result (Last + 1 .. Last + Img'Length) := Img;
-               Last := Last + Img'Length + 1;
-               Result (Last) := ASCII.LF;
-            end loop;
-
-            return Result (1 .. Last);
-         end;
-      end if;
-   end Symbolic_Traceback;
-
-   function Symbolic_Traceback (E : Exception_Occurrence) return String is
-   begin
-      return Symbolic_Traceback (Tracebacks (E));
-   end Symbolic_Traceback;
-
-end GNAT.Traceback.Symbolic;
+pragma No_Body;

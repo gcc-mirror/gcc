@@ -58,6 +58,10 @@ package body Sprint is
    --  requiring Sloc fixup, until Set_Debug_Sloc is called to set the proper
    --  value. The call clears it back to Empty.
 
+   First_Debug_Sloc : Source_Ptr;
+   --  Sloc of first byte of the current output file if we are generating a
+   --  source debug file.
+
    Debug_Sloc : Source_Ptr;
    --  Sloc of first byte of line currently being written if we are
    --  generating a source debug file.
@@ -512,7 +516,46 @@ package body Sprint is
    procedure Set_Debug_Sloc is
    begin
       if Debug_Generated_Code and then Present (Dump_Node) then
-         Set_Sloc (Dump_Node, Debug_Sloc + Source_Ptr (Column - 1));
+         declare
+            Loc : constant Source_Ptr := Sloc (Dump_Node);
+
+         begin
+            --  Do not change the location of nodes defined in package Standard
+            --  and nodes of pragmas scanned by Targparm.
+
+            if Loc <= Standard_Location then
+               null;
+
+            --  Update the location of a node which is part of the current .dg
+            --  output. This situation occurs in comma separated parameter
+            --  declarations since each parameter references the same parameter
+            --  type node (ie. obj1, obj2 : <param-type>).
+
+            --  Note: This case is needed here since we cannot use the routine
+            --  In_Extended_Main_Code_Unit with nodes whose location is a .dg
+            --  file.
+
+            elsif Loc >= First_Debug_Sloc then
+               Set_Sloc (Dump_Node, Debug_Sloc + Source_Ptr (Column - 1));
+
+            --  Do not change the location of nodes which are not part of the
+            --  generated code
+
+            elsif not In_Extended_Main_Code_Unit (Loc) then
+               null;
+
+            else
+               Set_Sloc (Dump_Node, Debug_Sloc + Source_Ptr (Column - 1));
+            end if;
+         end;
+
+         --  We do not know the actual end location in the generated code and
+         --  it could be much closer than in the source code, so play safe.
+
+         if Nkind_In (Dump_Node, N_Case_Statement, N_If_Statement) then
+            Set_End_Location (Dump_Node, Debug_Sloc + Source_Ptr (Column - 1));
+         end if;
+
          Dump_Node := Empty;
       end if;
    end Set_Debug_Sloc;
@@ -573,6 +616,7 @@ package body Sprint is
          Debug_Flag_G := False;
          Debug_Flag_O := False;
          Debug_Flag_S := False;
+         First_Debug_Sloc := No_Location;
 
          --  Dump requested units
 
@@ -590,6 +634,7 @@ package body Sprint is
                if Debug_Generated_Code then
                   Set_Special_Output (Print_Debug_Line'Access);
                   Create_Debug_Source (Source_Index (U), Debug_Sloc);
+                  First_Debug_Sloc := Debug_Sloc;
                   Write_Source_Line (1);
                   Last_Line_Printed := 1;
                   Sprint_Node (Cunit (U));
@@ -1350,10 +1395,55 @@ package body Sprint is
             Sprint_Node (Component_Definition (Node));
 
          --  A contract node should not appear in the tree. It is a semantic
-         --  node attached to entry and [generic] subprogram entities.
+         --  node attached to entry and [generic] subprogram entities. But we
+         --  still provide meaningful output, in case called from the debugger.
 
          when N_Contract =>
-            raise Program_Error;
+            declare
+               P : Node_Id;
+
+            begin
+               Indent_Begin;
+               Write_Str ("N_Contract node");
+               Write_Eol;
+
+               Write_Indent_Str ("Pre_Post_Conditions");
+               Indent_Begin;
+
+               P := Pre_Post_Conditions (Node);
+               while Present (P) loop
+                  Sprint_Node (P);
+                  P := Next_Pragma (P);
+               end loop;
+
+               Write_Eol;
+               Indent_End;
+
+               Write_Indent_Str ("Contract_Test_Cases");
+               Indent_Begin;
+
+               P := Contract_Test_Cases (Node);
+               while Present (P) loop
+                  Sprint_Node (P);
+                  P := Next_Pragma (P);
+               end loop;
+
+               Write_Eol;
+               Indent_End;
+
+               Write_Indent_Str ("Classifications");
+               Indent_Begin;
+
+               P := Classifications (Node);
+               while Present (P) loop
+                  Sprint_Node (P);
+                  P := Next_Pragma (P);
+               end loop;
+
+               Write_Eol;
+               Indent_End;
+               Indent_End;
+            end;
 
          when N_Decimal_Fixed_Point_Definition =>
             Write_Str_With_Col_Check_Sloc (" delta ");
@@ -2261,6 +2351,7 @@ package body Sprint is
 
                   begin
                      if Nkind (Odef) = N_Identifier
+                       and then Present (Etype (Odef))
                        and then Is_Array_Type (Etype (Odef))
                        and then not Is_Constrained (Etype (Odef))
                        and then Present (Etype (Def_Id))
@@ -4083,7 +4174,7 @@ package body Sprint is
 
                   --  Array types and string types
 
-                  when E_Array_Type | E_String_Type =>
+                  when E_Array_Type =>
                      Write_Header;
                      Write_Str ("array (");
 

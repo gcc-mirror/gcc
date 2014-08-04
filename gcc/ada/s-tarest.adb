@@ -126,7 +126,7 @@ package body System.Tasking.Restricted.Stages is
       Elaborated    : Access_Boolean;
       Task_Image    : String;
       Created_Task  : Task_Id);
-   --  Code shared between Create_Restricted_Task_Concurrent and
+   --  Code shared between Create_Restricted_Task (the concurrent version) and
    --  Create_Restricted_Task_Sequential. See comment of the former in the
    --  specification of this package.
 
@@ -538,7 +538,6 @@ package body System.Tasking.Restricted.Stages is
 
       if CPU /= Unspecified_CPU
         and then (CPU < Integer (System.Multiprocessors.CPU_Range'First)
-          or else CPU > Integer (System.Multiprocessors.CPU_Range'Last)
           or else CPU > Integer (System.Multiprocessors.Number_Of_CPUs))
       then
          raise Tasking_Error with "CPU not in range";

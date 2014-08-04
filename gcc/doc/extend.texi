@@ -5890,6 +5890,17 @@ and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
 
+@item designated_init
+This attribute may only be applied to structure types.  It indicates
+that any initialization of an object of this type must use designated
+initializers rather than positional initializers.  The intent of this
+attribute is to allow the programmer to indicate that a structure's
+layout may change, and that therefore relying on positional
+initialization will result in future breakage.
+
+GCC emits warnings based on this attribute by default; use
+@option{-Wno-designated-init} to suppress them.
+
 @end table
 
 To specify multiple attributes, separate them by commas within the

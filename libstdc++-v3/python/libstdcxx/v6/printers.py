@@ -851,14 +851,14 @@ class SingleObjContainerPrinter(object):
         return gdb.types.apply_type_recognizers(gdb.types.get_type_recognizers(),
                                                 type) or str(type)
 
-    class _contained:
+    class _contained(Iterator):
         def __init__ (self, val):
             self.val = val
 
         def __iter__ (self):
             return self
 
-        def next (self):
+        def __next__(self):
             if self.val is None:
                 raise StopIteration
             retval = self.val

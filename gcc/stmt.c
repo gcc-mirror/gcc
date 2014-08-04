@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "optabs.h"
 #include "target.h"
+#include "hash-set.h"
 #include "pointer-set.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
@@ -1183,7 +1184,7 @@ expand_case (gimple stmt)
      how to expand this switch().  */
   uniq = 0;
   count = 0;
-  struct pointer_set_t *seen_labels = pointer_set_create ();
+  hash_set<tree> seen_labels;
   compute_cases_per_edge (stmt);
 
   for (i = ncases - 1; i >= 1; --i)
@@ -1203,7 +1204,7 @@ expand_case (gimple stmt)
 
       /* If we have not seen this label yet, then increase the
 	 number of unique case node targets seen.  */
-      if (!pointer_set_insert (seen_labels, lab))
+      if (!seen_labels.add (lab))
 	uniq++;
 
       /* The bounds on the case range, LOW and HIGH, have to be converted
@@ -1231,7 +1232,6 @@ expand_case (gimple stmt)
           case_edge->probability / (intptr_t)(case_edge->aux),
           case_node_pool);
     }
-  pointer_set_destroy (seen_labels);
   reset_out_edges_aux (bb);
 
   /* cleanup_tree_cfg removes all SWITCH_EXPR with a single

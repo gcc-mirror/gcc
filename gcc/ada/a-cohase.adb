@@ -824,6 +824,11 @@ package body Ada.Containers.Hashed_Sets is
          HT_Ops.Reserve_Capacity (HT, 1);
       end if;
 
+      if HT.Busy > 0 then
+         raise Program_Error with
+           "attempt to tamper with cursors (set is busy)";
+      end if;
+
       Local_Insert (HT, New_Item, Node, Inserted);
 
       if Inserted
@@ -1921,6 +1926,24 @@ package body Ada.Containers.Hashed_Sets is
       -- Local Subprograms --
       -----------------------
 
+      ------------
+      -- Adjust --
+      ------------
+
+      procedure Adjust (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               HT : Hash_Table_Type renames Control.Container.all.HT;
+               B : Natural renames HT.Busy;
+               L : Natural renames HT.Lock;
+            begin
+               B := B + 1;
+               L := L + 1;
+            end;
+         end if;
+      end Adjust;
+
       function Equivalent_Key_Node
         (Key  : Key_Type;
          Node : Node_Access) return Boolean;
@@ -2046,6 +2069,33 @@ package body Ada.Containers.Hashed_Sets is
          Free (X);
       end Exclude;
 
+      --------------
+      -- Finalize --
+      --------------
+
+      procedure Finalize (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               HT : Hash_Table_Type renames Control.Container.all.HT;
+               B  : Natural renames HT.Busy;
+               L  : Natural renames HT.Lock;
+            begin
+               B := B - 1;
+               L := L - 1;
+            end;
+
+            if Hash (Key (Element (Control.Old_Pos))) /= Control.Old_Hash
+            then
+               HT_Ops.Delete_Node_At_Index
+                 (Control.Container.HT, Control.Index, Control.Old_Pos.Node);
+               raise Program_Error with "key not preserved in reference";
+            end if;
+
+            Control.Container := null;
+         end if;
+      end Finalize;
+
       ----------
       -- Find --
       ----------
@@ -2056,13 +2106,12 @@ package body Ada.Containers.Hashed_Sets is
       is
          HT   : Hash_Table_Type renames Container'Unrestricted_Access.HT;
          Node : constant Node_Access := Key_Keys.Find (HT, Key);
-
       begin
          if Node = null then
             return No_Element;
+         else
+            return Cursor'(Container'Unrestricted_Access, Node);
          end if;
-
-         return Cursor'(Container'Unrestricted_Access, Node);
       end Find;
 
       ---------
@@ -2115,11 +2164,24 @@ package body Ada.Containers.Hashed_Sets is
            (Vet (Position),
             "bad cursor in function Reference_Preserving_Key");
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Position has
-         --  not changed.  ???
-
-         return (Element => Position.Node.Element'Access);
+         declare
+            HT : Hash_Table_Type renames Position.Container.all.HT;
+            B  : Natural renames HT.Busy;
+            L  : Natural renames HT.Lock;
+         begin
+            return R : constant Reference_Type :=
+                         (Element => Position.Node.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container'Unrestricted_Access,
+                              Index    => HT_Ops.Index (HT, Position.Node),
+                              Old_Pos  => Position,
+                              Old_Hash => Hash (Key (Position))))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key
@@ -2130,14 +2192,28 @@ package body Ada.Containers.Hashed_Sets is
 
       begin
          if Node = null then
-            raise Constraint_Error with "Key not in set";
+            raise Constraint_Error with "key not in set";
          end if;
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Key has not
-         --  changed.  ???
-
-         return (Element => Node.Element'Access);
+         declare
+            HT : Hash_Table_Type renames Container.HT;
+            B  : Natural renames HT.Busy;
+            L  : Natural renames HT.Lock;
+            P  : constant Cursor := Find (Container, Key);
+         begin
+            return R : constant Reference_Type :=
+                         (Element => Node.Element'Access,
+                          Control =>
+                            (Controlled with
+                              Container'Unrestricted_Access,
+                              Index    => HT_Ops.Index (HT, P.Node),
+                              Old_Pos  => P,
+                              Old_Hash => Hash (Key)))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
+         end;
       end Reference_Preserving_Key;
 
       -------------

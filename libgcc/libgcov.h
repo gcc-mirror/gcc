@@ -83,6 +83,25 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define GCOV_LOCKED 0
 #endif
 
+/* In libgcov we need these functions to be extern, so prefix them with
+   __gcov.  In libgcov they must also be hidden so that the instance in
+   the executable is not also used in a DSO.  */
+#define gcov_var __gcov_var
+#define gcov_open __gcov_open
+#define gcov_close __gcov_close
+#define gcov_write_tag_length __gcov_write_tag_length
+#define gcov_position __gcov_position
+#define gcov_seek __gcov_seek
+#define gcov_rewrite __gcov_rewrite
+#define gcov_is_error __gcov_is_error
+#define gcov_write_unsigned __gcov_write_unsigned
+#define gcov_write_counter __gcov_write_counter
+#define gcov_write_summary __gcov_write_summary
+#define gcov_read_unsigned __gcov_read_unsigned
+#define gcov_read_counter __gcov_read_counter
+#define gcov_read_summary __gcov_read_summary
+#define gcov_do_dump __gcov_do_dump
+
 #else /* IN_GCOV_TOOL */
 /* About the host.  */
 /* This path will be compiled for the host and linked into
@@ -125,24 +144,6 @@ extern struct gcov_info *gcov_list;
 #define GCOV_LINKAGE /* nothing */
 #endif
 #endif
-
-/* In libgcov we need these functions to be extern, so prefix them with
-   __gcov.  In libgcov they must also be hidden so that the instance in
-   the executable is not also used in a DSO.  */
-#define gcov_var __gcov_var
-#define gcov_open __gcov_open
-#define gcov_close __gcov_close
-#define gcov_write_tag_length __gcov_write_tag_length
-#define gcov_position __gcov_position
-#define gcov_seek __gcov_seek
-#define gcov_rewrite __gcov_rewrite
-#define gcov_is_error __gcov_is_error
-#define gcov_write_unsigned __gcov_write_unsigned
-#define gcov_write_counter __gcov_write_counter
-#define gcov_write_summary __gcov_write_summary
-#define gcov_read_unsigned __gcov_read_unsigned
-#define gcov_read_counter __gcov_read_counter
-#define gcov_read_summary __gcov_read_summary
 
 /* Poison these, so they don't accidentally slip in.  */
 #pragma GCC poison gcov_write_string gcov_write_tag gcov_write_length
@@ -265,7 +266,7 @@ GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
                                       const struct gcov_summary *)
     ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/) ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE inline void gcov_rewrite (void);
+GCOV_LINKAGE void gcov_rewrite (void) ATTRIBUTE_HIDDEN;
 
 /* "Counts" stored in gcda files can be a real counter value, or
    an target address. When differentiate these two types because

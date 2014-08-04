@@ -1621,6 +1621,23 @@ package body Ada.Containers.Bounded_Hashed_Sets is
       -- Local Subprograms --
       -----------------------
 
+      ------------
+      -- Adjust --
+      ------------
+
+      procedure Adjust (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               B : Natural renames Control.Container.Busy;
+               L : Natural renames Control.Container.Lock;
+            begin
+               B := B + 1;
+               L := L + 1;
+            end;
+         end if;
+      end Adjust;
+
       function Equivalent_Key_Node
         (Key  : Key_Type;
          Node : Node_Type) return Boolean;
@@ -1632,11 +1649,11 @@ package body Ada.Containers.Bounded_Hashed_Sets is
 
       package Key_Keys is
          new Hash_Tables.Generic_Bounded_Keys
-          (HT_Types  => HT_Types,
-           Next      => Next,
-           Set_Next  => Set_Next,
-           Key_Type  => Key_Type,
-           Hash      => Hash,
+          (HT_Types        => HT_Types,
+           Next            => Next,
+           Set_Next        => Set_Next,
+           Key_Type        => Key_Type,
+           Hash            => Hash,
            Equivalent_Keys => Equivalent_Key_Node);
 
       ------------------------
@@ -1751,6 +1768,32 @@ package body Ada.Containers.Bounded_Hashed_Sets is
          HT_Ops.Free (Container, X);
       end Exclude;
 
+      --------------
+      -- Finalize --
+      --------------
+
+      procedure Finalize (Control : in out Reference_Control_Type) is
+      begin
+         if Control.Container /= null then
+            declare
+               B : Natural renames Control.Container.Busy;
+               L : Natural renames Control.Container.Lock;
+            begin
+               B := B - 1;
+               L := L - 1;
+            end;
+
+            if Hash (Key (Element (Control.Old_Pos))) /= Control.Old_Hash
+            then
+               HT_Ops.Delete_Node_At_Index
+                 (Control.Container.all, Control.Index, Control.Old_Pos.Node);
+               raise Program_Error with "key not preserved in reference";
+            end if;
+
+            Control.Container := null;
+         end if;
+      end Finalize;
+
       ----------
       -- Find --
       ----------
@@ -1815,14 +1858,24 @@ package body Ada.Containers.Bounded_Hashed_Sets is
            (Vet (Position),
             "bad cursor in function Reference_Preserving_Key");
 
-         --  Some form of finalization will be required in order to actually
-         --  check that the key-part of the element designated by Position has
-         --  not changed.  ???
-
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
+            B : Natural renames Container.Busy;
+            L : Natural renames Container.Lock;
+
          begin
-            return (Element => N.Element'Access);
+            return R : constant Reference_Type :=
+              (Element  => N.Element'Unrestricted_Access,
+                Control =>
+                  (Controlled with
+                     Container'Unrestricted_Access,
+                     Index    => Key_Keys.Index (Container, Key (Position)),
+                     Old_Pos  => Position,
+                     Old_Hash => Hash (Key (Position))))
+         do
+               B := B + 1;
+               L := L + 1;
+            end return;
          end;
       end Reference_Preserving_Key;
 
@@ -1838,9 +1891,23 @@ package body Ada.Containers.Bounded_Hashed_Sets is
          end if;
 
          declare
-            N : Node_Type renames Container.Nodes (Node);
+            P : constant Cursor := Find (Container, Key);
+            B : Natural renames Container.Busy;
+            L : Natural renames Container.Lock;
+
          begin
-            return (Element => N.Element'Access);
+            return R : constant Reference_Type :=
+              (Element => Container.Nodes (Node).Element'Unrestricted_Access,
+               Control =>
+                 (Controlled with
+                    Container'Unrestricted_Access,
+                    Index  => Key_Keys.Index (Container, Key),
+                    Old_Pos => P,
+                    Old_Hash => Hash (Key)))
+            do
+               B := B + 1;
+               L := L + 1;
+            end return;
          end;
       end Reference_Preserving_Key;
 

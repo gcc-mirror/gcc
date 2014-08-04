@@ -26,7 +26,7 @@
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Csets;
-with Hostparm; use Hostparm;
+with Gnatvsn;
 with Makeutl;  use Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
@@ -47,11 +47,9 @@ with Snames;   use Snames;
 with Stringt;
 with Switch;   use Switch;
 with Table;
-with Targparm;
+with Targparm; use Targparm;
 with Tempdir;
 with Types;    use Types;
-with VMS_Conv; use VMS_Conv;
-with VMS_Cmds; use VMS_Cmds;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line;        use Ada.Command_Line;
@@ -60,14 +58,57 @@ with Ada.Text_IO;             use Ada.Text_IO;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure GNATCmd is
+   Normal_Exit : exception;
+   --  Raise this exception for normal program termination
+
+   Error_Exit : exception;
+   --  Raise this exception if error detected
+
+   type Command_Type is
+     (Bind,
+      Chop,
+      Clean,
+      Compile,
+      Check,
+      Sync,
+      Elim,
+      Find,
+      Krunch,
+      Link,
+      List,
+      Make,
+      Metric,
+      Name,
+      Preprocess,
+      Pretty,
+      Stack,
+      Stub,
+      Test,
+      Xref,
+      Undefined);
+
+   subtype Real_Command_Type is Command_Type range Bind .. Xref;
+   --  All real command types (excludes only Undefined).
+
+   type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
+   --  Alternate command label
+
+   Corresponding_To : constant array (Alternate_Command) of Command_Type :=
+     (Comp  => Compile,
+      Ls    => List,
+      Kr    => Krunch,
+      Prep  => Preprocess,
+      Pp    => Pretty);
+   --  Mapping of alternate commands to commands
+
    Project_Node_Tree : Project_Node_Tree_Ref;
    Project_File      : String_Access;
    Project           : Prj.Project_Id;
    Current_Verbosity : Prj.Verbosity := Prj.Default;
    Tool_Package_Name : Name_Id       := No_Name;
 
-   B_Start : String_Ptr    := new String'("b~");
-   --  Prefix of binder generated file, changed to b__ for VMS
+   B_Start : constant String := "b~";
+   --  Prefix of binder generated file
 
    Project_Tree : constant Project_Tree_Ref :=
                     new Project_Tree_Data (Is_Root_Tree => True);
@@ -119,6 +160,14 @@ procedure GNATCmd is
      Table_Initial        => 20,
      Table_Increment      => 100,
      Table_Name           => "Make.Library_Path");
+
+   package Last_Switches is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 20,
+      Table_Increment      => 100,
+      Table_Name           => "Gnatcmd.Last_Switches");
 
    --  Packages of project files to pass to Prj.Pars.Parse, depending on the
    --  tool. We allocate objects because we cannot declare aliased objects
@@ -192,8 +241,7 @@ procedure GNATCmd is
    --  The index of the command in the arguments of the GNAT driver
 
    My_Exit_Status : Exit_Status := Success;
-   --  The exit status of the spawned tool. Used to set the correct VMS
-   --  exit status.
+   --  The exit status of the spawned tool
 
    Current_Work_Dir : constant String := Get_Current_Dir;
    --  The path of the working directory
@@ -203,8 +251,120 @@ procedure GNATCmd is
    --  indicate that the underlying tool (gnatcheck, gnatpp or gnatmetric)
    --  should be invoked for all sources of all projects.
 
-   Max_OpenVMS_Logical_Length : constant Integer := 255;
-   --  The maximum length of OpenVMS logicals
+   type Command_Entry is record
+      Cname : String_Access;
+      --  Command name for GNAT xxx command
+
+      Unixcmd : String_Access;
+      --  Corresponding Unix command
+
+      Unixsws : Argument_List_Access;
+      --  List of switches to be used with the Unix command
+   end record;
+
+   Command_List : constant array (Real_Command_Type) of Command_Entry :=
+     (Bind =>
+        (Cname    => new String'("BIND"),
+         Unixcmd  => new String'("gnatbind"),
+         Unixsws  => null),
+
+      Chop =>
+        (Cname    => new String'("CHOP"),
+         Unixcmd  => new String'("gnatchop"),
+         Unixsws  => null),
+
+      Clean =>
+        (Cname    => new String'("CLEAN"),
+         Unixcmd  => new String'("gnatclean"),
+         Unixsws  => null),
+
+      Compile =>
+        (Cname    => new String'("COMPILE"),
+         Unixcmd  => new String'("gnatmake"),
+         Unixsws  => new Argument_List'(1 => new String'("-f"),
+                                        2 => new String'("-u"),
+                                        3 => new String'("-c"))),
+
+      Check =>
+        (Cname    => new String'("CHECK"),
+         Unixcmd  => new String'("gnatcheck"),
+         Unixsws  => null),
+
+      Sync =>
+        (Cname    => new String'("SYNC"),
+         Unixcmd  => new String'("gnatsync"),
+         Unixsws  => null),
+
+      Elim =>
+        (Cname    => new String'("ELIM"),
+         Unixcmd  => new String'("gnatelim"),
+         Unixsws  => null),
+
+      Find =>
+        (Cname    => new String'("FIND"),
+         Unixcmd  => new String'("gnatfind"),
+         Unixsws  => null),
+
+      Krunch =>
+        (Cname    => new String'("KRUNCH"),
+         Unixcmd  => new String'("gnatkr"),
+         Unixsws  => null),
+
+      Link =>
+        (Cname    => new String'("LINK"),
+         Unixcmd  => new String'("gnatlink"),
+         Unixsws  => null),
+
+      List =>
+        (Cname    => new String'("LIST"),
+         Unixcmd  => new String'("gnatls"),
+         Unixsws  => null),
+
+      Make =>
+        (Cname    => new String'("MAKE"),
+         Unixcmd  => new String'("gnatmake"),
+         Unixsws  => null),
+
+      Metric =>
+        (Cname    => new String'("METRIC"),
+         Unixcmd  => new String'("gnatmetric"),
+         Unixsws  => null),
+
+      Name =>
+        (Cname    => new String'("NAME"),
+         Unixcmd  => new String'("gnatname"),
+         Unixsws  => null),
+
+      Preprocess =>
+        (Cname    => new String'("PREPROCESS"),
+         Unixcmd  => new String'("gnatprep"),
+         Unixsws  => null),
+
+      Pretty =>
+        (Cname    => new String'("PRETTY"),
+         Unixcmd  => new String'("gnatpp"),
+         Unixsws  => null),
+
+      Stack =>
+        (Cname    => new String'("STACK"),
+         Unixcmd  => new String'("gnatstack"),
+         Unixsws  => null),
+
+      Stub =>
+        (Cname    => new String'("STUB"),
+         Unixcmd  => new String'("gnatstub"),
+         Unixsws  => null),
+
+      Test =>
+        (Cname    => new String'("TEST"),
+         Unixcmd  => new String'("gnattest"),
+         Unixsws  => null),
+
+      Xref =>
+        (Cname    => new String'("XREF"),
+         Unixcmd  => new String'("gnatxref"),
+         Unixsws  => null)
+     );
 
    -----------------------
    -- Local Subprograms --
@@ -263,8 +423,11 @@ procedure GNATCmd is
    --  (GNAT STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric
    --  (GNAT METRIC).
 
-   procedure Non_VMS_Usage;
-   --  Display usage for platforms other than VMS
+   procedure Output_Version;
+   --  Output the version of this program
+
+   procedure Usage;
+   --  Display usage
 
    procedure Process_Link;
    --  Process GNAT LINK, when there is a project file specified
@@ -452,7 +615,7 @@ procedure GNATCmd is
                            Add_To_Response_File
                              (Get_Name_String
                                 (Proj.Project.Object_Directory.Name) &
-                              B_Start.all                            &
+                              B_Start                                &
                               MLib.Fil.Ext_To
                                 (Get_Name_String
                                    (Project_Tree.Shared.String_Elements.Table
@@ -465,7 +628,6 @@ procedure GNATCmd is
                            --  such files.
 
                            if not Is_Regular_File (Name_Buffer (1 .. Name_Len))
-                             and then B_Start.all /= "b__"
                            then
                               Add_To_Response_File
                                 (Get_Name_String
@@ -491,7 +653,7 @@ procedure GNATCmd is
                            Add_To_Response_File
                              (Get_Name_String
                                 (Proj.Project.Object_Directory.Name)      &
-                              B_Start.all                                 &
+                              B_Start                                     &
                               Get_Name_String (Proj.Project.Library_Name) &
                               ".ci");
 
@@ -501,7 +663,6 @@ procedure GNATCmd is
                            --  such files.
 
                            if not Is_Regular_File (Name_Buffer (1 .. Name_Len))
-                               and then B_Start.all /= "b__"
                            then
                               Add_To_Response_File
                                 (Get_Name_String
@@ -861,8 +1022,7 @@ procedure GNATCmd is
 
       Prj.Env.Create_Temp_File (Project_Tree.Shared, FD, Name, "files");
 
-      --  And close it, because on VMS Spawn with a file descriptor created
-      --  with Create_Temp_File does not redirect output.
+      --  And close it
 
       Close (FD);
 
@@ -989,11 +1149,29 @@ procedure GNATCmd is
       return Result;
    end Mapping_File;
 
-   -------------------
-   -- Non_VMS_Usage --
-   -------------------
+   --------------------
+   -- Output_Version --
+   --------------------
 
-   procedure Non_VMS_Usage is
+   procedure Output_Version is
+   begin
+      if AAMP_On_Target then
+         Put ("GNAAMP ");
+      else
+         Put ("GNAT ");
+      end if;
+
+      Put_Line (Gnatvsn.Gnat_Version_String);
+      Put_Line ("Copyright 1996-" &
+                Gnatvsn.Current_Year &
+                ", Free Software Foundation, Inc.");
+   end Output_Version;
+
+   -----------
+   -- Usage --
+   -----------
+
+   procedure Usage is
    begin
       Output_Version;
       New_Line;
@@ -1002,9 +1180,9 @@ procedure GNATCmd is
 
       for C in Command_List'Range loop
 
-         --  No usage for VMS only command or for Sync
+         --  No usage for Sync
 
-         if not Command_List (C).VMS_Only and then C /= Sync then
+         if C /= Sync then
             if Targparm.AAMP_On_Target then
                Put ("gnaampcmd ");
             else
@@ -1041,7 +1219,7 @@ procedure GNATCmd is
       Put_Line ("All commands except chop, krunch and preprocess " &
                 "accept project file switches -vPx, -Pprj and -Xnam=val");
       New_Line;
-   end Non_VMS_Usage;
+   end Usage;
 
    ------------------
    -- Process_Link --
@@ -1374,7 +1552,7 @@ procedure GNATCmd is
    end Set_Library_For;
 
    procedure Check_Version_And_Help is
-     new Check_Version_And_Help_G (Non_VMS_Usage);
+     new Check_Version_And_Help_G (Usage);
 
 --  Start of processing for GNATCmd
 
@@ -1406,17 +1584,12 @@ begin
    Rules_Switches.Init;
    Rules_Switches.Set_Last (0);
 
-   VMS_Conv.Initialize;
+   --  Set AAMP_On_Target from command name, for testing in Osint.Program_Name
+   --  to handle the mapping of GNAAMP tool names. We don't extract it from
+   --  system.ads, as there may be no default runtime.
 
-   --  Add the default search directories, to be able to find system.ads in the
-   --  subsequent call to Targparm.Get_Target_Parameters.
-
-   Add_Default_Search_Dirs;
-
-   --  Get target parameters so that AAMP_On_Target will be set, for testing in
-   --  Osint.Program_Name to handle the mapping of GNAAMP tool names.
-
-   Targparm.Get_Target_Parameters;
+   Find_Program_Name;
+   AAMP_On_Target := Name_Buffer (1 .. Name_Len) = "gnaampcmd";
 
    --  Put the command line in environment variable GNAT_DRIVER_COMMAND_LINE,
    --  so that the spawned tool may know the way the GNAT driver was invoked.
@@ -1429,179 +1602,147 @@ begin
       Add_Str_To_Name_Buffer (Argument (J));
    end loop;
 
-   --  On OpenVMS, setenv creates a logical whose length is limited to
-   --  255 bytes.
-
-   if OpenVMS and then Name_Len > Max_OpenVMS_Logical_Length then
-      Name_Buffer (Max_OpenVMS_Logical_Length - 2
-                     .. Max_OpenVMS_Logical_Length) := "...";
-      Name_Len := Max_OpenVMS_Logical_Length;
-   end if;
-
    Setenv ("GNAT_DRIVER_COMMAND_LINE", Name_Buffer (1 .. Name_Len));
 
    --  Add the directory where the GNAT driver is invoked in front of the path,
-   --  if the GNAT driver is invoked with directory information. Do not do this
-   --  for VMS, where the notion of path does not really exist.
+   --  if the GNAT driver is invoked with directory information.
 
-   if not OpenVMS then
-      declare
-         Command : constant String := Command_Name;
+   declare
+      Command : constant String := Command_Name;
 
-      begin
-         for Index in reverse Command'Range loop
-            if Command (Index) = Directory_Separator then
-               declare
-                  Absolute_Dir : constant String :=
-                                   Normalize_Pathname
-                                     (Command (Command'First .. Index));
-
-                  PATH : constant String :=
-                           Absolute_Dir & Path_Separator & Getenv ("PATH").all;
-
-               begin
-                  Setenv ("PATH", PATH);
-               end;
-
-               exit;
-            end if;
-         end loop;
-      end;
-   end if;
-
-   --  If on VMS, or if VMS emulation is on, convert VMS style /qualifiers,
-   --  filenames and pathnames to Unix style.
-
-   if Hostparm.OpenVMS
-     or else To_Lower (Getenv ("EMULATE_VMS").all) = "true"
-   then
-      VMS_Conversion (The_Command);
-
-      B_Start := new String'("b__");
-
-   --  If not on VMS, scan the command line directly
-
-   else
-      --  First, scan to detect --version and/or --help
-
-      Check_Version_And_Help ("GNAT", "1996");
-
-      begin
-         loop
-            if Command_Arg <= Argument_Count
-              and then Argument (Command_Arg) = "-v"
-            then
-               Verbose_Mode := True;
-               Command_Arg := Command_Arg + 1;
-
-            elsif Command_Arg <= Argument_Count
-              and then Argument (Command_Arg) = "-dn"
-            then
-               Keep_Temporary_Files := True;
-               Command_Arg := Command_Arg + 1;
-
-            else
-               exit;
-            end if;
-         end loop;
-
-         --  If there is no command, just output the usage
-
-         if Command_Arg > Argument_Count then
-            Non_VMS_Usage;
-            return;
-         end if;
-
-         The_Command := Real_Command_Type'Value (Argument (Command_Arg));
-
-         if Command_List (The_Command).VMS_Only then
-            Non_VMS_Usage;
-            Fail
-              ("command """
-               & Command_List (The_Command).Cname.all
-               & """ can only be used on VMS");
-         end if;
-
-      exception
-         when Constraint_Error =>
-
-            --  Check if it is an alternate command
-
+   begin
+      for Index in reverse Command'Range loop
+         if Command (Index) = Directory_Separator then
             declare
-               Alternate : Alternate_Command;
+               Absolute_Dir : constant String :=
+                                Normalize_Pathname
+                                  (Command (Command'First .. Index));
+
+               PATH : constant String :=
+                        Absolute_Dir & Path_Separator & Getenv ("PATH").all;
 
             begin
-               Alternate := Alternate_Command'Value
-                              (Argument (Command_Arg));
-               The_Command := Corresponding_To (Alternate);
-
-            exception
-               when Constraint_Error =>
-                  Non_VMS_Usage;
-                  Fail ("unknown command: " & Argument (Command_Arg));
+               Setenv ("PATH", PATH);
             end;
-      end;
 
-      --  Get the arguments from the command line and from the eventual
-      --  argument file(s) specified on the command line.
+            exit;
+         end if;
+      end loop;
+   end;
 
-      for Arg in Command_Arg + 1 .. Argument_Count loop
+   --  Scan the command line
+
+   --  First, scan to detect --version and/or --help
+
+   Check_Version_And_Help ("GNAT", "1996");
+
+   begin
+      loop
+         if Command_Arg <= Argument_Count
+           and then Argument (Command_Arg) = "-v"
+         then
+            Verbose_Mode := True;
+            Command_Arg := Command_Arg + 1;
+
+         elsif Command_Arg <= Argument_Count
+           and then Argument (Command_Arg) = "-dn"
+         then
+            Keep_Temporary_Files := True;
+            Command_Arg := Command_Arg + 1;
+
+         else
+            exit;
+         end if;
+      end loop;
+
+      --  If there is no command, just output the usage
+
+      if Command_Arg > Argument_Count then
+         Usage;
+         return;
+      end if;
+
+      The_Command := Real_Command_Type'Value (Argument (Command_Arg));
+
+   exception
+      when Constraint_Error =>
+
+         --  Check if it is an alternate command
+
          declare
-            The_Arg : constant String := Argument (Arg);
+            Alternate : Alternate_Command;
 
          begin
-            --  Check if an argument file is specified
+            Alternate := Alternate_Command'Value
+                           (Argument (Command_Arg));
+            The_Command := Corresponding_To (Alternate);
 
-            if The_Arg (The_Arg'First) = '@' then
-               declare
-                  Arg_File : Ada.Text_IO.File_Type;
-                  Line     : String (1 .. 256);
-                  Last     : Natural;
+         exception
+            when Constraint_Error =>
+               Usage;
+               Fail ("unknown command: " & Argument (Command_Arg));
+         end;
+   end;
+
+   --  Get the arguments from the command line and from the eventual
+   --  argument file(s) specified on the command line.
+
+   for Arg in Command_Arg + 1 .. Argument_Count loop
+      declare
+         The_Arg : constant String := Argument (Arg);
+
+      begin
+         --  Check if an argument file is specified
+
+         if The_Arg (The_Arg'First) = '@' then
+            declare
+               Arg_File : Ada.Text_IO.File_Type;
+               Line     : String (1 .. 256);
+               Last     : Natural;
+
+            begin
+               --  Open the file and fail if the file cannot be found
 
                begin
-                  --  Open the file and fail if the file cannot be found
+                  Open
+                    (Arg_File, In_File,
+                     The_Arg (The_Arg'First + 1 .. The_Arg'Last));
 
-                  begin
-                     Open
-                       (Arg_File, In_File,
-                        The_Arg (The_Arg'First + 1 .. The_Arg'Last));
-
-                  exception
-                     when others =>
-                        Put (Standard_Error, "Cannot open argument file """);
-                        Put (Standard_Error,
-                             The_Arg (The_Arg'First + 1 .. The_Arg'Last));
-                        Put_Line (Standard_Error, """");
-                        raise Error_Exit;
-                  end;
-
-                  --  Read line by line and put the content of each non-
-                  --  empty line in the Last_Switches table.
-
-                  while not End_Of_File (Arg_File) loop
-                     Get_Line (Arg_File, Line, Last);
-
-                     if Last /= 0 then
-                        Last_Switches.Increment_Last;
-                        Last_Switches.Table (Last_Switches.Last) :=
-                          new String'(Line (1 .. Last));
-                     end if;
-                  end loop;
-
-                  Close (Arg_File);
+               exception
+                  when others =>
+                     Put (Standard_Error, "Cannot open argument file """);
+                     Put (Standard_Error,
+                          The_Arg (The_Arg'First + 1 .. The_Arg'Last));
+                     Put_Line (Standard_Error, """");
+                     raise Error_Exit;
                end;
 
-            else
-               --  It is not an argument file; just put the argument in
-               --  the Last_Switches table.
+               --  Read line by line and put the content of each non-
+               --  empty line in the Last_Switches table.
 
-               Last_Switches.Increment_Last;
-               Last_Switches.Table (Last_Switches.Last) :=
-                 new String'(The_Arg);
-            end if;
-         end;
-      end loop;
-   end if;
+               while not End_Of_File (Arg_File) loop
+                  Get_Line (Arg_File, Line, Last);
+
+                  if Last /= 0 then
+                     Last_Switches.Increment_Last;
+                     Last_Switches.Table (Last_Switches.Last) :=
+                       new String'(Line (1 .. Last));
+                  end if;
+               end loop;
+
+               Close (Arg_File);
+            end;
+
+         else
+            --  It is not an argument file; just put the argument in
+            --  the Last_Switches table.
+
+            Last_Switches.Increment_Last;
+            Last_Switches.Table (Last_Switches.Last) :=
+              new String'(The_Arg);
+         end if;
+      end;
+   end loop;
 
    declare
       Program   : String_Access;
@@ -2618,20 +2759,6 @@ begin
          if ASIS_Main /= null then
             Get_Closure;
 
-            --  On VMS, set up the env var again for source dirs file. This is
-            --  because the call to gnatmake has set this env var to another
-            --  file that has now been deleted.
-
-            if Hostparm.OpenVMS then
-
-               --  First make sure that the recorded file names are empty
-
-               Prj.Env.Initialize (Project_Tree);
-
-               Prj.Env.Set_Ada_Paths
-                 (Project, Project_Tree, Including_Libraries => False);
-            end if;
-
          --  For gnat check, gnat sync, gnat pretty, gnat metric, gnat list,
          --  and gnat stack, if no file has been put on the command line, call
          --  tool with all the sources of the main project.
@@ -2678,22 +2805,6 @@ begin
             The_Args (Arg_Num) := Rules_Switches.Table (J);
          end loop;
 
-         --  If Display_Command is on, only display the generated command
-
-         if Display_Command then
-            Put (Standard_Error, "generated command -->");
-            Put (Standard_Error, Exec_Path.all);
-
-            for Arg in The_Args'Range loop
-               Put (Standard_Error, " ");
-               Put (Standard_Error, The_Args (Arg).all);
-            end loop;
-
-            Put (Standard_Error, "<--");
-            New_Line (Standard_Error);
-            raise Normal_Exit;
-         end if;
-
          if Verbose_Mode then
             Output.Write_Str (Exec_Path.all);
 
@@ -2726,14 +2837,5 @@ exception
          Delete_Temp_Config_Files;
       end if;
 
-      --  Since GNATCmd is normally called from DCL (the VMS shell), it must
-      --  return an understandable VMS exit status. However the exit status
-      --  returned *to* GNATCmd is a Posix style code, so we test it and return
-      --  just a simple success or failure on VMS.
-
-      if Hostparm.OpenVMS and then My_Exit_Status /= Success then
-         Set_Exit_Status (Failure);
-      else
-         Set_Exit_Status (My_Exit_Status);
-      end if;
+      Set_Exit_Status (My_Exit_Status);
 end GNATCmd;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2010, AdaCore                     --
+--                     Copyright (C) 2000-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Currently this package is implemented on all native GNAT ports except
---  for VMS. It is not yet implemented for any of the cross-ports (e.g. it
---  is not available for VxWorks or LynxOS).
+--  Currently this package is implemented on all native GNAT ports. It is not
+--  yet implemented for any of the cross-ports (e.g. it is not available for
+--  VxWorks or LynxOS).
 
 --  -----------
 --  -- Usage --

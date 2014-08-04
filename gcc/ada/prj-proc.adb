@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              P R J . P R O C                             --
+--                             P R J . P R O C                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,9 +118,12 @@ package body Prj.Proc is
    --  of an expression and return it as a Variable_Value.
 
    function Imported_Or_Extended_Project_From
-     (Project   : Project_Id;
-      With_Name : Name_Id) return Project_Id;
-   --  Find an imported or extended project of Project whose name is With_Name
+     (Project      : Project_Id;
+      With_Name    : Name_Id;
+      No_Extending : Boolean := False) return Project_Id;
+   --  Find an imported or extended project of Project whose name is With_Name.
+   --  When No_Extending is True, do not look for extending projects, returns
+   --  the exact project whose name is With_Name.
 
    function Package_From
      (Project   : Project_Id;
@@ -705,8 +708,9 @@ package body Prj.Proc is
                      The_Name :=
                        Name_Of (Term_Project, From_Project_Node_Tree);
                      The_Project := Imported_Or_Extended_Project_From
-                                      (Project   => Project,
-                                       With_Name => The_Name);
+                                      (Project      => Project,
+                                       With_Name    => The_Name,
+                                       No_Extending => True);
                   end if;
 
                   if Present (Term_Package) then
@@ -1261,8 +1265,9 @@ package body Prj.Proc is
    ---------------------------------------
 
    function Imported_Or_Extended_Project_From
-     (Project   : Project_Id;
-      With_Name : Name_Id) return Project_Id
+     (Project      : Project_Id;
+      With_Name    : Name_Id;
+      No_Extending : Boolean := False) return Project_Id
    is
       List        : Project_List;
       Result      : Project_Id;
@@ -1304,7 +1309,12 @@ package body Prj.Proc is
             Proj := Result.Extends;
             while Proj /= No_Project loop
                if Proj.Name = With_Name then
-                  Temp_Result := Result;
+                  if No_Extending then
+                     Temp_Result := Proj;
+                  else
+                     Temp_Result := Result;
+                  end if;
+
                   exit;
                end if;
 
@@ -2835,20 +2845,43 @@ package body Prj.Proc is
                return;
             end if;
 
-            Project :=
-              new Project_Data'
-                (Empty_Project
-                  (Project_Qualifier_Of
-                    (From_Project_Node, From_Project_Node_Tree)));
+            --  Check if the project is already in the tree
 
-            --  Note that at this point we do not know yet if the project has
-            --  been withed from an encapsulated library or not.
+            Project := No_Project;
 
-            In_Tree.Projects :=
-              new Project_List_Element'
-             (Project               => Project,
-              From_Encapsulated_Lib => False,
-              Next                  => In_Tree.Projects);
+            declare
+               List : Project_List := In_Tree.Projects;
+               Path : constant Path_Name_Type :=
+                        Path_Name_Of (From_Project_Node,
+                                      From_Project_Node_Tree);
+
+            begin
+               while List /= null loop
+                  if List.Project.Path.Display_Name = Path then
+                     Project := List.Project;
+                     exit;
+                  end if;
+
+                  List := List.Next;
+               end loop;
+            end;
+
+            if Project = No_Project then
+               Project :=
+                 new Project_Data'
+                   (Empty_Project
+                      (Project_Qualifier_Of
+                         (From_Project_Node, From_Project_Node_Tree)));
+
+               --  Note that at this point we do not know yet if the project
+               --  has been withed from an encapsulated library or not.
+
+               In_Tree.Projects :=
+                 new Project_List_Element'
+                   (Project               => Project,
+                    From_Encapsulated_Lib => False,
+                    Next                  => In_Tree.Projects);
+            end if;
 
             --  Keep track of this point
 
@@ -2898,7 +2931,7 @@ package body Prj.Proc is
 
             Process_Imported_Projects (Imported, Limited_With => False);
 
-            if Project.Qualifier = Aggregate and then In_Tree.Is_Root_Tree then
+            if Project.Qualifier = Aggregate then
                Initialize_And_Copy (Child_Env, Copy_From => Env);
 
             elsif Project.Qualifier = Aggregate_Library then

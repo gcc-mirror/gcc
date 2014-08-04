@@ -267,7 +267,7 @@ static hash_map<const_tree, hashval_t> *canonical_type_hash_cache;
 static unsigned long num_canonical_type_hash_entries;
 static unsigned long num_canonical_type_hash_queries;
 
-static void iterative_hash_canonical_type (tree type, inchash &hstate);
+static void iterative_hash_canonical_type (tree type, inchash::hash &hstate);
 static hashval_t gimple_canonical_type_hash (const void *p);
 static void gimple_register_canonical_type_1 (tree t, hashval_t hash);
 
@@ -279,7 +279,7 @@ static void gimple_register_canonical_type_1 (tree t, hashval_t hash);
 static hashval_t
 hash_canonical_type (tree type)
 {
-  inchash hstate;
+  inchash::hash hstate;
 
   /* Combine a few common features of types so that types are grouped into
      smaller sets; when searching for existing matching types to merge,
@@ -327,9 +327,9 @@ hash_canonical_type (tree type)
       /* OMP lowering can introduce error_mark_node in place of
 	 random local decls in types.  */
       if (TYPE_MIN_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
-	iterative_hstate_expr (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), hstate);
+	inchash::add_expr (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), hstate);
       if (TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != error_mark_node)
-	iterative_hstate_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), hstate);
+	inchash::add_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), hstate);
     }
 
   /* Recurse for aggregates with a single element type.  */
@@ -380,7 +380,7 @@ hash_canonical_type (tree type)
 /* Returning a hash value for gimple type TYPE combined with VAL.  */
 
 static void
-iterative_hash_canonical_type (tree type, inchash &hstate)
+iterative_hash_canonical_type (tree type, inchash::hash &hstate)
 {
   hashval_t v;
   /* An already processed type.  */

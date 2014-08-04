@@ -20,11 +20,7 @@ MANUALS="cpp
   gcj
   gfortran
   gfc-internals
-  gnat_ug_unx
-  gnat_ug_vms
-  gnat_ug_vxw
-  gnat_ug_wnt
-  gnat_ugn_unw
+  gnat_ugn
   gnat-style
   gnat_rm
   libgomp
@@ -118,8 +114,6 @@ fi
 find gcc -type f \( -name '*.texi' \
   -o -path gcc/gcc/doc/install.texi2html \
   -o -path gcc/gcc/doc/include/texinfo.tex \
-  -o -path gcc/gcc/ada/xgnatugn.adb \
-  -o -path gcc/gcc/ada/ug_words \
   -o -path gcc/gcc/BASE-VER \
   -o -path gcc/gcc/DEV-PHASE \
   -o -print0 \) | xargs -0 rm -f
@@ -130,14 +124,6 @@ tar cf docs-sources.tar gcc
 # The directory to pass to -I; this is the one with texinfo.tex
 # and fdl.texi.
 includedir=gcc/gcc/doc/include
-
-# Generate gnat_ugn_unw
-
-if [ -f gcc/gcc/ada/xgnatugn.adb ]; then
-   gnatmake -q gcc/gcc/ada/xgnatugn
-   ./xgnatugn unw gcc/gcc/ada/gnat_ugn.texi \
-     gcc/gcc/ada/ug_words gnat_ugn_unw.texi
-fi
 
 # Generate gcc-vers.texi.
 (
@@ -161,7 +147,7 @@ for file in $MANUALS; do
   filename=`find . -name ${file}.texi`
   if [ "${filename}" ]; then
     includes="-I ${includedir} -I `dirname ${filename}`"
-    if [ "$file" = "gnat_ugn_unw" ]; then
+    if [ "$file" = "gnat_ugn" ]; then
       includes="$includes -I gcc/gcc/ada"
     fi
     makeinfo --html $includes -o ${file} ${filename}

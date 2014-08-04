@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Casing;   use Casing;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -1685,59 +1684,17 @@ package body Exp_Ch11 is
 
             Str := String_From_Name_Buffer;
 
-            --  For VMS exceptions, convert the raise into a call to
-            --  lib$stop so it will be handled by __gnat_error_handler.
+            --  Convert raise to call to the Raise_Exception routine
 
-            if Is_VMS_Exception (Id) then
-               declare
-                  Excep_Image : String_Id;
-                  Cond        : Node_Id;
-
-               begin
-                  if Present (Interface_Name (Id)) then
-                     Excep_Image := Strval (Interface_Name (Id));
-                  else
-                     Get_Name_String (Chars (Id));
-                     Set_All_Upper_Case;
-                     Excep_Image := String_From_Name_Buffer;
-                  end if;
-
-                  if Exception_Code (Id) /= No_Uint then
-                     Cond :=
-                       Make_Integer_Literal (Loc, Exception_Code (Id));
-                  else
-                     Cond :=
-                       Unchecked_Convert_To (Standard_Integer,
-                         Make_Function_Call (Loc,
-                           Name => New_Occurrence_Of
-                             (RTE (RE_Import_Value), Loc),
-                           Parameter_Associations => New_List
-                             (Make_String_Literal (Loc,
-                               Strval => Excep_Image))));
-                  end if;
-
-                  Rewrite (N,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Occurrence_Of (RTE (RE_Lib_Stop), Loc),
-                      Parameter_Associations => New_List (Cond)));
-                        Analyze_And_Resolve (Cond, Standard_Integer);
-               end;
-
-            --  Not VMS exception case, convert raise to call to the
-            --  Raise_Exception routine.
-
-            else
-               Rewrite (N,
-                 Make_Procedure_Call_Statement (Loc,
-                    Name => New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
-                    Parameter_Associations => New_List (
-                      Make_Attribute_Reference (Loc,
-                        Prefix => Name (N),
-                        Attribute_Name => Name_Identity),
-                      Make_String_Literal (Loc,
-                        Strval => Str))));
-            end if;
+            Rewrite (N,
+              Make_Procedure_Call_Statement (Loc,
+                 Name                   =>
+                   New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
+                 Parameter_Associations => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => Name (N),
+                     Attribute_Name => Name_Identity),
+                   Make_String_Literal (Loc, Strval => Str))));
          end;
 
       --  Case of no name present (reraise). We rewrite the raise to:
@@ -2068,10 +2025,10 @@ package body Exp_Ch11 is
 
    function Get_RT_Exception_Entity (R : RT_Exception_Code) return Entity_Id is
    begin
-      case R is
-         when RT_CE_Exceptions => return Standard_Constraint_Error;
-         when RT_PE_Exceptions => return Standard_Program_Error;
-         when RT_SE_Exceptions => return Standard_Storage_Error;
+      case Rkind (R) is
+         when CE_Reason => return Standard_Constraint_Error;
+         when PE_Reason => return Standard_Program_Error;
+         when SE_Reason => return Standard_Storage_Error;
       end case;
    end Get_RT_Exception_Entity;
 
@@ -2137,16 +2094,18 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("PE_Misaligned_Address_Value");
          when PE_Missing_Return =>
             Add_Str_To_Name_Buffer ("PE_Missing_Return");
+         when PE_Non_Transportable_Actual =>
+            Add_Str_To_Name_Buffer ("PE_Non_Transportable_Actual");
          when PE_Overlaid_Controlled_Object =>
             Add_Str_To_Name_Buffer ("PE_Overlaid_Controlled_Object");
          when PE_Potentially_Blocking_Operation =>
             Add_Str_To_Name_Buffer ("PE_Potentially_Blocking_Operation");
+         when PE_Stream_Operation_Not_Allowed =>
+            Add_Str_To_Name_Buffer ("PE_Stream_Operation_Not_Allowed");
          when PE_Stubbed_Subprogram_Called =>
             Add_Str_To_Name_Buffer ("PE_Stubbed_Subprogram_Called");
          when PE_Unchecked_Union_Restriction =>
             Add_Str_To_Name_Buffer ("PE_Unchecked_Union_Restriction");
-         when PE_Non_Transportable_Actual =>
-            Add_Str_To_Name_Buffer ("PE_Non_Transportable_Actual");
 
          when SE_Empty_Storage_Pool =>
             Add_Str_To_Name_Buffer ("SE_Empty_Storage_Pool");
@@ -2158,29 +2117,6 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("SE_Object_Too_Large");
       end case;
    end Get_RT_Exception_Name;
-
-   ----------------------
-   -- Is_Non_Ada_Error --
-   ----------------------
-
-   function Is_Non_Ada_Error (E : Entity_Id) return Boolean is
-   begin
-      if not OpenVMS_On_Target then
-         return False;
-      end if;
-
-      Get_Name_String (Chars (E));
-
-      --  Note: it is a little irregular for the body of exp_ch11 to know
-      --  the details of the encoding scheme for names, but on the other
-      --  hand, gigi knows them, and this is for gigi's benefit anyway.
-
-      if Name_Buffer (1 .. 30) /= "system__aux_dec__non_ada_error" then
-         return False;
-      end if;
-
-      return True;
-   end Is_Non_Ada_Error;
 
    ----------------------------
    -- Warn_If_No_Propagation --

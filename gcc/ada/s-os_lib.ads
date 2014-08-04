@@ -101,14 +101,14 @@ package System.OS_Lib is
    ---------------------
 
    type OS_Time is private;
-   --  The OS's notion of time is represented by the private type OS_Time.
-   --  This is the type returned by the File_Time_Stamp functions to obtain
-   --  the time stamp of a specified file. Functions and a procedure (modeled
-   --  after the similar subprograms in package Calendar) are provided for
-   --  extracting information from a value of this type. Although these are
-   --  called GM, the intention is not that they provide GMT times in all
-   --  cases but rather the actual (time-zone independent) time stamp of the
-   --  file (of course in Unix systems, this *is* in GMT form).
+   --  The OS's notion of time is represented by the private type OS_Time. This
+   --  is the type returned by the File_Time_Stamp functions to obtain the time
+   --  stamp of a specified file. Functions and a procedure (modeled after the
+   --  similar subprograms in package Calendar) are provided for extracting
+   --  information from a value of this type. Although these are called GM, the
+   --  intention in the case of time stamps is not that they provide GMT times
+   --  in all cases but rather the actual (time-zone independent) time stamp of
+   --  the file (of course in Unix systems, this *is* in GMT form).
 
    Invalid_Time : constant OS_Time;
    --  A special unique value used to flag an invalid time stamp value
@@ -130,7 +130,7 @@ package System.OS_Lib is
    function GM_Hour    (Date : OS_Time) return Hour_Type;
    function GM_Minute  (Date : OS_Time) return Minute_Type;
    function GM_Second  (Date : OS_Time) return Second_Type;
-   --  Functions to extract information from OS_Time value
+   --  Functions to extract information from OS_Time value in GMT form
 
    function "<"  (X, Y : OS_Time) return Boolean;
    function ">"  (X, Y : OS_Time) return Boolean;
@@ -160,8 +160,12 @@ package System.OS_Lib is
       Minute : Minute_Type;
       Second : Second_Type) return OS_Time;
    --  Analogous to the Time_Of routine in Ada.Calendar, takes a set of time
-   --  component parts and returns an OS_Time. Returns Invalid_Time if the
-   --  creation fails.
+   --  component parts to be interpreted in the local time zone, and returns
+   --  an OS_Time. Returns Invalid_Time if the creation fails.
+
+   function Current_Time_String return String;
+   --  Returns current local time in the form YYYY-MM-DD HH:MM:SS. The result
+   --  has bounds 1 .. 19.
 
    ----------------
    -- File Stuff --
@@ -204,14 +208,22 @@ package System.OS_Lib is
    function Open_Read
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
-   --  Open file Name for reading, returning file descriptor File descriptor
-   --  returned is Invalid_FD if file cannot be opened.
+   --  Open file Name for reading, returning its file descriptor. File
+   --  descriptor returned is Invalid_FD if the file cannot be opened.
 
    function Open_Read_Write
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
-   --  Open file Name for both reading and writing, returning file descriptor.
-   --  File descriptor returned is Invalid_FD if file cannot be opened.
+   --  Open file Name for both reading and writing, returning its file
+   --  descriptor. File descriptor returned is Invalid_FD if the file
+   --  cannot be opened.
+
+   function Open_Append
+     (Name  : String;
+      Fmode : Mode) return File_Descriptor;
+   --  Opens file Name for appending, returning its file descriptor. File
+   --  descriptor returned is Invalid_FD if the file cannot be successfully
+   --  opened.
 
    function Create_File
      (Name  : String;
@@ -364,7 +376,7 @@ package System.OS_Lib is
    --  effect of "cp -p" on Unix systems, and None corresponds to the typical
    --  effect of "cp" on Unix systems.
 
-   --  Note: Time_Stamps and Full are not supported on VMS and VxWorks 5
+   --  Note: Time_Stamps and Full are not supported on VxWorks 5
 
    procedure Copy_File
      (Name     : String;
@@ -380,20 +392,14 @@ package System.OS_Lib is
    --  True or False indicating if the copy is successful (depending on the
    --  specified Mode).
    --
-   --  Note: this procedure is only supported to a very limited extent on VMS.
-   --  The only supported mode is Overwrite, and the only supported value for
-   --  Preserve is None, resulting in the default action which for Overwrite
-   --  is to leave attributes unchanged. Furthermore, the copy only works for
-   --  simple text files.
-
    procedure Copy_Time_Stamps (Source, Dest : String; Success : out Boolean);
    --  Copy Source file time stamps (last modification and last access time
    --  stamps) to Dest file. Source and Dest must be valid filenames,
    --  furthermore Dest must be writable. Success will be set to True if the
    --  operation was successful and False otherwise.
    --
-   --  Note: this procedure is not supported on VMS and VxWorks 5. On these
-   --  platforms, Success is always set to False.
+   --  Note: this procedure is not supported on VxWorks 5. On this platform,
+   --  Success is always set to False.
 
    procedure Set_File_Last_Modify_Time_Stamp (Name : String; Time : OS_Time);
    --  Given the name of a file or directory, Name, set the last modification
@@ -428,8 +434,15 @@ package System.OS_Lib is
    --  to the current position (origin = SEEK_CUR), end of file (origin =
    --  SEEK_END), or start of file (origin = SEEK_SET).
 
+   type Large_File_Size is range -2**63 .. 2**63 - 1;
+   --  Maximum supported size for a file (8 exabytes = 8 million terabytes,
+   --  should be enough to accomodate all possible needs for quite a while).
+
    function File_Length (FD : File_Descriptor) return Long_Integer;
-   pragma Import (C, File_Length, "__gnat_file_length");
+   pragma Import (C, File_Length, "__gnat_file_length_long");
+
+   function File_Length64 (FD : File_Descriptor) return Large_File_Size;
+   pragma Import (C, File_Length64, "__gnat_file_length");
    --  Get length of file from file descriptor FD
 
    function File_Time_Stamp (Name : String) return OS_Time;
@@ -475,17 +488,13 @@ package System.OS_Lib is
    --  e.g. A is a symbolic link for B, and B is a symbolic link for A), then
    --  Normalize_Pathname returns an empty string.
    --
-   --  In VMS, if Name follows the VMS syntax file specification, it is first
-   --  converted into Unix syntax. If the conversion fails, Normalize_Pathname
-   --  returns an empty string.
-   --
    --  For case-sensitive file systems, the value of Case_Sensitive parameter
    --  is ignored. For file systems that are not case-sensitive, such as
-   --  Windows and OpenVMS, if this parameter is set to False, then the file
-   --  and directory names are folded to lower case. This allows checking
-   --  whether two files are the same by applying this function to their names
-   --  and comparing the results. If Case_Sensitive is set to True, this
-   --  function does not change the casing of file and directory names.
+   --  Windows, if this parameter is set to False, then the file and directory
+   --  names are folded to lower case. This allows checking whether two files
+   --  are the same by applying this function to their names and comparing the
+   --  results. If Case_Sensitive is set to True, this function does not change
+   --  the casing of file and directory names.
 
    function Is_Absolute_Path (Name : String) return Boolean;
    --  Returns True if Name is an absolute path name, i.e. it designates a
@@ -638,6 +647,10 @@ package System.OS_Lib is
       Fmode : Mode) return File_Descriptor;
 
    function Open_Read_Write
+     (Name  : C_File_Name;
+      Fmode : Mode) return File_Descriptor;
+
+   function Open_Append
      (Name  : C_File_Name;
       Fmode : Mode) return File_Descriptor;
 
@@ -885,7 +898,7 @@ package System.OS_Lib is
 
    --     On Solaris: fork1, followed in the child process by execv
 
-   --     On other Unix-like systems, and on VMS: fork, followed in the child
+   --     On other Unix-like systems: fork, followed in the child
    --     process by execv.
 
    --     On vxworks, nucleus, and RTX, spawning of processes is not supported
@@ -951,7 +964,7 @@ package System.OS_Lib is
    --  set an explicit null as the value, or to remove the entry, this is
    --  operating system dependent). Note that any following calls to Spawn
    --  will pass an environment to the spawned process that includes the
-   --  changes made by Setenv calls. This procedure is not available on VMS.
+   --  changes made by Setenv calls.
 
    procedure OS_Exit (Status : Integer);
    pragma No_Return (OS_Exit);

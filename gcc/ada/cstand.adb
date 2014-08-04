@@ -151,6 +151,10 @@ package body CStand is
      (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id;
    --  Builds a new entity for Standard
 
+   function New_Standard_Entity (S : String) return Entity_Id;
+   --  Builds a new entity for Standard with Nkind = N_Defining_Identifier,
+   --  and Chars of this defining identifier set to the given string S.
+
    procedure Print_Standard;
    --  Print representation of package Standard if switch set
 
@@ -450,6 +454,9 @@ package body CStand is
       --  Creates entities for all predefined floating point types, and
       --  adds these to the Predefined_Float_Types list in package Standard.
 
+      procedure Make_Dummy_Index (E : Entity_Id);
+      --  Called to provide a dummy index field value for Any_Array/Any_String
+
       procedure Pack_String_Type (String_Type : Entity_Id);
       --  Generate proper tree for pragma Pack that applies to given type, and
       --  mark type as having the pragma.
@@ -460,10 +467,9 @@ package body CStand is
 
       procedure Build_Exception (S : Standard_Entity_Type) is
       begin
-         Set_Ekind          (Standard_Entity (S), E_Exception);
-         Set_Etype          (Standard_Entity (S), Standard_Exception_Type);
-         Set_Exception_Code (Standard_Entity (S), Uint_0);
-         Set_Is_Public      (Standard_Entity (S), True);
+         Set_Ekind     (Standard_Entity (S), E_Exception);
+         Set_Etype     (Standard_Entity (S), Standard_Exception_Type);
+         Set_Is_Public (Standard_Entity (S), True);
 
          Decl :=
            Make_Exception_Declaration (Stloc,
@@ -552,6 +558,27 @@ package body CStand is
             end;
          end loop;
       end Create_Float_Types;
+
+      ----------------------
+      -- Make_Dummy_Index --
+      ----------------------
+
+      procedure Make_Dummy_Index (E : Entity_Id) is
+         Index : Node_Id;
+         Dummy : List_Id;
+
+      begin
+         Index :=
+           Make_Range (Sloc (E),
+             Low_Bound  => Make_Integer (Uint_0),
+             High_Bound => Make_Integer (Uint_2 ** Standard_Integer_Size));
+         Set_Etype (Index, Standard_Integer);
+         Set_First_Index (E, Index);
+
+         --  Make sure Index is a list as required, so Next_Index is Empty
+
+         Dummy := New_List (Index);
+      end Make_Dummy_Index;
 
       ----------------------
       -- Pack_String_Type --
@@ -712,17 +739,8 @@ package body CStand is
       Build_Signed_Integer_Type
         (Standard_Integer, Standard_Integer_Size);
 
-      declare
-         LIS : Nat;
-      begin
-         if Debug_Flag_M then
-            LIS := 64;
-         else
-            LIS := Standard_Long_Integer_Size;
-         end if;
-
-         Build_Signed_Integer_Type (Standard_Long_Integer, LIS);
-      end;
+      Build_Signed_Integer_Type
+        (Standard_Long_Integer, Standard_Long_Integer_Size);
 
       Build_Signed_Integer_Type
         (Standard_Long_Long_Integer, Standard_Long_Long_Integer_Size);
@@ -907,7 +925,7 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_String), Tdef_Node);
 
-      Set_Ekind           (Standard_String, E_String_Type);
+      Set_Ekind           (Standard_String, E_Array_Type);
       Set_Etype           (Standard_String, Standard_String);
       Set_Component_Type  (Standard_String, Standard_Character);
       Set_Component_Size  (Standard_String, Uint_8);
@@ -926,8 +944,8 @@ package body CStand is
 
       --  Set index type of String
 
-      E_Id := First
-        (Subtype_Marks (Type_Definition (Parent (Standard_String))));
+      E_Id :=
+        First (Subtype_Marks (Type_Definition (Parent (Standard_String))));
       Set_First_Index (Standard_String, E_Id);
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
@@ -951,7 +969,7 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_Wide_String), Tdef_Node);
 
-      Set_Ekind           (Standard_Wide_String, E_String_Type);
+      Set_Ekind           (Standard_Wide_String, E_Array_Type);
       Set_Etype           (Standard_Wide_String, Standard_Wide_String);
       Set_Component_Type  (Standard_Wide_String, Standard_Wide_Character);
       Set_Component_Size  (Standard_Wide_String, Uint_16);
@@ -960,8 +978,9 @@ package body CStand is
 
       --  Set index type of Wide_String
 
-      E_Id := First
-        (Subtype_Marks (Type_Definition (Parent (Standard_Wide_String))));
+      E_Id :=
+        First
+          (Subtype_Marks (Type_Definition (Parent (Standard_Wide_String))));
       Set_First_Index (Standard_Wide_String, E_Id);
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
@@ -985,7 +1004,7 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_Wide_Wide_String), Tdef_Node);
 
-      Set_Ekind            (Standard_Wide_Wide_String, E_String_Type);
+      Set_Ekind            (Standard_Wide_Wide_String, E_Array_Type);
       Set_Etype            (Standard_Wide_Wide_String,
                             Standard_Wide_Wide_String);
       Set_Component_Type   (Standard_Wide_Wide_String,
@@ -997,8 +1016,10 @@ package body CStand is
 
       --  Set index type of Wide_Wide_String
 
-      E_Id := First
-        (Subtype_Marks (Type_Definition (Parent (Standard_Wide_Wide_String))));
+      E_Id :=
+        First
+         (Subtype_Marks
+            (Type_Definition (Parent (Standard_Wide_Wide_String))));
       Set_First_Index (Standard_Wide_Wide_String, E_Id);
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
@@ -1177,30 +1198,27 @@ package body CStand is
       --  filled out to minimize problems with cascaded errors (for example,
       --  Any_Integer is given reasonable and consistent type and size values)
 
-      Any_Type := New_Standard_Entity;
+      Any_Type := New_Standard_Entity ("any type");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Any_Type);
       Set_Scope (Any_Type, Standard_Standard);
       Build_Signed_Integer_Type (Any_Type, Standard_Integer_Size);
-      Make_Name (Any_Type, "any type");
 
-      Any_Id := New_Standard_Entity;
+      Any_Id := New_Standard_Entity ("any id");
       Set_Ekind             (Any_Id, E_Variable);
       Set_Scope             (Any_Id, Standard_Standard);
       Set_Etype             (Any_Id, Any_Type);
       Init_Esize            (Any_Id);
       Init_Alignment        (Any_Id);
-      Make_Name             (Any_Id, "any id");
 
-      Any_Access := New_Standard_Entity;
+      Any_Access := New_Standard_Entity ("an access type");
       Set_Ekind             (Any_Access, E_Access_Type);
       Set_Scope             (Any_Access, Standard_Standard);
       Set_Etype             (Any_Access, Any_Access);
       Init_Size             (Any_Access, System_Address_Size);
       Set_Elem_Alignment    (Any_Access);
-      Make_Name             (Any_Access, "an access type");
 
-      Any_Character := New_Standard_Entity;
+      Any_Character := New_Standard_Entity ("a character type");
       Set_Ekind             (Any_Character, E_Enumeration_Type);
       Set_Scope             (Any_Character, Standard_Standard);
       Set_Etype             (Any_Character, Any_Character);
@@ -1210,17 +1228,16 @@ package body CStand is
       Init_RM_Size          (Any_Character, 8);
       Set_Elem_Alignment    (Any_Character);
       Set_Scalar_Range      (Any_Character, Scalar_Range (Standard_Character));
-      Make_Name             (Any_Character, "a character type");
 
-      Any_Array := New_Standard_Entity;
-      Set_Ekind             (Any_Array, E_String_Type);
+      Any_Array := New_Standard_Entity ("an array type");
+      Set_Ekind             (Any_Array, E_Array_Type);
       Set_Scope             (Any_Array, Standard_Standard);
       Set_Etype             (Any_Array, Any_Array);
       Set_Component_Type    (Any_Array, Any_Character);
       Init_Size_Align       (Any_Array);
-      Make_Name             (Any_Array, "an array type");
+      Make_Dummy_Index      (Any_Array);
 
-      Any_Boolean := New_Standard_Entity;
+      Any_Boolean := New_Standard_Entity ("a boolean type");
       Set_Ekind             (Any_Boolean, E_Enumeration_Type);
       Set_Scope             (Any_Boolean, Standard_Standard);
       Set_Etype             (Any_Boolean, Standard_Boolean);
@@ -1229,34 +1246,30 @@ package body CStand is
       Set_Elem_Alignment    (Any_Boolean);
       Set_Is_Unsigned_Type  (Any_Boolean);
       Set_Scalar_Range      (Any_Boolean, Scalar_Range (Standard_Boolean));
-      Make_Name             (Any_Boolean, "a boolean type");
 
-      Any_Composite := New_Standard_Entity;
+      Any_Composite := New_Standard_Entity ("a composite type");
       Set_Ekind             (Any_Composite, E_Array_Type);
       Set_Scope             (Any_Composite, Standard_Standard);
       Set_Etype             (Any_Composite, Any_Composite);
       Set_Component_Size    (Any_Composite, Uint_0);
       Set_Component_Type    (Any_Composite, Standard_Integer);
       Init_Size_Align       (Any_Composite);
-      Make_Name             (Any_Composite, "a composite type");
 
-      Any_Discrete := New_Standard_Entity;
+      Any_Discrete := New_Standard_Entity ("a discrete type");
       Set_Ekind             (Any_Discrete, E_Signed_Integer_Type);
       Set_Scope             (Any_Discrete, Standard_Standard);
       Set_Etype             (Any_Discrete, Any_Discrete);
       Init_Size             (Any_Discrete, Standard_Integer_Size);
       Set_Elem_Alignment    (Any_Discrete);
-      Make_Name             (Any_Discrete, "a discrete type");
 
-      Any_Fixed := New_Standard_Entity;
+      Any_Fixed := New_Standard_Entity ("a fixed-point type");
       Set_Ekind             (Any_Fixed, E_Ordinary_Fixed_Point_Type);
       Set_Scope             (Any_Fixed, Standard_Standard);
       Set_Etype             (Any_Fixed, Any_Fixed);
       Init_Size             (Any_Fixed, Standard_Integer_Size);
       Set_Elem_Alignment    (Any_Fixed);
-      Make_Name             (Any_Fixed, "a fixed-point type");
 
-      Any_Integer := New_Standard_Entity;
+      Any_Integer := New_Standard_Entity ("an integer type");
       Set_Ekind             (Any_Integer, E_Signed_Integer_Type);
       Set_Scope             (Any_Integer, Standard_Standard);
       Set_Etype             (Any_Integer, Standard_Long_Long_Integer);
@@ -1268,94 +1281,72 @@ package body CStand is
          Typ => Base_Type (Standard_Integer),
          Lb  => Uint_0,
          Hb  => Intval (High_Bound (Scalar_Range (Standard_Integer))));
-      Make_Name (Any_Integer, "an integer type");
 
-      Any_Modular := New_Standard_Entity;
+      Any_Modular := New_Standard_Entity ("a modular type");
       Set_Ekind             (Any_Modular, E_Modular_Integer_Type);
       Set_Scope             (Any_Modular, Standard_Standard);
       Set_Etype             (Any_Modular, Standard_Long_Long_Integer);
       Init_Size             (Any_Modular, Standard_Long_Long_Integer_Size);
       Set_Elem_Alignment    (Any_Modular);
       Set_Is_Unsigned_Type  (Any_Modular);
-      Make_Name             (Any_Modular, "a modular type");
 
-      Any_Numeric := New_Standard_Entity;
+      Any_Numeric := New_Standard_Entity ("a numeric type");
       Set_Ekind             (Any_Numeric, E_Signed_Integer_Type);
       Set_Scope             (Any_Numeric, Standard_Standard);
       Set_Etype             (Any_Numeric, Standard_Long_Long_Integer);
       Init_Size             (Any_Numeric, Standard_Long_Long_Integer_Size);
       Set_Elem_Alignment    (Any_Numeric);
-      Make_Name             (Any_Numeric, "a numeric type");
 
-      Any_Real := New_Standard_Entity;
+      Any_Real := New_Standard_Entity ("a real type");
       Set_Ekind             (Any_Real, E_Floating_Point_Type);
       Set_Scope             (Any_Real, Standard_Standard);
       Set_Etype             (Any_Real, Standard_Long_Long_Float);
       Init_Size             (Any_Real,
         UI_To_Int (Esize (Standard_Long_Long_Float)));
       Set_Elem_Alignment    (Any_Real);
-      Make_Name             (Any_Real, "a real type");
 
-      Any_Scalar := New_Standard_Entity;
+      Any_Scalar := New_Standard_Entity ("a scalar type");
       Set_Ekind             (Any_Scalar, E_Signed_Integer_Type);
       Set_Scope             (Any_Scalar, Standard_Standard);
       Set_Etype             (Any_Scalar, Any_Scalar);
       Init_Size             (Any_Scalar, Standard_Integer_Size);
       Set_Elem_Alignment    (Any_Scalar);
-      Make_Name             (Any_Scalar, "a scalar type");
 
-      Any_String := New_Standard_Entity;
-      Set_Ekind             (Any_String, E_String_Type);
+      Any_String := New_Standard_Entity ("a string type");
+      Set_Ekind             (Any_String, E_Array_Type);
       Set_Scope             (Any_String, Standard_Standard);
       Set_Etype             (Any_String, Any_String);
       Set_Component_Type    (Any_String, Any_Character);
       Init_Size_Align       (Any_String);
-      Make_Name             (Any_String, "a string type");
+      Make_Dummy_Index      (Any_String);
 
-      declare
-         Index   : Node_Id;
-
-      begin
-         Index :=
-           Make_Range (Stloc,
-             Low_Bound  => Make_Integer (Uint_0),
-             High_Bound => Make_Integer (Uint_2 ** Standard_Integer_Size));
-         Set_Etype (Index, Standard_Integer);
-         Set_First_Index (Any_String, Index);
-      end;
-
-      Raise_Type := New_Standard_Entity;
+      Raise_Type := New_Standard_Entity ("raise type");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Raise_Type);
       Set_Scope (Raise_Type, Standard_Standard);
       Build_Signed_Integer_Type (Raise_Type, Standard_Integer_Size);
-      Make_Name (Raise_Type, "any type");
 
-      Standard_Integer_8 := New_Standard_Entity;
+      Standard_Integer_8 := New_Standard_Entity ("integer_8");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Standard_Integer_8);
-      Make_Name (Standard_Integer_8, "integer_8");
       Set_Scope (Standard_Integer_8, Standard_Standard);
       Build_Signed_Integer_Type (Standard_Integer_8, 8);
 
-      Standard_Integer_16 := New_Standard_Entity;
+      Standard_Integer_16 := New_Standard_Entity ("integer_16");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Standard_Integer_16);
-      Make_Name (Standard_Integer_16, "integer_16");
       Set_Scope (Standard_Integer_16, Standard_Standard);
       Build_Signed_Integer_Type (Standard_Integer_16, 16);
 
-      Standard_Integer_32 := New_Standard_Entity;
+      Standard_Integer_32 := New_Standard_Entity ("integer_32");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Standard_Integer_32);
-      Make_Name (Standard_Integer_32, "integer_32");
       Set_Scope (Standard_Integer_32, Standard_Standard);
       Build_Signed_Integer_Type (Standard_Integer_32, 32);
 
-      Standard_Integer_64 := New_Standard_Entity;
+      Standard_Integer_64 := New_Standard_Entity ("integer_64");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Standard_Integer_64);
-      Make_Name (Standard_Integer_64, "integer_64");
       Set_Scope (Standard_Integer_64, Standard_Standard);
       Build_Signed_Integer_Type (Standard_Integer_64, 64);
 
@@ -1598,7 +1589,6 @@ package body CStand is
          E_Id := Standard_Entity (S_Numeric_Error);
 
          Set_Ekind          (E_Id, E_Exception);
-         Set_Exception_Code (E_Id, Uint_0);
          Set_Etype          (E_Id, Standard_Exception_Type);
          Set_Is_Public      (E_Id);
          Set_Renamed_Entity (E_Id, Standard_Entity (S_Constraint_Error));
@@ -1615,12 +1605,11 @@ package body CStand is
       --  Abort_Signal is an entity that does not get made visible
 
       Abort_Signal := New_Standard_Entity;
-      Set_Chars          (Abort_Signal, Name_uAbort_Signal);
-      Set_Ekind          (Abort_Signal, E_Exception);
-      Set_Exception_Code (Abort_Signal, Uint_0);
-      Set_Etype          (Abort_Signal, Standard_Exception_Type);
-      Set_Scope          (Abort_Signal, Standard_Standard);
-      Set_Is_Public      (Abort_Signal, True);
+      Set_Chars     (Abort_Signal, Name_uAbort_Signal);
+      Set_Ekind     (Abort_Signal, E_Exception);
+      Set_Etype     (Abort_Signal, Standard_Exception_Type);
+      Set_Scope     (Abort_Signal, Standard_Standard);
+      Set_Is_Public (Abort_Signal, True);
       Decl :=
         Make_Exception_Declaration (Stloc,
           Defining_Identifier => Abort_Signal);
@@ -1860,6 +1849,13 @@ package body CStand is
       --  Return newly created entity to be completed by caller
 
       return E;
+   end New_Standard_Entity;
+
+   function New_Standard_Entity (S : String) return Entity_Id is
+      Ent : constant Entity_Id := New_Standard_Entity;
+   begin
+      Make_Name (Ent, S);
+      return Ent;
    end New_Standard_Entity;
 
    --------------------
@@ -2126,11 +2122,6 @@ package body CStand is
       Exponent    : constant Uint := Emax - Mantissa;
 
    begin
-      --  Note: for the call from Cstand to initially create the types in
-      --  Standard, Float_Rep will never be VAX_Native. Circuitry in Sem_Vfpt
-      --  will adjust these types appropriately VAX_Native if a pragma
-      --  Float_Representation (VAX_Float) is used.
-
       H := Make_Float_Literal (Stloc, Radix, Significand, Exponent);
       L := Make_Float_Literal (Stloc, Radix, -Significand, Exponent);
 

@@ -68,3 +68,7 @@ along with GCC; see the file COPYING3.  If not see
     }                                                                   \
   while (0)
 
+/* Do VxWorks-specific parts of TARGET_OPTION_OVERRIDE.  */
+#undef VXWORKS_OVERRIDE_OPTIONS
+#define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
+extern void vxworks_override_options (void);

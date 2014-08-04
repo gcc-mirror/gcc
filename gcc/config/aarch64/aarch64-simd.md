@@ -1022,7 +1022,7 @@
 	  (match_operand:<VHALF> 1 "register_operand" "w,r")
           (vec_select:<VHALF>
                 (match_dup 0)
-                (match_operand:VQ 2 "vect_par_cnst_hi_half" ""))))]
+                (match_operand:VQ 2 "vect_par_cnst_lo_half" ""))))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "@
    ins\\t%0.d[1], %1.d[0]
@@ -1035,7 +1035,7 @@
   (match_operand:<VHALF> 1 "register_operand" "")]
  "TARGET_SIMD"
 {
-  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, BYTES_BIG_ENDIAN);
+  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, false);
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_aarch64_simd_move_hi_quad_be_<mode> (operands[0],
 		    operands[1], p));

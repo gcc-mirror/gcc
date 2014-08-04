@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CGRAPH_H
 #define GCC_CGRAPH_H
 
+#include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
 #include "vec.h"
@@ -1204,7 +1205,7 @@ public:
    can appear in multiple sets.  */
 struct cgraph_node_set_def
 {
-  struct pointer_map_t *map;
+  hash_map<cgraph_node *, size_t> *map;
   vec<cgraph_node *> nodes;
 };
 
@@ -1217,7 +1218,7 @@ class varpool_node;
    can appear in multiple sets.  */
 struct varpool_node_set_def
 {
-  struct pointer_map_t * map;
+  hash_map<varpool_node *, size_t> * map;
   vec<varpool_node *> nodes;
 };
 
@@ -1243,11 +1244,11 @@ struct GTY(()) cgraph_indirect_call_info
      was actually used in the polymorphic resides within a larger structure.
      If agg_contents is set, the field contains the offset within the aggregate
      from which the address to call was loaded.  */
-  HOST_WIDE_INT offset;
+  HOST_WIDE_INT offset, speculative_offset;
   /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
   HOST_WIDE_INT otr_token;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
-  tree otr_type, outer_type;
+  tree otr_type, outer_type, speculative_outer_type;
   /* Index of the parameter that is called.  */
   int param_index;
   /* ECF flags determined from the caller.  */
@@ -1270,6 +1271,7 @@ struct GTY(()) cgraph_indirect_call_info
   unsigned by_ref : 1;
   unsigned int maybe_in_construction : 1;
   unsigned int maybe_derived_type : 1;
+  unsigned int speculative_maybe_derived_type : 1;
 };
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {

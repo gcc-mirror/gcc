@@ -1325,7 +1325,7 @@ dump_template_decl (cxx_pretty_printer *pp, tree t, int flags)
 
 struct find_typenames_t
 {
-  struct pointer_set_t *p_set;
+  hash_set<tree> *p_set;
   vec<tree, va_gc> *typenames;
 };
 
@@ -1351,7 +1351,7 @@ find_typenames_r (tree *tp, int *walk_subtrees, void *data)
       return NULL_TREE;
     }
 
-  if (mv && (mv == *tp || !pointer_set_insert (d->p_set, mv)))
+  if (mv && (mv == *tp || !d->p_set->add (mv)))
     vec_safe_push (d->typenames, mv);
 
   /* Search into class template arguments, which cp_walk_subtrees
@@ -1367,11 +1367,11 @@ static vec<tree, va_gc> *
 find_typenames (tree t)
 {
   struct find_typenames_t ft;
-  ft.p_set = pointer_set_create ();
+  ft.p_set = new hash_set<tree>;
   ft.typenames = NULL;
   cp_walk_tree (&TREE_TYPE (DECL_TEMPLATE_RESULT (t)),
 		find_typenames_r, &ft, ft.p_set);
-  pointer_set_destroy (ft.p_set);
+  delete ft.p_set;
   return ft.typenames;
 }
 

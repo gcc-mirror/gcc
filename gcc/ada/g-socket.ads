@@ -39,9 +39,6 @@
 --       feature, so it is not available if Multicast is not supported, or not
 --       installed.
 
---       The VMS implementation was implemented using the DECC RTL Socket API,
---       and is thus subject to limitations in the implementation of this API.
-
 --     VxWorks cross ports fully implement this package
 
 --     This package is not yet implemented on LynxOS or other cross ports
@@ -797,7 +794,7 @@ package GNAT.Sockets is
 
    type Vector_Element is record
       Base   : Stream_Element_Reference;
-      Length : Ada.Streams.Stream_Element_Count;
+      Length : Interfaces.C.size_t;
    end record;
 
    type Vector_Type is array (Integer range <>) of Vector_Element;

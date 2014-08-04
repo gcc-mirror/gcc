@@ -131,9 +131,9 @@ package body Exp_Strm is
    --      return V;
    --    end typSI[_nnn]
 
-   --  Note: the suffix [_nnn] is present for non-tagged types, where we
-   --  generate a local subprogram at the point of the occurrence of the
-   --  attribute reference, so the name must be unique.
+   --  Note: the suffix [_nnn] is present for untagged types, where we generate
+   --  a local subprogram at the point of the occurrence of the attribute
+   --  reference, so the name must be unique.
 
    procedure Build_Array_Input_Function
      (Loc  : Source_Ptr;
@@ -155,7 +155,6 @@ package body Exp_Strm is
       Decls := New_List;
       Ranges := New_List;
       Indx  := First_Index (Typ);
-
       for J in 1 .. Dim loop
          Lnam := New_External_Name ('L', J);
          Hnam := New_External_Name ('H', J);
@@ -435,7 +434,6 @@ package body Exp_Strm is
       Pnam : out Entity_Id)
    is
       Loc : constant Source_Ptr := Sloc (Nod);
-
    begin
       Pnam :=
         Make_Defining_Identifier (Loc,
@@ -636,6 +634,7 @@ package body Exp_Strm is
                  Relocate_Node (Strm))));
 
          Set_Do_Range_Check (Res);
+
          if Base_Type (P_Type) /= Base_Type (U_Type) then
             Res := Unchecked_Convert_To (Base_Type (P_Type), Res);
          end if;

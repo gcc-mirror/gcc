@@ -56,6 +56,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -147,8 +148,8 @@ package body Exp_Ch3 is
    --  The resulting operation is a TSS subprogram.
 
    procedure Build_Variant_Record_Equality (Typ  : Entity_Id);
-   --  Create An Equality function for the non-tagged variant record 'Typ'
-   --  and attach it to the TSS list
+   --  Create An Equality function for the untagged variant record Typ and
+   --  attach it to the TSS list
 
    procedure Check_Stream_Attributes (Typ : Entity_Id);
    --  Check that if a limited extension has a parent with user-defined stream
@@ -241,7 +242,7 @@ package body Exp_Ch3 is
       CL     : Node_Id;
       Discrs : Elist_Id := New_Elmt_List) return List_Id;
    --  Building block for variant record equality. Defined to share the code
-   --  between the tagged and non-tagged case. Given a Component_List node CL,
+   --  between the tagged and untagged case. Given a Component_List node CL,
    --  it generates an 'if' followed by a 'case' statement that compares all
    --  components of local temporaries named X and Y (that are declared as
    --  formals at some upper level). E provides the Sloc to be used for the
@@ -255,7 +256,7 @@ package body Exp_Ch3 is
      (E : Entity_Id;
       L : List_Id) return Node_Id;
    --  Building block for variant record equality. Defined to share the code
-   --  between the tagged and non-tagged case. Given the list of components
+   --  between the tagged and untagged case. Given the list of components
    --  (or discriminants) L, it generates a return statement that compares all
    --  components of local temporaries named X and Y (that are declared as
    --  formals at some upper level). E provides the Sloc to be used for the
@@ -442,9 +443,7 @@ package body Exp_Ch3 is
 
          Ctyp := Etype (Comp);
 
-         if not Is_Array_Type (Ctyp)
-           or else Number_Dimensions (Ctyp) > 1
-         then
+         if not Is_Array_Type (Ctyp) or else Number_Dimensions (Ctyp) > 1 then
             goto Continue;
          end if;
 
@@ -1492,14 +1491,20 @@ package body Exp_Ch3 is
          return Empty_List;
       end if;
 
-      --  Go to full view if private type. In the case of successive
-      --  private derivations, this can require more than one step.
+      --  Go to full view or underlying full view if private type. In the case
+      --  of successive private derivations, this can require two steps.
 
-      while Is_Private_Type (Full_Type)
+      if Is_Private_Type (Full_Type)
         and then Present (Full_View (Full_Type))
-      loop
+      then
          Full_Type := Full_View (Full_Type);
-      end loop;
+      end if;
+
+      if Is_Private_Type (Full_Type)
+        and then Present (Underlying_Full_View (Full_Type))
+      then
+         Full_Type := Underlying_Full_View (Full_Type);
+      end if;
 
       --  If Typ is derived, the procedure is the initialization procedure for
       --  the root type. Wrap the argument in an conversion to make it type
@@ -1584,12 +1589,6 @@ package body Exp_Ch3 is
             begin
                if Is_Protected_Type (T) then
                   T := Corresponding_Record_Type (T);
-
-               elsif Is_Private_Type (T)
-                 and then Present (Underlying_Full_View (T))
-                 and then Is_Protected_Type (Underlying_Full_View (T))
-               then
-                  T := Corresponding_Record_Type (Underlying_Full_View (T));
                end if;
 
                Arg :=
@@ -1702,18 +1701,6 @@ package body Exp_Ch3 is
          end if;
       end if;
 
-      --  When the object is either protected or a task, create static strings
-      --  which denote the names of entries and families. Associate the strings
-      --  with the concurrent object's Protection_Entries or ATCB. This is a
-      --  VMS Debug feature.
-
-      if OpenVMS_On_Target
-        and then Is_Concurrent_Type (Typ)
-        and then Entry_Names_OK
-      then
-         Build_Entry_Names (Id_Ref, Typ, Res);
-      end if;
-
       return Res;
 
    exception
@@ -1753,12 +1740,10 @@ package body Exp_Ch3 is
       --  objects on list Decls.
 
       function Build_Init_Call_Thru (Parameters : List_Id) return List_Id;
-      --  Given a non-tagged type-derivation that declares discriminants,
-      --  such as
+      --  Given an untagged type-derivation that declares discriminants, e.g.
       --
-      --  type R (R1, R2 : Integer) is record ... end record;
-      --
-      --  type D (D1 : Integer) is new R (1, D1);
+      --     type R (R1, R2 : Integer) is record ... end record;
+      --     type D (D1 : Integer) is new R (1, D1);
       --
       --  we make the _init_proc of D be
       --
@@ -2365,8 +2350,7 @@ package body Exp_Ch3 is
 
             if not Null_Present (Type_Definition (N)) then
                Append_List_To (Body_Stmts,
-                 Build_Init_Statements (
-                   Component_List (Type_Definition (N))));
+                 Build_Init_Statements (Component_List (Type_Definition (N))));
             end if;
 
          --  N is a Derived_Type_Definition with a possible non-empty
@@ -2596,7 +2580,7 @@ package body Exp_Ch3 is
          Set_Statements (Handled_Stmt_Node, Body_Stmts);
 
          --  Generate:
-         --    Local_DF_Id (_init, C1, ..., CN);
+         --    Deep_Finalize (_init, C1, ..., CN);
          --    raise;
 
          if Counter > 0
@@ -2605,30 +2589,36 @@ package body Exp_Ch3 is
            and then not Restriction_Active (No_Exception_Propagation)
          then
             declare
-               Local_DF_Id : Entity_Id;
+               DF_Call : Node_Id;
+               DF_Id   : Entity_Id;
 
             begin
                --  Create a local version of Deep_Finalize which has indication
                --  of partial initialization state.
 
-               Local_DF_Id := Make_Temporary (Loc, 'F');
+               DF_Id := Make_Temporary (Loc, 'F');
 
-               Append_To (Decls,
-                 Make_Local_Deep_Finalize (Rec_Type, Local_DF_Id));
+               Append_To (Decls, Make_Local_Deep_Finalize (Rec_Type, DF_Id));
+
+               DF_Call :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   => New_Occurrence_Of (DF_Id, Loc),
+                   Parameter_Associations => New_List (
+                     Make_Identifier (Loc, Name_uInit),
+                     New_Occurrence_Of (Standard_False, Loc)));
+
+               --  Do not emit warnings related to the elaboration order when a
+               --  controlled object is declared before the body of Finalize is
+               --  seen.
+
+               Set_No_Elaboration_Check (DF_Call);
 
                Set_Exception_Handlers (Handled_Stmt_Node, New_List (
                  Make_Exception_Handler (Loc,
                    Exception_Choices => New_List (
                      Make_Others_Choice (Loc)),
-
-                   Statements => New_List (
-                     Make_Procedure_Call_Statement (Loc,
-                       Name                   =>
-                         New_Occurrence_Of (Local_DF_Id, Loc),
-                       Parameter_Associations => New_List (
-                         Make_Identifier (Loc, Name_uInit),
-                         New_Occurrence_Of (Standard_False, Loc))),
-
+                   Statements        => New_List (
+                     DF_Call,
                      Make_Raise_Statement (Loc)))));
             end;
          else
@@ -2812,6 +2802,14 @@ package body Exp_Ch3 is
             --  Regular component cases
 
             else
+               --  In the context of the init proc, references to discriminants
+               --  resolve to denote the discriminals: this is where we can
+               --  freeze discriminant dependent component subtypes.
+
+               if not Is_Frozen (Typ) then
+                  Append_List_To (Stmts, Freeze_Entity (Typ, N));
+               end if;
+
                --  Explicit initialization
 
                if Present (Expression (Decl)) then
@@ -3167,7 +3165,7 @@ package body Exp_Ch3 is
 
       exception
          when RE_Not_Available =>
-         return Empty_List;
+            return Empty_List;
       end Build_Init_Statements;
 
       -------------------------
@@ -3220,7 +3218,7 @@ package body Exp_Ch3 is
 
             begin
                if Nkind (S) = N_Range then
-                  Process_Range_Expr_In_Decl (S, T, Check_List);
+                  Process_Range_Expr_In_Decl (S, T, Check_List => Check_List);
                end if;
             end Constrain_Index;
 
@@ -3692,8 +3690,21 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Comp, Loc));
 
          if Is_Access_Type (Typ) then
-            Sel_Comp := Make_Explicit_Dereference (Loc, Sel_Comp);
-            Typ := Designated_Type (Typ);
+
+            --  If the access component designates a type with an invariant,
+            --  the check applies to the designated object. The access type
+            --  itself may have an invariant, in which case it applies to the
+            --  access value directly.
+
+            --  Note: we are assuming that invariants will not occur on both
+            --  the access type and the type that it designates. This is not
+            --  really justified but it is hard to imagine that this case will
+            --  ever cause trouble ???
+
+            if not (Has_Invariants (Typ)) then
+               Sel_Comp := Make_Explicit_Dereference (Loc, Sel_Comp);
+               Typ := Designated_Type (Typ);
+            end if;
          end if;
 
          Call :=
@@ -3737,7 +3748,15 @@ package body Exp_Ch3 is
                if Has_Invariants (Etype (Id))
                  and then In_Open_Scopes (Scope (R_Type))
                then
-                  Append_To (Stmts, Build_Component_Invariant_Call (Id));
+                  if Has_Unchecked_Union (R_Type) then
+                     Error_Msg_NE
+                       ("invariants cannot be checked on components of "
+                         & "unchecked_union type&?", Decl, R_Type);
+                     return Empty_List;
+
+                  else
+                     Append_To (Stmts, Build_Component_Invariant_Call (Id));
+                  end if;
 
                elsif Is_Access_Type (Etype (Id))
                  and then not Is_Access_Constant (Etype (Id))
@@ -3810,9 +3829,14 @@ package body Exp_Ch3 is
          return Empty;
       end if;
 
+      --  The name of the invariant procedure reflects the fact that the
+      --  checks correspond to invariants on the component types. The
+      --  record type itself may have invariants that will create a separate
+      --  procedure whose name carries the Invariant suffix.
+
       Proc_Id :=
         Make_Defining_Identifier (Loc,
-           Chars => New_External_Name (Chars (R_Type), "Invariant"));
+           Chars => New_External_Name (Chars (R_Type), "CInvariant"));
 
       Proc_Body :=
         Make_Subprogram_Body (Loc,
@@ -4265,9 +4289,9 @@ package body Exp_Ch3 is
       end if;
    end Build_Untagged_Equality;
 
-   ------------------------------------
+   -----------------------------------
    -- Build_Variant_Record_Equality --
-   ------------------------------------
+   -----------------------------------
 
    --  Generates:
 
@@ -4275,13 +4299,13 @@ package body Exp_Ch3 is
    --    begin
    --       --  Compare discriminants
 
-   --       if False or else X.D1 /= Y.D1 or else X.D2 /= Y.D2 then
+   --       if X.D1 /= Y.D1 or else X.D2 /= Y.D2 or else ... then
    --          return False;
    --       end if;
 
    --       --  Compare components
 
-   --       if False or else X.C1 /= Y.C1 or else X.C2 /= Y.C2 then
+   --       if X.C1 /= Y.C1 or else X.C2 /= Y.C2 or else ... then
    --          return False;
    --       end if;
 
@@ -4289,12 +4313,12 @@ package body Exp_Ch3 is
 
    --       case X.D1 is
    --          when V1 =>
-   --             if False or else X.C2 /= Y.C2 or else X.C3 /= Y.C3 then
+   --             if X.C2 /= Y.C2 or else X.C3 /= Y.C3 or else ... then
    --                return False;
    --             end if;
    --          ...
    --          when Vn =>
-   --             if False or else X.Cn /= Y.Cn then
+   --             if X.Cn /= Y.Cn or else ... then
    --                return False;
    --             end if;
    --       end case;
@@ -4309,13 +4333,8 @@ package body Exp_Ch3 is
             Make_Defining_Identifier (Loc,
               Chars => Make_TSS_Name (Typ, TSS_Composite_Equality));
 
-      X : constant Entity_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => Name_X);
-
-      Y : constant Entity_Id :=
-            Make_Defining_Identifier (Loc,
-              Chars => Name_Y);
+      X : constant Entity_Id := Make_Defining_Identifier (Loc, Name_X);
+      Y : constant Entity_Id := Make_Defining_Identifier (Loc, Name_Y);
 
       Def    : constant Node_Id := Parent (Typ);
       Comps  : constant Node_Id := Component_List (Type_Definition (Def));
@@ -4343,7 +4362,6 @@ package body Exp_Ch3 is
          declare
             Parent_Eq : constant Entity_Id :=
                           TSS (Root_Type (Typ), TSS_Composite_Equality);
-
          begin
             if Present (Parent_Eq) then
                Copy_TSS (Parent_Eq, Typ);
@@ -4440,8 +4458,7 @@ package body Exp_Ch3 is
             --  the case statement switch. Their value is added when an
             --  equality call on unchecked unions is expanded.
 
-            Append_List_To (Stmts,
-              Make_Eq_Case (Typ, Comps, New_Discrs));
+            Append_List_To (Stmts, Make_Eq_Case (Typ, Comps, New_Discrs));
          end;
 
       --  Normal case (not unchecked union)
@@ -4557,6 +4574,8 @@ package body Exp_Ch3 is
    begin
       --  Expand_Record_Extension is called directly from the semantics, so
       --  we must check to see whether expansion is active before proceeding
+      --  Because this affects the visibility of selected components in bodies
+      --  of instances.
 
       if not Expander_Active then
          return;
@@ -5031,6 +5050,7 @@ package body Exp_Ch3 is
 
          --  Local variables
 
+         Abrt_Blk   : Node_Id;
          Abrt_HSS   : Node_Id;
          Abrt_Id    : Entity_Id;
          Abrt_Stmts : List_Id;
@@ -5041,9 +5061,23 @@ package body Exp_Ch3 is
          Obj_Init   : Node_Id := Empty;
          Obj_Ref    : Node_Id;
 
+         Dummy : Entity_Id;
+         --  This variable captures a dummy internal entity, see the comment
+         --  associated with its use.
+
       --  Start of processing for Default_Initialize_Object
 
       begin
+         --  Default initialization is suppressed for objects that are already
+         --  known to be imported (i.e. whose declaration specifies the Import
+         --  aspect). Note that for objects with a pragma Import, we generate
+         --  initialization here, and then remove it downstream when processing
+         --  the pragma.
+
+         if Is_Imported (Def_Id) then
+            return;
+         end if;
+
          --  Step 1: Initialize the object
 
          if Needs_Finalization (Typ) and then not No_Initialization (N) then
@@ -5205,47 +5239,55 @@ package body Exp_Ch3 is
 
          --  Step 3b: Build the abort block (if applicable)
 
-         --  The abort block is required when aborts are allowed and there is
-         --  at least one initialization call that needs protection.
+         --  The abort block is required when aborts are allowed in order to
+         --  protect both initialization calls.
 
-         if Abort_Allowed
-           and then Present (Comp_Init)
-           and then Present (Obj_Init)
-         then
-            --  Generate:
-            --    Abort_Defer;
+         if Present (Comp_Init) and then Present (Obj_Init) then
+            if Abort_Allowed then
 
-            Prepend_To (Fin_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+               --  Generate:
+               --    Abort_Defer;
 
-            --  Generate:
-            --    begin
-            --       Abort_Defer;
-            --       <finalization statements>
-            --    at end
-            --       Abort_Undefer_Direct;
-            --    end;
+               Prepend_To
+                 (Fin_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
 
-            Abrt_Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
-            Set_Etype (Abrt_Id, Standard_Void_Type);
-            Set_Scope (Abrt_Id, Current_Scope);
+               --  Generate:
+               --    begin
+               --       Abort_Defer;
+               --       <finalization statements>
+               --    at end
+               --       Abort_Undefer_Direct;
+               --    end;
 
-            Abrt_HSS :=
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements  => Fin_Stmts,
-                At_End_Proc =>
-                  New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
+               Abrt_HSS :=
+                 Make_Handled_Sequence_Of_Statements (Loc,
+                   Statements  => Fin_Stmts,
+                   At_End_Proc =>
+                     New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
 
-            Abrt_Stmts := New_List (
-              Make_Block_Statement (Loc,
-                Identifier                 => New_Occurrence_Of (Abrt_Id, Loc),
-                Declarations               => No_List,
-                Handled_Statement_Sequence => Abrt_HSS));
+               Abrt_Blk :=
+                 Make_Block_Statement (Loc,
+                   Declarations               => No_List,
+                   Handled_Statement_Sequence => Abrt_HSS);
 
-            Expand_At_End_Handler (Abrt_HSS, Abrt_Id);
+               Add_Block_Identifier (Abrt_Blk, Abrt_Id);
+               Expand_At_End_Handler (Abrt_HSS, Abrt_Id);
 
-         --  Abort is not required, the construct from Step 3a is to be added
-         --  in the tree (either finalization block or single initialization
-         --  call).
+               Abrt_Stmts := New_List (Abrt_Blk);
+
+            --  Abort is not required
+
+            else
+               --  Generate a dummy entity to ensure that the internal symbols
+               --  are in sync when a unit is compiled with and without aborts.
+               --  The entity is a block with proper scope and type.
+
+               Dummy := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+               Set_Etype (Dummy, Standard_Void_Type);
+               Abrt_Stmts := Fin_Stmts;
+            end if;
+
+         --  No initialization calls present
 
          else
             Abrt_Stmts := Fin_Stmts;
@@ -5710,13 +5752,18 @@ package body Exp_Ch3 is
                elsif Nkind (Expr) /= N_Error then
                   Apply_Constraint_Check (Expr, Typ);
 
-                  --  If the expression has been marked as requiring a range
-                  --  check, generate it now and reset the flag.
+                  --  Deal with possible range check
 
                   if Do_Range_Check (Expr) then
-                     Set_Do_Range_Check (Expr, False);
 
-                     if not Suppress_Assignment_Checks (N) then
+                     --  If assignment checks are suppressed, turn off flag
+
+                     if Suppress_Assignment_Checks (N) then
+                        Set_Do_Range_Check (Expr, False);
+
+                     --  Otherwise generate the range check
+
+                     else
                         Generate_Range_Check
                           (Expr, Typ, CE_Range_Check_Failed);
                      end if;
@@ -5789,7 +5836,7 @@ package body Exp_Ch3 is
 
             --  Handle C++ constructor calls. Note that we do not check that
             --  Typ is a tagged type since the equivalent Ada type of a C++
-            --  class that has no virtual methods is a non-tagged limited
+            --  class that has no virtual methods is an untagged limited
             --  record type.
 
             elsif Is_CPP_Constructor_Call (Expr) then
@@ -5812,9 +5859,14 @@ package body Exp_Ch3 is
                return;
 
             --  For discrete types, set the Is_Known_Valid flag if the
-            --  initializing value is known to be valid.
+            --  initializing value is known to be valid. Only do this for
+            --  source assignments, since otherwise we can end up turning
+            --  on the known valid flag prematurely from inserted code.
 
-            elsif Is_Discrete_Type (Typ) and then Expr_Known_Valid (Expr) then
+            elsif Comes_From_Source (N)
+              and then Is_Discrete_Type (Typ)
+              and then Expr_Known_Valid (Expr)
+            then
                Set_Is_Known_Valid (Def_Id);
 
             elsif Is_Access_Type (Typ) then
@@ -6143,12 +6195,15 @@ package body Exp_Ch3 is
          --  If the component contains tasks, so does the array type. This may
          --  not be indicated in the array type because the component may have
          --  been a private type at the point of definition. Same if component
-         --  type is controlled.
+         --  type is controlled or contains protected objects.
 
-         Set_Has_Task (Base, Has_Task (Comp_Typ));
-         Set_Has_Controlled_Component (Base,
-           Has_Controlled_Component (Comp_Typ)
-             or else Is_Controlled (Comp_Typ));
+         Set_Has_Task       (Base, Has_Task      (Comp_Typ));
+         Set_Has_Protected  (Base, Has_Protected (Comp_Typ));
+         Set_Has_Controlled_Component
+                            (Base, Has_Controlled_Component
+                                                 (Comp_Typ)
+                                     or else
+                                   Is_Controlled (Comp_Typ));
 
          if No (Init_Proc (Base)) then
 
@@ -6702,9 +6757,9 @@ package body Exp_Ch3 is
          Check_Stream_Attributes (Def_Id);
       end if;
 
-      --  Update task and controlled component flags, because some of the
-      --  component types may have been private at the point of the record
-      --  declaration. Detect anonymous access-to-controlled components.
+      --  Update task, protected, and controlled component flags, because some
+      --  of the component types may have been private at the point of the
+      --  record declaration. Detect anonymous access-to-controlled components.
 
       Has_AACC := False;
 
@@ -6714,20 +6769,26 @@ package body Exp_Ch3 is
 
          if Has_Task (Comp_Typ) then
             Set_Has_Task (Def_Id);
+         end if;
+
+         if Has_Protected (Comp_Typ) then
+            Set_Has_Protected (Def_Id);
+         end if;
 
          --  Do not set Has_Controlled_Component on a class-wide equivalent
          --  type. See Make_CW_Equivalent_Type.
 
-         elsif not Is_Class_Wide_Equivalent_Type (Def_Id)
+         if not Is_Class_Wide_Equivalent_Type (Def_Id)
            and then (Has_Controlled_Component (Comp_Typ)
                       or else (Chars (Comp) /= Name_uParent
                                 and then Is_Controlled (Comp_Typ)))
          then
             Set_Has_Controlled_Component (Def_Id);
+         end if;
 
          --  Non-self-referential anonymous access-to-controlled component
 
-         elsif Ekind (Comp_Typ) = E_Anonymous_Access_Type
+         if Ekind (Comp_Typ) = E_Anonymous_Access_Type
            and then Needs_Finalization (Designated_Type (Comp_Typ))
            and then Designated_Type (Comp_Typ) /= Def_Id
          then
@@ -6737,7 +6798,7 @@ package body Exp_Ch3 is
          Next_Component (Comp);
       end loop;
 
-      --  Handle constructors of non-tagged CPP_Class types
+      --  Handle constructors of untagged CPP_Class types
 
       if not Is_Tagged_Type (Def_Id) and then Is_CPP_Class (Def_Id) then
          Set_CPP_Constructors (Def_Id);
@@ -6954,7 +7015,7 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-      --  In the non-tagged case, ever since Ada 83 an equality function must
+      --  In the untagged case, ever since Ada 83 an equality function must
       --  be  provided for variant records that are not unchecked unions.
       --  In Ada 2012 the equality function composes, and thus must be built
       --  explicitly just as for tagged records.
@@ -7147,8 +7208,8 @@ package body Exp_Ch3 is
                         --  All anonymous access-to-controlled types allocate
                         --  on the global pool.
 
-                        Set_Associated_Storage_Pool (Comp_Typ,
-                          Get_Global_Pool_For_Access_Type (Comp_Typ));
+                        Set_Associated_Storage_Pool
+                          (Comp_Typ, RTE (RE_Global_Pool_Object));
 
                         Build_Finalization_Master
                           (Typ        => Comp_Typ,
@@ -7164,8 +7225,8 @@ package body Exp_Ch3 is
                         --  All anonymous access-to-controlled types allocate
                         --  on the global pool.
 
-                        Set_Associated_Storage_Pool (Comp_Typ,
-                          Get_Global_Pool_For_Access_Type (Comp_Typ));
+                        Set_Associated_Storage_Pool
+                          (Comp_Typ, RTE (RE_Global_Pool_Object));
 
                         --  Shared the master among multiple components
 
@@ -7208,8 +7269,20 @@ package body Exp_Ch3 is
       --  Check whether individual components have a defined invariant, and add
       --  the corresponding component invariant checks.
 
-      Insert_Component_Invariant_Checks
-        (N, Def_Id, Build_Record_Invariant_Proc (Def_Id, N));
+      --  Do not create an invariant procedure for some internally generated
+      --  subtypes, in particular those created for objects of a class-wide
+      --  type. Such types may have components to which invariant apply, but
+      --  the corresponding checks will be applied when an object of the parent
+      --  type is constructed.
+
+      --  Such objects will show up in a class-wide postcondition, and the
+      --  invariant will be checked, if necessary, upon return from the
+      --  enclosing subprogram.
+
+      if not Is_Class_Wide_Equivalent_Type (Def_Id) then
+         Insert_Component_Invariant_Checks
+           (N, Def_Id, Build_Record_Invariant_Proc (Def_Id, N));
+      end if;
    end Expand_Freeze_Record_Type;
 
    ------------------------------
@@ -8007,14 +8080,15 @@ package body Exp_Ch3 is
 
          else
 
-            --  Find already created invariant body, insert body of component
-            --  invariant proc in it, and add call after other checks.
+            --  Find already created invariant subprogram, insert body of
+            --  component invariant proc in its body, and add call after
+            --  other checks.
 
             declare
                Bod : Node_Id;
                Inv_Id : constant Entity_Id := Invariant_Procedure (Typ);
                Call   : constant Node_Id :=
-                 Make_Procedure_Call_Statement (Loc,
+                 Make_Procedure_Call_Statement (Sloc (N),
                    Name => New_Occurrence_Of (Proc_Id, Loc),
                    Parameter_Associations =>
                      New_List
@@ -8032,8 +8106,22 @@ package body Exp_Ch3 is
                   Next (Bod);
                end loop;
 
+               --  If the body is not found, it is the case of an invariant
+               --  appearing on a full declaration in a private part, in
+               --  which case the type has been frozen but the invariant
+               --  procedure for the composite type not created yet. Create
+               --  body now.
+
+               if No (Bod) then
+                  Build_Invariant_Procedure (Typ, Parent (Current_Scope));
+                  Bod := Unit_Declaration_Node
+                    (Corresponding_Body (Unit_Declaration_Node (Inv_Id)));
+               end if;
+
                Append_To (Declarations (Bod), Proc);
                Append_To (Statements (Handled_Statement_Sequence (Bod)), Call);
+               Analyze (Proc);
+               Analyze (Call);
             end;
          end if;
       end if;
@@ -8759,6 +8847,7 @@ package body Exp_Ch3 is
    ------------------
 
    --  <Make_Eq_If shared components>
+
    --  case X.D1 is
    --     when V1 => <Make_Eq_Case> on subcomponents
    --     ...

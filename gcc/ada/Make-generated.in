@@ -66,48 +66,6 @@ $(ADA_GEN_SUBDIR)/stamp-nmake: $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nma
 	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/nmake/nmake.adb $(ADA_GEN_SUBDIR)/nmake.adb
 	touch $(ADA_GEN_SUBDIR)/stamp-nmake
 
-# GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
-# for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons.
-
-OSCONS_CC=$(subst ./xgcc,../../../xgcc,$(subst -B./, -B../../../,$(GCC_FOR_TARGET)))
-
-# The main ada source directory must be on the include path for #include "..."
-# because s-oscons-tmplt.c requires adaint.h, gsocket.h, and any file included
-# by these headers. However note that we must use -iquote, not -I, so that
-# ada/types.h does not conflict with a same-named system header (VxWorks
-# has a <types.h> header).
-
-OSCONS_SRCDIR=$${_oscons_srcdir}
-OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
-  -DTARGET=\"$(target)\" -iquote $(OSCONS_SRCDIR) s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(OSCONS_CC) -iquote $(OSCONS_SRCDIR) -S s-oscons-tmplt.i
-
-# Note: if you need to build with a non-GNU compiler, you could adapt the
-# following definitions (written for VMS DEC-C)
-#OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
-#             -DTARGET='""$(target)""' -I$(OSCONS_SRCDIR) s-oscons-tmplt.c
-#
-#OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
-#                 -DTARGET='""$(target)""' -I$(OSCONS_SRCDIR) s-oscons-tmplt.c ; \
-#  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
-#  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
-
-# Note: the first dependency of s-oscons.ads *must* remain s-oscons-tmplt.c, as
-# we use $(<D) to locate the main ada/ source directory and pass it to OSCONS_CPP
-# as a -I argument.
-$(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
-	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/oscons
-	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/oscons/,$(notdir $^))
-	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/oscons
-	_oscons_srcdir=`cd $(<D) && pwd` ; \
-	(cd $(ADA_GEN_SUBDIR)/bldtools/oscons ; gnatmake -q xoscons ; \
-		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
-		$(OSCONS_CPP) ; \
-		$(OSCONS_EXTRACT) ; \
-		./xoscons s-oscons ) ; \
-		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.ads $(ADA_GEN_SUBDIR)/s-oscons.ads ; \
-		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.h $(ADA_GEN_SUBDIR)/s-oscons.h
-
 $(ADA_GEN_SUBDIR)/sdefault.adb: $(ADA_GEN_SUBDIR)/stamp-sdefault ; @true
 $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb
@@ -137,11 +95,3 @@ $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "end Sdefault;" >> tmp-sdefault.adb
 	$(MOVE_IF_CHANGE) tmp-sdefault.adb $(ADA_GEN_SUBDIR)/sdefault.adb
 	touch $(ADA_GEN_SUBDIR)/stamp-sdefault
-
-$(ADA_GEN_SUBDIR)/gnat.hlp :  $(ADA_GEN_SUBDIR)/vms_help.adb $(ADA_GEN_SUBDIR)/vms_cmds.ads $(ADA_GEN_SUBDIR)/gnat.help_in $(ADA_GEN_SUBDIR)/vms_data.ads
-	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp
-	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp/,$(notdir $^))
-	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp
-	(cd $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp; \
-	  gnatmake -q vms_help; \
-	  ./vms_help$(build_exeext) gnat.help_in vms_data.ads ../../gnat.hlp)

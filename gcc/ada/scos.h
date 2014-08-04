@@ -37,7 +37,7 @@ typedef Int SCO_Unit_Index;
 
 struct SCO_Unit_Table_Entry
   {
-    Fat_Pointer File_Name;
+    String_Pointer File_Name;
     Int File_Index;
     Nat Dep_Num;
     Nat From, To;

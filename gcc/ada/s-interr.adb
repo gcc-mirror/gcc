@@ -52,6 +52,7 @@
 --  There is no more than one interrupt per Server_Task and no more than one
 --  Server_Task per interrupt.
 
+with Ada.Exceptions;
 with Ada.Task_Identification;
 
 with System.Task_Primitives;
@@ -59,6 +60,8 @@ with System.Interrupt_Management;
 
 with System.Interrupt_Management.Operations;
 pragma Elaborate_All (System.Interrupt_Management.Operations);
+
+with System.IO;
 
 with System.Task_Primitives.Operations;
 with System.Task_Primitives.Interrupt_Operations;
@@ -678,6 +681,10 @@ package body System.Interrupts is
    -----------------------
 
    task body Interrupt_Manager is
+      --  By making this task independent of master, when the process
+      --  goes away, the Interrupt_Manager will terminate gracefully.
+
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
 
       ---------------------
       -- Local Variables --
@@ -940,11 +947,6 @@ package body System.Interrupts is
    --  Start of processing for Interrupt_Manager
 
    begin
-      --  By making this task independent of master, when the process
-      --  goes away, the Interrupt_Manager will terminate gracefully.
-
-      System.Tasking.Utilities.Make_Independent;
-
       --  Environment task gets its own interrupt mask, saves it, and then
       --  masks all interrupts except the Keep_Unmasked set.
 
@@ -1221,9 +1223,10 @@ package body System.Interrupts is
             when Program_Error =>
                null;
 
-            when others =>
+            when X : others =>
+               System.IO.Put_Line ("Exception in Interrupt_Manager");
+               System.IO.Put_Line (Ada.Exceptions.Exception_Information (X));
                pragma Assert (False);
-               null;
          end;
       end loop;
    end Interrupt_Manager;
@@ -1233,6 +1236,11 @@ package body System.Interrupts is
    -----------------
 
    task body Server_Task is
+      --  By making this task independent of master, when the process goes
+      --  away, the Server_Task will terminate gracefully.
+
+      Ignore : constant Boolean := System.Tasking.Utilities.Make_Independent;
+
       Intwait_Mask    : aliased IMNG.Interrupt_Mask;
       Ret_Interrupt   : Interrupt_ID;
       Self_ID         : constant Task_Id := Self;
@@ -1241,11 +1249,6 @@ package body System.Interrupts is
       Tmp_Entry_Index : Task_Entry_Index;
 
    begin
-      --  By making this task independent of master, when the process goes
-      --  away, the Server_Task will terminate gracefully.
-
-      System.Tasking.Utilities.Make_Independent;
-
       --  Install default action in system level
 
       IMOP.Install_Default_Action (IMNG.Interrupt_ID (Interrupt));
@@ -1302,7 +1305,7 @@ package body System.Interrupts is
 
          elsif Blocked (Interrupt) then
 
-            --  Interrupt is blocked. Stay here, so we won't catch it
+            --  Interrupt is blocked, stay here, so we won't catch it
 
             Self_ID.Common.State := Interrupt_Server_Blocked_Interrupt_Sleep;
             POP.Sleep (Self_ID, Interrupt_Server_Blocked_Interrupt_Sleep);

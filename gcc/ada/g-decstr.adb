@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2013, AdaCore                     --
+--                     Copyright (C) 2007-2014, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -323,7 +323,6 @@ package body GNAT.Decode_String is
 
    procedure Next_Wide_Character (Input : String; Ptr : in out Natural) is
       Discard : Wide_Character;
-      pragma Unreferenced (Discard);
    begin
       Decode_Wide_Character (Input, Ptr, Discard);
    end Next_Wide_Character;
@@ -334,7 +333,6 @@ package body GNAT.Decode_String is
 
    procedure Next_Wide_Wide_Character (Input : String; Ptr : in out Natural) is
       Discard : Wide_Wide_Character;
-      pragma Unreferenced (Discard);
    begin
       Decode_Wide_Wide_Character (Input, Ptr, Discard);
    end Next_Wide_Wide_Character;

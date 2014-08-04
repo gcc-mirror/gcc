@@ -1480,7 +1480,7 @@ maybe_explain_implicit_delete (tree decl)
   if (DECL_DEFAULTED_FN (decl))
     {
       /* Not marked GTY; it doesn't need to be GC'd or written to PCH.  */
-      static struct pointer_set_t *explained;
+      static hash_set<tree> *explained;
 
       special_function_kind sfk;
       location_t loc;
@@ -1488,8 +1488,8 @@ maybe_explain_implicit_delete (tree decl)
       tree ctype;
 
       if (!explained)
-	explained = pointer_set_create ();
-      if (pointer_set_insert (explained, decl))
+	explained = new hash_set<tree>;
+      if (explained->add (decl))
 	return true;
 
       sfk = special_function_p (decl);
@@ -1798,8 +1798,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_ARGUMENTS (fn) = this_parm;
 
   grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL);
-  set_linkage_according_to_type (type, fn);
-  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_DEFAULTED_FN (fn) = 1;
@@ -1811,6 +1809,9 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_EXTERNAL (fn) = true;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
+  DECL_COMDAT (fn) = 1;
+  set_linkage_according_to_type (type, fn);
+  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
   gcc_assert (!TREE_USED (fn));
 
   /* Restore PROCESSING_TEMPLATE_DECL.  */

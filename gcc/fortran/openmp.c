@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "arith.h"
 #include "match.h"
 #include "parse.h"
-#include "pointer-set.h"
+#include "hash-set.h"
 
 /* Match an end of OpenMP directive.  End of OpenMP directive is optional
    whitespace, followed by '\n' or comment '!'.  */
@@ -3013,8 +3013,8 @@ resolve_omp_atomic (gfc_code *code)
 struct omp_context
 {
   gfc_code *code;
-  struct pointer_set_t *sharing_clauses;
-  struct pointer_set_t *private_iterators;
+  hash_set<gfc_symbol *> *sharing_clauses;
+  hash_set<gfc_symbol *> *private_iterators;
   struct omp_context *previous;
 } *omp_current_ctx;
 static gfc_code *omp_current_do_code;
@@ -3057,8 +3057,8 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
   int list;
 
   ctx.code = code;
-  ctx.sharing_clauses = pointer_set_create ();
-  ctx.private_iterators = pointer_set_create ();
+  ctx.sharing_clauses = new hash_set<gfc_symbol *>;
+  ctx.private_iterators = new hash_set<gfc_symbol *>;
   ctx.previous = omp_current_ctx;
   omp_current_ctx = &ctx;
 
@@ -3072,7 +3072,7 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
       case OMP_LIST_REDUCTION:
       case OMP_LIST_LINEAR:
 	for (n = omp_clauses->lists[list]; n; n = n->next)
-	  pointer_set_insert (ctx.sharing_clauses, n->sym);
+	  ctx.sharing_clauses->add (n->sym);
 	break;
       default:
 	break;
@@ -3097,8 +3097,8 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
     }
 
   omp_current_ctx = ctx.previous;
-  pointer_set_destroy (ctx.sharing_clauses);
-  pointer_set_destroy (ctx.private_iterators);
+  delete ctx.sharing_clauses;
+  delete ctx.private_iterators;
 }
 
 
@@ -3154,10 +3154,10 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
   if (omp_current_ctx == NULL)
     return;
 
-  if (pointer_set_contains (omp_current_ctx->sharing_clauses, sym))
+  if (omp_current_ctx->sharing_clauses->contains (sym))
     return;
 
-  if (! pointer_set_insert (omp_current_ctx->private_iterators, sym))
+  if (! omp_current_ctx->private_iterators->add (sym))
     {
       gfc_omp_clauses *omp_clauses = omp_current_ctx->code->ext.omp_clauses;
       gfc_omp_namelist *p;

@@ -1,3 +1,7 @@
+2014-08-04  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 213543 into gupc branch.
+
 2014-08-01  Gary Funck  <gary@intrepid.com>
 
 	* testsuite/gcc.dg/gupc: New.

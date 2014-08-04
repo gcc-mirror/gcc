@@ -306,6 +306,16 @@ package body Exp_Dbug is
       Obj : Entity_Id;
       Res : Node_Id;
 
+      Enable : Boolean := Nkind (N) = N_Package_Renaming_Declaration;
+      --  By default, we do not generate an encoding for renaming. This is
+      --  however done (in which case this is set to True) in a few cases:
+      --    - when a package is renamed,
+      --    - when the renaming involves a packed array,
+      --    - when the renaming involves a packed record.
+
+      procedure Enable_If_Packed_Array (N : Node_Id);
+      --  Enable encoding generation if N is a packed array
+
       function Output_Subscript (N : Node_Id; S : String) return Boolean;
       --  Outputs a single subscript value as ?nnn (subscript is compile time
       --  known value with value nnn) or as ?e (subscript is local constant
@@ -313,6 +323,18 @@ package body Exp_Dbug is
       --  Returns False if the subscript is not of an appropriate type to
       --  output in one of these two forms. The result is prepended to the
       --  name stored in Name_Buffer.
+
+      ----------------------------
+      -- Enable_If_Packed_Array --
+      ----------------------------
+
+      procedure Enable_If_Packed_Array (N : Node_Id) is
+         T : constant Entity_Id := Etype (N);
+      begin
+         Enable :=
+           Enable or else (Ekind (T) in Array_Kind
+                            and then Present (Packed_Array_Impl_Type (T)));
+      end Enable_If_Packed_Array;
 
       ----------------------
       -- Output_Subscript --
@@ -372,6 +394,7 @@ package body Exp_Dbug is
                exit;
 
             when N_Selected_Component =>
+               Enable := Enable or else Is_Packed (Etype (Prefix (Ren)));
                Prepend_String_To_Buffer
                  (Get_Name_String (Chars (Selector_Name (Ren))));
                Prepend_String_To_Buffer ("XR");
@@ -379,9 +402,12 @@ package body Exp_Dbug is
 
             when N_Indexed_Component =>
                declare
-                  X : Node_Id := Last (Expressions (Ren));
+                  X : Node_Id;
 
                begin
+                  Enable_If_Packed_Array (Prefix (Ren));
+
+                  X := Last (Expressions (Ren));
                   while Present (X) loop
                      if not Output_Subscript (X, "XS") then
                         Set_Materialize_Entity (Ent);
@@ -395,7 +421,7 @@ package body Exp_Dbug is
                Ren := Prefix (Ren);
 
             when N_Slice =>
-
+               Enable_If_Packed_Array (Prefix (Ren));
                Typ := Etype (First_Index (Etype (Nam)));
 
                if not Output_Subscript (Type_High_Bound (Typ), "XS") then
@@ -421,6 +447,13 @@ package body Exp_Dbug is
                return Empty;
          end case;
       end loop;
+
+      --  If we found no reason here to emit an encoding, stop now
+
+      if not Enable then
+         Set_Materialize_Entity (Ent);
+         return Empty;
+      end if;
 
       Prepend_String_To_Buffer ("___XE");
 
@@ -478,6 +511,13 @@ package body Exp_Dbug is
       Set_Debug_Renaming_Link (Obj, Entity (Ren));
 
       Set_Debug_Info_Needed (Obj);
+
+      --  The renamed entity may be a temporary, e.g. the result of an
+      --  implicit dereference in an iterator. Indicate that the temporary
+      --  itself requires debug information. If the renamed entity comes
+      --  from source this is a no-op.
+
+      Set_Debug_Info_Needed (Entity (Ren));
 
       --  Mark the object as internal so that it won't be initialized when
       --  pragma Initialize_Scalars or Normalize_Scalars is in use.
@@ -562,20 +602,6 @@ package body Exp_Dbug is
          if Small_Value (E) /= Delta_Value (E) then
             Add_Str_To_Name_Buffer ("_");
             Add_Real_To_Buffer (Small_Value (E));
-         end if;
-
-      --  Vax floating-point case
-
-      elsif Vax_Float (E) then
-         if Digits_Value (Base_Type (E)) = 6 then
-            Get_External_Name (E, True, "XFF");
-
-         elsif Digits_Value (Base_Type (E)) = 9 then
-            Get_External_Name (E, True, "XFF");
-
-         else
-            pragma Assert (Digits_Value (Base_Type (E)) = 15);
-            Get_External_Name (E, True, "XFG");
          end if;
 
       --  Discrete case where bounds do not match size
@@ -1096,7 +1122,8 @@ package body Exp_Dbug is
 
       function Qualify_Needed (S : Entity_Id) return Boolean;
       --  Given a scope, determines if the scope is to be included in the
-      --  fully qualified name, True if so, False if not.
+      --  fully qualified name, True if so, False if not. Blocks and loops
+      --  are excluded from a qualified name.
 
       procedure Set_BNPE_Suffix (E : Entity_Id);
       --  Recursive routine to append the BNPE qualification suffix. Works
@@ -1211,6 +1238,7 @@ package body Exp_Dbug is
             return Is_Subprogram (Ent)
               or else Ekind (Ent) = E_Subprogram_Body
               or else (Ekind (S) /= E_Block
+                        and then Ekind (S) /= E_Loop
                         and then not Is_Dynamic_Scope (S));
          end if;
       end Qualify_Needed;

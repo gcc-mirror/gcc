@@ -316,7 +316,7 @@ const struct fname_var_t fname_vars[] =
 struct visibility_flags visibility_options;
 
 static tree c_fully_fold_internal (tree expr, bool, bool *, bool *);
-static tree check_case_value (tree);
+static tree check_case_value (location_t, tree);
 static bool check_case_bounds (location_t, tree, tree, tree *, tree *);
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
@@ -396,6 +396,7 @@ static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 					       bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
+static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -803,6 +804,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_alloc_align_attribute, false },
   { "assume_aligned",	      1, 2, false, true, true,
 			      handle_assume_aligned_attribute, false },
+  { "designated_init",        0, 0, false, true, false,
+			      handle_designated_init_attribute, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -3379,7 +3382,7 @@ verify_sequence_points (tree expr)
 /* Validate the expression after `case' and apply default promotions.  */
 
 static tree
-check_case_value (tree value)
+check_case_value (location_t loc, tree value)
 {
   if (value == NULL_TREE)
     return value;
@@ -3389,7 +3392,7 @@ check_case_value (tree value)
     value = perform_integral_promotions (value);
   else if (value != error_mark_node)
     {
-      error ("case label does not reduce to an integer constant");
+      error_at (loc, "case label does not reduce to an integer constant");
       value = error_mark_node;
     }
 
@@ -5023,26 +5026,6 @@ c_common_get_alias_set (tree t)
   return -1;
 }
 
-/* Return the least alignment required for type TYPE.  */
-
-unsigned int
-min_align_of_type (tree type)
-{
-  unsigned int align = TYPE_ALIGN (type);
-  align = MIN (align, BIGGEST_ALIGNMENT);
-#ifdef BIGGEST_FIELD_ALIGNMENT
-  align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
-#endif
-  unsigned int field_align = align;
-#ifdef ADJUST_FIELD_ALIGN
-  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-			   type);
-  field_align = ADJUST_FIELD_ALIGN (field, field_align);
-#endif
-  align = MIN (align, field_align);
-  return align / BITS_PER_UNIT;
-}
-
 /* Return the value of THREADS.
 
    UPC defines a reserved variable, THREADS, which returns the
@@ -6122,14 +6105,14 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
   type = TREE_TYPE (cond);
   if (low_value)
     {
-      low_value = check_case_value (low_value);
+      low_value = check_case_value (loc, low_value);
       low_value = convert_and_check (loc, type, low_value);
       if (low_value == error_mark_node)
 	goto error_out;
     }
   if (high_value)
     {
-      high_value = check_case_value (high_value);
+      high_value = check_case_value (loc, high_value);
       high_value = convert_and_check (loc, type, high_value);
       if (high_value == error_mark_node)
 	goto error_out;
@@ -9382,6 +9365,21 @@ handle_returns_nonnull_attribute (tree *node, tree, tree, int,
   if (TREE_CODE (TREE_TYPE (*node)) != POINTER_TYPE)
     {
       error ("returns_nonnull attribute on a function not returning a pointer");
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
+/* Handle a "designated_init" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_designated_init_attribute (tree *node, tree name, tree, int,
+				  bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != RECORD_TYPE)
+    {
+      error ("%qE attribute is only valid on %<struct%> type", name);
       *no_add_attrs = true;
     }
   return NULL_TREE;

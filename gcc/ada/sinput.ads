@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -637,6 +637,13 @@ package Sinput is
    --  Given a source pointer S, returns the corresponding source pointer
    --  value of the instantiation if this location is within an instance.
    --  If S is not within an instance, then this returns No_Location.
+
+   function Comes_From_Inlined_Body (S : Source_Ptr) return Boolean;
+   pragma Inline (Comes_From_Inlined_Body);
+   --  Given a source pointer S, returns whether it comes from an inlined body.
+   --  This allows distinguishing these source pointers from those that come
+   --  from instantiation of generics, since Instantiation_Location returns a
+   --  valid location in both cases.
 
    function Top_Level_Location (S : Source_Ptr) return Source_Ptr;
    --  Given a source pointer S, returns the argument unchanged if it is

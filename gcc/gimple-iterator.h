@@ -281,6 +281,30 @@ gsi_last_nondebug_bb (basic_block bb)
   return i;
 }
 
+/* Iterates I statement iterator to the next non-virtual statement.  */
+
+static inline void
+gsi_next_nonvirtual_phi (gimple_stmt_iterator *i)
+{
+  gimple phi;
+
+  if (gsi_end_p (*i))
+    return;
+
+  phi = gsi_stmt (*i);
+  gcc_assert (phi != NULL);
+
+  while (virtual_operand_p (gimple_phi_result (phi)))
+    {
+      gsi_next (i);
+
+      if (gsi_end_p (*i))
+	return;
+
+      phi = gsi_stmt (*i);
+    }
+}
+
 /* Return the basic block associated with this iterator.  */
 
 static inline basic_block

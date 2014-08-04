@@ -1268,7 +1268,6 @@ package body Sem is
            Next     => Suppress_Stack_Entries);
       Suppress_Stack_Entries := Global_Suppress_Stack_Top;
       return;
-
    end Push_Global_Suppress_Stack_Entry;
 
    -------------------------------------
@@ -1310,6 +1309,7 @@ package body Sem is
       S_GNAT_Mode         : constant Boolean          := GNAT_Mode;
       S_Global_Dis_Names  : constant Boolean          := Global_Discard_Names;
       S_In_Assertion_Expr : constant Nat              := In_Assertion_Expr;
+      S_In_Default_Expr   : constant Boolean          := In_Default_Expr;
       S_In_Spec_Expr      : constant Boolean          := In_Spec_Expression;
       S_Inside_A_Generic  : constant Boolean          := Inside_A_Generic;
       S_Outer_Gen_Scope   : constant Entity_Id        := Outer_Generic_Scope;
@@ -1411,16 +1411,39 @@ package body Sem is
          GNAT_Mode := True;
       end if;
 
+      --  For generic main, never do expansion
+
       if Generic_Main then
          Expander_Mode_Save_And_Set (False);
+
+      --  Non generic case
+
       else
          Expander_Mode_Save_And_Set
-           (Operating_Mode = Generate_Code or Debug_Flag_X);
+
+           --  Turn on expansion if generating code
+
+           (Operating_Mode = Generate_Code
+
+             --  or if special debug flag -gnatdx is set
+
+             or else Debug_Flag_X
+
+             --  Or if in configuration run-time mode. We do this so we get
+             --  error messages about missing entities in the run-time even
+             --  if we are compiling in -gnatc (no code generation) mode.
+             --  Similar processing applies to No_Run_Time_Mode. However,
+             --  don't do this if debug flag -gnatd.Z is set (this is to handle
+             --  a situation where this new processing causes trouble).
+
+             or else ((Configurable_Run_Time_Mode or No_Run_Time_Mode)
+                       and not Debug_Flag_Dot_ZZ));
       end if;
 
       Full_Analysis      := True;
       Inside_A_Generic   := False;
       In_Assertion_Expr  := 0;
+      In_Default_Expr    := False;
       In_Spec_Expression := False;
       Set_Comes_From_Source_Default (False);
 
@@ -1483,13 +1506,7 @@ package body Sem is
             null;
 
          else
-            --  Initialize if first time
-
-            if No (Comp_Unit_List) then
-               Comp_Unit_List := New_Elmt_List;
-            end if;
-
-            Append_Elmt (Comp_Unit, Comp_Unit_List);
+            Append_New_Elmt (Comp_Unit, To => Comp_Unit_List);
 
             if Debug_Unit_Walk then
                Write_Str ("Appending ");
@@ -1510,6 +1527,7 @@ package body Sem is
       Global_Discard_Names := S_Global_Dis_Names;
       GNAT_Mode            := S_GNAT_Mode;
       In_Assertion_Expr    := S_In_Assertion_Expr;
+      In_Default_Expr      := S_In_Default_Expr;
       In_Spec_Expression   := S_In_Spec_Expr;
       Inside_A_Generic     := S_Inside_A_Generic;
       Outer_Generic_Scope  := S_Outer_Gen_Scope;
