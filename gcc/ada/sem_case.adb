@@ -735,6 +735,8 @@ package body Sem_Case is
          return;
       end if;
 
+      Predicate_Error := False;
+
       --  Choice_Table must start at 0 which is an unused location used by the
       --  sorting algorithm. However the first valid position for a discrete
       --  choice is 1.
@@ -761,8 +763,6 @@ package body Sem_Case is
       --  Note that in GNAT the predicate is considered static if the predicate
       --  expression is static, independently of whether the aspect mentions
       --  Static explicitly.
-
-      Predicate_Error := False;
 
       if Has_Predicate then
          Pred    := First (Static_Discrete_Predicate (Bounds_Type));

@@ -11010,6 +11010,11 @@ package body Sem_Prag is
 
             if Arg_Count > 1 then
                Check_Optional_Identifier (Arg2, Name_Message);
+
+               --  Provide semantic annnotations for optional argument, for
+               --  ASIS use, before rewriting.
+
+               Preanalyze_And_Resolve (Expression (Arg2), Standard_String);
                Append_To (Newa, New_Copy_Tree (Arg2));
             end if;
 
@@ -19319,7 +19324,6 @@ package body Sem_Prag is
 
                else
                   Spec_Id := Defining_Entity (Unit (Context));
-                  Inst_Id := Related_Instance (Spec_Id);
                   Check_Library_Level_Entity (Spec_Id);
                   Check_Pragma_Conformance
                     (Context_Pragma => SPARK_Mode_Pragma,
@@ -19329,7 +19333,10 @@ package body Sem_Prag is
                   Set_SPARK_Pragma           (Spec_Id, N);
                   Set_SPARK_Pragma_Inherited (Spec_Id, False);
 
-                  if Present (Inst_Id) then
+                  if Ekind (Spec_Id) = E_Package
+                    and then Present (Related_Instance (Spec_Id))
+                  then
+                     Inst_Id := Related_Instance (Spec_Id);
                      Set_SPARK_Pragma           (Inst_Id, N);
                      Set_SPARK_Pragma_Inherited (Inst_Id, False);
                   end if;
