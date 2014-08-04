@@ -2388,12 +2388,18 @@ package body Sem_Ch3 is
             --  When a package has private declarations, its contract must be
             --  analyzed at the end of the said declarations. This way both the
             --  analysis and freeze actions are properly synchronized in case
-            --  of private type use within the contract. Build the bodies of
-            --  the default initial condition procedures for all types subject
-            --  to pragma Default_Initial_Condition.
+            --  of private type use within the contract.
 
             if L = Private_Declarations (Context) then
                Analyze_Package_Contract (Defining_Entity (Context));
+
+               --  Build the bodies of the default initial condition procedures
+               --  for all types subject to pragma Default_Initial_Condition.
+               --  From a purely Ada stand point, this is a freezing activity,
+               --  however freezing is not available under GNATprove_Mode. To
+               --  accomodate both scenarios, the bodies are build at the end
+               --  of private declaration analysis.
+
                Build_Default_Init_Cond_Procedure_Bodies (L);
 
             --  Otherwise the contract is analyzed at the end of the visible
