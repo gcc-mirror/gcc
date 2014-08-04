@@ -1,5 +1,16 @@
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Add section on use of address clause for memory
+	mapped I/O.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): A subtype, in
+	particular the subtype created for a generic actual, inherits
+	invariant information from the base type.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads, aspects.adb: Add entries for aspect Obsolescent.
 	* gnat_rm.texi: Add documentation for aspect Obsolescent.
 	* sem_ch13.adb (Analyze_Aspect_Specifications): Implement aspect

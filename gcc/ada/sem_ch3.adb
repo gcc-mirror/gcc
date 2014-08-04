@@ -4944,6 +4944,14 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  A type invariant applies to any subtype in its scope, in particular
+      --  to a generic actual.
+
+      if Has_Invariants (T) and then In_Open_Scopes (Scope (T)) then
+         Set_Has_Invariants (Id);
+         Set_Invariant_Procedure (Id, Invariant_Procedure (T));
+      end if;
+
       --  Make sure that generic actual types are properly frozen. The subtype
       --  is marked as a generic actual type when the enclosing instance is
       --  analyzed, so here we identify the subtype from the tree structure.

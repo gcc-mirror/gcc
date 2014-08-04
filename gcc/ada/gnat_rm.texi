@@ -14813,6 +14813,7 @@ source file location.
 * Handling of Records with Holes::
 * Enumeration Clauses::
 * Address Clauses::
+* Use of Address Clauses for Memory-Mapped I/O::
 * Effect of Convention on Representation::
 * Conventions and Anonymous Access Types::
 * Determining the Representations chosen by GNAT::
@@ -16605,6 +16606,64 @@ end Overwrite_Array;
 @noindent
 then the program compiles without the warning and when run will generate
 the output @code{X was not clobbered}.
+
+@node Use of Address Clauses for Memory-Mapped I/O
+@section Use of Address Clauses for Memory-Mapped I/O
+@cindex Memory-mapped I/O
+
+A common pattern is to use an address clause to map an atomic variable to
+a location in memory that corresponds to a memory-mapped I/O operation or
+operations, for example:
+
+@smallexample @c ada
+    type Mem_Word is record
+       A,B,C,D : Byte;
+    end record;
+    pragma Atomic (Mem_Word);
+    for Mem_Word_Size use 32;
+
+    Mem : Mem_Word;
+    for Mem'Address use some-address;
+    ...
+    Temp := Mem;
+    Temp.A := 32;
+    Mem := Temp;
+@end smallexample
+
+@noindent
+For a full access (reference or modification) of the variable (Mem) in
+this case, as in the above examples, GNAT guarantees that the entire atomic
+word will be accessed. It is not clear whether the RM requires this. For
+example in the above, can the compiler reference only the Mem.A field as
+an optimization? Whatever the answer to this question is, GNAT makes the
+guarantee that for such a reference, the entire word is read or written.
+
+A problem arises with a component access such as:
+
+@smallexample @c ada
+    Mem.A := 32;
+@end smallexample
+
+@noindent
+Note that the component A is not declared as atomic. This means that it is
+not clear what this assignment means. It could correspond to full word read
+and write as given in the first example, or on architectures that supported
+such an operation it might be a single byte store instruction. The RM does
+not have anything to say in this situation, and GNAT does not make any
+guarantee. The code generated may vary from target to target. GNAT will issue
+a warning in such a case:
+
+@smallexample @c ada
+    Mem.A := 32;
+    |
+    >>> warning: access to non-atomic component of atomic array,
+        may cause unexpected accesses to atomic object
+@end smallexample
+
+@noindent
+It is best to be explicit in this situation, by either declaring the
+components to be atomic if you want the byte store, or explicitly writing
+the full word access sequence if that is what the hardware requires.
 
 @node Effect of Convention on Representation
 @section Effect of Convention on Representation
