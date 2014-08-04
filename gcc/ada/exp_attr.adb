@@ -7080,6 +7080,7 @@ package body Exp_Attr is
            Attribute_Class                        |
            Attribute_Compiler_Version             |
            Attribute_Default_Bit_Order            |
+           Attribute_Default_Scalar_Storage_Order |
            Attribute_Delta                        |
            Attribute_Denorm                       |
            Attribute_Digits                       |

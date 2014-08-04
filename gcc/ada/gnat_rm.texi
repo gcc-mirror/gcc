@@ -351,6 +351,7 @@ Implementation Defined Attributes
 * Attribute Compiler_Version::
 * Attribute Constrained::
 * Attribute Default_Bit_Order::
+* Attribute Default_Scalar_Storage_Order::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -8531,6 +8532,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Compiler_Version::
 * Attribute Constrained::
 * Attribute Default_Bit_Order::
+* Attribute Default_Scalar_Storage_Order::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -8780,6 +8782,18 @@ permissible prefix), provides the value @code{System.Default_Bit_Order}
 as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @code{Low_Order_First}).  This is used to construct the definition of
 @code{Default_Bit_Order} in package @code{System}.
+
+@node Attribute Default_Scalar_Storage_Order
+@unnumberedsec Attribute Default_Scalar_Storage_Order
+@cindex Big endian
+@cindex Little endian
+@findex Default_Scalar_Storage_Order
+@noindent
+@code{Standard'Default_Scalar_Storage_Order} (@code{Standard} is the only
+permissible prefix), provides the current value of the default scalar storage
+order (as specified using pragma @code{Default_Scalar_Storage_Order}, or
+equal to @code{Default_Bit_Order} if unspecified) as a
+@code{System.Bit_Order} value. This is a static attribute.
 
 @node Attribute Descriptor_Size
 @unnumberedsec Attribute Descriptor_Size

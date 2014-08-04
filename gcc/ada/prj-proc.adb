@@ -896,56 +896,56 @@ package body Prj.Proc is
                         The_Default : constant Attribute_Default_Value :=
                           Default_Of
                             (The_Current_Term, From_Project_Node_Tree);
+
                      begin
                         case The_Variable.Kind is
-                        when Undefined =>
-                           null;
+                           when Undefined =>
+                              null;
 
-                        when Single =>
-                           case The_Default is
-                              when Read_Only_Value =>
-                                 null;
+                           when Single =>
+                              case The_Default is
+                                 when Read_Only_Value =>
+                                    null;
 
-                              when Empty_Value =>
-                                 The_Variable.Value := Empty_String;
+                                 when Empty_Value =>
+                                    The_Variable.Value := Empty_String;
 
-                              when Dot_Value =>
-                                 The_Variable.Value := Dot_String;
+                                 when Dot_Value =>
+                                    The_Variable.Value := Dot_String;
 
-                              when Object_Dir_Value =>
-                                 From_Project_Node_Tree.Project_Nodes.Table
-                                   (The_Current_Term).Name :=
-                                   Snames.Name_Object_Dir;
-                                 From_Project_Node_Tree.Project_Nodes.Table
-                                   (The_Current_Term).Default :=
-                                   Dot_Value;
-                                 goto Object_Dir_Restart;
+                                 when Object_Dir_Value =>
+                                    From_Project_Node_Tree.Project_Nodes.Table
+                                      (The_Current_Term).Name :=
+                                      Snames.Name_Object_Dir;
+                                    From_Project_Node_Tree.Project_Nodes.Table
+                                      (The_Current_Term).Default :=
+                                      Dot_Value;
+                                    goto Object_Dir_Restart;
 
-                              when Target_Value =>
-                                 null;
-                           end case;
+                                 when Target_Value =>
+                                    null;
+                              end case;
 
-                        when List =>
-                           case The_Default is
-                              when Read_Only_Value =>
-                                 null;
+                           when List =>
+                              case The_Default is
+                                 when Read_Only_Value =>
+                                    null;
 
-                              when Empty_Value =>
-                                 The_Variable.Values := Nil_String;
+                                 when Empty_Value =>
+                                    The_Variable.Values := Nil_String;
 
-                              when Dot_Value =>
-                                 The_Variable.Values :=
-                                   Shared.Dot_String_List;
+                                 when Dot_Value =>
+                                    The_Variable.Values :=
+                                      Shared.Dot_String_List;
 
-                              when Object_Dir_Value | Target_Value =>
-                                 null;
-                           end case;
+                                 when Object_Dir_Value | Target_Value =>
+                                    null;
+                              end case;
                         end case;
                      end;
                   end if;
 
                   case Kind is
-
                      when Undefined =>
 
                         --  Should never happen
@@ -954,7 +954,6 @@ package body Prj.Proc is
                         null;
 
                      when Single =>
-
                         case The_Variable.Kind is
 
                            when Undefined =>

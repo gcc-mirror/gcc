@@ -220,6 +220,8 @@ package body Snames is
       case N is
          when Name_CPU                              =>
             return Pragma_CPU;
+         when Name_Default_Scalar_Storage_Order     =>
+            return Pragma_Default_Scalar_Storage_Order;
          when Name_Dispatching_Domain               =>
             return Pragma_Dispatching_Domain;
          when Name_Fast_Math                        =>
@@ -335,6 +337,7 @@ package body Snames is
    function Is_Configuration_Pragma_Name (N : Name_Id) return Boolean is
    begin
       return N in First_Pragma_Name .. Last_Configuration_Pragma_Name
+        or else N = Name_Default_Scalar_Storage_Order
         or else N = Name_Fast_Math;
    end Is_Configuration_Pragma_Name;
 
@@ -447,6 +450,7 @@ package body Snames is
    begin
       return N in First_Pragma_Name .. Last_Pragma_Name
         or else N = Name_CPU
+        or else N = Name_Default_Scalar_Storage_Order
         or else N = Name_Dispatching_Domain
         or else N = Name_Fast_Math
         or else N = Name_Interface

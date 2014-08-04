@@ -73,21 +73,11 @@ package Prj is
    --  Tri-state to decide if -lgnarl is needed when linking
 
    type Attribute_Default_Value is
-     (Read_Only_Value,
-      --  for read only attributes (Name, Project_Dir)
-
-      Empty_Value,
-      --  empty string or empty string list
-
-      Dot_Value,
-      --  "." or (".")
-
-      Object_Dir_Value,
-      --  'Object_Dir
-
-      Target_Value
-      --  'Target (special rules)
-     );
+     (Read_Only_Value,     --  For read only attributes (Name, Project_Dir)
+      Empty_Value,         --  Empty string or empty string list
+      Dot_Value,           --  "." or (".")
+      Object_Dir_Value,    --  'Object_Dir
+      Target_Value);       --  'Target (special rules)
    --  Describe the default values of attributes that are referenced but not
    --  declared.
 

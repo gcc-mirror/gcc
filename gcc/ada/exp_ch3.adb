@@ -5412,11 +5412,14 @@ package body Exp_Ch3 is
          --  is raised, then the object will go out of scope. In the case where
          --  an array object is initialized with an aggregate, the expression
          --  is removed. Check flag Has_Init_Expression to avoid generating a
-         --  junk invariant check.
+         --  junk invariant check and flag No_Initialization to avoid checking
+         --  an uninitialized object such as a compiler temporary used for an
+         --  aggregate.
 
          if Has_Invariants (Base_Typ)
            and then Present (Invariant_Procedure (Base_Typ))
            and then not Has_Init_Expression (N)
+           and then not No_Initialization (N)
          then
             Insert_After (N,
               Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));

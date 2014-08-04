@@ -83,6 +83,25 @@ package body Expander is
           and then (Full_Analysis or else not Expander_Active)
           and then not (Inside_A_Generic and then Expander_Active));
 
+      --  The GNATprove_Mode flag indicates that a light expansion for formal
+      --  verification should be used. This expansion is never done inside
+      --  generics, because otherwise, this breaks the name resolution
+      --  mechanism for generic instances.
+
+      if GNATprove_Mode then
+         if not Inside_A_Generic then
+            Expand_SPARK (N);
+         end if;
+
+         Set_Analyzed (N, Full_Analysis);
+
+         --  Regular expansion is normally followed by special handling for
+         --  transient scopes for unconstrained results, etc. but this is not
+         --  needed, and in general cannot be done correctly, in this mode, so
+         --  we are all done.
+
+         return;
+
       --  There are three reasons for the Expander_Active flag to be false
 
       --  The first is when are not generating code. In this mode the
@@ -90,11 +109,6 @@ package body Expander is
       --  analysis, in which case Full_Analysis = True or a pre-analysis in
       --  which case Full_Analysis = False. See the spec of Sem for more info
       --  on this.
-
-      --  Additionally, the GNATprove_Mode flag indicates that a light
-      --  expansion for formal verification should be used. This expansion is
-      --  never done inside generics, because otherwise, this breaks the name
-      --  resolution mechanism for generic instances
 
       --  The second reason for the Expander_Active flag to be False is that
       --  we are performing a pre-analysis. During pre-analysis all expansion
@@ -112,9 +126,7 @@ package body Expander is
       --  given that the expansion actions that would normally process it will
       --  not take place. This prevents cascaded errors due to stack mismatch.
 
-      if not Expander_Active
-        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
-      then
+      elsif not Expander_Active then
          Set_Analyzed (N, Full_Analysis);
 
          if Serious_Errors_Detected > 0 and then Scope_Is_Transient then
@@ -126,352 +138,333 @@ package body Expander is
          return;
 
       else
-         Debug_A_Entry ("expanding  ", N);
-
          begin
-            --  In GNATprove mode we only need a very limited subset of
-            --  the usual expansions. This limited subset is implemented
-            --  in Expand_SPARK.
+            Debug_A_Entry ("expanding  ", N);
 
-            if GNATprove_Mode then
-               Expand_SPARK (N);
-               Set_Analyzed (N);
+            --  Processing depends on node kind. For full details on the
+            --  expansion activity required in each case, see bodies of
+            --  corresponding expand routines.
 
-               --  Regular expansion is normally followed by special handling
-               --  for transient scopes for unconstrained results, etc. but
-               --  this is not needed, and in general cannot be done correctly,
-               --  in this mode, so we are all done.
+            case Nkind (N) is
 
-               return;
+               when N_Abort_Statement =>
+                  Expand_N_Abort_Statement (N);
 
-            --  Here for normal non-SPARK mode
+               when N_Accept_Statement =>
+                  Expand_N_Accept_Statement (N);
 
-            else
-               --  Processing depends on node kind. For full details on the
-               --  expansion activity required in each case, see bodies of
-               --  corresponding expand routines.
+               when N_Aggregate =>
+                  Expand_N_Aggregate (N);
 
-               case Nkind (N) is
+               when N_Allocator =>
+                  Expand_N_Allocator (N);
 
-                  when N_Abort_Statement =>
-                     Expand_N_Abort_Statement (N);
+               when N_And_Then =>
+                  Expand_N_And_Then (N);
 
-                  when N_Accept_Statement =>
-                     Expand_N_Accept_Statement (N);
+               when N_Assignment_Statement =>
+                  Expand_N_Assignment_Statement (N);
 
-                  when N_Aggregate =>
-                     Expand_N_Aggregate (N);
+               when N_Asynchronous_Select =>
+                  Expand_N_Asynchronous_Select (N);
 
-                  when N_Allocator =>
-                     Expand_N_Allocator (N);
+               when N_Attribute_Definition_Clause =>
+                  Expand_N_Attribute_Definition_Clause (N);
 
-                  when N_And_Then =>
-                     Expand_N_And_Then (N);
+               when N_Attribute_Reference =>
+                  Expand_N_Attribute_Reference (N);
 
-                  when N_Assignment_Statement =>
-                     Expand_N_Assignment_Statement (N);
+               when N_Block_Statement =>
+                  Expand_N_Block_Statement (N);
 
-                  when N_Asynchronous_Select =>
-                     Expand_N_Asynchronous_Select (N);
+               when N_Case_Expression =>
+                  Expand_N_Case_Expression (N);
 
-                  when N_Attribute_Definition_Clause =>
-                     Expand_N_Attribute_Definition_Clause (N);
+               when N_Case_Statement =>
+                  Expand_N_Case_Statement (N);
 
-                  when N_Attribute_Reference =>
-                     Expand_N_Attribute_Reference (N);
+               when N_Conditional_Entry_Call =>
+                  Expand_N_Conditional_Entry_Call (N);
 
-                  when N_Block_Statement =>
-                     Expand_N_Block_Statement (N);
+               when N_Delay_Relative_Statement =>
+                  Expand_N_Delay_Relative_Statement (N);
 
-                  when N_Case_Expression =>
-                     Expand_N_Case_Expression (N);
+               when N_Delay_Until_Statement =>
+                  Expand_N_Delay_Until_Statement (N);
 
-                  when N_Case_Statement =>
-                     Expand_N_Case_Statement (N);
+               when N_Entry_Body =>
+                  Expand_N_Entry_Body (N);
 
-                  when N_Conditional_Entry_Call =>
-                     Expand_N_Conditional_Entry_Call (N);
+               when N_Entry_Call_Statement =>
+                  Expand_N_Entry_Call_Statement (N);
 
-                  when N_Delay_Relative_Statement =>
-                     Expand_N_Delay_Relative_Statement (N);
+               when N_Entry_Declaration =>
+                  Expand_N_Entry_Declaration (N);
 
-                  when N_Delay_Until_Statement =>
-                     Expand_N_Delay_Until_Statement (N);
+               when N_Exception_Declaration =>
+                  Expand_N_Exception_Declaration (N);
 
-                  when N_Entry_Body =>
-                     Expand_N_Entry_Body (N);
+               when N_Exception_Renaming_Declaration =>
+                  Expand_N_Exception_Renaming_Declaration (N);
 
-                  when N_Entry_Call_Statement =>
-                     Expand_N_Entry_Call_Statement (N);
+               when N_Exit_Statement =>
+                  Expand_N_Exit_Statement (N);
 
-                  when N_Entry_Declaration =>
-                     Expand_N_Entry_Declaration (N);
+               when N_Expanded_Name =>
+                  Expand_N_Expanded_Name (N);
 
-                  when N_Exception_Declaration =>
-                     Expand_N_Exception_Declaration (N);
+               when N_Explicit_Dereference =>
+                  Expand_N_Explicit_Dereference (N);
 
-                  when N_Exception_Renaming_Declaration =>
-                     Expand_N_Exception_Renaming_Declaration (N);
+               when N_Expression_With_Actions =>
+                  Expand_N_Expression_With_Actions (N);
 
-                  when N_Exit_Statement =>
-                     Expand_N_Exit_Statement (N);
+               when N_Extended_Return_Statement =>
+                  Expand_N_Extended_Return_Statement (N);
 
-                  when N_Expanded_Name =>
-                     Expand_N_Expanded_Name (N);
+               when N_Extension_Aggregate =>
+                  Expand_N_Extension_Aggregate (N);
 
-                  when N_Explicit_Dereference =>
-                     Expand_N_Explicit_Dereference (N);
+               when N_Free_Statement =>
+                  Expand_N_Free_Statement (N);
 
-                  when N_Expression_With_Actions =>
-                     Expand_N_Expression_With_Actions (N);
+               when N_Freeze_Entity =>
+                  Expand_N_Freeze_Entity (N);
 
-                  when N_Extended_Return_Statement =>
-                     Expand_N_Extended_Return_Statement (N);
+               when N_Full_Type_Declaration =>
+                  Expand_N_Full_Type_Declaration (N);
 
-                  when N_Extension_Aggregate =>
-                     Expand_N_Extension_Aggregate (N);
+               when N_Function_Call =>
+                  Expand_N_Function_Call (N);
 
-                  when N_Free_Statement =>
-                     Expand_N_Free_Statement (N);
+               when N_Generic_Instantiation =>
+                  Expand_N_Generic_Instantiation (N);
 
-                  when N_Freeze_Entity =>
-                     Expand_N_Freeze_Entity (N);
+               when N_Goto_Statement =>
+                  Expand_N_Goto_Statement (N);
 
-                  when N_Full_Type_Declaration =>
-                     Expand_N_Full_Type_Declaration (N);
+               when N_Handled_Sequence_Of_Statements =>
+                  Expand_N_Handled_Sequence_Of_Statements (N);
 
-                  when N_Function_Call =>
-                     Expand_N_Function_Call (N);
+               when N_Identifier =>
+                  Expand_N_Identifier (N);
 
-                  when N_Generic_Instantiation =>
-                     Expand_N_Generic_Instantiation (N);
+               when N_If_Expression =>
+                  Expand_N_If_Expression (N);
 
-                  when N_Goto_Statement =>
-                     Expand_N_Goto_Statement (N);
+               when N_Indexed_Component =>
+                  Expand_N_Indexed_Component (N);
 
-                  when N_Handled_Sequence_Of_Statements =>
-                     Expand_N_Handled_Sequence_Of_Statements (N);
+               when N_If_Statement =>
+                  Expand_N_If_Statement (N);
 
-                  when N_Identifier =>
-                     Expand_N_Identifier (N);
+               when N_In =>
+                  Expand_N_In (N);
 
-                  when N_If_Expression =>
-                     Expand_N_If_Expression (N);
+               when N_Loop_Statement =>
+                  Expand_N_Loop_Statement (N);
 
-                  when N_Indexed_Component =>
-                     Expand_N_Indexed_Component (N);
+               when N_Not_In =>
+                  Expand_N_Not_In (N);
 
-                  when N_If_Statement =>
-                     Expand_N_If_Statement (N);
+               when N_Null =>
+                  Expand_N_Null (N);
 
-                  when N_In =>
-                     Expand_N_In (N);
+               when N_Object_Declaration =>
+                  Expand_N_Object_Declaration (N);
 
-                  when N_Loop_Statement =>
-                     Expand_N_Loop_Statement (N);
+               when N_Object_Renaming_Declaration =>
+                  Expand_N_Object_Renaming_Declaration (N);
 
-                  when N_Not_In =>
-                     Expand_N_Not_In (N);
+               when N_Op_Add =>
+                  Expand_N_Op_Add (N);
 
-                  when N_Null =>
-                     Expand_N_Null (N);
+               when N_Op_Abs =>
+                  Expand_N_Op_Abs (N);
 
-                  when N_Object_Declaration =>
-                     Expand_N_Object_Declaration (N);
+               when N_Op_And =>
+                  Expand_N_Op_And (N);
 
-                  when N_Object_Renaming_Declaration =>
-                     Expand_N_Object_Renaming_Declaration (N);
+               when N_Op_Concat =>
+                  Expand_N_Op_Concat (N);
 
-                  when N_Op_Add =>
-                     Expand_N_Op_Add (N);
+               when N_Op_Divide =>
+                  Expand_N_Op_Divide (N);
 
-                  when N_Op_Abs =>
-                     Expand_N_Op_Abs (N);
+               when N_Op_Eq =>
+                  Expand_N_Op_Eq (N);
 
-                  when N_Op_And =>
-                     Expand_N_Op_And (N);
+               when N_Op_Expon =>
+                  Expand_N_Op_Expon (N);
 
-                  when N_Op_Concat =>
-                     Expand_N_Op_Concat (N);
+               when N_Op_Ge =>
+                  Expand_N_Op_Ge (N);
 
-                  when N_Op_Divide =>
-                     Expand_N_Op_Divide (N);
+               when N_Op_Gt =>
+                  Expand_N_Op_Gt (N);
 
-                  when N_Op_Eq =>
-                     Expand_N_Op_Eq (N);
+               when N_Op_Le =>
+                  Expand_N_Op_Le (N);
 
-                  when N_Op_Expon =>
-                     Expand_N_Op_Expon (N);
+               when N_Op_Lt =>
+                  Expand_N_Op_Lt (N);
 
-                  when N_Op_Ge =>
-                     Expand_N_Op_Ge (N);
+               when N_Op_Minus =>
+                  Expand_N_Op_Minus (N);
 
-                  when N_Op_Gt =>
-                     Expand_N_Op_Gt (N);
+               when N_Op_Mod =>
+                  Expand_N_Op_Mod (N);
 
-                  when N_Op_Le =>
-                     Expand_N_Op_Le (N);
+               when N_Op_Multiply =>
+                  Expand_N_Op_Multiply (N);
 
-                  when N_Op_Lt =>
-                     Expand_N_Op_Lt (N);
+               when N_Op_Ne =>
+                  Expand_N_Op_Ne (N);
 
-                  when N_Op_Minus =>
-                     Expand_N_Op_Minus (N);
+               when N_Op_Not =>
+                  Expand_N_Op_Not (N);
 
-                  when N_Op_Mod =>
-                     Expand_N_Op_Mod (N);
+               when N_Op_Or =>
+                  Expand_N_Op_Or (N);
 
-                  when N_Op_Multiply =>
-                     Expand_N_Op_Multiply (N);
+               when N_Op_Plus =>
+                  Expand_N_Op_Plus (N);
 
-                  when N_Op_Ne =>
-                     Expand_N_Op_Ne (N);
+               when N_Op_Rem =>
+                  Expand_N_Op_Rem (N);
 
-                  when N_Op_Not =>
-                     Expand_N_Op_Not (N);
+               when N_Op_Rotate_Left =>
+                  Expand_N_Op_Rotate_Left (N);
 
-                  when N_Op_Or =>
-                     Expand_N_Op_Or (N);
+               when N_Op_Rotate_Right =>
+                  Expand_N_Op_Rotate_Right (N);
 
-                  when N_Op_Plus =>
-                     Expand_N_Op_Plus (N);
+               when N_Op_Shift_Left =>
+                  Expand_N_Op_Shift_Left (N);
 
-                  when N_Op_Rem =>
-                     Expand_N_Op_Rem (N);
+               when N_Op_Shift_Right =>
+                  Expand_N_Op_Shift_Right (N);
 
-                  when N_Op_Rotate_Left =>
-                     Expand_N_Op_Rotate_Left (N);
+               when N_Op_Shift_Right_Arithmetic =>
+                  Expand_N_Op_Shift_Right_Arithmetic (N);
 
-                  when N_Op_Rotate_Right =>
-                     Expand_N_Op_Rotate_Right (N);
+               when N_Op_Subtract =>
+                  Expand_N_Op_Subtract (N);
 
-                  when N_Op_Shift_Left =>
-                     Expand_N_Op_Shift_Left (N);
+               when N_Op_Xor =>
+                  Expand_N_Op_Xor (N);
 
-                  when N_Op_Shift_Right =>
-                     Expand_N_Op_Shift_Right (N);
+               when N_Or_Else =>
+                  Expand_N_Or_Else (N);
 
-                  when N_Op_Shift_Right_Arithmetic =>
-                     Expand_N_Op_Shift_Right_Arithmetic (N);
+               when N_Package_Body =>
+                  Expand_N_Package_Body (N);
 
-                  when N_Op_Subtract =>
-                     Expand_N_Op_Subtract (N);
+               when N_Package_Declaration =>
+                  Expand_N_Package_Declaration (N);
 
-                  when N_Op_Xor =>
-                     Expand_N_Op_Xor (N);
+               when N_Package_Renaming_Declaration =>
+                  Expand_N_Package_Renaming_Declaration (N);
 
-                  when N_Or_Else =>
-                     Expand_N_Or_Else (N);
+               when N_Subprogram_Renaming_Declaration =>
+                  Expand_N_Subprogram_Renaming_Declaration (N);
 
-                  when N_Package_Body =>
-                     Expand_N_Package_Body (N);
+               when N_Pragma =>
+                  Expand_N_Pragma (N);
 
-                  when N_Package_Declaration =>
-                     Expand_N_Package_Declaration (N);
+               when N_Procedure_Call_Statement =>
+                  Expand_N_Procedure_Call_Statement (N);
 
-                  when N_Package_Renaming_Declaration =>
-                     Expand_N_Package_Renaming_Declaration (N);
+               when N_Protected_Type_Declaration =>
+                  Expand_N_Protected_Type_Declaration (N);
 
-                  when N_Subprogram_Renaming_Declaration =>
-                     Expand_N_Subprogram_Renaming_Declaration (N);
+               when N_Protected_Body =>
+                  Expand_N_Protected_Body (N);
 
-                  when N_Pragma =>
-                     Expand_N_Pragma (N);
+               when N_Qualified_Expression =>
+                  Expand_N_Qualified_Expression (N);
 
-                  when N_Procedure_Call_Statement =>
-                     Expand_N_Procedure_Call_Statement (N);
+               when N_Quantified_Expression  =>
+                  Expand_N_Quantified_Expression (N);
 
-                  when N_Protected_Type_Declaration =>
-                     Expand_N_Protected_Type_Declaration (N);
+               when N_Raise_Statement =>
+                  Expand_N_Raise_Statement (N);
 
-                  when N_Protected_Body =>
-                     Expand_N_Protected_Body (N);
+               when N_Raise_Constraint_Error =>
+                  Expand_N_Raise_Constraint_Error (N);
 
-                  when N_Qualified_Expression =>
-                     Expand_N_Qualified_Expression (N);
+               when N_Raise_Expression =>
+                  Expand_N_Raise_Expression (N);
 
-                  when N_Quantified_Expression  =>
-                     Expand_N_Quantified_Expression (N);
+               when N_Raise_Program_Error =>
+                  Expand_N_Raise_Program_Error (N);
 
-                  when N_Raise_Statement =>
-                     Expand_N_Raise_Statement (N);
+               when N_Raise_Storage_Error =>
+                  Expand_N_Raise_Storage_Error (N);
 
-                  when N_Raise_Constraint_Error =>
-                     Expand_N_Raise_Constraint_Error (N);
+               when N_Real_Literal =>
+                  Expand_N_Real_Literal (N);
 
-                  when N_Raise_Expression =>
-                     Expand_N_Raise_Expression (N);
+               when N_Record_Representation_Clause =>
+                  Expand_N_Record_Representation_Clause (N);
 
-                  when N_Raise_Program_Error =>
-                     Expand_N_Raise_Program_Error (N);
+               when N_Requeue_Statement =>
+                  Expand_N_Requeue_Statement (N);
 
-                  when N_Raise_Storage_Error =>
-                     Expand_N_Raise_Storage_Error (N);
+               when N_Simple_Return_Statement =>
+                  Expand_N_Simple_Return_Statement (N);
 
-                  when N_Real_Literal =>
-                     Expand_N_Real_Literal (N);
+               when N_Selected_Component =>
+                  Expand_N_Selected_Component (N);
 
-                  when N_Record_Representation_Clause =>
-                     Expand_N_Record_Representation_Clause (N);
+               when N_Selective_Accept =>
+                  Expand_N_Selective_Accept (N);
 
-                  when N_Requeue_Statement =>
-                     Expand_N_Requeue_Statement (N);
+               when N_Single_Task_Declaration =>
+                  Expand_N_Single_Task_Declaration (N);
 
-                  when N_Simple_Return_Statement =>
-                     Expand_N_Simple_Return_Statement (N);
+               when N_Slice =>
+                  Expand_N_Slice (N);
 
-                  when N_Selected_Component =>
-                     Expand_N_Selected_Component (N);
+               when N_Subtype_Indication =>
+                  Expand_N_Subtype_Indication (N);
 
-                  when N_Selective_Accept =>
-                     Expand_N_Selective_Accept (N);
+               when N_Subprogram_Body =>
+                  Expand_N_Subprogram_Body (N);
 
-                  when N_Single_Task_Declaration =>
-                     Expand_N_Single_Task_Declaration (N);
+               when N_Subprogram_Body_Stub =>
+                  Expand_N_Subprogram_Body_Stub (N);
 
-                  when N_Slice =>
-                     Expand_N_Slice (N);
+               when N_Subprogram_Declaration =>
+                  Expand_N_Subprogram_Declaration (N);
 
-                  when N_Subtype_Indication =>
-                     Expand_N_Subtype_Indication (N);
+               when N_Task_Body =>
+                  Expand_N_Task_Body (N);
 
-                  when N_Subprogram_Body =>
-                     Expand_N_Subprogram_Body (N);
+               when N_Task_Type_Declaration =>
+                  Expand_N_Task_Type_Declaration (N);
 
-                  when N_Subprogram_Body_Stub =>
-                     Expand_N_Subprogram_Body_Stub (N);
+               when N_Timed_Entry_Call =>
+                  Expand_N_Timed_Entry_Call (N);
 
-                  when N_Subprogram_Declaration =>
-                     Expand_N_Subprogram_Declaration (N);
+               when N_Type_Conversion =>
+                  Expand_N_Type_Conversion (N);
 
-                  when N_Task_Body =>
-                     Expand_N_Task_Body (N);
+               when N_Unchecked_Expression =>
+                  Expand_N_Unchecked_Expression (N);
 
-                  when N_Task_Type_Declaration =>
-                     Expand_N_Task_Type_Declaration (N);
+               when N_Unchecked_Type_Conversion =>
+                  Expand_N_Unchecked_Type_Conversion (N);
 
-                  when N_Timed_Entry_Call =>
-                     Expand_N_Timed_Entry_Call (N);
-
-                  when N_Type_Conversion =>
-                     Expand_N_Type_Conversion (N);
-
-                  when N_Unchecked_Expression =>
-                     Expand_N_Unchecked_Expression (N);
-
-                  when N_Unchecked_Type_Conversion =>
-                     Expand_N_Unchecked_Type_Conversion (N);
-
-                  when N_Variant_Part =>
-                     Expand_N_Variant_Part (N);
+               when N_Variant_Part =>
+                  Expand_N_Variant_Part (N);
 
                   --  For all other node kinds, no expansion activity required
 
-                  when others =>
-                     null;
+               when others =>
+                  null;
 
-               end case;
-            end if;
+            end case;
 
          exception
             when RE_Not_Available =>

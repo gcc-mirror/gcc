@@ -65,6 +65,7 @@ with Sem_Util; use Sem_Util;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
+with System;
 with Stringt;  use Stringt;
 with Style;
 with Stylesw;  use Stylesw;
@@ -3191,20 +3192,51 @@ package body Sem_Attr is
       -----------------------
 
       when Attribute_Default_Bit_Order => Default_Bit_Order :
+      declare
+         Target_Default_Bit_Order : System.Bit_Order;
       begin
          Check_Standard_Prefix;
 
          if Bytes_Big_Endian then
-            Rewrite (N,
-              Make_Integer_Literal (Loc, False_Value));
+            Target_Default_Bit_Order := System.High_Order_First;
          else
-            Rewrite (N,
-              Make_Integer_Literal (Loc, True_Value));
+            Target_Default_Bit_Order := System.Low_Order_First;
          end if;
+
+         Rewrite (N,
+           Make_Integer_Literal (Loc,
+             UI_From_Int (System.Bit_Order'Pos (Target_Default_Bit_Order))));
 
          Set_Etype (N, Universal_Integer);
          Set_Is_Static_Expression (N);
       end Default_Bit_Order;
+
+      ----------------------------------
+      -- Default_Scalar_Storage_Order --
+      ----------------------------------
+
+      when Attribute_Default_Scalar_Storage_Order => Default_SSO : declare
+         RE_Default_SSO : RE_Id;
+      begin
+         Check_Standard_Prefix;
+
+         case Opt.Default_SSO is
+            when ' ' =>
+               if Bytes_Big_Endian then
+                  RE_Default_SSO := RE_High_Order_First;
+               else
+                  RE_Default_SSO := RE_Low_Order_First;
+               end if;
+            when 'H' =>
+               RE_Default_SSO := RE_High_Order_First;
+            when 'L' =>
+               RE_Default_SSO := RE_Low_Order_First;
+            when others =>
+               raise Program_Error;
+         end case;
+
+         Rewrite (N, New_Occurrence_Of (RTE (RE_Default_SSO), Loc));
+      end Default_SSO;
 
       --------------
       -- Definite --
@@ -9534,66 +9566,67 @@ package body Sem_Attr is
       --  Note that in some cases, the values have already been folded as
       --  a result of the processing in Analyze_Attribute.
 
-      when Attribute_Abort_Signal               |
-           Attribute_Access                     |
-           Attribute_Address                    |
-           Attribute_Address_Size               |
-           Attribute_Asm_Input                  |
-           Attribute_Asm_Output                 |
-           Attribute_Base                       |
-           Attribute_Bit_Order                  |
-           Attribute_Bit_Position               |
-           Attribute_Callable                   |
-           Attribute_Caller                     |
-           Attribute_Class                      |
-           Attribute_Code_Address               |
-           Attribute_Compiler_Version           |
-           Attribute_Count                      |
-           Attribute_Default_Bit_Order          |
-           Attribute_Elaborated                 |
-           Attribute_Elab_Body                  |
-           Attribute_Elab_Spec                  |
-           Attribute_Elab_Subp_Body             |
-           Attribute_Enabled                    |
-           Attribute_External_Tag               |
-           Attribute_Fast_Math                  |
-           Attribute_First_Bit                  |
-           Attribute_Input                      |
-           Attribute_Last_Bit                   |
-           Attribute_Library_Level              |
-           Attribute_Maximum_Alignment          |
-           Attribute_Old                        |
-           Attribute_Output                     |
-           Attribute_Partition_ID               |
-           Attribute_Pool_Address               |
-           Attribute_Position                   |
-           Attribute_Priority                   |
-           Attribute_Read                       |
-           Attribute_Result                     |
-           Attribute_Scalar_Storage_Order       |
-           Attribute_Simple_Storage_Pool        |
-           Attribute_Storage_Pool               |
-           Attribute_Storage_Size               |
-           Attribute_Storage_Unit               |
-           Attribute_Stub_Type                  |
-           Attribute_System_Allocator_Alignment |
-           Attribute_Tag                        |
-           Attribute_Target_Name                |
-           Attribute_Terminated                 |
-           Attribute_To_Address                 |
-           Attribute_Type_Key                   |
-           Attribute_UET_Address                |
-           Attribute_Unchecked_Access           |
-           Attribute_Universal_Literal_String   |
-           Attribute_Unrestricted_Access        |
-           Attribute_Valid                      |
-           Attribute_Valid_Scalars              |
-           Attribute_Value                      |
-           Attribute_Wchar_T_Size               |
-           Attribute_Wide_Value                 |
-           Attribute_Wide_Wide_Value            |
-           Attribute_Word_Size                  |
-           Attribute_Write                      =>
+      when Attribute_Abort_Signal                 |
+           Attribute_Access                       |
+           Attribute_Address                      |
+           Attribute_Address_Size                 |
+           Attribute_Asm_Input                    |
+           Attribute_Asm_Output                   |
+           Attribute_Base                         |
+           Attribute_Bit_Order                    |
+           Attribute_Bit_Position                 |
+           Attribute_Callable                     |
+           Attribute_Caller                       |
+           Attribute_Class                        |
+           Attribute_Code_Address                 |
+           Attribute_Compiler_Version             |
+           Attribute_Count                        |
+           Attribute_Default_Bit_Order            |
+           Attribute_Default_Scalar_Storage_Order |
+           Attribute_Elaborated                   |
+           Attribute_Elab_Body                    |
+           Attribute_Elab_Spec                    |
+           Attribute_Elab_Subp_Body               |
+           Attribute_Enabled                      |
+           Attribute_External_Tag                 |
+           Attribute_Fast_Math                    |
+           Attribute_First_Bit                    |
+           Attribute_Input                        |
+           Attribute_Last_Bit                     |
+           Attribute_Library_Level                |
+           Attribute_Maximum_Alignment            |
+           Attribute_Old                          |
+           Attribute_Output                       |
+           Attribute_Partition_ID                 |
+           Attribute_Pool_Address                 |
+           Attribute_Position                     |
+           Attribute_Priority                     |
+           Attribute_Read                         |
+           Attribute_Result                       |
+           Attribute_Scalar_Storage_Order         |
+           Attribute_Simple_Storage_Pool          |
+           Attribute_Storage_Pool                 |
+           Attribute_Storage_Size                 |
+           Attribute_Storage_Unit                 |
+           Attribute_Stub_Type                    |
+           Attribute_System_Allocator_Alignment   |
+           Attribute_Tag                          |
+           Attribute_Target_Name                  |
+           Attribute_Terminated                   |
+           Attribute_To_Address                   |
+           Attribute_Type_Key                     |
+           Attribute_UET_Address                  |
+           Attribute_Unchecked_Access             |
+           Attribute_Universal_Literal_String     |
+           Attribute_Unrestricted_Access          |
+           Attribute_Valid                        |
+           Attribute_Valid_Scalars                |
+           Attribute_Value                        |
+           Attribute_Wchar_T_Size                 |
+           Attribute_Wide_Value                   |
+           Attribute_Wide_Wide_Value              |
+           Attribute_Word_Size                    |
+           Attribute_Write                        =>
 
          raise Program_Error;
       end case;

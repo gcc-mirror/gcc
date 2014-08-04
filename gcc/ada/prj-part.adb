@@ -1813,11 +1813,11 @@ package body Prj.Part is
                      --  with sources if it inherits sources from the project
                      --  it extends.
 
-                     if Project_Qualifier_Of
-                         (Project, In_Tree) = Abstract_Project
-                        and then
-                         Project_Qualifier_Of
-                           (Extended_Project, In_Tree) /= Abstract_Project
+                     if Project_Qualifier_Of (Project, In_Tree) =
+                                                           Abstract_Project
+                       and then
+                         Project_Qualifier_Of (Extended_Project, In_Tree) /=
+                                                           Abstract_Project
                      then
                         Error_Msg
                           (Env.Flags, "an abstract project can only extend " &
@@ -1930,9 +1930,8 @@ package body Prj.Part is
          Set_Project_Declaration_Of (Project, In_Tree, Project_Declaration);
 
          if Present (Extended_Project)
-           and then
-             Project_Qualifier_Of
-               (Extended_Project, In_Tree) /= Abstract_Project
+           and then Project_Qualifier_Of (Extended_Project, In_Tree) /=
+                                                        Abstract_Project
          then
             Set_Extending_Project_Of
               (Project_Declaration_Of (Extended_Project, In_Tree), In_Tree,

@@ -3263,7 +3263,7 @@ package body Freeze is
                  ("\??since no component clauses were specified", ADC);
 
             --  Here is where we do the processing to adjust component clauses
-            --  for reversed bit order.
+            --  for reversed bit order, when not using reverse SSO.
 
             elsif Reverse_Bit_Order (Rec)
               and then not Reverse_Storage_Order (Rec)
@@ -7454,9 +7454,17 @@ package body Freeze is
       if (Is_Record_Type (T) or else Is_Array_Type (T))
         and then Is_Base_Type (T)
       then
-         if (Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
-              or else
-            ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T))
+         if ((Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
+               or else
+             ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
+
+           --  For a record type, if native bit order is specified explicitly,
+           --  then never set reverse SSO from default.
+
+           and then not
+             (Is_Record_Type (T)
+               and then Has_Rep_Item (T, Name_Bit_Order)
+               and then not Reverse_Bit_Order (T))
          then
             --  If flags cause reverse storage order, then set the result. Note
             --  that we would have ignored the pragma setting the non default
@@ -7464,6 +7472,14 @@ package body Freeze is
 
             pragma Assert (Support_Nondefault_SSO_On_Target);
             Set_Reverse_Storage_Order (T);
+
+            --  For a record type, also set reversed bit order. Note that if
+            --  a bit order has been specified explicitly, then this is a
+            --  no-op, as per the guard above.
+
+            if Is_Record_Type (T) then
+               Set_Reverse_Bit_Order (T);
+            end if;
          end if;
       end if;
    end Set_SSO_From_Default;
