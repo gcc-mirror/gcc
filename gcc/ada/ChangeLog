@@ -1,5 +1,22 @@
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch7.adb (Analyze_Package_Body_Helper): When verifying the
+	compatibility of SPARK_Mode between a spec and a body, use the
+	SPARK_Mode of the public part.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Use
+	the already available routine to exchange the aspects between
+	the template and its copy. Analyze the aspects of copy to
+	ensure that the corresponding pragmas perform their semantic
+	effects.  The partial analysis of aspects is no longer needed.
+	(Analyze_Package_Instantiation): Save and restore the SPARK_Mode
+	of the context.
+	(Analyze_Subprogram_Instantiation): Save and restore the SPARK_Mode of
+	the context.
+	* sem_prag.adb (Analyze_Pragma): Do not bypass a subprogram
+	instantiation which does not come from source.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* a-cfhama.ads, a-cfhase.ads, a-cforma.ads, a-cforse.ads Add
 	SPARK_Mode pragmas to the public and private part of the unit.
 	* sem_ch3.adb (Derive_Type_Declaration): Ensure that a derived

@@ -3342,19 +3342,10 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
-      --  The aspect specifications are not attached to the tree, and must
-      --  be copied and attached to the generic copy explicitly.
+      --  Once the contents of the generic copy and the template are swapped,
+      --  do the same for their respective aspect specifications.
 
-      if Present (Aspect_Specifications (New_N)) then
-         declare
-            Aspects : constant List_Id := Aspect_Specifications (N);
-         begin
-            Set_Has_Aspects (N, False);
-            Move_Aspects (New_N, To => N);
-            Set_Has_Aspects (Original_Node (N), False);
-            Set_Aspect_Specifications (Original_Node (N), Aspects);
-         end;
-      end if;
+      Exchange_Aspects (N, New_N);
 
       Spec := Specification (N);
       Id := Defining_Entity (Spec);
@@ -3369,8 +3360,15 @@ package body Sem_Ch12 is
       Start_Generic;
 
       Enter_Name (Id);
-
       Set_Scope_Depth_Value (Id, Scope_Depth (Current_Scope) + 1);
+
+      --  Analyze the aspects of the generic copy to ensure that all generated
+      --  pragmas (if any) perform their semantic effects.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
+
       Push_Scope (Id);
       Enter_Generic_Scope (Id);
       Set_Inner_Instances (Id, New_Elmt_List);
@@ -3460,41 +3458,6 @@ package body Sem_Ch12 is
          Make_Aspect_For_PPC_In_Gen_Sub_Decl (N);
       end if;
 
-      --  To capture global references, analyze the expressions of aspects,
-      --  and propagate information to original tree. Note that in this case
-      --  analysis of attributes is not delayed until the freeze point.
-
-      --  It seems very hard to recreate the proper visibility of the generic
-      --  subprogram at a later point because the analysis of an aspect may
-      --  create pragmas after the generic copies have been made ???
-
-      if Has_Aspects (N) then
-         declare
-            Aspect : Node_Id;
-
-         begin
-            Aspect := First (Aspect_Specifications (N));
-            while Present (Aspect) loop
-               if Get_Aspect_Id (Aspect) /= Aspect_Warnings
-                 and then Present (Expression (Aspect))
-               then
-                  Analyze (Expression (Aspect));
-               end if;
-
-               Next (Aspect);
-            end loop;
-
-            Aspect := First (Aspect_Specifications (Original_Node (N)));
-            while Present (Aspect) loop
-               if Present (Expression (Aspect)) then
-                  Save_Global_References (Expression (Aspect));
-               end if;
-
-               Next (Aspect);
-            end loop;
-         end;
-      end if;
-
       End_Generic;
       End_Scope;
       Exit_Generic_Scope (Id);
@@ -3532,6 +3495,10 @@ package body Sem_Ch12 is
 
       Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
       --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+
+      Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data for restore on exit
 
       Save_Style_Check : constant Boolean := Style_Check;
       --  Save style check mode for restore on exit
@@ -4283,7 +4250,9 @@ package body Sem_Ch12 is
       end if;
 
       Ignore_Pragma_SPARK_Mode := Save_IPSM;
-      Style_Check := Save_Style_Check;
+      SPARK_Mode               := Save_SM;
+      SPARK_Mode_Pragma        := Save_SMP;
+      Style_Check              := Save_Style_Check;
 
       --  Check that if N is an instantiation of System.Dim_Float_IO or
       --  System.Dim_Integer_IO, the formal type has a dimension system.
@@ -4318,7 +4287,9 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
-         Style_Check := Save_Style_Check;
+         SPARK_Mode               := Save_SM;
+         SPARK_Mode_Pragma        := Save_SMP;
+         Style_Check              := Save_Style_Check;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -4875,6 +4846,10 @@ package body Sem_Ch12 is
       Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
       --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
 
+      Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data for restore on exit
+
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
@@ -5157,6 +5132,8 @@ package body Sem_Ch12 is
          Generic_Renamings_HTable.Reset;
 
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
+         SPARK_Mode               := Save_SM;
+         SPARK_Mode_Pragma        := Save_SMP;
       end if;
 
    <<Leave>>
@@ -5175,6 +5152,8 @@ package body Sem_Ch12 is
          end if;
 
          Ignore_Pragma_SPARK_Mode := Save_IPSM;
+         SPARK_Mode               := Save_SM;
+         SPARK_Mode_Pragma        := Save_SMP;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
