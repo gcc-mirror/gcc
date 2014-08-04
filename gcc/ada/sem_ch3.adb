@@ -15062,17 +15062,6 @@ package body Sem_Ch3 is
 
          else
             Check_SPARK_05_Restriction ("discriminant type is not allowed", N);
-
-            --  The following check is only relevant when SPARK_Mode is on as
-            --  it is not a standard Ada legality rule. A derived type cannot
-            --  have discriminants if the parent type is discriminated.
-
-            if SPARK_Mode = On and then Has_Discriminants (Parent_Type) then
-               SPARK_Msg_N
-                 ("discriminants not allowed if parent type is discriminated",
-                  Defining_Identifier
-                    (First (Discriminant_Specifications (N))));
-            end if;
          end if;
       end if;
 
@@ -18038,44 +18027,29 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  The following checks are only relevant when SPARK_Mode is on as
-         --  they are not standard Ada legality rules.
+         --  Handling of discriminants that are access types
 
-         if SPARK_Mode = On then
-            if Is_Access_Type (Discr_Type) then
-               SPARK_Msg_N
-                 ("discriminant cannot have an access type",
-                  Discriminant_Type (Discr));
+         if Is_Access_Type (Discr_Type) then
 
-            elsif not Is_Discrete_Type (Discr_Type) then
-               SPARK_Msg_N
-                 ("discriminant must have a discrete type",
-                  Discriminant_Type (Discr));
+            --  Ada 2005 (AI-230): Access discriminant allowed in non-
+            --  limited record types
+
+            if Ada_Version < Ada_2005 then
+               Check_Access_Discriminant_Requires_Limited
+                 (Discr, Discriminant_Type (Discr));
             end if;
 
-         --  Normal Ada rules
-
-         else
-            if Is_Access_Type (Discr_Type) then
-
-               --  Ada 2005 (AI-230): Access discriminant allowed in non-
-               --  limited record types
-
-               if Ada_Version < Ada_2005 then
-                  Check_Access_Discriminant_Requires_Limited
-                    (Discr, Discriminant_Type (Discr));
-               end if;
-
-               if Ada_Version = Ada_83 and then Comes_From_Source (Discr) then
-                  Error_Msg_N
-                    ("(Ada 83) access discriminant not allowed", Discr);
-               end if;
-
-            elsif not Is_Discrete_Type (Discr_Type) then
+            if Ada_Version = Ada_83 and then Comes_From_Source (Discr) then
                Error_Msg_N
-                 ("discriminants must have a discrete or access type",
-                  Discriminant_Type (Discr));
+                 ("(Ada 83) access discriminant not allowed", Discr);
             end if;
+
+         --  If not access type, must be a discrete type
+
+         elsif not Is_Discrete_Type (Discr_Type) then
+            Error_Msg_N
+              ("discriminants must have a discrete or access type",
+               Discriminant_Type (Discr));
          end if;
 
          Set_Etype (Defining_Identifier (Discr), Discr_Type);
@@ -18085,8 +18059,8 @@ package body Sem_Ch3 is
          --  expression of the discriminant; the default expression must be of
          --  the type of the discriminant. (RM 3.7.1) Since this expression is
          --  a default expression, we do the special preanalysis, since this
-         --  expression does not freeze (see "Handling of Default and Per-
-         --  Object Expressions" in spec of package Sem).
+         --  expression does not freeze (see section "Handling of Default and
+         --  Per-Object Expressions" in spec of package Sem).
 
          if Present (Expression (Discr)) then
             Preanalyze_Spec_Expression (Expression (Discr), Discr_Type);

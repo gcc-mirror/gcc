@@ -1174,7 +1174,8 @@ package body Osint is
       T         : File_Type;
       Found     : out File_Name_Type;
       Attr      : access File_Attributes;
-      Full_Name : Boolean := False) is
+      Full_Name : Boolean := False)
+   is
    begin
       Get_Name_String (N);
 
@@ -1200,9 +1201,8 @@ package body Osint is
             if T = Config and then Full_Name then
                declare
                   Full_Path : constant String :=
-                           Normalize_Pathname (Get_Name_String (N));
+                                Normalize_Pathname (Get_Name_String (N));
                   Full_Size : constant Natural := Full_Path'Length;
-
                begin
                   Name_Buffer (1 .. Full_Size) := Full_Path;
                   Name_Len := Full_Size;

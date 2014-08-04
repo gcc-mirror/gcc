@@ -19359,7 +19359,7 @@ package body Sem_Prag is
                   elsif not Comes_From_Source (Stmt)
                     and then
                       (Nkind (Stmt) /= N_Subprogram_Declaration
-                         or else No (Generic_Parent (Specification (Stmt))))
+                        or else No (Generic_Parent (Specification (Stmt))))
                   then
                      null;
 
