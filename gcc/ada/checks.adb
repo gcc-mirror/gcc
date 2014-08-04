@@ -2971,11 +2971,18 @@ package body Checks is
         and then Is_Discrete_Type (S_Typ) = Is_Discrete_Type (Target_Typ)
         and then
           (In_Subrange_Of (S_Typ, Target_Typ, Fixed_Int)
+
+             --  Also check if the expression itself is in the range of the
+             --  target type if it is a known at compile time value. We skip
+             --  this test if S_Typ is set since for OUT and IN OUT parameters
+             --  the Expr itself is not relevant to the checking.
+
              or else
-               Is_In_Range (Expr, Target_Typ,
-                            Assume_Valid => True,
-                            Fixed_Int    => Fixed_Int,
-                            Int_Real     => Int_Real))
+               (No (Source_Typ)
+                  and then Is_In_Range (Expr, Target_Typ,
+                                        Assume_Valid => True,
+                                        Fixed_Int    => Fixed_Int,
+                                        Int_Real     => Int_Real)))
       then
          return;
 

@@ -923,8 +923,7 @@ package body System.Regpat is
 
             else
                --  Need to keep looking after the closing parenthesis
-
-               null;
+               Ender := Emit_Ptr;
             end if;
 
          else

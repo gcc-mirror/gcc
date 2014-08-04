@@ -2203,7 +2203,6 @@ package body Exp_Ch3 is
          Body_Node         : Node_Id;
          Body_Stmts        : List_Id;
          Flag_Id           : Entity_Id;
-         Flag_Decl         : Node_Id;
          Handled_Stmt_Node : Node_Id;
          Init_Tags_List    : List_Id;
          Proc_Id           : Entity_Id;
@@ -2235,19 +2234,16 @@ package body Exp_Ch3 is
 
          Flag_Id := Make_Temporary (Loc, 'F');
 
-         Flag_Decl :=
+         Append_Freeze_Action (Rec_Type,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Flag_Id,
              Object_Definition =>
                New_Occurrence_Of (Standard_Boolean, Loc),
              Expression =>
-               New_Occurrence_Of (Standard_True, Loc));
-
-         Analyze (Flag_Decl);
-         Append_Freeze_Action (Rec_Type, Flag_Decl);
+               New_Occurrence_Of (Standard_True, Loc)));
 
          Body_Stmts := New_List;
-         Body_Node := New_Node (N_Subprogram_Body, Loc);
+         Body_Node  := New_Node (N_Subprogram_Body, Loc);
 
          Proc_Spec_Node := New_Node (N_Procedure_Specification, Loc);
 
@@ -2262,7 +2258,7 @@ package body Exp_Ch3 is
 
          Set_Parameter_Specifications (Proc_Spec_Node, New_List);
          Set_Specification (Body_Node, Proc_Spec_Node);
-         Set_Declarations (Body_Node, New_List);
+         Set_Declarations  (Body_Node, New_List);
 
          Init_Tags_List := Build_Inherit_CPP_Prims (Rec_Type);
 
