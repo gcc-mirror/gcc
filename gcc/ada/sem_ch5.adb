@@ -3114,24 +3114,38 @@ package body Sem_Ch5 is
       --  If the expander is not active, or in SPARK mode, then we want to
       --  analyze the loop body now even in the Ada 2012 iterator case, since
       --  the rewriting will not be done. Insert the loop variable in the
-      --  current scope, if not done when analysing the iteration scheme.
+      --  current scope, if not done when analysing the iteration scheme. Set
+      --  is kind properly to detect improper uses in the loop body.
 
-      if No (Iter)
-        or else No (Iterator_Specification (Iter))
-        or else not Expander_Active
+      if Present (Iter)
+        and then Present (Iterator_Specification (Iter))
       then
-         if Present (Iter)
-           and then Present (Iterator_Specification (Iter))
-         then
+         if not Expander_Active then
             declare
-               Id : constant Entity_Id :=
-                      Defining_Identifier (Iterator_Specification (Iter));
+               I_Spec : constant Node_Id   := Iterator_Specification (Iter);
+               Id     : constant Entity_Id := Defining_Identifier (I_Spec);
+
             begin
                if Scope (Id) /= Current_Scope then
                   Enter_Name (Id);
                end if;
+
+               --  In an element iterator, The loop parameter is a variable if
+               --  the domain of iteration (container or array) is a variable.
+
+               if not Of_Present (I_Spec)
+                 or else not Is_Variable (Name (I_Spec))
+               then
+                  Set_Ekind (Id, E_Loop_Parameter);
+               end if;
             end;
+
+            Analyze_Statements (Statements (N));
          end if;
+
+      else
+
+         --  Pre-Ada2012 for-loops and while loops.
 
          Analyze_Statements (Statements (N));
       end if;

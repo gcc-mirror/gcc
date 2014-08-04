@@ -5146,6 +5146,12 @@ package body Exp_Util is
       T  : constant Entity_Id := Etype (N);
 
    begin
+      --  Objects are never unaligned on VMs
+
+      if VM_Target /= No_VM then
+         return False;
+      end if;
+
       --  If renamed object, apply test to underlying object
 
       if Is_Entity_Name (N)

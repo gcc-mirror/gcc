@@ -1,3 +1,21 @@
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* s-fatgen.adb: Minor reformatting.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_util.adb (Is_Possibly_Unaligned_Object): Always return
+	False on .NET.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Set properly the kind of
+	the loop parameter for element iterators over containers and
+	arrays, so that improper uses of it are detected in the loop
+	body when expansion is disabled.
+	* exp_ch5.adb (Expand_Iterator_Loop): The entity kind of the
+	generated cursor is that of the analyzed loop parameter.
+
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Build_CPP_Init_Procedure): Remove

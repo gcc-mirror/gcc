@@ -892,7 +892,7 @@ package body System.Fat_Gen is
       for R'Address use XA;
       --  R is a view of the input floating-point parameter. Note that we
       --  must avoid copying the actual bits of this parameter in float
-      --  form (since it may be a signalling NaN.
+      --  form (since it may be a signalling NaN).
 
       E  : constant IEEE_Exponent_Range :=
              Integer ((R (Most_Significant_Word) and Exponent_Mask) /

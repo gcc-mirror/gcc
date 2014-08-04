@@ -3200,6 +3200,7 @@ package body Exp_Ch5 is
 
       Container     : constant Node_Id   := Name (I_Spec);
       Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
+      I_Kind        : constant Entity_Kind := Ekind (Id);
       Cursor        : Entity_Id;
       Iterator      : Entity_Id;
       New_Loop      : Node_Id;
@@ -3481,7 +3482,7 @@ package body Exp_Ch5 is
 
          else
             Cursor := Id;
-            Set_Ekind (Cursor, E_Variable);
+            --  Set_Ekind (Cursor, E_Variable);
          end if;
 
          Iterator := Make_Temporary (Loc, 'I');
@@ -3527,6 +3528,7 @@ package body Exp_Ch5 is
               Make_Assignment_Statement (Loc,
                  Name       => New_Occurrence_Of (Cursor, Loc),
                  Expression => Rhs));
+            Set_Assignment_OK (Name (Last (Stats)));
          end;
 
          --  Generate:
@@ -3592,12 +3594,15 @@ package body Exp_Ch5 is
 
             --  The cursor is only modified in expanded code, so it appears
             --  as unassigned to the warning machinery. We must suppress
-            --  this spurious warning explicitly.
+            --  this spurious warning explicitly. The cursor's kind is that of
+            --  the original loop parameter (it is a constant if the doamin of
+            --  iteration is constant).
 
             Set_Warnings_Off (Cursor);
             Set_Assignment_OK (Decl);
 
             Insert_Action (N, Decl);
+            Set_Ekind (Cursor, I_Kind);
          end;
 
          --  If the range of iteration is given by a function call that
