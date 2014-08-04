@@ -918,30 +918,4 @@ package body System.Fat_Gen is
          ((E = IEEE_Emin - 1) and then abs To_Float (SR) = 1.0);
    end Valid;
 
-   ---------------------
-   -- Unaligned_Valid --
-   ---------------------
-
-   function Unaligned_Valid (A : System.Address) return Boolean is
-      subtype FS is String (1 .. T'Size / Character'Size);
-      type FSP is access FS;
-
-      function To_FSP is new Ada.Unchecked_Conversion (Address, FSP);
-
-      Local_T : aliased T;
-
-   begin
-      --  Note that we have to be sure that we do not load the value into a
-      --  floating-point register, since a signalling NaN may cause a trap.
-      --  The following assignment is what does the actual alignment, since
-      --  we know that the target Local_T is aligned.
-
-      To_FSP (Local_T'Address).all := To_FSP (A).all;
-
-      --  Now that we have an aligned value, we can use the normal aligned
-      --  version of Valid to obtain the required result.
-
-      return Valid (Local_T'Access);
-   end Unaligned_Valid;
-
 end System.Fat_Gen;

@@ -1,3 +1,17 @@
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* s-fatgen.ads, s-fatgen.adb (S, P): New visible type declarations
+	(Unaligned_Valid): Remove now unused subprogram.
+	* exp_attr.adb (Expand_N_Attribute_Reference, case
+	Attribute_Valid): If the prefix is in reverse SSO or potentially
+	unaligned, copy it using a byte copy operation to a temporary
+	variable.
+	* einfo.adb: Minor comment fix.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not freeze formal subprograms.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* s-imgrea.adb (Image_Floating_Point): Don't add space before +Inf.
