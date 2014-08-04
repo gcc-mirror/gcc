@@ -1,3 +1,22 @@
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cfhama.adb, a-cfhase.adb, a-cforma.adb, a-cforse.adb Add
+	SPARK_Mode in the body.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Restore the original
+	way to verify the consistency of SPARK_Mode between a spec and
+	a body.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Remove the call
+	to Set_Ignore_Pragma_SPARK_Mode. Set flag Ignore_Pragma_SPARK_Mode
+	manually.
+	(Analyze_Subprogram_Instantiation): Remove the call to
+	Set_Ignore_Pragma_SPARK_Mode. Set flag Ignore_Pragma_SPARK_Mode
+	manually.
+	* sem_prag.adb (Analyze_Pragma): Remove local variable
+	Inst_Id. SPARK_Mode can no longer be applied to a package or
+	subprogram instantiation.
+	* sem_util.adb, sem_util.ads (Set_Ignore_Pragma_SPARK_Mode):
+	Removed.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb, osint.adb, osint.ads: Minor reformatting.

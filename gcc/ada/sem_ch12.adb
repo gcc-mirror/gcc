@@ -3739,11 +3739,13 @@ package body Sem_Ch12 is
          goto Leave;
 
       else
-         --  If the instance or its context is subject to SPARK_Mode "off",
+         --  If the context of the instance is subject to SPARK_Mode "off",
          --  set the global flag which signals Analyze_Pragma to ignore all
          --  SPARK_Mode pragmas within the instance.
 
-         Set_Ignore_Pragma_SPARK_Mode (N);
+         if SPARK_Mode = Off then
+            Ignore_Pragma_SPARK_Mode := True;
+         end if;
 
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
 
@@ -4914,11 +4916,13 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
-         --  If the instance or its context is subject to SPARK_Mode "off",
+         --  If the context of the instance is subject to SPARK_Mode "off",
          --  set the global flag which signals Analyze_Pragma to ignore all
          --  SPARK_Mode pragmas within the instance.
 
-         Set_Ignore_Pragma_SPARK_Mode (N);
+         if SPARK_Mode = Off then
+            Ignore_Pragma_SPARK_Mode := True;
+         end if;
 
          Set_Entity (Gen_Id, Gen_Unit);
          Set_Is_Instantiated (Gen_Unit);

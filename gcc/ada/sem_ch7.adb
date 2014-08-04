@@ -440,8 +440,8 @@ package body Sem_Ch7 is
       --  Verify that the SPARK_Mode of the body agrees with that of its spec
 
       if Present (SPARK_Pragma (Body_Id)) then
-         if Present (SPARK_Pragma (Spec_Id)) then
-            if Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) = Off
+         if Present (SPARK_Aux_Pragma (Spec_Id)) then
+            if Get_SPARK_Mode_From_Pragma (SPARK_Aux_Pragma (Spec_Id)) = Off
                  and then
                Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) = On
             then
