@@ -274,8 +274,8 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
 #ifdef __SPE__
   for (i = 14; i < 32; i++)
     {
-      fs->regs.reg[i + FIRST_PSEUDO_REGISTER - 1].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i + FIRST_PSEUDO_REGISTER - 1].loc.offset
+      fs->regs.reg[i + FIRST_SPE_HIGH_REGNO - 4].how = REG_SAVED_OFFSET;
+      fs->regs.reg[i + FIRST_SPE_HIGH_REGNO - 4].loc.offset
 	= (long) &regs->vregs - new_cfa + 4 * i;
     }
 #endif
