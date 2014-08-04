@@ -1,3 +1,10 @@
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/discr6.adb, gnat.dg/discr6_pkg.ads: Removed, no longer
+	relevant.
+	* gnat.dg/debug1.ads: Adjust.
+	* gnat.dg/formal_type.ads: Fix error in test.
+
 2014-08-03  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/case-bogus-1.c: New test.
