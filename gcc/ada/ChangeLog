@@ -1,3 +1,9 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* s-imgrea.adb (Image_Floating_Point): Don't add space before +Inf.
+	* s-fatgen.adb (Pred): Handle Float'First.
+	(Succ): Handle Float'Last.
+
 2014-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Is_Potentially_Unevaluated): If the original
