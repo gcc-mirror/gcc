@@ -1,3 +1,36 @@
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch8.adb (Build_Class_Wide_Wrapper): Handle various special
+	cases related to equality.  Remove the special processing
+	for dispatching abstract subprograms as it is not needed.
+	(Interpretation_Error): Add a specialized error message for
+	predefined operators.
+	(Is_Intrinsic_Equality): New routine.
+	(Is_Suitable_Candidate): New routine.
+
+2014-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb: Minor comment reformatting.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* restrict.adb (Check_Restriction): For checked max_parameter
+	restrictions reset Violated flag, so that subsequent violations
+	are properly detected.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Check_Initialization): Fix bad test of GNATprove
+	mode.
+	(Process_Discriminants): Fix bad test of GNATprove mode
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Formal_Subprogram):
+	Move variable to their own section. Propagate the source
+	location of a formal parameter to the corresponding formal of
+	the subprogram renaming declaration. Code reformatting.
+
 2014-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* g-trasym-vms-ia64.adb, g-trasym-vms-alpha.adb: Removed.

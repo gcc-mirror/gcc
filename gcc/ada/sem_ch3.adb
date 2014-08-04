@@ -10377,7 +10377,7 @@ package body Sem_Ch3 is
       --  In gnatc or gnatprove mode, make sure set Do_Range_Check flag gets
       --  set unless we can be sure that no range check is required.
 
-      if (not Expander_Active and not GNATprove_Mode)
+      if (GNATprove_Mode or not Expander_Active)
         and then Is_Scalar_Type (T)
         and then not Is_In_Range (Exp, T, Assume_Valid => True)
       then
@@ -18092,7 +18092,7 @@ package body Sem_Ch3 is
             --  In gnatc or gnatprove mode, make sure set Do_Range_Check flag
             --  gets set unless we can be sure that no range check is required.
 
-            if (not Expander_Active and not GNATprove_Mode)
+            if (GNATprove_Mode or not Expander_Active)
               and then not
                 Is_In_Range
                   (Expression (Discr), Discr_Type, Assume_Valid => True)

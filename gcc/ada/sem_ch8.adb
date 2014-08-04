@@ -1918,6 +1918,14 @@ package body Sem_Ch8 is
          --  Emit a continuation error message suggesting subprogram Subp_Id as
          --  a possible interpretation.
 
+         function Is_Intrinsic_Equality (Subp_Id : Entity_Id) return Boolean;
+         --  Determine whether subprogram Subp_Id denotes the intrinsic "="
+         --  operator.
+
+         function Is_Suitable_Candidate (Subp_Id : Entity_Id) return Boolean;
+         --  Determine whether subprogram Subp_Id is a suitable candidate for
+         --  the role of a wrapped subprogram.
+
          ----------------
          -- Build_Call --
          ----------------
@@ -2087,25 +2095,70 @@ package body Sem_Ch8 is
          procedure Interpretation_Error (Subp_Id : Entity_Id) is
          begin
             Error_Msg_Sloc := Sloc (Subp_Id);
-            Error_Msg_NE
-              ("\\possible interpretation: & defined #", Spec, Formal_Spec);
+
+            if Is_Internal (Subp_Id) then
+               Error_Msg_NE
+                 ("\\possible interpretation: predefined & #",
+                  Spec, Formal_Spec);
+            else
+               Error_Msg_NE
+                 ("\\possible interpretation: & defined #", Spec, Formal_Spec);
+            end if;
          end Interpretation_Error;
+
+         ---------------------------
+         -- Is_Intrinsic_Equality --
+         ---------------------------
+
+         function Is_Intrinsic_Equality (Subp_Id : Entity_Id) return Boolean is
+         begin
+            return
+              Ekind (Subp_Id) = E_Operator
+                and then Chars (Subp_Id) = Name_Op_Eq
+                and then Is_Intrinsic_Subprogram (Subp_Id);
+         end Is_Intrinsic_Equality;
+
+         ---------------------------
+         -- Is_Suitable_Candidate --
+         ---------------------------
+
+         function Is_Suitable_Candidate (Subp_Id : Entity_Id) return Boolean is
+         begin
+            if No (Subp_Id) then
+               return False;
+
+            --  An intrinsic subprogram is never a good candidate. This is an
+            --  indication of a missing primitive, either defined directly or
+            --  inherited from a parent tagged type.
+
+            elsif Is_Intrinsic_Subprogram (Subp_Id) then
+               return False;
+
+            else
+               return True;
+            end if;
+         end Is_Suitable_Candidate;
 
          --  Local variables
 
          Actual_Typ : Entity_Id := Empty;
          --  The actual class-wide type for Formal_Typ
 
+         CW_Prim_OK : Boolean;
          CW_Prim_Op : Entity_Id;
-         --  The class-wide primitive (if any) which corresponds to the renamed
-         --  generic formal subprogram.
+         --  The class-wide subprogram (if available) which corresponds to the
+         --  renamed generic formal subprogram.
 
          Formal_Typ : Entity_Id := Empty;
-         --  The generic formal type (if any) with unknown discriminants
+         --  The generic formal type with unknown discriminants
 
+         Root_Prim_OK : Boolean;
          Root_Prim_Op : Entity_Id;
-         --  The root type primitive (if any) which corresponds to the renamed
-         --  generic formal subprogram.
+         --  The root type primitive (if available) which corresponds to the
+         --  renamed generic formal subprogram.
+
+         Root_Typ : Entity_Id := Empty;
+         --  The root type of Actual_Typ
 
          Body_Decl : Node_Id;
          Formal    : Node_Id;
@@ -2128,9 +2181,18 @@ package body Sem_Ch8 is
          end if;
 
          --  Analyze the renamed name, but do not resolve it. The resolution is
-         --  completed once a suitable primitive is found.
+         --  completed once a suitable subprogram is found.
 
          Analyze (Nam);
+
+         --  When the renamed name denotes the intrinsic operator equals, the
+         --  name must be treated as overloaded. This allows for a potential
+         --  match against the root type's predefined equality function.
+
+         if Is_Intrinsic_Equality (Entity (Nam)) then
+            Set_Is_Overloaded (Nam);
+            Collect_Interps   (Nam);
+         end if;
 
          --  Step 1: Find the generic formal type with unknown discriminants
          --  and its corresponding class-wide actual type from the renamed
@@ -2144,6 +2206,7 @@ package body Sem_Ch8 is
             then
                Formal_Typ := Etype (Formal);
                Actual_Typ := Get_Instance_Of (Formal_Typ);
+               Root_Typ   := Etype (Actual_Typ);
                exit;
             end if;
 
@@ -2157,13 +2220,15 @@ package body Sem_Ch8 is
 
          pragma Assert (Present (Formal_Typ));
 
-         --  Step 2: Find the proper primitive which corresponds to the renamed
-         --  generic formal subprogram.
+         --  Step 2: Find the proper class-wide subprogram or primitive which
+         --  corresponds to the renamed generic formal subprogram.
 
          CW_Prim_Op   := Find_Primitive (Actual_Typ);
-         Root_Prim_Op := Find_Primitive (Etype (Actual_Typ));
+         CW_Prim_OK   := Is_Suitable_Candidate (CW_Prim_Op);
+         Root_Prim_Op := Find_Primitive (Root_Typ);
+         Root_Prim_OK := Is_Suitable_Candidate (Root_Prim_Op);
 
-         --  The class-wide actual type has two primitives which correspond to
+         --  The class-wide actual type has two subprograms which correspond to
          --  the renamed generic formal subprogram:
 
          --    with procedure Prim_Op (Param : Formal_Typ);
@@ -2171,72 +2236,54 @@ package body Sem_Ch8 is
          --    procedure Prim_Op (Param : Actual_Typ);  --  may be inherited
          --    procedure Prim_Op (Param : Actual_Typ'Class);
 
-         --  Even though the declaration of the two primitives is legal, a call
-         --  to either one is ambiguous and therefore illegal.
+         --  Even though the declaration of the two subprograms is legal, a
+         --  call to either one is ambiguous and therefore illegal.
 
-         if Present (CW_Prim_Op) and then Present (Root_Prim_Op) then
+         if CW_Prim_OK and Root_Prim_OK then
 
-            --  Deal with abstract primitives
+            --  A user-defined primitive has precedence over a predefined one
 
-            if Is_Abstract_Subprogram (CW_Prim_Op)
-              or else Is_Abstract_Subprogram (Root_Prim_Op)
+            if Is_Internal (CW_Prim_Op)
+              and then not Is_Internal (Root_Prim_Op)
             then
-               --  An abstract subprogram cannot act as a generic actual, but
-               --  the partial parameterization of the instance may hide the
-               --  true nature of the actual. Emit an error when both options
-               --  are abstract.
-
-               if Is_Abstract_Subprogram (CW_Prim_Op)
-                 and then Is_Abstract_Subprogram (Root_Prim_Op)
-               then
-                  Error_Msg_NE
-                    ("abstract subprogram not allowed as generic actual",
-                     Spec, Formal_Spec);
-                  Interpretation_Error (CW_Prim_Op);
-                  Interpretation_Error (Root_Prim_Op);
-                  return;
-
-               --  Otherwise choose the non-abstract version
-
-               elsif Is_Abstract_Subprogram (Root_Prim_Op) then
-                  Prim_Op := CW_Prim_Op;
-
-               else pragma Assert (Is_Abstract_Subprogram (CW_Prim_Op));
-                  Prim_Op := Root_Prim_Op;
-               end if;
-
-            --  If one of the candidate primitives is intrinsic, choose the
-            --  other (which may also be intrinsic). Preference is given to
-            --  the primitive of the root type.
-
-            elsif Is_Intrinsic_Subprogram (CW_Prim_Op) then
                Prim_Op := Root_Prim_Op;
 
-            elsif Is_Intrinsic_Subprogram (Root_Prim_Op) then
+            elsif Is_Internal (Root_Prim_Op)
+              and then not Is_Internal (CW_Prim_Op)
+            then
                Prim_Op := CW_Prim_Op;
 
             elsif CW_Prim_Op = Root_Prim_Op then
                Prim_Op := Root_Prim_Op;
 
-            --  Otherwise there are two perfectly good candidates which satisfy
-            --  the profile of the renamed generic formal subprogram.
+            --  Otherwise both candidate subprograms are user-defined and
+            --  ambiguous.
 
             else
                Error_Msg_NE
                  ("ambiguous actual for generic subprogram &",
-                   Spec, Formal_Spec);
-               Interpretation_Error (CW_Prim_Op);
+                  Spec, Formal_Spec);
                Interpretation_Error (Root_Prim_Op);
+               Interpretation_Error (CW_Prim_Op);
                return;
             end if;
 
-         elsif Present (CW_Prim_Op) then
+         elsif CW_Prim_OK and not Root_Prim_OK then
             Prim_Op := CW_Prim_Op;
 
-         elsif Present (Root_Prim_Op) then
+         elsif not CW_Prim_OK and Root_Prim_OK then
             Prim_Op := Root_Prim_Op;
 
-         --  Otherwise there are no candidate primitives. Let the caller
+         --  An intrinsic equality may act as a suitable candidate in the case
+         --  of a null type extension where the parent's equality is hidden. A
+         --  call to an intrinsic equality is expanded as dispatching.
+
+         elsif Present (Root_Prim_Op)
+           and then Is_Intrinsic_Equality (Root_Prim_Op)
+         then
+            Prim_Op := Root_Prim_Op;
+
+         --  Otherwise there are no candidate subprograms. Let the caller
          --  diagnose the error.
 
          else

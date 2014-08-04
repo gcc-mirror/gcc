@@ -562,6 +562,7 @@ package body Restrict is
 
       if R in Checked_Max_Parameter_Restrictions then
          Restrictions.Count (R) := 0;
+         Restrictions.Violated (R) := False;
       end if;
    end Check_Restriction;
 

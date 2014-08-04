@@ -9454,14 +9454,10 @@ package body Sem_Ch12 is
       Actual          : Node_Id;
       Analyzed_Formal : Node_Id) return Node_Id
    is
-      Loc        : Source_Ptr;
-      Formal_Sub : constant Entity_Id :=
-                     Defining_Unit_Name (Specification (Formal));
       Analyzed_S : constant Entity_Id :=
                      Defining_Unit_Name (Specification (Analyzed_Formal));
-      Decl_Node  : Node_Id;
-      Nam        : Node_Id;
-      New_Spec   : Node_Id;
+      Formal_Sub : constant Entity_Id :=
+                     Defining_Unit_Name (Specification (Formal));
 
       function From_Parent_Scope (Subp : Entity_Id) return Boolean;
       --  If the generic is a child unit, the parent has been installed on the
@@ -9528,8 +9524,14 @@ package body Sem_Ch12 is
            ("expect subprogram or entry name in instantiation of&",
             Instantiation_Node, Formal_Sub);
          Abandon_Instantiation (Instantiation_Node);
-
       end Valid_Actual_Subprogram;
+
+      --  Local variables
+
+      Decl_Node  : Node_Id;
+      Loc        : Source_Ptr;
+      Nam        : Node_Id;
+      New_Spec   : Node_Id;
 
    --  Start of processing for Instantiate_Formal_Subprogram
 
@@ -9547,18 +9549,21 @@ package body Sem_Ch12 is
       Set_Defining_Unit_Name
         (New_Spec, Make_Defining_Identifier (Loc, Chars (Formal_Sub)));
 
-      --  Create new entities for the each of the formals in the
-      --  specification of the renaming declaration built for the actual.
+      --  Create new entities for the each of the formals in the specification
+      --  of the renaming declaration built for the actual.
 
       if Present (Parameter_Specifications (New_Spec)) then
          declare
-            F : Node_Id;
+            F    : Node_Id;
+            F_Id : Entity_Id;
+
          begin
             F := First (Parameter_Specifications (New_Spec));
             while Present (F) loop
+               F_Id := Defining_Identifier (F);
+
                Set_Defining_Identifier (F,
-                  Make_Defining_Identifier (Sloc (F),
-                    Chars => Chars (Defining_Identifier (F))));
+                  Make_Defining_Identifier (Sloc (F_Id), Chars (F_Id)));
                Next (F);
             end loop;
          end;
@@ -9607,9 +9612,10 @@ package body Sem_Ch12 is
          --  identifier or operator with the same name as the formal.
 
          if Nkind (Formal_Sub) = N_Defining_Operator_Symbol then
-            Nam := Make_Operator_Symbol (Loc,
-              Chars =>  Chars (Formal_Sub),
-              Strval => No_String);
+            Nam :=
+              Make_Operator_Symbol (Loc,
+                Chars  => Chars (Formal_Sub),
+                Strval => No_String);
          else
             Nam := Make_Identifier (Loc, Chars (Formal_Sub));
          end if;
@@ -9656,9 +9662,7 @@ package body Sem_Ch12 is
       --  instance. If overloaded, it will be resolved when analyzing the
       --  renaming declaration.
 
-      if Box_Present (Formal)
-        and then No (Actual)
-      then
+      if Box_Present (Formal) and then No (Actual) then
          Analyze (Nam);
 
          if Is_Child_Unit (Scope (Analyzed_S))
