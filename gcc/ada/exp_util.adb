@@ -1633,6 +1633,60 @@ package body Exp_Util is
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Record_Image;
 
+   -----------------------------
+   -- Check_Float_Op_Overflow --
+   -----------------------------
+
+   procedure Check_Float_Op_Overflow (N : Node_Id) is
+   begin
+      --  Return if no check needed
+
+      if not Check_Float_Overflow
+        or else not Is_Floating_Point_Type (Etype (N))
+      then
+         return;
+      end if;
+
+      --  Otherwise we replace the expression by
+
+      --  do Tnn : constant ftype := expression;
+      --     constraint_error when not Tnn'Valid;
+      --  in Tnn;
+
+      declare
+         Loc : constant Source_Ptr := Sloc (N);
+         Tnn : constant Entity_Id  := Make_Temporary (Loc, 'T', N);
+         Typ : constant Entity_Id  := Etype (N);
+
+      begin
+         --  Prevent recursion
+
+         Set_Analyzed (N);
+
+         --  Do the rewrite to include the check
+
+         Rewrite (N,
+           Make_Expression_With_Actions (Loc,
+             Actions    => New_List (
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => Tnn,
+                 Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                 Constant_Present    => True,
+                 Expression          => Relocate_Node (N)),
+               Make_Raise_Constraint_Error (Loc,
+                 Condition =>
+                   Make_Op_Not (Loc,
+                     Right_Opnd =>
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => New_Occurrence_Of (Tnn, Loc),
+                         Attribute_Name => Name_Valid)),
+                 Reason    => CE_Overflow_Check_Failed)),
+             Expression => New_Occurrence_Of (Tnn, Loc)));
+
+         Analyze_And_Resolve (N, Typ);
+      end;
+   end Check_Float_Op_Overflow;
+
    ----------------------------------
    -- Component_May_Be_Bit_Aligned --
    ----------------------------------

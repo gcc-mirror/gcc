@@ -1,5 +1,34 @@
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb (Activate_Overflow_Check): Remove
+	Check_Float_Overflow processing.
+	(Apply_Scalar_Range_Check): Ditto.
+	(Generate_Range_Check): Ditto.
+	* exp_ch4.adb (Expand_N_Op_Add): Add call to
+	Check_Float_Op_Overflow.
+	(Expand_N_Op_Divide): ditto.
+	(Expand_N_Op_Multiply): ditto.
+	(Expand_N_Op_Subtract): ditto.
+	* exp_util.ads, exp_util.adb (Check_Float_Op_Overflow): New procedure.
+	* sem_attr.adb (Analyze_Attribute, case Pred): Make sure
+	Do_Range_Check is set for floating-point case in -gnatc or
+	GNATprove mode.
+	(Analyze_Attribute, case Succ): Make sure
+	Do_Range_Check is set for floating-point case in -gnatc or
+	GNATprove mode.
+	* sem_res.adb (Resolve_Type_Conversion): Make sure Do_Range_Check
+	flag is set for real to integer conversion in GNATprove or
+	-gnatc mode.
+
+2014-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Resolve
+	the expression of an Import or Export aspect as type Boolean
+	and require it to be static. Add ??? comment. Also, set the
+	Is_Exported flag when appropriate.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb: Minor reformatting.
 	* exp_attr.adb: Minor reformatting.
 
