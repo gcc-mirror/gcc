@@ -26,7 +26,7 @@
 #include <new>
 #include "bits/gthr.h"
 
-#if HAVE___CXA_THREAD_ATEXIT_IMPL
+#if _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL
 
 extern "C" int __cxa_thread_atexit_impl (void (*func) (void *),
 					 void *arg, void *d);
@@ -38,7 +38,7 @@ __cxxabiv1::__cxa_thread_atexit (void (*dtor)(void *),
   return __cxa_thread_atexit_impl (dtor, obj, dso_handle);
 }
 
-#else /* HAVE___CXA_THREAD_ATEXIT_IMPL */
+#else /* _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL */
 
 namespace {
   // One element in a singly-linked stack of cleanups.
@@ -142,4 +142,4 @@ __cxxabiv1::__cxa_thread_atexit (void (*dtor)(void *), void *obj, void */*dso_ha
   return 0;
 }
 
-#endif /* HAVE___CXA_THREAD_ATEXIT_IMPL */
+#endif /* _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL */
