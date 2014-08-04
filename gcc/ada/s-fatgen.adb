@@ -426,6 +426,11 @@ package body System.Fat_Gen is
             return X / (X - X);
          end if;
 
+      --  For infinities, return unchanged
+
+      elsif X < T'First or else X > T'Last then
+         return X;
+
       --  Subtract from the given number a number equivalent to the value
       --  of its least significant bit. Given that the most significant bit
       --  represents a value of 1.0 * radix ** (exp - 1), the value we want
@@ -674,6 +679,11 @@ package body System.Fat_Gen is
          else
             return X / (X - X);
          end if;
+
+      --  For infinities, return unchanged
+
+      elsif X < T'First or else X > T'Last then
+         return X;
 
       --  Add to the given number a number equivalent to the value
       --  of its least significant bit. Given that the most significant bit

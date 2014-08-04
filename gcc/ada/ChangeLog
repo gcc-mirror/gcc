@@ -1,5 +1,21 @@
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Pred):
+	Remove special test for Float'First, no longer required.
+	(Expand_N_Attribute_Reference, case Succ): Remove special test
+	for Float'First, no longer required.
+	* s-fatgen.adb (Pred): return infinity unchanged.
+	(Succ): ditto.
+
+2014-08-04  Claire Dross  <dross@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): Defaults should only be
+	used if there is no explicit match.
+	* exp_util.adb (Get_First_Parent_With_Ext_Axioms_For_Entity):
+	Also check for pragma external_axiomatization on generic units.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Activate_Overflow_Check): Remove
 	Check_Float_Overflow processing.
 	(Apply_Scalar_Range_Check): Ditto.
