@@ -1,6 +1,14 @@
 2014-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline
+	2014-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61390
+	* include/ext/pb_ds/detail/bin_search_tree_/traits.hpp
+	(bin_search_tree_traits): Do not redeclare template-parameters.
+	* testsuite/util/testsuite_iterators.h (test_container): Likewise.
+
+	Backported from mainline
 	2014-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/condition_variable (condition_variable_any::_Unlock): Do
