@@ -1,3 +1,13 @@
+2014-07-14  Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* sched-deps.c (try_group_insn): Generalise macro fusion hook usage
+	to any two insns.  Update comment.  Rename to sched_macro_fuse_insns.
+	(sched_analyze_insn): Update use of try_group_insn to
+	sched_macro_fuse_insns.
+	* config/i386/i386.c (ix86_macro_fusion_pair_p): Reject 2nd
+	arguments that are not conditional jumps.
+
 2014-08-04 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Handle AMD's extended
