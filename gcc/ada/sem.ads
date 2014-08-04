@@ -245,12 +245,18 @@ package Sem is
 
    In_Assertion_Expr : Nat := 0;
    --  This is set non-zero if we are within the expression of an assertion
-   --  pragma or aspect. It is a counter which is incremented at the start
-   --  of expanding such an expression, and decremented on completion of
-   --  expanding that expression. Probably a boolean would be good enough,
-   --  since we think that such expressions cannot nest, but that might not
-   --  be true in the future (e.g. if let expressions are added to Ada) so
-   --  we prepare for that future possibility by making it a counter.
+   --  pragma or aspect. It is a counter which is incremented at the start of
+   --  expanding such an expression, and decremented on completion of expanding
+   --  that expression. Probably a boolean would be good enough, since we think
+   --  that such expressions cannot nest, but that might not be true in the
+   --  future (e.g. if let expressions are added to Ada) so we prepare for that
+   --  future possibility by making it a counter. Like In_Spec_Expression, it
+   --  must be recursively saved on a Semantics call.
+
+   In_Default_Expr : Boolean := False;
+   --  Switch to indicate that we are analyzing a default component expression.
+   --  Like In_Spec_Expression, it must be recursively saved on a Semantics
+   --  call.
 
    In_Inlined_Body : Boolean := False;
    --  Switch to indicate that we are analyzing and resolving an inlined body.

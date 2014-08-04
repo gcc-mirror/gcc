@@ -1938,7 +1938,7 @@ package body Sem_Ch3 is
 
       if Present (E) then
          Check_SPARK_Restriction ("default expression is not allowed", E);
-         Preanalyze_Spec_Expression (E, T);
+         Preanalyze_Default_Expression (E, T);
          Check_Initialization (T, E);
 
          if Ada_Version >= Ada_2005
@@ -20214,6 +20214,18 @@ package body Sem_Ch3 is
       Preanalyze_Spec_Expression (N, T);
       In_Assertion_Expr := In_Assertion_Expr - 1;
    end Preanalyze_Assert_Expression;
+
+   -----------------------------------
+   -- Preanalyze_Default_Expression --
+   -----------------------------------
+
+   procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id) is
+      Save_In_Default_Expr : constant Boolean := In_Default_Expr;
+   begin
+      In_Default_Expr := True;
+      Preanalyze_Spec_Expression (N, T);
+      In_Default_Expr := Save_In_Default_Expr;
+   end Preanalyze_Default_Expression;
 
    --------------------------------
    -- Preanalyze_Spec_Expression --
