@@ -1,3 +1,8 @@
+2014-08-04  Zifei Tong  <zifeitong@gmail.com>
+
+	* libsupc++/atexit_thread.cc (HAVE___CXA_THREAD_ATEXIT_IMPL): Add
+	_GLIBCXX_ prefix to macro.
+
 2014-08-04  Samuel Bronson  <naesten@gmail.com>
 
 	Backport r212453 from trunk
