@@ -1510,7 +1510,7 @@ enum cgraph_state
 };
 extern enum cgraph_state cgraph_state;
 extern bool cgraph_function_flags_ready;
-extern cgraph_node_set cgraph_new_nodes;
+extern vec<cgraph_node *> cgraph_new_nodes;
 
 extern GTY(()) struct asm_node *asm_nodes;
 extern GTY(()) int symtab_order;
@@ -1616,24 +1616,7 @@ void record_references_in_initializer (tree, bool);
 
 /* In ipa.c  */
 bool symtab_remove_unreachable_nodes (bool, FILE *);
-cgraph_node_set cgraph_node_set_new (void);
-cgraph_node_set_iterator cgraph_node_set_find (cgraph_node_set,
-					       cgraph_node *);
-void cgraph_node_set_add (cgraph_node_set, cgraph_node *);
-void cgraph_node_set_remove (cgraph_node_set, cgraph_node *);
-void dump_cgraph_node_set (FILE *, cgraph_node_set);
-void debug_cgraph_node_set (cgraph_node_set);
-void free_cgraph_node_set (cgraph_node_set);
 void cgraph_build_static_cdtor (char which, tree body, int priority);
-
-varpool_node_set varpool_node_set_new (void);
-varpool_node_set_iterator varpool_node_set_find (varpool_node_set,
-						 varpool_node *);
-void varpool_node_set_add (varpool_node_set, varpool_node *);
-void varpool_node_set_remove (varpool_node_set, varpool_node *);
-void dump_varpool_node_set (FILE *, varpool_node_set);
-void debug_varpool_node_set (varpool_node_set);
-void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
 
 /* In predict.c  */
@@ -1949,93 +1932,6 @@ cgraph_next_function_with_gimple_body (cgraph_node *node)
 /* Create a new static variable of type TYPE.  */
 tree add_new_static_var (tree type);
 
-/* Return true if iterator CSI points to nothing.  */
-static inline bool
-csi_end_p (cgraph_node_set_iterator csi)
-{
-  return csi.index >= csi.set->nodes.length ();
-}
-
-/* Advance iterator CSI.  */
-static inline void
-csi_next (cgraph_node_set_iterator *csi)
-{
-  csi->index++;
-}
-
-/* Return the node pointed to by CSI.  */
-static inline cgraph_node *
-csi_node (cgraph_node_set_iterator csi)
-{
-  return csi.set->nodes[csi.index];
-}
-
-/* Return an iterator to the first node in SET.  */
-static inline cgraph_node_set_iterator
-csi_start (cgraph_node_set set)
-{
-  cgraph_node_set_iterator csi;
-
-  csi.set = set;
-  csi.index = 0;
-  return csi;
-}
-
-/* Return true if SET contains NODE.  */
-static inline bool
-cgraph_node_in_set_p (cgraph_node *node, cgraph_node_set set)
-{
-  cgraph_node_set_iterator csi;
-  csi = cgraph_node_set_find (set, node);
-  return !csi_end_p (csi);
-}
-
-/* Return number of nodes in SET.  */
-static inline size_t
-cgraph_node_set_size (cgraph_node_set set)
-{
-  return set->nodes.length ();
-}
-
-/* Return true if iterator VSI points to nothing.  */
-static inline bool
-vsi_end_p (varpool_node_set_iterator vsi)
-{
-  return vsi.index >= vsi.set->nodes.length ();
-}
-
-/* Advance iterator VSI.  */
-static inline void
-vsi_next (varpool_node_set_iterator *vsi)
-{
-  vsi->index++;
-}
-
-/* Return the node pointed to by VSI.  */
-static inline varpool_node *
-vsi_node (varpool_node_set_iterator vsi)
-{
-  return vsi.set->nodes[vsi.index];
-}
-
-/* Return an iterator to the first node in SET.  */
-static inline varpool_node_set_iterator
-vsi_start (varpool_node_set set)
-{
-  varpool_node_set_iterator vsi;
-
-  vsi.set = set;
-  vsi.index = 0;
-  return vsi;
-}
-
-/* Return number of nodes in SET.  */
-static inline size_t
-varpool_node_set_size (varpool_node_set set)
-{
-  return set->nodes.length ();
-}
-
 /* Uniquize all constants that appear in memory.
    Each constant in memory thus far output is recorded
    in `const_desc_table'.  */
@@ -2052,20 +1948,6 @@ struct GTY(()) constant_descriptor_tree {
      use of the hash table during hash table expansion.  */
   hashval_t hash;
 };
-
-/* Return true if set is nonempty.  */
-static inline bool
-cgraph_node_set_nonempty_p (cgraph_node_set set)
-{
-  return !set->nodes.is_empty ();
-}
-
-/* Return true if set is nonempty.  */
-static inline bool
-varpool_node_set_nonempty_p (varpool_node_set set)
-{
-  return !set->nodes.is_empty ();
-}
 
 /* Return true when function is only called directly or it has alias.
    i.e. it is not externally visible, address was not taken and
