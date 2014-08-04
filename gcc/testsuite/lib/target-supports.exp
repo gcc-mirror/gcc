@@ -5061,19 +5061,19 @@ proc check_effective_target_glibc_2_12_or_later {} {
     }]
 }
 
-# Return true if this is a not a glibc 2.11 or earlier target.
+# Return true if this is a glibc 2.11 or earlier target.
 
-proc check_effective_target_not_glibc_2_11_or_earlier {} {
+proc check_effective_target_glibc_2_11_or_earlier {} {
 
     if { ![check_effective_target_glibc] } {
 	return 1
     }
     
     if { [check_effective_target_glibc_2_12_or_later] } {
-	return 1
+	return 0
     }
 
-    return 0
+    return 1
 }
 
 # Return true if this is NOT a Bionic target.
