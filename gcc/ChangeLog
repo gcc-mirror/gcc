@@ -1,3 +1,10 @@
+2014-08-04  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (gimple_fold_builtin): Remove.
+	* gimple-fold.c (gimple_fold_builtin): Make static.
+	* tree-ssa-ccp.c (pass_fold_builtins::execute): Use
+	fold_stmt, not gimple_fold_builtin.
+
 2014-08-04  Martin Liska <mliska@suse.cz>
 
 	* cgraph.h (csi_end_p): Removed.

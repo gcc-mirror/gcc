@@ -2655,7 +2655,7 @@ pass_fold_builtins::execute (function *fun)
       for (i = gsi_start_bb (bb); !gsi_end_p (i); )
 	{
           gimple stmt, old_stmt;
-	  tree callee, result;
+	  tree callee;
 	  enum built_in_function fcode;
 
 	  stmt = gsi_stmt (i);
@@ -2680,62 +2680,69 @@ pass_fold_builtins::execute (function *fun)
 	      gsi_next (&i);
 	      continue;
 	    }
+
 	  callee = gimple_call_fndecl (stmt);
 	  if (!callee || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL)
 	    {
 	      gsi_next (&i);
 	      continue;
 	    }
+
 	  fcode = DECL_FUNCTION_CODE (callee);
-
-	  result = gimple_fold_builtin (stmt);
-
-	  if (result)
-	    gimple_remove_stmt_histograms (fun, stmt);
-
-	  if (!result)
-	    switch (DECL_FUNCTION_CODE (callee))
-	      {
-	      case BUILT_IN_CONSTANT_P:
-		/* Resolve __builtin_constant_p.  If it hasn't been
-		   folded to integer_one_node by now, it's fairly
-		   certain that the value simply isn't constant.  */
-                result = integer_zero_node;
-		break;
-
-	      case BUILT_IN_ASSUME_ALIGNED:
-		/* Remove __builtin_assume_aligned.  */
-		result = gimple_call_arg (stmt, 0);
-		break;
-
-	      case BUILT_IN_STACK_RESTORE:
-		result = optimize_stack_restore (i);
-		if (result)
+	  if (fold_stmt (&i))
+	    ;
+	  else
+	    {
+	      tree result = NULL_TREE;
+	      switch (DECL_FUNCTION_CODE (callee))
+		{
+		case BUILT_IN_CONSTANT_P:
+		  /* Resolve __builtin_constant_p.  If it hasn't been
+		     folded to integer_one_node by now, it's fairly
+		     certain that the value simply isn't constant.  */
+		  result = integer_zero_node;
 		  break;
-		gsi_next (&i);
-		continue;
 
-	      case BUILT_IN_UNREACHABLE:
-		if (optimize_unreachable (i))
-		  cfg_changed = true;
-		break;
-
-	      case BUILT_IN_VA_START:
-	      case BUILT_IN_VA_END:
-	      case BUILT_IN_VA_COPY:
-		/* These shouldn't be folded before pass_stdarg.  */
-		result = optimize_stdarg_builtin (stmt);
-		if (result)
+		case BUILT_IN_ASSUME_ALIGNED:
+		  /* Remove __builtin_assume_aligned.  */
+		  result = gimple_call_arg (stmt, 0);
 		  break;
-		/* FALLTHRU */
 
-	      default:
-		gsi_next (&i);
-		continue;
-	      }
+		case BUILT_IN_STACK_RESTORE:
+		  result = optimize_stack_restore (i);
+		  if (result)
+		    break;
+		  gsi_next (&i);
+		  continue;
 
-	  if (result == NULL_TREE)
-	    break;
+		case BUILT_IN_UNREACHABLE:
+		  if (optimize_unreachable (i))
+		    cfg_changed = true;
+		  break;
+
+		case BUILT_IN_VA_START:
+		case BUILT_IN_VA_END:
+		case BUILT_IN_VA_COPY:
+		  /* These shouldn't be folded before pass_stdarg.  */
+		  result = optimize_stdarg_builtin (stmt);
+		  if (result)
+		    break;
+		  /* FALLTHRU */
+
+		default:;
+		}
+
+	      if (!result)
+		{
+		  gsi_next (&i);
+		  continue;
+		}
+
+	      if (!update_call_from_tree (&i, result))
+		gimplify_and_update_call_from_tree (&i, result);
+	    }
+
+	  todoflags |= TODO_update_address_taken;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -2744,12 +2751,6 @@ pass_fold_builtins::execute (function *fun)
 	    }
 
           old_stmt = stmt;
-          if (!update_call_from_tree (&i, result))
-	    {
-	      gimplify_and_update_call_from_tree (&i, result);
-	      todoflags |= TODO_update_address_taken;
-	    }
-
 	  stmt = gsi_stmt (i);
 	  update_stmt (stmt);
 

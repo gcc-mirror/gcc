@@ -873,7 +873,7 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
    Note that some builtins expand into inline code that may not
    be valid in GIMPLE.  Callers must take care.  */
 
-tree
+static tree
 gimple_fold_builtin (gimple stmt)
 {
   tree result, val[3];
