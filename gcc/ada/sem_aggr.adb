@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -3168,6 +3169,7 @@ package body Sem_Aggr is
          Consider_Others_Choice : Boolean := False)
          return                   Node_Id
       is
+         Typ           : constant Entity_Id := Etype (Compon);
          Assoc         : Node_Id;
          Expr          : Node_Id := Empty;
          Selector_Name : Node_Id;
@@ -3215,15 +3217,15 @@ package body Sem_Aggr is
                         end if;
 
                      else
-                        if Present (Others_Etype) and then
-                           Base_Type (Others_Etype) /= Base_Type (Etype
-                                                                   (Compon))
+                        if Present (Others_Etype)
+                          and then Base_Type (Others_Etype) /= Base_Type (Typ)
                         then
-                           Error_Msg_N ("components in OTHERS choice must " &
-                                        "have same type", Selector_Name);
+                           Error_Msg_N
+                             ("components in OTHERS choice must "
+                              & "have same type", Selector_Name);
                         end if;
 
-                        Others_Etype := Etype (Compon);
+                        Others_Etype := Typ;
 
                         if Expander_Active then
                            return
@@ -3269,15 +3271,42 @@ package body Sem_Aggr is
                         --  initialized, but an association for the component
                         --  exists, and it is not covered by an others clause.
 
+                        --  Scalar and private types have no initialization
+                        --  procedure, so they remain uninitialized. If the
+                        --  target of the aggregate is a constant this
+                        --  deserves a warning.
+
+                        if No (Expression (Parent (Compon)))
+                          and then not Has_Non_Null_Base_Init_Proc (Typ)
+                          and then not Has_Aspect (Typ, Aspect_Default_Value)
+                          and then not Is_Concurrent_Type (Typ)
+                          and then Nkind (Parent (N)) = N_Object_Declaration
+                          and then Constant_Present (Parent (N))
+                        then
+                           Error_Msg_Node_2 := Typ;
+                           Error_Msg_NE
+                             ("component&? of type& is uninitialized",
+                              Assoc, Selector_Name);
+
+                           --  An additional reminder if the component type
+                           --  is a generic formal.
+
+                           if Is_Generic_Type (Base_Type (Typ)) then
+                              Error_Msg_NE
+                                ("\instance should provide actual "
+                                 & "type with initialization for&",
+                                 Assoc, Typ);
+                           end if;
+                        end if;
+
                         return
                           New_Copy_Tree_And_Copy_Dimensions
                             (Expression (Parent (Compon)));
 
                      else
                         if Present (Next (Selector_Name)) then
-                           Expr :=
-                             New_Copy_Tree_And_Copy_Dimensions
-                               (Expression (Assoc));
+                           Expr := New_Copy_Tree_And_Copy_Dimensions
+                                     (Expression (Assoc));
                         else
                            Expr := Expression (Assoc);
                         end if;
