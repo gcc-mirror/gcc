@@ -2949,18 +2949,34 @@ package body Sem_Ch13 is
                      --  that verifed that there was a matching convention
                      --  is now obsolete.
 
-                     if A_Id = Aspect_Import then
-                        Set_Is_Imported (E);
+                     --  Resolve the expression of an Import or Export here,
+                     --  and require it to be of type Boolean and static. This
+                     --  is not quite right, because in general this should be
+                     --  delayed, but that seems tricky for these, because
+                     --  normally Boolean aspects are replaced with pragmas at
+                     --  the freeze point (in Make_Pragma_From_Boolean_Aspect),
+                     --  but in the case of these aspects we can't generate
+                     --  a simple pragma with just the entity name. ???
 
-                        --  An imported entity cannot have an explicit
-                        --  initialization.
+                     if not Present (Expr)
+                       or else Is_True (Static_Boolean (Expr))
+                     then
+                        if A_Id = Aspect_Import then
+                           Set_Is_Imported (E);
 
-                        if Nkind (N) = N_Object_Declaration
-                          and then Present (Expression (N))
-                        then
-                           Error_Msg_N
-                             ("imported entities cannot be initialized "
-                              & "(RM B.1(24))", Expression (N));
+                           --  An imported entity cannot have an explicit
+                           --  initialization.
+
+                           if Nkind (N) = N_Object_Declaration
+                             and then Present (Expression (N))
+                           then
+                              Error_Msg_N
+                                ("imported entities cannot be initialized "
+                                 & "(RM B.1(24))", Expression (N));
+                           end if;
+
+                        elsif A_Id = Aspect_Export then
+                           Set_Is_Exported (E);
                         end if;
                      end if;
 

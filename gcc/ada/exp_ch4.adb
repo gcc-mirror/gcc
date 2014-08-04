@@ -151,11 +151,11 @@ package body Exp_Ch4 is
       Bodies : List_Id) return Node_Id;
    --  Local recursive function used to expand equality for nested composite
    --  types. Used by Expand_Record/Array_Equality, Bodies is a list on which
-   --  to attach bodies of local functions that are created in the process.
-   --  It is the responsibility of the caller to insert those bodies at the
-   --  right place. Nod provides the Sloc value for generated code. Lhs and Rhs
-   --  are the left and right sides for the comparison, and Typ is the type of
-   --  the objects to compare.
+   --  to attach bodies of local functions that are created in the process. It
+   --  is the responsibility of the caller to insert those bodies at the right
+   --  place. Nod provides the Sloc value for generated code. Lhs and Rhs are
+   --  the left and right sides for the comparison, and Typ is the type of the
+   --  objects to compare.
 
    procedure Expand_Concatenate (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of a sequence of two or more operands

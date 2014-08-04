@@ -4808,10 +4808,8 @@ package body Sem_Attr is
          --  make an exception in Check_Float_Overflow mode.
 
          if Is_Floating_Point_Type (P_Type) then
-            if Check_Float_Overflow
-              and then not Range_Checks_Suppressed (P_Base_Type)
-            then
-               Enable_Range_Check (E1);
+            if not Range_Checks_Suppressed (P_Base_Type) then
+               Set_Do_Range_Check (E1);
             end if;
 
          --  If not modular type, test for overflow check required
@@ -5702,10 +5700,8 @@ package body Sem_Attr is
          --  make an exception in Check_Float_Overflow mode.
 
          if Is_Floating_Point_Type (P_Type) then
-            if Check_Float_Overflow
-              and then not Range_Checks_Suppressed (P_Base_Type)
-            then
-               Enable_Range_Check (E1);
+            if not Range_Checks_Suppressed (P_Base_Type) then
+               Set_Do_Range_Check (E1);
             end if;
 
          --  If not modular type, test for overflow check required

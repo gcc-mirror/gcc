@@ -396,10 +396,6 @@ package body Checks is
       if Present (Etype (N))
         and then Is_Floating_Point_Type (Etype (N))
         and then not Is_Constrained (Etype (N))
-
-        --  But do the check after all if float overflow checking enforced
-
-        and then not Check_Float_Overflow
       then
          return;
       end if;
@@ -2871,11 +2867,6 @@ package body Checks is
            and then not Has_Infinities (Target_Typ)
          then
             Enable_Range_Check (Expr);
-
-         --  Always do a range check for operators if option set
-
-         elsif Check_Float_Overflow and then Nkind (Expr) in N_Op then
-            Enable_Range_Check (Expr);
          end if;
       end if;
 
@@ -2984,9 +2975,9 @@ package body Checks is
 
       --  Normally, we only do range checks if the type is constrained. We do
       --  NOT want range checks for unconstrained types, since we want to have
-      --  infinities. Override this decision in Check_Float_Overflow mode.
+      --  infinities.
 
-         if Is_Constrained (S_Typ) or else Check_Float_Overflow then
+         if Is_Constrained (S_Typ) then
             Enable_Range_Check (Expr);
          end if;
 
@@ -6471,11 +6462,6 @@ package body Checks is
              or else
                (Is_Entity_Name (N)
                  and then Ekind (Entity (N)) = E_Enumeration_Literal))
-
-        --  Also do not apply this for floating-point if Check_Float_Overflow
-
-        and then not
-          (Is_Floating_Point_Type (Source_Type) and Check_Float_Overflow)
       then
          Set_Do_Range_Check (N, False);
          return;

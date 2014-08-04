@@ -10507,9 +10507,11 @@ package body Sem_Res is
 
       --  If at this stage we have a real to integer conversion, make sure
       --  that the Do_Range_Check flag is set, because such conversions in
-      --  general need a range check.
+      --  general need a range check. We only need this if expansion is off
+      --  or we are in GNATProve mode.
 
       if Nkind (N) = N_Type_Conversion
+        and then (GNATprove_Mode or not Expander_Active)
         and then Is_Integer_Type (Target_Typ)
         and then Is_Real_Type (Operand_Typ)
       then
