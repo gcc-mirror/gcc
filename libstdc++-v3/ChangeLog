@@ -1,3 +1,23 @@
+2014-08-04  Samuel Bronson  <naesten@gmail.com>
+
+	Backport r212453 from trunk
+	2014-07-11  Samuel Bronson  <naesten@gmail.com>
+		    Matthias Klose  <doko@ubuntu.com>
+
+	PR libstdc++/58962
+	* python/libstdcxx/v6/printers.py: Port to Python 2+3
+	(imap): New compat function.
+	(izip): Likewise.
+	(Iterator): New mixin to allow writing iterators in Python 3 style
+	regardless of which version we're running on.
+	[Python3] (long) New compat alias for "int".
+	* testsuite/lib/gdb-test.exp: Port to Python 2+3 (print syntax)
+
+	Backport r210625 from trunk
+	2014-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py: Use Python3 raise syntax.
+
 2014-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline
