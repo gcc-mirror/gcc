@@ -1298,7 +1298,7 @@ package body Sem_Util is
          Expr      : Node_Id;
          Stmt      : Node_Id;
 
-      --  Start of processing for Build_Default_Init_Cond_Procedure
+      --  Start of processing for Build_Default_Init_Cond_Procedure_Body
 
       begin
          --  The procedure should be generated only for [sub]types subject to

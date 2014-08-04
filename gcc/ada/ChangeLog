@@ -1,3 +1,12 @@
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Explain why the bodies of
+	the default initial condition procedures are build here.
+	* sem_util.adb (Build_Default_Init_Cond_Procedure): Wrap the
+	analyzed argument of pragma Default_Initial_Condition in some
+	dummy code as GNATprove mode disables assertions, but still
+	needs to see the argument.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch6.adb, sem_util.adb: Minor reformatting.
