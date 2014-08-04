@@ -497,33 +497,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* The GNAT record where the component was defined.  */
 	Entity_Id gnat_record = Underlying_Type (Scope (gnat_entity));
 
-	/* If the entity is an inherited component (in the case of extended
-	   tagged record types), just return the original entity, which must
-	   be a FIELD_DECL.  Likewise for discriminants.  If the entity is a
-	   non-girder discriminant (in the case of derived untagged record
-	   types), return the stored discriminant it renames.  */
-	if (Present (Original_Record_Component (gnat_entity))
-	    && Original_Record_Component (gnat_entity) != gnat_entity)
+	/* If the entity is a discriminant of an extended tagged type used to
+	   rename a discriminant of the parent type, return the latter.  */
+	if (Is_Tagged_Type (gnat_record)
+	    && Present (Corresponding_Discriminant (gnat_entity)))
 	  {
 	    gnu_decl
-	      = gnat_to_gnu_entity (Original_Record_Component (gnat_entity),
+	      = gnat_to_gnu_entity (Corresponding_Discriminant (gnat_entity),
 				    gnu_expr, definition);
 	    saved = true;
 	    break;
 	  }
 
-	/* If this is a discriminant of an extended tagged type used to rename
-	   a discriminant of the parent type, return the latter.  */
-	else if (Present (Corresponding_Discriminant (gnat_entity)))
+	/* If the entity is an inherited component (in the case of extended
+	   tagged record types), just return the original entity, which must
+	   be a FIELD_DECL.  Likewise for discriminants.  If the entity is a
+	   non-girder discriminant (in the case of derived untagged record
+	   types), return the stored discriminant it renames.  */
+	else if (Present (Original_Record_Component (gnat_entity))
+		 && Original_Record_Component (gnat_entity) != gnat_entity)
 	  {
-	    /* If the derived type is untagged, then this is a non-girder
-	       discriminant and its Original_Record_Component must point to
-	       the stored discriminant it renames (i.e. we should have taken
-	       the previous branch).  */
-	    gcc_assert (Is_Tagged_Type (gnat_record));
-
 	    gnu_decl
-	      = gnat_to_gnu_entity (Corresponding_Discriminant (gnat_entity),
+	      = gnat_to_gnu_entity (Original_Record_Component (gnat_entity),
 				    gnu_expr, definition);
 	    saved = true;
 	    break;
@@ -2184,7 +2179,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	for (index = ndim - 1; index >= 0; index--)
 	  {
 	    tem = build_nonshared_array_type (tem, gnu_index_types[index]);
-	    if (Reverse_Storage_Order (gnat_entity))
+	    if (Reverse_Storage_Order (gnat_entity) && !GNAT_Mode)
 	      sorry ("non-default Scalar_Storage_Order");
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
@@ -2916,7 +2911,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type = make_node (tree_code_for_record_type (gnat_entity));
 	TYPE_NAME (gnu_type) = gnu_entity_name;
 	TYPE_PACKED (gnu_type) = (packed != 0) || has_rep;
-
 	if (Reverse_Storage_Order (gnat_entity) && !GNAT_Mode)
 	  sorry ("non-default Scalar_Storage_Order");
 	process_attributes (&gnu_type, &attr_list, true, gnat_entity);

@@ -1417,7 +1417,8 @@ Pragma_to_gnu (Node_Id gnat_node)
 		  gcc_unreachable ();
 	      }
 
-	    if (Present (Next (gnat_temp)))
+	    /* Deal with optional pattern (but ignore Reason => "...").  */
+	    if (Present (Next (gnat_temp)) && No (Chars (Next (gnat_temp))))
 	      {
 		/* pragma Warnings (On | Off, Name) is handled differently.  */
 		if (Nkind (Expression (Next (gnat_temp))) != N_String_Literal)
@@ -5767,7 +5768,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* For discriminant references in tagged types always substitute the
 	   corresponding discriminant as the actual selected component.  */
-	if (Is_Tagged_Type (Etype (gnat_prefix)))
+	if (Is_Tagged_Type (Underlying_Type (Etype (gnat_prefix))))
 	  while (Present (Corresponding_Discriminant (gnat_field)))
 	    gnat_field = Corresponding_Discriminant (gnat_field);
 
@@ -7910,12 +7911,14 @@ process_freeze_entity (Node_Id gnat_node)
 	{
 	  Entity_Id full_view = Full_View (gnat_entity);
 
+	  save_gnu_tree (full_view, NULL_TREE, false);
+
           if (IN (Ekind (full_view), Private_Kind)
 	      && Present (Underlying_Full_View (full_view)))
-	    full_view = Underlying_Full_View (full_view);
-
-	  if (present_gnu_tree (full_view))
-	    save_gnu_tree (full_view, NULL_TREE, false);
+	    {
+	      full_view = Underlying_Full_View (full_view);
+	      save_gnu_tree (full_view, NULL_TREE, false);
+	    }
 	}
 
       if (IN (kind, Type_Kind)
