@@ -1,3 +1,21 @@
+2014-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * gcc-interface/decl.c (gnat_to_gnu_entity) <E_Component>: Deal with
+        renaming discriminants in tagged types first.
+        * gcc-interface/trans.c (gnat_to_gnu) <N_Selected_Component>: Test
+        the underlying type of the prefix.
+        (Pragma_to_gnu, case Pragma_Warning): Ignore Reason => "..."
+        (process_freeze_entity): Reset the nodes of
+        all the view of a type, if any.
+
+2014-08-04  Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+        * gcc-interface/Makefile.in (x86 VxWorks): Add filter-out for vxworks7
+	and remove incorrect EH_MECHANISM macros.
+        Add sigtramp.h to EXTRA_LIBGNAT_SRCS when we add sigtramp-vxworks.o to
+	EXTRA_LIBGNAT_OBJS.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): Make sure prefix
