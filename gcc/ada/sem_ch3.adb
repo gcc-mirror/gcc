@@ -6903,19 +6903,15 @@ package body Sem_Ch3 is
             return;
          end if;
 
+         --  If this is not a completion, construct the implicit full view by
+         --  deriving from the full view of the parent type. But if this is a
+         --  completion, the derived private type being built is a full view
+         --  and the full derivation can only be its underlying full view.
+
+         Build_Full_Derivation;
          if not Is_Completion then
-            --  If this is not a completion, construct the implicit full view
-            --  by deriving from the full view of the parent type.
-
-            Build_Full_Derivation;
             Set_Full_View (Derived_Type, Full_Der);
-
          else
-            --  If this is a completion, the full view being built is itself
-            --  private. Construct an underlying full view by deriving from
-            --  the full view of the parent type.
-
-            Build_Full_Derivation;
             Set_Underlying_Full_View (Derived_Type, Full_Der);
          end if;
 
