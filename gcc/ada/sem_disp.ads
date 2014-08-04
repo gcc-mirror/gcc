@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,13 +97,22 @@ package Sem_Disp is
    type Subprogram_List is array (Nat range <>) of Entity_Id;
    --  Type returned by Inherited_Subprograms function
 
-   function Inherited_Subprograms (S : Entity_Id) return Subprogram_List;
+   function Inherited_Subprograms
+     (S               : Entity_Id;
+      No_Interfaces   : Boolean := False;
+      Interfaces_Only : Boolean := False) return Subprogram_List;
    --  Given the spec of a subprogram, this function gathers any inherited
-   --  subprograms from direct inheritance or via interfaces. The list is
-   --  a list of entity id's of the specs of inherited subprograms. Returns
-   --  a null array if passed an Empty spec id. Note that the returned array
+   --  subprograms from direct inheritance or via interfaces. The list is a
+   --  list of entity id's of the specs of inherited subprograms. Returns a
+   --  null array if passed an Empty spec id. Note that the returned array
    --  only includes subprograms and generic subprograms (and excludes any
-   --  other inherited entities, in particular enumeration literals).
+   --  other inherited entities, in particular enumeration literals). If
+   --  No_Interfaces is True, only return inherited subprograms not coming
+   --  from an interface. If Interfaces_Only is True, only return inherited
+   --  subprograms from interfaces. Otherwise, subprograms inherited directly
+   --  come first, starting with the closest ancestors, and are followed by
+   --  subprograms inherited from interfaces. At most one of No_Interfaces
+   --  and Interfaces_Only should be True.
 
    function Is_Dynamically_Tagged (N : Node_Id) return Boolean;
    --  Used to determine whether a call is dispatching, i.e. if is an

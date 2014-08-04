@@ -1,3 +1,14 @@
+2014-08-04  Claire Dross  <dross@adacore.com>
+
+	* exp_util.adb (Get_First_Parent_With_Ext_Axioms_For_Entity):
+	For an instance, look at the scope before the generic parent.
+
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* lib-writ.ads: Update comments.
+	* sem_disp.ads, sem_disp.adb (Inherited_Subprograms): Add
+	parameters to filter inherited subprograms.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Add section on use of address clause for memory
