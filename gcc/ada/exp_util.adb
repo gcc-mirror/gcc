@@ -3319,27 +3319,36 @@ package body Exp_Util is
         and then Has_Annotate_Pragma_For_External_Axiomatization (E)
       then
          return E;
-
-         --  E is a package instance, in which case it is axiomatized iff the
-         --  corresponding generic package is Axiomatized.
-
-      elsif Ekind (E) = E_Package
-        and then Present (Generic_Parent (Decl))
-      then
-         return
-           Get_First_Parent_With_Ext_Axioms_For_Entity (Generic_Parent (Decl));
-
-         --  Otherwise, look at E's scope instead if present
-
-      elsif Present (Scope (E)) then
-         return
-           Get_First_Parent_With_Ext_Axioms_For_Entity (Scope (E));
-
-         --  Else there is no such axiomatized package
-
-      else
-         return Empty;
       end if;
+
+      --  If E's scope is axiomatized, E is axiomatized.
+
+      declare
+         First_Ax_Parent_Scope : Entity_Id := Empty;
+
+      begin
+         if Present (Scope (E)) then
+            First_Ax_Parent_Scope :=
+              Get_First_Parent_With_Ext_Axioms_For_Entity (Scope (E));
+         end if;
+
+         if Present (First_Ax_Parent_Scope) then
+            return First_Ax_Parent_Scope;
+         end if;
+
+         --  otherwise, if E is a package instance, it is axiomatized if the
+         --  corresponding generic package is axiomatized.
+
+         if Ekind (E) = E_Package
+           and then Present (Generic_Parent (Decl))
+         then
+            return
+              Get_First_Parent_With_Ext_Axioms_For_Entity
+                (Generic_Parent (Decl));
+         else
+            return Empty;
+         end if;
+      end;
    end Get_First_Parent_With_Ext_Axioms_For_Entity;
 
    ---------------------
