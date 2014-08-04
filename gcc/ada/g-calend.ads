@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,7 +162,7 @@ private
    --  This is a dummy declaration that should be the largest possible timeval
    --  structure of all supported targets.
 
-   type timeval is array (1 .. 2) of Interfaces.C.long;
+   type timeval is array (1 .. 3) of Interfaces.C.long;
 
    function Julian_Day
      (Year  : Ada.Calendar.Year_Number;

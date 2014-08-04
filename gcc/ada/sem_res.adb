@@ -9058,6 +9058,16 @@ package body Sem_Res is
 
       Analyze_Dimension (N);
       Eval_Qualified_Expression (N);
+
+      --  If we still have a qualified expression after the static evaluation,
+      --  then apply a scalar range check if needed. The reason that we do this
+      --  after the Eval call is that otherwise, the application of the range
+      --  check may convert an illegal static expression and result in warning
+      --  rather than giving an error (e.g Integer'(Integer'Last + 1)).
+
+      if Nkind (N) = N_Qualified_Expression and then Is_Scalar_Type (Typ) then
+         Apply_Scalar_Range_Check (Expr, Typ);
+      end if;
    end Resolve_Qualified_Expression;
 
    ------------------------------
