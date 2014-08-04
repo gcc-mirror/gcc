@@ -35,22 +35,6 @@
 /*  struct timeval fields type are not normalized (they are generally       */
 /*  defined as int or long values).                                         */
 
-#if defined(VMS) || defined(__nucleus__)
-
-/* this is temporary code to avoid build failure under VMS */
-
-void
-__gnat_timeval_to_duration (void *t, long *sec, long *usec)
-{
-}
-
-void
-__gnat_duration_to_timeval (long sec, long usec, void *t)
-{
-}
-
-#else
-
 #if defined (__vxworks)
 #ifdef __RTP__
 #include <time.h>
@@ -89,21 +73,4 @@ __gnat_duration_to_timeval (long sec, long usec, struct timeval *t)
 
   t->tv_sec = sec;
   t->tv_usec = usec;
-}
-#endif
-
-#ifdef __alpha_vxworks
-#include "vxWorks.h"
-#elif defined (__vxworks)
-#include <types/vxTypesOld.h>
-#endif
-
-/* Return the value of the "time" C library function.  We always return
-   a long and do it this way to avoid problems with not knowing
-   what time_t is on the target.  */
-
-long
-gnat_time (void)
-{
-  return time (0);
 }

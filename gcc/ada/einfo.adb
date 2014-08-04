@@ -7264,6 +7264,29 @@ package body Einfo is
       end if;
    end Is_Standard_Character_Type;
 
+   -----------------------------
+   -- Is_Standard_String_Type --
+   -----------------------------
+
+   function Is_Standard_String_Type (Id : E) return B is
+   begin
+      if Is_Type (Id) then
+         declare
+            R : constant Entity_Id := Root_Type (Id);
+         begin
+            return
+              R = Standard_String
+                or else
+              R = Standard_Wide_String
+                or else
+              R = Standard_Wide_Wide_String;
+         end;
+
+      else
+         return False;
+      end if;
+   end Is_Standard_String_Type;
+
    --------------------
    -- Is_String_Type --
    --------------------

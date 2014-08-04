@@ -2940,8 +2940,13 @@ package Einfo is
 
 --    Is_Standard_Character_Type (synthesized)
 --       Applies to all entities, true for types and subtypes whose root type
---       is one of the standard character types (Character, Wide_Character,
+--       is one of the standard character types (Character, Wide_Character, or
 --       Wide_Wide_Character).
+
+--    Is_Standard_String_Type (synthesized)
+--       Applies to all entities, true for types and subtypes whose root
+--       type is one of the standard string types (String, Wide_String, or
+--       Wide_Wide_String).
 
 --    Is_Statically_Allocated (Flag28)
 --       Defined in all entities. This can only be set for exception,
@@ -5233,6 +5238,7 @@ package Einfo is
    --    Has_Foreign_Convention              (synth)
    --    Is_Dynamic_Scope                    (synth)
    --    Is_Standard_Character_Type          (synth)
+   --    Is_Standard_String_Type             (synth)
    --    Underlying_Type                     (synth)
    --    all classification attributes       (synth)
 
@@ -7002,6 +7008,7 @@ package Einfo is
    function Is_Protected_Interface              (Id : E) return B;
    function Is_Protected_Record_Type            (Id : E) return B;
    function Is_Standard_Character_Type          (Id : E) return B;
+   function Is_Standard_String_Type             (Id : E) return B;
    function Is_String_Type                      (Id : E) return B;
    function Is_Synchronized_Interface           (Id : E) return B;
    function Is_Task_Interface                   (Id : E) return B;

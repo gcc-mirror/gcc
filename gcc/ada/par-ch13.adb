@@ -154,6 +154,9 @@ package body Ch13 is
       Aspects : List_Id;
       OK      : Boolean;
 
+      Opt : Boolean;
+      --  True if current aspect takes an optional argument
+
    begin
       Aspects := Empty_List;
 
@@ -248,6 +251,9 @@ package body Ch13 is
 
          else
             Scan; -- past identifier
+            Opt := Aspect_Argument (A_Id) = Optional_Expression
+                      or else
+                   Aspect_Argument (A_Id) = Optional_Name;
 
             --  Check for 'Class present
 
@@ -285,23 +291,21 @@ package body Ch13 is
             --  definitions are not considered.
 
             if Token = Tok_Comma or else Token = Tok_Semicolon then
-               if Aspect_Argument (A_Id) /= Optional_Expression
-                 and then Aspect_Argument (A_Id) /= Optional_Name
-               then
+               if not Opt then
                   Error_Msg_Node_1 := Identifier (Aspect);
                   Error_Msg_AP ("aspect& requires an aspect definition");
                   OK := False;
                end if;
 
-            --  Check for a missing arrow when the aspect has a definition
+            --  Here we do not have a comma or a semicolon, we are done if we
+            --  do not have an arrow and the aspect does not need an argument
 
-            elsif not Semicolon and then Token /= Tok_Arrow then
-               if Aspect_Argument (A_Id) /= Optional_Expression
-                 and then Aspect_Argument (A_Id) /= Optional_Name
-               then
-                  T_Arrow;
-                  Resync_To_Semicolon;
-               end if;
+            elsif Opt and then Token /= Tok_Arrow then
+               null;
+
+            --  Here we have either an arrow, or an aspect that definitely
+            --  needs an aspect definition, and we will look for one even if
+            --  no arrow is preseant.
 
             --  Otherwise we have an aspect definition
 

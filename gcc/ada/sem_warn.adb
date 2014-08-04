@@ -3650,11 +3650,7 @@ package body Sem_Warn is
          if Is_Array_Type (Typ)
            and then not Is_Constrained (Typ)
            and then Number_Dimensions (Typ) = 1
-           and then (Root_Type (Typ) = Standard_String
-                       or else
-                     Root_Type (Typ) = Standard_Wide_String
-                       or else
-                     Root_Type (Typ) = Standard_Wide_Wide_String)
+           and then Is_Standard_String_Type (Typ)
            and then not Has_Warnings_Off (Typ)
          then
             LB := Type_Low_Bound (Etype (First_Index (Typ)));

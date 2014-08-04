@@ -1,3 +1,34 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Standard_String_Type): New function.
+	* exp_ch3.adb (Build_Array_Init_Proc): Use
+	Is_Standard_String_Type.
+	(Expand_Freeze_Array_Type): ditto.
+	(Get_Simple_Init_Val): ditto.
+	(Needs_Simple_Initialization): ditto.
+	* sem_eval.adb (Eval_String_Literal): Use Is_Standard_String_Type.
+	* sem_warn.adb (Is_Suspicious_Type): Use Is_Standard_String_Type.
+
+2014-08-04  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_try_lock): Use _tcscpy and _tcscat instead of
+	_stprintf which insert garbage into the wfull_path buffer.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* cal.c: Remove old VMS/nucleus code. Remove obsolete vxworks
+	code.
+	* fe.h: Minor reformatting.
+
+2014-08-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* cstreams.c: (_LARGEFILE_SOURCE): Guard definition.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch13.adb (Get_Aspect_Specifications): Improve error
+	recovery, fixing a -gnatQ bomb.
+
 2014-08-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): In GNATprove mode,
