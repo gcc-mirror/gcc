@@ -1,3 +1,14 @@
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): If the original
+	node of a parent node in the tree is a short-circuit operation,
+	the node is potentially unevaluated.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Set Do_Range_Check on
+	conversion from a real type to an integer type.
+
 2014-08-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_aggr.adb, sem_ch3.adb, sem_ch5.adb, sem_ch7.adb, sem_ch9.adb,
