@@ -165,11 +165,6 @@ package body Exp_Ch3 is
    --  needed after an initialization. Typ is the component type, and Proc_Id
    --  the initialization procedure for the enclosing composite type.
 
-   procedure Expand_Tagged_Root (T : Entity_Id);
-   --  Add a field _Tag at the beginning of the record. This field carries
-   --  the value of the access to the Dispatch table. This procedure is only
-   --  called on root type, the _Tag field being inherited by the descendants.
-
    procedure Expand_Freeze_Array_Type (N : Node_Id);
    --  Freeze an array type. Deals with building the initialization procedure,
    --  creating the packed array type for a packed array and also with the
@@ -192,6 +187,11 @@ package body Exp_Ch3 is
    --  needed. The argument N is the N_Freeze_Entity node. This processing
    --  applies only to E_Record_Type entities, not to class wide types,
    --  record subtypes, or private types.
+
+   procedure Expand_Tagged_Root (T : Entity_Id);
+   --  Add a field _Tag at the beginning of the record. This field carries
+   --  the value of the access to the Dispatch table. This procedure is only
+   --  called on root type, the _Tag field being inherited by the descendants.
 
    procedure Freeze_Stream_Operations (N : Node_Id; Typ : Entity_Id);
    --  Treat user-defined stream operations as renaming_as_body if the
@@ -632,19 +632,20 @@ package body Exp_Ch3 is
 
             return New_List (
               Make_Implicit_Loop_Statement (Nod,
-                Identifier => Empty,
+                Identifier       => Empty,
                 Iteration_Scheme =>
                   Make_Iteration_Scheme (Loc,
                     Loop_Parameter_Specification =>
                       Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Index,
+                        Defining_Identifier         => Index,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix => Make_Identifier (Loc, Name_uInit),
+                            Prefix          =>
+                              Make_Identifier (Loc, Name_uInit),
                             Attribute_Name  => Name_Range,
                             Expressions     => New_List (
                               Make_Integer_Literal (Loc, N))))),
-                Statements =>  Init_One_Dimension (N + 1)));
+                Statements       => Init_One_Dimension (N + 1)));
          end if;
       end Init_One_Dimension;
 
@@ -4664,7 +4665,6 @@ package body Exp_Ch3 is
    ------------------------------------
 
    procedure Expand_N_Full_Type_Declaration (N : Node_Id) is
-
       procedure Build_Master (Ptr_Typ : Entity_Id);
       --  Create the master associated with Ptr_Typ
 
@@ -5313,6 +5313,7 @@ package body Exp_Ch3 is
 
       --  Local variables
 
+      Next_N  : constant Node_Id := Next (N);
       Id_Ref  : Node_Id;
       New_Ref : Node_Id;
 
@@ -5563,7 +5564,7 @@ package body Exp_Ch3 is
                   --  by
                   --     Tmp : T := Obj;
                   --     type Ityp is not null access I'Class;
-                  --     CW  : I'Class renames Ityp(Tmp.I_Tag'Address).all;
+                  --     CW  : I'Class renames Ityp (Tmp.I_Tag'Address).all;
 
                   if Comes_From_Source (Expr_N)
                     and then Nkind (Expr_N) = N_Identifier
@@ -5672,7 +5673,8 @@ package body Exp_Ch3 is
                     Make_Object_Renaming_Declaration (Loc,
                       Defining_Identifier => Make_Temporary (Loc, 'D'),
                       Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
-                      Name => Convert_Tag_To_Interface (Typ, Tag_Comp)));
+                      Name                =>
+                        Convert_Tag_To_Interface (Typ, Tag_Comp)));
 
                   --  If the original entity comes from source, then mark the
                   --  new entity as needing debug information, even though it's
@@ -6023,6 +6025,37 @@ package body Exp_Ch3 is
             Insert_Action_After (Init_After, Level_Decl);
 
             Set_Extra_Accessibility (Def_Id, Level);
+         end;
+      end if;
+
+      --  At this point the object is fully initialized by either invoking the
+      --  related type init proc, routine [Deep_]Initialize or performing in-
+      --  place assingments for an array object. If the related type is subject
+      --  to pragma Default_Initial_Condition, add a runtime check to verify
+      --  the assumption of the pragma. Generate:
+
+      --    <Base_Typ>Default_Init_Cond (<Base_Typ> (Def_Id));
+
+      --  Note that the check is generated for source objects only
+
+      if Comes_From_Source (Def_Id)
+        and then (Has_Default_Init_Cond (Base_Typ)
+                    or else Has_Inherited_Default_Init_Cond (Base_Typ))
+      then
+         declare
+            DIC_Call : constant Node_Id :=
+                         Build_Default_Init_Cond_Call (Loc, Def_Id, Base_Typ);
+         begin
+            if Present (Next_N) then
+               Insert_Before_And_Analyze (Next_N, DIC_Call);
+
+            --  The object declaration is the last node in a declarative or a
+            --  statement list.
+
+            else
+               Append_To (List_Containing (N), DIC_Call);
+               Analyze (DIC_Call);
+            end if;
          end;
       end if;
 
@@ -7357,12 +7390,25 @@ package body Exp_Ch3 is
             end loop;
          end;
 
+         --  If there are RACWs designating this type, make stubs now
+
          if RACW_Seen then
-
-            --  If there are RACWs designating this type, make stubs now
-
             Remote_Types_Tagged_Full_View_Encountered (Def_Id);
          end if;
+      end if;
+
+      --  If the type is subject to pragma Default_Initial_Condition, generate
+      --  the body of the procedure which verifies the assertion of the pragma
+      --  at runtime.
+
+      if Has_Default_Init_Cond (Def_Id) then
+         Build_Default_Init_Cond_Procedure_Body (Def_Id);
+
+      --  A derived type inherits the default initial condition procedure from
+      --  its parent type.
+
+      elsif Has_Inherited_Default_Init_Cond (Def_Id) then
+         Inherit_Default_Init_Cond_Procedure (Def_Id);
       end if;
 
       --  Freeze processing for record types

@@ -3191,9 +3191,9 @@ package body Sem_Attr is
       -- Default_Bit_Order --
       -----------------------
 
-      when Attribute_Default_Bit_Order => Default_Bit_Order :
-      declare
+      when Attribute_Default_Bit_Order => Default_Bit_Order : declare
          Target_Default_Bit_Order : System.Bit_Order;
+
       begin
          Check_Standard_Prefix;
 
@@ -3217,6 +3217,7 @@ package body Sem_Attr is
 
       when Attribute_Default_Scalar_Storage_Order => Default_SSO : declare
          RE_Default_SSO : RE_Id;
+
       begin
          Check_Standard_Prefix;
 
@@ -3227,10 +3228,13 @@ package body Sem_Attr is
                else
                   RE_Default_SSO := RE_Low_Order_First;
                end if;
+
             when 'H' =>
                RE_Default_SSO := RE_High_Order_First;
+
             when 'L' =>
                RE_Default_SSO := RE_Low_Order_First;
+
             when others =>
                raise Program_Error;
          end case;

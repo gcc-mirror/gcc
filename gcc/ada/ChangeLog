@@ -1,3 +1,78 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* prj-strt.adb, prj-strt.ads, sem_attr.adb: Minor reformatting.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb Add an entry in table Canonical_Aspect for
+	Default_Initial_Condition.
+	* aspects.ads Add an entry in tables Aspect_Id, Aspect_Argument,
+	Aspect_Names and Aspect_Delay for Default_Initial_Condition.
+	* einfo.adb Flag3 is now Has_Default_Init_Cond. Flag132
+	is now Is_Default_Init_Cond_ Procedure. Flag133 is now
+	Has_Inherited_Default_Init_Cond.
+	(Default_Init_Cond_Procedure): New routine.
+	(Has_Default_Init_Cond): New routine.
+	(Has_Inherited_Default_Init_Cond): New routine.
+	(Is_Default_Init_Cond_Procedure): New routine.
+	(Set_Default_Init_Cond_Procedure): New routine.
+	(Set_Has_Default_Init_Cond): New routine.
+	(Set_Has_Inherited_Default_Init_Cond): New routine.
+	(Set_Is_Default_Init_Cond_Procedure): New routine.
+	(Write_Entity_Flags): Output all the new flags.
+	* einfo.ads New attributes Default_Init_Cond_Procedure,
+	Has_Inherited_Default_Init_Cond and Is_Default_Init_Cond_Procedure
+	along with usage in nodes.
+	(Default_Init_Cond_Procedure): New routine.
+	(Has_Default_Init_Cond): New routine and pragma Inline.
+	(Has_Inherited_Default_Init_Cond): New routine and
+	pragma Inline.
+	(Is_Default_Init_Cond_Procedure): New routine and
+	pragma Inline.
+	(Set_Default_Init_Cond_Procedure): New routine.
+	(Set_Has_Default_Init_Cond): New routine and pragma Inline.
+	(Set_Has_Inherited_Default_Init_Cond): New routine and pragma Inline.
+	(Set_Is_Default_Init_Cond_Procedure): New routine and pragma Inline.
+	* exp_ch3.adb (Expand_N_Object_Declaration): New constant
+	Next_N. Generate a call to the default initial condition procedure
+	if the object's type is subject to the pragma.	(Freeze_Type):
+	Generate the body of the default initial condition procedure or
+	inherit the spec from a parent type.
+	* exp_ch7.adb Add with and use clause for Exp_Prag.
+	(Expand_Pragma_Initial_Condition): Removed.
+	* exp_prag.ads, exp_prag.adb (Expand_Pragma_Initial_Condition): New
+	routine.
+	* par-prag.adb (Prag): Pragma Default_Initial_Condition does
+	not need special treatment by the parser.
+	* sem_ch3.adb (Build_Derived_Record_Type): Propagate the
+	attributes related to pragma Default_Initial_Condition to the
+	derived type.
+	(Process_Full_View): Propagate the attributes
+	related to pragma Default_Initial_Condition to the full view.
+	* sem_ch7.adb (Analyze_Package_Specification): Build the
+	declaration of the default initial condition procedure for all
+	types that qualify or inherit the one from the parent type.
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Add processing for aspect Default_Initial_Condition.
+	(Check_Aspect_At_Freeze_Point): Aspect
+	Default_Initial_Condition does not require delayed analysis.
+	(Replace_Type_References_Generic): Moved to spec.
+	* sem_ch13.ads (Replace_Type_References_Generic): Moved from body.
+	* sem_prag.adb Add an entry in table Sif_Glags for
+	Default_Initial_Condition.
+	(Analyze_Pragma): Pragma
+	Default_Initial_Condition is now part of assertion
+	policy. Add processing for pragma Default_Initial_Condition.
+	(Is_Valid_Assertion_Kind): Pragma Default_Initial_Condition is
+	now recognized as a proper assertion policy.
+	* sem_util.ads, sem_util.adb (Build_Default_Init_Cond_Call): New
+	routine.
+	(Build_Default_Init_Cond_Procedure_Body): New routine.
+	(Build_Default_Init_Cond_Procedure_Declaration): New routine.
+	(Inherit_Default_Init_Cond_Procedure): New routine.
+	* snames.ads-tmpl Add new predefined name and pragma id for
+	Default_Initial_Condition.
+
 2014-08-04  Vincent Celier  <celier@adacore.com>
 
 	* prj-dect.adb (Parse_Case_Construction): It is no longer

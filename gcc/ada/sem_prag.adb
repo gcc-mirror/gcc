@@ -2363,7 +2363,7 @@ package body Sem_Prag is
       --  final place yet. A direct analysis may generate side effects and this
       --  is not desired at this point.
 
-      Preanalyze_And_Resolve (Expr, Standard_Boolean);
+      Preanalyze_Assert_Expression (Expr, Standard_Boolean);
    end Analyze_Initial_Condition_In_Decl_Part;
 
    --------------------------------------
@@ -11016,17 +11016,18 @@ package body Sem_Prag is
          --                        Type_Invariant       |
          --                        Type_Invariant'Class
 
-         --  ID_ASSERTION_KIND ::= Assert_And_Cut       |
-         --                        Assume               |
-         --                        Contract_Cases       |
-         --                        Debug                |
-         --                        Initial_Condition    |
-         --                        Loop_Invariant       |
-         --                        Loop_Variant         |
-         --                        Postcondition        |
-         --                        Precondition         |
-         --                        Predicate            |
-         --                        Refined_Post         |
+         --  ID_ASSERTION_KIND ::= Assert_And_Cut            |
+         --                        Assume                    |
+         --                        Contract_Cases            |
+         --                        Debug                     |
+         --                        Default_Initial_Condition |
+         --                        Initial_Condition         |
+         --                        Loop_Invariant            |
+         --                        Loop_Variant              |
+         --                        Postcondition             |
+         --                        Precondition              |
+         --                        Predicate                 |
+         --                        Refined_Post              |
          --                        Statement_Assertions
 
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
@@ -12755,100 +12756,66 @@ package body Sem_Prag is
                     Expression => Get_Pragma_Arg (Arg1)))));
             Analyze (N);
 
-         -------------
-         -- Depends --
-         -------------
+         --------------------------------------
+         -- Pragma_Default_Initial_Condition --
+         --------------------------------------
 
-         --  pragma Depends (DEPENDENCY_RELATION);
+         --  pragma Pragma_Default_Initial_Condition
+         --           [ (null | boolean_EXPRESSION) ];
 
-         --  DEPENDENCY_RELATION ::=
-         --    null
-         --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
-
-         --  DEPENDENCY_CLAUSE ::=
-         --    OUTPUT_LIST =>[+] INPUT_LIST
-         --  | NULL_DEPENDENCY_CLAUSE
-
-         --  NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
-
-         --  OUTPUT_LIST ::= OUTPUT | (OUTPUT {, OUTPUT})
-
-         --  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
-
-         --  OUTPUT ::= NAME | FUNCTION_RESULT
-         --  INPUT  ::= NAME
-
-         --  where FUNCTION_RESULT is a function Result attribute_reference
-
-         when Pragma_Depends => Depends : declare
-            Subp_Decl : Node_Id;
+         when Pragma_Default_Initial_Condition => Default_Init_Cond : declare
+            Discard : Boolean;
+            Stmt    : Node_Id;
+            Typ     : Entity_Id;
 
          begin
             GNAT_Pragma;
-            Check_Arg_Count (1);
-            Ensure_Aggregate_Form (Arg1);
+            Check_At_Most_N_Arguments (1);
 
-            --  Ensure the proper placement of the pragma. Depends must be
-            --  associated with a subprogram declaration or a body that acts
-            --  as a spec.
+            Stmt := Prev (N);
+            while Present (Stmt) loop
 
-            Subp_Decl :=
-              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+               --  Skip prior pragmas, but check for duplicates
 
-            if Nkind (Subp_Decl) = N_Subprogram_Declaration then
-               null;
+               if Nkind (Stmt) = N_Pragma then
+                  if Pragma_Name (Stmt) = Pname then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc   := Sloc (Stmt);
+                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+                  end if;
 
-            --  Body acts as spec
+               --  Skip internally generated code
 
-            elsif Nkind (Subp_Decl) = N_Subprogram_Body
-              and then No (Corresponding_Spec (Subp_Decl))
-            then
-               null;
+               elsif not Comes_From_Source (Stmt) then
+                  null;
 
-            --  Body stub acts as spec
+               --  The associated private type [extension] has been found, stop
+               --  the search.
 
-            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
-              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
-            then
-               null;
+               elsif Nkind_In (Stmt, N_Private_Extension_Declaration,
+                                     N_Private_Type_Declaration)
+               then
+                  Typ := Defining_Entity (Stmt);
+                  exit;
 
-            else
-               Pragma_Misplaced;
-               return;
-            end if;
+               --  The pragma does not apply to a legal construct, issue an
+               --  error and stop the analysis.
 
-            --  When the pragma appears on a subprogram body, perform the full
-            --  analysis now.
+               else
+                  Pragma_Misplaced;
+                  return;
+               end if;
 
-            if Nkind (Subp_Decl) = N_Subprogram_Body then
-               Analyze_Depends_In_Decl_Part (N);
+               Stmt := Prev (Stmt);
+            end loop;
 
-            --  When Depends applies to a subprogram compilation unit, the
-            --  corresponding pragma is placed after the unit's declaration
-            --  node and needs to be analyzed immediately.
+            Set_Has_Default_Init_Cond (Typ);
+            Set_Has_Inherited_Default_Init_Cond (Typ, False);
 
-            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration
-              and then Nkind (Parent (Subp_Decl)) = N_Compilation_Unit
-            then
-               Analyze_Depends_In_Decl_Part (N);
-            end if;
+            --  Chain the pragma on the rep item chain for further processing
 
-            --  Chain the pragma on the contract for further processing
-
-            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
-         end Depends;
-
-         ---------------------
-         -- Detect_Blocking --
-         ---------------------
-
-         --  pragma Detect_Blocking;
-
-         when Pragma_Detect_Blocking =>
-            Ada_2005_Pragma;
-            Check_Arg_Count (0);
-            Check_Valid_Configuration_Pragma;
-            Detect_Blocking := True;
+            Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
+         end Default_Init_Cond;
 
          ----------------------------------
          -- Default_Scalar_Storage_Order --
@@ -12945,6 +12912,101 @@ package body Sem_Prag is
             --  appropriate attributes of the access type.
 
             Default_Pool := Expression (Arg1);
+
+         -------------
+         -- Depends --
+         -------------
+
+         --  pragma Depends (DEPENDENCY_RELATION);
+
+         --  DEPENDENCY_RELATION ::=
+         --    null
+         --  | DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE}
+
+         --  DEPENDENCY_CLAUSE ::=
+         --    OUTPUT_LIST =>[+] INPUT_LIST
+         --  | NULL_DEPENDENCY_CLAUSE
+
+         --  NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+         --  OUTPUT_LIST ::= OUTPUT | (OUTPUT {, OUTPUT})
+
+         --  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
+
+         --  OUTPUT ::= NAME | FUNCTION_RESULT
+         --  INPUT  ::= NAME
+
+         --  where FUNCTION_RESULT is a function Result attribute_reference
+
+         when Pragma_Depends => Depends : declare
+            Subp_Decl : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Ensure_Aggregate_Form (Arg1);
+
+            --  Ensure the proper placement of the pragma. Depends must be
+            --  associated with a subprogram declaration or a body that acts
+            --  as a spec.
+
+            Subp_Decl :=
+              Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
+
+            if Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
+            then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            else
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            --  When the pragma appears on a subprogram body, perform the full
+            --  analysis now.
+
+            if Nkind (Subp_Decl) = N_Subprogram_Body then
+               Analyze_Depends_In_Decl_Part (N);
+
+            --  When Depends applies to a subprogram compilation unit, the
+            --  corresponding pragma is placed after the unit's declaration
+            --  node and needs to be analyzed immediately.
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration
+              and then Nkind (Parent (Subp_Decl)) = N_Compilation_Unit
+            then
+               Analyze_Depends_In_Decl_Part (N);
+            end if;
+
+            --  Chain the pragma on the contract for further processing
+
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+         end Depends;
+
+         ---------------------
+         -- Detect_Blocking --
+         ---------------------
+
+         --  pragma Detect_Blocking;
+
+         when Pragma_Detect_Blocking =>
+            Ada_2005_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Detect_Blocking := True;
 
          ------------------------------------
          -- Disable_Atomic_Synchronization --
@@ -15208,7 +15270,6 @@ package body Sem_Prag is
          when Pragma_Invariant => Invariant : declare
             Type_Id : Node_Id;
             Typ     : Entity_Id;
-            PDecl   : Node_Id;
             Discard : Boolean;
 
          begin
@@ -15265,10 +15326,8 @@ package body Sem_Prag is
             --  procedure declaration, so that calls to it can be generated
             --  before the body is built (e.g. within an expression function).
 
-            PDecl := Build_Invariant_Procedure_Declaration (Typ);
-
-            Insert_After (N, PDecl);
-            Analyze (PDecl);
+            Insert_After_And_Analyze
+              (N, Build_Invariant_Procedure_Declaration (Typ));
 
             if Class_Present (N) then
                Set_Has_Inheritable_Invariants (Typ);
@@ -24719,6 +24778,7 @@ package body Sem_Prag is
       Pragma_Debug                          => -1,
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                => -1,
+      Pragma_Default_Initial_Condition      => -1,
       Pragma_Default_Scalar_Storage_Order   =>  0,
       Pragma_Default_Storage_Pool           => -1,
       Pragma_Depends                        => -1,
@@ -25105,34 +25165,35 @@ package body Sem_Prag is
          when
             --  RM defined
 
-            Name_Assert               |
-            Name_Static_Predicate     |
-            Name_Dynamic_Predicate    |
-            Name_Pre                  |
-            Name_uPre                 |
-            Name_Post                 |
-            Name_uPost                |
-            Name_Type_Invariant       |
-            Name_uType_Invariant      |
+            Name_Assert                    |
+            Name_Static_Predicate          |
+            Name_Dynamic_Predicate         |
+            Name_Pre                       |
+            Name_uPre                      |
+            Name_Post                      |
+            Name_uPost                     |
+            Name_Type_Invariant            |
+            Name_uType_Invariant           |
 
             --  Impl defined
 
-            Name_Assert_And_Cut       |
-            Name_Assume               |
-            Name_Contract_Cases       |
-            Name_Debug                |
-            Name_Initial_Condition    |
-            Name_Invariant            |
-            Name_uInvariant           |
-            Name_Loop_Invariant       |
-            Name_Loop_Variant         |
-            Name_Postcondition        |
-            Name_Precondition         |
-            Name_Predicate            |
-            Name_Refined_Post         |
-            Name_Statement_Assertions => return True;
+            Name_Assert_And_Cut            |
+            Name_Assume                    |
+            Name_Contract_Cases            |
+            Name_Debug                     |
+            Name_Default_Initial_Condition |
+            Name_Initial_Condition         |
+            Name_Invariant                 |
+            Name_uInvariant                |
+            Name_Loop_Invariant            |
+            Name_Loop_Variant              |
+            Name_Postcondition             |
+            Name_Precondition              |
+            Name_Predicate                 |
+            Name_Refined_Post              |
+            Name_Statement_Assertions      => return True;
 
-         when others                  => return False;
+         when others                       => return False;
       end case;
    end Is_Valid_Assertion_Kind;
 

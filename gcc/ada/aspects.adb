@@ -509,6 +509,7 @@ package body Aspects is
     Aspect_Convention                   => Aspect_Convention,
     Aspect_CPU                          => Aspect_CPU,
     Aspect_Default_Component_Value      => Aspect_Default_Component_Value,
+    Aspect_Default_Initial_Condition    => Aspect_Default_Initial_Condition,
     Aspect_Default_Iterator             => Aspect_Default_Iterator,
     Aspect_Default_Value                => Aspect_Default_Value,
     Aspect_Depends                      => Aspect_Depends,

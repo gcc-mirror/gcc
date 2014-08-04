@@ -48,6 +48,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Attr; use Sem_Attr;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
@@ -1228,6 +1229,189 @@ package body Sem_Util is
       Mark_Rewrite_Insertion (Decl);
       return Decl;
    end Build_Component_Subtype;
+
+   ----------------------------------
+   -- Build_Default_Init_Cond_Call --
+   ----------------------------------
+
+   function Build_Default_Init_Cond_Call
+     (Loc    : Source_Ptr;
+      Obj_Id : Entity_Id;
+      Typ    : Entity_Id) return Node_Id
+   is
+      Proc_Id    : constant Entity_Id := Default_Init_Cond_Procedure (Typ);
+      Formal_Typ : constant Entity_Id := Etype (First_Formal (Proc_Id));
+
+   begin
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name                   => New_Occurrence_Of (Proc_Id, Loc),
+          Parameter_Associations => New_List (
+            Make_Type_Conversion (Loc,
+              Subtype_Mark => New_Occurrence_Of (Formal_Typ, Loc),
+              Expression   => New_Occurrence_Of (Obj_Id, Loc))));
+   end Build_Default_Init_Cond_Call;
+
+   --------------------------------------------
+   -- Build_Default_Init_Cond_Procedure_Body --
+   --------------------------------------------
+
+   procedure Build_Default_Init_Cond_Procedure_Body (Typ : Entity_Id) is
+      Param_Id : Entity_Id;
+      --  The entity of the formal parameter of the default initial condition
+      --  procedure.
+
+      procedure Replace_Type_Reference (N : Node_Id);
+      --  Replace a single reference to type Typ with a reference to Param_Id
+
+      ----------------------------
+      -- Replace_Type_Reference --
+      ----------------------------
+
+      procedure Replace_Type_Reference (N : Node_Id) is
+      begin
+         Rewrite (N, New_Occurrence_Of (Param_Id, Sloc (N)));
+      end Replace_Type_Reference;
+
+      procedure Replace_Type_References is
+        new Replace_Type_References_Generic (Replace_Type_Reference);
+
+      --  Local variables
+
+      Loc       : constant Source_Ptr := Sloc (Typ);
+      Prag      : constant Node_Id    :=
+                    Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+      Proc_Id   : constant Entity_Id  := Default_Init_Cond_Procedure (Typ);
+      Spec_Decl : constant Node_Id    := Unit_Declaration_Node (Proc_Id);
+      Body_Decl : Node_Id;
+      Expr      : Node_Id;
+      Stmt      : Node_Id;
+
+   --  Start of processing for Build_Default_Init_Cond_Procedure
+
+   begin
+      --  The procedure should be generated only for types subject to pragma
+      --  Default_Initial_Condition. Types that inherit the pragma do not get
+      --  this specialized procedure.
+
+      pragma Assert (Has_Default_Init_Cond (Typ));
+      pragma Assert (Present (Prag));
+      pragma Assert (Present (Proc_Id));
+
+      --  Nothing to do if the body was already built
+
+      if Present (Corresponding_Body (Spec_Decl)) then
+         return;
+      end if;
+
+      Param_Id := First_Formal (Proc_Id);
+
+      --  The pragma has an argument. Note that the argument is analyzed after
+      --  all references to the current instance of the type are replaced.
+
+      if Present (Pragma_Argument_Associations (Prag)) then
+         Expr := Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+
+         if Nkind (Expr) = N_Null then
+            Stmt := Make_Null_Statement (Loc);
+
+         --  Preserve the original argument of the pragma by replicating it.
+         --  Replace all references to the current instance of the type with
+         --  references to the formal parameter.
+
+         else
+            Expr := New_Copy_Tree (Expr);
+            Replace_Type_References (Expr, Typ);
+
+            --  Generate:
+            --    pragma Check (Default_Initial_Condition, <Expr>);
+
+            Stmt :=
+              Make_Pragma (Loc,
+                Pragma_Identifier            =>
+                  Make_Identifier (Loc, Name_Check),
+
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression =>
+                      Make_Identifier (Loc, Name_Default_Initial_Condition)),
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Expr)));
+         end if;
+
+      --  Otherwise the pragma appears without an argument
+
+      else
+         Stmt := Make_Null_Statement (Loc);
+      end if;
+
+      --  Generate:
+      --    procedure <Typ>Default_Init_Cond (I : <Typ>) is
+      --    begin
+      --       <Stmt>;
+      --    end <Typ>Default_Init_Cond;
+
+      Body_Decl :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Copy_Separate_Tree (Specification (Spec_Decl)),
+          Declarations               => Empty_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (Stmt)));
+
+      --  Link the spec and body of the default initial condition procedure
+      --  to prevent the generation of a duplicate body in case there is an
+      --  attempt to freeze the related type again.
+
+      Set_Corresponding_Body (Spec_Decl, Defining_Entity (Body_Decl));
+      Set_Corresponding_Spec (Body_Decl, Proc_Id);
+
+      Append_Freeze_Action (Typ, Body_Decl);
+   end Build_Default_Init_Cond_Procedure_Body;
+
+   ---------------------------------------------------
+   -- Build_Default_Init_Cond_Procedure_Declaration --
+   ---------------------------------------------------
+
+   procedure Build_Default_Init_Cond_Procedure_Declaration (Typ : Entity_Id) is
+      Loc     : constant Source_Ptr := Sloc (Typ);
+      Prag    : constant Node_Id    :=
+                  Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+      Proc_Id : Entity_Id;
+
+   begin
+      --  The procedure should be generated only for types subject to pragma
+      --  Default_Initial_Condition. Types that inherit the pragma do not get
+      --  this specialized procedure.
+
+      pragma Assert (Has_Default_Init_Cond (Typ));
+      pragma Assert (Present (Prag));
+
+      Proc_Id  :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Typ), "Default_Init_Cond"));
+
+      --  Associate the default initial condition procedure with the private
+      --  type.
+
+      Set_Ekind (Proc_Id, E_Procedure);
+      Set_Is_Default_Init_Cond_Procedure (Proc_Id);
+      Set_Default_Init_Cond_Procedure (Typ, Proc_Id);
+
+      --  Generate:
+      --    procedure <Typ>Default_Init_Cond (Inn : <Typ>);
+
+      Insert_After_And_Analyze (Prag,
+        Make_Subprogram_Declaration (Loc,
+          Specification =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name       => Proc_Id,
+              Parameter_Specifications => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier => Make_Temporary (Loc, 'I'),
+                  Parameter_Type      => New_Occurrence_Of (Typ, Loc))))));
+   end Build_Default_Init_Cond_Procedure_Declaration;
 
    ---------------------------
    -- Build_Default_Subtype --
@@ -9065,6 +9249,23 @@ package body Sem_Util is
 
       return Empty;
    end Incomplete_Or_Private_View;
+
+   -----------------------------------------
+   -- Inherit_Default_Init_Cond_Procedure --
+   -----------------------------------------
+
+   procedure Inherit_Default_Init_Cond_Procedure (Typ : Entity_Id) is
+      Par_Typ : constant Entity_Id := Etype (Typ);
+
+   begin
+      --  A derived type inherits the default initial condition procedure of
+      --  its parent type.
+
+      if No (Default_Init_Cond_Procedure (Typ)) then
+         Set_Default_Init_Cond_Procedure
+           (Typ, Default_Init_Cond_Procedure (Par_Typ));
+      end if;
+   end Inherit_Default_Init_Cond_Procedure;
 
    ---------------------------------
    -- Insert_Explicit_Dereference --

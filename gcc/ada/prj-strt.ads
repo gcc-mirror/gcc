@@ -50,21 +50,20 @@ private package Prj.Strt is
    procedure Start_New_Case_Construction
      (In_Tree     : Project_Node_Tree_Ref;
       String_Type : Project_Node_Id);
-   --  This procedure is called at the beginning of a case construction The
+   --  This procedure is called at the beginning of a case construction. The
    --  parameter String_Type is the node for the string type of the case label
    --  variable. The different literal strings of the string type are stored
-   --  into a table to be checked against the case labels of the case
-   --  construction.
+   --  into a table to be checked against the labels of the case construction.
 
    procedure End_Case_Construction
-     (Check_All_Labels   : Boolean;
-      Case_Location      : Source_Ptr;
-      Flags              : Processing_Flags;
-      String_Type        : Boolean);
-   --  This procedure is called at the end of a case construction to remove the
-   --  case labels and to restore the previous state. In particular, in the
+     (Check_All_Labels : Boolean;
+      Case_Location    : Source_Ptr;
+      Flags            : Processing_Flags;
+      String_Type      : Boolean);
+   --  This procedure is called at the end of a case construction to remove
+   --  the case labels and to restore the previous state. In particular, in the
    --  case of nested case constructions, the case labels of the enclosing case
-   --  construction are restored. When When_Others is False and we are not in
+   --  construction are restored. If When_Others is False and we are not in
    --  quiet output, a warning is emitted for each value of the case variable
    --  string type that has not been specified.
 
