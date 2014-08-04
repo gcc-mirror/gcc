@@ -1124,10 +1124,11 @@ package body Exp_Ch4 is
                --  Inherit the allocation-related attributes from the original
                --  access type.
 
-               Set_Finalization_Master (Def_Id, Finalization_Master (PtrT));
+               Set_Finalization_Master
+                 (Def_Id, Finalization_Master (PtrT));
 
-               Set_Associated_Storage_Pool (Def_Id,
-                 Associated_Storage_Pool (PtrT));
+               Set_Associated_Storage_Pool
+                 (Def_Id, Associated_Storage_Pool (PtrT));
 
                --  Declare the object using the previous type declaration
 
@@ -4318,26 +4319,29 @@ package body Exp_Ch4 is
 
          --  Anonymous access-to-controlled types allocate on the global pool.
          --  Do not set this attribute on .NET/JVM since those targets do not
-         --  support pools.
+         --  support pools. Note that this is a "root type only" attribute.
 
          if No (Associated_Storage_Pool (PtrT)) and then VM_Target = No_VM then
             if Present (Rel_Typ) then
                Set_Associated_Storage_Pool
-                 (PtrT, Associated_Storage_Pool (Rel_Typ));
+                 (Root_Type (PtrT), Associated_Storage_Pool (Rel_Typ));
             else
                Set_Associated_Storage_Pool
-                 (PtrT, RTE (RE_Global_Pool_Object));
+                 (Root_Type (PtrT), RTE (RE_Global_Pool_Object));
             end if;
          end if;
 
          --  The finalization master must be inserted and analyzed as part of
          --  the current semantic unit. Note that the master is updated when
-         --  analysis changes current units.
+         --  analysis changes current units. Note that this is a "root type
+         --  only" attribute.
 
          if Present (Rel_Typ) then
-            Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
+            Set_Finalization_Master
+              (Root_Type (PtrT), Finalization_Master (Rel_Typ));
          else
-            Set_Finalization_Master (PtrT, Current_Anonymous_Master);
+            Set_Finalization_Master
+              (Root_Type (PtrT), Current_Anonymous_Master);
          end if;
       end if;
 

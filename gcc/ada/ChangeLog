@@ -1,3 +1,41 @@
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): In GNATprove mode,
+	do not generate two Itypes with the same name for an array
+	definition.
+	* sinfo.ads: Expand doc on GNATprove mode.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Set the finalization
+	master and storage pool attributes on the root type of an
+	anonymous access type.
+	* exp_ch4.adb (Expand_N_Allocator): Set the finalization master
+	and storage pool attributes on the root type of an anonymous
+	access type.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting.
+	* tb-alvms.c, tb-alvxw.c, tb-ivms.c: Removed.
+	* tracebak.c: Remove use of above files.
+	* gcc-interface/Makefile.in: Update dependencies.
+
+2014-08-04  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* gcc-interface/utils.c (gnat_set_type_context): Also set the
+	context for parallel types' TYPE_STUB_DECL.  Do not change
+	anything if the context is already set for them.
+	(gnat_pushdecl): Update the comment for calls to
+	gnat_set_type_context to mention parallel types.
+	(add_parallel_type): When adding a context-less parallel type to
+	a type that has a context, propagate the context from the latter
+	type to the former.
+	(process_deferred_decl_context): Call gnat_set_type_context
+	rather than manually setting the type context.
+	(build_unc_object_type): Call gnat_set_type_context on the
+	template type.
+
 2014-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Case_Statement): If a choice is a
