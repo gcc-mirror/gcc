@@ -25808,6 +25808,9 @@ ix86_macro_fusion_pair_p (rtx condgen, rtx condjmp)
   rtx compare_set = NULL_RTX, test_if, cond;
   rtx alu_set = NULL_RTX, addr = NULL_RTX;
 
+  if (!any_condjump_p (condjmp))
+    return false;
+
   if (get_attr_type (condgen) != TYPE_TEST
       && get_attr_type (condgen) != TYPE_ICMP
       && get_attr_type (condgen) != TYPE_INCDEC
