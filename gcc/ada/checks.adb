@@ -391,11 +391,13 @@ package body Checks is
    begin
       --  Nothing to do for unconstrained floating-point types (the test for
       --  Etype (N) being present seems necessary in some cases, should be
-      --  tracked down, but for now just ignore the check in this case ???)
+      --  tracked down, but for now just ignore the check in this case ???),
+      --  except if Check_Float_Overflow is set.
 
       if Present (Etype (N))
         and then Is_Floating_Point_Type (Etype (N))
         and then not Is_Constrained (Etype (N))
+        and then not Check_Float_Overflow
       then
          return;
       end if;
@@ -9212,6 +9214,7 @@ package body Checks is
       Wnode       : Node_Id  := Warn_Node;
       Ret_Result  : Check_Result := (Empty, Empty);
       Num_Checks  : Integer := 0;
+      Reason      : RT_Exception_Code := CE_Range_Check_Failed;
 
       procedure Add_Check (N : Node_Id);
       --  Adds the action given to Ret_Result if N is non-Empty
@@ -9833,6 +9836,16 @@ package body Checks is
          else
             if not In_Subrange_Of (S_Typ, T_Typ) then
                Cond := Discrete_Expr_Cond (Ck_Node, T_Typ);
+
+            --  Special case CodePeer_Mode and apparently redundant checks on
+            --  floating point types: these are used as overflow checks, see
+            --  Exp_Util.Check_Float_Op_Overflow.
+
+            elsif CodePeer_Mode and then Check_Float_Overflow
+              and then Is_Floating_Point_Type (S_Typ)
+            then
+               Cond := Discrete_Expr_Cond (Ck_Node, T_Typ);
+               Reason := CE_Overflow_Check_Failed;
             end if;
          end if;
       end if;
@@ -10027,7 +10040,7 @@ package body Checks is
          Add_Check
            (Make_Raise_Constraint_Error (Loc,
              Condition => Cond,
-             Reason    => CE_Range_Check_Failed));
+             Reason    => Reason));
       end if;
 
       return Ret_Result;

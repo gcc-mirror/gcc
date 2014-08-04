@@ -1,5 +1,16 @@
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch12.adb: Minor reformatting.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_util.adb, checks.adb (Check_Float_Op_Overflow): Add special
+	expansion in CodePeer_Mode.
+	(Selected_Range_Checks): Add handling of overflow checks in
+	CodePeer_Mode.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
 	* exp_attr.adb (Expand_N_Attribute_Reference, case Pred):
 	Remove special test for Float'First, no longer required.
 	(Expand_N_Attribute_Reference, case Succ): Remove special test

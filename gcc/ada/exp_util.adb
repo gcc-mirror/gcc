@@ -1647,6 +1647,28 @@ package body Exp_Util is
          return;
       end if;
 
+      --  Special expansion for CodePeer_Mode: we reuse the Apply_Range_Check
+      --  machinery instead of expanding a 'Valid attribute, since CodePeer
+      --  does not know how to handle expansion of 'Valid on floating point.
+      --  ??? Consider using the same expansion in normal mode. This should
+      --  work assuming division checks are also enabled (to prevent generation
+      --  of NaNs), except for e.g. unchecked conversions which might also
+      --  generate NaNs.
+
+      if CodePeer_Mode then
+         declare
+            Typ : constant Entity_Id := Etype (N);
+         begin
+            --  Prevent recursion
+
+            Set_Analyzed (N);
+
+            Apply_Range_Check (N, Typ);
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end;
+      end if;
+
       --  Otherwise we replace the expression by
 
       --  do Tnn : constant ftype := expression;

@@ -1682,6 +1682,7 @@ package body Sem_Ch12 is
 
                         if Present (Match) then
                            if Nkind (Match) = N_Operator_Symbol then
+
                               --  If the name is a default, find its visible
                               --  entity at the point of instantiation.
 
