@@ -1,3 +1,19 @@
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Late_Freeze_Subprogram): Following AI05-151,
+	a function can return a limited view of a type declared
+	elsewhere. In that case the function cannot be frozen at the end
+	of its enclosing package. If its first use is in a different unit,
+	it cannot be frozen there, but if the call is legal the full view
+	of the return type is available and the subprogram can now be
+	frozen. However the freeze node cannot be inserted at the point
+	of call, but rather must go in the package holding the function,
+	so that the backend can process it in the proper context.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, sem_ch5.adb, einfo.ads: Minor reformatting.
