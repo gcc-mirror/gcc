@@ -1159,8 +1159,7 @@ package body Exp_Prag is
               Expression => New_Copy_Tree (Internal)),
             Make_Pragma_Argument_Association (Eloc,
               Expression =>
-                Make_String_Literal (Sloc => Ploc,
-                  Strval => "common_object")),
+                Make_String_Literal (Sloc => Ploc, Strval => "common_object")),
             Make_Pragma_Argument_Association (Ploc,
               Expression => New_Copy_Tree (Psect)))));
    end Expand_Pragma_Common_Object;

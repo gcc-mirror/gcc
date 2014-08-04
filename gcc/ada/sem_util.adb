@@ -1392,8 +1392,7 @@ package body Sem_Util is
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Typ), "Default_Init_Cond"));
 
-      --  Associate the default initial condition procedure with the private
-      --  type.
+      --  Associate default initial condition procedure with the private type
 
       Set_Ekind (Proc_Id, E_Procedure);
       Set_Is_Default_Init_Cond_Procedure (Proc_Id);

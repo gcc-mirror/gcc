@@ -6039,8 +6039,9 @@ package body Exp_Ch3 is
       --  Note that the check is generated for source objects only
 
       if Comes_From_Source (Def_Id)
-        and then (Has_Default_Init_Cond (Base_Typ)
-                    or else Has_Inherited_Default_Init_Cond (Base_Typ))
+        and then (Has_Default_Init_Cond           (Base_Typ)
+                    or else
+                  Has_Inherited_Default_Init_Cond (Base_Typ))
       then
          declare
             DIC_Call : constant Node_Id :=

@@ -12781,7 +12781,7 @@ package body Sem_Prag is
                   if Pragma_Name (Stmt) = Pname then
                      Error_Msg_Name_1 := Pname;
                      Error_Msg_Sloc   := Sloc (Stmt);
-                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+                     Error_Msg_N ("pragma % duplicates pragma declared#", N);
                   end if;
 
                --  Skip internally generated code
