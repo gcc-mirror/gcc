@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -308,17 +308,16 @@ package Ada.Containers.Multiway_Trees is
       Process : not null access procedure (Position : Cursor));
 
 private
-
    --  A node of this multiway tree comprises an element and a list of children
    --  (that are themselves trees). The root node is distinguished because it
    --  contains only children: it does not have an element itself.
-   --
-   --  This design feature puts two design goals in tension:
+
+   --  This design feature puts two design goals in tension with one another:
    --   (1) treat the root node the same as any other node
    --   (2) not declare any objects of type Element_Type unnecessarily
-   --
-   --  To satisfy (1), we could simply declare the Root node of the tree using
-   --  the normal Tree_Node_Type, but that would mean that (2) is not
+
+   --  To satisfy (1), we could simply declare the Root node of the tree
+   --  using the normal Tree_Node_Type, but that would mean that (2) is not
    --  satisfied. To resolve the tension (in favor of (2)), we declare the
    --  component Root as having a different node type, without an Element
    --  component (thus satisfying goal (2)) but otherwise identical to a normal
@@ -327,11 +326,11 @@ private
    --  normal, non-root node (thus satisfying goal (1)). We make an explicit
    --  check for Root when there is any attempt to manipulate the Element
    --  component of the node (a check required by the RM anyway).
-   --
+
    --  In order to be explicit about node (and pointer) representation, we
-   --  specify that the respective node types have convention C, to ensure that
-   --  the layout of the components of the node records is the same, thus
-   --  guaranteeing that (unchecked) conversions between access types
+   --  specify that the respective node types have convention C, to ensure
+   --  that the layout of the components of the node records is the same,
+   --  thus guaranteeing that (unchecked) conversions between access types
    --  designating each kind of node type is a meaningful conversion.
 
    type Tree_Node_Type;
@@ -365,6 +364,11 @@ private
       Children : Children_Type;
    end record;
    pragma Convention (C, Root_Node_Type);
+
+   for Root_Node_Type'Alignment use Standard'Maximum_Alignment;
+   --  The alignment has to be large enough to allow Root_Node to Tree_Node
+   --  access value conversions, and Tree_Node_Type's alignment may be bumped
+   --  up by the Element component.
 
    use Ada.Finalization;
 

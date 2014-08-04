@@ -1,3 +1,31 @@
+2014-08-04  Olivier Hainque  <hainque@adacore.com>
+
+	* a-comutr.ads: Set Root_Node_Type'Alignment to
+	Standard'Maximum_Alignment, so that it is at least as large as
+	the max default for Tree_Node_Type'Alignment.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Remove the generation and inheritance
+	of the default initial condition procedure [body].
+	* sem_ch3.adb (Analyze_Declarations): Create the bodies of
+	all default initial condition procedures at the end of private
+	declaration analysis.
+	* sem_util.adb (Build_Default_Init_Cond_Procedure_Bodies): New
+	routine.
+	(Build_Default_Init_Cond_Procedure_Body): Merged in the
+	processing of routine Build_Default_Init_Cond_Procedure_Bodies.
+	* sem_util.ads (Build_Default_Init_Cond_Procedure_Bodies):
+	New routine.
+	(Build_Default_Init_Cond_Procedure_Body): Removed.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elab.adb (Check_Elab_Call): Do not check a call to a
+	postcondtion.
+	* exp_ch6.adb (Expand_Call): Clarify handling of inserted
+	postcondition call.
+
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Ensure that an
