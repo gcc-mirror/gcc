@@ -109,6 +109,7 @@ package Aspects is
       Aspect_Linker_Section,                -- GNAT
       Aspect_Machine_Radix,
       Aspect_Object_Size,                   -- GNAT
+      Aspect_Obsolescent,                   -- GNAT
       Aspect_Output,
       Aspect_Part_Of,                       -- GNAT
       Aspect_Post,
@@ -333,6 +334,7 @@ package Aspects is
       Aspect_Linker_Section            => Expression,
       Aspect_Machine_Radix             => Expression,
       Aspect_Object_Size               => Expression,
+      Aspect_Obsolescent               => Optional_Expression,
       Aspect_Output                    => Name,
       Aspect_Part_Of                   => Expression,
       Aspect_Post                      => Expression,
@@ -433,6 +435,7 @@ package Aspects is
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
       Aspect_No_Return                    => Name_No_Return,
       Aspect_Object_Size                  => Name_Object_Size,
+      Aspect_Obsolescent                  => Name_Obsolescent,
       Aspect_Output                       => Name_Output,
       Aspect_Pack                         => Name_Pack,
       Aspect_Part_Of                      => Name_Part_Of,
@@ -688,6 +691,7 @@ package Aspects is
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
       Aspect_No_Elaboration_Code_All      => Never_Delay,
+      Aspect_Obsolescent                  => Never_Delay,
       Aspect_Part_Of                      => Never_Delay,
       Aspect_Refined_Depends              => Never_Delay,
       Aspect_Refined_Global               => Never_Delay,

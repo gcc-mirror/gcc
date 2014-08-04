@@ -128,6 +128,11 @@ package body Sem_Res is
    --  for restriction No_Direct_Boolean_Operators. This procedure also handles
    --  the style check for Style_Check_Boolean_And_Or.
 
+   function Is_Atomic_Ref_With_Address (N : Node_Id) return Boolean;
+   --  N is either an indexed component or a selected component. This function
+   --  returns true if the prefix refers to an object that has an address
+   --  clause (the case in which we may want to issue a warning).
+
    function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
    --  Determine whether E is an access type declared by an access declaration,
    --  and not an (anonymous) allocator type.
@@ -1130,6 +1135,29 @@ package body Sem_Res is
          Set_Etype (N, Any_String);
       end if;
    end Check_Parameterless_Call;
+
+   --------------------------------
+   -- Is_Atomic_Ref_With_Address --
+   --------------------------------
+
+   function Is_Atomic_Ref_With_Address (N : Node_Id) return Boolean is
+      Pref : constant Node_Id := Prefix (N);
+
+   begin
+      if not Is_Entity_Name (Pref) then
+         return False;
+
+      else
+         declare
+            Pent : constant Entity_Id := Entity (Pref);
+            Ptyp : constant Entity_Id := Etype (Pent);
+         begin
+            return not Is_Access_Type (Ptyp)
+              and then (Is_Atomic (Ptyp) or else Is_Atomic (Pent))
+              and then Present (Address_Clause (Pent));
+         end;
+      end if;
+   end Is_Atomic_Ref_With_Address;
 
    -----------------------------
    -- Is_Definite_Access_Type --
@@ -7973,19 +8001,20 @@ package body Sem_Res is
          Eval_Indexed_Component (N);
       end if;
 
-      --  If the array type is atomic, and is packed, and we are in a left side
-      --  context, then this is worth a warning, since we have a situation
-      --  where the access to the component may cause extra read/writes of
-      --  the atomic array object, which could be considered unexpected.
+      --  If the array type is atomic, and the component is not atomic, then
+      --  this is worth a warning, since we have a situation where the access
+      --  to the component may cause extra read/writes of the atomic array
+      --  object, or partial word accesses, which could be unexpected.
 
       if Nkind (N) = N_Indexed_Component
-        and then (Is_Atomic (Array_Type)
-                   or else (Is_Entity_Name (Prefix (N))
-                             and then Is_Atomic (Entity (Prefix (N)))))
-        and then Is_Bit_Packed_Array (Array_Type)
-        and then Is_LHS (N) = Yes
+        and then Is_Atomic_Ref_With_Address (N)
+        and then not (Has_Atomic_Components (Array_Type)
+                       or else (Is_Entity_Name (Prefix (N))
+                                 and then Has_Atomic_Components
+                                            (Entity (Prefix (N)))))
+        and then not Is_Atomic (Component_Type (Array_Type))
       then
-         Error_Msg_N ("??assignment to component of packed atomic array",
+         Error_Msg_N ("??access to non-atomic component of atomic array",
                       Prefix (N));
          Error_Msg_N ("??\may cause unexpected accesses to atomic object",
                       Prefix (N));
@@ -9293,7 +9322,7 @@ package body Sem_Res is
    procedure Resolve_Selected_Component (N : Node_Id; Typ : Entity_Id) is
       Comp  : Entity_Id;
       Comp1 : Entity_Id        := Empty; -- prevent junk warning
-      P     : constant Node_Id := Prefix  (N);
+      P     : constant Node_Id := Prefix (N);
       S     : constant Node_Id := Selector_Name (N);
       T     : Entity_Id        := Etype (P);
       I     : Interp_Index;
@@ -9470,22 +9499,22 @@ package body Sem_Res is
       --  Note: No Eval processing is required, because the prefix is of a
       --  record type, or protected type, and neither can possibly be static.
 
-      --  If the array type is atomic, and is packed, and we are in a left side
-      --  context, then this is worth a warning, since we have a situation
-      --  where the access to the component may cause extra read/writes of the
-      --  atomic array object, which could be considered unexpected.
+      --  If the record type is atomic, and the component is non-atomic, then
+      --  this is worth a warning, since we have a situation where the access
+      --  to the component may cause extra read/writes of the atomic array
+      --  object, or partial word accesses, both of which may be unexpected.
 
       if Nkind (N) = N_Selected_Component
-        and then (Is_Atomic (T)
-                   or else (Is_Entity_Name (Prefix (N))
-                             and then Is_Atomic (Entity (Prefix (N)))))
-        and then Is_Packed (T)
-        and then Is_LHS (N) = Yes
+        and then Is_Atomic_Ref_With_Address (N)
+        and then not Is_Atomic (Entity (S))
+        and then not Is_Atomic (Etype (Entity (S)))
       then
          Error_Msg_N
-           ("??assignment to component of packed atomic record", Prefix (N));
+           ("??access to non-atomic component of atomic record",
+            Prefix (N));
          Error_Msg_N
-           ("\??may cause unexpected accesses to atomic object", Prefix (N));
+           ("\??may cause unexpected accesses to atomic object",
+            Prefix (N));
       end if;
 
       Analyze_Dimension (N);

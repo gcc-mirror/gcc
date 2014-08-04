@@ -1,3 +1,15 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add entries for aspect Obsolescent.
+	* gnat_rm.texi: Add documentation for aspect Obsolescent.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Implement aspect
+	Obsolescent.
+	(Check_Aspect_At_Freeze_Point): Add dummy entry for pragma Obsolescent.
+	* s-osprim-mingw.adb: Minor reformatting.
+	* sem_res.adb (Is_Atomic_Ref_With_Address): New function
+	(Resolve_Indexed_Component): Rework warnings for non-atomic access
+	(Resolve_Selected_Component): Add warnings for non-atomic access.
+
 2014-08-04  Doug Rupp  <rupp@adacore.com>
 
 	* g-calend.adb (timeval_to_duration, duration_to_timeval): Change sec
