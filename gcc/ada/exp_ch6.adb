@@ -5546,7 +5546,7 @@ package body Exp_Ch6 is
 
       if Nkind (Parent (N)) /= N_Package_Specification then
          if Nkind (Parent (N)) = N_Compilation_Unit then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("subprogram declaration is not a library item", N);
 
          elsif Present (Next (N))
@@ -5560,7 +5560,7 @@ package body Exp_Ch6 is
 
             null;
          else
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("subprogram declaration is not allowed here", N);
          end if;
       end if;

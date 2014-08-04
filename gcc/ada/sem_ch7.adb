@@ -1093,7 +1093,7 @@ package body Sem_Ch7 is
 
                   else
                      Error_Msg_Sloc := Sloc (Previous);
-                     Check_SPARK_Restriction
+                     Check_SPARK_05_Restriction
                        ("at most one tagged type or type extension allowed",
                         "\\ previous declaration#",
                         Decl);

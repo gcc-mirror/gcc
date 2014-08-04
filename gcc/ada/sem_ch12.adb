@@ -3189,7 +3189,7 @@ package body Sem_Ch12 is
       Decl        : Node_Id;
 
    begin
-      Check_SPARK_Restriction ("generic is not allowed", N);
+      Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  We introduce a renaming of the enclosing package, to have a usable
       --  entity as the prefix of an expanded name for a local entity of the
@@ -3322,7 +3322,7 @@ package body Sem_Ch12 is
       Typ         : Entity_Id;
 
    begin
-      Check_SPARK_Restriction ("generic is not allowed", N);
+      Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Create copy of generic unit, and save for instantiation. If the unit
       --  is a child unit, do not copy the specifications for the parent, which
@@ -3618,7 +3618,7 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_Package_Instantiation
 
    begin
-      Check_SPARK_Restriction ("generic is not allowed", N);
+      Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Very first thing: check for Text_IO sp[ecial unit in case we are
       --  instantiating one of the children of [[Wide_]Wide_]Text_IO.
@@ -4865,7 +4865,7 @@ package body Sem_Ch12 is
    --  Start of processing for Analyze_Subprogram_Instantiation
 
    begin
-      Check_SPARK_Restriction ("generic is not allowed", N);
+      Check_SPARK_05_Restriction ("generic is not allowed", N);
 
       --  Very first thing: check for special Text_IO unit in case we are
       --  instantiating one of the children of [[Wide_]Wide_]Text_IO. Of course

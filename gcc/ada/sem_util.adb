@@ -2557,7 +2557,7 @@ package body Sem_Util is
                      end if;
                   else
                      Error_Msg_Sloc := Body_Sloc;
-                     Check_SPARK_Restriction
+                     Check_SPARK_05_Restriction
                        ("decl cannot appear after body#", Decl);
                   end if;
                end if;
@@ -5426,7 +5426,7 @@ package body Sem_Util is
               and then Comes_From_Source (C)
             then
                Error_Msg_Sloc := Sloc (C);
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("redeclaration of identifier &#", Def_Id);
             end if;
          end;
@@ -11459,11 +11459,11 @@ package body Sem_Util is
       end if;
    end Is_Selector_Name;
 
-   ----------------------------------
-   -- Is_SPARK_Initialization_Expr --
-   ----------------------------------
+   -------------------------------------
+   -- Is_SPARK_05_Initialization_Expr --
+   -------------------------------------
 
-   function Is_SPARK_Initialization_Expr (N : Node_Id) return Boolean is
+   function Is_SPARK_05_Initialization_Expr (N : Node_Id) return Boolean is
       Is_Ok     : Boolean;
       Expr      : Node_Id;
       Comp_Assn : Node_Id;
@@ -11507,27 +11507,28 @@ package body Sem_Util is
 
          when N_Qualified_Expression |
               N_Type_Conversion      =>
-            Is_Ok := Is_SPARK_Initialization_Expr (Expression (Orig_N));
+            Is_Ok := Is_SPARK_05_Initialization_Expr (Expression (Orig_N));
 
          when N_Unary_Op =>
-            Is_Ok := Is_SPARK_Initialization_Expr (Right_Opnd (Orig_N));
+            Is_Ok := Is_SPARK_05_Initialization_Expr (Right_Opnd (Orig_N));
 
          when N_Binary_Op       |
               N_Short_Circuit   |
               N_Membership_Test =>
-            Is_Ok := Is_SPARK_Initialization_Expr (Left_Opnd (Orig_N))
+            Is_Ok := Is_SPARK_05_Initialization_Expr (Left_Opnd (Orig_N))
                        and then
-                         Is_SPARK_Initialization_Expr (Right_Opnd (Orig_N));
+                         Is_SPARK_05_Initialization_Expr (Right_Opnd (Orig_N));
 
          when N_Aggregate           |
               N_Extension_Aggregate =>
             if Nkind (Orig_N) = N_Extension_Aggregate then
-               Is_Ok := Is_SPARK_Initialization_Expr (Ancestor_Part (Orig_N));
+               Is_Ok :=
+                 Is_SPARK_05_Initialization_Expr (Ancestor_Part (Orig_N));
             end if;
 
             Expr := First (Expressions (Orig_N));
             while Present (Expr) loop
-               if not Is_SPARK_Initialization_Expr (Expr) then
+               if not Is_SPARK_05_Initialization_Expr (Expr) then
                   Is_Ok := False;
                   goto Done;
                end if;
@@ -11539,7 +11540,7 @@ package body Sem_Util is
             while Present (Comp_Assn) loop
                Expr := Expression (Comp_Assn);
                if Present (Expr)  --  needed for box association
-                 and then not Is_SPARK_Initialization_Expr (Expr)
+                 and then not Is_SPARK_05_Initialization_Expr (Expr)
                then
                   Is_Ok := False;
                   goto Done;
@@ -11550,12 +11551,12 @@ package body Sem_Util is
 
          when N_Attribute_Reference =>
             if Nkind (Prefix (Orig_N)) in N_Subexpr then
-               Is_Ok := Is_SPARK_Initialization_Expr (Prefix (Orig_N));
+               Is_Ok := Is_SPARK_05_Initialization_Expr (Prefix (Orig_N));
             end if;
 
             Expr := First (Expressions (Orig_N));
             while Present (Expr) loop
-               if not Is_SPARK_Initialization_Expr (Expr) then
+               if not Is_SPARK_05_Initialization_Expr (Expr) then
                   Is_Ok := False;
                   goto Done;
                end if;
@@ -11575,13 +11576,13 @@ package body Sem_Util is
 
    <<Done>>
       return Is_Ok;
-   end Is_SPARK_Initialization_Expr;
+   end Is_SPARK_05_Initialization_Expr;
 
-   -------------------------------
-   -- Is_SPARK_Object_Reference --
-   -------------------------------
+   ----------------------------------
+   -- Is_SPARK_05_Object_Reference --
+   ----------------------------------
 
-   function Is_SPARK_Object_Reference (N : Node_Id) return Boolean is
+   function Is_SPARK_05_Object_Reference (N : Node_Id) return Boolean is
    begin
       if Is_Entity_Name (N) then
          return Present (Entity (N))
@@ -11592,13 +11593,13 @@ package body Sem_Util is
       else
          case Nkind (N) is
             when N_Selected_Component =>
-               return Is_SPARK_Object_Reference (Prefix (N));
+               return Is_SPARK_05_Object_Reference (Prefix (N));
 
             when others =>
                return False;
          end case;
       end if;
-   end Is_SPARK_Object_Reference;
+   end Is_SPARK_05_Object_Reference;
 
    ------------------
    -- Is_Statement --
@@ -15116,7 +15117,8 @@ package body Sem_Util is
            and then (Typ = 't' or else Ekind (Ent) = E_Package)
          then
             Error_Msg_Node_1 := Endl;
-            Check_SPARK_Restriction ("`END &` required", Endl, Force => True);
+            Check_SPARK_05_Restriction
+              ("`END &` required", Endl, Force => True);
          end if;
       end if;
 

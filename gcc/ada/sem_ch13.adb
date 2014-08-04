@@ -1417,7 +1417,7 @@ package body Sem_Ch13 is
                   if No (A) then
                      Error_Msg_N
                        ("missing Import/Export for Link/External name",
-                         Aspect);
+                        Aspect);
                   end if;
                end;
             end Analyze_Aspect_External_Or_Link_Name;
@@ -1927,12 +1927,12 @@ package body Sem_Ch13 is
 
                      --  Assemble the full argument list
 
-                     if Present (Link_Arg) then
-                        Append_To (Args, Link_Arg);
-                     end if;
-
                      if Present (Extern_Arg) then
                         Append_To (Args, Extern_Arg);
+                     end if;
+
+                     if Present (Link_Arg) then
+                        Append_To (Args, Link_Arg);
                      end if;
 
                      Make_Aitem_Pragma

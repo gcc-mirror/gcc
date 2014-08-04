@@ -213,7 +213,7 @@ package body Sem_Ch6 is
       Scop       : constant Entity_Id := Current_Scope;
 
    begin
-      Check_SPARK_Restriction ("abstract subprogram is not allowed", N);
+      Check_SPARK_05_Restriction ("abstract subprogram is not allowed", N);
 
       Generate_Definition (Designator);
       Set_Contract (Designator, Make_Contract (Sloc (Designator)));
@@ -882,12 +882,12 @@ package body Sem_Ch6 is
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
                or else Present (Next (N)))
          then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("RETURN should be the last statement in function", N);
          end if;
 
       else
-         Check_SPARK_Restriction ("extended RETURN is not allowed", N);
+         Check_SPARK_05_Restriction ("extended RETURN is not allowed", N);
 
          --  Analyze parts specific to extended_return_statement:
 
@@ -1861,7 +1861,7 @@ package body Sem_Ch6 is
 
       if Result_Definition (N) /= Error then
          if Nkind (Result_Definition (N)) = N_Access_Definition then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("access result is not allowed", Result_Definition (N));
 
             --  Ada 2005 (AI-254): Handle anonymous access to subprograms
@@ -1895,7 +1895,7 @@ package body Sem_Ch6 is
             --  Unconstrained array as result is not allowed in SPARK
 
             if Is_Array_Type (Typ) and then not Is_Constrained (Typ) then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("returning an unconstrained array is not allowed",
                   Result_Definition (N));
             end if;
@@ -2674,7 +2674,7 @@ package body Sem_Ch6 is
                  and then not Nkind_In (Stat, N_Simple_Return_Statement,
                                               N_Extended_Return_Statement)
                then
-                  Check_SPARK_Restriction
+                  Check_SPARK_05_Restriction
                     ("last statement in function should be RETURN", Stat);
                end if;
             end;
@@ -2692,7 +2692,7 @@ package body Sem_Ch6 is
             --  borrow the Check_Returns procedure here ???
 
             if Return_Present (Id) then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("procedure should not have RETURN", N);
             end if;
          end if;
@@ -4144,7 +4144,7 @@ package body Sem_Ch6 is
       if Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
       then
-         Check_SPARK_Restriction ("null procedure is not allowed", N);
+         Check_SPARK_05_Restriction ("null procedure is not allowed", N);
 
          if Is_Protected_Type (Current_Scope) then
             Error_Msg_N ("protected operation cannot be a null procedure", N);
@@ -4351,7 +4351,8 @@ package body Sem_Ch6 is
       if Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
         and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
       then
-         Check_SPARK_Restriction ("user-defined operator is not allowed", N);
+         Check_SPARK_05_Restriction
+           ("user-defined operator is not allowed", N);
       end if;
 
       --  Proceed with analysis. Do not emit a cross-reference entry if the
@@ -9771,7 +9772,7 @@ package body Sem_Ch6 is
 
          if Nkind (S) /= N_Defining_Operator_Symbol then
             Error_Msg_Sloc := Sloc (Homonym (S));
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("overloading not allowed with entity#", S);
          end if;
 
@@ -10081,7 +10082,7 @@ package body Sem_Ch6 is
          Default := Expression (Param_Spec);
 
          if Present (Default) then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("default expression is not allowed", Default);
 
             if Out_Present (Param_Spec) then

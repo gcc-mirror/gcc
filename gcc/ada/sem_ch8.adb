@@ -552,7 +552,7 @@ package body Sem_Ch8 is
       Nam : constant Node_Id := Name (N);
 
    begin
-      Check_SPARK_Restriction ("exception renaming is not allowed", N);
+      Check_SPARK_05_Restriction ("exception renaming is not allowed", N);
 
       Enter_Name (Id);
       Analyze (Nam);
@@ -658,7 +658,7 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      Check_SPARK_Restriction ("generic renaming is not allowed", N);
+      Check_SPARK_05_Restriction ("generic renaming is not allowed", N);
 
       Generate_Definition (New_P);
 
@@ -836,7 +836,7 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      Check_SPARK_Restriction ("object renaming is not allowed", N);
+      Check_SPARK_05_Restriction ("object renaming is not allowed", N);
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
       Enter_Name (Id);
@@ -3430,7 +3430,7 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Use_Package
 
    begin
-      Check_SPARK_Restriction ("use clause is not allowed", N);
+      Check_SPARK_05_Restriction ("use clause is not allowed", N);
 
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
@@ -6392,12 +6392,13 @@ package body Sem_Ch8 is
 
       if Restriction_Check_Required (SPARK_05) then
          if Nkind (Selector_Name (N)) = N_Character_Literal then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("character literal cannot be prefixed", N);
          elsif Nkind (Selector_Name (N)) = N_Operator_Symbol
            and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
          then
-            Check_SPARK_Restriction ("operator symbol cannot be prefixed", N);
+            Check_SPARK_05_Restriction
+              ("operator symbol cannot be prefixed", N);
          end if;
       end if;
 
@@ -6765,10 +6766,10 @@ package body Sem_Ch8 is
            and then Restriction_Check_Required (SPARK_05)
          then
             if Is_Subprogram (P_Name) then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("prefix of expanded name cannot be a subprogram", P);
             elsif Ekind (P_Name) = E_Loop then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("prefix of expanded name cannot be a loop statement", P);
             end if;
          end if;
@@ -6927,7 +6928,7 @@ package body Sem_Ch8 is
 
          elsif Attribute_Name (N) = Name_Base then
             Error_Msg_Name_1 := Name_Base;
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("attribute% is only allowed as prefix of another attribute", N);
 
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
