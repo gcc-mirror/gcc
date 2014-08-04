@@ -1,3 +1,43 @@
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_util.adb (Check_Float_Op_Overflow): No-op in codepeer
+	mode for now, to revert to previous behavior.
+	* checks.adb: Revert previous change, no longer needed.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Don't set
+	Check_Float_Overflow if Machine_Oveflows_On_Target is True.
+	* sem_prag.adb (Analyze_Pragma, case Check_Float_Overflow): Don't
+	set Check_Float_Overflow if Machine_Oveflows_On_Target is True.
+	* switch-c.adb (Scan_Front_End_Switches): Don't set
+	Check_Float_Overflow if Machine_Oveflows_On_Target is True.
+
+2014-08-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Add new default indications for
+	attributes Object_Dir, Exec_Dir, Source_Dirs and Target.
+	(Attribute_Default_Of): New function (Initialize): Set the
+	default for those attributes that have one specified.
+	* prj-attr.ads (Attribute_Data): New component Default.
+	* prj-proc.adb (Expression): Take into account the new defaults
+	for attributes Object_Dir, Exec_Dir and Source_Dirs.
+	* prj-strt.adb (Attribute_Reference): Set the default for
+	the attribute.
+	* prj-tree.ads, prj-tree.adb (Default_Of): New function.
+	(Set_Default_Of): New procedure.
+	* prj.adb (The_Dot_String): New global Name_Id variable,
+	initialized in procedure Initialize.
+	(Dot_String): New function
+	(Initialize): Initialize The_Dot_String.
+	(Reset): Create the string list Shared.Dot_String_List.
+	* prj.ads (Attribute_Default_Value): New enumeration type.
+	(Project_Qualifier): Change enumeration value Dry to Abstract_Project.
+	(Dot_String): New function.
+	(Shared_Project_Tree_Data): New string list component Dot_String_List.
+	* projects.texi: Document new defaults for attribute Object_Dir,
+	Exec_Dir and Source_Dirs.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch12.adb: Minor reformatting.

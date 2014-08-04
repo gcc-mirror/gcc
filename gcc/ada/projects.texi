@@ -3724,7 +3724,7 @@ Here are some examples of attribute declarations:
 Attributes references may appear anywhere in expressions, and are used
 to retrieve the value previously assigned to the attribute. If an attribute
 has not been set in a given package or project, its value defaults to the
-empty string or the empty list.
+empty string or the empty list, with some exceptions.
 
 @smallexample
 attribute_reference ::=
@@ -3745,6 +3745,15 @@ Examples are:
   Imported_Project.Naming'Casing
   Builder'Default_Switches ("Ada")
 @end smallexample
+
+The exceptions to the empty defaults are:
+
+@itemize @bullet
+@item Object_Dir: default is "."
+@item Exec_Dir: default is 'Object_Dir, that is the value of attribute
+  Object_Dir in the same project, declared or defaulted.
+@item Source_Dirs: default is (".")
+@end itemize
 
 @noindent
 The prefix of an attribute may be:

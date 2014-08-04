@@ -11806,7 +11806,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (0);
-            Check_Float_Overflow := True;
+            Check_Float_Overflow := not Machine_Overflows_On_Target;
 
          ----------------
          -- Check_Name --

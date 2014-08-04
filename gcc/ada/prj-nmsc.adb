@@ -8517,7 +8517,7 @@ package body Prj.Nmsc is
                   Show_Source_Dirs (Project, Shared);
                end if;
 
-               if Project.Qualifier = Dry then
+               if Project.Qualifier = Abstract_Project then
                   Check_Abstract_Project (Project, Data);
                end if;
          end case;
