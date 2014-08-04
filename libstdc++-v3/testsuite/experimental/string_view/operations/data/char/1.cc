@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++1y" }
 
-// Copyright (C) 2013 Free Software Foundation, Inc.
+// Copyright (C) 2013-2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,9 @@ test01()
 
   std::experimental::string_view empty;
 
-  // data() for size == 0 is non-NULL.
   VERIFY( empty.size() == 0 );
   const std::experimental::string_view::value_type* p = empty.data();
-  VERIFY( p );
+  VERIFY( p == nullptr );
 
   return 0;
 }

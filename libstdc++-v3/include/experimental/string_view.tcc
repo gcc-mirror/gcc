@@ -47,10 +47,6 @@ namespace experimental
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits>
-    constexpr _CharT
-    basic_string_view<_CharT, _Traits>::_S_empty_str[1];
-
-  template<typename _CharT, typename _Traits>
     typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find(const _CharT* __str, size_type __pos, size_type __n) const noexcept
