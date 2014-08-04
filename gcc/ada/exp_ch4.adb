@@ -11569,11 +11569,12 @@ package body Exp_Ch4 is
       Pool  : constant Entity_Id  := Associated_Storage_Pool (Typ);
       Pnod  : constant Node_Id    := Parent (N);
 
-      Addr  : Entity_Id;
-      Alig  : Entity_Id;
-      Deref : Node_Id;
-      Size  : Entity_Id;
-      Stmt  : Node_Id;
+      Addr      : Entity_Id;
+      Alig      : Entity_Id;
+      Deref     : Node_Id;
+      Size      : Entity_Id;
+      Size_Bits : Node_Id;
+      Stmt      : Node_Id;
 
    --  Start of processing for Insert_Dereference_Action
 
@@ -11624,23 +11625,36 @@ package body Exp_Ch4 is
           Prefix => Duplicate_Subexpr_Move_Checks (N));
       Set_Has_Dereference_Action (Deref);
 
-      Size := Make_Temporary (Loc, 'S');
+      Size_Bits :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => Deref,
+          Attribute_Name => Name_Size);
 
+      --  Special case of an unconstrained array: need to add descriptor size
+
+      if Is_Array_Type (Desig)
+        and then not Is_Constrained (First_Subtype (Desig))
+      then
+         Size_Bits :=
+           Make_Op_Add (Loc,
+             Left_Opnd  =>
+               Make_Attribute_Reference (Loc,
+                 Prefix         =>
+                   New_Occurrence_Of (First_Subtype (Desig), Loc),
+                 Attribute_Name => Name_Descriptor_Size),
+             Right_Opnd => Size_Bits);
+      end if;
+
+      Size := Make_Temporary (Loc, 'S');
       Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Size,
-
           Object_Definition   =>
             New_Occurrence_Of (RTE (RE_Storage_Count), Loc),
-
           Expression          =>
             Make_Op_Divide (Loc,
-              Left_Opnd   =>
-                Make_Attribute_Reference (Loc,
-                  Prefix         => Deref,
-                  Attribute_Name => Name_Size),
-               Right_Opnd =>
-                 Make_Integer_Literal (Loc, System_Storage_Unit))));
+              Left_Opnd  => Size_Bits,
+              Right_Opnd => Make_Integer_Literal (Loc, System_Storage_Unit))));
 
       --  Calculate the alignment of the dereferenced object. Generate:
       --    Alig : constant Storage_Count := <N>.all'Alignment;
@@ -11651,7 +11665,6 @@ package body Exp_Ch4 is
       Set_Has_Dereference_Action (Deref);
 
       Alig := Make_Temporary (Loc, 'A');
-
       Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Alig,

@@ -19304,12 +19304,9 @@ package body Sem_Prag is
                         raise Pragma_Exit;
                      end if;
 
-                  --  Skip internally generated code
-
-                  elsif not Comes_From_Source (Stmt) then
-                     null;
-
-                  --  The pragma applies to a [generic] subprogram declaration
+                  --  The pragma applies to a [generic] subprogram declaration.
+                  --  Note that this case covers an internally generated spec
+                  --  for a stand alone body.
 
                   --    [generic]
                   --    procedure Proc ...;
@@ -19328,6 +19325,11 @@ package body Sem_Prag is
                      Set_SPARK_Pragma           (Spec_Id, N);
                      Set_SPARK_Pragma_Inherited (Spec_Id, False);
                      return;
+
+                  --  Skip internally generated code
+
+                  elsif not Comes_From_Source (Stmt) then
+                     null;
 
                   --  Otherwise the pragma does not apply to a legal construct
                   --  or it does not appear at the top of a declarative or a

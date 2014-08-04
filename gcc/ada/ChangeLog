@@ -1,5 +1,30 @@
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma): Ensure that an
+	internally generated spec for a stand alone body is recognized
+	as a proper context for pragma SPARK_Mode.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* erroutc.adb (Delete_Msg): Do not decrement Warnings_Treated_As_Errors.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* adabkend.adb (Scan_Back_End_Switches): Ignore extra -o
+	when -gnatO has already been specified, for compatibility
+	with gcc driver.
+	(Scan_Compiler_Args): Do not call Set_Output_Object_File_Name in
+	codepeer mode.
+	* g-expect.ads: Fix typo.
+
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Insert_Dereference_Action): the actual Size
+	must account for the bounds template if the designated type is
+	an unconstrained array.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* a-cfhama.adb, a-cfhase.adb, a-cforma.adb, a-cforse.adb Add
 	SPARK_Mode in the body.
 	* sem_ch7.adb (Analyze_Package_Body_Helper): Restore the original
