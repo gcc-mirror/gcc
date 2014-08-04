@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -70,6 +70,7 @@ generic
 package Ada.Containers.Formal_Hashed_Sets is
    pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
+   pragma SPARK_Mode (On);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is private with
      Iterable => (First       => First,
@@ -329,8 +330,8 @@ package Ada.Containers.Formal_Hashed_Sets is
    --  scanned yet.
 
 private
-
    pragma Inline (Next);
+   pragma SPARK_Mode (Off);
 
    type Node_Type is
       record
@@ -343,7 +344,7 @@ private
      Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is
-      new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
 
    use HT_Types;
 

@@ -19243,13 +19243,6 @@ package body Sem_Prag is
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;
-
-            --  Do not analyze the pragma when it appears inside a generic
-            --  because the semantic information of the related context is
-            --  scarce.
-
-            elsif Inside_A_Generic then
-               return;
             end if;
 
             GNAT_Pragma;
