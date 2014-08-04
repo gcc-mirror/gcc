@@ -1,4 +1,12 @@
 2014-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/md.texi (clrsb): Document.
+	(clz): Change reference to x into operand 1.
+	(ctz): Likewise.
+	(popcount): Likewise.
+
+2014-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/61713
 	* gcc/optabs.c (expand_atomic_test_and_set): Do not try to emit
