@@ -1312,14 +1312,16 @@ package Sem_Util is
    --  represent use of the N_Identifier node for a true identifier, when
    --  normally such nodes represent a direct name.
 
-   function Is_SPARK_Initialization_Expr (N : Node_Id) return Boolean;
+   function Is_SPARK_05_Initialization_Expr (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an initialization
-   --  expression in SPARK, suitable for initializing an object in an object
-   --  declaration.
+   --  expression in SPARK 2005, suitable for initializing an object in an
+   --  object declaration.
 
-   function Is_SPARK_Object_Reference (N : Node_Id) return Boolean;
-   --  Determines if the tree referenced by N represents an object in SPARK.
-   --  This differs from Is_Object_Reference in that ???
+   function Is_SPARK_05_Object_Reference (N : Node_Id) return Boolean;
+   --  Determines if the tree referenced by N represents an object in SPARK
+   --  2005. This differs from Is_Object_Reference in that only variables,
+   --  constants, formal parameters, and selected_components of those are
+   --  valid objects in SPARK 2005.
 
    function Is_Statement (N : Node_Id) return Boolean;
    pragma Inline (Is_Statement);

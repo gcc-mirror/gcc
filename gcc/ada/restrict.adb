@@ -491,7 +491,7 @@ package body Restrict is
       --  No_Dispatch restriction is not set.
 
       if R = No_Dispatch then
-         Check_SPARK_Restriction ("class-wide is not allowed", N);
+         Check_SPARK_05_Restriction ("class-wide is not allowed", N);
       end if;
 
       if UI_Is_In_Int_Range (V) then
@@ -1418,11 +1418,11 @@ package body Restrict is
       end if;
    end Set_Restriction_No_Use_Of_Pragma;
 
-   -----------------------------
-   -- Check_SPARK_Restriction --
-   -----------------------------
+   --------------------------------
+   -- Check_SPARK_05_Restriction --
+   --------------------------------
 
-   procedure Check_SPARK_Restriction
+   procedure Check_SPARK_05_Restriction
      (Msg   : String;
       N     : Node_Id;
       Force : Boolean := False)
@@ -1471,9 +1471,9 @@ package body Restrict is
             Error_Msg_F ("\\| " & Msg, N);
          end if;
       end if;
-   end Check_SPARK_Restriction;
+   end Check_SPARK_05_Restriction;
 
-   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+   procedure Check_SPARK_05_Restriction (Msg1, Msg2 : String; N : Node_Id) is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
 
@@ -1500,7 +1500,7 @@ package body Restrict is
             Error_Msg_F (Msg2, N);
          end if;
       end if;
-   end Check_SPARK_Restriction;
+   end Check_SPARK_05_Restriction;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

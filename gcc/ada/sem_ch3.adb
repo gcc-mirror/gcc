@@ -730,7 +730,7 @@ package body Sem_Ch3 is
       Enclosing_Prot_Type : Entity_Id := Empty;
 
    begin
-      Check_SPARK_Restriction ("access type is not allowed", N);
+      Check_SPARK_05_Restriction ("access type is not allowed", N);
 
       if Is_Entry (Current_Scope)
         and then Is_Task_Type (Etype (Scope (Current_Scope)))
@@ -1053,7 +1053,7 @@ package body Sem_Ch3 is
    --  Start of processing for Access_Subprogram_Declaration
 
    begin
-      Check_SPARK_Restriction ("access type is not allowed", T_Def);
+      Check_SPARK_05_Restriction ("access type is not allowed", T_Def);
 
       --  Associate the Itype node with the inner full-type declaration or
       --  subprogram spec or entry body. This is required to handle nested
@@ -1322,7 +1322,7 @@ package body Sem_Ch3 is
       Full_Desig : Entity_Id;
 
    begin
-      Check_SPARK_Restriction ("access type is not allowed", Def);
+      Check_SPARK_05_Restriction ("access type is not allowed", Def);
 
       --  Check for permissible use of incomplete type
 
@@ -1884,7 +1884,7 @@ package body Sem_Ch3 is
                 (Subtype_Indication (Component_Definition (N)), N);
 
          if not Nkind_In (Typ, N_Identifier, N_Expanded_Name) then
-            Check_SPARK_Restriction ("subtype mark required", Typ);
+            Check_SPARK_05_Restriction ("subtype mark required", Typ);
          end if;
 
       --  Ada 2005 (AI-230): Access Definition case
@@ -1937,7 +1937,7 @@ package body Sem_Ch3 is
       --  package Sem).
 
       if Present (E) then
-         Check_SPARK_Restriction ("default expression is not allowed", E);
+         Check_SPARK_05_Restriction ("default expression is not allowed", E);
          Preanalyze_Default_Expression (E, T);
          Check_Initialization (T, E);
 
@@ -2256,7 +2256,7 @@ package body Sem_Ch3 is
          if Nkind (Decl) = N_Package_Declaration
            and then Nkind (Parent (L)) = N_Package_Specification
          then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("package specification cannot contain a package declaration",
                Decl);
          end if;
@@ -2549,7 +2549,7 @@ package body Sem_Ch3 is
 
          when N_Record_Definition =>
             if Present (Discriminant_Specifications (N)) then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("discriminant type is not allowed",
                   Defining_Identifier
                     (First (Discriminant_Specifications (N))));
@@ -2658,7 +2658,7 @@ package body Sem_Ch3 is
       --  Controlled type is not allowed in SPARK
 
       if Is_Visibly_Controlled (T) then
-         Check_SPARK_Restriction ("controlled type is not allowed", N);
+         Check_SPARK_05_Restriction ("controlled type is not allowed", N);
       end if;
 
       --  Some common processing for all types
@@ -2775,7 +2775,7 @@ package body Sem_Ch3 is
       T : Entity_Id;
 
    begin
-      Check_SPARK_Restriction ("incomplete type is not allowed", N);
+      Check_SPARK_05_Restriction ("incomplete type is not allowed", N);
 
       Generate_Definition (Defining_Identifier (N));
 
@@ -3448,14 +3448,14 @@ package body Sem_Ch3 is
       if not
         Nkind_In (Object_Definition (N), N_Identifier, N_Expanded_Name)
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("subtype mark required", Object_Definition (N));
 
       elsif Is_Array_Type (T)
         and then not Is_Constrained (T)
         and then T /= Standard_String
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("subtype mark of constrained type expected",
             Object_Definition (N));
       end if;
@@ -3463,7 +3463,7 @@ package body Sem_Ch3 is
       --  There are no aliased objects in SPARK
 
       if Aliased_Present (N) then
-         Check_SPARK_Restriction ("aliased object is not allowed", N);
+         Check_SPARK_05_Restriction ("aliased object is not allowed", N);
       end if;
 
       --  Process initialization expression if present and not in error
@@ -3618,9 +3618,9 @@ package body Sem_Ch3 is
            --  Only call test if needed
 
            and then Restriction_Check_Required (SPARK_05)
-           and then not Is_SPARK_Initialization_Expr (Original_Node (E))
+           and then not Is_SPARK_05_Initialization_Expr (Original_Node (E))
          then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("initialization expression is not appropriate", E);
          end if;
       end if;
@@ -3676,7 +3676,7 @@ package body Sem_Ch3 is
          --  only for constants of type string.
 
          if Is_String_Type (T) and then not Constant_Present (N) then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("declaration of object of unconstrained type not allowed", N);
          end if;
 
@@ -4460,7 +4460,7 @@ package body Sem_Ch3 is
       if Is_Boolean_Type (T)
         and then Nkind (Subtype_Indication (N)) = N_Subtype_Indication
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("subtype of Boolean cannot have constraint", N);
       end if;
 
@@ -4482,7 +4482,7 @@ package body Sem_Ch3 is
                   if not
                     Nkind_In (One_Cstr, N_Identifier, N_Expanded_Name)
                   then
-                     Check_SPARK_Restriction
+                     Check_SPARK_05_Restriction
                        ("subtype mark required", One_Cstr);
 
                   --  String subtype must have a lower bound of 1 in SPARK.
@@ -4496,7 +4496,7 @@ package body Sem_Ch3 is
                      if Is_OK_Static_Expression (Low)
                        and then Expr_Value (Low) /= 1
                      then
-                        Check_SPARK_Restriction
+                        Check_SPARK_05_Restriction
                           ("String subtype must have lower bound of 1", N);
                      end if;
                   end if;
@@ -4518,7 +4518,7 @@ package body Sem_Ch3 is
          --  in SPARK.
 
          if Is_Array_Type (T) and then not Is_Constrained (T) then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("subtype of unconstrained array must have constraint", N);
          end if;
 
@@ -5092,7 +5092,7 @@ package body Sem_Ch3 is
          --  Check SPARK restriction requiring a subtype mark
 
          if not Nkind_In (Index, N_Identifier, N_Expanded_Name) then
-            Check_SPARK_Restriction ("subtype mark required", Index);
+            Check_SPARK_05_Restriction ("subtype mark required", Index);
          end if;
 
          --  Add a subtype declaration for each index of private array type
@@ -5169,7 +5169,8 @@ package body Sem_Ch3 is
          Set_Etype (Component_Typ, Element_Type);
 
          if not Nkind_In (Component_Typ, N_Identifier, N_Expanded_Name) then
-            Check_SPARK_Restriction ("subtype mark required", Component_Typ);
+            Check_SPARK_05_Restriction
+              ("subtype mark required", Component_Typ);
          end if;
 
       --  Ada 2005 (AI-230): Access Definition case
@@ -5282,7 +5283,7 @@ package body Sem_Ch3 is
       Set_Packed_Array_Impl_Type (T, Empty);
 
       if Aliased_Present (Component_Definition (Def)) then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("aliased is not allowed", Component_Definition (Def));
          Set_Has_Aliased_Components (Etype (T));
       end if;
@@ -12123,7 +12124,7 @@ package body Sem_Ch3 is
       else
          pragma Assert (Nkind (C) = N_Digits_Constraint);
 
-         Check_SPARK_Restriction ("digits constraint is not allowed", S);
+         Check_SPARK_05_Restriction ("digits constraint is not allowed", S);
 
          Digits_Expr := Digits_Expression (C);
          Analyze_And_Resolve (Digits_Expr, Any_Integer);
@@ -12351,7 +12352,7 @@ package body Sem_Ch3 is
 
       if Nkind (C) = N_Digits_Constraint then
 
-         Check_SPARK_Restriction ("digits constraint is not allowed", S);
+         Check_SPARK_05_Restriction ("digits constraint is not allowed", S);
          Check_Restriction (No_Obsolescent_Features, C);
 
          if Warn_On_Obsolescent_Feature then
@@ -12582,7 +12583,7 @@ package body Sem_Ch3 is
 
       if Nkind (C) = N_Delta_Constraint then
 
-         Check_SPARK_Restriction ("delta constraint is not allowed", S);
+         Check_SPARK_05_Restriction ("delta constraint is not allowed", S);
          Check_Restriction (No_Obsolescent_Features, C);
 
          if Warn_On_Obsolescent_Feature then
@@ -13235,7 +13236,7 @@ package body Sem_Ch3 is
       Bound_Val     : Ureal;
 
    begin
-      Check_SPARK_Restriction
+      Check_SPARK_05_Restriction
         ("decimal fixed point type is not allowed", Def);
       Check_Restriction (No_Fixed_Point, Def);
 
@@ -14790,7 +14791,7 @@ package body Sem_Ch3 is
       --  parent is also an interface.
 
       if Interface_Present (Def) then
-         Check_SPARK_Restriction ("interface is not allowed", Def);
+         Check_SPARK_05_Restriction ("interface is not allowed", Def);
 
          if not Is_Interface (Parent_Type) then
             Diagnose_Interface (Indic, Parent_Type);
@@ -15044,7 +15045,7 @@ package body Sem_Ch3 is
                Defining_Identifier (First (Discriminant_Specifications (N))));
             Set_Has_Discriminants (T, False);
          else
-            Check_SPARK_Restriction ("discriminant type is not allowed", N);
+            Check_SPARK_05_Restriction ("discriminant type is not allowed", N);
          end if;
       end if;
 
@@ -15235,7 +15236,7 @@ package body Sem_Ch3 is
       --  extensions of tagged record types.
 
       if No (Extension) then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("derived type is not allowed", Original_Node (N));
       end if;
    end Derived_Type_Declaration;
@@ -17577,7 +17578,7 @@ package body Sem_Ch3 is
          --  Non-binary case
 
          elsif M_Val < 2 ** Bits then
-            Check_SPARK_Restriction ("modulus should be a power of 2", T);
+            Check_SPARK_05_Restriction ("modulus should be a power of 2", T);
             Set_Non_Binary_Modulus (T);
 
             if Bits > System_Max_Nonbinary_Modulus_Power then
@@ -18507,7 +18508,7 @@ package body Sem_Ch3 is
 
             if Priv_Parent /= Full_Parent then
                Error_Msg_Name_1 := Chars (Priv_Parent);
-               Check_SPARK_Restriction ("% expected", Full_Indic);
+               Check_SPARK_05_Restriction ("% expected", Full_Indic);
             end if;
 
             --  Check the rules of 7.3(10): if the private extension inherits
@@ -19113,7 +19114,7 @@ package body Sem_Ch3 is
          if not In_Iter_Schm
            and then not Is_OK_Static_Range (R)
          then
-            Check_SPARK_Restriction ("range should be static", R);
+            Check_SPARK_05_Restriction ("range should be static", R);
          end if;
 
          Lo := Low_Bound (R);
@@ -20269,11 +20270,11 @@ package body Sem_Ch3 is
         or else not Interface_Present (Def)
       then
          if Limited_Present (Def) then
-            Check_SPARK_Restriction ("limited is not allowed", N);
+            Check_SPARK_05_Restriction ("limited is not allowed", N);
          end if;
 
          if Abstract_Present (Def) then
-            Check_SPARK_Restriction ("abstract is not allowed", N);
+            Check_SPARK_05_Restriction ("abstract is not allowed", N);
          end if;
 
          --  The flag Is_Tagged_Type might have already been set by
@@ -20295,7 +20296,7 @@ package body Sem_Ch3 is
                                       or else Abstract_Present (Def));
 
       else
-         Check_SPARK_Restriction ("interface is not allowed", N);
+         Check_SPARK_05_Restriction ("interface is not allowed", N);
 
          Is_Tagged := True;
          Analyze_Interface_Declaration (T, Def);
@@ -20459,13 +20460,13 @@ package body Sem_Ch3 is
             if Nkind (Ctxt) = N_Package_Body
               and then Nkind (Parent (Ctxt)) = N_Compilation_Unit
             then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("type should be defined in package specification", Typ);
 
             elsif Nkind (Ctxt) /= N_Package_Specification
               or else Nkind (Parent (Parent (Ctxt))) /= N_Compilation_Unit
             then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("type should be defined in library unit package", Typ);
             end if;
          end;
@@ -20494,14 +20495,14 @@ package body Sem_Ch3 is
         or else Null_Present (Component_List (Def))
       then
          if not Is_Tagged_Type (T) then
-            Check_SPARK_Restriction ("untagged record cannot be null", Def);
+            Check_SPARK_05_Restriction ("untagged record cannot be null", Def);
          end if;
 
       else
          Analyze_Declarations (Component_Items (Component_List (Def)));
 
          if Present (Variant_Part (Component_List (Def))) then
-            Check_SPARK_Restriction ("variant part is not allowed", Def);
+            Check_SPARK_05_Restriction ("variant part is not allowed", Def);
             Analyze (Variant_Part (Component_List (Def)));
          end if;
       end if;

@@ -437,7 +437,7 @@ package body Sem_Ch11 is
          Check_Compiler_Unit ("raise expression", N);
       end if;
 
-      Check_SPARK_Restriction ("raise expression is not allowed", N);
+      Check_SPARK_05_Restriction ("raise expression is not allowed", N);
 
       --  Check exception restrictions on the original source
 
@@ -495,7 +495,7 @@ package body Sem_Ch11 is
 
    begin
       if Comes_From_Source (N) then
-         Check_SPARK_Restriction ("raise statement is not allowed", N);
+         Check_SPARK_05_Restriction ("raise statement is not allowed", N);
       end if;
 
       Check_Unreachable_Code (N);
@@ -702,7 +702,7 @@ package body Sem_Ch11 is
 
    begin
       if Nkind (Original_Node (N)) = N_Raise_Statement then
-         Check_SPARK_Restriction ("raise statement is not allowed", N);
+         Check_SPARK_05_Restriction ("raise statement is not allowed", N);
       end if;
 
       if No (Etype (N)) then

@@ -320,7 +320,7 @@ package body Sem_Attr is
       --  Verify that prefix of attribute N is a float type and that
       --  two attribute expressions are present
 
-      procedure Check_SPARK_Restriction_On_Attribute;
+      procedure Check_SPARK_05_Restriction_On_Attribute;
       --  Issue an error in formal mode because attribute N is allowed
 
       procedure Check_Integer_Type;
@@ -755,7 +755,7 @@ package body Sem_Attr is
       --  Start of processing for Analyze_Access_Attribute
 
       begin
-         Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
 
          if Nkind (P) = N_Character_Literal then
@@ -1804,14 +1804,14 @@ package body Sem_Attr is
       end Check_Scalar_Type;
 
       ------------------------------------------
-      -- Check_SPARK_Restriction_On_Attribute --
+      -- Check_SPARK_05_Restriction_On_Attribute --
       ------------------------------------------
 
-      procedure Check_SPARK_Restriction_On_Attribute is
+      procedure Check_SPARK_05_Restriction_On_Attribute is
       begin
          Error_Msg_Name_1 := Aname;
-         Check_SPARK_Restriction ("attribute % is not allowed", P);
-      end Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction ("attribute % is not allowed", P);
+      end Check_SPARK_05_Restriction_On_Attribute;
 
       ---------------------------
       -- Check_Standard_Prefix --
@@ -2556,7 +2556,7 @@ package body Sem_Attr is
         and then not In_Open_Scopes (Scope (P_Type))
         and then not In_Spec_Expression
       then
-         Check_SPARK_Restriction ("invisible attribute of type", N);
+         Check_SPARK_05_Restriction ("invisible attribute of type", N);
       end if;
 
       --  Remaining processing depends on attribute
@@ -2726,7 +2726,7 @@ package body Sem_Attr is
 
          if Nkind (Parent (N)) /= N_Attribute_Reference then
             Error_Msg_Name_1 := Aname;
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("attribute% is only allowed as prefix of another attribute", P);
          end if;
 
@@ -3571,7 +3571,7 @@ package body Sem_Attr is
 
       when Attribute_Image => Image :
       begin
-         Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction_On_Attribute;
          Check_Scalar_Type;
          Set_Etype (N, Standard_String);
 
@@ -4770,7 +4770,7 @@ package body Sem_Attr is
          if Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("attribute% is not allowed for type%", P);
          end if;
 
@@ -4796,7 +4796,8 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction ("attribute% is not allowed for type%", P);
+            Check_SPARK_05_Restriction
+              ("attribute% is not allowed for type%", P);
          end if;
 
          Resolve (E1, P_Base_Type);
@@ -5689,7 +5690,8 @@ package body Sem_Attr is
          if Is_Real_Type (P_Type) or else Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction ("attribute% is not allowed for type%", P);
+            Check_SPARK_05_Restriction
+              ("attribute% is not allowed for type%", P);
          end if;
 
          Resolve (E1, P_Base_Type);
@@ -6392,7 +6394,7 @@ package body Sem_Attr is
          if Is_Boolean_Type (P_Type) then
             Error_Msg_Name_1 := Aname;
             Error_Msg_Name_2 := Chars (P_Type);
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("attribute% is not allowed for type%", P);
          end if;
 
@@ -6471,7 +6473,7 @@ package body Sem_Attr is
 
       when Attribute_Value => Value :
       begin
-         Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -6550,7 +6552,7 @@ package body Sem_Attr is
 
       when Attribute_Wide_Image => Wide_Image :
       begin
-         Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction_On_Attribute;
          Check_Scalar_Type;
          Set_Etype (N, Standard_Wide_String);
          Check_E1;
@@ -6593,7 +6595,7 @@ package body Sem_Attr is
 
       when Attribute_Wide_Value => Wide_Value :
       begin
-         Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction_On_Attribute;
          Check_E1;
          Check_Scalar_Type;
 
@@ -6650,7 +6652,7 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Width =>
-         Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -6660,7 +6662,7 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Width =>
-         Check_SPARK_Restriction_On_Attribute;
+         Check_SPARK_05_Restriction_On_Attribute;
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);

@@ -712,7 +712,7 @@ package body Sem_Aggr is
    begin
       if Level = 0 then
          if Nkind (Parent (Expr)) /= N_Qualified_Expression then
-            Check_SPARK_Restriction ("aggregate should be qualified", Expr);
+            Check_SPARK_05_Restriction ("aggregate should be qualified", Expr);
          end if;
 
       else
@@ -925,12 +925,12 @@ package body Sem_Aggr is
            and then not Is_Constrained (Etype (Name (Parent (N))))
          then
             if not Is_Others_Aggregate (N) then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("array aggregate should have only OTHERS", N);
             end if;
 
          elsif Is_Top_Level_Aggregate (N) then
-            Check_SPARK_Restriction ("aggregate should be qualified", N);
+            Check_SPARK_05_Restriction ("aggregate should be qualified", N);
 
          --  The legality of this unqualified aggregate is checked by calling
          --  Check_Qualified_Aggregate from one of its enclosing aggregate,
@@ -1934,7 +1934,7 @@ package body Sem_Aggr is
                               or else (Nkind (Choice) = N_Range
                                         and then Is_OK_Static_Range (Choice)))
                      then
-                        Check_SPARK_Restriction
+                        Check_SPARK_05_Restriction
                           ("choice should be static", Choice);
                      end if;
                   end if;
@@ -2744,7 +2744,7 @@ package body Sem_Aggr is
       if Is_Entity_Name (A)
         and then Is_Type (Entity (A))
       then
-         Check_SPARK_Restriction ("ancestor part cannot be a type mark", A);
+         Check_SPARK_05_Restriction ("ancestor part cannot be a type mark", A);
 
          --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
          --  must not have unknown discriminants.
@@ -3512,7 +3512,7 @@ package body Sem_Aggr is
       then
 
          if Present (Expressions (N)) then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("named association cannot follow positional one",
                First (Choices (First (Component_Associations (N)))));
          end if;
@@ -3524,13 +3524,13 @@ package body Sem_Aggr is
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
                if List_Length (Choices (Assoc)) > 1 then
-                  Check_SPARK_Restriction
+                  Check_SPARK_05_Restriction
                     ("component association in record aggregate must "
                      & "contain a single choice", Assoc);
                end if;
 
                if Nkind (First (Choices (Assoc))) = N_Others_Choice then
-                  Check_SPARK_Restriction
+                  Check_SPARK_05_Restriction
                     ("record aggregate cannot contain OTHERS", Assoc);
                end if;
 

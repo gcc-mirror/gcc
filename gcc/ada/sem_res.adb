@@ -3885,7 +3885,7 @@ package body Sem_Res is
                --  conversions of objects), not general expressions.
 
                if Is_Actual_Tagged_Parameter (A) then
-                  if Is_SPARK_Object_Reference (A) then
+                  if Is_SPARK_05_Object_Reference (A) then
                      null;
 
                   elsif Nkind (A) = N_Type_Conversion then
@@ -3895,8 +3895,8 @@ package body Sem_Res is
                         Target_Typ  : constant Entity_Id := A_Typ;
 
                      begin
-                        if not Is_SPARK_Object_Reference (Operand) then
-                           Check_SPARK_Restriction
+                        if not Is_SPARK_05_Object_Reference (Operand) then
+                           Check_SPARK_05_Restriction
                              ("object required", Operand);
 
                         --  In formal mode, the only view conversions are those
@@ -3912,11 +3912,11 @@ package body Sem_Res is
                            if Ekind_In
                              (F, E_Out_Parameter, E_In_Out_Parameter)
                            then
-                              Check_SPARK_Restriction
+                              Check_SPARK_05_Restriction
                                 ("ancestor conversion is the only permitted "
                                  & "view conversion", A);
                            else
-                              Check_SPARK_Restriction
+                              Check_SPARK_05_Restriction
                                 ("ancestor conversion required", A);
                            end if;
 
@@ -3926,7 +3926,7 @@ package body Sem_Res is
                      end;
 
                   else
-                     Check_SPARK_Restriction ("object required", A);
+                     Check_SPARK_05_Restriction ("object required", A);
                   end if;
 
                --  In formal mode, the only view conversions are those
@@ -3935,7 +3935,7 @@ package body Sem_Res is
                elsif Nkind (A) = N_Type_Conversion
                  and then Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
                then
-                  Check_SPARK_Restriction
+                  Check_SPARK_05_Restriction
                     ("ancestor conversion is the only permitted view "
                      & "conversion", A);
                end if;
@@ -5238,7 +5238,7 @@ package body Sem_Res is
         and then
           not Nkind_In (Parent (N), N_Qualified_Expression, N_Type_Conversion)
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("operation should be qualified or explicitly converted", N);
       end if;
 
@@ -5610,7 +5610,7 @@ package body Sem_Res is
 
         and then Ekind (Nam) /= E_Enumeration_Literal
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("call to subprogram cannot appear before its body", N);
       end if;
 
@@ -5780,7 +5780,7 @@ package body Sem_Res is
          if Restriction_Check_Required (SPARK_05)
            and then Same_Or_Aliased_Subprograms (Nam, Scop)
          then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("subprogram may not contain direct call to itself", N);
          end if;
 
@@ -6149,7 +6149,7 @@ package body Sem_Res is
         and then Is_Entity_Name (Name (N))
         and then Is_Inherited_Operation_For_Type (Entity (Name (N)), Etype (N))
       then
-         Check_SPARK_Restriction ("function not inherited", N);
+         Check_SPARK_05_Restriction ("function not inherited", N);
       end if;
 
       --  Implement rule in 12.5.1 (23.3/2): In an instance, if the actual is
@@ -6462,13 +6462,13 @@ package body Sem_Res is
       --  types or array types except String.
 
       if Is_Boolean_Type (T) then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("comparison is not defined on Boolean type", N);
 
       elsif Is_Array_Type (T)
         and then Base_Type (T) /= Standard_String
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("comparison is not defined on array types other than String", N);
       end if;
 
@@ -7514,7 +7514,7 @@ package body Sem_Res is
               and then Etype (R) /= Any_Composite  --  or else R in error
               and then not Matching_Static_Array_Bounds (Etype (L), Etype (R))
             then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("array types should have matching static bounds", N);
             end if;
          end if;
@@ -8272,7 +8272,7 @@ package body Sem_Res is
               and then Right_Typ /= Any_Composite  --  or Right_Opnd in error
               and then not Matching_Static_Array_Bounds (Left_Typ, Right_Typ)
             then
-               Check_SPARK_Restriction
+               Check_SPARK_05_Restriction
                  ("array types should have matching static bounds", N);
             end if;
          end;
@@ -8571,7 +8571,7 @@ package body Sem_Res is
       end loop;
 
       if Base_Type (Etype (N)) /= Standard_String then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("result of concatenation should have type String", N);
       end if;
    end Resolve_Op_Concat;
@@ -8706,7 +8706,7 @@ package body Sem_Res is
 
       if Is_Character_Type (Etype (Arg)) then
          if not Is_OK_Static_Expression (Arg) then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("character operand for concatenation should be static", Arg);
          end if;
 
@@ -8715,7 +8715,7 @@ package body Sem_Res is
                   and then Is_Constant_Object (Entity (Arg)))
            and then not Is_OK_Static_Expression (Arg)
          then
-            Check_SPARK_Restriction
+            Check_SPARK_05_Restriction
               ("string operand for concatenation should be static", Arg);
          end if;
 
@@ -9026,7 +9026,7 @@ package body Sem_Res is
         and then Etype (Expr) /= Any_Composite  --  or else Expr in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Etype (Expr))
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("array types should have matching static bounds", N);
       end if;
 
@@ -10235,7 +10235,7 @@ package body Sem_Res is
         and then Operand_Typ /= Any_Composite  --  or else Operand in error
         and then not Matching_Static_Array_Bounds (Target_Typ, Operand_Typ)
       then
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("array types should have matching static bounds", N);
       end if;
 
@@ -10247,9 +10247,9 @@ package body Sem_Res is
         and then Is_Tagged_Type (Operand_Typ)
         and then not Is_Class_Wide_Type (Operand_Typ)
         and then Is_Ancestor (Target_Typ, Operand_Typ)
-        and then not Is_SPARK_Object_Reference (Operand)
+        and then not Is_SPARK_05_Object_Reference (Operand)
       then
-         Check_SPARK_Restriction ("object required", Operand);
+         Check_SPARK_05_Restriction ("object required", Operand);
       end if;
 
       Analyze_Dimension (N);
@@ -10520,7 +10520,7 @@ package body Sem_Res is
    begin
       if Is_Modular_Integer_Type (Typ) and then Nkind (N) /= N_Op_Not then
          Error_Msg_Name_1 := Chars (Typ);
-         Check_SPARK_Restriction
+         Check_SPARK_05_Restriction
            ("unary operator not defined for modular type%", N);
       end if;
 

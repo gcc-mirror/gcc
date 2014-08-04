@@ -1,5 +1,21 @@
 2014-08-04  Yannick Moy  <moy@adacore.com>
 
+	* sem_aggr.adb, sem_ch3.adb, sem_ch5.adb, sem_ch7.adb, sem_ch9.adb,
+	sem_ch12.adb, sem_util.adb, sem_util.ads, sem_res.adb, sem_attr.adb,
+	exp_ch6.adb, sem_ch4.adb, restrict.adb, restrict.ads, sem_ch6.adb,
+	sem_ch8.adb, sem_ch11.adb: Update some subprogram names to refer to
+	SPARK_05 instead of SPARK.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem.ads: Minor reformatting.
+	* sem_ch13.adb (Analyze_Aspect_External_Or_Link_Name): Minor
+	reformatting.
+	(Analyze_Aspect_Specifications, case Convention): Put External_Name
+	before Link_Name when constructing pragma.
+
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
 	* sem.adb, sem.ads (In_Default_Expr): Global flag that is set
 	to True during analysis of a default component expression.
 	(Semantics): Save and restore In_Default_Expr around analysis.
