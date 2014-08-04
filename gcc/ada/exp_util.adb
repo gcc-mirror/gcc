@@ -3292,8 +3292,8 @@ package body Exp_Util is
    -------------------------------------------------
 
    function Get_First_Parent_With_Ext_Axioms_For_Entity
-     (E : Entity_Id) return Entity_Id is
-
+     (E : Entity_Id) return Entity_Id
+   is
       Decl : Node_Id;
 
    begin
@@ -3305,9 +3305,9 @@ package body Exp_Util is
          end if;
       end if;
 
-      --  E is the package which is externally axiomatized
+      --  E is the package or generic package which is externally axiomatized
 
-      if Ekind (E) = E_Package
+      if Ekind_In (E, E_Package, E_Generic_Package)
         and then Has_Annotate_Pragma_For_External_Axiomatization (E)
       then
          return E;
@@ -3318,14 +3318,14 @@ package body Exp_Util is
       elsif Ekind (E) = E_Package
         and then Present (Generic_Parent (Decl))
       then
-         return Get_First_Parent_With_Ext_Axioms_For_Entity
-           (Generic_Parent (Decl));
+         return
+           Get_First_Parent_With_Ext_Axioms_For_Entity (Generic_Parent (Decl));
 
          --  Otherwise, look at E's scope instead if present
 
       elsif Present (Scope (E)) then
-         return Get_First_Parent_With_Ext_Axioms_For_Entity
-             (Scope (E));
+         return
+           Get_First_Parent_With_Ext_Axioms_For_Entity (Scope (E));
 
          --  Else there is no such axiomatized package
 

@@ -4859,10 +4859,9 @@ package body Exp_Attr is
       -- Pred --
       ----------
 
-      --  1. Deal with enumeration types with holes
-      --  2. For floating-point, generate call to attribute function and deal
-      --       with range checking if Check_Float_Overflow mode is set.
-      --  3. For other cases, deal with constraint checking
+      --  1. Deal with enumeration types with holes.
+      --  2. For floating-point, generate call to attribute function.
+      --  3. For other cases, deal with constraint checking.
 
       when Attribute_Pred => Pred :
       declare
@@ -4934,35 +4933,9 @@ package body Exp_Attr is
 
          --  For floating-point, we transform 'Pred into a call to the Pred
          --  floating-point attribute function in Fat_xxx (xxx is root type).
+         --  Note that this function takes care of the overflow case.
 
          elsif Is_Floating_Point_Type (Ptyp) then
-
-            --  Handle case of range check. The Do_Range_Check flag is set only
-            --  in Check_Float_Overflow mode, and what we need is a specific
-            --  check against typ'First, since that is the only overflow case.
-
-            declare
-               Expr : constant Node_Id := First (Exprs);
-            begin
-               if Do_Range_Check (Expr) then
-                  Set_Do_Range_Check (Expr, False);
-                  Insert_Action (N,
-                    Make_Raise_Constraint_Error (Loc,
-                      Condition =>
-                        Make_Op_Eq (Loc,
-                          Left_Opnd  => Duplicate_Subexpr (Expr),
-                          Right_Opnd =>
-                            Make_Attribute_Reference (Loc,
-                              Attribute_Name => Name_First,
-                              Prefix         =>
-                                New_Occurrence_Of (Base_Type (Ptyp), Loc))),
-                      Reason => CE_Overflow_Check_Failed),
-                  Suppress => All_Checks);
-               end if;
-            end;
-
-            --  Transform into call to attribute function
-
             Expand_Fpt_Attribute_R (N);
             Analyze_And_Resolve (N, Typ);
 
@@ -5889,9 +5862,9 @@ package body Exp_Attr is
       -- Succ --
       ----------
 
-      --  1. Deal with enumeration types with holes
-      --  2. For floating-point, generate call to attribute function
-      --  3. For other cases, deal with constraint checking
+      --  1. Deal with enumeration types with holes.
+      --  2. For floating-point, generate call to attribute function.
+      --  3. For other cases, deal with constraint checking.
 
       when Attribute_Succ => Succ : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
@@ -5960,33 +5933,6 @@ package body Exp_Attr is
          --  floating-point attribute function in Fat_xxx (xxx is root type)
 
          elsif Is_Floating_Point_Type (Ptyp) then
-
-            --  Handle case of range check. The Do_Range_Check flag is set only
-            --  in Check_Float_Overflow mode, and what we need is a specific
-            --  check against typ'Last, since that is the only overflow case.
-
-            declare
-               Expr : constant Node_Id := First (Exprs);
-            begin
-               if Do_Range_Check (Expr) then
-                  Set_Do_Range_Check (Expr, False);
-                  Insert_Action (N,
-                    Make_Raise_Constraint_Error (Loc,
-                      Condition =>
-                        Make_Op_Eq (Loc,
-                          Left_Opnd  => Duplicate_Subexpr (Expr),
-                          Right_Opnd =>
-                            Make_Attribute_Reference (Loc,
-                              Attribute_Name => Name_Last,
-                              Prefix         =>
-                                New_Occurrence_Of (Base_Type (Ptyp), Loc))),
-                      Reason    => CE_Overflow_Check_Failed),
-                    Suppress => All_Checks);
-               end if;
-            end;
-
-            --  Transform into call to attribute function
-
             Expand_Fpt_Attribute_R (N);
             Analyze_And_Resolve (N, Typ);
 

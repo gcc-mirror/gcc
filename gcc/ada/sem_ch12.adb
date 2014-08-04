@@ -1680,21 +1680,27 @@ package body Sem_Ch12 is
                         --  If actual is an entity (function or operator),
                         --  build wrapper for it.
 
-                        if Present (Match)
-                          and then Nkind (Match) = N_Operator_Symbol
-                        then
-                           --  If the name is a default, find its visible
-                           --  entity at the point of instantiation.
+                        if Present (Match) then
+                           if Nkind (Match) = N_Operator_Symbol then
+                              --  If the name is a default, find its visible
+                              --  entity at the point of instantiation.
 
-                           if Is_Entity_Name (Match)
-                             and then No (Entity (Match))
-                           then
-                              Find_Direct_Name (Match);
+                              if Is_Entity_Name (Match)
+                                and then No (Entity (Match))
+                              then
+                                 Find_Direct_Name (Match);
+                              end if;
+
+                              Append_To
+                                (Assoc,
+                                 Build_Wrapper
+                                   (Defining_Entity (Analyzed_Formal), Match));
+
+                           else
+                              Append_To (Assoc,
+                                         Instantiate_Formal_Subprogram
+                                           (Formal, Match, Analyzed_Formal));
                            end if;
-
-                           Append_To (Assoc,
-                             Build_Wrapper
-                               (Defining_Entity (Analyzed_Formal), Match));
 
                         --  Ditto if formal is an operator with a default.
 
