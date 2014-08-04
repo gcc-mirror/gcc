@@ -7896,7 +7896,6 @@ package body Einfo is
              (Num   => Significand * 2 ** (Exponent mod 4),
               Den   => -Exponent / 4,
               Rbase => 16);
-
       else
          return
            UR_From_Components
@@ -7981,9 +7980,9 @@ package body Einfo is
 
    begin
       pragma Assert
-        (Is_Type (Id)
-           and then (Has_Default_Init_Cond (Id)
-                       or Has_Inherited_Default_Init_Cond (Id)));
+        (Is_Type (Id) and then (Has_Default_Init_Cond           (Id)
+                                  or
+                                Has_Inherited_Default_Init_Cond (Id)));
 
       S := Subprograms_For_Type (Id);
       Set_Subprograms_For_Type (Id, V);

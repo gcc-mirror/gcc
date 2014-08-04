@@ -1352,8 +1352,7 @@ package body Sem_Ch7 is
 
       --  Inspect the entities defined in the package and ensure that all
       --  incomplete types have received full declarations. Build default
-      --  initial condition and invariant procedures for all types that
-      --  qualify.
+      --  initial condition and invariant procedures for all qualifying types.
 
       E := First_Entity (Id);
       while Present (E) loop

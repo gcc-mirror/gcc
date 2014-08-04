@@ -1,5 +1,10 @@
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
+	* exp_prag.adb, sem_ch7.adb, einfo.adb, sem_prag.adb, sem_util.adb,
+	exp_ch3.adb: Minor reformatting.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
 	* prj-strt.adb, prj-strt.ads, sem_attr.adb: Minor reformatting.
 
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
