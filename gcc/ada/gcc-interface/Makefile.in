@@ -515,7 +515,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(target_cpu) $(target_vendor) $(target
 endif
 
 # PowerPC and e500v2 VxWorks
-ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7,$(target_cpu) $(target_vendor) $(target_os))),)
 
   ifeq ($(strip $(filter-out e500%, $(target_alias))),)
      ARCH_STR=e500
@@ -3012,7 +3012,7 @@ a-tags.o  : a-tags.adb a-tags.ads
 
 # need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
-tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c
+tracebak.o  : tracebak.c tb-gcc.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
 	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 

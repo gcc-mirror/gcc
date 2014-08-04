@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2012, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2014, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -95,19 +95,7 @@ extern void (*Unlock_Task) (void);
  *-- Target specific implementations --*
  *-------------------------------------*/
 
-#if defined (__alpha_vxworks)
-
-#include "tb-alvxw.c"
-
-#elif defined (__ALPHA) && defined (__VMS__)
-
-#include "tb-alvms.c"
-
-#elif defined (__ia64__) && defined (__VMS__)
-
-#include "tb-ivms.c"
-
-#elif defined (_WIN64) && defined (__SEH__)
+#if defined (_WIN64) && defined (__SEH__)
 
 #include <windows.h>
 

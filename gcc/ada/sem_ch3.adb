@@ -3769,6 +3769,14 @@ package body Sem_Ch3 is
             elsif Is_Interface (T) then
                null;
 
+            --  In GNATprove mode, Expand_Subtype_From_Expr does nothing. Thus,
+            --  we should prevent the generation of another Itype with the
+            --  same name as the one already generated, or we end up with
+            --  two identical types in GNATprove.
+
+            elsif GNATprove_Mode then
+               null;
+
             else
                Expand_Subtype_From_Expr (N, T, Object_Definition (N), E);
                Act_T := Find_Type_Of_Object (Object_Definition (N), N);
