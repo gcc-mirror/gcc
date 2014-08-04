@@ -8586,55 +8586,54 @@ package body Sem_Ch3 is
       --  The derived type inherits the representation clauses of the parent.
       --  However, for a private type that is completed by a derivation, there
       --  may be operation attributes that have been specified already (stream
-      --  attributes and External_Tag) and those must be provided. Finally,
-      --  if the partial view is a private extension, the representation items
-      --  of the parent have been inherited already, and should not be chained
+      --  attributes and External_Tag) and those must be provided. Finally, if
+      --  the partial view is a private extension, the representation items of
+      --  the parent have been inherited already, and should not be chained
       --  twice to the derived type.
 
-      if Is_Tagged_Type (Parent_Type)
-        and then Present (First_Rep_Item (Derived_Type))
-      then
-         --  The existing items are either operational items or items inherited
-         --  from a private extension declaration.
+      --  Historic note: The guard below used to check whether the parent type
+      --  is tagged. This is no longer needed because an untagged derived type
+      --  may carry rep items of its own as a result of certain SPARK pragmas.
+      --  With the old guard in place, the rep items of the derived type were
+      --  clobbered.
 
+      if Present (First_Rep_Item (Derived_Type)) then
          declare
-            Rep : Node_Id;
-            --  Used to iterate over representation items of the derived type
-
-            Last_Rep : Node_Id;
-            --  Last representation item of the (non-empty) representation
-            --  item list of the derived type.
-
-            Found : Boolean := False;
+            Par_Item  : constant Node_Id := First_Rep_Item (Parent_Type);
+            Inherited : Boolean := False;
+            Item      : Node_Id;
+            Last_Item : Node_Id;
 
          begin
-            Rep      := First_Rep_Item (Derived_Type);
-            Last_Rep := Rep;
-            while Present (Rep) loop
-               if Rep = First_Rep_Item (Parent_Type) then
-                  Found := True;
+            --  Inspect the rep item chain of the derived type and perform the
+            --  following two functions:
+            --    1) Determine whether the derived type already inherited the
+            --       rep items of the parent type.
+            --    2) Find the last rep item of the derived type
+
+            Item := First_Rep_Item (Derived_Type);
+            Last_Item := Item;
+            while Present (Item) loop
+               if Item = Par_Item then
+                  Inherited := True;
                   exit;
-
-               else
-                  Rep := Next_Rep_Item (Rep);
-
-                  if Present (Rep) then
-                     Last_Rep := Rep;
-                  end if;
                end if;
+
+               Last_Item := Item;
+               Item := Next_Rep_Item (Item);
             end loop;
 
-            --  Here if we either encountered the parent type's first rep
-            --  item on the derived type's rep item list (in which case
-            --  Found is True, and we have nothing else to do), or if we
-            --  reached the last rep item of the derived type, which is
-            --  Last_Rep, in which case we further chain the parent type's
-            --  rep items to those of the derived type.
+            --  Nothing to do if the derived type already inherited the rep
+            --  items from the parent type, otherwise append the parent rep
+            --  item chain to that of the derived type.
 
-            if not Found then
-               Set_Next_Rep_Item (Last_Rep, First_Rep_Item (Parent_Type));
+            if not Inherited then
+               Set_Next_Rep_Item (Last_Item, Par_Item);
             end if;
          end;
+
+      --  Otherwise the derived type lacks rep items and directly inherits the
+      --  rep items of the parent type.
 
       else
          Set_First_Rep_Item (Derived_Type, First_Rep_Item (Parent_Type));

@@ -1,5 +1,32 @@
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
+	* inline.adb, einfo.ads, s-tassta.adb, s-tarest.adb: Minor comment
+	fixes.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Handle properly
+	an aspect Import that specifies a False value.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add section on aspect Invariant'Class.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Check_Choice_Set): New flag Predicate_Error,
+	for better control of cascaded error messages when some choice
+	in a case statement over a predicated type violates the given
+	static predicate.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Type): Modify the
+	inheritance of the rep chain to ensure that a non-tagged type's
+	items are not clobbered during the inheritance.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, einfo.ads: Minor reformatting.
 
 2014-08-04  Yannick Moy  <moy@adacore.com>

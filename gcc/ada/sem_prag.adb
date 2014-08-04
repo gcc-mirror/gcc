@@ -7993,7 +7993,37 @@ package body Sem_Prag is
                      end if;
                   end;
 
-                  Set_Has_Completion (Def_Id);
+                  --  If the pragma comes from an aspect specification, there
+                  --  must be an Import aspect specified as well. In the rare
+                  --  case where Import is set to False, the suprogram needs to
+                  --  have a local completion.
+
+                  declare
+                     Imp_Aspect : constant Node_Id :=
+                                    Find_Aspect (Def_Id, Aspect_Import);
+                     Expr       : Node_Id;
+
+                  begin
+                     if Present (Imp_Aspect)
+                       and then Present (Expression (Imp_Aspect))
+                     then
+                        Expr := Expression (Imp_Aspect);
+                        Analyze_And_Resolve (Expr, Standard_Boolean);
+
+                        if Is_Entity_Name (Expr)
+                          and then Entity (Expr) = Standard_True
+                        then
+                           Set_Has_Completion (Def_Id);
+                        end if;
+
+                     --  If there is no expression, the default is True, as for
+                     --  all boolean aspects. Same for the older pragma.
+
+                     else
+                        Set_Has_Completion (Def_Id);
+                     end if;
+                  end;
+
                   Process_Interface_Name (Def_Id, Arg3, Arg4);
                end if;
 

@@ -1384,6 +1384,7 @@ package body Inline is
 
       function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id defines a compilation unit
+      --  Shouldn't this be in Sem_Aux???
 
       function In_Package_Visible_Spec (Id : Node_Id) return Boolean;
       --  Returns True if subprogram Id is defined in the visible part of a

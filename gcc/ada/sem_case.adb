@@ -113,7 +113,12 @@ package body Sem_Case is
       Subtyp         : Entity_Id;
       Others_Present : Boolean;
       Case_Node      : Node_Id)
+
    is
+      Predicate_Error : Boolean;
+      --  Flag to prevent cascaded errors when a static predicate is known to
+      --  be violated by one choice.
+
       procedure Check_Against_Predicate
         (Pred    : in out Node_Id;
          Choice  : Choice_Bounds;
@@ -626,6 +631,12 @@ package body Sem_Case is
 
          elsif Value1 > Value2 then
             return;
+
+         --  If predicate is already known to be violated, do no check for
+         --  coverage error, to prevent cascaded messages.
+
+         elsif Predicate_Error then
+            return;
          end if;
 
          --  Case of only one value that is missing
@@ -748,6 +759,8 @@ package body Sem_Case is
       --  expression is static, independently of whether the aspect mentions
       --  Static explicitly.
 
+      Predicate_Error := False;
+
       if Has_Predicate then
          Pred    := First (Static_Discrete_Predicate (Bounds_Type));
          Prev_Lo := Uint_Minus_1;
@@ -763,12 +776,20 @@ package body Sem_Case is
                Error   => Error);
 
             --  The analysis detected an illegal intersection between a choice
-            --  and a static predicate set.
+            --  and a static predicate set. Do not examine other choices unless
+            --  all errors are requested.
 
             if Error then
-               return;
+               Predicate_Error := True;
+               if not All_Errors_Mode then
+                  return;
+               end if;
             end if;
          end loop;
+
+         if Predicate_Error then
+            return;
+         end if;
 
          --  The choices may legally cover some of the static predicate sets,
          --  but not all. Emit an error for each non-covered set.
