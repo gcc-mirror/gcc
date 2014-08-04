@@ -5209,11 +5209,11 @@ package body Exp_Ch6 is
                --  Analyze call, but something goes wrong in some weird cases
                --  and it is not worth worrying about ???
 
-               --  The return statement is handled properly, and the call to
-               --  the postcondition, inserted below, does not require
+               --  The return statement is handled properly, and the call
+               --  to the postcondition, inserted below, does not require
                --  information from the body either. However, that call is
                --  analyzed in the enclosing scope, and an elaboration check
-               --  might improperly be added to it.  A guard in sem_elab is
+               --  might improperly be added to it. A guard in Sem_Elab is
                --  needed to prevent that spurious check, see Check_Elab_Call.
 
                Append_To (S, Rtn);
