@@ -34,7 +34,7 @@ package body Prj.Attr is
 
    --  Data for predefined attributes and packages
 
-   --  Names are in lower case and end with '#' or 'D'.
+   --  Names are in lower case and end with '#' or 'D'
 
    --  Package names are preceded by 'P'
 
@@ -55,16 +55,17 @@ package body Prj.Attr is
    --    'c' same as 'b', with optional index
 
    --  The third optional letter is
-   --     'R' to indicate that the attribute is read-only
-   --     'O' to indicate that others is allowed as an index for an associative
-   --     array
+   --     'R' the attribute is read-only
+   --     'O' others is allowed as an index for an associative array
 
-   --  If the character after the name in lower case letter is a 'D'
-   --  (for default), then 'D' must be followed by an enumeration value of type
+   --  If the character after the name in lower case letter is a 'D' (for
+   --  default), then 'D' must be followed by an enumeration value of type
    --  Attribute_Default_Value, followed by a '#'.
+
    --  Example:
    --    "SVobject_dirDdot_value#"
-   --  End is indicated by two consecutive '#'
+
+   --  End is indicated by two consecutive '#'.
 
    Initialization_Data : constant String :=
 
@@ -647,8 +648,8 @@ package body Prj.Attr is
             Finish := Start;
 
             while Initialization_Data (Finish) /= '#'
-              and then
-                Initialization_Data (Finish) /= 'D'
+                    and then
+                  Initialization_Data (Finish) /= 'D'
             loop
                Finish := Finish + 1;
             end loop;
@@ -658,20 +659,18 @@ package body Prj.Attr is
 
             if Initialization_Data (Finish) = 'D' then
                Start := Finish + 1;
-               Finish := Start;
 
+               Finish := Start;
                while Initialization_Data (Finish) /= '#' loop
                   Finish := Finish + 1;
                end loop;
 
                declare
                   Default_Name : constant String :=
-                    Initialization_Data (Start .. Finish - 1);
+                                   Initialization_Data (Start .. Finish - 1);
                   pragma Unsuppress (All_Checks);
-
                begin
                   Default := Attribute_Default_Value'Value (Default_Name);
-
                exception
                   when Constraint_Error =>
                      Osint.Fail
@@ -823,8 +822,8 @@ package body Prj.Attr is
       In_Package         : Package_Node_Id;
       Attr_Kind          : Defined_Attribute_Kind;
       Var_Kind           : Defined_Variable_Kind;
-      Index_Is_File_Name : Boolean := False;
-      Opt_Index          : Boolean := False;
+      Index_Is_File_Name : Boolean                 := False;
+      Opt_Index          : Boolean                 := False;
       Default            : Attribute_Default_Value := Empty_Value)
    is
       Attr_Name       : Name_Id;

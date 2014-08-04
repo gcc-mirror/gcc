@@ -60,7 +60,6 @@ package body Prj is
    --  Initial size for extensible buffer used in Add_To_Buffer
 
    The_Empty_String : Name_Id := No_Name;
-
    The_Dot_String   : Name_Id := No_Name;
 
    Debug_Level : Integer := 0;

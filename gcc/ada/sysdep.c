@@ -42,6 +42,7 @@
 #endif
 #include "selectLib.h"
 #include "vxWorks.h"
+#include "version.h"
 #if defined (__RTP__)
 #  include "vwModNum.h"
 #endif /* __RTP__ */
@@ -949,7 +950,7 @@ __gnat_is_file_not_found_error (int errno_val) {
       /* In the case of VxWorks, we also have to take into account various
        * filesystem-specific variants of this error.
        */
-#if ! defined (VTHREADS)
+#if ! defined (VTHREADS) && (_WRS_VXWORKS_MAJOR < 7)
       case S_dosFsLib_FILE_NOT_FOUND:
 #endif
 #if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))

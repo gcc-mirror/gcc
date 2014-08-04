@@ -109,7 +109,7 @@ package Prj.Attr is
 
       Default : Attribute_Default_Value := Empty_Value;
       --  The value of the attribute when referenced if the attribute has not
-      --  been (yet) declared.
+      --  yet been declared.
 
    end record;
    --  Name and characteristics of an attribute in a package registered
@@ -197,8 +197,7 @@ package Prj.Attr is
    function Attribute_Default_Of
      (Attribute : Attribute_Node_Id) return Attribute_Default_Value;
    --  Returns the default of the attribute, Read_Only_Value for read only
-   --  attributes, Empty_Value when ndefault not specified or specified
-   --  value.
+   --  attributes, Empty_Value when default not specified, or specified value.
 
    function Optional_Index_Of (Attribute : Attribute_Node_Id) return Boolean;
    --  Returns True if Attribute is a known attribute and may have an
@@ -241,14 +240,14 @@ package Prj.Attr is
       In_Package         : Package_Node_Id;
       Attr_Kind          : Defined_Attribute_Kind;
       Var_Kind           : Defined_Variable_Kind;
-      Index_Is_File_Name : Boolean := False;
-      Opt_Index          : Boolean := False;
+      Index_Is_File_Name : Boolean                 := False;
+      Opt_Index          : Boolean                 := False;
       Default            : Attribute_Default_Value := Empty_Value);
    --  Add a new attribute to registered package In_Package. Fails if Name
    --  (the attribute name) is empty, if In_Package is Empty_Package or if
    --  the attribute name has a duplicate name. See definition of type
    --  Attribute_Data above for the meaning of parameters Attr_Kind, Var_Kind,
-   --  Index_Is_File_Name, Opt_Index and Default.
+   --  Index_Is_File_Name, Opt_Index, and Default.
 
    function Package_Node_Id_Of (Name : Name_Id) return Package_Node_Id;
    --  Returns the package node id of the package with name Name. Returns

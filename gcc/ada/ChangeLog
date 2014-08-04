@@ -1,3 +1,49 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* prj-proc.adb, prj-part.adb, prj-strt.adb, prj.adb, prj.ads,
+	prj-attr.adb, prj-attr.ads: Minor reformatting.
+
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* expander.adb (Expand): Always perform special
+	expansion in GNATprove mode, even when doing pre-analysis.
+
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* repinfo.adb (List_Scalar_Storage_Order): List bit order if
+	not default. Also list bit order if SSO is specified. Do not
+	assume that bit order is always equal to scalar storage order.
+
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Set_SSO_From_Default): Do not set scalar storage
+	order to reverse SSO for a type that has an explicit native
+	Bit_Order.
+
+2014-08-04  Doug Rupp  <rupp@adacore.com>
+
+	* cal.c: Macro check for VxWorks7.
+	* init.c (getpid): Likewise.
+	* mkdir.c (__gnat_mkdir): Likewise.
+	* sysdep.c (__gnat_is_file_not_found_error): Likewise.
+
+2014-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Inhibit generation
+	of an invariant check in the case where No_Initialization is set,
+	since the object is uninitialized.
+
+2014-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* snames.ads-tmpl (Default_Scalar_Storage_Order): Now an attribute
+	name, in addition to a pragma name.
+	* snames.adb-tmpl (Get_Pragma_Id, Is_Configuration_Pragma_Name,
+	Is_Pragma_Name): Adjust accordingly.
+	* sem_attr.ads, sem_attr.adb, exp_attr.adb
+	(Attribute_Default_Scalar_Storage_Order): Add handling of new
+	attribute.
+	* gnat_rm.texi: Document the above.
+
 2014-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_util.adb (Check_Float_Op_Overflow): No-op in codepeer

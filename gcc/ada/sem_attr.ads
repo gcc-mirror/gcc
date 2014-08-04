@@ -135,20 +135,31 @@ package Sem_Attr is
       -----------------------
 
       Attribute_Default_Bit_Order => True,
-      --  Standard'Default_Bit_Order (Standard is the only permissible prefix),
+      --  Standard'Default_Bit_Order (Standard is the only permissible prefix)
       --  provides the value System.Default_Bit_Order as a Pos value (0 for
       --  High_Order_First, 1 for Low_Order_First). This is used to construct
       --  the definition of Default_Bit_Order in package System. This is a
       --  static attribute.
+
+      ----------------------------------
+      -- Default_Scalar_Storage_Order --
+      ----------------------------------
+
+      Attribute_Default_Scalar_Storage_Order => True,
+      --  Standard'Default_Scalar_Storage_Order (Standard is the
+      --  only permissible prefix) provides the current value of the
+      --  default scalar storage order (as specified using pragma
+      --  Default_Scalar_Storage_Order, or equal to Default_Bit_Order if
+      --  unspecified) as a System.Bit_Order value. This is a static attribute.
 
       ---------------
       -- Elab_Body --
       ---------------
 
       Attribute_Elab_Body => True,
-      --  This attribute can only be applied to a program unit name. It returns
-      --  the entity for the corresponding elaboration procedure for elabor-
-      --  ating the body of the referenced unit. This is used in the main
+      --  This attribute can only be applied to a program unit name. It
+      --  returns the entity for the corresponding elaboration procedure for
+      --  elaborating the body of the referenced unit. This is used in the main
       --  generated elaboration procedure by the binder, and is not normally
       --  used in any other context, but there may be specialized situations in
       --  which it is useful to be able to call this elaboration procedure from
@@ -172,13 +183,13 @@ package Sem_Attr is
 
       Attribute_Elab_Spec => True,
       --  This attribute can only be applied to a program unit name. It
-      --  returns the entity for the corresponding elaboration procedure
-      --  for elaborating the spec of the referenced unit. This is used
-      --  in the main generated elaboration procedure by the binder, and
-      --  is not normally used in any other context, but there may be
-      --  specialized situations in which it is useful to be able to
-      --  call this elaboration procedure from Ada code, e.g. if it
-      --  is necessary to do selective reelaboration to fix some error.
+      --  returns the entity for the corresponding elaboration procedure for
+      --  elaborating the spec of the referenced unit. This is used in the main
+      --  generated elaboration procedure by the binder, and is not normally
+      --  used in any other context, but there may be specialized situations in
+      --  which it is useful to be able to call this elaboration procedure from
+      --  Ada code, e.g. if it is necessary to do selective reelaboration to
+      --  fix some error.
 
       ----------------
       -- Elaborated --
@@ -209,8 +220,8 @@ package Sem_Attr is
       --------------
 
       Attribute_Enum_Val => True,
-      --  For every enumeration subtype S, S'Enum_Val denotes a function
-      --  with the following specification:
+      --  For every enumeration subtype S, S'Enum_Val denotes a function with
+      --  the following specification:
       --
       --    function S'Enum_Val (Arg : universal_integer) return S'Base;
       --
@@ -236,8 +247,8 @@ package Sem_Attr is
       --  The effect is thus equivalent to first converting the argument to
       --  the integer type used to represent S, and then doing an unchecked
       --  conversion to the fixed-point type. This attribute is primarily
-      --  intended for use in implementation of the input-output functions for
-      --  fixed-point values.
+      --  intended for use in implementation of the input-output functions
+      --  for fixed-point values.
 
       -----------------------
       -- Has_Discriminants --
@@ -290,10 +301,10 @@ package Sem_Attr is
       --  of the type. If possible this value is an invalid value, and in fact
       --  is identical to the value that would be set if Initialize_Scalars
       --  mode were in effect (including the behavior of its value on
-      --  environment variables or binder switches). The intended use is
-      --  to set a value where initialization is required (e.g. as a result of
-      --  the coding standards in use), but logically no initialization is
-      --  needed, and the value should never be accessed.
+      --  environment variables or binder switches). The intended use is to
+      --  set a value where initialization is required (e.g. as a result of the
+      --  coding standards in use), but logically no initialization is needed,
+      --  and the value should never be accessed.
 
       Attribute_Loop_Entry => True,
       --  For every object of a non-limited type, S'Loop_Entry [(Loop_Name)]
@@ -314,11 +325,11 @@ package Sem_Attr is
 
       Attribute_Maximum_Alignment => True,
       --  Standard'Maximum_Alignment (Standard is the only permissible prefix)
-      --  provides the maximum useful alignment value for the target. This
-      --  is a static value that can be used to specify the alignment for an
-      --  object, guaranteeing that it is properly aligned in all cases. The
-      --  time this is useful is when an external object is imported and its
-      --  alignment requirements are unknown. This is a static attribute.
+      --  provides the maximum useful alignment value for the target. This is a
+      --  static value that can be used to specify the alignment for an object,
+      --  guaranteeing that it is properly aligned in all cases. The time this
+      --  is useful is when an external object is imported and its alignment
+      --  requirements are unknown. This is a static attribute.
 
       --------------------
       -- Mechanism_Code --
@@ -346,19 +357,19 @@ package Sem_Attr is
       --------------------
 
       Attribute_Null_Parameter => True,
-      --  A reference T'Null_Parameter denotes an (imaginary) object of type or
-      --  subtype T allocated at (machine) address zero. The attribute is
-      --  allowed only as the default expression of a formal parameter, or as
-      --  an actual expression of a subprogram call. In either case, the
+      --  A reference T'Null_Parameter denotes an (imaginary) object of type
+      --  or subtype T allocated at (machine) address zero. The attribute is
+      --  allowed only as the default expression of a formal parameter, or
+      --  as an actual expression of a subprogram call. In either case, the
       --  subprogram must be imported.
       --
-      --  The identity of the object is represented by the address zero in the
-      --  argument list, independent of the passing mechanism (explicit or
-      --  default).
+      --  The identity of the object is represented by the address zero in
+      --  the argument list, independent of the passing mechanism (explicit
+      --  or default).
       --
       --  The reason that this capability is needed is that for a record or
-      --  other composite object passed by reference, there is no other way of
-      --  specifying that a zero address should be passed.
+      --  other composite object passed by reference, there is no other way
+      --  of specifying that a zero address should be passed.
 
       -----------------
       -- Object_Size --
