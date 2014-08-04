@@ -1,3 +1,17 @@
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Returns_Limited_View): New flag defined
+	on function entities whose return type is a limited view.
+	* freeze.adb (Freeze_Entity): Use Returns_Limited_View to determine
+	where to place the freeze node for a function that returns the
+	limited view of a type, when the function is called and frozen
+	in a different unit.
+
+2014-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Minor code
+	refactoring.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Clarify documentation on assertions.
