@@ -47,7 +47,7 @@ addrspace_free(void *v __attribute__ ((unused)), uintptr n __attribute__ ((unuse
 		chunk = page_size * sizeof vec;
 		if(chunk > (n - off))
 			chunk = n - off;
-		errval = mincore((int8*)v + off, chunk, vec);
+		errval = mincore((char*)v + off, chunk, (void*)vec);
 		// ENOMEM means unmapped, which is what we want.
 		// Anything else we assume means the pages are mapped.
 		if(errval == 0 || errno != ENOMEM)
