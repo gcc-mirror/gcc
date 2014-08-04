@@ -20936,7 +20936,7 @@ including machine instructions in a subprogram.
 The two features are similar, and both are closely related to the mechanism
 provided by the asm instruction in the GNU C compiler.  Full understanding
 and use of the facilities in this package requires understanding the asm
-instruction, see @ref{Extended Asm,,, gcc, Using the GNU Compiler 
+instruction, see @ref{Extended Asm,,, gcc, Using the GNU Compiler
 Collection (GCC)}.
 
 Calls to the function @code{Asm} and the procedure @code{Asm} have identical
@@ -20970,7 +20970,7 @@ The @code{Asm_Output} attribute denotes a function that takes two
 parameters.  The first is a string, the second is the name of a variable
 of the type designated by the attribute prefix.  The first (string)
 argument is required to be a static expression and designates the
-constraint (@pxref{Constraints,,, gcc, Using the GNU Compiler 
+constraint (@pxref{Constraints,,, gcc, Using the GNU Compiler
 Collection (GCC)})
 for the parameter (e.g.@: what kind of register is required).  The second
 argument is the variable to be written or updated with the
@@ -21007,7 +21007,7 @@ expression, and is a space or comma separated list of names of registers
 that must be considered destroyed as a result of the @code{Asm} call.  If
 this argument is the null string (the default value), then the code
 generator assumes that no additional registers are destroyed.
-In addition to registers, the special clobbers @code{memory} and 
+In addition to registers, the special clobbers @code{memory} and
 @code{cc} as described in the GNU C docs are both supported.
 
 The fifth argument, not present in the above example, called the
@@ -21019,7 +21019,7 @@ will still be generated, even if none of the outputs are
 used.  @xref{Volatile,,,
 gcc, Using the GNU Compiler Collection (GCC)}, for the full description.
 Generally it is strongly advisable to use Volatile for any ASM statement
-that is missing either input or output operands or to avoid unwanted 
+that is missing either input or output operands or to avoid unwanted
 optimizations. A warning is generated if this advice is not followed.
 
 No support is provided for GNU C's @code{asm goto} feature.
