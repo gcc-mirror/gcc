@@ -1005,7 +1005,13 @@ package body Sem_Attr is
                   --  pointer can be used to modify the variable, and we might
                   --  not detect this, leading to some junk warnings.
 
-                  Set_Never_Set_In_Source (Ent, False);
+                  --  We only do this for source references, since otherwise
+                  --  we can suppress warnings, e.g. from the unrestricted
+                  --  access generated for validity checks in -gnatVa mode.
+
+                  if Comes_From_Source (N) then
+                     Set_Never_Set_In_Source (Ent, False);
+                  end if;
 
                   --  Mark entity as address taken, and kill current values
 

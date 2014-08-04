@@ -14557,8 +14557,7 @@ package body Sem_Util is
             --  this modifies a constant, then give an appropriate warning.
 
             if Overlays_Constant (Ent)
-              and then Modification_Comes_From_Source
-              and then Sure
+              and then (Modification_Comes_From_Source and Sure)
             then
                declare
                   A : constant Node_Id := Address_Clause (Ent);

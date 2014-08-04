@@ -6448,13 +6448,19 @@ package body Exp_Attr is
                      end if;
 
                      --  We now have an object of the proper endianness and
-                     --  alignment, and can call the Valid runtime routine.
+                     --  alignment, and can construct a Valid attribute.
+
+                     --  We make sure the prefix of this valid attribute is
+                     --  marked as not coming from source, to avoid losing
+                     --  warnings from 'Valid looking like a possible update.
+
+                     Set_Comes_From_Source (Pref, False);
 
                      Expand_Fpt_Attribute
                        (N, Pkg, Name_Valid,
                         New_List (
                           Make_Attribute_Reference (Loc,
-                            Prefix => Unchecked_Convert_To (Ftp, Pref),
+                            Prefix         => Unchecked_Convert_To (Ftp, Pref),
                             Attribute_Name => Name_Unrestricted_Access)));
                end case;
 
