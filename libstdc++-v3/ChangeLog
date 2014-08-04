@@ -1,3 +1,11 @@
+2014-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from mainline
+	2014-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::_M_type_size): Add
+	const to constexpr member functions.
+
 2014-07-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/60037 - SIGFPE in std::generate_canonical<unsigned int...>
