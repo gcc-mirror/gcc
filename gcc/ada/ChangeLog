@@ -1,3 +1,25 @@
+2014-08-04  Doug Rupp  <rupp@adacore.com>
+
+	* g-calend.adb (timeval_to_duration, duration_to_timeval): Change sec
+	formal to long_long.
+	* g-calend.ads (timeval): Bump up size to accomodate sec type.
+	* s-taprop-linux.adb (timeval_to_duration): Change sec formal to
+	long_long
+	* s-osprim-posix.adb (timeval): Bump up size to accomodate
+	new sec type.
+	(timeval_to_duration): Change sec formal to Long_Long_Integer
+	* s-osinte-darwin.adb (timeval): Bump up
+	size to accomodate new sec type.
+	(timeval_to_duration): Change sec formal to long_long
+	* s-osinte-android.adb: Likewise.
+	* cal.c (__gnat_timeal_to_duration, __gnat_duration_to_timeval): Change
+	sec formal from long to long long.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Qualified_Expression): Make sure
+	Do_Range_Check flag gets set.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads, einfo.adb (Is_Standard_String_Type): New function.
