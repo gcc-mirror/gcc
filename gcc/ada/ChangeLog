@@ -1,3 +1,46 @@
+2014-08-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-dect.adb (Parse_Case_Construction): It is no longer
+	an error if the variable for a case construction is not
+	typed, only if the variable value is not a single string. Call
+	Parse_Choice_List and End_Case_Construction with the new parameter
+	to indicate that the variable is typed.
+	* prj-strt.adb (End_Case_Construction): Only check the labels
+	if the variable is typed.  If the variable is not typed,
+	issue a warning when there is no "when others" allternative.
+	(Parse_Choice_List): Manage the labels only if the variable
+	is typed.
+	* prj-strt.ads (End_Case_Construction): New Boolean parameter
+	String_Type.
+	(Parse_Choice_List): Ditto.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Additional fix to Check_Predicate_Use.
+
+2014-08-04  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Update documentation of case constructions with
+	variables that are not typed.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Build_Class_Wide_Wrapper): If the operator carries
+	an Eliminated pragma, indicate that the wrapper is also to be
+	eliminated, to prevent spurious errors when using gnatelim on
+	programs that include box-initialization of equality operators
+	(consequence of AI05-071)..
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Activate_Overflow_Check): Handle floating-point
+	case correctly.
+	* checks.ads (Activate_Overflow_Check): Clarify handling of
+	floating-point cases.
+	* exp_util.adb (Check_Float_Op_Overflow): Reset Do_Overflow_Check
+	flag if we generate an explicit overflow check (for
+	Check_Float_Overflow mode).
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* prj-proc.adb, prj-part.adb, prj-strt.adb, prj.adb, prj.ads,

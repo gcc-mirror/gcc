@@ -2321,6 +2321,13 @@ package body Sem_Ch8 is
          Insert_Before_And_Analyze (N, Spec_Decl);
          Wrap_Id := Defining_Entity (Spec_Decl);
 
+         --  If the operator carries an Eliminated pragma, indicate that the
+         --  wrapper is also to be eliminated, to prevent spurious error when
+         --  using gnatelim on programs that include box-initialization of
+         --  equality operators.
+
+         Set_Is_Eliminated (Wrap_Id, Is_Eliminated (Prim_Op));
+
          --  The generated body does not freeze and must be analyzed when the
          --  class-wide wrapper is frozen. The body is only needed if expansion
          --  is enabled.

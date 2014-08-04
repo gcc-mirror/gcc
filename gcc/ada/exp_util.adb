@@ -1641,10 +1641,11 @@ package body Exp_Util is
    begin
       --  Return if no check needed
 
-      if not Check_Float_Overflow
-        or else not Is_Floating_Point_Type (Etype (N))
+      if not Is_Floating_Point_Type (Etype (N))
+        or else not (Do_Overflow_Check (N) and then Check_Float_Overflow)
 
         --  In CodePeer_Mode, rely on the overflow check flag being set instead
+        --  and do not expand the code for float overflow checking.
 
         or else CodePeer_Mode
       then
@@ -1663,9 +1664,12 @@ package body Exp_Util is
          Typ : constant Entity_Id  := Etype (N);
 
       begin
-         --  Prevent recursion
+         --  Turn off the Do_Overflow_Check flag, since we are doing that work
+         --  right here. We also set the node as analyzed to prevent infinite
+         --  recursion from repeating the operation in the expansion.
 
-         Set_Analyzed (N);
+         Set_Do_Overflow_Check (N, False);
+         Set_Analyzed (N, True);
 
          --  Do the rewrite to include the check
 

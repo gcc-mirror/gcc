@@ -297,7 +297,8 @@ package body Prj.Strt is
    procedure End_Case_Construction
      (Check_All_Labels   : Boolean;
       Case_Location      : Source_Ptr;
-      Flags              : Processing_Flags)
+      Flags              : Processing_Flags;
+      String_Type        : Boolean)
    is
       Non_Used : Natural := 0;
       First_Non_Used : Choice_Node_Id := First_Choice_Node_Id;
@@ -306,7 +307,8 @@ package body Prj.Strt is
       --  of the string type have been used.
 
       if Check_All_Labels then
-         for Choice in Choice_First .. Choices.Last loop
+         if String_Type then
+            for Choice in Choice_First .. Choices.Last loop
                if not Choices.Table (Choice).Already_Used then
                   Non_Used := Non_Used + 1;
 
@@ -314,27 +316,35 @@ package body Prj.Strt is
                      First_Non_Used := Choice;
                   end if;
                end if;
-         end loop;
-
-         --  If only one is not used, report a single warning for this value
-
-         if Non_Used = 1 then
-            Error_Msg_Name_1 := Choices.Table (First_Non_Used).The_String;
-            Error_Msg (Flags, "?value %% is not used as label", Case_Location);
-
-         --  If several are not used, report a warning for each one of them
-
-         elsif Non_Used > 1 then
-            Error_Msg
-              (Flags, "?the following values are not used as labels:",
-               Case_Location);
-
-            for Choice in First_Non_Used .. Choices.Last loop
-               if not Choices.Table (Choice).Already_Used then
-                  Error_Msg_Name_1 := Choices.Table (Choice).The_String;
-                  Error_Msg (Flags, "\?%%", Case_Location);
-               end if;
             end loop;
+
+            --  If only one is not used, report a single warning for this value
+
+            if Non_Used = 1 then
+               Error_Msg_Name_1 := Choices.Table (First_Non_Used).The_String;
+               Error_Msg
+                 (Flags, "?value %% is not used as label", Case_Location);
+
+               --  If several are not used, report a warning for each one of
+               --  them.
+
+            elsif Non_Used > 1 then
+               Error_Msg
+                 (Flags, "?the following values are not used as labels:",
+                  Case_Location);
+
+               for Choice in First_Non_Used .. Choices.Last loop
+                  if not Choices.Table (Choice).Already_Used then
+                     Error_Msg_Name_1 := Choices.Table (Choice).The_String;
+                     Error_Msg (Flags, "\?%%", Case_Location);
+                  end if;
+               end loop;
+            end if;
+         else
+            Error_Msg
+              (Flags,
+               "?no when others for this case construction",
+               Case_Location);
          end if;
       end if;
 
@@ -487,7 +497,8 @@ package body Prj.Strt is
    procedure Parse_Choice_List
      (In_Tree      : Project_Node_Tree_Ref;
       First_Choice : out Project_Node_Id;
-      Flags        : Processing_Flags)
+      Flags        : Processing_Flags;
+      String_Type  : Boolean := True)
    is
       Current_Choice : Project_Node_Id := Empty_Node;
       Next_Choice    : Project_Node_Id := Empty_Node;
@@ -517,38 +528,40 @@ package body Prj.Strt is
 
          Set_String_Value_Of (Current_Choice, In_Tree, To => Choice_String);
 
-         --  Check if the label is part of the string type and if it has not
-         --  been already used.
+         if String_Type then
+            --  Check if the label is part of the string type and if it has not
+            --  been already used.
 
-         Found := False;
-         for Choice in Choice_First .. Choices.Last loop
-            if Choices.Table (Choice).The_String = Choice_String then
+            Found := False;
+            for Choice in Choice_First .. Choices.Last loop
+               if Choices.Table (Choice).The_String = Choice_String then
 
-               --  This label is part of the string type
+                  --  This label is part of the string type
 
-               Found := True;
+                  Found := True;
 
-               if Choices.Table (Choice).Already_Used then
+                  if Choices.Table (Choice).Already_Used then
 
-                  --  But it has already appeared in a choice list for this
-                  --  case construction so report an error.
+                     --  But it has already appeared in a choice list for this
+                     --  case construction so report an error.
 
-                  Error_Msg_Name_1 := Choice_String;
-                  Error_Msg (Flags, "duplicate case label %%", Token_Ptr);
+                     Error_Msg_Name_1 := Choice_String;
+                     Error_Msg (Flags, "duplicate case label %%", Token_Ptr);
 
-               else
-                  Choices.Table (Choice).Already_Used := True;
+                  else
+                     Choices.Table (Choice).Already_Used := True;
+                  end if;
+
+                  exit;
                end if;
+            end loop;
 
-               exit;
+            --  If the label is not part of the string list, report an error
+
+            if not Found then
+               Error_Msg_Name_1 := Choice_String;
+               Error_Msg (Flags, "illegal case label %%", Token_Ptr);
             end if;
-         end loop;
-
-         --  If the label is not part of the string list, report an error
-
-         if not Found then
-            Error_Msg_Name_1 := Choice_String;
-            Error_Msg (Flags, "illegal case label %%", Token_Ptr);
          end if;
 
          --  Scan past the label

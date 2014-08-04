@@ -388,27 +388,46 @@ package body Checks is
    -----------------------------
 
    procedure Activate_Overflow_Check (N : Node_Id) is
+      Typ : constant Entity_Id := Etype (N);
+
    begin
-      --  Nothing to do for unconstrained floating-point types (the test for
-      --  Etype (N) being present seems necessary in some cases, should be
-      --  tracked down, but for now just ignore the check in this case ???),
-      --  except if Check_Float_Overflow is set.
+      --  Floating-point case. If Etype is not set (this can happen when we
+      --  activate a check on a node that has not yet been analyzed), then
+      --  we assume we do not have a floating-point type (as per our spec).
 
-      if Present (Etype (N))
-        and then Is_Floating_Point_Type (Etype (N))
-        and then not Is_Constrained (Etype (N))
-        and then not Check_Float_Overflow
-      then
-         return;
+      if Present (Typ) and then Is_Floating_Point_Type (Typ) then
+
+         --  Ignore call if we have no automatic overflow checks on the target
+         --  and Check_Float_Overflow mode is not set. These are the cases in
+         --  which we expect to generate infinities and NaN's with no check.
+
+         if not (Machine_Overflows_On_Target or Check_Float_Overflow) then
+            return;
+
+         --  Ignore for unary operations ("+", "-", abs) since these can never
+         --  result in overflow for floating-point cases.
+
+         elsif Nkind (N) in N_Unary_Op then
+            return;
+
+         --  Otherwise we will set the flag
+
+         else
+            null;
+         end if;
+
+      --  Discrete case
+
+      else
+         --  Nothing to do for Rem/Mod/Plus (overflow not possible, the check
+         --  for zero-divide is a divide check, not an overflow check).
+
+         if Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
+            return;
+         end if;
       end if;
 
-      --  Nothing to do for Rem/Mod/Plus (overflow not possible)
-
-      if Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
-         return;
-      end if;
-
-      --  Otherwise set the flag
+      --  Fall through for cases where we do set the flag
 
       Set_Do_Overflow_Check (N, True);
       Possible_Local_Raise (N, Standard_Constraint_Error);
