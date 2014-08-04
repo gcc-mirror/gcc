@@ -313,6 +313,7 @@ Implementation Defined Aspects
 * Aspect Linker_Section::
 * Aspect No_Elaboration_Code_All::
 * Aspect Object_Size::
+* Aspect Obsolescent::
 * Aspect Part_Of::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
@@ -8068,6 +8069,7 @@ clause.
 * Aspect Lock_Free::
 * Aspect No_Elaboration_Code_All::
 * Aspect Object_Size::
+* Aspect Obsolescent::
 * Aspect Part_Of::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
@@ -8349,6 +8351,14 @@ statement for a program unit.
 @noindent
 This aspect is equivalent to an @code{Object_Size} attribute definition
 clause.
+
+@node Aspect Obsolescent
+@unnumberedsec Aspect Obsolescent
+@findex Obsolsecent
+@noindent
+This aspect is equivalent to an @code{Obsolescent} pragma. Note that the
+evaluation of this aspect happens at the point of occurrence, it is not
+delayed until the freeze point.
 
 @node Aspect Part_Of
 @unnumberedsec Aspect Part_Of

@@ -2388,6 +2388,25 @@ package body Sem_Ch13 is
                   goto Continue;
                end Initializes;
 
+               --  Obsolescent
+
+               when Aspect_Obsolescent => declare
+                  Args : List_Id;
+
+               begin
+                  if No (Expr) then
+                     Args := No_List;
+                  else
+                     Args := New_List (
+                       Make_Pragma_Argument_Association (Sloc (Expr),
+                         Expression => Relocate_Node (Expr)));
+                  end if;
+
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => Args,
+                     Pragma_Name                  => Chars (Id));
+               end;
+
                --  Part_Of
 
                when Aspect_Part_Of =>
@@ -8758,6 +8777,7 @@ package body Sem_Ch13 is
               Aspect_Implicit_Dereference      |
               Aspect_Initial_Condition         |
               Aspect_Initializes               |
+              Aspect_Obsolescent               |
               Aspect_Part_Of                   |
               Aspect_Post                      |
               Aspect_Postcondition             |
