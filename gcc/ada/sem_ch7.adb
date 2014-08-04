@@ -437,11 +437,9 @@ package body Sem_Ch7 is
          Inspect_Deferred_Constant_Completion (Declarations (N));
       end if;
 
-      --  After declarations have been analyzed, the body has been set to have
-      --  the final value of SPARK_Mode. Check that the SPARK_Mode for the body
-      --  is consistent with the SPARK_Mode for the spec.
+      --  Verify that the SPARK_Mode of the body agrees with that of its spec
 
-      if Present (SPARK_Pragma (Body_Id)) then
+      if not Inside_A_Generic and then Present (SPARK_Pragma (Body_Id)) then
          if Present (SPARK_Aux_Pragma (Spec_Id)) then
             if Get_SPARK_Mode_From_Pragma (SPARK_Aux_Pragma (Spec_Id)) = Off
                  and then

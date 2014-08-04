@@ -3078,31 +3078,6 @@ package body Sem_Util is
       end if;
    end Check_Result_And_Post_State;
 
-   ---------------------------------
-   -- Check_SPARK_Mode_In_Generic --
-   ---------------------------------
-
-   procedure Check_SPARK_Mode_In_Generic (N : Node_Id) is
-      Aspect : Node_Id;
-
-   begin
-      --  Try to find aspect SPARK_Mode and flag it as illegal
-
-      if Has_Aspects (N) then
-         Aspect := First (Aspect_Specifications (N));
-         while Present (Aspect) loop
-            if Get_Aspect_Id (Aspect) = Aspect_SPARK_Mode then
-               Error_Msg_Name_1 := Name_SPARK_Mode;
-               Error_Msg_N
-                 ("incorrect placement of aspect % on a generic", Aspect);
-               exit;
-            end if;
-
-            Next (Aspect);
-         end loop;
-      end if;
-   end Check_SPARK_Mode_In_Generic;
-
    ------------------------------
    -- Check_Unprotected_Access --
    ------------------------------
@@ -16480,6 +16455,128 @@ package body Sem_Util is
 
       Set_Entity (N, Val);
    end Set_Entity_With_Checks;
+
+   ----------------------------------
+   -- Set_Ignore_Pragma_SPARK_Mode --
+   ----------------------------------
+
+   procedure Set_Ignore_Pragma_SPARK_Mode (N : Node_Id) is
+      procedure Set_SPARK_Mode (Expr : Node_Id);
+      --  Set flag Ignore_Pragma_SPARK_Mode based on the argument of aspect or
+      --  pragma SPARK_Mode denoted by Expr.
+
+      --------------------
+      -- Set_SPARK_Mode --
+      --------------------
+
+      procedure Set_SPARK_Mode (Expr : Node_Id) is
+      begin
+         --  When pragma SPARK_Mode with argument "off" applies to an instance,
+         --  all SPARK_Mode pragmas within the instance are ignored.
+
+         if Present (Expr)
+           and then Nkind (Expr) = N_Identifier
+           and then Chars (Expr) = Name_Off
+         then
+            Ignore_Pragma_SPARK_Mode := True;
+         end if;
+      end Set_SPARK_Mode;
+
+      --  Local variables
+
+      Aspects : constant List_Id := Aspect_Specifications (N);
+      Context : constant Node_Id := Parent (N);
+      Args    : List_Id;
+      Aspect  : Node_Id;
+      Decl    : Node_Id;
+
+   --  Start of processing for Set_Ignore_Pragma_SPARK_Mode
+
+   begin
+      --  When the enclosing context of the instance has SPARK_Mode "off", all
+      --  SPARK_Mode pragmas within the instance are ignored. Note that there
+      --  is no point in checking whether the instantiation itself carries
+      --  aspect/pragma SPARK_Mode because it is either illegal ("on") or has
+      --  no effect ("off").
+
+      if SPARK_Mode = Off then
+         Ignore_Pragma_SPARK_Mode := True;
+         return;
+      end if;
+
+      --  Inspect the aspects of the instantiation and locate SPARK_Mode. Note
+      --  that the aspect form of SPARK_Mode precedes a potentially duplicate
+      --  pragma.
+
+      if Present (Aspects) then
+         Aspect := First (Aspects);
+         while Present (Aspect) loop
+            if Get_Aspect_Id (Aspect) = Aspect_SPARK_Mode then
+               Set_SPARK_Mode (Expression (Aspect));
+               return;
+            end if;
+
+            Next (Aspect);
+         end loop;
+      end if;
+
+      --  Peek ahead of the instance and locate pragma SPARK_Mode. Even though
+      --  the pragma is analyzed after the instance, its mode must be known now
+      --  as it governs the legality of SPARK_Mode pragmas within the instance.
+
+      Decl := Empty;
+
+      --  The instance is a compilation unit, the pragma appears on the
+      --  Pragmas_After list.
+
+      if Present (Context)
+        and then Nkind (Context) = N_Compilation_Unit
+        and then Present (Aux_Decls_Node (Context))
+        and then Present (Pragmas_After (Aux_Decls_Node (Context)))
+      then
+         Decl := First (Pragmas_After (Aux_Decls_Node (Context)));
+
+      --  The instance is part of a declarative list, the pragma appears after
+      --  the instance.
+
+      elsif Is_List_Member (N) then
+         Decl := Next (N);
+      end if;
+
+      --  Inspect all declarations following the instance
+
+      while Present (Decl) loop
+         if Nkind (Decl) = N_Pragma then
+            if Get_Pragma_Id (Decl) = Pragma_SPARK_Mode then
+               Args := Pragma_Argument_Associations (Decl);
+
+               --  The pragma argument dictates the mode
+
+               if Present (Args) then
+                  Set_SPARK_Mode (Get_Pragma_Arg (First (Args)));
+               end if;
+
+               --  Only the first SPARK_Mode following the instance is
+               --  considered, any extra (illegal) pragmas are ignored.
+
+               exit;
+            end if;
+
+         --  Skip internally generated code
+
+         elsif not Comes_From_Source (Decl) then
+            null;
+
+         --  Otherwise a source construct exhaust the range where the pragma
+         --  may appear.
+
+         else
+            exit;
+         end if;
+
+         Next (Decl);
+      end loop;
+   end Set_Ignore_Pragma_SPARK_Mode;
 
    ------------------------
    -- Set_Name_Entity_Id --

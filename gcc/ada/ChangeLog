@@ -1,3 +1,32 @@
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* opt.ads Alphabetize various global flags. New flag
+	Ignore_Pragma_SPARK_Mode along with a comment on usage.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body):
+	Pragma SPARK_Mode is now allowed in generic units.
+	(Analyze_Subprogram_Body_Helper): Do not verify the compatibility
+	between the SPARK_Mode of a spec and that of a body when inside
+	a generic.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Do not verify the
+	compatibility between the SPARK_Mode of a spec and that of a
+	body when inside a generic.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration):
+	Pragma SPARK_Mode is now allowed in generic units.
+	(Analyze_Package_Instantiation): Save and restore the value of
+	flag Ignore_ Pragma_SPARK_Mode in a stack-like fasion. Set
+	the governing SPARK_Mode before analyzing the instance.
+	(Analyze_Subprogram_Instantiation): Save and restore the value
+	of flag Ignore_ Pragma_SPARK_Mode in a stack-like fasion. Set
+	the governing SPARK_Mode before analyzing the instance.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Emulate the
+	placement of a source pragma when inserting the generated pragma
+	for aspect SPARK_Mode.
+	* sem_prag.adb (Analyze_Pragma): Reimplement the handling of
+	pragma SPARK_Mode to allow for generics and their respective
+	instantiations.
+	* sem_util.ads, sem_util.adb (Check_SPARK_Mode_In_Generic): Removed.
+	(Set_Ignore_Pragma_SPARK_Mode): New routine.
+
 2014-08-04  Eric Botcazou  <ebotcazou@adacore.com>
 
         * gcc-interface/decl.c (gnat_to_gnu_entity) <E_Component>: Deal with

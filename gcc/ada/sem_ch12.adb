@@ -3342,8 +3342,6 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
-      Check_SPARK_Mode_In_Generic (N);
-
       --  The aspect specifications are not attached to the tree, and must
       --  be copied and attached to the generic copy explicitly.
 
@@ -3531,6 +3529,9 @@ package body Sem_Ch12 is
       Unit_Renaming    : Node_Id;
       Needs_Body       : Boolean;
       Inline_Now       : Boolean := False;
+
+      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
+      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
 
       Save_Style_Check : constant Boolean := Style_Check;
       --  Save style check mode for restore on exit
@@ -3771,6 +3772,12 @@ package body Sem_Ch12 is
          goto Leave;
 
       else
+         --  If the instance or its context is subject to SPARK_Mode "off",
+         --  set the global flag which signals Analyze_Pragma to ignore all
+         --  SPARK_Mode pragmas within the instance.
+
+         Set_Ignore_Pragma_SPARK_Mode (N);
+
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
 
          --  Initialize renamings map, for error checking, and the list that
@@ -3835,9 +3842,7 @@ package body Sem_Ch12 is
             Set_Visible_Declarations (Act_Spec, Renaming_List);
          end if;
 
-         Act_Decl :=
-           Make_Package_Declaration (Loc,
-             Specification => Act_Spec);
+         Act_Decl := Make_Package_Declaration (Loc, Specification => Act_Spec);
 
          --  Propagate the aspect specifications from the package declaration
          --  template to the instantiated version of the package declaration.
@@ -4277,6 +4282,7 @@ package body Sem_Ch12 is
          Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
+      Ignore_Pragma_SPARK_Mode := Save_IPSM;
       Style_Check := Save_Style_Check;
 
       --  Check that if N is an instantiation of System.Dim_Float_IO or
@@ -4311,6 +4317,7 @@ package body Sem_Ch12 is
             Restore_Env;
          end if;
 
+         Ignore_Pragma_SPARK_Mode := Save_IPSM;
          Style_Check := Save_Style_Check;
    end Analyze_Package_Instantiation;
 
@@ -4865,6 +4872,9 @@ package body Sem_Ch12 is
 
       --  Local variables
 
+      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
+      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
@@ -4929,6 +4939,12 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
+         --  If the instance or its context is subject to SPARK_Mode "off",
+         --  set the global flag which signals Analyze_Pragma to ignore all
+         --  SPARK_Mode pragmas within the instance.
+
+         Set_Ignore_Pragma_SPARK_Mode (N);
+
          Set_Entity (Gen_Id, Gen_Unit);
          Set_Is_Instantiated (Gen_Unit);
 
@@ -5139,6 +5155,8 @@ package body Sem_Ch12 is
          Env_Installed := False;
          Generic_Renamings.Set_Last (0);
          Generic_Renamings_HTable.Reset;
+
+         Ignore_Pragma_SPARK_Mode := Save_IPSM;
       end if;
 
    <<Leave>>
@@ -5155,6 +5173,8 @@ package body Sem_Ch12 is
          if Env_Installed then
             Restore_Env;
          end if;
+
+         Ignore_Pragma_SPARK_Mode := Save_IPSM;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------
