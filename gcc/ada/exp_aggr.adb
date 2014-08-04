@@ -5013,6 +5013,13 @@ package body Exp_Aggr is
                    (Return_Applies_To (Return_Statement_Entity (Parent (N))))
       then
          return;
+
+      --  Do not attempt expansion if error already detected. We may reach this
+      --  point in spite of previous errors when compiling with -gnatq, to
+      --  force all possible errors (this is the usual ACATS mode).
+
+      elsif Error_Posted (N) then
+         return;
       end if;
 
       --  If the semantic analyzer has determined that aggregate N will raise

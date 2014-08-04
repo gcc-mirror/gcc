@@ -1,3 +1,30 @@
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-trasym-vms-ia64.adb, g-trasym-vms-alpha.adb: Removed.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Do not attempt expansion
+	if error already detected.  We may reach this point in spite of
+	previous errors when compiling with -gnatq, to force all possible
+	errors (this is the usual ACATS mode).
+
+2014-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Generate_Range_Check): For the case of converting
+	a base type with a larger range to a smaller target subtype, only
+	use unchecked conversions of bounds in the range check followed
+	by conversion in the case where both types are discrete. In other
+	cases, convert to the target base type and save in a temporary
+	followed by the range check.
+	(Convert_And_Check_Range): New procedure factoring code to save
+	conversion to a temporary followed by a range check (called two
+	places in Generate_Range_Check).
+	* exp_ch4.adb (Expand_N_Type_Conversion): Relax previous
+	check-in, to generate range checks for conversions between
+	any floating-point types rather than limiting it to matching
+	base types.
+
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* gcc-interface/trans.c: Use hash_set instead of pointer_set.

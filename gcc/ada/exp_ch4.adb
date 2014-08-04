@@ -10844,19 +10844,19 @@ package body Exp_Ch4 is
 
       --  The only remaining step is to generate a range check if we still have
       --  a type conversion at this stage and Do_Range_Check is set. For now we
-      --  do this only for conversions of discrete types and for floating-point
-      --  conversions where the base types of source and target are the same.
+      --  do this only for conversions of discrete types and for float-to-float
+      --  conversions.
 
       if Nkind (N) = N_Type_Conversion then
 
-         --  For now we only support floating-point cases where the base types
-         --  of the target type and source expression are the same, so there's
-         --  potentially only a range check. Conversions where the source and
-         --  target have different base types are still TBD. ???
+         --  For now we only support floating-point cases where both source
+         --  and target are floating-point types. Conversions where the source
+         --  and target involve integer or fixed-point types are still TBD,
+         --  though not clear whether those can even happen at this point, due
+         --  to transformations above. ???
 
          if Is_Floating_Point_Type (Etype (N))
-           and then
-             Base_Type (Etype (N)) = Base_Type (Etype (Expression (N)))
+           and then Is_Floating_Point_Type (Etype (Expression (N)))
          then
             if Do_Range_Check (Expression (N))
               and then Is_Floating_Point_Type (Target_Type)
@@ -10864,6 +10864,8 @@ package body Exp_Ch4 is
                Generate_Range_Check
                  (Expression (N), Target_Type, CE_Range_Check_Failed);
             end if;
+
+         --  Discrete-to-discrete conversions
 
          elsif Is_Discrete_Type (Etype (N)) then
             declare
