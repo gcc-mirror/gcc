@@ -713,9 +713,7 @@ package body Exp_Ch3 is
       if Has_Default_Init
         or else (not Restriction_Active (No_Initialize_Scalars)
                   and then Is_Public (A_Type)
-                  and then Root_Type (A_Type) /= Standard_String
-                  and then Root_Type (A_Type) /= Standard_Wide_String
-                  and then Root_Type (A_Type) /= Standard_Wide_Wide_String)
+                  and then not Is_Standard_String_Type (A_Type))
       then
          Proc_Id :=
            Make_Defining_Identifier (Loc,
@@ -6257,10 +6255,7 @@ package body Exp_Ch3 is
             --  initialize scalars mode, and these types are treated specially
             --  and do not need initialization procedures.
 
-            elsif     Root_Type (Base) = Standard_String
-              or else Root_Type (Base) = Standard_Wide_String
-              or else Root_Type (Base) = Standard_Wide_Wide_String
-            then
+            elsif Is_Standard_String_Type (Base) then
                null;
 
             --  Otherwise we have to build an init proc for the subtype
@@ -8001,12 +7996,7 @@ package body Exp_Ch3 is
 
       --  String or Wide_[Wide]_String (must have Initialize_Scalars set)
 
-      elsif Root_Type (T) = Standard_String
-              or else
-            Root_Type (T) = Standard_Wide_String
-              or else
-            Root_Type (T) = Standard_Wide_Wide_String
-      then
+      elsif Is_Standard_String_Type (T) then
          pragma Assert (Init_Or_Norm_Scalars);
 
          return
@@ -9714,10 +9704,7 @@ package body Exp_Ch3 is
       --  filled with appropriate initializing values before they are used).
 
       elsif Consider_IS_NS
-        and then
-          (Root_Type (T) = Standard_String      or else
-           Root_Type (T) = Standard_Wide_String or else
-           Root_Type (T) = Standard_Wide_Wide_String)
+        and then Is_Standard_String_Type (T)
         and then
           (not Is_Itype (T)
             or else Nkind (Associated_Node_For_Itype (T)) /= N_Aggregate)
