@@ -308,6 +308,7 @@ Implementation Defined Aspects
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Invariant'Class::
 * Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect No_Elaboration_Code_All::
@@ -8061,6 +8062,7 @@ clause.
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Invariant'Class::
 * Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect Lock_Free::
@@ -8283,6 +8285,14 @@ This aspect is equivalent to pragma @code{Inline_Always}.
 @noindent
 This aspect is equivalent to pragma @code{Invariant}. It is a
 synonym for the language defined aspect @code{Type_Invariant} except
+that it is separately controllable using pragma @code{Assertion_Policy}.
+
+@node Aspect Invariant'Class
+@unnumberedsec Aspect Invariant'Class
+@findex Invariant'Class
+@noindent
+This aspect is equivalent to pragma @code{Type_Invariant_Class}. It is a
+synonym for the language defined aspect @code{Type_Invariant'Class} except
 that it is separately controllable using pragma @code{Assertion_Policy}.
 
 @node Aspect Iterable
