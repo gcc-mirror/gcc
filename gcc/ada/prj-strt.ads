@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,8 @@ private package Prj.Strt is
    procedure End_Case_Construction
      (Check_All_Labels   : Boolean;
       Case_Location      : Source_Ptr;
-      Flags              : Processing_Flags);
+      Flags              : Processing_Flags;
+      String_Type        : Boolean);
    --  This procedure is called at the end of a case construction to remove the
    --  case labels and to restore the previous state. In particular, in the
    --  case of nested case constructions, the case labels of the enclosing case
@@ -70,7 +71,8 @@ private package Prj.Strt is
    procedure Parse_Choice_List
      (In_Tree      : Project_Node_Tree_Ref;
       First_Choice : out Project_Node_Id;
-      Flags        : Processing_Flags);
+      Flags        : Processing_Flags;
+      String_Type  : Boolean := True);
    --  Get the label for a choice list.
    --  Report an error if
    --    - a case label is not a literal string

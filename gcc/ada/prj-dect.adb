@@ -827,11 +827,11 @@ package body Prj.Dect is
       if Present (Case_Variable) then
          String_Type := String_Type_Of (Case_Variable, In_Tree);
 
-         if No (String_Type) then
+         if Expression_Kind_Of (Case_Variable, In_Tree) /= Single then
             Error_Msg (Flags,
                        "variable """ &
                        Get_Name_String (Name_Of (Case_Variable, In_Tree)) &
-                       """ is not typed",
+                       """ is not a single string",
                        Variable_Location);
          end if;
       end if;
@@ -914,7 +914,8 @@ package body Prj.Dect is
             Parse_Choice_List
               (In_Tree      => In_Tree,
                First_Choice => First_Choice,
-               Flags        => Flags);
+               Flags        => Flags,
+               String_Type  => Present (String_Type));
             Set_First_Choice_Of (Current_Item, In_Tree, To => First_Choice);
 
             Expect (Tok_Arrow, "`=>`");
@@ -941,7 +942,8 @@ package body Prj.Dect is
       End_Case_Construction
         (Check_All_Labels => not When_Others and not Quiet_Output,
          Case_Location    => Location_Of (Case_Construction, In_Tree),
-         Flags            => Flags);
+         Flags            => Flags,
+         String_Type      => Present (String_Type));
 
       Expect (Tok_End, "`END CASE`");
       Remove_Next_End_Node;
