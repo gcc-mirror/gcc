@@ -1168,6 +1168,10 @@ package body Inline is
           Make_Defining_Identifier (Sloc (N), Name_uParent));
       Set_Corresponding_Spec (Original_Body, Empty);
 
+      --  Remove those pragmas that have no meaining in an inlined body.
+
+      Remove_Pragmas (Original_Body);
+
       Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
 
       --  Set return type of function, which is also global and does not need
@@ -1190,7 +1194,6 @@ package body Inline is
 
       Expander_Mode_Save_And_Set (False);
       Full_Analysis := False;
-      Remove_Pragmas (Body_To_Analyze);
 
       Analyze (Body_To_Analyze);
       Push_Scope (Defining_Entity (Body_To_Analyze));

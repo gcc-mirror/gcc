@@ -1,3 +1,37 @@
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_CPP_Init_Procedure): Remove
+	Flag_Decl. Do not analyze the declaration of the flag as it is
+	not part of the tree yet, instead add it to the freeze actions
+	of the C++ type.
+
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Make sure we handle
+	case of OUT and IN OUT parameter correctly (where Source_Typ is
+	set), we were missing one case where a check must be applied.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch8.adb (Build_Class_Wide_Wrapper): Update the comment on
+	the generated code. Instead of hiding the renaming and using the
+	wrapper as the proper association, have the subprogram renaming
+	alias the wrapper.
+	(Build_Spec): The entity of the wrapper is
+	now derived from the entity of the related primitive.
+
+2014-08-04  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb: s-regpat.adb (Parse): fix incorrect link when
+	using non-capturing groups.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Build_Body_To_Inline): Remove Unmodified and
+	related pragmas before copying the original body, to prevent
+	spurious errors when the pragmas apply to formals that will not
+	appear in the inlined body.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb, sem_ch7.adb, einfo.adb, sem_prag.adb, sem_util.adb,

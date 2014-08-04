@@ -1845,12 +1845,12 @@ package body Sem_Ch8 is
       --
       --  The above is replaced the following wrapper/renaming combination:
       --
-      --    procedure Prim_Op (Param : Formal_Typ) is  --  wrapper
+      --    procedure Wrapper (Param : Formal_Typ) is  --  wrapper
       --    begin
       --       Prim_Op (Param);                        --  primitive
       --    end Wrapper;
       --
-      --    procedure Dummy (Param : Formal_Typ) renames Prim_Op;
+      --    procedure Prim_Op (Param : Formal_Typ) renames Wrapper;
       --
       --  This transformation applies only if there is no explicit visible
       --  class-wide operation at the point of the instantiation. Ren_Id is
@@ -1977,7 +1977,8 @@ package body Sem_Ch8 is
          function Build_Spec (Subp_Id : Entity_Id) return Node_Id is
             Params  : constant List_Id   := Copy_Parameter_List (Subp_Id);
             Spec_Id : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc, Chars (Subp_Id));
+                        Make_Defining_Identifier (Loc,
+                          Chars => New_External_Name (Chars (Subp_Id), 'R'));
 
          begin
             if Ekind (Formal_Spec) = E_Procedure then
@@ -2290,12 +2291,10 @@ package body Sem_Ch8 is
             return;
          end if;
 
-         --  Set the proper entity of the renamed generic formal subprogram,
-         --  reset its overloaded status and mark the primitive as referenced
-         --  now that resolution has finally taken place.
+         --  At this point resolution has taken place and the name is no longer
+         --  overloaded. Mark the primitive as referenced.
 
-         Set_Entity        (Nam, Prim_Op);
-         Set_Is_Overloaded (Nam, False);
+         Set_Is_Overloaded (Name (N), False);
          Set_Referenced    (Prim_Op);
 
          --  Step 3: Create the declaration and the body of the wrapper, insert
@@ -2304,6 +2303,15 @@ package body Sem_Ch8 is
          Spec_Decl :=
            Make_Subprogram_Declaration (Loc,
              Specification => Build_Spec (Ren_Id));
+         Insert_Before_And_Analyze (N, Spec_Decl);
+
+         --  If the operator carries an Eliminated pragma, indicate that the
+         --  wrapper is also to be eliminated, to prevent spurious error when
+         --  using gnatelim on programs that include box-initialization of
+         --  equality operators.
+
+         Wrap_Id := Defining_Entity (Spec_Decl);
+         Set_Is_Eliminated (Wrap_Id, Is_Eliminated (Prim_Op));
 
          Body_Decl :=
            Make_Subprogram_Body (Loc,
@@ -2318,16 +2326,6 @@ package body Sem_Ch8 is
                         Parameter_Specifications
                           (Specification (Spec_Decl))))));
 
-         Insert_Before_And_Analyze (N, Spec_Decl);
-         Wrap_Id := Defining_Entity (Spec_Decl);
-
-         --  If the operator carries an Eliminated pragma, indicate that the
-         --  wrapper is also to be eliminated, to prevent spurious error when
-         --  using gnatelim on programs that include box-initialization of
-         --  equality operators.
-
-         Set_Is_Eliminated (Wrap_Id, Is_Eliminated (Prim_Op));
-
          --  The generated body does not freeze and must be analyzed when the
          --  class-wide wrapper is frozen. The body is only needed if expansion
          --  is enabled.
@@ -2336,12 +2334,9 @@ package body Sem_Ch8 is
             Append_Freeze_Action (Wrap_Id, Body_Decl);
          end if;
 
-         --  Step 4: Once the proper actual type and primitive operation are
-         --  known, hide the renaming declaration from visibility by giving it
-         --  a dummy name.
+         --  Step 4: The subprogram renaming aliases the wrapper
 
-         Set_Defining_Unit_Name (Spec, Make_Temporary (Loc, 'R'));
-         Ren_Id := Analyze_Subprogram_Specification (Spec);
+         Rewrite (Nam, New_Occurrence_Of (Wrap_Id, Loc));
       end Build_Class_Wide_Wrapper;
 
       --------------------------
