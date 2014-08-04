@@ -2402,6 +2402,9 @@ package Einfo is
 --       Defined in all type and subtype entities. Set in the subtype
 --       declaration that renames the generic formal as a subtype of the
 --       actual. Guarantees that the subtype is not static within the instance.
+--       Also used during analysis of an instance, to simplify resolution of
+--       accidental overloading that occurs when different formal types get the
+--       same actual.
 
 --    Is_Generic_Instance (Flag130)
 --       Defined in all entities. Set to indicate that the entity is an
@@ -2841,10 +2844,11 @@ package Einfo is
 --       as well as for record with private types as subtypes
 
 --    Is_Processed_Transient (Flag252)
---       Defined in entities of variables and constants. Set when a transient
---       object needs to be finalized and it has already been processed by the
---       transient scope machinery. This flag signals the general finalization
---       mechanism to ignore the transient object.
+--       Defined in entities of variables and constants, including the loop
+--       parameters of generalized iterators. Set when a transient object needs
+--       to be finalized and it has already been processed by the transient
+--       scope machinery. This flag signals the general finalization mechanism
+--       to ignore the transient object.
 
 --    Is_Protected_Component (synthesized)
 --       Applicable to all entities, true if the entity denotes a private
