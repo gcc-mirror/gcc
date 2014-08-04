@@ -1382,6 +1382,9 @@ package body Inline is
       --  Returns True if subprogram Id has any contract (Pre, Post, Global,
       --  Depends, etc.)
 
+      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
+      --  Returns True if subprogram Id defines a compilation unit
+
       function In_Package_Visible_Spec (Id : Node_Id) return Boolean;
       --  Returns True if subprogram Id is defined in the visible part of a
       --  package specification.
@@ -1436,6 +1439,20 @@ package body Inline is
          return Nkind (Original_Node (Decl)) = N_Expression_Function;
       end Is_Expression_Function;
 
+      ------------------------
+      -- Is_Unit_Subprogram --
+      ------------------------
+
+      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean is
+         Decl : Node_Id := Parent (Parent (Id));
+      begin
+         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Decl);
+         end if;
+
+         return Nkind (Parent (Decl)) = N_Compilation_Unit;
+      end Is_Unit_Subprogram;
+
       --  Local declarations
 
       Id : Entity_Id;  --  Procedure or function entity for the subprogram
@@ -1462,7 +1479,7 @@ package body Inline is
 
       --  Do not inline unit-level subprograms
 
-      if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+      if Is_Unit_Subprogram (Id) then
          return False;
 
       --  Do not inline subprograms declared in the visible part of a package

@@ -2872,6 +2872,7 @@ package body Einfo is
 
    function Returns_Limited_View (Id : E) return B is
    begin
+      pragma Assert (Ekind (Id) = E_Function);
       return Flag134 (Id);
    end Returns_Limited_View;
 
@@ -5701,6 +5702,7 @@ package body Einfo is
 
    procedure Set_Returns_Limited_View (Id : E; V : B := True) is
    begin
+      pragma Assert (Ekind (Id) = E_Function);
       Set_Flag134 (Id, V);
    end Set_Returns_Limited_View;
 
