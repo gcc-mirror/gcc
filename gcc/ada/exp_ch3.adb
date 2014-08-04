@@ -4570,8 +4570,8 @@ package body Exp_Ch3 is
 
    begin
       --  Expand_Record_Extension is called directly from the semantics, so
-      --  we must check to see whether expansion is active before proceeding
-      --  Because this affects the visibility of selected components in bodies
+      --  we must check to see whether expansion is active before proceeding,
+      --  because this affects the visibility of selected components in bodies
       --  of instances.
 
       if not Expander_Active then
@@ -4686,9 +4686,7 @@ package body Exp_Ch3 is
          --  record parameter for an entry declaration. No master is created
          --  for such a type.
 
-         if Comes_From_Source (N)
-           and then Has_Task (Desig_Typ)
-         then
+         if Comes_From_Source (N) and then Has_Task (Desig_Typ) then
             Build_Master_Entity (Ptr_Typ);
             Build_Master_Renaming (Ptr_Typ);
 
@@ -5743,8 +5741,7 @@ package body Exp_Ch3 is
                --  allocated in place, delay checks until assignments are
                --  made, because the discriminants are not initialized.
 
-               if Nkind (Expr) = N_Allocator
-                 and then No_Initialization (Expr)
+               if Nkind (Expr) = N_Allocator and then No_Initialization (Expr)
                then
                   null;
 
@@ -7134,9 +7131,8 @@ package body Exp_Ch3 is
       --  routine. There is no need to add predefined primitives of interfaces
       --  because all their predefined primitives are abstract.
 
-      if Is_Tagged_Type (Def_Id)
-        and then not Is_Interface (Def_Id)
-      then
+      if Is_Tagged_Type (Def_Id) and then not Is_Interface (Def_Id) then
+
          --  Do not add the body of predefined primitives in case of CPP tagged
          --  type derivations that have convention CPP.
 
@@ -7990,10 +7986,9 @@ package body Exp_Ch3 is
          end if;
 
          --  The final expression is obtained by doing an unchecked conversion
-         --  of this result to the base type of the required subtype. We use
-         --  the base type to prevent the unchecked conversion from chopping
-         --  bits, and then we set Kill_Range_Check to preserve the "bad"
-         --  value.
+         --  of this result to the base type of the required subtype. Use the
+         --  base type to prevent the unchecked conversion from chopping bits,
+         --  and then we set Kill_Range_Check to preserve the "bad" value.
 
          Result := Unchecked_Convert_To (Base_Type (T), Val);
 

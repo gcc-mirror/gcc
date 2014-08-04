@@ -2681,12 +2681,22 @@ package body Exp_Ch5 is
                            and then Attribute_Name (Choice) = Name_Range)
                  or else (Is_Entity_Name (Choice)
                            and then Is_Type (Entity (Choice)))
-                 or else Nkind (Choice) = N_Subtype_Indication
                then
                   Cond :=
                     Make_In (Loc,
                       Left_Opnd  => Expression (N),
                       Right_Opnd => Relocate_Node (Choice));
+
+               --  A subtype indication is not a legal operator in a membership
+               --  test, so retrieve its range.
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Cond :=
+                    Make_In (Loc,
+                      Left_Opnd  => Expression (N),
+                      Right_Opnd =>
+                        Relocate_Node
+                          (Range_Expression (Constraint (Choice))));
 
                --  For any other subexpression "expression = value"
 
@@ -2715,10 +2725,9 @@ package body Exp_Ch5 is
          --  compute the contents of the Others_Discrete_Choices which is not
          --  needed by the back end anyway.
 
-         --  The reason we do this is that the back end always needs some
-         --  default for a switch, so if we have not supplied one in the
-         --  processing above for validity checking, then we need to supply
-         --  one here.
+         --  The reason for this is that the back end always needs some default
+         --  for a switch, so if we have not supplied one in the processing
+         --  above for validity checking, then we need to supply one here.
 
          if not Others_Present then
             Others_Node := Make_Others_Choice (Sloc (Last_Alt));
@@ -2810,7 +2819,7 @@ package body Exp_Ch5 is
       I_Spec        : constant Node_Id    := Iterator_Specification (Isc);
       Element       : constant Entity_Id  := Defining_Identifier (I_Spec);
       Container     : constant Node_Id    := Entity (Name (I_Spec));
-      Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
+      Container_Typ : constant Entity_Id  := Base_Type (Etype (Container));
       Stats         : constant List_Id    := Statements (N);
 
       Cursor    : constant Entity_Id :=

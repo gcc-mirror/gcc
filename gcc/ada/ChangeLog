@@ -1,3 +1,14 @@
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): If a choice is a
+	subtype indication and the case statement has only two choices,
+	replace subtype indication with its range, because the resulting
+	membership test cannot have a subtype indication as an operand.
+
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb: Update comments, minor reformatting.
+
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Analyze_Declarations): Explain why the bodies of
