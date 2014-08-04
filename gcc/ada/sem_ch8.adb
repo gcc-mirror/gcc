@@ -2290,12 +2290,13 @@ package body Sem_Ch8 is
             return;
          end if;
 
-         --  Set the proper entity of the renamed generic formal subprogram
-         --  and reset its overloaded status now that resolution has finally
-         --  taken place.
+         --  Set the proper entity of the renamed generic formal subprogram,
+         --  reset its overloaded status and mark the primitive as referenced
+         --  now that resolution has finally taken place.
 
          Set_Entity        (Nam, Prim_Op);
          Set_Is_Overloaded (Nam, False);
+         Set_Referenced    (Prim_Op);
 
          --  Step 3: Create the declaration and the body of the wrapper, insert
          --  all the pieces into the tree.

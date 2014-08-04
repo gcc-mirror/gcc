@@ -1,5 +1,17 @@
 2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch8.adb (Build_Class_Wide_Wrapper): Mark the primitive as
+	referenced once resolution has taken place.
+
+2014-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Don't
+	compare access levels in the case where the target type is the
+	anonymous type of an access discriminant, since the level of
+	such types is defined based on context. Add comment.
+
+2014-08-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch8.adb (Build_Class_Wide_Wrapper): Handle various special
 	cases related to equality.  Remove the special processing
 	for dispatching abstract subprograms as it is not needed.
