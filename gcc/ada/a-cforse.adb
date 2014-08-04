@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1534,8 +1534,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
       end if;
 
       return S : Set (Length (Left) + Length (Right)) do
-         S.Assign (Source => Left);
-         S.Union (Right);
+         Assign (S, Source => Left);
+         Union (S, Right);
       end return;
    end Union;
 
