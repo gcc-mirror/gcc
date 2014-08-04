@@ -1,3 +1,45 @@
+2014-08-04  Martin Liska <mliska@suse.cz>
+
+	* cgraph.h (csi_end_p): Removed.
+	(csi_next): Likewise.
+	(csi_node): Likewise.
+	(csi_start): Likewise.
+	(cgraph_node_in_set_p): Likewise.
+	(cgraph_node_set_size): Likewise.
+	(vsi_end_p): Likewise.
+	(vsi_next): Likewise.
+	(vsi_node): Likewise.
+	(vsi_start): Likewise.
+	(varpool_node_set_size): Likewise.
+	(cgraph_node_set_nonempty_p): Likewise.
+	(varpool_node_set_nonempty_p): Likewise.
+	* cgraphunit.c (cgraph_process_new_functions): vec replaces
+	cgraph_node_set.
+	* ipa-inline-transform.c: Likewise.
+	* ipa-utils.c (cgraph_node_set_new): Removed.
+	(cgraph_node_set_add): Likewise.
+	(cgraph_node_set_remove): Likewise.
+	(cgraph_node_set_find): Likewise.
+	(dump_cgraph_node_set): Likewise.
+	(debug_cgraph_node_set): Likewise.
+	(free_cgraph_node_set): Likewise.
+	(varpool_node_set_new): Likewise.
+	(varpool_node_set_add): Likewise.
+	(varpool_node_set_remove): Likewise.
+	(varpool_node_set_find): Likewise.
+	(dump_varpool_node_set): Likewise.
+	(free_varpool_node_set): Likewise.
+	(debug_varpool_node_set): Likewise.
+	* tree-emutls.c (struct tls_var_data):
+	(emutls_index): Removed.
+	(emutls_decl): Likewise.
+	(gen_emutls_addr): Function implementation uses newly added
+	hash_map<varpool_node *, tls_var_data>.
+	(clear_access_vars): Likewise.
+	(create_emultls_var): Likewise.
+	(ipa_lower_emutls): Likewise.
+	(reset_access): New function.
+
 2014-08-04 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Add
