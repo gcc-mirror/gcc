@@ -6407,25 +6407,24 @@ package body Checks is
       --  a temporary. Then check the converted value against the range of the
       --  target subtype.
 
-      procedure Convert_And_Check_Range is
-         --  To what does the following comment belong???
-         --  We make a temporary to hold the value of the converted value
-         --  (converted to the base type), and then we will do the test against
-         --  this temporary.
-         --
-         --     Tnn : constant Target_Base_Type := Target_Base_Type (N);
-         --     [constraint_error when Tnn not in Target_Type]
-         --
-         --  The conversion itself is replaced by an occurrence of Tnn
+      -----------------------------
+      -- Convert_And_Check_Range --
+      -----------------------------
 
+      procedure Convert_And_Check_Range is
          Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
 
-         --  To what does the following comment belong???
-         --  Follow the conversion with the explicit range check. Note that we
-         --  suppress checks for this code, since we don't want a recursive
+      begin
+         --  We make a temporary to hold the value of the converted value
+         --  (converted to the base type), and then do the test against this
+         --  temporary. The conversion itself is replaced by an occurrence of
+         --  Tnn and followed by the explicit range check. Note that checks
+         --  are suppressed for this code, since we don't want a recursive
          --  range check popping up.
 
-      begin
+         --     Tnn : constant Target_Base_Type := Target_Base_Type (N);
+         --     [constraint_error when Tnn not in Target_Type]
+
          Insert_Actions (N, New_List (
            Make_Object_Declaration (Loc,
              Defining_Identifier => Tnn,
