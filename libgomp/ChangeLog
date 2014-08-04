@@ -1,3 +1,14 @@
+2014-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (GOMP_taskgroup_end): If taskgroup->num_children
+	is not zero, but taskgroup->children is NULL and there are
+	any task->children, schedule those instead of waiting.
+	* testsuite/libgomp.c/depend-6.c: New test.
+	* testsuite/libgomp.c/depend-7.c: New test.
+	* testsuite/libgomp.c/depend-8.c: New test.
+	* testsuite/libgomp.c/depend-9.c: New test.
+	* testsuite/libgomp.c/depend-10.c: New test.
+
 2014-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.h (struct gomp_task_depend_entry): Add redundant_out field.
