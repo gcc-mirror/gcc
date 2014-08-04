@@ -11146,6 +11146,17 @@ package body Sem_Util is
    begin
       Expr := N;
       Par  := Parent (N);
+
+      --  A postcondition whose expression is a short-circuit is broken down
+      --  into individual aspects for better exception reporting. The original
+      --  short-circuit expression is rewritten as the second operand, and an
+      --  occurrence of 'Old in that operand is potentially unevaluated.
+      --  See Sem_ch13.adb for details of this transformation.
+
+      if Nkind (Original_Node (Par)) =  N_And_Then then
+         return True;
+      end if;
+
       while not Nkind_In (Par, N_If_Expression,
                                N_Case_Expression,
                                N_And_Then,
