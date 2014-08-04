@@ -7394,20 +7394,6 @@ package body Exp_Ch3 is
          end if;
       end if;
 
-      --  If the type is subject to pragma Default_Initial_Condition, generate
-      --  the body of the procedure which verifies the assertion of the pragma
-      --  at runtime.
-
-      if Has_Default_Init_Cond (Def_Id) then
-         Build_Default_Init_Cond_Procedure_Body (Def_Id);
-
-      --  A derived type inherits the default initial condition procedure from
-      --  its parent type.
-
-      elsif Has_Inherited_Default_Init_Cond (Def_Id) then
-         Inherit_Default_Init_Cond_Procedure (Def_Id);
-      end if;
-
       --  Freeze processing for record types
 
       if Is_Record_Type (Def_Id) then

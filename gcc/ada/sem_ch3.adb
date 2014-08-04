@@ -2388,10 +2388,13 @@ package body Sem_Ch3 is
             --  When a package has private declarations, its contract must be
             --  analyzed at the end of the said declarations. This way both the
             --  analysis and freeze actions are properly synchronized in case
-            --  of private type use within the contract.
+            --  of private type use within the contract. Build the bodies of
+            --  the default initial condition procedures for all types subject
+            --  to pragma Default_Initial_Condition.
 
             if L = Private_Declarations (Context) then
                Analyze_Package_Contract (Defining_Entity (Context));
+               Build_Default_Init_Cond_Procedure_Bodies (L);
 
             --  Otherwise the contract is analyzed at the end of the visible
             --  declarations.
