@@ -2292,7 +2292,7 @@ package body Einfo is
 
    function Is_Processed_Transient (Id : E) return B is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
       return Flag252 (Id);
    end Is_Processed_Transient;
 
@@ -5096,7 +5096,7 @@ package body Einfo is
 
    procedure Set_Is_Processed_Transient (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind_In (Id, E_Constant, E_Loop_Parameter, E_Variable));
       Set_Flag252 (Id, V);
    end Set_Is_Processed_Transient;
 

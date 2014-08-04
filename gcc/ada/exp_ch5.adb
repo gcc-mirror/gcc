@@ -3482,7 +3482,6 @@ package body Exp_Ch5 is
 
          else
             Cursor := Id;
-            --  Set_Ekind (Cursor, E_Variable);
          end if;
 
          Iterator := Make_Temporary (Loc, 'I');

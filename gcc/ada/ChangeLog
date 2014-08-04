@@ -1,3 +1,9 @@
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb: minor reformatting.
+	* einfo.ads, einfo.adb (Is_Processed_Transient): Applies to loop
+	parameters.
+
 2014-08-04  Thomas Quinot  <quinot@adacore.com>
 
 	* s-fatgen.adb: Minor reformatting.
