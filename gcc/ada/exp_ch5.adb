@@ -3198,8 +3198,8 @@ package body Exp_Ch5 is
       Id     : constant Entity_Id  := Defining_Identifier (I_Spec);
       Loc    : constant Source_Ptr := Sloc (N);
 
-      Container     : constant Node_Id   := Name (I_Spec);
-      Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
+      Container     : constant Node_Id     := Name (I_Spec);
+      Container_Typ : constant Entity_Id   := Base_Type (Etype (Container));
       I_Kind        : constant Entity_Kind := Ekind (Id);
       Cursor        : Entity_Id;
       Iterator      : Entity_Id;
@@ -3594,7 +3594,7 @@ package body Exp_Ch5 is
             --  The cursor is only modified in expanded code, so it appears
             --  as unassigned to the warning machinery. We must suppress
             --  this spurious warning explicitly. The cursor's kind is that of
-            --  the original loop parameter (it is a constant if the doamin of
+            --  the original loop parameter (it is a constant if the domain of
             --  iteration is constant).
 
             Set_Warnings_Off (Cursor);

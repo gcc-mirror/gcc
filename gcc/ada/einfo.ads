@@ -2844,9 +2844,9 @@ package Einfo is
 --       as well as for record with private types as subtypes
 
 --    Is_Processed_Transient (Flag252)
---       Defined in entities of variables and constants, including the loop
---       parameters of generalized iterators. Set when a transient object needs
---       to be finalized and it has already been processed by the transient
+--       Defined in variables, loop parameters, and constants, including the
+--       loop parameters of generalized iterators. Set when a transient object
+--       needs to be finalized and has already been processed by the transient
 --       scope machinery. This flag signals the general finalization mechanism
 --       to ignore the transient object.
 
