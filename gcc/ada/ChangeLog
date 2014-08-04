@@ -1,3 +1,17 @@
+2014-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_scil.ads: Improve comments.
+	* sem_ch4.adb (Analyze_Equality_Op): Add support for
+	Allow_Integer_Address (equality between Address and Integer).
+
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* a-cfhama.adb, a-cforse.adb: Minor fixes to avoid using prefix
+	notation on untagged objects.
+	* sem.ads: Update comment.
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do
+	not inline subprograms declared in the visible part of a package.
+
 2014-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb: minor reformatting.
