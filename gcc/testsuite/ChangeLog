@@ -1,3 +1,11 @@
+2014-08-04  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/cproj-fails-with-broken-glibc.c: Use xfail for broken glibc
+	version instead of required-target.
+	* lib/target-supports.exp
+	(check_effective_target_not_glibc_2_11_or_earlier): Replace by ...
+	(check_effective_target_glibc_2_11_or_earlier): ... this.
+
 2014-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/discr6.adb, gnat.dg/discr6_pkg.ads: Removed, no longer

@@ -7,11 +7,10 @@
 
    Origin: Kaveh R. Ghazi,  April 20, 2010.  */
 
-/* { dg-do run } */
+/* { dg-do run { xfail glibc_2_11_or_earlier } } */
 /* { dg-options "-fno-builtin-cproj" } */
 /* { dg-add-options c99_runtime } */
 /* { dg-require-effective-target c99_runtime } */
-/* { dg-require-effective-target not_glibc_2_11_or_earlier } */
 
 extern void abort(void);
 extern void exit(int);

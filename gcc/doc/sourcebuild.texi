@@ -1804,6 +1804,15 @@ Target is a VxWorks RTP.
 
 @item wchar
 Target supports wide characters.
+
+@item glibc
+Target supports glibc
+
+@item glibc_2_12_or_later
+Target supports glibc 2.12 or later
+
+@item glibc_2_11_or_earlier
+Target supports glibc 2.11 or earlier
 @end table
 
 @subsubsection Other attributes
