@@ -1,3 +1,18 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Clarify documentation on assertions.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate, Get_Value): Warn
+	if a component association has a box initialization when the
+	component type has no default initialization, either through an
+	initial value, an aspect, or an implicit initialization procedure.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb: Code clean up.
+
 2014-08-04  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch5.adb: Minor reformatting.

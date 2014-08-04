@@ -3604,7 +3604,10 @@ using the configuration pragma @code{Check_Policy}. In Ada 2012, it
 also activates all assertions defined in the RM as aspects: preconditions,
 postconditions, type invariants and (sub)type predicates. In all Ada modes,
 corresponding pragmas for type invariants and (sub)type predicates are
-also activated.
+also activated. The default is that all these assertions are disabled,
+and have no effect, other than being checked for syntactic validity, and
+in the case of subtype predicates, constructions such as membership tests
+still test predicates even if assertions are turned off.
 
 @item -gnatA
 @cindex @option{-gnatA} (@command{gcc})
