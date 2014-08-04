@@ -1260,7 +1260,7 @@ package body Sem_Util is
       procedure Build_Default_Init_Cond_Procedure_Body (Typ : Entity_Id);
       --  If type Typ is subject to pragma Default_Initial_Condition, build the
       --  body of the procedure which verifies the assumption of the pragma at
-      --  runtime. The generated body is added after the type declaration.
+      --  run time. The generated body is added after the type declaration.
 
       --------------------------------------------
       -- Build_Default_Init_Cond_Procedure_Body --
@@ -1406,7 +1406,7 @@ package body Sem_Util is
 
                --  If the type is subject to pragma Default_Initial_Condition,
                --  generate the body of the internal procedure which verifies
-               --  the assertion of the pragma at runtime.
+               --  the assertion of the pragma at run time.
 
                if Has_Default_Init_Cond (Typ) then
                   Build_Default_Init_Cond_Procedure_Body (Typ);
