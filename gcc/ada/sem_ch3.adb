@@ -6909,6 +6909,7 @@ package body Sem_Ch3 is
          --  and the full derivation can only be its underlying full view.
 
          Build_Full_Derivation;
+
          if not Is_Completion then
             Set_Full_View (Derived_Type, Full_Der);
          else

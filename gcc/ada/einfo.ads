@@ -3767,15 +3767,15 @@ package Einfo is
 --       even though it causes the whole function to return.
 
 --    Returns_By_Ref (Flag90)
---       Defined in function entities, to indicate that the function
---       returns the result by reference, either because its return type is a
---       by-reference-type or because it uses explicitly the secondary stack.
+--       Defined in function entities. Set if the function returns the result
+--       by reference, either because its return type is a by-reference-type
+--       or because the function explicitly uses the secondary stack.
 
 --    Returns_Limited_View (Flag134)
---       Defined on function entities, to indicate that the return type of
---       the function at the point of definition is a limited view. Used to
---       handle the late freezing of the function, when it is called in the
---       current semantic unit while it is still unfrozen.
+--       Defined in function entities. Set if the return type of the function
+--       at the point of definition is a limited view. Used to handle the late
+--       freezing of the function when it is called in the current semantic
+--       unit while it is still unfrozen.
 
 --    Reverse_Bit_Order (Flag164) [base type only]
 --       Defined in all record type entities. Set if entity has a Bit_Order

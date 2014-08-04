@@ -1,3 +1,21 @@
+2014-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, einfo.ads: Minor reformatting.
+
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Fix
+	detection of subprograms that cannot be inlined in GNATprove mode.
+
+2014-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb: Add guard to Returns_Limited_View.
+
+2014-08-04  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-tassta.adb, s-tarest.adb (Task_Wrapper): Force maximum alignment of
+	the secondary stack to respect the alignments of the returned objects.
+
 2014-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb (Returns_Limited_View): New flag defined
