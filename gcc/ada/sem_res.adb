@@ -6245,6 +6245,13 @@ package body Sem_Res is
                Error_Msg_N ("\call appears in assertion expression", N);
                Set_Is_Inlined_Always (Nam_UA, False);
 
+            --  Calls cannot be inlined inside default expressions
+
+            elsif In_Default_Expr then
+               Error_Msg_NE ("?no contextual analysis of &", N, Nam);
+               Error_Msg_N ("\call appears in default expression", N);
+               Set_Is_Inlined_Always (Nam_UA, False);
+
             --  Inlining should not be performed during pre-analysis
 
             elsif Full_Analysis then

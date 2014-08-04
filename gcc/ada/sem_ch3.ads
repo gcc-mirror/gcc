@@ -250,6 +250,10 @@ package Sem_Ch3 is
    --  Wrapper on Preanalyze_Spec_Expression for assertion expressions, so that
    --  In_Assertion_Expr can be properly adjusted.
 
+   procedure Preanalyze_Default_Expression (N : Node_Id; T : Entity_Id);
+   --  Wrapper on Preanalyze_Spec_Expression for default expressions, so that
+   --  In_Default_Expr can be properly adjusted.
+
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is
    --  encountered and analyzed. The first action is to create the full views

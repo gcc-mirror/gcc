@@ -1,3 +1,15 @@
+2014-08-04  Yannick Moy  <moy@adacore.com>
+
+	* sem.adb, sem.ads (In_Default_Expr): Global flag that is set
+	to True during analysis of a default component expression.
+	(Semantics): Save and restore In_Default_Expr around analysis.
+	* sem_ch3.adb, sem_ch3.ads (Analyze_Component_Declaration):
+	Call new wrapper Preanalyze_Default_Expression.
+	(Preanalyze_Default_Expression): New wrapper on
+	Preanalyze_Spec_Expression which sets and restores In_Default_Expr.
+	* sem_res.adb (Resolve_Call): Mark calls inside default
+	expressions as not inlined in GNATprove mode.
+
 2014-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb: Minor reformatting.
