@@ -1251,8 +1251,6 @@ package body Sem_Ch6 is
             end loop;
          end;
 
-         Check_SPARK_Mode_In_Generic (N);
-
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id, True);
 
@@ -3743,11 +3741,12 @@ package body Sem_Ch6 is
 
       Analyze_Declarations (Declarations (N));
 
-      --  After declarations have been analyzed, the body has been set
-      --  its final value of SPARK_Mode. Check that SPARK_Mode for body
-      --  is consistent with SPARK_Mode for spec.
+      --  Verify that the SPARK_Mode of the body agrees with that of its spec
 
-      if Present (Spec_Id) and then Present (SPARK_Pragma (Body_Id)) then
+      if not Inside_A_Generic
+        and then Present (Spec_Id)
+        and then Present (SPARK_Pragma (Body_Id))
+      then
          if Present (SPARK_Pragma (Spec_Id)) then
             if Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) = Off
                  and then
@@ -3757,7 +3756,7 @@ package body Sem_Ch6 is
                Error_Msg_N ("incorrect application of SPARK_Mode#", N);
                Error_Msg_Sloc := Sloc (SPARK_Pragma (Spec_Id));
                Error_Msg_NE
-                 ("\value Off was set for SPARK_Mode on&#", N, Spec_Id);
+                 ("\value Off was set for SPARK_Mode on & #", N, Spec_Id);
             end if;
 
          elsif Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Body_Stub then
@@ -3767,7 +3766,8 @@ package body Sem_Ch6 is
             Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
             Error_Msg_N ("incorrect application of SPARK_Mode#", N);
             Error_Msg_Sloc := Sloc (Spec_Id);
-            Error_Msg_NE ("\no value was set for SPARK_Mode on&#", N, Spec_Id);
+            Error_Msg_NE
+              ("\no value was set for SPARK_Mode on & #", N, Spec_Id);
          end if;
       end if;
 

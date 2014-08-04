@@ -2418,11 +2418,11 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_SPARK_Mode);
 
-                  --  When the aspect appears on a package body, insert the
-                  --  generated pragma at the top of the body declarations to
-                  --  emulate the behavior of a source pragma.
+                  --  When the aspect appears on a package or a subprogram
+                  --  body, insert the generated pragma at the top of the body
+                  --  declarations to emulate the behavior of a source pragma.
 
-                  if Nkind (N) = N_Package_Body then
+                  if Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
                      Decorate (Aspect, Aitem);
 
                      Decls := Declarations (N);
@@ -2435,11 +2435,14 @@ package body Sem_Ch13 is
                      Prepend_To (Decls, Aitem);
                      goto Continue;
 
-                  --  When the aspect is associated with package declaration,
-                  --  insert the generated pragma at the top of the visible
-                  --  declarations to emulate the behavior of a source pragma.
+                  --  When the aspect is associated with a [generic] package
+                  --  declaration, insert the generated pragma at the top of
+                  --  the visible declarations to emulate the behavior of a
+                  --  source pragma.
 
-                  elsif Nkind (N) = N_Package_Declaration then
+                  elsif Nkind_In (N, N_Generic_Package_Declaration,
+                                     N_Package_Declaration)
+                  then
                      Decorate (Aspect, Aitem);
 
                      Decls := Visible_Declarations (Specification (N));

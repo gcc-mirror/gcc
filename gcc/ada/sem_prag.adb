@@ -19116,13 +19116,6 @@ package body Sem_Prag is
          --  pragma SPARK_Mode [(On | Off)];
 
          when Pragma_SPARK_Mode => Do_SPARK_Mode : declare
-            Body_Id : Entity_Id;
-            Context : Node_Id;
-            Mode    : Name_Id;
-            Mode_Id : SPARK_Mode_Type;
-            Spec_Id : Entity_Id;
-            Stmt    : Node_Id;
-
             procedure Check_Pragma_Conformance
               (Context_Pragma : Node_Id;
                Entity_Pragma  : Node_Id;
@@ -19163,7 +19156,7 @@ package body Sem_Prag is
                   --  New mode less restrictive than the established mode
 
                   if Get_SPARK_Mode_From_Pragma (Context_Pragma) = Off
-                    and then Mode_Id = On
+                    and then Get_SPARK_Mode_From_Pragma (N) = On
                   then
                      Error_Msg_N
                        ("cannot change SPARK_Mode from Off to On", Arg1);
@@ -19176,7 +19169,7 @@ package body Sem_Prag is
                if Present (Entity) then
                   if Present (Entity_Pragma) then
                      if Get_SPARK_Mode_From_Pragma (Entity_Pragma) = Off
-                       and then Mode_Id = On
+                       and then Get_SPARK_Mode_From_Pragma (N) = On
                      then
                         Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
                         Error_Msg_Sloc := Sloc (Entity_Pragma);
@@ -19224,9 +19217,36 @@ package body Sem_Prag is
                end if;
             end Check_Library_Level_Entity;
 
+            --  Local variables
+
+            Body_Id : Entity_Id;
+            Context : Node_Id;
+            Inst_Id : Entity_Id;
+            Mode    : Name_Id;
+            Mode_Id : SPARK_Mode_Type;
+            Spec_Id : Entity_Id;
+            Stmt    : Node_Id;
+
          --  Start of processing for Do_SPARK_Mode
 
          begin
+            --  When a SPARK_Mode pragma appears inside an instantiation whose
+            --  enclosing context has SPARK_Mode set to "off", the pragma has
+            --  no semantic effect.
+
+            if Ignore_Pragma_SPARK_Mode then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
+
+            --  Do not analyze the pragma when it appears inside a generic
+            --  because the semantic information of the related context is
+            --  scarce.
+
+            elsif Inside_A_Generic then
+               return;
+            end if;
+
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
@@ -19243,15 +19263,15 @@ package body Sem_Prag is
             Mode_Id := Get_SPARK_Mode_Type (Mode);
             Context := Parent (N);
 
-            --  Packages and subprograms declared in a generic unit cannot be
-            --  subject to the pragma.
+            --  Handle a compilation unit with configuration pragmas
 
-            if Inside_A_Generic then
-               Error_Pragma ("incorrect placement of pragma% in a generic");
+            if Nkind (Context) = N_Compilation_Unit_Aux then
+               Context := Parent (Context);
+            end if;
 
             --  The pragma appears in a configuration pragmas file
 
-            elsif No (Context) then
+            if No (Context) then
                Check_Valid_Configuration_Pragma;
 
                if Present (SPARK_Mode_Pragma) then
@@ -19263,29 +19283,63 @@ package body Sem_Prag is
                SPARK_Mode_Pragma := N;
                SPARK_Mode := Mode_Id;
 
-            --  When the pragma is placed before the declaration of a unit, it
-            --  configures the whole unit.
+            --  The pragma applies to a compilation unit
 
             elsif Nkind (Context) = N_Compilation_Unit then
-               Check_Valid_Configuration_Pragma;
 
-               if Nkind (Unit (Context)) in N_Generic_Declaration
-                 or else (Present (Library_Unit (Context))
-                           and then Nkind (Unit (Library_Unit (Context))) in
-                                                        N_Generic_Declaration)
-               then
-                  Error_Pragma ("incorrect placement of pragma% in a generic");
+               --  The pragma acts as a configuration pragma
+
+               --    pragma SPARK_Mode ...;
+               --    package Pack is ...;
+
+               if List_Containing (N) = Context_Items (Context) then
+                  Check_Valid_Configuration_Pragma;
+                  SPARK_Mode_Pragma := N;
+                  SPARK_Mode := Mode_Id;
+
+               --  The pragma applies to a package instantiation that acts as a
+               --  compilation unit.
+
+               --    package Inst is new Gen ...;
+               --    pragma SPARK_Mode ...;
+
+               elsif Nkind (Unit (Context)) = N_Package_Instantiation then
+                  Inst_Id := Defining_Entity (Instance_Spec (Unit (Context)));
+                  Check_Library_Level_Entity (Inst_Id);
+                  Check_Pragma_Conformance
+                    (Context_Pragma => SPARK_Mode_Pragma,
+                     Entity_Pragma  => Empty,
+                     Entity         => Empty);
+
+                  Set_SPARK_Pragma           (Inst_Id, N);
+                  Set_SPARK_Pragma_Inherited (Inst_Id, False);
+
+               --  Otherwise the pragma applies to a subprogram instantiation
+               --  that acts as a compilation unit.
+
+               else
+                  Spec_Id := Defining_Entity (Unit (Context));
+                  Inst_Id := Related_Instance (Spec_Id);
+                  Check_Library_Level_Entity (Spec_Id);
+                  Check_Pragma_Conformance
+                    (Context_Pragma => SPARK_Mode_Pragma,
+                     Entity_Pragma  => Empty,
+                     Entity         => Empty);
+
+                  Set_SPARK_Pragma           (Spec_Id, N);
+                  Set_SPARK_Pragma_Inherited (Spec_Id, False);
+
+                  if Present (Inst_Id) then
+                     Set_SPARK_Pragma           (Inst_Id, N);
+                     Set_SPARK_Pragma_Inherited (Inst_Id, False);
+                  end if;
                end if;
 
-               SPARK_Mode_Pragma := N;
-               SPARK_Mode := Mode_Id;
-
-            --  The pragma applies to a [library unit] subprogram or package
+            --  Otherwise the placement of the pragma within the tree dictates
+            --  its associated construct. Inspect the declarative list where
+            --  the pragma resides to find a potential construct.
 
             else
-               --  Verify the placement of the pragma with respect to package
-               --  or subprogram declarations and detect duplicates.
-
                Stmt := Prev (N);
                while Present (Stmt) loop
 
@@ -19299,27 +19353,31 @@ package body Sem_Prag is
                         raise Pragma_Exit;
                      end if;
 
-                  elsif Nkind (Stmt) in N_Generic_Declaration then
-                     Error_Pragma
-                       ("incorrect placement of pragma% on a generic");
+                  --  The pragma is associated with a package or subprogram
+                  --  instantiation that does not act as a compilation unit.
 
-                  --  The pragma applies to a package declaration
+                  --    package Inst is new Gen ...;
+                  --    pragma SPARK_Mode ...;
 
-                  elsif Nkind (Stmt) = N_Package_Declaration then
-                     Spec_Id := Defining_Entity (Stmt);
-                     Check_Library_Level_Entity (Spec_Id);
+                  elsif Nkind_In (Stmt, N_Function_Instantiation,
+                                        N_Package_Instantiation,
+                                        N_Procedure_Instantiation)
+                  then
+                     Inst_Id := Defining_Entity (Instance_Spec (Stmt));
+                     Check_Library_Level_Entity (Inst_Id);
                      Check_Pragma_Conformance
-                       (Context_Pragma => SPARK_Pragma (Spec_Id),
+                       (Context_Pragma => SPARK_Mode_Pragma,
                         Entity_Pragma  => Empty,
                         Entity         => Empty);
 
-                     Set_SPARK_Pragma               (Spec_Id, N);
-                     Set_SPARK_Pragma_Inherited     (Spec_Id, False);
-                     Set_SPARK_Aux_Pragma           (Spec_Id, N);
-                     Set_SPARK_Aux_Pragma_Inherited (Spec_Id, True);
+                     Set_SPARK_Pragma           (Inst_Id, N);
+                     Set_SPARK_Pragma_Inherited (Inst_Id, False);
                      return;
 
                   --  The pragma applies to a subprogram declaration
+
+                  --    procedure Proc ...;
+                  --    pragma SPARK_Mode ..;
 
                   elsif Nkind (Stmt) = N_Subprogram_Declaration then
                      Spec_Id := Defining_Entity (Stmt);
@@ -19338,8 +19396,9 @@ package body Sem_Prag is
                   elsif not Comes_From_Source (Stmt) then
                      null;
 
-                  --  The pragma does not apply to a legal construct, issue an
-                  --  error and stop the analysis.
+                  --  Otherwise the pragma does not apply to a legal construct
+                  --  or it does not appear at the top of a declarative or a
+                  --  statement list. Issue an error and stop the analysis.
 
                   else
                      Pragma_Misplaced;
@@ -19349,59 +19408,18 @@ package body Sem_Prag is
                   Stmt := Prev (Stmt);
                end loop;
 
-               --  Handle all cases where the pragma is actually an aspect and
-               --  applies to a library-level package spec, body or subprogram.
-
-               --    function F ... with SPARK_Mode => ...;
-               --    package P with SPARK_Mode => ...;
-               --    package body P with SPARK_Mode => ... is
-
-               --  The following circuitry simply prepares the proper context
-               --  for the general pragma processing mechanism below.
-
-               if Nkind (Context) = N_Compilation_Unit_Aux then
-                  Context := Unit (Parent (Context));
-
-                  if Nkind_In (Context, N_Package_Declaration,
-                                        N_Subprogram_Declaration)
-                  then
-                     Context := Specification (Context);
-                  end if;
-               end if;
-
-               --  The pragma is at the top level of a package spec
-
-               --    package P is
-               --       pragma SPARK_Mode;
-
-               --      or
-
-               --    package P is
-               --      ...
-               --    private
-               --      pragma SPARK_Mode;
+               --  The pragma appears within package declarations
 
                if Nkind (Context) = N_Package_Specification then
                   Spec_Id := Defining_Entity (Context);
+                  Check_Library_Level_Entity (Spec_Id);
 
-                  --  Pragma applies to private part
+                  --  The pragma is at the top of the visible declarations
 
-                  if List_Containing (N) = Private_Declarations (Context) then
-                     Check_Library_Level_Entity (Spec_Id);
-                     Check_Pragma_Conformance
-                       (Context_Pragma => Empty,
-                        Entity_Pragma  => SPARK_Pragma (Spec_Id),
-                        Entity         => Spec_Id);
-                     SPARK_Mode_Pragma := N;
-                     SPARK_Mode := Mode_Id;
+                  --    package Pack is
+                  --       pragma SPARK_Mode ...;
 
-                     Set_SPARK_Aux_Pragma           (Spec_Id, N);
-                     Set_SPARK_Aux_Pragma_Inherited (Spec_Id, False);
-
-                  --  Pragma applies to public part
-
-                  else
-                     Check_Library_Level_Entity (Spec_Id);
+                  if List_Containing (N) = Visible_Declarations (Context) then
                      Check_Pragma_Conformance
                        (Context_Pragma => SPARK_Pragma (Spec_Id),
                         Entity_Pragma  => Empty,
@@ -19413,28 +19431,29 @@ package body Sem_Prag is
                      Set_SPARK_Pragma_Inherited     (Spec_Id, False);
                      Set_SPARK_Aux_Pragma           (Spec_Id, N);
                      Set_SPARK_Aux_Pragma_Inherited (Spec_Id, True);
+
+                  --  The pragma is at the top of the private declarations
+
+                  --    package Pack is
+                  --    private
+                  --       pragma SPARK_Mode ...;
+
+                  else
+                     Check_Pragma_Conformance
+                       (Context_Pragma => Empty,
+                        Entity_Pragma  => SPARK_Pragma (Spec_Id),
+                        Entity         => Spec_Id);
+                     SPARK_Mode_Pragma := N;
+                     SPARK_Mode := Mode_Id;
+
+                     Set_SPARK_Aux_Pragma           (Spec_Id, N);
+                     Set_SPARK_Aux_Pragma_Inherited (Spec_Id, False);
                   end if;
 
-               --  The pragma appears as an aspect on a subprogram.
+               --  The pragma appears at the top of package body declarations
 
-               --    function F ... with SPARK_Mode => ...;
-
-               elsif Nkind_In (Context, N_Function_Specification,
-                                        N_Procedure_Specification)
-               then
-                  Spec_Id := Defining_Entity (Context);
-                  Check_Library_Level_Entity (Spec_Id);
-                  Check_Pragma_Conformance
-                    (Context_Pragma => SPARK_Pragma (Spec_Id),
-                     Entity_Pragma  => Empty,
-                     Entity         => Empty);
-                  Set_SPARK_Pragma           (Spec_Id, N);
-                  Set_SPARK_Pragma_Inherited (Spec_Id, False);
-
-               --  Pragma is immediately within a package body
-
-               --    package body P is
-               --       pragma SPARK_Mode;
+               --    package body Pack is
+               --       pragma SPARK_Mode ...;
 
                elsif Nkind (Context) = N_Package_Body then
                   Spec_Id := Corresponding_Spec (Context);
@@ -19452,46 +19471,9 @@ package body Sem_Prag is
                   Set_SPARK_Aux_Pragma           (Body_Id, N);
                   Set_SPARK_Aux_Pragma_Inherited (Body_Id, True);
 
-               --  Pragma is immediately within a subprogram body
+               --  The pragma appears at the top of package body statements
 
-               --    function F ... is
-               --       pragma SPARK_Mode;
-
-               elsif Nkind (Context) = N_Subprogram_Body then
-                  Spec_Id := Corresponding_Spec (Context);
-                  Context := Specification (Context);
-                  Body_Id := Defining_Entity (Context);
-
-                  --  Ignore pragma when applied to the special body created
-                  --  for inlining, recognized by its internal name _Parent.
-
-                  if Chars (Body_Id) = Name_uParent then
-                     return;
-                  end if;
-
-                  Check_Library_Level_Entity (Body_Id);
-
-                  if Present (Spec_Id) then
-                     Check_Pragma_Conformance
-                       (Context_Pragma => SPARK_Pragma (Body_Id),
-                        Entity_Pragma  => SPARK_Pragma (Spec_Id),
-                        Entity         => Spec_Id);
-                  else
-                     Check_Pragma_Conformance
-                       (Context_Pragma => SPARK_Pragma (Body_Id),
-                        Entity_Pragma  => Empty,
-                        Entity         => Empty);
-                  end if;
-
-                  SPARK_Mode_Pragma := N;
-                  SPARK_Mode := Mode_Id;
-
-                  Set_SPARK_Pragma           (Body_Id, N);
-                  Set_SPARK_Pragma_Inherited (Body_Id, False);
-
-               --  The pragma applies to the statements of a package body
-
-               --    package body P is
+               --    package body Pack is
                --    begin
                --       pragma SPARK_Mode;
 
@@ -19511,6 +19493,49 @@ package body Sem_Prag is
 
                   Set_SPARK_Aux_Pragma           (Body_Id, N);
                   Set_SPARK_Aux_Pragma_Inherited (Body_Id, False);
+
+               --  The pragma appears at the top of subprogram body
+               --  declarations.
+
+               --    procedure Proc ... is
+               --       pragma SPARK_Mode;
+
+               elsif Nkind (Context) = N_Subprogram_Body then
+                  Spec_Id := Corresponding_Spec (Context);
+                  Context := Specification (Context);
+                  Body_Id := Defining_Entity (Context);
+
+                  --  Ignore pragma when applied to the special body created
+                  --  for inlining, recognized by its internal name _Parent.
+
+                  if Chars (Body_Id) = Name_uParent then
+                     return;
+                  end if;
+
+                  Check_Library_Level_Entity (Body_Id);
+
+                  --  The body is a completion of a previous declaration
+
+                  if Present (Spec_Id) then
+                     Check_Pragma_Conformance
+                       (Context_Pragma => SPARK_Pragma (Body_Id),
+                        Entity_Pragma  => SPARK_Pragma (Spec_Id),
+                        Entity         => Spec_Id);
+
+                  --  The body acts as spec
+
+                  else
+                     Check_Pragma_Conformance
+                       (Context_Pragma => SPARK_Pragma (Body_Id),
+                        Entity_Pragma  => Empty,
+                        Entity         => Empty);
+                  end if;
+
+                  SPARK_Mode_Pragma := N;
+                  SPARK_Mode := Mode_Id;
+
+                  Set_SPARK_Pragma           (Body_Id, N);
+                  Set_SPARK_Pragma_Inherited (Body_Id, False);
 
                --  The pragma does not apply to a legal construct, issue error
 

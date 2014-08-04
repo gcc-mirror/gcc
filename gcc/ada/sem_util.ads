@@ -327,10 +327,6 @@ package Sem_Util is
    --  and post-state. Prag is a [refined] postcondition or a contract-cases
    --  pragma. Result_Seen is set when the pragma mentions attribute 'Result.
 
-   procedure Check_SPARK_Mode_In_Generic (N : Node_Id);
-   --  Given a generic package [body] or a generic subprogram [body], inspect
-   --  the aspect specifications (if any) and flag SPARK_Mode as illegal.
-
    procedure Check_Unprotected_Access
      (Context : Node_Id;
       Expr    : Node_Id);
@@ -1840,6 +1836,11 @@ package Sem_Util is
    --
    --    If restriction No_Implementation_Identifiers is set, then it checks
    --    that the entity is not implementation defined.
+
+   procedure Set_Ignore_Pragma_SPARK_Mode (N : Node_Id);
+   --  Determine whether [the enclosing context of] package or subprogram N is
+   --  subject to pragma SPARK_Mode with mode "off". If this is the case, set
+   --  global flag Ignore_Pragma_SPARK_Mode to True.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);
