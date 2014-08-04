@@ -3818,8 +3818,12 @@ package body Freeze is
       then
          return No_List;
 
-      --  Generic types need no freeze node and have no delayed semantic
-      --  checks.
+      --  Formal subprograms are never frozen
+
+      elsif Is_Formal_Subprogram (E) then
+         return No_List;
+
+      --  Generic types are never frozen as they lack delayed semantic checks
 
       elsif Is_Generic_Type (E) then
          return No_List;

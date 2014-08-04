@@ -563,7 +563,7 @@ package body Einfo is
 
    --    (Has_Protected)                 Flag271
    --    (SSO_Set_Low_By_Default)        Flag272
-   --    (SSO_Set_Low_By_Default)        Flag273
+   --    (SSO_Set_High_By_Default)       Flag273
 
    --    Is_Generic_Actual_Subprogram    Flag274
    --    No_Predicate_On_Actual          Flag275

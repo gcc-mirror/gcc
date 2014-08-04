@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -6406,6 +6407,23 @@ package body Exp_Attr is
                Pkg : RE_Id;
                Ftp : Entity_Id;
 
+               function Get_Fat_Entity (Nam : Name_Id) return Entity_Id;
+               --  Return entity for Pkg.Nam
+
+               --------------------
+               -- Get_Fat_Entity --
+               --------------------
+
+               function Get_Fat_Entity (Nam : Name_Id) return Entity_Id is
+                  Exp_Name : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => New_Occurrence_Of (RTE (Pkg), Loc),
+                      Selector_Name => Make_Identifier (Loc, Nam));
+               begin
+                  Find_Selected_Component (Exp_Name);
+                  return Entity (Exp_Name);
+               end Get_Fat_Entity;
+
             begin
                case Float_Rep (Btyp) is
 
@@ -6419,34 +6437,76 @@ package body Exp_Attr is
                   when IEEE_Binary =>
                      Find_Fat_Info (Ptyp, Ftp, Pkg);
 
-                     --  If the floating-point object might be unaligned, we
-                     --  need to call the special routine Unaligned_Valid,
-                     --  which makes the needed copy, being careful not to
-                     --  load the value into any floating-point register.
-                     --  The argument in this case is obj'Address (see
-                     --  Unaligned_Valid routine in Fat_Gen).
+                     --  If the prefix is a reverse SSO component, or is
+                     --  possibly unaligned, first create a temporary copy
+                     --  that is in native SSO, and properly aligned. Make it
+                     --  Volatile to prevent folding in the back-end. Note
+                     --  that we use an intermediate constrained string type
+                     --  to initialize the temporary, as the value at hand
+                     --  might be invalid, and in that case it cannot be copied
+                     --  using a floating point register.
 
-                     if Is_Possibly_Unaligned_Object (Pref) then
-                        Expand_Fpt_Attribute
-                          (N, Pkg, Name_Unaligned_Valid,
-                           New_List (
-                             Make_Attribute_Reference (Loc,
-                               Prefix => Relocate_Node (Pref),
-                               Attribute_Name => Name_Address)));
+                     if In_Reverse_Storage_Order_Object (Pref)
+                          or else
+                        Is_Possibly_Unaligned_Object (Pref)
+                     then
+                        declare
+                           Temp : constant Entity_Id :=
+                                    Make_Temporary (Loc, 'F');
 
-                     --  In the normal case where we are sure the object is
-                     --  aligned, we generate a call to Valid, and the argument
-                     --  in this case is obj'Unrestricted_Access (after
-                     --  converting obj to the right floating-point type).
+                           Fat_S : constant Entity_Id :=
+                                     Get_Fat_Entity (Name_S);
+                           --  Constrained string subtype of appropriate size
 
-                     else
-                        Expand_Fpt_Attribute
-                          (N, Pkg, Name_Valid,
-                           New_List (
-                             Make_Attribute_Reference (Loc,
-                               Prefix => Unchecked_Convert_To (Ftp, Pref),
-                               Attribute_Name => Name_Unrestricted_Access)));
+                           Fat_P : constant Entity_Id :=
+                                     Get_Fat_Entity (Name_P);
+                           --  Access to Fat_S
+
+                           Decl : constant Node_Id :=
+                             Make_Object_Declaration (Loc,
+                               Defining_Identifier => Temp,
+                               Aliased_Present     => True,
+                               Object_Definition   =>
+                                 New_Occurrence_Of (Ptyp, Loc));
+
+                        begin
+                           Set_Aspect_Specifications (Decl, New_List (
+                             Make_Aspect_Specification (Loc,
+                               Identifier =>
+                                 Make_Identifier (Loc, Name_Volatile))));
+
+                           Insert_Actions (N,
+                             New_List (
+                               Decl,
+
+                               Make_Assignment_Statement (Loc,
+                                 Name =>
+                                   Make_Explicit_Dereference (Loc,
+                                     Prefix =>
+                                       Unchecked_Convert_To (Fat_P,
+                                         Make_Attribute_Reference (Loc,
+                                           Prefix =>
+                                             New_Occurrence_Of (Temp, Loc),
+                                           Attribute_Name =>
+                                             Name_Unrestricted_Access))),
+                                 Expression =>
+                                   Unchecked_Convert_To (Fat_S,
+                                     Relocate_Node (Pref)))),
+                             Suppress => All_Checks);
+
+                           Rewrite (Pref, New_Occurrence_Of (Temp, Loc));
+                        end;
                      end if;
+
+                     --  We now have an object of the proper endianness and
+                     --  alignment, and can call the Valid runtime routine.
+
+                     Expand_Fpt_Attribute
+                       (N, Pkg, Name_Valid,
+                        New_List (
+                          Make_Attribute_Reference (Loc,
+                            Prefix => Unchecked_Convert_To (Ftp, Pref),
+                            Attribute_Name => Name_Unrestricted_Access)));
                end case;
 
                --  One more task, we still need a range check. Required
@@ -6462,7 +6522,7 @@ package body Exp_Attr is
                       Left_Opnd  => Relocate_Node (N),
                       Right_Opnd =>
                         Make_In (Loc,
-                          Left_Opnd => Convert_To (Btyp, Pref),
+                          Left_Opnd  => Convert_To (Btyp, Pref),
                           Right_Opnd => New_Occurrence_Of (Ptyp, Loc))));
                end if;
             end;
