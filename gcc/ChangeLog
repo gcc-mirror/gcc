@@ -1,3 +1,8 @@
+2014-08-04 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Add
+	PTA_RDRND and PTA_MOVBE for bdver4.
+
 2014-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             James Greenhalgh  <james.greenhalgh@arm.com>
 
