@@ -2865,7 +2865,10 @@ Parse::function_lit()
   // For a function literal, the next token must be a '{'.  If we
   // don't see that, then we may have a type expression.
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
-    return Expression::make_type(type, location);
+    {
+      hold_enclosing_vars.swap(this->enclosing_vars_);
+      return Expression::make_type(type, location);
+    }
 
   bool hold_is_erroneous_function = this->is_erroneous_function_;
   if (fntype_is_error)
