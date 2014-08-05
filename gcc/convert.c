@@ -477,8 +477,8 @@ convert_to_integer (tree type, tree expr)
 	    break;
 	  /* ... Fall through ...  */
 	CASE_FLT_FN (BUILT_IN_RINT):
-	  /* Only convert in ISO C99 mode.  */
-	  if (!targetm.libc_has_function (function_c99_misc))
+	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
+	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
