@@ -1,5 +1,11 @@
 2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/arm_neon.h (vqdmlals_lane_s32): Use scalar types
+	rather than singleton vectors.
+	(vqdmlsls_lane_s32): Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_sqdmulh_laneq<mode>):
 	Use VSDQ_HSI mode iterator.
 	(aarch64_sqrdmulh_laneq<mode>): Likewise.

@@ -405,8 +405,8 @@ test_vqdmlals_s32 (int64_t a, int32x1_t b, int32x1_t c)
 
 /* { dg-final { scan-assembler-times "\\tsqdmlal\\td\[0-9\]+, s\[0-9\]+, v" 1 } } */
 
-int64x1_t
-test_vqdmlals_lane_s32 (int64x1_t a, int32x1_t b, int32x2_t c)
+int64_t
+test_vqdmlals_lane_s32 (int64_t a, int32_t b, int32x2_t c)
 {
   return vqdmlals_lane_s32 (a, b, c, 1);
 }
@@ -437,8 +437,8 @@ test_vqdmlsls_s32 (int64_t a, int32x1_t b, int32x1_t c)
 
 /* { dg-final { scan-assembler-times "\\tsqdmlsl\\td\[0-9\]+, s\[0-9\]+, v" 1 } } */
 
-int64x1_t
-test_vqdmlsls_lane_s32 (int64x1_t a, int32x1_t b, int32x2_t c)
+int64_t
+test_vqdmlsls_lane_s32 (int64_t a, int32_t b, int32x2_t c)
 {
   return vqdmlsls_lane_s32 (a, b, c, 1);
 }
