@@ -1,3 +1,9 @@
+2014-08-05  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(set_options): New function.
+	(scop_to_isl_ast): Add calling of set_options.
+
 2014-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* loop-unroll.c (struct iv_to_split): Remove n_loc and loc fields.

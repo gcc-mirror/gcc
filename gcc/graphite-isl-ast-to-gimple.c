@@ -867,6 +867,25 @@ ast_build_before_for (__isl_keep isl_ast_build *build, void *user)
   return id;
 }
 
+/* Set the separate option for all dimensions.
+   This helps to reduce control overhead.  */
+
+static __isl_give isl_ast_build *
+set_options (__isl_take isl_ast_build *control,
+	     __isl_keep isl_union_map *schedule)
+{
+  isl_ctx *ctx = isl_union_map_get_ctx (schedule);
+  isl_space *range_space = isl_space_set_alloc (ctx, 0, 1);
+  range_space =
+    isl_space_set_tuple_name (range_space, isl_dim_set, "separate");
+  isl_union_set *range =
+    isl_union_set_from_set (isl_set_universe (range_space));  
+  isl_union_set *domain = isl_union_map_range (isl_union_map_copy (schedule));
+  domain = isl_union_set_universe (domain);
+  isl_union_map *options = isl_union_map_from_domain_and_range (domain, range);
+  return isl_ast_build_set_options (control, options);
+}
+
 static __isl_give isl_ast_node *
 scop_to_isl_ast (scop_p scop, ivs_params &ip)
 {
@@ -879,6 +898,7 @@ scop_to_isl_ast (scop_p scop, ivs_params &ip)
   add_parameters_to_ivs_params (scop, ip);
   isl_union_map *schedule_isl = generate_isl_schedule (scop);
   isl_ast_build *context_isl = generate_isl_context (scop);
+  context_isl = set_options (context_isl, schedule_isl);
   isl_union_map *dependences = NULL;
   if (flag_loop_parallelize_all)
   {
