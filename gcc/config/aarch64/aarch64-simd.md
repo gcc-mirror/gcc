@@ -2793,8 +2793,8 @@
 )
 
 (define_expand "aarch64_sqdmulh_laneq<mode>"
-  [(match_operand:VDQHS 0 "register_operand" "")
-   (match_operand:VDQHS 1 "register_operand" "")
+  [(match_operand:VSDQ_HSI 0 "register_operand" "")
+   (match_operand:VSDQ_HSI 1 "register_operand" "")
    (match_operand:<VCONQ> 2 "register_operand" "")
    (match_operand:SI 3 "immediate_operand" "")]
   "TARGET_SIMD"
@@ -2810,8 +2810,8 @@
 )
 
 (define_expand "aarch64_sqrdmulh_laneq<mode>"
-  [(match_operand:VDQHS 0 "register_operand" "")
-   (match_operand:VDQHS 1 "register_operand" "")
+  [(match_operand:VSDQ_HSI 0 "register_operand" "")
+   (match_operand:VSDQ_HSI 1 "register_operand" "")
    (match_operand:<VCONQ> 2 "register_operand" "")
    (match_operand:SI 3 "immediate_operand" "")]
   "TARGET_SIMD"
@@ -2886,6 +2886,21 @@
   "TARGET_SIMD"
   "*
    operands[3] = GEN_INT (ENDIAN_LANE_N (<VCOND>mode, INTVAL (operands[3])));
+   return \"sq<r>dmulh\\t%<v>0, %<v>1, %2.<v>[%3]\";"
+  [(set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")]
+)
+
+(define_insn "aarch64_sq<r>dmulh_laneq<mode>_internal"
+  [(set (match_operand:SD_HSI 0 "register_operand" "=w")
+        (unspec:SD_HSI
+	  [(match_operand:SD_HSI 1 "register_operand" "w")
+           (vec_select:<VEL>
+             (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
+             (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
+	 VQDMULH))]
+  "TARGET_SIMD"
+  "*
+   operands[3] = GEN_INT (ENDIAN_LANE_N (<VCONQ>mode, INTVAL (operands[3])));
    return \"sq<r>dmulh\\t%<v>0, %<v>1, %2.<v>[%3]\";"
   [(set_attr "type" "neon_sat_mul_<Vetype>_scalar<q>")]
 )

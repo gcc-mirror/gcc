@@ -1,5 +1,23 @@
 2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_sqdmulh_laneq<mode>):
+	Use VSDQ_HSI mode iterator.
+	(aarch64_sqrdmulh_laneq<mode>): Likewise.
+	(aarch64_sq<r>dmulh_laneq<mode>_internal): New define_insn.
+	* config/aarch64/aarch64-simd-builtins.def (sqdmulh_laneq):
+	Use BUILTIN_VDQHS macro.
+	(sqrdmulh_laneq): Likewise.
+	* config/aarch64/arm_neon.h (vqdmlalh_laneq_s16): New intrinsic.
+	(vqdmlals_laneq_s32): Likewise.
+	(vqdmlslh_laneq_s16): Likewise.
+	(vqdmlsls_laneq_s32): Likewise.
+	(vqdmulhh_laneq_s16): Likewise.
+	(vqdmulhs_laneq_s32): Likewise.
+	(vqrdmulhh_laneq_s16): Likewise.
+	(vqrdmulhs_laneq_s32): Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/arm_neon.h (vmul_f64): New intrinsic.
 	(vmuld_laneq_f64): Likewise.
 	(vmuls_laneq_f32): Likewise.
