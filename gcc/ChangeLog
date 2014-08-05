@@ -1,5 +1,14 @@
 2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/arm_neon.h (vmul_f64): New intrinsic.
+	(vmuld_laneq_f64): Likewise.
+	(vmuls_laneq_f32): Likewise.
+	(vmul_n_f64): Likewise.
+	(vmuld_lane_f64): Reimplement in C.
+	(vmuls_lane_f32): Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/cortex-a15.md (cortex_a15_alu_shift): Add crc type
 	to reservation.
 	* config/arm/cortex-a53.md (cortex_a53_alu_shift): Likewise.
