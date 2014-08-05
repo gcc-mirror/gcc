@@ -1,5 +1,11 @@
 2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/cortex-a15.md (cortex_a15_alu_shift): Add crc type
+	to reservation.
+	* config/arm/cortex-a53.md (cortex_a53_alu_shift): Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (clzsi2): Set predicable_short_it attr to no.
 	(rbitsi2): Likewise.
 	(*arm_rev): Set predicable and predicable_short_it attributes.
