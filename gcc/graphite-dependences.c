@@ -53,6 +53,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-poly.h"
 #include "graphite-htab.h"
 
+isl_union_map *
+scop_get_dependences (scop_p scop)
+{
+  isl_union_map *dependences;
+
+  if (!scop->must_raw)
+    compute_deps (scop, SCOP_BBS (scop),
+		  &scop->must_raw, &scop->may_raw,
+		  &scop->must_raw_no_source, &scop->may_raw_no_source,
+		  &scop->must_war, &scop->may_war,
+		  &scop->must_war_no_source, &scop->may_war_no_source,
+		  &scop->must_waw, &scop->may_waw,
+		  &scop->must_waw_no_source, &scop->may_waw_no_source);
+
+  dependences = isl_union_map_copy (scop->must_raw);
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->must_war));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->must_waw));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->may_raw));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->may_war));
+  dependences = isl_union_map_union (dependences,
+				     isl_union_map_copy (scop->may_waw));
+
+  return dependences;
+}
+
 /* Add the constraints from the set S to the domain of MAP.  */
 
 static isl_map *
@@ -263,6 +292,11 @@ apply_schedule_on_deps (__isl_keep isl_union_map *schedule,
   ux = isl_union_map_copy (deps);
   ux = isl_union_map_apply_domain (ux, isl_union_map_copy (trans));
   ux = isl_union_map_apply_range (ux, trans);
+  if (isl_union_map_is_empty (ux))
+    {
+      isl_union_map_free (ux);
+      return NULL;
+    }
   x = isl_map_from_union_map (ux);
 
   return x;
@@ -300,7 +334,7 @@ no_violations (__isl_keep isl_union_map *schedule,
    in which all the inputs before DEPTH occur at the same time as the
    output, and the input at DEPTH occurs before output.  */
 
-static bool
+bool
 carries_deps (__isl_keep isl_union_map *schedule,
 	      __isl_keep isl_union_map *deps,
 	      int depth)
@@ -315,6 +349,8 @@ carries_deps (__isl_keep isl_union_map *schedule,
     return false;
 
   x = apply_schedule_on_deps (schedule, deps);
+  if (x == NULL)
+    return false;
   space = isl_map_get_space (x);
   space = isl_space_range (space);
   lex = isl_map_lex_le (space);

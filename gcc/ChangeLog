@@ -1,3 +1,20 @@
+2014-08-05  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c: Add a new struct ast_build_info.
+	(translate_isl_ast_for_loop): Add checking of the 
+	flag_loop_parallelize_all.
+	(ast_build_before_for): New function.
+	(scop_to_isl_ast): Add checking of the 
+	flag_loop_parallelize_all.
+	* graphite-dependences.c: Move the defenition of the
+	scop_get_dependences from graphite-optimize-isl.c to this file.
+	(apply_schedule_on_deps): Add checking of the ux's emptiness.
+	(carries_deps): Add checking of the x's value.
+	* graphite-optimize-isl.c: Move the defenition of the
+	scop_get_dependences to graphite-dependences.c.
+	* graphite-poly.h: Add declarations of scop_get_dependences
+	and carries_deps.
+
 2014-08-04  Rohit  <rohitarulraj@freescale.com>
 
 	PR target/60102
