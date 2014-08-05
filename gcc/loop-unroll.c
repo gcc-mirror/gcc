@@ -79,11 +79,6 @@ struct iv_to_split
 			   iterations are based.  */
   rtx step;		/* Step of the induction variable.  */
   struct iv_to_split *next; /* Next entry in walking order.  */
-  unsigned n_loc;
-  unsigned loc[3];	/* Location where the definition of the induction
-			   variable occurs in the insn.  For example if
-			   N_LOC is 2, the expression is located at
-			   XEXP (XEXP (single_set, loc[0]), loc[1]).  */
 };
 
 /* Information about accumulators to expand.  */
@@ -1942,8 +1937,6 @@ analyze_iv_to_split_insn (rtx insn)
   ivts->base_var = NULL_RTX;
   ivts->step = iv.step;
   ivts->next = NULL;
-  ivts->n_loc = 1;
-  ivts->loc[0] = 1;
 
   return ivts;
 }
@@ -2080,27 +2073,12 @@ determine_split_iv_delta (unsigned n_copy, unsigned n_copies, bool unrolling)
     }
 }
 
-/* Locate in EXPR the expression corresponding to the location recorded
-   in IVTS, and return a pointer to the RTX for this location.  */
-
-static rtx *
-get_ivts_expr (rtx expr, struct iv_to_split *ivts)
-{
-  unsigned i;
-  rtx *ret = &expr;
-
-  for (i = 0; i < ivts->n_loc; i++)
-    ret = &XEXP (*ret, ivts->loc[i]);
-
-  return ret;
-}
-
 /* Allocate basic variable for the induction variable chain.  */
 
 static void
 allocate_basic_variable (struct iv_to_split *ivts)
 {
-  rtx expr = *get_ivts_expr (single_set (ivts->insn), ivts);
+  rtx expr = SET_SRC (single_set (ivts->insn));
 
   ivts->base_var = gen_reg_rtx (GET_MODE (expr));
 }
@@ -2111,7 +2089,7 @@ allocate_basic_variable (struct iv_to_split *ivts)
 static void
 insert_base_initialization (struct iv_to_split *ivts, rtx insn)
 {
-  rtx expr = copy_rtx (*get_ivts_expr (single_set (insn), ivts));
+  rtx expr = copy_rtx (SET_SRC (single_set (insn)));
   rtx seq;
 
   start_sequence ();
@@ -2146,7 +2124,7 @@ split_iv (struct iv_to_split *ivts, rtx insn, unsigned delta)
     }
 
   /* Figure out where to do the replacement.  */
-  loc = get_ivts_expr (single_set (insn), ivts);
+  loc = &SET_SRC (single_set (insn));
 
   /* If we can make the replacement right away, we're done.  */
   if (validate_change (insn, loc, expr, 0))
