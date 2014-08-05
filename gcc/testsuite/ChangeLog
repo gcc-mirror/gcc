@@ -537,8 +537,9 @@
 
 2014-07-16  Arnaud Charlet  <charlet@adacore.com>
 
-	* gnat.db/specs/alignment2.ads, gnat.db/specs/size_clause1.ads,
-	gnat.db/specs/size_clause2.ads: Update test case.
+	* gnat.dg/specs/alignment2.ads: Update.
+	* gnat.dg/specs/size_clause1.ads: Likewise.
+	* gnat.dg/specs/size_clause2.ads: Likewise.
 
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 
