@@ -13646,6 +13646,10 @@ cp_parser_template_id (cp_parser *parser,
       template_id
 	= finish_template_type (templ, arguments, entering_scope);
     }
+  else if (variable_template_p (templ))
+    {
+      template_id = lookup_template_variable (templ, arguments);
+    }
   else
     {
       /* If it's not a class-template or a template-template, it should be

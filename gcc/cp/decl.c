@@ -80,8 +80,8 @@ static int ambi_op_p (enum tree_code);
 static int unary_op_p (enum tree_code);
 static void push_local_name (tree);
 static tree grok_reference_init (tree, tree, tree, int);
-static tree grokvardecl (tree, tree, const cp_decl_specifier_seq *,
-			 int, int, tree);
+static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
+			 int, int, int, tree);
 static int check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
@@ -7968,9 +7968,11 @@ set_linkage_for_static_data_member (tree decl)
 static tree
 grokvardecl (tree type,
 	     tree name,
+	     tree orig_declarator,
 	     const cp_decl_specifier_seq *declspecs,
 	     int initialized,
 	     int constp,
+	     int template_count,
 	     tree scope)
 {
   tree decl;
@@ -8000,7 +8002,10 @@ grokvardecl (tree type,
 	  || (TREE_CODE (scope) == NAMESPACE_DECL
 	      && current_lang_name != lang_name_cplusplus)
 	  /* Similarly for static data members.  */
-	  || TYPE_P (scope)))
+	  || TYPE_P (scope)
+	  /* Similarly for explicit specializations.  */
+	  || (orig_declarator
+	      && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)))
     decl = build_lang_decl (VAR_DECL, name, type);
   else
     decl = build_decl (input_location, VAR_DECL, name, type);
@@ -8068,7 +8073,12 @@ grokvardecl (tree type,
   else
     DECL_INTERFACE_KNOWN (decl) = 1;
 
-  return decl;
+  // Handle explicit specializations and instantiations of variable templates.
+  if (orig_declarator)
+    decl = check_explicit_specialization (orig_declarator, decl,
+					  template_count, 0);
+
+  return decl != error_mark_node ? decl : NULL_TREE;
 }
 
 /* Create and return a canonical pointer to member function type, for
@@ -8962,8 +8972,13 @@ grokdeclarator (const cp_declarator *declarator,
 		  dname = fns;
 		  if (!identifier_p (dname))
 		    {
-		      gcc_assert (is_overloaded_fn (dname));
-		      dname = DECL_NAME (get_first_fn (dname));
+		      if (variable_template_p (dname))
+			dname = DECL_NAME (dname);
+		      else
+		        {
+		          gcc_assert (is_overloaded_fn (dname));
+		          dname = DECL_NAME (get_first_fn (dname));
+		        }
 		    }
 		}
 		/* Fall through.  */
@@ -10004,7 +10019,8 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (unqualified_id && TREE_CODE (unqualified_id) == TEMPLATE_ID_EXPR
       && TREE_CODE (type) != FUNCTION_TYPE
-      && TREE_CODE (type) != METHOD_TYPE)
+      && TREE_CODE (type) != METHOD_TYPE
+      && !variable_template_p (TREE_OPERAND (unqualified_id, 0)))
     {
       error ("template-id %qD used as a declarator",
 	     unqualified_id);
@@ -10894,11 +10910,15 @@ grokdeclarator (const cp_declarator *declarator,
 	/* It's a variable.  */
 
 	/* An uninitialized decl with `extern' is a reference.  */
-	decl = grokvardecl (type, unqualified_id,
+	decl = grokvardecl (type, dname, unqualified_id,
 			    declspecs,
 			    initialized,
 			    (type_quals & TYPE_QUAL_CONST) != 0,
+			    template_count,
 			    ctype ? ctype : in_namespace);
+	if (decl == NULL_TREE)
+	  return error_mark_node;
+
 	bad_specifiers (decl, BSP_VAR, virtualp,
 			memfn_quals != TYPE_UNQUALIFIED,
 			inlinep, friendp, raises != NULL_TREE);
