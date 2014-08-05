@@ -1,5 +1,14 @@
 2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/simd/vmul_f64_1.c: New test.
+	* gcc.target/aarch64/simd/vmul_n_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuld_lane_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuld_laneq_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuls_lane_f32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuls_laneq_f32_1.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.dg/torture/ftrapv-1.c: Correct usage of dg-require-fork.
 
 2014-08-04  Rohit  <rohitarulraj@freescale.com>
