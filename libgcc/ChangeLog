@@ -2,7 +2,7 @@
 
 	PR target/60102
 	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Update
-	  based on change in SPE high register numbers and 3 HTM registers.
+	based on change in SPE high register numbers and 3 HTM registers.
 
 2014-08-01  Nathan Sidwell  <nathan@acm.org>
 
