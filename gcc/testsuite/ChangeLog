@@ -1,5 +1,13 @@
 2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmlals_lane_s32):
+	Fix types.
+	(test_vqdmlsls_lane_s32): Likewise.
+	* gcc.target/aarch64/simd/vqdmlals_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsls_lane_s32.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/simd/vqdmlalh_laneq_s16_1.c: New test.
 	* gcc.target/aarch64/simd/vqdmlals_laneq_s32_1.c: Likewise.
 	* gcc.target/aarch64/simd/vqdmlslh_laneq_s16_1.c: Likewise.

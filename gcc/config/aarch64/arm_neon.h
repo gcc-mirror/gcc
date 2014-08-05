@@ -19457,11 +19457,10 @@ vqdmlals_s32 (int64_t __a, int32x1_t __b, int32x1_t __c)
   return __builtin_aarch64_sqdmlalsi (__a, __b, __c);
 }
 
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vqdmlals_lane_s32 (int64x1_t __a, int32x1_t __b, int32x2_t __c, const int __d)
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vqdmlals_lane_s32 (int64_t __a, int32_t __b, int32x2_t __c, const int __d)
 {
-  return (int64x1_t)
-      {__builtin_aarch64_sqdmlal_lanesi (__a[0], __b, __c, __d)};
+  return __builtin_aarch64_sqdmlal_lanesi (__a, __b, __c, __d);
 }
 
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
@@ -19596,10 +19595,10 @@ vqdmlsls_s32 (int64_t __a, int32x1_t __b, int32x1_t __c)
   return __builtin_aarch64_sqdmlslsi (__a, __b, __c);
 }
 
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vqdmlsls_lane_s32 (int64x1_t __a, int32x1_t __b, int32x2_t __c, const int __d)
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vqdmlsls_lane_s32 (int64_t __a, int32_t __b, int32x2_t __c, const int __d)
 {
-  return (int64x1_t) {__builtin_aarch64_sqdmlsl_lanesi (__a[0], __b, __c, __d)};
+  return __builtin_aarch64_sqdmlsl_lanesi (__a, __b, __c, __d);
 }
 
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
