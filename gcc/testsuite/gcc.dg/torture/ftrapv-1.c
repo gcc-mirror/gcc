@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-ftrapv" } */
 /* { dg-require-effective-target trapping } */
-/* { dg-require-fork } */
+/* { dg-require-fork "" } */
 
 #include <stdlib.h>
 #include <unistd.h>
