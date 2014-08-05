@@ -130,6 +130,7 @@ Instead (for now) you must access m_vecdata:
   (gdb) p bb->preds->m_vecdata[1]
   $21 = <edge 0x7ffff044d3b8 (4 -> 5)>
 """
+import os.path
 import re
 
 import gdb
@@ -475,5 +476,71 @@ def build_pretty_printer():
 gdb.printing.register_pretty_printer(
     gdb.current_objfile(),
     build_pretty_printer())
+
+def find_gcc_source_dir():
+    # Use location of global "g" to locate the source tree
+    sym_g = gdb.lookup_global_symbol('g')
+    path = sym_g.symtab.filename # e.g. '../../src/gcc/context.h'
+    srcdir = os.path.split(path)[0] # e.g. '../../src/gcc'
+    return srcdir
+
+class PassNames:
+    """Parse passes.def, gathering a list of pass class names"""
+    def __init__(self):
+        srcdir = find_gcc_source_dir()
+        self.names = []
+        with open(os.path.join(srcdir, 'passes.def')) as f:
+            for line in f:
+                m = re.match('\s*NEXT_PASS \((.+)\);', line)
+                if m:
+                    self.names.append(m.group(1))
+
+class BreakOnPass(gdb.Command):
+    """
+    A custom command for putting breakpoints on the execute hook of passes.
+    This is largely a workaround for issues with tab-completion in gdb when
+    setting breakpoints on methods on classes within anonymous namespaces.
+
+    Example of use: putting a breakpoint on "final"
+      (gdb) break-on-pass
+    Press <TAB>; it autocompletes to "pass_":
+      (gdb) break-on-pass pass_
+    Press <TAB>:
+      Display all 219 possibilities? (y or n)
+    Press "n"; then type "f":
+      (gdb) break-on-pass pass_f
+    Press <TAB> to autocomplete to pass classnames beginning with "pass_f":
+      pass_fast_rtl_dce              pass_fold_builtins
+      pass_feedback_split_functions  pass_forwprop
+      pass_final                     pass_fre
+      pass_fixup_cfg                 pass_free_cfg
+    Type "in<TAB>" to complete to "pass_final":
+      (gdb) break-on-pass pass_final
+    ...and hit <RETURN>:
+      Breakpoint 6 at 0x8396ba: file ../../src/gcc/final.c, line 4526.
+    ...and we have a breakpoint set; continue execution:
+      (gdb) cont
+      Continuing.
+      Breakpoint 6, (anonymous namespace)::pass_final::execute (this=0x17fb990) at ../../src/gcc/final.c:4526
+      4526	  virtual unsigned int execute (function *) { return rest_of_handle_final (); }
+    """
+    def __init__(self):
+        gdb.Command.__init__(self, 'break-on-pass', gdb.COMMAND_BREAKPOINTS)
+        self.pass_names = None
+
+    def complete(self, text, word):
+        # Lazily load pass names:
+        if not self.pass_names:
+            self.pass_names = PassNames()
+
+        return [name
+                for name in sorted(self.pass_names.names)
+                if name.startswith(text)]
+
+    def invoke(self, arg, from_tty):
+        sym = '(anonymous namespace)::%s::execute' % arg
+        breakpoint = gdb.Breakpoint(sym)
+
+BreakOnPass()
 
 print('Successfully loaded GDB hooks for GCC')
