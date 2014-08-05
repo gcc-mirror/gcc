@@ -2418,6 +2418,15 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
   return result;
 }
 
+/* Instantiate a variable declaration from a TEMPLATE_ID_EXPR for use. */
+
+tree
+finish_template_variable (tree var)
+{
+  return instantiate_template (TREE_OPERAND (var, 0), TREE_OPERAND (var, 1),
+                               tf_error);
+}
+
 /* Finish a call to a postfix increment or decrement or EXPR.  (Which
    is indicated by CODE, which should be POSTINCREMENT_EXPR or
    POSTDECREMENT_EXPR.)  */
@@ -3499,6 +3508,11 @@ finish_id_expression (tree id_expression,
 	  /* Replace an evaluated use of the thread_local variable with
 	     a call to its wrapper.  */
 	  decl = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
+	}
+      else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
+	       && variable_template_p (TREE_OPERAND (decl, 0)))
+	{
+	  decl = finish_template_variable (decl);
 	}
       else if (scope)
 	{
