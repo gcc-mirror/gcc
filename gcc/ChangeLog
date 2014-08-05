@@ -1,3 +1,8 @@
+2014-08-05  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* tree-ssa.c (redirect_edge_var_map_dup): insert newe before
+	getting olde.
+
 2014-08-05  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/61672
