@@ -1,3 +1,33 @@
+2014-08-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_builtin_type_mode): Delete.
+	(v8qi_UP): Remap to V8QImode.
+	(v4hi_UP): Remap to V4HImode.
+	(v2si_UP): Remap to V2SImode.
+	(v2sf_UP): Remap to V2SFmode.
+	(v1df_UP): Remap to V1DFmode.
+	(di_UP): Remap to DImode.
+	(df_UP): Remap to DFmode.
+	(v16qi_UP):V16QImode.
+	(v8hi_UP): Remap to V8HImode.
+	(v4si_UP): Remap to V4SImode.
+	(v4sf_UP): Remap to V4SFmode.
+	(v2di_UP): Remap to V2DImode.
+	(v2df_UP): Remap to V2DFmode.
+	(ti_UP): Remap to TImode.
+	(ei_UP): Remap to EImode.
+	(oi_UP): Remap to OImode.
+	(ci_UP): Map to CImode.
+	(xi_UP): Remap to XImode.
+	(si_UP): Remap to SImode.
+	(sf_UP): Remap to SFmode.
+	(hi_UP): Remap to HImode.
+	(qi_UP): Remap to QImode.
+	(aarch64_simd_builtin_datum): Make mode a machine_mode.
+	(VAR1): Build builtin name.
+	(aarch64_init_simd_builtins): Remove dead code.
+
 2014-08-05  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
