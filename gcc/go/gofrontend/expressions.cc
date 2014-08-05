@@ -3620,6 +3620,16 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
       return Expression::make_error(this->location());
     }
 
+  // Check for an invalid pointer dereference.  We need to do this
+  // here because Unary_expression::do_type will return an error type
+  // in this case.  That can cause code to appear erroneous, and
+  // therefore disappear at lowering time, without any error message.
+  if (op == OPERATOR_MULT && expr->type()->points_to() == NULL)
+    {
+      this->report_error(_("expected pointer"));
+      return Expression::make_error(this->location());
+    }
+
   if (op == OPERATOR_PLUS || op == OPERATOR_MINUS || op == OPERATOR_XOR)
     {
       Numeric_constant nc;
@@ -9811,7 +9821,10 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 
   Type* type = left->type();
   if (type->is_error())
-    return Expression::make_error(location);
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(location);
+    }
   else if (left->is_type_expression())
     {
       error_at(location, "attempt to index type expression");
@@ -10298,9 +10311,9 @@ Array_index_expression::do_get_backend(Translate_context* context)
       go_assert(saw_errors());
       return context->backend()->error_expression();
     }
-  Expression* start_expr = Expression::make_cast(int_type, this->start_, loc);
+
   Bexpression* bad_index =
-    Expression::check_bounds(start_expr, loc)->get_backend(context);
+    Expression::check_bounds(this->start_, loc)->get_backend(context);
 
   Bexpression* start = this->start_->get_backend(context);
   start = gogo->backend()->convert_expression(int_btype, start, loc);
