@@ -1324,15 +1324,7 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
       streamer_tree_cache_append (data_in->reader_cache, result, hash);
     }
   else if (tag == LTO_tree_scc)
-    {
-      unsigned len, entry_len;
-
-      /* Input and skip the SCC.  */
-      lto_input_scc (ib, data_in, &len, &entry_len);
-
-      /* Recurse.  */
-      return lto_input_tree (ib, data_in);
-    }
+    gcc_unreachable ();
   else
     {
       /* Otherwise, materialize a new node from IB.  */
@@ -1345,7 +1337,15 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
 tree
 lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 {
-  return lto_input_tree_1 (ib, data_in, streamer_read_record_start (ib), 0);
+  enum LTO_tags tag;
+
+  /* Input and skip SCCs.  */
+  while ((tag = streamer_read_record_start (ib)) == LTO_tree_scc)
+    {
+      unsigned len, entry_len;
+      lto_input_scc (ib, data_in, &len, &entry_len);
+    }
+  return lto_input_tree_1 (ib, data_in, tag, 0);
 }
 
 

@@ -1,5 +1,12 @@
 2014-08-06  Richard Biener  <rguenther@suse.de>
 
+	PR lto/62034
+	* lto-streamer-in.c (lto_input_tree_1): Assert we do not read
+	SCCs here.
+	(lto_input_tree): Pop SCCs here.
+
+2014-08-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/61320
 	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Properly
 	handle misaligned loads.
