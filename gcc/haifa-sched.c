@@ -2972,7 +2972,7 @@ advance_one_cycle (void)
 {
   advance_state (curr_state);
   if (sched_verbose >= 6)
-    fprintf (sched_dump, ";;\tAdvanced a state.\n");
+    fprintf (sched_dump, ";;\tAdvance the current state.\n");
 }
 
 /* Update register pressure after scheduling INSN.  */
@@ -6007,6 +6007,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
   modulo_insns_scheduled = 0;
 
   ls.modulo_epilogue = false;
+  ls.first_cycle_insn_p = true;
 
   /* Loop until all the insns in BB are scheduled.  */
   while ((*current_sched_info->schedule_more_p) ())
@@ -6077,7 +6078,6 @@ schedule_block (basic_block *target_bb, state_t init_state)
       if (must_backtrack)
 	goto do_backtrack;
 
-      ls.first_cycle_insn_p = true;
       ls.shadows_only_p = false;
       cycle_issued_insns = 0;
       ls.can_issue_more = issue_rate;
@@ -6363,11 +6363,13 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	      break;
 	    }
 	}
+      ls.first_cycle_insn_p = true;
     }
   if (ls.modulo_epilogue)
     success = true;
  end_schedule:
-  advance_one_cycle ();
+  if (!ls.first_cycle_insn_p)
+    advance_one_cycle ();
   perform_replacements_new_cycle ();
   if (modulo_ii > 0)
     {
