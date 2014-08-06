@@ -1,3 +1,8 @@
+2014-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61801
+	* gcc.target/i386/pr61801.c: Rewritten.
+
 2014-08-04  Rohit  <rohitarulraj@freescale.com>
 
 	PR target/60102
