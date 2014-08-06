@@ -1,3 +1,14 @@
+2014-08-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_address): Use REG_P and
+	CONST_INT_P instead of GET_CODE and compare.
+	(aarch64_select_cc_mode): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_rtx_costs): Likewise.
+	(aarch64_simd_valid_immediate): Likewise.
+	(aarch64_simd_check_vect_par_cnst_half): Likewise.
+	(aarch64_simd_emit_pair_result_insn): Likewise.
+
 2014-08-05  David Malcolm  <dmalcolm@redhat.com>
 
         * gdbhooks.py (find_gcc_source_dir): New helper function.

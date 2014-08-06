@@ -3250,11 +3250,11 @@ aarch64_classify_address (struct aarch64_address_info *info,
       op1 = XEXP (x, 1);
 
       if (! strict_p
-	  && GET_CODE (op0) == REG
+	  && REG_P (op0)
 	  && (op0 == virtual_stack_vars_rtx
 	      || op0 == frame_pointer_rtx
 	      || op0 == arg_pointer_rtx)
-	  && GET_CODE (op1) == CONST_INT)
+	  && CONST_INT_P (op1))
 	{
 	  info->type = ADDRESS_REG_IMM;
 	  info->base = op0;
@@ -3542,7 +3542,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
      the comparison will have to be swapped when we emit the assembly
      code.  */
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
-      && (GET_CODE (y) == REG || GET_CODE (y) == SUBREG)
+      && (REG_P (y) || GET_CODE (y) == SUBREG)
       && (GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == LSHIFTRT
 	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND))
@@ -3551,7 +3551,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
   /* Similarly for a negated operand, but we can only do this for
      equalities.  */
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
-      && (GET_CODE (y) == REG || GET_CODE (y) == SUBREG)
+      && (REG_P (y) || GET_CODE (y) == SUBREG)
       && (code == EQ || code == NE)
       && GET_CODE (x) == NEG)
     return CC_Zmode;
@@ -3711,7 +3711,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       {
 	int n;
 
-	if (GET_CODE (x) != CONST_INT
+	if (!CONST_INT_P (x)
 	    || (n = exact_log2 (INTVAL (x) & ~7)) <= 0)
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -3741,7 +3741,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	int n;
 
 	/* Print N such that 2^N == X.  */
-	if (GET_CODE (x) != CONST_INT || (n = exact_log2 (INTVAL (x))) < 0)
+	if (!CONST_INT_P (x) || (n = exact_log2 (INTVAL (x))) < 0)
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;
@@ -3753,7 +3753,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
     case 'P':
       /* Print the number of non-zero bits in X (a const_int).  */
-      if (GET_CODE (x) != CONST_INT)
+      if (!CONST_INT_P (x))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
@@ -3764,7 +3764,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
     case 'H':
       /* Print the higher numbered register of a pair (TImode) of regs.  */
-      if (GET_CODE (x) != REG || !GP_REGNUM_P (REGNO (x) + 1))
+      if (!REG_P (x) || !GP_REGNUM_P (REGNO (x) + 1))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
@@ -3838,7 +3838,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
     case 'X':
       /* Print bottom 16 bits of integer constant in hex.  */
-      if (GET_CODE (x) != CONST_INT)
+      if (!CONST_INT_P (x))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
@@ -5108,7 +5108,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 	    op1 = SUBREG_REG (op1);
 	  if ((GET_CODE (op1) == ZERO_EXTEND
 	       || GET_CODE (op1) == SIGN_EXTEND)
-	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	      && CONST_INT_P (XEXP (op0, 1))
 	      && (GET_MODE_BITSIZE (GET_MODE (XEXP (op1, 0)))
 		  >= INTVAL (XEXP (op0, 1))))
 	    op1 = XEXP (op1, 0);
@@ -7677,7 +7677,7 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, bool inverse,
       unsigned HOST_WIDE_INT elpart;
       unsigned int part, parts;
 
-      if (GET_CODE (el) == CONST_INT)
+      if (CONST_INT_P (el))
         {
           elpart = INTVAL (el);
           parts = 1;
@@ -7983,7 +7983,7 @@ aarch64_simd_check_vect_par_cnst_half (rtx op, enum machine_mode mode,
       rtx elt_op = XVECEXP (op, 0, i);
       rtx elt_ideal = XVECEXP (ideal, 0, i);
 
-      if (GET_CODE (elt_op) != CONST_INT
+      if (!CONST_INT_P (elt_op)
 	  || INTVAL (elt_ideal) != INTVAL (elt_op))
 	return false;
     }
@@ -7996,7 +7996,7 @@ void
 aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 {
   HOST_WIDE_INT lane;
-  gcc_assert (GET_CODE (operand) == CONST_INT);
+  gcc_assert (CONST_INT_P (operand));
   lane = INTVAL (operand);
 
   if (lane < low || lane >= high)
@@ -8006,7 +8006,7 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 void
 aarch64_simd_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
 {
-  gcc_assert (GET_CODE (operand) == CONST_INT);
+  gcc_assert (CONST_INT_P (operand));
   HOST_WIDE_INT lane = INTVAL (operand);
 
   if (lane < low || lane >= high)
@@ -8044,7 +8044,7 @@ bool
 aarch64_simd_mem_operand_p (rtx op)
 {
   return MEM_P (op) && (GET_CODE (XEXP (op, 0)) == POST_INC
-			|| GET_CODE (XEXP (op, 0)) == REG);
+			|| REG_P (XEXP (op, 0)));
 }
 
 /* Set up OPERANDS for a register copy from SRC to DEST, taking care
