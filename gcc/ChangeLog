@@ -1,3 +1,8 @@
+2014-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61393
+	* cgraphclones.c (cgraph_node::create_clone): Also copy tm_clone.
+
 2014-08-06  Richard Biener  <rguenther@suse.de>
 
 	PR lto/62034
