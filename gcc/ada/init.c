@@ -1730,7 +1730,7 @@ __gnat_inum_to_ivec (int num)
 }
 #endif
 
-#if !defined(__alpha_vxworks) && (_WRS_VXWORKS_MAJOR != 6) && !defined(__RTP__)
+#if !defined(__alpha_vxworks) && ((_WRS_VXWORKS_MAJOR != 6) && (_WRS_VXWORKS_MAJOR != 7)) && !defined(__RTP__)
 
 /* getpid is used by s-parint.adb, but is not defined by VxWorks, except
    on Alpha VxWorks and VxWorks 6.x (including RTPs).  */

@@ -63,8 +63,9 @@ package Osint is
    type File_Type is (Source, Library, Config, Definition, Preprocessing_Data);
 
    function Find_File
-     (N : File_Name_Type;
-      T : File_Type) return File_Name_Type;
+     (N         : File_Name_Type;
+      T         : File_Type;
+      Full_Name : Boolean := False) return File_Name_Type;
    --  Finds a source, library or config file depending on the value of T
    --  following the directory search order rules unless N is the name of the
    --  file just read with Next_Main_File and already contains directory
@@ -76,6 +77,10 @@ package Osint is
    --  set and the file name ends in ".dg", in which case we look for the
    --  generated file only in the current directory, since that is where it is
    --  always built.
+   --
+   --  In the case of configuration files, full path names are needed for some
+   --  ASIS queries. The flag Full_Name indicates that the name of the file
+   --  should be normalized to include a full path.
 
    function Get_File_Names_Case_Sensitive return Int;
    pragma Import (C, Get_File_Names_Case_Sensitive,

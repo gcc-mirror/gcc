@@ -5316,10 +5316,18 @@ generating the instruction.
 The @code{ffs} built-in function of C always uses the mode which
 corresponds to the C data type @code{int}.
 
+@cindex @code{clrsb@var{m}2} instruction pattern
+@item @samp{clrsb@var{m}2}
+Count leading redundant sign bits.
+Store into operand 0 the number of redundant sign bits in operand 1, starting
+at the most significant bit position.
+A redundant sign bit is defined as any sign bit after the first. As such,
+this count will be one less than the count of leading sign bits.
+
 @cindex @code{clz@var{m}2} instruction pattern
 @item @samp{clz@var{m}2}
-Store into operand 0 the number of leading 0-bits in @var{x}, starting
-at the most significant bit position.  If @var{x} is 0, the
+Store into operand 0 the number of leading 0-bits in operand 1, starting
+at the most significant bit position.  If operand 1 is 0, the
 @code{CLZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}) macro defines if
 the result is undefined or has a useful value.
 @var{m} is the mode of operand 0; operand 1's mode is
@@ -5328,8 +5336,8 @@ operand to that mode before generating the instruction.
 
 @cindex @code{ctz@var{m}2} instruction pattern
 @item @samp{ctz@var{m}2}
-Store into operand 0 the number of trailing 0-bits in @var{x}, starting
-at the least significant bit position.  If @var{x} is 0, the
+Store into operand 0 the number of trailing 0-bits in operand 1, starting
+at the least significant bit position.  If operand 1 is 0, the
 @code{CTZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}) macro defines if
 the result is undefined or has a useful value.
 @var{m} is the mode of operand 0; operand 1's mode is
@@ -5338,15 +5346,15 @@ operand to that mode before generating the instruction.
 
 @cindex @code{popcount@var{m}2} instruction pattern
 @item @samp{popcount@var{m}2}
-Store into operand 0 the number of 1-bits in @var{x}.  @var{m} is the
+Store into operand 0 the number of 1-bits in operand 1.  @var{m} is the
 mode of operand 0; operand 1's mode is specified by the instruction
 pattern, and the compiler will convert the operand to that mode before
 generating the instruction.
 
 @cindex @code{parity@var{m}2} instruction pattern
 @item @samp{parity@var{m}2}
-Store into operand 0 the parity of @var{x}, i.e.@: the number of 1-bits
-in @var{x} modulo 2.  @var{m} is the mode of operand 0; operand 1's mode
+Store into operand 0 the parity of operand 1, i.e.@: the number of 1-bits
+in operand 1 modulo 2.  @var{m} is the mode of operand 0; operand 1's mode
 is specified by the instruction pattern, and the compiler will convert
 the operand to that mode before generating the instruction.
 

@@ -211,6 +211,24 @@ package Sem_Util is
    --  Determine whether a selected component has a type that depends on
    --  discriminants, and build actual subtype for it if so.
 
+   function Build_Default_Init_Cond_Call
+     (Loc    : Source_Ptr;
+      Obj_Id : Entity_Id;
+      Typ    : Entity_Id) return Node_Id;
+   --  Build a call to the default initial condition procedure of type Typ with
+   --  Obj_Id as the actual parameter.
+
+   procedure Build_Default_Init_Cond_Procedure_Bodies (Priv_Decls : List_Id);
+   --  Inspect the contents of private declarations Priv_Decls and build the
+   --  bodies the default initial condition procedures for all types subject
+   --  to pragma Default_Initial_Condition.
+
+   procedure Build_Default_Init_Cond_Procedure_Declaration (Typ : Entity_Id);
+   --  If private type Typ is subject to pragma Default_Initial_Condition,
+   --  build the declaration of the procedure which verifies the assumption
+   --  of the pragma at runtime. The declaration is inserted after the related
+   --  pragma.
+
    function Build_Default_Subtype
      (T : Entity_Id;
       N : Node_Id) return Entity_Id;
@@ -307,10 +325,6 @@ package Sem_Util is
    --  the pragma contains an expression that evaluates differently in pre-
    --  and post-state. Prag is a [refined] postcondition or a contract-cases
    --  pragma. Result_Seen is set when the pragma mentions attribute 'Result.
-
-   procedure Check_SPARK_Mode_In_Generic (N : Node_Id);
-   --  Given a generic package [body] or a generic subprogram [body], inspect
-   --  the aspect specifications (if any) and flag SPARK_Mode as illegal.
 
    procedure Check_Unprotected_Access
      (Context : Node_Id;
@@ -1065,6 +1079,10 @@ package Sem_Util is
    --  the same type. Note that Typ may not have a partial view to begin with,
    --  in that case the function returns Empty.
 
+   procedure Inherit_Default_Init_Cond_Procedure (Typ : Entity_Id);
+   --  Inherit the default initial condition procedure from the parent type of
+   --  derived type Typ.
+
    procedure Insert_Explicit_Dereference (N : Node_Id);
    --  In a context that requires a composite or subprogram type and where a
    --  prefix is an access type, rewrite the access type node N (which is the
@@ -1596,16 +1614,16 @@ package Sem_Util is
    --  (e.g. target of assignment, or out parameter), and to False if the
    --  modification is only potential (e.g. address of entity taken).
 
+   function Object_Access_Level (Obj : Node_Id) return Uint;
+   --  Return the accessibility level of the view of the object Obj. For
+   --  convenience, qualified expressions applied to object names are also
+   --  allowed as actuals for this function.
+
    function Original_Corresponding_Operation (S : Entity_Id) return Entity_Id;
    --  [Ada 2012: AI05-0125-1]: If S is an inherited dispatching primitive S2,
    --  or overrides an inherited dispatching primitive S2, the original
    --  corresponding operation of S is the original corresponding operation of
    --  S2. Otherwise, it is S itself.
-
-   function Object_Access_Level (Obj : Node_Id) return Uint;
-   --  Return the accessibility level of the view of the object Obj. For
-   --  convenience, qualified expressions applied to object names are also
-   --  allowed as actuals for this function.
 
    function Original_Aspect_Name (N : Node_Id) return Name_Id;
    --  N is a pragma node or aspect specification node. This function returns

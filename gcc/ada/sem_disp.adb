@@ -2044,7 +2044,11 @@ package body Sem_Disp is
    -- Inherited_Subprograms --
    ---------------------------
 
-   function Inherited_Subprograms (S : Entity_Id) return Subprogram_List is
+   function Inherited_Subprograms
+     (S               : Entity_Id;
+      No_Interfaces   : Boolean := False;
+      Interfaces_Only : Boolean := False) return Subprogram_List
+   is
       Result : Subprogram_List (1 .. 6000);
       --  6000 here is intended to be infinity. We could use an expandable
       --  table, but it would be awfully heavy, and there is no way that we
@@ -2078,68 +2082,79 @@ package body Sem_Disp is
    --  Start of processing for Inherited_Subprograms
 
    begin
+      pragma Assert (not (No_Interfaces and Interfaces_Only));
+
       if Present (S) and then Is_Dispatching_Operation (S) then
 
          --  Deal with direct inheritance
 
-         Parent_Op := S;
-         loop
-            Parent_Op := Overridden_Operation (Parent_Op);
-            exit when No (Parent_Op);
+         if not Interfaces_Only then
+            Parent_Op := S;
+            loop
+               Parent_Op := Overridden_Operation (Parent_Op);
+               exit when No (Parent_Op)
+                 or else
+                   (No_Interfaces
+                     and then
+                       Is_Interface (Find_Dispatching_Type (Parent_Op)));
 
-            if Is_Subprogram (Parent_Op)
-              or else Is_Generic_Subprogram (Parent_Op)
-            then
-               Store_IS (Parent_Op);
-            end if;
-         end loop;
+               if Is_Subprogram         (Parent_Op)
+                    or else
+                  Is_Generic_Subprogram (Parent_Op)
+               then
+                  Store_IS (Parent_Op);
+               end if;
+            end loop;
+         end if;
 
          --  Now deal with interfaces
 
-         declare
-            Tag_Typ : Entity_Id;
-            Prim    : Entity_Id;
-            Elmt    : Elmt_Id;
+         if not No_Interfaces then
+            declare
+               Tag_Typ : Entity_Id;
+               Prim    : Entity_Id;
+               Elmt    : Elmt_Id;
 
-         begin
-            Tag_Typ := Find_Dispatching_Type (S);
+            begin
+               Tag_Typ := Find_Dispatching_Type (S);
 
-            if Is_Concurrent_Type (Tag_Typ) then
-               Tag_Typ := Corresponding_Record_Type (Tag_Typ);
-            end if;
+               if Is_Concurrent_Type (Tag_Typ) then
+                  Tag_Typ := Corresponding_Record_Type (Tag_Typ);
+               end if;
 
-            --  Search primitive operations of dispatching type
+               --  Search primitive operations of dispatching type
 
-            if Present (Tag_Typ)
-              and then Present (Primitive_Operations (Tag_Typ))
-            then
-               Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-               while Present (Elmt) loop
-                  Prim := Node (Elmt);
+               if Present (Tag_Typ)
+                 and then Present (Primitive_Operations (Tag_Typ))
+               then
+                  Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+                  while Present (Elmt) loop
+                     Prim := Node (Elmt);
 
-                  --  The following test eliminates some odd cases in which
-                  --  Ekind (Prim) is Void, to be investigated further ???
+                     --  The following test eliminates some odd cases in which
+                     --  Ekind (Prim) is Void, to be investigated further ???
 
-                  if not (Is_Subprogram (Prim)
-                            or else
-                          Is_Generic_Subprogram (Prim))
-                  then
-                     null;
+                     if not (Is_Subprogram         (Prim)
+                                or else
+                             Is_Generic_Subprogram (Prim))
+                     then
+                        null;
 
                      --  For [generic] subprogram, look at interface alias
 
-                  elsif Present (Interface_Alias (Prim))
-                    and then Alias (Prim) = S
-                  then
-                     --  We have found a primitive covered by S
+                     elsif Present (Interface_Alias (Prim))
+                       and then Alias (Prim) = S
+                     then
+                        --  We have found a primitive covered by S
 
-                     Store_IS (Interface_Alias (Prim));
-                  end if;
+                        Store_IS (Interface_Alias (Prim));
+                     end if;
 
-                  Next_Elmt (Elmt);
-               end loop;
-            end if;
-         end;
+                     Next_Elmt (Elmt);
+                  end loop;
+               end if;
+            end;
+         end if;
       end if;
 
       return Result (1 .. N);

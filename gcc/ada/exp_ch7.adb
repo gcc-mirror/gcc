@@ -38,6 +38,7 @@ with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Dist; use Exp_Dist;
 with Exp_Disp; use Exp_Disp;
+with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
@@ -378,11 +379,6 @@ package body Exp_Ch7 is
    function Enclosing_Function (E : Entity_Id) return Entity_Id;
    --  Given an arbitrary entity, traverse the scope chain looking for the
    --  first enclosing function. Return Empty if no function was found.
-
-   procedure Expand_Pragma_Initial_Condition (N : Node_Id);
-   --  Subsidiary to the expansion of package specs and bodies. Generate a
-   --  runtime check needed to verify the assumption introduced by pragma
-   --  Initial_Condition. N denotes the package spec or body.
 
    function Make_Call
      (Loc       : Source_Ptr;
@@ -4262,88 +4258,6 @@ package body Exp_Ch7 is
          Set_Finalizer (Id, Fin_Id);
       end if;
    end Expand_N_Package_Declaration;
-
-   -------------------------------------
-   -- Expand_Pragma_Initial_Condition --
-   -------------------------------------
-
-   procedure Expand_Pragma_Initial_Condition (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Check     : Node_Id;
-      Expr      : Node_Id;
-      Init_Cond : Node_Id;
-      List      : List_Id;
-      Pack_Id   : Entity_Id;
-
-   begin
-      if Nkind (N) = N_Package_Body then
-         Pack_Id := Corresponding_Spec (N);
-
-         if Present (Handled_Statement_Sequence (N)) then
-            List := Statements (Handled_Statement_Sequence (N));
-
-         --  The package body lacks statements, create an empty list
-
-         else
-            List := New_List;
-
-            Set_Handled_Statement_Sequence (N,
-              Make_Handled_Sequence_Of_Statements (Loc, Statements => List));
-         end if;
-
-      elsif Nkind (N) = N_Package_Declaration then
-         Pack_Id := Defining_Entity (N);
-
-         if Present (Visible_Declarations (Specification (N))) then
-            List := Visible_Declarations (Specification (N));
-
-         --  The package lacks visible declarations, create an empty list
-
-         else
-            List := New_List;
-
-            Set_Visible_Declarations (Specification (N), List);
-         end if;
-
-      --  This routine should not be used on anything other than packages
-
-      else
-         raise Program_Error;
-      end if;
-
-      Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
-
-      --  The caller should check whether the package is subject to pragma
-      --  Initial_Condition.
-
-      pragma Assert (Present (Init_Cond));
-
-      Expr :=
-        Get_Pragma_Arg (First (Pragma_Argument_Associations (Init_Cond)));
-
-      --  The assertion expression was found to be illegal, do not generate the
-      --  runtime check as it will repeat the illegality.
-
-      if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
-         return;
-      end if;
-
-      --  Generate:
-      --    pragma Check (Initial_Condition, <Expr>);
-
-      Check :=
-        Make_Pragma (Loc,
-          Chars                        => Name_Check,
-          Pragma_Argument_Associations => New_List (
-            Make_Pragma_Argument_Association (Loc,
-              Expression => Make_Identifier (Loc, Name_Initial_Condition)),
-
-            Make_Pragma_Argument_Association (Loc,
-              Expression => New_Copy_Tree (Expr))));
-
-      Append_To (List, Check);
-      Analyze (Check);
-   end Expand_Pragma_Initial_Condition;
 
    -----------------------------
    -- Find_Node_To_Be_Wrapped --

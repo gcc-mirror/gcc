@@ -1815,13 +1815,18 @@ package body Freeze is
    -------------------
 
    function Freeze_Entity (E : Entity_Id; N : Node_Id) return List_Id is
-      Loc    : constant Source_Ptr := Sloc (N);
+      Loc           : constant Source_Ptr := Sloc (N);
+      Comp          : Entity_Id;
+      F_Node        : Node_Id;
+      Indx          : Node_Id;
+      Formal        : Entity_Id;
+      Atype         : Entity_Id;
+
       Test_E : Entity_Id := E;
-      Comp   : Entity_Id;
-      F_Node : Node_Id;
-      Indx   : Node_Id;
-      Formal : Entity_Id;
-      Atype  : Entity_Id;
+      --  This could use a comment ???
+
+      Late_Freezing : Boolean := False;
+      --  Used to detect attempt to freeze function declared in another unit
 
       Result : List_Id := No_List;
       --  List of freezing actions, left at No_List if none
@@ -1861,6 +1866,16 @@ package body Freeze is
       --  Determine whether an arbitrary entity is subject to Boolean aspect
       --  Import and its value is specified as True.
 
+      procedure Late_Freeze_Subprogram (E : Entity_Id);
+      --  Following AI05-151, a function can return a limited view of a type
+      --  declared elsewhere. In that case the function cannot be frozen at
+      --  the end of its enclosing package. If its first use is in a different
+      --  unit, it cannot be frozen there, but if the call is legal the full
+      --  view of the return type is available and the subprogram can now be
+      --  frozen. However the freeze node cannot be inserted at the point of
+      --  call, but rather must go in the package holding the function, so that
+      --  the backend can process it in the proper context.
+
       procedure Wrap_Imported_Subprogram (E : Entity_Id);
       --  If E is an entity for an imported subprogram with pre/post-conditions
       --  then this procedure will create a wrapper to ensure that proper run-
@@ -1885,6 +1900,7 @@ package body Freeze is
 
       function After_Last_Declaration return Boolean is
          Spec : constant Node_Id := Parent (Current_Scope);
+
       begin
          if Nkind (Spec) = N_Package_Specification then
             if Present (Private_Declarations (Spec)) then
@@ -1894,6 +1910,7 @@ package body Freeze is
             else
                return False;
             end if;
+
          else
             return False;
          end if;
@@ -2013,8 +2030,7 @@ package body Freeze is
                      else
                         Error_Msg_N
                           ("current instance must be an immutably limited "
-                           & "type (RM-2012, 7.5 (8.1/3))",
-                           Prefix (N));
+                           & "type (RM-2012, 7.5 (8.1/3))", Prefix (N));
                      end if;
 
                      return Abandon;
@@ -2182,8 +2198,7 @@ package body Freeze is
                      Error_Msg_Name_1 := CN;
                      Error_Msg_Sloc := Sloc (Arr);
                      Error_Msg_N
-                       ("pragma Pack affects convention % components #??",
-                        PP);
+                       ("pragma Pack affects convention % components #??", PP);
                      Error_Msg_Name_1 := CN;
                      Error_Msg_N
                        ("\array components may not have % compatible "
@@ -2260,6 +2275,7 @@ package body Freeze is
                      Comp_Size_C : constant Node_Id :=
                                      Get_Attribute_Definition_Clause
                                        (Ent, Attribute_Component_Size);
+
                   begin
                      --  Warn if we have pack and component size so that the
                      --  pack is ignored.
@@ -2305,11 +2321,11 @@ package body Freeze is
 
                         if Present (Pack_Pragma) then
                            Error_Msg_N
-                             ("??pragma Pack causes component size "
-                              & "to be ^!", Pack_Pragma);
+                             ("??pragma Pack causes component size to be ^!",
+                              Pack_Pragma);
                            Error_Msg_N
-                             ("\??use Component_Size to set "
-                              & "desired value!", Pack_Pragma);
+                             ("\??use Component_Size to set desired value!",
+                              Pack_Pragma);
                         end if;
                      end if;
 
@@ -2531,8 +2547,7 @@ package body Freeze is
 
                      Ilen :=
                        Make_Attribute_Reference (Loc,
-                         Prefix         =>
-                           New_Occurrence_Of (Ityp, Loc),
+                         Prefix         => New_Occurrence_Of (Ityp, Loc),
                          Attribute_Name => Name_Range_Length);
                      Analyze_And_Resolve (Ilen);
 
@@ -2562,10 +2577,8 @@ package body Freeze is
 
             if Known_RM_Size (Arr) then
                declare
-                  SizC : constant Node_Id := Size_Clause (Arr);
-
+                  SizC    : constant Node_Id := Size_Clause (Arr);
                   Discard : Boolean;
-                  pragma Warnings (Off, Discard);
 
                begin
                   --  It is not clear if it is possible to have no size clause
@@ -3060,6 +3073,7 @@ package body Freeze is
 
                   if Will_Be_Frozen then
                      Undelay_Type (Comp);
+
                   else
                      if Present (Prev) then
                         Set_Next_Entity (Prev, Next_Entity (Comp));
@@ -3107,8 +3121,8 @@ package body Freeze is
                         if Is_Entity_Name (Expression (Alloc)) then
                            Freeze_And_Append
                              (Entity (Expression (Alloc)), N, Result);
-                        elsif
-                          Nkind (Expression (Alloc)) = N_Subtype_Indication
+
+                        elsif Nkind (Expression (Alloc)) = N_Subtype_Indication
                         then
                            Freeze_And_Append
                             (Entity (Subtype_Mark (Expression (Alloc))),
@@ -3263,7 +3277,7 @@ package body Freeze is
                  ("\??since no component clauses were specified", ADC);
 
             --  Here is where we do the processing to adjust component clauses
-            --  for reversed bit order.
+            --  for reversed bit order, when not using reverse SSO.
 
             elsif Reverse_Bit_Order (Rec)
               and then not Reverse_Storage_Order (Rec)
@@ -3633,6 +3647,25 @@ package body Freeze is
          return False;
       end Has_Boolean_Aspect_Import;
 
+      ----------------------------
+      -- Late_Freeze_Subprogram --
+      ----------------------------
+
+      procedure Late_Freeze_Subprogram (E : Entity_Id) is
+         Spec  : constant Node_Id :=
+                   Specification (Unit_Declaration_Node (Scope (E)));
+         Decls : List_Id;
+
+      begin
+         if Present (Private_Declarations (Spec)) then
+            Decls := Private_Declarations (Spec);
+         else
+            Decls := Visible_Declarations (Spec);
+         end if;
+
+         Append_List (Result, Decls);
+      end Late_Freeze_Subprogram;
+
       ------------------------------
       -- Wrap_Imported_Subprogram --
       ------------------------------
@@ -3985,7 +4018,7 @@ package body Freeze is
                   while Present (Formal) loop
                      F_Type := Etype (Formal);
 
-                     --  AI05-0151 : incomplete types can appear in a profile.
+                     --  AI05-0151: incomplete types can appear in a profile.
                      --  By the time the entity is frozen, the full view must
                      --  be available, unless it is a limited view.
 
@@ -4165,6 +4198,13 @@ package body Freeze is
 
                   if Ekind (E) = E_Function then
 
+                     --  Check whether function is declared elsewhere.
+
+                     Late_Freezing :=
+                       Get_Source_Unit (E) /= Get_Source_Unit (N)
+                         and then Returns_Limited_View (E)
+                         and then not In_Open_Scopes (Scope (E));
+
                      --  Freeze return type
 
                      R_Type := Etype (E);
@@ -4193,6 +4233,7 @@ package body Freeze is
                          Ekind (Non_Limited_View (R_Type)) = E_Incomplete_Type
                      then
                         Set_Is_Frozen (E, False);
+                        Set_Returns_Limited_View (E);
                         return Result;
                      end if;
 
@@ -4323,6 +4364,11 @@ package body Freeze is
               or else Is_Predefined_Dispatching_Operation (E)
             then
                Freeze_Subprogram (E);
+            end if;
+
+            if Late_Freezing then
+               Late_Freeze_Subprogram (E);
+               return No_List;
             end if;
 
             --  If warning on suspicious contracts then check for the case of
@@ -7454,9 +7500,17 @@ package body Freeze is
       if (Is_Record_Type (T) or else Is_Array_Type (T))
         and then Is_Base_Type (T)
       then
-         if (Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
-              or else
-            ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T))
+         if ((Bytes_Big_Endian and then SSO_Set_Low_By_Default (T))
+               or else
+             ((not Bytes_Big_Endian) and then SSO_Set_High_By_Default (T)))
+
+           --  For a record type, if native bit order is specified explicitly,
+           --  then never set reverse SSO from default.
+
+           and then not
+             (Is_Record_Type (T)
+               and then Has_Rep_Item (T, Name_Bit_Order)
+               and then not Reverse_Bit_Order (T))
          then
             --  If flags cause reverse storage order, then set the result. Note
             --  that we would have ignored the pragma setting the non default
@@ -7464,6 +7518,14 @@ package body Freeze is
 
             pragma Assert (Support_Nondefault_SSO_On_Target);
             Set_Reverse_Storage_Order (T);
+
+            --  For a record type, also set reversed bit order. Note that if
+            --  a bit order has been specified explicitly, then this is a
+            --  no-op, as per the guard above.
+
+            if Is_Record_Type (T) then
+               Set_Reverse_Bit_Order (T);
+            end if;
          end if;
       end if;
    end Set_SSO_From_Default;

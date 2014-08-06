@@ -210,6 +210,9 @@ package body System.Tasking.Restricted.Stages is
       Secondary_Stack : aliased SSE.Storage_Array
         (1 .. Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
                 SSE.Storage_Offset (Parameters.Sec_Stack_Percentage) / 100);
+      for Secondary_Stack'Alignment use Standard'Maximum_Alignment;
+      --  This is the secondary stack data. Note that it is critical that this
+      --  have maximum alignment, since any kind of data can be allocated here.
 
       pragma Warnings (Off);
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;

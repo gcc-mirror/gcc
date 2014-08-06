@@ -276,6 +276,13 @@ package Exp_Util is
    --  is false, the call is for a stand-alone object, and the generated
    --  function itself must do its own cleanups.
 
+   procedure Check_Float_Op_Overflow (N : Node_Id);
+   --  Called where we could have a floating-point binary operator where we
+   --  must check for infinities if we are operating in Check_Float_Overflow
+   --  mode. Note that we don't need to worry about unary operator cases,
+   --  since for floating-point, abs, unary "-", and unary "+" can never
+   --  case overflow.
+
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
    --  This function is in charge of detecting record components that may
    --  cause trouble in the back end if an attempt is made to assign the

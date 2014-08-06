@@ -426,6 +426,11 @@ package body System.Fat_Gen is
             return X / (X - X);
          end if;
 
+      --  For infinities, return unchanged
+
+      elsif X < T'First or else X > T'Last then
+         return X;
+
       --  Subtract from the given number a number equivalent to the value
       --  of its least significant bit. Given that the most significant bit
       --  represents a value of 1.0 * radix ** (exp - 1), the value we want
@@ -675,6 +680,11 @@ package body System.Fat_Gen is
             return X / (X - X);
          end if;
 
+      --  For infinities, return unchanged
+
+      elsif X < T'First or else X > T'Last then
+         return X;
+
       --  Add to the given number a number equivalent to the value
       --  of its least significant bit. Given that the most significant bit
       --  represents a value of 1.0 * radix ** (exp - 1), the value we want
@@ -882,7 +892,7 @@ package body System.Fat_Gen is
       for R'Address use XA;
       --  R is a view of the input floating-point parameter. Note that we
       --  must avoid copying the actual bits of this parameter in float
-      --  form (since it may be a signalling NaN.
+      --  form (since it may be a signalling NaN).
 
       E  : constant IEEE_Exponent_Range :=
              Integer ((R (Most_Significant_Word) and Exponent_Mask) /

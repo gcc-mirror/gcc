@@ -1186,6 +1186,7 @@ begin
            Pragma_Debug_Policy                   |
            Pragma_Depends                        |
            Pragma_Detect_Blocking                |
+           Pragma_Default_Initial_Condition      |
            Pragma_Default_Scalar_Storage_Order   |
            Pragma_Default_Storage_Pool           |
            Pragma_Disable_Atomic_Synchronization |

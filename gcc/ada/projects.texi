@@ -2403,7 +2403,7 @@ The environment variables at the time you launch @command{gprbuild}
 will influence the view these tools have of the project
 (PATH to find the compiler, ADA_PROJECT_PATH or GPR_PROJECT_PATH to find the
 projects, environment variables that are referenced in project files
-through the "external" statement,...). Several command line switches
+through the "external" built-in function, ...). Several command line switches
 can be used to override those (-X or -aP), but on some systems and
 with some projects, this might make the command line too long, and on
 all systems often make it hard to read.
@@ -2427,7 +2427,7 @@ building. The syntax looks like
 @end smallexample
 
 One of the often requested features in projects is to be able to
-reference external variables in @code{with} statements, as in
+reference external variables in @code{with} declarations, as in
 
 @smallexample @c projectfile
   @b{with} @b{external}("SETUP") & "path/prj.gpr";   --@i{  ILLEGAL}
@@ -2566,7 +2566,7 @@ Here are a few valid examples:
 @cindex @code{Project_Path}
 
 This attribute can be used to specify a list of directories in
-which to look for project files in @code{with} statements.
+which to look for project files in @code{with} declarations.
 
 When you specify a project in Project_Files (say @code{x/y/a.gpr}), and
 @code{a.gpr} imports a project @code{b.gpr}, only @code{b.gpr} is searched in
@@ -2637,7 +2637,7 @@ Example:
 @cindex @code{External}
 
 This attribute can be used to set the value of environment
-variables as retrieved through the @code{external} statement
+variables as retrieved through the @code{external} function
 in projects. It does not affect the environment variables
 themselves (so for instance you cannot use it to change the value
 of your PATH as seen from the spawned compiler).
@@ -3403,7 +3403,7 @@ list expression, and can therefore appear in a variable declaration or
 an attribute declaration.
 
 Most of the time, this construct is used to initialize typed variables, which
-are then used in @b{case} statements to control the value assigned to
+are then used in @b{case} constructions to control the value assigned to
 attributes in various scenarios. Thus such variables are often called
 @b{scenario variables}.
 
@@ -3565,8 +3565,8 @@ A @b{context} may be one of the following:
 @c ---------------------------------------------
 
 @noindent
-A @b{case} statement is used in a project file to effect conditional
-behavior. Through this statement, you can set the value of attributes
+A @b{case} construction is used in a project file to effect conditional
+behavior. Through this construction, you can set the value of attributes
 and variables depending on the value previously assigned to a typed
 variable.
 
@@ -3574,30 +3574,30 @@ All choices in a choice list must be distinct. Unlike Ada, the choice
 lists of all alternatives do not need to include all values of the type.
 An @code{others} choice must appear last in the list of alternatives.
 
-The syntax of a @code{case} construction is based on the Ada case statement
-(although the @code{null} statement for empty alternatives is optional).
+The syntax of a @code{case} construction is based on the Ada case construction
+(although the @code{null} declaration for empty alternatives is optional).
 
-The case expression must be a typed string variable, whose value is often
-given by an external reference (@pxref{External Values}).
+The case expression must be a string variable, either typed or not, whose value
+is often given by an external reference (@pxref{External Values}).
 
 Each alternative starts with the reserved word @code{when}, either a list of
 literal strings separated by the @code{"|"} character or the reserved word
 @code{others}, and the @code{"=>"} token.
-Each literal string must belong to the string type that is the type of the
-case variable.
-After each @code{=>}, there are zero or more statements.  The only
-statements allowed in a case construction are other case constructions,
+When the case expression is a typed string variable, each literal string must
+belong to the string type that is the type of the case variable.
+After each @code{=>}, there are zero or more declarations.  The only
+declarations allowed in a case construction are other case constructions,
 attribute declarations and variable declarations. String type declarations and
 package declarations are not allowed. Variable declarations are restricted to
 variables that have already been declared before the case construction.
 
 @smallexample
-case_statement ::=
-  @i{case} @i{<typed_variable_>}name @i{is} @{case_item@} @i{end case} ;
+case_construction ::=
+  @i{case} @i{<variable_>}name @i{is} @{case_item@} @i{end case} ;
 
 case_item ::=
   @i{when} discrete_choice_list =>
-    @{case_statement
+    @{case_declaration
       | attribute_declaration
       | variable_declaration
       | empty_declaration@}
@@ -3606,7 +3606,7 @@ discrete_choice_list ::= string_literal @{| string_literal@} | @i{others}
 @end smallexample
 
 @noindent
-Here is a typical example:
+Here is a typical example, with a typed string variable:
 
 @smallexample @c projectfile
 @group
@@ -3724,7 +3724,7 @@ Here are some examples of attribute declarations:
 Attributes references may appear anywhere in expressions, and are used
 to retrieve the value previously assigned to the attribute. If an attribute
 has not been set in a given package or project, its value defaults to the
-empty string or the empty list.
+empty string or the empty list, with some exceptions.
 
 @smallexample
 attribute_reference ::=
@@ -3745,6 +3745,15 @@ Examples are:
   Imported_Project.Naming'Casing
   Builder'Default_Switches ("Ada")
 @end smallexample
+
+The exceptions to the empty defaults are:
+
+@itemize @bullet
+@item Object_Dir: default is "."
+@item Exec_Dir: default is 'Object_Dir, that is the value of attribute
+  Object_Dir in the same project, declared or defaulted.
+@item Source_Dirs: default is (".")
+@end itemize
 
 @noindent
 The prefix of an attribute may be:

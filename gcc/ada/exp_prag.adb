@@ -1152,17 +1152,16 @@ package body Exp_Prag is
       --  Insert the pragma
 
       Insert_After_And_Analyze (N,
-         Make_Pragma (Loc,
-           Chars                        => Name_Machine_Attribute,
-           Pragma_Argument_Associations => New_List (
-             Make_Pragma_Argument_Association (Iloc,
-               Expression => New_Copy_Tree (Internal)),
-             Make_Pragma_Argument_Association (Eloc,
-               Expression =>
-                 Make_String_Literal (Sloc => Ploc,
-                   Strval => "common_object")),
-             Make_Pragma_Argument_Association (Ploc,
-               Expression => New_Copy_Tree (Psect)))));
+        Make_Pragma (Loc,
+          Chars                        => Name_Machine_Attribute,
+          Pragma_Argument_Associations => New_List (
+            Make_Pragma_Argument_Association (Iloc,
+              Expression => New_Copy_Tree (Internal)),
+            Make_Pragma_Argument_Association (Eloc,
+              Expression =>
+                Make_String_Literal (Sloc => Ploc, Strval => "common_object")),
+            Make_Pragma_Argument_Association (Ploc,
+              Expression => New_Copy_Tree (Psect)))));
    end Expand_Pragma_Common_Object;
 
    ---------------------------------------
@@ -1282,6 +1281,88 @@ package body Exp_Prag is
          null;
       end if;
    end Expand_Pragma_Import_Or_Interface;
+
+   -------------------------------------
+   -- Expand_Pragma_Initial_Condition --
+   -------------------------------------
+
+   procedure Expand_Pragma_Initial_Condition (Spec_Or_Body : Node_Id) is
+      Loc       : constant Source_Ptr := Sloc (Spec_Or_Body);
+      Check     : Node_Id;
+      Expr      : Node_Id;
+      Init_Cond : Node_Id;
+      List      : List_Id;
+      Pack_Id   : Entity_Id;
+
+   begin
+      if Nkind (Spec_Or_Body) = N_Package_Body then
+         Pack_Id := Corresponding_Spec (Spec_Or_Body);
+
+         if Present (Handled_Statement_Sequence (Spec_Or_Body)) then
+            List := Statements (Handled_Statement_Sequence (Spec_Or_Body));
+
+         --  The package body lacks statements, create an empty list
+
+         else
+            List := New_List;
+
+            Set_Handled_Statement_Sequence (Spec_Or_Body,
+              Make_Handled_Sequence_Of_Statements (Loc, Statements => List));
+         end if;
+
+      elsif Nkind (Spec_Or_Body) = N_Package_Declaration then
+         Pack_Id := Defining_Entity (Spec_Or_Body);
+
+         if Present (Visible_Declarations (Specification (Spec_Or_Body))) then
+            List := Visible_Declarations (Specification (Spec_Or_Body));
+
+         --  The package lacks visible declarations, create an empty list
+
+         else
+            List := New_List;
+
+            Set_Visible_Declarations (Specification (Spec_Or_Body), List);
+         end if;
+
+      --  This routine should not be used on anything other than packages
+
+      else
+         raise Program_Error;
+      end if;
+
+      Init_Cond := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
+
+      --  The caller should check whether the package is subject to pragma
+      --  Initial_Condition.
+
+      pragma Assert (Present (Init_Cond));
+
+      Expr :=
+        Get_Pragma_Arg (First (Pragma_Argument_Associations (Init_Cond)));
+
+      --  The assertion expression was found to be illegal, do not generate the
+      --  runtime check as it will repeat the illegality.
+
+      if Error_Posted (Init_Cond) or else Error_Posted (Expr) then
+         return;
+      end if;
+
+      --  Generate:
+      --    pragma Check (Initial_Condition, <Expr>);
+
+      Check :=
+        Make_Pragma (Loc,
+          Chars                        => Name_Check,
+          Pragma_Argument_Associations => New_List (
+            Make_Pragma_Argument_Association (Loc,
+              Expression => Make_Identifier (Loc, Name_Initial_Condition)),
+
+            Make_Pragma_Argument_Association (Loc,
+              Expression => New_Copy_Tree (Expr))));
+
+      Append_To (List, Check);
+      Analyze (Check);
+   end Expand_Pragma_Initial_Condition;
 
    ------------------------------------
    -- Expand_Pragma_Inspection_Point --

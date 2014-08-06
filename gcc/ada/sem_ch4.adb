@@ -6472,11 +6472,16 @@ package body Sem_Ch4 is
                   if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
                      Rewrite (R,
                        Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
-                     Analyze_Arithmetic_Op (N);
 
+                     if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                        Analyze_Comparison_Op (N);
+                     else
+                        Analyze_Arithmetic_Op (N);
+                     end if;
                   else
                      Resolve (R, Etype (L));
                   end if;
+
                   return;
 
                elsif Is_Numeric_Type (Etype (R))
@@ -6485,7 +6490,13 @@ package body Sem_Ch4 is
                   if Address_Integer_Convert_OK (Etype (L), Etype (R)) then
                      Rewrite (L,
                        Unchecked_Convert_To (Etype (R), Relocate_Node (L)));
-                     Analyze_Arithmetic_Op (N);
+
+                     if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                        Analyze_Comparison_Op (N);
+                     else
+                        Analyze_Arithmetic_Op (N);
+                     end if;
+
                      return;
 
                   else
@@ -6509,7 +6520,12 @@ package body Sem_Ch4 is
                      Rewrite (R,
                        Unchecked_Convert_To (
                          Standard_Integer, Relocate_Node (R)));
-                     Analyze_Arithmetic_Op (N);
+
+                     if Nkind_In (N, N_Op_Ge, N_Op_Gt, N_Op_Le, N_Op_Lt) then
+                        Analyze_Comparison_Op (N);
+                     else
+                        Analyze_Arithmetic_Op (N);
+                     end if;
 
                      --  If this is an operand in an enclosing arithmetic
                      --  operation, Convert the result as an address so that
@@ -6584,6 +6600,14 @@ package body Sem_Ch4 is
                end if;
 
                return;
+
+            elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
+               if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
+                  Rewrite (R,
+                    Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
+                  Analyze_Equality_Op (N);
+                  return;
+               end if;
             end if;
 
             --  If we fall through then just give general message. Note that in

@@ -2821,35 +2821,42 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
     sched_deps_info->finish_rhs ();
 }
 
-/* Try to group comparison and the following conditional jump INSN if
-   they're already adjacent. This is to prevent scheduler from scheduling
-   them apart.  */
+/* Try to group two fuseable insns together to prevent scheduler
+   from scheduling them apart.  */
 
 static void
-try_group_insn (rtx insn)
+sched_macro_fuse_insns (rtx insn)
 {
-  unsigned int condreg1, condreg2;
-  rtx cc_reg_1;
   rtx prev;
 
-  if (!any_condjump_p (insn))
-    return;
+  if (any_condjump_p (insn))
+    {
+      unsigned int condreg1, condreg2;
+      rtx cc_reg_1;
+      targetm.fixed_condition_code_regs (&condreg1, &condreg2);
+      cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
+      prev = prev_nonnote_nondebug_insn (insn);
+      if (!reg_referenced_p (cc_reg_1, PATTERN (insn))
+          || !prev
+          || !modified_in_p (cc_reg_1, prev))
+        return;
+    }
+  else
+    {
+      rtx insn_set = single_set (insn);
 
-  targetm.fixed_condition_code_regs (&condreg1, &condreg2);
-  cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
-  prev = prev_nonnote_nondebug_insn (insn);
-  if (!reg_referenced_p (cc_reg_1, PATTERN (insn))
-      || !prev
-      || !modified_in_p (cc_reg_1, prev))
-    return;
+      prev = prev_nonnote_nondebug_insn (insn);
+      if (!prev
+          || !insn_set
+          || !single_set (prev)
+          || !modified_in_p (SET_DEST (insn_set), prev))
+        return;
 
-  /* Different microarchitectures support macro fusions for different
-     combinations of insn pairs.  */
-  if (!targetm.sched.macro_fusion_pair_p
-      || !targetm.sched.macro_fusion_pair_p (prev, insn))
-    return;
+    }
 
-  SCHED_GROUP_P (insn) = 1;
+  if (targetm.sched.macro_fusion_pair_p (prev, insn))
+    SCHED_GROUP_P (insn) = 1;
+
 }
 
 /* Analyze an INSN with pattern X to find all dependencies.  */
@@ -2878,7 +2885,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
   /* Group compare and branch insns for macro-fusion.  */
   if (targetm.sched.macro_fusion_p
       && targetm.sched.macro_fusion_p ())
-    try_group_insn (insn);
+    sched_macro_fuse_insns (insn);
 
   if (may_trap_p (x))
     /* Avoid moving trapping instructions across function calls that might

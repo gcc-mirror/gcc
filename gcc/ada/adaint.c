@@ -459,7 +459,20 @@ __gnat_try_lock (char *dir, char *file)
   S2WSC (wdir, dir, GNAT_MAX_PATH_LEN);
   S2WSC (wfile, file, GNAT_MAX_PATH_LEN);
 
+  /* ??? the code below crash on MingW64 for obscure reasons, a ticket
+     has been opened here:
+
+     https://sourceforge.net/p/mingw-w64/bugs/414/
+
+     As a workaround an equivalent set of code has been put in place below.
+
   _stprintf (wfull_path, _T("%s%c%s"), wdir, _T(DIR_SEPARATOR), wfile);
+  */
+
+  _tcscpy (wfull_path, wdir);
+  _tcscat (wfull_path, L"\\");
+  _tcscat (wfull_path, wfile);
+
   fd = _topen (wfull_path, O_CREAT | O_EXCL, 0600);
 #else
   char full_path[256];

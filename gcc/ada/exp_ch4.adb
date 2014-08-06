@@ -151,11 +151,11 @@ package body Exp_Ch4 is
       Bodies : List_Id) return Node_Id;
    --  Local recursive function used to expand equality for nested composite
    --  types. Used by Expand_Record/Array_Equality, Bodies is a list on which
-   --  to attach bodies of local functions that are created in the process.
-   --  It is the responsibility of the caller to insert those bodies at the
-   --  right place. Nod provides the Sloc value for generated code. Lhs and Rhs
-   --  are the left and right sides for the comparison, and Typ is the type of
-   --  the objects to compare.
+   --  to attach bodies of local functions that are created in the process. It
+   --  is the responsibility of the caller to insert those bodies at the right
+   --  place. Nod provides the Sloc value for generated code. Lhs and Rhs are
+   --  the left and right sides for the comparison, and Typ is the type of the
+   --  objects to compare.
 
    procedure Expand_Concatenate (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of a sequence of two or more operands
@@ -1124,10 +1124,11 @@ package body Exp_Ch4 is
                --  Inherit the allocation-related attributes from the original
                --  access type.
 
-               Set_Finalization_Master (Def_Id, Finalization_Master (PtrT));
+               Set_Finalization_Master
+                 (Def_Id, Finalization_Master (PtrT));
 
-               Set_Associated_Storage_Pool (Def_Id,
-                 Associated_Storage_Pool (PtrT));
+               Set_Associated_Storage_Pool
+                 (Def_Id, Associated_Storage_Pool (PtrT));
 
                --  Declare the object using the previous type declaration
 
@@ -4318,26 +4319,29 @@ package body Exp_Ch4 is
 
          --  Anonymous access-to-controlled types allocate on the global pool.
          --  Do not set this attribute on .NET/JVM since those targets do not
-         --  support pools.
+         --  support pools. Note that this is a "root type only" attribute.
 
          if No (Associated_Storage_Pool (PtrT)) and then VM_Target = No_VM then
             if Present (Rel_Typ) then
                Set_Associated_Storage_Pool
-                 (PtrT, Associated_Storage_Pool (Rel_Typ));
+                 (Root_Type (PtrT), Associated_Storage_Pool (Rel_Typ));
             else
                Set_Associated_Storage_Pool
-                 (PtrT, RTE (RE_Global_Pool_Object));
+                 (Root_Type (PtrT), RTE (RE_Global_Pool_Object));
             end if;
          end if;
 
          --  The finalization master must be inserted and analyzed as part of
          --  the current semantic unit. Note that the master is updated when
-         --  analysis changes current units.
+         --  analysis changes current units. Note that this is a "root type
+         --  only" attribute.
 
          if Present (Rel_Typ) then
-            Set_Finalization_Master (PtrT, Finalization_Master (Rel_Typ));
+            Set_Finalization_Master
+              (Root_Type (PtrT), Finalization_Master (Rel_Typ));
          else
-            Set_Finalization_Master (PtrT, Current_Anonymous_Master);
+            Set_Finalization_Master
+              (Root_Type (PtrT), Current_Anonymous_Master);
          end if;
       end if;
 
@@ -11569,11 +11573,12 @@ package body Exp_Ch4 is
       Pool  : constant Entity_Id  := Associated_Storage_Pool (Typ);
       Pnod  : constant Node_Id    := Parent (N);
 
-      Addr  : Entity_Id;
-      Alig  : Entity_Id;
-      Deref : Node_Id;
-      Size  : Entity_Id;
-      Stmt  : Node_Id;
+      Addr      : Entity_Id;
+      Alig      : Entity_Id;
+      Deref     : Node_Id;
+      Size      : Entity_Id;
+      Size_Bits : Node_Id;
+      Stmt      : Node_Id;
 
    --  Start of processing for Insert_Dereference_Action
 
@@ -11624,23 +11629,36 @@ package body Exp_Ch4 is
           Prefix => Duplicate_Subexpr_Move_Checks (N));
       Set_Has_Dereference_Action (Deref);
 
-      Size := Make_Temporary (Loc, 'S');
+      Size_Bits :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => Deref,
+          Attribute_Name => Name_Size);
 
+      --  Special case of an unconstrained array: need to add descriptor size
+
+      if Is_Array_Type (Desig)
+        and then not Is_Constrained (First_Subtype (Desig))
+      then
+         Size_Bits :=
+           Make_Op_Add (Loc,
+             Left_Opnd  =>
+               Make_Attribute_Reference (Loc,
+                 Prefix         =>
+                   New_Occurrence_Of (First_Subtype (Desig), Loc),
+                 Attribute_Name => Name_Descriptor_Size),
+             Right_Opnd => Size_Bits);
+      end if;
+
+      Size := Make_Temporary (Loc, 'S');
       Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Size,
-
           Object_Definition   =>
             New_Occurrence_Of (RTE (RE_Storage_Count), Loc),
-
           Expression          =>
             Make_Op_Divide (Loc,
-              Left_Opnd   =>
-                Make_Attribute_Reference (Loc,
-                  Prefix         => Deref,
-                  Attribute_Name => Name_Size),
-               Right_Opnd =>
-                 Make_Integer_Literal (Loc, System_Storage_Unit))));
+              Left_Opnd  => Size_Bits,
+              Right_Opnd => Make_Integer_Literal (Loc, System_Storage_Unit))));
 
       --  Calculate the alignment of the dereferenced object. Generate:
       --    Alig : constant Storage_Count := <N>.all'Alignment;
@@ -11651,7 +11669,6 @@ package body Exp_Ch4 is
       Set_Has_Dereference_Action (Deref);
 
       Alig := Make_Temporary (Loc, 'A');
-
       Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Alig,

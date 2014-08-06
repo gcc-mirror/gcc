@@ -329,7 +329,7 @@ package Snames is
    --  to be implementation dependent pragmas.
 
    --  The entries marked GNAT are pragmas that are defined by GNAT and that
-   --  are implemented in all modes (Ada 83, Ada 95, and Ada 2005) Complete
+   --  are implemented in all modes (Ada 83, Ada 95, and Ada 2005). Complete
    --  descriptions of the syntax of these implementation dependent pragmas may
    --  be found in the appropriate section in unit Sem_Prag in file
    --  sem-prag.adb, and they are documented in the GNAT reference manual.
@@ -376,7 +376,6 @@ package Snames is
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
    Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
-   Name_Default_Scalar_Storage_Order   : constant Name_Id := N + $; -- GNAT
    Name_Default_Storage_Pool           : constant Name_Id := N + $; -- Ada 12
    Name_Disable_Atomic_Synchronization : constant Name_Id := N + $; -- GNAT
    Name_Discard_Names                  : constant Name_Id := N + $;
@@ -480,6 +479,7 @@ package Snames is
    --  pragma.
 
    Name_Debug                          : constant Name_Id := N + $; -- GNAT
+   Name_Default_Initial_Condition      : constant Name_Id := N + $; -- GNAT
    Name_Depends                        : constant Name_Id := N + $; -- GNAT
    Name_Effective_Reads                : constant Name_Id := N + $; -- GNAT
    Name_Effective_Writes               : constant Name_Id := N + $; -- GNAT
@@ -833,6 +833,7 @@ package Snames is
    Name_Constrained                    : constant Name_Id := N + $;
    Name_Count                          : constant Name_Id := N + $;
    Name_Default_Bit_Order              : constant Name_Id := N + $; -- GNAT
+   Name_Default_Scalar_Storage_Order   : constant Name_Id := N + $; -- GNAT
    Name_Default_Iterator               : constant Name_Id := N + $; -- GNAT
    Name_Definite                       : constant Name_Id := N + $;
    Name_Delta                          : constant Name_Id := N + $;
@@ -1462,6 +1463,7 @@ package Snames is
       Attribute_Constrained,
       Attribute_Count,
       Attribute_Default_Bit_Order,
+      Attribute_Default_Scalar_Storage_Order,
       Attribute_Default_Iterator,
       Attribute_Definite,
       Attribute_Delta,
@@ -1728,7 +1730,6 @@ package Snames is
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,
       Pragma_Detect_Blocking,
-      Pragma_Default_Scalar_Storage_Order,
       Pragma_Default_Storage_Pool,
       Pragma_Disable_Atomic_Synchronization,
       Pragma_Discard_Names,
@@ -1810,6 +1811,7 @@ package Snames is
       Pragma_CPP_Virtual,
       Pragma_CPP_Vtable,
       Pragma_Debug,
+      Pragma_Default_Initial_Condition,
       Pragma_Depends,
       Pragma_Effective_Reads,
       Pragma_Effective_Writes,
@@ -1929,6 +1931,7 @@ package Snames is
       --  match existing attribute names.
 
       Pragma_CPU,
+      Pragma_Default_Scalar_Storage_Order,
       Pragma_Dispatching_Domain,
       Pragma_Fast_Math,
       Pragma_Interface,

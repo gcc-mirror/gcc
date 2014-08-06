@@ -2685,7 +2685,7 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 	     But because really all MEM attributes should be the same for
 	     equivalent MEMs, we just use the invariant that MEMs that have
 	     the same attributes share the same mem_attrs data structure.  */
-	  if (MEM_ATTRS (x) != MEM_ATTRS (y))
+	  if (!mem_attrs_eq_p (MEM_ATTRS (x), MEM_ATTRS (y)))
 	    return 0;
 
 	  /* If we are handling exceptions, we cannot consider two expressions

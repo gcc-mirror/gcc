@@ -1,3 +1,45 @@
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmlals_lane_s32):
+	Fix types.
+	(test_vqdmlsls_lane_s32): Likewise.
+	* gcc.target/aarch64/simd/vqdmlals_lane_s32.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsls_lane_s32.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vqdmlalh_laneq_s16_1.c: New test.
+	* gcc.target/aarch64/simd/vqdmlals_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlslh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmlsls_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqdmulhs_laneq_s32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhh_laneq_s16_1.c: Likewise.
+	* gcc.target/aarch64/simd/vqrdmulhs_laneq_s32_1.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vmul_f64_1.c: New test.
+	* gcc.target/aarch64/simd/vmul_n_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuld_lane_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuld_laneq_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuls_lane_f32_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmuls_laneq_f32_1.c: Likewise.
+
+2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/torture/ftrapv-1.c: Correct usage of dg-require-fork.
+
+2014-08-04  Rohit  <rohitarulraj@freescale.com>
+
+	PR target/60102
+	* gcc.target/powerpc/pr60102.c: New testcase.
+
+2014-08-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/61713
+	* gcc.dg/pr61756.c: New test.
+
 2014-08-04  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/cproj-fails-with-broken-glibc.c: Use xfail for broken glibc
@@ -8,10 +50,9 @@
 
 2014-08-04  Arnaud Charlet  <charlet@adacore.com>
 
-	* gnat.dg/discr6.adb, gnat.dg/discr6_pkg.ads: Removed, no longer
-	relevant.
-	* gnat.dg/debug1.ads: Adjust.
-	* gnat.dg/formal_type.ads: Fix error in test.
+	* gnat.dg/discr6.ad[sb]: Remove, no longer relevant.
+	* gnat.dg/specs/debug1.ads: Adjust.
+	* gnat.dg/specs/formal_type.ads: Fix error in test.
 
 2014-08-03  Marek Polacek  <polacek@redhat.com>
 
@@ -495,8 +536,9 @@
 
 2014-07-16  Arnaud Charlet  <charlet@adacore.com>
 
-	* gnat.db/specs/alignment2.ads, gnat.db/specs/size_clause1.ads,
-	gnat.db/specs/size_clause2.ads: Update test case.
+	* gnat.dg/specs/alignment2.ads: Update.
+	* gnat.dg/specs/size_clause1.ads: Likewise.
+	* gnat.dg/specs/size_clause2.ads: Likewise.
 
 2014-07-16  Dodji Seketeli  <dodji@redhat.com>
 

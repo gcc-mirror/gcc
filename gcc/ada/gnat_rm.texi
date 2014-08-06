@@ -308,10 +308,12 @@ Implementation Defined Aspects
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Invariant'Class::
 * Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect No_Elaboration_Code_All::
 * Aspect Object_Size::
+* Aspect Obsolescent::
 * Aspect Part_Of::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
@@ -351,6 +353,7 @@ Implementation Defined Attributes
 * Attribute Compiler_Version::
 * Attribute Constrained::
 * Attribute Default_Bit_Order::
+* Attribute Default_Scalar_Storage_Order::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -8060,11 +8063,13 @@ clause.
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Invariant'Class::
 * Aspect Iterable::
 * Aspect Linker_Section::
 * Aspect Lock_Free::
 * Aspect No_Elaboration_Code_All::
 * Aspect Object_Size::
+* Aspect Obsolescent::
 * Aspect Part_Of::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
@@ -8284,6 +8289,14 @@ This aspect is equivalent to pragma @code{Invariant}. It is a
 synonym for the language defined aspect @code{Type_Invariant} except
 that it is separately controllable using pragma @code{Assertion_Policy}.
 
+@node Aspect Invariant'Class
+@unnumberedsec Aspect Invariant'Class
+@findex Invariant'Class
+@noindent
+This aspect is equivalent to pragma @code{Type_Invariant_Class}. It is a
+synonym for the language defined aspect @code{Type_Invariant'Class} except
+that it is separately controllable using pragma @code{Assertion_Policy}.
+
 @node Aspect Iterable
 @unnumberedsec Aspect Iterable
 @findex Iterable
@@ -8338,6 +8351,14 @@ statement for a program unit.
 @noindent
 This aspect is equivalent to an @code{Object_Size} attribute definition
 clause.
+
+@node Aspect Obsolescent
+@unnumberedsec Aspect Obsolescent
+@findex Obsolsecent
+@noindent
+This aspect is equivalent to an @code{Obsolescent} pragma. Note that the
+evaluation of this aspect happens at the point of occurrence, it is not
+delayed until the freeze point.
 
 @node Aspect Part_Of
 @unnumberedsec Aspect Part_Of
@@ -8531,6 +8552,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Compiler_Version::
 * Attribute Constrained::
 * Attribute Default_Bit_Order::
+* Attribute Default_Scalar_Storage_Order::
 * Attribute Descriptor_Size::
 * Attribute Elaborated::
 * Attribute Elab_Body::
@@ -8780,6 +8802,18 @@ permissible prefix), provides the value @code{System.Default_Bit_Order}
 as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @code{Low_Order_First}).  This is used to construct the definition of
 @code{Default_Bit_Order} in package @code{System}.
+
+@node Attribute Default_Scalar_Storage_Order
+@unnumberedsec Attribute Default_Scalar_Storage_Order
+@cindex Big endian
+@cindex Little endian
+@findex Default_Scalar_Storage_Order
+@noindent
+@code{Standard'Default_Scalar_Storage_Order} (@code{Standard} is the only
+permissible prefix), provides the current value of the default scalar storage
+order (as specified using pragma @code{Default_Scalar_Storage_Order}, or
+equal to @code{Default_Bit_Order} if unspecified) as a
+@code{System.Bit_Order} value. This is a static attribute.
 
 @node Attribute Descriptor_Size
 @unnumberedsec Attribute Descriptor_Size
@@ -14779,6 +14813,7 @@ source file location.
 * Handling of Records with Holes::
 * Enumeration Clauses::
 * Address Clauses::
+* Use of Address Clauses for Memory-Mapped I/O::
 * Effect of Convention on Representation::
 * Conventions and Anonymous Access Types::
 * Determining the Representations chosen by GNAT::
@@ -16571,6 +16606,64 @@ end Overwrite_Array;
 @noindent
 then the program compiles without the warning and when run will generate
 the output @code{X was not clobbered}.
+
+@node Use of Address Clauses for Memory-Mapped I/O
+@section Use of Address Clauses for Memory-Mapped I/O
+@cindex Memory-mapped I/O
+
+A common pattern is to use an address clause to map an atomic variable to
+a location in memory that corresponds to a memory-mapped I/O operation or
+operations, for example:
+
+@smallexample @c ada
+    type Mem_Word is record
+       A,B,C,D : Byte;
+    end record;
+    pragma Atomic (Mem_Word);
+    for Mem_Word_Size use 32;
+
+    Mem : Mem_Word;
+    for Mem'Address use some-address;
+    ...
+    Temp := Mem;
+    Temp.A := 32;
+    Mem := Temp;
+@end smallexample
+
+@noindent
+For a full access (reference or modification) of the variable (Mem) in
+this case, as in the above examples, GNAT guarantees that the entire atomic
+word will be accessed. It is not clear whether the RM requires this. For
+example in the above, can the compiler reference only the Mem.A field as
+an optimization? Whatever the answer to this question is, GNAT makes the
+guarantee that for such a reference, the entire word is read or written.
+
+A problem arises with a component access such as:
+
+@smallexample @c ada
+    Mem.A := 32;
+@end smallexample
+
+@noindent
+Note that the component A is not declared as atomic. This means that it is
+not clear what this assignment means. It could correspond to full word read
+and write as given in the first example, or on architectures that supported
+such an operation it might be a single byte store instruction. The RM does
+not have anything to say in this situation, and GNAT does not make any
+guarantee. The code generated may vary from target to target. GNAT will issue
+a warning in such a case:
+
+@smallexample @c ada
+    Mem.A := 32;
+    |
+    >>> warning: access to non-atomic component of atomic array,
+        may cause unexpected accesses to atomic object
+@end smallexample
+
+@noindent
+It is best to be explicit in this situation, by either declaring the
+components to be atomic if you want the byte store, or explicitly writing
+the full word access sequence if that is what the hardware requires.
 
 @node Effect of Convention on Representation
 @section Effect of Convention on Representation
@@ -19928,7 +20021,9 @@ a modified version of the Blum-Blum-Shub generator.
 @cindex Message Digest MD5
 
 @noindent
-Implements the MD5 Message-Digest Algorithm as described in RFC 1321.
+Implements the MD5 Message-Digest Algorithm as described in RFC 1321, and
+the HMAC-MD5 message authentication function as described in RFC 2104 and
+FIPS PUB 198.
 
 @node GNAT.Memory_Dump (g-memdum.ads)
 @section @code{GNAT.Memory_Dump} (@file{g-memdum.ads})
@@ -20064,7 +20159,8 @@ port. This is only supported on GNU/Linux and Windows.
 
 @noindent
 Implements the SHA-1 Secure Hash Algorithm as described in FIPS PUB 180-3
-and RFC 3174.
+and RFC 3174, and the HMAC-SHA1 message authentication function as described
+in RFC 2104 and FIPS PUB 198.
 
 @node GNAT.SHA224 (g-sha224.ads)
 @section @code{GNAT.SHA224} (@file{g-sha224.ads})
@@ -20072,7 +20168,9 @@ and RFC 3174.
 @cindex Secure Hash Algorithm SHA-224
 
 @noindent
-Implements the SHA-224 Secure Hash Algorithm as described in FIPS PUB 180-3.
+Implements the SHA-224 Secure Hash Algorithm as described in FIPS PUB 180-3,
+and the HMAC-SHA224 message authentication function as described
+in RFC 2104 and FIPS PUB 198.
 
 @node GNAT.SHA256 (g-sha256.ads)
 @section @code{GNAT.SHA256} (@file{g-sha256.ads})
@@ -20080,7 +20178,9 @@ Implements the SHA-224 Secure Hash Algorithm as described in FIPS PUB 180-3.
 @cindex Secure Hash Algorithm SHA-256
 
 @noindent
-Implements the SHA-256 Secure Hash Algorithm as described in FIPS PUB 180-3.
+Implements the SHA-256 Secure Hash Algorithm as described in FIPS PUB 180-3,
+and the HMAC-SHA256 message authentication function as described
+in RFC 2104 and FIPS PUB 198.
 
 @node GNAT.SHA384 (g-sha384.ads)
 @section @code{GNAT.SHA384} (@file{g-sha384.ads})
@@ -20088,7 +20188,9 @@ Implements the SHA-256 Secure Hash Algorithm as described in FIPS PUB 180-3.
 @cindex Secure Hash Algorithm SHA-384
 
 @noindent
-Implements the SHA-384 Secure Hash Algorithm as described in FIPS PUB 180-3.
+Implements the SHA-384 Secure Hash Algorithm as described in FIPS PUB 180-3,
+and the HMAC-SHA384 message authentication function as described
+in RFC 2104 and FIPS PUB 198.
 
 @node GNAT.SHA512 (g-sha512.ads)
 @section @code{GNAT.SHA512} (@file{g-sha512.ads})
@@ -20096,7 +20198,9 @@ Implements the SHA-384 Secure Hash Algorithm as described in FIPS PUB 180-3.
 @cindex Secure Hash Algorithm SHA-512
 
 @noindent
-Implements the SHA-512 Secure Hash Algorithm as described in FIPS PUB 180-3.
+Implements the SHA-512 Secure Hash Algorithm as described in FIPS PUB 180-3,
+and the HMAC-SHA512 message authentication function as described
+in RFC 2104 and FIPS PUB 198.
 
 @node GNAT.Signals (g-signal.ads)
 @section @code{GNAT.Signals} (@file{g-signal.ads})
@@ -20832,7 +20936,7 @@ including machine instructions in a subprogram.
 The two features are similar, and both are closely related to the mechanism
 provided by the asm instruction in the GNU C compiler.  Full understanding
 and use of the facilities in this package requires understanding the asm
-instruction, see @ref{Extended Asm,,, gcc, Using the GNU Compiler 
+instruction, see @ref{Extended Asm,,, gcc, Using the GNU Compiler
 Collection (GCC)}.
 
 Calls to the function @code{Asm} and the procedure @code{Asm} have identical
@@ -20866,7 +20970,7 @@ The @code{Asm_Output} attribute denotes a function that takes two
 parameters.  The first is a string, the second is the name of a variable
 of the type designated by the attribute prefix.  The first (string)
 argument is required to be a static expression and designates the
-constraint (@pxref{Constraints,,, gcc, Using the GNU Compiler 
+constraint (@pxref{Constraints,,, gcc, Using the GNU Compiler
 Collection (GCC)})
 for the parameter (e.g.@: what kind of register is required).  The second
 argument is the variable to be written or updated with the
@@ -20903,7 +21007,7 @@ expression, and is a space or comma separated list of names of registers
 that must be considered destroyed as a result of the @code{Asm} call.  If
 this argument is the null string (the default value), then the code
 generator assumes that no additional registers are destroyed.
-In addition to registers, the special clobbers @code{memory} and 
+In addition to registers, the special clobbers @code{memory} and
 @code{cc} as described in the GNU C docs are both supported.
 
 The fifth argument, not present in the above example, called the
@@ -20915,7 +21019,7 @@ will still be generated, even if none of the outputs are
 used.  @xref{Volatile,,,
 gcc, Using the GNU Compiler Collection (GCC)}, for the full description.
 Generally it is strongly advisable to use Volatile for any ASM statement
-that is missing either input or output operands or to avoid unwanted 
+that is missing either input or output operands or to avoid unwanted
 optimizations. A warning is generated if this advice is not followed.
 
 No support is provided for GNU C's @code{asm goto} feature.

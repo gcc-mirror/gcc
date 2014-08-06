@@ -47,54 +47,28 @@
 #include "gimple.h"
 #include "gimple-iterator.h"
 
-enum aarch64_simd_builtin_type_mode
-{
-  T_V8QI,
-  T_V4HI,
-  T_V2SI,
-  T_V2SF,
-  T_V1DF,
-  T_DI,
-  T_DF,
-  T_V16QI,
-  T_V8HI,
-  T_V4SI,
-  T_V4SF,
-  T_V2DI,
-  T_V2DF,
-  T_TI,
-  T_EI,
-  T_OI,
-  T_XI,
-  T_SI,
-  T_SF,
-  T_HI,
-  T_QI,
-  T_MAX
-};
-
-#define v8qi_UP  T_V8QI
-#define v4hi_UP  T_V4HI
-#define v2si_UP  T_V2SI
-#define v2sf_UP  T_V2SF
-#define v1df_UP  T_V1DF
-#define di_UP    T_DI
-#define df_UP    T_DF
-#define v16qi_UP T_V16QI
-#define v8hi_UP  T_V8HI
-#define v4si_UP  T_V4SI
-#define v4sf_UP  T_V4SF
-#define v2di_UP  T_V2DI
-#define v2df_UP  T_V2DF
-#define ti_UP	 T_TI
-#define ei_UP	 T_EI
-#define oi_UP	 T_OI
-#define xi_UP	 T_XI
-#define si_UP    T_SI
-#define sf_UP    T_SF
-#define hi_UP    T_HI
-#define qi_UP    T_QI
-
+#define v8qi_UP  V8QImode
+#define v4hi_UP  V4HImode
+#define v2si_UP  V2SImode
+#define v2sf_UP  V2SFmode
+#define v1df_UP  V1DFmode
+#define di_UP    DImode
+#define df_UP    DFmode
+#define v16qi_UP V16QImode
+#define v8hi_UP  V8HImode
+#define v4si_UP  V4SImode
+#define v4sf_UP  V4SFmode
+#define v2di_UP  V2DImode
+#define v2df_UP  V2DFmode
+#define ti_UP	 TImode
+#define ei_UP	 EImode
+#define oi_UP	 OImode
+#define ci_UP	 CImode
+#define xi_UP	 XImode
+#define si_UP    SImode
+#define sf_UP    SFmode
+#define hi_UP    HImode
+#define qi_UP    QImode
 #define UP(X) X##_UP
 
 #define SIMD_MAX_BUILTIN_ARGS 5
@@ -134,7 +108,7 @@ enum aarch64_type_qualifiers
 typedef struct
 {
   const char *name;
-  enum aarch64_simd_builtin_type_mode mode;
+  enum machine_mode mode;
   const enum insn_code code;
   unsigned int fcode;
   enum aarch64_type_qualifiers *qualifiers;
@@ -288,7 +262,7 @@ aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define CF10(N, X) CODE_FOR_##N##X
 
 #define VAR1(T, N, MAP, A) \
-  {#N, UP (A), CF##MAP (N, A), 0, TYPES_##T},
+  {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T},
 #define VAR2(T, N, MAP, A, B) \
   VAR1 (T, N, MAP, A) \
   VAR1 (T, N, MAP, B)
@@ -731,24 +705,9 @@ aarch64_init_simd_builtins (void)
       bool print_type_signature_p = false;
       char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
       aarch64_simd_builtin_datum *d = &aarch64_simd_builtin_data[i];
-      const char *const modenames[] =
-	{
-	  "v8qi", "v4hi", "v2si", "v2sf", "v1df", "di", "df",
-	  "v16qi", "v8hi", "v4si", "v4sf", "v2di", "v2df",
-	  "ti", "ei", "oi", "xi", "si", "sf", "hi", "qi"
-	};
-      const enum machine_mode modes[] =
-	{
-	  V8QImode, V4HImode, V2SImode, V2SFmode, V1DFmode, DImode, DFmode,
-	  V16QImode, V8HImode, V4SImode, V4SFmode, V2DImode,
-	  V2DFmode, TImode, EImode, OImode, XImode, SImode,
-	  SFmode, HImode, QImode
-	};
       char namebuf[60];
       tree ftype = NULL;
       tree fndecl = NULL;
-
-      gcc_assert (ARRAY_SIZE (modenames) == T_MAX);
 
       d->fcode = fcode;
 
@@ -797,7 +756,7 @@ aarch64_init_simd_builtins (void)
 	  /* Some builtins have different user-facing types
 	     for certain arguments, encoded in d->mode.  */
 	  if (qualifiers & qualifier_map_mode)
-	      op_mode = modes[d->mode];
+	      op_mode = d->mode;
 
 	  /* For pointers, we want a pointer to the basic type
 	     of the vector.  */
@@ -829,11 +788,11 @@ aarch64_init_simd_builtins (void)
       gcc_assert (ftype != NULL);
 
       if (print_type_signature_p)
-	snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s%s_%s",
-		  d->name, modenames[d->mode], type_signature);
+	snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s_%s",
+		  d->name, type_signature);
       else
-	snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s%s",
-		  d->name, modenames[d->mode]);
+	snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s",
+		  d->name);
 
       fndecl = add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD,
 				     NULL, NULL_TREE);

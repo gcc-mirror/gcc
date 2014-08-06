@@ -1277,6 +1277,12 @@ vmul_f32 (float32x2_t __a, float32x2_t __b)
   return __a * __b;
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmul_f64 (float64x1_t __a, float64x1_t __b)
+{
+  return __a * __b;
+}
+
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vmul_u8 (uint8x8_t __a, uint8x8_t __b)
 {
@@ -8299,19 +8305,6 @@ vmul_n_u32 (uint32x2_t a, uint32_t b)
   return result;
 }
 
-#define vmuld_lane_f64(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x2_t b_ = (b);                                            \
-       float64_t a_ = (a);                                              \
-       float64_t result;                                                \
-       __asm__ ("fmul %d0,%d1,%2.d[%3]"                                 \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
 #define vmull_high_lane_s16(a, b, c)                                    \
   __extension__                                                         \
     ({                                                                  \
@@ -8827,19 +8820,6 @@ vmulq_n_u32 (uint32x4_t a, uint32_t b)
            : /* No clobbers */);
   return result;
 }
-
-#define vmuls_lane_f32(a, b, c)                                         \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t b_ = (b);                                            \
-       float32_t a_ = (a);                                              \
-       float32_t result;                                                \
-       __asm__ ("fmul %s0,%s1,%2.s[%3]"                                 \
-                : "=w"(result)                                          \
-                : "w"(a_), "w"(b_), "i"(c)                              \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vmulx_f32 (float32x2_t a, float32x2_t b)
@@ -18985,6 +18965,34 @@ vmul_lane_u32 (uint32x2_t __a, uint32x2_t __b, const int __lane)
   return __a * __aarch64_vget_lane_u32 (__b, __lane);
 }
 
+/* vmuld_lane  */
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vmuld_lane_f64 (float64_t __a, float64x1_t __b, const int __lane)
+{
+  return __a * vget_lane_f64 (__b, __lane);
+}
+
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vmuld_laneq_f64 (float64_t __a, float64x2_t __b, const int __lane)
+{
+  return __a * vgetq_lane_f64 (__b, __lane);
+}
+
+/* vmuls_lane  */
+
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vmuls_lane_f32 (float32_t __a, float32x2_t __b, const int __lane)
+{
+  return __a * vget_lane_f32 (__b, __lane);
+}
+
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vmuls_laneq_f32 (float32_t __a, float32x4_t __b, const int __lane)
+{
+  return __a * vgetq_lane_f32 (__b, __lane);
+}
+
 /* vmul_laneq  */
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
@@ -19021,6 +19029,14 @@ __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vmul_laneq_u32 (uint32x2_t __a, uint32x4_t __b, const int __lane)
 {
   return __a * __aarch64_vgetq_lane_u32 (__b, __lane);
+}
+
+/* vmul_n  */
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmul_n_f64  (float64x1_t __a, float64_t __b)
+{
+  return (float64x1_t) { vget_lane_f64 (__a, 0) * __b };
 }
 
 /* vmulq_lane  */
@@ -19429,17 +19445,28 @@ vqdmlalh_lane_s16 (int32x1_t __a, int16x1_t __b, int16x4_t __c, const int __d)
   return __builtin_aarch64_sqdmlal_lanehi (__a, __b, __c, __d);
 }
 
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vqdmlalh_laneq_s16 (int32_t __a, int16_t __b, int16x8_t __c, const int __d)
+{
+  return __builtin_aarch64_sqdmlal_laneqhi (__a, __b, __c, __d);
+}
+
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vqdmlals_s32 (int64_t __a, int32x1_t __b, int32x1_t __c)
 {
   return __builtin_aarch64_sqdmlalsi (__a, __b, __c);
 }
 
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vqdmlals_lane_s32 (int64x1_t __a, int32x1_t __b, int32x2_t __c, const int __d)
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vqdmlals_lane_s32 (int64_t __a, int32_t __b, int32x2_t __c, const int __d)
 {
-  return (int64x1_t)
-      {__builtin_aarch64_sqdmlal_lanesi (__a[0], __b, __c, __d)};
+  return __builtin_aarch64_sqdmlal_lanesi (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vqdmlals_laneq_s32 (int64_t __a, int32_t __b, int32x4_t __c, const int __d)
+{
+  return __builtin_aarch64_sqdmlal_laneqsi (__a, __b, __c, __d);
 }
 
 /* vqdmlsl */
@@ -19556,16 +19583,28 @@ vqdmlslh_lane_s16 (int32x1_t __a, int16x1_t __b, int16x4_t __c, const int __d)
   return __builtin_aarch64_sqdmlsl_lanehi (__a, __b, __c, __d);
 }
 
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vqdmlslh_laneq_s16 (int32_t __a, int16_t __b, int16x8_t __c, const int __d)
+{
+  return __builtin_aarch64_sqdmlsl_laneqhi (__a, __b, __c, __d);
+}
+
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vqdmlsls_s32 (int64_t __a, int32x1_t __b, int32x1_t __c)
 {
   return __builtin_aarch64_sqdmlslsi (__a, __b, __c);
 }
 
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vqdmlsls_lane_s32 (int64x1_t __a, int32x1_t __b, int32x2_t __c, const int __d)
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vqdmlsls_lane_s32 (int64_t __a, int32_t __b, int32x2_t __c, const int __d)
 {
-  return (int64x1_t) {__builtin_aarch64_sqdmlsl_lanesi (__a[0], __b, __c, __d)};
+  return __builtin_aarch64_sqdmlsl_lanesi (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vqdmlsls_laneq_s32 (int64_t __a, int32_t __b, int32x4_t __c, const int __d)
+{
+  return __builtin_aarch64_sqdmlsl_laneqsi (__a, __b, __c, __d);
 }
 
 /* vqdmulh */
@@ -19606,6 +19645,12 @@ vqdmulhh_lane_s16 (int16x1_t __a, int16x4_t __b, const int __c)
   return __builtin_aarch64_sqdmulh_lanehi (__a, __b, __c);
 }
 
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vqdmulhh_laneq_s16 (int16_t __a, int16x8_t __b, const int __c)
+{
+  return __builtin_aarch64_sqdmulh_laneqhi (__a, __b, __c);
+}
+
 __extension__ static __inline int32x1_t __attribute__ ((__always_inline__))
 vqdmulhs_s32 (int32x1_t __a, int32x1_t __b)
 {
@@ -19616,6 +19661,12 @@ __extension__ static __inline int32x1_t __attribute__ ((__always_inline__))
 vqdmulhs_lane_s32 (int32x1_t __a, int32x2_t __b, const int __c)
 {
   return __builtin_aarch64_sqdmulh_lanesi (__a, __b, __c);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vqdmulhs_laneq_s32 (int32_t __a, int32x4_t __b, const int __c)
+{
+  return __builtin_aarch64_sqdmulh_laneqsi (__a, __b, __c);
 }
 
 /* vqdmull */
@@ -19922,6 +19973,12 @@ vqrdmulhh_lane_s16 (int16x1_t __a, int16x4_t __b, const int __c)
   return __builtin_aarch64_sqrdmulh_lanehi (__a, __b, __c);
 }
 
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vqrdmulhh_laneq_s16 (int16_t __a, int16x8_t __b, const int __c)
+{
+  return __builtin_aarch64_sqrdmulh_laneqhi (__a, __b, __c);
+}
+
 __extension__ static __inline int32x1_t __attribute__ ((__always_inline__))
 vqrdmulhs_s32 (int32x1_t __a, int32x1_t __b)
 {
@@ -19932,6 +19989,12 @@ __extension__ static __inline int32x1_t __attribute__ ((__always_inline__))
 vqrdmulhs_lane_s32 (int32x1_t __a, int32x2_t __b, const int __c)
 {
   return __builtin_aarch64_sqrdmulh_lanesi (__a, __b, __c);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vqrdmulhs_laneq_s32 (int32_t __a, int32x4_t __b, const int __c)
+{
+  return __builtin_aarch64_sqrdmulh_laneqsi (__a, __b, __c);
 }
 
 /* vqrshl */

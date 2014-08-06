@@ -575,7 +575,18 @@ gnat_set_type_context (tree type, tree context)
 
   while (decl && DECL_PARALLEL_TYPE (decl))
     {
-      TYPE_CONTEXT (DECL_PARALLEL_TYPE (decl)) = context;
+      tree parallel_type = DECL_PARALLEL_TYPE (decl);
+
+      /* Give a context to the parallel types and their stub decl, if any.
+	 Some parallel types seems to be present in multiple parallel type
+	 chains, so don't mess with their context if they already have one.  */
+      if (TYPE_CONTEXT (parallel_type) == NULL_TREE)
+	{
+	  if (TYPE_STUB_DECL (parallel_type) != NULL_TREE)
+	    DECL_CONTEXT (TYPE_STUB_DECL (parallel_type)) = context;
+	  TYPE_CONTEXT (parallel_type) = context;
+	}
+
       decl = TYPE_STUB_DECL (DECL_PARALLEL_TYPE (decl));
     }
 }
@@ -799,7 +810,9 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	t = NULL_TREE;
 
       /* Propagate the name to all the anonymous variants.  This is needed
-	 for the type qualifiers machinery to work properly.  */
+	 for the type qualifiers machinery to work properly.  Also propagate
+	 the context to them.  Note that the context will be propagated to all
+	 parallel types too thanks to gnat_set_type_context.  */
       if (t)
 	for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
 	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
@@ -1763,7 +1776,10 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
     rest_of_record_type_compilation (record_type);
 }
 
-/* Append PARALLEL_TYPE on the chain of parallel types of TYPE.  */
+/* Append PARALLEL_TYPE on the chain of parallel types of TYPE.  If
+   PARRALEL_TYPE has no context and its computation is not deferred yet, also
+   propagate TYPE's context to PARALLEL_TYPE's or defer its propagation to the
+   moment TYPE will get a context.  */
 
 void
 add_parallel_type (tree type, tree parallel_type)
@@ -1774,6 +1790,19 @@ add_parallel_type (tree type, tree parallel_type)
     decl = TYPE_STUB_DECL (DECL_PARALLEL_TYPE (decl));
 
   SET_DECL_PARALLEL_TYPE (decl, parallel_type);
+
+  /* If PARALLEL_TYPE already has a context, we are done.  */
+  if (TYPE_CONTEXT (parallel_type) != NULL_TREE)
+    return;
+
+  /* Otherwise, try to get one from TYPE's context.  */
+  if (TYPE_CONTEXT (type) != NULL_TREE)
+    /* TYPE already has a context, so simply propagate it to PARALLEL_TYPE.  */
+    gnat_set_type_context (parallel_type, TYPE_CONTEXT (type));
+
+    /* ... otherwise TYPE has not context yet.  We know it will thanks to
+       gnat_pushdecl, and then its context will be propagated to PARALLEL_TYPE.
+       So we have nothing to do in this case.  */
 }
 
 /* Return true if TYPE has a parallel type.  */
@@ -2851,7 +2880,7 @@ process_deferred_decl_context (bool force)
 	     ..._TYPE nodes.  */
 	  FOR_EACH_VEC_ELT (node->types, i, t)
 	    {
-	      TYPE_CONTEXT (t) = context;
+	      gnat_set_type_context (t, context);
 	    }
 	  processed = true;
 	}
@@ -3629,6 +3658,7 @@ tree
 build_unc_object_type (tree template_type, tree object_type, tree name,
 		       bool debug_info_p)
 {
+  tree decl;
   tree type = make_node (RECORD_TYPE);
   tree template_field
     = create_field_decl (get_identifier ("BOUNDS"), template_type, type,
@@ -3644,7 +3674,12 @@ build_unc_object_type (tree template_type, tree object_type, tree name,
 
   /* Declare it now since it will never be declared otherwise.  This is
      necessary to ensure that its subtrees are properly marked.  */
-  create_type_decl (name, type, true, debug_info_p, Empty);
+  decl = create_type_decl (name, type, true, debug_info_p, Empty);
+
+  /* template_type will not be used elsewhere than here, so to keep the debug
+     info clean and in order to avoid scoping issues, make decl its
+     context.  */
+  gnat_set_type_context (template_type, decl);
 
   return type;
 }

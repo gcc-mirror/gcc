@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_EMIT_RTL_H
 #define GCC_EMIT_RTL_H
 
+/* Return whether two MEM_ATTRs are equal.  */
+bool mem_attrs_eq_p (const struct mem_attrs *, const struct mem_attrs *);
+
 /* Set the alias set of MEM to SET.  */
 extern void set_mem_alias_set (rtx, alias_set_type);
 

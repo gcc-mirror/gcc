@@ -72,6 +72,15 @@ package Prj is
    type Yes_No_Unknown is (Yes, No, Unknown);
    --  Tri-state to decide if -lgnarl is needed when linking
 
+   type Attribute_Default_Value is
+     (Read_Only_Value,     --  For read only attributes (Name, Project_Dir)
+      Empty_Value,         --  Empty string or empty string list
+      Dot_Value,           --  "." or (".")
+      Object_Dir_Value,    --  'Object_Dir
+      Target_Value);       --  'Target (special rules)
+   --  Describe the default values of attributes that are referenced but not
+   --  declared.
+
    pragma Warnings (Off);
    type Project_Qualifier is
      (Unspecified,
@@ -83,7 +92,7 @@ package Prj is
 
       Library,
       Configuration,
-      Dry,
+      Abstract_Project,
       Aggregate,
       Aggregate_Library);
    pragma Warnings (On);
@@ -91,7 +100,7 @@ package Prj is
    --  file:
    --    Standard:             standard project ...
    --    Library:              library project is ...
-   --    Dry:                  abstract project is
+   --    Abstract_Project:     abstract project is
    --    Aggregate:            aggregate project is
    --    Aggregate_Library:    aggregate library project is ...
    --    Configuration:        configuration project is ...
@@ -122,6 +131,9 @@ package Prj is
    function Empty_File   return File_Name_Type;
    function Empty_String return Name_Id;
    --  Return the id for an empty string ""
+
+   function Dot_String return Name_Id;
+   --  Return the id for "."
 
    type Path_Information is record
       Name         : Path_Name_Type := No_Path;
@@ -1570,6 +1582,7 @@ package Prj is
       Arrays            : Array_Table.Instance;
       Packages          : Package_Table.Instance;
       Private_Part      : Private_Project_Tree_Data;
+      Dot_String_List   : String_List_Id := Nil_String;
    end record;
    type Shared_Project_Tree_Data_Access is access all Shared_Project_Tree_Data;
    --  The data that is shared among multiple trees, when these trees are

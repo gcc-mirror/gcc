@@ -2204,11 +2204,19 @@ package body Sem_Ch5 is
 
       procedure Check_Predicate_Use (T : Entity_Id) is
       begin
+         --  A predicated subtype is illegal in loops and related constructs
+         --  if the predicate is not static, or if it is a non-static subtype
+         --  of a statically predicated subtype.
+
          if Is_Discrete_Type (T)
            and then Has_Predicates (T)
            and then (not Has_Static_Predicate (T)
+                      or else not Is_Static_Subtype (T)
                       or else Has_Dynamic_Predicate_Aspect (T))
          then
+            --  Seems a confusing message for the case of a static predicate
+            --  with a non-static subtype???
+
             Bad_Predicated_Subtype_Use
               ("cannot use subtype& with non-static predicate for loop "
                & "iteration", Discrete_Subtype_Definition (N),
@@ -3109,23 +3117,37 @@ package body Sem_Ch5 is
       --  analyze the loop body now even in the Ada 2012 iterator case, since
       --  the rewriting will not be done. Insert the loop variable in the
       --  current scope, if not done when analysing the iteration scheme.
+      --  Set its kind properly to detect improper uses in the loop body.
 
-      if No (Iter)
-        or else No (Iterator_Specification (Iter))
-        or else not Expander_Active
+      if Present (Iter)
+        and then Present (Iterator_Specification (Iter))
       then
-         if Present (Iter)
-           and then Present (Iterator_Specification (Iter))
-         then
+         if not Expander_Active then
             declare
-               Id : constant Entity_Id :=
-                      Defining_Identifier (Iterator_Specification (Iter));
+               I_Spec : constant Node_Id   := Iterator_Specification (Iter);
+               Id     : constant Entity_Id := Defining_Identifier (I_Spec);
+
             begin
                if Scope (Id) /= Current_Scope then
                   Enter_Name (Id);
                end if;
+
+               --  In an element iterator, The loop parameter is a variable if
+               --  the domain of iteration (container or array) is a variable.
+
+               if not Of_Present (I_Spec)
+                 or else not Is_Variable (Name (I_Spec))
+               then
+                  Set_Ekind (Id, E_Loop_Parameter);
+               end if;
             end;
+
+            Analyze_Statements (Statements (N));
          end if;
+
+      else
+
+         --  Pre-Ada2012 for-loops and while loops.
 
          Analyze_Statements (Statements (N));
       end if;

@@ -577,6 +577,10 @@ package Sinfo is
    --       warning issued when generating code, to avoid formal verification
    --       of a partial unit.
 
+   --    4. Unconstrained types are not replaced by constrained types whose
+   --       bounds are generated from an expression: Expand_Subtype_From_Expr
+   --       should be noop.
+
    -----------------------
    -- Check Flag Fields --
    -----------------------

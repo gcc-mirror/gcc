@@ -144,6 +144,17 @@ package Sem_Ch13 is
    --  type. Returns False if no such error occurs. If this error does occur,
    --  appropriate error messages are posted on node N, and True is returned.
 
+   generic
+      with procedure Replace_Type_Reference (N : Node_Id);
+   procedure Replace_Type_References_Generic (N : Node_Id; T : Entity_Id);
+   --  This is used to scan an expression for a predicate or invariant aspect
+   --  replacing occurrences of the name of the subtype to which the aspect
+   --  applies with appropriate references to the parameter of the predicate
+   --  function or invariant procedure. The procedure passed as a generic
+   --  parameter does the actual replacement of node N, which is either a
+   --  simple direct reference to T, or a selected component that represents
+   --  an appropriately qualified occurrence of T.
+
    function Rep_Item_Too_Late
      (T     : Entity_Id;
       N     : Node_Id;

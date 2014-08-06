@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 extern tree canonicalize_constructor_val (tree, tree);
 extern tree get_symbol_constant_value (tree);
 extern void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
-extern tree gimple_fold_builtin (gimple);
 extern bool fold_stmt (gimple_stmt_iterator *);
 extern bool fold_stmt_inplace (gimple_stmt_iterator *);
 extern tree maybe_fold_and_comparisons (enum tree_code, tree, tree, 

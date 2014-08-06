@@ -92,8 +92,8 @@ package body Sem_Ch3 is
    --  record type.
 
    procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of object Obj_Id as
-   --  if they appeared at the end of the declarative region. The aspects to be
+   --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
+   --  if they appeared at the end of the declarative region. The pragmas to be
    --  considered are:
    --    Async_Readers
    --    Async_Writers
@@ -2393,6 +2393,15 @@ package body Sem_Ch3 is
             if L = Private_Declarations (Context) then
                Analyze_Package_Contract (Defining_Entity (Context));
 
+               --  Build the bodies of the default initial condition procedures
+               --  for all types subject to pragma Default_Initial_Condition.
+               --  From a purely Ada stand point, this is a freezing activity,
+               --  however freezing is not available under GNATprove_Mode. To
+               --  accomodate both scenarios, the bodies are build at the end
+               --  of private declaration analysis.
+
+               Build_Default_Init_Cond_Procedure_Bodies (L);
+
             --  Otherwise the contract is analyzed at the end of the visible
             --  declarations.
 
@@ -3760,6 +3769,14 @@ package body Sem_Ch3 is
             elsif Is_Interface (T) then
                null;
 
+            --  In GNATprove mode, Expand_Subtype_From_Expr does nothing. Thus,
+            --  we should prevent the generation of another Itype with the
+            --  same name as the one already generated, or we end up with
+            --  two identical types in GNATprove.
+
+            elsif GNATprove_Mode then
+               null;
+
             else
                Expand_Subtype_From_Expr (N, T, Object_Definition (N), E);
                Act_T := Find_Type_Of_Object (Object_Definition (N), N);
@@ -4925,6 +4942,14 @@ package body Sem_Ch3 is
                Set_Has_Dynamic_Range_Check (N, Has_Dyn_Chk);
             end;
          end if;
+      end if;
+
+      --  A type invariant applies to any subtype in its scope, in particular
+      --  to a generic actual.
+
+      if Has_Invariants (T) and then In_Open_Scopes (Scope (T)) then
+         Set_Has_Invariants (Id);
+         Set_Invariant_Procedure (Id, Invariant_Procedure (T));
       end if;
 
       --  Make sure that generic actual types are properly frozen. The subtype
@@ -6903,19 +6928,16 @@ package body Sem_Ch3 is
             return;
          end if;
 
+         --  If this is not a completion, construct the implicit full view by
+         --  deriving from the full view of the parent type. But if this is a
+         --  completion, the derived private type being built is a full view
+         --  and the full derivation can only be its underlying full view.
+
+         Build_Full_Derivation;
+
          if not Is_Completion then
-            --  If this is not a completion, construct the implicit full view
-            --  by deriving from the full view of the parent type.
-
-            Build_Full_Derivation;
             Set_Full_View (Derived_Type, Full_Der);
-
          else
-            --  If this is a completion, the full view being built is itself
-            --  private. Construct an underlying full view by deriving from
-            --  the full view of the parent type.
-
-            Build_Full_Derivation;
             Set_Underlying_Full_View (Derived_Type, Full_Der);
          end if;
 
@@ -8508,6 +8530,23 @@ package body Sem_Ch3 is
       end if;
 
       Check_Function_Writable_Actuals (N);
+
+      --  Propagate the attributes related to pragma Default_Initial_Condition
+      --  from the parent type to the private extension. A derived type always
+      --  inherits the default initial condition flag from the parent type. If
+      --  the derived type carries its own Default_Initial_Condition pragma,
+      --  the flag is later reset in Analyze_Pragma. Note that both flags are
+      --  mutually exclusive.
+
+      if Has_Inherited_Default_Init_Cond (Parent_Type)
+        or else Present (Get_Pragma
+                  (Parent_Type, Pragma_Default_Initial_Condition))
+      then
+         Set_Has_Inherited_Default_Init_Cond (Derived_Type);
+
+      elsif Has_Default_Init_Cond (Parent_Type) then
+         Set_Has_Default_Init_Cond (Derived_Type);
+      end if;
    end Build_Derived_Record_Type;
 
    ------------------------
@@ -8572,55 +8611,54 @@ package body Sem_Ch3 is
       --  The derived type inherits the representation clauses of the parent.
       --  However, for a private type that is completed by a derivation, there
       --  may be operation attributes that have been specified already (stream
-      --  attributes and External_Tag) and those must be provided. Finally,
-      --  if the partial view is a private extension, the representation items
-      --  of the parent have been inherited already, and should not be chained
+      --  attributes and External_Tag) and those must be provided. Finally, if
+      --  the partial view is a private extension, the representation items of
+      --  the parent have been inherited already, and should not be chained
       --  twice to the derived type.
 
-      if Is_Tagged_Type (Parent_Type)
-        and then Present (First_Rep_Item (Derived_Type))
-      then
-         --  The existing items are either operational items or items inherited
-         --  from a private extension declaration.
+      --  Historic note: The guard below used to check whether the parent type
+      --  is tagged. This is no longer needed because an untagged derived type
+      --  may carry rep items of its own as a result of certain SPARK pragmas.
+      --  With the old guard in place, the rep items of the derived type were
+      --  clobbered.
 
+      if Present (First_Rep_Item (Derived_Type)) then
          declare
-            Rep : Node_Id;
-            --  Used to iterate over representation items of the derived type
-
-            Last_Rep : Node_Id;
-            --  Last representation item of the (non-empty) representation
-            --  item list of the derived type.
-
-            Found : Boolean := False;
+            Par_Item  : constant Node_Id := First_Rep_Item (Parent_Type);
+            Inherited : Boolean := False;
+            Item      : Node_Id;
+            Last_Item : Node_Id;
 
          begin
-            Rep      := First_Rep_Item (Derived_Type);
-            Last_Rep := Rep;
-            while Present (Rep) loop
-               if Rep = First_Rep_Item (Parent_Type) then
-                  Found := True;
+            --  Inspect the rep item chain of the derived type and perform the
+            --  following two functions:
+            --    1) Determine whether the derived type already inherited the
+            --       rep items of the parent type.
+            --    2) Find the last rep item of the derived type
+
+            Item := First_Rep_Item (Derived_Type);
+            Last_Item := Item;
+            while Present (Item) loop
+               if Item = Par_Item then
+                  Inherited := True;
                   exit;
-
-               else
-                  Rep := Next_Rep_Item (Rep);
-
-                  if Present (Rep) then
-                     Last_Rep := Rep;
-                  end if;
                end if;
+
+               Last_Item := Item;
+               Item := Next_Rep_Item (Item);
             end loop;
 
-            --  Here if we either encountered the parent type's first rep
-            --  item on the derived type's rep item list (in which case
-            --  Found is True, and we have nothing else to do), or if we
-            --  reached the last rep item of the derived type, which is
-            --  Last_Rep, in which case we further chain the parent type's
-            --  rep items to those of the derived type.
+            --  Nothing to do if the derived type already inherited the rep
+            --  items from the parent type, otherwise append the parent rep
+            --  item chain to that of the derived type.
 
-            if not Found then
-               Set_Next_Rep_Item (Last_Rep, First_Rep_Item (Parent_Type));
+            if not Inherited then
+               Set_Next_Rep_Item (Last_Item, Par_Item);
             end if;
          end;
+
+      --  Otherwise the derived type lacks rep items and directly inherits the
+      --  rep items of the parent type.
 
       else
          Set_First_Rep_Item (Derived_Type, First_Rep_Item (Parent_Type));
@@ -15033,7 +15071,7 @@ package body Sem_Ch3 is
       end if;
 
       --  Only composite types other than array types are allowed to have
-      --  discriminants. In SPARK, no types are allowed to have discriminants.
+      --  discriminants.
 
       if Present (Discriminant_Specifications (N)) then
          if (Is_Elementary_Type (Parent_Type)
@@ -15044,6 +15082,9 @@ package body Sem_Ch3 is
               ("elementary or array type cannot have discriminants",
                Defining_Identifier (First (Discriminant_Specifications (N))));
             Set_Has_Discriminants (T, False);
+
+         --  The type is allowed to have discriminants
+
          else
             Check_SPARK_05_Restriction ("discriminant type is not allowed", N);
          end if;
@@ -18011,10 +18052,12 @@ package body Sem_Ch3 is
             end if;
          end if;
 
+         --  Handling of discriminants that are access types
+
          if Is_Access_Type (Discr_Type) then
 
-            --  Ada 2005 (AI-230): Access discriminant allowed in non-limited
-            --  record types
+            --  Ada 2005 (AI-230): Access discriminant allowed in non-
+            --  limited record types
 
             if Ada_Version < Ada_2005 then
                Check_Access_Discriminant_Requires_Limited
@@ -18026,9 +18069,12 @@ package body Sem_Ch3 is
                  ("(Ada 83) access discriminant not allowed", Discr);
             end if;
 
+         --  If not access type, must be a discrete type
+
          elsif not Is_Discrete_Type (Discr_Type) then
-            Error_Msg_N ("discriminants must have a discrete or access type",
-              Discriminant_Type (Discr));
+            Error_Msg_N
+              ("discriminants must have a discrete or access type",
+               Discriminant_Type (Discr));
          end if;
 
          Set_Etype (Defining_Identifier (Discr), Discr_Type);
@@ -18038,8 +18084,8 @@ package body Sem_Ch3 is
          --  expression of the discriminant; the default expression must be of
          --  the type of the discriminant. (RM 3.7.1) Since this expression is
          --  a default expression, we do the special preanalysis, since this
-         --  expression does not freeze (see "Handling of Default and Per-
-         --  Object Expressions" in spec of package Sem).
+         --  expression does not freeze (see section "Handling of Default and
+         --  Per-Object Expressions" in spec of package Sem).
 
          if Present (Expression (Discr)) then
             Preanalyze_Spec_Expression (Expression (Discr), Discr_Type);
@@ -18943,6 +18989,21 @@ package body Sem_Ch3 is
 
       if Has_Specified_Stream_Output (Priv_T) then
          Set_Has_Specified_Stream_Output (Full_T);
+      end if;
+
+      --  Propagate the attributes related to pragma Default_Initial_Condition
+      --  from the private to the full view. Note that both flags are mutually
+      --  exclusive.
+
+      if Has_Inherited_Default_Init_Cond (Priv_T) then
+         Set_Has_Inherited_Default_Init_Cond (Full_T);
+         Set_Default_Init_Cond_Procedure
+           (Full_T, Default_Init_Cond_Procedure (Priv_T));
+
+      elsif Has_Default_Init_Cond (Priv_T) then
+         Set_Has_Default_Init_Cond (Full_T);
+         Set_Default_Init_Cond_Procedure
+           (Full_T, Default_Init_Cond_Procedure (Priv_T));
       end if;
 
       --  Propagate invariants to full type

@@ -1110,11 +1110,15 @@ package body Sem_Warn is
                --  since a given instance could have modifications outside
                --  the package.
 
+               --  Note that we used to check Address_Taken here, but we don't
+               --  want to do that since it can be set for non-source cases,
+               --  e.g. the Unrestricted_Access from a valid attribute, and
+               --  the wanted effect is included in Never_Set_In_Source.
+
                elsif Warn_On_Constant
                  and then (Ekind (E1) = E_Variable
                             and then Has_Initial_Value (E1))
                  and then Never_Set_In_Source_Check_Spec (E1)
-                 and then not Address_Taken (E1)
                  and then not Generic_Package_Spec_Entity (E1)
                then
                   --  A special case, if this variable is volatile and not
@@ -3646,11 +3650,7 @@ package body Sem_Warn is
          if Is_Array_Type (Typ)
            and then not Is_Constrained (Typ)
            and then Number_Dimensions (Typ) = 1
-           and then (Root_Type (Typ) = Standard_String
-                       or else
-                     Root_Type (Typ) = Standard_Wide_String
-                       or else
-                     Root_Type (Typ) = Standard_Wide_Wide_String)
+           and then Is_Standard_String_Type (Typ)
            and then not Has_Warnings_Off (Typ)
          then
             LB := Type_Low_Bound (Etype (First_Index (Typ)));

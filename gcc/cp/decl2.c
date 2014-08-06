@@ -524,6 +524,8 @@ check_member_template (tree tmpl)
 	 with member templates.  */
       DECL_IGNORED_P (tmpl) = 1;
     }
+  else if (variable_template_p (tmpl))
+    /* OK */;
   else
     error ("template declaration of %q#D", decl);
 }

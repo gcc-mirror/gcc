@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1094,7 +1094,8 @@ package body Prj.Part is
          while Present (With_Clause) loop
             Imported := Project_Node_Of (With_Clause, In_Tree);
 
-            if Project_Qualifier_Of (Imported, In_Tree) /= Dry then
+            if Project_Qualifier_Of (Imported, In_Tree) /= Abstract_Project
+            then
                Error_Msg_Name_1 := Name_Id (Path_Name_Of (Imported, In_Tree));
                Error_Msg (Flags, "can only import abstract projects, not %%",
                           Token_Ptr);
@@ -1152,7 +1153,7 @@ package body Prj.Part is
       Qualifier_Location := Token_Ptr;
 
       if Token = Tok_Abstract then
-         Proj_Qualifier := Dry;
+         Proj_Qualifier := Abstract_Project;
          Scan (In_Tree);
 
       elsif Token = Tok_Identifier then
@@ -1370,7 +1371,8 @@ package body Prj.Part is
             if Extended then
 
                if A_Project_Name_And_Node.Extended then
-                  if A_Project_Name_And_Node.Proj_Qualifier /= Dry then
+                  if A_Project_Name_And_Node.Proj_Qualifier /= Abstract_Project
+                  then
                      Error_Msg
                        (Env.Flags,
                         "cannot extend the same project file several times",
@@ -1811,8 +1813,11 @@ package body Prj.Part is
                      --  with sources if it inherits sources from the project
                      --  it extends.
 
-                     if Project_Qualifier_Of (Project, In_Tree) = Dry and then
-                       Project_Qualifier_Of (Extended_Project, In_Tree) /= Dry
+                     if Project_Qualifier_Of (Project, In_Tree) =
+                                                           Abstract_Project
+                       and then
+                         Project_Qualifier_Of (Extended_Project, In_Tree) /=
+                                                           Abstract_Project
                      then
                         Error_Msg
                           (Env.Flags, "an abstract project can only extend " &
@@ -1925,7 +1930,8 @@ package body Prj.Part is
          Set_Project_Declaration_Of (Project, In_Tree, Project_Declaration);
 
          if Present (Extended_Project)
-           and then Project_Qualifier_Of (Extended_Project, In_Tree) /= Dry
+           and then Project_Qualifier_Of (Extended_Project, In_Tree) /=
+                                                        Abstract_Project
          then
             Set_Extending_Project_Of
               (Project_Declaration_Of (Extended_Project, In_Tree), In_Tree,

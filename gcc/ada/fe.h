@@ -174,7 +174,7 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 #define Exception_Mechanism            opt__exception_mechanism
 #define Float_Format                   opt__float_format
 #define Generate_SCO_Instance_Table    opt__generate_sco_instance_table
-#define GNAT_Mode		       opt__gnat_mode
+#define GNAT_Mode                      opt__gnat_mode
 #define List_Representation_Info       opt__list_representation_info
 
 typedef enum {Setjmp_Longjmp, Back_End_Exceptions} Exception_Mechanism_Type;

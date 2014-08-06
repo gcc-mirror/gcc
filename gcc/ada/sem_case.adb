@@ -114,6 +114,10 @@ package body Sem_Case is
       Others_Present : Boolean;
       Case_Node      : Node_Id)
    is
+      Predicate_Error : Boolean;
+      --  Flag to prevent cascaded errors when a static predicate is known to
+      --  be violated by one choice.
+
       procedure Check_Against_Predicate
         (Pred    : in out Node_Id;
          Choice  : Choice_Bounds;
@@ -611,6 +615,10 @@ package body Sem_Case is
          Missing_Choice (Value1, Expr_Value (Value2));
       end Missing_Choice;
 
+      --------------------
+      -- Missing_Choice --
+      --------------------
+
       procedure Missing_Choice (Value1 : Uint; Value2 : Uint) is
          Msg_Sloc : constant Source_Ptr := Sloc (Case_Node);
 
@@ -625,6 +633,12 @@ package body Sem_Case is
          --  we don't want to complain in this case.
 
          elsif Value1 > Value2 then
+            return;
+
+         --  If predicate is already known to be violated, do no check for
+         --  coverage error, to prevent cascaded messages.
+
+         elsif Predicate_Error then
             return;
          end if;
 
@@ -721,6 +735,8 @@ package body Sem_Case is
          return;
       end if;
 
+      Predicate_Error := False;
+
       --  Choice_Table must start at 0 which is an unused location used by the
       --  sorting algorithm. However the first valid position for a discrete
       --  choice is 1.
@@ -763,12 +779,21 @@ package body Sem_Case is
                Error   => Error);
 
             --  The analysis detected an illegal intersection between a choice
-            --  and a static predicate set.
+            --  and a static predicate set. Do not examine other choices unless
+            --  all errors are requested.
 
             if Error then
-               return;
+               Predicate_Error := True;
+
+               if not All_Errors_Mode then
+                  return;
+               end if;
             end if;
          end loop;
+
+         if Predicate_Error then
+            return;
+         end if;
 
          --  The choices may legally cover some of the static predicate sets,
          --  but not all. Emit an error for each non-covered set.

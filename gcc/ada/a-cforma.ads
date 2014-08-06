@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -69,6 +69,7 @@ generic
 package Ada.Containers.Formal_Ordered_Maps is
    pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
+   pragma SPARK_Mode (On);
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean with
      Global => null;
@@ -265,10 +266,11 @@ package Ada.Containers.Formal_Ordered_Maps is
    function Overlap (Left, Right : Map) return Boolean with
      Global => null;
    --  Overlap returns True if the containers have common keys
-private
 
+private
    pragma Inline (Next);
    pragma Inline (Previous);
+   pragma SPARK_Mode (Off);
 
    subtype Node_Access is Count_Type;
 
@@ -288,7 +290,7 @@ private
      new Ada.Containers.Red_Black_Trees.Generic_Bounded_Tree_Types (Node_Type);
 
    type Map (Capacity : Count_Type) is
-      new Tree_Types.Tree_Type (Capacity) with null record;
+     new Tree_Types.Tree_Type (Capacity) with null record;
 
    type Cursor is record
       Node : Node_Access;

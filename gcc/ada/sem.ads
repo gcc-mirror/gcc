@@ -683,13 +683,14 @@ package Sem is
    generic
       with procedure Action (Item : Node_Id);
    procedure Walk_Library_Items;
-   --  Primarily for use by CodePeer. Must be called after semantic analysis
-   --  (and expansion) are complete. Walks each relevant library item, calling
-   --  Action for each, in an order such that one will not run across forward
-   --  references. Each Item passed to Action is the declaration or body of
-   --  a library unit, including generics and renamings. The first item is
-   --  the N_Package_Declaration node for package Standard. Bodies are not
-   --  included, except for the main unit itself, which always comes last.
+   --  Primarily for use by CodePeer and GNATprove. Must be called after
+   --  semantic analysis (and expansion in the case of CodePeer) are complete.
+   --  Walks each relevant library item, calling Action for each, in an order
+   --  such that one will not run across forward references. Each Item passed
+   --  to Action is the declaration or body of a library unit, including
+   --  generics and renamings. The first item is the N_Package_Declaration node
+   --  for package Standard. Bodies are not included, except for the main unit
+   --  itself, which always comes last.
    --
    --  Item is never a subunit
    --

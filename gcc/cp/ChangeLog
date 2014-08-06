@@ -1,3 +1,28 @@
+2014-08-01  Braden Obrzut  <admin@maniacsvault.net>
+
+	Implement constexpr variable templates
+	* decl.c (grokvardecl): Handle specializations of variable templates.
+	(grokdeclarator): Handle variable template id expressions and NULL_TREE
+	return from grokvardecl.
+	* decl2.c (check_member_template): Allow declaration of template member
+	variables.
+	* parser.c (cp_parser_template_id): Build a TEMPLATE_ID_EXPR for
+	variable templates.
+	* pt.c (check_template_variable): Accept variable temploids at
+	non-class scope.
+	(push_template_decl_real): The current instantiation of a template
+	can be a VAR_DECL.
+	(determine_specialization): Accept variable templates.
+	(check_explicit_specialization): Handle and check for malformed
+	variable template specializations.
+	(lookup_template_variable): New.
+	(tsubst_decl): Handle variable template specializations.
+	(do_decl_instantiation): Handle template variables.
+	(instantiate_decl): Handle template variables.
+	* semantics.c (finish_template_variable): New.
+	(finish_id_expression): Instantiate variable templates.
+	* cp-tree.h (variable_template_p): New.
+
 2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/15339

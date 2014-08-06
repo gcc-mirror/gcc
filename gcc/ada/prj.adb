@@ -60,6 +60,7 @@ package body Prj is
    --  Initial size for extensible buffer used in Add_To_Buffer
 
    The_Empty_String : Name_Id := No_Name;
+   The_Dot_String   : Name_Id := No_Name;
 
    Debug_Level : Integer := 0;
    --  Current indentation level for debug traces
@@ -306,6 +307,15 @@ package body Prj is
             return Extend_Name (Source_File_Name, ALI_Dependency_Suffix);
       end case;
    end Dependency_Name;
+
+   ----------------
+   -- Dot_String --
+   ----------------
+
+   function Dot_String return Name_Id is
+   begin
+      return The_Dot_String;
+   end Dot_String;
 
    ----------------
    -- Empty_File --
@@ -1057,6 +1067,10 @@ package body Prj is
          Name_Len := 0;
          The_Empty_String := Name_Find;
 
+         Name_Len := 1;
+         Name_Buffer (1) := '.';
+         The_Dot_String := Name_Find;
+
          Prj.Attr.Initialize;
 
          --  Make sure that new reserved words after Ada 95 may be used as
@@ -1441,6 +1455,20 @@ package body Prj is
          Array_Element_Table.Init    (Tree.Shared.Array_Elements);
          Array_Table.Init            (Tree.Shared.Arrays);
          Package_Table.Init          (Tree.Shared.Packages);
+
+         --  Create Dot_String_List
+
+         String_Element_Table.Append
+           (Tree.Shared.String_Elements,
+            String_Element'
+              (Value         => The_Dot_String,
+               Index         => 0,
+               Display_Value => The_Dot_String,
+               Location      => No_Location,
+               Flag          => False,
+               Next          => Nil_String));
+         Tree.Shared.Dot_String_List :=
+           String_Element_Table.Last (Tree.Shared.String_Elements);
 
          --  Private part table
 

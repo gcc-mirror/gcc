@@ -437,9 +437,7 @@ package body Sem_Ch7 is
          Inspect_Deferred_Constant_Completion (Declarations (N));
       end if;
 
-      --  After declarations have been analyzed, the body has been set to have
-      --  the final value of SPARK_Mode. Check that the SPARK_Mode for the body
-      --  is consistent with the SPARK_Mode for the spec.
+      --  Verify that the SPARK_Mode of the body agrees with that of its spec
 
       if Present (SPARK_Pragma (Body_Id)) then
          if Present (SPARK_Aux_Pragma (Spec_Id)) then
@@ -1350,8 +1348,9 @@ package body Sem_Ch7 is
          Analyze_Declarations (Vis_Decls);
       end if;
 
-      --  Verify that incomplete types have received full declarations and
-      --  also build invariant procedures for any types with invariants.
+      --  Inspect the entities defined in the package and ensure that all
+      --  incomplete types have received full declarations. Build default
+      --  initial condition and invariant procedures for all qualifying types.
 
       E := First_Entity (Id);
       while Present (E) loop
@@ -1367,10 +1366,26 @@ package body Sem_Ch7 is
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
          end if;
 
-         --  Build invariant procedures
+         if Is_Type (E) then
 
-         if Is_Type (E) and then Has_Invariants (E) then
-            Build_Invariant_Procedure (E, N);
+            --  Each private type subject to pragma Default_Initial_Condition
+            --  declares a specialized procedure which verifies the assumption
+            --  of the pragma. The declaration appears in the visible part of
+            --  the package to allow for being called from the outside.
+
+            if Has_Default_Init_Cond (E) then
+               Build_Default_Init_Cond_Procedure_Declaration (E);
+
+            --  A private extension inherits the default initial condition
+            --  procedure from its parent type.
+
+            elsif Has_Inherited_Default_Init_Cond (E) then
+               Inherit_Default_Init_Cond_Procedure (E);
+            end if;
+
+            if Has_Invariants (E) then
+               Build_Invariant_Procedure (E, N);
+            end if;
          end if;
 
          Next_Entity (E);

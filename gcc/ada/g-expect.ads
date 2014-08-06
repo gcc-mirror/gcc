@@ -178,7 +178,7 @@ package GNAT.Expect is
    --  till Expect matches), but this is slower.
    --
    --  If Err_To_Out is True, then the standard error of the spawned process is
-   --  connected to the standard output. This is the only way to get the Except
+   --  connected to the standard output. This is the only way to get the Expect
    --  subprograms to also match on output on standard error.
    --
    --  Invalid_Process is raised if the process could not be spawned.

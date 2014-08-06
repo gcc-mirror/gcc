@@ -1680,21 +1680,28 @@ package body Sem_Ch12 is
                         --  If actual is an entity (function or operator),
                         --  build wrapper for it.
 
-                        if Present (Match)
-                          and then Nkind (Match) = N_Operator_Symbol
-                        then
-                           --  If the name is a default, find its visible
-                           --  entity at the point of instantiation.
+                        if Present (Match) then
+                           if Nkind (Match) = N_Operator_Symbol then
 
-                           if Is_Entity_Name (Match)
-                             and then No (Entity (Match))
-                           then
-                              Find_Direct_Name (Match);
+                              --  If the name is a default, find its visible
+                              --  entity at the point of instantiation.
+
+                              if Is_Entity_Name (Match)
+                                and then No (Entity (Match))
+                              then
+                                 Find_Direct_Name (Match);
+                              end if;
+
+                              Append_To
+                                (Assoc,
+                                 Build_Wrapper
+                                   (Defining_Entity (Analyzed_Formal), Match));
+
+                           else
+                              Append_To (Assoc,
+                                         Instantiate_Formal_Subprogram
+                                           (Formal, Match, Analyzed_Formal));
                            end if;
-
-                           Append_To (Assoc,
-                             Build_Wrapper
-                               (Defining_Entity (Analyzed_Formal), Match));
 
                         --  Ditto if formal is an operator with a default.
 
@@ -3335,21 +3342,10 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
-      Check_SPARK_Mode_In_Generic (N);
+      --  Once the contents of the generic copy and the template are swapped,
+      --  do the same for their respective aspect specifications.
 
-      --  The aspect specifications are not attached to the tree, and must
-      --  be copied and attached to the generic copy explicitly.
-
-      if Present (Aspect_Specifications (New_N)) then
-         declare
-            Aspects : constant List_Id := Aspect_Specifications (N);
-         begin
-            Set_Has_Aspects (N, False);
-            Move_Aspects (New_N, To => N);
-            Set_Has_Aspects (Original_Node (N), False);
-            Set_Aspect_Specifications (Original_Node (N), Aspects);
-         end;
-      end if;
+      Exchange_Aspects (N, New_N);
 
       Spec := Specification (N);
       Id := Defining_Entity (Spec);
@@ -3364,8 +3360,15 @@ package body Sem_Ch12 is
       Start_Generic;
 
       Enter_Name (Id);
-
       Set_Scope_Depth_Value (Id, Scope_Depth (Current_Scope) + 1);
+
+      --  Analyze the aspects of the generic copy to ensure that all generated
+      --  pragmas (if any) perform their semantic effects.
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
+
       Push_Scope (Id);
       Enter_Generic_Scope (Id);
       Set_Inner_Instances (Id, New_Elmt_List);
@@ -3455,41 +3458,6 @@ package body Sem_Ch12 is
          Make_Aspect_For_PPC_In_Gen_Sub_Decl (N);
       end if;
 
-      --  To capture global references, analyze the expressions of aspects,
-      --  and propagate information to original tree. Note that in this case
-      --  analysis of attributes is not delayed until the freeze point.
-
-      --  It seems very hard to recreate the proper visibility of the generic
-      --  subprogram at a later point because the analysis of an aspect may
-      --  create pragmas after the generic copies have been made ???
-
-      if Has_Aspects (N) then
-         declare
-            Aspect : Node_Id;
-
-         begin
-            Aspect := First (Aspect_Specifications (N));
-            while Present (Aspect) loop
-               if Get_Aspect_Id (Aspect) /= Aspect_Warnings
-                 and then Present (Expression (Aspect))
-               then
-                  Analyze (Expression (Aspect));
-               end if;
-
-               Next (Aspect);
-            end loop;
-
-            Aspect := First (Aspect_Specifications (Original_Node (N)));
-            while Present (Aspect) loop
-               if Present (Expression (Aspect)) then
-                  Save_Global_References (Expression (Aspect));
-               end if;
-
-               Next (Aspect);
-            end loop;
-         end;
-      end if;
-
       End_Generic;
       End_Scope;
       Exit_Generic_Scope (Id);
@@ -3524,6 +3492,13 @@ package body Sem_Ch12 is
       Unit_Renaming    : Node_Id;
       Needs_Body       : Boolean;
       Inline_Now       : Boolean := False;
+
+      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
+      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+
+      Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data for restore on exit
 
       Save_Style_Check : constant Boolean := Style_Check;
       --  Save style check mode for restore on exit
@@ -3764,6 +3739,14 @@ package body Sem_Ch12 is
          goto Leave;
 
       else
+         --  If the context of the instance is subject to SPARK_Mode "off",
+         --  set the global flag which signals Analyze_Pragma to ignore all
+         --  SPARK_Mode pragmas within the instance.
+
+         if SPARK_Mode = Off then
+            Ignore_Pragma_SPARK_Mode := True;
+         end if;
+
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
 
          --  Initialize renamings map, for error checking, and the list that
@@ -3828,9 +3811,7 @@ package body Sem_Ch12 is
             Set_Visible_Declarations (Act_Spec, Renaming_List);
          end if;
 
-         Act_Decl :=
-           Make_Package_Declaration (Loc,
-             Specification => Act_Spec);
+         Act_Decl := Make_Package_Declaration (Loc, Specification => Act_Spec);
 
          --  Propagate the aspect specifications from the package declaration
          --  template to the instantiated version of the package declaration.
@@ -4270,7 +4251,10 @@ package body Sem_Ch12 is
          Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
-      Style_Check := Save_Style_Check;
+      Ignore_Pragma_SPARK_Mode := Save_IPSM;
+      SPARK_Mode               := Save_SM;
+      SPARK_Mode_Pragma        := Save_SMP;
+      Style_Check              := Save_Style_Check;
 
       --  Check that if N is an instantiation of System.Dim_Float_IO or
       --  System.Dim_Integer_IO, the formal type has a dimension system.
@@ -4304,7 +4288,10 @@ package body Sem_Ch12 is
             Restore_Env;
          end if;
 
-         Style_Check := Save_Style_Check;
+         Ignore_Pragma_SPARK_Mode := Save_IPSM;
+         SPARK_Mode               := Save_SM;
+         SPARK_Mode_Pragma        := Save_SMP;
+         Style_Check              := Save_Style_Check;
    end Analyze_Package_Instantiation;
 
    --------------------------
@@ -4858,6 +4845,13 @@ package body Sem_Ch12 is
 
       --  Local variables
 
+      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
+      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+
+      Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data for restore on exit
+
       Vis_Prims_List : Elist_Id := No_Elist;
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type
@@ -4922,6 +4916,14 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
+         --  If the context of the instance is subject to SPARK_Mode "off",
+         --  set the global flag which signals Analyze_Pragma to ignore all
+         --  SPARK_Mode pragmas within the instance.
+
+         if SPARK_Mode = Off then
+            Ignore_Pragma_SPARK_Mode := True;
+         end if;
+
          Set_Entity (Gen_Id, Gen_Unit);
          Set_Is_Instantiated (Gen_Unit);
 
@@ -5132,6 +5134,10 @@ package body Sem_Ch12 is
          Env_Installed := False;
          Generic_Renamings.Set_Last (0);
          Generic_Renamings_HTable.Reset;
+
+         Ignore_Pragma_SPARK_Mode := Save_IPSM;
+         SPARK_Mode               := Save_SM;
+         SPARK_Mode_Pragma        := Save_SMP;
       end if;
 
    <<Leave>>
@@ -5148,6 +5154,10 @@ package body Sem_Ch12 is
          if Env_Installed then
             Restore_Env;
          end if;
+
+         Ignore_Pragma_SPARK_Mode := Save_IPSM;
+         SPARK_Mode               := Save_SM;
+         SPARK_Mode_Pragma        := Save_SMP;
    end Analyze_Subprogram_Instantiation;
 
    -------------------------

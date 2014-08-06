@@ -1168,6 +1168,10 @@ package body Inline is
           Make_Defining_Identifier (Sloc (N), Name_uParent));
       Set_Corresponding_Spec (Original_Body, Empty);
 
+      --  Remove those pragmas that have no meaining in an inlined body.
+
+      Remove_Pragmas (Original_Body);
+
       Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
 
       --  Set return type of function, which is also global and does not need
@@ -1190,7 +1194,6 @@ package body Inline is
 
       Expander_Mode_Save_And_Set (False);
       Full_Analysis := False;
-      Remove_Pragmas (Body_To_Analyze);
 
       Analyze (Body_To_Analyze);
       Push_Scope (Defining_Entity (Body_To_Analyze));
@@ -1379,11 +1382,13 @@ package body Inline is
       --  Returns True if subprogram Id has any contract (Pre, Post, Global,
       --  Depends, etc.)
 
-      function In_Some_Private_Part (N : Node_Id) return Boolean;
-      --  Returns True if node N is defined in the private part of a package
+      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
+      --  Returns True if subprogram Id defines a compilation unit
+      --  Shouldn't this be in Sem_Aux???
 
-      function In_Unit_Body (N : Node_Id) return Boolean;
-      --  Returns True if node N is defined in the body of a unit
+      function In_Package_Visible_Spec (Id : Node_Id) return Boolean;
+      --  Returns True if subprogram Id is defined in the visible part of a
+      --  package specification.
 
       function Is_Expression_Function (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id was defined originally as an expression
@@ -1402,53 +1407,52 @@ package body Inline is
                      Present (Classifications     (Items)));
       end Has_Some_Contract;
 
-      --------------------------
-      -- In_Some_Private_Part --
-      --------------------------
+      -----------------------------
+      -- In_Package_Visible_Spec --
+      -----------------------------
 
-      function In_Some_Private_Part (N : Node_Id) return Boolean is
-         P  : Node_Id;
-         PP : Node_Id;
+      function In_Package_Visible_Spec  (Id : Node_Id) return Boolean is
+         Decl : Node_Id := Parent (Parent (Id));
+         P    : Node_Id;
 
       begin
-         P := N;
-         while Present (P) and then Present (Parent (P)) loop
-            PP := Parent (P);
+         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Decl);
+         end if;
 
-            if Nkind (PP) = N_Package_Specification
-              and then List_Containing (P) = Private_Declarations (PP)
-            then
-               return True;
-            end if;
+         P := Parent (Decl);
 
-            P := PP;
-         end loop;
-
-         return False;
-      end In_Some_Private_Part;
-
-      ------------------
-      -- In_Unit_Body --
-      ------------------
-
-      function In_Unit_Body (N : Node_Id) return Boolean is
-         CU : constant Node_Id := Enclosing_Comp_Unit_Node (N);
-      begin
-         return Present (CU)
-           and then Nkind_In (Unit (CU), N_Package_Body,
-                                         N_Subprogram_Body,
-                                         N_Subunit);
-      end In_Unit_Body;
+         return Nkind (P) = N_Package_Specification
+           and then List_Containing (Decl) = Visible_Declarations (P);
+      end In_Package_Visible_Spec;
 
       ----------------------------
       -- Is_Expression_Function --
       ----------------------------
 
       function Is_Expression_Function (Id : Entity_Id) return Boolean is
-         Decl : constant Node_Id := Parent (Parent (Id));
+         Decl : Node_Id := Parent (Parent (Id));
       begin
+         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Decl);
+         end if;
+
          return Nkind (Original_Node (Decl)) = N_Expression_Function;
       end Is_Expression_Function;
+
+      ------------------------
+      -- Is_Unit_Subprogram --
+      ------------------------
+
+      function Is_Unit_Subprogram (Id : Entity_Id) return Boolean is
+         Decl : Node_Id := Parent (Parent (Id));
+      begin
+         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Decl);
+         end if;
+
+         return Nkind (Parent (Decl)) = N_Compilation_Unit;
+      end Is_Unit_Subprogram;
 
       --  Local declarations
 
@@ -1476,16 +1480,12 @@ package body Inline is
 
       --  Do not inline unit-level subprograms
 
-      if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
+      if Is_Unit_Subprogram (Id) then
          return False;
 
-      --  Do not inline subprograms declared in the visible part of a library
-      --  package.
+      --  Do not inline subprograms declared in the visible part of a package
 
-      elsif Is_Library_Level_Entity (Id)
-        and then not In_Unit_Body (Id)
-        and then not In_Some_Private_Part (Id)
-      then
+      elsif In_Package_Visible_Spec (Id) then
          return False;
 
       --  Do not inline subprograms that have a contract on the spec or the

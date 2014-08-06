@@ -451,8 +451,10 @@ LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(fsrcpfx)ada/gnatvsn.ad
 
 # Additionnal object files from C source to be added to libgnat.
 EXTRA_LIBGNAT_OBJS=
-# Additionnal C source file to be added to libgnat without corresponding object
-# file (included files).
+
+# Additionnal C source files to be added to libgnat without corresponding
+# object file (#included files). This should include at least the GNAT
+# specific header files required to rebuild the runtime library from sources.
 EXTRA_LIBGNAT_SRCS=
 
 # GCC spec files to be installed in $(libsubdir), so --specs=<spec-filename>
@@ -513,7 +515,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(target_cpu) $(target_vendor) $(target
 endif
 
 # PowerPC and e500v2 VxWorks
-ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7,$(target_cpu) $(target_vendor) $(target_os))),)
 
   ifeq ($(strip $(filter-out e500%, $(target_alias))),)
      ARCH_STR=e500
@@ -588,6 +590,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
 
       EH_MECHANISM=-gcc
       EXTRA_LIBGNAT_OBJS+=affinity.o sigtramp-vxworks.o
+      EXTRA_LIBGNAT_SRCS+=sigtramp.h
     else
       ifeq ($(strip $(filter-out kernel-smp,$(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
@@ -618,6 +621,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $
       endif
       EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
       EXTRA_LIBGNAT_OBJS+=sigtramp-vxworks.o
+      EXTRA_LIBGNAT_SRCS+=sigtramp.h
     endif
   endif
 
@@ -672,6 +676,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(target_cpu) $(target_vendor)
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=sigtramp-vxworks.o
+  EXTRA_LIBGNAT_SRCS+=sigtramp.h
 
   # Extra pairs for the vthreads runtime
   ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
@@ -736,6 +741,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(target_cpu) $(target_vendo
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o sigtramp-vxworks.o
+  EXTRA_LIBGNAT_SRCS+=sigtramp.h
   GNATRTL_SOCKETS_OBJS =
 
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
@@ -864,7 +870,7 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(target_cpu) $(target_vendor) $(targe
 endif
 
 # x86 VxWorks
-ifeq ($(strip $(filter-out %86 wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   i-vxwork.ads<i-vxwork-x86.ads \
@@ -920,8 +926,6 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(target_cpu) $(target_vendor) $(targ
       EXTRA_LIBGNAT_OBJS+=affinity.o
     else
       ifeq ($(strip $(filter-out kernel-smp, $(THREAD_KIND))),)
-        EH_MECHANISM=-gcc
-
         LIBGNAT_TARGET_PAIRS += \
         s-interr.adb<s-interr-hwint.adb \
         s-mudido.adb<s-mudido-affinity.adb \
@@ -936,8 +940,6 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(target_cpu) $(target_vendor) $(targ
         s-tpopsp.adb<s-tpopsp-vxworks.adb
 
         ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
-          EH_MECHANISM=-gcc
-
           LIBGNAT_TARGET_PAIRS += \
           s-vxwext.ads<s-vxwext-kernel.ads \
           s-vxwext.adb<s-vxwext-kernel.adb \
@@ -995,6 +997,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     system.ads<system-vxworks-arm-rtp.ads
 
     EXTRA_LIBGNAT_OBJS+=affinity.o sigtramp-vxworks.o
+    EXTRA_LIBGNAT_SRCS+=sigtramp.h
   else
     ifeq ($(strip $(filter-out kernel-smp,$(THREAD_KIND))),)
       EH_MECHANISM=-gcc
@@ -1007,6 +1010,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
       system.ads<system-vxworks-arm.ads
 
       EXTRA_LIBGNAT_OBJS+=affinity.o sigtramp-vxworks.o
+      EXTRA_LIBGNAT_SRCS+=sigtramp.h
     else
       LIBGNAT_TARGET_PAIRS += \
       s-tpopsp.adb<s-tpopsp-vxworks.adb \
@@ -1020,6 +1024,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
         s-vxwext.adb<s-vxwext-kernel.adb
 
         EXTRA_LIBGNAT_OBJS+=sigtramp-vxworks.o
+        EXTRA_LIBGNAT_SRCS+=sigtramp.h
       endif
     endif
   endif
@@ -3007,7 +3012,7 @@ a-tags.o  : a-tags.adb a-tags.ads
 
 # need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
-tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c
+tracebak.o  : tracebak.c tb-gcc.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
 	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 

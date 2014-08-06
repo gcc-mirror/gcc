@@ -145,10 +145,19 @@ package Checks is
    --  Sets Do_Overflow_Check flag in node N, and handles possible local raise.
    --  Always call this routine rather than calling Set_Do_Overflow_Check to
    --  set an explicit value of True, to ensure handling the local raise case.
-   --  Note that this call has no effect for MOD, REM, and unary "+" for which
-   --  overflow is never possible in any case. In addition, we do not set the
-   --  flag for unconstrained floating-point type operations, since we want to
-   --  allow for the generation of IEEE infinities in such cases.
+   --  Note that for discrete types, this call has no effect for MOD, REM, and
+   --  unary "+" for which overflow is never possible in any case.
+   --
+   --  Note: for the discrete-type case, it is legitimate to call this routine
+   --  on an unanalyzed node where the Etype field is not set. However, for the
+   --  floating-point case, Etype must be set (to a floating-point type).
+   --
+   --  For floating-point, we set the flag if we have automatic overflow checks
+   --  on the target, or if Check_Float_Overflow mode is set. For the floating-
+   --  point case, we ignore all the unary operators ("+", "-", and abs) since
+   --  none of these can result in overflow. If there are no overflow checks on
+   --  the target, and Check_Float_Overflow mode is not set, then the call has
+   --  no effect, since in such cases we want to generate NaN's and infinities.
 
    procedure Activate_Range_Check (N : Node_Id);
    pragma Inline (Activate_Range_Check);

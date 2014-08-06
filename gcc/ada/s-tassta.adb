@@ -1052,7 +1052,10 @@ package body System.Tasking.Stages is
             SSE.Storage_Offset (Parameters.Sec_Stack_Percentage) / 100;
 
       Secondary_Stack : aliased SSE.Storage_Array (1 .. Secondary_Stack_Size);
-      --  Actual area allocated for secondary stack
+      for Secondary_Stack'Alignment use Standard'Maximum_Alignment;
+      --  Actual area allocated for secondary stack. Note that it is critical
+      --  that this have maximum alignment, since any kind of data can be
+      --  allocated here.
 
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
       --  Address of secondary stack. In the fixed secondary stack case, this
