@@ -1,22 +1,21 @@
+/* PR rtl-optimization/61801 */
 /* { dg-do compile } */
 /* { dg-options "-Os -fcompare-debug" } */
 
-int a, b, c;
-void fn1 ()
+int a, c;
+int bar (void);
+void baz (void);
+
+void
+foo (void)
 {
   int d;
-  if (fn2 () && !0)
+  if (bar ())
     {
-      b = (
-	   {
-	   int e;
-	   fn3 ();
-	   switch (0)
-	   default:
-	   asm volatile("" : "=a"(e) : "0"(a), "i"(0));
-	   e;
-	   });
-      d = b;
+      int e;
+      baz ();
+      asm volatile ("" : "=a" (e) : "0" (a), "i" (0));
+      d = e;
     }
   c = d;
 }
