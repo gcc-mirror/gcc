@@ -1,3 +1,8 @@
+2014-08-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_dup): Enable for bigendian.
+	(aarch64_expand_vec_perm_const): Check for dup before zip.
+
 2014-08-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_address): Use REG_P and
