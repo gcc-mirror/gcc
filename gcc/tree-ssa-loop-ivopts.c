@@ -1679,6 +1679,8 @@ may_be_unaligned_p (tree ref, tree step)
     return false;
 
   unsigned int align = TYPE_ALIGN (TREE_TYPE (ref));
+  if (GET_MODE_ALIGNMENT (TYPE_MODE (TREE_TYPE (ref))) > align)
+    align = GET_MODE_ALIGNMENT (TYPE_MODE (TREE_TYPE (ref)));
 
   unsigned HOST_WIDE_INT bitpos;
   unsigned int ref_align;
