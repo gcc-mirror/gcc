@@ -1,3 +1,8 @@
+2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.dg/pr44194-1.c: Also exclude powerpc*-*-linux*, except if
+	powerpc_elfv2.
+
 2014-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/61801
