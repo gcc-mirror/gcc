@@ -1,3 +1,7 @@
+2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.dg/pr44194-1.c: Remove an extraneous brace.
+
 2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/61923
