@@ -4353,13 +4353,18 @@ cp_build_binary_op (location_t location,
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
 	      || code1 == COMPLEX_TYPE || code1 == ENUMERAL_TYPE))
 	short_compare = 1;
-      else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
-	       || (TYPE_PTRDATAMEM_P (type0) && TYPE_PTRDATAMEM_P (type1)))
-	result_type = composite_pointer_type (type0, type1, op0, op1,
-					      CPO_COMPARISON, complain);
-      else if ((code0 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type0))
-	       && null_ptr_cst_p (op1))
+      else if (((code0 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type0))
+		&& null_ptr_cst_p (op1))
+	       /* Handle, eg, (void*)0 (c++/43906), and more.  */
+	       || (code0 == POINTER_TYPE
+		   && TYPE_PTR_P (type1) && integer_zerop (op1)))
 	{
+	  if (TYPE_PTR_P (type1))
+	    result_type = composite_pointer_type (type0, type1, op0, op1,
+						  CPO_COMPARISON, complain);
+	  else
+	    result_type = type0;
+
 	  if (TREE_CODE (op0) == ADDR_EXPR
 	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0)))
 	    {
@@ -4368,11 +4373,19 @@ cp_build_binary_op (location_t location,
 		warning (OPT_Waddress, "the address of %qD will never be NULL",
 			 TREE_OPERAND (op0, 0));
 	    }
-	  result_type = type0;
 	}
-      else if ((code1 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type1))
-	       && null_ptr_cst_p (op0))
+      else if (((code1 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type1))
+		&& null_ptr_cst_p (op0))
+	       /* Handle, eg, (void*)0 (c++/43906), and more.  */
+	       || (code1 == POINTER_TYPE
+		   && TYPE_PTR_P (type0) && integer_zerop (op0)))
 	{
+	  if (TYPE_PTR_P (type0))
+	    result_type = composite_pointer_type (type0, type1, op0, op1,
+						  CPO_COMPARISON, complain);
+	  else
+	    result_type = type1;
+
 	  if (TREE_CODE (op1) == ADDR_EXPR 
 	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0)))
 	    {
@@ -4381,8 +4394,11 @@ cp_build_binary_op (location_t location,
 		warning (OPT_Waddress, "the address of %qD will never be NULL",
 			 TREE_OPERAND (op1, 0));
 	    }
-	  result_type = type1;
 	}
+      else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
+	       || (TYPE_PTRDATAMEM_P (type0) && TYPE_PTRDATAMEM_P (type1)))
+	result_type = composite_pointer_type (type0, type1, op0, op1,
+					      CPO_COMPARISON, complain);
       else if (null_ptr_cst_p (op0) && null_ptr_cst_p (op1))
 	/* One of the operands must be of nullptr_t type.  */
         result_type = TREE_TYPE (nullptr_node);

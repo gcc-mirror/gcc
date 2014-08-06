@@ -1,3 +1,9 @@
+2014-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43906
+	* typeck.c (cp_build_binary_op): Extend to more cases the
+	-Waddress warning.
+
 2014-08-01  Braden Obrzut  <admin@maniacsvault.net>
 
 	Implement constexpr variable templates
