@@ -1,3 +1,8 @@
+2014-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43906
+	* g++.dg/warn/Waddress-1.C: New.
+
 2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* gcc.dg/pr44194-1.c: Remove an extraneous brace.
