@@ -1,3 +1,9 @@
+2014-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61320
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Properly
+	handle misaligned loads.
+
 2014-08-06  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_evpc_dup): Enable for bigendian.
