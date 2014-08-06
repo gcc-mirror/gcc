@@ -9378,10 +9378,6 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   unsigned int i, elt, nelt = d->nelt;
   rtx lane;
 
-  /* TODO: This may not be big-endian safe.  */
-  if (BYTES_BIG_ENDIAN)
-    return false;
-
   elt = d->perm[0];
   for (i = 1; i < nelt; i++)
     {
@@ -9395,7 +9391,7 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
      use d->op0 and need not do any extra arithmetic to get the
      correct lane number.  */
   in0 = d->op0;
-  lane = GEN_INT (elt);
+  lane = GEN_INT (elt); /* The pattern corrects for big-endian.  */
 
   switch (vmode)
     {
@@ -9476,13 +9472,13 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	return true;
       else if (aarch64_evpc_ext (d))
 	return true;
+      else if (aarch64_evpc_dup (d))
+	return true;
       else if (aarch64_evpc_zip (d))
 	return true;
       else if (aarch64_evpc_uzp (d))
 	return true;
       else if (aarch64_evpc_trn (d))
-	return true;
-      else if (aarch64_evpc_dup (d))
 	return true;
       return aarch64_evpc_tbl (d);
     }

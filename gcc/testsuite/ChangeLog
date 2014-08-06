@@ -1,3 +1,7 @@
+2014-08-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vdup_n_2.c: New test.
+
 2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* gcc.dg/pr44194-1.c: Also exclude powerpc*-*-linux*, except if
