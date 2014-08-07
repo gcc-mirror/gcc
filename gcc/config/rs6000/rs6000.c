@@ -56,7 +56,6 @@
 #include "reload.h"
 #include "cfgloop.h"
 #include "sched-int.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "basic-block.h"

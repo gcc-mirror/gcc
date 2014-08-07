@@ -139,7 +139,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "tree-pass.h"
-#include "pointer-set.h"
 #include "cfgloop.h"
 #include "builtins.h"
 

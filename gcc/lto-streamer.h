@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "gcov-io.h"
 #include "diagnostic.h"
-#include "pointer-set.h"
 
 /* Define when debugging the LTO streamer.  This causes the writer
    to output the numeric value for the memory address of the tree node

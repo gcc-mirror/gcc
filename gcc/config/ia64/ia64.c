@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "hash-table.h"
 #include "langhooks.h"
-#include "pointer-set.h"
 #include "vec.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"

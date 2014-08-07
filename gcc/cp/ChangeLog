@@ -1,3 +1,8 @@
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* class.c, cp-gimplify.c, decl.c, decl2.c, error.c, method.c,
+	optimize.c, pt.c, semantics.c: Remove includes of pointer-set.h.
+
 2014-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51312

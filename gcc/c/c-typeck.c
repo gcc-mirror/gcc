@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-iterator.h"
 #include "bitmap.h"
-#include "pointer-set.h"
 #include "basic-block.h"
 #include "gimple-expr.h"
 #include "gimplify.h"

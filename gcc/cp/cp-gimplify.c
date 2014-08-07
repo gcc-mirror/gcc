@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "tree-iterator.h"
-#include "pointer-set.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

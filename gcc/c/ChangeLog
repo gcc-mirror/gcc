@@ -1,3 +1,7 @@
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-typeck.c: Remove include of pointer-set.h.
+
 2014-08-07  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (pointer_diff): Remove P - (P + CST) optimization.

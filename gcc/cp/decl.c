@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "debug.h"
 #include "timevar.h"
-#include "pointer-set.h"
 #include "splay-tree.h"
 #include "plugin.h"
 #include "cgraph.h"

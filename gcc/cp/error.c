@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
-#include "pointer-set.h"
 #include "c-family/c-objc.h"
 #include "ubsan.h"
 

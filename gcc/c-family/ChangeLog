@@ -1,3 +1,7 @@
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* c-gimplify.c, cilk.c: Remove includes of pointer-set.h.
+
 2014-08-03  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (check_case_value):  Add location_t parameter.  Use it.

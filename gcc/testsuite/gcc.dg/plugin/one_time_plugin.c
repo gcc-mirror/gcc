@@ -6,7 +6,6 @@
 #include "tree.h"
 #include "tm.h"
 #include "toplev.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "ggc.h"

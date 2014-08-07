@@ -41,7 +41,6 @@
 #include "tree-pass.h"
 #include "df.h"
 #include "vec.h"
-#include "pointer-set.h"
 #include "dbgcnt.h"
 
 #ifndef HAVE_conditional_move

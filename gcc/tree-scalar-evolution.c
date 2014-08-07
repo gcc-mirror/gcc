@@ -280,7 +280,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
-#include "pointer-set.h"
 #include "tree-affine.h"
 #include "tree-scalar-evolution.h"
 #include "dumpfile.h"

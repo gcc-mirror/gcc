@@ -46,7 +46,6 @@
 #include "recog.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "basic-block.h"

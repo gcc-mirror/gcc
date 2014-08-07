@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "expr.h"
 #include "hash-set.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"

@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "cfgloop.h"
-#include "pointer-set.h"
 #include "hash-map.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

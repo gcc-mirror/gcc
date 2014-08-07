@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "target.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "gimplify.h"
 #include "bitmap.h"

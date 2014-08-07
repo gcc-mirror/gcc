@@ -1,3 +1,25 @@
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* Makefile.in: Remove references to pointer-set.c and pointer-set.h.
+	* alias.c, cfgexpand.c, cgraphbuild.c,
+	config/aarch64/aarch64-builtins.c, config/aarch64/aarch64.c,
+	config/alpha/alpha.c, config/darwin.c, config/i386/i386.c,
+	config/i386/winnt.c, config/ia64/ia64.c, config/m32c/m32c.c,
+	config/mep/mep.c, config/mips/mips.c, config/rs6000/rs6000.c,
+	config/s390/s390.c, config/sh/sh.c, config/sparc/sparc.c,
+	config/spu/spu.c, config/stormy16/stormy16.c, config/tilegx/tilegx.c,
+	config/tilepro/tilepro.c, config/xtensa/xtensa.c, dominance.c,
+	dse.c, except.c, gengtype.c, gimple-expr.c,
+	gimple-ssa-strength-reduction.c, gimplify.c, ifcvt.c,
+	ipa-visibility.c, lto-streamer.h, omp-low.c, predict.c, stmt.c,
+	tree-affine.c, tree-cfg.c, tree-eh.c, tree-inline.c, tree-nested.c,
+	tree-scalar-evolution.c, tree-ssa-loop-im.c, tree-ssa-loop-niter.c,
+	tree-ssa-phiopt.c, tree-ssa-structalias.c, tree-ssa-uninit.c,
+	tree-ssa.c, tree.c, var-tracking.c, varpool.c: Remove includes of
+	pointer-set.h.
+	* pointer-set.c: Remove file.
+	* pointer-set.h: Remove file.
+
 2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (*cmov<mode>): Set type attribute to fcsel.
