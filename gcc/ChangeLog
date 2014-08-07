@@ -1,5 +1,20 @@
 2014-08-07  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+	* haifa-sched.c (SCHED_SORT): Delete.  Macro used exactly once.
+	(enum rfs_decition:RFS_*): New constants wrapped in an enum.
+	(rfs_str): String corresponding to RFS_* constants.
+	(rank_for_schedule_stats_t): New typedef.
+	(rank_for_schedule_stats): New static variable.
+	(rfs_result): New static function.
+	(rank_for_schedule): Track statistics for deciding heuristics.
+	(rank_for_schedule_stats_diff, print_rank_for_schedule_stats): New
+	static functions.
+	(ready_sort): Use them for debug printouts.
+	(schedule_block): Init statistics state.  Print statistics on
+	rank_for_schedule decisions.
+
+2014-08-07  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
 	* haifa-sched.c (rank_for_schedule): Fix INSN_TICK-based heuristics.
 
 2014-08-07  Ilya Tocar  <ilya.tocar@intel.com>
