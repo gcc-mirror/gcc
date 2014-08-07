@@ -1,4 +1,8 @@
-2014-08-07  Jason Merrill  <jason@redhat.com>
+2014-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61994
+	* init.c (build_vec_init): Leave atype an ARRAY_TYPE
+	if we're just returning an INIT_EXPR.
 
 	PR c++/60872
 	* call.c (standard_conversion): Don't try to apply restrict to void.

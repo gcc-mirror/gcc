@@ -3846,6 +3846,13 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
 
+  current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
+
+  if (errors)
+    return error_mark_node;
+  if (const_init)
+    return build2 (INIT_EXPR, atype, obase, const_init);
+
   /* Now make the result have the correct type.  */
   if (TREE_CODE (atype) == ARRAY_TYPE)
     {
@@ -3855,12 +3862,6 @@ build_vec_init (tree base, tree maxindex, tree init,
       TREE_NO_WARNING (stmt_expr) = 1;
     }
 
-  current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
-
-  if (const_init)
-    return build2 (INIT_EXPR, atype, obase, const_init);
-  if (errors)
-    return error_mark_node;
   return stmt_expr;
 }
 
