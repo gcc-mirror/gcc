@@ -1,3 +1,14 @@
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* hash-map.h (default_hashmap_traits): Adjust overloads of hash
+	function to not conflict.
+	* alias.c, cfgexpand.c, dse.c, except.h, gimple-expr.c,
+	gimple-ssa-strength-reduction.c, gimple-ssa.h, ifcvt.c,
+	lto-streamer-out.c, lto-streamer.h, tree-affine.c, tree-affine.h,
+	tree-predcom.c, tree-scalar-evolution.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-niter.c, tree-ssa.c, value-prof.c: Use hash_map instead
+	of pointer_map.
+
 2014-08-07  Marek Polacek  <polacek@redhat.com>
 
 	* fold-const.c (fold_binary_loc): Add folding of 

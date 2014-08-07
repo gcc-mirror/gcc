@@ -1403,7 +1403,7 @@ simplify_peeled_chrec (struct loop *loop, tree arg, tree init_cond)
 {
   aff_tree aff1, aff2;
   tree ev, left, right, type, step_val;
-  pointer_map_t *peeled_chrec_map = NULL;
+  hash_map<tree, name_expansion *> *peeled_chrec_map = NULL;
 
   ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, arg));
   if (ev == NULL_TREE || TREE_CODE (ev) != POLYNOMIAL_CHREC)

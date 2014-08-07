@@ -883,10 +883,9 @@ mark_addressable (tree x)
       && cfun->gimple_df != NULL
       && cfun->gimple_df->decls_to_pointers != NULL)
     {
-      void *namep
-	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, x); 
+      tree *namep = cfun->gimple_df->decls_to_pointers->get (x);
       if (namep)
-	TREE_ADDRESSABLE (*(tree *)namep) = 1;
+	TREE_ADDRESSABLE (*namep) = 1;
     }
 }
 

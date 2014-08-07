@@ -986,10 +986,9 @@ local_variable_can_escape (tree decl)
      of the escape analysis.  */
   if (cfun->gimple_df->decls_to_pointers != NULL)
     {
-      void *namep
-	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, decl);
+      tree *namep = cfun->gimple_df->decls_to_pointers->get (decl);
       if (namep)
-	return TREE_ADDRESSABLE (*(tree *)namep);
+	return TREE_ADDRESSABLE (*namep);
     }
 
   return false;

@@ -1007,8 +1007,9 @@ register_resolution (struct lto_file_decl_data *file_data, tree decl,
   if (resolution == LDPR_UNKNOWN)
     return;
   if (!file_data->resolution_map)
-    file_data->resolution_map = pointer_map_create ();
-  *pointer_map_insert (file_data->resolution_map, decl) = (void *)(size_t)resolution;
+    file_data->resolution_map
+      = new hash_map<tree, ld_plugin_symbol_resolution>;
+  file_data->resolution_map->put (decl, resolution);
 }
 
 /* Register DECL with the global symbol table and change its
@@ -2887,7 +2888,6 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   FILE *resolution;
   int count = 0;
   struct lto_file_decl_data **decl_data;
-  void **res;
   symtab_node *snode;
 
   init_cgraph ();
@@ -3014,18 +3014,17 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   /* Store resolutions into the symbol table.  */
 
+  ld_plugin_symbol_resolution_t *res;
   FOR_EACH_SYMBOL (snode)
     if (snode->real_symbol_p ()
 	&& snode->lto_file_data
 	&& snode->lto_file_data->resolution_map
-	&& (res = pointer_map_contains (snode->lto_file_data->resolution_map,
-					snode->decl)))
-      snode->resolution
-	= (enum ld_plugin_symbol_resolution)(size_t)*res;
+	&& (res = snode->lto_file_data->resolution_map->get (snode->decl)))
+      snode->resolution = *res;
   for (i = 0; all_file_decl_data[i]; i++)
     if (all_file_decl_data[i]->resolution_map)
       {
-        pointer_map_destroy (all_file_decl_data[i]->resolution_map);
+        delete all_file_decl_data[i]->resolution_map;
         all_file_decl_data[i]->resolution_map = NULL;
       }
   
