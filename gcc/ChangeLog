@@ -1,3 +1,7 @@
+2014-08-07  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* haifa-sched.c (rank_for_schedule): Fix INSN_TICK-based heuristics.
+
 2014-08-07  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Fix

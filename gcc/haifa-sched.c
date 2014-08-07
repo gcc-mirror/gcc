@@ -2584,14 +2584,11 @@ rank_for_schedule (const void *x, const void *y)
     }
 
   if (sched_pressure != SCHED_PRESSURE_NONE
-      && (INSN_TICK (tmp2) > clock_var || INSN_TICK (tmp) > clock_var))
+      && (INSN_TICK (tmp2) > clock_var || INSN_TICK (tmp) > clock_var)
+      && INSN_TICK (tmp2) != INSN_TICK (tmp))
     {
-      if (INSN_TICK (tmp) <= clock_var)
-	return -1;
-      else if (INSN_TICK (tmp2) <= clock_var)
-	return 1;
-      else
-	return INSN_TICK (tmp) - INSN_TICK (tmp2);
+      diff = INSN_TICK (tmp) - INSN_TICK (tmp2);
+      return diff;
     }
 
   /* If we are doing backtracking in this schedule, prefer insns that
@@ -2676,10 +2673,9 @@ rank_for_schedule (const void *x, const void *y)
     }
 
   /* Prefer instructions that occur earlier in the model schedule.  */
-  if (sched_pressure == SCHED_PRESSURE_MODEL)
+  if (sched_pressure == SCHED_PRESSURE_MODEL
+      && INSN_BB (tmp) == target_bb && INSN_BB (tmp2) == target_bb)
     {
-      int diff;
-
       diff = model_index (tmp) - model_index (tmp2);
       if (diff != 0)
 	return diff;
