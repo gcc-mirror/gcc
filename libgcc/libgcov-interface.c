@@ -42,8 +42,7 @@ void __gcov_dump (void) {}
 
 #else
 
-extern void gcov_clear (void) ATTRIBUTE_HIDDEN;
-extern void gcov_exit (void) ATTRIBUTE_HIDDEN;
+extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 extern __gthread_mutex_t __gcov_flush_mx ATTRIBUTE_HIDDEN;
 
 #ifdef L_gcov_flush
@@ -77,8 +76,8 @@ __gcov_flush (void)
   init_mx_once ();
   __gthread_mutex_lock (&__gcov_flush_mx);
 
-  gcov_exit ();
-  gcov_clear ();
+  __gcov_dump_one (&__gcov_root);
+  __gcov_reset ();
 
   __gthread_mutex_unlock (&__gcov_flush_mx);
 }
@@ -87,30 +86,60 @@ __gcov_flush (void)
 
 #ifdef L_gcov_reset
 
+/* Reset all counters to zero.  */
+
+static void
+gcov_clear (const struct gcov_info *list)
+{
+  const struct gcov_info *gi_ptr;
+
+  for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
+    {
+      unsigned f_ix;
+
+      for (f_ix = 0; f_ix < gi_ptr->n_functions; f_ix++)
+        {
+          unsigned t_ix;
+          const struct gcov_fn_info *gfi_ptr = gi_ptr->functions[f_ix];
+
+          if (!gfi_ptr || gfi_ptr->key != gi_ptr)
+            continue;
+          const struct gcov_ctr_info *ci_ptr = gfi_ptr->ctrs;
+          for (t_ix = 0; t_ix != GCOV_COUNTERS; t_ix++)
+            {
+              if (!gi_ptr->merge[t_ix])
+                continue;
+
+              memset (ci_ptr->values, 0, sizeof (gcov_type) * ci_ptr->num);
+              ci_ptr++;
+            }
+        }
+    }
+}
+
 /* Function that can be called from application to reset counters to zero,
    in order to collect profile in region of interest.  */
 
 void
 __gcov_reset (void)
 {
-  gcov_clear ();
+  gcov_clear (__gcov_root.list);
+  __gcov_root.dumped = 0;
 }
 
 #endif /* L_gcov_reset */
 
 #ifdef L_gcov_dump
-
 /* Function that can be called from application to write profile collected
    so far, in order to collect profile in region of interest.  */
 
 void
 __gcov_dump (void)
 {
-  gcov_exit ();
+  __gcov_dump_one (&__gcov_root);
 }
 
 #endif /* L_gcov_dump */
-
 
 #ifdef L_gcov_fork
 /* A wrapper for the fork function.  Flushes the accumulated profiling data, so
@@ -120,7 +149,6 @@ pid_t
 __gcov_fork (void)
 {
   pid_t pid;
-  extern __gthread_mutex_t __gcov_flush_mx;
   __gcov_flush ();
   pid = fork ();
   if (pid == 0)
