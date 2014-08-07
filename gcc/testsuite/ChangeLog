@@ -1,5 +1,8 @@
 2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.c-torture/compile/pr60655-1.c: Don't add -fdata-sections option
+	on 32-bit hppa-hpux.
+
 	* gcc.dg/pr57233.c: Add -fno-common option on hppa*-*-hpux*.
 	* c-c++-common/pr50459.c: Likewise.
 

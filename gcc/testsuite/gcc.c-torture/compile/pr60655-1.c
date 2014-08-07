@@ -1,4 +1,4 @@
-/* { dg-options "-fdata-sections" } */
+/* { dg-options "-fdata-sections" { target { ! { { hppa*-*-hpux* } && { ! lp64 } } } } } */
 
 typedef unsigned char unit;
 typedef unit *unitptr;
