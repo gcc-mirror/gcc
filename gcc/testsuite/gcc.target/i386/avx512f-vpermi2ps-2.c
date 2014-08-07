@@ -9,7 +9,6 @@
 #define SIZE (AVX512F_LEN / 32)
 #include "avx512f-mask-type.h"
 #include "math.h"
-#include "values.h"
 
 static void
 CALC (float *dst, float *src1, int *ind, float *src2)
