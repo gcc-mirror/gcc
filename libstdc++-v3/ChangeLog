@@ -26,6 +26,9 @@
 	and initialize _Task_setter with pointers.
 	(__location_invariant): Specialize for _Setter and _Task_setter.
 
+	* include/std/future (__location_invariant): Move specializations
+	after preprocessor condition.
+
 2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/15339
