@@ -1006,7 +1006,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
   unsigned HOST_WIDE_INT val;
   bool subtargets;
   rtx subtarget;
-  int one_match, zero_match;
+  int one_match, zero_match, first_not_ffff_match;
 
   gcc_assert (mode == SImode || mode == DImode);
 
@@ -1107,29 +1107,48 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
   one_match = 0;
   zero_match = 0;
   mask = 0xffff;
+  first_not_ffff_match = -1;
 
   for (i = 0; i < 64; i += 16, mask <<= 16)
     {
-      if ((val & mask) == 0)
-	zero_match++;
-      else if ((val & mask) == mask)
+      if ((val & mask) == mask)
 	one_match++;
+      else
+	{
+	  if (first_not_ffff_match < 0)
+	    first_not_ffff_match = i;
+	  if ((val & mask) == 0)
+	    zero_match++;
+	}
     }
 
   if (one_match == 2)
     {
-      mask = 0xffff;
-      for (i = 0; i < 64; i += 16, mask <<= 16)
+      /* Set one of the quarters and then insert back into result.  */
+      mask = 0xffffll << first_not_ffff_match;
+      emit_insn (gen_rtx_SET (VOIDmode, dest, GEN_INT (val | mask)));
+      emit_insn (gen_insv_immdi (dest, GEN_INT (first_not_ffff_match),
+				 GEN_INT ((val >> first_not_ffff_match)
+					  & 0xffff)));
+      return;
+    }
+
+  if (one_match > zero_match)
+    {
+      /* Set either first three quarters or all but the third.	 */
+      mask = 0xffffll << (16 - first_not_ffff_match);
+      emit_insn (gen_rtx_SET (VOIDmode, dest,
+			      GEN_INT (val | mask | 0xffffffff00000000ull)));
+
+      /* Now insert other two quarters.	 */
+      for (i = first_not_ffff_match + 16, mask <<= (first_not_ffff_match << 1);
+	   i < 64; i += 16, mask <<= 16)
 	{
 	  if ((val & mask) != mask)
-	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, dest, GEN_INT (val | mask)));
-	      emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-					 GEN_INT ((val >> i) & 0xffff)));
-	      return;
-	    }
+	    emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+				       GEN_INT ((val >> i) & 0xffff)));
 	}
-      gcc_unreachable ();
+      return;
     }
 
   if (zero_match == 2)
