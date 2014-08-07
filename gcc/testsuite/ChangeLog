@@ -1,3 +1,7 @@
+2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/pr61756.c: Remove arm-specific dg-options.
+
 2014-08-07  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-reassoc-3.c: New test.
