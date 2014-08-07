@@ -1,3 +1,8 @@
+2014-08-07  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Fix
+	constraint.
+
 2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* hash-map.h (default_hashmap_traits): Adjust overloads of hash
