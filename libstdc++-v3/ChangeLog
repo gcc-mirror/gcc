@@ -1,3 +1,16 @@
+2014-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (_List_base::_List_base(_List_base&&)):
+	Optimize.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/15339
