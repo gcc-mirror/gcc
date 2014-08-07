@@ -1,3 +1,26 @@
+2014-08-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c: Include gimple-pretty-print.h
+	(referenced_from_vtable_p): Exclude DECL_EXTERNAL from
+	further tests.
+	(decl_maybe_in_construction_p): Fix conditional on cdtor check
+	(get_polymorphic_call_info): Fix return value
+	(type_change_info): New sturcture based on ipa-prop
+	variant.
+	(noncall_stmt_may_be_vtbl_ptr_store): New predicate
+	based on ipa-prop variant.
+	(extr_type_from_vtbl_ptr_store): New function
+	based on ipa-prop variant.
+	(record_known_type): New function.
+	(check_stmt_for_type_change): New function.
+	(get_dynamic_type): New function.
+	* ipa-prop.c (ipa_analyze_call_uses): Use get_dynamic_type.
+	* tree-ssa-pre.c: ipa-utils.h
+	(eliminate_dom_walker::before_dom_children): Use ipa-devirt
+	machinery; sanity check with ipa-prop devirtualization.
+	* trans-mem.c (ipa_tm_insert_gettmclone_call): Clear
+	polymorphic flag.
+
 2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* Makefile.in: Remove references to pointer-set.c and pointer-set.h.
