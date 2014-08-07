@@ -1,3 +1,7 @@
+2014-08-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (pointer_diff): Remove P - (P + CST) optimization.
+
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* c-typeck.c: Use hash_map instead of pointer_map.
