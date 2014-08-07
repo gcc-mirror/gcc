@@ -1,3 +1,20 @@
+2014-08-07  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Include float.h instead of
+	values.h, change MAXDOUBLE for DBL_MAX.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Include float.h instead of
+	values.h, change MAXFLOAT for FLT_MAX.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2d-2.c: Do not include values.h.
+	* gcc.target/i386/avx512f-vpermi2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2q-2.c: Ditto.
+
 2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/pr61756.c: Remove arm-specific dg-options.
