@@ -2,7 +2,6 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -march=armv5" { target arm*-*-*  } } */
 
 #include <stdatomic.h>
 
