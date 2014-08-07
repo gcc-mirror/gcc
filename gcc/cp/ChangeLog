@@ -1,5 +1,8 @@
 2014-08-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60872
+	* call.c (standard_conversion): Don't try to apply restrict to void.
+
 	PR c++/58714
 	* tree.c (stabilize_expr): A stabilized prvalue is an xvalue.
 
