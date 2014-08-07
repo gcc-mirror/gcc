@@ -1,3 +1,7 @@
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* cp-tree.h, pt.c: Use hash_map instead of pointer_map.
+
 2014-08-06  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_vec_init): Fix constant initialization of

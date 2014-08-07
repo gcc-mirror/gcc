@@ -200,7 +200,7 @@ static struct
   vec<bitmap_head> all_refs_stored_in_loop;
 
   /* Cache for expanding memory addresses.  */
-  struct pointer_map_t *ttae_cache;
+  hash_map<tree, name_expansion *> *ttae_cache;
 } memory_accesses;
 
 /* Obstack for the bitmaps in the above data structures.  */
@@ -1610,7 +1610,7 @@ analyze_memory_references (void)
 
 static bool
 mem_refs_may_alias_p (mem_ref_p mem1, mem_ref_p mem2,
-		      struct pointer_map_t **ttae_cache)
+		      hash_map<tree, name_expansion *> **ttae_cache)
 {
   /* Perform BASE + OFFSET analysis -- if MEM1 and MEM2 are based on the same
      object and their offset differ in such a way that the locations cannot

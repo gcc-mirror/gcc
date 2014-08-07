@@ -1112,13 +1112,11 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 static tree
 retrieve_local_specialization (tree tmpl)
 {
-  void **slot;
-
   if (local_specializations == NULL)
     return NULL_TREE;
 
-  slot = pointer_map_contains (local_specializations, tmpl);
-  return slot ? (tree) *slot : NULL_TREE;
+  tree *slot = local_specializations->get (tmpl);
+  return slot ? *slot : NULL_TREE;
 }
 
 /* Returns nonzero iff DECL is a specialization of TMPL.  */
@@ -1730,10 +1728,7 @@ reregister_specialization (tree spec, tree tinfo, tree new_spec)
 static void
 register_local_specialization (tree spec, tree tmpl)
 {
-  void **slot;
-
-  slot = pointer_map_insert (local_specializations, tmpl);
-  *slot = spec;
+  local_specializations->put (tmpl, spec);
 }
 
 /* TYPE is a class type.  Returns true if TYPE is an explicitly
@@ -9772,7 +9767,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   bool unsubstituted_packs = false;
   int i, len = -1;
   tree result;
-  struct pointer_map_t *saved_local_specializations = NULL;
+  hash_map<tree, tree> *saved_local_specializations = NULL;
   bool need_local_specializations = false;
   int levels;
 
@@ -9926,7 +9921,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	 case of recursive unification) might have bindings that we don't
 	 want to use or alter.  */
       saved_local_specializations = local_specializations;
-      local_specializations = pointer_map_create ();
+      local_specializations = new hash_map<tree, tree>;
     }
 
   /* For each argument in each argument pack, substitute into the
@@ -9975,7 +9970,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
   if (need_local_specializations)
     {
-      pointer_map_destroy (local_specializations);
+      delete local_specializations;
       local_specializations = saved_local_specializations;
     }
   
@@ -20089,7 +20084,7 @@ instantiate_decl (tree d, int defer_ok,
     synthesize_method (d);
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
-      struct pointer_map_t *saved_local_specializations;
+      hash_map<tree, tree> *saved_local_specializations;
       tree subst_decl;
       tree tmpl_parm;
       tree spec_parm;
@@ -20100,7 +20095,7 @@ instantiate_decl (tree d, int defer_ok,
       saved_local_specializations = local_specializations;
 
       /* Set up the list of local specializations.  */
-      local_specializations = pointer_map_create ();
+      local_specializations = new hash_map<tree, tree>;
 
       /* Set up context.  */
       if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern)
@@ -20164,7 +20159,7 @@ instantiate_decl (tree d, int defer_ok,
 	}
 
       /* We don't need the local specializations any more.  */
-      pointer_map_destroy (local_specializations);
+      delete local_specializations;
       local_specializations = saved_local_specializations;
 
       /* Finish the function.  */

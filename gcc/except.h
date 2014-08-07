@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 
 struct function;
 struct eh_region_d;
-struct pointer_map_t;
 
 /* The type of an exception region.  */
 enum eh_region_type

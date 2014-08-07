@@ -268,12 +268,9 @@ lto_1_to_1_map (void)
 {
   symtab_node *node;
   struct lto_file_decl_data *file_data;
-  struct pointer_map_t *pmap;
+  hash_map<lto_file_decl_data *, ltrans_partition> pmap;
   ltrans_partition partition;
-  void **slot;
   int npartitions = 0;
-
-  pmap = pointer_map_create ();
 
   FOR_EACH_SYMBOL (node)
     {
@@ -285,13 +282,12 @@ lto_1_to_1_map (void)
 
       if (file_data)
 	{
-          slot = pointer_map_contains (pmap, file_data);
-          if (slot)
-	    partition = (ltrans_partition) *slot;
+          ltrans_partition *slot = &pmap.get_or_insert (file_data);
+          if (*slot)
+	    partition = *slot;
 	  else
 	    {
 	      partition = new_partition (file_data->file_name);
-	      slot = pointer_map_insert (pmap, file_data);
 	      *slot = partition;
 	      npartitions++;
 	    }
@@ -301,8 +297,7 @@ lto_1_to_1_map (void)
       else
 	{
 	  partition = new_partition ("");
-	  slot = pointer_map_insert (pmap, NULL);
-	  *slot = partition;
+	  pmap.put (NULL, partition);
 	  npartitions++;
 	}
 
@@ -313,8 +308,6 @@ lto_1_to_1_map (void)
      an output file for any variables that need to be exported in a DSO.  */
   if (!npartitions)
     new_partition ("empty");
-
-  pointer_map_destroy (pmap);
 
 }
 

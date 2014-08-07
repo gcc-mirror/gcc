@@ -475,7 +475,7 @@ private:
   hash_scc (struct output_block *ob, unsigned first, unsigned size);
 
   unsigned int next_dfs_num;
-  struct pointer_map_t *sccstate;
+  hash_map<tree, sccs *> sccstate;
   struct obstack sccstate_obstack;
 };
 
@@ -483,7 +483,6 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  bool single_p)
 {
   sccstack.create (0);
-  sccstate = pointer_map_create ();
   gcc_obstack_init (&sccstate_obstack);
   next_dfs_num = 1;
   DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p, single_p);
@@ -492,7 +491,6 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 DFS::~DFS ()
 {
   sccstack.release ();
-  pointer_map_destroy (sccstate);
   obstack_free (&sccstate_obstack, NULL);
 }
 
@@ -1314,7 +1312,6 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
 		     tree expr, bool ref_p, bool this_ref_p, bool single_p)
 {
   unsigned ix;
-  sccs **slot;
 
   /* Handle special cases.  */
   if (expr == NULL_TREE)
@@ -1328,7 +1325,7 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
   if (streamer_tree_cache_lookup (ob->writer_cache, expr, &ix))
     return;
 
-  slot = (sccs **)pointer_map_insert (sccstate, expr);
+  sccs **slot = &sccstate.get_or_insert (expr);
   sccs *cstate = *slot;
   if (!cstate)
     {
