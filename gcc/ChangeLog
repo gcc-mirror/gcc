@@ -1,3 +1,8 @@
+2014-08-04  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (glibc, glibc_2_12_or_later)
+	(glibc_2_11_or_earlier): Document effective-target keywords.
+
 2014-08-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/arm/arm.c (bdesc_2arg): Fix typo.
