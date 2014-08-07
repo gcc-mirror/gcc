@@ -1,3 +1,8 @@
+2014-08-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58714
+	* tree.c (stabilize_expr): A stabilized prvalue is an xvalue.
+
 2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	* cp-array-notation.c (expand_an_in_modify_expr): Fix the misprint
