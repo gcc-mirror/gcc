@@ -1,4 +1,10 @@
 2014-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61994
+	* init.c (build_vec_init): Leave atype an ARRAY_TYPE
+	if we're just returning an INIT_EXPR.
+
+2014-08-06  Jason Merrill  <jason@redhat.com>
 	    Braden Obrzut  <admin@maniacsvault.net>
 
 	* pt.c (check_explicit_specialization): Don't test
