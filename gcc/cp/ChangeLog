@@ -1,5 +1,11 @@
 2014-08-06  Jason Merrill  <jason@redhat.com>
 
+	* init.c (build_vec_init): Fix constant initialization of
+	trailing elements.
+	(build_value_init_noctor): Call maybe_constant_init.
+	* semantics.c (maybe_constant_init): See through EXPR_STMT and
+	conversion to void.
+
 	PR c++/60417
 	* init.c (build_vec_init): Reorganize earlier change a bit.
 
