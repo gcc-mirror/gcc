@@ -2817,9 +2817,11 @@ check_explicit_specialization (tree declarator,
 	       It's just the name of an instantiation.  But, it's not
 	       a request for an instantiation, either.  */
 	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
-	  else
+	  else if (TREE_CODE (decl) == FUNCTION_DECL)
 	    /* A specialization is not necessarily COMDAT.  */
 	    DECL_COMDAT (decl) = DECL_DECLARED_INLINE_P (decl);
+	  else if (TREE_CODE (decl) == VAR_DECL)
+	    DECL_COMDAT (decl) = false;
 
 	  /* Register this specialization so that we can find it
 	     again.  */
