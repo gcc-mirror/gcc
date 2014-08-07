@@ -1,3 +1,8 @@
+2014-08-07  Marek Polacek  <polacek@redhat.com>
+
+	* fold-const.c (fold_binary_loc): Add folding of 
+	(PTR0 - (PTR1 p+ A) -> (PTR0 - PTR1) - A.
+
 2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Use decl size

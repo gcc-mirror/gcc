@@ -10831,6 +10831,19 @@ fold_binary_loc (location_t loc,
 	      if (tmp)
 	        return fold_build2_loc (loc, PLUS_EXPR, type, tmp, arg01);
 	    }
+	  /* PTR0 - (PTR1 p+ A) -> (PTR0 - PTR1) - A, assuming PTR0 - PTR1
+	     simplifies. */
+	  else if (TREE_CODE (arg1) == POINTER_PLUS_EXPR)
+	    {
+	      tree arg10 = fold_convert_loc (loc, type,
+					     TREE_OPERAND (arg1, 0));
+	      tree arg11 = fold_convert_loc (loc, type,
+					     TREE_OPERAND (arg1, 1));
+	      tree tmp = fold_binary_loc (loc, MINUS_EXPR, type, arg0,
+					  fold_convert_loc (loc, type, arg10));
+	      if (tmp)
+		return fold_build2_loc (loc, MINUS_EXPR, type, tmp, arg11);
+	    }
 	}
       /* A - (-B) -> A + B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)

@@ -1,3 +1,7 @@
+2014-08-07  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-reassoc-3.c: New test.
+
 2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/struct-size.c: New.

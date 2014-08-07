@@ -3460,7 +3460,6 @@ pointer_diff (location_t loc, tree op0, tree op1)
   addr_space_t as0 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op0)));
   addr_space_t as1 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op1)));
   tree target_type = TREE_TYPE (TREE_TYPE (op0));
-  tree con0, con1, lit0, lit1;
   tree orig_op1 = op1;
 
   /* If the operands point into different address spaces, we need to
@@ -3490,57 +3489,12 @@ pointer_diff (location_t loc, tree op0, tree op1)
   else
     inttype = restype;
 
-
   if (TREE_CODE (target_type) == VOID_TYPE)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer of type %<void *%> used in subtraction");
   if (TREE_CODE (target_type) == FUNCTION_TYPE)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer to a function used in subtraction");
-
-  /* If the conversion to ptrdiff_type does anything like widening or
-     converting a partial to an integral mode, we get a convert_expression
-     that is in the way to do any simplifications.
-     (fold-const.c doesn't know that the extra bits won't be needed.
-     split_tree uses STRIP_SIGN_NOPS, which leaves conversions to a
-     different mode in place.)
-     So first try to find a common term here 'by hand'; we want to cover
-     at least the cases that occur in legal static initializers.  */
-  if (CONVERT_EXPR_P (op0)
-      && (TYPE_PRECISION (TREE_TYPE (op0))
-	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))))
-    con0 = TREE_OPERAND (op0, 0);
-  else
-    con0 = op0;
-  if (CONVERT_EXPR_P (op1)
-      && (TYPE_PRECISION (TREE_TYPE (op1))
-	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op1, 0)))))
-    con1 = TREE_OPERAND (op1, 0);
-  else
-    con1 = op1;
-
-  if (TREE_CODE (con0) == POINTER_PLUS_EXPR)
-    {
-      lit0 = TREE_OPERAND (con0, 1);
-      con0 = TREE_OPERAND (con0, 0);
-    }
-  else
-    lit0 = integer_zero_node;
-
-  if (TREE_CODE (con1) == POINTER_PLUS_EXPR)
-    {
-      lit1 = TREE_OPERAND (con1, 1);
-      con1 = TREE_OPERAND (con1, 0);
-    }
-  else
-    lit1 = integer_zero_node;
-
-  if (operand_equal_p (con0, con1, 0))
-    {
-      op0 = lit0;
-      op1 = lit1;
-    }
-
 
   /* First do the subtraction as integers;
      then drop through to build the divide operator.
