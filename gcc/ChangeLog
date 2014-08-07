@@ -1,5 +1,10 @@
 2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (*cmov<mode>): Set type attribute to fcsel.
+	* config/arm/types.md (f_sels, f_seld): Delete.
+
+2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.md (absdi2): Set simd attribute.
 	(aarch64_reload_mov<mode>): Predicate on TARGET_FLOAT.
 	(aarch64_movdi_<mode>high): Likewise.
