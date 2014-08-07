@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "params.h"
 #include "ggc.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

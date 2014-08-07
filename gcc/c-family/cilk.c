@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "calls.h"
 #include "langhooks.h"
-#include "pointer-set.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
 #include "tree-iterator.h"

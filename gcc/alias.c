@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "df.h"
 #include "tree-ssa-alias.h"
-#include "pointer-set.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
 #include "is-a.h"

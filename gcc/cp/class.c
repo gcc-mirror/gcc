@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "attribs.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "cp-tree.h"
 #include "flags.h"

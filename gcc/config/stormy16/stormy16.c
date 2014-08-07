@@ -47,7 +47,6 @@
 #include "target-def.h"
 #include "tm_p.h"
 #include "langhooks.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "ggc.h"

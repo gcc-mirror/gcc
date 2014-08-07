@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "sched-int.h"
-#include "pointer-set.h"
 #include "vec.h"
 #include "basic-block.h"
 #include "tree-ssa-alias.h"

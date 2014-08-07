@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "pointer-set.h"
 #include "flags.h"
 #include "cp-tree.h"
 #include "decl.h"

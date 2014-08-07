@@ -892,7 +892,7 @@ TREE_H = tree.h $(TREE_CORE_H)  tree-check.h
 REGSET_H = regset.h $(BITMAP_H) hard-reg-set.h
 BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 	cfg-flags.def cfghooks.h
-GIMPLE_H = gimple.h gimple.def gsstruct.def pointer-set.h $(VEC_H) \
+GIMPLE_H = gimple.h gimple.def gsstruct.def $(VEC_H) \
 	$(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H) $(HASH_TABLE_H) is-a.h
 GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h gcov-counter.def
@@ -950,7 +950,7 @@ TREE_INLINE_H = tree-inline.h
 REAL_H = real.h $(MACHMODE_H)
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) $(HASH_TABLE_H) $(TREE_H) $(GIMPLE_H) \
-		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h pointer-set.h
+		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h
 IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
 GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h plugin.def \
@@ -1329,7 +1329,6 @@ OBJS = \
 	opts-global.o \
 	passes.o \
 	plugin.o \
-	pointer-set.o \
 	postreload-gcse.o \
 	postreload.o \
 	predict.o \
@@ -3140,7 +3139,7 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) pointer-set.h $(HASH_TABLE_H) \
+  toplev.h $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(HASH_TABLE_H) \
   tree-ssa-alias.h $(INTERNAL_FN_H) gimple-fold.h tree-eh.h gimple-expr.h \
   gimple.h is-a.h $(TREE_PASS_H) $(GCC_PLUGIN_H) \
   $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) $(OPTS_H) $(PARAMS_H) \

@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
-#include "pointer-set.h"
 #include "hash-map.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"

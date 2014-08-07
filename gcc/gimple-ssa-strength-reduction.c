@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "pointer-set.h"
 #include "hash-map.h"
 #include "hash-table.h"
 #include "basic-block.h"

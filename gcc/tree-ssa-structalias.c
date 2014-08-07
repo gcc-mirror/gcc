@@ -30,7 +30,6 @@
 #include "tree.h"
 #include "stor-layout.h"
 #include "stmt.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

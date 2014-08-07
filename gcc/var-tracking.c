@@ -93,7 +93,6 @@
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
-#include "pointer-set.h"
 #include "hash-map.h"
 #include "hash-table.h"
 #include "basic-block.h"
