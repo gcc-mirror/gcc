@@ -1,3 +1,15 @@
+2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (absdi2): Set simd attribute.
+	(aarch64_reload_mov<mode>): Predicate on TARGET_FLOAT.
+	(aarch64_movdi_<mode>high): Likewise.
+	(aarch64_mov<mode>high_di): Likewise.
+	(aarch64_movdi_<mode>low): Likewise.
+	(aarch64_mov<mode>low_di): Likewise.
+	(aarch64_movtilow_tilow): Likewise.
+	Add comment explaining usage of fp,simd attributes and of
+	TARGET_FLOAT and TARGET_SIMD.
+
 2014-08-07  Ian Bolton  <ian.bolton@arm.com>
             Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
