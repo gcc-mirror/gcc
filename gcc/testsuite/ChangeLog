@@ -1,3 +1,8 @@
+2014-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51312
+	* g++.dg/cpp0x/enum29.C: New.
+
 2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/atomic/c11-atomic-exec-4.c: Undefine _POSIX_C_SOURCE before

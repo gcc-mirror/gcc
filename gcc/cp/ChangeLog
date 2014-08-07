@@ -1,3 +1,13 @@
+2014-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51312
+	* decl.c (build_enumerator): Handle class types with conversion
+	operators via perform_implicit_conversion_flags and
+	build_expr_type_conversion.
+
+	* cvt.c (build_expr_type_conversion): Replace pair of errors
+	with error + inform.
+
 2014-08-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62043
