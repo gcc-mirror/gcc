@@ -1,3 +1,8 @@
+2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/60707
+	* gfortran.dg/pr45636.f90: xfail on 32-bit hppa*-*-*.
+
 2014-08-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-35.C: New testcase.
