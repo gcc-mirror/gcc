@@ -2,7 +2,7 @@
    operating properly when operations on the same variable are carried
    out in two threads.  */
 /* { dg-do run } */
-/* { dg-options "-std=c11 -pedantic-errors -pthread -D_POSIX_C_SOURCE=200809L" } */
+/* { dg-options "-std=c11 -pedantic-errors -pthread -U_POSIX_C_SOURCE -D_POSIX_C_SOURCE=200809L" } */
 /* { dg-additional-options "-D_XOPEN_SOURCE=600" { target *-*-solaris2.1[0-9]* } }
 /* { dg-require-effective-target pthread } */
 
