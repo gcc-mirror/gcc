@@ -5038,44 +5038,6 @@ proc check_effective_target_newlib {} {
     }]
 }
 
-# Return true if this is a glibc target.
-
-proc check_effective_target_glibc {} {
-    return [check_no_compiler_messages glibc object {
-	#include <features.h>
-	#if !(defined (__GLIBC__) && defined (__GLIBC_MINOR__))
-	#error FOO
-	#endif
-    }]
-}
-
-# Return true if this is a glibc 2.12 or later target.
-
-proc check_effective_target_glibc_2_12_or_later {} {
-    return [check_no_compiler_messages glibc_2_12_or_later object {
-	#include <features.h>
-	#if !(defined (__GLIBC__) && defined (__GLIBC_MINOR__) \
-              && __GLIBC_PREREQ(2,12))
-	#error FOO
-	#endif
-    }]
-}
-
-# Return true if this is a glibc 2.11 or earlier target.
-
-proc check_effective_target_glibc_2_11_or_earlier {} {
-
-    if { ![check_effective_target_glibc] } {
-	return 1
-    }
-    
-    if { [check_effective_target_glibc_2_12_or_later] } {
-	return 0
-    }
-
-    return 1
-}
-
 # Return true if this is NOT a Bionic target.
 
 proc check_effective_target_non_bionic {} {
