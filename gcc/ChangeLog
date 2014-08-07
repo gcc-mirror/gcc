@@ -1,3 +1,9 @@
+2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Use decl size
+	instead of type size.
+	(ASM_FINISH_DECLARE_OBJECT): Likewise.
+
 2014-08-07  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* config/arm/thumb1.md (*thumb1_movhi_insn): Handle stack pointer.
