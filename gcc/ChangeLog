@@ -1,3 +1,9 @@
+2014-08-07  Ian Bolton  <ian.bolton@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate):
+	Use MOVN when one of the half-words is 0xffff.
+
 2014-08-07  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* config/arm/thumb1.md (*thumb1_movqi_insn): Copy of thumb1_movhi_insn.
