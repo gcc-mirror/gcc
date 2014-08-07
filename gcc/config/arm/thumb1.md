@@ -761,8 +761,8 @@
 )
 
 (define_insn "*thumb1_movqi_insn"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=l,l,m,*r,*h,l")
-	(match_operand:QI 1 "general_operand"      "lk, m,l,*h,*r,I"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=l,l,m,l*r,*h,l")
+	(match_operand:QI 1 "general_operand"       "l,m,l,k*h,*r,I"))]
   "TARGET_THUMB1
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"

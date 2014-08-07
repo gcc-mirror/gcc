@@ -1,3 +1,7 @@
+2014-08-07  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* config/arm/thumb1.md (*thumb1_movqi_insn): Copy of thumb1_movhi_insn.
+
 2014-08-07  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* haifa-sched.c (SCHED_SORT): Delete.  Macro used exactly once.
