@@ -318,7 +318,7 @@
 ;; of the messiness associated with the ARM patterns.
 (define_insn "*thumb2_movhi_insn"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,l,r,m,r")
-	(match_operand:HI 1 "general_operand"      "r,I,Py,n,r,m"))]
+	(match_operand:HI 1 "general_operand"      "rk,I,Py,n,r,m"))]
   "TARGET_THUMB2
   && (register_operand (operands[0], HImode)
      || register_operand (operands[1], HImode))"
