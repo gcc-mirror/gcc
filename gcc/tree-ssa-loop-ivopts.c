@@ -3309,6 +3309,18 @@ get_address_cost (bool symbol_present, bool var_present,
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
+	  /* For some TARGET, like ARM THUMB1, the offset should be nature
+	     aligned.  Try an aligned offset if address_mode is not QImode.  */
+	  off = (address_mode == QImode)
+		? 0
+		: ((unsigned HOST_WIDE_INT) 1 << i)
+		    - GET_MODE_SIZE (address_mode);
+	  if (off > 0)
+	    {
+	      XEXP (addr, 1) = gen_int_mode (off, address_mode);
+	      if (memory_address_addr_space_p (mem_mode, addr, as))
+		break;
+	    }
 	}
       if (i == -1)
         off = 0;

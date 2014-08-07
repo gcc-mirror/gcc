@@ -1,3 +1,7 @@
+2014-08-07  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Try aligned offset.
+
 2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR debug/61923
