@@ -31942,10 +31942,7 @@ c_parse_file (void)
   static bool already_called = false;
 
   if (already_called)
-    {
-      sorry ("inter-module optimizations not implemented for C++");
-      return;
-    }
+    fatal_error ("inter-module optimizations not implemented for C++");
   already_called = true;
 
   the_parser = cp_parser_new ();
