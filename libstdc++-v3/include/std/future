@@ -551,6 +551,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void _M_destroy() { delete this; }
     };
 
+#ifndef _GLIBCXX_ASYNC_ABI_COMPAT
+
   // Allow _Setter objects to be stored locally in std::function
   template<typename _Res, typename _Arg>
     struct __is_location_invariant
@@ -562,8 +564,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_location_invariant
     <__future_base::_Task_setter<_Res_ptr, _Fn, _Res>>
     : true_type { };
-
-#ifndef _GLIBCXX_ASYNC_ABI_COMPAT
 
   /// Common implementation for future and shared_future.
   template<typename _Res>
