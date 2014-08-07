@@ -1,3 +1,8 @@
+2014-08-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/arm/arm.c (bdesc_2arg): Fix typo.
+	(arm_atomic_assign_expand_fenv): Remove The default implementation.
+
 2014-08-07  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* tree-ssa-loop-ivopts.c (get_address_cost): Try aligned offset.
