@@ -5994,9 +5994,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>,v")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:V8FI 1 "nonimmediate_operand" "vm")
+	  (match_operand:V8FI 1 "nonimmediate_operand" "v,m")
 	  (parallel [(const_int 0) (const_int 1)
             (const_int 2) (const_int 3)])))]
   "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
