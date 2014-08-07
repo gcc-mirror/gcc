@@ -9976,6 +9976,11 @@ maybe_constant_value (tree t)
 tree
 maybe_constant_init (tree t)
 {
+  if (TREE_CODE (t) == EXPR_STMT)
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) == CONVERT_EXPR
+      && VOID_TYPE_P (TREE_TYPE (t)))
+    t = TREE_OPERAND (t, 0);
   t = maybe_constant_value (t);
   if (TREE_CODE (t) == TARGET_EXPR)
     {
