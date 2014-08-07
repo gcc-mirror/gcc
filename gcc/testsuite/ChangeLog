@@ -1,3 +1,8 @@
+2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr57233.c: Add -fno-common option on hppa*-*-hpux*.
+	* c-c++-common/pr50459.c: Likewise.
+
 2014-08-07  Petr Murzin  <petr.murzin@intel.com>
 
 	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Include float.h instead of
