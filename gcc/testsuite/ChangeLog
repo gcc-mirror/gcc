@@ -1,5 +1,9 @@
 2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/atomic/c11-atomic-exec-4.c: Undefine _POSIX_C_SOURCE before
+	defining in dg-options.
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Likewise.
+
 	* gcc.dg/atomic/stdatomic-flag.c: Add xfail comment.
 
 	* gcc.dg/memcpy-5.c: Add -fno-common option on hppa*-*-hpux*.
