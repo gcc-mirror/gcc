@@ -11,6 +11,21 @@
 	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
 	Likewise.
 
+	* include/std/future (_State_baseV2::_M_set_result): Pass pointers to
+	_M_do_set.
+	(_State_baseV2::_M_do_set): Change parameters to pointers.
+	(_State_baseV2::_Setter): Change _M_arg from reference to pointer.
+	(_State_baseV2::__setter): Initialize _Setter with pointers.
+	(_State_baseV2::__setter(promise<void>*)): Remove overload.
+	(promise::set_value, promise::set_exception): Pass setter directly
+	to _M_set_result.
+	(_State_baseV2::_Task_setter): Add template parameter for callable
+	type and replace std::function member with pointer to that type.
+	Change _M_result member from reference to pointer.
+	(_State_baseV2::_S_task_setter): Change parameter to lvalue reference
+	and initialize _Task_setter with pointers.
+	(__location_invariant): Specialize for _Setter and _Task_setter.
+
 2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/15339
