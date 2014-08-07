@@ -1,5 +1,8 @@
 2014-08-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60417
+	* init.c (build_vec_init): Reorganize earlier change a bit.
+
 	PR c++/61994
 	* init.c (build_vec_init): Leave atype an ARRAY_TYPE
 	if we're just returning an INIT_EXPR.
