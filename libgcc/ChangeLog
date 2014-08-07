@@ -1,3 +1,28 @@
+2014-08-07  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (LIBGCOV_INTERFACE): Move _gcov_dump ...
+	(LIBGCOV_DRIVER): ... to here.
+	* libgcov.h (gcov_do_dump): New #define.
+	(struct gcov_root): New.
+	(__gcov_root): New declaration.
+	(__gcov_dump_one): Declare.
+	* libgcov-driver.c (gcov_list, gcov_dump_complete,
+	run_accounted): Delete.
+	(gcov_compute_histogram): Add LIST argument, adjust.
+	(compute_summary): Adjust gcov_compute_histogram call.
+	(gcov_do_dump): Not hidden, static in libgcov.
+	(gcov_clear): Move  to interface.c.
+	(__gcov_dump_one): New, broken out of ...
+	(gcov_exit): ... here.  Make static.
+	(__gcov_root): New.
+	(__gcov_init): Adjust.
+	* libgcov-interface.c (gcov_clear, gcov_exit): Remove
+	declarations.
+	(__gcov_flush): Use __gcov_dump_one and __gcov_reset.
+	(gcov_clear): Moved from driver.c.   Add LIST argument.
+	(__gcov_reset): Adjust for changed interfaces.
+	(__gcov_fork): Remove local declaration of __gcov_flush_mx.
+
 2014-08-04  Rohit  <rohitarulraj@freescale.com>
 
 	PR target/60102
