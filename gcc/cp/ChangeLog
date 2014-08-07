@@ -1,5 +1,8 @@
 2014-08-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/62043
+	* parser.c (c_parse_file): Change sorry to fatal_error.
+
 	PR c++/61959
 	* semantics.c (cxx_eval_bare_aggregate): Handle POINTER_PLUS_EXPR.
 
