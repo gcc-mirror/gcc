@@ -1,3 +1,9 @@
+2014-08-07  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* config/arm/thumb1.md (*thumb1_movhi_insn): Handle stack pointer.
+	(*thumb1_movqi_insn): Likewise.
+	* config/arm/thumb2.md (*thumb2_movhi_insn): Likewise.
+
 2014-08-07  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (glibc, glibc_2_12_or_later)
