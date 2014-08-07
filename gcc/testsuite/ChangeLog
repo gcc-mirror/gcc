@@ -1,3 +1,7 @@
+2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/struct-size.c: New.
+
 2014-08-07  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/cproj-fails-with-broken-glibc.c: Remove test.
