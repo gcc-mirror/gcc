@@ -1,3 +1,7 @@
+2014-08-07  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/get_address_cost_aligned_max_offset.c: New test.
+
 2014-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/43906
