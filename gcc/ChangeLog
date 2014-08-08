@@ -1,3 +1,7 @@
+2014-08-08  Guozhi Wei  <carrot@google.com>
+
+	* config/rs6000/rs6000.md (*movdi_internal64): Add a new constraint.
+
 2014-08-08  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (get_skeleton_type_unit): Remove.
