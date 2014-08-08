@@ -1,3 +1,8 @@
+2014-08-07  Yi Yang  <ahyangyi@google.com>
+
+	* predict.c (expr_expected_value_1): Remove the redundant assignment.
+
+
 2014-08-08  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (struct lto_input_block): Make it a class
