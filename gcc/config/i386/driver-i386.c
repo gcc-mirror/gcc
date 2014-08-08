@@ -411,6 +411,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_avx512er = 0, has_avx512pf = 0, has_avx512cd = 0;
   unsigned int has_avx512f = 0, has_sha = 0, has_prefetchwt1 = 0;
   unsigned int has_clflushopt = 0, has_xsavec = 0, has_xsaves = 0;
+  unsigned int has_avx512dq = 0;
 
   bool arch;
 
@@ -489,6 +490,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512cd = ebx & bit_AVX512CD;
       has_sha = ebx & bit_SHA;
       has_clflushopt = ebx & bit_CLFLUSHOPT;
+      has_avx512dq = ebx & bit_AVX512DQ;
 
       has_prefetchwt1 = ecx & bit_PREFETCHWT1;
     }
@@ -901,6 +903,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *clflushopt = has_clflushopt ? " -mclflushopt" : " -mno-clflushopt";
       const char *xsavec = has_xsavec ? " -mxsavec" : " -mno-xsavec";
       const char *xsaves = has_xsaves ? " -mxsaves" : " -mno-xsaves";
+      const char *avx512dq = has_avx512dq ? " -mavx512dq" : " -mno-avx512dq";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
@@ -909,7 +912,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			hle, rdrnd, f16c, fsgsbase, rdseed, prfchw, adx,
 			fxsr, xsave, xsaveopt, avx512f, avx512er,
 			avx512cd, avx512pf, prefetchwt1, clflushopt,
-			xsavec, xsaves, NULL);
+			xsavec, xsaves, avx512dq, NULL);
     }
 
 done:
