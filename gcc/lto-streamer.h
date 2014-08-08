@@ -307,26 +307,20 @@ typedef void (lto_free_section_data_f) (struct lto_file_decl_data *,
 					size_t);
 
 /* Structure used as buffer for reading an LTO file.  */
-struct lto_input_block
+class lto_input_block
 {
+public:
+  /* Special constructor for the string table, it abuses this to
+     do random access but use the uhwi decoder.  */
+  lto_input_block (const char *data_, unsigned int p_, unsigned int len_)
+      : data (data_), p (p_), len (len_) {}
+  lto_input_block (const char *data_, unsigned int len_)
+      : data (data_), p (0), len (len_) {}
+
   const char *data;
   unsigned int p;
   unsigned int len;
 };
-
-#define LTO_INIT_INPUT_BLOCK(BASE,D,P,L)   \
-  do {                                     \
-    BASE.data = D;                         \
-    BASE.p = P;                            \
-    BASE.len = L;                          \
-  } while (0)
-
-#define LTO_INIT_INPUT_BLOCK_PTR(BASE,D,P,L) \
-  do {                                       \
-    BASE->data = D;                          \
-    BASE->p = P;                             \
-    BASE->len = L;                           \
-  } while (0)
 
 
 /* The is the first part of the record for a function or constructor
@@ -337,27 +331,16 @@ struct lto_header
   int16_t minor_version;
 };
 
-/* The header for a function body.  */
-struct lto_function_header
+/* The is the first part of the record in an LTO file for many of the
+   IPA passes.  */
+struct lto_simple_header : lto_header
 {
-  /* The header for all types of sections. */
-  struct lto_header lto_header;
+  /* Size of main gimple body of function.  */
+  int32_t main_size;
+};
 
-  /* Number of labels with names.  */
-  int32_t num_named_labels;
-
-  /* Number of labels without names.  */
-  int32_t num_unnamed_labels;
-
-  /* Size compressed or 0 if not compressed.  */
-  int32_t compressed_size;
-
-  /* Size of names for named labels.  */
-  int32_t named_label_size;
-
-  /* Size of the cfg.  */
-  int32_t cfg_size;
-
+struct lto_simple_header_with_strings : lto_simple_header
+{
   /* Size of main gimple body of function.  */
   int32_t main_size;
 
@@ -365,41 +348,22 @@ struct lto_function_header
   int32_t string_size;
 };
 
+/* The header for a function body.  */
+struct lto_function_header : lto_simple_header_with_strings
+{
+  /* Size of the cfg.  */
+  int32_t cfg_size;
+};
+
 
 /* Structure describing a symbol section.  */
-struct lto_decl_header
+struct lto_decl_header : lto_simple_header_with_strings
 {
-  /* The header for all types of sections. */
-  struct lto_header lto_header;
-
   /* Size of region for decl state. */
   int32_t decl_state_size;
 
   /* Number of nodes in globals stream.  */
   int32_t num_nodes;
-
-  /* Size of region for expressions, decls, types, etc. */
-  int32_t main_size;
-
-  /* Size of the string table.  */
-  int32_t string_size;
-};
-
-
-/* Structure describing top level asm()s.  */
-struct lto_asm_header
-{
-  /* The header for all types of sections. */
-  struct lto_header lto_header;
-
-  /* Size compressed or 0 if not compressed.  */
-  int32_t compressed_size;
-
-  /* Size of region for expressions, decls, types, etc. */
-  int32_t main_size;
-
-  /* Size of the string table.  */
-  int32_t string_size;
 };
 
 
@@ -593,20 +557,6 @@ struct lto_output_stream
 
   /* The total number of characters written.  */
   unsigned int total_size;
-};
-
-/* The is the first part of the record in an LTO file for many of the
-   IPA passes.  */
-struct lto_simple_header
-{
-  /* The header for all types of sections. */
-  struct lto_header lto_header;
-
-  /* Size of main gimple body of function.  */
-  int32_t main_size;
-
-  /* Size of main stream when compressed.  */
-  int32_t compressed_size;
 };
 
 /* A simple output block.  This can be used for simple IPA passes that
