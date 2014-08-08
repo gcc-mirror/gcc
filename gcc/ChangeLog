@@ -1,3 +1,27 @@
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (struct lto_input_block): Make it a class
+	with a constructor.
+	(LTO_INIT_INPUT_BLOCK, LTO_INIT_INPUT_BLOCK_PTR): Remove.
+	(struct lto_function_header, struct lto_simple_header,
+	struct lto_simple_header_with_strings,
+	struct lto_decl_header, struct lto_function_header): Make
+	a simple inheritance hieararchy.  Remove unused fields.
+	(struct lto_asm_header): Remove.
+	* lto-streamer-out.c (produce_asm): Adjust.
+	(lto_output_toplevel_asms): Likewise.
+	(produce_asm_for_decls): Likewise.
+	* lto-section-out.c (lto_destroy_simple_output_block): Likewise.
+	* data-streamer-in.c (string_for_index): Likewise.
+	* ipa-inline-analysis.c (inline_read_section): Likewise.
+	* ipa-prop.c (ipa_prop_read_section): Likewise.
+	(read_replacements_section): Likewise.
+	* lto-cgraph.c (input_cgraph_opt_section): Likewise.
+	* lto-section-in.c (lto_create_simple_input_block): Likewise.
+	(lto_destroy_simple_input_block): Likewise.
+	* lto-streamer-in.c (lto_read_body_or_constructor): Likewise.
+	(lto_input_toplevel_asms): Likewise.
+
 2014-08-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

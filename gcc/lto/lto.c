@@ -1844,14 +1844,13 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   const int decl_offset = sizeof (struct lto_decl_header);
   const int main_offset = decl_offset + header->decl_state_size;
   const int string_offset = main_offset + header->main_size;
-  struct lto_input_block ib_main;
   struct data_in *data_in;
   unsigned int i;
   const uint32_t *data_ptr, *data_end;
   uint32_t num_decl_states;
 
-  LTO_INIT_INPUT_BLOCK (ib_main, (const char *) data + main_offset, 0,
-			header->main_size);
+  lto_input_block ib_main ((const char *) data + main_offset,
+			   header->main_size);
 
   data_in = lto_data_in_create (decl_data, (const char *) data + string_offset,
 				header->string_size, resolutions);
