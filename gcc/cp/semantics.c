@@ -4014,11 +4014,11 @@ expand_or_defer_fn_1 (tree fn)
 	 this function as needed so that finish_file will make sure to
 	 output it later.  Similarly, all dllexport'd functions must
 	 be emitted; there may be callers in other DLLs.  */
-      if ((flag_keep_inline_functions
-	   && DECL_DECLARED_INLINE_P (fn)
-	   && !DECL_REALLY_EXTERN (fn))
-	  || (flag_keep_inline_dllexport
-	      && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn))))
+      if (DECL_DECLARED_INLINE_P (fn)
+	  && !DECL_REALLY_EXTERN (fn)
+	  && (flag_keep_inline_functions
+	      || (flag_keep_inline_dllexport
+		  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn)))))
 	{
 	  mark_needed (fn);
 	  DECL_EXTERNAL (fn) = 0;
