@@ -1,5 +1,17 @@
 2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	* calls.c (precompute_arguments): Check
+	 promoted_for_signed_and_unsigned_p and set the promoted mode.
+	(promoted_for_signed_and_unsigned_p): New function.
+	(expand_expr_real_1): Check promoted_for_signed_and_unsigned_p
+	and set the promoted mode.
+	* expr.h (promoted_for_signed_and_unsigned_p): New function definition.
+	* cfgexpand.c (expand_gimple_stmt_1): Call emit_move_insn if
+	SUBREG is promoted with SRP_SIGNED_AND_UNSIGNED.
+
+
+2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	* calls.c (precompute_arguments): Use new SUBREG_PROMOTED_SET
 	instead of SUBREG_PROMOTED_UNSIGNED_SET.
 	(expand_call): Likewise.
