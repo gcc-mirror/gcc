@@ -1859,7 +1859,6 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		    return val;
 		  if (predictor)
 		    {
-		      *predictor = PRED_BUILTIN_EXPECT;
 		      tree val2 = gimple_call_arg (def, 2);
 		      gcc_assert (TREE_CODE (val2) == INTEGER_CST
 				  && tree_fits_uhwi_p (val2)
