@@ -1352,7 +1352,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && ! SUBREG_PROMOTED_UNSIGNED_P (op)
+	  && SUBREG_PROMOTED_SIGNED_P (op)
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
 	{
 	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
@@ -1419,7 +1419,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 target mode is the same as the variable's promotion.  */
       if (GET_CODE (op) == SUBREG
 	  && SUBREG_PROMOTED_VAR_P (op)
-	  && SUBREG_PROMOTED_UNSIGNED_P (op) > 0
+	  && SUBREG_PROMOTED_UNSIGNED_P (op)
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
 	{
 	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
@@ -5633,7 +5633,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	{
 	  newx = gen_rtx_SUBREG (outermode, SUBREG_REG (op), final_offset);
 	  if (SUBREG_PROMOTED_VAR_P (op)
-	      && SUBREG_PROMOTED_UNSIGNED_P (op) >= 0
+	      && SUBREG_PROMOTED_SIGN (op) >= 0
 	      && GET_MODE_CLASS (outermode) == MODE_INT
 	      && IN_RANGE (GET_MODE_SIZE (outermode),
 			   GET_MODE_SIZE (innermode),
@@ -5641,8 +5641,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	      && subreg_lowpart_p (newx))
 	    {
 	      SUBREG_PROMOTED_VAR_P (newx) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET
-		(newx, SUBREG_PROMOTED_UNSIGNED_P (op));
+	      SUBREG_PROMOTED_SET (newx, SUBREG_PROMOTED_GET (op));
 	    }
 	  return newx;
 	}

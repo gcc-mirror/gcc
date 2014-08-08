@@ -3094,7 +3094,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  /* The argument is already sign/zero extended, so note it
 	     into the subreg.  */
 	  SUBREG_PROMOTED_VAR_P (tempreg) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_SET (tempreg, unsignedp);
+	  SUBREG_PROMOTED_SET (tempreg, unsignedp);
 	}
 
       /* TREE_USED gets set erroneously during expand_assignment.  */
