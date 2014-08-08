@@ -1,3 +1,11 @@
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/strlenopt-8.c: Remove XFAIL.
+	* gcc.dg/tree-prof/stringop-2.c: Adjust.
+	* gfortran.dg/array_memcpy_4.f90: Likewise.
+	* gfortran.dg/trim_optimize_1.f90: Likewise.
+	* gfortran.dg/trim_optimize_2.f90: Likewise.
+
 2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/zero_sign_ext_test.c: New test.

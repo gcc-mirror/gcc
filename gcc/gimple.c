@@ -1178,6 +1178,21 @@ gimple_seq_add_seq (gimple_seq *dst_p, gimple_seq src)
   gsi_insert_seq_after (&si, src, GSI_NEW_STMT);
 }
 
+/* Append sequence SRC to the end of sequence *DST_P.  If *DST_P is
+   NULL, a new sequence is allocated.  This function is
+   similar to gimple_seq_add_seq, but does not scan the operands.  */
+
+void
+gimple_seq_add_seq_without_update (gimple_seq *dst_p, gimple_seq src)
+{
+  gimple_stmt_iterator si;
+  if (src == NULL)
+    return;
+
+  si = gsi_last (*dst_p);
+  gsi_insert_seq_after_without_update (&si, src, GSI_NEW_STMT);
+}
+
 /* Determine whether to assign a location to the statement GS.  */
 
 static bool

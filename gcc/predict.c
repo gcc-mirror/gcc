@@ -339,7 +339,8 @@ optimize_function_for_speed_p (struct function *fun)
 bool
 optimize_bb_for_size_p (const_basic_block bb)
 {
-  return optimize_function_for_size_p (cfun) || !maybe_hot_bb_p (cfun, bb);
+  return (optimize_function_for_size_p (cfun)
+	  || (bb && !maybe_hot_bb_p (cfun, bb)));
 }
 
 /* Return TRUE when BB should be optimized for speed.  */
