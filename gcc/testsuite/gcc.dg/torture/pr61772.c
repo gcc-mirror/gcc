@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 /* { dg-final { scan-assembler-times "XXX" 2 } } */
 
 static inline __attribute__((always_inline)) int dec_and_test (int *i)
