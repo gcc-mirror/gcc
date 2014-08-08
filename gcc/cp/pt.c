@@ -7813,6 +7813,12 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	    }
 	}
 
+      if (OVERLOAD_TYPE_P (t)
+	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl))
+	if (tree attributes
+	    = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (template_type)))
+	  TYPE_ATTRIBUTES (t) = attributes;
+
       /* Let's consider the explicit specialization of a member
          of a class template specialization that is implicitly instantiated,
 	 e.g.:
