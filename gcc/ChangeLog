@@ -1,3 +1,10 @@
+2014-08-08  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (get_skeleton_type_unit): Remove.
+	(output_skeleton_debug_sections): Remove skeleton type units.
+	(output_comdat_type_unit): Likewise.
+	(dwarf2out_finish): Likewise.
+
 2014-08-07  Yi Yang  <ahyangyi@google.com>
 
 	* predict.c (expr_expected_value_1): Remove the redundant assignment.
