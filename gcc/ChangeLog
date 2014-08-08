@@ -1,3 +1,46 @@
+2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* calls.c (precompute_arguments): Use new SUBREG_PROMOTED_SET
+	instead of SUBREG_PROMOTED_UNSIGNED_SET.
+	(expand_call): Likewise.
+	* cfgexpand.c (expand_gimple_stmt_1): Use SUBREG_PROMOTED_SIGN
+	to get promoted mode.
+	* combine.c (record_promoted_value): Skip > 0 comparison with
+	SUBREG_PROMOTED_UNSIGNED_P as it now returns only 0 or 1.
+	* expr.c (convert_move): Use SUBREG_CHECK_PROMOTED_SIGN instead
+	of SUBREG_PROMOTED_UNSIGNED_P.
+	(convert_modes): Likewise.
+	(store_expr): Use SUBREG_PROMOTED_SIGN to get promoted mode.
+	Use SUBREG_CHECK_PROMOTED_SIGN instead of SUBREG_PROMOTED_UNSIGNED_P.
+	(expand_expr_real_1): Use new SUBREG_PROMOTED_SET instead of
+	SUBREG_PROMOTED_UNSIGNED_SET.
+	* function.c (assign_parm_setup_reg): Use new SUBREG_PROMOTED_SET
+	instead of SUBREG_PROMOTED_UNSIGNED_SET.
+	* ifcvt.c (noce_emit_cmove): Updated to use SUBREG_PROMOTED_GET and
+	SUBREG_PROMOTED_SET.
+	* internal-fn.c (ubsan_expand_si_overflow_mul_check): Use
+	SUBREG_PROMOTED_SET instead of SUBREG_PROMOTED_UNSIGNED_SET.
+	* optabs.c (widen_operand): Use SUBREG_CHECK_PROMOTED_SIGN instead
+	of SUBREG_PROMOTED_UNSIGNED_P.
+	* rtl.h (SUBREG_PROMOTED_UNSIGNED_SET): Remove.
+	(SUBREG_PROMOTED_SET): New define.
+	(SUBREG_PROMOTED_GET): Likewise.
+	(SUBREG_PROMOTED_SIGN): Likewise.
+	(SUBREG_PROMOTED_SIGNED_P): Likewise.
+	(SUBREG_CHECK_PROMOTED_SIGN): Likewise.
+	(SUBREG_PROMOTED_UNSIGNED_P): Updated.
+	* rtlanal.c (unsigned_reg_p): Use new SUBREG_PROMOTED_GET
+	instead of SUBREG_PROMOTED_UNSIGNED_GET.
+	(nonzero_bits1): Skip > 0 comparison with the results as
+	SUBREG_PROMOTED_UNSIGNED_P now returns only 0 or 1.
+	(num_sign_bit_copies1): Use SUBREG_PROMOTED_SIGNED_P instead
+	of !SUBREG_PROMOTED_UNSIGNED_P.
+	* simplify-rtx.c (simplify_unary_operation_1): Use new
+	SUBREG_PROMOTED_SIGNED_P instead of !SUBREG_PROMOTED_UNSIGNED_P.
+	(simplify_subreg): Use new SUBREG_PROMOTED_SIGNED_P,
+	SUBREG_PROMOTED_UNSIGNED_P and SUBREG_PROMOTED_SET instead of
+	SUBREG_PROMOTED_UNSIGNED_P and SUBREG_PROMOTED_UNSIGNED_SET.
+
 2014-08-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c: Include gimple-pretty-print.h

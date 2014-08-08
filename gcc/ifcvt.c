@@ -1447,8 +1447,8 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 	  || byte_vtrue != byte_vfalse
 	  || (SUBREG_PROMOTED_VAR_P (vtrue)
 	      != SUBREG_PROMOTED_VAR_P (vfalse))
-	  || (SUBREG_PROMOTED_UNSIGNED_P (vtrue)
-	      != SUBREG_PROMOTED_UNSIGNED_P (vfalse)))
+	  || (SUBREG_PROMOTED_GET (vtrue)
+	      != SUBREG_PROMOTED_GET (vfalse)))
 	return NULL_RTX;
 
       promoted_target = gen_reg_rtx (GET_MODE (reg_vtrue));
@@ -1462,7 +1462,7 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 
       target = gen_rtx_SUBREG (GET_MODE (vtrue), promoted_target, byte_vtrue);
       SUBREG_PROMOTED_VAR_P (target) = SUBREG_PROMOTED_VAR_P (vtrue);
-      SUBREG_PROMOTED_UNSIGNED_SET (target, SUBREG_PROMOTED_UNSIGNED_P (vtrue));
+      SUBREG_PROMOTED_SET (target, SUBREG_PROMOTED_GET (vtrue));
       emit_move_insn (x, target);
       return x;
     }

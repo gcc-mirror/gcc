@@ -584,12 +584,12 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	  if (GET_CODE (lopart0) == SUBREG)
 	    {
 	      SUBREG_PROMOTED_VAR_P (lopart0) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (lopart0, 0);
+	      SUBREG_PROMOTED_SET (lopart0, 0);
 	    }
 	  if (GET_CODE (lopart1) == SUBREG)
 	    {
 	      SUBREG_PROMOTED_VAR_P (lopart1) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (lopart1, 0);
+	      SUBREG_PROMOTED_SET (lopart1, 0);
 	    }
 	  tree halfstype = build_nonstandard_integer_type (hprec, 0);
 	  ops.op0 = make_tree (halfstype, lopart0);
