@@ -1,3 +1,8 @@
+2014-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	PR lto/62032
+	* lto-lang.c (lto_init): Switch mis-matched arguments.
+
 2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto-partition.c, lto.c: Use hash_map instead of pointer_map.
