@@ -1,3 +1,7 @@
+2014-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/torture/pr61772.c: Skip lto running.
+
 2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR tree-optimization/60707
