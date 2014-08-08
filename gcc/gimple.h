@@ -1226,6 +1226,7 @@ gimple gimple_build_predict (enum br_predictor, enum prediction);
 extern void gimple_seq_add_stmt (gimple_seq *, gimple);
 extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple);
 void gimple_seq_add_seq (gimple_seq *, gimple_seq);
+void gimple_seq_add_seq_without_update (gimple_seq *, gimple_seq);
 extern void annotate_all_with_location_after (gimple_seq, gimple_stmt_iterator,
 					      location_t);
 extern void annotate_all_with_location (gimple_seq, location_t);

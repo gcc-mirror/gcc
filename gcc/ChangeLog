@@ -1,3 +1,57 @@
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (c_getstr, readonly_data_expr, init_target_chars,
+	target_percent, target_percent_s): Export.
+	(var_decl_component_p, fold_builtin_memory_op, fold_builtin_memset,
+	fold_builtin_bzero, fold_builtin_strcpy, fold_builtin_strncpy,
+	fold_builtin_strcat, fold_builtin_fputs, fold_builtin_memory_chk,
+	fold_builtin_stxcpy_chk, fold_builtin_stxncpy_chk,
+	fold_builtin_sprintf_chk_1, fold_builtin_snprintf_chk_1):
+	Move to gimple-fold.c.
+	(fold_builtin_2): Remove handling of bzero, fputs, fputs_unlocked,
+	strcat and strcpy.
+	(fold_builtin_3): Remove handling of memset, bcopy, memcpy,
+	mempcpy, memmove, strncpy, strcpy_chk and stpcpy_chk.
+	(fold_builtin_4): Remove handling of memcpy_chk, mempcpy_chk,
+	memmove_chk, memset_chk, strncpy_chk and stpncpy_chk.
+	(rewrite_call_expr_array): Remove.
+	(fold_builtin_sprintf_chk): Likewise.
+	(fold_builtin_snprintf_chk): Likewise.
+	(fold_builtin_varargs): Remove handling of sprintf_chk,
+	vsprintf_chk, snprintf_chk and vsnprintf_chk.
+	(gimple_fold_builtin_sprintf_chk): Remove.
+	(gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_fold_builtin_varargs): Likewise.
+	(fold_call_stmt): Do not call gimple_fold_builtin_varargs.
+	* predict.c (optimize_bb_for_size_p): Handle NULL bb.
+	* gimple.c (gimple_seq_add_seq_without_update): New function.
+	* gimple.h (gimple_seq_add_seq_without_update): Declare.
+	* gimple-fold.c: Include output.h.
+	(gsi_replace_with_seq_vops): New function, split out from ...
+	(gimplify_and_update_call_from_tree): ... here.
+	(replace_call_with_value): New function.
+	(replace_call_with_call_and_fold): Likewise.
+	(var_decl_component_p): Moved from builtins.c.
+	(gimple_fold_builtin_memory_op): Moved from builtins.c
+	fold_builtin_memory_op and rewritten to GIMPLE.
+	(gimple_fold_builtin_memset): Likewise.
+	(gimple_fold_builtin_strcpy): Likewise.
+	(gimple_fold_builtin_strncpy): Likewise.
+	(gimple_fold_builtin_strcat): Likewise.
+	(gimple_fold_builtin_fputs): Likewise.
+	(gimple_fold_builtin_memory_chk): Likewise.
+	(gimple_fold_builtin_stxcpy_chk): Likewise.
+	(gimple_fold_builtin_stxncpy_chk): Likewise.
+	(gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_fold_builtin_sprintf_chk): Likewise.
+	(gimple_fold_builtin_strlen): New function.
+	(gimple_fold_builtin_with_strlen): New function split out from
+	gimple_fold_builtin.
+	(gimple_fold_builtin): Change signature and handle
+	bzero, memset, bcopy, memcpy, mempcpy and memmove folding
+	here.  Call gimple_fold_builtin_with_strlen.
+	(gimple_fold_call): Adjust.
+
 2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* calls.c (precompute_arguments): Check
