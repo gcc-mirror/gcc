@@ -1,3 +1,7 @@
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/invoke.texi ([Wnarrowing]): Update for non-constants in C++11.
+
 2014-08-09  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c:
@@ -19,7 +23,6 @@
 2014-08-07  Yi Yang  <ahyangyi@google.com>
 
 	* predict.c (expr_expected_value_1): Remove the redundant assignment.
-
 
 2014-08-08  Richard Biener  <rguenther@suse.de>
 
@@ -289,7 +292,7 @@
 
 2014-08-07  Marek Polacek  <polacek@redhat.com>
 
-	* fold-const.c (fold_binary_loc): Add folding of 
+	* fold-const.c (fold_binary_loc): Add folding of
 	(PTR0 - (PTR1 p+ A) -> (PTR0 - PTR1) - A.
 
 2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
@@ -477,10 +480,10 @@
 2014-08-05  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c: Add a new struct ast_build_info.
-	(translate_isl_ast_for_loop): Add checking of the 
+	(translate_isl_ast_for_loop): Add checking of the
 	flag_loop_parallelize_all.
 	(ast_build_before_for): New function.
-	(scop_to_isl_ast): Add checking of the 
+	(scop_to_isl_ast): Add checking of the
 	flag_loop_parallelize_all.
 	* graphite-dependences.c: Move the defenition of the
 	scop_get_dependences from graphite-optimize-isl.c to this file.
@@ -612,7 +615,8 @@
 
 2014-08-01  Jan Hubicka  <hubicka@ucw.cz>
 
-	* doc/invoke.texi (Wsuggest-final-types, Wsuggest-final-methods): Document.
+	* doc/invoke.texi (Wsuggest-final-types, Wsuggest-final-methods):
+	Document.
 	* ipa-devirt.c: Include hash-map.h
 	(struct polymorphic_call_target_d): Add type_warning and decl_warning.
 	(clear_speculation): Break out of ...
@@ -621,15 +625,16 @@
 	(odr_type_warn_count, decl_warn_count): New structures.
 	(final_warning_record): New structure.
 	(final_warning_records): New static variable.
-	(possible_polymorphic_call_targets): Cleanup handling of speculative info;
-	do not build speculation when user do not care; record info about warnings
-	when asked for.
+	(possible_polymorphic_call_targets): Cleanup handling of
+	speculative info; do not build speculation when user do not care;
+	record info about warnings when asked for.
 	(add_decl_warning): New function.
 	(type_warning_cmp): New function.
 	(decl_warning_cmp): New function.
 	(ipa_devirt): Handle -Wsuggest-final-methods and -Wsuggest-final-types.
 	(gate): Enable pass when warnings are requested.
-	* common.opt (Wsuggest-final-types, Wsuggest-final-methods): New options.
+	* common.opt (Wsuggest-final-types, Wsuggest-final-methods): New
+	options.
 
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
