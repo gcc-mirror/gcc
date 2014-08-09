@@ -6251,8 +6251,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 					  1, false, false, complain);
 	    if (sub == error_mark_node)
 	      return sub;
-	    if (!BRACE_ENCLOSED_INITIALIZER_P (val))
-	      check_narrowing (TREE_TYPE (sub), val);
+	    if (!BRACE_ENCLOSED_INITIALIZER_P (val)
+		&& !check_narrowing (TREE_TYPE (sub), val, complain))
+	      return error_mark_node;
 	    CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor), NULL_TREE, sub);
 	    if (!TREE_CONSTANT (sub))
 	      TREE_CONSTANT (new_ctor) = false;
@@ -6480,8 +6481,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       break;
     }
 
-  if (convs->check_narrowing)
-    check_narrowing (totype, expr);
+  if (convs->check_narrowing
+      && !check_narrowing (totype, expr, complain))
+    return error_mark_node;
 
   if (issue_conversion_warnings)
     expr = cp_convert_and_check (totype, expr, complain);

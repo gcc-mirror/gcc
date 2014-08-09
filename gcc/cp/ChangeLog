@@ -1,3 +1,11 @@
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck2.c (check_narrowing): Add tsubst_flags_t parameter, change
+	return type to bool; in C++11 for constants give errors, not pedwarns.
+	* cp-tree.h (check_narrowing): Adjust declaration.
+	* call.c (convert_like_real): Update calls.
+	* semantics.c (finish_compound_literal): Likewise.
+
 2014-08-08  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (lookup_template_class_1): Copy abi_tag.

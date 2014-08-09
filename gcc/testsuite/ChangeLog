@@ -1,3 +1,8 @@
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/Wnarrowing1.C: Adjust for errors.
+	* g++.dg/cpp0x/enum29.C: Adjust.
+
 2014-08-08  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/strlenopt-8.c: Remove XFAIL.

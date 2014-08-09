@@ -51,8 +51,6 @@ enum F5 : int { f5 = X5() };
 enum G0 : signed char { g0 = X0() };
 enum G1 : signed char { g1 = X1() };
 enum G2 : signed char { g2 = X2() };  // { dg-error "narrowing" }
-// { dg-warning "overflow" "" { target *-*-* } 53 }
 enum G3 : signed char { g3 = X3() };  // { dg-error "narrowing" }
-// { dg-warning "overflow" "" { target *-*-* } 55 }
 enum G4 : signed char { g4 = X4() };  // { dg-error "narrowing" }
 enum G5 : signed char { g5 = X5() };  // { dg-error "ambiguous" }
