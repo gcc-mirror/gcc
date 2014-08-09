@@ -1,4 +1,4 @@
-2014-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/pod_char_traits.h (char_traits<__gnu_cxx::
 	character<_Value, _Int, _St> >::eof): Fix vs narrowing conversion.
