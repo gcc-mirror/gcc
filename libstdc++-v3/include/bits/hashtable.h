@@ -1281,10 +1281,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     __rehash_policy(const _RehashPolicy& __pol)
     {
-      size_type __n_bkt = __pol._M_bkt_for_elements(_M_element_count);
-      __n_bkt = __pol._M_next_bkt(__n_bkt);
-      if (__n_bkt != _M_bucket_count)
-	_M_rehash(__n_bkt, _M_rehash_policy._M_state());
+      auto __do_rehash =
+	__pol._M_need_rehash(_M_bucket_count, _M_element_count, 0);
+      if (__do_rehash.first)
+	_M_rehash(__do_rehash.second, _M_rehash_policy._M_state());
       _M_rehash_policy = __pol;
     }
 
