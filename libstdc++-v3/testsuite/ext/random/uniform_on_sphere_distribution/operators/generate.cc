@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++11" }
 // { dg-require-cstdint "" }
 //
-// 2014-04-15  Ulrich Drepper  <drepper@gmail.com>
+// 2014-08-09  Ulrich Drepper  <drepper@gmail.com>
 //
 // Copyright (C) 2014 Free Software Foundation, Inc.
 //
@@ -21,18 +21,35 @@
 // <http://www.gnu.org/licenses/>.
 
 // Class template uniform_on_sphere_distribution [rand.dist.ext.uniform_on_sphere]
+// Concept RandomNumberDistribution [rand.concept.dist]
 
 #include <ext/random>
+#include <sstream>
 #include <testsuite_hooks.h>
 
 void
 test01()
 {
   bool test [[gnu::unused]] = true;
+  std::minstd_rand0 rng;
 
-  __gnu_cxx::uniform_on_sphere_distribution<3> u, v;
+  __gnu_cxx::uniform_on_sphere_distribution<3> u3;
 
-  VERIFY( !(u != v) );
+  for (size_t n = 0; n < 1000; ++n)
+    {
+      auto r = u3(rng);
+
+      VERIFY (r[0] != 0.0 || r[1] != 0.0 || r[2] != 0.0);
+    }
+
+  __gnu_cxx::uniform_on_sphere_distribution<2> u2;
+
+  for (size_t n = 0; n < 1000; ++n)
+    {
+      auto r = u2(rng);
+
+      VERIFY (r[0] != 0.0 || r[1] != 0.0);
+    }
 }
 
 int
