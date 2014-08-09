@@ -1,3 +1,9 @@
+2014-08-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-35.C: Fix template.
+	* g++.dg/ipa/devirt-36.C: Likewise.
+	* g++.dg/ipa/devirt-37.C: New testcase.
+
 2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/Wnarrowing1.C: Adjust for errors.

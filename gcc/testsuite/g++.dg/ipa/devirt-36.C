@@ -17,9 +17,9 @@ m(struct B *b)
                   //  test2 may change the type of A by placement new.
                   // C++ standard is bit imprecise about this.
 }
-/* { dg-final { scan-ipa-dump "converting indirect call to function virtual int B::t"  "fre1"  } } */
+/* { dg-final { scan-tree-dump "converting indirect call to function virtual int B::t"  "fre1"  } } */
 /* { dg-final { scan-ipa-dump "to virtual int B::t"  "devirt"  } } */
 /* { dg-final { scan-ipa-dump "1 speculatively devirtualized"  "devirt"  } } */
 /* { dg-final { cleanup-ipa-dump "devirt" } } */
-/* { dg-final { cleanup-tree-dump "fre" } } */
+/* { dg-final { cleanup-tree-dump "fre1" } } */
 
