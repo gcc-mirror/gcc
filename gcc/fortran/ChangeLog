@@ -1,3 +1,9 @@
+2014-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/61999
+	* simplify.c (gfc_simplify_dot_product): Convert types of
+	vectors before calculating the result.
+
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* openmp.c, trans-decl.c: Use hash_set instead of pointer_set.
