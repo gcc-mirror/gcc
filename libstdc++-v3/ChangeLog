@@ -1,3 +1,11 @@
+2014-08-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/61667
+	* include/bits/hashtable.h (_Hashtable<>::__rehash_policy): Use
+	_M_need_rehash to initialize the rehash policy and check if a rehash is
+	needed.
+	* testsuite/23_containers/unordered_map/modifiers/61667.cc: New.
+
 2014-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline
