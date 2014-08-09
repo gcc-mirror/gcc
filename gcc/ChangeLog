@@ -1,3 +1,8 @@
+2014-08-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (get_dynamic_type): Handle case when instance is in
+	DECL correctly; do not give up on types in static storage.
+
 2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/invoke.texi ([Wnarrowing]): Update for non-constants in C++11.

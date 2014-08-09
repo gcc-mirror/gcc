@@ -2799,10 +2799,12 @@ get_dynamic_type (tree instance,
 		  /* Finally verify that what we found looks like read from OTR_OBJECT
 		     or from INSTANCE with offset OFFSET.  */
 		  if (base_ref
-		      && TREE_CODE (base_ref) == MEM_REF
-		      && ((offset2 == context->offset
-		           && TREE_OPERAND (base_ref, 0) == instance)
-			  || (!offset2 && TREE_OPERAND (base_ref, 0) == otr_object)))
+		      && ((TREE_CODE (base_ref) == MEM_REF
+		           && ((offset2 == context->offset
+		                && TREE_OPERAND (base_ref, 0) == instance)
+			       || (!offset2 && TREE_OPERAND (base_ref, 0) == otr_object)))
+			  || (DECL_P (instance) && base_ref == instance
+			      && offset2 == context->offset)))
 		    {
 		      stmt = SSA_NAME_DEF_STMT (ref);
 		      instance_ref = ref_exp;
@@ -2923,7 +2925,14 @@ get_dynamic_type (tree instance,
       && !function_entry_reached
       && !tci.multiple_types_encountered)
     {
-      if (!tci.speculative)
+      if (!tci.speculative
+	  /* Again in instances located in static storage we are interested only
+	     in constructor stores.  */
+	  || (context->outer_type
+	      && !tci.seen_unanalyzed_store
+	      && context->offset == tci.offset
+	      && types_same_for_odr (tci.known_current_type,
+				     context->outer_type)))
 	{
 	  context->outer_type = tci.known_current_type;
 	  context->offset = tci.known_current_offset;
