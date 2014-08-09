@@ -1,3 +1,7 @@
+2014-08-08  Guozhi Wei  <carrot@google.com>
+
+	* config/rs6000/rs6000.md (*movdi_internal64): Add a new constraint.
+
 2014-08-07  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Fix
