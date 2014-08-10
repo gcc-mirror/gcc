@@ -1,3 +1,29 @@
+2014-08-10 Marek Polacek  <polacek@redhat.com>
+
+	PR c/51849
+	* c-decl.c (build_array_declarator): Remove check for !flag_isoc99.
+	Call pedwarn_c90 instead of pedwarn.
+	(check_bitfield_type_and_width): Likewise.
+	(declspecs_add_qual): Likewise.
+	(declspecs_add_type): Likewise.
+	(warn_variable_length_array): Unify function for -pedantic and -Wvla.
+	Adjust to only call pedwarn_c90.
+	(grokdeclarator): Remove pedantic && !flag_isoc99 check.  Call
+	pedwarn_c90 instead of pedwarn.
+	* c-errors.c (pedwarn_c90): Handle -Wc90-c99-compat.
+	* c-parser.c (disable_extension_diagnostics): Handle
+	warn_c90_c99_compat.
+	(restore_extension_diagnostics): Likewise.
+	(c_parser_enum_specifier): Remove check for !flag_isoc99.  Call
+	pedwarn_c90 instead of pedwarn.
+	(c_parser_initelt): Likewise.
+	(c_parser_postfix_expression): Likewise.
+	(c_parser_postfix_expression_after_paren_type): Likewise.
+	(c_parser_compound_statement_nostart): Remove check for !flag_isoc99.
+	* c-tree.h: Fix formatting.
+	* c-typeck.c (build_array_ref): Remove check for !flag_isoc99.  Call
+	pedwarn_c90 instead of pedwarn.
+
 2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* c-typeck.c: Remove include of pointer-set.h.

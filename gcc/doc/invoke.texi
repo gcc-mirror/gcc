@@ -241,6 +241,7 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
 -Waggressive-loop-optimizations -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
+-Wc90-c99-compat @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
@@ -4516,6 +4517,15 @@ example, warn if an unsigned variable is compared against zero with
 @opindex Wno-bad-function-cast
 Warn whenever a function call is cast to a non-matching type.
 For example, warn if @code{int malloc()} is cast to @code{anything *}.
+
+@item -Wc90-c99-compat @r{(C and Objective-C only)}
+@opindex Wc90-c99-compat
+@opindex Wno-c90-c99-compat
+Warn about features not present in ISO C90, but present in ISO C99.
+For instance, warn about use of variable length arrays, @code{long long}
+type, @code{bool} type, compound literals, designated initializers, and so
+on.  This option is independent of the standards mode.  Warnings are disabled
+in the expression that follows @code{__extension__}.
 
 @item -Wc++-compat @r{(C and Objective-C only)}
 Warn about ISO C constructs that are outside of the common subset of

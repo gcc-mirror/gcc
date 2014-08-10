@@ -1,3 +1,17 @@
+2014-08-10 Marek Polacek  <polacek@redhat.com>
+
+	PR c/51849
+	* gcc.dg/Wc90-c99-compat-1.c: New test.
+	* gcc.dg/Wc90-c99-compat-2.c: New test.
+	* gcc.dg/Wc90-c99-compat-3.c: New test.
+	* gcc.dg/Wc90-c99-compat-4.c: New test.
+	* gcc.dg/Wc90-c99-compat-5.c: New test.
+	* gcc.dg/Wc90-c99-compat-6.c: New test.
+	* gcc.dg/wvla-1.c: Adjust dg-warning.
+	* gcc.dg/wvla-2.c: Adjust dg-warning.
+	* gcc.dg/wvla-4.c: Adjust dg-warning.
+	* gcc.dg/wvla-6.c: Adjust dg-warning.
+
 2014-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/61999

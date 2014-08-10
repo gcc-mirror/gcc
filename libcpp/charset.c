@@ -995,6 +995,10 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   if (!CPP_OPTION (pfile, cplusplus) && !CPP_OPTION (pfile, c99))
     cpp_error (pfile, CPP_DL_WARNING,
 	       "universal character names are only valid in C++ and C99");
+  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat)
+	   && !CPP_OPTION (pfile, cplusplus))
+    cpp_error (pfile, CPP_DL_WARNING,
+	       "C99's universal character names are incompatible with C90");
   else if (CPP_WTRADITIONAL (pfile) && identifier_pos == 0)
     cpp_warning (pfile, CPP_W_TRADITIONAL,
 	         "the meaning of '\\%c' is different in traditional C",

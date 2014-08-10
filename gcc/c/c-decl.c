@@ -3968,16 +3968,13 @@ build_array_declarator (location_t loc,
     }
   declarator->u.array.static_p = static_p;
   declarator->u.array.vla_unspec_p = vla_unspec_p;
-  if (!flag_isoc99)
-    {
-      if (static_p || quals != NULL)
-	pedwarn (loc, OPT_Wpedantic,
+  if (static_p || quals != NULL)
+    pedwarn_c90 (loc, OPT_Wpedantic,
 		 "ISO C90 does not support %<static%> or type "
 		 "qualifiers in parameter array declarators");
-      if (vla_unspec_p)
-	pedwarn (loc, OPT_Wpedantic,
+  if (vla_unspec_p)
+    pedwarn_c90 (loc, OPT_Wpedantic,
 		 "ISO C90 does not support %<[*]%> array declarators");
-    }
   if (vla_unspec_p)
     {
       if (!current_scope->parm_flag)
@@ -4891,10 +4888,9 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
   if (!in_system_header_at (input_location)
       && type_mv != integer_type_node
       && type_mv != unsigned_type_node
-      && type_mv != boolean_type_node
-      && !flag_isoc99)
-    pedwarn (input_location, OPT_Wpedantic,
-	     "type of bit-field %qs is a GCC extension", name);
+      && type_mv != boolean_type_node)
+    pedwarn_c90 (input_location, OPT_Wpedantic,
+		 "type of bit-field %qs is a GCC extension", name);
 
   max_width = TYPE_PRECISION (*type);
 
@@ -4925,52 +4921,27 @@ static void
 warn_variable_length_array (tree name, tree size)
 {
   int const_size = TREE_CONSTANT (size);
+  enum opt_code opt = (warn_vla == -1 && !warn_c90_c99_compat)
+		      ? OPT_Wpedantic : OPT_Wvla;
 
-  if (!flag_isoc99 && pedantic && warn_vla != 0)
+  if (const_size)
     {
-      if (const_size)
-	{
-	  if (name)
-	    pedwarn (input_location, OPT_Wvla,
+      if (name)
+	pedwarn_c90 (input_location, opt,
 		     "ISO C90 forbids array %qE whose size "
-		     "can%'t be evaluated",
-		     name);
-	  else
-	    pedwarn (input_location, OPT_Wvla, "ISO C90 forbids array whose size "
-		     "can%'t be evaluated");
-	}
+		     "can%'t be evaluated", name);
       else
-	{
-	  if (name)
-	    pedwarn (input_location, OPT_Wvla,
-		     "ISO C90 forbids variable length array %qE",
-		     name);
-	  else
-	    pedwarn (input_location, OPT_Wvla, "ISO C90 forbids variable length array");
-	}
+	pedwarn_c90 (input_location, opt, "ISO C90 forbids array "
+		     "whose size can%'t be evaluated");
     }
-  else if (warn_vla > 0)
+  else
     {
-      if (const_size)
-        {
-	  if (name)
-	    warning (OPT_Wvla,
-		     "the size of array %qE can"
-		     "%'t be evaluated", name);
-	  else
-	    warning (OPT_Wvla,
-		     "the size of array can %'t be evaluated");
-	}
+      if (name)
+	pedwarn_c90 (input_location, opt,
+		     "ISO C90 forbids variable length array %qE", name);
       else
-	{
-	  if (name)
-	    warning (OPT_Wvla,
-		     "variable length array %qE is used",
-		     name);
-	  else
-	    warning (OPT_Wvla,
-		     "variable length array is used");
-	}
+	pedwarn_c90 (input_location, opt, "ISO C90 forbids variable "
+		     "length array");
     }
 }
 
@@ -5186,18 +5157,14 @@ grokdeclarator (const struct c_declarator *declarator,
   as2 = TYPE_ADDR_SPACE (element_type);
   address_space = ADDR_SPACE_GENERIC_P (as1)? as2 : as1;
 
-  if (pedantic && !flag_isoc99)
-    {
-      if (constp > 1)
-	pedwarn (loc, OPT_Wpedantic, "duplicate %<const%>");
-      if (restrictp > 1)
-	pedwarn (loc, OPT_Wpedantic, "duplicate %<restrict%>");
-      if (volatilep > 1)
-	pedwarn (loc, OPT_Wpedantic, "duplicate %<volatile%>");
-      if (atomicp > 1)
-	pedwarn (loc, OPT_Wpedantic, "duplicate %<_Atomic%>");
-
-    }
+  if (constp > 1)
+    pedwarn_c90 (loc, OPT_Wpedantic, "duplicate %<const%>");
+  if (restrictp > 1)
+    pedwarn_c90 (loc, OPT_Wpedantic, "duplicate %<restrict%>");
+  if (volatilep > 1)
+    pedwarn_c90 (loc, OPT_Wpedantic, "duplicate %<volatile%>");
+  if (atomicp > 1)
+    pedwarn_c90 (loc, OPT_Wpedantic, "duplicate %<_Atomic%>");
 
   if (!ADDR_SPACE_GENERIC_P (as1) && !ADDR_SPACE_GENERIC_P (as2) && as1 != as2)
     error_at (loc, "conflicting named address spaces (%s vs %s)",
@@ -5602,10 +5569,9 @@ grokdeclarator (const struct c_declarator *declarator,
 		    flexible_array_member = (t->kind == cdk_id);
 		  }
 		if (flexible_array_member
-		    && pedantic && !flag_isoc99
 		    && !in_system_header_at (input_location))
-		  pedwarn (loc, OPT_Wpedantic,
-			   "ISO C90 does not support flexible array members");
+		  pedwarn_c90 (loc, OPT_Wpedantic, "ISO C90 does not "
+			       "support flexible array members");
 
 		/* ISO C99 Flexible array members are effectively
 		   identical to GCC's zero-length array extension.  */
@@ -9136,8 +9102,8 @@ declspecs_add_qual (source_location loc,
     default:
       gcc_unreachable ();
     }
-  if (dupe && !flag_isoc99)
-    pedwarn (loc, OPT_Wpedantic, "duplicate %qE", qual);
+  if (dupe)
+    pedwarn_c90 (loc, OPT_Wpedantic, "duplicate %qE", qual);
   return specs;
 }
 
@@ -9381,9 +9347,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      break;
 	    case RID_COMPLEX:
 	      dupe = specs->complex_p;
-	      if (!flag_isoc99 && !in_system_header_at (loc))
-		pedwarn (loc, OPT_Wpedantic,
-			 "ISO C90 does not support complex types");
+	      if (!in_system_header_at (loc))
+		pedwarn_c90 (loc, OPT_Wpedantic,
+			     "ISO C90 does not support complex types");
 	      if (specs->typespec_word == cts_auto_type)
 		error_at (loc,
 			  ("both %<complex%> and %<__auto_type%> in "
@@ -9599,9 +9565,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		}
 	      return specs;
 	    case RID_BOOL:
-	      if (!flag_isoc99 && !in_system_header_at (loc))
-		pedwarn (loc, OPT_Wpedantic,
-			 "ISO C90 does not support boolean types");
+	      if (!in_system_header_at (loc))
+		pedwarn_c90 (loc, OPT_Wpedantic,
+			     "ISO C90 does not support boolean types");
 	      if (specs->long_p)
 		error_at (loc,
 			  ("both %<long%> and %<_Bool%> in "
