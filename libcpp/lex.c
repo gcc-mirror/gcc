@@ -2325,7 +2325,7 @@ _cpp_lex_direct (cpp_reader *pfile)
       else if (c == '/' && (CPP_OPTION (pfile, cplusplus_comments)
 			    || cpp_in_system_header (pfile)))
 	{
-	  /* Warn about comments only if pedantically GNUC89, and not
+	  /* Warn about comments if pedantically GNUC89, and not
 	     in system headers.  */
 	  if (CPP_OPTION (pfile, lang) == CLK_GNUC89 && CPP_PEDANTIC (pfile)
 	      && ! buffer->warned_cplusplus_comments)
@@ -2333,6 +2333,16 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      cpp_error (pfile, CPP_DL_PEDWARN,
 			 "C++ style comments are not allowed in ISO C90");
 	      cpp_error (pfile, CPP_DL_PEDWARN,
+			 "(this will be reported only once per input file)");
+	      buffer->warned_cplusplus_comments = 1;
+	    }
+	  /* Or if specifically desired via -Wc90-c99-compat.  */
+	  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat)
+		   && ! buffer->warned_cplusplus_comments)
+	    {
+	      cpp_error (pfile, CPP_DL_WARNING,
+			 "C++ style comments are are incompatible with C90");
+	      cpp_error (pfile, CPP_DL_WARNING,
 			 "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
 	    }

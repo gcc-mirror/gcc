@@ -1795,6 +1795,16 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		       NODE_NAME (node),
 		       src->val.macro_arg.arg_no);
 	}
+      else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat)
+	       && ! macro->syshdr
+	       && ! cpp_in_system_header (pfile)
+	       && ! CPP_OPTION (pfile, cplusplus))
+	cpp_error (pfile, CPP_DL_WARNING,
+		   "invoking macro %s argument %d: "
+		   "empty macro arguments are undefined"
+		   " in ISO C90",
+		   NODE_NAME (node),
+		   src->val.macro_arg.arg_no);
 
       /* Avoid paste on RHS (even case count == 0).  */
       if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT))
@@ -2848,6 +2858,10 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 			(pfile, CPP_W_VARIADIC_MACROS,
 			"anonymous variadic macros were introduced in C99");
 		}
+	      else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat)
+		       && ! CPP_OPTION (pfile, cplusplus))
+		cpp_error (pfile, CPP_DL_WARNING,
+			   "anonymous variadic macros were introduced in C99");
 	    }
 	  else if (CPP_OPTION (pfile, cpp_pedantic)
 		   && CPP_OPTION (pfile, warn_variadic_macros))

@@ -44,21 +44,38 @@ pedwarn_c99 (location_t location, int opt, const char *gmsgid, ...)
   va_end (ap);
 }
 
-/* Issue an ISO C90 pedantic warning MSGID.  This function is supposed to
-   be used for matters that are allowed in ISO C99 but not supported in
-   ISO C90, thus we explicitly don't pedwarn when C99 is specified.
-   (There is no flag_c90.)  */
+/* Issue an ISO C90 pedantic warning MSGID if -pedantic outside C99 mode,
+   otherwise issue warning MSGID if -Wc90-c99-compat is specified, or if
+   a specific option such as -Wlong-long is specified.
+   This function is supposed to be used for matters that are allowed in
+   ISO C99 but not supported in ISO C90, thus we explicitly don't pedwarn
+   when C99 is specified.  (There is no flag_c90.)  */
 
 void
 pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  bool warned = false;
 
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
-		       flag_isoc99 ? DK_WARNING : DK_PEDWARN);
-  diagnostic.option_index = opt;
-  report_diagnostic (&diagnostic);
+  if (pedantic && !flag_isoc99)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_PEDWARN);
+      diagnostic.option_index = opt;
+      warned = report_diagnostic (&diagnostic);
+    }
+  else if (opt != OPT_Wpedantic)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_WARNING);
+      diagnostic.option_index = opt;
+      warned = report_diagnostic (&diagnostic);
+    }
+  if (warn_c90_c99_compat && !warned)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_WARNING);
+      diagnostic.option_index = OPT_Wc90_c99_compat;
+      report_diagnostic (&diagnostic);
+    }
   va_end (ap);
 }
