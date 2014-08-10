@@ -1878,13 +1878,22 @@ gfc_simplify_dim (gfc_expr *x, gfc_expr *y)
 gfc_expr*
 gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 {
+
+  gfc_expr temp;
+
   if (!is_constant_array_expr (vector_a)
       || !is_constant_array_expr (vector_b))
     return NULL;
 
   gcc_assert (vector_a->rank == 1);
   gcc_assert (vector_b->rank == 1);
-  gcc_assert (gfc_compare_types (&vector_a->ts, &vector_b->ts));
+
+  temp.expr_type = EXPR_OP;
+  gfc_clear_ts (&temp.ts);
+  temp.value.op.op = INTRINSIC_NONE;
+  temp.value.op.op1 = vector_a;
+  temp.value.op.op2 = vector_b;
+  gfc_type_convert_binary (&temp, 1);
 
   return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0, true);
 }

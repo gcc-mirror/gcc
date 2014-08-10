@@ -1,3 +1,9 @@
+2014-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/61999
+	* gfortran.dg/dot_product_3.f90:  New test case.
+
 2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR tree-optimization/60707
