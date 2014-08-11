@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "incompatible options" { ! { arm_thumb1_ok || arm_thumb2_ok } } { "*" } { "" } } */
 /* { dg-options "-mthumb -O2" } */
 
 typedef unsigned int size_t;
