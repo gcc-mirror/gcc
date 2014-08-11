@@ -1,3 +1,9 @@
+2014-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62070
+	* tree-ssa-loop-manip.c (gimple_duplicate_loop_to_header_edge):
+	Remove SSA checking.
+
 2014-08-11  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (asan_check_flags): New enum.
