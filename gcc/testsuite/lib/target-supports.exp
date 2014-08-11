@@ -2761,6 +2761,7 @@ proc check_effective_target_arm_thumb1_ok { } {
 	#if !defined(__arm__) || !defined(__thumb__) || defined(__thumb2__)
 	#error FOO
 	#endif
+	int foo (int i) { return i; }
     } "-mthumb"]
 }
 
@@ -2772,6 +2773,7 @@ proc check_effective_target_arm_thumb2_ok { } {
 	#if !defined(__thumb2__)
 	#error FOO
 	#endif
+	int foo (int i) { return i; }
     } "-mthumb"]
 }
 
