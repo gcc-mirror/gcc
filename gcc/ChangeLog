@@ -1,3 +1,16 @@
+2014-08-11  Yury Gribov  <y.gribov@samsung.com>
+
+	* gimple.c (gimple_call_fnspec): Support internal functions.
+	(gimple_call_return_flags): Use const.
+	* Makefile.in (GTFILES): Add internal-fn.h to list of GC files.
+	* internal-fn.def: Add fnspec information.
+	* internal-fn.h (internal_fn_fnspec): New function.
+	(init_internal_fns): Declare new function.
+	* internal-fn.c (internal_fn_fnspec_array): New global variable.
+	(init_internal_fns): New function.
+	* tree-core.h: Update macro call.
+	* tree.c (build_common_builtin_nodes): Initialize internal fns.
+
 2014-08-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* lto-streamer.h (struct output_block::symbol): Change from
