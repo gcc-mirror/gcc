@@ -1,3 +1,24 @@
+2014-08-11  Mircea Namolaru  <mircea.namolaru@inria.fr>
+
+	Replacement of isl_int by isl_val
+	* graphite-clast-to-gimple.c: include isl/val.h, isl/val_gmp.h
+	(compute_bounds_for_param): use isl_val instead of isl_int
+	(compute_bounds_for_loop): likewise
+	* graphite-interchange.c: include isl/val.h, isl/val_gmp.h
+        (build_linearized_memory_access): use isl_val instead of isl_int
+        (pdr_stride_in_loop): likewise
+	* graphite-optimize-isl.c:
+	(getPrevectorMap): use isl_val instead of isl_int
+	* graphite-poly.c:
+	(pbb_number_of_iterations_at_time): use isl_val instead of isl_int
+	graphite-sese-to-poly.c: include isl/val.h, isl/val_gmp.h
+	(extern the_isl_ctx): declare
+	(build_pbb_scattering_polyhedrons): use isl_val instead of isl_int
+	(extract_affine_gmp): likewise
+	(wrap): likewise
+	(build_loop_iteration_domains): likewise
+	(add_param_constraints): likewise
+
 2014-08-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62075
