@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-iterator.h"
 #include "bitmap.h"
-#include "pointer-set.h"
 #include "basic-block.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
@@ -2571,7 +2570,7 @@ build_array_ref (location_t loc, tree array, tree index)
 	    return error_mark_node;
 	}
 
-      if (pedantic)
+      if (pedantic || warn_c90_c99_compat)
 	{
 	  tree foo = array;
 	  while (TREE_CODE (foo) == COMPONENT_REF)
@@ -2579,9 +2578,10 @@ build_array_ref (location_t loc, tree array, tree index)
 	  if (TREE_CODE (foo) == VAR_DECL && C_DECL_REGISTER (foo))
 	    pedwarn (loc, OPT_Wpedantic,
 		     "ISO C forbids subscripting %<register%> array");
-	  else if (!flag_isoc99 && !lvalue_p (foo))
-	    pedwarn (loc, OPT_Wpedantic,
-		     "ISO C90 forbids subscripting non-lvalue array");
+	  else if (!lvalue_p (foo))
+	    pedwarn_c90 (loc, OPT_Wpedantic,
+			 "ISO C90 forbids subscripting non-lvalue "
+			 "array");
 	}
 
       type = TREE_TYPE (TREE_TYPE (array));
@@ -3538,7 +3538,6 @@ pointer_diff (location_t loc, tree op0, tree op1)
   addr_space_t as1 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op1)));
   tree target_type = TREE_TYPE (TREE_TYPE (op0));
   tree subtrahend_type = TREE_TYPE (TREE_TYPE (op1));
-  tree con0, con1, lit0, lit1;
   tree orig_op1 = op1;
 
   /* If the operands point into different address spaces, we need to
@@ -3568,7 +3567,6 @@ pointer_diff (location_t loc, tree op0, tree op1)
   else
     inttype = restype;
 
-
   if (TREE_CODE (target_type) == VOID_TYPE)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer of type %<void *%> used in subtraction");
@@ -3578,52 +3576,6 @@ pointer_diff (location_t loc, tree op0, tree op1)
 
   if (upc_shared_type_p (target_type) || upc_shared_type_p (subtrahend_type))
     return upc_pts_diff (op0, op1);
-
-  /* If the conversion to ptrdiff_type does anything like widening or
-     converting a partial to an integral mode, we get a convert_expression
-     that is in the way to do any simplifications.
-     (fold-const.c doesn't know that the extra bits won't be needed.
-     split_tree uses STRIP_SIGN_NOPS, which leaves conversions to a
-     different mode in place.)
-     So first try to find a common term here 'by hand'; we want to cover
-     at least the cases that occur in legal static initializers.  */
-  if (CONVERT_EXPR_P (op0)
-      && (TYPE_PRECISION (TREE_TYPE (op0))
-	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))))
-    con0 = TREE_OPERAND (op0, 0);
-  else
-    con0 = op0;
-  if (CONVERT_EXPR_P (op1)
-      && (TYPE_PRECISION (TREE_TYPE (op1))
-	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op1, 0)))))
-    con1 = TREE_OPERAND (op1, 0);
-  else
-    con1 = op1;
-
-  if (TREE_CODE (con0) == POINTER_PLUS_EXPR)
-    {
-      lit0 = TREE_OPERAND (con0, 1);
-      con0 = TREE_OPERAND (con0, 0);
-    }
-  else
-    lit0 = integer_zero_node;
-
-  if (TREE_CODE (con1) == POINTER_PLUS_EXPR)
-    {
-      lit1 = TREE_OPERAND (con1, 1);
-      con1 = TREE_OPERAND (con1, 0);
-    }
-  else
-    lit1 = integer_zero_node;
-
-  if (operand_equal_p (con0, con1, 0)
-      && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (con0)))
-      && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (con1))))
-    {
-      op0 = lit0;
-      op1 = lit1;
-    }
-
 
   /* First do the subtraction as integers;
      then drop through to build the divide operator.

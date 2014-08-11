@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "cfgloop.h"
-#include "pointer-set.h"
 #include "hash-map.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
@@ -340,7 +339,8 @@ optimize_function_for_speed_p (struct function *fun)
 bool
 optimize_bb_for_size_p (const_basic_block bb)
 {
-  return optimize_function_for_size_p (cfun) || !maybe_hot_bb_p (cfun, bb);
+  return (optimize_function_for_size_p (cfun)
+	  || (bb && !maybe_hot_bb_p (cfun, bb)));
 }
 
 /* Return TRUE when BB should be optimized for speed.  */
@@ -1859,7 +1859,6 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		    return val;
 		  if (predictor)
 		    {
-		      *predictor = PRED_BUILTIN_EXPECT;
 		      tree val2 = gimple_call_arg (def, 2);
 		      gcc_assert (TREE_CODE (val2) == INTEGER_CST
 				  && tree_fits_uhwi_p (val2)

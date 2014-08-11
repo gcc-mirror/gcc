@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "bitmap.h"
 #include "hash-set.h"
-#include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
@@ -216,7 +215,7 @@ struct stack_var
 static struct stack_var *stack_vars;
 static size_t stack_vars_alloc;
 static size_t stack_vars_num;
-static struct pointer_map_t *decl_to_stack_part;
+static hash_map<tree, size_t> *decl_to_stack_part;
 
 /* Conflict bitmaps go on this obstack.  This allows us to destroy
    all of them in one big sweep.  */
@@ -300,10 +299,10 @@ add_stack_var (tree decl)
 	= XRESIZEVEC (struct stack_var, stack_vars, stack_vars_alloc);
     }
   if (!decl_to_stack_part)
-    decl_to_stack_part = pointer_map_create ();
+    decl_to_stack_part = new hash_map<tree, size_t>;
 
   v = &stack_vars[stack_vars_num];
-  * (size_t *)pointer_map_insert (decl_to_stack_part, decl) = stack_vars_num;
+  decl_to_stack_part->put (decl, stack_vars_num);
 
   v->decl = decl;
   v->size = tree_to_uhwi (DECL_SIZE_UNIT (SSAVAR (decl)));
@@ -375,7 +374,7 @@ visit_op (gimple, tree op, tree, void *data)
       && DECL_P (op)
       && DECL_RTL_IF_SET (op) == pc_rtx)
     {
-      size_t *v = (size_t *) pointer_map_contains (decl_to_stack_part, op);
+      size_t *v = decl_to_stack_part->get (op);
       if (v)
 	bitmap_set_bit (active, *v);
     }
@@ -395,8 +394,7 @@ visit_conflict (gimple, tree op, tree, void *data)
       && DECL_P (op)
       && DECL_RTL_IF_SET (op) == pc_rtx)
     {
-      size_t *v =
-	(size_t *) pointer_map_contains (decl_to_stack_part, op);
+      size_t *v = decl_to_stack_part->get (op);
       if (v && bitmap_set_bit (active, *v))
 	{
 	  size_t num = *v;
@@ -447,8 +445,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	  if (TREE_CODE (lhs) != VAR_DECL)
 	    continue;
 	  if (DECL_RTL_IF_SET (lhs) == pc_rtx
-	      && (v = (size_t *)
-		  pointer_map_contains (decl_to_stack_part, lhs)))
+	      && (v = decl_to_stack_part->get (lhs)))
 	    bitmap_clear_bit (work, *v);
 	}
       else if (!is_gimple_debug (stmt))
@@ -587,6 +584,26 @@ stack_var_cmp (const void *a, const void *b)
   return 0;
 }
 
+struct part_traits : default_hashmap_traits
+{
+  template<typename T>
+    static bool
+    is_deleted (T &e)
+    { return e.m_value == reinterpret_cast<void *> (1); }
+
+  template<typename T> static bool is_empty (T &e) { return e.m_value == NULL; }
+  template<typename T>
+    static void
+    mark_deleted (T &e)
+    { e.m_value = reinterpret_cast<T> (1); }
+
+  template<typename T>
+    static void
+    mark_empty (T &e)
+      { e.m_value = NULL; }
+};
+
+typedef hash_map<size_t, bitmap, part_traits> part_hashmap;
 
 /* If the points-to solution *PI points to variables that are in a partition
    together with other variables add all partition members to the pointed-to
@@ -594,7 +611,7 @@ stack_var_cmp (const void *a, const void *b)
 
 static void
 add_partitioned_vars_to_ptset (struct pt_solution *pt,
-			       struct pointer_map_t *decls_to_partitions,
+			       part_hashmap *decls_to_partitions,
 			       hash_set<bitmap> *visited, bitmap temp)
 {
   bitmap_iterator bi;
@@ -616,8 +633,7 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
   EXECUTE_IF_SET_IN_BITMAP (pt->vars, 0, i, bi)
     if ((!temp
 	 || !bitmap_bit_p (temp, i))
-	&& (part = (bitmap *) pointer_map_contains (decls_to_partitions,
-						    (void *)(size_t) i)))
+	&& (part = decls_to_partitions->get (i)))
       bitmap_ior_into (temp, *part);
   if (!bitmap_empty_p (temp))
     bitmap_ior_into (pt->vars, temp);
@@ -631,7 +647,7 @@ add_partitioned_vars_to_ptset (struct pt_solution *pt,
 static void
 update_alias_info_with_stack_vars (void)
 {
-  struct pointer_map_t *decls_to_partitions = NULL;
+  part_hashmap *decls_to_partitions = NULL;
   size_t i, j;
   tree var = NULL_TREE;
 
@@ -648,8 +664,8 @@ update_alias_info_with_stack_vars (void)
 
       if (!decls_to_partitions)
 	{
-	  decls_to_partitions = pointer_map_create ();
-	  cfun->gimple_df->decls_to_pointers = pointer_map_create ();
+	  decls_to_partitions = new part_hashmap;
+	  cfun->gimple_df->decls_to_pointers = new hash_map<tree, tree>;
 	}
 
       /* Create an SSA_NAME that points to the partition for use
@@ -667,10 +683,8 @@ update_alias_info_with_stack_vars (void)
 	  tree decl = stack_vars[j].decl;
 	  unsigned int uid = DECL_PT_UID (decl);
 	  bitmap_set_bit (part, uid);
-	  *((bitmap *) pointer_map_insert (decls_to_partitions,
-					   (void *)(size_t) uid)) = part;
-	  *((tree *) pointer_map_insert (cfun->gimple_df->decls_to_pointers,
-					 decl)) = name;
+	  decls_to_partitions->put (uid, part);
+	  cfun->gimple_df->decls_to_pointers->put (decl, name);
 	  if (TREE_ADDRESSABLE (decl))
 	    TREE_ADDRESSABLE (name) = 1;
 	}
@@ -703,7 +717,7 @@ update_alias_info_with_stack_vars (void)
       add_partitioned_vars_to_ptset (&cfun->gimple_df->escaped,
 				     decls_to_partitions, &visited, temp);
 
-      pointer_map_destroy (decls_to_partitions);
+      delete decls_to_partitions;
       BITMAP_FREE (temp);
     }
 }
@@ -1530,7 +1544,7 @@ init_vars_expansion (void)
   bitmap_obstack_initialize (&stack_var_bitmap_obstack);
 
   /* A map from decl to stack partition.  */
-  decl_to_stack_part = pointer_map_create ();
+  decl_to_stack_part = new hash_map<tree, size_t>;
 
   /* Initialize local stack smashing state.  */
   has_protected_decls = false;
@@ -1549,7 +1563,7 @@ fini_vars_expansion (void)
   stack_vars = NULL;
   stack_vars_sorted = NULL;
   stack_vars_alloc = stack_vars_num = 0;
-  pointer_map_destroy (decl_to_stack_part);
+  delete decl_to_stack_part;
   decl_to_stack_part = NULL;
 }
 
@@ -1666,7 +1680,6 @@ expand_used_vars (void)
   tree var, outer_block = DECL_INITIAL (current_function_decl);
   vec<tree> maybe_local_decls = vNULL;
   rtx var_end_seq = NULL_RTX;
-  struct pointer_map_t *ssa_name_decls;
   unsigned i;
   unsigned len;
   bool gen_stack_protect_signal = false;
@@ -1686,7 +1699,7 @@ expand_used_vars (void)
 
   init_vars_expansion ();
 
-  ssa_name_decls = pointer_map_create ();
+  hash_map<tree, tree> ssa_name_decls;
   for (i = 0; i < SA.map->num_partitions; i++)
     {
       tree var = partition_to_var (SA.map, i);
@@ -1697,10 +1710,10 @@ expand_used_vars (void)
          we could have coalesced (those with the same type).  */
       if (SSA_NAME_VAR (var) == NULL_TREE)
 	{
-	  void **slot = pointer_map_insert (ssa_name_decls, TREE_TYPE (var));
+	  tree *slot = &ssa_name_decls.get_or_insert (TREE_TYPE (var));
 	  if (!*slot)
-	    *slot = (void *) create_tmp_reg (TREE_TYPE (var), NULL);
-	  replace_ssa_name_symbol (var, (tree) *slot);
+	    *slot = create_tmp_reg (TREE_TYPE (var), NULL);
+	  replace_ssa_name_symbol (var, *slot);
 	}
 
       /* Always allocate space for partitions based on VAR_DECLs.  But for
@@ -1727,7 +1740,6 @@ expand_used_vars (void)
 	    }
 	}
     }
-  pointer_map_destroy (ssa_name_decls);
 
   if (flag_stack_protect == SPCT_FLAG_STRONG)
       gen_stack_protect_signal
@@ -1957,7 +1969,7 @@ maybe_dump_rtl_for_gimple_stmt (gimple stmt, rtx since)
 
 /* Maps the blocks that do not contain tree labels to rtx labels.  */
 
-static struct pointer_map_t *lab_rtx_for_bb;
+static hash_map<basic_block, rtx> *lab_rtx_for_bb;
 
 /* Returns the label_rtx expression for a label starting basic block BB.  */
 
@@ -1967,14 +1979,13 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
   gimple_stmt_iterator gsi;
   tree lab;
   gimple lab_stmt;
-  void **elt;
 
   if (bb->flags & BB_RTL)
     return block_label (bb);
 
-  elt = pointer_map_contains (lab_rtx_for_bb, bb);
+  rtx *elt = lab_rtx_for_bb->get (bb);
   if (elt)
-    return (rtx) *elt;
+    return *elt;
 
   /* Find the tree label if it is present.  */
 
@@ -1991,9 +2002,9 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
       return label_rtx (lab);
     }
 
-  elt = pointer_map_insert (lab_rtx_for_bb, bb);
-  *elt = gen_label_rtx ();
-  return (rtx) *elt;
+  rtx l = gen_label_rtx ();
+  lab_rtx_for_bb->put (bb, l);
+  return l;
 }
 
 
@@ -3297,7 +3308,7 @@ expand_gimple_stmt_1 (gimple stmt)
 	      ;
 	    else if (promoted)
 	      {
-		int unsignedp = SUBREG_PROMOTED_UNSIGNED_P (target);
+		int unsignedp = SUBREG_PROMOTED_SIGN (target);
 		/* If TEMP is a VOIDmode constant, use convert_modes to make
 		   sure that we properly convert it.  */
 		if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
@@ -3309,7 +3320,13 @@ expand_gimple_stmt_1 (gimple stmt)
 					  GET_MODE (target), temp, unsignedp);
 		  }
 
-		convert_move (SUBREG_REG (target), temp, unsignedp);
+		if ((SUBREG_PROMOTED_GET (target) == SRP_SIGNED_AND_UNSIGNED)
+		    && (GET_CODE (temp) == SUBREG)
+		    && (GET_MODE (target) == GET_MODE (temp))
+		    && (GET_MODE (SUBREG_REG (target)) == GET_MODE (SUBREG_REG (temp))))
+		  emit_move_insn (SUBREG_REG (target), SUBREG_REG (temp));
+		else
+		  convert_move (SUBREG_REG (target), temp, unsignedp);
 	      }
 	    else if (nontemporal && emit_storent_insn (target, temp))
 	      ;
@@ -4878,7 +4895,6 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   rtx note, last;
   edge e;
   edge_iterator ei;
-  void **elt;
 
   if (dump_file)
     fprintf (dump_file, "\n;; Generating RTL for gimple basic block %d\n",
@@ -4922,7 +4938,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	stmt = NULL;
     }
 
-  elt = pointer_map_contains (lab_rtx_for_bb, bb);
+  rtx *elt = lab_rtx_for_bb->get (bb);
 
   if (stmt || elt)
     {
@@ -4935,7 +4951,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	}
 
       if (elt)
-	emit_label ((rtx) *elt);
+	emit_label (*elt);
 
       /* Java emits line number notes in the top of labels.
 	 ??? Make this go away once line number notes are obsoleted.  */
@@ -5792,7 +5808,7 @@ pass_expand::execute (function *fun)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (fun)->succs)
     e->flags &= ~EDGE_EXECUTABLE;
 
-  lab_rtx_for_bb = pointer_map_create ();
+  lab_rtx_for_bb = new hash_map<basic_block, rtx>;
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR_FOR_FN (fun),
 		  next_bb)
     bb = expand_gimple_basic_block (bb, var_ret_seq != NULL_RTX);
@@ -5816,7 +5832,7 @@ pass_expand::execute (function *fun)
 
   /* Expansion is used by optimization passes too, set maybe_hot_insn_p
      conservatively to true until they are all profile aware.  */
-  pointer_map_destroy (lab_rtx_for_bb);
+  delete lab_rtx_for_bb;
   free_histograms ();
 
   construct_exit_block ();

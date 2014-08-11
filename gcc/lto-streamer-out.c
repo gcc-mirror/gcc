@@ -475,7 +475,7 @@ private:
   hash_scc (struct output_block *ob, unsigned first, unsigned size);
 
   unsigned int next_dfs_num;
-  struct pointer_map_t *sccstate;
+  hash_map<tree, sccs *> sccstate;
   struct obstack sccstate_obstack;
 };
 
@@ -483,7 +483,6 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  bool single_p)
 {
   sccstack.create (0);
-  sccstate = pointer_map_create ();
   gcc_obstack_init (&sccstate_obstack);
   next_dfs_num = 1;
   DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p, single_p);
@@ -492,7 +491,6 @@ DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 DFS::~DFS ()
 {
   sccstack.release ();
-  pointer_map_destroy (sccstate);
   obstack_free (&sccstate_obstack, NULL);
 }
 
@@ -1314,7 +1312,6 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
 		     tree expr, bool ref_p, bool this_ref_p, bool single_p)
 {
   unsigned ix;
-  sccs **slot;
 
   /* Handle special cases.  */
   if (expr == NULL_TREE)
@@ -1328,7 +1325,7 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
   if (streamer_tree_cache_lookup (ob->writer_cache, expr, &ix))
     return;
 
-  slot = (sccs **)pointer_map_insert (sccstate, expr);
+  sccs **slot = &sccstate.get_or_insert (expr);
   sccs *cstate = *slot;
   if (!cstate)
     {
@@ -1889,10 +1886,8 @@ produce_asm (struct output_block *ob, tree fn)
   memset (&header, 0, sizeof (struct lto_function_header));
 
   /* Write the header.  */
-  header.lto_header.major_version = LTO_major_version;
-  header.lto_header.minor_version = LTO_minor_version;
-
-  header.compressed_size = 0;
+  header.major_version = LTO_major_version;
+  header.minor_version = LTO_minor_version;
 
   if (section_type == LTO_section_function_body)
     header.cfg_size = ob->cfg_stream->total_size;
@@ -2100,7 +2095,7 @@ lto_output_toplevel_asms (void)
   struct output_block *ob;
   struct asm_node *can;
   char *section_name;
-  struct lto_asm_header header;
+  struct lto_simple_header_with_strings header;
 
   if (! asm_nodes)
     return;
@@ -2126,8 +2121,8 @@ lto_output_toplevel_asms (void)
   memset (&header, 0, sizeof (header));
 
   /* Write the header.  */
-  header.lto_header.major_version = LTO_major_version;
-  header.lto_header.minor_version = LTO_minor_version;
+  header.major_version = LTO_major_version;
+  header.minor_version = LTO_minor_version;
 
   header.main_size = ob->main_stream->total_size;
   header.string_size = ob->string_stream->total_size;
@@ -2660,8 +2655,8 @@ produce_asm_for_decls (void)
       lto_output_decl_state_streams (ob, fn_out_state);
     }
 
-  header.lto_header.major_version = LTO_major_version;
-  header.lto_header.minor_version = LTO_minor_version;
+  header.major_version = LTO_major_version;
+  header.minor_version = LTO_minor_version;
 
   /* Currently not used.  This field would allow us to preallocate
      the globals vector, so that it need not be resized as it is extended.  */

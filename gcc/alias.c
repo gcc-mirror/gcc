@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "df.h"
 #include "tree-ssa-alias.h"
-#include "pointer-set.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
 #include "is-a.h"
@@ -302,10 +301,9 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
       && ! is_global_var (base)
       && cfun->gimple_df->decls_to_pointers != NULL)
     {
-      void *namep;
-      namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers, base);
+      tree *namep = cfun->gimple_df->decls_to_pointers->get (base);
       if (namep)
-	ref->base = build_simple_mem_ref (*(tree *)namep);
+	ref->base = build_simple_mem_ref (*namep);
     }
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);

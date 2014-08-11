@@ -95,7 +95,7 @@ tree get_polymorphic_call_info (tree, tree, tree *,
 				HOST_WIDE_INT *,
 				ipa_polymorphic_call_context *,
 				gimple call = NULL);
-bool get_dynamic_type (tree, ipa_polymorphic_call_context *, tree, gimple);
+bool get_dynamic_type (tree, ipa_polymorphic_call_context *, tree, tree, gimple);
 bool get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *,
 					       tree, tree, HOST_WIDE_INT);
 bool decl_maybe_in_construction_p (tree, tree, gimple, tree);

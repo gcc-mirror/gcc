@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "cfgexpand.h"
 #include "builtins.h"
+#include "tree-ssa.h"
 
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD
@@ -329,7 +330,7 @@ convert_move (rtx to, rtx from, int unsignedp)
   if (GET_CODE (from) == SUBREG && SUBREG_PROMOTED_VAR_P (from)
       && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (from)))
 	  >= GET_MODE_PRECISION (to_mode))
-      && SUBREG_PROMOTED_UNSIGNED_P (from) == unsignedp)
+      && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
     from = gen_lowpart (to_mode, from), from_mode = to_mode;
 
   gcc_assert (GET_CODE (to) != SUBREG || !SUBREG_PROMOTED_VAR_P (to));
@@ -703,7 +704,7 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
 
   if (GET_CODE (x) == SUBREG && SUBREG_PROMOTED_VAR_P (x)
       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) >= GET_MODE_SIZE (mode)
-      && SUBREG_PROMOTED_UNSIGNED_P (x) == unsignedp)
+      && SUBREG_CHECK_PROMOTED_SIGN (x, unsignedp))
     x = gen_lowpart (mode, SUBREG_REG (x));
 
   if (GET_MODE (x) != VOIDmode)
@@ -5202,25 +5203,25 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	  && GET_MODE_PRECISION (GET_MODE (target))
 	     == TYPE_PRECISION (TREE_TYPE (exp)))
 	{
-	  if (TYPE_UNSIGNED (TREE_TYPE (exp))
-	      != SUBREG_PROMOTED_UNSIGNED_P (target))
+	  if (!SUBREG_CHECK_PROMOTED_SIGN (target,
+					  TYPE_UNSIGNED (TREE_TYPE (exp))))
 	    {
 	      /* Some types, e.g. Fortran's logical*4, won't have a signed
 		 version, so use the mode instead.  */
 	      tree ntype
 		= (signed_or_unsigned_type_for
-		   (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)));
+		   (SUBREG_PROMOTED_SIGN (target), TREE_TYPE (exp)));
 	      if (ntype == NULL)
 		ntype = lang_hooks.types.type_for_mode
 		  (TYPE_MODE (TREE_TYPE (exp)),
-		   SUBREG_PROMOTED_UNSIGNED_P (target));
+		   SUBREG_PROMOTED_SIGN (target));
 
 	      exp = fold_convert_loc (loc, ntype, exp);
 	    }
 
 	  exp = fold_convert_loc (loc, lang_hooks.types.type_for_mode
 				  (GET_MODE (SUBREG_REG (target)),
-				   SUBREG_PROMOTED_UNSIGNED_P (target)),
+				   SUBREG_PROMOTED_SIGN (target)),
 				  exp);
 
 	  inner_target = SUBREG_REG (target);
@@ -5234,14 +5235,14 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
       if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
 	{
 	  temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
-				temp, SUBREG_PROMOTED_UNSIGNED_P (target));
+				temp, SUBREG_PROMOTED_SIGN (target));
 	  temp = convert_modes (GET_MODE (SUBREG_REG (target)),
 			        GET_MODE (target), temp,
-			        SUBREG_PROMOTED_UNSIGNED_P (target));
+				SUBREG_PROMOTED_SIGN (target));
 	}
 
       convert_move (SUBREG_REG (target), temp,
-		    SUBREG_PROMOTED_UNSIGNED_P (target));
+		    SUBREG_PROMOTED_SIGN (target));
 
       return NULL_RTX;
     }
@@ -9224,6 +9225,35 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 }
 #undef REDUCE_BIT_FIELD
 
+/* Return TRUE if value in SSA is zero and sign extended for wider mode MODE
+   using value range information stored.  Return FALSE otherwise.
+
+   This is used to check if SUBREG is zero and sign extended and to set
+   promoted mode SRP_SIGNED_AND_UNSIGNED to SUBREG.  */
+
+bool
+promoted_for_signed_and_unsigned_p (tree ssa, enum machine_mode mode)
+{
+  wide_int min, max;
+
+  if (ssa == NULL_TREE
+      || TREE_CODE (ssa) != SSA_NAME
+      || !INTEGRAL_TYPE_P (TREE_TYPE (ssa))
+      || (TYPE_PRECISION (TREE_TYPE (ssa)) != GET_MODE_PRECISION (mode)))
+    return false;
+
+  /* Return FALSE if value_range is not recorded for SSA.  */
+  if (get_range_info (ssa, &min, &max) != VR_RANGE)
+    return false;
+
+  /* Return true (to set SRP_SIGNED_AND_UNSIGNED to SUBREG) if MSB of the
+     smaller mode is not set (i.e.  MSB of ssa is not set).  */
+  if (!wi::neg_p (min, SIGNED) && !wi::neg_p(max, SIGNED))
+    return true;
+  else
+    return false;
+
+}
 
 /* Return TRUE if expression STMT is suitable for replacement.  
    Never consider memory loads as replaceable, because those don't ever lead 
@@ -9527,7 +9557,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
+	  if (promoted_for_signed_and_unsigned_p (ssa_name, mode))
+	    SUBREG_PROMOTED_SET (temp, SRP_SIGNED_AND_UNSIGNED);
+	  else
+	    SUBREG_PROMOTED_SET (temp, unsignedp);
 	  return temp;
 	}
 

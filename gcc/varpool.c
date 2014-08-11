@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "gimple-expr.h"
 #include "flags.h"
-#include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "gimple.h"
 #include "lto-streamer.h"

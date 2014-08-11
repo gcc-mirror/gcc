@@ -1,4 +1,4 @@
-/* { dg-options "-fdump-tree-asan0" } */
+/* { dg-options "-fdump-tree-sanopt" } */
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
 
@@ -9,5 +9,5 @@ f (char *a)
   return  __builtin_strlen (a);
 }
 
-/* { dg-final { scan-tree-dump-times "__asan_report_load1" 1 "asan0" } } */
-/* { dg-final { cleanup-tree-dump "asan0" } } */
+/* { dg-final { scan-tree-dump-times "__asan_report_load1" 1 "sanopt" } } */
+/* { dg-final { cleanup-tree-dump "sanopt" } } */

@@ -1,4 +1,4 @@
-/* { dg-options "-fdump-tree-asan0" } */
+/* { dg-options "-fdump-tree-sanopt" } */
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
 
@@ -10,8 +10,8 @@ foo  (int *a, char *b, char *c)
   /* For a total of 5 checks.  */
 }
 
-/* { dg-final { scan-tree-dump-times "& 7" 5 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load1" 1 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load_n" 1 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 1 "asan0" } } */
-/* { dg-final { cleanup-tree-dump "asan0" } } */
+/* { dg-final { scan-tree-dump-times "& 7" 5 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load1" 1 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load_n" 1 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 1 "sanopt" } } */
+/* { dg-final { cleanup-tree-dump "sanopt" } } */

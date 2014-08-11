@@ -5042,6 +5042,9 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
   }
 
   update_stmt (stmt);
+  cgraph_edge *e = cgraph_node::get (current_function_decl)->get_edge (stmt);
+  if (e && e->indirect_info)
+    e->indirect_info->polymorphic = false;
 
   return true;
 }

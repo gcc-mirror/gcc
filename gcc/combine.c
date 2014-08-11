@@ -12458,7 +12458,7 @@ record_promoted_value (rtx insn, rtx subreg)
       rsp = &reg_stat[regno];
       if (rsp->last_set == insn)
 	{
-	  if (SUBREG_PROMOTED_UNSIGNED_P (subreg) > 0)
+	  if (SUBREG_PROMOTED_UNSIGNED_P (subreg))
 	    rsp->last_set_nonzero_bits &= GET_MODE_MASK (mode);
 	}
 

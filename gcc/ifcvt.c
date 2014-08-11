@@ -41,7 +41,6 @@
 #include "tree-pass.h"
 #include "df.h"
 #include "vec.h"
-#include "pointer-set.h"
 #include "dbgcnt.h"
 
 #ifndef HAVE_conditional_move
@@ -1448,8 +1447,8 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 	  || byte_vtrue != byte_vfalse
 	  || (SUBREG_PROMOTED_VAR_P (vtrue)
 	      != SUBREG_PROMOTED_VAR_P (vfalse))
-	  || (SUBREG_PROMOTED_UNSIGNED_P (vtrue)
-	      != SUBREG_PROMOTED_UNSIGNED_P (vfalse)))
+	  || (SUBREG_PROMOTED_GET (vtrue)
+	      != SUBREG_PROMOTED_GET (vfalse)))
 	return NULL_RTX;
 
       promoted_target = gen_reg_rtx (GET_MODE (reg_vtrue));
@@ -1463,7 +1462,7 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 
       target = gen_rtx_SUBREG (GET_MODE (vtrue), promoted_target, byte_vtrue);
       SUBREG_PROMOTED_VAR_P (target) = SUBREG_PROMOTED_VAR_P (vtrue);
-      SUBREG_PROMOTED_UNSIGNED_SET (target, SUBREG_PROMOTED_UNSIGNED_P (vtrue));
+      SUBREG_PROMOTED_SET (target, SUBREG_PROMOTED_GET (vtrue));
       emit_move_insn (x, target);
       return x;
     }
@@ -2727,7 +2726,7 @@ noce_process_if_block (struct noce_if_info *if_info)
 
 static int
 check_cond_move_block (basic_block bb,
-		       struct pointer_map_t *vals,
+		       hash_map<rtx, rtx> *vals,
 		       vec<rtx> *regs,
 		       rtx cond)
 {
@@ -2742,7 +2741,6 @@ check_cond_move_block (basic_block bb,
   FOR_BB_INSNS (bb, insn)
     {
       rtx set, dest, src;
-      void **slot;
 
       if (!NONDEBUG_INSN_P (insn) || JUMP_P (insn))
 	continue;
@@ -2769,14 +2767,14 @@ check_cond_move_block (basic_block bb,
       /* Don't try to handle this if the source register was
 	 modified earlier in the block.  */
       if ((REG_P (src)
-	   && pointer_map_contains (vals, src))
+	   && vals->get (src))
 	  || (GET_CODE (src) == SUBREG && REG_P (SUBREG_REG (src))
-	      && pointer_map_contains (vals, SUBREG_REG (src))))
+	      && vals->get (SUBREG_REG (src))))
 	return FALSE;
 
       /* Don't try to handle this if the destination register was
 	 modified earlier in the block.  */
-      if (pointer_map_contains (vals, dest))
+      if (vals->get (dest))
 	return FALSE;
 
       /* Don't try to handle this if the condition uses the
@@ -2790,8 +2788,7 @@ check_cond_move_block (basic_block bb,
 	  && modified_between_p (src, insn, NEXT_INSN (BB_END (bb))))
 	return FALSE;
 
-      slot = pointer_map_insert (vals, (void *) dest);
-      *slot = (void *) src;
+      vals->put (dest, src);
 
       regs->safe_push (dest);
     }
@@ -2809,8 +2806,8 @@ check_cond_move_block (basic_block bb,
 static bool
 cond_move_convert_if_block (struct noce_if_info *if_infop,
 			    basic_block bb, rtx cond,
-			    struct pointer_map_t *then_vals,
-			    struct pointer_map_t *else_vals,
+			    hash_map<rtx, rtx> *then_vals,
+			    hash_map<rtx, rtx> *else_vals,
 			    bool else_block_p)
 {
   enum rtx_code code;
@@ -2823,7 +2820,6 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
   FOR_BB_INSNS (bb, insn)
     {
       rtx set, target, dest, t, e;
-      void **then_slot, **else_slot;
 
       /* ??? Maybe emit conditional debug insn?  */
       if (!NONDEBUG_INSN_P (insn) || JUMP_P (insn))
@@ -2833,10 +2829,10 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
 
       dest = SET_DEST (set);
 
-      then_slot = pointer_map_contains (then_vals, dest);
-      else_slot = pointer_map_contains (else_vals, dest);
-      t = then_slot ? (rtx) *then_slot : NULL_RTX;
-      e = else_slot ? (rtx) *else_slot : NULL_RTX;
+      rtx *then_slot = then_vals->get (dest);
+      rtx *else_slot = else_vals->get (dest);
+      t = then_slot ? *then_slot : NULL_RTX;
+      e = else_slot ? *else_slot : NULL_RTX;
 
       if (else_block_p)
 	{
@@ -2882,8 +2878,6 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   rtx seq, loc_insn;
   rtx reg;
   int c;
-  struct pointer_map_t *then_vals;
-  struct pointer_map_t *else_vals;
   vec<rtx> then_regs = vNULL;
   vec<rtx> else_regs = vNULL;
   unsigned int i;
@@ -2891,13 +2885,13 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 
   /* Build a mapping for each block to the value used for each
      register.  */
-  then_vals = pointer_map_create ();
-  else_vals = pointer_map_create ();
+  hash_map<rtx, rtx> then_vals;
+  hash_map<rtx, rtx> else_vals;
 
   /* Make sure the blocks are suitable.  */
-  if (!check_cond_move_block (then_bb, then_vals, &then_regs, cond)
+  if (!check_cond_move_block (then_bb, &then_vals, &then_regs, cond)
       || (else_bb
-	  && !check_cond_move_block (else_bb, else_vals, &else_regs, cond)))
+	  && !check_cond_move_block (else_bb, &else_vals, &else_regs, cond)))
     goto done;
 
   /* Make sure the blocks can be used together.  If the same register
@@ -2909,16 +2903,16 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   c = 0;
   FOR_EACH_VEC_ELT (then_regs, i, reg)
     {
-      void **then_slot = pointer_map_contains (then_vals, reg);
-      void **else_slot = pointer_map_contains (else_vals, reg);
+      rtx *then_slot = then_vals.get (reg);
+      rtx *else_slot = else_vals.get (reg);
 
       gcc_checking_assert (then_slot);
       if (!else_slot)
 	++c;
       else
 	{
-	  rtx then_val = (rtx) *then_slot;
-	  rtx else_val = (rtx) *else_slot;
+	  rtx then_val = *then_slot;
+	  rtx else_val = *else_slot;
 	  if (!CONSTANT_P (then_val) && !CONSTANT_P (else_val)
 	      && !rtx_equal_p (then_val, else_val))
 	    goto done;
@@ -2928,8 +2922,8 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   /* Finish off c for MAX_CONDITIONAL_EXECUTE.  */
   FOR_EACH_VEC_ELT (else_regs, i, reg)
     {
-      gcc_checking_assert (pointer_map_contains (else_vals, reg));
-      if (!pointer_map_contains (then_vals, reg))
+      gcc_checking_assert (else_vals.get (reg));
+      if (!then_vals.get (reg))
 	++c;
     }
 
@@ -2944,10 +2938,10 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      then do anything left in the else blocks.  */
   start_sequence ();
   if (!cond_move_convert_if_block (if_info, then_bb, cond,
-				   then_vals, else_vals, false)
+				   &then_vals, &else_vals, false)
       || (else_bb
 	  && !cond_move_convert_if_block (if_info, else_bb, cond,
-					  then_vals, else_vals, true)))
+					  &then_vals, &else_vals, true)))
     {
       end_sequence ();
       goto done;
@@ -2988,8 +2982,6 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   success_p = TRUE;
 
 done:
-  pointer_map_destroy (then_vals);
-  pointer_map_destroy (else_vals);
   then_regs.release ();
   else_regs.release ();
   return success_p;

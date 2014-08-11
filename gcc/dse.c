@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "target.h"
 #include "params.h"
-#include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -986,10 +985,9 @@ local_variable_can_escape (tree decl)
      of the escape analysis.  */
   if (cfun->gimple_df->decls_to_pointers != NULL)
     {
-      void *namep
-	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, decl);
+      tree *namep = cfun->gimple_df->decls_to_pointers->get (decl);
       if (namep)
-	return TREE_ADDRESSABLE (*(tree *)namep);
+	return TREE_ADDRESSABLE (*namep);
     }
 
   return false;

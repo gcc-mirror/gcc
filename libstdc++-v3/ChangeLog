@@ -1,3 +1,63 @@
+2014-08-09  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random.tcc (uniform_on_sphere_helper): Define.
+	(uniform_on_sphere_distribution::operator()): Use the new helper
+	class for the implementation.
+
+	* testsuite/ext/random/uniform_on_sphere_distribution/operators/
+	equal.cc: Remove bogus part of comment.
+	* testsuite/ext/random/uniform_on_sphere_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/ext/random/uniform_on_sphere_distribution/operators/
+	serialize.cc: Add check to verify result of serialzation and
+	deserialization.
+	* testsuite/ext/random/uniform_on_sphere_distribution/operators/
+	generate.cc: New file.
+
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/pod_char_traits.h (char_traits<__gnu_cxx::
+	character<_Value, _Int, _St> >::eof): Fix vs narrowing conversion.
+
+2014-08-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/61667
+	* include/bits/hashtable.h (_Hashtable<>::__rehash_policy): Use
+	_M_need_rehash to initialize the rehash policy and check if a rehash is
+	needed.
+	* testsuite/23_containers/unordered_map/modifiers/61667.cc: New.
+
+2014-08-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (_List_base::_List_base(_List_base&&)):
+	Optimize.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+	* include/std/future (_State_baseV2::_M_set_result): Pass pointers to
+	_M_do_set.
+	(_State_baseV2::_M_do_set): Change parameters to pointers.
+	(_State_baseV2::_Setter): Change _M_arg from reference to pointer.
+	(_State_baseV2::__setter): Initialize _Setter with pointers.
+	(_State_baseV2::__setter(promise<void>*)): Remove overload.
+	(promise::set_value, promise::set_exception): Pass setter directly
+	to _M_set_result.
+	(_State_baseV2::_Task_setter): Add template parameter for callable
+	type and replace std::function member with pointer to that type.
+	Change _M_result member from reference to pointer.
+	(_State_baseV2::_S_task_setter): Change parameter to lvalue reference
+	and initialize _Task_setter with pointers.
+	(__location_invariant): Specialize for _Setter and _Task_setter.
+
+	* include/std/future (__location_invariant): Move specializations
+	after preprocessor condition.
+
 2014-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/15339

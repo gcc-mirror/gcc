@@ -33,7 +33,6 @@
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "optabs.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "vec.h"
 #include "ggc.h"

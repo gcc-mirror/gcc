@@ -1,3 +1,162 @@
+2014-08-11  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/inc.c: Update test.
+	* c-c++-common/asan/instrument-with-calls-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-3.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-4.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-5.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-6.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-8.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-9.c: Likewise.
+
+2014-08-10 Marek Polacek  <polacek@redhat.com>
+
+	PR c/51849
+	* gcc.dg/Wc90-c99-compat-1.c: New test.
+	* gcc.dg/Wc90-c99-compat-2.c: New test.
+	* gcc.dg/Wc90-c99-compat-3.c: New test.
+	* gcc.dg/Wc90-c99-compat-4.c: New test.
+	* gcc.dg/Wc90-c99-compat-5.c: New test.
+	* gcc.dg/Wc90-c99-compat-6.c: New test.
+	* gcc.dg/wvla-1.c: Adjust dg-warning.
+	* gcc.dg/wvla-2.c: Adjust dg-warning.
+	* gcc.dg/wvla-4.c: Adjust dg-warning.
+	* gcc.dg/wvla-6.c: Adjust dg-warning.
+
+2014-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/61999
+	* gfortran.dg/dot_product_3.f90:  New test case.
+
+2014-08-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-35.C: Fix template.
+	* g++.dg/ipa/devirt-36.C: Likewise.
+	* g++.dg/ipa/devirt-37.C: New testcase.
+
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/Wnarrowing1.C: Adjust for errors.
+	* g++.dg/cpp0x/enum29.C: Adjust.
+
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/strlenopt-8.c: Remove XFAIL.
+	* gcc.dg/tree-prof/stringop-2.c: Adjust.
+	* gfortran.dg/array_memcpy_4.f90: Likewise.
+	* gfortran.dg/trim_optimize_1.f90: Likewise.
+	* gfortran.dg/trim_optimize_2.f90: Likewise.
+
+2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/zero_sign_ext_test.c: New test.
+
+2014-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/torture/pr61772.c: Skip lto running.
+
+2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/60707
+	* gfortran.dg/pr45636.f90: xfail on 32-bit hppa*-*-*.
+
+2014-08-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-35.C: New testcase.
+	* g++.dg/ipa/devirt-36.C: New testcase.
+
+2014-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51312
+	* g++.dg/cpp0x/enum29.C: New.
+
+2014-08-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/atomic/c11-atomic-exec-4.c: Undefine _POSIX_C_SOURCE before
+	defining in dg-options.
+	* gcc.dg/atomic/c11-atomic-exec-5.c: Likewise.
+
+	* gcc.dg/atomic/stdatomic-flag.c: Add xfail comment.
+
+	* gcc.dg/memcpy-5.c: Add -fno-common option on hppa*-*-hpux*.
+
+	* gcc.c-torture/compile/pr60655-1.c: Don't add -fdata-sections option
+	on 32-bit hppa-hpux.
+
+	* gcc.dg/pr57233.c: Add -fno-common option on hppa*-*-hpux*.
+	* c-c++-common/pr50459.c: Likewise.
+
+2014-08-07  Petr Murzin  <petr.murzin@intel.com>
+
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Include float.h instead of
+	values.h, change MAXDOUBLE for DBL_MAX.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Include float.h instead of
+	values.h, change MAXFLOAT for FLT_MAX.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2d-2.c: Do not include values.h.
+	* gcc.target/i386/avx512f-vpermi2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2q-2.c: Ditto.
+
+2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/pr61756.c: Remove arm-specific dg-options.
+
+2014-08-07  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-reassoc-3.c: New test.
+
+2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/struct-size.c: New.
+
+2014-08-07  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/cproj-fails-with-broken-glibc.c: Remove test.
+	* lib/target-supports.exp (check_effective_target_glibc)
+	(check_effective_target_glibc_2_12_or_later)
+	(check_effective_target_glibc_2_11_or_earlier): Remove proc.
+
+2014-08-07  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/get_address_cost_aligned_max_offset.c: New test.
+
+2014-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43906
+	* g++.dg/warn/Waddress-1.C: New.
+
+2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.dg/pr44194-1.c: Remove an extraneous brace.
+
+2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/61923
+	* gcc.target/i386/pr61923.c: New test.
+
+2014-08-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/vdup_n_2.c: New test.
+
+2014-08-06  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.dg/pr44194-1.c: Also exclude powerpc*-*-linux*, except if
+	powerpc_elfv2.
+
+2014-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61801
+	* gcc.target/i386/pr61801.c: Rewritten.
+
 2014-08-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c (test_vqdmlals_lane_s32):

@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
-#define DEF_INTERNAL_FN(CODE, FLAGS) #CODE,
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) #CODE,
 #include "internal-fn.def"
 #undef DEF_INTERNAL_FN
   "<invalid-fn>"
@@ -48,11 +48,25 @@ const char *const internal_fn_name_array[] = {
 
 /* The ECF_* flags of each internal function, indexed by function number.  */
 const int internal_fn_flags_array[] = {
-#define DEF_INTERNAL_FN(CODE, FLAGS) FLAGS,
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) FLAGS,
 #include "internal-fn.def"
 #undef DEF_INTERNAL_FN
   0
 };
+
+/* Fnspec of each internal function, indexed by function number.  */
+const_tree internal_fn_fnspec_array[IFN_LAST + 1];
+
+void
+init_internal_fns ()
+{
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
+  if (FNSPEC) internal_fn_fnspec_array[IFN_##CODE] = \
+    build_string ((int) sizeof (FNSPEC) + 1, FNSPEC ? FNSPEC : "");
+#include "internal-fn.def"
+#undef DEF_INTERNAL_FN
+  internal_fn_fnspec_array[IFN_LAST] = 0;
+}
 
 /* ARRAY_TYPE is an array of vector modes.  Return the associated insn
    for load-lanes-style optab OPTAB.  The insn must exist.  */
@@ -163,6 +177,14 @@ expand_UBSAN_NULL (gimple stmt ATTRIBUTE_UNUSED)
 
 static void
 expand_UBSAN_BOUNDS (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
+expand_ASAN_CHECK (gimple stmt ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
 }
@@ -584,12 +606,12 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	  if (GET_CODE (lopart0) == SUBREG)
 	    {
 	      SUBREG_PROMOTED_VAR_P (lopart0) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (lopart0, 0);
+	      SUBREG_PROMOTED_SET (lopart0, 0);
 	    }
 	  if (GET_CODE (lopart1) == SUBREG)
 	    {
 	      SUBREG_PROMOTED_VAR_P (lopart1) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (lopart1, 0);
+	      SUBREG_PROMOTED_SET (lopart1, 0);
 	    }
 	  tree halfstype = build_nonstandard_integer_type (hprec, 0);
 	  ops.op0 = make_tree (halfstype, lopart0);
@@ -897,7 +919,7 @@ expand_BUILTIN_EXPECT (gimple stmt)
 
    where STMT is the statement that performs the call. */
 static void (*const internal_fn_expanders[]) (gimple) = {
-#define DEF_INTERNAL_FN(CODE, FLAGS) expand_##CODE,
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) expand_##CODE,
 #include "internal-fn.def"
 #undef DEF_INTERNAL_FN
   0

@@ -1,3 +1,16 @@
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (lto_read_decls): Adjust for lto_input_block changes.
+
+2014-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	PR lto/62032
+	* lto-lang.c (lto_init): Switch mis-matched arguments.
+
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* lto-partition.c, lto.c: Use hash_map instead of pointer_map.
+
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto-partition.c, lto-partition.h: Use hash_set instead of

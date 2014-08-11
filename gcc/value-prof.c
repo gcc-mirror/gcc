@@ -1209,7 +1209,22 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   return true;
 }
 
-static pointer_map_t *cgraph_node_map = 0;
+struct profile_id_traits : default_hashmap_traits
+{
+  template<typename T>
+  static bool
+  is_deleted (T &e)
+    {
+      return e.m_key == UINT_MAX;
+    }
+
+  template<typename T> static bool is_empty (T &e) { return e.m_key == 0; }
+  template<typename T> static void mark_deleted (T &e) { e.m_key = UINT_MAX; }
+  template<typename T> static void mark_empty (T &e) { e.m_key = 0; }
+};
+
+static hash_map<unsigned int, cgraph_node *, profile_id_traits> *
+cgraph_node_map = 0;
 
 /* Returns true if node graph is initialized. This
    is used to test if profile_id has been created
@@ -1229,17 +1244,17 @@ void
 init_node_map (bool local)
 {
   struct cgraph_node *n;
-  cgraph_node_map = pointer_map_create ();
+  cgraph_node_map
+    = new hash_map<unsigned int, cgraph_node *, profile_id_traits>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
     if (n->has_gimple_body_p ())
       {
-	void **val;
+	cgraph_node **val;
 	if (local)
 	  {
 	    n->profile_id = coverage_compute_profile_id (n);
-	    while ((val = pointer_map_contains (cgraph_node_map,
-						(void *)(size_t)n->profile_id))
+	    while ((val = cgraph_node_map->get (n->profile_id))
 		   || !n->profile_id)
 	      {
 		if (dump_file)
@@ -1248,8 +1263,8 @@ init_node_map (bool local)
 			   n->profile_id,
 			   n->name (),
 			   n->order,
-			   (*(symtab_node **)val)->name (),
-			   (*(symtab_node **)val)->order);
+			   (*val)->name (),
+			   (*val)->order);
 		n->profile_id = (n->profile_id + 1) & 0x7fffffff;
 	      }
 	  }
@@ -1263,8 +1278,7 @@ init_node_map (bool local)
 		       n->order);
 	    continue;
 	  }
-	else if ((val = pointer_map_contains (cgraph_node_map,
-					      (void *)(size_t)n->profile_id)))
+	else if ((val = cgraph_node_map->get (n->profile_id)))
 	  {
 	    if (dump_file)
 	      fprintf (dump_file,
@@ -1276,8 +1290,7 @@ init_node_map (bool local)
 	    *val = NULL;
 	    continue;
 	  }
-	*pointer_map_insert (cgraph_node_map,
-			     (void *)(size_t)n->profile_id) = (void *)n;
+	cgraph_node_map->put (n->profile_id, n);
       }
 }
 
@@ -1286,7 +1299,7 @@ init_node_map (bool local)
 void
 del_node_map (void)
 {
-  pointer_map_destroy (cgraph_node_map);
+  delete cgraph_node_map;
 }
 
 /* Return cgraph node for function with pid */
@@ -1294,10 +1307,9 @@ del_node_map (void)
 struct cgraph_node*
 find_func_by_profile_id (int profile_id)
 {
-  void **val = pointer_map_contains (cgraph_node_map,
-				     (void *)(size_t)profile_id);
+  cgraph_node **val = cgraph_node_map->get (profile_id);
   if (val)
-    return (struct cgraph_node *)*val;
+    return *val;
   else
     return NULL;
 }

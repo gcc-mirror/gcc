@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "diagnostic.h"
 #include "cgraph.h"
-#include "pointer-set.h"
 
 /* Various flags to control the mangling process.  */
 

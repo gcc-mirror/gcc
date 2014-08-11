@@ -79,7 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "pointer-set.h"
 #include "calls.h"
 #include "gimple-expr.h"
 #include "varasm.h"

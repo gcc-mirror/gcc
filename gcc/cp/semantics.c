@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "target.h"
-#include "pointer-set.h"
 #include "hash-table.h"
 #include "gimplify.h"
 #include "bitmap.h"
@@ -2598,8 +2597,8 @@ finish_compound_literal (tree type, tree compound_literal,
   compound_literal = reshape_init (type, compound_literal, complain);
   if (SCALAR_TYPE_P (type)
       && !BRACE_ENCLOSED_INITIALIZER_P (compound_literal)
-      && (complain & tf_warning_or_error))
-    check_narrowing (type, compound_literal);
+      && !check_narrowing (type, compound_literal, complain))
+    return error_mark_node;
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == NULL_TREE)
     {
@@ -4015,11 +4014,11 @@ expand_or_defer_fn_1 (tree fn)
 	 this function as needed so that finish_file will make sure to
 	 output it later.  Similarly, all dllexport'd functions must
 	 be emitted; there may be callers in other DLLs.  */
-      if ((flag_keep_inline_functions
-	   && DECL_DECLARED_INLINE_P (fn)
-	   && !DECL_REALLY_EXTERN (fn))
-	  || (flag_keep_inline_dllexport
-	      && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn))))
+      if (DECL_DECLARED_INLINE_P (fn)
+	  && !DECL_REALLY_EXTERN (fn)
+	  && (flag_keep_inline_functions
+	      || (flag_keep_inline_dllexport
+		  && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn)))))
 	{
 	  mark_needed (fn);
 	  DECL_EXTERNAL (fn) = 0;
@@ -8977,7 +8976,9 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 	  constructor_elt *inner = base_field_constructor_elt (n, ce->index);
 	  inner->value = elt;
 	}
-      else if (ce->index && TREE_CODE (ce->index) == NOP_EXPR)
+      else if (ce->index
+	       && (TREE_CODE (ce->index) == NOP_EXPR
+		   || TREE_CODE (ce->index) == POINTER_PLUS_EXPR))
 	{
 	  /* This is an initializer for an empty base; now that we've
 	     checked that it's constant, we can ignore it.  */
@@ -9976,6 +9977,11 @@ maybe_constant_value (tree t)
 tree
 maybe_constant_init (tree t)
 {
+  if (TREE_CODE (t) == EXPR_STMT)
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) == CONVERT_EXPR
+      && VOID_TYPE_P (TREE_TYPE (t)))
+    t = TREE_OPERAND (t, 0);
   t = maybe_constant_value (t);
   if (TREE_CODE (t) == TARGET_EXPR)
     {

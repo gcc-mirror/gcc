@@ -1825,7 +1825,7 @@ open_base_files (void)
       "tree.h", "rtl.h", "wide-int.h", "function.h", "insn-config.h", "expr.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
-      "pointer-set.h", "hash-table.h", "vec.h", "ggc.h", "basic-block.h",
+      "hash-table.h", "vec.h", "ggc.h", "basic-block.h",
       "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
       "gimple-expr.h", "is-a.h",
       "gimple.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",

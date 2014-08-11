@@ -1,3 +1,422 @@
+2014-08-11  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (asan_check_flags): New enum.
+	(build_check_stmt_with_calls): Removed function.
+	(build_check_stmt): Split inlining logic to
+	asan_expand_check_ifn.
+	(instrument_derefs): Rename parameter.
+	(instrument_mem_region_access): Rename parameter.
+	(instrument_strlen_call): Likewise.
+	(asan_expand_check_ifn): New function.
+	(asan_instrument): Remove old code.
+	(pass_sanopt::execute): Change handling of
+	asan-instrumentation-with-call-threshold.
+	(asan_clear_shadow): Fix formatting.
+	(asan_function_start): Likewise.
+	(asan_emit_stack_protection): Likewise.
+	* doc/invoke.texi (asan-instrumentation-with-call-threshold):
+	Update description.
+	* internal-fn.c (expand_ASAN_CHECK): New function.
+	* internal-fn.def (ASAN_CHECK): New internal function.
+	* params.def (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD):
+	Update description.
+	(PARAM_ASAN_USE_AFTER_RETURN): Likewise.
+	* tree.c: Small comment fix.
+
+2014-08-11  Yury Gribov  <y.gribov@samsung.com>
+
+	* gimple.c (gimple_call_fnspec): Support internal functions.
+	(gimple_call_return_flags): Use const.
+	* Makefile.in (GTFILES): Add internal-fn.h to list of GC files.
+	* internal-fn.def: Add fnspec information.
+	* internal-fn.h (internal_fn_fnspec): New function.
+	(init_internal_fns): Declare new function.
+	* internal-fn.c (internal_fn_fnspec_array): New global variable.
+	(init_internal_fns): New function.
+	* tree-core.h: Update macro call.
+	* tree.c (build_common_builtin_nodes): Initialize internal fns.
+
+2014-08-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* lto-streamer.h (struct output_block::symbol): Change from
+	struct symtab_node to plain symtab_node.
+	(referenced_from_this_partition_p): Change first parameter
+	from struct symtab_node to plain symtab_node.
+
+2014-08-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/51849
+	* gcc/doc/invoke.texi: Document -Wc90-c99-compat.
+
+2014-08-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (get_dynamic_type): Handle case when instance is in
+	DECL correctly; do not give up on types in static storage.
+
+2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/invoke.texi ([Wnarrowing]): Update for non-constants in C++11.
+
+2014-08-09  Roman Gareev  <gareevroman@gmail.com>
+
+	* graphite-isl-ast-to-gimple.c:
+	(translate_isl_ast_node_user): Use nb_loops instead of loop->num + 1.
+
+	* gcc.dg/graphite/isl-ast-gen-user-1.c: New testcase.
+
+2014-08-08  Guozhi Wei  <carrot@google.com>
+
+	* config/rs6000/rs6000.md (*movdi_internal64): Add a new constraint.
+
+2014-08-08  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (get_skeleton_type_unit): Remove.
+	(output_skeleton_debug_sections): Remove skeleton type units.
+	(output_comdat_type_unit): Likewise.
+	(dwarf2out_finish): Likewise.
+
+2014-08-07  Yi Yang  <ahyangyi@google.com>
+
+	* predict.c (expr_expected_value_1): Remove the redundant assignment.
+
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (struct lto_input_block): Make it a class
+	with a constructor.
+	(LTO_INIT_INPUT_BLOCK, LTO_INIT_INPUT_BLOCK_PTR): Remove.
+	(struct lto_function_header, struct lto_simple_header,
+	struct lto_simple_header_with_strings,
+	struct lto_decl_header, struct lto_function_header): Make
+	a simple inheritance hieararchy.  Remove unused fields.
+	(struct lto_asm_header): Remove.
+	* lto-streamer-out.c (produce_asm): Adjust.
+	(lto_output_toplevel_asms): Likewise.
+	(produce_asm_for_decls): Likewise.
+	* lto-section-out.c (lto_destroy_simple_output_block): Likewise.
+	* data-streamer-in.c (string_for_index): Likewise.
+	* ipa-inline-analysis.c (inline_read_section): Likewise.
+	* ipa-prop.c (ipa_prop_read_section): Likewise.
+	(read_replacements_section): Likewise.
+	* lto-cgraph.c (input_cgraph_opt_section): Likewise.
+	* lto-section-in.c (lto_create_simple_input_block): Likewise.
+	(lto_destroy_simple_input_block): Likewise.
+	* lto-streamer-in.c (lto_read_body_or_constructor): Likewise.
+	(lto_input_toplevel_asms): Likewise.
+
+2014-08-08  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+        * common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX512DQ_SET): Define.
+	(OPTION_MASK_ISA_AVX512DQ_UNSET): Ditto.
+	(ix86_handle_option): Handle OPT_mavx512dq.
+	* config/i386/cpuid.h (bit_AVX512DQ): Define.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect avx512dq,
+	set -mavx512dq accordingly.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_AVX512DQ.
+	* config/i386/i386.c (ix86_target_string): Handle -mavx512dq.
+	(ix86_option_override_internal): Define PTA_AVX512DQ, handle
+	PTA_AVX512DQ and OPTION_MASK_ISA_AVX512DQ.
+	(ix86_valid_target_attribute_inner_p): Handle OPT_mavx512dq.
+	* config/i386/i386.h (TARGET_AVX512DQ): Define.
+	(TARGET_AVX512DQ_P(x)): Ditto.
+	* config/i386/i386.opt: Add mavx512dq.
+
+2014-08-08  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (c_getstr, readonly_data_expr, init_target_chars,
+	target_percent, target_percent_s): Export.
+	(var_decl_component_p, fold_builtin_memory_op, fold_builtin_memset,
+	fold_builtin_bzero, fold_builtin_strcpy, fold_builtin_strncpy,
+	fold_builtin_strcat, fold_builtin_fputs, fold_builtin_memory_chk,
+	fold_builtin_stxcpy_chk, fold_builtin_stxncpy_chk,
+	fold_builtin_sprintf_chk_1, fold_builtin_snprintf_chk_1):
+	Move to gimple-fold.c.
+	(fold_builtin_2): Remove handling of bzero, fputs, fputs_unlocked,
+	strcat and strcpy.
+	(fold_builtin_3): Remove handling of memset, bcopy, memcpy,
+	mempcpy, memmove, strncpy, strcpy_chk and stpcpy_chk.
+	(fold_builtin_4): Remove handling of memcpy_chk, mempcpy_chk,
+	memmove_chk, memset_chk, strncpy_chk and stpncpy_chk.
+	(rewrite_call_expr_array): Remove.
+	(fold_builtin_sprintf_chk): Likewise.
+	(fold_builtin_snprintf_chk): Likewise.
+	(fold_builtin_varargs): Remove handling of sprintf_chk,
+	vsprintf_chk, snprintf_chk and vsnprintf_chk.
+	(gimple_fold_builtin_sprintf_chk): Remove.
+	(gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_fold_builtin_varargs): Likewise.
+	(fold_call_stmt): Do not call gimple_fold_builtin_varargs.
+	* predict.c (optimize_bb_for_size_p): Handle NULL bb.
+	* gimple.c (gimple_seq_add_seq_without_update): New function.
+	* gimple.h (gimple_seq_add_seq_without_update): Declare.
+	* gimple-fold.c: Include output.h.
+	(gsi_replace_with_seq_vops): New function, split out from ...
+	(gimplify_and_update_call_from_tree): ... here.
+	(replace_call_with_value): New function.
+	(replace_call_with_call_and_fold): Likewise.
+	(var_decl_component_p): Moved from builtins.c.
+	(gimple_fold_builtin_memory_op): Moved from builtins.c
+	fold_builtin_memory_op and rewritten to GIMPLE.
+	(gimple_fold_builtin_memset): Likewise.
+	(gimple_fold_builtin_strcpy): Likewise.
+	(gimple_fold_builtin_strncpy): Likewise.
+	(gimple_fold_builtin_strcat): Likewise.
+	(gimple_fold_builtin_fputs): Likewise.
+	(gimple_fold_builtin_memory_chk): Likewise.
+	(gimple_fold_builtin_stxcpy_chk): Likewise.
+	(gimple_fold_builtin_stxncpy_chk): Likewise.
+	(gimple_fold_builtin_snprintf_chk): Likewise.
+	(gimple_fold_builtin_sprintf_chk): Likewise.
+	(gimple_fold_builtin_strlen): New function.
+	(gimple_fold_builtin_with_strlen): New function split out from
+	gimple_fold_builtin.
+	(gimple_fold_builtin): Change signature and handle
+	bzero, memset, bcopy, memcpy, mempcpy and memmove folding
+	here.  Call gimple_fold_builtin_with_strlen.
+	(gimple_fold_call): Adjust.
+
+2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* calls.c (precompute_arguments): Check
+	 promoted_for_signed_and_unsigned_p and set the promoted mode.
+	(promoted_for_signed_and_unsigned_p): New function.
+	(expand_expr_real_1): Check promoted_for_signed_and_unsigned_p
+	and set the promoted mode.
+	* expr.h (promoted_for_signed_and_unsigned_p): New function definition.
+	* cfgexpand.c (expand_gimple_stmt_1): Call emit_move_insn if
+	SUBREG is promoted with SRP_SIGNED_AND_UNSIGNED.
+
+
+2014-08-08  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* calls.c (precompute_arguments): Use new SUBREG_PROMOTED_SET
+	instead of SUBREG_PROMOTED_UNSIGNED_SET.
+	(expand_call): Likewise.
+	* cfgexpand.c (expand_gimple_stmt_1): Use SUBREG_PROMOTED_SIGN
+	to get promoted mode.
+	* combine.c (record_promoted_value): Skip > 0 comparison with
+	SUBREG_PROMOTED_UNSIGNED_P as it now returns only 0 or 1.
+	* expr.c (convert_move): Use SUBREG_CHECK_PROMOTED_SIGN instead
+	of SUBREG_PROMOTED_UNSIGNED_P.
+	(convert_modes): Likewise.
+	(store_expr): Use SUBREG_PROMOTED_SIGN to get promoted mode.
+	Use SUBREG_CHECK_PROMOTED_SIGN instead of SUBREG_PROMOTED_UNSIGNED_P.
+	(expand_expr_real_1): Use new SUBREG_PROMOTED_SET instead of
+	SUBREG_PROMOTED_UNSIGNED_SET.
+	* function.c (assign_parm_setup_reg): Use new SUBREG_PROMOTED_SET
+	instead of SUBREG_PROMOTED_UNSIGNED_SET.
+	* ifcvt.c (noce_emit_cmove): Updated to use SUBREG_PROMOTED_GET and
+	SUBREG_PROMOTED_SET.
+	* internal-fn.c (ubsan_expand_si_overflow_mul_check): Use
+	SUBREG_PROMOTED_SET instead of SUBREG_PROMOTED_UNSIGNED_SET.
+	* optabs.c (widen_operand): Use SUBREG_CHECK_PROMOTED_SIGN instead
+	of SUBREG_PROMOTED_UNSIGNED_P.
+	* rtl.h (SUBREG_PROMOTED_UNSIGNED_SET): Remove.
+	(SUBREG_PROMOTED_SET): New define.
+	(SUBREG_PROMOTED_GET): Likewise.
+	(SUBREG_PROMOTED_SIGN): Likewise.
+	(SUBREG_PROMOTED_SIGNED_P): Likewise.
+	(SUBREG_CHECK_PROMOTED_SIGN): Likewise.
+	(SUBREG_PROMOTED_UNSIGNED_P): Updated.
+	* rtlanal.c (unsigned_reg_p): Use new SUBREG_PROMOTED_GET
+	instead of SUBREG_PROMOTED_UNSIGNED_GET.
+	(nonzero_bits1): Skip > 0 comparison with the results as
+	SUBREG_PROMOTED_UNSIGNED_P now returns only 0 or 1.
+	(num_sign_bit_copies1): Use SUBREG_PROMOTED_SIGNED_P instead
+	of !SUBREG_PROMOTED_UNSIGNED_P.
+	* simplify-rtx.c (simplify_unary_operation_1): Use new
+	SUBREG_PROMOTED_SIGNED_P instead of !SUBREG_PROMOTED_UNSIGNED_P.
+	(simplify_subreg): Use new SUBREG_PROMOTED_SIGNED_P,
+	SUBREG_PROMOTED_UNSIGNED_P and SUBREG_PROMOTED_SET instead of
+	SUBREG_PROMOTED_UNSIGNED_P and SUBREG_PROMOTED_UNSIGNED_SET.
+
+2014-08-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c: Include gimple-pretty-print.h
+	(referenced_from_vtable_p): Exclude DECL_EXTERNAL from
+	further tests.
+	(decl_maybe_in_construction_p): Fix conditional on cdtor check
+	(get_polymorphic_call_info): Fix return value
+	(type_change_info): New sturcture based on ipa-prop
+	variant.
+	(noncall_stmt_may_be_vtbl_ptr_store): New predicate
+	based on ipa-prop variant.
+	(extr_type_from_vtbl_ptr_store): New function
+	based on ipa-prop variant.
+	(record_known_type): New function.
+	(check_stmt_for_type_change): New function.
+	(get_dynamic_type): New function.
+	* ipa-prop.c (ipa_analyze_call_uses): Use get_dynamic_type.
+	* tree-ssa-pre.c: ipa-utils.h
+	(eliminate_dom_walker::before_dom_children): Use ipa-devirt
+	machinery; sanity check with ipa-prop devirtualization.
+	* trans-mem.c (ipa_tm_insert_gettmclone_call): Clear
+	polymorphic flag.
+
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* Makefile.in: Remove references to pointer-set.c and pointer-set.h.
+	* alias.c, cfgexpand.c, cgraphbuild.c,
+	config/aarch64/aarch64-builtins.c, config/aarch64/aarch64.c,
+	config/alpha/alpha.c, config/darwin.c, config/i386/i386.c,
+	config/i386/winnt.c, config/ia64/ia64.c, config/m32c/m32c.c,
+	config/mep/mep.c, config/mips/mips.c, config/rs6000/rs6000.c,
+	config/s390/s390.c, config/sh/sh.c, config/sparc/sparc.c,
+	config/spu/spu.c, config/stormy16/stormy16.c, config/tilegx/tilegx.c,
+	config/tilepro/tilepro.c, config/xtensa/xtensa.c, dominance.c,
+	dse.c, except.c, gengtype.c, gimple-expr.c,
+	gimple-ssa-strength-reduction.c, gimplify.c, ifcvt.c,
+	ipa-visibility.c, lto-streamer.h, omp-low.c, predict.c, stmt.c,
+	tree-affine.c, tree-cfg.c, tree-eh.c, tree-inline.c, tree-nested.c,
+	tree-scalar-evolution.c, tree-ssa-loop-im.c, tree-ssa-loop-niter.c,
+	tree-ssa-phiopt.c, tree-ssa-structalias.c, tree-ssa-uninit.c,
+	tree-ssa.c, tree.c, var-tracking.c, varpool.c: Remove includes of
+	pointer-set.h.
+	* pointer-set.c: Remove file.
+	* pointer-set.h: Remove file.
+
+2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (*cmov<mode>): Set type attribute to fcsel.
+	* config/arm/types.md (f_sels, f_seld): Delete.
+
+2014-08-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (absdi2): Set simd attribute.
+	(aarch64_reload_mov<mode>): Predicate on TARGET_FLOAT.
+	(aarch64_movdi_<mode>high): Likewise.
+	(aarch64_mov<mode>high_di): Likewise.
+	(aarch64_movdi_<mode>low): Likewise.
+	(aarch64_mov<mode>low_di): Likewise.
+	(aarch64_movtilow_tilow): Likewise.
+	Add comment explaining usage of fp,simd attributes and of
+	TARGET_FLOAT and TARGET_SIMD.
+
+2014-08-07  Ian Bolton  <ian.bolton@arm.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate):
+	Use MOVN when one of the half-words is 0xffff.
+
+2014-08-07  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* config/arm/thumb1.md (*thumb1_movqi_insn): Copy of thumb1_movhi_insn.
+
+2014-08-07  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* haifa-sched.c (SCHED_SORT): Delete.  Macro used exactly once.
+	(enum rfs_decition:RFS_*): New constants wrapped in an enum.
+	(rfs_str): String corresponding to RFS_* constants.
+	(rank_for_schedule_stats_t): New typedef.
+	(rank_for_schedule_stats): New static variable.
+	(rfs_result): New static function.
+	(rank_for_schedule): Track statistics for deciding heuristics.
+	(rank_for_schedule_stats_diff, print_rank_for_schedule_stats): New
+	static functions.
+	(ready_sort): Use them for debug printouts.
+	(schedule_block): Init statistics state.  Print statistics on
+	rank_for_schedule decisions.
+
+2014-08-07  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* haifa-sched.c (rank_for_schedule): Fix INSN_TICK-based heuristics.
+
+2014-08-07  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): Fix
+	constraint.
+
+2014-08-07  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* hash-map.h (default_hashmap_traits): Adjust overloads of hash
+	function to not conflict.
+	* alias.c, cfgexpand.c, dse.c, except.h, gimple-expr.c,
+	gimple-ssa-strength-reduction.c, gimple-ssa.h, ifcvt.c,
+	lto-streamer-out.c, lto-streamer.h, tree-affine.c, tree-affine.h,
+	tree-predcom.c, tree-scalar-evolution.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-niter.c, tree-ssa.c, value-prof.c: Use hash_map instead
+	of pointer_map.
+
+2014-08-07  Marek Polacek  <polacek@redhat.com>
+
+	* fold-const.c (fold_binary_loc): Add folding of
+	(PTR0 - (PTR1 p+ A) -> (PTR0 - PTR1) - A.
+
+2013-08-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Use decl size
+	instead of type size.
+	(ASM_FINISH_DECLARE_OBJECT): Likewise.
+
+2014-08-07  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* config/arm/thumb1.md (*thumb1_movhi_insn): Handle stack pointer.
+	(*thumb1_movqi_insn): Likewise.
+	* config/arm/thumb2.md (*thumb2_movhi_insn): Likewise.
+
+2014-08-07  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (glibc, glibc_2_12_or_later)
+	(glibc_2_11_or_earlier): Remove effective-target keywords.
+
+2014-08-07  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/arm/arm.c (bdesc_2arg): Fix typo.
+	(arm_atomic_assign_expand_fenv): Remove The default implementation.
+
+2014-08-07  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Try aligned offset.
+
+2014-08-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR debug/61923
+	* haifa-sched.c (advance_one_cycle): Fix dump.
+	(schedule_block): Don't advance cycle if we are already at the
+	beginning of the cycle.
+
+2014-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/61393
+	* cgraphclones.c (cgraph_node::create_clone): Also copy tm_clone.
+
+2014-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/62034
+	* lto-streamer-in.c (lto_input_tree_1): Assert we do not read
+	SCCs here.
+	(lto_input_tree): Pop SCCs here.
+
+2014-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61320
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Properly
+	handle misaligned loads.
+
+2014-08-06  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_dup): Enable for bigendian.
+	(aarch64_expand_vec_perm_const): Check for dup before zip.
+
+2014-08-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_address): Use REG_P and
+	CONST_INT_P instead of GET_CODE and compare.
+	(aarch64_select_cc_mode): Likewise.
+	(aarch64_print_operand): Likewise.
+	(aarch64_rtx_costs): Likewise.
+	(aarch64_simd_valid_immediate): Likewise.
+	(aarch64_simd_check_vect_par_cnst_half): Likewise.
+	(aarch64_simd_emit_pair_result_insn): Likewise.
+
 2014-08-05  David Malcolm  <dmalcolm@redhat.com>
 
         * gdbhooks.py (find_gcc_source_dir): New helper function.
@@ -116,10 +535,10 @@
 2014-08-05  Roman Gareev  <gareevroman@gmail.com>
 
 	* graphite-isl-ast-to-gimple.c: Add a new struct ast_build_info.
-	(translate_isl_ast_for_loop): Add checking of the 
+	(translate_isl_ast_for_loop): Add checking of the
 	flag_loop_parallelize_all.
 	(ast_build_before_for): New function.
-	(scop_to_isl_ast): Add checking of the 
+	(scop_to_isl_ast): Add checking of the
 	flag_loop_parallelize_all.
 	* graphite-dependences.c: Move the defenition of the
 	scop_get_dependences from graphite-optimize-isl.c to this file.
@@ -251,7 +670,8 @@
 
 2014-08-01  Jan Hubicka  <hubicka@ucw.cz>
 
-	* doc/invoke.texi (Wsuggest-final-types, Wsuggest-final-methods): Document.
+	* doc/invoke.texi (Wsuggest-final-types, Wsuggest-final-methods):
+	Document.
 	* ipa-devirt.c: Include hash-map.h
 	(struct polymorphic_call_target_d): Add type_warning and decl_warning.
 	(clear_speculation): Break out of ...
@@ -260,15 +680,16 @@
 	(odr_type_warn_count, decl_warn_count): New structures.
 	(final_warning_record): New structure.
 	(final_warning_records): New static variable.
-	(possible_polymorphic_call_targets): Cleanup handling of speculative info;
-	do not build speculation when user do not care; record info about warnings
-	when asked for.
+	(possible_polymorphic_call_targets): Cleanup handling of
+	speculative info; do not build speculation when user do not care;
+	record info about warnings when asked for.
 	(add_decl_warning): New function.
 	(type_warning_cmp): New function.
 	(decl_warning_cmp): New function.
 	(ipa_devirt): Handle -Wsuggest-final-methods and -Wsuggest-final-types.
 	(gate): Enable pass when warnings are requested.
-	* common.opt (Wsuggest-final-types, Wsuggest-final-methods): New options.
+	* common.opt (Wsuggest-final-types, Wsuggest-final-methods): New
+	options.
 
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
 

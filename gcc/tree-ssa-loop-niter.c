@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "intl.h"
 #include "hash-set.h"
-#include "pointer-set.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
@@ -3108,14 +3107,12 @@ bound_index (vec<widest_int> bounds, const widest_int &bound)
 static void
 discover_iteration_bound_by_body_walk (struct loop *loop)
 {
-  pointer_map_t *bb_bounds;
   struct nb_iter_bound *elt;
   vec<widest_int> bounds = vNULL;
   vec<vec<basic_block> > queues = vNULL;
   vec<basic_block> queue = vNULL;
   ptrdiff_t queue_index;
   ptrdiff_t latch_index = 0;
-  pointer_map_t *block_priority;
 
   /* Discover what bounds may interest us.  */
   for (elt = loop->bounds; elt; elt = elt->next)
@@ -3150,7 +3147,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
   /* For every basic block record the lowest bound that is guaranteed to
      terminate the loop.  */
 
-  bb_bounds = pointer_map_create ();
+  hash_map<basic_block, ptrdiff_t> bb_bounds;
   for (elt = loop->bounds; elt; elt = elt->next)
     {
       widest_int bound = elt->bound;
@@ -3166,17 +3163,15 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 	  || wi::ltu_p (bound, loop->nb_iterations_upper_bound))
 	{
 	  ptrdiff_t index = bound_index (bounds, bound);
-	  void **entry = pointer_map_contains (bb_bounds,
-					       gimple_bb (elt->stmt));
+	  ptrdiff_t *entry = bb_bounds.get (gimple_bb (elt->stmt));
 	  if (!entry)
-	    *pointer_map_insert (bb_bounds,
-				 gimple_bb (elt->stmt)) = (void *)index;
+	    bb_bounds.put (gimple_bb (elt->stmt), index);
 	  else if ((ptrdiff_t)*entry > index)
-	    *entry = (void *)index;
+	    *entry = index;
 	}
     }
 
-  block_priority = pointer_map_create ();
+  hash_map<basic_block, ptrdiff_t> block_priority;
 
   /* Perform shortest path discovery loop->header ... loop->latch.
 
@@ -3199,7 +3194,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
   queues.safe_grow_cleared (queue_index + 1);
   queue.safe_push (loop->header);
   queues[queue_index] = queue;
-  *pointer_map_insert (block_priority, loop->header) = (void *)queue_index;
+  block_priority.put (loop->header, queue_index);
 
   for (; queue_index >= 0; queue_index--)
     {
@@ -3209,7 +3204,6 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 	    {
 	      basic_block bb;
 	      ptrdiff_t bound_index = queue_index;
-	      void **entry;
               edge e;
               edge_iterator ei;
 
@@ -3217,20 +3211,19 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 	      bb = queue.pop ();
 
 	      /* OK, we later inserted the BB with lower priority, skip it.  */
-	      if ((ptrdiff_t)*pointer_map_contains (block_priority, bb) > queue_index)
+	      if (*block_priority.get (bb) > queue_index)
 		continue;
 
 	      /* See if we can improve the bound.  */
-	      entry = pointer_map_contains (bb_bounds, bb);
-	      if (entry && (ptrdiff_t)*entry < bound_index)
-		bound_index = (ptrdiff_t)*entry;
+	      ptrdiff_t *entry = bb_bounds.get (bb);
+	      if (entry && *entry < bound_index)
+		bound_index = *entry;
 
 	      /* Insert succesors into the queue, watch for latch edge
 		 and record greatest index we saw.  */
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		{
 		  bool insert = false;
-		  void **entry;
 
 		  if (loop_exit_edge_p (loop, e))
 		    continue;
@@ -3238,15 +3231,15 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 		  if (e == loop_latch_edge (loop)
 		      && latch_index < bound_index)
 		    latch_index = bound_index;
-		  else if (!(entry = pointer_map_contains (block_priority, e->dest)))
+		  else if (!(entry = block_priority.get (e->dest)))
 		    {
 		      insert = true;
-		      *pointer_map_insert (block_priority, e->dest) = (void *)bound_index;
+		      block_priority.put (e->dest, bound_index);
 		    }
-		  else if ((ptrdiff_t)*entry < bound_index)
+		  else if (*entry < bound_index)
 		    {
 		      insert = true;
-		      *entry = (void *)bound_index;
+		      *entry = bound_index;
 		    }
 		    
 		  if (insert)
@@ -3271,8 +3264,6 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 
   queues.release ();
   bounds.release ();
-  pointer_map_destroy (bb_bounds);
-  pointer_map_destroy (block_priority);
 }
 
 /* See if every path cross the loop goes through a statement that is known

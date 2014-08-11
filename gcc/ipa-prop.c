@@ -2337,11 +2337,46 @@ ipa_analyze_call_uses (struct func_body_info *fbi, gimple call)
           && !virtual_method_call_p (target)))
     return;
 
+  struct cgraph_edge *cs = fbi->node->get_edge (call);
   /* If we previously turned the call into a direct call, there is
      no need to analyze.  */
-  struct cgraph_edge *cs = fbi->node->get_edge (call);
   if (cs && !cs->indirect_unknown_callee)
     return;
+
+  if (cs->indirect_info->polymorphic)
+    {
+      tree otr_type;
+      HOST_WIDE_INT otr_token;
+      ipa_polymorphic_call_context context;
+      tree instance;
+      tree target = gimple_call_fn (call);
+
+      instance = get_polymorphic_call_info (current_function_decl,
+					    target,
+					    &otr_type, &otr_token,
+					    &context, call);
+
+      if (get_dynamic_type (instance, &context,
+			    OBJ_TYPE_REF_OBJECT (target),
+			    otr_type, call))
+	{
+	  gcc_assert (TREE_CODE (otr_type) == RECORD_TYPE);
+	  cs->indirect_info->polymorphic = true;
+	  cs->indirect_info->param_index = -1;
+	  cs->indirect_info->otr_token = otr_token;
+	  cs->indirect_info->otr_type = otr_type;
+	  cs->indirect_info->outer_type = context.outer_type;
+	  cs->indirect_info->speculative_outer_type = context.speculative_outer_type;
+	  cs->indirect_info->offset = context.offset;
+	  cs->indirect_info->speculative_offset = context.speculative_offset;
+	  cs->indirect_info->maybe_in_construction
+	     = context.maybe_in_construction;
+	  cs->indirect_info->maybe_derived_type = context.maybe_derived_type;
+	  cs->indirect_info->speculative_maybe_derived_type
+	     = context.speculative_maybe_derived_type;
+	}
+    }
+
   if (TREE_CODE (target) == SSA_NAME)
     ipa_analyze_indirect_call_uses (fbi, call, target);
   else if (virtual_method_call_p (target))
@@ -4895,12 +4930,11 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
   const int main_offset = cfg_offset + header->cfg_size;
   const int string_offset = main_offset + header->main_size;
   struct data_in *data_in;
-  struct lto_input_block ib_main;
   unsigned int i;
   unsigned int count;
 
-  LTO_INIT_INPUT_BLOCK (ib_main, (const char *) data + main_offset, 0,
-			header->main_size);
+  lto_input_block ib_main ((const char *) data + main_offset,
+			   header->main_size);
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
@@ -5073,12 +5107,11 @@ read_replacements_section (struct lto_file_decl_data *file_data,
   const int main_offset = cfg_offset + header->cfg_size;
   const int string_offset = main_offset + header->main_size;
   struct data_in *data_in;
-  struct lto_input_block ib_main;
   unsigned int i;
   unsigned int count;
 
-  LTO_INIT_INPUT_BLOCK (ib_main, (const char *) data + main_offset, 0,
-			header->main_size);
+  lto_input_block ib_main ((const char *) data + main_offset,
+			   header->main_size);
 
   data_in = lto_data_in_create (file_data, (const char *) data + string_offset,
 				header->string_size, vNULL);

@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "pointer-set.h"
 #include "hash-map.h"
 #include "hash-table.h"
 #include "basic-block.h"
@@ -434,7 +433,7 @@ cand_chain_hasher::equal (const value_type *chain1, const compare_type *chain2)
 static hash_table<cand_chain_hasher> *base_cand_map;
 
 /* Pointer map used by tree_to_aff_combination_expand.  */
-static struct pointer_map_t *name_expansions;
+static hash_map<tree, name_expansion *> *name_expansions;
 /* Pointer map embodying a mapping from bases to alternative bases.  */
 static hash_map<tree, tree> *alt_base_map;
 

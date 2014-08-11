@@ -73,6 +73,7 @@
 #define bit_BMI2	(1 << 8)
 #define bit_RTM	(1 << 11)
 #define bit_AVX512F	(1 << 16)
+#define bit_AVX512DQ	(1 << 17)
 #define bit_RDSEED	(1 << 18)
 #define bit_ADX	(1 << 19)
 #define bit_CLFLUSHOPT	(1 << 23)

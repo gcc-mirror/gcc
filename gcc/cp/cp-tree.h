@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "hashtab.h"
 #include "vec.h"
+#include "hash-map.h"
 
 /* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before
@@ -1064,7 +1065,7 @@ struct GTY(()) saved_scope {
   cp_binding_level *class_bindings;
   cp_binding_level *bindings;
 
-  struct pointer_map_t *x_local_specializations;
+  hash_map<tree, tree> *GTY((skip)) x_local_specializations;
 
   struct saved_scope *prev;
 };
@@ -6213,7 +6214,7 @@ extern int abstract_virtuals_error_sfinae	(tree, tree, tsubst_flags_t);
 extern int abstract_virtuals_error_sfinae	(abstract_class_use, tree, tsubst_flags_t);
 
 extern tree store_init_value			(tree, tree, vec<tree, va_gc>**, int);
-extern void check_narrowing			(tree, tree);
+extern bool check_narrowing			(tree, tree, tsubst_flags_t);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int);
 extern tree digest_nsdmi_init		        (tree, tree);

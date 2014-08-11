@@ -36,12 +36,9 @@ struct default_hashmap_traits
       return uintptr_t(p) >> 3;
     }
 
-  /* The right thing to do here would be using is_integral to only allow
-     template arguments of integer type, but reimplementing that is a pain, so
-     we'll just promote everything to [u]int64_t and truncate to hashval_t.  */
+  /* If the value converts to hashval_t just use it.  */
 
-  static hashval_t hash (uint64_t v) { return v; }
-  static hashval_t hash (int64_t v) { return v; }
+  template<typename T> static hashval_t hash (T v) { return v; }
 
   /* Return true if the two keys passed as arguments are equal.  */
 

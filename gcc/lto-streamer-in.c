@@ -1054,8 +1054,6 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
   int cfg_offset;
   int main_offset;
   int string_offset;
-  struct lto_input_block ib_cfg;
-  struct lto_input_block ib_main;
   tree fn_decl = node->decl;
 
   header = (const struct lto_function_header *) data;
@@ -1064,26 +1062,11 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
       cfg_offset = sizeof (struct lto_function_header);
       main_offset = cfg_offset + header->cfg_size;
       string_offset = main_offset + header->main_size;
-
-      LTO_INIT_INPUT_BLOCK (ib_cfg,
-			    data + cfg_offset,
-			    0,
-			    header->cfg_size);
-
-      LTO_INIT_INPUT_BLOCK (ib_main,
-			    data + main_offset,
-			    0,
-			    header->main_size);
     }
   else
     {
       main_offset = sizeof (struct lto_function_header);
       string_offset = main_offset + header->main_size;
-
-      LTO_INIT_INPUT_BLOCK (ib_main,
-			    data + main_offset,
-			    0,
-			    header->main_size);
     }
 
   data_in = lto_data_in_create (file_data, data + string_offset,
@@ -1104,8 +1087,12 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 
       /* Set up the struct function.  */
       from = data_in->reader_cache->nodes.length ();
+      lto_input_block ib_main (data + main_offset, header->main_size);
       if (TREE_CODE (node->decl) == FUNCTION_DECL)
-        input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+	{
+	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size);
+	  input_function (fn_decl, data_in, &ib_main, &ib_cfg);
+	}
       else
         input_constructor (fn_decl, data_in, &ib_main);
       /* And fixup types we streamed locally.  */
@@ -1324,15 +1311,7 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
       streamer_tree_cache_append (data_in->reader_cache, result, hash);
     }
   else if (tag == LTO_tree_scc)
-    {
-      unsigned len, entry_len;
-
-      /* Input and skip the SCC.  */
-      lto_input_scc (ib, data_in, &len, &entry_len);
-
-      /* Recurse.  */
-      return lto_input_tree (ib, data_in);
-    }
+    gcc_unreachable ();
   else
     {
       /* Otherwise, materialize a new node from IB.  */
@@ -1345,7 +1324,15 @@ lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
 tree
 lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 {
-  return lto_input_tree_1 (ib, data_in, streamer_read_record_start (ib), 0);
+  enum LTO_tags tag;
+
+  /* Input and skip SCCs.  */
+  while ((tag = streamer_read_record_start (ib)) == LTO_tree_scc)
+    {
+      unsigned len, entry_len;
+      lto_input_scc (ib, data_in, &len, &entry_len);
+    }
+  return lto_input_tree_1 (ib, data_in, tag, 0);
 }
 
 
@@ -1357,10 +1344,10 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
   size_t len;
   const char *data = lto_get_section_data (file_data, LTO_section_asm,
 					   NULL, &len);
-  const struct lto_asm_header *header = (const struct lto_asm_header *) data;
+  const struct lto_simple_header_with_strings *header
+    = (const struct lto_simple_header_with_strings *) data;
   int string_offset;
   struct data_in *data_in;
-  struct lto_input_block ib;
   tree str;
 
   if (! data)
@@ -1368,10 +1355,7 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
 
   string_offset = sizeof (*header) + header->main_size;
 
-  LTO_INIT_INPUT_BLOCK (ib,
-			data + sizeof (*header),
-			0,
-			header->main_size);
+  lto_input_block ib (data + sizeof (*header), header->main_size);
 
   data_in = lto_data_in_create (file_data, data + string_offset,
 			      header->string_size, vNULL);

@@ -670,7 +670,7 @@ unsigned_reg_p (rtx op)
     return true;
 
   if (GET_CODE (op) == SUBREG
-      && SUBREG_PROMOTED_UNSIGNED_P (op))
+      && SUBREG_PROMOTED_SIGN (op))
     return true;
 
   return false;
@@ -4309,7 +4309,7 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 	 been zero-extended, we know that at least the high-order bits
 	 are zero, though others might be too.  */
 
-      if (SUBREG_PROMOTED_VAR_P (x) && SUBREG_PROMOTED_UNSIGNED_P (x) > 0)
+      if (SUBREG_PROMOTED_VAR_P (x) && SUBREG_PROMOTED_UNSIGNED_P (x))
 	nonzero = GET_MODE_MASK (GET_MODE (x))
 		  & cached_nonzero_bits (SUBREG_REG (x), GET_MODE (x),
 					 known_x, known_mode, known_ret);
@@ -4619,7 +4619,7 @@ num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 	 and we are looking at it in a wider mode, we know that at least the
 	 high-order bits are known to be sign bit copies.  */
 
-      if (SUBREG_PROMOTED_VAR_P (x) && ! SUBREG_PROMOTED_UNSIGNED_P (x))
+      if (SUBREG_PROMOTED_VAR_P (x) && SUBREG_PROMOTED_SIGNED_P (x))
 	{
 	  num0 = cached_num_sign_bit_copies (SUBREG_REG (x), mode,
 					     known_x, known_mode, known_ret);

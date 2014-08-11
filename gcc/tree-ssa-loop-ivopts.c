@@ -1703,6 +1703,8 @@ may_be_unaligned_p (tree ref, tree step)
     return false;
 
   unsigned int align = TYPE_ALIGN (TREE_TYPE (ref));
+  if (GET_MODE_ALIGNMENT (TYPE_MODE (TREE_TYPE (ref))) > align)
+    align = GET_MODE_ALIGNMENT (TYPE_MODE (TREE_TYPE (ref)));
 
   unsigned HOST_WIDE_INT bitpos;
   unsigned int ref_align;
@@ -3307,6 +3309,18 @@ get_address_cost (bool symbol_present, bool var_present,
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
+	  /* For some TARGET, like ARM THUMB1, the offset should be nature
+	     aligned.  Try an aligned offset if address_mode is not QImode.  */
+	  off = (address_mode == QImode)
+		? 0
+		: ((unsigned HOST_WIDE_INT) 1 << i)
+		    - GET_MODE_SIZE (address_mode);
+	  if (off > 0)
+	    {
+	      XEXP (addr, 1) = gen_int_mode (off, address_mode);
+	      if (memory_address_addr_space_p (mem_mode, addr, as))
+		break;
+	    }
 	}
       if (i == -1)
         off = 0;

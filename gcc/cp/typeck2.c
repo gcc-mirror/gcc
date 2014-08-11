@@ -842,27 +842,31 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 }
 
 
-/* Give errors about narrowing conversions within { }.  */
+/* Give diagnostic about narrowing conversions within { }.  */
 
-void
-check_narrowing (tree type, tree init)
+bool
+check_narrowing (tree type, tree init, tsubst_flags_t complain)
 {
   tree ftype = unlowered_expr_type (init);
   bool ok = true;
   REAL_VALUE_TYPE d;
 
-  if (!warn_narrowing || !ARITHMETIC_TYPE_P (type))
-    return;
+  if (((!warn_narrowing || !(complain & tf_warning))
+       && cxx_dialect == cxx98)
+      || !ARITHMETIC_TYPE_P (type))
+    return ok;
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
       && TREE_CODE (type) == COMPLEX_TYPE)
     {
       tree elttype = TREE_TYPE (type);
       if (CONSTRUCTOR_NELTS (init) > 0)
-        check_narrowing (elttype, CONSTRUCTOR_ELT (init, 0)->value);
+        ok &= check_narrowing (elttype, CONSTRUCTOR_ELT (init, 0)->value,
+			       complain);
       if (CONSTRUCTOR_NELTS (init) > 1)
-	check_narrowing (elttype, CONSTRUCTOR_ELT (init, 1)->value);
-      return;
+	ok &= check_narrowing (elttype, CONSTRUCTOR_ELT (init, 1)->value,
+			       complain);
+      return ok;
     }
 
   init = maybe_constant_value (fold_non_dependent_expr_sfinae (init, tf_none));
@@ -917,15 +921,27 @@ check_narrowing (tree type, tree init)
 
   if (!ok)
     {
-      if (cxx_dialect >= cxx11)
-	pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
-		 "narrowing conversion of %qE from %qT to %qT inside { }",
-		 init, ftype, type);
-      else
+      if (cxx_dialect == cxx98)
 	warning_at (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
 		    "narrowing conversion of %qE from %qT to %qT inside { } "
 		    "is ill-formed in C++11", init, ftype, type);
+      else if (!TREE_CONSTANT (init))
+	{
+	  if (complain & tf_warning_or_error)
+	    {
+	      pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
+		       "narrowing conversion of %qE from %qT to %qT inside { }",
+		       init, ftype, type);
+	      ok = true;
+	    }
+	}
+      else if (complain & tf_error)
+	error_at (EXPR_LOC_OR_LOC (init, input_location),
+		  "narrowing conversion of %qE from %qT to %qT inside { }",
+		  init, ftype, type);
     }
+
+  return cxx_dialect == cxx98 || ok; 
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting

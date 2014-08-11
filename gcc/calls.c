@@ -1484,8 +1484,10 @@ precompute_arguments (int num_actuals, struct arg_data *args)
 	      args[i].initial_value
 		= gen_lowpart_SUBREG (mode, args[i].value);
 	      SUBREG_PROMOTED_VAR_P (args[i].initial_value) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (args[i].initial_value,
-					    args[i].unsignedp);
+	      if (promoted_for_signed_and_unsigned_p (args[i].tree_value, mode))
+		SUBREG_PROMOTED_SET (args[i].initial_value, SRP_SIGNED_AND_UNSIGNED);
+	      else
+		SUBREG_PROMOTED_SET (args[i].initial_value, args[i].unsignedp);
 	    }
 	}
     }
@@ -3365,7 +3367,7 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
 	  SUBREG_PROMOTED_VAR_P (target) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_SET (target, unsignedp);
+	  SUBREG_PROMOTED_SET (target, unsignedp);
 	}
 
       /* If size of args is variable or this was a constructor call for a stack
