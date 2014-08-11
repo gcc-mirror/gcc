@@ -8285,7 +8285,9 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
       if (!val_14)
 	output_asm_insn ("addil L'%2,%%r26", xoperands);
 
-      output_asm_insn ("b %0", xoperands);
+      /* An absolute branch without a link register is not considered
+	 a call by GAS.  We need a call to get a stub if necessary.  */
+      output_asm_insn ("bl %0,%%r31", xoperands);
 
       if (val_14)
 	{

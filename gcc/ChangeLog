@@ -1,3 +1,9 @@
+2014-08-11  John Dave Anglin  <danglin@gcc.gnu.org>
+
+	PR target/62038
+	* config/pa/pa.c (pa_asm_output_mi_thunk): Use a branch with %r31 link
+	register.
+
 2014-08-11  Mircea Namolaru  <mircea.namolaru@inria.fr>
 
 	Replacement of isl_int by isl_val
