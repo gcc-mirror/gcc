@@ -68,6 +68,20 @@
 (define_register_constraint "wg" "rs6000_constraints[RS6000_CONSTRAINT_wg]"
   "If -mmfpgpr was used, a floating point register or NO_REGS.")
 
+(define_register_constraint "wh" "rs6000_constraints[RS6000_CONSTRAINT_wh]"
+  "Floating point register if direct moves are available, or NO_REGS.")
+
+;; At present, DImode is not allowed in the Altivec registers.  If in the
+;; future it is allowed, wi/wj can be set to VSX_REGS instead of FLOAT_REGS.
+(define_register_constraint "wi" "rs6000_constraints[RS6000_CONSTRAINT_wi]"
+  "FP or VSX register to hold 64-bit integers or NO_REGS.")
+
+(define_register_constraint "wj" "rs6000_constraints[RS6000_CONSTRAINT_wj]"
+  "FP or VSX register to hold 64-bit integers for direct moves or NO_REGS.")
+
+(define_register_constraint "wk" "rs6000_constraints[RS6000_CONSTRAINT_wk]"
+  "FP or VSX register to hold 64-bit doubles for direct moves or NO_REGS.")
+
 (define_register_constraint "wl" "rs6000_constraints[RS6000_CONSTRAINT_wl]"
   "Floating point register if the LFIWAX instruction is enabled or NO_REGS.")
 
@@ -101,7 +115,7 @@
   "Floating point register if the STFIWX instruction is enabled or NO_REGS.")
 
 (define_register_constraint "wy" "rs6000_constraints[RS6000_CONSTRAINT_wy]"
-  "VSX vector register to hold scalar float values or NO_REGS.")
+  "FP or VSX register to perform ISA 2.07 float ops or NO_REGS.")
 
 (define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
   "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")

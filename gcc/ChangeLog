@@ -1,3 +1,124 @@
+2014-08-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md (wh constraint): New constraint,
+	for FP registers if direct move is available.
+	(wi constraint): New constraint, for VSX/FP registers that can
+	handle 64-bit integers.
+	(wj constraint): New constraint for VSX/FP registers that can
+	handle 64-bit integers for direct moves.
+	(wk constraint): New constraint for VSX/FP registers that can
+	handle 64-bit doubles for direct moves.
+	(wy constraint): Make documentation match implementation.
+
+	* config/rs6000/rs6000.c (struct rs6000_reg_addr): Add
+	scalar_in_vmx_p field to simplify tests of whether SFmode or
+	DFmode can go in the Altivec registers.
+	(rs6000_hard_regno_mode_ok): Use scalar_in_vmx_p field.
+	(rs6000_setup_reg_addr_masks): Likewise.
+	(rs6000_debug_print_mode): Add debug support for scalar_in_vmx_p
+	field, and wh/wi/wj/wk constraints.
+	(rs6000_init_hard_regno_mode_ok): Setup scalar_in_vmx_p field, and
+	the wh/wi/wj/wk constraints.
+	(rs6000_preferred_reload_class): If SFmode/DFmode can go in the
+	upper registers, prefer VSX registers unless the operation is a
+	memory operation with REG+OFFSET addressing.
+
+	* config/rs6000/vsx.md (VSr mode attribute): Add support for
+	DImode.  Change SFmode to use ww constraint instead of d to allow
+	SF registers in the upper registers.
+	(VSr2): Likewise.
+	(VSr3): Likewise.
+	(VSr5): Fix thinko in comment.
+	(VSa): New mode attribute that is an alternative to wa, that
+	returns the VSX register class that a mode can go in, but may not
+	be the preferred register class.
+	(VS_64dm): New mode attribute for appropriate register classes for
+	referencing 64-bit elements of vectors for direct moves and normal
+	moves.
+	(VS_64reg): Likewise.
+	(vsx_mov<mode>): Change wa constraint to <VSa> to limit the
+	register allocator to only registers the data type can handle.
+	(vsx_le_perm_load_<mode>): Likewise.
+	(vsx_le_perm_store_<mode>): Likewise.
+	(vsx_xxpermdi2_le_<mode>): Likewise.
+	(vsx_xxpermdi4_le_<mode>): Likewise.
+	(vsx_lxvd2x2_le_<mode>): Likewise.
+	(vsx_lxvd2x4_le_<mode>): Likewise.
+	(vsx_stxvd2x2_le_<mode>): Likewise.
+	(vsx_add<mode>3): Likewise.
+	(vsx_sub<mode>3): Likewise.
+	(vsx_mul<mode>3): Likewise.
+	(vsx_div<mode>3): Likewise.
+	(vsx_tdiv<mode>3_internal): Likewise.
+	(vsx_fre<mode>2): Likewise.
+	(vsx_neg<mode>2): Likewise.
+	(vsx_abs<mode>2): Likewise.
+	(vsx_nabs<mode>2): Likewise.
+	(vsx_smax<mode>3): Likewise.
+	(vsx_smin<mode>3): Likewise.
+	(vsx_sqrt<mode>2): Likewise.
+	(vsx_rsqrte<mode>2): Likewise.
+	(vsx_tsqrt<mode>2_internal): Likewise.
+	(vsx_fms<mode>4): Likewise.
+	(vsx_nfma<mode>4): Likewise.
+	(vsx_eq<mode>): Likewise.
+	(vsx_gt<mode>): Likewise.
+	(vsx_ge<mode>): Likewise.
+	(vsx_eq<mode>_p): Likewise.
+	(vsx_gt<mode>_p): Likewise.
+	(vsx_ge<mode>_p): Likewise.
+	(vsx_xxsel<mode>): Likewise.
+	(vsx_xxsel<mode>_uns): Likewise.
+	(vsx_copysign<mode>3): Likewise.
+	(vsx_float<VSi><mode>2): Likewise.
+	(vsx_floatuns<VSi><mode>2): Likewise.
+	(vsx_fix_trunc<mode><VSi>2): Likewise.
+	(vsx_fixuns_trunc<mode><VSi>2): Likewise.
+	(vsx_x<VSv>r<VSs>i): Likewise.
+	(vsx_x<VSv>r<VSs>ic): Likewise.
+	(vsx_btrunc<mode>2): Likewise.
+	(vsx_b2trunc<mode>2): Likewise.
+	(vsx_floor<mode>2): Likewise.
+	(vsx_ceil<mode>2): Likewise.
+	(vsx_<VS_spdp_insn>): Likewise.
+	(vsx_xscvspdp): Likewise.
+	(vsx_xvcvspuxds): Likewise.
+	(vsx_float_fix_<mode>2): Likewise.
+	(vsx_set_<mode>): Likewise.
+	(vsx_extract_<mode>_internal1): Likewise.
+	(vsx_extract_<mode>_internal2): Likewise.
+	(vsx_extract_<mode>_load): Likewise.
+	(vsx_extract_<mode>_store): Likewise.
+	(vsx_splat_<mode>): Likewise.
+	(vsx_xxspltw_<mode>): Likewise.
+	(vsx_xxspltw_<mode>_direct): Likewise.
+	(vsx_xxmrghw_<mode>): Likewise.
+	(vsx_xxmrglw_<mode>): Likewise.
+	(vsx_xxsldwi_<mode>): Likewise.
+	(vsx_xscvdpspn): Tighten constraints to only use register classes
+	the types use.
+	(vsx_xscvspdpn): Likewise.
+	(vsx_xscvdpspn_scalar): Likewise.
+
+	* config/rs6000/rs6000.h (enum rs6000_reg_class_enum): Add wh, wi,
+	wj, and wk constraints.
+	(GPR_REG_CLASS_P): New helper macro for register classes targeting
+	general purpose registers.
+
+	* config/rs6000/rs6000.md (f32_dm): Use wh constraint for SDmode
+	direct moves.
+	(zero_extendsidi2_lfiwz): Use wj constraint for direct move of
+	DImode instead of wm.  Use wk constraint for direct move of DFmode
+	instead of wm.
+	(extendsidi2_lfiwax): Likewise.
+	(lfiwax): Likewise.
+	(lfiwzx): Likewise.
+	(movdi_internal64): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000): Document wh, wi, wj, and
+	wk constraints. Make the wy constraint documentation match them
+	implementation.
+
 2014-08-11  John Dave Anglin  <danglin@gcc.gnu.org>
 
 	PR target/62038
@@ -62,7 +183,7 @@
 	PR tree-optimization/62073
 	* tree-vect-loop.c (vect_is_simple_reduction_1): Check that DEF1 has
 	a basic block.
-	
+
 2014-08-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
