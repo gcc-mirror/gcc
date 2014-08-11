@@ -1,3 +1,30 @@
+2014-08-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+        * common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX512BW_SET) : Define.
+	(OPTION_MASK_ISA_AVX512BW_UNSET): Ditto.
+	(OPTION_MASK_ISA_AVX512VL_UNSET) : Ditto.
+	(ix86_handle_option): Handle OPT_mavx512bw.
+	* config/i386/cpuid.h (bit_AVX512BW): Define.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect avx512bw,
+	set -mavx512bw accordingly.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_AVX512BW.
+	* config/i386/i386.c (ix86_target_string): Handle -mavx512bw.
+	(ix86_option_override_internal): Define PTA_AVX512BW, handle
+	PTA_AVX512BW and OPTION_MASK_ISA_AVX512BW.
+	(ix86_valid_target_attribute_inner_p): Handle OPT_mavx512bw.
+	* config/i386/i386.h (TARGET_AVX512BW): Define.
+	(TARGET_AVX512BW_P(x)): Ditto.
+	* config/i386/i386.opt: Add mavx512bw.
+
 2014-08-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62070

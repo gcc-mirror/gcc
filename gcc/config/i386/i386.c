@@ -2593,6 +2593,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
     { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
     { "-mavx512dq",	OPTION_MASK_ISA_AVX512DQ },
+    { "-mavx512bw",	OPTION_MASK_ISA_AVX512BW },
     { "-msse4a",	OPTION_MASK_ISA_SSE4A },
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
@@ -3124,6 +3125,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_XSAVEC		(HOST_WIDE_INT_1 << 48)
 #define PTA_XSAVES		(HOST_WIDE_INT_1 << 49)
 #define PTA_AVX512DQ		(HOST_WIDE_INT_1 << 50)
+#define PTA_AVX512BW		(HOST_WIDE_INT_1 << 51)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -3694,6 +3696,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_AVX512DQ
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512DQ))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512DQ;
+	if (processor_alias_table[i].flags & PTA_AVX512BW
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512BW))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512BW;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4551,6 +4556,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512er",	OPT_mavx512er),
     IX86_ATTR_ISA ("avx512cd",	OPT_mavx512cd),
     IX86_ATTR_ISA ("avx512dq",	OPT_mavx512dq),
+    IX86_ATTR_ISA ("avx512bw",	OPT_mavx512bw),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
     IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
