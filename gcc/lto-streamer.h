@@ -636,7 +636,7 @@ struct output_block
 
   /* The current symbol that we are currently serializing.  Null
      if we are serializing something else.  */
-  struct symtab_node *symbol;
+  symtab_node *symbol;
 
   /* These are the last file and line that were seen in the stream.
      If the current node differs from these, it needs to insert
@@ -826,7 +826,7 @@ bool referenced_from_other_partition_p (struct ipa_ref_list *,
 				        lto_symtab_encoder_t);
 bool reachable_from_other_partition_p (struct cgraph_node *,
 				       lto_symtab_encoder_t);
-bool referenced_from_this_partition_p (struct symtab_node *,
+bool referenced_from_this_partition_p (symtab_node *,
 					lto_symtab_encoder_t);
 bool reachable_from_this_partition_p (struct cgraph_node *,
 				      lto_symtab_encoder_t);
