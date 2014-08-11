@@ -2,7 +2,7 @@
    location in the same basic block, the second reference should not
    be instrumented by the Address Sanitizer.  */
 
-/* { dg-options "-fdump-tree-asan0" } */
+/* { dg-options "-fdump-tree-sanopt" } */
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
 
@@ -62,7 +62,7 @@ main ()
   return test0 () && test1 (0);
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store1" 3 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 2 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load" 1 "asan0" }  } */
-/* { dg-final { cleanup-tree-dump "asan0" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store1" 3 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_store_n" 2 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load" 1 "sanopt" }  } */
+/* { dg-final { cleanup-tree-dump "sanopt" } } */

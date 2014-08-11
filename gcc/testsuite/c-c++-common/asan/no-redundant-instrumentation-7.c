@@ -1,4 +1,4 @@
-/* { dg-options "-fdump-tree-asan0" } */
+/* { dg-options "-fdump-tree-sanopt" } */
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "*" } { "-O0" } } */
 
@@ -21,7 +21,7 @@ foo  (int *a, char *b, char *c)
   return d;
 }
 
-/* { dg-final { scan-tree-dump-times "& 7" 6 "asan0" } } */
-/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load_n" 4 "asan0" } } */
-/* { dg-final { scan-tree-dump-not "__builtin___asan_report_store" "asan0" } } */
-/* { dg-final { cleanup-tree-dump "asan0" } } */
+/* { dg-final { scan-tree-dump-times "& 7" 6 "sanopt" } } */
+/* { dg-final { scan-tree-dump-times "__builtin___asan_report_load_n" 4 "sanopt" } } */
+/* { dg-final { scan-tree-dump-not "__builtin___asan_report_store" "sanopt" } } */
+/* { dg-final { cleanup-tree-dump "sanopt" } } */
