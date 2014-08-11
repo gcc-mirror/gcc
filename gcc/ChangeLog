@@ -1,3 +1,10 @@
+2014-08-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* lto-streamer.h (struct output_block::symbol): Change from
+	struct symtab_node to plain symtab_node.
+	(referenced_from_this_partition_p): Change first parameter
+	from struct symtab_node to plain symtab_node.
+
 2014-08-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c/51849
