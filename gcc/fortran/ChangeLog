@@ -1,3 +1,9 @@
+2014-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/61950
+	* trans-expr.c (gfc_conv_structure): Initialize _size with
+	a value of proper type.
+
 2014-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/61999
