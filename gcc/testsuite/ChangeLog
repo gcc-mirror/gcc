@@ -1,3 +1,9 @@
+2014-08-11  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_thumb1_ok,
+	check_effective_target_arm_thumb2_ok): Test with code that passes
+	an argument and returns a result.
+
 2014-08-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62075
