@@ -1,5 +1,6 @@
 /* Wrong method to get number of arg reg will cause argument corruption.  */
 /* { dg-do run } */
+/* { dg-skip-if "incompatible options" { ! { arm_thumb1_ok || arm_thumb2_ok } } { "*" } { "" } } */
 /* { dg-require-effective-target arm_eabi } */
 /* { dg-options "-mthumb -O1" } */
 
