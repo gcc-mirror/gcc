@@ -667,7 +667,7 @@ enum annot_expr_kind {
 
 /* Internal functions.  */
 enum internal_fn {
-#define DEF_INTERNAL_FN(CODE, FLAGS) IFN_##CODE,
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) IFN_##CODE,
 #include "internal-fn.def"
 #undef DEF_INTERNAL_FN
   IFN_LAST
