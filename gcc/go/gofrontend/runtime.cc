@@ -24,7 +24,7 @@ enum Runtime_function_type
 {
   // General indicator that value is not used.
   RFT_VOID,
-  // Go type bool, C type _Bool.
+  // Go untyped bool, C type _Bool.
   RFT_BOOL,
   // Go type *bool, C type _Bool*.
   RFT_BOOLPTR,
@@ -93,7 +93,7 @@ runtime_function_type(Runtime_function_type bft)
 	  go_unreachable();
 
 	case RFT_BOOL:
-	  t = Type::lookup_bool_type();
+	  t = Type::make_boolean_type();
 	  break;
 
 	case RFT_BOOLPTR:
