@@ -1,3 +1,8 @@
+2014-08-12  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* socket.c: For RTEMS, use correct prototype of gethostbyname_r().
+	* gsocket.h Add include of <unistd.h> on RTEMS.
+
 2014-08-11  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* s-osinte-rtems.adb: Correct formatting of line in license block.

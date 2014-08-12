@@ -212,7 +212,7 @@ __gnat_gethostbyname (const char *name,
   struct hostent *rh;
   int ri;
 
-#if defined(__linux__) || defined(__GLIBC__)
+#if defined(__linux__) || defined(__GLIBC__) || defined(__rtems__)
   (void) gethostbyname_r (name, ret, buf, buflen, &rh, h_errnop);
 #else
   rh = gethostbyname_r (name, ret, buf, buflen, h_errnop);
