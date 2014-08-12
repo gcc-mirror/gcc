@@ -1,3 +1,8 @@
+2014-08-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/62103
+	* gcc.c-torture/execute/bitfld-6.c: New test.
+
 2014-08-11  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/frame-pointer-1.c: Skip if Thumb is not supported.
