@@ -1,3 +1,8 @@
+2014-08-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr48784.c: Skip for thumb1 multilib.
+	* gcc.target/arm/pr59985.c: Likewise.
+
 2014-08-12  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR other/61962
