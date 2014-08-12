@@ -1,6 +1,15 @@
 2014-08-12  Ganesh Gopalasubramanian <Ganesh.Gopalasubramanian@amd.com>
 
 	Backport from mainline
+	2014-08-04  Ganesh Gopalasubramanian 
+		    <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle AMD's extended
+	family information. Handle BTVER2 cpu with cpuid family value.
+
+2014-08-12  Ganesh Gopalasubramanian <Ganesh.Gopalasubramanian@amd.com>
+
+	Backport from mainline
 	2014-06-16  Ganesh Gopalasubramanian 
 		    <Ganesh.Gopalasubramanian@amd.com>
 

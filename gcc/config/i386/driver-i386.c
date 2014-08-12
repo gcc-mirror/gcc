@@ -431,7 +431,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   model = (eax >> 4) & 0x0f;
   family = (eax >> 8) & 0x0f;
-  if (vendor == signature_INTEL_ebx)
+  if (vendor == signature_INTEL_ebx
+      || vendor == signature_AMD_ebx)
     {
       unsigned int extended_model, extended_family;
 
@@ -570,7 +571,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
       if (name == signature_NSC_ebx)
 	processor = PROCESSOR_GEODE;
-      else if (has_movbe)
+      else if (has_movbe && family == 22)
 	processor = PROCESSOR_BTVER2;
       else if (has_avx2)
         processor = PROCESSOR_BDVER4;
