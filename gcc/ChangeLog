@@ -1,3 +1,9 @@
+2014-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/62098
+	* config/arm/vfp.md (*combine_vcvtf2i): Fix constraint.
+	Remove unnecessary attributes.
+
 2014-08-12  Yury Gribov  <y.gribov@samsung.com>
 
 	* internal-fn.c (init_internal_fns): Fix off-by-one.
