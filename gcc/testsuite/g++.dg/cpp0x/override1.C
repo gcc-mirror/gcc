@@ -52,6 +52,14 @@ struct D5 : B
 void D5::g() override {} // { dg-error "not allowed outside a class definition" }
 void g() override {} // { dg-error "not allowed outside a class definition" }
 
+struct B5
+{
+  friend void f() final; // { dg-error "may not have virt-specifiers" }
+  friend void g() override; // { dg-error "may not have virt-specifiers" }
+  template <class T> void h() final; // { dg-error "may not have virt-specifiers" }
+  template <class T> void i() override; // { dg-error "may not have virt-specifiers" }
+};
+
 int main()
 {
   D2<B> d;
