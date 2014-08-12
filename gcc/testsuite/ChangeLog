@@ -1,3 +1,8 @@
+2014-08-12  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/61962
+	* c-c++-common/cilk-plus/AN/pr61962.c: New test.
+
 2014-08-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR middle-end/62103
