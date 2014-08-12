@@ -1,5 +1,8 @@
 2014-08-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/neon-vext-execute.c: Skip if the test won't run
+	on Neon hardware.
+
 	* gcc.target/arm/pr48784.c: Skip for thumb1 multilib.
 	* gcc.target/arm/pr59985.c: Likewise.
 
