@@ -1,3 +1,14 @@
+2014-08-12  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/t-mti-elf (MULTILIB_OPTIONS): Remove fp64 multilib.
+	(MULTILIB_DIRNAMES): Ditto.
+	* config/mips/t-mti-elf (MULTILIB_OPTIONS): Ditto.
+	* config/mips/t-mti-elf (MULTILIB_EXCEPTIONS): Ditto.
+	* config/mips/t-mti-linux (MULTILIB_OPTIONS): Ditto.
+	* config/mips/t-mti-linux (MULTILIB_DIRNAMES): Ditto.
+	* config/mips/t-mti-linux (MULTILIB_EXCEPTIONS): Ditto.
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Ditto.
+
 2014-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/61413
