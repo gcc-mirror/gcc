@@ -1,5 +1,9 @@
 2014-08-12  Steve Ellcey  <sellcey@mips.com>
 
+	* config/mips/mips.h (ASM_SPEC): Pass float options to assembler. 
+
+2014-08-12  Steve Ellcey  <sellcey@mips.com>
+
 	* config/mips/t-mti-elf (MULTILIB_OPTIONS): Remove fp64 multilib.
 	(MULTILIB_DIRNAMES): Ditto.
 	* config/mips/t-mti-elf (MULTILIB_OPTIONS): Ditto.
