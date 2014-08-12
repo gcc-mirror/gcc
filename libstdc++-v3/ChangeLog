@@ -1,3 +1,12 @@
+2014-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (getline): Qualify call to prevent ADL
+	and add overloads for rvalue streams.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/12.cc:
+	New.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/12.cc:
+	New.
+
 2014-08-09  Ulrich Drepper  <drepper@gmail.com>
 
 	* include/ext/random.tcc (uniform_on_sphere_helper): Define.
