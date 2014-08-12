@@ -1,5 +1,9 @@
 2014-08-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/target/supports.exp
+	(check_effective_target_arm_v8_neon_ok_nocache): Check for armv8
+	or later.
+
 	* gcc.dg/pr59418.c: Don't add ARM options for a Thumb1 multilib.
 
 	* gcc.target/arm/neon-vext-execute.c: Skip if the test won't run
