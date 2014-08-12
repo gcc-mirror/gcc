@@ -1,3 +1,9 @@
+2014-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/62025
+	* sched-deps.c (find_inc): Check if inc_insn doesn't clobber
+	any registers that are used in mem_insn.
+
 2014-08-12  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.h (ASM_SPEC): Pass float options to assembler. 
