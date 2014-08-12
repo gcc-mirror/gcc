@@ -8997,19 +8997,24 @@ standard_sse_constant_opcode (rtx insn, rtx x)
       switch (get_attr_mode (insn))
 	{
 	case MODE_XI:
-	case MODE_V16SF:
 	  return "vpxord\t%g0, %g0, %g0";
+	case MODE_V16SF:
+	  return TARGET_AVX512DQ ? "vxorps\t%g0, %g0, %g0"
+				 : "vpxord\t%g0, %g0, %g0";
 	case MODE_V8DF:
-	  return "vpxorq\t%g0, %g0, %g0";
+	  return TARGET_AVX512DQ ? "vxorpd\t%g0, %g0, %g0"
+				 : "vpxorq\t%g0, %g0, %g0";
 	case MODE_TI:
-	  return "%vpxor\t%0, %d0";
+	  return TARGET_AVX512VL ? "vpxord\t%t0, %t0, %t0"
+				 : "%vpxor\t%0, %d0";
 	case MODE_V2DF:
 	  return "%vxorpd\t%0, %d0";
 	case MODE_V4SF:
 	  return "%vxorps\t%0, %d0";
 
 	case MODE_OI:
-	  return "vpxor\t%x0, %x0, %x0";
+	  return TARGET_AVX512VL ? "vpxord\t%x0, %x0, %x0"
+				 : "vpxor\t%x0, %x0, %x0";
 	case MODE_V4DF:
 	  return "vxorpd\t%x0, %x0, %x0";
 	case MODE_V8SF:
@@ -9020,7 +9025,8 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	}
 
     case 2:
-      if (get_attr_mode (insn) == MODE_XI
+      if (TARGET_AVX512VL
+	  || get_attr_mode (insn) == MODE_XI
 	  || get_attr_mode (insn) == MODE_V8DF
 	  || get_attr_mode (insn) == MODE_V16SF)
 	return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
