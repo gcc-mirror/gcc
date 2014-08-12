@@ -1,3 +1,7 @@
+2014-08-12  Yury Gribov  <y.gribov@samsung.com>
+
+	* internal-fn.c (init_internal_fns): Fix off-by-one.
+
 2014-08-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
