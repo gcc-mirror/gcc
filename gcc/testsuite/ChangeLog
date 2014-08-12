@@ -1,3 +1,15 @@
+2014-08-12  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/concat.c: Add dg-options.
+	* gcc.dg/func-outside-2.c: Add __extension__.
+	* gcc.dg/pr19967.c: Use -std=c99.
+	* gcc.dg/pr22458-1.c: Add dg-options.
+	* gcc.dg/pr33676.c: Add dg-options.
+	* gcc.dg/gnu-predef-1.c: New test.
+	* gcc.dg/c90-func-1.c: New test.
+	* gcc.dg/c90-func-2.c: New test.
+	* gcc.dg/c90-func-2.h: New test.
+
 2014-08-12  Janis Johnson  <janisjo@codesourcery.com>
 
 	* lib/target/supports.exp

@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "" } */
 /* { dg-options "-O0 -mtune=i386 -fomit-frame-pointer" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 __attribute__((noreturn,noinline)) void abrt (const char *fi, const char *fu)

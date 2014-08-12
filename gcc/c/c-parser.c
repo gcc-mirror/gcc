@@ -7136,8 +7136,24 @@ c_parser_postfix_expression (c_parser *parser)
       switch (c_parser_peek_token (parser)->keyword)
 	{
 	case RID_FUNCTION_NAME:
+	  pedwarn (loc, OPT_Wpedantic,  "ISO C does not support "
+		   "%<__FUNCTION__%> predefined identifier");
+	  expr.value = fname_decl (loc,
+				   c_parser_peek_token (parser)->keyword,
+				   c_parser_peek_token (parser)->value);
+	  c_parser_consume_token (parser);
+	  break;
 	case RID_PRETTY_FUNCTION_NAME:
+	  pedwarn (loc, OPT_Wpedantic,  "ISO C does not support "
+		   "%<__PRETTY_FUNCTION__%> predefined identifier");
+	  expr.value = fname_decl (loc,
+				   c_parser_peek_token (parser)->keyword,
+				   c_parser_peek_token (parser)->value);
+	  c_parser_consume_token (parser);
+	  break;
 	case RID_C99_FUNCTION_NAME:
+	  pedwarn_c90 (loc, OPT_Wpedantic,  "ISO C90 does not support "
+		   "%<__func__%> predefined identifier");
 	  expr.value = fname_decl (loc,
 				   c_parser_peek_token (parser)->keyword,
 				   c_parser_peek_token (parser)->value);
