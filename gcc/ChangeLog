@@ -1,5 +1,11 @@
 2014-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	PR target/61413
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Fix definition
+	of __ARM_SIZEOF_WCHAR_T.
+
+2014-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	PR target/62098
 	* config/arm/vfp.md (*combine_vcvtf2i): Fix constraint.
 	Remove unnecessary attributes.
