@@ -1,3 +1,9 @@
+2014-08-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Reject virt-specifiers on friends and member templates
+	* friend.c (do_friend): Diagnose virt-specifiers.
+	* pt.c (push_template_decl_real): Diagnose virt-specifiers.
+
 2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck2.c (check_narrowing): Add tsubst_flags_t parameter, change

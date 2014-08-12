@@ -4737,6 +4737,11 @@ push_template_decl_real (tree decl, bool is_friend)
 	}
       else if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
+	  if (member_template_p)
+	    {
+	      if (DECL_OVERRIDE_P (decl) || DECL_FINAL_P (decl))
+		error ("member template %qD may not have virt-specifiers", decl);
+	    }
 	  if (DECL_DESTRUCTOR_P (decl))
 	    {
 	      /* [temp.mem]
