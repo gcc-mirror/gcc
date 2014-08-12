@@ -1,3 +1,9 @@
+2014-08-12  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/61962
+	* array-notation-common.c (find_rank): Added handling for other
+	types of references.
+
 2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/61455

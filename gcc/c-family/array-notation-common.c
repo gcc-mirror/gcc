@@ -221,11 +221,14 @@ find_rank (location_t loc, tree orig_expr, tree expr, bool ignore_builtin_fn,
 	      current_rank++;
 	      ii_tree = ARRAY_NOTATION_ARRAY (ii_tree);
 	    }
-	  else if (TREE_CODE (ii_tree) == ARRAY_REF)
+	  else if (handled_component_p (ii_tree)
+		   || TREE_CODE (ii_tree) == INDIRECT_REF)
 	    ii_tree = TREE_OPERAND (ii_tree, 0);
 	  else if (TREE_CODE (ii_tree) == PARM_DECL
 		   || TREE_CODE (ii_tree) == VAR_DECL)
 	    break;
+	  else
+	    gcc_unreachable ();
 	}
       if (*rank == 0)
 	/* In this case, all the expressions this function has encountered thus
