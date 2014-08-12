@@ -270,6 +270,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+XCFLAGS = @XCFLAGS@
+XLDFLAGS = @XLDFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -344,9 +346,9 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 GENERAL_FLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/runtime \
 	-I$(top_srcdir)/runtime/config/$(config_dir) \
 	-DIN_CILK_RUNTIME=1 -fcilkplus
-AM_CFLAGS = $(GENERAL_FLAGS) -std=c99
+AM_CFLAGS = $(XCFLAGS) $(GENERAL_FLAGS) -std=c99
 AM_CPPFLAGS = $(GENERAL_FLAGS)
-AM_LDFLAGS = -lpthread 
+AM_LDFLAGS = $(XLDFLAGS)
 
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -393,9 +395,8 @@ CILK_REVISION = 3902
 #libcilkrts_la_LDFLAGS  = -rpath '$(libdir)'
 
 # Hack for Cygwin
-libcilkrts_la_LDFLAGS = -version-info 5:0:0 -lpthread \
-	@lt_cv_dlopen_libs@ $(am__append_1) $(am__append_2) \
-	-no-undefined
+libcilkrts_la_LDFLAGS = -version-info 5:0:0 @lt_cv_dlopen_libs@ \
+	$(AM_LDFLAGS) $(am__append_1) $(am__append_2) -no-undefined
 
 # C/C++ header files for Cilk.
 # cilkincludedir = $(includedir)/cilk
