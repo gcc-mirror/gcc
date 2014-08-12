@@ -1,3 +1,9 @@
+2014-08-04  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* inclhack.def (complier_h_tradcpp): Remove.
+	* fixincl.x: Regenerate.
+	* tests/base/linux/compiler.h: Remove.
+
 2014-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (math_exception): Bypass on *-*-solaris2.1[0-9]*.
