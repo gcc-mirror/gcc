@@ -1,3 +1,15 @@
+2014-08-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (standard_sse_constant_opcode): Use
+	vpxord/vpternlog if avx512 is availible.
+
 2014-08-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR middle-end/62103
