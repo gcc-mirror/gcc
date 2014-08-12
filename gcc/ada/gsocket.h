@@ -183,6 +183,11 @@
 #include <sys/time.h>
 #endif
 
+#if defined(__rtems__)
+#include <unistd.h>
+/* Required, for read(), write(), and close() */
+#endif
+
 /*
  * RTEMS has these .h files but not until you have built and installed RTEMS.
  * When building a C/C++ toolset, you also build the newlib C library, so the
