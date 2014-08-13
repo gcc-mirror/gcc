@@ -1,3 +1,9 @@
+2014-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/62118
+	* include/ext/random.tcc (uniform_on_sphere_helper<2, _RealType>::
+	operator()): Use std::hypot only when _GLIBCXX_USE_C99_MATH_TR1.
+
 2014-08-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (getline): Qualify call to prevent ADL
