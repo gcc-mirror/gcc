@@ -191,8 +191,8 @@ package System.Interrupts is
    --  with it (types to be used are New_Handler_Item and New_Handler_Array).
    --  On finalization, we need to restore the handlers that were installed
    --  before the elaboration of the PO, so we need to store these previous
-   --  handlers. This is also done by Install_Handlers, the room for these
-   --  informations is provided by adding a discriminant which is the number
+   --  handlers. This is also done by Install_Handlers, the room for this
+   --  information is provided by adding a discriminant which is the number
    --  of Attach_Handler pragmas and an array of this size in the protection
    --  type, Static_Interrupt_Protection.
 

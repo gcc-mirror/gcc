@@ -600,7 +600,7 @@ package body System.RPC is
       Header     : aliased Params_Stream_Type (Header_Size);
 
    begin
-      --  For more informations, see above
+      --  For more information, see above
       --  Request = 0 as we are not waiting for a reply message
       --  Result length = 0 as we don't expect a result at all
 
