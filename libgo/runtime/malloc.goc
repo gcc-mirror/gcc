@@ -79,6 +79,7 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 	MSpan *s;
 	MLink *v;
 	bool incallback;
+	void *closure;
 
 	if(size == 0) {
 		// All 0-length allocations use this pointer.
@@ -89,6 +90,10 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 
 	m = runtime_m();
 	g = runtime_g();
+
+	// We should not be called in between __go_set_closure and the
+	// actual function call, but cope with it if we are.
+	closure = g->closure;
 
 	incallback = false;
 	if(m->mcache == nil && g->ncgo > 0) {
@@ -205,6 +210,8 @@ runtime_mallocgc(uintptr size, uintptr typ, uint32 flag)
 
 	if(incallback)
 		runtime_entersyscall();
+
+	g->closure = closure;
 
 	return v;
 }
