@@ -671,7 +671,7 @@ package System.Tasking is
       --  Task_Info pragma.
 
       Analyzer  : System.Stack_Usage.Stack_Analyzer;
-      --  For storing informations used to measure the stack usage
+      --  For storing information used to measure the stack usage
 
       Global_Task_Lock_Nesting : Natural;
       --  This is the current nesting level of calls to
