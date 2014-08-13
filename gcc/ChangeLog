@@ -1,3 +1,8 @@
+2014-08-13  Roman Gareev  <gareevroman@gmail.com>
+
+	* gcc.dg/graphite/pr35356-2.c: Update according to the ISL code
+	generator.
+
 2014-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/62025
