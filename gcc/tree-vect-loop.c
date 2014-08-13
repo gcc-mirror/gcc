@@ -2321,7 +2321,8 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
         }
 
       def1 = SSA_NAME_DEF_STMT (op1);
-      if (flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+      if (gimple_bb (def1)
+	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
           && loop->inner
           && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
           && is_gimple_assign (def1))

@@ -1,3 +1,8 @@
+2014-08-12  Felix Yang  <fei.yang0953@gmail.com>
+
+	PR tree-optimization/62073
+	* gcc.dg/vect/pr62073.c: New test.
+
 2014-08-12  Janis Johnson  <janisjo@codesourcery.com>
 
 	Backport from mainline

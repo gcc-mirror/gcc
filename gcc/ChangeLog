@@ -1,3 +1,9 @@
+2014-08-12  Felix Yang  <fei.yang0953@gmail.com>
+
+	PR tree-optimization/62073
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Check that DEF1 has
+	a basic block.
+
 2014-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/62025
