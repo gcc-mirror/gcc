@@ -1372,6 +1372,9 @@ GLIBCXX_3.4.21 {
     # std::regex_error::regex_error(std::regex_constants::error_type)
     _ZNSt11regex_errorC2ENSt15regex_constants10error_typeE;
 
+    # void std::thread::_M_start_thread(__shared_base_type, void(*)())
+    _ZNSt6thread15_M_start_threadESt10shared_ptrINS_10_Impl_baseEEPFvvE;
+
 } GLIBCXX_3.4.20;
 
 
