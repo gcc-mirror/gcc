@@ -1611,7 +1611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // accurate.
 	  auto __norm = std::hypot(__ret[0], __ret[1]);
 #else
-	  auto __norm = std::sqrt(__ret[0] * __ret[0] + __ret[1] * __ret[1]);
+	  auto __norm = std::sqrt(__sq);
 #endif
 	  __ret[0] /= __norm;
 	  __ret[1] /= __norm;
