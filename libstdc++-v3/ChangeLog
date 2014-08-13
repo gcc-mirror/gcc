@@ -1,3 +1,12 @@
+2014-08-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61841
+	* include/std/thread (thread::_M_start_thread): Declare new overload.
+	(thread::thread<_Callable, _Args...>): Call new overload with an
+	explicit reference to pthread_create.
+	* src/c++11/thread.cc (thread::_M_start_thread): Add new overload.
+	* config/abi/pre/gnu.ver: Export new function.
+
 2014-08-13  Sylvestre Ledru  <sylvestre@debian.org>
 
 	* include/profile/impl/profiler_hash_func.h: Fix a comment typo
