@@ -1,4 +1,4 @@
-2014-08-12  Sylvestre Ledru  <sylvestre@debian.org>
+2014-08-13  Sylvestre Ledru  <sylvestre@debian.org>
 
 	* include/profile/impl/profiler_hash_func.h: Fix a comment typo
 
