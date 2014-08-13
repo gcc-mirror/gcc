@@ -1,3 +1,8 @@
+2014-08-13  Chen Gang  gang.chen.5i5j@gmail.com
+
+	* microblaze/microblaze.md: Remove redundant '@' to avoid compiling
+	warning.
+
 2014-08-13  Roman Gareev  <gareevroman@gmail.com>
 
 	* gcc.dg/graphite/pr35356-2.c: Update according to the ISL code
