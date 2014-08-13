@@ -124,14 +124,14 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Convert named types to backend representation.
   ::gogo->convert_named_types();
 
-  // Flatten the parse tree.
-  ::gogo->flatten();
-
   // Build thunks for functions which call recover.
   ::gogo->build_recover_thunks();
 
   // Convert complicated go and defer statements into simpler ones.
   ::gogo->simplify_thunk_statements();
+
+  // Flatten the parse tree.
+  ::gogo->flatten();
 
   // Dump ast, use filename[0] as the base name
   ::gogo->dump_ast(filenames[0]);
