@@ -1,3 +1,8 @@
+2014-08-13  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_x_va_arg): Support passing non-POD through ....
+	(convert_arg_to_ellipsis): Likewise.
+
 2014-08-13  Andrew Sutton  <andrew.n.sutton@gmail.com>
 
 	* pt.c (lookup_template_variable): Make dependent variable templates 

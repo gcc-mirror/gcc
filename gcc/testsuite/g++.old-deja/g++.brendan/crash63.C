@@ -13,4 +13,4 @@ class UnitList
    UnitList (...);
    };
 
-UnitList unit_list (String("keV")); // { dg-error "" } cannot pass non-pod
+UnitList unit_list (String("keV"));

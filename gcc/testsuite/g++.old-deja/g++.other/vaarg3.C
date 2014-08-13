@@ -1,5 +1,6 @@
 // { dg-do assemble  }
-// { dg-options "-Wno-abi" { target arm_eabi } }
+// { dg-options "-Wconditionally-supported" }
+// { dg-options "-Wno-abi -Wconditionally-supported" { target arm_eabi } }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Oct 1999 <nathan@acm.org>
@@ -14,19 +15,19 @@ struct Z;   // { dg-message "forward decl" }
 void fn1(va_list args)
 {
   int i = va_arg (args, int);
-  Y x = va_arg (args, Y);         // { dg-error "cannot receive" }
-  Y y = va_arg (args, struct Y);  // { dg-error "cannot receive" }
+  Y x = va_arg (args, Y);         // { dg-message "receiv" }
+  Y y = va_arg (args, struct Y);  // { dg-message "receiv" }
   int &r = va_arg (args, int &);  // { dg-error "cannot receive" }
   
   Z z1 = va_arg (args, Z);        // { dg-error "incomplete" } 
   const Z &z2 = va_arg (args, Z);       // { dg-error "incomplete" } 
 
   va_arg (args, char);    // { dg-warning "promote" } 
-  // { dg-message "should pass" "pass" { target *-*-* } 24 }
-  // { dg-message "abort" "abort" { target *-*-* } 24 }
+  // { dg-message "should pass" "pass" { target *-*-* } 25 }
+  // { dg-message "abort" "abort" { target *-*-* } 25 }
   va_arg (args, int []);  // { dg-error "array with unspecified bounds" } promote
   va_arg (args, int ());  // { dg-warning "promoted" } promote
-  // { dg-message "abort" "abort" { target *-*-* } 28 }
+  // { dg-message "abort" "abort" { target *-*-* } 29 }
   va_arg (args, bool);    // { dg-warning "promote" "promote" } 
-  // { dg-message "abort" "abort" { target *-*-* } 30 }
+  // { dg-message "abort" "abort" { target *-*-* } 31 }
 }
