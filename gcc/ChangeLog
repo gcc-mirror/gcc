@@ -7,6 +7,31 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+        * config/i386/i386.md
+	(define_attr "isa"): Add avx512bw,noavx512bw.
+	(define_attr "enabled"): Ditto.
+	(define_split): Add 32/64-bit mask logic.
+	(define_insn "*k<logic>qi"): New.
+	(define_insn "*k<logic>hi"): New.
+	(define_insn "*anddi_1"): Add mask version.
+	(define_insn "*andsi_1"): Ditto.
+	(define_insn "*<code><mode>_1"): Ditto.
+	(define_insn "*<code>hi_1"): Ditto.
+	(define_insn "kxnor<mode>"): New.
+	(define_insn "kunpcksi"): New.
+	(define_insn "kunpckdi"): New.
+	(define_insn "*one_cmpl<mode>2_1"): Add mask version.
+	(define_insn "*one_cmplhi2_1"): Ditto.
+
+2014-08-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c (ix86_preferred_simd_mode): Allow V64QImode and
 	V32HImode.
 
