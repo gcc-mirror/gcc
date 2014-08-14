@@ -1,5 +1,13 @@
 2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR tree-optimization/62091
+	* tree-ssa-alias.c (walk_aliased_vdefs_1): Do not clear
+	function_entry_reached.
+	(walk_aliased_vdefs): Clear it here.
+	* ipa-devirt.c (check_stmt_for_type_change): Handle static storage.
+
+2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-utils.h (compare_virtual_tables): Declare.
 	* ipa-devirt.c (odr_subtypes_equivalent_p): New function
 

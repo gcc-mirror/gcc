@@ -2777,6 +2777,8 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 			  * BITS_PER_UNIT;
 		op = TREE_OPERAND (op, 0);
 	      }
+	    else if (DECL_P (op))
+	      ;
 	    else
 	      {
                 tci->speculative = true;

@@ -1,3 +1,8 @@
+2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62091
+	* g++.dg/ipa/devirt-38.C: New testcase.
+
 2014-08-14  Marek Polacek  <polacek@redhat.com>
 
 	DR 458

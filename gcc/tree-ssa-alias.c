@@ -2658,8 +2658,6 @@ walk_aliased_vdefs_1 (ao_ref *ref, tree vdef,
 		      bitmap *visited, unsigned int cnt,
 		      bool *function_entry_reached)
 {
-  if (function_entry_reached)
-    *function_entry_reached = false;
   do
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
@@ -2708,6 +2706,9 @@ walk_aliased_vdefs (ao_ref *ref, tree vdef,
   unsigned int ret;
 
   timevar_push (TV_ALIAS_STMT_WALK);
+
+  if (function_entry_reached)
+    *function_entry_reached = false;
 
   ret = walk_aliased_vdefs_1 (ref, vdef, walker, data,
 			      visited ? visited : &local_visited, 0,
