@@ -7,6 +7,43 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md: Allow V64QI, V32QI, V32HI, V4HI modes.
+	* config/i386/subst.md
+	(define_mode_iterator SUBST_V): Update.
+	(define_mode_iterator SUBST_A): Ditto.
+	(define_subst_attr "mask_operand7"): New.
+	(define_subst_attr "mask_operand10"): New.
+	(define_subst_attr "mask_operand_arg34") : New.
+	(define_subst_attr "mask_expand_op3"): New.
+	(define_subst_attr "mask_mode512bit_condition"): Handle TARGET_AVX512VL.
+	(define_subst_attr "sd_mask_mode512bit_condition"): Ditto.
+	(define_subst_attr "mask_avx512vl_condition"): New.
+	(define_subst_attr "round_mask_operand4"): Ditto.
+	(define_subst_attr "round_mask_scalar_op3"): Delete.
+	(define_subst_attr "round_mask_op4"): New.
+	(define_subst_attr "round_mode512bit_condition"): Allow V8DImode,
+	V16SImode.
+	(define_subst_attr "round_modev8sf_condition"): New.
+	(define_subst_attr "round_modev4sf_condition"): GET_MODE instead of
+	<MODE>mode.
+	(define_subst_attr "round_saeonly_mask_operand4"): New.
+	(define_subst_attr "round_saeonly_mask_op4"): New.
+	(define_subst_attr "round_saeonly_mode512bit_condition"): Allow
+	V8DImode, V16SImode.
+	(define_subst_attr "round_saeonly_modev8sf_condition"): New.
+	(define_subst_attr "mask_expand4_name" "mask_expand4"): New.
+	(define_subst_attr "mask_expand4_args"): New.
+	(define_subst "mask_expand4"): New.
+
+2014-08-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
         * config/i386/i386.md
 	(define_attr "isa"): Add avx512bw,noavx512bw.
 	(define_attr "enabled"): Ditto.

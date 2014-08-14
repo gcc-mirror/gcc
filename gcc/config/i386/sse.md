@@ -471,8 +471,8 @@
 
 ;; Mapping of vector modes to corresponding mask size
 (define_mode_attr avx512fmaskmode
-  [(V16QI "HI")
-   (V16HI "HI") (V8HI  "QI")
+  [(V64QI "DI") (V32QI "SI") (V16QI "HI")
+   (V32HI "SI") (V16HI "HI") (V8HI  "QI") (V4HI "QI")
    (V16SI "HI") (V8SI  "QI") (V4SI  "QI")
    (V8DI  "QI") (V4DI  "QI") (V2DI  "QI")
    (V16SF "HI") (V8SF  "QI") (V4SF  "QI")
