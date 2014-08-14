@@ -190,7 +190,6 @@ static tree fold_builtin_strrchr (location_t, tree, tree, tree);
 static tree fold_builtin_strncat (location_t, tree, tree, tree);
 static tree fold_builtin_strspn (location_t, tree, tree);
 static tree fold_builtin_strcspn (location_t, tree, tree);
-static tree fold_builtin_sprintf (location_t, tree, tree, tree, int);
 static tree fold_builtin_snprintf (location_t, tree, tree, tree, tree, int);
 
 static rtx expand_builtin_object_size (tree);
@@ -10234,9 +10233,6 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
     case BUILT_IN_VA_START:
       break;
 
-    case BUILT_IN_SPRINTF:
-      return fold_builtin_sprintf (loc, arg0, arg1, NULL_TREE, ignore);
-
     case BUILT_IN_OBJECT_SIZE:
       return fold_builtin_object_size (arg0, arg1);
 
@@ -10312,9 +10308,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       return fold_builtin_memcmp (loc, arg0, arg1, arg2);;
-
-    case BUILT_IN_SPRINTF:
-      return fold_builtin_sprintf (loc, arg0, arg1, arg2, ignore);
 
     case BUILT_IN_SNPRINTF:
       return fold_builtin_snprintf (loc, arg0, arg1, arg2, NULL_TREE, ignore);
@@ -11236,94 +11229,6 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
   return false;
 }
 
-
-/* Simplify a call to the sprintf builtin with arguments DEST, FMT, and ORIG.
-   ORIG may be null if this is a 2-argument call.  We don't attempt to
-   simplify calls with more than 3 arguments.
-
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  If IGNORED is true, it means that
-   the caller does not use the returned value of the function.  */
-
-static tree
-fold_builtin_sprintf (location_t loc, tree dest, tree fmt,
-		      tree orig, int ignored)
-{
-  tree call, retval;
-  const char *fmt_str = NULL;
-
-  /* Verify the required arguments in the original call.  We deal with two
-     types of sprintf() calls: 'sprintf (str, fmt)' and
-     'sprintf (dest, "%s", orig)'.  */
-  if (!validate_arg (dest, POINTER_TYPE)
-      || !validate_arg (fmt, POINTER_TYPE))
-    return NULL_TREE;
-  if (orig && !validate_arg (orig, POINTER_TYPE))
-    return NULL_TREE;
-
-  /* Check whether the format is a literal string constant.  */
-  fmt_str = c_getstr (fmt);
-  if (fmt_str == NULL)
-    return NULL_TREE;
-
-  call = NULL_TREE;
-  retval = NULL_TREE;
-
-  if (!init_target_chars ())
-    return NULL_TREE;
-
-  /* If the format doesn't contain % args or %%, use strcpy.  */
-  if (strchr (fmt_str, target_percent) == NULL)
-    {
-      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-
-      if (!fn)
-	return NULL_TREE;
-
-      /* Don't optimize sprintf (buf, "abc", ptr++).  */
-      if (orig)
-	return NULL_TREE;
-
-      /* Convert sprintf (str, fmt) into strcpy (str, fmt) when
-	 'format' is known to contain no % formats.  */
-      call = build_call_expr_loc (loc, fn, 2, dest, fmt);
-      if (!ignored)
-	retval = build_int_cst (integer_type_node, strlen (fmt_str));
-    }
-
-  /* If the format is "%s", use strcpy if the result isn't used.  */
-  else if (fmt_str && strcmp (fmt_str, target_percent_s) == 0)
-    {
-      tree fn;
-      fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-
-      if (!fn)
-	return NULL_TREE;
-
-      /* Don't crash on sprintf (str1, "%s").  */
-      if (!orig)
-	return NULL_TREE;
-
-      /* Convert sprintf (str1, "%s", str2) into strcpy (str1, str2).  */
-      if (!ignored)
-	{
-	  retval = c_strlen (orig, 1);
-	  if (!retval || TREE_CODE (retval) != INTEGER_CST)
-	    return NULL_TREE;
-	}
-      call = build_call_expr_loc (loc, fn, 2, dest, orig);
-    }
-
-  if (call && retval)
-    {
-      retval = fold_convert_loc
-	(loc, TREE_TYPE (TREE_TYPE (builtin_decl_implicit (BUILT_IN_SPRINTF))),
-	 retval);
-      return build2 (COMPOUND_EXPR, TREE_TYPE (retval), call, retval);
-    }
-  else
-    return call;
-}
 
 /* Simplify a call to the snprintf builtin with arguments DEST, DESTSIZE,
    FMT, and ORIG.  ORIG may be null if this is a 3-argument call.  We don't
