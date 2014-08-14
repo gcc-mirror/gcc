@@ -8,7 +8,6 @@
 	PR rtl-optimization/62030
 	* ifcvt.c (rtx_interchangeable_p): New function.
 	(noce_try_move, noce_process_if_block): Use rtx_interchangeable_p.
-	* emit-rtl.c (mem_attrs_eq_p): Remove static.
 	* emit-rtl.h (mem_attrs_eq_p): Declare.
 
 2014-08-14  Roman Gareev  <gareevroman@gmail.com>
