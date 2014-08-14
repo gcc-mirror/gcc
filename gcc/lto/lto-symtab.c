@@ -117,6 +117,10 @@ lto_varpool_replace_node (varpool_node *vnode,
       && vnode->decl != prevailing_node->decl)
     DECL_INITIAL (vnode->decl) = error_mark_node;
 
+  /* Check and report ODR violations on virtual tables.  */
+  if (DECL_VIRTUAL_P (vnode->decl) || DECL_VIRTUAL_P (prevailing_node->decl))
+    compare_virtual_tables (prevailing_node, vnode);
+
   if (vnode->tls_model != prevailing_node->tls_model)
     {
       error_at (DECL_SOURCE_LOCATION (vnode->decl),

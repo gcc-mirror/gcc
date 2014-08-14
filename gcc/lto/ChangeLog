@@ -1,3 +1,7 @@
+2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (lto_varpool_replace_node): Call compare_virtual_tables.
+
 2014-08-14  Richard Biener  <rguenther@suse.de>
 
 	PR lto/62067

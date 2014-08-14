@@ -1,3 +1,8 @@
+2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.h (compare_virtual_tables): Declare.
+	* ipa-devirt.c (odr_subtypes_equivalent_p): New function
+
 2014-08-14  Marek Polacek  <polacek@redhat.com>
 
 	DR 458
