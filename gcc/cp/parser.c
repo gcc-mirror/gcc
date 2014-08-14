@@ -16900,17 +16900,6 @@ cp_parser_init_declarator (cp_parser* parser,
      possibly be looking at any other construct.  */
   cp_parser_commit_to_tentative_parse (parser);
 
-  /* If the decl specifiers were bad, issue an error now that we're
-     sure this was intended to be a declarator.  Then continue
-     declaring the variable(s), as int, to try to cut down on further
-     errors.  */
-  if (decl_specifiers->any_specifiers_p
-      && decl_specifiers->type == error_mark_node)
-    {
-      cp_parser_error (parser, "invalid type in declaration");
-      decl_specifiers->type = integer_type_node;
-    }
-
   /* Enter the newly declared entry in the symbol table.  If we're
      processing a declaration in a class-specifier, we wait until
      after processing the initializer.  */

@@ -1,3 +1,8 @@
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_init_declarator): Remove redundant check of
+	decl_specifiers->type.
+
 2014-08-13  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_x_va_arg): Support passing non-POD through ....
@@ -5,7 +10,7 @@
 
 2014-08-13  Andrew Sutton  <andrew.n.sutton@gmail.com>
 
-	* pt.c (lookup_template_variable): Make dependent variable templates 
+	* pt.c (lookup_template_variable): Make dependent variable templates
 	have unknown type.
 
 2014-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
