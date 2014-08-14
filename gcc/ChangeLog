@@ -1,3 +1,13 @@
+2014-08-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2014-08-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/62103
+	* gimple-fold.c (fold_ctor_reference): Don't fold in presence of
+	bitfields, that is when size doesn't match the size of type or the
+	size of the constructor.
+
 2014-08-12  Felix Yang  <fei.yang0953@gmail.com>
 
 	PR tree-optimization/62073
