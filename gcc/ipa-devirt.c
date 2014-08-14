@@ -2319,7 +2319,7 @@ get_polymorphic_call_info (tree fndecl,
 		     = decl_maybe_in_construction_p (base,
 						     context->outer_type,
 						     call,
-						     current_function_decl);
+						     fndecl);
 		  return base;
 		}
 	      else
