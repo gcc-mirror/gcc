@@ -6763,44 +6763,6 @@ type_hash_hash (const void *item)
   return ((const struct type_hash *) item)->hash;
 }
 
-/* Look in the type hash table for a type isomorphic to TYPE.
-   If one is found, return it.  Otherwise return 0.  */
-
-static tree
-type_hash_lookup (hashval_t hashcode, tree type)
-{
-  struct type_hash *h, in;
-
-  /* The TYPE_ALIGN field of a type is set by layout_type(), so we
-     must call that routine before comparing TYPE_ALIGNs.  */
-  layout_type (type);
-
-  in.hash = hashcode;
-  in.type = type;
-
-  h = (struct type_hash *) htab_find_with_hash (type_hash_table, &in,
-						hashcode);
-  if (h)
-    return h->type;
-  return NULL_TREE;
-}
-
-/* Add an entry to the type-hash-table
-   for a type TYPE whose hash code is HASHCODE.  */
-
-static void
-type_hash_add (hashval_t hashcode, tree type)
-{
-  struct type_hash *h;
-  void **loc;
-
-  h = ggc_alloc<type_hash> ();
-  h->hash = hashcode;
-  h->type = type;
-  loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, INSERT);
-  *loc = (void *)h;
-}
-
 /* Given TYPE, and HASHCODE its hash code, return the canonical
    object for an identical type if one already exists.
    Otherwise, return TYPE, and record it as the canonical object.
@@ -6813,17 +6775,28 @@ type_hash_add (hashval_t hashcode, tree type)
 tree
 type_hash_canon (unsigned int hashcode, tree type)
 {
-  tree t1;
+  type_hash in;
+  void **loc;
 
   /* The hash table only contains main variants, so ensure that's what we're
      being passed.  */
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
-  /* See if the type is in the hash table already.  If so, return it.
-     Otherwise, add the type.  */
-  t1 = type_hash_lookup (hashcode, type);
-  if (t1 != 0)
+  /* The TYPE_ALIGN field of a type is set by layout_type(), so we
+     must call that routine before comparing TYPE_ALIGNs.  */
+  layout_type (type);
+
+  in.hash = hashcode;
+  in.type = type;
+
+  loc = htab_find_slot_with_hash (type_hash_table, &in, hashcode, INSERT);
+  if (*loc)
     {
+      tree t1 = ((type_hash *) *loc)->type;
+      /* ???  We'd like to assert here that the hashtable only contains
+         main variants but the C++ frontend breaks this by modifying
+	 types already in the hashtable in build_cplus_array_type.  */
+      /* gcc_assert (TYPE_MAIN_VARIANT (t1) == t1); */
       if (GATHER_STATISTICS)
 	{
 	  tree_code_counts[(int) TREE_CODE (type)]--;
@@ -6834,7 +6807,13 @@ type_hash_canon (unsigned int hashcode, tree type)
     }
   else
     {
-      type_hash_add (hashcode, type);
+      struct type_hash *h;
+
+      h = ggc_alloc<type_hash> ();
+      h->hash = hashcode;
+      h->type = type;
+      *loc = (void *)h;
+
       return type;
     }
 }
