@@ -1,3 +1,8 @@
+2014-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Coarray Programming): Add first ABI
+	documentation.
+
 2014-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/62076
