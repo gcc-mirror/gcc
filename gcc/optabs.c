@@ -7334,7 +7334,10 @@ expand_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
      perform the operation.  */
   if (!ret)
     {
-      emit_move_insn (subtarget, mem);
+      /* If the result is ignored skip the move to target.  */
+      if (subtarget != const0_rtx)
+        emit_move_insn (subtarget, mem);
+
       emit_move_insn (mem, trueval);
       ret = subtarget;
     }
