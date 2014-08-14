@@ -1,3 +1,10 @@
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/non_uint_neg.cc: Adjust for parser change.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	requirements/non_uint_neg.cc: Likewise.
+
 2014-08-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/61841

@@ -1,3 +1,22 @@
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/alias-decl-4.C: Adjust for parser change.
+	* g++.dg/cpp0x/decltype2.C: Likewise.
+	* g++.dg/cpp0x/decltype3.C: Likewise.
+	* g++.dg/cpp0x/pr60249.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex10.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex14.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/cpp0x/variadic74.C: Likewise.
+	* g++.dg/parse/error10.C: Likewise.
+	* g++.dg/parse/error15.C: Likewise.
+	* g++.dg/parse/error2.C: Likewise.
+	* g++.dg/template/crash106.C: Likewise.
+	* g++.dg/template/crash89.C: Likewise.
+	* g++.dg/template/nontype7.C: Likewise.
+	* g++.dg/template/void3.C: Likewise.
+	* g++.dg/template/void7.C: Likewise.
+
 2014-08-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62090

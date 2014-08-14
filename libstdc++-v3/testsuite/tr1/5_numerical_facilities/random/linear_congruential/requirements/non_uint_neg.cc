@@ -19,8 +19,7 @@
 
 // { dg-do compile }
 // { dg-options "-D_GLIBCXX_CONCEPT_CHECKS" }
-// { dg-error "not a valid type" "" { target *-*-* } 30 }
-// { dg-error "invalid type"     "" { target *-*-* } 30 }
+// { dg-error "not a valid type" "" { target *-*-* } 29 }
 
 // 5.1.4.1 class template linear_congruential [tr.rand.eng.lcong]
 // 5.1.4.1 [4]
@@ -28,4 +27,3 @@
 #include <tr1/random>
  
 std::tr1::linear_congruential<double, 48271, 0, 2147483647> x;
-
