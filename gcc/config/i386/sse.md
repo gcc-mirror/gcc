@@ -331,32 +331,41 @@
    (V4SI "TARGET_AVX2") (V2DI "TARGET_AVX2")
    (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")])
 
+(define_mode_attr avx512
+  [(V16QI "avx512vl") (V32QI "avx512vl") (V64QI "avx512bw")
+   (V8HI  "avx512vl") (V16HI  "avx512vl") (V32HI "avx512bw")
+   (V4SI  "avx512vl") (V8SI  "avx512vl") (V16SI "avx512f")
+   (V2DI  "avx512vl") (V4DI  "avx512vl") (V8DI "avx512f")
+   (V4SF "avx512vl") (V8SF "avx512vl") (V16SF "avx512f")
+   (V2DF "avx512vl") (V4DF "avx512vl") (V8DF "avx512f")])
+
 (define_mode_attr sse2_avx_avx512f
   [(V16QI "sse2") (V32QI "avx") (V64QI "avx512f")
+   (V8HI  "avx512vl") (V16HI  "avx512vl") (V32HI "avx512bw")
    (V4SI  "sse2") (V8SI  "avx") (V16SI "avx512f")
-   (V8DI "avx512f")
+   (V2DI  "avx512vl") (V4DI  "avx512vl") (V8DI "avx512f")
    (V16SF "avx512f") (V8SF "avx") (V4SF "avx")
    (V8DF "avx512f") (V4DF "avx") (V2DF "avx")])
 
 (define_mode_attr sse2_avx2
-  [(V16QI "sse2") (V32QI "avx2")
-   (V8HI "sse2") (V16HI "avx2")
+  [(V16QI "sse2") (V32QI "avx2") (V64QI "avx512bw")
+   (V8HI "sse2") (V16HI "avx2") (V32HI "avx512bw")
    (V4SI "sse2") (V8SI "avx2") (V16SI "avx512f")
    (V2DI "sse2") (V4DI "avx2") (V8DI "avx512f")
-   (V1TI "sse2") (V2TI "avx2")])
+   (V1TI "sse2") (V2TI "avx2") (V4TI "avx512bw")])
 
 (define_mode_attr ssse3_avx2
-   [(V16QI "ssse3") (V32QI "avx2")
-    (V4HI "ssse3") (V8HI "ssse3") (V16HI "avx2")
+   [(V16QI "ssse3") (V32QI "avx2") (V64QI "avx512bw")
+    (V4HI "ssse3") (V8HI "ssse3") (V16HI "avx2") (V32HI "avx512bw")
     (V4SI "ssse3") (V8SI "avx2")
     (V2DI "ssse3") (V4DI "avx2")
-    (TI "ssse3") (V2TI "avx2")])
+    (TI "ssse3") (V2TI "avx2") (V4TI "avx512bw")])
 
 (define_mode_attr sse4_1_avx2
-   [(V16QI "sse4_1") (V32QI "avx2")
-    (V8HI "sse4_1") (V16HI "avx2")
+   [(V16QI "sse4_1") (V32QI "avx2") (V64QI "avx512bw")
+    (V8HI "sse4_1") (V16HI "avx2") (V32HI "avx512bw")
     (V4SI "sse4_1") (V8SI "avx2") (V16SI "avx512f")
-    (V2DI "sse4_1") (V4DI "avx2") (V8DI "avx512f")])
+    (V2DI "sse4_1") (V4DI "avx2") (V8DI "avx512dq")])
 
 (define_mode_attr avx_avx2
   [(V4SF "avx") (V2DF "avx")
@@ -376,6 +385,13 @@
    (V8SF "avx2") (V16SF "avx512f")
    (V4DF "avx2") (V8DF "avx512f")])
 
+(define_mode_attr avx2_avx512bw
+  [(V4SI "avx2") (V8SI "avx2") (V16SI "avx512f")
+   (V2DI "avx2") (V4DI "avx2") (V8DI "avx512f")
+   (V4SF "avx2") (V8SF "avx2") (V16SF "avx512f")
+   (V2DF "avx2") (V4DF "avx2") (V8DF "avx512f")
+   (V8HI "avx512vl") (V16HI "avx512vl") (V32HI "avx512bw")])
+
 (define_mode_attr shuffletype
   [(V16SF "f") (V16SI "i") (V8DF "f") (V8DI "i")
   (V8SF "f") (V8SI "i") (V4DF "f") (V4DI "i")
@@ -386,13 +402,19 @@
 (define_mode_attr ssequartermode
   [(V16SF "V4SF") (V8DF "V2DF") (V16SI "V4SI") (V8DI "V2DI")])
 
+(define_mode_attr ssedoublemodelower
+  [(V16QI "v16hi") (V32QI "v32hi") (V64QI "v64hi")
+   (V8HI "v8si")   (V16HI "v16si") (V32HI "v32si")
+   (V4SI "v4di")   (V8SI "v8di")   (V16SI "v16di")])
+
 (define_mode_attr ssedoublemode
   [(V16SF "V32SF") (V16SI "V32SI") (V8DI "V16DI") (V8DF "V16DF")
-   (V16HI "V16SI") (V8HI "V8SI") (V4HI "V4SI")
-   (V32QI "V32HI") (V16QI "V16HI")])
+   (V8SF "V16SF") (V8SI "V16SI") (V4DI "V8DI") (V4DF "V8DF")
+   (V16HI "V16SI") (V8HI "V8SI") (V4HI "V4SI") (V4SI "V4DI")
+   (V32HI "V32SI") (V32QI "V32HI") (V16QI "V16HI") (V64QI "V64HI")])
 
 (define_mode_attr ssebytemode
-  [(V4DI "V32QI") (V2DI "V16QI")])
+  [(V8DI "V64QI") (V4DI "V32QI") (V2DI "V16QI")])
 
 ;; All 128bit vector integer modes
 (define_mode_iterator VI_128 [V16QI V8HI V4SI V2DI])
@@ -461,7 +483,7 @@
 
 ;; SSE instruction mode
 (define_mode_attr sseinsnmode
-  [(V64QI "XI") (V32HI "XI") (V16SI "XI") (V8DI "XI")
+  [(V64QI "XI") (V32HI "XI") (V16SI "XI") (V8DI "XI") (V4TI "XI")
    (V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI") (V2TI "OI")
    (V16QI "TI") (V8HI "TI") (V4SI "TI") (V2DI "TI") (V1TI "TI")
    (V16SF "V16SF") (V8DF "V8DF")
@@ -487,10 +509,11 @@
    (V8SI  "V8SI")  (V4DI  "V4DI")
    (V4SI  "V4SI")  (V2DI  "V2DI")
    (V16HI "V16HI") (V8HI  "V8HI")
+   (V32HI "V32HI") (V64QI "V64QI")
    (V32QI "V32QI") (V16QI "V16QI")])
 
 (define_mode_attr sseintvecmodelower
-  [(V16SF "v16si")
+  [(V16SF "v16si") (V8DF "v8di")
    (V8SF "v8si") (V4DF "v4di")
    (V4SF "v4si") (V2DF "v2di")
    (V8SI "v8si") (V4DI "v4di")
@@ -522,9 +545,12 @@
    (V32HI "V16SF") (V16HI "V8SF") (V8HI "V4SF")
    (V8SI "V8SF") (V4SI "V4SF")
    (V4DI "V8SF") (V2DI "V4SF")
-   (V2TI "V8SF") (V1TI "V4SF")
+   (V4TI "V16SF") (V2TI "V8SF") (V1TI "V4SF")
    (V8SF "V8SF") (V4SF "V4SF")
    (V4DF "V8SF") (V2DF "V4SF")])
+
+(define_mode_attr ssePSmode2
+  [(V8DI "V8SF") (V4DI "V4SF")])
 
 ;; Mapping of vector modes back to the scalar modes
 (define_mode_attr ssescalarmode
@@ -570,6 +596,7 @@
 
 (define_mode_attr ssescalarsize
   [(V8DI  "64") (V4DI  "64") (V2DI  "64")
+   (V64QI "8") (V32QI "8") (V16QI "8")
    (V32HI "16") (V16HI "16") (V8HI "16")
    (V16SI "32") (V8SI "32") (V4SI "32")
    (V16SF "32") (V8DF "64")])
@@ -581,7 +608,10 @@
    (V8DI  "p") (V8DF  "")
    (V4SI  "p") (V4SF  "")
    (V8SI  "p") (V8SF  "")
-   (V16SI "p") (V16SF "")])
+   (V16SI "p") (V16SF "")
+   (V16QI "p") (V8HI "p")
+   (V32QI "p") (V16HI "p")
+   (V64QI "p") (V32HI "p")])
 
 ;; SSE scalar suffix for vector modes
 (define_mode_attr ssescalarmodesuffix
@@ -622,13 +652,18 @@
 ;; Mix-n-match
 (define_mode_iterator AVX256MODE2P [V8SI V8SF V4DF])
 
-;; Mapping of immediate bits for blend instructions
-(define_mode_attr blendbits
-  [(V8SF "255") (V4SF "15") (V4DF "15") (V2DF "3")])
+;; Mapping for dbpsabbw modes
+(define_mode_attr dbpsadbwmode
+  [(V32HI "V64QI") (V16HI "V32QI") (V8HI "V16QI")])
 
 ;; Mapping suffixes for broadcast
 (define_mode_attr bcstscalarsuff
-  [(V16SI "d") (V16SF "ss") (V8DI "q") (V8DF "sd")])
+  [(V64QI "b")  (V32QI "b") (V16QI "b")
+   (V32HI "w")  (V16HI "w") (V8HI "w")
+   (V16SI "d")  (V8SI "d")  (V4SI "d")
+   (V8DI "q")   (V4DI "q")  (V2DI "q")
+   (V16SF "ss") (V8SF "ss") (V4SF "ss")
+   (V8DF "sd")  (V4DF "sd") (V2DF "sd")])
 
 ;; Include define_subst patterns for instructions with mask
 (include "subst.md")
@@ -11583,6 +11618,10 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Mapping of immediate bits for blend instructions
+(define_mode_attr blendbits
+  [(V8SF "255") (V4SF "15") (V4DF "15") (V2DF "3")])
+
 (define_insn "<sse4_1>_blend<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=x,x")
 	(vec_merge:VF_128_256
@@ -11641,7 +11680,11 @@
    (set_attr "btver2_decode" "vector,vector")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<sse4_1_avx2>_movntdqa"
+;; Mode attribute used by `vmovntdqa' pattern
+(define_mode_attr vi8_sse4_1_avx2_avx512
+   [(V2DI "sse4_1") (V4DI "avx2") (V8DI "avx512f")])
+
+(define_insn "<vi8_sse4_1_avx2_avx512>_movntdqa"
   [(set (match_operand:VI8_AVX2_AVX512F 0 "register_operand" "=x, v")
 	(unspec:VI8_AVX2_AVX512F [(match_operand:VI8_AVX2_AVX512F 1 "memory_operand" "m, m")]
 		     UNSPEC_MOVNTDQA))]
