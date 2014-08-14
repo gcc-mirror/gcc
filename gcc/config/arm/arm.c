@@ -2989,6 +2989,10 @@ arm_option_override (void)
       /* If optimizing for size, bump the number of instructions that we
          are prepared to conditionally execute (even on a StrongARM).  */
       max_insns_skipped = 6;
+
+      /* For THUMB2, we limit the conditional sequence to one IT block.  */
+      if (TARGET_THUMB2)
+	max_insns_skipped = MAX_INSN_PER_IT_BLOCK;
     }
   else
     max_insns_skipped = current_tune->max_insns_skipped;

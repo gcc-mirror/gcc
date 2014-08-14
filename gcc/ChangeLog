@@ -1,3 +1,8 @@
+2014-08-14  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* config/arm/arm.c (arm_option_override): Set max_insns_skipped
+	to MAX_INSN_PER_IT_BLOCK when optimize_size for THUMB2.
+
 2014-08-13  Chen Gang  gang.chen.5i5j@gmail.com
 
 	* microblaze/microblaze.md: Remove redundant '@' to avoid compiling
