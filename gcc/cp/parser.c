@@ -2454,7 +2454,7 @@ static void cp_parser_check_for_invalid_template_id
 static bool cp_parser_non_integral_constant_expression
   (cp_parser *, non_integral_constant);
 static void cp_parser_diagnose_invalid_type_name
-  (cp_parser *, tree, tree, location_t);
+  (cp_parser *, tree, location_t);
 static bool cp_parser_parse_and_diagnose_invalid_type_name
   (cp_parser *);
 static int cp_parser_skip_to_closing_parenthesis
@@ -2482,7 +2482,7 @@ static bool cp_parser_is_string_literal
 static bool cp_parser_is_keyword
   (cp_token *, enum rid);
 static tree cp_parser_make_typename_type
-  (cp_parser *, tree, tree, location_t location);
+  (cp_parser *, tree, location_t location);
 static cp_declarator * cp_parser_make_indirect_declarator
   (enum tree_code, tree, cp_cv_quals, cp_declarator *, tree);
 static bool cp_parser_compound_literal_p
@@ -2881,28 +2881,23 @@ cp_parser_non_integral_constant_expression (cp_parser  *parser,
   return false;
 }
 
-/* Emit a diagnostic for an invalid type name.  SCOPE is the
-   qualifying scope (or NULL, if none) for ID.  This function commits
+/* Emit a diagnostic for an invalid type name.  This function commits
    to the current active tentative parse, if any.  (Otherwise, the
    problematic construct might be encountered again later, resulting
    in duplicate error messages.) LOCATION is the location of ID.  */
 
 static void
-cp_parser_diagnose_invalid_type_name (cp_parser *parser,
-				      tree scope, tree id,
+cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 				      location_t location)
 {
-  tree decl, old_scope, ambiguous_decls;
+  tree decl, ambiguous_decls;
   cp_parser_commit_to_tentative_parse (parser);
   /* Try to lookup the identifier.  */
-  old_scope = parser->scope;
-  parser->scope = scope;
   decl = cp_parser_lookup_name (parser, id, none_type,
 				/*is_template=*/false,
 				/*is_namespace=*/false,
 				/*check_dependency=*/true,
 				&ambiguous_decls, location);
-  parser->scope = old_scope;
   if (ambiguous_decls)
     /* If the lookup was ambiguous, an error will already have
        been issued.  */
@@ -3063,8 +3058,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
     return false;
 
   /* Emit a diagnostic for the invalid type.  */
-  cp_parser_diagnose_invalid_type_name (parser, parser->scope,
-					id, token->location);
+  cp_parser_diagnose_invalid_type_name (parser, id, token->location);
  out:
   /* If we aren't in the middle of a declarator (i.e. in a
      parameter-declaration-clause), skip to the end of the declaration;
@@ -3376,19 +3370,19 @@ cp_parser_require_pragma_eol (cp_parser *parser, cp_token *pragma_tok)
    using cp_parser_diagnose_invalid_type_name.  */
 
 static tree
-cp_parser_make_typename_type (cp_parser *parser, tree scope,
-			      tree id, location_t id_location)
+cp_parser_make_typename_type (cp_parser *parser, tree id,
+			      location_t id_location)
 {
   tree result;
   if (identifier_p (id))
     {
-      result = make_typename_type (scope, id, typename_type,
+      result = make_typename_type (parser->scope, id, typename_type,
 				   /*complain=*/tf_none);
       if (result == error_mark_node)
-	cp_parser_diagnose_invalid_type_name (parser, scope, id, id_location);
+	cp_parser_diagnose_invalid_type_name (parser, id, id_location);
       return result;
     }
-  return make_typename_type (scope, id, typename_type, tf_error);
+  return make_typename_type (parser->scope, id, typename_type, tf_error);
 }
 
 /* This is a wrapper around the
@@ -15194,6 +15188,17 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	 identifier.  */
       if (!template_p && !cp_parser_parse_definitely (parser))
 	;
+      /* We can get here when cp_parser_template_id, called by
+	 cp_parser_class_name with tag_type == none_type, succeeds
+	 and caches a BASELINK.  Then, when called again here,
+	 instead of failing and returning an error_mark_node
+	 returns it (see template/typename17.C in C++11).
+	 ??? Could we diagnose this earlier?  */
+      else if (tag_type == typename_type && BASELINK_P (decl))
+	{
+	  cp_parser_diagnose_invalid_type_name (parser, decl, token->location);
+	  type = error_mark_node;
+	}
       /* If DECL is a TEMPLATE_ID_EXPR, and the `typename' keyword is
 	 in effect, then we must assume that, upon instantiation, the
 	 template will correspond to a class.  */
@@ -15227,8 +15232,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       /* For a `typename', we needn't call xref_tag.  */
       if (tag_type == typename_type
 	  && TREE_CODE (parser->scope) != NAMESPACE_DECL)
-	return cp_parser_make_typename_type (parser, parser->scope,
-					     identifier,
+	return cp_parser_make_typename_type (parser, identifier,
 					     token->location);
 
       /* Template parameter lists apply only if we are not within a
@@ -15289,7 +15293,6 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  if (TREE_CODE (decl) != TYPE_DECL)
 	    {
 	      cp_parser_diagnose_invalid_type_name (parser,
-						    parser->scope,
 						    identifier,
 						    token->location);
 	      return error_mark_node;
@@ -16896,17 +16899,6 @@ cp_parser_init_declarator (cp_parser* parser,
      know we're going ahead.  By this point, we know that we cannot
      possibly be looking at any other construct.  */
   cp_parser_commit_to_tentative_parse (parser);
-
-  /* If the decl specifiers were bad, issue an error now that we're
-     sure this was intended to be a declarator.  Then continue
-     declaring the variable(s), as int, to try to cut down on further
-     errors.  */
-  if (decl_specifiers->any_specifiers_p
-      && decl_specifiers->type == error_mark_node)
-    {
-      cp_parser_error (parser, "invalid type in declaration");
-      decl_specifiers->type = integer_type_node;
-    }
 
   /* Enter the newly declared entry in the symbol table.  If we're
      processing a declaration in a class-specifier, we wait until

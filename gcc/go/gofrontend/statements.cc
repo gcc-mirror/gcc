@@ -1150,7 +1150,10 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
 
   // var present_temp bool
   Temporary_statement* present_temp =
-    Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
+    Statement::make_temporary((this->present_->type()->is_sink_type())
+			      ? Type::make_boolean_type()
+			      : this->present_->type(),
+			      NULL, loc);
   b->add_statement(present_temp);
 
   // present_temp = mapaccess2(DESCRIPTOR, MAP, &key_temp, &val_temp)
@@ -1163,7 +1166,6 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Named_object*,
   Expression* a4 = Expression::make_unary(OPERATOR_AND, ref, loc);
   Expression* call = Runtime::make_call(Runtime::MAPACCESS2, loc, 4,
 					a1, a2, a3, a4);
-
   ref = Expression::make_temporary_reference(present_temp, loc);
   ref->set_is_lvalue();
   Statement* s = Statement::make_assignment(ref, call, loc);
@@ -1426,7 +1428,10 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 
   // var closed_temp bool
   Temporary_statement* closed_temp =
-    Statement::make_temporary(Type::lookup_bool_type(), NULL, loc);
+    Statement::make_temporary((this->closed_->type()->is_sink_type())
+			      ? Type::make_boolean_type()
+			      : this->closed_->type(),
+			      NULL, loc);
   b->add_statement(closed_temp);
 
   // closed_temp = chanrecv2(type, channel, &val_temp)

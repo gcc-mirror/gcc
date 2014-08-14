@@ -73,6 +73,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX512CD_P(x)	TARGET_ISA_AVX512CD_P(x)
 #define TARGET_AVX512DQ	TARGET_ISA_AVX512DQ
 #define TARGET_AVX512DQ_P(x)	TARGET_ISA_AVX512DQ_P(x)
+#define TARGET_AVX512BW	TARGET_ISA_AVX512BW
+#define TARGET_AVX512BW_P(x)	TARGET_ISA_AVX512BW_P(x)
+#define TARGET_AVX512VL	TARGET_ISA_AVX512VL
+#define TARGET_AVX512VL_P(x)	TARGET_ISA_AVX512VL_P(x)
 #define TARGET_FMA	TARGET_ISA_FMA
 #define TARGET_FMA_P(x)	TARGET_ISA_FMA_P(x)
 #define TARGET_SSE4A	TARGET_ISA_SSE4A
@@ -1050,7 +1054,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    applied to them.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
+  (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO)				\
+   || MMX_REGNO_P (REGNO) || MASK_REGNO_P (REGNO)			\
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
@@ -1081,7 +1086,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
-   || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode)
+   || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
+   || (MODE) == V4TImode)
+
+#define VALID_AVX512VL_128_REG_MODE(MODE)					\
+  ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
+   || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode)
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
@@ -1127,6 +1137,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V16SFmode)
 
 #define VALID_MASK_REG_MODE(MODE) ((MODE) == HImode || (MODE) == QImode)
+
+#define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
@@ -1450,6 +1462,7 @@ enum reg_class
          : (N) <= LAST_REX_SSE_REG ? (FIRST_REX_SSE_REG + (N) - 8) \
                                    : (FIRST_EXT_REX_SSE_REG + (N) - 16))
 
+#define MASK_REG_P(X) (REG_P (X) && MASK_REGNO_P (REGNO (X)))
 #define MASK_REGNO_P(N) IN_RANGE ((N), FIRST_MASK_REG, LAST_MASK_REG)
 #define ANY_MASK_REG_P(X) (REG_P (X) && MASK_REGNO_P (REGNO (X)))
 

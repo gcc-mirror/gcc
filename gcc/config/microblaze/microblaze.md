@@ -518,8 +518,7 @@
 	(minus:DI (match_operand:DI 1 "register_operand" "d")
 		  (match_operand:DI 2 "arith_operand32" "d")))]
   ""
-  "@
-   rsub\t%L0,%L2,%L1\;rsubc\t%M0,%M2,%M1"
+  "rsub\t%L0,%L2,%L1\;rsubc\t%M0,%M2,%M1"
   [(set_attr "type"	"darith")
   (set_attr "mode"	"DI")
   (set_attr "length"	"8")])

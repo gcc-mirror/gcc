@@ -3000,11 +3000,11 @@ cgraph_node::verify_cgraph_nodes (void)
 cgraph_node *
 cgraph_node::function_symbol (enum availability *availability)
 {
-  cgraph_node *node = NULL;
+  cgraph_node *node = this;
 
   do
     {
-      node = ultimate_alias_target (availability);
+      node = node->ultimate_alias_target (availability);
       if (node->thunk.thunk_p)
 	{
 	  node = node->callees->callee;

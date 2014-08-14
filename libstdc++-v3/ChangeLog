@@ -1,3 +1,49 @@
+2014-08-14  Matthias Klose  <doko@ubuntu.com>
+
+	* testsuite/ext/random/uniform_on_sphere_distribution/requirements:
+	Remove empty directory.
+
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/non_uint_neg.cc: Adjust for parser change.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	requirements/non_uint_neg.cc: Likewise.
+
+2014-08-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61841
+	* include/std/thread (thread::_M_start_thread): Declare new overload.
+	(thread::thread<_Callable, _Args...>): Call new overload with an
+	explicit reference to pthread_create.
+	* src/c++11/thread.cc (thread::_M_start_thread): Add new overload.
+	* config/abi/pre/gnu.ver: Export new function.
+
+2014-08-13  Sylvestre Ledru  <sylvestre@debian.org>
+
+	* include/profile/impl/profiler_hash_func.h: Fix a comment typo
+
+2014-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* Fix thinko in the last commit.
+
+2014-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/62118
+	* include/ext/random.tcc (uniform_on_sphere_helper<2, _RealType>::
+	operator()): Use std::hypot only when _GLIBCXX_USE_C99_MATH_TR1.
+
+2014-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (getline): Qualify call to prevent ADL
+	and add overloads for rvalue streams.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/12.cc:
+	New.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/12.cc:
+	New.
+
+	* include/bits/basic_string.h (getline): Declare inline.
+
 2014-08-09  Ulrich Drepper  <drepper@gmail.com>
 
 	* include/ext/random.tcc (uniform_on_sphere_helper): Define.

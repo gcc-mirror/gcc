@@ -1,3 +1,8 @@
+2014-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/62067
+	* lto-lang.c (def_fn_type): Fix error handling wrt va_end.
+
 2014-08-08  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (lto_read_decls): Adjust for lto_input_block changes.

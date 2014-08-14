@@ -9013,8 +9013,51 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 // Flatten a call with multiple results into a temporary.
 
 Expression*
-Call_expression::do_flatten(Gogo*, Named_object*, Statement_inserter* inserter)
+Call_expression::do_flatten(Gogo* gogo, Named_object*,
+			    Statement_inserter* inserter)
 {
+  if (this->classification() == EXPRESSION_ERROR)
+    return this;
+
+  // Add temporary variables for all arguments that require type
+  // conversion.
+  Function_type* fntype = this->get_function_type();
+  go_assert(fntype != NULL);
+  if (this->args_ != NULL && !this->args_->empty()
+      && fntype->parameters() != NULL && !fntype->parameters()->empty())
+    {
+      bool is_interface_method =
+	this->fn_->interface_field_reference_expression() != NULL;
+
+      Expression_list *args = new Expression_list();
+      Typed_identifier_list::const_iterator pp = fntype->parameters()->begin();
+      Expression_list::const_iterator pa = this->args_->begin();
+      if (!is_interface_method && fntype->is_method())
+	{
+	  // The receiver argument.
+	  args->push_back(*pa);
+	  ++pa;
+	}
+      for (; pa != this->args_->end(); ++pa, ++pp)
+	{
+	  go_assert(pp != fntype->parameters()->end());
+	  if (Type::are_identical(pp->type(), (*pa)->type(), true, NULL))
+	    args->push_back(*pa);
+	  else
+	    {
+	      Location loc = (*pa)->location();
+	      Expression* arg =
+		Expression::convert_for_assignment(gogo, pp->type(), *pa, loc);
+	      Temporary_statement* temp =
+		Statement::make_temporary(pp->type(), arg, loc);
+	      inserter->insert(temp);
+	      args->push_back(Expression::make_temporary_reference(temp, loc));
+	    }
+	}
+      delete this->args_;
+      this->args_ = args;
+    }
+
   size_t rc = this->result_count();
   if (rc > 1 && this->call_temp_ == NULL)
     {

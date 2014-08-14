@@ -1547,10 +1547,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<std::size_t _Dimen, typename _RealType>
       class uniform_on_sphere_helper
       {
-	typedef typename uniform_on_sphere_distribution<_Dimen, _RealType>::result_type result_type;
+	typedef typename uniform_on_sphere_distribution<_Dimen, _RealType>::
+	  result_type result_type;
 
       public:
-	template<typename _NormalDistribution, typename _UniformRandomNumberGenerator>
+	template<typename _NormalDistribution,
+		 typename _UniformRandomNumberGenerator>
 	result_type operator()(_NormalDistribution& __nd,
 			       _UniformRandomNumberGenerator& __urng)
         {
@@ -1604,9 +1606,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  while (__sq == _RealType(0) || __sq > _RealType(1));
 
+#if _GLIBCXX_USE_C99_MATH_TR1
 	  // Yes, we do not just use sqrt(__sq) because hypot() is more
 	  // accurate.
 	  auto __norm = std::hypot(__ret[0], __ret[1]);
+#else
+	  auto __norm = std::sqrt(__sq);
+#endif
 	  __ret[0] /= __norm;
 	  __ret[1] /= __norm;
 

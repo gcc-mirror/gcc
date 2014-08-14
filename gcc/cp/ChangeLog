@@ -1,3 +1,36 @@
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_init_declarator): Remove redundant check of
+	decl_specifiers->type.
+
+2014-08-13  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_x_va_arg): Support passing non-POD through ....
+	(convert_arg_to_ellipsis): Likewise.
+
+2014-08-13  Andrew Sutton  <andrew.n.sutton@gmail.com>
+
+	* pt.c (lookup_template_variable): Make dependent variable templates
+	have unknown type.
+
+2014-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_elaborated_type_specifier): Handle
+	specially cp_parser_template_id returning a BASELINK.
+
+2014-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_diagnose_invalid_type_name,
+	cp_parser_make_typename_type): Remove scope parameter.
+	(cp_parser_parse_and_diagnose_invalid_type_name,
+	cp_parser_elaborated_type_specifier): Adjust calls.
+
+2014-08-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Reject virt-specifiers on friends and member templates
+	* friend.c (do_friend): Diagnose virt-specifiers.
+	* pt.c (push_template_decl_real): Diagnose virt-specifiers.
+
 2014-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck2.c (check_narrowing): Add tsubst_flags_t parameter, change

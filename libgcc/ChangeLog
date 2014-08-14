@@ -1,3 +1,11 @@
+2014-08-13  Steve Ellcey  <sellcey@mips.com>
+
+	* crtstuff.c: Undef caddr_t.
+
+2014-08-12  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips16.S:  Skip when __mips_soft_float is defined.
+
 2014-08-07  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in (LIBGCOV_INTERFACE): Move _gcov_dump ...

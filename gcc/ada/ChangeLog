@@ -1,3 +1,20 @@
+2014-08-13  Sylvestre Ledru  <sylvestre@debian.org>
+
+	* 9drpc.adb: Fix a typo
+	* s-interr.ads: Likewise
+	* s-taskin.ads: Likewise
+	* s-traces.ads: Likewise
+	* sysdep.c: Likewise
+
+2014-08-12  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* socket.c: For RTEMS, use correct prototype of gethostbyname_r().
+	* gsocket.h Add include of <unistd.h> on RTEMS.
+
+2014-08-11  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* s-osinte-rtems.adb: Correct formatting of line in license block.
+
 2014-08-04  Claire Dross  <dross@adacore.com>
 
 	* exp_util.adb (Get_First_Parent_With_Ext_Axioms_For_Entity):

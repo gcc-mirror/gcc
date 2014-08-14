@@ -2593,6 +2593,8 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
     { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
     { "-mavx512dq",	OPTION_MASK_ISA_AVX512DQ },
+    { "-mavx512bw",	OPTION_MASK_ISA_AVX512BW },
+    { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
     { "-msse4a",	OPTION_MASK_ISA_SSE4A },
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
@@ -3124,6 +3126,8 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_XSAVEC		(HOST_WIDE_INT_1 << 48)
 #define PTA_XSAVES		(HOST_WIDE_INT_1 << 49)
 #define PTA_AVX512DQ		(HOST_WIDE_INT_1 << 50)
+#define PTA_AVX512BW		(HOST_WIDE_INT_1 << 51)
+#define PTA_AVX512VL		(HOST_WIDE_INT_1 << 52)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -3694,6 +3698,12 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_AVX512DQ
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512DQ))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512DQ;
+	if (processor_alias_table[i].flags & PTA_AVX512BW
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512BW))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512BW;
+	if (processor_alias_table[i].flags & PTA_AVX512VL
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512VL))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VL;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4551,6 +4561,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512er",	OPT_mavx512er),
     IX86_ATTR_ISA ("avx512cd",	OPT_mavx512cd),
     IX86_ATTR_ISA ("avx512dq",	OPT_mavx512dq),
+    IX86_ATTR_ISA ("avx512bw",	OPT_mavx512bw),
+    IX86_ATTR_ISA ("avx512vl",	OPT_mavx512vl),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
     IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
@@ -9000,19 +9012,24 @@ standard_sse_constant_opcode (rtx insn, rtx x)
       switch (get_attr_mode (insn))
 	{
 	case MODE_XI:
-	case MODE_V16SF:
 	  return "vpxord\t%g0, %g0, %g0";
+	case MODE_V16SF:
+	  return TARGET_AVX512DQ ? "vxorps\t%g0, %g0, %g0"
+				 : "vpxord\t%g0, %g0, %g0";
 	case MODE_V8DF:
-	  return "vpxorq\t%g0, %g0, %g0";
+	  return TARGET_AVX512DQ ? "vxorpd\t%g0, %g0, %g0"
+				 : "vpxorq\t%g0, %g0, %g0";
 	case MODE_TI:
-	  return "%vpxor\t%0, %d0";
+	  return TARGET_AVX512VL ? "vpxord\t%t0, %t0, %t0"
+				 : "%vpxor\t%0, %d0";
 	case MODE_V2DF:
 	  return "%vxorpd\t%0, %d0";
 	case MODE_V4SF:
 	  return "%vxorps\t%0, %d0";
 
 	case MODE_OI:
-	  return "vpxor\t%x0, %x0, %x0";
+	  return TARGET_AVX512VL ? "vpxord\t%x0, %x0, %x0"
+				 : "vpxor\t%x0, %x0, %x0";
 	case MODE_V4DF:
 	  return "vxorpd\t%x0, %x0, %x0";
 	case MODE_V8SF:
@@ -9023,7 +9040,8 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	}
 
     case 2:
-      if (get_attr_mode (insn) == MODE_XI
+      if (TARGET_AVX512VL
+	  || get_attr_mode (insn) == MODE_XI
 	  || get_attr_mode (insn) == MODE_V8DF
 	  || get_attr_mode (insn) == MODE_V16SF)
 	return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
@@ -14698,7 +14716,7 @@ print_reg (rtx x, int code, FILE *file)
     case 8:
     case 4:
     case 12:
-      if (! ANY_FP_REG_P (x))
+      if (! ANY_FP_REG_P (x) && ! ANY_MASK_REG_P (x))
 	putc (code == 8 && TARGET_64BIT ? 'r' : 'e', file);
       /* FALLTHRU */
     case 16:
@@ -37390,6 +37408,11 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   if (FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class2))
     return true;
 
+  /* Between mask and general, we have moves no larger than word size.  */
+  if ((MAYBE_MASK_CLASS_P (class1) != MAYBE_MASK_CLASS_P (class2))
+      && (GET_MODE_SIZE (mode) > UNITS_PER_WORD))
+  return true;
+
   /* ??? This is a lie.  We do have moves between mmx/general, and for
      mmx/sse2.  But by saying we need secondary memory we discourage the
      register allocator from using the mmx registers unless needed.  */
@@ -37695,7 +37718,8 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
   if (STACK_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
   if (MASK_REGNO_P (regno))
-    return VALID_MASK_REG_MODE (mode);
+    return (VALID_MASK_REG_MODE (mode)
+	    || (TARGET_AVX512BW && VALID_MASK_AVX512BW_MODE (mode)));
   if (SSE_REGNO_P (regno))
     {
       /* We implement the move patterns for all vector modes into and
@@ -37710,6 +37734,15 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
 	  && (mode == XImode
 	      || VALID_AVX512F_REG_MODE (mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
+	return true;
+
+      /* TODO check for QI/HI scalars.  */
+      /* AVX512VL allows sse regs16+ for 128/256 bit modes.  */
+      if (TARGET_AVX512VL
+	  && (mode == OImode
+	      || mode == TImode
+	      || VALID_AVX256_REG_MODE (mode)
+	      || VALID_AVX512VL_128_REG_MODE (mode)))
 	return true;
 
       /* xmm16-xmm31 are only available for AVX-512.  */
@@ -46456,9 +46489,11 @@ ix86_preferred_simd_mode (enum machine_mode mode)
   switch (mode)
     {
     case QImode:
-      return (TARGET_AVX && !TARGET_PREFER_AVX128) ? V32QImode : V16QImode;
+      return TARGET_AVX512BW ? V64QImode :
+       (TARGET_AVX && !TARGET_PREFER_AVX128) ? V32QImode : V16QImode;
     case HImode:
-      return (TARGET_AVX && !TARGET_PREFER_AVX128) ? V16HImode : V8HImode;
+      return TARGET_AVX512BW ? V32HImode :
+       (TARGET_AVX && !TARGET_PREFER_AVX128) ? V16HImode : V8HImode;
     case SImode:
       return TARGET_AVX512F ? V16SImode :
 	(TARGET_AVX && !TARGET_PREFER_AVX128) ? V8SImode : V4SImode;

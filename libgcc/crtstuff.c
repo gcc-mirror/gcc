@@ -52,6 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    identified the set of defines that need to go into auto-target.h,
    this will have to do.  */
 #include "auto-host.h"
+#undef caddr_t
 #undef pid_t
 #undef rlim_t
 #undef ssize_t

@@ -1,6 +1,7 @@
 /* Check local register variables using a register conventionally 
    used as the frame pointer aren't clobbered under high register pressure.  */
 /* { dg-do run } */
+/* { dg-skip-if "incompatible options" { ! { arm_thumb1_ok || arm_thumb2_ok } } { "*" } { "" } } */
 /* { dg-options "-Os -mthumb -fomit-frame-pointer" } */
 
 #include <stdlib.h>

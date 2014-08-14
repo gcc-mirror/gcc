@@ -1187,6 +1187,8 @@ struct mips_cpu_info {
 %{mshared} %{mno-shared} \
 %{msym32} %{mno-sym32} \
 %{mtune=*} \
+%{mhard-float} %{msoft-float} \
+%{msingle-float} %{mdouble-float} \
 %(subtarget_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */

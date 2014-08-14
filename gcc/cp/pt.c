@@ -4737,6 +4737,11 @@ push_template_decl_real (tree decl, bool is_friend)
 	}
       else if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
+	  if (member_template_p)
+	    {
+	      if (DECL_OVERRIDE_P (decl) || DECL_FINAL_P (decl))
+		error ("member template %qD may not have virt-specifiers", decl);
+	    }
 	  if (DECL_DESTRUCTOR_P (decl))
 	    {
 	      /* [temp.mem]
@@ -7960,13 +7965,22 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
   return ret;
 }
 
-/* Return a TEMPLATE_ID_EXPR for the given variable template and ARGLIST. */
+/* Return a TEMPLATE_ID_EXPR for the given variable template and ARGLIST. 
+   If the ARGLIST refers to any template parameters, the type of the
+   expression is the unknown_type_node since the template-id could
+   refer to an explicit or partial specialization. */
 
 tree
 lookup_template_variable (tree templ, tree arglist)
 {
-  return build2 (TEMPLATE_ID_EXPR, TREE_TYPE (templ), templ, arglist);
+  tree type;
+  if (uses_template_parms (arglist))
+    type = unknown_type_node;
+  else
+    type = TREE_TYPE (templ);
+  return build2 (TEMPLATE_ID_EXPR, type, templ, arglist);
 }
+
 
 struct pair_fn_data
 {

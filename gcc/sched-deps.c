@@ -4751,6 +4751,24 @@ find_inc (struct mem_inc_info *mii, bool backwards)
 			   "inc conflicts with store failure.\n");
 		goto next;
 	      }
+
+	  /* The inc instruction could have clobbers, make sure those
+	     registers are not used in mem insn.  */
+	  FOR_EACH_INSN_DEF (def, mii->inc_insn)
+	    if (!reg_overlap_mentioned_p (DF_REF_REG (def), mii->mem_reg0))
+	      {
+		df_ref use;
+		FOR_EACH_INSN_USE (use, mii->mem_insn)
+		  if (reg_overlap_mentioned_p (DF_REF_REG (def),
+					       DF_REF_REG (use)))
+		    {
+		      if (sched_verbose >= 5)
+			fprintf (sched_dump,
+				 "inc clobber used in store failure.\n");
+		      goto next;
+		    }
+	      }
+
 	  newaddr = mii->inc_input;
 	  if (mii->mem_index != NULL_RTX)
 	    newaddr = gen_rtx_PLUS (GET_MODE (newaddr), newaddr,

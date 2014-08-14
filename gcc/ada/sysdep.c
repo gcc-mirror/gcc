@@ -742,7 +742,7 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
                         * 10000000ULL;
 
     /* If GetTimeZoneInformation does not return a value between 0 and 2 then
-       it means that we were not able to retrieve timezone informations. Note
+       it means that we were not able to retrieve timezone information. Note
        that we cannot use here FileTimeToLocalFileTime as Windows will use in
        always in this case the current timezone setting. As suggested on MSDN
        we use the following three system calls to get the right information.

@@ -10,10 +10,8 @@ template<template<class...> class Q> class Y { /* ... */ };
 X<A> xA; // okay
 X<B> xB; // { dg-error "mismatch" "mismatch" }
 // { dg-message "expected a template" "expected" { target *-*-* } 11 }
-// { dg-error "invalid type" "invalid" { target *-*-* } 11 }
 X<C> xC; // { dg-error "mismatch" "mismatch" }
-// { dg-message "expected a template" "expected" { target *-*-* } 14 }
-// { dg-error "invalid type" "invalid" { target *-*-* } 14 }
+// { dg-message "expected a template" "expected" { target *-*-* } 13 }
 Y<A> yA;
 Y<B> yB;
 Y<C> yC; // okay

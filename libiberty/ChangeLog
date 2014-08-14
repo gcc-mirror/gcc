@@ -1,3 +1,10 @@
+2014-08-13  Gary Benson  <gbenson@redhat.com>
+
+	* testsuite/demangler-fuzzer.c: New file.
+	* testsuite/Makefile.in (fuzz-demangler): New rule.
+	(demangler-fuzzer): Likewise.
+	(mostlyclean): Clean up demangler fuzzer.
+
 2014-06-11  Andrew Burgess  <aburgess@broadcom.com>
 
 	* cplus-dem.c (do_type): Call string_delete even if the call to

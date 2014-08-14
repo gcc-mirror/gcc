@@ -2143,6 +2143,132 @@ gimple_fold_builtin_sprintf_chk (gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Simplify a call to the sprintf builtin with arguments DEST, FMT, and ORIG.
+   ORIG may be null if this is a 2-argument call.  We don't attempt to
+   simplify calls with more than 3 arguments.
+
+   Return NULL_TREE if no simplification was possible, otherwise return the
+   simplified form of the call as a tree.  If IGNORED is true, it means that
+   the caller does not use the returned value of the function.  */
+
+static bool
+gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree dest = gimple_call_arg (stmt, 0);
+  tree fmt = gimple_call_arg (stmt, 1);
+  tree orig = NULL_TREE;
+  const char *fmt_str = NULL;
+
+  /* Verify the required arguments in the original call.  We deal with two
+     types of sprintf() calls: 'sprintf (str, fmt)' and
+     'sprintf (dest, "%s", orig)'.  */
+  if (gimple_call_num_args (stmt) > 3)
+    return false;
+
+  if (gimple_call_num_args (stmt) == 3)
+    orig = gimple_call_arg (stmt, 2);
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return false;
+
+  if (!init_target_chars ())
+    return false;
+
+  /* If the format doesn't contain % args or %%, use strcpy.  */
+  if (strchr (fmt_str, target_percent) == NULL)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+
+      if (!fn)
+	return false;
+
+      /* Don't optimize sprintf (buf, "abc", ptr++).  */
+      if (orig)
+	return false;
+
+      /* Convert sprintf (str, fmt) into strcpy (str, fmt) when
+	 'format' is known to contain no % formats.  */
+      gimple_seq stmts = NULL;
+      gimple repl = gimple_build_call (fn, 2, dest, fmt);
+      gimple_seq_add_stmt_without_update (&stmts, repl);
+      if (gimple_call_lhs (stmt))
+	{
+	  repl = gimple_build_assign (gimple_call_lhs (stmt),
+				      build_int_cst (integer_type_node,
+						     strlen (fmt_str)));
+	  gimple_seq_add_stmt_without_update (&stmts, repl);
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  /* gsi now points at the assignment to the lhs, get a
+	     stmt iterator to the memcpy call.
+	     ???  We can't use gsi_for_stmt as that doesn't work when the
+	     CFG isn't built yet.  */
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_prev (&gsi2);
+	  fold_stmt (&gsi2);
+	}
+      else
+	{
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  fold_stmt (gsi);
+	}
+      return true;
+    }
+
+  /* If the format is "%s", use strcpy if the result isn't used.  */
+  else if (fmt_str && strcmp (fmt_str, target_percent_s) == 0)
+    {
+      tree fn;
+      fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+
+      if (!fn)
+	return false;
+
+      /* Don't crash on sprintf (str1, "%s").  */
+      if (!orig)
+	return false;
+
+      tree len = NULL_TREE;
+      if (gimple_call_lhs (stmt))
+	{
+	  len = c_strlen (orig, 1);
+	  if (!len)
+	    return false;
+	}
+
+      /* Convert sprintf (str1, "%s", str2) into strcpy (str1, str2).  */
+      gimple_seq stmts = NULL;
+      gimple repl = gimple_build_call (fn, 2, dest, orig);
+      gimple_seq_add_stmt_without_update (&stmts, repl);
+      if (gimple_call_lhs (stmt))
+	{
+	  if (!useless_type_conversion_p (integer_type_node, TREE_TYPE (len)))
+	    len = fold_convert (integer_type_node, len);
+	  repl = gimple_build_assign (gimple_call_lhs (stmt), len);
+	  gimple_seq_add_stmt_without_update (&stmts, repl);
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  /* gsi now points at the assignment to the lhs, get a
+	     stmt iterator to the memcpy call.
+	     ???  We can't use gsi_for_stmt as that doesn't work when the
+	     CFG isn't built yet.  */
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_prev (&gsi2);
+	  fold_stmt (&gsi2);
+	}
+      else
+	{
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  fold_stmt (gsi);
+	}
+      return true;
+    }
+  return false;
+}
+
+
+
 
 /* Fold a call to __builtin_strlen with known length LEN.  */
 
@@ -2349,6 +2475,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
       return gimple_fold_builtin_sprintf_chk (gsi, DECL_FUNCTION_CODE (callee));
+    case BUILT_IN_SPRINTF:
+      return gimple_fold_builtin_sprintf (gsi);
     default:;
     }
 
@@ -4355,8 +4483,8 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
      result.  */
   if (!AGGREGATE_TYPE_P (TREE_TYPE (ctor)) && !offset
       /* VIEW_CONVERT_EXPR is defined only for matching sizes.  */
-      && operand_equal_p (TYPE_SIZE (type),
-			  TYPE_SIZE (TREE_TYPE (ctor)), 0))
+      && !compare_tree_int (TYPE_SIZE (type), size)
+      && !compare_tree_int (TYPE_SIZE (TREE_TYPE (ctor)), size))
     {
       ret = canonicalize_constructor_val (unshare_expr (ctor), from_decl);
       ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);

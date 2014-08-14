@@ -1,3 +1,11 @@
+2014-08-12  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_postfix_expression) <case RID_FUNCTION_NAME>:
+	Add pedwarn.
+	(c_parser_postfix_expression) <case RID_PRETTY_FUNCTION_NAME>:
+	Likewise.
+	(c_parser_postfix_expression) <case RID_C99_FUNCTION_NAME>: Likewise.
+
 2014-08-10 Marek Polacek  <polacek@redhat.com>
 
 	PR c/51849

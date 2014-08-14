@@ -1,3 +1,15 @@
+2014-08-01  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* configure.ac: Move pthread affinity test to the place where
+	'-pthread' passed to CFLAGS. Otherwise the test always fails.
+	(XCFLAGS): New variable for correctly passing
+	'-pthread'.
+	(XLDFLAGS): New variable for passing the correct pthread lib.
+	* configure: Regenerate.
+	* Makefile.am (AM_CFLAGS): Add $XCFLAGS.
+	(AM_LDFLAGS): Add $XLDFLAGS.
+	* Makefile.in: Regenerate.
+
 2014-05-21  John Marino  <gnugcc@marino.st>
 
 	* runtime/os-unix.c (__DragonFly__): New target.
