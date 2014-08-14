@@ -1,3 +1,9 @@
+2014-08-14  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* cgraph.c (cgraph_node::function_symbol): Fix wrong
+	cgraph_function_node to cgraph_node::function_symbol
+	refactoring.
+
 2014-08-14  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* config/arm/arm.c (arm_option_override): Set max_insns_skipped
