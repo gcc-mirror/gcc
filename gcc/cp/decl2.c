@@ -870,11 +870,6 @@ grokfield (const cp_declarator *declarator,
   if (value == void_type_node)
     return value;
 
-  /* Pass friend decls back.  */
-  if ((TREE_CODE (value) == FUNCTION_DECL
-       || TREE_CODE (value) == TEMPLATE_DECL)
-      && DECL_CONTEXT (value) != current_class_type)
-    return value;
 
   name = DECL_NAME (value);
 
@@ -926,7 +921,9 @@ grokfield (const cp_declarator *declarator,
       return value;
     }
 
-  if (DECL_IN_AGGR_P (value))
+  int friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
+
+  if (!friendp && DECL_IN_AGGR_P (value))
     {
       error ("%qD is already defined in %qT", value, DECL_CONTEXT (value));
       return void_type_node;
@@ -939,8 +936,6 @@ grokfield (const cp_declarator *declarator,
     {
       if (TREE_CODE (value) == FUNCTION_DECL)
 	{
-	  /* Initializers for functions are rejected early in the parser.
-	     If we get here, it must be a pure specifier for a method.  */
 	  if (init == ridpointers[(int)RID_DELETE])
 	    {
 	      DECL_DELETED_FN (value) = 1;
@@ -971,8 +966,12 @@ grokfield (const cp_declarator *declarator,
 	  else
 	    {
 	      gcc_assert (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE);
-	      error ("initializer specified for static member function %qD",
-		     value);
+	      if (friendp)
+		error ("initializer specified for friend function %qD",
+		       value);
+	      else
+		error ("initializer specified for static member function %qD",
+		       value);
 	    }
 	}
       else if (TREE_CODE (value) == FIELD_DECL)
@@ -980,6 +979,12 @@ grokfield (const cp_declarator *declarator,
       else if (!VAR_P (value))
 	gcc_unreachable ();
     }
+
+  /* Pass friend decls back.  */
+  if ((TREE_CODE (value) == FUNCTION_DECL
+       || TREE_CODE (value) == TEMPLATE_DECL)
+      && DECL_CONTEXT (value) != current_class_type)
+    return value;
 
   if (processing_template_decl && VAR_OR_FUNCTION_DECL_P (value))
     {

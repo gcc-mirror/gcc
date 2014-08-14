@@ -1,3 +1,10 @@
+2014-08-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/62101
+	* decl.c (grokdeclarator): Move the check for friend initializers..
+	* decl2.c (grokfield) ..here. Postpone early return for friends
+	until after the initializer check.
+
 2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54377
