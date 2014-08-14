@@ -1,3 +1,13 @@
+2014-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/62076
+	* openmp.c (gfc_match_omp_clauses): When failed to match
+	operator name, defined op name or name, set buffer to
+	empty string.  Don't call gfc_find_omp_udr if buffer is empty
+	string.
+	(gfc_match_omp_declare_reduction): Call gfc_undo_symbols ()
+	before calling gfc_free_omp_udr.
+
 2014-08-11  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/61950
