@@ -101,6 +101,7 @@ bool get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *,
 bool decl_maybe_in_construction_p (tree, tree, gimple, tree);
 tree vtable_pointer_value_to_binfo (const_tree);
 bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT *);
+void compare_virtual_tables (varpool_node *, varpool_node *);
 bool contains_polymorphic_type_p (const_tree);
 
 /* Return vector containing possible targets of polymorphic call E.
