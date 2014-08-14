@@ -95,30 +95,16 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 #define atomic_signal_fence(MO)	__atomic_signal_fence  (MO)
 #define atomic_is_lock_free(OBJ) __atomic_is_lock_free (sizeof (*(OBJ)), (OBJ))
 
-#define __atomic_type_lock_free(T)				\
-  (__atomic_always_lock_free (sizeof (T), (void *) 0)		\
-   ? 2								\
-   : (__atomic_is_lock_free (sizeof (T), (void *) 0) ? 1 : 0))
-#define ATOMIC_BOOL_LOCK_FREE			\
-  __atomic_type_lock_free (atomic_bool)
-#define ATOMIC_CHAR_LOCK_FREE			\
-  __atomic_type_lock_free (atomic_char)
-#define ATOMIC_CHAR16_T_LOCK_FREE		\
-  __atomic_type_lock_free (atomic_char16_t)
-#define ATOMIC_CHAR32_T_LOCK_FREE		\
-  __atomic_type_lock_free (atomic_char32_t)
-#define ATOMIC_WCHAR_T_LOCK_FREE		\
-  __atomic_type_lock_free (atomic_wchar_t)
-#define ATOMIC_SHORT_LOCK_FREE 			\
-  __atomic_type_lock_free (atomic_short)
-#define ATOMIC_INT_LOCK_FREE 			\
-  __atomic_type_lock_free (atomic_int)
-#define ATOMIC_LONG_LOCK_FREE			\
-  __atomic_type_lock_free (atomic_long)
-#define ATOMIC_LLONG_LOCK_FREE			\
-  __atomic_type_lock_free (atomic_llong)
-#define ATOMIC_POINTER_LOCK_FREE		\
-  __atomic_type_lock_free (void * _Atomic)
+#define ATOMIC_BOOL_LOCK_FREE		__GCC_ATOMIC_BOOL_LOCK_FREE
+#define ATOMIC_CHAR_LOCK_FREE		__GCC_ATOMIC_CHAR_LOCK_FREE
+#define ATOMIC_CHAR16_T_LOCK_FREE	__GCC_ATOMIC_CHAR16_T_LOCK_FREE
+#define ATOMIC_CHAR32_T_LOCK_FREE	__GCC_ATOMIC_CHAR32_T_LOCK_FREE
+#define ATOMIC_WCHAR_T_LOCK_FREE	__GCC_ATOMIC_WCHAR_T_LOCK_FREE
+#define ATOMIC_SHORT_LOCK_FREE		__GCC_ATOMIC_SHORT_LOCK_FREE
+#define ATOMIC_INT_LOCK_FREE		__GCC_ATOMIC_INT_LOCK_FREE
+#define ATOMIC_LONG_LOCK_FREE		__GCC_ATOMIC_LONG_LOCK_FREE
+#define ATOMIC_LLONG_LOCK_FREE		__GCC_ATOMIC_LLONG_LOCK_FREE
+#define ATOMIC_POINTER_LOCK_FREE	__GCC_ATOMIC_POINTER_LOCK_FREE
 
 
 /* Note that these macros require __typeof__ and __auto_type to remove

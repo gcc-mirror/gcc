@@ -1,3 +1,9 @@
+2014-08-14  Marek Polacek  <polacek@redhat.com>
+
+	DR 458
+	* ginclude/stdatomic.h (__atomic_type_lock_free): Remove.
+	(ATOMIC_*_LOCK_FREE): Map to __GCC_ATOMIC_*_LOCK_FREE.
+
 2014-08-14  Tom de Vries  <tom@codesourcery.com>
 
 	* emit-rtl.h (mem_attrs_eq_p): Remove duplicate declaration.
