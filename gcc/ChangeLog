@@ -1,5 +1,13 @@
 2014-08-14  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/62081
+	* tree-ssa-loop.c (pass_fix_loops): New pass.
+	(pass_tree_loop::gate):  Do not fixup loops here.
+	* tree-pass.h (make_pass_fix_loops): Declare.
+	* passes.def: Schedule pass_fix_loops before GIMPLE loop passes.
+
+2014-08-14  Richard Biener  <rguenther@suse.de>
+
 	* tree.c (type_hash_lookup, type_hash_add): Merge into ...
 	(type_hash_canon): ... this and avoid 2nd lookup for the add.
 
