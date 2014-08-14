@@ -1,5 +1,9 @@
 2014-08-14  Tom de Vries  <tom@codesourcery.com>
 
+	* emit-rtl.h (mem_attrs_eq_p): Remove duplicate declaration.
+
+2014-08-14  Tom de Vries  <tom@codesourcery.com>
+
 	PR rtl-optimization/62004
 	PR rtl-optimization/62030
 	* ifcvt.c (rtx_interchangeable_p): New function.
