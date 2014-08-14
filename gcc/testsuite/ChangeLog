@@ -1,3 +1,18 @@
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54377
+	* g++.dg/template/pr54377.C: New.
+	* g++.dg/cpp0x/pr54377.C: Likewise.
+	* g++.dg/cpp0x/alias-decl-2.C: Adjust.
+	* g++.dg/cpp0x/pr51226.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/parse/too-many-tmpl-args1.C: Likewise.
+	* g++.dg/template/dtor3.C: Likewise.
+	* g++.dg/template/qualttp4.C: Likewise.
+	* g++.dg/template/spec28.C: Likewise.
+	* g++.old-deja/g++.brendan/crash8.C: Likewise.
+	* g++.old-deja/g++.pt/ttp7.C: Likewise.
+
 2014-08-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/62004

@@ -1,7 +1,7 @@
 // PR c++/51226
 // { dg-do compile { target c++11 } }
 
-template<int> struct A           // { dg-error "provided" }
+template<int> struct A           // { dg-message "provided" }
 {
   enum E : int;
 };

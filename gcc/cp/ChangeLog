@@ -1,5 +1,11 @@
 2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/54377
+	* pt.c (coerce_template_parms): Improve error message vs default
+	arguments.
+
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* parser.c (cp_parser_init_declarator): Remove redundant check of
 	decl_specifiers->type.
 
