@@ -1,3 +1,13 @@
+2014-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62106
+	* gfortran.h (symbol_attribute):  Add fe_temp flag.
+	* frontend-passes.c (is_fe_temp):  New function.
+	(create_var):  Don't add a temporary for an already
+	created variable or for a constant.
+	(combine_ARRAY_constructor):  Remove special handling
+	for constants.
+
 2014-08-14  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (caf_register_t): Add CAF_REGTYPE_CRITICAL.
