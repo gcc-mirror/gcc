@@ -157,7 +157,7 @@ Boston, MA 02110-1301, USA@*
 @top Introduction
 @cindex Introduction
 
-This manual documents the use of @command{gfortran}, 
+This manual documents the use of @command{gfortran},
 the GNU Fortran compiler.  You can find in this manual how to invoke
 @command{gfortran}, as well as its features and incompatibilities.
 
@@ -290,13 +290,13 @@ It also helps developers to find bugs in the compiler itself.
 @item
 Provide information in the generated machine code that can
 make it easier to find bugs in the program (using a debugging tool,
-called a @dfn{debugger}, such as the GNU Debugger @command{gdb}). 
+called a @dfn{debugger}, such as the GNU Debugger @command{gdb}).
 
 @item
 Locate and gather machine code already generated to
 perform actions requested by statements in the user's program.
 This machine code is organized into @dfn{modules} and is located
-and @dfn{linked} to the user program. 
+and @dfn{linked} to the user program.
 @end itemize
 
 The GNU Fortran compiler consists of several components:
@@ -2714,7 +2714,8 @@ are in a shared library.  The following attributes are available:
 
 @itemize
 @item @code{DLLEXPORT} -- provide a global pointer to a pointer in the DLL
-@item @code{DLLIMPORT} -- reference the function or variable using a global pointer 
+@item @code{DLLIMPORT} -- reference the function or variable using a
+global pointer
 @end itemize
 
 For dummy arguments, the @code{NO_ARG_CHECK} attribute can be used; in
@@ -2864,7 +2865,7 @@ if e.g. an input-output edit descriptor is invalid in a given standard.
 Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 @code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4), @code{GFC_STD_F95}
 (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU} (32),
-@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128), 
+@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
 @code{GFC_STD_F2008_OBS} (256) and GFC_STD_F2008_TS (512). Default:
 @code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003
 | GFC_STD_F2008 | GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77
@@ -3103,7 +3104,7 @@ by-reference argument.  Note that with the @option{-ff2c} option,
 the argument passing is modified and no longer completely matches
 the platform ABI.  Some other Fortran compilers use @code{f2c}
 semantic by default; this might cause problems with
-interoperablility. 
+interoperablility.
 
 GNU Fortran passes most arguments by reference, i.e. by passing a
 pointer to the data.  Note that the compiler might use a temporary
@@ -3215,7 +3216,8 @@ typedef enum caf_register_t {
   CAF_REGTYPE_COARRAY_STATIC,
   CAF_REGTYPE_COARRAY_ALLOC,
   CAF_REGTYPE_LOCK_STATIC,
-  CAF_REGTYPE_LOCK_ALLOC
+  CAF_REGTYPE_LOCK_ALLOC,
+  CAF_REGTYPE_CRITICAL
 }
 caf_register_t;
 @end verbatim
@@ -3234,6 +3236,8 @@ caf_register_t;
 * _gfortran_caf_send:: Sending data from a local image to a remote image
 * _gfortran_caf_get:: Getting data from a remote image
 * _gfortran_caf_sendget:: Sending data between remote images
+* _gfortran_caf_lock:: Locking a lock variable
+* _gfortran_caf_unlock:: Unlocking a lock variable
 @end menu
 
 
@@ -3360,17 +3364,26 @@ value and, if not-@code{NULL}, @var{ERRMSG} shall be set to a string describing
 the failure. The function shall return a pointer to the requested memory
 for the local image as a call to @code{malloc} would do.
 
+For @code{CAF_REGTYPE_COARRAY_STATIC} and @code{CAF_REGTYPE_COARRAY_ALLOC},
+the passed size is the byte size requested.  For @code{CAF_REGTYPE_LOCK_STATIC},
+@code{CAF_REGTYPE_LOCK_ALLOC} and @code{CAF_REGTYPE_CRITICAL} it is the array
+size or one for a scalar.
+
+
 @item @emph{Syntax}:
 @code{void *caf_register (size_t size, caf_register_t type, caf_token_t *token,
 int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{size} @tab byte size of the coarray to be allocated
+@item @var{size} @tab For normal coarrays, the byte size of the coarray to be
+allocated; for lock types, the number of elements.
 @item @var{type} @tab one of the caf_register_t types.
 @item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
-@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=; may be NULL
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to an error message; may be NULL
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
@@ -3383,6 +3396,13 @@ static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
 complicated struct.
+
+For normal coarrays, the returned pointer is used for accesses on the local
+image. For lock types, the value shall only used for checking the allocation
+status. Note that for critical blocks, the locking is only required on one
+image; in the locking statement, the processor shall always pass always an
+image index of one for critical-block lock variables
+(@code{CAF_REGTYPE_CRITICAL}).
 @end table
 
 
@@ -3402,8 +3422,10 @@ int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=; may be NULL
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to an error message; may be NULL
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set
+to an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
@@ -3549,6 +3571,79 @@ character kinds.
 @end table
 
 
+@node _gfortran_caf_lock
+@subsection @code{_gfortran_caf_lock} --- Locking a lock variable
+@cindex Coarray, _gfortran_caf_lock
+
+@table @asis
+@item @emph{Description}:
+Acquire a lock on the given image on a scalar locking variable or for the
+given array element for an array-valued variable. If the @var{aquired_lock}
+is @code{NULL}, the function return after having obtained the lock. If it is
+nonnull, the result is is assigned the value true (one) when the lock could be
+obtained and false (zero) otherwise.  Locking a lock variable which has already
+been locked by the same image is an error.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
+int *aquired_lock, int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{index} @tab Array index; first array index is 0. For scalars, it is
+always 0.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{aquired_lock} @tab intent(out) If not NULL, it returns whether lock
+could be obtained
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+This function is also called for critical blocks; for those, the array index
+is always zero and the image index is one.  Libraries are permitted to use other
+images for critical-block locking variables.
+@end table
+
+
+@node _gfortran_caf_unlock
+@subsection @code{_gfortran_caf_lock} --- Unlocking a lock variable
+@cindex Coarray, _gfortran_caf_unlock
+
+@table @asis
+@item @emph{Description}:
+Release a lock on the given image on a scalar locking variable or for the
+given array element for an array-valued variable. Unlocking a lock variable
+which is unlocked or has been locked by a different image is an error.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
+int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{index} @tab Array index; first array index is 0. For scalars, it is
+always 0.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
+may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+This function is also called for critical block; for those, the array index
+is always zero and the image index is one.  Libraries are permitted to use other
+images for critical-block locking variables.
+@end table
 
 
 
@@ -3693,7 +3788,7 @@ order.  Most of these are necessary to be fully compatible with
 existing Fortran compilers, but they are not part of the official
 J3 Fortran 95 standard.
 
-@subsection Compiler extensions: 
+@subsection Compiler extensions:
 @itemize @bullet
 @item
 User-specified alignment rules for structures.
