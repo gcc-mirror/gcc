@@ -1,5 +1,10 @@
 2014-08-14  Richard Biener  <rguenther@suse.de>
 
+	* tree.c (type_hash_lookup, type_hash_add): Merge into ...
+	(type_hash_canon): ... this and avoid 2nd lookup for the add.
+
+2014-08-14  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/62090
 	* builtins.c (fold_builtin_sprintf): Move to gimple-fold.c.
 	(fold_builtin_2): Do not fold sprintf.
