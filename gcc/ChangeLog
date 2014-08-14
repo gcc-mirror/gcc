@@ -7,6 +7,39 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+        * config/i386/sse.md (define_mode_attr avx512): New.
+	(define_mode_attr sse2_avx_avx512f): Allow V8HI, V16HI, V32HI, V2DI,
+	V4DI modes.
+	(define_mode_attr sse2_avx2): Allow V64QI, V32HI, V4TI modes.
+	(define_mode_attr ssse3_avx2): Ditto.
+	(define_mode_attr sse4_1_avx2): Allow V64QI, V32HI, V8DI modes.
+	(define_mode_attr avx2_avx512bw): New.
+	(define_mode_attr ssedoublemodelower): New.
+	(define_mode_attr ssedoublemode): Allow V8SF, V8SI, V4DI, V4DF, V4SI,
+	V32HI, V64QI modes.
+	(define_mode_attr ssebytemode): Allow V8DI modes.
+	(define_mode_attr sseinsnmode): Allow V4TI, V32HI, V64QI modes.
+	(define_mode_attr sseintvecmodelower): Allow V8DF, V4TI modes.
+	(define_mode_attr ssePSmode2): New.
+	(define_mode_attr ssescalarsize): Allow V64QI, V32QI, V16QI, V8HI,
+	V16HI, V32HI modes.
+	(define_mode_attr dbpsadbwmode): New.
+	(define_mode_attr bcstscalarsuff): Allow V64QI, V32QI, V16QI, V32HI,
+	V16HI, V8HI, V8SI, V4SI, V4DI, V2DI, V8SF, V4SF, V4DF, V2DF modes.
+	(vi8_sse4_1_avx2_avx512): New.
+	(define_insn <sse4_1_avx2>_movntdqa): Use <vi8_sse4_1_avx2_avx512>
+	mode attribute.
+	(define_mode_attr blendbits): Move before its immediate use.
+
+2014-08-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md: Allow V64QI, V32QI, V32HI, V4HI modes.
 	* config/i386/subst.md
 	(define_mode_iterator SUBST_V): Update.
