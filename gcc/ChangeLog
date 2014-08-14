@@ -1,3 +1,27 @@
+2014-08-14  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (print_reg): Сorrectly print 64-bit mask
+	registers.
+	(inline_secondary_memory_needed): Allow 64 bit wide mask registers.
+	(ix86_hard_regno_mode_ok): Allow 32/64-bit mask registers and
+	xmm/ymm16+ when availble.
+	* config/i386/i386.h
+	(HARD_REGNO_NREGS): Add mask regs.
+	(VALID_AVX512F_REG_MODE): Ditto.
+	(VALID_AVX512F_REG_MODE) : Define.
+	(VALID_MASK_AVX512BW_MODE): Ditto.
+	(reg_class) (MASK_REG_P(X)): Define.
+	* config/i386/i386.md: Do not split long moves with mask register,
+	use kmovb if avx512bw is availible.
+	(movdi_internal): Handle mask registers.
+
 2014-08-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62081
