@@ -1,3 +1,8 @@
+2014-08-14  Marek Polacek  <polacek@redhat.com>
+
+	DR 458
+	* gcc.dg/c11-stdatomic-2.c: New test.
+
 2014-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/62106
