@@ -1,3 +1,13 @@
+2014-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (caf_register_t): Update for critical.
+	(_gfortran_caf_critical, _gfortran_caf_end_critical): Remove.
+	(_gfortran_caf_lock, _gfortran_caf_unlock): Add.
+	* caf/single.c (_gfortran_caf_register): Handle locking
+	variables.
+	(_gfortran_caf_sendget): Re-name args for consistency.
+	(_gfortran_caf_lock, _gfortran_caf_unlock): Add.
+
 2014-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* runtime/memory.c (xmallocarray): Avoid division for the common case.

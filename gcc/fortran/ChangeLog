@@ -1,5 +1,26 @@
 2014-08-14  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.texi (caf_register_t): Add CAF_REGTYPE_CRITICAL.
+	(_gfortran_caf_register): Update for locking/critical.
+	(_gfortran_caf_lock, _gfortran_caf_unlock): Add.
+	* resolve.c (resolve_critical): New.
+	(gfc_resolve_code): Call it.
+	* trans-decl.c (gfor_fndecl_caf_critical,
+	gfor_fndecl_caf_end_critical): Remove.
+	(gfor_fndecl_caf_lock, gfor_fndecl_caf_unlock): Add.
+	(gfc_build_builtin_function_decls): Remove critical,
+	assign locking declarations.
+	(generate_coarray_sym_init): Handle locking and
+	critical variables.
+	* trans-stmt.c (gfc_trans_critical): Add calls to
+	lock/unlock libcaf functions.
+	* trans.h (gfc_coarray_type): Update locking, add
+	critical enum values.
+	(gfor_fndecl_caf_critical, gfor_fndecl_caf_end_critical): Remove.
+	(gfor_fndecl_caf_lock, gfor_fndecl_caf_unlock): Add.
+
+2014-08-14  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.texi (Coarray Programming): Add first ABI
 	documentation.
 

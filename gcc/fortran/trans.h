@@ -107,8 +107,9 @@ typedef enum
 {
   GFC_CAF_COARRAY_STATIC,
   GFC_CAF_COARRAY_ALLOC,
-  GFC_CAF_LOCK,
-  GFC_CAF_LOCK_COMP
+  GFC_CAF_LOCK_STATIC,
+  GFC_CAF_LOCK_ALLOC,
+  GFC_CAF_CRITICAL
 }
 gfc_coarray_type;
 
@@ -714,8 +715,6 @@ extern GTY(()) tree gfor_fndecl_caf_deregister;
 extern GTY(()) tree gfor_fndecl_caf_get;
 extern GTY(()) tree gfor_fndecl_caf_send;
 extern GTY(()) tree gfor_fndecl_caf_sendget;
-extern GTY(()) tree gfor_fndecl_caf_critical;
-extern GTY(()) tree gfor_fndecl_caf_end_critical;
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_images;
 extern GTY(()) tree gfor_fndecl_caf_error_stop;
@@ -724,6 +723,8 @@ extern GTY(()) tree gfor_fndecl_caf_atomic_def;
 extern GTY(()) tree gfor_fndecl_caf_atomic_ref;
 extern GTY(()) tree gfor_fndecl_caf_atomic_cas;
 extern GTY(()) tree gfor_fndecl_caf_atomic_op;
+extern GTY(()) tree gfor_fndecl_caf_lock;
+extern GTY(()) tree gfor_fndecl_caf_unlock;
 extern GTY(()) tree gfor_fndecl_co_max;
 extern GTY(()) tree gfor_fndecl_co_min;
 extern GTY(()) tree gfor_fndecl_co_sum;
