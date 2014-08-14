@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-add-options bind_pic_locally } */
 
 typedef struct A { int a,b; } A;
 int*g(int*x){return x;}

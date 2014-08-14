@@ -1,3 +1,7 @@
+2014-08-14  Bin Cheng  <bin.cheng@arm.com>
+
+	* c-c++-common/addrtmp.c: Add bind_pic_locally option.
+
 2014-08-12  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/concat.c: Add dg-options.
