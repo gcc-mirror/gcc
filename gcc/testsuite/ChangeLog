@@ -1,3 +1,7 @@
+2014-08-14  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/max-insns-skipped.c: New test.
+
 2014-08-14  Bin Cheng  <bin.cheng@arm.com>
 
 	* c-c++-common/addrtmp.c: Add bind_pic_locally option.
