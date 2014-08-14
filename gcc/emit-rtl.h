@@ -72,6 +72,7 @@ extern void set_reg_attrs_for_parm (rtx, rtx);
 extern void set_reg_attrs_for_decl_rtl (tree t, rtx x);
 extern void adjust_reg_mode (rtx, enum machine_mode);
 extern int mem_expr_equal_p (const_tree, const_tree);
+extern bool mem_attrs_eq_p (const struct mem_attrs *, const struct mem_attrs *);
 
 extern bool need_atomic_barrier_p (enum memmodel, bool);
 
