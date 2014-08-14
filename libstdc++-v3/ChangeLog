@@ -1,3 +1,8 @@
+2014-08-14  Matthias Klose  <doko@ubuntu.com>
+
+	* testsuite/ext/random/uniform_on_sphere_distribution/requirements:
+	Remove empty directory.
+
 2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/26_numerics/random/linear_congruential_engine/
