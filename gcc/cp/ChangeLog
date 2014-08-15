@@ -1,3 +1,11 @@
+2014-08-15  Richard Biener  <rguenther@suse.de>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/62077
+	* tree.c (build_min_array_type, set_array_type_canon): Split out...
+	(build_cplus_array_type): ...from here.  Only call build_array_type
+	for main variants.
+
 2014-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/62072
