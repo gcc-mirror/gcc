@@ -1132,24 +1132,6 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
       return;
     }
 
-  if (one_match > zero_match)
-    {
-      /* Set either first three quarters or all but the third.	 */
-      mask = 0xffffll << (16 - first_not_ffff_match);
-      emit_insn (gen_rtx_SET (VOIDmode, dest,
-			      GEN_INT (val | mask | 0xffffffff00000000ull)));
-
-      /* Now insert other two quarters.	 */
-      for (i = first_not_ffff_match + 16, mask <<= (first_not_ffff_match << 1);
-	   i < 64; i += 16, mask <<= 16)
-	{
-	  if ((val & mask) != mask)
-	    emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-				       GEN_INT ((val >> i) & 0xffff)));
-	}
-      return;
-    }
-
   if (zero_match == 2)
     goto simple_sequence;
 
@@ -1264,6 +1246,24 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 		return;
 	      }
 	}
+    }
+
+  if (one_match > zero_match)
+    {
+      /* Set either first three quarters or all but the third.	 */
+      mask = 0xffffll << (16 - first_not_ffff_match);
+      emit_insn (gen_rtx_SET (VOIDmode, dest,
+			      GEN_INT (val | mask | 0xffffffff00000000ull)));
+
+      /* Now insert other two quarters.	 */
+      for (i = first_not_ffff_match + 16, mask <<= (first_not_ffff_match << 1);
+	   i < 64; i += 16, mask <<= 16)
+	{
+	  if ((val & mask) != mask)
+	    emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+				       GEN_INT ((val >> i) & 0xffff)));
+	}
+      return;
     }
 
  simple_sequence:
