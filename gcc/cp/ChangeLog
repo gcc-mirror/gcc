@@ -1,6 +1,10 @@
 2014-08-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61566
+	* pt.c (lookup_template_class_1): Revert recent change.
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): Revert recent change.
+
+	PR c++/61566
 	* pt.c (instantiate_class_template_1): Ignore lambda on
 	CLASSTYPE_DECL_LIST.
 	(push_template_decl_real): A lambda is not primary.

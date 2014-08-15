@@ -87,7 +87,6 @@ along with GCC; see the file COPYING3.  If not see
   (TYPE_LANG_SPECIFIC (NODE) != NULL					\
    && (TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM			\
        || (CLASSTYPE_TEMPLATE_INFO (NODE) != NULL			\
-	   && !LAMBDA_TYPE_P (NODE)					\
 	   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))))
 
 /* Things we only need one of.  This module is not reentrant.  */
