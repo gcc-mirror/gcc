@@ -2204,6 +2204,7 @@ runtime_gc(int32 force)
 		g->status = Gwaiting;
 		g->waitreason = "garbage collection";
 		runtime_mcall(mgc);
+		m = runtime_m();
 	}
 
 	// all done
