@@ -182,7 +182,7 @@ diagnostic_file_cache_init (void)
     fcache_tab = new fcache[fcache_tab_size];
 }
 
-/* Free the ressources used by the set of cache used for files accessed
+/* Free the resources used by the set of cache used for files accessed
    by caret diagnostic.  */
 
 void

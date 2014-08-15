@@ -1,3 +1,7 @@
+2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* input.c (diagnostic_file_cache_fini): Fix typo in comment.
+
 2014-08-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (readonly_id): Rename to string_id.
