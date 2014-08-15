@@ -1,3 +1,8 @@
+2014-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62142
+	* trans-expr.c (is_runtime_conformable):  Add NULL pointer checks.
+
 2014-08-15  Tobias Burnus  <burnus@net-b.de>
 
 	* resolve.c (resolve_critical): Fix name mangling.
