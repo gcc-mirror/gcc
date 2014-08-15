@@ -17284,11 +17284,6 @@ check_cv_quals_for_unify (int strict, tree arg, tree parm)
   int arg_quals = cp_type_quals (arg);
   int parm_quals = cp_type_quals (parm);
 
-  /* DR 1584: cv-qualification of a deduced function type is
-     ignored; see 8.3.5 [dcl.fct].  */
-  if (TREE_CODE (arg) == FUNCTION_TYPE)
-    return 1;
-
   if (TREE_CODE (parm) == TEMPLATE_TYPE_PARM
       && !(strict & UNIFY_ALLOW_OUTER_MORE_CV_QUAL))
     {
