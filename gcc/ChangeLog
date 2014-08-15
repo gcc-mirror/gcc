@@ -1,3 +1,9 @@
+2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* diagnostic.c (build_message_string): Make it extern.
+	* diagnostic.h (build_message_string): Make it extern.
+
 2014-08-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Use SDmode for

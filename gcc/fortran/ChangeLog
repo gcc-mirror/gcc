@@ -1,3 +1,28 @@
+2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h: Define GCC_DIAG_STYLE.
+	(gfc_diagnostics_init,gfc_warning_cmdline): Declare.
+	* trans-array.c: Include gfortran.h before diagnostic-core.h.
+	* trans-expr.c: Likewise.
+	* trans-openmp.c: Likewise.
+	* trans-const.c: Likewise.
+	* trans.c: Likewise.
+	* trans-types.c: Likewise.
+	* f95-lang.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-io.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+	* error.c: Include diagnostic.h and diagnostic-color.h.
+	(gfc_diagnostic_build_prefix): New.
+	(gfc_diagnostic_starter): New.
+	(gfc_diagnostic_finalizer): New.
+	(gfc_warning_cmdline): New.
+	(gfc_diagnostics_init): New.
+	* gfc-diagnostic.def: New.
+	* options.c (gfc_init_options): Call gfc_diagnostics_init.
+	(gfc_post_options): Use gfc_warning_cmdline.
+
 2014-08-15  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <burnus@net-b.de>
 

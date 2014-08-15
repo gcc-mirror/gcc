@@ -1,3 +1,8 @@
+2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* c-format.c: Handle Fortran flags.
+
 2014-08-12  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR other/61962

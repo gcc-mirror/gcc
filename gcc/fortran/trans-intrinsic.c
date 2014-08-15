@@ -30,10 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-nested.h"
 #include "stor-layout.h"
 #include "ggc.h"
+#include "gfortran.h"
 #include "diagnostic-core.h"	/* For internal_error.  */
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
 #include "flags.h"
-#include "gfortran.h"
 #include "arith.h"
 #include "intrinsic.h"
 #include "trans.h"
