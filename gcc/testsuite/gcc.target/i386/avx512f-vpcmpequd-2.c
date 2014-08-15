@@ -6,18 +6,18 @@
 
 #include "avx512f-helper.h"
 
-#define SIZE (AVX512F_LEN / 64)
+#define SIZE (AVX512F_LEN / 32)
 #include "avx512f-mask-type.h"
 
 static void
-CALC (MASK_TYPE *r, long long *s1, long long *s2)
+CALC (MASK_TYPE *r, unsigned int *s1, unsigned int *s2)
 {
   int i;
   *r = 0;
   MASK_TYPE one = 1;
 
   for (i = 0; i < SIZE; i++)
-    if (s1[i] != s2[i])
+    if (s1[i] == s2[i])
       *r = *r | (one << i);
 }
 
@@ -25,9 +25,11 @@ void
 TEST (void)
 {
   int i;
-  UNION_TYPE (AVX512F_LEN, i_q) src1, src2;
-  MASK_TYPE res1, res_ref, res2;
+  UNION_TYPE (AVX512F_LEN, i_d) src1, src2;
+  MASK_TYPE res_ref, res1, res2;
+  MASK_TYPE mask = MASK_VALUE;
   res1 = 0;
+  res2 = 0;
 
   for (i = 0; i < SIZE / 2; i++)
     {
@@ -37,15 +39,16 @@ TEST (void)
       src2.a[i * 2 + 1] = i * i;
     }
 
-  res1 = INTRINSIC (_cmpneq_epi64_mask) (src1.x, src2.x);
-  res2 = INTRINSIC (_mask_cmpneq_epi64_mask) (MASK_VALUE, src1.x, src2.x);
+  res1 = INTRINSIC (_cmpeq_epu32_mask) (src1.x, src2.x);
+  res2 = INTRINSIC (_mask_cmpeq_epu32_mask) (mask, src1.x, src2.x);
 
   CALC (&res_ref, src1.a, src2.a);
 
-  if (res1 != res_ref)
+  if (res_ref != res1)
     abort ();
 
-  res_ref &= MASK_VALUE;
-  if (res2 != res_ref)
+  res_ref &= mask;
+
+  if (res_ref != res2)
     abort ();
 }

@@ -637,7 +637,9 @@
   [(V16QI "7") (V8HI "15") (V4SI "31") (V2DI "63")])
 
 ;; Mapping of mode to cast intrinsic name
-(define_mode_attr castmode [(V8SI "si") (V8SF "ps") (V4DF "pd")])
+(define_mode_attr castmode
+ [(V8SI "si") (V8SF "ps") (V4DF "pd")
+  (V16SI "si") (V16SF "ps") (V8DF "pd")])
 
 ;; Instruction suffix for sign and zero extensions.
 (define_code_attr extsuffix [(sign_extend "sx") (zero_extend "zx")])
@@ -651,6 +653,7 @@
 
 ;; Mix-n-match
 (define_mode_iterator AVX256MODE2P [V8SI V8SF V4DF])
+(define_mode_iterator AVX512MODE2P [V16SI V16SF V8DF])
 
 ;; Mapping for dbpsabbw modes
 (define_mode_attr dbpsadbwmode
@@ -15717,3 +15720,43 @@
   [(set_attr "type" "sselog1")
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
+
+(define_insn_and_split "avx512f_<castmode><avxsizesuffix>_<castmode>"
+  [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")
+	(unspec:AVX512MODE2P
+	  [(match_operand:<ssequartermode> 1 "nonimmediate_operand" "xm,x")]
+	  UNSPEC_CAST))]
+  "TARGET_AVX512F"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  if (REG_P (op0))
+    op0 = gen_rtx_REG (<ssequartermode>mode, REGNO (op0));
+  else
+    op1 = gen_rtx_REG (<MODE>mode, REGNO (op1));
+  emit_move_insn (op0, op1);
+  DONE;
+})
+
+(define_insn_and_split "avx512f_<castmode><avxsizesuffix>_256<castmode>"
+  [(set (match_operand:AVX512MODE2P 0 "nonimmediate_operand" "=x,m")
+	(unspec:AVX512MODE2P
+	  [(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "xm,x")]
+	  UNSPEC_CAST))]
+  "TARGET_AVX512F"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  if (REG_P (op0))
+    op0 = gen_rtx_REG (<ssehalfvecmode>mode, REGNO (op0));
+  else
+    op1 = gen_rtx_REG (<MODE>mode, REGNO (op1));
+  emit_move_insn (op0, op1);
+  DONE;
+})

@@ -11,6 +11,6 @@ volatile __mmask16 m;
 void extern
 avx512f_test (void)
 {
-  m = _mm512_cmple_epu32_mask (x, x);
-  m = _mm512_mask_cmple_epu32_mask (m, x, x);
+  m = _mm512_cmpeq_epu32_mask (x, x);
+  m = _mm512_mask_cmpeq_epu32_mask (3, x, x);
 }
