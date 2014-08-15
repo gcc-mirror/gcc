@@ -1,3 +1,10 @@
+2014-08-15  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_mem.c (upc_memcpy): Make sure outstanding
+	strict puts are completed before transferring data from
+	the remote node as local thread can have an outstanding
+	memory put to the same location.
+
 2014-08-01  Gary Funck  <gary@intrepid.com>
 
 	* configure.ac (GUPCR_PORTALS_RUNTIME): New AC_DEFINE().

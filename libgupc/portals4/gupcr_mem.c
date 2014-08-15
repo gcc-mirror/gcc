@@ -76,6 +76,8 @@ upc_memcpy (upc_shared_ptr_t dest, upc_shared_ptr_t src, size_t n)
 	    GUPCR_GMEM_OFF_TO_LOCAL (sthread, soffset), n);
   else if (dthread_local)
     {
+      if (gupcr_pending_strict_put)
+        gupcr_gmem_sync_puts ();
       gupcr_gmem_get (GUPCR_GMEM_OFF_TO_LOCAL (dthread, doffset),
 		      sthread, soffset, n);
       gupcr_gmem_sync_gets ();
