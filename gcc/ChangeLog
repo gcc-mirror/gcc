@@ -11,6 +11,9 @@
 
 2014-08-14  DJ Delorie  <dj@redhat.com>
 
+	* config/rl78/rl78-real.md (addqi3_real): Allow adding global
+	variables to the accumulator.
+
 	* config/rl78/predicates.md (rl78_near_mem_operand): New.
 	* config/rl78/rl78-virt.md (movqi_virt_mm, movqi_virt)
 	(movhi_virt_mm): Split out near mem-mem moves to avoid problems
