@@ -41,8 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #define permissive_error_option(DC) ((DC)->opt_permissive)
 
 /* Prototypes.  */
-static char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
-
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 
 static void diagnostic_action_after_output (diagnostic_context *,
@@ -59,7 +57,7 @@ diagnostic_context *global_dc = &global_diagnostic_context;
 
 /* Return a malloc'd string containing MSG formatted a la printf.  The
    caller is responsible for freeing the memory.  */
-static char *
+char *
 build_message_string (const char *msg, ...)
 {
   char *str;

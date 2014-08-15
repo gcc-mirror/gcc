@@ -26,8 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "gimplify.h"	/* For create_tmp_var_raw.  */
 #include "stringpool.h"
-#include "diagnostic-core.h"	/* For internal_error.  */
 #include "gfortran.h"
+#include "diagnostic-core.h"	/* For internal_error.  */
 #include "trans.h"
 #include "trans-stmt.h"
 #include "trans-types.h"

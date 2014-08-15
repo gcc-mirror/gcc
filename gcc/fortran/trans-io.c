@@ -26,8 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "stor-layout.h"
 #include "ggc.h"
-#include "diagnostic-core.h"	/* For internal_error.  */
 #include "gfortran.h"
+#include "diagnostic-core.h"	/* For internal_error.  */
 #include "trans.h"
 #include "trans-stmt.h"
 #include "trans-array.h"

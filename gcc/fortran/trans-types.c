@@ -39,9 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"	/* For iso-c-bindings.def.  */
 #include "target.h"
 #include "ggc.h"
+#include "gfortran.h"
 #include "diagnostic-core.h"  /* For fatal_error.  */
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
-#include "gfortran.h"
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"

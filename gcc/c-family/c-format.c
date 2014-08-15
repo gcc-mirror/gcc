@@ -510,11 +510,7 @@ static const format_flag_pair gcc_diag_flag_pairs[] =
 #define gcc_tdiag_flag_pairs gcc_diag_flag_pairs
 #define gcc_cdiag_flag_pairs gcc_diag_flag_pairs
 #define gcc_cxxdiag_flag_pairs gcc_diag_flag_pairs
-
-static const format_flag_pair gcc_gfc_flag_pairs[] =
-{
-  { 0, 0, 0, 0 }
-};
+#define gcc_gfc_flag_pairs gcc_diag_flag_pairs
 
 static const format_flag_spec gcc_diag_flag_specs[] =
 {
@@ -529,6 +525,7 @@ static const format_flag_spec gcc_diag_flag_specs[] =
 #define gcc_tdiag_flag_specs gcc_diag_flag_specs
 #define gcc_cdiag_flag_specs gcc_diag_flag_specs
 #define gcc_cxxdiag_flag_specs gcc_diag_flag_specs
+#define gcc_gfc_flag_specs gcc_diag_flag_specs
 
 static const format_flag_spec scanf_flag_specs[] =
 {
@@ -741,7 +738,7 @@ static const format_char_info gcc_gfc_char_table[] =
   { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
   { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
   { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "cR", NULL },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", "cR", NULL },
 
   /* gfc conversion specifiers.  */
 
@@ -750,6 +747,8 @@ static const format_char_info gcc_gfc_char_table[] =
   /* This will require a "locus" at runtime.  */
   { "L",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "R", NULL },
 
+  /* These will require nothing.  */
+  { "<>",0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
@@ -846,8 +845,8 @@ static const format_kind_info format_types_orig[] =
     0, 0, 'p', 0, 'L', 0,
     NULL, &integer_type_node
   },
-  { "gcc_gfc", gcc_gfc_length_specs, gcc_gfc_char_table, "", NULL,
-    NULL, gcc_gfc_flag_pairs,
+  { "gcc_gfc", gcc_gfc_length_specs, gcc_gfc_char_table, "q+#", NULL,
+    gcc_gfc_flag_specs, gcc_gfc_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 0, 0, 0, 0,
     NULL, NULL
