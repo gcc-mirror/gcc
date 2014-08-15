@@ -1,3 +1,9 @@
+2014-08-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* doc/invoke.texi (SH options): Document missing processor variant
+	options.  Remove references to Hitachi.  Undocument deprecated mspace
+	option.
+
 2014-08-15  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (type_hash_canon): Uncomment assert.

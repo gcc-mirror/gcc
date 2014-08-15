@@ -20704,6 +20704,72 @@ single-precision mode by default.
 @opindex m4
 Generate code for the SH4.
 
+@item -m4-100
+@opindex m4-100
+Generate code for SH4-100.
+
+@item -m4-100-nofpu
+@opindex m4-100-nofpu
+Generate code for SH4-100 in such a way that the
+floating-point unit is not used.
+
+@item -m4-100-single
+@opindex m4-100-single
+Generate code for SH4-100 assuming the floating-point unit is in
+single-precision mode by default.
+
+@item -m4-100-single-only
+@opindex m4-100-single-only
+Generate code for SH4-100 in such a way that no double-precision
+floating-point operations are used.
+
+@item -m4-200
+@opindex m4-200
+Generate code for SH4-200.
+
+@item -m4-200-nofpu
+@opindex m4-200-nofpu
+Generate code for SH4-200 without in such a way that the
+floating-point unit is not used.
+
+@item -m4-200-single
+@opindex m4-200-single
+Generate code for SH4-200 assuming the floating-point unit is in
+single-precision mode by default.
+
+@item -m4-200-single-only
+@opindex m4-200-single-only
+Generate code for SH4-200 in such a way that no double-precision
+floating-point operations are used.
+
+@item -m4-300
+@opindex m4-300
+Generate code for SH4-300.
+
+@item -m4-300-nofpu
+@opindex m4-300-nofpu
+Generate code for SH4-300 without in such a way that the
+floating-point unit is not used.
+
+@item -m4-300-single
+@opindex m4-300-single
+Generate code for SH4-300 in such a way that no double-precision
+floating-point operations are used.
+
+@item -m4-300-single-only
+@opindex m4-300-single-only
+Generate code for SH4-300 in such a way that no double-precision
+floating-point operations are used.
+
+@item -m4-340
+@opindex m4-340
+Generate code for SH4-340 (no MMU, no FPU).
+
+@item -m4-500
+@opindex m4-500
+Generate code for SH4-500 (no FPU).  Passes @option{-isa=sh4-nofpu} to the
+assembler.
+
 @item -m4a-nofpu
 @opindex m4a-nofpu
 Generate code for the SH4al-dsp, or for a SH4a in such a way that the
@@ -20728,6 +20794,33 @@ Generate code for the SH4a.
 Same as @option{-m4a-nofpu}, except that it implicitly passes
 @option{-dsp} to the assembler.  GCC doesn't generate any DSP
 instructions at the moment.
+
+@item -m5-32media
+@opindex m5-32media
+Generate 32-bit code for SHmedia.
+
+@item -m5-32media-nofpu
+@opindex m5-32media-nofpu
+Generate 32-bit code for SHmedia in such a way that the
+floating-point unit is not used.
+
+@item -m5-64media
+@opindex m5-64media
+Generate 64-bit code for SHmedia.
+
+@item -m5-64media-nofpu
+@opindex m5-64media-nofpu
+Generate 64-bit code for SHmedia in such a way that the
+floating-point unit is not used.
+
+@item -m5-compact
+@opindex m5-compact
+Generate code for SHcompact.
+
+@item -m5-compact-nofpu
+@opindex m5-compact-nofpu
+Generate code for SHcompact in such a way that the
+floating-point unit is not used.
 
 @item -mb
 @opindex mb
@@ -20762,16 +20855,12 @@ Enable the use of bit manipulation instructions on SH2A.
 Enable the use of the instruction @code{fmovd}.  Check @option{-mdalign} for
 alignment constraints.
 
-@item -mhitachi
-@opindex mhitachi
-Comply with the calling conventions defined by Renesas.
-
 @item -mrenesas
-@opindex mhitachi
+@opindex mrenesas
 Comply with the calling conventions defined by Renesas.
 
 @item -mno-renesas
-@opindex mhitachi
+@opindex mno-renesas
 Comply with the calling conventions defined for GCC before the Renesas
 conventions were available.  This option is the default for all
 targets of the SH toolchain.
@@ -20779,7 +20868,7 @@ targets of the SH toolchain.
 @item -mnomacsave
 @opindex mnomacsave
 Mark the @code{MAC} register as call-clobbered, even if
-@option{-mhitachi} is given.
+@option{-mrenesas} is given.
 
 @item -mieee
 @itemx -mno-ieee
@@ -20884,10 +20973,6 @@ this can degrade overall performance due to the operand cache line flushes
 that are implied by the @code{tas.b} instruction.  On multi-core SH4A
 processors the @code{tas.b} instruction must be used with caution since it
 can result in data corruption for certain cache configurations.
-
-@item -mspace
-@opindex mspace
-Optimize for space instead of speed.  Implied by @option{-Os}.
 
 @item -mprefergot
 @opindex mprefergot
