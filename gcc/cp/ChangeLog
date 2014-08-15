@@ -1,3 +1,15 @@
+2014-08-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61566
+	* pt.c (instantiate_class_template_1): Ignore lambda on
+	CLASSTYPE_DECL_LIST.
+	(push_template_decl_real): A lambda is not primary.
+	(lookup_template_class_1): Don't look for a lambda partial
+	instantiation.
+	* lambda.c (maybe_add_lambda_conv_op): Distinguish between being
+	currently in a function and the lambda living in a function.
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): False for lambda.
+
 2014-08-15  Richard Biener  <rguenther@suse.de>
 	    Jason Merrill  <jason@redhat.com>
 
