@@ -1,3 +1,7 @@
+2014-08-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* call.c (build_conditional_expr_1): Use OPT_Wextra in warning.
+
 2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* typeck.c (composite_pointer_type, cxx_sizeof_or_alignof_type,

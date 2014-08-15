@@ -5017,7 +5017,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 					type_promotes_to (arg3_type)))))
         {
           if (complain & tf_warning)
-            warning_at (loc, 0, "enumeral and non-enumeral type in "
+            warning_at (loc, OPT_Wextra, "enumeral and non-enumeral type in "
 			"conditional expression");
         }
 
