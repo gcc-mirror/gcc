@@ -1,3 +1,8 @@
+2014-08-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use SDmode for
+	load/store from/to non-floating class pseudo.
+
 2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* input.c (diagnostic_file_cache_fini): Fix typo in comment.
