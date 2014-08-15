@@ -1,5 +1,9 @@
 2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* input.h (in_system_header_at): Add comment.
+
+2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR fortran/44054
 	* diagnostic.c (build_message_string): Make it extern.
 	* diagnostic.h (build_message_string): Make it extern.

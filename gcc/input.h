@@ -59,8 +59,17 @@ extern location_t input_location;
   ((tree) ((IS_ADHOC_LOC (LOC)) ? get_data_from_adhoc_loc (line_table, (LOC)) \
    : NULL))
 
+/* Return a positive value if LOCATION is the locus of a token that is
+   located in a system header, O otherwise. It returns 1 if LOCATION
+   is the locus of a token that is located in a system header, and 2
+   if LOCATION is the locus of a token located in a C system header
+   that therefore needs to be extern "C" protected in C++.
+
+   Note that this function returns 1 if LOCATION belongs to a token
+   that is part of a macro replacement-list defined in a system
+   header, but expanded in a non-system file.  */
 #define in_system_header_at(LOC) \
-  ((linemap_location_in_system_header_p (line_table, LOC)))
+  (linemap_location_in_system_header_p (line_table, LOC))
 
 void dump_line_table_statistics (void);
 
