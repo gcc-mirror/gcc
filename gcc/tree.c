@@ -6793,10 +6793,7 @@ type_hash_canon (unsigned int hashcode, tree type)
   if (*loc)
     {
       tree t1 = ((type_hash *) *loc)->type;
-      /* ???  We'd like to assert here that the hashtable only contains
-         main variants but the C++ frontend breaks this by modifying
-	 types already in the hashtable in build_cplus_array_type.  */
-      /* gcc_assert (TYPE_MAIN_VARIANT (t1) == t1); */
+      gcc_assert (TYPE_MAIN_VARIANT (t1) == t1);
       if (GATHER_STATISTICS)
 	{
 	  tree_code_counts[(int) TREE_CODE (type)]--;

@@ -1,3 +1,7 @@
+2014-08-15  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (type_hash_canon): Uncomment assert.
+
 2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* input.h (in_system_header_at): Add comment.
