@@ -1,3 +1,9 @@
+2014-08-15  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (tree_swap_operands_p): Put all constants
+	last, also strip sign-changing NOPs when considering further
+	canonicalization.  Canonicalize also when optimizing for size.
+
 2014-08-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Move
