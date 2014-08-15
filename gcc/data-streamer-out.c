@@ -81,7 +81,7 @@ lto_append_block (struct lto_output_stream *obs)
    When PERSISTENT is set, the string S is supposed to not change during
    duration of the OB and thus OB can keep pointer into it.  */
 
-unsigned
+static unsigned
 streamer_string_index (struct output_block *ob, const char *s, unsigned int len,
 		       bool persistent)
 {
