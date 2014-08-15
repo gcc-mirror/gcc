@@ -1,5 +1,11 @@
 2014-08-14  DJ Delorie  <dj@redhat.com>
 
+	* config/rl78/rl78-expand.md (umulqihi3): Disable for G10.
+	* config/rl78/rl78-virt.md (umulhi3_shift_virt): Likewise.
+	(umulqihi3_virt): Likewise.
+	* config/rl78/rl78-real.md (umulhi3_shift_real): Likewise.
+	(umulqihi3_real): Likewise.
+
 	* config/rl78/rl78-virt.md (movhi_virt): Allow const->far moves.
 
 2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
