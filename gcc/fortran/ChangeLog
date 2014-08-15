@@ -1,3 +1,10 @@
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/62107
+	* trans-openmp.c (gfc_omp_finish_clause): Handle scalar pointer
+	or allocatable passed by reference.
+	(gfc_trans_omp_clauses) <case OMP_LIST_MAP>: Likewise.
+
 2014-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/62106
