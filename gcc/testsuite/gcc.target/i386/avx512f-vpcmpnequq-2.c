@@ -26,7 +26,7 @@ TEST (void)
 {
   int i;
   UNION_TYPE (AVX512F_LEN, i_q) src1, src2;
-  MASK_TYPE res1, res_ref;
+  MASK_TYPE res1, res_ref, res2;
   res1 = 0;
 
   for (i = 0; i < SIZE / 2; i++)
@@ -38,9 +38,15 @@ TEST (void)
     }
 
   res1 = INTRINSIC (_cmpneq_epu64_mask) (src1.x, src2.x);
+  res2 = INTRINSIC (_mask_cmpneq_epu64_mask) (MASK_VALUE, src1.x, src2.x);
 
   CALC (&res_ref, src1.a, src2.a);
 
   if (res1 != res_ref)
+    abort ();
+
+  res_ref &= MASK_VALUE;
+
+  if (res2 != res_ref)
     abort ();
 }

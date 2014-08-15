@@ -1,3 +1,48 @@
+2014-08-15  Ilya Tocar  <tocarip@gmail.com>
+
+	PR target/61878
+	* gcc.target/i386/avx512f-typecast-1.c: New test.
+	* gcc.target/i386/avx512f-vpcmpequd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpged-1.c: Add new intrinsic.
+	* gcc.target/i386/avx512f-vpcmpged-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtud-1.c: New test.
+	* gcc.target/i386/avx512f-vpcmpgtud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-2.c: Ditto.
+
 2014-08-15  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <burnus@net-b.de>
 
