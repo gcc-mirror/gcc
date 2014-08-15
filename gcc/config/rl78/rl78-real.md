@@ -99,7 +99,7 @@
 (define_insn "*addqi3_real"
   [(set (match_operand:QI          0 "nonimmediate_operand"  "=rvWabWhlWh1,rvWabWhlWh1,a,*bcdehl")
 	(plus:QI (match_operand:QI 1 "general_operand"  "%0,0,0,0")
-		 (match_operand:QI 2 "general_operand" "K,L,RWhlWh1i,a")))
+		 (match_operand:QI 2 "general_operand" "K,L,RWhlWh1Wabi,a")))
    ]
   "rl78_real_insns_ok ()"
   "@
