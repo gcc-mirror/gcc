@@ -91,7 +91,7 @@
   [(set (match_operand:HI 0 "register_operand" "=vm")
         (mult:HI (match_operand:HI 1 "rl78_nonfar_operand" "%vim")
                  (match_operand:HI 2 "rl78_24_operand" "Ni")))]
-  "rl78_virt_insns_ok ()"
+  "rl78_virt_insns_ok () && !TARGET_G10"
   "v.mulu\t%0, %1, %2"
   [(set_attr "valloc" "umul")]
 )
@@ -100,7 +100,7 @@
   [(set (match_operand:HI 0 "register_operand" "=vm")
         (mult:HI (zero_extend:HI (match_operand:QI 1 "rl78_nonfar_operand" "%vim"))
                  (zero_extend:HI (match_operand:QI 2 "general_operand" "vim"))))]
-  "rl78_virt_insns_ok ()"
+  "rl78_virt_insns_ok () && !TARGET_G10"
   "v.mulu\t%0, %2"
   [(set_attr "valloc" "umul")]
 )
