@@ -11,6 +11,11 @@
 
 2014-08-14  DJ Delorie  <dj@redhat.com>
 
+	* config/rl78/predicates.md (rl78_near_mem_operand): New.
+	* config/rl78/rl78-virt.md (movqi_virt_mm, movqi_virt)
+	(movhi_virt_mm): Split out near mem-mem moves to avoid problems
+	with far-far moves.
+
 	* config/rl78/rl78-expand.md (umulqihi3): Disable for G10.
 	* config/rl78/rl78-virt.md (umulhi3_shift_virt): Likewise.
 	(umulqihi3_virt): Likewise.
