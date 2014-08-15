@@ -33,11 +33,27 @@
 
 ;;---------- Moving ------------------------
 
-(define_insn "*movqi_virt"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=vY,v,Wfr")
-	(match_operand    1 "general_operand" "vInt8JY,Wfr,vInt8J"))]
+(define_insn "*movqi_virt_mm"
+  [(set (match_operand:QI 0 "rl78_near_mem_operand" "=Y")
+	(match_operand    1 "rl78_near_mem_operand" "Y"))]
   "rl78_virt_insns_ok ()"
   "v.mov %0, %1"
+  [(set_attr "valloc" "op1")]
+)
+
+(define_insn "*movqi_virt"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=vY,v,Wfr")
+	(match_operand    1 "general_operand" "vInt8J,YWfr,vInt8J"))]
+  "rl78_virt_insns_ok ()"
+  "v.mov %0, %1"
+  [(set_attr "valloc" "op1")]
+)
+
+(define_insn "*movhi_virt_mm"
+  [(set (match_operand:HI 0 "rl78_near_mem_operand" "=Y")
+	(match_operand:HI 1 "rl78_near_mem_operand" "Y"))]
+  "rl78_virt_insns_ok ()"
+  "v.movw %0, %1"
   [(set_attr "valloc" "op1")]
 )
 
