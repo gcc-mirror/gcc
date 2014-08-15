@@ -2000,6 +2000,7 @@ runtime_gc(int32 force)
 		runtime_mcall(mgc);
 		// record a new start time in case we're going around again
 		a.start_time = runtime_nanotime();
+		m = runtime_m();
 	}
 
 	// all done
