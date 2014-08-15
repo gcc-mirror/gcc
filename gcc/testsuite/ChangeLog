@@ -1,3 +1,9 @@
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62131
+	* gfortran.dg/gomp/pr62131.f90: New test.
+
 2014-08-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62031
