@@ -1121,7 +1121,7 @@ gfc_trans_critical (gfc_code *code)
       token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (token));
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_lock, 7,
 				 token, integer_zero_node, integer_one_node,
-				 boolean_true_node, null_pointer_node,
+				 null_pointer_node, null_pointer_node,
 				 null_pointer_node, integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
     }
