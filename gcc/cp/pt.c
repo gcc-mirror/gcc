@@ -7878,8 +7878,6 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  && TMPL_ARGS_HAVE_MULTIPLE_LEVELS (arglist)
 	  /* the enclosing class must be an instantiation...  */
 	  && CLASS_TYPE_P (context)
-	  /* We don't do partial instantiation of closures.  */
-	  && !LAMBDA_TYPE_P (TREE_TYPE (gen_tmpl))
 	  && !same_type_p (context, DECL_CONTEXT (gen_tmpl)))
 	{
 	  tree partial_inst_args;
