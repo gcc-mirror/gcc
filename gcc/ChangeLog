@@ -1,3 +1,12 @@
+2014-08-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline:
+	2014-08-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* doc/invoke.texi (SH options): Document missing processor variant
+	options.  Remove references to Hitachi.  Undocument deprecated mspace
+	option.
+
 2014-08-15  Tom de Vries  <tom@codesourcery.com>
 
 	Backport from mainline:
