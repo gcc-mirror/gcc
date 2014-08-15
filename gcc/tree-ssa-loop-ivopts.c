@@ -323,6 +323,9 @@ struct ivopts_data
   /* A bitmap of important candidates.  */
   bitmap important_candidates;
 
+  /* Cache used by tree_to_aff_combination_expand.  */
+  hash_map<tree, name_expansion *> *name_expansion_cache;
+
   /* The maximum invariant id.  */
   unsigned max_inv_id;
 
@@ -876,6 +879,7 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->iv_candidates.create (20);
   data->inv_expr_tab = new hash_table<iv_inv_expr_hasher> (10);
   data->inv_expr_id = 0;
+  data->name_expansion_cache = NULL;
   decl_rtl_to_reset.create (20);
 }
 
@@ -4462,75 +4466,20 @@ iv_elimination_compare (struct ivopts_data *data, struct iv_use *use)
   return (exit->flags & EDGE_TRUE_VALUE ? EQ_EXPR : NE_EXPR);
 }
 
-static tree
-strip_wrap_conserving_type_conversions (tree exp)
-{
-  while (tree_ssa_useless_type_conversion (exp)
-	 && (nowrap_type_p (TREE_TYPE (exp))
-	     == nowrap_type_p (TREE_TYPE (TREE_OPERAND (exp, 0)))))
-    exp = TREE_OPERAND (exp, 0);
-  return exp;
-}
-
-/* Walk the SSA form and check whether E == WHAT.  Fairly simplistic, we
-   check for an exact match.  */
-
-static bool
-expr_equal_p (tree e, tree what)
-{
-  gimple stmt;
-  enum tree_code code;
-
-  e = strip_wrap_conserving_type_conversions (e);
-  what = strip_wrap_conserving_type_conversions (what);
-
-  code = TREE_CODE (what);
-  if (TREE_TYPE (e) != TREE_TYPE (what))
-    return false;
-
-  if (operand_equal_p (e, what, 0))
-    return true;
-
-  if (TREE_CODE (e) != SSA_NAME)
-    return false;
-
-  stmt = SSA_NAME_DEF_STMT (e);
-  if (gimple_code (stmt) != GIMPLE_ASSIGN
-      || gimple_assign_rhs_code (stmt) != code)
-    return false;
-
-  switch (get_gimple_rhs_class (code))
-    {
-    case GIMPLE_BINARY_RHS:
-      if (!expr_equal_p (gimple_assign_rhs2 (stmt), TREE_OPERAND (what, 1)))
-	return false;
-      /* Fallthru.  */
-
-    case GIMPLE_UNARY_RHS:
-    case GIMPLE_SINGLE_RHS:
-      return expr_equal_p (gimple_assign_rhs1 (stmt), TREE_OPERAND (what, 0));
-    default:
-      return false;
-    }
-}
-
 /* Returns true if we can prove that BASE - OFFSET does not overflow.  For now,
    we only detect the situation that BASE = SOMETHING + OFFSET, where the
    calculation is performed in non-wrapping type.
 
    TODO: More generally, we could test for the situation that
 	 BASE = SOMETHING + OFFSET' and OFFSET is between OFFSET' and zero.
-	 This would require knowing the sign of OFFSET.
-
-	 Also, we only look for the first addition in the computation of BASE.
-	 More complex analysis would be better, but introducing it just for
-	 this optimization seems like an overkill.  */
+	 This would require knowing the sign of OFFSET.  */
 
 static bool
-difference_cannot_overflow_p (tree base, tree offset)
+difference_cannot_overflow_p (struct ivopts_data *data, tree base, tree offset)
 {
   enum tree_code code;
   tree e1, e2;
+  aff_tree aff_e1, aff_e2, aff_offset;
 
   if (!nowrap_type_p (TREE_TYPE (base)))
     return false;
@@ -4560,13 +4509,27 @@ difference_cannot_overflow_p (tree base, tree offset)
       e2 = TREE_OPERAND (base, 1);
     }
 
-  /* TODO: deeper inspection may be necessary to prove the equality.  */
+  /* Use affine expansion as deeper inspection to prove the equality.  */
+  tree_to_aff_combination_expand (e2, TREE_TYPE (e2),
+				  &aff_e2, &data->name_expansion_cache);
+  tree_to_aff_combination_expand (offset, TREE_TYPE (offset),
+				  &aff_offset, &data->name_expansion_cache);
+  aff_combination_scale (&aff_offset, -1);
   switch (code)
     {
     case PLUS_EXPR:
-      return expr_equal_p (e1, offset) || expr_equal_p (e2, offset);
+      aff_combination_add (&aff_e2, &aff_offset);
+      if (aff_combination_zero_p (&aff_e2))
+	return true;
+
+      tree_to_aff_combination_expand (e1, TREE_TYPE (e1),
+				      &aff_e1, &data->name_expansion_cache);
+      aff_combination_add (&aff_e1, &aff_offset);
+      return aff_combination_zero_p (&aff_e1);
+
     case POINTER_PLUS_EXPR:
-      return expr_equal_p (e2, offset);
+      aff_combination_add (&aff_e2, &aff_offset);
+      return aff_combination_zero_p (&aff_e2);
 
     default:
       return false;
@@ -4690,7 +4653,7 @@ iv_elimination_compare_lt (struct ivopts_data *data,
   offset = fold_build2 (MULT_EXPR, TREE_TYPE (cand->iv->step),
 			cand->iv->step,
 			fold_convert (TREE_TYPE (cand->iv->step), a));
-  if (!difference_cannot_overflow_p (cand->iv->base, offset))
+  if (!difference_cannot_overflow_p (data, cand->iv->base, offset))
     return false;
 
   /* Determine the new comparison operator.  */
@@ -6815,6 +6778,7 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   data->iv_candidates.release ();
   delete data->inv_expr_tab;
   data->inv_expr_tab = NULL;
+  free_affine_expand_cache (&data->name_expansion_cache);
 }
 
 /* Returns true if the loop body BODY includes any function calls.  */
