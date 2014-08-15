@@ -1,3 +1,7 @@
+2014-08-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: New test.
+
 2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/62091

@@ -1,3 +1,14 @@
+2014-08-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (ivopts_data): New field
+	name_expansion_cache.
+	(tree_ssa_iv_optimize_init): Initialize name_expansion_cache.
+	(tree_ssa_iv_optimize_finalize): Free name_expansion_cache.
+	(strip_wrap_conserving_type_conversions, expr_equal_p): Delete.
+	(difference_cannot_overflow_p): New parameter.  Use affine
+	expansion for equality check.
+	(iv_elimination_compare_lt): Pass new argument.
+
 2014-08-14  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78-expand.md (umulqihi3): Disable for G10.
