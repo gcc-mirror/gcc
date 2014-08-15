@@ -6308,7 +6308,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 		= splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      if (on && (on->value & (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE
 				      | GOVD_PRIVATE | GOVD_REDUCTION
-				      | GOVD_LINEAR)) != 0)
+				      | GOVD_LINEAR | GOVD_MAP)) != 0)
 		break;
 	      ctx = ctx->outer_context;
 	    }

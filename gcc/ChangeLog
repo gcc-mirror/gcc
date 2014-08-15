@@ -1,3 +1,10 @@
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/62092
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Don't remove
+	OMP_CLAUSE_SHARED for global vars if the global var is mentioned
+	in OMP_CLAUSE_MAP in some outer target region.
+
 2014-08-15  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (ivopts_data): New field
