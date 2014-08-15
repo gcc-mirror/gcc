@@ -1,4 +1,11 @@
 2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62131
+	* openmp.c (resolve_omp_atomic): Only complain if code->expr1's attr
+	is allocatable, rather than whenever var->attr.allocatable.
+
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/62107
 	* trans-openmp.c (gfc_omp_finish_clause): Handle scalar pointer

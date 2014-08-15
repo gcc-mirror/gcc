@@ -2744,7 +2744,7 @@ resolve_omp_atomic (gfc_code *code)
       break;
     }
 
-  if (var->attr.allocatable)
+  if (gfc_expr_attr (code->expr1).allocatable)
     {
       gfc_error ("!$OMP ATOMIC with ALLOCATABLE variable at %L",
 		 &code->loc);
