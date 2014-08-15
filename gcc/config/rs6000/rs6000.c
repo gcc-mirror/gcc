@@ -8308,6 +8308,30 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       eliminate_regs (cfun->machine->sdmode_stack_slot, VOIDmode, NULL_RTX);
 
 
+  /* Transform (p0:DD, (SUBREG:DD p1:SD)) to ((SUBREG:SD p0:DD),
+     p1:SD) if p1 is not of floating point class and p0 is spilled as
+     we can have no analogous movsd_store for this.  */
+  if (lra_in_progress && mode == DDmode
+      && REG_P (operands[0]) && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER
+      && reg_preferred_class (REGNO (operands[0])) == NO_REGS
+      && GET_CODE (operands[1]) == SUBREG && REG_P (SUBREG_REG (operands[1]))
+      && GET_MODE (SUBREG_REG (operands[1])) == SDmode)
+    {
+      enum reg_class cl;
+      int regno = REGNO (SUBREG_REG (operands[1]));
+
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	{
+	  cl = reg_preferred_class (regno);
+	  regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][1];
+	}
+      if (regno >= 0 && ! FP_REGNO_P (regno))
+	{
+	  mode = SDmode;
+	  operands[0] = gen_lowpart_SUBREG (SDmode, operands[0]);
+	  operands[1] = SUBREG_REG (operands[1]);
+	}
+    }
   if (lra_in_progress
       && mode == SDmode
       && REG_P (operands[0]) && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER
@@ -8337,6 +8361,30 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       else
 	gcc_unreachable();
       return;
+    }
+  /* Transform ((SUBREG:DD p0:SD), p1:DD) to (p0:SD, (SUBREG:SD
+     p:DD)) if p0 is not of floating point class and p1 is spilled as
+     we can have no analogous movsd_load for this.  */
+  if (lra_in_progress && mode == DDmode
+      && GET_CODE (operands[0]) == SUBREG && REG_P (SUBREG_REG (operands[0]))
+      && GET_MODE (SUBREG_REG (operands[0])) == SDmode
+      && REG_P (operands[1]) && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER
+      && reg_preferred_class (REGNO (operands[1])) == NO_REGS)
+    {
+      enum reg_class cl;
+      int regno = REGNO (SUBREG_REG (operands[0]));
+
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	{
+	  cl = reg_preferred_class (regno);
+	  regno = cl == NO_REGS ? -1 : ira_class_hard_regs[cl][0];
+	}
+      if (regno >= 0 && ! FP_REGNO_P (regno))
+	{
+	  mode = SDmode;
+	  operands[0] = SUBREG_REG (operands[0]);
+	  operands[1] = gen_lowpart_SUBREG (SDmode, operands[1]);
+	}
     }
   if (lra_in_progress
       && mode == SDmode
