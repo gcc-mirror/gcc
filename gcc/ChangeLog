@@ -1,3 +1,8 @@
+2014-08-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate): Move
+	one_match > zero_match case to just before simple_sequence.
+
 2014-08-15  Richard Biener  <rguenther@suse.de>
 
 	* data-streamer.h (streamer_string_index, string_for_index):
