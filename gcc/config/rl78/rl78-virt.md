@@ -43,7 +43,7 @@
 
 (define_insn "*movhi_virt"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=vS,  Y,   v,   Wfr")
-	(match_operand:HI 1 "general_operand"      "viYS, viS, Wfr, v"))]
+	(match_operand:HI 1 "general_operand"      "viYS, viS, Wfr, vi"))]
   "rl78_virt_insns_ok ()"
   "v.movw %0, %1"
   [(set_attr "valloc" "op1")]

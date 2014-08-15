@@ -1,3 +1,7 @@
+2014-08-14  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78-virt.md (movhi_virt): Allow const->far moves.
+
 2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/62091
