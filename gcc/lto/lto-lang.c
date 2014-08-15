@@ -1186,10 +1186,10 @@ lto_init (void)
     }
   else
     {
-      lto_define_builtins (va_list_type_node,
-			   build_reference_type (va_list_type_node));
+      lto_define_builtins (build_reference_type (va_list_type_node),
+			   va_list_type_node);
     }
-  
+
   if (flag_cilkplus)
     cilk_init_builtins ();
 
