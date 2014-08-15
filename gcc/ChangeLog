@@ -1,5 +1,14 @@
 2014-08-15  Richard Biener  <rguenther@suse.de>
 
+	* data-streamer.h (streamer_string_index, string_for_index):
+	Remove.
+	* data-streamer-out.c (streamer_string_index): Make static.
+	* data-streamer-in.c (string_for_index): Likewise.
+	* lto-streamer-out.c (lto_output_location): Use bp_pack_string.
+	* lto-streamer-in.c (lto_input_location): Use bp_unpack_string.
+
+2014-08-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/62031
 	* tree-data-ref.c (dr_analyze_indices): Do not set
 	DR_UNCONSTRAINED_BASE.

@@ -154,7 +154,6 @@ lto_input_location (struct bitpack_d *bp, struct data_in *data_in)
   static int current_line;
   static int current_col;
   bool file_change, line_change, column_change;
-  unsigned len;
   bool prev_file = current_file != NULL;
 
   if (bp_unpack_value (bp, 1))
@@ -165,10 +164,7 @@ lto_input_location (struct bitpack_d *bp, struct data_in *data_in)
   column_change = bp_unpack_value (bp, 1);
 
   if (file_change)
-    current_file = canon_file_name
-		     (string_for_index (data_in,
-					bp_unpack_var_len_unsigned (bp),
-					&len));
+    current_file = canon_file_name (bp_unpack_string (data_in, bp));
 
   if (line_change)
     current_line = bp_unpack_var_len_unsigned (bp);
