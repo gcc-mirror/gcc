@@ -430,11 +430,26 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+/* Auxiliary function to check if an expression is a temporary created by
+   create var.  */
+
+static bool
+is_fe_temp (gfc_expr *e)
+{
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  return e->symtree->n.sym->attr.fe_temp;
+}
+
+
 /* Returns a new expression (a variable) to be used in place of the old one,
    with an assignment statement before the current statement to set
    the value of the variable. Creates a new BLOCK for the statement if
    that hasn't already been done and puts the statement, plus the
-   newly created variables, in that block.  */
+   newly created variables, in that block.  Special cases:  If the
+   expression is constant or a temporary which has already
+   been created, just copy it.  */
 
 static gfc_expr*
 create_var (gfc_expr * e)
@@ -447,6 +462,9 @@ create_var (gfc_expr * e)
   gfc_code *n;
   gfc_namespace *ns;
   int i;
+
+  if (e->expr_type == EXPR_CONSTANT || is_fe_temp (e))
+    return gfc_copy_expr (e);
 
   /* If the block hasn't already been created, do so.  */
   if (inserted_block == NULL)
@@ -522,6 +540,7 @@ create_var (gfc_expr * e)
   symbol->attr.flavor = FL_VARIABLE;
   symbol->attr.referenced = 1;
   symbol->attr.dimension = e->rank > 0;
+  symbol->attr.fe_temp = 1;
   gfc_commit_symbol (symbol);
 
   result = gfc_get_expr ();
@@ -1082,10 +1101,7 @@ combine_array_constructor (gfc_expr *e)
   if (op2->ts.type == BT_CHARACTER)
     return false;
 
-  if (op2->expr_type == EXPR_CONSTANT)
-    scalar = gfc_copy_expr (op2);
-  else
-    scalar = create_var (gfc_copy_expr (op2));
+  scalar = create_var (gfc_copy_expr (op2));
 
   oldbase = op1->value.constructor;
   newbase = NULL;
