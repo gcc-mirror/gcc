@@ -1,3 +1,14 @@
+2014-08-15  Tom de Vries  <tom@codesourcery.com>
+
+	Backport from mainline:
+	2014-08-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/62004
+	PR rtl-optimization/62030
+	* gcc.dg/pr62004.c: New test.
+	* gcc.dg/pr62030.c: Same.
+	* gcc.target/mips/pr62030-octeon.c: Same.
+
 2014-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

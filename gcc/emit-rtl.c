@@ -245,7 +245,7 @@ const_fixed_htab_eq (const void *x, const void *y)
 
 /* Return true if the given memory attributes are equal.  */
 
-static bool
+bool
 mem_attrs_eq_p (const struct mem_attrs *p, const struct mem_attrs *q)
 {
   return (p->alias == q->alias

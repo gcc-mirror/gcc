@@ -306,6 +306,28 @@ block_fallthru (basic_block bb)
 
   return (e) ? e->dest : NULL_BLOCK;
 }
+
+/* Return true if RTXs A and B can be safely interchanged.  */
+
+static bool
+rtx_interchangeable_p (const_rtx a, const_rtx b)
+{
+  if (!rtx_equal_p (a, b))
+    return false;
+
+  if (GET_CODE (a) != MEM)
+    return true;
+
+  /* A dead type-unsafe memory reference is legal, but a live type-unsafe memory
+     reference is not.  Interchanging a dead type-unsafe memory reference with
+     a live type-safe one creates a live type-unsafe memory reference, in other
+     words, it makes the program illegal.
+     We check here conservatively whether the two memory references have equal
+     memory attributes.  */
+
+  return mem_attrs_eq_p (get_mem_attrs (a), get_mem_attrs (b));
+}
+
 
 /* Go through a bunch of insns, converting them to conditional
    execution format if possible.  Return TRUE if all of the non-note
@@ -1034,6 +1056,9 @@ noce_try_move (struct noce_if_info *if_info)
       || (rtx_equal_p (if_info->a, XEXP (cond, 1))
 	  && rtx_equal_p (if_info->b, XEXP (cond, 0))))
     {
+      if (!rtx_interchangeable_p (if_info->a, if_info->b))
+	return FALSE;
+
       y = (code == EQ) ? if_info->a : if_info->b;
 
       /* Avoid generating the move if the source is the destination.  */
@@ -2504,7 +2529,7 @@ noce_process_if_block (struct noce_if_info *if_info)
       if (! insn_b
 	  || insn_b != last_active_insn (else_bb, FALSE)
 	  || (set_b = single_set (insn_b)) == NULL_RTX
-	  || ! rtx_equal_p (x, SET_DEST (set_b)))
+	  || ! rtx_interchangeable_p (x, SET_DEST (set_b)))
 	return FALSE;
     }
   else
@@ -2517,7 +2542,7 @@ noce_process_if_block (struct noce_if_info *if_info)
 	  || BLOCK_FOR_INSN (insn_b) != BLOCK_FOR_INSN (if_info->cond_earliest)
 	  || !NONJUMP_INSN_P (insn_b)
 	  || (set_b = single_set (insn_b)) == NULL_RTX
-	  || ! rtx_equal_p (x, SET_DEST (set_b))
+	  || ! rtx_interchangeable_p (x, SET_DEST (set_b))
 	  || ! noce_operand_ok (SET_SRC (set_b))
 	  || reg_overlap_mentioned_p (x, SET_SRC (set_b))
 	  || modified_between_p (SET_SRC (set_b), insn_b, jump)
@@ -2583,7 +2608,7 @@ noce_process_if_block (struct noce_if_info *if_info)
 
   /* Look and see if A and B are really the same.  Avoid creating silly
      cmove constructs that no one will fix up later.  */
-  if (rtx_equal_p (a, b))
+  if (rtx_interchangeable_p (a, b))
     {
       /* If we have an INSN_B, we don't have to create any new rtl.  Just
 	 move the instruction that we already have.  If we don't have an
