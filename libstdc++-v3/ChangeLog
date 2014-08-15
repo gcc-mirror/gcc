@@ -1,3 +1,10 @@
+2014-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62154
+	* libsupc++/nested_exception.h (throw_with_nested, rethrow_if_nested):
+	Rewrite to conform to C++11 requirements.
+	* testsuite/18_support/nested_exception/62154.cc: New.
+
 2014-08-14  Matthias Klose  <doko@ubuntu.com>
 
 	* testsuite/ext/random/uniform_on_sphere_distribution/requirements:
