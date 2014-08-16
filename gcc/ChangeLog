@@ -1,3 +1,7 @@
+2014-08-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* doc/cppopts.texi (ftrack-macro-expansion): Add missing @code.
+
 2014-08-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.h (ipa_polymorphic_call_context): Turn into class; add ctors.
