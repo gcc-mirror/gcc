@@ -5176,6 +5176,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
               gogo->backend()->init_statement(vars[i], var_inits[i]);
           init.push_back(init_stmt);
 	}
+      if (defer_init != NULL)
+	init.push_back(defer_init);
       Bstatement* var_init = gogo->backend()->statement_list(init);
 
       // Initialize all variables before executing this code block.
