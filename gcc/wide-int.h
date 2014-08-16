@@ -282,7 +282,7 @@ along with GCC; see the file COPYING3.  If not see
     wi::int_traits <WI_UNARY_RESULT (T)>::get_binary_result (X, X); \
   HOST_WIDE_INT *VAL = RESULT.write_val ()
 
-template <typename T> struct generic_wide_int;
+template <typename T> class generic_wide_int;
 template <int N> struct fixed_wide_int_storage;
 class wide_int_storage;
 
