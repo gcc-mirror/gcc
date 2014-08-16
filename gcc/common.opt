@@ -1268,7 +1268,7 @@ Common Report Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation
  
 fgraphite-code-generator=
-Common Report RejectNegative Joined Optimization Enum(fgraphite_generator) Var(flag_graphite_code_gen) Init(FGRAPHITE_CODE_GEN_CLOOG)
+Common Report RejectNegative Joined Optimization Enum(fgraphite_generator) Var(flag_graphite_code_gen) Init(FGRAPHITE_CODE_GEN_ISL)
 Choose code generator of Graphite
 
 Enum

@@ -1,3 +1,8 @@
+2014-08-17 Roman Gareev  <gareevroman@gmail.com>
+
+	* common.opt: Make the ISL AST generator to be the main code generator
+	of Graphite.
+
 2014-08-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* wide-int.h (generic_wide_int): Declare as class instead of struct.
