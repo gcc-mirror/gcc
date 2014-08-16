@@ -1,3 +1,15 @@
+2014-08-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/61641
+	* config/pa/pa-protos.h (pa_output_addr_vec, pa_output_addr_diff_vec):
+	Declare.
+	* config/pa/pa.c (pa_reorg): Remove code to insert brtab marker insns.
+	(pa_output_addr_vec, pa_output_addr_diff_vec): New.
+	* config/pa/pa.h (ASM_OUTPUT_ADDR_VEC, ASM_OUTPUT_ADDR_DIFF_VEC):
+	Define.
+	* config/pa/pa.md (begin_brtab): Delete insn.
+	(end_brtab): Likewise.
+
 2014-08-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/cppopts.texi (ftrack-macro-expansion): Add missing @code.
