@@ -1,3 +1,14 @@
+2014-08-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from trunk:
+	2014-04-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR debug/55794
+	* config/pa/pa.c (pa_output_function_epilogue): Skip address and code
+	size accounting for thunks.
+	(pa_asm_output_mi_thunk): Use final_start_function() and
+	final_end_function() to output function start and end directives.
+
 2014-08-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline:
