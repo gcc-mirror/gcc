@@ -1,3 +1,7 @@
+2014-08-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* wide-int.h (generic_wide_int): Declare as class instead of struct.
+
 2014-08-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/61641
