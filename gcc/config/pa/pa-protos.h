@@ -49,6 +49,8 @@ extern const char *pa_output_mul_insn (int, rtx);
 extern const char *pa_output_div_insn (rtx *, int, rtx);
 extern const char *pa_output_mod_insn (int, rtx);
 extern const char *pa_singlemove_string (rtx *);
+extern void pa_output_addr_vec (rtx, rtx);
+extern void pa_output_addr_diff_vec (rtx, rtx);
 extern void pa_output_arg_descriptor (rtx);
 extern void pa_output_global_address (FILE *, rtx, int);
 extern void pa_print_operand (FILE *, rtx, int);

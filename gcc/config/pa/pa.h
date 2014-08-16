@@ -1193,6 +1193,16 @@ do {									     \
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   fprintf (FILE, "\t.word L$%04d-L$%04d\n", VALUE, REL)
 
+/* This is how to output an absolute case-vector.  */
+
+#define ASM_OUTPUT_ADDR_VEC(LAB,BODY)	\
+  pa_output_addr_vec ((LAB),(BODY))
+
+/* This is how to output a relative case-vector.  */
+
+#define ASM_OUTPUT_ADDR_DIFF_VEC(LAB,BODY)	\
+  pa_output_addr_diff_vec ((LAB),(BODY))
+
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */
 
