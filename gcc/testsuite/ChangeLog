@@ -1,3 +1,9 @@
+2014-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/62142
+	* gfortran.dg/realloc_on_assign_24.f90:  New test.
+
 2014-08-15  Tom de Vries  <tom@codesourcery.com>
 
 	Backport from mainline:
