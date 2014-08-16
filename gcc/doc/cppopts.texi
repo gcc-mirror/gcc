@@ -620,7 +620,7 @@ tokens locations completely. This value is the most memory hungry.
 When this option is given no argument, the default parameter value is
 @samp{2}.
 
-Note that -ftrack-macro-expansion=2 is activated by default.
+Note that @code{-ftrack-macro-expansion=2} is activated by default.
 
 @item -fexec-charset=@var{charset}
 @opindex fexec-charset
