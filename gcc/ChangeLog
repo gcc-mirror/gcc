@@ -1,3 +1,11 @@
+2014-08-17  Marek Polacek  <polacek@redhat.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/62059
+	* diagnostic.c (adjust_line): Add gcc_checking_assert.
+	(diagnostic_show_locus): Don't print caret diagnostic
+	if a column is larger than the line_width.
+
 2014-08-17 Roman Gareev  <gareevroman@gmail.com>
 
 	* common.opt: Make the ISL AST generator to be the main code generator
