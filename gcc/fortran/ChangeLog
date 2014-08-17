@@ -1,3 +1,9 @@
+2014-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Fix decl of
+	IOCALL_SET_NML_VAL.
+	(transfer_namelist_element): Use proper int type as argument.
+
 2014-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/62142
