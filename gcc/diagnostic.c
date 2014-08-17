@@ -268,6 +268,7 @@ adjust_line (const char *line, int line_width,
   int right_margin = 10;
   int column = *column_p;
 
+  gcc_checking_assert (line_width >= column);
   right_margin = MIN (line_width - column, right_margin);
   right_margin = max_width - right_margin;
   if (line_width >= max_width && column > right_margin)
@@ -300,7 +301,7 @@ diagnostic_show_locus (diagnostic_context * context,
   context->last_location = diagnostic->location;
   s = expand_location_to_spelling_point (diagnostic->location);
   line = location_get_source_line (s, &line_width);
-  if (line == NULL)
+  if (line == NULL || s.column > line_width)
     return;
 
   max_width = context->caret_max_width;
