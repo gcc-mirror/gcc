@@ -11416,6 +11416,10 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   bool seen_scalar = false;
   gfc_symbol *vtab;
   gfc_component *c;
+  gfc_symbol *parent = gfc_get_derived_super_type (derived);
+
+  if (parent)
+    gfc_resolve_finalizers (parent, finalizable);
 
   /* Return early when not finalizable. Additionally, ensure that derived-type
      components have a their finalizables resolved.  */
