@@ -1,5 +1,14 @@
 2014-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*boolccsi3_internal1, *boolccsi3_internal2
+	and split, *boolccsi3_internal3 and split): Delete.
+	(*boolccdi3_internal1, *boolccdi3_internal2 and split,
+	*boolccdi3_internal3 and split): Delete.
+	(*boolcc<mode>3, *boolcc<mode>3_dot, *boolcc<mode>3_dot2): New.
+	(*eqv<mode>3): Move.  Add TODO comment.  Fix attributes.
+
+2014-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (*boolcsi3_internal1, *boolcsi3_internal2
 	and split, *boolcsi3_internal3 and split): Delete.
 	(*boolcdi3_internal1, *boolcdi3_internal2 and split,
