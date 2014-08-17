@@ -32795,9 +32795,7 @@ rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
    MODE is the machine mode.
    If COMPLEMENT_FINAL_P is true, wrap the whole operation with NOT.
    If COMPLEMENT_OP1_P is true, wrap operand1 with NOT.
-   If COMPLEMENT_OP2_P is true, wrap operand2 with NOT.
-   CLOBBER_REG is either NULL or a scratch register of type CC to allow
-   formation of the AND instructions.  */
+   If COMPLEMENT_OP2_P is true, wrap operand2 with NOT.  */
 
 static void
 rs6000_split_logical_inner (rtx dest,
@@ -32807,11 +32805,9 @@ rs6000_split_logical_inner (rtx dest,
 			    enum machine_mode mode,
 			    bool complement_final_p,
 			    bool complement_op1_p,
-			    bool complement_op2_p,
-			    rtx clobber_reg)
+			    bool complement_op2_p)
 {
   rtx bool_rtx;
-  rtx set_rtx;
 
   /* Optimize AND of 0/0xffffffff and IOR/XOR of 0.  */
   if (op2 && GET_CODE (op2) == CONST_INT
@@ -32851,6 +32847,13 @@ rs6000_split_logical_inner (rtx dest,
 	}
     }
 
+  if (code == AND && mode == SImode
+      && !complement_final_p && !complement_op1_p && !complement_op2_p)
+    {
+      emit_insn (gen_andsi3 (dest, op1, op2));
+      return;
+    }
+
   if (complement_op1_p)
     op1 = gen_rtx_NOT (mode, op1);
 
@@ -32864,17 +32867,7 @@ rs6000_split_logical_inner (rtx dest,
   if (complement_final_p)
     bool_rtx = gen_rtx_NOT (mode, bool_rtx);
 
-  set_rtx = gen_rtx_SET (VOIDmode, dest, bool_rtx);
-
-  /* Is this AND with an explicit clobber?  */
-  if (clobber_reg)
-    {
-      rtx clobber = gen_rtx_CLOBBER (VOIDmode, clobber_reg);
-      set_rtx = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set_rtx, clobber));
-    }
-
-  emit_insn (set_rtx);
-  return;
+  emit_insn (gen_rtx_SET (VOIDmode, dest, bool_rtx));
 }
 
 /* Split a DImode AND/IOR/XOR with a constant on a 32-bit system.  These
@@ -32895,8 +32888,7 @@ rs6000_split_logical_di (rtx operands[3],
 			 enum rtx_code code,
 			 bool complement_final_p,
 			 bool complement_op1_p,
-			 bool complement_op2_p,
-			 rtx clobber_reg)
+			 bool complement_op2_p)
 {
   const HOST_WIDE_INT lower_32bits = HOST_WIDE_INT_C(0xffffffff);
   const HOST_WIDE_INT upper_32bits = ~ lower_32bits;
@@ -32957,7 +32949,6 @@ rs6000_split_logical_di (rtx operands[3],
 	  && !complement_final_p
 	  && !complement_op1_p
 	  && !complement_op2_p
-	  && clobber_reg == NULL_RTX
 	  && !logical_const_operand (op2_hi_lo[i], SImode))
 	{
 	  HOST_WIDE_INT value = INTVAL (op2_hi_lo[i]);
@@ -32970,18 +32961,15 @@ rs6000_split_logical_di (rtx operands[3],
 	    hi_16bits |= upper_32bits;
 
 	  rs6000_split_logical_inner (tmp, op1_hi_lo[i], GEN_INT (hi_16bits),
-				      code, SImode, false, false, false,
-				      NULL_RTX);
+				      code, SImode, false, false, false);
 
 	  rs6000_split_logical_inner (op0_hi_lo[i], tmp, GEN_INT (lo_16bits),
-				      code, SImode, false, false, false,
-				      NULL_RTX);
+				      code, SImode, false, false, false);
 	}
       else
 	rs6000_split_logical_inner (op0_hi_lo[i], op1_hi_lo[i], op2_hi_lo[i],
 				    code, SImode, complement_final_p,
-				    complement_op1_p, complement_op2_p,
-				    clobber_reg);
+				    complement_op1_p, complement_op2_p);
     }
 
   return;
@@ -32993,20 +32981,16 @@ rs6000_split_logical_di (rtx operands[3],
 
    OPERANDS is an array containing the destination and two input operands.
    CODE is the base operation (AND, IOR, XOR, NOT).
-   MODE is the machine mode.
    If COMPLEMENT_FINAL_P is true, wrap the whole operation with NOT.
    If COMPLEMENT_OP1_P is true, wrap operand1 with NOT.
-   If COMPLEMENT_OP2_P is true, wrap operand2 with NOT.
-   CLOBBER_REG is either NULL or a scratch register of type CC to allow
-   formation of the AND instructions.  */
+   If COMPLEMENT_OP2_P is true, wrap operand2 with NOT.  */
 
 void
 rs6000_split_logical (rtx operands[3],
 		      enum rtx_code code,
 		      bool complement_final_p,
 		      bool complement_op1_p,
-		      bool complement_op2_p,
-		      rtx clobber_reg)
+		      bool complement_op2_p)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
   enum machine_mode sub_mode;
@@ -33018,8 +33002,7 @@ rs6000_split_logical (rtx operands[3],
   if (mode == DImode && !TARGET_POWERPC64)
     {
       rs6000_split_logical_di (operands, code, complement_final_p,
-			       complement_op1_p, complement_op2_p,
-			       clobber_reg);
+			       complement_op1_p, complement_op2_p);
       return;
     }
 
@@ -33052,7 +33035,7 @@ rs6000_split_logical (rtx operands[3],
 
       rs6000_split_logical_inner (sub_op0, sub_op1, sub_op2, code, sub_mode,
 				  complement_final_p, complement_op1_p,
-				  complement_op2_p, clobber_reg);
+				  complement_op2_p);
     }
 
   return;

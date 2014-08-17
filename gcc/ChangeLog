@@ -1,5 +1,50 @@
 2014-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/constraints.md ("S"): Require TARGET_POWERPC64.
+	* config/rs6000/htm.md (ttest): Remove clobber.
+	* config/rs6000/predicates.md (any_mask_operand): New predicate.
+	(and_operand): Reformat.
+	(and_2rld_operand): New predicate.
+	* config/rs6000/rs6000-protos.h (rs6000_split_logical): Remove last
+	parameter.
+	* config/rs6000/rs6000.c (rs6000_split_logical_inner): Remove last
+	parameter.  Handle AND directly.
+	(rs6000_split_logical_di): Remove last parameter.
+	(rs6000_split_logical): Remove last parameter.  Remove obsolete
+	comment.
+	* config/rs6000/rs6000.md (BOOL_REGS_AND_CR0): Delete.
+	(one_cmpl<mode>2): Adjust call of rs6000_split_logical.
+	(ctz<mode>2, ffs<mode>2): Delete clobber.  Reformat.
+	(andsi3, andsi3_mc, andsi3_nomc, *andsi3_internal2_mc,
+	*andsi3_internal3_mc, *andsi3_internal4, *andsi3_internal5_mc,
+	and 5 anonymous splitters):  Delete.
+	(and<mode>3): New expander.
+	(*and<mode>3, *and<mode>3_dot, *and<mode>3_dot2): New.
+	(and<mode>3_imm, *and<mode>3_imm_dot, *and<mode>3_imm_dot2): New.
+	(*and<mode>3_mask, *and<mode>3_mask_dot, *and<mode>3_mask_dot2): New.
+	(ior<mode>, xor<mode>3): Adjust call of rs6000_split_logical.
+	(floatdisf2_internal1): Remove clobbers.
+	(anddi3, anddi3_mc, anddi3_nomc, anddi3_internal2_mc,
+	*anddi3_internal3_mc, and 4 anonymous splitters): Delete.
+	(*anddi3_2rld, *anddi3_2rld_dot, *anddi3_2rld_dot2): New.
+	(and<mode>3 for BOOL_128): Remove clobber.
+	(*and<mode>3_internal for BOOL_128): Remove clobber.  Adjust call of
+	rs6000_split_logical.
+	(*bool<mode>3_internal for BOOL_128): Adjust call of
+	rs6000_split_logical.
+	(*boolc<mode>3_internal1 for BOOL_128,
+	*boolc<mode>3_internal2 for BOOL_128,
+	*boolcc<mode>3_internal1 for BOOL_128,
+	*boolcc<mode>3_internal2 for BOOL_128,
+	*eqv<mode>3_internal1 for BOOL_128,
+	*eqv<mode>3_internal2 for BOOL_128,
+	*one_cmpl<mode>3_internal for BOOL_128): Ditto.
+	* config/rs6000/vector.md (*vec_reload_and_plus_<mptrsize): Remove
+	clobber.
+	(*vec_reload_and_reg_<mptrsize>): Delete.
+
+2014-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (*boolccsi3_internal1, *boolccsi3_internal2
 	and split, *boolccsi3_internal3 and split): Delete.
 	(*boolccdi3_internal1, *boolccdi3_internal2 and split,
