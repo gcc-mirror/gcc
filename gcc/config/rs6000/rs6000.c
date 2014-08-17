@@ -18044,6 +18044,19 @@ print_operand (FILE *file, rtx x, int code)
       fprintf (file, "%d", i + 1);
       return;
 
+    case 'e':
+      /* If the low 16 bits are 0, but some other bit is set, write 's'.  */
+      if (! INT_P (x))
+	{
+	  output_operand_lossage ("invalid %%e value");
+	  return;
+	}
+
+      uval = INTVAL (x);
+      if ((uval & 0xffff) == 0 && uval != 0)
+	putc ('s', file);
+      return;
+
     case 'E':
       /* X is a CR register.  Print the number of the EQ bit of the CR */
       if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
@@ -18346,12 +18359,19 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case 'u':
-      /* High-order 16 bits of constant for use in unsigned operand.  */
+      /* High-order or low-order 16 bits of constant, whichever is non-zero,
+	 for use in unsigned operand.  */
       if (! INT_P (x))
-	output_operand_lossage ("invalid %%u value");
-      else
-	fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-		 (INTVAL (x) >> 16) & 0xffff);
+	{
+	  output_operand_lossage ("invalid %%u value");
+	  return;
+	}
+
+      uval = INTVAL (x);
+      if ((uval & 0xffff) == 0)
+	uval >>= 16;
+
+      fprintf (file, HOST_WIDE_INT_PRINT_HEX, uval & 0xffff);
       return;
 
     case 'v':

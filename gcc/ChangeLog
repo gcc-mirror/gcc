@@ -1,3 +1,15 @@
+2014-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (print_operand) <'e'>: New.
+	<'u'>: Also support printing the low-order 16 bits.
+	* config/rs6000/rs6000.md (iorsi3, xorsi3, *boolsi3_internal1,
+	*boolsi3_internal2 and split, *boolsi3_internal3 and split): Delete.
+	(iordi3, xordi3, *booldi3_internal1, *booldi3_internal2 and split,
+	*booldi3_internal3 and split): Delete.
+	(ior<mode>3, xor<mode>3, *bool<mode>3, *bool<mode>3_dot,
+	*bool<mode>3_dot2): New.
+	(two anonymous define_splits for non_logical_cint_operand): Merge.
+
 2014-08-17  Marek Polacek  <polacek@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
