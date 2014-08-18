@@ -1,3 +1,8 @@
+2014-08-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/62089
+	* asan.c (instrument_derefs): Fix bitfield check.
+
 2014-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md ("S"): Require TARGET_POWERPC64.

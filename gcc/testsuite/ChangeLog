@@ -1,3 +1,12 @@
+2014-08-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/62089
+	* c-c++-common/asan/pr62089.c: New test.
+	* c-c++-common/asan/bitfield-1.c: New test.
+	* c-c++-common/asan/bitfield-2.c: New test.
+	* c-c++-common/asan/bitfield-3.c: New test.
+	* c-c++-common/asan/bitfield-4.c: New test.
+
 2014-08-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR tree-optimization/52904
