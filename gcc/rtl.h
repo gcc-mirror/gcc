@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "wide-int.h"
 #include "flags.h"
+#include "is-a.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */
@@ -266,7 +267,21 @@ struct GTY((variable_size)) hwivec_def {
 
 /* RTL expression ("rtx").  */
 
-struct GTY((chain_next ("RTX_NEXT (&%h)"),
+/* The GTY "desc" and "tag" options below are a kludge: we need a desc
+   field for for gengtype to recognize that inheritance is occurring,
+   so that all subclasses are redirected to the traversal hook for the
+   base class.
+   However, all of the fields are in the base class, and special-casing
+   is at work.  Hence we use desc and tag of 0, generating a switch
+   statement of the form:
+     switch (0)
+       {
+       case 0: // all the work happens here
+      }
+   in order to work with the existing special-casing in gengtype.  */
+
+struct GTY((desc("0"), tag("0"),
+	    chain_next ("RTX_NEXT (&%h)"),
 	    chain_prev ("RTX_PREV (&%h)"))) rtx_def {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
@@ -385,6 +400,25 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
     struct fixed_value fv;
     struct hwivec_def hwiv;
   } GTY ((special ("rtx_def"), desc ("GET_CODE (&%0)"))) u;
+};
+
+class GTY(()) rtx_insn : public rtx_def
+{
+  /* No extra fields, but adds the invariant:
+
+     (INSN_P (X)
+      || NOTE_P (X)
+      || JUMP_TABLE_DATA_P (X)
+      || BARRIER_P (X)
+      || LABEL_P (X))
+
+     i.e. that we must be able to use the following:
+      INSN_UID ()
+      NEXT_INSN ()
+      PREV_INSN ()
+    i.e. we have an rtx that has an INSN_UID field and can be part of
+    a linked list of insns.
+  */
 };
 
 /* The size in bytes of an rtx header (code, mode and flags).  */
@@ -547,6 +581,30 @@ struct GTY(()) rtvec_def {
 
 /* Predicate yielding nonzero iff X is a data for a jump table.  */
 #define JUMP_TABLE_DATA_P(INSN) (GET_CODE (INSN) == JUMP_TABLE_DATA)
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_insn *>::test (rtx rt)
+{
+  return (INSN_P (rt)
+	  || NOTE_P (rt)
+	  || JUMP_TABLE_DATA_P (rt)
+	  || BARRIER_P (rt)
+	  || LABEL_P (rt));
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const rtx_insn *>::test (const_rtx rt)
+{
+  return (INSN_P (rt)
+	  || NOTE_P (rt)
+	  || JUMP_TABLE_DATA_P (rt)
+	  || BARRIER_P (rt)
+	  || LABEL_P (rt));
+}
 
 /* Predicate yielding nonzero iff X is a return or simple_return.  */
 #define ANY_RETURN_P(X) \
