@@ -34738,6 +34738,14 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	case CODE_FOR_avx512f_storev16si_mask:
 	case CODE_FOR_avx512f_storev8df_mask:
 	case CODE_FOR_avx512f_storev8di_mask:
+	case CODE_FOR_avx512vl_storev8sf_mask:
+	case CODE_FOR_avx512vl_storev8si_mask:
+	case CODE_FOR_avx512vl_storev4df_mask:
+	case CODE_FOR_avx512vl_storev4di_mask:
+	case CODE_FOR_avx512vl_storev4sf_mask:
+	case CODE_FOR_avx512vl_storev4si_mask:
+	case CODE_FOR_avx512vl_storev2df_mask:
+	case CODE_FOR_avx512vl_storev2di_mask:
 	  aligned_mem = true;
 	  break;
 	default:
@@ -34781,6 +34789,20 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	case CODE_FOR_avx512f_loadv16si_mask:
 	case CODE_FOR_avx512f_loadv8df_mask:
 	case CODE_FOR_avx512f_loadv8di_mask:
+	case CODE_FOR_avx512vl_loadv8sf_mask:
+	case CODE_FOR_avx512vl_loadv8si_mask:
+	case CODE_FOR_avx512vl_loadv4df_mask:
+	case CODE_FOR_avx512vl_loadv4di_mask:
+	case CODE_FOR_avx512vl_loadv4sf_mask:
+	case CODE_FOR_avx512vl_loadv4si_mask:
+	case CODE_FOR_avx512vl_loadv2df_mask:
+	case CODE_FOR_avx512vl_loadv2di_mask:
+	case CODE_FOR_avx512bw_loadv64qi_mask:
+	case CODE_FOR_avx512vl_loadv32qi_mask:
+	case CODE_FOR_avx512vl_loadv16qi_mask:
+	case CODE_FOR_avx512bw_loadv32hi_mask:
+	case CODE_FOR_avx512vl_loadv16hi_mask:
+	case CODE_FOR_avx512vl_loadv8hi_mask:
 	  aligned_mem = true;
 	  break;
 	default:
