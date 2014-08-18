@@ -6131,6 +6131,25 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "vec_extract_hi_<mode><mask_name>"
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>,vm")
+	(vec_select:<ssehalfvecmode>
+	  (match_operand:V16FI 1 "register_operand" "v,v")
+	  (parallel [(const_int 8) (const_int 9)
+            (const_int 10) (const_int 11)
+	    (const_int 12) (const_int 13)
+	    (const_int 14) (const_int 15)])))]
+  "TARGET_AVX512F && (!<mask_applied> || TARGET_AVX512DQ)"
+  "@
+   vextract<shuffletype>32x8\t{$0x1, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x1}
+   vextracti64x4\t{$0x1, %1, %0|%0, %1, 0x1}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "isa" "avx512dq,noavx512dq")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_expand "avx_vextractf128<mode>"
   [(match_operand:<ssehalfvecmode> 0 "nonimmediate_operand")
    (match_operand:V_256 1 "register_operand")
@@ -6176,23 +6195,6 @@
   emit_move_insn (operands[0], op1);
   DONE;
 })
-
-(define_insn "vec_extract_hi_<mode>"
-  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
-	(vec_select:<ssehalfvecmode>
-	  (match_operand:V16FI 1 "nonimmediate_operand" "v,v")
-	  (parallel [(const_int 8) (const_int 9)
-		     (const_int 10) (const_int 11)
-		     (const_int 12) (const_int 13)
-		     (const_int 14) (const_int 15)])))]
-  "TARGET_AVX512F"
-  "vextracti64x4\t{$0x1, %1, %0|%0, %1, 0x1}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "XI")])
 
 (define_insn_and_split "vec_extract_lo_<mode>"
   [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=x,m")

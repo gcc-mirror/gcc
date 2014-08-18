@@ -7,6 +7,21 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.md
+	(define_attr "isa"): Add avx512dq, noavx512dq.
+	(define_attr "enabled"): Ditto.
+	* config/i386/sse.md
+	(define_insn "vec_extract_hi_<mode><mask_name>"): Support masking.
+
+2014-08-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c
 	(ix86_expand_special_args_builtin): Handle avx512vl_storev8sf_mask,
 	avx512vl_storev8si_mask, avx512vl_storev4df_mask, avx512vl_storev4di_mask,
