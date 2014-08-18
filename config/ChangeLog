@@ -1,3 +1,8 @@
+2014-08-18 Roman Gareev  <gareevroman@gmail.com>
+
+	* cloog.m4: Remove the path to isllibs from clooglibs.
+	* isl.m4: Add paths to islinc, isllibs.
+
 2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47230

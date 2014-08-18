@@ -1,3 +1,10 @@
+2014-08-18 Roman Gareev  <gareevroman@gmail.com>
+
+	* configure.ac: Eliminate ClooG installation dependency.
+	* configure: Regenerate.
+	* Makefile.tpl: Add definition of ISLLIBS and HOST_ISLLIBS.
+	* Makefile.in: Regenerate.
+
 2014-08-15  Ilya Verbin  <iverbin@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

@@ -27888,6 +27888,11 @@ fi
 
 
 
+if test "x${ISLLIBS}" != "x" ; then
+
+$as_echo "#define HAVE_isl 1" >>confdefs.h
+
+fi
 
 
 

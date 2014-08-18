@@ -21,14 +21,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/union_map.h>
 #include <isl/flow.h>
 #include <isl/constraint.h>
+#ifdef HAVE_cloog
 #include <cloog/cloog.h>
 #include <cloog/isl/domain.h>
+#endif
 #endif
 
 #include "system.h"
@@ -49,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "sese.h"
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 #include "graphite-poly.h"
 #include "graphite-htab.h"
 
@@ -630,6 +632,8 @@ graphite_legal_transform (scop_p scop)
   return res;
 }
 
+#ifdef HAVE_cloog
+
 /* Return true when the loop at DEPTH carries dependences.  BODY is
    the body of the loop.  */
 
@@ -684,4 +688,5 @@ loop_is_parallel_p (loop_p loop, bb_pbb_htab_type *bb_pbb_mapping, int depth)
   return !dependences;
 }
 
+#endif
 #endif

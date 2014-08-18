@@ -132,7 +132,7 @@ build_libs="build-libiberty"
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
-#
+#f
 host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
 
 # these tools are built for the host environment
@@ -1644,10 +1644,9 @@ AC_ARG_WITH(isl,
     Equivalent to --with-isl-include=PATH/include
     plus --with-isl-lib=PATH/lib])])
 
-# Treat either --without-cloog or --without-isl as a request to disable
+# Treat --without-isl as a request to disable
 # GRAPHITE support and skip all following checks.
-if test "x$with_isl" != "xno" &&
-   test "x$with_cloog" != "xno"; then
+if test "x$with_isl" != "xno"; then
   # Check for ISL
   dnl Provide configure switches and initialize islinc & isllibs
   dnl with user input.
@@ -1672,11 +1671,9 @@ if test "x$with_isl" != "xno" &&
   fi
 fi
 
-# If either the ISL or the CLooG check failed, disable builds of in-tree
-# variants of both
+# If the ISL check failed, disable builds of in-tree
+# variants of both ISL and CLooG
 if test "x$with_isl" = xno ||
-   test "x$with_cloog" = xno ||
-   test "x$gcc_cv_cloog" = xno ||
    test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs cloog isl"
   islinc=
@@ -1684,10 +1681,19 @@ if test "x$with_isl" = xno ||
   clooglibs=
 fi
 
+# If the CLooG check failed, disable builds of in-tree
+# variants of CLooG
+if test "x$with_cloog" = xno ||
+   test "x$gcc_cv_cloog" = xno; then
+  noconfigdirs="$noconfigdirs cloog isl"
+  clooginc=
+  clooglibs=
+fi
+
+AC_SUBST(isllibs)
 AC_SUBST(islinc)
 AC_SUBST(clooglibs)
 AC_SUBST(clooginc)
-
 
 # Check for LTO support.
 AC_ARG_ENABLE(lto,
@@ -2812,7 +2818,7 @@ changequote(,)
 changequote([,])
 
     case $lib in
-    mpc | mpfr | gmp | cloog)
+    mpc | mpfr | gmp | isl | cloog)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any

@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/union_map.h>
@@ -55,7 +55,7 @@ extern "C" {
 #include "tree-into-ssa.h"
 #include <map>
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 #include "graphite-poly.h"
 #include "graphite-isl-ast-to-gimple.h"
 
