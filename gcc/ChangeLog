@@ -1,5 +1,10 @@
 2014-08-18  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-visibility.c (update_visibility_by_resolution_info): Do no turn UNDEF
+	comdats as extern.
+
+2014-08-18  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gimple-fold.c (fold_gimple_assign): Do not intorudce referneces
 	to BUILT_IN_UNREACHABLE.
 
