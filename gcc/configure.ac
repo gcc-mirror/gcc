@@ -2094,6 +2094,7 @@ AC_ARG_ENABLE(gold,
    fi
    ;;
  no)
+   install_gold_as_default=no
    ;;
  *)
    AC_MSG_ERROR([invalid --enable-gold argument])

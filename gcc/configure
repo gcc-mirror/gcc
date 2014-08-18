@@ -21540,6 +21540,7 @@ if test "${enable_gold+set}" = set; then :
    fi
    ;;
  no)
+   install_gold_as_default=no
    ;;
  *)
    as_fn_error "invalid --enable-gold argument" "$LINENO" 5
