@@ -7,6 +7,21 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md
+	(define_mode_iterator VF1_AVX512VL): New.
+	(define_insn "ufloatv16siv16sf2<mask_name><round_name>"): Delete.
+	(define_insn "ufloat<sseintvecmodelower><mode>2<mask_name><round_name>"):
+	New.
+
+2014-08-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c: Rename ufloatv8siv8df_mask to ufloatv8siv8df2_mask.
 	* config/i386/i386.md
 	(define_code_iterator any_float): New.

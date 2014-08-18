@@ -237,6 +237,9 @@
 (define_mode_iterator VF2_AVX512VL
   [V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
+(define_mode_iterator VF1_AVX512VL
+  [V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")])
+
 ;; All vector integer modes
 (define_mode_iterator VI
   [(V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")
@@ -3686,15 +3689,15 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "ufloatv16siv16sf2<mask_name><round_name>"
-  [(set (match_operand:V16SF 0 "register_operand" "=v")
-	(unsigned_float:V16SF
-	  (match_operand:V16SI 1 "<round_nimm_predicate>" "<round_constraint>")))]
+(define_insn "ufloat<sseintvecmodelower><mode>2<mask_name><round_name>"
+  [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=v")
+	(unsigned_float:VF1_AVX512VL
+	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "<round_constraint>")))]
   "TARGET_AVX512F"
   "vcvtudq2ps\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
-   (set_attr "mode" "V16SF")])
+   (set_attr "mode" "<MODE>")])
 
 (define_expand "floatuns<sseintvecmodelower><mode>2"
   [(match_operand:VF1 0 "register_operand")
