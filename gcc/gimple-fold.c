@@ -324,7 +324,9 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		    if (targets.length () == 1)
 		      fndecl = targets[0]->decl;
 		    else
-		      fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		      /* We can not use __builtin_unreachable here because it
+			 can not have address taken.  */
+		      fndecl = integer_zero_node;
 		    if (dump_enabled_p ())
 		      {
 			location_t loc = gimple_location_safe (stmt);
