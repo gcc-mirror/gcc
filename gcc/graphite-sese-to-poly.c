@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/union_map.h>
@@ -38,9 +38,11 @@ extern "C" {
 #if defined(__cplusplus)
 }
 #endif
+#ifdef HAVE_cloog
 #include <cloog/cloog.h>
 #include <cloog/cloog.h>
 #include <cloog/isl/domain.h>
+#endif
 #endif
 
 #include "system.h"
@@ -74,7 +76,7 @@ extern "C" {
 #include "sese.h"
 #include "tree-ssa-propagate.h"
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 #include "expr.h"
 #include "graphite-poly.h"
 #include "graphite-sese-to-poly.h"

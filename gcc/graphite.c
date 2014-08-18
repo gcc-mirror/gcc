@@ -34,14 +34,16 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/options.h>
 #include <isl/union_map.h>
+#ifdef HAVE_cloog
 #include <cloog/cloog.h>
 #include <cloog/isl/domain.h>
 #include <cloog/isl/cloog.h>
+#endif
 #endif
 
 #include "system.h"
@@ -68,16 +70,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-cfgcleanup.h"
 
-#ifdef HAVE_cloog
+#ifdef HAVE_isl
 
 #include "graphite-poly.h"
 #include "graphite-scop-detection.h"
-#include "graphite-clast-to-gimple.h"
 #include "graphite-isl-ast-to-gimple.h"
 #include "graphite-sese-to-poly.h"
 #include "graphite-htab.h"
 
+#ifdef HAVE_cloog
+#include "graphite-clast-to-gimple.h"
+
 CloogState *cloog_state;
+#endif
 
 /* Print global statistics to FILE.  */
 
@@ -228,7 +233,9 @@ graphite_initialize (isl_ctx *ctx)
   recompute_all_dominators ();
   initialize_original_copy_tables ();
 
+#ifdef HAVE_cloog
   cloog_state = cloog_isl_state_malloc (ctx);
+#endif
 
   if (dump_file && dump_flags)
     dump_function_to_file (current_function_decl, dump_file, dump_flags);
@@ -251,7 +258,9 @@ graphite_finalize (bool need_cfg_cleanup_p)
       tree_estimate_probability ();
     }
 
+#ifdef HAVE_cloog
   cloog_state_free (cloog_state);
+#endif
   free_original_copy_tables ();
 
   if (dump_file && dump_flags)
@@ -292,12 +301,23 @@ graphite_transform_loops (void)
     }
 
   bb_pbb_htab_type bb_pbb_mapping (10);
+
+#ifndef HAVE_cloog
+  if(flag_graphite_code_gen == FGRAPHITE_CODE_GEN_CLOOG)
+    {
+      flag_graphite_code_gen = FGRAPHITE_CODE_GEN_ISL;
+      printf ("The CLooG code generator cannot be used (CLooG is not "
+	      "available). The ISL code generator was chosen.\n");
+    }
+#endif
+
   FOR_EACH_VEC_ELT (scops, i, scop)
     if (dbg_cnt (graphite_scop))
       {
 	scop->ctx = ctx;
 	build_poly_scop (scop);
 
+#ifdef HAVE_cloog
 	if (POLY_SCOP_P (scop)
 	    && apply_poly_transforms (scop)
 	    && (((flag_graphite_code_gen == FGRAPHITE_CODE_GEN_ISL)
@@ -305,6 +325,13 @@ graphite_transform_loops (void)
 	    || ((flag_graphite_code_gen == FGRAPHITE_CODE_GEN_CLOOG)
 	    && graphite_regenerate_ast_cloog (scop, &bb_pbb_mapping))))
 	  need_cfg_cleanup_p = true;
+#else
+	if (POLY_SCOP_P (scop)
+	    && apply_poly_transforms (scop)
+	    && graphite_regenerate_ast_isl (scop))
+	  need_cfg_cleanup_p = true;
+#endif
+
       }
 
   free_scops (scops);
@@ -313,12 +340,12 @@ graphite_transform_loops (void)
   isl_ctx_free (ctx);
 }
 
-#else /* If Cloog is not available: #ifndef HAVE_cloog.  */
+#else /* If ISL is not available: #ifndef HAVE_isl.  */
 
 static void
 graphite_transform_loops (void)
 {
-  sorry ("Graphite loop optimizations cannot be used");
+  sorry ("Graphite loop optimizations cannot be used (ISL is not available).");
 }
 
 #endif

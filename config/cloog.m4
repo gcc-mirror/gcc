@@ -69,7 +69,7 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
   fi
 
   clooginc="-DCLOOG_INT_GMP ${clooginc}"
-  clooglibs="${clooglibs} -lcloog-isl ${isllibs} -lisl"
+  clooglibs="${clooglibs} -lcloog-isl"
 ]
 )
 

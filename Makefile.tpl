@@ -222,6 +222,7 @@ HOST_EXPORTS = \
 	HOST_LIBS="$(STAGE1_LIBS)"; export HOST_LIBS; \
 	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
+	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
 	CLOOGLIBS="$(HOST_CLOOGLIBS)"; export CLOOGLIBS; \
 	CLOOGINC="$(HOST_CLOOGINC)"; export CLOOGINC; \
@@ -313,6 +314,7 @@ HOST_GMPLIBS = @gmplibs@
 HOST_GMPINC = @gmpinc@
 
 # Where to find ISL
+HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
 
 # Where to find CLOOG

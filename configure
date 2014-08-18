@@ -649,6 +649,7 @@ extra_linker_plugin_configure_flags
 clooginc
 clooglibs
 islinc
+isllibs
 poststage1_ldflags
 poststage1_libs
 stage1_ldflags
@@ -2760,7 +2761,7 @@ build_libs="build-libiberty"
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
-#
+#f
 host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
 
 # these tools are built for the host environment
@@ -5835,10 +5836,9 @@ if test "${with_isl+set}" = set; then :
 fi
 
 
-# Treat either --without-cloog or --without-isl as a request to disable
+# Treat --without-isl as a request to disable
 # GRAPHITE support and skip all following checks.
-if test "x$with_isl" != "xno" &&
-   test "x$with_cloog" != "xno"; then
+if test "x$with_isl" != "xno"; then
   # Check for ISL
 
 
@@ -5889,6 +5889,9 @@ fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using in-tree ISL, disabling version check" >&5
 $as_echo "$as_me: WARNING: using in-tree ISL, disabling version check" >&2;}
   fi
+
+  islinc="-DCLOOG_INT_GMP ${islinc}"
+  isllibs="${isllibs} -lisl"
 
 
 
@@ -6021,7 +6024,7 @@ $as_echo "$as_me: WARNING: using in-tree CLooG, disabling version check" >&2;}
   fi
 
   clooginc="-DCLOOG_INT_GMP ${clooginc}"
-  clooglibs="${clooglibs} -lcloog-isl ${isllibs} -lisl"
+  clooglibs="${clooglibs} -lcloog-isl"
 
 
 
@@ -6098,14 +6101,21 @@ $as_echo "$gcc_cv_cloog" >&6; }
   fi
 fi
 
-# If either the ISL or the CLooG check failed, disable builds of in-tree
-# variants of both
+# If the ISL check failed, disable builds of in-tree
+# variants of both ISL and CLooG
 if test "x$with_isl" = xno ||
-   test "x$with_cloog" = xno ||
-   test "x$gcc_cv_cloog" = xno ||
    test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs cloog isl"
   islinc=
+  clooginc=
+  clooglibs=
+fi
+
+# If the CLooG check failed, disable builds of in-tree
+# variants of CLooG
+if test "x$with_cloog" = xno ||
+   test "x$gcc_cv_cloog" = xno; then
+  noconfigdirs="$noconfigdirs cloog isl"
   clooginc=
   clooglibs=
 fi
@@ -7325,7 +7335,7 @@ do
 
 
     case $lib in
-    mpc | mpfr | gmp | cloog)
+    mpc | mpfr | gmp | isl | cloog)
       # If we're processing --with-$lib, --with-$lib-include or
       # --with-$lib-lib, for one of the libs above, and target is
       # different from host, don't pass the current argument to any
