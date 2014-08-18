@@ -1,3 +1,32 @@
+2014-08-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c
+	(ix86_expand_special_args_builtin): Handle avx512vl_storev8sf_mask,
+	avx512vl_storev8si_mask, avx512vl_storev4df_mask, avx512vl_storev4di_mask,
+	avx512vl_storev4sf_mask, avx512vl_storev4si_mask, avx512vl_storev2df_mask,
+	avx512vl_storev2di_mask, avx512vl_loadv8sf_mask, avx512vl_loadv8si_mask,
+	avx512vl_loadv4df_mask, avx512vl_loadv4di_mask, avx512vl_loadv4sf_mask,
+	avx512vl_loadv4si_mask, avx512vl_loadv2df_mask,	avx512vl_loadv2di_mask,
+	avx512bw_loadv64qi_mask, avx512vl_loadv32qi_mask, avx512vl_loadv16qi_mask,
+	avx512bw_loadv32hi_mask, avx512vl_loadv16hi_mask, avx512vl_loadv8hi_mask.
+	* config/i386/i386.md (define_mode_attr ssemodesuffix): Allow V32HI mode.
+	* config/i386/sse.md
+	(define_mode_iterator VMOVE): Allow V4TI mode.
+	(define_mode_iterator V_AVX512VL): New.
+	(define_mode_iterator V): New handling for AVX512VL.
+	(define_insn "avx512f_load<mode>_mask"): Delete.
+	(define_insn "<avx512>_load<mode>_mask"): New.
+	(define_insn "avx512f_store<mode>_mask"): Delete.
+	(define_insn "<avx512>_store<mode>_mask"): New.
+
+
 2014-08-18  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/62089
