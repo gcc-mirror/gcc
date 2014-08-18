@@ -368,10 +368,17 @@ struct GTY(()) control_flow_graph {
 
 /* Stuff for recording basic block info.  */
 
-#define BB_HEAD(B)      (B)->il.x.head_
-#define BB_END(B)       (B)->il.x.rtl->end_
-#define BB_HEADER(B)    (B)->il.x.rtl->header_
-#define BB_FOOTER(B)    (B)->il.x.rtl->footer_
+/* These macros are currently split into two:
+   one suitable for reading, and for writing.
+   These will become functions in a follow-up patch.  */
+#define BB_HEAD(B)      (((const_basic_block)B)->il.x.head_)
+#define SET_BB_HEAD(B)  (B)->il.x.head_
+#define BB_END(B)       (((const rtl_bb_info *)(B)->il.x.rtl)->end_)
+#define SET_BB_END(B)   (B)->il.x.rtl->end_
+#define BB_HEADER(B)    (((const rtl_bb_info *)(B)->il.x.rtl)->header_)
+#define SET_BB_HEADER(B) (B)->il.x.rtl->header_
+#define BB_FOOTER(B)    (((const rtl_bb_info *)(B)->il.x.rtl)->footer_)
+#define SET_BB_FOOTER(B) (B)->il.x.rtl->footer_
 
 /* Special block numbers [markers] for entry and exit.
    Neither of them is supposed to hold actual statements.  */

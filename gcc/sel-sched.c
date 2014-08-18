@@ -5202,7 +5202,7 @@ move_nop_to_previous_block (insn_t nop, basic_block prev_bb)
   NEXT_INSN (nop) = note;
   PREV_INSN (next_insn) = note;
 
-  BB_END (prev_bb) = nop;
+  SET_BB_END (prev_bb) = nop;
   BLOCK_FOR_INSN (nop) = prev_bb;
 }
 

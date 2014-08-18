@@ -467,7 +467,7 @@ find_bb_boundaries (basic_block bb)
 	  fallthru = split_block (bb, PREV_INSN (insn));
 	  if (flow_transfer_insn)
 	    {
-	      BB_END (bb) = flow_transfer_insn;
+	      SET_BB_END (bb) = flow_transfer_insn;
 
 	      /* Clean up the bb field for the insns between the blocks.  */
 	      for (x = NEXT_INSN (flow_transfer_insn);
@@ -504,7 +504,7 @@ find_bb_boundaries (basic_block bb)
      ordinary jump, we need to take care and move basic block boundary.  */
   if (flow_transfer_insn)
     {
-      BB_END (bb) = flow_transfer_insn;
+      SET_BB_END (bb) = flow_transfer_insn;
 
       /* Clean up the bb field for the insns that do not belong to BB.  */
       x = flow_transfer_insn;

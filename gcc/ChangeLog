@@ -1,5 +1,65 @@
 2014-08-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (BB_HEAD): Split macro in two: the existing one,
+	for rvalues, and...
+	(SET_BB_HEAD): New macro, for use as a lvalue.
+	(BB_END, SET_BB_END): Likewise.
+	(BB_HEADER, SET_BB_HEADER): Likewise.
+	(BB_FOOTER, SET_BB_FOOTER): Likewise.
+
+	* bb-reorder.c (add_labels_and_missing_jumps): Convert lvalue use
+	of BB_* macros into SET_BB_* macros.
+	(fix_crossing_unconditional_branches): Likewise.
+	* caller-save.c (save_call_clobbered_regs): Likewise.
+	(insert_one_insn): Likewise.
+	* cfgbuild.c (find_bb_boundaries): Likewise.
+	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Likewise.
+	(outgoing_edges_match): Likewise.
+	(try_optimize_cfg): Likewise.
+	* cfgexpand.c (expand_gimple_cond): Likewise.
+	(expand_gimple_tailcall): Likewise.
+	(expand_gimple_basic_block): Likewise.
+	(construct_exit_block): Likewise.
+	* cfgrtl.c (delete_insn): Likewise.
+	(create_basic_block_structure): Likewise.
+	(rtl_delete_block): Likewise.
+	(rtl_split_block): Likewise.
+	(emit_nop_for_unique_locus_between): Likewise.
+	(rtl_merge_blocks): Likewise.
+	(block_label): Likewise.
+	(try_redirect_by_replacing_jump): Likewise.
+	(emit_barrier_after_bb): Likewise.
+	(fixup_abnormal_edges): Likewise.
+	(record_effective_endpoints): Likewise.
+	(relink_block_chain): Likewise.
+	(fixup_reorder_chain): Likewise.
+	(fixup_fallthru_exit_predecessor): Likewise.
+	(cfg_layout_duplicate_bb): Likewise.
+	(cfg_layout_split_block): Likewise.
+	(cfg_layout_delete_block): Likewise.
+	(cfg_layout_merge_blocks): Likewise.
+	* combine.c (update_cfg_for_uncondjump): Likewise.
+	* emit-rtl.c (add_insn_after): Likewise.
+	(remove_insn): Likewise.
+	(reorder_insns): Likewise.
+	(emit_insn_after_1): Likewise.
+	* haifa-sched.c (get_ebb_head_tail): Likewise.
+	(restore_other_notes): Likewise.
+	(move_insn): Likewise.
+	(sched_extend_bb): Likewise.
+	(fix_jump_move): Likewise.
+	* ifcvt.c (noce_process_if_block): Likewise.
+	(dead_or_predicable): Likewise.
+	* ira.c (update_equiv_regs): Likewise.
+	* reg-stack.c (change_stack): Likewise.
+	* sel-sched-ir.c (sel_move_insn): Likewise.
+	* sel-sched.c (move_nop_to_previous_block): Likewise.
+
+	* config/c6x/c6x.c (hwloop_optimize): Likewise.
+	* config/ia64/ia64.c (emit_predicate_relation_info): Likewise.
+
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (for_each_rtx_in_insn): New function.
 	* rtlanal.c (for_each_rtx_in_insn): Likewise.
 
