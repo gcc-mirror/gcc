@@ -1,5 +1,16 @@
 2014-08-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/62090
+	* builtins.c (fold_builtin_snprintf): Move to gimple-fold.c.
+	(fold_builtin_3): Do not fold snprintf.
+	(fold_builtin_4): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_snprintf): New function
+	moved from builtins.c.
+	(gimple_fold_builtin_with_strlen): Fold snprintf and sprintf.
+	(gimple_fold_builtin): Do not fold sprintf here.
+
+2014-08-18  Richard Biener  <rguenther@suse.de>
+
 	* gimple-fold.c (maybe_fold_reference): Move re-gimplification
 	code to ...
 	(maybe_canonicalize_mem_ref_addr): ... this function.
