@@ -1,3 +1,7 @@
+2014-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* guality/nrv-1.c: Add `used' attribute to a1.
+
 2014-08-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62090
