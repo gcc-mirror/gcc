@@ -1,3 +1,7 @@
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* is-a.h (template<T, U> safe_as_a <U *p>) New function.
+
 2014-08-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-visibility.c (update_visibility_by_resolution_info): Do no turn UNDEF
