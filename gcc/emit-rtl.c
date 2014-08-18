@@ -3997,7 +3997,7 @@ add_insn_after (rtx insn, rtx after, basic_block bb)
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && !BARRIER_P (insn)
 	  && !NOTE_INSN_BASIC_BLOCK_P (insn))
-	BB_END (bb) = insn;
+	SET_BB_END (bb) = insn;
     }
 }
 
@@ -4126,10 +4126,10 @@ remove_insn (rtx insn)
 	  /* Never ever delete the basic block note without deleting whole
 	     basic block.  */
 	  gcc_assert (!NOTE_P (insn));
-	  BB_HEAD (bb) = next;
+	  SET_BB_HEAD (bb) = next;
 	}
       if (BB_END (bb) == insn)
-	BB_END (bb) = prev;
+	SET_BB_END (bb) = prev;
     }
 }
 
@@ -4229,12 +4229,12 @@ reorder_insns (rtx from, rtx to, rtx after)
 	  && (bb2 = BLOCK_FOR_INSN (from)))
 	{
 	  if (BB_END (bb2) == to)
-	    BB_END (bb2) = prev;
+	    SET_BB_END (bb2) = prev;
 	  df_set_bb_dirty (bb2);
 	}
 
       if (BB_END (bb) == after)
-	BB_END (bb) = to;
+	SET_BB_END (bb) = to;
 
       for (x = from; x != NEXT_INSN (to); x = NEXT_INSN (x))
 	if (!BARRIER_P (x))
@@ -4402,7 +4402,7 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
 	  df_insn_rescan (last);
 	}
       if (BB_END (bb) == after)
-	BB_END (bb) = last;
+	SET_BB_END (bb) = last;
     }
   else
     for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))

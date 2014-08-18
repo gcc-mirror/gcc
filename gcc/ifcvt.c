@@ -2618,7 +2618,7 @@ noce_process_if_block (struct noce_if_info *if_info)
 	  rtx note;
 
 	  if (else_bb && insn_b == BB_END (else_bb))
-	    BB_END (else_bb) = PREV_INSN (insn_b);
+	    SET_BB_END (else_bb) = PREV_INSN (insn_b);
 	  reorder_insns (insn_b, insn_b, PREV_INSN (jump));
 
 	  /* If there was a REG_EQUAL note, delete it since it may have been
@@ -4372,7 +4372,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       rtx insn;
 
       if (end == BB_END (merge_bb))
-	BB_END (merge_bb) = PREV_INSN (head);
+	SET_BB_END (merge_bb) = PREV_INSN (head);
 
       /* PR 21767: when moving insns above a conditional branch, the REG_EQUAL
 	 notes being moved might become invalid.  */

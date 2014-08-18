@@ -4809,7 +4809,7 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
 		reorder_insns_nobb (note, note, end_tail);
 
 		if (end_tail == BB_END (end))
-		  BB_END (end) = note;
+		  SET_BB_END (end) = note;
 
 		if (BLOCK_FOR_INSN (note) != end)
 		  df_insn_change_bb (note, end);
@@ -4868,7 +4868,7 @@ restore_other_notes (rtx head, basic_block head_bb)
       NEXT_INSN (note_list) = head;
 
       if (BLOCK_FOR_INSN (head) != head_bb)
-	BB_END (head_bb) = note_list;
+	SET_BB_END (head_bb) = note_list;
 
       head = note_head;
     }
@@ -5267,7 +5267,7 @@ move_insn (rtx insn, rtx last, rtx nt)
 
 	  gcc_assert (BLOCK_FOR_INSN (PREV_INSN (insn)) == bb);
 
-	  BB_END (bb) = PREV_INSN (insn);
+	  SET_BB_END (bb) = PREV_INSN (insn);
 	}
 
       gcc_assert (BB_END (bb) != last);
@@ -5316,7 +5316,7 @@ move_insn (rtx insn, rtx last, rtx nt)
 
       /* Update BB_END, if needed.  */
       if (BB_END (bb) == last)
-	BB_END (bb) = insn;
+	SET_BB_END (bb) = insn;
     }
 
   SCHED_GROUP_P (insn) = 0;
@@ -7613,7 +7613,7 @@ sched_extend_bb (void)
       rtx note = emit_note_after (NOTE_INSN_DELETED, end);
       /* Make note appear outside BB.  */
       set_block_for_insn (note, NULL);
-      BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb) = end;
+      SET_BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb) = end;
     }
 }
 
@@ -8297,18 +8297,18 @@ fix_jump_move (rtx jump)
 
   if (!NOTE_INSN_BASIC_BLOCK_P (BB_END (jump_bb_next)))
     /* if jump_bb_next is not empty.  */
-    BB_END (jump_bb) = BB_END (jump_bb_next);
+    SET_BB_END (jump_bb) = BB_END (jump_bb_next);
 
   if (BB_END (bb) != PREV_INSN (jump))
     /* Then there are instruction after jump that should be placed
        to jump_bb_next.  */
-    BB_END (jump_bb_next) = BB_END (bb);
+    SET_BB_END (jump_bb_next) = BB_END (bb);
   else
     /* Otherwise jump_bb_next is empty.  */
-    BB_END (jump_bb_next) = NEXT_INSN (BB_HEAD (jump_bb_next));
+    SET_BB_END (jump_bb_next) = NEXT_INSN (BB_HEAD (jump_bb_next));
 
   /* To make assertion in move_insn happy.  */
-  BB_END (bb) = PREV_INSN (jump);
+  SET_BB_END (bb) = PREV_INSN (jump);
 
   update_bb_for_insn (jump_bb_next);
 }
