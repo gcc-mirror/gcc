@@ -288,6 +288,9 @@
   [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
    (V8DI "TARGET_AVX512F")])
 
+(define_mode_iterator VI8_AVX2_AVX512BW
+  [(V8DI "TARGET_AVX512BW") (V4DI "TARGET_AVX2") V2DI])
+
 (define_mode_iterator VI8_AVX2
   [(V4DI "TARGET_AVX2") V2DI])
 
@@ -10979,10 +10982,10 @@
 ;; The correct representation for this is absolutely enormous, and
 ;; surely not generally useful.
 (define_insn "<sse2_avx2>_psadbw"
-  [(set (match_operand:VI8_AVX2 0 "register_operand" "=x,x")
-	(unspec:VI8_AVX2
-	  [(match_operand:<ssebytemode> 1 "register_operand" "0,x")
-	   (match_operand:<ssebytemode> 2 "nonimmediate_operand" "xm,xm")]
+  [(set (match_operand:VI8_AVX2_AVX512BW 0 "register_operand" "=x,v")
+	(unspec:VI8_AVX2_AVX512BW
+	  [(match_operand:<ssebytemode> 1 "register_operand" "0,v")
+	   (match_operand:<ssebytemode> 2 "nonimmediate_operand" "xm,vm")]
 	  UNSPEC_PSADBW))]
   "TARGET_SSE2"
   "@
@@ -10992,7 +10995,7 @@
    (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "simul")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<sse>_movmsk<ssemodesuffix><avxsizesuffix>"
