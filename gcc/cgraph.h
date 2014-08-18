@@ -915,7 +915,8 @@ public:
      statement destination is a formal parameter of the caller with index
      PARAM_INDEX. */
   struct cgraph_edge *create_indirect_edge (gimple call_stmt, int ecf_flags,
-					    gcov_type count, int freq);
+					    gcov_type count, int freq,
+					    bool compute_indirect_info = true);
 
   /* Like cgraph_create_edge walk the clone tree and update all clones sharing
    same function body.  If clones already have edge for OLD_STMT; only
