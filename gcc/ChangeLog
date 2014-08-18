@@ -7,6 +7,29 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md
+	(define_mode_iterator VF2_AVX512VL): New.
+	(define_mode_attr sseintvecmode2): New.
+	(define_insn "ufix_truncv2dfv2si2<mask_name>"): Add masking.
+	(define_insn "fix_truncv4dfv4si2<mask_name>"): New.
+	(define_insn "ufix_truncv4dfv4si2<mask_name>"): Ditto.
+	(define_insn
+	"<fixsuffix>fix_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>"):
+	Ditto.
+	(define_insn "fix_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>"):
+	Ditto.
+	(define_insn "ufix_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>"):
+	Ditto.
+
+2014-08-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.md
 	(define_insn "*movoi_internal_avx"): Add evex version.
 	(define_insn "*movti_internal"): Ditto.
