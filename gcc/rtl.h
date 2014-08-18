@@ -2399,6 +2399,7 @@ extern bool tls_referenced_p (rtx);
 
 typedef int (*rtx_function) (rtx *, void *);
 extern int for_each_rtx (rtx *, rtx_function, void *);
+extern int for_each_rtx_in_insn (rtx_insn **, rtx_function, void *);
 
 /* Callback for for_each_inc_dec, to process the autoinc operation OP
    within MEM that sets DEST to SRC + SRCOFF, or SRC if SRCOFF is

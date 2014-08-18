@@ -1,5 +1,10 @@
 2014-08-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (for_each_rtx_in_insn): New function.
+	* rtlanal.c (for_each_rtx_in_insn): Likewise.
+
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* coretypes.h (class rtx_insn): Add forward declaration.
 
 	* rtl.h: Include is-a.h.
