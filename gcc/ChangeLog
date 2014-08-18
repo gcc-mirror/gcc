@@ -1,3 +1,10 @@
+2014-08-18  Ajit Agarwal  <ajitkum@xilinx.com>
+
+	* config/microblaze/microblaze.c (microblaze_elf_asm_cdtor): New.
+	(microblaze_elf_asm_constructor,microblaze_elf_asm_destructor): New.
+	* config/microblaze/microblaze.h
+	(TARGET_ASM_CONSTRUCTOR,TARGET_ASM_DESTRUCTOR): New Macros.
+
 2014-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/62168
