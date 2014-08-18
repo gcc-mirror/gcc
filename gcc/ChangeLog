@@ -7,6 +7,38 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/i386.c: Rename ufloatv8siv8df_mask to ufloatv8siv8df2_mask.
+	* config/i386/i386.md
+	(define_code_iterator any_float): New.
+	(define_code_attr floatsuffix): New.
+	* config/i386/sse.md
+	(define_mode_iterator VF1_128_256VL): New.
+	(define_mode_iterator VF2_512_256VL): New.
+	(define_insn "float<si2dfmodelower><mode>2<mask_name>"): Remove unnecessary
+	TARGET check.
+	(define_insn "ufloatv8siv8df<mask_name>"): Delete.
+	(define_insn "<floatsuffix>float<sseintvecmodelower><mode>2<mask_name><round_name>"):
+	New.
+	(define_mode_attr qq2pssuff): New.
+	(define_mode_attr sselongvecmode): New.
+	(define_mode_attr sselongvecmodelower): New.
+	(define_mode_attr sseintvecmode3): New.
+	(define_insn "<floatsuffix>float<sselongvecmodelower><mode>2<mask_name><round_name>"):
+	New.
+	(define_insn "*<floatsuffix>floatv2div2sf2"): New.
+	(define_insn "<floatsuffix>floatv2div2sf2_mask"): New.
+	(define_insn "ufloat<si2dfmodelower><mode>2<mask_name>"): New.
+	(define_insn "ufloatv2siv2df2<mask_name>"): New.
+
+2014-08-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md
 	(define_mode_iterator VF2_AVX512VL): New.
 	(define_mode_attr sseintvecmode2): New.
