@@ -1,3 +1,7 @@
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+        * rtx-classes-status.txt: New file
+
 2014-08-18 Roman Gareev  <gareevroman@gmail.com>
 
 	* configure.ac: Eliminate ClooG installation dependency.
