@@ -1,3 +1,13 @@
+2014-08-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR ipa/61800
+	* cgraph.h (cgraph_node::create_indirect_edge): Add
+	compute_indirect_info param.
+	* cgraph.c (cgraph_node::create_indirect_edge): Compute
+	indirect_info only when it is required.
+	* cgraphclones.c (cgraph_clone_edge): Do not recompute
+	indirect_info fore cloned indirect edge.
+
 2014-08-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>

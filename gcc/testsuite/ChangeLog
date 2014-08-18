@@ -1,3 +1,7 @@
+2014-08-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* g++.dg/ipa/pr61800.C: New.
+
 2014-08-18  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/62089
