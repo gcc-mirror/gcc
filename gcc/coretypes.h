@@ -55,6 +55,13 @@ typedef const struct simple_bitmap_def *const_sbitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;
+
+/* Subclasses of rtx_def, using indentation to show the class
+   hierarchy.
+   Where possible, keep this list in the same order as in rtl.def.  */
+class rtx_def;
+  class rtx_insn;
+
 struct rtvec_def;
 typedef struct rtvec_def *rtvec;
 typedef const struct rtvec_def *const_rtvec;
