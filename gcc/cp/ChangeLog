@@ -1,3 +1,23 @@
+2014-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_expression): Add default arguments.
+	(cp_parser_primary_expression, cp_parser_postfix_expression,
+	cp_parser_array_notation, cp_parser_postfix_open_square_expression,
+	cp_parser_unary_expression, cp_parser_direct_new_declarator,
+	cp_parser_question_colon_clause, cp_parser_assignment_operator_opt,
+	cp_parser_lambda_body, cp_parser_expression_statement,
+	cp_parser_condition, cp_parser_c_for, cp_parser_range_for,
+	cp_parser_iteration_statement, cp_parser_jump_statement,
+	cp_parser_decltype_expr, cp_parser_noexcept_specification_opt,
+	cp_parser_asm_operand_list, cp_parser_objc_message_receiver,
+	cp_parser_objc_synchronized_statement, cp_parser_objc_throw_statement,
+	cp_parser_omp_var_list_no_open, cp_parser_omp_clause_num_threads,
+	cp_parser_omp_clause_num_teams, cp_parser_omp_clause_thread_limit,
+	cp_parser_omp_clause_linear, cp_parser_omp_clause_device,
+	cp_parser_omp_atomic, cp_parser_omp_for_loop_init,
+	cp_parser_omp_for_loop, cp_parser_omp_declare_reduction_exprs,
+	cp_parser_transaction_expression): Adjust.
+
 2014-08-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/61566
