@@ -256,7 +256,6 @@ get_symbol_constant_value (tree sym)
 static tree
 maybe_fold_reference (tree expr, bool is_lhs)
 {
-  tree *t = &expr;
   tree result;
 
   if ((TREE_CODE (expr) == VIEW_CONVERT_EXPR
@@ -276,70 +275,10 @@ maybe_fold_reference (tree expr, bool is_lhs)
 			     TREE_OPERAND (expr, 1),
 			     TREE_OPERAND (expr, 2));
 
-  while (handled_component_p (*t))
-    t = &TREE_OPERAND (*t, 0);
-
-  /* Canonicalize MEM_REFs invariant address operand.  Do this first
-     to avoid feeding non-canonical MEM_REFs elsewhere.  */
-  if (TREE_CODE (*t) == MEM_REF
-      && !is_gimple_mem_ref_addr (TREE_OPERAND (*t, 0)))
-    {
-      bool volatile_p = TREE_THIS_VOLATILE (*t);
-      tree tem = fold_binary (MEM_REF, TREE_TYPE (*t),
-			      TREE_OPERAND (*t, 0),
-			      TREE_OPERAND (*t, 1));
-      if (tem)
-	{
-	  TREE_THIS_VOLATILE (tem) = volatile_p;
-	  *t = tem;
-	  tem = maybe_fold_reference (expr, is_lhs);
-	  if (tem)
-	    return tem;
-	  return expr;
-	}
-    }
-
   if (!is_lhs
       && (result = fold_const_aggregate_ref (expr))
       && is_gimple_min_invariant (result))
     return result;
-
-  /* Fold back MEM_REFs to reference trees.  */
-  if (TREE_CODE (*t) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (*t, 0)) == ADDR_EXPR
-      && integer_zerop (TREE_OPERAND (*t, 1))
-      && (TREE_THIS_VOLATILE (*t)
-	  == TREE_THIS_VOLATILE (TREE_OPERAND (TREE_OPERAND (*t, 0), 0)))
-      && !TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (*t, 1)))
-      && (TYPE_MAIN_VARIANT (TREE_TYPE (*t))
-	  == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (TREE_OPERAND (*t, 1)))))
-      /* We have to look out here to not drop a required conversion
-	 from the rhs to the lhs if is_lhs, but we don't have the
-	 rhs here to verify that.  Thus require strict type
-	 compatibility.  */
-      && types_compatible_p (TREE_TYPE (*t),
-			     TREE_TYPE (TREE_OPERAND
-					(TREE_OPERAND (*t, 0), 0))))
-    {
-      tree tem;
-      *t = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
-      tem = maybe_fold_reference (expr, is_lhs);
-      if (tem)
-	return tem;
-      return expr;
-    }
-  else if (TREE_CODE (*t) == TARGET_MEM_REF)
-    {
-      tree tem = maybe_fold_tmr (*t);
-      if (tem)
-	{
-	  *t = tem;
-	  tem = maybe_fold_reference (expr, is_lhs);
-	  if (tem)
-	    return tem;
-	  return expr;
-	}
-    }
 
   return NULL_TREE;
 }
@@ -2678,6 +2617,88 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
   return changed;
 }
 
+/* Canonicalize MEM_REFs invariant address operand after propagation.  */
+
+static bool
+maybe_canonicalize_mem_ref_addr (tree *t)
+{
+  bool res = false;
+
+  if (TREE_CODE (*t) == ADDR_EXPR)
+    t = &TREE_OPERAND (*t, 0);
+
+  while (handled_component_p (*t))
+    t = &TREE_OPERAND (*t, 0);
+
+  /* Canonicalize MEM [&foo.bar, 0] which appears after propagating
+     of invariant addresses into a SSA name MEM_REF address.  */
+  if (TREE_CODE (*t) == MEM_REF
+      || TREE_CODE (*t) == TARGET_MEM_REF)
+    {
+      tree addr = TREE_OPERAND (*t, 0);
+      if (TREE_CODE (addr) == ADDR_EXPR
+	  && (TREE_CODE (TREE_OPERAND (addr, 0)) == MEM_REF
+	      || handled_component_p (TREE_OPERAND (addr, 0))))
+	{
+	  tree base;
+	  HOST_WIDE_INT coffset;
+	  base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
+						&coffset);
+	  if (!base)
+	    gcc_unreachable ();
+
+	  TREE_OPERAND (*t, 0) = build_fold_addr_expr (base);
+	  TREE_OPERAND (*t, 1) = int_const_binop (PLUS_EXPR,
+						  TREE_OPERAND (*t, 1),
+						  size_int (coffset));
+	  res = true;
+	}
+      gcc_checking_assert (TREE_CODE (TREE_OPERAND (*t, 0)) == DEBUG_EXPR_DECL
+			   || is_gimple_mem_ref_addr (TREE_OPERAND (*t, 0)));
+    }
+
+  /* Canonicalize back MEM_REFs to plain reference trees if the object
+     accessed is a decl that has the same access semantics as the MEM_REF.  */
+  if (TREE_CODE (*t) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (*t, 0)) == ADDR_EXPR
+      && integer_zerop (TREE_OPERAND (*t, 1)))
+    {
+      tree decl = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
+      tree alias_type = TREE_TYPE (TREE_OPERAND (*t, 1));
+      if (/* Same volatile qualification.  */
+	  TREE_THIS_VOLATILE (*t) == TREE_THIS_VOLATILE (decl)
+	  /* Same TBAA behavior with -fstrict-aliasing.  */
+	  && !TYPE_REF_CAN_ALIAS_ALL (alias_type)
+	  && (TYPE_MAIN_VARIANT (TREE_TYPE (decl))
+	      == TYPE_MAIN_VARIANT (TREE_TYPE (alias_type)))
+	  /* Same alignment.  */
+	  && TYPE_ALIGN (TREE_TYPE (decl)) == TYPE_ALIGN (TREE_TYPE (*t))
+	  /* We have to look out here to not drop a required conversion
+	     from the rhs to the lhs if *t appears on the lhs or vice-versa
+	     if it appears on the rhs.  Thus require strict type
+	     compatibility.  */
+	  && types_compatible_p (TREE_TYPE (*t), TREE_TYPE (decl)))
+	{
+	  *t = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
+	  res = true;
+	}
+    }
+
+  /* Canonicalize TARGET_MEM_REF in particular with respect to
+     the indexes becoming constant.  */
+  else if (TREE_CODE (*t) == TARGET_MEM_REF)
+    {
+      tree tem = maybe_fold_tmr (*t);
+      if (tem)
+	{
+	  *t = tem;
+	  res = true;
+	}
+    }
+
+  return res;
+}
+
 /* Worker for both fold_stmt and fold_stmt_inplace.  The INPLACE argument
    distinguishes both cases.  */
 
@@ -2687,6 +2708,78 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
   bool changed = false;
   gimple stmt = gsi_stmt (*gsi);
   unsigned i;
+
+  /* First do required canonicalization of [TARGET_]MEM_REF addresses
+     after propagation.
+     ???  This shouldn't be done in generic folding but in the
+     propagation helpers which also know whether an address was
+     propagated.  */
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_ASSIGN:
+      if (gimple_assign_rhs_class (stmt) == GIMPLE_SINGLE_RHS)
+	{
+	  tree *rhs = gimple_assign_rhs1_ptr (stmt);
+	  if ((REFERENCE_CLASS_P (*rhs)
+	       || TREE_CODE (*rhs) == ADDR_EXPR)
+	      && maybe_canonicalize_mem_ref_addr (rhs))
+	    changed = true;
+	  tree *lhs = gimple_assign_lhs_ptr (stmt);
+	  if (REFERENCE_CLASS_P (*lhs)
+	      && maybe_canonicalize_mem_ref_addr (lhs))
+	    changed = true;
+	}
+      break;
+    case GIMPLE_CALL:
+      {
+	for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	  {
+	    tree *arg = gimple_call_arg_ptr (stmt, i);
+	    if (REFERENCE_CLASS_P (*arg)
+		&& maybe_canonicalize_mem_ref_addr (arg))
+	      changed = true;
+	  }
+	tree *lhs = gimple_call_lhs_ptr (stmt);
+	if (*lhs
+	    && REFERENCE_CLASS_P (*lhs)
+	    && maybe_canonicalize_mem_ref_addr (lhs))
+	  changed = true;
+	break;
+      }
+    case GIMPLE_ASM:
+      {
+	for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_output_op (stmt, i);
+	    tree op = TREE_VALUE (link);
+	    if (REFERENCE_CLASS_P (op)
+		&& maybe_canonicalize_mem_ref_addr (&TREE_VALUE (link)))
+	      changed = true;
+	  }
+	for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_input_op (stmt, i);
+	    tree op = TREE_VALUE (link);
+	    if ((REFERENCE_CLASS_P (op)
+		 || TREE_CODE (op) == ADDR_EXPR)
+		&& maybe_canonicalize_mem_ref_addr (&TREE_VALUE (link)))
+	      changed = true;
+	  }
+      }
+      break;
+    case GIMPLE_DEBUG:
+      if (gimple_debug_bind_p (stmt))
+	{
+	  tree *val = gimple_debug_bind_get_value_ptr (stmt);
+	  if (*val
+	      && (REFERENCE_CLASS_P (*val)
+		  || TREE_CODE (*val) == ADDR_EXPR)
+	      && maybe_canonicalize_mem_ref_addr (val))
+	    changed = true;
+	}
+      break;
+    default:;
+    }
 
   /* Fold the main computation performed by the statement.  */
   switch (gimple_code (stmt))
