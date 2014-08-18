@@ -1,3 +1,29 @@
+2014-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/62011
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI):
+	New tune flag.
+	* config/i386/i386.h (TARGET_AVOID_FALSE_DEP_FOR_BMI): New define.
+	* config/i386/i386.md (unspec) <UNSPEC_INSN_FALSE_DEP>: New unspec.
+	(ffs<mode>2): Do not expand with tzcnt for
+	TARGET_AVOID_FALSE_DEP_FOR_BMI.
+	(ffssi2_no_cmove): Ditto.
+	(*tzcnt<mode>_1): Disable for TARGET_AVOID_FALSE_DEP_FOR_BMI.
+	(ctz<mode>2): New expander.
+	(*ctz<mode>2_falsedep_1): New insn_and_split pattern.
+	(*ctz<mode>2_falsedep): New insn.
+	(*ctz<mode>2): Rename from ctz<mode>2.
+	(clz<mode>2_lzcnt): New expander.
+	(*clz<mode>2_lzcnt_falsedep_1): New insn_and_split pattern.
+	(*clz<mode>2_lzcnt_falsedep): New insn.
+	(*clz<mode>2): Rename from ctz<mode>2.
+	(popcount<mode>2): New expander.
+	(*popcount<mode>2_falsedep_1): New insn_and_split pattern.
+	(*popcount<mode>2_falsedep): New insn.
+	(*popcount<mode>2): Rename from ctz<mode>2.
+	(*popcount<mode>2_cmp): Remove.
+	(*popcountsi2_cmp_zext): Ditto.
+
 2014-08-18  Ajit Agarwal  <ajitkum@xilinx.com>
 
 	* config/microblaze/microblaze.c (microblaze_elf_asm_cdtor): New.
