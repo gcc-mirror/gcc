@@ -1,3 +1,8 @@
+2014-08-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple-fold.c (fold_gimple_assign): Do not intorudce referneces
+	to BUILT_IN_UNREACHABLE.
+
 2014-08-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/62011
