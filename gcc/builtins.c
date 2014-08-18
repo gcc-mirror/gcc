@@ -190,7 +190,6 @@ static tree fold_builtin_strrchr (location_t, tree, tree, tree);
 static tree fold_builtin_strncat (location_t, tree, tree, tree);
 static tree fold_builtin_strspn (location_t, tree, tree);
 static tree fold_builtin_strcspn (location_t, tree, tree);
-static tree fold_builtin_snprintf (location_t, tree, tree, tree, tree, int);
 
 static rtx expand_builtin_object_size (tree);
 static rtx expand_builtin_memory_chk (tree, rtx, enum machine_mode,
@@ -10309,9 +10308,6 @@ fold_builtin_3 (location_t loc, tree fndecl,
     case BUILT_IN_MEMCMP:
       return fold_builtin_memcmp (loc, arg0, arg1, arg2);;
 
-    case BUILT_IN_SNPRINTF:
-      return fold_builtin_snprintf (loc, arg0, arg1, arg2, NULL_TREE, ignore);
-
     case BUILT_IN_STRCAT_CHK:
       return fold_builtin_strcat_chk (loc, fndecl, arg0, arg1, arg2);
 
@@ -10363,9 +10359,6 @@ fold_builtin_4 (location_t loc, tree fndecl,
     {
     case BUILT_IN_STRNCAT_CHK:
       return fold_builtin_strncat_chk (loc, fndecl, arg0, arg1, arg2, arg3);
-
-    case BUILT_IN_SNPRINTF:
-      return fold_builtin_snprintf (loc, arg0, arg1, arg2, arg3, ignore);
 
     case BUILT_IN_FPRINTF_CHK:
     case BUILT_IN_VFPRINTF_CHK:
@@ -11229,126 +11222,6 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
   return false;
 }
 
-
-/* Simplify a call to the snprintf builtin with arguments DEST, DESTSIZE,
-   FMT, and ORIG.  ORIG may be null if this is a 3-argument call.  We don't
-   attempt to simplify calls with more than 4 arguments.
-
-   Return NULL_TREE if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.  If IGNORED is true, it means that
-   the caller does not use the returned value of the function.  */
-
-static tree
-fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
-		       tree orig, int ignored)
-{
-  tree call, retval;
-  const char *fmt_str = NULL;
-  unsigned HOST_WIDE_INT destlen;
-
-  /* Verify the required arguments in the original call.  We deal with two
-     types of snprintf() calls: 'snprintf (str, cst, fmt)' and
-     'snprintf (dest, cst, "%s", orig)'.  */
-  if (!validate_arg (dest, POINTER_TYPE)
-      || !validate_arg (destsize, INTEGER_TYPE)
-      || !validate_arg (fmt, POINTER_TYPE))
-    return NULL_TREE;
-  if (orig && !validate_arg (orig, POINTER_TYPE))
-    return NULL_TREE;
-
-  if (!tree_fits_uhwi_p (destsize))
-    return NULL_TREE;
-
-  /* Check whether the format is a literal string constant.  */
-  fmt_str = c_getstr (fmt);
-  if (fmt_str == NULL)
-    return NULL_TREE;
-
-  call = NULL_TREE;
-  retval = NULL_TREE;
-
-  if (!init_target_chars ())
-    return NULL_TREE;
-
-  destlen = tree_to_uhwi (destsize);
-
-  /* If the format doesn't contain % args or %%, use strcpy.  */
-  if (strchr (fmt_str, target_percent) == NULL)
-    {
-      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-      size_t len = strlen (fmt_str);
-
-      /* Don't optimize snprintf (buf, 4, "abc", ptr++).  */
-      if (orig)
-	return NULL_TREE;
-
-      /* We could expand this as
-	 memcpy (str, fmt, cst - 1); str[cst - 1] = '\0';
-	 or to
-	 memcpy (str, fmt_with_nul_at_cstm1, cst);
-	 but in the former case that might increase code size
-	 and in the latter case grow .rodata section too much.
-	 So punt for now.  */
-      if (len >= destlen)
-	return NULL_TREE;
-
-      if (!fn)
-	return NULL_TREE;
-
-      /* Convert snprintf (str, cst, fmt) into strcpy (str, fmt) when
-	 'format' is known to contain no % formats and
-	 strlen (fmt) < cst.  */
-      call = build_call_expr_loc (loc, fn, 2, dest, fmt);
-
-      if (!ignored)
-	retval = build_int_cst (integer_type_node, strlen (fmt_str));
-    }
-
-  /* If the format is "%s", use strcpy if the result isn't used.  */
-  else if (fmt_str && strcmp (fmt_str, target_percent_s) == 0)
-    {
-      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-      unsigned HOST_WIDE_INT origlen;
-
-      /* Don't crash on snprintf (str1, cst, "%s").  */
-      if (!orig)
-	return NULL_TREE;
-
-      retval = c_strlen (orig, 1);
-      if (!retval || !tree_fits_uhwi_p (retval))
-	return NULL_TREE;
-
-      origlen = tree_to_uhwi (retval);
-      /* We could expand this as
-	 memcpy (str1, str2, cst - 1); str1[cst - 1] = '\0';
-	 or to
-	 memcpy (str1, str2_with_nul_at_cstm1, cst);
-	 but in the former case that might increase code size
-	 and in the latter case grow .rodata section too much.
-	 So punt for now.  */
-      if (origlen >= destlen)
-	return NULL_TREE;
-
-      /* Convert snprintf (str1, cst, "%s", str2) into
-	 strcpy (str1, str2) if strlen (str2) < cst.  */
-      if (!fn)
-	return NULL_TREE;
-
-      call = build_call_expr_loc (loc, fn, 2, dest, orig);
-
-      if (ignored)
-	retval = NULL_TREE;
-    }
-
-  if (call && retval)
-    {
-      tree fn = builtin_decl_explicit (BUILT_IN_SNPRINTF);
-      retval = fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fn)), retval);
-      return build2 (COMPOUND_EXPR, TREE_TYPE (retval), call, retval);
-    }
-  else
-    return call;
-}
 
 /* Expand a call EXP to __builtin_object_size.  */
 

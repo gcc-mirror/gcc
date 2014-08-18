@@ -2091,7 +2091,7 @@ gimple_fold_builtin_sprintf_chk (gimple_stmt_iterator *gsi,
    the caller does not use the returned value of the function.  */
 
 static bool
-gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
+gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi, tree orig_len)
 {
   gimple stmt = gsi_stmt (*gsi);
   tree dest = gimple_call_arg (stmt, 0);
@@ -2169,11 +2169,11 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
       if (!orig)
 	return false;
 
-      tree len = NULL_TREE;
-      if (gimple_call_lhs (stmt))
+      if (gimple_call_lhs (stmt)
+	  && !orig_len)
 	{
-	  len = c_strlen (orig, 1);
-	  if (!len)
+	  orig_len = c_strlen (orig, 1);
+	  if (!orig_len)
 	    return false;
 	}
 
@@ -2183,9 +2183,10 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
       gimple_seq_add_stmt_without_update (&stmts, repl);
       if (gimple_call_lhs (stmt))
 	{
-	  if (!useless_type_conversion_p (integer_type_node, TREE_TYPE (len)))
-	    len = fold_convert (integer_type_node, len);
-	  repl = gimple_build_assign (gimple_call_lhs (stmt), len);
+	  if (!useless_type_conversion_p (integer_type_node,
+					  TREE_TYPE (orig_len)))
+	    orig_len = fold_convert (integer_type_node, orig_len);
+	  repl = gimple_build_assign (gimple_call_lhs (stmt), orig_len);
 	  gimple_seq_add_stmt_without_update (&stmts, repl);
 	  gsi_replace_with_seq_vops (gsi, stmts);
 	  /* gsi now points at the assignment to the lhs, get a
@@ -2206,7 +2207,147 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Simplify a call to the snprintf builtin with arguments DEST, DESTSIZE,
+   FMT, and ORIG.  ORIG may be null if this is a 3-argument call.  We don't
+   attempt to simplify calls with more than 4 arguments.
 
+   Return NULL_TREE if no simplification was possible, otherwise return the
+   simplified form of the call as a tree.  If IGNORED is true, it means that
+   the caller does not use the returned value of the function.  */
+
+static bool
+gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi, tree orig_len)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree dest = gimple_call_arg (stmt, 0);
+  tree destsize = gimple_call_arg (stmt, 1);
+  tree fmt = gimple_call_arg (stmt, 2);
+  tree orig = NULL_TREE;
+  const char *fmt_str = NULL;
+
+  if (gimple_call_num_args (stmt) > 4)
+    return false;
+
+  if (gimple_call_num_args (stmt) == 4)
+    orig = gimple_call_arg (stmt, 3);
+
+  if (!tree_fits_uhwi_p (destsize))
+    return false;
+  unsigned HOST_WIDE_INT destlen = tree_to_uhwi (destsize);
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return false;
+
+  if (!init_target_chars ())
+    return false;
+
+  /* If the format doesn't contain % args or %%, use strcpy.  */
+  if (strchr (fmt_str, target_percent) == NULL)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+      if (!fn)
+	return false;
+
+      /* Don't optimize snprintf (buf, 4, "abc", ptr++).  */
+      if (orig)
+	return false;
+
+      /* We could expand this as
+	 memcpy (str, fmt, cst - 1); str[cst - 1] = '\0';
+	 or to
+	 memcpy (str, fmt_with_nul_at_cstm1, cst);
+	 but in the former case that might increase code size
+	 and in the latter case grow .rodata section too much.
+	 So punt for now.  */
+      size_t len = strlen (fmt_str);
+      if (len >= destlen)
+	return false;
+
+      gimple_seq stmts = NULL;
+      gimple repl = gimple_build_call (fn, 2, dest, fmt);
+      gimple_seq_add_stmt_without_update (&stmts, repl);
+      if (gimple_call_lhs (stmt))
+	{
+	  repl = gimple_build_assign (gimple_call_lhs (stmt),
+				      build_int_cst (integer_type_node, len));
+	  gimple_seq_add_stmt_without_update (&stmts, repl);
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  /* gsi now points at the assignment to the lhs, get a
+	     stmt iterator to the memcpy call.
+	     ???  We can't use gsi_for_stmt as that doesn't work when the
+	     CFG isn't built yet.  */
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_prev (&gsi2);
+	  fold_stmt (&gsi2);
+	}
+      else
+	{
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  fold_stmt (gsi);
+	}
+      return true;
+    }
+
+  /* If the format is "%s", use strcpy if the result isn't used.  */
+  else if (fmt_str && strcmp (fmt_str, target_percent_s) == 0)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+      if (!fn)
+	return false;
+
+      /* Don't crash on snprintf (str1, cst, "%s").  */
+      if (!orig)
+	return false;
+
+      if (!orig_len)
+	{
+	  orig_len = c_strlen (orig, 1);
+	  if (!orig_len)
+	    return false;
+	}
+
+      /* We could expand this as
+	 memcpy (str1, str2, cst - 1); str1[cst - 1] = '\0';
+	 or to
+	 memcpy (str1, str2_with_nul_at_cstm1, cst);
+	 but in the former case that might increase code size
+	 and in the latter case grow .rodata section too much.
+	 So punt for now.  */
+      if (compare_tree_int (orig_len, destlen) >= 0)
+	return false;
+
+      /* Convert snprintf (str1, cst, "%s", str2) into
+	 strcpy (str1, str2) if strlen (str2) < cst.  */
+      gimple_seq stmts = NULL;
+      gimple repl = gimple_build_call (fn, 2, dest, orig);
+      gimple_seq_add_stmt_without_update (&stmts, repl);
+      if (gimple_call_lhs (stmt))
+	{
+	  if (!useless_type_conversion_p (integer_type_node,
+					  TREE_TYPE (orig_len)))
+	    orig_len = fold_convert (integer_type_node, orig_len);
+	  repl = gimple_build_assign (gimple_call_lhs (stmt), orig_len);
+	  gimple_seq_add_stmt_without_update (&stmts, repl);
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  /* gsi now points at the assignment to the lhs, get a
+	     stmt iterator to the memcpy call.
+	     ???  We can't use gsi_for_stmt as that doesn't work when the
+	     CFG isn't built yet.  */
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gsi_prev (&gsi2);
+	  fold_stmt (&gsi2);
+	}
+      else
+	{
+	  gsi_replace_with_seq_vops (gsi, stmts);
+	  fold_stmt (gsi);
+	}
+      return true;
+    }
+  return false;
+}
 
 
 /* Fold a call to __builtin_strlen with known length LEN.  */
@@ -2232,7 +2373,7 @@ static bool
 gimple_fold_builtin_with_strlen (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
-  tree val[3];
+  tree val[4];
   tree a;
   int arg_idx, type;
   bitmap visited;
@@ -2276,23 +2417,32 @@ gimple_fold_builtin_with_strlen (gimple_stmt_iterator *gsi)
       arg_idx = 1;
       type = 2;
       break;
+    case BUILT_IN_SPRINTF:
+      arg_idx = 2;
+      type = 0;
+      break;
+    case BUILT_IN_SNPRINTF:
+      arg_idx = 3;
+      type = 0;
+      break;
     default:
       return false;
     }
 
   int nargs = gimple_call_num_args (stmt);
-  if (arg_idx >= nargs)
-    return false;
 
   /* Try to use the dataflow information gathered by the CCP process.  */
   visited = BITMAP_ALLOC (NULL);
   bitmap_clear (visited);
 
   memset (val, 0, sizeof (val));
-  a = gimple_call_arg (stmt, arg_idx);
-  if (!get_maxval_strlen (a, &val[arg_idx], visited, type)
-      || !is_gimple_val (val[arg_idx]))
-    val[arg_idx] = NULL_TREE;
+  if (arg_idx < nargs)
+    {
+      a = gimple_call_arg (stmt, arg_idx);
+      if (!get_maxval_strlen (a, &val[arg_idx], visited, type)
+	  || !is_gimple_val (val[arg_idx]))
+	val[arg_idx] = NULL_TREE;
+    }
 
   BITMAP_FREE (visited);
 
@@ -2364,7 +2514,10 @@ gimple_fold_builtin_with_strlen (gimple_stmt_iterator *gsi)
     case BUILT_IN_VSNPRINTF_CHK:
       return gimple_fold_builtin_snprintf_chk (gsi, val[1],
 					       DECL_FUNCTION_CODE (callee));
-
+    case BUILT_IN_SNPRINTF:
+      return gimple_fold_builtin_snprintf (gsi, val[3]);
+    case BUILT_IN_SPRINTF:
+      return gimple_fold_builtin_sprintf (gsi, val[2]);
     default:
       gcc_unreachable ();
     }
@@ -2414,8 +2567,6 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
       return gimple_fold_builtin_sprintf_chk (gsi, DECL_FUNCTION_CODE (callee));
-    case BUILT_IN_SPRINTF:
-      return gimple_fold_builtin_sprintf (gsi);
     default:;
     }
 

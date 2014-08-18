@@ -1,3 +1,8 @@
+2014-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62090
+	* gcc.dg/pr62090-2.c: New testcase.
+
 2014-08-18  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* g++.dg/ipa/pr61800.C: New.
