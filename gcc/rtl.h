@@ -421,6 +421,99 @@ class GTY(()) rtx_insn : public rtx_def
   */
 };
 
+/* Subclasses of rtx_insn.  */
+
+class GTY(()) rtx_debug_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       DEBUG_INSN_P (X) aka (GET_CODE (X) == DEBUG_INSN)
+     i.e. an annotation for tracking variable assignments.
+
+     This is an instance of:
+       DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "uuBeiie", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_nonjump_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       NONJUMP_INSN_P (X) aka (GET_CODE (X) == INSN)
+     i.e an instruction that cannot jump.
+
+     This is an instance of:
+       DEF_RTL_EXPR(INSN, "insn", "uuBeiie", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_jump_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       JUMP_P (X) aka (GET_CODE (X) == JUMP_INSN)
+     i.e. an instruction that can possibly jump.
+
+     This is an instance of:
+       DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "uuBeiie0", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_call_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       CALL_P (X) aka (GET_CODE (X) == CALL_INSN)
+     i.e. an instruction that can possibly call a subroutine
+     but which will not change which instruction comes next
+     in the current function.
+
+     This is an instance of:
+       DEF_RTL_EXPR(CALL_INSN, "call_insn", "uuBeiiee", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_jump_table_data : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       JUMP_TABLE_DATA_P (X) aka (GET_CODE (INSN) == JUMP_TABLE_DATA)
+     i.e. a data for a jump table, considered an instruction for
+     historical reasons.
+
+     This is an instance of:
+       DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "uuBe0000", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_barrier : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       BARRIER_P (X) aka (GET_CODE (X) == BARRIER)
+     i.e. a marker that indicates that control will not flow through.
+
+     This is an instance of:
+       DEF_RTL_EXPR(BARRIER, "barrier", "uu00000", RTX_EXTRA)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_code_label : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       LABEL_P (X) aka (GET_CODE (X) == CODE_LABEL)
+     i.e. a label in the assembler.
+
+     This is an instance of:
+       DEF_RTL_EXPR(CODE_LABEL, "code_label", "uuB00is", RTX_EXTRA)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_note : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       NOTE_P(X) aka (GET_CODE (X) == NOTE)
+     i.e. a note about the corresponding source code.
+
+     This is an instance of:
+       DEF_RTL_EXPR(NOTE, "note", "uuB0ni", RTX_EXTRA)
+     from rtl.def.  */
+};
+
 /* The size in bytes of an rtx header (code, mode and flags).  */
 #define RTX_HDR_SIZE offsetof (struct rtx_def, u)
 
@@ -604,6 +697,94 @@ is_a_helper <const rtx_insn *>::test (const_rtx rt)
 	  || JUMP_TABLE_DATA_P (rt)
 	  || BARRIER_P (rt)
 	  || LABEL_P (rt));
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_debug_insn *>::test (rtx rt)
+{
+  return DEBUG_INSN_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_nonjump_insn *>::test (rtx rt)
+{
+  return NONJUMP_INSN_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_jump_insn *>::test (rtx rt)
+{
+  return JUMP_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_call_insn *>::test (rtx rt)
+{
+  return CALL_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_jump_table_data *>::test (rtx rt)
+{
+  return JUMP_TABLE_DATA_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_jump_table_data *>::test (rtx_insn *insn)
+{
+  return JUMP_TABLE_DATA_P (insn);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_barrier *>::test (rtx rt)
+{
+  return BARRIER_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_code_label *>::test (rtx rt)
+{
+  return LABEL_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_code_label *>::test (rtx_insn *insn)
+{
+  return LABEL_P (insn);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_note *>::test (rtx rt)
+{
+  return NOTE_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_note *>::test (rtx_insn *insn)
+{
+  return NOTE_P (insn);
 }
 
 /* Predicate yielding nonzero iff X is a return or simple_return.  */
