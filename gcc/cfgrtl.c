@@ -5091,4 +5091,64 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_account_profile_record,
 };
 
+/* BB_HEAD as an rvalue. */
+
+rtx_insn *BB_HEAD (const_basic_block bb)
+{
+  rtx insn = bb->il.x.head_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_HEAD for use as an lvalue. */
+
+rtx& SET_BB_HEAD (basic_block bb)
+{
+  return bb->il.x.head_;
+}
+
+/* BB_END as an rvalue. */
+
+rtx_insn *BB_END (const_basic_block bb)
+{
+  rtx insn = bb->il.x.rtl->end_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_END as an lvalue. */
+
+rtx& SET_BB_END (basic_block bb)
+{
+  return bb->il.x.rtl->end_;
+}
+
+/* BB_HEADER as an rvalue. */
+
+rtx_insn *BB_HEADER (const_basic_block bb)
+{
+  rtx insn = bb->il.x.rtl->header_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_HEADER as an lvalue. */
+
+rtx& SET_BB_HEADER (basic_block bb)
+{
+  return bb->il.x.rtl->header_;
+}
+
+/* BB_FOOTER as an rvalue. */
+
+rtx_insn *BB_FOOTER (const_basic_block bb)
+{
+  rtx insn = bb->il.x.rtl->footer_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_FOOTER as an lvalue. */
+
+rtx& SET_BB_FOOTER (basic_block bb)
+{
+  return bb->il.x.rtl->footer_;
+}
+
 #include "gt-cfgrtl.h"
