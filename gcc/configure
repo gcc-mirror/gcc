@@ -21528,6 +21528,7 @@ if test "${enable_ld+set}" = set; then :
 fi
 
 
+install_gold_as_default=no
 # Check whether --enable-gold was given.
 if test "${enable_gold+set}" = set; then :
   enableval=$enable_gold; case "${enableval}" in
@@ -21540,14 +21541,11 @@ if test "${enable_gold+set}" = set; then :
    fi
    ;;
  no)
-   install_gold_as_default=no
    ;;
  *)
    as_fn_error "invalid --enable-gold argument" "$LINENO" 5
    ;;
  esac
-else
-  install_gold_as_default=no
 fi
 
 

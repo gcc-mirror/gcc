@@ -1,3 +1,9 @@
+2014-08-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/62168
+	* configure.ac: Set install_gold_as_default to no first.
+	 * configure: Regenerated.
+
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* sel-sched-ir.h (BB_NOTE_LIST): struct sel_region_bb_info_def's
