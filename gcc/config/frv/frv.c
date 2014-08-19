@@ -1465,12 +1465,12 @@ frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       if (NEXT_INSN (last_call) == insn)
 	continue;
 
-      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
-      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-      PREV_INSN (insn) = last_call;
-      NEXT_INSN (insn) = NEXT_INSN (last_call);
-      PREV_INSN (NEXT_INSN (insn)) = insn;
-      NEXT_INSN (PREV_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+      SET_PREV_INSN (insn) = last_call;
+      SET_NEXT_INSN (insn) = NEXT_INSN (last_call);
+      SET_PREV_INSN (NEXT_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = insn;
       last_call = insn;
     }
 }
@@ -8162,8 +8162,8 @@ static void
 frv_register_nop (rtx nop)
 {
   nop = make_insn_raw (nop);
-  NEXT_INSN (nop) = 0;
-  PREV_INSN (nop) = 0;
+  SET_NEXT_INSN (nop) = 0;
+  SET_PREV_INSN (nop) = 0;
   frv_nops[frv_num_nops++] = nop;
 }
 

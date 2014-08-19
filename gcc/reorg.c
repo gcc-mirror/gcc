@@ -516,7 +516,7 @@ emit_delay_sequence (rtx insn, rtx list, int length)
      the SEQUENCE.   Remember where we want to emit SEQUENCE in AFTER.  */
   rtx after = PREV_INSN (insn);
   remove_insn (insn);
-  NEXT_INSN (insn) = PREV_INSN (insn) = NULL;
+  SET_NEXT_INSN (insn) = SET_PREV_INSN (insn) = NULL;
 
   /* Build our SEQUENCE and rebuild the insn chain.  */
   int i = 1;
@@ -532,7 +532,7 @@ emit_delay_sequence (rtx insn, rtx list, int length)
 
       /* Unlink insn from its original place, and re-emit it into
 	 the sequence.  */
-      NEXT_INSN (tem) = PREV_INSN (tem) = NULL;
+      SET_NEXT_INSN (tem) = SET_PREV_INSN (tem) = NULL;
       XVECEXP (seq, 0, i) = emit_insn (tem);
 
       /* SPARC assembler, for instance, emit warning when debug info is output
@@ -2015,9 +2015,9 @@ fill_simple_delay_slots (int non_jumps_p)
 	    rtx next = NEXT_INSN (trial);
 	    rtx prev = PREV_INSN (trial);
 	    if (prev)
-	      NEXT_INSN (prev) = next;
+	      SET_NEXT_INSN (prev) = next;
 	    if (next)
-	      PREV_INSN (next) = prev;
+	      SET_PREV_INSN (next) = prev;
 	  }
 	}
 

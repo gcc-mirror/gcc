@@ -9489,10 +9489,10 @@ ia64_init_dfa_pre_cycle_insn (void)
       prev_cycle_state = xmalloc (dfa_state_size);
     }
   dfa_pre_cycle_insn = make_insn_raw (gen_pre_cycle ());
-  PREV_INSN (dfa_pre_cycle_insn) = NEXT_INSN (dfa_pre_cycle_insn) = NULL_RTX;
+  SET_PREV_INSN (dfa_pre_cycle_insn) = SET_NEXT_INSN (dfa_pre_cycle_insn) = NULL_RTX;
   recog_memoized (dfa_pre_cycle_insn);
   dfa_stop_insn = make_insn_raw (gen_insn_group_barrier (GEN_INT (3)));
-  PREV_INSN (dfa_stop_insn) = NEXT_INSN (dfa_stop_insn) = NULL_RTX;
+  SET_PREV_INSN (dfa_stop_insn) = SET_NEXT_INSN (dfa_stop_insn) = NULL_RTX;
   recog_memoized (dfa_stop_insn);
 }
 
@@ -9679,7 +9679,7 @@ ia64_reorg (void)
 
       initiate_bundle_states ();
       ia64_nop = make_insn_raw (gen_nop ());
-      PREV_INSN (ia64_nop) = NEXT_INSN (ia64_nop) = NULL_RTX;
+      SET_PREV_INSN (ia64_nop) = SET_NEXT_INSN (ia64_nop) = NULL_RTX;
       recog_memoized (ia64_nop);
       clocks_length = get_max_uid () + 1;
       stops_p = XCNEWVEC (char, clocks_length);

@@ -1414,10 +1414,10 @@ delete_for_peephole (rtx from, rtx to)
 	  /* We don't do this all at once, because we
 	     must preserve all NOTEs.  */
 	  if (prev)
-	    NEXT_INSN (prev) = next;
+	    SET_NEXT_INSN (prev) = next;
 
 	  if (next)
-	    PREV_INSN (next) = prev;
+	    SET_PREV_INSN (next) = prev;
 	}
 
       if (insn == to)

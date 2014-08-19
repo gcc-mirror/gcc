@@ -15,3 +15,4 @@ Phase 6: use extra rtx_def subclasses:             TODO
 TODO: "Scaffolding" to be removed
 =================================
 * SET_BB_HEAD, SET_BB_END, SET_BB_HEADER, SET_BB_FOOTER
+* SET_NEXT_INSN, SET_PREV_INSN

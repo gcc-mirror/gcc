@@ -3959,12 +3959,12 @@ emit_libcall_block_1 (rtx insns, rtx target, rtx result, rtx equiv,
 	  if (! data.must_stay)
 	    {
 	      if (PREV_INSN (insn))
-		NEXT_INSN (PREV_INSN (insn)) = next;
+		SET_NEXT_INSN (PREV_INSN (insn)) = next;
 	      else
 		insns = next;
 
 	      if (next)
-		PREV_INSN (next) = PREV_INSN (insn);
+		SET_PREV_INSN (next) = PREV_INSN (insn);
 
 	      add_insn (insn);
 	    }

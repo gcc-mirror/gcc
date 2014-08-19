@@ -3874,29 +3874,29 @@ make_note_raw (enum insn_note subtype)
 static inline void
 link_insn_into_chain (rtx insn, rtx prev, rtx next)
 {
-  PREV_INSN (insn) = prev;
-  NEXT_INSN (insn) = next;
+  SET_PREV_INSN (insn) = prev;
+  SET_NEXT_INSN (insn) = next;
   if (prev != NULL)
     {
-      NEXT_INSN (prev) = insn;
+      SET_NEXT_INSN (prev) = insn;
       if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
 	  rtx sequence = PATTERN (prev);
-	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
+	  SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
 	}
     }
   if (next != NULL)
     {
-      PREV_INSN (next) = insn;
+      SET_PREV_INSN (next) = insn;
       if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
+	SET_PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
     }
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
       rtx sequence = PATTERN (insn);
-      PREV_INSN (XVECEXP (sequence, 0, 0)) = prev;
-      NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+      SET_PREV_INSN (XVECEXP (sequence, 0, 0)) = prev;
+      SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
     }
 }
 
@@ -4068,17 +4068,17 @@ remove_insn (rtx insn)
 
   if (prev)
     {
-      NEXT_INSN (prev) = next;
+      SET_NEXT_INSN (prev) = next;
       if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
 	  rtx sequence = PATTERN (prev);
-	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+	  SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
 	}
     }
   else if (get_insns () == insn)
     {
       if (next)
-        PREV_INSN (next) = NULL;
+        SET_PREV_INSN (next) = NULL;
       set_first_insn (next);
     }
   else
@@ -4097,9 +4097,9 @@ remove_insn (rtx insn)
 
   if (next)
     {
-      PREV_INSN (next) = prev;
+      SET_PREV_INSN (next) = prev;
       if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
+	SET_PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
     }
   else if (get_last_insn () == insn)
     set_last_insn (prev);
@@ -4165,7 +4165,7 @@ delete_insns_since (rtx from)
   if (from == 0)
     set_first_insn (0);
   else
-    NEXT_INSN (from) = 0;
+    SET_NEXT_INSN (from) = 0;
   set_last_insn (from);
 }
 
@@ -4191,9 +4191,9 @@ reorder_insns_nobb (rtx from, rtx to, rtx after)
 
   /* Splice this bunch out of where it is now.  */
   if (PREV_INSN (from))
-    NEXT_INSN (PREV_INSN (from)) = NEXT_INSN (to);
+    SET_NEXT_INSN (PREV_INSN (from)) = NEXT_INSN (to);
   if (NEXT_INSN (to))
-    PREV_INSN (NEXT_INSN (to)) = PREV_INSN (from);
+    SET_PREV_INSN (NEXT_INSN (to)) = PREV_INSN (from);
   if (get_last_insn () == to)
     set_last_insn (PREV_INSN (from));
   if (get_insns () == from)
@@ -4201,11 +4201,11 @@ reorder_insns_nobb (rtx from, rtx to, rtx after)
 
   /* Make the new neighbors point to it and it to them.  */
   if (NEXT_INSN (after))
-    PREV_INSN (NEXT_INSN (after)) = to;
+    SET_PREV_INSN (NEXT_INSN (after)) = to;
 
-  NEXT_INSN (to) = NEXT_INSN (after);
-  PREV_INSN (from) = after;
-  NEXT_INSN (after) = from;
+  SET_NEXT_INSN (to) = NEXT_INSN (after);
+  SET_PREV_INSN (from) = after;
+  SET_NEXT_INSN (after) = from;
   if (after == get_last_insn ())
     set_last_insn (to);
 }
@@ -4410,11 +4410,11 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
 
   after_after = NEXT_INSN (after);
 
-  NEXT_INSN (after) = first;
-  PREV_INSN (first) = after;
-  NEXT_INSN (last) = after_after;
+  SET_NEXT_INSN (after) = first;
+  SET_PREV_INSN (first) = after;
+  SET_NEXT_INSN (last) = after_after;
   if (after_after)
-    PREV_INSN (after_after) = last;
+    SET_PREV_INSN (after_after) = last;
 
   if (after == get_last_insn ())
     set_last_insn (last);

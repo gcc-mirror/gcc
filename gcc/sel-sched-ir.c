@@ -1423,11 +1423,11 @@ sel_move_insn (expr_t expr, int seqno, insn_t after)
 
   /* Assert that in move_op we disconnected this insn properly.  */
   gcc_assert (EXPR_VINSN (INSN_EXPR (insn)) != NULL);
-  PREV_INSN (insn) = after;
-  NEXT_INSN (insn) = next;
+  SET_PREV_INSN (insn) = after;
+  SET_NEXT_INSN (insn) = next;
 
-  NEXT_INSN (after) = insn;
-  PREV_INSN (next) = insn;
+  SET_NEXT_INSN (after) = insn;
+  SET_PREV_INSN (next) = insn;
 
   /* Update links from insn to bb and vice versa.  */
   df_insn_change_bb (insn, bb);
@@ -3942,8 +3942,8 @@ sel_remove_insn (insn_t insn, bool only_disconnect, bool full_tidying)
   /* It is necessary to NULL these fields in case we are going to re-insert
      INSN into the insns stream, as will usually happen in the ONLY_DISCONNECT
      case, but also for NOPs that we will return to the nop pool.  */
-  PREV_INSN (insn) = NULL_RTX;
-  NEXT_INSN (insn) = NULL_RTX;
+  SET_PREV_INSN (insn) = NULL_RTX;
+  SET_NEXT_INSN (insn) = NULL_RTX;
   set_block_for_insn (insn, NULL);
 
   return tidy_control_flow (bb, full_tidying);
@@ -4985,8 +4985,8 @@ get_bb_note_from_pool (void)
     {
       rtx note = bb_note_pool.pop ();
 
-      PREV_INSN (note) = NULL_RTX;
-      NEXT_INSN (note) = NULL_RTX;
+      SET_PREV_INSN (note) = NULL_RTX;
+      SET_NEXT_INSN (note) = NULL_RTX;
 
       return note;
     }

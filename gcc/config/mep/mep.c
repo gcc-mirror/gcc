@@ -5695,9 +5695,9 @@ mep_reorg_addcombine (rtx insns)
 		&& ic + nc > -32768)
 	      {
 		XEXP (SET_SRC (PATTERN (i)), 1) = GEN_INT (ic + nc);
-		NEXT_INSN (i) = NEXT_INSN (n);
+		SET_NEXT_INSN (i) = NEXT_INSN (n);
 		if (NEXT_INSN (i))
-		  PREV_INSN (NEXT_INSN (i)) = i;
+		  SET_PREV_INSN (NEXT_INSN (i)) = i;
 	      }
 	  }
       }
@@ -6812,10 +6812,10 @@ mep_make_bundle (rtx core, rtx cop)
   remove_insn (cop);
 
   /* Set up the links of the insns inside the SEQUENCE.  */
-  PREV_INSN (core) = PREV_INSN (insn);
-  NEXT_INSN (core) = cop;
-  PREV_INSN (cop) = core;
-  NEXT_INSN (cop) = NEXT_INSN (insn);
+  SET_PREV_INSN (core) = PREV_INSN (insn);
+  SET_NEXT_INSN (core) = cop;
+  SET_PREV_INSN (cop) = core;
+  SET_NEXT_INSN (cop) = NEXT_INSN (insn);
 
   /* Set the VLIW flag for the coprocessor instruction.  */
   PUT_MODE (core, VOIDmode);
@@ -6933,13 +6933,13 @@ mep_bundle_insns (rtx insns)
 	      if (NOTE_P (note))
 		{
 		  /* Remove NOTE from here... */
-		  PREV_INSN (NEXT_INSN (note)) = PREV_INSN (note);
-		  NEXT_INSN (PREV_INSN (note)) = NEXT_INSN (note);
+		  SET_PREV_INSN (NEXT_INSN (note)) = PREV_INSN (note);
+		  SET_NEXT_INSN (PREV_INSN (note)) = NEXT_INSN (note);
 		  /* ...and put it in here.  */
-		  NEXT_INSN (note) = first;
-		  PREV_INSN (note) = PREV_INSN (first);
-		  NEXT_INSN (PREV_INSN (note)) = note;
-		  PREV_INSN (NEXT_INSN (note)) = note;
+		  SET_NEXT_INSN (note) = first;
+		  SET_PREV_INSN (note) = PREV_INSN (first);
+		  SET_NEXT_INSN (PREV_INSN (note)) = note;
+		  SET_PREV_INSN (NEXT_INSN (note)) = note;
 		}
 
 	      note = prev;
@@ -7001,17 +7001,17 @@ mep_bundle_insns (rtx insns)
 
 		  /* Remove core insn.  */
 		  if (PREV_INSN (core_insn))
-		    NEXT_INSN (PREV_INSN (core_insn)) = NEXT_INSN (core_insn);
+		    SET_NEXT_INSN (PREV_INSN (core_insn)) = NEXT_INSN (core_insn);
 		  if (NEXT_INSN (core_insn))
-		    PREV_INSN (NEXT_INSN (core_insn)) = PREV_INSN (core_insn);
+		    SET_PREV_INSN (NEXT_INSN (core_insn)) = PREV_INSN (core_insn);
 
 		  /* Re-insert core insn.  */
-		  PREV_INSN (core_insn) = PREV_INSN (insn);
-		  NEXT_INSN (core_insn) = insn;
+		  SET_PREV_INSN (core_insn) = PREV_INSN (insn);
+		  SET_NEXT_INSN (core_insn) = insn;
 
 		  if (PREV_INSN (core_insn))
-		    NEXT_INSN (PREV_INSN (core_insn)) = core_insn;
-		  PREV_INSN (insn) = core_insn;
+		    SET_NEXT_INSN (PREV_INSN (core_insn)) = core_insn;
+		  SET_PREV_INSN (insn) = core_insn;
 
 		  PUT_MODE (core_insn, TImode);
 		  PUT_MODE (insn, VOIDmode);
