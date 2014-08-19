@@ -1,3 +1,28 @@
+2014-08-19  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
+	(define_mode_iterator VI48_AVX512F): Delete.
+	(define_mode_iterator VI48_AVX512F_AVX512VL): New.
+	(define_mode_iterator VI2_AVX512VL): Ditto.
+	(define_insn "<mask_codefor>avx512f_ufix_notruncv16sfv16si<mask_name><round_name>"):
+	Delete.
+	(define_insn
+	("<mask_codefor><avx512>_ufix_notrunc<sf2simodelower><mode><mask_name><round_name>"):
+	New.
+	(define_insn "avx512cd_maskw_vec_dup<mode>"): Macroize.
+	(define_insn "<avx2_avx512f>_ashrv<mode><mask_name>"): Delete.
+	(define_insn "<avx2_avx512bw>_ashrv<mode><mask_name>",
+	with VI48_AVX512F_AVX512VL): New.
+	(define_insn "<avx2_avx512bw>_ashrv<mode><mask_name>",
+	with VI2_AVX512VL): Ditto.
+
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document -Wc99-c11-compat.
