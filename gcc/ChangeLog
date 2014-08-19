@@ -1,3 +1,8 @@
+2014-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/59051
+	* dwarf2out.c (modified_type_die): Handle TYPE_QUAL_RESTRICT.
+
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61271
