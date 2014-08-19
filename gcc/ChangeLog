@@ -1,5 +1,10 @@
 2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR preprocessor/51303
+	* incpath.c (remove_duplicates): Use cpp_warning.
+
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR c/60975
 	PR c/53063
 	* doc/options.texi (CPP): Document it.

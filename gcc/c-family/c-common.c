@@ -9680,23 +9680,24 @@ struct reason_option_codes_t
 };
 
 static const struct reason_option_codes_t option_codes[] = {
-  {CPP_W_DEPRECATED,			OPT_Wdeprecated},
-  {CPP_W_COMMENTS,			OPT_Wcomment},
-  {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
-  {CPP_W_MULTICHAR,			OPT_Wmultichar},
-  {CPP_W_TRADITIONAL,			OPT_Wtraditional},
-  {CPP_W_LONG_LONG,			OPT_Wlong_long},
-  {CPP_W_ENDIF_LABELS,			OPT_Wendif_labels},
-  {CPP_W_VARIADIC_MACROS,		OPT_Wvariadic_macros},
   {CPP_W_BUILTIN_MACRO_REDEFINED,	OPT_Wbuiltin_macro_redefined},
+  {CPP_W_COMMENTS,			OPT_Wcomment},
+  {CPP_W_CXX_OPERATOR_NAMES,		OPT_Wc___compat},
+  {CPP_W_DATE_TIME,			OPT_Wdate_time},
+  {CPP_W_DEPRECATED,			OPT_Wdeprecated},
+  {CPP_W_ENDIF_LABELS,			OPT_Wendif_labels},
+  {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
+  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
+  {CPP_W_LONG_LONG,			OPT_Wlong_long},
+  {CPP_W_MISSING_INCLUDE_DIRS,          OPT_Wmissing_include_dirs},
+  {CPP_W_MULTICHAR,			OPT_Wmultichar},
+  {CPP_W_NORMALIZE,			OPT_Wnormalized_},
+  {CPP_W_TRADITIONAL,			OPT_Wtraditional},
+  {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
   {CPP_W_UNDEF,				OPT_Wundef},
   {CPP_W_UNUSED_MACROS,			OPT_Wunused_macros},
-  {CPP_W_CXX_OPERATOR_NAMES,		OPT_Wc___compat},
-  {CPP_W_NORMALIZE,			OPT_Wnormalized_},
-  {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
+  {CPP_W_VARIADIC_MACROS,		OPT_Wvariadic_macros},
   {CPP_W_WARNING_DIRECTIVE,		OPT_Wcpp},
-  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
-  {CPP_W_DATE_TIME,			OPT_Wdate_time},
   {CPP_W_NONE,				0}
 };
 
