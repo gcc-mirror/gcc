@@ -1,5 +1,11 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (entry_of_function): Strengthen return type from rtx to
+	rtx_insn *.
+	* cfgrtl.c (entry_of_function): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* emit-rtl.h (get_insns): Strengthen return type from rtx to
 	rtx_insn *, adding a checked cast for now.
 	(get_last_insn): Likewise.

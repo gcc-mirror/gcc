@@ -498,7 +498,7 @@ make_pass_free_cfg (gcc::context *ctxt)
 }
 
 /* Return RTX to emit after when we want to emit code on the entry of function.  */
-rtx
+rtx_insn *
 entry_of_function (void)
 {
   return (n_basic_blocks_for_fn (cfun) > NUM_FIXED_BLOCKS ?
