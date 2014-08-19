@@ -1,5 +1,27 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* expr.h (emit_move_insn): Strengthen return type from rtx to
+	rtx_insn *.
+	(emit_move_insn_1): Likewise.
+	(emit_move_complex_push): Likewise.
+	(emit_move_complex_parts): Likewise.
+
+	* expr.c (emit_move_via_integer): Strengthen return type from rtx
+	to rtx_insn *.  Replace use of NULL_RTX with NULL when working
+	with insns.
+	(emit_move_complex_push): Strengthen return type from rtx to
+	rtx_insn *.
+	(emit_move_complex): Likewise, also for local "ret".
+	(emit_move_ccmode): Likewise.
+	(emit_move_multi_word): Likewise for return type and locals
+	"last_insn", "seq".
+	(emit_move_insn_1): Likewise for return type and locals "result",
+	"ret".
+	(emit_move_insn): Likewise for return type and local "last_insn".
+	(compress_float_constant): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* emit-rtl.h (emit_copy_of_insn_after): Strengthen return type
 	from rtx to rtx_insn *.
 
