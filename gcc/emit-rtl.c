@@ -3450,20 +3450,20 @@ prev_active_insn (rtx insn)
 
    Return 0 if we can't find the insn.  */
 
-rtx
+rtx_insn *
 next_cc0_user (rtx insn)
 {
   rtx note = find_reg_note (insn, REG_CC_USER, NULL_RTX);
 
   if (note)
-    return XEXP (note, 0);
+    return safe_as_a <rtx_insn *> (XEXP (note, 0));
 
   insn = next_nonnote_insn (insn);
   if (insn && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
 
   if (insn && INSN_P (insn) && reg_mentioned_p (cc0_rtx, PATTERN (insn)))
-    return insn;
+    return safe_as_a <rtx_insn *> (insn);
 
   return 0;
 }
@@ -3471,18 +3471,18 @@ next_cc0_user (rtx insn)
 /* Find the insn that set CC0 for INSN.  Unless INSN has a REG_CC_SETTER
    note, it is the previous insn.  */
 
-rtx
+rtx_insn *
 prev_cc0_setter (rtx insn)
 {
   rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
 
   if (note)
-    return XEXP (note, 0);
+    return safe_as_a <rtx_insn *> (XEXP (note, 0));
 
   insn = prev_nonnote_insn (insn);
   gcc_assert (sets_cc0_p (PATTERN (insn)));
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 #endif
 
