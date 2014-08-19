@@ -1,5 +1,12 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (delete_trivially_dead_insns): Strengthen initial param
+	"insns" from rtx to rtx_insn *.
+	* cse.c (delete_trivially_dead_insns): Likewise, also do it for
+	locals "insn" and "prev".
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (tablejump_p): Strengthen third param from rtx * to
 	rtx_jump_table_data **.
 

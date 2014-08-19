@@ -6944,10 +6944,10 @@ replace_dead_reg (rtx x, const_rtx old_rtx ATTRIBUTE_UNUSED, void *data)
    remaining passes of the compilation are also sped up.  */
 
 int
-delete_trivially_dead_insns (rtx insns, int nreg)
+delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 {
   int *counts;
-  rtx insn, prev;
+  rtx_insn *insn, *prev;
   rtx *replacements = NULL;
   int ndead = 0;
 
