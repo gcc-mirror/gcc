@@ -1,3 +1,7 @@
+2014-08-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* class.c (contains_empty_class_p): Remove.
+
 2014-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_expression): Add default arguments.
