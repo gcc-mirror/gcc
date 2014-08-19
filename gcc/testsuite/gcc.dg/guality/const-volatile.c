@@ -7,7 +7,7 @@ const int ci;
 volatile int vi;
 const volatile int cvi;
 
-int *pi;
+int *pi __attribute__((used));
 const int *pci;
 volatile int *pvi;
 const volatile int *pcvi;
