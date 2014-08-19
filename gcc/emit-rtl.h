@@ -77,10 +77,11 @@ extern bool need_atomic_barrier_p (enum memmodel, bool);
 
 /* Return the first insn of the current sequence or current function.  */
 
-static inline rtx
+static inline rtx_insn *
 get_insns (void)
 {
-  return crtl->emit.x_first_insn;
+  rtx insn = crtl->emit.x_first_insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Specify a new insn as the first in the chain.  */
@@ -94,10 +95,11 @@ set_first_insn (rtx insn)
 
 /* Return the last insn emitted in current sequence or current function.  */
 
-static inline rtx
+static inline rtx_insn *
 get_last_insn (void)
 {
-  return crtl->emit.x_last_insn;
+  rtx insn = crtl->emit.x_last_insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Specify a new insn as the last in the chain.  */
