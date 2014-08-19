@@ -2587,7 +2587,7 @@ proc check_effective_target_arm_v8_neon_ok_nocache { } {
 		{
 	          __asm__ volatile ("vrintn.f32 q0, q0");
 		}
-	    } "$flags"] } {
+	    } "$flags -march=armv8-a"] } {
 		set et_arm_v8_neon_flags $flags
 		return 1
 	    }
