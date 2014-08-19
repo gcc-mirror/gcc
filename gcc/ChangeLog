@@ -1,3 +1,43 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (previous_insn): Strengthen return type from rtx to
+	rtx_insn *.
+	(next_insn): Likewise.
+	(prev_nonnote_insn): Likewise.
+	(prev_nonnote_insn_bb): Likewise.
+	(next_nonnote_insn): Likewise.
+	(next_nonnote_insn_bb): Likewise.
+	(prev_nondebug_insn): Likewise.
+	(next_nondebug_insn): Likewise.
+	(prev_nonnote_nondebug_insn): Likewise.
+	(next_nonnote_nondebug_insn): Likewise.
+	(prev_real_insn): Likewise.
+	(next_real_insn): Likewise.
+	(prev_active_insn): Likewise.
+	(next_active_insn): Likewise.
+
+	* emit-rtl.c (next_insn): Strengthen return type from rtx to
+	rtx_insn *, adding a checked cast.
+	(previous_insn): Likewise.
+	(next_nonnote_insn): Likewise.
+	(next_nonnote_insn_bb): Likewise.
+	(prev_nonnote_insn): Likewise.
+	(prev_nonnote_insn_bb): Likewise.
+	(next_nondebug_insn): Likewise.
+	(prev_nondebug_insn): Likewise.
+	(next_nonnote_nondebug_insn): Likewise.
+	(prev_nonnote_nondebug_insn): Likewise.
+	(next_real_insn): Likewise.
+	(prev_real_insn): Likewise.
+	(next_active_insn): Likewise.
+	(prev_active_insn): Likewise.
+
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Convert function ptr
+	param "stepfunc" so that it returns an rtx_insn * rather than an
+	rtx, to track the change to prev_nonnote_insn_bb, which is the
+	only function this is called with.
+	* config/sh/sh.c (sh_find_set_of_reg): Likewise.
+
 2014-08-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-visibility.c (update_visibility_by_resolution_info): Fix
