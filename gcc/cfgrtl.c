@@ -272,7 +272,8 @@ delete_insn_chain (rtx start, rtx finish, bool clear_bb)
    AFTER is the basic block we should be put after.  */
 
 basic_block
-create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
+create_basic_block_structure (rtx head, rtx end, rtx_note *bb_note,
+			      basic_block after)
 {
   basic_block bb;
 
@@ -4082,7 +4083,8 @@ cfg_layout_can_duplicate_bb_p (const_basic_block bb)
 rtx
 duplicate_insn_chain (rtx from, rtx to)
 {
-  rtx insn, next, last, copy;
+  rtx insn, next, copy;
+  rtx_note *last;
 
   /* Avoid updating of boundaries of previous basic block.  The
      note will get removed from insn stream in fixup.  */
@@ -4150,7 +4152,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	      break;
 
 	    case NOTE_INSN_EPILOGUE_BEG:
-	      emit_note_copy (insn);
+	      emit_note_copy (as_a <rtx_note *> (insn));
 	      break;
 
 	    default:

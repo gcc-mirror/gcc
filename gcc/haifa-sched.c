@@ -7610,7 +7610,7 @@ sched_extend_bb (void)
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
 	  && !BARRIER_P (NEXT_INSN (end))))
     {
-      rtx note = emit_note_after (NOTE_INSN_DELETED, end);
+      rtx_note *note = emit_note_after (NOTE_INSN_DELETED, end);
       /* Make note appear outside BB.  */
       set_block_for_insn (note, NULL);
       SET_BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb) = end;

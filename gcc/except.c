@@ -2458,10 +2458,10 @@ add_call_site (rtx landing_pad, int action, int section)
   return call_site_base + crtl->eh.call_site_record_v[section]->length () - 1;
 }
 
-static rtx
+static rtx_note *
 emit_note_eh_region_end (rtx insn)
 {
-  rtx next = NEXT_INSN (insn);
+  rtx_insn *next = NEXT_INSN (insn);
 
   /* Make sure we do not split a call and its corresponding
      CALL_ARG_LOCATION note.  */
@@ -2479,7 +2479,8 @@ emit_note_eh_region_end (rtx insn)
 static unsigned int
 convert_to_eh_region_ranges (void)
 {
-  rtx insn, iter, note;
+  rtx insn, iter;
+  rtx_note *note;
   action_hash_type ar_hash (31);
   int last_action = -3;
   rtx last_action_insn = NULL_RTX;

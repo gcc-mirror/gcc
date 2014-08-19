@@ -286,7 +286,7 @@ struct GTY(()) rtl_data {
   struct frame_space *frame_space_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
-  rtx x_stack_check_probe_note;
+  rtx_note *x_stack_check_probe_note;
 
   /* Location at which to save the argument pointer if it will need to be
      referenced.  There are two cases where this is done: if nonlocal gotos

@@ -1,5 +1,52 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (create_basic_block_structure): Strengthen third
+	param "bb_note" from rtx to rtx_note *.
+	* rtl.h (emit_note_before): Strengthen return type from rtx to
+	rtx_note *.
+	(emit_note_after): Likewise.
+	(emit_note): Likewise.
+	(emit_note_copy): Likewise.  Also, strengthen param similarly.
+	* function.h (struct rtl_data): Strengthen field
+	"x_stack_check_probe_note" from rtx to rtx_note *.
+
+	* cfgexpand.c (expand_gimple_basic_block): Strengthen local "note"
+	from rtx to rtx_note *.
+	* cfgrtl.c (create_basic_block_structure): Strengthen third param
+	"bb_note" from rtx to rtx_note *.
+	(duplicate_insn_chain): Likewise for local "last".  Add a checked cast
+	when calling emit_note_copy.
+	* emit-rtl.c (make_note_raw): Strengthen return type from rtx to
+	rtx_note *.
+	(emit_note_after): Likewise.
+	(emit_note_before): Likewise.
+	(emit_note_copy): Likewise.  Also, strengthen param similarly.
+	(emit_note): Likewise.
+	* except.c (emit_note_eh_region_end): Likewise for return type.
+	Strengthen local "next" from rtx to rtx_insn *.
+	(convert_to_eh_region_ranges): Strengthen local "note"
+	from rtx to rtx_note *.
+	* final.c (change_scope): Likewise.
+	(reemit_insn_block_notes): Likewise, for both locals named "note".
+	Also, strengthen local "insn" from rtx to rtx_insn *.
+	* haifa-sched.c (sched_extend_bb): Strengthen local "note" from
+	rtx to rtx_note *.
+	* reg-stack.c (compensate_edge): Likewise for local "after". Also,
+	strengthen local "seq" from rtx to rtx_insn *.
+	* reload1.c (reload_as_needed): Strengthen local "marker" from rtx
+	to rtx_note *.
+	* sel-sched-ir.c (bb_note_pool): Strengthen from rtx_vec_t to
+	vec<rtx_note *>.
+	(get_bb_note_from_pool): Strengthen return type from rtx to
+	rtx_note *.
+	(sel_create_basic_block): Strengthen local "new_bb_note" from
+	insn_t to rtx_note *.
+	* var-tracking.c (emit_note_insn_var_location): Strengthen local
+	"note" from rtx to rtx_note *.
+	(emit_notes_in_bb): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.h (struct rtl_data): Strengthen field
 	"x_parm_birth_insn" from rtx to rtx_insn *.
 	* function.c (struct assign_parm_data_all): Strengthen fields

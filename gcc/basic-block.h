@@ -412,7 +412,8 @@ extern void remove_edge_raw (edge);
 extern void redirect_edge_succ (edge, basic_block);
 extern edge redirect_edge_succ_nodup (edge, basic_block);
 extern void redirect_edge_pred (edge, basic_block);
-extern basic_block create_basic_block_structure (rtx, rtx, rtx, basic_block);
+extern basic_block create_basic_block_structure (rtx, rtx, rtx_note *,
+						 basic_block);
 extern void clear_bb_flags (void);
 extern void dump_bb_info (FILE *, basic_block, int, int, bool, bool);
 extern void dump_edge_info (FILE *, edge, int, int);

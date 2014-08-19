@@ -126,7 +126,7 @@ static struct
 } nop_pool = { NULL, 0, 0 };
 
 /* The pool for basic block notes.  */
-static rtx_vec_t bb_note_pool;
+static vec<rtx_note *> bb_note_pool;
 
 /* A NOP pattern used to emit placeholder insns.  */
 rtx nop_pattern = NULL_RTX;
@@ -4976,14 +4976,14 @@ return_bb_to_pool (basic_block bb)
 }
 
 /* Get a bb_note from pool or return NULL_RTX if pool is empty.  */
-static rtx
+static rtx_note *
 get_bb_note_from_pool (void)
 {
   if (bb_note_pool.is_empty ())
-    return NULL_RTX;
+    return NULL;
   else
     {
-      rtx note = bb_note_pool.pop ();
+      rtx_note *note = bb_note_pool.pop ();
 
       SET_PREV_INSN (note) = NULL_RTX;
       SET_NEXT_INSN (note) = NULL_RTX;
@@ -5341,7 +5341,7 @@ static basic_block
 sel_create_basic_block (void *headp, void *endp, basic_block after)
 {
   basic_block new_bb;
-  insn_t new_bb_note;
+  rtx_note *new_bb_note;
 
   gcc_assert (flag_sel_sched_pipelining_outer_loops
               || !last_added_blocks.exists ());

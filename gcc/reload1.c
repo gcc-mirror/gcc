@@ -4573,7 +4573,8 @@ reload_as_needed (int live_known)
 #if defined (AUTO_INC_DEC)
   int i;
 #endif
-  rtx x, marker;
+  rtx x;
+  rtx_note *marker;
 
   memset (spill_reg_rtx, 0, sizeof spill_reg_rtx);
   memset (spill_reg_store, 0, sizeof spill_reg_store);

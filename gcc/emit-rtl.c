@@ -3852,7 +3852,7 @@ make_call_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a NOTE instead of an insn.  */
 
-static rtx
+static rtx_note *
 make_note_raw (enum insn_note subtype)
 {
   /* Some notes are never created this way at all.  These notes are
@@ -3860,7 +3860,7 @@ make_note_raw (enum insn_note subtype)
   gcc_assert (subtype != NOTE_INSN_DELETED_LABEL
 	      && subtype != NOTE_INSN_DELETED_DEBUG_LABEL);
 
-  rtx note = rtx_alloc (NOTE);
+  rtx_note *note = as_a <rtx_note *> (rtx_alloc (NOTE));
   INSN_UID (note) = cur_insn_uid++;
   NOTE_KIND (note) = subtype;
   BLOCK_FOR_INSN (note) = NULL;
@@ -4557,10 +4557,10 @@ note_outside_basic_block_p (enum insn_note subtype, bool on_bb_boundary_p)
 
 /* Emit a note of subtype SUBTYPE after the insn AFTER.  */
 
-rtx
+rtx_note *
 emit_note_after (enum insn_note subtype, rtx after)
 {
-  rtx note = make_note_raw (subtype);
+  rtx_note *note = make_note_raw (subtype);
   basic_block bb = BARRIER_P (after) ? NULL : BLOCK_FOR_INSN (after);
   bool on_bb_boundary_p = (bb != NULL && BB_END (bb) == after);
 
@@ -4573,10 +4573,10 @@ emit_note_after (enum insn_note subtype, rtx after)
 
 /* Emit a note of subtype SUBTYPE before the insn BEFORE.  */
 
-rtx
+rtx_note *
 emit_note_before (enum insn_note subtype, rtx before)
 {
-  rtx note = make_note_raw (subtype);
+  rtx_note *note = make_note_raw (subtype);
   basic_block bb = BARRIER_P (before) ? NULL : BLOCK_FOR_INSN (before);
   bool on_bb_boundary_p = (bb != NULL && BB_HEAD (bb) == before);
 
@@ -5023,11 +5023,11 @@ emit_barrier (void)
 
 /* Emit a copy of note ORIG.  */
 
-rtx
-emit_note_copy (rtx orig)
+rtx_note *
+emit_note_copy (rtx_note *orig)
 {
   enum insn_note kind = (enum insn_note) NOTE_KIND (orig);
-  rtx note = make_note_raw (kind);
+  rtx_note *note = make_note_raw (kind);
   NOTE_DATA (note) = NOTE_DATA (orig);
   add_insn (note);
   return note;
@@ -5036,10 +5036,10 @@ emit_note_copy (rtx orig)
 /* Make an insn of code NOTE or type NOTE_NO
    and add it to the end of the doubly-linked list.  */
 
-rtx
+rtx_note *
 emit_note (enum insn_note kind)
 {
-  rtx note = make_note_raw (kind);
+  rtx_note *note = make_note_raw (kind);
   add_insn (note);
   return note;
 }
