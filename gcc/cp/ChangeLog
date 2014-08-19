@@ -1,3 +1,10 @@
+2014-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR lto/53808
+	PR c++/61659
+	* decl.c (maybe_commonize_var): Don't use DECL_COMDAT to trigger
+	comdat_linkage.
+
 2014-08-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* class.c (contains_empty_class_p): Remove.
