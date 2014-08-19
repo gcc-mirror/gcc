@@ -912,8 +912,10 @@ do {									     \
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* The CIX ctlz and cttz instructions return 64 for zero.  */
-#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, TARGET_CIX)
-#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, TARGET_CIX)
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, \
+  TARGET_CIX ? 1 : 0)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, \
+  TARGET_CIX ? 1 : 0)
 
 /* Define the value returned by a floating-point comparison instruction.  */
 
