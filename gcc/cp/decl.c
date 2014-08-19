@@ -5099,10 +5099,6 @@ maybe_commonize_var (tree decl)
 	    }
 	}
     }
-  else if (DECL_LANG_SPECIFIC (decl) && DECL_COMDAT (decl))
-    /* Set it up again; we might have set DECL_INITIAL since the last
-       time.  */
-    comdat_linkage (decl);
 }
 
 /* Issue an error message if DECL is an uninitialized const variable.  */
