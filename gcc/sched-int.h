@@ -1368,7 +1368,7 @@ extern void sched_change_pattern (rtx, rtx);
 extern int sched_speculate_insn (rtx, ds_t, rtx *);
 extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
-extern rtx bb_note (basic_block);
+extern rtx_note *bb_note (basic_block);
 extern void concat_note_lists (rtx, rtx *);
 extern rtx sched_emit_insn (rtx);
 extern rtx get_ready_element (int);

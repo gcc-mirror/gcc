@@ -661,7 +661,7 @@ could_fall_through (basic_block src, basic_block target)
 }
 
 /* Return the NOTE_INSN_BASIC_BLOCK of BB.  */
-rtx
+rtx_note *
 bb_note (basic_block bb)
 {
   rtx note;
@@ -671,7 +671,7 @@ bb_note (basic_block bb)
     note = NEXT_INSN (note);
 
   gcc_assert (NOTE_INSN_BASIC_BLOCK_P (note));
-  return note;
+  return as_a <rtx_note *> (note);
 }
 
 /* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
