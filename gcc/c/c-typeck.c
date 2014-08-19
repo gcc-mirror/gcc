@@ -4947,6 +4947,9 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  || TREE_CODE (type) == UNION_TYPE)
 	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C forbids casting nonscalar to the same type");
+
+      /* Convert to remove any qualifiers from VALUE's type.  */
+      value = convert (type, value);
     }
   else if (TREE_CODE (type) == UNION_TYPE)
     {

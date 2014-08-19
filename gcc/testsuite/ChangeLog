@@ -1,3 +1,8 @@
+2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/45584
+	* gcc.dg/pr13519-1.c: Adjust.
+
 2014-08-19  Mark Wielaard  <mjw@redhat.com>
 
 	* gcc.dg/guality/const-volatile.c: Add `used' attribute to pi.
@@ -7,7 +12,7 @@
 	PR debug/59051
 	* gcc.dg/guality/restrict.c: New test.
 
-2014-07-03  Mark Wielaard  <mjw@redhat.com>
+2014-08-19  Mark Wielaard  <mjw@redhat.com>
 
 	* lib/gcc-gdb-test.exp (gdb-test): Handle type:var for gdb ptype
 	matching. Catch '<unknown type in ' to recognize older gdb versions.

@@ -1,3 +1,9 @@
+2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/45584
+	* c-typeck.c (build_c_cast): Do a conversion even when the
+	TYPE_MAIN_VARIANTs are the same.
+
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Unconditionally call
