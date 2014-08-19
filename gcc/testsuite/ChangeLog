@@ -1,3 +1,9 @@
+2014-07-03  Mark Wielaard  <mjw@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Handle type:var for gdb ptype
+	matching. Catch '<unknown type in ' to recognize older gdb versions.
+	* gcc.dg/guality/const-volatile.c: New test.
+
 2014-08-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on *-*-solaris2.1[1-9]* &&
