@@ -1,5 +1,13 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.h (struct rtl_data): Strengthen field
+	"x_parm_birth_insn" from rtx to rtx_insn *.
+	* function.c (struct assign_parm_data_all): Strengthen fields
+	"first_conversion_insn" and "last_conversion_insn" from rtx to
+	rtx_insn *.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* cfgexpand.c (expand_used_vars): Strengthen return type from rtx
 	to rtx_insn *; also for local "var_end_seq".
 	(maybe_dump_rtl_for_gimple_stmt): Likewise for param "since".

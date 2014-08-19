@@ -2190,8 +2190,8 @@ struct assign_parm_data_all
   struct args_size stack_args_size;
   tree function_result_decl;
   tree orig_fnargs;
-  rtx first_conversion_insn;
-  rtx last_conversion_insn;
+  rtx_insn *first_conversion_insn;
+  rtx_insn *last_conversion_insn;
   HOST_WIDE_INT pretend_args_size;
   HOST_WIDE_INT extra_pretend_bytes;
   int reg_parm_stack_space;

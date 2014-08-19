@@ -303,7 +303,7 @@ struct GTY(()) rtl_data {
   HOST_WIDE_INT x_frame_offset;
 
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
-  rtx x_parm_birth_insn;
+  rtx_insn *x_parm_birth_insn;
 
   /* List of all used temporaries allocated, by level.  */
   vec<temp_slot_p, va_gc> *x_used_temp_slots;
