@@ -1,3 +1,13 @@
+2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* config.gcc (*-*-cygwin*): Use __cxa_atexit by default.
+	(extra_options): Add i386/cygwin.opt.
+	* config/i386/cygwin.h (STARTFILE_SPEC): Use crtbeginS.o if shared.
+	(CPP_SPEC): Accept -pthread.
+	(LINK_SPEC): Ditto.
+	(GOMP_SELF_SPECS): Update comment.
+	* config/i386/cygwin.opt: New file for -pthread flag.
+
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* df-core.c (DF_REF_INSN): New, using a checked cast for now.
