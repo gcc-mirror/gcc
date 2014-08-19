@@ -1,5 +1,9 @@
 2014-08-19  Jason Merrill  <jason@redhat.com>
 
+	PR tree-optimization/62091
+	* decl2.c (decl_needed_p): Return true for virtual functions when
+	devirtualizing.
+
 	PR lto/53808
 	PR c++/61659
 	* decl.c (maybe_commonize_var): Don't use DECL_COMDAT to trigger
