@@ -1,5 +1,12 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (gen_label_rtx): Strengthen return type from rtx to
+	rtx_code_label *.
+
+	* emit-rtl.c (gen_label_rtx): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (previous_insn): Strengthen return type from rtx to
 	rtx_insn *.
 	(next_insn): Likewise.
