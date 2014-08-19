@@ -295,6 +295,10 @@ Wc90-c99-compat
 C ObjC Var(warn_c90_c99_compat) Init(-1) Warning
 Warn about features not present in ISO C90, but present in ISO C99
 
+Wc99-c11-compat
+C ObjC Var(warn_c99_c11_compat) Init(-1) Warning
+Warn about features not present in ISO C99, but present in ISO C11
+
 Wc++-compat
 C ObjC Var(warn_cxx_compat) Warning
 Warn about C constructs that are not in the common subset of C and C++

@@ -1,5 +1,31 @@
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
+	* c-decl.c (diagnose_mismatched_decls): Unconditionally call
+	pedwarn_c99 instead of pedwarn.
+	(grokfield): Likewise.
+	(warn_defaults_to): New function.
+	(grokdeclarator): Call warn_defaults_to instead of pedwarn_c99.
+	Unconditionally call pedwarn_c99 instead of pedwarn.
+	(start_function): Call warn_defaults_to instead of pedwarn_c99.
+	(declspecs_add_scspec): Call pedwarn_c99 instead of pedwarn, don't
+	check flag_isoc11 before.
+	* c-errors.c (pedwarn_c99): Change the return type to bool.
+	Handle -Wc99-c11-compat.
+	* c-parser.c (disable_extension_diagnostics): Handle
+	warn_c99_c11_compat.
+	(restore_extension_diagnostics): Likewise.
+	(c_parser_static_assert_declaration_no_semi): Call pedwarn_c99
+	instead of pedwarn, don't check flag_isoc11 before.
+	(c_parser_declspecs): Likewise.
+	(c_parser_alignas_specifier): Likewise.
+	(c_parser_alignof_expression): Likewise.
+	(c_parser_generic_selection): Likewise.
+	* c-tree.h (pedwarn_c99): Update declaration.
+	* c-typeck.c (c_finish_return): Call pedwarn or warning_at instead
+	of pedwarn_c99.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
 	* c-decl.c (warn_variable_length_array): Pass OPT_Wvla unconditionally
 	to pedwarn_c90.
 	* c-errors.c: Include "opts.h".

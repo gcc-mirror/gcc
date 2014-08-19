@@ -538,6 +538,8 @@ static tree grokdeclarator (const struct c_declarator *,
 			    bool *, enum deprecated_states);
 static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
+static void warn_defaults_to (location_t, int, const char *, ...)
+    ATTRIBUTE_GCC_DIAG(3,4);
 
 /* T is a statement.  Add it to the statement-tree.  This is the
    C/ObjC version--C++ has a slightly different version of this
@@ -1844,12 +1846,9 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		 newdecl);
 	  locate_old_decl (olddecl);
 	}
-      else if (pedantic && !flag_isoc11)
-	{
-	  pedwarn (input_location, OPT_Wpedantic,
-		   "redefinition of typedef %q+D", newdecl);
-	  locate_old_decl (olddecl);
-	}
+      else if (pedwarn_c99 (input_location, OPT_Wpedantic,
+			    "redefinition of typedef %q+D", newdecl))
+	locate_old_decl (olddecl);
 
       return true;
     }
@@ -4941,6 +4940,22 @@ warn_variable_length_array (tree name, tree size)
     }
 }
 
+/* Print warning about defaulting to int if necessary.  */
+
+static void
+warn_defaults_to (location_t location, int opt, const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+                       flag_isoc99 ? DK_PEDWARN : DK_WARNING);
+  diagnostic.option_index = opt;
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -5117,12 +5132,12 @@ grokdeclarator (const struct c_declarator *declarator,
       else
 	{
 	  if (name)
-	    pedwarn_c99 (loc, flag_isoc99 ? 0 : OPT_Wimplicit_int,
-			 "type defaults to %<int%> in declaration of %qE",
-			 name);
+	    warn_defaults_to (loc, flag_isoc99 ? 0 : OPT_Wimplicit_int,
+			      "type defaults to %<int%> in declaration "
+			      "of %qE", name);
 	  else
-	    pedwarn_c99 (input_location, flag_isoc99 ? 0 : OPT_Wimplicit_int,
-			 "type defaults to %<int%> in type name");
+	    warn_defaults_to (loc, flag_isoc99 ? 0 : OPT_Wimplicit_int,
+			      "type defaults to %<int%> in type name");
 	}
     }
 
@@ -6249,15 +6264,12 @@ grokdeclarator (const struct c_declarator *declarator,
 	      DECL_DECLARED_INLINE_P (decl) = 1;
 	    if (declspecs->noreturn_p)
 	      {
-		if (!flag_isoc11)
-		  {
-		    if (flag_isoc99)
-		      pedwarn (loc, OPT_Wpedantic,
+		if (flag_isoc99)
+		  pedwarn_c99 (loc, OPT_Wpedantic,
 			       "ISO C99 does not support %<_Noreturn%>");
-		    else
-		      pedwarn (loc, OPT_Wpedantic,
+		else
+		  pedwarn_c99 (loc, OPT_Wpedantic,
 			       "ISO C90 does not support %<_Noreturn%>");
-		  }
 		TREE_THIS_VOLATILE (decl) = 1;
 	      }
 	  }
@@ -6964,15 +6976,12 @@ grokfield (location_t loc,
 	  pedwarn (loc, 0, "declaration does not declare anything");
 	  return NULL_TREE;
 	}
-      if (!flag_isoc11)
-	{
-	  if (flag_isoc99)
-	    pedwarn (loc, OPT_Wpedantic,
+      if (flag_isoc99)
+	pedwarn_c99 (loc, OPT_Wpedantic,
 		     "ISO C99 doesn%'t support unnamed structs/unions");
-	  else
-	    pedwarn (loc, OPT_Wpedantic,
+      else
+	pedwarn_c99 (loc, OPT_Wpedantic,
 		     "ISO C90 doesn%'t support unnamed structs/unions");
-	}
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
@@ -7913,9 +7922,10 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     }
 
   if (warn_about_return_type)
-    pedwarn_c99 (loc, flag_isoc99 ? 0
-		 : (warn_return_type ? OPT_Wreturn_type : OPT_Wimplicit_int),
-		 "return type defaults to %<int%>");
+    warn_defaults_to (loc, flag_isoc99 ? 0
+			   : (warn_return_type ? OPT_Wreturn_type
+			      : OPT_Wimplicit_int),
+		      "return type defaults to %<int%>");
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in pop_scope) with the BLOCK.  */
@@ -9893,14 +9903,14 @@ declspecs_add_scspec (source_location loc,
 	     identifier in the implementation namespace; only diagnose
 	     it for the C11 spelling because of existing code using
 	     the other spelling.  */
-	  if (!flag_isoc11 && !specs->thread_gnu_p)
+	  if (!specs->thread_gnu_p)
 	    {
 	      if (flag_isoc99)
-		pedwarn (loc, OPT_Wpedantic,
-			 "ISO C99 does not support %qE", scspec);
+		pedwarn_c99 (loc, OPT_Wpedantic,
+			     "ISO C99 does not support %qE", scspec);
 	      else
-		pedwarn (loc, OPT_Wpedantic,
-			 "ISO C90 does not support %qE", scspec);
+		pedwarn_c99 (loc, OPT_Wpedantic,
+			     "ISO C90 does not support %qE", scspec);
 	    }
 	  specs->locations[cdw_thread] = loc;
 	}

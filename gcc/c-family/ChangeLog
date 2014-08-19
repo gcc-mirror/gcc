@@ -1,5 +1,9 @@
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
+	* c.opt (Wc99-c11-compat): New option.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
 	* c-opts.c (sanitize_cpp_opts): Make warn_long_long be set according
 	to warn_c90_c99_compat.
 	* c.opt (Wc90-c99-compat, Wdeclaration-after-statement): Initialize

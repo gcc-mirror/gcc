@@ -1,3 +1,7 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document -Wc99-c11-compat.
+
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (PREV_INSN): Split macro in two: the existing one,

@@ -241,7 +241,7 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
 -Waggressive-loop-optimizations -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
--Wc90-c99-compat @gol
+-Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
@@ -4526,6 +4526,16 @@ For instance, warn about use of variable length arrays, @code{long long}
 type, @code{bool} type, compound literals, designated initializers, and so
 on.  This option is independent of the standards mode.  Warnings are disabled
 in the expression that follows @code{__extension__}.
+
+@item -Wc99-c11-compat @r{(C and Objective-C only)}
+@opindex Wc99-c11-compat
+@opindex Wno-c99-c11-compat
+Warn about features not present in ISO C99, but present in ISO C11.
+For instance, warn about use of anonymous structures and unions,
+@code{_Atomic} type qualifier, @code{_Thread_local} storage-class specifier,
+@code{_Alignas} specifier, @code{Alignof} operator, @code{_Generic} keyword,
+and so on.  This option is independent of the standards mode.  Warnings are
+disabled in the expression that follows @code{__extension__}.
 
 @item -Wc++-compat @r{(C and Objective-C only)}
 Warn about ISO C constructs that are outside of the common subset of
