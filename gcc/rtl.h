@@ -3099,7 +3099,7 @@ extern void delete_insn (rtx);
 extern rtx_insn *entry_of_function (void);
 extern void emit_insn_at_entry (rtx);
 extern void delete_insn_chain (rtx, rtx, bool);
-extern rtx unlink_insn_chain (rtx, rtx);
+extern rtx_insn *unlink_insn_chain (rtx, rtx);
 extern void delete_insn_and_edges (rtx);
 extern rtx gen_lowpart_SUBREG (enum machine_mode, rtx);
 extern rtx gen_const_mem (enum machine_mode, rtx);
@@ -3175,7 +3175,7 @@ extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */
 extern void print_rtl_with_bb (FILE *, const_rtx, int);
-extern rtx duplicate_insn_chain (rtx, rtx);
+extern rtx_insn *duplicate_insn_chain (rtx, rtx);
 
 /* In expmed.c */
 extern void init_expmed (void);
