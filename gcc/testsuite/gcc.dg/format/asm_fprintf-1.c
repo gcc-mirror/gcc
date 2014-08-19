@@ -42,39 +42,39 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   asm_fprintf ("%wd%wi%wo%wu%wx%wX", ll, ll, ull, ull, ull, ull);
 
   /* Standard specifiers not accepted in asm_fprintf.  */
-  asm_fprintf ("%f\n", d); /* { dg-warning "format" "float" } */
-  asm_fprintf ("%e\n", d); /* { dg-warning "format" "float" } */
-  asm_fprintf ("%E\n", d); /* { dg-warning "format" "float" } */
-  asm_fprintf ("%g\n", d); /* { dg-warning "format" "float" } */
-  asm_fprintf ("%G\n", d); /* { dg-warning "format" "float" } */
-  asm_fprintf ("%p\n", p); /* { dg-warning "format" "pointer" } */
-  asm_fprintf ("%n\n", n); /* { dg-warning "format" "counter" } */
-  asm_fprintf ("%hd\n", i); /* { dg-warning "format" "conversion" } */
+  asm_fprintf ("%f\n", d); /* { dg-warning "16:format" "float" } */
+  asm_fprintf ("%e\n", d); /* { dg-warning "16:format" "float" } */
+  asm_fprintf ("%E\n", d); /* { dg-warning "16:format" "float" } */
+  asm_fprintf ("%g\n", d); /* { dg-warning "16:format" "float" } */
+  asm_fprintf ("%G\n", d); /* { dg-warning "16:format" "float" } */
+  asm_fprintf ("%p\n", p); /* { dg-warning "16:format" "pointer" } */
+  asm_fprintf ("%n\n", n); /* { dg-warning "16:format" "counter" } */
+  asm_fprintf ("%hd\n", i); /* { dg-warning "16:format" "conversion" } */
 
   /* Various tests of bad argument types.  */
-  asm_fprintf ("%d", l); /* { dg-warning "format" "bad argument types" } */
-  asm_fprintf ("%wd", l); /* { dg-warning "format" "bad argument types" } */
-  asm_fprintf ("%d", ll); /* { dg-warning "format" "bad argument types" } */
-  asm_fprintf ("%*d\n", i1, i); /* { dg-warning "format" "bad * argument types" } */
-  asm_fprintf ("%.*d\n", i2, i); /* { dg-warning "format" "bad * argument types" } */
-  asm_fprintf ("%*.*ld\n", i1, i2, l); /* { dg-warning "format" "bad * argument types" } */
-  asm_fprintf ("%ld", i); /* { dg-warning "format" "bad argument types" } */
-  asm_fprintf ("%s", n); /* { dg-warning "format" "bad argument types" } */
+  asm_fprintf ("%d", l); /* { dg-warning "16:format" "bad argument types" } */
+  asm_fprintf ("%wd", l); /* { dg-warning "16:format" "bad argument types" } */
+  asm_fprintf ("%d", ll); /* { dg-warning "16:format" "bad argument types" } */
+  asm_fprintf ("%*d\n", i1, i); /* { dg-warning "16:format" "bad * argument types" } */
+  asm_fprintf ("%.*d\n", i2, i); /* { dg-warning "16:format" "bad * argument types" } */
+  asm_fprintf ("%*.*ld\n", i1, i2, l); /* { dg-warning "16:format" "bad * argument types" } */
+  asm_fprintf ("%ld", i); /* { dg-warning "16:format" "bad argument types" } */
+  asm_fprintf ("%s", n); /* { dg-warning "16:format" "bad argument types" } */
 
   /* Wrong number of arguments.  */
-  asm_fprintf ("%d%d", i); /* { dg-warning "matching" "wrong number of args" } */
-  asm_fprintf ("%d", i, i); /* { dg-warning "arguments" "wrong number of args" } */
+  asm_fprintf ("%d%d", i); /* { dg-warning "16:matching" "wrong number of args" } */
+  asm_fprintf ("%d", i, i); /* { dg-warning "16:arguments" "wrong number of args" } */
   /* Miscellaneous bogus constructions.  */
-  asm_fprintf (""); /* { dg-warning "zero-length" "warning for empty format" } */
-  asm_fprintf ("\0"); /* { dg-warning "embedded" "warning for embedded NUL" } */
-  asm_fprintf ("%d\0", i); /* { dg-warning "embedded" "warning for embedded NUL" } */
-  asm_fprintf ("%d\0%d", i, i); /* { dg-warning "embedded|too many" "warning for embedded NUL" } */
+  asm_fprintf (""); /* { dg-warning "16:zero-length" "warning for empty format" } */
+  asm_fprintf ("\0"); /* { dg-warning "16:embedded" "warning for embedded NUL" } */
+  asm_fprintf ("%d\0", i); /* { dg-warning "16:embedded" "warning for embedded NUL" } */
+  asm_fprintf ("%d\0%d", i, i); /* { dg-warning "16:embedded|too many" "warning for embedded NUL" } */
   asm_fprintf (NULL); /* { dg-warning "null" "null format string warning" } */
-  asm_fprintf ("%"); /* { dg-warning "trailing" "trailing % warning" } */
-  asm_fprintf ("%++d", i); /* { dg-warning "repeated" "repeated flag warning" } */
-  asm_fprintf ((const char *)L"foo"); /* { dg-warning "wide" "wide string" } */
+  asm_fprintf ("%"); /* { dg-warning "16:trailing" "trailing % warning" } */
+  asm_fprintf ("%++d", i); /* { dg-warning "16:repeated" "repeated flag warning" } */
+  asm_fprintf ((const char *)L"foo"); /* { dg-warning "30:wide" "wide string" } */
   asm_fprintf ("%s", (char *)0); /* { dg-warning "null" "%s with NULL" } */
 
   /* Make sure we still get warnings for regular printf.  */
-  printf ("%d\n", ll); /* { dg-warning "format" "bad argument types" } */
+  printf ("%d\n", ll); /* { dg-warning "11:format" "bad argument types" } */
 }

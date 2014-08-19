@@ -1,3 +1,18 @@
+2014-08-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/52952
+	* c-format.c: Add extra_arg_loc and format_string_loc to struct
+	format_check_results.
+	(check_function_format): Use true and add comment for boolean
+	argument.
+	(finish_dollar_format_checking): Use explicit location when warning.
+	(check_format_info): Likewise.
+	(check_format_arg): Set extra_arg_loc and format_string_loc.
+	(check_format_info_main): Use explicit location when warning.
+	(check_format_types): Pass explicit location.
+	(format_type_warning): Likewise.
+
 2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
