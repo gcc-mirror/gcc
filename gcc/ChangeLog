@@ -1,3 +1,31 @@
+2014-07-07  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (decl_quals): New function.
+	(modified_type_die): Take one cv_quals argument instead of two,
+	one for const and one for volatile.
+	(add_type_attribute): Likewise.
+	(generic_parameter_die): Call add_type_attribute with one modifier
+	argument.
+	(base_type_for_mode): Likewise.
+	(add_bounds_info): Likewise.
+	(add_subscript_info): Likewise.
+	(gen_array_type_die): Likewise.
+	(gen_descr_array_type_die): Likewise.
+	(gen_entry_point_die): Likewise.
+	(gen_enumeration_type_die): Likewise.
+	(gen_formal_parameter_die): Likewise.
+	(gen_subprogram_die): Likewise.
+	(gen_variable_die): Likewise.
+	(gen_const_die): Likewise.
+	(gen_field_die): Likewise.
+	(gen_pointer_type_die): Likewise.
+	(gen_reference_type_die): Likewise.
+	(gen_ptr_to_mbr_type_die): Likewise.
+	(gen_inheritance_die): Likewise.
+	(gen_subroutine_type_die): Likewise.
+	(gen_typedef_die): Likewise.
+	(force_type_die): Likewise.
+
 2014-08-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_comdat_group_group): Only default to no
