@@ -1,3 +1,7 @@
+2014-08-19  Joost VandeVondele <vondele@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-08-19  Christopher Faylor  <me.gnu@cgf.cx>
 
 	* MAINTAINERS: Remove myself
