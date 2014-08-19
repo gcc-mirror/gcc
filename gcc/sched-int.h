@@ -250,8 +250,10 @@ struct _dep
 typedef struct _dep dep_def;
 typedef dep_def *dep_t;
 
-#define DEP_PRO(D) ((D)->pro)
-#define DEP_CON(D) ((D)->con)
+extern rtx_insn *DEP_PRO (dep_t dep);
+extern rtx_insn *DEP_CON (dep_t dep);
+extern rtx& SET_DEP_PRO (dep_t dep);
+extern rtx& SET_DEP_CON (dep_t dep);
 #define DEP_TYPE(D) ((D)->type)
 #define DEP_STATUS(D) ((D)->status)
 #define DEP_COST(D) ((D)->cost)

@@ -1,3 +1,23 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* sched-int.h (DEP_PRO): struct _dep's "pro" and "con" fields will
+	eventually be rtx_insn *, but to help with transition, for now,
+	convert from an access macro into a pair of functions: DEP_PRO
+	returning an rtx_insn * and...
+	(SET_DEP_PRO): New function, for use where DEP_PRO is used as an
+	lvalue, returning an rtx&.
+	(DEP_CON): Analogous changes to DEP_PRO above.
+	(SET_DEP_CON): Likewise.
+
+	* haifa-sched.c (create_check_block_twin): Replace DEP_CON used as
+	an lvalue to SET_DEP_CON.
+	* sched-deps.c (init_dep_1): Likewise for DEP_PRO and DEP_CON.
+	(sd_copy_back_deps): Likewise for DEP_CON.
+	(DEP_PRO): New function, adding a checked cast for now.
+	(DEP_CON): Likewise.
+	(SET_DEP_PRO): New function.
+	(SET_DEP_CON): Likewise.
+
 2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* config.gcc (*-*-cygwin*): Use __cxa_atexit by default.
