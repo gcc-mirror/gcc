@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void asan_function_start (void);
 extern void asan_finish_file (void);
-extern rtx asan_emit_stack_protection (rtx, rtx, unsigned int, HOST_WIDE_INT *,
-				       tree *, int);
+extern rtx_insn *asan_emit_stack_protection (rtx, rtx, unsigned int,
+					     HOST_WIDE_INT *, tree *, int);
 extern bool asan_protect_global (tree);
 extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);

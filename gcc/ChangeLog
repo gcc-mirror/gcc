@@ -1,5 +1,12 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* asan.h (asan_emit_stack_protection): Strengthen return type from
+	rtx to rtx_insn *.
+	* asan.c (asan_emit_stack_protection): Likewise.  Add local
+	"insns" to hold the return value.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (bb_note): Strengthen return type from rtx to
 	rtx_note *.
 	* sched-int.h (bb_note): Likewise.
