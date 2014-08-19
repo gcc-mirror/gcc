@@ -3019,7 +3019,7 @@ extern int cse_not_expected;
 extern int rtx_to_tree_code (enum rtx_code);
 
 /* In cse.c */
-extern int delete_trivially_dead_insns (rtx, int);
+extern int delete_trivially_dead_insns (rtx_insn *, int);
 extern int exp_equiv_p (const_rtx, const_rtx, int, bool);
 extern unsigned hash_rtx (const_rtx x, enum machine_mode, int *, int *, bool);
 
