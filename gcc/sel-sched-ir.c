@@ -207,7 +207,7 @@ blist_add (blist_t *lp, insn_t to, ilist_t ptr, deps_t dc)
   _list_add (lp);
   bnd = BLIST_BND (*lp);
 
-  BND_TO (bnd) = to;
+  SET_BND_TO (bnd) = to;
   BND_PTR (bnd) = ptr;
   BND_AV (bnd) = NULL;
   BND_AV1 (bnd) = NULL;
@@ -6461,6 +6461,16 @@ rtx_insn *BB_NOTE_LIST (basic_block bb)
 rtx& SET_BB_NOTE_LIST (basic_block bb)
 {
   return SEL_REGION_BB_INFO (bb)->note_list;
+}
+
+rtx_insn *BND_TO (bnd_t bnd)
+{
+  return safe_as_a <rtx_insn *> (bnd->to);
+}
+
+insn_t& SET_BND_TO (bnd_t bnd)
+{
+  return bnd->to;
 }
 
 #endif

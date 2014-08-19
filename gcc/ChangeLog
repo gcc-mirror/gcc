@@ -1,3 +1,21 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* sel-sched-ir.h (BND_TO): insn_t will eventually be an
+	rtx_insn *.  To help with transition, for now, convert from an
+	access macro into a pair of functions: BND_TO, returning an
+	rtx_insn *, and...
+	(SET_BND_TO): New function, for use where BND_TO is used as an
+	lvalue.
+
+	* sel-sched-ir.c (blist_add): Update lvalue usage of BND_TO to
+	SET_BND_TO.
+	(BND_TO): New function, adding a checked cast.
+	(SET_BND_TO): New function.
+
+	* sel-sched.c (move_cond_jump): Update lvalue usage of BND_TO to
+	SET_BND_TO.
+	(compute_av_set_on_boundaries): Likewise.
+
 2014-08-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (*ctz<mode>2_falsedep_1): Don't clear
