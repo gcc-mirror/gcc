@@ -1,5 +1,16 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (unlink_insn_chain): Strengthen return type from rtx to
+	rtx_insn *.
+	(duplicate_insn_chain): Likewise.
+	* cfgrtl.c (unlink_insn_chain): Strengthen return type from rtx to
+	rtx_insn *, also for locals "prevfirst" and "nextlast".  Add a
+	checked cast for now (until we can strengthen the params in the
+	same way).
+	(duplicate_insn_chain): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (next_cc0_user): Strengthen return type from rtx to
 	rtx_insn *.
 	(prev_cc0_setter): Likewise.

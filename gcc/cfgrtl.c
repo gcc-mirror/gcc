@@ -3303,11 +3303,11 @@ fixup_abnormal_edges (void)
 
 /* Cut the insns from FIRST to LAST out of the insns stream.  */
 
-rtx
+rtx_insn *
 unlink_insn_chain (rtx first, rtx last)
 {
-  rtx prevfirst = PREV_INSN (first);
-  rtx nextlast = NEXT_INSN (last);
+  rtx_insn *prevfirst = PREV_INSN (first);
+  rtx_insn *nextlast = NEXT_INSN (last);
 
   SET_PREV_INSN (first) = NULL;
   SET_NEXT_INSN (last) = NULL;
@@ -3319,7 +3319,7 @@ unlink_insn_chain (rtx first, rtx last)
     set_last_insn (prevfirst);
   if (!prevfirst)
     set_first_insn (nextlast);
-  return first;
+  return as_a <rtx_insn *> (first);
 }
 
 /* Skip over inter-block insns occurring after BB which are typically
@@ -4080,7 +4080,7 @@ cfg_layout_can_duplicate_bb_p (const_basic_block bb)
   return true;
 }
 
-rtx
+rtx_insn *
 duplicate_insn_chain (rtx from, rtx to)
 {
   rtx insn, next, copy;
@@ -4166,7 +4166,7 @@ duplicate_insn_chain (rtx from, rtx to)
     }
   insn = NEXT_INSN (last);
   delete_insn (last);
-  return insn;
+  return as_a <rtx_insn *> (insn);
 }
 
 /* Create a duplicate of the basic block BB.  */
