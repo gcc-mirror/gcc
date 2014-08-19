@@ -368,17 +368,21 @@ struct GTY(()) control_flow_graph {
 
 /* Stuff for recording basic block info.  */
 
-/* These macros are currently split into two:
-   one suitable for reading, and for writing.
-   These will become functions in a follow-up patch.  */
-#define BB_HEAD(B)      (((const_basic_block)B)->il.x.head_)
-#define SET_BB_HEAD(B)  (B)->il.x.head_
-#define BB_END(B)       (((const rtl_bb_info *)(B)->il.x.rtl)->end_)
-#define SET_BB_END(B)   (B)->il.x.rtl->end_
-#define BB_HEADER(B)    (((const rtl_bb_info *)(B)->il.x.rtl)->header_)
-#define SET_BB_HEADER(B) (B)->il.x.rtl->header_
-#define BB_FOOTER(B)    (((const rtl_bb_info *)(B)->il.x.rtl)->footer_)
-#define SET_BB_FOOTER(B) (B)->il.x.rtl->footer_
+/* For now, these will be functions (so that they can include checked casts
+   to rtx_insn.   Once the underlying fields are converted from rtx
+   to rtx_insn, these can be converted back to macros.  */
+
+extern rtx_insn *BB_HEAD (const_basic_block bb);
+extern rtx& SET_BB_HEAD (basic_block bb);
+
+extern rtx_insn *BB_END (const_basic_block bb);
+extern rtx& SET_BB_END (basic_block bb);
+
+extern rtx_insn *BB_HEADER (const_basic_block bb);
+extern rtx& SET_BB_HEADER (basic_block bb);
+
+extern rtx_insn *BB_FOOTER (const_basic_block bb);
+extern rtx& SET_BB_FOOTER (basic_block bb);
 
 /* Special block numbers [markers] for entry and exit.
    Neither of them is supposed to hold actual statements.  */

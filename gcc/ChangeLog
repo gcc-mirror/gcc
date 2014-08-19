@@ -1,3 +1,29 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* basic-block.h (BB_HEAD): Convert to a function.  Strengthen the
+	return type from rtx to rtx_insn *.
+	(BB_END): Likewise.
+	(BB_HEADER): Likewise.
+	(BB_FOOTER): Likewise.
+	(SET_BB_HEAD): Convert to a function.
+	(SET_BB_END): Likewise.
+	(SET_BB_HEADER): Likewise.
+	(SET_BB_FOOTER): Likewise.
+
+	* cfgrtl.c (BB_HEAD): New function, from macro of same name.
+	Strengthen the return type from rtx to rtx_insn *.  For now, this
+	is done by adding a checked cast, but this will eventually
+	become a field lookup.
+	(BB_END): Likewise.
+	(BB_HEADER): Likewise.
+	(BB_FOOTER): Likewise.
+	(SET_BB_HEAD): New function, from macro of same name.  This is
+	intended for use as an lvalue, and so returns an rtx& to allow
+	in-place modification.
+	(SET_BB_END): Likewise.
+	(SET_BB_HEADER): Likewise.
+	(SET_BB_FOOTER): Likewise.
+
 2014-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* basic-block.h (BB_HEAD): Split macro in two: the existing one,
