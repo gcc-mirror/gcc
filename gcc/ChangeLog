@@ -1,5 +1,126 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* emit-rtl.h (emit_copy_of_insn_after): Strengthen return type
+	from rtx to rtx_insn *.
+
+	* rtl.h (emit_insn_before): Likewise.
+	(emit_insn_before_noloc): Likewise.
+	(emit_insn_before_setloc): Likewise.
+	(emit_jump_insn_before): Likewise.
+	(emit_jump_insn_before_noloc): Likewise.
+	(emit_jump_insn_before_setloc): Likewise.
+	(emit_call_insn_before): Likewise.
+	(emit_call_insn_before_noloc): Likewise.
+	(emit_call_insn_before_setloc): Likewise.
+	(emit_debug_insn_before): Likewise.
+	(emit_debug_insn_before_noloc): Likewise.
+	(emit_debug_insn_before_setloc): Likewise.
+	(emit_label_before): Likewise.
+	(emit_insn_after): Likewise.
+	(emit_insn_after_noloc): Likewise.
+	(emit_insn_after_setloc): Likewise.
+	(emit_jump_insn_after): Likewise.
+	(emit_jump_insn_after_noloc): Likewise.
+	(emit_jump_insn_after_setloc): Likewise.
+	(emit_call_insn_after): Likewise.
+	(emit_call_insn_after_noloc): Likewise.
+	(emit_call_insn_after_setloc): Likewise.
+	(emit_debug_insn_after): Likewise.
+	(emit_debug_insn_after_noloc): Likewise.
+	(emit_debug_insn_after_setloc): Likewise.
+	(emit_label_after): Likewise.
+	(emit_insn): Likewise.
+	(emit_debug_insn): Likewise.
+	(emit_jump_insn): Likewise.
+	(emit_call_insn): Likewise.
+	(emit_label): Likewise.
+	(gen_clobber): Likewise.
+	(emit_clobber): Likewise.
+	(gen_use): Likewise.
+	(emit_use): Likewise.
+	(emit): Likewise.
+
+	(emit_barrier_before): Strengthen return type from rtx to
+	rtx_barrier *.
+	(emit_barrier_after): Likewise.
+	(emit_barrier): Likewise.
+
+	* emit-rtl.c (emit_pattern_before_noloc):  Strengthen return type
+	from rtx to rtx_insn *.  Add checked casts for now when converting
+	"last" from rtx to rtx_insn *.
+	(emit_insn_before_noloc): Likewise for return type.
+	(emit_jump_insn_before_noloc): Likewise.
+	(emit_call_insn_before_noloc): Likewise.
+	(emit_debug_insn_before_noloc): Likewise.
+	(emit_barrier_before): Strengthen return type and local "insn"
+	from rtx to rtx_barrier *.
+	(emit_label_before): Strengthen return type from rtx to
+	rtx_insn *.  Add checked cast for now when returning param
+	(emit_pattern_after_noloc): Strengthen return type from rtx to
+	rtx_insn *.  Add checked casts for now when converting "last" from
+	rtx to rtx_insn *.
+	(emit_insn_after_noloc): Strengthen return type from rtx to
+	rtx_insn *.
+	(emit_jump_insn_after_noloc): Likewise.
+	(emit_call_insn_after_noloc): Likewise.
+	(emit_debug_insn_after_noloc): Likewise.
+	(emit_barrier_after): Strengthen return type from rtx to
+	rtx_barrier *.
+	(emit_label_after): Strengthen return type from rtx to rtx_insn *.
+	Add checked cast for now when converting "label" from rtx to
+	rtx_insn *.
+	(emit_pattern_after_setloc): Strengthen return type from rtx to
+	rtx_insn *.  Add checked casts for now when converting "last" from
+	rtx to rtx_insn *.
+	(emit_pattern_after): Strengthen return type from rtx to
+	rtx_insn *.
+	(emit_insn_after_setloc): Likewise.
+	(emit_insn_after): Likewise.
+	(emit_jump_insn_after_setloc): Likewise.
+	(emit_jump_insn_after): Likewise.
+	(emit_call_insn_after_setloc): Likewise.
+	(emit_call_insn_after): Likewise.
+	(emit_debug_insn_after_setloc): Likewise.
+	(emit_debug_insn_after): Likewise.
+	(emit_pattern_before_setloc): Likewise.  Add checked casts for now
+	when converting "last" from rtx to rtx_insn *.
+	(emit_pattern_before): Strengthen return type from rtx to
+	rtx_insn *.
+	(emit_insn_before_setloc): Likewise.
+	(emit_insn_before): Likewise.
+	(emit_jump_insn_before_setloc): Likewise.
+	(emit_jump_insn_before): Likewise.
+	(emit_call_insn_before_setloc): Likewise.
+	(emit_call_insn_before): Likewise.
+	(emit_debug_insn_before_setloc): Likewise.
+	(emit_debug_insn_before): Likewise.
+	(emit_insn): Strengthen return type and locals "last", "insn",
+	"next" from rtx to rtx_insn *.  Add checked cast to rtx_insn
+	within cases where we know we have an insn.
+	(emit_debug_insn): Likewise.
+	(emit_jump_insn): Likewise.
+	(emit_call_insn): Strengthen return type and local "insn" from rtx
+	to rtx_insn *.
+	(emit_label): Strengthen return type from rtx to rtx_insn *.  Add
+	a checked cast to rtx_insn * for now on "label".
+	(emit_barrier): Strengthen return type from rtx to rtx_barrier *.
+	(emit_clobber): Strengthen return type from rtx to rtx_insn *.
+	(emit_use): Likewise.
+	(gen_use): Likewise, also for local "seq".
+	(emit): Likewise for return type and local "insn".
+	(rtx_insn): Likewise for return type and local "new_rtx".
+
+	* cfgrtl.c (emit_barrier_after_bb): Strengthen local "barrier"
+	from rtx to rtx_barrier *.
+
+	* config/sh/sh.c (output_stack_adjust): Since emit_insn has
+	changed return type from rtx to rtx_insn *, we must update
+	"emit_fn" type, and this in turn means updating...
+	(frame_insn): ...this.  Strengthen return type from rtx to
+	rtx_insn *.  Introduce a new local "insn" of the appropriate type.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* emit-rtl.c (emit_jump_table_data): Strengthen return type from
 	rtx to rtx_jump_table_data *.  Also for local.
 	* rtl.h (emit_jump_table_data): Likewise.
