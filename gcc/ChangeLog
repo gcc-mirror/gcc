@@ -1,5 +1,14 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* emit-rtl.c (last_call_insn): Strengthen return type from rtx to
+	rtx_call_insn *.
+	* rtl.h (is_a_helper <rtx_call_insn *>::test): New overload,
+	accepting an rtx_insn *.
+	(last_call_insn): Strengthen return type from rtx to
+	rtx_call_insn *.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (delete_trivially_dead_insns): Strengthen initial param
 	"insns" from rtx to rtx_insn *.
 	* cse.c (delete_trivially_dead_insns): Likewise, also do it for

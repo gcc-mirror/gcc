@@ -3382,17 +3382,17 @@ prev_real_insn (rtx insn)
 /* Return the last CALL_INSN in the current list, or 0 if there is none.
    This routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_call_insn *
 last_call_insn (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = get_last_insn ();
        insn && !CALL_P (insn);
        insn = PREV_INSN (insn))
     ;
 
-  return insn;
+  return safe_as_a <rtx_call_insn *> (insn);
 }
 
 /* Find the next insn after INSN that really does something.  This routine
