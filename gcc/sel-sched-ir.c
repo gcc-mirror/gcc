@@ -4620,7 +4620,7 @@ static void
 init_bb (basic_block bb)
 {
   remove_notes (bb_note (bb), BB_END (bb));
-  BB_NOTE_LIST (bb) = note_list;
+  SET_BB_NOTE_LIST (bb) = note_list;
 }
 
 void
@@ -4655,7 +4655,7 @@ sel_restore_notes (void)
 	{
 	  note_list = BB_NOTE_LIST (first);
 	  restore_other_notes (NULL, first);
-	  BB_NOTE_LIST (first) = NULL_RTX;
+	  SET_BB_NOTE_LIST (first) = NULL_RTX;
 
 	  FOR_BB_INSNS (first, insn)
 	    if (NONDEBUG_INSN_P (insn))
@@ -5263,8 +5263,8 @@ move_bb_info (basic_block merge_bb, basic_block empty_bb)
 {
   if (in_current_region_p (merge_bb))
     concat_note_lists (BB_NOTE_LIST (empty_bb),
-		       &BB_NOTE_LIST (merge_bb));
-  BB_NOTE_LIST (empty_bb) = NULL_RTX;
+		       &SET_BB_NOTE_LIST (merge_bb));
+  SET_BB_NOTE_LIST (empty_bb) = NULL_RTX;
 
 }
 
@@ -6450,6 +6450,17 @@ rtx_insn *VINSN_INSN_RTX (vinsn_t vi)
 rtx& SET_VINSN_INSN_RTX (vinsn_t vi)
 {
   return vi->insn_rtx;
+}
+
+rtx_insn *BB_NOTE_LIST (basic_block bb)
+{
+  rtx note_list = SEL_REGION_BB_INFO (bb)->note_list;
+  return safe_as_a <rtx_insn *> (note_list);
+}
+
+rtx& SET_BB_NOTE_LIST (basic_block bb)
+{
+  return SEL_REGION_BB_INFO (bb)->note_list;
 }
 
 #endif

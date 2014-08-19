@@ -1,5 +1,9 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtx-classes-status.txt (TODO): Add SET_BB_NOTE_LIST.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtx-classes-status.txt (TODO): Add SET_VINSN_INSN_RTX.
 
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
