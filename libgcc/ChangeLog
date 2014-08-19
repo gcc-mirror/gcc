@@ -1,3 +1,8 @@
+2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* config/i386/cygming-crtbegin.c (deregister_frame_fn): Fix
+	declaration syntax.
+
 2014-08-13  Steve Ellcey  <sellcey@mips.com>
 
 	* crtstuff.c: Undef caddr_t.
