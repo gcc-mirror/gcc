@@ -1,3 +1,7 @@
+2014-08-19  Christopher Faylor  <me.gnu@cgf.cx>
+
+	* MAINTAINERS: Remove myself
+
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtx-classes-status.txt: Add SET_NEXT_INSN, SET_PREV_INSN.
