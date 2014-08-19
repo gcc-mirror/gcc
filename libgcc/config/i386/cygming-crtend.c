@@ -70,12 +70,6 @@ static void
 register_frame_ctor (void)
 {
   __gcc_register_frame ();
-#if DEFAULT_USE_CXA_ATEXIT
-  /* If we use the __cxa_atexit method to register C++ dtors
-     at object construction,  also use atexit to register eh frame
-     info cleanup.  */
-  atexit (__gcc_deregister_frame);
-#endif
 }
 
 #if !DEFAULT_USE_CXA_ATEXIT
