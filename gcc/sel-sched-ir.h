@@ -233,7 +233,8 @@ struct _bnd
   deps_t dc;
 };
 typedef struct _bnd *bnd_t;
-#define BND_TO(B) ((B)->to)
+extern rtx_insn *BND_TO (bnd_t bnd);
+extern insn_t& SET_BND_TO (bnd_t bnd);
 
 /* PTR stands not for pointer as you might think, but as a Path To Root of the
    current instruction group from boundary B.  */

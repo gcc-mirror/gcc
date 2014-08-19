@@ -4954,7 +4954,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
 
   /* Jump is moved to the boundary.  */
   next = PREV_INSN (insn);
-  BND_TO (bnd) = insn;
+  SET_BND_TO (bnd) = insn;
 
   ft_edge = find_fallthru_edge_from (block_from);
   block_next = ft_edge->dest;
@@ -5095,7 +5095,7 @@ compute_av_set_on_boundaries (fence_t fence, blist_t bnds, av_set_t *av_vliw_p)
 	{
   	  gcc_assert (FENCE_INSN (fence) == BND_TO (bnd));
 	  FENCE_INSN (fence) = bnd_to;
-	  BND_TO (bnd) = bnd_to;
+	  SET_BND_TO (bnd) = bnd_to;
 	}
 
       av_set_clear (&BND_AV (bnd));
