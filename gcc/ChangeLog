@@ -1,5 +1,12 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (bb_note): Strengthen return type from rtx to
+	rtx_note *.
+	* sched-int.h (bb_note): Likewise.
+	* cfgrtl.c (bb_note): Likewise.  Add a checked cast to rtx_note *.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (make_insn_raw): Strengthen return type from rtx to
 	rtx_insn *.
 

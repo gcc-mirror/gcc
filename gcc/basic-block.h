@@ -801,7 +801,7 @@ extern basic_block * single_pred_before_succ_order (void);
 
 /* In cfgrtl.c  */
 extern rtx block_label (basic_block);
-extern rtx bb_note (basic_block);
+extern rtx_note *bb_note (basic_block);
 extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
 extern bool fixup_abnormal_edges (void);
