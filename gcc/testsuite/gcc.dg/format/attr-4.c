@@ -16,7 +16,7 @@ void
 baz (int i, int *ip, double d)
 {
   tformatprintf0 ("%d", i);
-  tformatprintf0 ("%"); /* { dg-warning "format" "attribute format printf case 0" } */
+  tformatprintf0 ("%"); /* { dg-warning "19:format" "attribute format printf case 0" } */
   tformatprintf1 ("%d", i);
   tformatprintf1 ("%"); /* { dg-warning "format" "attribute format printf case 1" } */
   tformatprintf2 ("%d", i);
