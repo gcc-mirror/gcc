@@ -3179,7 +3179,7 @@ get_max_insn_count (void)
 /* Return the next insn.  If it is a SEQUENCE, return the first insn
    of the sequence.  */
 
-rtx
+rtx_insn *
 next_insn (rtx insn)
 {
   if (insn)
@@ -3190,13 +3190,13 @@ next_insn (rtx insn)
 	insn = XVECEXP (PATTERN (insn), 0, 0);
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn.  If it is a SEQUENCE, return the last insn
    of the sequence.  */
 
-rtx
+rtx_insn *
 previous_insn (rtx insn)
 {
   if (insn)
@@ -3207,13 +3207,13 @@ previous_insn (rtx insn)
 	insn = XVECEXP (PATTERN (insn), 0, XVECLEN (PATTERN (insn), 0) - 1);
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a NOTE.  This routine does not
    look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nonnote_insn (rtx insn)
 {
   while (insn)
@@ -3223,14 +3223,14 @@ next_nonnote_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a NOTE, but stop the
    search before we enter another basic block.  This routine does not
    look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nonnote_insn_bb (rtx insn)
 {
   while (insn)
@@ -3239,16 +3239,16 @@ next_nonnote_insn_bb (rtx insn)
       if (insn == 0 || !NOTE_P (insn))
 	break;
       if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	return NULL_RTX;
+	return NULL;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a NOTE.  This routine does
    not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nonnote_insn (rtx insn)
 {
   while (insn)
@@ -3258,14 +3258,14 @@ prev_nonnote_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a NOTE, but stop
    the search before we enter another basic block.  This routine does
    not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nonnote_insn_bb (rtx insn)
 {
   while (insn)
@@ -3274,16 +3274,16 @@ prev_nonnote_insn_bb (rtx insn)
       if (insn == 0 || !NOTE_P (insn))
 	break;
       if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	return NULL_RTX;
+	return NULL;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a DEBUG_INSN.  This
    routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3293,13 +3293,13 @@ next_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a DEBUG_INSN.
    This routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3309,13 +3309,13 @@ prev_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a NOTE nor DEBUG_INSN.
    This routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nonnote_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3325,13 +3325,13 @@ next_nonnote_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a NOTE nor DEBUG_INSN.
    This routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nonnote_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3341,14 +3341,14 @@ prev_nonnote_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next INSN, CALL_INSN or JUMP_INSN after INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_real_insn (rtx insn)
 {
   while (insn)
@@ -3358,14 +3358,14 @@ next_real_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the last INSN, CALL_INSN or JUMP_INSN before INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_real_insn (rtx insn)
 {
   while (insn)
@@ -3375,7 +3375,7 @@ prev_real_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the last CALL_INSN in the current list, or 0 if there is none.
@@ -3409,7 +3409,7 @@ active_insn_p (const_rtx insn)
 		      && GET_CODE (PATTERN (insn)) != CLOBBER))));
 }
 
-rtx
+rtx_insn *
 next_active_insn (rtx insn)
 {
   while (insn)
@@ -3419,14 +3419,14 @@ next_active_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Find the last insn before INSN that really does something.  This routine
    does not look inside SEQUENCEs.  After reload this also skips over
    standalone USE and CLOBBER insn.  */
 
-rtx
+rtx_insn *
 prev_active_insn (rtx insn)
 {
   while (insn)
@@ -3436,7 +3436,7 @@ prev_active_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 #ifdef HAVE_cc0
