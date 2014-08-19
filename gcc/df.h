@@ -649,7 +649,7 @@ struct df_d
 			: BLOCK_FOR_INSN (DF_REF_INSN (REF)))
 #define DF_REF_BBNO(REF) (DF_REF_BB (REF)->index)
 #define DF_REF_INSN_INFO(REF) ((REF)->base.insn_info)
-#define DF_REF_INSN(REF) ((REF)->base.insn_info->insn)
+extern rtx_insn *DF_REF_INSN (df_ref ref);
 #define DF_REF_INSN_UID(REF) (INSN_UID (DF_REF_INSN(REF)))
 #define DF_REF_CLASS(REF) ((REF)->base.cl)
 #define DF_REF_TYPE(REF) ((REF)->base.type)

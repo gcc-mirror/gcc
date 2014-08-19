@@ -1,3 +1,9 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* df-core.c (DF_REF_INSN): New, using a checked cast for now.
+	* df.h (DF_REF_INSN): Convert from a macro to a function, so
+	that we can return an rtx_insn *.
+
 2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* config/i386/cygwin.h (LINK_SPEC): Pass --tsaware flag only

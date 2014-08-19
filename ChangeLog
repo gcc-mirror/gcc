@@ -1,3 +1,7 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add DF_REF_INSN.
+
 2014-08-19  Joost VandeVondele <vondele@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
