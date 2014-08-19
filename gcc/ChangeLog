@@ -1,5 +1,26 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* cfgexpand.c (expand_used_vars): Strengthen return type from rtx
+	to rtx_insn *; also for local "var_end_seq".
+	(maybe_dump_rtl_for_gimple_stmt): Likewise for param "since".
+	(maybe_cleanup_end_of_block): Likewise for param "last" and local
+	"insn".
+	(expand_gimple_cond): Likewise for locals "last2" and "last".
+	(mark_transaction_restart_calls): Likewise for local "insn".
+	(expand_gimple_stmt): Likewise for return type and locals "last"
+	and "insn".
+	(expand_gimple_tailcall): Likewise for locals "last2" and "last".
+	(avoid_complex_debug_insns): Likewise for param "insn".
+	(expand_debug_locations): Likewise for locals "insn", "last",
+	"prev_insn" and "insn2".
+	(expand_gimple_basic_block): Likewise for local "last".
+	(construct_exit_block): Likewise for locals "head", "end",
+	"orig_end".
+	(pass_expand::execute): Likewise for locals "var_seq",
+	"var_ret_seq", "next".
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* asan.h (asan_emit_stack_protection): Strengthen return type from
 	rtx to rtx_insn *.
 	* asan.c (asan_emit_stack_protection): Likewise.  Add local
