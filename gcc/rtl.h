@@ -734,6 +734,14 @@ is_a_helper <rtx_call_insn *>::test (rtx rt)
 template <>
 template <>
 inline bool
+is_a_helper <rtx_call_insn *>::test (rtx_insn *insn)
+{
+  return CALL_P (insn);
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <rtx_jump_table_data *>::test (rtx rt)
 {
   return JUMP_TABLE_DATA_P (rt);
@@ -2416,7 +2424,7 @@ extern rtx gen_use (rtx);
 extern rtx emit_use (rtx);
 extern rtx make_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
-extern rtx last_call_insn (void);
+extern rtx_call_insn *last_call_insn (void);
 extern rtx_insn *previous_insn (rtx);
 extern rtx_insn *next_insn (rtx);
 extern rtx_insn *prev_nonnote_insn (rtx);
