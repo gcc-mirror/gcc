@@ -5127,9 +5127,10 @@ modes.  To inhibit the warning messages, use @option{-Wno-long-long}.
 @item -Wvariadic-macros
 @opindex Wvariadic-macros
 @opindex Wno-variadic-macros
-Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
-alternate syntax when in pedantic ISO C99 mode.  This is default.
-To inhibit the warning messages, use @option{-Wno-variadic-macros}.
+Warn if variadic macros are used in ISO C90 mode, or if the GNU
+alternate syntax is used in ISO C99 mode.  This is enabled by either
+@option{-Wpedantic} or @option{-Wtraditional}.  To inhibit the warning
+messages, use @option{-Wno-variadic-macros}.
 
 @item -Wvarargs
 @opindex Wvarargs

@@ -1,3 +1,12 @@
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/60975
+	PR c/53063
+	* c.opt (Wvariadic-macros): Use CPP and LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Call cpp_handle_option_auto.
+	(c_common_post_options): Call init_global_opts_from_cpp.
+	(sanitize_cpp_opts): Do not handle Wvariadic-macros here.
+
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/62153

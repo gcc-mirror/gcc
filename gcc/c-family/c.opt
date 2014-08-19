@@ -838,8 +838,12 @@ C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
 Wvariadic-macros
-C ObjC C++ ObjC++ Var(cpp_warn_variadic_macros) Init(1) Warning
+C ObjC C++ ObjC++ CPP(warn_variadic_macros) Var(cpp_warn_variadic_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
 Warn about using variadic macros
+
+Wvariadic-macros
+LangEnabledBy(C ObjC C++ ObjC++,Wtraditional)
+;
 
 Wvarargs
 C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)
