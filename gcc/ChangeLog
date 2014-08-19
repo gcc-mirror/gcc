@@ -1,5 +1,12 @@
 2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
 
+	* config/i386/cygwin.h (LINK_SPEC): Pass --tsaware flag only
+	when building executables, not DLLs.  Add --large-address-aware
+	under the same conditions.
+	* config/i386/cygwin-w64.h (LINK_SPEC): Pass --tsaware flag only
+	when building executables, not DLLs.  Add --large-address-aware
+	under the same conditions when using -m32.
+
 	* config/i386/cygwin-stdint.h: Throughout, make type
 	definitions dependent on target architecture, not host.
 

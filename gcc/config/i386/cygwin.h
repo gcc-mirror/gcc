@@ -120,7 +120,8 @@ along with GCC; see the file COPYING3.  If not see
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \
   %{shared|mdll: --enable-auto-image-base -e __cygwin_dll_entry@12} \
-  --dll-search-prefix=cyg -tsaware"
+  --dll-search-prefix=cyg \
+  %{!shared: %{!mdll: --large-address-aware --tsaware}}"
 
 /* Binutils does not handle weak symbols from dlls correctly.  For now,
    do not use them unnecessarily in gthr-posix.h.  */
