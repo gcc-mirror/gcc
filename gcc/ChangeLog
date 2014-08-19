@@ -1,3 +1,8 @@
+2014-08-19  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_gimple_assign): Properly build a
+	null-pointer constant when devirtualizing addresses.
+
 2014-07-07  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (decl_quals): New function.
