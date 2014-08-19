@@ -1,5 +1,19 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched-ir.h (VINSN_INSN_RTX): struct vinsn_def's "insn_rtx"
+	field will eventually be an rtx_insn *.  To help with transition,
+	for now, convert from an access macro into a pair of functions:
+	VINSN_INSN_RTX, returning an rtx_insn *, and...
+	(SET_VINSN_INSN_RTX): New function, for use where VINSN_INSN_RTX
+	is used as an lvalue.
+
+	* sel-sched-ir.c (vinsn_init): Replace VINSN_INSN_RTX with
+	SET_VINSN_INSN_RTX where it's used as an lvalue.
+	(VINSN_INSN_RTX): New function.
+	(SET_VINSN_INSN_RTX): New function.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-int.h (DEP_PRO): struct _dep's "pro" and "con" fields will
 	eventually be rtx_insn *, but to help with transition, for now,
 	convert from an access macro into a pair of functions: DEP_PRO

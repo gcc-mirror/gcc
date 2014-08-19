@@ -1179,7 +1179,7 @@ vinsn_init (vinsn_t vi, insn_t insn, bool force_unique_p)
   hash_rtx_callback_function hrcf;
   int insn_class;
 
-  VINSN_INSN_RTX (vi) = insn;
+  SET_VINSN_INSN_RTX (vi) = insn;
   VINSN_COUNT (vi) = 0;
   vi->cost = -1;
 
@@ -6441,4 +6441,15 @@ sel_remove_loop_preheader (void)
     SET_LOOP_PREHEADER_BLOCKS (loop_outer (current_loop_nest),
 			       preheader_blocks);
 }
+
+rtx_insn *VINSN_INSN_RTX (vinsn_t vi)
+{
+  return safe_as_a <rtx_insn *> (vi->insn_rtx);
+}
+
+rtx& SET_VINSN_INSN_RTX (vinsn_t vi)
+{
+  return vi->insn_rtx;
+}
+
 #endif
