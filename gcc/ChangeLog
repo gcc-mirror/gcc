@@ -1,3 +1,41 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* coretypes.h (class rtx_debug_insn): Add forward declaration.
+	(class rtx_nonjump_insn): Likewise.
+	(class rtx_jump_insn): Likewise.
+	(class rtx_call_insn): Likewise.
+	(class rtx_jump_table_data): Likewise.
+	(class rtx_barrier): Likewise.
+	(class rtx_code_label): Likewise.
+	(class rtx_note): Likewise.
+
+	* rtl.h (class rtx_debug_insn): New, a subclass of rtx_insn,
+	adding the invariant DEBUG_INSN_P (X).
+	(class rtx_nonjump_insn): New, a subclass of rtx_insn, adding
+	the invariant NONJUMP_INSN_P (X).
+	(class rtx_jump_insn): New, a subclass of rtx_insn, adding
+	the invariant JUMP_P (X).
+	(class rtx_call_insn): New, a subclass of rtx_insn, adding
+	the invariant CALL_P (X).
+	(class rtx_jump_table): New, a subclass of rtx_insn, adding the
+	invariant JUMP_TABLE_DATA_P (X).
+	(class rtx_barrier): New, a subclass of rtx_insn, adding the
+	invariant BARRIER_P (X).
+	(class rtx_code_label): New, a subclass of rtx_insn, adding
+	the invariant LABEL_P (X).
+	(class rtx_note): New, a subclass of rtx_insn, adding
+	the invariant NOTE_P(X).
+	(is_a_helper <rtx_debug_insn *>::test): New.
+	(is_a_helper <rtx_nonjump_insn *>::test): New.
+	(is_a_helper <rtx_jump_insn *>::test): New.
+	(is_a_helper <rtx_call_insn *>::test): New.
+	(is_a_helper <rtx_jump_table_data *>::test): New functions,
+	overloaded for both rtx and rtx_insn *.
+	(is_a_helper <rtx_barrier *>::test): New.
+	(is_a_helper <rtx_code_label *>::test): New functions, overloaded
+	for both rtx and rtx_insn *.
+	(is_a_helper <rtx_note *>::test): New.
+
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	* config/alpha/alpha.h (CLZ_DEFINED_VALUE_AT_ZERO,
