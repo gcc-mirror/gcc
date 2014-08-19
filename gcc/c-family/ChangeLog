@@ -1,3 +1,10 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-opts.c (sanitize_cpp_opts): Make warn_long_long be set according
+	to warn_c90_c99_compat.
+	* c.opt (Wc90-c99-compat, Wdeclaration-after-statement): Initialize
+	to -1.
+
 2014-08-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 

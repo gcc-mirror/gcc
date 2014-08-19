@@ -1,48 +1,46 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu90 -pedantic-errors -Wno-c90-c99-compat" } */
 
-_Bool b; /* { dg-error "ISO C90 does not support boolean types" } */
-_Complex double c = __builtin_complex (0.0, 0.0); /* { dg-error "ISO C90 does not support complex types" } */
-long long l; /* { dg-error "ISO C90 does not support .long long." } */
-struct A { int i; char a[]; }; /* { dg-error "ISO C90 does not support flexible array members" } */
-struct { long int b: 2; } s; /* { dg-error "type of bit-field .b. is a GCC extension" } */
-const const int i; /* { dg-error "duplicate .const." } */
-volatile volatile int v; /* { dg-error "duplicate .volatile." } */
+_Bool b;
+_Complex double c = __builtin_complex (0.0, 0.0);
+long long l;
+struct A { int i; char a[]; };
+struct { long int b: 2; } s;
+const const int i;
+volatile volatile int v;
 
 struct S { int a[2]; };
 extern struct S foo (void);
 
-#define V(v, ...) (v, __VA_ARGS) /* { dg-error "anonymous variadic macros were introduced in C99" } */
+enum { E, };
 
-enum { E, }; /* { dg-error "comma at end of enumerator list" } */
-
-void fn1 (char [*]); /* { dg-error "ISO C90 does not support .\\\[\\\*\\\]. array declarators" } */
+void fn1 (char [*]);
 
 void
-fn2 (char x[static 4]) /* { dg-error "ISO C90 does not support .static. or type qualifiers" } */
+fn2 (char x[static 4])
 {
-  int i = (int) { 1 }; /* { dg-error "ISO C90 forbids compound literals" } */
-  struct A a = { .i = 3 }; /* { dg-error "ISO C90 forbids specifying subobject to initialize" } */
+  int i = (int) { 1 };
+  struct A a = { .i = 3 };
 }
 
 void
 fn3 (int n)
 {
   n = 3;
-  int i; /* { dg-error "ISO C90 forbids mixed declarations and code" } */
+  int i;
 }
 
 void
 fn4 (int n)
 {
   n = 3;
-  __extension__ int i; /* { dg-error "ISO C90 forbids mixed declarations and code" } */
+  __extension__ int i;
 }
 
 void
 fn5 (void)
 {
-  (foo ()).a[0]; /* { dg-error "ISO C90 forbids subscripting non-lvalue array" } */
+  (foo ()).a[0];
 }
 
 #define F(a) a
@@ -50,7 +48,7 @@ fn5 (void)
 void
 fn6 (void)
 {
-  F(); /* { dg-error "invoking macro F argument" } */
+  F();
 }
 
-void fn7 (int n, int a[n]); /* { dg-error "ISO C90 forbids variable length array .a." } */
+void fn7 (int n, int a[n]);

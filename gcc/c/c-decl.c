@@ -4920,27 +4920,23 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
 static void
 warn_variable_length_array (tree name, tree size)
 {
-  int const_size = TREE_CONSTANT (size);
-  enum opt_code opt = (warn_vla == -1 && !warn_c90_c99_compat)
-		      ? OPT_Wpedantic : OPT_Wvla;
-
-  if (const_size)
+  if (TREE_CONSTANT (size))
     {
       if (name)
-	pedwarn_c90 (input_location, opt,
+	pedwarn_c90 (input_location, OPT_Wvla,
 		     "ISO C90 forbids array %qE whose size "
 		     "can%'t be evaluated", name);
       else
-	pedwarn_c90 (input_location, opt, "ISO C90 forbids array "
+	pedwarn_c90 (input_location, OPT_Wvla, "ISO C90 forbids array "
 		     "whose size can%'t be evaluated");
     }
   else
     {
       if (name)
-	pedwarn_c90 (input_location, opt,
+	pedwarn_c90 (input_location, OPT_Wvla,
 		     "ISO C90 forbids variable length array %qE", name);
       else
-	pedwarn_c90 (input_location, opt, "ISO C90 forbids variable "
+	pedwarn_c90 (input_location, OPT_Wvla, "ISO C90 forbids variable "
 		     "length array");
     }
 }

@@ -1299,10 +1299,13 @@ sanitize_cpp_opts (void)
 
   /* Wlong-long is disabled by default. It is enabled by:
       [-Wpedantic | -Wtraditional] -std=[gnu|c]++98 ; or
-      [-Wpedantic | -Wtraditional] -std=non-c99 .
+      [-Wpedantic | -Wtraditional] -std=non-c99 ; or
+      -Wc90-c99-compat, if specified.
 
       Either -Wlong-long or -Wno-long-long override any other settings.  */
-  if (warn_long_long == -1)
+  if (warn_long_long == -1 && warn_c90_c99_compat != -1)
+    warn_long_long = warn_c90_c99_compat;
+  else if (warn_long_long == -1)
     warn_long_long = ((pedantic || warn_traditional)
 		      && (c_dialect_cxx () ? cxx_dialect == cxx98 : !flag_isoc99));
   cpp_opts->cpp_warn_long_long = warn_long_long;
