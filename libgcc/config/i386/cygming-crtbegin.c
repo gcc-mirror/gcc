@@ -102,7 +102,7 @@ static struct object obj;
 
 /* Handle of libgcc's DLL reference.  */
 HANDLE hmod_libgcc;
-static void *  (*deregister_frame_fn) (const void *) == NULL;
+static void *  (*deregister_frame_fn) (const void *) = NULL;
 #endif
 
 #if TARGET_USE_JCR_SECTION
