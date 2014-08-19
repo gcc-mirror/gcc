@@ -1,3 +1,15 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c (warn_variable_length_array): Pass OPT_Wvla unconditionally
+	to pedwarn_c90.
+	* c-errors.c: Include "opts.h".
+	(pedwarn_c90): Rewrite to handle -Wno-c90-c99-compat better.
+	* c-parser.c (disable_extension_diagnostics): Handle negative value
+	of warn_c90_c99_compat, too.
+	(restore_extension_diagnostics): Likewise.
+	(c_parser_compound_statement_nostart): Pass
+	OPT_Wdeclaration_after_statement unconditionally to pedwarn_c90.
+
 2014-08-12  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_postfix_expression) <case RID_FUNCTION_NAME>:

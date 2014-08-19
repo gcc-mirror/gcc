@@ -292,7 +292,7 @@ C ObjC C++ ObjC++ Warning
 Warn when a built-in preprocessor macro is undefined or redefined
 
 Wc90-c99-compat
-C ObjC Var(warn_c90_c99_compat) Warning
+C ObjC Var(warn_c90_c99_compat) Init(-1) Warning
 Warn about features not present in ISO C90, but present in ISO C99
 
 Wc++-compat
@@ -344,7 +344,7 @@ C++ ObjC++ Var(warn_ctor_dtor_privacy) Warning
 Warn when all constructors and destructors are private
 
 Wdeclaration-after-statement
-C ObjC Var(warn_declaration_after_statement) Warning
+C ObjC Var(warn_declaration_after_statement) Init(-1) Warning
 Warn when a declaration is found after a statement
 
 Wdelete-incomplete

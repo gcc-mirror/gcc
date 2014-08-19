@@ -1,3 +1,11 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wc90-c99-compat-4.c: Remove all dg-warnings.
+	* gcc.dg/Wc90-c99-compat-5.c: Remove all dg-errors.
+	* gcc.dg/Wc90-c99-compat-7.c: New test.
+	* gcc.dg/Wc90-c99-compat-8.c: New test.
+	* gcc.dg/Wdeclaration-after-statement-4.c: New test.
+
 2014-08-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 

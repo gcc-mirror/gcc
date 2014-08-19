@@ -1,3 +1,12 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* charset.c (_cpp_valid_ucn): Warn only if -Wc90-c99-compat.
+	* lex.c (_cpp_lex_direct): Likewise.
+	* macro.c (replace_args): Likewise.
+	(parse_params): Likewise.
+	* include/cpplib.h (cpp_options): Change cpp_warn_c90_c99_compat
+	to char.
+
 2014-08-10 Marek Polacek  <polacek@redhat.com>
 
 	PR c/51849

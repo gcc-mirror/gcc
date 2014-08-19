@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "opts.h"
 
 /* Issue an ISO C99 pedantic warning MSGID.  */
 
@@ -56,26 +57,44 @@ pedwarn_c90 (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
-  bool warned = false;
 
   va_start (ap, gmsgid);
-  if (pedantic && !flag_isoc99)
+  /* Warnings such as -Wvla are the most specific ones.  */
+  if (opt != OPT_Wpedantic)
     {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_PEDWARN);
-      diagnostic.option_index = opt;
-      warned = report_diagnostic (&diagnostic);
+      int opt_var = *(int *) option_flag_var (opt, &global_options);
+      if (opt_var == 0)
+        goto out;
+      else if (opt_var > 0)
+	{
+	  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+			       (pedantic && !flag_isoc99)
+			       ? DK_PEDWARN : DK_WARNING);
+	  diagnostic.option_index = opt;
+	  report_diagnostic (&diagnostic);
+	  goto out;
+	}
     }
-  else if (opt != OPT_Wpedantic)
+  /* Maybe we want to issue the C90/C99 compat warning, which is more
+     specific than -pedantic.  */
+  if (warn_c90_c99_compat > 0)
     {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_WARNING);
-      diagnostic.option_index = opt;
-      warned = report_diagnostic (&diagnostic);
-    }
-  if (warn_c90_c99_compat && !warned)
-    {
-      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_WARNING);
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+			   (pedantic && !flag_isoc99)
+			   ? DK_PEDWARN : DK_WARNING);
       diagnostic.option_index = OPT_Wc90_c99_compat;
       report_diagnostic (&diagnostic);
     }
+  /* -Wno-c90-c99-compat suppresses the pedwarns.  */
+  else if (warn_c90_c99_compat == 0)
+    ;
+  /* For -pedantic outside C99, issue a pedwarn.  */
+  else if (pedantic && !flag_isoc99)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_PEDWARN);
+      diagnostic.option_index = opt;
+      report_diagnostic (&diagnostic);
+    }
+out:
   va_end (ap);
 }

@@ -1073,7 +1073,10 @@ disable_extension_diagnostics (void)
 	     | (warn_long_long << 4)
 	     | (warn_cxx_compat << 5)
 	     | (warn_overlength_strings << 6)
-	     | (warn_c90_c99_compat << 7));
+	     /* warn_c90_c99_compat has three states: -1/0/1, so we must
+		play tricks to properly restore it.  */
+	     | ((warn_c90_c99_compat == 1) << 7)
+	     | ((warn_c90_c99_compat == -1) << 8));
   cpp_opts->cpp_pedantic = pedantic = 0;
   warn_pointer_arith = 0;
   cpp_opts->cpp_warn_traditional = warn_traditional = 0;
@@ -1098,7 +1101,8 @@ restore_extension_diagnostics (int flags)
   cpp_opts->cpp_warn_long_long = warn_long_long = (flags >> 4) & 1;
   warn_cxx_compat = (flags >> 5) & 1;
   warn_overlength_strings = (flags >> 6) & 1;
-  warn_c90_c99_compat = (flags >> 7) & 1;
+  /* See above for why is this needed.  */
+  warn_c90_c99_compat = (flags >> 7) & 1 ? 1 : ((flags >> 8) & 1 ? -1 : 0);
 }
 
 /* Possibly kinds of declarator to parse.  */
@@ -4570,9 +4574,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  c_parser_declaration_or_fndef (parser, true, true, true, true,
 					 true, NULL, vNULL);
 	  if (last_stmt)
-	    pedwarn_c90 (loc, (pedantic && !flag_isoc99)
-			       ? OPT_Wpedantic
-			       : OPT_Wdeclaration_after_statement,
+	    pedwarn_c90 (loc, OPT_Wdeclaration_after_statement,
 			 "ISO C90 forbids mixed declarations and code");
 	  last_stmt = false;
 	}
@@ -4600,9 +4602,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 		 disable this diagnostic.  */
 	      restore_extension_diagnostics (ext);
 	      if (last_stmt)
-		pedwarn_c90 (loc, (pedantic && !flag_isoc99)
-				  ? OPT_Wpedantic
-				  : OPT_Wdeclaration_after_statement,
+		pedwarn_c90 (loc, OPT_Wdeclaration_after_statement,
 			     "ISO C90 forbids mixed declarations and code");
 	      last_stmt = false;
 	    }
