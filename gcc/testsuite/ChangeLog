@@ -1,5 +1,15 @@
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
+	* gcc.dg/Wc99-c11-compat-1.c: New test.
+	* gcc.dg/Wc99-c11-compat-2.c: New test.
+	* gcc.dg/Wc99-c11-compat-3.c: New test.
+	* gcc.dg/Wc99-c11-compat-4.c: New test.
+	* gcc.dg/Wc99-c11-compat-5.c: New test.
+	* gcc.dg/Wc99-c11-compat-6.c: New test.
+	* gcc.dg/Wc99-c11-compat-7.c: New test.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
 	* gcc.dg/Wc90-c99-compat-4.c: Remove all dg-warnings.
 	* gcc.dg/Wc90-c99-compat-5.c: Remove all dg-errors.
 	* gcc.dg/Wc90-c99-compat-7.c: New test.
