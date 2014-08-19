@@ -1,5 +1,23 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched-ir.h (BB_NOTE_LIST): struct sel_region_bb_info_def's
+	"note_list" field will eventually be an rtx_insn *.  To help with
+	transition, for now, convert from an access macro into a pair of
+	functions: BB_NOTE_LIST, returning an rtx_insn *, and...
+	(SET_BB_NOTE_LIST): New function, for use where BB_NOTE_LIST is
+	used as an lvalue.
+
+	* sel-sched.c (create_block_for_bookkeeping): Update lvalue usage
+	of BB_NOTE_LIST to SET_BB_NOTE_LIST.
+
+	* sel-sched-ir.c (init_bb): Likewise.
+	(sel_restore_notes): Likewise.
+	(move_bb_info): Likewise.
+	(BB_NOTE_LIST): New function, adding a checked cast to rtx_insn *.
+	(SET_BB_NOTE_LIST): New function.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* sel-sched-ir.h (VINSN_INSN_RTX): struct vinsn_def's "insn_rtx"
 	field will eventually be an rtx_insn *.  To help with transition,
 	for now, convert from an access macro into a pair of functions:
