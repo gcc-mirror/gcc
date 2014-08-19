@@ -240,6 +240,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
 -Waggressive-loop-optimizations -Warray-bounds @gol
+-Wbool-compare @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
@@ -4220,6 +4221,19 @@ of @option{-Wsuggest-final-types} and then rebuild with new annotations.
 This option is only active when @option{-ftree-vrp} is active
 (default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
+
+@item -Wbool-compare
+@opindex Wno-bool-compare
+@opindex Wbool-compare
+Warn about boolean expression compared with an integer value different from
+@code{true}/@code{false}.  For instance, the following comparison is
+always false:
+@smallexample
+int n = 5;
+@dots{}
+if ((n > 1) == 2) @{ @dots{} @}
+@end smallexample
+This warning is enabled by @option{-Wall}.
 
 @item -Wno-discarded-qualifiers @r{(C and Objective-C only)}
 @opindex Wno-discarded-qualifiers

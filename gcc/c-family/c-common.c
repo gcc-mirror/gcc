@@ -11612,6 +11612,39 @@ maybe_warn_unused_local_typedefs (void)
   vec_free (l->local_typedefs);
 }
 
+/* Warn about boolean expression compared with an integer value different
+   from true/false.  Warns also e.g. about "(i1 == i2) == 2".
+   LOC is the location of the comparison, CODE is its code, OP0 and OP1
+   are the operands of the comparison.  The caller must ensure that
+   either operand is a boolean expression.  */
+
+void
+maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
+			 tree op1)
+{
+  if (TREE_CODE_CLASS (code) != tcc_comparison)
+    return;
+
+  tree cst = (TREE_CODE (op0) == INTEGER_CST)
+	     ? op0 : (TREE_CODE (op1) == INTEGER_CST) ? op1 : NULL_TREE;
+  if (!cst)
+    return;
+
+  if (!integer_zerop (cst) && !integer_onep (cst))
+    {
+      int sign = (TREE_CODE (op0) == INTEGER_CST)
+		 ? tree_int_cst_sgn (cst) : -tree_int_cst_sgn (cst);
+      if (code == EQ_EXPR
+	  || ((code == GT_EXPR || code == GE_EXPR) && sign < 0)
+	  || ((code == LT_EXPR || code == LE_EXPR) && sign > 0))
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always false", cst);
+      else
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always true", cst);
+    }
+}
+
 /* The C and C++ parsers both use vectors to hold function arguments.
    For efficiency, we keep a cache of unused vectors.  This is the
    cache.  */

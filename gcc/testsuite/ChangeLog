@@ -1,3 +1,8 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* c-c++-common/Wbool-compare-1.c: New test.
+
 2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/45584

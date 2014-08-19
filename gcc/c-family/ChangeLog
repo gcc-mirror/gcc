@@ -1,5 +1,12 @@
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/62153
+	* c-common.c (maybe_warn_bool_compare): New function.
+	* c-common.h (maybe_warn_bool_compare): Declare.
+	* c.opt (Wbool-compare): New option.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
 	* c.opt (Wc99-c11-compat): New option.
 
 2014-08-19  Marek Polacek  <polacek@redhat.com>
