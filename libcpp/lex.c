@@ -2341,7 +2341,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
 	      cpp_error (pfile, CPP_DL_WARNING,
-			 "C++ style comments are are incompatible with C90");
+			 "C++ style comments are incompatible with C90");
 	      cpp_error (pfile, CPP_DL_WARNING,
 			 "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;

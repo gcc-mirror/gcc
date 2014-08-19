@@ -1,5 +1,9 @@
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
+	* lex.c (_cpp_lex_direct): Fix a typo.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
 	* charset.c (_cpp_valid_ucn): Warn only if -Wc90-c99-compat.
 	* lex.c (_cpp_lex_direct): Likewise.
 	* macro.c (replace_args): Likewise.
