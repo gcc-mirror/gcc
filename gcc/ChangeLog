@@ -1,3 +1,15 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (PREV_INSN): Convert to an inline function.  Strengthen
+	the return type from rtx to rtx_insn *,  which will enable various
+	conversions in followup patches.  For now this is is done by a
+	checked cast.
+	(NEXT_INSN): Likewise.
+	(SET_PREV_INSN): Convert to an inline function.  This is intended
+	for use as an lvalue, and so returns an rtx& to allow in-place
+	modification.
+	(SET_NEXT_INSN): Likewise.
+
 2014-07-08  Mark Wielaard  <mjw@redhat.com>
 
 	PR debug/59051
