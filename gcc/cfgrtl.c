@@ -1060,11 +1060,11 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 	      if (BARRIER_P (insn))
 		{
 		  if (PREV_INSN (insn))
-		    NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+		    SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 		  else
 		    SET_BB_FOOTER (src) = NEXT_INSN (insn);
 		  if (NEXT_INSN (insn))
-		    PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+		    SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 		}
 	      if (LABEL_P (insn))
 		break;
@@ -1132,14 +1132,14 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 	      update_bb_for_insn_chain (NEXT_INSN (BB_END (src)),
 				        PREV_INSN (barrier), src);
 
-	      NEXT_INSN (PREV_INSN (new_insn)) = NEXT_INSN (new_insn);
-	      PREV_INSN (NEXT_INSN (new_insn)) = PREV_INSN (new_insn);
+	      SET_NEXT_INSN (PREV_INSN (new_insn)) = NEXT_INSN (new_insn);
+	      SET_PREV_INSN (NEXT_INSN (new_insn)) = PREV_INSN (new_insn);
 
-	      NEXT_INSN (new_insn) = barrier;
-	      NEXT_INSN (PREV_INSN (barrier)) = new_insn;
+	      SET_NEXT_INSN (new_insn) = barrier;
+	      SET_NEXT_INSN (PREV_INSN (barrier)) = new_insn;
 
-	      PREV_INSN (new_insn) = PREV_INSN (barrier);
-	      PREV_INSN (barrier) = new_insn;
+	      SET_PREV_INSN (new_insn) = PREV_INSN (barrier);
+	      SET_PREV_INSN (barrier) = new_insn;
 	    }
 	}
     }
@@ -3270,8 +3270,8 @@ fixup_abnormal_edges (void)
 			{
 			  /* We're not deleting it, we're moving it.  */
 			  INSN_DELETED_P (insn) = 0;
-			  PREV_INSN (insn) = NULL_RTX;
-			  NEXT_INSN (insn) = NULL_RTX;
+			  SET_PREV_INSN (insn) = NULL_RTX;
+			  SET_NEXT_INSN (insn) = NULL_RTX;
 
 			  insert_insn_on_edge (insn, e);
 			  inserted = true;
@@ -3302,12 +3302,12 @@ unlink_insn_chain (rtx first, rtx last)
   rtx prevfirst = PREV_INSN (first);
   rtx nextlast = NEXT_INSN (last);
 
-  PREV_INSN (first) = NULL;
-  NEXT_INSN (last) = NULL;
+  SET_PREV_INSN (first) = NULL;
+  SET_NEXT_INSN (last) = NULL;
   if (prevfirst)
-    NEXT_INSN (prevfirst) = nextlast;
+    SET_NEXT_INSN (prevfirst) = nextlast;
   if (nextlast)
-    PREV_INSN (nextlast) = prevfirst;
+    SET_PREV_INSN (nextlast) = prevfirst;
   else
     set_last_insn (prevfirst);
   if (!prevfirst)
@@ -3650,32 +3650,32 @@ fixup_reorder_chain (void)
       if (BB_HEADER (bb))
 	{
 	  if (insn)
-	    NEXT_INSN (insn) = BB_HEADER (bb);
+	    SET_NEXT_INSN (insn) = BB_HEADER (bb);
 	  else
 	    set_first_insn (BB_HEADER (bb));
-	  PREV_INSN (BB_HEADER (bb)) = insn;
+	  SET_PREV_INSN (BB_HEADER (bb)) = insn;
 	  insn = BB_HEADER (bb);
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
       if (insn)
-	NEXT_INSN (insn) = BB_HEAD (bb);
+	SET_NEXT_INSN (insn) = BB_HEAD (bb);
       else
 	set_first_insn (BB_HEAD (bb));
-      PREV_INSN (BB_HEAD (bb)) = insn;
+      SET_PREV_INSN (BB_HEAD (bb)) = insn;
       insn = BB_END (bb);
       if (BB_FOOTER (bb))
 	{
-	  NEXT_INSN (insn) = BB_FOOTER (bb);
-	  PREV_INSN (BB_FOOTER (bb)) = insn;
+	  SET_NEXT_INSN (insn) = BB_FOOTER (bb);
+	  SET_PREV_INSN (BB_FOOTER (bb)) = insn;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
     }
 
-  NEXT_INSN (insn) = cfg_layout_function_footer;
+  SET_NEXT_INSN (insn) = cfg_layout_function_footer;
   if (cfg_layout_function_footer)
-    PREV_INSN (cfg_layout_function_footer) = insn;
+    SET_PREV_INSN (cfg_layout_function_footer) = insn;
 
   while (NEXT_INSN (insn))
     insn = NEXT_INSN (insn);
@@ -4410,15 +4410,15 @@ cfg_layout_delete_block (basic_block bb)
     {
       next = BB_HEAD (bb);
       if (prev)
-	NEXT_INSN (prev) = BB_HEADER (bb);
+	SET_NEXT_INSN (prev) = BB_HEADER (bb);
       else
 	set_first_insn (BB_HEADER (bb));
-      PREV_INSN (BB_HEADER (bb)) = prev;
+      SET_PREV_INSN (BB_HEADER (bb)) = prev;
       insn = BB_HEADER (bb);
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      NEXT_INSN (insn) = next;
-      PREV_INSN (next) = insn;
+      SET_NEXT_INSN (insn) = next;
+      SET_PREV_INSN (next) = insn;
     }
   next = NEXT_INSN (BB_END (bb));
   if (BB_FOOTER (bb))
@@ -4429,11 +4429,11 @@ cfg_layout_delete_block (basic_block bb)
 	  if (BARRIER_P (insn))
 	    {
 	      if (PREV_INSN (insn))
-		NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+		SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	      else
 		SET_BB_FOOTER (bb) = NEXT_INSN (insn);
 	      if (NEXT_INSN (insn))
-		PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+		SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	    }
 	  if (LABEL_P (insn))
 	    break;
@@ -4442,13 +4442,13 @@ cfg_layout_delete_block (basic_block bb)
       if (BB_FOOTER (bb))
 	{
 	  insn = BB_END (bb);
-	  NEXT_INSN (insn) = BB_FOOTER (bb);
-	  PREV_INSN (BB_FOOTER (bb)) = insn;
+	  SET_NEXT_INSN (insn) = BB_FOOTER (bb);
+	  SET_PREV_INSN (BB_FOOTER (bb)) = insn;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
-	  NEXT_INSN (insn) = next;
+	  SET_NEXT_INSN (insn) = next;
 	  if (next)
-	    PREV_INSN (next) = insn;
+	    SET_PREV_INSN (next) = insn;
 	  else
 	    set_last_insn (insn);
 	}
@@ -4475,9 +4475,9 @@ cfg_layout_delete_block (basic_block bb)
       insn = remaints;
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      NEXT_INSN (insn) = *to;
+      SET_NEXT_INSN (insn) = *to;
       if (*to)
-	PREV_INSN (*to) = insn;
+	SET_PREV_INSN (*to) = insn;
       *to = remaints;
     }
 }
@@ -4573,8 +4573,8 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 
 	  while (NEXT_INSN (last))
 	    last = NEXT_INSN (last);
-	  NEXT_INSN (last) = BB_FOOTER (b);
-	  PREV_INSN (BB_FOOTER (b)) = last;
+	  SET_NEXT_INSN (last) = BB_FOOTER (b);
+	  SET_PREV_INSN (BB_FOOTER (b)) = last;
 	}
       SET_BB_FOOTER (b) = NULL;
     }
@@ -4592,8 +4592,8 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
  
 	  while (NEXT_INSN (last))
 	    last = NEXT_INSN (last);
-	  NEXT_INSN (last) = BB_FOOTER (a);
-	  PREV_INSN (BB_FOOTER (a)) = last;
+	  SET_NEXT_INSN (last) = BB_FOOTER (a);
+	  SET_PREV_INSN (BB_FOOTER (a)) = last;
 	  SET_BB_FOOTER (a) = BB_HEADER (b);
 	}
       SET_BB_HEADER (b) = NULL;

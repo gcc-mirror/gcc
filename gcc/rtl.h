@@ -972,8 +972,15 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
   (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_UID", (INSN))->u2.insn_uid)
 
 /* Chain insns together in sequence.  */
-#define PREV_INSN(INSN)	XEXP (INSN, 0)
-#define NEXT_INSN(INSN)	XEXP (INSN, 1)
+/* For now these are split in two: an rvalue form:
+     PREV_INSN/NEXT_INSN
+   and an lvalue form:
+     SET_NEXT_INSN/SET_PREV_INSN.  */
+
+#define PREV_INSN(INSN)      XEXP ((const_rtx)(INSN), 0)
+#define SET_PREV_INSN(INSN)  XEXP (INSN, 0)
+#define NEXT_INSN(INSN)      XEXP ((const_rtx)(INSN), 1)
+#define SET_NEXT_INSN(INSN)  XEXP (INSN, 1)
 
 #define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 2)
 

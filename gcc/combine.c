@@ -2420,11 +2420,11 @@ update_cfg_for_uncondjump (rtx insn)
 	if (BARRIER_P (insn))
 	  {
 	    if (PREV_INSN (insn))
-	      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+	      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	    else
 	      SET_BB_FOOTER (bb) = NEXT_INSN (insn);
 	    if (NEXT_INSN (insn))
-	      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+	      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	  }
 	else if (LABEL_P (insn))
 	  break;

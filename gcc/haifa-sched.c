@@ -4024,8 +4024,8 @@ concat_note_lists (rtx from_end, rtx *to_endp)
   while (PREV_INSN (from_start) != NULL)
     from_start = PREV_INSN (from_start);
 
-  PREV_INSN (from_start) = *to_endp;
-  NEXT_INSN (*to_endp) = from_start;
+  SET_PREV_INSN (from_start) = *to_endp;
+  SET_NEXT_INSN (*to_endp) = from_start;
   *to_endp = from_end;
 }
 
@@ -4066,10 +4066,10 @@ remove_notes (rtx head, rtx tail)
 	  remove_insn (insn);
 
 	  /* Add the note to list that ends at NOTE_LIST.  */
-	  PREV_INSN (insn) = note_list;
-	  NEXT_INSN (insn) = NULL_RTX;
+	  SET_PREV_INSN (insn) = note_list;
+	  SET_NEXT_INSN (insn) = NULL_RTX;
 	  if (note_list)
-	    NEXT_INSN (note_list) = insn;
+	    SET_NEXT_INSN (note_list) = insn;
 	  note_list = insn;
 	  break;
 	}
@@ -4862,10 +4862,10 @@ restore_other_notes (rtx head, basic_block head_bb)
       /* In the above cycle we've missed this note.  */
       set_block_for_insn (note_head, head_bb);
 
-      PREV_INSN (note_head) = PREV_INSN (head);
-      NEXT_INSN (PREV_INSN (head)) = note_head;
-      PREV_INSN (head) = note_list;
-      NEXT_INSN (note_list) = head;
+      SET_PREV_INSN (note_head) = PREV_INSN (head);
+      SET_NEXT_INSN (PREV_INSN (head)) = note_head;
+      SET_PREV_INSN (head) = note_list;
+      SET_NEXT_INSN (note_list) = head;
 
       if (BLOCK_FOR_INSN (head) != head_bb)
 	SET_BB_END (head_bb) = note_list;
@@ -5291,14 +5291,14 @@ move_insn (rtx insn, rtx last, rtx nt)
       else
 	note = insn;
 
-      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (note);
-      PREV_INSN (NEXT_INSN (note)) = PREV_INSN (insn);
+      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (note);
+      SET_PREV_INSN (NEXT_INSN (note)) = PREV_INSN (insn);
 
-      NEXT_INSN (note) = NEXT_INSN (last);
-      PREV_INSN (NEXT_INSN (last)) = note;
+      SET_NEXT_INSN (note) = NEXT_INSN (last);
+      SET_PREV_INSN (NEXT_INSN (last)) = note;
 
-      NEXT_INSN (last) = insn;
-      PREV_INSN (insn) = last;
+      SET_NEXT_INSN (last) = insn;
+      SET_PREV_INSN (insn) = last;
 
       bb = BLOCK_FOR_INSN (last);
 
@@ -8227,8 +8227,8 @@ unlink_bb_notes (basic_block first, basic_block last)
       next = NEXT_INSN (note);
       gcc_assert (prev && next);
 
-      NEXT_INSN (prev) = next;
-      PREV_INSN (next) = prev;
+      SET_NEXT_INSN (prev) = next;
+      SET_PREV_INSN (next) = prev;
 
       bb_header[last->index] = label;
 
@@ -8269,9 +8269,9 @@ restore_bb_notes (basic_block first)
 
       bb_header[first->index] = 0;
 
-      NEXT_INSN (prev) = label;
-      NEXT_INSN (note) = next;
-      PREV_INSN (next) = note;
+      SET_NEXT_INSN (prev) = label;
+      SET_NEXT_INSN (note) = next;
+      SET_PREV_INSN (next) = note;
 
       first = first->next_bb;
     }

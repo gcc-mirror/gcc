@@ -1,5 +1,59 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (PREV_INSN): Split macro in two: the existing one,
+	for rvalues, and...
+	(SET_PREV_INSN): New macro, for use as an lvalue.
+	(NEXT_INSN, SET_NEXT_INSN): Likewise.
+
+	* caller-save.c (save_call_clobbered_regs): Convert lvalue use of
+	PREV_INSN/NEXT_INSN into SET_PREV_INSN/SET_NEXT_INSN.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Likewise.
+	(fixup_abnormal_edges): Likewise.
+	(unlink_insn_chain): Likewise.
+	(fixup_reorder_chain): Likewise.
+	(cfg_layout_delete_block): Likewise.
+	(cfg_layout_merge_blocks): Likewise.
+	* combine.c (update_cfg_for_uncondjump): Likewise.
+	* emit-rtl.c (link_insn_into_chain): Likewise.
+	(remove_insn): Likewise.
+	(delete_insns_since): Likewise.
+	(reorder_insns_nobb): Likewise.
+	(emit_insn_after_1): Likewise.
+	* final.c (rest_of_clean_state): Likewise.
+	(final_scan_insn): Likewise.
+	* gcse.c (can_assign_to_reg_without_clobbers_p): Likewise.
+	* haifa-sched.c (concat_note_lists): Likewise.
+	(remove_notes): Likewise.
+	(restore_other_notes): Likewise.
+	(move_insn): Likewise.
+	(unlink_bb_notes): Likewise.
+	(restore_bb_notes): Likewise.
+	* jump.c (delete_for_peephole): Likewise.
+	* optabs.c (emit_libcall_block_1): Likewise.
+	* reorg.c (emit_delay_sequence): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	* sel-sched-ir.c (sel_move_insn): Likewise.
+	(sel_remove_insn): Likewise.
+	(get_bb_note_from_pool): Likewise.
+	* sel-sched.c (move_nop_to_previous_block): Likewise.
+
+	* config/bfin/bfin.c (reorder_var_tracking_notes): Likewise.
+	* config/c6x/c6x.c (gen_one_bundle): Likewise.
+	(c6x_gen_bundles): Likewise.
+	(hwloop_optimize): Likewise.
+	* config/frv/frv.c (frv_function_prologue): Likewise.
+	(frv_register_nop): Likewise.
+	* config/ia64/ia64.c (ia64_init_dfa_pre_cycle_insn): Likewise.
+	(ia64_reorg): Likewise.
+	* config/mep/mep.c (mep_reorg_addcombine): Likewise.
+	(mep_make_bundle): Likewise.
+	(mep_bundle_insns): Likewise.
+	* config/picochip/picochip.c (reorder_var_tracking_notes): Likewise.
+	* config/tilegx/tilegx.c (reorder_var_tracking_notes): Likewise.
+	* config/tilepro/tilepro.c (reorder_var_tracking_notes): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (BB_HEAD): Convert to a function.  Strengthen the
 	return type from rtx to rtx_insn *.
 	(BB_END): Likewise.

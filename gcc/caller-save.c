@@ -913,13 +913,13 @@ save_call_clobbered_regs (void)
 		  prev = PREV_INSN (ins);
 		  if (NOTE_P (ins))
 		    {
-		      NEXT_INSN (prev) = NEXT_INSN (ins);
-		      PREV_INSN (NEXT_INSN (ins)) = prev;
-		      PREV_INSN (ins) = insn;
-		      NEXT_INSN (ins) = NEXT_INSN (insn);
-		      NEXT_INSN (insn) = ins;
+		      SET_NEXT_INSN (prev) = NEXT_INSN (ins);
+		      SET_PREV_INSN (NEXT_INSN (ins)) = prev;
+		      SET_PREV_INSN (ins) = insn;
+		      SET_NEXT_INSN (ins) = NEXT_INSN (insn);
+		      SET_NEXT_INSN (insn) = ins;
 		      if (NEXT_INSN (ins))
-			PREV_INSN (NEXT_INSN (ins)) = ins;
+			SET_PREV_INSN (NEXT_INSN (ins)) = ins;
                       if (BB_END (bb) == insn)
 			SET_BB_END (bb) = ins;
 		    }
