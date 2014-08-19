@@ -1,3 +1,8 @@
+2014-08-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (update_visibility_by_resolution_info): Fix
+	assert.
+
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* coretypes.h (class rtx_debug_insn): Add forward declaration.
