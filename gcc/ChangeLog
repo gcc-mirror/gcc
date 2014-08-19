@@ -1,3 +1,9 @@
+2014-08-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_comdat_group_group): Only default to no
+	if unset.
+	* configure: Regenerate.
+
 2014-08-19  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer-out.c (DFS::DFS_write_tree_body): Stream
