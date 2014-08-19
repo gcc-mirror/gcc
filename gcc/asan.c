@@ -974,11 +974,12 @@ asan_function_start (void)
    assigned to PBASE, when not doing use after return protection, or
    corresponding address based on __asan_stack_malloc* return value.  */
 
-rtx
+rtx_insn *
 asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 			    HOST_WIDE_INT *offsets, tree *decls, int length)
 {
   rtx shadow_base, shadow_mem, ret, mem, orig_base, lab;
+  rtx_insn *insns;
   char buf[30];
   unsigned char shadow_bytes[4];
   HOST_WIDE_INT base_offset = offsets[length - 1];
@@ -1248,9 +1249,9 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   if (lab)
     emit_label (lab);
 
-  ret = get_insns ();
+  insns = get_insns ();
   end_sequence ();
-  return ret;
+  return insns;
 }
 
 /* Return true if DECL, a global var, might be overridden and needs
