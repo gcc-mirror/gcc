@@ -319,14 +319,6 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		  = possible_polymorphic_call_targets (rhs, stmt, &final);
 		if (final && targets.length () <= 1 && dbg_cnt (devirt))
 		  {
-		    tree fndecl;
-
-		    if (targets.length () == 1)
-		      fndecl = targets[0]->decl;
-		    else
-		      /* We can not use __builtin_unreachable here because it
-			 can not have address taken.  */
-		      fndecl = integer_zero_node;
 		    if (dump_enabled_p ())
 		      {
 			location_t loc = gimple_location_safe (stmt);
@@ -335,11 +327,19 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 					 "reference to function %s\n",
 					 targets.length () == 1
 					 ? targets[0]->name ()
-					 : "__builtin_unreachable");
+					 : "NULL");
 		      }
-		    val = fold_convert (TREE_TYPE (val),
-					build_fold_addr_expr_loc (loc, fndecl));
-		    STRIP_USELESS_TYPE_CONVERSION (val);
+		    if (targets.length () == 1)
+		      {
+			val = fold_convert (TREE_TYPE (val),
+					    build_fold_addr_expr_loc
+					      (loc, targets[0]->decl));
+			STRIP_USELESS_TYPE_CONVERSION (val);
+		      }
+		    else
+		      /* We can not use __builtin_unreachable here because it
+			 can not have address taken.  */
+		      val = build_int_cst (TREE_TYPE (val), 0);
 		    return val;
 		  }
 	      }
