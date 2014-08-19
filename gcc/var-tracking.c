@@ -8589,7 +8589,8 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
   rtx insn = data->insn;
   enum emit_note_where where = data->where;
   variable_table_type *vars = data->vars;
-  rtx note, note_vl;
+  rtx_note *note;
+  rtx note_vl;
   int i, j, n_var_parts;
   bool complete;
   enum var_init_status initialized = VAR_INIT_STATUS_UNINITIALIZED;
@@ -9135,7 +9136,8 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	    dataflow_set_clear_at_call (set);
 	    emit_notes_for_changes (insn, EMIT_NOTE_AFTER_CALL_INSN, set->vars);
 	    {
-	      rtx arguments = mo->u.loc, *p = &arguments, note;
+	      rtx arguments = mo->u.loc, *p = &arguments;
+	      rtx_note *note;
 	      while (*p)
 		{
 		  XEXP (XEXP (*p, 0), 1)

@@ -2810,7 +2810,8 @@ compensate_edge (edge e)
     }
   else
     {
-      rtx seq, after;
+      rtx_insn *seq;
+      rtx_note *after;
 
       current_block = NULL;
       start_sequence ();
