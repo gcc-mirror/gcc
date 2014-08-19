@@ -10478,7 +10478,13 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
     return NULL;
 
   /* Only these cv-qualifiers are currently handled.  */
-  cv_quals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+  cv_quals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT);
+
+  /* Don't emit DW_TAG_restrict_type for DWARFv2, since it is a type
+     tag modifier (and not an attribute) old consumers won't be able
+     to handle it.  */
+  if (dwarf_version < 3)
+    cv_quals &= ~TYPE_QUAL_RESTRICT;
 
   /* See if we already have the appropriately qualified variant of
      this type.  */
@@ -10523,7 +10529,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
       else
 	{
 	  int dquals = TYPE_QUALS_NO_ADDR_SPACE (dtype);
-	  dquals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+	  dquals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT);
 	  if ((dquals & ~cv_quals) != TYPE_UNQUALIFIED
 	      || (cv_quals == dquals && DECL_ORIGINAL_TYPE (name) != type))
 	    /* cv-unqualified version of named type.  Just use
@@ -10537,20 +10543,31 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
   mod_scope = scope_die_for (type, context_die);
 
   if ((cv_quals & TYPE_QUAL_CONST)
-      /* If both const_type and volatile_type, prefer the path
-	 which leads to a qualified type.  */
-      && (!(cv_quals & TYPE_QUAL_VOLATILE)
-	  || get_qualified_type (type, TYPE_QUAL_CONST) == NULL_TREE
-	  || get_qualified_type (type, TYPE_QUAL_VOLATILE) != NULL_TREE))
+      /* If there are multiple type modifiers, prefer a path which
+	 leads to a qualified type.  */
+      && (((cv_quals & ~TYPE_QUAL_CONST) == TYPE_UNQUALIFIED)
+	  || get_qualified_type (type, cv_quals) == NULL_TREE
+	  || (get_qualified_type (type, cv_quals & ~TYPE_QUAL_CONST)
+	      != NULL_TREE)))
     {
       mod_type_die = new_die (DW_TAG_const_type, mod_scope, type);
       sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_CONST,
 				   context_die);
     }
-  else if (cv_quals & TYPE_QUAL_VOLATILE)
+  else if ((cv_quals & TYPE_QUAL_VOLATILE)
+	   && (((cv_quals & ~TYPE_QUAL_VOLATILE) == TYPE_UNQUALIFIED)
+	       || get_qualified_type (type, cv_quals) == NULL_TREE
+	       || (get_qualified_type (type, cv_quals & ~TYPE_QUAL_VOLATILE)
+		   != NULL_TREE)))
     {
       mod_type_die = new_die (DW_TAG_volatile_type, mod_scope, type);
       sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_VOLATILE,
+				   context_die);
+    }
+  else if (cv_quals & TYPE_QUAL_RESTRICT)
+    {
+      mod_type_die = new_die (DW_TAG_restrict_type, mod_scope, type);
+      sub_die = modified_type_die (type, cv_quals & ~TYPE_QUAL_RESTRICT,
 				   context_die);
     }
   else if (code == POINTER_TYPE)

@@ -1,3 +1,8 @@
+2014-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/59051
+	* gcc.dg/guality/restrict.c: New test.
+
 2014-07-03  Mark Wielaard  <mjw@redhat.com>
 
 	* lib/gcc-gdb-test.exp (gdb-test): Handle type:var for gdb ptype
