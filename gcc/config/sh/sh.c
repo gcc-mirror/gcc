@@ -195,7 +195,7 @@ static rtx gen_block_redirect (rtx, int, int);
 static void sh_reorg (void);
 static void sh_option_override (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
-static rtx frame_insn (rtx);
+static rtx_insn *frame_insn (rtx);
 static rtx push (int);
 static void pop (int);
 static void push_regs (HARD_REG_SET *, int);
@@ -6784,7 +6784,7 @@ static void
 output_stack_adjust (int size, rtx reg, int epilogue_p,
 		     HARD_REG_SET *live_regs_mask, bool frame_p)
 {
-  rtx (*emit_fn) (rtx) = frame_p ? &frame_insn : &emit_insn;
+  rtx_insn *(*emit_fn) (rtx) = frame_p ? &frame_insn : &emit_insn;
   if (size)
     {
       HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
@@ -6944,12 +6944,12 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 
 /* Emit the specified insn and mark it as frame related.
    FIXME: Rename this to emit_frame_insn.  */
-static rtx
+static rtx_insn *
 frame_insn (rtx x)
 {
-  x = emit_insn (x);
-  RTX_FRAME_RELATED_P (x) = 1;
-  return x;
+  rtx_insn *insn = emit_insn (x);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  return insn;
 }
 
 /* Output RTL to push register RN onto the stack.  */

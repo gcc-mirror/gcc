@@ -1446,7 +1446,7 @@ rtl_redirect_edge_and_branch (edge e, basic_block target)
 void
 emit_barrier_after_bb (basic_block bb)
 {
-  rtx barrier = emit_barrier_after (BB_END (bb));
+  rtx_barrier *barrier = emit_barrier_after (BB_END (bb));
   gcc_assert (current_ir_type () == IR_RTL_CFGRTL
               || current_ir_type () == IR_RTL_CFGLAYOUT);
   if (current_ir_type () == IR_RTL_CFGLAYOUT)

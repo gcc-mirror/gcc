@@ -4269,7 +4269,7 @@ reorder_insns (rtx from, rtx to, rtx after)
    SEQUENCE rtl results in much fragmented RTL memory since the SEQUENCE
    generated would almost certainly die right after it was created.  */
 
-static rtx
+static rtx_insn *
 emit_pattern_before_noloc (rtx x, rtx before, rtx last, basic_block bb,
                            rtx_insn *(*make_raw) (rtx))
 {
@@ -4278,7 +4278,7 @@ emit_pattern_before_noloc (rtx x, rtx before, rtx last, basic_block bb,
   gcc_assert (before);
 
   if (x == NULL_RTX)
-    return last;
+    return safe_as_a <rtx_insn *> (last);
 
   switch (GET_CODE (x))
     {
@@ -4311,12 +4311,12 @@ emit_pattern_before_noloc (rtx x, rtx before, rtx last, basic_block bb,
       break;
     }
 
-  return last;
+  return safe_as_a <rtx_insn *> (last);
 }
 
 /* Make X be output before the instruction BEFORE.  */
 
-rtx
+rtx_insn *
 emit_insn_before_noloc (rtx x, rtx before, basic_block bb)
 {
   return emit_pattern_before_noloc (x, before, before, bb, make_insn_raw);
@@ -4325,7 +4325,7 @@ emit_insn_before_noloc (rtx x, rtx before, basic_block bb)
 /* Make an instruction with body X and code JUMP_INSN
    and output it before the instruction BEFORE.  */
 
-rtx
+rtx_insn *
 emit_jump_insn_before_noloc (rtx x, rtx before)
 {
   return emit_pattern_before_noloc (x, before, NULL_RTX, NULL,
@@ -4335,7 +4335,7 @@ emit_jump_insn_before_noloc (rtx x, rtx before)
 /* Make an instruction with body X and code CALL_INSN
    and output it before the instruction BEFORE.  */
 
-rtx
+rtx_insn *
 emit_call_insn_before_noloc (rtx x, rtx before)
 {
   return emit_pattern_before_noloc (x, before, NULL_RTX, NULL,
@@ -4345,7 +4345,7 @@ emit_call_insn_before_noloc (rtx x, rtx before)
 /* Make an instruction with body X and code DEBUG_INSN
    and output it before the instruction BEFORE.  */
 
-rtx
+rtx_insn *
 emit_debug_insn_before_noloc (rtx x, rtx before)
 {
   return emit_pattern_before_noloc (x, before, NULL_RTX, NULL,
@@ -4355,10 +4355,10 @@ emit_debug_insn_before_noloc (rtx x, rtx before)
 /* Make an insn of code BARRIER
    and output it before the insn BEFORE.  */
 
-rtx
+rtx_barrier *
 emit_barrier_before (rtx before)
 {
-  rtx insn = rtx_alloc (BARRIER);
+  rtx_barrier *insn = as_a <rtx_barrier *> (rtx_alloc (BARRIER));
 
   INSN_UID (insn) = cur_insn_uid++;
 
@@ -4368,13 +4368,13 @@ emit_barrier_before (rtx before)
 
 /* Emit the label LABEL before the insn BEFORE.  */
 
-rtx
+rtx_insn *
 emit_label_before (rtx label, rtx before)
 {
   gcc_checking_assert (INSN_UID (label) == 0);
   INSN_UID (label) = cur_insn_uid++;
   add_insn_before (label, before, NULL);
-  return label;
+  return as_a <rtx_insn *> (label);
 }
 
 /* Helper for emit_insn_after, handles lists of instructions
@@ -4423,7 +4423,7 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
   return last;
 }
 
-static rtx
+static rtx_insn *
 emit_pattern_after_noloc (rtx x, rtx after, basic_block bb,
 			  rtx_insn *(*make_raw)(rtx))
 {
@@ -4432,7 +4432,7 @@ emit_pattern_after_noloc (rtx x, rtx after, basic_block bb,
   gcc_assert (after);
 
   if (x == NULL_RTX)
-    return last;
+    return safe_as_a <rtx_insn *> (last);
 
   switch (GET_CODE (x))
     {
@@ -4458,13 +4458,13 @@ emit_pattern_after_noloc (rtx x, rtx after, basic_block bb,
       break;
     }
 
-  return last;
+  return safe_as_a <rtx_insn *> (last);
 }
 
 /* Make X be output after the insn AFTER and set the BB of insn.  If
    BB is NULL, an attempt is made to infer the BB from AFTER.  */
 
-rtx
+rtx_insn *
 emit_insn_after_noloc (rtx x, rtx after, basic_block bb)
 {
   return emit_pattern_after_noloc (x, after, bb, make_insn_raw);
@@ -4474,7 +4474,7 @@ emit_insn_after_noloc (rtx x, rtx after, basic_block bb)
 /* Make an insn of code JUMP_INSN with body X
    and output it after the insn AFTER.  */
 
-rtx
+rtx_insn *
 emit_jump_insn_after_noloc (rtx x, rtx after)
 {
   return emit_pattern_after_noloc (x, after, NULL, make_jump_insn_raw);
@@ -4483,7 +4483,7 @@ emit_jump_insn_after_noloc (rtx x, rtx after)
 /* Make an instruction with body X and code CALL_INSN
    and output it after the instruction AFTER.  */
 
-rtx
+rtx_insn *
 emit_call_insn_after_noloc (rtx x, rtx after)
 {
   return emit_pattern_after_noloc (x, after, NULL, make_call_insn_raw);
@@ -4492,7 +4492,7 @@ emit_call_insn_after_noloc (rtx x, rtx after)
 /* Make an instruction with body X and code CALL_INSN
    and output it after the instruction AFTER.  */
 
-rtx
+rtx_insn *
 emit_debug_insn_after_noloc (rtx x, rtx after)
 {
   return emit_pattern_after_noloc (x, after, NULL, make_debug_insn_raw);
@@ -4501,10 +4501,10 @@ emit_debug_insn_after_noloc (rtx x, rtx after)
 /* Make an insn of code BARRIER
    and output it after the insn AFTER.  */
 
-rtx
+rtx_barrier *
 emit_barrier_after (rtx after)
 {
-  rtx insn = rtx_alloc (BARRIER);
+  rtx_barrier *insn = as_a <rtx_barrier *> (rtx_alloc (BARRIER));
 
   INSN_UID (insn) = cur_insn_uid++;
 
@@ -4514,13 +4514,13 @@ emit_barrier_after (rtx after)
 
 /* Emit the label LABEL after the insn AFTER.  */
 
-rtx
+rtx_insn *
 emit_label_after (rtx label, rtx after)
 {
   gcc_checking_assert (INSN_UID (label) == 0);
   INSN_UID (label) = cur_insn_uid++;
   add_insn_after (label, after, NULL);
-  return label;
+  return as_a <rtx_insn *> (label);
 }
 
 /* Notes require a bit of special handling: Some notes need to have their
@@ -4590,14 +4590,14 @@ emit_note_before (enum insn_note subtype, rtx before)
 /* Insert PATTERN after AFTER, setting its INSN_LOCATION to LOC.
    MAKE_RAW indicates how to turn PATTERN into a real insn.  */
 
-static rtx
+static rtx_insn *
 emit_pattern_after_setloc (rtx pattern, rtx after, int loc,
 			   rtx_insn *(*make_raw) (rtx))
 {
   rtx last = emit_pattern_after_noloc (pattern, after, NULL, make_raw);
 
   if (pattern == NULL_RTX || !loc)
-    return last;
+    return safe_as_a <rtx_insn *> (last);
 
   after = NEXT_INSN (after);
   while (1)
@@ -4608,14 +4608,14 @@ emit_pattern_after_setloc (rtx pattern, rtx after, int loc,
 	break;
       after = NEXT_INSN (after);
     }
-  return last;
+  return safe_as_a <rtx_insn *> (last);
 }
 
 /* Insert PATTERN after AFTER.  MAKE_RAW indicates how to turn PATTERN
    into a real insn.  SKIP_DEBUG_INSNS indicates whether to insert after
    any DEBUG_INSNs.  */
 
-static rtx
+static rtx_insn *
 emit_pattern_after (rtx pattern, rtx after, bool skip_debug_insns,
 		    rtx_insn *(*make_raw) (rtx))
 {
@@ -4633,56 +4633,56 @@ emit_pattern_after (rtx pattern, rtx after, bool skip_debug_insns,
 }
 
 /* Like emit_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_insn_raw);
 }
 
 /* Like emit_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
-rtx
+rtx_insn *
 emit_insn_after (rtx pattern, rtx after)
 {
   return emit_pattern_after (pattern, after, true, make_insn_raw);
 }
 
 /* Like emit_jump_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_jump_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_jump_insn_raw);
 }
 
 /* Like emit_jump_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
-rtx
+rtx_insn *
 emit_jump_insn_after (rtx pattern, rtx after)
 {
   return emit_pattern_after (pattern, after, true, make_jump_insn_raw);
 }
 
 /* Like emit_call_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_call_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_call_insn_raw);
 }
 
 /* Like emit_call_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
-rtx
+rtx_insn *
 emit_call_insn_after (rtx pattern, rtx after)
 {
   return emit_pattern_after (pattern, after, true, make_call_insn_raw);
 }
 
 /* Like emit_debug_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_debug_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_debug_insn_raw);
 }
 
 /* Like emit_debug_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
-rtx
+rtx_insn *
 emit_debug_insn_after (rtx pattern, rtx after)
 {
   return emit_pattern_after (pattern, after, false, make_debug_insn_raw);
@@ -4693,7 +4693,7 @@ emit_debug_insn_after (rtx pattern, rtx after)
    indicates if PATTERN is meant for an INSN as opposed to a JUMP_INSN,
    CALL_INSN, etc.  */
 
-static rtx
+static rtx_insn *
 emit_pattern_before_setloc (rtx pattern, rtx before, int loc, bool insnp,
 			    rtx_insn *(*make_raw) (rtx))
 {
@@ -4703,7 +4703,7 @@ emit_pattern_before_setloc (rtx pattern, rtx before, int loc, bool insnp,
                                         NULL, make_raw);
 
   if (pattern == NULL_RTX || !loc)
-    return last;
+    return safe_as_a <rtx_insn *> (last);
 
   if (!first)
     first = get_insns ();
@@ -4717,7 +4717,7 @@ emit_pattern_before_setloc (rtx pattern, rtx before, int loc, bool insnp,
 	break;
       first = NEXT_INSN (first);
     }
-  return last;
+  return safe_as_a <rtx_insn *> (last);
 }
 
 /* Insert PATTERN before BEFORE.  MAKE_RAW indicates how to turn PATTERN
@@ -4725,7 +4725,7 @@ emit_pattern_before_setloc (rtx pattern, rtx before, int loc, bool insnp,
    before any DEBUG_INSNs.  INSNP indicates if PATTERN is meant for an
    INSN as opposed to a JUMP_INSN, CALL_INSN, etc.  */
 
-static rtx
+static rtx_insn *
 emit_pattern_before (rtx pattern, rtx before, bool skip_debug_insns,
 		     bool insnp, rtx_insn *(*make_raw) (rtx))
 {
@@ -4745,7 +4745,7 @@ emit_pattern_before (rtx pattern, rtx before, bool skip_debug_insns,
 }
 
 /* Like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
   return emit_pattern_before_setloc (pattern, before, loc, true,
@@ -4753,14 +4753,14 @@ emit_insn_before_setloc (rtx pattern, rtx before, int loc)
 }
 
 /* Like emit_insn_before_noloc, but set INSN_LOCATION according to BEFORE.  */
-rtx
+rtx_insn *
 emit_insn_before (rtx pattern, rtx before)
 {
   return emit_pattern_before (pattern, before, true, true, make_insn_raw);
 }
 
 /* like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_jump_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
   return emit_pattern_before_setloc (pattern, before, loc, false,
@@ -4768,7 +4768,7 @@ emit_jump_insn_before_setloc (rtx pattern, rtx before, int loc)
 }
 
 /* Like emit_jump_insn_before_noloc, but set INSN_LOCATION according to BEFORE.  */
-rtx
+rtx_insn *
 emit_jump_insn_before (rtx pattern, rtx before)
 {
   return emit_pattern_before (pattern, before, true, false,
@@ -4776,7 +4776,7 @@ emit_jump_insn_before (rtx pattern, rtx before)
 }
 
 /* Like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_call_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
   return emit_pattern_before_setloc (pattern, before, loc, false,
@@ -4785,7 +4785,7 @@ emit_call_insn_before_setloc (rtx pattern, rtx before, int loc)
 
 /* Like emit_call_insn_before_noloc,
    but set insn_location according to BEFORE.  */
-rtx
+rtx_insn *
 emit_call_insn_before (rtx pattern, rtx before)
 {
   return emit_pattern_before (pattern, before, true, false,
@@ -4793,7 +4793,7 @@ emit_call_insn_before (rtx pattern, rtx before)
 }
 
 /* Like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
-rtx
+rtx_insn *
 emit_debug_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
   return emit_pattern_before_setloc (pattern, before, loc, false,
@@ -4802,7 +4802,7 @@ emit_debug_insn_before_setloc (rtx pattern, rtx before, int loc)
 
 /* Like emit_debug_insn_before_noloc,
    but set insn_location according to BEFORE.  */
-rtx
+rtx_insn *
 emit_debug_insn_before (rtx pattern, rtx before)
 {
   return emit_pattern_before (pattern, before, false, false,
@@ -4814,11 +4814,11 @@ emit_debug_insn_before (rtx pattern, rtx before)
 
    Returns the last insn emitted.  */
 
-rtx
+rtx_insn *
 emit_insn (rtx x)
 {
-  rtx last = get_last_insn ();
-  rtx insn;
+  rtx_insn *last = get_last_insn ();
+  rtx_insn *insn;
 
   if (x == NULL_RTX)
     return last;
@@ -4832,10 +4832,10 @@ emit_insn (rtx x)
     case CODE_LABEL:
     case BARRIER:
     case NOTE:
-      insn = x;
+      insn = as_a <rtx_insn *> (x);
       while (insn)
 	{
-	  rtx next = NEXT_INSN (insn);
+	  rtx_insn *next = NEXT_INSN (insn);
 	  add_insn (insn);
 	  last = insn;
 	  insn = next;
@@ -4861,11 +4861,11 @@ emit_insn (rtx x)
 /* Make an insn of code DEBUG_INSN with pattern X
    and add it to the end of the doubly-linked list.  */
 
-rtx
+rtx_insn *
 emit_debug_insn (rtx x)
 {
-  rtx last = get_last_insn ();
-  rtx insn;
+  rtx_insn *last = get_last_insn ();
+  rtx_insn *insn;
 
   if (x == NULL_RTX)
     return last;
@@ -4879,10 +4879,10 @@ emit_debug_insn (rtx x)
     case CODE_LABEL:
     case BARRIER:
     case NOTE:
-      insn = x;
+      insn = as_a <rtx_insn *> (x);
       while (insn)
 	{
-	  rtx next = NEXT_INSN (insn);
+	  rtx_insn *next = NEXT_INSN (insn);
 	  add_insn (insn);
 	  last = insn;
 	  insn = next;
@@ -4908,10 +4908,11 @@ emit_debug_insn (rtx x)
 /* Make an insn of code JUMP_INSN with pattern X
    and add it to the end of the doubly-linked list.  */
 
-rtx
+rtx_insn *
 emit_jump_insn (rtx x)
 {
-  rtx last = NULL_RTX, insn;
+  rtx_insn *last = NULL;
+  rtx_insn *insn;
 
   switch (GET_CODE (x))
     {
@@ -4922,10 +4923,10 @@ emit_jump_insn (rtx x)
     case CODE_LABEL:
     case BARRIER:
     case NOTE:
-      insn = x;
+      insn = as_a <rtx_insn *> (x);
       while (insn)
 	{
-	  rtx next = NEXT_INSN (insn);
+	  rtx_insn *next = NEXT_INSN (insn);
 	  add_insn (insn);
 	  last = insn;
 	  insn = next;
@@ -4951,10 +4952,10 @@ emit_jump_insn (rtx x)
 /* Make an insn of code CALL_INSN with pattern X
    and add it to the end of the doubly-linked list.  */
 
-rtx
+rtx_insn *
 emit_call_insn (rtx x)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   switch (GET_CODE (x))
     {
@@ -4986,13 +4987,13 @@ emit_call_insn (rtx x)
 
 /* Add the label LABEL to the end of the doubly-linked list.  */
 
-rtx
+rtx_insn *
 emit_label (rtx label)
 {
   gcc_checking_assert (INSN_UID (label) == 0);
   INSN_UID (label) = cur_insn_uid++;
   add_insn (label);
-  return label;
+  return as_a <rtx_insn *> (label);
 }
 
 /* Make an insn of code JUMP_TABLE_DATA
@@ -5013,10 +5014,10 @@ emit_jump_table_data (rtx table)
 /* Make an insn of code BARRIER
    and add it to the end of the doubly-linked list.  */
 
-rtx
+rtx_barrier *
 emit_barrier (void)
 {
-  rtx barrier = rtx_alloc (BARRIER);
+  rtx_barrier *barrier = as_a <rtx_barrier *> (rtx_alloc (BARRIER));
   INSN_UID (barrier) = cur_insn_uid++;
   add_insn (barrier);
   return barrier;
@@ -5047,7 +5048,7 @@ emit_note (enum insn_note kind)
 
 /* Emit a clobber of lvalue X.  */
 
-rtx
+rtx_insn *
 emit_clobber (rtx x)
 {
   /* CONCATs should not appear in the insn stream.  */
@@ -5061,10 +5062,10 @@ emit_clobber (rtx x)
 
 /* Return a sequence of insns to clobber lvalue X.  */
 
-rtx
+rtx_insn *
 gen_clobber (rtx x)
 {
-  rtx seq;
+  rtx_insn *seq;
 
   start_sequence ();
   emit_clobber (x);
@@ -5075,7 +5076,7 @@ gen_clobber (rtx x)
 
 /* Emit a use of rvalue X.  */
 
-rtx
+rtx_insn *
 emit_use (rtx x)
 {
   /* CONCATs should not appear in the insn stream.  */
@@ -5089,10 +5090,10 @@ emit_use (rtx x)
 
 /* Return a sequence of insns to use rvalue X.  */
 
-rtx
+rtx_insn *
 gen_use (rtx x)
 {
-  rtx seq;
+  rtx_insn *seq;
 
   start_sequence ();
   emit_use (x);
@@ -5237,7 +5238,7 @@ classify_insn (rtx x)
 /* Emit the rtl pattern X as an appropriate kind of insn.
    If X is a label, it is simply added into the insn chain.  */
 
-rtx
+rtx_insn *
 emit (rtx x)
 {
   enum rtx_code code = classify_insn (x);
@@ -5250,7 +5251,7 @@ emit (rtx x)
       return emit_insn (x);
     case  JUMP_INSN:
       {
-	rtx insn = emit_jump_insn (x);
+	rtx_insn *insn = emit_jump_insn (x);
 	if (any_uncondjump_p (insn) || GET_CODE (x) == RETURN)
 	  return emit_barrier ();
 	return insn;
@@ -6055,10 +6056,11 @@ init_emit_once (void)
 /* Produce exact duplicate of insn INSN after AFTER.
    Care updating of libcall regions if present.  */
 
-rtx
+rtx_insn *
 emit_copy_of_insn_after (rtx insn, rtx after)
 {
-  rtx new_rtx, link;
+  rtx_insn *new_rtx;
+  rtx link;
 
   switch (GET_CODE (insn))
     {
