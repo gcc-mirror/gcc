@@ -4998,10 +4998,11 @@ emit_label (rtx label)
 /* Make an insn of code JUMP_TABLE_DATA
    and add it to the end of the doubly-linked list.  */
 
-rtx
+rtx_jump_table_data *
 emit_jump_table_data (rtx table)
 {
-  rtx jump_table_data = rtx_alloc (JUMP_TABLE_DATA);
+  rtx_jump_table_data *jump_table_data =
+    as_a <rtx_jump_table_data *> (rtx_alloc (JUMP_TABLE_DATA));
   INSN_UID (jump_table_data) = cur_insn_uid++;
   PATTERN (jump_table_data) = table;
   BLOCK_FOR_INSN (jump_table_data) = NULL;
