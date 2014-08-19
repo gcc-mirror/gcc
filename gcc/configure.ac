@@ -2082,6 +2082,7 @@ AC_ARG_ENABLE(ld,
    ;;
  esac])
 
+install_gold_as_default=no
 AC_ARG_ENABLE(gold,
 [[  --enable-gold[=ARG]     build gold [ARG={default,yes,no}]]],
 [case "${enableval}" in
@@ -2094,13 +2095,11 @@ AC_ARG_ENABLE(gold,
    fi
    ;;
  no)
-   install_gold_as_default=no
    ;;
  *)
    AC_MSG_ERROR([invalid --enable-gold argument])
    ;;
- esac],
-[install_gold_as_default=no])
+ esac])
 
 # Identify the linker which will work hand-in-glove with the newly
 # built GCC, so that we can examine its features.  This is the linker
