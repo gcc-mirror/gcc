@@ -252,6 +252,7 @@ make_edges (basic_block min, basic_block max, int update_p)
       if (code == JUMP_INSN)
 	{
 	  rtx tmp;
+	  rtx_jump_table_data *table;
 
 	  /* Recognize a non-local goto as a branch outside the
 	     current function.  */
@@ -259,15 +260,15 @@ make_edges (basic_block min, basic_block max, int update_p)
 	    ;
 
 	  /* Recognize a tablejump and do the right thing.  */
-	  else if (tablejump_p (insn, NULL, &tmp))
+	  else if (tablejump_p (insn, NULL, &table))
 	    {
 	      rtvec vec;
 	      int j;
 
-	      if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
-		vec = XVEC (PATTERN (tmp), 0);
+	      if (GET_CODE (PATTERN (table)) == ADDR_VEC)
+		vec = XVEC (PATTERN (table), 0);
 	      else
-		vec = XVEC (PATTERN (tmp), 1);
+		vec = XVEC (PATTERN (table), 1);
 
 	      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 		make_label_edge (edge_cache, bb,
@@ -444,7 +445,7 @@ find_bb_boundaries (basic_block bb)
   basic_block orig_bb = bb;
   rtx insn = BB_HEAD (bb);
   rtx end = BB_END (bb), x;
-  rtx table;
+  rtx_jump_table_data *table;
   rtx flow_transfer_insn = NULL_RTX;
   edge fallthru = NULL;
 

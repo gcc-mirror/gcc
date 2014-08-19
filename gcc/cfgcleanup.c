@@ -704,7 +704,8 @@ static void
 merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 {
   rtx barrier, real_b_end;
-  rtx label, table;
+  rtx label;
+  rtx_jump_table_data *table;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -1675,7 +1676,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
      Return true if they are identical.  */
     {
       rtx label1, label2;
-      rtx table1, table2;
+      rtx_jump_table_data *table1, *table2;
 
       if (tablejump_p (BB_END (bb1), &label1, &table1)
 	  && tablejump_p (BB_END (bb2), &label2, &table2)
@@ -1978,7 +1979,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
      so replace the references to TABLE1 by references to TABLE2.  */
     {
       rtx label1, label2;
-      rtx table1, table2;
+      rtx_jump_table_data *table1, *table2;
 
       if (tablejump_p (BB_END (osrc1), &label1, &table1)
 	  && tablejump_p (BB_END (osrc2), &label2, &table2)
