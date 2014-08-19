@@ -7947,7 +7947,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
 
       if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
-	  DEP_CON (new_dep) = twin;
+	  SET_DEP_CON (new_dep) = twin;
 	  sd_add_dep (new_dep, false);
 	}
     }
