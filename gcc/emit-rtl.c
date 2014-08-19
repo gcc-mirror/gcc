@@ -2473,11 +2473,12 @@ set_mem_attrs_for_spill (rtx mem)
 
 /* Return a newly created CODE_LABEL rtx with a unique label number.  */
 
-rtx
+rtx_code_label *
 gen_label_rtx (void)
 {
-  return gen_rtx_CODE_LABEL (VOIDmode, NULL_RTX, NULL_RTX,
-			     NULL, label_num++, NULL);
+  return as_a <rtx_code_label *> (
+	    gen_rtx_CODE_LABEL (VOIDmode, NULL_RTX, NULL_RTX,
+				NULL, label_num++, NULL));
 }
 
 /* For procedure integration.  */

@@ -2300,7 +2300,7 @@ extern rtx gen_reg_rtx (enum machine_mode);
 extern rtx gen_rtx_REG_offset (rtx, enum machine_mode, unsigned int, int);
 extern rtx gen_reg_rtx_offset (rtx, enum machine_mode, int);
 extern rtx gen_reg_rtx_and_attrs (rtx);
-extern rtx gen_label_rtx (void);
+extern rtx_code_label *gen_label_rtx (void);
 extern rtx gen_lowpart_common (enum machine_mode, rtx);
 
 /* In cse.c */
