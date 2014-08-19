@@ -1,3 +1,47 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (tablejump_p): Strengthen third param from rtx * to
+	rtx_jump_table_data **.
+
+	* cfgbuild.c (make_edges): Introduce local "table", using it in
+	place of "tmp" for jump table data.
+	(find_bb_boundaries): Strengthen local "table" from rtx to
+	rtx_jump_table_data *.
+	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Likewise.
+	(outgoing_edges_match): Likewise for locals "table1" and "table2".
+	(try_crossjump_to_edge): Likewise.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Likewise for local
+	"table".
+	(patch_jump_insn): Introduce local "table", using it in place of
+	"tmp" for jump table data.
+	(force_nonfallthru_and_redirect): Introduce local "table", so that
+	call to tablejump_p can receive an rtx_jump_table_data **.  Update
+	logic around the call to overwrite "note" appropriately if
+	tablejump_p returns non-zero.
+	(get_last_bb_insn): Introduce local "table", using it in place of
+	"tmp" for jump table data.
+	* dwarf2cfi.c (create_trace_edges): Likewise.
+
+	* config/arm/arm.c (get_jump_table_size): Strengthen param "insn"
+	from rtx to rtx_jump_table_data *.
+	(create_fix_barrier): Strengthen local "tmp" from rtx to
+	rtx_jump_table_data *.
+	(arm_reorg): Likewise for local "table".
+
+	* config/s390/s390.c (s390_chunkify_start): Likewise.
+
+	* config/spu/spu.c (spu_emit_branch_hint): Likewise.
+
+	* jump.c (delete_related_insns): Strengthen local "lab_next" from
+	rtx to rtx_jump_table_data *.
+
+	* rtlanal.c (tablejump_p): Strengthen param "tablep" from rtx * to
+	rtx_jump_table_data **.  Add a checked cast when writing through
+	the pointer: we know there that local "table" is non-NULL and that
+	JUMP_TABLE_DATA_P (table) holds.
+	(label_is_jump_target_p): Introduce local "table", using it in
+	place of "tmp" for jump table data.
+
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/62153

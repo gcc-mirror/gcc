@@ -2291,14 +2291,16 @@ create_trace_edges (rtx insn)
 
   if (JUMP_P (insn))
     {
+      rtx_jump_table_data *table;
+
       if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
 	return;
 
-      if (tablejump_p (insn, NULL, &tmp))
+      if (tablejump_p (insn, NULL, &table))
 	{
 	  rtvec vec;
 
-	  tmp = PATTERN (tmp);
+	  tmp = PATTERN (table);
 	  vec = XVEC (tmp, GET_CODE (tmp) == ADDR_DIFF_VEC);
 
 	  n = GET_NUM_ELEM (vec);

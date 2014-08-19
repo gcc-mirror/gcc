@@ -2599,7 +2599,7 @@ extern int inequality_comparisons_p (const_rtx);
 extern rtx replace_rtx (rtx, rtx, rtx);
 extern int replace_label (rtx *, void *);
 extern int rtx_referenced_p (rtx, rtx);
-extern bool tablejump_p (const_rtx, rtx *, rtx *);
+extern bool tablejump_p (const_rtx, rtx *, rtx_jump_table_data **);
 extern int computed_jump_p (const_rtx);
 extern bool tls_referenced_p (rtx);
 

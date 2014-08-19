@@ -2104,7 +2104,7 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
   rtx branch_label = 0;
   rtx hint;
   rtx insn;
-  rtx table;
+  rtx_jump_table_data *table;
 
   if (before == 0 || branch == 0 || target == 0)
     return;
