@@ -1,3 +1,12 @@
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/60975
+	PR c/53063
+	* doc/options.texi (CPP): Document it.
+	* doc/invoke.texi (Wvariadic-macros): Fix documentation.
+	* optc-gen.awk: Handle CPP.
+	* opth-gen.awk: Likewise.
+
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (unlink_insn_chain): Strengthen return type from rtx to

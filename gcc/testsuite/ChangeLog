@@ -1,3 +1,9 @@
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/60975
+	PR c/53063
+	* gcc.dg/cpp/Wvariadic-1p.c: New test.
+
 2014-08-19  Janis Johnson  <janisjo@codesourcery.com>
 
 	* lib/target-supports.exp 
