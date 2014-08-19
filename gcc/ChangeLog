@@ -1,5 +1,11 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* emit-rtl.c (emit_jump_table_data): Strengthen return type from
+	rtx to rtx_jump_table_data *.  Also for local.
+	* rtl.h (emit_jump_table_data): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (create_basic_block_structure): Strengthen third
 	param "bb_note" from rtx to rtx_note *.
 	* rtl.h (emit_note_before): Strengthen return type from rtx to
