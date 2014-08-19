@@ -1,3 +1,9 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* c-typeck.c (build_binary_op): If either operand of a comparison
+	is a boolean expression, call maybe_warn_bool_compare.
+
 2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/45584

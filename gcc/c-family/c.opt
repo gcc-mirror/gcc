@@ -287,6 +287,10 @@ Wbad-function-cast
 C ObjC Var(warn_bad_function_cast) Warning
 Warn about casting functions to incompatible types
 
+Wbool-compare
+C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about boolean expression compared with an integer value different from true/false
+
 Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ Warning
 Warn when a built-in preprocessor macro is undefined or redefined

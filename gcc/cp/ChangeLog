@@ -1,3 +1,10 @@
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* call.c (build_new_op_1): Remember the type of arguments for
+	a comparison.  If either operand of a comparison is a boolean
+	expression, call maybe_warn_bool_compare.
+
 2014-08-19  Jason Merrill  <jason@redhat.com>
 
 	PR tree-optimization/62091
