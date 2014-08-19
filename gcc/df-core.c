@@ -2502,3 +2502,9 @@ debug_df_chain (struct df_link *link)
   df_chain_dump (link, stderr);
   fputc ('\n', stderr);
 }
+
+rtx_insn *DF_REF_INSN (df_ref ref)
+{
+  rtx insn = ref->base.insn_info->insn;
+  return safe_as_a <rtx_insn *> (insn);
+}
