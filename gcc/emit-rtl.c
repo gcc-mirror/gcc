@@ -3760,12 +3760,12 @@ try_split (rtx pat, rtx trial, int last)
 /* Make and return an INSN rtx, initializing all its slots.
    Store PATTERN in the pattern slots.  */
 
-rtx
+rtx_insn *
 make_insn_raw (rtx pattern)
 {
-  rtx insn;
+  rtx_insn *insn;
 
-  insn = rtx_alloc (INSN);
+  insn = as_a <rtx_insn *> (rtx_alloc (INSN));
 
   INSN_UID (insn) = cur_insn_uid++;
   PATTERN (insn) = pattern;
@@ -3791,12 +3791,12 @@ make_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a DEBUG_INSN instead of an insn.  */
 
-static rtx
+static rtx_insn *
 make_debug_insn_raw (rtx pattern)
 {
-  rtx insn;
+  rtx_debug_insn *insn;
 
-  insn = rtx_alloc (DEBUG_INSN);
+  insn = as_a <rtx_debug_insn *> (rtx_alloc (DEBUG_INSN));
   INSN_UID (insn) = cur_debug_insn_uid++;
   if (cur_debug_insn_uid > MIN_NONDEBUG_INSN_UID)
     INSN_UID (insn) = cur_insn_uid++;
@@ -3812,12 +3812,12 @@ make_debug_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a JUMP_INSN instead of an insn.  */
 
-static rtx
+static rtx_insn *
 make_jump_insn_raw (rtx pattern)
 {
-  rtx insn;
+  rtx_jump_insn *insn;
 
-  insn = rtx_alloc (JUMP_INSN);
+  insn = as_a <rtx_jump_insn *> (rtx_alloc (JUMP_INSN));
   INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
@@ -3832,12 +3832,12 @@ make_jump_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a CALL_INSN instead of an insn.  */
 
-static rtx
+static rtx_insn *
 make_call_insn_raw (rtx pattern)
 {
-  rtx insn;
+  rtx_call_insn *insn;
 
-  insn = rtx_alloc (CALL_INSN);
+  insn = as_a <rtx_call_insn *> (rtx_alloc (CALL_INSN));
   INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
@@ -4271,9 +4271,9 @@ reorder_insns (rtx from, rtx to, rtx after)
 
 static rtx
 emit_pattern_before_noloc (rtx x, rtx before, rtx last, basic_block bb,
-                           rtx (*make_raw) (rtx))
+                           rtx_insn *(*make_raw) (rtx))
 {
-  rtx insn;
+  rtx_insn *insn;
 
   gcc_assert (before);
 
@@ -4289,10 +4289,10 @@ emit_pattern_before_noloc (rtx x, rtx before, rtx last, basic_block bb,
     case CODE_LABEL:
     case BARRIER:
     case NOTE:
-      insn = x;
+      insn = as_a <rtx_insn *> (x);
       while (insn)
 	{
-	  rtx next = NEXT_INSN (insn);
+	  rtx_insn *next = NEXT_INSN (insn);
 	  add_insn_before (insn, before, bb);
 	  last = insn;
 	  insn = next;
@@ -4425,7 +4425,7 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
 
 static rtx
 emit_pattern_after_noloc (rtx x, rtx after, basic_block bb,
-			  rtx (*make_raw)(rtx))
+			  rtx_insn *(*make_raw)(rtx))
 {
   rtx last = after;
 
@@ -4592,7 +4592,7 @@ emit_note_before (enum insn_note subtype, rtx before)
 
 static rtx
 emit_pattern_after_setloc (rtx pattern, rtx after, int loc,
-			   rtx (*make_raw) (rtx))
+			   rtx_insn *(*make_raw) (rtx))
 {
   rtx last = emit_pattern_after_noloc (pattern, after, NULL, make_raw);
 
@@ -4617,7 +4617,7 @@ emit_pattern_after_setloc (rtx pattern, rtx after, int loc,
 
 static rtx
 emit_pattern_after (rtx pattern, rtx after, bool skip_debug_insns,
-		    rtx (*make_raw) (rtx))
+		    rtx_insn *(*make_raw) (rtx))
 {
   rtx prev = after;
 
@@ -4695,7 +4695,7 @@ emit_debug_insn_after (rtx pattern, rtx after)
 
 static rtx
 emit_pattern_before_setloc (rtx pattern, rtx before, int loc, bool insnp,
-			    rtx (*make_raw) (rtx))
+			    rtx_insn *(*make_raw) (rtx))
 {
   rtx first = PREV_INSN (before);
   rtx last = emit_pattern_before_noloc (pattern, before,
@@ -4727,7 +4727,7 @@ emit_pattern_before_setloc (rtx pattern, rtx before, int loc, bool insnp,
 
 static rtx
 emit_pattern_before (rtx pattern, rtx before, bool skip_debug_insns,
-		     bool insnp, rtx (*make_raw) (rtx))
+		     bool insnp, rtx_insn *(*make_raw) (rtx))
 {
   rtx next = before;
 

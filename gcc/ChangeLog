@@ -1,5 +1,29 @@
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (make_insn_raw): Strengthen return type from rtx to
+	rtx_insn *.
+
+	* emit-rtl.c (make_insn_raw): Strengthen return type and local
+	"insn" from rtx to rtx_insn *.
+	(make_debug_insn_raw): Strengthen return type from rtx to
+	rtx_insn *; strengthen local "insn" from rtx to rtx_debug_insn *.
+	(make_jump_insn_raw):  Strengthen return type from rtx to
+	rtx_insn *; strengthen local "insn" from rtx to rtx_jump_insn *.
+	(make_call_insn_raw):  Strengthen return type from rtx to
+	rtx_insn *; strengthen local "insn" from rtx to rtx_call_insn *.
+	(emit_pattern_before_noloc): Strengthen return type of "make_raw"
+	callback from rtx to rtx_insn *; likewise for local "insn" and
+	"next", adding a checked cast to rtx_insn in the relevant cases of
+	the switch statement.
+	(emit_pattern_after_noloc): Strengthen return type of "make_raw"
+	callback from rtx to rtx_insn *.
+	(emit_pattern_after_setloc): Likewise.
+	(emit_pattern_after): Likewise.
+	(emit_pattern_before_setloc): Likewise.
+	(emit_pattern_before): Likewise.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
 	* emit-rtl.c (last_call_insn): Strengthen return type from rtx to
 	rtx_call_insn *.
 	* rtl.h (is_a_helper <rtx_call_insn *>::test): New overload,

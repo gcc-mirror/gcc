@@ -2422,7 +2422,7 @@ extern rtx gen_clobber (rtx);
 extern rtx emit_clobber (rtx);
 extern rtx gen_use (rtx);
 extern rtx emit_use (rtx);
-extern rtx make_insn_raw (rtx);
+extern rtx_insn *make_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
 extern rtx_call_insn *last_call_insn (void);
 extern rtx_insn *previous_insn (rtx);
