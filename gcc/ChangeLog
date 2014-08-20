@@ -1,3 +1,10 @@
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* basic-block.h (get_last_bb_insn): Strengthen return type from
+	rtx to rtx_insn *.
+	* cfgrtl.c (get_last_bb_insn): Likewise, and for locals "tmp" and
+	end".
+
 2014-08-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
