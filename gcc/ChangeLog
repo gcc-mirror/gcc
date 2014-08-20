@@ -1,3 +1,9 @@
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* coverage.c (coverage_compute_profile_id): Return non-0;
+	also handle symbols with unique name.
+	(coverage_end_function): Do not skip DECL_EXTERNAL functions.
+
 2014-08-20  Steve Ellcey  <sellcey@mips.com>
 
 	PR middle-end/49191
