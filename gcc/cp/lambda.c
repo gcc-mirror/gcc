@@ -820,6 +820,7 @@ void
 maybe_add_lambda_conv_op (tree type)
 {
   bool nested = (current_function_decl != NULL_TREE);
+  bool nested_def = decl_function_context (TYPE_MAIN_DECL (type));
   tree callop = lambda_function (type);
 
   if (LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (type)) != NULL_TREE)
@@ -972,7 +973,7 @@ maybe_add_lambda_conv_op (tree type)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_ARGUMENTS (fn) = build_this_parm (fntype, TYPE_QUAL_CONST);
-  if (nested)
+  if (nested_def)
     DECL_INTERFACE_KNOWN (fn) = 1;
 
   if (generic_lambda_p)
@@ -1012,7 +1013,7 @@ maybe_add_lambda_conv_op (tree type)
       DECL_NAME (arg) = NULL_TREE;
       DECL_CONTEXT (arg) = fn;
     }
-  if (nested)
+  if (nested_def)
     DECL_INTERFACE_KNOWN (fn) = 1;
 
   if (generic_lambda_p)

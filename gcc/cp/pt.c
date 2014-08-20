@@ -4697,6 +4697,9 @@ push_template_decl_real (tree decl, bool is_friend)
          template <typename T> friend void A<T>::f();
        is not primary.  */
     is_primary = false;
+  else if (TREE_CODE (decl) == TYPE_DECL
+	   && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+    is_primary = false;
   else
     is_primary = template_parm_scope_p ();
 
@@ -9135,6 +9138,11 @@ instantiate_class_template_1 (tree type)
 		  && DECL_OMP_DECLARE_REDUCTION_P (r))
 		cp_check_omp_declare_reduction (r);
 	    }
+	  else if (DECL_CLASS_TEMPLATE_P (t)
+		   && LAMBDA_TYPE_P (TREE_TYPE (t)))
+	    /* A closure type for a lambda in a default argument for a
+	       member template.  Ignore it; it will be instantiated with
+	       the default argument.  */;
 	  else
 	    {
 	      /* Build new TYPE_FIELDS.  */
