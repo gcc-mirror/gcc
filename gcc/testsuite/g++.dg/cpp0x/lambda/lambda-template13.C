@@ -1,5 +1,6 @@
 // PR c++/61566
 // { dg-do compile { target c++11 } }
+// { dg-options "-fabi-version=0" }
 
 struct function
 {
