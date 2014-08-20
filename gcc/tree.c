@@ -9698,9 +9698,9 @@ build_common_tree_nodes (bool signed_char, bool short_double)
   integer_ptr_type_node = build_pointer_type (integer_type_node);
 
   /* Fixed size integer types.  */
-  uint16_type_node = build_nonstandard_integer_type (16, true);
-  uint32_type_node = build_nonstandard_integer_type (32, true);
-  uint64_type_node = build_nonstandard_integer_type (64, true);
+  uint16_type_node = make_or_reuse_type (16, 1);
+  uint32_type_node = make_or_reuse_type (32, 1);
+  uint64_type_node = make_or_reuse_type (64, 1);
 
   /* Decimal float types. */
   dfloat32_type_node = make_node (REAL_TYPE);
