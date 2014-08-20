@@ -1,3 +1,7 @@
+2014-08-20  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/guality/restrict.c: Add `used' attribute to all variables.
+
 2014-08-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/gcc-defs.exp (${tool}_check_unsupported_p):
