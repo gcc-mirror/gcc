@@ -66,7 +66,9 @@ void
 gfc_init_options_struct (struct gcc_options *opts)
 {
   opts->x_flag_errno_math = 0;
+  opts->frontend_set_flag_errno_math = true;
   opts->x_flag_associative_math = -1;
+  opts->frontend_set_flag_associative_math = true;
 }
 
 /* Get ready for options handling. Keep in sync with
