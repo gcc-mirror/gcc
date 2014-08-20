@@ -1,3 +1,11 @@
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/59304
+	* opts-common.c (set_option): Call diagnostic_classify_diagnostic
+	before setting the option.
+	* diagnostic.c (diagnostic_classify_diagnostic): Record
+	command-line status.
+
 2014-08-20  Mark Wielaard  <mjw@redhat.com>
 
 	* gcc.dg/guality/restrict.c: Add `used' attribute to all variables.
