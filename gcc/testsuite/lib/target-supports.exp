@@ -5854,6 +5854,8 @@ proc check_vect_support_and_set_flags { } {
     return 1
 }
 
+# Return 1 if the target does *not* require strict alignment.
+
 proc check_effective_target_non_strict_align {} {
     return [check_no_compiler_messages non_strict_align assembly {
 	char *y;
