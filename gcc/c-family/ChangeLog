@@ -1,3 +1,10 @@
+2014-08-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* c-opts.c: Include tree-diagnostics.h.
+	(c_diagnostic_finalizer): New.
+	(c_common_initialize_diagnostics): Use it.
+
 2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR preprocessor/51303

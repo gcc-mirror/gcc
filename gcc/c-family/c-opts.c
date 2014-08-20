@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "langhooks.h"
 #include "diagnostic.h"
+#include "tree-diagnostic.h" /* for virt_loc_aware_diagnostic_finalizer */
 #include "intl.h"
 #include "cppdefault.h"
 #include "incpath.h"
@@ -164,6 +165,19 @@ c_common_option_lang_mask (void)
   return lang_flags[c_language];
 }
 
+/* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
+static void
+c_diagnostic_finalizer (diagnostic_context *context,
+			diagnostic_info *diagnostic)
+{
+  diagnostic_show_locus (context, diagnostic);
+  /* By default print macro expansion contexts in the diagnostic
+     finalizer -- for tokens resulting from macro expansion.  */
+  virt_loc_aware_diagnostic_finalizer (context, diagnostic);
+  pp_destroy_prefix (context->printer);
+  pp_newline_and_flush (context->printer);
+}
+
 /* Common diagnostics initialization.  */
 void
 c_common_initialize_diagnostics (diagnostic_context *context)
@@ -179,7 +193,7 @@ c_common_initialize_diagnostics (diagnostic_context *context)
 	 diagnostic message.  */
       diagnostic_prefixing_rule (context) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
     }
-
+  diagnostic_finalizer (context) = c_diagnostic_finalizer;
   context->opt_permissive = OPT_fpermissive;
 }
 
