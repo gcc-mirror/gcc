@@ -1237,8 +1237,9 @@ process_init_constructor_array (tree type, tree init,
 	  {
 	    /* If this type needs constructors run for default-initialization,
 	       we can't rely on the back end to do it for us, so make the
-	       initialization explicit by list-initializing from {}.  */
+	       initialization explicit by list-initializing from T{}.  */
 	    next = build_constructor (init_list_type_node, NULL);
+	    CONSTRUCTOR_IS_DIRECT_INIT (next) = true;
 	    next = massage_init_elt (TREE_TYPE (type), next, complain);
 	    if (initializer_zerop (next))
 	      /* The default zero-initialization is fine for us; don't
