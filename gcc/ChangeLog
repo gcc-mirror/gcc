@@ -1,3 +1,22 @@
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* df.h (web_entry_base): Replace existing struct web_entry with a
+	new class web_entry_base with only the predecessor member.
+	(unionfind_root): Remove declaration and move to class member.
+	(unionfind_union): Remove declaration and move to friend
+	function.
+	(union_defs): Remove declaration.
+	* web.c (web_entry_base::unionfind_root): Modify to be member
+	function and adjust accessors.
+	(unionfind_union): Modify to be friend function and adjust
+	accessors.
+	(web_entry): New subclass of web_entry_base containing the reg
+	member.
+	(union_match_dups): Modify for struct -> class changes.
+	(union_defs): Likewise.
+	(entry_register): Likewise.
+	(pass_web::execute): Likewise.
+
 2014-08-20  Bill Schmidt  <wschmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Provide
