@@ -1,3 +1,8 @@
+2014-08-20  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	* options.c (gfc_init_options_struct): assert that the frontend sets
+	flag_errno_math and flag_associative_math.
+
 2014-08-17  Tobias Burnus  <burnus@net-b.de>
 
 	* resolve.c (gfc_resolve_finalizers): Ensure that parents are
