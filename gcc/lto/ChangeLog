@@ -1,3 +1,9 @@
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (read_cgraph_and_symbols): Fix symtab_remove_unreachable_nodes
+	call.
+	(do_whole_program_analysis): Only sanity check that IPA passes cleans up.
+
 2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-symtab.c (lto_varpool_replace_node): Call compare_virtual_tables.
