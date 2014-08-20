@@ -164,6 +164,7 @@ static int gimple_verify_flow_info (void);
 static void gimple_make_forwarder_block (edge);
 static gimple first_non_label_stmt (basic_block);
 static bool verify_gimple_transaction (gimple);
+static bool call_can_make_abnormal_goto (gimple);
 
 /* Flowgraph optimization and cleanup.  */
 static void gimple_merge_blocks (basic_block, basic_block);
@@ -437,6 +438,32 @@ assert_unreachable_fallthru_edge_p (edge e)
 }
 
 
+/* Initialize GF_CALL_CTRL_ALTERING flag, which indicates the call
+   could alter control flow except via eh. We initialize the flag at
+   CFG build time and only ever clear it later.  */
+
+static void
+gimple_call_initialize_ctrl_altering (gimple stmt)
+{
+  int flags = gimple_call_flags (stmt);
+
+  /* A call alters control flow if it can make an abnormal goto.  */
+  if (call_can_make_abnormal_goto (stmt)
+      /* A call also alters control flow if it does not return.  */
+      || flags & ECF_NORETURN
+      /* TM ending statements have backedges out of the transaction.
+	 Return true so we split the basic block containing them.
+	 Note that the TM_BUILTIN test is merely an optimization.  */
+      || ((flags & ECF_TM_BUILTIN)
+	  && is_tm_ending_fndecl (gimple_call_fndecl (stmt)))
+      /* BUILT_IN_RETURN call is same as return statement.  */
+      || gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
+    gimple_call_set_ctrl_altering (stmt, true);
+  else
+    gimple_call_set_ctrl_altering (stmt, false);
+}
+
+
 /* Build a flowgraph for the sequence of stmts SEQ.  */
 
 static void
@@ -454,6 +481,9 @@ make_blocks (gimple_seq seq)
 
       prev_stmt = stmt;
       stmt = gsi_stmt (i);
+
+      if (stmt && is_gimple_call (stmt))
+	gimple_call_initialize_ctrl_altering (stmt);
 
       /* If the statement starts a new basic block or if we have determined
 	 in a previous pass that we need to create a new block for STMT, do
@@ -2372,28 +2402,10 @@ is_ctrl_altering_stmt (gimple t)
   switch (gimple_code (t))
     {
     case GIMPLE_CALL:
-      {
-	int flags = gimple_call_flags (t);
-
-	/* A call alters control flow if it can make an abnormal goto.  */
-	if (call_can_make_abnormal_goto (t))
-	  return true;
-
-	/* A call also alters control flow if it does not return.  */
-	if (flags & ECF_NORETURN)
-	  return true;
-
-	/* TM ending statements have backedges out of the transaction.
-	   Return true so we split the basic block containing them.
-	   Note that the TM_BUILTIN test is merely an optimization.  */
-	if ((flags & ECF_TM_BUILTIN)
-	    && is_tm_ending_fndecl (gimple_call_fndecl (t)))
-	  return true;
-
-	/* BUILT_IN_RETURN call is same as return statement.  */
-	if (gimple_call_builtin_p (t, BUILT_IN_RETURN))
-	  return true;
-      }
+      /* Per stmt call flag indicates whether the call could alter
+	 controlflow.  */
+      if (gimple_call_ctrl_altering_p (t))
+	return true;
       break;
 
     case GIMPLE_EH_DISPATCH:
@@ -8533,6 +8545,8 @@ execute_fixup_cfg (void)
 		  && (!is_gimple_call (stmt)
 		      || (gimple_call_flags (stmt) & ECF_NORETURN) == 0)))
 	    {
+	      if (stmt && is_gimple_call (stmt))
+		gimple_call_set_ctrl_altering (stmt, false);
 	      stmt = gimple_build_call
 		  (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
 	      gimple_stmt_iterator gsi = gsi_last_bb (bb);
@@ -8542,10 +8556,6 @@ execute_fixup_cfg (void)
     }
   if (count_scale != REG_BR_PROB_BASE)
     compute_function_frequency ();
-
-  /* We just processed all calls.  */
-  if (cfun->gimple_df)
-    vec_free (MODIFIED_NORETURN_CALLS (cfun));
 
   /* Dump a textual representation of the flowgraph.  */
   if (dump_file)
