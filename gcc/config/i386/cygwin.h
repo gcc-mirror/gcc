@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   %{!ansi:-Dunix} \
+  %{pthread:-D_REENTRANT} \
   %{mwin32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ %{!ansi:-DWINNT}} \
   %{!nostdinc:%{!mno-win32:-idirafter ../include/w32api%s -idirafter ../../include/w32api%s}}\
 "
@@ -40,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #define STARTFILE_SPEC "\
   %{!shared: %{!mdll: crt0%O%s \
   %{pg:gcrt0%O%s}}}\
-  crtbegin.o%s"
+  %{shared:crtbeginS.o%s;:crtbegin.o%s}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -77,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC "\
   %{pg:-lgmon} \
+  %{pthread: } \
   -lcygwin \
   %{mwindows:-lgdi32 -lcomdlg32} \
   -ladvapi32 -lshell32 -luser32 -lkernel32"
@@ -120,7 +122,8 @@ along with GCC; see the file COPYING3.  If not see
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \
   %{shared|mdll: --enable-auto-image-base -e __cygwin_dll_entry@12} \
-  --dll-search-prefix=cyg -tsaware"
+  --dll-search-prefix=cyg \
+  %{!shared: %{!mdll: --large-address-aware --tsaware}}"
 
 /* Binutils does not handle weak symbols from dlls correctly.  For now,
    do not use them unnecessarily in gthr-posix.h.  */
@@ -128,7 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Every program on cygwin links against cygwin1.dll which contains 
    the pthread routines.  There is no need to explicitly link them
-   and the -pthread flag is not recognized.  */
+   and the -pthread flag is accepted only for compatibility.  */
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS ""
 #undef GTM_SELF_SPECS

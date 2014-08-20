@@ -55,6 +55,21 @@ typedef const struct simple_bitmap_def *const_sbitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;
+
+/* Subclasses of rtx_def, using indentation to show the class
+   hierarchy, along with the relevant invariant.
+   Where possible, keep this list in the same order as in rtl.def.  */
+class rtx_def;
+  class rtx_insn;
+    class rtx_debug_insn;      /* DEBUG_INSN_P (X) */
+    class rtx_nonjump_insn;    /* NONJUMP_INSN_P (X) */
+    class rtx_jump_insn;       /* JUMP_P (X) */
+    class rtx_call_insn;       /* CALL_P (X) */
+    class rtx_jump_table_data; /* JUMP_TABLE_DATA_P (X) */
+    class rtx_barrier;         /* BARRIER_P (X) */
+    class rtx_code_label;      /* LABEL_P (X) */
+    class rtx_note;            /* NOTE_P (X) */
+
 struct rtvec_def;
 typedef struct rtvec_def *rtvec;
 typedef const struct rtvec_def *const_rtvec;

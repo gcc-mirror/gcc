@@ -913,15 +913,15 @@ save_call_clobbered_regs (void)
 		  prev = PREV_INSN (ins);
 		  if (NOTE_P (ins))
 		    {
-		      NEXT_INSN (prev) = NEXT_INSN (ins);
-		      PREV_INSN (NEXT_INSN (ins)) = prev;
-		      PREV_INSN (ins) = insn;
-		      NEXT_INSN (ins) = NEXT_INSN (insn);
-		      NEXT_INSN (insn) = ins;
+		      SET_NEXT_INSN (prev) = NEXT_INSN (ins);
+		      SET_PREV_INSN (NEXT_INSN (ins)) = prev;
+		      SET_PREV_INSN (ins) = insn;
+		      SET_NEXT_INSN (ins) = NEXT_INSN (insn);
+		      SET_NEXT_INSN (insn) = ins;
 		      if (NEXT_INSN (ins))
-			PREV_INSN (NEXT_INSN (ins)) = ins;
+			SET_PREV_INSN (NEXT_INSN (ins)) = ins;
                       if (BB_END (bb) == insn)
-			BB_END (bb) = ins;
+			SET_BB_END (bb) = ins;
 		    }
 		  else
 		    gcc_assert (DEBUG_INSN_P (ins));
@@ -1418,7 +1418,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 
       CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)))
-	BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
+	SET_BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
     }
   else
     {
@@ -1438,7 +1438,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 		   &new_chain->live_throughout);
       CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)))
-	BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
+	SET_BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
     }
   new_chain->block = chain->block;
   new_chain->is_caller_save_insn = 1;

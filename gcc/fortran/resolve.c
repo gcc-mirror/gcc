@@ -8475,6 +8475,53 @@ resolve_lock_unlock (gfc_code *code)
 
 
 static void
+resolve_critical (gfc_code *code)
+{
+  gfc_symtree *symtree;
+  gfc_symbol *lock_type;
+  char name[GFC_MAX_SYMBOL_LEN];
+  static int serial = 0;
+
+  if (gfc_option.coarray != GFC_FCOARRAY_LIB)
+    return;
+
+  symtree = gfc_find_symtree (gfc_current_ns->sym_root,
+			      GFC_PREFIX ("lock_type"));
+  if (symtree)
+    lock_type = symtree->n.sym;
+  else
+    {
+      if (gfc_get_sym_tree (GFC_PREFIX ("lock_type"), gfc_current_ns, &symtree,
+			    false) != 0)
+	gcc_unreachable ();
+      lock_type = symtree->n.sym;
+      lock_type->attr.flavor = FL_DERIVED;
+      lock_type->attr.zero_comp = 1;
+      lock_type->from_intmod = INTMOD_ISO_FORTRAN_ENV;
+      lock_type->intmod_sym_id = ISOFORTRAN_LOCK_TYPE;
+    }
+
+  sprintf(name, GFC_PREFIX ("lock_var") "%d",serial++);
+  if (gfc_get_sym_tree (name, gfc_current_ns, &symtree, false) != 0)
+    gcc_unreachable ();
+
+  code->resolved_sym = symtree->n.sym;
+  symtree->n.sym->attr.flavor = FL_VARIABLE;
+  symtree->n.sym->attr.referenced = 1;
+  symtree->n.sym->attr.artificial = 1;
+  symtree->n.sym->attr.codimension = 1;
+  symtree->n.sym->ts.type = BT_DERIVED;
+  symtree->n.sym->ts.u.derived = lock_type;
+  symtree->n.sym->as = gfc_get_array_spec ();
+  symtree->n.sym->as->corank = 1;
+  symtree->n.sym->as->type = AS_EXPLICIT;
+  symtree->n.sym->as->cotype = AS_EXPLICIT;
+  symtree->n.sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
+						   NULL, 1);
+}
+
+
+static void
 resolve_sync (gfc_code *code)
 {
   /* Check imageset. The * case matches expr1 == NULL.  */
@@ -9913,7 +9960,10 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_CONTINUE:
 	case EXEC_DT_END:
 	case EXEC_ASSIGN_CALL:
+	  break;
+
 	case EXEC_CRITICAL:
+	  resolve_critical (code);
 	  break;
 
 	case EXEC_SYNC_ALL:
@@ -11366,6 +11416,10 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
   bool seen_scalar = false;
   gfc_symbol *vtab;
   gfc_component *c;
+  gfc_symbol *parent = gfc_get_derived_super_type (derived);
+
+  if (parent)
+    gfc_resolve_finalizers (parent, finalizable);
 
   /* Return early when not finalizable. Additionally, ensure that derived-type
      components have a their finalizables resolved.  */

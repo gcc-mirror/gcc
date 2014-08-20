@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "wide-int.h"
 #include "flags.h"
+#include "is-a.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */
@@ -266,7 +267,21 @@ struct GTY((variable_size)) hwivec_def {
 
 /* RTL expression ("rtx").  */
 
-struct GTY((chain_next ("RTX_NEXT (&%h)"),
+/* The GTY "desc" and "tag" options below are a kludge: we need a desc
+   field for for gengtype to recognize that inheritance is occurring,
+   so that all subclasses are redirected to the traversal hook for the
+   base class.
+   However, all of the fields are in the base class, and special-casing
+   is at work.  Hence we use desc and tag of 0, generating a switch
+   statement of the form:
+     switch (0)
+       {
+       case 0: // all the work happens here
+      }
+   in order to work with the existing special-casing in gengtype.  */
+
+struct GTY((desc("0"), tag("0"),
+	    chain_next ("RTX_NEXT (&%h)"),
 	    chain_prev ("RTX_PREV (&%h)"))) rtx_def {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
@@ -385,6 +400,118 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
     struct fixed_value fv;
     struct hwivec_def hwiv;
   } GTY ((special ("rtx_def"), desc ("GET_CODE (&%0)"))) u;
+};
+
+class GTY(()) rtx_insn : public rtx_def
+{
+  /* No extra fields, but adds the invariant:
+
+     (INSN_P (X)
+      || NOTE_P (X)
+      || JUMP_TABLE_DATA_P (X)
+      || BARRIER_P (X)
+      || LABEL_P (X))
+
+     i.e. that we must be able to use the following:
+      INSN_UID ()
+      NEXT_INSN ()
+      PREV_INSN ()
+    i.e. we have an rtx that has an INSN_UID field and can be part of
+    a linked list of insns.
+  */
+};
+
+/* Subclasses of rtx_insn.  */
+
+class GTY(()) rtx_debug_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       DEBUG_INSN_P (X) aka (GET_CODE (X) == DEBUG_INSN)
+     i.e. an annotation for tracking variable assignments.
+
+     This is an instance of:
+       DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "uuBeiie", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_nonjump_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       NONJUMP_INSN_P (X) aka (GET_CODE (X) == INSN)
+     i.e an instruction that cannot jump.
+
+     This is an instance of:
+       DEF_RTL_EXPR(INSN, "insn", "uuBeiie", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_jump_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       JUMP_P (X) aka (GET_CODE (X) == JUMP_INSN)
+     i.e. an instruction that can possibly jump.
+
+     This is an instance of:
+       DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "uuBeiie0", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_call_insn : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       CALL_P (X) aka (GET_CODE (X) == CALL_INSN)
+     i.e. an instruction that can possibly call a subroutine
+     but which will not change which instruction comes next
+     in the current function.
+
+     This is an instance of:
+       DEF_RTL_EXPR(CALL_INSN, "call_insn", "uuBeiiee", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_jump_table_data : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       JUMP_TABLE_DATA_P (X) aka (GET_CODE (INSN) == JUMP_TABLE_DATA)
+     i.e. a data for a jump table, considered an instruction for
+     historical reasons.
+
+     This is an instance of:
+       DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "uuBe0000", RTX_INSN)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_barrier : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       BARRIER_P (X) aka (GET_CODE (X) == BARRIER)
+     i.e. a marker that indicates that control will not flow through.
+
+     This is an instance of:
+       DEF_RTL_EXPR(BARRIER, "barrier", "uu00000", RTX_EXTRA)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_code_label : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       LABEL_P (X) aka (GET_CODE (X) == CODE_LABEL)
+     i.e. a label in the assembler.
+
+     This is an instance of:
+       DEF_RTL_EXPR(CODE_LABEL, "code_label", "uuB00is", RTX_EXTRA)
+     from rtl.def.  */
+};
+
+class GTY(()) rtx_note : public rtx_insn
+{
+  /* No extra fields, but adds the invariant:
+       NOTE_P(X) aka (GET_CODE (X) == NOTE)
+     i.e. a note about the corresponding source code.
+
+     This is an instance of:
+       DEF_RTL_EXPR(NOTE, "note", "uuB0ni", RTX_EXTRA)
+     from rtl.def.  */
 };
 
 /* The size in bytes of an rtx header (code, mode and flags).  */
@@ -547,6 +674,118 @@ struct GTY(()) rtvec_def {
 
 /* Predicate yielding nonzero iff X is a data for a jump table.  */
 #define JUMP_TABLE_DATA_P(INSN) (GET_CODE (INSN) == JUMP_TABLE_DATA)
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_insn *>::test (rtx rt)
+{
+  return (INSN_P (rt)
+	  || NOTE_P (rt)
+	  || JUMP_TABLE_DATA_P (rt)
+	  || BARRIER_P (rt)
+	  || LABEL_P (rt));
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const rtx_insn *>::test (const_rtx rt)
+{
+  return (INSN_P (rt)
+	  || NOTE_P (rt)
+	  || JUMP_TABLE_DATA_P (rt)
+	  || BARRIER_P (rt)
+	  || LABEL_P (rt));
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_debug_insn *>::test (rtx rt)
+{
+  return DEBUG_INSN_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_nonjump_insn *>::test (rtx rt)
+{
+  return NONJUMP_INSN_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_jump_insn *>::test (rtx rt)
+{
+  return JUMP_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_call_insn *>::test (rtx rt)
+{
+  return CALL_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_jump_table_data *>::test (rtx rt)
+{
+  return JUMP_TABLE_DATA_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_jump_table_data *>::test (rtx_insn *insn)
+{
+  return JUMP_TABLE_DATA_P (insn);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_barrier *>::test (rtx rt)
+{
+  return BARRIER_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_code_label *>::test (rtx rt)
+{
+  return LABEL_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_code_label *>::test (rtx_insn *insn)
+{
+  return LABEL_P (insn);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_note *>::test (rtx rt)
+{
+  return NOTE_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_note *>::test (rtx_insn *insn)
+{
+  return NOTE_P (insn);
+}
 
 /* Predicate yielding nonzero iff X is a return or simple_return.  */
 #define ANY_RETURN_P(X) \
@@ -914,8 +1153,33 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
   (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_UID", (INSN))->u2.insn_uid)
 
 /* Chain insns together in sequence.  */
-#define PREV_INSN(INSN)	XEXP (INSN, 0)
-#define NEXT_INSN(INSN)	XEXP (INSN, 1)
+
+/* For now these are split in two: an rvalue form:
+     PREV_INSN/NEXT_INSN
+   and an lvalue form:
+     SET_NEXT_INSN/SET_PREV_INSN.  */
+
+inline rtx_insn *PREV_INSN (const_rtx insn)
+{
+  rtx prev = XEXP (insn, 0);
+  return safe_as_a <rtx_insn *> (prev);
+}
+
+inline rtx& SET_PREV_INSN (rtx insn)
+{
+  return XEXP (insn, 0);
+}
+
+inline rtx_insn *NEXT_INSN (const_rtx insn)
+{
+  rtx next = XEXP (insn, 1);
+  return safe_as_a <rtx_insn *> (next);
+}
+
+inline rtx& SET_NEXT_INSN (rtx insn)
+{
+  return XEXP (insn, 1);
+}
 
 #define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 2)
 
@@ -2153,20 +2417,20 @@ extern rtx emit_use (rtx);
 extern rtx make_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
 extern rtx last_call_insn (void);
-extern rtx previous_insn (rtx);
-extern rtx next_insn (rtx);
-extern rtx prev_nonnote_insn (rtx);
-extern rtx prev_nonnote_insn_bb (rtx);
-extern rtx next_nonnote_insn (rtx);
-extern rtx next_nonnote_insn_bb (rtx);
-extern rtx prev_nondebug_insn (rtx);
-extern rtx next_nondebug_insn (rtx);
-extern rtx prev_nonnote_nondebug_insn (rtx);
-extern rtx next_nonnote_nondebug_insn (rtx);
-extern rtx prev_real_insn (rtx);
-extern rtx next_real_insn (rtx);
-extern rtx prev_active_insn (rtx);
-extern rtx next_active_insn (rtx);
+extern rtx_insn *previous_insn (rtx);
+extern rtx_insn *next_insn (rtx);
+extern rtx_insn *prev_nonnote_insn (rtx);
+extern rtx_insn *prev_nonnote_insn_bb (rtx);
+extern rtx_insn *next_nonnote_insn (rtx);
+extern rtx_insn *next_nonnote_insn_bb (rtx);
+extern rtx_insn *prev_nondebug_insn (rtx);
+extern rtx_insn *next_nondebug_insn (rtx);
+extern rtx_insn *prev_nonnote_nondebug_insn (rtx);
+extern rtx_insn *next_nonnote_nondebug_insn (rtx);
+extern rtx_insn *prev_real_insn (rtx);
+extern rtx_insn *next_real_insn (rtx);
+extern rtx_insn *prev_active_insn (rtx);
+extern rtx_insn *next_active_insn (rtx);
 extern int active_insn_p (const_rtx);
 extern rtx next_cc0_user (rtx);
 extern rtx prev_cc0_setter (rtx);
@@ -2341,6 +2605,7 @@ extern bool tls_referenced_p (rtx);
 
 typedef int (*rtx_function) (rtx *, void *);
 extern int for_each_rtx (rtx *, rtx_function, void *);
+extern int for_each_rtx_in_insn (rtx_insn **, rtx_function, void *);
 
 /* Callback for for_each_inc_dec, to process the autoinc operation OP
    within MEM that sets DEST to SRC + SRCOFF, or SRC if SRCOFF is

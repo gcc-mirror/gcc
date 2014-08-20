@@ -136,7 +136,6 @@ RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
 VMS			Douglas Rupp		rupp@gnat.com
 VMS			Tristan Gingold		gingold@adacore.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
-windows, cygwin, mingw	Christopher Faylor	cgf@gcc.gnu.org
 windows, cygwin, mingw	Kai Tietz		ktietz@redhat.com
 windows, cygwin, mingw	Dave Korn		dave.korn.cygwin@gmail.com
 
@@ -494,6 +493,7 @@ David O'Brien					obrien@FreeBSD.org
 Carlos O'Donell					carlos@redhat.com
 Peter O'Gorman					pogma@thewrittenword.com
 Andrea Ornstein					andrea.ornstein@st.com
+Patrick Palka					ppalka@gcc.gnu.org
 Seongbae Park					seongbae.park@gmail.com
 Devang Patel					dpatel@apple.com
 Fernando Pereira				pronesto@gmail.com
@@ -555,11 +555,14 @@ Dinar Temirbulatov				dtemirbulatov@gmail.com
 Kresten Krab Thorup				krab@gcc.gnu.org
 Caroline Tice					cmtice@google.com
 Kyrylo Tkachov					kyrylo.tkachov@arm.com
+Ilya Tocar					tocarip@gmail.com
 Konrad Trifunovic				konrad.trifunovic@inria.fr
 Markus Trippelsdorf				markus@trippelsdorf.de
 David Ung					davidu@mips.com
 Neil Vachharajani				nvachhar@gmail.com
 Kris Van Hees					kris.van.hees@oracle.com
+Joost VandeVondele				joost.vandevondele@mat.ethz.ch
+Ilya Verbin					iverbin@gmail.com
 Kugan Vivekanandarajah				kuganv@linaro.org	
 Tom de Vries					tom@codesourcery.com
 Nenad Vukicevic					nenad@intrepid.com

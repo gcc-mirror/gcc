@@ -136,7 +136,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 	{
 	  new_edge = n->create_indirect_edge (call_stmt,
 					      e->indirect_info->ecf_flags,
-					      count, freq);
+					      count, freq, false);
 	  *new_edge->indirect_info = *e->indirect_info;
 	}
     }

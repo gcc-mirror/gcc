@@ -1,3 +1,15 @@
+2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
+
+	* config/i386/cygming-crtend.c (register_frame_ctor): Move atexit
+	call from here...
+	* config/i386/cygming-crtbegin.c (__gcc_register_frame): to here.
+	(__dso_handle): Define on Cygwin.
+	* config/i386/t-cygming (crtbeginS.o): New rule.
+	* config.host (*-*-cygwin*): Add crtbeginS.o to extra_parts.
+
+	* config/i386/cygming-crtbegin.c (deregister_frame_fn): Fix
+	declaration syntax.
+
 2014-08-13  Steve Ellcey  <sellcey@mips.com>
 
 	* crtstuff.c: Undef caddr_t.

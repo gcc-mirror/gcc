@@ -17,6 +17,6 @@
 void
 foo (const char *s, int *p)
 {
-  scanf("%ld", p); /* { dg-warning "format" "implicit scanf" } */
+  scanf("%ld", p); /* { dg-warning "9:format" "implicit scanf" } */
   /* { dg-warning "implicit" "implicit decl warning" { target *-*-* } 20 } */
 }

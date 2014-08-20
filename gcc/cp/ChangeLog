@@ -1,3 +1,95 @@
+2014-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR lto/53808
+	PR c++/61659
+	* decl.c (maybe_commonize_var): Don't use DECL_COMDAT to trigger
+	comdat_linkage.
+
+2014-08-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* class.c (contains_empty_class_p): Remove.
+
+2014-08-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_expression): Add default arguments.
+	(cp_parser_primary_expression, cp_parser_postfix_expression,
+	cp_parser_array_notation, cp_parser_postfix_open_square_expression,
+	cp_parser_unary_expression, cp_parser_direct_new_declarator,
+	cp_parser_question_colon_clause, cp_parser_assignment_operator_opt,
+	cp_parser_lambda_body, cp_parser_expression_statement,
+	cp_parser_condition, cp_parser_c_for, cp_parser_range_for,
+	cp_parser_iteration_statement, cp_parser_jump_statement,
+	cp_parser_decltype_expr, cp_parser_noexcept_specification_opt,
+	cp_parser_asm_operand_list, cp_parser_objc_message_receiver,
+	cp_parser_objc_synchronized_statement, cp_parser_objc_throw_statement,
+	cp_parser_omp_var_list_no_open, cp_parser_omp_clause_num_threads,
+	cp_parser_omp_clause_num_teams, cp_parser_omp_clause_thread_limit,
+	cp_parser_omp_clause_linear, cp_parser_omp_clause_device,
+	cp_parser_omp_atomic, cp_parser_omp_for_loop_init,
+	cp_parser_omp_for_loop, cp_parser_omp_declare_reduction_exprs,
+	cp_parser_transaction_expression): Adjust.
+
+2014-08-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61566
+	* pt.c (lookup_template_class_1): Revert recent change.
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): Revert recent change.
+
+	PR c++/61566
+	* pt.c (instantiate_class_template_1): Ignore lambda on
+	CLASSTYPE_DECL_LIST.
+	(push_template_decl_real): A lambda is not primary.
+	(lookup_template_class_1): Don't look for a lambda partial
+	instantiation.
+	* lambda.c (maybe_add_lambda_conv_op): Distinguish between being
+	currently in a function and the lambda living in a function.
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): False for lambda.
+
+2014-08-15  Richard Biener  <rguenther@suse.de>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/62077
+	* tree.c (build_min_array_type, set_array_type_canon): Split out...
+	(build_cplus_array_type): ...from here.  Only call build_array_type
+	for main variants.
+
+2014-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62072
+	Revert:
+	2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1584
+	PR c++/57466
+	* pt.c (check_cv_quals_for_unify): Implement resolution, disregard
+	cv-qualifiers of function types.
+
+2014-08-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* call.c (build_conditional_expr_1): Use OPT_Wextra in warning.
+
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (composite_pointer_type, cxx_sizeof_or_alignof_type,
+	cp_build_array_ref, cp_build_function_call_vec): When a
+	pedwarn is suppressed under SFINAE, return error_mark_node.
+
+	* typeck.c (cxx_sizeof_or_alignof_type): Fix complain &
+	tf_warning_or_error, where complain is a bool, glitch.
+
+2014-08-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/62101
+	* decl.c (grokdeclarator): Move the check for friend initializers..
+	* decl2.c (grokfield) ..here. Postpone early return for friends
+	until after the initializer check.
+
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54377
+	* pt.c (coerce_template_parms): Improve error message vs default
+	arguments.
+
 2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_init_declarator): Remove redundant check of

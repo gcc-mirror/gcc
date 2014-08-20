@@ -55,8 +55,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef enum caf_register_t {
   CAF_REGTYPE_COARRAY_STATIC,
   CAF_REGTYPE_COARRAY_ALLOC,
-  CAF_REGTYPE_LOCK,
-  CAF_REGTYPE_LOCK_COMP
+  CAF_REGTYPE_LOCK_STATIC,
+  CAF_REGTYPE_LOCK_ALLOC,
+  CAF_REGTYPE_CRITICAL
 }
 caf_register_t;
 
@@ -101,15 +102,6 @@ void _gfortran_caf_deregister (caf_token_t *, int *, char *, int);
 void _gfortran_caf_sync_all (int *, char *, int);
 void _gfortran_caf_sync_images (int, int[], int *, char *, int);
 
-/* FIXME: The CRITICAL functions should be removed;
-   the functionality is better represented using Coarray's lock feature.  */
-void _gfortran_caf_critical (void);
-void _gfortran_caf_critical (void)  { }
-
-void _gfortran_caf_end_critical (void);
-void _gfortran_caf_end_critical (void)  { }
-
-
 void _gfortran_caf_error_stop_str (const char *, int32_t)
      __attribute__ ((noreturn));
 void _gfortran_caf_error_stop (int32_t) __attribute__ ((noreturn));
@@ -137,4 +129,8 @@ void _gfortran_caf_atomic_cas (caf_token_t, size_t, int, void *, void *,
 			       void *, int *, int, int);
 void _gfortran_caf_atomic_op (int, caf_token_t, size_t, int, void *, void *,
 			      int *, int, int);
+
+void _gfortran_caf_lock (caf_token_t, size_t, int, int *, int *, char *, int);
+void _gfortran_caf_unlock (caf_token_t, size_t, int, int *, char *, int);
+
 #endif  /* LIBCAF_H  */

@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "gfortran.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -39,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "cgraph.h"
 #include "debug.h"
-#include "gfortran.h"
 #include "hash-set.h"
 #include "constructor.h"
 #include "trans.h"
@@ -135,8 +135,6 @@ tree gfor_fndecl_caf_deregister;
 tree gfor_fndecl_caf_get;
 tree gfor_fndecl_caf_send;
 tree gfor_fndecl_caf_sendget;
-tree gfor_fndecl_caf_critical;
-tree gfor_fndecl_caf_end_critical;
 tree gfor_fndecl_caf_sync_all;
 tree gfor_fndecl_caf_sync_images;
 tree gfor_fndecl_caf_error_stop;
@@ -145,6 +143,8 @@ tree gfor_fndecl_caf_atomic_def;
 tree gfor_fndecl_caf_atomic_ref;
 tree gfor_fndecl_caf_atomic_cas;
 tree gfor_fndecl_caf_atomic_op;
+tree gfor_fndecl_caf_lock;
+tree gfor_fndecl_caf_unlock;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_sum;
@@ -3368,12 +3368,6 @@ gfc_build_builtin_function_decls (void)
 	pvoid_type_node, pvoid_type_node, size_type_node, integer_type_node,
 	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node);
 
-      gfor_fndecl_caf_critical = gfc_build_library_function_decl (
-	get_identifier (PREFIX("caf_critical")), void_type_node, 0);
-
-      gfor_fndecl_caf_end_critical = gfc_build_library_function_decl (
-	get_identifier (PREFIX("caf_end_critical")), void_type_node, 0);
-
       gfor_fndecl_caf_sync_all = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_sync_all")), ".WW", void_type_node,
 	3, pint_type, pchar_type_node, integer_type_node);
@@ -3416,6 +3410,16 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 9, integer_type_node, pvoid_type_node, size_type_node,
 	integer_type_node, pvoid_type_node, pvoid_type_node, pint_type,
 	integer_type_node, integer_type_node);
+
+      gfor_fndecl_caf_lock = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_lock")), "R..WWW",
+	void_type_node, 7, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pint_type, pchar_type_node, integer_type_node);
+
+      gfor_fndecl_caf_unlock = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_unlock")), "R..WW",
+	void_type_node, 7, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pchar_type_node, integer_type_node);
 
       gfor_fndecl_co_max = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_co_max")), "W.WW",
@@ -4694,6 +4698,8 @@ static void
 generate_coarray_sym_init (gfc_symbol *sym)
 {
   tree tmp, size, decl, token;
+  bool is_lock_type;
+  int reg_type;
 
   if (sym->attr.dummy || sym->attr.allocatable || !sym->attr.codimension
       || sym->attr.use_assoc || !sym->attr.referenced
@@ -4704,11 +4710,20 @@ generate_coarray_sym_init (gfc_symbol *sym)
   TREE_USED(decl) = 1;
   gcc_assert (GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
 
+  is_lock_type = sym->ts.type == BT_DERIVED
+		 && sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+		 && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE;
+
   /* FIXME: Workaround for PR middle-end/49106, cf. also PR middle-end/49108
      to make sure the variable is not optimized away.  */
   DECL_PRESERVE_P (DECL_CONTEXT (decl)) = 1;
 
-  size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (decl)));
+  /* For lock types, we pass the array size as only the library knows the
+     size of the variable.  */
+  if (is_lock_type)
+    size = gfc_index_one_node;
+  else
+    size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (decl)));
 
   /* Ensure that we do not have size=0 for zero-sized arrays.  */
   size = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
@@ -4725,16 +4740,16 @@ generate_coarray_sym_init (gfc_symbol *sym)
   gcc_assert (GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (decl)) != NULL_TREE);
   token = gfc_build_addr_expr (ppvoid_type_node,
 			       GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE(decl)));
-
+  if (is_lock_type)
+    reg_type = sym->attr.artificial ? GFC_CAF_CRITICAL : GFC_CAF_LOCK_STATIC;
+  else
+    reg_type = GFC_CAF_COARRAY_STATIC;
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_register, 6, size,
-			     build_int_cst (integer_type_node,
-					    GFC_CAF_COARRAY_STATIC), /* type.  */
+			     build_int_cst (integer_type_node, reg_type),
 			     token, null_pointer_node, /* token, stat.  */
 			     null_pointer_node, /* errgmsg, errmsg_len.  */
 			     build_int_cst (integer_type_node, 0));
-
   gfc_add_modify (&caf_init_block, decl, fold_convert (TREE_TYPE (decl), tmp));
-
 
   /* Handle "static" initializer.  */
   if (sym->value)

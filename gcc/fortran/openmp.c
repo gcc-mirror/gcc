@@ -464,7 +464,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, unsigned int mask,
 		      || !gfc_add_intrinsic (&sym->attr, NULL)))
 		rop = OMP_REDUCTION_NONE;
 	    }
-	  gfc_omp_udr *udr = gfc_find_omp_udr (gfc_current_ns, buffer, NULL);
+	  else
+	    buffer[0] = '\0';
+	  gfc_omp_udr *udr
+	    = (buffer[0]
+	       ? gfc_find_omp_udr (gfc_current_ns, buffer, NULL) : NULL);
 	  gfc_omp_namelist **head = NULL;
 	  if (rop == OMP_REDUCTION_NONE && udr)
 	    rop = OMP_REDUCTION_USER;
@@ -1240,6 +1244,7 @@ gfc_match_omp_declare_reduction (void)
 	 syntax:
 	  gfc_current_locus = old_loc;
 	  gfc_current_ns = combiner_ns->parent;
+	  gfc_undo_symbols ();
 	  gfc_free_omp_udr (omp_udr);
 	  return MATCH_ERROR;
 	}
@@ -2739,7 +2744,7 @@ resolve_omp_atomic (gfc_code *code)
       break;
     }
 
-  if (var->attr.allocatable)
+  if (gfc_expr_attr (code->expr1).allocatable)
     {
       gfc_error ("!$OMP ATOMIC with ALLOCATABLE variable at %L",
 		 &code->loc);

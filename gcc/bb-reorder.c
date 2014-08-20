@@ -1757,7 +1757,7 @@ add_labels_and_missing_jumps (vec<edge> crossing_edges)
       gcc_assert (single_succ_p (src));
 
       new_jump = emit_jump_insn_after (gen_jump (label), BB_END (src));
-      BB_END (src) = new_jump;
+      SET_BB_END (src) = new_jump;
       JUMP_LABEL (new_jump) = label;
       LABEL_NUSES (label) += 1;
 
@@ -2188,7 +2188,7 @@ fix_crossing_unconditional_branches (void)
 	      /* Make BB_END for cur_bb be the jump instruction (NOT the
 		 barrier instruction at the end of the sequence...).  */
 
-	      BB_END (cur_bb) = jump_insn;
+	      SET_BB_END (cur_bb) = jump_insn;
 	    }
 	}
     }

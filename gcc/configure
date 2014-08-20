@@ -21731,6 +21731,7 @@ if test "${enable_ld+set}" = set; then :
 fi
 
 
+install_gold_as_default=no
 # Check whether --enable-gold was given.
 if test "${enable_gold+set}" = set; then :
   enableval=$enable_gold; case "${enableval}" in
@@ -21748,8 +21749,6 @@ if test "${enable_gold+set}" = set; then :
    as_fn_error "invalid --enable-gold argument" "$LINENO" 5
    ;;
  esac
-else
-  install_gold_as_default=no
 fi
 
 
@@ -23324,9 +23323,6 @@ $as_echo "$gcc_cv_as_comdat_group_percent" >&6; }
  if test $gcc_cv_as_comdat_group_percent = yes; then
    gcc_cv_as_comdat_group_group=no
  else
-   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
-     gcc_cv_as_comdat_group_group=no
-   fi
    case "${target}" in
      # Sun as uses a completely different syntax.
      *-*-solaris2*)
@@ -23376,6 +23372,9 @@ $as_echo "$gcc_cv_as_comdat_group_group" >&6; }
 
        ;;
    esac
+   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
+     gcc_cv_as_comdat_group_group=no
+   fi
  fi
 fi
 if test x"$ld_is_gold" = xyes; then
@@ -28091,6 +28090,11 @@ fi
 
 
 
+if test "x${ISLLIBS}" != "x" ; then
+
+$as_echo "#define HAVE_isl 1" >>confdefs.h
+
+fi
 
 
 

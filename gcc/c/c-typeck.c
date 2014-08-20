@@ -5067,6 +5067,9 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  || TREE_CODE (type) == UNION_TYPE)
 	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C forbids casting nonscalar to the same type");
+
+      /* Convert to remove any qualifiers from VALUE's type.  */
+      value = convert (type, value);
     }
   else if (TREE_CODE (type) == UNION_TYPE)
     {
@@ -9477,9 +9480,12 @@ c_finish_return (location_t loc, tree retval, tree origtype)
       if ((warn_return_type || flag_isoc99)
 	  && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
 	{
-	  pedwarn_c99 (loc, flag_isoc99 ? 0 : OPT_Wreturn_type,
-		       "%<return%> with no value, in "
-		       "function returning non-void");
+	  if (flag_isoc99)
+	    pedwarn (loc, 0, "%<return%> with no value, in "
+		     "function returning non-void");
+	  else
+	    warning_at (loc, OPT_Wreturn_type, "%<return%> with no value, "
+			"in function returning non-void");
 	  no_warning = true;
 	}
     }

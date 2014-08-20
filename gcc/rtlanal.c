@@ -3011,6 +3011,22 @@ for_each_rtx (rtx *x, rtx_function f, void *data)
   return for_each_rtx_1 (*x, i, f, data);
 }
 
+/* Like "for_each_rtx", but for calling on an rtx_insn **.  */
+
+int
+for_each_rtx_in_insn (rtx_insn **insn, rtx_function f, void *data)
+{
+  rtx insn_as_rtx = *insn;
+  int result;
+
+  result = for_each_rtx (&insn_as_rtx, f, data);
+
+  if (insn_as_rtx != *insn)
+    *insn = safe_as_a <rtx_insn *> (insn_as_rtx);
+
+  return result;
+}
+
 
 
 /* Data structure that holds the internal state communicated between

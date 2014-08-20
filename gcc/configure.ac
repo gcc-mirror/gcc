@@ -2213,6 +2213,7 @@ AC_ARG_ENABLE(ld,
    ;;
  esac])
 
+install_gold_as_default=no
 AC_ARG_ENABLE(gold,
 [[  --enable-gold[=ARG]     build gold [ARG={default,yes,no}]]],
 [case "${enableval}" in
@@ -2229,8 +2230,7 @@ AC_ARG_ENABLE(gold,
  *)
    AC_MSG_ERROR([invalid --enable-gold argument])
    ;;
- esac],
-[install_gold_as_default=no])
+ esac])
 
 # Identify the linker which will work hand-in-glove with the newly
 # built GCC, so that we can examine its features.  This is the linker
@@ -2918,9 +2918,6 @@ else
  if test $gcc_cv_as_comdat_group_percent = yes; then
    gcc_cv_as_comdat_group_group=no
  else
-   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
-     gcc_cv_as_comdat_group_group=no
-   fi
    case "${target}" in
      # Sun as uses a completely different syntax.
      *-*-solaris2*)
@@ -2947,6 +2944,9 @@ else
          ,, [$conftest_s])
        ;;
    esac
+   if test -z "${gcc_cv_as_comdat_group_group+set}"; then
+     gcc_cv_as_comdat_group_group=no
+   fi
  fi
 fi
 if test x"$ld_is_gold" = xyes; then
@@ -5645,6 +5645,9 @@ AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
 AC_ARG_VAR(ISLLIBS,[How to link ISL])
 AC_ARG_VAR(ISLINC,[How to find ISL include files])
+if test "x${ISLLIBS}" != "x" ; then 
+   AC_DEFINE(HAVE_isl, 1, [Define if isl is in use.])
+fi
 
 AC_ARG_VAR(CLOOGLIBS,[How to link CLOOG])
 AC_ARG_VAR(CLOOGINC,[How to find CLOOG include files])

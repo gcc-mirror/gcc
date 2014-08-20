@@ -866,7 +866,7 @@ can_assign_to_reg_without_clobbers_p (rtx x)
 				      gen_rtx_REG (word_mode,
 						   FIRST_PSEUDO_REGISTER * 2),
 				      const0_rtx));
-      NEXT_INSN (test_insn) = PREV_INSN (test_insn) = 0;
+      SET_NEXT_INSN (test_insn) = SET_PREV_INSN (test_insn) = 0;
       INSN_LOCATION (test_insn) = UNKNOWN_LOCATION;
     }
 

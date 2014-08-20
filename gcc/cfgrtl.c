@@ -152,9 +152,9 @@ delete_insn (rtx insn)
 	      && bb == BLOCK_FOR_INSN (bb_note))
 	    {
 	      reorder_insns_nobb (insn, insn, bb_note);
-	      BB_HEAD (bb) = bb_note;
+	      SET_BB_HEAD (bb) = bb_note;
 	      if (BB_END (bb) == bb_note)
-		BB_END (bb) = insn;
+		SET_BB_END (bb) = insn;
 	    }
 	}
 
@@ -326,8 +326,8 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
   if (NEXT_INSN (end) == bb_note)
     end = bb_note;
 
-  BB_HEAD (bb) = head;
-  BB_END (bb) = end;
+  SET_BB_HEAD (bb) = head;
+  SET_BB_END (bb) = end;
   bb->index = last_basic_block_for_fn (cfun)++;
   bb->flags = BB_NEW | BB_RTL;
   link_block (bb, after);
@@ -400,7 +400,7 @@ rtl_delete_block (basic_block b)
   end = get_last_bb_insn (b);
 
   /* Selectively delete the entire chain.  */
-  BB_HEAD (b) = NULL;
+  SET_BB_HEAD (b) = NULL;
   delete_insn_chain (insn, end, true);
 
 
@@ -743,7 +743,7 @@ rtl_split_block (basic_block bb, void *insnp)
   /* Create the new basic block.  */
   new_bb = create_basic_block (NEXT_INSN (insn), BB_END (bb), bb);
   BB_COPY_PARTITION (new_bb, bb);
-  BB_END (bb) = insn;
+  SET_BB_END (bb) = insn;
 
   /* Redirect the outgoing edges.  */
   new_bb->succs = bb->succs;
@@ -802,7 +802,7 @@ emit_nop_for_unique_locus_between (basic_block a, basic_block b)
   if (!unique_locus_on_edge_between_p (a, b))
     return;
 
-  BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
+  SET_BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
   INSN_LOCATION (BB_END (a)) = EDGE_SUCC (a, 0)->goto_locus;
 }
 
@@ -884,8 +884,8 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
   /* Delete everything marked above as well as crap that might be
      hanging out between the two blocks.  */
-  BB_END (a) = a_end;
-  BB_HEAD (b) = b_empty ? NULL_RTX : b_head;
+  SET_BB_END (a) = a_end;
+  SET_BB_HEAD (b) = b_empty ? NULL_RTX : b_head;
   delete_insn_chain (del_first, del_last, true);
 
   /* When not optimizing and the edge is the only place in RTL which holds
@@ -901,8 +901,8 @@ rtl_merge_blocks (basic_block a, basic_block b)
     {
       update_bb_for_insn_chain (a_end, b_debug_end, a);
 
-      BB_END (a) = b_debug_end;
-      BB_HEAD (b) = NULL_RTX;
+      SET_BB_END (a) = b_debug_end;
+      SET_BB_HEAD (b) = NULL_RTX;
     }
   else if (b_end != b_debug_end)
     {
@@ -914,7 +914,7 @@ rtl_merge_blocks (basic_block a, basic_block b)
 	reorder_insns_nobb (NEXT_INSN (a_end), PREV_INSN (b_debug_start),
 			    b_debug_end);
       update_bb_for_insn_chain (b_debug_start, b_debug_end, a);
-      BB_END (a) = b_debug_end;
+      SET_BB_END (a) = b_debug_end;
     }
 
   df_bb_delete (b->index);
@@ -979,7 +979,7 @@ block_label (basic_block block)
 
   if (!LABEL_P (BB_HEAD (block)))
     {
-      BB_HEAD (block) = emit_label_before (gen_label_rtx (), BB_HEAD (block));
+      SET_BB_HEAD (block) = emit_label_before (gen_label_rtx (), BB_HEAD (block));
     }
 
   return BB_HEAD (block);
@@ -1060,11 +1060,11 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 	      if (BARRIER_P (insn))
 		{
 		  if (PREV_INSN (insn))
-		    NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+		    SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 		  else
-		    BB_FOOTER (src) = NEXT_INSN (insn);
+		    SET_BB_FOOTER (src) = NEXT_INSN (insn);
 		  if (NEXT_INSN (insn))
-		    PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+		    SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 		}
 	      if (LABEL_P (insn))
 		break;
@@ -1132,14 +1132,14 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 	      update_bb_for_insn_chain (NEXT_INSN (BB_END (src)),
 				        PREV_INSN (barrier), src);
 
-	      NEXT_INSN (PREV_INSN (new_insn)) = NEXT_INSN (new_insn);
-	      PREV_INSN (NEXT_INSN (new_insn)) = PREV_INSN (new_insn);
+	      SET_NEXT_INSN (PREV_INSN (new_insn)) = NEXT_INSN (new_insn);
+	      SET_PREV_INSN (NEXT_INSN (new_insn)) = PREV_INSN (new_insn);
 
-	      NEXT_INSN (new_insn) = barrier;
-	      NEXT_INSN (PREV_INSN (barrier)) = new_insn;
+	      SET_NEXT_INSN (new_insn) = barrier;
+	      SET_NEXT_INSN (PREV_INSN (barrier)) = new_insn;
 
-	      PREV_INSN (new_insn) = PREV_INSN (barrier);
-	      PREV_INSN (barrier) = new_insn;
+	      SET_PREV_INSN (new_insn) = PREV_INSN (barrier);
+	      SET_PREV_INSN (barrier) = new_insn;
 	    }
 	}
     }
@@ -1447,7 +1447,7 @@ emit_barrier_after_bb (basic_block bb)
   gcc_assert (current_ir_type () == IR_RTL_CFGRTL
               || current_ir_type () == IR_RTL_CFGLAYOUT);
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
-    BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
+    SET_BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
 }
 
 /* Like force_nonfallthru below, but additionally performs redirection
@@ -3252,7 +3252,7 @@ fixup_abnormal_edges (void)
 	      e = find_fallthru_edge (bb->succs);
 
 	      stop = NEXT_INSN (BB_END (bb));
-	      BB_END (bb) = insn;
+	      SET_BB_END (bb) = insn;
 
 	      for (insn = NEXT_INSN (insn); insn != stop; insn = next)
 		{
@@ -3270,8 +3270,8 @@ fixup_abnormal_edges (void)
 			{
 			  /* We're not deleting it, we're moving it.  */
 			  INSN_DELETED_P (insn) = 0;
-			  PREV_INSN (insn) = NULL_RTX;
-			  NEXT_INSN (insn) = NULL_RTX;
+			  SET_PREV_INSN (insn) = NULL_RTX;
+			  SET_NEXT_INSN (insn) = NULL_RTX;
 
 			  insert_insn_on_edge (insn, e);
 			  inserted = true;
@@ -3302,12 +3302,12 @@ unlink_insn_chain (rtx first, rtx last)
   rtx prevfirst = PREV_INSN (first);
   rtx nextlast = NEXT_INSN (last);
 
-  PREV_INSN (first) = NULL;
-  NEXT_INSN (last) = NULL;
+  SET_PREV_INSN (first) = NULL;
+  SET_NEXT_INSN (last) = NULL;
   if (prevfirst)
-    NEXT_INSN (prevfirst) = nextlast;
+    SET_NEXT_INSN (prevfirst) = nextlast;
   if (nextlast)
-    PREV_INSN (nextlast) = prevfirst;
+    SET_PREV_INSN (nextlast) = prevfirst;
   else
     set_last_insn (prevfirst);
   if (!prevfirst)
@@ -3448,11 +3448,11 @@ record_effective_endpoints (void)
       rtx end;
 
       if (PREV_INSN (BB_HEAD (bb)) && next_insn != BB_HEAD (bb))
-	BB_HEADER (bb) = unlink_insn_chain (next_insn,
-					      PREV_INSN (BB_HEAD (bb)));
+	SET_BB_HEADER (bb) = unlink_insn_chain (next_insn,
+						PREV_INSN (BB_HEAD (bb)));
       end = skip_insns_after_block (bb);
       if (NEXT_INSN (BB_END (bb)) && BB_END (bb) != end)
-	BB_FOOTER (bb) = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
+	SET_BB_FOOTER (bb) = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
       next_insn = NEXT_INSN (BB_END (bb));
     }
 
@@ -3610,7 +3610,7 @@ relink_block_chain (bool stay_in_cfglayout_mode)
     {
       bb->aux = NULL;
       if (!stay_in_cfglayout_mode)
-	BB_HEADER (bb) = BB_FOOTER (bb) = NULL;
+	SET_BB_HEADER (bb) = SET_BB_FOOTER (bb) = NULL;
     }
 
   /* Maybe reset the original copy tables, they are not valid anymore
@@ -3650,32 +3650,32 @@ fixup_reorder_chain (void)
       if (BB_HEADER (bb))
 	{
 	  if (insn)
-	    NEXT_INSN (insn) = BB_HEADER (bb);
+	    SET_NEXT_INSN (insn) = BB_HEADER (bb);
 	  else
 	    set_first_insn (BB_HEADER (bb));
-	  PREV_INSN (BB_HEADER (bb)) = insn;
+	  SET_PREV_INSN (BB_HEADER (bb)) = insn;
 	  insn = BB_HEADER (bb);
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
       if (insn)
-	NEXT_INSN (insn) = BB_HEAD (bb);
+	SET_NEXT_INSN (insn) = BB_HEAD (bb);
       else
 	set_first_insn (BB_HEAD (bb));
-      PREV_INSN (BB_HEAD (bb)) = insn;
+      SET_PREV_INSN (BB_HEAD (bb)) = insn;
       insn = BB_END (bb);
       if (BB_FOOTER (bb))
 	{
-	  NEXT_INSN (insn) = BB_FOOTER (bb);
-	  PREV_INSN (BB_FOOTER (bb)) = insn;
+	  SET_NEXT_INSN (insn) = BB_FOOTER (bb);
+	  SET_PREV_INSN (BB_FOOTER (bb)) = insn;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
     }
 
-  NEXT_INSN (insn) = cfg_layout_function_footer;
+  SET_NEXT_INSN (insn) = cfg_layout_function_footer;
   if (cfg_layout_function_footer)
-    PREV_INSN (cfg_layout_function_footer) = insn;
+    SET_PREV_INSN (cfg_layout_function_footer) = insn;
 
   while (NEXT_INSN (insn))
     insn = NEXT_INSN (insn);
@@ -3903,8 +3903,8 @@ fixup_reorder_chain (void)
 		}
 	      nb = split_edge (e);
 	      if (!INSN_P (BB_END (nb)))
-		BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
-						     nb);
+		SET_BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
+							 nb);
 	      INSN_LOCATION (BB_END (nb)) = e->goto_locus;
 
 	      /* If there are other incoming edges to the destination block
@@ -3978,8 +3978,8 @@ fixup_fallthru_exit_predecessor (void)
 	  bb = split_block (bb, NULL)->dest;
 	  bb->aux = c->aux;
 	  c->aux = bb;
-	  BB_FOOTER (bb) = BB_FOOTER (c);
-	  BB_FOOTER (c) = NULL;
+	  SET_BB_FOOTER (bb) = BB_FOOTER (c);
+	  SET_BB_FOOTER (c) = NULL;
 	}
 
       while (c->aux != bb)
@@ -4182,7 +4182,7 @@ cfg_layout_duplicate_bb (basic_block bb)
 	insn = NEXT_INSN (insn);
       insn = duplicate_insn_chain (BB_HEADER (bb), insn);
       if (insn)
-	BB_HEADER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
+	SET_BB_HEADER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }
 
   if (BB_FOOTER (bb))
@@ -4192,7 +4192,7 @@ cfg_layout_duplicate_bb (basic_block bb)
 	insn = NEXT_INSN (insn);
       insn = duplicate_insn_chain (BB_FOOTER (bb), insn);
       if (insn)
-	BB_FOOTER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
+	SET_BB_FOOTER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }
 
   return new_bb;
@@ -4300,8 +4300,8 @@ cfg_layout_split_block (basic_block bb, void *insnp)
   rtx insn = (rtx) insnp;
   basic_block new_bb = rtl_split_block (bb, insn);
 
-  BB_FOOTER (new_bb) = BB_FOOTER (bb);
-  BB_FOOTER (bb) = NULL;
+  SET_BB_FOOTER (new_bb) = BB_FOOTER (bb);
+  SET_BB_FOOTER (bb) = NULL;
 
   return new_bb;
 }
@@ -4410,15 +4410,15 @@ cfg_layout_delete_block (basic_block bb)
     {
       next = BB_HEAD (bb);
       if (prev)
-	NEXT_INSN (prev) = BB_HEADER (bb);
+	SET_NEXT_INSN (prev) = BB_HEADER (bb);
       else
 	set_first_insn (BB_HEADER (bb));
-      PREV_INSN (BB_HEADER (bb)) = prev;
+      SET_PREV_INSN (BB_HEADER (bb)) = prev;
       insn = BB_HEADER (bb);
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      NEXT_INSN (insn) = next;
-      PREV_INSN (next) = insn;
+      SET_NEXT_INSN (insn) = next;
+      SET_PREV_INSN (next) = insn;
     }
   next = NEXT_INSN (BB_END (bb));
   if (BB_FOOTER (bb))
@@ -4429,11 +4429,11 @@ cfg_layout_delete_block (basic_block bb)
 	  if (BARRIER_P (insn))
 	    {
 	      if (PREV_INSN (insn))
-		NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+		SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	      else
-		BB_FOOTER (bb) = NEXT_INSN (insn);
+		SET_BB_FOOTER (bb) = NEXT_INSN (insn);
 	      if (NEXT_INSN (insn))
-		PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+		SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	    }
 	  if (LABEL_P (insn))
 	    break;
@@ -4442,19 +4442,19 @@ cfg_layout_delete_block (basic_block bb)
       if (BB_FOOTER (bb))
 	{
 	  insn = BB_END (bb);
-	  NEXT_INSN (insn) = BB_FOOTER (bb);
-	  PREV_INSN (BB_FOOTER (bb)) = insn;
+	  SET_NEXT_INSN (insn) = BB_FOOTER (bb);
+	  SET_PREV_INSN (BB_FOOTER (bb)) = insn;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
-	  NEXT_INSN (insn) = next;
+	  SET_NEXT_INSN (insn) = next;
 	  if (next)
-	    PREV_INSN (next) = insn;
+	    SET_PREV_INSN (next) = insn;
 	  else
 	    set_last_insn (insn);
 	}
     }
   if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    to = &BB_HEADER (bb->next_bb);
+    to = &SET_BB_HEADER (bb->next_bb);
   else
     to = &cfg_layout_function_footer;
 
@@ -4475,9 +4475,9 @@ cfg_layout_delete_block (basic_block bb)
       insn = remaints;
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      NEXT_INSN (insn) = *to;
+      SET_NEXT_INSN (insn) = *to;
       if (*to)
-	PREV_INSN (*to) = insn;
+	SET_PREV_INSN (*to) = insn;
       *to = remaints;
     }
 }
@@ -4566,17 +4566,17 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (BB_FOOTER (b))
     {
       if (!BB_FOOTER (a))
-	BB_FOOTER (a) = BB_FOOTER (b);
+	SET_BB_FOOTER (a) = SET_BB_FOOTER (b);
       else
 	{
 	  rtx last = BB_FOOTER (a);
 
 	  while (NEXT_INSN (last))
 	    last = NEXT_INSN (last);
-	  NEXT_INSN (last) = BB_FOOTER (b);
-	  PREV_INSN (BB_FOOTER (b)) = last;
+	  SET_NEXT_INSN (last) = BB_FOOTER (b);
+	  SET_PREV_INSN (BB_FOOTER (b)) = last;
 	}
-      BB_FOOTER (b) = NULL;
+      SET_BB_FOOTER (b) = NULL;
     }
 
   /* Move things from b->header before a->footer.
@@ -4585,18 +4585,18 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
    if (BB_HEADER (b))
      {
       if (! BB_FOOTER (a))
-	BB_FOOTER (a) = BB_HEADER (b);
+	SET_BB_FOOTER (a) = BB_HEADER (b);
       else
 	{
 	  rtx last = BB_HEADER (b);
  
 	  while (NEXT_INSN (last))
 	    last = NEXT_INSN (last);
-	  NEXT_INSN (last) = BB_FOOTER (a);
-	  PREV_INSN (BB_FOOTER (a)) = last;
-	  BB_FOOTER (a) = BB_HEADER (b);
+	  SET_NEXT_INSN (last) = BB_FOOTER (a);
+	  SET_PREV_INSN (BB_FOOTER (a)) = last;
+	  SET_BB_FOOTER (a) = BB_HEADER (b);
 	}
-      BB_HEADER (b) = NULL;
+      SET_BB_HEADER (b) = NULL;
     }
 
   /* In the case basic blocks are not adjacent, move them around.  */
@@ -4610,7 +4610,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   else
     {
       insn = BB_HEAD (b);
-      BB_END (a) = BB_END (b);
+      SET_BB_END (a) = BB_END (b);
     }
 
   /* emit_insn_after_noloc doesn't call df_insn_change_bb.
@@ -4621,7 +4621,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (!NOTE_INSN_BASIC_BLOCK_P (insn))
     insn = NEXT_INSN (insn);
   gcc_assert (NOTE_INSN_BASIC_BLOCK_P (insn));
-  BB_HEAD (b) = BB_END (b) = NULL;
+  SET_BB_HEAD (b) = SET_BB_END (b) = NULL;
   delete_insn (insn);
 
   df_bb_delete (b->index);
@@ -5090,5 +5090,65 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_split_block_before_cond_jump, /* split_block_before_cond_jump */
   rtl_account_profile_record,
 };
+
+/* BB_HEAD as an rvalue. */
+
+rtx_insn *BB_HEAD (const_basic_block bb)
+{
+  rtx insn = bb->il.x.head_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_HEAD for use as an lvalue. */
+
+rtx& SET_BB_HEAD (basic_block bb)
+{
+  return bb->il.x.head_;
+}
+
+/* BB_END as an rvalue. */
+
+rtx_insn *BB_END (const_basic_block bb)
+{
+  rtx insn = bb->il.x.rtl->end_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_END as an lvalue. */
+
+rtx& SET_BB_END (basic_block bb)
+{
+  return bb->il.x.rtl->end_;
+}
+
+/* BB_HEADER as an rvalue. */
+
+rtx_insn *BB_HEADER (const_basic_block bb)
+{
+  rtx insn = bb->il.x.rtl->header_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_HEADER as an lvalue. */
+
+rtx& SET_BB_HEADER (basic_block bb)
+{
+  return bb->il.x.rtl->header_;
+}
+
+/* BB_FOOTER as an rvalue. */
+
+rtx_insn *BB_FOOTER (const_basic_block bb)
+{
+  rtx insn = bb->il.x.rtl->footer_;
+  return safe_as_a <rtx_insn *> (insn);
+}
+
+/* BB_FOOTER as an lvalue. */
+
+rtx& SET_BB_FOOTER (basic_block bb)
+{
+  return bb->il.x.rtl->footer_;
+}
 
 #include "gt-cfgrtl.h"

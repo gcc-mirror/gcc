@@ -1111,13 +1111,18 @@ tree
 gfc_trans_critical (gfc_code *code)
 {
   stmtblock_t block;
-  tree tmp;
+  tree tmp, token = NULL_TREE;
 
   gfc_start_block (&block);
 
   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
     {
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_critical, 0);
+      token = gfc_get_symbol_decl (code->resolved_sym);
+      token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (token));
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_lock, 7,
+				 token, integer_zero_node, integer_one_node,
+				 null_pointer_node, null_pointer_node,
+				 null_pointer_node, integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
     }
 
@@ -1126,8 +1131,10 @@ gfc_trans_critical (gfc_code *code)
 
   if (gfc_option.coarray == GFC_FCOARRAY_LIB)
     {
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_end_critical,
-				 0);
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_unlock, 6,
+				 token, integer_zero_node, integer_one_node,
+				 null_pointer_node, null_pointer_node,
+				 integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
     }
 

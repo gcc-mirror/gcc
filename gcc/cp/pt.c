@@ -4722,6 +4722,9 @@ push_template_decl_real (tree decl, bool is_friend)
          template <typename T> friend void A<T>::f();
        is not primary.  */
     is_primary = false;
+  else if (TREE_CODE (decl) == TYPE_DECL
+	   && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+    is_primary = false;
   else
     is_primary = template_parm_scope_p ();
 
@@ -6861,19 +6864,24 @@ coerce_template_parms (tree parms,
   int variadic_args_p = 0;
   int post_variadic_parms = 0;
 
+  /* Likewise for parameters with default arguments.  */
+  int default_p = 0;
+
   if (args == error_mark_node)
     return error_mark_node;
 
   nparms = TREE_VEC_LENGTH (parms);
 
-  /* Determine if there are any parameter packs.  */
+  /* Determine if there are any parameter packs or default arguments.  */
   for (parm_idx = 0; parm_idx < nparms; ++parm_idx)
     {
-      tree tparm = TREE_VALUE (TREE_VEC_ELT (parms, parm_idx));
+      tree parm = TREE_VEC_ELT (parms, parm_idx);
       if (variadic_p)
 	++post_variadic_parms;
-      if (template_parameter_pack_p (tparm))
+      if (template_parameter_pack_p (TREE_VALUE (parm)))
 	++variadic_p;
+      if (TREE_PURPOSE (parm))
+	++default_p;
     }
 
   inner_args = orig_inner_args = INNERMOST_TEMPLATE_ARGS (args);
@@ -6902,18 +6910,18 @@ coerce_template_parms (tree parms,
     {
       if (complain & tf_error)
 	{
-          if (variadic_p)
+          if (variadic_p || default_p)
             {
-              nparms -= variadic_p;
+              nparms -= variadic_p + default_p;
 	      error ("wrong number of template arguments "
-		     "(%d, should be %d or more)", nargs, nparms);
+		     "(%d, should be at least %d)", nargs, nparms);
             }
 	  else
 	     error ("wrong number of template arguments "
 		    "(%d, should be %d)", nargs, nparms);
 
 	  if (in_decl)
-	    error ("provided for %q+D", in_decl);
+	    inform (input_location, "provided for %q+D", in_decl);
 	}
 
       return error_mark_node;
@@ -9232,6 +9240,11 @@ instantiate_class_template_1 (tree type)
 		  && DECL_OMP_DECLARE_REDUCTION_P (r))
 		cp_check_omp_declare_reduction (r);
 	    }
+	  else if (DECL_CLASS_TEMPLATE_P (t)
+		   && LAMBDA_TYPE_P (TREE_TYPE (t)))
+	    /* A closure type for a lambda in a default argument for a
+	       member template.  Ignore it; it will be instantiated with
+	       the default argument.  */;
 	  else
 	    {
 	      /* Build new TYPE_FIELDS.  */
@@ -17278,11 +17291,6 @@ check_cv_quals_for_unify (int strict, tree arg, tree parm)
 {
   int arg_quals = cp_type_quals (arg);
   int parm_quals = cp_type_quals (parm);
-
-  /* DR 1584: cv-qualification of a deduced function type is
-     ignored; see 8.3.5 [dcl.fct].  */
-  if (TREE_CODE (arg) == FUNCTION_TYPE)
-    return 1;
 
   if (TREE_CODE (parm) == TEMPLATE_TYPE_PARM
       && !(strict & UNIFY_ALLOW_OUTER_MORE_CV_QUAL))

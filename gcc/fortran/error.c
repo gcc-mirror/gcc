@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 # include <sys/ioctl.h>
 #endif
 
+#include "diagnostic.h"
+#include "diagnostic-color.h"
 
 static int suppress_errors = 0;
 
@@ -956,6 +958,83 @@ gfc_warning_now (const char *gmsgid, ...)
   buffer_flag = i;
 }
 
+/* Return a malloc'd string describing a location.  The caller is
+   responsible for freeing the memory.  */
+static char *
+gfc_diagnostic_build_prefix (diagnostic_context *context,
+			     const diagnostic_info *diagnostic)
+{
+  static const char *const diagnostic_kind_text[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
+#include "gfc-diagnostic.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+    "must-not-happen"
+  };
+  static const char *const diagnostic_kind_color[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (C),
+#include "gfc-diagnostic.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+    NULL
+  };
+  gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
+  const char *text = _(diagnostic_kind_text[diagnostic->kind]);
+  const char *text_cs = "", *text_ce = "";
+  pretty_printer *pp = context->printer;
+
+  if (diagnostic_kind_color[diagnostic->kind])
+    {
+      text_cs = colorize_start (pp_show_color (pp),
+				diagnostic_kind_color[diagnostic->kind]);
+      text_ce = colorize_stop (pp_show_color (pp));
+    }
+  const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
+  const char *locus_ce = colorize_stop (pp_show_color (pp));
+
+  expanded_location s = expand_location_to_spelling_point (diagnostic->location);
+  if (diagnostic->override_column)
+    s.column = diagnostic->override_column;
+
+  return (s.file == NULL
+	  ? build_message_string ("%s%s:%s %s%s%s: ", locus_cs, progname, locus_ce,
+				  text_cs, text, text_ce)
+	  : !strcmp (s.file, N_("<built-in>"))
+	  ? build_message_string ("%s%s:%s %s%s%s: ", locus_cs, s.file, locus_ce,
+			     text_cs, text, text_ce)
+	  : context->show_column
+	  ? build_message_string ("%s%s:%d:%d:%s %s%s%s: ", locus_cs, s.file, s.line,
+				  s.column, locus_ce, text_cs, text, text_ce)
+	  : build_message_string ("%s%s:%d:%s %s%s%s: ", locus_cs, s.file, s.line, locus_ce,
+				  text_cs, text, text_ce));
+}
+
+static void
+gfc_diagnostic_starter (diagnostic_context *context,
+			diagnostic_info *diagnostic)
+{
+  pp_set_prefix (context->printer, gfc_diagnostic_build_prefix (context,
+								diagnostic));
+}
+
+static void
+gfc_diagnostic_finalizer (diagnostic_context *context ATTRIBUTE_UNUSED,
+			  diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
+{
+}
+
+/* Give a warning about the command-line.  */
+
+void
+gfc_warning_cmdline (const char *gmsgid, ...)
+{
+  va_list argp;
+  diagnostic_info diagnostic;
+
+  va_start (argp, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
+		       DK_WARNING);
+  report_diagnostic (&diagnostic);
+  va_end (argp);
+}
 
 /* Clear the warning flag.  */
 
@@ -1204,4 +1283,11 @@ void
 gfc_errors_to_warnings (int f)
 {
   warnings_not_errors = (f == 1) ? 1 : 0;
+}
+
+void
+gfc_diagnostics_init (void)
+{
+  diagnostic_starter (global_dc) = gfc_diagnostic_starter;
+  diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
 }

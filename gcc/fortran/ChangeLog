@@ -1,3 +1,109 @@
+2014-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (gfc_resolve_finalizers): Ensure that parents are
+	resolved first.
+
+2014-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Fix decl of
+	IOCALL_SET_NML_VAL.
+	(transfer_namelist_element): Use proper int type as argument.
+
+2014-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62142
+	* trans-expr.c (is_runtime_conformable):  Add NULL pointer checks.
+
+2014-08-15  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_critical): Fix name mangling.
+	* trans-stmt.c (gfc_trans_critical): Fix lock call.
+
+2014-08-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h: Define GCC_DIAG_STYLE.
+	(gfc_diagnostics_init,gfc_warning_cmdline): Declare.
+	* trans-array.c: Include gfortran.h before diagnostic-core.h.
+	* trans-expr.c: Likewise.
+	* trans-openmp.c: Likewise.
+	* trans-const.c: Likewise.
+	* trans.c: Likewise.
+	* trans-types.c: Likewise.
+	* f95-lang.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-io.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+	* error.c: Include diagnostic.h and diagnostic-color.h.
+	(gfc_diagnostic_build_prefix): New.
+	(gfc_diagnostic_starter): New.
+	(gfc_diagnostic_finalizer): New.
+	(gfc_warning_cmdline): New.
+	(gfc_diagnostics_init): New.
+	* gfc-diagnostic.def: New.
+	* options.c (gfc_init_options): Call gfc_diagnostics_init.
+	(gfc_post_options): Use gfc_warning_cmdline.
+
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62131
+	* openmp.c (resolve_omp_atomic): Only complain if code->expr1's attr
+	is allocatable, rather than whenever var->attr.allocatable.
+
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/62107
+	* trans-openmp.c (gfc_omp_finish_clause): Handle scalar pointer
+	or allocatable passed by reference.
+	(gfc_trans_omp_clauses) <case OMP_LIST_MAP>: Likewise.
+
+2014-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62106
+	* gfortran.h (symbol_attribute):  Add fe_temp flag.
+	* frontend-passes.c (is_fe_temp):  New function.
+	(create_var):  Don't add a temporary for an already
+	created variable or for a constant.
+	(combine_ARRAY_constructor):  Remove special handling
+	for constants.
+
+2014-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (caf_register_t): Add CAF_REGTYPE_CRITICAL.
+	(_gfortran_caf_register): Update for locking/critical.
+	(_gfortran_caf_lock, _gfortran_caf_unlock): Add.
+	* resolve.c (resolve_critical): New.
+	(gfc_resolve_code): Call it.
+	* trans-decl.c (gfor_fndecl_caf_critical,
+	gfor_fndecl_caf_end_critical): Remove.
+	(gfor_fndecl_caf_lock, gfor_fndecl_caf_unlock): Add.
+	(gfc_build_builtin_function_decls): Remove critical,
+	assign locking declarations.
+	(generate_coarray_sym_init): Handle locking and
+	critical variables.
+	* trans-stmt.c (gfc_trans_critical): Add calls to
+	lock/unlock libcaf functions.
+	* trans.h (gfc_coarray_type): Update locking, add
+	critical enum values.
+	(gfor_fndecl_caf_critical, gfor_fndecl_caf_end_critical): Remove.
+	(gfor_fndecl_caf_lock, gfor_fndecl_caf_unlock): Add.
+
+2014-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Coarray Programming): Add first ABI
+	documentation.
+
+2014-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/62076
+	* openmp.c (gfc_match_omp_clauses): When failed to match
+	operator name, defined op name or name, set buffer to
+	empty string.  Don't call gfc_find_omp_udr if buffer is empty
+	string.
+	(gfc_match_omp_declare_reduction): Call gfc_undo_symbols ()
+	before calling gfc_free_omp_udr.
+
 2014-08-11  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/61950

@@ -181,7 +181,7 @@ struct set_of_reg
   rtx set_src;
 };
 
-extern set_of_reg sh_find_set_of_reg (rtx reg, rtx insn, rtx(*stepfunc)(rtx));
+extern set_of_reg sh_find_set_of_reg (rtx reg, rtx insn, rtx_insn *(*stepfunc)(rtx));
 extern bool sh_is_logical_t_store_expr (rtx op, rtx insn);
 extern rtx sh_try_omit_signzero_extend (rtx extended_op, rtx insn);
 #endif /* RTX_CODE */

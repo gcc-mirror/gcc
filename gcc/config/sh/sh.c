@@ -13505,7 +13505,7 @@ sh_find_equiv_gbr_addr (rtx insn, rtx mem)
    'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
    of the reg set.  */
 set_of_reg
-sh_find_set_of_reg (rtx reg, rtx insn, rtx(*stepfunc)(rtx))
+sh_find_set_of_reg (rtx reg, rtx insn, rtx_insn *(*stepfunc)(rtx))
 {
   set_of_reg result;
   result.insn = insn;

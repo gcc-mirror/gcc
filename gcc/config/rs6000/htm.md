@@ -180,9 +180,9 @@
 			    UNSPECV_HTM_TABORTWCI))
    (set (subreg:CC (match_dup 2) 0) (match_dup 1))
    (set (match_dup 3) (lshiftrt:SI (match_dup 2) (const_int 28)))
-   (parallel [(set (match_operand:SI 0 "int_reg_operand" "")
-		   (and:SI (match_dup 3) (const_int 15)))
-              (clobber (scratch:CC))])]
+   (set (match_operand:SI 0 "int_reg_operand" "")
+	(and:SI (match_dup 3)
+		(const_int 15)))]
   "TARGET_HTM"
 {
   operands[1] = gen_rtx_REG (CCmode, CR0_REGNO);

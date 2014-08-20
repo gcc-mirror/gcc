@@ -3179,7 +3179,7 @@ get_max_insn_count (void)
 /* Return the next insn.  If it is a SEQUENCE, return the first insn
    of the sequence.  */
 
-rtx
+rtx_insn *
 next_insn (rtx insn)
 {
   if (insn)
@@ -3190,13 +3190,13 @@ next_insn (rtx insn)
 	insn = XVECEXP (PATTERN (insn), 0, 0);
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn.  If it is a SEQUENCE, return the last insn
    of the sequence.  */
 
-rtx
+rtx_insn *
 previous_insn (rtx insn)
 {
   if (insn)
@@ -3207,13 +3207,13 @@ previous_insn (rtx insn)
 	insn = XVECEXP (PATTERN (insn), 0, XVECLEN (PATTERN (insn), 0) - 1);
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a NOTE.  This routine does not
    look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nonnote_insn (rtx insn)
 {
   while (insn)
@@ -3223,14 +3223,14 @@ next_nonnote_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a NOTE, but stop the
    search before we enter another basic block.  This routine does not
    look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nonnote_insn_bb (rtx insn)
 {
   while (insn)
@@ -3239,16 +3239,16 @@ next_nonnote_insn_bb (rtx insn)
       if (insn == 0 || !NOTE_P (insn))
 	break;
       if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	return NULL_RTX;
+	return NULL;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a NOTE.  This routine does
    not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nonnote_insn (rtx insn)
 {
   while (insn)
@@ -3258,14 +3258,14 @@ prev_nonnote_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a NOTE, but stop
    the search before we enter another basic block.  This routine does
    not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nonnote_insn_bb (rtx insn)
 {
   while (insn)
@@ -3274,16 +3274,16 @@ prev_nonnote_insn_bb (rtx insn)
       if (insn == 0 || !NOTE_P (insn))
 	break;
       if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	return NULL_RTX;
+	return NULL;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a DEBUG_INSN.  This
    routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3293,13 +3293,13 @@ next_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a DEBUG_INSN.
    This routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3309,13 +3309,13 @@ prev_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next insn after INSN that is not a NOTE nor DEBUG_INSN.
    This routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_nonnote_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3325,13 +3325,13 @@ next_nonnote_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the previous insn before INSN that is not a NOTE nor DEBUG_INSN.
    This routine does not look inside SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_nonnote_nondebug_insn (rtx insn)
 {
   while (insn)
@@ -3341,14 +3341,14 @@ prev_nonnote_nondebug_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the next INSN, CALL_INSN or JUMP_INSN after INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
-rtx
+rtx_insn *
 next_real_insn (rtx insn)
 {
   while (insn)
@@ -3358,14 +3358,14 @@ next_real_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the last INSN, CALL_INSN or JUMP_INSN before INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
-rtx
+rtx_insn *
 prev_real_insn (rtx insn)
 {
   while (insn)
@@ -3375,7 +3375,7 @@ prev_real_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Return the last CALL_INSN in the current list, or 0 if there is none.
@@ -3409,7 +3409,7 @@ active_insn_p (const_rtx insn)
 		      && GET_CODE (PATTERN (insn)) != CLOBBER))));
 }
 
-rtx
+rtx_insn *
 next_active_insn (rtx insn)
 {
   while (insn)
@@ -3419,14 +3419,14 @@ next_active_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Find the last insn before INSN that really does something.  This routine
    does not look inside SEQUENCEs.  After reload this also skips over
    standalone USE and CLOBBER insn.  */
 
-rtx
+rtx_insn *
 prev_active_insn (rtx insn)
 {
   while (insn)
@@ -3436,7 +3436,7 @@ prev_active_insn (rtx insn)
 	break;
     }
 
-  return insn;
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 #ifdef HAVE_cc0
@@ -3874,29 +3874,29 @@ make_note_raw (enum insn_note subtype)
 static inline void
 link_insn_into_chain (rtx insn, rtx prev, rtx next)
 {
-  PREV_INSN (insn) = prev;
-  NEXT_INSN (insn) = next;
+  SET_PREV_INSN (insn) = prev;
+  SET_NEXT_INSN (insn) = next;
   if (prev != NULL)
     {
-      NEXT_INSN (prev) = insn;
+      SET_NEXT_INSN (prev) = insn;
       if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
 	  rtx sequence = PATTERN (prev);
-	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
+	  SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
 	}
     }
   if (next != NULL)
     {
-      PREV_INSN (next) = insn;
+      SET_PREV_INSN (next) = insn;
       if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
+	SET_PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = insn;
     }
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
       rtx sequence = PATTERN (insn);
-      PREV_INSN (XVECEXP (sequence, 0, 0)) = prev;
-      NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+      SET_PREV_INSN (XVECEXP (sequence, 0, 0)) = prev;
+      SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
     }
 }
 
@@ -3997,7 +3997,7 @@ add_insn_after (rtx insn, rtx after, basic_block bb)
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && !BARRIER_P (insn)
 	  && !NOTE_INSN_BASIC_BLOCK_P (insn))
-	BB_END (bb) = insn;
+	SET_BB_END (bb) = insn;
     }
 }
 
@@ -4068,17 +4068,17 @@ remove_insn (rtx insn)
 
   if (prev)
     {
-      NEXT_INSN (prev) = next;
+      SET_NEXT_INSN (prev) = next;
       if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	{
 	  rtx sequence = PATTERN (prev);
-	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+	  SET_NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
 	}
     }
   else if (get_insns () == insn)
     {
       if (next)
-        PREV_INSN (next) = NULL;
+        SET_PREV_INSN (next) = NULL;
       set_first_insn (next);
     }
   else
@@ -4097,9 +4097,9 @@ remove_insn (rtx insn)
 
   if (next)
     {
-      PREV_INSN (next) = prev;
+      SET_PREV_INSN (next) = prev;
       if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
+	SET_PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
     }
   else if (get_last_insn () == insn)
     set_last_insn (prev);
@@ -4126,10 +4126,10 @@ remove_insn (rtx insn)
 	  /* Never ever delete the basic block note without deleting whole
 	     basic block.  */
 	  gcc_assert (!NOTE_P (insn));
-	  BB_HEAD (bb) = next;
+	  SET_BB_HEAD (bb) = next;
 	}
       if (BB_END (bb) == insn)
-	BB_END (bb) = prev;
+	SET_BB_END (bb) = prev;
     }
 }
 
@@ -4165,7 +4165,7 @@ delete_insns_since (rtx from)
   if (from == 0)
     set_first_insn (0);
   else
-    NEXT_INSN (from) = 0;
+    SET_NEXT_INSN (from) = 0;
   set_last_insn (from);
 }
 
@@ -4191,9 +4191,9 @@ reorder_insns_nobb (rtx from, rtx to, rtx after)
 
   /* Splice this bunch out of where it is now.  */
   if (PREV_INSN (from))
-    NEXT_INSN (PREV_INSN (from)) = NEXT_INSN (to);
+    SET_NEXT_INSN (PREV_INSN (from)) = NEXT_INSN (to);
   if (NEXT_INSN (to))
-    PREV_INSN (NEXT_INSN (to)) = PREV_INSN (from);
+    SET_PREV_INSN (NEXT_INSN (to)) = PREV_INSN (from);
   if (get_last_insn () == to)
     set_last_insn (PREV_INSN (from));
   if (get_insns () == from)
@@ -4201,11 +4201,11 @@ reorder_insns_nobb (rtx from, rtx to, rtx after)
 
   /* Make the new neighbors point to it and it to them.  */
   if (NEXT_INSN (after))
-    PREV_INSN (NEXT_INSN (after)) = to;
+    SET_PREV_INSN (NEXT_INSN (after)) = to;
 
-  NEXT_INSN (to) = NEXT_INSN (after);
-  PREV_INSN (from) = after;
-  NEXT_INSN (after) = from;
+  SET_NEXT_INSN (to) = NEXT_INSN (after);
+  SET_PREV_INSN (from) = after;
+  SET_NEXT_INSN (after) = from;
   if (after == get_last_insn ())
     set_last_insn (to);
 }
@@ -4229,12 +4229,12 @@ reorder_insns (rtx from, rtx to, rtx after)
 	  && (bb2 = BLOCK_FOR_INSN (from)))
 	{
 	  if (BB_END (bb2) == to)
-	    BB_END (bb2) = prev;
+	    SET_BB_END (bb2) = prev;
 	  df_set_bb_dirty (bb2);
 	}
 
       if (BB_END (bb) == after)
-	BB_END (bb) = to;
+	SET_BB_END (bb) = to;
 
       for (x = from; x != NEXT_INSN (to); x = NEXT_INSN (x))
 	if (!BARRIER_P (x))
@@ -4402,7 +4402,7 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
 	  df_insn_rescan (last);
 	}
       if (BB_END (bb) == after)
-	BB_END (bb) = last;
+	SET_BB_END (bb) = last;
     }
   else
     for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
@@ -4410,11 +4410,11 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
 
   after_after = NEXT_INSN (after);
 
-  NEXT_INSN (after) = first;
-  PREV_INSN (first) = after;
-  NEXT_INSN (last) = after_after;
+  SET_NEXT_INSN (after) = first;
+  SET_PREV_INSN (first) = after;
+  SET_NEXT_INSN (last) = after_after;
   if (after_after)
-    PREV_INSN (after_after) = last;
+    SET_PREV_INSN (after_after) = last;
 
   if (after == get_last_insn ())
     set_last_insn (last);

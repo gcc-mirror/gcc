@@ -1,3 +1,63 @@
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_BND_TO
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_BB_NOTE_LIST.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_VINSN_INSN_RTX.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_DEP_PRO, SET_DEP_CON.
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add DF_REF_INSN.
+
+2014-08-19  Joost VandeVondele <vondele@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-08-19  Christopher Faylor  <me.gnu@cgf.cx>
+
+	* MAINTAINERS: Remove myself
+
+2014-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Add SET_NEXT_INSN, SET_PREV_INSN.
+
+2014-08-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt (TODO): Add SET_BB_HEAD, SET_BB_END,
+	SET_BB_HEADER, SET_BB_FOOTER
+
+2014-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: New file
+
+2014-08-18 Roman Gareev  <gareevroman@gmail.com>
+
+	* configure.ac: Eliminate ClooG installation dependency.
+	* configure: Regenerate.
+	* Makefile.tpl: Add definition of ISLLIBS and HOST_ISLLIBS.
+	* Makefile.in: Regenerate.
+
+2014-08-15  Ilya Verbin  <iverbin@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2014-08-15  Ilya Tocar  <tocarip@gmail.com> 
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-08-01  Jiong Wang  <jiong.wang@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

@@ -207,7 +207,7 @@ blist_add (blist_t *lp, insn_t to, ilist_t ptr, deps_t dc)
   _list_add (lp);
   bnd = BLIST_BND (*lp);
 
-  BND_TO (bnd) = to;
+  SET_BND_TO (bnd) = to;
   BND_PTR (bnd) = ptr;
   BND_AV (bnd) = NULL;
   BND_AV1 (bnd) = NULL;
@@ -1179,7 +1179,7 @@ vinsn_init (vinsn_t vi, insn_t insn, bool force_unique_p)
   hash_rtx_callback_function hrcf;
   int insn_class;
 
-  VINSN_INSN_RTX (vi) = insn;
+  SET_VINSN_INSN_RTX (vi) = insn;
   VINSN_COUNT (vi) = 0;
   vi->cost = -1;
 
@@ -1423,16 +1423,16 @@ sel_move_insn (expr_t expr, int seqno, insn_t after)
 
   /* Assert that in move_op we disconnected this insn properly.  */
   gcc_assert (EXPR_VINSN (INSN_EXPR (insn)) != NULL);
-  PREV_INSN (insn) = after;
-  NEXT_INSN (insn) = next;
+  SET_PREV_INSN (insn) = after;
+  SET_NEXT_INSN (insn) = next;
 
-  NEXT_INSN (after) = insn;
-  PREV_INSN (next) = insn;
+  SET_NEXT_INSN (after) = insn;
+  SET_PREV_INSN (next) = insn;
 
   /* Update links from insn to bb and vice versa.  */
   df_insn_change_bb (insn, bb);
   if (BB_END (bb) == after)
-    BB_END (bb) = insn;
+    SET_BB_END (bb) = insn;
 
   prepare_insn_expr (insn, seqno);
   return insn;
@@ -3942,8 +3942,8 @@ sel_remove_insn (insn_t insn, bool only_disconnect, bool full_tidying)
   /* It is necessary to NULL these fields in case we are going to re-insert
      INSN into the insns stream, as will usually happen in the ONLY_DISCONNECT
      case, but also for NOPs that we will return to the nop pool.  */
-  PREV_INSN (insn) = NULL_RTX;
-  NEXT_INSN (insn) = NULL_RTX;
+  SET_PREV_INSN (insn) = NULL_RTX;
+  SET_NEXT_INSN (insn) = NULL_RTX;
   set_block_for_insn (insn, NULL);
 
   return tidy_control_flow (bb, full_tidying);
@@ -4620,7 +4620,7 @@ static void
 init_bb (basic_block bb)
 {
   remove_notes (bb_note (bb), BB_END (bb));
-  BB_NOTE_LIST (bb) = note_list;
+  SET_BB_NOTE_LIST (bb) = note_list;
 }
 
 void
@@ -4655,7 +4655,7 @@ sel_restore_notes (void)
 	{
 	  note_list = BB_NOTE_LIST (first);
 	  restore_other_notes (NULL, first);
-	  BB_NOTE_LIST (first) = NULL_RTX;
+	  SET_BB_NOTE_LIST (first) = NULL_RTX;
 
 	  FOR_BB_INSNS (first, insn)
 	    if (NONDEBUG_INSN_P (insn))
@@ -4985,8 +4985,8 @@ get_bb_note_from_pool (void)
     {
       rtx note = bb_note_pool.pop ();
 
-      PREV_INSN (note) = NULL_RTX;
-      NEXT_INSN (note) = NULL_RTX;
+      SET_PREV_INSN (note) = NULL_RTX;
+      SET_NEXT_INSN (note) = NULL_RTX;
 
       return note;
     }
@@ -5263,8 +5263,8 @@ move_bb_info (basic_block merge_bb, basic_block empty_bb)
 {
   if (in_current_region_p (merge_bb))
     concat_note_lists (BB_NOTE_LIST (empty_bb),
-		       &BB_NOTE_LIST (merge_bb));
-  BB_NOTE_LIST (empty_bb) = NULL_RTX;
+		       &SET_BB_NOTE_LIST (merge_bb));
+  SET_BB_NOTE_LIST (empty_bb) = NULL_RTX;
 
 }
 
@@ -6441,4 +6441,36 @@ sel_remove_loop_preheader (void)
     SET_LOOP_PREHEADER_BLOCKS (loop_outer (current_loop_nest),
 			       preheader_blocks);
 }
+
+rtx_insn *VINSN_INSN_RTX (vinsn_t vi)
+{
+  return safe_as_a <rtx_insn *> (vi->insn_rtx);
+}
+
+rtx& SET_VINSN_INSN_RTX (vinsn_t vi)
+{
+  return vi->insn_rtx;
+}
+
+rtx_insn *BB_NOTE_LIST (basic_block bb)
+{
+  rtx note_list = SEL_REGION_BB_INFO (bb)->note_list;
+  return safe_as_a <rtx_insn *> (note_list);
+}
+
+rtx& SET_BB_NOTE_LIST (basic_block bb)
+{
+  return SEL_REGION_BB_INFO (bb)->note_list;
+}
+
+rtx_insn *BND_TO (bnd_t bnd)
+{
+  return safe_as_a <rtx_insn *> (bnd->to);
+}
+
+insn_t& SET_BND_TO (bnd_t bnd)
+{
+  return bnd->to;
+}
+
 #endif

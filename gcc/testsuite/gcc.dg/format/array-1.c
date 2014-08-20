@@ -23,19 +23,19 @@ foo (int i, long l)
   static const char q2[] = "bar%d";
   printf (a1);
   printf (a2, i);
-  printf (a2, l); /* { dg-warning "format" "wrong type with array" } */
-  printf (b1); /* { dg-warning "unterminated" "unterminated array" } */
-  printf (b2); /* { dg-warning "unterminated" "unterminated array" } */
+  printf (a2, l); /* { dg-warning "11:format" "wrong type with array" } */
+  printf (b1); /* { dg-warning "11:unterminated" "unterminated array" } */
+  printf (b2); /* { dg-warning "11:unterminated" "unterminated array" } */
   printf (c1);
   printf (c2, i);
-  printf (c2, l); /* { dg-warning "format" "wrong type with array" } */
+  printf (c2, l); /* { dg-warning "11:format" "wrong type with array" } */
   printf (p1);
   printf (p2, i);
-  printf (p2, l); /* { dg-warning "format" "wrong type with array" } */
+  printf (p2, l); /* { dg-warning "11:format" "wrong type with array" } */
   printf (q1);
   printf (q2, i);
-  printf (q2, l); /* { dg-warning "format" "wrong type with array" } */
+  printf (q2, l); /* { dg-warning "11:format" "wrong type with array" } */
   /* Volatile or non-constant arrays must not be checked.  */
-  printf (d); /* { dg-warning "not a string literal" "non-const" } */
-  printf ((const char *)e); /* { dg-warning "not a string literal" "volatile" } */
+  printf (d); /* { dg-warning "11:not a string literal" "non-const" } */
+  printf ((const char *)e); /* { dg-warning "25:not a string literal" "volatile" } */
 }

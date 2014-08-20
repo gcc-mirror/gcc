@@ -473,6 +473,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS]
 #define TARGET_ADJUST_UNROLL \
     ix86_tune_features[X86_TUNE_ADJUST_UNROLL]
+#define TARGET_AVOID_FALSE_DEP_FOR_BMI \
+	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -2496,9 +2498,9 @@ extern void debug_dispatch_window (int);
 /* The value at zero is only defined for the BMI instructions
    LZCNT and TZCNT, not the BSR/BSF insns in the original isa.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 1 : 0)
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 1 : 0)
 
 
 /* Flags returned by ix86_get_callcvt ().  */

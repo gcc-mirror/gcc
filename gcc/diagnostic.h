@@ -296,4 +296,7 @@ void diagnostic_file_cache_fini (void);
 /* Pure text formatting support functions.  */
 extern char *file_name_as_prefix (diagnostic_context *, const char *);
 
+extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
+
+
 #endif /* ! GCC_DIAGNOSTIC_H */

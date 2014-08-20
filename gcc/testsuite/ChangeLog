@@ -1,3 +1,218 @@
+2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/45584
+	* gcc.dg/pr13519-1.c: Adjust.
+
+2014-08-19  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/guality/const-volatile.c: Add `used' attribute to pi.
+
+2014-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	PR debug/59051
+	* gcc.dg/guality/restrict.c: New test.
+
+2014-08-19  Mark Wielaard  <mjw@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Handle type:var for gdb ptype
+	matching. Catch '<unknown type in ' to recognize older gdb versions.
+	* gcc.dg/guality/const-volatile.c: New test.
+
+2014-08-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/nested-4.C: XFAIL on *-*-solaris2.1[1-9]* &&
+	!gas.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wc99-c11-compat-1.c: New test.
+	* gcc.dg/Wc99-c11-compat-2.c: New test.
+	* gcc.dg/Wc99-c11-compat-3.c: New test.
+	* gcc.dg/Wc99-c11-compat-4.c: New test.
+	* gcc.dg/Wc99-c11-compat-5.c: New test.
+	* gcc.dg/Wc99-c11-compat-6.c: New test.
+	* gcc.dg/Wc99-c11-compat-7.c: New test.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wc90-c99-compat-4.c: Remove all dg-warnings.
+	* gcc.dg/Wc90-c99-compat-5.c: Remove all dg-errors.
+	* gcc.dg/Wc90-c99-compat-7.c: New test.
+	* gcc.dg/Wc90-c99-compat-8.c: New test.
+	* gcc.dg/Wdeclaration-after-statement-4.c: New test.
+
+2014-08-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/52952
+	* gcc.dg/redecl-4.c: Add column markers.
+	* gcc.dg/format/bitfld-1.c: Likewise.
+	* gcc.dg/format/attr-2.c: Likewise.
+	* gcc.dg/format/attr-6.c: Likewise.
+	* gcc.dg/format/array-1.c: Likewise.
+	* gcc.dg/format/attr-7.c: Likewise.
+	* gcc.dg/format/asm_fprintf-1.c: Likewise.
+	* gcc.dg/format/attr-4.c: Likewise.
+	* gcc.dg/format/branch-1.c: Likewise.
+	* gcc.dg/format/c90-printf-1.c: Likewise.
+
+2014-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* guality/nrv-1.c: Add `used' attribute to a1.
+
+2014-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62090
+	* gcc.dg/pr62090-2.c: New testcase.
+
+2014-08-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* g++.dg/ipa/pr61800.C: New.
+
+2014-08-18  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/62089
+	* c-c++-common/asan/pr62089.c: New test.
+	* c-c++-common/asan/bitfield-1.c: New test.
+	* c-c++-common/asan/bitfield-2.c: New test.
+	* c-c++-common/asan/bitfield-3.c: New test.
+	* c-c++-common/asan/bitfield-4.c: New test.
+
+2014-08-18  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR tree-optimization/52904
+	* gcc.dg/pr52904.c: New test.
+
+2014-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/finalize_27.f90: New.
+
+2014-08-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/20140816-1.c: New testcase.
+
+2014-08-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52819
+	* g++.dg/template/pr52819.C: New.
+
+2014-08-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62142
+	* gfortran.dg/realloc_on_assign_24.f90:  New test.
+
+2014-08-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62072
+	Revert:
+	2014-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	DR 1584
+	PR c++/57466
+	* g++.dg/template/pr57466.C: New.
+	* g++.dg/cpp0x/pr57466.C: Likewise.
+	* g++.dg/template/unify6.C: Update.
+
+	* g++.dg/cpp0x/sfinae52.C: New.
+
+2014-08-15  Ilya Tocar  <tocarip@gmail.com>
+
+	PR target/61878
+	* gcc.target/i386/avx512f-typecast-1.c: New test.
+	* gcc.target/i386/avx512f-vpcmpequd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpequq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpged-1.c: Add new intrinsic.
+	* gcc.target/i386/avx512f-vpcmpged-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgeuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtud-1.c: New test.
+	* gcc.target/i386/avx512f-vpcmpgtud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpled-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpleuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpltuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpneqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpnequq-2.c: Ditto.
+
+2014-08-15  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/62131
+	* gfortran.dg/gomp/pr62131.f90: New test.
+
+2014-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62031
+	* gcc.dg/torture/pr62031.c: New testcase.
+
+2014-08-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: New test.
+
+2014-08-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62091
+	* g++.dg/ipa/devirt-38.C: New testcase.
+
+2014-08-14  Marek Polacek  <polacek@redhat.com>
+
+	DR 458
+	* gcc.dg/c11-stdatomic-2.c: New test.
+
+2014-08-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62106
+	* gfortran.dg/array_constructor_49.f90:  New test.
+
+2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54377
+	* g++.dg/template/pr54377.C: New.
+	* g++.dg/cpp0x/pr54377.C: Likewise.
+	* g++.dg/cpp0x/alias-decl-2.C: Adjust.
+	* g++.dg/cpp0x/pr51226.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/parse/too-many-tmpl-args1.C: Likewise.
+	* g++.dg/template/dtor3.C: Likewise.
+	* g++.dg/template/qualttp4.C: Likewise.
+	* g++.dg/template/spec28.C: Likewise.
+	* g++.old-deja/g++.brendan/crash8.C: Likewise.
+	* g++.old-deja/g++.pt/ttp7.C: Likewise.
+
+2014-08-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/62004
+	PR rtl-optimization/62030
+	* gcc.dg/pr62004.c: New test.
+	* gcc.dg/pr62030.c: Same.
+	* gcc.target/mips/pr62030-octeon.c: Same.
+
 2014-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/alias-decl-4.C: Adjust for parser change.
@@ -92,7 +307,7 @@
 
 	PR tree-optimization/62073
 	* gcc.dg/vect/pr62073.c: New test.
-	
+
 2014-08-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62070

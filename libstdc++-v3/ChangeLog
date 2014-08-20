@@ -1,3 +1,23 @@
+2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
+	Kai Tietz  <ktietz@redhat.com>
+
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_THREAD_ATEXIT_WIN32):
+	Define.
+	* config/os/newlib/os_defines.h (_GLIBCXX_THREAD_ATEXIT_WIN32):
+	Ditto.
+	* libsupc++/atexit_thread.cc [_GLIBCXX_THREAD_ATEXIT_WIN32]:
+	#include <windows.h>.
+	(struct elt): Add dll member.
+	(run): Decrement dll refcount.
+	(__cxxabiv1::__cxa_thread_atexit): Increment dll refcount.
+
+2014-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62154
+	* libsupc++/nested_exception.h (throw_with_nested, rethrow_if_nested):
+	Rewrite to conform to C++11 requirements.
+	* testsuite/18_support/nested_exception/62154.cc: New.
+
 2014-08-14  Matthias Klose  <doko@ubuntu.com>
 
 	* testsuite/ext/random/uniform_on_sphere_distribution/requirements:

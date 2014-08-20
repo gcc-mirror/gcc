@@ -4374,8 +4374,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 						    fn,
 						    &otr_type, &otr_token, &context, stmt);
 
-	      get_dynamic_type (instance, &context,
-				OBJ_TYPE_REF_OBJECT (fn), otr_type, stmt);
+	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn), otr_type, stmt);
 
 	      vec <cgraph_node *>targets
 		= possible_polymorphic_call_targets (obj_type_ref_class (fn),

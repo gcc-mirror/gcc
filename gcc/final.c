@@ -2856,12 +2856,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		   when generating a far jump in a delayed branch
 		   sequence.  */
 		note = NEXT_INSN (insn);
-		PREV_INSN (note) = prev;
-		NEXT_INSN (prev) = note;
-		NEXT_INSN (PREV_INSN (next)) = insn;
-		PREV_INSN (insn) = PREV_INSN (next);
-		NEXT_INSN (insn) = next;
-		PREV_INSN (next) = insn;
+		SET_PREV_INSN (note) = prev;
+		SET_NEXT_INSN (prev) = note;
+		SET_NEXT_INSN (PREV_INSN (next)) = insn;
+		SET_PREV_INSN (insn) = PREV_INSN (next);
+		SET_NEXT_INSN (insn) = next;
+		SET_PREV_INSN (next) = insn;
 	      }
 
 	    /* PEEPHOLE might have changed this.  */
@@ -4628,8 +4628,8 @@ rest_of_clean_state (void)
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
-      NEXT_INSN (insn) = NULL;
-      PREV_INSN (insn) = NULL;
+      SET_NEXT_INSN (insn) = NULL;
+      SET_PREV_INSN (insn) = NULL;
 
       if (final_output
 	  && (!NOTE_P (insn) ||

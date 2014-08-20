@@ -1696,9 +1696,9 @@ extern void protected_set_expr_location (tree, location_t);
 	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
 	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)		\
-          | (TYPE_UPC_SHARED  (NODE) * TYPE_QUAL_UPC_SHARED)		\
-          | (TYPE_UPC_STRICT  (NODE) * TYPE_QUAL_UPC_STRICT)		\
-          | (TYPE_UPC_RELAXED (NODE) * TYPE_QUAL_UPC_RELAXED)		\
+          | (TYPE_UPC_SHARED  (NODE) * TYPE_QUAL_UPC_SHARED)	\
+          | (TYPE_UPC_STRICT  (NODE) * TYPE_QUAL_UPC_STRICT)	\
+          | (TYPE_UPC_RELAXED (NODE) * TYPE_QUAL_UPC_RELAXED)	\
 	  | (ENCODE_QUAL_ADDR_SPACE (TYPE_ADDR_SPACE (NODE)))))
 
 /* The set of qualifiers pertinent to a FUNCTION_DECL node.  */
@@ -1711,9 +1711,9 @@ extern void protected_set_expr_location (tree, location_t);
   ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
 	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
 	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
-          | (TYPE_UPC_SHARED  (NODE) * TYPE_QUAL_UPC_SHARED)		\
-          | (TYPE_UPC_STRICT  (NODE) * TYPE_QUAL_UPC_STRICT)		\
-          | (TYPE_UPC_RELAXED (NODE) * TYPE_QUAL_UPC_RELAXED)           \
+          | (TYPE_UPC_SHARED  (NODE) * TYPE_QUAL_UPC_SHARED)	\
+          | (TYPE_UPC_STRICT  (NODE) * TYPE_QUAL_UPC_STRICT)	\
+          | (TYPE_UPC_RELAXED (NODE) * TYPE_QUAL_UPC_RELAXED)	\
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
 
 /* The same as TYPE_QUALS without the address space and atomic 
@@ -1721,6 +1721,9 @@ extern void protected_set_expr_location (tree, location_t);
 #define TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC(NODE)		\
   ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
 	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
+          | (TYPE_UPC_SHARED  (NODE) * TYPE_QUAL_UPC_SHARED)	\
+          | (TYPE_UPC_STRICT  (NODE) * TYPE_QUAL_UPC_STRICT)	\
+          | (TYPE_UPC_RELAXED (NODE) * TYPE_QUAL_UPC_RELAXED)	\
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
 
 /* These flags are available for each language front end to use internally.  */

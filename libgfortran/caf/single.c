@@ -100,7 +100,11 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 {
   void *local;
 
-  local = malloc (size);
+  if (type == CAF_REGTYPE_LOCK_STATIC || type == CAF_REGTYPE_LOCK_ALLOC
+      || type == CAF_REGTYPE_CRITICAL)
+    local = calloc (size, sizeof (bool));
+  else
+    local = malloc (size);
   *token = malloc (sizeof (single_token_t));
 
   if (unlikely (local == NULL || token == NULL))
@@ -128,7 +132,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
   if (stat)
     *stat = 0;
 
-  if (type == CAF_REGTYPE_COARRAY_STATIC)
+  if (type == CAF_REGTYPE_COARRAY_STATIC || type == CAF_REGTYPE_LOCK_STATIC
+      || type == CAF_REGTYPE_CRITICAL)
     {
       caf_static_t *tmp = malloc (sizeof (caf_static_t));
       tmp->prev  = caf_static_list;
@@ -526,7 +531,7 @@ error:
 void
 _gfortran_caf_get (caf_token_t token, size_t offset,
 		   int image_index __attribute__ ((unused)),
-		   gfc_descriptor_t *src ,
+		   gfc_descriptor_t *src,
 		   caf_vector_t *src_vector __attribute__ ((unused)),
 		   gfc_descriptor_t *dest, int src_kind, int dst_kind)
 {
@@ -764,7 +769,7 @@ _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
 		       int src_image_index __attribute__ ((unused)),
 		       gfc_descriptor_t *src,
 		       caf_vector_t *src_vector __attribute__ ((unused)),
-		       int dst_len, int src_len)
+		       int dst_kind, int src_kind)
 {
   /* FIXME: Handle vector subscript of 'src_vector'.  */
   /* For a single image, src->base_addr should be the same as src_token + offset
@@ -772,7 +777,7 @@ _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
   void *src_base = GFC_DESCRIPTOR_DATA (src);
   GFC_DESCRIPTOR_DATA (src) = (void *) ((char *) TOKEN (src_token) + src_offset);
   _gfortran_caf_send (dst_token, dst_offset, dst_image_index, dest, dst_vector,
-		      src, dst_len, src_len);
+		      src, dst_kind, src_kind);
   GFC_DESCRIPTOR_DATA (src) = src_base;
 }
 
@@ -863,4 +868,81 @@ _gfortran_caf_atomic_op (int op, caf_token_t token, size_t offset,
 
   if (stat)
     *stat = 0;
+}
+
+
+void
+_gfortran_caf_lock (caf_token_t token, size_t index,
+		    int image_index __attribute__ ((unused)),
+		    int *aquired_lock, int *stat, char *errmsg, int errmsg_len)
+{
+  const char *msg = "Already locked";
+  bool *lock = &((bool *) TOKEN (token))[index];
+
+  if (!*lock)
+    {
+      *lock = true;
+      if (aquired_lock)
+	*aquired_lock = (int) true;
+      if (stat)
+	*stat = 0;
+      return;
+    }
+
+  if (aquired_lock)
+    {
+      *aquired_lock = (int) false;
+      if (stat)
+	*stat = 0;
+    return;
+    }
+
+
+  if (stat)
+    {
+      *stat = 1;
+      if (errmsg_len > 0)
+	{
+	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
+						      : (int) sizeof (msg);
+	  memcpy (errmsg, msg, len);
+	  if (errmsg_len > len)
+	    memset (&errmsg[len], ' ', errmsg_len-len);
+	}
+      return;
+    }
+  _gfortran_caf_error_stop_str (msg, (int32_t) strlen (msg));
+}
+
+
+void
+_gfortran_caf_unlock (caf_token_t token, size_t index,
+		      int image_index __attribute__ ((unused)),
+		      int *stat, char *errmsg, int errmsg_len)
+{
+  const char *msg = "Variable is not locked";
+  bool *lock = &((bool *) TOKEN (token))[index];
+
+  if (*lock)
+    {
+      *lock = false;
+      if (stat)
+	*stat = 0;
+      return;
+    }
+
+  if (stat)
+    {
+      *stat = 1;
+      if (errmsg_len > 0)
+	{
+	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
+						      : (int) sizeof (msg);
+	  memcpy (errmsg, msg, len);
+	  if (errmsg_len > len)
+	    memset (&errmsg[len], ' ', errmsg_len-len);
+	}
+      return;
+    }
+  _gfortran_caf_error_stop_str (msg, (int32_t) strlen (msg));
 }

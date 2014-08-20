@@ -4599,7 +4599,7 @@ gen_one_bundle (rtx *slot, int n_filled, int real_first)
   bundle = make_insn_raw (bundle);
   BLOCK_FOR_INSN (bundle) = BLOCK_FOR_INSN (slot[0]);
   INSN_LOCATION (bundle) = INSN_LOCATION (slot[0]);
-  PREV_INSN (bundle) = PREV_INSN (slot[real_first]);
+  SET_PREV_INSN (bundle) = SET_PREV_INSN (slot[real_first]);
 
   t = NULL_RTX;
 
@@ -4607,18 +4607,18 @@ gen_one_bundle (rtx *slot, int n_filled, int real_first)
     {
       rtx insn = slot[i];
       remove_insn (insn);
-      PREV_INSN (insn) = t ? t : PREV_INSN (bundle);
+      SET_PREV_INSN (insn) = t ? t : PREV_INSN (bundle);
       if (t != NULL_RTX)
-	NEXT_INSN (t) = insn;
+	SET_NEXT_INSN (t) = insn;
       t = insn;
       if (i > 0)
 	INSN_LOCATION (slot[i]) = INSN_LOCATION (bundle);
     }
 
-  NEXT_INSN (bundle) = NEXT_INSN (PREV_INSN (bundle));
-  NEXT_INSN (t) = NEXT_INSN (bundle);
-  NEXT_INSN (PREV_INSN (bundle)) = bundle;
-  PREV_INSN (NEXT_INSN (bundle)) = bundle;
+  SET_NEXT_INSN (bundle) = NEXT_INSN (PREV_INSN (bundle));
+  SET_NEXT_INSN (t) = NEXT_INSN (bundle);
+  SET_NEXT_INSN (PREV_INSN (bundle)) = bundle;
+  SET_PREV_INSN (NEXT_INSN (bundle)) = bundle;
 }
 
 /* Move all parallel instructions into SEQUENCEs, so that no subsequent passes
@@ -4710,12 +4710,12 @@ c6x_gen_bundles (void)
 	continue;
       if (NEXT_INSN (last_call) == insn)
 	continue;
-      NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
-      PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-      PREV_INSN (insn) = last_call;
-      NEXT_INSN (insn) = NEXT_INSN (last_call);
-      PREV_INSN (NEXT_INSN (insn)) = insn;
-      NEXT_INSN (PREV_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+      SET_PREV_INSN (insn) = last_call;
+      SET_NEXT_INSN (insn) = NEXT_INSN (last_call);
+      SET_PREV_INSN (NEXT_INSN (insn)) = insn;
+      SET_NEXT_INSN (PREV_INSN (insn)) = insn;
       last_call = insn;
     }
 }
@@ -5698,8 +5698,8 @@ hwloop_optimize (hwloop_info loop)
      reservations of the instructions contained in it to the corresponding
      instructions from iteration 0, which are the only ones we'll keep.  */
   assign_reservations (BB_HEAD (bb), ss.last_scheduled_insn);
-  PREV_INSN (BB_END (bb)) = ss.last_scheduled_iter0;
-  NEXT_INSN (ss.last_scheduled_iter0) = BB_END (bb);
+  SET_PREV_INSN (BB_END (bb)) = ss.last_scheduled_iter0;
+  SET_NEXT_INSN (ss.last_scheduled_iter0) = BB_END (bb);
   filter_insns_above (bb, sploop_max_uid_iter0);
 
   for (i = 0; i < n_real_insns; i++)
@@ -5821,15 +5821,15 @@ hwloop_optimize (hwloop_info loop)
 
   for (i = 1; i < n_insns; i++)
     {
-      NEXT_INSN (orig_vec[i - 1]) = orig_vec[i];
-      PREV_INSN (orig_vec[i]) = orig_vec[i - 1];
+      SET_NEXT_INSN (orig_vec[i - 1]) = orig_vec[i];
+      SET_PREV_INSN (orig_vec[i]) = orig_vec[i - 1];
     }
-  PREV_INSN (orig_vec[0]) = PREV_INSN (BB_HEAD (bb));
-  NEXT_INSN (PREV_INSN (BB_HEAD (bb))) = orig_vec[0];
-  NEXT_INSN (orig_vec[n_insns - 1]) = NEXT_INSN (BB_END (bb));
-  PREV_INSN (NEXT_INSN (BB_END (bb))) = orig_vec[n_insns - 1];
-  BB_HEAD (bb) = orig_vec[0];
-  BB_END (bb) = orig_vec[n_insns - 1];
+  SET_PREV_INSN (orig_vec[0]) = PREV_INSN (BB_HEAD (bb));
+  SET_NEXT_INSN (PREV_INSN (BB_HEAD (bb))) = orig_vec[0];
+  SET_NEXT_INSN (orig_vec[n_insns - 1]) = NEXT_INSN (BB_END (bb));
+  SET_PREV_INSN (NEXT_INSN (BB_END (bb))) = orig_vec[n_insns - 1];
+  SET_BB_HEAD (bb) = orig_vec[0];
+  SET_BB_END (bb) = orig_vec[n_insns - 1];
  undo_splits:
   free_delay_pairs ();
   FOR_BB_INSNS (bb, insn)

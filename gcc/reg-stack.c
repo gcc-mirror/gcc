@@ -2595,7 +2595,7 @@ change_stack (rtx insn, stack_ptr old, stack_ptr new_stack, enum emit_where wher
     }
 
   if (update_end)
-    BB_END (current_block) = PREV_INSN (insn);
+    SET_BB_END (current_block) = PREV_INSN (insn);
 }
 
 /* Print stack configuration.  */

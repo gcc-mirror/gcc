@@ -189,10 +189,7 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
   bp_pack_value (bp, ob->current_col != xloc.column, 1);
 
   if (ob->current_file != xloc.file)
-    bp_pack_var_len_unsigned (bp,
-	                      streamer_string_index (ob, xloc.file,
-						     strlen (xloc.file) + 1,
-						     true));
+    bp_pack_string (ob, bp, xloc.file, true);
   ob->current_file = xloc.file;
 
   if (ob->current_line != xloc.line)
@@ -651,9 +648,13 @@ DFS::DFS_write_tree_body (struct output_block *ob,
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     {
       for (tree t = BLOCK_VARS (expr); t; t = TREE_CHAIN (t))
-	/* ???  FIXME.  See also streamer_write_chain.  */
-	if (!(VAR_OR_FUNCTION_DECL_P (t)
-	      && DECL_EXTERNAL (t)))
+	if (VAR_OR_FUNCTION_DECL_P (t)
+	    && DECL_EXTERNAL (t))
+	  /* We have to stream externals in the block chain as
+	     non-references.  See also
+	     tree-streamer-out.c:streamer_write_chain.  */
+	  DFS_write_tree (ob, expr_state, t, ref_p, false, single_p);
+	else
 	  DFS_follow_tree_edge (t);
 
       DFS_follow_tree_edge (BLOCK_SUPERCONTEXT (expr));

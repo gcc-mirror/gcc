@@ -4585,8 +4585,8 @@ create_block_for_bookkeeping (edge e1, edge e2)
 
   /* Move note_list from the upper bb.  */
   gcc_assert (BB_NOTE_LIST (new_bb) == NULL_RTX);
-  BB_NOTE_LIST (new_bb) = BB_NOTE_LIST (bb);
-  BB_NOTE_LIST (bb) = NULL_RTX;
+  SET_BB_NOTE_LIST (new_bb) = BB_NOTE_LIST (bb);
+  SET_BB_NOTE_LIST (bb) = NULL_RTX;
 
   gcc_assert (e2->dest == bb);
 
@@ -4954,7 +4954,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
 
   /* Jump is moved to the boundary.  */
   next = PREV_INSN (insn);
-  BND_TO (bnd) = insn;
+  SET_BND_TO (bnd) = insn;
 
   ft_edge = find_fallthru_edge_from (block_from);
   block_next = ft_edge->dest;
@@ -5095,7 +5095,7 @@ compute_av_set_on_boundaries (fence_t fence, blist_t bnds, av_set_t *av_vliw_p)
 	{
   	  gcc_assert (FENCE_INSN (fence) == BND_TO (bnd));
 	  FENCE_INSN (fence) = bnd_to;
-	  BND_TO (bnd) = bnd_to;
+	  SET_BND_TO (bnd) = bnd_to;
 	}
 
       av_set_clear (&BND_AV (bnd));
@@ -5193,16 +5193,16 @@ move_nop_to_previous_block (insn_t nop, basic_block prev_bb)
   gcc_assert (prev_insn != NULL_RTX
               && PREV_INSN (note) == prev_insn);
 
-  NEXT_INSN (prev_insn) = nop;
-  PREV_INSN (nop) = prev_insn;
+  SET_NEXT_INSN (prev_insn) = nop;
+  SET_PREV_INSN (nop) = prev_insn;
 
-  PREV_INSN (note) = nop;
-  NEXT_INSN (note) = next_insn;
+  SET_PREV_INSN (note) = nop;
+  SET_NEXT_INSN (note) = next_insn;
 
-  NEXT_INSN (nop) = note;
-  PREV_INSN (next_insn) = note;
+  SET_NEXT_INSN (nop) = note;
+  SET_PREV_INSN (next_insn) = note;
 
-  BB_END (prev_bb) = nop;
+  SET_BB_END (prev_bb) = nop;
   BLOCK_FOR_INSN (nop) = prev_bb;
 }
 

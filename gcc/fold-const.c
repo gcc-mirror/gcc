@@ -6642,36 +6642,18 @@ reorder_operands_p (const_tree arg0, const_tree arg1)
 bool
 tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
 {
-  STRIP_SIGN_NOPS (arg0);
-  STRIP_SIGN_NOPS (arg1);
-
-  if (TREE_CODE (arg1) == INTEGER_CST)
+  if (CONSTANT_CLASS_P (arg1))
     return 0;
-  if (TREE_CODE (arg0) == INTEGER_CST)
+  if (CONSTANT_CLASS_P (arg0))
     return 1;
 
-  if (TREE_CODE (arg1) == REAL_CST)
-    return 0;
-  if (TREE_CODE (arg0) == REAL_CST)
-    return 1;
-
-  if (TREE_CODE (arg1) == FIXED_CST)
-    return 0;
-  if (TREE_CODE (arg0) == FIXED_CST)
-    return 1;
-
-  if (TREE_CODE (arg1) == COMPLEX_CST)
-    return 0;
-  if (TREE_CODE (arg0) == COMPLEX_CST)
-    return 1;
+  STRIP_NOPS (arg0);
+  STRIP_NOPS (arg1);
 
   if (TREE_CONSTANT (arg1))
     return 0;
   if (TREE_CONSTANT (arg0))
     return 1;
-
-  if (optimize_function_for_size_p (cfun))
-    return 0;
 
   if (reorder && flag_evaluation_order
       && (TREE_SIDE_EFFECTS (arg0) || TREE_SIDE_EFFECTS (arg1)))

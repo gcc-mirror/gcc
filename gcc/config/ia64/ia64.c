@@ -9489,10 +9489,10 @@ ia64_init_dfa_pre_cycle_insn (void)
       prev_cycle_state = xmalloc (dfa_state_size);
     }
   dfa_pre_cycle_insn = make_insn_raw (gen_pre_cycle ());
-  PREV_INSN (dfa_pre_cycle_insn) = NEXT_INSN (dfa_pre_cycle_insn) = NULL_RTX;
+  SET_PREV_INSN (dfa_pre_cycle_insn) = SET_NEXT_INSN (dfa_pre_cycle_insn) = NULL_RTX;
   recog_memoized (dfa_pre_cycle_insn);
   dfa_stop_insn = make_insn_raw (gen_insn_group_barrier (GEN_INT (3)));
-  PREV_INSN (dfa_stop_insn) = NEXT_INSN (dfa_stop_insn) = NULL_RTX;
+  SET_PREV_INSN (dfa_stop_insn) = SET_NEXT_INSN (dfa_stop_insn) = NULL_RTX;
   recog_memoized (dfa_stop_insn);
 }
 
@@ -9618,7 +9618,7 @@ emit_predicate_relation_info (void)
 	    rtx p = gen_rtx_REG (BImode, r);
 	    rtx n = emit_insn_after (gen_pred_rel_mutex (p), head);
 	    if (head == BB_END (bb))
-	      BB_END (bb) = n;
+	      SET_BB_END (bb) = n;
 	    head = n;
 	  }
     }
@@ -9640,9 +9640,9 @@ emit_predicate_relation_info (void)
 	      rtx b = emit_insn_before (gen_safe_across_calls_all (), insn);
 	      rtx a = emit_insn_after (gen_safe_across_calls_normal (), insn);
 	      if (BB_HEAD (bb) == insn)
-		BB_HEAD (bb) = b;
+		SET_BB_HEAD (bb) = b;
 	      if (BB_END (bb) == insn)
-		BB_END (bb) = a;
+		SET_BB_END (bb) = a;
 	    }
 
 	  if (insn == BB_END (bb))
@@ -9679,7 +9679,7 @@ ia64_reorg (void)
 
       initiate_bundle_states ();
       ia64_nop = make_insn_raw (gen_nop ());
-      PREV_INSN (ia64_nop) = NEXT_INSN (ia64_nop) = NULL_RTX;
+      SET_PREV_INSN (ia64_nop) = SET_NEXT_INSN (ia64_nop) = NULL_RTX;
       recog_memoized (ia64_nop);
       clocks_length = get_max_uid () + 1;
       stops_p = XCNEWVEC (char, clocks_length);

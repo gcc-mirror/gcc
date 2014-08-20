@@ -3199,10 +3199,10 @@ reorder_var_tracking_notes (void)
               while (queue)
                 {
                   rtx next_queue = PREV_INSN (queue);
-                  PREV_INSN (NEXT_INSN(insn)) = queue;
-                  NEXT_INSN(queue) = NEXT_INSN(insn);
-                  PREV_INSN(queue) = insn;
-                  NEXT_INSN(insn) = queue;
+                  SET_PREV_INSN (NEXT_INSN(insn)) = queue;
+                  SET_NEXT_INSN(queue) = NEXT_INSN(insn);
+                  SET_PREV_INSN(queue) = insn;
+                  SET_NEXT_INSN(insn) = queue;
                   queue = next_queue;
                 }
               /* There is no more to do for this bb. break*/
@@ -3216,10 +3216,10 @@ reorder_var_tracking_notes (void)
                   while (queue)
                     {
                       rtx next_queue = PREV_INSN (queue);
-                      NEXT_INSN (PREV_INSN(insn)) = queue;
-                      PREV_INSN (queue) = PREV_INSN(insn);
-                      PREV_INSN (insn) = queue;
-                      NEXT_INSN (queue) = insn;
+                      SET_NEXT_INSN (PREV_INSN(insn)) = queue;
+                      SET_PREV_INSN (queue) = PREV_INSN(insn);
+                      SET_PREV_INSN (insn) = queue;
+                      SET_NEXT_INSN (queue) = insn;
                       queue = next_queue;
                     }
                 }
@@ -3227,15 +3227,15 @@ reorder_var_tracking_notes (void)
           else if (NOTE_P (insn))
             {
                rtx prev = PREV_INSN (insn);
-               PREV_INSN (next) = prev;
-               NEXT_INSN (prev) = next;
+               SET_PREV_INSN (next) = prev;
+               SET_NEXT_INSN (prev) = next;
                /* Ignore call_arg notes. They are expected to be just after the
                   call insn. If the call is start of a long VLIW, labels are
                   emitted in the middle of a VLIW, which our assembler can not
                   handle. */
                if (NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION)
                  {
-                   PREV_INSN (insn) = queue;
+                   SET_PREV_INSN (insn) = queue;
                    queue = insn;
                  }
             }

@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Read a string from the string table in DATA_IN using input block
    IB.  Write the length to RLEN.  */
 
-const char *
+static const char *
 string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
 {
   unsigned int len;

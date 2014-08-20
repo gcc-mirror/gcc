@@ -233,7 +233,8 @@ struct _bnd
   deps_t dc;
 };
 typedef struct _bnd *bnd_t;
-#define BND_TO(B) ((B)->to)
+extern rtx_insn *BND_TO (bnd_t bnd);
+extern insn_t& SET_BND_TO (bnd_t bnd);
 
 /* PTR stands not for pointer as you might think, but as a Path To Root of the
    current instruction group from boundary B.  */
@@ -645,7 +646,8 @@ struct vinsn_def
   bool may_trap_p;
 };
 
-#define VINSN_INSN_RTX(VI) ((VI)->insn_rtx)
+extern rtx_insn *VINSN_INSN_RTX (vinsn_t);
+extern rtx& SET_VINSN_INSN_RTX (vinsn_t);
 #define VINSN_PATTERN(VI) (PATTERN (VINSN_INSN_RTX (VI)))
 
 #define VINSN_ID(VI) (&((VI)->id))
@@ -919,7 +921,8 @@ extern vec<sel_region_bb_info_def> sel_region_bb_info;
    A note_list is a list of various notes that was scattered across BB
    before scheduling, and will be appended at the beginning of BB after
    scheduling is finished.  */
-#define BB_NOTE_LIST(BB) (SEL_REGION_BB_INFO (BB)->note_list)
+extern rtx_insn *BB_NOTE_LIST (basic_block);
+extern rtx& SET_BB_NOTE_LIST (basic_block);
 
 #define BB_AV_SET(BB) (SEL_REGION_BB_INFO (BB)->av_set)
 #define BB_AV_LEVEL(BB) (SEL_REGION_BB_INFO (BB)->av_level)
