@@ -58,7 +58,6 @@ struct GTY (()) range_info_def {
 
 
 #define SSANAMES(fun) (fun)->gimple_df->ssa_names
-#define MODIFIED_NORETURN_CALLS(fun) (fun)->gimple_df->modified_noreturn_calls
 #define DEFAULT_DEFS(fun) (fun)->gimple_df->default_defs
 
 #define num_ssa_names (vec_safe_length (cfun->gimple_df->ssa_names))

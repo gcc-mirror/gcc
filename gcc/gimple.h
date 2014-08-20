@@ -90,6 +90,7 @@ enum gf_mask {
     GF_CALL_NOTHROW		= 1 << 4,
     GF_CALL_ALLOCA_FOR_VAR	= 1 << 5,
     GF_CALL_INTERNAL		= 1 << 6,
+    GF_CALL_CTRL_ALTERING       = 1 << 7,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_FOR_KIND_MASK	= 3 << 0,
     GF_OMP_FOR_KIND_FOR		= 0 << 0,
@@ -2445,6 +2446,29 @@ gimple_call_internal_fn (const_gimple gs)
 {
   gcc_gimple_checking_assert (gimple_call_internal_p (gs));
   return static_cast <const gimple_statement_call *> (gs)->u.internal_fn;
+}
+
+/* If CTRL_ALTERING_P is true, mark GIMPLE_CALL S to be a stmt
+   that could alter control flow.  */
+
+static inline void
+gimple_call_set_ctrl_altering (gimple s, bool ctrl_altering_p)
+{
+  GIMPLE_CHECK (s, GIMPLE_CALL);
+  if (ctrl_altering_p)
+    s->subcode |= GF_CALL_CTRL_ALTERING;
+  else
+    s->subcode &= ~GF_CALL_CTRL_ALTERING;
+}
+
+/* Return true if call GS calls an func whose GF_CALL_CTRL_ALTERING
+   flag is set. Such call could not be a stmt in the middle of a bb.  */
+
+static inline bool
+gimple_call_ctrl_altering_p (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_CALL);
+  return (gs->subcode & GF_CALL_CTRL_ALTERING) != 0;
 }
 
 
