@@ -1,5 +1,10 @@
 2014-08-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/61214
+	PR tree-optimization/62091
+	* decl2.c (decl_needed_p): Return true for virtual functions when
+	devirtualizing.
+
 	Backport:
 	PR c++/61566
 	* pt.c (instantiate_class_template_1): Ignore lambda on
