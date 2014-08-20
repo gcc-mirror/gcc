@@ -2338,6 +2338,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    }
 	  /* Or if specifically desired via -Wc90-c99-compat.  */
 	  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
+		   && ! CPP_OPTION (pfile, cplusplus)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
 	      cpp_error (pfile, CPP_DL_WARNING,
