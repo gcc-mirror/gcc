@@ -1,3 +1,24 @@
+2014-08-20  Martin Jambor  <mjambor@suse.cz>
+	    Wei Mi  <wmi@google.com>
+
+	PR ipa/60449
+	PR middle-end/61776
+	* tree-ssa-operands.c (update_stmt_operands): Remove
+	MODIFIED_NORETURN_CALLS.
+	* tree-cfgcleanup.c (cleanup_call_ctrl_altering_flag): New func.
+	(cleanup_control_flow_bb): Use cleanup_call_ctrl_altering_flag.
+	(split_bb_on_noreturn_calls): Renamed from split_bbs_on_noreturn_calls.
+	(cleanup_tree_cfg_1): Use split_bb_on_noreturn_calls.
+	* tree-ssanames.h: Remove MODIFIED_NORETURN_CALLS.
+	* gimple.h (enum gf_mask): Add GF_CALL_CTRL_ALTERING.
+	(gimple_call_set_ctrl_altering): New func.
+	(gimple_call_ctrl_altering_p): Ditto.
+	* tree-cfg.c (gimple_call_initialize_ctrl_altering): Ditto.
+	(make_blocks): Use gimple_call_initialize_ctrl_altering.
+	(is_ctrl_altering_stmt): Use gimple_call_ctrl_altering_p.
+	(execute_fixup_cfg): Use gimple_call_ctrl_altering_p and
+	remove MODIFIED_NORETURN_CALLS.
+
 2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* coverage.c (coverage_compute_profile_id): Return non-0;
