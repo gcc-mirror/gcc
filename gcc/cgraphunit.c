@@ -2047,10 +2047,8 @@ ipa_passes (void)
 	return;
     }
 
-  /* We never run removal of unreachable nodes after early passes.  This is
-     because TODO is run before the subpasses.  It is important to remove
-     the unreachable functions to save works at IPA level and to get LTO
-     symbol tables right.  */
+  /* This extra symtab_remove_unreachable_nodes pass tends to catch some
+     devirtualization and other changes where removal iterate.  */
   symtab_remove_unreachable_nodes (true, cgraph_dump_file);
 
   /* If pass_all_early_optimizations was not scheduled, the state of
@@ -2184,7 +2182,8 @@ compile (void)
     }
 
   /* This pass remove bodies of extern inline functions we never inlined.
-     Do this later so other IPA passes see what is really going on.  */
+     Do this later so other IPA passes see what is really going on.
+     FIXME: This should be run just after inlining by pasmanager.  */
   symtab_remove_unreachable_nodes (false, dump_file);
   cgraph_global_info_ready = true;
   if (cgraph_dump_file)
@@ -2210,9 +2209,10 @@ compile (void)
   cgraph_materialize_all_clones ();
   bitmap_obstack_initialize (NULL);
   execute_ipa_pass_list (g->get_passes ()->all_late_ipa_passes);
-  symtab_remove_unreachable_nodes (true, dump_file);
 #ifdef ENABLE_CHECKING
   symtab_node::verify_symtab_nodes ();
+  /* Verify late IPA passes cleaned up after themselves.  */
+  gcc_assert (!symtab_remove_unreachable_nodes (false, dump_file));
 #endif
   bitmap_obstack_release (NULL);
   mark_functions_to_output ();

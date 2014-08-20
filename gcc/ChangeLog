@@ -1,3 +1,16 @@
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (ipa_passes, compile): Reshedule
+	symtab_remove_unreachable_nodes passes; update comments.
+	* ipa-inline.c (pass_data_ipa_inline): Do not schedule
+	TODO_remove_functions before the pass; the functions ought to be
+	already removed.
+	* ipa.c (pass_data_ipa_free_inline_summary): Enable dump; schedule
+	TODO_remove_functions.
+	* passes.c (pass_data_early_local_passes): Do not schedule function
+	removal.
+	(execute_one_pass): Fix call of symtab_remove_unreachable_nodes.
+
 2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/59304
