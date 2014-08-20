@@ -1,3 +1,8 @@
+2014-08-20  Marek Polacek  <polacek@redhat.com>
+
+	* include/cpplib.h (cpp_options): Use signed char.
+	* lex.c (_cpp_lex_direct): Don't warn in C++ mode.
+
 2014-08-19  Marek Polacek  <polacek@redhat.com>
 
 	* lex.c (_cpp_lex_direct): Fix a typo.

@@ -467,7 +467,7 @@ struct cpp_options
   bool restore_pch_deps;
 
   /* True if warn about differences between C90 and C99.  */
-  char cpp_warn_c90_c99_compat;
+  signed char cpp_warn_c90_c99_compat;
 
   /* Dependency generation.  */
   struct
