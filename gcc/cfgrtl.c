@@ -4166,7 +4166,7 @@ duplicate_insn_chain (rtx from, rtx to)
     }
   insn = NEXT_INSN (last);
   delete_insn (last);
-  return as_a <rtx_insn *> (insn);
+  return safe_as_a <rtx_insn *> (insn);
 }
 
 /* Create a duplicate of the basic block BB.  */
