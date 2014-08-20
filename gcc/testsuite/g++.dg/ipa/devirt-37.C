@@ -1,4 +1,4 @@
-/* { dg-options "-fpermissive -fno-indirect-inlining -fno-devirtualize-speculatively -fdump-tree-fre2-details"  } */
+/* { dg-options "-fpermissive -O2 -fno-indirect-inlining -fno-devirtualize-speculatively -fdump-tree-fre2-details"  } */
 #include <stdlib.h>
 struct A {virtual void test() {abort ();}};
 struct B:A
@@ -13,6 +13,8 @@ inline void tt(struct A *a)
   a->test();
 }
 
+__attribute__ ((always_inline))
+inline
 B::B (void (*test)(struct A *))
 {
   struct B c;
