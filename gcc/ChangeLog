@@ -1,3 +1,8 @@
+2014-08-20  Steve Ellcey  <sellcey@mips.com>
+
+	PR middle-end/49191
+	* doc/sourcebuild.texi (non_strict_align): New.
+
 2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphunit.c (ipa_passes, compile): Reshedule
