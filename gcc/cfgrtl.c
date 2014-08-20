@@ -2237,12 +2237,12 @@ update_br_prob_note (basic_block bb)
 
 /* Get the last insn associated with block BB (that includes barriers and
    tablejumps after BB).  */
-rtx
+rtx_insn *
 get_last_bb_insn (basic_block bb)
 {
   rtx_jump_table_data *table;
-  rtx tmp;
-  rtx end = BB_END (bb);
+  rtx_insn *tmp;
+  rtx_insn *end = BB_END (bb);
 
   /* Include any jump table following the basic block.  */
   if (tablejump_p (end, NULL, &table))
