@@ -2,16 +2,16 @@
 /* { dg-do run } */
 /* { dg-options "-std=c99 -gdwarf-3" } */
 
-int *ip;
-const int *cip;
-int * restrict irp;
-int * const icp;
-const int * restrict cirp;
-int * const restrict icrp;
-const int * const restrict cicrp;
+int *ip __attribute__((used));
+const int *cip __attribute__((used));
+int * restrict irp __attribute__((used));
+int * const icp __attribute__((used));
+const int * restrict cirp __attribute__((used));
+int * const restrict icrp __attribute__((used));
+const int * const restrict cicrp __attribute__((used));
 
-int * const volatile restrict cvirp;
-const volatile int * restrict pcvir;
+int * const volatile restrict cvirp __attribute__((used));
+const volatile int * restrict pcvir __attribute__((used));
 
 static __attribute__((noclone, noinline)) void *
 cpy (void * restrict s1, const void * restrict s2, unsigned int n)
