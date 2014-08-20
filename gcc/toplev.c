@@ -1115,11 +1115,6 @@ general_init (const char *argv0)
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   tree_diagnostics_defaults (global_dc);
-  /* FIXME: This should probably be moved to C-family
-     language-specific initializations.  */
-  /* By default print macro expansion contexts in the diagnostic
-     finalizer -- for tokens resulting from macro expansion.  */
-  diagnostic_finalizer (global_dc) = virt_loc_aware_diagnostic_finalizer;
 
   global_dc->show_caret
     = global_options_init.x_flag_diagnostics_show_caret;

@@ -1,3 +1,8 @@
+2014-08-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* error.c (gfc_diagnostic_finalizer): Call default finalizer.
+
 2014-08-20  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
 
 	* options.c (gfc_init_options_struct): assert that the frontend sets

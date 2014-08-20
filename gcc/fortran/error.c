@@ -1016,9 +1016,10 @@ gfc_diagnostic_starter (diagnostic_context *context,
 }
 
 static void
-gfc_diagnostic_finalizer (diagnostic_context *context ATTRIBUTE_UNUSED,
-			  diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
+gfc_diagnostic_finalizer (diagnostic_context *context,
+			  diagnostic_info *diagnostic)
 {
+  default_diagnostic_finalizer(context, diagnostic);
 }
 
 /* Give a warning about the command-line.  */

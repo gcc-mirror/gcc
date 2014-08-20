@@ -554,9 +554,12 @@ default_diagnostic_starter (diagnostic_context *context,
 }
 
 void
-default_diagnostic_finalizer (diagnostic_context *context ATTRIBUTE_UNUSED,
-			      diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
+default_diagnostic_finalizer (diagnostic_context *context,
+			      diagnostic_info *diagnostic)
 {
+  diagnostic_show_locus (context, diagnostic);
+  pp_destroy_prefix (context->printer);
+  pp_newline_and_flush (context->printer);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the
@@ -805,10 +808,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_format (context->printer, &diagnostic->message);
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
-  diagnostic_show_locus (context, diagnostic);
   (*diagnostic_finalizer (context)) (context, diagnostic);
-  pp_destroy_prefix (context->printer);
-  pp_newline_and_flush (context->printer);
   diagnostic_action_after_output (context, diagnostic);
   diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;
