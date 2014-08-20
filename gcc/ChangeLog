@@ -1,3 +1,9 @@
+2014-08-20  Richard Biener  <rguenther@suse.de>
+
+	PR lto/62190
+	* tree.c (build_common_tree_nodes): Use make_or_reuse_type
+	to build uint{16,32,64}_type_node.
+
 2014-08-20  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/thumb1.md (64bit splitter): Replace const_double_operand
