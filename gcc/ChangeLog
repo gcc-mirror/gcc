@@ -1,3 +1,9 @@
+2014-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* cfgrtl.c (duplicate_insn_chain): Convert the checked cast on
+	"insn" from an as_a to a safe_as_a, for the case when "insn" is
+	NULL.
+
 2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR preprocessor/51303
