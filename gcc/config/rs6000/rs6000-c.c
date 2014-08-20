@@ -497,6 +497,12 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       break;
     }
 
+  /* Vector element order.  */
+  if (BYTES_BIG_ENDIAN || (rs6000_altivec_element_order == 2))
+    builtin_define ("__VEC_ELEMENT_REG_ORDER__=__ORDER_BIG_ENDIAN__");
+  else
+    builtin_define ("__VEC_ELEMENT_REG_ORDER__=__ORDER_LITTLE_ENDIAN__");
+
   /* Let the compiled code know if 'f' class registers will not be available.  */
   if (TARGET_SOFT_FLOAT || !TARGET_FPRS)
     builtin_define ("__NO_FPRS__");

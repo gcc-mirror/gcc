@@ -1,3 +1,8 @@
+2014-08-20  Bill Schmidt  <wschmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Provide
+	builtin define __VEC_ELEMENT_REG_ORDER__.
+
 2014-08-20  Martin Jambor  <mjambor@suse.cz>
 	    Wei Mi  <wmi@google.com>
 
