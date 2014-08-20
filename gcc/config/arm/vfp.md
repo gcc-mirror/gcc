@@ -1254,17 +1254,15 @@
 )
 
 (define_insn "*combine_vcvtf2i"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(fix:SI (fix:SF (mult:SF (match_operand:SF 1 "s_register_operand" "t")
+  [(set (match_operand:SI 0 "s_register_operand" "=t")
+	(fix:SI (fix:SF (mult:SF (match_operand:SF 1 "s_register_operand" "0")
 				 (match_operand 2
 				 "const_double_vcvt_power_of_two" "Dp")))))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP3 && !flag_rounding_math"
-  "vcvt%?.s32.f32\\t%1, %1, %v2\;vmov%?\\t%0, %1"
+  "vcvt%?.s32.f32\\t%0, %1, %v2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "ce_count" "2")
-   (set_attr "type" "f_cvtf2i")
-   (set_attr "length" "8")]
+   (set_attr "type" "f_cvtf2i")]
  )
 
 ;; Store multiple insn used in function prologue.

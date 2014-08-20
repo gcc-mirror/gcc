@@ -1,3 +1,11 @@
+2014-08-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+	2014-08-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	PR target/62098
+	* config/arm/vfp.md (*combine_vcvtf2i): Fix constraint.
+	Remove unnecessary attributes.
+
 2014-08-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/61641
@@ -41,6 +49,7 @@
 	OMP_CLAUSE_SHARED for global vars if the global var is mentioned
 	in OMP_CLAUSE_MAP in some outer target region.
 
+>>>>>>> .r214216
 2014-08-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
