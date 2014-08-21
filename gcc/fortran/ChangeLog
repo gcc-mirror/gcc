@@ -1,3 +1,11 @@
+2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/62214
+	* frontend-passes.c (optimize_binop_array_assignment):
+	Do not try to optimize the array assignment for string
+	concatenation.
+
 2014-08-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
