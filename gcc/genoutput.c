@@ -643,7 +643,7 @@ process_template (struct data *d, const char *template_code)
       d->output_format = INSN_OUTPUT_FORMAT_FUNCTION;
 
       puts ("\nstatic const char *");
-      printf ("output_%d (rtx *operands ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED)\n",
+      printf ("output_%d (rtx *operands ATTRIBUTE_UNUSED, rtx_insn *insn ATTRIBUTE_UNUSED)\n",
 	      d->code_number);
       puts ("{");
       print_md_ptr_loc (template_code);
@@ -672,7 +672,7 @@ process_template (struct data *d, const char *template_code)
 	  d->output_format = INSN_OUTPUT_FORMAT_FUNCTION;
 	  puts ("\nstatic const char *");
 	  printf ("output_%d (rtx *operands ATTRIBUTE_UNUSED, "
-		  "rtx insn ATTRIBUTE_UNUSED)\n", d->code_number);
+		  "rtx_insn *insn ATTRIBUTE_UNUSED)\n", d->code_number);
 	  puts ("{");
 	  puts ("  switch (which_alternative)\n    {");
 	}

@@ -2180,6 +2180,7 @@ write_subroutine (struct decision_head *head, enum routine_type type)
   const char *s_or_e;
   char extension[32];
   int i;
+  const char *insn_param;
 
   s_or_e = subfunction ? "static " : "";
 
@@ -2190,21 +2191,27 @@ write_subroutine (struct decision_head *head, enum routine_type type)
   else
     strcpy (extension, "_insns");
 
+  /* For now, the top-level functions take a plain "rtx", and perform a
+     checked cast to "rtx_insn *" for use throughout the rest of the
+     function and the code it calls.  */
+  insn_param = subfunction ? "rtx_insn *insn" : "rtx uncast_insn";
+
   switch (type)
     {
     case RECOG:
       printf ("%sint\n\
-recog%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n", s_or_e, extension);
+recog%s (rtx x0 ATTRIBUTE_UNUSED,\n\t%s ATTRIBUTE_UNUSED,\n\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension, insn_param);
       break;
     case SPLIT:
       printf ("%srtx\n\
-split%s (rtx x0 ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED)\n",
-	      s_or_e, extension);
+split%s (rtx x0 ATTRIBUTE_UNUSED, %s ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension, insn_param);
       break;
     case PEEPHOLE2:
       printf ("%srtx\n\
-peephole2%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *_pmatch_len ATTRIBUTE_UNUSED)\n",
-	      s_or_e, extension);
+peephole2%s (rtx x0 ATTRIBUTE_UNUSED,\n\t%s ATTRIBUTE_UNUSED,\n\tint *_pmatch_len ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension, insn_param);
       break;
     }
 
@@ -2216,6 +2223,14 @@ peephole2%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *_pma
 
   if (!subfunction)
     printf ("  recog_data.insn = NULL_RTX;\n");
+
+  /* For now add the downcast to rtx_insn *, at the top of each top-level
+     function.  */
+  if (!subfunction)
+    {
+      printf ("  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
+      printf ("  insn = safe_as_a <rtx_insn *> (uncast_insn);\n");
+    }
 
   if (head->first)
     write_tree (head, &root_pos, type, 1);
@@ -2461,12 +2476,12 @@ make_insn_sequence (rtx insn, enum routine_type type)
 
     case SPLIT:
       /* Define the subroutine we will call below and emit in genemit.  */
-      printf ("extern rtx gen_split_%d (rtx, rtx *);\n", next_insn_code);
+      printf ("extern rtx gen_split_%d (rtx_insn *, rtx *);\n", next_insn_code);
       break;
 
     case PEEPHOLE2:
       /* Define the subroutine we will call below and emit in genemit.  */
-      printf ("extern rtx gen_peephole2_%d (rtx, rtx *);\n",
+      printf ("extern rtx gen_peephole2_%d (rtx_insn *, rtx *);\n",
 	      next_insn_code);
       break;
     }
