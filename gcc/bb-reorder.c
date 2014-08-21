@@ -1331,7 +1331,7 @@ copy_bb_p (const_basic_block bb, int code_may_grow)
 {
   int size = 0;
   int max_size = uncond_jump_length;
-  rtx insn;
+  rtx_insn *insn;
 
   if (!bb->frequency)
     return false;
@@ -1371,7 +1371,7 @@ copy_bb_p (const_basic_block bb, int code_may_grow)
 int
 get_uncond_jump_length (void)
 {
-  rtx label, jump;
+  rtx_insn *label, *jump;
   int length;
 
   label = emit_label_before (gen_label_rtx (), get_insns ());
@@ -1393,7 +1393,8 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
 {
   eh_landing_pad new_lp;
   basic_block new_bb, last_bb, post_bb;
-  rtx new_label, jump, post_label;
+  rtx_insn *new_label, *jump;
+  rtx post_label;
   unsigned new_partition;
   edge_iterator ei;
   edge e;
@@ -1434,7 +1435,7 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
   for (ei = ei_start (old_bb->preds); (e = ei_safe_edge (ei)) != NULL; )
     if (BB_PARTITION (e->src) == new_partition)
       {
-	rtx insn = BB_END (e->src);
+	rtx_insn *insn = BB_END (e->src);
 	rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 
 	gcc_assert (note != NULL);
@@ -1732,7 +1733,8 @@ add_labels_and_missing_jumps (vec<edge> crossing_edges)
     {
       basic_block src = e->src;
       basic_block dest = e->dest;
-      rtx label, new_jump;
+      rtx label;
+      rtx_insn *new_jump;
 
       if (dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
@@ -1789,7 +1791,7 @@ fix_up_fall_thru_edges (void)
   edge e;
   bool cond_jump_crosses;
   int invert_worked;
-  rtx old_jump;
+  rtx_insn *old_jump;
   rtx fall_thru_label;
 
   FOR_EACH_BB_FN (cur_bb, cfun)
@@ -1936,7 +1938,7 @@ find_jump_block (basic_block jump_dest)
 {
   basic_block source_bb = NULL;
   edge e;
-  rtx insn;
+  rtx_insn *insn;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, jump_dest->preds)
@@ -1986,7 +1988,7 @@ fix_crossing_conditional_branches (void)
   edge succ2;
   edge crossing_edge;
   edge new_edge;
-  rtx old_jump;
+  rtx_insn *old_jump;
   rtx set_src;
   rtx old_label = NULL_RTX;
   rtx new_label;
@@ -2053,7 +2055,7 @@ fix_crossing_conditional_branches (void)
 	      else
 		{
 		  basic_block last_bb;
-		  rtx new_jump;
+		  rtx_insn *new_jump;
 
 		  /* Create new basic block to be dest for
 		     conditional jump.  */
@@ -2113,13 +2115,13 @@ static void
 fix_crossing_unconditional_branches (void)
 {
   basic_block cur_bb;
-  rtx last_insn;
+  rtx_insn *last_insn;
   rtx label;
   rtx label_addr;
-  rtx indirect_jump_sequence;
-  rtx jump_insn = NULL_RTX;
+  rtx_insn *indirect_jump_sequence;
+  rtx_insn *jump_insn = NULL;
   rtx new_reg;
-  rtx cur_insn;
+  rtx_insn *cur_insn;
   edge succ;
 
   FOR_EACH_BB_FN (cur_bb, cfun)
@@ -2441,7 +2443,7 @@ pass_duplicate_computed_gotos::execute (function *fun)
      mark it in the candidates.  */
   FOR_EACH_BB_FN (bb, fun)
     {
-      rtx insn;
+      rtx_insn *insn;
       edge e;
       edge_iterator ei;
       int size, all_flags;

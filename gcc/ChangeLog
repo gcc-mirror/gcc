@@ -1,5 +1,21 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* bb-reorder.c (copy_bb_p): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(get_uncond_jump_length): Likewise for locals "label", "jump".
+	(fix_up_crossing_landing_pad): Likewise for locals "new_label",
+	"jump", "insn".
+	(add_labels_and_missing_jumps): Likewise for local "new_jump".
+	(fix_up_fall_thru_edges): Likewise for local "old_jump".
+	(find_jump_block): Likewise for local "insn".
+	(fix_crossing_conditional_branches): Likewise for locals
+	"old_jump", "new_jump".
+	(fix_crossing_unconditional_branches): Likewise for locals
+	"last_insn", "indirect_jump_sequence", "jump_insn", "cur_insn".
+	(pass_duplicate_computed_gotos::execute): Likewise for local "insn".
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* auto-inc-dec.c (struct inc_insn): Strengthen field "insn" from
 	rtx to rtx_insn *.
 	(struct mem_insn): Likewise for field "insn".
