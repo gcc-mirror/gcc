@@ -2209,11 +2209,6 @@ compile (void)
   cgraph_materialize_all_clones ();
   bitmap_obstack_initialize (NULL);
   execute_ipa_pass_list (g->get_passes ()->all_late_ipa_passes);
-#ifdef ENABLE_CHECKING
-  symtab_node::verify_symtab_nodes ();
-  /* Verify late IPA passes cleaned up after themselves.  */
-  gcc_assert (!symtab_remove_unreachable_nodes (false, dump_file));
-#endif
   bitmap_obstack_release (NULL);
   mark_functions_to_output ();
 
