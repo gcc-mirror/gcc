@@ -1,5 +1,10 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* caller-save.c (save_call_clobbered_regs): Strengthen locals
+	"ins" and "prev" from rtx to rtx_insn *.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* calls.c (emit_call_1): Strengthen local "call_insn" from rtx to
 	rtx_insn *.
 	(internal_arg_pointer_exp_state): Likewise for field "scan_start".

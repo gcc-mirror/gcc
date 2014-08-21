@@ -901,7 +901,7 @@ save_call_clobbered_regs (void)
 	      && last
 	      && last->block == chain->block)
 	    {
-	      rtx ins, prev;
+	      rtx_insn *ins, *prev;
 	      basic_block bb = BLOCK_FOR_INSN (insn);
 
 	      /* When adding hard reg restores after a DEBUG_INSN, move
