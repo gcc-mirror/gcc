@@ -2641,7 +2641,7 @@ extern int auto_inc_p (const_rtx);
 extern int in_expr_list_p (const_rtx, const_rtx);
 extern void remove_node_from_expr_list (const_rtx, rtx *);
 extern int loc_mentioned_in_p (rtx *, const_rtx);
-extern rtx find_first_parameter_load (rtx, rtx);
+extern rtx_insn *find_first_parameter_load (rtx, rtx);
 extern bool keep_with_call_p (const_rtx);
 extern bool label_is_jump_target_p (const_rtx, const_rtx);
 extern int insn_rtx_cost (rtx, bool);
