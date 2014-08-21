@@ -18601,7 +18601,7 @@ print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "0,%s", reg_names[REGNO (tmp)]);
 	else
 	  {
-	    if (!GET_CODE (tmp) == PLUS
+	    if (GET_CODE (tmp) != PLUS
 		|| !REG_P (XEXP (tmp, 0))
 		|| !REG_P (XEXP (tmp, 1)))
 	      {
