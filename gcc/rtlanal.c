@@ -3684,7 +3684,7 @@ parms_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
    found if CSE has eliminated some of them (e.g., an argument
    to the outer function is passed down as a parameter).
    Do not skip BOUNDARY.  */
-rtx
+rtx_insn *
 find_first_parameter_load (rtx call_insn, rtx boundary)
 {
   struct parms_set_data parm;
@@ -3746,7 +3746,7 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
 	    break;
 	}
     }
-  return first_set;
+  return safe_as_a <rtx_insn *> (first_set);
 }
 
 /* Return true if we should avoid inserting code between INSN and preceding

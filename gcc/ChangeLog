@@ -1,3 +1,11 @@
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtl.h (find_first_parameter_load): Strengthen return type from
+	rtx to rtx_insn *.
+	* rtlanal.c (find_first_parameter_load): Strengthen return type
+	from rtx to rtx_insn *.  Add checked cast for now, to postpone
+	strengthening the params.
+
 2014-08-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
