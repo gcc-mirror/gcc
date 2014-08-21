@@ -476,10 +476,10 @@ cond_exec_process_if_block (ce_if_block * ce_info,
   rtx false_expr;		/* test for then block insns */
   int true_prob_val;		/* probability of else block */
   int false_prob_val;		/* probability of then block */
-  rtx then_last_head = NULL_RTX;	/* Last match at the head of THEN */
-  rtx else_last_head = NULL_RTX;	/* Last match at the head of ELSE */
-  rtx then_first_tail = NULL_RTX;	/* First match at the tail of THEN */
-  rtx else_first_tail = NULL_RTX;	/* First match at the tail of ELSE */
+  rtx_insn *then_last_head = NULL;	/* Last match at the head of THEN */
+  rtx_insn *else_last_head = NULL;	/* Last match at the head of ELSE */
+  rtx_insn *then_first_tail = NULL;	/* First match at the tail of THEN */
+  rtx_insn *else_first_tail = NULL;	/* First match at the tail of ELSE */
   int then_n_insns, else_n_insns, n_insns;
   enum rtx_code false_code;
   rtx note;

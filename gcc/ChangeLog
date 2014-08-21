@@ -1,5 +1,46 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (flow_find_cross_jump): Strengthen params 3 and 4
+	"f1" and "f2" from rtx * to rtx_insn **.
+	(flow_find_head_matching_sequence): Likewise.
+
+	* cfgcleanup.c (try_simplify_condjump): Strengthen local
+	"cbranch_insn" from rtx to rtx_insn *.
+	(thread_jump): Likewise for local "insn".
+	(try_forward_edges): Likewise for local "last".
+	(merge_blocks_move_predecessor_nojumps): Likewise for local "barrier".
+	(merge_blocks_move_successor_nojumps): Likewise for locals "barrier",
+	"real_b_end".
+	(can_replace_by): Likewise for params "i1", "i2".
+	(old_insns_match_p): Likewise.
+	(merge_notes): Likewise.
+	(walk_to_nondebug_insn): Likewise for param "i1".
+	(flow_find_cross_jump): Strengthen params "f1" and "f2" from rtx *
+	to rtx_insn **.  Strengthen locals "i1", "i2", "last1", "last2",
+	"afterlast1", "afterlast2" from rtx to rtx_insn *.
+	(flow_find_head_matching_sequence): Strengthen params "f1" and
+	"f2" from rtx * to rtx_insn **.  Strengthen locals "i1", "i2",
+	"last1", "last2", "beforelast1", "beforelast2" from rtx to
+	rtx_insn *.
+	(outgoing_edges_match): Likewise for locals "last1", "last2".
+	(try_crossjump_to_edge): Likewise for local "insn".
+	Replace call to for_each_rtx with for_each_rtx_in_insn.
+
+	(try_crossjump_to_edge): Likewise for locals "newpos1", "newpos2".
+	(try_head_merge_bb): Likewise for locals "e0_last_head_, "jump",
+	"e0_last", "e_last", "head", "curr", "insn".  Strengthen locals
+	"headptr", "currptr", "nextptr" from rtx * to rtx_insn **.
+	(try_optimize_cfg): Strengthen local "last" from rtx to
+	rtx_insn *.
+	(delete_dead_jumptables): Likewise for locals "insn", "next",
+	"label".
+
+	* ifcvt.c (cond_exec_process_if_block): Likewise for locals
+	"rtx then_last_head", "rtx else_last_head", "rtx then_first_tail",
+	"rtx else_first_tail", to reflect the basic-block.h changes above.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* cfgbuild.c (make_edges): Strengthen local "insn" from rtx to
 	rtx_insn *.
 	(purge_dead_tablejump_edges): Likewise.
