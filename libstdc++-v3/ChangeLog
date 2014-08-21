@@ -1,3 +1,8 @@
+2014-08-21  Tony Wang  <tony.wang@arm.com>
+
+        * testsuite/18_support/nested_exception/62154.cc: Disable when the
+	target doesn't provide atomic builtins.
+
 2014-08-19  Yaakov Selkowitz  <yselkowi@redhat.com>
 	Kai Tietz  <ktietz@redhat.com>
 
