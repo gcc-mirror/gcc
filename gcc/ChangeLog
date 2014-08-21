@@ -1,5 +1,13 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (try_split): Strengthen return type from rtx to rtx_insn *.
+
+	* emit-rtl.c (try_split): Likewise, also for locals "before" and
+	"after".  For now, don't strengthen param "trial", which requires
+	adding checked casts when returning it.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* debug.h (struct gcc_debug_hooks): Strengthen param 1 of hook
 	"label" from rtx to rtx_code_label *.  Strengthen param 1 of
 	"var_location" hook from rtx to rtx_insn *.

@@ -3551,11 +3551,11 @@ mark_label_nuses (rtx x)
    replacement insn depending on the value of LAST.  Otherwise, it
    returns TRIAL.  If the insn to be returned can be split, it will be.  */
 
-rtx
+rtx_insn *
 try_split (rtx pat, rtx trial, int last)
 {
-  rtx before = PREV_INSN (trial);
-  rtx after = NEXT_INSN (trial);
+  rtx_insn *before = PREV_INSN (trial);
+  rtx_insn *after = NEXT_INSN (trial);
   int has_barrier = 0;
   rtx note, seq, tem;
   int probability;
@@ -3565,7 +3565,7 @@ try_split (rtx pat, rtx trial, int last)
 
   /* We're not good at redistributing frame information.  */
   if (RTX_FRAME_RELATED_P (trial))
-    return trial;
+    return as_a <rtx_insn *> (trial);
 
   if (any_condjump_p (trial)
       && (note = find_reg_note (trial, REG_BR_PROB, 0)))
@@ -3585,7 +3585,7 @@ try_split (rtx pat, rtx trial, int last)
     }
 
   if (!seq)
-    return trial;
+    return as_a <rtx_insn *> (trial);
 
   /* Avoid infinite loop if any insn of the result matches
      the original pattern.  */
@@ -3594,7 +3594,7 @@ try_split (rtx pat, rtx trial, int last)
     {
       if (INSN_P (insn_last)
 	  && rtx_equal_p (PATTERN (insn_last), pat))
-	return trial;
+	return as_a <rtx_insn *> (trial);
       if (!NEXT_INSN (insn_last))
 	break;
       insn_last = NEXT_INSN (insn_last);
