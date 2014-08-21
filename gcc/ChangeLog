@@ -1,5 +1,43 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* debug.h (struct gcc_debug_hooks): Strengthen param 1 of hook
+	"label" from rtx to rtx_code_label *.  Strengthen param 1 of
+	"var_location" hook from rtx to rtx_insn *.
+	(debug_nothing_rtx): Delete in favor of...
+	(debug_nothing_rtx_code_label): New prototype.
+	(debug_nothing_rtx_rtx): Delete unused prototype.
+	(debug_nothing_rtx_insn): New prototype.
+
+	* final.c (final_scan_insn): Add checked cast to rtx_insn * when
+	invoking debug_hooks->var_location (in two places, one in a NOTE
+	case of a switch statement, the other guarded by a CALL_P
+	conditional.  Add checked cast to rtx_code_label * when invoking
+	debug_hooks->label (within CODE_LABEL case of switch statement).
+
+	* dbxout.c (dbx_debug_hooks): Update "label" hook from
+	debug_nothing_rtx to debug_nothing_rtx_code_label.  Update
+	"var_location" from debug_nothing_rtx to debug_nothing_rtx_insn.
+	(xcoff_debug_hooks): Likewise.
+	* debug.c (do_nothing_debug_hooks): Likewise.
+	(debug_nothing_rtx): Delete in favor of...
+	(debug_nothing_rtx_insn): New function.
+	(debug_nothing_rtx_rtx): Delete unused function.
+	(debug_nothing_rtx_code_label): New function.
+	* dwarf2out.c (dwarf2_debug_hooks): Update "label" hook from
+	debug_nothing_rtx to debug_nothing_rtx_code_label.
+	(dwarf2out_var_location): Strengthen param "loc_note" from rtx
+	to rtx_insn *.
+	* sdbout.c (sdb_debug_hooks): Update "var_location" hook from
+	debug_nothing_rtx to debug_nothing_rtx_insn.
+	(sdbout_label): Strengthen param "insn" from rtx to
+	rtx_code_label *.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Update "label" hook from
+	debug_nothing_rtx to debug_nothing_rtx_code_label.  Update
+	"var_location" hook from debug_nothing_rtx to
+	debug_nothing_rtx_insn.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* recog.h (insn_output_fn): Update this function typedef to match
 	the changes below to the generated output functions, strengthening
 	the 2nd param from rtx to rtx_insn *.

@@ -2343,7 +2343,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_VAR_LOCATION:
 	case NOTE_INSN_CALL_ARG_LOCATION:
 	  if (!DECL_IGNORED_P (current_function_decl))
-	    debug_hooks->var_location (insn);
+	    debug_hooks->var_location (as_a <rtx_insn *> (insn));
 	  break;
 
 	default:
@@ -2381,7 +2381,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
       CC_STATUS_INIT;
 
       if (!DECL_IGNORED_P (current_function_decl) && LABEL_NAME (insn))
-	debug_hooks->label (insn);
+	debug_hooks->label (as_a <rtx_code_label *> (insn));
 
       app_disable ();
 
@@ -2984,7 +2984,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  assemble_external (t);
 	      }
 	    if (!DECL_IGNORED_P (current_function_decl))
-	      debug_hooks->var_location (insn);
+	      debug_hooks->var_location (as_a <rtx_insn *> (insn));
 	  }
 
 	/* Output assembler code from the template.  */
