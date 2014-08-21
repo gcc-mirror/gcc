@@ -1,3 +1,9 @@
+2014-08-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62091
+	* g++.dg/ipa/devirt-37.C: Update template.
+	* g++.dg/ipa/devirt-40.C: New testcase.
+
 2014-08-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/62112

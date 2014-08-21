@@ -1,3 +1,14 @@
+2014-08-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62091
+	* ipa-devirt.c (ipa_polymorphic_call_context::restrict_to_inner_type):
+	handle correctly arrays.
+	(extr_type_from_vtbl_ptr_store): Add debug output; handle multiple
+	inheritance binfos.
+	(record_known_type): Walk into inner type.
+	(ipa_polymorphic_call_context::get_dynamic_type): Likewise; strenghten
+	condition on no type changes.
+
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* genattrtab.c (write_attr_get): Within the generated get_attr_
