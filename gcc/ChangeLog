@@ -1,5 +1,23 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* calls.c (emit_call_1): Strengthen local "call_insn" from rtx to
+	rtx_insn *.
+	(internal_arg_pointer_exp_state): Likewise for field "scan_start".
+	(internal_arg_pointer_based_exp_scan): Likewise for locals "insn",
+	"scan_start".
+	(load_register_parameters): Likewise for local "before_arg".
+	(check_sibcall_argument_overlap): Likewise for param "insn".
+	(expand_call): Likewise for locals "normal_call_insns",
+	"tail_call_insns", "insns", "before_call", "after_args",
+	"before_arg", "last", "prev".  Strengthen one of the "last" from
+	rtx to rtx_call_insn *.
+	(fixup_tail_calls): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(emit_library_call_value_1): Likewise for locals "before_call" and
+	"last".
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* builtins.c (expand_builtin_longjmp): Strengthen locals "insn"
 	and "last" from rtx to rtx_insn *.
 	(expand_builtin_nonlocal_goto): Likewise for local "insn".
