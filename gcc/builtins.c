@@ -965,7 +965,8 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 static void
 expand_builtin_longjmp (rtx buf_addr, rtx value)
 {
-  rtx fp, lab, stack, insn, last;
+  rtx fp, lab, stack;
+  rtx_insn *insn, *last;
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
 
   /* DRAP is needed for stack realign if longjmp is expanded to current
@@ -1109,7 +1110,8 @@ static rtx
 expand_builtin_nonlocal_goto (tree exp)
 {
   tree t_label, t_save_area;
-  rtx r_label, r_save_area, r_fp, r_sp, insn;
+  rtx r_label, r_save_area, r_fp, r_sp;
+  rtx_insn *insn;
 
   if (!validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -1573,7 +1575,8 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 {
   int size, align, regno;
   enum machine_mode mode;
-  rtx incoming_args, result, reg, dest, src, call_insn;
+  rtx incoming_args, result, reg, dest, src;
+  rtx_call_insn *call_insn;
   rtx old_stack_level = 0;
   rtx call_fusage = 0;
   rtx struct_value = targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 0);
@@ -1968,7 +1971,7 @@ mathfn_built_in (tree type, enum built_in_function fn)
 static void
 expand_errno_check (tree exp, rtx target)
 {
-  rtx lab = gen_label_rtx ();
+  rtx_code_label *lab = gen_label_rtx ();
 
   /* Test the result; if it is NaN, set errno=EDOM because
      the argument was not in the domain.  */
@@ -2015,7 +2018,8 @@ static rtx
 expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
-  rtx op0, insns;
+  rtx op0;
+  rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
   bool errno_set = false;
@@ -2141,7 +2145,8 @@ static rtx
 expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
-  rtx op0, op1, insns, result;
+  rtx op0, op1, result;
+  rtx_insn *insns;
   int op1_type = REAL_TYPE;
   tree fndecl = get_callee_fndecl (exp);
   tree arg0, arg1;
@@ -2250,7 +2255,8 @@ static rtx
 expand_builtin_mathfn_ternary (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
-  rtx op0, op1, op2, insns, result;
+  rtx op0, op1, op2, result;
+  rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
   tree arg0, arg1, arg2;
   enum machine_mode mode;
@@ -2323,7 +2329,8 @@ static rtx
 expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
-  rtx op0, insns;
+  rtx op0;
+  rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
   tree arg;
@@ -2482,7 +2489,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[1];
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
       tree orig_arg = arg;
 
       /* Wrap the computation of the argument in a SAVE_EXPR, as we may
@@ -2700,7 +2707,8 @@ static rtx
 expand_builtin_int_roundingfn (tree exp, rtx target)
 {
   convert_optab builtin_optab;
-  rtx op0, insns, tmp;
+  rtx op0, tmp;
+  rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
   enum built_in_function fallback_fn;
   tree fallback_fndecl;
@@ -2836,7 +2844,8 @@ static rtx
 expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 {
   convert_optab builtin_optab;
-  rtx op0, insns;
+  rtx op0;
+  rtx_insn *insns;
   tree fndecl = get_callee_fndecl (exp);
   tree arg;
   enum machine_mode mode;
@@ -2985,7 +2994,8 @@ expand_builtin_strlen (tree exp, rtx target,
       rtx pat;
       tree len;
       tree src = CALL_EXPR_ARG (exp, 0);
-      rtx src_reg, before_strlen;
+      rtx src_reg;
+      rtx_insn *before_strlen;
       enum machine_mode insn_mode = target_mode;
       enum insn_code icode = CODE_FOR_nothing;
       unsigned int align;
@@ -4156,7 +4166,8 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 rtx
 expand_builtin_saveregs (void)
 {
-  rtx val, seq;
+  rtx val;
+  rtx_insn *seq;
 
   /* Don't do __builtin_saveregs more than once in a function.
      Save the result of the first call and reuse it.  */
@@ -4848,7 +4859,7 @@ expand_builtin_signbit (tree exp, rtx target)
   icode = optab_handler (signbit_optab, fmode);
   if (icode != CODE_FOR_nothing)
     {
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
       target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
       if (maybe_emit_unop_insn (icode, target, temp, UNKNOWN))
 	return target;
@@ -5255,7 +5266,8 @@ static rtx
 expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp, 
 					rtx target)
 {
-  rtx expect, desired, mem, oldval, label;
+  rtx expect, desired, mem, oldval;
+  rtx_code_label *label;
   enum memmodel success, failure;
   tree weak;
   bool is_weak;
@@ -5713,7 +5725,8 @@ expand_builtin_set_thread_pointer (tree exp)
 static void
 expand_stack_restore (tree var)
 {
-  rtx prev, sa = expand_normal (var);
+  rtx_insn *prev;
+  rtx sa = expand_normal (var);
 
   sa = convert_memory_address (Pmode, sa);
 
