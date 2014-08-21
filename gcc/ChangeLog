@@ -1,3 +1,15 @@
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* output.h (peephole): Strengthen return type from rtx to
+	rtx_insn *.
+	* rtl.h (delete_for_peephole): Likewise for both params.
+	* genpeep.c (main): In generated "peephole" function, strengthen
+	return type and local "insn" from rtx to rtx_insn *.  For now,
+	rename param "ins1" to "uncast_ins1", adding "ins1" back as an
+	rtx_insn *, with a checked cast.
+	* jump.c (delete_for_peephole): Strengthen params "from", "to" and
+	locals "insn", "next", "prev" from rtx to rtx_insn *.
+
 2014-08-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/62112

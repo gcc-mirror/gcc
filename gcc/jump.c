@@ -1398,14 +1398,14 @@ delete_related_insns (rtx insn)
    peephole insn that will replace them.  */
 
 void
-delete_for_peephole (rtx from, rtx to)
+delete_for_peephole (rtx_insn *from, rtx_insn *to)
 {
-  rtx insn = from;
+  rtx_insn *insn = from;
 
   while (1)
     {
-      rtx next = NEXT_INSN (insn);
-      rtx prev = PREV_INSN (insn);
+      rtx_insn *next = NEXT_INSN (insn);
+      rtx_insn *prev = PREV_INSN (insn);
 
       if (!NOTE_P (insn))
 	{

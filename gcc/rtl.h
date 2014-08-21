@@ -3062,7 +3062,7 @@ extern rtx reversed_comparison (const_rtx, enum machine_mode);
 extern enum rtx_code reversed_comparison_code (const_rtx, const_rtx);
 extern enum rtx_code reversed_comparison_code_parts (enum rtx_code, const_rtx,
 						     const_rtx, const_rtx);
-extern void delete_for_peephole (rtx, rtx);
+extern void delete_for_peephole (rtx_insn *, rtx_insn *);
 extern int condjump_in_parallel_p (const_rtx);
 
 /* In emit-rtl.c.  */
