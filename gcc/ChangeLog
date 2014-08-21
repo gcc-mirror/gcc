@@ -1,3 +1,34 @@
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (context.h): New include.
+	(tree-pass.h): Likewise.
+	(make_pass_analyze_swaps): New decl.
+	(rs6000_option_override): Register pass_analyze_swaps.
+	(swap_web_entry): New subsclass of web_entry_base (df.h).
+	(special_handling_values): New enum.
+	(union_defs): New function.
+	(union_uses): Likewise.
+	(insn_is_load_p): Likewise.
+	(insn_is_store_p): Likewise.
+	(insn_is_swap_p): Likewise.
+	(rtx_is_swappable_p): Likewise.
+	(insn_is_swappable_p): Likewise.
+	(chain_purpose): New enum.
+	(chain_contains_only_swaps): New function.
+	(mark_swaps_for_removal): Likewise.
+	(swap_const_vector_halves): Likewise.
+	(adjust_subreg_index): Likewise.
+	(permute_load): Likewise.
+	(permute_store): Likewise.
+	(handle_special_swappables): Likewise.
+	(replace_swap_with_copy): Likewise.
+	(dump_swap_insn_table): Likewise.
+	(rs6000_analyze_swaps): Likewise.
+	(pass_data_analyze_swaps): New pass_data.
+	(pass_analyze_swaps): New rtl_opt_pass.
+	(make_pass_analyze_swaps): New function.
+	* config/rs6000/rs6000.opt (moptimize-swaps): New option.
+
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* sel-sched-ir.h (create_insn_rtx_from_pattern): Strengthen return
