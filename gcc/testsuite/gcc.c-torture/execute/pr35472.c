@@ -2,7 +2,7 @@ extern void abort (void);
 extern void *memset (void *s, int c, __SIZE_TYPE__ n);
 struct S { int i[16]; };
 struct S *p;
-void __attribute__((noinline))
+void __attribute__((noinline,noclone))
 foo(struct S *a, struct S *b) { a->i[0] = -1; p = b; }
 void test (void)
 {

@@ -330,18 +330,31 @@ ptr_deref_may_alias_ref_p_1 (tree ptr, ao_ref *ref)
   return true;
 }
 
-/* Return true whether REF may refer to global memory.  */
+/* Returns whether reference REF to BASE may refer to global memory.  */
 
-bool
-ref_may_alias_global_p (tree ref)
+static bool
+ref_may_alias_global_p_1 (tree base)
 {
-  tree base = get_base_address (ref);
   if (DECL_P (base))
     return is_global_var (base);
   else if (TREE_CODE (base) == MEM_REF
 	   || TREE_CODE (base) == TARGET_MEM_REF)
     return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0));
   return true;
+}
+
+bool
+ref_may_alias_global_p (ao_ref *ref)
+{
+  tree base = ao_ref_base (ref);
+  return ref_may_alias_global_p_1 (base);
+}
+
+bool
+ref_may_alias_global_p (tree ref)
+{
+  tree base = get_base_address (ref);
+  return ref_may_alias_global_p_1 (base);
 }
 
 /* Return true whether STMT may clobber global memory.  */
@@ -1413,6 +1426,14 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 #endif
 }
 
+static bool
+refs_may_alias_p (tree ref1, ao_ref *ref2)
+{
+  ao_ref r1;
+  ao_ref_init (&r1, ref1);
+  return refs_may_alias_p_1 (&r1, ref2, true);
+}
+
 bool
 refs_may_alias_p (tree ref1, tree ref2)
 {
@@ -1769,12 +1790,10 @@ process_args:
 }
 
 static bool
-ref_maybe_used_by_call_p (gimple call, tree ref)
+ref_maybe_used_by_call_p (gimple call, ao_ref *ref)
 {
-  ao_ref r;
   bool res;
-  ao_ref_init (&r, ref);
-  res = ref_maybe_used_by_call_p_1 (call, &r);
+  res = ref_maybe_used_by_call_p_1 (call, ref);
   if (res)
     ++alias_stats.ref_maybe_used_by_call_p_may_alias;
   else
@@ -1787,7 +1806,7 @@ ref_maybe_used_by_call_p (gimple call, tree ref)
    true, otherwise return false.  */
 
 bool
-ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
+ref_maybe_used_by_stmt_p (gimple stmt, ao_ref *ref)
 {
   if (is_gimple_assign (stmt))
     {
@@ -1810,14 +1829,13 @@ ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
   else if (gimple_code (stmt) == GIMPLE_RETURN)
     {
       tree retval = gimple_return_retval (stmt);
-      tree base;
       if (retval
 	  && TREE_CODE (retval) != SSA_NAME
 	  && !is_gimple_min_invariant (retval)
 	  && refs_may_alias_p (retval, ref))
 	return true;
       /* If ref escapes the function then the return acts as a use.  */
-      base = get_base_address (ref);
+      tree base = ao_ref_base (ref);
       if (!base)
 	;
       else if (DECL_P (base))
@@ -1829,6 +1847,14 @@ ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
     }
 
   return true;
+}
+
+bool
+ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
+{
+  ao_ref r;
+  ao_ref_init (&r, ref);
+  return ref_maybe_used_by_stmt_p (stmt, &r);
 }
 
 /* If the call in statement CALL may clobber the memory reference REF
@@ -2169,8 +2195,8 @@ stmt_may_clobber_ref_p (gimple stmt, tree ref)
 /* If STMT kills the memory reference REF return true, otherwise
    return false.  */
 
-static bool
-stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
+bool
+stmt_kills_ref_p (gimple stmt, ao_ref *ref)
 {
   if (!ao_ref_base (ref))
     return false;
@@ -2357,7 +2383,7 @@ stmt_kills_ref_p (gimple stmt, tree ref)
 {
   ao_ref r;
   ao_ref_init (&r, ref);
-  return stmt_kills_ref_p_1 (stmt, &r);
+  return stmt_kills_ref_p (stmt, &r);
 }
 
 

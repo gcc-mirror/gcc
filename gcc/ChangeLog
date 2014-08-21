@@ -1,3 +1,21 @@
+2014-08-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/62112
+	* gimple-iterator.c (gsi_replace): Return whether EH cleanup is needed.
+	* gimple-iterator.h (gsi_replace): Return bool.
+	* tree-ssa-alias.c (ref_may_alias_global_p_1): New helper, code
+	moved from ref_may_alias_global_p.
+	(ref_may_alias_global_p, refs_may_alias_p, ref_maybe_used_by_stmt_p):
+	New overloads.
+	(ref_maybe_used_by_call_p): Take ao_ref* instead of tree.
+	(stmt_kills_ref_p_1): Rename...
+	(stmt_kills_ref_p): ... to this.
+	* tree-ssa-alias.h (ref_may_alias_global_p, ref_maybe_used_by_stmt_p,
+	stmt_kills_ref_p): Declare.
+	* tree-ssa-dse.c (dse_possible_dead_store_p): New argument, use it.
+	Move the self-assignment case...
+	(dse_optimize_stmt): ... here. Handle builtin calls. Remove dead code.
+
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (try_split): Strengthen return type from rtx to rtx_insn *.

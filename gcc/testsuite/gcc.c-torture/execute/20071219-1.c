@@ -10,7 +10,7 @@ struct S
 
 struct S *p;
 
-void __attribute__((noinline))
+void __attribute__((noinline,noclone))
 foo (struct S *x, int set)
 {
   int i;
@@ -22,7 +22,7 @@ foo (struct S *x, int set)
   p = x;
 }
 
-void __attribute__((noinline))
+void __attribute__((noinline,noclone))
 test1 (void)
 {
   struct S a;
@@ -35,7 +35,7 @@ test1 (void)
   foo (&b, 0);
 }
 
-void __attribute__((noinline))
+void __attribute__((noinline,noclone))
 test2 (void)
 {
   struct S a;
@@ -48,7 +48,7 @@ test2 (void)
   foo (&b, 0);
 }
 
-void __attribute__((noinline))
+void __attribute__((noinline,noclone))
 test3 (void)
 {
   struct S a;
