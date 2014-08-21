@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O1 -fno-semantic-interposition -fdump-tree-optimized -fPIC" } */
 int t(void)
 {

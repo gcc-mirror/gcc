@@ -5970,6 +5970,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget mmix-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
+	 || [istarget nios2*-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
     }
