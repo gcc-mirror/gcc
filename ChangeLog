@@ -1,3 +1,7 @@
+2014-08-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* configure: Regenerated.
+
 2014-08-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtx-classes-status.txt (TODO): Add SET_BND_TO
