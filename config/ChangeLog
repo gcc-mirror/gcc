@@ -1,3 +1,8 @@
+2014-08-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* isl.m4 (ISL_CHECK_VERSION): Check link of isl library
+	for cross_compiling.
+
 2014-08-18 Roman Gareev  <gareevroman@gmail.com>
 
 	* cloog.m4: Remove the path to isllibs from clooglibs.
