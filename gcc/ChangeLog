@@ -1,5 +1,88 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* cfgrtl.c (can_delete_note_p): Require a const rtx_note * rather
+	than a const_rtx.
+	(can_delete_label_p): Require a const rtx_code_label * rather than
+	a const_rtx.
+	(delete_insn): Add checked cast to rtx_code_label * when we know
+	we're dealing with LABEL_P (insn).  Strengthen local "bb_note" from
+	rtx to rtx_insn *.
+	(delete_insn_chain): Strengthen locals "prev" and "current" from
+	rtx to rtx_insn *.  Add a checked cast when assigning from
+	"finish" (strengthening the params will come later).  Add a
+	checked cast to rtx_note * in region where we know
+	NOTE_P (current).
+	(rtl_delete_block): Strengthen locals "insn" and "end" from rtx to
+	rtx_insn *.
+	(compute_bb_for_insn): Likewise.
+	(free_bb_for_insn): Likewise for local "insn".
+	(compute_bb_for_insn): Likewise.
+	(update_bb_for_insn_chain): Strengthen params "begin", "end" and
+	local "insn" from rtx to rtx_insn *
+	(flow_active_insn_p): Require a const rtx_insn * rather than a
+	const_rtx.
+	(contains_no_active_insn_p): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(can_fallthru): Likewise for locals "insn" and "insn2".
+	(bb_note): Likewise for local "note".
+	(first_insn_after_basic_block_note): Likewise for local "note" and
+	for return type.
+	(rtl_split_block): Likewise for locals "insn" and "next".
+	(unique_locus_on_edge_between_p): Likewise for locals "insn" and
+	"end".
+	(rtl_merge_blocks): Likewise for locals "b_head", "b_end",
+	"a_end", "del_first", "del_last", "b_debug_start", "b_debug_end",
+	"prev", "tmp".
+	(try_redirect_by_replacing_jump): Likewise for locals "insn" (both of
+	them), "kill_from", "barrier", "new_insn".
+	(patch_jump_insn): Likewise for params "insn", "old_label".
+	(redirect_branch_edge): Likewise for locals "old_label", "insn".
+	(force_nonfallthru_and_redirect): Likewise for locals "insn",
+	"old_label", "new_label".
+	(rtl_tidy_fallthru_edge): Likewise for local "q".
+	(rtl_split_edge): Likewise for locals "before", "last".
+	(commit_one_edge_insertion): Likewise for locals "before",
+	"after", "insns", "tmp", "last", adding a checked cast where
+	currently necessary.
+	(commit_edge_insertions): Likewise.
+	(rtl_dump_bb): Likewise for locals "insn", "last".
+	(print_rtl_with_bb): Likewise for local "x".
+	(rtl_verify_bb_insns): Likewise for local "x".
+	(rtl_verify_bb_pointers): Likewise for local "insn".
+	(rtl_verify_bb_insn_chain): Likewise for locals "x", "last_head",
+	"head", "end".
+	(rtl_verify_fallthru): Likewise for local "insn".
+	(rtl_verify_bb_layout): Likewise for locals "x" and "rtx_first".
+	(purge_dead_edges): Likewise for local "insn".
+	(fixup_abnormal_edges): Likewise for locals "insn", "stop", "next".
+	(skip_insns_after_block): Likewise for return type and for locals
+	"insn", "last_insn", "next_head", "prev".
+	(record_effective_endpoints): Likewise for locals "next_insn",
+	"insn", "end".
+	(fixup_reorder_chain): Likewise for locals "bb_end_insn" and "end".
+	(verify_insn_chain): Likewise for locals "x", "prevx", "nextx".
+	(cfg_layout_can_duplicate_bb_p): Likewise for local "insn".
+	(duplicate_insn_chain): For now, add checked cast from rtx to
+	rtx_insn * when returning insn.
+	(cfg_layout_duplicate_bb): Likewise for local "insn".
+	(cfg_layout_delete_block): Likewise for locals "insn", "next",
+	"prev", "remaints".
+	(cfg_layout_merge_blocks): Likewise for local "insn", "last".
+	(rtl_block_empty_p): Likewise.
+	(rtl_split_block_before_cond_jump): Likewise for locals "insn",
+	"split_point", "last".
+	(rtl_block_ends_with_call_p): Likewise for local "insn".
+	(need_fake_edge_p): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(rtl_flow_call_edges_add): Strengthen locals "insn", "prev_insn",
+	"split_at_insn" from rtx to rtx_insn *.
+	(rtl_lv_add_condition_to_bb): Likewise for locals "seq", "jump".
+	(rtl_can_remove_branch_p): Strengthen local "insn" from const_rtx
+	to const rtx_insn *.
+	(rtl_account_profile_record): Likewise.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* cfgloopanal.c (num_loop_insns): Strengthen local "insn" from
 	rtx to rtx_insn *.
 	(average_num_loop_insns): Likewise.
