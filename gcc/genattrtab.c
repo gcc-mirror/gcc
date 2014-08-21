@@ -4027,9 +4027,9 @@ write_attr_get (FILE *outf, struct attr_desc *attr)
   /* If the attribute name starts with a star, the remainder is the name of
      the subroutine to use, instead of `get_attr_...'.  */
   if (attr->name[0] == '*')
-    fprintf (outf, "%s (rtx insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
+    fprintf (outf, "%s (rtx uncast_insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
   else if (attr->is_const == 0)
-    fprintf (outf, "get_attr_%s (rtx insn ATTRIBUTE_UNUSED)\n", attr->name);
+    fprintf (outf, "get_attr_%s (rtx uncast_insn ATTRIBUTE_UNUSED)\n", attr->name);
   else
     {
       fprintf (outf, "get_attr_%s (void)\n", attr->name);
@@ -4049,6 +4049,9 @@ write_attr_get (FILE *outf, struct attr_desc *attr)
     }
 
   fprintf (outf, "{\n");
+
+  if (attr->name[0] == '*' || attr->is_const == 0)
+    fprintf (outf, "  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);\n");
 
   /* Find attributes that are worth caching in the conditions.  */
   cached_attr_count = 0;
