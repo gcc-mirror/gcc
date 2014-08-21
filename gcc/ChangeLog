@@ -1,3 +1,8 @@
+2014-08-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (print_operand, 'y' case): Fix code that
+	generated a warning and prevented bootstrapping the compiler.
+
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtl.h (delete_related_insns): Strengthen return type from rtx to
