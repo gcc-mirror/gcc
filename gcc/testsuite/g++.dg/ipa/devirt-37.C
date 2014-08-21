@@ -30,7 +30,7 @@ t()
 /* After inlining the call within constructor needs to be checked to not go into a basetype.
    We should see the vtbl store and we should notice extcall as possibly clobbering the
    type but ignore it because b is in static storage.  */
-/* { dg-final { scan-tree-dump "Determined dynamic type."  "fre2"  } } */
+/* { dg-final { scan-tree-dump "No dynamic type change found."  "fre2"  } } */
 /* { dg-final { scan-tree-dump "Checking vtbl store:"  "fre2"  } } */
 /* { dg-final { scan-tree-dump "Function call may change dynamic type:extcall"  "fre2"  } } */
 /* { dg-final { scan-tree-dump "converting indirect call to function virtual void"  "fre2"  } } */

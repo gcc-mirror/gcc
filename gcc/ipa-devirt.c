@@ -2015,8 +2015,10 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree expected_type)
 	  tree subtype = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 
 	  /* Give up if we don't know array size.  */
-	  if (!tree_fits_shwi_p (TYPE_SIZE (subtype))
-	      || !tree_to_shwi (TYPE_SIZE (subtype)) <= 0)
+	  if (!TYPE_SIZE (subtype)
+	      || !tree_fits_shwi_p (TYPE_SIZE (subtype))
+	      || tree_to_shwi (TYPE_SIZE (subtype)) <= 0
+	      || !contains_polymorphic_type_p (subtype))
 	    goto give_up;
 	  cur_offset = cur_offset % tree_to_shwi (TYPE_SIZE (subtype));
 	  type = subtype;
@@ -2630,7 +2632,7 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
 			       HOST_WIDE_INT *type_offset)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree lhs, rhs, base, binfo;
+  tree lhs, rhs, base;
 
   if (!gimple_assign_single_p (stmt))
     return NULL_TREE;
@@ -2639,7 +2641,11 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
   rhs = gimple_assign_rhs1 (stmt);
   if (TREE_CODE (lhs) != COMPONENT_REF
       || !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1)))
-    return NULL_TREE;
+     {
+	if (dump_file)
+	  fprintf (dump_file, "  LHS is not virtual table.\n");
+	return NULL_TREE;
+     }
 
   if (tci->vtbl_ptr_ref && operand_equal_p (lhs, tci->vtbl_ptr_ref, 0))
     ;
@@ -2649,33 +2655,80 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci,
       if (offset != tci->offset
 	  || size != POINTER_SIZE
 	  || max_size != POINTER_SIZE)
-	return NULL_TREE;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "    wrong offset %i!=%i or size %i\n",
+		     (int)offset, (int)tci->offset, (int)size);
+	  return NULL_TREE;
+	}
       if (DECL_P (tci->instance))
 	{
 	  if (base != tci->instance)
-	    return NULL_TREE;
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "    base:");
+		  print_generic_expr (dump_file, base, TDF_SLIM);
+		  fprintf (dump_file, " does not match instance:");
+		  print_generic_expr (dump_file, tci->instance, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
+	      return NULL_TREE;
+	    }
 	}
       else if (TREE_CODE (base) == MEM_REF)
 	{
 	  if (!operand_equal_p (tci->instance, TREE_OPERAND (base, 0), 0)
 	      || !integer_zerop (TREE_OPERAND (base, 1)))
-	    return NULL_TREE;
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "    base mem ref:");
+		  print_generic_expr (dump_file, base, TDF_SLIM);
+		  fprintf (dump_file, " has nonzero offset or does not match instance:");
+		  print_generic_expr (dump_file, tci->instance, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
+	      return NULL_TREE;
+	    }
 	}
       else if (!operand_equal_p (tci->instance, base, 0)
 	       || tci->offset)
-	return NULL_TREE;
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "    base:");
+	      print_generic_expr (dump_file, base, TDF_SLIM);
+	      fprintf (dump_file, " does not match instance:");
+	      print_generic_expr (dump_file, tci->instance, TDF_SLIM);
+	      fprintf (dump_file, " with offset %i\n", (int)tci->offset);
+	    }
+	  return NULL_TREE;
+	}
     }
 
-  binfo = vtable_pointer_value_to_binfo (rhs);
+  tree vtable;
+  unsigned HOST_WIDE_INT offset2;
 
+  if (!vtable_pointer_value_to_vtable (rhs, &vtable, &offset2))
+    {
+      if (dump_file)
+	fprintf (dump_file, "    Failed to lookup binfo\n");
+      return NULL;
+    }
+
+  tree binfo = subbinfo_with_vtable_at_offset (TYPE_BINFO (DECL_CONTEXT (vtable)),
+					       offset2, vtable);
   if (!binfo)
-    return NULL;
+    {
+      if (dump_file)
+	fprintf (dump_file, "    Construction vtable used\n");
+      /* FIXME: We should suport construction contextes.  */
+      return NULL;
+    }
+ 
   *type_offset = tree_to_shwi (BINFO_OFFSET (binfo)) * BITS_PER_UNIT;
-  if (TYPE_BINFO (BINFO_TYPE (binfo)) == binfo)
-    return BINFO_TYPE (binfo);
-
-  /* TODO: Figure out the type containing BINFO.  */
-  return NULL;
+  return DECL_CONTEXT (vtable);
 }
 
 /* Record dynamic type change of TCI to TYPE.  */
@@ -2694,11 +2747,43 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
      else
        fprintf (dump_file, "  Recording unknown type\n");
     }
+
+  /* If we found a constructor of type that is not polymorphic or
+     that may contain the type in question as a field (not as base),
+     restrict to the inner class first to make type matching bellow
+     happier.  */
+  if (type
+      && (offset
+          || (TREE_CODE (type) != RECORD_TYPE
+	      || !polymorphic_type_binfo_p (TYPE_BINFO (type)))))
+    {
+      ipa_polymorphic_call_context context;
+
+      context.offset = offset;
+      context.outer_type = type;
+      context.maybe_in_construction = false;
+      context.maybe_derived_type = false;
+      /* If we failed to find the inner type, we know that the call
+	 would be undefined for type produced here.  */
+      if (!context.restrict_to_inner_class (tci->otr_type))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "  Ignoring; does not contain otr_type\n");
+	  return;
+	}
+      /* Watch for case we reached an POD type and anticipate placement
+	 new.  */
+      if (!context.maybe_derived_type)
+	{
+          type = context.outer_type;
+          offset = context.offset;
+	}
+    }
   if (tci->type_maybe_changed
-      && (type != tci->known_current_type
+      && (!types_same_for_odr (type, tci->known_current_type)
 	  || offset != tci->known_current_offset))
     tci->multiple_types_encountered = true;
-  tci->known_current_type = type;
+  tci->known_current_type = TYPE_MAIN_VARIANT (type);
   tci->known_current_offset = offset;
   tci->type_maybe_changed = true;
 }
@@ -2846,6 +2931,20 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   bool function_entry_reached = false;
   tree instance_ref = NULL;
   gimple stmt = call;
+  /* Remember OFFSET before it is modified by restrict_to_inner_class.
+     This is because we do not update INSTANCE when walking inwards.  */
+  HOST_WIDE_INT instance_offset = offset;
+
+  otr_type = TYPE_MAIN_VARIANT (otr_type);
+
+  /* Walk into inner type. This may clear maybe_derived_type and save us
+     from useless work.  It also makes later comparsions with static type
+     easier.  */
+  if (outer_type)
+    {
+      if (!restrict_to_inner_class (otr_type))
+        return false;
+    }
 
   if (!maybe_in_construction && !maybe_derived_type)
     return false;
@@ -2900,11 +2999,11 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 		     or from INSTANCE with offset OFFSET.  */
 		  if (base_ref
 		      && ((TREE_CODE (base_ref) == MEM_REF
-		           && ((offset2 == offset
+		           && ((offset2 == instance_offset
 		                && TREE_OPERAND (base_ref, 0) == instance)
 			       || (!offset2 && TREE_OPERAND (base_ref, 0) == otr_object)))
 			  || (DECL_P (instance) && base_ref == instance
-			      && offset2 == offset)))
+			      && offset2 == instance_offset)))
 		    {
 		      stmt = SSA_NAME_DEF_STMT (ref);
 		      instance_ref = ref_exp;
@@ -3010,7 +3109,13 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
      only if there was dyanmic type store that may affect given variable
      (seen_unanalyzed_store)  */
 
-  if (!tci.type_maybe_changed)
+  if (!tci.type_maybe_changed
+      || (outer_type
+	  && !tci.seen_unanalyzed_store
+	  && !tci.multiple_types_encountered
+	  && offset == tci.offset
+	  && types_same_for_odr (tci.known_current_type,
+				 outer_type)))
     {
       if (!outer_type || tci.seen_unanalyzed_store)
 	return false;
@@ -3025,16 +3130,9 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
       && !function_entry_reached
       && !tci.multiple_types_encountered)
     {
-      if (!tci.speculative
-	  /* Again in instances located in static storage we are interested only
-	     in constructor stores.  */
-	  || (outer_type
-	      && !tci.seen_unanalyzed_store
-	      && offset == tci.offset
-	      && types_same_for_odr (tci.known_current_type,
-				     outer_type)))
+      if (!tci.speculative)
 	{
-	  outer_type = tci.known_current_type;
+	  outer_type = TYPE_MAIN_VARIANT (tci.known_current_type);
 	  offset = tci.known_current_offset;
 	  maybe_in_construction = false;
 	  maybe_derived_type = false;
@@ -3044,7 +3142,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
       else if (!speculative_outer_type
 	       || speculative_maybe_derived_type)
 	{
-	  speculative_outer_type = tci.known_current_type;
+	  speculative_outer_type = TYPE_MAIN_VARIANT (tci.known_current_type);
 	  speculative_offset = tci.known_current_offset;
 	  speculative_maybe_derived_type = false;
 	  if (dump_file)
@@ -3052,7 +3150,11 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	}
     }
   else if (dump_file)
-    fprintf (dump_file, "  Found multiple types.\n");
+    {
+      fprintf (dump_file, "  Found multiple types%s%s\n",
+	       function_entry_reached ? " (function entry reached)" : "",
+	       function_entry_reached ? " (multiple types encountered)" : "");
+    }
 
   return true;
 }

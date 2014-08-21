@@ -3244,10 +3244,7 @@ do_whole_program_analysis (void)
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
   execute_ipa_pass_list (g->get_passes ()->all_regular_ipa_passes);
-#ifdef ENABLE_CHECKING
-  /* Verify that IPA passes cleans up after themselves.  */
-  gcc_assert (!symtab_remove_unreachable_nodes (false, dump_file));
-#endif
+  symtab_remove_unreachable_nodes (false, dump_file);
 
   if (cgraph_dump_file)
     {
