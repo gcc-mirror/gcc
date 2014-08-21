@@ -1,3 +1,11 @@
+2014-08-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/62112
+	* gcc.dg/tree-ssa/pr62112-1.c: New file.
+	* gcc.dg/tree-ssa/pr62112-2.c: Likewise.
+	* gcc.c-torture/execute/pr35472.c: Add noclone attribute.
+	* gcc.c-torture/execute/20071219-1.c: Likewise.
+
 2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* testsuite/gcc.target/powerpc/builtins-1.c: New test.

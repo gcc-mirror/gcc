@@ -58,7 +58,7 @@ extern void gsi_insert_seq_after (gimple_stmt_iterator *, gimple_seq,
 extern gimple_seq gsi_split_seq_after (gimple_stmt_iterator);
 extern void gsi_set_stmt (gimple_stmt_iterator *, gimple);
 extern void gsi_split_seq_before (gimple_stmt_iterator *, gimple_seq *);
-extern void gsi_replace (gimple_stmt_iterator *, gimple, bool);
+extern bool gsi_replace (gimple_stmt_iterator *, gimple, bool);
 extern void gsi_replace_with_seq (gimple_stmt_iterator *, gimple_seq, bool);
 extern void gsi_insert_before_without_update (gimple_stmt_iterator *, gimple,
 					      enum gsi_iterator_update);
