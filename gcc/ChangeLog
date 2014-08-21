@@ -1,5 +1,13 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched-ir.h (create_insn_rtx_from_pattern): Strengthen return
+	type from rtx to rtx_insn *.
+	(create_copy_of_insn_rtx): Likewise.
+	* sel-sched-ir.c (create_insn_rtx_from_pattern): Likewise.
+	(create_copy_of_insn_rtx): Likewise, also for local "res".
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (find_first_parameter_load): Strengthen return type from
 	rtx to rtx_insn *.
 	* rtlanal.c (find_first_parameter_load): Strengthen return type
