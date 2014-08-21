@@ -95,7 +95,7 @@ write_header (void)
 
   puts ("\
 /* Dummy external declarations.  */\n\
-extern rtx insn;\n\
+extern rtx_insn *insn;\n\
 extern rtx ins1;\n\
 extern rtx operands[];\n\
 \n\

@@ -557,15 +557,15 @@ gen_split (rtx split)
   /* Output the prototype, function name and argument declarations.  */
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     {
-      printf ("extern rtx gen_%s_%d (rtx, rtx *);\n",
+      printf ("extern rtx gen_%s_%d (rtx_insn *, rtx *);\n",
 	      name, insn_code_number);
-      printf ("rtx\ngen_%s_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
+      printf ("rtx\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
 	      name, insn_code_number, unused);
     }
   else
     {
-      printf ("extern rtx gen_split_%d (rtx, rtx *);\n", insn_code_number);
-      printf ("rtx\ngen_split_%d (rtx curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
+      printf ("extern rtx gen_split_%d (rtx_insn *, rtx *);\n", insn_code_number);
+      printf ("rtx\ngen_split_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
 	      insn_code_number, unused);
     }
   printf ("{\n");

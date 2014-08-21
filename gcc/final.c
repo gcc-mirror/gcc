@@ -2055,7 +2055,8 @@ get_insn_template (int code, rtx insn)
       return insn_data[code].output.multi[which_alternative];
     case INSN_OUTPUT_FORMAT_FUNCTION:
       gcc_assert (insn);
-      return (*insn_data[code].output.function) (recog_data.operand, insn);
+      return (*insn_data[code].output.function) (recog_data.operand,
+						 as_a <rtx_insn *> (insn));
 
     default:
       gcc_unreachable ();

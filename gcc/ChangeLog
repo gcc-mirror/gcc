@@ -1,3 +1,37 @@
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* recog.h (insn_output_fn): Update this function typedef to match
+	the changes below to the generated output functions, strengthening
+	the 2nd param from rtx to rtx_insn *.
+
+	* final.c (get_insn_template): Add a checked cast to rtx_insn * on
+	insn when invoking an output function, to match the new signature
+	of insn_output_fn with a stronger second param.
+
+	* genconditions.c (write_header): In the generated code for
+	gencondmd.c, strengthen the global "insn" from rtx to rtx_insn *
+	to match the other changes in this patch.
+
+	* genemit.c (gen_split): Strengthen the 1st param "curr_insn" of
+	the generated "gen_" functions from rtx to rtx_insn * within their
+	implementations.
+
+	* genrecog.c (write_subroutine): Strengthen the 2nd param "insn" of
+	the subfunctions within the generated "recog_", "split", "peephole2"
+	function trees from rtx to rtx_insn *.  For now, the top-level
+	generated functions ("recog", "split", "peephole2") continue to
+	take a plain rtx for "insn", to avoid introducing dependencies on
+	other patches.  Rename this 2nd param from "insn" to
+	"uncast_insn", and reintroduce "insn" as a local variable of type
+	rtx_insn *, initialized at the top of the generated function with
+	a checked cast on "uncast_insn".
+	(make_insn_sequence): Strengthen the 1st param "curr_insn" of
+	the generated "gen_" functions from rtx to rtx_insn * within their
+	prototypes.
+
+	* genoutput.c (process_template): Strengthen the 2nd param within
+	the generated "output_" functions "insn" from rtx to rtx_insn *.
+
 2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-profile.c (tree_profiling): Skip external functions

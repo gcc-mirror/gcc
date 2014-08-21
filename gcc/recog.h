@@ -279,7 +279,7 @@ which_op_alt ()
    each insn-code value.  */
 
 typedef int (*insn_operand_predicate_fn) (rtx, enum machine_mode);
-typedef const char * (*insn_output_fn) (rtx *, rtx);
+typedef const char * (*insn_output_fn) (rtx *, rtx_insn *);
 
 struct insn_gen_fn
 {
