@@ -1,3 +1,9 @@
+2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/62214
+	* gfortran.dg/array_assignment_5.f90:  New test.
+
 2014-08-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
