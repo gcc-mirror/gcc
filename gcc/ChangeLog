@@ -1,5 +1,29 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* auto-inc-dec.c (struct inc_insn): Strengthen field "insn" from
+	rtx to rtx_insn *.
+	(struct mem_insn): Likewise for field "insn".
+	(reg_next_use): Strengthen from rtx * to rtx_insn **.
+	(reg_next_inc_use): Likewise.
+	(reg_next_def): Likewise.
+	(move_dead_notes): Strengthen params "to_insn" and "from_insn"
+	from rtx to rtx_insn *.
+	(move_insn_before): Likewise for param "next_insn" and local "insns".
+	(attempt_change): Likewise for local "mov_insn".
+	(try_merge): Likewise for param "last_insn".
+	(get_next_ref): Likewise for return type and local "insn".
+	Strengthen param "next_array" from rtx * to rtx_insn **.
+	(parse_add_or_inc): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(find_inc): Likewise for locals "insn" and "other_insn" (three of
+	the latter).
+	(merge_in_block): Likewise for locals "insn", "curr",
+	"other_insn".
+	(pass_inc_dec::execute): Update allocations of the arrays to
+	reflect the stronger types.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* asan.c (asan_clear_shadow): Strengthen locals "insn", "insns"
 	and "jump" from rtx to rtx_insn *.  Strengthen local "top_label"
 	from rtx to rtx_code_label *.
