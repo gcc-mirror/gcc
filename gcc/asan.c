@@ -919,7 +919,9 @@ asan_shadow_cst (unsigned char shadow_bytes[4])
 static void
 asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
 {
-  rtx insn, insns, top_label, end, addr, tmp, jump;
+  rtx_insn *insn, *insns, *jump;
+  rtx_code_label *top_label;
+  rtx end, addr, tmp;
 
   start_sequence ();
   clear_storage (shadow_mem, GEN_INT (len), BLOCK_OP_NORMAL);
