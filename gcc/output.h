@@ -281,7 +281,7 @@ extern void assemble_addr_to_section (rtx, section *);
 extern int get_pool_size (void);
 
 #ifdef HAVE_peephole
-extern rtx peephole (rtx);
+extern rtx_insn *peephole (rtx);
 #endif
 
 extern void output_shared_constant_pool (void);
