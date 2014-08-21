@@ -1,5 +1,23 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* bt-load.c (struct btr_user_s): Strengthen field "insn" from rtx
+	to rtx_insn *.
+	(struct btr_def_s): Likewise.
+	(insn_sets_btr_p): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(add_btr_def): Likewise.
+	(new_btr_user): Likewise.
+	(compute_defs_uses_and_gen): Strengthen locals "insn", "last" from
+	rtx to rtx_insn *.
+	(link_btr_uses): Likewise.
+	(move_btr_def): Likewise for locals "insp", "old_insn",
+	"new_insn".  Add checked cast to rtx_insn * for now on result of
+	gen_move_insn.
+	(can_move_up): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* bb-reorder.c (copy_bb_p): Strengthen local "insn" from rtx to
 	rtx_insn *.
 	(get_uncond_jump_length): Likewise for locals "label", "jump".

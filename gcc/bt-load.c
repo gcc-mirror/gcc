@@ -53,7 +53,7 @@ typedef struct btr_user_s
   struct btr_user_s *next;
   basic_block bb;
   int luid;
-  rtx insn;
+  rtx_insn *insn;
   /* If INSN has a single use of a single branch register, then
      USE points to it within INSN.  If there is more than
      one branch register use, or the use is in some way ambiguous,
@@ -79,7 +79,7 @@ typedef struct btr_def_s
   struct btr_def_s *next_this_group;
   basic_block bb;
   int luid;
-  rtx insn;
+  rtx_insn *insn;
   int btr;
   int cost;
   /* For a branch register setting insn that has a constant
@@ -112,14 +112,14 @@ typedef struct btr_def_s
 static int issue_rate;
 
 static int basic_block_freq (const_basic_block);
-static int insn_sets_btr_p (const_rtx, int, int *);
+static int insn_sets_btr_p (const rtx_insn *, int, int *);
 static rtx *find_btr_use (rtx);
 static int btr_referenced_p (rtx, rtx *);
 static int find_btr_reference (rtx *, void *);
 static void find_btr_def_group (btr_def_group *, btr_def);
-static btr_def add_btr_def (fibheap_t, basic_block, int, rtx,
+static btr_def add_btr_def (fibheap_t, basic_block, int, rtx_insn *,
 			    unsigned int, int, btr_def_group *);
-static btr_user new_btr_user (basic_block, int, rtx);
+static btr_user new_btr_user (basic_block, int, rtx_insn *);
 static void dump_hard_reg_set (HARD_REG_SET);
 static void dump_btrs_live (int);
 static void note_other_use_this_block (unsigned int, btr_user);
@@ -140,7 +140,7 @@ static void btr_def_live_range (btr_def, HARD_REG_SET *);
 static void move_btr_def (basic_block, int, btr_def, bitmap, HARD_REG_SET *);
 static int migrate_btr_def (btr_def, int);
 static void migrate_btr_defs (enum reg_class, int);
-static int can_move_up (const_basic_block, const_rtx, int);
+static int can_move_up (const_basic_block, const rtx_insn *, int);
 static void note_btr_set (rtx, const_rtx, void *);
 
 /* The following code performs code motion of target load instructions
@@ -222,7 +222,7 @@ btr_referenced_p (rtx x, rtx *excludep)
    If such a set is found and REGNO is nonzero, assign the register number
    of the destination register to *REGNO.  */
 static int
-insn_sets_btr_p (const_rtx insn, int check_const, int *regno)
+insn_sets_btr_p (const rtx_insn *insn, int check_const, int *regno)
 {
   rtx set;
 
@@ -297,7 +297,8 @@ find_btr_def_group (btr_def_group *all_btr_def_groups, btr_def def)
    block BB, instruction INSN, and insert it into ALL_BTR_DEFS.  Return
    the new definition.  */
 static btr_def
-add_btr_def (fibheap_t all_btr_defs, basic_block bb, int insn_luid, rtx insn,
+add_btr_def (fibheap_t all_btr_defs, basic_block bb, int insn_luid,
+	     rtx_insn *insn,
 	     unsigned int dest_reg, int other_btr_uses_before_def,
 	     btr_def_group *all_btr_def_groups)
 {
@@ -330,7 +331,7 @@ add_btr_def (fibheap_t all_btr_defs, basic_block bb, int insn_luid, rtx insn,
 /* Create a new target register user structure, for a use in block BB,
    instruction INSN.  Return the new user.  */
 static btr_user
-new_btr_user (basic_block bb, int insn_luid, rtx insn)
+new_btr_user (basic_block bb, int insn_luid, rtx_insn *insn)
 {
   /* This instruction reads target registers.  We need
      to decide whether we can replace all target register
@@ -463,8 +464,8 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       int reg;
       btr_def defs_this_bb = NULL;
-      rtx insn;
-      rtx last;
+      rtx_insn *insn;
+      rtx_insn *last;
       int can_throw = 0;
 
       info.users_this_bb = NULL;
@@ -671,8 +672,8 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
   for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      rtx insn;
-      rtx last;
+      rtx_insn *insn;
+      rtx_insn *last;
 
       bitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK_FOR_FN (cfun, i));
       for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb));
@@ -1154,11 +1155,11 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
      Replace all uses of the old target register definition by
      uses of the new definition.  Delete the old definition.  */
   basic_block b = new_def_bb;
-  rtx insp = BB_HEAD (b);
-  rtx old_insn = def->insn;
+  rtx_insn *insp = BB_HEAD (b);
+  rtx_insn *old_insn = def->insn;
   rtx src;
   rtx btr_rtx;
-  rtx new_insn;
+  rtx_insn *new_insn;
   enum machine_mode btr_mode;
   btr_user user;
   rtx set;
@@ -1200,7 +1201,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   btr_mode = GET_MODE (SET_DEST (set));
   btr_rtx = gen_rtx_REG (btr_mode, btr);
 
-  new_insn = gen_move_insn (btr_rtx, src);
+  new_insn = as_a <rtx_insn *> (gen_move_insn (btr_rtx, src));
 
   /* Insert target register initialization at head of basic block.  */
   def->insn = emit_insn_after (new_insn, insp);
@@ -1236,7 +1237,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
 /* We anticipate intra-block scheduling to be done.  See if INSN could move
    up within BB by N_INSNS.  */
 static int
-can_move_up (const_basic_block bb, const_rtx insn, int n_insns)
+can_move_up (const_basic_block bb, const rtx_insn *insn, int n_insns)
 {
   while (insn != BB_HEAD (bb) && n_insns > 0)
     {
