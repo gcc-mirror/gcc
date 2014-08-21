@@ -2459,7 +2459,7 @@ extern enum rtx_code signed_condition (enum rtx_code);
 extern void mark_jump_label (rtx, rtx, int);
 
 /* In jump.c */
-extern rtx delete_related_insns (rtx);
+extern rtx_insn *delete_related_insns (rtx);
 
 /* In recog.c  */
 extern rtx *find_constant_term_loc (rtx *);

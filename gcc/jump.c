@@ -1248,12 +1248,12 @@ mark_jump_label_asm (rtx asmop, rtx insn)
    Usage of this instruction is deprecated.  Use delete_insn instead and
    subsequent cfg_cleanup pass to delete unreachable code if needed.  */
 
-rtx
+rtx_insn *
 delete_related_insns (rtx insn)
 {
   int was_code_label = (LABEL_P (insn));
   rtx note;
-  rtx next = NEXT_INSN (insn), prev = PREV_INSN (insn);
+  rtx_insn *next = NEXT_INSN (insn), *prev = PREV_INSN (insn);
 
   while (next && INSN_DELETED_P (next))
     next = NEXT_INSN (next);

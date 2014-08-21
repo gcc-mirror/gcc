@@ -1,5 +1,13 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (delete_related_insns): Strengthen return type from rtx to
+	rtx_insn *.
+
+	* jump.c (delete_related_insns): Likewise, also for locals "next"
+	and "prev".
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* genautomata.c (output_internal_insn_latency_func): When writing
 	the function "internal_insn_latency" to insn-automata.c,
 	strengthen params "insn" and "insn2" from rtx to rtx_insn *, thus
