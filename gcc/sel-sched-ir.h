@@ -809,7 +809,7 @@ extern flist_t fences;
 extern rtx nop_pattern;
 
 /* An insn that 'contained' in EXIT block.  */
-extern rtx exit_insn;
+extern rtx_insn *exit_insn;
 
 /* Provide a separate luid for the insn.  */
 #define INSN_INIT_TODO_LUID (1)
@@ -1012,8 +1012,8 @@ struct succs_info
 /* Some needed definitions.  */
 extern basic_block after_recovery;
 
-extern insn_t sel_bb_head (basic_block);
-extern insn_t sel_bb_end (basic_block);
+extern rtx_insn *sel_bb_head (basic_block);
+extern rtx_insn *sel_bb_end (basic_block);
 extern bool sel_bb_empty_p (basic_block);
 extern bool in_current_region_p (basic_block);
 
@@ -1583,9 +1583,9 @@ extern bool insn_at_boundary_p (insn_t);
 
 /* Basic block and CFG functions.  */
 
-extern insn_t sel_bb_head (basic_block);
+extern rtx_insn *sel_bb_head (basic_block);
 extern bool sel_bb_head_p (insn_t);
-extern insn_t sel_bb_end (basic_block);
+extern rtx_insn *sel_bb_end (basic_block);
 extern bool sel_bb_end_p (insn_t);
 extern bool sel_bb_empty_p (basic_block);
 

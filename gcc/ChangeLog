@@ -1,5 +1,19 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched-ir.h (exit_insn): Strengthen from rtx to rtx_insn *.
+	(sel_bb_head): Strengthen return type insn_t (currently just an
+	rtx) to rtx_insn *.
+	(sel_bb_end): Likewise.
+
+	* sel-sched-ir.c (exit_insn): Strengthen from rtx to rtx_insn *.
+	(sel_bb_head): Strengthen return type and local "head" from
+	insn_t (currently just an rtx) to rtx_insn *.
+	(sel_bb_end): Likewise for return type.
+	(free_nop_and_exit_insns): Replace use of NULL_RTX with NULL when
+	working with insn.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (get_last_bb_insn): Strengthen return type from
 	rtx to rtx_insn *.
 	* cfgrtl.c (get_last_bb_insn): Likewise, and for locals "tmp" and
