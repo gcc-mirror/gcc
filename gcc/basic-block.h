@@ -821,10 +821,10 @@ enum replace_direction { dir_none, dir_forward, dir_backward, dir_both };
 
 /* In cfgcleanup.c.  */
 extern bool cleanup_cfg (int);
-extern int flow_find_cross_jump (basic_block, basic_block, rtx *, rtx *,
-                                 enum replace_direction*);
+extern int flow_find_cross_jump (basic_block, basic_block, rtx_insn **,
+				 rtx_insn **, enum replace_direction*);
 extern int flow_find_head_matching_sequence (basic_block, basic_block,
-					     rtx *, rtx *, int);
+					     rtx_insn **, rtx_insn **, int);
 
 extern bool delete_unreachable_blocks (void);
 
