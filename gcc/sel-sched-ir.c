@@ -132,7 +132,7 @@ static vec<rtx_note *> bb_note_pool;
 rtx nop_pattern = NULL_RTX;
 /* A special instruction that resides in EXIT_BLOCK.
    EXIT_INSN is successor of the insns that lead to EXIT_BLOCK.  */
-rtx exit_insn = NULL_RTX;
+rtx_insn *exit_insn = NULL;
 
 /* TRUE if while scheduling current region, which is loop, its preheader
    was removed.  */
@@ -4530,10 +4530,10 @@ static struct
 /* Functions to work with control-flow graph.  */
 
 /* Return basic block note of BB.  */
-insn_t
+rtx_insn *
 sel_bb_head (basic_block bb)
 {
-  insn_t head;
+  rtx_insn *head;
 
   if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
@@ -4548,7 +4548,7 @@ sel_bb_head (basic_block bb)
       head = next_nonnote_insn (note);
 
       if (head && (BARRIER_P (head) || BLOCK_FOR_INSN (head) != bb))
-	head = NULL_RTX;
+	head = NULL;
     }
 
   return head;
@@ -4562,11 +4562,11 @@ sel_bb_head_p (insn_t insn)
 }
 
 /* Return last insn of BB.  */
-insn_t
+rtx_insn *
 sel_bb_end (basic_block bb)
 {
   if (sel_bb_empty_p (bb))
-    return NULL_RTX;
+    return NULL;
 
   gcc_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
@@ -5853,7 +5853,7 @@ setup_nop_and_exit_insns (void)
 void
 free_nop_and_exit_insns (void)
 {
-  exit_insn = NULL_RTX;
+  exit_insn = NULL;
   nop_pattern = NULL_RTX;
 }
 
