@@ -1,3 +1,16 @@
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* genautomata.c (output_internal_insn_latency_func): When writing
+	the function "internal_insn_latency" to insn-automata.c,
+	strengthen params "insn" and "insn2" from rtx to rtx_insn *, thus
+	allowing the optional guard function of (define_bypass) clauses to
+	expect a pair of rtx_insn *, rather than a pair of rtx.
+	(output_insn_latency_func): When writing the function
+	"insn_latency", add an "uncast_" prefix to params "insn" and
+	"insn2", reintroducing "insn" and "insn2" as rtx_insn * locals
+	using checked casts from the params, thus enabling the above
+	change to the generated "internal_insn_latency" function.
+
 2014-08-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/62091
