@@ -131,6 +131,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
     context->classify_diagnostic[i] = DK_UNSPECIFIED;
   context->show_caret = false;
   diagnostic_set_caret_max_width (context, pp_line_cutoff (context->printer));
+  context->caret_char = '^';
   context->show_option_requested = false;
   context->abort_on_error = false;
   context->show_column = false;
@@ -280,7 +281,7 @@ adjust_line (const char *line, int line_width,
 }
 
 /* Print the physical source line corresponding to the location of
-   this diagnostics, and a caret indicating the precise column.  */
+   this diagnostic, and a caret indicating the precise column.  */
 void
 diagnostic_show_locus (diagnostic_context * context,
 		       const diagnostic_info *diagnostic)
@@ -328,9 +329,11 @@ diagnostic_show_locus (diagnostic_context * context,
   /* pp_printf does not implement %*c.  */
   size_t len = s.column + 3 + strlen (caret_cs) + strlen (caret_ce);
   buffer = XALLOCAVEC (char, len);
-  snprintf (buffer, len, "%s %*c%s", caret_cs, s.column, '^', caret_ce);
+  snprintf (buffer, len, "%s %*c%s", caret_cs, s.column, context->caret_char,
+	    caret_ce);
   pp_string (context->printer, buffer);
   pp_set_prefix (context->printer, saved_prefix);
+  pp_needs_newline (context->printer) = true;
 }
 
 /* Functions at which to stop the backtrace print.  It's not
