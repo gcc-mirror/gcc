@@ -5,8 +5,8 @@ are merged.
 See https://gcc.gnu.org/ml/gcc-patches/2014-08/msg00498.html for more
 information.
 
-Phase 1: initial "scaffolding" commits:            IN PROGRESS
-Phase 2: per-file commits in main source dir:      TODO
+Phase 1: initial "scaffolding" commits:            DONE
+Phase 2: per-file commits in main source dir:      IN PROGRESS
 Phase 3: per-file commits within "config" subdirs: TODO
 Phase 4: removal of "scaffolding":                 TODO
 Phase 5: additional rtx_def subclasses:            TODO
