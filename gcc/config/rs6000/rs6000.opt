@@ -588,3 +588,7 @@ Allow double variables in upper registers with -mcpu=power7 or -mvsx
 mupper-regs-sf
 Target Undocumented Mask(UPPER_REGS_SF) Var(rs6000_isa_flags)
 Allow float variables in upper registers with -mcpu=power8 or -mp8-vector
+
+moptimize-swaps
+Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
+Analyze and remove doubleword swaps from VSX computations.
