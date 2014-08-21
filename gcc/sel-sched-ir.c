@@ -5719,10 +5719,10 @@ sel_unregister_cfg_hooks (void)
 
 /* Emit an insn rtx based on PATTERN.  If a jump insn is wanted,
    LABEL is where this jump should be directed.  */
-rtx
+rtx_insn *
 create_insn_rtx_from_pattern (rtx pattern, rtx label)
 {
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
 
   gcc_assert (!INSN_P (pattern));
 
@@ -5762,10 +5762,11 @@ create_vinsn_from_insn_rtx (rtx insn_rtx, bool force_unique_p)
 }
 
 /* Create a copy of INSN_RTX.  */
-rtx
+rtx_insn *
 create_copy_of_insn_rtx (rtx insn_rtx)
 {
-  rtx res, link;
+  rtx_insn *res;
+  rtx link;
 
   if (DEBUG_INSN_P (insn_rtx))
     return create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
