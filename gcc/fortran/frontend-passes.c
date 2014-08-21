@@ -903,6 +903,10 @@ optimize_binop_array_assignment (gfc_code *c, gfc_expr **rhs, bool seen_op)
 	    return true;
 	  break;
 
+	case INTRINSIC_CONCAT:
+	  /* Do not do string concatenations.  */
+	  break;
+
 	default:
 	  /* Binary operators.  */
 	  if (optimize_binop_array_assignment (c, &e->value.op.op1, true))
