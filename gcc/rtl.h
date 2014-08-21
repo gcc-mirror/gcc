@@ -2465,7 +2465,7 @@ extern rtx delete_related_insns (rtx);
 extern rtx *find_constant_term_loc (rtx *);
 
 /* In emit-rtl.c  */
-extern rtx try_split (rtx, rtx, int);
+extern rtx_insn *try_split (rtx, rtx, int);
 extern int split_branch_probability;
 
 /* In unknown file  */
