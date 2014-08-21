@@ -1,5 +1,9 @@
 2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* testsuite/gcc.target/powerpc/builtins-1.c: New test.
+
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* gcc.target/powerpc/swaps-p8-1.c: New test.
 	* gcc.target/powerpc/swaps-p8-2.c: New test.
 	* gcc.target/powerpc/swaps-p8-3.c: New test.

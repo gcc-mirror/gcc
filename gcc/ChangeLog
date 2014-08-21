@@ -1,5 +1,22 @@
 2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/altivec.h (vec_cpsgn): New #define.
+	(vec_mergee): Likewise.
+	(vec_mergeo): Likewise.
+	(vec_cntlz): Likewise.
+	* config/rs600/rs6000-c.c (altivec_overloaded_builtins): Add new
+	entries for VEC_AND, VEC_ANDC, VEC_MERGEH, VEC_MERGEL, VEC_NOR,
+	VEC_OR, VEC_PACKSU, VEC_XOR, VEC_PERM, VEC_SEL, VEC_VCMPGT_P,
+	VMRGEW, and VMRGOW.
+	* doc/extend.texi: Document various forms of vec_cpsgn,
+	vec_splats, vec_and, vec_andc, vec_mergeh, vec_mergel, vec_nor,
+	vec_or, vec_perm, vec_sel, vec_sub, vec_xor, vec_all_eq,
+	vec_all_ge, vec_all_gt, vec_all_le, vec_all_lt, vec_all_ne,
+	vec_any_eq, vec_any_ge, vec_any_gt, vec_any_le, vec_any_lt,
+	vec_any_ne, vec_mergee, vec_mergeo, vec_packsu, and vec_cntlz.
+
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/rs6000.c (context.h): New include.
 	(tree-pass.h): Likewise.
 	(make_pass_analyze_swaps): New decl.
