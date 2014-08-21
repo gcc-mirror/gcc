@@ -1,3 +1,9 @@
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-profile.c (tree_profiling): Skip external functions
+	when doing coverage instrumentation.
+	* cgraphunit.c (compile): Do not assert that all nodes are reachable.
+
 2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.h (vec_cpsgn): New #define.

@@ -578,6 +578,13 @@ tree_profiling (void)
       if (DECL_SOURCE_LOCATION (node->decl) == BUILTINS_LOCATION)
 	continue;
 
+      /* Do not instrument extern inline functions when testing coverage.
+	 While this is not perfectly consistent (early inlined extern inlines
+	 will get acocunted), testsuite expects that.  */
+      if (DECL_EXTERNAL (node->decl)
+	  && flag_test_coverage)
+	continue;
+
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
       /* Local pure-const may imply need to fixup the cfg.  */

@@ -19,6 +19,10 @@
 
 2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	* gcc.dg/ipa/ctor-empty-1.c: Update template.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	* g++.dg/ipa/devirt-37.C: Fix testcase.
 
 2014-08-20  Martin Jambor  <mjambor@suse.cz>
