@@ -382,16 +382,11 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       /* ??? Don't add new options here. Use LangEnabledBy in c.opt.  */
 
       cpp_opts->warn_trigraphs = value;
-      cpp_opts->warn_comments = value;
       cpp_opts->warn_num_sign_change = value;
       break;
 
     case OPT_Wbuiltin_macro_redefined:
       cpp_opts->warn_builtin_macro_redefined = value;
-      break;
-
-    case OPT_Wcomment:
-      cpp_opts->warn_comments = value;
       break;
 
     case OPT_Wc___compat:
@@ -421,12 +416,8 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wmissing_include_dirs:
       cpp_opts->warn_missing_include_dirs = value;
       break;
-
-    case OPT_Wmultichar:
-      cpp_opts->warn_multichar = value;
-      break;
-
     case OPT_Wnormalized_:
+      /* FIXME: Move all this to c.opt.  */
       if (kind == DK_ERROR)
 	{
 	  gcc_assert (!arg);
@@ -1310,7 +1301,6 @@ sanitize_cpp_opts (void)
 
   cpp_opts->unsigned_char = !flag_signed_char;
   cpp_opts->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
-  cpp_opts->warn_date_time = cpp_warn_date_time;
   cpp_opts->cpp_warn_c90_c99_compat = warn_c90_c99_compat;
 
   /* Wlong-long is disabled by default. It is enabled by:
