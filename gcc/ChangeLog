@@ -1,5 +1,16 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* explow.c (force_reg): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(adjust_stack_1): Likewise.
+	(allocate_dynamic_stack_space): Likewise.  Strengthen locals
+	"final_label", "available_label", "space_available" from rtx to
+	rtx_code_label *.
+	(probe_stack_range): Likewise for locals "loop_lab", "end_lab".
+	(anti_adjust_stack_and_probe): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* except.h (sjlj_emit_function_exit_after): Strengthen param
 	"after" from rtx to rtx_insn *.  This is only called with
 	result of get_last_insn (in function.c) so type-change should be
