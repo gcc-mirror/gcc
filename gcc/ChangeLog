@@ -1,5 +1,26 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (rebuild_jump_labels): Strengthen param "f" from rtx to
+	rtx_insn *.
+	(rebuild_jump_labels_chain): Likewise for param "chain".
+
+	* cfgexpand.c (pass_expand::execute): Add checked cast to
+	rtx_insn * when calling rebuild_jump_labels_chain in region where
+	we know e->insns.r is non-NULL.
+
+	* jump.c (rebuild_jump_labels_1): Strengthen param "f" from rtx to
+	rtx_insn *.
+	(rebuild_jump_labels): Likewise.
+	(rebuild_jump_labels_chain): Likewise for param "chain".
+	(cleanup_barriers): Likewise for locals "insn", "next", "prev".
+	(init_label_info): Likewise for param "f".
+	(maybe_propagate_label_ref): Likewise for params "jump_insn",
+	"prev_nonjump_insn".
+	(mark_all_labels): Likewise for param "f" and locals "insn",
+	"prev_nonjump_insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* ira-int.h (struct ira_allocno_copy): Strengthen field "insn"
 	from rtx to rtx_insn *insn.
 	(ira_create_copy): Strengthen param "insn" from rtx to rtx_insn *.
