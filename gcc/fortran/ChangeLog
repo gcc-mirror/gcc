@@ -1,3 +1,9 @@
+2014-08-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/62135
+	* resolve.c (resolve_select): Fix list traversal in case the
+	last element of the CASE list was dropped as unreachable code.
+
 2014-08-22  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
 
 	PR fortran/61234

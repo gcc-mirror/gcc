@@ -1,3 +1,8 @@
+2014-08-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/62135
+	* gfortran.dg/pr62135.f90: New test.
+
 2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* g++.dg/warn/wdate-time.C: Remove.
