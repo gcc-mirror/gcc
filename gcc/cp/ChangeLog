@@ -1,6 +1,12 @@
 2014-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62129
+	* class.c (outermost_open_class): Fix logic.
+	* decl.c (complete_vars): Fix logic.
+
+2014-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62129
 	* class.c (outermost_open_class): New.
 	* cp-tree.h: Declare it.
 	* decl.c (maybe_register_incomplete_var): Use it.
