@@ -1403,7 +1403,10 @@ build_array_notation_ref (location_t loc, tree array, tree start, tree length,
   if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == POINTER_TYPE)
     TREE_TYPE (array_ntn_expr) = TREE_TYPE (type);
   else
-    gcc_unreachable ();
+    {
+      error_at (loc, "base of array section must be pointer or array type");
+      return error_mark_node;
+    }
 
   SET_EXPR_LOCATION (array_ntn_expr, loc);
   return array_ntn_expr;

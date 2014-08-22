@@ -1,3 +1,9 @@
+2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/62008
+	* c-parser.c (c_parser_array_notation): Check for correct
+	type of an array added.
+
 2014-08-01  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR middle-end/61455
