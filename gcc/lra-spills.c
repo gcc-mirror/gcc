@@ -237,7 +237,7 @@ pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   slot_num2 = pseudo_slots[regno2].slot_num;
   if ((diff = slot_num1 - slot_num2) != 0)
     return (frame_pointer_needed
-	    || !FRAME_GROWS_DOWNWARD == STACK_GROWS_DOWNWARD ? diff : -diff);
+	    || (!FRAME_GROWS_DOWNWARD) == STACK_GROWS_DOWNWARD ? diff : -diff);
   total_size1 = GET_MODE_SIZE (lra_reg_info[regno1].biggest_mode);
   total_size2 = GET_MODE_SIZE (lra_reg_info[regno2].biggest_mode);
   if ((diff = total_size2 - total_size1) != 0)
