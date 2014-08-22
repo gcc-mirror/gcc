@@ -1,5 +1,11 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* resource.c (next_insn_no_annul): Strengthen local "next" from
+	rtx to rtx_insn *.
+	(mark_referenced_resources): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* reload.h (struct insn_chain): Strengthen field "insn" from rtx
 	to rtx_insn *.
 	(find_reloads): Likewise for param 1.
