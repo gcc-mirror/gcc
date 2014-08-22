@@ -73,16 +73,17 @@ along with GCC; see the file COPYING3.  If not see
 struct csa_reflist
 {
   HOST_WIDE_INT sp_offset;
-  rtx insn, *ref;
+  rtx_insn *insn;
+  rtx *ref;
   struct csa_reflist *next;
 };
 
 static int stack_memref_p (rtx);
-static rtx single_set_for_csa (rtx);
+static rtx single_set_for_csa (rtx_insn *);
 static void free_csa_reflist (struct csa_reflist *);
-static struct csa_reflist *record_one_stack_ref (rtx, rtx *,
+static struct csa_reflist *record_one_stack_ref (rtx_insn *, rtx *,
 						 struct csa_reflist *);
-static int try_apply_stack_adjustment (rtx, struct csa_reflist *,
+static int try_apply_stack_adjustment (rtx_insn *, struct csa_reflist *,
 				       HOST_WIDE_INT, HOST_WIDE_INT);
 static void combine_stack_adjustments_for_block (basic_block);
 static int record_stack_refs (rtx *, void *);
@@ -122,7 +123,7 @@ stack_memref_p (rtx x)
    tying fp and sp adjustments.  */
 
 static rtx
-single_set_for_csa (rtx insn)
+single_set_for_csa (rtx_insn *insn)
 {
   int i;
   rtx tmp = single_set (insn);
@@ -171,7 +172,7 @@ free_csa_reflist (struct csa_reflist *reflist)
    predicate stack_memref_p or a REG representing the stack pointer.  */
 
 static struct csa_reflist *
-record_one_stack_ref (rtx insn, rtx *ref, struct csa_reflist *next_reflist)
+record_one_stack_ref (rtx_insn *insn, rtx *ref, struct csa_reflist *next_reflist)
 {
   struct csa_reflist *ml;
 
@@ -194,7 +195,7 @@ record_one_stack_ref (rtx insn, rtx *ref, struct csa_reflist *next_reflist)
    on success.  */
 
 static int
-try_apply_stack_adjustment (rtx insn, struct csa_reflist *reflist,
+try_apply_stack_adjustment (rtx_insn *insn, struct csa_reflist *reflist,
 			    HOST_WIDE_INT new_adjust, HOST_WIDE_INT delta)
 {
   struct csa_reflist *ml;
@@ -240,7 +241,7 @@ try_apply_stack_adjustment (rtx insn, struct csa_reflist *reflist,
    references in the insn and discard all other stack pointer references.  */
 struct record_stack_refs_data
 {
-  rtx insn;
+  rtx_insn *insn;
   struct csa_reflist *reflist;
 };
 
@@ -297,7 +298,7 @@ record_stack_refs (rtx *xp, void *data)
    AFTER is true iff LAST follows INSN in the instruction stream.  */
 
 static void
-maybe_move_args_size_note (rtx last, rtx insn, bool after)
+maybe_move_args_size_note (rtx_insn *last, rtx_insn *insn, bool after)
 {
   rtx note, last_note;
 
@@ -319,35 +320,36 @@ maybe_move_args_size_note (rtx last, rtx insn, bool after)
 
 /* Return the next (or previous) active insn within BB.  */
 
-static rtx
-prev_active_insn_bb (basic_block bb, rtx insn)
+static rtx_insn *
+prev_active_insn_bb (basic_block bb, rtx_insn *insn)
 {
   for (insn = PREV_INSN (insn);
        insn != PREV_INSN (BB_HEAD (bb));
        insn = PREV_INSN (insn))
     if (active_insn_p (insn))
       return insn;
-  return NULL_RTX;
+  return NULL;
 }
 
-static rtx
-next_active_insn_bb (basic_block bb, rtx insn)
+static rtx_insn *
+next_active_insn_bb (basic_block bb, rtx_insn *insn)
 {
   for (insn = NEXT_INSN (insn);
        insn != NEXT_INSN (BB_END (bb));
        insn = NEXT_INSN (insn))
     if (active_insn_p (insn))
       return insn;
-  return NULL_RTX;
+  return NULL;
 }
 
 /* If INSN has a REG_ARGS_SIZE note, if possible move it to PREV.  Otherwise
    search for a nearby candidate within BB where we can stick the note.  */
 
 static void
-force_move_args_size_note (basic_block bb, rtx prev, rtx insn)
+force_move_args_size_note (basic_block bb, rtx_insn *prev, rtx_insn *insn)
 {
-  rtx note, test, next_candidate, prev_candidate;
+  rtx note;
+  rtx_insn *test, *next_candidate, *prev_candidate;
 
   /* If PREV exists, tail-call to the logic in the other function.  */
   if (prev)
@@ -425,10 +427,11 @@ static void
 combine_stack_adjustments_for_block (basic_block bb)
 {
   HOST_WIDE_INT last_sp_adjust = 0;
-  rtx last_sp_set = NULL_RTX;
-  rtx last2_sp_set = NULL_RTX;
+  rtx_insn *last_sp_set = NULL;
+  rtx_insn *last2_sp_set = NULL;
   struct csa_reflist *reflist = NULL;
-  rtx insn, next, set;
+  rtx_insn *insn, *next;
+  rtx set;
   struct record_stack_refs_data data;
   bool end_of_block = false;
 
@@ -574,7 +577,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 	      delete_insn (last_sp_set);
 	      free_csa_reflist (reflist);
 	      reflist = NULL;
-	      last_sp_set = NULL_RTX;
+	      last_sp_set = NULL;
 	      last_sp_adjust = 0;
 	      continue;
 	    }
@@ -603,8 +606,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 	    }
 	  free_csa_reflist (reflist);
 	  reflist = NULL;
-	  last2_sp_set = NULL_RTX;
-	  last_sp_set = NULL_RTX;
+	  last2_sp_set = NULL;
+	  last_sp_set = NULL;
 	  last_sp_adjust = 0;
 	}
     }
