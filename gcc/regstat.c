@@ -121,7 +121,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
 		       int *local_live_last_luid)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
-  rtx insn;
+  rtx_insn *insn;
   df_ref def, use;
   int luid = 0;
   bitmap_iterator bi;
@@ -429,7 +429,7 @@ static void
 regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
-  rtx insn;
+  rtx_insn *insn;
   df_ref def, use;
 
   bitmap_copy (live, df_get_live_out (bb));
