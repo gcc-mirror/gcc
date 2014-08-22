@@ -1,5 +1,21 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* regrename.c (create_new_chain): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	(init_rename_info): Replace use of NULL_RTX with NULL when dealing
+	with an insn.
+	(regrename_analyze): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(scan_rtx_reg): Likewise for param "insn".
+	(scan_rtx_address): Likewise.
+	(scan_rtx): Likewise.
+	(restore_operands): Likewise.
+	(record_out_operands): Likewise.
+	(build_def_use): Likewise for local "insn".  Replace use of
+	NULL_RTX with NULL when dealing with an insn.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (reg_scan): Strengthen param "f" from rtx to rtx_insn *.
 	* reginfo.c (reg_scan): Likewise, also for local "insn".
 	(reg_scan_mark_refs): Likewise for param "insn".
