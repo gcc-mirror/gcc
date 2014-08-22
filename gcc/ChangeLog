@@ -1,5 +1,33 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* haifa-sched.c (bb_header): Strengthen from rtx * to rtx_insn **.
+	(add_delay_dependencies): Strengthen local "pro" from rtx to
+	rtx_insn *.
+	(recompute_todo_spec): Likewise.
+	(dep_cost_1): Likewise for locals "insn", "used".
+	(schedule_insn): Likewise for local "dbg".
+	(schedule_insn): Likewise for locals "pro", "next".
+	(unschedule_insns_until): Likewise for local "con".
+	(restore_pattern): Likewise for local "next".
+	(estimate_insn_tick): Likewise for local "pro".
+	(resolve_dependencies): Likewise for local "next".
+	(fix_inter_tick): Likewise.
+	(fix_tick_ready): Likewise for local "pro".
+	(add_to_speculative_block): Likewise for locals "check", "twin",
+	"pro".
+	(sched_extend_bb): Likewise for locals "end", "insn".
+	(init_before_recovery): Likewise for local "x".
+	(sched_create_recovery_block): Likewise for local "barrier".
+	(create_check_block_twin): Likewise for local "pro".
+	(fix_recovery_deps): Likewise for locals "note", "insn", "jump",
+	"consumer".
+	(unlink_bb_notes): Update for change to type of bb_header.
+	Strengthen locals "prev", "label", "note", "next" from rtx to
+	rtx_insn *.
+	(clear_priorities): Likewise for local "pro".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcse.c (struct occr): Strengthen field "insn" from rtx to
 	rtx_insn *.
 	(test_insn): Likewise for this global.

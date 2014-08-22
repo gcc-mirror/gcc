@@ -261,7 +261,7 @@ bool haifa_recovery_bb_ever_added_p;
 static int nr_begin_data, nr_be_in_data, nr_begin_control, nr_be_in_control;
 
 /* Array used in {unlink, restore}_bb_notes.  */
-static rtx *bb_header = 0;
+static rtx_insn **bb_header = 0;
 
 /* Basic block after which recovery blocks will be created.  */
 static basic_block before_recovery;
@@ -798,7 +798,7 @@ add_delay_dependencies (rtx insn)
 
   FOR_EACH_DEP (pair->i2, SD_LIST_BACK, sd_it, dep)
     {
-      rtx pro = DEP_PRO (dep);
+      rtx_insn *pro = DEP_PRO (dep);
       struct delay_pair *other_pair
 	= delay_htab_i2->find_with_hash (pro, htab_hash_pointer (pro));
       if (!other_pair || other_pair->stages)
@@ -1208,7 +1208,7 @@ recompute_todo_spec (rtx next, bool for_backtrack)
 
   FOR_EACH_DEP (next, SD_LIST_BACK, sd_it, dep)
     {
-      rtx pro = DEP_PRO (dep);
+      rtx_insn *pro = DEP_PRO (dep);
       ds_t ds = DEP_STATUS (dep) & SPECULATIVE;
 
       if (DEBUG_INSN_P (pro) && !DEBUG_INSN_P (next))
@@ -1414,8 +1414,8 @@ insn_cost (rtx insn)
 int
 dep_cost_1 (dep_t link, dw_t dw)
 {
-  rtx insn = DEP_PRO (link);
-  rtx used = DEP_CON (link);
+  rtx_insn *insn = DEP_PRO (link);
+  rtx_insn *used = DEP_CON (link);
   int cost;
 
   if (DEP_COST (link) != UNKNOWN_DEP_COST)
@@ -3839,7 +3839,7 @@ schedule_insn (rtx insn)
     for (sd_it = sd_iterator_start (insn, SD_LIST_BACK);
 	 sd_iterator_cond (&sd_it, &dep);)
       {
-	rtx dbg = DEP_PRO (dep);
+	rtx_insn *dbg = DEP_PRO (dep);
 	struct reg_use_data *use, *next;
 
 	if (DEP_STATUS (dep) & DEP_CANCELLED)
@@ -3928,7 +3928,7 @@ schedule_insn (rtx insn)
        sd_iterator_cond (&sd_it, &dep); sd_iterator_next (&sd_it))
     {
       struct dep_replacement *desc = DEP_REPLACE (dep);
-      rtx pro = DEP_PRO (dep);
+      rtx_insn *pro = DEP_PRO (dep);
       if (QUEUE_INDEX (pro) != QUEUE_SCHEDULED
 	  && desc != NULL && desc->insn == pro)
 	apply_replacement (dep, false);
@@ -3938,7 +3938,7 @@ schedule_insn (rtx insn)
   for (sd_it = sd_iterator_start (insn, SD_LIST_FORW);
        sd_iterator_cond (&sd_it, &dep);)
     {
-      rtx next = DEP_CON (dep);
+      rtx_insn *next = DEP_CON (dep);
       bool cancelled = (DEP_STATUS (dep) & DEP_CANCELLED) != 0;
 
       /* Resolve the dependence between INSN and NEXT.
@@ -4303,7 +4303,7 @@ unschedule_insns_until (rtx insn)
       for (sd_it = sd_iterator_start (last, SD_LIST_RES_FORW);
 	   sd_iterator_cond (&sd_it, &dep);)
 	{
-	  rtx con = DEP_CON (dep);
+	  rtx_insn *con = DEP_CON (dep);
 	  sd_unresolve_dep (sd_it);
 	  if (!MUST_RECOMPUTE_SPEC_P (con))
 	    {
@@ -4548,7 +4548,7 @@ apply_replacement (dep_t dep, bool immediately)
 static void
 restore_pattern (dep_t dep, bool immediately)
 {
-  rtx next = DEP_CON (dep);
+  rtx_insn *next = DEP_CON (dep);
   int tick = INSN_TICK (next);
 
   /* If we already scheduled the insn, the modified version is
@@ -4633,7 +4633,7 @@ estimate_insn_tick (bitmap processed, rtx insn, int budget)
 
   FOR_EACH_DEP (insn, SD_LIST_BACK, sd_it, dep)
     {
-      rtx pro = DEP_PRO (dep);
+      rtx_insn *pro = DEP_PRO (dep);
       int t;
 
       if (DEP_STATUS (dep) & DEP_CANCELLED)
@@ -4710,7 +4710,7 @@ resolve_dependencies (rtx insn)
   for (sd_it = sd_iterator_start (insn, SD_LIST_FORW);
        sd_iterator_cond (&sd_it, &dep);)
     {
-      rtx next = DEP_CON (dep);
+      rtx_insn *next = DEP_CON (dep);
 
       if (sched_verbose >= 4)
 	fprintf (sched_dump, ";;\t\tdep %d against %d\n", INSN_UID (insn),
@@ -6987,7 +6987,7 @@ fix_inter_tick (rtx head, rtx tail)
 
 	  FOR_EACH_DEP (head, SD_LIST_RES_FORW, sd_it, dep)
 	    {
-	      rtx next;
+	      rtx_insn *next;
 
 	      next = DEP_CON (dep);
 	      tick = INSN_TICK (next);
@@ -7173,7 +7173,7 @@ fix_tick_ready (rtx next)
 
       FOR_EACH_DEP (next, SD_LIST_RES_BACK, sd_it, dep)
         {
-          rtx pro = DEP_PRO (dep);
+          rtx_insn *pro = DEP_PRO (dep);
           int tick1;
 
 	  gcc_assert (INSN_TICK (pro) >= MIN_TICK);
@@ -7441,7 +7441,7 @@ add_to_speculative_block (rtx insn)
   for (sd_it = sd_iterator_start (insn, SD_LIST_SPEC_BACK);
        sd_iterator_cond (&sd_it, &dep);)
     {
-      rtx check = DEP_PRO (dep);
+      rtx_insn *check = DEP_PRO (dep);
 
       if (IS_SPECULATION_SIMPLE_CHECK_P (check))
 	{
@@ -7460,7 +7460,7 @@ add_to_speculative_block (rtx insn)
 
   while (1)
     {
-      rtx check, twin;
+      rtx_insn *check, *twin;
       basic_block rec;
 
       /* Get the first backward dependency of INSN.  */
@@ -7497,7 +7497,7 @@ add_to_speculative_block (rtx insn)
 	 instructions from REC.  */
       FOR_EACH_DEP (insn, SD_LIST_SPEC_BACK, sd_it, dep)
 	{
-	  rtx pro = DEP_PRO (dep);
+	  rtx_insn *pro = DEP_PRO (dep);
 
 	  gcc_assert (DEP_TYPE (dep) == REG_DEP_TRUE);
 
@@ -7519,7 +7519,7 @@ add_to_speculative_block (rtx insn)
       for (sd_it = sd_iterator_start (insn, SD_LIST_SPEC_BACK);
 	   sd_iterator_cond (&sd_it, &dep);)
 	{
-	  rtx pro = DEP_PRO (dep);
+	  rtx_insn *pro = DEP_PRO (dep);
 
 	  if (BLOCK_FOR_INSN (pro) == rec)
 	    sd_delete_dep (sd_it);
@@ -7602,8 +7602,8 @@ static void
 sched_extend_bb (void)
 {
   /* The following is done to keep current_sched_info->next_tail non null.  */
-  rtx end = BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
-  rtx insn = DEBUG_INSN_P (end) ? prev_nondebug_insn (end) : end;
+  rtx_insn *end = BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
+  rtx_insn *insn = DEBUG_INSN_P (end) ? prev_nondebug_insn (end) : end;
   if (NEXT_INSN (end) == 0
       || (!NOTE_P (insn)
 	  && !LABEL_P (insn)
@@ -7643,7 +7643,8 @@ init_before_recovery (basic_block *before_recovery_ptr)
          Between these two blocks recovery blocks will be emitted.  */
 
       basic_block single, empty;
-      rtx x, label;
+      rtx_insn *x;
+      rtx label;
 
       /* If the fallthrough edge to exit we've found is from the block we've
 	 created before, don't do anything more.  */
@@ -7707,7 +7708,7 @@ basic_block
 sched_create_recovery_block (basic_block *before_recovery_ptr)
 {
   rtx label;
-  rtx barrier;
+  rtx_insn *barrier;
   basic_block rec;
 
   haifa_recovery_bb_recently_added_p = true;
@@ -7916,7 +7917,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
   /* First, create dependencies between INSN's producers and CHECK & TWIN.  */
   FOR_EACH_DEP (insn, SD_LIST_BACK, sd_it, dep)
     {
-      rtx pro = DEP_PRO (dep);
+      rtx_insn *pro = DEP_PRO (dep);
       ds_t ds;
 
       /* If BEGIN_DATA: [insn ~~TRUE~~> producer]:
@@ -8060,7 +8061,8 @@ create_check_block_twin (rtx insn, bool mutate_p)
 static void
 fix_recovery_deps (basic_block rec)
 {
-  rtx note, insn, jump, ready_list = 0;
+  rtx_insn *note, *insn, *jump;
+  rtx ready_list = 0;
   bitmap_head in_ready;
   rtx link;
 
@@ -8081,7 +8083,7 @@ fix_recovery_deps (basic_block rec)
       for (sd_it = sd_iterator_start (insn, SD_LIST_FORW);
 	   sd_iterator_cond (&sd_it, &dep);)
 	{
-	  rtx consumer = DEP_CON (dep);
+	  rtx_insn *consumer = DEP_CON (dep);
 
 	  if (BLOCK_FOR_INSN (consumer) != rec)
 	    {
@@ -8205,7 +8207,7 @@ unlink_bb_notes (basic_block first, basic_block last)
   if (first == last)
     return;
 
-  bb_header = XNEWVEC (rtx, last_basic_block_for_fn (cfun));
+  bb_header = XNEWVEC (rtx_insn *, last_basic_block_for_fn (cfun));
 
   /* Make a sentinel.  */
   if (last->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
@@ -8214,7 +8216,7 @@ unlink_bb_notes (basic_block first, basic_block last)
   first = first->next_bb;
   do
     {
-      rtx prev, label, note, next;
+      rtx_insn *prev, *label, *note, *next;
 
       label = BB_HEAD (last);
       if (LABEL_P (label))
@@ -8255,7 +8257,7 @@ restore_bb_notes (basic_block first)
   while (first != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	 && bb_header[first->index])
     {
-      rtx prev, label, note, next;
+      rtx_insn *prev, *label, *note, *next;
 
       label = bb_header[first->index];
       prev = PREV_INSN (label);
@@ -8389,7 +8391,7 @@ clear_priorities (rtx insn, rtx_vec_t *roots_ptr)
 
   FOR_EACH_DEP (insn, SD_LIST_BACK, sd_it, dep)
     {
-      rtx pro = DEP_PRO (dep);
+      rtx_insn *pro = DEP_PRO (dep);
 
       if (INSN_PRIORITY_STATUS (pro) >= 0
 	  && QUEUE_INDEX (insn) != QUEUE_SCHEDULED)
