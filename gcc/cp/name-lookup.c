@@ -1239,9 +1239,24 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
 	      if (member && !TREE_STATIC (member))
 		{
-		  /* Location of previous decl is not useful in this case.  */
-		  warning (OPT_Wshadow, "declaration of %qD shadows a member of 'this'",
-			   x);
+		  if (BASELINK_P (member))
+		    member = BASELINK_FUNCTIONS (member);
+		  member = OVL_CURRENT (member);
+	
+		  /* Do not warn if a variable shadows a function, unless
+		     the variable is a function or a pointer-to-function.  */
+		  if (TREE_CODE (member) != FUNCTION_DECL
+		      || TREE_CODE (x) == FUNCTION_DECL
+		      || TYPE_PTRFN_P (TREE_TYPE (x))
+		      || TYPE_PTRMEMFUNC_P (TREE_TYPE (x)))
+		    {
+		      if (warning_at (input_location, OPT_Wshadow,
+				      "declaration of %qD shadows a member of %qT",
+				      x, current_nonlambda_class_type ())
+			  && DECL_P (member))
+			inform (DECL_SOURCE_LOCATION (member),
+				"shadowed declaration is here");
+		    }
 		}
 	      else if (oldglobal != NULL_TREE
 		       && (VAR_P (oldglobal)

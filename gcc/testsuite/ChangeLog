@@ -1,3 +1,8 @@
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/57709
+	* g++.dg/Wshadow.C: New test.
+
 2014-08-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR fortran/62135

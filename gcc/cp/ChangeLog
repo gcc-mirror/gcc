@@ -1,3 +1,14 @@
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/57709
+	* name-lookup.c (pushdecl_maybe_friend_1): Do not warn if a
+	declaration shadows a function declaration, unless the former
+	declares a function, pointer to function or pointer to member
+	function, because this is a common and valid case in real-world
+	code.
+	* cp-tree.h (TYPE_PTRFN_P,TYPE_REFFN_P,TYPE_PTRMEMFUNC_P):
+	Improve description.
+
 2014-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62129
