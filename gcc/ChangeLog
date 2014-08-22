@@ -7,6 +7,27 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/subst.md (define_subst_attr "mask_avx512bw_condition"):
+	New.
+	* config/i386/sse.md
+	(define_mode_iterator VI248_AVX2): Delete.
+	(define_mode_iterator VI2_AVX2_AVX512BW): New.
+	(define_mode_iterator VI48_AVX2): Ditto.
+	(define_insn <shift_insn><mode>3): Delete.
+	(define_insn "<shift_insn><mode>3<mask_name>" with
+	VI2_AVX2_AVX512BW): New.
+	(define_insn "<shift_insn><mode>3<mask_name>" with
+	VI48_AVX2): Ditto.
+
+2014-08-22  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/sse.md
 	(define_mode_iterator VI4F_BRCST32x2): New.
 	(define_mode_attr 64x2_mode): Ditto.
