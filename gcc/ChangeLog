@@ -1,5 +1,22 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* loop-invariant.c (struct use): Strengthen field "insn" from rtx
+	to rtx_insn *.
+	(struct invariant): Likewise.
+	(hash_invariant_expr_1): Likewise for param "insn".
+	(invariant_expr_equal_p): Likewise for param "insn1", "insn2".
+	(find_exits): Likewise for local "insn".
+	(create_new_invariant): Likewise for param "insn".
+	(check_dependencies): Likewise.
+	(find_invariant_insn): Likewise.
+	(record_uses): Likewise.
+	(find_invariants_insn): Likewise.
+	(find_invariants_bb): Likewise for local "insn".
+	(get_pressure_class_and_nregs): Likewise for param "insn".
+	(calculate_loop_reg_pressure): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* loop-doloop.c (doloop_valid_p): Strengthen local "insn" from rtx
 	to rtx_insn *.
 	(add_test): Likewise for locals "seq", "jump".
