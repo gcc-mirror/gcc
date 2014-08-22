@@ -1,5 +1,61 @@
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* combine.c (i2mod): Strengthen this variable from rtx to rtx_insn *.
+	(struct reg_stat_struct): Likewise for fields "last_death", "last_set".
+	(subst_insn): Likewise for this variable.
+	(added_links_insn): Likewise.
+	(struct insn_link): Likewise for field "insn".
+	(alloc_insn_link): Likewise for param "insn".
+	(struct undobuf): Likewise for field "other_insn".
+	(find_single_use): Likewise for param "insn" and local "next".
+	(combine_validate_cost): Likewise for params "i0", "i1", "i2", "i3".
+	(delete_noop_moves): Likewise for locals "insn", "next".
+	(create_log_links): Likewise for locals "insn", "use_insn".
+	Strengthen local "next_use" from rtx * to rtx_insn **.
+	(insn_a_feeds_b): Likewise for params "a", "b".
+	(combine_instructions): Likewise for param "f" and locals "insn",
+	"next", "prev", "first", "last_combined_insn", "link", "link1",
+	"temp".  Replace use of NULL_RTX with NULL when referring to
+	insns.
+	(setup_incoming_promotions): Likewise for param "first"
+	(set_nonzero_bits_and_sign_copies): Likewise for local "insn".
+	(can_combine_p): Likewise for params "insn", "i3", "pred",
+	"pred2", "succ", "succ2" and for local "p".
+	(combinable_i3pat): Likewise for param "i3".
+	(cant_combine_insn_p): Likewise for param "insn".
+	(likely_spilled_retval_p): Likewise.
+	(adjust_for_new_dest): Likewise.
+	(update_cfg_for_uncondjump): Likewise, also for local "insn".
+	(try_combine): Likewise for return type and for params "i3", "i2",
+	"i1", "i0", "last_combined_insn", and for locals "insn",
+	"cc_use_insn", "p", "first", "last", "i2_insn", "i1_insn",
+	"i0_insn".  Eliminate local "tem" in favor of new locals
+	"tem_note" and "tem_insn", the latter being an rtx_insn *.  Add a
+	checked cast for now to rtx_insn * on the return type of
+	gen_rtx_INSN.  Replace use of NULL_RTX with NULL when referring to
+	insns.
+	(find_split_point): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(simplify_set): Likewise for local "other_insn".
+	(recog_for_combine): Likewise for param "insn".
+	(record_value_for_reg): Likewise.
+	(record_dead_and_set_regs_1): Likewise for local
+	"record_dead_insn".
+	(record_dead_and_set_regs): Likewise for param "insn".
+	(record_promoted_value): Likewise.
+	(check_promoted_subreg): Likewise.
+	(get_last_value_validate): Likewise.
+	(reg_dead_at_p): Likewise.
+	(move_deaths): Likewise for param "to_insn".
+	(distribute_notes): Likewise for params "from_insn", "i3", "i2"
+	and locals "place", "place2", "cc0_setter".  Eliminate local "tem
+	in favor of new locals "tem_note" and "tem_insn", the latter being
+	an rtx_insn *.
+	(distribute_links): Strengthen locals "place", "insn" from rtx to
+	rtx_insn *.
+
+2014-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* cfgrtl.c (can_delete_note_p): Require a const rtx_note * rather
 	than a const_rtx.
 	(can_delete_label_p): Require a const rtx_code_label * rather than
