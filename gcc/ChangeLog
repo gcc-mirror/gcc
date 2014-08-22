@@ -1,5 +1,17 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* compare-elim.c (struct comparison_use): Strengthen field "insn"
+	from rtx to rtx_insn *.
+	(struct comparison): Likewise, also for field "prev_clobber".
+	(conforming_compare): Likewise for param "insn".
+	(arithmetic_flags_clobber_p): Likewise.
+	(find_flags_uses_in_insn): Likewise.
+	(find_comparison_dom_walker::before_dom_children): Likewise for
+	locals "insn", "next", "last_clobber".
+	(try_eliminate_compare): Likewise for locals "insn", "bb_head".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* combine-stack-adj.c (struct csa_reflist): Strengthen field
 	"insn" from rtx to rtx_insn *.
 	(single_set_for_csa): Likewise for param "insn".
