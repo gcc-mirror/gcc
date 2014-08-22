@@ -364,7 +364,8 @@ convert_move (rtx to, rtx from, int unsignedp)
 
   if (to_real)
     {
-      rtx value, insns;
+      rtx value;
+      rtx_insn *insns;
       convert_optab tab;
 
       gcc_assert ((GET_MODE_PRECISION (from_mode)
@@ -472,7 +473,7 @@ convert_move (rtx to, rtx from, int unsignedp)
   if (GET_MODE_PRECISION (from_mode) < GET_MODE_PRECISION (to_mode)
       && GET_MODE_PRECISION (to_mode) > BITS_PER_WORD)
     {
-      rtx insns;
+      rtx_insn *insns;
       rtx lowpart;
       rtx fill_value;
       rtx lowfrom;
@@ -1453,7 +1454,8 @@ static void
 emit_block_move_via_loop (rtx x, rtx y, rtx size,
 			  unsigned int align ATTRIBUTE_UNUSED)
 {
-  rtx cmp_label, top_label, iter, x_addr, y_addr, tmp;
+  rtx_code_label *cmp_label, *top_label;
+  rtx iter, x_addr, y_addr, tmp;
   enum machine_mode x_addr_mode = get_address_mode (x);
   enum machine_mode y_addr_mode = get_address_mode (y);
   enum machine_mode iter_mode;
@@ -1507,7 +1509,7 @@ move_block_to_reg (int regno, rtx x, int nregs, enum machine_mode mode)
   int i;
 #ifdef HAVE_load_multiple
   rtx pat;
-  rtx last;
+  rtx_insn *last;
 #endif
 
   if (nregs == 0)
@@ -1553,7 +1555,7 @@ move_block_from_reg (int regno, rtx x, int nregs)
 #ifdef HAVE_store_multiple
   if (HAVE_store_multiple)
     {
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
       rtx pat = gen_store_multiple (x, gen_rtx_REG (word_mode, regno),
 				    GEN_INT (nregs));
       if (pat)
@@ -4064,8 +4066,8 @@ static void
 emit_single_push_insn (enum machine_mode mode, rtx x, tree type)
 {
   int delta, old_delta = stack_pointer_delta;
-  rtx prev = get_last_insn ();
-  rtx last;
+  rtx_insn *prev = get_last_insn ();
+  rtx_insn *last;
 
   emit_single_push_insn_1 (mode, x, type);
 
@@ -5170,7 +5172,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	 side.  This avoids the creation of unnecessary temporaries.
 	 For non-BLKmode, it is more efficient not to do this.  */
 
-      rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
+      rtx_code_label *lab1 = gen_label_rtx (), *lab2 = gen_label_rtx ();
 
       do_pending_stack_adjust ();
       NO_DEFER_POP;
@@ -5405,7 +5407,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 		= expand_expr (copy_size, NULL_RTX, VOIDmode,
 			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL));
-	      rtx label = 0;
+	      rtx_code_label *label = 0;
 
 	      /* Copy that much.  */
 	      copy_size_rtx = convert_to_mode (pointer_mode, copy_size_rtx,
@@ -6192,8 +6194,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  }
 		else
 		  {
-		    rtx loop_start = gen_label_rtx ();
-		    rtx loop_end = gen_label_rtx ();
+		    rtx_code_label *loop_start = gen_label_rtx ();
+		    rtx_code_label *loop_end = gen_label_rtx ();
 		    tree exit_cond;
 
 		    expand_normal (hi_index);
@@ -8010,7 +8012,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
      and return.  */
   if (insn)
     {
-      rtx seq = get_insns ();
+      rtx_insn *seq = get_insns ();
       end_sequence ();
       emit_insn (seq);
       return convert_modes (orig_mode, mode, temp, 0);
@@ -8814,7 +8816,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	       and return.  */
 	    if (insn)
 	      {
-		rtx seq = get_insns ();
+		rtx_insn *seq = get_insns ();
 		end_sequence ();
 		emit_insn (seq);
 		return target;
@@ -10595,7 +10597,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    && integer_onep (DECL_SIZE (TREE_OPERAND (lhs, 1)))
 	    && integer_onep (DECL_SIZE (TREE_OPERAND (TREE_OPERAND (rhs, 1), 1))))
 	  {
-	    rtx label = gen_label_rtx ();
+	    rtx_code_label *label = gen_label_rtx ();
 	    int value = TREE_CODE (rhs) == BIT_IOR_EXPR;
 	    do_jump (TREE_OPERAND (rhs, 1),
 		     value ? label : 0,

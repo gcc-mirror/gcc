@@ -1,5 +1,23 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* expr.c (convert_move): Strengthen local "insns" from rtx to
+	rtx_insn *.
+	(emit_block_move_via_loop): Strengthen locals "cmp_label" and
+	"top_label" from rtx to rtx_code_label *.
+	(move_block_to_reg): Strengthen local "insn", "last" from rtx to
+	rtx_insn *.
+	(emit_single_push_insn): Likewise for locals "prev", "last".
+	(store_expr): Strengthen locals "lab1", "lab2", "label" from rtx
+	to rtx_code_label *.
+	(store_constructor): Likewise for locals "loop_start", "loop_end".
+	(expand_cond_expr_using_cmove): Strengthen local "seq" from rtx to
+	rtx_insn *.
+	(expand_expr_real_2): Likewise.
+	(expand_expr_real_1): Strengthen local "label" from rtx to
+	rtx_code_label *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* expmed.c (store_bit_field_using_insv): Strengthen local "last"
 	from rtx to rtx_insn *.
 	(store_bit_field_1): Likewise.
