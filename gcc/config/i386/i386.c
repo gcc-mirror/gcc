@@ -10698,7 +10698,7 @@ ix86_finalize_stack_realign_flags (void)
 			   HARD_FRAME_POINTER_REGNUM);
       FOR_EACH_BB_FN (bb, cfun)
         {
-          rtx insn;
+          rtx_insn *insn;
 	  FOR_BB_INSNS (bb, insn)
 	    if (NONDEBUG_INSN_P (insn)
 		&& requires_stack_frame_p (insn, prologue_used,
