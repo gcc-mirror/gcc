@@ -1,5 +1,21 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* lower-subreg.c (simple_move): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	(resolve_reg_notes): Likewise.
+	(resolve_simple_move): Likewise for return type, param "insn", and
+	locals "insns", "minsn".
+	(resolve_clobber): Strengthen param "insn" from rtx to rtx_insn *.
+	(resolve_use): Likewise.
+	(resolve_debug): Likewise.
+	(find_decomposable_shift_zext): Likewise.
+	(resolve_shift_zext): Likewise for return type, param "insn", and
+	locals "insns", "in".  Eliminate use of NULL_RTX in favor of NULL.
+	(decompose_multiword_subregs): Likewise for local "insn",
+	"orig_insn", "decomposed_shift", "end".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (basic_block split_edge_and_insert): Strengthen
 	param "insns" from rtx to rtx_insn *.
 

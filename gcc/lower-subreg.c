@@ -321,7 +321,7 @@ simple_move_operand (rtx x)
    is called.  */
 
 static rtx
-simple_move (rtx insn, bool speed_p)
+simple_move (rtx_insn *insn, bool speed_p)
 {
   rtx x;
   rtx set;
@@ -800,7 +800,7 @@ adjust_decomposed_uses (rtx *px, void *data ATTRIBUTE_UNUSED)
    INSN.  */
 
 static void
-resolve_reg_notes (rtx insn)
+resolve_reg_notes (rtx_insn *insn)
 {
   rtx *pnote, note;
 
@@ -870,10 +870,11 @@ can_decompose_p (rtx x)
    we don't change anything, return INSN, otherwise return the start
    of the sequence of moves.  */
 
-static rtx
-resolve_simple_move (rtx set, rtx insn)
+static rtx_insn *
+resolve_simple_move (rtx set, rtx_insn *insn)
 {
-  rtx src, dest, real_dest, insns;
+  rtx src, dest, real_dest;
+  rtx_insn *insns;
   enum machine_mode orig_mode, dest_mode;
   unsigned int words;
   bool pushing;
@@ -915,7 +916,8 @@ resolve_simple_move (rtx set, rtx insn)
 	  || (GET_MODE_SIZE (orig_mode)
 	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))))
     {
-      rtx reg, minsn, smove;
+      rtx reg, smove;
+      rtx_insn *minsn;
 
       reg = gen_reg_rtx (orig_mode);
       minsn = emit_move_insn (reg, src);
@@ -1062,7 +1064,8 @@ resolve_simple_move (rtx set, rtx insn)
 
   if (real_dest != NULL_RTX)
     {
-      rtx mdest, minsn, smove;
+      rtx mdest, smove;
+      rtx_insn *minsn;
 
       if (dest_mode == orig_mode)
 	mdest = dest;
@@ -1108,7 +1111,7 @@ resolve_simple_move (rtx set, rtx insn)
    component registers.  Return whether we changed something.  */
 
 static bool
-resolve_clobber (rtx pat, rtx insn)
+resolve_clobber (rtx pat, rtx_insn *insn)
 {
   rtx reg;
   enum machine_mode orig_mode;
@@ -1149,7 +1152,7 @@ resolve_clobber (rtx pat, rtx insn)
    whether we changed something.  */
 
 static bool
-resolve_use (rtx pat, rtx insn)
+resolve_use (rtx pat, rtx_insn *insn)
 {
   if (resolve_reg_p (XEXP (pat, 0)) || resolve_subreg_p (XEXP (pat, 0)))
     {
@@ -1165,7 +1168,7 @@ resolve_use (rtx pat, rtx insn)
 /* A VAR_LOCATION can be simplified.  */
 
 static void
-resolve_debug (rtx insn)
+resolve_debug (rtx_insn *insn)
 {
   for_each_rtx (&PATTERN (insn), adjust_decomposed_uses, NULL_RTX);
 
@@ -1180,7 +1183,7 @@ resolve_debug (rtx insn)
    if INSN is decomposable.  */
 
 static bool
-find_decomposable_shift_zext (rtx insn, bool speed_p)
+find_decomposable_shift_zext (rtx_insn *insn, bool speed_p)
 {
   rtx set;
   rtx op;
@@ -1236,33 +1239,33 @@ find_decomposable_shift_zext (rtx insn, bool speed_p)
    and 'set to zero' insn.  Return a pointer to the new insn when a
    replacement was done.  */
 
-static rtx
-resolve_shift_zext (rtx insn)
+static rtx_insn *
+resolve_shift_zext (rtx_insn *insn)
 {
   rtx set;
   rtx op;
   rtx op_operand;
-  rtx insns;
+  rtx_insn *insns;
   rtx src_reg, dest_reg, dest_upper, upper_src = NULL_RTX;
   int src_reg_num, dest_reg_num, offset1, offset2, src_offset;
 
   set = single_set (insn);
   if (!set)
-    return NULL_RTX;
+    return NULL;
 
   op = SET_SRC (set);
   if (GET_CODE (op) != ASHIFT
       && GET_CODE (op) != LSHIFTRT
       && GET_CODE (op) != ASHIFTRT
       && GET_CODE (op) != ZERO_EXTEND)
-    return NULL_RTX;
+    return NULL;
 
   op_operand = XEXP (op, 0);
 
   /* We can tear this operation apart only if the regs were already
      torn apart.  */
   if (!resolve_reg_p (SET_DEST (set)) && !resolve_reg_p (op_operand))
-    return NULL_RTX;
+    return NULL;
 
   /* src_reg_num is the number of the word mode register which we
      are operating on.  For a left shift and a zero_extend on little
@@ -1326,7 +1329,7 @@ resolve_shift_zext (rtx insn)
 
   if (dump_file)
     {
-      rtx in;
+      rtx_insn *in;
       fprintf (dump_file, "; Replacing insn: %d with insns: ", INSN_UID (insn));
       for (in = insns; in != insn; in = NEXT_INSN (in))
 	fprintf (dump_file, "%d ", INSN_UID (in));
@@ -1465,7 +1468,7 @@ decompose_multiword_subregs (bool decompose_copies)
   speed_p = optimize_function_for_speed_p (cfun);
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	{
@@ -1545,7 +1548,7 @@ decompose_multiword_subregs (bool decompose_copies)
 
       FOR_EACH_BB_FN (bb, cfun)
 	{
-	  rtx insn;
+	  rtx_insn *insn;
 
 	  FOR_BB_INSNS (bb, insn)
 	    {
@@ -1572,7 +1575,7 @@ decompose_multiword_subregs (bool decompose_copies)
 		  set = simple_move (insn, speed_p);
 		  if (set)
 		    {
-		      rtx orig_insn = insn;
+		      rtx_insn *orig_insn = insn;
 		      bool cfi = control_flow_insn_p (insn);
 
 		      /* We can end up splitting loads to multi-word pseudos
@@ -1602,7 +1605,7 @@ decompose_multiword_subregs (bool decompose_copies)
 		    }
 		  else
 		    {
-		      rtx decomposed_shift;
+		      rtx_insn *decomposed_shift;
 
 		      decomposed_shift = resolve_shift_zext (insn);
 		      if (decomposed_shift != NULL_RTX)
@@ -1644,7 +1647,7 @@ decompose_multiword_subregs (bool decompose_copies)
 	 loads to appear.  */
       EXECUTE_IF_SET_IN_BITMAP (sub_blocks, 0, i, sbi)
 	{
-	  rtx insn, end;
+	  rtx_insn *insn, *end;
 	  edge fallthru;
 
 	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
