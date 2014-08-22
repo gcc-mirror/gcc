@@ -1,5 +1,29 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* reg-stack.c (next_flags_user): Strengthen return type and param
+	"insn" from rtx to rtx_insn *.
+	(straighten_stack): Likewise for param "insn".
+	(check_asm_stack_operands): Likewise.
+	(remove_regno_note): Likewise.
+	(emit_pop_insn): Likewise for return type, param "insn", local
+	"pop_insn".
+	(emit_swap_insn):  Strengthen param "insn" and locals "i1", "tmp",
+	"limit" from rtx to rtx_insn *.
+	(swap_to_top): Likewise for param "insn".
+	(move_for_stack_reg): Likewise.
+	(move_nan_for_stack_reg): Likewise.
+	(swap_rtx_condition): Likewise.
+	(compare_for_stack_reg): Likewise.
+	(subst_all_stack_regs_in_debug_insn): Likewise.
+	(subst_stack_regs_pat): Likewise, and local "insn2".
+	(subst_asm_stack_regs): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(subst_stack_regs): Likewise.
+	(change_stack): Likewise.
+	(convert_regs_1): Likewise for locals "insn", "next".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* ree.c (struct ext_cand): Strengthen field "insn" from rtx to
 	rtx_insn *.
 	(combine_set_extension): Likewise for param "curr_insn".
