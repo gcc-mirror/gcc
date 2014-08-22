@@ -1,5 +1,11 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* regstat.c (regstat_bb_compute_ri): Strengthen local "insn" from
+	rtx to rtx_insn *.
+	(regstat_bb_compute_calls_crossed): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* regrename.c (create_new_chain): Strengthen param "insn" from rtx
 	to rtx_insn *.
 	(init_rename_info): Replace use of NULL_RTX with NULL when dealing
