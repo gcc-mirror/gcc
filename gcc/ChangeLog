@@ -1,5 +1,23 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.c (emit_initial_value_sets): Strengthen local "seq"
+	from rtx to rtx_insn *.
+	(instantiate_virtual_regs_in_insn): Likewise for param "insn" and
+	local "seq".
+	(instantiate_virtual_regs): Likewise for local "insn".
+	(assign_parm_setup_reg): Likewise for locals "linsn", "sinsn".
+	(reorder_blocks_1): Likewise for param "insns" and local "insn".
+	(expand_function_end): Likewise for locals "insn" and "seq".
+	(epilogue_done): Likewise for local "insn".
+	(thread_prologue_and_epilogue_insns): Likewise for locals "prev",
+	"last", "trial".
+	(reposition_prologue_and_epilogue_notes): Likewise for locals
+	"insn", "last", "note", "first".
+	(match_asm_constraints_1): Likewise for param "insn" and local "insns".
+	(pass_match_asm_constraints::execute): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* output.h (final_scan_insn): Strengthen return type from rtx to
 	rtx_insn *.
 	(final_forward_branch_p): Likewise for param.
