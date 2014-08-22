@@ -1,5 +1,18 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-deps.c (maybe_add_or_update_dep_1): Strengthen locals
+	"elem", "insn" from rtx to rtx_insn *.
+	(change_spec_dep_to_hard): Likewise.
+	(get_back_and_forw_lists): Likewise for local "con".
+	(sd_add_dep): Likewise for locals "elem", "insn".
+	(sd_resolve_dep): Likewise for locals "pro", "con".
+	(sd_unresolve_dep): Likewise.
+	(sd_delete_dep): Likewise.
+	(chain_to_prev_insn): Likewise for local "pro".
+	(find_inc): Likewise for locals "pro", "con".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtlanal.c (reg_used_between_p): Strengthen local "insn" from rtx
 	to rtx_insn *.
 	(reg_set_between_p): Strengthen local "insn" from const_rtx to
