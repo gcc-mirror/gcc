@@ -1,5 +1,16 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* dwarf2out.c (last_var_location_insn): Strengthen this variable
+	from rtx to rtx_insn *.
+	(cached_next_real_insn): Likewise.
+	(dwarf2out_end_epilogue): Replace use of NULL_RTX with NULL when
+	working with insns.
+	(dwarf2out_var_location): Strengthen locals "next_real",
+	"next_note", "expected_next_loc_note", "last_start", "insn" from
+	rtx to rtx_insn *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* dwarf2cfi.c (add_cfis_to_fde): Strengthen locals "insn", "next"
 	from rtx to rtx_insn *.
 	(create_pseudo_cfg): Likewise for local "insn".
