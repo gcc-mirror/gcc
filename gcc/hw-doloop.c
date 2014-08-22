@@ -94,7 +94,7 @@ scan_loop (hwloop_info loop)
 
   for (ix = 0; loop->blocks.iterate (ix, &bb); ix++)
     {
-      rtx insn;
+      rtx_insn *insn;
       edge e;
       edge_iterator ei;
 
@@ -232,7 +232,7 @@ add_forwarder_blocks (hwloop_info loop)
    the expected use; targets that call into this code usually replace the
    loop counter with a different special register.  */
 static void
-discover_loop (hwloop_info loop, basic_block tail_bb, rtx tail_insn, rtx reg)
+discover_loop (hwloop_info loop, basic_block tail_bb, rtx_insn *tail_insn, rtx reg)
 {
   bool found_tail;
   unsigned dwork = 0;
@@ -359,7 +359,7 @@ discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
      structure and add the head block to the work list. */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx tail = BB_END (bb);
+      rtx_insn *tail = BB_END (bb);
       rtx insn, reg;
 
       while (tail && NOTE_P (tail) && tail != BB_HEAD (bb))
