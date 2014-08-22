@@ -1,3 +1,10 @@
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* parser.c (cp_parser_binary_expression): Check each LHS if it's
+	preceded with logical not.  Adjust call to
+	warn_logical_not_parentheses.
+
 2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/57709

@@ -8,7 +8,7 @@ int foo (int);
 int
 bar (int a, int b, int c)
 {
-  foo (!a & b); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
+  foo (!a & b); /* { dg-warning "parentheses" "correct warning" } */
   foo (!a & (b < c));
   foo (!a & (b > c));
   foo (!a & (b == c));
@@ -20,7 +20,7 @@ bar (int a, int b, int c)
   foo (!a & !b);
   foo (!(a & b));
   foo ((!a) & b);
-  foo (!a & 2); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
+  foo (!a & 2); /* { dg-warning "parentheses" "correct warning" } */
   foo (!a & (2 < c));
   foo (!a & (2 > c));
   foo (!a & (2 == c));
@@ -32,7 +32,7 @@ bar (int a, int b, int c)
   foo (!a & !2);
   foo (!(a & 2));
   foo ((!a) & 2);
-  foo (!1 & 2); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
+  foo (!1 & 2); /* { dg-warning "parentheses" "correct warning" } */
   foo (!1 & (2 < c));
   foo (!1 & (2 > c));
   foo (!1 & (2 == c));
@@ -44,7 +44,7 @@ bar (int a, int b, int c)
   foo (!1 & !2);
   foo (!(1 & 2));
 
-  foo (!a | b); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
+  foo (!a | b); /* { dg-warning "parentheses" "correct warning" } */
   foo (!a | (b < c));
   foo (!a | (b > c));
   foo (!a | (b == c));
@@ -56,7 +56,7 @@ bar (int a, int b, int c)
   foo (!a | !b);
   foo (!(a | b));
   foo ((!a) | b);
-  foo (!a | 2); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
+  foo (!a | 2); /* { dg-warning "parentheses" "correct warning" } */
   foo (!a | (2 < c));
   foo (!a | (2 > c));
   foo (!a | (2 == c));
@@ -68,7 +68,7 @@ bar (int a, int b, int c)
   foo (!a | !2);
   foo (!(a | 2));
   foo ((!a) | 2);
-  foo (!1 | 2); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
+  foo (!1 | 2); /* { dg-warning "parentheses" "correct warning" } */
   foo (!1 | (2 < c));
   foo (!1 | (2 > c));
   foo (!1 | (2 == c));
@@ -159,55 +159,55 @@ bar (int a, int b, int c)
 int
 baz (int a, int b, int c)
 {
-  foo (!a & (b << c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (b >> c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (b + c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (b - c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (b = c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & ~b);      /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (b & c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (b | c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & 2);       /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (2 << c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (2 >> c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (2 + c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (2 - c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (c = 2)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & ~2);      /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (2 & c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a & (2 | c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & (2 << c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & (2 >> c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & (2 + c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & (2 - c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & (c = 2)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & ~2);      /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & (2 & c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 & (2 | c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (b << c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (b >> c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (b + c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (b - c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (b = c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | ~b);      /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (b & c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (b | c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (2 << c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (2 >> c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (2 + c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (2 - c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (c = 2)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | ~2);      /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (2 & c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!a | (2 | c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | (2 << c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | (2 >> c));/* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | (2 + c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | (2 - c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | (c = 2)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | ~2);      /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | (2 & c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
-  foo (!1 | (2 | c)); /* { dg-warning "parentheses" "correct warning" { xfail *-*-* } } */
+  foo (!a & (b << c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (b >> c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (b + c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (b - c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (b = c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & ~b);      /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (b & c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (b | c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & 2);       /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (2 << c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (2 >> c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (2 + c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (2 - c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (c = 2)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & ~2);      /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (2 & c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a & (2 | c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & (2 << c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & (2 >> c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & (2 + c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & (2 - c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & (c = 2)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & ~2);      /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & (2 & c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 & (2 | c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (b << c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (b >> c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (b + c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (b - c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (b = c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | ~b);      /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (b & c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (b | c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (2 << c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (2 >> c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (2 + c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (2 - c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (c = 2)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | ~2);      /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (2 & c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!a | (2 | c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | (2 << c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | (2 >> c));/* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | (2 + c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | (2 - c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | (c = 2)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | ~2);      /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | (2 & c)); /* { dg-warning "parentheses" "correct warning" } */
+  foo (!1 | (2 | c)); /* { dg-warning "parentheses" "correct warning" } */
   foo ((b << c) & !a);
   foo ((b >> c) & !a);
   foo ((b + c) & !a);

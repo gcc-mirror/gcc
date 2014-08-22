@@ -1,3 +1,10 @@
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* c-c++-common/pr62199.c: New test.
+	* c-c++-common/pr62199-2.c: New test.
+	* g++.dg/warn/Wparentheses-25.C: Drop XFAILs.
+
 2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/57709
