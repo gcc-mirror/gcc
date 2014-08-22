@@ -1,5 +1,10 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* init-regs.c (initialize_uninitialized_regs): Strengthen locals
+	"insn" and "move_insn" from rtx to rtx_insn *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* ifcvt.c (count_bb_insns): Strengthen local "insn" from rtx to
 	rtx_insn *.
 	(cheap_bb_rtx_cost_p): Likewise.
