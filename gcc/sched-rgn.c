@@ -2140,9 +2140,9 @@ init_ready_list (void)
   for (bb_src = target_bb + 1; bb_src < current_nr_blocks; bb_src++)
     if (IS_VALID (bb_src))
       {
-	rtx src_head;
-	rtx src_next_tail;
-	rtx tail, head;
+	rtx_insn *src_head;
+	rtx_insn *src_next_tail;
+	rtx_insn *tail, *head;
 
 	get_ebb_head_tail (EBB_FIRST_BB (bb_src), EBB_LAST_BB (bb_src),
 			   &head, &tail);
@@ -2721,7 +2721,7 @@ propagate_deps (int bb, struct deps_desc *pred_deps)
 static void
 compute_block_dependences (int bb)
 {
-  rtx head, tail;
+  rtx_insn *head, *tail;
   struct deps_desc tmp_deps;
 
   tmp_deps = bb_deps[bb];
@@ -2750,8 +2750,8 @@ compute_block_dependences (int bb)
 static void
 free_block_dependencies (int bb)
 {
-  rtx head;
-  rtx tail;
+  rtx_insn *head;
+  rtx_insn *tail;
 
   get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
 
@@ -2793,7 +2793,7 @@ debug_rgn_dependencies (int from_bb)
 
   for (bb = from_bb; bb < current_nr_blocks; bb++)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
       fprintf (sched_dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
@@ -2894,7 +2894,7 @@ free_rgn_deps (void)
 
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
@@ -2914,7 +2914,7 @@ compute_priorities (void)
   current_sched_info->sched_max_insns_priority = 0;
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
@@ -3025,7 +3025,7 @@ schedule_region (int rgn)
       for (bb = 0; bb < current_nr_blocks; bb++)
 	{
 	  basic_block first_bb, last_bb;
-	  rtx head, tail;
+	  rtx_insn *head, *tail;
 
 	  first_bb = EBB_FIRST_BB (bb);
 	  last_bb = EBB_LAST_BB (bb);
@@ -3045,7 +3045,7 @@ schedule_region (int rgn)
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
       basic_block first_bb, last_bb, curr_bb;
-      rtx head, tail;
+      rtx_insn *head, *tail;
 
       first_bb = EBB_FIRST_BB (bb);
       last_bb = EBB_LAST_BB (bb);

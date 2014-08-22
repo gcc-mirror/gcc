@@ -1,5 +1,35 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-int.h (get_ebb_head_tail): Strengthen params "headp" and
+	"tailp" from rtx * to rtx_insn **.
+
+	* ddg.c (build_intra_loop_deps): Strengthen locals head", "tail"
+	from rtx to rtx_insn *.
+	* haifa-sched.c (get_ebb_head_tail): Strengthen params "headp" and
+	"tailp" from rtx * to rtx_insn **.  Strengthen locals "beg_head",
+	"beg_tail", "end_head", "end_tail", "note", "next", "prev" from
+	rtx to rtx_insn *.
+	* modulo-sched.c (const_iteration_count): Strengthen return type
+	and locals "insn", "head", "tail" from rtx to rtx_insn *.  Replace
+	use of NULL_RTX with NULL when working with insns.
+	(loop_single_full_bb_p): Strengthen locals "head", "tail" from rtx
+	to rtx_insn *.
+	(sms_schedule): Likewise.
+	* sched-rgn.c (init_ready_list): Likewise, also for locals
+	"src_head" and "src_next_tail".
+	(compute_block_dependences): Likewise.
+	(free_block_dependencies): Likewise.
+	(debug_rgn_dependencies): Likewise.
+	(free_rgn_deps): Likewise.
+	(compute_priorities): Likewise.
+	(schedule_region): Likewise.
+	* sel-sched.c (find_ebb_boundaries): Likewise.
+
+	* config/sh/sh.c (find_insn_regmode_weight): Strengthen locals
+	"insn", "next_tail", "head", "tail" from rtx to rtx_insn *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* mode-switching.c (struct seginfo): Strengthen field "insn_ptr"
 	from rtx to rtx_insn *.
 	(new_seginfo): Likewise for param "insn".

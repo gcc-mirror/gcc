@@ -4738,12 +4738,13 @@ resolve_dependencies (rtx insn)
 /* Return the head and tail pointers of ebb starting at BEG and ending
    at END.  */
 void
-get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
+get_ebb_head_tail (basic_block beg, basic_block end,
+		   rtx_insn **headp, rtx_insn **tailp)
 {
-  rtx beg_head = BB_HEAD (beg);
-  rtx beg_tail = BB_END (beg);
-  rtx end_head = BB_HEAD (end);
-  rtx end_tail = BB_END (end);
+  rtx_insn *beg_head = BB_HEAD (beg);
+  rtx_insn * beg_tail = BB_END (beg);
+  rtx_insn * end_head = BB_HEAD (end);
+  rtx_insn * end_tail = BB_END (end);
 
   /* Don't include any notes or labels at the beginning of the BEG
      basic block, or notes at the end of the END basic blocks.  */
@@ -4756,7 +4757,7 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
       beg_head = NEXT_INSN (beg_head);
     else if (DEBUG_INSN_P (beg_head))
       {
-	rtx note, next;
+	rtx_insn * note, *next;
 
 	for (note = NEXT_INSN (beg_head);
 	     note != beg_tail;
@@ -4794,7 +4795,7 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
       end_tail = PREV_INSN (end_tail);
     else if (DEBUG_INSN_P (end_tail))
       {
-	rtx note, prev;
+	rtx_insn * note, *prev;
 
 	for (note = PREV_INSN (end_tail);
 	     note != end_head;

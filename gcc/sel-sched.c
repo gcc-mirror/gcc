@@ -7024,7 +7024,7 @@ simplify_changed_insns (void)
 static void
 find_ebb_boundaries (basic_block bb, bitmap scheduled_blocks)
 {
-  insn_t head, tail;
+  rtx_insn *head, *tail;
   basic_block bb1 = bb;
   if (sched_verbose >= 2)
     sel_print ("Finishing schedule in bbs: ");
