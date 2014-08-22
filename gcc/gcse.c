@@ -296,7 +296,7 @@ struct occr
   /* Next occurrence of this expression.  */
   struct occr *next;
   /* The insn that computes the expression.  */
-  rtx insn;
+  rtx_insn *insn;
   /* Nonzero if this [anticipatable] occurrence has been deleted.  */
   char deleted_p;
   /* Nonzero if this [available] occurrence has been copied to
@@ -462,16 +462,16 @@ static void *gcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
 static void *gcse_alloc (unsigned long);
 static void alloc_gcse_mem (void);
 static void free_gcse_mem (void);
-static void hash_scan_insn (rtx, struct hash_table_d *);
-static void hash_scan_set (rtx, rtx, struct hash_table_d *);
-static void hash_scan_clobber (rtx, rtx, struct hash_table_d *);
-static void hash_scan_call (rtx, rtx, struct hash_table_d *);
+static void hash_scan_insn (rtx_insn *, struct hash_table_d *);
+static void hash_scan_set (rtx, rtx_insn *, struct hash_table_d *);
+static void hash_scan_clobber (rtx, rtx_insn *, struct hash_table_d *);
+static void hash_scan_call (rtx, rtx_insn *, struct hash_table_d *);
 static int want_to_gcse_p (rtx, int *);
-static int oprs_unchanged_p (const_rtx, const_rtx, int);
-static int oprs_anticipatable_p (const_rtx, const_rtx);
-static int oprs_available_p (const_rtx, const_rtx);
-static void insert_expr_in_table (rtx, enum machine_mode, rtx, int, int, int,
-				  struct hash_table_d *);
+static int oprs_unchanged_p (const_rtx, const rtx_insn *, int);
+static int oprs_anticipatable_p (const_rtx, const rtx_insn *);
+static int oprs_available_p (const_rtx, const rtx_insn *);
+static void insert_expr_in_table (rtx, enum machine_mode, rtx_insn *, int, int,
+				  int, struct hash_table_d *);
 static unsigned int hash_expr (const_rtx, enum machine_mode, int *, int);
 static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx);
@@ -493,7 +493,7 @@ static struct edge_list *compute_pre_data (void);
 static int pre_expr_reaches_here_p (basic_block, struct expr *,
 				    basic_block);
 static void insert_insn_end_basic_block (struct expr *, basic_block);
-static void pre_insert_copy_insn (struct expr *, rtx);
+static void pre_insert_copy_insn (struct expr *, rtx_insn *);
 static void pre_insert_copies (void);
 static int pre_delete (void);
 static int pre_gcse (struct edge_list *);
@@ -505,12 +505,12 @@ static void compute_code_hoist_vbeinout (void);
 static void compute_code_hoist_data (void);
 static int should_hoist_expr_to_dom (basic_block, struct expr *, basic_block,
 				     sbitmap, int, int *, enum reg_class,
-				     int *, bitmap, rtx);
+				     int *, bitmap, rtx_insn *);
 static int hoist_code (void);
 static enum reg_class get_regno_pressure_class (int regno, int *nregs);
-static enum reg_class get_pressure_class_and_nregs (rtx insn, int *nregs);
+static enum reg_class get_pressure_class_and_nregs (rtx_insn *insn, int *nregs);
 static int one_code_hoisting_pass (void);
-static rtx process_insert_insn (struct expr *);
+static rtx_insn *process_insert_insn (struct expr *);
 static int pre_edge_insert (struct edge_list *, struct expr **);
 static int pre_expr_reaches_here_p_work (basic_block, struct expr *,
 					 basic_block, char *);
@@ -526,7 +526,7 @@ static void trim_ld_motion_mems (void);
 static void update_ld_motion_stores (struct expr *);
 static void clear_modify_mem_tables (void);
 static void free_modify_mem_tables (void);
-static rtx gcse_emit_move_after (rtx, rtx, rtx);
+static rtx gcse_emit_move_after (rtx, rtx, rtx_insn *);
 static bool is_too_expensive (const char *);
 
 #define GNEW(T)			((T *) gmalloc (sizeof (T)))
@@ -830,7 +830,7 @@ want_to_gcse_p (rtx x, int *max_distance_ptr)
 
 /* Used internally by can_assign_to_reg_without_clobbers_p.  */
 
-static GTY(()) rtx test_insn;
+static GTY(()) rtx_insn *test_insn;
 
 /* Return true if we can assign X to a pseudo register such that the
    resulting insn does not result in clobbering a hard register as a
@@ -896,7 +896,7 @@ can_assign_to_reg_without_clobbers_p (rtx x)
    or from INSN to the end of INSN's basic block (if AVAIL_P != 0).  */
 
 static int
-oprs_unchanged_p (const_rtx x, const_rtx insn, int avail_p)
+oprs_unchanged_p (const_rtx x, const rtx_insn *insn, int avail_p)
 {
   int i, j;
   enum rtx_code code;
@@ -1071,7 +1071,7 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x,
    the start of INSN's basic block up to but not including INSN.  */
 
 static int
-oprs_anticipatable_p (const_rtx x, const_rtx insn)
+oprs_anticipatable_p (const_rtx x, const rtx_insn *insn)
 {
   return oprs_unchanged_p (x, insn, 0);
 }
@@ -1080,7 +1080,7 @@ oprs_anticipatable_p (const_rtx x, const_rtx insn)
    INSN to the end of INSN's basic block.  */
 
 static int
-oprs_available_p (const_rtx x, const_rtx insn)
+oprs_available_p (const_rtx x, const rtx_insn *insn)
 {
   return oprs_unchanged_p (x, insn, 1);
 }
@@ -1126,7 +1126,8 @@ expr_equiv_p (const_rtx x, const_rtx y)
    be moved.  */
 
 static void
-insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
+insert_expr_in_table (rtx x, enum machine_mode mode, rtx_insn *insn,
+		      int antic_p,
 		      int avail_p, int max_distance, struct hash_table_d *table)
 {
   int found, do_not_record_p;
@@ -1231,7 +1232,7 @@ insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
 /* Scan SET present in INSN and add an entry to the hash TABLE.  */
 
 static void
-hash_scan_set (rtx set, rtx insn, struct hash_table_d *table)
+hash_scan_set (rtx set, rtx_insn *insn, struct hash_table_d *table)
 {
   rtx src = SET_SRC (set);
   rtx dest = SET_DEST (set);
@@ -1350,14 +1351,14 @@ hash_scan_set (rtx set, rtx insn, struct hash_table_d *table)
 }
 
 static void
-hash_scan_clobber (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
+hash_scan_clobber (rtx x ATTRIBUTE_UNUSED, rtx_insn *insn ATTRIBUTE_UNUSED,
 		   struct hash_table_d *table ATTRIBUTE_UNUSED)
 {
   /* Currently nothing to do.  */
 }
 
 static void
-hash_scan_call (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
+hash_scan_call (rtx x ATTRIBUTE_UNUSED, rtx_insn *insn ATTRIBUTE_UNUSED,
 		struct hash_table_d *table ATTRIBUTE_UNUSED)
 {
   /* Currently nothing to do.  */
@@ -1366,7 +1367,7 @@ hash_scan_call (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
 /* Process INSN and add hash table entries as appropriate.  */
 
 static void
-hash_scan_insn (rtx insn, struct hash_table_d *table)
+hash_scan_insn (rtx_insn *insn, struct hash_table_d *table)
 {
   rtx pat = PATTERN (insn);
   int i;
@@ -1566,7 +1567,7 @@ compute_hash_table_work (struct hash_table_d *table)
 
   FOR_EACH_BB_FN (current_bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
       unsigned int regno;
 
       /* First pass over the instructions records information used to
@@ -2122,13 +2123,13 @@ pre_expr_reaches_here_p (basic_block occr_bb, struct expr *expr, basic_block bb)
 
 /* Generate RTL to copy an EXPR to its `reaching_reg' and return it.  */
 
-static rtx
+static rtx_insn *
 process_insert_insn (struct expr *expr)
 {
   rtx reg = expr->reaching_reg;
   /* Copy the expression to make sure we don't have any sharing issues.  */
   rtx exp = copy_rtx (expr->expr);
-  rtx pat;
+  rtx_insn *pat;
 
   start_sequence ();
 
@@ -2161,10 +2162,10 @@ static void
 insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 {
   rtx insn = BB_END (bb);
-  rtx new_insn;
+  rtx_insn *new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
-  rtx pat, pat_end;
+  rtx_insn *pat, *pat_end;
 
   pat = process_insert_insn (expr);
   gcc_assert (pat && INSN_P (pat));
@@ -2190,7 +2191,7 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 	insn = XEXP (note, 0);
       else
 	{
-	  rtx maybe_cc0_setter = prev_nonnote_insn (insn);
+	  rtx_insn *maybe_cc0_setter = prev_nonnote_insn (insn);
 	  if (maybe_cc0_setter
 	      && INSN_P (maybe_cc0_setter)
 	      && sets_cc0_p (PATTERN (maybe_cc0_setter)))
@@ -2298,7 +2299,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 		       reach the deleted occurrence in BB.  */
 		    if (!bitmap_bit_p (inserted[e], j))
 		      {
-			rtx insn;
+			rtx_insn *insn;
 			edge eg = INDEX_EDGE (edge_list, e);
 
 			/* We can't insert anything on an abnormal and
@@ -2355,7 +2356,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
      MEM          <- reaching_reg.  */
 
 static void
-pre_insert_copy_insn (struct expr *expr, rtx insn)
+pre_insert_copy_insn (struct expr *expr, rtx_insn *insn)
 {
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
@@ -2478,7 +2479,7 @@ pre_insert_copies (void)
 
 	    for (avail = expr->avail_occr; avail != NULL; avail = avail->next)
 	      {
-		rtx insn = avail->insn;
+		rtx_insn *insn = avail->insn;
 
 		/* No need to handle this one if handled already.  */
 		if (avail->copied_p)
@@ -2509,7 +2510,7 @@ pre_insert_copies (void)
 
 struct set_data
 {
-  rtx insn;
+  rtx_insn *insn;
   const_rtx set;
   int nsets;
 };
@@ -2545,7 +2546,7 @@ record_set_data (rtx dest, const_rtx set, void *data)
 }
 
 static const_rtx
-single_set_gcse (rtx insn)
+single_set_gcse (rtx_insn *insn)
 {
   struct set_data s;
   rtx pattern;
@@ -2570,7 +2571,7 @@ single_set_gcse (rtx insn)
    in INSN.  */
 
 static rtx
-gcse_emit_move_after (rtx dest, rtx src, rtx insn)
+gcse_emit_move_after (rtx dest, rtx src, rtx_insn *insn)
 {
   rtx new_rtx;
   const_rtx set = single_set_gcse (insn);
@@ -2625,7 +2626,7 @@ pre_delete (void)
 	/* We only need to search antic_occr since we require ANTLOC != 0.  */
 	for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
 	  {
-	    rtx insn = occr->insn;
+	    rtx_insn *insn = occr->insn;
 	    rtx set;
 	    basic_block bb = BLOCK_FOR_INSN (insn);
 
@@ -2957,9 +2958,10 @@ compute_code_hoist_data (void)
    NOTE: Register pressure won't be increased in this function.  */
 
 static int
-update_bb_reg_pressure (basic_block bb, rtx from)
+update_bb_reg_pressure (basic_block bb, rtx_insn *from)
 {
-  rtx dreg, insn;
+  rtx dreg;
+  rtx_insn *insn;
   basic_block succ_bb;
   df_ref use, op_ref;
   edge succ;
@@ -3043,7 +3045,7 @@ static int
 should_hoist_expr_to_dom (basic_block expr_bb, struct expr *expr,
 			  basic_block bb, sbitmap visited, int distance,
 			  int *bb_size, enum reg_class pressure_class,
-			  int *nregs, bitmap hoisted_bbs, rtx from)
+			  int *nregs, bitmap hoisted_bbs, rtx_insn *from)
 {
   unsigned int i;
   edge pred;
@@ -3239,7 +3241,7 @@ hoist_code (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
       int to_head;
 
       to_head = 0;
@@ -3433,7 +3435,7 @@ hoist_code (void)
 		 to hoist to BB and make the transformations.  */
 	      FOR_EACH_VEC_ELT (occrs_to_hoist, j, occr)
 		{
-		  rtx insn;
+		  rtx_insn *insn;
 		  const_rtx set;
 
 		  gcc_assert (!occr->deleted_p);
@@ -3516,7 +3518,7 @@ get_regno_pressure_class (int regno, int *nregs)
 /* Return pressure class and number of hard registers (through *NREGS)
    for destination of INSN. */
 static enum reg_class
-get_pressure_class_and_nregs (rtx insn, int *nregs)
+get_pressure_class_and_nregs (rtx_insn *insn, int *nregs)
 {
   rtx reg;
   enum reg_class pressure_class;
@@ -3569,7 +3571,7 @@ calculate_bb_reg_pressure (void)
 {
   int i;
   unsigned int j;
-  rtx insn;
+  rtx_insn *insn;
   basic_block bb;
   bitmap curr_regs_live;
   bitmap_iterator bi;
@@ -3948,7 +3950,7 @@ compute_ld_motion_mems (void)
 {
   struct ls_expr * ptr;
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
 
   pre_ldst_mems = NULL;
   pre_ldst_table = new hash_table<pre_ldst_expr_hasher> (13);

@@ -1,5 +1,39 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcse.c (struct occr): Strengthen field "insn" from rtx to
+	rtx_insn *.
+	(test_insn): Likewise for this global.
+	(oprs_unchanged_p): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(oprs_anticipatable_p): Likewise.
+	(oprs_available_p): Likewise.
+	(insert_expr_in_table): Strengthen param "insn" from  rtx to
+	rtx_insn *.
+	(hash_scan_set): Likewise.
+	(hash_scan_clobber): Likewise.
+	(hash_scan_call): Likewise.
+	(hash_scan_insn): Likewise.
+	(compute_hash_table_work): Likewise for local "insn".
+	(process_insert_insn): Likewise for return type and local "pat".
+	(insert_insn_end_basic_block): Likewise for locals "new_insn",
+	"pat", "pat_end", "maybe_cc0_setter".
+	(pre_edge_insert): Likewise for local "insn".
+	(pre_insert_copy_insn): Likewise for param "insn".
+	(pre_insert_copies): Likewise for local "insn".
+	(struct set_data): Likewise for field "insn".
+	(single_set_gcse): Likewise for param "insn".
+	(gcse_emit_move_after): Likewise.
+	(pre_delete): Likewise for local "insn".
+	(update_bb_reg_pressure): Likewise for param "from" and local
+	"insn".
+	(should_hoist_expr_to_dom): Likewise for param "from".
+	(hoist_code): Likewise for local "insn".
+	(get_pressure_class_and_nregs): Likewise for param "insn".
+	(calculate_bb_reg_pressure): Likewise for local "insn".
+	(compute_ld_motion_mems): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* genpeep.c (main): Rename param back from "uncast_ins1" to
 	"ins1", strengthening from rtx to rtx_insn *.  Drop now-redundant
 	checked cast.
