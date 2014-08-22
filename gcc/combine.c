@@ -134,7 +134,7 @@ static int total_attempts, total_merges, total_extras, total_successes;
    and can cause distribute_notes to do wrong things.  This is the
    second instruction if it has been so modified, null otherwise.  */
 
-static rtx i2mod;
+static rtx_insn *i2mod;
 
 /* When I2MOD is nonnull, this is a copy of the old right hand side.  */
 
@@ -146,10 +146,10 @@ static rtx i2mod_new_rhs;
 
 typedef struct reg_stat_struct {
   /* Record last point of death of (hard or pseudo) register n.  */
-  rtx				last_death;
+  rtx_insn			*last_death;
 
   /* Record last point of modification of (hard or pseudo) register n.  */
-  rtx				last_set;
+  rtx_insn			*last_set;
 
   /* The next group of fields allows the recording of the last value assigned
      to (hard or pseudo) register n.  We use this information to see if an
@@ -272,7 +272,7 @@ static int last_call_luid;
    looked at, but this may be used to examine the successors of the insn
    to judge whether a simplification is valid.  */
 
-static rtx subst_insn;
+static rtx_insn *subst_insn;
 
 /* This is the lowest LUID that `subst' is currently dealing with.
    get_last_value will not return a value if the register was set at or
@@ -292,7 +292,7 @@ static HARD_REG_SET newpat_used_regs;
    insn is the earlier than I2 or I3, combine should rescan starting at
    that location.  */
 
-static rtx added_links_insn;
+static rtx_insn *added_links_insn;
 
 /* Basic block in which we are performing combines.  */
 static basic_block this_basic_block;
@@ -312,7 +312,7 @@ static int *uid_insn_cost;
    instruction stream as struct insn_link pointers.  */
 
 struct insn_link {
-  rtx insn;
+  rtx_insn *insn;
   struct insn_link *next;
 };
 
@@ -331,7 +331,7 @@ static struct obstack insn_link_obstack;
 /* Allocate a link.  */
 
 static inline struct insn_link *
-alloc_insn_link (rtx insn, struct insn_link *next)
+alloc_insn_link (rtx_insn *insn, struct insn_link *next)
 {
   struct insn_link *l
     = (struct insn_link *) obstack_alloc (&insn_link_obstack,
@@ -386,7 +386,7 @@ struct undobuf
 {
   struct undo *undos;
   struct undo *frees;
-  rtx other_insn;
+  rtx_insn *other_insn;
 };
 
 static struct undobuf undobuf;
@@ -406,16 +406,18 @@ static rtx reg_num_sign_bit_copies_for_combine (const_rtx, enum machine_mode, co
 static void do_SUBST (rtx *, rtx);
 static void do_SUBST_INT (int *, int);
 static void init_reg_last (void);
-static void setup_incoming_promotions (rtx);
+static void setup_incoming_promotions (rtx_insn *);
 static void set_nonzero_bits_and_sign_copies (rtx, const_rtx, void *);
-static int cant_combine_insn_p (rtx);
-static int can_combine_p (rtx, rtx, rtx, rtx, rtx, rtx, rtx *, rtx *);
-static int combinable_i3pat (rtx, rtx *, rtx, rtx, rtx, int, int, rtx *);
+static int cant_combine_insn_p (rtx_insn *);
+static int can_combine_p (rtx_insn *, rtx_insn *, rtx_insn *, rtx_insn *,
+			  rtx_insn *, rtx_insn *, rtx *, rtx *);
+static int combinable_i3pat (rtx_insn *, rtx *, rtx, rtx, rtx, int, int, rtx *);
 static int contains_muldiv (rtx);
-static rtx try_combine (rtx, rtx, rtx, rtx, int *, rtx);
+static rtx_insn *try_combine (rtx_insn *, rtx_insn *, rtx_insn *, rtx_insn *,
+			      int *, rtx_insn *);
 static void undo_all (void);
 static void undo_commit (void);
-static rtx *find_split_point (rtx *, rtx, bool);
+static rtx *find_split_point (rtx *, rtx_insn *, bool);
 static rtx subst (rtx, rtx, rtx, int, int, int);
 static rtx combine_simplify_rtx (rtx, enum machine_mode, int, int);
 static rtx simplify_if_then_else (rtx);
@@ -446,27 +448,27 @@ static int merge_outer_ops (enum rtx_code *, HOST_WIDE_INT *, enum rtx_code,
 static rtx simplify_shift_const_1 (enum rtx_code, enum machine_mode, rtx, int);
 static rtx simplify_shift_const (rtx, enum rtx_code, enum machine_mode, rtx,
 				 int);
-static int recog_for_combine (rtx *, rtx, rtx *);
+static int recog_for_combine (rtx *, rtx_insn *, rtx *);
 static rtx gen_lowpart_for_combine (enum machine_mode, rtx);
 static enum rtx_code simplify_compare_const (enum rtx_code, enum machine_mode,
 					     rtx, rtx *);
 static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
 static void update_table_tick (rtx);
-static void record_value_for_reg (rtx, rtx, rtx);
-static void check_promoted_subreg (rtx, rtx);
+static void record_value_for_reg (rtx, rtx_insn *, rtx);
+static void check_promoted_subreg (rtx_insn *, rtx);
 static void record_dead_and_set_regs_1 (rtx, const_rtx, void *);
-static void record_dead_and_set_regs (rtx);
-static int get_last_value_validate (rtx *, rtx, int, int);
+static void record_dead_and_set_regs (rtx_insn *);
+static int get_last_value_validate (rtx *, rtx_insn *, int, int);
 static rtx get_last_value (const_rtx);
 static int use_crosses_set_p (const_rtx, int);
 static void reg_dead_at_p_1 (rtx, const_rtx, void *);
-static int reg_dead_at_p (rtx, rtx);
-static void move_deaths (rtx, rtx, int, rtx, rtx *);
+static int reg_dead_at_p (rtx, rtx_insn *);
+static void move_deaths (rtx, rtx, int, rtx_insn *, rtx *);
 static int reg_bitfield_target_p (rtx, rtx);
-static void distribute_notes (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+static void distribute_notes (rtx, rtx_insn *, rtx_insn *, rtx_insn *, rtx, rtx, rtx);
 static void distribute_links (struct insn_link *);
 static void mark_used_regs_combine (rtx);
-static void record_promoted_value (rtx, rtx);
+static void record_promoted_value (rtx_insn *, rtx);
 static int unmentioned_reg_p_1 (rtx *, void *);
 static bool unmentioned_reg_p (rtx, rtx);
 static int record_truncated_value (rtx *, void *);
@@ -639,10 +641,10 @@ find_single_use_1 (rtx dest, rtx *loc)
    and last insn referencing DEST.  */
 
 static rtx *
-find_single_use (rtx dest, rtx insn, rtx *ploc)
+find_single_use (rtx dest, rtx_insn *insn, rtx_insn **ploc)
 {
   basic_block bb;
-  rtx next;
+  rtx_insn *next;
   rtx *result;
   struct insn_link *link;
 
@@ -835,8 +837,8 @@ do_SUBST_LINK (struct insn_link **into, struct insn_link *newval)
    expensive than the original sequence.  */
 
 static bool
-combine_validate_cost (rtx i0, rtx i1, rtx i2, rtx i3, rtx newpat,
-		       rtx newi2pat, rtx newotherpat)
+combine_validate_cost (rtx_insn *i0, rtx_insn *i1, rtx_insn *i2, rtx_insn *i3,
+		       rtx newpat, rtx newi2pat, rtx newotherpat)
 {
   int i0_cost, i1_cost, i2_cost, i3_cost;
   int new_i2_cost, new_i3_cost;
@@ -960,7 +962,7 @@ combine_validate_cost (rtx i0, rtx i1, rtx i2, rtx i3, rtx newpat,
 static void
 delete_noop_moves (void)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
   basic_block bb;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -986,10 +988,11 @@ static void
 create_log_links (void)
 {
   basic_block bb;
-  rtx *next_use, insn;
+  rtx_insn **next_use;
+  rtx_insn *insn;
   df_ref def, use;
 
-  next_use = XCNEWVEC (rtx, max_reg_num ());
+  next_use = XCNEWVEC (rtx_insn *, max_reg_num ());
 
   /* Pass through each block from the end, recording the uses of each
      register and establishing log links when def is encountered.
@@ -1013,7 +1016,7 @@ create_log_links (void)
 	  FOR_EACH_INSN_DEF (def, insn)
             {
               int regno = DF_REF_REGNO (def);
-              rtx use_insn;
+              rtx_insn *use_insn;
 
               if (!next_use[regno])
                 continue;
@@ -1059,7 +1062,7 @@ create_log_links (void)
 			  = alloc_insn_link (insn, LOG_LINKS (use_insn));
 		    }
                 }
-              next_use[regno] = NULL_RTX;
+              next_use[regno] = NULL;
             }
 
 	  FOR_EACH_INSN_USE (use, insn)
@@ -1087,7 +1090,7 @@ create_log_links (void)
    pair.  */
 
 static bool
-insn_a_feeds_b (rtx a, rtx b)
+insn_a_feeds_b (rtx_insn *a, rtx_insn *b)
 {
   struct insn_link *links;
   FOR_EACH_LOG_LINK (links, b)
@@ -1106,14 +1109,14 @@ insn_a_feeds_b (rtx a, rtx b)
    Return nonzero if the combiner has turned an indirect jump
    instruction into a direct jump.  */
 static int
-combine_instructions (rtx f, unsigned int nregs)
+combine_instructions (rtx_insn *f, unsigned int nregs)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
 #ifdef HAVE_cc0
-  rtx prev;
+  rtx_insn *prev;
 #endif
   struct insn_link *links, *nextlinks;
-  rtx first;
+  rtx_insn *first;
   basic_block last_bb;
 
   int new_direct_jump_p = 0;
@@ -1215,7 +1218,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
   FOR_EACH_BB_FN (this_basic_block, cfun)
     {
-      rtx last_combined_insn = NULL_RTX;
+      rtx_insn *last_combined_insn = NULL;
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
@@ -1256,8 +1259,8 @@ combine_instructions (rtx f, unsigned int nregs)
 	  /* Try this insn with each insn it links back to.  */
 
 	  FOR_EACH_LOG_LINK (links, insn)
-	    if ((next = try_combine (insn, links->insn, NULL_RTX,
-				     NULL_RTX, &new_direct_jump_p,
+	    if ((next = try_combine (insn, links->insn, NULL,
+				     NULL, &new_direct_jump_p,
 				     last_combined_insn)) != 0)
 	      {
 		statistics_counter_event (cfun, "two-insn combine", 1);
@@ -1269,7 +1272,7 @@ combine_instructions (rtx f, unsigned int nregs)
 	  if (max_combine >= 3)
 	    FOR_EACH_LOG_LINK (links, insn)
 	      {
-		rtx link = links->insn;
+		rtx_insn *link = links->insn;
 
 		/* If the linked insn has been replaced by a note, then there
 		   is no point in pursuing this chain any further.  */
@@ -1278,7 +1281,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
 		FOR_EACH_LOG_LINK (nextlinks, link)
 		  if ((next = try_combine (insn, link, nextlinks->insn,
-					   NULL_RTX, &new_direct_jump_p,
+					   NULL, &new_direct_jump_p,
 					   last_combined_insn)) != 0)
 		    {
 		      statistics_counter_event (cfun, "three-insn combine", 1);
@@ -1299,14 +1302,14 @@ combine_instructions (rtx f, unsigned int nregs)
 	      && NONJUMP_INSN_P (prev)
 	      && sets_cc0_p (PATTERN (prev)))
 	    {
-	      if ((next = try_combine (insn, prev, NULL_RTX, NULL_RTX,
+	      if ((next = try_combine (insn, prev, NULL, NULL,
 				       &new_direct_jump_p,
 				       last_combined_insn)) != 0)
 		goto retry;
 
 	      FOR_EACH_LOG_LINK (nextlinks, prev)
 		  if ((next = try_combine (insn, prev, nextlinks->insn,
-					   NULL_RTX, &new_direct_jump_p,
+					   NULL, &new_direct_jump_p,
 					   last_combined_insn)) != 0)
 		    goto retry;
 	    }
@@ -1319,14 +1322,14 @@ combine_instructions (rtx f, unsigned int nregs)
 	      && GET_CODE (PATTERN (insn)) == SET
 	      && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (insn))))
 	    {
-	      if ((next = try_combine (insn, prev, NULL_RTX, NULL_RTX,
+	      if ((next = try_combine (insn, prev, NULL, NULL,
 				       &new_direct_jump_p,
 				       last_combined_insn)) != 0)
 		goto retry;
 
 	      FOR_EACH_LOG_LINK (nextlinks, prev)
 		  if ((next = try_combine (insn, prev, nextlinks->insn,
-					   NULL_RTX, &new_direct_jump_p,
+					   NULL, &new_direct_jump_p,
 					   last_combined_insn)) != 0)
 		    goto retry;
 	    }
@@ -1342,7 +1345,7 @@ combine_instructions (rtx f, unsigned int nregs)
 		  && NONJUMP_INSN_P (prev)
 		  && sets_cc0_p (PATTERN (prev))
 		  && (next = try_combine (insn, links->insn,
-					  prev, NULL_RTX, &new_direct_jump_p,
+					  prev, NULL, &new_direct_jump_p,
 					  last_combined_insn)) != 0)
 		goto retry;
 #endif
@@ -1354,7 +1357,7 @@ combine_instructions (rtx f, unsigned int nregs)
 	      for (nextlinks = links->next; nextlinks;
 		   nextlinks = nextlinks->next)
 		if ((next = try_combine (insn, links->insn,
-					 nextlinks->insn, NULL_RTX,
+					 nextlinks->insn, NULL,
 					 &new_direct_jump_p,
 					 last_combined_insn)) != 0)
 
@@ -1368,7 +1371,7 @@ combine_instructions (rtx f, unsigned int nregs)
 	    FOR_EACH_LOG_LINK (links, insn)
 	      {
 		struct insn_link *next1;
-		rtx link = links->insn;
+		rtx_insn *link = links->insn;
 
 		/* If the linked insn has been replaced by a note, then there
 		   is no point in pursuing this chain any further.  */
@@ -1377,7 +1380,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
 		FOR_EACH_LOG_LINK (next1, link)
 		  {
-		    rtx link1 = next1->insn;
+		    rtx_insn *link1 = next1->insn;
 		    if (NOTE_P (link1))
 		      continue;
 		    /* I0 -> I1 -> I2 -> I3.  */
@@ -1405,7 +1408,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
 		for (next1 = links->next; next1; next1 = next1->next)
 		  {
-		    rtx link1 = next1->insn;
+		    rtx_insn *link1 = next1->insn;
 		    if (NOTE_P (link1))
 		      continue;
 		    /* I0 -> I2; I1, I2 -> I3.  */
@@ -1435,7 +1438,7 @@ combine_instructions (rtx f, unsigned int nregs)
 	  FOR_EACH_LOG_LINK (links, insn)
 	    {
 	      rtx set, note;
-	      rtx temp = links->insn;
+	      rtx_insn *temp = links->insn;
 	      if ((set = single_set (temp)) != 0
 		  && (note = find_reg_equal_equiv_note (temp)) != 0
 		  && (note = XEXP (note, 0), GET_CODE (note)) != EXPR_LIST
@@ -1454,10 +1457,10 @@ combine_instructions (rtx f, unsigned int nregs)
 		  i2mod = temp;
 		  i2mod_old_rhs = copy_rtx (orig);
 		  i2mod_new_rhs = copy_rtx (note);
-		  next = try_combine (insn, i2mod, NULL_RTX, NULL_RTX,
+		  next = try_combine (insn, i2mod, NULL, NULL,
 				      &new_direct_jump_p,
 				      last_combined_insn);
-		  i2mod = NULL_RTX;
+		  i2mod = NULL;
 		  if (next)
 		    {
 		      statistics_counter_event (cfun, "insn-with-note combine", 1);
@@ -1525,7 +1528,7 @@ init_reg_last (void)
 /* Set up any promoted values for incoming argument registers.  */
 
 static void
-setup_incoming_promotions (rtx first)
+setup_incoming_promotions (rtx_insn *first)
 {
   tree arg;
   bool strictly_local = false;
@@ -1614,7 +1617,7 @@ setup_incoming_promotions (rtx first)
 static void
 set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 {
-  rtx insn = (rtx) data;
+  rtx_insn *insn = (rtx_insn *) data;
   unsigned int num;
 
   if (REG_P (x)
@@ -1723,14 +1726,14 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
    will return 1.  */
 
 static int
-can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED,
-	       rtx pred2 ATTRIBUTE_UNUSED, rtx succ, rtx succ2,
+can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
+	       rtx_insn *pred2 ATTRIBUTE_UNUSED, rtx_insn *succ, rtx_insn *succ2,
 	       rtx *pdest, rtx *psrc)
 {
   int i;
   const_rtx set = 0;
   rtx src, dest;
-  rtx p;
+  rtx_insn *p;
 #ifdef AUTO_INC_DEC
   rtx link;
 #endif
@@ -2088,7 +2091,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED,
    Return 1 if the combination is valid, zero otherwise.  */
 
 static int
-combinable_i3pat (rtx i3, rtx *loc, rtx i2dest, rtx i1dest, rtx i0dest,
+combinable_i3pat (rtx_insn *i3, rtx *loc, rtx i2dest, rtx i1dest, rtx i0dest,
 		  int i1_not_in_src, int i0_not_in_src, rtx *pi3dest_killed)
 {
   rtx x = *loc;
@@ -2213,7 +2216,7 @@ contains_muldiv (rtx x)
    can't perform combinations.  */
 
 static int
-cant_combine_insn_p (rtx insn)
+cant_combine_insn_p (rtx_insn *insn)
 {
   rtx set;
   rtx src, dest;
@@ -2290,7 +2293,7 @@ likely_spilled_retval_1 (rtx x, const_rtx set, void *data)
    second copy insn for a complex value.  */
 
 static int
-likely_spilled_retval_p (rtx insn)
+likely_spilled_retval_p (rtx_insn *insn)
 {
   rtx use = BB_END (this_basic_block);
   rtx reg, p;
@@ -2339,7 +2342,7 @@ likely_spilled_retval_p (rtx insn)
    the results of the insn and a LOG_LINK pointing to the insn.  */
 
 static void
-adjust_for_new_dest (rtx insn)
+adjust_for_new_dest (rtx_insn *insn)
 {
   /* For notes, be conservative and simply remove them.  */
   remove_reg_equal_equiv_notes (insn);
@@ -2401,7 +2404,7 @@ reg_subword_p (rtx x, rtx reg)
    but not for a (set (pc) (label_ref FOO)).  */
 
 static void
-update_cfg_for_uncondjump (rtx insn)
+update_cfg_for_uncondjump (rtx_insn *insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   gcc_assert (BB_END (bb) == insn);
@@ -2411,7 +2414,7 @@ update_cfg_for_uncondjump (rtx insn)
   delete_insn (insn);
   if (EDGE_COUNT (bb->succs) == 1)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
 
@@ -2452,9 +2455,9 @@ update_cfg_for_uncondjump (rtx insn)
    been I3 passed to an earlier try_combine within the same basic
    block.  */
 
-static rtx
-try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
-	     rtx last_combined_insn)
+static rtx_insn *
+try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
+	     int *new_direct_jump_p, rtx_insn *last_combined_insn)
 {
   /* New patterns for I3 and I2, respectively.  */
   rtx newpat, newi2pat = 0;
@@ -2496,7 +2499,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
   int changed_i3_dest = 0;
 
   int maxreg;
-  rtx temp;
+  rtx_insn *temp_insn;
+  rtx temp_expr;
   struct insn_link *link;
   rtx other_pat = 0;
   rtx new_other_notes;
@@ -2516,7 +2520,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
       for (i = 0; i < 4; i++)
 	{
-	  rtx insn = i == 0 ? i0 : i == 1 ? i1 : i == 2 ? i2 : i3;
+	  rtx_insn *insn = i == 0 ? i0 : i == 1 ? i1 : i == 2 ? i2 : i3;
 	  rtx set = single_set (insn);
 	  rtx src;
 	  if (!set)
@@ -2568,11 +2572,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
   /* If multiple insns feed into one of I2 or I3, they can be in any
      order.  To simplify the code below, reorder them in sequence.  */
   if (i0 && DF_INSN_LUID (i0) > DF_INSN_LUID (i2))
-    temp = i2, i2 = i0, i0 = temp;
+    temp_insn = i2, i2 = i0, i0 = temp_insn;
   if (i0 && DF_INSN_LUID (i0) > DF_INSN_LUID (i1))
-    temp = i1, i1 = i0, i0 = temp;
+    temp_insn = i1, i1 = i0, i0 = temp_insn;
   if (i1 && DF_INSN_LUID (i1) > DF_INSN_LUID (i2))
-    temp = i1, i1 = i2, i2 = temp;
+    temp_insn = i1, i1 = i2, i2 = temp_insn;
 
   added_links_insn = 0;
 
@@ -2656,11 +2660,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
      sub-part of it to another constant, merge them by making a new
      constant.  */
   if (i1 == 0
-      && (temp = single_set (i2)) != 0
-      && CONST_SCALAR_INT_P (SET_SRC (temp))
+      && (temp_expr = single_set (i2)) != 0
+      && CONST_SCALAR_INT_P (SET_SRC (temp_expr))
       && GET_CODE (PATTERN (i3)) == SET
       && CONST_SCALAR_INT_P (SET_SRC (PATTERN (i3)))
-      && reg_subword_p (SET_DEST (PATTERN (i3)), SET_DEST (temp)))
+      && reg_subword_p (SET_DEST (PATTERN (i3)), SET_DEST (temp_expr)))
     {
       rtx dest = SET_DEST (PATTERN (i3));
       int offset = -1;
@@ -2692,7 +2696,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  if (subreg_lowpart_p (dest))
 	    ;
 	  /* Handle the case where inner is twice the size of outer.  */
-	  else if (GET_MODE_PRECISION (GET_MODE (SET_DEST (temp)))
+	  else if (GET_MODE_PRECISION (GET_MODE (SET_DEST (temp_expr)))
 		   == 2 * GET_MODE_PRECISION (GET_MODE (dest)))
 	    offset += GET_MODE_PRECISION (GET_MODE (dest));
 	  /* Otherwise give up for now.  */
@@ -2703,10 +2707,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       if (offset >= 0)
 	{
 	  rtx inner = SET_SRC (PATTERN (i3));
-	  rtx outer = SET_SRC (temp);
+	  rtx outer = SET_SRC (temp_expr);
 
 	  wide_int o
-	    = wi::insert (std::make_pair (outer, GET_MODE (SET_DEST (temp))),
+	    = wi::insert (std::make_pair (outer, GET_MODE (SET_DEST (temp_expr))),
 			  std::make_pair (inner, GET_MODE (dest)),
 			  offset, width);
 
@@ -2714,14 +2718,14 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  subst_insn = i3;
 	  subst_low_luid = DF_INSN_LUID (i2);
 	  added_sets_2 = added_sets_1 = added_sets_0 = 0;
-	  i2dest = SET_DEST (temp);
+	  i2dest = SET_DEST (temp_expr);
 	  i2dest_killed = dead_or_set_p (i2, i2dest);
 
 	  /* Replace the source in I2 with the new constant and make the
 	     resulting insn the new pattern for I3.  Then skip to where we
 	     validate the pattern.  Everything was set up above.  */
-	  SUBST (SET_SRC (temp),
-		 immed_wide_int_const (o, GET_MODE (SET_DEST (temp))));
+	  SUBST (SET_SRC (temp_expr),
+		 immed_wide_int_const (o, GET_MODE (SET_DEST (temp_expr))));
 
 	  newpat = PATTERN (i2);
 
@@ -2768,9 +2772,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	     never appear in the insn stream so giving it the same INSN_UID
 	     as I2 will not cause a problem.  */
 
-	  i1 = gen_rtx_INSN (VOIDmode, NULL_RTX, i2, BLOCK_FOR_INSN (i2),
-			     XVECEXP (PATTERN (i2), 0, 1), INSN_LOCATION (i2),
-			     -1, NULL_RTX);
+	  i1 = as_a <rtx_insn *> (
+		 gen_rtx_INSN (VOIDmode, NULL_RTX, i2, BLOCK_FOR_INSN (i2),
+			       XVECEXP (PATTERN (i2), 0, 1), INSN_LOCATION (i2),
+			       -1, NULL_RTX));
 	  INSN_UID (i1) = INSN_UID (i2);
 
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
@@ -2782,10 +2787,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 #endif
 
   /* Verify that I2 and I1 are valid for combining.  */
-  if (! can_combine_p (i2, i3, i0, i1, NULL_RTX, NULL_RTX, &i2dest, &i2src)
-      || (i1 && ! can_combine_p (i1, i3, i0, NULL_RTX, i2, NULL_RTX,
+  if (! can_combine_p (i2, i3, i0, i1, NULL, NULL, &i2dest, &i2src)
+      || (i1 && ! can_combine_p (i1, i3, i0, NULL, i2, NULL,
 				 &i1dest, &i1src))
-      || (i0 && ! can_combine_p (i0, i3, NULL_RTX, NULL_RTX, i1, i2,
+      || (i0 && ! can_combine_p (i0, i3, NULL, NULL, i1, i2,
 				 &i0dest, &i0src)))
     {
       undo_all ();
@@ -2958,7 +2963,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       && rtx_equal_p (XEXP (SET_SRC (PATTERN (i3)), 0), i2dest))
     {
       rtx newpat_dest;
-      rtx *cc_use_loc = NULL, cc_use_insn = NULL_RTX;
+      rtx *cc_use_loc = NULL;
+      rtx_insn *cc_use_insn = NULL;
       rtx op0 = i2src, op1 = XEXP (SET_SRC (PATTERN (i3)), 1);
       enum machine_mode compare_mode, orig_compare_mode;
       enum rtx_code compare_code = UNKNOWN, orig_compare_code = UNKNOWN;
@@ -3111,7 +3117,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	   /* Before we can do this substitution, we must redo the test done
 	      above (see detailed comments there) that ensures I1DEST isn't
 	      mentioned in any SETs in NEWPAT that are field assignments.  */
-	  || !combinable_i3pat (NULL_RTX, &newpat, i1dest, NULL_RTX, NULL_RTX,
+	  || !combinable_i3pat (NULL, &newpat, i1dest, NULL_RTX, NULL_RTX,
 				0, 0, 0))
 	{
 	  undo_all ();
@@ -3146,7 +3152,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	   && ((i0_feeds_i2_n && dead_or_set_p (i2, i0dest))
 	       || (i0_feeds_i1_n && dead_or_set_p (i1, i0dest)))
 	   && !reg_overlap_mentioned_p (i0dest, newpat))
-	  || !combinable_i3pat (NULL_RTX, &newpat, i0dest, NULL_RTX, NULL_RTX,
+	  || !combinable_i3pat (NULL, &newpat, i0dest, NULL_RTX, NULL_RTX,
 				0, 0, 0))
 	{
 	  undo_all ();
@@ -3661,20 +3667,20 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 				   DF_INSN_LUID (i2))
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != ZERO_EXTRACT
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != STRICT_LOW_PART
-	   && ! (temp = SET_DEST (XVECEXP (newpat, 0, 1)),
-		 (REG_P (temp)
-		  && reg_stat[REGNO (temp)].nonzero_bits != 0
-		  && GET_MODE_PRECISION (GET_MODE (temp)) < BITS_PER_WORD
-		  && GET_MODE_PRECISION (GET_MODE (temp)) < HOST_BITS_PER_INT
-		  && (reg_stat[REGNO (temp)].nonzero_bits
+	   && ! (temp_expr = SET_DEST (XVECEXP (newpat, 0, 1)),
+		 (REG_P (temp_expr)
+		  && reg_stat[REGNO (temp_expr)].nonzero_bits != 0
+		  && GET_MODE_PRECISION (GET_MODE (temp_expr)) < BITS_PER_WORD
+		  && GET_MODE_PRECISION (GET_MODE (temp_expr)) < HOST_BITS_PER_INT
+		  && (reg_stat[REGNO (temp_expr)].nonzero_bits
 		      != GET_MODE_MASK (word_mode))))
 	   && ! (GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) == SUBREG
-		 && (temp = SUBREG_REG (SET_DEST (XVECEXP (newpat, 0, 1))),
-		     (REG_P (temp)
-		      && reg_stat[REGNO (temp)].nonzero_bits != 0
-		      && GET_MODE_PRECISION (GET_MODE (temp)) < BITS_PER_WORD
-		      && GET_MODE_PRECISION (GET_MODE (temp)) < HOST_BITS_PER_INT
-		      && (reg_stat[REGNO (temp)].nonzero_bits
+		 && (temp_expr = SUBREG_REG (SET_DEST (XVECEXP (newpat, 0, 1))),
+		     (REG_P (temp_expr)
+		      && reg_stat[REGNO (temp_expr)].nonzero_bits != 0
+		      && GET_MODE_PRECISION (GET_MODE (temp_expr)) < BITS_PER_WORD
+		      && GET_MODE_PRECISION (GET_MODE (temp_expr)) < HOST_BITS_PER_INT
+		      && (reg_stat[REGNO (temp_expr)].nonzero_bits
 			  != GET_MODE_MASK (word_mode)))))
 	   && ! reg_overlap_mentioned_p (SET_DEST (XVECEXP (newpat, 0, 1)),
 					 SET_SRC (XVECEXP (newpat, 0, 1)))
@@ -3821,7 +3827,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
   /* If I2 is the CC0 setter and I3 is the CC0 user then check whether
      they are adjacent to each other or not.  */
   {
-    rtx p = prev_nonnote_insn (i3);
+    rtx_insn *p = prev_nonnote_insn (i3);
     if (p && p != i2 && NONJUMP_INSN_P (p) && newi2pat
 	&& sets_cc0_p (newi2pat))
       {
@@ -3869,7 +3875,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	    else
 	      {
 		rtx tempreg = gen_raw_REG (old_mode, REGNO (reg));
-		rtx first, last;
+		rtx_insn *first, *last;
 
 		if (reg == i2dest)
 		  {
@@ -3940,14 +3946,14 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	    remove_note (undobuf.other_insn, note);
 	}
 
-      distribute_notes (new_other_notes, undobuf.other_insn,
-			undobuf.other_insn, NULL_RTX, NULL_RTX, NULL_RTX,
+      distribute_notes  (new_other_notes, undobuf.other_insn,
+			undobuf.other_insn, NULL, NULL_RTX, NULL_RTX,
 			NULL_RTX);
     }
 
   if (swap_i2i3)
     {
-      rtx insn;
+      rtx_insn *insn;
       struct insn_link *link;
       rtx ni2dest;
 
@@ -4087,13 +4093,13 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	      && SET_DEST (XVECEXP (PATTERN (i2), 0, i)) != i2dest
 	      && ! find_reg_note (i2, REG_UNUSED,
 				  SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
-	    for (temp = NEXT_INSN (i2);
-		 temp
+	    for (temp_insn = NEXT_INSN (i2);
+		 temp_insn
 		 && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-			  || BB_HEAD (this_basic_block) != temp);
-		 temp = NEXT_INSN (temp))
-	      if (temp != i3 && INSN_P (temp))
-		FOR_EACH_LOG_LINK (link, temp)
+			  || BB_HEAD (this_basic_block) != temp_insn);
+		 temp_insn = NEXT_INSN (temp_insn))
+	      if (temp_insn != i3 && INSN_P (temp_insn))
+		FOR_EACH_LOG_LINK (link, temp_insn)
 		  if (link->insn == i2)
 		    link->insn = i3;
 
@@ -4167,19 +4173,19 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 
     /* Distribute all the LOG_LINKS and REG_NOTES from I1, I2, and I3.  */
     if (i3notes)
-      distribute_notes (i3notes, i3, i3, newi2pat ? i2 : NULL_RTX,
+      distribute_notes (i3notes, i3, i3, newi2pat ? i2 : NULL,
 			elim_i2, elim_i1, elim_i0);
     if (i2notes)
-      distribute_notes (i2notes, i2, i3, newi2pat ? i2 : NULL_RTX,
+      distribute_notes (i2notes, i2, i3, newi2pat ? i2 : NULL,
 			elim_i2, elim_i1, elim_i0);
     if (i1notes)
-      distribute_notes (i1notes, i1, i3, newi2pat ? i2 : NULL_RTX,
+      distribute_notes (i1notes, i1, i3, newi2pat ? i2 : NULL,
 			elim_i2, elim_i1, elim_i0);
     if (i0notes)
-      distribute_notes (i0notes, i0, i3, newi2pat ? i2 : NULL_RTX,
+      distribute_notes (i0notes, i0, i3, newi2pat ? i2 : NULL,
 			elim_i2, elim_i1, elim_i0);
     if (midnotes)
-      distribute_notes (midnotes, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+      distribute_notes (midnotes, NULL, i3, newi2pat ? i2 : NULL,
 			elim_i2, elim_i1, elim_i0);
 
     /* Distribute any notes added to I2 or I3 by recog_for_combine.  We
@@ -4187,11 +4193,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
        so we always pass it as i3.  */
 
     if (newi2pat && new_i2_notes)
-      distribute_notes (new_i2_notes, i2, i2, NULL_RTX, NULL_RTX, NULL_RTX,
+      distribute_notes (new_i2_notes, i2, i2, NULL, NULL_RTX, NULL_RTX,
 			NULL_RTX);
 
     if (new_i3_notes)
-      distribute_notes (new_i3_notes, i3, i3, NULL_RTX, NULL_RTX, NULL_RTX,
+      distribute_notes (new_i3_notes, i3, i3, NULL, NULL_RTX, NULL_RTX,
 			NULL_RTX);
 
     /* If I3DEST was used in I3SRC, it really died in I3.  We may need to
@@ -4205,10 +4211,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       {
 	rtx new_note = alloc_reg_note (REG_DEAD, i3dest_killed, NULL_RTX);
 	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
-	  distribute_notes (new_note, NULL_RTX, i2, NULL_RTX, elim_i2,
+	  distribute_notes (new_note, NULL, i2, NULL, elim_i2,
 			    elim_i1, elim_i0);
 	else
-	  distribute_notes (new_note, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+	  distribute_notes (new_note, NULL, i3, newi2pat ? i2 : NULL,
 			    elim_i2, elim_i1, elim_i0);
       }
 
@@ -4216,10 +4222,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       {
 	rtx new_note = alloc_reg_note (REG_DEAD, i2dest, NULL_RTX);
 	if (newi2pat && reg_set_p (i2dest, newi2pat))
-	  distribute_notes (new_note,  NULL_RTX, i2, NULL_RTX, NULL_RTX,
+	  distribute_notes (new_note,  NULL, i2, NULL, NULL_RTX,
 			    NULL_RTX, NULL_RTX);
 	else
-	  distribute_notes (new_note, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+	  distribute_notes (new_note, NULL, i3, newi2pat ? i2 : NULL,
 			    NULL_RTX, NULL_RTX, NULL_RTX);
       }
 
@@ -4227,10 +4233,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       {
 	rtx new_note = alloc_reg_note (REG_DEAD, i1dest, NULL_RTX);
 	if (newi2pat && reg_set_p (i1dest, newi2pat))
-	  distribute_notes (new_note, NULL_RTX, i2, NULL_RTX, NULL_RTX,
+	  distribute_notes (new_note, NULL, i2, NULL, NULL_RTX,
 			    NULL_RTX, NULL_RTX);
 	else
-	  distribute_notes (new_note, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+	  distribute_notes (new_note, NULL, i3, newi2pat ? i2 : NULL,
 			    NULL_RTX, NULL_RTX, NULL_RTX);
       }
 
@@ -4238,10 +4244,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
       {
 	rtx new_note = alloc_reg_note (REG_DEAD, i0dest, NULL_RTX);
 	if (newi2pat && reg_set_p (i0dest, newi2pat))
-	  distribute_notes (new_note, NULL_RTX, i2, NULL_RTX, NULL_RTX,
+	  distribute_notes (new_note, NULL, i2, NULL, NULL_RTX,
 			    NULL_RTX, NULL_RTX);
 	else
-	  distribute_notes (new_note, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+	  distribute_notes (new_note, NULL, i3, newi2pat ? i2 : NULL,
 			    NULL_RTX, NULL_RTX, NULL_RTX);
       }
 
@@ -4253,7 +4259,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
     if (REG_P (i2dest))
       {
 	struct insn_link *link;
-	rtx i2_insn = 0, i2_val = 0, set;
+	rtx_insn *i2_insn = 0;
+	rtx i2_val = 0, set;
 
 	/* The insn that used to set this register doesn't exist, and
 	   this life of the register may not exist either.  See if one of
@@ -4280,7 +4287,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
     if (i1 && REG_P (i1dest))
       {
 	struct insn_link *link;
-	rtx i1_insn = 0, i1_val = 0, set;
+	rtx_insn *i1_insn = 0;
+	rtx i1_val = 0, set;
 
 	FOR_EACH_LOG_LINK (link, i3)
 	  if ((set = single_set (link->insn)) != 0
@@ -4296,7 +4304,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
     if (i0 && REG_P (i0dest))
       {
 	struct insn_link *link;
-	rtx i0_insn = 0, i0_val = 0, set;
+	rtx_insn *i0_insn = 0;
+	rtx i0_val = 0, set;
 
 	FOR_EACH_LOG_LINK (link, i3)
 	  if ((set = single_set (link->insn)) != 0
@@ -4476,7 +4485,7 @@ undo_commit (void)
    two insns.  */
 
 static rtx *
-find_split_point (rtx *loc, rtx insn, bool set_src)
+find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 {
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
@@ -4686,7 +4695,7 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 	      && REG_P (XEXP (SET_SRC (x), 0))
 	      && (pos = exact_log2 (UINTVAL (XEXP (SET_SRC (x), 1)))) >= 7
 	      && REG_P (SET_DEST (x))
-	      && (split = find_single_use (SET_DEST (x), insn, (rtx*) 0)) != 0
+	      && (split = find_single_use (SET_DEST (x), insn, NULL)) != 0
 	      && (GET_CODE (*split) == EQ || GET_CODE (*split) == NE)
 	      && XEXP (*split, 0) == SET_DEST (x)
 	      && XEXP (*split, 1) == const0_rtx)
@@ -6264,7 +6273,7 @@ simplify_set (rtx x)
   rtx dest = SET_DEST (x);
   enum machine_mode mode
     = GET_MODE (src) != VOIDmode ? GET_MODE (src) : GET_MODE (dest);
-  rtx other_insn;
+  rtx_insn *other_insn;
   rtx *cc_use;
 
   /* (set (pc) (return)) gets written as (return).  */
@@ -10580,7 +10589,7 @@ simplify_shift_const (rtx x, enum rtx_code code, enum machine_mode result_mode,
    or -1.  */
 
 static int
-recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
+recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
 {
   rtx pat = *pnewpat;
   rtx pat_without_clobbers;
@@ -12200,7 +12209,7 @@ update_table_tick (rtx x)
    register.  */
 
 static void
-record_value_for_reg (rtx reg, rtx insn, rtx value)
+record_value_for_reg (rtx reg, rtx_insn *insn, rtx value)
 {
   unsigned int regno = REGNO (reg);
   unsigned int endregno = END_REGNO (reg);
@@ -12318,7 +12327,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
 static void
 record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 {
-  rtx record_dead_insn = (rtx) data;
+  rtx_insn *record_dead_insn = (rtx_insn *) data;
 
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
@@ -12326,7 +12335,7 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
   if (!record_dead_insn)
     {
       if (REG_P (dest))
-	record_value_for_reg (dest, NULL_RTX, NULL_RTX);
+	record_value_for_reg (dest, NULL, NULL_RTX);
       return;
     }
 
@@ -12365,7 +12374,7 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
    most recent subroutine call).  */
 
 static void
-record_dead_and_set_regs (rtx insn)
+record_dead_and_set_regs (rtx_insn *insn)
 {
   rtx link;
   unsigned int i;
@@ -12430,7 +12439,7 @@ record_dead_and_set_regs (rtx insn)
    missed because of that.  */
 
 static void
-record_promoted_value (rtx insn, rtx subreg)
+record_promoted_value (rtx_insn *insn, rtx subreg)
 {
   struct insn_link *links;
   rtx set;
@@ -12552,7 +12561,7 @@ record_truncated_values (rtx *x, void *data ATTRIBUTE_UNUSED)
    note what it implies to the registers used in it.  */
 
 static void
-check_promoted_subreg (rtx insn, rtx x)
+check_promoted_subreg (rtx_insn *insn, rtx x)
 {
   if (GET_CODE (x) == SUBREG
       && SUBREG_PROMOTED_VAR_P (x)
@@ -12589,7 +12598,7 @@ check_promoted_subreg (rtx insn, rtx x)
    was produced from.  */
 
 static int
-get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
+get_last_value_validate (rtx *loc, rtx_insn *insn, int tick, int replace)
 {
   rtx x = *loc;
   const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
@@ -12837,7 +12846,7 @@ reg_dead_at_p_1 (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
    must be assumed to be always live.  */
 
 static int
-reg_dead_at_p (rtx reg, rtx insn)
+reg_dead_at_p (rtx reg, rtx_insn *insn)
 {
   basic_block block;
   unsigned int i;
@@ -13009,7 +13018,7 @@ remove_death (unsigned int regno, rtx insn)
    notes will then be distributed as needed.  */
 
 static void
-move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx to_insn,
+move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 	     rtx *pnotes)
 {
   const char *fmt;
@@ -13210,15 +13219,16 @@ reg_bitfield_target_p (rtx x, rtx body)
    on the type of note.  */
 
 static void
-distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
-		  rtx elim_i1, rtx elim_i0)
+distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
+		  rtx elim_i2, rtx elim_i1, rtx elim_i0)
 {
   rtx note, next_note;
-  rtx tem;
+  rtx tem_note;
+  rtx_insn *tem_insn;
 
   for (note = notes; note; note = next_note)
     {
-      rtx place = 0, place2 = 0;
+      rtx_insn *place = 0, *place2 = 0;
 
       next_note = XEXP (note, 1);
       switch (REG_NOTE_KIND (note))
@@ -13389,16 +13399,16 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	     a REG_EQUAL note.  */
 	  /* ??? Ignore the without-reg_equal-note problem for now.  */
 	  if (reg_mentioned_p (XEXP (note, 0), PATTERN (i3))
-	      || ((tem = find_reg_note (i3, REG_EQUAL, NULL_RTX))
-		  && GET_CODE (XEXP (tem, 0)) == LABEL_REF
-		  && XEXP (XEXP (tem, 0), 0) == XEXP (note, 0)))
+	      || ((tem_note = find_reg_note (i3, REG_EQUAL, NULL_RTX))
+		  && GET_CODE (XEXP (tem_note, 0)) == LABEL_REF
+		  && XEXP (XEXP (tem_note, 0), 0) == XEXP (note, 0)))
 	    place = i3;
 
 	  if (i2
 	      && (reg_mentioned_p (XEXP (note, 0), PATTERN (i2))
-		  || ((tem = find_reg_note (i2, REG_EQUAL, NULL_RTX))
-		      && GET_CODE (XEXP (tem, 0)) == LABEL_REF
-		      && XEXP (XEXP (tem, 0), 0) == XEXP (note, 0))))
+		  || ((tem_note = find_reg_note (i2, REG_EQUAL, NULL_RTX))
+		      && GET_CODE (XEXP (tem_note, 0)) == LABEL_REF
+		      && XEXP (XEXP (tem_note, 0), 0) == XEXP (note, 0))))
 	    {
 	      if (place)
 		place2 = i2;
@@ -13470,7 +13480,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	  if (from_insn
 	      && from_insn == i2mod
 	      && !reg_overlap_mentioned_p (XEXP (note, 0), i2mod_new_rhs))
-	    tem = from_insn;
+	    tem_insn = from_insn;
 	  else
 	    {
 	      if (from_insn
@@ -13489,34 +13499,34 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 		       || rtx_equal_p (XEXP (note, 0), elim_i1)
 		       || rtx_equal_p (XEXP (note, 0), elim_i0))
 		break;
-	      tem = i3;
+	      tem_insn = i3;
 	    }
 
 	  if (place == 0)
 	    {
 	      basic_block bb = this_basic_block;
 
-	      for (tem = PREV_INSN (tem); place == 0; tem = PREV_INSN (tem))
+	      for (tem_insn = PREV_INSN (tem_insn); place == 0; tem_insn = PREV_INSN (tem_insn))
 		{
-		  if (!NONDEBUG_INSN_P (tem))
+		  if (!NONDEBUG_INSN_P (tem_insn))
 		    {
-		      if (tem == BB_HEAD (bb))
+		      if (tem_insn == BB_HEAD (bb))
 			break;
 		      continue;
 		    }
 
-		  /* If the register is being set at TEM, see if that is all
-		     TEM is doing.  If so, delete TEM.  Otherwise, make this
+		  /* If the register is being set at TEM_INSN, see if that is all
+		     TEM_INSN is doing.  If so, delete TEM_INSN.  Otherwise, make this
 		     into a REG_UNUSED note instead. Don't delete sets to
 		     global register vars.  */
 		  if ((REGNO (XEXP (note, 0)) >= FIRST_PSEUDO_REGISTER
 		       || !global_regs[REGNO (XEXP (note, 0))])
-		      && reg_set_p (XEXP (note, 0), PATTERN (tem)))
+		      && reg_set_p (XEXP (note, 0), PATTERN (tem_insn)))
 		    {
-		      rtx set = single_set (tem);
+		      rtx set = single_set (tem_insn);
 		      rtx inner_dest = 0;
 #ifdef HAVE_cc0
-		      rtx cc0_setter = NULL_RTX;
+		      rtx_insn *cc0_setter = NULL;
 #endif
 
 		      if (set != 0)
@@ -13539,27 +13549,27 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 			  && rtx_equal_p (XEXP (note, 0), inner_dest)
 #ifdef HAVE_cc0
 			  && (! reg_mentioned_p (cc0_rtx, SET_SRC (set))
-			      || ((cc0_setter = prev_cc0_setter (tem)) != NULL
+			      || ((cc0_setter = prev_cc0_setter (tem_insn)) != NULL
 				  && sets_cc0_p (PATTERN (cc0_setter)) > 0))
 #endif
 			  )
 			{
-			  /* Move the notes and links of TEM elsewhere.
+			  /* Move the notes and links of TEM_INSN elsewhere.
 			     This might delete other dead insns recursively.
 			     First set the pattern to something that won't use
 			     any register.  */
-			  rtx old_notes = REG_NOTES (tem);
+			  rtx old_notes = REG_NOTES (tem_insn);
 
-			  PATTERN (tem) = pc_rtx;
-			  REG_NOTES (tem) = NULL;
+			  PATTERN (tem_insn) = pc_rtx;
+			  REG_NOTES (tem_insn) = NULL;
 
-			  distribute_notes (old_notes, tem, tem, NULL_RTX,
+			  distribute_notes (old_notes, tem_insn, tem_insn, NULL,
 					    NULL_RTX, NULL_RTX, NULL_RTX);
-			  distribute_links (LOG_LINKS (tem));
+			  distribute_links (LOG_LINKS (tem_insn));
 
-			  SET_INSN_DELETED (tem);
-			  if (tem == i2)
-			    i2 = NULL_RTX;
+			  SET_INSN_DELETED (tem_insn);
+			  if (tem_insn == i2)
+			    i2 = NULL;
 
 #ifdef HAVE_cc0
 			  /* Delete the setter too.  */
@@ -13570,13 +13580,13 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 			      REG_NOTES (cc0_setter) = NULL;
 
 			      distribute_notes (old_notes, cc0_setter,
-						cc0_setter, NULL_RTX,
+						cc0_setter, NULL,
 						NULL_RTX, NULL_RTX, NULL_RTX);
 			      distribute_links (LOG_LINKS (cc0_setter));
 
 			      SET_INSN_DELETED (cc0_setter);
 			      if (cc0_setter == i2)
-				i2 = NULL_RTX;
+				i2 = NULL;
 			    }
 #endif
 			}
@@ -13590,17 +13600,17 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 			      match the algorithm used in lifetime analysis
 			      and can cause the consistency check in the
 			      scheduler to fail.  */
-			  if (! find_regno_note (tem, REG_UNUSED,
+			  if (! find_regno_note (tem_insn, REG_UNUSED,
 						 REGNO (XEXP (note, 0))))
-			    place = tem;
+			    place = tem_insn;
 			  break;
 			}
 		    }
-		  else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem))
-			   || (CALL_P (tem)
-			       && find_reg_fusage (tem, USE, XEXP (note, 0))))
+		  else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem_insn))
+			   || (CALL_P (tem_insn)
+			       && find_reg_fusage (tem_insn, USE, XEXP (note, 0))))
 		    {
-		      place = tem;
+		      place = tem_insn;
 
 		      /* If we are doing a 3->2 combination, and we have a
 			 register which formerly died in i3 and was not used
@@ -13620,7 +13630,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 		      break;
 		    }
 
-		  if (tem == BB_HEAD (bb))
+		  if (tem_insn == BB_HEAD (bb))
 		    break;
 		}
 
@@ -13694,26 +13704,26 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 							     NULL_RTX);
 
 			      distribute_notes (new_note, place, place,
-						NULL_RTX, NULL_RTX, NULL_RTX,
+						NULL, NULL_RTX, NULL_RTX,
 						NULL_RTX);
 			    }
 			  else if (! refers_to_regno_p (i, i + 1,
 							PATTERN (place), 0)
 				   && ! find_regno_fusage (place, USE, i))
-			    for (tem = PREV_INSN (place); ;
-				 tem = PREV_INSN (tem))
+			    for (tem_insn = PREV_INSN (place); ;
+				 tem_insn = PREV_INSN (tem_insn))
 			      {
-				if (!NONDEBUG_INSN_P (tem))
+				if (!NONDEBUG_INSN_P (tem_insn))
 				  {
-				    if (tem == BB_HEAD (bb))
+				    if (tem_insn == BB_HEAD (bb))
 			 	      break;
 				    continue;
 				  }
-				if (dead_or_set_p (tem, piece)
+				if (dead_or_set_p (tem_insn, piece)
 				    || reg_bitfield_target_p (piece,
-							      PATTERN (tem)))
+							      PATTERN (tem_insn)))
 				  {
-				    add_reg_note (tem, REG_UNUSED, piece);
+				    add_reg_note (tem_insn, REG_UNUSED, piece);
 				    break;
 				  }
 			      }
@@ -13753,8 +13763,8 @@ distribute_links (struct insn_link *links)
 
   for (link = links; link; link = next_link)
     {
-      rtx place = 0;
-      rtx insn;
+      rtx_insn *place = 0;
+      rtx_insn *insn;
       rtx set, reg;
 
       next_link = link->next;
