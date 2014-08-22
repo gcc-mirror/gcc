@@ -1,5 +1,40 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* except.h (sjlj_emit_function_exit_after): Strengthen param
+	"after" from rtx to rtx_insn *.  This is only called with
+	result of get_last_insn (in function.c) so type-change should be
+	self-contained.
+
+	* function.h (struct rtl_eh): Strengthen field "ehr_label" from
+	rtx to rtx_code_label *, and field "sjlj_exit_after" from rtx
+	to rtx_insn *.  These fields are only used from except.c so this
+	type-change should be self-contained to this patch.
+
+	* except.c (emit_to_new_bb_before): Strengthen param "seq" and
+	local "last" from rtx to rtx_insn *.
+	(dw2_build_landing_pads): Likewise for local "seq".
+	(sjlj_mark_call_sites): Likewise for locals "insn", "before", p".
+	(sjlj_emit_function_enter): Strengthen param "dispatch_label" from
+	rtx to rtx_code_label *.  Strengthen locals "fn_begin", "seq" from
+	rtx to rtx_insn *.
+	(sjlj_emit_function_exit_after): Strengthen param "after" from rtx
+	to rtx_insn *.
+	(sjlj_emit_function_exit): Likewise for locals "seq", "insn".
+	(sjlj_emit_dispatch_table): Likewise for locals "seq", "seq2".
+	(sjlj_build_landing_pads): Replace NULL_RTX with NULL when
+	referring to an insn.  Strengthen local "dispatch_label" from
+	rtx to rtx_code_label *.
+	(set_nothrow_function_flags): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(expand_eh_return): Strengthen local "around_label" from
+	rtx to rtx_code_label *.
+	(convert_to_eh_region_ranges): Strengthen locals "iter",
+	"last_action_insn", "first_no_action_insn",
+	"first_no_action_insn_before_switch",
+	"last_no_action_insn_before_switch", from rtx to rtx_insn *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* dwarf2out.c (last_var_location_insn): Strengthen this variable
 	from rtx to rtx_insn *.
 	(cached_next_real_insn): Likewise.

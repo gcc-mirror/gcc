@@ -144,10 +144,10 @@ typedef struct call_site_record_d *call_site_record;
 struct GTY(()) rtl_eh {
   rtx ehr_stackadj;
   rtx ehr_handler;
-  rtx ehr_label;
+  rtx_code_label *ehr_label;
 
   rtx sjlj_fc;
-  rtx sjlj_exit_after;
+  rtx_insn *sjlj_exit_after;
 
   vec<uchar, va_gc> *action_record_data;
 
