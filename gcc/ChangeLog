@@ -1,3 +1,11 @@
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* genpeep.c (main): Rename param back from "uncast_ins1" to
+	"ins1", strengthening from rtx to rtx_insn *.  Drop now-redundant
+	checked cast.
+
+	* output.h (peephole): Strengthen param from rtx to rtx_insn *.
+
 2014-08-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/62195

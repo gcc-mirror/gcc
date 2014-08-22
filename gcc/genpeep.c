@@ -378,8 +378,7 @@ from the machine description file `md'.  */\n\n");
   printf ("extern rtx peep_operand[];\n\n");
   printf ("#define operands peep_operand\n\n");
 
-  printf ("rtx_insn *\npeephole (rtx uncast_ins1)\n{\n");
-  printf ("  rtx_insn *ins1 = as_a <rtx_insn *> (uncast_ins1);\n");
+  printf ("rtx_insn *\npeephole (rtx_insn *ins1)\n{\n");
   printf ("  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
   printf ("  rtx x ATTRIBUTE_UNUSED, pat ATTRIBUTE_UNUSED;\n\n");
 
