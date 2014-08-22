@@ -507,7 +507,7 @@ build_intra_loop_deps (ddg_ptr g)
   int i;
   /* Hold the dependency analysis state during dependency calculations.  */
   struct deps_desc tmp_deps;
-  rtx head, tail;
+  rtx_insn *head, *tail;
 
   /* Build the dependence information, using the sched_analyze function.  */
   init_deps_global ();

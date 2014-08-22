@@ -392,17 +392,17 @@ doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
 
 /* Check if COUNT_REG is set to a constant in the PRE_HEADER block, so
    that the number of iterations is a compile-time constant.  If so,
-   return the rtx that sets COUNT_REG to a constant, and set COUNT to
+   return the rtx_insn that sets COUNT_REG to a constant, and set COUNT to
    this constant.  Otherwise return 0.  */
-static rtx
+static rtx_insn *
 const_iteration_count (rtx count_reg, basic_block pre_header,
 		       int64_t * count)
 {
-  rtx insn;
-  rtx head, tail;
+  rtx_insn *insn;
+  rtx_insn *head, *tail;
 
   if (! pre_header)
-    return NULL_RTX;
+    return NULL;
 
   get_ebb_head_tail (pre_header, pre_header, &head, &tail);
 
@@ -418,10 +418,10 @@ const_iteration_count (rtx count_reg, basic_block pre_header,
 	    return insn;
 	  }
 
-	return NULL_RTX;
+	return NULL;
       }
 
-  return NULL_RTX;
+  return NULL;
 }
 
 /* A very simple resource-based lower bound on the initiation interval.
@@ -1211,7 +1211,7 @@ loop_single_full_bb_p (struct loop *loop)
 
   for (i = 0; i < loop->num_nodes ; i++)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
       bool empty_bb = true;
 
       if (bbs[i] == loop->header)
@@ -1398,7 +1398,7 @@ sms_schedule (void)
      indexed by the loop index.  */
   FOR_EACH_LOOP (loop, 0)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
       rtx count_reg;
 
       /* For debugging.  */
@@ -1536,7 +1536,7 @@ sms_schedule (void)
   /* We don't want to perform SMS on new loops - created by versioning.  */
   FOR_EACH_LOOP (loop, 0)
     {
-      rtx head, tail;
+      rtx_insn *head, *tail;
       rtx count_reg, count_init;
       int mii, rec_mii, stage_count, min_cycle;
       int64_t loop_count = 0;

@@ -11094,7 +11094,7 @@ find_insn_regmode_weight (rtx insn, enum machine_mode mode)
 static void
 find_regmode_weight (basic_block b, enum machine_mode mode)
 {
-  rtx insn, next_tail, head, tail;
+  rtx_insn *insn, *next_tail, *head, *tail;
 
   get_ebb_head_tail (b, b, &head, &tail);
   next_tail = NEXT_INSN (tail);
