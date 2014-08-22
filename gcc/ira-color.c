@@ -3850,7 +3850,7 @@ coalesced_pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   slot_num2 = -ALLOCNO_HARD_REGNO (a2);
   if ((diff = slot_num1 - slot_num2) != 0)
     return (frame_pointer_needed
-	    || !FRAME_GROWS_DOWNWARD == STACK_GROWS_DOWNWARD ? diff : -diff);
+	    || (!FRAME_GROWS_DOWNWARD) == STACK_GROWS_DOWNWARD ? diff : -diff);
   total_size1 = MAX (PSEUDO_REGNO_BYTES (regno1),
 		     regno_max_ref_width[regno1]);
   total_size2 = MAX (PSEUDO_REGNO_BYTES (regno2),
