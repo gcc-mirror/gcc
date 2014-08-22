@@ -256,7 +256,8 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
   enum reg_class rclass, spill_class;
   enum machine_mode mode;
   lra_live_range_t r;
-  rtx insn, set;
+  rtx_insn *insn;
+  rtx set;
   basic_block bb;
   HARD_REG_SET conflict_hard_regs;
   bitmap_head ok_insn_bitmap;
@@ -411,7 +412,7 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
    corresponding memory or spilled hard reg.  Ignore spilled pseudos
    created from the scratches.	*/
 static void
-remove_pseudos (rtx *loc, rtx insn)
+remove_pseudos (rtx *loc, rtx_insn *insn)
 {
   int i;
   rtx hard_reg;
@@ -463,7 +464,7 @@ static void
 spill_pseudos (void)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   int i;
   bitmap_head spilled_pseudos, changed_insns;
 
@@ -679,7 +680,7 @@ lra_final_code_change (void)
 {
   int i, hard_regno;
   basic_block bb;
-  rtx insn, curr;
+  rtx_insn *insn, *curr;
   int max_regno = max_reg_num ();
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
