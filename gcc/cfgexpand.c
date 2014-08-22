@@ -5865,7 +5865,7 @@ pass_expand::execute (function *fun)
 	{
 	  if (e->insns.r)
 	    {
-	      rebuild_jump_labels_chain (e->insns.r);
+	      rebuild_jump_labels_chain (as_a <rtx_insn *> (e->insns.r));
 	      /* Put insns after parm birth, but before
 		 NOTE_INSNS_FUNCTION_BEG.  */
 	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (fun)
