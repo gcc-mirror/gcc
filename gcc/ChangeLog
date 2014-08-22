@@ -1,5 +1,38 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (basic_block split_edge_and_insert): Strengthen
+	param "insns" from rtx to rtx_insn *.
+
+	* loop-unroll.c (struct iv_to_split): Strengthen field "insn" from
+	rtx to rtx_insn *.
+	(struct iv_to_split): Likewise.
+	(loop_exit_at_end_p): Likewise for local "insn".
+	(split_edge_and_insert): Likewise for param "insns".
+	(compare_and_jump_seq): Likewise for return type, param "cinsn",
+	and locals "seq", "jump".
+	(unroll_loop_runtime_iterations): Likewise for locals "init_code",
+	"branch_code"; update invocations of compare_and_jump_seq to
+	eliminate NULL_RTX in favor of NULL.
+	(referenced_in_one_insn_in_loop_p): Strengthen local "insn" from
+	rtx to rtx_insn *.
+	(reset_debug_uses_in_loop): Likewise.
+	(analyze_insn_to_expand_var): Likewise for param "insn".
+	(analyze_iv_to_split_insn): Likewise.
+	(analyze_insns_in_loop): Likewise for local "insn".
+	(insert_base_initialization): Likewise for param
+	"insn" and local "seq".
+	(split_iv): Likewise for param "insn" and local "seq".
+	(expand_var_during_unrolling): Likewise for param "insn".
+	(insert_var_expansion_initialization): Likewise for local "seq".
+	(combine_var_copies_in_loop_exit): Likewise.
+	(combine_var_copies_in_loop_exit): Likewise for locals "seq" and
+	"insn".
+	(maybe_strip_eq_note_for_split_iv): Likewise for param "insn".
+	(apply_opt_in_copies): Likewise for locals "insn", "orig_insn",
+	"next".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* cfgloop.h (iv_analyze): Strengthen param 1 "insn" from rtx to
 	rtx_insn *.
 	(iv_analyze_result): Likewise.
