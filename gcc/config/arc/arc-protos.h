@@ -113,6 +113,6 @@ extern int arc_decl_pretend_args (tree decl);
 extern bool arc_short_comparison_p (rtx, int);
 extern bool arc_epilogue_uses (int regno);
 /* insn-attrtab.c doesn't include reload.h, which declares regno_clobbered_p. */
-extern int regno_clobbered_p (unsigned int, rtx, enum machine_mode, int);
+extern int regno_clobbered_p (unsigned int, rtx_insn *, enum machine_mode, int);
 extern int arc_return_slot_offset (void);
 extern bool arc_legitimize_reload_address (rtx *, enum machine_mode, int, int);

@@ -755,7 +755,7 @@ save_call_clobbered_regs (void)
 
   for (chain = reload_insn_chain; chain != 0; chain = next)
     {
-      rtx insn = chain->insn;
+      rtx_insn *insn = chain->insn;
       enum rtx_code code = GET_CODE (insn);
 
       next = chain->next;
@@ -1372,7 +1372,7 @@ add_used_regs (rtx *loc, void *data)
 static struct insn_chain *
 insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 {
-  rtx insn = chain->insn;
+  rtx_insn *insn = chain->insn;
   struct insn_chain *new_chain;
 
 #ifdef HAVE_cc0
