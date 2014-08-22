@@ -142,7 +142,7 @@ and warnings}.
 @gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds
 -Wc-binding-type -Wcharacter-truncation @gol
 -Wconversion -Wfunction-elimination -Wimplicit-interface @gol
--Wimplicit-procedure -Wintrinsic-shadow -Wintrinsics-std @gol
+-Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only -Wintrinsics-std @gol
 -Wline-truncation -Wno-align-commons -Wno-tabs -Wreal-q-constant @gol
 -Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all @gol
 -Wtarget-lifetime -fmax-errors=@var{n} -fsyntax-only -pedantic -pedantic-errors
@@ -895,6 +895,13 @@ Warn if a user-defined procedure or module procedure has the same name as an
 intrinsic; in this case, an explicit interface or @code{EXTERNAL} or
 @code{INTRINSIC} declaration might be needed to get calls later resolved to
 the desired intrinsic/procedure.  This option is implied by @option{-Wall}.
+
+@item -Wuse-without-only
+@opindex @code{Wuse-without-only}
+@cindex warnings, use statements
+@cindex intrinsic
+Warn if a @code{USE} statement has no @code{ONLY} qualifier and 
+thus implicitly imports all public entities of the used module.
 
 @item -Wunused-dummy-argument
 @opindex @code{Wunused-dummy-argument}
