@@ -1,5 +1,13 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-rgn.c (is_cfg_nonregular): Strengthen locals "insn" and
+	"next" from rtx to rtx_insn *.
+	(find_conditional_protection): Likewise for local "next".
+	(is_conditionally_protected): Likewise for local "insn1".
+	(is_pfree): Likewise for locals "insn1", "insn2".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-int.h (schedule_ebb): Strengthen params "head", "tail"
 	from rtx to rtx_insn *.
 

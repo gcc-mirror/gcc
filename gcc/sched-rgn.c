@@ -256,7 +256,7 @@ static int
 is_cfg_nonregular (void)
 {
   basic_block b;
-  rtx insn;
+  rtx_insn *insn;
 
   /* If we have a label that could be the target of a nonlocal goto, then
      the cfg is not well structured.  */
@@ -278,7 +278,8 @@ is_cfg_nonregular (void)
   FOR_EACH_BB_FN (b, cfun)
     FOR_BB_INSNS (b, insn)
       {
-	rtx note, next, set, dest;
+	rtx note, set, dest;
+	rtx_insn *next;
 
 	/* If this function has a computed jump, then we consider the cfg
 	   not well structured.  */
@@ -1877,7 +1878,7 @@ find_conditional_protection (rtx insn, int load_insn_bb)
   /* Iterate through DEF-USE forward dependences.  */
   FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
     {
-      rtx next = DEP_CON (dep);
+      rtx_insn *next = DEP_CON (dep);
 
       if ((CONTAINING_RGN (BLOCK_NUM (next)) ==
 	   CONTAINING_RGN (BB_TO_BLOCK (load_insn_bb)))
@@ -1913,7 +1914,7 @@ is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
 
   FOR_EACH_DEP (load_insn, SD_LIST_BACK, sd_it, dep)
     {
-      rtx insn1 = DEP_PRO (dep);
+      rtx_insn *insn1 = DEP_PRO (dep);
 
       /* Must be a DEF-USE dependence upon non-branch.  */
       if (DEP_TYPE (dep) != REG_DEP_TRUE
@@ -1969,7 +1970,7 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
 
   FOR_EACH_DEP (load_insn, SD_LIST_BACK, back_sd_it, back_dep)
     {
-      rtx insn1 = DEP_PRO (back_dep);
+      rtx_insn *insn1 = DEP_PRO (back_dep);
 
       if (DEP_TYPE (back_dep) == REG_DEP_TRUE)
 	/* Found a DEF-USE dependence (insn1, load_insn).  */
@@ -1979,7 +1980,7 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
 
 	  FOR_EACH_DEP (insn1, SD_LIST_FORW, fore_sd_it, fore_dep)
 	    {
-	      rtx insn2 = DEP_CON (fore_dep);
+	      rtx_insn *insn2 = DEP_CON (fore_dep);
 
 	      if (DEP_TYPE (fore_dep) == REG_DEP_TRUE)
 		{
