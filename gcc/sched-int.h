@@ -1377,7 +1377,7 @@ extern int number_in_ready (void);
 
 /* Types and functions in sched-ebb.c.  */
 
-extern basic_block schedule_ebb (rtx, rtx, bool);
+extern basic_block schedule_ebb (rtx_insn *, rtx_insn *, bool);
 extern void schedule_ebbs_init (void);
 extern void schedule_ebbs_finish (void);
 

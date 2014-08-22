@@ -1,5 +1,21 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-int.h (schedule_ebb): Strengthen params "head", "tail"
+	from rtx to rtx_insn *.
+
+	* sched-ebb.c (earliest_block_with_similiar_load): Strengthen
+	locals "insn1", "insn2" from rtx to rtx_insn *.
+	(add_deps_for_risky_insns): Likewise for params "head", "tail" and
+	locals "insn", "prev", "last_jump", "next_tail".
+	(schedule_ebb): Likewise for params "head", "tail".
+	(schedule_ebbs): Likewise for locals "tail", "head".
+
+	* config/c6x/c6x.c (hwloop_optimize): For now, add a checked cast
+	to rtx_insn on "last_insn" in one of the invocations of
+	schedule_ebb.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-deps.c (maybe_add_or_update_dep_1): Strengthen locals
 	"elem", "insn" from rtx to rtx_insn *.
 	(change_spec_dep_to_hard): Likewise.

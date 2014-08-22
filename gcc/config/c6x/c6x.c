@@ -5669,7 +5669,9 @@ hwloop_optimize (hwloop_info loop)
       schedule_ebbs_init ();
       set_modulo_params (sp_ii, max_parallel, n_real_insns,
 			 sploop_max_uid_iter0);
-      tmp_bb = schedule_ebb (BB_HEAD (bb), last_insn, true);
+      tmp_bb = schedule_ebb (BB_HEAD (bb),
+			     safe_as_a <rtx_insn *> (last_insn),
+			     true);
       schedule_ebbs_finish ();
 
       if (tmp_bb)
