@@ -1,5 +1,11 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* stmt.c (expand_case): Strengthen local "before_case" from rtx to
+	rtx_insn *.
+	(expand_sjlj_dispatch_table): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* stack-ptr-mod.c (pass_stack_ptr_mod::execute): Strengthen local
 	"insn" from rtx to rtx_insn *.
 

@@ -1239,7 +1239,7 @@ expand_case (gimple stmt)
      type, so we should never get a zero here.  */
   gcc_assert (count > 0);
 
-  rtx before_case = get_last_insn ();
+  rtx_insn *before_case = get_last_insn ();
 
   /* Decide how to expand this switch.
      The two options at this point are a dispatch table (casesi or
@@ -1283,7 +1283,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
   int ncases = dispatch_table.length ();
 
   do_pending_stack_adjust ();
-  rtx before_case = get_last_insn ();
+  rtx_insn *before_case = get_last_insn ();
 
   /* Expand as a decrement-chain if there are 5 or fewer dispatch
      labels.  This covers more than 98% of the cases in libjava,
