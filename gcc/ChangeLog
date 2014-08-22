@@ -1,5 +1,10 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* stack-ptr-mod.c (pass_stack_ptr_mod::execute): Strengthen local
+	"insn" from rtx to rtx_insn *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* shrink-wrap.h (requires_stack_frame_p): Strengthen param 1
 	"insn" from rtx to rtx_insn *.
 	(dup_block_and_redirect): Likewise for param 3 "before".
