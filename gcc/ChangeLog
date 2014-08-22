@@ -1,3 +1,70 @@
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* output.h (final_scan_insn): Strengthen return type from rtx to
+	rtx_insn *.
+	(final_forward_branch_p): Likewise for param.
+	(current_output_insn): Likewise for this global.
+
+	* final.c (rtx debug_insn): Likewise for this variable.
+	(current_output_insn): Likewise.
+	(get_attr_length_1): Rename param "insn" to "uncast_insn",
+	adding "insn" back in as an rtx_insn * with a checked cast, so
+	that macro ADJUST_INSN_LENGTH can be passed an rtx_insn * as the
+	first param.
+	(compute_alignments): Strengthen local "label" from rtx to
+	rtx_insn *.
+	(shorten_branches): Rename param from "first" to "uncast_first",
+	introducing a new local rtx_insn * "first" using a checked cast to
+	effectively strengthen "first" from rtx to rtx_insn * without
+	affecting the type signature.  Strengthen locals "insn", "seq",
+	"next", "label" from rtx to rtx_insn *.
+	(change_scope): Strengthen param "orig_insn" and local "insn" from
+	rtx to rtx_insn *.
+	(final_start_function): Rename param from "first" to "uncast_first",
+	introducing a new local rtx_insn * "first" using a checked cast to
+	effectively strengthen "first" from rtx to rtx_insn * without
+	affecting the type signature.  Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(dump_basic_block_info): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(final): Rename param from "first" to "uncast_first",
+	introducing a new local rtx_insn * "first" using a checked cast to
+	effectively strengthen "first" from rtx to rtx_insn * without
+	affecting the type signature.  Strengthen locals "insn", "next"
+	from rtx to rtx_insn *.
+	(output_alternate_entry_point): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(call_from_call_insn): Strengthen param "insn" from rtx to
+	rtx_call_insn *.
+	(final_scan_insn): Rename param from "insn" to "uncast_insn",
+	introducing a new local rtx_insn * "insn" using a checked cast to
+	effectively strengthen "insn" from rtx to rtx_insn * without
+	affecting the type signature.  Strengthen return type and locals
+	"next", "note", "prev", "new_rtx" from rtx to rtx_insn *.  Remove
+	now-redundant checked cast to rtx_insn * from both invocations of
+	debug_hooks->var_location.  Convert CALL_P into a dyn_cast,
+	introducing a local "call_insn" for use when invoking
+	call_from_call_insn.
+	(notice_source_line): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(leaf_function_p): Likewise for local "insn".
+	(final_forward_branch_p): Likewise.
+	(leaf_renumber_regs): Likewise for param "first".
+	(rest_of_clean_state): Likewise for locals "insn" and "next".
+	(self_recursive_call_p): Likewise for param "insn".
+	(collect_fn_hard_reg_usage): Likewise for local "insn".
+	(get_call_fndecl): Likewise for param "insn".
+	(get_call_cgraph_rtl_info): Likewise.
+	(get_call_reg_set_usage): Rename param from "insn" to "uncast_insn",
+	introducing a new local rtx_insn * "insn" using a checked cast to
+	effectively strengthen "insn" from rtx to rtx_insn * without
+	affecting the type signature.
+
+	* config/arc/arc.c (arc_final_prescan_insn): For now, add checked
+	cast when assigning from param "insn" to current_output_insn.
+	(arc_pad_return): Strengthen local "insn" from rtx to rtx_insn *
+	so that we can assign it back to current_output_insn.
+
 2014-08-20  Pitchumani Sivanupandi <pitchumani.s@atmel.com>
 
 	* config/avr/avr-mcus.def: Remove atmega26hvg, atmega64rfa2,

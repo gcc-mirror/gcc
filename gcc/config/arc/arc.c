@@ -3943,7 +3943,7 @@ arc_final_prescan_insn (rtx insn, rtx *opvec ATTRIBUTE_UNUSED,
       current_output_insn =
 	emit_insn_before (gen_nop (), NEXT_INSN (PREV_INSN (insn)));
       final_scan_insn (current_output_insn, asm_out_file, optimize, 1, NULL);
-      current_output_insn = insn;
+      current_output_insn = as_a <rtx_insn *> (insn);
     }
   /* Restore extraction data which might have been clobbered by arc_hazard.  */
   extract_constrain_insn_cached (insn);
@@ -8651,7 +8651,7 @@ arc_branch_size_unknown_p (void)
 void
 arc_pad_return (void)
 {
-  rtx insn = current_output_insn;
+  rtx_insn *insn = current_output_insn;
   rtx prev = prev_active_insn (insn);
   int want_long;
 
