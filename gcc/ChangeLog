@@ -8,6 +8,28 @@
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/sse.md
+	(define_mode_iterator VI4F_BRCST32x2): New.
+	(define_mode_attr 64x2_mode): Ditto.
+	(define_mode_attr 32x2mode): Ditto.
+	(define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>"
+	with VI4F_BRCST32x2): Ditto.
+	(define_insn "<mask_codefor>avx512vl_broadcast<mode><mask_name>_1"
+	with V16FI mode iterator): Ditto.
+	(define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>_1"
+	with V16FI): Ditto.
+	(define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>_1"
+	with VI8F_BRCST64x2): Ditto.
+
+2014-08-22  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md
 	(define_mode_iterator VI8_AVX512VL): New.
 	(define_insn "avx512cd_maskb_vec_dup<mode>"): Macroize.
 
