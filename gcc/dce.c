@@ -51,7 +51,7 @@ static bool can_alter_cfg = false;
 
 /* Instructions that have been marked but whose dependencies have not
    yet been processed.  */
-static vec<rtx> worklist;
+static vec<rtx_insn *> worklist;
 
 /* Bitmap of instructions marked as needed indexed by INSN_UID.  */
 static sbitmap marked;
@@ -60,7 +60,7 @@ static sbitmap marked;
 static bitmap_obstack dce_blocks_bitmap_obstack;
 static bitmap_obstack dce_tmp_bitmap_obstack;
 
-static bool find_call_stack_args (rtx, bool, bool, bitmap);
+static bool find_call_stack_args (rtx_call_insn *, bool, bool, bitmap);
 
 /* A subroutine for which BODY is part of the instruction being tested;
    either the top-level pattern, or an element of a PARALLEL.  The
@@ -92,7 +92,7 @@ deletable_insn_p_1 (rtx body)
    the DCE pass.  */
 
 static bool
-deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
+deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
 {
   rtx body, x;
   int i;
@@ -110,7 +110,8 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
          infinite loop.  */
       && (RTL_CONST_OR_PURE_CALL_P (insn)
 	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
-    return find_call_stack_args (insn, false, fast, arg_stores);
+    return find_call_stack_args (as_a <rtx_call_insn *> (insn), false,
+				 fast, arg_stores);
 
   /* Don't delete jumps, notes and the like.  */
   if (!NONJUMP_INSN_P (insn))
@@ -164,7 +165,7 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
 /* Return true if INSN has been marked as needed.  */
 
 static inline int
-marked_insn_p (rtx insn)
+marked_insn_p (rtx_insn *insn)
 {
   /* Artificial defs are always needed and they do not have an insn.
      We should never see them here.  */
@@ -177,7 +178,7 @@ marked_insn_p (rtx insn)
    the worklist.  */
 
 static void
-mark_insn (rtx insn, bool fast)
+mark_insn (rtx_insn *insn, bool fast)
 {
   if (!marked_insn_p (insn))
     {
@@ -191,7 +192,7 @@ mark_insn (rtx insn, bool fast)
 	  && !SIBLING_CALL_P (insn)
 	  && (RTL_CONST_OR_PURE_CALL_P (insn)
 	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
-	find_call_stack_args (insn, true, fast, NULL);
+	find_call_stack_args (as_a <rtx_call_insn *> (insn), true, fast, NULL);
     }
 }
 
@@ -203,7 +204,7 @@ static void
 mark_nonreg_stores_1 (rtx dest, const_rtx pattern, void *data)
 {
   if (GET_CODE (pattern) != CLOBBER && !REG_P (dest))
-    mark_insn ((rtx) data, true);
+    mark_insn ((rtx_insn *) data, true);
 }
 
 
@@ -214,14 +215,14 @@ static void
 mark_nonreg_stores_2 (rtx dest, const_rtx pattern, void *data)
 {
   if (GET_CODE (pattern) != CLOBBER && !REG_P (dest))
-    mark_insn ((rtx) data, false);
+    mark_insn ((rtx_insn *) data, false);
 }
 
 
 /* Mark INSN if BODY stores to a non-register destination.  */
 
 static void
-mark_nonreg_stores (rtx body, rtx insn, bool fast)
+mark_nonreg_stores (rtx body, rtx_insn *insn, bool fast)
 {
   if (fast)
     note_stores (body, mark_nonreg_stores_1, insn);
@@ -258,10 +259,11 @@ check_argument_store (rtx mem, HOST_WIDE_INT off, HOST_WIDE_INT min_sp_off,
    going to be marked called again with DO_MARK true.  */
 
 static bool
-find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
+find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 		      bitmap arg_stores)
 {
-  rtx p, insn, prev_insn;
+  rtx p;
+  rtx_insn *insn, *prev_insn;
   bool ret;
   HOST_WIDE_INT min_sp_off, max_sp_off;
   bitmap sp_bytes;
@@ -397,7 +399,7 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
       HOST_WIDE_INT off;
 
       if (insn == BB_HEAD (BLOCK_FOR_INSN (call_insn)))
-	prev_insn = NULL_RTX;
+	prev_insn = NULL;
       else
 	prev_insn = PREV_INSN (insn);
 
@@ -495,7 +497,7 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
    writes to.  */
 
 static void
-remove_reg_equal_equiv_notes_for_defs (rtx insn)
+remove_reg_equal_equiv_notes_for_defs (rtx_insn *insn)
 {
   df_ref def;
 
@@ -510,7 +512,7 @@ static void
 reset_unmarked_insns_debug_uses (void)
 {
   basic_block bb;
-  rtx insn, next;
+  rtx_insn *insn, *next;
 
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
@@ -523,7 +525,7 @@ reset_unmarked_insns_debug_uses (void)
 	      struct df_link *defs;
 	      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
 		{
-		  rtx ref_insn;
+		  rtx_insn *ref_insn;
 		  if (DF_REF_IS_ARTIFICIAL (defs->ref))
 		    continue;
 		  ref_insn = DF_REF_INSN (defs->ref);
@@ -547,7 +549,7 @@ static void
 delete_unmarked_insns (void)
 {
   basic_block bb;
-  rtx insn, next;
+  rtx_insn *insn, *next;
   bool must_clean = false;
 
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
@@ -614,7 +616,7 @@ static void
 prescan_insns_for_dce (bool fast)
 {
   basic_block bb;
-  rtx insn, prev;
+  rtx_insn *insn, *prev;
   bitmap arg_stores = NULL;
 
   if (dump_file)
@@ -674,7 +676,7 @@ mark_artificial_uses (void)
 /* Mark every instruction that defines a register value that INSN uses.  */
 
 static void
-mark_reg_dependencies (rtx insn)
+mark_reg_dependencies (rtx_insn *insn)
 {
   struct df_link *defs;
   df_ref use;
@@ -749,7 +751,7 @@ fini_dce (bool fast)
 static unsigned int
 rest_of_handle_ud_dce (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   init_dce (false);
 
@@ -834,7 +836,7 @@ word_dce_process_block (basic_block bb, bool redo_out,
 			struct dead_debug_global *global_debug)
 {
   bitmap local_live = BITMAP_ALLOC (&dce_tmp_bitmap_obstack);
-  rtx insn;
+  rtx_insn *insn;
   bool block_changed;
   struct dead_debug_local debug;
 
@@ -932,7 +934,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au,
 		   struct dead_debug_global *global_debug)
 {
   bitmap local_live = BITMAP_ALLOC (&dce_tmp_bitmap_obstack);
-  rtx insn;
+  rtx_insn *insn;
   bool block_changed;
   df_ref def;
   struct dead_debug_local debug;

@@ -1,5 +1,36 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* dce.c (worklist): Strengthen from vec<rtx> to vec<rtx_insn *>.
+	(deletable_insn_p): Strengthen param "insn" from rtx to
+	rtx_insn *.  Add checked cast to rtx_call_insn when invoking
+	find_call_stack_args, since this is guarded by CALL_P (insn).
+	(marked_insn_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(mark_insn): Likewise.  Add checked cast to rtx_call_insn when
+	invoking find_call_stack_args, since this is guarded by
+	CALL_P (insn).
+	(mark_nonreg_stores_1): Strengthen cast of "data" from rtx to
+	rtx_insn *; we know this is an insn since this was called by
+	mark_nonreg_stores.
+	(mark_nonreg_stores_2): Likewise.
+	(mark_nonreg_stores): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(find_call_stack_args): Strengthen param "call_insn" from rtx to
+	rtx_call_insn *; strengthen locals "insn" and "prev_insn" from rtx
+	to rtx_insn *.
+	(remove_reg_equal_equiv_notes_for_defs): Strengthen param "insn"
+	from rtx to rtx_insn *.
+	(reset_unmarked_insns_debug_uses): Likewise for locals "insn",
+	"next", "ref_insn".
+	(delete_unmarked_insns): Likewise for locals "insn", "next".
+	(prescan_insns_for_dce): Likewise for locals "insn", "prev".
+	(mark_reg_dependencies): Likewise for param "insn".
+	(rest_of_handle_ud_dce): Likewise for local "insn".
+	(word_dce_process_block): Likewise.
+	(dce_process_block): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* cse.c (struct qty_table_elem): Strengthen field "const_insn"
 	from rtx to rtx_insn *.
 	(struct change_cc_mode_args): Likewise for field "insn".
