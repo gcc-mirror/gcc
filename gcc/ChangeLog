@@ -1,5 +1,10 @@
 2014-08-22  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/62199
+	* doc/invoke.texi: Update -Wlogical-not-parentheses description.
+
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
 	PR c/61271
 	* ira-color.c (coalesced_pseudo_reg_slot_compare): Wrap LHS of
 	a comparison in parens.

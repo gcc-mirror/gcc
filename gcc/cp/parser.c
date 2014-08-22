@@ -8020,13 +8020,12 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
   enum tree_code rhs_type;
   enum cp_parser_prec new_prec, lookahead_prec;
   tree overload;
-  bool parenthesized_not_lhs_warn
-    = cp_lexer_next_token_is (parser->lexer, CPP_NOT);
 
   /* Parse the first expression.  */
+  current.lhs_type = (cp_lexer_next_token_is (parser->lexer, CPP_NOT)
+		      ? TRUTH_NOT_EXPR : ERROR_MARK);
   current.lhs = cp_parser_cast_expression (parser, /*address_p=*/false,
 					   cast_p, decltype_p, pidk);
-  current.lhs_type = ERROR_MARK;
   current.prec = prec;
 
   if (cp_parser_error_occurred (parser))
@@ -8081,8 +8080,9 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
+      rhs_type = (cp_lexer_next_token_is (parser->lexer, CPP_NOT)
+		  ? TRUTH_NOT_EXPR : ERROR_MARK);
       rhs = cp_parser_simple_cast_expression (parser);
-      rhs_type = ERROR_MARK;
 
       /* Get another operator token.  Look up its precedence to avoid
 	 building a useless (immediately popped) stack entry for common
@@ -8125,9 +8125,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
 
       if (warn_logical_not_paren
-	  && parenthesized_not_lhs_warn)
-	warn_logical_not_parentheses (current.loc, current.tree_type,
-				      TREE_OPERAND (current.lhs, 0), rhs);
+	  && current.lhs_type == TRUTH_NOT_EXPR)
+	warn_logical_not_parentheses (current.loc, current.tree_type, rhs);
 
       overload = NULL;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==

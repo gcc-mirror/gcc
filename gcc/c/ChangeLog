@@ -1,3 +1,9 @@
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* c-typeck.c (parser_build_binary_op): Adjust call to
+	warn_logical_not_parentheses.
+
 2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR other/62008
