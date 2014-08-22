@@ -1,5 +1,25 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* modulo-sched.c (struct ps_reg_move_info): Strengthen field
+	"insn" from rtx to rtx_insn *.
+	(ps_rtl_insn): Likewise for return type.
+	(doloop_register_get): Likewise for params "head", "tail" and
+	locals "insn", "first_insn_not_to_check".
+	(schedule_reg_move): Likewise for local "this_insn".
+	(schedule_reg_moves): Add a checked cast to rtx_insn * to result
+	of gen_move_insn for now.
+	(reset_sched_times): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(permute_partial_schedule): Likewise.
+	(duplicate_insns_of_cycles): Likewise for local "u_insn".
+	(dump_insn_location): Likewise for param "insn".
+	(loop_canon_p): Likewise for local "insn".
+	(sms_schedule): Likewise.
+	(print_partial_schedule): Likewise.
+	(ps_has_conflicts): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-int.h (get_ebb_head_tail): Strengthen params "headp" and
 	"tailp" from rtx * to rtx_insn **.
 
