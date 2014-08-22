@@ -189,7 +189,7 @@ static void apply_opt_in_copies (struct opt_info *, unsigned, bool, bool);
 static void free_opt_info (struct opt_info *);
 static struct var_to_expand *analyze_insn_to_expand_var (struct loop*, rtx);
 static bool referenced_in_one_insn_in_loop_p (struct loop *, rtx, int *);
-static struct iv_to_split *analyze_iv_to_split_insn (rtx);
+static struct iv_to_split *analyze_iv_to_split_insn (rtx_insn *);
 static void expand_var_during_unrolling (struct var_to_expand *, rtx);
 static void insert_var_expansion_initialization (struct var_to_expand *,
 						 basic_block);
@@ -1893,7 +1893,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
    pointer to it.  */
 
 static struct iv_to_split *
-analyze_iv_to_split_insn (rtx insn)
+analyze_iv_to_split_insn (rtx_insn *insn)
 {
   rtx set, dest;
   struct rtx_iv iv;
@@ -1952,7 +1952,7 @@ analyze_insns_in_loop (struct loop *loop)
   basic_block *body, bb;
   unsigned i;
   struct opt_info *opt_info = XCNEW (struct opt_info);
-  rtx insn;
+  rtx_insn *insn;
   struct iv_to_split *ivts = NULL;
   struct var_to_expand *ves = NULL;
   iv_to_split **slot1;
