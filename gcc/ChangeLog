@@ -1,5 +1,12 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* recog.c (split_insn): Strengthen param "insn" and locals
+	"first", "last" from rtx to rtx_insn *.
+	(split_all_insns): Likewise for locals "insn", "next".
+	(split_all_insns_noflow): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (debug_rtx_list): Strengthen param 1 "x" from const_rtx to
 	const rtx_insn *.
 	(debug_rtx_range): Likewise for params 1 and 2 "start" and "end".
