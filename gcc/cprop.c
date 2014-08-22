@@ -1285,7 +1285,7 @@ local_cprop_pass (void)
    but this would require some code reorganization.  */
 
 rtx
-fis_get_condition (rtx jump)
+fis_get_condition (rtx_insn *jump)
 {
   return get_condition (jump, NULL, false, true);
 }

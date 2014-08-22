@@ -3188,7 +3188,7 @@ extern void init_lower_subreg (void);
 /* In gcse.c */
 extern bool can_copy_p (enum machine_mode);
 extern bool can_assign_to_reg_without_clobbers_p (rtx);
-extern rtx fis_get_condition (rtx);
+extern rtx fis_get_condition (rtx_insn *);
 
 /* In ira.c */
 #ifdef HARD_CONST

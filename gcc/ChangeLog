@@ -1,5 +1,33 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (fis_get_condition): Strengthen param "jump" from rtx to
+	rtx_insn *.
+
+	* cprop.c (fis_get_condition): Likewise.
+
+	* postreload.c (reload_cse_regs): Likewise for param "first".
+	(reload_cse_simplify): Likewise for param "insn".
+	(reload_cse_regs_1): Likewise for local "insn".
+	(reload_cse_simplify_set): Likewise for param "insn".
+	(reload_cse_simplify_operands): Likewise.
+	(struct reg_use): Likewise for field "insn".
+	(reload_combine_purge_insn_uses): Likewise for param "insn".
+	(fixup_debug_insns): Likewise for params "from", "to" and local
+	"insn".
+	(try_replace_in_use): Likewise for local "use_insn".
+	(reload_combine_recognize_const_pattern): Likewise for param
+	"insn" and locals "add_moved_after_insn", "use_insn".
+	(reload_combine_recognize_pattern): Likewise for param "insn" and
+	local "prev".
+	(reload_combine): Likewise for locals "insn", "prev".
+	(reload_combine_note_use): Likewise for param "insn".
+	(move2add_use_add2_insn): Likewise.
+	(move2add_use_add3_insn): Likewise.
+	(reload_cse_move2add): Likewise, also for local "next".
+	(move2add_note_store): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* postreload-gcse.c (struct occr): Strengthen field "insn" from
 	rtx to rtx_insn *.
 	(struct unoccr): Likewise.
