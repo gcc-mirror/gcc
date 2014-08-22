@@ -1,5 +1,30 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* cprop.c (struct occr): Strengthen field "insn" from rtx to
+	rtx_insn *.
+	(reg_available_p): Likewise for param "insn".
+	(insert_set_in_table): Likewise.
+	(hash_scan_set): Likewise.
+	(hash_scan_insn): Likewise.
+	(make_set_regs_unavailable): Likewise.
+	(compute_hash_table_work): Likewise for local "insn".
+	(reg_not_set_p): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(mark_oprs_set): Strengthen param "insn" from rtx to rtx_insn *.
+	(try_replace_reg): Likewise.
+	(find_avail_set): Likewise.
+	(cprop_jump): Likewise for params "setcc", "jump".
+	(constprop_register): Likewise for param "insn".
+	(cprop_insn): Likewise.
+	(do_local_cprop): Likewise.
+	(local_cprop_pass): Likewise for local "insn".
+	(bypass_block): Likewise for params "setcc" and "jump".
+	(bypass_conditional_jumps): Likewise for locals "setcc" and
+	"insn".
+	(one_cprop_pass): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* compare-elim.c (struct comparison_use): Strengthen field "insn"
 	from rtx to rtx_insn *.
 	(struct comparison): Likewise, also for field "prev_clobber".
