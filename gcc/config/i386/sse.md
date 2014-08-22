@@ -267,6 +267,9 @@
 (define_mode_iterator VI8
   [(V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") V2DI])
 
+(define_mode_iterator VI8_AVX512VL
+  [V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
+
 (define_mode_iterator VI1_AVX2
   [(V32QI "TARGET_AVX2") V16QI])
 
@@ -14511,9 +14514,9 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx512cd_maskb_vec_dupv8di"
-  [(set (match_operand:V8DI 0 "register_operand" "=v")
-	(vec_duplicate:V8DI
+(define_insn "avx512cd_maskb_vec_dup<mode>"
+  [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
+	(vec_duplicate:VI8_AVX512VL
 	  (zero_extend:DI
 	    (match_operand:QI 1 "register_operand" "Yk"))))]
   "TARGET_AVX512CD"
