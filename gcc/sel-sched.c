@@ -753,7 +753,7 @@ substitute_reg_in_expr (expr_t expr, insn_t insn, bool undo)
   /* Substitute if INSN has a form of x:=y and LHS(INSN) occurs in *VI.  */
   if (rtx_ok_for_substitution_p (old, *where))
     {
-      rtx new_insn;
+      rtx_insn *new_insn;
       rtx *where_replace;
 
       /* We should copy these rtxes before substitution.  */
@@ -864,12 +864,12 @@ rtx_ok_for_substitution_p (rtx what, rtx where)
 
 /* Substitute VI's set source with REGNO.  Returns newly created pattern
    that has REGNO as its source.  */
-static rtx
+static rtx_insn *
 create_insn_rtx_with_rhs (vinsn_t vi, rtx rhs_rtx)
 {
   rtx lhs_rtx;
   rtx pattern;
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
 
   lhs_rtx = copy_rtx (VINSN_LHS (vi));
 
@@ -945,12 +945,12 @@ replace_dest_with_reg_ok_p (insn_t insn, rtx new_reg)
 }
 
 /* Create a pattern with rhs of VI and lhs of LHS_RTX.  */
-static rtx
+static rtx_insn *
 create_insn_rtx_with_lhs (vinsn_t vi, rtx lhs_rtx)
 {
   rtx rhs_rtx;
   rtx pattern;
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
 
   rhs_rtx = copy_rtx (VINSN_RHS (vi));
 
@@ -1802,7 +1802,7 @@ static insn_t
 create_speculation_check (expr_t c_expr, ds_t check_ds, insn_t orig_insn)
 {
   rtx check_pattern;
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
   insn_t insn;
   basic_block recovery_block;
   rtx label;
@@ -2103,7 +2103,8 @@ static bool
 implicit_clobber_conflict_p (insn_t through_insn, expr_t expr)
 {
   HARD_REG_SET temp;
-  rtx insn, reg, rhs, pat;
+  rtx_insn *insn;
+  rtx reg, rhs, pat;
   hard_reg_set_iterator hrsi;
   unsigned regno;
   bool valid;
@@ -4327,7 +4328,7 @@ estimate_insn_cost (rtx insn, state_t state)
 static int
 get_expr_cost (expr_t expr, fence_t fence)
 {
-  rtx insn = EXPR_INSN_RTX (expr);
+  rtx_insn *insn = EXPR_INSN_RTX (expr);
 
   if (recog_memoized (insn) < 0)
     {
@@ -4797,7 +4798,7 @@ find_seqno_for_bookkeeping (insn_t place_to_insert, insn_t join_point)
 static insn_t
 emit_bookkeeping_insn (insn_t place_to_insert, expr_t c_expr, int new_seqno)
 {
-  rtx new_insn_rtx = create_copy_of_insn_rtx (EXPR_INSN_RTX (c_expr));
+  rtx_insn *new_insn_rtx = create_copy_of_insn_rtx (EXPR_INSN_RTX (c_expr));
 
   vinsn_t new_vinsn
     = create_vinsn_from_insn_rtx (new_insn_rtx,
@@ -4925,7 +4926,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
 {
   edge ft_edge;
   basic_block block_from, block_next, block_new, block_bnd, bb;
-  rtx next, prev, link, head;
+  rtx_insn *next, *prev, *link, *head;
 
   block_from = BLOCK_FOR_INSN (insn);
   block_bnd = BLOCK_FOR_INSN (BND_TO (bnd));
@@ -4972,7 +4973,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
   head = BB_HEAD (block_new);
   while (bb != block_from->next_bb)
     {
-      rtx from, to;
+      rtx_insn *from, *to;
       from = bb == block_bnd ? prev : sel_bb_head (bb);
       to = bb == block_from ? next : sel_bb_end (bb);
 
