@@ -1,5 +1,110 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* reload.h (struct insn_chain): Strengthen field "insn" from rtx
+	to rtx_insn *.
+	(find_reloads): Likewise for param 1.
+	(subst_reloads): Likewise for sole param.
+	(find_equiv_reg): Likwise for param 2.
+	(regno_clobbered_p): Likwise for param 2.
+	(reload): Likewise for param 1.
+
+	* caller-save.c (save_call_clobbered_regs): Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(insert_one_insn): Likewise for local "insn".
+
+	* reload.c (this_insn): Likewise for this global.
+	(find_reloads): Likewise for param "insn".
+	(find_reloads_toplev): Likewise.
+	(find_reloads_address): Likewise.
+	(subst_reg_equivs): Likewise.
+	(update_auto_inc_notes): Likewise.
+	(find_reloads_address_1): Likewise.
+	(find_reloads_subreg_address): Likewise.
+	(subst_reloads): Likewise.
+	(find_equiv_reg): Likewise, also for local "p".
+	(regno_clobbered_p): Likewise for param "insn".
+
+	* reload1.c (reg_reloaded_insn): Likewise for the elements of this
+	array.
+	(spill_reg_store): Likewise for the elements of this array.
+	(remove_init_insns): Likewise for local "equiv_insn".
+	(will_delete_init_insn_p): Likewise for param "insn".
+	(reload): Likewise for param ""first" and local "insn".
+	(calculate_needs_all_insns): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(calculate_elim_costs_all_insns): Likewise.
+	(delete_caller_save_insns): Likewise.
+	(spill_failure): Likewise for param "insn".
+	(delete_dead_insn): Likewise.
+	(set_label_offsets): Likewise.
+	(eliminate_regs_in_insn): Likewise, also for locals "base_insn" and
+	"prev_insn".
+	(elimination_costs_in_insn): Likewise for param "insn".
+	(set_initial_eh_label_offset): Replace use of NULL_RTX with NULL
+	when referring to an insn.
+	(set_initial_label_offsets): Likewise.
+	(set_offsets_for_label): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(init_eliminable_invariants): Likewise for param "first" and local
+	"insn".
+	(fixup_eh_region_note): Likewise for param "insn".
+	(reload_as_needed): Likewise for locals "prev", "insn",
+	"old_next", "old_prev", "next".
+	(gen_reload_chain_without_interm_reg_p): Likewise for locals "insn",
+	"last".
+	(reload_inheritance_insn): Strengthen elements of this array from
+	rtx to rtx_insn *.
+	(failed_reload): Likewise for param "insn".
+	(choose_reload_regs): Likewise for local "insn".  Replace use of
+	NULL_RTX with NULL when referring to an insn.
+	(input_reload_insns): Strengthen elements of this array from rtx
+	to rtx_insn *.
+	(other_input_address_reload_insns): Likewise for this global.
+	(other_input_reload_insns): Likewise for this global.
+	(input_address_reload_insns): Likwise for the elements of this
+	array.
+	(inpaddr_address_reload_insns): Likwise for the elements of this
+	array.
+	(output_reload_insns): Likewise for the elements of this array.
+	(output_address_reload_insns): Likewise for the elements of this
+	array.
+	(outaddr_address_reload_insns): Likewise for the elements of this
+	array.
+	(operand_reload_insns): Likewise for this global.
+	(other_operand_reload_insns): Likewise for this global.
+	(other_output_reload_insns): Likewise for the elements of this
+	array.
+	(new_spill_reg_store): Likewise for the elements of this
+	array.
+	(emit_input_reload_insns): Likewise for locals "insn", "temp".
+	Strengthen local "where" from rtx * to rtx_insn **.
+	(emit_output_reload_insns): Strengthen locals "insn", "p", "next"
+	from rtx to rtx_insn *.
+	(do_input_reload): Likewise for local "insn".
+	(do_output_reload): Likewise for local "insn".
+	(emit_reload_insns): Likewise for locals "insn" and "store_insn".
+	(emit_insn_if_valid_for_reload): Likewise for return type and local
+	"last".  Add checked cast to rtx_insn when returning "insn" since
+	this has been through emit_insn.
+	(gen_reload): Strengthen return type and locals "last", "insn", "set"
+	from rtx to rtx_insn *.  Add checked cast to rtx_insn when
+	returning "insn" since it's been through
+	emit_insn_if_valid_for_reload at this point.
+	(delete_output_reload): Strengthen param "insn" and locals
+	"output_reload_insn", "i2" from rtx to rtx_insn *.
+	(delete_address_reloads): Likewise for params "dead_insn",
+	"current_insn" and locals "prev", "next".
+	(delete_address_reloads_1): Likewise for params "dead_insn",
+	"current_insn" and locals "prev", "i2".
+	(inc_for_reload): Likewise for locals "last", "add_insn".
+	(add_auto_inc_notes): Strengthen param "insn" from rtx to
+	rtx_insn *.
+
+	* config/arc/arc-protos.h (regno_clobbered_p): Likewise for 2nd
+	param of this duplicate of the prototype from reload.h
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* regstat.c (regstat_bb_compute_ri): Strengthen local "insn" from
 	rtx to rtx_insn *.
 	(regstat_bb_compute_calls_crossed): Likewise.
