@@ -1,3 +1,9 @@
+2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/62008
+	* cp-array-notation.c (build_array_notation_ref): Added correct
+	handling of case with incorrect array.
+
 2014-08-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
