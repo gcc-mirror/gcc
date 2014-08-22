@@ -1,5 +1,12 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* loop-doloop.c (doloop_valid_p): Strengthen local "insn" from rtx
+	to rtx_insn *.
+	(add_test): Likewise for locals "seq", "jump".
+	(doloop_modify): Likewise for locals "sequence", "jump_insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (rebuild_jump_labels): Strengthen param "f" from rtx to
 	rtx_insn *.
 	(rebuild_jump_labels_chain): Likewise for param "chain".
