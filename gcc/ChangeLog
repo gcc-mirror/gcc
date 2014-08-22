@@ -1,5 +1,11 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* dwarf2cfi.c (add_cfis_to_fde): Strengthen locals "insn", "next"
+	from rtx to rtx_insn *.
+	(create_pseudo_cfg): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* df-core.c (df_bb_regno_first_def_find): Strengthen local "insn"
 	from rtx to rtx_insn *.
 	(df_bb_regno_last_def_find): Likewise.

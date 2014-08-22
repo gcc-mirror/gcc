@@ -2132,7 +2132,7 @@ static void
 add_cfis_to_fde (void)
 {
   dw_fde_ref fde = cfun->fde;
-  rtx insn, next;
+  rtx_insn *insn, *next;
   /* We always start with a function_begin label.  */
   bool first = false;
 
@@ -2727,7 +2727,7 @@ create_pseudo_cfg (void)
 {
   bool saw_barrier, switch_sections;
   dw_trace_info ti;
-  rtx insn;
+  rtx_insn *insn;
   unsigned i;
 
   /* The first trace begins at the start of the function,
