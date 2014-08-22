@@ -14514,6 +14514,74 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<sseinsnmode>")])
 
+;; For broadcast[i|f]32x2.  Yes there is no v4sf version, only v4si.
+(define_mode_iterator VI4F_BRCST32x2
+  [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   V16SF (V8SF "TARGET_AVX512VL")])
+
+(define_mode_attr 64x2mode
+  [(V8DF "V2DF") (V8DI "V2DI") (V4DI "V2DI") (V4DF "V2DF")])
+
+(define_mode_attr 32x2mode
+  [(V16SF "V2SF") (V16SI "V2SI") (V8SI "V2SI")
+  (V8SF "V2SF") (V4SI "V2SI")])
+
+(define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>"
+  [(set (match_operand:VI4F_BRCST32x2 0 "register_operand" "=v")
+	(vec_duplicate:VI4F_BRCST32x2
+	  (vec_select:<32x2mode>
+	    (match_operand:<ssexmmmode> 1 "nonimmediate_operand" "vm")
+	    (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_AVX512DQ"
+  "vbroadcast<shuffletype>32x2\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<mask_codefor>avx512vl_broadcast<mode><mask_name>_1"
+  [(set (match_operand:VI4F_256 0 "register_operand" "=v,v")
+        (vec_duplicate:VI4F_256
+         (match_operand:<ssexmmmode> 1 "nonimmediate_operand" "v,m")))]
+  "TARGET_AVX512VL"
+  "@
+   vshuf<shuffletype>32x4\t{$0x0, %t1, %t1, %0<mask_operand2>|%0<mask_operand2>, %t1, %t1, 0x0}
+   vbroadcast<shuffletype>32x4\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>_1"
+  [(set (match_operand:V16FI 0 "register_operand" "=v,v")
+       (vec_duplicate:V16FI
+         (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "v,m")))]
+  "TARGET_AVX512DQ"
+  "@
+   vshuf<shuffletype>32x4\t{$0x44, %g1, %g1, %0<mask_operand2>|%0<mask_operand2>, %g1, %g1, 0x44}
+   vbroadcast<shuffletype>32x8\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+;; For broadcast[i|f]64x2
+(define_mode_iterator VI8F_BRCST64x2
+  [V8DI V8DF (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")])
+
+(define_insn "<mask_codefor>avx512dq_broadcast<mode><mask_name>_1"
+  [(set (match_operand:VI8F_BRCST64x2 0 "register_operand" "=v,v")
+       (vec_duplicate:VI8F_BRCST64x2
+         (match_operand:<64x2mode> 1 "nonimmediate_operand" "v,m")))]
+  "TARGET_AVX512DQ"
+  "@
+   vshuf<shuffletype>64x2\t{$0x0, %g1, %g1, %0<mask_operand2>|%0<mask_operand2>, %g1, %g1, 0x0}
+   vbroadcast<shuffletype>64x2\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "avx512cd_maskb_vec_dup<mode>"
   [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
 	(vec_duplicate:VI8_AVX512VL
