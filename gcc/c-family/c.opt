@@ -328,7 +328,7 @@ C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
 Warn about variables that might be changed by \"longjmp\" or \"vfork\"
 
 Wcomment
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_comments) Var(cpp_warn_comment) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line
 
 Wcomments
@@ -598,7 +598,7 @@ Wmudflap
 C ObjC C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 Wmultichar
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_multichar) Var(cpp_warn_multichar) Warning
 Warn about use of multi-character character constants
 
 Wnarrowing
@@ -702,7 +702,7 @@ C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
 Wdate-time
-Common Var(cpp_warn_date_time) Warning
+C ObjC C++ ObjC++ CPP(warn_date_time) Var(cpp_warn_date_time) Warning
 Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage
 
 Wproperty-assign-default

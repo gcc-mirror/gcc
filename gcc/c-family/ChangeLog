@@ -1,3 +1,13 @@
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (Wcomment): Use CPP, Var and LangEnabledBy.
+	(Wmultichar): Likewise.
+	(Wdate-time): Use C-family languages instead of Common. Use CPP
+	and Var.
+	* c-opts.c (c_common_handle_option): Do not handle the above
+	options here.
+	(sanitize_cpp_opts): Likewise.
+
 2014-08-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
