@@ -1,5 +1,54 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* ira-int.h (struct ira_allocno_copy): Strengthen field "insn"
+	from rtx to rtx_insn *insn.
+	(ira_create_copy): Strengthen param "insn" from rtx to rtx_insn *.
+	(ira_add_allocno_copy): Likewise.
+	* ira-build.c (find_allocno_copy): Strengthen param "insn" from
+	rtx to rtx_insn *.
+	(ira_create_copy): Likewise.
+	(ira_add_allocno_copy): Likewise.
+	(create_bb_allocnos): Likewise for local "insn".
+	* ira-conflicts.c (process_regs_for_copy): Likewise for param "insn".
+	(process_reg_shuffles): Update NULL_RTX to NULL in invocation of
+	process_regs_for_copy for rtx_insn * param.
+	(add_insn_allocno_copies): Strengthen param "insn" from rtx to
+	rtx_insn *insn.  Update NULL_RTX to NULL in invocation of
+	process_regs_for_copy for rtx_insn * param.
+	(add_copies): Strengthen local "insn" from rtx to rtx_insn *insn.
+	* ira-costs.c (record_reg_classes): Likewise for param "insn".
+	(record_operand_costs): Likewise.
+	(scan_one_insn): Likewise for return type, and for param "insn".
+	(process_bb_for_costs): Likewise for local "insn".
+	(process_bb_node_for_hard_reg_moves): Likewise.
+	* ira-emit.c (struct move): Likewise for field "insn".
+	(create_move): Eliminate use of NULL_RTX when dealing with an
+	rtx_insn *.
+	(emit_move_list): Strengthen return type and locals "result",
+	"insn" from rtx to rtx_insn *insn.
+	(emit_moves): Likewise for locals "insns", "tmp".
+	(ira_emit): Likewise for local "insn".
+	* ira-lives.c (mark_hard_reg_early_clobbers): Likewise for param
+	"insn".
+	(find_call_crossed_cheap_reg): Likewise.
+	(process_bb_node_lives): Likewise for local "insn".
+	* ira.c (decrease_live_ranges_number): Likewise.
+	(compute_regs_asm_clobbered): Likewise.
+	(build_insn_chain): Likewise.
+	(find_moveable_pseudos): Likewise, also locals "def_insn",
+	"use_insn", "x".  Also strengthen local "closest_uses" from rtx *
+	to rtx_insn **.  Add a checked cast when assigning from
+	"closest_use" into closest_uses array in a region where we know
+	it's a non-NULL insn.
+	(interesting_dest_for_shprep): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	(split_live_ranges_for_shrink_wrap): Likewise for locals "insn",
+	"last_interesting_insn", "uin".
+	(move_unallocated_pseudos): Likewise for locals "def_insn",
+	"move_insn", "newinsn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* internal-fn.c (ubsan_expand_si_overflow_addsub_check):
 	Strengthen locals "done_label", "do_error" from rtx to
 	rtx_code_label *.
