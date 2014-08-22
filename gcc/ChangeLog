@@ -1,5 +1,22 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check):
+	Strengthen locals "done_label", "do_error" from rtx to
+	rtx_code_label *.
+	(ubsan_expand_si_overflow_addsub_check): Strengthen local "last"
+	from rtx to rtx_insn *.  Strengthen local "sub_check from rtx to
+	rtx_code_label *.
+	(ubsan_expand_si_overflow_neg_check): Likewise for locals
+	"done_label", "do_error" to rtx_code_label * and local  "last" to
+	rtx_insn *.
+	(ubsan_expand_si_overflow_mul_check): Likewise for locals
+	"done_label", "do_error", "large_op0", "small_op0_large_op1",
+	"one_small_one_large", "both_ops_large", "after_hipart_neg",
+	"after_lopart_neg", "do_overflow", "hipart_different"  to
+	rtx_code_label * and local  "last" to rtx_insn *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* init-regs.c (initialize_uninitialized_regs): Strengthen locals
 	"insn" and "move_insn" from rtx to rtx_insn *.
 
