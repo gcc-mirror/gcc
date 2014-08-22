@@ -261,7 +261,7 @@ static bool
 doloop_valid_p (struct loop *loop, struct niter_desc *desc)
 {
   basic_block *body = get_loop_body (loop), bb;
-  rtx insn;
+  rtx_insn *insn;
   unsigned i;
   bool result = true;
 
@@ -336,7 +336,8 @@ cleanup:
 static bool
 add_test (rtx cond, edge *e, basic_block dest)
 {
-  rtx seq, jump, label;
+  rtx_insn *seq, *jump;
+  rtx label;
   enum machine_mode mode;
   rtx op0 = XEXP (cond, 0), op1 = XEXP (cond, 1);
   enum rtx_code code = GET_CODE (cond);
@@ -401,8 +402,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 {
   rtx counter_reg;
   rtx tmp, noloop = NULL_RTX;
-  rtx sequence;
-  rtx jump_insn;
+  rtx_insn *sequence;
+  rtx_insn *jump_insn;
   rtx jump_label;
   int nonneg = 0;
   bool increment_count;
