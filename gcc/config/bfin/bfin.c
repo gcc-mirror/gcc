@@ -3655,7 +3655,7 @@ hwloop_optimize (hwloop_info loop)
       last_insn = emit_insn_after (gen_forced_nop (), last_insn);
     }
 
-  loop->last_insn = last_insn;
+  loop->last_insn = safe_as_a <rtx_insn *> (last_insn);
 
   /* The loop is good for replacement.  */
   start_label = loop->start_label;

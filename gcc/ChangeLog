@@ -1,5 +1,18 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* hw-doloop.h (struct hwloop_info_d): Strengthen fields
+	"last_insn", "loop_end" from rtx to rtx_insn *.
+
+	* hw-doloop.c (scan_loop): Likewise for local "insn".
+	(discover_loop): Likewise for param "tail_insn".
+	(discover_loops): Likewise for local "tail".
+
+	* config/bfin/bfin.c (hwloop_optimize): For now, add a checked
+	cast to rtx_insn * when assigning from an rtx local to a
+	hwloop_info's "last_insn" field.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* haifa-sched.c (bb_header): Strengthen from rtx * to rtx_insn **.
 	(add_delay_dependencies): Strengthen local "pro" from rtx to
 	rtx_insn *.
