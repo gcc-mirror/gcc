@@ -1,5 +1,15 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* mode-switching.c (struct seginfo): Strengthen field "insn_ptr"
+	from rtx to rtx_insn *.
+	(new_seginfo): Likewise for param "insn".
+	(create_pre_exit): Likewise for locals "last_insn",
+	"before_return_copy", "return_copy".
+	(optimize_mode_switching): Likewise for locals "insn", "ins_pos",
+	"mode_set".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* lra-int.h (struct lra_insn_recog_data): Strengthen field "insn"
 	from rtx to rtx_insn *.
 	(lra_push_insn): Likewise for 1st param.
