@@ -1,5 +1,24 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (debug_rtx_list): Strengthen param 1 "x" from const_rtx to
+	const rtx_insn *.
+	(debug_rtx_range): Likewise for params 1 and 2 "start" and "end".
+	(debug_rtx_find): Likewise for param 1 "x".
+
+	* print-rtl.c (debug_rtx_list): Strengthen param 1 "x" from
+	const_rtx to const rtx_insn *.  Likewise for local "insn".
+	(debug_rtx_range): Likewise for params 1 and 2 "start" and "end".
+	(debug_rtx_find): Likewise for param 1 "x".
+	(print_rtl): Likewise for local "tmp_rtx", adding a checked cast
+	from const_rtx to const rtx_insn * within the appropriate cases of
+	the switch statement.
+
+	* config/rs6000/rs6000.c (rs6000_debug_legitimize_address):
+	Strengthen local "insns" from rtx to rtx_insn * since this is
+	passed to a call to debug_rtx_list.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* predict.h (predict_insn_def): Strengthen param "insn" from rtx
 	to rtx_insn *.
 

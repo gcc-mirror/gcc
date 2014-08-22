@@ -6813,7 +6813,7 @@ static rtx
 rs6000_debug_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 {
   rtx ret;
-  rtx insns;
+  rtx_insn *insns;
 
   start_sequence ();
   ret = rs6000_legitimize_address (x, oldx, mode);
