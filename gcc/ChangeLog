@@ -1,5 +1,27 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* ree.c (struct ext_cand): Strengthen field "insn" from rtx to
+	rtx_insn *.
+	(combine_set_extension): Likewise for param "curr_insn".
+	(transform_ifelse): Likewise for param "def_insn".
+	(get_defs): Likewise for param "def_insn".  Strengthen param "dest"
+	from vec<rtx> * to vec<rtx_insn *> *.
+	(is_cond_copy_insn): Likewise for param "insn".
+	(struct ext_state): Strengthen the four vec fields from vec<rtx>
+	to vec<rtx_insn *>.
+	(make_defs_and_copies_lists): Strengthen param "extend_insn" and
+	local "def_insn" from rtx to rtx_insn *.
+	(get_sub_rtx): Likewise for param "def_insn".
+	(merge_def_and_ext): Likewise.
+	(combine_reaching_defs): Likewise.
+	(add_removable_extension): Likewise for param "insn".
+	(find_removable_extensions): Likewise for local "insn".
+	(find_and_remove_re): Likewise for locals "curr_insn" and
+	"def_insn".  Strengthen locals "reinsn_del_list" and
+	"reinsn_del_list" from auto_vec<rtx> to auto_vec<rtx_insn *>.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* recog.c (split_insn): Strengthen param "insn" and locals
 	"first", "last" from rtx to rtx_insn *.
 	(split_all_insns): Likewise for locals "insn", "next".
