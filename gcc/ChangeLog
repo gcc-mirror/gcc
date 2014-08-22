@@ -1,5 +1,29 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* postreload-gcse.c (struct occr): Strengthen field "insn" from
+	rtx to rtx_insn *.
+	(struct unoccr): Likewise.
+	(struct modifies_mem): Likewise.
+	(alloc_mem): Likewise for local "insn".
+	(insert_expr_in_table): Likewise for param "insn".
+	(dump_expr_hash_table_entry): Likewise for local "insn".
+	(oprs_unchanged_p): Likewise for param "insn".
+	(load_killed_in_block_p): Likewise for local "setter".
+	(record_last_reg_set_info): Likewise for param "insn".
+	(record_last_reg_set_info_regno): Likewise.
+	(record_last_mem_set_info): Likewise.
+	(record_last_set_info): Likewise for local "last_set_insn".
+	(record_opr_changes): Likewise for param "insn".
+	(hash_scan_set): Likewise.
+	(compute_hash_table): Likewise for local "insn".
+	(get_avail_load_store_reg): Likewise for param "insn".
+	(eliminate_partially_redundant_load): Likewise, also for locals
+	"avail_insn", "next_pred_bb_end".  Replace use of NULL_RTX with
+	RTX for insns.
+	(eliminate_partially_redundant_loads): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* optabs.c (expand_doubleword_shift): Strengthen local "insn" from
 	rtx to rtx_insn *.
 	(expand_binop): Likewise for locals "entry_last", "last", "insns"
