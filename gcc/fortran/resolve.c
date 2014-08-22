@@ -7761,7 +7761,7 @@ resolve_select (gfc_code *code, bool select_type)
 	/* Strip all other unreachable cases.  */
 	if (body->ext.block.case_list)
 	  {
-	    for (cp = body->ext.block.case_list; cp->next; cp = cp->next)
+	    for (cp = body->ext.block.case_list; cp && cp->next; cp = cp->next)
 	      {
 		if (cp->next->unreachable)
 		  {
