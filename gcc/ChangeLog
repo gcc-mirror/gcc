@@ -1,5 +1,25 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* shrink-wrap.h (requires_stack_frame_p): Strengthen param 1
+	"insn" from rtx to rtx_insn *.
+	(dup_block_and_redirect): Likewise for param 3 "before".
+
+	* shrink-wrap.c (requires_stack_frame_p): Strengthen param "insn"
+	from rtx to rtx_insn *.
+	(move_insn_for_shrink_wrap): Likewise.
+	(prepare_shrink_wrap): Likewise for locals "insn", "curr".
+	(dup_block_and_redirect): Likewise for param "before" and local
+	"insn".
+	(try_shrink_wrapping): Likewise for locals "insn", "insert_point",
+	"end".
+	(convert_to_simple_return): Likewise for local "start".
+
+	* config/i386/i386.c (ix86_finalize_stack_realign_flags):
+	Strengthen local "insn" from rtx to rtx_insn *, for use when
+	invoking requires_stack_frame_p.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* sel-sched-ir.c (vinsn_copy): Strengthen local "copy" from rtx to
 	rtx_insn *.
 	(speculate_expr): Likewise for locals "orig_insn_rtx",
