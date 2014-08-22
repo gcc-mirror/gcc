@@ -100,8 +100,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gdb/gdb-index.h"
 
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
-static rtx last_var_location_insn;
-static rtx cached_next_real_insn;
+static rtx_insn *last_var_location_insn;
+static rtx_insn *cached_next_real_insn;
 
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
@@ -1138,8 +1138,8 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  last_var_location_insn = NULL_RTX;
-  cached_next_real_insn = NULL_RTX;
+  last_var_location_insn = NULL;
+  cached_next_real_insn = NULL;
 
   if (dwarf2out_do_cfi_asm ())
     fprintf (asm_out_file, "\t.cfi_endproc\n");
@@ -21289,11 +21289,11 @@ dwarf2out_var_location (rtx_insn *loc_note)
 {
   char loclabel[MAX_ARTIFICIAL_LABEL_BYTES + 2];
   struct var_loc_node *newloc;
-  rtx next_real, next_note;
+  rtx_insn *next_real, *next_note;
   static const char *last_label;
   static const char *last_postcall_label;
   static bool last_in_cold_section_p;
-  static rtx expected_next_loc_note;
+  static rtx_insn *expected_next_loc_note;
   tree decl;
   bool var_loc_p;
 
@@ -21320,7 +21320,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
   if (next_real)
     {
       if (expected_next_loc_note != loc_note)
-	next_real = NULL_RTX;
+	next_real = NULL;
     }
 
   next_note = NEXT_INSN (loc_note);
@@ -21329,7 +21329,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
       || ! NOTE_P (next_note)
       || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
 	  && NOTE_KIND (next_note) != NOTE_INSN_CALL_ARG_LOCATION))
-    next_note = NULL_RTX;
+    next_note = NULL;
 
   if (! next_real)
     next_real = next_real_insn (loc_note);
@@ -21340,7 +21340,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
       cached_next_real_insn = next_real;
     }
   else
-    cached_next_real_insn = NULL_RTX;
+    cached_next_real_insn = NULL;
 
   /* If there are no instructions which would be affected by this note,
      don't do anything.  */
@@ -21393,8 +21393,8 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	  && in_first_function_p
 	  && maybe_at_text_label_p)
 	{
-	  static rtx last_start;
-	  rtx insn;
+	  static rtx_insn *last_start;
+	  rtx_insn *insn;
 	  for (insn = loc_note; insn; insn = previous_insn (insn))
 	    if (insn == last_start)
 	      break;
