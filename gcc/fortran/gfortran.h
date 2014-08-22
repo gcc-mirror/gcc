@@ -2450,6 +2450,7 @@ typedef struct
   int warn_tabs;
   int warn_underflow;
   int warn_intrinsic_shadow;
+  int warn_use_without_only;
   int warn_intrinsics_std;
   int warn_character_truncation;
   int warn_array_temp;

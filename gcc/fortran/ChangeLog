@@ -1,3 +1,12 @@
+2014-08-22  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	PR fortran/61234
+	* lang.opt (Wuse-without-only): New flag.
+	* gfortran.h (gfc_option_t): Add it.
+	* invoke.texi: Document it.
+	* module.c (gfc_use_module): Warn if needed.
+	* options.c (gfc_init_options,gfc_handle_option): Init accordingly.
+
 2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/62214

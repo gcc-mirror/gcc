@@ -1,3 +1,7 @@
+2014-08-22  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	* gfortran.dg/use_without_only_1.f90: New test.
+
 2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR other/62008
@@ -5,7 +9,7 @@
 
 2014-08-22  Tony Wang  <tony.wang@arm.com>
 
-        * g++.dg/tls/thread_local6.C: Skip this test case when target uses
+	* g++.dg/tls/thread_local6.C: Skip this test case when target uses
 	dejagnu wrapper.
 
 2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
