@@ -2014,7 +2014,8 @@ static void
 decrease_live_ranges_number (void)
 {
   basic_block bb;
-  rtx insn, set, src, dest, dest_death, p, q, note;
+  rtx_insn *insn;
+  rtx set, src, dest, dest_death, p, q, note;
   int sregno, dregno;
 
   if (! flag_expensive_optimizations)
@@ -2229,7 +2230,7 @@ compute_regs_asm_clobbered (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
       FOR_BB_INSNS_REVERSE (bb, insn)
 	{
 	  df_ref def;
@@ -3998,7 +3999,7 @@ build_insn_chain (void)
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       bitmap_iterator bi;
-      rtx insn;
+      rtx_insn *insn;
 
       CLEAR_REG_SET (live_relevant_regs);
       bitmap_clear (live_subregs_used);
@@ -4370,7 +4371,7 @@ find_moveable_pseudos (void)
   int max_uid = get_max_uid ();
   basic_block bb;
   int *uid_luid = XNEWVEC (int, max_uid);
-  rtx *closest_uses = XNEWVEC (rtx, max_regs);
+  rtx_insn **closest_uses = XNEWVEC (rtx_insn *, max_regs);
   /* A set of registers which are live but not modified throughout a block.  */
   bitmap_head *bb_transp_live = XNEWVEC (bitmap_head,
 					 last_basic_block_for_fn (cfun));
@@ -4399,7 +4400,7 @@ find_moveable_pseudos (void)
   bitmap_initialize (&unusable_as_input, 0);
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
       bitmap transp = bb_transp_live + bb->index;
       bitmap moveable = bb_moveable_reg_sets + bb->index;
       bitmap local = bb_local + bb->index;
@@ -4462,13 +4463,14 @@ find_moveable_pseudos (void)
   FOR_EACH_BB_FN (bb, cfun)
     {
       bitmap local = bb_local + bb->index;
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	if (NONDEBUG_INSN_P (insn))
 	  {
 	    df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
-	    rtx def_insn, closest_use, note;
+	    rtx_insn *def_insn;
+	    rtx closest_use, note;
 	    df_ref def, use;
 	    unsigned regno;
 	    bool all_dominated, all_local;
@@ -4510,7 +4512,7 @@ find_moveable_pseudos (void)
 	    closest_use = NULL_RTX;
 	    for (; use; use = DF_REF_NEXT_REG (use))
 	      {
-		rtx insn;
+		rtx_insn *insn;
 		if (!DF_REF_INSN_INFO (use))
 		  {
 		    all_dominated = false;
@@ -4562,7 +4564,9 @@ find_moveable_pseudos (void)
 	      }
 #endif
 	    bitmap_set_bit (&interesting, regno);
-	    closest_uses[regno] = closest_use;
+	    /* If we get here, we know closest_use is a non-NULL insn
+	       (as opposed to const_0_rtx).  */
+	    closest_uses[regno] = as_a <rtx_insn *> (closest_use);
 
 	    if (dump_file && (all_local || all_dominated))
 	      {
@@ -4581,13 +4585,13 @@ find_moveable_pseudos (void)
   EXECUTE_IF_SET_IN_BITMAP (&interesting, 0, i, bi)
     {
       df_ref def = DF_REG_DEF_CHAIN (i);
-      rtx def_insn = DF_REF_INSN (def);
+      rtx_insn *def_insn = DF_REF_INSN (def);
       basic_block def_block = BLOCK_FOR_INSN (def_insn);
       bitmap def_bb_local = bb_local + def_block->index;
       bitmap def_bb_moveable = bb_moveable_reg_sets + def_block->index;
       bitmap def_bb_transp = bb_transp_live + def_block->index;
       bool local_to_bb_p = bitmap_bit_p (def_bb_local, i);
-      rtx use_insn = closest_uses[i];
+      rtx_insn *use_insn = closest_uses[i];
       df_ref use;
       bool all_ok = true;
       bool all_transp = true;
@@ -4640,7 +4644,7 @@ find_moveable_pseudos (void)
 		{
 		  if (modified_between_p (DF_REF_REG (use), def_insn, use_insn))
 		    {
-		      rtx x = NEXT_INSN (def_insn);
+		      rtx_insn *x = NEXT_INSN (def_insn);
 		      while (!modified_in_p (DF_REF_REG (use), x))
 			{
 			  gcc_assert (x != use_insn);
@@ -4733,7 +4737,7 @@ interesting_dest_for_shprep_1 (rtx set, basic_block call_dom)
    Otherwise return NULL.  */
 
 static rtx
-interesting_dest_for_shprep (rtx insn, basic_block call_dom)
+interesting_dest_for_shprep (rtx_insn *insn, basic_block call_dom)
 {
   if (!INSN_P (insn))
     return NULL;
@@ -4771,7 +4775,7 @@ split_live_ranges_for_shrink_wrap (void)
 {
   basic_block bb, call_dom = NULL;
   basic_block first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  rtx insn, last_interesting_insn = NULL;
+  rtx_insn *insn, *last_interesting_insn = NULL;
   bitmap_head need_new, reachable;
   vec<basic_block> queue;
 
@@ -4888,7 +4892,7 @@ split_live_ranges_for_shrink_wrap (void)
       df_ref use, next;
       for (use = DF_REG_USE_CHAIN (REGNO (dest)); use; use = next)
 	{
-	  rtx uin = DF_REF_INSN (use);
+	  rtx_insn *uin = DF_REF_INSN (use);
 	  next = DF_REF_NEXT_REG (use);
 
 	  basic_block ubb = BLOCK_FOR_INSN (uin);
@@ -4934,12 +4938,12 @@ move_unallocated_pseudos (void)
       {
 	int idx = i - first_moveable_pseudo;
 	rtx other_reg = pseudo_replaced_reg[idx];
-	rtx def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (i));
+	rtx_insn *def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (i));
 	/* The use must follow all definitions of OTHER_REG, so we can
 	   insert the new definition immediately after any of them.  */
 	df_ref other_def = DF_REG_DEF_CHAIN (REGNO (other_reg));
-	rtx move_insn = DF_REF_INSN (other_def);
-	rtx newinsn = emit_insn_after (PATTERN (def_insn), move_insn);
+	rtx_insn *move_insn = DF_REF_INSN (other_def);
+	rtx_insn *newinsn = emit_insn_after (PATTERN (def_insn), move_insn);
 	rtx set;
 	int success;
 

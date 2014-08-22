@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira-int.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
-static ira_copy_t find_allocno_copy (ira_allocno_t, ira_allocno_t, rtx,
+static ira_copy_t find_allocno_copy (ira_allocno_t, ira_allocno_t, rtx_insn *,
 				     ira_loop_tree_node_t);
 
 /* The root of the loop tree corresponding to the all function.  */
@@ -1385,7 +1385,7 @@ initiate_copies (void)
 /* Return copy connecting A1 and A2 and originated from INSN of
    LOOP_TREE_NODE if any.  */
 static ira_copy_t
-find_allocno_copy (ira_allocno_t a1, ira_allocno_t a2, rtx insn,
+find_allocno_copy (ira_allocno_t a1, ira_allocno_t a2, rtx_insn *insn,
 		   ira_loop_tree_node_t loop_tree_node)
 {
   ira_copy_t cp, next_cp;
@@ -1416,7 +1416,7 @@ find_allocno_copy (ira_allocno_t a1, ira_allocno_t a2, rtx insn,
    SECOND, FREQ, CONSTRAINT_P, and INSN.  */
 ira_copy_t
 ira_create_copy (ira_allocno_t first, ira_allocno_t second, int freq,
-		 bool constraint_p, rtx insn,
+		 bool constraint_p, rtx_insn *insn,
 		 ira_loop_tree_node_t loop_tree_node)
 {
   ira_copy_t cp;
@@ -1493,7 +1493,7 @@ swap_allocno_copy_ends_if_necessary (ira_copy_t cp)
    LOOP_TREE_NODE.  */
 ira_copy_t
 ira_add_allocno_copy (ira_allocno_t first, ira_allocno_t second, int freq,
-		      bool constraint_p, rtx insn,
+		      bool constraint_p, rtx_insn *insn,
 		      ira_loop_tree_node_t loop_tree_node)
 {
   ira_copy_t cp;
@@ -1927,7 +1927,7 @@ static void
 create_bb_allocnos (ira_loop_tree_node_t bb_node)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   unsigned int i;
   bitmap_iterator bi;
 

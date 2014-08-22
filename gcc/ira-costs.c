@@ -403,7 +403,7 @@ copy_cost (rtx x, enum machine_mode mode, reg_class_t rclass, bool to_p,
 static void
 record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		    enum machine_mode *modes, const char **constraints,
-		    rtx insn, enum reg_class *pref)
+		    rtx_insn *insn, enum reg_class *pref)
 {
   int alt;
   int i, j, k;
@@ -1168,7 +1168,7 @@ record_address_regs (enum machine_mode mode, addr_space_t as, rtx x,
 
 /* Calculate the costs of insn operands.  */
 static void
-record_operand_costs (rtx insn, enum reg_class *pref)
+record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 {
   const char *constraints[MAX_RECOG_OPERANDS];
   enum machine_mode modes[MAX_RECOG_OPERANDS];
@@ -1312,8 +1312,8 @@ record_operand_costs (rtx insn, enum reg_class *pref)
 /* Process one insn INSN.  Scan it and record each time it would save
    code to put a certain allocnos in a certain class.  Return the last
    insn processed, so that the scan can be continued from there.  */
-static rtx
-scan_one_insn (rtx insn)
+static rtx_insn *
+scan_one_insn (rtx_insn *insn)
 {
   enum rtx_code pat_code;
   rtx set, note;
@@ -1496,7 +1496,7 @@ print_pseudo_costs (FILE *f)
 static void
 process_bb_for_costs (basic_block bb)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   frequency = REG_FREQ_FROM_BB (bb);
   if (frequency == 0)
@@ -1903,7 +1903,8 @@ process_bb_node_for_hard_reg_moves (ira_loop_tree_node_t loop_tree_node)
   ira_loop_tree_node_t curr_loop_tree_node;
   enum reg_class rclass;
   basic_block bb;
-  rtx insn, set, src, dst;
+  rtx_insn *insn;
+  rtx set, src, dst;
 
   bb = loop_tree_node->bb;
   if (bb == NULL)
