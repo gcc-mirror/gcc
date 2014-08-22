@@ -1221,7 +1221,7 @@ static void
 assign_by_spills (void)
 {
   int i, n, nfails, iter, regno, hard_regno, cost, restore_regno;
-  rtx insn;
+  rtx_insn *insn;
   bitmap_head changed_insns, do_not_assign_nonreload_pseudos;
   unsigned int u, conflict_regno;
   bitmap_iterator bi;

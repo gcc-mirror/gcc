@@ -1,5 +1,129 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* lra-int.h (struct lra_insn_recog_data): Strengthen field "insn"
+	from rtx to rtx_insn *.
+	(lra_push_insn): Likewise for 1st param.
+	(lra_push_insn_and_update_insn_regno_info): Likewise.
+	(lra_pop_insn): Likewise for return type.
+	(lra_invalidate_insn_data): Likewise for 1st param.
+	(lra_set_insn_deleted): Likewise.
+	(lra_delete_dead_insn): Likewise.
+	(lra_process_new_insns): Likewise for first 3 params.
+	(lra_set_insn_recog_data): Likewise for 1st param.
+	(lra_update_insn_recog_data): Likewise.
+	(lra_set_used_insn_alternative): Likewise.
+	(lra_invalidate_insn_regno_info): Likewise.
+	(lra_update_insn_regno_info): Likewise.
+	(lra_former_scratch_operand_p): Likewise.
+	(lra_eliminate_regs_1): Likewise.
+	(lra_get_insn_recog_data): Likewise.
+
+	* lra-assigns.c (assign_by_spills): Strengthen local "insn" from
+	rtx to rtx_insn *.
+
+	* lra-coalesce.c (move_freq_compare_func): Likewise for locals
+	"mv1" and "mv2".
+	(substitute_within_insn): New.
+	(lra_coalesce): Strengthen locals "mv", "insn", "next" from rtx to
+	rtx_insn *.  Strengthen sorted_moves from rtx * to rxt_insn **.
+	Replace call to "substitute" with call to substitute_within_insn.
+
+	* lra-constraints.c (curr_insn): Strengthen from rtx to
+	rtx_insn *.
+	(get_equiv_with_elimination): Likewise for param "insn".
+	(match_reload): Strengthen params "before" and "after" from rtx *
+	to rtx_insn **.
+	(emit_spill_move): Likewise for return type.  Add a checked cast
+	to rtx_insn * on result of gen_move_insn for now.
+	(check_and_process_move): Likewise for local "before".  Replace
+	NULL_RTX with NULL when referring to insns.
+	(process_addr_reg): Strengthen params "before" and "after" from
+	rtx * to rtx_insn **.
+	(insert_move_for_subreg): Likewise.
+	(simplify_operand_subreg): Strengthen locals "before" and "after"
+	from rtx to rtx_insn *.
+	(process_address_1): Strengthen params "before" and "after" from
+	rtx * to rtx_insn **.  Strengthen locals "insns", "last_insn" from
+	rtx to rtx_insn *.
+	(process_address): Strengthen params "before" and "after" from
+	rtx * to rtx_insn **.
+	(emit_inc): Strengthen local "last" from rtx to rtx_insn *.
+	(curr_insn_transform): Strengthen locals "before" and "after"
+	from rtx to rtx_insn *.  Replace NULL_RTX with NULL when referring
+	to insns.
+	(loc_equivalence_callback): Update cast of "data", changing
+	resulting type from rtx to rtx_insn *.
+	(substitute_pseudo_within_insn): New.
+	(inherit_reload_reg): Strengthen param "insn" from rtx to
+	rtx_insn *; likewise for local "new_insns".  Replace NULL_RTX with
+	NULL when referring to insns.  Add a checked cast to rtx_insn *
+	when using usage_insn to invoke lra_update_insn_regno_info.
+	(split_reg): Strengthen param "insn" from rtx to rtx_insn *;
+	likewise for locals "restore", "save".  Add checked casts to
+	rtx_insn * when using usage_insn to invoke
+	lra_update_insn_regno_info and lra_process_new_insns.  Replace
+	NULL_RTX with NULL when referring to insns.
+	(split_if_necessary): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(update_ebb_live_info): Likewise for params "head", "tail" and local
+	"prev_insn".
+	(get_last_insertion_point): Likewise for return type and local "insn".
+	(get_live_on_other_edges): Likewise for local "last".
+	(inherit_in_ebb): Likewise for params "head", "tail" and locals
+	"prev_insn", "next_insn", "restore".
+	(remove_inheritance_pseudos): Likewise for local "prev_insn".
+	(undo_optional_reloads): Likewise for local "insn".
+
+	* lra-eliminations.c (lra_eliminate_regs_1): Likewise for param
+	"insn".
+	(lra_eliminate_regs): Replace NULL_RTX with NULL when referring to
+	insns.
+	(eliminate_regs_in_insn): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(spill_pseudos): Likewise for local "insn".
+	(init_elimination): Likewise.
+	(process_insn_for_elimination): Likewise for param "insn".
+
+	* lra-lives.c (curr_insn): Likewise.;
+
+	* lra-spills.c (assign_spill_hard_regs): Likewise for local "insn".
+	(remove_pseudos): Likewise for param "insn".
+	(spill_pseudos): Likewise for local "insn".
+	(lra_final_code_change): Likewise for locals "insn", "curr".
+
+	* lra.c (lra_invalidate_insn_data): Likewise for param "insn".
+	(lra_set_insn_deleted): Likewise.
+	(lra_delete_dead_insn): Likewise, and for local "prev".
+	(new_insn_reg): Likewise for param "insn".
+	(lra_set_insn_recog_data): Likewise.
+	(lra_update_insn_recog_data): Likewise.
+	(lra_set_used_insn_alternative): Likewise.
+	(get_insn_freq): Likewise.
+	(invalidate_insn_data_regno_info): Likewise.
+	(lra_invalidate_insn_regno_info): Likewise.
+	(lra_update_insn_regno_info): Likewise.
+	(lra_constraint_insn_stack): Strengthen from vec<rtx> to
+	vec<rtx_insn *>.
+	(lra_push_insn_1): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(lra_push_insn): Likewise.
+	(lra_push_insn_and_update_insn_regno_info): Likewise.
+	(lra_pop_insn): Likewise for return type and local "insn".
+	(push_insns): Likewise for params "from", "to", and local "insn".
+	(setup_sp_offset): Likewise for params "from", "last" and locals
+	"before", "insn".
+	(lra_process_new_insns): Likewise for params "insn", "before",
+	"after" and local "last".
+	(struct sloc): Likewise for field "insn".
+	(lra_former_scratch_operand_p): Likewise for param "insn".
+	(remove_scratches): Likewise for locals "insn", "last".
+	(check_rtl): Likewise for local "insn".
+	(add_auto_inc_notes): Likewise for param "insn".
+	(update_inc_notes): Likewise for local "insn".
+	(lra): Replace NULL_RTX with NULL when referring to insn.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* lower-subreg.c (simple_move): Strengthen param "insn" from rtx
 	to rtx_insn *.
 	(resolve_reg_notes): Likewise.
