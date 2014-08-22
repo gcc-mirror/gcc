@@ -1,5 +1,33 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* cfgloop.h (iv_analyze): Strengthen param 1 "insn" from rtx to
+	rtx_insn *.
+	(iv_analyze_result): Likewise.
+	(iv_analyze_expr): Likewise.
+	(biv_p): Likewise.
+
+	* loop-iv.c (iv_get_reaching_def): Strengthen param "insn" and
+	local "def_insn" from rtx to rtx_insn *.
+	(get_biv_step_1): Likewise for local "insn".
+	(iv_analyze_expr): Likewise for param "insn".
+	(iv_analyze_def): Likewise for local "insn".
+	(iv_analyze_op): Likewise for param "insn".
+	(iv_analyze): Likewise.
+	(iv_analyze_result): Likewise.
+	(biv_p): Likewise.
+	(suitable_set_for_replacement): Likewise.
+	(simplify_using_initial_values): Likewise for local "insn".
+	(iv_number_of_iterations): Likewise for param "insn".
+	(check_simple_exit): Add checked cast to rtx_insn when invoking
+	iv_number_of_iterations for now (until get_condition is
+	strengthened).
+
+	* loop-unroll.c (analyze_iv_to_split_insn): Strengthen param
+	"insn" from rtx to rtx_insn *.
+	(analyze_insns_in_loop): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* loop-invariant.c (struct use): Strengthen field "insn" from rtx
 	to rtx_insn *.
 	(struct invariant): Likewise.
