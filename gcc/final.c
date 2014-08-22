@@ -117,8 +117,8 @@ along with GCC; see the file COPYING3.  If not see
 #define SEEN_EMITTED	2
 
 /* Last insn processed by final_scan_insn.  */
-static rtx debug_insn;
-rtx current_output_insn;
+static rtx_insn *debug_insn;
+rtx_insn *current_output_insn;
 
 /* Line number of last NOTE.  */
 static int last_linenum;
@@ -208,14 +208,14 @@ static bool need_profile_function;
 static int asm_insn_count (rtx);
 static void profile_function (FILE *);
 static void profile_after_prologue (FILE *);
-static bool notice_source_line (rtx, bool *);
+static bool notice_source_line (rtx_insn *, bool *);
 static rtx walk_alter_subreg (rtx *, bool *);
 static void output_asm_name (void);
-static void output_alternate_entry_point (FILE *, rtx);
+static void output_alternate_entry_point (FILE *, rtx_insn *);
 static tree get_mem_expr_from_op (rtx, int *);
 static void output_asm_operand_names (rtx *, int *, int);
 #ifdef LEAF_REGISTERS
-static void leaf_renumber_regs (rtx);
+static void leaf_renumber_regs (rtx_insn *);
 #endif
 #ifdef HAVE_cc0
 static int alter_cond (rtx);
@@ -225,7 +225,7 @@ static int final_addr_vec_align (rtx);
 #endif
 static int align_fuzz (rtx, rtx, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
-static tree get_call_fndecl (rtx);
+static tree get_call_fndecl (rtx_insn *);
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -374,8 +374,9 @@ init_insn_lengths (void)
    get its actual length.  Otherwise, use FALLBACK_FN to calculate the
    length.  */
 static int
-get_attr_length_1 (rtx insn, int (*fallback_fn) (rtx))
+get_attr_length_1 (rtx uncast_insn, int (*fallback_fn) (rtx))
 {
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   rtx body;
   int i;
   int length = 0;
@@ -711,7 +712,7 @@ compute_alignments (void)
     fprintf (dump_file, "freq_max: %i\n",freq_max);
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx label = BB_HEAD (bb);
+      rtx_insn *label = BB_HEAD (bb);
       int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
       edge e;
       edge_iterator ei;
@@ -898,15 +899,16 @@ make_pass_compute_alignments (gcc::context *ctxt)
    slots.  */
 
 void
-shorten_branches (rtx first)
+shorten_branches (rtx uncast_first)
 {
-  rtx insn;
+  rtx_insn *first = safe_as_a <rtx_insn *> (uncast_first);
+  rtx_insn *insn;
   int max_uid;
   int i;
   int max_log;
   int max_skip;
 #define MAX_CODE_ALIGN 16
-  rtx seq;
+  rtx_insn *seq;
   int something_changed = 1;
   char *varying_length;
   rtx body;
@@ -943,7 +945,7 @@ shorten_branches (rtx first)
 
       if (LABEL_P (insn))
 	{
-	  rtx next;
+	  rtx_insn *next;
 	  bool next_is_jumptable;
 
 	  /* Merge in alignments computed by compute_alignments.  */
@@ -985,7 +987,7 @@ shorten_branches (rtx first)
 	}
       else if (BARRIER_P (insn))
 	{
-	  rtx label;
+	  rtx_insn *label;
 
 	  for (label = insn; label && ! INSN_P (label);
 	       label = NEXT_INSN (label))
@@ -1230,7 +1232,7 @@ shorten_branches (rtx first)
 #ifdef CASE_VECTOR_SHORTEN_MODE
 	      /* If the mode of a following jump table was changed, we
 		 may need to update the alignment of this label.  */
-	      rtx next;
+	      rtx_insn *next;
 	      bool next_is_jumptable;
 
 	      next = next_nonnote_insn (insn);
@@ -1605,9 +1607,9 @@ choose_inner_scope (tree s1, tree s2)
 /* Emit lexical block notes needed to change scope from S1 to S2.  */
 
 static void
-change_scope (rtx orig_insn, tree s1, tree s2)
+change_scope (rtx_insn *orig_insn, tree s1, tree s2)
 {
-  rtx insn = orig_insn;
+  rtx_insn *insn = orig_insn;
   tree com = NULL_TREE;
   tree ts1 = s1, ts2 = s2;
   tree s;
@@ -1728,9 +1730,10 @@ reemit_insn_block_notes (void)
      test and compare insns.  */
 
 void
-final_start_function (rtx first, FILE *file,
+final_start_function (rtx uncast_first, FILE *file,
 		      int optimize_p ATTRIBUTE_UNUSED)
 {
+  rtx_insn *first = safe_as_a <rtx_insn *> (uncast_first);
   block_depth = 0;
 
   this_is_asm_operands = 0;
@@ -1768,11 +1771,11 @@ final_start_function (rtx first, FILE *file,
 #endif
 	 )
 	{
-	  rtx insn;
+	  rtx_insn *insn;
 	  for (insn = first; insn; insn = NEXT_INSN (insn))
 	    if (!NOTE_P (insn))
 	      {
-		insn = NULL_RTX;
+		insn = NULL;
 		break;
 	      }
 	    else if (NOTE_KIND (insn) == NOTE_INSN_BASIC_BLOCK
@@ -1783,7 +1786,7 @@ final_start_function (rtx first, FILE *file,
 	      continue;
 	    else
 	      {
-		insn = NULL_RTX;
+		insn = NULL;
 		break;
 	      }
 
@@ -1909,7 +1912,7 @@ final_end_function (void)
    output file, and INSN is the instruction being emitted.  */
 
 static void
-dump_basic_block_info (FILE *file, rtx insn, basic_block *start_to_bb,
+dump_basic_block_info (FILE *file, rtx_insn *insn, basic_block *start_to_bb,
                        basic_block *end_to_bb, int bb_map_size, int *bb_seqn)
 {
   basic_block bb;
@@ -1956,9 +1959,10 @@ dump_basic_block_info (FILE *file, rtx insn, basic_block *start_to_bb,
    For description of args, see `final_start_function', above.  */
 
 void
-final (rtx first, FILE *file, int optimize_p)
+final (rtx uncast_first, FILE *file, int optimize_p)
 {
-  rtx insn, next;
+  rtx_insn *first = safe_as_a <rtx_insn *> (uncast_first);
+  rtx_insn *insn, *next;
   int seen = 0;
 
   /* Used for -dA dump.  */
@@ -2069,7 +2073,7 @@ get_insn_template (int code, rtx insn)
 
    The case fall-through in this function is intentional.  */
 static void
-output_alternate_entry_point (FILE *file, rtx insn)
+output_alternate_entry_point (FILE *file, rtx_insn *insn)
 {
   const char *name = LABEL_NAME (insn);
 
@@ -2096,7 +2100,7 @@ output_alternate_entry_point (FILE *file, rtx insn)
 
 /* Given a CALL_INSN, find and return the nested CALL. */
 static rtx
-call_from_call_insn (rtx insn)
+call_from_call_insn (rtx_call_insn *insn)
 {
   rtx x;
   gcc_assert (CALL_P (insn));
@@ -2134,14 +2138,16 @@ call_from_call_insn (rtx insn)
    debug information.  We force the emission of a line note after
    both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG.  */
 
-rtx
-final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
+rtx_insn *
+final_scan_insn (rtx uncast_insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
 #ifdef HAVE_cc0
   rtx set;
 #endif
-  rtx next;
+  rtx_insn *next;
+
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
 
   insn_counter++;
 
@@ -2343,7 +2349,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_VAR_LOCATION:
 	case NOTE_INSN_CALL_ARG_LOCATION:
 	  if (!DECL_IGNORED_P (current_function_decl))
-	    debug_hooks->var_location (as_a <rtx_insn *> (insn));
+	    debug_hooks->var_location (insn);
 	  break;
 
 	default:
@@ -2633,7 +2639,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    for (i = 1; i < XVECLEN (body, 0); i++)
 	      {
 		rtx insn = XVECEXP (body, 0, i);
-		rtx next = NEXT_INSN (insn);
+		rtx_insn *next = NEXT_INSN (insn);
 		/* We loop in case any instruction in a delay slot gets
 		   split.  */
 		do
@@ -2842,12 +2848,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	if (optimize_p && !flag_no_peephole && !nopeepholes)
 	  {
-	    rtx next = peephole (insn);
+	    rtx_insn *next = peephole (insn);
 	    /* When peepholing, if there were notes within the peephole,
 	       emit them before the peephole.  */
 	    if (next != 0 && next != NEXT_INSN (insn))
 	      {
-		rtx note, prev = PREV_INSN (insn);
+		rtx_insn *note, *prev = PREV_INSN (insn);
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
@@ -2927,7 +2933,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	   needs to be reinserted.  */
 	if (templ == 0)
 	  {
-	    rtx prev;
+	    rtx_insn *prev;
 
 	    gcc_assert (prev_nonnote_insn (insn) == last_ignored_compare);
 
@@ -2950,7 +2956,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	   be split.  */
 	if (templ[0] == '#' && templ[1] == '\0')
 	  {
-	    rtx new_rtx = try_split (body, insn, 0);
+	    rtx_insn *new_rtx = try_split (body, insn, 0);
 
 	    /* If we didn't split the insn, go away.  */
 	    if (new_rtx == insn && PATTERN (new_rtx) == body)
@@ -2971,9 +2977,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    && targetm.asm_out.unwind_emit)
 	  targetm.asm_out.unwind_emit (asm_out_file, insn);
 
-	if (CALL_P (insn))
+	if (rtx_call_insn *call_insn = dyn_cast <rtx_call_insn *> (insn))
 	  {
-	    rtx x = call_from_call_insn (insn);
+	    rtx x = call_from_call_insn (call_insn);
 	    x = XEXP (x, 0);
 	    if (x && MEM_P (x) && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
 	      {
@@ -2984,7 +2990,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  assemble_external (t);
 	      }
 	    if (!DECL_IGNORED_P (current_function_decl))
-	      debug_hooks->var_location (as_a <rtx_insn *> (insn));
+	      debug_hooks->var_location (insn);
 	  }
 
 	/* Output assembler code from the template.  */
@@ -3011,7 +3017,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
    breakpoint location.  */
 
 static bool
-notice_source_line (rtx insn, bool *is_stmt)
+notice_source_line (rtx_insn *insn, bool *is_stmt)
 {
   const char *filename;
   int linenum;
@@ -4262,7 +4268,7 @@ asm_fprintf (FILE *file, const char *p, ...)
 int
 leaf_function_p (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* Some back-ends (e.g. s390) want leaf functions to stay leaf
      functions even if they call mcount.  */
@@ -4289,7 +4295,7 @@ leaf_function_p (void)
    output templates to customary add branch prediction hints.
  */
 int
-final_forward_branch_p (rtx insn)
+final_forward_branch_p (rtx_insn *insn)
 {
   int insn_id, label_id;
 
@@ -4339,9 +4345,9 @@ only_leaf_regs_used (void)
    available in leaf functions.  */
 
 static void
-leaf_renumber_regs (rtx first)
+leaf_renumber_regs (rtx_insn *first)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* Renumber only the actual patterns.
      The reg-notes can contain frame pointer refs,
@@ -4588,7 +4594,7 @@ make_pass_shorten_branches (gcc::context *ctxt)
 static unsigned int
 rest_of_clean_state (void)
 {
-  rtx insn, next;
+  rtx_insn *insn, *next;
   FILE *final_output = NULL;
   int save_unnumbered = flag_dump_unnumbered;
   int save_noaddr = flag_dump_noaddr;
@@ -4752,7 +4758,7 @@ make_pass_clean_state (gcc::context *ctxt)
 /* Return true if INSN is a call to the the current function.  */
 
 static bool
-self_recursive_call_p (rtx insn)
+self_recursive_call_p (rtx_insn *insn)
 {
   tree fndecl = get_call_fndecl (insn);
   return (fndecl == current_function_decl
@@ -4764,7 +4770,7 @@ self_recursive_call_p (rtx insn)
 static void
 collect_fn_hard_reg_usage (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 #ifdef STACK_REGS
   int i;
 #endif
@@ -4824,7 +4830,7 @@ collect_fn_hard_reg_usage (void)
 /* Get the declaration of the function called by INSN.  */
 
 static tree
-get_call_fndecl (rtx insn)
+get_call_fndecl (rtx_insn *insn)
 {
   rtx note, datum;
 
@@ -4843,7 +4849,7 @@ get_call_fndecl (rtx insn)
    call targets that can be overwritten.  */
 
 static struct cgraph_rtl_info *
-get_call_cgraph_rtl_info (rtx insn)
+get_call_cgraph_rtl_info (rtx_insn *insn)
 {
   tree fndecl;
 
@@ -4862,9 +4868,10 @@ get_call_cgraph_rtl_info (rtx insn)
    in REG_SET.  Return DEFAULT_SET in REG_SET if not found.  */
 
 bool
-get_call_reg_set_usage (rtx insn, HARD_REG_SET *reg_set,
+get_call_reg_set_usage (rtx uncast_insn, HARD_REG_SET *reg_set,
 			HARD_REG_SET default_set)
 {
+  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   if (flag_use_caller_save)
     {
       struct cgraph_rtl_info *node = get_call_cgraph_rtl_info (insn);
