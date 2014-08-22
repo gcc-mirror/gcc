@@ -1,5 +1,15 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* regcprop.c (struct queued_debug_insn_change): Strengthen field
+	"insn" from rtx to rtx_insn *.
+	(replace_oldest_value_reg): Likewise for param "insn".
+	(replace_oldest_value_addr): Likewise.
+	(replace_oldest_value_mem): Likewise.
+	(apply_debug_insn_changes): Likewise for local "last_insn".
+	(copyprop_hardreg_forward_1): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* reg-stack.c (next_flags_user): Strengthen return type and param
 	"insn" from rtx to rtx_insn *.
 	(straighten_stack): Likewise for param "insn".
