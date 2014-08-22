@@ -1,3 +1,12 @@
+2014-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62129
+	* class.c (outermost_open_class): New.
+	* cp-tree.h: Declare it.
+	* decl.c (maybe_register_incomplete_var): Use it.
+	(complete_vars): Handle any constant variable.
+	* expr.c (cplus_expand_constant): Handle CONSTRUCTOR.
+
 2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR other/62008
