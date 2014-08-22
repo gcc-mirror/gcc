@@ -1,5 +1,60 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* optabs.c (expand_doubleword_shift): Strengthen local "insn" from
+	rtx to rtx_insn *.
+	(expand_binop): Likewise for locals "entry_last", "last", "insns"
+	(expand_twoval_unop): Likewise for locals entry_last", "last".
+	(expand_twoval_binop): Likewise.
+	(expand_twoval_binop_libfunc): Likewise for local "insns".
+	(widen_leading): Likewise for local "last".
+	(expand_doubleword_clz): Likewise for local "seq".  Strengthen
+	locals "hi0_label", "after_label" from rtx to rtx_code_label *.
+	(widen_bswap): Strengthen local "last" from rtx to rtx_insn *.
+	(expand_parity): Likewise for locals "last" and "seq".
+	(expand_ffs): Likewise for local "seq".  Strengthen local
+	"nonzero_label" from rtx to rtx_code_label *.
+	(expand_absneg_bit): Strengthen local "insns" from rtx to
+	rtx_insn *.
+	(expand_unop_direct): Likewise for local "last".
+	(expand_unop): Likewise for locals "last", "insns".
+	(expand_abs_nojump): Likewise for local "last".
+	(expand_abs): Strengthen local "op1" from rtx to rtx_code_label *.
+	(expand_one_cmpl_abs_nojump): Strengthen local "last" from rtx to
+	rtx_insn *.
+	(expand_copysign_absneg): Strengthen local "label" from rtx to
+	rtx_code_label *.
+	(expand_copysign_bit): Strengthen local "insns" from rtx to
+	rtx_insn *.
+	(struct no_conflict_data): Likewise for fields "first", "insn".
+	(emit_libcall_block_1): Likewise for param "insns" and locals
+	"next", "last", "insn".
+	(emit_libcall_block): For now, add a checked cast to rtx_insn *
+	on "insns" when invoking emit_libcall_block_1.  Ultimately we
+	want to strengthen insns itself.
+	(prepare_cmp_insn): Strengthen local "last" from rtx to
+	rtx_insn *.
+	(emit_cmp_and_jump_insn_1): Likewise for local "insn".
+	(prepare_float_lib_cmp): Likewise for local "insns".
+	(emit_conditional_move): Likewise for local "last".
+	(emit_conditional_add): Likewise.
+	(have_sub2_insn): Likewise for local "seq".
+	(expand_float): Likewise for local "insns".  Strengthen locals
+	"label", "neglabel" from rtx to rtx_code_label *.
+	(expand_fix): Likewise for locals "last", "insn", "insns" (to
+	rtx_insn *) and locals "lab1", "lab2" (to rtx_code_label *).
+	(expand_fixed_convert): Likewise for local "insns" (to
+	rtx_insn *).
+	(expand_sfix_optab): Likewise for local "last".
+	(expand_compare_and_swap_loop): Strengthen local "label" from rtx
+	to rtx_code_label *.
+	(maybe_emit_sync_lock_test_and_set): Strengthen local "last_insn"
+	from rtx to rtx_insn *.
+	(expand_atomic_fetch_op): Likewise for local "insn".
+	(maybe_legitimize_operand_same_code): Likewise for local "last".
+	(maybe_legitimize_operands): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* modulo-sched.c (struct ps_reg_move_info): Strengthen field
 	"insn" from rtx to rtx_insn *.
 	(ps_rtl_insn): Likewise for return type.
