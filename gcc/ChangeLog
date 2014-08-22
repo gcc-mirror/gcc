@@ -1,5 +1,19 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched.c (substitute_reg_in_expr): Strengthen local
+	"new_insn" from rtx to rtx_insn *.
+	(create_insn_rtx_with_rhs): Likewise for return type and for local
+	"insn_rtx".
+	(create_insn_rtx_with_lhs): Likewise.
+	(create_speculation_check): Likewise for local "insn_rtx".
+	(implicit_clobber_conflict_p): Likewise for local "insn".
+	(get_expr_cost): Likewise.
+	(emit_bookkeeping_insn): Likewise for local "new_insn_rtx".
+	(move_cond_jump): Likewise for locals "next", "prev", "link",
+	"head", "from", "to".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-rgn.c (is_cfg_nonregular): Strengthen locals "insn" and
 	"next" from rtx to rtx_insn *.
 	(find_conditional_protection): Likewise for local "next".
