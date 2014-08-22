@@ -1,3 +1,25 @@
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* predict.h (predict_insn_def): Strengthen param "insn" from rtx
+	to rtx_insn *.
+
+	* function.c (stack_protect_epilogue): Add checked cast to
+	rtx_insn for now when invoking predict_insn_def.
+
+	* predict.c (predict_insn): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(predict_insn_def): Likewise.
+	(rtl_predict_edge): Likewise for local "last_insn".
+	(can_predict_insn_p): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(combine_predictions_for_insn): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	(bb_estimate_probability_locally): Likewise for local "last_insn".
+	(expensive_function_p): Likewise for local "insn".
+
+	* config/cris/cris.c (cris_emit_trap_for_misalignment): Likewise for
+	local "jmp", since this is used when invoking predict_insn_def.
+
 2014-08-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/62199
