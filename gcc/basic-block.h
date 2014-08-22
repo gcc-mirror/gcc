@@ -399,7 +399,7 @@ extern unsigned int free_bb_for_insn (void);
 extern void update_bb_for_insn (basic_block);
 
 extern void insert_insn_on_edge (rtx, edge);
-basic_block split_edge_and_insert (edge, rtx);
+basic_block split_edge_and_insert (edge, rtx_insn *);
 
 extern void commit_one_edge_insertion (edge e);
 extern void commit_edge_insertions (void);
