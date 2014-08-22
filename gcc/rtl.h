@@ -3207,7 +3207,7 @@ extern void init_fake_stack_mems (void);
 extern void save_register_info (void);
 extern void init_reg_sets (void);
 extern void regclass (rtx, int);
-extern void reg_scan (rtx, unsigned int);
+extern void reg_scan (rtx_insn *, unsigned int);
 extern void fix_register (const char *, int, int);
 extern bool invalid_mode_change_p (unsigned int, enum reg_class);
 
