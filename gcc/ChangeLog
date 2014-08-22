@@ -1,5 +1,26 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* ddg.h (struct ddg_node): Strengthen fields "insn" and
+	"first_note" from rtx to rtx_insn *.
+	(get_node_of_insn): Likewise for param 2 "insn".
+	(autoinc_var_is_used_p): Likewise for params "def_insn" and "use_insn".
+
+	* ddg.c (mem_read_insn_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(mem_write_insn_p): Likewise.
+	(mem_access_insn_p): Likewise.
+	(autoinc_var_is_used_p): Likewise for params "def_insn" and "use_insn".
+	(def_has_ccmode_p): Likewise for param "insn".
+	(add_cross_iteration_register_deps): Likewise for locals
+	"def_insn" and "use_insn".
+	(insns_may_alias_p): Likewise for params "insn1" and "insn2".
+	(build_intra_loop_deps): Likewise for local "src_insn".
+	(create_ddg): Strengthen locals "insn" and "first_note" from rtx
+	to rtx_insn *.
+	(get_node_of_insn): Likewise for param "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* dce.c (worklist): Strengthen from vec<rtx> to vec<rtx_insn *>.
 	(deletable_insn_p): Strengthen param "insn" from rtx to
 	rtx_insn *.  Add checked cast to rtx_call_insn when invoking
