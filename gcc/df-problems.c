@@ -348,7 +348,7 @@ df_rd_bb_local_compute (unsigned int bb_index)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_rd_bb_info *bb_info = df_rd_get_bb_info (bb_index);
-  rtx insn;
+  rtx_insn *insn;
 
   bitmap_clear (&seen_in_block);
   bitmap_clear (&seen_in_insn);
@@ -828,7 +828,7 @@ df_lr_bb_local_compute (unsigned int bb_index)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_lr_bb_info *bb_info = df_lr_get_bb_info (bb_index);
-  rtx insn;
+  rtx_insn *insn;
   df_ref def, use;
 
   /* Process the registers set in an exception handler.  */
@@ -1435,7 +1435,7 @@ df_live_bb_local_compute (unsigned int bb_index)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_live_bb_info *bb_info = df_live_get_bb_info (bb_index);
-  rtx insn;
+  rtx_insn *insn;
   df_ref def;
   int luid = 0;
 
@@ -1951,7 +1951,7 @@ df_chain_remove_problem (void)
 
   EXECUTE_IF_SET_IN_BITMAP (df_chain->out_of_date_transfer_functions, 0, bb_index, bi)
     {
-      rtx insn;
+      rtx_insn *insn;
       df_ref def, use;
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 
@@ -2067,7 +2067,7 @@ df_chain_create_bb (unsigned int bb_index)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_rd_bb_info *bb_info = df_rd_get_bb_info (bb_index);
-  rtx insn;
+  rtx_insn *insn;
   bitmap_head cpy;
 
   bitmap_initialize (&cpy, &bitmap_default_obstack);
@@ -2462,7 +2462,7 @@ df_word_lr_bb_local_compute (unsigned int bb_index)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_word_lr_bb_info *bb_info = df_word_lr_get_bb_info (bb_index);
-  rtx insn;
+  rtx_insn *insn;
   df_ref def, use;
 
   /* Ensure that artificial refs don't contain references to pseudos.  */
@@ -2796,7 +2796,7 @@ df_remove_dead_and_unused_notes (rtx insn)
    as the bitmap of currently live registers.  */
 
 static void
-df_remove_dead_eq_notes (rtx insn, bitmap live)
+df_remove_dead_eq_notes (rtx_insn *insn, bitmap live)
 {
   rtx *pprev = &REG_NOTES (insn);
   rtx link = *pprev;
@@ -3063,7 +3063,7 @@ df_note_bb_compute (unsigned int bb_index,
 		    bitmap live, bitmap do_not_gen, bitmap artificial_uses)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
-  rtx insn;
+  rtx_insn *insn;
   df_ref def, use;
   struct dead_debug_local debug;
 
@@ -3632,7 +3632,7 @@ find_memory_stores (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
 void
 simulate_backwards_to_point (basic_block bb, regset live, rtx point)
 {
-  rtx insn;
+  rtx_insn *insn;
   bitmap_copy (live, df_get_live_out (bb));
   df_simulate_initialize_backwards (bb, live);
 
@@ -4113,7 +4113,7 @@ df_md_bb_local_compute (unsigned int bb_index)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
-  rtx insn;
+  rtx_insn *insn;
 
   /* Artificials are only hard regs.  */
   if (!(df->changeable_flags & DF_NO_HARD_REGS))

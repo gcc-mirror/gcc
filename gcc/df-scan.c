@@ -229,7 +229,7 @@ df_scan_free_bb_info (basic_block bb, void *vbb_info)
 {
   struct df_scan_bb_info *bb_info = (struct df_scan_bb_info *) vbb_info;
   unsigned int bb_index = bb->index;
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
@@ -344,7 +344,7 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
   int icount = 0;
   int ccount = 0;
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
 
   fprintf (file, ";;  invalidated by call \t");
   df_print_regset (file, regs_invalidated_by_call_regset);
@@ -423,7 +423,7 @@ df_scan_start_block (basic_block bb, FILE *file)
     }
 #if 0
   {
-    rtx insn;
+    rtx_insn *insn;
     FOR_BB_INSNS (bb, insn)
       if (INSN_P (insn))
 	df_insn_debug (insn, false, file);
@@ -643,7 +643,7 @@ df_install_ref_incremental (df_ref ref)
   df_ref *ref_ptr;
   bool add_to_table;
 
-  rtx insn = DF_REF_INSN (ref);
+  rtx_insn *insn = DF_REF_INSN (ref);
   basic_block bb = BLOCK_FOR_INSN (insn);
 
   if (DF_REF_REG_DEF_P (ref))
@@ -1210,7 +1210,7 @@ df_insn_rescan_all (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
       FOR_BB_INSNS (bb, insn)
 	{
 	  df_insn_rescan (insn);
@@ -1431,7 +1431,7 @@ df_reorganize_refs_by_reg_by_insn (struct df_ref_info *ref_info,
   EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, bb_index, bi)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
-      rtx insn;
+      rtx_insn *insn;
       df_ref def, use;
 
       if (include_defs)
@@ -1485,7 +1485,7 @@ df_reorganize_refs_by_reg_by_insn (struct df_ref_info *ref_info,
   EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, bb_index, bi)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
-      rtx insn;
+      rtx_insn *insn;
       df_ref def, use;
 
       if (include_defs)
@@ -1611,7 +1611,7 @@ df_reorganize_refs_by_insn_bb (basic_block bb, unsigned int offset,
 			       bool include_defs, bool include_uses,
 			       bool include_eq_uses)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (include_defs)
     offset = df_add_refs_to_table (offset, ref_info,
@@ -3272,7 +3272,7 @@ df_insn_refs_collect (struct df_collection_rec *collection_rec,
 void
 df_recompute_luids (basic_block bb)
 {
-  rtx insn;
+  rtx_insn *insn;
   int luid = 0;
 
   df_grow_insn_info ();
@@ -3366,7 +3366,7 @@ void
 df_bb_refs_record (int bb_index, bool scan_insns)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
-  rtx insn;
+  rtx_insn *insn;
   int luid = 0;
 
   if (!df)
@@ -3903,7 +3903,7 @@ df_update_entry_exit_and_calls (void)
      in the set of registers clobbered across the call.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
       FOR_BB_INSNS (bb, insn)
 	{
 	  if (INSN_P (insn) && CALL_P (insn))
@@ -4165,7 +4165,7 @@ df_insn_refs_verify (struct df_collection_rec *collection_rec,
 static bool
 df_bb_verify (basic_block bb)
 {
-  rtx insn;
+  rtx_insn *insn;
   struct df_scan_bb_info *bb_info = df_scan_get_bb_info (bb->index);
   struct df_collection_rec collection_rec;
 

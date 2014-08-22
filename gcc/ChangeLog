@@ -1,5 +1,34 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* df-core.c (df_bb_regno_first_def_find): Strengthen local "insn"
+	from rtx to rtx_insn *.
+	(df_bb_regno_last_def_find): Likewise.
+
+	* df-problems.c (df_rd_bb_local_compute): Likewise.
+	(df_lr_bb_local_compute): Likewise.
+	(df_live_bb_local_compute): Likewise.
+	(df_chain_remove_problem): Likewise.
+	(df_chain_create_bb): Likewise.
+	(df_word_lr_bb_local_compute): Likewise.
+	(df_remove_dead_eq_notes): Likewise for param "insn".
+	(df_note_bb_compute): Likewise for local "insn".
+	(simulate_backwards_to_point): Likewise.
+	(df_md_bb_local_compute): Likewise.
+
+	* df-scan.c (df_scan_free_bb_info): Likewise.
+	(df_scan_start_dump): Likewise.
+	(df_scan_start_block): Likewise.
+	(df_install_ref_incremental): Likewise for local "insn".
+	(df_insn_rescan_all): Likewise.
+	(df_reorganize_refs_by_reg_by_insn): Likewise.
+	(df_reorganize_refs_by_insn_bb): Likewise.
+	(df_recompute_luids): Likewise.
+	(df_bb_refs_record): Likewise.
+	(df_update_entry_exit_and_calls): Likewise.
+	(df_bb_verify): Likewise.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* ddg.h (struct ddg_node): Strengthen fields "insn" and
 	"first_note" from rtx to rtx_insn *.
 	(get_node_of_insn): Likewise for param 2 "insn".
