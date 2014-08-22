@@ -1,3 +1,8 @@
+2014-08-22  Tony Wang  <tony.wang@arm.com>
+
+        * g++.dg/tls/thread_local6.C: Skip this test case when target uses
+	dejagnu wrapper.
+
 2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/62214
