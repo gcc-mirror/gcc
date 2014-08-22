@@ -1,5 +1,26 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* fwprop.c (single_def_use_dom_walker::before_dom_children):
+	Strengthen local "insn" from rtx to rtx_insn *.
+	(use_killed_between): Likewise for param "target_insn".
+	(all_uses_available_at): Likewise for param "target_insn" and
+	local "next".
+	(update_df_init): Likewise for params "def_insn", "insn".
+	(update_df): Likewise for param "insn".
+	(try_fwprop_subst): Likewise for param "def_insn" and local
+	"insn".
+	(free_load_extend): Likewise for param "insn".
+	(forward_propagate_subreg): Likewise for param "def_insn" and
+	local "use_insn".
+	(forward_propagate_asm): Likewise for param "def_insn" and local
+	"use_insn".
+	(forward_propagate_and_simplify): Likewise for param "def_insn"
+	and local "use_insn".
+	(forward_propagate_into): Likewise for locals "def_insn" and
+	"use_insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.c (emit_initial_value_sets): Strengthen local "seq"
 	from rtx to rtx_insn *.
 	(instantiate_virtual_regs_in_insn): Likewise for param "insn" and
