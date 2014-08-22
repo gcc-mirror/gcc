@@ -1,5 +1,12 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (reg_scan): Strengthen param "f" from rtx to rtx_insn *.
+	* reginfo.c (reg_scan): Likewise, also for local "insn".
+	(reg_scan_mark_refs): Likewise for param "insn".
+	(init_subregs_of_mode): Likewise for local "insn".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* regcprop.c (struct queued_debug_insn_change): Strengthen field
 	"insn" from rtx to rtx_insn *.
 	(replace_oldest_value_reg): Likewise for param "insn".
