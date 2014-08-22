@@ -1,3 +1,44 @@
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* cse.c (struct qty_table_elem): Strengthen field "const_insn"
+	from rtx to rtx_insn *.
+	(struct change_cc_mode_args): Likewise for field "insn".
+	(this_insn): Strengthen from rtx to rtx_insn *.
+	(make_new_qty): Replace use of NULL_RTX with NULL when dealing
+	with insn.
+	(validate_canon_reg): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(canon_reg): Likewise.
+	(fold_rtx): Likewise.  Replace use of NULL_RTX with NULL when
+	dealing with insn.
+	(record_jump_equiv): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(try_back_substitute_reg): Likewise, also for locals "prev",
+	"bb_head".
+	(find_sets_in_insn): Likewise for param "insn".
+	(canonicalize_insn): Likewise.
+	(cse_insn): Likewise.  Add a checked cast.
+	(invalidate_from_clobbers): Likewise for param "insn".
+	(invalidate_from_sets_and_clobbers): Likewise.
+	(cse_process_notes_1): Replace use of NULL_RTX with NULL when
+	dealing with insn.
+	(cse_prescan_path): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(cse_extended_basic_block): Likewise for locals "insn" and
+	"prev_insn".
+	(cse_main): Likewise for param "f".
+	(check_for_label_ref): Likewise for local "insn".
+	(set_live_p): Likewise for second param ("insn").
+	(insn_live_p): Likewise for first param ("insn") and for local
+	"next".
+	(cse_change_cc_mode_insn): Likewise for first param "insn".
+	(cse_change_cc_mode_insns): Likewise for first and second params
+	"start" and "end".
+	(cse_cc_succs): Likewise for locals "insns", "last_insns", "insn"
+	and "end".
+	(cse_condition_code_reg): Likewise for locals "last_insn", "insn",
+	"cc_src_insn".
+
 2014-08-22  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
