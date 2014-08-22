@@ -1,5 +1,25 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* expmed.c (store_bit_field_using_insv): Strengthen local "last"
+	from rtx to rtx_insn *.
+	(store_bit_field_1): Likewise.
+	(extract_bit_field_1): Likewise.
+	(expand_mult_const): Likewise for local "insns".
+	(expmed_mult_highpart): Strengthen local "label" from rtx to
+	rtx_code_label *.
+	(expand_smod_pow2): Likewise.
+	(expand_sdiv_pow2): Likewise.
+	(expand_divmod): Strengthen locals "last", "insn" from rtx to
+	rtx_insn *.  Strengthen locals "label", "label1", "label2",
+	"label3", "label4", "label5", "lab" from rtx to rtx_code_label *.
+	(emit_cstore): Strengthen local "last" from rtx to rtx_insn *.
+	(emit_store_flag): Likewise.
+	(emit_store_flag_force): Strengthen local "label" from rtx to
+	rtx_code_label *.
+	(do_cmp_and_jump): Likewise for param "label".
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* explow.c (force_reg): Strengthen local "insn" from rtx to
 	rtx_insn *.
 	(adjust_stack_1): Likewise.
