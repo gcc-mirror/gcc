@@ -1,3 +1,13 @@
+2014-08-22  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc/config/i386/sse.md (define_mode_iterator V_AVX512VL): Delete.
+	(define_mode_iterator V48_AVX512VL): New.
+	(define_mode_iterator V12_AVX512VL): Ditto.
+	(define_insn <avx512>_load<mode>_mask): Split into two similar
+	patterns which use different mode iterators: V48_AVX512VL V12_AVX512VL.
+	Refactor output template.
+	(define_insn "<avx512>_store<mode>_mask"): Ditto.
+
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* cprop.c (struct occr): Strengthen field "insn" from rtx to

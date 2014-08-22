@@ -150,16 +150,17 @@
    (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F")  (V4DF "TARGET_AVX") V2DF])
 
-;; All AVX512VL vector modes
-(define_mode_iterator V_AVX512VL
-  [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX512VL && TARGET_AVX512BW")
-   (V16QI "TARGET_AVX512VL && TARGET_AVX512BW")
-   (V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX512VL && TARGET_AVX512BW")
-   (V8HI "TARGET_AVX512VL && TARGET_AVX512BW")
-   (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX512VL")  (V4SI "TARGET_AVX512VL")
-   (V8DI "TARGET_AVX512F")  (V4DI "TARGET_AVX512VL")  (V2DI "TARGET_AVX512VL")
-   (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX512VL")  (V4SF "TARGET_AVX512VL")
-   (V8DF "TARGET_AVX512F")  (V4DF "TARGET_AVX512VL")  (V2DF "TARGET_AVX512VL")])
+;; All AVX-512{F,VL} vector modes. Supposed TARGET_AVX512F baseline.
+(define_mode_iterator V48_AVX512VL
+  [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   V8DI  (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")
+   V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
+   V8DF  (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
+
+;; 1,2 byte AVX-512{BW,VL} vector modes. Supposed TARGET_AVX512BW baseline.
+(define_mode_iterator VI12_AVX512VL
+  [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")
+   V32HI (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
 
 ;; All vector modes
 (define_mode_iterator V
@@ -849,38 +850,51 @@
 	      (const_string "<sseinsnmode>")))])
 
 (define_insn "<avx512>_load<mode>_mask"
-  [(set (match_operand:V_AVX512VL 0 "register_operand" "=v,v")
-	(vec_merge:V_AVX512VL
-	  (match_operand:V_AVX512VL 1 "nonimmediate_operand" "v,m")
-	  (match_operand:V_AVX512VL 2 "vector_move_operand" "0C,0C")
+  [(set (match_operand:V48_AVX512VL 0 "register_operand" "=v,v")
+	(vec_merge:V48_AVX512VL
+	  (match_operand:V48_AVX512VL 1 "nonimmediate_operand" "v,m")
+	  (match_operand:V48_AVX512VL 2 "vector_move_operand" "0C,0C")
 	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F"
 {
-  switch (MODE_<sseinsnmode>)
+  static char buf [64];
+
+  const char *insn_op;
+  const char *sse_suffix;
+  const char *align;
+  if (FLOAT_MODE_P (GET_MODE_INNER (<MODE>mode)))
     {
-    case MODE_V8DF:
-    case MODE_V4DF:
-    case MODE_V2DF:
-    case MODE_V16SF:
-    case MODE_V8SF:
-    case MODE_V4SF:
-      if (misaligned_operand (operands[1], <MODE>mode))
-	return "vmovu<ssemodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
-      return "vmova<ssemodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
-    default:
-      /* There is no vmovdqa8/16 use vmovdqu8/16 instead.  */
-      if (<MODE>mode == V64QImode
-	  || <MODE>mode == V32QImode
-	  || <MODE>mode == V16QImode
-	  || <MODE>mode == V32HImode
-	  || <MODE>mode == V16HImode
-	  || <MODE>mode == V8HImode
-	  || misaligned_operand (operands[1], <MODE>mode))
-	return "vmovdqu<ssescalarsize>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
-      else
-	return "vmovdqa<ssescalarsize>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
+      insn_op = "vmov";
+      sse_suffix = "<ssemodesuffix>";
     }
+  else
+    {
+      insn_op = "vmovdq";
+      sse_suffix = "<ssescalarsize>";
+    }
+
+  if (misaligned_operand (operands[1], <MODE>mode))
+    align = "u";
+  else
+    align = "a";
+
+  snprintf (buf, sizeof (buf), "%s%s%s\t{%%1, %%0%%{%%3%%}%%N2|%%0%%{%%3%%}%%N2, %%1}",
+	    insn_op, align, sse_suffix);
+  return buf;
 }
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_load<mode>_mask"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v,v")
+	(vec_merge:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 1 "nonimmediate_operand" "v,m")
+	  (match_operand:VI12_AVX512VL 2 "vector_move_operand" "0C,0C")
+	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX512BW"
+  "vmovdqu<ssescalarsize>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "memory" "none,load")
@@ -899,35 +913,51 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx512>_store<mode>_mask"
-  [(set (match_operand:V_AVX512VL 0 "memory_operand" "=m")
-	(vec_merge:V_AVX512VL
-	  (match_operand:V_AVX512VL 1 "register_operand" "v")
+  [(set (match_operand:V48_AVX512VL 0 "memory_operand" "=m")
+	(vec_merge:V48_AVX512VL
+	  (match_operand:V48_AVX512VL 1 "register_operand" "v")
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))]
   "TARGET_AVX512F"
 {
-  switch (MODE_<sseinsnmode>)
+  static char buf [64];
+
+  const char *insn_op;
+  const char *sse_suffix;
+  const char *align;
+  if (FLOAT_MODE_P (GET_MODE_INNER (<MODE>mode)))
     {
-    case MODE_V8DF:
-    case MODE_V4DF:
-    case MODE_V2DF:
-    case MODE_V16SF:
-    case MODE_V8SF:
-    case MODE_V4SF:
-      return "vmova<ssemodesuffix>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
-    default:
-      /* There is no vmovdqa8/16 use vmovdqu8/16 instead.  */
-      if (<MODE>mode == V64QImode
-	  || <MODE>mode == V32QImode
-	  || <MODE>mode == V16QImode
-	  || <MODE>mode == V32HImode
-	  || <MODE>mode == V16HImode
-	  || <MODE>mode == V8HImode)
-	return "vmovdqu<ssescalarsize>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
-      else
-	return "vmovdqa<ssescalarsize>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
+      insn_op = "vmov";
+      sse_suffix = "<ssemodesuffix>";
     }
+  else
+    {
+      insn_op = "vmovdq";
+      sse_suffix = "<ssescalarsize>";
+    }
+
+  if (misaligned_operand (operands[1], <MODE>mode))
+    align = "u";
+  else
+    align = "a";
+
+  snprintf (buf, sizeof (buf), "%s%s%s\t{%%1, %%0%%{%%2%%}|%%0%%{%%2%%}, %%1}",
+	    insn_op, align, sse_suffix);
+  return buf;
 }
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "memory" "store")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_store<mode>_mask"
+  [(set (match_operand:VI12_AVX512VL 0 "memory_operand" "=m")
+	(vec_merge:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 1 "register_operand" "v")
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))]
+  "TARGET_AVX512BW"
+  "vmovdqu<ssescalarsize>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "memory" "store")
