@@ -2034,7 +2034,8 @@ cris_simple_epilogue (void)
 void
 cris_emit_trap_for_misalignment (rtx mem)
 {
-  rtx addr, reg, ok_label, andop, jmp;
+  rtx addr, reg, ok_label, andop;
+  rtx_insn *jmp;
   int natural_alignment;
   gcc_assert (MEM_P (mem));
 
