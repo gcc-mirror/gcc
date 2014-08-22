@@ -347,9 +347,11 @@
    (V16HI "TARGET_AVX2") V8HI
    (V8SI "TARGET_AVX2") V4SI])
 
-(define_mode_iterator VI248_AVX2
-  [(V16HI "TARGET_AVX2") V8HI
-   (V8SI "TARGET_AVX2") V4SI
+(define_mode_iterator VI2_AVX2_AVX512BW
+  [(V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI])
+
+(define_mode_iterator VI48_AVX2
+  [(V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
 
 (define_mode_iterator VI248_AVX2_8_AVX512F
@@ -8584,15 +8586,34 @@
        (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<shift_insn><mode>3"
-  [(set (match_operand:VI248_AVX2 0 "register_operand" "=x,x")
-	(any_lshift:VI248_AVX2
-	  (match_operand:VI248_AVX2 1 "register_operand" "0,x")
-	  (match_operand:SI 2 "nonmemory_operand" "xN,xN")))]
-  "TARGET_SSE2"
+(define_insn "<shift_insn><mode>3<mask_name>"
+  [(set (match_operand:VI2_AVX2_AVX512BW 0 "register_operand" "=x,v")
+	(any_lshift:VI2_AVX2_AVX512BW
+	  (match_operand:VI2_AVX2_AVX512BW 1 "register_operand" "0,v")
+	  (match_operand:SI 2 "nonmemory_operand" "xN,vN")))]
+  "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
-   vp<vshift><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+   vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseishft")
+   (set (attr "length_immediate")
+     (if_then_else (match_operand 2 "const_int_operand")
+       (const_string "1")
+       (const_string "0")))
+   (set_attr "prefix_data16" "1,*")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<shift_insn><mode>3<mask_name>"
+  [(set (match_operand:VI48_AVX2 0 "register_operand" "=x,v")
+	(any_lshift:VI48_AVX2
+	  (match_operand:VI48_AVX2 1 "register_operand" "0,v")
+	  (match_operand:SI 2 "nonmemory_operand" "xN,vN")))]
+  "TARGET_SSE2 && <mask_mode512bit_condition>"
+  "@
+   p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
+   vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseishft")
    (set (attr "length_immediate")
