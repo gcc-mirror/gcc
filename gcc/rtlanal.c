@@ -762,7 +762,7 @@ no_labels_between_p (const_rtx beg, const_rtx end)
 int
 reg_used_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (from_insn == to_insn)
     return 0;
@@ -858,7 +858,7 @@ reg_referenced_p (const_rtx x, const_rtx body)
 int
 reg_set_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
 {
-  const_rtx insn;
+  const rtx_insn *insn;
 
   if (from_insn == to_insn)
     return 0;
@@ -899,7 +899,7 @@ modified_between_p (const_rtx x, const_rtx start, const_rtx end)
   const enum rtx_code code = GET_CODE (x);
   const char *fmt;
   int i, j;
-  rtx insn;
+  rtx_insn *insn;
 
   if (start == end)
     return 0;
@@ -2100,7 +2100,7 @@ remove_reg_equal_equiv_notes_for_regno (unsigned int regno)
      over the head.  We plan to drain the list anyway.  */
   while ((eq_use = DF_REG_EQ_USE_CHAIN (regno)) != NULL)
     {
-      rtx insn = DF_REF_INSN (eq_use);
+      rtx_insn *insn = DF_REF_INSN (eq_use);
       rtx note = find_reg_equal_equiv_note (insn);
 
       /* This assert is generally triggered when someone deletes a REG_EQUAL
@@ -3777,7 +3777,7 @@ keep_with_call_p (const_rtx insn)
 	  /* This CONST_CAST is okay because next_nonnote_insn just
 	     returns its argument and we assign it to a const_rtx
 	     variable.  */
-	  const_rtx i2 = next_nonnote_insn (CONST_CAST_RTX (insn));
+	  const rtx_insn *i2 = next_nonnote_insn (CONST_CAST_RTX (insn));
 	  if (i2 && keep_with_call_p (i2))
 	    return true;
 	}

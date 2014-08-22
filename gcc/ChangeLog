@@ -1,5 +1,17 @@
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtlanal.c (reg_used_between_p): Strengthen local "insn" from rtx
+	to rtx_insn *.
+	(reg_set_between_p): Strengthen local "insn" from const_rtx to
+	const rtx_insn *.
+	(modified_between_p): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(remove_reg_equal_equiv_notes_for_regno): Likewise.
+	(keep_with_call_p): Strengthen local "i2" from const_rtx to
+	const rtx_insn *.
+
+2014-08-22  David Malcolm  <dmalcolm@redhat.com>
+
 	* resource.c (next_insn_no_annul): Strengthen local "next" from
 	rtx to rtx_insn *.
 	(mark_referenced_resources): Likewise for local "insn".
