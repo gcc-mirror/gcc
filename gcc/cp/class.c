@@ -7141,7 +7141,9 @@ outermost_open_class (void)
   if (!current_class_type)
     return NULL_TREE;
   tree r = NULL_TREE;
-  for (int i = current_class_depth; i > 0; --i)
+  if (TYPE_BEING_DEFINED (current_class_type))
+    r = current_class_type;
+  for (int i = current_class_depth - 1; i > 0; --i)
     {
       if (current_class_stack[i].hidden)
 	break;
