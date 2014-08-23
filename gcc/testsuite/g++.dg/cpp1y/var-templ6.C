@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++14 } }
 
 template<typename T>
   constexpr bool Class = __is_class(T);

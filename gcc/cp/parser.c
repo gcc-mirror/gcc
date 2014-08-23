@@ -4970,10 +4970,10 @@ cp_parser_unqualified_id (cp_parser* parser,
 	/* ~auto means the destructor of whatever the object is.  */
 	if (cp_parser_is_keyword (token, RID_AUTO))
 	  {
-	    if (cxx_dialect < cxx1y)
+	    if (cxx_dialect < cxx14)
 	      pedwarn (input_location, 0,
 		       "%<~auto%> only available with "
-		       "-std=c++1y or -std=gnu++1y");
+		       "-std=c++14 or -std=gnu++14");
 	    cp_lexer_consume_token (parser->lexer);
 	    return build_nt (BIT_NOT_EXPR, make_auto ());
 	  }
@@ -6895,10 +6895,10 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
       && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_AUTO)
       && !type_dependent_expression_p (object))
     {
-      if (cxx_dialect < cxx1y)
+      if (cxx_dialect < cxx14)
 	pedwarn (input_location, 0,
 		 "%<~auto%> only available with "
-		 "-std=c++1y or -std=gnu++1y");
+		 "-std=c++14 or -std=gnu++14");
       cp_lexer_consume_token (parser->lexer);
       cp_lexer_consume_token (parser->lexer);
       *scope = NULL_TREE;
@@ -9058,10 +9058,10 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	{
 	  bool direct, non_constant;
 	  /* An explicit initializer exists.  */
-	  if (cxx_dialect < cxx1y)
+	  if (cxx_dialect < cxx14)
 	    pedwarn (input_location, 0,
 		     "lambda capture initializers "
-		     "only available with -std=c++1y or -std=gnu++1y");
+		     "only available with -std=c++14 or -std=gnu++14");
 	  capture_init_expr = cp_parser_initializer (parser, &direct,
 						     &non_constant);
 	  explicit_init_p = true;
@@ -9184,10 +9184,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      an opening angle if present.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
-      if (cxx_dialect < cxx1y)
+      if (cxx_dialect < cxx14)
 	pedwarn (parser->lexer->next_token->location, 0,
 		 "lambda templates are only available with "
-		 "-std=c++1y or -std=gnu++1y");
+		 "-std=c++14 or -std=gnu++14");
 
       cp_lexer_consume_token (parser->lexer);
 
@@ -12162,7 +12162,7 @@ cp_parser_decltype (cp_parser *parser)
     return error_mark_node;
 
   /* decltype (auto) */
-  if (cxx_dialect >= cxx1y
+  if (cxx_dialect >= cxx14
       && cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
     {
       cp_lexer_consume_token (parser->lexer);
@@ -12345,7 +12345,7 @@ cp_parser_conversion_type_id (cp_parser* parser)
   if (! cp_parser_uncommitted_to_tentative_parse_p (parser)
       && type_uses_auto (type_specified))
     {
-      if (cxx_dialect < cxx1y)
+      if (cxx_dialect < cxx14)
 	{
 	  error ("invalid use of %<auto%> in conversion operator");
 	  return error_mark_node;
@@ -14710,17 +14710,17 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
 	  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
 	    {
-	      if (cxx_dialect < cxx1y)
+	      if (cxx_dialect < cxx14)
 		pedwarn (location_of (type), 0,
 			 "use of %<auto%> in lambda parameter declaration "
 			 "only available with "
-			 "-std=c++1y or -std=gnu++1y");
+			 "-std=c++14 or -std=gnu++14");
 	    }
-	  else if (cxx_dialect < cxx1y)
+	  else if (cxx_dialect < cxx14)
 	    pedwarn (location_of (type), 0,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with "
-		     "-std=c++1y or -std=gnu++1y");
+		     "-std=c++14 or -std=gnu++14");
 	  else
 	    pedwarn (location_of (type), OPT_Wpedantic,
 		     "ISO C++ forbids use of %<auto%> in parameter "
@@ -18215,7 +18215,7 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
   if (type_specifier_seq.type
       /* None of the valid uses of 'auto' in C++14 involve the type-id
 	 nonterminal, but it is valid in a trailing-return-type.  */
-      && !(cxx_dialect >= cxx1y && is_trailing_return)
+      && !(cxx_dialect >= cxx14 && is_trailing_return)
       && type_uses_auto (type_specifier_seq.type))
     {
       /* A type-id with type 'auto' is only ok if the abstract declarator
@@ -18248,7 +18248,7 @@ static tree cp_parser_template_type_arg (cp_parser *parser)
     = G_("types may not be defined in template arguments");
   r = cp_parser_type_id_1 (parser, true, false);
   parser->type_definition_forbidden_message = saved_message;
-  if (cxx_dialect >= cxx1y && type_uses_auto (r))
+  if (cxx_dialect >= cxx14 && type_uses_auto (r))
     {
       error ("invalid use of %<auto%> in template argument");
       r = error_mark_node;
@@ -22104,7 +22104,7 @@ cp_parser_std_attribute (cp_parser *parser)
       if (is_attribute_p ("noreturn", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
       /* C++14 deprecated attribute is equivalent to GNU's.  */
-      else if (cxx_dialect >= cxx1y && is_attribute_p ("deprecated", attr_id))
+      else if (cxx_dialect >= cxx14 && is_attribute_p ("deprecated", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
     }
 
@@ -23317,7 +23317,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 		ok = false;
 	    }
-	  else if (num_parms == 2 && cxx_dialect >= cxx1y)
+	  else if (num_parms == 2 && cxx_dialect >= cxx14)
 	    {
 	      tree parm_type = TREE_VEC_ELT (parameter_list, 0);
 	      tree type = INNERMOST_TEMPLATE_PARMS (parm_type);
@@ -23332,7 +23332,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 	}
       if (!ok)
 	{
-	  if (cxx_dialect >= cxx1y)
+	  if (cxx_dialect >= cxx14)
 	    error ("literal operator template %qD has invalid parameter list."
 		   "  Expected non-type template argument pack <char...>"
 		   " or <typename CharT, CharT...>",

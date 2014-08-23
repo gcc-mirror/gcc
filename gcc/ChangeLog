@@ -1,3 +1,8 @@
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* doc/invoke.texi: Change c++1y to c++14 and gnu++1y to gnu++14.
+	Deprecate c++1y. Change language to reflect greater confidence in C++14.
+
 2014-08-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/62038

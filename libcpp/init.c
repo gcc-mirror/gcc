@@ -90,26 +90,29 @@ struct lang_flags
   char user_literals;
   char binary_constants;
   char digit_separators;
+  char trigraphs;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid c11 std  //   digr ulit rlit udlit bin_cst dig_sep */
-  /* GNUC89   */  { 0,  0,  1,   0,  0,  0,   1,   1,   0,   0,   0,    0,      0 },
-  /* GNUC99   */  { 1,  0,  1,   0,  0,  0,   1,   1,   1,   1,   0,    0,      0 },
-  /* GNUC11   */  { 1,  0,  1,   0,  1,  0,   1,   1,   1,   1,   0,    0,      0 },
-  /* STDC89   */  { 0,  0,  0,   0,  0,  1,   0,   0,   0,   0,   0,    0,      0 },
-  /* STDC94   */  { 0,  0,  0,   0,  0,  1,   0,   1,   0,   0,   0,    0,      0 },
-  /* STDC99   */  { 1,  0,  1,   0,  0,  1,   1,   1,   0,   0,   0,    0,      0 },
-  /* STDC11   */  { 1,  0,  1,   0,  1,  1,   1,   1,   1,   0,   0,    0,      0 },
-  /* GNUCXX   */  { 0,  1,  1,   0,  0,  0,   1,   1,   0,   0,   0,    0,      0 },
-  /* CXX98    */  { 0,  1,  1,   0,  0,  1,   1,   1,   0,   0,   0,    0,      0 },
-  /* GNUCXX11 */  { 1,  1,  1,   0,  1,  0,   1,   1,   1,   1,   1,    0,      0 },
-  /* CXX11    */  { 1,  1,  1,   0,  1,  1,   1,   1,   1,   1,   1,    0,      0 },
-  /* GNUCXX1Y */  { 1,  1,  1,   0,  1,  0,   1,   1,   1,   1,   1,    1,      1 },
-  /* CXX1Y    */  { 1,  1,  1,   0,  1,  1,   1,   1,   1,   1,   1,    1,      1 },
-  /* ASM      */  { 0,  0,  1,   0,  0,  0,   1,   0,   0,   0,   0,    0,      0 }
+{ /*              c99 c++ xnum xid c11 std // digr ulit rlit udlit bincst digsep trig */
+  /* GNUC89   */  { 0,  0,  1,  0,  0,  0,  1,  1,  0,   0,   0,    0,     0,     0 },
+  /* GNUC99   */  { 1,  0,  1,  0,  0,  0,  1,  1,  1,   1,   0,    0,     0,     0 },
+  /* GNUC11   */  { 1,  0,  1,  0,  1,  0,  1,  1,  1,   1,   0,    0,     0,     0 },
+  /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,  0,  0,   0,   0,    0,     0,     1 },
+  /* STDC94   */  { 0,  0,  0,  0,  0,  1,  0,  1,  0,   0,   0,    0,     0,     1 },
+  /* STDC99   */  { 1,  0,  1,  0,  0,  1,  1,  1,  0,   0,   0,    0,     0,     1 },
+  /* STDC11   */  { 1,  0,  1,  0,  1,  1,  1,  1,  1,   0,   0,    0,     0,     1 },
+  /* GNUCXX   */  { 0,  1,  1,  0,  0,  0,  1,  1,  0,   0,   0,    0,     0,     0 },
+  /* CXX98    */  { 0,  1,  1,  0,  0,  1,  1,  1,  0,   0,   0,    0,     0,     1 },
+  /* GNUCXX11 */  { 1,  1,  1,  0,  1,  0,  1,  1,  1,   1,   1,    0,     0,     0 },
+  /* CXX11    */  { 1,  1,  1,  0,  1,  1,  1,  1,  1,   1,   1,    0,     0,     1 },
+  /* GNUCXX14 */  { 1,  1,  1,  0,  1,  0,  1,  1,  1,   1,   1,    1,     1,     0 },
+  /* CXX14    */  { 1,  1,  1,  0,  1,  1,  1,  1,  1,   1,   1,    1,     1,     1 },
+  /* GNUCXX1Z */  { 1,  1,  1,  0,  1,  0,  1,  1,  1,   1,   1,    1,     1,     0 },
+  /* CXX1Z    */  { 1,  1,  1,  0,  1,  1,  1,  1,  1,   1,   1,    1,     1,     0 },
+  /* ASM      */  { 0,  0,  1,  0,  0,  0,  1,  0,  0,   0,   0,    0,     0,     0 }
   /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX11, CXX11,
-     GNUCXX1Y, and CXX1Y when no longer experimental (when all uses of
+     GNUCXX14, and CXX14 when no longer experimental (when all uses of
      identifiers in the compiler have been audited for correct handling
      of extended identifiers).  */
 };
@@ -128,7 +131,6 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, extended_identifiers)	 = l->extended_identifiers;
   CPP_OPTION (pfile, c11_identifiers)		 = l->c11_identifiers;
   CPP_OPTION (pfile, std)			 = l->std;
-  CPP_OPTION (pfile, trigraphs)			 = l->std;
   CPP_OPTION (pfile, cplusplus_comments)	 = l->cplusplus_comments;
   CPP_OPTION (pfile, digraphs)			 = l->digraphs;
   CPP_OPTION (pfile, uliterals)			 = l->uliterals;
@@ -136,6 +138,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, user_literals)		 = l->user_literals;
   CPP_OPTION (pfile, binary_constants)		 = l->binary_constants;
   CPP_OPTION (pfile, digit_separators)		 = l->digit_separators;
+  CPP_OPTION (pfile, trigraphs)			 = l->trigraphs;
 }
 
 /* Initialize library global state.  */
@@ -489,9 +492,12 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, cplusplus))
     {
-      if (CPP_OPTION (pfile, lang) == CLK_CXX1Y
-	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX1Y)
-	_cpp_define_builtin (pfile, "__cplusplus 201300L");
+      if (CPP_OPTION (pfile, lang) == CLK_CXX1Z
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX1Z)
+	_cpp_define_builtin (pfile, "__cplusplus 201500L");
+      else if (CPP_OPTION (pfile, lang) == CLK_CXX14
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX14)
+	_cpp_define_builtin (pfile, "__cplusplus 201402L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX11
 	       || CPP_OPTION (pfile, lang) == CLK_GNUCXX11)
 	_cpp_define_builtin (pfile, "__cplusplus 201103L");
@@ -509,7 +515,9 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
 
   if (CPP_OPTION (pfile, uliterals)
-      && !CPP_OPTION (pfile, cplusplus))
+      && !(CPP_OPTION (pfile, cplusplus)
+	   && (CPP_OPTION (pfile, lang) == CLK_GNUCXX
+	    || CPP_OPTION (pfile, lang) == CLK_CXX98)))
     {
       _cpp_define_builtin (pfile, "__STDC_UTF_16__ 1");
       _cpp_define_builtin (pfile, "__STDC_UTF_32__ 1");

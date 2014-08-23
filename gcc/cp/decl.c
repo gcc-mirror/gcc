@@ -8413,7 +8413,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	   /* We don't allow VLAs at non-function scopes, or during
 	      tentative template substitution.  */
 	   || !at_function_scope_p ()
-	   || (cxx_dialect < cxx1y && !(complain & tf_error)))
+	   || (cxx_dialect < cxx14 && !(complain & tf_error)))
     {
       if (!(complain & tf_error))
 	return error_mark_node;
@@ -8425,7 +8425,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	error ("size of array is not an integral constant-expression");
       size = integer_one_node;
     }
-  else if (cxx_dialect < cxx1y && pedantic && warn_vla != 0)
+  else if (cxx_dialect < cxx14 && pedantic && warn_vla != 0)
     {
       if (name)
 	pedwarn (input_location, OPT_Wvla, "ISO C++ forbids variable length array %qD", name);
@@ -8483,7 +8483,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 
 	  stabilize_vla_size (itype);
 
-	  if (cxx_dialect >= cxx1y && flag_exceptions)
+	  if (cxx_dialect >= cxx14 && flag_exceptions)
 	    {
 	      /* If the VLA bound is larger than half the address space,
 	         or less than zero, throw std::bad_array_length.  */
@@ -8499,7 +8499,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 					 DECL_ATTRIBUTES
 					   (current_function_decl)))
 	    {
-	      /* From C++1y onwards, we throw an exception on a negative
+	      /* From C++14 onwards, we throw an exception on a negative
 		 length size of an array; see above.  */
 
 	      /* We have to add 1 -- in the ubsan routine we generate
@@ -8628,7 +8628,7 @@ create_array_type_for_decl (tree name, tree type, tree size)
       return error_mark_node;
     }
 
-  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+  if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (type)
       && (flag_iso || warn_vla > 0))
     pedwarn (input_location, OPT_Wvla, "array of array of runtime bound");
 
@@ -9648,14 +9648,14 @@ grokdeclarator (const cp_declarator *declarator,
 			if (current_class_type
 			    && LAMBDA_TYPE_P (current_class_type))
 			  /* OK for C++11 lambdas.  */;
-			else if (cxx_dialect < cxx1y)
+			else if (cxx_dialect < cxx14)
 			  {
 			    error ("%qs function uses "
 				   "%<auto%> type specifier without trailing "
 				   "return type", name);
 			    inform (input_location, "deduced return type "
-				    "only available with -std=c++1y or "
-				    "-std=gnu++1y");
+				    "only available with -std=c++14 or "
+				    "-std=gnu++14");
 			  }
 			else if (virtualp)
 			  {
@@ -9872,7 +9872,7 @@ grokdeclarator (const cp_declarator *declarator,
                    : G_("cannot declare pointer to qualified function type %qT"),
 		   type);
 
-	  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+	  if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (type)
 	      && (flag_iso || warn_vla > 0))
 	    pedwarn (input_location, OPT_Wvla,
 		     declarator->kind == cdk_reference
@@ -10229,7 +10229,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  type = error_mark_node;
 	}
 
-      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+      if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (type)
 	  && (flag_iso || warn_vla > 0))
 	pedwarn (input_location, OPT_Wvla,
 		 "typedef naming array of runtime bound");
@@ -10475,7 +10475,7 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (type_uses_auto (type))
 	{
-	  if (cxx_dialect >= cxx1y)
+	  if (cxx_dialect >= cxx14)
 	    error ("%<auto%> parameter not permitted in this context");
 	  else
 	    error ("parameter declared %<auto%>");
@@ -14629,7 +14629,7 @@ fndecl_declared_return_type (tree fn)
 bool
 undeduced_auto_decl (tree decl)
 {
-  if (cxx_dialect < cxx1y)
+  if (cxx_dialect < cxx14)
     return false;
   return type_uses_auto (TREE_TYPE (decl));
 }

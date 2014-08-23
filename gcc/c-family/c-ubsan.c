@@ -146,12 +146,12 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 			build_int_cst (TREE_TYPE (tt), 0));
     }
 
-  /* For signed x << y, in C++11/C++14, the following:
+  /* For signed x << y, in C++11 and later, the following:
      x < 0 || ((unsigned) x >> (precm1 - y))
      if > 1, is undefined.  */
   if (code == LSHIFT_EXPR
       && !TYPE_UNSIGNED (TREE_TYPE (op0))
-      && (cxx_dialect == cxx11 || cxx_dialect == cxx1y))
+      && (cxx_dialect >= cxx11))
     {
       tree x = fold_build2 (MINUS_EXPR, integer_type_node, precm1, op1);
       tt = fold_convert_loc (loc, unsigned_type_for (type0), op0);

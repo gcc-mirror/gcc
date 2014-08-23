@@ -1,5 +1,5 @@
 // DR1760: "no additional copy and destruction is performed"
-// { dg-do run { target c++1y } }
+// { dg-do run { target c++14 } }
 
 #include <cassert>
 

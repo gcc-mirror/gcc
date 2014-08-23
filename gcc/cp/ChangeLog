@@ -1,3 +1,20 @@
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* decl.c (compute_array_index_type, grokdeclarator,
+	undeduced_auto_decl): Change from cxx1y to cxx14.
+	*lambda.c(add_capture()): Change error message from C++1y to C++14.
+	* parser.c (cp_parser_unqualified_id, cp_parser_pseudo_destructor_name,
+	cp_parser_lambda_introducer, cp_parser_lambda_declarator_opt,
+	cp_parser_decltype, cp_parser_conversion_type_id,
+	cp_parser_simple_type_specifier, cp_parser_type_id_1,
+	cp_parser_template_type_arg, cp_parser_std_attribute,
+	cp_parser_template_declaration_after_export): Ditto.
+	* pt.c (tsubst): Ditto.
+	* semantics.c (force_paren_expr, finish_decltype_type): Ditto.
+	* tree.c: Change comment.
+	* typeck.c (comp_template_parms_position, cxx_sizeof_or_alignof_type,
+	cp_build_addr_expr_1, maybe_warn_about_useless_cast): Ditto.
+
 2014-08-23  Jason Merrill  <jason@redhat.com>
 
 	Allow non-constexpr variable templates.

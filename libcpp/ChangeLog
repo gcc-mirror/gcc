@@ -1,3 +1,14 @@
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUCXX1Z, CLK_CXX1Z;
+	Rename CLK_GNUCXX1Y, CLK_CXX1Y to CLK_GNUCXX14, CLK_CXX14;
+	* init.c (struct lang_flags lang_defaults): Add column for trigraphs;
+	Add rows for CLK_GNUCXX1Z, CLK_CXX1Z; (cpp_set_lang): Set trigraphs;
+	(cpp_init_builtins): Set __cplusplus to 201402L for C++14;
+	Set __cplusplus to 201500L for C++17.
+	* expr.c (cpp_classify_number): Change C++1y to C++14 in binary
+	constants error message.
+
 2014-08-20  Marek Polacek  <polacek@redhat.com>
 
 	* include/cpplib.h (cpp_options): Use signed char.

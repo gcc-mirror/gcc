@@ -1,5 +1,5 @@
 // Test for paren and brace initializers
-// { dg-do run { target c++1y } }
+// { dg-do run { target c++14 } }
 
 #include <initializer_list>
 
