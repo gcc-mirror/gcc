@@ -1,5 +1,12 @@
 2014-08-23  David Malcolm  <dmalcolm@redhat.com>
 
+	* valtrack.c (dead_debug_reset_uses): Strengthen local "insn" from
+	rtx to rtx_insn *.
+	(dead_debug_promote_uses): Likewise.
+	(dead_debug_insert_temp): Likewise.
+
+2014-08-23  David Malcolm  <dmalcolm@redhat.com>
+
 	* store-motion.c (store_killed_in_insn): Strengthen param "insn"
 	from const_rtx to const rtx_insn *.
 	(store_killed_after): Likewise.  Strengthen locals "last", "act"
