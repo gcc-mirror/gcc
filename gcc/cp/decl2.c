@@ -787,6 +787,14 @@ note_vague_linkage_fn (tree decl)
   vec_safe_push (deferred_fns, decl);
 }
 
+/* As above, but for variable template instantiations.  */
+
+void
+note_variable_template_instantiation (tree decl)
+{
+  vec_safe_push (pending_statics, decl);
+}
+
 /* We have just processed the DECL, which is a static data member.
    The other parameters are as for cp_finish_decl.  */
 

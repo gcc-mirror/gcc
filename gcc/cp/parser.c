@@ -16779,6 +16779,8 @@ cp_parser_init_declarator (cp_parser* parser,
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
 
+  bool bogus_implicit_tmpl = false;
+
   if (function_declarator_p (declarator))
     {
       /* Check to see if the token indicates the start of a
@@ -16830,6 +16832,19 @@ cp_parser_init_declarator (cp_parser* parser,
 
 	  return decl;
 	}
+    }
+  else if (parser->fully_implicit_function_template_p)
+    {
+      /* A non-template declaration involving a function parameter list
+	 containing an implicit template parameter will be made into a
+	 template.  If the resulting declaration is not going to be an
+	 actual function then finish the template scope here to prevent it.
+	 An error message will be issued once we have a decl to talk about.
+
+         FIXME probably we should do type deduction rather than create an
+         implicit template, but the standard currently doesn't allow it. */
+      bogus_implicit_tmpl = true;
+      finish_fully_implicit_template (parser, NULL_TREE);
     }
 
   /* [dcl.dcl]
@@ -16996,21 +17011,10 @@ cp_parser_init_declarator (cp_parser* parser,
       warning (OPT_Wattributes,
 	       "attributes after parenthesized initializer ignored");
 
-  /* A non-template declaration involving a function parameter list containing
-     an implicit template parameter will have been made into a template.  If it
-     turns out that the resulting declaration is not an actual function then
-     finish the template declaration here.  An error message will already have
-     been issued.  */
-  if (parser->fully_implicit_function_template_p)
-    if (!function_declarator_p (declarator))
-      {
-	if (pushed_scope)
-	  {
-	    pop_scope (pushed_scope);
-	    pushed_scope = 0;
-	  }
-	finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
-      }
+  /* And now complain about a non-function implicit template.  */
+  if (bogus_implicit_tmpl)
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "non-function %qD declared as implicit template", decl);
 
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */

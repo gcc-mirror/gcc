@@ -3512,6 +3512,7 @@ finish_id_expression (tree id_expression,
 	       && variable_template_p (TREE_OPERAND (decl, 0)))
 	{
 	  decl = finish_template_variable (decl);
+	  mark_used (decl);
 	}
       else if (scope)
 	{
