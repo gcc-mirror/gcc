@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=c++1y" }
+// { dg-do run { target c++14 } }
 
 template<typename T>
   constexpr int var = sizeof (T);

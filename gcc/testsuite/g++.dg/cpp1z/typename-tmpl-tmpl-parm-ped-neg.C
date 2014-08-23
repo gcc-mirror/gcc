@@ -1,4 +1,4 @@
-// { dg-do compile { target c++1y_down } }
+// { dg-do compile { target c++14_down } }
 // { dg-options "-pedantic" }
 
 template<typename T>

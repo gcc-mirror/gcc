@@ -5683,7 +5683,7 @@ proc check_effective_target_c++ { } {
 }
 
 # Check whether the current active language standard supports the features
-# of C++11/C++1y by checking for the presence of one of the -std
+# of C++11/C++14 by checking for the presence of one of the -std
 # flags.  This assumes that the default for the compiler is C++98, and that
 # there will never be multiple -std= arguments on the command line.
 proc check_effective_target_c++11_only { } {
@@ -5696,28 +5696,29 @@ proc check_effective_target_c++11 { } {
     if [check_effective_target_c++11_only] {
 	return 1
     }
-    return [check_effective_target_c++1y]
+    return [check_effective_target_c++14]
 }
 proc check_effective_target_c++11_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return ![check_effective_target_c++1y]
+    return ![check_effective_target_c++14]
 }
 
-proc check_effective_target_c++1y_only { } {
+proc check_effective_target_c++14_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
     return [check-flags { { } { } { -std=c++1y -std=gnu++1y -std=c++14 -std=gnu++14 } }]
 }
-proc check_effective_target_c++1y { } {
-    if [check_effective_target_c++1y_only] {
+
+proc check_effective_target_c++14 { } {
+    if [check_effective_target_c++14_only] {
 	return 1
     }
     return [check_effective_target_c++1z]
 }
-proc check_effective_target_c++1y_down { } {
+proc check_effective_target_c++14_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }

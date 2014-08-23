@@ -1,4 +1,4 @@
-// { dg-do run { target c++1y } }
+// { dg-do run { target c++14 } }
 
 template<typename, typename>
   struct is_same

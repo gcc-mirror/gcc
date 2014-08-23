@@ -1,5 +1,5 @@
 // DR 1586
-// { dg-do run { target c++1y } }
+// { dg-do run { target c++14 } }
 
 template <class T>
 void f (T* p)

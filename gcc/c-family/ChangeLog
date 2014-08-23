@@ -1,3 +1,10 @@
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* c-common.h (enum cxx_dialect): Add cxx14.
+	* c-opts.c (set_std_cxx1y): Rename to set_std_cxx14; Use cxx14.
+	* c-ubsan.c (ubsan_instrument_shift): Change comment and logic from
+	cxx_dialect == cxx11 || cxx_dialect == cxx1y to cxx_dialect >= cxx11.
+
 2014-08-22  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (std=gnu++17): Fix alias.

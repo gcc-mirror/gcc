@@ -1,6 +1,6 @@
 // N3648: capture init
 // { dg-options "-w" }
-// { dg-do run { target c++1y } }
+// { dg-do run { target c++14 } }
 
 int main()
 {

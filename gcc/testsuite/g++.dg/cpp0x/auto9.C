@@ -15,13 +15,13 @@ const std::type_info &t2 = typeid (auto *);	// { dg-error "auto" }
 
 struct A
 {
-  operator auto ();				// { dg-error "auto" "" { target { ! c++1y } } }
-  operator auto *();				// { dg-error "auto" "" { target { ! c++1y } } }
+  operator auto ();				// { dg-error "auto" "" { target { ! c++14 } } }
+  operator auto *();				// { dg-error "auto" "" { target { ! c++14 } } }
 };
 
 struct A2
 {
-  operator auto () -> int;			// { dg-error "invalid use of" "" { target { ! c++1y } } }
+  operator auto () -> int;			// { dg-error "invalid use of" "" { target { ! c++14 } } }
   operator auto *() -> int;			// { dg-error "auto" }
 };
 
@@ -98,8 +98,8 @@ baz (int i, ...)
 template <typename T = auto> struct E {};	// { dg-error "invalid use of" }
 template <class T = auto *> struct F {};	// { dg-error "invalid use of|expected" }
 
-auto fnlate () -> auto;				// { dg-error "invalid use of" "" { target { ! c++1y } } }
-auto fnlate2 () -> auto *;			// { dg-error "invalid use of|expected" "" { target { ! c++1y } } }
+auto fnlate () -> auto;				// { dg-error "invalid use of" "" { target { ! c++14 } } }
+auto fnlate2 () -> auto *;			// { dg-error "invalid use of|expected" "" { target { ! c++14 } } }
 
 void
 badthrow () throw (auto)			// { dg-error "invalid use of" }

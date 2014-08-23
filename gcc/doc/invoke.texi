@@ -1722,13 +1722,23 @@ The name @samp{c++0x} is deprecated.
 GNU dialect of @option{-std=c++11}.
 The name @samp{gnu++0x} is deprecated.
 
-@item c++1y
+@item c++14
+@itemx c++1y
+The 2014 ISO C++ standard plus amendments.
+The name @samp{c++1y} is deprecated.
+
+@item gnu++14
+@itemx gnu++1y
+GNU dialect of @option{-std=c++14}.
+The name @samp{gnu++1y} is deprecated.
+
+@item c++1z
 The next revision of the ISO C++ standard, tentatively planned for
-2014.  Support is highly experimental, and will almost certainly
+2017.  Support is highly experimental, and will almost certainly
 change in incompatible ways in future releases.
 
-@item gnu++1y
-GNU dialect of @option{-std=c++1y}.  Support is highly experimental,
+@item gnu++1z
+GNU dialect of @option{-std=c++1z}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
 @end table
@@ -2676,7 +2686,7 @@ When this option is turned off these suffixes are treated
 as C++11 user-defined literal numeric suffixes.
 This is on by default for all pre-C++11 dialects and all GNU dialects:
 @option{-std=c++98}, @option{-std=gnu++98}, @option{-std=gnu++11},
-@option{-std=gnu++1y}.
+@option{-std=gnu++14}.
 This option is off by default
 for ISO C++11 onwards (@option{-std=c++11}, ...).
 @end table
@@ -5510,7 +5520,7 @@ call into a diagnostics message call instead.  When reaching the
 @opindex fsanitize=vla-bound
 This option instructs the compiler to check that the size of a variable
 length array is positive.  This option does not have any effect in
-@option{-std=c++1y} mode, as the standard requires the exception be thrown
+@option{-std=c++14} mode, as the standard requires the exception be thrown
 instead.
 
 @item -fsanitize=null

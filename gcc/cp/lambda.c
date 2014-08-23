@@ -474,7 +474,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
     }
   else if (variably_modified_type_p (type, NULL_TREE))
     {
-      error ("capture of variable-size type %qT that is not a C++1y array "
+      error ("capture of variable-size type %qT that is not a C++14 array "
 	     "of runtime bound", type);
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && variably_modified_type_p (TREE_TYPE (type), NULL_TREE))

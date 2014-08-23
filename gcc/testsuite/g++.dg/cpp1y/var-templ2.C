@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++14 } }
 
 // Template variables and static member variables of template classes are
 // often confused.

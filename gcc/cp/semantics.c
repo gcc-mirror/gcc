@@ -1610,7 +1610,7 @@ tree
 force_paren_expr (tree expr)
 {
   /* This is only needed for decltype(auto) in C++14.  */
-  if (cxx_dialect < cxx1y)
+  if (cxx_dialect < cxx14)
     return expr;
 
   /* If we're in unevaluated context, we can't be deducing a
@@ -7064,7 +7064,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	}
     }
 
-  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+  if (cxx_dialect >= cxx14 && array_of_runtime_bound_p (type)
       && (flag_iso || warn_vla > 0))
     {
       if (complain & tf_warning_or_error)
