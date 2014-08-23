@@ -3916,7 +3916,7 @@ mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
    deferred strings that are used.  */
 
 static void
-mark_constants (rtx insn)
+mark_constants (rtx_insn *insn)
 {
   if (!INSN_P (insn))
     return;
@@ -3946,7 +3946,7 @@ mark_constants (rtx insn)
 static void
 mark_constant_pool (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (!crtl->uses_const_pool && n_deferred_constants == 0)
     return;
