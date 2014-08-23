@@ -1,3 +1,23 @@
+2014-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* store-motion.c (store_killed_in_insn): Strengthen param "insn"
+	from const_rtx to const rtx_insn *.
+	(store_killed_after): Likewise.  Strengthen locals "last", "act"
+	from rtx to rtx_insn *.
+	(store_killed_before): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.  Strengthen local "first" from rtx to rtx_insn *.
+	(find_moveable_store): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(compute_store_table): Likewise for local "insn".
+	(insert_insn_start_basic_block): Likewise for param "insn" and
+	locals "prev", "before", "insn".
+	(insert_store): For now, add a checked cast to rtx_insn * on the
+	result of gen_move_insn.
+	(remove_reachable_equiv_notes): Strengthen local "insn" from rtx
+	to rtx_insn *.
+	(replace_store_insn): Likewise.  For now, add a checked cast to
+	rtx_insn * on the result of gen_move_insn.
+
 2014-08-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* stmt.c (expand_case): Strengthen local "before_case" from rtx to
