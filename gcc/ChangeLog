@@ -1,3 +1,12 @@
+2014-08-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/62038
+	* config/pa/pa.c (pa_output_function_epilogue): Don't set
+	last_address when the current function is a thunk.
+	(pa_asm_output_mi_thunk): When we don't have named sections or they
+	are not being used, check that thunk can reach the stub table with a
+	short branch.
+
 2014-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* web.c (union_match_dups): Strengthen param "insn" from rtx to
