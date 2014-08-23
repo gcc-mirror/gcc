@@ -1,5 +1,35 @@
 2014-08-23  David Malcolm  <dmalcolm@redhat.com>
 
+	* var-tracking.c (struct micro_operation_def): Strengthen field
+	"insn" from rtx to rtx_insn *.
+	(struct emit_note_data_def): Likewise.
+	(insn_stack_adjust_offset_pre_post): Likewise for param "insn".
+	(vt_stack_adjustments): Likewise for local "insn".
+	(adjust_insn): Likewise for param "insn".
+	(val_store): Likewise.
+	(val_resolve): Likewise.
+	(struct count_use_info): Likewise for field "insn".
+	(log_op_type): Likewise for param "insn".
+	(reverse_op): Likewise.
+	(prepare_call_arguments): Likewise.
+	(add_with_sets):  The initial param takes an insn, but we can't
+	yet strengthen it from rtx to rtx_insn * since it's used as a
+	cselib_record_sets_hook callback.  For now rename initial param
+	from "insn" to "uncast_insn", and introduce a local "insn" of
+	the stronger rtx_insn * type, with a checked cast.
+	(compute_bb_dataflow): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(emit_note_insn_var_location): Likewise.
+	(emit_notes_for_changes): Likewise.
+	(emit_notes_for_differences): Likewise.
+	(next_non_note_insn_var_location): Likewise for return type and
+	for param "insn".
+	(emit_notes_in_bb): Likewise for locals "insn" and "next_insn".
+	(vt_initialize): Likewise for local "insn".
+	(delete_debug_insns): Likewise for locals "insn" and "next".
+
+2014-08-23  David Malcolm  <dmalcolm@redhat.com>
+
 	* varasm.c (mark_constants): Strengthen param "insn" from rtx to
 	rtx_insn *.
 	(mark_constant_pool): Likewise for local "insn".
