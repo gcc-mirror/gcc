@@ -1,5 +1,11 @@
 2014-08-23  David Malcolm  <dmalcolm@redhat.com>
 
+	* varasm.c (mark_constants): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(mark_constant_pool): Likewise for local "insn".
+
+2014-08-23  David Malcolm  <dmalcolm@redhat.com>
+
 	* valtrack.c (dead_debug_reset_uses): Strengthen local "insn" from
 	rtx to rtx_insn *.
 	(dead_debug_promote_uses): Likewise.
