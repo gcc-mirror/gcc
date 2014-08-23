@@ -4777,14 +4777,7 @@ push_template_decl_real (tree decl, bool is_friend)
 	/* alias-declaration */
 	gcc_assert (!DECL_ARTIFICIAL (decl));
       else if (VAR_P (decl))
-        {
-          if (!DECL_DECLARED_CONSTEXPR_P (decl))
-            {
-              sorry ("template declaration of non-constexpr variable %qD",
-		     decl);
-              return error_mark_node;
-            }
-        }
+	/* C++14 variable template. */;
       else
 	{
 	  error ("template declaration of %q#D", decl);
@@ -20106,6 +20099,9 @@ instantiate_decl (tree d, int defer_ok,
 
       if (enter_context)
         pop_nested_class ();
+
+      if (variable_template_p (td))
+	note_variable_template_instantiation (d);
     }
   else if (TREE_CODE (d) == FUNCTION_DECL && DECL_DEFAULTED_FN (code_pattern))
     synthesize_method (d);

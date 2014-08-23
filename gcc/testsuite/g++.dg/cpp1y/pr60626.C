@@ -4,4 +4,4 @@
 
 struct A {};
 
-void (*A::p)(auto) = 0;  // { dg-error "static member|non-template" }
+void (*A::p)(auto) = 0;  // { dg-error "static member|template" }

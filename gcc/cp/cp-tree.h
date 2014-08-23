@@ -5051,6 +5051,8 @@ variable_template_p (tree t)
 {
   if (TREE_CODE (t) != TEMPLATE_DECL)
     return false;
+  if (!PRIMARY_TEMPLATE_P (t))
+    return false;
   if (tree r = DECL_TEMPLATE_RESULT (t))
     return VAR_P (r);
   return false;
@@ -5393,6 +5395,7 @@ extern tree get_tls_wrapper_fn			(tree);
 extern void mark_needed				(tree);
 extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
+extern void note_variable_template_instantiation (tree);
 extern tree build_artificial_parm		(tree, tree);
 extern bool possibly_inlined_p			(tree);
 extern int parm_index                           (tree);

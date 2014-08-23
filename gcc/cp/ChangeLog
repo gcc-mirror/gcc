@@ -1,3 +1,17 @@
+2014-08-23  Jason Merrill  <jason@redhat.com>
+
+	Allow non-constexpr variable templates.
+	* decl2.c (note_variable_template_instantiation): New.
+	* cp-tree.h: Declare it.
+	* pt.c (instantiate_decl): Call it.
+	(push_template_decl_real): Allow non-constexpr variable templates.
+	* semantics.c (finish_id_expression): Mark the variable template
+	instantiation as used.
+	* mangle.c (write_mangled_name): Variable template instantiations
+	are mangled.
+	* parser.c (cp_parser_init_declarator): Complain about
+	non-function implicit templates.
+
 2014-08-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/62199
