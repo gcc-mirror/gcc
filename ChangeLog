@@ -1,3 +1,9 @@
+2014-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* rtx-classes-status.txt: Phase 2 (per-file commits in main source
+	dir) is done; begin phase 3 (per-file commits within "config"
+	subdirs).
+
 2014-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* rtx-classes-status.txt: Phase 1 ("scaffolding") is done; begin
