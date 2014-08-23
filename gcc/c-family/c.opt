@@ -1507,7 +1507,7 @@ C++ ObjC++
 Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++17
-C++ ObjC++ Alias(std=gnu++1y) Undocumented
+C++ ObjC++ Alias(std=gnu++1z) Undocumented
 
 std=gnu11
 C ObjC

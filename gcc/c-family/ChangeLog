@@ -1,3 +1,7 @@
+2014-08-22  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (std=gnu++17): Fix alias.
+
 2014-08-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/62199
