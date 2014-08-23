@@ -1,5 +1,11 @@
 2014-08-23  David Malcolm  <dmalcolm@redhat.com>
 
+	* web.c (union_match_dups): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(pass_web::execute): Likewise for local "insn".
+
+2014-08-23  David Malcolm  <dmalcolm@redhat.com>
+
 	* var-tracking.c (struct micro_operation_def): Strengthen field
 	"insn" from rtx to rtx_insn *.
 	(struct emit_note_data_def): Likewise.

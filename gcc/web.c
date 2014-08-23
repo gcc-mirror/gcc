@@ -98,7 +98,7 @@ class web_entry : public web_entry_base
    FUN is the function that does the union.  */
 
 static void
-union_match_dups (rtx insn, web_entry *def_entry, web_entry *use_entry,
+union_match_dups (rtx_insn *insn, web_entry *def_entry, web_entry *use_entry,
 		  bool (*fun) (web_entry_base *, web_entry_base *))
 {
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
@@ -347,7 +347,7 @@ pass_web::execute (function *fun)
   unsigned int *used;
   basic_block bb;
   unsigned int uses_num = 0;
-  rtx insn;
+  rtx_insn *insn;
 
   df_set_flags (DF_NO_HARD_REGS + DF_EQ_NOTES);
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
