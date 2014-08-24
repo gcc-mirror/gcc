@@ -251,7 +251,7 @@ along with GCC; see the file COPYING3.  If not see
          hard registers to other allocnos if it decreases the overall
          allocation cost.
 
-       * After allono assigning in the region, IRA modifies the hard
+       * After allocno assigning in the region, IRA modifies the hard
          register and memory costs for the corresponding allocnos in
          the subregions to reflect the cost of possible loads, stores,
          or moves on the border of the region and its subregions.
