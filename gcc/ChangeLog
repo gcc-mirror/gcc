@@ -1,3 +1,7 @@
+2014-08-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Optimize Options): Fix markup in two cases.
+
 2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/61996

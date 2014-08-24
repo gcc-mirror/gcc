@@ -7232,7 +7232,7 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 @opindex foptimize-strlen
 Optimize various standard C string functions (e.g. @code{strlen},
 @code{strchr} or @code{strcpy}) and
-their _FORTIFY_SOURCE counterparts into faster alternatives.
+their @code{_FORTIFY_SOURCE} counterparts into faster alternatives.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -7401,7 +7401,7 @@ register, compare it against zero, then branch based upon the result.
 This option is only meaningful on architectures that support such
 instructions, which include x86, PowerPC, IA-64 and S/390.
 
-Enabled by default at -O1 and higher.
+Enabled by default at @option{-O1} and higher.
 
 The default is @option{-fbranch-count-reg}.
 
