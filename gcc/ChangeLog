@@ -1,3 +1,12 @@
+2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61996
+	* config/sh/sh.opt (musermode): Allow negative form.
+	* config/sh/sh.c (sh_option_override): Disable TARGET_USERMODE for
+	targets that don't support it.
+	* doc/invoke.texi (SH Options): Rename sh-*-linux* to sh*-*-linux*.
+	Document -mno-usermode option.
+
 2014-08-24  Kito Cheng  <kito@0xlab.org>
 
 	* system.h (CALLER_SAVE_PROFITABLE): Poison.
