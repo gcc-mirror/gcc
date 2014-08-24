@@ -1,5 +1,12 @@
 2014-08-24  Kito Cheng  <kito@0xlab.org>
 
+	* system.h (CALLER_SAVE_PROFITABLE): Poison.
+	* regs.h (CALLER_SAVE_PROFITABLE): Remove.
+	* doc/tm.texi.in (CALLER_SAVE_PROFITABLE): Remove.
+	* doc/tm.texi: Regenerate.
+
+2014-08-24  Kito Cheng  <kito@0xlab.org>
+
 	* ira.c: Fix typo in comment.
 
 2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
