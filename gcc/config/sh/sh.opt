@@ -343,7 +343,7 @@ Target RejectNegative Joined UInteger Var(sh_multcost) Init(-1)
 Cost to assume for a multiply insn
 
 musermode
-Target Report RejectNegative Var(TARGET_USERMODE)
+Target Var(TARGET_USERMODE)
 Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode.
 
 ;; We might want to enable this by default for TARGET_HARD_SH4, because

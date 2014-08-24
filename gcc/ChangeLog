@@ -1,3 +1,15 @@
+2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61996
+	* config/sh/sh.opt (musermode): Allow negative form.
+	* config/sh/sh.c (sh_option_override): Disable TARGET_USERMODE for
+	targets that don't support it.
+	* doc/invoke.texi (SH Options): Rename sh-*-linux* to sh*-*-linux*.
+	Document -mno-usermode option.
+
 2014-08-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/62038
@@ -9,7 +21,7 @@
 
 2014-08-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
-	Backport fro mainline
+	Backport from mainline
 	2014-08-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/62195
