@@ -8401,7 +8401,8 @@ ix86_va_start (tree valist, rtx nextarg)
       scratch_regno = split_stack_prologue_scratch_regno ();
       if (scratch_regno != INVALID_REGNUM)
 	{
-	  rtx reg, seq;
+	  rtx reg;
+	  rtx_insn *seq;
 
 	  reg = gen_reg_rtx (Pmode);
 	  cfun->machine->split_stack_varargs_pointer = reg;
@@ -10212,7 +10213,7 @@ ix86_get_drap_rtx (void)
       unsigned int regno = find_drap_reg ();
       rtx drap_vreg;
       rtx arg_ptr;
-      rtx seq, insn;
+      rtx_insn *seq, *insn;
 
       arg_ptr = gen_rtx_REG (Pmode, regno);
       crtl->drap_reg = arg_ptr;
@@ -11797,8 +11798,8 @@ ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED, HOST_WIDE_INT)
   /* Mach-O doesn't support labels at the end of objects, so if
      it looks like we might want one, insert a NOP.  */
   {
-    rtx insn = get_last_insn ();
-    rtx deleted_debug_label = NULL_RTX;
+    rtx_insn *insn = get_last_insn ();
+    rtx_insn *deleted_debug_label = NULL;
     while (insn
 	   && NOTE_P (insn)
 	   && NOTE_KIND (insn) != NOTE_INSN_DELETED_LABEL)
@@ -13494,7 +13495,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  if (TARGET_64BIT)
 	    {
 	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
-	      rtx insns;
+	      rtx_insn *insns;
 
 	      start_sequence ();
 	      emit_call_insn
@@ -13547,7 +13548,8 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  if (TARGET_64BIT)
 	    {
 	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
-	      rtx insns, eqv;
+	      rtx_insn *insns;
+	      rtx eqv;
 
 	      start_sequence ();
 	      emit_call_insn
@@ -14776,7 +14778,7 @@ get_some_local_dynamic_name_1 (rtx *px, void *)
 static const char *
 get_some_local_dynamic_name (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (cfun->machine->some_ld_name)
     return cfun->machine->some_ld_name;
@@ -17782,7 +17784,7 @@ ix86_emit_cfi ()
    go to next cycle if there is some dependecy.  */
 
 static unsigned int
-increase_distance (rtx prev, rtx next, unsigned int distance)
+increase_distance (rtx_insn *prev, rtx_insn *next, unsigned int distance)
 {
   df_ref def, use;
 
@@ -17847,12 +17849,12 @@ insn_uses_reg_mem (unsigned int regno, rtx insn)
 
 static int
 distance_non_agu_define_in_bb (unsigned int regno1, unsigned int regno2,
-			       rtx insn, int distance,
-			       rtx start, bool *found)
+			       rtx_insn *insn, int distance,
+			       rtx_insn *start, bool *found)
 {
   basic_block bb = start ? BLOCK_FOR_INSN (start) : NULL;
-  rtx prev = start;
-  rtx next = NULL;
+  rtx_insn *prev = start;
+  rtx_insn *next = NULL;
 
   *found = false;
 
@@ -17894,7 +17896,7 @@ distance_non_agu_define_in_bb (unsigned int regno1, unsigned int regno2,
 
 static int
 distance_non_agu_define (unsigned int regno1, unsigned int regno2,
-			 rtx insn)
+			 rtx_insn *insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   int distance = 0;
@@ -17971,12 +17973,12 @@ distance_non_agu_define (unsigned int regno1, unsigned int regno2,
 
 static int
 distance_agu_use_in_bb (unsigned int regno,
-			rtx insn, int distance, rtx start,
+			rtx_insn *insn, int distance, rtx_insn *start,
 			bool *found, bool *redefined)
 {
   basic_block bb = NULL;
-  rtx next = start;
-  rtx prev = NULL;
+  rtx_insn *next = start;
+  rtx_insn *prev = NULL;
 
   *found = false;
   *redefined = false;
@@ -18030,7 +18032,7 @@ distance_agu_use_in_bb (unsigned int regno,
    a use is found within LEA_SEARCH_THRESHOLD or REGNO0 is set.  */
 
 static int
-distance_agu_use (unsigned int regno0, rtx insn)
+distance_agu_use (unsigned int regno0, rtx_insn *insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   int distance = 0;
@@ -18104,7 +18106,7 @@ distance_agu_use (unsigned int regno0, rtx insn)
    SPLIT_COST cycles higher latency than lea latency.  */
 
 static bool
-ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
+ix86_lea_outperforms (rtx_insn *insn, unsigned int regno0, unsigned int regno1,
 		      unsigned int regno2, int split_cost, bool has_scale)
 {
   int dist_define, dist_use;
@@ -18158,7 +18160,7 @@ ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
    false otherwise.  */
 
 static bool
-ix86_ok_to_clobber_flags (rtx insn)
+ix86_ok_to_clobber_flags (rtx_insn *insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   df_ref use;
@@ -18190,7 +18192,7 @@ ix86_ok_to_clobber_flags (rtx insn)
    move and add to avoid AGU stalls.  */
 
 bool
-ix86_avoid_lea_for_add (rtx insn, rtx operands[])
+ix86_avoid_lea_for_add (rtx_insn *insn, rtx operands[])
 {
   unsigned int regno0, regno1, regno2;
 
@@ -18218,7 +18220,7 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
    instruction.  */
 
 bool
-ix86_use_lea_for_mov (rtx insn, rtx operands[])
+ix86_use_lea_for_mov (rtx_insn *insn, rtx operands[])
 {
   unsigned int regno0, regno1;
 
@@ -18240,7 +18242,7 @@ ix86_use_lea_for_mov (rtx insn, rtx operands[])
    instructions to avoid AGU stalls. */
 
 bool
-ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
+ix86_avoid_lea_for_addr (rtx_insn *insn, rtx operands[])
 {
   unsigned int regno0, regno1, regno2;
   int split_cost;
@@ -18344,10 +18346,10 @@ ix86_emit_binop (enum rtx_code code, enum machine_mode mode,
 /* Return true if regno1 def is nearest to the insn.  */
 
 static bool
-find_nearest_reg_def (rtx insn, int regno1, int regno2)
+find_nearest_reg_def (rtx_insn *insn, int regno1, int regno2)
 {
-  rtx prev = insn;
-  rtx start = BB_HEAD (BLOCK_FOR_INSN (insn));
+  rtx_insn *prev = insn;
+  rtx_insn *start = BB_HEAD (BLOCK_FOR_INSN (insn));
 
   if (insn == start)
     return false;
@@ -18375,7 +18377,7 @@ find_nearest_reg_def (rtx insn, int regno1, int regno2)
    at lea position.  */
 
 void
-ix86_split_lea_for_addr (rtx insn, rtx operands[], enum machine_mode mode)
+ix86_split_lea_for_addr (rtx_insn *insn, rtx operands[], enum machine_mode mode)
 {
   unsigned int regno0, regno1, regno2;
   struct ix86_address parts;
@@ -18495,7 +18497,7 @@ ix86_split_lea_for_addr (rtx insn, rtx operands[], enum machine_mode mode)
    used soon, LEA is better and otherwise ADD is better.  */
 
 bool
-ix86_lea_for_add_ok (rtx insn, rtx operands[])
+ix86_lea_for_add_ok (rtx_insn *insn, rtx operands[])
 {
   unsigned int regno0 = true_regnum (operands[0]);
   unsigned int regno1 = true_regnum (operands[1]);
@@ -20102,7 +20104,8 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 
   if (SCALAR_FLOAT_MODE_P (mode))
     {
-      rtx compare_op, compare_seq;
+      rtx compare_op;
+      rtx_insn *compare_seq;
 
       gcc_assert (!DECIMAL_FLOAT_MODE_P (mode));
 
@@ -20220,7 +20223,8 @@ bool
 ix86_expand_int_movcc (rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[1]), compare_code;
-  rtx compare_seq, compare_op;
+  rtx_insn *compare_seq;
+  rtx compare_op;
   enum machine_mode mode = GET_MODE (operands[0]);
   bool sign_bit_compare_p = false;
   rtx op0 = XEXP (operands[1], 0);
@@ -24987,7 +24991,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 /* Output the assembly for a call instruction.  */
 
 const char *
-ix86_output_call_insn (rtx insn, rtx call_op)
+ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 {
   bool direct_p = constant_call_address_operand (call_op, VOIDmode);
   bool seh_nop_p = false;
@@ -25012,7 +25016,7 @@ ix86_output_call_insn (rtx insn, rtx call_op)
      circumstances.  Determine if we have one of those.  */
   if (TARGET_SEH)
     {
-      rtx i;
+      rtx_insn *i;
 
       for (i = NEXT_INSN (insn); i ; i = NEXT_INSN (i))
 	{
@@ -38837,6 +38841,7 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
   rtx this_param = x86_this_parameter (function);
   rtx this_reg, tmp, fnaddr;
   unsigned int tmp_regno;
+  rtx_insn *insn;
 
   if (TARGET_64BIT)
     tmp_regno = R10_REG;
@@ -38996,10 +39001,10 @@ x86_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 
   /* Emit just enough of rest_of_compilation to get the insns emitted.
      Note that use_thunk calls assemble_start_function et al.  */
-  tmp = get_insns ();
-  shorten_branches (tmp);
-  final_start_function (tmp, file, 1);
-  final (tmp, file, 1);
+  insn = get_insns ();
+  shorten_branches (insn);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1);
   final_end_function ();
 }
 
@@ -39140,7 +39145,7 @@ min_insn_size (rtx insn)
 static void
 ix86_avoid_jump_mispredicts (void)
 {
-  rtx insn, start = get_insns ();
+  rtx_insn *insn, *start = get_insns ();
   int nbytes = 0, njumps = 0;
   int isjump = 0;
 
@@ -39246,8 +39251,8 @@ ix86_pad_returns (void)
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
       basic_block bb = e->src;
-      rtx ret = BB_END (bb);
-      rtx prev;
+      rtx_insn *ret = BB_END (bb);
+      rtx_insn *prev;
       bool replace = false;
 
       if (!JUMP_P (ret) || !ANY_RETURN_P (PATTERN (ret))
@@ -39295,7 +39300,7 @@ ix86_pad_returns (void)
 static int
 ix86_count_insn_bb (basic_block bb)
 {
-  rtx insn;
+  rtx_insn *insn;
   int insn_count = 0;
 
   /* Count number of instructions in this block.  Return 4 if the number
@@ -39376,7 +39381,7 @@ ix86_pad_short_function (void)
 
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      rtx ret = BB_END (e->src);
+      rtx_insn *ret = BB_END (e->src);
       if (JUMP_P (ret) && ANY_RETURN_P (PATTERN (ret)))
 	{
 	  int insn_count = ix86_count_insn (e->src);
@@ -39384,7 +39389,7 @@ ix86_pad_short_function (void)
 	  /* Pad short function.  */
 	  if (insn_count < 4)
 	    {
-	      rtx insn = ret;
+	      rtx_insn *insn = ret;
 
 	      /* Find epilogue.  */
 	      while (insn
@@ -39416,7 +39421,7 @@ ix86_seh_fixup_eh_fallthru (void)
 
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      rtx insn, next;
+      rtx_insn *insn, *next;
 
       /* Find the beginning of the epilogue.  */
       for (insn = BB_END (e->src); insn != NULL; insn = PREV_INSN (insn))
@@ -39629,14 +39634,15 @@ static bool
 ix86_vector_duplicate_value (enum machine_mode mode, rtx target, rtx val)
 {
   bool ok;
-  rtx insn, dup;
+  rtx_insn *insn;
+  rtx dup;
 
   /* First attempt to recognize VAL as-is.  */
   dup = gen_rtx_VEC_DUPLICATE (mode, val);
   insn = emit_insn (gen_rtx_SET (VOIDmode, target, dup));
   if (recog_memoized (insn) < 0)
     {
-      rtx seq;
+      rtx_insn *seq;
       /* If that fails, force VAL into a register.  */
 
       start_sequence ();
@@ -43355,7 +43361,7 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
   unsigned i, nelt = d->nelt, nelt2 = nelt / 2;
   unsigned HOST_WIDE_INT contents;
   unsigned char remap[2 * MAX_VECT_LEN];
-  rtx seq;
+  rtx_insn *seq;
   bool ok, same_halves = false;
 
   if (GET_MODE_SIZE (d->vmode) == 16)
@@ -43904,7 +43910,7 @@ expand_vec_perm_vperm2f128_vblend (struct expand_vec_perm_d *d)
 {
   struct expand_vec_perm_d dfirst, dsecond;
   unsigned i, j, msk, nelt = d->nelt, nelt2 = nelt / 2;
-  rtx seq;
+  rtx_insn *seq;
   bool ok;
   rtx (*blend) (rtx, rtx, rtx, rtx) = NULL;
 
@@ -46901,7 +46907,7 @@ static unsigned
 ix86_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 {
   basic_block *bbs;
-  rtx insn;
+  rtx_insn *insn;
   unsigned i;
   unsigned mem_count = 0;
 
@@ -46914,7 +46920,8 @@ ix86_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
     {
       for (insn = BB_HEAD (bbs[i]); insn != BB_END (bbs[i]); insn = NEXT_INSN (insn))
         if (NONDEBUG_INSN_P (insn))
-            for_each_rtx (&insn, (rtx_function) ix86_loop_memcount, &mem_count);
+            for_each_rtx_in_insn (&insn, (rtx_function) ix86_loop_memcount,
+				  &mem_count);
     }
   free (bbs);
 

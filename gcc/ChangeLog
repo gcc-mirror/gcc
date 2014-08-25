@@ -1,5 +1,55 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/i386/i386-protos.h (ix86_avoid_lea_for_add): Strengthen
+	param 1 "insn" from rtx to rtx_insn *.
+	(ix86_use_lea_for_mov): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(ix86_split_lea_for_addr): Likewise.
+	(ix86_lea_for_add_ok): Likewise.
+	(ix86_output_call_insn): Likewise.
+
+	* config/i386/i386.c (ix86_va_start): Likewise for local "seq".
+	(ix86_get_drap_rtx): Likewise for locals "seq", "insn".
+	(ix86_output_function_epilogue): Likewise for locals "insn",
+	"deleted_debug_label".
+	(legitimize_tls_address): Likewise for local "insn".
+	(get_some_local_dynamic_name): Likewise.
+	(increase_distance): Likewise for params "prev", "next".
+	(distance_non_agu_define_in_bb): Likewise for params "insn",
+	"start" and locals "prev", "next".
+	(distance_non_agu_define): Likewise for param "insn".
+	(distance_agu_use_in_bb): Likewise for params "insn", "start" and
+	locals "next", "prev".
+	(distance_agu_use): Likewise for param "insn".
+	(ix86_lea_outperforms): Likewise.
+	(ix86_ok_to_clobber_flags): Likewise.
+	(ix86_avoid_lea_for_add): Likewise.
+	(ix86_use_lea_for_mov): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(find_nearest_reg_def): Likewise, also for locals "prev", "start".
+	(ix86_split_lea_for_addr): Likewise for param "insn".
+	(ix86_lea_for_add_ok): Likewise for param "insn".
+	(ix86_expand_carry_flag_compare): Likewise for local
+	"compare_seq".
+	(ix86_expand_int_movcc): Likewise.
+	(ix86_output_call_insn): Likewise for param "insn".
+	(ix86_output_call_insn): Likewise for local "i".
+	(x86_output_mi_thunk): Introduce local "insn", using it in place
+	of "tmp" when dealing with insns.
+	(ix86_avoid_jump_mispredicts): Likewise for locals "insn",
+	"start".
+	(ix86_pad_returns): Likewise for locals "ret", "prev".
+	(ix86_count_insn_bb): Likewise for local "insn".
+	(ix86_pad_short_function): Likewise for locals "ret", "insn".
+	(ix86_seh_fixup_eh_fallthru): Likewise for locals "insn", "next".
+	(ix86_vector_duplicate_value): Likewise for local "insn", "seq".
+	(expand_vec_perm_interleave2): Likewise for local "seq".
+	(expand_vec_perm_vperm2f128_vblend): Likewise.
+	(ix86_loop_unroll_adjust): Likewise for local "insn".  Convert
+	call to for_each_rtx with for_each_rtx_in_insn.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/i386/i386.c (setup_incoming_varargs_64): Strengthen local
 	"label" from rtx to rtx_code_label *.
 	(ix86_expand_prologue): Likewise.
