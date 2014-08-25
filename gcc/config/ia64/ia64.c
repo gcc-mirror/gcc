@@ -1159,7 +1159,8 @@ static rtx
 ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
 			 rtx orig_op1, HOST_WIDE_INT addend)
 {
-  rtx tga_op1, tga_op2, tga_ret, tga_eqv, tmp, insns;
+  rtx tga_op1, tga_op2, tga_ret, tga_eqv, tmp;
+  rtx_insn *insns;
   rtx orig_op0 = op0;
   HOST_WIDE_INT addend_lo, addend_hi;
 
@@ -1340,7 +1341,7 @@ ia64_expand_move (rtx op0, rtx op1)
 void
 ia64_emit_cond_move (rtx op0, rtx op1, rtx cond)
 {
-  rtx insn, first = get_last_insn ();
+  rtx_insn *insn, *first = get_last_insn ();
 
   emit_move_insn (op0, op1);
 
@@ -2995,11 +2996,11 @@ ia64_initial_elimination_offset (int from, int to)
 
 struct spill_fill_data
 {
-  rtx init_after;		/* point at which to emit initializations */
+  rtx_insn *init_after;		/* point at which to emit initializations */
   rtx init_reg[2];		/* initial base register */
   rtx iter_reg[2];		/* the iterator registers */
   rtx *prev_addr[2];		/* address of last memory use */
-  rtx prev_insn[2];		/* the insn corresponding to prev_addr */
+  rtx_insn *prev_insn[2];	/* the insn corresponding to prev_addr */
   HOST_WIDE_INT prev_off[2];	/* last offset */
   int n_iter;			/* number of iterators in use */
   int next_iter;		/* next iterator to use */
@@ -3087,7 +3088,8 @@ spill_restore_mem (rtx reg, HOST_WIDE_INT cfa_off)
     }
   else
     {
-      rtx seq, insn;
+      rtx seq;
+      rtx_insn *insn;
 
       if (disp == 0)
 	seq = gen_movdi (spill_fill_data.iter_reg[iter],
@@ -3116,7 +3118,7 @@ spill_restore_mem (rtx reg, HOST_WIDE_INT cfa_off)
 	insn = emit_insn_after (seq, spill_fill_data.init_after);
       else
 	{
-	  rtx first = get_insns ();
+	  rtx_insn *first = get_insns ();
 	  if (first)
 	    insn = emit_insn_before (seq, first);
 	  else
@@ -3147,7 +3149,8 @@ do_spill (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off,
 	  rtx frame_reg)
 {
   int iter = spill_fill_data.next_iter;
-  rtx mem, insn;
+  rtx mem;
+  rtx_insn *insn;
 
   mem = spill_restore_mem (reg, cfa_off);
   insn = emit_insn ((*move_fn) (mem, reg, GEN_INT (cfa_off)));
@@ -3188,7 +3191,7 @@ static void
 do_restore (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off)
 {
   int iter = spill_fill_data.next_iter;
-  rtx insn;
+  rtx_insn *insn;
 
   insn = emit_insn ((*move_fn) (reg, spill_restore_mem (reg, cfa_off),
 				GEN_INT (cfa_off)));
@@ -3443,7 +3446,8 @@ output_probe_stack_range (rtx reg1, rtx reg2)
 void
 ia64_expand_prologue (void)
 {
-  rtx insn, ar_pfs_save_reg, ar_unat_save_reg;
+  rtx_insn *insn;
+  rtx ar_pfs_save_reg, ar_unat_save_reg;
   int i, epilogue_p, regno, alt_regno, cfa_off, n_varargs;
   rtx reg, alt_reg;
 
@@ -3854,7 +3858,8 @@ ia64_start_function (FILE *file, const char *fnname,
 void
 ia64_expand_epilogue (int sibcall_p)
 {
-  rtx insn, reg, alt_reg, ar_unat_save_reg;
+  rtx_insn *insn;
+  rtx reg, alt_reg, ar_unat_save_reg;
   int regno, alt_regno, cfa_off;
 
   ia64_compute_frame_size (get_frame_size ());
@@ -6949,8 +6954,8 @@ safe_group_barrier_needed (rtx insn)
 static void
 emit_insn_group_barriers (FILE *dump)
 {
-  rtx insn;
-  rtx last_label = 0;
+  rtx_insn *insn;
+  rtx_insn *last_label = 0;
   int insns_since_last_label = 0;
 
   init_insn_group_barriers ();
@@ -7005,7 +7010,7 @@ emit_insn_group_barriers (FILE *dump)
 static void
 emit_all_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   init_insn_group_barriers ();
 
@@ -7013,7 +7018,7 @@ emit_all_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
     {
       if (BARRIER_P (insn))
 	{
-	  rtx last = prev_active_insn (insn);
+	  rtx_insn *last = prev_active_insn (insn);
 
 	  if (! last)
 	    continue;
@@ -7078,7 +7083,7 @@ static int pos_1, pos_2, pos_3, pos_4, pos_5, pos_6;
 
 /* The following variable value is an insn group barrier.  */
 
-static rtx dfa_stop_insn;
+static rtx_insn *dfa_stop_insn;
 
 /* The following variable value is the last issued insn.  */
 
@@ -7556,7 +7561,7 @@ ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn, int ready_index)
    scheduler to change the DFA state when the simulated clock is
    increased.  */
 
-static rtx dfa_pre_cycle_insn;
+static rtx_insn *dfa_pre_cycle_insn;
 
 /* Returns 1 when a meaningful insn was scheduled between the last group
    barrier and LAST.  */
@@ -8650,7 +8655,7 @@ finish_bundle_state_table (void)
 /* The following variable is a insn `nop' used to check bundle states
    with different number of inserted nops.  */
 
-static rtx ia64_nop;
+static rtx_insn *ia64_nop;
 
 /* The following function tries to issue NOPS_NUM nops for the current
    state without advancing processor cycle.  If it failed, the
@@ -9379,7 +9384,7 @@ ia64_sched_finish (FILE *dump, int sched_verbose)
 static void
 final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 {
-  rtx insn;
+  rtx_insn *insn;
   int need_barrier_p = 0;
   int seen_good_insn = 0;
 
@@ -9391,7 +9396,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
     {
       if (BARRIER_P (insn))
 	{
-	  rtx last = prev_active_insn (insn);
+	  rtx_insn *last = prev_active_insn (insn);
 
 	  if (! last)
 	    continue;
@@ -9419,7 +9424,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 	    {
 	      if (TARGET_EARLY_STOP_BITS)
 		{
-		  rtx last;
+		  rtx_insn *last;
 
 		  for (last = insn;
 		       last != current_sched_info->prev_head;
@@ -9602,7 +9607,7 @@ emit_predicate_relation_info (void)
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       int r;
-      rtx head = BB_HEAD (bb);
+      rtx_insn *head = BB_HEAD (bb);
 
       /* We only need such notes at code labels.  */
       if (! LABEL_P (head))
@@ -9616,7 +9621,7 @@ emit_predicate_relation_info (void)
 	if (REGNO_REG_SET_P (df_get_live_in (bb), r))
 	  {
 	    rtx p = gen_rtx_REG (BImode, r);
-	    rtx n = emit_insn_after (gen_pred_rel_mutex (p), head);
+	    rtx_insn *n = emit_insn_after (gen_pred_rel_mutex (p), head);
 	    if (head == BB_END (bb))
 	      SET_BB_END (bb) = n;
 	    head = n;
@@ -9629,7 +9634,7 @@ emit_predicate_relation_info (void)
      the call.  */
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
-      rtx insn = BB_HEAD (bb);
+      rtx_insn *insn = BB_HEAD (bb);
 
       while (1)
 	{
@@ -9637,8 +9642,9 @@ emit_predicate_relation_info (void)
 	      && GET_CODE (PATTERN (insn)) == COND_EXEC
 	      && find_reg_note (insn, REG_NORETURN, NULL_RTX))
 	    {
-	      rtx b = emit_insn_before (gen_safe_across_calls_all (), insn);
-	      rtx a = emit_insn_after (gen_safe_across_calls_normal (), insn);
+	      rtx_insn *b =
+		emit_insn_before (gen_safe_across_calls_all (), insn);
+	      rtx_insn *a = emit_insn_after (gen_safe_across_calls_normal (), insn);
 	      if (BB_HEAD (bb) == insn)
 		SET_BB_HEAD (bb) = b;
 	      if (BB_END (bb) == insn)
@@ -9772,7 +9778,7 @@ ia64_reorg (void)
      properly.  Note that IA-64 differs from dwarf2 on this point.  */
   if (ia64_except_unwind_info (&global_options) == UI_TARGET)
     {
-      rtx insn;
+      rtx_insn *insn;
       int saw_stop = 0;
 
       insn = get_last_insn ();
@@ -10742,7 +10748,8 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx this_rtx, insn, funexp;
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
   unsigned int this_parmno;
   unsigned int this_regno;
   rtx delta_rtx;
@@ -11401,7 +11408,7 @@ expand_vec_perm_interleave_2 (struct expand_vec_perm_d *d)
   unsigned char remap[2 * MAX_VECT_LEN];
   unsigned contents, i, nelt, nelt2;
   unsigned h0, h1, h2, h3;
-  rtx seq;
+  rtx_insn *seq;
   bool ok;
 
   if (d->one_operand_p)
