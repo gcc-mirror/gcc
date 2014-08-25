@@ -1,5 +1,47 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/i386/i386.c (setup_incoming_varargs_64): Strengthen local
+	"label" from rtx to rtx_code_label *.
+	(ix86_expand_prologue): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise for locals "label",
+	"varargs_label".
+	(ix86_split_idivmod): Likewise for locals "end_label" and
+	"qimode_label".
+	(ix86_expand_branch): Likewise for local "label2".
+	(ix86_expand_aligntest): Likewise for return type and local "label".
+	(expand_set_or_movmem_via_loop): Likewise for locals "out_label" and
+	"top_label".
+	(expand_movmem_epilogue): Likewise for the various locals named
+	"label".
+	(expand_setmem_epilogue): Likewise.
+	(expand_small_movmem_or_setmem): Likewise for local "label".
+	(expand_set_or_movmem_prologue_epilogue_by_misaligned_moves):
+	Strengthen param "done_label" from rtx * to rtx_code_label **.
+	Strengthen locals "loop_label" and "label" from rtx to
+	rtx_code_label *.
+	(expand_set_or_movmem_prologue_epilogue_by_misaligned_moves):
+	Likewise for locals "loop_label", "label".
+	(ix86_expand_set_or_movmem): Likewise for locals "label",
+	"jump_around_label", "hot_label".
+	(ix86_expand_strlensi_unroll_1): Likewise for locals
+	"align_2_label", align_3_label", "align_4_label", "end_0_label",
+	"end_2_label".
+	(x86_emit_floatuns): Likewise for locals "neglab", "donelab".
+	(void ix86_emit_i387_log1p): Likewise for locals "label1",
+	"label2", "jump_label".
+	(ix86_expand_sse_compare_and_jump): Likewise for return type and
+	local "label".
+	(ix86_expand_lfloorceil): Likewise for local "label".
+	(ix86_expand_rint): Likewise.
+	(ix86_expand_floorceildf_32): Likewise.
+	(ix86_expand_floorceil): Likewise.
+	(ix86_expand_rounddf_32): Likewise.
+	(ix86_expand_trunc): Likewise.
+	(ix86_expand_truncdf_32): Likewise.
+	(ix86_expand_round): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/h8300/h8300-protos.h (final_prescan_insn): Strengthen
 	first param from rtx to rtx_insn *.
 	(h8300_insn_length_from_table): Likewise.
