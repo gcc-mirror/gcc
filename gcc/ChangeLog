@@ -1,5 +1,43 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/tilegx/tilegx-protos.h (tilegx_output_cbranch_with_opcode):
+	Strengthen param 1 from rtx to rtx_insn *.
+	(tilegx_output_cbranch): Likewise.
+	(tilegx_adjust_insn_length): Likewise.
+	(tilegx_final_prescan_insn): Likewise for sole param.
+
+	* config/tilegx/tilegx.c (tilegx_legitimize_tls_address): Likewise
+	or local "last".
+	(cbranch_predicted_p): Likewise for param "insn".
+	(tilegx_output_simple_cbranch_with_opcode): Likewise.
+	(tilegx_output_cbranch_with_opcode): Likewise.
+	(tilegx_output_cbranch): Likewise.
+	(frame_emit_load): Likewise for return type.
+	(set_frame_related_p): Likewise for locals "seq", "insn".
+	(emit_sp_adjust): Likewise for return type, and for local "insn".
+	Introduce local "pat" for use in place of "insn" where the latter
+	isn't an instruction.
+	(tilegx_expand_epilogue): Strengthen locals "last_insn", "insn"
+	from rtx to rtx_insn *.
+	(tilegx_adjust_insn_length): Likewise for param "insn".
+	(next_insn_to_bundle): Likewise for return type and params "r" and
+	"end".
+	(tilegx_gen_bundles): Likewise for locals "insn", "next", "prev",
+	"end".
+	(replace_insns): Likewise for params "old_insn", "new_insns".
+	(replace_mov_pcrel_step1): Likewise for param "insn" and local
+	"new_insns".
+	(replace_mov_pcrel_step2): Likewise.
+	(replace_mov_pcrel_step3): Likewise.
+	(tilegx_fixup_pcrel_references): Likewise for locals "insn",
+	"next_insn".
+	(reorder_var_tracking_notes): Likewise for locals "insn", "next",
+	"queue", "next_queue", "prev".
+	(tilegx_output_mi_thunk): Likewise for local "insn".
+	(tilegx_final_prescan_insn): Likewise for param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/spu/spu.c (frame_emit_store): Strengthen return type from
 	rtx to rtx_insn *.
 	(frame_emit_load): Likewise.
