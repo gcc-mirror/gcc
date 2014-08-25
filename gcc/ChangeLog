@@ -1,5 +1,18 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/iq2000/iq2000-protos.h (final_prescan_insn): Strengthen
+	first param from rtx to rtx_insn *.
+	(iq2000_adjust_insn_length): Likewise.
+	(iq2000_output_conditional_branch): Likewise.
+	* config/iq2000/iq2000.c (final_prescan_insn): Likewise for param
+	"insn" and local "nop_insn".
+	(iq2000_annotate_frame_insn): Likewise for param "insn".
+	(iq2000_expand_prologue): Likewise for both locals "insn".
+	(iq2000_adjust_insn_length): Likewise for param "insn".
+	(iq2000_output_conditional_branch): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/ia64/ia64.c (ia64_expand_tls_address): Strengthen local
 	"insns" from rtx to rtx_insn *.
 	(ia64_emit_cond_move): Likewise for locals "insn", "first".
