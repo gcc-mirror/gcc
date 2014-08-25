@@ -3126,7 +3126,7 @@ nds32_ls_333_p (rtx rt, rtx ra, rtx imm, enum machine_mode mode)
    Modifies the length assigned to instruction INSN.
    LEN is the initially computed length of the insn.  */
 int
-nds32_adjust_insn_length (rtx insn, int length)
+nds32_adjust_insn_length (rtx_insn *insn, int length)
 {
   rtx src, dst;
 
