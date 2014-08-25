@@ -1,5 +1,19 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (rtx_jump_table_data::get_labels): New method.
+	* cfgbuild.c (make_edges): Replace hand-coded lookup of labels
+	with use of the new rtx_jump_table_data::get_labels method.
+	(purge_dead_tablejump_edges): Strengthen param "table" from rtx
+	to rtx_jump_table_data *.  Simplify by using get_labels method.
+	* cfgrtl.c (delete_insn): Replace use of JUMP_TABLE_DATA_P with
+	a dyn_cast, introducing local "table", using it to replace
+	label-lookup logic with a get_labels method call.
+	(patch_jump_insn): Simplify using get_labels method.
+	* dwarf2cfi.c (create_trace_edges): Likewise.
+	* rtlanal.c (label_is_jump_target_p): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (unshare_all_rtl_again): Strengthen param "insn" from rtx
 	to rtx_insn *.
 

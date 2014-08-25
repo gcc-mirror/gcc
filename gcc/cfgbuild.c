@@ -263,13 +263,8 @@ make_edges (basic_block min, basic_block max, int update_p)
 	  /* Recognize a tablejump and do the right thing.  */
 	  else if (tablejump_p (insn, NULL, &table))
 	    {
-	      rtvec vec;
+	      rtvec vec = table->get_labels ();
 	      int j;
-
-	      if (GET_CODE (PATTERN (table)) == ADDR_VEC)
-		vec = XVEC (PATTERN (table), 0);
-	      else
-		vec = XVEC (PATTERN (table), 1);
 
 	      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 		make_label_edge (edge_cache, bb,
@@ -398,7 +393,7 @@ mark_tablejump_edge (rtx label)
 }
 
 static void
-purge_dead_tablejump_edges (basic_block bb, rtx table)
+purge_dead_tablejump_edges (basic_block bb, rtx_jump_table_data *table)
 {
   rtx_insn *insn = BB_END (bb);
   rtx tmp;
@@ -407,10 +402,7 @@ purge_dead_tablejump_edges (basic_block bb, rtx table)
   edge_iterator ei;
   edge e;
 
-  if (GET_CODE (PATTERN (table)) == ADDR_VEC)
-    vec = XVEC (PATTERN (table), 0);
-  else
-    vec = XVEC (PATTERN (table), 1);
+  vec = table->get_labels ();
 
   for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
     mark_tablejump_edge (XEXP (RTVEC_ELT (vec, j), 0));
