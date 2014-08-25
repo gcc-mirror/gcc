@@ -1,5 +1,36 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/sparc/sparc-protos.h (output_ubranch): Strengthen param 2
+	from rtx to rtx_insn *.
+	(output_cbranch): Likewise for param 6.
+	(output_return): Likewise for param 1.
+	(output_sibcall): Likewise.
+	(output_v8plus_shift): Likewise.
+	(output_v8plus_mult): Likewise.
+	(output_v9branch): Likewise for param 7.
+	(output_cbcond):  Likewise for param 3.
+
+	* config/sparc/sparc.c (sparc_legitimize_tls_address): Likewise
+	for local "insn".
+	(sparc_legitimize_pic_address): Likewise.
+	(sparc_emit_call_insn): Likewise.
+	(emit_save_or_restore_regs): Likewise.
+	(emit_window_save): Likewise for return type and local "insn".
+	(sparc_expand_prologue): Likewise for local "insn".
+	(sparc_flat_expand_prologue): Likewise.
+	(output_return): Likewise for param "insn".
+	(output_sibcall): Likewise for param "insn" and local "delay".
+	(output_ubranch): Likewise for param "insn".
+	(output_cbranch): Likewise.
+	(output_cbcond): Likewise.
+	(output_v9branch): Likewise.
+	(output_v8plus_shift): Likewise.
+	(sparc_output_mi_thunk): Likewise for local "insn".
+	(get_some_local_dynamic_name): Likewise.
+	(output_v8plus_mult): Likewise for param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/sh/sh-protos.h (output_ieee_ccmpeq): Strengthen param 1
 	from rtx to rtx_insn *.
 	(output_branchy_insn): Likewise for param 3.
