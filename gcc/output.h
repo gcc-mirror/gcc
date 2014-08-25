@@ -50,7 +50,7 @@ extern int get_attr_min_length (rtx);
 
 /* Make a pass over all insns and compute their actual lengths by shortening
    any branches of variable length if possible.  */
-extern void shorten_branches (rtx);
+extern void shorten_branches (rtx_insn *);
 
 /* Output assembler code for the start of a function,
    and initialize some of the variables in this file

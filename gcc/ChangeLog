@@ -1,5 +1,17 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* output.h (shorten_branches): Strengthen param from rtx to
+	rtx_insn *.
+
+	* final.c (shorten_branches): Likewise, renaming param back from
+	"uncast_first" to "first", and dropping the checked cast from rtx
+	to rtx_insn *.
+
+	* genattr.c (gen_attr): Likewise when writing out the prototype of
+	shorten_branches.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-int.h (struct haifa_sched_info): Strengthen fields
 	"prev_head" and "next_tail" from rtx to rtx_insn *.
 

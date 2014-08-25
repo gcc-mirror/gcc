@@ -899,9 +899,8 @@ make_pass_compute_alignments (gcc::context *ctxt)
    slots.  */
 
 void
-shorten_branches (rtx uncast_first)
+shorten_branches (rtx_insn *first)
 {
-  rtx_insn *first = safe_as_a <rtx_insn *> (uncast_first);
   rtx_insn *insn;
   int max_uid;
   int i;
