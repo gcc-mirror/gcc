@@ -5865,14 +5865,14 @@ pass_expand::execute (function *fun)
 	{
 	  if (e->insns.r)
 	    {
-	      rebuild_jump_labels_chain (as_a <rtx_insn *> (e->insns.r));
+	      rebuild_jump_labels_chain (e->insns.r);
 	      /* Put insns after parm birth, but before
 		 NOTE_INSNS_FUNCTION_BEG.  */
 	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (fun)
 		  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
 		{
-		  rtx insns = e->insns.r;
-		  e->insns.r = NULL_RTX;
+		  rtx_insn *insns = e->insns.r;
+		  e->insns.r = NULL;
 		  if (NOTE_P (parm_birth_insn)
 		      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
 		    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);

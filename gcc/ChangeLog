@@ -1,5 +1,24 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (struct edge_def). Strengthen "r" within
+	union edge_def_insns from rtx to rtx_insn *.
+
+	* cfgexpand.c (pass_expand::execute): Remove now-redundant cast
+	from rtx to rtx_insn *.  Strengthen local "insns" from rtx to
+	rtx_insn *.
+	* cfgrtl.c (commit_one_edge_insertion): Remove now-redundant cast
+	from rtx to rtx_insn *.
+	* cprop.c (find_bypass_set): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	* postreload-gcse.c (reg_killed_on_edge): Likewise.
+	(reg_used_on_edge): Likewise.
+	* tree-cfg.c (gt_ggc_mx): New overload for rtx_insn *&.
+	(gt_pch_nx): New overload for rtx_insn *&.
+	* tree-outof-ssa.c (expand_phi_nodes): Strengthen local "insns"
+	from rtx to rtx_insn *.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (struct rtl_bb_info): Strengthen field "footer_"
 	from rtx to rtx_insn *.
 	(BB_FOOTER): Replace function with access macro.

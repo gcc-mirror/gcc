@@ -1950,8 +1950,8 @@ commit_one_edge_insertion (edge e)
   basic_block bb;
 
   /* Pull the insns off the edge now since the edge might go away.  */
-  insns = safe_as_a <rtx_insn *> (e->insns.r);
-  e->insns.r = NULL_RTX;
+  insns = e->insns.r;
+  e->insns.r = NULL;
 
   /* Figure out where to put these insns.  If the destination has
      one predecessor, insert there.  Except for the exit block.  */

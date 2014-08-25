@@ -958,9 +958,9 @@ expand_phi_nodes (struct ssaexpand *sa)
 	    if (e->insns.r && (e->flags & EDGE_EH)
 		&& !single_pred_p (e->dest))
 	      {
-		rtx insns = e->insns.r;
+		rtx_insn *insns = e->insns.r;
 		basic_block bb;
-		e->insns.r = NULL_RTX;
+		e->insns.r = NULL;
 		bb = split_edge (e);
 		single_pred_edge (bb)->insns.r = insns;
 	      }
