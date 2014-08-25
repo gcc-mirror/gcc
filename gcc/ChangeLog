@@ -1,5 +1,22 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/m68k/m68k-protos.h (output_btst): Strengthen param 4 from
+	rtx to rtx_insn *.
+	(strict_low_part_peephole_ok): Likewise for param 2 "first_insn".
+	(m68k_final_prescan_insn): Likewise for first param.
+
+	* config/m68k/m68k.c (m68k_emit_movem): Likewise for return type.
+	(m68k_set_frame_related): Likewise for param "insn".
+	(output_btst): Likewise for param "insn".
+	(m68k_final_prescan_insn): Likewise.
+	(m68k_move_to_reg): Likewise for local "insn".
+	(m68k_call_tls_get_addr): Likewise for local "insns".
+	(m68k_call_m68k_read_tp): Likewise.
+	(strict_low_part_peephole_ok): Likewise for param "first_insn".
+	(m68k_output_mi_thunk): Likewise for local "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/iq2000/iq2000-protos.h (final_prescan_insn): Strengthen
 	first param from rtx to rtx_insn *.
 	(iq2000_adjust_insn_length): Likewise.
