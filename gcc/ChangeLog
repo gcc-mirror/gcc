@@ -1,5 +1,23 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/pa/pa-protos.h (pa_output_call): Strengthen first param
+	from rtx to rtx_insn *.
+	(pa_output_indirect_call): Likewise.
+	(pa_adjust_insn_length): Likewise.
+	(pa_attr_length_millicode_call): Likewise.
+	(pa_attr_length_call): Likewise.
+	(pa_attr_length_indirect_call): Likewise.
+
+	* config/pa/pa.c (pa_adjust_insn_length): Likewise for param
+	"insn".
+	(pa_attr_length_millicode_call): Likewise.
+	(pa_attr_length_call): Likewise.
+	(pa_output_call): Likewise.
+	(pa_attr_length_indirect_call): Likewise.
+	(pa_output_indirect_call): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/nds32/nds32-protos.h (nds32_adjust_insn_length):
 	Strengthen first param from rtx to rtx_insn *.
 	* config/nds32/nds32.c (nds32_adjust_insn_length): Likewise for

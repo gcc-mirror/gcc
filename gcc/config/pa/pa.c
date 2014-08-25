@@ -4893,7 +4893,7 @@ pa_issue_rate (void)
    Also compute the length of an inline block move here as it is too
    complicated to express as a length attribute in pa.md.  */
 int
-pa_adjust_insn_length (rtx insn, int length)
+pa_adjust_insn_length (rtx_insn *insn, int length)
 {
   rtx pat = PATTERN (insn);
 
@@ -4901,7 +4901,7 @@ pa_adjust_insn_length (rtx insn, int length)
   if ((unsigned int) length >= INT_MAX)
     {
       if (GET_CODE (pat) == SEQUENCE)
-	insn = XVECEXP (pat, 0, 0);
+	insn = as_a <rtx_insn *> (XVECEXP (pat, 0, 0));
 
       switch (get_attr_type (insn))
 	{
@@ -7494,7 +7494,7 @@ length_fp_args (rtx insn)
    over estimate the length than to under estimate it.  */
 
 int
-pa_attr_length_millicode_call (rtx insn)
+pa_attr_length_millicode_call (rtx_insn *insn)
 {
   unsigned long distance = -1;
   unsigned long total = IN_NAMED_SECTION_P (cfun->decl) ? 0 : total_code_bytes;
@@ -7690,7 +7690,7 @@ pa_output_millicode_call (rtx insn, rtx call_dest)
    these sequences.  */
 
 int
-pa_attr_length_call (rtx insn, int sibcall)
+pa_attr_length_call (rtx_insn *insn, int sibcall)
 {
   int local_call;
   rtx call, call_dest;
@@ -7780,7 +7780,7 @@ pa_attr_length_call (rtx insn, int sibcall)
    CALL_DEST is the routine we are calling.  */
 
 const char *
-pa_output_call (rtx insn, rtx call_dest, int sibcall)
+pa_output_call (rtx_insn *insn, rtx call_dest, int sibcall)
 {
   int delay_insn_deleted = 0;
   int delay_slot_filled = 0;
@@ -8069,7 +8069,7 @@ pa_output_call (rtx insn, rtx call_dest, int sibcall)
    the sequence itself.  */
 
 int
-pa_attr_length_indirect_call (rtx insn)
+pa_attr_length_indirect_call (rtx_insn *insn)
 {
   unsigned long distance = -1;
   unsigned long total = IN_NAMED_SECTION_P (cfun->decl) ? 0 : total_code_bytes;
@@ -8102,7 +8102,7 @@ pa_attr_length_indirect_call (rtx insn)
 }
 
 const char *
-pa_output_indirect_call (rtx insn, rtx call_dest)
+pa_output_indirect_call (rtx_insn *insn, rtx call_dest)
 {
   rtx xoperands[1];
 
