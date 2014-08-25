@@ -5613,8 +5613,9 @@ thread_prologue_and_epilogue_insns (void)
   vec<edge> unconverted_simple_returns = vNULL;
   bitmap_head bb_flags;
 #endif
-  rtx returnjump;
-  rtx seq ATTRIBUTE_UNUSED, epilogue_end ATTRIBUTE_UNUSED;
+  rtx_insn *returnjump;
+  rtx seq ATTRIBUTE_UNUSED;
+  rtx_insn *epilogue_end ATTRIBUTE_UNUSED;
   rtx prologue_seq ATTRIBUTE_UNUSED, split_prologue_seq ATTRIBUTE_UNUSED;
   edge e, entry_edge, orig_entry_edge, exit_fallthru_edge;
   edge_iterator ei;
@@ -5625,8 +5626,8 @@ thread_prologue_and_epilogue_insns (void)
 
   inserted = false;
   seq = NULL_RTX;
-  epilogue_end = NULL_RTX;
-  returnjump = NULL_RTX;
+  epilogue_end = NULL;
+  returnjump = NULL;
 
   /* Can't deal with multiple successors of the entry block at the
      moment.  Function should always have at least one entry
@@ -5916,7 +5917,7 @@ epilogue_done:
 #ifdef HAVE_epilogue
   if (epilogue_end)
     {
-      rtx insn, next;
+      rtx_insn *insn, *next;
 
       /* Similarly, move any line notes that appear after the epilogue.
          There is no need, however, to be quite so anal about the existence
