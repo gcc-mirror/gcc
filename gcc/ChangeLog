@@ -1,5 +1,28 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (struct rtl_bb_info): Strengthen field "footer_"
+	from rtx to rtx_insn *.
+	(BB_FOOTER): Replace function with access macro.
+	(SET_BB_FOOTER): Delete.
+
+	* cfgcleanup.c (try_optimize_cfg): Replace uses of SET_BB_FOOTER
+	with BB_FOOTER.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Likewise.
+	(emit_barrier_after_bb): Likewise.
+	(record_effective_endpoints): Likewise.
+	(relink_block_chain): Likewise.
+	(fixup_fallthru_exit_predecessor): Likewise.
+	(cfg_layout_duplicate_bb): Likewise.
+	(cfg_layout_split_block): Likewise.
+	(cfg_layout_delete_block): Likewise.
+	(cfg_layout_merge_blocks): Likewise.
+	(BB_FOOTER): Delete function.
+	(SET_BB_FOOTER): Delete function.
+	* combine.c (update_cfg_for_uncondjump): Replace uses of
+	SET_BB_FOOTER with BB_FOOTER.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* except.h (struct eh_landing_pad_d): Strengthen field
 	"landing_pad" from rtx to rtx_code_label *.
 

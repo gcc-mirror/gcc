@@ -127,7 +127,7 @@ struct GTY(()) rtl_bb_info {
   /* In CFGlayout mode points to insn notes/jumptables to be placed just before
      and after the block.   */
   rtx header_;
-  rtx footer_;
+  rtx_insn *footer_;
 };
 
 struct GTY(()) gimple_bb_info {
@@ -381,8 +381,7 @@ extern rtx& SET_BB_END (basic_block bb);
 extern rtx_insn *BB_HEADER (const_basic_block bb);
 extern rtx& SET_BB_HEADER (basic_block bb);
 
-extern rtx_insn *BB_FOOTER (const_basic_block bb);
-extern rtx& SET_BB_FOOTER (basic_block bb);
+#define BB_FOOTER(B)    (B)->il.x.rtl->footer_
 
 /* Special block numbers [markers] for entry and exit.
    Neither of them is supposed to hold actual statements.  */

@@ -1063,7 +1063,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 		  if (PREV_INSN (insn))
 		    SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 		  else
-		    SET_BB_FOOTER (src) = NEXT_INSN (insn);
+		    BB_FOOTER (src) = NEXT_INSN (insn);
 		  if (NEXT_INSN (insn))
 		    SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 		}
@@ -1451,7 +1451,7 @@ emit_barrier_after_bb (basic_block bb)
   gcc_assert (current_ir_type () == IR_RTL_CFGRTL
               || current_ir_type () == IR_RTL_CFGLAYOUT);
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
-    SET_BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
+    BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
 }
 
 /* Like force_nonfallthru below, but additionally performs redirection
@@ -3462,7 +3462,7 @@ record_effective_endpoints (void)
 						PREV_INSN (BB_HEAD (bb)));
       end = skip_insns_after_block (bb);
       if (NEXT_INSN (BB_END (bb)) && BB_END (bb) != end)
-	SET_BB_FOOTER (bb) = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
+	BB_FOOTER (bb) = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
       next_insn = NEXT_INSN (BB_END (bb));
     }
 
@@ -3620,7 +3620,7 @@ relink_block_chain (bool stay_in_cfglayout_mode)
     {
       bb->aux = NULL;
       if (!stay_in_cfglayout_mode)
-	SET_BB_HEADER (bb) = SET_BB_FOOTER (bb) = NULL;
+	SET_BB_HEADER (bb) = BB_FOOTER (bb) = NULL;
     }
 
   /* Maybe reset the original copy tables, they are not valid anymore
@@ -3988,8 +3988,8 @@ fixup_fallthru_exit_predecessor (void)
 	  bb = split_block (bb, NULL)->dest;
 	  bb->aux = c->aux;
 	  c->aux = bb;
-	  SET_BB_FOOTER (bb) = BB_FOOTER (c);
-	  SET_BB_FOOTER (c) = NULL;
+	  BB_FOOTER (bb) = BB_FOOTER (c);
+	  BB_FOOTER (c) = NULL;
 	}
 
       while (c->aux != bb)
@@ -4203,7 +4203,7 @@ cfg_layout_duplicate_bb (basic_block bb)
 	insn = NEXT_INSN (insn);
       insn = duplicate_insn_chain (BB_FOOTER (bb), insn);
       if (insn)
-	SET_BB_FOOTER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
+	BB_FOOTER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }
 
   return new_bb;
@@ -4311,8 +4311,8 @@ cfg_layout_split_block (basic_block bb, void *insnp)
   rtx insn = (rtx) insnp;
   basic_block new_bb = rtl_split_block (bb, insn);
 
-  SET_BB_FOOTER (new_bb) = BB_FOOTER (bb);
-  SET_BB_FOOTER (bb) = NULL;
+  BB_FOOTER (new_bb) = BB_FOOTER (bb);
+  BB_FOOTER (bb) = NULL;
 
   return new_bb;
 }
@@ -4443,7 +4443,7 @@ cfg_layout_delete_block (basic_block bb)
 	      if (PREV_INSN (insn))
 		SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	      else
-		SET_BB_FOOTER (bb) = NEXT_INSN (insn);
+		BB_FOOTER (bb) = NEXT_INSN (insn);
 	      if (NEXT_INSN (insn))
 		SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	    }
@@ -4578,7 +4578,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (BB_FOOTER (b))
     {
       if (!BB_FOOTER (a))
-	SET_BB_FOOTER (a) = SET_BB_FOOTER (b);
+	BB_FOOTER (a) = BB_FOOTER (b);
       else
 	{
 	  rtx_insn *last = BB_FOOTER (a);
@@ -4588,7 +4588,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 	  SET_NEXT_INSN (last) = BB_FOOTER (b);
 	  SET_PREV_INSN (BB_FOOTER (b)) = last;
 	}
-      SET_BB_FOOTER (b) = NULL;
+      BB_FOOTER (b) = NULL;
     }
 
   /* Move things from b->header before a->footer.
@@ -4597,7 +4597,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
    if (BB_HEADER (b))
      {
       if (! BB_FOOTER (a))
-	SET_BB_FOOTER (a) = BB_HEADER (b);
+	BB_FOOTER (a) = BB_HEADER (b);
       else
 	{
 	  rtx_insn *last = BB_HEADER (b);
@@ -4606,7 +4606,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 	    last = NEXT_INSN (last);
 	  SET_NEXT_INSN (last) = BB_FOOTER (a);
 	  SET_PREV_INSN (BB_FOOTER (a)) = last;
-	  SET_BB_FOOTER (a) = BB_HEADER (b);
+	  BB_FOOTER (a) = BB_HEADER (b);
 	}
       SET_BB_HEADER (b) = NULL;
     }
@@ -5148,21 +5148,6 @@ rtx_insn *BB_HEADER (const_basic_block bb)
 rtx& SET_BB_HEADER (basic_block bb)
 {
   return bb->il.x.rtl->header_;
-}
-
-/* BB_FOOTER as an rvalue. */
-
-rtx_insn *BB_FOOTER (const_basic_block bb)
-{
-  rtx insn = bb->il.x.rtl->footer_;
-  return safe_as_a <rtx_insn *> (insn);
-}
-
-/* BB_FOOTER as an lvalue. */
-
-rtx& SET_BB_FOOTER (basic_block bb)
-{
-  return bb->il.x.rtl->footer_;
 }
 
 #include "gt-cfgrtl.h"
