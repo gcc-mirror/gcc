@@ -1,5 +1,41 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/tilepro/tilepro-protos.h (tilepro_output_cbranch_with_opcode):
+	Strengthen param 1 from rtx to rtx_insn *.
+	(tilepro_output_cbranch): Likewise.
+	(tilepro_adjust_insn_length): Likewise.
+	(tilepro_final_prescan_insn): Likewise for sole param.
+
+	* config/tilepro/tilepro.c (tilepro_legitimize_tls_address):
+	Likewise for local "last".
+	(cbranch_predicted_p): Likewise for param "insn".
+	(tilepro_output_simple_cbranch_with_opcode): Likewise.
+	(tilepro_output_cbranch_with_opcode): Likewise.
+	(tilepro_output_cbranch): Likewise.
+	(frame_emit_load): Likewise for return type and locals "seq",
+	"insn".
+	(emit_sp_adjust): Likewise for return type and local "insn".
+	(tilepro_expand_epilogue): Likewise for locals "last_insn",
+	"insn".
+	(tilepro_adjust_insn_length): Likewise for param "insn".
+	(next_insn_to_bundle): Likewise for return type and params
+	"r", "end".
+	(tilepro_gen_bundles): Likewise for locals "insn", "next", "end".
+	(replace_pc_relative_symbol_ref): Likewise for param "insn" and
+	local "new_insns".
+	(match_addli_pcrel): Likewise for param "insn".
+	(replace_addli_pcrel): Likewise.
+	(match_auli_pcrel): Likewise.
+	(replace_auli_pcrel): Likewise.
+	(tilepro_fixup_pcrel_references): Likewise for locals "insn",
+	"next_insn".
+	(reorder_var_tracking_notes): Likewise for locals "insn", "next",
+	"queue", "next_queue", "prev".
+	(tilepro_asm_output_mi_thunk): Likewise for local "insn".
+	(tilepro_final_prescan_insn): Likewise for param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/tilegx/tilegx-protos.h (tilegx_output_cbranch_with_opcode):
 	Strengthen param 1 from rtx to rtx_insn *.
 	(tilegx_output_cbranch): Likewise.
