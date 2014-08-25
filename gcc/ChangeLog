@@ -1,3 +1,26 @@
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/alpha/alpha.c (alpha_emit_set_const): Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(alpha_gp_save_rtx): Likewise for local "seq".
+	(alpha_instantiate_decls): Likewise for local "top".
+	(get_some_local_dynamic_name): Likewise for local "insn".
+	(alpha_does_function_need_gp): Likewise.
+	(set_frame_related_p): Likewise for return type and for locals
+	"seq" and "insn".
+	(emit_frame_store_1): Likewise for local "insn".
+	(alpha_expand_prologue): Likewise for locals "insn", "seq".
+	(alpha_end_function): Likewise for local "insn".
+	(alpha_output_mi_thunk_osf): Likewise.
+	(alphaev4_insn_pipe): Likewise for param "insn".
+	(alphaev5_insn_pipe): Likewise.
+	(alphaev4_next_group): Likewise for return type and param 1
+	"insn".
+	(alphaev5_next_group): Likewise.
+	(alpha_align_insns_1): Likewise for return type and param 1 of
+	callback param "next_group", and for locals "i", "next", "prev",
+	"where", "where2", "insn".
+
 2014-08-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* tree-nested.c (finalize_nesting_tree_1): Initialize temporary earlier
