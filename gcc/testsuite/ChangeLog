@@ -1,3 +1,9 @@
+2014-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34938
+	* g++.dg/template/pr34938-1.C: New.
+	* g++.dg/template/pr34938-2.C: Likewise.
+
 2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/61996

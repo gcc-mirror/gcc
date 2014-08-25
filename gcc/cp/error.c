@@ -820,6 +820,8 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
 	pp_cxx_right_paren (pp);
+      if (TREE_CODE (t) == POINTER_TYPE)
+	flags |= TFF_POINTER;
       dump_type_suffix (pp, TREE_TYPE (t), flags);
       break;
 
@@ -839,7 +841,9 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
 	dump_parameters (pp, arg, flags & ~TFF_FUNCTION_DEFAULT_ARGUMENTS);
 
 	pp->padding = pp_before;
-	pp_cxx_cv_qualifiers (pp, type_memfn_quals (t));
+	pp_cxx_cv_qualifiers (pp, type_memfn_quals (t),
+			      TREE_CODE (t) == FUNCTION_TYPE
+			      && (flags & TFF_POINTER));
 	dump_ref_qualifier (pp, t, flags);
 	dump_exception_spec (pp, TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (pp, TREE_TYPE (t), flags);

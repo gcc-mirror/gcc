@@ -59,8 +59,8 @@ struct cxx_pretty_printer : c_pretty_printer
 
 #define pp_cxx_cv_qualifier_seq(PP, T)   \
    pp_c_type_qualifier_list (PP, T)
-#define pp_cxx_cv_qualifiers(PP, CV)   \
-   pp_c_cv_qualifiers (PP, CV, false)
+#define pp_cxx_cv_qualifiers(PP, CV, FT) \
+   pp_c_cv_qualifiers (PP, CV, FT)
 
 #define pp_cxx_whitespace(PP)		pp_c_whitespace (PP)
 #define pp_cxx_left_paren(PP)		pp_c_left_paren (PP)
