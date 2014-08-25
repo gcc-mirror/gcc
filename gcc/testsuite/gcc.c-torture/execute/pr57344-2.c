@@ -1,4 +1,5 @@
 /* PR middle-end/57344 */
+/* { dg-require-effective-target int32plus } */
 
 struct __attribute__((packed)) S
 {

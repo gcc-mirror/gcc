@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 #pragma pack(1)
 struct S
 {

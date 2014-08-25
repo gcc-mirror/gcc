@@ -1,4 +1,5 @@
 /* Origin: PR target/6981 from Mattias Engdegaard <mattias@virtutech.se>.  */
+/* { dg-require-effective-target int32plus } */
 
 void exit (int);
 void abort (void);

@@ -1,3 +1,5 @@
+/* { dg-options "-std=c99" } */
+
 long long a = -1;
 long long llabs (long long);
 void abort (void);

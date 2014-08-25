@@ -1,3 +1,5 @@
+/* { dg-options "-mtune-i686" { target { { i?86*-*-* } && ilp32 } } } */
+
 long baz1 (void *a)
 {
   static long l;
