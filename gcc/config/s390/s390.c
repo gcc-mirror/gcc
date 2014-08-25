@@ -11482,11 +11482,11 @@ s390_fpload_toreg (rtx insn, unsigned int regno)
    for Z10_EARLYLOAD_DISTANCE.  A problematic load instruction is
    moved to the very end of the ready list.  */
 static void
-s390_z10_prevent_earlyload_conflicts (rtx *ready, int *nready_p)
+s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
 {
   unsigned int regno;
   int nready = *nready_p;
-  rtx tmp;
+  rtx_insn *tmp;
   int i;
   rtx_insn *insn;
   rtx set;
@@ -11524,7 +11524,7 @@ s390_z10_prevent_earlyload_conflicts (rtx *ready, int *nready_p)
     return;
 
   tmp = ready[i];
-  memmove (&ready[1], &ready[0], sizeof (rtx) * i);
+  memmove (&ready[1], &ready[0], sizeof (rtx_insn *) * i);
   ready[0] = tmp;
 }
 
@@ -11627,7 +11627,7 @@ s390_sched_score (rtx insn)
    conflicts in the floating point pipeline  */
 static int
 s390_sched_reorder (FILE *file, int verbose,
-		    rtx *ready, int *nreadyp, int clock ATTRIBUTE_UNUSED)
+		    rtx_insn **ready, int *nreadyp, int clock ATTRIBUTE_UNUSED)
 {
   if (s390_tune == PROCESSOR_2097_Z10)
     if (reload_completed && *nreadyp > 1)
@@ -11641,7 +11641,7 @@ s390_sched_reorder (FILE *file, int verbose,
       int last_index = *nreadyp - 1;
       int max_index = -1;
       int max_score = -1;
-      rtx tmp;
+      rtx_insn *tmp;
 
       /* Just move the insn with the highest score to the top (the
 	 end) of the list.  A full sort is not needed since a conflict

@@ -251,7 +251,7 @@ typedef struct node_sched_params node_sched_params;
    code in order to use sched_analyze() for computing the dependencies.
    They are used when initializing the sched_info structure.  */
 static const char *
-sms_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
+sms_print_insn (const rtx_insn *insn, int aligned ATTRIBUTE_UNUSED)
 {
   static char tmp[80];
 

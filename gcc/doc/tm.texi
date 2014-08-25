@@ -6415,7 +6415,7 @@ later.  Do not define this hook if you do not need to adjust the
 scheduling priorities of insns.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_REORDER (FILE *@var{file}, int @var{verbose}, rtx *@var{ready}, int *@var{n_readyp}, int @var{clock})
+@deftypefn {Target Hook} int TARGET_SCHED_REORDER (FILE *@var{file}, int @var{verbose}, rtx_insn **@var{ready}, int *@var{n_readyp}, int @var{clock})
 This hook is executed by the scheduler after it has scheduled the ready
 list, to allow the machine description to reorder it (for example to
 combine two small instructions together on @samp{VLIW} machines).
@@ -6432,7 +6432,7 @@ can issue this cycle; normally this is just @code{issue_rate}.  See also
 @samp{TARGET_SCHED_REORDER2}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_REORDER2 (FILE *@var{file}, int @var{verbose}, rtx *@var{ready}, int *@var{n_readyp}, int @var{clock})
+@deftypefn {Target Hook} int TARGET_SCHED_REORDER2 (FILE *@var{file}, int @var{verbose}, rtx_insn **@var{ready}, int *@var{n_readyp}, int @var{clock})
 Like @samp{TARGET_SCHED_REORDER}, but called at a different time.  That
 function is called whenever the scheduler starts a new cycle.  This one
 is called once per iteration over a cycle, immediately after
@@ -6454,7 +6454,7 @@ target microarchitecture. If this hook returns true for the given insn pair
 group, and they will not be scheduled apart.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK (rtx @var{head}, rtx @var{tail})
+@deftypefn {Target Hook} void TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK (rtx_insn *@var{head}, rtx_insn *@var{tail})
 This hook is called after evaluation forward dependencies of insns in
 chain given by two parameter values (@var{head} and @var{tail}
 correspondingly) but before insns scheduling of the insn chain.  For

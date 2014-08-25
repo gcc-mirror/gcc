@@ -516,7 +516,7 @@ void
 advance_deps_context (deps_t dc, insn_t insn)
 {
   sched_deps_info = &advance_deps_context_sched_deps_info;
-  deps_analyze_insn (dc, insn);
+  deps_analyze_insn (dc, as_a <rtx_insn *> (insn));
 }
 
 
@@ -2748,7 +2748,7 @@ deps_init_id (idata_t id, insn_t insn, bool force_unique_p)
 
   sched_deps_info = &deps_init_id_sched_deps_info;
 
-  deps_analyze_insn (dc, insn);
+  deps_analyze_insn (dc, as_a <rtx_insn *> (insn));
 
   free_deps (dc);
 

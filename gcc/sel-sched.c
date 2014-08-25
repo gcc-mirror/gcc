@@ -4015,7 +4015,7 @@ convert_vec_av_set_to_ready (void)
       insn_t insn = VINSN_INSN_RTX (vi);
 
       ready_try[n] = 0;
-      ready.vec[n] = insn;
+      ready.vec[n] = as_a <rtx_insn *> (insn);
     }
 }
 
@@ -4154,7 +4154,7 @@ invoke_reorder_hooks (fence_t fence)
   if (issue_more && ran_hook)
     {
       int i, j, n;
-      rtx *arr = ready.vec;
+      rtx_insn **arr = ready.vec;
       expr_t *vec = vec_av_set.address ();
 
       for (i = 0, n = ready.n_ready; i < n; i++)

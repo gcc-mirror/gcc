@@ -241,7 +241,7 @@ struct common_sched_info_def *common_sched_info;
 
 /* List of important notes we must keep around.  This is a pointer to the
    last element in the list.  */
-rtx note_list;
+rtx_insn *note_list;
 
 static struct spec_info_def spec_info_var;
 /* Description of the speculative part of the scheduling.
@@ -370,7 +370,7 @@ int cycle_issued_insns;
 
 /* This records the actual schedule.  It is built up during the main phase
    of schedule_block, and afterwards used to reorder the insns in the RTL.  */
-static vec<rtx> scheduled_insns;
+static vec<rtx_insn *> scheduled_insns;
 
 static int may_trap_exp (const_rtx, int);
 
@@ -591,7 +591,7 @@ set_modulo_params (int ii, int max_stages, int insns, int max_uid)
 struct delay_pair
 {
   struct delay_pair *next_same_i1;
-  rtx i1, i2;
+  rtx_insn *i1, *i2;
   int cycles;
   /* When doing modulo scheduling, we a delay_pair can also be used to
      show that I1 and I2 are the same insn in a different stage.  If that
@@ -726,7 +726,7 @@ discard_delay_pairs_above (int max_uid)
    scheduling.  */
 
 void
-record_delay_slot_pair (rtx i1, rtx i2, int cycles, int stages)
+record_delay_slot_pair (rtx_insn *i1, rtx_insn *i2, int cycles, int stages)
 {
   struct delay_pair *p = XNEW (struct delay_pair);
   struct delay_pair **slot;
@@ -780,7 +780,7 @@ pair_delay (struct delay_pair *p)
    and add dependencies to the real insns to limit the amount of backtracking
    needed.  */
 void
-add_delay_dependencies (rtx insn)
+add_delay_dependencies (rtx_insn *insn)
 {
   struct delay_pair *pair;
   sd_iterator_def sd_it;
@@ -828,9 +828,9 @@ add_delay_dependencies (rtx insn)
 
 static int priority (rtx);
 static int rank_for_schedule (const void *, const void *);
-static void swap_sort (rtx *, int);
-static void queue_insn (rtx, int, const char *);
-static int schedule_insn (rtx);
+static void swap_sort (rtx_insn **, int);
+static void queue_insn (rtx_insn *, int, const char *);
+static int schedule_insn (rtx_insn *);
 static void adjust_priority (rtx);
 static void advance_one_cycle (void);
 static void extend_h_i_d (void);
@@ -852,21 +852,21 @@ static void extend_h_i_d (void);
    unlink_other_notes ()).  After scheduling the block, these notes are
    inserted at the beginning of the block (in schedule_block()).  */
 
-static void ready_add (struct ready_list *, rtx, bool);
-static rtx ready_remove_first (struct ready_list *);
-static rtx ready_remove_first_dispatch (struct ready_list *ready);
+static void ready_add (struct ready_list *, rtx_insn *, bool);
+static rtx_insn *ready_remove_first (struct ready_list *);
+static rtx_insn *ready_remove_first_dispatch (struct ready_list *ready);
 
 static void queue_to_ready (struct ready_list *);
 static int early_queue_to_ready (state_t, struct ready_list *);
 
 /* The following functions are used to implement multi-pass scheduling
    on the first cycle.  */
-static rtx ready_remove (struct ready_list *, int);
+static rtx_insn *ready_remove (struct ready_list *, int);
 static void ready_remove_insn (rtx);
 
 static void fix_inter_tick (rtx, rtx);
-static int fix_tick_ready (rtx);
-static void change_queue_index (rtx, int);
+static int fix_tick_ready (rtx_insn *);
+static void change_queue_index (rtx_insn *, int);
 
 /* The following functions are used to implement scheduling of data/control
    speculative instructions.  */
@@ -874,12 +874,12 @@ static void change_queue_index (rtx, int);
 static void extend_h_i_d (void);
 static void init_h_i_d (rtx);
 static int haifa_speculate_insn (rtx, ds_t, rtx *);
-static void generate_recovery_code (rtx);
+static void generate_recovery_code (rtx_insn *);
 static void process_insn_forw_deps_be_in_spec (rtx, rtx, ds_t);
-static void begin_speculative_block (rtx);
+static void begin_speculative_block (rtx_insn *);
 static void add_to_speculative_block (rtx);
 static void init_before_recovery (basic_block *);
-static void create_check_block_twin (rtx, bool);
+static void create_check_block_twin (rtx_insn *, bool);
 static void fix_recovery_deps (basic_block);
 static bool haifa_change_pattern (rtx, rtx);
 static void dump_new_block_header (int, basic_block, rtx, rtx);
@@ -887,7 +887,7 @@ static void restore_bb_notes (basic_block);
 static void fix_jump_move (rtx);
 static void move_block_after_check (rtx);
 static void move_succs (vec<edge, va_gc> **, basic_block);
-static void sched_remove_insn (rtx);
+static void sched_remove_insn (rtx_insn *);
 static void clear_priorities (rtx, rtx_vec_t *);
 static void calc_priorities (rtx_vec_t);
 static void add_jump_dependencies (rtx, rtx);
@@ -1119,7 +1119,7 @@ print_curr_reg_pressure (void)
 /* Determine if INSN has a condition that is clobbered if a register
    in SET_REGS is modified.  */
 static bool
-cond_clobbered_p (rtx insn, HARD_REG_SET set_regs)
+cond_clobbered_p (rtx_insn *insn, HARD_REG_SET set_regs)
 {
   rtx pat = PATTERN (insn);
   gcc_assert (GET_CODE (pat) == COND_EXEC);
@@ -1271,7 +1271,7 @@ recompute_todo_spec (rtx next, bool for_backtrack)
       rtx pro, other, new_pat;
       rtx cond = NULL_RTX;
       bool success;
-      rtx prev = NULL_RTX;
+      rtx_insn *prev = NULL;
       int i;
       unsigned regno;
   
@@ -1348,7 +1348,7 @@ recompute_todo_spec (rtx next, bool for_backtrack)
 }
 
 /* Pointer to the last instruction scheduled.  */
-static rtx last_scheduled_insn;
+static rtx_insn *last_scheduled_insn;
 
 /* Pointer to the last nondebug instruction scheduled within the
    block, or the prev_head of the scheduling block.  Used by
@@ -1359,7 +1359,7 @@ static rtx last_nondebug_scheduled_insn;
 /* Pointer that iterates through the list of unscheduled insns if we
    have a dbg_cnt enabled.  It always points at an insn prior to the
    first unscheduled one.  */
-static rtx nonscheduled_insns_begin;
+static rtx_insn *nonscheduled_insns_begin;
 
 /* Compute cost of executing INSN.
    This is the number of cycles between instruction issue and
@@ -2464,7 +2464,7 @@ model_dump_pressure_points (struct model_pressure_group *group)
 /* Set INSN_REG_PRESSURE_EXCESS_COST_CHANGE for INSNS[0...COUNT-1].  */
 
 static void
-model_set_excess_costs (rtx *insns, int count)
+model_set_excess_costs (rtx_insn **insns, int count)
 {
   int i, cost, priority_base, priority;
   bool print_p;
@@ -2553,8 +2553,8 @@ rfs_result (enum rfs_decision decision, int result)
 static int
 rank_for_schedule (const void *x, const void *y)
 {
-  rtx tmp = *(const rtx *) y;
-  rtx tmp2 = *(const rtx *) x;
+  rtx_insn *tmp = *(rtx_insn * const *) y;
+  rtx_insn *tmp2 = *(rtx_insn * const *) x;
   int tmp_class, tmp2_class;
   int val, priority_val, info_val, diff;
 
@@ -2722,9 +2722,9 @@ rank_for_schedule (const void *x, const void *y)
 /* Resort the array A in which only element at index N may be out of order.  */
 
 HAIFA_INLINE static void
-swap_sort (rtx *a, int n)
+swap_sort (rtx_insn **a, int n)
 {
-  rtx insn = a[n - 1];
+  rtx_insn *insn = a[n - 1];
   int i = n - 2;
 
   while (i >= 0 && rank_for_schedule (a + i, &insn) >= 0)
@@ -2741,7 +2741,7 @@ swap_sort (rtx *a, int n)
    output.  */
 
 HAIFA_INLINE static void
-queue_insn (rtx insn, int n_cycles, const char *reason)
+queue_insn (rtx_insn *insn, int n_cycles, const char *reason)
 {
   int next_q = NEXT_Q_AFTER (q_ptr, n_cycles);
   rtx link = alloc_INSN_LIST (insn, insn_queue[next_q]);
@@ -2792,7 +2792,7 @@ queue_remove (rtx insn)
 /* Return a pointer to the bottom of the ready list, i.e. the insn
    with the lowest priority.  */
 
-rtx *
+rtx_insn **
 ready_lastpos (struct ready_list *ready)
 {
   gcc_assert (ready->n_ready >= 1);
@@ -2803,7 +2803,7 @@ ready_lastpos (struct ready_list *ready)
    lowest/highest priority depending on FIRST_P.  */
 
 HAIFA_INLINE static void
-ready_add (struct ready_list *ready, rtx insn, bool first_p)
+ready_add (struct ready_list *ready, rtx_insn *insn, bool first_p)
 {
   if (!first_p)
     {
@@ -2847,10 +2847,10 @@ ready_add (struct ready_list *ready, rtx insn, bool first_p)
 /* Remove the element with the highest priority from the ready list and
    return it.  */
 
-HAIFA_INLINE static rtx
+HAIFA_INLINE static rtx_insn *
 ready_remove_first (struct ready_list *ready)
 {
-  rtx t;
+  rtx_insn *t;
 
   gcc_assert (ready->n_ready);
   t = ready->vec[ready->first--];
@@ -2875,7 +2875,7 @@ ready_remove_first (struct ready_list *ready)
    insn with the highest priority is 0, and the lowest priority has
    N_READY - 1.  */
 
-rtx
+rtx_insn *
 ready_element (struct ready_list *ready, int index)
 {
   gcc_assert (ready->n_ready && index < ready->n_ready);
@@ -2887,10 +2887,10 @@ ready_element (struct ready_list *ready, int index)
    for insn with the highest priority is 0, and the lowest priority
    has N_READY - 1.  */
 
-HAIFA_INLINE static rtx
+HAIFA_INLINE static rtx_insn *
 ready_remove (struct ready_list *ready, int index)
 {
-  rtx t;
+  rtx_insn *t;
   int i;
 
   if (index == 0)
@@ -2948,7 +2948,7 @@ void
 ready_sort (struct ready_list *ready)
 {
   int i;
-  rtx *first = ready_lastpos (ready);
+  rtx_insn **first = ready_lastpos (ready);
 
   if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
     {
@@ -3137,7 +3137,7 @@ check_clobbered_conditions (rtx insn)
  restart:
   for (i = 0; i < ready.n_ready; i++)
     {
-      rtx x = ready_element (&ready, i);
+      rtx_insn *x = ready_element (&ready, i);
       if (TODO_SPEC (x) == DEP_CONTROL && cond_clobbered_p (x, t))
 	{
 	  ready_remove_insn (x);
@@ -3152,7 +3152,7 @@ check_clobbered_conditions (rtx insn)
     restart_queue:
       for (link = insn_queue[q]; link; link = XEXP (link, 1))
 	{
-	  rtx x = XEXP (link, 0);
+	  rtx_insn *x = as_a <rtx_insn *> (XEXP (link, 0));
 	  if (TODO_SPEC (x) == DEP_CONTROL && cond_clobbered_p (x, t))
 	    {
 	      queue_remove (x);
@@ -3790,7 +3790,7 @@ struct sched_block_state
    zero for insns in a schedule group).  */
 
 static int
-schedule_insn (rtx insn)
+schedule_insn (rtx_insn *insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -4032,9 +4032,9 @@ concat_note_lists (rtx from_end, rtx *to_endp)
 /* Delete notes between HEAD and TAIL and put them in the chain
    of notes ended by NOTE_LIST.  */
 void
-remove_notes (rtx head, rtx tail)
+remove_notes (rtx_insn *head, rtx_insn *tail)
 {
-  rtx next_tail, insn, next;
+  rtx_insn *next_tail, *insn, *next;
 
   note_list = 0;
   if (head == tail && !INSN_P (head))
@@ -4100,9 +4100,9 @@ struct haifa_saved_data
   struct ready_list ready;
   state_t curr_state;
 
-  rtx last_scheduled_insn;
+  rtx_insn *last_scheduled_insn;
   rtx last_nondebug_scheduled_insn;
-  rtx nonscheduled_insns_begin;
+  rtx_insn *nonscheduled_insns_begin;
   int cycle_issued_insns;
 
   /* Copies of state used in the inner loop of schedule_block.  */
@@ -4159,7 +4159,7 @@ save_backtrack_point (struct delay_pair *pair,
   save->ready.n_ready = ready.n_ready;
   save->ready.n_debug = ready.n_debug;
   save->ready.veclen = ready.veclen;
-  save->ready.vec = XNEWVEC (rtx, ready.veclen);
+  save->ready.vec = XNEWVEC (rtx_insn *, ready.veclen);
   memcpy (save->ready.vec, ready.vec, ready.veclen * sizeof (rtx));
 
   save->insn_queue = XNEWVEC (rtx, max_insn_queue_index + 1);
@@ -4223,7 +4223,7 @@ toggle_cancelled_flags (bool set)
 
   if (ready.n_ready > 0)
     {
-      rtx *first = ready_lastpos (&ready);
+      rtx_insn **first = ready_lastpos (&ready);
       for (i = 0; i < ready.n_ready; i++)
 	FOR_EACH_DEP (first[i], SD_LIST_BACK, sd_it, dep)
 	  if (!DEBUG_INSN_P (DEP_PRO (dep)))
@@ -4370,10 +4370,10 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
      of the queues.  */
   if (ready.n_ready > 0)
     {
-      rtx *first = ready_lastpos (&ready);
+      rtx_insn **first = ready_lastpos (&ready);
       for (i = 0; i < ready.n_ready; i++)
 	{
-	  rtx insn = first[i];
+	  rtx_insn *insn = first[i];
 	  QUEUE_INDEX (insn) = QUEUE_NOWHERE;
 	  INSN_TICK (insn) = INVALID_TICK;
 	}
@@ -4396,10 +4396,10 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
 
   if (ready.n_ready > 0)
     {
-      rtx *first = ready_lastpos (&ready);
+      rtx_insn **first = ready_lastpos (&ready);
       for (i = 0; i < ready.n_ready; i++)
 	{
-	  rtx insn = first[i];
+	  rtx_insn *insn = first[i];
 	  QUEUE_INDEX (insn) = QUEUE_READY;
 	  TODO_SPEC (insn) = recompute_todo_spec (insn, true);
 	  INSN_TICK (insn) = save->clock_var;
@@ -4688,7 +4688,7 @@ estimate_shadow_tick (struct delay_pair *p)
 /* If INSN has no unresolved backwards dependencies, add it to the schedule and
    recursively resolve all its forward dependencies.  */
 static void
-resolve_dependencies (rtx insn)
+resolve_dependencies (rtx_insn *insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -4843,12 +4843,12 @@ no_real_insns_p (const_rtx head, const_rtx tail)
 
 /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
    previously found among the insns.  Insert them just before HEAD.  */
-rtx
-restore_other_notes (rtx head, basic_block head_bb)
+rtx_insn *
+restore_other_notes (rtx_insn *head, basic_block head_bb)
 {
   if (note_list != 0)
     {
-      rtx note_head = note_list;
+      rtx_insn *note_head = note_list;
 
       if (head)
 	head_bb = BLOCK_FOR_INSN (head);
@@ -4882,7 +4882,7 @@ restore_other_notes (rtx head, basic_block head_bb)
 static void
 undo_all_replacements (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   int i;
 
   FOR_EACH_VEC_ELT (scheduled_insns, i, insn)
@@ -4903,12 +4903,12 @@ undo_all_replacements (void)
 
 /* Return first non-scheduled insn in the current scheduling block.
    This is mostly used for debug-counter purposes.  */
-static rtx
+static rtx_insn *
 first_nonscheduled_insn (void)
 {
-  rtx insn = (nonscheduled_insns_begin != NULL_RTX
-	      ? nonscheduled_insns_begin
-	      : current_sched_info->prev_head);
+  rtx_insn *insn = (nonscheduled_insns_begin != NULL_RTX
+		    ? nonscheduled_insns_begin
+		    : current_sched_info->prev_head);
 
   do
     {
@@ -4924,7 +4924,7 @@ first_nonscheduled_insn (void)
 static void
 queue_to_ready (struct ready_list *ready)
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx link;
   rtx skip_insn;
 
@@ -4941,7 +4941,7 @@ queue_to_ready (struct ready_list *ready)
      ready list.  */
   for (link = insn_queue[q_ptr]; link; link = XEXP (link, 1))
     {
-      insn = XEXP (link, 0);
+      insn = as_a <rtx_insn *> (XEXP (link, 0));
       q_size -= 1;
 
       if (sched_verbose >= 2)
@@ -4989,7 +4989,7 @@ queue_to_ready (struct ready_list *ready)
 	    {
 	      for (; link; link = XEXP (link, 1))
 		{
-		  insn = XEXP (link, 0);
+		  insn = as_a <rtx_insn *> (XEXP (link, 0));
 		  q_size -= 1;
 
 		  if (sched_verbose >= 2)
@@ -5080,7 +5080,7 @@ ok_for_early_queue_removal (rtx insn)
 static int
 early_queue_to_ready (state_t state, struct ready_list *ready)
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx link;
   rtx next_link;
   rtx prev_link;
@@ -5118,7 +5118,7 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
 	  while (link)
 	    {
 	      next_link = XEXP (link, 1);
-	      insn = XEXP (link, 0);
+	      insn = as_a <rtx_insn *> (XEXP (link, 0));
 	      if (insn && sched_verbose > 6)
 		print_rtl_single (sched_dump, insn);
 
@@ -5181,7 +5181,7 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
 static void
 debug_ready_list_1 (struct ready_list *ready, signed char *ready_try)
 {
-  rtx *p;
+  rtx_insn **p;
   int i;
 
   if (ready->n_ready == 0)
@@ -5240,12 +5240,12 @@ reemit_notes (rtx insn)
 
 /* Move INSN.  Reemit notes if needed.  Update CFG, if needed.  */
 static void
-move_insn (rtx insn, rtx last, rtx nt)
+move_insn (rtx_insn *insn, rtx last, rtx nt)
 {
   if (PREV_INSN (insn) != last)
     {
       basic_block bb;
-      rtx note;
+      rtx_insn *note;
       int jump_p = 0;
 
       bb = BLOCK_FOR_INSN (insn);
@@ -5325,7 +5325,7 @@ move_insn (rtx insn, rtx last, rtx nt)
 
 /* Return true if scheduling INSN will finish current clock cycle.  */
 static bool
-insn_finishes_cycle_p (rtx insn)
+insn_finishes_cycle_p (rtx_insn *insn)
 {
   if (SCHED_GROUP_P (insn))
     /* After issuing INSN, rest of the sched_group will be forced to issue
@@ -5409,7 +5409,7 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
   int n, i, all, n_ready, best, delay, tries_num;
   int more_issue;
   struct choice_entry *top;
-  rtx insn;
+  rtx_insn *insn;
 
   n_ready = ready->n_ready;
   gcc_assert (dfa_lookahead >= 1 && privileged_n >= 0
@@ -5579,7 +5579,7 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
    1 if choose_ready () should be restarted without advancing the cycle.  */
 static int
 choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
-	      rtx *insn_ptr)
+	      rtx_insn **insn_ptr)
 {
   int lookahead;
 
@@ -5588,7 +5588,7 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
       if (nonscheduled_insns_begin == NULL_RTX)
 	nonscheduled_insns_begin = current_sched_info->prev_head;
 
-      rtx insn = first_nonscheduled_insn ();
+      rtx_insn *insn = first_nonscheduled_insn ();
 
       if (QUEUE_INDEX (insn) == QUEUE_READY)
 	/* INSN is in the ready_list.  */
@@ -5621,7 +5621,7 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
     {
       /* Try to choose the best insn.  */
       int index = 0, i;
-      rtx insn;
+      rtx_insn *insn;
 
       insn = ready_element (ready, 0);
       if (INSN_CODE (insn) < 0)
@@ -5709,10 +5709,10 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
    block.  TARGET_BB is the argument passed to schedule_block.  */
 
 static void
-commit_schedule (rtx prev_head, rtx tail, basic_block *target_bb)
+commit_schedule (rtx_insn *prev_head, rtx tail, basic_block *target_bb)
 {
   unsigned int i;
-  rtx insn;
+  rtx_insn *insn;
 
   last_scheduled_insn = prev_head;
   for (i = 0;
@@ -5768,7 +5768,7 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 
   for (i = 0; i < ready.n_ready; i++)
     {
-      rtx insn = ready_element (&ready, i);
+      rtx_insn *insn = ready_element (&ready, i);
       if (SCHED_GROUP_P (insn))
 	{
 	  sched_group_found = true;
@@ -5784,7 +5784,7 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
       int n = ready.n_ready;
       for (i = 0; i < n; i++)
 	{
-	  rtx insn = ready_element (&ready, i);
+	  rtx_insn *insn = ready_element (&ready, i);
 	  int cost = 0;
 	  const char *reason = "resource conflict";
 
@@ -5971,10 +5971,10 @@ schedule_block (basic_block *target_bb, state_t init_state)
   int sort_p, advance, start_clock_var;
 
   /* Head/tail info for this block.  */
-  rtx prev_head = current_sched_info->prev_head;
+  rtx_insn *prev_head = current_sched_info->prev_head;
   rtx next_tail = current_sched_info->next_tail;
-  rtx head = NEXT_INSN (prev_head);
-  rtx tail = PREV_INSN (next_tail);
+  rtx_insn *head = NEXT_INSN (prev_head);
+  rtx_insn *tail = PREV_INSN (next_tail);
 
   if ((current_sched_info->flags & DONT_BREAK_DEPENDENCIES) == 0
       && sched_pressure != SCHED_PRESSURE_MODEL)
@@ -6025,7 +6025,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
   /* We start inserting insns after PREV_HEAD.  */
   last_scheduled_insn = prev_head;
   last_nondebug_scheduled_insn = NULL_RTX;
-  nonscheduled_insns_begin = NULL_RTX;
+  nonscheduled_insns_begin = NULL;
 
   gcc_assert ((NOTE_P (last_scheduled_insn)
 	       || DEBUG_INSN_P (last_scheduled_insn))
@@ -6075,16 +6075,16 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	 activated make an exception for the insn right after
 	 nonscheduled_insns_begin.  */
       {
-	rtx skip_insn;
+	rtx_insn *skip_insn;
 
 	if (dbg_cnt (sched_insn) == false)
 	  skip_insn = first_nonscheduled_insn ();
 	else
-	  skip_insn = NULL_RTX;
+	  skip_insn = NULL;
 
 	while (i < ready.n_ready)
 	  {
-	    rtx insn;
+	    rtx_insn *insn;
 
 	    insn = ready_remove (&ready, i);
 
@@ -6185,7 +6185,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
       ls.can_issue_more = issue_rate;
       for (;;)
 	{
-	  rtx insn;
+	  rtx_insn *insn;
 	  int cost;
 	  bool asm_p;
 
@@ -6212,7 +6212,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	    {
 	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
 		{
-		  rtx insn = ready_remove_first (&ready);
+		  rtx_insn *insn = ready_remove_first (&ready);
 		  gcc_assert (DEBUG_INSN_P (insn));
 		  (*current_sched_info->begin_schedule_ready) (insn);
 		  scheduled_insns.safe_push (insn);
@@ -6282,7 +6282,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	    {
 	      int res;
 
-	      insn = NULL_RTX;
+	      insn = NULL;
 	      res = choose_ready (&ready, ls.first_cycle_insn_p, &insn);
 
 	      if (res < 0)
@@ -6434,7 +6434,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
       while (must_backtrack)
 	{
 	  struct haifa_saved_data *failed;
-	  rtx failed_insn;
+	  rtx_insn *failed_insn;
 
 	  must_backtrack = false;
 	  failed = verify_shadows ();
@@ -6494,7 +6494,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	}
       for (i = ready.n_ready - 1; i >= 0; i--)
 	{
-	  rtx x;
+	  rtx_insn *x;
 
 	  x = ready_element (&ready, i);
 	  resolve_dependencies (x);
@@ -6504,7 +6504,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	  rtx link;
 	  while ((link = insn_queue[i]) != NULL)
 	    {
-	      rtx x = XEXP (link, 0);
+	      rtx_insn *x = as_a <rtx_insn *> (XEXP (link, 0));
 	      insn_queue[i] = XEXP (link, 1);
 	      QUEUE_INDEX (x) = QUEUE_NOWHERE;
 	      free_INSN_LIST_node (link);
@@ -6628,7 +6628,7 @@ set_priorities (rtx head, rtx tail)
   int n_insn;
   int sched_max_insns_priority =
 	current_sched_info->sched_max_insns_priority;
-  rtx prev_head;
+  rtx_insn *prev_head;
 
   if (head == tail && ! INSN_P (head))
     gcc_unreachable ();
@@ -7024,7 +7024,7 @@ fix_inter_tick (rtx head, rtx tail)
        0 - added to the ready list,
    0 < N - queued for N cycles.  */
 int
-try_ready (rtx next)
+try_ready (rtx_insn *next)
 {
   ds_t old_ts, new_ts;
 
@@ -7156,7 +7156,7 @@ try_ready (rtx next)
 
 /* Calculate INSN_TICK of NEXT and add it to either ready or queue list.  */
 static int
-fix_tick_ready (rtx next)
+fix_tick_ready (rtx_insn *next)
 {
   int tick, delay;
 
@@ -7205,7 +7205,7 @@ fix_tick_ready (rtx next)
    or add it to the ready list (DELAY == QUEUE_READY),
    or remove it from ready and queue lists at all (DELAY == QUEUE_NOWHERE).  */
 static void
-change_queue_index (rtx next, int delay)
+change_queue_index (rtx_insn *next, int delay)
 {
   int i = QUEUE_INDEX (next);
 
@@ -7264,7 +7264,7 @@ sched_extend_ready_list (int new_sched_ready_n_insns)
     i = sched_ready_n_insns + 1;
 
   ready.veclen = new_sched_ready_n_insns + issue_rate;
-  ready.vec = XRESIZEVEC (rtx, ready.vec, ready.veclen);
+  ready.vec = XRESIZEVEC (rtx_insn *, ready.vec, ready.veclen);
 
   gcc_assert (new_sched_ready_n_insns >= sched_ready_n_insns);
 
@@ -7326,7 +7326,7 @@ haifa_luid_for_non_insn (rtx x)
 
 /* Generates recovery code for INSN.  */
 static void
-generate_recovery_code (rtx insn)
+generate_recovery_code (rtx_insn *insn)
 {
   if (TODO_SPEC (insn) & BEGIN_SPEC)
     begin_speculative_block (insn);
@@ -7401,7 +7401,7 @@ process_insn_forw_deps_be_in_spec (rtx insn, rtx twin, ds_t fs)
 
 /* Generates recovery code for BEGIN speculative INSN.  */
 static void
-begin_speculative_block (rtx insn)
+begin_speculative_block (rtx_insn *insn)
 {
   if (TODO_SPEC (insn) & BEGIN_DATA)
     nr_begin_data++;
@@ -7785,10 +7785,11 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 /* This function creates recovery code for INSN.  If MUTATE_P is nonzero,
    INSN is a simple check, that should be converted to branchy one.  */
 static void
-create_check_block_twin (rtx insn, bool mutate_p)
+create_check_block_twin (rtx_insn *insn, bool mutate_p)
 {
   basic_block rec;
-  rtx label, check, twin;
+  rtx_insn *label, *check, *twin;
+  rtx check_pat;
   ds_t fs;
   sd_iterator_def sd_it;
   dep_t dep;
@@ -7818,11 +7819,11 @@ create_check_block_twin (rtx insn, bool mutate_p)
   else
     {
       rec = EXIT_BLOCK_PTR_FOR_FN (cfun);
-      label = NULL_RTX;
+      label = NULL;
     }
 
   /* Emit CHECK.  */
-  check = targetm.sched.gen_spec_check (insn, label, todo_spec);
+  check_pat = targetm.sched.gen_spec_check (insn, label, todo_spec);
 
   if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
@@ -7830,12 +7831,12 @@ create_check_block_twin (rtx insn, bool mutate_p)
 	 we emit check BEFORE insn, so insn after splitting
 	 insn will be at the beginning of second_bb, which will
 	 provide us with the correct life information.  */
-      check = emit_jump_insn_before (check, insn);
+      check = emit_jump_insn_before (check_pat, insn);
       JUMP_LABEL (check) = label;
       LABEL_NUSES (label)++;
     }
   else
-    check = emit_insn_before (check, insn);
+    check = emit_insn_before (check_pat, insn);
 
   /* Extend data structures.  */
   haifa_init_insn (check);
@@ -8109,7 +8110,7 @@ fix_recovery_deps (basic_block rec)
 
   /* Try to add instructions to the ready or queue list.  */
   for (link = ready_list; link; link = XEXP (link, 1))
-    try_ready (XEXP (link, 0));
+    try_ready (as_a <rtx_insn *> (XEXP (link, 0)));
   free_INSN_LIST_list (&ready_list);
 
   /* Fixing jump's dependences.  */
@@ -8369,7 +8370,7 @@ move_succs (vec<edge, va_gc> **succsp, basic_block to)
 /* Remove INSN from the instruction stream.
    INSN should have any dependencies.  */
 static void
-sched_remove_insn (rtx insn)
+sched_remove_insn (rtx_insn *insn)
 {
   sd_finish_insn (insn);
 
@@ -8647,10 +8648,10 @@ sched_create_empty_bb_1 (basic_block after)
 
 /* Insert PAT as an INSN into the schedule and update the necessary data
    structures to account for it. */
-rtx
+rtx_insn *
 sched_emit_insn (rtx pat)
 {
-  rtx insn = emit_insn_before (pat, first_nonscheduled_insn ());
+  rtx_insn *insn = emit_insn_before (pat, first_nonscheduled_insn ());
   haifa_init_insn (insn);
 
   if (current_sched_info->add_remove_insn)
@@ -8666,11 +8667,11 @@ sched_emit_insn (rtx pat)
 /* This function returns a candidate satisfying dispatch constraints from
    the ready list.  */
 
-static rtx
+static rtx_insn *
 ready_remove_first_dispatch (struct ready_list *ready)
 {
   int i;
-  rtx insn = ready_element (ready, 0);
+  rtx_insn *insn = ready_element (ready, 0);
 
   if (ready->n_ready == 1
       || !INSN_P (insn)

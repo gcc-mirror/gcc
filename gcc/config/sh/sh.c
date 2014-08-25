@@ -237,11 +237,11 @@ static int find_r0_life_regions (basic_block);
 static void  sh_md_init_global (FILE *, int, int);
 static void  sh_md_finish_global (FILE *, int);
 static int rank_for_reorder (const void *, const void *);
-static void swap_reorder (rtx *, int);
-static void ready_reorder (rtx *, int);
+static void swap_reorder (rtx_insn **, int);
+static void ready_reorder (rtx_insn **, int);
 static bool high_pressure (enum machine_mode);
-static int sh_reorder (FILE *, int, rtx *, int *, int);
-static int sh_reorder2 (FILE *, int, rtx *, int *, int);
+static int sh_reorder (FILE *, int, rtx_insn **, int *, int);
+static int sh_reorder2 (FILE *, int, rtx_insn **, int *, int);
 static void sh_md_init (FILE *, int, int);
 static int sh_variable_issue (FILE *, int, rtx, int);
 
@@ -11127,8 +11127,8 @@ find_regmode_weight (basic_block b, enum machine_mode mode)
 static int
 rank_for_reorder (const void *x, const void *y)
 {
-  rtx tmp = *(const rtx *) y;
-  rtx tmp2 = *(const rtx *) x;
+  rtx_insn *tmp = *(rtx_insn * const *) y;
+  rtx_insn *tmp2 = *(rtx_insn * const *) x;
 
   /* The insn in a schedule group should be issued the first.  */
   if (SCHED_GROUP_P (tmp) != SCHED_GROUP_P (tmp2))
@@ -11142,9 +11142,9 @@ rank_for_reorder (const void *x, const void *y)
 
 /* Resort the array A in which only element at index N may be out of order.  */
 static void
-swap_reorder (rtx *a, int n)
+swap_reorder (rtx_insn **a, int n)
 {
-  rtx insn = a[n - 1];
+  rtx_insn *insn = a[n - 1];
   int i = n - 2;
 
   while (i >= 0 && rank_for_reorder (a + i, &insn) >= 0)
@@ -11157,12 +11157,12 @@ swap_reorder (rtx *a, int n)
 
 /* Sort the ready list by ascending priority.  */
 static void
-ready_reorder (rtx *ready, int nready)
+ready_reorder (rtx_insn **ready, int nready)
 {
   if (nready == 2)
     swap_reorder (ready, nready);
   else if (nready > 2)
-     qsort (ready, nready, sizeof (rtx), rank_for_reorder);
+     qsort (ready, nready, sizeof (rtx_insn *), rank_for_reorder);
 }
 
 /* Count life regions of r0 for a block.  */
@@ -11326,7 +11326,7 @@ high_pressure (enum machine_mode mode)
 static int
 sh_reorder (FILE *dump ATTRIBUTE_UNUSED,
 	    int sched_verbose ATTRIBUTE_UNUSED,
-	    rtx *ready,
+	    rtx_insn **ready,
 	    int *n_readyp,
 	    int clock_var ATTRIBUTE_UNUSED)
 {
@@ -11345,7 +11345,7 @@ sh_reorder (FILE *dump ATTRIBUTE_UNUSED,
 static int
 sh_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 	     int sched_verbose ATTRIBUTE_UNUSED,
-	     rtx *ready ATTRIBUTE_UNUSED,
+	     rtx_insn **ready ATTRIBUTE_UNUSED,
 	     int *n_readyp ATTRIBUTE_UNUSED,
 	     int clock_var ATTRIBUTE_UNUSED)
 {

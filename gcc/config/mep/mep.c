@@ -220,9 +220,9 @@ static void mep_incompatible_arg (const struct insn_operand_data *, rtx, int, tr
 static rtx mep_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static int mep_adjust_cost (rtx, rtx, rtx, int);
 static int mep_issue_rate (void);
-static rtx mep_find_ready_insn (rtx *, int, enum attr_slot, int);
-static void mep_move_ready_insn (rtx *, int, rtx);
-static int mep_sched_reorder (FILE *, int, rtx *, int *, int);
+static rtx_insn *mep_find_ready_insn (rtx_insn **, int, enum attr_slot, int);
+static void mep_move_ready_insn (rtx_insn **, int, rtx_insn *);
+static int mep_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static rtx_insn *mep_make_bundle (rtx, rtx_insn *);
 static void mep_bundle_insns (rtx_insn *);
 static bool mep_rtx_cost (rtx, int, int, int, int *, bool);
@@ -6540,25 +6540,26 @@ mep_vliw_function_p (tree decl)
   return lookup_attribute ("vliw", TYPE_ATTRIBUTES (TREE_TYPE (decl))) != 0;
 }
 
-static rtx
-mep_find_ready_insn (rtx *ready, int nready, enum attr_slot slot, int length)
+static rtx_insn *
+mep_find_ready_insn (rtx_insn **ready, int nready, enum attr_slot slot,
+		     int length)
 {
   int i;
 
   for (i = nready - 1; i >= 0; --i)
     {
-      rtx insn = ready[i];
+      rtx_insn *insn = ready[i];
       if (recog_memoized (insn) >= 0
 	  && get_attr_slot (insn) == slot
 	  && get_attr_length (insn) == length)
 	return insn;
     }
 
-  return NULL_RTX;
+  return NULL;
 }
 
 static void
-mep_move_ready_insn (rtx *ready, int nready, rtx insn)
+mep_move_ready_insn (rtx_insn **ready, int nready, rtx_insn *insn)
 {
   int i;
 
@@ -6575,7 +6576,7 @@ mep_move_ready_insn (rtx *ready, int nready, rtx insn)
 }
 
 static void
-mep_print_sched_insn (FILE *dump, rtx insn)
+mep_print_sched_insn (FILE *dump, rtx_insn *insn)
 {
   const char *slots = "none";
   const char *name = NULL;
@@ -6620,11 +6621,11 @@ mep_print_sched_insn (FILE *dump, rtx insn)
 
 static int
 mep_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
-		   int sched_verbose ATTRIBUTE_UNUSED, rtx *ready,
+		   int sched_verbose ATTRIBUTE_UNUSED, rtx_insn **ready,
 		   int *pnready, int clock ATTRIBUTE_UNUSED)
 {
   int nready = *pnready;
-  rtx core_insn, cop_insn;
+  rtx_insn *core_insn, *cop_insn;
   int i;
 
   if (dump && sched_verbose > 1)

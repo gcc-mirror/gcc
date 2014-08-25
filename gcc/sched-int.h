@@ -125,10 +125,10 @@ extern int insn_luid (rtx);
 /* This list holds ripped off notes from the current block.  These notes will
    be attached to the beginning of the block when its scheduling is
    finished.  */
-extern rtx note_list;
+extern rtx_insn *note_list;
 
-extern void remove_notes (rtx, rtx);
-extern rtx restore_other_notes (rtx, basic_block);
+extern void remove_notes (rtx_insn *, rtx_insn *);
+extern rtx_insn *restore_other_notes (rtx_insn *, basic_block);
 extern void sched_insns_init (rtx);
 extern void sched_insns_finish (void);
 
@@ -163,7 +163,7 @@ extern bool sel_insn_is_speculation_check (rtx);
    N_DEBUG determines how many debug insns are on the ready list.  */
 struct ready_list
 {
-  rtx *vec;
+  rtx_insn **vec;
   int veclen;
   int first;
   int n_ready;
@@ -211,7 +211,7 @@ struct dep_replacement
   rtx *loc;
   rtx orig;
   rtx newval;
-  rtx insn;
+  rtx_insn *insn;
 };
 
 /* Information about the dependency.  */
@@ -539,10 +539,10 @@ struct deps_desc
   enum post_call_group in_post_call_group_p;
 
   /* The last debug insn we've seen.  */
-  rtx last_debug_insn;
+  rtx_insn *last_debug_insn;
 
   /* The last insn bearing REG_ARGS_SIZE that we've seen.  */
-  rtx last_args_size;
+  rtx_insn *last_args_size;
 
   /* The maximum register number for the following arrays.  Before reload
      this is max_reg_num; after reload it is FIRST_PSEUDO_REGISTER.  */
@@ -580,7 +580,7 @@ struct haifa_sched_info
   void (*init_ready_list) (void);
   /* Called after taking an insn from the ready list.  Returns nonzero if
      this insn can be scheduled, nonzero if we should silently discard it.  */
-  int (*can_schedule_ready_p) (rtx);
+  int (*can_schedule_ready_p) (rtx_insn *);
   /* Return nonzero if there are more insns that should be scheduled.  */
   int (*schedule_more_p) (void);
   /* Called after an insn has all its hard dependencies resolved.
@@ -588,30 +588,30 @@ struct haifa_sched_info
      to indicate if instruction should be moved to the ready list or the
      queue, or if it should silently discard it (until next resolved
      dependence).  */
-  ds_t (*new_ready) (rtx, ds_t);
+  ds_t (*new_ready) (rtx_insn *, ds_t);
   /* Compare priority of two insns.  Return a positive number if the second
      insn is to be preferred for scheduling, and a negative one if the first
      is to be preferred.  Zero if they are equally good.  */
-  int (*rank) (rtx, rtx);
+  int (*rank) (rtx_insn *, rtx_insn *);
   /* Return a string that contains the insn uid and optionally anything else
      necessary to identify this insn in an output.  It's valid to use a
      static buffer for this.  The ALIGNED parameter should cause the string
      to be formatted so that multiple output lines will line up nicely.  */
-  const char *(*print_insn) (const_rtx, int);
+  const char *(*print_insn) (const rtx_insn *, int);
   /* Return nonzero if an insn should be included in priority
      calculations.  */
-  int (*contributes_to_priority) (rtx, rtx);
+  int (*contributes_to_priority) (rtx_insn *, rtx_insn *);
 
   /* Return true if scheduling insn (passed as the parameter) will trigger
      finish of scheduling current block.  */
-  bool (*insn_finishes_block_p) (rtx);
+  bool (*insn_finishes_block_p) (rtx_insn *);
 
   /* The boundaries of the set of insns to be scheduled.  */
   rtx_insn *prev_head, *next_tail;
 
   /* Filled in after the schedule is finished; the first and last scheduled
      insns.  */
-  rtx head, tail;
+  rtx_insn *head, *tail;
 
   /* If nonzero, enables an additional sanity check in schedule_block.  */
   unsigned int queue_must_finish_empty:1;
@@ -623,23 +623,23 @@ struct haifa_sched_info
 
   /* Called to notify frontend that instruction is being added (second
      parameter == 0) or removed (second parameter == 1).  */
-  void (*add_remove_insn) (rtx, int);
+  void (*add_remove_insn) (rtx_insn *, int);
 
   /* Called to notify the frontend that instruction INSN is being
      scheduled.  */
-  void (*begin_schedule_ready) (rtx insn);
+  void (*begin_schedule_ready) (rtx_insn *insn);
 
   /* Called to notify the frontend that an instruction INSN is about to be
      moved to its correct place in the final schedule.  This is done for all
      insns in order of the schedule.  LAST indicates the last scheduled
      instruction.  */
-  void (*begin_move_insn) (rtx insn, rtx last);
+  void (*begin_move_insn) (rtx_insn *insn, rtx_insn *last);
 
   /* If the second parameter is not NULL, return nonnull value, if the
      basic block should be advanced.
      If the second parameter is NULL, return the next basic block in EBB.
      The first parameter is the current basic block in EBB.  */
-  basic_block (*advance_target_bb) (basic_block, rtx);
+  basic_block (*advance_target_bb) (basic_block, rtx_insn *);
 
   /* Allocate memory, store the frontend scheduler state in it, and
      return it.  */
@@ -1272,7 +1272,7 @@ struct sched_deps_info_def
   void (*note_mem_dep) (rtx mem1, rtx mem2, rtx insn2, ds_t ds);
 
   /* Note a dependence of type DS from the INSN.  */
-  void (*note_dep) (rtx insn, ds_t ds);
+  void (*note_dep) (rtx, ds_t ds);
 
   /* Nonzero if we should use cselib for better alias analysis.  This
      must be 0 if the dependency information is used after sched_analyze
@@ -1296,14 +1296,14 @@ extern struct sched_deps_info_def *sched_deps_info;
 extern rtx sched_get_reverse_condition_uncached (const_rtx);
 extern bool sched_insns_conditions_mutex_p (const_rtx, const_rtx);
 extern bool sched_insn_is_legitimate_for_speculation_p (const_rtx, ds_t);
-extern void add_dependence (rtx, rtx, enum reg_note);
-extern void sched_analyze (struct deps_desc *, rtx, rtx);
+extern void add_dependence (rtx_insn *, rtx_insn *, enum reg_note);
+extern void sched_analyze (struct deps_desc *, rtx_insn *, rtx_insn *);
 extern void init_deps (struct deps_desc *, bool);
 extern void init_deps_reg_last (struct deps_desc *);
 extern void free_deps (struct deps_desc *);
 extern void init_deps_global (void);
 extern void finish_deps_global (void);
-extern void deps_analyze_insn (struct deps_desc *, rtx);
+extern void deps_analyze_insn (struct deps_desc *, rtx_insn *);
 extern void remove_from_deps (struct deps_desc *, rtx);
 extern void init_insn_reg_pressure_info (rtx);
 
@@ -1359,10 +1359,10 @@ extern int issue_rate;
 extern int dfa_lookahead;
 
 extern void ready_sort (struct ready_list *);
-extern rtx ready_element (struct ready_list *, int);
-extern rtx *ready_lastpos (struct ready_list *);
+extern rtx_insn *ready_element (struct ready_list *, int);
+extern rtx_insn **ready_lastpos (struct ready_list *);
 
-extern int try_ready (rtx);
+extern int try_ready (rtx_insn *);
 extern void sched_extend_ready_list (int);
 extern void sched_finish_ready_list (void);
 extern void sched_change_pattern (rtx, rtx);
@@ -1371,7 +1371,7 @@ extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
 extern rtx_note *bb_note (basic_block);
 extern void concat_note_lists (rtx, rtx *);
-extern rtx sched_emit_insn (rtx);
+extern rtx_insn *sched_emit_insn (rtx);
 extern rtx get_ready_element (int);
 extern int number_in_ready (void);
 
@@ -1431,11 +1431,11 @@ extern int target_bb;
 extern bool sched_no_dce;
 
 extern void set_modulo_params (int, int, int, int);
-extern void record_delay_slot_pair (rtx, rtx, int, int);
+extern void record_delay_slot_pair (rtx_insn *, rtx_insn *, int, int);
 extern rtx real_insn_for_shadow (rtx);
 extern void discard_delay_pairs_above (int);
 extern void free_delay_pairs (void);
-extern void add_delay_dependencies (rtx);
+extern void add_delay_dependencies (rtx_insn *);
 extern bool sched_is_disabled_for_current_region_p (void);
 extern void sched_rgn_init (bool);
 extern void sched_rgn_finish (void);
@@ -1452,7 +1452,7 @@ extern void increase_insn_priority (rtx, int);
 extern void debug_rgn_dependencies (int);
 extern void debug_dependencies (rtx, rtx);
 extern void free_rgn_deps (void);
-extern int contributes_to_priority (rtx, rtx);
+extern int contributes_to_priority (rtx_insn *, rtx_insn *);
 extern void extend_rgns (int *, int *, sbitmap, int *);
 extern void deps_join (struct deps_desc *, struct deps_desc *);
 
@@ -1467,7 +1467,7 @@ extern void dump_region_dot_file (const char *, int);
 extern void haifa_sched_init (void);
 extern void haifa_sched_finish (void);
 
-extern void find_modifiable_mems (rtx, rtx);
+extern void find_modifiable_mems (rtx_insn *, rtx_insn *);
 
 /* sched-deps.c interface to walk, add, search, update, resolve, delete
    and debug instruction dependencies.  */

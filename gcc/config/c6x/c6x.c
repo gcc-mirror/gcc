@@ -3615,7 +3615,7 @@ typedef struct c6x_sched_context
   /* The following variable value is the last issued insn.  */
   rtx last_scheduled_insn;
   /* The last issued insn that isn't a shadow of another.  */
-  rtx last_scheduled_iter0;
+  rtx_insn *last_scheduled_iter0;
 
   /* The following variable value is DFA state before issuing the
      first insn in the current clock cycle.  We do not use this member
@@ -3845,7 +3845,7 @@ static void
 init_sched_state (c6x_sched_context_t sc)
 {
   sc->last_scheduled_insn = NULL_RTX;
-  sc->last_scheduled_iter0 = NULL_RTX;
+  sc->last_scheduled_iter0 = NULL;
   sc->issued_this_cycle = 0;
   memset (sc->jump_cycles, 0, sizeof sc->jump_cycles);
   memset (sc->jump_cond, 0, sizeof sc->jump_cond);
@@ -4132,11 +4132,11 @@ c6x_registers_update (rtx insn)
    number of non-unsafe insns.  */
 
 static int
-c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
+c6x_sched_reorder_1 (rtx_insn **ready, int *pn_ready, int clock_var)
 {
   int n_ready = *pn_ready;
-  rtx *e_ready = ready + n_ready;
-  rtx *insnp;
+  rtx_insn **e_ready = ready + n_ready;
+  rtx_insn **insnp;
   int first_jump;
 
   /* Keep track of conflicts due to a limit number of register accesses,
@@ -4145,7 +4145,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 
   for (insnp = ready; insnp < e_ready; insnp++)
     {
-      rtx insn = *insnp;
+      rtx_insn *insn = *insnp;
       int icode = recog_memoized (insn);
       bool is_asm = (icode < 0
 		     && (GET_CODE (PATTERN (insn)) == ASM_INPUT
@@ -4206,7 +4206,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 
       for (insnp = ready; insnp < e_ready; insnp++)
 	{
-	  rtx insn = *insnp;
+	  rtx_insn *insn = *insnp;
 	  int icode = recog_memoized (insn);
 	  bool is_asm = (icode < 0
 			 && (GET_CODE (PATTERN (insn)) == ASM_INPUT
@@ -4249,7 +4249,7 @@ c6x_sched_reorder_1 (rtx *ready, int *pn_ready, int clock_var)
 static int
 c6x_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
 		   int sched_verbose ATTRIBUTE_UNUSED,
-		   rtx *ready ATTRIBUTE_UNUSED,
+		   rtx_insn **ready ATTRIBUTE_UNUSED,
 		   int *pn_ready ATTRIBUTE_UNUSED, int clock_var)
 {
   ss.curr_sched_clock = clock_var;
@@ -4269,7 +4269,7 @@ c6x_sched_reorder (FILE *dump ATTRIBUTE_UNUSED,
 static int
 c6x_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 		    int sched_verbose ATTRIBUTE_UNUSED,
-		    rtx *ready ATTRIBUTE_UNUSED,
+		    rtx_insn **ready ATTRIBUTE_UNUSED,
 		    int *pn_ready ATTRIBUTE_UNUSED, int clock_var)
 {
   /* FIXME: the assembler rejects labels inside an execute packet.
@@ -4282,12 +4282,12 @@ c6x_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 	  && get_attr_type (ss.last_scheduled_insn) == TYPE_ATOMIC))
     {
       int n_ready = *pn_ready;
-      rtx *e_ready = ready + n_ready;
-      rtx *insnp;
+      rtx_insn **e_ready = ready + n_ready;
+      rtx_insn **insnp;
 
       for (insnp = ready; insnp < e_ready; insnp++)
 	{
-	  rtx insn = *insnp;
+	  rtx_insn *insn = *insnp;
 	  if (!shadow_p (insn))
 	    {
 	      memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
@@ -4362,7 +4362,7 @@ c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 {
   ss.last_scheduled_insn = insn;
   if (INSN_UID (insn) < sploop_max_uid_iter0 && !JUMP_P (insn))
-    ss.last_scheduled_iter0 = insn;
+    ss.last_scheduled_iter0 = as_a <rtx_insn *> (insn);
   if (GET_CODE (PATTERN (insn)) != USE && GET_CODE (PATTERN (insn)) != CLOBBER)
     ss.issued_this_cycle++;
   if (insn_info.exists ())
@@ -5152,10 +5152,11 @@ reorg_emit_nops (rtx *call_labels)
 /* If possible, split INSN, which we know is either a jump or a call, into a real
    insn and its shadow.  */
 static void
-split_delayed_branch (rtx insn)
+split_delayed_branch (rtx_insn *insn)
 {
   int code = recog_memoized (insn);
-  rtx i1, newpat;
+  rtx_insn *i1;
+  rtx newpat;
   rtx pat = PATTERN (insn);
 
   if (GET_CODE (pat) == COND_EXEC)
@@ -5258,11 +5259,12 @@ split_delayed_branch (rtx insn)
    with the possibility.  Currently we handle loads and most mpy2 and
    mpy4 insns.  */
 static bool
-split_delayed_nonbranch (rtx insn)
+split_delayed_nonbranch (rtx_insn *insn)
 {
   int code = recog_memoized (insn);
   enum attr_type type;
-  rtx i1, newpat, src, dest;
+  rtx_insn *i1;
+  rtx newpat, src, dest;
   rtx pat = PATTERN (insn);
   rtvec rtv;
   int delay;
@@ -5370,7 +5372,7 @@ undo_split_delayed_nonbranch (rtx insn)
 static void
 split_delayed_insns (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (JUMP_P (insn) || CALL_P (insn))
@@ -5512,17 +5514,17 @@ static bool
 hwloop_optimize (hwloop_info loop)
 {
   basic_block entry_bb, bb;
-  rtx seq, insn, prev, entry_after, end_packet;
-  rtx head_insn, tail_insn, new_insns, last_insn;
+  rtx_insn *seq, *insn, *prev, *entry_after, *end_packet;
+  rtx_insn *head_insn, *tail_insn, *new_insns, *last_insn;
   int loop_earliest;
   int n_execute_packets;
   edge entry_edge;
   unsigned ix;
   int max_uid_before, delayed_splits;
   int i, sp_ii, min_ii, max_ii, max_parallel, n_insns, n_real_insns, stages;
-  rtx *orig_vec;
-  rtx *copies;
-  rtx **insn_copies;
+  rtx_insn **orig_vec;
+  rtx_insn **copies;
+  rtx_insn ***insn_copies;
 
   if (!c6x_flag_modulo_sched || !c6x_flag_schedule_insns2
       || !TARGET_INSNS_64PLUS)
@@ -5587,7 +5589,7 @@ hwloop_optimize (hwloop_info loop)
       if (NONDEBUG_INSN_P (insn) && insn != loop->loop_end)
 	n_real_insns++;
     }
-  orig_vec = XNEWVEC (rtx, n_insns);
+  orig_vec = XNEWVEC (rtx_insn *, n_insns);
   n_insns = 0;
   FOR_BB_INSNS (bb, insn)
     orig_vec[n_insns++] = insn;
@@ -5605,8 +5607,8 @@ hwloop_optimize (hwloop_info loop)
      to handle.  */
   max_parallel = loop_earliest / min_ii + 1;
 
-  copies = XCNEWVEC (rtx, (max_parallel + 1) * n_real_insns);
-  insn_copies = XNEWVEC (rtx *, max_parallel + 1);
+  copies = XCNEWVEC (rtx_insn *, (max_parallel + 1) * n_real_insns);
+  insn_copies = XNEWVEC (rtx_insn **, max_parallel + 1);
   for (i = 0; i < max_parallel + 1; i++)
     insn_copies[i] = copies + i * n_real_insns;
 
@@ -5626,20 +5628,20 @@ hwloop_optimize (hwloop_info loop)
   for (i = 0; i < max_parallel; i++)
     {
       int j;
-      rtx this_iter;
+      rtx_insn *this_iter;
 
       this_iter = duplicate_insn_chain (head_insn, tail_insn);
       j = 0;
       while (this_iter)
 	{
-	  rtx prev_stage_insn = insn_copies[i][j];
+	  rtx_insn *prev_stage_insn = insn_copies[i][j];
 	  gcc_assert (INSN_CODE (this_iter) == INSN_CODE (prev_stage_insn));
 
 	  if (INSN_CODE (this_iter) >= 0
 	      && (get_attr_type (this_iter) == TYPE_LOAD_SHADOW
 		  || get_attr_type (this_iter) == TYPE_MULT_SHADOW))
 	    {
-	      rtx prev = PREV_INSN (this_iter);
+	      rtx_insn *prev = PREV_INSN (this_iter);
 	      record_delay_slot_pair (prev, this_iter,
 				      get_attr_cycles (prev) - 1, 0);
 	    }
@@ -5670,9 +5672,7 @@ hwloop_optimize (hwloop_info loop)
       schedule_ebbs_init ();
       set_modulo_params (sp_ii, max_parallel, n_real_insns,
 			 sploop_max_uid_iter0);
-      tmp_bb = schedule_ebb (BB_HEAD (bb),
-			     safe_as_a <rtx_insn *> (last_insn),
-			     true);
+      tmp_bb = schedule_ebb (BB_HEAD (bb), last_insn, true);
       schedule_ebbs_finish ();
 
       if (tmp_bb)
@@ -5725,9 +5725,11 @@ hwloop_optimize (hwloop_info loop)
 
   /* Compute the number of execute packets the pipelined form of the loop will
      require.  */
-  prev = NULL_RTX;
+  prev = NULL;
   n_execute_packets = 0;
-  for (insn = loop->start_label; insn != loop->loop_end; insn = NEXT_INSN (insn))
+  for (insn = as_a <rtx_insn *> (loop->start_label);
+       insn != loop->loop_end;
+       insn = NEXT_INSN (insn))
     {
       if (NONDEBUG_INSN_P (insn) && GET_MODE (insn) == TImode
 	  && !shadow_p (insn))
@@ -5762,9 +5764,10 @@ hwloop_optimize (hwloop_info loop)
      spot.  */
   PUT_MODE (end_packet, VOIDmode);
 
-  insn = gen_spkernel (GEN_INT (stages - 1),
-		       const0_rtx, JUMP_LABEL (loop->loop_end));
-  insn = emit_jump_insn_before (insn, end_packet);
+  insn = emit_jump_insn_before (
+	   gen_spkernel (GEN_INT (stages - 1),
+			 const0_rtx, JUMP_LABEL (loop->loop_end)),
+	   end_packet);
   JUMP_LABEL (insn) = JUMP_LABEL (loop->loop_end);
   insn_set_clock (insn, loop_earliest);
   PUT_MODE (insn, TImode);
