@@ -8263,7 +8263,8 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
   if (ix86_varargs_fpr_size)
     {
       enum machine_mode smode;
-      rtx label, test;
+      rtx_code_label *label;
+      rtx test;
 
       /* Now emit code to save SSE registers.  The AX parameter contains number
 	 of SSE parameter registers used to call this function, though all we
@@ -11217,7 +11218,8 @@ ix86_expand_prologue (void)
 	{
 	  if (ix86_cmodel == CM_LARGE_PIC)
 	    {
-	      rtx label, tmp_reg;
+	      rtx_code_label *label;
+	      rtx tmp_reg;
 
 	      gcc_assert (Pmode == DImode);
 	      label = gen_label_rtx ();
@@ -11907,9 +11909,10 @@ ix86_expand_split_stack_prologue (void)
   struct ix86_frame frame;
   HOST_WIDE_INT allocate;
   unsigned HOST_WIDE_INT args_size;
-  rtx label, limit, current, jump_insn, allocate_rtx, call_insn, call_fusage;
+  rtx_code_label *label;
+  rtx limit, current, jump_insn, allocate_rtx, call_insn, call_fusage;
   rtx scratch_reg = NULL_RTX;
-  rtx varargs_label = NULL_RTX;
+  rtx_code_label *varargs_label = NULL;
   rtx fn;
 
   gcc_assert (flag_split_stack && reload_completed);
@@ -12025,7 +12028,8 @@ ix86_expand_split_stack_prologue (void)
 
 	  if (ix86_cmodel == CM_LARGE_PIC)
 	    {
-	      rtx label, x;
+	      rtx_code_label *label;
+	      rtx x;
 
 	      label = gen_label_rtx ();
 	      emit_label (label);
@@ -17667,7 +17671,7 @@ void
 ix86_split_idivmod (enum machine_mode mode, rtx operands[],
 		    bool signed_p)
 {
-  rtx end_label, qimode_label;
+  rtx_code_label *end_label, *qimode_label;
   rtx insn, div, mod;
   rtx scratch, tmp0, tmp1, tmp2;
   rtx (*gen_divmod4_1) (rtx, rtx, rtx, rtx);
@@ -19925,7 +19929,8 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
     case TImode:
       /* Expand DImode branch into multiple compare+branch.  */
       {
-	rtx lo[2], hi[2], label2;
+	rtx lo[2], hi[2];
+	rtx_code_label *label2;
 	enum rtx_code code1, code2, code3;
 	enum machine_mode submode;
 
@@ -22734,10 +22739,10 @@ predict_jump (int prob)
 
 /* Helper function for the string operations below.  Dest VARIABLE whether
    it is aligned to VALUE bytes.  If true, jump to the label.  */
-static rtx
+static rtx_code_label *
 ix86_expand_aligntest (rtx variable, int value, bool epilogue)
 {
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   rtx tmpcount = gen_reg_rtx (GET_MODE (variable));
   if (GET_MODE (variable) == DImode)
     emit_insn (gen_anddi3 (tmpcount, variable, GEN_INT (value)));
@@ -22832,7 +22837,8 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
 			       rtx count, enum machine_mode mode, int unroll,
 			       int expected_size, bool issetmem)
 {
-  rtx out_label, top_label, iter, tmp;
+  rtx_code_label *out_label, *top_label;
+  rtx iter, tmp;
   enum machine_mode iter_mode = counter_mode (count);
   int piece_size_n = GET_MODE_SIZE (mode) * unroll;
   rtx piece_size = GEN_INT (piece_size_n);
@@ -23149,7 +23155,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
     {
       if (max_size > 4)
 	{
-	  rtx label = ix86_expand_aligntest (count, 4, true);
+	  rtx_code_label *label = ix86_expand_aligntest (count, 4, true);
 	  src = change_address (srcmem, SImode, srcptr);
 	  dest = change_address (destmem, SImode, destptr);
 	  emit_insn (gen_strmov (destptr, dest, srcptr, src));
@@ -23158,7 +23164,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
 	}
       if (max_size > 2)
 	{
-	  rtx label = ix86_expand_aligntest (count, 2, true);
+	  rtx_code_label *label = ix86_expand_aligntest (count, 2, true);
 	  src = change_address (srcmem, HImode, srcptr);
 	  dest = change_address (destmem, HImode, destptr);
 	  emit_insn (gen_strmov (destptr, dest, srcptr, src));
@@ -23167,7 +23173,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
 	}
       if (max_size > 1)
 	{
-	  rtx label = ix86_expand_aligntest (count, 1, true);
+	  rtx_code_label *label = ix86_expand_aligntest (count, 1, true);
 	  src = change_address (srcmem, QImode, srcptr);
 	  dest = change_address (destmem, QImode, destptr);
 	  emit_insn (gen_strmov (destptr, dest, srcptr, src));
@@ -23182,7 +23188,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
 
       if (max_size > 4)
 	{
-	  rtx label = ix86_expand_aligntest (count, 4, true);
+	  rtx_code_label *label = ix86_expand_aligntest (count, 4, true);
 	  src = change_address (srcmem, SImode, srcptr);
 	  dest = change_address (destmem, SImode, destptr);
 	  emit_move_insn (dest, src);
@@ -23195,7 +23201,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
 	}
       if (max_size > 2)
 	{
-	  rtx label = ix86_expand_aligntest (count, 2, true);
+	  rtx_code_label *label = ix86_expand_aligntest (count, 2, true);
 	  tmp = gen_rtx_PLUS (Pmode, srcptr, offset);
 	  src = change_address (srcmem, HImode, tmp);
 	  tmp = gen_rtx_PLUS (Pmode, destptr, offset);
@@ -23210,7 +23216,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
 	}
       if (max_size > 1)
 	{
-	  rtx label = ix86_expand_aligntest (count, 1, true);
+	  rtx_code_label *label = ix86_expand_aligntest (count, 1, true);
 	  tmp = gen_rtx_PLUS (Pmode, srcptr, offset);
 	  src = change_address (srcmem, QImode, tmp);
 	  tmp = gen_rtx_PLUS (Pmode, destptr, offset);
@@ -23326,7 +23332,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
     }
   if (max_size > 16)
     {
-      rtx label = ix86_expand_aligntest (count, 16, true);
+      rtx_code_label *label = ix86_expand_aligntest (count, 16, true);
       if (TARGET_64BIT)
 	{
 	  dest = change_address (destmem, DImode, destptr);
@@ -23350,7 +23356,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
     }
   if (max_size > 8)
     {
-      rtx label = ix86_expand_aligntest (count, 8, true);
+      rtx_code_label *label = ix86_expand_aligntest (count, 8, true);
       if (TARGET_64BIT)
 	{
 	  dest = change_address (destmem, DImode, destptr);
@@ -23368,7 +23374,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
     }
   if (max_size > 4)
     {
-      rtx label = ix86_expand_aligntest (count, 4, true);
+      rtx_code_label *label = ix86_expand_aligntest (count, 4, true);
       dest = change_address (destmem, SImode, destptr);
       emit_insn (gen_strset (destptr, dest, gen_lowpart (SImode, value)));
       emit_label (label);
@@ -23376,7 +23382,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
     }
   if (max_size > 2)
     {
-      rtx label = ix86_expand_aligntest (count, 2, true);
+      rtx_code_label *label = ix86_expand_aligntest (count, 2, true);
       dest = change_address (destmem, HImode, destptr);
       emit_insn (gen_strset (destptr, dest, gen_lowpart (HImode, value)));
       emit_label (label);
@@ -23384,7 +23390,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
     }
   if (max_size > 1)
     {
-      rtx label = ix86_expand_aligntest (count, 1, true);
+      rtx_code_label *label = ix86_expand_aligntest (count, 1, true);
       dest = change_address (destmem, QImode, destptr);
       emit_insn (gen_strset (destptr, dest, gen_lowpart (QImode, value)));
       emit_label (label);
@@ -23408,7 +23414,7 @@ expand_set_or_movmem_prologue (rtx destmem, rtx srcmem,
     {
       if (align <= i)
 	{
-	  rtx label = ix86_expand_aligntest (destptr, i, false);
+	  rtx_code_label *label = ix86_expand_aligntest (destptr, i, false);
 	  if (issetmem)
 	    {
 	      if (vec_value && i > GET_MODE_SIZE (GET_MODE (value)))
@@ -23437,7 +23443,7 @@ expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
 			       rtx count, int size,
 			       rtx done_label, bool issetmem)
 {
-  rtx label = ix86_expand_aligntest (count, size, false);
+  rtx_code_label *label = ix86_expand_aligntest (count, size, false);
   enum machine_mode mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 1);
   rtx modesize;
   int n;
@@ -23562,7 +23568,7 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
 							    enum machine_mode mode,
 							    rtx value, rtx vec_value,
 							    rtx *count,
-							    rtx *done_label,
+							    rtx_code_label **done_label,
 							    int size,
 							    int desired_align,
 							    int align,
@@ -23570,7 +23576,7 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
 							    bool dynamic_check,
 							    bool issetmem)
 {
-  rtx loop_label = NULL, label;
+  rtx_code_label *loop_label = NULL, *label;
   int n;
   rtx modesize;
   int prolog_size = 0;
@@ -24168,9 +24174,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 {
   rtx destreg;
   rtx srcreg = NULL;
-  rtx label = NULL;
+  rtx_code_label *label = NULL;
   rtx tmp;
-  rtx jump_around_label = NULL;
+  rtx_code_label *jump_around_label = NULL;
   HOST_WIDE_INT align = 1;
   unsigned HOST_WIDE_INT count = 0;
   HOST_WIDE_INT expected_size = -1;
@@ -24444,7 +24450,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	}
       else
 	{
-	  rtx hot_label = gen_label_rtx ();
+	  rtx_code_label *hot_label = gen_label_rtx ();
 	  if (jump_around_label == NULL_RTX)
 	    jump_around_label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp, GEN_INT (dynamic_check - 1),
@@ -24642,10 +24648,10 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 {
   int align;
   rtx tmp;
-  rtx align_2_label = NULL_RTX;
-  rtx align_3_label = NULL_RTX;
-  rtx align_4_label = gen_label_rtx ();
-  rtx end_0_label = gen_label_rtx ();
+  rtx_code_label *align_2_label = NULL;
+  rtx_code_label *align_3_label = NULL;
+  rtx_code_label *align_4_label = gen_label_rtx ();
+  rtx_code_label *end_0_label = gen_label_rtx ();
   rtx mem;
   rtx tmpreg = gen_reg_rtx (SImode);
   rtx scratch = gen_reg_rtx (SImode);
@@ -24769,7 +24775,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
     }
   else
     {
-       rtx end_2_label = gen_label_rtx ();
+       rtx_code_label *end_2_label = gen_label_rtx ();
        /* Is zero in the first two bytes? */
 
        emit_insn (gen_testsi_ccno_1 (tmpreg, GEN_INT (0x8080)));
@@ -39549,7 +39555,8 @@ x86_maybe_negate_const_int (rtx *loc, enum machine_mode mode)
 void
 x86_emit_floatuns (rtx operands[2])
 {
-  rtx neglab, donelab, i0, i1, f0, in, out;
+  rtx_code_label *neglab, *donelab;
+  rtx i0, i1, f0, in, out;
   enum machine_mode mode, inmode;
 
   inmode = GET_MODE (operands[1]);
@@ -41334,8 +41341,8 @@ ix86_emit_fp_unordered_jump (rtx label)
 
 void ix86_emit_i387_log1p (rtx op0, rtx op1)
 {
-  rtx label1 = gen_label_rtx ();
-  rtx label2 = gen_label_rtx ();
+  rtx_code_label *label1 = gen_label_rtx ();
+  rtx_code_label *label2 = gen_label_rtx ();
 
   rtx tmp = gen_reg_rtx (XFmode);
   rtx tmp2 = gen_reg_rtx (XFmode);
@@ -41369,7 +41376,7 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
   rtx e1, e2, res, tmp, tmp1, half;
   rtx scratch = gen_reg_rtx (HImode);
   rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
-  rtx jump_label = gen_label_rtx ();
+  rtx_code_label *jump_label = gen_label_rtx ();
   rtx insn;
   rtx (*gen_abs) (rtx, rtx);
   rtx (*gen_neg) (rtx, rtx);
@@ -41805,12 +41812,13 @@ ix86_expand_sse_fabs (rtx op0, rtx *smask)
    swapping the operands if SWAP_OPERANDS is true.  The expanded
    code is a forward jump to a newly created label in case the
    comparison is true.  The generated label rtx is returned.  */
-static rtx
+static rtx_code_label *
 ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
                                   bool swap_operands)
 {
   enum machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
-  rtx label, tmp;
+  rtx_code_label *label;
+  rtx tmp;
 
   if (swap_operands)
     {
@@ -41914,7 +41922,8 @@ ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
    */
   enum machine_mode fmode = GET_MODE (op1);
   enum machine_mode imode = GET_MODE (op0);
-  rtx ireg, freg, label, tmp;
+  rtx ireg, freg, tmp;
+  rtx_code_label *label;
 
   /* reg = (long)op1 */
   ireg = gen_reg_rtx (imode);
@@ -41950,7 +41959,8 @@ ix86_expand_rint (rtx operand0, rtx operand1)
         return copysign (xa, operand1);
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx res, xa, label, TWO52, mask;
+  rtx res, xa, TWO52, mask;
+  rtx_code_label *label;
 
   res = gen_reg_rtx (mode);
   emit_move_insn (res, operand1);
@@ -41993,7 +42003,8 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
         return x2;
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, TWO52, tmp, label, one, res, mask;
+  rtx xa, TWO52, tmp, one, res, mask;
+  rtx_code_label *label;
 
   TWO52 = ix86_gen_TWO52 (mode);
 
@@ -42056,7 +42067,8 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
 	return x2;
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, xi, TWO52, tmp, label, one, res, mask;
+  rtx xa, xi, TWO52, tmp, one, res, mask;
+  rtx_code_label *label;
 
   TWO52 = ix86_gen_TWO52 (mode);
 
@@ -42119,7 +42131,8 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
         return x2;
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, xa2, dxa, TWO52, tmp, label, half, mhalf, one, res, mask;
+  rtx xa, xa2, dxa, TWO52, tmp, half, mhalf, one, res, mask;
+  rtx_code_label *label;
 
   TWO52 = ix86_gen_TWO52 (mode);
 
@@ -42184,7 +42197,8 @@ ix86_expand_trunc (rtx operand0, rtx operand1)
 	return x2;
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, xi, TWO52, label, res, mask;
+  rtx xa, xi, TWO52, res, mask;
+  rtx_code_label *label;
 
   TWO52 = ix86_gen_TWO52 (mode);
 
@@ -42219,7 +42233,8 @@ void
 ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
 {
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, mask, TWO52, label, one, res, smask, tmp;
+  rtx xa, mask, TWO52, one, res, smask, tmp;
+  rtx_code_label *label;
 
   /* C code for SSE variant we expand below.
         double xa = fabs (x), x2;
@@ -42284,7 +42299,8 @@ ix86_expand_round (rtx operand0, rtx operand1)
         return copysign (xa, x);
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx res, TWO52, xa, label, xi, half, mask;
+  rtx res, TWO52, xa, xi, half, mask;
+  rtx_code_label *label;
   const struct real_format *fmt;
   REAL_VALUE_TYPE pred_half, half_minus_pred_half;
 
