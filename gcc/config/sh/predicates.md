@@ -398,7 +398,7 @@
 (define_predicate "general_extend_operand"
   (match_code "subreg,reg,mem,truncate")
 {
-  if (GET_CODE (op) == TRUNCATE)
+  if (reload_completed && GET_CODE (op) == TRUNCATE)
     return arith_operand (op, mode);
 
   if (MEM_P (op) || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op))))
