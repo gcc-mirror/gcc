@@ -87,7 +87,7 @@ unsigned long c6x_insn_mask = C6X_DEFAULT_INSN_MASK;
 
 /* The instruction that is being output (as obtained from FINAL_PRESCAN_INSN).
  */
-static rtx c6x_current_insn = NULL_RTX;
+static rtx_insn *c6x_current_insn = NULL;
 
 /* A decl we build to access __c6xabi_DSBT_base.  */
 static GTY(()) tree dsbt_decl;
@@ -770,7 +770,7 @@ c6x_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
   /* The this parameter is passed as the first argument.  */
   rtx this_rtx = gen_rtx_REG (Pmode, REG_A4);
 
-  c6x_current_insn = NULL_RTX;
+  c6x_current_insn = NULL;
 
   xops[4] = XEXP (DECL_RTL (function), 0);
   if (!vcall_offset)
@@ -1566,7 +1566,7 @@ c6x_expand_compare (rtx comparison, enum machine_mode mode)
 
       if (is_fp_libfunc)
 	{
-	  rtx insns;
+	  rtx_insn *insns;
 	  rtx libfunc;
 	  switch (code)
 	    {
@@ -1971,7 +1971,7 @@ c6x_print_address_operand (FILE *file, rtx x, enum machine_mode mem_mode)
    specifies the functional unit used by INSN.  */
 
 char
-c6x_get_unit_specifier (rtx insn)
+c6x_get_unit_specifier (rtx_insn *insn)
 {
   enum attr_units units;
 
@@ -2008,7 +2008,7 @@ c6x_get_unit_specifier (rtx insn)
 
 /* Prints the unit specifier field.  */
 static void
-c6x_print_unit_specifier_field (FILE *file, rtx insn)
+c6x_print_unit_specifier_field (FILE *file, rtx_insn *insn)
 {
   enum attr_units units = get_attr_units (insn);
   enum attr_cross cross = get_attr_cross (insn);
@@ -2488,7 +2488,7 @@ c6x_preferred_rename_class (reg_class_t cl)
 
 /* Implements FINAL_PRESCAN_INSN.  */
 void
-c6x_final_prescan_insn (rtx insn, rtx *opvec ATTRIBUTE_UNUSED,
+c6x_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 			int noperands ATTRIBUTE_UNUSED)
 {
   c6x_current_insn = insn;
@@ -2716,7 +2716,7 @@ emit_add_sp_const (HOST_WIDE_INT offset, bool frame_related_p)
 {
   rtx to_add = GEN_INT (offset);
   rtx orig_to_add = to_add;
-  rtx insn;
+  rtx_insn *insn;
 
   if (offset == 0)
     return;
@@ -2753,7 +2753,8 @@ void
 c6x_expand_prologue (void)
 {
   struct c6x_frame frame;
-  rtx insn, mem;
+  rtx_insn *insn;
+  rtx mem;
   int nsaved = 0;
   HOST_WIDE_INT initial_offset, off, added_already;
 

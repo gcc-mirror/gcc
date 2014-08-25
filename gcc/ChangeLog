@@ -1,5 +1,21 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/c6x/c6x-protos.h (c6x_get_unit_specifier): Strengthen
+	param from rtx to rtx_insn *.
+	(c6x_final_prescan_insn): Likewise for first param.
+
+	* config/c6x/c6x.c (c6x_current_insn): Likewise for this variable.
+	(c6x_output_mi_thunk): Replace use of NULL_RTX with NULL.
+	(c6x_expand_compare): Strengthen local "insns" from rtx to
+	rtx_insn *.
+	(c6x_get_unit_specifier): Likewise for param "insn".
+	(c6x_print_unit_specifier_field): Likewise.
+	(c6x_final_prescan_insn): Likewise.
+	(emit_add_sp_const): Likewise for local "insn".
+	(c6x_expand_prologue): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/bfin/bfin-protos.h (asm_conditional_branch): Strengthen
 	param 1 from rtx to rtx_insn *.
 	* config/bfin/bfin.c (expand_prologue_reg_save): Likewise for
