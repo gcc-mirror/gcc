@@ -1,5 +1,14 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.c (thread_prologue_and_epilogue_insns): Likewise for
+	locals "returnjump", "epilogue_end", "insn", "next".
+
+	* shrink-wrap.h (get_unconverted_simple_return): Strengthen param
+	"returnjump" from rtx * to rtx_insn **.
+	* shrink-wrap.c (get_unconverted_simple_return): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (struct edge_def). Strengthen "r" within
 	union edge_def_insns from rtx to rtx_insn *.
 

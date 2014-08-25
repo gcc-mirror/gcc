@@ -790,7 +790,7 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 edge
 get_unconverted_simple_return (edge exit_fallthru_edge, bitmap_head bb_flags,
 			       vec<edge> *unconverted_simple_returns,
-			       rtx *returnjump)
+			       rtx_insn **returnjump)
 {
   if (optimize)
     {
