@@ -1,5 +1,11 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/score/score.c (score_output_mi_thunk): Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(score_prologue): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/s390/s390-protos.h (s390_match_ccmode): Strengthen param
 	1 from rtx to rtx_insn *.
 	(s390_emit_jump): Likewise for return type.
