@@ -1,3 +1,9 @@
+2014-08-25  Petr Murzin  <petr.murzin@intel.com>
+
+	* config/i386/i386.md (SWI1248_AVX512BW): New mode iterator.
+	(*k<logic><mode>): Add *k<logic>qi and *k<logic>hi and use
+	SWI1248_AVX512BW mode iterator.
+
 2014-08-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/62111
