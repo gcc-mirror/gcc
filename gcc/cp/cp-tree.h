@@ -4728,7 +4728,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS: do not omit template arguments
        identical to their defaults.
    TFF_NO_TEMPLATE_BINDINGS: do not print information about the template
-       arguments for a function template specialization.  */
+       arguments for a function template specialization.
+   TFF_POINTER: we are printing a pointer type.  */
 
 #define TFF_PLAIN_IDENTIFIER			(0)
 #define TFF_SCOPE				(1)
@@ -4745,6 +4746,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define TFF_UNQUALIFIED_NAME			(1 << 11)
 #define TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS	(1 << 12)
 #define TFF_NO_TEMPLATE_BINDINGS		(1 << 13)
+#define TFF_POINTER		                (1 << 14)
 
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */
