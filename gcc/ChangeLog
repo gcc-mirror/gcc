@@ -1,3 +1,8 @@
+2014-08-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* tree-nested.c (finalize_nesting_tree_1): Initialize temporary earlier
+	rather than modifying the stmt.
+
 2014-08-25  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/rs6000/rs6000.c (rs6000_return_in_msb): Fix fallout from
