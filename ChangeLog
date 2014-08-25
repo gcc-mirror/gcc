@@ -1,5 +1,9 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtx-classes-status.txt (TODO): Remove SET_BB_FOOTER.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtx-classes-status.txt: Phase 3 (per-file commits within
 	"config" subdirs) is done; begin phase 4 (removal of
 	"scaffolding").

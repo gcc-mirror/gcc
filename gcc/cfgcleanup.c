@@ -2676,13 +2676,13 @@ try_optimize_cfg (int mode)
 				{
 				  if (BB_FOOTER (b))
 				    {
-				      SET_BB_FOOTER (e->src) = BB_FOOTER (b);
-				      SET_BB_FOOTER (b) = NULL;
+				      BB_FOOTER (e->src) = BB_FOOTER (b);
+				      BB_FOOTER (b) = NULL;
 				    }
 				  else
 				    {
 				      start_sequence ();
-				      SET_BB_FOOTER (e->src) = emit_barrier ();
+				      BB_FOOTER (e->src) = emit_barrier ();
 				      end_sequence ();
 				    }
 				}
