@@ -1958,9 +1958,8 @@ dump_basic_block_info (FILE *file, rtx_insn *insn, basic_block *start_to_bb,
    For description of args, see `final_start_function', above.  */
 
 void
-final (rtx uncast_first, FILE *file, int optimize_p)
+final (rtx_insn *first, FILE *file, int optimize_p)
 {
-  rtx_insn *first = safe_as_a <rtx_insn *> (uncast_first);
   rtx_insn *insn, *next;
   int seen = 0;
 
