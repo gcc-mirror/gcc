@@ -4586,8 +4586,8 @@ create_block_for_bookkeeping (edge e1, edge e2)
 
   /* Move note_list from the upper bb.  */
   gcc_assert (BB_NOTE_LIST (new_bb) == NULL_RTX);
-  SET_BB_NOTE_LIST (new_bb) = BB_NOTE_LIST (bb);
-  SET_BB_NOTE_LIST (bb) = NULL_RTX;
+  BB_NOTE_LIST (new_bb) = BB_NOTE_LIST (bb);
+  BB_NOTE_LIST (bb) = NULL;
 
   gcc_assert (e2->dest == bb);
 

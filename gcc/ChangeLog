@@ -1,5 +1,27 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched-ir.h (struct sel_region_bb_info_def): Strengthen field
+	"note_list" from rtx to rtx_insn *.
+	(BB_NOTE_LIST): Replace this function and...
+	(SET_BB_NOTE_LIST): ...this function with...
+	(BB_NOTE_LIST): ...the former macro implementation.
+
+	* sched-int.h (concat_note_lists): Strengthen param "from_end" and
+	local "from_start" from rtx to rtx_insn *.  Strengthen param
+	"to_endp" from rtx * to rtx_insn **.
+
+	* haifa-sched.c (concat_note_lists): Likewise.
+	* sel-sched-ir.c (init_bb): Eliminate SET_BB_NOTE_LIST in favor of
+	BB_NOTE_LIST.
+	(sel_restore_notes): Likewise.
+	(move_bb_info): Likewise.
+	(BB_NOTE_LIST): Delete this function.
+	(SET_BB_NOTE_LIST): Delete this function.
+	* sel-sched.c (create_block_for_bookkeeping): Eliminate
+	SET_BB_NOTE_LIST in favor of BB_NOTE_LIST.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* target.def (reorder): Strengthen param "ready" of this DEFHOOK
 	from rtx * to rtx_insn **.
 	(reorder2): Likewise.

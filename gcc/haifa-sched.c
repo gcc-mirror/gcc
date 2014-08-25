@@ -4005,9 +4005,9 @@ schedule_insn (rtx_insn *insn)
 
 /* Add note list that ends on FROM_END to the end of TO_ENDP.  */
 void
-concat_note_lists (rtx from_end, rtx *to_endp)
+concat_note_lists (rtx_insn *from_end, rtx_insn **to_endp)
 {
-  rtx from_start;
+  rtx_insn *from_start;
 
   /* It's easy when have nothing to concat.  */
   if (from_end == NULL)
