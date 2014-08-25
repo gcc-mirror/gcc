@@ -1,5 +1,9 @@
 2014-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.old-deja/g++.pt/var1.C: Use c++14, not c++1y, in dg-error.
+
+2014-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/34938
 	* g++.dg/template/pr34938-1.C: New.
 	* g++.dg/template/pr34938-2.C: Likewise.
