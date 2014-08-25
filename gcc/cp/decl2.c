@@ -994,6 +994,10 @@ grokfield (const cp_declarator *declarator,
       && DECL_CONTEXT (value) != current_class_type)
     return value;
 
+  /* Need to set this before push_template_decl.  */
+  if (TREE_CODE (value) == VAR_DECL)
+    DECL_CONTEXT (value) = current_class_type;
+
   if (processing_template_decl && VAR_OR_FUNCTION_DECL_P (value))
     {
       value = push_template_decl (value);
