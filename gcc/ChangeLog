@@ -1,3 +1,17 @@
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Strengthen local "insns" from rtx to rtx_insn *.
+	(aarch64_set_frame_expr): Likewise for local "insn".
+	(aarch64_save_or_restore_fprs): Likewise.
+	(aarch64_save_or_restore_callee_save_registers): Likewise.
+	(aarch64_expand_prologue): Likewise.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_output_mi_thunk): Likewise.
+	(aarch64_split_compare_and_swap): Strengthen locals "label1" and
+	"label2" from rtx to rtx_code_label *.
+	(aarch64_split_atomic_op): Likewise for local "label".
+
 2014-08-25  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.h (symtab_node):
