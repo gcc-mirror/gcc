@@ -640,9 +640,8 @@ enum cxx_dialect {
   /* C++11  */
   cxx0x,
   cxx11 = cxx0x,
-  /* C++14  */
-  cxx1y,
-  cxx14 = cxx1y,
+  /* C++14 */
+  cxx14,
   /* C++1z (C++17?) */
   cxx1z
 };
