@@ -73,7 +73,8 @@ extern rtx picochip_get_high_const (rtx value);
 extern void picochip_expand_prologue (void);
 extern void picochip_expand_epilogue (int is_sibling_call);
 
-extern void picochip_final_prescan_insn (rtx insn, rtx * operand, int num_operands);
+extern void picochip_final_prescan_insn (rtx_insn *insn, rtx * operand,
+					 int num_operands);
 extern const char *picochip_asm_output_opcode (FILE * f, const char *ptr);
 
 extern int picochip_check_conditional_copy (rtx * operands);

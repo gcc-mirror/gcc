@@ -1,5 +1,13 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/picochip/picochip-protos.h (picochip_final_prescan_insn):
+	Strengthen param "insn" from rtx to rtx_insn *.
+	* config/picochip/picochip.c (picochip_current_prescan_insn):
+	Likewise for this variable.
+	(picochip_final_prescan_insn): Likewise for param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/pa/pa-protos.h (pa_output_call): Strengthen first param
 	from rtx to rtx_insn *.
 	(pa_output_indirect_call): Likewise.
