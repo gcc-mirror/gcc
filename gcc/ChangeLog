@@ -1,5 +1,21 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/xtensa/xtensa-protos.h (xtensa_emit_loop_end): Strengthen
+	first param from rtx to rtx_insn *.
+	* config/xtensa/xtensa.c (struct machine_function): Likewise for
+	field "set_frame_ptr_insn".
+	(xtensa_expand_compare_and_swap): Strengthen locals "csloop" and
+	"csend" from rtx to rtx_code_label *.
+	(xtensa_expand_atomic): Likewise for local "csloop".
+	(xtensa_emit_loop_end): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(xtensa_call_tls_desc): Likewise for return type and locals
+	"call_insn", "insns".
+	(xtensa_legitimize_tls_address): Likewise for local "insns".
+	(xtensa_expand_prologue): Likewise for locals "insn", "first".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/v850/v850-protos.h (v850_adjust_insn_length): Strengthen
 	first param from rtx to rtx_insn *.
 	* config/v850/v850.c (v850_adjust_insn_length): Likewise for param
