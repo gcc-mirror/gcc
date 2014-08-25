@@ -1,5 +1,12 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/v850/v850-protos.h (v850_adjust_insn_length): Strengthen
+	first param from rtx to rtx_insn *.
+	* config/v850/v850.c (v850_adjust_insn_length): Likewise for param
+	"insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/tilepro/tilepro-protos.h (tilepro_output_cbranch_with_opcode):
 	Strengthen param 1 from rtx to rtx_insn *.
 	(tilepro_output_cbranch): Likewise.
