@@ -87,7 +87,7 @@ struct GTY(()) eh_landing_pad_d
      EXCEPTION_RECEIVER pattern will be expanded here, as well as other
      bookkeeping specific to exceptions.  There must not be normal edges
      into the block containing the landing-pad label.  */
-  rtx landing_pad;
+  rtx_code_label *landing_pad;
 
   /* The index of this landing pad within fun->eh->lp_array.  */
   int index;
