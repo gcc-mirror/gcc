@@ -1,5 +1,106 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/avr/avr-protos.h (output_movqi): Strengthen first param
+	from rtx to rtx_insn *.
+	(output_movhi): Likewise.
+	(output_movsisf): Likewise.
+	(avr_out_tstsi): Likewise.
+	(avr_out_tsthi): Likewise.
+	(avr_out_tstpsi): Likewise.
+	(avr_out_compare): Likewise.
+	(avr_out_compare64): Likewise.
+	(avr_out_movpsi): Likewise.
+	(ashlqi3_out): Likewise.
+	(ashlhi3_out): Likewise.
+	(ashlsi3_out): Likewise.
+	(ashrqi3_out): Likewise.
+	(ashrhi3_out): Likewise.
+	(ashrsi3_out): Likewise.
+	(lshrqi3_out): Likewise.
+	(lshrhi3_out): Likewise.
+	(lshrsi3_out): Likewise.
+	(avr_out_ashlpsi3): Likewise.
+	(avr_out_ashrpsi3): Likewise.
+	(avr_out_lshrpsi3): Likewise.
+	(avr_out_fract): Likewise.
+	(avr_out_sbxx_branch): Likewise.
+	(avr_out_round): Likewise.
+	(avr_out_xload): Likewise.
+	(avr_out_movmem): Likewise.
+	(adjust_insn_length): Likewise.
+	(avr_out_lpm): Likewise.
+	(reg_unused_after): Likewise.
+	(_reg_unused_after): Likewise.
+	(avr_jump_mode): Likewise for second param.
+	(jump_over_one_insn): Likewise for first param.
+	(avr_final_prescan_insn): Likewise.
+	(out_shift_with_cnt): Likewise for second param.
+
+	* config/avr/avr.c (get_sequence_length): Likewise for param
+	"insns" and local "insn".
+	(emit_push_byte): Likewise for local "insn".
+	(emit_push_sfr): Likewise.
+	(avr_prologue_setup_frame): Likewise for locals "insn",
+	"fp_plus_insns", "sp_plus_insns".
+	(avr_expand_epilogue): Likewise for local "fp_plus_insns",
+	"sp_plus_insns".
+	(avr_jump_mode): Likewise for param "insn".
+	(avr_final_prescan_insn): Likewise.
+	(avr_find_unused_d_reg): Likewise.
+	(avr_out_lpm_no_lpmx): Likewise.
+	(avr_out_lpm): Likewise.
+	(avr_out_xload): Likewise.
+	(output_movqi): Likewise.
+	(output_movhi): Likewise.
+	(out_movqi_r_mr): Likewise.
+	(out_movhi_r_mr): Likewise.
+	(out_movsi_r_mr): Likewise.
+	(out_movsi_mr_r): Likewise.
+	(output_movsisf): Likewise.
+	(avr_out_load_psi): Likewise.
+	(avr_out_store_psi): Likewise.
+	(avr_out_movpsi): Likewise.
+	(out_movqi_mr_r): Likewise.
+	(avr_out_movhi_mr_r_xmega): Likewise.
+	(out_movhi_mr_r): Likewise.
+	(compare_condition): Likewise for param "insn" and local "next".
+	(compare_sign_p): Likewise for param "insn".
+	(compare_diff_p): Likewise.
+	(compare_eq_p): Likewise.
+	(avr_out_compare): Likewise.
+	(avr_out_compare64): Likewise.
+	(avr_out_tsthi): Likewise.
+	(avr_out_tstpsi): Likewise.
+	(avr_out_tstsi): Likewise.
+	(out_shift_with_cnt): Likewise.
+	(ashlqi3_out): Likewise.
+	(ashlhi3_out): Likewise.
+	(avr_out_ashlpsi3): Likewise.
+	(ashlsi3_out): Likewise.
+	(ashrqi3_out): Likewise.
+	(ashrhi3_out): Likewise.
+	(avr_out_ashrpsi3): Likewise.
+	(ashrsi3_out): Likewise.
+	(lshrqi3_out): Likewise.
+	(lshrhi3_out): Likewise.
+	(avr_out_lshrpsi3): Likewise.
+	(lshrsi3_out): Likewise.
+	(avr_out_fract): Likewise.
+	(avr_out_round): Likewise.
+	(avr_adjust_insn_length): Likewise.
+	(reg_unused_after): Likewise.
+	(_reg_unused_after): Likewise.
+	(avr_compare_pattern): Likewise.
+	(avr_reorg_remove_redundant_compare): Likewise for param "insn1"
+	and locals "branch1", "branch2", "insn2", "jump".
+	(avr_reorg): Likewise for local "insn".
+	(avr_2word_insn_p): Likewise for param "insn".
+	(jump_over_one_insn_p): Likewise.
+	(avr_out_sbxx_branch): Likewise.
+	(avr_out_movmem): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/arm/arm-protos.h (arm_final_prescan_insn): Strengthen
 	param from rtx to rtx_insn *.
 	(thumb1_final_prescan_insn): Likewise.
