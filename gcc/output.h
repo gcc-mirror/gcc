@@ -57,7 +57,7 @@ extern void shorten_branches (rtx_insn *);
    for the new function.  The label for the function and associated
    assembler pseudo-ops have already been output in
    `assemble_start_function'.  */
-extern void final_start_function (rtx, FILE *, int);
+extern void final_start_function (rtx_insn *, FILE *, int);
 
 /* Output assembler code for the end of a function.
    For clarity, args are same as those of `final_start_function'

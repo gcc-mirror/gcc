@@ -1729,10 +1729,9 @@ reemit_insn_block_notes (void)
      test and compare insns.  */
 
 void
-final_start_function (rtx uncast_first, FILE *file,
+final_start_function (rtx_insn *first, FILE *file,
 		      int optimize_p ATTRIBUTE_UNUSED)
 {
-  rtx_insn *first = safe_as_a <rtx_insn *> (uncast_first);
   block_depth = 0;
 
   this_is_asm_operands = 0;
