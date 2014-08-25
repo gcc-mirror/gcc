@@ -1,5 +1,19 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/microblaze/microblaze.c (microblaze_call_tls_get_addr):
+	Strengthen return type and local "insns" from rtx to rtx_insn *.
+	(microblaze_legitimize_tls_address): Likewise for local "insns".
+	(microblaze_block_move_loop): Strengthen local "label" from rtx
+	to rtx_code_label *.
+	(microblaze_expand_prologue): Strengthen two locals named "insn"
+	from rtx to rtx_insn *.
+	(microblaze_asm_output_mi_thunk): Likewise for local "insn".
+	(microblaze_expand_divide): Likewise for locals "jump", "cjump",
+	"insn".  Strengthen locals "div_label", "div_end_label" from rtx
+	to rtx_code_label *.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/mep/mep-protos.h (mep_mulr_source): Strengthen first
 	param from rtx to rtx_insn *.
 	(mep_reuse_lo): Likewise for third param.
