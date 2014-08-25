@@ -1,5 +1,10 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* regrename.h (struct du_chain): Strengthen field "insn" from rtx
+	to rtx_insn *.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* sel-sched-ir.h (struct sel_region_bb_info_def): Strengthen field
 	"note_list" from rtx to rtx_insn *.
 	(BB_NOTE_LIST): Replace this function and...
