@@ -1,3 +1,8 @@
+2014-08-25  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/rs6000/rs6000.c (rs6000_return_in_msb): Fix fallout from
+	cgraph_state conversion.
+
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
@@ -32,7 +37,7 @@
 	(void remove_caller (void)): created from cgraph_edge_remove_caller
 	(void remove_callee (void)): created from cgraph_edge_remove_callee
 	(void set_call_stmt (gimple new_stmt, bool update_speculative = true)):
-	  created from cgraph_set_call_stmt	
+	  created from cgraph_set_call_stmt
 	(void redirect_callee (cgraph_node *n)): created from cgraph_redirect_edge_callee
 	(cgraph_edge *make_direct (cgraph_node *callee)): created from cgraph_make_edge_direct
 	(cgraph_edge *make_speculative (cgraph_node *n2, gcov_type direct_count,
@@ -45,7 +50,7 @@
 	(bool cannot_lead_to_return_p (void)): created from cannot_lead_to_return_p
 	(bool recursive_p (void)): created from cgraph_edge_recursive_p
 	(bool maybe_hot_p (void)): created from cgraph_maybe_hot_edge_p
-	(static unsigned int rebuild_edges (void)): created from rebuild_cgraph_edges 
+	(static unsigned int rebuild_edges (void)): created from rebuild_cgraph_edges
 	(static void rebuild_references (void)): created from cgraph_rebuild_references
 	* cgraph.h (symbol_table):
 	(create_reference): renamed from add_reference
