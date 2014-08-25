@@ -3092,7 +3092,7 @@ v850_memory_move_cost (enum machine_mode mode,
 }
 
 int
-v850_adjust_insn_length (rtx insn, int length)
+v850_adjust_insn_length (rtx_insn *insn, int length)
 {
   if (TARGET_V850E3V5_UP)
     {
