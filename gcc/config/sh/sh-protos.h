@@ -95,11 +95,12 @@ extern rtx sh_fsca_int2sf (void);
 /* Declare functions defined in sh.c and used in templates.  */
 
 extern const char *output_branch (int, rtx, rtx *);
-extern const char *output_ieee_ccmpeq (rtx, rtx *);
-extern const char *output_branchy_insn (enum rtx_code, const char *, rtx, rtx *);
+extern const char *output_ieee_ccmpeq (rtx_insn *, rtx *);
+extern const char *output_branchy_insn (enum rtx_code, const char *,
+					rtx_insn *, rtx *);
 extern const char *output_movedouble (rtx, rtx[], enum machine_mode);
 extern const char *output_movepcrel (rtx, rtx[], enum machine_mode);
-extern const char *output_far_jump (rtx, rtx);
+extern const char *output_far_jump (rtx_insn *, rtx);
 
 extern rtx sfunc_uses_reg (rtx);
 extern int barrier_align (rtx);
@@ -145,7 +146,7 @@ extern rtx gen_datalabel_ref (rtx);
 extern int regs_used (rtx, int);
 extern void fixup_addr_diff_vecs (rtx);
 extern int get_dest_uid (rtx, int);
-extern void final_prescan_insn (rtx, rtx *, int);
+extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern enum tls_model tls_symbolic_operand (rtx, enum machine_mode);
 extern bool system_reg_operand (rtx, enum machine_mode);
 extern bool reg_unused_after (rtx, rtx);
@@ -153,7 +154,7 @@ extern void expand_sf_unop (rtx (*)(rtx, rtx, rtx), rtx *);
 extern void expand_sf_binop (rtx (*)(rtx, rtx, rtx, rtx), rtx *);
 extern void expand_df_unop (rtx (*)(rtx, rtx, rtx), rtx *);
 extern void expand_df_binop (rtx (*)(rtx, rtx, rtx, rtx), rtx *);
-extern int sh_insn_length_adjustment (rtx);
+extern int sh_insn_length_adjustment (rtx_insn *);
 extern bool sh_can_redirect_branch (rtx, rtx);
 extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
 extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
