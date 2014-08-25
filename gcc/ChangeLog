@@ -1,5 +1,41 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/arm/arm-protos.h (arm_final_prescan_insn): Strengthen
+	param from rtx to rtx_insn *.
+	(thumb1_final_prescan_insn): Likewise.
+	(thumb2_final_prescan_insn): Likewise.
+
+	* config/arm/arm.c (emit_set_insn): Strengthen return type from
+	rtx to rtx_insn *.
+	(struct minipool_node): Likewise for field "insn".
+	(dump_minipool): Likewise for param "scan".
+	(create_fix_barrier): Likewise for local "from".  Strengthen local
+	"label" from rtx to rtx_code_label *.
+	(push_minipool_barrier): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(push_minipool_fix): Likewise.
+	(note_invalid_constants): Likewise.
+	(thumb2_reorg): Likewise for local "insn".
+	(arm_reorg): Likewise.
+	(thumb2_final_prescan_insn): Likewise for param
+	"insn" and local "first_insn".
+	(arm_final_prescan_insn): Likewise for param "insn" and locals
+	"start_insn", "this_insn".
+	(arm_debugger_arg_offset): Likewise for param "insn".
+	(thumb1_emit_multi_reg_push): Likewise for return type and local
+	"insn".
+	(thumb1_final_prescan_insn): Likewise for param "insn".
+	(thumb_far_jump_used_p): Likewise for local "insn".
+	(thumb1_expand_prologue): Likewise.
+	(arm_expand_epilogue_apcs_frame): Likewise.
+	(arm_expand_epilogue): Likewise for locals "insn", "tmp".
+	(arm_split_compare_and_swap): Strengthen locals "label1", "label2"
+	from rtx to rtx_code_label *.
+	(arm_split_atomic_op): Likewise for local "label".
+	(arm_emit_coreregs_64bit_shift): Likewise for local "done_label".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/arc/arc-protos.h (arc_final_prescan_insn): Strengthen
 	first param from rtx to rtx_insn *.
 	(arc_verify_short): Likewise.
