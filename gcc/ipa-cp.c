@@ -498,7 +498,7 @@ gather_caller_stats (struct cgraph_node *node, void *data)
 	stats->count_sum += cs->count;
 	stats->freq_sum += cs->frequency;
 	stats->n_calls++;
-	if (cgraph_maybe_hot_edge_p (cs))
+	if (cs->maybe_hot_p ())
 	  stats->n_hot_calls ++;
       }
   return false;
@@ -585,8 +585,9 @@ struct topo_info
 static void
 build_toporder_info (struct topo_info *topo)
 {
-  topo->order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
-  topo->stack = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  topo->order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
+  topo->stack = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
+
   topo->stack_top = 0;
   topo->nnodes = ipa_reduced_postorder (topo->order, true, true, NULL);
 }
@@ -2284,7 +2285,7 @@ propagate_effects (void)
       for (val = base; val; val = val->scc_next)
 	for (src = val->sources; src; src = src->next)
 	  if (src->val
-	      && cgraph_maybe_hot_edge_p (src->cs))
+	      && src->cs->maybe_hot_p ())
 	    {
 	      src->val->prop_time_benefit = safe_add (time,
 						src->val->prop_time_benefit);
@@ -2415,11 +2416,11 @@ static inline void
 grow_edge_clone_vectors (void)
 {
   if (next_edge_clone.length ()
-      <=  (unsigned) cgraph_edge_max_uid)
-    next_edge_clone.safe_grow_cleared (cgraph_edge_max_uid + 1);
+      <=  (unsigned) symtab->edges_max_uid)
+    next_edge_clone.safe_grow_cleared (symtab->edges_max_uid + 1);
   if (prev_edge_clone.length ()
-      <=  (unsigned) cgraph_edge_max_uid)
-    prev_edge_clone.safe_grow_cleared (cgraph_edge_max_uid + 1);
+      <=  (unsigned) symtab->edges_max_uid)
+    prev_edge_clone.safe_grow_cleared (symtab->edges_max_uid + 1);
 }
 
 /* Edge duplication hook to grow the appropriate linked list in
@@ -2555,7 +2556,7 @@ get_info_about_necessary_edges (struct ipcp_value *val, int *freq_sum,
 	      count++;
 	      freq += cs->frequency;
 	      cnt += cs->count;
-	      hot |= cgraph_maybe_hot_edge_p (cs);
+	      hot |= cs->maybe_hot_p ();
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
@@ -2805,7 +2806,7 @@ create_specialized_node (struct cgraph_node *node,
 					 args_to_skip, "constprop");
   ipa_set_node_agg_value_chain (new_node, aggvals);
   for (av = aggvals; av; av = av->next)
-    new_node->maybe_add_reference (av->value, IPA_REF_ADDR, NULL);
+    new_node->maybe_create_reference (av->value, IPA_REF_ADDR, NULL);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3366,7 +3367,7 @@ perhaps_add_new_callers (struct cgraph_node *node, struct ipcp_value *val)
 			     xstrdup (val->spec_node->name ()),
 			     val->spec_node->order);
 
-		  cgraph_redirect_edge_callee (cs, val->spec_node);
+		  cs->redirect_callee (val->spec_node);
 		  redirected_sum += cs->count;
 		}
 	    }
@@ -3687,9 +3688,9 @@ ipcp_driver (void)
   ipa_check_create_edge_args ();
   grow_edge_clone_vectors ();
   edge_duplication_hook_holder =
-    cgraph_add_edge_duplication_hook (&ipcp_edge_duplication_hook, NULL);
+    symtab->add_edge_duplication_hook (&ipcp_edge_duplication_hook, NULL);
   edge_removal_hook_holder =
-    cgraph_add_edge_removal_hook (&ipcp_edge_removal_hook, NULL);
+    symtab->add_edge_removal_hook (&ipcp_edge_removal_hook, NULL);
 
   ipcp_values_pool = create_alloc_pool ("IPA-CP values",
 					sizeof (struct ipcp_value), 32);
@@ -3716,8 +3717,8 @@ ipcp_driver (void)
   /* Free all IPCP structures.  */
   free_toporder_info (&topo);
   next_edge_clone.release ();
-  cgraph_remove_edge_removal_hook (edge_removal_hook_holder);
-  cgraph_remove_edge_duplication_hook (edge_duplication_hook_holder);
+  symtab->remove_edge_removal_hook (edge_removal_hook_holder);
+  symtab->remove_edge_duplication_hook (edge_duplication_hook_holder);
   ipa_free_all_structures_after_ipa_cp ();
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation end\n");

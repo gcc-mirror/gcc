@@ -4907,7 +4907,7 @@ expand_omp_taskreg (struct omp_region *region)
       push_cfun (child_cfun);
       if (optimize)
 	optimize_omp_library_calls (entry_stmt);
-      rebuild_cgraph_edges ();
+      cgraph_edge::rebuild_edges ();
 
       /* Some EH regions might become dead, see PR34608.  If
 	 pass_cleanup_cfg isn't the first pass to happen with the
@@ -8022,7 +8022,7 @@ expand_omp_target (struct omp_region *region)
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
-      rebuild_cgraph_edges ();
+      cgraph_edge::rebuild_edges ();
 
       /* Some EH regions might become dead, see PR34608.  If
 	 pass_cleanup_cfg isn't the first pass to happen with the
@@ -11051,7 +11051,7 @@ simd_clone_create (struct cgraph_node *old_node)
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
       DECL_STATIC_DESTRUCTOR (new_decl) = 0;
       new_node = old_node->create_version_clone (new_decl, vNULL, NULL);
-      new_node->call_function_insertion_hooks ();
+      symtab->call_cgraph_insertion_hooks (new_node);
     }
   if (new_node == NULL)
     return new_node;
@@ -11884,7 +11884,7 @@ expand_simd_clones (struct cgraph_node *node)
 	      clone->prev_clone->simdclone->next_clone = n;
 	      node->simd_clones->simdclone->prev_clone = n;
 	    }
-	  change_decl_assembler_name (n->decl, id);
+	  symtab->change_decl_assembler_name (n->decl, id);
 	  /* And finally adjust the return type, parameters and for
 	     definitions also function body.  */
 	  if (node->definition)

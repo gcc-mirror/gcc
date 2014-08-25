@@ -5664,7 +5664,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       && !(profile_flag && !flag_fentry))
     {
       /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
-      struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE (decl));
+      cgraph_local_info *i = cgraph_node::local_info (CONST_CAST_TREE (decl));
       if (i && i->local && i->can_change_signature)
 	{
 	  int local_regparm, globals = 0, regno;
@@ -5741,7 +5741,7 @@ ix86_function_sseregparm (const_tree type, const_tree decl, bool warn)
       && !(profile_flag && !flag_fentry))
     {
       /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
-      struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE(decl));
+      cgraph_local_info *i = cgraph_node::local_info (CONST_CAST_TREE(decl));
       if (i && i->local && i->can_change_signature)
 	return TARGET_SSE2 ? 2 : 1;
     }
@@ -6150,7 +6150,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 
   if (fndecl)
     {
-      i = cgraph_local_info (fndecl);
+      i = cgraph_node::local_info (fndecl);
       cum->call_abi = ix86_function_abi (fndecl);
     }
   else
@@ -32231,7 +32231,7 @@ make_resolver_func (const tree default_decl,
   *empty_bb = init_lowered_empty_function (decl, false);
 
   cgraph_node::add_new_function (decl, true);
-  cgraph_node::get_create (decl)->call_function_insertion_hooks ();
+  symtab->call_cgraph_insertion_hooks (cgraph_node::get_create (decl));
 
   pop_cfun ();
 
@@ -32304,7 +32304,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
     }
 
   dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
-  rebuild_cgraph_edges (); 
+  cgraph_edge::rebuild_edges ();
   pop_cfun ();
   return resolver_decl;
 }
@@ -32493,7 +32493,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 					"__cpu_model");
 
 
-  varpool_add_new_variable (__cpu_model_var);
+  varpool_node::add (__cpu_model_var);
 
   gcc_assert ((args != NULL) && (*args != NULL));
 

@@ -1090,8 +1090,8 @@ coverage_obj_init (void)
   if (!prg_ctr_mask)
     return false;
 
-  if (cgraph_dump_file)
-    fprintf (cgraph_dump_file, "Using data file %s\n", da_file_name);
+  if (symtab->dump_file)
+    fprintf (symtab->dump_file, "Using data file %s\n", da_file_name);
 
   /* Prune functions.  */
   for (fn_prev = &functions_head; (fn = *fn_prev);)

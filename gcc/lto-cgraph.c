@@ -789,7 +789,7 @@ add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
 /* Add all references in NODE to encoders.  */
 
 static void
-add_references (lto_symtab_encoder_t encoder, symtab_node *node)
+create_references (lto_symtab_encoder_t encoder, symtab_node *node)
 {
   int i;
   struct ipa_ref *ref = NULL;
@@ -828,7 +828,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       struct cgraph_node *node = lsei_cgraph_node (lsei);
       add_node_to (encoder, node, true);
       lto_set_symtab_encoder_in_partition (encoder, node);
-      add_references (encoder, node);
+      create_references (encoder, node);
       /* For proper debug info, we need to ship the origins, too.  */
       if (DECL_ABSTRACT_ORIGIN (node->decl))
 	{
@@ -844,7 +844,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 
       lto_set_symtab_encoder_in_partition (encoder, vnode);
       lto_set_symtab_encoder_encode_initializer (encoder, vnode);
-      add_references (encoder, vnode);
+      create_references (encoder, vnode);
       /* For proper debug info, we need to ship the origins, too.  */
       if (DECL_ABSTRACT_ORIGIN (vnode->decl))
 	{
@@ -866,7 +866,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      && vnode->ctor_useable_for_folding_p ())
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
-	      add_references (encoder, vnode);
+	      create_references (encoder, vnode);
 	    }
        }
     }
@@ -1114,7 +1114,6 @@ input_node (struct lto_file_decl_data *file_data,
   int i, count;
   tree group;
   const char *section;
-
   order = streamer_read_hwi (ib) + order_base;
   clone_ref = streamer_read_hwi (ib);
 
@@ -1132,14 +1131,14 @@ input_node (struct lto_file_decl_data *file_data,
       /* Declaration of functions can be already merged with a declaration
 	 from other input file.  We keep cgraph unmerged until after streaming
 	 of ipa passes is done.  Alays forcingly create a fresh node.  */
-      node = cgraph_node::create_empty ();
+      node = symtab->create_empty ();
       node->decl = fn_decl;
       node->register_symbol ();
     }
 
   node->order = order;
-  if (order >= symtab_order)
-    symtab_order = order + 1;
+  if (order >= symtab->order)
+    symtab->order = order + 1;
 
   node->count = streamer_read_gcov_count (ib);
   node->count_materialization_scale = streamer_read_hwi (ib);
@@ -1241,8 +1240,8 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->register_symbol ();
 
   node->order = order;
-  if (order >= symtab_order)
-    symtab_order = order + 1;
+  if (order >= symtab->order)
+    symtab->order = order + 1;
   node->lto_file_data = file_data;
 
   bp = streamer_read_bitpack (ib);
@@ -1308,7 +1307,7 @@ input_ref (struct lto_input_block *ib,
   use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
   speculative = (enum ipa_ref_use) bp_unpack_value (&bp, 1);
   node = nodes[streamer_read_hwi (ib)];
-  ref = referring_node->add_reference (node, use);
+  ref = referring_node->create_reference (node, use);
   ref->speculative = speculative;
   if (is_a <cgraph_node *> (referring_node))
     ref->lto_stmt_uid = streamer_read_hwi (ib);
@@ -1397,7 +1396,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   unsigned i;
 
   tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
-  order_base = symtab_order;
+  order_base = symtab->order;
   while (tag)
     {
       if (tag == LTO_symtab_edge)

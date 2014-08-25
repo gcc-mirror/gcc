@@ -320,7 +320,7 @@ write_global_declarations (void)
   timevar_start (TV_PHASE_OPT_GEN);
   /* This lang hook is dual-purposed, and also finalizes the
      compilation unit.  */
-  finalize_compilation_unit ();
+  symtab->finalize_compilation_unit ();
   timevar_stop (TV_PHASE_OPT_GEN);
 
   timevar_start (TV_PHASE_DBGINFO);

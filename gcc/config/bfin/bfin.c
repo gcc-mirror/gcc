@@ -1045,7 +1045,7 @@ bfin_load_pic_reg (rtx dest)
   struct cgraph_local_info *i = NULL;
   rtx addr;
  
-  i = cgraph_local_info (current_function_decl);
+  i = cgraph_node::local_info (current_function_decl);
  
   /* Functions local to the translation unit don't need to reload the
      pic reg, since the caller always passes a usable one.  */
@@ -1839,8 +1839,8 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
     /* Not enough information.  */
     return false;
  
-  this_func = cgraph_local_info (current_function_decl);
-  called_func = cgraph_local_info (decl);
+  this_func = cgraph_node::local_info (current_function_decl);
+  called_func = cgraph_node::local_info (decl);
   if (!called_func)
     return false;
   return !called_func->local || this_func->local;

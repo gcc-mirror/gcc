@@ -16619,7 +16619,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	    }
 	}
       else
-	add_asm_node (string);
+	symtab->finalize_toplevel_asm (string);
     }
 }
 

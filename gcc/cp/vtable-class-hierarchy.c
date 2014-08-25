@@ -1188,7 +1188,7 @@ vtv_generate_init_routine (void)
       gimplify_function_tree (vtv_fndecl);
       cgraph_node::add_new_function (vtv_fndecl, false);
 
-      cgraph_process_new_functions ();
+      symtab->process_new_functions ();
 
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY)
         assemble_vtv_preinit_initializer (vtv_fndecl);

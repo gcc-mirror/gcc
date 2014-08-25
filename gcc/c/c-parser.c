@@ -1980,7 +1980,7 @@ c_parser_asm_definition (c_parser *parser)
 {
   tree asm_str = c_parser_simple_asm_expr (parser);
   if (asm_str)
-    add_asm_node (asm_str);
+    symtab->finalize_toplevel_asm (asm_str);
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 }
 

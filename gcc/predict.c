@@ -187,31 +187,30 @@ maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 /* Return true if the call can be hot.  */
 
 bool
-cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
+cgraph_edge::maybe_hot_p (void)
 {
   if (profile_info && flag_branch_probabilities
-      && !maybe_hot_count_p (NULL,
-                             edge->count))
+      && !maybe_hot_count_p (NULL, count))
     return false;
-  if (edge->caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
-      || (edge->callee
-	  && edge->callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
+  if (caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
+      || (callee
+	  && callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return false;
-  if (edge->caller->frequency > NODE_FREQUENCY_UNLIKELY_EXECUTED
-      && (edge->callee
-	  && edge->callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE))
+  if (caller->frequency > NODE_FREQUENCY_UNLIKELY_EXECUTED
+      && (callee
+	  && callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE))
     return false;
   if (optimize_size)
     return false;
-  if (edge->caller->frequency == NODE_FREQUENCY_HOT)
+  if (caller->frequency == NODE_FREQUENCY_HOT)
     return true;
-  if (edge->caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && edge->frequency < CGRAPH_FREQ_BASE * 3 / 2)
+  if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+      && frequency < CGRAPH_FREQ_BASE * 3 / 2)
     return false;
   if (flag_guess_branch_prob)
     {
       if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0
-	  || edge->frequency <= (CGRAPH_FREQ_BASE
+	  || frequency <= (CGRAPH_FREQ_BASE
 				 / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
         return false;
     }

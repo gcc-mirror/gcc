@@ -3156,7 +3156,7 @@ rest_of_subprog_body_compilation (tree subprog_decl)
   dump_function (TDI_original, subprog_decl);
 
   if (!decl_function_context (subprog_decl))
-    cgraph_finalize_function (subprog_decl, false);
+    cgraph_node::finalize_function (subprog_decl, false);
   else
     /* Register this function with cgraph just far enough to get it
        added to our parent's nested function list.  */
@@ -5187,7 +5187,7 @@ gnat_write_global_declarations (void)
       debug_hooks->global_decl (iter);
 
   /* Proceed to optimize and emit assembly. */
-  finalize_compilation_unit ();
+  symtab->finalize_compilation_unit ();
 
   /* After cgraph has had a chance to emit everything that's going to
      be emitted, output debug information for the rest of globals.  */

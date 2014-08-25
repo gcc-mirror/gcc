@@ -580,11 +580,11 @@ function_and_variable_visibility (bool whole_program)
 		{
 		  struct cgraph_edge *e = node->callers;
 
-		  cgraph_redirect_edge_callee (e, alias);
+		  e->redirect_callee (alias);
 		  if (gimple_has_body_p (e->caller->decl))
 		    {
 		      push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-		      cgraph_redirect_edge_call_stmt_to_callee (e);
+		      e->redirect_call_stmt_to_callee ();
 		      pop_cfun ();
 		    }
 		}
@@ -717,7 +717,7 @@ function_and_variable_visibility (bool whole_program)
 	  fprintf (dump_file, " %s", vnode->name ());
       fprintf (dump_file, "\n\n");
     }
-  cgraph_function_flags_ready = true;
+  symtab->function_flags_ready = true;
   return 0;
 }
 

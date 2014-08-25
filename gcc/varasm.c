@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "stringpool.h"
-#include "gcc-symtab.h"
 #include "varasm.h"
 #include "flags.h"
 #include "function.h"
@@ -856,7 +855,7 @@ set_user_assembler_name (tree decl, const char *name)
   char *starred = (char *) alloca (strlen (name) + 2);
   starred[0] = '*';
   strcpy (starred + 1, name);
-  change_decl_assembler_name (decl, get_identifier (starred));
+  symtab->change_decl_assembler_name (decl, get_identifier (starred));
   SET_DECL_RTL (decl, NULL_RTX);
 }
 
@@ -2332,8 +2331,8 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
      Ideally, only final.c would be calling this function, but it is
      not clear whether that would break things somehow.  See PR 17982
      for further discussion.  */
-  gcc_assert (cgraph_state == CGRAPH_STATE_EXPANSION
-	      || cgraph_state == CGRAPH_STATE_FINISHED);
+  gcc_assert (state == EXPANSION
+	      || state == FINISHED);
 #endif
 
   if (!DECL_P (decl) || !DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
@@ -5361,7 +5360,7 @@ weak_finish_1 (tree decl)
 static tree
 find_decl (tree target)
 {
-  symtab_node *node = symtab_node_for_asm (target);
+  symtab_node *node = symtab_node::get_for_asmname (target);
   if (node)
     return node->decl;
   return NULL_TREE;
@@ -5656,12 +5655,12 @@ assemble_alias (tree decl, tree target)
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
-  if (cgraph_global_info_ready)
+  if (symtab->global_info_ready)
     target_decl = find_decl (target);
   else
     target_decl= NULL;
   if ((target_decl && TREE_ASM_WRITTEN (target_decl))
-      || cgraph_state >= CGRAPH_STATE_EXPANSION)
+      || symtab->state >= EXPANSION)
     do_assemble_alias (decl, target);
   else
     {
@@ -7591,10 +7590,10 @@ default_asm_output_ident_directive (const char *ident_str)
      to asm_out_file.  Instead, add a fake top-level asm statement.
      This allows the front ends to use this hook without actually
      writing to asm_out_file, to handle #ident or Pragma Ident.  */
-  if (cgraph_state == CGRAPH_STATE_PARSING)
+  if (symtab->state == PARSING)
     {
       char *buf = ACONCAT ((ident_asm_op, "\"", ident_str, "\"\n", NULL));
-      add_asm_node (build_string (strlen (buf), buf));
+      symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
     }
   else
     fprintf (asm_out_file, "%s\"%s\"\n", ident_asm_op, ident_str);

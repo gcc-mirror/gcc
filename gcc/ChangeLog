@@ -1,3 +1,138 @@
+2014-08-25  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h (symtab_node):
+	(bool needed_p (void)): created from decide_is_symbol_needed
+	(bool referred_to_p (void)): created from referred_to_p
+	(static cgraph_node *get_for_asmname (tree asmname)): created from symtab_node_for_asm
+	* cgraph.h (cgraph_node):
+	(void assemble_thunks_and_aliases (void)): created from assemble_thunks_and_aliases
+	(void expand (void)): created from expand_function
+	(static void finalize_function (tree, bool)): created from cgraph_finalize_function
+	(static cgraph_local_info *local_info (tree decl)): created from cgraph_local_info
+	(static cgraph_global_info *global_info (tree)): created from cgraph_global_info
+	(static cgraph_rtl_info *rtl_info (tree)): created from cgraph_rtl_info
+	* cgraph.h (varpool_node):
+	(static void add (tree decl): created from varpool_add_new_variable
+	* cgraph.h (cgraph_edge):
+	void remove (void);
+	(void remove_caller (void)): created from cgraph_edge_remove_caller
+	(void remove_callee (void)): created from cgraph_edge_remove_callee
+	(void set_call_stmt (gimple new_stmt, bool update_speculative = true)):
+	  created from cgraph_set_call_stmt	
+	(void redirect_callee (cgraph_node *n)): created from cgraph_redirect_edge_callee
+	(cgraph_edge *make_direct (cgraph_node *callee)): created from cgraph_make_edge_direct
+	(cgraph_edge *make_speculative (cgraph_node *n2, gcov_type direct_count,
+	  gimple redirect_call_stmt_to_callee (void)): created from cgraph_turn_edge_to_speculative
+	(void speculative_call_info (cgraph_edge *&direct, cgraph_edge *&indirect, ipa_ref *&reference)):
+	  created from cgraph_speculative_call_info
+	(cgraph_edge * clone (cgraph_node *n, gimple call_stmt, unsigned stmt_uid, gcov_type count_scale,
+	  int freq_scale, bool update_original)): created from cgraph_clone_edge
+	(cgraph_edge *resolve_speculation (tree callee_decl)): created from cgraph_resolve_speculation
+	(bool cannot_lead_to_return_p (void)): created from cannot_lead_to_return_p
+	(bool recursive_p (void)): created from cgraph_edge_recursive_p
+	(bool maybe_hot_p (void)): created from cgraph_maybe_hot_edge_p
+	(static unsigned int rebuild_edges (void)): created from rebuild_cgraph_edges 
+	(static void rebuild_references (void)): created from cgraph_rebuild_references
+	* cgraph.h (symbol_table):
+	(create_reference): renamed from add_reference
+	(maybe_create_reference): renamed from maybe_add_reference
+	(void register_symbol (symtab_node *node)): new function
+	(void clear_asm_symbols (void)): new function
+	(void unregister (symtab_node *node)): new function
+	(void release_symbol (cgraph_node *node, int uid)): new function
+	(cgraph_node * allocate_cgraph_symbol (void)): new function
+	(void initialize (void)): created from cgraph_init
+	(symtab_node *first_symbol (void)):new function
+	(asm_node *first_asm_symbol (void)):new function
+	(symtab_node *first_defined_symbol (void)):new function
+	(varpool_node *first_variable (void)):new function
+	(varpool_node *next_variable (varpool_node *node)):new function
+	(varpool_node *first_static_initializer (void)):new function
+	(varpool_node *next_static_initializer (varpool_node *node)):new function
+	(varpool_node *first_defined_variable (void)):new function
+	(varpool_node *next_defined_variable (varpool_node *node)):new function
+	(cgraph_node *first_defined_function (void)):new function
+	(cgraph_node *next_defined_function (cgraph_node *node)):new function
+	(cgraph_node *first_function (void)):new function
+	(cgraph_node *next_function (cgraph_node *node)):new function
+	(cgraph_node *first_function_with_gimple_body (void)):new function
+	(asm_node *finalize_toplevel_asm (tree asm_str)): created from add_asm_node
+	(bool remove_unreachable_nodes (bool before_inlining_p, FILE *file)):
+	  created from symtab_remove_unreachable_nodes
+	(void remove_unreferenced_decls (void)): created from varpool_remove_unreferenced_decls
+	(void process_new_functions (void)): created from cgraph_process_new_functions
+	(void process_same_body_aliases (void)): created from cgraph_process_same_body_aliases
+	(bool output_variables (void)): created from varpool_node::output_variables
+	(void output_asm_statements (void)): created from output_asm_statements
+	(void finalize_compilation_unit (void)): created from finalize_compilation_unit
+	(void compile (void)): created from compile
+	(void output_weakrefs (void)): created from output_weakrefs
+	(cgraph_node *create_empty (void)): created from cgraph_node::create_empty
+	(cgraph_edge *create_edge (cgraph_node *caller, cgraph_node *callee, gimple call_stmt,
+	  gcov_type count, int freq, bool indir_unknown_callee)): created from cgraph_node::create_edge
+	(void free_edge (cgraph_edge *e)): created from cgraph_free_edge
+	(cgraph_node *next_function_with_gimple_body (cgraph_node *node)):
+	  created from cgraph_next_function_with_gimple_body
+	(void remove_edge_removal_hook (cgraph_edge_hook_list *)):
+	  created from cgraph_remove_edge_removal_hook
+	(cgraph_node_hook_list *add_cgraph_removal_hook (cgraph_node_hook, void *)):
+	  created from cgraph_add_node_removal_hook
+	(void remove_cgraph_removal_hook (cgraph_node_hook_list *)):
+	  created from cgraph_remove_node_removal_hook
+	(varpool_node_hook_list *add_varpool_removal_hook (varpool_node_hook, void *)):
+	  created from varpool_add_node_removal_hook
+	(void remove_varpool_removal_hook (varpool_node_hook_list *)):
+	  created from varpool_remove_node_removal_hook
+	(cgraph_node_hook_list *add_cgraph_insertion_hook (cgraph_node_hook, void *)):
+	  created from cgraph_add_function_insertion_hook
+	(void remove_cgraph_insertion_hook (cgraph_node_hook_list *)):
+	  created from cgraph_remove_function_insertion_hook
+	(varpool_node_hook_list *add_varpool_insertion_hook (varpool_node_hook, void *)):
+	  created from varpool_add_variable_insertion_hook
+	(void remove_varpool_insertion_hook (varpool_node_hook_list *)):
+	  created from varpool_remove_variable_insertion_hook
+	(cgraph_2edge_hook_list *add_edge_duplication_hook (cgraph_2edge_hook, void *)):
+	  created from cgraph_add_edge_duplication_hook
+	(void remove_edge_duplication_hook (cgraph_2edge_hook_list *)):
+	  created from cgraph_remove_edge_duplication_hook
+	(cgraph_2node_hook_list *add_cgraph_duplication_hook (cgraph_2node_hook, void *)):
+	  created from cgraph_add_node_duplication_hook
+	(void remove_cgraph_duplication_hook (cgraph_2node_hook_list *)):
+	  created from cgraph_remove_node_duplication_hook
+	(void call_edge_removal_hooks (cgraph_edge *e)):
+	  created from cgraph_call_edge_removal_hooks
+	(void call_cgraph_insertion_hooks (cgraph_node *node)):
+	  created from call_function_insertion_hooks 
+	(void call_cgraph_removal_hooks (cgraph_node *node)):
+	  created from cgraph_call_node_removal_hooks 
+	(void call_cgraph_duplication_hooks (cgraph_node *node, cgraph_node *node2)):
+	  created from cgraph_node::call_duplication_hooks 
+	(void call_edge_duplication_hooks (cgraph_edge *cs1, cgraph_edge *cs2)):
+	  created from cgraph_call_edge_duplication_hooks
+	(void call_varpool_removal_hooks (varpool_node *node)):
+	  created from varpool_call_node_removal_hooks
+	(void call_varpool_insertion_hooks (varpool_node *node)):
+	  created from varpool_call_variable_insertion_hooks
+	(void insert_to_assembler_name_hash (symtab_node *node, bool with_clones)):
+	  created from insert_to_assembler_name_hash
+	(void unlink_from_assembler_name_hash (symtab_node *node, bool with_clones)):
+	  created from unlink_from_assembler_name_hash
+	(void symtab_prevail_in_asm_name_hash (symtab_node *node)):
+	  created from symtab_prevail_in_asm_name_hash
+	(void symtab_initialize_asm_name_hash (void)):
+	  created from symtab_initialize_asm_name_hash
+	(void change_decl_assembler_name (tree decl, tree name)):
+	  created from change_decl_assembler_name
+	(void materialize_all_clones (void)): created from cgraph_materialize_all_clones
+	(static hashval_t decl_assembler_name_hash (const_tree asmname)):
+	  created from decl_assembler_name_hash
+	(static bool decl_assembler_name_equal (tree decl, const_tree asmname)):
+	  created from decl_assembler_name_equal
+	(static hashval_t hash_node_by_assembler_name (const void *p)):
+	  created from hash_node_by_assembler_name
+	(static int eq_assembler_name (const void *p1, const void *p2)):
+	  created from eq_assembler_name
+
 2014-08-25  Marek Polacek  <polacek@redhat.com>
 
 	* config/i386/i386.md (SWI1248_AVX512BW): Add missing paren.

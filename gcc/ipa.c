@@ -114,7 +114,7 @@ process_references (symtab_node *snode,
       if (node->definition && !node->in_other_partition
 	  && ((!DECL_EXTERNAL (node->decl) || node->alias)
 	      || (((before_inlining_p
-		    && (cgraph_state < CGRAPH_STATE_IPA_SSA
+		    && (symtab->state < IPA_SSA
 		        || !lookup_attribute ("always_inline",
 					      DECL_ATTRIBUTES (node->decl)))))
 		  /* We use variable constructors during late complation for
@@ -169,7 +169,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	     devirtualization.  */
 	   if (n->definition
 	       && (before_inlining_p
-		   && (cgraph_state < CGRAPH_STATE_IPA_SSA
+		   && (symtab->state < IPA_SSA
 		       || !lookup_attribute ("always_inline",
 					     DECL_ATTRIBUTES (n->decl)))))
 	     reachable->add (n);
@@ -205,11 +205,11 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
                                target->name (),
                                target->order);
 	    }
-	  edge = cgraph_make_edge_direct (edge, target);
+	  edge = edge->make_direct (target);
 	  if (inline_summary_vec)
 	    inline_update_overall_summary (node);
 	  else if (edge->call_stmt)
-	    cgraph_redirect_edge_call_stmt_to_callee (edge);
+	    edge->redirect_call_stmt_to_callee ();
 	}
     }
 }
@@ -270,7 +270,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
    we set AUX pointer of processed symbols in the boundary to constant 2.  */
 
 bool
-symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
+symbol_table::remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
   symtab_node *first = (symtab_node *) (void *) 1;
   struct cgraph_node *node, *next;
@@ -448,9 +448,9 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     }
 
   /* Remove unreachable functions.   */
-  for (node = cgraph_first_function (); node; node = next)
+  for (node = first_function (); node; node = next)
     {
-      next = cgraph_next_function (node);
+      next = next_function (node);
 
       /* If node is not needed at all, remove it.  */
       if (!node->aux)
@@ -515,9 +515,9 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   /* Remove unreachable variables.  */
   if (file)
     fprintf (file, "\nReclaiming variables:");
-  for (vnode = varpool_first_variable (); vnode; vnode = vnext)
+  for (vnode = first_variable (); vnode; vnode = vnext)
     {
-      vnext = varpool_next_variable (vnode);
+      vnext = next_variable (vnode);
       if (!vnode->aux
 	  /* For can_refer_decl_in_current_unit_p we want to track for
 	     all external variables if they are defined in other partition

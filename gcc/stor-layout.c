@@ -298,7 +298,7 @@ finalize_size_functions (void)
       dump_function (TDI_original, fndecl);
       gimplify_function_tree (fndecl);
       dump_function (TDI_generic, fndecl);
-      cgraph_finalize_function (fndecl, false);
+      cgraph_node::finalize_function (fndecl, false);
     }
 
   vec_free (size_functions);

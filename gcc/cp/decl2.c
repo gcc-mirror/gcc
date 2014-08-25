@@ -4320,7 +4320,7 @@ cp_write_global_declarations (void)
       return;
     }
 
-  cgraph_process_same_body_aliases ();
+  symtab->process_same_body_aliases ();
 
   /* Handle -fdump-ada-spec[-slim] */
   if (flag_dump_ada_spec || flag_dump_ada_spec_slim)
@@ -4663,7 +4663,7 @@ cp_write_global_declarations (void)
       vtv_build_vtable_verify_fndecl ();
     }
 
-  finalize_compilation_unit ();
+  symtab->finalize_compilation_unit ();
 
   if (flag_vtable_verify)
     {

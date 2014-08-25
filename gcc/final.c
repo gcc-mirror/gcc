@@ -4697,8 +4697,8 @@ rest_of_clean_state (void)
       unsigned int pref = crtl->preferred_stack_boundary;
       if (crtl->stack_alignment_needed > crtl->preferred_stack_boundary)
         pref = crtl->stack_alignment_needed;
-      cgraph_rtl_info (current_function_decl)->preferred_incoming_stack_boundary
-        = pref;
+      cgraph_node::rtl_info (current_function_decl)
+	->preferred_incoming_stack_boundary = pref;
     }
 
   /* Make sure volatile mem refs aren't considered valid operands for
@@ -4820,7 +4820,7 @@ collect_fn_hard_reg_usage (void)
   if (hard_reg_set_subset_p (call_used_reg_set, function_used_regs))
     return;
 
-  node = cgraph_rtl_info (current_function_decl);
+  node = cgraph_node::rtl_info (current_function_decl);
   gcc_assert (node != NULL);
 
   COPY_HARD_REG_SET (node->function_used_regs, function_used_regs);
@@ -4861,7 +4861,7 @@ get_call_cgraph_rtl_info (rtx_insn *insn)
       || !decl_binds_to_current_def_p (fndecl))
     return NULL;
 
-  return cgraph_rtl_info (fndecl);
+  return cgraph_node::rtl_info (fndecl);
 }
 
 /* Find hard registers used by function call instruction INSN, and return them
