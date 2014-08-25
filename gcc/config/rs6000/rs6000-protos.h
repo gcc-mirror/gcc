@@ -111,7 +111,7 @@ extern enum rtx_code rs6000_reverse_condition (enum machine_mode,
 extern void rs6000_emit_sISEL (enum machine_mode, rtx[]);
 extern void rs6000_emit_sCOND (enum machine_mode, rtx[]);
 extern void rs6000_emit_cbranch (enum machine_mode, rtx[]);
-extern char * output_cbranch (rtx, const char *, int, rtx);
+extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
 extern char * output_e500_flip_gt_bit (rtx, rtx);
 extern const char * output_probe_stack_range (rtx, rtx);
 extern bool rs6000_emit_set_const (rtx, rtx);
@@ -217,7 +217,7 @@ char *output_call (rtx, rtx *, int, int);
 const char * rs6000_xcoff_strip_dollar (const char *);
 #endif
 
-void rs6000_final_prescan_insn (rtx, rtx *operand, int num_operands);
+void rs6000_final_prescan_insn (rtx_insn *, rtx *operand, int num_operands);
 
 extern bool rs6000_hard_regno_mode_ok_p[][FIRST_PSEUDO_REGISTER];
 extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];

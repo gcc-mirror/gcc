@@ -1,5 +1,26 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/rs6000/rs6000-protos.h (output_cbranch): Strengthen param
+	4 from rtx to rtx_insn *.
+	(rs6000_final_prescan_insn): Likewise for first param.
+	* config/rs6000/rs6000.c (rs6000_emit_set_const): Likewise for
+	local "insn".
+	(rs6000_get_some_local_dynamic_name): Likewise.
+	(output_cbranch): Likewise for param "insn".
+	(spe_func_has_64bit_regs_p): Likewise for locals "insns", "insn".
+	(rs6000_function_ok_for_sibcall): Likewise for locals "top", "insn".
+	(rs6000_emit_allocate_stack): Likewise for local "insn".
+	(load_cr_save): Likewise.
+	(restore_saved_cr): Likewise.
+	(restore_saved_lr): Likewise.
+	(emit_cfa_restores): Likewise.
+	(rs6000_output_function_epilogue): Likewise for locals "insn" and
+	"deleted_debug_label".
+	(rs6000_output_mi_thunk): Likewise for local "insn".
+	(rs6000_final_prescan_insn): Likewise for param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/picochip/picochip-protos.h (picochip_final_prescan_insn):
 	Strengthen param "insn" from rtx to rtx_insn *.
 	* config/picochip/picochip.c (picochip_current_prescan_insn):
