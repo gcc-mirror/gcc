@@ -4103,7 +4103,8 @@ sparc_tls_referenced_p (rtx x)
 static rtx
 sparc_legitimize_tls_address (rtx addr)
 {
-  rtx temp1, temp2, temp3, ret, o0, got, insn;
+  rtx temp1, temp2, temp3, ret, o0, got;
+  rtx_insn *insn;
 
   gcc_assert (can_create_pseudo_p ());
 
@@ -4256,7 +4257,7 @@ sparc_legitimize_pic_address (rtx orig, rtx reg)
       || (GET_CODE (orig) == LABEL_REF && !can_use_mov_pic_label_ref (orig)))
     {
       rtx pic_ref, address;
-      rtx insn;
+      rtx_insn *insn;
 
       if (reg == 0)
 	{
@@ -4600,7 +4601,7 @@ load_got_register (void)
 void
 sparc_emit_call_insn (rtx pat, rtx addr)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   insn = emit_call_insn (pat);
 
@@ -5247,7 +5248,8 @@ emit_save_or_restore_regs (unsigned int low, unsigned int high, rtx base,
 			   sorr_act_t action_true, sorr_act_t action_false)
 {
   unsigned int i;
-  rtx mem, insn;
+  rtx mem;
+  rtx_insn *insn;
 
   if (TARGET_ARCH64 && high <= 32)
     {
@@ -5406,10 +5408,10 @@ emit_save_or_restore_local_in_regs (rtx base, int offset, sorr_act_t action)
 
 /* Emit a window_save insn.  */
 
-static rtx
+static rtx_insn *
 emit_window_save (rtx increment)
 {
-  rtx insn = emit_insn (gen_window_save (increment));
+  rtx_insn *insn = emit_insn (gen_window_save (increment));
   RTX_FRAME_RELATED_P (insn) = 1;
 
   /* The incoming return address (%o7) is saved in %i7.  */
@@ -5450,7 +5452,7 @@ void
 sparc_expand_prologue (void)
 {
   HOST_WIDE_INT size;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Compute a snapshot of crtl->uses_only_leaf_regs.  Relying
      on the final value of the flag means deferring the prologue/epilogue
@@ -5584,7 +5586,7 @@ void
 sparc_flat_expand_prologue (void)
 {
   HOST_WIDE_INT size;
-  rtx insn;
+  rtx_insn *insn;
 
   sparc_leaf_function_p = optimize > 0 && crtl->is_leaf;
 
@@ -5892,7 +5894,7 @@ output_restore (rtx pat)
 /* Output a return.  */
 
 const char *
-output_return (rtx insn)
+output_return (rtx_insn *insn)
 {
   if (crtl->calls_eh_return)
     {
@@ -5979,7 +5981,7 @@ output_return (rtx insn)
 /* Output a sibling call.  */
 
 const char *
-output_sibcall (rtx insn, rtx call_operand)
+output_sibcall (rtx_insn *insn, rtx call_operand)
 {
   rtx operands[1];
 
@@ -6014,7 +6016,7 @@ output_sibcall (rtx insn, rtx call_operand)
 
       if (final_sequence)
 	{
-	  rtx delay = NEXT_INSN (insn);
+	  rtx_insn *delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
 
 	  output_restore (PATTERN (delay));
@@ -7586,7 +7588,7 @@ sparc_preferred_simd_mode (enum machine_mode mode)
    DEST is the destination insn (i.e. the label), INSN is the source.  */
 
 const char *
-output_ubranch (rtx dest, rtx insn)
+output_ubranch (rtx dest, rtx_insn *insn)
 {
   static char string[64];
   bool v9_form = false;
@@ -7660,7 +7662,7 @@ output_ubranch (rtx dest, rtx insn)
 
 const char *
 output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
-		rtx insn)
+		rtx_insn *insn)
 {
   static char string[64];
   enum rtx_code code = GET_CODE (op);
@@ -8123,7 +8125,7 @@ sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
    and OP is the conditional expression.  */
 
 const char *
-output_cbcond (rtx op, rtx dest, rtx insn)
+output_cbcond (rtx op, rtx dest, rtx_insn *insn)
 {
   enum machine_mode mode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
@@ -8250,7 +8252,7 @@ output_cbcond (rtx op, rtx dest, rtx insn)
 
 const char *
 output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
-		 int annul, rtx insn)
+		 int annul, rtx_insn *insn)
 {
   static char string[64];
   enum rtx_code code = GET_CODE (op);
@@ -9837,7 +9839,7 @@ sparc_check_64 (rtx x, rtx insn)
    OPERANDS are its operands and OPCODE is the mnemonic to be used.  */
 
 const char *
-output_v8plus_shift (rtx insn, rtx *operands, const char *opcode)
+output_v8plus_shift (rtx_insn *insn, rtx *operands, const char *opcode)
 {
   static char asm_code[60];
 
@@ -11264,7 +11266,8 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		       HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		       tree function)
 {
-  rtx this_rtx, insn, funexp;
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
   unsigned int int_arg_first;
 
   reload_completed = 1;
@@ -11486,7 +11489,7 @@ sparc_init_machine_status (void)
 static const char *
 get_some_local_dynamic_name (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (cfun->machine->some_ld_name)
     return cfun->machine->some_ld_name;
@@ -12120,7 +12123,7 @@ sparc_preferred_reload_class (rtx x, reg_class_t rclass)
    OPERANDS are its operands and OPCODE is the mnemonic to be used.  */
 
 const char *
-output_v8plus_mult (rtx insn, rtx *operands, const char *opcode)
+output_v8plus_mult (rtx_insn *insn, rtx *operands, const char *opcode)
 {
   char mulstr[32];
 
