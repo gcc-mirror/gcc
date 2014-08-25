@@ -65,7 +65,7 @@ gen_attr (rtx attr)
   if (! strcmp (XSTR (attr, 0), "length"))
     {
       puts ("\
-extern void shorten_branches (rtx);\n\
+extern void shorten_branches (rtx_insn *);\n\
 extern int insn_default_length (rtx);\n\
 extern int insn_min_length (rtx);\n\
 extern int insn_variable_length_p (rtx);\n\
