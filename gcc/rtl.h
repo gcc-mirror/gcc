@@ -479,6 +479,21 @@ class GTY(()) rtx_jump_table_data : public rtx_insn
      This is an instance of:
        DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "uuBe0000", RTX_INSN)
      from rtl.def.  */
+
+public:
+
+  /* This can be either:
+
+       (a) a table of absolute jumps, in which case PATTERN (this) is an
+           ADDR_VEC with arg 0 a vector of labels, or
+
+       (b) a table of relative jumps (e.g. for -fPIC), in which case
+           PATTERN (this) is an ADDR_DIFF_VEC, with arg 0 a LABEL_REF and
+	   arg 1 the vector of labels.
+
+     This method gets the underlying vec.  */
+
+  inline rtvec get_labels () const;
 };
 
 class GTY(()) rtx_barrier : public rtx_insn
@@ -1206,6 +1221,15 @@ inline rtx& SET_NEXT_INSN (rtx insn)
 /* Code number of instruction, from when it was recognized.
    -1 means this instruction has not been recognized yet.  */
 #define INSN_CODE(INSN) XINT (INSN, 5)
+
+inline rtvec rtx_jump_table_data::get_labels () const
+{
+  rtx pat = PATTERN (this);
+  if (GET_CODE (pat) == ADDR_VEC)
+    return XVEC (pat, 0);
+  else
+    return XVEC (pat, 1); /* presumably an ADDR_DIFF_VEC */
+}
 
 #define RTX_FRAME_RELATED_P(RTX)					\
   (RTL_FLAG_CHECK6 ("RTX_FRAME_RELATED_P", (RTX), DEBUG_INSN, INSN,	\

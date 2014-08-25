@@ -2298,10 +2298,7 @@ create_trace_edges (rtx insn)
 
       if (tablejump_p (insn, NULL, &table))
 	{
-	  rtvec vec;
-
-	  tmp = PATTERN (table);
-	  vec = XVEC (tmp, GET_CODE (tmp) == ADDR_DIFF_VEC);
+	  rtvec vec = table->get_labels ();
 
 	  n = GET_NUM_ELEM (vec);
 	  for (i = 0; i < n; ++i)

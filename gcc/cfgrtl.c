@@ -197,16 +197,15 @@ delete_insn (rtx insn)
       remove_note (insn, note);
     }
 
-  if (JUMP_TABLE_DATA_P (insn))
+  if (rtx_jump_table_data *table = dyn_cast <rtx_jump_table_data *> (insn))
     {
-      rtx pat = PATTERN (insn);
-      int diff_vec_p = GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC;
-      int len = XVECLEN (pat, diff_vec_p);
+      rtvec vec = table->get_labels ();
+      int len = GET_NUM_ELEM (vec);
       int i;
 
       for (i = 0; i < len; i++)
 	{
-	  rtx label = XEXP (XVECEXP (pat, diff_vec_p, i), 0);
+	  rtx label = XEXP (RTVEC_ELT (vec, i), 0);
 
 	  /* When deleting code in bulk (e.g. removing many unreachable
 	     blocks) we can delete a label that's a target of the vector
@@ -1186,10 +1185,7 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
 
       if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
-      if (GET_CODE (PATTERN (table)) == ADDR_VEC)
-	vec = XVEC (PATTERN (table), 0);
-      else
-	vec = XVEC (PATTERN (table), 1);
+      vec = table->get_labels ();
 
       for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 	if (XEXP (RTVEC_ELT (vec, j), 0) == old_label)
