@@ -305,7 +305,7 @@ struct processor_costs zEC12_cost =
 extern int reload_completed;
 
 /* Kept up to date using the SCHED_VARIABLE_ISSUE hook.  */
-static rtx last_scheduled_insn;
+static rtx_insn *last_scheduled_insn;
 
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
@@ -652,7 +652,7 @@ s390_match_ccmode_set (rtx set, enum machine_mode req_mode)
    If REQ_MODE is VOIDmode, always return false.  */
 
 bool
-s390_match_ccmode (rtx insn, enum machine_mode req_mode)
+s390_match_ccmode (rtx_insn *insn, enum machine_mode req_mode)
 {
   int i;
 
@@ -1047,7 +1047,7 @@ s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem,
    NULL_RTX, emit an unconditional jump, else a conditional jump under
    condition COND.  */
 
-rtx
+rtx_insn *
 s390_emit_jump (rtx target, rtx cond)
 {
   rtx insn;
@@ -6029,7 +6029,8 @@ s390_split_branches (void)
 {
   rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   int new_literal = 0, ret;
-  rtx insn, pat, tmp, target;
+  rtx_insn *insn;
+  rtx pat, tmp, target;
   rtx *label;
 
   /* We need correct insn addresses.  */
@@ -6291,20 +6292,20 @@ struct constant
 {
   struct constant *next;
   rtx value;
-  rtx label;
+  rtx_code_label *label;
 };
 
 struct constant_pool
 {
   struct constant_pool *next;
-  rtx first_insn;
-  rtx pool_insn;
+  rtx_insn *first_insn;
+  rtx_insn *pool_insn;
   bitmap insns;
-  rtx emit_pool_after;
+  rtx_insn *emit_pool_after;
 
   struct constant *constants[NR_C_MODES];
   struct constant *execute;
-  rtx label;
+  rtx_code_label *label;
   int size;
 };
 
@@ -6323,11 +6324,11 @@ s390_alloc_pool (void)
 
   pool->execute = NULL;
   pool->label = gen_label_rtx ();
-  pool->first_insn = NULL_RTX;
-  pool->pool_insn = NULL_RTX;
+  pool->first_insn = NULL;
+  pool->pool_insn = NULL;
   pool->insns = BITMAP_ALLOC (NULL);
   pool->size = 0;
-  pool->emit_pool_after = NULL_RTX;
+  pool->emit_pool_after = NULL;
 
   return pool;
 }
@@ -6336,7 +6337,7 @@ s390_alloc_pool (void)
    and chain it to the end of POOL_LIST.  */
 
 static struct constant_pool *
-s390_start_pool (struct constant_pool **pool_list, rtx insn)
+s390_start_pool (struct constant_pool **pool_list, rtx_insn *insn)
 {
   struct constant_pool *pool, **prev;
 
@@ -6354,7 +6355,7 @@ s390_start_pool (struct constant_pool **pool_list, rtx insn)
    placeholder insn representing the pool.  */
 
 static void
-s390_end_pool (struct constant_pool *pool, rtx insn)
+s390_end_pool (struct constant_pool *pool, rtx_insn *insn)
 {
   rtx pool_size = GEN_INT (pool->size + 8 /* alignment slop */);
 
@@ -6552,7 +6553,7 @@ static void
 s390_dump_pool (struct constant_pool *pool, bool remote_label)
 {
   struct constant *c;
-  rtx insn = pool->pool_insn;
+  rtx_insn *insn = pool->pool_insn;
   int i;
 
   /* Switch to rodata section.  */
@@ -6659,7 +6660,7 @@ static struct constant_pool *
 s390_mainpool_start (void)
 {
   struct constant_pool *pool;
-  rtx insn;
+  rtx_insn *insn;
 
   pool = s390_alloc_pool ();
 
@@ -6875,7 +6876,7 @@ s390_chunkify_start (void)
   int extra_size = 0;
   bitmap far_labels;
   rtx pending_ltrel = NULL_RTX;
-  rtx insn;
+  rtx_insn *insn;
 
   rtx (*gen_reload_base) (rtx, rtx) =
     TARGET_CPU_ZARCH? gen_reload_base_64 : gen_reload_base_31;
@@ -6968,7 +6969,7 @@ s390_chunkify_start (void)
 	  if (curr_pool->size < S390_POOL_CHUNK_MAX)
 	    continue;
 
-	  s390_end_pool (curr_pool, NULL_RTX);
+	  s390_end_pool (curr_pool, NULL);
 	  curr_pool = NULL;
 	}
       else
@@ -7002,7 +7003,7 @@ s390_chunkify_start (void)
 	           || curr_pool->size > S390_POOL_CHUNK_MAX
 		   || section_switch_p)
 	    {
-	      rtx label, jump, barrier, next, prev;
+	      rtx_insn *label, *jump, *barrier, *next, *prev;
 
 	      if (!section_switch_p)
 		{
@@ -7062,7 +7063,7 @@ s390_chunkify_start (void)
     }
 
   if (curr_pool)
-    s390_end_pool (curr_pool, NULL_RTX);
+    s390_end_pool (curr_pool, NULL);
   gcc_assert (!pending_ltrel);
 
   /* Find all labels that are branched into
@@ -7084,7 +7085,7 @@ s390_chunkify_start (void)
       if (LABEL_P (insn)
 	  && (LABEL_PRESERVE_P (insn) || LABEL_NAME (insn)))
 	{
-	  rtx vec_insn = NEXT_INSN (insn);
+	  rtx_insn *vec_insn = NEXT_INSN (insn);
 	  if (! vec_insn || ! JUMP_TABLE_DATA_P (vec_insn))
 	    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (insn));
 	}
@@ -7131,7 +7132,7 @@ s390_chunkify_start (void)
     {
       rtx new_insn = gen_reload_base (cfun->machine->base_reg,
 				      curr_pool->label);
-      rtx insn = curr_pool->first_insn;
+      rtx_insn *insn = curr_pool->first_insn;
       INSN_ADDRESSES_NEW (emit_insn_before (new_insn, insn), -1);
     }
 
@@ -7170,7 +7171,7 @@ static void
 s390_chunkify_finish (struct constant_pool *pool_list)
 {
   struct constant_pool *curr_pool = NULL;
-  rtx insn;
+  rtx_insn *insn;
 
 
   /* Replace all literal pool references.  */
@@ -7226,16 +7227,16 @@ static void
 s390_chunkify_cancel (struct constant_pool *pool_list)
 {
   struct constant_pool *curr_pool = NULL;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Remove all pool placeholder insns.  */
 
   for (curr_pool = pool_list; curr_pool; curr_pool = curr_pool->next)
     {
       /* Did we insert an extra barrier?  Remove it.  */
-      rtx barrier = PREV_INSN (curr_pool->pool_insn);
-      rtx jump = barrier? PREV_INSN (barrier) : NULL_RTX;
-      rtx label = NEXT_INSN (curr_pool->pool_insn);
+      rtx_insn *barrier = PREV_INSN (curr_pool->pool_insn);
+      rtx_insn *jump = barrier? PREV_INSN (barrier) : NULL;
+      rtx_insn *label = NEXT_INSN (curr_pool->pool_insn);
 
       if (jump && JUMP_P (jump)
 	  && barrier && BARRIER_P (barrier)
@@ -7257,7 +7258,7 @@ s390_chunkify_cancel (struct constant_pool *pool_list)
 
   for (insn = get_insns (); insn; )
     {
-      rtx next_insn = NEXT_INSN (insn);
+      rtx_insn *next_insn = NEXT_INSN (insn);
 
       if (NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SET
@@ -7418,7 +7419,7 @@ static void
 s390_regs_ever_clobbered (char regs_ever_clobbered[])
 {
   basic_block cur_bb;
-  rtx cur_insn;
+  rtx_insn *cur_insn;
   unsigned int i;
 
   memset (regs_ever_clobbered, 0, 32);
@@ -7967,10 +7968,10 @@ s390_optimize_nonescaping_tx (void)
   basic_block tbegin_bb = NULL;
   basic_block tend_bb = NULL;
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   bool result = true;
   int bb_index;
-  rtx tbegin_insn = NULL_RTX;
+  rtx_insn *tbegin_insn = NULL;
 
   if (!cfun->machine->tbegin_p)
     return;
@@ -8517,10 +8518,10 @@ restore_gprs (rtx base, int offset, int first, int last)
 /* Return insn sequence to load the GOT register.  */
 
 static GTY(()) rtx got_symbol;
-rtx
+rtx_insn *
 s390_load_got (void)
 {
-  rtx insns;
+  rtx_insn *insns;
 
   /* We cannot use pic_offset_table_rtx here since we use this
      function also for non-pic if __tls_get_offset is called and in
@@ -8589,7 +8590,7 @@ s390_save_gprs_to_fprs (void)
     {
       if (FP_REGNO_P (cfun_gpr_save_slot (i)))
 	{
-	  rtx insn =
+	  rtx_insn *insn =
 	    emit_move_insn (gen_rtx_REG (DImode, cfun_gpr_save_slot (i)),
 			    gen_rtx_REG (DImode, i));
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -8611,7 +8612,7 @@ s390_restore_gprs_from_fprs (void)
     {
       if (FP_REGNO_P (cfun_gpr_save_slot (i)))
 	{
-	  rtx insn =
+	  rtx_insn *insn =
 	    emit_move_insn (gen_rtx_REG (DImode, i),
 			    gen_rtx_REG (DImode, cfun_gpr_save_slot (i)));
 	  df_set_regs_ever_live (i, true);
@@ -8659,7 +8660,7 @@ public:
 unsigned int
 pass_s390_early_mach::execute (function *fun)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   /* Try to get rid of the FPR clobbers.  */
   s390_optimize_nonescaping_tx ();
@@ -8952,7 +8953,7 @@ s390_emit_prologue (void)
 
   if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
     {
-      rtx insns = s390_load_got ();
+      rtx_insn *insns = s390_load_got ();
 
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	annotate_constant_pool_refs (&PATTERN (insn));
@@ -9931,7 +9932,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
       const int CC3 = 1 << 0;
       rtx jump;
       rtx count = gen_reg_rtx (SImode);
-      rtx leave_label = gen_label_rtx ();
+      rtx_code_label *leave_label = gen_label_rtx ();
 
       /* Exit for success and permanent failures.  */
       jump = s390_emit_jump (leave_label,
@@ -10714,12 +10715,12 @@ s390_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
                If this parameter is NULL_RTX the call is considered
                to be a sibling call.  */
 
-rtx
+rtx_insn *
 s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 		rtx retaddr_reg)
 {
   bool plt_call = false;
-  rtx insn;
+  rtx_insn *insn;
   rtx call;
   rtx clobber;
   rtvec vec;
@@ -10849,7 +10850,8 @@ static GTY(()) rtx s390_tpf_eh_return_symbol;
 void
 s390_emit_tpf_eh_return (rtx target)
 {
-  rtx insn, reg, orig_ra;
+  rtx_insn *insn;
+  rtx reg, orig_ra;
 
   if (!s390_tpf_eh_return_symbol)
     s390_tpf_eh_return_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tpf_eh_return");
@@ -10873,7 +10875,7 @@ s390_emit_tpf_eh_return (rtx target)
 static void
 s390_optimize_prologue (void)
 {
-  rtx insn, new_insn, next_insn;
+  rtx_insn *insn, *new_insn, *next_insn;
 
   /* Do a final recompute of the frame-related data.  */
   s390_optimize_register_info ();
@@ -10963,12 +10965,12 @@ s390_optimize_prologue (void)
 
 	  if (cfun_frame_layout.first_save_gpr != -1)
 	    {
-	      new_insn 	= save_gprs (base,
+	      rtx s_pat = save_gprs (base,
 				     off + (cfun_frame_layout.first_save_gpr
 					    - first) * UNITS_PER_LONG,
 				     cfun_frame_layout.first_save_gpr,
 				     cfun_frame_layout.last_save_gpr);
-	      new_insn = emit_insn_before (new_insn, insn);
+	      new_insn = emit_insn_before (s_pat, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
 
@@ -11022,7 +11024,7 @@ s390_optimize_prologue (void)
 
 	  if (cfun_frame_layout.first_restore_gpr != -1)
 	    {
-	      new_insn = restore_gprs (base,
+	      rtx rpat = restore_gprs (base,
 				       off + (cfun_frame_layout.first_restore_gpr
 					      - first) * UNITS_PER_LONG,
 				       cfun_frame_layout.first_restore_gpr,
@@ -11030,15 +11032,15 @@ s390_optimize_prologue (void)
 
 	      /* Remove REG_CFA_RESTOREs for registers that we no
 		 longer need to save.  */
-	      REG_NOTES (new_insn) = REG_NOTES (insn);
-	      for (rtx *ptr = &REG_NOTES (new_insn); *ptr; )
+	      REG_NOTES (rpat) = REG_NOTES (insn);
+	      for (rtx *ptr = &REG_NOTES (rpat); *ptr; )
 		if (REG_NOTE_KIND (*ptr) == REG_CFA_RESTORE
 		    && ((int) REGNO (XEXP (*ptr, 0))
 			< cfun_frame_layout.first_restore_gpr))
 		  *ptr = XEXP (*ptr, 1);
 		else
 		  ptr = &XEXP (*ptr, 1);
-	      new_insn = emit_insn_before (new_insn, insn);
+	      new_insn = emit_insn_before (rpat, insn);
 	      RTX_FRAME_RELATED_P (new_insn) = 1;
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -11077,12 +11079,12 @@ s390_optimize_prologue (void)
    branch in a way which makes the static prediction always correct.
    The function returns true if it added an instruction.  */
 static bool
-s390_fix_long_loop_prediction (rtx insn)
+s390_fix_long_loop_prediction (rtx_insn *insn)
 {
   rtx set = single_set (insn);
   rtx code_label, label_ref, new_label;
   rtx uncond_jump;
-  rtx cur_insn;
+  rtx_insn *cur_insn;
   rtx tmp;
   int distance;
 
@@ -11139,7 +11141,7 @@ s390_fix_long_loop_prediction (rtx insn)
 /* Returns 1 if INSN reads the value of REG for purposes not related
    to addressing of memory, and 0 otherwise.  */
 static int
-s390_non_addr_reg_read_p (rtx reg, rtx insn)
+s390_non_addr_reg_read_p (rtx reg, rtx_insn *insn)
 {
   return reg_referenced_p (reg, PATTERN (insn))
     && !reg_used_in_mem_p (REGNO (reg), PATTERN (insn));
@@ -11148,8 +11150,8 @@ s390_non_addr_reg_read_p (rtx reg, rtx insn)
 /* Starting from INSN find_cond_jump looks downwards in the insn
    stream for a single jump insn which is the last user of the
    condition code set in INSN.  */
-static rtx
-find_cond_jump (rtx insn)
+static rtx_insn *
+find_cond_jump (rtx_insn *insn)
 {
   for (; insn; insn = NEXT_INSN (insn))
     {
@@ -11184,14 +11186,14 @@ find_cond_jump (rtx insn)
       break;
     }
 
-  return NULL_RTX;
+  return NULL;
 }
 
 /* Swap the condition in COND and the operands in OP0 and OP1 so that
    the semantics does not change.  If NULL_RTX is passed as COND the
    function tries to find the conditional jump starting with INSN.  */
 static void
-s390_swap_cmp (rtx cond, rtx *op0, rtx *op1, rtx insn)
+s390_swap_cmp (rtx cond, rtx *op0, rtx *op1, rtx_insn *insn)
 {
   rtx tmp = *op0;
 
@@ -11221,9 +11223,9 @@ s390_swap_cmp (rtx cond, rtx *op0, rtx *op1, rtx insn)
    operands of the compare.  The function return true whenever it
    added an insn.  */
 static bool
-s390_z10_optimize_cmp (rtx insn)
+s390_z10_optimize_cmp (rtx_insn *insn)
 {
-  rtx prev_insn, next_insn;
+  rtx_insn *prev_insn, *next_insn;
   bool insn_added_p = false;
   rtx cond, *op0, *op1;
 
@@ -11391,7 +11393,8 @@ s390_reorg (void)
   /* Generate out-of-pool execute target insns.  */
   if (TARGET_CPU_ZARCH)
     {
-      rtx insn, label, target;
+      rtx_insn *insn, *target;
+      rtx label;
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
@@ -11417,7 +11420,7 @@ s390_reorg (void)
       || s390_tune == PROCESSOR_2817_Z196
       || s390_tune == PROCESSOR_2827_ZEC12)
     {
-      rtx insn;
+      rtx_insn *insn;
       bool insn_added_p = false;
 
       /* The insn lengths and addresses have to be up to date for the
@@ -11485,7 +11488,7 @@ s390_z10_prevent_earlyload_conflicts (rtx *ready, int *nready_p)
   int nready = *nready_p;
   rtx tmp;
   int i;
-  rtx insn;
+  rtx_insn *insn;
   rtx set;
   enum attr_type flag;
   int distance;
@@ -11709,8 +11712,9 @@ s390_sched_reorder (FILE *file, int verbose,
    last_scheduled_insn in order to make it available for
    s390_sched_reorder.  */
 static int
-s390_sched_variable_issue (FILE *file, int verbose, rtx insn, int more)
+s390_sched_variable_issue (FILE *file, int verbose, rtx uncast_insn, int more)
 {
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   last_scheduled_insn = insn;
 
   if (s390_tune == PROCESSOR_2827_ZEC12
@@ -11772,7 +11776,7 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
 		 int verbose ATTRIBUTE_UNUSED,
 		 int max_ready ATTRIBUTE_UNUSED)
 {
-  last_scheduled_insn = NULL_RTX;
+  last_scheduled_insn = NULL;
   s390_sched_state = 0;
 }
 
@@ -11800,7 +11804,7 @@ static unsigned
 s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 {
   basic_block *bbs;
-  rtx insn;
+  rtx_insn *insn;
   unsigned i;
   unsigned mem_count = 0;
 
@@ -11815,7 +11819,7 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
     {
       for (insn = BB_HEAD (bbs[i]); insn != BB_END (bbs[i]); insn = NEXT_INSN (insn))
 	if (INSN_P (insn) && INSN_CODE (insn) != -1)
-            for_each_rtx (&insn, (rtx_function) check_dpu, &mem_count);
+            for_each_rtx_in_insn (&insn, (rtx_function) check_dpu, &mem_count);
     }
   free (bbs);
 

@@ -1,5 +1,68 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/s390/s390-protos.h (s390_match_ccmode): Strengthen param
+	1 from rtx to rtx_insn *.
+	(s390_emit_jump): Likewise for return type.
+	(s390_emit_call): Likewise.
+	(s390_load_got): Likewise.
+
+	* config/s390/s390.c (last_scheduled_insn): Likewise for this
+	variable.
+	(s390_match_ccmode): Likewise for param "insn".
+	(s390_emit_jump): Likewise for return type.
+	(s390_split_branches): Likewise for local "label".
+	(struct constant): Strengthen field "label" from rtx to
+	rtx_code_label *.
+	(struct constant_pool): Likewise for field "label".  Strengthen
+	fields "first_insn", "pool_insn", "emit_pool_after" from rtx to
+	rtx_insn *.
+	(s390_alloc_pool): Replace NULL_RTX with NULL when dealing with
+	insns.
+	(s390_start_pool): Strengthen param "insn" from rtx to rtx_insn *.
+	(s390_end_pool): Likewise.
+	(s390_dump_pool): Likewise for local "insn".
+	(s390_mainpool_start): Likewise.
+	(s390_chunkify_start): Likewise.
+	(s390_chunkify_start): Replace NULL_RTX with NULL when dealing
+	with insns.  Strengthen locals "label", "jump", "barrier", "next",
+	"prev", "vec_insn", "insn" from rtx to rtx_insn *.
+	(s390_chunkify_finish): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(s390_chunkify_cancel): Likewise for locals "insn", "barrier",
+	"jump", "label", "next_insn".
+	(s390_regs_ever_clobbered): Likewise for local "cur_insn".
+	(s390_optimize_nonescaping_tx): Likewise for locals "insn",
+	"tbegin_insn".
+	(s390_load_got): Likewise for return type and local "insns".
+	(s390_save_gprs_to_fprs): Likewise for local "insn".
+	(s390_restore_gprs_from_fprs): Likewise.
+	(pass_s390_early_mach::execute): Likewise.
+	(s390_emit_prologue): Likewise for local "insns".
+	(s390_expand_tbegin): Strengthen local "leave_label" from rtx to
+	rtx_code_label *.
+	(s390_emit_call): Strengthen return type and local "insn" from
+	rtx to rtx_insn *.
+	(s390_emit_tpf_eh_return): Likewise for local "insn".
+	(s390_optimize_prologue): Likewise for locals "insn", "new_insn",
+	"next_insn", introducing locals "s_pat", "rpat" to allow this.
+	(s390_fix_long_loop_prediction): Likewise for param "insn" and
+	local "cur_insn".
+	(s390_non_addr_reg_read_p): Likewise for param "insn".
+	(find_cond_jump): Likewise for return type and param "insn".
+	(s390_swap_cmp): Likewise for param "insn".
+	(s390_z10_optimize_cmp): Likewise for param "insn" and locals
+	"prev_insn", "next_insn".
+	(s390_reorg): Likewise for locals "insn", "target".
+	(s390_z10_prevent_earlyload_conflicts): Likewise for local "insn".
+	(s390_sched_variable_issue): For now, rename param "insn" to
+	"uncast_insn", introducing a checked cast.
+	(s390_sched_init): Replace NULL_RTX with NULL when dealing with
+	insn.
+	(s390_loop_unroll_adjust): Strengthen local "insn" from rtx to
+	rtx_insn *.  Use for_each_rtx_in_insn rather than for_each_rtx.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/rx/rx-protos.h (rx_adjust_insn_length): Strengthen first
 	param from rtx to rtx_insn *.
 	* config/rx/rx.c (rx_adjust_insn_length): Likewise for param "insn".
