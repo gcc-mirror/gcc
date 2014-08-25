@@ -911,7 +911,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
    whether or not this is pre-decrement (if STORE_P) or post-increment
    (if !STORE_P) operation.  */
 
-static rtx
+static rtx_insn *
 m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 		 unsigned int count, unsigned int regno,
 		 unsigned int mask, bool store_p, bool adjust_stack_p)
@@ -951,7 +951,7 @@ m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
 /* Make INSN a frame-related instruction.  */
 
 static void
-m68k_set_frame_related (rtx insn)
+m68k_set_frame_related (rtx_insn *insn)
 {
   rtx body;
   int i;
@@ -1742,7 +1742,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
 }
 
 const char *
-output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
+output_btst (rtx *operands, rtx countop, rtx dataop, rtx_insn *insn, int signpos)
 {
   operands[0] = countop;
   operands[1] = dataop;
@@ -2320,7 +2320,7 @@ m68k_final_prescan_insn_1 (rtx *x_ptr, void *data ATTRIBUTE_UNUSED)
 /* Prescan insn before outputing assembler for it.  */
 
 void
-m68k_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
+m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
 			 rtx *operands, int n_operands)
 {
   int i;
@@ -2358,7 +2358,7 @@ m68k_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
 static rtx
 m68k_move_to_reg (rtx x, rtx orig, rtx reg)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (reg == NULL_RTX)
     {
@@ -2495,7 +2495,7 @@ static rtx
 m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
 {
   rtx a0;
-  rtx insns;
+  rtx_insn *insns;
   rtx dest;
 
   /* Emit the call sequence.  */
@@ -2555,7 +2555,7 @@ m68k_call_m68k_read_tp (void)
 {
   rtx a0;
   rtx eqv;
-  rtx insns;
+  rtx_insn *insns;
   rtx dest;
 
   start_sequence ();
@@ -4799,10 +4799,10 @@ print_operand_address (FILE *file, rtx addr)
    clear insn.  */
 
 bool
-strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
+strict_low_part_peephole_ok (enum machine_mode mode, rtx_insn *first_insn,
                              rtx target)
 {
-  rtx p = first_insn;
+  rtx_insn *p = first_insn;
 
   while ((p = PREV_INSN (p)))
     {
@@ -5042,7 +5042,8 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx this_slot, offset, addr, mem, insn, tmp;
+  rtx this_slot, offset, addr, mem, tmp;
+  rtx_insn *insn;
 
   /* Avoid clobbering the struct value reg by using the
      static chain reg as a temporary.  */
