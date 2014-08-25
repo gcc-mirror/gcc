@@ -898,7 +898,7 @@ struct sel_region_bb_info_def
 {
   /* This insn stream is constructed in such a way that it should be
      traversed by PREV_INSN field - (*not* NEXT_INSN).  */
-  rtx note_list;
+  rtx_insn *note_list;
 
   /* Cached availability set at the beginning of a block.
      See also AV_LEVEL () for conditions when this av_set can be used.  */
@@ -921,8 +921,7 @@ extern vec<sel_region_bb_info_def> sel_region_bb_info;
    A note_list is a list of various notes that was scattered across BB
    before scheduling, and will be appended at the beginning of BB after
    scheduling is finished.  */
-extern rtx_insn *BB_NOTE_LIST (basic_block);
-extern rtx& SET_BB_NOTE_LIST (basic_block);
+#define BB_NOTE_LIST(BB) (SEL_REGION_BB_INFO (BB)->note_list)
 
 #define BB_AV_SET(BB) (SEL_REGION_BB_INFO (BB)->av_set)
 #define BB_AV_LEVEL(BB) (SEL_REGION_BB_INFO (BB)->av_level)
