@@ -1,5 +1,13 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (unshare_all_rtl_again): Strengthen param "insn" from rtx
+	to rtx_insn *.
+
+	* emit-rtl.c (unshare_all_rtl_1): Likewise.
+	(unshare_all_rtl_again): Likewise, also for local "p".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (delete_insn_and_edges): Strengthen param "insn" from rtx
 	to rtx_insn *.
 	* cfgrtl.c (delete_insn_and_edges): Likewise.

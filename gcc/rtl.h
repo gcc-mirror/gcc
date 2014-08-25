@@ -3087,7 +3087,7 @@ extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);
 extern void set_new_first_and_last_insn (rtx, rtx);
 extern unsigned int unshare_all_rtl (void);
-extern void unshare_all_rtl_again (rtx);
+extern void unshare_all_rtl_again (rtx_insn *);
 extern void unshare_all_rtl_in_chain (rtx);
 extern void verify_rtl_sharing (void);
 extern void add_insn (rtx);
