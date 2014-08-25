@@ -1,5 +1,10 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-int.h (struct haifa_sched_info): Strengthen fields
+	"prev_head" and "next_tail" from rtx to rtx_insn *.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (rtx_jump_table_data::get_labels): New method.
 	* cfgbuild.c (make_edges): Replace hand-coded lookup of labels
 	with use of the new rtx_jump_table_data::get_labels method.

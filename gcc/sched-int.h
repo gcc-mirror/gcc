@@ -607,7 +607,7 @@ struct haifa_sched_info
   bool (*insn_finishes_block_p) (rtx);
 
   /* The boundaries of the set of insns to be scheduled.  */
-  rtx prev_head, next_tail;
+  rtx_insn *prev_head, *next_tail;
 
   /* Filled in after the schedule is finished; the first and last scheduled
      insns.  */
