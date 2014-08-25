@@ -1,5 +1,11 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (delete_insn_and_edges): Strengthen param "insn" from rtx
+	to rtx_insn *.
+	* cfgrtl.c (delete_insn_and_edges): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (reorder_insns): Strengthen params "from", "to", "after"
 	from rtx to rtx_insn *.
 

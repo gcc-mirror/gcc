@@ -3100,7 +3100,7 @@ extern rtx_insn *entry_of_function (void);
 extern void emit_insn_at_entry (rtx);
 extern void delete_insn_chain (rtx, rtx, bool);
 extern rtx_insn *unlink_insn_chain (rtx, rtx);
-extern void delete_insn_and_edges (rtx);
+extern void delete_insn_and_edges (rtx_insn *);
 extern rtx gen_lowpart_SUBREG (enum machine_mode, rtx);
 extern rtx gen_const_mem (enum machine_mode, rtx);
 extern rtx gen_frame_mem (enum machine_mode, rtx);

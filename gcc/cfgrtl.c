@@ -220,7 +220,7 @@ delete_insn (rtx insn)
 /* Like delete_insn but also purge dead edges from BB.  */
 
 void
-delete_insn_and_edges (rtx insn)
+delete_insn_and_edges (rtx_insn *insn)
 {
   bool purge = false;
 
