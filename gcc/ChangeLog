@@ -1,3 +1,9 @@
+2014-08-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/62111
+	* config/sh/predicates.md (general_extend_operand): Disable
+	TRUNCATE before reload completes.
+
 2014-08-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Optimize Options): Fix markup in two cases.
