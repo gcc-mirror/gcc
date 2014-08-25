@@ -3075,7 +3075,7 @@ extern void mark_reg_pointer (rtx, int);
 extern void mark_user_reg (rtx);
 extern void reset_used_flags (rtx);
 extern void set_used_flags (rtx);
-extern void reorder_insns (rtx, rtx, rtx);
+extern void reorder_insns (rtx_insn *, rtx_insn *, rtx_insn *);
 extern void reorder_insns_nobb (rtx, rtx, rtx);
 extern int get_max_insn_count (void);
 extern int in_sequence_p (void);

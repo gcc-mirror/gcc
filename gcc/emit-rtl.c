@@ -4213,9 +4213,9 @@ reorder_insns_nobb (rtx from, rtx to, rtx after)
 
 /* Same as function above, but take care to update BB boundaries.  */
 void
-reorder_insns (rtx from, rtx to, rtx after)
+reorder_insns (rtx_insn *from, rtx_insn *to, rtx_insn *after)
 {
-  rtx prev = PREV_INSN (from);
+  rtx_insn *prev = PREV_INSN (from);
   basic_block bb, bb2;
 
   reorder_insns_nobb (from, to, after);
