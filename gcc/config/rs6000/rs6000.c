@@ -9054,7 +9054,7 @@ rs6000_return_in_msb (const_tree valtype)
 static bool
 call_ABI_of_interest (tree fndecl)
 {
-  if (cgraph_state == CGRAPH_STATE_EXPANSION)
+  if (symtab->state == EXPANSION)
     {
       struct cgraph_node *c_node;
 
