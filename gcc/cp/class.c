@@ -7251,6 +7251,29 @@ currently_open_derived_class (tree t)
   return NULL_TREE;
 }
 
+/* Return the outermost enclosing class type that is still open, or
+   NULL_TREE.  */
+
+tree
+outermost_open_class (void)
+{
+  if (!current_class_type)
+    return NULL_TREE;
+  tree r = NULL_TREE;
+  if (TYPE_BEING_DEFINED (current_class_type))
+    r = current_class_type;
+  for (int i = current_class_depth - 1; i > 0; --i)
+    {
+      if (current_class_stack[i].hidden)
+	break;
+      tree t = current_class_stack[i].type;
+      if (!TYPE_BEING_DEFINED (t))
+	break;
+      r = t;
+    }
+  return r;
+}
+
 /* Returns the innermost class type which is not a lambda closure type.  */
 
 tree
