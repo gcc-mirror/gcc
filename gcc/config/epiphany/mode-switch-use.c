@@ -49,7 +49,7 @@ insert_uses (void)
   for (e = N_ENTITIES - 1; e >= 0; e--)
     {
       int no_mode = num_modes[e];
-      rtx insn;
+      rtx_insn *insn;
       int mode;
 
       if (!OPTIMIZE_MODE_SWITCHING (e))

@@ -76,7 +76,7 @@ static tree epiphany_handle_forwarder_attribute (tree *, tree, tree, int,
 						 bool *);
 static bool epiphany_pass_by_reference (cumulative_args_t, enum machine_mode,
 					const_tree, bool);
-static rtx frame_insn (rtx);
+static rtx_insn *frame_insn (rtx);
 
 /* defines for the initialization of the GCC target structure.  */
 #define TARGET_ATTRIBUTE_TABLE epiphany_attribute_table
@@ -1440,7 +1440,7 @@ epiphany_print_operand_address (FILE *file, rtx addr)
 }
 
 void
-epiphany_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
+epiphany_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
 			     rtx *opvec ATTRIBUTE_UNUSED,
 			     int noperands ATTRIBUTE_UNUSED)
 {
@@ -1545,11 +1545,12 @@ frame_subreg_note (rtx set, int offset)
   return set;
 }
 
-static rtx
+static rtx_insn *
 frame_insn (rtx x)
 {
   int i;
   rtx note = NULL_RTX;
+  rtx_insn *insn;
 
   if (GET_CODE (x) == PARALLEL)
     {
@@ -1584,14 +1585,14 @@ frame_insn (rtx x)
     note = gen_rtx_PARALLEL (VOIDmode,
 			     gen_rtvec (2, frame_subreg_note (x, 0),
 					frame_subreg_note (x, UNITS_PER_WORD)));
-  x = emit_insn (x);
-  RTX_FRAME_RELATED_P (x) = 1;
+  insn = emit_insn (x);
+  RTX_FRAME_RELATED_P (insn) = 1;
   if (note)
-    add_reg_note (x, REG_FRAME_RELATED_EXPR, note);
-  return x;
+    add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
+  return insn;
 }
 
-static rtx
+static rtx_insn *
 frame_move_insn (rtx to, rtx from)
 {
   return frame_insn (gen_rtx_SET (VOIDmode, to, from));
@@ -1819,7 +1820,8 @@ epiphany_expand_prologue (void)
      register save.  */
   if (current_frame_info.last_slot >= 0)
     {
-      rtx ip, mem2, insn, note;
+      rtx ip, mem2, note;
+      rtx_insn *insn;
 
       gcc_assert (current_frame_info.last_slot != GPR_FP
 		  || (!current_frame_info.need_fp
