@@ -1,5 +1,14 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* output.h (final_start_function): Strengthen param 1 from rtx to
+	rtx_insn *.
+
+	* final.c (final_start_function): Likewise, renaming back from
+	"uncast_first" to "first", and dropping the checked cast from rtx
+	to rtx_insn *.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* output.h (final): Strengthen param 1 from rtx to rtx_insn *.
 	* final.c (final): Likewise.  Rename param back from
 	"uncast_first" to "first" and eliminate the checked cast from rtx
