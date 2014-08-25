@@ -1,5 +1,19 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/h8300/h8300-protos.h (final_prescan_insn): Strengthen
+	first param from rtx to rtx_insn *.
+	(h8300_insn_length_from_table): Likewise.
+	* config/h8300/h8300.c (F): Likewise for return type and param
+	"x".
+	(Fpa): Add a checked cast to rtx_insn *.
+	(h8300_emit_stack_adjustment): Strengthen local "x" from rtx to
+	rtx_insn *.
+	(final_prescan_insn): Likewise for param "insn".
+	(h8300_binary_length): Likewise.
+	(h8300_insn_length_from_table): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/epiphany/epiphany-protos.h (epiphany_final_prescan_insn):
 	Strengthen first param "insn" from rtx to rtx_insn *.
 

@@ -115,7 +115,7 @@ static unsigned int  h8300_length_from_table      (rtx, rtx, const h8300_length_
 static unsigned int  h8300_unary_length           (rtx);
 static unsigned int  h8300_short_immediate_length (rtx);
 static unsigned int  h8300_bitfield_length        (rtx, rtx);
-static unsigned int  h8300_binary_length          (rtx, const h8300_length_table *);
+static unsigned int  h8300_binary_length          (rtx_insn *, const h8300_length_table *);
 static bool          h8300_short_move_mem_p       (rtx, enum rtx_code);
 static unsigned int  h8300_move_length            (rtx *, const h8300_length_table *);
 static bool	     h8300_hard_regno_scratch_ok  (unsigned int);
@@ -486,8 +486,8 @@ byte_reg (rtx x, int b)
 	   && !crtl->is_leaf)))
 
 /* We use this to wrap all emitted insns in the prologue.  */
-static rtx
-F (rtx x, bool set_it)
+static rtx_insn *
+F (rtx_insn *x, bool set_it)
 {
   if (set_it)
     RTX_FRAME_RELATED_P (x) = 1;
@@ -507,7 +507,7 @@ Fpa (rtx par)
   int i;
 
   for (i = 0; i < len; i++)
-    F (XVECEXP (par, 0, i), true);
+    F (as_a <rtx_insn *> (XVECEXP (par, 0, i)), true);
 
   return par;
 }
@@ -544,8 +544,9 @@ h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size, bool in_prologue)
 	 the splitter will do.  */
       if (Pmode == HImode)
 	{
-	  rtx x = emit_insn (gen_addhi3 (stack_pointer_rtx,
-					 stack_pointer_rtx, GEN_INT (sign * size)));
+	  rtx_insn *x = emit_insn (gen_addhi3 (stack_pointer_rtx,
+					       stack_pointer_rtx,
+					       GEN_INT (sign * size)));
 	  if (size < 4)
 	    F (x, in_prologue);
 	}
@@ -1875,7 +1876,7 @@ h8300_print_operand_address (FILE *file, rtx addr)
    option.  */
 
 void
-final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
+final_prescan_insn (rtx_insn *insn, rtx *operand ATTRIBUTE_UNUSED,
 		    int num_operands ATTRIBUTE_UNUSED)
 {
   /* This holds the last insn address.  */
@@ -2439,7 +2440,7 @@ h8300_bitfield_length (rtx op, rtx op2)
 /* Calculate the length of general binary instruction INSN using TABLE.  */
 
 static unsigned int
-h8300_binary_length (rtx insn, const h8300_length_table *table)
+h8300_binary_length (rtx_insn *insn, const h8300_length_table *table)
 {
   rtx set;
 
@@ -2528,7 +2529,7 @@ h8300_mova_length (rtx dest, rtx src, rtx offset)
    OPERANDS is the array of its operands.  */
 
 unsigned int
-h8300_insn_length_from_table (rtx insn, rtx * operands)
+h8300_insn_length_from_table (rtx_insn *insn, rtx * operands)
 {
   switch (get_attr_length_table (insn))
     {
