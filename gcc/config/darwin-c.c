@@ -731,7 +731,7 @@ darwin_objc_declare_unresolved_class_reference (const char *name)
   gcc_checking_assert (!strncmp (name, ".objc_class_name_", 17));
 
   snprintf (buf, len, "%s%s", reference, name);
-  add_asm_node (build_string (strlen (buf), buf));
+  symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
 }
 
 static void
@@ -746,10 +746,10 @@ darwin_objc_declare_class_definition (const char *name)
 
   /* Mimic default_globalize_label.  */
   snprintf (buf, len, ".globl\t%s", xname);
-  add_asm_node (build_string (strlen (buf), buf));
+  symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
 
   snprintf (buf, len, "%s = 0", xname);
-  add_asm_node (build_string (strlen (buf), buf));
+  symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
 }
 
 #undef  TARGET_HANDLE_C_OPTION

@@ -4174,7 +4174,7 @@ ipa_tm_scan_calls_transaction (struct tm_ipa_cg_data *d,
 
   // ??? copy_bbs should maintain cgraph edges for the blocks as it is
   // copying them, rather than forcing us to do this externally.
-  rebuild_cgraph_edges ();
+  cgraph_edge::rebuild_edges ();
 
   // ??? In ipa_uninstrument_transaction we don't try to update dominators
   // because copy_bbs doesn't return a VEC like iterate_fix_dominators expects.
@@ -4715,7 +4715,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
 	      if (is_tm_callable (fndecl))
 		continue;
 
-	      if (cgraph_local_info (fndecl)->tm_may_enter_irr)
+	      if (cgraph_node::local_info (fndecl)->tm_may_enter_irr)
 		error_at (gimple_location (stmt),
 			  "unsafe function call %qD within "
 			  "atomic transaction", fndecl);
@@ -4913,7 +4913,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 
   record_tm_clone_pair (old_decl, new_decl);
 
-  new_node->call_function_insertion_hooks ();
+  symtab->call_cgraph_insertion_hooks (new_node);
   if (old_node->force_output
       || old_node->ref_list.first_referring ())
     ipa_tm_mark_force_output_node (new_node);
@@ -5134,7 +5134,7 @@ ipa_tm_transform_calls_redirect (struct cgraph_node *node,
       fndecl = new_node->decl;
     }
 
-  cgraph_redirect_edge_callee (e, new_node);
+  e->redirect_callee (new_node);
   gimple_call_set_fndecl (stmt, fndecl);
 }
 

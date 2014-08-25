@@ -8665,12 +8665,12 @@ finish_function (void)
 
 	  /* ??? Objc emits functions after finalizing the compilation unit.
 	     This should be cleaned up later and this conditional removed.  */
-	  if (cgraph_global_info_ready)
+	  if (symtab->global_info_ready)
 	    {
 	      cgraph_node::add_new_function (fndecl, false);
 	      return;
 	    }
-	  cgraph_finalize_function (fndecl, false);
+	  cgraph_node::finalize_function (fndecl, false);
 	}
       else
 	{
@@ -10428,7 +10428,7 @@ c_write_global_declarations (void)
 
   /* We're done parsing; proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
-  finalize_compilation_unit ();
+  symtab->finalize_compilation_unit ();
 
   timevar_stop (TV_PHASE_OPT_GEN);
   timevar_start (TV_PHASE_DBGINFO);

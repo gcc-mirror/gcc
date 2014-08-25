@@ -56,7 +56,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 {
   tree t = *tp;
   tree decl;
-  struct record_reference_ctx *ctx = (struct record_reference_ctx *)data;
+  record_reference_ctx *ctx = (record_reference_ctx *)data;
 
   t = canonicalize_constructor_val (t, NULL);
   if (!t)
@@ -78,16 +78,16 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
       decl = get_base_var (*tp);
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
-	  struct cgraph_node *node = cgraph_node::get_create (decl);
+	  cgraph_node *node = cgraph_node::get_create (decl);
 	  if (!ctx->only_vars)
 	    node->mark_address_taken ();
-	  ctx->varpool_node->add_reference (node, IPA_REF_ADDR);
+	  ctx->varpool_node->create_reference (node, IPA_REF_ADDR);
 	}
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
 	  varpool_node *vnode = varpool_node::get_create (decl);
-	  ctx->varpool_node->add_reference (vnode, IPA_REF_ADDR);
+	  ctx->varpool_node->create_reference (vnode, IPA_REF_ADDR);
 	}
       *walk_subtrees = 0;
       break;
@@ -109,7 +109,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 /* Record references to typeinfos in the type list LIST.  */
 
 static void
-record_type_list (struct cgraph_node *node, tree list)
+record_type_list (cgraph_node *node, tree list)
 {
   for (; list; list = TREE_CHAIN (list))
     {
@@ -124,7 +124,7 @@ record_type_list (struct cgraph_node *node, tree list)
 	  if (TREE_CODE (type) == VAR_DECL)
 	    {
 	      varpool_node *vnode = varpool_node::get_create (type);
-	      node->add_reference (vnode, IPA_REF_ADDR);
+	      node->create_reference (vnode, IPA_REF_ADDR);
 	    }
 	}
     }
@@ -134,16 +134,16 @@ record_type_list (struct cgraph_node *node, tree list)
    for NODE.  */
 
 static void
-record_eh_tables (struct cgraph_node *node, struct function *fun)
+record_eh_tables (cgraph_node *node, function *fun)
 {
   eh_region i;
 
   if (DECL_FUNCTION_PERSONALITY (node->decl))
     {
       tree per_decl = DECL_FUNCTION_PERSONALITY (node->decl);
-      struct cgraph_node *per_node = cgraph_node::get_create (per_decl);
+      cgraph_node *per_node = cgraph_node::get_create (per_decl);
 
-      node->add_reference (per_node, IPA_REF_ADDR);
+      node->create_reference (per_node, IPA_REF_ADDR);
       per_node->mark_address_taken ();
     }
 
@@ -222,16 +222,16 @@ mark_address (gimple stmt, tree addr, tree, void *data)
   addr = get_base_address (addr);
   if (TREE_CODE (addr) == FUNCTION_DECL)
     {
-      struct cgraph_node *node = cgraph_node::get_create (addr);
+      cgraph_node *node = cgraph_node::get_create (addr);
       node->mark_address_taken ();
-      ((symtab_node *)data)->add_reference (node, IPA_REF_ADDR, stmt);
+      ((symtab_node *)data)->create_reference (node, IPA_REF_ADDR, stmt);
     }
   else if (addr && TREE_CODE (addr) == VAR_DECL
 	   && (TREE_STATIC (addr) || DECL_EXTERNAL (addr)))
     {
       varpool_node *vnode = varpool_node::get_create (addr);
 
-      ((symtab_node *)data)->add_reference (vnode, IPA_REF_ADDR, stmt);
+      ((symtab_node *)data)->create_reference (vnode, IPA_REF_ADDR, stmt);
     }
 
   return false;
@@ -247,16 +247,16 @@ mark_load (gimple stmt, tree t, tree, void *data)
     {
       /* ??? This can happen on platforms with descriptors when these are
 	 directly manipulated in the code.  Pretend that it's an address.  */
-      struct cgraph_node *node = cgraph_node::get_create (t);
+      cgraph_node *node = cgraph_node::get_create (t);
       node->mark_address_taken ();
-      ((symtab_node *)data)->add_reference (node, IPA_REF_ADDR, stmt);
+      ((symtab_node *)data)->create_reference (node, IPA_REF_ADDR, stmt);
     }
   else if (t && TREE_CODE (t) == VAR_DECL
 	   && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       varpool_node *vnode = varpool_node::get_create (t);
 
-      ((symtab_node *)data)->add_reference (vnode, IPA_REF_LOAD, stmt);
+      ((symtab_node *)data)->create_reference (vnode, IPA_REF_LOAD, stmt);
     }
   return false;
 }
@@ -272,7 +272,7 @@ mark_store (gimple stmt, tree t, tree, void *data)
     {
       varpool_node *vnode = varpool_node::get_create (t);
 
-      ((symtab_node *)data)->add_reference (vnode, IPA_REF_STORE, stmt);
+      ((symtab_node *)data)->create_reference (vnode, IPA_REF_STORE, stmt);
      }
   return false;
 }
@@ -320,7 +320,7 @@ unsigned int
 pass_build_cgraph_edges::execute (function *fun)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_node::get (current_function_decl);
+  cgraph_node *node = cgraph_node::get (current_function_decl);
   gimple_stmt_iterator gsi;
   tree decl;
   unsigned ix;
@@ -343,8 +343,7 @@ pass_build_cgraph_edges::execute (function *fun)
 							 bb);
 	      decl = gimple_call_fndecl (stmt);
 	      if (decl)
-		node->create_edge (cgraph_node::get_create (decl),
-				   stmt, bb->count, freq);
+		node->create_edge (cgraph_node::get_create (decl), stmt, bb->count, freq);
 	      else if (gimple_call_internal_p (stmt))
 		;
 	      else
@@ -357,18 +356,18 @@ pass_build_cgraph_edges::execute (function *fun)
 	      && gimple_omp_parallel_child_fn (stmt))
 	    {
 	      tree fn = gimple_omp_parallel_child_fn (stmt);
-	      node->add_reference (cgraph_node::get_create (fn),
+	      node->create_reference (cgraph_node::get_create (fn),
 				      IPA_REF_ADDR, stmt);
 	    }
 	  if (gimple_code (stmt) == GIMPLE_OMP_TASK)
 	    {
 	      tree fn = gimple_omp_task_child_fn (stmt);
 	      if (fn)
-		node->add_reference (cgraph_node::get_create (fn),
+		node->create_reference (cgraph_node::get_create (fn),
 					IPA_REF_ADDR, stmt);
 	      fn = gimple_omp_task_copy_fn (stmt);
 	      if (fn)
-		node->add_reference (cgraph_node::get_create (fn),
+		node->create_reference (cgraph_node::get_create (fn),
 					IPA_REF_ADDR, stmt);
 	    }
 	}
@@ -404,7 +403,7 @@ record_references_in_initializer (tree decl, bool only_vars)
 {
   varpool_node *node = varpool_node::get_create (decl);
   hash_set<tree> visited_nodes;
-  struct record_reference_ctx ctx = {false, NULL};
+  record_reference_ctx ctx = {false, NULL};
 
   ctx.varpool_node = node;
   ctx.only_vars = only_vars;
@@ -416,10 +415,10 @@ record_references_in_initializer (tree decl, bool only_vars)
    passes that don't update the cgraph.  */
 
 unsigned int
-rebuild_cgraph_edges (void)
+cgraph_edge::rebuild_edges (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_node::get (current_function_decl);
+  cgraph_node *node = cgraph_node::get (current_function_decl);
   gimple_stmt_iterator gsi;
 
   node->remove_callees ();
@@ -460,16 +459,16 @@ rebuild_cgraph_edges (void)
   return 0;
 }
 
-/* Rebuild cgraph edges for current function node.  This needs to be run after
-   passes that don't update the cgraph.  */
+/* Rebuild cgraph references for current function node.  This needs to be run
+   after passes that don't update the cgraph.  */
 
 void
-cgraph_rebuild_references (void)
+cgraph_edge::rebuild_references (void)
 {
   basic_block bb;
-  struct cgraph_node *node = cgraph_node::get (current_function_decl);
+  cgraph_node *node = cgraph_node::get (current_function_decl);
   gimple_stmt_iterator gsi;
-  struct ipa_ref *ref = NULL;
+  ipa_ref *ref = NULL;
   int i;
 
   /* Keep speculative references for further cgraph edge expansion.  */
@@ -515,7 +514,10 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_rebuild_cgraph_edges (m_ctxt); }
-  virtual unsigned int execute (function *) { return rebuild_cgraph_edges (); }
+  virtual unsigned int execute (function *)
+  {
+    return cgraph_edge::rebuild_edges ();
+  }
 
 }; // class pass_rebuild_cgraph_edges
 
@@ -561,7 +563,7 @@ public:
 unsigned int
 pass_remove_cgraph_callee_edges::execute (function *)
 {
-  struct cgraph_node *node = cgraph_node::get (current_function_decl);
+  cgraph_node *node = cgraph_node::get (current_function_decl);
   node->remove_callees ();
   node->remove_all_references ();
   return 0;

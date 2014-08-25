@@ -463,7 +463,7 @@ want_early_inline_function_p (struct cgraph_edge *e)
 
       if (growth <= 0)
 	;
-      else if (!cgraph_maybe_hot_edge_p (e)
+      else if (!e->maybe_hot_p ()
 	       && growth > 0)
 	{
 	  if (dump_file)
@@ -578,7 +578,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
      promote non-inline function to inline and we increase
      MAX_INLINE_INSNS_SINGLE 16fold for inline functions.  */
   else if ((!DECL_DECLARED_INLINE_P (callee->decl)
-	   && (!e->count || !cgraph_maybe_hot_edge_p (e)))
+	   && (!e->count || !e->maybe_hot_p ()))
 	   && inline_summary (callee)->min_size - inline_edge_summary (e)->call_stmt_size
 	      > MAX (MAX_INLINE_INSNS_SINGLE, MAX_INLINE_INSNS_AUTO))
     {
@@ -651,7 +651,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
  	    }
 	}
       /* If call is cold, do not inline when function body would grow. */
-      else if (!cgraph_maybe_hot_edge_p (e)
+      else if (!e->maybe_hot_p ()
 	       && (growth >= MAX_INLINE_INSNS_SINGLE
 		   || growth_likely_positive (callee, growth)))
 	{
@@ -689,7 +689,7 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
   if (DECL_DECLARED_INLINE_P (edge->caller->decl))
     max_depth = PARAM_VALUE (PARAM_MAX_INLINE_RECURSIVE_DEPTH);
 
-  if (!cgraph_maybe_hot_edge_p (edge))
+  if (!edge->maybe_hot_p ())
     {
       reason = "recursive call is cold";
       want_inline = false;
@@ -797,7 +797,7 @@ check_callers (struct cgraph_node *node, void *has_hot_call)
      {
        if (!can_inline_edge_p (e, true))
          return true;
-       if (!(*(bool *)has_hot_call) && cgraph_maybe_hot_edge_p (e))
+       if (!(*(bool *)has_hot_call) && e->maybe_hot_p ())
 	 *(bool *)has_hot_call = true;
      }
   return false;
@@ -1052,7 +1052,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   gcc_assert (badness >= INT_MIN);
   gcc_assert (badness <= INT_MAX - 1);
   /* Make recursive inlining happen always after other inlining is done.  */
-  if (cgraph_edge_recursive_p (edge))
+  if (edge->recursive_p ())
     return badness + 1;
   else
     return badness;
@@ -1342,13 +1342,13 @@ recursive_inlining (struct cgraph_edge *edge,
 	 the already modified body.  */
       if (master_clone)
 	{
-          cgraph_redirect_edge_callee (curr, master_clone);
-          reset_edge_growth_cache (curr);
+	  curr->redirect_callee (master_clone);
+	  reset_edge_growth_cache (curr);
 	}
 
       if (estimate_size_after_inlining (node, curr) > limit)
 	{
-	  cgraph_redirect_edge_callee (curr, dest);
+	  curr->redirect_callee (dest);
 	  reset_edge_growth_cache (curr);
 	  break;
 	}
@@ -1362,7 +1362,7 @@ recursive_inlining (struct cgraph_edge *edge,
 
       if (!want_inline_self_recursive_call_p (curr, node, false, depth))
 	{
-	  cgraph_redirect_edge_callee (curr, dest);
+	  curr->redirect_callee (dest);
 	  reset_edge_growth_cache (curr);
 	  continue;
 	}
@@ -1387,7 +1387,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL, CGRAPH_FREQ_BASE);
-          cgraph_redirect_edge_callee (curr, master_clone);
+	  curr->redirect_callee (master_clone);
           reset_edge_growth_cache (curr);
 	}
 
@@ -1413,10 +1413,10 @@ recursive_inlining (struct cgraph_edge *edge,
   /* Remove master clone we used for inlining.  We rely that clones inlined
      into master clone gets queued just before master clone so we don't
      need recursion.  */
-  for (node = cgraph_first_function (); node != master_clone;
+  for (node = symtab->first_function (); node != master_clone;
        node = next)
     {
-      next = cgraph_next_function (node);
+      next = symtab->next_function (node);
       if (node->global.inlined_to == master_clone)
 	node->remove ();
     }
@@ -1485,7 +1485,7 @@ speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
 
   gcc_assert (e->speculative && !e->indirect_unknown_callee);
 
-  if (!cgraph_maybe_hot_edge_p (e))
+  if (!e->maybe_hot_p ())
     return false;
 
   /* See if IP optimizations found something potentially useful about the
@@ -1496,13 +1496,13 @@ speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
       int ecf_flags = flags_from_decl_or_type (target->decl);
       if (ecf_flags & ECF_CONST)
         {
-          cgraph_speculative_call_info (e, direct, indirect, ref);
+	  e->speculative_call_info (direct, indirect, ref);
 	  if (!(indirect->indirect_info->ecf_flags & ECF_CONST))
 	    return true;
         }
       else if (ecf_flags & ECF_PURE)
         {
-          cgraph_speculative_call_info (e, direct, indirect, ref);
+	  e->speculative_call_info (direct, indirect, ref);
 	  if (!(indirect->indirect_info->ecf_flags & ECF_PURE))
 	    return true;
         }
@@ -1534,7 +1534,7 @@ resolve_noninline_speculation (fibheap_t edge_heap, struct cgraph_edge *edge)
       bitmap updated_nodes = BITMAP_ALLOC (NULL);
 
       spec_rem += edge->count;
-      cgraph_resolve_speculation (edge, NULL);
+      edge->resolve_speculation ();
       reset_edge_caches (where);
       inline_update_overall_summary (where);
       update_caller_keys (edge_heap, where,
@@ -1561,14 +1561,13 @@ inline_small_functions (void)
   int min_size, max_size;
   auto_vec<cgraph_edge *> new_indirect_edges;
   int initial_size = 0;
-  struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_node **order = XCNEWVEC (cgraph_node *, symtab->cgraph_count);
   struct cgraph_edge_hook_list *edge_removal_hook_holder;
-
   if (flag_indirect_inlining)
     new_indirect_edges.create (8);
 
   edge_removal_hook_holder
-    = cgraph_add_edge_removal_hook (&heap_edge_removal_hook, edge_heap);
+    = symtab->add_edge_removal_hook (&heap_edge_removal_hook, edge_heap);
 
   /* Compute overall unit size and other global parameters used by badness
      metrics.  */
@@ -1651,7 +1650,7 @@ inline_small_functions (void)
 	    }
 	  if (edge->speculative && !speculation_useful_p (edge, edge->aux != NULL))
 	    {
-	      cgraph_resolve_speculation (edge, NULL);
+	      edge->resolve_speculation ();
 	      update = true;
 	    }
 	}
@@ -1756,7 +1755,7 @@ inline_small_functions (void)
 	 recursive calls where we do effects similar to loop unrolling.
 	 When inlining such edge seems profitable, leave decision on
 	 specific inliner.  */
-      if (cgraph_edge_recursive_p (edge))
+      if (edge->recursive_p ())
 	{
 	  where = edge->caller;
 	  if (where->global.inlined_to)
@@ -1859,7 +1858,7 @@ inline_small_functions (void)
 	     initial_size, overall_size,
 	     initial_size ? overall_size * 100 / (initial_size) - 100: 0);
   BITMAP_FREE (updated_nodes);
-  cgraph_remove_edge_removal_hook (edge_removal_hook_holder);
+  symtab->remove_edge_removal_hook (edge_removal_hook_holder);
 }
 
 /* Flatten NODE.  Performed both during early inlining and
@@ -1908,7 +1907,7 @@ flatten_function (struct cgraph_node *node, bool early)
 	  : !can_early_inline_edge_p (e))
 	continue;
 
-      if (cgraph_edge_recursive_p (e))
+      if (e->recursive_p ())
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Not inlining: recursive call.\n");
@@ -2141,7 +2140,7 @@ ipa_inline (void)
   if (!optimize)
     return 0;
 
-  order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
 
   if (in_lto_p && optimize)
     ipa_update_after_lto_read ();
@@ -2184,7 +2183,7 @@ ipa_inline (void)
 
   /* Do first after-inlining removal.  We want to remove all "stale" extern inline
      functions and virtual functions so we really know what is called once.  */
-  symtab_remove_unreachable_nodes (false, dump_file);
+  symtab->remove_unreachable_nodes (false, dump_file);
   free (order);
 
   /* Inline functions with a property that after inlining into all callers the
@@ -2222,7 +2221,7 @@ ipa_inline (void)
 	      next = edge->next_callee;
 	      if (edge->speculative && !speculation_useful_p (edge, false))
 		{
-		  cgraph_resolve_speculation (edge, NULL);
+		  edge->resolve_speculation ();
 		  spec_rem += edge->count;
 		  update = true;
 		  remove_functions = true;
@@ -2284,7 +2283,7 @@ inline_always_inline_functions (struct cgraph_node *node)
       if (!DECL_DISREGARD_INLINE_LIMITS (callee->decl))
 	continue;
 
-      if (cgraph_edge_recursive_p (e))
+      if (e->recursive_p ())
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "  Not inlining recursive call to %s.\n",
@@ -2346,7 +2345,7 @@ early_inline_small_functions (struct cgraph_node *node)
       if (!can_early_inline_edge_p (e))
 	continue;
 
-      if (cgraph_edge_recursive_p (e))
+      if (e->recursive_p ())
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "  Not inlining: recursive call.\n");

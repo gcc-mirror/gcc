@@ -1800,10 +1800,10 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		      int edge_freq = edge->frequency;
 		      int new_freq;
 		      struct cgraph_edge *old_edge = edge;
-		      edge = cgraph_clone_edge (edge, id->dst_node, stmt,
-					        gimple_uid (stmt),
-					        REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
-					        true);
+		      edge = edge->clone (id->dst_node, stmt,
+					  gimple_uid (stmt),
+					  REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
+					  true);
 		      /* We could also just rescale the frequency, but
 		         doing so would introduce roundoff errors and make
 			 verifier unhappy.  */
@@ -1818,11 +1818,11 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 			  struct ipa_ref *ref;
 
 			  gcc_assert (!edge->indirect_unknown_callee);
-			  cgraph_speculative_call_info (old_edge, direct, indirect, ref);
-			  indirect = cgraph_clone_edge (indirect, id->dst_node, stmt,
-							gimple_uid (stmt),
-							REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
-							true);
+			  old_edge->speculative_call_info (direct, indirect, ref);
+			  indirect = indirect->clone (id->dst_node, stmt,
+						      gimple_uid (stmt),
+						      REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
+						      true);
 			  if (old_edge->frequency + indirect->frequency)
 			    {
 			      edge->frequency = MIN (RDIV ((gcov_type)new_freq * old_edge->frequency,
@@ -1865,7 +1865,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		case CB_CGE_MOVE:
 		  edge = id->dst_node->get_edge (orig_stmt);
 		  if (edge)
-		    cgraph_set_call_stmt (edge, stmt);
+		    edge->set_call_stmt (stmt);
 		  break;
 
 		default:
@@ -2426,7 +2426,7 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
 	{
 	  struct cgraph_edge *edge = id->dst_node->get_edge (gsi_stmt (si));
 	  if (edge)
-	    cgraph_redirect_edge_call_stmt_to_callee (edge);
+	    edge->redirect_call_stmt_to_callee ();
 	}
     }
 }
@@ -4192,7 +4192,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	  && !cg_edge->callee->local.redefined_extern_inline
 	  /* During early inline pass, report only when optimization is
 	     not turned on.  */
-	  && (cgraph_global_info_ready
+	  && (symtab->global_info_ready
 	      || !optimize
 	      || cgraph_inline_failed_type (reason) == CIF_FINAL_ERROR)
 	  /* PR 20090218-1_0.c. Body can be provided by another module. */
@@ -4209,9 +4209,9 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	       && reason != CIF_UNSPECIFIED
 	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn))
 	       /* Do not warn about not inlined recursive calls.  */
-	       && !cgraph_edge_recursive_p (cg_edge)
+	       && !cg_edge->recursive_p ()
 	       /* Avoid warnings during early inline pass. */
-	       && cgraph_global_info_ready)
+	       && symtab->global_info_ready)
 	{
 	  warning (OPT_Winline, "inlining failed in call to %q+F: %s",
 		   fn, _(cgraph_inline_failed_string (reason)));
@@ -5216,7 +5216,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 		  if (!e->inline_failed)
 		    e->callee->remove_symbol_and_inline_clones (id->dst_node);
 		  else
-		    cgraph_remove_edge (e);
+		    e->remove ();
 		}
 	      if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES
 		  && id->dst_node->clones)
@@ -5229,7 +5229,7 @@ delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 			if (!e->inline_failed)
 			  e->callee->remove_symbol_and_inline_clones (id->dst_node);
 			else
-			  cgraph_remove_edge (e);
+			  e->remove ();
 		      }
 
 		    if (node->clones)
@@ -5535,7 +5535,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   fold_cond_expr_cond ();
   delete_unreachable_blocks_update_callgraph (&id);
   if (id.dst_node->definition)
-    cgraph_rebuild_references ();
+    cgraph_edge::rebuild_references ();
   update_ssa (TODO_update_ssa);
 
   /* After partial cloning we need to rescale frequencies, so they are

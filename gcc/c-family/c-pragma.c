@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "varasm.h"
-#include "gcc-symtab.h"
 #include "function.h"		/* For cfun.  FIXME: Does the parser know
 				   when it is inside a function, so that
 				   we don't have to look at cfun?  */
@@ -329,7 +328,7 @@ maybe_apply_pending_pragma_weaks (void)
       if (id == NULL)
 	continue;
 
-      target = symtab_node_for_asm (id);
+      target = symtab_node::get_for_asmname (id);
       decl = build_decl (UNKNOWN_LOCATION,
 			 target ? TREE_CODE (target->decl) : FUNCTION_DECL,
 			 alias_id, default_function_type);
@@ -479,7 +478,7 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
 			 "conflict with previous rename");
 	    }
 	  else
-	    change_decl_assembler_name (decl, newname);
+	    symtab->change_decl_assembler_name (decl, newname);
 	}
     }
 

@@ -188,7 +188,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 				       update_original, vNULL, true,
 				       inlining_into,
 				       NULL);
-	  cgraph_redirect_edge_callee (e, n);
+	  e->redirect_callee (n);
 	}
     }
   else
@@ -204,7 +204,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
         clone_inlined_nodes (e, duplicate, update_original, overall_size, freq_scale);
       if (e->speculative && !speculation_useful_p (e, true))
 	{
-	  cgraph_resolve_speculation (e, NULL);
+	  e->resolve_speculation (NULL);
 	  speculation_removed = true;
 	}
     }
@@ -257,7 +257,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (e->callee != callee)
     {
       struct cgraph_node *alias = e->callee, *next_alias;
-      cgraph_redirect_edge_callee (e, callee);
+      e->redirect_callee (callee);
       while (alias && alias != callee)
 	{
 	  if (!alias->callers
@@ -421,7 +421,7 @@ save_inline_function_body (struct cgraph_node *node)
 static bool
 preserve_function_body_p (struct cgraph_node *node)
 {
-  gcc_assert (cgraph_global_info_ready);
+  gcc_assert (symtab->global_info_ready);
   gcc_assert (!node->alias && !node->thunk.thunk_p);
 
   /* Look if there is any clone around.  */
@@ -451,7 +451,7 @@ inline_transform (struct cgraph_node *node)
   for (e = node->callees; e; e = next)
     {
       next = e->next_callee;
-      cgraph_redirect_edge_call_stmt_to_callee (e);
+      e->redirect_call_stmt_to_callee ();
     }
   node->remove_all_references ();
 

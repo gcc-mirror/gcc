@@ -4056,7 +4056,7 @@ expand_or_defer_fn (tree fn)
       function_depth++;
 
       /* Expand or defer, at the whim of the compilation unit manager.  */
-      cgraph_finalize_function (fn, function_depth > 1);
+      cgraph_node::finalize_function (fn, function_depth > 1);
       emit_associated_thunks (fn);
 
       function_depth--;

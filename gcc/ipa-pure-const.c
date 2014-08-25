@@ -890,11 +890,11 @@ register_hooks (void)
   init_p = true;
 
   node_removal_hook_holder =
-      cgraph_add_node_removal_hook (&remove_node_data, NULL);
+      symtab->add_cgraph_removal_hook (&remove_node_data, NULL);
   node_duplication_hook_holder =
-      cgraph_add_node_duplication_hook (&duplicate_node_data, NULL);
+      symtab->add_cgraph_duplication_hook (&duplicate_node_data, NULL);
   function_insertion_hook_holder =
-      cgraph_add_function_insertion_hook (&add_new_function, NULL);
+      symtab->add_cgraph_insertion_hook (&add_new_function, NULL);
 }
 
 
@@ -1090,7 +1090,7 @@ propagate_pure_const (void)
   struct cgraph_node *node;
   struct cgraph_node *w;
   struct cgraph_node **order =
-    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+    XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   int order_pos;
   int i;
   struct ipa_dfs_info * w_info;
@@ -1192,7 +1192,7 @@ propagate_pure_const (void)
 			       y_l->looping);
 		    }
 		  if (y_l->pure_const_state > IPA_PURE
-		      && cgraph_edge_cannot_lead_to_return (e))
+		      && e->cannot_lead_to_return_p ())
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file,
@@ -1213,7 +1213,7 @@ propagate_pure_const (void)
 	      else
 		state_from_flags (&edge_state, &edge_looping,
 				  flags_from_decl_or_type (y->decl),
-				  cgraph_edge_cannot_lead_to_return (e));
+				  e->cannot_lead_to_return_p ());
 
 	      /* Merge the results with what we already know.  */
 	      better_state (&edge_state, &edge_looping,
@@ -1237,7 +1237,7 @@ propagate_pure_const (void)
 		fprintf (dump_file, "    Indirect call");
 	      state_from_flags (&edge_state, &edge_looping,
 			        ie->indirect_info->ecf_flags,
-			        cgraph_edge_cannot_lead_to_return (ie));
+				ie->cannot_lead_to_return_p ());
 	      /* Merge the results with what we already know.  */
 	      better_state (&edge_state, &edge_looping,
 			    w_l->state_previously_known,
@@ -1368,7 +1368,7 @@ propagate_nothrow (void)
   struct cgraph_node *node;
   struct cgraph_node *w;
   struct cgraph_node **order =
-    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+    XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   int order_pos;
   int i;
   struct ipa_dfs_info * w_info;
@@ -1473,9 +1473,9 @@ propagate (void)
 {
   struct cgraph_node *node;
 
-  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
-  cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
-  cgraph_remove_node_removal_hook (node_removal_hook_holder);
+  symtab->remove_cgraph_insertion_hook (function_insertion_hook_holder);
+  symtab->remove_cgraph_duplication_hook (node_duplication_hook_holder);
+  symtab->remove_cgraph_removal_hook (node_removal_hook_holder);
 
   /* Nothrow makes more function to not lead to return and improve
      later analysis.  */

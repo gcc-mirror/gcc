@@ -2897,7 +2897,7 @@ unnest_nesting_tree_1 (struct nesting_info *root)
   if (node->origin)
     {
        node->unnest ();
-       cgraph_finalize_function (root->context, true);
+       cgraph_node::finalize_function (root->context, true);
     }
 }
 

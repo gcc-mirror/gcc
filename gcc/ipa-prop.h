@@ -538,10 +538,10 @@ static inline void
 ipa_check_create_node_params (void)
 {
   if (!ipa_node_params_vector.exists ())
-    ipa_node_params_vector.create (cgraph_max_uid);
+    ipa_node_params_vector.create (symtab->cgraph_max_uid);
 
-  if (ipa_node_params_vector.length () <= (unsigned) cgraph_max_uid)
-    ipa_node_params_vector.safe_grow_cleared (cgraph_max_uid + 1);
+  if (ipa_node_params_vector.length () <= (unsigned) symtab->cgraph_max_uid)
+    ipa_node_params_vector.safe_grow_cleared (symtab->cgraph_max_uid + 1);
 }
 
 /* This function ensures the array of edge arguments infos is big enough to
@@ -550,8 +550,9 @@ ipa_check_create_node_params (void)
 static inline void
 ipa_check_create_edge_args (void)
 {
-  if (vec_safe_length (ipa_edge_args_vector) <= (unsigned) cgraph_edge_max_uid)
-    vec_safe_grow_cleared (ipa_edge_args_vector, cgraph_edge_max_uid + 1);
+  if (vec_safe_length (ipa_edge_args_vector)
+      <= (unsigned) symtab->edges_max_uid)
+    vec_safe_grow_cleared (ipa_edge_args_vector, symtab->edges_max_uid + 1);
 }
 
 /* Returns true if the array of edge infos is large enough to accommodate an

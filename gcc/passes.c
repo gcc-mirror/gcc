@@ -333,8 +333,8 @@ execute_all_early_local_passes (void)
      none of the sub-passes are IPA passes and do not create new
      functions, this is ok.  We're setting this value for the benefit
      of IPA passes that follow.  */
-  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
-    cgraph_state = CGRAPH_STATE_IPA_SSA;
+  if (symtab->state < IPA_SSA)
+    symtab->state = IPA_SSA;
   return 0;
 }
 
@@ -1506,7 +1506,7 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
   else
     {
       gcc_assert (!order);
-      order = ggc_vec_alloc<cgraph_node *> (cgraph_n_nodes);
+      order = ggc_vec_alloc<cgraph_node *> (symtab->cgraph_count);
       nnodes = ipa_reverse_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
         order[i]->process = 1;
@@ -1732,7 +1732,7 @@ execute_function_todo (function *fn, void *data)
     rebuild_frequencies ();
 
   if (flags & TODO_rebuild_cgraph_edges)
-    rebuild_cgraph_edges ();
+    cgraph_edge::rebuild_edges ();
 
   /* If we've seen errors do not bother running any verifiers.  */
   if (!seen_error ())
@@ -1814,7 +1814,7 @@ execute_todo (unsigned int flags)
   if (flags & TODO_remove_functions)
     {
       gcc_assert (!cfun);
-      symtab_remove_unreachable_nodes (true, dump_file);
+      symtab->remove_unreachable_nodes (true, dump_file);
     }
 
   if ((flags & TODO_dump_symtab) && dump_file && !current_function_decl)
@@ -2113,7 +2113,7 @@ execute_one_pass (opt_pass *pass)
 		node->get_body ();
 		push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 		execute_all_ipa_transforms ();
-		rebuild_cgraph_edges ();
+		cgraph_edge::rebuild_edges ();
 		free_dominance_info (CDI_DOMINATORS);
 		free_dominance_info (CDI_POST_DOMINATORS);
 		pop_cfun ();
@@ -2121,7 +2121,7 @@ execute_one_pass (opt_pass *pass)
 	      }
 	  }
       if (applied)
-        symtab_remove_unreachable_nodes (false, dump_file);
+	symtab->remove_unreachable_nodes (false, dump_file);
       /* Restore current_pass.  */
       current_pass = pass;
     }
@@ -2176,7 +2176,7 @@ execute_one_pass (opt_pass *pass)
     }
 
   if (!current_function_decl)
-    cgraph_process_new_functions ();
+    symtab->process_new_functions ();
 
   pass_fini_dump_file (pass);
 
@@ -2314,9 +2314,9 @@ ipa_write_summaries (void)
      cgraph_expand_all_functions.  This mostly facilitates debugging,
      since it causes the gimple file to be processed in the same order
      as the source code.  */
-  order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
   order_pos = ipa_reverse_postorder (order);
-  gcc_assert (order_pos == cgraph_n_nodes);
+  gcc_assert (order_pos == symtab->cgraph_count);
 
   for (i = order_pos - 1; i >= 0; i--)
     {
@@ -2555,7 +2555,7 @@ execute_ipa_pass_list (opt_pass *pass)
 	    gcc_unreachable ();
 	}
       gcc_assert (!current_function_decl);
-      cgraph_process_new_functions ();
+      symtab->process_new_functions ();
       pass = pass->next;
     }
   while (pass);

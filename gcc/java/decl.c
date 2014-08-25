@@ -1890,7 +1890,7 @@ finish_method (tree fndecl)
   cfun->function_end_locus = DECL_FUNCTION_LAST_LINE (fndecl);
 
   /* Defer inlining and expansion to the cgraph optimizers.  */
-  cgraph_finalize_function (fndecl, false);
+  cgraph_node::finalize_function (fndecl, false);
 }
 
 /* We pessimistically marked all methods and fields external until we

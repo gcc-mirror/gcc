@@ -98,7 +98,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
     {
       /* Before we start optimizing unreachable code we can be sure all
 	 static objects are defined.  */
-      if (cgraph_function_flags_ready)
+      if (symtab->function_flags_ready)
 	return true;
       snode = symtab_node::get (decl);
       if (!snode || !snode->definition)
@@ -143,7 +143,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
      units where they are used and when the other unit was compiled with LTO
      it is possible that vtable was kept public while the function itself
      was privatized. */
-  if (!cgraph_function_flags_ready)
+  if (!symtab->function_flags_ready)
     return true;
 
   snode = symtab_node::get (decl);
