@@ -1,5 +1,6 @@
 /* PR rtl-optimization/54290 */
 /* Testcase by Eric Volk <eriksnga@gmail.com> */
+/* { dg-require-effective-target int32plus } */
 
 double vd[2] = {1., 0.};
 int vi[2] = {1234567890, 0};

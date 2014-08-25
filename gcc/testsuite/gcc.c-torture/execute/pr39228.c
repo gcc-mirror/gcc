@@ -1,3 +1,6 @@
+/* { dg-options "-mieee" { target sh*-*-* alpha*-*-* } } */
+/* { dg-skip-if "No Inf/NaN support" { spu-*-* } "*" "" } */
+
 extern void abort (void);
 
 static int __attribute__((always_inline)) testf (float b)

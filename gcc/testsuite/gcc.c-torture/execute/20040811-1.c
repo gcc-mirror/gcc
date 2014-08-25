@@ -1,3 +1,5 @@
+/* { dg-require-effective-target int32plus } */
+
 /* Ensure that we deallocate X when branching back before its
    declaration.  */
 

@@ -1,4 +1,8 @@
 /* { dg-options "-fno-ira-share-spill-slots" } */
+
+extern void abort (void);
+extern void exit (int);
+
 #define CHAR_BIT 8
 
 #define ROR(a,b) (((a) >> (b)) | ((a) << ((sizeof (a) * CHAR_BIT) - (b))))

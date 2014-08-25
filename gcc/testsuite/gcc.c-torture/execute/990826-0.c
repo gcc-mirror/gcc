@@ -6,6 +6,8 @@ Date: Sun, 06 Jun 1999 23:37:23 -0400
 X-UIDL: 9c1e40c572e3b306464f703461764cd5
 */
 
+/* { dg-xfail-if "Can not call system libm.a with -msoft-float" { powerpc-*-aix* rs6000-*-aix* } { "-msoft-float" } { "" } } */
+
 #include <stdio.h>
 #include <math.h>
 

@@ -1,6 +1,6 @@
 /* Testcase derived from 20111227-1.c to ensure that REE is combining
    redundant zero extends with zero extend to wider mode.  */
-/* { dg-options "-fdump-rtl-ree -O" } */
+/* { dg-options "-fdump-rtl-ree -O -free" } */
 extern void abort (void);
 
 unsigned short s;

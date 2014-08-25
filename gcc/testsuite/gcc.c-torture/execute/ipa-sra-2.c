@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 struct big
 {
   int data[1000000];

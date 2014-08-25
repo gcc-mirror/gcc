@@ -1,3 +1,4 @@
+/* { dg-skip-if "assumes absence of larger-than-word padding" { epiphany-*-* } "*" "" } */
 extern void abort(void);
 
 typedef int word __attribute__((mode(word)));
