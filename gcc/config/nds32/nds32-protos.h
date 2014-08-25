@@ -92,7 +92,7 @@ extern int nds32_can_use_bitci_p (int);
 
 /* Auxiliary function for 'Computing the Length of an Insn'.  */
 
-extern int nds32_adjust_insn_length (rtx, int);
+extern int nds32_adjust_insn_length (rtx_insn *, int);
 
 /* Auxiliary functions for FP_AS_GP detection.  */
 

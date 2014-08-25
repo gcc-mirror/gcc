@@ -1,5 +1,12 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/nds32/nds32-protos.h (nds32_adjust_insn_length):
+	Strengthen first param from rtx to rtx_insn *.
+	* config/nds32/nds32.c (nds32_adjust_insn_length): Likewise for
+	param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/mips/mips-protos.h (mips_emit_move): Strengthen return
 	type from rtx to rtx_insn *.
 	(mips_expand_call): Likewise.
