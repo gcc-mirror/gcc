@@ -1280,7 +1280,7 @@ sjlj_emit_function_exit (void)
 }
 
 static void
-sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
+sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 {
   enum machine_mode unwind_word_mode = targetm.unwind_word_mode ();
   enum machine_mode filter_mode = targetm.eh_return_filter_mode ();

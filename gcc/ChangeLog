@@ -1,5 +1,14 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* except.h (struct eh_landing_pad_d): Strengthen field
+	"landing_pad" from rtx to rtx_code_label *.
+
+	* except.c (sjlj_emit_dispatch_table): Likewise for param
+	"dispatch_label"
+	(sjlj_build_landing_pads): Likewise for local "dispatch_label".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/xtensa/xtensa-protos.h (xtensa_emit_loop_end): Strengthen
 	first param from rtx to rtx_insn *.
 	* config/xtensa/xtensa.c (struct machine_function): Likewise for
