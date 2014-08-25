@@ -1,5 +1,11 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/rx/rx-protos.h (rx_adjust_insn_length): Strengthen first
+	param from rtx to rtx_insn *.
+	* config/rx/rx.c (rx_adjust_insn_length): Likewise for param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/rs6000/rs6000-protos.h (output_cbranch): Strengthen param
 	4 from rtx to rtx_insn *.
 	(rs6000_final_prescan_insn): Likewise for first param.

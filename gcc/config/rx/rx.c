@@ -3237,7 +3237,7 @@ rx_max_skip_for_label (rtx lab)
 /* Compute the real length of the extending load-and-op instructions.  */
 
 int
-rx_adjust_insn_length (rtx insn, int current_length)
+rx_adjust_insn_length (rtx_insn *insn, int current_length)
 {
   rtx extend, mem, offset;
   bool zero;
