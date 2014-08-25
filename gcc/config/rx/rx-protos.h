@@ -27,7 +27,7 @@ extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
 
 #ifdef RTX_CODE
-extern int		rx_adjust_insn_length (rtx, int);
+extern int		rx_adjust_insn_length (rtx_insn *, int);
 extern int 		rx_align_for_label (rtx, int);
 extern void             rx_emit_stack_popm (rtx *, bool);
 extern void             rx_emit_stack_pushm (rtx *);
