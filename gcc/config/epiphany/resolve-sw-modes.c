@@ -77,7 +77,8 @@ unsigned
 pass_resolve_sw_modes::execute (function *fun)
 {
   basic_block bb;
-  rtx insn, src;
+  rtx_insn *insn;
+  rtx src;
   vec<basic_block> todo;
   sbitmap pushed;
   bool need_commit = false;
@@ -155,7 +156,7 @@ pass_resolve_sw_modes::execute (function *fun)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  basic_block succ = e->dest;
-	  rtx seq;
+	  rtx_insn *seq;
 
 	  if (!REGNO_REG_SET_P (DF_LIVE_IN (succ), jilted_reg))
 	    continue;

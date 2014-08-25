@@ -27,7 +27,7 @@ extern struct rtx_def *gen_compare_reg (enum machine_mode, enum rtx_code,
 #endif
 
 /* Declarations for various fns used in the .md file.  */
-extern void epiphany_final_prescan_insn (rtx, rtx *, int);
+extern void epiphany_final_prescan_insn (rtx_insn *, rtx *, int);
 extern bool epiphany_is_long_call_p (rtx);
 extern bool epiphany_small16 (rtx);
 bool epiphany_uninterruptible_p (tree decl);

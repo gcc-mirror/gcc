@@ -1,5 +1,21 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/epiphany/epiphany-protos.h (epiphany_final_prescan_insn):
+	Strengthen first param "insn" from rtx to rtx_insn *.
+
+	* config/epiphany/epiphany.c (epiphany_final_prescan_insn):
+	Likewise.
+	(frame_insn): Likewise for return type.  Introduce local "insn"
+	for use in place of local "x" for use as an rtx_insn *.
+	(frame_move_insn): Strengthen return type from rtx to rtx_insn *.
+	(epiphany_expand_prologue): Likewise for local "insn".
+	* config/epiphany/mode-switch-use.c (insert_uses): Likewise.
+	* config/epiphany/resolve-sw-modes.c
+	(pass_resolve_sw_modes::execute): Likewise for locals "insn" and
+	"seq".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/c6x/c6x-protos.h (c6x_get_unit_specifier): Strengthen
 	param from rtx to rtx_insn *.
 	(c6x_final_prescan_insn): Likewise for first param.
