@@ -4650,13 +4650,37 @@ start_decl (const cp_declarator *declarator,
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
+      bool this_tmpl = (processing_template_decl
+			> template_class_depth (context));
       if (VAR_P (decl))
 	{
 	  tree field = lookup_field (context, DECL_NAME (decl), 0, false);
-	  if (field == NULL_TREE || !VAR_P (field))
-	    error ("%q#D is not a static member of %q#T", decl, context);
+	  if (field == NULL_TREE
+	      || !(VAR_P (field) || variable_template_p (field)))
+	    error ("%q+#D is not a static data member of %q#T", decl, context);
 	  else
 	    {
+	      if (variable_template_p (field))
+		{
+		  if (!this_tmpl)
+		    {
+		      error_at (DECL_SOURCE_LOCATION (decl),
+				"non-member-template declaration of %qD", decl);
+		      inform (DECL_SOURCE_LOCATION (field), "does not match "
+			      "member template declaration here");
+		      return error_mark_node;
+		    }
+		  field = DECL_TEMPLATE_RESULT (field);
+		}
+	      else if (this_tmpl)
+		{
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "member template declaration of %qD", decl);
+		  inform (DECL_SOURCE_LOCATION (field), "does not match "
+			  "non-member-template declaration here");
+		  return error_mark_node;
+		}
+
 	      if (DECL_CONTEXT (field) != context)
 		{
 		  if (!same_type_p (DECL_CONTEXT (field), context))
@@ -4683,8 +4707,7 @@ start_decl (const cp_declarator *declarator,
       else
 	{
 	  tree field = check_classfn (context, decl,
-				      (processing_template_decl
-				       > template_class_depth (context))
+				      this_tmpl
 				      ? current_template_parms
 				      : NULL_TREE);
 	  if (field && field != error_mark_node

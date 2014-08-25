@@ -11127,13 +11127,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		   same_type_p, because DECL_CONTEXT is always
 		   canonical...  */
 		if (ctx == DECL_CONTEXT (t)
-		    && (TREE_CODE (t) != TYPE_DECL
-			/* ... unless T is a member template; in which
-			   case our caller can be willing to create a
-			   specialization of that template represented
-			   by T.  */
-			|| !(DECL_TI_TEMPLATE (t)
-			     && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (t)))))
+		    /* ... unless T is a member template; in which
+		       case our caller can be willing to create a
+		       specialization of that template represented
+		       by T.  */
+		    && !(DECL_TI_TEMPLATE (t)
+			 && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (t))))
 		  spec = t;
 	      }
 
