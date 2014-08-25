@@ -1,5 +1,32 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_tls_address): Strengthen local
+	"insns" from rtx to rtx_insn *.
+	(ia64_emit_cond_move): Likewise for locals "insn", "first".
+	(struct spill_fill_data): Likewise for field "init_after" and for
+	elements of array field "prev_insn".
+	(spill_restore_mem): Likewise for locals "insn", "first".
+	(do_spill): Likewise for local "insn".
+	(do_restore): Likewise.
+	(ia64_expand_prologue): Likewise.
+	(ia64_expand_epilogue): Likewise.
+	(emit_insn_group_barriers): Likewise for locals "insn",
+	"last_label".
+	(emit_all_insn_group_barriers): Likewise for locals "insn",
+	"last".
+	(dfa_stop_insn): Likewise for this global.
+	(dfa_pre_cycle_insn): Likewise.
+	(ia64_nop): Likewise.
+	(final_emit_insn_group_barriers): Likewise for locals "insn",
+	"last".
+	(emit_predicate_relation_info): Likewise for locals "head", "n",
+	"insn", "b", "a".
+	(ia64_reorg): Likewise for local "insn".
+	(ia64_output_mi_thunk): Likewise.
+	(expand_vec_perm_interleave_2): Likewise for local "seq".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/i386/i386-protos.h (ix86_avoid_lea_for_add): Strengthen
 	param 1 "insn" from rtx to rtx_insn *.
 	(ix86_use_lea_for_mov): Likewise.
