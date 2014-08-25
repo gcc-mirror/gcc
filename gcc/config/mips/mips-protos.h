@@ -199,7 +199,7 @@ extern int mips_const_insns (rtx);
 extern int mips_split_const_insns (rtx);
 extern int mips_load_store_insns (rtx, rtx);
 extern int mips_idiv_insns (void);
-extern rtx mips_emit_move (rtx, rtx);
+extern rtx_insn *mips_emit_move (rtx, rtx);
 #ifdef RTX_CODE
 extern void mips_emit_binary (enum rtx_code, rtx, rtx, rtx);
 #endif
@@ -229,7 +229,8 @@ extern void mips_expand_conditional_move (rtx *);
 extern void mips_expand_conditional_trap (rtx);
 #endif
 extern bool mips_use_pic_fn_addr_reg_p (const_rtx);
-extern rtx mips_expand_call (enum mips_call_type, rtx, rtx, rtx, rtx, bool);
+extern rtx_insn *mips_expand_call (enum mips_call_type, rtx, rtx, rtx, rtx,
+				   bool);
 extern void mips_split_call (rtx, rtx);
 extern bool mips_get_pic_call_symbol (rtx *, int);
 extern void mips_set_return_address (rtx, rtx);
@@ -286,11 +287,12 @@ extern enum reg_class mips_secondary_reload_class (enum reg_class,
 						   rtx, bool);
 extern int mips_class_max_nregs (enum reg_class, enum machine_mode);
 
-extern int mips_adjust_insn_length (rtx, int);
+extern int mips_adjust_insn_length (rtx_insn *, int);
 extern void mips_output_load_label (rtx);
-extern const char *mips_output_conditional_branch (rtx, rtx *, const char *,
-						   const char *);
-extern const char *mips_output_order_conditional_branch (rtx, rtx *, bool);
+extern const char *mips_output_conditional_branch (rtx_insn *, rtx *,
+						   const char *, const char *);
+extern const char *mips_output_order_conditional_branch (rtx_insn *, rtx *,
+							 bool);
 extern const char *mips_output_sync (void);
 extern const char *mips_output_sync_loop (rtx, rtx *);
 extern unsigned int mips_sync_loop_insns (rtx, rtx *);
@@ -349,7 +351,7 @@ extern void mips16_expand_set_fcsr (rtx);
 
 extern bool mips_eh_uses (unsigned int);
 extern bool mips_epilogue_uses (unsigned int);
-extern void mips_final_prescan_insn (rtx, rtx *, int);
+extern void mips_final_prescan_insn (rtx_insn *, rtx *, int);
 extern int mips_trampoline_code_size (void);
 extern void mips_function_profiler (FILE *);
 

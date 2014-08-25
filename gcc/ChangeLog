@@ -1,5 +1,100 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/mips/mips-protos.h (mips_emit_move): Strengthen return
+	type from rtx to rtx_insn *.
+	(mips_expand_call): Likewise.
+	(mips_adjust_insn_length): Likewise for first param.
+	(mips_output_conditional_branch): Likewise.
+	(mips_output_order_conditional_branch): Likewise.
+	(mips_final_prescan_insn): Likewise.
+
+	* config/mips/mips.c (SEQ_BEGIN): For now, add checked cast to
+	rtx_insn * for the SEQUENCE case.
+	(SEQ_END): Likewise.
+	(mips_emit_move): Strengthen return type from rtx to rtx_insn *.
+	(mips_emit_call_insn): Likewise, also for local "insn".
+	(mips16_gp_pseudo_reg): Likewise for local "scan".
+	(mips16_build_call_stub): Likewise for return type and for local
+	"insn".  Introduce a new local "pattern" so that "insn" can indeed
+	be an insn.
+	(mips_expand_call): Strengthen return type and local "insn" from
+	rtx to rtx_insn *.
+	(mips_block_move_loop): Strengthen local "label" from rtx to
+	rtx_code_label *.
+	(mips_expand_synci_loop): Likewise for locals "label",
+	"end_label".
+	(mips_set_frame_expr): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	(mips16e_collect_argument_saves): Likewise for locals "insn",
+	"next".
+	(mips_find_gp_ref): Likewise for param of callback for "pred"
+	param, and for local "insn".
+	(mips_insn_has_inflexible_gp_ref_p): Likewise for param "insn".
+	(mips_insn_has_flexible_gp_ref_p): Likewise.
+	(mips_epilogue_emit_cfa_restores): Likewise for return type and
+	local "insn".
+	(mips_epilogue_set_cfa): Likewise for local "insn".
+	(mips_expand_epilogue): Likewise.
+	(mips_adjust_insn_length): Likewise for param "insn".
+	(mips_output_conditional_branch): Likewise.
+	(mips_output_order_conditional_branch): Likewise.
+	(struct mips_ls2): Likewise for fields "alu1_turn_enabled_insn",
+	"alu2_turn_enabled_insn", "falu1_turn_enabled_insn",
+	"falu2_turn_enabled_insn".
+	(mips_builtin_branch_and_move): Strengthen locals "true_label",
+	"done_label" from rtx to rtx_code_label *.
+	(struct mips16_constant): Likewise for field "label".
+	(mips16_add_constant): Likewise for return type.
+	(mips16_emit_constants_1): Strengthen return type and param "insn"
+	from rtx to rtx_insn *.
+	(mips16_emit_constants): Likewise for param "insn".
+	(mips16_insn_length): Likewise.
+	(mips16_rewrite_pool_constant): Strengthen local "label" from rtx
+	to rtx_code_label *.
+	(struct mips16_rewrite_pool_refs_info): Strengthen field "insn"
+	from rtx to rtx_insn *.
+	(mips16_lay_out_constants): Likewise for locals "insn", "barrier",
+	"jump".  Strengthen local "label" from rtx to rtx_code_label *.
+	(r10k_simplify_address): Strengthen param "insn" and local
+	"def_insn" from rtx to rtx_insn *.
+	(r10k_safe_address_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(r10k_needs_protection_p_1): Update target type of cast of data
+	from to rtx to rtx_insn *.
+	(r10k_needs_protection_p_store): Strengthen local "insn_ptr" from
+	rtx * to rtx_insn **.
+	(r10k_needs_protection_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(r10k_insert_cache_barriers): Likewise for locals "insn", "end".
+	(mips_call_expr_from_insn): Likewise for param "insn".
+	(mips_pic_call_symbol_from_set): Likewise for local "def_insn".
+	(mips_find_pic_call_symbol): Likewise for param "insn".
+	(mips_annotate_pic_calls): Likewise for local "insn".
+	(mips_sim_insn): Likewise for this variable.
+	(struct mips_sim): Likewise for field "insn" within elements of
+	last_set array.
+	(mips_sim_wait_reg): Likewise for param "insn".
+	(mips_sim_wait_regs): Likewise.
+	(mips_sim_wait_units): Likewise.
+	(mips_sim_wait_insn): Likewise.
+	(mips_sim_issue_insn): Likewise.
+	(mips_sim_finish_insn): Likewise.
+	(mips_seq_time): Likewise for param "seq" and local "insn".
+	(vr4130_avoid_branch_rt_conflict): Likewise for param "insn" and
+	locals "first", "second".
+	(vr4130_align_insns): Likewise for locals "insn", "subinsn",
+	"last", "last2", "next".
+	(mips_avoid_hazard): Likewise for params "after", "insn".
+	(mips_reorg_process_insns): Likewise for locals "insn",
+	"last_insn", "subinsn", "next_insn".
+	(mips_has_long_branch_p): Likewise for locals "insn", "subinsn".
+	(mips16_split_long_branches): Likewise for locals "insn" "jump",
+	"jump_sequence".
+	(mips_output_mi_thunk): Likewise for local "insn".
+	(mips_final_prescan_insn): Likewise for param "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/microblaze/microblaze.c (microblaze_call_tls_get_addr):
 	Strengthen return type and local "insns" from rtx to rtx_insn *.
 	(microblaze_legitimize_tls_address): Likewise for local "insns".
