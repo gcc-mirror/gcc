@@ -117,7 +117,7 @@ struct GTY (()) arc_ccfsm
   int state;
   int cc;
   rtx cond;
-  rtx target_insn;
+  rtx_insn *target_insn;
   int target_label;
 };
 
@@ -3404,7 +3404,7 @@ unspec_prof_htab_eq (const void *x, const void *y)
    before letting final output INSN.  */
 
 static void
-arc_ccfsm_advance (rtx insn, struct arc_ccfsm *state)
+arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 {
   /* BODY will hold the body of INSN.  */
   register rtx body;
@@ -3418,7 +3418,7 @@ arc_ccfsm_advance (rtx insn, struct arc_ccfsm *state)
 
   /* START_INSN will hold the insn from where we start looking.  This is the
      first insn after the following code_label if REVERSE is true.  */
-  rtx start_insn = insn;
+  rtx_insn *start_insn = insn;
 
   /* Type of the jump_insn. Brcc insns don't affect ccfsm changes,
      since they don't rely on a cmp preceding the.  */
@@ -3516,7 +3516,8 @@ arc_ccfsm_advance (rtx insn, struct arc_ccfsm *state)
       int then_not_else = TRUE;
       /* Nonzero if next insn must be the target label.  */
       int next_must_be_target_label_p;
-      rtx this_insn = start_insn, label = 0;
+      rtx_insn *this_insn = start_insn;
+      rtx label = 0;
 
       /* Register the insn jumped to.  */
       if (reverse)
@@ -3725,7 +3726,7 @@ arc_ccfsm_at_label (const char *prefix, int num, struct arc_ccfsm *state)
       && !strcmp (prefix, "L"))
     {
       state->state = 0;
-      state->target_insn = NULL_RTX;
+      state->target_insn = NULL;
     }
 }
 
@@ -3737,7 +3738,7 @@ void
 arc_ccfsm_record_condition (rtx cond, bool reverse, rtx jump,
 			    struct arc_ccfsm *state)
 {
-  rtx seq_insn = NEXT_INSN (PREV_INSN (jump));
+  rtx_insn *seq_insn = NEXT_INSN (PREV_INSN (jump));
   if (!state)
     state = &arc_ccfsm_current;
 
@@ -3769,7 +3770,7 @@ arc_ccfsm_record_condition (rtx cond, bool reverse, rtx jump,
 /* Update *STATE as we would when we emit INSN.  */
 
 static void
-arc_ccfsm_post_advance (rtx insn, struct arc_ccfsm *state)
+arc_ccfsm_post_advance (rtx_insn *insn, struct arc_ccfsm *state)
 {
   enum attr_type type;
 
@@ -3827,8 +3828,8 @@ arc_ccfsm_cond_exec_p (void)
 /* Like next_active_insn, but return NULL if we find an ADDR_(DIFF_)VEC,
    and look inside SEQUENCEs.  */
 
-static rtx
-arc_next_active_insn (rtx insn, struct arc_ccfsm *statep)
+static rtx_insn *
+arc_next_active_insn (rtx_insn *insn, struct arc_ccfsm *statep)
 {
   rtx pat;
 
@@ -3838,7 +3839,7 @@ arc_next_active_insn (rtx insn, struct arc_ccfsm *statep)
 	arc_ccfsm_post_advance (insn, statep);
       insn = NEXT_INSN (insn);
       if (!insn || BARRIER_P (insn))
-	return NULL_RTX;
+	return NULL;
       if (statep)
 	arc_ccfsm_advance (insn, statep);
     }
@@ -3853,9 +3854,9 @@ arc_next_active_insn (rtx insn, struct arc_ccfsm *statep)
       gcc_assert (INSN_P (insn));
       pat = PATTERN (insn);
       if (GET_CODE (pat) == ADDR_VEC || GET_CODE (pat) == ADDR_DIFF_VEC)
-	return NULL_RTX;
+	return NULL;
       if (GET_CODE (pat) == SEQUENCE)
-	return XVECEXP (pat, 0, 0);
+	return as_a <rtx_insn *> (XVECEXP (pat, 0, 0));
     }
   return insn;
 }
@@ -3885,7 +3886,7 @@ arc_next_active_insn (rtx insn, struct arc_ccfsm *statep)
    If CHECK_ATTR is greater than 0, check the iscompact attribute first.  */
 
 int
-arc_verify_short (rtx insn, int, int check_attr)
+arc_verify_short (rtx_insn *insn, int, int check_attr)
 {
   enum attr_iscompact iscompact;
   struct machine_function *machine;
@@ -3911,7 +3912,7 @@ arc_verify_short (rtx insn, int, int check_attr)
 static void
 output_short_suffix (FILE *file)
 {
-  rtx insn = current_output_insn;
+  rtx_insn *insn = current_output_insn;
 
   if (arc_verify_short (insn, cfun->machine->unalign, 1))
     {
@@ -3925,7 +3926,7 @@ output_short_suffix (FILE *file)
 /* Implement FINAL_PRESCAN_INSN.  */
 
 void
-arc_final_prescan_insn (rtx insn, rtx *opvec ATTRIBUTE_UNUSED,
+arc_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 			int noperands ATTRIBUTE_UNUSED)
 {
   if (TARGET_DUMPISIZE)
@@ -3943,7 +3944,7 @@ arc_final_prescan_insn (rtx insn, rtx *opvec ATTRIBUTE_UNUSED,
       current_output_insn =
 	emit_insn_before (gen_nop (), NEXT_INSN (PREV_INSN (insn)));
       final_scan_insn (current_output_insn, asm_out_file, optimize, 1, NULL);
-      current_output_insn = as_a <rtx_insn *> (insn);
+      current_output_insn = insn;
     }
   /* Restore extraction data which might have been clobbered by arc_hazard.  */
   extract_constrain_insn_cached (insn);
@@ -5733,7 +5734,8 @@ static int arc_reorg_in_progress = 0;
 static void
 arc_reorg (void)
 {
-  rtx insn, pattern;
+  rtx_insn *insn;
+  rtx pattern;
   rtx pc_target;
   long offset;
   int changed;
@@ -5745,7 +5747,7 @@ arc_reorg (void)
   if (crtl->profile)
     {
       section *save_text_section;
-      rtx insn;
+      rtx_insn *insn;
       int size = get_max_uid () >> 4;
       htab_t htab = htab_create (size, unspec_prof_hash, unspec_prof_htab_eq,
 				 NULL);
@@ -5766,12 +5768,12 @@ arc_reorg (void)
       if (GET_CODE (insn) == JUMP_INSN
 	  && recog_memoized (insn) == CODE_FOR_doloop_end_i)
 	{
-	  rtx top_label
-	    = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0);
+	  rtx_insn *top_label
+	    = as_a <rtx_insn *> (XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0));
 	  rtx num = GEN_INT (CODE_LABEL_NUMBER (top_label));
-	  rtx lp, prev = prev_nonnote_insn (top_label);
-	  rtx lp_simple = NULL_RTX;
-	  rtx next = NULL_RTX;
+	  rtx_insn *lp, *prev = prev_nonnote_insn (top_label);
+	  rtx_insn *lp_simple = NULL;
+	  rtx_insn *next = NULL;
 	  rtx op0 = XEXP (XVECEXP (PATTERN (insn), 0, 1), 0);
 	  HOST_WIDE_INT loop_end_id
 	    = -INTVAL (XEXP (XVECEXP (PATTERN (insn), 0, 4), 0));
@@ -5785,7 +5787,7 @@ arc_reorg (void)
 	  if (!lp || !NONJUMP_INSN_P (lp)
 	      || dead_or_set_regno_p (lp, LP_COUNT))
 	    {
-	      for (prev = next = insn, lp = NULL_RTX ; prev || next;)
+	      for (prev = next = insn, lp = NULL ; prev || next;)
 		{
 		  if (prev)
 		    {
@@ -5814,7 +5816,7 @@ arc_reorg (void)
 		      next = next_nonnote_insn (next);
 		    }
 		}
-	      prev = NULL_RTX;
+	      prev = NULL;
 	    }
 	  else
 	    lp_simple = lp;
@@ -5850,7 +5852,8 @@ arc_reorg (void)
 		 move exists.  */
 	      if (true_regnum (begin_cnt) != LP_COUNT)
 		{
-		  rtx mov, set, note;
+		  rtx_insn *mov;
+		  rtx set, note;
 
 		  for (mov = prev_nonnote_insn (lp); mov;
 		       mov = prev_nonnote_insn (mov))
@@ -5902,16 +5905,16 @@ arc_reorg (void)
 				   XEXP (XVECEXP (PATTERN (lp), 0, 3), 0),
 				   const0_rtx);
 
-		  lc_set = emit_insn_before (lc_set, insn);
+		  rtx_insn *lc_set_insn = emit_insn_before (lc_set, insn);
 		  delete_insn (lp);
 		  delete_insn (insn);
-		  insn = lc_set;
+		  insn = lc_set_insn;
 		}
 	      /* If the loop is non-empty with zero length, we can't make it
 		 a zero-overhead loop.  That can happen for empty asms.  */
 	      else
 		{
-		  rtx scan;
+		  rtx_insn *scan;
 
 		  for (scan = top_label;
 		       (scan && scan != insn
@@ -6064,7 +6067,8 @@ arc_reorg (void)
 	  label = XEXP (pc_target, 1);
 
 	    {
-	      rtx pat, scan, link_insn = NULL;
+	      rtx pat;
+	      rtx_insn *scan, *link_insn = NULL;
 
 	      for (scan = PREV_INSN (insn);
 		   scan && GET_CODE (scan) != CODE_LABEL;
@@ -7804,7 +7808,7 @@ arc_adjust_insn_length (rtx insn, int len, bool)
      loop.  */
   if (recog_memoized (insn) == CODE_FOR_doloop_end_i)
     {
-      rtx prev = prev_nonnote_insn (insn);
+      rtx_insn *prev = prev_nonnote_insn (insn);
 
       return ((LABEL_P (prev)
 	       || (TARGET_ARC600
@@ -7834,7 +7838,7 @@ arc_adjust_insn_length (rtx insn, int len, bool)
     }
   if (TARGET_ARC600)
     {
-      rtx succ = next_real_insn (insn);
+      rtx_insn *succ = next_real_insn (insn);
 
       /* One the ARC600, a write to an extension register must be separated
 	 from a read.  */
@@ -7953,7 +7957,7 @@ arc_get_insn_variants (rtx insn, int len, bool, bool target_p,
   /* If the previous instruction is an sfunc call, this insn is always
      a target, even though the middle-end is unaware of this.  */
   bool force_target = false;
-  rtx prev = prev_active_insn (insn);
+  rtx_insn *prev = prev_active_insn (insn);
   if (prev && arc_next_active_insn (prev, 0) == insn
       && ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
 	  ? CALL_ATTR (XVECEXP (PATTERN (prev), 0, 0), NON_SIBCALL)
@@ -8228,7 +8232,7 @@ arc_ifcvt (void)
   basic_block merge_bb = 0;
 
   memset (statep, 0, sizeof *statep);
-  for (rtx insn = get_insns (); insn; insn = next_insn (insn))
+  for (rtx_insn *insn = get_insns (); insn; insn = next_insn (insn))
     {
       arc_ccfsm_advance (insn, statep);
 
@@ -8247,7 +8251,7 @@ arc_ifcvt (void)
 	      = BLOCK_FOR_INSN (NEXT_INSN (NEXT_INSN (PREV_INSN (insn))));
 	    arc_ccfsm_post_advance (insn, statep);
 	    gcc_assert (!IN_RANGE (statep->state, 1, 2));
-	    rtx seq = NEXT_INSN (PREV_INSN (insn));
+	    rtx_insn *seq = NEXT_INSN (PREV_INSN (insn));
 	    if (seq != insn)
 	      {
 		rtx slot = XVECEXP (PATTERN (seq), 0, 1);
@@ -8302,7 +8306,8 @@ arc_ifcvt (void)
 
 	  /* Conditionalized insn.  */
 
-	  rtx prev, pprev, *patp, pat, cond;
+	  rtx_insn *prev, *pprev;
+	  rtx *patp, pat, cond;
 	  bool annulled; annulled = false;
 
 	  /* If this is a delay slot insn in a non-annulled branch,
@@ -8347,7 +8352,7 @@ arc_ifcvt (void)
 	    gcc_unreachable ();
 	  if (JUMP_P (insn))
 	    {
-	      rtx next = next_nonnote_insn (insn);
+	      rtx_insn *next = next_nonnote_insn (insn);
 	      if (GET_CODE (next) == BARRIER)
 		delete_insn (next);
 	      if (statep->state == 3)
@@ -8368,7 +8373,7 @@ arc_ifcvt (void)
 static unsigned
 arc_predicate_delay_insns (void)
 {
-  for (rtx insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       rtx pat, jump, dlay, src, cond, *patp;
       int reverse;
@@ -8652,7 +8657,7 @@ void
 arc_pad_return (void)
 {
   rtx_insn *insn = current_output_insn;
-  rtx prev = prev_active_insn (insn);
+  rtx_insn *prev = prev_active_insn (insn);
   int want_long;
 
   if (!prev)
@@ -8693,7 +8698,7 @@ arc_pad_return (void)
 	      || !reg_set_p (gen_rtx_REG (CCmode, CC_REG),
 			     XVECEXP (final_sequence, 0, 1))))
 	{
-	  prev = XVECEXP (final_sequence, 0, 1);
+	  prev = as_a <rtx_insn *> (XVECEXP (final_sequence, 0, 1));
 	  gcc_assert (!prev_real_insn (insn)
 		      || !arc_hazard (prev_real_insn (insn), prev));
 	  cfun->machine->force_short_suffix = !want_long;
@@ -9030,7 +9035,7 @@ arc_split_move (rtx *operands)
    and l_tmpl (for long INSNs).  */
 
 const char *
-arc_short_long (rtx insn, const char *s_tmpl, const char *l_tmpl)
+arc_short_long (rtx_insn *insn, const char *s_tmpl, const char *l_tmpl)
 {
   int is_short = arc_verify_short (insn, cfun->machine->unalign, -1);
 
@@ -9099,9 +9104,9 @@ arc_sets_cc_p (rtx insn)
    to fill.  */
 
 bool
-arc_need_delay (rtx insn)
+arc_need_delay (rtx_insn *insn)
 {
-  rtx next;
+  rtx_insn *next;
 
   if (!flag_delayed_branch)
     return false;
@@ -9151,7 +9156,7 @@ arc_label_align (rtx label)
 
   if (loop_align > align_labels_log)
     {
-      rtx prev = prev_nonnote_insn (label);
+      rtx_insn *prev = prev_nonnote_insn (label);
 
       if (prev && NONJUMP_INSN_P (prev)
 	  && GET_CODE (PATTERN (prev)) == PARALLEL
@@ -9162,7 +9167,7 @@ arc_label_align (rtx label)
      ADDR_DIFF_VEC.  */
   if (align_labels_log < 1)
     {
-      rtx next = next_nonnote_nondebug_insn (label);
+      rtx_insn *next = next_nonnote_nondebug_insn (label);
       if (INSN_P (next) && recog_memoized (next) >= 0)
 	return 1;
     }
@@ -9174,7 +9179,7 @@ arc_label_align (rtx label)
 bool
 arc_text_label (rtx label)
 {
-  rtx next;
+  rtx_insn *next;
 
   /* ??? We use deleted labels like they were still there, see
      gcc.c-torture/compile/20000326-2.c .  */

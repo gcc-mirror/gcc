@@ -1,5 +1,41 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/arc/arc-protos.h (arc_final_prescan_insn): Strengthen
+	first param from rtx to rtx_insn *.
+	(arc_verify_short): Likewise.
+	(arc_short_long): Likewise.
+	(arc_need_delay): Likewise.
+
+	* config/arc/arc.c (struct arc_ccfsm): Likewise for field
+	"target_insn".
+	(arc_ccfsm_advance): Likewise for param "insn" and locals
+	"start_insn", "this_insn".
+	(arc_ccfsm_record_condition): Likewise for local "seq_insn".
+	(arc_ccfsm_post_advance): Likewise for param "insn".
+	(arc_next_active_insn): Likewise for return type and param "insn".
+	Convert NULL_RTX to NULL as appropriate.  Add a checked cast.
+	(arc_verify_short): Strengthen param "insn" from rtx to rtx_insn *.
+	(output_short_suffix): Likewise for local "insn".
+	(arc_final_prescan_insn): Likewise for param "insn".  Remove
+	now-redundant checked cast.
+	(arc_reorg): Strengthen locals "insn", "top_label", "lp", "prev",
+	"lp_simple", "next", "mov", "scan", "link_insn" from rtx to
+	rtx_insn *.  Add a checked cast.  Introduce local "lc_set_insn"
+	for use where lc_set became an insn.
+	(arc_adjust_insn_length): Strengthen locals "prev", "succ" from
+	rtx to rtx_insn *.
+	(arc_get_insn_variants): Likewise for local "prev".
+	(arc_ifcvt): Likewise for locals "insn", "seq", "prev", "pprev",
+	"next".
+	(arc_predicate_delay_insns): Likewise for local "insn".
+	(arc_pad_return): Likewise for local "prev".  For now, add a
+	checked cast when extracting the insn from "final_sequence".
+	(arc_short_long): Likewise for param "insn".
+	(arc_need_delay): Likewise for param "insn" and local "next".
+	(arc_label_align): Likewise for locals "prev", "next".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/alpha/alpha.c (alpha_emit_set_const): Strengthen local
 	"insn" from rtx to rtx_insn *.
 	(alpha_gp_save_rtx): Likewise for local "seq".
