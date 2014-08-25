@@ -70,7 +70,7 @@ extern void final (rtx, FILE *, int);
 /* The final scan for one insn, INSN.  Args are same as in `final', except
    that INSN is the insn being scanned.  Value returned is the next insn to
    be scanned.  */
-extern rtx final_scan_insn (rtx, FILE *, int, int, int *);
+extern rtx_insn *final_scan_insn (rtx, FILE *, int, int, int *);
 
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */
@@ -136,7 +136,7 @@ extern int leaf_function_p (void);
 /* Return 1 if branch is a forward branch.
    Uses insn_shuid array, so it works only in the final pass.  May be used by
    output templates to add branch prediction hints, for example.  */
-extern int final_forward_branch_p (rtx);
+extern int final_forward_branch_p (rtx_insn *);
 
 /* Return 1 if this function uses only the registers that can be
    safely renumbered.  */
@@ -281,7 +281,7 @@ extern void assemble_addr_to_section (rtx, section *);
 extern int get_pool_size (void);
 
 #ifdef HAVE_peephole
-extern rtx peephole (rtx);
+extern rtx_insn *peephole (rtx_insn *);
 #endif
 
 extern void output_shared_constant_pool (void);
@@ -321,7 +321,7 @@ extern const char *weak_global_object_name;
 extern rtx current_insn_predicate;
 
 /* Last insn processed by final_scan_insn.  */
-extern rtx current_output_insn;
+extern rtx_insn *current_output_insn;
 
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't die.

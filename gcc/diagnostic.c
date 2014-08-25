@@ -131,6 +131,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
     context->classify_diagnostic[i] = DK_UNSPECIFIED;
   context->show_caret = false;
   diagnostic_set_caret_max_width (context, pp_line_cutoff (context->printer));
+  context->caret_char = '^';
   context->show_option_requested = false;
   context->abort_on_error = false;
   context->show_column = false;
@@ -280,7 +281,7 @@ adjust_line (const char *line, int line_width,
 }
 
 /* Print the physical source line corresponding to the location of
-   this diagnostics, and a caret indicating the precise column.  */
+   this diagnostic, and a caret indicating the precise column.  */
 void
 diagnostic_show_locus (diagnostic_context * context,
 		       const diagnostic_info *diagnostic)
@@ -328,9 +329,11 @@ diagnostic_show_locus (diagnostic_context * context,
   /* pp_printf does not implement %*c.  */
   size_t len = s.column + 3 + strlen (caret_cs) + strlen (caret_ce);
   buffer = XALLOCAVEC (char, len);
-  snprintf (buffer, len, "%s %*c%s", caret_cs, s.column, '^', caret_ce);
+  snprintf (buffer, len, "%s %*c%s", caret_cs, s.column, context->caret_char,
+	    caret_ce);
   pp_string (context->printer, buffer);
   pp_set_prefix (context->printer, saved_prefix);
+  pp_needs_newline (context->printer) = true;
 }
 
 /* Functions at which to stop the backtrace print.  It's not
@@ -554,9 +557,12 @@ default_diagnostic_starter (diagnostic_context *context,
 }
 
 void
-default_diagnostic_finalizer (diagnostic_context *context ATTRIBUTE_UNUSED,
-			      diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
+default_diagnostic_finalizer (diagnostic_context *context,
+			      diagnostic_info *diagnostic)
 {
+  diagnostic_show_locus (context, diagnostic);
+  pp_destroy_prefix (context->printer);
+  pp_newline_and_flush (context->printer);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the
@@ -583,6 +589,15 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
   if (where != UNKNOWN_LOCATION)
     {
       int i;
+
+      /* Record the command-line status, so we can reset it back on DK_POP. */
+      if (old_kind == DK_UNSPECIFIED)
+	{
+	  old_kind = context->option_enabled (option_index,
+					      context->option_state)
+	    ? DK_WARNING : DK_IGNORED;
+	  context->classify_diagnostic[option_index] = old_kind;
+	}
 
       for (i = context->n_classification_history - 1; i >= 0; i --)
 	if (context->classification_history[i].option == option_index)
@@ -796,10 +811,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_format (context->printer, &diagnostic->message);
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
-  diagnostic_show_locus (context, diagnostic);
   (*diagnostic_finalizer (context)) (context, diagnostic);
-  pp_destroy_prefix (context->printer);
-  pp_newline_and_flush (context->printer);
   diagnostic_action_after_output (context, diagnostic);
   diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;

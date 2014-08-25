@@ -2596,7 +2596,7 @@ proc check_effective_target_arm_v8_neon_ok_nocache { } {
 		{
 	          __asm__ volatile ("vrintn.f32 q0, q0");
 		}
-	    } "$flags"] } {
+	    } "$flags -march=armv8-a"] } {
 		set et_arm_v8_neon_flags $flags
 		return 1
 	    }
@@ -5719,7 +5719,7 @@ proc check_effective_target_c++ { } {
 }
 
 # Check whether the current active language standard supports the features
-# of C++11/C++1y by checking for the presence of one of the -std
+# of C++11/C++14 by checking for the presence of one of the -std
 # flags.  This assumes that the default for the compiler is C++98, and that
 # there will never be multiple -std= arguments on the command line.
 proc check_effective_target_c++11_only { } {
@@ -5732,28 +5732,29 @@ proc check_effective_target_c++11 { } {
     if [check_effective_target_c++11_only] {
 	return 1
     }
-    return [check_effective_target_c++1y]
+    return [check_effective_target_c++14]
 }
 proc check_effective_target_c++11_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return ![check_effective_target_c++1y]
+    return ![check_effective_target_c++14]
 }
 
-proc check_effective_target_c++1y_only { } {
+proc check_effective_target_c++14_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
     return [check-flags { { } { } { -std=c++1y -std=gnu++1y -std=c++14 -std=gnu++14 } }]
 }
-proc check_effective_target_c++1y { } {
-    if [check_effective_target_c++1y_only] {
+
+proc check_effective_target_c++14 { } {
+    if [check_effective_target_c++14_only] {
 	return 1
     }
     return [check_effective_target_c++1z]
 }
-proc check_effective_target_c++1y_down { } {
+proc check_effective_target_c++14_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
@@ -5890,6 +5891,8 @@ proc check_vect_support_and_set_flags { } {
     return 1
 }
 
+# Return 1 if the target does *not* require strict alignment.
+
 proc check_effective_target_non_strict_align {} {
     return [check_no_compiler_messages non_strict_align assembly {
 	char *y;
@@ -5986,6 +5989,14 @@ proc check_effective_target_fenv_exceptions {} {
     } [add_options_for_ieee "-std=gnu99"]]
 }
 
+proc check_effective_target_tiny {} {
+    if { [istarget aarch64*-*-*]
+         && [check_effective_target_aarch64_tiny] } {
+        return 1
+    }
+    return 0
+}
+
 # Return 1 if LOGICAL_OP_NON_SHORT_CIRCUIT is set to 0 for the current target.
 
 proc check_effective_target_logical_op_short_circuit {} {
@@ -5996,6 +6007,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget mmix-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
+	 || [istarget nios2*-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
     }

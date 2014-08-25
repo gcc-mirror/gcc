@@ -1342,7 +1342,8 @@ extern void finish_live_range_shrinkage (void);
 extern void sched_init_region_reg_pressure_info (void);
 extern void free_global_sched_pressure_data (void);
 extern int haifa_classify_insn (const_rtx);
-extern void get_ebb_head_tail (basic_block, basic_block, rtx *, rtx *);
+extern void get_ebb_head_tail (basic_block, basic_block,
+			       rtx_insn **, rtx_insn **);
 extern int no_real_insns_p (const_rtx, const_rtx);
 
 extern int insn_cost (rtx);
@@ -1368,7 +1369,7 @@ extern void sched_change_pattern (rtx, rtx);
 extern int sched_speculate_insn (rtx, ds_t, rtx *);
 extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
-extern rtx bb_note (basic_block);
+extern rtx_note *bb_note (basic_block);
 extern void concat_note_lists (rtx, rtx *);
 extern rtx sched_emit_insn (rtx);
 extern rtx get_ready_element (int);
@@ -1376,7 +1377,7 @@ extern int number_in_ready (void);
 
 /* Types and functions in sched-ebb.c.  */
 
-extern basic_block schedule_ebb (rtx, rtx, bool);
+extern basic_block schedule_ebb (rtx_insn *, rtx_insn *, bool);
 extern void schedule_ebbs_init (void);
 extern void schedule_ebbs_finish (void);
 

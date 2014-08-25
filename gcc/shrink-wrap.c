@@ -61,7 +61,7 @@ along with GCC; see the file COPYING3.  If not see
    prologue.  SET_UP_BY_PROLOGUE is the set of registers we expect the
    prologue to set up for the function.  */
 bool
-requires_stack_frame_p (rtx insn, HARD_REG_SET prologue_used,
+requires_stack_frame_p (rtx_insn *insn, HARD_REG_SET prologue_used,
 			HARD_REG_SET set_up_by_prologue)
 {
   df_ref def, use;
@@ -162,7 +162,7 @@ live_edge_for_reg (basic_block bb, int regno, int end_regno)
    is splitted or not.  */
 
 static bool
-move_insn_for_shrink_wrap (basic_block bb, rtx insn,
+move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 			   const HARD_REG_SET uses,
 			   const HARD_REG_SET defs,
 			   bool *split_p)
@@ -331,7 +331,8 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
 void
 prepare_shrink_wrap (basic_block entry_block)
 {
-  rtx insn, curr, x;
+  rtx_insn *insn, *curr;
+  rtx x;
   HARD_REG_SET uses, defs;
   df_ref def, use;
   bool split_p = false;
@@ -373,12 +374,12 @@ prepare_shrink_wrap (basic_block entry_block)
 /* Create a copy of BB instructions and insert at BEFORE.  Redirect
    preds of BB to COPY_BB if they don't appear in NEED_PROLOGUE.  */
 void
-dup_block_and_redirect (basic_block bb, basic_block copy_bb, rtx before,
+dup_block_and_redirect (basic_block bb, basic_block copy_bb, rtx_insn *before,
 			bitmap_head *need_prologue)
 {
   edge_iterator ei;
   edge e;
-  rtx insn = BB_END (bb);
+  rtx_insn *insn = BB_END (bb);
 
   /* We know BB has a single successor, so there is no need to copy a
      simple jump at the end of BB.  */
@@ -513,7 +514,7 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 
       FOR_EACH_BB_FN (bb, cfun)
 	{
-	  rtx insn;
+	  rtx_insn *insn;
 	  unsigned size = 0;
 
 	  FOR_BB_INSNS (bb, insn)
@@ -707,7 +708,7 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 	    FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	      {
 		basic_block copy_bb, tbb;
-		rtx insert_point;
+		rtx_insn *insert_point;
 		int eflags;
 
 		if (!bitmap_clear_bit (&bb_tail, bb->index))
@@ -724,7 +725,7 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
 		if (e)
 		  {
                     /* Make sure we insert after any barriers.  */
-                    rtx end = get_last_bb_insn (e->src);
+                    rtx_insn *end = get_last_bb_insn (e->src);
                     copy_bb = create_basic_block (NEXT_INSN (end),
                                                   NULL_RTX, e->src);
 		    BB_COPY_PARTITION (copy_bb, e->src);
@@ -902,7 +903,7 @@ convert_to_simple_return (edge entry_edge, edge orig_entry_edge,
 	  else if (*pdest_bb == NULL)
 	    {
 	      basic_block bb;
-	      rtx start;
+	      rtx_insn *start;
 
 	      bb = create_basic_block (NULL, NULL, exit_pred);
 	      BB_COPY_PARTITION (bb, e->src);

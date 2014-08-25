@@ -174,7 +174,7 @@ next_insn_no_annul (rtx insn)
 	  && INSN_ANNULLED_BRANCH_P (insn)
 	  && NEXT_INSN (PREV_INSN (insn)) != insn)
 	{
-	  rtx next = NEXT_INSN (insn);
+	  rtx_insn *next = NEXT_INSN (insn);
 
 	  while ((NONJUMP_INSN_P (next) || JUMP_P (next) || CALL_P (next))
 		 && INSN_FROM_TARGET_P (next))
@@ -308,7 +308,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	     However, we may have moved some of the parameter loading insns
 	     into the delay slot of this CALL.  If so, the USE's for them
 	     don't count and should be skipped.  */
-	  rtx insn = PREV_INSN (x);
+	  rtx_insn *insn = PREV_INSN (x);
 	  rtx sequence = 0;
 	  int seq_size = 0;
 	  int i;

@@ -126,13 +126,13 @@ static struct
 } nop_pool = { NULL, 0, 0 };
 
 /* The pool for basic block notes.  */
-static rtx_vec_t bb_note_pool;
+static vec<rtx_note *> bb_note_pool;
 
 /* A NOP pattern used to emit placeholder insns.  */
 rtx nop_pattern = NULL_RTX;
 /* A special instruction that resides in EXIT_BLOCK.
    EXIT_INSN is successor of the insns that lead to EXIT_BLOCK.  */
-rtx exit_insn = NULL_RTX;
+rtx_insn *exit_insn = NULL;
 
 /* TRUE if while scheduling current region, which is loop, its preheader
    was removed.  */
@@ -1246,7 +1246,7 @@ vinsn_create (insn_t insn, bool force_unique_p)
 vinsn_t
 vinsn_copy (vinsn_t vi, bool reattach_p)
 {
-  rtx copy;
+  rtx_insn *copy;
   bool unique = VINSN_UNIQUE_P (vi);
   vinsn_t new_vi;
 
@@ -1962,7 +1962,7 @@ int
 speculate_expr (expr_t expr, ds_t ds)
 {
   int res;
-  rtx orig_insn_rtx;
+  rtx_insn *orig_insn_rtx;
   rtx spec_pat;
   ds_t target_ds, current_ds;
 
@@ -1983,7 +1983,8 @@ speculate_expr (expr_t expr, ds_t ds)
 
     case 1:
       {
-	rtx spec_insn_rtx = create_insn_rtx_from_pattern (spec_pat, NULL_RTX);
+	rtx_insn *spec_insn_rtx =
+	  create_insn_rtx_from_pattern (spec_pat, NULL_RTX);
 	vinsn_t spec_vinsn = create_vinsn_from_insn_rtx (spec_insn_rtx, false);
 
 	change_vinsn_in_expr (expr, spec_vinsn);
@@ -2825,8 +2826,10 @@ hash_transformed_insns (const void *p)
 static int
 eq_transformed_insns (const void *p, const void *q)
 {
-  rtx i1 = VINSN_INSN_RTX (((const struct transformed_insns *) p)->vinsn_old);
-  rtx i2 = VINSN_INSN_RTX (((const struct transformed_insns *) q)->vinsn_old);
+  rtx_insn *i1 =
+    VINSN_INSN_RTX (((const struct transformed_insns *) p)->vinsn_old);
+  rtx_insn *i2 =
+    VINSN_INSN_RTX (((const struct transformed_insns *) q)->vinsn_old);
 
   if (INSN_UID (i1) == INSN_UID (i2))
     return 1;
@@ -4530,10 +4533,10 @@ static struct
 /* Functions to work with control-flow graph.  */
 
 /* Return basic block note of BB.  */
-insn_t
+rtx_insn *
 sel_bb_head (basic_block bb)
 {
-  insn_t head;
+  rtx_insn *head;
 
   if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
@@ -4548,7 +4551,7 @@ sel_bb_head (basic_block bb)
       head = next_nonnote_insn (note);
 
       if (head && (BARRIER_P (head) || BLOCK_FOR_INSN (head) != bb))
-	head = NULL_RTX;
+	head = NULL;
     }
 
   return head;
@@ -4562,11 +4565,11 @@ sel_bb_head_p (insn_t insn)
 }
 
 /* Return last insn of BB.  */
-insn_t
+rtx_insn *
 sel_bb_end (basic_block bb)
 {
   if (sel_bb_empty_p (bb))
-    return NULL_RTX;
+    return NULL;
 
   gcc_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
@@ -4976,14 +4979,14 @@ return_bb_to_pool (basic_block bb)
 }
 
 /* Get a bb_note from pool or return NULL_RTX if pool is empty.  */
-static rtx
+static rtx_note *
 get_bb_note_from_pool (void)
 {
   if (bb_note_pool.is_empty ())
-    return NULL_RTX;
+    return NULL;
   else
     {
-      rtx note = bb_note_pool.pop ();
+      rtx_note *note = bb_note_pool.pop ();
 
       SET_PREV_INSN (note) = NULL_RTX;
       SET_NEXT_INSN (note) = NULL_RTX;
@@ -5341,7 +5344,7 @@ static basic_block
 sel_create_basic_block (void *headp, void *endp, basic_block after)
 {
   basic_block new_bb;
-  insn_t new_bb_note;
+  rtx_note *new_bb_note;
 
   gcc_assert (flag_sel_sched_pipelining_outer_loops
               || !last_added_blocks.exists ());
@@ -5434,10 +5437,10 @@ sel_split_block (basic_block bb, rtx after)
 
 /* If BB ends with a jump insn whose ID is bigger then PREV_MAX_UID, return it.
    Otherwise returns NULL.  */
-static rtx
+static rtx_insn *
 check_for_new_jump (basic_block bb, int prev_max_uid)
 {
-  rtx end;
+  rtx_insn *end;
 
   end = sel_bb_end (bb);
   if (end && INSN_UID (end) >= prev_max_uid)
@@ -5447,10 +5450,10 @@ check_for_new_jump (basic_block bb, int prev_max_uid)
 
 /* Look for a new jump either in FROM_BB block or in newly created JUMP_BB block.
    New means having UID at least equal to PREV_MAX_UID.  */
-static rtx
+static rtx_insn *
 find_new_jump (basic_block from, basic_block jump_bb, int prev_max_uid)
 {
-  rtx jump;
+  rtx_insn *jump;
 
   /* Return immediately if no new insns were emitted.  */
   if (get_max_uid () == prev_max_uid)
@@ -5473,7 +5476,7 @@ sel_split_edge (edge e)
 {
   basic_block new_bb, src, other_bb = NULL;
   int prev_max_uid;
-  rtx jump;
+  rtx_insn *jump;
 
   src = e->src;
   prev_max_uid = get_max_uid ();
@@ -5536,7 +5539,7 @@ sel_create_recovery_block (insn_t orig_insn)
 {
   basic_block first_bb, second_bb, recovery_block;
   basic_block before_recovery = NULL;
-  rtx jump;
+  rtx_insn *jump;
 
   first_bb = BLOCK_FOR_INSN (orig_insn);
   if (sel_bb_end_p (orig_insn))
@@ -5587,7 +5590,7 @@ sel_redirect_edge_and_branch_force (edge e, basic_block to)
 {
   basic_block jump_bb, src, orig_dest = e->dest;
   int prev_max_uid;
-  rtx jump;
+  rtx_insn *jump;
   int old_seqno = -1;
 
   /* This function is now used only for bookkeeping code creation, where
@@ -5631,7 +5634,7 @@ sel_redirect_edge_and_branch (edge e, basic_block to)
   bool latch_edge_p;
   basic_block src, orig_dest = e->dest;
   int prev_max_uid;
-  rtx jump;
+  rtx_insn *jump;
   edge redirected;
   bool recompute_toporder_p = false;
   bool maybe_unreachable = single_pred_p (orig_dest);
@@ -5719,10 +5722,10 @@ sel_unregister_cfg_hooks (void)
 
 /* Emit an insn rtx based on PATTERN.  If a jump insn is wanted,
    LABEL is where this jump should be directed.  */
-rtx
+rtx_insn *
 create_insn_rtx_from_pattern (rtx pattern, rtx label)
 {
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
 
   gcc_assert (!INSN_P (pattern));
 
@@ -5762,10 +5765,11 @@ create_vinsn_from_insn_rtx (rtx insn_rtx, bool force_unique_p)
 }
 
 /* Create a copy of INSN_RTX.  */
-rtx
+rtx_insn *
 create_copy_of_insn_rtx (rtx insn_rtx)
 {
-  rtx res, link;
+  rtx_insn *res;
+  rtx link;
 
   if (DEBUG_INSN_P (insn_rtx))
     return create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
@@ -5853,7 +5857,7 @@ setup_nop_and_exit_insns (void)
 void
 free_nop_and_exit_insns (void)
 {
-  exit_insn = NULL_RTX;
+  exit_insn = NULL;
   nop_pattern = NULL_RTX;
 }
 

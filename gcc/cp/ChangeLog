@@ -1,4 +1,100 @@
+2014-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34938
+	* cp-tree.h (TFF_POINTER): Add.
+	* cxx-pretty-print.h (pp_cxx_cv_qualifiers): Forward the third
+	argument too.
+	* error.c (dump_type_suffix): Actually print the const and noreturn
+	attribute when appropriate.
+
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* decl.c (compute_array_index_type, grokdeclarator,
+	undeduced_auto_decl): Change from cxx1y to cxx14.
+	*lambda.c(add_capture()): Change error message from C++1y to C++14.
+	* parser.c (cp_parser_unqualified_id, cp_parser_pseudo_destructor_name,
+	cp_parser_lambda_introducer, cp_parser_lambda_declarator_opt,
+	cp_parser_decltype, cp_parser_conversion_type_id,
+	cp_parser_simple_type_specifier, cp_parser_type_id_1,
+	cp_parser_template_type_arg, cp_parser_std_attribute,
+	cp_parser_template_declaration_after_export): Ditto.
+	* pt.c (tsubst): Ditto.
+	* semantics.c (force_paren_expr, finish_decltype_type): Ditto.
+	* tree.c: Change comment.
+	* typeck.c (comp_template_parms_position, cxx_sizeof_or_alignof_type,
+	cp_build_addr_expr_1, maybe_warn_about_useless_cast): Ditto.
+
+2014-08-23  Jason Merrill  <jason@redhat.com>
+
+	Allow non-constexpr variable templates.
+	* decl2.c (note_variable_template_instantiation): New.
+	* cp-tree.h: Declare it.
+	* pt.c (instantiate_decl): Call it.
+	(push_template_decl_real): Allow non-constexpr variable templates.
+	* semantics.c (finish_id_expression): Mark the variable template
+	instantiation as used.
+	* mangle.c (write_mangled_name): Variable template instantiations
+	are mangled.
+	* parser.c (cp_parser_init_declarator): Complain about
+	non-function implicit templates.
+
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* parser.c (cp_parser_binary_expression): Check each LHS if it's
+	preceded with logical not.  Adjust call to
+	warn_logical_not_parentheses.
+
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/57709
+	* name-lookup.c (pushdecl_maybe_friend_1): Do not warn if a
+	declaration shadows a function declaration, unless the former
+	declares a function, pointer to function or pointer to member
+	function, because this is a common and valid case in real-world
+	code.
+	* cp-tree.h (TYPE_PTRFN_P,TYPE_REFFN_P,TYPE_PTRMEMFUNC_P):
+	Improve description.
+
+2014-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62129
+	* class.c (outermost_open_class): Fix logic.
+	* decl.c (complete_vars): Fix logic.
+
+2014-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/62129
+	* class.c (outermost_open_class): New.
+	* cp-tree.h: Declare it.
+	* decl.c (maybe_register_incomplete_var): Use it.
+	(complete_vars): Handle any constant variable.
+	* expr.c (cplus_expand_constant): Handle CONSTRUCTOR.
+
+2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/62008
+	* cp-array-notation.c (build_array_notation_ref): Added correct
+	handling of case with incorrect array.
+
+2014-08-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* error.c (cp_diagnostic_finalizer): Delete.
+	(init_error): Do not set diagnostic_finalizer here.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* call.c (build_new_op_1): Remember the type of arguments for
+	a comparison.  If either operand of a comparison is a boolean
+	expression, call maybe_warn_bool_compare.
+
 2014-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR tree-optimization/62091
+	* decl2.c (decl_needed_p): Return true for virtual functions when
+	devirtualizing.
 
 	PR lto/53808
 	PR c++/61659

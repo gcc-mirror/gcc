@@ -727,14 +727,17 @@ namespace {
 const pass_data pass_data_ipa_free_inline_summary =
 {
   SIMPLE_IPA_PASS, /* type */
-  "*free_inline_summary", /* name */
+  "free-inline-summary", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_IPA_FREE_INLINE_SUMMARY, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  0, /* todo_flags_finish */
+  /* Early optimizations may make function unreachable.  We can not
+     remove unreachable functions as part of the ealry opts pass because
+     TODOs are run before subpasses.  Do it here.  */
+  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
 };
 
 class pass_ipa_free_inline_summary : public simple_ipa_opt_pass

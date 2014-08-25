@@ -166,7 +166,7 @@ enum cpp_ttype
 enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11,
 	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC11,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
-	     CLK_GNUCXX1Y, CLK_CXX1Y, CLK_ASM};
+	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX1Z, CLK_CXX1Z, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -467,7 +467,7 @@ struct cpp_options
   bool restore_pch_deps;
 
   /* True if warn about differences between C90 and C99.  */
-  char cpp_warn_c90_c99_compat;
+  signed char cpp_warn_c90_c99_compat;
 
   /* Dependency generation.  */
   struct

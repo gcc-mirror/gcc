@@ -66,7 +66,9 @@ void
 gfc_init_options_struct (struct gcc_options *opts)
 {
   opts->x_flag_errno_math = 0;
+  opts->frontend_set_flag_errno_math = true;
   opts->x_flag_associative_math = -1;
+  opts->frontend_set_flag_associative_math = true;
 }
 
 /* Get ready for options handling. Keep in sync with
@@ -105,6 +107,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.warn_tabs = 1;
   gfc_option.warn_underflow = 1;
   gfc_option.warn_intrinsic_shadow = 0;
+  gfc_option.warn_use_without_only = 0;
   gfc_option.warn_intrinsics_std = 0;
   gfc_option.warn_align_commons = 1;
   gfc_option.warn_real_q_constant = 0;
@@ -724,6 +727,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Wintrinsic_shadow:
       gfc_option.warn_intrinsic_shadow = value;
+      break;
+
+    case OPT_Wuse_without_only:
+      gfc_option.warn_use_without_only = value;
       break;
 
     case OPT_Walign_commons:

@@ -125,7 +125,7 @@ static void sdbout_end_prologue		(unsigned int, const char *);
 static void sdbout_begin_function	(tree);
 static void sdbout_end_function		(unsigned int);
 static void sdbout_toplevel_data	(tree);
-static void sdbout_label		(rtx);
+static void sdbout_label		(rtx_code_label *);
 static char *gen_fake_label		(void);
 static int plain_type			(tree);
 static int template_name_p		(tree);
@@ -302,7 +302,7 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   debug_nothing_tree,		         /* outlining_inline_function */
   sdbout_label,			         /* label */
   debug_nothing_int,		         /* handle_pch */
-  debug_nothing_rtx,		         /* var_location */
+  debug_nothing_rtx_insn,	         /* var_location */
   debug_nothing_void,                    /* switch_text_section */
   debug_nothing_tree_tree,		 /* set_name */
   0,                                     /* start_end_main_source_file */
@@ -1597,7 +1597,7 @@ sdbout_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
    is present.  */
 
 static void
-sdbout_label (rtx insn)
+sdbout_label (rtx_code_label *insn)
 {
   PUT_SDB_DEF (LABEL_NAME (insn));
   PUT_SDB_VAL (insn);

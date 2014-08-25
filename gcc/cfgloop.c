@@ -1736,7 +1736,7 @@ loop_exits_from_bb_p (struct loop *loop, basic_block bb)
 location_t
 get_loop_location (struct loop *loop)
 {
-  rtx insn = NULL;
+  rtx_insn *insn = NULL;
   struct niter_desc *desc = NULL;
   edge exit;
 

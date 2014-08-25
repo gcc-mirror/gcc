@@ -50,7 +50,7 @@
 struct queued_debug_insn_change
 {
   struct queued_debug_insn_change *next;
-  rtx insn;
+  rtx_insn *insn;
   rtx *loc;
   rtx new_rtx;
 };
@@ -93,12 +93,12 @@ static bool mode_change_ok (enum machine_mode, enum machine_mode,
 static rtx maybe_mode_change (enum machine_mode, enum machine_mode,
 			      enum machine_mode, unsigned int, unsigned int);
 static rtx find_oldest_value_reg (enum reg_class, rtx, struct value_data *);
-static bool replace_oldest_value_reg (rtx *, enum reg_class, rtx,
+static bool replace_oldest_value_reg (rtx *, enum reg_class, rtx_insn *,
 				      struct value_data *);
 static bool replace_oldest_value_addr (rtx *, enum reg_class,
-				       enum machine_mode, addr_space_t, rtx,
-				       struct value_data *);
-static bool replace_oldest_value_mem (rtx, rtx, struct value_data *);
+				       enum machine_mode, addr_space_t,
+				       rtx_insn *, struct value_data *);
+static bool replace_oldest_value_mem (rtx, rtx_insn *, struct value_data *);
 static bool copyprop_hardreg_forward_1 (basic_block, struct value_data *);
 extern void debug_value_data (struct value_data *);
 #ifdef ENABLE_CHECKING
@@ -482,7 +482,7 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
    in register class CL.  Return true if successfully replaced.  */
 
 static bool
-replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx insn,
+replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx_insn *insn,
 			  struct value_data *vd)
 {
   rtx new_rtx = find_oldest_value_reg (cl, *loc, vd);
@@ -523,7 +523,7 @@ replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx insn,
 static bool
 replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 			   enum machine_mode mode, addr_space_t as,
-			   rtx insn, struct value_data *vd)
+			   rtx_insn *insn, struct value_data *vd)
 {
   rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
@@ -669,7 +669,7 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 /* Similar to replace_oldest_value_reg, but X contains a memory.  */
 
 static bool
-replace_oldest_value_mem (rtx x, rtx insn, struct value_data *vd)
+replace_oldest_value_mem (rtx x, rtx_insn *insn, struct value_data *vd)
 {
   enum reg_class cl;
 
@@ -690,7 +690,7 @@ static void
 apply_debug_insn_changes (struct value_data *vd, unsigned int regno)
 {
   struct queued_debug_insn_change *change;
-  rtx last_insn = vd->e[regno].debug_insn_changes->insn;
+  rtx_insn *last_insn = vd->e[regno].debug_insn_changes->insn;
 
   for (change = vd->e[regno].debug_insn_changes;
        change;
@@ -741,7 +741,7 @@ static bool
 copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 {
   bool anything_changed = false;
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {

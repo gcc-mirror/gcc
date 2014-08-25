@@ -2838,7 +2838,8 @@ init_alias_analysis (void)
   int changed, pass;
   int i;
   unsigned int ui;
-  rtx insn, val;
+  rtx_insn *insn;
+  rtx val;
   int rpo_cnt;
   int *rpo;
 

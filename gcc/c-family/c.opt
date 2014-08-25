@@ -287,6 +287,10 @@ Wbad-function-cast
 C ObjC Var(warn_bad_function_cast) Warning
 Warn about casting functions to incompatible types
 
+Wbool-compare
+C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about boolean expression compared with an integer value different from true/false
+
 Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ Warning
 Warn when a built-in preprocessor macro is undefined or redefined
@@ -324,7 +328,7 @@ C ObjC C++ ObjC++ Var(warn_clobbered) Warning EnabledBy(Wextra)
 Warn about variables that might be changed by \"longjmp\" or \"vfork\"
 
 Wcomment
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_comments) Var(cpp_warn_comment) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line
 
 Wcomments
@@ -594,7 +598,7 @@ Wmudflap
 C ObjC C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 Wmultichar
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ CPP(warn_multichar) Var(cpp_warn_multichar) Warning
 Warn about use of multi-character character constants
 
 Wnarrowing
@@ -698,7 +702,7 @@ C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
 Wdate-time
-Common Var(cpp_warn_date_time) Warning
+C ObjC C++ ObjC++ CPP(warn_date_time) Var(cpp_warn_date_time) Warning
 Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage
 
 Wproperty-assign-default
@@ -834,8 +838,12 @@ C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
 Wvariadic-macros
-C ObjC C++ ObjC++ Var(cpp_warn_variadic_macros) Init(1) Warning
+C ObjC C++ ObjC++ CPP(warn_variadic_macros) Var(cpp_warn_variadic_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
 Warn about using variadic macros
+
+Wvariadic-macros
+LangEnabledBy(C ObjC C++ ObjC++,Wtraditional)
+;
 
 Wvarargs
 C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)
@@ -1475,11 +1483,12 @@ C++ ObjC++ Alias(std=c++11) Undocumented
 Deprecated in favor of -std=c++11
 
 std=c++1y
-C++ ObjC++
-Conform to the ISO 2014(?) C++ draft standard (experimental and incomplete support)
+C++ ObjC++ Alias(std=c++14) Undocumented
+Deprecated in favor of -std=c++14
 
 std=c++14
-C++ ObjC++ Alias(std=c++1y) Undocumented
+C++ ObjC++ Undocumented
+Conform to the ISO 2014 C++ standard (experimental and incomplete support)
 
 std=c++1z
 C++ ObjC++
@@ -1531,18 +1540,18 @@ C++ ObjC++ Alias(std=gnu++11)
 Deprecated in favor of -std=gnu++11
 
 std=gnu++1y
-C++ ObjC++
-Conform to the ISO 201y(4?) C++ draft standard with GNU extensions (experimental and incomplete support)
+C++ ObjC++ Alias(std=gnu++14) Undocumented
 
 std=gnu++14
-C++ ObjC++ Alias(std=gnu++1y) Undocumented
+C++ ObjC++
+Conform to the ISO 2014 C++ standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++1z
 C++ ObjC++
 Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++17
-C++ ObjC++ Alias(std=gnu++1y) Undocumented
+C++ ObjC++ Alias(std=gnu++1z) Undocumented
 
 std=gnu11
 C ObjC

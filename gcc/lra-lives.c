@@ -358,7 +358,7 @@ mark_regno_dead (int regno, enum machine_mode mode, int point)
 }
 
 /* Insn currently scanned.  */
-static rtx curr_insn;
+static rtx_insn *curr_insn;
 /* The insn data.  */
 static lra_insn_recog_data_t curr_id;
 /* The insn static data.  */

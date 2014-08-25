@@ -74,11 +74,11 @@ along with GCC; see the file COPYING3.  If not see
 static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 	     real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
-static void combine_predictions_for_insn (rtx, basic_block);
+static void combine_predictions_for_insn (rtx_insn *, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
 static void predict_paths_leading_to_edge (edge, enum br_predictor, enum prediction);
-static bool can_predict_insn_p (const_rtx);
+static bool can_predict_insn_p (const rtx_insn *);
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -563,7 +563,7 @@ br_prob_note_reliable_p (const_rtx note)
 }
 
 static void
-predict_insn (rtx insn, enum br_predictor predictor, int probability)
+predict_insn (rtx_insn *insn, enum br_predictor predictor, int probability)
 {
   gcc_assert (any_condjump_p (insn));
   if (!flag_guess_branch_prob)
@@ -578,7 +578,7 @@ predict_insn (rtx insn, enum br_predictor predictor, int probability)
 /* Predict insn by given predictor.  */
 
 void
-predict_insn_def (rtx insn, enum br_predictor predictor,
+predict_insn_def (rtx_insn *insn, enum br_predictor predictor,
 		  enum prediction taken)
 {
    int probability = predictor_info[(int) predictor].hitrate;
@@ -594,7 +594,7 @@ predict_insn_def (rtx insn, enum br_predictor predictor,
 void
 rtl_predict_edge (edge e, enum br_predictor predictor, int probability)
 {
-  rtx last_insn;
+  rtx_insn *last_insn;
   last_insn = BB_END (e->src);
 
   /* We can store the branch prediction information only about
@@ -681,7 +681,7 @@ clear_bb_predictions (basic_block bb)
    At the moment we represent predictions only on conditional
    jumps, not at computed jump or other complicated cases.  */
 static bool
-can_predict_insn_p (const_rtx insn)
+can_predict_insn_p (const rtx_insn *insn)
 {
   return (JUMP_P (insn)
 	  && any_condjump_p (insn)
@@ -774,7 +774,7 @@ set_even_probabilities (basic_block bb)
    note if not already present.  Remove now useless REG_BR_PRED notes.  */
 
 static void
-combine_predictions_for_insn (rtx insn, basic_block bb)
+combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 {
   rtx prob_note;
   rtx *pnote;
@@ -1668,7 +1668,7 @@ predict_loops (void)
 static void
 bb_estimate_probability_locally (basic_block bb)
 {
-  rtx last_insn = BB_END (bb);
+  rtx_insn *last_insn = BB_END (bb);
   rtx cond;
 
   if (! can_predict_insn_p (last_insn))
@@ -2890,7 +2890,7 @@ expensive_function_p (int threshold)
   limit = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency * threshold;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	if (active_insn_p (insn))

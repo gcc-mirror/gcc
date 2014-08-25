@@ -1,3 +1,322 @@
+2014-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34938
+	* g++.dg/template/pr34938-1.C: New.
+	* g++.dg/template/pr34938-2.C: Likewise.
+
+2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61996
+	* gcc.target/sh/pr61996.c: New.
+
+2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/cplusplus.C: New.
+	* g++.dg/cpp0x/cplusplus_0x.C: New.
+	* g++.dg/cpp0x/auto3.C: Change c++1y to c++14.
+	* g++.dg/cpp0x/auto41.C: Ditto.
+	* g++.dg/cpp0x/auto9.C: Ditto.
+	* g++.dg/cpp0x/initlist26.C: Ditto.
+	* g++.dg/cpp0x/pr59111.C: Ditto.
+	* g++.dg/cpp0x/trailing2.C: Ditto.
+	* g++.dg/cpp1y/attr-deprecated.C: Ditto.
+	* g++.dg/cpp1y/auto-dtor1.C: Ditto.
+	* g++.dg/cpp1y/auto-fn1.C: Ditto.
+	* g++.dg/cpp1y/auto-fn2.C: Ditto.
+	* g++.dg/cpp1y/auto-fn3.C: Ditto.
+	* g++.dg/cpp1y/auto-fn4.C: Ditto.
+	* g++.dg/cpp1y/auto-fn5.C: Ditto.
+	* g++.dg/cpp1y/auto-fn6.C: Ditto.
+	* g++.dg/cpp1y/auto-fn7.C: Ditto.
+	* g++.dg/cpp1y/auto-fn8.C: Ditto.
+	* g++.dg/cpp1y/auto-fn9.C: Ditto.
+	* g++.dg/cpp1y/auto-fn10.C: Ditto.
+	* g++.dg/cpp1y/auto-fn11.C: Ditto.
+	* g++.dg/cpp1y/auto-fn12.C: Ditto.
+	* g++.dg/cpp1y/auto-fn13.C: Ditto.
+	* g++.dg/cpp1y/auto-fn14.C: Ditto.
+	* g++.dg/cpp1y/auto-fn15.C: Ditto.
+	* g++.dg/cpp1y/auto-fn16.C: Ditto.
+	* g++.dg/cpp1y/auto-fn17.C: Ditto.
+	* g++.dg/cpp1y/auto-fn18.C: Ditto.
+	* g++.dg/cpp1y/auto-fn19.C: Ditto.
+	* g++.dg/cpp1y/auto-fn20.C: Ditto.
+	* g++.dg/cpp1y/auto-fn21.C: Ditto.
+	* g++.dg/cpp1y/auto-fn22.C: Ditto.
+	* g++.dg/cpp1y/auto-fn23.C: Ditto.
+	* g++.dg/cpp1y/auto-fn24.C: Ditto.
+	* g++.dg/cpp1y/auto-fn25.C: Ditto.
+	* g++.dg/cpp1y/auto-mangle1.C: Ditto.
+	* g++.dg/cpp1y/auto-neg1.C: Ditto.
+	* g++.dg/cpp1y/digit-sep.C: Ditto.
+	* g++.dg/cpp1y/digit-sep-neg.C: Ditto.
+	* g++.dg/cpp1y/digit-sep-cxx11-neg.C: Ditto.
+	* g++.dg/cpp1y/fn-generic-member-ool.C: Ditto.
+	* g++.dg/cpp1y/lambda-deduce-mult.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-cfun.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-dep.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-mixed.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-udt.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-variadic.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-vla1.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-x.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-xcfun.C: Ditto.
+	* g++.dg/cpp1y/lambda-generic-xudt.C: Ditto.
+	* g++.dg/cpp1y/lambda-init.C: Ditto.
+	* g++.dg/cpp1y/lambda-init1.C: Ditto.
+	* g++.dg/cpp1y/lambda-init2.C: Ditto.
+	* g++.dg/cpp1y/lambda-init3.C: Ditto.
+	* g++.dg/cpp1y/lambda-init4.C: Ditto.
+	* g++.dg/cpp1y/lambda-init5.C: Ditto.
+	* g++.dg/cpp1y/lambda-init6.C: Ditto.
+	* g++.dg/cpp1y/lambda-init7.C: Ditto.
+	* g++.dg/cpp1y/lambda-init8.C: Ditto.
+	* g++.dg/cpp1y/lambda-init9.C: Ditto.
+	* g++.dg/cpp1y/mangle1.C: Ditto.
+	* g++.dg/cpp1y/pr57640.C: Ditto.
+	* g++.dg/cpp1y/pr57644.C: Ditto.
+	* g++.dg/cpp1y/pr58500.C: Ditto.
+	* g++.dg/cpp1y/pr58533.C: Ditto.
+	* g++.dg/cpp1y/pr58534.C: Ditto.
+	* g++.dg/cpp1y/pr58535.C: Ditto.
+	* g++.dg/cpp1y/pr58536.C: Ditto.
+	* g++.dg/cpp1y/pr58548.C: Ditto.
+	* g++.dg/cpp1y/pr58549.C: Ditto.
+	* g++.dg/cpp1y/pr58637.C: Ditto.
+	* g++.dg/cpp1y/pr58708.C: Ditto.
+	* g++.dg/cpp1y/pr59110.C: Ditto.
+	* g++.dg/cpp1y/pr59112.C: Ditto.
+	* g++.dg/cpp1y/pr59113.C: Ditto.
+	* g++.dg/cpp1y/pr59629.C: Ditto.
+	* g++.dg/cpp1y/pr59635.C: Ditto.
+	* g++.dg/cpp1y/pr59636.C: Ditto.
+	* g++.dg/cpp1y/pr59638.C: Ditto.
+	* g++.dg/cpp1y/pr59867.C: Ditto.
+	* g++.dg/cpp1y/pr60033.C: Ditto.
+	* g++.dg/cpp1y/pr60052.C: Ditto.
+	* g++.dg/cpp1y/pr60053.C: Ditto.
+	* g++.dg/cpp1y/pr60054.C: Ditto.
+	* g++.dg/cpp1y/pr60064.C: Ditto.
+	* g++.dg/cpp1y/pr60065.C: Ditto.
+	* g++.dg/cpp1y/pr60190.C: Ditto.
+	* g++.dg/cpp1y/pr60311.C: Ditto.
+	* g++.dg/cpp1y/pr60332.C: Ditto.
+	* g++.dg/cpp1y/pr60376.C: Ditto.
+	* g++.dg/cpp1y/pr60377.C: Ditto.
+	* g++.dg/cpp1y/pr60384.C: Ditto.
+	* g++.dg/cpp1y/pr60390.C: Ditto.
+	* g++.dg/cpp1y/pr60391.C: Ditto.
+	* g++.dg/cpp1y/pr60393.C: Ditto.
+	* g++.dg/cpp1y/pr60573.C: Ditto.
+	* g++.dg/cpp1y/pr60626.C: Ditto.
+	* g++.dg/cpp1y/pr60627.C: Ditto.
+	* g++.dg/cpp1y/regress1.C: Ditto.
+	* g++.dg/cpp1y/system-binary-constants-1.C: Ditto.
+	* g++.dg/cpp1y/udlit-char-template.C: Ditto.
+	* g++.dg/cpp1y/udlit-char-template-neg.C: Ditto.
+	* g++.dg/cpp1y/udlit-empty-string-neg.C: Ditto.
+	* g++.dg/cpp1y/udlit-enc-prefix-neg.C: Ditto.
+	* g++.dg/cpp1y/udlit-userdef-string.C: Ditto.
+	* g++.dg/cpp1y/var-templ1.C: Ditto.
+	* g++.dg/cpp1y/var-templ2.C: Ditto.
+	* g++.dg/cpp1y/var-templ3.C: Ditto.
+	* g++.dg/cpp1y/var-templ4.C: Ditto.
+	* g++.dg/cpp1y/var-templ5.C: Ditto.
+	* g++.dg/cpp1y/var-templ6.C: Ditto.
+	* g++.dg/cpp1y/var-templ7.C: Ditto.
+	* g++.dg/cpp1y/vla1.C: Ditto.
+	* g++.dg/cpp1y/vla2.C: Ditto.
+	* g++.dg/cpp1y/vla3.C: Ditto.
+	* g++.dg/cpp1y/vla4.C: Ditto.
+	* g++.dg/cpp1y/vla5.C: Ditto.
+	* g++.dg/cpp1y/vla8.C: Ditto.
+	* g++.dg/cpp1y/vla9.C: Ditto.
+	* g++.dg/cpp1y/vla10.C: Ditto.
+	* g++.dg/cpp1y/vla11.C: Ditto.
+	* g++.dg/cpp1y/vla12.C: Ditto.
+	* g++.dg/cpp1y/vla13.C: Ditto.
+	* g++.dg/cpp1y/vla-initlist1.C: Ditto.
+	* g++.dg/ext/vector23.C: Ditto.
+	* g++.dg/ext/vla11.C: Ditto.
+	* gcc/testsuite/g++.dg/ubsan/cxx1y-vla.C: Ditto.
+	* g++.dg/warn/Wvla-2.C: Ditto.
+	* g++.dg/debug/dwarf2/auto1.C: Ditto.
+	* g++.dg/cpp1z/typename-tmpl-tmpl-parm-ped-neg.C: Ditto.
+	* g++.dg/cpp1y/cplusplus.C: Check for exact date.
+	* g++.dg/cpp1y/system-binary-constants-1.C: Check C++14 instead of C++1y
+	in error message.
+	* g++.dg/system-binary-constants-1.C: Ditto.
+	* g++.dg/cpp1y/cplusplus_1y.C: New.
+	* g++.dg/cpp1z/cplusplus.C: New.
+	* lib/target-supports.exp:
+	(check_effective_target_c++1y*): Rename to check_effective_target_c++14*
+	(check_effective_target_c++11_only): Call check_effective_target_c++14;
+	(check_effective_target_c++11_down): Ditto.
+
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* c-c++-common/pr62199.c: New test.
+	* c-c++-common/pr62199-2.c: New test.
+	* g++.dg/warn/Wparentheses-25.C: Drop XFAILs.
+
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/57709
+	* g++.dg/Wshadow.C: New test.
+
+2014-08-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR fortran/62135
+	* gfortran.dg/pr62135.f90: New test.
+
+2014-08-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* g++.dg/warn/wdate-time.C: Remove.
+	* gcc.dg/wdate-time.c: Move from here...
+	* c-c++-common/wdate-time.c: ... to here.
+
+2014-08-22  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	* gfortran.dg/use_without_only_1.f90: New test.
+
+2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/62008
+	* c-c++-common/cilk-plus/AN/pr62008.c: New test.
+
+2014-08-22  Tony Wang  <tony.wang@arm.com>
+
+	* g++.dg/tls/thread_local6.C: Skip this test case when target uses
+	dejagnu wrapper.
+
+2014-08-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/62214
+	* gfortran.dg/array_assignment_5.f90:  New test.
+
+2014-08-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_logical_op_short_circuit): Add nios2.
+	* gcc.dg/tree-ssa/reassoc-33.c: Skip for nios2.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/interposition.c: Require fpic effective target
+	for test using -fPIC.
+	* gcc.dg/lto/pr61526_0.c: Likewise.
+
+2014-08-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62091
+	* g++.dg/ipa/devirt-37.C: Update template.
+	* g++.dg/ipa/devirt-40.C: New testcase.
+
+2014-08-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/62112
+	* gcc.dg/tree-ssa/pr62112-1.c: New file.
+	* gcc.dg/tree-ssa/pr62112-2.c: Likewise.
+	* gcc.c-torture/execute/pr35472.c: Add noclone attribute.
+	* gcc.c-torture/execute/20071219-1.c: Likewise.
+
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* testsuite/gcc.target/powerpc/builtins-1.c: New test.
+
+2014-08-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-1.c: New test.
+	* gcc.target/powerpc/swaps-p8-2.c: New test.
+	* gcc.target/powerpc/swaps-p8-3.c: New test.
+	* gcc.target/powerpc/swaps-p8-4.c: New test.
+	* gcc.target/powerpc/swaps-p8-5.c: New test.
+	* gcc.target/powerpc/swaps-p8-6.c: New test.
+	* gcc.target/powerpc/swaps-p8-7.c: New test.
+	* gcc.target/powerpc/swaps-p8-8.c: New test.
+	* gcc.target/powerpc/swaps-p8-9.c: New test.
+	* gcc.target/powerpc/swaps-p8-10.c: New test.
+	* gcc.target/powerpc/swaps-p8-11.c: New test.
+	* gcc.target/powerpc/swaps-p8-12.c: New test.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ctor-empty-1.c: Update template.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-37.C: Fix testcase.
+
+2014-08-20  Martin Jambor  <mjambor@suse.cz>
+	    Wei Mi  <wmi@google.com>
+
+	PR ipa/60449
+	PR middle-end/61776
+	* testsuite/gcc.dg/lto/pr60449_1.c: New test.
+	* testsuite/gcc.dg/lto/pr60449_0.c: New test.
+	* testsuite/gcc.dg/pr61776.c: New test.
+
+2014-08-20  Steve Ellcey  <sellcey@mips.com>
+
+	PR middle-end/49191
+	* lib/target-supports.exp (check_effective_target_non_strict_align):
+	Add function description.
+
+2014-08-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* testsuite/g++.dg/ipa/devirt-17.C: Update template.
+	* testsuite/g++.dg/ipa/devirt-16.C: Update template.
+
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/59304
+	* opts-common.c (set_option): Call diagnostic_classify_diagnostic
+	before setting the option.
+	* diagnostic.c (diagnostic_classify_diagnostic): Record
+	command-line status.
+
+2014-08-20  Mark Wielaard  <mjw@redhat.com>
+
+	* gcc.dg/guality/restrict.c: Add `used' attribute to all variables.
+
+2014-08-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/gcc-defs.exp (${tool}_check_unsupported_p):
+	Return memory full when we have a tiny target and relocation
+	truncation occurs.
+	* lib/gcc-dg.exp (gcc-dg-prune): Likewise.
+	* lib/objc.exp (${tool}_check_unsupported_p): Likewise.
+	* lib/target-supports.exp (check_effective_target_tiny): New function.
+
+2014-08-20  Joost VandeVondele  <Joost.VandeVondele@mat.ethz.ch>
+
+	* gfortran.dg/errnocheck_1.f90: New test.
+	* gfortran.dg/associative_1.f90: New test.
+
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR preprocessor/51303
+	* gcc.dg/cpp/Wmissingdirs.c: Test for the warning option.
+
+2014-08-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/60975
+	PR c/53063
+	* gcc.dg/cpp/Wvariadic-1p.c: New test.
+
+2014-08-19  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports.exp 
+	(check_effective_target_arm_v8_neon_ok_nocache): Add
+	"-march-armv8-a" to compile flags.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* c-c++-common/Wbool-compare-1.c: New test.
+
 2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/45584

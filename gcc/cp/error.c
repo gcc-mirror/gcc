@@ -99,7 +99,6 @@ static void print_instantiation_partial_context (diagnostic_context *,
 						 struct tinst_level *,
 						 location_t);
 static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
-static void cp_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *, const char *,
@@ -109,7 +108,7 @@ void
 init_error (void)
 {
   diagnostic_starter (global_dc) = cp_diagnostic_starter;
-  diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
+  /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
   diagnostic_format_decoder (global_dc) = cp_printer;
 
   new (cxx_pp) cxx_pretty_printer ();
@@ -821,6 +820,8 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
 	pp_cxx_right_paren (pp);
+      if (TREE_CODE (t) == POINTER_TYPE)
+	flags |= TFF_POINTER;
       dump_type_suffix (pp, TREE_TYPE (t), flags);
       break;
 
@@ -840,7 +841,9 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
 	dump_parameters (pp, arg, flags & ~TFF_FUNCTION_DEFAULT_ARGUMENTS);
 
 	pp->padding = pp_before;
-	pp_cxx_cv_qualifiers (pp, type_memfn_quals (t));
+	pp_cxx_cv_qualifiers (pp, type_memfn_quals (t),
+			      TREE_CODE (t) == FUNCTION_TYPE
+			      && (flags & TFF_POINTER));
 	dump_ref_qualifier (pp, t, flags);
 	dump_exception_spec (pp, TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (pp, TREE_TYPE (t), flags);
@@ -3039,14 +3042,6 @@ cp_diagnostic_starter (diagnostic_context *context,
   maybe_print_constexpr_context (context);
   pp_set_prefix (context->printer, diagnostic_build_prefix (context,
 								 diagnostic));
-}
-
-static void
-cp_diagnostic_finalizer (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
-{
-  virt_loc_aware_diagnostic_finalizer (context, diagnostic);
-  pp_destroy_prefix (context->printer);
 }
 
 /* Print current function onto BUFFER, in the process of reporting

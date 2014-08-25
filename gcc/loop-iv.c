@@ -136,7 +136,7 @@ biv_entry_hasher::equal (const value_type *b, const compare_type *r)
 
 static hash_table<biv_entry_hasher> *bivs;
 
-static bool iv_analyze_op (rtx, rtx, struct rtx_iv *);
+static bool iv_analyze_op (rtx_insn *, rtx, struct rtx_iv *);
 
 /* Return the RTX code corresponding to the IV extend code EXTEND.  */
 static inline enum rtx_code
@@ -339,11 +339,11 @@ latch_dominating_def (rtx reg, df_ref *def)
 /* Gets definition of REG reaching its use in INSN and stores it to DEF.  */
 
 static enum iv_grd_result
-iv_get_reaching_def (rtx insn, rtx reg, df_ref *def)
+iv_get_reaching_def (rtx_insn *insn, rtx reg, df_ref *def)
 {
   df_ref use, adef;
   basic_block def_bb, use_bb;
-  rtx def_insn;
+  rtx_insn *def_insn;
   bool dom_p;
 
   *def = NULL;
@@ -650,7 +650,7 @@ get_biv_step_1 (df_ref def, rtx reg,
   rtx set, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
   rtx next, nextr, tmp;
   enum rtx_code code;
-  rtx insn = DF_REF_INSN (def);
+  rtx_insn *insn = DF_REF_INSN (def);
   df_ref next_def;
   enum iv_grd_result res;
 
@@ -946,7 +946,8 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
    The mode of the induction variable is MODE.  */
 
 bool
-iv_analyze_expr (rtx insn, rtx rhs, enum machine_mode mode, struct rtx_iv *iv)
+iv_analyze_expr (rtx_insn *insn, rtx rhs, enum machine_mode mode,
+		 struct rtx_iv *iv)
 {
   rtx mby = NULL_RTX, tmp;
   rtx op0 = NULL_RTX, op1 = NULL_RTX;
@@ -1073,7 +1074,7 @@ iv_analyze_expr (rtx insn, rtx rhs, enum machine_mode mode, struct rtx_iv *iv)
 static bool
 iv_analyze_def (df_ref def, struct rtx_iv *iv)
 {
-  rtx insn = DF_REF_INSN (def);
+  rtx_insn *insn = DF_REF_INSN (def);
   rtx reg = DF_REF_REG (def);
   rtx set, rhs;
 
@@ -1134,7 +1135,7 @@ iv_analyze_def (df_ref def, struct rtx_iv *iv)
 /* Analyzes operand OP of INSN and stores the result to *IV.  */
 
 static bool
-iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
+iv_analyze_op (rtx_insn *insn, rtx op, struct rtx_iv *iv)
 {
   df_ref def = NULL;
   enum iv_grd_result res;
@@ -1192,7 +1193,7 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 /* Analyzes value VAL at INSN and stores the result to *IV.  */
 
 bool
-iv_analyze (rtx insn, rtx val, struct rtx_iv *iv)
+iv_analyze (rtx_insn *insn, rtx val, struct rtx_iv *iv)
 {
   rtx reg;
 
@@ -1217,7 +1218,7 @@ iv_analyze (rtx insn, rtx val, struct rtx_iv *iv)
 /* Analyzes definition of DEF in INSN and stores the result to IV.  */
 
 bool
-iv_analyze_result (rtx insn, rtx def, struct rtx_iv *iv)
+iv_analyze_result (rtx_insn *insn, rtx def, struct rtx_iv *iv)
 {
   df_ref adef;
 
@@ -1233,7 +1234,7 @@ iv_analyze_result (rtx insn, rtx def, struct rtx_iv *iv)
    iv_analysis_loop_init) for this function to produce a result.  */
 
 bool
-biv_p (rtx insn, rtx reg)
+biv_p (rtx_insn *insn, rtx reg)
 {
   struct rtx_iv iv;
   df_ref def, last_def;
@@ -1454,7 +1455,7 @@ replace_single_def_regs (rtx *reg, void *expr1)
    the set; return false otherwise.  */
 
 static bool
-suitable_set_for_replacement (rtx insn, rtx *dest, rtx *src)
+suitable_set_for_replacement (rtx_insn *insn, rtx *dest, rtx *src)
 {
   rtx set = single_set (insn);
   rtx lhs = NULL_RTX, rhs;
@@ -1872,7 +1873,8 @@ static void
 simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 {
   bool expression_valid;
-  rtx head, tail, insn, cond_list, last_valid_expr;
+  rtx head, tail, cond_list, last_valid_expr;
+  rtx_insn *insn;
   rtx neutral, aggr;
   regset altered, this_altered;
   edge e;
@@ -2323,7 +2325,7 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
    (basically its rtl version), complicated by things like subregs.  */
 
 static void
-iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
+iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
 			 struct niter_desc *desc)
 {
   rtx op0, op1, delta, step, bound, may_xform, tmp, tmp0, tmp1;
@@ -2929,7 +2931,8 @@ check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
 
   /* Check that we are able to determine number of iterations and fill
      in information about it.  */
-  iv_number_of_iterations (loop, at, condition, desc);
+  iv_number_of_iterations (loop, safe_as_a <rtx_insn *> (at),
+			   condition, desc);
 }
 
 /* Finds a simple exit of LOOP and stores its description into DESC.  */

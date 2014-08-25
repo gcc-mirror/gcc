@@ -904,7 +904,7 @@ build_array_of_n_type (tree elt, int n)
   return build_cplus_array_type (elt, build_index_type (size_int (n - 1)));
 }
 
-/* True iff T is a C++1y array of runtime bound (VLA).  */
+/* True iff T is a C++14 array of runtime bound (VLA).  */
 
 bool
 array_of_runtime_bound_p (tree t)

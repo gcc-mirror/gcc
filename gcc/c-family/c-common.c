@@ -1760,21 +1760,15 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 
 /* Warn about logical not used on the left hand side operand of a comparison.
    This function assumes that the LHS is inside of TRUTH_NOT_EXPR.
-   Do not warn if the LHS or RHS is of a boolean or a vector type.  */
+   Do not warn if RHS is of a boolean type.  */
 
 void
 warn_logical_not_parentheses (location_t location, enum tree_code code,
-			      tree lhs, tree rhs)
+			      tree rhs)
 {
-  if (TREE_CODE_CLASS (code) != tcc_comparison)
-    return;
-  if (TREE_TYPE (lhs) == NULL_TREE
-      || TREE_TYPE (rhs) == NULL_TREE)
-    ;
-  else if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
-	   || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE
-	   || VECTOR_TYPE_P (TREE_TYPE (lhs))
-	   || VECTOR_TYPE_P (TREE_TYPE (rhs)))
+  if (TREE_CODE_CLASS (code) != tcc_comparison
+      || TREE_TYPE (rhs) == NULL_TREE
+      || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE)
     return;
 
   warning_at (location, OPT_Wlogical_not_parentheses,
@@ -9792,23 +9786,24 @@ struct reason_option_codes_t
 };
 
 static const struct reason_option_codes_t option_codes[] = {
-  {CPP_W_DEPRECATED,			OPT_Wdeprecated},
-  {CPP_W_COMMENTS,			OPT_Wcomment},
-  {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
-  {CPP_W_MULTICHAR,			OPT_Wmultichar},
-  {CPP_W_TRADITIONAL,			OPT_Wtraditional},
-  {CPP_W_LONG_LONG,			OPT_Wlong_long},
-  {CPP_W_ENDIF_LABELS,			OPT_Wendif_labels},
-  {CPP_W_VARIADIC_MACROS,		OPT_Wvariadic_macros},
   {CPP_W_BUILTIN_MACRO_REDEFINED,	OPT_Wbuiltin_macro_redefined},
+  {CPP_W_COMMENTS,			OPT_Wcomment},
+  {CPP_W_CXX_OPERATOR_NAMES,		OPT_Wc___compat},
+  {CPP_W_DATE_TIME,			OPT_Wdate_time},
+  {CPP_W_DEPRECATED,			OPT_Wdeprecated},
+  {CPP_W_ENDIF_LABELS,			OPT_Wendif_labels},
+  {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
+  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
+  {CPP_W_LONG_LONG,			OPT_Wlong_long},
+  {CPP_W_MISSING_INCLUDE_DIRS,          OPT_Wmissing_include_dirs},
+  {CPP_W_MULTICHAR,			OPT_Wmultichar},
+  {CPP_W_NORMALIZE,			OPT_Wnormalized_},
+  {CPP_W_TRADITIONAL,			OPT_Wtraditional},
+  {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
   {CPP_W_UNDEF,				OPT_Wundef},
   {CPP_W_UNUSED_MACROS,			OPT_Wunused_macros},
-  {CPP_W_CXX_OPERATOR_NAMES,		OPT_Wc___compat},
-  {CPP_W_NORMALIZE,			OPT_Wnormalized_},
-  {CPP_W_INVALID_PCH,			OPT_Winvalid_pch},
+  {CPP_W_VARIADIC_MACROS,		OPT_Wvariadic_macros},
   {CPP_W_WARNING_DIRECTIVE,		OPT_Wcpp},
-  {CPP_W_LITERAL_SUFFIX,		OPT_Wliteral_suffix},
-  {CPP_W_DATE_TIME,			OPT_Wdate_time},
   {CPP_W_NONE,				0}
 };
 
@@ -11726,6 +11721,39 @@ maybe_warn_unused_local_typedefs (void)
     }
 
   vec_free (l->local_typedefs);
+}
+
+/* Warn about boolean expression compared with an integer value different
+   from true/false.  Warns also e.g. about "(i1 == i2) == 2".
+   LOC is the location of the comparison, CODE is its code, OP0 and OP1
+   are the operands of the comparison.  The caller must ensure that
+   either operand is a boolean expression.  */
+
+void
+maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
+			 tree op1)
+{
+  if (TREE_CODE_CLASS (code) != tcc_comparison)
+    return;
+
+  tree cst = (TREE_CODE (op0) == INTEGER_CST)
+	     ? op0 : (TREE_CODE (op1) == INTEGER_CST) ? op1 : NULL_TREE;
+  if (!cst)
+    return;
+
+  if (!integer_zerop (cst) && !integer_onep (cst))
+    {
+      int sign = (TREE_CODE (op0) == INTEGER_CST)
+		 ? tree_int_cst_sgn (cst) : -tree_int_cst_sgn (cst);
+      if (code == EQ_EXPR
+	  || ((code == GT_EXPR || code == GE_EXPR) && sign < 0)
+	  || ((code == LT_EXPR || code == LE_EXPR) && sign > 0))
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always false", cst);
+      else
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always true", cst);
+    }
 }
 
 /* The C and C++ parsers both use vectors to hold function arguments.

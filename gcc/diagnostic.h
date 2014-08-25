@@ -105,6 +105,9 @@ struct diagnostic_context
   /* Maximum width of the source line printed.  */
   int caret_max_width;
 
+  /* Character used for caret diagnostics.  */
+  char caret_char;
+
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
   bool show_option_requested;

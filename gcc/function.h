@@ -144,10 +144,10 @@ typedef struct call_site_record_d *call_site_record;
 struct GTY(()) rtl_eh {
   rtx ehr_stackadj;
   rtx ehr_handler;
-  rtx ehr_label;
+  rtx_code_label *ehr_label;
 
   rtx sjlj_fc;
-  rtx sjlj_exit_after;
+  rtx_insn *sjlj_exit_after;
 
   vec<uchar, va_gc> *action_record_data;
 
@@ -286,7 +286,7 @@ struct GTY(()) rtl_data {
   struct frame_space *frame_space_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
-  rtx x_stack_check_probe_note;
+  rtx_note *x_stack_check_probe_note;
 
   /* Location at which to save the argument pointer if it will need to be
      referenced.  There are two cases where this is done: if nonlocal gotos
@@ -303,7 +303,7 @@ struct GTY(()) rtl_data {
   HOST_WIDE_INT x_frame_offset;
 
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
-  rtx x_parm_birth_insn;
+  rtx_insn *x_parm_birth_insn;
 
   /* List of all used temporaries allocated, by level.  */
   vec<temp_slot_p, va_gc> *x_used_temp_slots;

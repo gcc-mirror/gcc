@@ -119,14 +119,14 @@ struct gcc_debug_hooks
 
   /* Called from final_scan_insn for any CODE_LABEL insn whose
      LABEL_NAME is non-null.  */
-  void (* label) (rtx);
+  void (* label) (rtx_code_label *);
 
   /* Called after the start and before the end of writing a PCH file.
      The parameter is 0 if after the start, 1 if before the end.  */
   void (* handle_pch) (unsigned int);
 
   /* Called from final_scan_insn for any NOTE_INSN_VAR_LOCATION note.  */
-  void (* var_location) (rtx);
+  void (* var_location) (rtx_insn *);
 
   /* Called from final_scan_insn if there is a switch between hot and cold
      text sections.  */
@@ -160,8 +160,8 @@ extern void debug_nothing_tree_tree (tree, tree);
 extern void debug_nothing_tree_int (tree, int);
 extern void debug_nothing_tree_tree_tree_bool (tree, tree, tree, bool);
 extern bool debug_true_const_tree (const_tree);
-extern void debug_nothing_rtx (rtx);
-extern void debug_nothing_rtx_rtx (rtx, rtx);
+extern void debug_nothing_rtx_insn (rtx_insn *);
+extern void debug_nothing_rtx_code_label (rtx_code_label *);
 
 /* Hooks for various debug formats.  */
 extern const struct gcc_debug_hooks do_nothing_debug_hooks;

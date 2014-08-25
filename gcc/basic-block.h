@@ -399,7 +399,7 @@ extern unsigned int free_bb_for_insn (void);
 extern void update_bb_for_insn (basic_block);
 
 extern void insert_insn_on_edge (rtx, edge);
-basic_block split_edge_and_insert (edge, rtx);
+basic_block split_edge_and_insert (edge, rtx_insn *);
 
 extern void commit_one_edge_insertion (edge e);
 extern void commit_edge_insertions (void);
@@ -412,7 +412,8 @@ extern void remove_edge_raw (edge);
 extern void redirect_edge_succ (edge, basic_block);
 extern edge redirect_edge_succ_nodup (edge, basic_block);
 extern void redirect_edge_pred (edge, basic_block);
-extern basic_block create_basic_block_structure (rtx, rtx, rtx, basic_block);
+extern basic_block create_basic_block_structure (rtx, rtx, rtx_note *,
+						 basic_block);
 extern void clear_bb_flags (void);
 extern void dump_bb_info (FILE *, basic_block, int, int, bool, bool);
 extern void dump_edge_info (FILE *, edge, int, int);
@@ -801,7 +802,7 @@ extern basic_block * single_pred_before_succ_order (void);
 
 /* In cfgrtl.c  */
 extern rtx block_label (basic_block);
-extern rtx bb_note (basic_block);
+extern rtx_note *bb_note (basic_block);
 extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
 extern bool fixup_abnormal_edges (void);
@@ -820,17 +821,17 @@ enum replace_direction { dir_none, dir_forward, dir_backward, dir_both };
 
 /* In cfgcleanup.c.  */
 extern bool cleanup_cfg (int);
-extern int flow_find_cross_jump (basic_block, basic_block, rtx *, rtx *,
-                                 enum replace_direction*);
+extern int flow_find_cross_jump (basic_block, basic_block, rtx_insn **,
+				 rtx_insn **, enum replace_direction*);
 extern int flow_find_head_matching_sequence (basic_block, basic_block,
-					     rtx *, rtx *, int);
+					     rtx_insn **, rtx_insn **, int);
 
 extern bool delete_unreachable_blocks (void);
 
 extern void update_br_prob_note (basic_block);
 extern bool inside_basic_block_p (const_rtx);
 extern bool control_flow_insn_p (const_rtx);
-extern rtx get_last_bb_insn (basic_block);
+extern rtx_insn *get_last_bb_insn (basic_block);
 
 /* In dominance.c */
 

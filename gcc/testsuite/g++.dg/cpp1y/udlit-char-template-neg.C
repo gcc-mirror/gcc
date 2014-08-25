@@ -1,4 +1,4 @@
-// { dg-do compile { target { c++11 && { ! c++1y } } } }
+// { dg-do compile { target { c++11 && { ! c++14 } } } }
 
 template<typename CharT, CharT... String>
   int

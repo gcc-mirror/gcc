@@ -172,7 +172,7 @@ struct move
      dependencies.  */
   move_t *deps;
   /* First insn generated for the move.  */
-  rtx insn;
+  rtx_insn *insn;
 };
 
 /* Array of moves (indexed by BB index) which should be put at the
@@ -196,7 +196,7 @@ create_move (ira_allocno_t to, ira_allocno_t from)
   move->to = to;
   move->from = from;
   move->next = NULL;
-  move->insn = NULL_RTX;
+  move->insn = NULL;
   move->visited_p = false;
   return move;
 }
@@ -893,12 +893,13 @@ modify_move_list (move_t list)
 
 /* Generate RTX move insns from the move list LIST.  This updates
    allocation cost using move execution frequency FREQ.  */
-static rtx
+static rtx_insn *
 emit_move_list (move_t list, int freq)
 {
   rtx to, from, dest;
   int to_regno, from_regno, cost, regno;
-  rtx result, insn, set;
+  rtx_insn *result, *insn;
+  rtx set;
   enum machine_mode mode;
   enum reg_class aclass;
 
@@ -984,7 +985,7 @@ emit_moves (void)
   basic_block bb;
   edge_iterator ei;
   edge e;
-  rtx insns, tmp;
+  rtx_insn *insns, *tmp;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1234,7 +1235,7 @@ void
 ira_emit (bool loops_p)
 {
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   edge_iterator ei;
   edge e;
   ira_allocno_t a;

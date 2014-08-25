@@ -350,7 +350,9 @@ const pass_data pass_data_early_local_passes =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_remove_functions, /* todo_flags_finish */
+  /* todo_flags_finish is executed before subpases. For this reason
+     it makes no sense to remove unreachable functions here.  */
+  0, /* todo_flags_finish */
 };
 
 class pass_early_local_passes : public simple_ipa_opt_pass
@@ -2119,7 +2121,7 @@ execute_one_pass (opt_pass *pass)
 	      }
 	  }
       if (applied)
-        symtab_remove_unreachable_nodes (true, dump_file);
+        symtab_remove_unreachable_nodes (false, dump_file);
       /* Restore current_pass.  */
       current_pass = pass;
     }

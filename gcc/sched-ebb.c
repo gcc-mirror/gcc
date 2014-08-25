@@ -61,7 +61,7 @@ static const char *ebb_print_insn (const_rtx, int);
 static int rank (rtx, rtx);
 static int ebb_contributes_to_priority (rtx, rtx);
 static basic_block earliest_block_with_similiar_load (basic_block, rtx);
-static void add_deps_for_risky_insns (rtx, rtx);
+static void add_deps_for_risky_insns (rtx_insn *, rtx_insn *);
 static void debug_ebb_dependencies (rtx, rtx);
 
 static void ebb_add_remove_insn (rtx, int);
@@ -338,7 +338,7 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 
   FOR_EACH_DEP (load_insn, SD_LIST_BACK, back_sd_it, back_dep)
     {
-      rtx insn1 = DEP_PRO (back_dep);
+      rtx_insn *insn1 = DEP_PRO (back_dep);
 
       if (DEP_TYPE (back_dep) == REG_DEP_TRUE)
 	/* Found a DEF-USE dependence (insn1, load_insn).  */
@@ -348,7 +348,7 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 
 	  FOR_EACH_DEP (insn1, SD_LIST_FORW, fore_sd_it, fore_dep)
 	    {
-	      rtx insn2 = DEP_CON (fore_dep);
+	      rtx_insn *insn2 = DEP_CON (fore_dep);
 	      basic_block insn2_block = BLOCK_FOR_INSN (insn2);
 
 	      if (DEP_TYPE (fore_dep) == REG_DEP_TRUE)
@@ -381,12 +381,12 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
    insns in given ebb.  */
 
 static void
-add_deps_for_risky_insns (rtx head, rtx tail)
+add_deps_for_risky_insns (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn, prev;
+  rtx_insn *insn, *prev;
   int classification;
-  rtx last_jump = NULL_RTX;
-  rtx next_tail = NEXT_INSN (tail);
+  rtx_insn *last_jump = NULL;
+  rtx_insn *next_tail = NEXT_INSN (tail);
   basic_block last_block = NULL, bb;
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
@@ -477,7 +477,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
    NULL_RTX.  */
 
 basic_block
-schedule_ebb (rtx head, rtx tail, bool modulo_scheduling)
+schedule_ebb (rtx_insn *head, rtx_insn *tail, bool modulo_scheduling)
 {
   basic_block first_bb, target_bb;
   struct deps_desc tmp_deps;
@@ -621,7 +621,7 @@ schedule_ebbs (void)
 {
   basic_block bb;
   int probability_cutoff;
-  rtx tail;
+  rtx_insn *tail;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -639,7 +639,7 @@ schedule_ebbs (void)
   /* Schedule every region in the subroutine.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx head = BB_HEAD (bb);
+      rtx_insn *head = BB_HEAD (bb);
 
       if (bb->flags & BB_DISABLE_SCHEDULE)
 	continue;

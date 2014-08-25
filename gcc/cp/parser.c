@@ -4970,10 +4970,10 @@ cp_parser_unqualified_id (cp_parser* parser,
 	/* ~auto means the destructor of whatever the object is.  */
 	if (cp_parser_is_keyword (token, RID_AUTO))
 	  {
-	    if (cxx_dialect < cxx1y)
+	    if (cxx_dialect < cxx14)
 	      pedwarn (input_location, 0,
 		       "%<~auto%> only available with "
-		       "-std=c++1y or -std=gnu++1y");
+		       "-std=c++14 or -std=gnu++14");
 	    cp_lexer_consume_token (parser->lexer);
 	    return build_nt (BIT_NOT_EXPR, make_auto ());
 	  }
@@ -6895,10 +6895,10 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
       && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_AUTO)
       && !type_dependent_expression_p (object))
     {
-      if (cxx_dialect < cxx1y)
+      if (cxx_dialect < cxx14)
 	pedwarn (input_location, 0,
 		 "%<~auto%> only available with "
-		 "-std=c++1y or -std=gnu++1y");
+		 "-std=c++14 or -std=gnu++14");
       cp_lexer_consume_token (parser->lexer);
       cp_lexer_consume_token (parser->lexer);
       *scope = NULL_TREE;
@@ -8020,13 +8020,12 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
   enum tree_code rhs_type;
   enum cp_parser_prec new_prec, lookahead_prec;
   tree overload;
-  bool parenthesized_not_lhs_warn
-    = cp_lexer_next_token_is (parser->lexer, CPP_NOT);
 
   /* Parse the first expression.  */
+  current.lhs_type = (cp_lexer_next_token_is (parser->lexer, CPP_NOT)
+		      ? TRUTH_NOT_EXPR : ERROR_MARK);
   current.lhs = cp_parser_cast_expression (parser, /*address_p=*/false,
 					   cast_p, decltype_p, pidk);
-  current.lhs_type = ERROR_MARK;
   current.prec = prec;
 
   if (cp_parser_error_occurred (parser))
@@ -8081,8 +8080,9 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
+      rhs_type = (cp_lexer_next_token_is (parser->lexer, CPP_NOT)
+		  ? TRUTH_NOT_EXPR : ERROR_MARK);
       rhs = cp_parser_simple_cast_expression (parser);
-      rhs_type = ERROR_MARK;
 
       /* Get another operator token.  Look up its precedence to avoid
 	 building a useless (immediately popped) stack entry for common
@@ -8125,9 +8125,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
 
       if (warn_logical_not_paren
-	  && parenthesized_not_lhs_warn)
-	warn_logical_not_parentheses (current.loc, current.tree_type,
-				      TREE_OPERAND (current.lhs, 0), rhs);
+	  && current.lhs_type == TRUTH_NOT_EXPR)
+	warn_logical_not_parentheses (current.loc, current.tree_type, rhs);
 
       overload = NULL;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==
@@ -9059,10 +9058,10 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	{
 	  bool direct, non_constant;
 	  /* An explicit initializer exists.  */
-	  if (cxx_dialect < cxx1y)
+	  if (cxx_dialect < cxx14)
 	    pedwarn (input_location, 0,
 		     "lambda capture initializers "
-		     "only available with -std=c++1y or -std=gnu++1y");
+		     "only available with -std=c++14 or -std=gnu++14");
 	  capture_init_expr = cp_parser_initializer (parser, &direct,
 						     &non_constant);
 	  explicit_init_p = true;
@@ -9185,10 +9184,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
      an opening angle if present.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
-      if (cxx_dialect < cxx1y)
+      if (cxx_dialect < cxx14)
 	pedwarn (parser->lexer->next_token->location, 0,
 		 "lambda templates are only available with "
-		 "-std=c++1y or -std=gnu++1y");
+		 "-std=c++14 or -std=gnu++14");
 
       cp_lexer_consume_token (parser->lexer);
 
@@ -12163,7 +12162,7 @@ cp_parser_decltype (cp_parser *parser)
     return error_mark_node;
 
   /* decltype (auto) */
-  if (cxx_dialect >= cxx1y
+  if (cxx_dialect >= cxx14
       && cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
     {
       cp_lexer_consume_token (parser->lexer);
@@ -12346,7 +12345,7 @@ cp_parser_conversion_type_id (cp_parser* parser)
   if (! cp_parser_uncommitted_to_tentative_parse_p (parser)
       && type_uses_auto (type_specified))
     {
-      if (cxx_dialect < cxx1y)
+      if (cxx_dialect < cxx14)
 	{
 	  error ("invalid use of %<auto%> in conversion operator");
 	  return error_mark_node;
@@ -14711,17 +14710,17 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
 	  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
 	    {
-	      if (cxx_dialect < cxx1y)
+	      if (cxx_dialect < cxx14)
 		pedwarn (location_of (type), 0,
 			 "use of %<auto%> in lambda parameter declaration "
 			 "only available with "
-			 "-std=c++1y or -std=gnu++1y");
+			 "-std=c++14 or -std=gnu++14");
 	    }
-	  else if (cxx_dialect < cxx1y)
+	  else if (cxx_dialect < cxx14)
 	    pedwarn (location_of (type), 0,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with "
-		     "-std=c++1y or -std=gnu++1y");
+		     "-std=c++14 or -std=gnu++14");
 	  else
 	    pedwarn (location_of (type), OPT_Wpedantic,
 		     "ISO C++ forbids use of %<auto%> in parameter "
@@ -16780,6 +16779,8 @@ cp_parser_init_declarator (cp_parser* parser,
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
 
+  bool bogus_implicit_tmpl = false;
+
   if (function_declarator_p (declarator))
     {
       /* Check to see if the token indicates the start of a
@@ -16831,6 +16832,19 @@ cp_parser_init_declarator (cp_parser* parser,
 
 	  return decl;
 	}
+    }
+  else if (parser->fully_implicit_function_template_p)
+    {
+      /* A non-template declaration involving a function parameter list
+	 containing an implicit template parameter will be made into a
+	 template.  If the resulting declaration is not going to be an
+	 actual function then finish the template scope here to prevent it.
+	 An error message will be issued once we have a decl to talk about.
+
+         FIXME probably we should do type deduction rather than create an
+         implicit template, but the standard currently doesn't allow it. */
+      bogus_implicit_tmpl = true;
+      finish_fully_implicit_template (parser, NULL_TREE);
     }
 
   /* [dcl.dcl]
@@ -16997,21 +17011,10 @@ cp_parser_init_declarator (cp_parser* parser,
       warning (OPT_Wattributes,
 	       "attributes after parenthesized initializer ignored");
 
-  /* A non-template declaration involving a function parameter list containing
-     an implicit template parameter will have been made into a template.  If it
-     turns out that the resulting declaration is not an actual function then
-     finish the template declaration here.  An error message will already have
-     been issued.  */
-  if (parser->fully_implicit_function_template_p)
-    if (!function_declarator_p (declarator))
-      {
-	if (pushed_scope)
-	  {
-	    pop_scope (pushed_scope);
-	    pushed_scope = 0;
-	  }
-	finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
-      }
+  /* And now complain about a non-function implicit template.  */
+  if (bogus_implicit_tmpl)
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "non-function %qD declared as implicit template", decl);
 
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */
@@ -18212,7 +18215,7 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
   if (type_specifier_seq.type
       /* None of the valid uses of 'auto' in C++14 involve the type-id
 	 nonterminal, but it is valid in a trailing-return-type.  */
-      && !(cxx_dialect >= cxx1y && is_trailing_return)
+      && !(cxx_dialect >= cxx14 && is_trailing_return)
       && type_uses_auto (type_specifier_seq.type))
     {
       /* A type-id with type 'auto' is only ok if the abstract declarator
@@ -18245,7 +18248,7 @@ static tree cp_parser_template_type_arg (cp_parser *parser)
     = G_("types may not be defined in template arguments");
   r = cp_parser_type_id_1 (parser, true, false);
   parser->type_definition_forbidden_message = saved_message;
-  if (cxx_dialect >= cxx1y && type_uses_auto (r))
+  if (cxx_dialect >= cxx14 && type_uses_auto (r))
     {
       error ("invalid use of %<auto%> in template argument");
       r = error_mark_node;
@@ -22101,7 +22104,7 @@ cp_parser_std_attribute (cp_parser *parser)
       if (is_attribute_p ("noreturn", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
       /* C++14 deprecated attribute is equivalent to GNU's.  */
-      else if (cxx_dialect >= cxx1y && is_attribute_p ("deprecated", attr_id))
+      else if (cxx_dialect >= cxx14 && is_attribute_p ("deprecated", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
     }
 
@@ -23314,7 +23317,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 		ok = false;
 	    }
-	  else if (num_parms == 2 && cxx_dialect >= cxx1y)
+	  else if (num_parms == 2 && cxx_dialect >= cxx14)
 	    {
 	      tree parm_type = TREE_VEC_ELT (parameter_list, 0);
 	      tree type = INNERMOST_TEMPLATE_PARMS (parm_type);
@@ -23329,7 +23332,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 	}
       if (!ok)
 	{
-	  if (cxx_dialect >= cxx1y)
+	  if (cxx_dialect >= cxx14)
 	    error ("literal operator template %qD has invalid parameter list."
 		   "  Expected non-type template argument pack <char...>"
 		   " or <typename CharT, CharT...>",

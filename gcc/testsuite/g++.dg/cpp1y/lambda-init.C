@@ -1,5 +1,5 @@
-// Test for the explicit initializer extension of C++1y
-// { dg-do compile { target c++1y } }
+// Test for the explicit initializer extension of C++14
+// { dg-do compile { target c++14 } }
 
 int main()
 {

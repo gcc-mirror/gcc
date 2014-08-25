@@ -302,7 +302,7 @@ get_elimination (rtx reg)
    If we make full substitution to SP for non-null INSN, add the insn
    sp offset.  */
 rtx
-lra_eliminate_regs_1 (rtx insn, rtx x, enum machine_mode mem_mode,
+lra_eliminate_regs_1 (rtx_insn *insn, rtx x, enum machine_mode mem_mode,
 		      bool subst_p, bool update_p, bool full_p)
 {
   enum rtx_code code = GET_CODE (x);
@@ -657,7 +657,7 @@ rtx
 lra_eliminate_regs (rtx x, enum machine_mode mem_mode,
 		    rtx insn ATTRIBUTE_UNUSED)
 {
-  return lra_eliminate_regs_1 (NULL_RTX, x, mem_mode, true, false, true);
+  return lra_eliminate_regs_1 (NULL, x, mem_mode, true, false, true);
 }
 
 /* Stack pointer offset before the current insn relative to one at the
@@ -848,7 +848,7 @@ remove_reg_equal_offset_note (rtx insn, rtx what)
    previously used) in future.  */
 
 static void
-eliminate_regs_in_insn (rtx insn, bool replace_p, bool first_p)
+eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p)
 {
   int icode = recog_memoized (insn);
   rtx old_set = single_set (insn);
@@ -1086,7 +1086,7 @@ spill_pseudos (HARD_REG_SET set)
 {
   int i;
   bitmap_head to_process;
-  rtx insn;
+  rtx_insn *insn;
 
   if (hard_reg_set_empty_p (set))
     return;
@@ -1290,7 +1290,7 @@ init_elimination (void)
 {
   bool stop_to_sp_elimination_p;
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
   struct elim_table *ep;
 
   init_elim_table ();
@@ -1339,7 +1339,7 @@ lra_eliminate_reg_if_possible (rtx *loc)
    the insn for subsequent processing in the constraint pass, update
    the insn info.  */
 static void
-process_insn_for_elimination (rtx insn, bool final_p, bool first_p)
+process_insn_for_elimination (rtx_insn *insn, bool final_p, bool first_p)
 {
   eliminate_regs_in_insn (insn, final_p, first_p);
   if (! final_p)

@@ -174,7 +174,7 @@ num_loop_insns (const struct loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, ninsns = 0;
-  rtx insn;
+  rtx_insn *insn;
 
   bbs = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
@@ -198,7 +198,7 @@ average_num_loop_insns (const struct loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, binsns, ninsns, ratio;
-  rtx insn;
+  rtx_insn *insn;
 
   ninsns = 0;
   bbs = get_loop_body (loop);
@@ -305,7 +305,7 @@ get_loop_level (const struct loop *loop)
 /* Returns estimate on cost of computing SEQ.  */
 
 static unsigned
-seq_cost (const_rtx seq, bool speed)
+seq_cost (const rtx_insn *seq, bool speed)
 {
   unsigned cost = 0;
   rtx set;
@@ -328,7 +328,7 @@ void
 init_set_costs (void)
 {
   int speed;
-  rtx seq;
+  rtx_insn *seq;
   rtx reg1 = gen_raw_REG (SImode, FIRST_PSEUDO_REGISTER);
   rtx reg2 = gen_raw_REG (SImode, FIRST_PSEUDO_REGISTER + 1);
   rtx addr = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER + 2);

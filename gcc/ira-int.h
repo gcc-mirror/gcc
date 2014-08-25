@@ -571,7 +571,7 @@ struct ira_allocno_copy
      for the copy created to remove register shuffle is NULL.  In last
      case the copy frequency is smaller than the corresponding insn
      execution frequency.  */
-  rtx insn;
+  rtx_insn *insn;
   /* All copies with the same allocno as FIRST are linked by the two
      following members.  */
   ira_copy_t prev_first_allocno_copy, next_first_allocno_copy;
@@ -1009,9 +1009,11 @@ extern void ira_add_allocno_pref (ira_allocno_t, int, int);
 extern void ira_remove_pref (ira_pref_t);
 extern void ira_remove_allocno_prefs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
-				   int, bool, rtx, ira_loop_tree_node_t);
+				   int, bool, rtx_insn *,
+				   ira_loop_tree_node_t);
 extern ira_copy_t ira_add_allocno_copy (ira_allocno_t, ira_allocno_t, int,
-					bool, rtx, ira_loop_tree_node_t);
+					bool, rtx_insn *,
+					ira_loop_tree_node_t);
 
 extern int *ira_allocate_cost_vector (reg_class_t);
 extern void ira_free_cost_vector (int *, reg_class_t);

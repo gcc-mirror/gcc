@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2"  } */
+/* { dg-options "-O2 -fdump-tree-ccp1"  } */
 class SnmpSyntax
 {
 public:
@@ -27,4 +27,5 @@ void fn1 ()
         c.m_fn1 ();
       }
 }
-// Devirtualization to A::m_fn1 would be possible, but we can not do it at the moment
+/* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "ccp1"  } } */
+/* { dg-final { cleanup-tree-dump "ccp1" } } */

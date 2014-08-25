@@ -285,7 +285,7 @@ struct insn_chain
   struct insn_chain *next_need_reload;
 
   /* The rtx of the insn.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* The basic block this insn is in.  */
   int block;
@@ -364,7 +364,7 @@ extern int safe_from_earlyclobber (rtx, rtx);
 /* Search the body of INSN for values that need reloading and record them
    with push_reload.  REPLACE nonzero means record also where the values occur
    so that subst_reloads can be used.  */
-extern int find_reloads (rtx, int, int, int, short *);
+extern int find_reloads (rtx_insn *, int, int, int, short *);
 
 /* Compute the sum of X and Y, making canonicalizations assumed in an
    address, namely: sum constant integers, surround the sum of two
@@ -374,7 +374,7 @@ extern rtx form_sum (enum machine_mode, rtx, rtx);
 
 /* Substitute into the current INSN the registers into which we have reloaded
    the things that need reloading.  */
-extern void subst_reloads (rtx);
+extern void subst_reloads (rtx_insn *);
 
 /* Make a copy of any replacements being done into X and move those copies
    to locations in Y, a copy of X.  We only look at the highest level of
@@ -393,11 +393,11 @@ extern int reg_overlap_mentioned_for_reload_p (rtx, rtx);
 
 /* Check the insns before INSN to see if there is a suitable register
    containing the same value as GOAL.  */
-extern rtx find_equiv_reg (rtx, rtx, enum reg_class, int, short *,
+extern rtx find_equiv_reg (rtx, rtx_insn *, enum reg_class, int, short *,
 			   int, enum machine_mode);
 
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.  */
-extern int regno_clobbered_p (unsigned int, rtx, enum machine_mode, int);
+extern int regno_clobbered_p (unsigned int, rtx_insn *, enum machine_mode, int);
 
 /* Return 1 if X is an operand of an insn that is being earlyclobbered.  */
 extern int earlyclobber_operand_p (rtx);
@@ -413,7 +413,7 @@ extern int push_reload (rtx, rtx, rtx *, rtx *, enum reg_class,
 extern void init_reload (void);
 
 /* The reload pass itself.  */
-extern bool reload (rtx, int);
+extern bool reload (rtx_insn *, int);
 
 /* Mark the slots in regs_ever_live for the hard regs
    used by pseudo-reg number REGNO.  */

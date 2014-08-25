@@ -101,17 +101,20 @@ extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern bool ptr_deref_may_alias_global_p (tree);
 extern bool ptr_derefs_may_alias_p (tree, tree);
 extern bool ref_may_alias_global_p (tree);
+extern bool ref_may_alias_global_p (ao_ref *);
 extern bool refs_may_alias_p (tree, tree);
 extern bool refs_may_alias_p_1 (ao_ref *, ao_ref *, bool);
 extern bool refs_anti_dependent_p (tree, tree);
 extern bool refs_output_dependent_p (tree, tree);
 extern bool ref_maybe_used_by_stmt_p (gimple, tree);
+extern bool ref_maybe_used_by_stmt_p (gimple, ao_ref *);
 extern bool stmt_may_clobber_global_p (gimple);
 extern bool stmt_may_clobber_ref_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p_1 (gimple, ao_ref *);
 extern bool call_may_clobber_ref_p (gimple, tree);
 extern bool call_may_clobber_ref_p_1 (gimple, ao_ref *);
 extern bool stmt_kills_ref_p (gimple, tree);
+extern bool stmt_kills_ref_p (gimple, ao_ref *);
 extern tree get_continuation_for_phi (gimple, ao_ref *,
 				      unsigned int *, bitmap *, bool,
 				      void *(*)(ao_ref *, tree, void *, bool),

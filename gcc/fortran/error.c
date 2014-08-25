@@ -987,38 +987,69 @@ gfc_diagnostic_build_prefix (diagnostic_context *context,
 				diagnostic_kind_color[diagnostic->kind]);
       text_ce = colorize_stop (pp_show_color (pp));
     }
+  return build_message_string ("%s%s%s: ", text_cs, text, text_ce);
+}
+
+/* Return a malloc'd string describing a location.  The caller is
+   responsible for freeing the memory.  */
+static char *
+gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
+				   const diagnostic_info *diagnostic)
+{
+  pretty_printer *pp = context->printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
-
   expanded_location s = expand_location_to_spelling_point (diagnostic->location);
   if (diagnostic->override_column)
     s.column = diagnostic->override_column;
 
   return (s.file == NULL
-	  ? build_message_string ("%s%s:%s %s%s%s: ", locus_cs, progname, locus_ce,
-				  text_cs, text, text_ce)
+	  ? build_message_string ("%s%s:%s ", locus_cs, progname, locus_ce )
 	  : !strcmp (s.file, N_("<built-in>"))
-	  ? build_message_string ("%s%s:%s %s%s%s: ", locus_cs, s.file, locus_ce,
-			     text_cs, text, text_ce)
+	  ? build_message_string ("%s%s:%s ", locus_cs, s.file, locus_ce)
 	  : context->show_column
-	  ? build_message_string ("%s%s:%d:%d:%s %s%s%s: ", locus_cs, s.file, s.line,
-				  s.column, locus_ce, text_cs, text, text_ce)
-	  : build_message_string ("%s%s:%d:%s %s%s%s: ", locus_cs, s.file, s.line, locus_ce,
-				  text_cs, text, text_ce));
+	  ? build_message_string ("%s%s:%d:%d:%s ", locus_cs, s.file, s.line,
+				  s.column, locus_ce)
+	  : build_message_string ("%s%s:%d:%s ", locus_cs, s.file, s.line, locus_ce));
 }
 
 static void
 gfc_diagnostic_starter (diagnostic_context *context,
 			diagnostic_info *diagnostic)
 {
-  pp_set_prefix (context->printer, gfc_diagnostic_build_prefix (context,
-								diagnostic));
+  char * locus_prefix = gfc_diagnostic_build_locus_prefix (context, diagnostic);
+  char * prefix = gfc_diagnostic_build_prefix (context, diagnostic);
+  /* First we assume there is a caret line.  */
+  pp_set_prefix (context->printer, NULL);
+  if (pp_needs_newline (context->printer))
+    pp_newline (context->printer);
+  pp_verbatim (context->printer, locus_prefix);
+  /* Fortran uses an empty line between locus and caret line.  */
+  pp_newline (context->printer);
+  diagnostic_show_locus (context, diagnostic);
+  if (pp_needs_newline (context->printer))
+    {
+      pp_newline (context->printer);
+      /* If the caret line was shown, the prefix does not contain the
+	 locus. */
+      pp_set_prefix (context->printer, prefix);
+    }
+  else 
+    {
+      /* Otherwise, start again.  */
+      pp_clear_output_area(context->printer);
+      pp_set_prefix (context->printer, concat (locus_prefix, prefix, NULL));
+      free (prefix);
+    }
+  free (locus_prefix);
 }
 
 static void
-gfc_diagnostic_finalizer (diagnostic_context *context ATTRIBUTE_UNUSED,
+gfc_diagnostic_finalizer (diagnostic_context *context,
 			  diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
 {
+  pp_destroy_prefix (context->printer);
+  pp_newline_and_flush (context->printer);
 }
 
 /* Give a warning about the command-line.  */
@@ -1290,4 +1321,5 @@ gfc_diagnostics_init (void)
 {
   diagnostic_starter (global_dc) = gfc_diagnostic_starter;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
+  global_dc->caret_char = '^';
 }

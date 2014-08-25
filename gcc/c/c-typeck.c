@@ -3474,7 +3474,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
   if (warn_logical_not_paren
       && code1 == TRUTH_NOT_EXPR
       && code2 != TRUTH_NOT_EXPR)
-    warn_logical_not_parentheses (location, code, arg1.value, arg2.value);
+    warn_logical_not_parentheses (location, code, arg2.value);
 
   /* Warn about comparisons against string literals, with the exception
      of testing for equality or inequality of a string literal with NULL.  */
@@ -10985,6 +10985,11 @@ build_binary_op (location_t location, enum tree_code code,
 	  result_type = type1;
 	  pedwarn (location, 0, "comparison between pointer and integer");
 	}
+      if ((TREE_CODE (TREE_TYPE (orig_op0)) == BOOLEAN_TYPE
+	   || truth_value_p (TREE_CODE (orig_op0)))
+	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE
+	     || truth_value_p (TREE_CODE (orig_op1))))
+	maybe_warn_bool_compare (location, code, orig_op0, orig_op1);
       break;
 
     case LE_EXPR:
@@ -11119,6 +11124,11 @@ build_binary_op (location_t location, enum tree_code code,
 	  result_type = type1;
 	  pedwarn (location, 0, "comparison between pointer and integer");
 	}
+      if ((TREE_CODE (TREE_TYPE (orig_op0)) == BOOLEAN_TYPE
+	   || truth_value_p (TREE_CODE (orig_op0)))
+	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE
+	     || truth_value_p (TREE_CODE (orig_op1))))
+	maybe_warn_bool_compare (location, code, orig_op0, orig_op1);
       break;
 
     default:

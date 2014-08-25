@@ -927,8 +927,8 @@ sd_find_dep_between (rtx pro, rtx con, bool resolved_p)
 static enum DEPS_ADJUST_RESULT
 maybe_add_or_update_dep_1 (dep_t dep, bool resolved_p, rtx mem1, rtx mem2)
 {
-  rtx elem = DEP_PRO (dep);
-  rtx insn = DEP_CON (dep);
+  rtx_insn *elem = DEP_PRO (dep);
+  rtx_insn *insn = DEP_CON (dep);
 
   gcc_assert (INSN_P (insn) && INSN_P (elem));
 
@@ -1118,8 +1118,8 @@ change_spec_dep_to_hard (sd_iterator_def sd_it)
   dep_node_t node = DEP_LINK_NODE (*sd_it.linkp);
   dep_link_t link = DEP_NODE_BACK (node);
   dep_t dep = DEP_NODE_DEP (node);
-  rtx elem = DEP_PRO (dep);
-  rtx insn = DEP_CON (dep);
+  rtx_insn *elem = DEP_PRO (dep);
+  rtx_insn *insn = DEP_CON (dep);
 
   move_dep_link (link, INSN_SPEC_BACK_DEPS (insn), INSN_HARD_BACK_DEPS (insn));
 
@@ -1296,7 +1296,7 @@ get_back_and_forw_lists (dep_t dep, bool resolved_p,
 			 deps_list_t *back_list_ptr,
 			 deps_list_t *forw_list_ptr)
 {
-  rtx con = DEP_CON (dep);
+  rtx_insn *con = DEP_CON (dep);
 
   if (!resolved_p)
     {
@@ -1322,8 +1322,8 @@ sd_add_dep (dep_t dep, bool resolved_p)
   dep_node_t n = create_dep_node ();
   deps_list_t con_back_deps;
   deps_list_t pro_forw_deps;
-  rtx elem = DEP_PRO (dep);
-  rtx insn = DEP_CON (dep);
+  rtx_insn *elem = DEP_PRO (dep);
+  rtx_insn *insn = DEP_CON (dep);
 
   gcc_assert (INSN_P (insn) && INSN_P (elem) && insn != elem);
 
@@ -1365,8 +1365,8 @@ sd_resolve_dep (sd_iterator_def sd_it)
 {
   dep_node_t node = DEP_LINK_NODE (*sd_it.linkp);
   dep_t dep = DEP_NODE_DEP (node);
-  rtx pro = DEP_PRO (dep);
-  rtx con = DEP_CON (dep);
+  rtx_insn *pro = DEP_PRO (dep);
+  rtx_insn *con = DEP_CON (dep);
 
   if (dep_spec_p (dep))
     move_dep_link (DEP_NODE_BACK (node), INSN_SPEC_BACK_DEPS (con),
@@ -1386,8 +1386,8 @@ sd_unresolve_dep (sd_iterator_def sd_it)
 {
   dep_node_t node = DEP_LINK_NODE (*sd_it.linkp);
   dep_t dep = DEP_NODE_DEP (node);
-  rtx pro = DEP_PRO (dep);
-  rtx con = DEP_CON (dep);
+  rtx_insn *pro = DEP_PRO (dep);
+  rtx_insn *con = DEP_CON (dep);
 
   if (dep_spec_p (dep))
     move_dep_link (DEP_NODE_BACK (node), INSN_RESOLVED_BACK_DEPS (con),
@@ -1428,8 +1428,8 @@ sd_delete_dep (sd_iterator_def sd_it)
 {
   dep_node_t n = DEP_LINK_NODE (*sd_it.linkp);
   dep_t dep = DEP_NODE_DEP (n);
-  rtx pro = DEP_PRO (dep);
-  rtx con = DEP_CON (dep);
+  rtx_insn *pro = DEP_PRO (dep);
+  rtx_insn *con = DEP_CON (dep);
   deps_list_t con_back_deps;
   deps_list_t pro_forw_deps;
 
@@ -1670,7 +1670,7 @@ chain_to_prev_insn (rtx insn)
   FOR_EACH_DEP (insn, SD_LIST_BACK, sd_it, dep)
     {
       rtx i = insn;
-      rtx pro = DEP_PRO (dep);
+      rtx_insn *pro = DEP_PRO (dep);
 
       do
 	{
@@ -4725,8 +4725,8 @@ find_inc (struct mem_inc_info *mii, bool backwards)
   while (sd_iterator_cond (&sd_it, &dep))
     {
       dep_node_t node = DEP_LINK_NODE (*sd_it.linkp);
-      rtx pro = DEP_PRO (dep);
-      rtx con = DEP_CON (dep);
+      rtx_insn *pro = DEP_PRO (dep);
+      rtx_insn *con = DEP_CON (dep);
       rtx inc_cand = backwards ? pro : con;
       if (DEP_NONREG (dep) || DEP_MULTIPLE (dep))
 	goto next;

@@ -1,3 +1,21 @@
+2014-08-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62199
+	* c-typeck.c (parser_build_binary_op): Adjust call to
+	warn_logical_not_parentheses.
+
+2014-08-22  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR other/62008
+	* c-parser.c (c_parser_array_notation): Check for correct
+	type of an array added.
+
+2014-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/62153
+	* c-typeck.c (build_binary_op): If either operand of a comparison
+	is a boolean expression, call maybe_warn_bool_compare.
+
 2014-08-19  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/45584

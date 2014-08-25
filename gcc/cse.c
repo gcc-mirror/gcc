@@ -241,7 +241,7 @@ static int next_qty;
 struct qty_table_elem
 {
   rtx const_rtx;
-  rtx const_insn;
+  rtx_insn *const_insn;
   rtx comparison_const;
   int comparison_qty;
   unsigned int first_reg, last_reg;
@@ -258,7 +258,7 @@ static struct qty_table_elem *qty_table;
    cse_change_cc_mode.  */
 struct change_cc_mode_args
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx newreg;
 };
 
@@ -278,7 +278,7 @@ static enum machine_mode this_insn_cc0_mode, prev_insn_cc0_mode;
 
 /* Insn being scanned.  */
 
-static rtx this_insn;
+static rtx_insn *this_insn;
 static bool optimize_this_for_speed_p;
 
 /* Index by register number, gives the number of the next (or
@@ -582,19 +582,19 @@ static inline unsigned canon_hash (rtx, enum machine_mode);
 static inline unsigned safe_hash (rtx, enum machine_mode);
 static inline unsigned hash_rtx_string (const char *);
 
-static rtx canon_reg (rtx, rtx);
+static rtx canon_reg (rtx, rtx_insn *);
 static enum rtx_code find_comparison_args (enum rtx_code, rtx *, rtx *,
 					   enum machine_mode *,
 					   enum machine_mode *);
-static rtx fold_rtx (rtx, rtx);
+static rtx fold_rtx (rtx, rtx_insn *);
 static rtx equiv_constant (rtx);
-static void record_jump_equiv (rtx, bool);
+static void record_jump_equiv (rtx_insn *, bool);
 static void record_jump_cond (enum rtx_code, enum machine_mode, rtx, rtx,
 			      int);
-static void cse_insn (rtx);
+static void cse_insn (rtx_insn *);
 static void cse_prescan_path (struct cse_basic_block_data *);
-static void invalidate_from_clobbers (rtx);
-static void invalidate_from_sets_and_clobbers (rtx);
+static void invalidate_from_clobbers (rtx_insn *);
+static void invalidate_from_sets_and_clobbers (rtx_insn *);
 static rtx cse_process_notes (rtx, rtx, bool *);
 static void cse_extended_basic_block (struct cse_basic_block_data *);
 static int check_for_label_ref (rtx *, void *);
@@ -604,11 +604,11 @@ static struct cse_reg_info * get_cse_reg_info (unsigned int regno);
 static int check_dependence (rtx *, void *);
 
 static void flush_hash_table (void);
-static bool insn_live_p (rtx, int *);
-static bool set_live_p (rtx, rtx, int *);
+static bool insn_live_p (rtx_insn *, int *);
+static bool set_live_p (rtx, rtx_insn *, int *);
 static int cse_change_cc_mode (rtx *, void *);
-static void cse_change_cc_mode_insn (rtx, rtx);
-static void cse_change_cc_mode_insns (rtx, rtx, rtx);
+static void cse_change_cc_mode_insn (rtx_insn *, rtx);
+static void cse_change_cc_mode_insns (rtx_insn *, rtx_insn *, rtx);
 static enum machine_mode cse_cc_succs (basic_block, basic_block, rtx, rtx,
 				       bool);
 
@@ -904,7 +904,7 @@ make_new_qty (unsigned int reg, enum machine_mode mode)
   ent->first_reg = reg;
   ent->last_reg = reg;
   ent->mode = mode;
-  ent->const_rtx = ent->const_insn = NULL_RTX;
+  ent->const_rtx = ent->const_insn = NULL;
   ent->comparison_code = UNKNOWN;
 
   eqv = &reg_eqv_table[reg];
@@ -2801,7 +2801,7 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
    the result if necessary.  INSN is as for canon_reg.  */
 
 static void
-validate_canon_reg (rtx *xloc, rtx insn)
+validate_canon_reg (rtx *xloc, rtx_insn *insn)
 {
   if (*xloc)
     {
@@ -2825,7 +2825,7 @@ validate_canon_reg (rtx *xloc, rtx insn)
    generally be discarded since the changes we are making are optional.  */
 
 static rtx
-canon_reg (rtx x, rtx insn)
+canon_reg (rtx x, rtx_insn *insn)
 {
   int i;
   enum rtx_code code;
@@ -3104,7 +3104,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
    of X before modifying it.  */
 
 static rtx
-fold_rtx (rtx x, rtx insn)
+fold_rtx (rtx x, rtx_insn *insn)
 {
   enum rtx_code code;
   enum machine_mode mode;
@@ -3580,7 +3580,7 @@ fold_rtx (rtx x, rtx insn)
 		for (p = p->first_same_value; p; p = p->next_same_value)
 		  if (REG_P (p->exp))
 		    return simplify_gen_binary (MINUS, mode, folded_arg0,
-						canon_reg (p->exp, NULL_RTX));
+						canon_reg (p->exp, NULL));
 	    }
 	  goto from_plus;
 
@@ -3593,7 +3593,7 @@ fold_rtx (rtx x, rtx insn)
 	      if (y && CONST_INT_P (XEXP (y, 1)))
 		return fold_rtx (plus_constant (mode, copy_rtx (y),
 						-INTVAL (const_arg1)),
-				 NULL_RTX);
+				 NULL);
 	    }
 
 	  /* Fall through.  */
@@ -3858,7 +3858,7 @@ equiv_constant (rtx x)
    comparison is seen later, we will know its value.  */
 
 static void
-record_jump_equiv (rtx insn, bool taken)
+record_jump_equiv (rtx_insn *insn, bool taken)
 {
   int cond_known_true;
   rtx op0, op1;
@@ -4185,7 +4185,7 @@ struct set
    This is the last transformation that cse_insn will try to do.  */
 
 static void
-try_back_substitute_reg (rtx set, rtx insn)
+try_back_substitute_reg (rtx set, rtx_insn *insn)
 {
   rtx dest = SET_DEST (set);
   rtx src = SET_SRC (set);
@@ -4201,8 +4201,8 @@ try_back_substitute_reg (rtx set, rtx insn)
 	{
 	  /* Scan for the previous nonnote insn, but stop at a basic
 	     block boundary.  */
-	  rtx prev = insn;
-	  rtx bb_head = BB_HEAD (BLOCK_FOR_INSN (insn));
+	  rtx_insn *prev = insn;
+	  rtx_insn *bb_head = BB_HEAD (BLOCK_FOR_INSN (insn));
 	  do
 	    {
 	      prev = PREV_INSN (prev);
@@ -4249,7 +4249,7 @@ try_back_substitute_reg (rtx set, rtx insn)
 /* Record all the SETs in this instruction into SETS_PTR,
    and return the number of recorded sets.  */
 static int
-find_sets_in_insn (rtx insn, struct set **psets)
+find_sets_in_insn (rtx_insn *insn, struct set **psets)
 {
   struct set *sets = *psets;
   int n_sets = 0;
@@ -4331,7 +4331,7 @@ find_sets_in_insn (rtx insn, struct set **psets)
    see canon_reg.  */
 
 static void
-canonicalize_insn (rtx insn, struct set **psets, int n_sets)
+canonicalize_insn (rtx_insn *insn, struct set **psets, int n_sets)
 {
   struct set *sets = *psets;
   rtx tem;
@@ -4487,7 +4487,7 @@ canonicalize_insn (rtx insn, struct set **psets, int n_sets)
    of available values.  */
 
 static void
-cse_insn (rtx insn)
+cse_insn (rtx_insn *insn)
 {
   rtx x = PATTERN (insn);
   int i;
@@ -5481,7 +5481,7 @@ cse_insn (rtx insn)
 		}
 
 	      delete_insn_and_edges (insn);
-	      insn = new_rtx;
+	      insn = as_a <rtx_insn *> (new_rtx);
 	    }
 	  else
 	    INSN_CODE (insn) = -1;
@@ -5984,7 +5984,7 @@ invalidate_memory (void)
    alias with something that is SET or CLOBBERed.  */
 
 static void
-invalidate_from_clobbers (rtx insn)
+invalidate_from_clobbers (rtx_insn *insn)
 {
   rtx x = PATTERN (insn);
 
@@ -6026,7 +6026,7 @@ invalidate_from_clobbers (rtx insn)
    alias with something that is SET or CLOBBERed.  */
 
 static void
-invalidate_from_sets_and_clobbers (rtx insn)
+invalidate_from_sets_and_clobbers (rtx_insn *insn)
 {
   rtx tem;
   rtx x = PATTERN (insn);
@@ -6154,7 +6154,7 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
 	}
 
       /* Otherwise, canonicalize this register.  */
-      return canon_reg (x, NULL_RTX);
+      return canon_reg (x, NULL);
 
     default:
       break;
@@ -6366,7 +6366,7 @@ cse_prescan_path (struct cse_basic_block_data *data)
   for (path_entry = 0; path_entry < path_size; path_entry++)
     {
       basic_block bb;
-      rtx insn;
+      rtx_insn *insn;
 
       bb = data->path[path_entry].bb;
 
@@ -6405,7 +6405,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
   for (path_entry = 0; path_entry < path_size; path_entry++)
     {
       basic_block bb;
-      rtx insn;
+      rtx_insn *insn;
 
       bb = ebb_data->path[path_entry].bb;
 
@@ -6469,7 +6469,8 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 		     Here we use fact that nothing expects CC0 to be
 		     valid over an insn, which is true until the final
 		     pass.  */
-		  rtx prev_insn, tem;
+		  rtx_insn *prev_insn;
+		  rtx tem;
 
 		  prev_insn = prev_nonnote_nondebug_insn (insn);
 		  if (prev_insn && NONJUMP_INSN_P (prev_insn)
@@ -6560,7 +6561,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
    Return 0 otherwise.  */
 
 static int
-cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
+cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
 {
   struct cse_basic_block_data ebb_data;
   basic_block bb;
@@ -6657,7 +6658,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 static int
 check_for_label_ref (rtx *rtl, void *data)
 {
-  rtx insn = (rtx) data;
+  rtx_insn *insn = (rtx_insn *) data;
 
   /* If this insn uses a LABEL_REF and there isn't a REG_LABEL_OPERAND
      note for it, we must rerun jump since it needs to place the note.  If
@@ -6811,7 +6812,7 @@ is_dead_reg (rtx x, int *counts)
 
 /* Return true if set is live.  */
 static bool
-set_live_p (rtx set, rtx insn ATTRIBUTE_UNUSED, /* Only used with HAVE_cc0.  */
+set_live_p (rtx set, rtx_insn *insn ATTRIBUTE_UNUSED, /* Only used with HAVE_cc0.  */
 	    int *counts)
 {
 #ifdef HAVE_cc0
@@ -6838,7 +6839,7 @@ set_live_p (rtx set, rtx insn ATTRIBUTE_UNUSED, /* Only used with HAVE_cc0.  */
 /* Return true if insn is live.  */
 
 static bool
-insn_live_p (rtx insn, int *counts)
+insn_live_p (rtx_insn *insn, int *counts)
 {
   int i;
   if (!cfun->can_delete_dead_exceptions && !insn_nothrow_p (insn))
@@ -6863,7 +6864,7 @@ insn_live_p (rtx insn, int *counts)
     }
   else if (DEBUG_INSN_P (insn))
     {
-      rtx next;
+      rtx_insn *next;
 
       for (next = NEXT_INSN (insn); next; next = NEXT_INSN (next))
 	if (NOTE_P (next))
@@ -6944,10 +6945,10 @@ replace_dead_reg (rtx x, const_rtx old_rtx ATTRIBUTE_UNUSED, void *data)
    remaining passes of the compilation are also sped up.  */
 
 int
-delete_trivially_dead_insns (rtx insns, int nreg)
+delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 {
   int *counts;
-  rtx insn, prev;
+  rtx_insn *insn, *prev;
   rtx *replacements = NULL;
   int ndead = 0;
 
@@ -7116,7 +7117,7 @@ cse_change_cc_mode (rtx *loc, void *data)
    GET_MODE (NEWREG) in INSN.  */
 
 static void
-cse_change_cc_mode_insn (rtx insn, rtx newreg)
+cse_change_cc_mode_insn (rtx_insn *insn, rtx newreg)
 {
   struct change_cc_mode_args args;
   int success;
@@ -7143,9 +7144,9 @@ cse_change_cc_mode_insn (rtx insn, rtx newreg)
    any instruction which modifies NEWREG.  */
 
 static void
-cse_change_cc_mode_insns (rtx start, rtx end, rtx newreg)
+cse_change_cc_mode_insns (rtx_insn *start, rtx_insn *end, rtx newreg)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = start; insn != end; insn = NEXT_INSN (insn))
     {
@@ -7183,9 +7184,9 @@ cse_cc_succs (basic_block bb, basic_block orig_bb, rtx cc_reg, rtx cc_src,
   enum machine_mode mode;
   unsigned int insn_count;
   edge e;
-  rtx insns[2];
+  rtx_insn *insns[2];
   enum machine_mode modes[2];
-  rtx last_insns[2];
+  rtx_insn *last_insns[2];
   unsigned int i;
   rtx newreg;
   edge_iterator ei;
@@ -7201,8 +7202,8 @@ cse_cc_succs (basic_block bb, basic_block orig_bb, rtx cc_reg, rtx cc_src,
   insn_count = 0;
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      rtx insn;
-      rtx end;
+      rtx_insn *insn;
+      rtx_insn *end;
 
       if (e->flags & EDGE_COMPLEX)
 	continue;
@@ -7379,10 +7380,10 @@ cse_condition_code_reg (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx last_insn;
+      rtx_insn *last_insn;
       rtx cc_reg;
-      rtx insn;
-      rtx cc_src_insn;
+      rtx_insn *insn;
+      rtx_insn *cc_src_insn;
       rtx cc_src;
       enum machine_mode mode;
       enum machine_mode orig_mode;
@@ -7407,7 +7408,7 @@ cse_condition_code_reg (void)
       else
 	continue;
 
-      cc_src_insn = NULL_RTX;
+      cc_src_insn = NULL;
       cc_src = NULL_RTX;
       for (insn = PREV_INSN (last_insn);
 	   insn && insn != PREV_INSN (BB_HEAD (bb));

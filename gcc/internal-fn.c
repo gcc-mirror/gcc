@@ -197,7 +197,8 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 {
   rtx res, op0, op1;
   tree lhs, fn, arg0, arg1;
-  rtx done_label, do_error, target = NULL_RTX;
+  rtx_code_label *done_label, *do_error;
+  rtx target = NULL_RTX;
 
   lhs = gimple_call_lhs (stmt);
   arg0 = gimple_call_arg (stmt, 0);
@@ -217,7 +218,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[4];
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
       create_output_operand (&ops[0], res, mode);
@@ -243,7 +244,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 
   if (icode == CODE_FOR_nothing)
     {
-      rtx sub_check = gen_label_rtx ();
+      rtx_code_label *sub_check = gen_label_rtx ();
       int pos_neg = 3;
 
       /* Compute the operation.  On RTL level, the addition is always
@@ -345,7 +346,8 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
 {
   rtx res, op1;
   tree lhs, fn, arg1;
-  rtx done_label, do_error, target = NULL_RTX;
+  rtx_code_label *done_label, *do_error;
+  rtx target = NULL_RTX;
 
   lhs = gimple_call_lhs (stmt);
   arg1 = gimple_call_arg (stmt, 1);
@@ -363,7 +365,7 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[3];
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
       create_output_operand (&ops[0], res, mode);
@@ -421,7 +423,8 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 {
   rtx res, op0, op1;
   tree lhs, fn, arg0, arg1;
-  rtx done_label, do_error, target = NULL_RTX;
+  rtx_code_label *done_label, *do_error;
+  rtx target = NULL_RTX;
 
   lhs = gimple_call_lhs (stmt);
   arg0 = gimple_call_arg (stmt, 0);
@@ -441,7 +444,7 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[4];
-      rtx last = get_last_insn ();
+      rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
       create_output_operand (&ops[0], res, mode);
@@ -499,14 +502,14 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
       else if (hmode != BLKmode
 	       && 2 * GET_MODE_PRECISION (hmode) == GET_MODE_PRECISION (mode))
 	{
-	  rtx large_op0 = gen_label_rtx ();
-	  rtx small_op0_large_op1 = gen_label_rtx ();
-	  rtx one_small_one_large = gen_label_rtx ();
-	  rtx both_ops_large = gen_label_rtx ();
-	  rtx after_hipart_neg = gen_label_rtx ();
-	  rtx after_lopart_neg = gen_label_rtx ();
-	  rtx do_overflow = gen_label_rtx ();
-	  rtx hipart_different = gen_label_rtx ();
+	  rtx_code_label *large_op0 = gen_label_rtx ();
+	  rtx_code_label *small_op0_large_op1 = gen_label_rtx ();
+	  rtx_code_label *one_small_one_large = gen_label_rtx ();
+	  rtx_code_label *both_ops_large = gen_label_rtx ();
+	  rtx_code_label *after_hipart_neg = gen_label_rtx ();
+	  rtx_code_label *after_lopart_neg = gen_label_rtx ();
+	  rtx_code_label *do_overflow = gen_label_rtx ();
+	  rtx_code_label *hipart_different = gen_label_rtx ();
 
 	  unsigned int hprec = GET_MODE_PRECISION (hmode);
 	  rtx hipart0 = expand_shift (RSHIFT_EXPR, mode, op0, hprec,

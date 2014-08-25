@@ -218,7 +218,8 @@ make_edges (basic_block min, basic_block max, int update_p)
 
   FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
     {
-      rtx insn, x;
+      rtx_insn *insn;
+      rtx x;
       enum rtx_code code;
       edge e;
       edge_iterator ei;
@@ -252,6 +253,7 @@ make_edges (basic_block min, basic_block max, int update_p)
       if (code == JUMP_INSN)
 	{
 	  rtx tmp;
+	  rtx_jump_table_data *table;
 
 	  /* Recognize a non-local goto as a branch outside the
 	     current function.  */
@@ -259,15 +261,15 @@ make_edges (basic_block min, basic_block max, int update_p)
 	    ;
 
 	  /* Recognize a tablejump and do the right thing.  */
-	  else if (tablejump_p (insn, NULL, &tmp))
+	  else if (tablejump_p (insn, NULL, &table))
 	    {
 	      rtvec vec;
 	      int j;
 
-	      if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
-		vec = XVEC (PATTERN (tmp), 0);
+	      if (GET_CODE (PATTERN (table)) == ADDR_VEC)
+		vec = XVEC (PATTERN (table), 0);
 	      else
-		vec = XVEC (PATTERN (tmp), 1);
+		vec = XVEC (PATTERN (table), 1);
 
 	      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 		make_label_edge (edge_cache, bb,
@@ -398,7 +400,8 @@ mark_tablejump_edge (rtx label)
 static void
 purge_dead_tablejump_edges (basic_block bb, rtx table)
 {
-  rtx insn = BB_END (bb), tmp;
+  rtx_insn *insn = BB_END (bb);
+  rtx tmp;
   rtvec vec;
   int j;
   edge_iterator ei;
@@ -442,10 +445,10 @@ static void
 find_bb_boundaries (basic_block bb)
 {
   basic_block orig_bb = bb;
-  rtx insn = BB_HEAD (bb);
-  rtx end = BB_END (bb), x;
-  rtx table;
-  rtx flow_transfer_insn = NULL_RTX;
+  rtx_insn *insn = BB_HEAD (bb);
+  rtx_insn *end = BB_END (bb), *x;
+  rtx_jump_table_data *table;
+  rtx_insn *flow_transfer_insn = NULL;
   edge fallthru = NULL;
 
   if (insn == BB_END (bb))
@@ -479,7 +482,7 @@ find_bb_boundaries (basic_block bb)
 
 	  bb = fallthru->dest;
 	  remove_edge (fallthru);
-	  flow_transfer_insn = NULL_RTX;
+	  flow_transfer_insn = NULL;
 	  if (code == CODE_LABEL && LABEL_ALT_ENTRY_P (insn))
 	    make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, 0);
 	}

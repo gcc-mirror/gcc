@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx, bool);
 static void validate_replace_src_1 (rtx *, void *);
-static rtx split_insn (rtx);
+static rtx split_insn (rtx_insn *);
 
 struct target_recog default_target_recog;
 #if SWITCHABLE_TARGET
@@ -2772,11 +2772,11 @@ reg_fits_class_p (const_rtx operand, reg_class_t cl, int offset,
    or NULL if unsuccessful.  */
 
 static rtx
-split_insn (rtx insn)
+split_insn (rtx_insn *insn)
 {
   /* Split insns here to get max fine-grain parallelism.  */
-  rtx first = PREV_INSN (insn);
-  rtx last = try_split (PATTERN (insn), insn, 1);
+  rtx_insn *first = PREV_INSN (insn);
+  rtx_insn *last = try_split (PATTERN (insn), insn, 1);
   rtx insn_set, last_set, note;
 
   if (last == insn)
@@ -2837,7 +2837,7 @@ split_all_insns (void)
 
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
-      rtx insn, next;
+      rtx_insn *insn, *next;
       bool finish = false;
 
       rtl_profile_for_bb (bb);
@@ -2893,7 +2893,7 @@ split_all_insns (void)
 unsigned int
 split_all_insns_noflow (void)
 {
-  rtx next, insn;
+  rtx_insn *next, *insn;
 
   for (insn = get_insns (); insn; insn = next)
     {

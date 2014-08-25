@@ -240,6 +240,7 @@ Objective-C and Objective-C++ Dialects}.
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
 -Waggressive-loop-optimizations -Warray-bounds @gol
+-Wbool-compare @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
@@ -1721,13 +1722,23 @@ The name @samp{c++0x} is deprecated.
 GNU dialect of @option{-std=c++11}.
 The name @samp{gnu++0x} is deprecated.
 
-@item c++1y
+@item c++14
+@itemx c++1y
+The 2014 ISO C++ standard plus amendments.
+The name @samp{c++1y} is deprecated.
+
+@item gnu++14
+@itemx gnu++1y
+GNU dialect of @option{-std=c++14}.
+The name @samp{gnu++1y} is deprecated.
+
+@item c++1z
 The next revision of the ISO C++ standard, tentatively planned for
-2014.  Support is highly experimental, and will almost certainly
+2017.  Support is highly experimental, and will almost certainly
 change in incompatible ways in future releases.
 
-@item gnu++1y
-GNU dialect of @option{-std=c++1y}.  Support is highly experimental,
+@item gnu++1z
+GNU dialect of @option{-std=c++1z}.  Support is highly experimental,
 and will almost certainly change in incompatible ways in future
 releases.
 @end table
@@ -2675,7 +2686,7 @@ When this option is turned off these suffixes are treated
 as C++11 user-defined literal numeric suffixes.
 This is on by default for all pre-C++11 dialects and all GNU dialects:
 @option{-std=c++98}, @option{-std=gnu++98}, @option{-std=gnu++11},
-@option{-std=gnu++1y}.
+@option{-std=gnu++14}.
 This option is off by default
 for ISO C++11 onwards (@option{-std=c++11}, ...).
 @end table
@@ -4221,6 +4232,19 @@ This option is only active when @option{-ftree-vrp} is active
 (default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
 
+@item -Wbool-compare
+@opindex Wno-bool-compare
+@opindex Wbool-compare
+Warn about boolean expression compared with an integer value different from
+@code{true}/@code{false}.  For instance, the following comparison is
+always false:
+@smallexample
+int n = 5;
+@dots{}
+if ((n > 1) == 2) @{ @dots{} @}
+@end smallexample
+This warning is enabled by @option{-Wall}.
+
 @item -Wno-discarded-qualifiers @r{(C and Objective-C only)}
 @opindex Wno-discarded-qualifiers
 @opindex Wdiscarded-qualifiers
@@ -4762,8 +4786,8 @@ bit-wise operator is likely to be expected.
 @opindex Wlogical-not-parentheses
 @opindex Wno-logical-not-parentheses
 Warn about logical not used on the left hand side operand of a comparison.
-This option does not warn if the LHS or RHS operand is of a boolean or
-a vector type.  Its purpose is to detect suspicious code like the following:
+This option does not warn if the RHS operand is of a boolean type.  Its
+purpose is to detect suspicious code like the following:
 @smallexample
 int a;
 @dots{}
@@ -5113,9 +5137,10 @@ modes.  To inhibit the warning messages, use @option{-Wno-long-long}.
 @item -Wvariadic-macros
 @opindex Wvariadic-macros
 @opindex Wno-variadic-macros
-Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
-alternate syntax when in pedantic ISO C99 mode.  This is default.
-To inhibit the warning messages, use @option{-Wno-variadic-macros}.
+Warn if variadic macros are used in ISO C90 mode, or if the GNU
+alternate syntax is used in ISO C99 mode.  This is enabled by either
+@option{-Wpedantic} or @option{-Wtraditional}.  To inhibit the warning
+messages, use @option{-Wno-variadic-macros}.
 
 @item -Wvarargs
 @opindex Wvarargs
@@ -5495,7 +5520,7 @@ call into a diagnostics message call instead.  When reaching the
 @opindex fsanitize=vla-bound
 This option instructs the compiler to check that the size of a variable
 length array is positive.  This option does not have any effect in
-@option{-std=c++1y} mode, as the standard requires the exception be thrown
+@option{-std=c++14} mode, as the standard requires the exception be thrown
 instead.
 
 @item -fsanitize=null
@@ -7207,7 +7232,7 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 @opindex foptimize-strlen
 Optimize various standard C string functions (e.g. @code{strlen},
 @code{strchr} or @code{strcpy}) and
-their _FORTIFY_SOURCE counterparts into faster alternatives.
+their @code{_FORTIFY_SOURCE} counterparts into faster alternatives.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -7376,7 +7401,7 @@ register, compare it against zero, then branch based upon the result.
 This option is only meaningful on architectures that support such
 instructions, which include x86, PowerPC, IA-64 and S/390.
 
-Enabled by default at -O1 and higher.
+Enabled by default at @option{-O1} and higher.
 
 The default is @option{-fbranch-count-reg}.
 
@@ -20883,7 +20908,7 @@ Mark the @code{MAC} register as call-clobbered, even if
 @item -mieee
 @itemx -mno-ieee
 @opindex mieee
-@opindex mnoieee
+@opindex mno-ieee
 Control the IEEE compliance of floating-point comparisons, which affects the
 handling of cases where the result of a comparison is unordered.  By default
 @option{-mieee} is implicitly enabled.  If @option{-ffinite-math-only} is
@@ -20923,14 +20948,14 @@ separated list.  For details on the atomic built-in functions see
 
 @item none
 Disable compiler generated atomic sequences and emit library calls for atomic
-operations.  This is the default if the target is not @code{sh-*-linux*}.
+operations.  This is the default if the target is not @code{sh*-*-linux*}.
 
 @item soft-gusa
 Generate GNU/Linux compatible gUSA software atomic sequences for the atomic
 built-in functions.  The generated atomic sequences require additional support
 from the interrupt/exception handling code of the system and are only suitable
 for SH3* and SH4* single-core systems.  This option is enabled by default when
-the target is @code{sh-*-linux*} and SH3* or SH4*.  When the target is SH4A,
+the target is @code{sh*-*-linux*} and SH3* or SH4*.  When the target is SH4A,
 this option will also partially utilize the hardware atomic instructions
 @code{movli.l} and @code{movco.l} to create more efficient code, unless
 @samp{strict} is specified.  
@@ -20949,7 +20974,7 @@ setting @code{SR.IMASK = 1111}.  This model works only when the program runs
 in privileged mode and is only suitable for single-core systems.  Additional
 support from the interrupt/exception handling code of the system is not
 required.  This model is enabled by default when the target is
-@code{sh-*-linux*} and SH1* or SH2*.
+@code{sh*-*-linux*} and SH1* or SH2*.
 
 @item hard-llcs
 Generate hardware atomic sequences using the @code{movli.l} and @code{movco.l}
@@ -20990,11 +21015,14 @@ When generating position-independent code, emit function calls using
 the Global Offset Table instead of the Procedure Linkage Table.
 
 @item -musermode
+@itemx -mno-usermode
 @opindex musermode
-Don't generate privileged mode only code.  This option
-implies @option{-mno-inline-ic_invalidate}
-if the inlined code would not work in user mode.
-This is the default when the target is @code{sh-*-linux*}.
+@opindex mno-usermode
+Don't allow (allow) the compiler generating privileged mode code.  Specifying
+@option{-musermode} also implies @option{-mno-inline-ic_invalidate} if the
+inlined code would not work in user mode.  @option{-musermode} is the default
+when the target is @code{sh*-*-linux*}.  If the target is SH1* or SH2*
+@option{-musermode} has no effect, since there is no user mode.
 
 @item -multcost=@var{number}
 @opindex multcost=@var{number}

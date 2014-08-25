@@ -2132,7 +2132,7 @@ static void
 add_cfis_to_fde (void)
 {
   dw_fde_ref fde = cfun->fde;
-  rtx insn, next;
+  rtx_insn *insn, *next;
   /* We always start with a function_begin label.  */
   bool first = false;
 
@@ -2291,14 +2291,16 @@ create_trace_edges (rtx insn)
 
   if (JUMP_P (insn))
     {
+      rtx_jump_table_data *table;
+
       if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
 	return;
 
-      if (tablejump_p (insn, NULL, &tmp))
+      if (tablejump_p (insn, NULL, &table))
 	{
 	  rtvec vec;
 
-	  tmp = PATTERN (tmp);
+	  tmp = PATTERN (table);
 	  vec = XVEC (tmp, GET_CODE (tmp) == ADDR_DIFF_VEC);
 
 	  n = GET_NUM_ELEM (vec);
@@ -2725,7 +2727,7 @@ create_pseudo_cfg (void)
 {
   bool saw_barrier, switch_sections;
   dw_trace_info ti;
-  rtx insn;
+  rtx_insn *insn;
   unsigned i;
 
   /* The first trace begins at the start of the function,
