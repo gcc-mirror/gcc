@@ -1,3 +1,11 @@
+2014-08-25  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Change -std=c++1y and -std=gnu++1y to be aliases for
+	-std=c++14 and -std=gnu++14, rather than the reverse.
+	* c-opts.c (c_common_handle_option): Change OPT_std_c__1y and
+	OPT_std_gnu__1y to OPT_std_c__14 and OPT_std_gnu__14.
+	* c-common.h (cxx_dialect): Remove cxx1y.
+
 2014-08-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* c-common.h (enum cxx_dialect): Add cxx14.

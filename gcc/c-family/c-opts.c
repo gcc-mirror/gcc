@@ -698,12 +698,12 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	}
       break;
 
-    case OPT_std_c__1y:
-    case OPT_std_gnu__1y:
+    case OPT_std_c__14:
+    case OPT_std_gnu__14:
       if (!preprocessing_asm_p)
 	{
-	  set_std_cxx14 (code == OPT_std_c__1y /* ISO */);
-	  if (code == OPT_std_c__1y)
+	  set_std_cxx14 (code == OPT_std_c__14 /* ISO */);
+	  if (code == OPT_std_c__14)
 	    cpp_opts->ext_numeric_literals = 0;
 	}
       break;
@@ -1587,7 +1587,7 @@ set_std_cxx11 (int iso)
   cxx_dialect = cxx11;
 }
 
-/* Set the C++ 201y draft standard (without GNU extensions if ISO).  */
+/* Set the C++ 2014 draft standard (without GNU extensions if ISO).  */
 static void
 set_std_cxx14 (int iso)
 {
