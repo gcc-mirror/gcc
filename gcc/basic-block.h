@@ -39,7 +39,7 @@ struct GTY((user)) edge_def {
   /* Instructions queued on the edge.  */
   union edge_def_insns {
     gimple_seq g;
-    rtx r;
+    rtx_insn *r;
   } insns;
 
   /* Auxiliary info specific to a pass.  */
