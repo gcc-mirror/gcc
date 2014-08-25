@@ -1,5 +1,35 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/spu/spu.c (frame_emit_store): Strengthen return type from
+	rtx to rtx_insn *.
+	(frame_emit_load): Likewise.
+	(frame_emit_add_imm): Likewise, also for local "insn".
+	(spu_expand_prologue): Likewise for local "insn".
+	(struct spu_bb_info): Likewise for field "prop_jump".
+	(emit_nop_for_insn): Likewise for param "insn" and local
+	"new_insn".
+	(pad_bb): Likewise for locals "insn", "next_insn", "prev_insn",
+	"hbr_insn".
+	(spu_emit_branch_hint): Likewise for params "before", "branch" and
+	locals "hint", "insn".
+	(get_branch_target): Likewise for param "branch".
+	(insn_clobbers_hbr): Likewise for param "insn".
+	(insert_hbrp_for_ilb_runout): Likewise for param "first" and
+	locals "insn", "before_4", "before_16".
+	(insert_hbrp): Likewise for local "insn".
+	(spu_machine_dependent_reorg): Likewise for locals "branch",
+	"insn", "next", "bbend".
+	(uses_ls_unit): Likewise for param "insn".
+	(get_pipe): Likewise.
+	(spu_sched_variable_issue): Rename param "insn" to "uncast_insn",
+	introducing a checked cast.
+	(spu_sched_adjust_cost): Likewise for params "insn" and
+	"dep_insn".
+	(ea_load_store_inline): Strengthen local "insn" from rtx to rtx_insn *.
+	(spu_sms_res_mii): Likewise.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/sparc/sparc-protos.h (output_ubranch): Strengthen param 2
 	from rtx to rtx_insn *.
 	(output_cbranch): Likewise for param 6.
