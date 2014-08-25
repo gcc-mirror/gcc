@@ -346,7 +346,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
 
   if (saveall || is_inthandler)
     {
-      rtx insn = emit_move_insn (predec, gen_rtx_REG (SImode, REG_ASTAT));
+      rtx_insn *insn = emit_move_insn (predec, gen_rtx_REG (SImode, REG_ASTAT));
 
       RTX_FRAME_RELATED_P (insn) = 1;
       for (dregno = REG_LT0; dregno <= REG_LB1; dregno++)
@@ -363,7 +363,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
 
   if (total_consec != 0)
     {
-      rtx insn;
+      rtx_insn *insn;
       rtx val = GEN_INT (-total_consec * 4);
       rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (total_consec + 2));
 
@@ -405,7 +405,8 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
     {
       if (must_save_p (is_inthandler, dregno))
 	{
-	  rtx insn = emit_move_insn (predec, gen_rtx_REG (word_mode, dregno));
+	  rtx_insn *insn =
+	    emit_move_insn (predec, gen_rtx_REG (word_mode, dregno));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  ndregs--;
 	}
@@ -414,7 +415,8 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
     {
       if (must_save_p (is_inthandler, pregno))
 	{
-	  rtx insn = emit_move_insn (predec, gen_rtx_REG (word_mode, pregno));
+	  rtx_insn *insn =
+	    emit_move_insn (predec, gen_rtx_REG (word_mode, pregno));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  npregs--;
 	}
@@ -425,7 +427,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
 	    && (df_regs_ever_live_p (i)
 		|| (!leaf_function_p () && call_used_regs[i]))))
       {
-	rtx insn;
+	rtx_insn *insn;
 	if (i == REG_A0 || i == REG_A1)
 	  insn = emit_move_insn (gen_rtx_MEM (PDImode, predec1),
 				 gen_rtx_REG (PDImode, i));
@@ -452,7 +454,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
   int npregs_consec = saveall ? 6 : n_pregs_to_save (is_inthandler, true);
   int total_consec = ndregs_consec + npregs_consec;
   int i, regno;
-  rtx insn;
+  rtx_insn *insn;
 
   /* A slightly crude technique to stop flow from trying to delete "dead"
      insns.  */
@@ -706,7 +708,7 @@ bfin_initial_elimination_offset (int from, int to)
 static void
 frame_related_constant_load (rtx reg, HOST_WIDE_INT constant, bool related)
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx cst = GEN_INT (constant);
 
   if (constant >= -32768 && constant < 65536)
@@ -743,7 +745,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
     {
       rtx tmpreg;
       rtx tmpreg2;
-      rtx insn;
+      rtx_insn *insn;
 
       tmpreg2 = NULL_RTX;
 
@@ -792,7 +794,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
     do
       {
 	int size = value;
-	rtx insn;
+	rtx_insn *insn;
 
 	if (size > 60)
 	  size = 60;
@@ -817,7 +819,7 @@ static void
 emit_link_insn (rtx spreg, HOST_WIDE_INT frame_size)
 {
   HOST_WIDE_INT link_size = frame_size;
-  rtx insn;
+  rtx_insn *insn;
   int i;
 
   if (link_size > 262140)
@@ -884,7 +886,7 @@ do_link (rtx spreg, HOST_WIDE_INT frame_size, bool all)
 	  rtx pat = gen_movsi (gen_rtx_MEM (Pmode,
 					    gen_rtx_PRE_DEC (Pmode, spreg)),
 			       bfin_rets_rtx);
-	  rtx insn = emit_insn (pat);
+	  rtx_insn *insn = emit_insn (pat);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       if (must_save_fp_p ())
@@ -892,7 +894,7 @@ do_link (rtx spreg, HOST_WIDE_INT frame_size, bool all)
 	  rtx pat = gen_movsi (gen_rtx_MEM (Pmode,
 					    gen_rtx_PRE_DEC (Pmode, spreg)),
 			       gen_rtx_REG (Pmode, REG_FP));
-	  rtx insn = emit_insn (pat);
+	  rtx_insn *insn = emit_insn (pat);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       add_to_reg (spreg, -frame_size, 1, 0);
@@ -940,7 +942,7 @@ expand_interrupt_handler_prologue (rtx spreg, e_funkind fkind, bool all)
   HOST_WIDE_INT frame_size = get_frame_size ();
   rtx predec1 = gen_rtx_PRE_DEC (SImode, spreg);
   rtx predec = gen_rtx_MEM (SImode, predec1);
-  rtx insn;
+  rtx_insn *insn;
   tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
   tree kspisusp = lookup_attribute ("kspisusp", attrs);
 
@@ -2416,7 +2418,7 @@ bfin_option_override (void)
    we still prefer to use shorter sequences.  */
 
 static int
-branch_dest (rtx branch)
+branch_dest (rtx_insn *branch)
 {
   rtx dest;
   int dest_uid;
@@ -2470,7 +2472,7 @@ static const char *ccbranch_templates[][3] = {
    anyway.  */
 
 void
-asm_conditional_branch (rtx insn, rtx *operands, int n_nops, int predict_taken)
+asm_conditional_branch (rtx_insn *insn, rtx *operands, int n_nops, int predict_taken)
 {
   int offset = branch_dest (insn) - INSN_ADDRESSES (INSN_UID (insn));
   /* Note : offset for instructions like if cc jmp; jump.[sl] offset
@@ -3895,7 +3897,7 @@ bfin_reorg_loops (void)
 /* Possibly generate a SEQUENCE out of three insns found in SLOT.
    Returns true if we modified the insn chain, false otherwise.  */
 static bool
-gen_one_bundle (rtx slot[3])
+gen_one_bundle (rtx_insn *slot[3])
 {
   gcc_assert (slot[1] != NULL_RTX);
 
@@ -3917,7 +3919,7 @@ gen_one_bundle (rtx slot[3])
     }
   if (slot[2])
     {
-      rtx t = NEXT_INSN (slot[1]);
+      rtx_insn *t = NEXT_INSN (slot[1]);
       while (t != slot[2])
 	{
 	  if (! NOTE_P (t) || NOTE_KIND (t) != NOTE_INSN_DELETED)
@@ -3963,11 +3965,11 @@ bfin_gen_bundles (void)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
-      rtx slot[3];
+      rtx_insn *insn, *next;
+      rtx_insn *slot[3];
       int n_filled = 0;
 
-      slot[0] = slot[1] = slot[2] = NULL_RTX;
+      slot[0] = slot[1] = slot[2] = NULL;
       for (insn = BB_HEAD (bb);; insn = next)
 	{
 	  int at_end;
@@ -4023,7 +4025,7 @@ bfin_gen_bundles (void)
 		    }
 		}
 	      n_filled = 0;
-	      slot[0] = slot[1] = slot[2] = NULL_RTX;
+	      slot[0] = slot[1] = slot[2] = NULL;
 	    }
 	  if (delete_this != NULL_RTX)
 	    delete_insn (delete_this);
@@ -4042,8 +4044,8 @@ reorder_var_tracking_notes (void)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
-      rtx queue = NULL_RTX;
+      rtx_insn *insn, *next;
+      rtx_insn *queue = NULL;
       bool in_bundle = false;
 
       for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = next)
@@ -4057,7 +4059,7 @@ reorder_var_tracking_notes (void)
 		{
 		  while (queue)
 		    {
-		      rtx next_queue = PREV_INSN (queue);
+		      rtx_insn *next_queue = PREV_INSN (queue);
 		      SET_PREV_INSN (NEXT_INSN (insn)) = queue;
 		      SET_NEXT_INSN (queue) = NEXT_INSN (insn);
 		      SET_NEXT_INSN (insn) = queue;
@@ -4073,7 +4075,7 @@ reorder_var_tracking_notes (void)
 	    {
 	      if (in_bundle)
 		{
-		  rtx prev = PREV_INSN (insn);
+		  rtx_insn *prev = PREV_INSN (insn);
 		  SET_PREV_INSN (next) = prev;
 		  SET_NEXT_INSN (prev) = next;
 
@@ -4091,7 +4093,7 @@ reorder_var_tracking_notes (void)
 static void
 workaround_rts_anomaly (void)
 {
-  rtx insn, first_insn = NULL_RTX;
+  rtx_insn *insn, *first_insn = NULL;
   int cycles = 4;
 
   if (! ENABLE_WA_RETS)
@@ -4526,7 +4528,7 @@ workaround_speculation (void)
 static void
 add_sched_insns_for_speculation (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (! ENABLE_WA_SPECULATIVE_LOADS && ! ENABLE_WA_SPECULATIVE_SYNCS
       && ! ENABLE_WA_INDIRECT_CALLS)

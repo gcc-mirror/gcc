@@ -1,5 +1,28 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/bfin/bfin-protos.h (asm_conditional_branch): Strengthen
+	param 1 from rtx to rtx_insn *.
+	* config/bfin/bfin.c (expand_prologue_reg_save): Likewise for
+	the various locals named "insn".
+	(expand_epilogue_reg_restore): Likewise.
+	(frame_related_constant_load): Likewise.
+	(add_to_reg): Likewise.
+	(emit_link_insn): Likewise.
+	(do_link): Likewise.
+	(expand_interrupt_handler_prologue): Likewise.
+	(branch_dest): Likewise for param "branch".
+	(asm_conditional_branch): Likewise for param "insn".
+	(gen_one_bundle): Likewise for elements of param "slot" and local
+	"t".
+	(bfin_gen_bundles): Likewise for locals "insn", "next" and
+	elements of local "slot".
+	(reorder_var_tracking_notes): Likewise for locals "insn", "next",
+	"queue", "next_queue", "prev".
+	(workaround_rts_anomaly): Likewise for locals "insn", "first_insn".
+	(add_sched_insns_for_speculation): Likewise for local "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/avr/avr-protos.h (output_movqi): Strengthen first param
 	from rtx to rtx_insn *.
 	(output_movhi): Likewise.

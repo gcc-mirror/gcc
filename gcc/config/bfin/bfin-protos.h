@@ -97,7 +97,7 @@ extern void print_address_operand (FILE *, rtx);
 extern void split_di (rtx [], int, rtx [], rtx []);
 extern int split_load_immediate (rtx []);
 extern void emit_pic_move (rtx *, enum machine_mode);
-extern void asm_conditional_branch (rtx, rtx *, int, int);
+extern void asm_conditional_branch (rtx_insn *, rtx *, int, int);
 extern rtx bfin_gen_compare (rtx, enum machine_mode);
 
 extern unsigned bfin_local_alignment (tree, unsigned);
