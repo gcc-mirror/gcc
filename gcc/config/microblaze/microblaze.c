@@ -571,10 +571,11 @@ load_tls_operand (rtx x, rtx reg)
   return reg;
 }
 
-static rtx
+static rtx_insn *
 microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 {
-  rtx insns, tls_entry;
+  rtx_insn *insns;
+  rtx tls_entry;
 
   df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 
@@ -598,7 +599,8 @@ microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 rtx
 microblaze_legitimize_tls_address(rtx x, rtx reg)
 {
-  rtx dest, insns, ret, eqv, addend;
+  rtx dest, ret, eqv, addend;
+  rtx_insn *insns;
   enum tls_model model;
   model = SYMBOL_REF_TLS_MODEL (x);
 
@@ -1147,7 +1149,8 @@ microblaze_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
 static void
 microblaze_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
 {
-  rtx label, src_reg, dest_reg, final_src;
+  rtx_code_label *label;
+  rtx src_reg, dest_reg, final_src;
   HOST_WIDE_INT leftover;
 
   leftover = length % MAX_MOVE_BYTES;
@@ -2895,7 +2898,7 @@ microblaze_expand_prologue (void)
     {
       rtx fsiz_rtx = GEN_INT (fsiz);
 
-      rtx insn = NULL;
+      rtx_insn *insn = NULL;
       insn = emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				    fsiz_rtx));
       if (insn)
@@ -2922,7 +2925,7 @@ microblaze_expand_prologue (void)
 
       if (frame_pointer_needed)
 	{
-	  rtx insn = 0;
+	  rtx_insn *insn = 0;
 
 	  insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
 				       stack_pointer_rtx));
@@ -3169,7 +3172,8 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
         HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
         tree function)
 {
-  rtx this_rtx, insn, funexp;
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
 
   reload_completed = 1;
   epilogue_completed = 1;
@@ -3474,12 +3478,12 @@ microblaze_expand_divide (rtx operands[])
   rtx regt1 = gen_reg_rtx (SImode); 
   rtx reg18 = gen_rtx_REG (SImode, R_TMP);
   rtx regqi = gen_reg_rtx (QImode);
-  rtx div_label = gen_label_rtx ();
-  rtx div_end_label = gen_label_rtx ();
+  rtx_code_label *div_label = gen_label_rtx ();
+  rtx_code_label *div_end_label = gen_label_rtx ();
   rtx div_table_rtx = gen_rtx_SYMBOL_REF (QImode,"_divsi3_table");
   rtx mem_rtx;
   rtx ret;
-  rtx jump, cjump, insn;
+  rtx_insn *jump, *cjump, *insn;
 
   insn = emit_insn (gen_iorsi3 (regt1, operands[1], operands[2]));
   cjump = emit_jump_insn_after (gen_cbranchsi4 (
