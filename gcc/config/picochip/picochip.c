@@ -164,7 +164,7 @@ static int picochip_vliw_continuation = 0;
    between final_prescan_insn and functions such as asm_output_opcode,
    and picochip_get_vliw_alu_id (which are otherwise unable to determine the
    current instruction. */
-static rtx picochip_current_prescan_insn;
+static rtx_insn *picochip_current_prescan_insn;
 
 static bool picochip_is_delay_slot_pending = 0;
 
@@ -3873,7 +3873,7 @@ picochip_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 }
 
 void
-picochip_final_prescan_insn (rtx insn, rtx * opvec ATTRIBUTE_UNUSED,
+picochip_final_prescan_insn (rtx_insn *insn, rtx * opvec ATTRIBUTE_UNUSED,
 			     int num_operands ATTRIBUTE_UNUSED)
 {
   rtx local_insn;
