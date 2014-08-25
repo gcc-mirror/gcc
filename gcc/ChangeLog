@@ -1,5 +1,12 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (reorder_insns): Strengthen params "from", "to", "after"
+	from rtx to rtx_insn *.
+
+	* emit-rtl.c (reorder_insns): Likewise, also for local "insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.c (thread_prologue_and_epilogue_insns): Likewise for
 	locals "returnjump", "epilogue_end", "insn", "next".
 
