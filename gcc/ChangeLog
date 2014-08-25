@@ -1,5 +1,75 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/mep/mep-protos.h (mep_mulr_source): Strengthen first
+	param from rtx to rtx_insn *.
+	(mep_reuse_lo): Likewise for third param.
+	(mep_use_post_modify_p): Likewise for first param.
+	(mep_core_address_length): Likewise.
+	(mep_cop_address_length): Likewise.
+	(mep_final_prescan_insn): Likewise.
+	(mep_store_data_bypass_p): Likewise for both params.
+	(mep_mul_hilo_bypass_p): Likewise.
+	(mep_ipipe_ldc_p): Likewise for param.
+
+	* config/mep/mep.c (mep_mulr_source): Likewise for param "insn".
+	(mep_rewrite_mult): Likewise.
+	(mep_rewrite_mulsi3): Likewise.
+	(mep_rewrite_maddsi3): Likewise.
+	(mep_reuse_lo_p_1): Likewise.
+	(mep_reuse_lo_p): Likewise.
+	(mep_frame_expr): Likewise.
+	(mep_make_parallel): Likewise for both params.
+	(mep_use_post_modify_p_1): Likewise for param "set_insn" and
+	local "insn".
+	(mep_use_post_modify_p): Likewise for param "insn".
+	(mep_core_address_length): Likewise.
+	(mep_cop_address_length): Likewise.
+	(mep_reg_set_in_function): Likewise for local "insn".
+	(mep_asm_without_operands_p): Likewise.
+	(F): Likewise for return type and param "x".
+	(add_constant): Likewise for local "insn".
+	(maybe_dead_move): Likewise for return type and local "insn".
+	(mep_expand_prologue): Likewise for local "insn".
+	(mep_final_prescan_insn): Likewise for param "insn".
+	(mep_reorg_regmove): Likewise for param "insns" and locals "insn",
+	"next", "follow", "x".
+	(mep_insert_repeat_label_last): Likewise for return type, param
+	"last_insn", and locals "next", "prev".  Strengthen param "label"
+	from rtx to rtx_code_label *.
+	(struct mep_doloop_begin): Strengthen field "insn" from rtx to
+	rtx_insn *.
+	(struct mep_doloop_end): Likewise for fields "insn" and
+	"fallthrough".
+	(mep_reorg_repeat): Likewise for param "insns" and local "insn".
+	Strengthen local "repeat_label" from rtx to rtx_code_label *.
+	(mep_invertable_branch_p): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(mep_invert_branch): Likewise for params "insn" and "after".
+	(mep_reorg_erepeat): Likewise for param "insns" and locals
+	"insn", "prev", "new_last", "barrier", "user".  Strengthen local
+	"l" from rtx to rtx_code_label *.
+	(mep_jmp_return_reorg): Strengthen param "insns" and local "insn"
+	from rtx to rtx_insn *.
+	(mep_reorg_addcombine): Likewise for param "insns" and locals
+	"i", "n".
+	(add_sp_insn_p): Likewise for param "insn".
+	(mep_reorg_noframe): Likewise for param "insns" and locals
+	"start_frame_insn", "end_frame_insn", "next".
+	(mep_reorg): Likewise for local "insns".
+	(mep_store_data_bypass_1): Likewise for param "prev".  Add checked
+	cast.
+	(mep_store_data_bypass_p): Likewise for params "prev", "insn".
+	(mep_mul_hilo_bypass_p): Likewise.
+	(mep_ipipe_ldc_p): Likewise for param "insn".
+	(mep_make_bundle): Likewise for return type, param "cop" and local
+	"insn", splitting out the latter into a new local "seq" for when it
+	is a SEQUENCE rather than an insn.
+	(core_insn_p): Likewise for param "insn".
+	(mep_bundle_insns): Likewise for param "insns" and locals "insn",
+	"last", "first", "note", "prev", "core_insn".
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* config/m68k/m68k-protos.h (output_btst): Strengthen param 4 from
 	rtx to rtx_insn *.
 	(strict_low_part_peephole_ok): Likewise for param 2 "first_insn".
