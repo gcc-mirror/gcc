@@ -1027,7 +1027,7 @@ is the timer tick of the scheduler.  You may modify the ready list and\n\
 the number of ready insns.  The return value is the number of insns that\n\
 can issue this cycle; normally this is just @code{issue_rate}.  See also\n\
 @samp{TARGET_SCHED_REORDER2}.",
- int, (FILE *file, int verbose, rtx *ready, int *n_readyp, int clock), NULL)
+ int, (FILE *file, int verbose, rtx_insn **ready, int *n_readyp, int clock), NULL)
 
 DEFHOOK
 (reorder2,
@@ -1039,7 +1039,7 @@ return the number of insns to be scheduled in the same cycle.  Defining\n\
 this hook can be useful if there are frequent situations where\n\
 scheduling one insn causes other insns to become ready in the same\n\
 cycle.  These other insns can then be taken into account properly.",
- int, (FILE *file, int verbose, rtx *ready, int *n_readyp, int clock), NULL)
+ int, (FILE *file, int verbose, rtx_insn **ready, int *n_readyp, int clock), NULL)
 
 DEFHOOK
 (macro_fusion_p,
@@ -1066,7 +1066,7 @@ example, it can be used for better insn classification if it requires\n\
 analysis of dependencies.  This hook can use backward and forward\n\
 dependencies of the insn scheduler because they are already\n\
 calculated.",
- void, (rtx head, rtx tail), NULL)
+ void, (rtx_insn *head, rtx_insn *tail), NULL)
 
 /* The values of the following four members are pointers to functions
    used to simplify the automaton descriptions.  dfa_pre_cycle_insn and

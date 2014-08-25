@@ -482,17 +482,17 @@ static int cache_size;
 static bool mark_as_hard;
 
 static int deps_may_trap_p (const_rtx);
-static void add_dependence_1 (rtx, rtx, enum reg_note);
-static void add_dependence_list (rtx, rtx, int, enum reg_note, bool);
-static void add_dependence_list_and_free (struct deps_desc *, rtx,
+static void add_dependence_1 (rtx_insn *, rtx_insn *, enum reg_note);
+static void add_dependence_list (rtx_insn *, rtx, int, enum reg_note, bool);
+static void add_dependence_list_and_free (struct deps_desc *, rtx_insn *,
 					  rtx *, int, enum reg_note, bool);
 static void delete_all_dependences (rtx);
-static void chain_to_prev_insn (rtx);
+static void chain_to_prev_insn (rtx_insn *);
 
-static void flush_pending_lists (struct deps_desc *, rtx, int, int);
-static void sched_analyze_1 (struct deps_desc *, rtx, rtx);
-static void sched_analyze_2 (struct deps_desc *, rtx, rtx);
-static void sched_analyze_insn (struct deps_desc *, rtx, rtx);
+static void flush_pending_lists (struct deps_desc *, rtx_insn *, int, int);
+static void sched_analyze_1 (struct deps_desc *, rtx, rtx_insn *);
+static void sched_analyze_2 (struct deps_desc *, rtx, rtx_insn *);
+static void sched_analyze_insn (struct deps_desc *, rtx, rtx_insn *);
 
 static bool sched_has_condition_p (const_rtx);
 static int conditions_mutex_p (const_rtx, const_rtx, bool, bool);
@@ -1513,7 +1513,7 @@ sd_debug_lists (rtx insn, sd_list_types_def types)
    impossible; otherwise we add additional true dependencies on the
    INSN_COND_DEPS list of the jump (which PRO must be).  */
 void
-add_dependence (rtx con, rtx pro, enum reg_note dep_type)
+add_dependence (rtx_insn *con, rtx_insn *pro, enum reg_note dep_type)
 {
   if (dep_type == REG_DEP_CONTROL
       && !(current_sched_info->flags & DO_PREDICATION))
@@ -1561,14 +1561,14 @@ add_dependence (rtx con, rtx pro, enum reg_note dep_type)
    true if DEP_NONREG should be set on newly created dependencies.  */
 
 static void
-add_dependence_list (rtx insn, rtx list, int uncond, enum reg_note dep_type,
+add_dependence_list (rtx_insn *insn, rtx list, int uncond, enum reg_note dep_type,
 		     bool hard)
 {
   mark_as_hard = hard;
   for (; list; list = XEXP (list, 1))
     {
       if (uncond || ! sched_insns_conditions_mutex_p (insn, XEXP (list, 0)))
-	add_dependence (insn, XEXP (list, 0), dep_type);
+	add_dependence (insn, as_a <rtx_insn *> (XEXP (list, 0)), dep_type);
     }
   mark_as_hard = false;
 }
@@ -1578,7 +1578,7 @@ add_dependence_list (rtx insn, rtx list, int uncond, enum reg_note dep_type,
    newly created dependencies.  */
 
 static void
-add_dependence_list_and_free (struct deps_desc *deps, rtx insn, rtx *listp,
+add_dependence_list_and_free (struct deps_desc *deps, rtx_insn *insn, rtx *listp,
                               int uncond, enum reg_note dep_type, bool hard)
 {
   add_dependence_list (insn, *listp, uncond, dep_type, hard);
@@ -1661,15 +1661,15 @@ delete_all_dependences (rtx insn)
    the previous nonnote insn.  */
 
 static void
-chain_to_prev_insn (rtx insn)
+chain_to_prev_insn (rtx_insn *insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
-  rtx prev_nonnote;
+  rtx_insn *prev_nonnote;
 
   FOR_EACH_DEP (insn, SD_LIST_BACK, sd_it, dep)
     {
-      rtx i = insn;
+      rtx_insn *i = insn;
       rtx_insn *pro = DEP_PRO (dep);
 
       do
@@ -1749,7 +1749,7 @@ add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
    dependencies for a read operation, similarly with FOR_WRITE.  */
 
 static void
-flush_pending_lists (struct deps_desc *deps, rtx insn, int for_read,
+flush_pending_lists (struct deps_desc *deps, rtx_insn *insn, int for_read,
 		     int for_write)
 {
   if (for_write)
@@ -1796,7 +1796,7 @@ flush_pending_lists (struct deps_desc *deps, rtx insn, int for_read,
 }
 
 /* Instruction which dependencies we are analyzing.  */
-static rtx cur_insn = NULL_RTX;
+static rtx_insn *cur_insn = NULL;
 
 /* Implement hooks for haifa scheduler.  */
 
@@ -1805,7 +1805,7 @@ haifa_start_insn (rtx insn)
 {
   gcc_assert (insn && !cur_insn);
 
-  cur_insn = insn;
+  cur_insn = as_a <rtx_insn *> (insn);
 }
 
 static void
@@ -1895,7 +1895,7 @@ note_mem_dep (rtx m1, rtx m2, rtx e, ds_t ds)
 }
 
 static void
-note_dep (rtx e, ds_t ds)
+note_dep (rtx_insn *e, ds_t ds)
 {
   if (sched_deps_info->note_dep)
     sched_deps_info->note_dep (e, ds);
@@ -2298,7 +2298,7 @@ maybe_extend_reg_info_p (void)
 
 static void
 sched_analyze_reg (struct deps_desc *deps, int regno, enum machine_mode mode,
-		   enum rtx_code ref, rtx insn)
+		   enum rtx_code ref, rtx_insn *insn)
 {
   /* We could emit new pseudos in renaming.  Extend the reg structures.  */
   if (!reload_completed && sel_sched_p ()
@@ -2376,7 +2376,7 @@ sched_analyze_reg (struct deps_desc *deps, int regno, enum machine_mode mode,
    destination of X, and reads of everything mentioned.  */
 
 static void
-sched_analyze_1 (struct deps_desc *deps, rtx x, rtx insn)
+sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 {
   rtx dest = XEXP (x, 0);
   enum rtx_code code = GET_CODE (x);
@@ -2548,7 +2548,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx insn)
 
 /* Analyze the uses of memory and registers in rtx X in INSN.  */
 static void
-sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
+sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 {
   int i;
   int j;
@@ -2669,7 +2669,8 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 	      }
 
 	    for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	      add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)),
+			      REG_DEP_ANTI);
 
 	    for (u = deps->pending_jump_insns; u; u = XEXP (u, 1))
 	      if (deps_may_trap_p (x))
@@ -2680,10 +2681,11 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 		      ds_t ds = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
 					      MAX_DEP_WEAK);
 		      
-		      note_dep (XEXP (u, 0), ds);
+		      note_dep (as_a <rtx_insn *> (XEXP (u, 0)), ds);
 		    }
 		  else
-		    add_dependence (insn, XEXP (u, 0), REG_DEP_CONTROL);
+		    add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)),
+				    REG_DEP_CONTROL);
 		}
 	  }
 
@@ -2861,7 +2863,7 @@ sched_macro_fuse_insns (rtx insn)
 
 /* Analyze an INSN with pattern X to find all dependencies.  */
 static void
-sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
+sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 {
   RTX_CODE code = GET_CODE (x);
   rtx link;
@@ -3009,7 +3011,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 	  while (pending)
 	    {
 	      if (! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
+		add_dependence (insn, as_a <rtx_insn *> (XEXP (pending, 0)),
+				REG_DEP_OUTPUT);
 	      pending = XEXP (pending, 1);
 	      pending_mem = XEXP (pending_mem, 1);
 	    }
@@ -3020,7 +3023,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 	    {
 	      if (MEM_VOLATILE_P (XEXP (pending_mem, 0))
 		  && ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
+		add_dependence (insn, as_a <rtx_insn *> (XEXP (pending, 0)),
+				REG_DEP_OUTPUT);
 	      pending = XEXP (pending, 1);
 	      pending_mem = XEXP (pending_mem, 1);
 	    }
@@ -3051,7 +3055,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
   /* Add register dependencies for insn.  */
   if (DEBUG_INSN_P (insn))
     {
-      rtx prev = deps->last_debug_insn;
+      rtx_insn *prev = deps->last_debug_insn;
       rtx u;
 
       if (!deps->readonly)
@@ -3065,7 +3069,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 
       if (!sel_sched_p ())
 	for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	  add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)), REG_DEP_ANTI);
 
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
 	{
@@ -3585,7 +3589,7 @@ chain_to_prev_insn_p (rtx insn)
 
 /* Analyze INSN with DEPS as a context.  */
 void
-deps_analyze_insn (struct deps_desc *deps, rtx insn)
+deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
 {
   if (sched_deps_info->start_insn)
     sched_deps_info->start_insn (insn);
@@ -3770,9 +3774,9 @@ deps_start_bb (struct deps_desc *deps, rtx head)
 /* Analyze every insn between HEAD and TAIL inclusive, creating backward
    dependencies for each insn.  */
 void
-sched_analyze (struct deps_desc *deps, rtx head, rtx tail)
+sched_analyze (struct deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (sched_deps_info->use_cselib)
     cselib_init (CSELIB_RECORD_MEMORY);
@@ -4204,7 +4208,7 @@ estimate_dep_weak (rtx mem1, rtx mem2)
    This function can handle same INSN and ELEM (INSN == ELEM).
    It is a convenience wrapper.  */
 static void
-add_dependence_1 (rtx insn, rtx elem, enum reg_note dep_type)
+add_dependence_1 (rtx_insn *insn, rtx_insn *elem, enum reg_note dep_type)
 {
   ds_t ds;
   bool internal;
@@ -4601,8 +4605,8 @@ check_dep (dep_t dep, bool relaxed_p)
    insns which depend on each other, but could possibly be interchanged.  */
 struct mem_inc_info
 {
-  rtx inc_insn;
-  rtx mem_insn;
+  rtx_insn *inc_insn;
+  rtx_insn *mem_insn;
 
   rtx *mem_loc;
   /* A register occurring in the memory address for which we wish to break
@@ -4657,7 +4661,7 @@ attempt_change (struct mem_inc_info *mii, rtx new_addr)
    a corresponding memory reference.  */
 
 static bool
-parse_add_or_inc (struct mem_inc_info *mii, rtx insn, bool before_mem)
+parse_add_or_inc (struct mem_inc_info *mii, rtx_insn *insn, bool before_mem)
 {
   rtx pat = single_set (insn);
   rtx src, cst;
@@ -4727,7 +4731,7 @@ find_inc (struct mem_inc_info *mii, bool backwards)
       dep_node_t node = DEP_LINK_NODE (*sd_it.linkp);
       rtx_insn *pro = DEP_PRO (dep);
       rtx_insn *con = DEP_CON (dep);
-      rtx inc_cand = backwards ? pro : con;
+      rtx_insn *inc_cand = backwards ? pro : con;
       if (DEP_NONREG (dep) || DEP_MULTIPLE (dep))
 	goto next;
       if (parse_add_or_inc (mii, inc_cand, backwards))
@@ -4894,9 +4898,9 @@ find_mem (struct mem_inc_info *mii, rtx *address_of_x)
    dependencies that can be broken by modifying one of the patterns.  */
 
 void
-find_modifiable_mems (rtx head, rtx tail)
+find_modifiable_mems (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn, next_tail = NEXT_INSN (tail);
+  rtx_insn *insn, *next_tail = NEXT_INSN (tail);
   int success_in_block = 0;
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))

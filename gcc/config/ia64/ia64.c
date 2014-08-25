@@ -166,7 +166,7 @@ static struct ia64_frame_info current_frame_info;
 static int emitted_frame_related_regs[number_of_ia64_frame_regs];
 
 static int ia64_first_cycle_multipass_dfa_lookahead (void);
-static void ia64_dependencies_evaluation_hook (rtx, rtx);
+static void ia64_dependencies_evaluation_hook (rtx_insn *, rtx_insn *);
 static void ia64_init_dfa_pre_cycle_insn (void);
 static rtx ia64_dfa_pre_cycle_insn (void);
 static int ia64_first_cycle_multipass_dfa_lookahead_guard (rtx, int);
@@ -255,9 +255,9 @@ static void ia64_sched_init (FILE *, int, int);
 static void ia64_sched_init_global (FILE *, int, int);
 static void ia64_sched_finish_global (FILE *, int);
 static void ia64_sched_finish (FILE *, int);
-static int ia64_dfa_sched_reorder (FILE *, int, rtx *, int *, int, int);
-static int ia64_sched_reorder (FILE *, int, rtx *, int *, int);
-static int ia64_sched_reorder2 (FILE *, int, rtx *, int *, int);
+static int ia64_dfa_sched_reorder (FILE *, int, rtx_insn **, int *, int, int);
+static int ia64_sched_reorder (FILE *, int, rtx_insn **, int *, int);
+static int ia64_sched_reorder2 (FILE *, int, rtx_insn **, int *, int);
 static int ia64_variable_issue (FILE *, int, rtx, int);
 
 static void ia64_asm_unwind_emit (FILE *, rtx);
@@ -7233,9 +7233,9 @@ ia64_emit_insn_before (rtx insn, rtx before)
    `ia64_produce_address_p' and the DFA descriptions).  */
 
 static void
-ia64_dependencies_evaluation_hook (rtx head, rtx tail)
+ia64_dependencies_evaluation_hook (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn, next, next_tail;
+  rtx_insn *insn, *next, *next_tail;
 
   /* Before reload, which_alternative is not set, which means that
      ia64_safe_itanium_class will produce wrong results for (at least)
@@ -7364,14 +7364,14 @@ record_memory_reference (rtx insn)
    Override the default sort algorithm to better slot instructions.  */
 
 static int
-ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx *ready,
+ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx_insn **ready,
 			int *pn_ready, int clock_var,
 			int reorder_type)
 {
   int n_asms;
   int n_ready = *pn_ready;
-  rtx *e_ready = ready + n_ready;
-  rtx *insnp;
+  rtx_insn **e_ready = ready + n_ready;
+  rtx_insn **insnp;
 
   if (sched_verbose)
     fprintf (dump, "// ia64_dfa_sched_reorder (type %d):\n", reorder_type);
@@ -7383,21 +7383,21 @@ ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx *ready,
       for (insnp = ready; insnp < e_ready; insnp++)
 	if (insnp < e_ready)
 	  {
-	    rtx insn = *insnp;
+	    rtx_insn *insn = *insnp;
 	    enum attr_type t = ia64_safe_type (insn);
 	    if (t == TYPE_UNKNOWN)
 	      {
 		if (GET_CODE (PATTERN (insn)) == ASM_INPUT
 		    || asm_noperands (PATTERN (insn)) >= 0)
 		  {
-		    rtx lowest = ready[n_asms];
+		    rtx_insn *lowest = ready[n_asms];
 		    ready[n_asms] = insn;
 		    *insnp = lowest;
 		    n_asms++;
 		  }
 		else
 		  {
-		    rtx highest = ready[n_ready - 1];
+		    rtx_insn *highest = ready[n_ready - 1];
 		    ready[n_ready - 1] = insn;
 		    *insnp = highest;
 		    return 1;
@@ -7434,7 +7434,7 @@ ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx *ready,
       while (insnp-- > ready + deleted)
 	while (insnp >= ready + deleted)
 	  {
-	    rtx insn = *insnp;
+	    rtx_insn *insn = *insnp;
 	    if (! safe_group_barrier_needed (insn))
 	      break;
 	    memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
@@ -7455,7 +7455,7 @@ ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx *ready,
       while (insnp-- > ready + moved)
 	while (insnp >= ready + moved)
 	  {
-	    rtx insn = *insnp;
+	    rtx_insn *insn = *insnp;
 	    if (! is_load_p (insn))
 	      break;
 	    memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
@@ -7473,8 +7473,8 @@ ia64_dfa_sched_reorder (FILE *dump, int sched_verbose, rtx *ready,
    the default sort algorithm to better slot instructions.  */
 
 static int
-ia64_sched_reorder (FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
-		    int clock_var)
+ia64_sched_reorder (FILE *dump, int sched_verbose, rtx_insn **ready,
+		    int *pn_ready, int clock_var)
 {
   return ia64_dfa_sched_reorder (dump, sched_verbose, ready,
 				 pn_ready, clock_var, 0);
@@ -7485,7 +7485,7 @@ ia64_sched_reorder (FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
 
 static int
 ia64_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
-		     int sched_verbose ATTRIBUTE_UNUSED, rtx *ready,
+		     int sched_verbose ATTRIBUTE_UNUSED, rtx_insn **ready,
 		     int *pn_ready, int clock_var)
 {
   return ia64_dfa_sched_reorder (dump, sched_verbose, ready, pn_ready,

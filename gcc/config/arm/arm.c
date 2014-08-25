@@ -138,7 +138,7 @@ static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
 static void arm_set_default_type_attributes (tree);
 static int arm_adjust_cost (rtx, rtx, rtx, int);
-static int arm_sched_reorder (FILE *, int, rtx *, int *, int);
+static int arm_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static int optimal_immediate_sequence (enum rtx_code code,
 				       unsigned HOST_WIDE_INT val,
 				       struct four_ints *return_sequence);
@@ -11797,8 +11797,8 @@ cortexa7_younger (FILE *file, int verbose, rtx insn)
    instructions.  This heuristic may affect dual issue opportunities
    in the current cycle.  */
 static void
-cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
-                        int clock)
+cortexa7_sched_reorder (FILE *file, int verbose, rtx_insn **ready,
+			int *n_readyp, int clock)
 {
   int i;
   int first_older_only = -1, first_younger = -1;
@@ -11815,7 +11815,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
      older.  */
   for (i = *n_readyp - 1; i >= 0; i--)
     {
-      rtx insn = ready[i];
+      rtx_insn *insn = ready[i];
       if (cortexa7_older_only (insn))
         {
           first_older_only = i;
@@ -11850,7 +11850,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
     fprintf (file, ";; cortexa7_sched_reorder insn %d before %d\n",
              INSN_UID(ready [first_older_only]),
              INSN_UID(ready [first_younger]));
-  rtx first_older_only_insn = ready [first_older_only];
+  rtx_insn *first_older_only_insn = ready [first_older_only];
   for (i = first_older_only; i < first_younger; i++)
     {
       ready[i] = ready[i+1];
@@ -11862,7 +11862,7 @@ cortexa7_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
 
 /* Implement TARGET_SCHED_REORDER. */
 static int
-arm_sched_reorder (FILE *file, int verbose, rtx *ready, int *n_readyp,
+arm_sched_reorder (FILE *file, int verbose, rtx_insn **ready, int *n_readyp,
                    int clock)
 {
   switch (arm_tune)

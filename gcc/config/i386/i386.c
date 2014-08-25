@@ -25944,9 +25944,10 @@ ix86_macro_fusion_pair_p (rtx condgen, rtx condjmp)
        ready list.
    Return index of IMUL producer if it was found and -1 otherwise.  */
 static int
-do_reorder_for_imul (rtx *ready, int n_ready)
+do_reorder_for_imul (rtx_insn **ready, int n_ready)
 {
-  rtx insn, set, insn1, insn2;
+  rtx_insn *insn;
+  rtx set, insn1, insn2;
   sd_iterator_def sd_it;
   dep_t dep;
   int index = -1;
@@ -26021,10 +26022,10 @@ do_reorder_for_imul (rtx *ready, int n_ready)
    scheduled earlier. Applied for Silvermont only.
    Return true if top 2 insns must be interchanged.  */
 static bool
-swap_top_of_ready_list (rtx *ready, int n_ready)
+swap_top_of_ready_list (rtx_insn **ready, int n_ready)
 {
-  rtx top = ready[n_ready - 1];
-  rtx next = ready[n_ready - 2];
+  rtx_insn *top = ready[n_ready - 1];
+  rtx_insn *next = ready[n_ready - 2];
   rtx set;
   sd_iterator_def sd_it;
   dep_t dep;
@@ -26092,13 +26093,13 @@ swap_top_of_ready_list (rtx *ready, int n_ready)
 /* Perform possible reodering of ready list for Atom/Silvermont only.
    Return issue rate.  */
 static int
-ix86_sched_reorder (FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
-		   int clock_var)
+ix86_sched_reorder (FILE *dump, int sched_verbose, rtx_insn **ready,
+		    int *pn_ready, int clock_var)
 {
   int issue_rate = -1;
   int n_ready = *pn_ready;
   int i;
-  rtx insn;
+  rtx_insn *insn;
   int index = -1;
 
   /* Set up issue rate.  */
@@ -26178,12 +26179,12 @@ insn_is_function_arg (rtx insn, bool* is_spilled)
 /* Add output dependencies for chain of function adjacent arguments if only
    there is a move to likely spilled HW register.  Return first argument
    if at least one dependence was added or NULL otherwise.  */
-static rtx
-add_parameter_dependencies (rtx call, rtx head)
+static rtx_insn *
+add_parameter_dependencies (rtx_insn *call, rtx_insn *head)
 {
-  rtx insn;
-  rtx last = call;
-  rtx first_arg = NULL;
+  rtx_insn *insn;
+  rtx_insn *last = call;
+  rtx_insn *first_arg = NULL;
   bool is_spilled = false;
 
   head = PREV_INSN (head);
@@ -26233,7 +26234,7 @@ add_parameter_dependencies (rtx call, rtx head)
 /* Add output or anti dependency from insn to first_arg to restrict its code
    motion.  */
 static void
-avoid_func_arg_motion (rtx first_arg, rtx insn)
+avoid_func_arg_motion (rtx_insn *first_arg, rtx_insn *insn)
 {
   rtx set;
   rtx tmp;
@@ -26255,9 +26256,9 @@ avoid_func_arg_motion (rtx first_arg, rtx insn)
 /* Avoid cross block motion of function argument through adding dependency
    from the first non-jump instruction in bb.  */
 static void
-add_dependee_for_func_arg (rtx arg, basic_block bb)
+add_dependee_for_func_arg (rtx_insn *arg, basic_block bb)
 {
-  rtx insn = BB_END (bb);
+  rtx_insn *insn = BB_END (bb);
 
   while (insn)
     {
@@ -26279,10 +26280,10 @@ add_dependee_for_func_arg (rtx arg, basic_block bb)
 /* Hook for pre-reload schedule - avoid motion of function arguments
    passed in likely spilled HW registers.  */
 static void
-ix86_dependencies_evaluation_hook (rtx head, rtx tail)
+ix86_dependencies_evaluation_hook (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn;
-  rtx first_arg = NULL;
+  rtx_insn *insn;
+  rtx_insn *first_arg = NULL;
   if (reload_completed)
     return;
   while (head != tail && DEBUG_INSN_P (head))

@@ -242,7 +242,7 @@ discover_loop (hwloop_info loop, basic_block tail_bb, rtx_insn *tail_insn, rtx r
   loop->loop_end = tail_insn;
   loop->iter_reg = reg;
   vec_alloc (loop->incoming, 2);
-  loop->start_label = JUMP_LABEL (tail_insn);
+  loop->start_label = as_a <rtx_insn *> (JUMP_LABEL (tail_insn));
 
   if (EDGE_COUNT (tail_bb->succs) != 2)
     {

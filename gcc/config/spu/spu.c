@@ -2861,11 +2861,11 @@ spu_sched_variable_issue (FILE *file ATTRIBUTE_UNUSED,
    TARGET_SCHED_REORDER2.  */
 static int
 spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		   rtx *ready, int *nreadyp, int clock)
+		   rtx_insn **ready, int *nreadyp, int clock)
 {
   int i, nready = *nreadyp;
   int pipe_0, pipe_1, pipe_hbrp, pipe_ls, schedule_i;
-  rtx insn;
+  rtx_insn *insn;
 
   clock_var = clock;
 

@@ -1,5 +1,300 @@
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* target.def (reorder): Strengthen param "ready" of this DEFHOOK
+	from rtx * to rtx_insn **.
+	(reorder2): Likewise.
+	(dependencies_evaluation_hook): Strengthen params "head", "tail"
+	from rtx to rtx_insn *.
+
+	* doc/tm.texi: Update mechanically for above change to target.def.
+
+	* sched-int.h (note_list): Strengthen this variable from rtx to
+	rtx_insn *.
+	(remove_notes): Likewise for both params.
+	(restore_other_notes): Likewise for return type and first param.
+	(struct ready_list): Strengthen field "vec" from rtx * to
+	rtx_insn **.
+	(struct dep_replacement): Strenghten field "insn" from rtx to
+	rtx_insn *.
+	(struct deps_desc): Likewise for fields "last_debug_insn",
+	"last_args_size".
+	(struct haifa_sched_info): Likewise for callback field
+	"can_schedule_ready_p"'s param, for first param of "new_ready"
+	callback field, for both params of "rank" callback field, for
+	first field of "print_insn" callback field (with a const), for
+	both params of "contributes_to_priority" callback, for param
+	of "insn_finishes_block_p" callback, for fields "prev_head",
+	"next_tail", "head", "tail", for first param of "add_remove_insn"
+	callback, for first param of "begin_schedule_ready" callback, for
+	both params of "begin_move_insn" callback, and for second param
+	of "advance_target_bb" callback.
+	(add_dependence): Likewise for params 1 and 2.
+	(sched_analyze): Likewise for params 2 and 3.
+	(deps_analyze_insn): Likewise for param 2.
+	(ready_element): Likewise for return type.
+	(ready_lastpos): Strengthen return type from rtx * to rtx_insn **.
+	(try_ready): Strenghten param from rtx to rtx_insn *.
+	(sched_emit_insn): Likewise for return type.
+	(record_delay_slot_pair): Likewise for params 1 and 2.
+	(add_delay_dependencies): Likewise for param.
+	(contributes_to_priority): Likewise for both params.
+	(find_modifiable_mems): Likewise.
+
+	* config/arm/arm.c (cortexa7_sched_reorder):  Strengthen param
+	"ready" from rtx * to rtx_insn **.  Strengthen locals "insn",
+	"first_older_only_insn" from rtx to rtx_insn *.
+	(arm_sched_reorder):  Strengthen param "ready"  from rtx * to
+	rtx_insn **.
+
+	* config/c6x/c6x.c (struct c6x_sched_context): Strengthen field
+	"last_scheduled_iter0" from rtx to rtx_insn *.
+	(init_sched_state): Replace use of NULL_RTX with NULL for insn.
+	(c6x_sched_reorder_1): Strengthen param "ready" and locals
+	"e_ready", "insnp" from rtx * to rtx_insn **.  Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(c6x_sched_reorder): Strengthen param "ready" from rtx * to
+	rtx_insn **.
+	(c6x_sched_reorder2): Strengthen param "ready" and locals
+	"e_ready", "insnp" from rtx * to rtx_insn **. Strengthen local
+	"insn" from rtx to rtx_insn *.
+	(c6x_variable_issue):  Add a checked cast when assigning from insn
+	to ss.last_scheduled_iter0.
+	(split_delayed_branch): Strengthen param "insn" and local "i1"
+	from rtx to rtx_insn *.
+	(split_delayed_nonbranch): Likewise.
+	(undo_split_delayed_nonbranch): Likewise for local "insn".
+	(hwloop_optimize): Likewise for locals "seq", "insn", "prev",
+	"entry_after", "end_packet", "head_insn", "tail_insn",
+	"new_insns", "last_insn", "this_iter", "prev_stage_insn".
+	Strengthen locals "orig_vec", "copies", "insn_copies" from rtx *
+	to rtx_insn **.  Remove now-redundant checked cast on last_insn,
+	but add a checked cast on loop->start_label.  Consolidate calls to
+	avoid assigning result of gen_spkernel to "insn", now an
+	rtx_insn *.
+
+	* config/i386/i386.c (do_reorder_for_imul): Strengthen param
+	"ready" from rtx * to rtx_insn **.  Strengthen local "insn" from
+	rtx to rtx_insn *.
+	(swap_top_of_ready_list): Strengthen param "ready" from rtx * to
+	rtx_insn **.  Strengthen locals "top", "next" from rtx to
+	rtx_insn *.
+	(ix86_sched_reorder): Strengthen param "ready" from rtx * to
+	rtx_insn **.  Strengthen local "insn" from rtx to rtx_insn *.
+	(add_parameter_dependencies): Strengthen params "call", "head" and
+	locals "insn", "last", "first_arg" from rtx to rtx_insn *.
+	(avoid_func_arg_motion): Likewise for params "first_arg", "insn".
+	(add_dependee_for_func_arg): Likewise for param "arg" and local
+	"insn".
+	(ix86_dependencies_evaluation_hook): Likewise for params "head",
+	"tail" and locals "insn", "first_arg".
+
+	* config/ia64/ia64.c (ia64_dependencies_evaluation_hook): Likewise
+	for params "head", "tail" and locals "insn", "next", "next_tail".
+	(ia64_dfa_sched_reorder): Strengthen param "ready" and locals
+	"e_ready", "insnp" from rtx * to rtx_insn **. Strengthen locals
+	"insn", "lowest", "highest" from rtx to rtx_insn *.
+	(ia64_sched_reorder): Strengthen param "ready" from rtx * to
+	rtx_insn **.
+	(ia64_sched_reorder2): Likewise.
+
+	* config/mep/mep.c (mep_find_ready_insn): Strengthen return type
+	and local "insn" from rtx to rtx_insn *.  Strengthen param "ready"
+	from rtx * to rtx_insn **.
+	(mep_move_ready_insn): Strengthen param "ready" from rtx * to
+	rtx_insn **.
+	(mep_print_sched_insn): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(mep_sched_reorder): Strengthen param "ready" from rtx * to
+	rtx_insn **.  Strengthen locals "core_insn", "cop_insn" from rtx
+	to rtx_insn *.
+
+	* config/mips/mips.c (mips_promote_ready): Strengthen param "ready"
+	from rtx * to rtx_insn **.  Strengthen local "new_head" from rtx
+	to rtx_insn *.
+	(mips_maybe_swap_ready): Strengthen param "ready" from rtx * to
+	rtx_insn **.  Strengthen local "temp" from rtx to rtx_insn *.
+	(mips_macc_chains_reorder): Strengthen param "ready" from rtx * to
+	rtx_insn **.
+	(vr4130_reorder): Likewise.
+	(mips_74k_agen_reorder): Likewise.  Strengthen local "insn" from
+	rtx to rtx_insn *.
+	(mips_sched_reorder_1): Strengthen param "ready" from rtx * to
+	rtx_insn **.
+	(mips_sched_reorder): Likewise.
+	(mips_sched_reorder2): Likewise.
+
+	* config/picochip/picochip.c (picochip_sched_reorder): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_sched_reorder): Likewise.
+	Strengthen local "tmp" from rtx to rtx_insn *.
+	(rs6000_sched_reorder2): Likewise.
+
+	* config/s390/s390.c (s390_z10_prevent_earlyload_conflicts):
+	Likewise.  Update sizeof(rtx) to sizeof(rtx_insn *) in memmove.
+	(s390_sched_reorder): Strengthen param "ready" from rtx * to
+	rtx_insn **.  Strengthen local "tmp" from rtx to rtx_insn *.
+
+	* config/sh/sh.c (rank_for_reorder): Strengthen locals "tmp",
+	"tmp2" from rtx to rtx_insn *.
+	(swap_reorder): Strengthen param "a" from rtx * to rtx_insn **.
+	Strengthen local "insn" from rtx to rtx_insn *.
+	(ready_reorder): Strengthen param "ready" from rtx * to
+	rtx_insn **.  Update sizeof(rtx) to sizeof(rtx_insn *) in qsort.
+	(sh_reorder):  Strengthen param "ready" from rtx * to rtx_insn **.
+	(sh_reorder2): Likewise.
+
+	* config/spu/spu.c (spu_sched_reorder): Likewise.  Strengthen
+	local "insn" from rtx to rtx_insn *.
+
+	* haifa-sched.c (note_list): Strengthen this variable from rtx to
+	rtx_insn *.
+	(scheduled_insns): Strengthen this variable from vec<rtx> to
+	vec<rtx_insn *>.
+	(set_modulo_params): Likewise for locals "i1", "i2".
+	(record_delay_slot_pair): Likewise for params "i1", "i2".
+	(add_delay_dependencies): Likewise for param "insn".
+	(cond_clobbered_p): Likewise.
+	(recompute_todo_spec): Likewise for local "prev".
+	(last_scheduled_insn): Likewise for this variable.
+	(nonscheduled_insns_begin): Likewise.
+	(model_set_excess_costs): Strengthen param "insns" from rtx * to
+	rtx_insn **.
+	(rank_for_schedule): Strengthen locals "tmp", "tmp2" from rtx to
+	rtx_insn *.
+	(swap_sort): Strengthen param "a" from rtx * to rtx_insn **.
+	Strengthen local "insn" from rtx to rtx_insn *.
+	(queue_insn): Strengthen param "insn" from rtx to rtx_insn *.
+	(ready_lastpos): Strengthen return type from rtx * to rtx_insn **.
+	(ready_add): Strengthen param "insn" from rtx to rtx_insn *.
+	(ready_remove_first): Likewise for return type and local "t".
+	(ready_element): Likewise for return type.
+	(ready_remove): Likewise for return type and local "t".
+	(ready_sort): Strengthen local "first" from rtx * to rtx_insn **.
+	(check_clobbered_conditions): Strengthen local "x" from rtx to
+	rtx_insn *, adding a checked cast.
+	(schedule_insn): Likewise for param "insn".
+	(remove_notes): Likewise for params "head", "tail" and locals
+	"next_tail", "insn", "next".
+	(struct haifa_saved_data): Likewise for fields
+	"last_scheduled_insn", "nonscheduled_insns_begin".
+	(save_backtrack_point): Update for change to field "vec" of
+	struct ready_list.
+	(toggle_cancelled_flags): Strengthen local "first" from rtx * to
+	rtx_insn **.
+	(restore_last_backtrack_point): Likewise.  Strengthen local "insn"
+	from rtx to rtx_insn *
+	(resolve_dependencies): Strengthen param "insn" from rtx to
+	rtx_insn *
+	(restore_other_notes): Likewise for return type, for param "head"
+	and local "note_head".
+	(undo_all_replacements): Likewise for local "insn".
+	(first_nonscheduled_insn): Likewise for return type and local "insn".
+	(queue_to_ready): Likewise for local "insn", adding checked casts.
+	(early_queue_to_ready): Likewise for local "insn".
+	(debug_ready_list_1): Strengthen local "p" from rtx * to
+	rtx_insn **.
+	(move_insn): Strengthen param "insn" and local "note" from rtx to
+	rtx_insn *
+	(insn_finishes_cycle_p): Likewise for param "insn".
+	(max_issue): Likewise for local "insn".
+	(choose_ready): Likewise.  Strengthen param "insn_ptr" from rtx *
+	to rtx_insn **.
+	(commit_schedule): Strengthen param "prev_head" and local "insn"
+	from rtx to rtx_insn *
+	(prune_ready_list): Likewise for local "insn".
+	(schedule_block): Likewise for locals "prev_head", "head", "tail",
+	"skip_insn", "insn", "failed_insn", "x", adding a checked cast.
+	(set_priorities): Likewise for local "prev_head".
+	(try_ready): Likewise for param "next".
+	(fix_tick_ready): Likewise.
+	(change_queue_index): Likewise.
+	(sched_extend_ready_list): Update for change to field "vec" of
+	struct ready_list.
+	(generate_recovery_code): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(begin_speculative_block): Likewise.
+	(create_check_block_twin): Likewise for param "insn" and locals
+	"label", "check", "twin".  Introduce local "check_pat" to avoid
+	"check" being used as a plain rtx before being used as an insn.
+	(fix_recovery_deps): Add a checked cast to rtx_insn * when
+	extracting elements from ready_list.
+	(sched_remove_insn): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(sched_emit_insn): Likewise for return type.
+	(ready_remove_first_dispatch): Likewise for return type and local
+	"insn".
+
+	* hw-doloop.c (discover_loop): Add a checked cast to rtx_insn *.
+
+	* modulo-sched.c (sms_print_insn): Strengthen from const_rtx to
+	const rtx_insn *.
+
+	* sched-deps.c (add_dependence): Strengthen params "con", "pro"
+	from rtx to rtx_insn *.
+	(add_dependence_list): Likewise for param "insn".  Add a checked
+	cast.
+	(add_dependence_list_and_free): Strengthen param "insn" from rtx
+	to rtx_insn *.  Strengthen param "list_p" from rtx * to
+	rtx_insn **.
+	(chain_to_prev_insn): Strengthen param "insn" and locals
+	"prec_nonnote", "i" from rtx to rtx_insn *.
+	(flush_pending_lists): Likewise for param "insn".
+	(cur_insn): Likewise for this variable.
+	(haifa_start_insn): Add a checked cast.
+	(note_dep): Strengthen param "e" from rtx to rtx_insn *.
+	(sched_analyze_reg): Likewise for param "insn".
+	(sched_analyze_1): Likewise.
+	(sched_analyze_2): Likewise.  Add checked casts.
+	(sched_analyze_insn): Likewise.  Also for local "prev".
+	(deps_analyze_insn): Likewise for param "insn".
+	(sched_analyze): Likewise for params "head", "tail" and local "insn".
+	(add_dependence_1): Likewise for params "insn", "elem".
+	(struct mem_inc_info): Likewise for fields "inc_insn", "mem_insn".
+	(parse_add_or_inc): Likewise for param "insn".
+	(find_inc): Likewise for local "inc_cand".
+	(find_modifiable_mems): Likewise for params "head", "tail" and
+	locals "insn", "next_tail".
+
+	* sched-ebb.c (init_ready_list): Likewise for local "insn".
+	(begin_schedule_ready): Likewise for param "insn".
+	(begin_move_insn): Likewise for params "insn" and "last".
+	(ebb_print_insn): Strengthen param "insn" from const_rtx to
+	const rtx_insn *.
+	(rank): Strengthen params "insn1", "insn2" from rtx to rtx_insn *.
+	(ebb_contributes_to_priority): Likewise for params "next", "insn".
+	(ebb_add_remove_insn): Likewise for param "insn".
+	(advance_target_bb): Likewise.
+
+	* sched-rgn.c (rgn_estimate_number_of_insns): Likewise for local
+	"insn".
+	(check_live): Likewise for param "insn".
+	(init_ready_list): Likewise for local "insn".
+	(can_schedule_ready_p): Likewise for param "insn".
+	(begin_schedule_ready): Likewise.
+	(new_ready): Likewise for param "next".
+	(rgn_print_insn): Likewise for param "insn".
+	(rgn_rank): Likewise for params "insn1", "insn2".
+	(contributes_to_priority): Likewise for params "next", "insn".
+	(rgn_insn_finishes_block_p): Likewise for param "insn".
+	(add_branch_dependences): Likewise for params "head", "tail" and
+	locals "insn", "last".
+	(rgn_add_remove_insn): Likewise for param "insn".
+	(advance_target_bb): Likewise.
+
+	* sel-sched-dump.c (sel_print_insn): Strengthen param "insn" from
+	const_rtx to const rtx_insn *.
+
+	* sel-sched-dump.h (sel_print_insn): Likewise.
+
+	* sel-sched-ir.c (advance_deps_context): Add a checked cast.
+	(deps_init_id): Likewise.
+
+	* sel-sched.c (convert_vec_av_set_to_ready): Likewise.
+	(invoke_reorder_hooks): Strengthen local "arr" from rtx * to
+	rtx_insn **.
+
+2014-08-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* output.h (final_start_function): Strengthen param 1 from rtx to
 	rtx_insn *.
 

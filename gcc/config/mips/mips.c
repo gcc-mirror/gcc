@@ -13334,9 +13334,9 @@ mips_multipass_dfa_lookahead (void)
    be <= HIGHER.  */
 
 static void
-mips_promote_ready (rtx *ready, int lower, int higher)
+mips_promote_ready (rtx_insn **ready, int lower, int higher)
 {
-  rtx new_head;
+  rtx_insn *new_head;
   int i;
 
   new_head = ready[lower];
@@ -13350,12 +13350,12 @@ mips_promote_ready (rtx *ready, int lower, int higher)
    instructions if POS2 is not already less than POS1.  */
 
 static void
-mips_maybe_swap_ready (rtx *ready, int pos1, int pos2, int limit)
+mips_maybe_swap_ready (rtx_insn **ready, int pos1, int pos2, int limit)
 {
   if (pos1 < pos2
       && INSN_PRIORITY (ready[pos1]) + limit >= INSN_PRIORITY (ready[pos2]))
     {
-      rtx temp;
+      rtx_insn *temp;
 
       temp = ready[pos1];
       ready[pos1] = ready[pos2];
@@ -13384,7 +13384,7 @@ mips_macc_chains_record (rtx insn)
    clobber hi or lo.  */
 
 static void
-mips_macc_chains_reorder (rtx *ready, int nready)
+mips_macc_chains_reorder (rtx_insn **ready, int nready)
 {
   int i, j;
 
@@ -13498,7 +13498,7 @@ vr4130_swap_insns_p (rtx insn1, rtx insn2)
    vr4130_swap_insns_p says that it could be worthwhile.  */
 
 static void
-vr4130_reorder (rtx *ready, int nready)
+vr4130_reorder (rtx_insn **ready, int nready)
 {
   if (vr4130_swap_insns_p (ready[nready - 1], ready[nready - 2]))
     mips_promote_ready (ready, nready - 2, nready - 1);
@@ -13528,7 +13528,7 @@ mips_74k_agen_init (rtx insn)
    together.  Swap things around in the ready queue to make this happen.  */
 
 static void
-mips_74k_agen_reorder (rtx *ready, int nready)
+mips_74k_agen_reorder (rtx_insn **ready, int nready)
 {
   int i;
   int store_pos, load_pos;
@@ -13538,7 +13538,7 @@ mips_74k_agen_reorder (rtx *ready, int nready)
 
   for (i = nready - 1; i >= 0; i--)
     {
-      rtx insn = ready[i];
+      rtx_insn *insn = ready[i];
       if (USEFUL_INSN_P (insn))
 	switch (get_attr_type (insn))
 	  {
@@ -13598,7 +13598,7 @@ mips_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 
 static void
 mips_sched_reorder_1 (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		      rtx *ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
+		      rtx_insn **ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
 {
   if (!reload_completed
       && TUNE_MACC_CHAINS
@@ -13619,7 +13619,7 @@ mips_sched_reorder_1 (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 
 static int
 mips_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		    rtx *ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
+		    rtx_insn **ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
 {
   mips_sched_reorder_1 (file, verbose, ready, nreadyp, cycle);
   return mips_issue_rate ();
@@ -13629,7 +13629,7 @@ mips_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 
 static int
 mips_sched_reorder2 (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		     rtx *ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
+		     rtx_insn **ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
 {
   mips_sched_reorder_1 (file, verbose, ready, nreadyp, cycle);
   return cached_can_issue_more;
