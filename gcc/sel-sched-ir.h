@@ -655,7 +655,7 @@ struct idata_def
 struct vinsn_def
 {
   /* Associated insn.  */
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
 
   /* Its description.  */
   struct idata_def id;
@@ -677,8 +677,7 @@ struct vinsn_def
   bool may_trap_p;
 };
 
-extern rtx_insn *VINSN_INSN_RTX (vinsn_t);
-extern rtx& SET_VINSN_INSN_RTX (vinsn_t);
+#define VINSN_INSN_RTX(VI) ((VI)->insn_rtx)
 #define VINSN_PATTERN(VI) (PATTERN (VINSN_INSN_RTX (VI)))
 
 #define VINSN_ID(VI) (&((VI)->id))

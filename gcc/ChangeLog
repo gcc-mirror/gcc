@@ -1,5 +1,18 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched-ir.h (struct vinsn_def): Strengthen field "insn_rtx"
+	from rtx to rtx_insn *.
+        (VINSN_INSN_RTX): Eliminate rvalue function and...
+	(SET_VINSN_INSN): ...lvalue function in favor of...
+	(VINSN_INSN_RTX): reinstate this old macro.
+
+	* sel-sched-ir.c (vinsn_init): Eliminate use of SET_VINSN_INSN_RTX
+	in favor of VINSN_INSN_RTX.
+	(VINSN_INSN_RTX): Delete this function.
+	(SET_VINSN_INSN_RTX): Likewise.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* sel-sched-ir.h (insn_t): Strengthen from rtx to rtx_insn *.
 	(BND_TO): Delete this function and...
 	(SET_BND_TO): ...this functions in favor of...
