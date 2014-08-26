@@ -1,3 +1,8 @@
+2014-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61271
+	* sel-sched-ir.c (make_regions_from_the_rest): Fix condition.
+
 2014-08-26  Evandro Menezes <e.menezes@samsung.com>
 
 	* config/arm/aarch64/aarch64.c (generic_addrcost_table): Delete
