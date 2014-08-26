@@ -226,10 +226,12 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.8.6</entry>
       <entry><code>nested_exception</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Follows an earlier C++0x draft, not the final specification.
+      </entry>
     </row>
     <row>
       <entry>18.9</entry>
@@ -1119,10 +1121,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.4</entry>
       <entry>Class template <code>basic_string</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>getline</code> overloads for rvalue streams.</entry>
     </row>
     <row>
       <entry>21.5</entry>
