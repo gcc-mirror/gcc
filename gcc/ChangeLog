@@ -1,5 +1,15 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (create_basic_block_structure): Strengthen params
+	1 "head" and 2 "end" from rtx to rtx_insn *.
+	* cfgrtl.c (create_basic_block_structure): Likewise.
+	(rtl_create_basic_block): Update casts from void * to rtx to
+	rtx_insn *, so that we can pass them as rtx_insn * to
+	create_basic_block_structure.
+	* sel-sched-ir.c (sel_create_basic_block): Likewise.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (for_each_inc_dec): Strengthen param 1 from rtx * to
 	rtx_insn **.
 	(check_for_inc_dec): Strengthen param "insn" from rtx to
