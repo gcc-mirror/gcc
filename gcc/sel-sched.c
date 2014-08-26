@@ -4716,7 +4716,7 @@ find_place_for_bookkeeping (edge e1, edge e2, fence_t *fence_to_rewind)
 	 removed already.  */
       if (DEBUG_INSN_P (place_to_insert))
 	{
-	  rtx insn = sel_bb_head (book_block);
+	  rtx_insn *insn = sel_bb_head (book_block);
 
 	  while (insn != place_to_insert &&
 		 (DEBUG_INSN_P (insn) || NOTE_P (insn)))
@@ -5960,7 +5960,7 @@ handle_emitting_transformations (rtx_insn *insn, expr_t expr,
    leave a NOP there till the return to fill_insns.  */
 
 static bool
-need_nop_to_preserve_insn_bb (rtx insn)
+need_nop_to_preserve_insn_bb (rtx_insn *insn)
 {
   insn_t bb_head, bb_end, bb_next, in_next;
   basic_block bb = BLOCK_FOR_INSN (insn);
@@ -6638,7 +6638,7 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
   if (!expr)
     {
       int res;
-      rtx last_insn = PREV_INSN (insn);
+      rtx_insn *last_insn = PREV_INSN (insn);
       bool added_to_path;
 
       gcc_assert (insn == sel_bb_end (bb));
@@ -7006,7 +7006,7 @@ simplify_changed_insns (void)
   for (i = 0; i < current_nr_blocks; i++)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i));
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	if (INSN_P (insn))
