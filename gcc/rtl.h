@@ -2672,11 +2672,12 @@ extern int insn_rtx_cost (rtx, bool);
 
 /* Given an insn and condition, return a canonical description of
    the test being made.  */
-extern rtx canonicalize_condition (rtx, rtx, int, rtx *, rtx, int, int);
+extern rtx canonicalize_condition (rtx_insn *, rtx, int, rtx_insn **, rtx,
+				   int, int);
 
 /* Given a JUMP_INSN, return a canonical description of the test
    being made.  */
-extern rtx get_condition (rtx, rtx *, int, int);
+extern rtx get_condition (rtx_insn *, rtx_insn **, int, int);
 
 /* Information about a subreg of a hard register.  */
 struct subreg_info

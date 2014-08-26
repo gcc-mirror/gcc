@@ -2893,7 +2893,8 @@ static void
 check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
 {
   basic_block exit_bb;
-  rtx condition, at;
+  rtx condition;
+  rtx_insn *at;
   edge ein;
 
   exit_bb = e->src;
@@ -2931,8 +2932,7 @@ check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
 
   /* Check that we are able to determine number of iterations and fill
      in information about it.  */
-  iv_number_of_iterations (loop, safe_as_a <rtx_insn *> (at),
-			   condition, desc);
+  iv_number_of_iterations (loop, at, condition, desc);
 }
 
 /* Finds a simple exit of LOOP and stores its description into DESC.  */

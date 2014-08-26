@@ -1,5 +1,43 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (canonicalize_condition): Strengthen param 1 from rtx to
+	rtx_insn * and param 4 from rtx * to rtx_insn **.
+	(get_condition): Strengthen param 1 from rtx to rtx_insn * and
+	param 2 from rtx * to rtx_insn **.
+
+	* df.h (can_move_insns_across): Strengthen params 1-4 from rtx to
+	rtx_insn * and final param from rtx * to rtx_insn **.
+
+	* cfgcleanup.c (try_head_merge_bb): Strengthen local "move_before"
+	from rtx to rtx_insn *.
+	(try_head_merge_bb): Likewise for both locals named "move_upto".
+	* df-problems.c (can_move_insns_across): Likewise for params
+	"from", "to", "across_from", "across_to" and locals "insn",
+	"next", "max_to".  Strengthen param "pmove_upto" from rtx * to
+	rtx_insn **.
+	* ifcvt.c (struct noce_if_info): Strengthen field "cond_earliest"
+	from rtx to rtx_insn *.
+	(noce_get_alt_condition): Strengthen param "earliest" from rtx *
+	to rtx_insn **.  Strengthen local "insn" from rtx to rtx_insn *.
+	(noce_try_minmax): Strengthen locals "earliest", "seq" from rtx to
+	rtx_insn *.
+	(noce_try_abs): Likewise.
+	(noce_get_condition): Likewise for param "jump".  Strengthen param
+	"earliest" from rtx * to rtx_insn **.
+	(noce_find_if_block): Strengthen local "cond_earliest" from rtx to
+	rtx_insn *.
+	(find_cond_trap): Likewise.
+	(dead_or_predicable): Likewise for local "earliest".
+	* loop-iv.c (check_simple_exit): Likewise for local "at".  Add
+	checked cast.
+	* rtlanal.c (canonicalize_condition): Likewise for param "insn"
+	and local "prev".  Strengthen param "earliest" from rtx * to
+	rtx_insn **.
+	(get_condition): Strengthen param "jump" from rtx to rtx_insn *
+	Strengthen param "earliest" from rtx * to rtx_insn **.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* fwprop.c (local_ref_killed_between_p): Strengthen params "from",
 	"to" and local "insn" from rtx to rtx_insn *.
 

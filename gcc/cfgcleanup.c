@@ -2291,7 +2291,8 @@ try_head_merge_bb (basic_block bb)
   bool changed, moveall;
   unsigned ix;
   rtx_insn *e0_last_head;
-  rtx cond, move_before;
+  rtx cond;
+  rtx_insn *move_before;
   unsigned nedges = EDGE_COUNT (bb->succs);
   rtx_insn *jump = BB_END (bb);
   regset live, live_union;
@@ -2455,7 +2456,7 @@ try_head_merge_bb (basic_block bb)
      with the final move.  */
   if (final_dest_bb != NULL)
     {
-      rtx move_upto;
+      rtx_insn *move_upto;
 
       moveall = can_move_insns_across (currptr[0], e0_last_head, move_before,
 				       jump, e0->dest, live_union,
@@ -2490,7 +2491,7 @@ try_head_merge_bb (basic_block bb)
 
   do
     {
-      rtx move_upto;
+      rtx_insn *move_upto;
       moveall = can_move_insns_across (currptr[0], e0_last_head,
 				       move_before, jump, e0->dest, live_union,
 				       NULL, &move_upto);
