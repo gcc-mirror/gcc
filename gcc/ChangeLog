@@ -1,5 +1,10 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* fwprop.c (local_ref_killed_between_p): Strengthen params "from",
+	"to" and local "insn" from rtx to rtx_insn *.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* sel-sched.c (find_place_for_bookkeeping): Strengthen local "insn"
 	from rtx to rtx_insn *.
 	(need_nop_to_preserve_insn_bb): Likewise for param "insn".
