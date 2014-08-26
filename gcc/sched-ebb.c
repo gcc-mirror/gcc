@@ -62,7 +62,7 @@ static int rank (rtx_insn *, rtx_insn *);
 static int ebb_contributes_to_priority (rtx_insn *, rtx_insn *);
 static basic_block earliest_block_with_similiar_load (basic_block, rtx);
 static void add_deps_for_risky_insns (rtx_insn *, rtx_insn *);
-static void debug_ebb_dependencies (rtx, rtx);
+static void debug_ebb_dependencies (rtx_insn *, rtx_insn *);
 
 static void ebb_add_remove_insn (rtx_insn *, int);
 static void ebb_add_block (basic_block, basic_block);
@@ -98,7 +98,7 @@ schedule_more_p (void)
 
 /* Print dependency information about ebb between HEAD and TAIL.  */
 static void
-debug_ebb_dependencies (rtx head, rtx tail)
+debug_ebb_dependencies (rtx_insn *head, rtx_insn *tail)
 {
   fprintf (sched_dump,
 	   ";;   --------------- forward dependences: ------------ \n");
