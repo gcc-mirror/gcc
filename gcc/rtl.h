@@ -3200,7 +3200,7 @@ extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */
 extern void print_rtl_with_bb (FILE *, const_rtx, int);
-extern rtx_insn *duplicate_insn_chain (rtx, rtx);
+extern rtx_insn *duplicate_insn_chain (rtx_insn *, rtx_insn *);
 
 /* In expmed.c */
 extern void init_expmed (void);
