@@ -271,7 +271,7 @@ delete_insn_chain (rtx start, rtx finish, bool clear_bb)
    AFTER is the basic block we should be put after.  */
 
 basic_block
-create_basic_block_structure (rtx head, rtx end, rtx_note *bb_note,
+create_basic_block_structure (rtx_insn *head, rtx_insn *end, rtx_note *bb_note,
 			      basic_block after)
 {
   basic_block bb;
@@ -351,7 +351,8 @@ create_basic_block_structure (rtx head, rtx end, rtx_note *bb_note,
 static basic_block
 rtl_create_basic_block (void *headp, void *endp, basic_block after)
 {
-  rtx head = (rtx) headp, end = (rtx) endp;
+  rtx_insn *head = (rtx_insn *) headp;
+  rtx_insn *end = (rtx_insn *) endp;
   basic_block bb;
 
   /* Grow the basic block array if needed.  */

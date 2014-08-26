@@ -5358,7 +5358,8 @@ sel_create_basic_block (void *headp, void *endp, basic_block after)
     new_bb = orig_cfg_hooks.create_basic_block (headp, endp, after);
   else
     {
-      new_bb = create_basic_block_structure ((rtx) headp, (rtx) endp,
+      new_bb = create_basic_block_structure ((rtx_insn *) headp,
+					     (rtx_insn *) endp,
 					     new_bb_note, after);
       new_bb->aux = NULL;
     }
