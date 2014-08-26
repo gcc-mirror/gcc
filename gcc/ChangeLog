@@ -1,3 +1,7 @@
+2014-08-26  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* doc/invoke.texi: -fno-cxa-atexit should be -fno-use-cxa-atexit.
+
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* cselib.h (struct elt_loc_list): Strengthen field "setting_insn"
