@@ -1,5 +1,9 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtx-classes-status.txt (TODO): Remove SET_VINSN_INSN_RTX.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtx-classes-status.txt (TODO): Remove SET_BND_TO.
 
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
