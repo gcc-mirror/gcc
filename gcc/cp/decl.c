@@ -4672,14 +4672,6 @@ start_decl (const cp_declarator *declarator,
 		    }
 		  field = DECL_TEMPLATE_RESULT (field);
 		}
-	      else if (this_tmpl)
-		{
-		  error_at (DECL_SOURCE_LOCATION (decl),
-			    "member template declaration of %qD", decl);
-		  inform (DECL_SOURCE_LOCATION (field), "does not match "
-			  "non-member-template declaration here");
-		  return error_mark_node;
-		}
 
 	      if (DECL_CONTEXT (field) != context)
 		{
