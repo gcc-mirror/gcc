@@ -9623,7 +9623,7 @@ emit_predicate_relation_info (void)
 	    rtx p = gen_rtx_REG (BImode, r);
 	    rtx_insn *n = emit_insn_after (gen_pred_rel_mutex (p), head);
 	    if (head == BB_END (bb))
-	      SET_BB_END (bb) = n;
+	      BB_END (bb) = n;
 	    head = n;
 	  }
     }
@@ -9646,9 +9646,9 @@ emit_predicate_relation_info (void)
 		emit_insn_before (gen_safe_across_calls_all (), insn);
 	      rtx_insn *a = emit_insn_after (gen_safe_across_calls_normal (), insn);
 	      if (BB_HEAD (bb) == insn)
-		SET_BB_HEAD (bb) = b;
+		BB_HEAD (bb) = b;
 	      if (BB_END (bb) == insn)
-		SET_BB_END (bb) = a;
+		BB_END (bb) = a;
 	    }
 
 	  if (insn == BB_END (bb))

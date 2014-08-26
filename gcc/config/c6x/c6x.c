@@ -5834,8 +5834,8 @@ hwloop_optimize (hwloop_info loop)
   SET_NEXT_INSN (PREV_INSN (BB_HEAD (bb))) = orig_vec[0];
   SET_NEXT_INSN (orig_vec[n_insns - 1]) = NEXT_INSN (BB_END (bb));
   SET_PREV_INSN (NEXT_INSN (BB_END (bb))) = orig_vec[n_insns - 1];
-  SET_BB_HEAD (bb) = orig_vec[0];
-  SET_BB_END (bb) = orig_vec[n_insns - 1];
+  BB_HEAD (bb) = orig_vec[0];
+  BB_END (bb) = orig_vec[n_insns - 1];
  undo_splits:
   free_delay_pairs ();
   FOR_BB_INSNS (bb, insn)

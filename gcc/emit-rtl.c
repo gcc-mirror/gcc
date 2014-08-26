@@ -3982,8 +3982,9 @@ add_insn_before_nobb (rtx insn, rtx before)
    they know how to update a SEQUENCE. */
 
 void
-add_insn_after (rtx insn, rtx after, basic_block bb)
+add_insn_after (rtx uncast_insn, rtx after, basic_block bb)
 {
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   add_insn_after_nobb (insn, after);
   if (!BARRIER_P (after)
       && !BARRIER_P (insn)
@@ -3998,7 +3999,7 @@ add_insn_after (rtx insn, rtx after, basic_block bb)
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && !BARRIER_P (insn)
 	  && !NOTE_INSN_BASIC_BLOCK_P (insn))
-	SET_BB_END (bb) = insn;
+	BB_END (bb) = insn;
     }
 }
 
@@ -4063,8 +4064,8 @@ set_insn_deleted (rtx insn)
 void
 remove_insn (rtx insn)
 {
-  rtx next = NEXT_INSN (insn);
-  rtx prev = PREV_INSN (insn);
+  rtx_insn *next = NEXT_INSN (insn);
+  rtx_insn *prev = PREV_INSN (insn);
   basic_block bb;
 
   if (prev)
@@ -4127,10 +4128,10 @@ remove_insn (rtx insn)
 	  /* Never ever delete the basic block note without deleting whole
 	     basic block.  */
 	  gcc_assert (!NOTE_P (insn));
-	  SET_BB_HEAD (bb) = next;
+	  BB_HEAD (bb) = next;
 	}
       if (BB_END (bb) == insn)
-	SET_BB_END (bb) = prev;
+	BB_END (bb) = prev;
     }
 }
 
@@ -4230,12 +4231,12 @@ reorder_insns (rtx_insn *from, rtx_insn *to, rtx_insn *after)
 	  && (bb2 = BLOCK_FOR_INSN (from)))
 	{
 	  if (BB_END (bb2) == to)
-	    SET_BB_END (bb2) = prev;
+	    BB_END (bb2) = prev;
 	  df_set_bb_dirty (bb2);
 	}
 
       if (BB_END (bb) == after)
-	SET_BB_END (bb) = to;
+	BB_END (bb) = to;
 
       for (x = from; x != NEXT_INSN (to); x = NEXT_INSN (x))
 	if (!BARRIER_P (x))
@@ -4381,10 +4382,10 @@ emit_label_before (rtx label, rtx before)
    efficiently.  */
 
 static rtx
-emit_insn_after_1 (rtx first, rtx after, basic_block bb)
+emit_insn_after_1 (rtx_insn *first, rtx after, basic_block bb)
 {
-  rtx last;
-  rtx after_after;
+  rtx_insn *last;
+  rtx_insn *after_after;
   if (!bb && !BARRIER_P (after))
     bb = BLOCK_FOR_INSN (after);
 
@@ -4403,7 +4404,7 @@ emit_insn_after_1 (rtx first, rtx after, basic_block bb)
 	  df_insn_rescan (last);
 	}
       if (BB_END (bb) == after)
-	SET_BB_END (bb) = last;
+	BB_END (bb) = last;
     }
   else
     for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
@@ -4443,7 +4444,7 @@ emit_pattern_after_noloc (rtx x, rtx after, basic_block bb,
     case CODE_LABEL:
     case BARRIER:
     case NOTE:
-      last = emit_insn_after_1 (x, after, bb);
+      last = emit_insn_after_1 (as_a <rtx_insn *> (x), after, bb);
       break;
 
 #ifdef ENABLE_RTL_CHECKING

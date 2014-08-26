@@ -64,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
-static GTY(()) rtx cfg_layout_function_footer;
+static GTY(()) rtx_insn *cfg_layout_function_footer;
 static GTY(()) rtx cfg_layout_function_header;
 
 static rtx_insn *skip_insns_after_block (basic_block);
@@ -123,8 +123,9 @@ can_delete_label_p (const rtx_code_label *label)
 /* Delete INSN by patching it out.  */
 
 void
-delete_insn (rtx insn)
+delete_insn (rtx uncast_insn)
 {
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   rtx note;
   bool really_delete = true;
 
@@ -152,9 +153,9 @@ delete_insn (rtx insn)
 	      && bb == BLOCK_FOR_INSN (bb_note))
 	    {
 	      reorder_insns_nobb (insn, insn, bb_note);
-	      SET_BB_HEAD (bb) = bb_note;
+	      BB_HEAD (bb) = bb_note;
 	      if (BB_END (bb) == bb_note)
-		SET_BB_END (bb) = insn;
+		BB_END (bb) = insn;
 	    }
 	}
 
@@ -326,8 +327,8 @@ create_basic_block_structure (rtx_insn *head, rtx_insn *end, rtx_note *bb_note,
   if (NEXT_INSN (end) == bb_note)
     end = bb_note;
 
-  SET_BB_HEAD (bb) = head;
-  SET_BB_END (bb) = end;
+  BB_HEAD (bb) = head;
+  BB_END (bb) = end;
   bb->index = last_basic_block_for_fn (cfun)++;
   bb->flags = BB_NEW | BB_RTL;
   link_block (bb, after);
@@ -401,7 +402,7 @@ rtl_delete_block (basic_block b)
   end = get_last_bb_insn (b);
 
   /* Selectively delete the entire chain.  */
-  SET_BB_HEAD (b) = NULL;
+  BB_HEAD (b) = NULL;
   delete_insn_chain (insn, end, true);
 
 
@@ -744,7 +745,7 @@ rtl_split_block (basic_block bb, void *insnp)
   /* Create the new basic block.  */
   new_bb = create_basic_block (NEXT_INSN (insn), BB_END (bb), bb);
   BB_COPY_PARTITION (new_bb, bb);
-  SET_BB_END (bb) = insn;
+  BB_END (bb) = insn;
 
   /* Redirect the outgoing edges.  */
   new_bb->succs = bb->succs;
@@ -803,7 +804,7 @@ emit_nop_for_unique_locus_between (basic_block a, basic_block b)
   if (!unique_locus_on_edge_between_p (a, b))
     return;
 
-  SET_BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
+  BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
   INSN_LOCATION (BB_END (a)) = EDGE_SUCC (a, 0)->goto_locus;
 }
 
@@ -885,8 +886,8 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
   /* Delete everything marked above as well as crap that might be
      hanging out between the two blocks.  */
-  SET_BB_END (a) = a_end;
-  SET_BB_HEAD (b) = b_empty ? NULL_RTX : b_head;
+  BB_END (a) = a_end;
+  BB_HEAD (b) = b_empty ? NULL : b_head;
   delete_insn_chain (del_first, del_last, true);
 
   /* When not optimizing and the edge is the only place in RTL which holds
@@ -902,8 +903,8 @@ rtl_merge_blocks (basic_block a, basic_block b)
     {
       update_bb_for_insn_chain (a_end, b_debug_end, a);
 
-      SET_BB_END (a) = b_debug_end;
-      SET_BB_HEAD (b) = NULL_RTX;
+      BB_END (a) = b_debug_end;
+      BB_HEAD (b) = NULL;
     }
   else if (b_end != b_debug_end)
     {
@@ -915,7 +916,7 @@ rtl_merge_blocks (basic_block a, basic_block b)
 	reorder_insns_nobb (NEXT_INSN (a_end), PREV_INSN (b_debug_start),
 			    b_debug_end);
       update_bb_for_insn_chain (b_debug_start, b_debug_end, a);
-      SET_BB_END (a) = b_debug_end;
+      BB_END (a) = b_debug_end;
     }
 
   df_bb_delete (b->index);
@@ -980,7 +981,7 @@ block_label (basic_block block)
 
   if (!LABEL_P (BB_HEAD (block)))
     {
-      SET_BB_HEAD (block) = emit_label_before (gen_label_rtx (), BB_HEAD (block));
+      BB_HEAD (block) = emit_label_before (gen_label_rtx (), BB_HEAD (block));
     }
 
   return BB_HEAD (block);
@@ -3259,7 +3260,7 @@ fixup_abnormal_edges (void)
 	      e = find_fallthru_edge (bb->succs);
 
 	      stop = NEXT_INSN (BB_END (bb));
-	      SET_BB_END (bb) = insn;
+	      BB_END (bb) = insn;
 
 	      for (insn = NEXT_INSN (insn); insn != stop; insn = next)
 		{
@@ -3455,7 +3456,7 @@ record_effective_endpoints (void)
       rtx_insn *end;
 
       if (PREV_INSN (BB_HEAD (bb)) && next_insn != BB_HEAD (bb))
-	SET_BB_HEADER (bb) = unlink_insn_chain (next_insn,
+	BB_HEADER (bb) = unlink_insn_chain (next_insn,
 						PREV_INSN (BB_HEAD (bb)));
       end = skip_insns_after_block (bb);
       if (NEXT_INSN (BB_END (bb)) && BB_END (bb) != end)
@@ -3617,7 +3618,7 @@ relink_block_chain (bool stay_in_cfglayout_mode)
     {
       bb->aux = NULL;
       if (!stay_in_cfglayout_mode)
-	SET_BB_HEADER (bb) = BB_FOOTER (bb) = NULL;
+	BB_HEADER (bb) = BB_FOOTER (bb) = NULL;
     }
 
   /* Maybe reset the original copy tables, they are not valid anymore
@@ -3910,7 +3911,7 @@ fixup_reorder_chain (void)
 		}
 	      nb = split_edge (e);
 	      if (!INSN_P (BB_END (nb)))
-		SET_BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
+		BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
 							 nb);
 	      INSN_LOCATION (BB_END (nb)) = e->goto_locus;
 
@@ -4190,7 +4191,7 @@ cfg_layout_duplicate_bb (basic_block bb)
 	insn = NEXT_INSN (insn);
       insn = duplicate_insn_chain (BB_HEADER (bb), insn);
       if (insn)
-	SET_BB_HEADER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
+	BB_HEADER (new_bb) = unlink_insn_chain (insn, get_last_insn ());
     }
 
   if (BB_FOOTER (bb))
@@ -4413,7 +4414,7 @@ static void
 cfg_layout_delete_block (basic_block bb)
 {
   rtx_insn *insn, *next, *prev = PREV_INSN (BB_HEAD (bb)), *remaints;
-  rtx *to;
+  rtx_insn **to;
 
   if (BB_HEADER (bb))
     {
@@ -4463,7 +4464,7 @@ cfg_layout_delete_block (basic_block bb)
 	}
     }
   if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    to = &SET_BB_HEADER (bb->next_bb);
+    to = &BB_HEADER (bb->next_bb);
   else
     to = &cfg_layout_function_footer;
 
@@ -4605,7 +4606,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 	  SET_PREV_INSN (BB_FOOTER (a)) = last;
 	  BB_FOOTER (a) = BB_HEADER (b);
 	}
-      SET_BB_HEADER (b) = NULL;
+      BB_HEADER (b) = NULL;
     }
 
   /* In the case basic blocks are not adjacent, move them around.  */
@@ -4619,7 +4620,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   else
     {
       insn = BB_HEAD (b);
-      SET_BB_END (a) = BB_END (b);
+      BB_END (a) = BB_END (b);
     }
 
   /* emit_insn_after_noloc doesn't call df_insn_change_bb.
@@ -4630,7 +4631,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   if (!NOTE_INSN_BASIC_BLOCK_P (insn))
     insn = NEXT_INSN (insn);
   gcc_assert (NOTE_INSN_BASIC_BLOCK_P (insn));
-  SET_BB_HEAD (b) = SET_BB_END (b) = NULL;
+  BB_HEAD (b) = BB_END (b) = NULL;
   delete_insn (insn);
 
   df_bb_delete (b->index);
@@ -5101,50 +5102,5 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_split_block_before_cond_jump, /* split_block_before_cond_jump */
   rtl_account_profile_record,
 };
-
-/* BB_HEAD as an rvalue. */
-
-rtx_insn *BB_HEAD (const_basic_block bb)
-{
-  rtx insn = bb->il.x.head_;
-  return safe_as_a <rtx_insn *> (insn);
-}
-
-/* BB_HEAD for use as an lvalue. */
-
-rtx& SET_BB_HEAD (basic_block bb)
-{
-  return bb->il.x.head_;
-}
-
-/* BB_END as an rvalue. */
-
-rtx_insn *BB_END (const_basic_block bb)
-{
-  rtx insn = bb->il.x.rtl->end_;
-  return safe_as_a <rtx_insn *> (insn);
-}
-
-/* BB_END as an lvalue. */
-
-rtx& SET_BB_END (basic_block bb)
-{
-  return bb->il.x.rtl->end_;
-}
-
-/* BB_HEADER as an rvalue. */
-
-rtx_insn *BB_HEADER (const_basic_block bb)
-{
-  rtx insn = bb->il.x.rtl->header_;
-  return safe_as_a <rtx_insn *> (insn);
-}
-
-/* BB_HEADER as an lvalue. */
-
-rtx& SET_BB_HEADER (basic_block bb)
-{
-  return bb->il.x.rtl->header_;
-}
 
 #include "gt-cfgrtl.h"

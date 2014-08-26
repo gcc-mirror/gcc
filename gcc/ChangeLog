@@ -1,5 +1,88 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (struct rtl_bb_info): Strengthen fields "end_"
+	and "header_" from rtx to rtx_insn *.
+	(struct basic_block_d): Likewise for field "head_" within "x"
+	field of union basic_block_il_dependent.
+	(BB_HEAD): Drop function...
+	(SET_BB_HEAD): ...and this function in favor of...
+	(BB_HEAD): ...reinstate macro.
+	(BB_END): Drop function...
+	(SET_BB_END): ...and this function in favor of...
+	(BB_END): ...reinstate macro.
+	(BB_HEADER): Drop function...
+	(SET_BB_HEADER): ...and this function in favor of...
+	(BB_HEADER): ...reinstate macro.
+
+	* bb-reorder.c (add_labels_and_missing_jumps): Drop use of BB_END.
+	(fix_crossing_unconditional_branches): Likewise.
+	* caller-save.c (save_call_clobbered_regs): Likewise.
+	(insert_one_insn): Drop use of SET_BB_HEAD and SET_BB_END.
+	* cfgbuild.c (find_bb_boundaries): Drop use of SET_BB_END.
+	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Likewise.
+	(merge_blocks_move_successor_nojumps): Likewise.
+	(outgoing_edges_match): Update use of for_each_rtx to
+	for_each_rtx_in_insn.
+	* cfgexpand.c (expand_gimple_cond): Drop use of SET_BB_END.
+	(expand_gimple_cond): Likewise.
+	(expand_gimple_tailcall): Likewise.
+	(expand_gimple_basic_block): Drop use of SET_BB_HEAD and
+	SET_BB_END.
+	(construct_exit_block): Drop use of SET_BB_END.
+	* cfgrtl.c (cfg_layout_function_footer): Strengthen from rtx to
+	rtx_insn *.
+	(delete_insn): Rename param "insn" to "uncast_insn", introducing
+	a new local "insn" with a checked cast to rtx_insn *.  Drop use of
+	SET_BB_HEAD and SET_BB_END.
+	(create_basic_block_structure): Drop use of SET_BB_HEAD and
+	SET_BB_END.
+	(rtl_delete_block): Drop use of SET_BB_HEAD.
+	(rtl_split_block): Drop use of SET_BB_END.
+	(emit_nop_for_unique_locus_between): Likewise.
+	(rtl_merge_blocks): Drop use of SET_BB_END and SET_BB_HEAD.
+	(block_label): Drop use of SET_BB_HEAD.
+	(fixup_abnormal_edges): Drop use of SET_BB_END.
+	(record_effective_endpoints): Drop use of SET_BB_HEADER.
+	(relink_block_chain): Likewise.
+	(fixup_reorder_chain): Drop use of SET_BB_END.
+	(cfg_layout_duplicate_bb): Drop use of SET_BB_HEADER.
+	(cfg_layout_delete_block): Strengthen local "to" from rtx * to
+	rtx_insn **.  Drop use of SET_BB_HEADER.
+	(cfg_layout_merge_blocks): Drop use of SET_BB_HEADER, SET_BB_END,
+	SET_BB_HEAD.
+	(BB_HEAD): Delete this function.
+	(SET_BB_HEAD): Likewise.
+	(BB_END): Likewise.
+	(SET_BB_END): Likewise.
+	(BB_HEADER): Likewise.
+	(SET_BB_HEADER): Likewise.
+	* emit-rtl.c (add_insn_after):  Rename param "insn" to
+	"uncast_insn", adding a new local "insn" and a checked cast to
+	rtx_insn *.  Drop use of SET_BB_END.
+	(remove_insn): Strengthen locals "next" and "prev" from rtx to
+	rtx_insn *.  Drop use of SET_BB_HEAD and SET_BB_END.
+	(reorder_insns): Drop use of SET_BB_END.
+	(emit_insn_after_1): Strengthen param "first" and locals "last",
+	"after_after" from rtx to rtx_insn *.  Drop use of SET_BB_END.
+	(emit_pattern_after_noloc): Add checked cast.
+	* haifa-sched.c (get_ebb_head_tail): Drop use of SET_BB_END.
+	(restore_other_notes): Likewise.
+	(move_insn): Likewise.
+	(sched_extend_bb): Likewise.
+	(fix_jump_move): Likewise.
+	* ifcvt.c (noce_process_if_block): Likewise.
+	(dead_or_predicable): Likewise.
+	* ira.c (update_equiv_regs): Drop use of SET_BB_HEAD.
+	* reg-stack.c (change_stack): Drop use of SET_BB_END.
+	* sel-sched-ir.c (sel_move_insn): Likewise.
+	* sel-sched.c (move_nop_to_previous_block): Likewise.
+
+	* config/c6x/c6x.c (hwloop_optimize): Drop use of SET_BB_HEAD and
+	SET_BB_END.
+	* config/ia64/ia64.c (emit_predicate_relation_info): Likewise.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (create_basic_block_structure): Strengthen params
 	1 "head" and 2 "end" from rtx to rtx_insn *.
 	* cfgrtl.c (create_basic_block_structure): Likewise.

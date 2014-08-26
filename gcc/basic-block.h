@@ -122,11 +122,11 @@ struct loop;
 struct GTY(()) rtl_bb_info {
   /* The first insn of the block is embedded into bb->il.x.  */
   /* The last insn of the block.  */
-  rtx end_;
+  rtx_insn *end_;
 
   /* In CFGlayout mode points to insn notes/jumptables to be placed just before
      and after the block.   */
-  rtx header_;
+  rtx_insn *header_;
   rtx_insn *footer_;
 };
 
@@ -185,7 +185,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   union basic_block_il_dependent {
       struct gimple_bb_info GTY ((tag ("0"))) gimple;
       struct {
-        rtx head_;
+        rtx_insn *head_;
         struct rtl_bb_info * rtl;
       } GTY ((tag ("1"))) x;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
@@ -372,15 +372,9 @@ struct GTY(()) control_flow_graph {
    to rtx_insn.   Once the underlying fields are converted from rtx
    to rtx_insn, these can be converted back to macros.  */
 
-extern rtx_insn *BB_HEAD (const_basic_block bb);
-extern rtx& SET_BB_HEAD (basic_block bb);
-
-extern rtx_insn *BB_END (const_basic_block bb);
-extern rtx& SET_BB_END (basic_block bb);
-
-extern rtx_insn *BB_HEADER (const_basic_block bb);
-extern rtx& SET_BB_HEADER (basic_block bb);
-
+#define BB_HEAD(B)      (B)->il.x.head_
+#define BB_END(B)       (B)->il.x.rtl->end_
+#define BB_HEADER(B)    (B)->il.x.rtl->header_
 #define BB_FOOTER(B)    (B)->il.x.rtl->footer_
 
 /* Special block numbers [markers] for entry and exit.

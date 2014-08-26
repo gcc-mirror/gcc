@@ -3761,7 +3761,7 @@ update_equiv_regs (void)
 		      REG_LIVE_LENGTH (regno) = 2;
 
 		      if (insn == BB_HEAD (bb))
-			SET_BB_HEAD (bb) = PREV_INSN (insn);
+			BB_HEAD (bb) = PREV_INSN (insn);
 
 		      ira_reg_equiv[regno].init_insns
 			= gen_rtx_INSN_LIST (VOIDmode, new_insn, NULL_RTX);
