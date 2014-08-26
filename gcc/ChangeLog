@@ -1,3 +1,9 @@
+2014-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62175
+	* tree-ssa-loop-niter.c (expand_simple_operations): Do not
+	expand possibly trapping operations.
+
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/rs6000/rs6000.c (class swap_web_entry): Strengthen field
