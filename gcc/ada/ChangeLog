@@ -1,3 +1,9 @@
+2014-08-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/utils.c (rest_of_subprog_body_compilation): Adjust to
+	new cgraph interface.
+	(gnat_write_global_declarations): Likewise.
+
 2014-08-13  Sylvestre Ledru  <sylvestre@debian.org>
 
 	* 9drpc.adb: Fix a typo
