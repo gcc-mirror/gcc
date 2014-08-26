@@ -1,3 +1,15 @@
+2014-08-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/60606
+	PR target/61330
+	* varasm.c (make_decl_rtl): Clear DECL_ASSEMBLER_NAME and
+	DECL_HARD_REGISTER and return for invalid register specifications.
+	* cfgexpand.c (expand_one_var): If expand_one_hard_reg_var clears
+	DECL_HARD_REGISTER, call expand_one_error_var.
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Do not allow
+	CC_REGNUM with non-MODE_CC modes.
+	(arm_regno_class): Return NO_REGS for PC_REGNUM.
+
 2014-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61271

@@ -1,3 +1,10 @@
+2014-08-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/60606
+	PR target/61330
+	* gcc.dg/torture/pr60606-1.c, gcc.target/arm/pr60606-2.c,
+	gcc.target/arm/pr60606-3.c, gcc.target/arm/pr60606-4.c: New tests.
+
 2014-08-26  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gfortran.dg/bessel_7.f90: Bump allowed precision to avoid
