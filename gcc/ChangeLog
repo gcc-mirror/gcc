@@ -1,5 +1,26 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (for_each_inc_dec): Strengthen param 1 from rtx * to
+	rtx_insn **.
+	(check_for_inc_dec): Strengthen param "insn" from rtx to
+	rtx_insn *.
+
+	* cselib.h (cselib_process_insn): Likewise.
+
+	* cselib.c (cselib_record_sets): Likewise.
+	(cselib_process_insn): Likewise.
+
+	* dse.c (struct insn_info): Likewise for field "insn".
+	(check_for_inc_dec_1): Likewise for local "insn".
+	(check_for_inc_dec): Likewise for param "insn".
+	(scan_insn): Likewise.
+	(dse_step1): Likewise for local "insn".
+
+	* rtlanal.c (for_each_inc_dec): Strengthen param 1 from rtx * to
+	rtx_insn **.  Use for_each_rtx_in_insn rather than for_each_rtx.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-int.h (struct _dep): Strengthen fields "pro" and "con"
 	from rtx to rtx_insn *.
 	(DEP_PRO): Delete this function and...
