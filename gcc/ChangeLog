@@ -1,5 +1,12 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* haifa-sched.c (struct model_insn_info): Strengthen field "insn"
+	from rtx to rtx_insn *.
+	(model_add_to_schedule): Likewise for locals "start", "end",
+	"iter".
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (duplicate_insn_chain): Strengthen both params from rtx to
 	rtx_insn *.
 	* cfgrtl.c (duplicate_insn_chain): Likewise for  params "from",

@@ -1815,7 +1815,7 @@ struct model_pressure_data {
    than the main schedule.  */
 struct model_insn_info {
   /* The instruction itself.  */
-  rtx insn;
+  rtx_insn *insn;
 
   /* If this instruction is in model_worklist, these fields link to the
      previous (higher-priority) and next (lower-priority) instructions
@@ -3351,7 +3351,7 @@ model_add_to_schedule (rtx insn)
 static void
 model_analyze_insns (void)
 {
-  rtx start, end, iter;
+  rtx_insn *start, *end, *iter;
   sd_iterator_def sd_it;
   dep_t dep;
   struct model_insn_info *insn, *con;
