@@ -379,7 +379,7 @@ struct insn_info
   bool contains_cselib_groups;
 
   /* The insn. */
-  rtx insn;
+  rtx_insn *insn;
 
   /* The list of mem sets or mem clobbers that are contained in this
      insn.  If the insn is deletable, it contains only one mem set.
@@ -903,7 +903,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
 static bool
 check_for_inc_dec_1 (insn_info_t insn_info)
 {
-  rtx insn = insn_info->insn;
+  rtx_insn *insn = insn_info->insn;
   rtx note = find_reg_note (insn, REG_INC, NULL_RTX);
   if (note)
     return for_each_inc_dec (&insn, emit_inc_dec_insn_before, insn_info) == 0;
@@ -916,7 +916,7 @@ check_for_inc_dec_1 (insn_info_t insn_info)
    and add a parameter to this function so that it can be passed down in
    insn_info.fixed_regs_live.  */
 bool
-check_for_inc_dec (rtx insn)
+check_for_inc_dec (rtx_insn *insn)
 {
   struct insn_info insn_info;
   rtx note;
@@ -2442,7 +2442,7 @@ copy_fixed_regs (const_bitmap in)
    non-register target.  */
 
 static void
-scan_insn (bb_info_t bb_info, rtx insn)
+scan_insn (bb_info_t bb_info, rtx_insn *insn)
 {
   rtx body;
   insn_info_t insn_info = (insn_info_t) pool_alloc (insn_info_pool);
@@ -2708,7 +2708,7 @@ dse_step1 (void)
 
       if (bb->index >= NUM_FIXED_BLOCKS)
 	{
-	  rtx insn;
+	  rtx_insn *insn;
 
 	  cse_store_info_pool
 	    = create_alloc_pool ("cse_store_info_pool",

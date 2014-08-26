@@ -2648,7 +2648,7 @@ extern int for_each_rtx_in_insn (rtx_insn **, rtx_function, void *);
    for_each_inc_dec.  */
 typedef int (*for_each_inc_dec_fn) (rtx mem, rtx op, rtx dest, rtx src,
 				    rtx srcoff, void *arg);
-extern int for_each_inc_dec (rtx *, for_each_inc_dec_fn, void *arg);
+extern int for_each_inc_dec (rtx_insn **, for_each_inc_dec_fn, void *arg);
 
 typedef int (*rtx_equal_p_callback_function) (const_rtx *, const_rtx *,
                                               rtx *, rtx *);
@@ -3056,7 +3056,7 @@ extern int exp_equiv_p (const_rtx, const_rtx, int, bool);
 extern unsigned hash_rtx (const_rtx x, enum machine_mode, int *, int *, bool);
 
 /* In dse.c */
-extern bool check_for_inc_dec (rtx insn);
+extern bool check_for_inc_dec (rtx_insn *insn);
 
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);

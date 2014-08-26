@@ -67,7 +67,7 @@ static cselib_val *cselib_lookup_mem (rtx, int);
 static void cselib_invalidate_regno (unsigned int, enum machine_mode);
 static void cselib_invalidate_mem (rtx);
 static void cselib_record_set (rtx, cselib_val *, cselib_val *);
-static void cselib_record_sets (rtx);
+static void cselib_record_sets (rtx_insn *);
 
 struct expand_value_data
 {
@@ -2469,7 +2469,7 @@ cselib_record_autoinc_cb (rtx mem ATTRIBUTE_UNUSED, rtx op ATTRIBUTE_UNUSED,
 
 /* Record the effects of any sets and autoincs in INSN.  */
 static void
-cselib_record_sets (rtx insn)
+cselib_record_sets (rtx_insn *insn)
 {
   int n_sets = 0;
   int i;
@@ -2627,7 +2627,7 @@ fp_setter_insn (rtx insn)
 /* Record the effects of INSN.  */
 
 void
-cselib_process_insn (rtx insn)
+cselib_process_insn (rtx_insn *insn)
 {
   int i;
   rtx x;

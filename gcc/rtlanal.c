@@ -3120,7 +3120,7 @@ for_each_inc_dec_find_mem (rtx *r, void *d)
   return 0;
 }
 
-/* Traverse *X looking for MEMs, and for autoinc operations within
+/* Traverse *INSN looking for MEMs, and for autoinc operations within
    them.  For each such autoinc operation found, call FN, passing it
    the innermost enclosing MEM, the operation itself, the RTX modified
    by the operation, two RTXs (the second may be NULL) that, once
@@ -3131,7 +3131,7 @@ for_each_inc_dec_find_mem (rtx *r, void *d)
    for_each_inc_dec.  */
 
 int
-for_each_inc_dec (rtx *x,
+for_each_inc_dec (rtx_insn **insn,
 		  for_each_inc_dec_fn fn,
 		  void *arg)
 {
@@ -3141,7 +3141,7 @@ for_each_inc_dec (rtx *x,
   data.arg = arg;
   data.mem = NULL;
 
-  return for_each_rtx (x, for_each_inc_dec_find_mem, &data);
+  return for_each_rtx_in_insn (insn, for_each_inc_dec_find_mem, &data);
 }
 
 
