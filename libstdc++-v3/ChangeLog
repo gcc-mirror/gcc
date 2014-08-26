@@ -1,3 +1,8 @@
+2014-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62264
+	* include/experimental/string_view: Fix inconsistent exception specs.
+
 2014-08-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/61667
