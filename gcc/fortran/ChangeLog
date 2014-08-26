@@ -1,3 +1,15 @@
+2014-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend_passes (expr_array):  Replace by vec template.
+	(expr_size):  Remove.
+	(expr_count):  Remove.
+	(doloop_list):  Replace by vec template.
+	(doloop_size):  Remove.
+	(gfc_run_passes):  Adjust to use of vec template.
+	(cfe_register_funcs):  Likewise.
+	(cfe_expr_0):  Likewise.
+	(doloop_code):  Likewise.
+
 2014-08-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR fortran/62135
