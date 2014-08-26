@@ -1,3 +1,12 @@
+2014-08-26  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2014-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61271
+	* tree-vectorizer.h (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT,
+	LOOP_REQUIRES_VERSIONING_FOR_ALIAS): Wrap in parens.
+
 2014-08-24  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
