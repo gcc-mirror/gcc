@@ -1,5 +1,71 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-int.h (sched_init_insn_luid): Strengthen param 1 from rtx
+	to rtx_insn *.
+	(struct reg_use_data): Likewise for field "insn".
+	(insn_cost): Likewise for param.
+	(real_insn_for_shadow): Likewise for return type and param.
+	(increase_insn_priority): Likewise for param 1.
+	(debug_dependencies): Likewise for both params.
+
+	* haifa-sched.c (insn_delay): Likewise for param "insn".
+	(real_insn_for_shadow): Likewise for return type and param "insn".
+	(update_insn_after_change): Likewise for param "insn".
+	(recompute_todo_spec): Likewise for param "next" and locals "pro",
+	"other".
+	(insn_cost): Likewise for param "insn".
+	(increase_insn_priority): Likewise.
+	(calculate_reg_deaths): Likewise.
+	(setup_insn_reg_pressure_info): Likewise.
+	(model_schedule): Strengthen from vec<rtx> to vec<rtx_insn *>.
+	(model_index): Strengthen param "insn" from rtx to rtx_insn *.
+	(model_recompute): Likewise.
+	(must_restore_pattern_p): Likewise for param "next".
+	(model_excess_cost): Likewise for param "insn".
+	(queue_remove): Likewise.
+	(adjust_priority): Likewise for param "prev".
+	(update_register_pressure): Likewise for param "insn".
+	(setup_insn_max_reg_pressure): Likewise for local "insn".
+	(update_reg_and_insn_max_reg_pressure): Likewise for param "insn".
+	(model_add_to_schedule): Likewise.
+	(model_reset_queue_indices): Likewise for local "insn".
+	(unschedule_insns_until): Strengthen local "recompute_vec" from
+	auto_vec<rtx> to auto_vec<rtx_insn *>.  Strengthen locals "last",
+	"con" from rtx to rtx_insn *.
+	(restore_last_backtrack_point): Likewise for both locals "x". Add
+	checked casts.
+	(estimate_insn_tick): Likewise for param "insn".
+	(commit_schedule): Likewise for params "prev_head", "tail" and
+	local "x".
+	(verify_shadows): Likewise for locals "i1", "i2".
+	(dump_insn_stream): Likewise for params "head", "tail" and locals
+	"next_tail", "insn".
+	(schedule_block): Likewise for locals "insn", "x".  Add a checked
+	cast.
+	(fix_inter_tick): Likewise for params "head", "tail".
+	(create_check_block_twin): Likewise for local "jump".
+	(haifa_change_pattern): Likewise for param "insn".
+	(haifa_speculate_insn): Likewise.
+	(dump_new_block_header): Likewise for params "head", "tail".
+	(fix_jump_move): Likewise for param "jump".
+	(move_block_after_check): Likewise.
+	(sched_init_insn_luid): Likewise for param "insn".
+	(sched_init_luids): Likewise for local "insn".
+	(insn_luid): Likewise for param "insn".
+	(init_h_i_d): Likewise.
+	(haifa_init_h_i_d): Likewise for local "insn".
+	(haifa_init_insn): Likewise for param "insn".
+	* sched-deps.c (add_dependence): Likewise for local "real_pro",
+	"other".
+	(create_insn_reg_use): Likewise for param "insn".
+	(setup_insn_reg_uses): Likewise.  Add a checked cast.
+	* sched-ebb.c (debug_ebb_dependencies): Strengthen params "head",
+	"tail" from rtx to rtx_insn *.
+	* sched-rgn.c (void debug_dependencies): Likewise, also for locals
+	"insn", "next_tail".
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* haifa-sched.c (struct model_insn_info): Strengthen field "insn"
 	from rtx to rtx_insn *.
 	(model_add_to_schedule): Likewise for locals "start", "end",

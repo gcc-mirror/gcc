@@ -2806,10 +2806,10 @@ debug_rgn_dependencies (int from_bb)
 
 /* Print dependencies information for instructions between HEAD and TAIL.
    ??? This function would probably fit best in haifa-sched.c.  */
-void debug_dependencies (rtx head, rtx tail)
+void debug_dependencies (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn;
-  rtx next_tail = NEXT_INSN (tail);
+  rtx_insn *insn;
+  rtx_insn *next_tail = NEXT_INSN (tail);
 
   fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
 	   "insn", "code", "bb", "dep", "prio", "cost",

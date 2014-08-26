@@ -47,7 +47,7 @@ typedef vec<rtx_insn *> rtx_vec_t;
 extern void sched_init_bbs (void);
 
 extern void sched_extend_luids (void);
-extern void sched_init_insn_luid (rtx);
+extern void sched_init_insn_luid (rtx_insn *);
 extern void sched_init_luids (bb_vec_t);
 extern void sched_finish_luids (void);
 
@@ -774,7 +774,7 @@ struct reg_use_data
   /* Regno used in the insn.  */
   int regno;
   /* Insn using the regno.  */
-  rtx insn;
+  rtx_insn *insn;
   /* Cyclic list of elements with the same regno.  */
   struct reg_use_data *next_regno_use;
   /* List of elements with the same insn.  */
@@ -1344,7 +1344,7 @@ extern void get_ebb_head_tail (basic_block, basic_block,
 			       rtx_insn **, rtx_insn **);
 extern int no_real_insns_p (const_rtx, const_rtx);
 
-extern int insn_cost (rtx);
+extern int insn_cost (rtx_insn *);
 extern int dep_cost_1 (dep_t, dw_t);
 extern int dep_cost (dep_t);
 extern int set_priorities (rtx_insn *, rtx_insn *);
@@ -1430,7 +1430,7 @@ extern bool sched_no_dce;
 
 extern void set_modulo_params (int, int, int, int);
 extern void record_delay_slot_pair (rtx_insn *, rtx_insn *, int, int);
-extern rtx real_insn_for_shadow (rtx);
+extern rtx_insn *real_insn_for_shadow (rtx_insn *);
 extern void discard_delay_pairs_above (int);
 extern void free_delay_pairs (void);
 extern void add_delay_dependencies (rtx_insn *);
@@ -1446,9 +1446,9 @@ extern void extend_regions (void);
 extern void rgn_make_new_region_out_of_new_block (basic_block);
 
 extern void compute_priorities (void);
-extern void increase_insn_priority (rtx, int);
+extern void increase_insn_priority (rtx_insn *, int);
 extern void debug_rgn_dependencies (int);
-extern void debug_dependencies (rtx, rtx);
+extern void debug_dependencies (rtx_insn *, rtx_insn *);
 extern void free_rgn_deps (void);
 extern int contributes_to_priority (rtx_insn *, rtx_insn *);
 extern void extend_rgns (int *, int *, sbitmap, int *);

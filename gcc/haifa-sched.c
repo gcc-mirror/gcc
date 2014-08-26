@@ -419,7 +419,7 @@ basic_block (* sched_create_empty_bb) (basic_block);
 /* Return the number of cycles until INSN is expected to be ready.
    Return zero if it already is.  */
 static int
-insn_delay (rtx insn)
+insn_delay (rtx_insn *insn)
 {
   return MAX (INSN_TICK (insn) - clock_var, 0);
 }
@@ -750,17 +750,17 @@ record_delay_slot_pair (rtx_insn *i1, rtx_insn *i2, int cycles, int stages)
 
 /* Examine the delay pair hashtable to see if INSN is a shadow for another,
    and return the other insn if so.  Return NULL otherwise.  */
-rtx
-real_insn_for_shadow (rtx insn)
+rtx_insn *
+real_insn_for_shadow (rtx_insn *insn)
 {
   struct delay_pair *pair;
 
   if (!delay_htab)
-    return NULL_RTX;
+    return NULL;
 
   pair = delay_htab_i2->find_with_hash (insn, htab_hash_pointer (insn));
   if (!pair || pair->stages > 0)
-    return NULL_RTX;
+    return NULL;
   return pair->i1;
 }
 
@@ -831,7 +831,7 @@ static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx_insn **, int);
 static void queue_insn (rtx_insn *, int, const char *);
 static int schedule_insn (rtx_insn *);
-static void adjust_priority (rtx);
+static void adjust_priority (rtx_insn *);
 static void advance_one_cycle (void);
 static void extend_h_i_d (void);
 
@@ -864,7 +864,7 @@ static int early_queue_to_ready (state_t, struct ready_list *);
 static rtx_insn *ready_remove (struct ready_list *, int);
 static void ready_remove_insn (rtx);
 
-static void fix_inter_tick (rtx, rtx);
+static void fix_inter_tick (rtx_insn *, rtx_insn *);
 static int fix_tick_ready (rtx_insn *);
 static void change_queue_index (rtx_insn *, int);
 
@@ -872,8 +872,8 @@ static void change_queue_index (rtx_insn *, int);
    speculative instructions.  */
 
 static void extend_h_i_d (void);
-static void init_h_i_d (rtx);
-static int haifa_speculate_insn (rtx, ds_t, rtx *);
+static void init_h_i_d (rtx_insn *);
+static int haifa_speculate_insn (rtx_insn *, ds_t, rtx *);
 static void generate_recovery_code (rtx_insn *);
 static void process_insn_forw_deps_be_in_spec (rtx, rtx_insn *, ds_t);
 static void begin_speculative_block (rtx_insn *);
@@ -881,11 +881,11 @@ static void add_to_speculative_block (rtx_insn *);
 static void init_before_recovery (basic_block *);
 static void create_check_block_twin (rtx_insn *, bool);
 static void fix_recovery_deps (basic_block);
-static bool haifa_change_pattern (rtx, rtx);
-static void dump_new_block_header (int, basic_block, rtx, rtx);
+static bool haifa_change_pattern (rtx_insn *, rtx);
+static void dump_new_block_header (int, basic_block, rtx_insn *, rtx_insn *);
 static void restore_bb_notes (basic_block);
-static void fix_jump_move (rtx);
-static void move_block_after_check (rtx);
+static void fix_jump_move (rtx_insn *);
+static void move_block_after_check (rtx_insn *);
 static void move_succs (vec<edge, va_gc> **, basic_block);
 static void sched_remove_insn (rtx_insn *);
 static void clear_priorities (rtx_insn *, rtx_vec_t *);
@@ -1144,7 +1144,7 @@ cond_clobbered_p (rtx_insn *insn, HARD_REG_SET set_regs)
 /* This function should be called after modifying the pattern of INSN,
    to update scheduler data structures as needed.  */
 static void
-update_insn_after_change (rtx insn)
+update_insn_after_change (rtx_insn *insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -1184,7 +1184,7 @@ static void restore_pattern (dep_t, bool);
    false.  */
 
 static ds_t
-recompute_todo_spec (rtx next, bool for_backtrack)
+recompute_todo_spec (rtx_insn *next, bool for_backtrack)
 {
   ds_t new_ds;
   sd_iterator_def sd_it;
@@ -1268,7 +1268,8 @@ recompute_todo_spec (rtx next, bool for_backtrack)
   
   else if (n_control == 1 && n_replace == 0 && n_spec == 0)
     {
-      rtx pro, other, new_pat;
+      rtx_insn *pro, *other;
+      rtx new_pat;
       rtx cond = NULL_RTX;
       bool success;
       rtx_insn *prev = NULL;
@@ -1365,7 +1366,7 @@ static rtx_insn *nonscheduled_insns_begin;
    This is the number of cycles between instruction issue and
    instruction results.  */
 int
-insn_cost (rtx insn)
+insn_cost (rtx_insn *insn)
 {
   int cost;
 
@@ -1509,7 +1510,7 @@ dep_cost (dep_t link)
 /* Use this sel-sched.c friendly function in reorder2 instead of increasing
    INSN_PRIORITY explicitly.  */
 void
-increase_insn_priority (rtx insn, int amount)
+increase_insn_priority (rtx_insn *insn, int amount)
 {
   if (!sel_sched_p ())
     {
@@ -1687,7 +1688,7 @@ priority (rtx_insn *insn)
    in that class that die in INSN.  */
 
 static void
-calculate_reg_deaths (rtx insn, int *death)
+calculate_reg_deaths (rtx_insn *insn, int *death)
 {
   int i;
   struct reg_use_data *use;
@@ -1702,7 +1703,7 @@ calculate_reg_deaths (rtx insn, int *death)
 /* Setup info about the current register pressure impact of scheduling
    INSN at the current scheduling point.  */
 static void
-setup_insn_reg_pressure_info (rtx insn)
+setup_insn_reg_pressure_info (rtx_insn *insn)
 {
   int i, change, before, after, hard_regno;
   int excess_cost_change;
@@ -1876,7 +1877,7 @@ struct model_pressure_group {
 
 /* Index POINT gives the instruction at point POINT of the model schedule.
    This array doesn't change during main scheduling.  */
-static vec<rtx> model_schedule;
+static vec<rtx_insn *> model_schedule;
 
 /* The list of instructions in the model worklist, sorted in order of
    decreasing priority.  */
@@ -1927,7 +1928,7 @@ static unsigned int model_next_priority;
    doesn't belong to that schedule.  */
 
 static int
-model_index (rtx insn)
+model_index (rtx_insn *insn)
 {
   if (INSN_MODEL_INDEX (insn) == 0)
     return model_num_insns;
@@ -2096,7 +2097,7 @@ model_update_pressure (struct model_pressure_group *group,
 /* INSN has just been scheduled.  Update the model schedule accordingly.  */
 
 static void
-model_recompute (rtx insn)
+model_recompute (rtx_insn *insn)
 {
   struct {
     int last_use;
@@ -2229,7 +2230,7 @@ model_recompute (rtx insn)
 /* After DEP, which was cancelled, has been resolved for insn NEXT,
    check whether the insn's pattern needs restoring.  */
 static bool
-must_restore_pattern_p (rtx next, dep_t dep)
+must_restore_pattern_p (rtx_insn *next, dep_t dep)
 {
   if (QUEUE_INDEX (next) == QUEUE_SCHEDULED)
     return false;
@@ -2405,7 +2406,7 @@ model_excess_group_cost (struct model_pressure_group *group,
    if PRINT_P.  */
 
 static int
-model_excess_cost (rtx insn, bool print_p)
+model_excess_cost (rtx_insn *insn, bool print_p)
 {
   int point, pci, cl, cost, this_cost, delta;
   struct reg_pressure_data *insn_reg_pressure;
@@ -2781,7 +2782,7 @@ queue_insn (rtx_insn *insn, int n_cycles, const char *reason)
 
 /* Remove INSN from queue.  */
 static void
-queue_remove (rtx insn)
+queue_remove (rtx_insn *insn)
 {
   gcc_assert (QUEUE_INDEX (insn) >= 0);
   remove_free_INSN_LIST_elem (insn, &insn_queue[QUEUE_INDEX (insn)]);
@@ -2981,7 +2982,7 @@ ready_sort (struct ready_list *ready)
    provide a hook for the target to tweak itself.  */
 
 HAIFA_INLINE static void
-adjust_priority (rtx prev)
+adjust_priority (rtx_insn *prev)
 {
   /* ??? There used to be code here to try and estimate how an insn
      affected register lifetimes, but it did it by looking at REG_DEAD
@@ -3027,7 +3028,7 @@ advance_one_cycle (void)
 
 /* Update register pressure after scheduling INSN.  */
 static void
-update_register_pressure (rtx insn)
+update_register_pressure (rtx_insn *insn)
 {
   struct reg_use_data *use;
   struct reg_set_data *set;
@@ -3051,7 +3052,7 @@ setup_insn_max_reg_pressure (rtx after, bool update_p)
 {
   int i, p;
   bool eq_p;
-  rtx insn;
+  rtx_insn *insn;
   static int max_reg_pressure[N_REG_CLASSES];
 
   save_reg_pressure ();
@@ -3091,7 +3092,7 @@ setup_insn_max_reg_pressure (rtx after, bool update_p)
    also max register pressure for unscheduled insns of the current
    BB.  */
 static void
-update_reg_and_insn_max_reg_pressure (rtx insn)
+update_reg_and_insn_max_reg_pressure (rtx_insn *insn)
 {
   int i;
   int before[N_REG_CLASSES];
@@ -3332,7 +3333,7 @@ model_promote_insn (struct model_insn_info *insn)
 /* Add INSN to the end of the model schedule.  */
 
 static void
-model_add_to_schedule (rtx insn)
+model_add_to_schedule (rtx_insn *insn)
 {
   unsigned int point;
 
@@ -3692,7 +3693,7 @@ static void
 model_reset_queue_indices (void)
 {
   unsigned int i;
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_EACH_VEC_ELT (model_schedule, i, insn)
     QUEUE_INDEX (insn) = MODEL_INSN_INFO (insn)->old_queue;
@@ -4279,13 +4280,13 @@ undo_replacements_for_backtrack (struct haifa_saved_data *save)
 static void
 unschedule_insns_until (rtx insn)
 {
-  auto_vec<rtx> recompute_vec;
+  auto_vec<rtx_insn *> recompute_vec;
 
   /* Make two passes over the insns to be unscheduled.  First, we clear out
      dependencies and other trivial bookkeeping.  */
   for (;;)
     {
-      rtx last;
+      rtx_insn *last;
       sd_iterator_def sd_it;
       dep_t dep;
 
@@ -4323,7 +4324,7 @@ unschedule_insns_until (rtx insn)
      up-to-date.  */
   while (!recompute_vec.is_empty ())
     {
-      rtx con;
+      rtx_insn *con;
 
       con = recompute_vec.pop ();
       MUST_RECOMPUTE_SPEC_P (con) = 0;
@@ -4384,7 +4385,7 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
 
       for (link = insn_queue[q]; link; link = XEXP (link, 1))
 	{
-	  rtx x = XEXP (link, 0);
+	  rtx_insn *x = as_a <rtx_insn *> (XEXP (link, 0));
 	  QUEUE_INDEX (x) = QUEUE_NOWHERE;
 	  INSN_TICK (x) = INVALID_TICK;
 	}
@@ -4416,7 +4417,7 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
 
       for (link = insn_queue[q]; link; link = XEXP (link, 1))
 	{
-	  rtx x = XEXP (link, 0);
+	  rtx_insn *x = as_a <rtx_insn *> (XEXP (link, 0));
 	  QUEUE_INDEX (x) = i;
 	  TODO_SPEC (x) = recompute_todo_spec (x, true);
 	  INSN_TICK (x) = save->clock_var + i;
@@ -4625,7 +4626,7 @@ perform_replacements_new_cycle (void)
    reduced on recursive calls.  Return true if we produced a good
    estimate, or false if we exceeded the budget.  */
 static bool
-estimate_insn_tick (bitmap processed, rtx insn, int budget)
+estimate_insn_tick (bitmap processed, rtx_insn *insn, int budget)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -5709,7 +5710,7 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
    block.  TARGET_BB is the argument passed to schedule_block.  */
 
 static void
-commit_schedule (rtx_insn *prev_head, rtx tail, basic_block *target_bb)
+commit_schedule (rtx_insn *prev_head, rtx_insn *tail, basic_block *target_bb)
 {
   unsigned int i;
   rtx_insn *insn;
@@ -5726,7 +5727,7 @@ commit_schedule (rtx_insn *prev_head, rtx tail, basic_block *target_bb)
 
 	  if (sched_verbose)
 	    {
-	      rtx x;
+	      rtx_insn *x;
 
 	      x = next_real_insn (last_scheduled_insn);
 	      gcc_assert (x);
@@ -5885,11 +5886,11 @@ verify_shadows (void)
     {
       int t;
       struct delay_pair *pair = save->delay_pair;
-      rtx i1 = pair->i1;
+      rtx_insn *i1 = pair->i1;
 
       for (; pair; pair = pair->next_same_i1)
 	{
-	  rtx i2 = pair->i2;
+	  rtx_insn *i2 = pair->i2;
 
 	  if (QUEUE_INDEX (i2) == QUEUE_SCHEDULED)
 	    continue;
@@ -5931,12 +5932,12 @@ verify_shadows (void)
 /* Print instructions together with useful scheduling information between
    HEAD and TAIL (inclusive).  */
 static void
-dump_insn_stream (rtx head, rtx tail)
+dump_insn_stream (rtx_insn *head, rtx_insn *tail)
 {
   fprintf (sched_dump, ";;\t| insn | prio |\n");
 
-  rtx next_tail = NEXT_INSN (tail);
-  for (rtx insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+  rtx_insn *next_tail = NEXT_INSN (tail);
+  for (rtx_insn *insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
       int priority = NOTE_P (insn) ? 0 : INSN_PRIORITY (insn);
       const char *pattern = (NOTE_P (insn)
@@ -6417,7 +6418,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
       if (!must_backtrack)
 	for (i = 0; i < ready.n_ready; i++)
 	  {
-	    rtx insn = ready_element (&ready, i);
+	    rtx_insn *insn = ready_element (&ready, i);
 	    if (INSN_EXACT_TICK (insn) == clock_var)
 	      {
 		must_backtrack = true;
@@ -6482,7 +6483,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
     restart_debug_insn_loop:
       for (i = ready.n_ready - 1; i >= 0; i--)
 	{
-	  rtx x;
+	  rtx_insn *x;
 
 	  x = ready_element (&ready, i);
 	  if (DEPS_LIST_FIRST (INSN_HARD_BACK_DEPS (x)) != NULL
@@ -6532,7 +6533,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
       /* We must maintain QUEUE_INDEX between blocks in region.  */
       for (i = ready.n_ready - 1; i >= 0; i--)
 	{
-	  rtx x;
+	  rtx_insn *x;
 
 	  x = ready_element (&ready, i);
 	  QUEUE_INDEX (x) = QUEUE_NOWHERE;
@@ -6545,9 +6546,9 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	    rtx link;
 	    for (link = insn_queue[i]; link; link = XEXP (link, 1))
 	      {
-		rtx x;
+		rtx_insn *x;
 
-		x = XEXP (link, 0);
+		x = as_a <rtx_insn *> (XEXP (link, 0));
 		QUEUE_INDEX (x) = QUEUE_NOWHERE;
 		TODO_SPEC (x) = HARD_DEP;
 	      }
@@ -6946,7 +6947,7 @@ free_delay_pairs (void)
    INSN_TICKs of their dependents.
    HEAD and TAIL are the begin and the end of the current scheduled block.  */
 static void
-fix_inter_tick (rtx head, rtx tail)
+fix_inter_tick (rtx_insn *head, rtx_insn *tail)
 {
   /* Set of instructions with corrected INSN_TICK.  */
   bitmap_head processed;
@@ -7413,7 +7414,7 @@ begin_speculative_block (rtx_insn *insn)
   TODO_SPEC (insn) &= ~BEGIN_SPEC;
 }
 
-static void haifa_init_insn (rtx);
+static void haifa_init_insn (rtx_insn *);
 
 /* Generates recovery code for BE_IN speculative INSN.  */
 static void
@@ -7899,7 +7900,7 @@ create_check_block_twin (rtx_insn *insn, bool mutate_p)
     /* In case of branchy check, fix CFG.  */
     {
       basic_block first_bb, second_bb;
-      rtx jump;
+      rtx_insn *jump;
 
       first_bb = BLOCK_FOR_INSN (check);
       second_bb = sched_split_block (first_bb, check);
@@ -8127,7 +8128,7 @@ fix_recovery_deps (basic_block rec)
 /* Change pattern of INSN to NEW_PAT.  Invalidate cached haifa
    instruction data.  */
 static bool
-haifa_change_pattern (rtx insn, rtx new_pat)
+haifa_change_pattern (rtx_insn *insn, rtx new_pat)
 {
   int t;
 
@@ -8161,7 +8162,7 @@ sched_speculate_insn (rtx insn, ds_t request, rtx *new_pat)
 }
 
 static int
-haifa_speculate_insn (rtx insn, ds_t request, rtx *new_pat)
+haifa_speculate_insn (rtx_insn *insn, ds_t request, rtx *new_pat)
 {
   gcc_assert (sched_deps_info->generate_spec_deps
 	      && !IS_SPECULATION_CHECK_P (insn));
@@ -8177,7 +8178,7 @@ haifa_speculate_insn (rtx insn, ds_t request, rtx *new_pat)
    ends with TAIL, before scheduling it.
    I is zero, if scheduler is about to start with the fresh ebb.  */
 static void
-dump_new_block_header (int i, basic_block bb, rtx head, rtx tail)
+dump_new_block_header (int i, basic_block bb, rtx_insn *head, rtx_insn *tail)
 {
   if (!i)
     fprintf (sched_dump,
@@ -8288,7 +8289,7 @@ restore_bb_notes (basic_block first)
    Fix CFG after both in- and inter-block movement of
    control_flow_insn_p JUMP.  */
 static void
-fix_jump_move (rtx jump)
+fix_jump_move (rtx_insn *jump)
 {
   basic_block bb, jump_bb, jump_bb_next;
 
@@ -8319,7 +8320,7 @@ fix_jump_move (rtx jump)
 
 /* Fix CFG after interblock movement of control_flow_insn_p JUMP.  */
 static void
-move_block_after_check (rtx jump)
+move_block_after_check (rtx_insn *jump)
 {
   basic_block bb, jump_bb, jump_bb_next;
   vec<edge, va_gc> *t;
@@ -8461,7 +8462,7 @@ sched_extend_luids (void)
 
 /* Initialize LUID for INSN.  */
 void
-sched_init_insn_luid (rtx insn)
+sched_init_insn_luid (rtx_insn *insn)
 {
   int i = INSN_P (insn) ? 1 : common_sched_info->luid_for_non_insn (insn);
   int luid;
@@ -8489,7 +8490,7 @@ sched_init_luids (bb_vec_t bbs)
   sched_extend_luids ();
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	sched_init_insn_luid (insn);
@@ -8506,7 +8507,7 @@ sched_finish_luids (void)
 
 /* Return logical uid of INSN.  Helpful while debugging.  */
 int
-insn_luid (rtx insn)
+insn_luid (rtx_insn *insn)
 {
   return INSN_LUID (insn);
 }
@@ -8536,7 +8537,7 @@ extend_h_i_d (void)
 /* Initialize h_i_d entry of the INSN with default values.
    Values, that are not explicitly initialized here, hold zero.  */
 static void
-init_h_i_d (rtx insn)
+init_h_i_d (rtx_insn *insn)
 {
   if (INSN_LUID (insn) > 0)
     {
@@ -8559,7 +8560,7 @@ haifa_init_h_i_d (bb_vec_t bbs)
   extend_h_i_d ();
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       FOR_BB_INSNS (bb, insn)
 	init_h_i_d (insn);
@@ -8589,7 +8590,7 @@ haifa_finish_h_i_d (void)
 
 /* Init data for the new insn INSN.  */
 static void
-haifa_init_insn (rtx insn)
+haifa_init_insn (rtx_insn *insn)
 {
   gcc_assert (insn != NULL);
 

@@ -1524,8 +1524,8 @@ add_dependence (rtx_insn *con, rtx_insn *pro, enum reg_note dep_type)
      condition.  */
   if (dep_type == REG_DEP_CONTROL)
     {
-      rtx real_pro = pro;
-      rtx other = real_insn_for_shadow (real_pro);
+      rtx_insn *real_pro = pro;
+      rtx_insn *other = real_insn_for_shadow (real_pro);
       rtx cond;
 
       if (other != NULL_RTX)
@@ -1926,7 +1926,7 @@ ds_to_dt (ds_t ds)
 
 /* Allocate and return reg_use_data structure for REGNO and INSN.  */
 static struct reg_use_data *
-create_insn_reg_use (int regno, rtx insn)
+create_insn_reg_use (int regno, rtx_insn *insn)
 {
   struct reg_use_data *use;
 
@@ -1953,7 +1953,7 @@ create_insn_reg_set (int regno, rtx insn)
 
 /* Set up insn register uses for INSN and dependency context DEPS.  */
 static void
-setup_insn_reg_uses (struct deps_desc *deps, rtx insn)
+setup_insn_reg_uses (struct deps_desc *deps, rtx_insn *insn)
 {
   unsigned i;
   reg_set_iterator rsi;
@@ -1980,7 +1980,7 @@ setup_insn_reg_uses (struct deps_desc *deps, rtx insn)
       /* Create the cycle list of uses.  */
       for (list = reg_last->uses; list; list = XEXP (list, 1))
 	{
-	  use2 = create_insn_reg_use (i, XEXP (list, 0));
+	  use2 = create_insn_reg_use (i, as_a <rtx_insn *> (XEXP (list, 0)));
 	  next = use->next_regno_use;
 	  use->next_regno_use = use2;
 	  use2->next_regno_use = next;
