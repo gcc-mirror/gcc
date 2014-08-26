@@ -1,6 +1,11 @@
 2014-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61271
+	* expr.c (is_aligning_offset): Remove logical not.
+
+2014-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61271
 	* tree-vectorizer.h (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT,
 	LOOP_REQUIRES_VERSIONING_FOR_ALIAS): Wrap in parens.
 
