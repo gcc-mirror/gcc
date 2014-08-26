@@ -692,9 +692,9 @@ propagate_rtx (rtx x, enum machine_mode mode, rtx old_rtx, rtx new_rtx,
    between FROM to (but not including) TO.  */
 
 static bool
-local_ref_killed_between_p (df_ref ref, rtx from, rtx to)
+local_ref_killed_between_p (df_ref ref, rtx_insn *from, rtx_insn *to)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
