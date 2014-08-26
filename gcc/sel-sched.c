@@ -572,7 +572,7 @@ advance_one_cycle (fence_t fence)
 {
   unsigned i;
   int cycle;
-  rtx insn;
+  rtx_insn *insn;
 
   advance_state (FENCE_STATE (fence));
   cycle = ++FENCE_CYCLE (fence);
@@ -630,7 +630,7 @@ extract_new_fences_from (flist_t old_fences, flist_tail_t new_fences,
 			 int orig_max_seqno)
 {
   bool was_here_p = false;
-  insn_t insn = NULL_RTX;
+  insn_t insn = NULL;
   insn_t succ;
   succ_iterator si;
   ilist_iterator ii;
@@ -965,7 +965,7 @@ create_insn_rtx_with_lhs (vinsn_t vi, rtx lhs_rtx)
 static void
 replace_dest_with_reg_in_expr (expr_t expr, rtx new_reg)
 {
-  rtx insn_rtx;
+  rtx_insn *insn_rtx;
   vinsn_t vinsn;
 
   insn_rtx = create_insn_rtx_with_lhs (EXPR_VINSN (expr), new_reg);
@@ -1894,7 +1894,7 @@ identical_copy_p (rtx insn)
 /* Undo all transformations on *AV_PTR that were done when
    moving through INSN.  */
 static void
-undo_transformations (av_set_t *av_ptr, rtx insn)
+undo_transformations (av_set_t *av_ptr, rtx_insn *insn)
 {
   av_set_iterator av_iter;
   expr_t expr;
@@ -3189,7 +3189,7 @@ compute_live (insn_t insn)
 
 /* Update liveness sets for INSN.  */
 static inline void
-update_liveness_on_insn (rtx insn)
+update_liveness_on_insn (rtx_insn *insn)
 {
   ignore_first = true;
   compute_live (insn);
@@ -3197,9 +3197,9 @@ update_liveness_on_insn (rtx insn)
 
 /* Compute liveness below INSN and write it into REGS.  */
 static inline void
-compute_live_below_insn (rtx insn, regset regs)
+compute_live_below_insn (rtx_insn *insn, regset regs)
 {
-  rtx succ;
+  rtx_insn *succ;
   succ_iterator si;
 
   FOR_EACH_SUCC_1 (succ, si, insn, SUCCS_ALL)
@@ -3208,7 +3208,7 @@ compute_live_below_insn (rtx insn, regset regs)
 
 /* Update the data gathered in av and lv sets starting from INSN.  */
 static void
-update_data_sets (rtx insn)
+update_data_sets (rtx_insn *insn)
 {
   update_liveness_on_insn (insn);
   if (sel_bb_head_p (insn))
@@ -3955,7 +3955,7 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
   if (FENCE_SCHED_NEXT (fence))
     {
       gcc_assert (sched_next_worked == 1);
-      FENCE_SCHED_NEXT (fence) = NULL_RTX;
+      FENCE_SCHED_NEXT (fence) = NULL;
     }
 
   /* No need to stall if this variable was not initialized.  */
@@ -4015,7 +4015,7 @@ convert_vec_av_set_to_ready (void)
       insn_t insn = VINSN_INSN_RTX (vi);
 
       ready_try[n] = 0;
-      ready.vec[n] = as_a <rtx_insn *> (insn);
+      ready.vec[n] = insn;
     }
 }
 
@@ -4281,7 +4281,7 @@ calculate_privileged_insns (void)
    number is ISSUE_MORE.  FENCE and BEST_INSN are the current fence
    and the insn chosen for scheduling, respectively.  */
 static int
-invoke_aftermath_hooks (fence_t fence, rtx best_insn, int issue_more)
+invoke_aftermath_hooks (fence_t fence, rtx_insn *best_insn, int issue_more)
 {
   gcc_assert (INSN_P (best_insn));
 
@@ -4922,7 +4922,7 @@ remove_insns_that_need_bookkeeping (fence_t fence, av_set_t *av_ptr)
       ...
 */
 static void
-move_cond_jump (rtx insn, bnd_t bnd)
+move_cond_jump (rtx_insn *insn, bnd_t bnd)
 {
   edge ft_edge;
   basic_block block_from, block_next, block_new, block_bnd, bb;
@@ -4955,7 +4955,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
 
   /* Jump is moved to the boundary.  */
   next = PREV_INSN (insn);
-  SET_BND_TO (bnd) = insn;
+  BND_TO (bnd) = insn;
 
   ft_edge = find_fallthru_edge_from (block_from);
   block_next = ft_edge->dest;
@@ -5096,7 +5096,7 @@ compute_av_set_on_boundaries (fence_t fence, blist_t bnds, av_set_t *av_vliw_p)
 	{
   	  gcc_assert (FENCE_INSN (fence) == BND_TO (bnd));
 	  FENCE_INSN (fence) = bnd_to;
-	  SET_BND_TO (bnd) = bnd_to;
+	  BND_TO (bnd) = bnd_to;
 	}
 
       av_set_clear (&BND_AV (bnd));
@@ -5373,7 +5373,7 @@ update_fence_and_insn (fence_t fence, insn_t insn, int need_stall)
       SCHED_GROUP_P (insn) = 0;
     }
   else
-    FENCE_SCHED_NEXT (fence) = NULL_RTX;
+    FENCE_SCHED_NEXT (fence) = NULL;
   if (INSN_UID (insn) < FENCE_READY_TICKS_SIZE (fence))
     FENCE_READY_TICKS (fence) [INSN_UID (insn)] = 0;
 
@@ -5707,7 +5707,7 @@ update_and_record_unavailable_insns (basic_block book_block)
   av_set_iterator i;
   av_set_t old_av_set = NULL;
   expr_t cur_expr;
-  rtx bb_end = sel_bb_end (book_block);
+  rtx_insn *bb_end = sel_bb_end (book_block);
 
   /* First, get correct liveness in the bookkeeping block.  The problem is
      the range between the bookeeping insn and the end of block.  */
@@ -5875,7 +5875,7 @@ track_scheduled_insns_and_blocks (rtx insn)
 /* Emit a register-register copy for INSN if needed.  Return true if
    emitted one.  PARAMS is the move_op static parameters.  */
 static bool
-maybe_emit_renaming_copy (rtx insn,
+maybe_emit_renaming_copy (rtx_insn *insn,
                           moveop_static_params_p params)
 {
   bool insn_emitted  = false;
@@ -5915,7 +5915,7 @@ maybe_emit_renaming_copy (rtx insn,
    Return true if we've  emitted one.  PARAMS is the move_op static
    parameters.  */
 static bool
-maybe_emit_speculative_check (rtx insn, expr_t expr,
+maybe_emit_speculative_check (rtx_insn *insn, expr_t expr,
                               moveop_static_params_p params)
 {
   bool insn_emitted = false;
@@ -5944,7 +5944,7 @@ maybe_emit_speculative_check (rtx insn, expr_t expr,
    insn such as renaming/speculation.  Return true if one of such
    transformations actually happened, and we have emitted this insn.  */
 static bool
-handle_emitting_transformations (rtx insn, expr_t expr,
+handle_emitting_transformations (rtx_insn *insn, expr_t expr,
                                  moveop_static_params_p params)
 {
   bool insn_emitted = false;
@@ -6003,7 +6003,7 @@ need_nop_to_preserve_insn_bb (rtx insn)
 /* Remove INSN from stream.  When ONLY_DISCONNECT is true, its data
    is not removed but reused when INSN is re-emitted.  */
 static void
-remove_insn_from_stream (rtx insn, bool only_disconnect)
+remove_insn_from_stream (rtx_insn *insn, bool only_disconnect)
 {
   /* If there's only one insn in the BB, make sure that a nop is
      inserted into it, so the basic block won't disappear when we'll
@@ -6351,7 +6351,7 @@ code_motion_process_successors (insn_t insn, av_set_t orig_ops,
 {
   int res = 0;
   succ_iterator succ_i;
-  rtx succ;
+  insn_t succ;
   basic_block bb;
   int old_index;
   unsigned old_succs;

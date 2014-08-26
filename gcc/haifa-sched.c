@@ -877,7 +877,7 @@ static int haifa_speculate_insn (rtx, ds_t, rtx *);
 static void generate_recovery_code (rtx_insn *);
 static void process_insn_forw_deps_be_in_spec (rtx, rtx, ds_t);
 static void begin_speculative_block (rtx_insn *);
-static void add_to_speculative_block (rtx);
+static void add_to_speculative_block (rtx_insn *);
 static void init_before_recovery (basic_block *);
 static void create_check_block_twin (rtx_insn *, bool);
 static void fix_recovery_deps (basic_block);
@@ -888,7 +888,7 @@ static void fix_jump_move (rtx);
 static void move_block_after_check (rtx);
 static void move_succs (vec<edge, va_gc> **, basic_block);
 static void sched_remove_insn (rtx_insn *);
-static void clear_priorities (rtx, rtx_vec_t *);
+static void clear_priorities (rtx_insn *, rtx_vec_t *);
 static void calc_priorities (rtx_vec_t);
 static void add_jump_dependencies (rtx, rtx);
 
@@ -7417,7 +7417,7 @@ static void haifa_init_insn (rtx);
 
 /* Generates recovery code for BE_IN speculative INSN.  */
 static void
-add_to_speculative_block (rtx insn)
+add_to_speculative_block (rtx_insn *insn)
 {
   ds_t ts;
   sd_iterator_def sd_it;
@@ -8383,7 +8383,7 @@ sched_remove_insn (rtx_insn *insn)
    Store in vector pointed to by ROOTS_PTR insns on which priority () should
    be invoked to initialize all cleared priorities.  */
 static void
-clear_priorities (rtx insn, rtx_vec_t *roots_ptr)
+clear_priorities (rtx_insn *insn, rtx_vec_t *roots_ptr)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -8419,7 +8419,7 @@ static void
 calc_priorities (rtx_vec_t roots)
 {
   int i;
-  rtx insn;
+  rtx_insn *insn;
 
   FOR_EACH_VEC_ELT (roots, i, insn)
     priority (insn);

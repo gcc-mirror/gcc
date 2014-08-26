@@ -1801,11 +1801,11 @@ static rtx_insn *cur_insn = NULL;
 /* Implement hooks for haifa scheduler.  */
 
 static void
-haifa_start_insn (rtx insn)
+haifa_start_insn (rtx_insn *insn)
 {
   gcc_assert (insn && !cur_insn);
 
-  cur_insn = as_a <rtx_insn *> (insn);
+  cur_insn = insn;
 }
 
 static void
@@ -1833,7 +1833,7 @@ haifa_note_reg_use (int regno)
 }
 
 static void
-haifa_note_mem_dep (rtx mem, rtx pending_mem, rtx pending_insn, ds_t ds)
+haifa_note_mem_dep (rtx mem, rtx pending_mem, rtx_insn *pending_insn, ds_t ds)
 {
   if (!(ds & SPECULATIVE))
     {
@@ -1855,7 +1855,7 @@ haifa_note_mem_dep (rtx mem, rtx pending_mem, rtx pending_insn, ds_t ds)
 }
 
 static void
-haifa_note_dep (rtx elem, ds_t ds)
+haifa_note_dep (rtx_insn *elem, ds_t ds)
 {
   dep_def _dep;
   dep_t dep = &_dep;
@@ -1888,7 +1888,7 @@ note_reg_clobber (int r)
 }
 
 static void
-note_mem_dep (rtx m1, rtx m2, rtx e, ds_t ds)
+note_mem_dep (rtx m1, rtx m2, rtx_insn *e, ds_t ds)
 {
   if (sched_deps_info->note_mem_dep)
     sched_deps_info->note_mem_dep (m1, m2, e, ds);
@@ -2501,7 +2501,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	    {
 	      if (anti_dependence (XEXP (pending_mem, 0), t)
 		  && ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
+		note_mem_dep (t, XEXP (pending_mem, 0), as_a <rtx_insn *> (XEXP (pending, 0)),
 			      DEP_ANTI);
 
 	      pending = XEXP (pending, 1);
@@ -2514,7 +2514,8 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	    {
 	      if (output_dependence (XEXP (pending_mem, 0), t)
 		  && ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-		note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
+		note_mem_dep (t, XEXP (pending_mem, 0),
+			      as_a <rtx_insn *> (XEXP (pending, 0)),
 			      DEP_OUTPUT);
 
 	      pending = XEXP (pending, 1);
@@ -2646,7 +2647,8 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		if (read_dependence (XEXP (pending_mem, 0), t)
 		    && ! sched_insns_conditions_mutex_p (insn,
 							 XEXP (pending, 0)))
-		  note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
+		  note_mem_dep (t, XEXP (pending_mem, 0),
+				as_a <rtx_insn *> (XEXP (pending, 0)),
 				DEP_ANTI);
 
 		pending = XEXP (pending, 1);
@@ -2660,7 +2662,8 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		if (true_dependence (XEXP (pending_mem, 0), VOIDmode, t)
 		    && ! sched_insns_conditions_mutex_p (insn,
 							 XEXP (pending, 0)))
-		  note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
+		  note_mem_dep (t, XEXP (pending_mem, 0),
+				as_a <rtx_insn *> (XEXP (pending, 0)),
 				sched_deps_info->generate_spec_deps
 				? BEGIN_DATA | DEP_TRUE : DEP_TRUE);
 
