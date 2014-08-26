@@ -152,7 +152,7 @@ static hash_table<cselib_hasher> *cselib_preserved_hash_table;
 
 /* This is a global so we don't have to pass this through every function.
    It is used in new_elt_loc_list to set SETTING_INSN.  */
-static rtx cselib_current_insn;
+static rtx_insn *cselib_current_insn;
 
 /* The unique id that the next create value will take.  */
 static unsigned int next_uid;
@@ -1948,7 +1948,7 @@ cselib_subst_to_values (rtx x, enum machine_mode memmode)
 /* Wrapper for cselib_subst_to_values, that indicates X is in INSN.  */
 
 rtx
-cselib_subst_to_values_from_insn (rtx x, enum machine_mode memmode, rtx insn)
+cselib_subst_to_values_from_insn (rtx x, enum machine_mode memmode, rtx_insn *insn)
 {
   rtx ret;
   gcc_assert (!cselib_current_insn);
@@ -2089,7 +2089,7 @@ cselib_lookup_1 (rtx x, enum machine_mode mode,
 
 cselib_val *
 cselib_lookup_from_insn (rtx x, enum machine_mode mode,
-			 int create, enum machine_mode memmode, rtx insn)
+			 int create, enum machine_mode memmode, rtx_insn *insn)
 {
   cselib_val *ret;
 
@@ -2401,10 +2401,10 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 /* Make ELT and X's VALUE equivalent to each other at INSN.  */
 
 void
-cselib_add_permanent_equiv (cselib_val *elt, rtx x, rtx insn)
+cselib_add_permanent_equiv (cselib_val *elt, rtx x, rtx_insn *insn)
 {
   cselib_val *nelt;
-  rtx save_cselib_current_insn = cselib_current_insn;
+  rtx_insn *save_cselib_current_insn = cselib_current_insn;
 
   gcc_checking_assert (elt);
   gcc_checking_assert (PRESERVED_VALUE_P (elt->val_rtx));
@@ -2641,13 +2641,13 @@ cselib_process_insn (rtx_insn *insn)
       && !cselib_preserve_constants)
     {
       cselib_reset_table (next_uid);
-      cselib_current_insn = NULL_RTX;
+      cselib_current_insn = NULL;
       return;
     }
 
   if (! INSN_P (insn))
     {
-      cselib_current_insn = NULL_RTX;
+      cselib_current_insn = NULL;
       return;
     }
 
@@ -2697,7 +2697,7 @@ cselib_process_insn (rtx_insn *insn)
       && fp_setter_insn (insn))
     cselib_invalidate_rtx (stack_pointer_rtx);
 
-  cselib_current_insn = NULL_RTX;
+  cselib_current_insn = NULL;
 
   if (n_useless_values > MAX_USELESS_VALUES
       /* remove_useless_values is linear in the hash table size.  Avoid

@@ -1,5 +1,23 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* cselib.h (struct elt_loc_list): Strengthen field "setting_insn"
+	from rtx to rtx_insn *.
+	(cselib_lookup_from_insn): Likewise for final param.
+	(cselib_subst_to_values_from_insn): Likewise.
+	(cselib_add_permanent_equiv): Likewise.
+
+	* cselib.c (cselib_current_insn): Likewise for this variable.
+	(cselib_subst_to_values_from_insn): Likewise for param "insn".
+	(cselib_lookup_from_insn): Likewise.
+	(cselib_add_permanent_equiv): Likewise for param "insn" and local
+	"save_cselib_current_insn".
+	(cselib_process_insn): Replace use of NULL_RTX with NULL.
+
+	* sched-deps.c (add_insn_mem_dependence): Strengthen param "insn"
+	from rtx to rtx_insn *.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* dse.c (dse_step6): Strengthen local "rinsn" from rtx to
 	rtx_insn *.
 

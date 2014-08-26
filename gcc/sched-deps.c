@@ -1710,7 +1710,7 @@ chain_to_prev_insn (rtx_insn *insn)
 
 static void
 add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
-			 rtx insn, rtx mem)
+			 rtx_insn *insn, rtx mem)
 {
   rtx *insn_list;
   rtx *mem_list;
