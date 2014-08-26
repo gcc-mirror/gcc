@@ -134,7 +134,7 @@ extern void sched_insns_finish (void);
 
 extern void *xrecalloc (void *, size_t, size_t, size_t);
 
-extern void reemit_notes (rtx);
+extern void reemit_notes (rtx_insn *);
 
 /* Functions in haifa-sched.c.  */
 extern int haifa_classify_insn (const_rtx);

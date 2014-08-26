@@ -500,13 +500,13 @@ confirm_change_group (void)
       if (object)
 	{
 	  if (object != last_object && last_object && INSN_P (last_object))
-	    df_insn_rescan (last_object);
+	    df_insn_rescan (as_a <rtx_insn *> (last_object));
 	  last_object = object;
 	}
     }
 
   if (last_object && INSN_P (last_object))
-    df_insn_rescan (last_object);
+    df_insn_rescan (as_a <rtx_insn *> (last_object));
   num_changes = 0;
 }
 
@@ -3396,7 +3396,7 @@ static void
 peep2_update_life (basic_block bb, int match_len, rtx last, rtx prev)
 {
   int i = peep2_buf_position (peep2_current + match_len + 1);
-  rtx x;
+  rtx_insn *x;
   regset_head live;
 
   INIT_REG_SET (&live);
@@ -3405,7 +3405,7 @@ peep2_update_life (basic_block bb, int match_len, rtx last, rtx prev)
   gcc_assert (peep2_current_count >= match_len + 1);
   peep2_current_count -= match_len + 1;
 
-  x = last;
+  x = as_a <rtx_insn *> (last);
   do
     {
       if (INSN_P (x))
@@ -3461,7 +3461,7 @@ peep2_fill_buffer (basic_block bb, rtx insn, regset live)
   COPY_REG_SET (peep2_insn_data[pos].live_before, live);
   peep2_current_count++;
 
-  df_simulate_one_insn_forwards (bb, insn, live);
+  df_simulate_one_insn_forwards (bb, as_a <rtx_insn *> (insn), live);
   return true;
 }
 

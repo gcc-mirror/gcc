@@ -7025,20 +7025,22 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 		  && !side_effects_p (SET_SRC (set))
 		  && asm_noperands (PATTERN (insn)) < 0)
 		{
-		  rtx dval, bind;
+		  rtx dval, bind_var_loc;
+		  rtx_insn *bind;
 
 		  /* Create DEBUG_EXPR (and DEBUG_EXPR_DECL).  */
 		  dval = make_debug_expr_from_rtl (SET_DEST (set));
 
 		  /* Emit a debug bind insn before the insn in which
 		     reg dies.  */
-		  bind = gen_rtx_VAR_LOCATION (GET_MODE (SET_DEST (set)),
-					       DEBUG_EXPR_TREE_DECL (dval),
-					       SET_SRC (set),
-					       VAR_INIT_STATUS_INITIALIZED);
-		  count_reg_usage (bind, counts + nreg, NULL_RTX, 1);
+		  bind_var_loc =
+		    gen_rtx_VAR_LOCATION (GET_MODE (SET_DEST (set)),
+					  DEBUG_EXPR_TREE_DECL (dval),
+					  SET_SRC (set),
+					  VAR_INIT_STATUS_INITIALIZED);
+		  count_reg_usage (bind_var_loc, counts + nreg, NULL_RTX, 1);
 
-		  bind = emit_debug_insn_before (bind, insn);
+		  bind = emit_debug_insn_before (bind_var_loc, insn);
 		  df_insn_rescan (bind);
 
 		  if (replacements == NULL)

@@ -4043,7 +4043,7 @@ void
 set_insn_deleted (rtx insn)
 {
   if (INSN_P (insn))
-    df_insn_delete (insn);
+    df_insn_delete (as_a <rtx_insn *> (insn));
   PUT_CODE (insn, NOTE);
   NOTE_KIND (insn) = NOTE_INSN_DELETED;
 }
@@ -4227,7 +4227,7 @@ reorder_insns (rtx_insn *from, rtx_insn *to, rtx_insn *after)
   if (!BARRIER_P (after)
       && (bb = BLOCK_FOR_INSN (after)))
     {
-      rtx x;
+      rtx_insn *x;
       df_set_bb_dirty (bb);
 
       if (!BARRIER_P (from)
@@ -5184,7 +5184,7 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
     {
     case REG_EQUAL:
     case REG_EQUIV:
-      df_notes_rescan (insn);
+      df_notes_rescan (as_a <rtx_insn *> (insn));
       break;
     default:
       break;

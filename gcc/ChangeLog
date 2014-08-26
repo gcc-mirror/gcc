@@ -1,5 +1,120 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* df.h (df_dump_insn_problem_function): Strengthen first param of
+	this callback from const_rtx to const rtx_insn *.
+	(struct df_insn_info): Strengthen field "insn" from rtx to
+	rtx_insn *.
+	(DF_REF_INSN): Eliminate this function, reinstating the older
+	macro definition.
+	(df_find_def): Strengthen param 1 from rtx to rtx_insn *.
+	(df_reg_defined): Likewise.
+	(df_find_use): Likewise.
+	(df_reg_used): Likewise.
+	(df_dump_insn_top): Strengthen param 1 from const_rtx to
+	const rtx_insn *.
+	(df_dump_insn_bottom): Likewise.
+	(df_insn_debug): Strengthen param 1 from rtx to rtx_insn *.
+	(df_insn_debug_regno): Likewise.
+	(debug_df_insn): Likewise.
+	(df_rd_simulate_one_insn): Likewise for param 2.
+	(df_word_lr_simulate_defs): Likewise for param 1.
+	(df_word_lr_simulate_uses): Likewise.
+	(df_md_simulate_one_insn): Likewise for param 2.
+	(df_simulate_find_noclobber_defs): Likewise for param 1.
+	(df_simulate_find_defs): Likewise.
+	(df_simulate_defs): Likewise.
+	(df_simulate_uses): Likewise.
+	(df_simulate_one_insn_backwards): Likewise for param 2.
+	(df_simulate_one_insn_forwards): Likewise.
+	(df_uses_create): Likewise for param 2.
+	(df_insn_create_insn_record): Likewise for param 1.
+	(df_insn_delete): Likewise.
+	(df_insn_rescan): Likewise.
+	(df_insn_rescan_debug_internal): Likewise.
+	(df_insn_change_bb): Likewise.
+	(df_notes_rescan): Likewise.
+	* rtl.h (remove_death): Likewise for param 2.
+	(print_rtl_with_bb): Strengthen param 2 from const_rtx to
+	const rtx_insn *.
+	* sched-int.h (reemit_notes): Strengthen param from rtx to
+	rtx_insn *.
+	* valtrack.h (propagate_for_debug): Likewise for param 1.
+
+	* cfgrtl.c (print_rtl_with_bb): Strengthen param "rtx_first" and
+	local "tmp_rtx" from const_rtx to const rtx_insn *.
+	* combine.c (remove_death): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(move_deaths): Likewise for local "where_dead".
+	* cse.c (delete_trivially_dead_insns): Introduce local
+	"bind_var_loc" so that "bind" can be strengthened to an rtx_insn *.
+	* df-core.c (df_find_def): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(df_reg_defined): Likewise.
+	(df_find_use): Likewise.
+	(df_reg_used): Likewise.
+	(df_dump_insn_problem_data): Strengthen param "insn" from
+	const_rtx to const rtx_insn *.
+	(df_dump_insn_top): Likewise.
+	(df_dump_insn_bottom): Likewise.
+	(df_insn_debug): Strengthen param "insn" from rtx to rtx_insn *.
+	(df_insn_debug_regno): Likewise.
+	(debug_df_insn): Likewise.
+	(DF_REF_INSN): Delete.
+	* df-problems.c (df_rd_simulate_one_insn): Strengthen param "insn"
+	from rtx to rtx_insn *.
+	(df_chain_insn_top_dump): Strengthen param "insn" from
+	const_rtx to const rtx_insn *.
+	(df_chain_insn_bottom_dump): Likewise.
+	(df_word_lr_simulate_defs): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(df_word_lr_simulate_uses): Likewise.
+	(df_print_note): Likewise.
+	(df_remove_dead_and_unused_notes): Likewise.
+	(df_set_unused_notes_for_mw): Likewise.
+	(df_set_dead_notes_for_mw): Likewise.
+	(df_create_unused_note): Likewise.
+	(df_simulate_find_defs): Likewise.
+	(df_simulate_find_uses): Likewise.
+	(df_simulate_find_noclobber_defs): Likewise.
+	(df_simulate_defs): Likewise.
+	(df_simulate_uses): Likewise.
+	(df_simulate_one_insn_backwards): Likewise.
+	(df_simulate_one_insn_forwards): Likewise.
+	(df_md_simulate_one_insn): Likewise.
+	* df-scan.c (df_uses_create): Likewise.
+	(df_insn_create_insn_record): Likewise.
+	(df_insn_delete): Likewise.
+	(df_insn_rescan): Likewise.
+	(df_insn_rescan_debug_internal): Likewise.
+	(df_insn_change_bb): Likewise.
+	(df_notes_rescan): Likewise.
+	(df_refs_add_to_chains): Likewise.
+	(df_insn_refs_verify): Likewise.
+	* emit-rtl.c (set_insn_deleted): Add checked cast to rtx_insn *
+	when invoking df_insn_delete.
+	(reorder_insns): Strengthen local "x" from rtx to rtx_insn *.
+	(set_unique_reg_note): Add checked cast.
+	* final.c (cleanup_subreg_operands): Likewise.
+	* gcse.c (update_ld_motion_stores): Likewise, strengthening local
+	"insn" from rtx to rtx_insn *.
+	* haifa-sched.c (reemit_notes): Strengthen param "insn" and local
+	"last" from rtx to rtx_insn *.
+	* ira-emit.c (change_regs_in_insn): New function.
+	(change_loop): Strengthen local "insn" from rtx to rtx_insn *.
+	Invoke change_regs_in_insn rather than change_regs.
+	* ira.c (update_equiv_regs): Strengthen locals "insn",
+	"init_insn", "new_insn" from rtx to rtx_insn *.  Invoke
+	for_each_rtx_in_insn rather than for_each_rtx.
+	* recog.c (confirm_change_group): Add checked casts.
+	(peep2_update_life): Strengthen local "x" from rtx to rtx_insn *.
+	Add checked cast.
+	(peep2_fill_buffer): Add checked cast.
+	* rtlanal.c (remove_note): Likewise.
+	* valtrack.c (propagate_for_debug): Strengthen param "insn" and
+	locals "next" "end" from rtx to rtx_insn *.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* sched-int.h (sched_init_insn_luid): Strengthen param 1 from rtx
 	to rtx_insn *.
 	(struct reg_use_data): Likewise for field "insn".

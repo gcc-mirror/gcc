@@ -177,10 +177,11 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
    of THIS_BASIC_BLOCK.  */
 
 void
-propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src,
+propagate_for_debug (rtx_insn *insn, rtx last, rtx dest, rtx src,
 		     basic_block this_basic_block)
 {
-  rtx next, loc, end = NEXT_INSN (BB_END (this_basic_block));
+  rtx_insn *next, *end = NEXT_INSN (BB_END (this_basic_block));
+  rtx loc;
   rtx (*saved_rtl_hook_no_emit) (enum machine_mode, rtx);
 
   struct rtx_subst_pair p;

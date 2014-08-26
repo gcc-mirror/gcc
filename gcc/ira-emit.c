@@ -301,6 +301,15 @@ change_regs (rtx *loc)
   return result;
 }
 
+static bool
+change_regs_in_insn (rtx_insn **insn_ptr)
+{
+  rtx rtx = *insn_ptr;
+  bool result = change_regs (&rtx);
+  *insn_ptr = as_a <rtx_insn *> (rtx);
+  return result;
+}
+
 /* Attach MOVE to the edge E.  The move is attached to the head of the
    list if HEAD_P is TRUE.  */
 static void
@@ -557,7 +566,8 @@ change_loop (ira_loop_tree_node_t node)
   int regno;
   bool used_p;
   ira_allocno_t allocno, parent_allocno, *map;
-  rtx insn, original_reg;
+  rtx_insn *insn;
+  rtx original_reg;
   enum reg_class aclass, pclass;
   ira_loop_tree_node_t parent;
 
@@ -568,7 +578,7 @@ change_loop (ira_loop_tree_node_t node)
       if (node->bb != NULL)
 	{
 	  FOR_BB_INSNS (node->bb, insn)
-	    if (INSN_P (insn) && change_regs (&insn))
+	    if (INSN_P (insn) && change_regs_in_insn (&insn))
 	      {
 		df_insn_rescan (insn);
 		df_notes_rescan (insn);

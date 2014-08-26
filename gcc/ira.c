@@ -3319,7 +3319,7 @@ static int recorded_label_ref;
 static int
 update_equiv_regs (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   basic_block bb;
   int loop_depth;
   bitmap cleared_regs;
@@ -3345,7 +3345,8 @@ update_equiv_regs (void)
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (NONDEBUG_INSN_P (insn))
-	for_each_rtx (&insn, set_paradoxical_subreg, (void *) pdx_subregs);
+	for_each_rtx_in_insn (&insn, set_paradoxical_subreg,
+			      (void *) pdx_subregs);
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
@@ -3616,7 +3617,8 @@ update_equiv_regs (void)
 	  && ! contains_replace_regs (XEXP (dest, 0))
 	  && ! pdx_subregs[regno])
 	{
-	  rtx init_insn = XEXP (reg_equiv[regno].init_insns, 0);
+	  rtx_insn *init_insn =
+	    as_a <rtx_insn *> (XEXP (reg_equiv[regno].init_insns, 0));
 	  if (validate_equiv_mem (init_insn, src, dest)
 	      && ! memref_used_between_p (dest, init_insn, insn)
 	      /* Attaching a REG_EQUIV note will fail if INIT_INSN has
@@ -3737,7 +3739,7 @@ update_equiv_regs (void)
 		     INSN.  Update the flow information.  */
 		  else if (prev_nondebug_insn (insn) != equiv_insn)
 		    {
-		      rtx new_insn;
+		      rtx_insn *new_insn;
 
 		      new_insn = emit_insn_before (PATTERN (equiv_insn), insn);
 		      REG_NOTES (new_insn) = REG_NOTES (equiv_insn);
