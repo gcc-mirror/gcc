@@ -1371,6 +1371,11 @@ make_decl_rtl (tree decl)
 	  /* As a register variable, it has no section.  */
 	  return;
 	}
+      /* Avoid internal errors from invalid register
+	 specifications.  */
+      SET_DECL_ASSEMBLER_NAME (decl, NULL_TREE);
+      DECL_HARD_REGISTER (decl) = 0;
+      return;
     }
   /* Now handle ordinary static variables and functions (in memory).
      Also handle vars declared register invalidly.  */

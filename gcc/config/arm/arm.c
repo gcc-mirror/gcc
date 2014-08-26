@@ -22970,6 +22970,9 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 	    || (TARGET_HARD_FLOAT && TARGET_VFP
 		&& regno == VFPCC_REGNUM));
 
+  if (regno == CC_REGNUM && GET_MODE_CLASS (mode) != MODE_CC)
+    return false;
+
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
        registers 0 - 6, so that there is always a second low
@@ -23066,6 +23069,9 @@ arm_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 enum reg_class
 arm_regno_class (int regno)
 {
+  if (regno == PC_REGNUM)
+    return NO_REGS;
+
   if (TARGET_THUMB1)
     {
       if (regno == STACK_POINTER_REGNUM)
