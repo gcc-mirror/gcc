@@ -1,5 +1,13 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched.c (find_place_for_bookkeeping): Strengthen local "insn"
+	from rtx to rtx_insn *.
+	(need_nop_to_preserve_insn_bb): Likewise for param "insn".
+	(code_motion_path_driver): Likewise for local "last_insn".
+	(simplify_changed_insns): Likewise for local "insn".
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (push_to_sequence): Strengthen param from rtx to
 	rtx_insn *.
 	(push_to_sequence2): Likewise for both params.
