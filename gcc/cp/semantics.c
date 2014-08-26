@@ -3500,6 +3500,7 @@ finish_id_expression (tree id_expression,
       tree wrap;
       if (VAR_P (decl)
 	  && !cp_unevaluated_operand
+	  && !processing_template_decl
 	  && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
 	  && DECL_THREAD_LOCAL_P (decl)
 	  && (wrap = get_tls_wrapper_fn (decl)))
