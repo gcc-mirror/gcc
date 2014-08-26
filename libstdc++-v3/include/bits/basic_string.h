@@ -2811,7 +2811,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_istream<_CharT, _Traits>&
     getline(basic_istream<_CharT, _Traits>& __is,
 	    basic_string<_CharT, _Traits, _Alloc>& __str)
-    { return getline(__is, __str, __is.widen('\n')); }
+    { return std::getline(__is, __str, __is.widen('\n')); }
+
+#if __cplusplus >= 201103L
+  /// Read a line from an rvalue stream into a string.
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_istream<_CharT, _Traits>&
+    getline(basic_istream<_CharT, _Traits>&& __is,
+	    basic_string<_CharT, _Traits, _Alloc>& __str, _CharT __delim)
+    { return std::getline(__is, __str, __delim); }
+
+  /// Read a line from an rvalue stream into a string.
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_istream<_CharT, _Traits>&
+    getline(basic_istream<_CharT, _Traits>&& __is,
+	    basic_string<_CharT, _Traits, _Alloc>& __str)
+    { return std::getline(__is, __str); }
+#endif
 
   template<>
     basic_istream<char>&
