@@ -1,5 +1,10 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* dse.c (dse_step6): Strengthen local "rinsn" from rtx to
+	rtx_insn *.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* df.h (df_dump_insn_problem_function): Strengthen first param of
 	this callback from const_rtx to const rtx_insn *.
 	(struct df_insn_info): Strengthen field "insn" from rtx to

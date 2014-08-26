@@ -3622,7 +3622,7 @@ dse_step6 (void)
 		  && s_info->redundant_reason->insn
 		  && INSN_P (s_info->redundant_reason->insn))
 		{
-		  rtx rinsn = s_info->redundant_reason->insn;
+		  rtx_insn *rinsn = s_info->redundant_reason->insn;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Locally deleting insn %d "
 					"because insn %d stores the "
