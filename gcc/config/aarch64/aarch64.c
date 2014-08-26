@@ -177,9 +177,9 @@ static const struct cpu_addrcost_table generic_addrcost_table =
   .addr_scale_costs =
 #endif
     {
-      NAMED_PARAM (qi, 0),
       NAMED_PARAM (hi, 0),
       NAMED_PARAM (si, 0),
+      NAMED_PARAM (di, 0),
       NAMED_PARAM (ti, 0),
     },
   NAMED_PARAM (pre_modify, 0),
@@ -198,9 +198,9 @@ static const struct cpu_addrcost_table cortexa57_addrcost_table =
   .addr_scale_costs =
 #endif
     {
-      NAMED_PARAM (qi, 0),
       NAMED_PARAM (hi, 1),
       NAMED_PARAM (si, 0),
+      NAMED_PARAM (di, 0),
       NAMED_PARAM (ti, 1),
     },
   NAMED_PARAM (pre_modify, 0),
