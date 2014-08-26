@@ -1743,7 +1743,7 @@ expand_builtin_return (rtx result)
   int size, align, regno;
   enum machine_mode mode;
   rtx reg;
-  rtx call_fusage = 0;
+  rtx_insn *call_fusage = 0;
 
   result = convert_memory_address (Pmode, result);
 

@@ -283,7 +283,7 @@ create_basic_block_structure (rtx_insn *head, rtx_insn *end, rtx_note *bb_note,
     {
       /* If we found an existing note, thread it back onto the chain.  */
 
-      rtx after;
+      rtx_insn *after;
 
       if (LABEL_P (head))
 	after = head;

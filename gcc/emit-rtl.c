@@ -2488,9 +2488,9 @@ gen_label_rtx (void)
    Used for an inline-procedure after copying the insn chain.  */
 
 void
-set_new_first_and_last_insn (rtx first, rtx last)
+set_new_first_and_last_insn (rtx_insn *first, rtx_insn *last)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   set_first_insn (first);
   set_last_insn (last);
@@ -4165,7 +4165,7 @@ add_function_usage_to (rtx call_insn, rtx call_fusage)
    FROM becomes the new last instruction.  */
 
 void
-delete_insns_since (rtx from)
+delete_insns_since (rtx_insn *from)
 {
   if (from == 0)
     set_first_insn (0);
@@ -4185,10 +4185,10 @@ delete_insns_since (rtx from)
    called after delay-slot filling has been done.  */
 
 void
-reorder_insns_nobb (rtx from, rtx to, rtx after)
+reorder_insns_nobb (rtx_insn *from, rtx_insn *to, rtx_insn *after)
 {
 #ifdef ENABLE_CHECKING
-  rtx x;
+  rtx_insn *x;
   for (x = from; x != to; x = NEXT_INSN (x))
     gcc_assert (after != x);
   gcc_assert (after != to);
@@ -5309,9 +5309,9 @@ start_sequence (void)
    start_sequence for more information about how to use this function.  */
 
 void
-push_to_sequence (rtx first)
+push_to_sequence (rtx_insn *first)
 {
-  rtx last;
+  rtx_insn *last;
 
   start_sequence ();
 
@@ -5326,7 +5326,7 @@ push_to_sequence (rtx first)
    looping through the list.  */
 
 void
-push_to_sequence2 (rtx first, rtx last)
+push_to_sequence2 (rtx_insn *first, rtx_insn *last)
 {
   start_sequence ();
 
