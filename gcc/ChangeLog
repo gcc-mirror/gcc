@@ -1,3 +1,29 @@
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* sel-sched-ir.h (ilist_t): Redefine this typedef in terms of
+	ilist_t, not _xlist_t;
+	(ILIST_INSN): Define in terms of new union field "insn".
+	(ILIST_NEXT): Define in terms of _LIST_NEXT rather than
+	_XLIST_NEXT.
+	(struct _list_node): Add new field "insn" to the union, of type
+	insn_t.
+	(ilist_add): Replace macro with an inline function, requiring an
+	insn_t.
+	(ilist_remove): Define this macro directly in terms of
+	_list_remove, rather than indirectly via _xlist_remove.
+	(ilist_clear): Likewise, in terms of _list_clear rather than
+	_xlist_clear.
+	(ilist_is_in_p): Replace macro with an inline function, requiring
+	an insn_t.
+	(_list_iter_cond_insn): New function.
+	(ilist_iter_remove): Define this macro directly in terms of
+	_list_iter_remove, rather than indirectly via _xlist_iter_remove.
+	(ilist_iterator): Define directly in terms of _list_iterator
+	rather than indirectly through _xlist_iterator.
+	(FOR_EACH_INSN): Define in terms of _list_iter_cond_insn rather
+	than in terms of _FOR_EACH_X.
+	(FOR_EACH_INSN_1): Likewise.
+
 2014-08-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/60606

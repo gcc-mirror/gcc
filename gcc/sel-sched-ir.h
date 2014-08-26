@@ -63,9 +63,9 @@ typedef _list_t _xlist_t;
 typedef rtx insn_t;
 
 /* List of insns.  */
-typedef _xlist_t ilist_t;
-#define ILIST_INSN(L) (_XLIST_X (L))
-#define ILIST_NEXT(L) (_XLIST_NEXT (L))
+typedef _list_t ilist_t;
+#define ILIST_INSN(L) ((L)->u.insn)
+#define ILIST_NEXT(L) (_LIST_NEXT (L))
 
 /* This lists possible transformations that done locally, i.e. in
    moveup_expr.  */
@@ -353,6 +353,7 @@ struct _list_node
   union
   {
     rtx x;
+    insn_t insn;
     struct _bnd bnd;
     expr_def expr;
     struct _fence fence;
@@ -511,17 +512,48 @@ typedef _list_iterator _xlist_iterator;
 #define _FOR_EACH_X_1(X, I, LP) _FOR_EACH_1 (x, (X), (I), (LP))
 
 
-/* ilist_t functions.  Instruction lists are simply RTX lists.  */
+/* ilist_t functions.  */
 
-#define ilist_add(LP, INSN) (_xlist_add ((LP), (INSN)))
-#define ilist_remove(LP) (_xlist_remove (LP))
-#define ilist_clear(LP) (_xlist_clear (LP))
-#define ilist_is_in_p(L, INSN) (_xlist_is_in_p ((L), (INSN)))
-#define ilist_iter_remove(IP) (_xlist_iter_remove (IP))
+static inline void
+ilist_add (ilist_t *lp, insn_t insn)
+{
+  _list_add (lp);
+  ILIST_INSN (*lp) = insn;
+}
+#define ilist_remove(LP) (_list_remove (LP))
+#define ilist_clear(LP) (_list_clear (LP))
 
-typedef _xlist_iterator ilist_iterator;
-#define FOR_EACH_INSN(INSN, I, L) _FOR_EACH_X (INSN, I, L)
-#define FOR_EACH_INSN_1(INSN, I, LP) _FOR_EACH_X_1 (INSN, I, LP)
+static inline bool
+ilist_is_in_p (ilist_t l, insn_t insn)
+{
+  while (l)
+    {
+      if (ILIST_INSN (l) == insn)
+        return true;
+      l = ILIST_NEXT (l);
+    }
+
+  return false;
+}
+
+/* Used through _FOR_EACH.  */
+static inline bool
+_list_iter_cond_insn (ilist_t l, insn_t *ip)
+{
+  if (l)
+    {
+      *ip = ILIST_INSN (l);
+      return true;
+    }
+
+  return false;
+}
+
+#define ilist_iter_remove(IP) (_list_iter_remove (IP))
+
+typedef _list_iterator ilist_iterator;
+#define FOR_EACH_INSN(INSN, I, L) _FOR_EACH (insn, (INSN), (I), (L))
+#define FOR_EACH_INSN_1(INSN, I, LP) _FOR_EACH_1 (insn, (INSN), (I), (LP))
 
 
 /* Av set iterators.  */
