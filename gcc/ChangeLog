@@ -1,3 +1,9 @@
+2014-08-26  Evandro Menezes <e.menezes@samsung.com>
+
+	* config/arm/aarch64/aarch64.c (generic_addrcost_table): Delete
+	qi cost; add di cost.
+	(cortexa57_addrcost_table): Likewise.
+
 2014-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61271
