@@ -1,5 +1,42 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* sched-int.h (struct _dep): Strengthen fields "pro" and "con"
+	from rtx to rtx_insn *.
+	(DEP_PRO): Delete this function and...
+	(SET_DEP_PRO): ...this function in favor of...
+	(DEP_PRO): ...reinstate this macro.
+	(DEP_CON): Delete this function and...
+	(SET_DEP_CON): ...this function in favor of...
+	(DEP_CON): ...reinstate this old macro.
+	(init_dep_1): Strengthen params 2 and 3 from rtx to rtx_insn *.
+	(init_dep): Likewise.
+	(set_priorities): Likewise for both params.
+	(sd_copy_back_deps): Likewise for params 1 and 2.
+
+	* haifa-sched.c (priority): Likewise for param "insn" and local
+	"next".
+	(set_priorities): Likewise for params "head" and "tail" and local
+	"insn".
+	(process_insn_forw_deps_be_in_spec): Likewise for param "twin" and
+	local "consumer".
+	(add_to_speculative_block): Add a checked cast.
+	(create_check_block_twin): Drop use of SET_DEP_CON.
+	(add_jump_dependencies): Strengthen params "insn" and "jump" from
+	rtx to rtx_insn *.
+
+	* sched-deps.c (init_dep_1): Likewise for params "pro" and "con".
+	Drop use of SET_DEP_PRO
+	(init_dep): Strengthen params "pro" and "con" from rtx to
+	rtx_insn *.
+	(sd_copy_back_deps): Likewise for params "to" and "from".  Drop
+	use of SET_DEP_CON.
+	(DEP_PRO): Delete.
+	(DEP_CON): Delete.
+	(SET_DEP_PRO): Delete.
+	(SET_DEP_CON): Delete.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* sel-sched-ir.h (struct vinsn_def): Strengthen field "insn_rtx"
 	from rtx to rtx_insn *.
         (VINSN_INSN_RTX): Eliminate rvalue function and...

@@ -218,10 +218,10 @@ struct dep_replacement
 struct _dep
 {
   /* Producer.  */
-  rtx pro;
+  rtx_insn *pro;
 
   /* Consumer.  */
-  rtx con;
+  rtx_insn *con;
 
   /* If nonnull, holds a pointer to information about how to break the
      dependency by making a replacement in one of the insns.  There is
@@ -250,10 +250,8 @@ struct _dep
 typedef struct _dep dep_def;
 typedef dep_def *dep_t;
 
-extern rtx_insn *DEP_PRO (dep_t dep);
-extern rtx_insn *DEP_CON (dep_t dep);
-extern rtx& SET_DEP_PRO (dep_t dep);
-extern rtx& SET_DEP_CON (dep_t dep);
+#define DEP_PRO(D) ((D)->pro)
+#define DEP_CON(D) ((D)->con)
 #define DEP_TYPE(D) ((D)->type)
 #define DEP_STATUS(D) ((D)->status)
 #define DEP_COST(D) ((D)->cost)
@@ -263,8 +261,8 @@ extern rtx& SET_DEP_CON (dep_t dep);
 
 /* Functions to work with dep.  */
 
-extern void init_dep_1 (dep_t, rtx, rtx, enum reg_note, ds_t);
-extern void init_dep (dep_t, rtx, rtx, enum reg_note);
+extern void init_dep_1 (dep_t, rtx_insn *, rtx_insn *, enum reg_note, ds_t);
+extern void init_dep (dep_t, rtx_insn *, rtx_insn *, enum reg_note);
 
 extern void sd_debug_dep (dep_t);
 
@@ -1349,7 +1347,7 @@ extern int no_real_insns_p (const_rtx, const_rtx);
 extern int insn_cost (rtx);
 extern int dep_cost_1 (dep_t, dw_t);
 extern int dep_cost (dep_t);
-extern int set_priorities (rtx, rtx);
+extern int set_priorities (rtx_insn *, rtx_insn *);
 
 extern void sched_setup_bb_reg_pressure_info (basic_block, rtx);
 extern bool schedule_block (basic_block *, state_t);
@@ -1615,7 +1613,7 @@ extern void sd_add_dep (dep_t, bool);
 extern enum DEPS_ADJUST_RESULT sd_add_or_update_dep (dep_t, bool);
 extern void sd_resolve_dep (sd_iterator_def);
 extern void sd_unresolve_dep (sd_iterator_def);
-extern void sd_copy_back_deps (rtx, rtx, bool);
+extern void sd_copy_back_deps (rtx_insn *, rtx_insn *, bool);
 extern void sd_delete_dep (sd_iterator_def);
 extern void sd_debug_lists (rtx, sd_list_types_def);
 
