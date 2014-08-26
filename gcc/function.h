@@ -34,8 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 
 struct GTY(()) sequence_stack {
   /* First and last insns in the chain of the saved sequence.  */
-  rtx first;
-  rtx last;
+  rtx_insn *first;
+  rtx_insn *last;
   struct sequence_stack *next;
 };
 
@@ -52,8 +52,8 @@ struct GTY(()) emit_status {
 
      start_sequence saves both of these on `sequence_stack' and then starts
      a new, nested sequence of insns.  */
-  rtx x_first_insn;
-  rtx x_last_insn;
+  rtx_insn *x_first_insn;
+  rtx_insn *x_last_insn;
 
   /* Stack of pending (incomplete) sequences saved by `start_sequence'.
      Each element describes one pending sequence.
