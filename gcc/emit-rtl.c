@@ -3873,7 +3873,7 @@ make_note_raw (enum insn_note subtype)
    but also BARRIERs and JUMP_TABLE_DATAs.  PREV and NEXT may be NULL.  */
 
 static inline void
-link_insn_into_chain (rtx insn, rtx prev, rtx next)
+link_insn_into_chain (rtx_insn *insn, rtx_insn *prev, rtx_insn *next)
 {
   SET_PREV_INSN (insn) = prev;
   SET_NEXT_INSN (insn) = next;
@@ -3905,9 +3905,9 @@ link_insn_into_chain (rtx insn, rtx prev, rtx next)
    INSN may be an INSN, JUMP_INSN, CALL_INSN, CODE_LABEL, BARRIER or NOTE.  */
 
 void
-add_insn (rtx insn)
+add_insn (rtx_insn *insn)
 {
-  rtx prev = get_last_insn ();
+  rtx_insn *prev = get_last_insn ();
   link_insn_into_chain (insn, prev, NULL);
   if (NULL == get_insns ())
     set_first_insn (insn);
@@ -3917,9 +3917,9 @@ add_insn (rtx insn)
 /* Add INSN into the doubly-linked list after insn AFTER.  */
 
 static void
-add_insn_after_nobb (rtx insn, rtx after)
+add_insn_after_nobb (rtx_insn *insn, rtx_insn *after)
 {
-  rtx next = NEXT_INSN (after);
+  rtx_insn *next = NEXT_INSN (after);
 
   gcc_assert (!optimize || !INSN_DELETED_P (after));
 
@@ -3946,9 +3946,9 @@ add_insn_after_nobb (rtx insn, rtx after)
 /* Add INSN into the doubly-linked list before insn BEFORE.  */
 
 static void
-add_insn_before_nobb (rtx insn, rtx before)
+add_insn_before_nobb (rtx_insn *insn, rtx_insn *before)
 {
-  rtx prev = PREV_INSN (before);
+  rtx_insn *prev = PREV_INSN (before);
 
   gcc_assert (!optimize || !INSN_DELETED_P (before));
 
@@ -3982,9 +3982,10 @@ add_insn_before_nobb (rtx insn, rtx before)
    they know how to update a SEQUENCE. */
 
 void
-add_insn_after (rtx uncast_insn, rtx after, basic_block bb)
+add_insn_after (rtx uncast_insn, rtx uncast_after, basic_block bb)
 {
   rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
+  rtx_insn *after = as_a <rtx_insn *> (uncast_after);
   add_insn_after_nobb (insn, after);
   if (!BARRIER_P (after)
       && !BARRIER_P (insn)
@@ -4011,8 +4012,10 @@ add_insn_after (rtx uncast_insn, rtx after, basic_block bb)
    they know how to update a SEQUENCE. */
 
 void
-add_insn_before (rtx insn, rtx before, basic_block bb)
+add_insn_before (rtx uncast_insn, rtx uncast_before, basic_block bb)
 {
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
+  rtx_insn *before = as_a <rtx_insn *> (uncast_before);
   add_insn_before_nobb (insn, before);
 
   if (!bb
@@ -4559,8 +4562,9 @@ note_outside_basic_block_p (enum insn_note subtype, bool on_bb_boundary_p)
 /* Emit a note of subtype SUBTYPE after the insn AFTER.  */
 
 rtx_note *
-emit_note_after (enum insn_note subtype, rtx after)
+emit_note_after (enum insn_note subtype, rtx uncast_after)
 {
+  rtx_insn *after = as_a <rtx_insn *> (uncast_after);
   rtx_note *note = make_note_raw (subtype);
   basic_block bb = BARRIER_P (after) ? NULL : BLOCK_FOR_INSN (after);
   bool on_bb_boundary_p = (bb != NULL && BB_END (bb) == after);
@@ -4575,8 +4579,9 @@ emit_note_after (enum insn_note subtype, rtx after)
 /* Emit a note of subtype SUBTYPE before the insn BEFORE.  */
 
 rtx_note *
-emit_note_before (enum insn_note subtype, rtx before)
+emit_note_before (enum insn_note subtype, rtx uncast_before)
 {
+  rtx_insn *before = as_a <rtx_insn *> (uncast_before);
   rtx_note *note = make_note_raw (subtype);
   basic_block bb = BARRIER_P (before) ? NULL : BLOCK_FOR_INSN (before);
   bool on_bb_boundary_p = (bb != NULL && BB_HEAD (bb) == before);
@@ -4993,7 +4998,7 @@ emit_label (rtx label)
 {
   gcc_checking_assert (INSN_UID (label) == 0);
   INSN_UID (label) = cur_insn_uid++;
-  add_insn (label);
+  add_insn (as_a <rtx_insn *> (label));
   return as_a <rtx_insn *> (label);
 }
 

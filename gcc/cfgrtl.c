@@ -65,7 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
 static GTY(()) rtx_insn *cfg_layout_function_footer;
-static GTY(()) rtx cfg_layout_function_header;
+static GTY(()) rtx_insn *cfg_layout_function_header;
 
 static rtx_insn *skip_insns_after_block (basic_block);
 static void record_effective_endpoints (void);
@@ -3305,7 +3305,7 @@ fixup_abnormal_edges (void)
 /* Cut the insns from FIRST to LAST out of the insns stream.  */
 
 rtx_insn *
-unlink_insn_chain (rtx first, rtx last)
+unlink_insn_chain (rtx_insn *first, rtx_insn *last)
 {
   rtx_insn *prevfirst = PREV_INSN (first);
   rtx_insn *nextlast = NEXT_INSN (last);
@@ -3320,7 +3320,7 @@ unlink_insn_chain (rtx first, rtx last)
     set_last_insn (prevfirst);
   if (!prevfirst)
     set_first_insn (nextlast);
-  return as_a <rtx_insn *> (first);
+  return first;
 }
 
 /* Skip over inter-block insns occurring after BB which are typically
@@ -3448,7 +3448,7 @@ record_effective_endpoints (void)
     cfg_layout_function_header =
 	    unlink_insn_chain (get_insns (), PREV_INSN (insn));
   else
-    cfg_layout_function_header = NULL_RTX;
+    cfg_layout_function_header = NULL;
 
   next_insn = get_insns ();
   FOR_EACH_BB_FN (bb, cfun)
@@ -3639,7 +3639,7 @@ static void
 fixup_reorder_chain (void)
 {
   basic_block bb;
-  rtx insn = NULL;
+  rtx_insn *insn = NULL;
 
   if (cfg_layout_function_header)
     {
