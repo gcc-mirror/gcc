@@ -92,7 +92,7 @@ static rtx find_active_insn_after (basic_block, rtx);
 static basic_block block_fallthru (basic_block);
 static int cond_exec_process_insns (ce_if_block *, rtx, rtx, rtx, int, int);
 static rtx cond_exec_get_condition (rtx);
-static rtx noce_get_condition (rtx, rtx *, bool);
+static rtx noce_get_condition (rtx_insn *, rtx_insn **, bool);
 static int noce_operand_ok (const_rtx);
 static void merge_if_block (ce_if_block *);
 static int find_cond_trap (basic_block, edge, edge);
@@ -783,7 +783,7 @@ struct noce_if_info
   rtx cond;
 
   /* New insns should be inserted before this one.  */
-  rtx cond_earliest;
+  rtx_insn *cond_earliest;
 
   /* Insns in the THEN and ELSE block.  There is always just this
      one insns in those blocks.  The insns are single_set insns.
@@ -819,7 +819,7 @@ static rtx noce_emit_cmove (struct noce_if_info *, rtx, enum rtx_code, rtx,
 			    rtx, rtx, rtx);
 static int noce_try_cmove (struct noce_if_info *);
 static int noce_try_cmove_arith (struct noce_if_info *);
-static rtx noce_get_alt_condition (struct noce_if_info *, rtx, rtx *);
+static rtx noce_get_alt_condition (struct noce_if_info *, rtx, rtx_insn **);
 static int noce_try_minmax (struct noce_if_info *);
 static int noce_try_abs (struct noce_if_info *);
 static int noce_try_sign_mask (struct noce_if_info *);
@@ -1754,9 +1754,10 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 
 static rtx
 noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
-			rtx *earliest)
+			rtx_insn **earliest)
 {
-  rtx cond, set, insn;
+  rtx cond, set;
+  rtx_insn *insn;
   int reverse;
 
   /* If target is already mentioned in the known condition, return it.  */
@@ -1906,8 +1907,8 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
 static int
 noce_try_minmax (struct noce_if_info *if_info)
 {
-  rtx cond, earliest, target;
-  rtx_insn *seq;
+  rtx cond, target;
+  rtx_insn *earliest, *seq;
   enum rtx_code code, op;
   int unsignedp;
 
@@ -2002,8 +2003,8 @@ noce_try_minmax (struct noce_if_info *if_info)
 static int
 noce_try_abs (struct noce_if_info *if_info)
 {
-  rtx cond, earliest, target, a, b, c;
-  rtx_insn *seq;
+  rtx cond, target, a, b, c;
+  rtx_insn *earliest, *seq;
   int negate;
   bool one_cmpl = false;
 
@@ -2330,7 +2331,7 @@ noce_try_bitop (struct noce_if_info *if_info)
    THEN block of the caller, and we have to reverse the condition.  */
 
 static rtx
-noce_get_condition (rtx jump, rtx *earliest, bool then_else_reversed)
+noce_get_condition (rtx_insn *jump, rtx_insn **earliest, bool then_else_reversed)
 {
   rtx cond, set, tmp;
   bool reverse;
@@ -3044,7 +3045,7 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
   bool then_else_reversed = false;
   rtx_insn *jump;
   rtx cond;
-  rtx cond_earliest;
+  rtx_insn *cond_earliest;
   struct noce_if_info if_info;
 
   /* We only ever should get here before reload.  */
@@ -3698,7 +3699,8 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block else_bb = else_edge->dest;
   basic_block other_bb, trap_bb;
   rtx_insn *trap, *jump;
-  rtx cond, cond_earliest, seq;
+  rtx cond, seq;
+  rtx_insn *cond_earliest;
   enum rtx_code code;
 
   /* Locate the block with the trap instruction.  */
@@ -4134,7 +4136,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 {
   basic_block new_dest = dest_edge->dest;
   rtx_insn *head, *end, *jump;
-  rtx earliest = NULL_RTX, old_dest;
+  rtx_insn *earliest = NULL;
+  rtx old_dest;
   bitmap merge_set = NULL;
   /* Number of pending changes.  */
   int n_validated_changes = 0;

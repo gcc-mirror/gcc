@@ -4985,11 +4985,12 @@ insn_rtx_cost (rtx pat, bool speed)
    and at INSN.  */
 
 rtx
-canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
+canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
+			rtx_insn **earliest,
 			rtx want_reg, int allow_cc_mode, int valid_at_insn_p)
 {
   enum rtx_code code;
-  rtx prev = insn;
+  rtx_insn *prev = insn;
   const_rtx set;
   rtx tem;
   rtx op0, op1;
@@ -5254,7 +5255,8 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
    VALID_AT_INSN_P is the same as for canonicalize_condition.  */
 
 rtx
-get_condition (rtx jump, rtx *earliest, int allow_cc_mode, int valid_at_insn_p)
+get_condition (rtx_insn *jump, rtx_insn **earliest, int allow_cc_mode,
+	       int valid_at_insn_p)
 {
   rtx cond;
   int reverse;

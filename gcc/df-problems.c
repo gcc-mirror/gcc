@@ -3664,11 +3664,12 @@ simulate_backwards_to_point (basic_block bb, regset live, rtx point)
    is set to point at the last moveable insn in such a case.  */
 
 bool
-can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
+can_move_insns_across (rtx_insn *from, rtx_insn *to,
+		       rtx_insn *across_from, rtx_insn *across_to,
 		       basic_block merge_bb, regset merge_live,
-		       regset other_branch_live, rtx *pmove_upto)
+		       regset other_branch_live, rtx_insn **pmove_upto)
 {
-  rtx insn, next, max_to;
+  rtx_insn *insn, *next, *max_to;
   bitmap merge_set, merge_use, local_merge_live;
   bitmap test_set, test_use;
   unsigned i, fail = 0;
@@ -3678,7 +3679,7 @@ can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
   bool trapping_insns_in_across = false;
 
   if (pmove_upto != NULL)
-    *pmove_upto = NULL_RTX;
+    *pmove_upto = NULL;
 
   /* Find real bounds, ignoring debug insns.  */
   while (!NONDEBUG_INSN_P (from) && from != to)
@@ -3754,7 +3755,7 @@ can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
      the first insn in MERGE that sets a register in TEST_USE, or uses
      a register in TEST_SET.  We also check for calls, trapping operations,
      and memory references.  */
-  max_to = NULL_RTX;
+  max_to = NULL;
   for (insn = from; ; insn = next)
     {
       if (CALL_P (insn))
