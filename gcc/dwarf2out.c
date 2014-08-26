@@ -102,6 +102,7 @@ along with GCC; see the file COPYING3.  If not see
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
+static void dwarf2out_decl (tree);
 
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
@@ -20881,7 +20882,7 @@ gen_namelist_decl (tree name, dw_die_ref scope_die, tree item_decls)
 
 /* Write the debugging output for DECL.  */
 
-void
+static void
 dwarf2out_decl (tree decl)
 {
   dw_die_ref context_die = comp_unit_die ();
