@@ -6464,9 +6464,8 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
    first place, in which case sets and n_sets will be 0).  */
 
 static void
-add_with_sets (rtx uncast_insn, struct cselib_set *sets, int n_sets)
+add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
 {
-  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   basic_block bb = BLOCK_FOR_INSN (insn);
   int n1, n2;
   struct count_use_info cui;

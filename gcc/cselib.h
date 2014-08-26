@@ -65,7 +65,7 @@ enum cselib_record_what
 };
 
 extern void (*cselib_discard_hook) (cselib_val *);
-extern void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
+extern void (*cselib_record_sets_hook) (rtx_insn *insn, struct cselib_set *sets,
 					int n_sets);
 
 extern cselib_val *cselib_lookup (rtx, enum machine_mode,
