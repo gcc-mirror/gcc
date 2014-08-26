@@ -1,3 +1,12 @@
+2014-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/62260
+	* Makefile.am (gcc_build_dir): Set to @gcc_build_dir@.
+	* configure.ac (gcc_build_dir): Set and AC_SUBST according to
+	$host_subdir.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
 2014-06-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac (--with-libiberty): New configure option.
