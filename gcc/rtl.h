@@ -2358,7 +2358,7 @@ extern rtx convert_memory_address_addr_space (enum machine_mode, rtx,
 #define convert_memory_address(to_mode,x) \
 	convert_memory_address_addr_space ((to_mode), (x), ADDR_SPACE_GENERIC)
 extern const char *get_insn_name (int);
-extern rtx get_last_insn_anywhere (void);
+extern rtx_insn *get_last_insn_anywhere (void);
 extern rtx get_first_nonnote_insn (void);
 extern rtx get_last_nonnote_insn (void);
 extern void start_sequence (void);
