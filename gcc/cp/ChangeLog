@@ -1,5 +1,12 @@
 2014-08-25  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (check_explicit_specialization): Don't complain about
+	non-template variable.
+	(template_for_substitution): Allow variable templates.
+	(check_template_variable): Fix logic for member var template.
+	* decl.c (start_decl): Don't complain about extra template header
+	here.
+
 	* decl.c (start_decl): Look through member variable template.
 	* pt.c (tsubst_decl) [VAR_DECL]: Handle member variable templates.
 	* decl2.c (grokfield): Set DECL_CONTEXT earlier on

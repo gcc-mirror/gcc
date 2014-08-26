@@ -2308,7 +2308,8 @@ check_template_variable (tree decl)
 {
   tree ctx = CP_DECL_CONTEXT (decl);
   int wanted = num_template_headers_for_class (ctx);
-  if (!TYPE_P (ctx) || !CLASSTYPE_TEMPLATE_INFO (ctx))
+  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl)))
     {
       if (cxx_dialect < cxx14)
         pedwarn (DECL_SOURCE_LOCATION (decl), 0,
@@ -2323,7 +2324,8 @@ check_template_variable (tree decl)
       bool warned = pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 			     "too many template headers for %D (should be %d)",
 			     decl, wanted);
-      if (warned && CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
+      if (warned && CLASS_TYPE_P (ctx)
+	  && CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
 	inform (DECL_SOURCE_LOCATION (decl),
 		"members of an explicitly specialized class are defined "
 		"without a template header");
@@ -2451,11 +2453,9 @@ check_explicit_specialization (tree declarator,
       /* Fall through.  */
     case tsk_expl_spec:
       if (VAR_P (decl) && TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
-        {
-           // In cases like template<> constexpr bool v = true;
-           error ("%qD is not a template variable", dname);
-           break;
-        }
+	/* In cases like template<> constexpr bool v = true;
+	   We'll give an error in check_template_variable.  */
+	break;
 
       SET_DECL_TEMPLATE_SPECIALIZATION (decl);
       if (ctype)
@@ -19711,8 +19711,6 @@ template_for_substitution (tree decl)
 	 cannot restructure the loop to just keep going until we find
 	 a template with a definition, since that might go too far if
 	 a specialization was declared, but not defined.  */
-      gcc_assert (!VAR_P (decl)
-		  || DECL_IN_AGGR_P (DECL_TEMPLATE_RESULT (tmpl)));
 
       /* Fetch the more general template.  */
       tmpl = DECL_TI_TEMPLATE (tmpl);
