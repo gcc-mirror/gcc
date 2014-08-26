@@ -4082,9 +4082,9 @@ cfg_layout_can_duplicate_bb_p (const_basic_block bb)
 }
 
 rtx_insn *
-duplicate_insn_chain (rtx from, rtx to)
+duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
 {
-  rtx insn, next, copy;
+  rtx_insn *insn, *next, *copy;
   rtx_note *last;
 
   /* Avoid updating of boundaries of previous basic block.  The
@@ -4167,7 +4167,7 @@ duplicate_insn_chain (rtx from, rtx to)
     }
   insn = NEXT_INSN (last);
   delete_insn (last);
-  return safe_as_a <rtx_insn *> (insn);
+  return insn;
 }
 
 /* Create a duplicate of the basic block BB.  */

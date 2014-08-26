@@ -1,5 +1,13 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (duplicate_insn_chain): Strengthen both params from rtx to
+	rtx_insn *.
+	* cfgrtl.c (duplicate_insn_chain): Likewise for  params "from",
+	"to" and locals "insn", "next", "copy".  Remove now-redundant
+	checked cast.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (canonicalize_condition): Strengthen param 1 from rtx to
 	rtx_insn * and param 4 from rtx * to rtx_insn **.
 	(get_condition): Strengthen param 1 from rtx to rtx_insn * and
