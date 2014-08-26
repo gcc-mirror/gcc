@@ -1,3 +1,14 @@
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/rs6000/rs6000.c (class swap_web_entry): Strengthen field
+	"insn" from rtx to rtx_insn *.
+	(permute_load): Likewise for param "insn".
+	(permute_store): Likewise.
+	(handle_special_swappables): Likewise for local "insn".
+	(replace_swap_with_copy): Likewise for locals "insn" and
+	"new_insn".
+	(rs6000_analyze_swaps): Likewise for local "insn".
+
 2014-08-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* regrename.h (struct du_chain): Strengthen field "insn" from rtx

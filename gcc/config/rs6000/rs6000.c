@@ -33496,7 +33496,7 @@ class swap_web_entry : public web_entry_base
 {
  public:
   /* Pointer to the insn.  */
-  rtx insn;
+  rtx_insn *insn;
   /* Set if insn contains a mention of a vector register.  All other
      fields are undefined if this field is unset.  */
   unsigned int is_relevant : 1;
@@ -34040,7 +34040,7 @@ adjust_subreg_index (rtx op)
 
 /* Convert the non-permuting load INSN to a permuting one.  */
 static void
-permute_load (rtx insn)
+permute_load (rtx_insn *insn)
 {
   rtx body = PATTERN (insn);
   rtx mem_op = SET_SRC (body);
@@ -34066,7 +34066,7 @@ permute_load (rtx insn)
 
 /* Convert the non-permuting store INSN to a permuting one.  */
 static void
-permute_store (rtx insn)
+permute_store (rtx_insn *insn)
 {
   rtx body = PATTERN (insn);
   rtx src_reg = SET_SRC (body);
@@ -34094,7 +34094,7 @@ permute_store (rtx insn)
 static void
 handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
 {
-  rtx insn = insn_entry[i].insn;
+  rtx_insn *insn = insn_entry[i].insn;
   rtx body = PATTERN (insn);
 
   switch (insn_entry[i].special_handling)
@@ -34133,11 +34133,11 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
 static void
 replace_swap_with_copy (swap_web_entry *insn_entry, unsigned i)
 {
-  rtx insn = insn_entry[i].insn;
+  rtx_insn *insn = insn_entry[i].insn;
   rtx body = PATTERN (insn);
   rtx src_reg = XEXP (SET_SRC (body), 0);
   rtx copy = gen_rtx_SET (VOIDmode, SET_DEST (body), src_reg);
-  rtx new_insn = emit_insn_before (copy, insn);
+  rtx_insn *new_insn = emit_insn_before (copy, insn);
   set_block_for_insn (new_insn, BLOCK_FOR_INSN (insn));
   df_insn_rescan (new_insn);
 
@@ -34209,7 +34209,7 @@ rs6000_analyze_swaps (function *fun)
 {
   swap_web_entry *insn_entry;
   basic_block bb;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Dataflow analysis for use-def chains.  */
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
