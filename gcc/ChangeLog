@@ -1,5 +1,31 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (add_insn): Strengthen param from rtx to rtx_insn *.
+	(unlink_insn_chain): Strengthen both params from rtx to
+	rtx_insn *.
+
+	* cfgrtl.c (cfg_layout_function_header): Likewise for this
+	variable.
+	(unlink_insn_chain): Likewise for params "first" and "last".
+	Remove now-redundant checked cast.
+	(record_effective_endpoints): Replace use of NULL_RTX with NULL.
+	(fixup_reorder_chain): Strengthen local "insn" from rtx to
+	rtx_insn *.
+	* emit-rtl.c (link_insn_into_chain): Likewise for all three
+	params.
+	(add_insn): Likewise for param "insn" and local "prev".
+	(add_insn_after_nobb): Likewise for both params and local "next".
+	(add_insn_before_nobb): Likewise for both params and local "prev".
+	(add_insn_after): Rename param "after" to "uncast_after",
+	introducing local "after" with another checked cast.
+	(add_insn_before): Rename params "insn" and "before", giving them
+	"uncast_" prefixes, adding the old names back using checked casts.
+	(emit_note_after): Likewise for param "after".
+	(emit_note_before): Likewise for param "before".
+	(emit_label): Add a checked cast.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* cselib.h (cselib_record_sets_hook):  Strengthen initial param
 	"insn" from rtx to rtx_insn *.
 
