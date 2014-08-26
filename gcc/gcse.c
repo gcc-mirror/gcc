@@ -4092,7 +4092,7 @@ update_ld_motion_stores (struct expr * expr)
 
       for ( ; list != NULL_RTX; list = XEXP (list, 1))
 	{
-	  rtx insn = XEXP (list, 0);
+	  rtx_insn *insn = as_a <rtx_insn *> (XEXP (list, 0));
 	  rtx pat = PATTERN (insn);
 	  rtx src = SET_SRC (pat);
 	  rtx reg = expr->reaching_reg;

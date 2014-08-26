@@ -3135,7 +3135,7 @@ extern bool validate_subreg (enum machine_mode, enum machine_mode,
 
 /* In combine.c  */
 extern unsigned int extended_count (const_rtx, enum machine_mode, int);
-extern rtx remove_death (unsigned int, rtx);
+extern rtx remove_death (unsigned int, rtx_insn *);
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
 extern rtx make_compound_operation (rtx, enum rtx_code);
@@ -3199,7 +3199,7 @@ extern HOST_WIDE_INT find_args_size_adjust (rtx);
 extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */
-extern void print_rtl_with_bb (FILE *, const_rtx, int);
+extern void print_rtl_with_bb (FILE *, const rtx_insn *, int);
 extern rtx_insn *duplicate_insn_chain (rtx_insn *, rtx_insn *);
 
 /* In expmed.c */

@@ -2128,9 +2128,9 @@ rtl_dump_bb (FILE *outf, basic_block bb, int indent, int flags)
    in dumpfile.h.  */
 
 void
-print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
+print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, int flags)
 {
-  const_rtx tmp_rtx;
+  const rtx_insn *tmp_rtx;
   if (rtx_first == 0)
     fprintf (outf, "(nil)\n");
   else

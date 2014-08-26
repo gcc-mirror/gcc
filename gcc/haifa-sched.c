@@ -5223,9 +5223,10 @@ debug_ready_list (struct ready_list *ready)
    NOTEs.  This is used for NOTE_INSN_EPILOGUE_BEG, so that sched-ebb
    replaces the epilogue note in the correct basic block.  */
 void
-reemit_notes (rtx insn)
+reemit_notes (rtx_insn *insn)
 {
-  rtx note, last = insn;
+  rtx note;
+  rtx_insn *last = insn;
 
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     {

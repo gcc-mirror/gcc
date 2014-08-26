@@ -2060,7 +2060,7 @@ remove_note (rtx insn, const_rtx note)
     {
     case REG_EQUAL:
     case REG_EQUIV:
-      df_notes_rescan (insn);
+      df_notes_rescan (as_a <rtx_insn *> (insn));
       break;
     default:
       break;

@@ -3106,7 +3106,7 @@ cleanup_subreg_operands (rtx insn)
 	*recog_data.dup_loc[i] = walk_alter_subreg (recog_data.dup_loc[i], &changed);
     }
   if (changed)
-    df_insn_rescan (insn);
+    df_insn_rescan (as_a <rtx_insn *> (insn));
 }
 
 /* If X is a SUBREG, try to replace it with a REG or a MEM, based on

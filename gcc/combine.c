@@ -12997,7 +12997,7 @@ mark_used_regs_combine (rtx x)
    Return the note used to record the death, if there was one.  */
 
 rtx
-remove_death (unsigned int regno, rtx insn)
+remove_death (unsigned int regno, rtx_insn *insn)
 {
   rtx note = find_regno_note (insn, REG_DEAD, regno);
 
@@ -13028,7 +13028,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
   if (code == REG)
     {
       unsigned int regno = REGNO (x);
-      rtx where_dead = reg_stat[regno].last_death;
+      rtx_insn *where_dead = reg_stat[regno].last_death;
 
       /* Don't move the register if it gets killed in between from and to.  */
       if (maybe_kill_insn && reg_set_p (x, maybe_kill_insn)
