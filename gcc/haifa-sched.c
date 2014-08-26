@@ -826,7 +826,7 @@ add_delay_dependencies (rtx_insn *insn)
 
 /* Forward declarations.  */
 
-static int priority (rtx);
+static int priority (rtx_insn *);
 static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx_insn **, int);
 static void queue_insn (rtx_insn *, int, const char *);
@@ -875,7 +875,7 @@ static void extend_h_i_d (void);
 static void init_h_i_d (rtx);
 static int haifa_speculate_insn (rtx, ds_t, rtx *);
 static void generate_recovery_code (rtx_insn *);
-static void process_insn_forw_deps_be_in_spec (rtx, rtx, ds_t);
+static void process_insn_forw_deps_be_in_spec (rtx, rtx_insn *, ds_t);
 static void begin_speculative_block (rtx_insn *);
 static void add_to_speculative_block (rtx_insn *);
 static void init_before_recovery (basic_block *);
@@ -890,7 +890,7 @@ static void move_succs (vec<edge, va_gc> **, basic_block);
 static void sched_remove_insn (rtx_insn *);
 static void clear_priorities (rtx_insn *, rtx_vec_t *);
 static void calc_priorities (rtx_vec_t);
-static void add_jump_dependencies (rtx, rtx);
+static void add_jump_dependencies (rtx_insn *, rtx_insn *);
 
 #endif /* INSN_SCHEDULING */
 
@@ -1582,7 +1582,7 @@ dep_list_size (rtx insn, sd_list_types_def list)
 
 /* Compute the priority number for INSN.  */
 static int
-priority (rtx insn)
+priority (rtx_insn *insn)
 {
   if (! INSN_P (insn))
     return 0;
@@ -1631,7 +1631,7 @@ priority (rtx insn)
 
 	      FOR_EACH_DEP (twin, SD_LIST_FORW, sd_it, dep)
 		{
-		  rtx next;
+		  rtx_insn *next;
 		  int next_priority;
 
 		  next = DEP_CON (dep);
@@ -6622,9 +6622,9 @@ schedule_block (basic_block *target_bb, state_t init_state)
 /* Set_priorities: compute priority of each insn in the block.  */
 
 int
-set_priorities (rtx head, rtx tail)
+set_priorities (rtx_insn *head, rtx_insn *tail)
 {
-  rtx insn;
+  rtx_insn *insn;
   int n_insn;
   int sched_max_insns_priority =
 	current_sched_info->sched_max_insns_priority;
@@ -7342,7 +7342,7 @@ generate_recovery_code (rtx_insn *insn)
    Tries to add speculative dependencies of type FS between instructions
    in deps_list L and TWIN.  */
 static void
-process_insn_forw_deps_be_in_spec (rtx insn, rtx twin, ds_t fs)
+process_insn_forw_deps_be_in_spec (rtx insn, rtx_insn *twin, ds_t fs)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -7350,7 +7350,7 @@ process_insn_forw_deps_be_in_spec (rtx insn, rtx twin, ds_t fs)
   FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
     {
       ds_t ds;
-      rtx consumer;
+      rtx_insn *consumer;
 
       consumer = DEP_CON (dep);
 
@@ -7540,7 +7540,7 @@ add_to_speculative_block (rtx_insn *insn)
       {
 	dep_def _new_dep, *new_dep = &_new_dep;
 
-	init_dep (new_dep, insn, twin, REG_DEP_OUTPUT);
+	init_dep (new_dep, insn, as_a <rtx_insn *> (twin), REG_DEP_OUTPUT);
 	sd_add_dep (new_dep, false);
       }
 
@@ -7950,7 +7950,7 @@ create_check_block_twin (rtx_insn *insn, bool mutate_p)
 
       if (rec != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
-	  SET_DEP_CON (new_dep) = twin;
+	  DEP_CON (new_dep) = twin;
 	  sd_add_dep (new_dep, false);
 	}
     }
@@ -8429,7 +8429,7 @@ calc_priorities (rtx_vec_t roots)
 /* Add dependences between JUMP and other instructions in the recovery
    block.  INSN is the first insn the recovery block.  */
 static void
-add_jump_dependencies (rtx insn, rtx jump)
+add_jump_dependencies (rtx_insn *insn, rtx_insn *jump)
 {
   do
     {
