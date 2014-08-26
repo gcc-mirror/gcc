@@ -41,8 +41,8 @@ enum sched_pressure_algorithm
 };
 
 typedef vec<basic_block> bb_vec_t;
-typedef vec<rtx> insn_vec_t;
-typedef vec<rtx> rtx_vec_t;
+typedef vec<rtx_insn *> insn_vec_t;
+typedef vec<rtx_insn *> rtx_vec_t;
 
 extern void sched_init_bbs (void);
 
@@ -1241,7 +1241,7 @@ struct sched_deps_info_def
   void (*compute_jump_reg_dependencies) (rtx, regset);
 
   /* Start analyzing insn.  */
-  void (*start_insn) (rtx);
+  void (*start_insn) (rtx_insn *);
 
   /* Finish analyzing insn.  */
   void (*finish_insn) (void);
@@ -1269,10 +1269,10 @@ struct sched_deps_info_def
 
   /* Note memory dependence of type DS between MEM1 and MEM2 (which is
      in the INSN2).  */
-  void (*note_mem_dep) (rtx mem1, rtx mem2, rtx insn2, ds_t ds);
+  void (*note_mem_dep) (rtx mem1, rtx mem2, rtx_insn *insn2, ds_t ds);
 
   /* Note a dependence of type DS from the INSN.  */
-  void (*note_dep) (rtx, ds_t ds);
+  void (*note_dep) (rtx_insn *, ds_t ds);
 
   /* Nonzero if we should use cselib for better alias analysis.  This
      must be 0 if the dependency information is used after sched_analyze

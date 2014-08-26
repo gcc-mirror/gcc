@@ -1,5 +1,97 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* sel-sched-ir.h (insn_t): Strengthen from rtx to rtx_insn *.
+	(BND_TO): Delete this function and...
+	(SET_BND_TO): ...this functions in favor of...
+	(BND_TO): ...reinstating this macro.
+	(struct _fence): Strengthen field "executing_insns" from
+	vec<rtx, va_gc> * to vec<rtx_insn *, va_gc> *.  Strengthen fields
+	"last_scheduled_insn" and "sched_next" from rtx to rtx_insn *.
+	(_succ_iter_cond): Update param "succp" from rtx * to insn_t *
+	and param "insn" from rtx to insn_t.
+	(create_vinsn_from_insn_rtx): Strengthen first param from rtx to
+	rtx_insn *.
+
+	* sched-int.h (insn_vec_t): Strengthen from vec<rtx> to
+	vec<rtx_insn *> .
+	(rtx_vec_t): Likewise.
+	(struct sched_deps_info_def): Strengthen param of "start_insn"
+	callback from rtx to rtx_insn *.  Likewise for param "insn2" of
+	"note_mem_dep" callback and first param of "note_dep" callback.
+
+	* haifa-sched.c (add_to_speculative_block): Strengthen param
+	"insn" from rtx to rtx_insn *.
+	(clear_priorities): Likewise.
+	(calc_priorities): Likewise for local "insn".
+
+	* sched-deps.c (haifa_start_insn): Likewise for param "insn".
+	Remove redundant checked cast.
+	(haifa_note_mem_dep): Likewise for param "pending_insn".
+	(haifa_note_dep): Likewise for param "elem".
+	(note_mem_dep): Likewise for param "e".
+	(sched_analyze_1): Add checked casts.
+	(sched_analyze_2): Likewise.
+
+	* sel-sched-dump.c (dump_insn_vector): Strengthen local "succ"
+	from rtx to rtx_insn *.
+	(debug): Update param from vec<rtx> & to vec<rtx_insn *>, and
+	from vec<rtx> * to vec<rtx_insn *> *.
+
+	* sel-sched-ir.c (blist_add): Remove use of SET_BND_TO
+	scaffolding.
+	(flist_add): Strengthen param "executing_insns" from
+	vec<rtx, va_gc> * to vec<rtx_insn *, va_gc> *.
+	(advance_deps_context): Remove now-redundant checked cast.
+	(init_fences): Replace uses of NULL_RTX with NULL.
+	(merge_fences): Strengthen params "last_scheduled_insn" and
+	"sched_next" from rtx to rtx_insn * and "executing_insns" from
+	vec<rtx, va_gc> * to vec<rtx_insn *, va_gc> *.
+	(add_clean_fence_to_fences): Replace uses of NULL_RTX with NULL.
+	(get_nop_from_pool): Add local "nop_pat" so that "nop" can be
+	an instruction, rather than doing double-duty as a pattern.
+	(return_nop_to_pool): Update for change of insn_t.
+	(deps_init_id): Remove now-redundant checked cast.
+	(struct sched_scan_info_def): Strengthen param of "init_insn"
+	callback from rtx to insn_t.
+	(sched_scan): Strengthen local "insn" from rtx to rtx_insn *.
+	(init_global_and_expr_for_insn): Replace uses of NULL_RTX with
+	NULL.
+	(get_seqno_by_succs): Strengthen param "insn" and locals "tmp",
+	"end" from rtx to rtx_insn *.
+	(create_vinsn_from_insn_rtx): Likewise for param "insn_rtx".
+	(rtx insn_rtx, bool force_unique_p)
+	(BND_TO): Delete function.
+	(SET_BND_TO): Delete function.
+
+	* sel-sched.c (advance_one_cycle): Strengthen local "insn" from
+	rtx to rtx_insn *.
+	(extract_new_fences_from): Replace uses of NULL_RTX with NULL.
+	(replace_dest_with_reg_in_expr): Strengthen local "insn_rtx" from
+	rtx to rtx_insn *.
+	(undo_transformations): Likewise for param "insn".
+	(update_liveness_on_insn): Likewise.
+	(compute_live_below_insn): Likewise for param "insn" and local
+	"succ".
+	(update_data_sets): Likewise for param "insn".
+	(fill_vec_av_set): Replace uses of NULL_RTX with NULL.
+	(convert_vec_av_set_to_ready): Drop now-redundant checked cast.
+	(invoke_aftermath_hooks): Strengthen param "best_insn" from rtx to
+	rtx_insn *.
+	(move_cond_jump): Likewise for param "insn".
+	(move_cond_jump): Drop use of SET_BND_TO.
+	(compute_av_set_on_boundaries): Likewise.
+	(update_fence_and_insn): Replace uses of NULL_RTX with NULL.
+	(update_and_record_unavailable_insns): Strengthen local "bb_end"
+	from rtx to rtx_insn *.
+	(maybe_emit_renaming_copy): Likewise for param "insn".
+	(maybe_emit_speculative_check): Likewise.
+	(handle_emitting_transformations): Likewise.
+	(remove_insn_from_stream): Likewise.
+	(code_motion_process_successors): Strengthen local "succ" from rtx
+	to insn_t.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* sel-sched-ir.h (ilist_t): Redefine this typedef in terms of
 	ilist_t, not _xlist_t;
 	(ILIST_INSN): Define in terms of new union field "insn".

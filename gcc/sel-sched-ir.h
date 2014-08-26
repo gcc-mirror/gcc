@@ -60,7 +60,7 @@ typedef _list_t _xlist_t;
 #define _XLIST_NEXT(L) (_LIST_NEXT (L))
 
 /* Instruction.  */
-typedef rtx insn_t;
+typedef rtx_insn *insn_t;
 
 /* List of insns.  */
 typedef _list_t ilist_t;
@@ -233,8 +233,7 @@ struct _bnd
   deps_t dc;
 };
 typedef struct _bnd *bnd_t;
-extern rtx_insn *BND_TO (bnd_t bnd);
-extern insn_t& SET_BND_TO (bnd_t bnd);
+#define BND_TO(B) ((B)->to)
 
 /* PTR stands not for pointer as you might think, but as a Path To Root of the
    current instruction group from boundary B.  */
@@ -279,7 +278,7 @@ struct _fence
   tc_t tc;
 
   /* A vector of insns that are scheduled but not yet completed.  */
-  vec<rtx, va_gc> *executing_insns;
+  vec<rtx_insn *, va_gc> *executing_insns;
 
   /* A vector indexed by UIDs that caches the earliest cycle on which
      an insn can be scheduled on this fence.  */
@@ -289,13 +288,13 @@ struct _fence
   int ready_ticks_size;
 
   /* Insn, which has been scheduled last on this fence.  */
-  rtx last_scheduled_insn;
+  rtx_insn *last_scheduled_insn;
 
   /* The last value of can_issue_more variable on this fence.  */
   int issue_more;
 
   /* If non-NULL force the next scheduled insn to be SCHED_NEXT.  */
-  rtx sched_next;
+  rtx_insn *sched_next;
 
   /* True if fill_insns processed this fence.  */
   BOOL_BITFIELD processed_p : 1;
@@ -1255,7 +1254,7 @@ _succ_iter_start (insn_t *succp, insn_t insn, int flags)
 }
 
 static inline bool
-_succ_iter_cond (succ_iterator *ip, rtx *succp, rtx insn,
+_succ_iter_cond (succ_iterator *ip, insn_t *succp, insn_t insn,
                  bool check (edge, succ_iterator *))
 {
   if (!ip->bb_end)
@@ -1661,7 +1660,7 @@ extern void sel_unregister_cfg_hooks (void);
 
 /* Expression transformation routines.  */
 extern rtx_insn *create_insn_rtx_from_pattern (rtx, rtx);
-extern vinsn_t create_vinsn_from_insn_rtx (rtx, bool);
+extern vinsn_t create_vinsn_from_insn_rtx (rtx_insn *, bool);
 extern rtx_insn *create_copy_of_insn_rtx (rtx);
 extern void change_vinsn_in_expr (expr_t, vinsn_t);
 
