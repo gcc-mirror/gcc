@@ -2175,9 +2175,9 @@ expand_gimple_cond (basic_block bb, gimple stmt)
     set_curr_insn_location (false_edge->goto_locus);
   emit_jump (label_rtx_for_bb (false_edge->dest));
 
-  SET_BB_END (bb) = last;
+  BB_END (bb) = last;
   if (BARRIER_P (BB_END (bb)))
-    SET_BB_END (bb) = PREV_INSN (BB_END (bb));
+    BB_END (bb) = PREV_INSN (BB_END (bb));
   update_bb_for_insn (bb);
 
   new_bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
@@ -2191,7 +2191,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   new_edge->probability = REG_BR_PROB_BASE;
   new_edge->count = new_bb->count;
   if (BARRIER_P (BB_END (new_bb)))
-    SET_BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
+    BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
   update_bb_for_insn (new_bb);
 
   maybe_dump_rtl_for_gimple_stmt (stmt, last2);
@@ -3490,7 +3490,7 @@ expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
 		 | EDGE_SIBCALL);
   e->probability += probability;
   e->count += count;
-  SET_BB_END (bb) = last;
+  BB_END (bb) = last;
   update_bb_for_insn (bb);
 
   if (NEXT_INSN (last))
@@ -3499,7 +3499,7 @@ expand_gimple_tailcall (basic_block bb, gimple stmt, bool *can_fallthru)
 
       last = BB_END (bb);
       if (BARRIER_P (last))
-	SET_BB_END (bb) = PREV_INSN (last);
+	BB_END (bb) = PREV_INSN (last);
     }
 
   maybe_dump_rtl_for_gimple_stmt (stmt, last2);
@@ -4962,15 +4962,15 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 
       /* Java emits line number notes in the top of labels.
 	 ??? Make this go away once line number notes are obsoleted.  */
-      SET_BB_HEAD (bb) = NEXT_INSN (last);
+      BB_HEAD (bb) = NEXT_INSN (last);
       if (NOTE_P (BB_HEAD (bb)))
-	SET_BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
+	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
       note = emit_note_after (NOTE_INSN_BASIC_BLOCK, BB_HEAD (bb));
 
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
     }
   else
-    SET_BB_HEAD (bb) = note = emit_note (NOTE_INSN_BASIC_BLOCK);
+    BB_HEAD (bb) = note = emit_note (NOTE_INSN_BASIC_BLOCK);
 
   NOTE_BASIC_BLOCK (note) = bb;
 
@@ -5253,7 +5253,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
     last = PREV_INSN (last);
   if (JUMP_TABLE_DATA_P (last))
     last = PREV_INSN (PREV_INSN (last));
-  SET_BB_END (bb) = last;
+  BB_END (bb) = last;
 
   update_bb_for_insn (bb);
 
@@ -5355,7 +5355,7 @@ construct_exit_block (void)
     return;
   /* While emitting the function end we could move end of the last basic
      block.  */
-  SET_BB_END (prev_bb) = orig_end;
+  BB_END (prev_bb) = orig_end;
   while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
   /* But make sure exit_block starts with RETURN_LABEL, otherwise the
@@ -5367,7 +5367,7 @@ construct_exit_block (void)
       while (NEXT_INSN (head) != return_label)
 	{
 	  if (!NOTE_P (NEXT_INSN (head)))
-	    SET_BB_END (prev_bb) = NEXT_INSN (head);
+	    BB_END (prev_bb) = NEXT_INSN (head);
 	  head = NEXT_INSN (head);
 	}
     }

@@ -1,5 +1,10 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtx-classes-status.txt (TODO): SET_BB_HEAD, SET_BB_END,
+	SET_BB_HEADER are done.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtx-classes-status.txt (TODO): SET_DEP_PRO and SET_DEP_CON are
 	done.
 

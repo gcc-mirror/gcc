@@ -1435,7 +1435,7 @@ sel_move_insn (expr_t expr, int seqno, insn_t after)
   /* Update links from insn to bb and vice versa.  */
   df_insn_change_bb (insn, bb);
   if (BB_END (bb) == after)
-    SET_BB_END (bb) = insn;
+    BB_END (bb) = insn;
 
   prepare_insn_expr (insn, seqno);
   return insn;
