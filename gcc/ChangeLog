@@ -1,5 +1,20 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.h (struct sequence_stack): Strengthen fields "first"
+	and "last" from rtx to rtx_insn *.
+	(struct emit_status): Likewise for fields "x_first_insn" and
+	"x_last_insn".
+
+	* emit-rtl.h (get_insns): Remove now-redundant checked cast.
+	(set_first_insn): Add checked cast.
+	(get_last_insn): Remove now-redundant checked cast.
+	(set_last_insn): Add checked cast.
+
+	* config/m32c/m32c.c (m32c_leaf_function_p): Strengthen locals
+	"saved_first" and "saved_last" from rtx to rtx_insn *.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (add_insn): Strengthen param from rtx to rtx_insn *.
 	(unlink_insn_chain): Strengthen both params from rtx to
 	rtx_insn *.
