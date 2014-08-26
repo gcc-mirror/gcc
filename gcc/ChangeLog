@@ -1,5 +1,16 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* cselib.h (cselib_record_sets_hook):  Strengthen initial param
+	"insn" from rtx to rtx_insn *.
+
+	* cselib.c (cselib_record_sets_hook): Likewise.
+
+	* var-tracking.c (add_with_sets): Likewise, renaming back from
+	"uncast_insn" to "insn" and eliminating the checked cast from rtx
+	to rtx_insn *.
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (struct rtl_bb_info): Strengthen fields "end_"
 	and "header_" from rtx to rtx_insn *.
 	(struct basic_block_d): Likewise for field "head_" within "x"

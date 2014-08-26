@@ -258,7 +258,7 @@ void (*cselib_discard_hook) (cselib_val *);
    represented in the array sets[n_sets].  new_val_min can be used to
    tell whether values present in sets are introduced by this
    instruction.  */
-void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
+void (*cselib_record_sets_hook) (rtx_insn *insn, struct cselib_set *sets,
 				 int n_sets);
 
 #define PRESERVED_VALUE_P(RTX) \
