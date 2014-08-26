@@ -1,5 +1,37 @@
 2014-08-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (push_to_sequence): Strengthen param from rtx to
+	rtx_insn *.
+	(push_to_sequence2): Likewise for both params.
+	(delete_insns_since): Likewise for param.
+	(reorder_insns_nobb): Likewise for all three params.
+	(set_new_first_and_last_insn): Likewise for both params.
+
+	* emit-rtl.h (set_first_insn): Strengthen param "insn" from rtx to
+	rtx_insn *.  Remove now-redundant cast.
+	(set_last_insn): Likewise.
+
+	* builtins.c (expand_builtin_return): Strengthen local
+	"call_fusage" from rtx to rtx_insn *.
+	* cfgrtl.c (create_basic_block_structure): Likewise for local
+	"after".
+	* emit-rtl.c (set_new_first_and_last_insn): Likewise for params
+	"first", "last" and local "insn".
+	(delete_insns_since): Likewise for param "from".
+	(reorder_insns_nobb): Likewise for params "from", "to", "after"
+	and local "x".
+	(push_to_sequence): Likewise for param "first" and local "last".
+	(push_to_sequence2): Likewise for params "first" and "last".
+	* lra.c (emit_add3_insn): Likewise for local "last".
+	(lra_emit_add): Likewise.
+	* lra-constraints.c (base_to_reg): Likewise for locals "insn",
+	"last_insn".
+	(process_address_1): Likewise for locals "insn", last".
+	* modulo-sched.c (ps_first_note): Likewise for return type.
+	* optabs.c (expand_binop_directly): Likewise for param "last".
+
+2014-08-26  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (get_last_insn_anywhere): Strengthen return type from rtx
 	to rtx_insn*.
 	* emit-rtl.c (get_last_insn_anywhere): Likewise.

@@ -252,7 +252,8 @@ lra_delete_dead_insn (rtx_insn *insn)
 static rtx
 emit_add3_insn (rtx x, rtx y, rtx z)
 {
-  rtx insn, last;
+  rtx_insn *last;
+  rtx insn;
 
   last = get_last_insn ();
 
@@ -309,7 +310,8 @@ void
 lra_emit_add (rtx x, rtx y, rtx z)
 {
   int old;
-  rtx insn, last;
+  rtx insn;
+  rtx_insn *last;
   rtx a1, a2, base, index, disp, scale, index_scale;
   bool ok_p;
 

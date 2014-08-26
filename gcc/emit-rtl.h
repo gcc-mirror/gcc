@@ -86,10 +86,10 @@ get_insns (void)
 /* Specify a new insn as the first in the chain.  */
 
 static inline void
-set_first_insn (rtx insn)
+set_first_insn (rtx_insn *insn)
 {
   gcc_checking_assert (!insn || !PREV_INSN (insn));
-  crtl->emit.x_first_insn = safe_as_a <rtx_insn *> (insn);
+  crtl->emit.x_first_insn = insn;
 }
 
 /* Return the last insn emitted in current sequence or current function.  */
@@ -103,10 +103,10 @@ get_last_insn (void)
 /* Specify a new insn as the last in the chain.  */
 
 static inline void
-set_last_insn (rtx insn)
+set_last_insn (rtx_insn *insn)
 {
   gcc_checking_assert (!insn || !NEXT_INSN (insn));
-  crtl->emit.x_last_insn = safe_as_a <rtx_insn *> (insn);
+  crtl->emit.x_last_insn = insn;
 }
 
 /* Return a number larger than any instruction's uid in this function.  */

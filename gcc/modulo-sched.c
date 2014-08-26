@@ -319,7 +319,7 @@ ps_rtl_insn (partial_schedule_ptr ps, int id)
    in the loop that was associated with ps_rtl_insn (PS, ID).
    If the instruction had some notes before it, this is the first
    of those notes.  */
-static rtx
+static rtx_insn *
 ps_first_note (partial_schedule_ptr ps, int id)
 {
   gcc_assert (id < ps->g->num_nodes);
