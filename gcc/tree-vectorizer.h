@@ -414,9 +414,9 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
-  (L)->may_misalign_stmts.length () > 0
+  ((L)->may_misalign_stmts.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)     \
-  (L)->may_alias_ddrs.length () > 0
+  ((L)->may_alias_ddrs.length () > 0)
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
   (tree_fits_shwi_p ((L)->num_iters) && tree_to_shwi ((L)->num_iters) > 0)
