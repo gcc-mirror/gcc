@@ -1,5 +1,12 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* dwarf2cfi.c (create_trace_edges): Convert GET_CODE check into a
+	dyn_cast, strengthening local "seq" from rtx to rtx_sequence *.
+	Use methods of rtx_sequence.
+	(scan_trace): Likewise for local "pat".
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* coretypes.h (class rtx_sequence): Add forward declaration.
 	* rtl.h (class rtx_sequence): New subclass of rtx_def, adding
 	invariant: GET_CODE (X) == SEQUENCE.
