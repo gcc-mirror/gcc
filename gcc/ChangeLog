@@ -1,3 +1,8 @@
+2014-08-27  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR other/62248
+	* config.gcc (arm*-*-*): Check --with-fpu against arm-fpus.def.
+
 2014-08-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
