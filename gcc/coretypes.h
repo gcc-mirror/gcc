@@ -61,6 +61,7 @@ typedef const struct rtx_def *const_rtx;
    Where possible, keep this list in the same order as in rtl.def.  */
 class rtx_def;
   class rtx_insn_list;           /* GET_CODE (X) == INSN_LIST */
+  class rtx_sequence;            /* GET_CODE (X) == SEQUENCE */
   class rtx_insn;
     class rtx_debug_insn;      /* DEBUG_INSN_P (X) */
     class rtx_nonjump_insn;    /* NONJUMP_INSN_P (X) */
