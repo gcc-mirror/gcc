@@ -3431,7 +3431,8 @@
 	(and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand" "r")
 			     (match_operand 2 "const_int_operand" "n"))
 		 (match_operand 3 "const_int_operand" "n")))]
-  "exact_log2 ((INTVAL (operands[3]) >> INTVAL (operands[2])) + 1) >= 0
+  "(INTVAL (operands[2]) < (<GPI:sizen>))
+   && exact_log2 ((INTVAL (operands[3]) >> INTVAL (operands[2])) + 1) >= 0
    && (INTVAL (operands[3]) & ((1 << INTVAL (operands[2])) - 1)) == 0"
   "ubfiz\\t%<w>0, %<w>1, %2, %P3"
   [(set_attr "type" "bfm")]

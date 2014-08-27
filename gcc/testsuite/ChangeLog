@@ -1,3 +1,8 @@
+2014-08-27  Guozhi Wei  <carrot@google.com>
+
+	PR target/62262
+	* gcc.target/aarch64/pr62262.c: New test.
+
 2014-08-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/60606

@@ -1,3 +1,9 @@
+2014-08-27  Guozhi Wei  <carrot@google.com>
+
+	PR target/62262
+	* config/aarch64/aarch64.md (*andim_ashift<mode>_bfiz): Check the shift
+	amount before using it.
+
 2014-08-27  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (get_maxval_strlen): Add overload wrapping
