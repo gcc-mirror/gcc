@@ -76,7 +76,7 @@ static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
 
 static void  m32r_file_start (void);
 
-static int    m32r_adjust_priority (rtx, int);
+static int    m32r_adjust_priority (rtx_insn *, int);
 static int    m32r_issue_rate (void);
 
 static void m32r_encode_section_info (tree, rtx, int);
@@ -1322,7 +1322,7 @@ m32r_is_insn (rtx insn)
    short instructions are scheduled ahead of the long ones.  */
 
 static int
-m32r_adjust_priority (rtx insn, int priority)
+m32r_adjust_priority (rtx_insn *insn, int priority)
 {
   if (m32r_is_insn (insn)
       && get_attr_insn_size (insn) != INSN_SIZE_SHORT)

@@ -6378,7 +6378,7 @@ it to vary depending on what the instructions are, you must use
 @samp{TARGET_SCHED_VARIABLE_ISSUE}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx @var{insn}, int @var{more})
+@deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx_insn *@var{insn}, int @var{more})
 This hook is executed by the scheduler after it has scheduled an insn
 from the ready list.  It should return the number of insns which can
 still be issued in the current cycle.  The default is
@@ -6392,7 +6392,7 @@ debug output to.  @var{verbose} is the verbose level provided by
 was scheduled.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx @var{insn}, rtx @var{link}, rtx @var{dep_insn}, int @var{cost})
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx_insn *@var{insn}, rtx @var{link}, rtx_insn *@var{dep_insn}, int @var{cost})
 This function corrects the value of @var{cost} based on the
 relationship between @var{insn} and @var{dep_insn} through the
 dependence @var{link}.  It should return the new value.  The default
@@ -6407,7 +6407,7 @@ acceptable, you could use the hook to modify them too.  See also
 @pxref{Processor pipeline description}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx @var{insn}, int @var{priority})
+@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_PRIORITY (rtx_insn *@var{insn}, int @var{priority})
 This hook adjusts the integer scheduling priority @var{priority} of
 @var{insn}.  It should return the new priority.  Increase the priority to
 execute @var{insn} earlier, reduce the priority to execute @var{insn}
@@ -6447,7 +6447,7 @@ cycle.  These other insns can then be taken into account properly.
 This hook is used to check whether target platform supports macro fusion.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_PAIR_P (rtx @var{condgen}, rtx @var{condjmp})
+@deftypefn {Target Hook} bool TARGET_SCHED_MACRO_FUSION_PAIR_P (rtx_insn *@var{condgen}, rtx_insn *@var{condjmp})
 This hook is used to check whether two insns could be macro fused for
 target microarchitecture. If this hook returns true for the given insn pair
 (@var{condgen} and @var{condjmp}), scheduler will put them into a sched
@@ -6510,7 +6510,7 @@ when the new simulated processor cycle starts.
 The hook can be used to initialize data used by the previous hook.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_SCHED_DFA_POST_CYCLE_INSN (void)
+@deftypefn {Target Hook} {rtx_insn *} TARGET_SCHED_DFA_POST_CYCLE_INSN (void)
 The hook is analogous to @samp{TARGET_SCHED_DFA_PRE_CYCLE_INSN} but used
 to changed the state as if the insn were scheduled when the new
 simulated processor cycle finishes.
@@ -6564,7 +6564,7 @@ schedules to choose the best one.
 The default is no multipass scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD (rtx @var{insn}, int @var{ready_index})
+@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD (rtx_insn *@var{insn}, int @var{ready_index})
 
 This hook controls what insns from the ready insn queue will be
 considered for the multipass insn scheduling.  If the hook returns
@@ -6585,7 +6585,7 @@ This hook prepares the target backend for a new round of multipass
 scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE (void *@var{data}, signed char *@var{ready_try}, int @var{n_ready}, rtx @var{insn}, const void *@var{prev_data})
+@deftypefn {Target Hook} void TARGET_SCHED_FIRST_CYCLE_MULTIPASS_ISSUE (void *@var{data}, signed char *@var{ready_try}, int @var{n_ready}, rtx_insn *@var{insn}, const void *@var{prev_data})
 This hook is called when multipass scheduling evaluates instruction INSN.
 @end deftypefn
 
@@ -6607,7 +6607,7 @@ This hook initializes target-specific data used in multipass scheduling.
 This hook finalizes target-specific data used in multipass scheduling.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *@var{dump}, int @var{verbose}, rtx @var{insn}, int @var{last_clock}, int @var{clock}, int *@var{sort_p})
+@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *@var{dump}, int @var{verbose}, rtx_insn *@var{insn}, int @var{last_clock}, int @var{clock}, int *@var{sort_p})
 This hook is called by the insn scheduler before issuing @var{insn}
 on cycle @var{clock}.  If the hook returns nonzero,
 @var{insn} is not issued on this processor cycle.  Instead,
@@ -6669,7 +6669,7 @@ Deallocate internal data in target scheduling context pointed to by @var{tc}.
 Deallocate a store for target scheduling context pointed to by @var{tc}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, unsigned int @var{dep_status}, rtx *@var{new_pat})
+@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx_insn *@var{insn}, unsigned int @var{dep_status}, rtx *@var{new_pat})
 This hook is called by the insn scheduler when @var{insn} has only
 speculative dependencies and therefore can be scheduled speculatively.
 The hook is used to check if the pattern of @var{insn} has a speculative
@@ -6686,7 +6686,7 @@ for @var{insn}.  It should return @code{true}, if the corresponding check
 instruction should branch to recovery code, or @code{false} otherwise.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx @var{insn}, rtx @var{label}, unsigned int @var{ds})
+@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx_insn *@var{insn}, rtx_insn *@var{label}, unsigned int @var{ds})
 This hook is called by the insn scheduler to generate a pattern for recovery
 check instruction.  If @var{mutate_p} is zero, then @var{insn} is a
 speculative instruction for which the check should be generated.
@@ -6713,12 +6713,12 @@ bound will be used in case this hook is not implemented: the total number
 of instructions divided by the issue rate.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_DISPATCH (rtx @var{insn}, int @var{x})
+@deftypefn {Target Hook} bool TARGET_SCHED_DISPATCH (rtx_insn *@var{insn}, int @var{x})
 This hook is called by Haifa Scheduler.  It returns true if dispatch scheduling
 is supported in hardware and the condition specified in the parameter is true.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_DISPATCH_DO (rtx @var{insn}, int @var{x})
+@deftypefn {Target Hook} void TARGET_SCHED_DISPATCH_DO (rtx_insn *@var{insn}, int @var{x})
 This hook is called by Haifa Scheduler.  It performs the operation specified
 in its second parameter.
 @end deftypefn
@@ -8498,7 +8498,7 @@ writing conditional output routines in those patterns.
 If this macro is not defined, it is equivalent to a null statement.
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_ASM_FINAL_POSTSCAN_INSN (FILE *@var{file}, rtx @var{insn}, rtx *@var{opvec}, int @var{noperands})
+@deftypefn {Target Hook} void TARGET_ASM_FINAL_POSTSCAN_INSN (FILE *@var{file}, rtx_insn *@var{insn}, rtx *@var{opvec}, int @var{noperands})
 If defined, this target hook is a function which is executed just after the
 output of assembler code for @var{insn}, to change the mode of the assembler
 if necessary.
@@ -8742,7 +8742,7 @@ The default is that no label is emitted.
 If the target implements @code{TARGET_ASM_UNWIND_EMIT}, this hook may be used to emit a directive to install a personality hook into the unwind info.  This hook should not be used if dwarf2 unwind info is used.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_ASM_UNWIND_EMIT (FILE *@var{stream}, rtx @var{insn})
+@deftypefn {Target Hook} void TARGET_ASM_UNWIND_EMIT (FILE *@var{stream}, rtx_insn *@var{insn})
 This target hook emits assembly directives required to unwind the
 given instruction.  This is only used when @code{TARGET_EXCEPT_UNWIND_INFO}
 returns @code{UI_TARGET}.
@@ -9589,11 +9589,11 @@ switch is needed / supplied.
 Generate one or more insns to set @var{entity} to @var{mode}. @var{hard_reg_live} is the set of hard registers live at the point where the insn(s) are to be inserted. @var{prev_moxde} indicates the mode to switch from. Sets of a lower numbered entity will be emitted before sets of a higher numbered entity to a mode of the same or lower priority.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_MODE_NEEDED (int @var{entity}, rtx @var{insn})
+@deftypefn {Target Hook} int TARGET_MODE_NEEDED (int @var{entity}, rtx_insn *@var{insn})
 @var{entity} is an integer specifying a mode-switched entity.  If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to return an integer value not larger than the corresponding element in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity} must be switched into prior to the execution of @var{insn}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_MODE_AFTER (int @var{entity}, int @var{mode}, rtx @var{insn})
+@deftypefn {Target Hook} int TARGET_MODE_AFTER (int @var{entity}, int @var{mode}, rtx_insn *@var{insn})
 @var{entity} is an integer specifying a mode-switched entity.  If this macro is defined, it is evaluated for every @var{insn} during mode switching.  It determines the mode that an insn results in (if different from the incoming mode).
 @end deftypefn
 
@@ -10842,7 +10842,7 @@ implementation returns true.  You can use @code{can_use_doloop_if_innermost}
 if the loop must be the innermost, and if there are no other restrictions.
 @end deftypefn
 
-@deftypefn {Target Hook} {const char *} TARGET_INVALID_WITHIN_DOLOOP (const_rtx @var{insn})
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_WITHIN_DOLOOP (const rtx_insn *@var{insn})
 
 Take an instruction in @var{insn} and return NULL if it is valid within a
 low-overhead loop, otherwise return a string explaining why doloop
@@ -10855,7 +10855,7 @@ By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx @var{insn})
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx_insn *@var{insn})
 Take an instruction in @var{insn} and return @code{false} if the instruction is not appropriate as a combination of two or more instructions.  The default is to accept all instructions.
 @end deftypefn
 

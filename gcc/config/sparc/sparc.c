@@ -537,8 +537,8 @@ static void scan_record_type (const_tree, int *, int *, int *);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
 				const_tree, bool, bool, int *, int *);
 
-static int supersparc_adjust_cost (rtx, rtx, rtx, int);
-static int hypersparc_adjust_cost (rtx, rtx, rtx, int);
+static int supersparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int hypersparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 
 static void sparc_emit_set_const32 (rtx, rtx);
 static void sparc_emit_set_const64 (rtx, rtx);
@@ -557,7 +557,7 @@ static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sparc_solaris_elf_asm_named_section (const char *, unsigned int,
 						 tree) ATTRIBUTE_UNUSED;
 #endif
-static int sparc_adjust_cost (rtx, rtx, rtx, int);
+static int sparc_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int sparc_issue_rate (void);
 static void sparc_sched_init (FILE *, int, int);
 static int sparc_use_sched_lookahead (void);
@@ -9407,7 +9407,7 @@ sparc_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-supersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+supersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type;
 
@@ -9468,7 +9468,7 @@ supersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 }
 
 static int
-hypersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+hypersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type, dep_type;
   rtx pat = PATTERN(insn);
@@ -9545,7 +9545,7 @@ hypersparc_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 }
 
 static int
-sparc_adjust_cost(rtx insn, rtx link, rtx dep, int cost)
+sparc_adjust_cost(rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   switch (sparc_cpu)
     {

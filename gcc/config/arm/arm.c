@@ -137,7 +137,7 @@ static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static int arm_comp_type_attributes (const_tree, const_tree);
 static void arm_set_default_type_attributes (tree);
-static int arm_adjust_cost (rtx, rtx, rtx, int);
+static int arm_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int arm_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static int optimal_immediate_sequence (enum rtx_code code,
 				       unsigned HOST_WIDE_INT val,
@@ -216,7 +216,7 @@ static bool arm_return_in_msb (const_tree);
 static bool arm_must_pass_in_stack (enum machine_mode, const_tree);
 static bool arm_return_in_memory (const_tree, const_tree);
 #if ARM_UNWIND_INFO
-static void arm_unwind_emit (FILE *, rtx);
+static void arm_unwind_emit (FILE *, rtx_insn *);
 static bool arm_output_ttype (rtx);
 static void arm_asm_emit_except_personality (rtx);
 static void arm_asm_init_sections (void);
@@ -238,7 +238,7 @@ static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
-static bool arm_cannot_copy_insn_p (rtx);
+static bool arm_cannot_copy_insn_p (rtx_insn *);
 static int arm_issue_rate (void);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static bool arm_output_addr_const_extra (FILE *, rtx);
@@ -11886,7 +11886,7 @@ arm_sched_reorder (FILE *file, int verbose, rtx_insn **ready, int *n_readyp,
    adjust_cost function. Only put bits of code into arm_adjust_cost that
    are common across all cores.  */
 static int
-arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
+arm_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   rtx i_pat, d_pat;
 
@@ -13115,7 +13115,7 @@ arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
 }
 
 static bool
-arm_cannot_copy_insn_p (rtx insn)
+arm_cannot_copy_insn_p (rtx_insn *insn)
 {
   /* The tls call insn cannot be copied, as it is paired with a data
      word.  */
@@ -29353,7 +29353,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 /* Emit unwind directives for the given insn.  */
 
 static void
-arm_unwind_emit (FILE * asm_out_file, rtx insn)
+arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
 {
   rtx note, pat;
   bool handled_one = false;

@@ -203,8 +203,8 @@ static int calc_live_regs (HARD_REG_SET *);
 static HOST_WIDE_INT rounded_frame_size (int);
 static bool sh_frame_pointer_required (void);
 static void sh_emit_mode_set (int, int, int, HARD_REG_SET);
-static int sh_mode_needed (int, rtx);
-static int sh_mode_after (int, int, rtx);
+static int sh_mode_needed (int, rtx_insn *);
+static int sh_mode_after (int, int, rtx_insn *);
 static int sh_mode_entry (int);
 static int sh_mode_exit (int);
 static int sh_mode_priority (int entity, int n);
@@ -227,9 +227,9 @@ static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
 static int sh_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
-static int sh_adjust_cost (rtx, rtx, rtx, int);
+static int sh_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int sh_issue_rate (void);
-static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
+static int sh_dfa_new_cycle (FILE *, int, rtx_insn *, int, int, int *sort_p);
 static short find_set_regmode_weight (rtx, enum machine_mode);
 static short find_insn_regmode_weight (rtx, enum machine_mode);
 static void find_regmode_weight (basic_block, enum machine_mode);
@@ -243,7 +243,7 @@ static bool high_pressure (enum machine_mode);
 static int sh_reorder (FILE *, int, rtx_insn **, int *, int);
 static int sh_reorder2 (FILE *, int, rtx_insn **, int *, int);
 static void sh_md_init (FILE *, int, int);
-static int sh_variable_issue (FILE *, int, rtx, int);
+static int sh_variable_issue (FILE *, int, rtx_insn *, int);
 
 static bool sh_function_ok_for_sibcall (tree, tree);
 
@@ -265,7 +265,7 @@ static int and_xor_ior_costs (rtx, int);
 static int addsubcosts (rtx);
 static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
-static bool sh_cannot_copy_insn_p (rtx);
+static bool sh_cannot_copy_insn_p (rtx_insn *);
 static bool sh_rtx_costs (rtx, int, int, int, int *, bool);
 static int sh_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static int sh_pr_n_sets (void);
@@ -2948,7 +2948,7 @@ unspec_caller_rtx_p (rtx pat)
 /* Indicate that INSN cannot be duplicated.  This is true for insn
    that generates a unique label.  */
 static bool
-sh_cannot_copy_insn_p (rtx insn)
+sh_cannot_copy_insn_p (rtx_insn *insn)
 {
   rtx pat;
 
@@ -10784,7 +10784,8 @@ sh_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
    the same cost as a data-dependence.  The return value should be
    the new value for COST.  */
 static int
-sh_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx dep_insn, int cost)
+sh_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
+		rtx_insn *dep_insn, int cost)
 {
   rtx reg, use_pat;
 
@@ -11272,7 +11273,7 @@ sh_scalar_mode_supported_p (enum machine_mode mode)
 static int
 sh_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 		   int sched_verbose ATTRIBUTE_UNUSED,
-		   rtx insn,
+		   rtx_insn *insn,
 		   int can_issue_more)
 {
   if (GET_CODE (PATTERN (insn)) != USE
@@ -11369,7 +11370,7 @@ sh_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 static int
 sh_dfa_new_cycle (FILE *sched_dump ATTRIBUTE_UNUSED,
 		  int sched_verbose ATTRIBUTE_UNUSED,
-		  rtx insn ATTRIBUTE_UNUSED,
+		  rtx_insn *insn ATTRIBUTE_UNUSED,
 		  int last_clock_var,
 		  int clock_var,
 		  int *sort_p)
@@ -13630,13 +13631,13 @@ sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
 }
 
 static int
-sh_mode_needed (int entity ATTRIBUTE_UNUSED, rtx insn)
+sh_mode_needed (int entity ATTRIBUTE_UNUSED, rtx_insn *insn)
 {
   return recog_memoized (insn) >= 0  ? get_attr_fp_mode (insn) : FP_MODE_NONE;
 }
 
 static int
-sh_mode_after (int entity ATTRIBUTE_UNUSED, int mode, rtx insn)
+sh_mode_after (int entity ATTRIBUTE_UNUSED, int mode, rtx_insn *insn)
 {
   if (TARGET_HITACHI && recog_memoized (insn) >= 0 &&
       get_attr_fp_set (insn) != FP_SET_NONE)

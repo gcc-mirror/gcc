@@ -117,8 +117,8 @@ static bool pa_function_value_regno_p (const unsigned int);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void update_total_code_bytes (unsigned int);
 static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static int pa_adjust_cost (rtx, rtx, rtx, int);
-static int pa_adjust_priority (rtx, int);
+static int pa_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int pa_adjust_priority (rtx_insn *, int);
 static int pa_issue_rate (void);
 static void pa_som_asm_init_sections (void) ATTRIBUTE_UNUSED;
 static section *pa_som_tm_clone_table_section (void) ATTRIBUTE_UNUSED;
@@ -4647,7 +4647,7 @@ pa_emit_bcond_fp (rtx operands[])
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-pa_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+pa_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type attr_type;
 
@@ -4836,7 +4836,7 @@ pa_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 /* Adjust scheduling priorities.  We use this to try and keep addil
    and the next use of %r1 close together.  */
 static int
-pa_adjust_priority (rtx insn, int priority)
+pa_adjust_priority (rtx_insn *insn, int priority)
 {
   rtx set = single_set (insn);
   rtx src, dest;

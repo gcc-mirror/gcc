@@ -395,7 +395,7 @@ static bool arc_vector_mode_supported_p (enum machine_mode);
 
 static bool arc_can_use_doloop_p (const widest_int &, const widest_int &,
 				  unsigned int, bool);
-static const char *arc_invalid_within_doloop (const_rtx);
+static const char *arc_invalid_within_doloop (const rtx_insn *);
 
 static void output_short_suffix (FILE *file);
 
@@ -572,7 +572,7 @@ static void arc_finalize_pic (void);
    use the peephole2 pattern.  */
 
 static int
-arc_sched_adjust_priority (rtx insn, int priority)
+arc_sched_adjust_priority (rtx_insn *insn, int priority)
 {
   rtx set = single_set (insn);
   if (set
@@ -5720,7 +5720,7 @@ arc_can_use_doloop_p (const widest_int &iterations, const widest_int &,
    Otherwise return why doloop cannot be applied.  */
 
 static const char *
-arc_invalid_within_doloop (const_rtx insn)
+arc_invalid_within_doloop (const rtx_insn *insn)
 {
   if (CALL_P (insn))
     return "Function call in the loop.";

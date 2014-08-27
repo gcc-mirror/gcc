@@ -5833,7 +5833,7 @@ ix86_return_pops_args (tree fundecl, tree funtype, int size)
 /* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
 
 static bool
-ix86_legitimate_combined_insn (rtx insn)
+ix86_legitimate_combined_insn (rtx_insn *insn)
 {
   /* Check operand constraints in case hard registers were propagated
      into insn pattern.  This check prevents combine pass from
@@ -16104,7 +16104,7 @@ ix86_check_avx256_register (rtx *pexp, void *)
 /* Return needed mode for entity in optimize_mode_switching pass.  */
 
 static int
-ix86_avx_u128_mode_needed (rtx insn)
+ix86_avx_u128_mode_needed (rtx_insn *insn)
 {
   if (CALL_P (insn))
     {
@@ -16142,7 +16142,7 @@ ix86_avx_u128_mode_needed (rtx insn)
    prior to the execution of insn.  */
 
 static int
-ix86_i387_mode_needed (int entity, rtx insn)
+ix86_i387_mode_needed (int entity, rtx_insn *insn)
 {
   enum attr_i387_cw mode;
 
@@ -16195,7 +16195,7 @@ ix86_i387_mode_needed (int entity, rtx insn)
    prior to the execution of insn.  */
 
 static int
-ix86_mode_needed (int entity, rtx insn)
+ix86_mode_needed (int entity, rtx_insn *insn)
 {
   switch (entity)
     {
@@ -16227,7 +16227,7 @@ ix86_check_avx256_stores (rtx dest, const_rtx, void *data)
 /* Calculate mode of upper 128bit AVX registers after the insn.  */
 
 static int
-ix86_avx_u128_mode_after (int mode, rtx insn)
+ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
 
@@ -16254,7 +16254,7 @@ ix86_avx_u128_mode_after (int mode, rtx insn)
 /* Return the mode that an insn results in.  */
 
 int
-ix86_mode_after (int entity, int mode, rtx insn)
+ix86_mode_after (int entity, int mode, rtx_insn *insn)
 {
   switch (entity)
     {
@@ -25556,7 +25556,7 @@ exact_store_load_dependency (rtx store, rtx load)
 }
 
 static int
-ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+ix86_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type, dep_insn_type;
   enum attr_memory memory;
@@ -25834,7 +25834,7 @@ ix86_macro_fusion_p ()
    "Intel Architectures Optimization Reference Manual". */
 
 static bool
-ix86_macro_fusion_pair_p (rtx condgen, rtx condjmp)
+ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
 {
   rtx src, dest;
   rtx single_set = single_set (condgen);
@@ -26333,7 +26333,7 @@ ix86_dependencies_evaluation_hook (rtx_insn *head, rtx_insn *tail)
    moves from function argument registers at the top of the function entry
    and moves from function return value registers after call.  */
 static int
-ix86_adjust_priority (rtx insn, int priority)
+ix86_adjust_priority (rtx_insn *insn, int priority)
 {
   rtx set;
 
@@ -26472,7 +26472,7 @@ core2i7_first_cycle_multipass_begin (void *_data,
 static void
 core2i7_first_cycle_multipass_issue (void *_data,
 				     signed char *ready_try, int n_ready,
-				     rtx insn, const void *_prev_data)
+				     rtx_insn *insn, const void *_prev_data)
 {
   ix86_first_cycle_multipass_data_t data
     = (ix86_first_cycle_multipass_data_t) _data;
@@ -46451,7 +46451,7 @@ debug_ready_dispatch (void)
 /* This routine is the driver of the dispatch scheduler.  */
 
 static void
-do_dispatch (rtx insn, int mode)
+do_dispatch (rtx_insn *insn, int mode)
 {
   if (mode == DISPATCH_INIT)
     init_dispatch_sched ();
@@ -46462,7 +46462,7 @@ do_dispatch (rtx insn, int mode)
 /* Return TRUE if Dispatch Scheduling is supported.  */
 
 static bool
-has_dispatch (rtx insn, int action)
+has_dispatch (rtx_insn *insn, int action)
 {
   if ((TARGET_BDVER1 || TARGET_BDVER2 || TARGET_BDVER3 || TARGET_BDVER4)
       && flag_dispatch_scheduler)

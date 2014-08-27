@@ -218,7 +218,7 @@ static rtx mep_convert_regnum (const struct cgen_regnum_operand *, rtx);
 static rtx mep_legitimize_arg (const struct insn_operand_data *, rtx, int);
 static void mep_incompatible_arg (const struct insn_operand_data *, rtx, int, tree);
 static rtx mep_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static int mep_adjust_cost (rtx, rtx, rtx, int);
+static int mep_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int mep_issue_rate (void);
 static rtx_insn *mep_find_ready_insn (rtx_insn **, int, enum attr_slot, int);
 static void mep_move_ready_insn (rtx_insn **, int, rtx_insn *);
@@ -6477,7 +6477,7 @@ global_reg_mentioned_p (rtx x)
    insns.  Not implemented.  */
 
 static int
-mep_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+mep_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   int cost_specified;
 

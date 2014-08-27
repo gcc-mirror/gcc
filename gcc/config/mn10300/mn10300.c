@@ -2760,7 +2760,7 @@ set_is_store_p (rtx set)
    COST is the current cycle cost for DEP.  */
 
 static int
-mn10300_adjust_sched_cost (rtx insn, rtx link, rtx dep, int cost)
+mn10300_adjust_sched_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   rtx insn_set;
   rtx dep_set;

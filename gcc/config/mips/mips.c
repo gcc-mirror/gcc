@@ -13133,8 +13133,8 @@ static struct
    is treated like input-dependence.  */
 
 static int
-mips_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
-		  rtx dep ATTRIBUTE_UNUSED, int cost)
+mips_adjust_cost (rtx_insn *insn ATTRIBUTE_UNUSED, rtx link,
+		  rtx_insn *dep ATTRIBUTE_UNUSED, int cost)
 {
   if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT
       && TUNE_20KC)
@@ -13670,7 +13670,7 @@ mips_ls2_variable_issue (rtx insn)
 
 static int
 mips_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		     rtx insn, int more)
+		     rtx_insn *insn, int more)
 {
   /* Ignore USEs and CLOBBERs; don't count them against the issue rate.  */
   if (USEFUL_INSN_P (insn))
@@ -17590,7 +17590,7 @@ mips_final_prescan_insn (rtx_insn *insn, rtx *opvec, int noperands)
 /* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  */
 
 static void
-mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx insn,
+mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
 			  rtx *opvec, int noperands)
 {
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))

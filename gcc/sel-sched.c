@@ -1805,7 +1805,7 @@ create_speculation_check (expr_t c_expr, ds_t check_ds, insn_t orig_insn)
   rtx_insn *insn_rtx;
   insn_t insn;
   basic_block recovery_block;
-  rtx label;
+  rtx_insn *label;
 
   /* Create a recovery block if target is going to emit branchy check, or if
      ORIG_INSN was speculative already.  */
@@ -1818,7 +1818,7 @@ create_speculation_check (expr_t c_expr, ds_t check_ds, insn_t orig_insn)
   else
     {
       recovery_block = NULL;
-      label = NULL_RTX;
+      label = NULL;
     }
 
   /* Get pattern of the check.  */

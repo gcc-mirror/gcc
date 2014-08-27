@@ -3529,8 +3529,8 @@ microblaze_function_value (const_tree valtype,
 
 /* Implement TARGET_SCHED_ADJUST_COST.  */
 static int
-microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
-			rtx dep ATTRIBUTE_UNUSED, int cost)
+microblaze_adjust_cost (rtx_insn *insn ATTRIBUTE_UNUSED, rtx link,
+			rtx_insn *dep ATTRIBUTE_UNUSED, int cost)
 {
   if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
     return cost;

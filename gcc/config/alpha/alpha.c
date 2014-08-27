@@ -1274,7 +1274,7 @@ split_small_symbolic_operand (rtx x)
    containing the call and branch to the block containing the ldgp.  */
 
 static bool
-alpha_cannot_copy_insn_p (rtx insn)
+alpha_cannot_copy_insn_p (rtx_insn *insn)
 {
   if (!reload_completed || !TARGET_EXPLICIT_RELOCS)
     return false;
@@ -4803,7 +4803,7 @@ alpha_split_atomic_exchange_12 (rtx operands[])
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-alpha_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+alpha_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type dep_insn_type;
 

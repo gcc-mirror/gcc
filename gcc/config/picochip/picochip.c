@@ -98,8 +98,8 @@ unsigned int picochip_function_arg_boundary (enum machine_mode mode,
 
 int picochip_sched_lookahead (void);
 int picochip_sched_issue_rate (void);
-int picochip_sched_adjust_cost (rtx insn, rtx link,
-				       rtx dep_insn, int cost);
+int picochip_sched_adjust_cost (rtx_insn *insn, rtx link,
+				rtx_insn *dep_insn, int cost);
 int picochip_sched_reorder (FILE * file, int verbose, rtx_insn ** ready,
 				   int *n_readyp, int clock);
 
@@ -3535,7 +3535,8 @@ picochip_sched_issue_rate (void)
 /* Adjust the scheduling cost between the two given instructions,
    which have the given dependency. */
 int
-picochip_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+picochip_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn,
+			    int cost)
 {
 
   if (TARGET_DEBUG)

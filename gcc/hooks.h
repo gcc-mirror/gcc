@@ -52,9 +52,9 @@ extern bool hook_bool_const_tree_hwi_hwi_const_tree_true (const_tree,
 							  HOST_WIDE_INT,
 							  HOST_WIDE_INT,
 							  const_tree);
-extern bool hook_bool_rtx_true (rtx);
+extern bool hook_bool_rtx_insn_true (rtx_insn *);
 extern bool hook_bool_rtx_false (rtx);
-extern bool hook_bool_rtx_int_false (rtx, int);
+extern bool hook_bool_rtx_insn_int_false (rtx_insn *, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
 extern bool hook_bool_rtx_int_int_int_intp_bool_false (rtx, int, int, int,
 						       int *, bool);
@@ -67,7 +67,7 @@ extern bool hook_bool_wint_wint_uint_bool_true (const widest_int &,
 
 extern void hook_void_void (void);
 extern void hook_void_constcharptr (const char *);
-extern void hook_void_rtx_int (rtx, int);
+extern void hook_void_rtx_insn_int (rtx_insn *, int);
 extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
 extern bool hook_bool_FILEptr_rtx_false (FILE *, rtx);
 extern void hook_void_tree (tree);
@@ -104,7 +104,7 @@ extern rtx hook_rtx_tree_int_null (tree, int);
 
 extern const char *hook_constcharptr_void_null (void);
 extern const char *hook_constcharptr_const_tree_null (const_tree);
-extern const char *hook_constcharptr_const_rtx_null (const_rtx);
+extern const char *hook_constcharptr_const_rtx_insn_null (const rtx_insn *);
 extern const char *hook_constcharptr_const_tree_const_tree_null (const_tree, const_tree);
 extern const char *hook_constcharptr_int_const_tree_null (int, const_tree);
 extern const char *hook_constcharptr_int_const_tree_const_tree_null (int, const_tree, const_tree);

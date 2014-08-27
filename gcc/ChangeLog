@@ -1,5 +1,206 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* target.def (unwind_emit): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(final_postscan_insn): Likewise.
+	(adjust_cost): Likewise.
+	(adjust_priority): Likewise.
+	(variable_issue): Likewise.
+	(macro_fusion_pair_p): Likewise.
+	(dfa_post_cycle_insn): Likewise.
+	(first_cycle_multipass_dfa_lookahead_guard): Likewise.
+	(first_cycle_multipass_issue): Likewise.
+	(dfa_new_cycle): Likewise.
+	(adjust_cost_2): Likewise for params "insn" and "dep_insn".
+	(speculate_insn): Likewise for param "insn".
+	(gen_spec_check): Likewise for params "insn" and "label".
+	(get_insn_spec_ds): Likewise for param "insn".
+	(get_insn_checked_ds): Likewise.
+	(dispatch_do): Likewise.
+	(dispatch): Likewise.
+	(cannot_copy_insn_p): Likewise.
+	(invalid_within_doloop): Likewise.
+	(legitimate_combined_insn): Likewise.
+	(needed): Likewise.
+	(after): Likewise.
+
+	* doc/tm.texi: Automatically updated to reflect changes to
+	target.def.
+
+	* haifa-sched.c (choose_ready): Convert NULL_RTX to NULL when
+	working with insn.
+	(schedule_block): Likewise.
+	(sched_init): Likewise.
+	(sched_speculate_insn): Strengthen param "insn" from rtx to
+	rtx_insn *.
+	(ready_remove_first_dispatch): Convert NULL_RTX to NULL when
+	working with insn.
+	* hooks.c (hook_bool_rtx_true): Rename to...
+	hook_bool_rtx_insn_true): ...this, and strengthen first param from
+	rtx to rtx_insn *.
+	(hook_constcharptr_const_rtx_null): Rename to...
+	(hook_constcharptr_const_rtx_insn_null): ...this, and strengthen
+	first param from const_rtx to const rtx_insn *.
+	(hook_bool_rtx_int_false): Rename to...
+	(hook_bool_rtx_insn_int_false): ...this, and strengthen first
+	param from rtx to rtx_insn *.
+	(hook_void_rtx_int): Rename to...
+	(hook_void_rtx_insn_int): ...this, and strengthen first param from
+	rtx to rtx_insn *.
+
+	* hooks.h (hook_bool_rtx_true): Rename to...
+	(hook_bool_rtx_insn_true): ...this, and strengthen first param from
+	rtx to rtx_insn *.
+	(hook_bool_rtx_int_false): Rename to...
+	(hook_bool_rtx_insn_int_false): ...this, and strengthen first
+	param from rtx to rtx_insn *.
+	(hook_void_rtx_int): Rename to...
+	(hook_void_rtx_insn_int): ...this, and strengthen first param from
+	rtx to rtx_insn *.
+	(hook_constcharptr_const_rtx_null): Rename to...
+	(hook_constcharptr_const_rtx_insn_null): ...this, and strengthen
+	first param from const_rtx to const rtx_insn *.
+
+	* sched-deps.c (sched_macro_fuse_insns): Strengthen param "insn"
+	and local "prev" from rtx to rtx_insn *.
+
+	* sched-int.h (sched_speculate_insn): Strengthen first param from
+	rtx to rtx_insn *.
+
+	* sel-sched.c (create_speculation_check): Likewise for local "label".
+	* targhooks.c (default_invalid_within_doloop): Strengthen param
+	"insn" from const_rtx to const rtx_insn *.
+	* targhooks.h (default_invalid_within_doloop): Strengthen param
+	from const_rtx to const rtx_insn *.
+
+	* config/alpha/alpha.c (alpha_cannot_copy_insn_p): Likewise.
+	(alpha_adjust_cost): Likewise for params "insn", "dep_insn".
+
+	* config/arc/arc.c (arc_sched_adjust_priority): Likewise for param
+	"insn".
+	(arc_invalid_within_doloop): Likewise, with const.
+
+	* config/arm/arm.c (arm_adjust_cost): Likewise for params "insn", "dep".
+	(arm_cannot_copy_insn_p): Likewise for param "insn".
+	(arm_unwind_emit): Likewise.
+
+	* config/bfin/bfin.c (bfin_adjust_cost): Likewise for params "insn",
+	"dep_insn".
+
+	* config/c6x/c6x.c (c6x_dfa_new_cycle): Likewise for param "insn".
+	(c6x_variable_issue): Likewise.  Removed now-redundant checked
+	cast.
+	(c6x_adjust_cost): Likewise for params "insn", "dep_insn".
+
+	* config/epiphany/epiphany-protos.h (epiphany_mode_needed):
+	Likewise for param "insn".
+	(epiphany_mode_after): Likewise.
+	* config/epiphany/epiphany.c (epiphany_adjust_cost): Likewise for
+	params "insn", "dep_insn".
+	(epiphany_mode_needed): Likewise for param "insn".
+	(epiphany_mode_after): Likewise.
+
+	* config/i386/i386-protos.h (i386_pe_seh_unwind_emit): Likewise.
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Likewise.
+	(ix86_avx_u128_mode_needed): Likewise.
+	(ix86_i387_mode_needed): Likewise.
+	(ix86_mode_needed): Likewise.
+	(ix86_avx_u128_mode_after): Likewise.
+	(ix86_mode_after): Likewise.
+	(ix86_adjust_cost): Likewise for params "insn", "dep_insn".
+	(ix86_macro_fusion_pair_p): Likewise for params "condgen", "condjmp".
+	(ix86_adjust_priority): Likewise for param "insn".
+	(core2i7_first_cycle_multipass_issue): Likewise for param "insn".
+	(do_dispatch): Likewise.
+	(has_dispatch): Likewise.
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): Likewise.
+
+	* config/ia64/ia64.c (TARGET_INVALID_WITHIN_DOLOOP): Update to
+	reflect renaming of default hook implementation from
+	hook_constcharptr_const_rtx_null to
+	hook_constcharptr_const_rtx_insn_null.
+	(ia64_adjust_cost_2): Strengthen params "insn", "dep_insn" from
+	rtx to rtx_insn *.
+	(ia64_variable_issue): Likewise for param "insn".
+	(ia64_first_cycle_multipass_dfa_lookahead_guard): Likewise.
+	(ia64_dfa_new_cycle): Likewise.
+	(ia64_get_insn_spec_ds): Likewise.
+	(ia64_get_insn_checked_ds): Likewise.
+	(ia64_speculate_insn): Likewise.
+	(ia64_gen_spec_check): Likewise for params "insn", "label".
+	(ia64_asm_unwind_emit): Likewise for param "insn".
+
+	* config/m32r/m32r.c (m32r_adjust_priority): Likewise.
+
+	* config/m68k/m68k.c (m68k_sched_adjust_cost): Likewise for params
+	"insn", "def_insn".
+	(m68k_sched_variable_issue): Likewise for param "insn".
+
+	* config/mep/mep.c (mep_adjust_cost): Likewise for params "insn",
+	"def_insn".
+
+	* config/microblaze/microblaze.c (microblaze_adjust_cost):
+	Likewise for params "insn", "dep".
+
+	* config/mips/mips.c (mips_adjust_cost): Likewise.
+	(mips_variable_issue): Likewise for param "insn".
+	(mips_final_postscan_insn): Likewise.
+
+	* config/mn10300/mn10300.c (mn10300_adjust_sched_cost): Likewise
+	for params "insn", "dep".
+
+	* config/pa/pa.c (pa_adjust_cost): Likewise for params "insn",
+	"dep_insn".
+	(pa_adjust_priority): Likewise for param "insn".
+
+	* config/picochip/picochip.c (picochip_sched_adjust_cost):
+	Likewise for params "insn", "dep_insn".
+
+	* config/rs6000/rs6000.c (rs6000_variable_issue_1): Likewise for
+	param "insn".
+	(rs6000_variable_issue): Likewise.
+	(rs6000_adjust_cost): Likewise for params "insn", "dep_insn".
+	(rs6000_debug_adjust_cost): Likewise.
+	(rs6000_adjust_priority): Likewise for param "insn".
+	(rs6000_use_sched_lookahead_guard): Likewise.
+	(get_next_active_insn): Likewise for return type and both params.
+	(redefine_groups): Likewise for params "prev_head_insn", "tail"
+	and locals "insn", "next_insn".
+	(pad_groups): Likewise.
+
+	* config/s390/s390.c (s390_adjust_priority): Likewise for param
+	"insn".
+	(s390_cannot_copy_insn_p): Likewise.
+	(s390_sched_variable_issue): Likewise for third param, eliminating
+	checked cast.
+	(TARGET_INVALID_WITHIN_DOLOOP): Update to reflect renaming of
+	default hook implementation from hook_constcharptr_const_rtx_null
+	to hook_constcharptr_const_rtx_insn_null.
+
+	* config/sh/sh.c (sh_cannot_copy_insn_p): Strengthen param "insn"
+	from rtx to rtx_insn *.
+	(sh_adjust_cost): Likewise for params "insn", "dep_insn".
+	(sh_variable_issue): Likewise for param "insn".
+	(sh_dfa_new_cycle): Likewise.
+	(sh_mode_needed): Likewise.
+	(sh_mode_after): Likewise.
+
+	* config/sparc/sparc.c (supersparc_adjust_cost): Likewise for
+	params "insn", "dep_insn".
+	(hypersparc_adjust_cost): Likewise.
+	(sparc_adjust_cost): Likewise.
+
+	* config/spu/spu.c (spu_sched_variable_issue): Likewise for third
+	param, eliminated checked cast.
+	(spu_sched_adjust_cost): Likewise for first and third params.
+
+	* config/tilegx/tilegx.c (tilegx_sched_adjust_cost): Strengthen
+	params "insn" and "dep_insn" from rtx to rtx_insn *.
+
+	* config/tilepro/tilepro.c (tilepro_sched_adjust_cost): Likewise.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc/config/mn10300/mn10300.c (is_load_insn): Rename to...
 	(set_is_load_p): ...this, updating to work on a SET pattern rather
 	than an insn.
