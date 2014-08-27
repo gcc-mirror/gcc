@@ -5335,9 +5335,10 @@ contains (const_rtx insn, htab_t hash)
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
+      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
       int i;
-      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	if (htab_find (hash, XVECEXP (PATTERN (insn), 0, i)))
+      for (i = seq->len () - 1; i >= 0; i--)
+	if (htab_find (hash, seq->element (i)))
 	  return true;
       return false;
     }
