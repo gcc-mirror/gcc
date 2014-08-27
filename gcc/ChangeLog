@@ -1,3 +1,10 @@
+2014-08-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+        PR target/62261
+        * config/sh/sh.md (ashlsi3): Handle negative shift count for
+	TARGET_SHMEDIA.
+	(ashldi3, ashrsi3, ashrdi3, lshrsi3, lshrdi3): Likewise.
+
 2014-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* emit-rtl.c (set_unique_reg_note): Discard notes with side effects.
