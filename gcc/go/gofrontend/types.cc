@@ -9453,10 +9453,11 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  else
 	    go_unreachable();
 	  go_assert(m != NULL);
-	  if (dereferenced && m->is_value_method())
+	  if (dereferenced)
 	    {
 	      error_at(location,
-		       "calling value method requires explicit dereference");
+		       "calling method %qs requires explicit dereference",
+		       Gogo::message_name(name).c_str());
 	      return Expression::make_error(location);
 	    }
 	  if (!m->is_value_method() && expr->type()->points_to() == NULL)
