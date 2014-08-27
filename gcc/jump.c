@@ -1117,9 +1117,12 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
       break;
 
     case SEQUENCE:
-      for (i = 0; i < XVECLEN (x, 0); i++)
-	mark_jump_label (PATTERN (XVECEXP (x, 0, i)),
-			 XVECEXP (x, 0, i), 0);
+      {
+	rtx_sequence *seq = as_a <rtx_sequence *> (x);
+	for (i = 0; i < seq->len (); i++)
+	  mark_jump_label (PATTERN (seq->insn (i)),
+			   seq->insn (i), 0);
+      }
       return;
 
     case SYMBOL_REF:
