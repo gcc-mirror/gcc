@@ -75,7 +75,7 @@ extern bool default_fixed_point_supported_p (void);
 
 extern bool default_has_ifunc_p (void);
 
-extern const char * default_invalid_within_doloop (const_rtx);
+extern const char * default_invalid_within_doloop (const rtx_insn *);
 
 extern tree default_builtin_vectorized_function (tree, tree, tree);
 

@@ -1986,7 +1986,7 @@ epiphany_issue_rate (void)
    the same cost as a data-dependence.  The return value should be
    the new value for COST.  */
 static int
-epiphany_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+epiphany_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   if (REG_NOTE_KIND (link) == 0)
     {
@@ -2385,7 +2385,7 @@ epiphany_mode_priority (int entity, int priority)
 }
 
 int
-epiphany_mode_needed (int entity, rtx insn)
+epiphany_mode_needed (int entity, rtx_insn *insn)
 {
   enum attr_fp_mode mode;
 
@@ -2483,7 +2483,7 @@ epiphany_mode_entry_exit (int entity, bool exit)
 }
 
 int
-epiphany_mode_after (int entity, int last_mode, rtx insn)
+epiphany_mode_after (int entity, int last_mode, rtx_insn *insn)
 {
   /* We have too few call-saved registers to hope to keep the masks across
      calls.  */

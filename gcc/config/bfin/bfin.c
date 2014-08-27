@@ -3310,7 +3310,7 @@ bfin_issue_rate (void)
 }
 
 static int
-bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+bfin_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type dep_insn_type;
   int dep_insn_code_number;

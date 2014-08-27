@@ -4429,7 +4429,8 @@ get_jump_target (rtx branch)
 
 /* Implement TARGET_SCHED_ADJUST_COST.  */
 static int
-tilegx_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+tilegx_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn,
+			  int cost)
 {
   /* If we have a true dependence, INSN is a call, and DEP_INSN
      defines a register that is needed by the call (argument or stack

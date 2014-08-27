@@ -485,7 +485,7 @@ default_has_ifunc_p (void)
    these cases.  */
 
 const char *
-default_invalid_within_doloop (const_rtx insn)
+default_invalid_within_doloop (const rtx_insn *insn)
 {
   if (CALL_P (insn))
     return "Function call in loop.";

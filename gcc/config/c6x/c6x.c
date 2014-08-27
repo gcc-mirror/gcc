@@ -3982,7 +3982,8 @@ c6x_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 
 static int
 c6x_dfa_new_cycle (FILE *dump ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		   rtx insn ATTRIBUTE_UNUSED, int last_clock ATTRIBUTE_UNUSED,
+		   rtx_insn *insn ATTRIBUTE_UNUSED,
+		   int last_clock ATTRIBUTE_UNUSED,
 		   int clock ATTRIBUTE_UNUSED, int *sort_p ATTRIBUTE_UNUSED)
 {
   if (clock != last_clock)
@@ -4358,11 +4359,11 @@ maybe_clobber_cond (rtx insn, int clock_var)
 static int
 c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 		    int sched_verbose ATTRIBUTE_UNUSED,
-		    rtx insn, int can_issue_more ATTRIBUTE_UNUSED)
+		    rtx_insn *insn, int can_issue_more ATTRIBUTE_UNUSED)
 {
   ss.last_scheduled_insn = insn;
   if (INSN_UID (insn) < sploop_max_uid_iter0 && !JUMP_P (insn))
-    ss.last_scheduled_iter0 = as_a <rtx_insn *> (insn);
+    ss.last_scheduled_iter0 = insn;
   if (GET_CODE (PATTERN (insn)) != USE && GET_CODE (PATTERN (insn)) != CLOBBER)
     ss.issued_this_cycle++;
   if (insn_info.exists ())
@@ -4465,7 +4466,7 @@ c6x_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
    anti- and output dependencies.  */
 
 static int
-c6x_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
+c6x_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type = TYPE_UNKNOWN, dep_insn_type = TYPE_UNKNOWN;
   int dep_insn_code_number, insn_code_number;

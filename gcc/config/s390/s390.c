@@ -5864,7 +5864,7 @@ s390_agen_dep_p (rtx dep_insn, rtx insn)
    A STD instruction should be scheduled earlier,
    in order to use the bypass.  */
 static int
-s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
+s390_adjust_priority (rtx_insn *insn, int priority)
 {
   if (! INSN_P (insn))
     return priority;
@@ -6540,7 +6540,7 @@ s390_execute_target (rtx insn)
    execute insns that carry a unique label.  */
 
 static bool
-s390_cannot_copy_insn_p (rtx insn)
+s390_cannot_copy_insn_p (rtx_insn *insn)
 {
   rtx label = s390_execute_label (insn);
   return label && label != const0_rtx;
@@ -11712,9 +11712,8 @@ s390_sched_reorder (FILE *file, int verbose,
    last_scheduled_insn in order to make it available for
    s390_sched_reorder.  */
 static int
-s390_sched_variable_issue (FILE *file, int verbose, rtx uncast_insn, int more)
+s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 {
-  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   last_scheduled_insn = insn;
 
   if (s390_tune == PROCESSOR_2827_ZEC12
@@ -12184,7 +12183,7 @@ s390_option_override (void)
 #define TARGET_CC_MODES_COMPATIBLE s390_cc_modes_compatible
 
 #undef TARGET_INVALID_WITHIN_DOLOOP
-#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_null
+#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_insn_null
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL

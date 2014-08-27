@@ -5612,7 +5612,7 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
   if (lookahead <= 0 || SCHED_GROUP_P (ready_element (ready, 0))
       || DEBUG_INSN_P (ready_element (ready, 0)))
     {
-      if (targetm.sched.dispatch (NULL_RTX, IS_DISPATCH_ON))
+      if (targetm.sched.dispatch (NULL, IS_DISPATCH_ON))
 	*insn_ptr = ready_remove_first_dispatch (ready);
       else
 	*insn_ptr = ready_remove_first (ready);
@@ -6362,7 +6362,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
           if (TODO_SPEC (insn) & SPECULATIVE)
             generate_recovery_code (insn);
 
-	  if (targetm.sched.dispatch (NULL_RTX, IS_DISPATCH_ON))
+	  if (targetm.sched.dispatch (NULL, IS_DISPATCH_ON))
 	    targetm.sched.dispatch_do (insn, ADD_TO_DISPATCH_WINDOW);
 
 	  /* Update counters, etc in the scheduler's front end.  */
@@ -6730,8 +6730,8 @@ sched_init (void)
   flag_schedule_speculative_load = 0;
 #endif
 
-  if (targetm.sched.dispatch (NULL_RTX, IS_DISPATCH_ON))
-    targetm.sched.dispatch_do (NULL_RTX, DISPATCH_INIT);
+  if (targetm.sched.dispatch (NULL, IS_DISPATCH_ON))
+    targetm.sched.dispatch_do (NULL, DISPATCH_INIT);
 
   if (live_range_shrinkage_p)
     sched_pressure = SCHED_PRESSURE_WEIGHTED;
@@ -8146,7 +8146,7 @@ haifa_change_pattern (rtx_insn *insn, rtx new_pat)
    current instruction pattern,
    1 - need to change pattern for *NEW_PAT to be speculative.  */
 int
-sched_speculate_insn (rtx insn, ds_t request, rtx *new_pat)
+sched_speculate_insn (rtx_insn *insn, ds_t request, rtx *new_pat)
 {
   gcc_assert (current_sched_info->flags & DO_SPECULATION
               && (request & SPECULATIVE)
@@ -8699,7 +8699,7 @@ ready_remove_first_dispatch (struct ready_list *ready)
 	}
     }
 
-  if (targetm.sched.dispatch (NULL_RTX, DISPATCH_VIOLATION))
+  if (targetm.sched.dispatch (NULL, DISPATCH_VIOLATION))
     return ready_remove_first (ready);
 
   for (i = 1; i < ready->n_ready; i++)

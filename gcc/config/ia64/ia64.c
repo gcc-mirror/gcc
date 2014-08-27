@@ -169,8 +169,8 @@ static int ia64_first_cycle_multipass_dfa_lookahead (void);
 static void ia64_dependencies_evaluation_hook (rtx_insn *, rtx_insn *);
 static void ia64_init_dfa_pre_cycle_insn (void);
 static rtx ia64_dfa_pre_cycle_insn (void);
-static int ia64_first_cycle_multipass_dfa_lookahead_guard (rtx, int);
-static int ia64_dfa_new_cycle (FILE *, int, rtx, int, int, int *);
+static int ia64_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *, int);
+static int ia64_dfa_new_cycle (FILE *, int, rtx_insn *, int, int, int *);
 static void ia64_h_i_d_extended (void);
 static void * ia64_alloc_sched_context (void);
 static void ia64_init_sched_context (void *, bool);
@@ -179,12 +179,12 @@ static void ia64_clear_sched_context (void *);
 static void ia64_free_sched_context (void *);
 static int ia64_mode_to_int (enum machine_mode);
 static void ia64_set_sched_flags (spec_info_t);
-static ds_t ia64_get_insn_spec_ds (rtx);
-static ds_t ia64_get_insn_checked_ds (rtx);
+static ds_t ia64_get_insn_spec_ds (rtx_insn *);
+static ds_t ia64_get_insn_checked_ds (rtx_insn *);
 static bool ia64_skip_rtx_p (const_rtx);
-static int ia64_speculate_insn (rtx, ds_t, rtx *);
+static int ia64_speculate_insn (rtx_insn *, ds_t, rtx *);
 static bool ia64_needs_block_p (ds_t);
-static rtx ia64_gen_spec_check (rtx, rtx, ds_t);
+static rtx ia64_gen_spec_check (rtx_insn *, rtx_insn *, ds_t);
 static int ia64_spec_check_p (rtx);
 static int ia64_spec_check_src_p (rtx);
 static rtx gen_tls_get_addr (void);
@@ -250,7 +250,7 @@ static void ia64_print_operand_address (FILE *, rtx);
 static bool ia64_print_operand_punct_valid_p (unsigned char code);
 
 static int ia64_issue_rate (void);
-static int ia64_adjust_cost_2 (rtx, int, rtx, int, dw_t);
+static int ia64_adjust_cost_2 (rtx_insn *, int, rtx_insn *, int, dw_t);
 static void ia64_sched_init (FILE *, int, int);
 static void ia64_sched_init_global (FILE *, int, int);
 static void ia64_sched_finish_global (FILE *, int);
@@ -258,9 +258,9 @@ static void ia64_sched_finish (FILE *, int);
 static int ia64_dfa_sched_reorder (FILE *, int, rtx_insn **, int *, int, int);
 static int ia64_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 static int ia64_sched_reorder2 (FILE *, int, rtx_insn **, int *, int);
-static int ia64_variable_issue (FILE *, int, rtx, int);
+static int ia64_variable_issue (FILE *, int, rtx_insn *, int);
 
-static void ia64_asm_unwind_emit (FILE *, rtx);
+static void ia64_asm_unwind_emit (FILE *, rtx_insn *);
 static void ia64_asm_emit_except_personality (rtx);
 static void ia64_asm_init_sections (void);
 
@@ -632,7 +632,7 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 #undef TARGET_INVALID_WITHIN_DOLOOP
-#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_null
+#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_insn_null
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE ia64_override_options_after_change
@@ -7177,7 +7177,8 @@ ia64_single_set (rtx insn)
    Return the new cost of a dependency of type DEP_TYPE or INSN on DEP_INSN.
    COST is the current cost, DW is dependency weakness.  */
 static int
-ia64_adjust_cost_2 (rtx insn, int dep_type1, rtx dep_insn, int cost, dw_t dw)
+ia64_adjust_cost_2 (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn,
+		    int cost, dw_t dw)
 {
   enum reg_note dep_type = (enum reg_note) dep_type1;
   enum attr_itanium_class dep_class;
@@ -7498,7 +7499,7 @@ ia64_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 static int
 ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
 		     int sched_verbose ATTRIBUTE_UNUSED,
-		     rtx insn ATTRIBUTE_UNUSED,
+		     rtx_insn *insn,
 		     int can_issue_more ATTRIBUTE_UNUSED)
 {
   if (sched_deps_info->generate_spec_deps && !sel_sched_p ())
@@ -7535,7 +7536,7 @@ ia64_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
    can be chosen.  */
 
 static int
-ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn, int ready_index)
+ia64_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *insn, int ready_index)
 {
   gcc_assert (insn && INSN_P (insn));
 
@@ -7588,7 +7589,7 @@ scheduled_good_insn (rtx last)
    the ready queue on the next clock start.  */
 
 static int
-ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
+ia64_dfa_new_cycle (FILE *dump, int verbose, rtx_insn *insn, int last_clock,
 		    int clock, int *sort_p)
 {
   gcc_assert (insn && INSN_P (insn));
@@ -8112,7 +8113,7 @@ get_insn_spec_code (const_rtx insn)
 /* If INSN is a speculative load, return a ds with the speculation types.
    Otherwise [if INSN is a normal instruction] return 0.  */
 static ds_t
-ia64_get_insn_spec_ds (rtx insn)
+ia64_get_insn_spec_ds (rtx_insn *insn)
 {
   int code = get_insn_spec_code (insn);
 
@@ -8137,7 +8138,7 @@ ia64_get_insn_spec_ds (rtx insn)
    will be checked.
    Otherwise [if INSN is a normal instruction] return 0.  */
 static ds_t
-ia64_get_insn_checked_ds (rtx insn)
+ia64_get_insn_checked_ds (rtx_insn *insn)
 {
   int code = get_insn_spec_code (insn);
 
@@ -8195,7 +8196,7 @@ insn_can_be_in_speculative_p (rtx insn ATTRIBUTE_UNUSED,
    If current pattern of the INSN already provides TS speculation,
    return 0.  */
 static int
-ia64_speculate_insn (rtx insn, ds_t ts, rtx *new_pat)
+ia64_speculate_insn (rtx_insn *insn, ds_t ts, rtx *new_pat)
 {  
   int mode_no;
   int res;
@@ -8370,7 +8371,7 @@ ia64_needs_block_p (ds_t ts)
 
 /* Generate (or regenerate) a recovery check for INSN.  */
 static rtx
-ia64_gen_spec_check (rtx insn, rtx label, ds_t ds)
+ia64_gen_spec_check (rtx_insn *insn, rtx_insn *label, ds_t ds)
 {
   rtx op1, pat, check_pat;
   gen_func_t gen_check;
@@ -10178,7 +10179,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
    required to unwind this insn.  */
 
 static void
-ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
+ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 {
   bool unwind = ia64_except_unwind_info (&global_options) == UI_TARGET;
   bool frame = dwarf2out_do_frame ();

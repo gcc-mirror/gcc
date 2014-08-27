@@ -2830,9 +2830,9 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
    from scheduling them apart.  */
 
 static void
-sched_macro_fuse_insns (rtx insn)
+sched_macro_fuse_insns (rtx_insn *insn)
 {
-  rtx prev;
+  rtx_insn *prev;
 
   if (any_condjump_p (insn))
     {
