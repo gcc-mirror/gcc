@@ -1,3 +1,21 @@
+2014-08-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+        * config/i386/sse.md
+	(define_mode_iterator VI48_AVX2_48_AVX512F): Delete.
+	(define_mode_iterator VI48_AVX512BW): New.
+	(define_insn "<avx2_avx512f>_<shift_insn>v<mode><mask_name>"): Delete.
+	(define_insn "<avx2_avx512bw>_<shift_insn>v<mode><mask_name>"
+	with VI48_AVX2_48_AVX512F): New.
+	(define_insn "<avx2_avx512bw>_<shift_insn>v<mode><mask_name>"
+	with VI2_AVX512VL): Ditto.
+
 2014-08-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/62239
