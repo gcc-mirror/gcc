@@ -5181,6 +5181,14 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
 	 It serves no useful purpose and breaks eliminate_regs.  */
       if (GET_CODE (datum) == ASM_OPERANDS)
 	return NULL_RTX;
+
+      /* Notes with side effects are dangerous.  Even if the side-effect
+	 initially mirrors one in PATTERN (INSN), later optimizations
+	 might alter the way that the final register value is calculated
+	 and so move or alter the side-effect in some way.  The note would
+	 then no longer be a valid substitution for SET_SRC.  */
+      if (side_effects_p (datum))
+	return NULL_RTX;
       break;
 
     default:
