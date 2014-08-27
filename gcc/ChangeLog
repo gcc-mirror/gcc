@@ -1,3 +1,17 @@
+2014-08-27  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (get_maxval_strlen): Add overload wrapping
+	get_maxval_strlen inside a more useful API.
+	(gimple_fold_builtin_with_strlen): Remove and fold into ...
+	(gimple_fold_builtin): ... caller.
+	(gimple_fold_builtin_strlen, gimple_fold_builtin_strcpy,
+	gimple_fold_builtin_strncpy, gimple_fold_builtin_strcat,
+	gimple_fold_builtin_fputs, gimple_fold_builtin_memory_chk,
+	gimple_fold_builtin_stxcpy_chk, gimple_fold_builtin_stxncpy_chk,
+	gimple_fold_builtin_snprintf_chk, gimple_fold_builtin_snprintf,
+	gimple_fold_builtin_sprintf): Adjust to compute maxval
+	themselves.
+
 2014-08-27  Yvan Roux  <yvan.roux@linaro.org>
 
 	PR other/62248
