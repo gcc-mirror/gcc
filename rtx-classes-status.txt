@@ -8,8 +8,8 @@ information.
 Phase 1: initial "scaffolding" commits:            DONE
 Phase 2: per-file commits in main source dir:      DONE
 Phase 3: per-file commits within "config" subdirs: DONE
-Phase 4: removal of "scaffolding":                 IN PROGRESS
-Phase 5: additional rtx_def subclasses:            TODO
+Phase 4: removal of "scaffolding":                 DONE
+Phase 5: additional rtx_def subclasses:            IN PROGRESS
 Phase 6: use extra rtx_def subclasses:             TODO
 
 TODO: "Scaffolding" to be removed
