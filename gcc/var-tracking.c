@@ -948,7 +948,7 @@ struct adjust_mem_data
   bool store;
   enum machine_mode mem_mode;
   HOST_WIDE_INT stack_adjust;
-  rtx side_effects;
+  rtx_expr_list *side_effects;
 };
 
 /* Helper for adjust_mems.  Return 1 if *loc is unsuitable for
@@ -1231,7 +1231,7 @@ adjust_insn (basic_block bb, rtx_insn *insn)
 
   amd.mem_mode = VOIDmode;
   amd.stack_adjust = -VTI (bb)->out.stack_adjust;
-  amd.side_effects = NULL_RTX;
+  amd.side_effects = NULL;
 
   amd.store = true;
   note_stores (PATTERN (insn), adjust_mem_stores, &amd);
@@ -6277,7 +6277,7 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 		struct adjust_mem_data amd;
 		amd.mem_mode = VOIDmode;
 		amd.stack_adjust = -VTI (bb)->out.stack_adjust;
-		amd.side_effects = NULL_RTX;
+		amd.side_effects = NULL;
 		amd.store = true;
 		mem = simplify_replace_fn_rtx (mem, NULL_RTX, adjust_mems,
 					       &amd);

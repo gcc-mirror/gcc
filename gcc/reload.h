@@ -233,7 +233,7 @@ struct reg_equivs_t
 
   /* An EXPR_LIST of REG_EQUIVs containing MEMs with
      alternate representations of the location of pseudo reg N.  */
-  rtx alt_mem_list;
+  rtx_expr_list *alt_mem_list;
 
   /* The list of insns that initialized reg N from its equivalent
      constant or memory slot.  */
