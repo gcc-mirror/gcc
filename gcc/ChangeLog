@@ -1,5 +1,11 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* except.c (can_throw_external): Strengthen local "seq" from rtx
+	to rtx_sequence *.  Use methods of rtx_sequence.
+	(insn_nothrow_p): Likewise.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* dwarf2cfi.c (create_trace_edges): Convert GET_CODE check into a
 	dyn_cast, strengthening local "seq" from rtx to rtx_sequence *.
 	Use methods of rtx_sequence.
