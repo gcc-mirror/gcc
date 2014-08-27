@@ -1,3 +1,12 @@
+2014-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/62239
+	* builtins.c (fold_builtin_strcat_chk): Move to gimple-fold.c.
+	(fold_builtin_3): Do not fold strcat_chk here.
+	* gimple-fold.c (gimple_fold_builtin_strcat_chk): Move here
+	from builtins.c.
+	(gimple_fold_builtin): Fold strcat_chk here.
+
 2014-08-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* dwarf2out.h (dwarf2out_decl): Remove prototype.
