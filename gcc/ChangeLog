@@ -1,5 +1,10 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* ira-lives.c (find_call_crossed_cheap_reg): Strengthen local
+	"prev" from rtx to rtx_insn *.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (INSN_UID): Convert from a macro to a pair of inline
 	functions.  Require merely an rtx for now, not an rtx_insn *.
 	(BLOCK_FOR_INSN): Likewise.
