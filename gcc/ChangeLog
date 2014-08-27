@@ -1,5 +1,19 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* resource.c (mark_referenced_resources): Strengthen local
+	"sequence" from rtx to rtx_sequence *, adding a checked cast, and
+	using methods of rtx_sequence to clarify the code.
+	(find_dead_or_set_registers): Within the switch statement, convert
+	a GET_CODE check to a dyn_cast, introducing local "seq".  Within
+	the JUMP_P handling, introduce another local "seq", adding a
+	checked cast to rtx_sequence *.  In both cases, use methods of
+	rtx_sequence to clarify the code.
+	(mark_set_resources): Within SEQUENCE case, introduce local "seq"
+	via a checked cast, and use methods of rtx_sequence to simplify
+	the code.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* reorg.c (redundant_insn): In two places in the function, replace
 	a check of GET_CODE with a dyn_cast, introducing local "seq", and
 	usings methods of rtx_sequence to clarify the code.

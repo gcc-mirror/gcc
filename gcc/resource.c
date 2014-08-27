@@ -309,15 +309,15 @@ mark_referenced_resources (rtx x, struct resources *res,
 	     into the delay slot of this CALL.  If so, the USE's for them
 	     don't count and should be skipped.  */
 	  rtx_insn *insn = PREV_INSN (x);
-	  rtx sequence = 0;
+	  rtx_sequence *sequence = 0;
 	  int seq_size = 0;
 	  int i;
 
 	  /* If we are part of a delay slot sequence, point at the SEQUENCE.  */
 	  if (NEXT_INSN (insn) != x)
 	    {
-	      sequence = PATTERN (NEXT_INSN (insn));
-	      seq_size = XVECLEN (sequence, 0);
+	      sequence = as_a <rtx_sequence *> (PATTERN (NEXT_INSN (insn)));
+	      seq_size = sequence->len ();
 	      gcc_assert (GET_CODE (sequence) == SEQUENCE);
 	    }
 
@@ -356,7 +356,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 		{
 		  for (i = 1; i < seq_size; i++)
 		    {
-		      rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
+		      rtx slot_pat = PATTERN (sequence->element (i));
 		      if (GET_CODE (slot_pat) == SET
 			  && rtx_equal_p (SET_DEST (slot_pat),
 					  XEXP (XEXP (link, 0), 0)))
@@ -473,13 +473,14 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 	    }
 	  else if (GET_CODE (PATTERN (insn)) == CLOBBER)
 	    continue;
-	  else if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	  else if (rtx_sequence *seq =
+		     dyn_cast <rtx_sequence *> (PATTERN (insn)))
 	    {
 	      /* An unconditional jump can be used to fill the delay slot
 		 of a call, so search for a JUMP_INSN in any position.  */
-	      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+	      for (i = 0; i < seq->len (); i++)
 		{
-		  this_jump_insn = XVECEXP (PATTERN (insn), 0, i);
+		  this_jump_insn = seq->element (i);
 		  if (JUMP_P (this_jump_insn))
 		    break;
 		}
@@ -536,17 +537,18 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 		  if (GET_CODE (PATTERN (insn)) == SEQUENCE
 		      && INSN_ANNULLED_BRANCH_P (this_jump_insn))
 		    {
-		      for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
-			INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i))
-			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
+		      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
+		      for (i = 1; i < seq->len (); i++)
+			INSN_FROM_TARGET_P (seq->element (i))
+			  = ! INSN_FROM_TARGET_P (seq->element (i));
 
 		      target_set = set;
 		      mark_set_resources (insn, &target_set, 0,
 					  MARK_SRC_DEST_CALL);
 
-		      for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
-			INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i))
-			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
+		      for (i = 1; i < seq->len (); i++)
+			INSN_FROM_TARGET_P (seq->element (i))
+			  = ! INSN_FROM_TARGET_P (seq->element (i));
 
 		      mark_set_resources (insn, &set, 0, MARK_SRC_DEST_CALL);
 		    }
@@ -712,13 +714,14 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 
     case SEQUENCE:
       {
-        rtx control = XVECEXP (x, 0, 0);
+        rtx_sequence *seq = as_a <rtx_sequence *> (x);
+        rtx control = seq->element (0);
         bool annul_p = JUMP_P (control) && INSN_ANNULLED_BRANCH_P (control);
 
         mark_set_resources (control, res, 0, mark_type);
-        for (i = XVECLEN (x, 0) - 1; i >= 0; --i)
+        for (i = seq->len () - 1; i >= 0; --i)
 	  {
-	    rtx elt = XVECEXP (x, 0, i);
+	    rtx elt = seq->element (i);
 	    if (!annul_p && INSN_FROM_TARGET_P (elt))
 	      mark_set_resources (elt, res, 0, mark_type);
 	  }
