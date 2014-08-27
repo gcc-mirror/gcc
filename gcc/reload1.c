@@ -3909,14 +3909,13 @@ set_initial_eh_label_offset (rtx label)
 static void
 set_initial_label_offsets (void)
 {
-  rtx x;
   memset (offsets_known_at, 0, num_labels);
 
-  for (x = forced_labels; x; x = XEXP (x, 1))
-    if (XEXP (x, 0))
-      set_label_offsets (XEXP (x, 0), NULL, 1);
+  for (rtx_expr_list *x = forced_labels; x; x = x->next ())
+    if (x->element ())
+      set_label_offsets (x->element (), NULL, 1);
 
-  for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
+  for (rtx x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
     if (XEXP (x, 0))
       set_label_offsets (XEXP (x, 0), NULL, 1);
 
