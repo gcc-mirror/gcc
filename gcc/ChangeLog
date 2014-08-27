@@ -1,5 +1,11 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* jump.c (mark_jump_label_1): Within the SEQUENCE case, introduce
+	local "seq" with a checked cast, and use methods of rtx_sequence
+	to clarify the code.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.c (contains): Introduce local "seq" for PATTERN (insn),
 	with a checked cast, in the region for where we know it's a
 	SEQUENCE.  Use methods of rtx_sequence.
