@@ -1,5 +1,10 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (PATTERN): Convert this macro into a pair of inline
+	functions, for now, requiring const_rtx and rtx.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* target.def (unwind_emit): Strengthen param "insn" from rtx to
 	rtx_insn *.
 	(final_postscan_insn): Likewise.

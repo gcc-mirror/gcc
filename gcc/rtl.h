@@ -1207,7 +1207,15 @@ inline rtx& SET_NEXT_INSN (rtx insn)
 #define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 2)
 
 /* The body of an insn.  */
-#define PATTERN(INSN)	XEXP (INSN, 3)
+inline rtx PATTERN (const_rtx insn)
+{
+  return XEXP (insn, 3);
+}
+
+inline rtx& PATTERN (rtx insn)
+{
+  return XEXP (insn, 3);
+}
 
 #define INSN_LOCATION(INSN) XUINT (INSN, 4)
 
