@@ -1172,8 +1172,16 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 /* Holds a unique number for each insn.
    These are not necessarily sequentially increasing.  */
-#define INSN_UID(INSN) \
-  (RTL_INSN_CHAIN_FLAG_CHECK ("INSN_UID", (INSN))->u2.insn_uid)
+inline int INSN_UID (const_rtx insn)
+{
+  return RTL_INSN_CHAIN_FLAG_CHECK ("INSN_UID",
+				    (insn))->u2.insn_uid;
+}
+inline int& INSN_UID (rtx insn)
+{
+  return RTL_INSN_CHAIN_FLAG_CHECK ("INSN_UID",
+				    (insn))->u2.insn_uid;
+}
 
 /* Chain insns together in sequence.  */
 
@@ -1204,7 +1212,15 @@ inline rtx& SET_NEXT_INSN (rtx insn)
   return XEXP (insn, 1);
 }
 
-#define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 2)
+inline basic_block BLOCK_FOR_INSN (const_rtx insn)
+{
+  return XBBDEF (insn, 2);
+}
+
+inline basic_block& BLOCK_FOR_INSN (rtx insn)
+{
+  return XBBDEF (insn, 2);
+}
 
 /* The body of an insn.  */
 inline rtx PATTERN (const_rtx insn)
@@ -1217,10 +1233,20 @@ inline rtx& PATTERN (rtx insn)
   return XEXP (insn, 3);
 }
 
-#define INSN_LOCATION(INSN) XUINT (INSN, 4)
+inline unsigned int INSN_LOCATION (const_rtx insn)
+{
+  return XUINT (insn, 4);
+}
 
-#define INSN_HAS_LOCATION(INSN) ((LOCATION_LOCUS (INSN_LOCATION (INSN)))\
-  != UNKNOWN_LOCATION)
+inline unsigned int& INSN_LOCATION (rtx insn)
+{
+  return XUINT (insn, 4);
+}
+
+inline bool INSN_HAS_LOCATION (const_rtx insn)
+{
+  return LOCATION_LOCUS (INSN_LOCATION (insn)) != UNKNOWN_LOCATION;
+}
 
 /* LOCATION of an RTX if relevant.  */
 #define RTL_LOCATION(X) (INSN_P (X) ? \

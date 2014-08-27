@@ -1,5 +1,13 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (INSN_UID): Convert from a macro to a pair of inline
+	functions.  Require merely an rtx for now, not an rtx_insn *.
+	(BLOCK_FOR_INSN): Likewise.
+	(INSN_LOCATION): Likewise.
+	(INSN_HAS_LOCATION): Convert from a macro to an inline function.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (PATTERN): Convert this macro into a pair of inline
 	functions, for now, requiring const_rtx and rtx.
 
