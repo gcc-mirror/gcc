@@ -219,7 +219,6 @@ make_edges (basic_block min, basic_block max, int update_p)
   FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
     {
       rtx_insn *insn;
-      rtx x;
       enum rtx_code code;
       edge e;
       edge_iterator ei;
@@ -285,8 +284,8 @@ make_edges (basic_block min, basic_block max, int update_p)
 	     everything on the forced_labels list.  */
 	  else if (computed_jump_p (insn))
 	    {
-	      for (x = forced_labels; x; x = XEXP (x, 1))
-		make_label_edge (edge_cache, bb, XEXP (x, 0), EDGE_ABNORMAL);
+	      for (rtx_expr_list *x = forced_labels; x; x = x->next ())
+		make_label_edge (edge_cache, bb, x->element (), EDGE_ABNORMAL);
 	    }
 
 	  /* Returns create an exit out.  */
@@ -338,7 +337,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 		     taken, then only calls to those functions or to other
 		     nested functions that use them could possibly do
 		     nonlocal gotos.  */
-		  for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
+		  for (rtx x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
 		    make_label_edge (edge_cache, bb, XEXP (x, 0),
 				     EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
 		}

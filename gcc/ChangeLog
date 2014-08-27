@@ -1,5 +1,23 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.h (struct expr_status): Strengthen field
+	"x_forced_labels" from rtx to rtx_expr_list *.
+
+	* cfgbuild.c (make_edges): Split local "x" into two locals,
+	strengthening one from rtx to rtx_expr_list *, and using methods
+	of said class.
+	* dwarf2cfi.c (create_trace_edges): Split local "lab" out; within
+	loop over forced_labels, introduce strengthen it from rtx to
+	rtx_expr_list *, using methods to clarify the code.
+	* jump.c (rebuild_jump_labels_1): Strengthen local "insn" from rtx
+	to rtx_expr_list *, using methods of said class to clarify the
+	code.
+	* reload1.c (set_initial_label_offsets): Split local "x" into two
+	per-loop variables, strengthening the first from rtx to
+	rtx_expr_list * and using methods.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* coretypes.h (class rtx_expr_list): Add forward declaration.
 	* emit-rtl.c (gen_rtx_EXPR_LIST): New.
 	* gengenrtl.c (special_rtx): Add EXPR_LIST.

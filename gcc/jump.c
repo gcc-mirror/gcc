@@ -74,7 +74,7 @@ static int returnjump_p_1 (rtx *, void *);
 static void
 rebuild_jump_labels_1 (rtx_insn *f, bool count_forced)
 {
-  rtx insn;
+  rtx_expr_list *insn;
 
   timevar_push (TV_REBUILD_JUMP);
   init_label_info (f);
@@ -85,9 +85,9 @@ rebuild_jump_labels_1 (rtx_insn *f, bool count_forced)
      count doesn't drop to zero.  */
 
   if (count_forced)
-    for (insn = forced_labels; insn; insn = XEXP (insn, 1))
-      if (LABEL_P (XEXP (insn, 0)))
-	LABEL_NUSES (XEXP (insn, 0))++;
+    for (insn = forced_labels; insn; insn = insn->next ())
+      if (LABEL_P (insn->element ()))
+	LABEL_NUSES (insn->element ())++;
   timevar_pop (TV_REBUILD_JUMP);
 }
 

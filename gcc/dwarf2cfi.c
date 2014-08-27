@@ -2286,7 +2286,7 @@ maybe_record_trace_start_abnormal (rtx start, rtx origin)
 static void
 create_trace_edges (rtx insn)
 {
-  rtx tmp, lab;
+  rtx tmp;
   int i, n;
 
   if (JUMP_P (insn))
@@ -2303,14 +2303,14 @@ create_trace_edges (rtx insn)
 	  n = GET_NUM_ELEM (vec);
 	  for (i = 0; i < n; ++i)
 	    {
-	      lab = XEXP (RTVEC_ELT (vec, i), 0);
+	      rtx lab = XEXP (RTVEC_ELT (vec, i), 0);
 	      maybe_record_trace_start (lab, insn);
 	    }
 	}
       else if (computed_jump_p (insn))
 	{
-	  for (lab = forced_labels; lab; lab = XEXP (lab, 1))
-	    maybe_record_trace_start (XEXP (lab, 0), insn);
+	  for (rtx_expr_list *lab = forced_labels; lab; lab = lab->next ())
+	    maybe_record_trace_start (lab->element (), insn);
 	}
       else if (returnjump_p (insn))
 	;
@@ -2319,13 +2319,13 @@ create_trace_edges (rtx insn)
 	  n = ASM_OPERANDS_LABEL_LENGTH (tmp);
 	  for (i = 0; i < n; ++i)
 	    {
-	      lab = XEXP (ASM_OPERANDS_LABEL (tmp, i), 0);
+	      rtx lab = XEXP (ASM_OPERANDS_LABEL (tmp, i), 0);
 	      maybe_record_trace_start (lab, insn);
 	    }
 	}
       else
 	{
-	  lab = JUMP_LABEL (insn);
+	  rtx lab = JUMP_LABEL (insn);
 	  gcc_assert (lab != NULL);
 	  maybe_record_trace_start (lab, insn);
 	}
@@ -2338,7 +2338,7 @@ create_trace_edges (rtx insn)
 
       /* Process non-local goto edges.  */
       if (can_nonlocal_goto (insn))
-	for (lab = nonlocal_goto_handler_labels; lab; lab = XEXP (lab, 1))
+	for (rtx lab = nonlocal_goto_handler_labels; lab; lab = XEXP (lab, 1))
 	  maybe_record_trace_start_abnormal (XEXP (lab, 0), insn);
     }
   else if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
