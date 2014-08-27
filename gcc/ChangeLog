@@ -1,3 +1,22 @@
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc/config/mn10300/mn10300.c (is_load_insn): Rename to...
+	(set_is_load_p): ...this, updating to work on a SET pattern rather
+	than an insn.
+	(is_store_insn): Rename to...
+	(set_is_store_p): ...this, updating to work on a SET pattern
+	rather than an insn.
+	(mn10300_adjust_sched_cost): Move call to get_attr_timings from
+	top of function to where it is needed.  Rewrite the bogus
+	condition that checks for "insn" and "dep" being PARALLEL to
+	instead use single_set, introducing locals "insn_set" and
+	"dep_set".  Given that we only ever returned "cost" for a non-pair
+	of SETs, bail out early if we don't have a pair of SET.
+	Rewrite all uses of PATTERN (dep) and PATTERN (insn) to instead
+	use the new locals "insn_set" and "dep_set", and update calls to
+	is_load_insn and is_store_insn to be calls to set_is_load_p and
+	set_is_store_p.
+
 2014-08-27  Guozhi Wei  <carrot@google.com>
 
 	PR target/62262
