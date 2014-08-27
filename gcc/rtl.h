@@ -1658,6 +1658,11 @@ enum label_kind
    be decremented and possibly the label can be deleted.  */
 #define JUMP_LABEL(INSN)   XCEXP (INSN, 7, JUMP_INSN)
 
+inline rtx_insn *JUMP_LABEL_AS_INSN (rtx_insn *insn)
+{
+  return safe_as_a <rtx_insn *> (JUMP_LABEL (insn));
+}
+
 /* Once basic blocks are found, each CODE_LABEL starts a chain that
    goes through all the LABEL_REFs that jump to that label.  The chain
    eventually winds up at the CODE_LABEL: it is circular.  */
