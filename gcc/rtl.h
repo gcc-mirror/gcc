@@ -431,6 +431,41 @@ is_a_helper <rtx_insn_list *>::test (rtx rt)
   return rt->code == INSN_LIST;
 }
 
+/* A node with invariant GET_CODE (X) == SEQUENCE i.e. a vector of rtx,
+   typically (but not always) of rtx_insn *, used in the late passes.  */
+
+class GTY(()) rtx_sequence : public rtx_def
+{
+  /* No extra fields, but adds invariant: (GET_CODE (X) == SEQUENCE).  */
+
+public:
+  /* Get number of elements in sequence.  */
+  int len () const;
+
+  /* Get i-th element of the sequence.  */
+  rtx element (int index) const;
+
+  /* Get i-th element of the sequence, with a checked cast to
+     rtx_insn *.  */
+  rtx_insn *insn (int index) const;
+};
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_sequence *>::test (rtx rt)
+{
+  return rt->code == SEQUENCE;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const rtx_sequence *>::test (const_rtx rt)
+{
+  return rt->code == SEQUENCE;
+}
+
 class GTY(()) rtx_insn : public rtx_def
 {
   /* No extra fields, but adds the invariant:
@@ -1210,6 +1245,23 @@ inline rtx_insn *rtx_insn_list::insn () const
 {
   rtx tmp = XEXP (this, 0);
   return safe_as_a <rtx_insn *> (tmp);
+}
+
+/* Methods of rtx_sequence.  */
+
+inline int rtx_sequence::len () const
+{
+  return XVECLEN (this, 0);
+}
+
+inline rtx rtx_sequence::element (int index) const
+{
+  return XVECEXP (this, 0, index);
+}
+
+inline rtx_insn *rtx_sequence::insn (int index) const
+{
+  return as_a <rtx_insn *> (XVECEXP (this, 0, index));
 }
 
 /* ACCESS MACROS for particular fields of insns.  */

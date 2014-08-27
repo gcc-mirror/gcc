@@ -1,5 +1,16 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* coretypes.h (class rtx_sequence): Add forward declaration.
+	* rtl.h (class rtx_sequence): New subclass of rtx_def, adding
+	invariant: GET_CODE (X) == SEQUENCE.
+	(is_a_helper <rtx_sequence *>::test): New.
+	(is_a_helper <const rtx_sequence *>::test): New.
+	(rtx_sequence::len): New.
+	(rtx_sequence::element): New.
+	(rtx_sequence::insn): New.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (free_INSN_LIST_list): Strengthen param from rtx * to
 	rtx_insn_list **.
 	(alloc_INSN_LIST): Strengthen return type from rtx to
