@@ -402,6 +402,35 @@ struct GTY((desc("0"), tag("0"),
   } GTY ((special ("rtx_def"), desc ("GET_CODE (&%0)"))) u;
 };
 
+class GTY(()) rtx_insn_list : public rtx_def
+{
+  /* No extra fields, but adds invariant: (GET_CODE (X) == INSN_LIST).
+
+     This is an instance of:
+
+       DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", RTX_EXTRA)
+
+     i.e. a node for constructing singly-linked lists of rtx_insn *, where
+     the list is "external" to the insn (as opposed to the doubly-linked
+     list embedded within rtx_insn itself).  */
+
+public:
+  /* Get next in list.  */
+  rtx_insn_list *next () const;
+
+  /* Get at the underlying instruction.  */
+  rtx_insn *insn () const;
+
+};
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_insn_list *>::test (rtx rt)
+{
+  return rt->code == INSN_LIST;
+}
+
 class GTY(()) rtx_insn : public rtx_def
 {
   /* No extra fields, but adds the invariant:
@@ -1168,6 +1197,21 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 #define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rt_rtx)
 
+
+/* Methods of rtx_insn_list.  */
+
+inline rtx_insn_list *rtx_insn_list::next () const
+{
+  rtx tmp = XEXP (this, 1);
+  return safe_as_a <rtx_insn_list *> (tmp);
+}
+
+inline rtx_insn *rtx_insn_list::insn () const
+{
+  rtx tmp = XEXP (this, 0);
+  return safe_as_a <rtx_insn *> (tmp);
+}
+
 /* ACCESS MACROS for particular fields of insns.  */
 
 /* Holds a unique number for each insn.
@@ -2952,6 +2996,7 @@ get_mem_attrs (const_rtx x)
    generation functions included above do the raw handling.  If you
    add to this list, modify special_rtx in gengenrtl.c as well.  */
 
+extern rtx_insn_list *gen_rtx_INSN_LIST (enum machine_mode, rtx, rtx);
 extern rtx gen_rtx_CONST_INT (enum machine_mode, HOST_WIDE_INT);
 extern rtx gen_rtx_CONST_VECTOR (enum machine_mode, rtvec);
 extern rtx gen_raw_REG (enum machine_mode, int);

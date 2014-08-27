@@ -1,5 +1,16 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* coretypes.h (class rtx_insn_list): Add forward declaration.
+	* rtl.h (class rtx_insn_list): New subclass of rtx_def
+	(is_a_helper <rtx_insn_list *>::test): New.
+	(rtx_insn_list::next): New.
+	(rtx_insn_list::insn): New.
+	(gen_rtx_INSN_LIST): Add prototype.
+	* emit-rtl.c (gen_rtx_INSN_LIST): New.
+	* gengenrtl.c (special_rtx): Add INSN_LIST.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* ira-lives.c (find_call_crossed_cheap_reg): Strengthen local
 	"prev" from rtx to rtx_insn *.
 
