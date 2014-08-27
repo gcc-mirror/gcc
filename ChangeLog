@@ -1,5 +1,10 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtx-classes-status.txt: Phase 5 (additional rtx_def subclasses)
+	is done; begin phase 6 (use extra rtx_def subclasses).
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtx-classes-status.txt: Phase 4 (removal of "scaffolding") is
 	done; begin phase 5 (additional rtx_def subclasses).
 
