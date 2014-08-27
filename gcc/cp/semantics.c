@@ -8391,7 +8391,9 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
     {
       /* Might be a constexpr function pointer.  */
       fun = cxx_eval_constant_expression (old_call, fun, allow_non_constant,
-					  /*addr*/false, non_constant_p, overflow_p);
+					  /*addr*/false, non_constant_p,
+					  overflow_p);
+      STRIP_NOPS (fun);
       if (TREE_CODE (fun) == ADDR_EXPR)
 	fun = TREE_OPERAND (fun, 0);
     }
