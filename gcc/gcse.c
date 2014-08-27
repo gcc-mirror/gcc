@@ -347,8 +347,8 @@ struct ls_expr
   struct expr * expr;		/* Gcse expression reference for LM.  */
   rtx pattern;			/* Pattern of this mem.  */
   rtx pattern_regs;		/* List of registers mentioned by the mem.  */
-  rtx loads;			/* INSN list of loads seen.  */
-  rtx stores;			/* INSN list of stores seen.  */
+  rtx_insn_list *loads;		/* INSN list of loads seen.  */
+  rtx_insn_list *stores;	/* INSN list of stores seen.  */
   struct ls_expr * next;	/* Next in the list.  */
   int invalid;			/* Invalid for some reason.  */
   int index;			/* If it maps to a bitmap index.  */
@@ -3774,8 +3774,8 @@ ldst_entry (rtx x)
   ptr->expr         = NULL;
   ptr->pattern      = x;
   ptr->pattern_regs = NULL_RTX;
-  ptr->loads        = NULL_RTX;
-  ptr->stores       = NULL_RTX;
+  ptr->loads        = NULL;
+  ptr->stores       = NULL;
   ptr->reaching_reg = NULL_RTX;
   ptr->invalid      = 0;
   ptr->index        = 0;
