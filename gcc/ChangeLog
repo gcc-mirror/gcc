@@ -1,6 +1,14 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* function.h (struct rtl_data): Strengthen field
+	"x_stack_slot_list" from rtx to rtx_expr_list *.
+
+	* emit-rtl.c (unshare_all_rtl_1): Add a checked cast
+	when assigning to stack_slot_list.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* function.h (struct rtl_data): Strengthen field
 	x_nonlocal_goto_handler_labels from rtx to rtx_expr_list *.
 	* rtl.h (remove_node_from_expr_list): Strengthen second param from
 	rtx * to rtx_expr_list **.

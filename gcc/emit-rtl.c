@@ -2555,7 +2555,8 @@ unshare_all_rtl_1 (rtx_insn *insn)
      This special care is necessary when the stack slot MEM does not
      actually appear in the insn chain.  If it does appear, its address
      is unshared from all else at that point.  */
-  stack_slot_list = copy_rtx_if_shared (stack_slot_list);
+  stack_slot_list = safe_as_a <rtx_expr_list *> (
+		      copy_rtx_if_shared (stack_slot_list));
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared
