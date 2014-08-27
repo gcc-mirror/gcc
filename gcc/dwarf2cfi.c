@@ -2341,12 +2341,11 @@ create_trace_edges (rtx insn)
 	for (lab = nonlocal_goto_handler_labels; lab; lab = XEXP (lab, 1))
 	  maybe_record_trace_start_abnormal (XEXP (lab, 0), insn);
     }
-  else if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+  else if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
     {
-      rtx seq = PATTERN (insn);
-      int i, n = XVECLEN (seq, 0);
+      int i, n = seq->len ();
       for (i = 0; i < n; ++i)
-	create_trace_edges (XVECEXP (seq, 0, i));
+	create_trace_edges (seq->insn (i));
       return;
     }
 
@@ -2421,12 +2420,12 @@ scan_trace (dw_trace_info *trace)
 
       /* Handle all changes to the row state.  Sequences require special
 	 handling for the positioning of the notes.  */
-      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+      if (rtx_sequence *pat = dyn_cast <rtx_sequence *> (PATTERN (insn)))
 	{
-	  rtx elt, pat = PATTERN (insn);
-	  int i, n = XVECLEN (pat, 0);
+	  rtx elt;
+	  int i, n = pat->len ();
 
-	  control = XVECEXP (pat, 0, 0);
+	  control = pat->element (0);
 	  if (can_throw_internal (control))
 	    notice_eh_throw (control);
 	  dwarf2out_flush_queued_reg_saves ();
@@ -2438,7 +2437,7 @@ scan_trace (dw_trace_info *trace)
 	      gcc_assert (!RTX_FRAME_RELATED_P (control));
 	      gcc_assert (!find_reg_note (control, REG_ARGS_SIZE, NULL));
 
-	      elt = XVECEXP (pat, 0, 1);
+	      elt = pat->element (1);
 
 	      if (INSN_FROM_TARGET_P (elt))
 		{
@@ -2493,7 +2492,7 @@ scan_trace (dw_trace_info *trace)
 
 	  for (i = 1; i < n; ++i)
 	    {
-	      elt = XVECEXP (pat, 0, i);
+	      elt = pat->element (i);
 	      scan_insn_after (elt);
 	    }
 
