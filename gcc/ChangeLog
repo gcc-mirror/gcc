@@ -1,5 +1,17 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* coretypes.h (class rtx_expr_list): Add forward declaration.
+	* emit-rtl.c (gen_rtx_EXPR_LIST): New.
+	* gengenrtl.c (special_rtx): Add EXPR_LIST.
+	* rtl.h (class rtx_expr_list): New subclass of rtx_def, adding
+	invariant: GET_CODE (X) == EXPR_LIST.
+	(is_a_helper <rtx_expr_list *>::test): New.
+	(rtx_expr_list::next): New.
+	(rtx_expr_list::element): New.
+	(gen_rtx_EXPR_LIST): New.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* varasm.c (mark_constants): Convert a GET_CODE check into a
 	dyn_cast, strengthening local "seq" from rtx to rtx_sequence *.
 	Use methods of rtx_sequence to clarify the code.
