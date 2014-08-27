@@ -1004,7 +1004,7 @@ find_call_crossed_cheap_reg (rtx_insn *insn)
     {
       basic_block bb = BLOCK_FOR_INSN (insn);
       rtx reg = SET_SRC (exp);
-      rtx prev = PREV_INSN (insn);
+      rtx_insn *prev = PREV_INSN (insn);
       while (prev && !(INSN_P (prev)
 		       && BLOCK_FOR_INSN (prev) != bb))
 	{
