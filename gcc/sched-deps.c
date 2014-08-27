@@ -1622,7 +1622,7 @@ remove_from_dependence_list (rtx insn, rtx_insn_list **listp)
 static int
 remove_from_both_dependence_lists (rtx insn,
 				   rtx_insn_list **listp,
-				   rtx *exprp)
+				   rtx_expr_list **exprp)
 {
   int removed = 0;
 
@@ -1637,7 +1637,7 @@ remove_from_both_dependence_lists (rtx insn,
         }
 
       listp = (rtx_insn_list **)&XEXP (*listp, 1);
-      exprp = &XEXP (*exprp, 1);
+      exprp = (rtx_expr_list **)&XEXP (*exprp, 1);
     }
 
   return removed;
@@ -1719,8 +1719,8 @@ add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
 {
   rtx_insn_list **insn_list;
   rtx_insn_list *insn_node;
-  rtx *mem_list;
-  rtx mem_node;
+  rtx_expr_list **mem_list;
+  rtx_expr_list *mem_node;
 
   gcc_assert (!deps->readonly);
   if (read_p)

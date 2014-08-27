@@ -474,13 +474,13 @@ struct deps_desc
   rtx_insn_list *pending_read_insns;
 
   /* An EXPR_LIST containing all MEM rtx's which are pending reads.  */
-  rtx pending_read_mems;
+  rtx_expr_list *pending_read_mems;
 
   /* An INSN_LIST containing all insns with pending write operations.  */
   rtx_insn_list *pending_write_insns;
 
   /* An EXPR_LIST containing all MEM rtx's which are pending writes.  */
-  rtx pending_write_mems;
+  rtx_expr_list *pending_write_mems;
 
   /* An INSN_LIST containing all jump insns.  */
   rtx_insn_list *pending_jump_insns;

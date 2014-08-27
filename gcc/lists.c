@@ -125,14 +125,14 @@ alloc_INSN_LIST (rtx val, rtx next)
 /* This call is used in place of a gen_rtx_EXPR_LIST. If there is a cached
    node available, we'll use it, otherwise a call to gen_rtx_EXPR_LIST
    is made.  */
-rtx
+rtx_expr_list *
 alloc_EXPR_LIST (int kind, rtx val, rtx next)
 {
-  rtx r;
+  rtx_expr_list *r;
 
   if (unused_expr_list)
     {
-      r = unused_expr_list;
+      r = as_a <rtx_expr_list *> (unused_expr_list);
       unused_expr_list = XEXP (r, 1);
       XEXP (r, 0) = val;
       XEXP (r, 1) = next;
@@ -146,11 +146,11 @@ alloc_EXPR_LIST (int kind, rtx val, rtx next)
 
 /* This function will free up an entire list of EXPR_LIST nodes.  */
 void
-free_EXPR_LIST_list (rtx *listp)
+free_EXPR_LIST_list (rtx_expr_list **listp)
 {
   if (*listp == 0)
     return;
-  free_list (listp, &unused_expr_list);
+  free_list ((rtx *)listp, &unused_expr_list);
 }
 
 /* This function will free up an entire list of INSN_LIST nodes.  */
@@ -233,12 +233,12 @@ remove_free_INSN_LIST_node (rtx_insn_list **listp)
 
 /* Remove and free the first node in the EXPR_LIST pointed to by LISTP.  */
 rtx
-remove_free_EXPR_LIST_node (rtx *listp)
+remove_free_EXPR_LIST_node (rtx_expr_list **listp)
 {
-  rtx node = *listp;
+  rtx_expr_list *node = *listp;
   rtx elem = XEXP (node, 0);
 
-  remove_list_node (listp);
+  remove_list_node ((rtx *)listp);
   free_EXPR_LIST_node (node);
 
   return elem;

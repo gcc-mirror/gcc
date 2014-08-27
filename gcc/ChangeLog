@@ -1,5 +1,42 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (free_EXPR_LIST_list): Strengthen param from rtx * to
+	rtx_expr_list **.
+	(alloc_EXPR_LIST): Strengthen return type from rtx to
+	rtx_expr_list *.
+	(remove_free_EXPR_LIST_node): Likewise for param.
+	* reload.h (struct reg_equivs_t): Strengthen field "alt_mem_list"
+	from rtx to rtx_expr_list *.
+	* sched-int.h (struct deps_desc): Strengthen fields
+	"pending_read_mems" and "pending_write_mems" from rtx to
+	rtx_expr_list *.
+
+	* dwarf2out.c (decl_piece_varloc_ptr): Strengthen return type from
+	rtx to rtx_expr_list *.
+	* lists.c (alloc_INSN_LIST): Likewise, also for local "r".
+	(free_EXPR_LIST_list): Strengthen param "listp" from rtx * to
+	rtx_expr_list **.
+	(remove_free_EXPR_LIST_node): Likewise.  Strengthen local "node"
+	from rtx to rtx_expr_list *.
+	* loop-iv.c (simplify_using_initial_values): Strengthen local
+	"cond_list" from rtx to rtx_expr_list *, and locals "pnode",
+	"pnote_next" from rtx * to rtx_expr_list **.
+	* sched-deps.c (remove_from_both_dependence_lists):  Strengthen
+	param "exprp" from rtx * to rtx_expr_list **.
+	(add_insn_mem_dependence): Strengthen local "mem_list" from
+	rtx * to rtx_expr_list **.  Strengthen local "mem_node" from rtx
+	to rtx_expr_list *.
+	* sched-rgn.c (concat_insn_mem_list): Strengthen param "copy_mems"
+	and local "new_mems" from rtx to rtx_expr_list *.  Strengthen
+	param "old_mems_p" from rtx * to rtx_expr_list **.
+	* var-tracking.c (struct adjust_mem_data): Strengthen field
+	"side_effects" from rtx to rtx_expr_list *.
+	(adjust_insn): Replace NULL_RTX with NULL when assigning to
+	rtx_expr_list *.
+	(prepare_call_arguments): Likewise.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.h (struct rtl_data): Strengthen field
 	"x_stack_slot_list" from rtx to rtx_expr_list *.
 

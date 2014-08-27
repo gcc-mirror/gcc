@@ -240,8 +240,8 @@ static void add_branch_dependences (rtx_insn *, rtx_insn *);
 static void compute_block_dependences (int);
 
 static void schedule_region (int);
-static void concat_insn_mem_list (rtx_insn_list *, rtx,
-				  rtx_insn_list **, rtx *);
+static void concat_insn_mem_list (rtx_insn_list *, rtx_expr_list *,
+				  rtx_insn_list **, rtx_expr_list **);
 static void propagate_deps (int, struct deps_desc *);
 static void free_pending_lists (void);
 
@@ -2585,19 +2585,20 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
 static struct deps_desc *bb_deps;
 
 static void
-concat_insn_mem_list (rtx_insn_list *copy_insns, rtx copy_mems,
+concat_insn_mem_list (rtx_insn_list *copy_insns,
+		      rtx_expr_list *copy_mems,
 		      rtx_insn_list **old_insns_p,
-		      rtx *old_mems_p)
+		      rtx_expr_list **old_mems_p)
 {
   rtx_insn_list *new_insns = *old_insns_p;
-  rtx new_mems = *old_mems_p;
+  rtx_expr_list *new_mems = *old_mems_p;
 
   while (copy_insns)
     {
       new_insns = alloc_INSN_LIST (copy_insns->insn (), new_insns);
-      new_mems = alloc_EXPR_LIST (VOIDmode, XEXP (copy_mems, 0), new_mems);
+      new_mems = alloc_EXPR_LIST (VOIDmode, copy_mems->element (), new_mems);
       copy_insns = copy_insns->next ();
-      copy_mems = XEXP (copy_mems, 1);
+      copy_mems = copy_mems->next ();
     }
 
   *old_insns_p = new_insns;

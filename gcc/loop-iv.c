@@ -1873,7 +1873,8 @@ static void
 simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 {
   bool expression_valid;
-  rtx head, tail, cond_list, last_valid_expr;
+  rtx head, tail, last_valid_expr;
+  rtx_expr_list *cond_list;
   rtx_insn *insn;
   rtx neutral, aggr;
   regset altered, this_altered;
@@ -1951,7 +1952,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
   expression_valid = true;
   last_valid_expr = *expr;
-  cond_list = NULL_RTX;
+  cond_list = NULL;
   while (1)
     {
       insn = BB_END (e->src);
@@ -2003,7 +2004,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
 	  if (suitable_set_for_replacement (insn, &dest, &src))
 	    {
-	      rtx *pnote, *pnote_next;
+	      rtx_expr_list **pnote, **pnote_next;
 
 	      replace_in_expr (expr, dest, src);
 	      if (CONSTANT_P (*expr))
@@ -2014,7 +2015,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 		  rtx note = *pnote;
 		  rtx old_cond = XEXP (note, 0);
 
-		  pnote_next = &XEXP (note, 1);
+		  pnote_next = (rtx_expr_list **)&XEXP (note, 1);
 		  replace_in_expr (&XEXP (note, 0), dest, src);
 
 		  /* We can no longer use a condition that has been simplified
@@ -2034,7 +2035,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	    }
 	  else
 	    {
-	      rtx *pnote, *pnote_next;
+	      rtx_expr_list **pnote, **pnote_next;
 
 	      /* If we did not use this insn to make a replacement, any overlap
 		 between stores in this insn and our expression will cause the
@@ -2048,7 +2049,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 		  rtx note = *pnote;
 		  rtx old_cond = XEXP (note, 0);
 
-		  pnote_next = &XEXP (note, 1);
+		  pnote_next = (rtx_expr_list **)&XEXP (note, 1);
 		  if (for_each_rtx (&old_cond, altered_reg_used, this_altered))
 		    {
 		      *pnote = *pnote_next;

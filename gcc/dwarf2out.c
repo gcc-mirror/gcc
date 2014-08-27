@@ -5024,7 +5024,7 @@ decl_piece_varloc_ptr (rtx piece)
 /* Create an EXPR_LIST for location note LOC_NOTE covering BITSIZE bits.
    Next is the chain of following piece nodes.  */
 
-static rtx
+static rtx_expr_list *
 decl_piece_node (rtx loc_note, HOST_WIDE_INT bitsize, rtx next)
 {
   if (bitsize <= (int) MAX_MACHINE_MODE)
