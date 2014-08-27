@@ -409,6 +409,13 @@ gen_raw_REG (enum machine_mode mode, int regno)
    functions do the raw handling.  If you add to this list, modify
    special_rtx in gengenrtl.c as well.  */
 
+rtx_insn_list *
+gen_rtx_INSN_LIST (enum machine_mode mode, rtx insn, rtx insn_list)
+{
+  return as_a <rtx_insn_list *> (gen_rtx_fmt_ue (INSN_LIST, mode, insn,
+						 insn_list));
+}
+
 rtx
 gen_rtx_CONST_INT (enum machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 {
