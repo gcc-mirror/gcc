@@ -235,6 +235,10 @@
 (define_mode_iterator VF_512
   [V16SF V8DF])
 
+(define_mode_iterator VI48_AVX512VL
+  [V16SI (V8SI  "TARGET_AVX512VL") (V4SI  "TARGET_AVX512VL")
+   V8DI  (V4DI  "TARGET_AVX512VL") (V2DI  "TARGET_AVX512VL")])
+
 (define_mode_iterator VF2_AVX512VL
   [V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
@@ -259,9 +263,13 @@
 (define_mode_iterator VI1
   [(V32QI "TARGET_AVX") V16QI])
 
-(define_mode_iterator VI_UNALIGNED_LOADSTORE
-  [(V32QI "TARGET_AVX") V16QI
-   (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F")])
+(define_mode_iterator VI_ULOADSTORE_BW_AVX512VL
+  [V64QI
+   V32HI (V8HI "TARGET_AVX512VL") (V16HI "TARGET_AVX512VL")])
+
+(define_mode_iterator VI_ULOADSTORE_F_AVX512VL
+  [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
 
 ;; All DImode vector integer modes
 (define_mode_iterator VI8
@@ -1167,18 +1175,18 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+/* For AVX, normal *mov<mode>_internal pattern will handle unaligned loads
+   just fine if misaligned_operand is true, and without the UNSPEC it can
+   be combined with arithmetic instructions.  If misaligned_operand is
+   false, still emit UNSPEC_LOADU insn to honor user's request for
+   misaligned load.  */
 (define_expand "<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
-  [(set (match_operand:VI_UNALIGNED_LOADSTORE 0 "register_operand")
-	(unspec:VI_UNALIGNED_LOADSTORE
-	  [(match_operand:VI_UNALIGNED_LOADSTORE 1 "nonimmediate_operand")]
+  [(set (match_operand:VI1 0 "register_operand")
+	(unspec:VI1
+	  [(match_operand:VI1 1 "nonimmediate_operand")]
 	  UNSPEC_LOADU))]
-  "TARGET_SSE2 && <mask_mode512bit_condition>"
+  "TARGET_SSE2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
 {
-  /* For AVX, normal *mov<mode>_internal pattern will handle unaligned loads
-     just fine if misaligned_operand is true, and without the UNSPEC it can
-     be combined with arithmetic instructions.  If misaligned_operand is
-     false, still emit UNSPEC_LOADU insn to honor user's request for
-     misaligned load.  */
   if (TARGET_AVX
       && misaligned_operand (operands[1], <MODE>mode))
     {
@@ -1192,25 +1200,61 @@
     }
 })
 
-(define_insn "*<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
-  [(set (match_operand:VI_UNALIGNED_LOADSTORE 0 "register_operand" "=v")
-	(unspec:VI_UNALIGNED_LOADSTORE
-	  [(match_operand:VI_UNALIGNED_LOADSTORE 1 "nonimmediate_operand" "vm")]
+(define_expand "<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
+  [(set (match_operand:VI_ULOADSTORE_BW_AVX512VL 0 "register_operand")
+	(unspec:VI_ULOADSTORE_BW_AVX512VL
+	  [(match_operand:VI_ULOADSTORE_BW_AVX512VL 1 "nonimmediate_operand")]
 	  UNSPEC_LOADU))]
-  "TARGET_SSE2 && <mask_mode512bit_condition>"
+  "TARGET_AVX512BW"
+{
+  if (misaligned_operand (operands[1], <MODE>mode))
+    {
+      rtx src = operands[1];
+      if (<mask_applied>)
+	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
+				 operands[2 * <mask_applied>],
+				 operands[3 * <mask_applied>]);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
+      DONE;
+    }
+})
+
+(define_expand "<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
+  [(set (match_operand:VI_ULOADSTORE_F_AVX512VL 0 "register_operand")
+	(unspec:VI_ULOADSTORE_F_AVX512VL
+	  [(match_operand:VI_ULOADSTORE_F_AVX512VL 1 "nonimmediate_operand")]
+	  UNSPEC_LOADU))]
+  "TARGET_AVX512F"
+{
+  if (misaligned_operand (operands[1], <MODE>mode))
+    {
+      rtx src = operands[1];
+      if (<mask_applied>)
+	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
+				 operands[2 * <mask_applied>],
+				 operands[3 * <mask_applied>]);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
+      DONE;
+    }
+})
+
+(define_insn "*<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
+  [(set (match_operand:VI1 0 "register_operand" "=v")
+	(unspec:VI1
+	  [(match_operand:VI1 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_LOADU))]
+  "TARGET_SSE2 && <mask_avx512vl_condition> && <mask_avx512bw_condition>"
 {
   switch (get_attr_mode (insn))
     {
     case MODE_V8SF:
     case MODE_V4SF:
       return "%vmovups\t{%1, %0|%0, %1}";
-    case MODE_XI:
-      if (<MODE>mode == V8DImode)
-	return "vmovdqu64\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
-      else
-	return "vmovdqu32\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
     default:
-      return "%vmovdqu\t{%1, %0|%0, %1}";
+      if (!(TARGET_AVX512VL && TARGET_AVX512BW))
+	return "%vmovdqu\t{%1, %0|%0, %1}";
+      else
+	return "vmovdqu<ssescalarsize>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
     }
 }
   [(set_attr "type" "ssemov")
@@ -1233,10 +1277,34 @@
 	      ]
 	      (const_string "<sseinsnmode>")))])
 
+(define_insn "*<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
+  [(set (match_operand:VI_ULOADSTORE_BW_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI_ULOADSTORE_BW_AVX512VL
+	  [(match_operand:VI_ULOADSTORE_BW_AVX512VL 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_LOADU))]
+  "TARGET_AVX512BW"
+  "vmovdqu<ssescalarsize>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
+  [(set_attr "type" "ssemov")
+   (set_attr "movu" "1")
+   (set_attr "ssememalign" "8")
+   (set_attr "prefix" "maybe_evex")])
+
+(define_insn "*<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
+  [(set (match_operand:VI_ULOADSTORE_F_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI_ULOADSTORE_F_AVX512VL
+	  [(match_operand:VI_ULOADSTORE_F_AVX512VL 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_LOADU))]
+  "TARGET_AVX512F"
+  "vmovdqu<ssescalarsize>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
+  [(set_attr "type" "ssemov")
+   (set_attr "movu" "1")
+   (set_attr "ssememalign" "8")
+   (set_attr "prefix" "maybe_evex")])
+
 (define_insn "<sse2_avx_avx512f>_storedqu<mode>"
-  [(set (match_operand:VI_UNALIGNED_LOADSTORE 0 "memory_operand" "=m")
-	(unspec:VI_UNALIGNED_LOADSTORE
-	  [(match_operand:VI_UNALIGNED_LOADSTORE 1 "register_operand" "v")]
+  [(set (match_operand:VI1 0 "memory_operand" "=m")
+	(unspec:VI1
+	  [(match_operand:VI1 1 "register_operand" "v")]
 	  UNSPEC_STOREU))]
   "TARGET_SSE2"
 {
@@ -1246,13 +1314,16 @@
     case MODE_V8SF:
     case MODE_V4SF:
       return "%vmovups\t{%1, %0|%0, %1}";
-    case MODE_XI:
-      if (<MODE>mode == V8DImode)
-	return "vmovdqu64\t{%1, %0|%0, %1}";
-      else
-	return "vmovdqu32\t{%1, %0|%0, %1}";
     default:
-      return "%vmovdqu\t{%1, %0|%0, %1}";
+      switch (<MODE>mode)
+      {
+      case V32QImode:
+      case V16QImode:
+	if (!(TARGET_AVX512VL && TARGET_AVX512BW))
+	  return "%vmovdqu\t{%1, %0|%0, %1}";
+      default:
+	  return "vmovdqu<ssescalarsize>\t{%1, %0|%0, %1}";
+      }
     }
 }
   [(set_attr "type" "ssemov")
@@ -1276,21 +1347,56 @@
 	      ]
 	      (const_string "<sseinsnmode>")))])
 
-(define_insn "avx512f_storedqu<mode>_mask"
-  [(set (match_operand:VI48_512 0 "memory_operand" "=m")
-	(vec_merge:VI48_512
-	  (unspec:VI48_512
-	    [(match_operand:VI48_512 1 "register_operand" "v")]
+(define_insn "<sse2_avx_avx512f>_storedqu<mode>"
+  [(set (match_operand:VI_ULOADSTORE_BW_AVX512VL 0 "memory_operand" "=m")
+	(unspec:VI_ULOADSTORE_BW_AVX512VL
+	  [(match_operand:VI_ULOADSTORE_BW_AVX512VL 1 "register_operand" "v")]
+	  UNSPEC_STOREU))]
+  "TARGET_AVX512BW"
+  "vmovdqu<ssescalarsize>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "movu" "1")
+   (set_attr "ssememalign" "8")
+   (set_attr "prefix" "maybe_evex")])
+
+(define_insn "<sse2_avx_avx512f>_storedqu<mode>"
+  [(set (match_operand:VI_ULOADSTORE_F_AVX512VL 0 "memory_operand" "=m")
+	(unspec:VI_ULOADSTORE_F_AVX512VL
+	  [(match_operand:VI_ULOADSTORE_F_AVX512VL 1 "register_operand" "v")]
+	  UNSPEC_STOREU))]
+  "TARGET_AVX512F"
+  "vmovdqu<ssescalarsize>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "movu" "1")
+   (set_attr "ssememalign" "8")
+   (set_attr "prefix" "maybe_vex")])
+
+(define_insn "<avx512>_storedqu<mode>_mask"
+  [(set (match_operand:VI48_AVX512VL 0 "memory_operand" "=m")
+	(vec_merge:VI48_AVX512VL
+	  (unspec:VI48_AVX512VL
+	    [(match_operand:VI48_AVX512VL 1 "register_operand" "v")]
 	    UNSPEC_STOREU)
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))]
   "TARGET_AVX512F"
-{
-  if (<MODE>mode == V8DImode)
-    return "vmovdqu64\t{%1, %0%{%2%}|%0%{%2%}, %1}";
-  else
-    return "vmovdqu32\t{%1, %0%{%2%}|%0%{%2%}, %1}";
-}
+  "vmovdqu<ssescalarsize>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "movu" "1")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "<avx512>_storedqu<mode>_mask"
+  [(set (match_operand:VI12_AVX512VL 0 "memory_operand" "=m")
+	(vec_merge:VI12_AVX512VL
+	  (unspec:VI12_AVX512VL
+	    [(match_operand:VI12_AVX512VL 1 "register_operand" "v")]
+	    UNSPEC_STOREU)
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))]
+  "TARGET_AVX512BW"
+  "vmovdqu<ssescalarsize>\t{%1, %0%{%2%}|%0%{%2%}, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "movu" "1")
    (set_attr "memory" "store")
