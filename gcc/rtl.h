@@ -2828,7 +2828,7 @@ extern unsigned hash_rtx_cb (const_rtx, enum machine_mode, int *, int *,
 extern rtx regno_use_in (unsigned int, rtx);
 extern int auto_inc_p (const_rtx);
 extern int in_expr_list_p (const_rtx, const_rtx);
-extern void remove_node_from_expr_list (const_rtx, rtx *);
+extern void remove_node_from_expr_list (const_rtx, rtx_expr_list **);
 extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx_insn *find_first_parameter_load (rtx, rtx);
 extern bool keep_with_call_p (const_rtx);
