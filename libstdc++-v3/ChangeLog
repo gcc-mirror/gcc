@@ -1,3 +1,10 @@
+2014-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62159
+	* include/Makefile.am (install-freestanding-headers): Add missing
+	C++11 headers.
+	* include/Makefile.in: Regenerate.
+
 2014-08-21  Tony Wang  <tony.wang@arm.com>
 
 	* testsuite/18_support/nested_exception/62154.cc: Disable when the
