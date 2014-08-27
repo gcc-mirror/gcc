@@ -3928,13 +3928,12 @@ mark_constants (rtx_insn *insn)
   /* Insns may appear inside a SEQUENCE.  Only check the patterns of
      insns, not any notes that may be attached.  We don't want to mark
      a constant just because it happens to appear in a REG_EQUIV note.  */
-  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
     {
-      rtx seq = PATTERN (insn);
-      int i, n = XVECLEN (seq, 0);
+      int i, n = seq->len ();
       for (i = 0; i < n; ++i)
 	{
-	  rtx subinsn = XVECEXP (seq, 0, i);
+	  rtx subinsn = seq->element (i);
 	  if (INSN_P (subinsn))
 	    for_each_rtx (&PATTERN (subinsn), mark_constant, NULL);
 	}
