@@ -718,6 +718,12 @@
    (V16SF "ss") (V8SF "ss") (V4SF "ss")
    (V8DF "sd")  (V4DF "sd") (V2DF "sd")])
 
+;; Tie mode of assembler operand to mode iterator
+(define_mode_attr concat_tg_mode
+  [(V32QI "t") (V16HI "t") (V8SI "t") (V4DI "t") (V8SF "t") (V4DF "t")
+   (V64QI "g") (V32HI "g") (V16SI "g") (V8DI "g") (V16SF "g") (V8DF "g")])
+
+
 ;; Include define_subst patterns for instructions with mask
 (include "subst.md")
 
@@ -14702,7 +14708,7 @@
          (match_operand:<64x2mode> 1 "nonimmediate_operand" "v,m")))]
   "TARGET_AVX512DQ"
   "@
-   vshuf<shuffletype>64x2\t{$0x0, %g1, %g1, %0<mask_operand2>|%0<mask_operand2>, %g1, %g1, 0x0}
+   vshuf<shuffletype>64x2\t{$0x0, %<concat_tg_mode>1, %<concat_tg_mode>1, %0<mask_operand2>|%0<mask_operand2>, %<concat_tg_mode>1, %<concat_tg_mode>1, 0x0}
    vbroadcast<shuffletype>64x2\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
@@ -15447,11 +15453,6 @@
   [(set_attr "type" "sseishft")
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
-
-;; For avx_vec_concat<mode> insn pattern
-(define_mode_attr concat_tg_mode
-  [(V32QI "t") (V16HI "t") (V8SI "t") (V4DI "t") (V8SF "t") (V4DF "t")
-   (V64QI "g") (V32HI "g") (V16SI "g") (V8DI "g") (V16SF "g") (V8DF "g")])
 
 (define_insn "avx_vec_concat<mode>"
   [(set (match_operand:V_256_512 0 "register_operand" "=x,x")
