@@ -578,8 +578,9 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
       break;
     case SEQUENCE:
       {
+	const rtx_sequence *seq = as_a <const rtx_sequence *> (x);
 	pp_string (pp, "sequence{");
-	if (INSN_P (XVECEXP (x, 0, 0)))
+	if (INSN_P (seq->element (0)))
 	  {
 	    /* Print the sequence insns indented.  */
 	    const char * save_print_rtx_head = print_rtx_head;
@@ -591,16 +592,16 @@ print_pattern (pretty_printer *pp, const_rtx x, int verbose)
 		      sizeof (indented_print_rtx_head),
 		      "%s     ", print_rtx_head);
 	    print_rtx_head = indented_print_rtx_head;
-	    for (int i = 0; i < XVECLEN (x, 0); i++)
-	      print_insn_with_notes (pp, XVECEXP (x, 0, i));
+	    for (int i = 0; i < seq->len (); i++)
+	      print_insn_with_notes (pp, seq->insn (i));
 	    pp_printf (pp, "%s      ", save_print_rtx_head);
 	    print_rtx_head = save_print_rtx_head;
 	  }
 	else
 	  {
-	    for (int i = 0; i < XVECLEN (x, 0); i++)
+	    for (int i = 0; i < seq->len (); i++)
 	      {
-		print_pattern (pp, XVECEXP (x, 0, i), verbose);
+		print_pattern (pp, seq->element (i), verbose);
 		pp_semicolon (pp);
 	      }
 	  }
