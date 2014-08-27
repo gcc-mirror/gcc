@@ -2134,26 +2134,26 @@ in_expr_list_p (const_rtx listp, const_rtx node)
    A simple equality test is used to determine if NODE matches.  */
 
 void
-remove_node_from_expr_list (const_rtx node, rtx *listp)
+remove_node_from_expr_list (const_rtx node, rtx_expr_list **listp)
 {
-  rtx temp = *listp;
+  rtx_expr_list *temp = *listp;
   rtx prev = NULL_RTX;
 
   while (temp)
     {
-      if (node == XEXP (temp, 0))
+      if (node == temp->element ())
 	{
 	  /* Splice the node out of the list.  */
 	  if (prev)
-	    XEXP (prev, 1) = XEXP (temp, 1);
+	    XEXP (prev, 1) = temp->next ();
 	  else
-	    *listp = XEXP (temp, 1);
+	    *listp = temp->next ();
 
 	  return;
 	}
 
       prev = temp;
-      temp = XEXP (temp, 1);
+      temp = temp->next ();
     }
 }
 

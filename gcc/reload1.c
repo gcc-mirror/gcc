@@ -3915,9 +3915,9 @@ set_initial_label_offsets (void)
     if (x->element ())
       set_label_offsets (x->element (), NULL, 1);
 
-  for (rtx x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
-    if (XEXP (x, 0))
-      set_label_offsets (XEXP (x, 0), NULL, 1);
+  for (rtx_expr_list *x = nonlocal_goto_handler_labels; x; x = x->next ())
+    if (x->element ())
+      set_label_offsets (x->element (), NULL, 1);
 
   for_each_eh_label (set_initial_eh_label_offset);
 }

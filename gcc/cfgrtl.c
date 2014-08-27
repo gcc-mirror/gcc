@@ -4216,7 +4216,7 @@ cfg_layout_duplicate_bb (basic_block bb)
 void
 cfg_layout_initialize (unsigned int flags)
 {
-  rtx x;
+  rtx_expr_list *x;
   basic_block bb;
 
   /* Once bb partitioning is complete, cfg layout mode should not be
@@ -4235,9 +4235,9 @@ cfg_layout_initialize (unsigned int flags)
   record_effective_endpoints ();
 
   /* Make sure that the targets of non local gotos are marked.  */
-  for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
+  for (x = nonlocal_goto_handler_labels; x; x = x->next ())
     {
-      bb = BLOCK_FOR_INSN (XEXP (x, 0));
+      bb = BLOCK_FOR_INSN (x->element ());
       bb->flags |= BB_NON_LOCAL_GOTO_TARGET;
     }
 

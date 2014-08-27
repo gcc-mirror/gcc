@@ -1,5 +1,26 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* function.h (struct rtl_data): Strengthen field
+	x_nonlocal_goto_handler_labels from rtx to rtx_expr_list *.
+	* rtl.h (remove_node_from_expr_list): Strengthen second param from
+	rtx * to rtx_expr_list **.
+
+	* cfgbuild.c (make_edges): In loop over
+	nonlocal_goto_handler_labels, strengthen local "x" from rtx to
+	rtx_expr_list *, and use methods of the latter class to clarify
+	the code.
+	* cfgrtl.c (cfg_layout_initialize): Strengthen local "x" from rtx to
+	rtx_expr_list *, and use methods of the latter class to clarify
+	the code.
+	* dwarf2cfi.c (create_trace_edges): Likewise for local "lab".
+	* reload1.c (set_initial_label_offsets): Likewise for local "x".
+	* rtlanal.c (remove_node_from_expr_list): Strengthen param "listp"
+	from rtx * to rtx_expr_list **.  Strengthen local "temp" from rtx
+	to rtx_expr_list *.  Use methods of the latter class to clarify
+	the code.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.h (struct expr_status): Strengthen field
 	"x_forced_labels" from rtx to rtx_expr_list *.
 

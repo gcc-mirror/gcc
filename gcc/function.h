@@ -266,7 +266,7 @@ struct GTY(()) rtl_data {
 
   /* List (chain of EXPR_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
-  rtx x_nonlocal_goto_handler_labels;
+  rtx_expr_list *x_nonlocal_goto_handler_labels;
 
   /* Label that will go on function epilogue.
      Jumping to this label serves as a "return" instruction
