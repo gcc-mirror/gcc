@@ -72,9 +72,9 @@ struct st_expr
   /* List of registers mentioned by the mem.  */
   rtx pattern_regs;
   /* INSN list of stores that are locally anticipatable.  */
-  rtx antic_stores;
+  rtx_insn_list *antic_stores;
   /* INSN list of stores that are locally available.  */
-  rtx avail_stores;
+  rtx_insn_list *avail_stores;
   /* Next in the list.  */
   struct st_expr * next;
   /* Store ID in the dataflow bitmaps.  */
@@ -156,8 +156,8 @@ st_expr_entry (rtx x)
   ptr->next         = store_motion_mems;
   ptr->pattern      = x;
   ptr->pattern_regs = NULL_RTX;
-  ptr->antic_stores = NULL_RTX;
-  ptr->avail_stores = NULL_RTX;
+  ptr->antic_stores = NULL;
+  ptr->avail_stores = NULL;
   ptr->reaching_reg = NULL_RTX;
   ptr->index        = 0;
   ptr->hash_index   = hash;
@@ -540,7 +540,7 @@ static void
 find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
 {
   struct st_expr * ptr;
-  rtx dest, set, tmp;
+  rtx dest, set;
   int check_anticipatable, check_available;
   basic_block bb = BLOCK_FOR_INSN (insn);
 
@@ -587,15 +587,16 @@ find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
     check_anticipatable = 1;
   else
     {
-      tmp = XEXP (ptr->antic_stores, 0);
+      rtx_insn *tmp = ptr->antic_stores->insn ();
       if (tmp != NULL_RTX
 	  && BLOCK_FOR_INSN (tmp) != bb)
 	check_anticipatable = 1;
     }
   if (check_anticipatable)
     {
+      rtx_insn *tmp;
       if (store_killed_before (dest, ptr->pattern_regs, insn, bb, regs_set_before))
-	tmp = NULL_RTX;
+	tmp = NULL;
       else
 	tmp = insn;
       ptr->antic_stores = alloc_INSN_LIST (tmp, ptr->antic_stores);
@@ -609,7 +610,7 @@ find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
     check_available = 1;
   else
     {
-      tmp = XEXP (ptr->avail_stores, 0);
+      rtx_insn *tmp = ptr->avail_stores->insn ();
       if (BLOCK_FOR_INSN (tmp) != bb)
 	check_available = 1;
     }
@@ -619,6 +620,7 @@ find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
 	 failed last time.  */
       if (LAST_AVAIL_CHECK_FAILURE (ptr))
 	{
+	  rtx_insn *tmp;
 	  for (tmp = BB_END (bb);
 	       tmp != insn && tmp != LAST_AVAIL_CHECK_FAILURE (ptr);
 	       tmp = PREV_INSN (tmp))
@@ -646,7 +648,7 @@ compute_store_table (void)
   unsigned regno;
 #endif
   rtx_insn *insn;
-  rtx tmp;
+  rtx_insn *tmp;
   df_ref def;
   int *last_set_in, *already_set;
   struct st_expr * ptr, **prev_next_ptr_ptr;
@@ -701,8 +703,8 @@ compute_store_table (void)
 	{
 	  LAST_AVAIL_CHECK_FAILURE (ptr) = NULL_RTX;
 	  if (ptr->antic_stores
-	      && (tmp = XEXP (ptr->antic_stores, 0)) == NULL_RTX)
-	    ptr->antic_stores = XEXP (ptr->antic_stores, 1);
+	      && (tmp = ptr->antic_stores->insn ()) == NULL_RTX)
+	    ptr->antic_stores = ptr->antic_stores->next ();
 	}
     }
 

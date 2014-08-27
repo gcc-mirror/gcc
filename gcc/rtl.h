@@ -2776,16 +2776,16 @@ extern void subreg_get_info (unsigned int, enum machine_mode,
 /* lists.c */
 
 extern void free_EXPR_LIST_list (rtx *);
-extern void free_INSN_LIST_list (rtx *);
+extern void free_INSN_LIST_list (rtx_insn_list **);
 extern void free_EXPR_LIST_node (rtx);
 extern void free_INSN_LIST_node (rtx);
-extern rtx alloc_INSN_LIST (rtx, rtx);
-extern rtx copy_INSN_LIST (rtx);
-extern rtx concat_INSN_LIST (rtx, rtx);
+extern rtx_insn_list *alloc_INSN_LIST (rtx, rtx);
+extern rtx_insn_list *copy_INSN_LIST (rtx_insn_list *);
+extern rtx_insn_list *concat_INSN_LIST (rtx_insn_list *, rtx_insn_list *);
 extern rtx alloc_EXPR_LIST (int, rtx, rtx);
-extern void remove_free_INSN_LIST_elem (rtx, rtx *);
+extern void remove_free_INSN_LIST_elem (rtx_insn *, rtx_insn_list **);
 extern rtx remove_list_elem (rtx, rtx *);
-extern rtx remove_free_INSN_LIST_node (rtx *);
+extern rtx_insn *remove_free_INSN_LIST_node (rtx_insn_list **);
 extern rtx remove_free_EXPR_LIST_node (rtx *);
 
 

@@ -318,7 +318,7 @@ bool adding_bb_to_current_region_p = true;
    the base maximal time of functional unit reservations and getting a
    result.  This is the longest time an insn may be queued.  */
 
-static rtx *insn_queue;
+static rtx_insn_list **insn_queue;
 static int q_ptr = 0;
 static int q_size = 0;
 #define NEXT_Q(X) (((X)+1) & max_insn_queue_index)
@@ -1475,7 +1475,8 @@ dep_cost_1 (dep_t link, dw_t dw)
 	{
 	  /* This variable is used for backward compatibility with the
 	     targets.  */
-	  rtx dep_cost_rtx_link = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+	  rtx_insn_list *dep_cost_rtx_link =
+	    alloc_INSN_LIST (NULL_RTX, NULL);
 
 	  /* Make it self-cycled, so that if some tries to walk over this
 	     incomplete list he/she will be caught in an endless loop.  */
@@ -2745,7 +2746,7 @@ HAIFA_INLINE static void
 queue_insn (rtx_insn *insn, int n_cycles, const char *reason)
 {
   int next_q = NEXT_Q_AFTER (q_ptr, n_cycles);
-  rtx link = alloc_INSN_LIST (insn, insn_queue[next_q]);
+  rtx_insn_list *link = alloc_INSN_LIST (insn, insn_queue[next_q]);
   int new_tick;
 
   gcc_assert (n_cycles <= max_insn_queue_index);
@@ -4112,7 +4113,7 @@ struct haifa_saved_data
   /* We don't need to save q_ptr, as its value is arbitrary and we can set it
      to 0 when restoring.  */
   int q_size;
-  rtx *insn_queue;
+  rtx_insn_list **insn_queue;
 
   /* Describe pattern replacements that occurred since this backtrack point
      was queued.  */
@@ -4163,7 +4164,7 @@ save_backtrack_point (struct delay_pair *pair,
   save->ready.vec = XNEWVEC (rtx_insn *, ready.veclen);
   memcpy (save->ready.vec, ready.vec, ready.veclen * sizeof (rtx));
 
-  save->insn_queue = XNEWVEC (rtx, max_insn_queue_index + 1);
+  save->insn_queue = XNEWVEC (rtx_insn_list *, max_insn_queue_index + 1);
   save->q_size = q_size;
   for (i = 0; i <= max_insn_queue_index; i++)
     {
@@ -4926,7 +4927,7 @@ static void
 queue_to_ready (struct ready_list *ready)
 {
   rtx_insn *insn;
-  rtx link;
+  rtx_insn_list *link;
   rtx skip_insn;
 
   q_ptr = NEXT_Q (q_ptr);
@@ -4940,9 +4941,9 @@ queue_to_ready (struct ready_list *ready)
 
   /* Add all pending insns that can be scheduled without stalls to the
      ready list.  */
-  for (link = insn_queue[q_ptr]; link; link = XEXP (link, 1))
+  for (link = insn_queue[q_ptr]; link; link = link->next ())
     {
-      insn = as_a <rtx_insn *> (XEXP (link, 0));
+      insn = link->insn ();
       q_size -= 1;
 
       if (sched_verbose >= 2)
@@ -4988,7 +4989,7 @@ queue_to_ready (struct ready_list *ready)
 	{
 	  if ((link = insn_queue[NEXT_Q_AFTER (q_ptr, stalls)]))
 	    {
-	      for (; link; link = XEXP (link, 1))
+	      for (; link; link = link->next ())
 		{
 		  insn = as_a <rtx_insn *> (XEXP (link, 0));
 		  q_size -= 1;
@@ -5082,9 +5083,9 @@ static int
 early_queue_to_ready (state_t state, struct ready_list *ready)
 {
   rtx_insn *insn;
-  rtx link;
-  rtx next_link;
-  rtx prev_link;
+  rtx_insn_list *link;
+  rtx_insn_list *next_link;
+  rtx_insn_list *prev_link;
   bool move_to_ready;
   int cost;
   state_t temp_state = alloca (dfa_state_size);
@@ -5118,8 +5119,8 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
 	  prev_link = 0;
 	  while (link)
 	    {
-	      next_link = XEXP (link, 1);
-	      insn = as_a <rtx_insn *> (XEXP (link, 0));
+	      next_link = link->next ();
+	      insn = link->insn ();
 	      if (insn && sched_verbose > 6)
 		print_rtl_single (sched_dump, insn);
 
@@ -6038,7 +6039,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
   q_ptr = 0;
   q_size = 0;
 
-  insn_queue = XALLOCAVEC (rtx, max_insn_queue_index + 1);
+  insn_queue = XALLOCAVEC (rtx_insn_list *, max_insn_queue_index + 1);
   memset (insn_queue, 0, (max_insn_queue_index + 1) * sizeof (rtx));
 
   /* Start just before the beginning of time.  */
@@ -6503,11 +6504,11 @@ schedule_block (basic_block *target_bb, state_t init_state)
 	}
       for (i = 0; i <= max_insn_queue_index; i++)
 	{
-	  rtx link;
+	  rtx_insn_list *link;
 	  while ((link = insn_queue[i]) != NULL)
 	    {
-	      rtx_insn *x = as_a <rtx_insn *> (XEXP (link, 0));
-	      insn_queue[i] = XEXP (link, 1);
+	      rtx_insn *x = link->insn ();
+	      insn_queue[i] = link->next ();
 	      QUEUE_INDEX (x) = QUEUE_NOWHERE;
 	      free_INSN_LIST_node (link);
 	      resolve_dependencies (x);
@@ -7424,7 +7425,7 @@ add_to_speculative_block (rtx_insn *insn)
   ds_t ts;
   sd_iterator_def sd_it;
   dep_t dep;
-  rtx twins = NULL;
+  rtx_insn_list *twins = NULL;
   rtx_vec_t priorities_roots;
 
   ts = TODO_SPEC (insn);
@@ -7535,20 +7536,21 @@ add_to_speculative_block (rtx_insn *insn)
      because that would make TWINS appear in the INSN_BACK_DEPS (INSN).  */
   while (twins)
     {
-      rtx twin;
+      rtx_insn *twin;
+      rtx_insn_list *next_node;
 
-      twin = XEXP (twins, 0);
+      twin = twins->insn ();
 
       {
 	dep_def _new_dep, *new_dep = &_new_dep;
 
-	init_dep (new_dep, insn, as_a <rtx_insn *> (twin), REG_DEP_OUTPUT);
+	init_dep (new_dep, insn, twin, REG_DEP_OUTPUT);
 	sd_add_dep (new_dep, false);
       }
 
-      twin = XEXP (twins, 1);
+      next_node = twins->next ();
       free_INSN_LIST_node (twins);
-      twins = twin;
+      twins = next_node;
     }
 
   calc_priorities (priorities_roots);
@@ -8066,9 +8068,9 @@ static void
 fix_recovery_deps (basic_block rec)
 {
   rtx_insn *note, *insn, *jump;
-  rtx ready_list = 0;
+  rtx_insn_list *ready_list = 0;
   bitmap_head in_ready;
-  rtx link;
+  rtx_insn_list *link;
 
   bitmap_initialize (&in_ready, 0);
 
@@ -8111,8 +8113,8 @@ fix_recovery_deps (basic_block rec)
   bitmap_clear (&in_ready);
 
   /* Try to add instructions to the ready or queue list.  */
-  for (link = ready_list; link; link = XEXP (link, 1))
-    try_ready (as_a <rtx_insn *> (XEXP (link, 0)));
+  for (link = ready_list; link; link = link->next ())
+    try_ready (link->insn ());
   free_INSN_LIST_list (&ready_list);
 
   /* Fixing jump's dependences.  */

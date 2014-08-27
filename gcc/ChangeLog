@@ -1,5 +1,108 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (free_INSN_LIST_list): Strengthen param from rtx * to
+	rtx_insn_list **.
+	(alloc_INSN_LIST): Strengthen return type from rtx to
+	rtx_insn_list *.
+	(copy_INSN_LIST): Likewise for return type and param.
+	(concat_INSN_LIST): Likewise for both params and return type.
+	(remove_free_INSN_LIST_elem): Strenghten first param from rtx to
+	rtx_insn *.  Strengthen second param from rtx * to rtx_insn_list **.
+	(remove_free_INSN_LIST_node): Strenghten return type from rtx to
+	rtx_insn *.  Strengthen param from rtx * to rtx_insn_list **.
+
+	* sched-int.h (struct deps_reg): Strengthen fields "uses", "sets",
+	"implicit_sets", "control_uses", "clobbers" from rtx to
+	rtx_insn_list *.
+	(struct deps_desc): Likewise for fields "pending_read_insns",
+	"pending_write_insns", "pending_jump_insns",
+	"last_pending_memory_flush", "last_function_call",
+	"last_function_call_may_noreturn", "sched_before_next_call",
+	"sched_before_next_jump".
+	(struct _haifa_deps_insn_data): Likewise for field "cond_deps".
+	(remove_from_deps): Strengthen second param from rtx to rtx_insn *.
+
+	* gcse.c (struct ls_expr): Strengthen fields "loads" and "stores"
+	from rtx to rtx_insn_list *.
+	(ldst_entry): Replace use of NULL_RTX with NULL when dealing with
+	rtx_insn_list *.
+
+	* haifa-sched.c (insn_queue): Strengthen this variable from rtx *
+	to rtx_insn_list **.
+	(dep_cost_1): Strengthen local "dep_cost_rtx_link" from rtx to
+	rtx_insn_list *.
+	(queue_insn): Likewise for local "link".
+	(struct haifa_saved_data): Strengthen field "insn_queue" from
+	rtx * to rtx_insn_list **.
+	(save_backtrack_point): Update allocation of save->insn_queue to
+	reflect the strengthening of elements from rtx to rtx_insn_list *.
+	(queue_to_ready): Strengthen local "link" from rtx to
+	rtx_insn_list *; use methods "next" and "insn" when traversing the
+	list.
+	(early_queue_to_ready): Likewise for locals "link", "next_link",
+	"prev_link".
+	(schedule_block): Update allocation of insn_queue to reflect the
+	strengthening of elements from rtx to rtx_insn_list *.  Strengthen
+	local "link" from rtx to rtx_insn_list *, and use methods when
+	working it.
+	(add_to_speculative_block): Strengthen locals "twins" and
+	"next_node" from rtx to rtx_insn_list *, and use methods when
+	working with them.  Strengthen local "twin" from rtx to
+	rtx_insn *, eliminating a checked cast.
+	(fix_recovery_deps): Strengthen locals "ready_list" and "link"
+	from rtx to rtx_insn_list *, and use methods when working with
+	them.
+
+	* lists.c (alloc_INSN_LIST): Strengthen return type and local "r"
+	from rtx to rtx_insn_list *, adding a checked cast.
+	(free_INSN_LIST_list): Strengthen param "listp" from rtx * to
+	rtx_insn_list **.
+	(copy_INSN_LIST): Strengthen return type and locals "new_queue",
+	"newlink" from rtx to rtx_insn_list *.  Strengthen local
+	"pqueue" from rtx * to rtx_insn_list **.  Strengthen local "x"
+	from rtx to rtx_insn *.
+	(concat_INSN_LIST): Strengthen return type and local "new_rtx",
+	from rtx to rtx_insn_list *.  Use methods of the latter class.
+	(remove_free_INSN_LIST_elem): Strengthen param "elem" from rtx to
+	rtx_insn *, and param "listp" from rtx * to rtx_insn_list **.
+	(remove_free_INSN_LIST_node): Strengthen return type and local
+	"elem" from rtx to rtx_insn *.  Strenghten param "listp" from
+	rtx * to rtx_insn_list **.  Strengthen local "node" from rtx to
+	rtx_insn_list *, using "insn" method.
+
+	* sched-deps.c (add_dependence_list):  Strengthen param "list"
+	from rtx to rtx_insn_list *, and use methods when working with it.
+	(add_dependence_list_and_free):  Strengthen param "listp" from
+	rtx * to rtx_insn_list **.
+	(remove_from_dependence_list): Strenghten param "listp" from rtx *
+	to rtx_insn_list **, and use methods when working with *listp.
+	(remove_from_both_dependence_lists): Strengthen param "listp" from
+	rtx * to rtx_insn_list **
+	(add_insn_mem_dependence): Strengthen local "insn_list" from rtx *
+	to rtx_insn_list **.  Eliminate local "link", in favor of two new
+	locals "insn_node" and "mem_node", an rtx_insn_list * and an rtx
+	respectively.
+	(deps_analyze_insn): Split out uses 'f local "t" as an INSN_LIST
+	by introducing local "cond_deps".
+	(remove_from_deps): Strengthen param "insn" from rtx to
+	rtx_insn *.
+
+	* sched-rgn.c (concat_insn_mem_list): Strengthen param
+	"copy_insns" and local "new_insns" from rtx to rtx_insn_list *.
+	Strengthen param "old_insns_p" from rtx * to rtx_insn_list **.
+	Use methods of rtx_insn_list.
+
+	* store-motion.c (struct st_expr): Strengthen fields
+	"antic_stores" and "avail_stores" from rtx to rtx_insn_list *.
+	(st_expr_entry): Replace NULL_RTX with NULL when dealing with
+	rtx_insn_list *.
+	(find_moveable_store): Split out "tmp" into multiple more-tightly
+	scoped locals.  Use methods of rtx_insn_list *.
+	(compute_store_table): Strengthen local "tmp" from rtx to
+	rtx_insn *.  Use methods of rtx_insn_list *.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* coretypes.h (class rtx_insn_list): Add forward declaration.
 	* rtl.h (class rtx_insn_list): New subclass of rtx_def
 	(is_a_helper <rtx_insn_list *>::test): New.

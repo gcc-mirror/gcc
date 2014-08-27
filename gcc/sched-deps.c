@@ -483,9 +483,11 @@ static bool mark_as_hard;
 
 static int deps_may_trap_p (const_rtx);
 static void add_dependence_1 (rtx_insn *, rtx_insn *, enum reg_note);
-static void add_dependence_list (rtx_insn *, rtx, int, enum reg_note, bool);
+static void add_dependence_list (rtx_insn *, rtx_insn_list *, int,
+				 enum reg_note, bool);
 static void add_dependence_list_and_free (struct deps_desc *, rtx_insn *,
-					  rtx *, int, enum reg_note, bool);
+					  rtx_insn_list **, int, enum reg_note,
+					  bool);
 static void delete_all_dependences (rtx);
 static void chain_to_prev_insn (rtx_insn *);
 
@@ -1561,14 +1563,14 @@ add_dependence (rtx_insn *con, rtx_insn *pro, enum reg_note dep_type)
    true if DEP_NONREG should be set on newly created dependencies.  */
 
 static void
-add_dependence_list (rtx_insn *insn, rtx list, int uncond, enum reg_note dep_type,
-		     bool hard)
+add_dependence_list (rtx_insn *insn, rtx_insn_list *list, int uncond,
+		     enum reg_note dep_type, bool hard)
 {
   mark_as_hard = hard;
-  for (; list; list = XEXP (list, 1))
+  for (; list; list = list->next ())
     {
-      if (uncond || ! sched_insns_conditions_mutex_p (insn, XEXP (list, 0)))
-	add_dependence (insn, as_a <rtx_insn *> (XEXP (list, 0)), dep_type);
+      if (uncond || ! sched_insns_conditions_mutex_p (insn, list->insn ()))
+	add_dependence (insn, list->insn (), dep_type);
     }
   mark_as_hard = false;
 }
@@ -1578,7 +1580,8 @@ add_dependence_list (rtx_insn *insn, rtx list, int uncond, enum reg_note dep_typ
    newly created dependencies.  */
 
 static void
-add_dependence_list_and_free (struct deps_desc *deps, rtx_insn *insn, rtx *listp,
+add_dependence_list_and_free (struct deps_desc *deps, rtx_insn *insn,
+			      rtx_insn_list **listp,
                               int uncond, enum reg_note dep_type, bool hard)
 {
   add_dependence_list (insn, *listp, uncond, dep_type, hard);
@@ -1596,20 +1599,20 @@ add_dependence_list_and_free (struct deps_desc *deps, rtx_insn *insn, rtx *listp
    occurrences removed.  */
 
 static int
-remove_from_dependence_list (rtx insn, rtx* listp)
+remove_from_dependence_list (rtx insn, rtx_insn_list **listp)
 {
   int removed = 0;
 
   while (*listp)
     {
-      if (XEXP (*listp, 0) == insn)
+      if ((*listp)->insn () == insn)
         {
           remove_free_INSN_LIST_node (listp);
           removed++;
           continue;
         }
 
-      listp = &XEXP (*listp, 1);
+      listp = (rtx_insn_list **)&XEXP (*listp, 1);
     }
 
   return removed;
@@ -1617,7 +1620,9 @@ remove_from_dependence_list (rtx insn, rtx* listp)
 
 /* Same as above, but process two lists at once.  */
 static int
-remove_from_both_dependence_lists (rtx insn, rtx *listp, rtx *exprp)
+remove_from_both_dependence_lists (rtx insn,
+				   rtx_insn_list **listp,
+				   rtx *exprp)
 {
   int removed = 0;
 
@@ -1631,7 +1636,7 @@ remove_from_both_dependence_lists (rtx insn, rtx *listp, rtx *exprp)
           continue;
         }
 
-      listp = &XEXP (*listp, 1);
+      listp = (rtx_insn_list **)&XEXP (*listp, 1);
       exprp = &XEXP (*exprp, 1);
     }
 
@@ -1712,9 +1717,10 @@ static void
 add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
 			 rtx_insn *insn, rtx mem)
 {
-  rtx *insn_list;
+  rtx_insn_list **insn_list;
+  rtx_insn_list *insn_node;
   rtx *mem_list;
-  rtx link;
+  rtx mem_node;
 
   gcc_assert (!deps->readonly);
   if (read_p)
@@ -1731,8 +1737,8 @@ add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
       deps->pending_write_list_length++;
     }
 
-  link = alloc_INSN_LIST (insn, *insn_list);
-  *insn_list = link;
+  insn_node = alloc_INSN_LIST (insn, *insn_list);
+  *insn_list = insn_node;
 
   if (sched_deps_info->use_cselib)
     {
@@ -1740,8 +1746,8 @@ add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
       XEXP (mem, 0) = cselib_subst_to_values_from_insn (XEXP (mem, 0),
 							GET_MODE (mem), insn);
     }
-  link = alloc_EXPR_LIST (VOIDmode, canon_rtx (mem), *mem_list);
-  *mem_list = link;
+  mem_node = alloc_EXPR_LIST (VOIDmode, canon_rtx (mem), *mem_list);
+  *mem_list = mem_node;
 }
 
 /* Make a dependency between every memory reference on the pending lists
@@ -3603,7 +3609,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
       rtx t;
       sched_get_condition_with_rev (insn, NULL);
       t = INSN_CACHED_COND (insn);
-      INSN_COND_DEPS (insn) = NULL_RTX;
+      INSN_COND_DEPS (insn) = NULL;
       if (reload_completed
 	  && (current_sched_info->flags & DO_PREDICATION)
 	  && COMPARISON_P (t)
@@ -3612,18 +3618,18 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
 	{
 	  unsigned int regno;
 	  int nregs;
+	  rtx_insn_list *cond_deps = NULL;
 	  t = XEXP (t, 0);
 	  regno = REGNO (t);
 	  nregs = hard_regno_nregs[regno][GET_MODE (t)];
-	  t = NULL_RTX;
 	  while (nregs-- > 0)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[regno + nregs];
-	      t = concat_INSN_LIST (reg_last->sets, t);
-	      t = concat_INSN_LIST (reg_last->clobbers, t);
-	      t = concat_INSN_LIST (reg_last->implicit_sets, t);
+	      cond_deps = concat_INSN_LIST (reg_last->sets, cond_deps);
+	      cond_deps = concat_INSN_LIST (reg_last->clobbers, cond_deps);
+	      cond_deps = concat_INSN_LIST (reg_last->implicit_sets, cond_deps);
 	    }
-	  INSN_COND_DEPS (insn) = t;
+	  INSN_COND_DEPS (insn) = cond_deps;
 	}
     }
 
@@ -3968,7 +3974,7 @@ free_deps (struct deps_desc *deps)
 
 /* Remove INSN from dependence contexts DEPS.  */
 void
-remove_from_deps (struct deps_desc *deps, rtx insn)
+remove_from_deps (struct deps_desc *deps, rtx_insn *insn)
 {
   int removed;
   unsigned i;
