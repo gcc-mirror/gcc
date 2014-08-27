@@ -157,7 +157,6 @@
 	OMP_CLAUSE_SHARED for global vars if the global var is mentioned
 	in OMP_CLAUSE_MAP in some outer target region.
 
->>>>>>> .r214216
 2014-08-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
