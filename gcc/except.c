@@ -1877,11 +1877,11 @@ can_throw_external (const_rtx insn)
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
-      rtx seq = PATTERN (insn);
-      int i, n = XVECLEN (seq, 0);
+      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
+      int i, n = seq->len ();
 
       for (i = 0; i < n; i++)
-	if (can_throw_external (XVECEXP (seq, 0, i)))
+	if (can_throw_external (seq->element (i)))
 	  return true;
 
       return false;
@@ -1921,11 +1921,11 @@ insn_nothrow_p (const_rtx insn)
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
-      rtx seq = PATTERN (insn);
-      int i, n = XVECLEN (seq, 0);
+      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
+      int i, n = seq->len ();
 
       for (i = 0; i < n; i++)
-	if (!insn_nothrow_p (XVECEXP (seq, 0, i)))
+	if (!insn_nothrow_p (seq->element (i)))
 	  return false;
 
       return true;
