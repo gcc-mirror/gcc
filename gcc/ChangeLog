@@ -1,5 +1,11 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* reorg.c (redundant_insn): In two places in the function, replace
+	a check of GET_CODE with a dyn_cast, introducing local "seq", and
+	usings methods of rtx_sequence to clarify the code.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* jump.c (mark_jump_label_1): Within the SEQUENCE case, introduce
 	local "seq" with a checked cast, and use methods of rtx_sequence
 	to clarify the code.
