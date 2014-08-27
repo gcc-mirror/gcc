@@ -1,5 +1,9 @@
 2014-08-27  David Malcolm  <dmalcolm@redhat.com>
 
+	* rtl.h (JUMP_LABEL_AS_INSN): New.
+
+2014-08-27  David Malcolm  <dmalcolm@redhat.com>
+
 	* rtl.h (free_EXPR_LIST_list): Strengthen param from rtx * to
 	rtx_expr_list **.
 	(alloc_EXPR_LIST): Strengthen return type from rtx to
