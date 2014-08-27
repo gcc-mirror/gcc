@@ -280,7 +280,7 @@ struct GTY(()) rtl_data {
 
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
-  rtx x_stack_slot_list;
+  rtx_expr_list *x_stack_slot_list;
 
   /* List of empty areas in the stack frame.  */
   struct frame_space *frame_space_list;
