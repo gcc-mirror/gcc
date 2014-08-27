@@ -1587,6 +1587,41 @@ gimple_fold_builtin_strcat (gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Fold a call to the __strcat_chk builtin FNDECL.  DEST, SRC, and SIZE
+   are the arguments to the call.  */
+
+static bool
+gimple_fold_builtin_strcat_chk (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree dest = gimple_call_arg (stmt, 0);
+  tree src = gimple_call_arg (stmt, 1);
+  tree size = gimple_call_arg (stmt, 2);
+  tree fn;
+  const char *p;
+
+
+  p = c_getstr (src);
+  /* If the SRC parameter is "", return DEST.  */
+  if (p && *p == '\0')
+    {
+      replace_call_with_value (gsi, dest);
+      return true;
+    }
+
+  if (! tree_fits_uhwi_p (size) || ! integer_all_onesp (size))
+    return false;
+
+  /* If __builtin_strcat_chk is used, assume strcat is available.  */
+  fn = builtin_decl_explicit (BUILT_IN_STRCAT);
+  if (!fn)
+    return false;
+
+  gimple repl = gimple_build_call (fn, 2, dest, src);
+  replace_call_with_call_and_fold (gsi, repl);
+  return true;
+}
+
 /* Fold a call to the fputs builtin.  ARG0 and ARG1 are the arguments
    to the call.  IGNORE is true if the value returned
    by the builtin will be ignored.  UNLOCKED is true is true if this
@@ -2569,6 +2604,8 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
       return gimple_fold_builtin_sprintf_chk (gsi, DECL_FUNCTION_CODE (callee));
+    case BUILT_IN_STRCAT_CHK:
+      return gimple_fold_builtin_strcat_chk (gsi);
     default:;
     }
 
