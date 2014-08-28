@@ -1,5 +1,11 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lower-subreg.c (adjust_decomposed_uses): Delete.
+	(resolve_debug): Use FOR_EACH_SUBRTX_PTR rather than for_each_rtx.
+	Remove handling of null rtxes.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lower-subreg.c: Include rtl-iter.h.
 	(resolve_subreg_use): Turn from being a for_each_rtx callback
 	to being a function that examines each subrtx itself.  Remove
