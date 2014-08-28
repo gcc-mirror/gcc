@@ -5603,11 +5603,11 @@ copy_insn (rtx insn)
 /* Return a copy of INSN that can be used in a SEQUENCE delay slot,
    on that assumption that INSN itself remains in its original place.  */
 
-rtx
-copy_delay_slot_insn (rtx insn)
+rtx_insn *
+copy_delay_slot_insn (rtx_insn *insn)
 {
   /* Copy INSN with its rtx_code, all its notes, location etc.  */
-  insn = copy_rtx (insn);
+  insn = as_a <rtx_insn *> (copy_rtx (insn));
   INSN_UID (insn) = cur_insn_uid++;
   return insn;
 }

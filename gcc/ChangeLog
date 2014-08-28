@@ -1,3 +1,81 @@
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* emit-rtl.h (copy_delay_slot_insn): Strengthen return type and
+	param from rtx to rtx_insn *.
+
+	* emit-rtl.c (copy_delay_slot_insn): Likewise.
+
+	* reorg.c (skip_consecutive_labels): Strengthen return type, param
+	and local "insn" from rtx to rtx_insn *.
+	(unfilled_slots_base): Strengthen type from rtx * to rtx_insn **.
+	(unfilled_slots_next): Likewise.
+	(function_return_label): Strengthen from rtx to rtx_code_label *.
+	(function_simple_return_label): Likewise.
+	(first_active_target_insn): Strengthen return type and param from
+	rtx to rtx_insn *.
+	(find_end_label): Strengthen return type from rtx to
+	rtx_code_label *; strengthen locals as appropriate.
+	(emit_delay_sequence): Strengthen return type, param "insn" and
+	local "seq_insn" from rtx to rtx_insn *.  Strengthen param "list"
+	and local "li" from rtx to rtx_insn_list *, using methods of
+	rtx_insn_list for clarity and typesafety.
+	(add_to_delay_list): Strengthen return type and param "insn" from
+	rtx to rtx_insn *.  Strengthen param "delay_list" from rtx to
+	rtx_insn_list * and use methods of rtx_insn_list.
+	(delete_from_delay_slot): Strengthen return type, param "insn",
+	locals "trial", "seq_insn", "prev" from rtx to rtx_insn *.
+	Strengthen local "seq" from rtx to rtx_sequence *, and local
+	"delay_list" from rtx to rtx_insn_list *, using methods of
+	rtx_sequence for clarity and type-safety.
+	(delete_scheduled_jump): Add checked cast when invoking
+	delete_from_delay_slot.  Strengthen local "trial" from rtx to
+	rtx_insn *.
+	(optimize_skip): Strengthen return type and local "delay_list"
+	from rtx to rtx_insn_list *.  Strengthen local "trial" from rtx to
+	rtx_insn *.
+	(steal_delay_list_from_target): Strengthen return type, param
+	"delay_list" and local "new_delay_list" from rtx to
+	rtx_insn_list *.  Strengthen param "seq" from rtx to
+	rtx_sequence *.  Strengthen param "pnew_thread" from rtx * to
+	rtx_insn **.
+	Split out local "temp" into multiple more-tightly scoped locals:
+	sometimes an rtx_insn_list *, and once a rtx_insn *.  Use methods
+	of rtx_insn_list and rtx_sequence for clarity and typesafety.
+	Strengthen locals named "trial" from rtx to rtx_insn *.
+	(steal_delay_list_from_fallthrough): Strengthen return type and
+	param "delay_list" from rtx to rtx_insn_list *.  Strengthen param
+	"seq" from rtx to rtx_sequence *.  Use methods of rtx_sequence.
+	Strengthen local "trial" from rtx to rtx_insn *.
+	(try_merge_delay_insns): Strength local "merged_insns" from rtx
+	to rtx_insn_list * and use its methods.  Strengthen local "pat"
+	from rtx to rtx_sequence * and use its methods.  Strengthen locals
+	"dtrial" and "new_rtx" from rtx to rtx_insn *.
+	(get_label_before): Strengthen return type and local "label" from
+	rtx to rtx_insn *.
+	(fill_simple_delay_slots): Likewise for locals "insn", "trial",
+	"next_trial", "next", prev".  Strengthen local "delay_list" from
+	rtx to rtx_insn_list *  Strengthen local "tmp" from rtx * to
+	rtx_insn **.
+	(follow_jumps): Strengthen return type, param "label" and locals
+	"insn", "next", "value", "this_label" from rtx to rtx_insn *.
+	(fill_slots_from_thread): Strengthen return type, param
+	"delay_list" from rtx to rtx_insn_list *.  Strengthen params
+	"insn", "thread", "opposite_thread" and locals "new_thread",
+	"trial", "temp", "ninsn" from rtx to rtx_insn *.  Introduce local
+	"sequence" from a checked cast to rtx_sequence so that we can call
+	steal_delay_list_from_target and steal_delay_list_from_fallthrough
+	with an rtx_sequence *.
+	(fill_eager_delay_slots): Strengthen locals "insn", "target_label",
+	"insn_at_target", "fallthrough_insn" from rtx to rtx_insn *.
+	Strengthen local "delay_list" from rtx to rtx_insn_list *.
+	(relax_delay_slots): Strengthen param "first" and locals "insn",
+	"next", "trial", "delay_insn", "target_label" from rtx to
+	rtx_insn *.  Strengthen local "pat" from rtx to rtx_sequence *.
+	Introduce a local "trial_seq" for PATTERN (trial) of type
+	rtx_sequence *, in both cases using methods of rtx_sequence.
+	(dbr_schedule): Strengthen param "first" and locals "insn",
+	"next", "epilogue_insn" from rtx to rtx_insn *.
+
 2014-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62283
