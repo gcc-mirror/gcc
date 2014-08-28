@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* cfgcleanup.c: Include rtl-iter.h.
+	(mentions_nonequal_regs): Turn from being a for_each_rtx callback
+	to being a function that examines each subrtx itself.
+	(thread_jump): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* combine-stack-adj.c: Include rtl-iter.h.
 	(record_stack_refs_data): Delete.
 	(record_stack_refs): Turn from being a for_each_rtx callback
