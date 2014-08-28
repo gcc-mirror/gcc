@@ -1719,15 +1719,11 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 
 	      if (identical)
 		{
-		  replace_label_data rr;
 		  bool match;
 
 		  /* Temporarily replace references to LABEL1 with LABEL2
 		     in BB1->END so that we could compare the instructions.  */
-		  rr.r1 = label1;
-		  rr.r2 = label2;
-		  rr.update_label_nuses = false;
-		  for_each_rtx_in_insn (&BB_END (bb1), replace_label, &rr);
+		  replace_label_in_insn (BB_END (bb1), label1, label2, false);
 
 		  match = (old_insns_match_p (mode, BB_END (bb1), BB_END (bb2))
 			   == dir_both);
@@ -1739,9 +1735,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 		  /* Set the original label in BB1->END because when deleting
 		     a block whose end is a tablejump, the tablejump referenced
 		     from the instruction is deleted too.  */
-		  rr.r1 = label2;
-		  rr.r2 = label1;
-		  for_each_rtx_in_insn (&BB_END (bb1), replace_label, &rr);
+		  replace_label_in_insn (BB_END (bb1), label2, label1, false);
 
 		  return match;
 		}
@@ -1988,20 +1982,16 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 	  && tablejump_p (BB_END (osrc2), &label2, &table2)
 	  && label1 != label2)
 	{
-	  replace_label_data rr;
 	  rtx_insn *insn;
 
 	  /* Replace references to LABEL1 with LABEL2.  */
-	  rr.r1 = label1;
-	  rr.r2 = label2;
-	  rr.update_label_nuses = true;
 	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	    {
 	      /* Do not replace the label in SRC1->END because when deleting
 		 a block whose end is a tablejump, the tablejump referenced
 		 from the instruction is deleted too.  */
 	      if (insn != BB_END (osrc1))
-		for_each_rtx_in_insn (&insn, replace_label, &rr);
+		replace_label_in_insn (insn, label1, label2, true);
 	    }
 	}
     }

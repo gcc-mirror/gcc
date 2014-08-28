@@ -2770,65 +2770,88 @@ replace_rtx (rtx x, rtx from, rtx to)
   return x;
 }
 
-/* Replace occurrences of the old label in *X with the new one.
-   DATA is a REPLACE_LABEL_DATA containing the old and new labels.  */
+/* Replace occurrences of the OLD_LABEL in *LOC with NEW_LABEL.  Also track
+   the change in LABEL_NUSES if UPDATE_LABEL_NUSES.  */
 
-int
-replace_label (rtx *x, void *data)
+void
+replace_label (rtx *loc, rtx old_label, rtx new_label, bool update_label_nuses)
 {
-  rtx l = *x;
-  rtx old_label = ((replace_label_data *) data)->r1;
-  rtx new_label = ((replace_label_data *) data)->r2;
-  bool update_label_nuses = ((replace_label_data *) data)->update_label_nuses;
-
-  if (l == NULL_RTX)
-    return 0;
-
-  if (GET_CODE (l) == SYMBOL_REF
-      && CONSTANT_POOL_ADDRESS_P (l))
+  /* Handle jump tables specially, since ADDR_{DIFF_,}VECs can be long.  */
+  rtx x = *loc;
+  if (JUMP_TABLE_DATA_P (x))
     {
-      rtx c = get_pool_constant (l);
-      if (rtx_referenced_p (old_label, c))
+      x = PATTERN (x);
+      rtvec vec = XVEC (x, GET_CODE (x) == ADDR_DIFF_VEC);
+      int len = GET_NUM_ELEM (vec);
+      for (int i = 0; i < len; ++i)
 	{
-	  rtx new_c, new_l;
-	  replace_label_data *d = (replace_label_data *) data;
-
-	  /* Create a copy of constant C; replace the label inside
-	     but do not update LABEL_NUSES because uses in constant pool
-	     are not counted.  */
-	  new_c = copy_rtx (c);
-	  d->update_label_nuses = false;
-	  for_each_rtx (&new_c, replace_label, data);
-	  d->update_label_nuses = update_label_nuses;
-
-	  /* Add the new constant NEW_C to constant pool and replace
-	     the old reference to constant by new reference.  */
-	  new_l = XEXP (force_const_mem (get_pool_mode (l), new_c), 0);
-	  *x = replace_rtx (l, l, new_l);
+	  rtx ref = RTVEC_ELT (vec, i);
+	  if (XEXP (ref, 0) == old_label)
+	    {
+	      XEXP (ref, 0) = new_label;
+	      if (update_label_nuses)
+		{
+		  ++LABEL_NUSES (new_label);
+		  --LABEL_NUSES (old_label);
+		}
+	    }
 	}
-      return 0;
+      return;
     }
 
   /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
-     field.  This is not handled by for_each_rtx because it doesn't
+     field.  This is not handled by the iterator because it doesn't
      handle unprinted ('0') fields.  */
-  if (JUMP_P (l) && JUMP_LABEL (l) == old_label)
-    JUMP_LABEL (l) = new_label;
+  if (JUMP_P (x) && JUMP_LABEL (x) == old_label)
+    JUMP_LABEL (x) = new_label;
 
-  if ((GET_CODE (l) == LABEL_REF
-       || GET_CODE (l) == INSN_LIST)
-      && XEXP (l, 0) == old_label)
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)
     {
-      XEXP (l, 0) = new_label;
-      if (update_label_nuses)
+      rtx *loc = *iter;
+      if (rtx x = *loc)
 	{
-	  ++LABEL_NUSES (new_label);
-	  --LABEL_NUSES (old_label);
-	}
-      return 0;
-    }
+	  if (GET_CODE (x) == SYMBOL_REF
+	      && CONSTANT_POOL_ADDRESS_P (x))
+	    {
+	      rtx c = get_pool_constant (x);
+	      if (rtx_referenced_p (old_label, c))
+		{
+		  /* Create a copy of constant C; replace the label inside
+		     but do not update LABEL_NUSES because uses in constant pool
+		     are not counted.  */
+		  rtx new_c = copy_rtx (c);
+		  replace_label (&new_c, old_label, new_label, false);
 
-  return 0;
+		  /* Add the new constant NEW_C to constant pool and replace
+		     the old reference to constant by new reference.  */
+		  rtx new_mem = force_const_mem (get_pool_mode (x), new_c);
+		  *loc = replace_rtx (x, x, XEXP (new_mem, 0));
+		}
+	    }
+
+	  if ((GET_CODE (x) == LABEL_REF
+	       || GET_CODE (x) == INSN_LIST)
+	      && XEXP (x, 0) == old_label)
+	    {
+	      XEXP (x, 0) = new_label;
+	      if (update_label_nuses)
+		{
+		  ++LABEL_NUSES (new_label);
+		  --LABEL_NUSES (old_label);
+		}
+	    }
+	}
+    }
+}
+
+void
+replace_label_in_insn (rtx_insn *insn, rtx old_label, rtx new_label,
+		       bool update_label_nuses)
+{
+  rtx insn_as_rtx = insn;
+  replace_label (&insn_as_rtx, old_label, new_label, update_label_nuses);
+  gcc_checking_assert (insn_as_rtx == insn);
 }
 
 /* Return true if X is referenced in BODY.  */
