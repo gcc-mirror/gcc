@@ -428,13 +428,13 @@ dup_block_and_redirect (basic_block bb, basic_block copy_bb, rtx_insn *before,
 
 void
 try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
-		     bitmap_head *bb_flags, rtx prologue_seq)
+		     bitmap_head *bb_flags, rtx_insn *prologue_seq)
 {
   edge e;
   edge_iterator ei;
   bool nonempty_prologue = false;
   unsigned max_grow_size;
-  rtx seq;
+  rtx_insn *seq;
 
   for (seq = prologue_seq; seq; seq = NEXT_INSN (seq))
     if (!NOTE_P (seq) || NOTE_KIND (seq) != NOTE_INSN_PROLOGUE_END)
@@ -449,7 +449,7 @@ try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
     {
       HARD_REG_SET prologue_clobbered, prologue_used, live_on_edge;
       struct hard_reg_set_container set_up_by_prologue;
-      rtx p_insn;
+      rtx_insn *p_insn;
       vec<basic_block> vec;
       basic_block bb;
       bitmap_head bb_antic_flags;
@@ -831,7 +831,7 @@ get_unconverted_simple_return (edge exit_fallthru_edge, bitmap_head bb_flags,
 
 void
 convert_to_simple_return (edge entry_edge, edge orig_entry_edge,
-			  bitmap_head bb_flags, rtx returnjump,
+			  bitmap_head bb_flags, rtx_insn *returnjump,
 			  vec<edge> unconverted_simple_returns)
 {
   edge e;

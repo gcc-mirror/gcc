@@ -1037,7 +1037,7 @@ static void
 initiate_bb_reg_pressure_info (basic_block bb)
 {
   unsigned int i ATTRIBUTE_UNUSED;
-  rtx insn;
+  rtx_insn *insn;
 
   if (current_nr_blocks > 1)
     FOR_BB_INSNS (bb, insn)
@@ -1604,7 +1604,7 @@ priority (rtx_insn *insn)
 	this_priority = insn_cost (insn);
       else
 	{
-	  rtx prev_first, twin;
+	  rtx_insn *prev_first, *twin;
 	  basic_block rec;
 
 	  /* For recovery check instructions we calculate priority slightly
@@ -3049,7 +3049,7 @@ update_register_pressure (rtx_insn *insn)
    meaning in sched-int.h::_haifa_insn_data) for all current BB insns
    after insn AFTER.  */
 static void
-setup_insn_max_reg_pressure (rtx after, bool update_p)
+setup_insn_max_reg_pressure (rtx_insn *after, bool update_p)
 {
   int i, p;
   bool eq_p;
@@ -3112,7 +3112,7 @@ update_reg_and_insn_max_reg_pressure (rtx_insn *insn)
    insns starting after insn AFTER.  Set up also max register pressure
    for all insns of the basic block.  */
 void
-sched_setup_bb_reg_pressure_info (basic_block bb, rtx after)
+sched_setup_bb_reg_pressure_info (basic_block bb, rtx_insn *after)
 {
   gcc_assert (sched_pressure == SCHED_PRESSURE_WEIGHTED);
   initiate_bb_reg_pressure_info (bb);
@@ -4832,7 +4832,7 @@ get_ebb_head_tail (basic_block beg, basic_block end,
 /* Return nonzero if there are no real insns in the range [ HEAD, TAIL ].  */
 
 int
-no_real_insns_p (const_rtx head, const_rtx tail)
+no_real_insns_p (const rtx_insn *head, const rtx_insn *tail)
 {
   while (head != NEXT_INSN (tail))
     {
@@ -5975,7 +5975,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 
   /* Head/tail info for this block.  */
   rtx_insn *prev_head = current_sched_info->prev_head;
-  rtx next_tail = current_sched_info->next_tail;
+  rtx_insn *next_tail = current_sched_info->next_tail;
   rtx_insn *head = NEXT_INSN (prev_head);
   rtx_insn *tail = PREV_INSN (next_tail);
 

@@ -2664,8 +2664,8 @@ spu_machine_dependent_reorg (void)
 	   label because GCC expects it at the beginning of the block. */
 	rtx unspec = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
 	rtx label_ref = XVECEXP (unspec, 0, 0);
-	rtx label = XEXP (label_ref, 0);
-	rtx branch;
+	rtx_insn *label = as_a <rtx_insn *> (XEXP (label_ref, 0));
+	rtx_insn *branch;
 	int offset = 0;
 	for (branch = NEXT_INSN (label);
 	     !JUMP_P (branch) && !CALL_P (branch);

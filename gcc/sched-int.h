@@ -1328,7 +1328,7 @@ extern void deps_start_bb (struct deps_desc *, rtx);
 extern enum reg_note ds_to_dt (ds_t);
 
 extern bool deps_pools_are_empty_p (void);
-extern void sched_free_deps (rtx, rtx, bool);
+extern void sched_free_deps (rtx_insn *, rtx_insn *, bool);
 extern void extend_dependency_caches (int, bool);
 
 extern void debug_ds (ds_t);
@@ -1342,14 +1342,14 @@ extern void free_global_sched_pressure_data (void);
 extern int haifa_classify_insn (const_rtx);
 extern void get_ebb_head_tail (basic_block, basic_block,
 			       rtx_insn **, rtx_insn **);
-extern int no_real_insns_p (const_rtx, const_rtx);
+extern int no_real_insns_p (const rtx_insn *, const rtx_insn *);
 
 extern int insn_cost (rtx_insn *);
 extern int dep_cost_1 (dep_t, dw_t);
 extern int dep_cost (dep_t);
 extern int set_priorities (rtx_insn *, rtx_insn *);
 
-extern void sched_setup_bb_reg_pressure_info (basic_block, rtx);
+extern void sched_setup_bb_reg_pressure_info (basic_block, rtx_insn *);
 extern bool schedule_block (basic_block *, state_t);
 
 extern int cycle_issued_insns;

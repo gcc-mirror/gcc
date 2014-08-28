@@ -116,8 +116,8 @@ static void
 init_ready_list (void)
 {
   int n = 0;
-  rtx prev_head = current_sched_info->prev_head;
-  rtx next_tail = current_sched_info->next_tail;
+  rtx_insn *prev_head = current_sched_info->prev_head;
+  rtx_insn *next_tail = current_sched_info->next_tail;
   rtx_insn *insn;
 
   sched_rgn_n_insns = 0;
@@ -189,7 +189,7 @@ begin_move_insn (rtx_insn *insn, rtx_insn *last)
       else
 	{
 	  /* Create an empty unreachable block after the INSN.  */
-	  rtx next = NEXT_INSN (insn);
+	  rtx_insn *next = NEXT_INSN (insn);
 	  if (next && BARRIER_P (next))
 	    next = NEXT_INSN (next);
 	  bb = create_basic_block (next, NULL_RTX, last_bb);

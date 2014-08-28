@@ -1247,8 +1247,9 @@ mark_jump_label_asm (rtx asmop, rtx insn)
    subsequent cfg_cleanup pass to delete unreachable code if needed.  */
 
 rtx_insn *
-delete_related_insns (rtx insn)
+delete_related_insns (rtx uncast_insn)
 {
+  rtx_insn *insn = as_a <rtx_insn *> (uncast_insn);
   int was_code_label = (LABEL_P (insn));
   rtx note;
   rtx_insn *next = NEXT_INSN (insn), *prev = PREV_INSN (insn);
@@ -1276,7 +1277,7 @@ delete_related_insns (rtx insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE
 	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
     {
-      rtx p;
+      rtx_insn *p;
 
       for (p = next && INSN_DELETED_P (next) ? NEXT_INSN (next) : next;
 	   p && NOTE_P (p);

@@ -2107,8 +2107,8 @@ schedule_more_p (void)
 static void
 init_ready_list (void)
 {
-  rtx prev_head = current_sched_info->prev_head;
-  rtx next_tail = current_sched_info->next_tail;
+  rtx_insn *prev_head = current_sched_info->prev_head;
+  rtx_insn *next_tail = current_sched_info->next_tail;
   int bb_src;
   rtx_insn *insn;
 

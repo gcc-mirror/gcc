@@ -3164,7 +3164,8 @@ static rtx
 peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
 {
   int i;
-  rtx last, eh_note, as_note, before_try, x;
+  rtx_insn *last, *before_try, *x;
+  rtx eh_note, as_note;
   rtx old_insn, new_insn;
   bool was_call = false;
 

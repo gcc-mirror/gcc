@@ -40,11 +40,12 @@ extern void dup_block_and_redirect (basic_block bb, basic_block copy_bb,
 				    rtx_insn *before,
 				    bitmap_head *need_prologue);
 extern void try_shrink_wrapping (edge *entry_edge, edge orig_entry_edge,
-				 bitmap_head *bb_flags, rtx prologue_seq);
+				 bitmap_head *bb_flags, rtx_insn *prologue_seq);
 extern edge get_unconverted_simple_return (edge, bitmap_head,
 					   vec<edge> *, rtx_insn **);
 extern void convert_to_simple_return (edge entry_edge, edge orig_entry_edge,
-				      bitmap_head bb_flags, rtx returnjump,
+				      bitmap_head bb_flags,
+				      rtx_insn *returnjump,
 				      vec<edge> unconverted_simple_returns);
 #endif
 

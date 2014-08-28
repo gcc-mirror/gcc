@@ -213,7 +213,7 @@ static rtx_insn *delete_from_delay_slot (rtx_insn *);
 static void delete_scheduled_jump (rtx);
 static void note_delay_statistics (int, int);
 #if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
-static rtx_insn_list *optimize_skip (rtx);
+static rtx_insn_list *optimize_skip (rtx_insn *);
 #endif
 static int get_jump_flags (rtx, rtx);
 static int mostly_true_jump (rtx);
@@ -766,10 +766,10 @@ note_delay_statistics (int slots_filled, int index)
    of delay slots required.  */
 
 static rtx_insn_list *
-optimize_skip (rtx insn)
+optimize_skip (rtx_insn *insn)
 {
   rtx_insn *trial = next_nonnote_insn (insn);
-  rtx next_trial = next_active_insn (trial);
+  rtx_insn *next_trial = next_active_insn (trial);
   rtx_insn_list *delay_list = 0;
   int flags;
 

@@ -87,10 +87,11 @@ static int count_bb_insns (const_basic_block);
 static bool cheap_bb_rtx_cost_p (const_basic_block, int, int);
 static rtx_insn *first_active_insn (basic_block);
 static rtx_insn *last_active_insn (basic_block, int);
-static rtx find_active_insn_before (basic_block, rtx);
-static rtx find_active_insn_after (basic_block, rtx);
+static rtx_insn *find_active_insn_before (basic_block, rtx_insn *);
+static rtx_insn *find_active_insn_after (basic_block, rtx_insn *);
 static basic_block block_fallthru (basic_block);
-static int cond_exec_process_insns (ce_if_block *, rtx, rtx, rtx, int, int);
+static int cond_exec_process_insns (ce_if_block *, rtx_insn *, rtx, rtx, int,
+				    int);
 static rtx cond_exec_get_condition (rtx);
 static rtx noce_get_condition (rtx_insn *, rtx_insn **, bool);
 static int noce_operand_ok (const_rtx);
@@ -256,11 +257,11 @@ last_active_insn (basic_block bb, int skip_use_p)
 
 /* Return the active insn before INSN inside basic block CURR_BB. */
 
-static rtx
-find_active_insn_before (basic_block curr_bb, rtx insn)
+static rtx_insn *
+find_active_insn_before (basic_block curr_bb, rtx_insn *insn)
 {
   if (!insn || insn == BB_HEAD (curr_bb))
-    return NULL_RTX;
+    return NULL;
 
   while ((insn = PREV_INSN (insn)) != NULL_RTX)
     {
@@ -269,7 +270,7 @@ find_active_insn_before (basic_block curr_bb, rtx insn)
 
       /* No other active insn all the way to the start of the basic block. */
       if (insn == BB_HEAD (curr_bb))
-        return NULL_RTX;
+        return NULL;
     }
 
   return insn;
@@ -277,11 +278,11 @@ find_active_insn_before (basic_block curr_bb, rtx insn)
 
 /* Return the active insn after INSN inside basic block CURR_BB. */
 
-static rtx
-find_active_insn_after (basic_block curr_bb, rtx insn)
+static rtx_insn *
+find_active_insn_after (basic_block curr_bb, rtx_insn *insn)
 {
   if (!insn || insn == BB_END (curr_bb))
-    return NULL_RTX;
+    return NULL;
 
   while ((insn = NEXT_INSN (insn)) != NULL_RTX)
     {
@@ -290,7 +291,7 @@ find_active_insn_after (basic_block curr_bb, rtx insn)
 
       /* No other active insn all the way to the end of the basic block. */
       if (insn == BB_END (curr_bb))
-        return NULL_RTX;
+        return NULL;
     }
 
   return insn;
@@ -334,14 +335,14 @@ rtx_interchangeable_p (const_rtx a, const_rtx b)
 
 static int
 cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
-			 /* if block information */rtx start,
+			 /* if block information */rtx_insn *start,
 			 /* first insn to look at */rtx end,
 			 /* last insn to look at */rtx test,
 			 /* conditional execution test */int prob_val,
 			 /* probability of branch taken. */int mod_ok)
 {
   int must_be_last = FALSE;
-  rtx insn;
+  rtx_insn *insn;
   rtx xtest;
   rtx pattern;
 
@@ -466,10 +467,10 @@ cond_exec_process_if_block (ce_if_block * ce_info,
   basic_block then_bb = ce_info->then_bb;	/* THEN */
   basic_block else_bb = ce_info->else_bb;	/* ELSE or NULL */
   rtx test_expr;		/* expression in IF_THEN_ELSE that is tested */
-  rtx then_start;		/* first insn in THEN block */
-  rtx then_end;			/* last insn + 1 in THEN block */
-  rtx else_start = NULL_RTX;	/* first insn in ELSE block or NULL */
-  rtx else_end = NULL_RTX;	/* last insn + 1 in ELSE block */
+  rtx_insn *then_start;		/* first insn in THEN block */
+  rtx_insn *then_end;		/* last insn + 1 in THEN block */
+  rtx_insn *else_start = NULL;	/* first insn in ELSE block or NULL */
+  rtx_insn *else_end = NULL;	/* last insn + 1 in ELSE block */
   int max;			/* max # of insns to convert.  */
   int then_mod_ok;		/* whether conditional mods are ok in THEN */
   rtx true_expr;		/* test for else block insns */
@@ -534,9 +535,9 @@ cond_exec_process_if_block (ce_if_block * ce_info,
 					 &then_first_tail, &else_first_tail,
 					 NULL);
       if (then_first_tail == BB_HEAD (then_bb))
-	then_start = then_end = NULL_RTX;
+	then_start = then_end = NULL;
       if (else_first_tail == BB_HEAD (else_bb))
-	else_start = else_end = NULL_RTX;
+	else_start = else_end = NULL;
 
       if (n_matching > 0)
 	{
@@ -562,7 +563,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
 
 	  if (n_matching > 0)
 	    {
-	      rtx insn;
+	      rtx_insn *insn;
 
 	      /* We won't pass the insns in the head sequence to
 		 cond_exec_process_insns, so we need to test them here
@@ -577,9 +578,9 @@ cond_exec_process_if_block (ce_if_block * ce_info,
 	    }
 
 	  if (then_last_head == then_end)
-	    then_start = then_end = NULL_RTX;
+	    then_start = then_end = NULL;
 	  if (else_last_head == else_end)
-	    else_start = else_end = NULL_RTX;
+	    else_start = else_end = NULL;
 
 	  if (n_matching > 0)
 	    {
@@ -641,7 +642,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
 
       do
 	{
-	  rtx start, end;
+	  rtx_insn *start, *end;
 	  rtx t, f;
 	  enum rtx_code f_code;
 
@@ -743,7 +744,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
      that the remaining one is executed first for both branches.  */
   if (then_first_tail)
     {
-      rtx from = then_first_tail;
+      rtx_insn *from = then_first_tail;
       if (!INSN_P (from))
 	from = find_active_insn_after (then_bb, from);
       delete_insn_chain (from, BB_END (then_bb), false);
@@ -2499,7 +2500,7 @@ noce_process_if_block (struct noce_if_info *if_info)
   basic_block then_bb = if_info->then_bb;	/* THEN */
   basic_block else_bb = if_info->else_bb;	/* ELSE or NULL */
   basic_block join_bb = if_info->join_bb;	/* JOIN */
-  rtx jump = if_info->jump;
+  rtx_insn *jump = if_info->jump;
   rtx cond = if_info->cond;
   rtx_insn *insn_a, *insn_b;
   rtx set_a, set_b;
@@ -3201,7 +3202,7 @@ merge_if_block (struct ce_if_block * ce_info)
       if (EDGE_COUNT (then_bb->succs) == 0
 	  && EDGE_COUNT (combo_bb->succs) > 1)
 	{
-	  rtx end = NEXT_INSN (BB_END (then_bb));
+	  rtx_insn *end = NEXT_INSN (BB_END (then_bb));
 	  while (end && NOTE_P (end) && !NOTE_INSN_BASIC_BLOCK_P (end))
 	    end = NEXT_INSN (end);
 
@@ -3224,7 +3225,7 @@ merge_if_block (struct ce_if_block * ce_info)
       if (EDGE_COUNT (else_bb->succs) == 0
 	  && EDGE_COUNT (combo_bb->succs) > 1)
 	{
-	  rtx end = NEXT_INSN (BB_END (else_bb));
+	  rtx_insn *end = NEXT_INSN (BB_END (else_bb));
 	  while (end && NOTE_P (end) && !NOTE_INSN_BASIC_BLOCK_P (end))
 	    end = NEXT_INSN (end);
 
@@ -3568,7 +3569,7 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
     {
       if (single_pred_p (else_bb) && else_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
-	  rtx last_insn = BB_END (then_bb);
+	  rtx_insn *last_insn = BB_END (then_bb);
 
 	  while (last_insn
 		 && NOTE_P (last_insn)

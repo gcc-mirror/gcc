@@ -1603,6 +1603,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 
   if (EDGE_COUNT (e->src->succs) >= 2 || abnormal_edge_flags || asm_goto_edge)
     {
+      rtx_insn *new_head;
       gcov_type count = e->count;
       int probability = e->probability;
       /* Create the new structures.  */
@@ -1612,12 +1613,12 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	 forward from the last instruction of the old block.  */
       rtx_jump_table_data *table;
       if (tablejump_p (BB_END (e->src), NULL, &table))
-	note = table;
+	new_head = table;
       else
-	note = BB_END (e->src);
-      note = NEXT_INSN (note);
+	new_head = BB_END (e->src);
+      new_head = NEXT_INSN (new_head);
 
-      jump_block = create_basic_block (note, NULL, e->src);
+      jump_block = create_basic_block (new_head, NULL, e->src);
       jump_block->count = count;
       jump_block->frequency = EDGE_FREQUENCY (e);
 

@@ -812,7 +812,7 @@ free_store_info (insn_info_t insn_info)
 
 typedef struct
 {
-  rtx first, current;
+  rtx_insn *first, *current;
   regset fixed_regs_live;
   bool failure;
 } note_add_store_info;
@@ -823,7 +823,7 @@ typedef struct
 static void
 note_add_store (rtx loc, const_rtx expr ATTRIBUTE_UNUSED, void *data)
 {
-  rtx insn;
+  rtx_insn *insn;
   note_add_store_info *info = (note_add_store_info *) data;
   int r, n;
 
@@ -864,7 +864,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
 			  rtx dest, rtx src, rtx srcoff, void *arg)
 {
   insn_info_t insn_info = (insn_info_t) arg;
-  rtx insn = insn_info->insn, new_insn, cur;
+  rtx_insn *insn = insn_info->insn, *new_insn, *cur;
   note_add_store_info info;
 
   /* We can reuse all operands without copying, because we are about
@@ -877,7 +877,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
       end_sequence ();
     }
   else
-    new_insn = gen_move_insn (dest, src);
+    new_insn = as_a <rtx_insn *> (gen_move_insn (dest, src));
   info.first = new_insn;
   info.fixed_regs_live = insn_info->fixed_regs_live;
   info.failure = false;
@@ -1742,7 +1742,8 @@ find_shift_sequence (int access_size,
        GET_MODE_BITSIZE (new_mode) <= BITS_PER_WORD;
        new_mode = GET_MODE_WIDER_MODE (new_mode))
     {
-      rtx target, new_reg, shift_seq, insn, new_lhs;
+      rtx target, new_reg, new_lhs;
+      rtx_insn *shift_seq, *insn;
       int cost;
 
       /* If a constant was stored into memory, try to simplify it here,
@@ -1962,7 +1963,8 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
 {
   enum machine_mode store_mode = GET_MODE (store_info->mem);
   enum machine_mode read_mode = GET_MODE (read_info->mem);
-  rtx insns, this_insn, read_reg;
+  rtx_insn *insns, *this_insn;
+  rtx read_reg;
   basic_block bb;
 
   if (!dbg_cnt (dse))

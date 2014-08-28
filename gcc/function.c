@@ -122,7 +122,7 @@ static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
 /* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
-static void record_insns (rtx, rtx, htab_t *) ATTRIBUTE_UNUSED;
+static void record_insns (rtx_insn *, rtx, htab_t *) ATTRIBUTE_UNUSED;
 static bool contains (const_rtx, htab_t);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
@@ -4982,9 +4982,9 @@ do_warn_unused_parameter (tree fn)
 /* Set the location of the insn chain starting at INSN to LOC.  */
 
 static void
-set_insn_locations (rtx insn, int loc)
+set_insn_locations (rtx_insn *insn, int loc)
 {
-  while (insn != NULL_RTX)
+  while (insn != NULL)
     {
       if (INSN_P (insn))
 	INSN_LOCATION (insn) = loc;
@@ -5284,9 +5284,9 @@ get_arg_pointer_save_area (void)
    for the first time.  */
 
 static void
-record_insns (rtx insns, rtx end, htab_t *hashp)
+record_insns (rtx_insn *insns, rtx end, htab_t *hashp)
 {
-  rtx tmp;
+  rtx_insn *tmp;
   htab_t hash = *hashp;
 
   if (hash == NULL)
@@ -5424,8 +5424,9 @@ set_return_jump_label (rtx returnjump)
 #if defined (HAVE_return) || defined (HAVE_simple_return)
 /* Return true if there are any active insns between HEAD and TAIL.  */
 bool
-active_insn_between (rtx head, rtx tail)
+active_insn_between (rtx head, rtx uncast_tail)
 {
+  rtx_insn *tail = safe_as_a <rtx_insn *> (uncast_tail);
   while (tail)
     {
       if (active_insn_p (tail))
@@ -5615,9 +5616,8 @@ thread_prologue_and_epilogue_insns (void)
   bitmap_head bb_flags;
 #endif
   rtx_insn *returnjump;
-  rtx seq ATTRIBUTE_UNUSED;
   rtx_insn *epilogue_end ATTRIBUTE_UNUSED;
-  rtx prologue_seq ATTRIBUTE_UNUSED, split_prologue_seq ATTRIBUTE_UNUSED;
+  rtx_insn *prologue_seq ATTRIBUTE_UNUSED, *split_prologue_seq ATTRIBUTE_UNUSED;
   edge e, entry_edge, orig_entry_edge, exit_fallthru_edge;
   edge_iterator ei;
 
@@ -5626,7 +5626,6 @@ thread_prologue_and_epilogue_insns (void)
   rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   inserted = false;
-  seq = NULL_RTX;
   epilogue_end = NULL;
   returnjump = NULL;
 
@@ -5637,7 +5636,7 @@ thread_prologue_and_epilogue_insns (void)
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   orig_entry_edge = entry_edge;
 
-  split_prologue_seq = NULL_RTX;
+  split_prologue_seq = NULL;
   if (flag_split_stack
       && (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (cfun->decl))
 	  == NULL))
@@ -5657,12 +5656,12 @@ thread_prologue_and_epilogue_insns (void)
 #endif
     }
 
-  prologue_seq = NULL_RTX;
+  prologue_seq = NULL;
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
       start_sequence ();
-      seq = gen_prologue ();
+      rtx_insn *seq = safe_as_a <rtx_insn *> (gen_prologue ());
       emit_insn (seq);
 
       /* Insert an explicit USE for the frame pointer
@@ -5799,7 +5798,7 @@ thread_prologue_and_epilogue_insns (void)
     {
       start_sequence ();
       epilogue_end = emit_note (NOTE_INSN_EPILOGUE_BEG);
-      seq = gen_epilogue ();
+      rtx_insn *seq = as_a <rtx_insn *> (gen_epilogue ());
       if (seq)
 	emit_jump_insn (seq);
 
@@ -5900,7 +5899,7 @@ epilogue_done:
 	  start_sequence ();
 	  emit_note (NOTE_INSN_EPILOGUE_BEG);
 	  emit_insn (ep_seq);
-	  seq = get_insns ();
+	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
 
 	  /* Retain a map of the epilogue insns.  Used in life analysis to

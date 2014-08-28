@@ -5847,7 +5847,7 @@ pass_expand::execute (function *fun)
 
   if (var_ret_seq)
     {
-      rtx after = return_label;
+      rtx_insn *after = return_label;
       rtx_insn *next = NEXT_INSN (after);
       if (next && NOTE_INSN_BASIC_BLOCK_P (next))
 	after = next;
