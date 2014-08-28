@@ -3933,11 +3933,12 @@ find_args_size_adjust (rtx insn)
 }
 
 int
-fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
+fixup_args_size_notes (rtx prev, rtx uncast_last, int end_args_size)
 {
+  rtx_insn *last = safe_as_a <rtx_insn *> (uncast_last);
   int args_size = end_args_size;
   bool saw_unknown = false;
-  rtx insn;
+  rtx_insn *insn;
 
   for (insn = last; insn != prev; insn = PREV_INSN (insn))
     {

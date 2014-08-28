@@ -3848,10 +3848,10 @@ delete_dep_nodes_in_back_deps (rtx insn, bool resolved_p)
 /* Delete (RESOLVED_P) dependencies between HEAD and TAIL together with
    deps_lists.  */
 void
-sched_free_deps (rtx head, rtx tail, bool resolved_p)
+sched_free_deps (rtx_insn *head, rtx_insn *tail, bool resolved_p)
 {
-  rtx insn;
-  rtx next_tail = NEXT_INSN (tail);
+  rtx_insn *insn;
+  rtx_insn *next_tail = NEXT_INSN (tail);
 
   /* We make two passes since some insns may be scheduled before their
      dependencies are resolved.  */

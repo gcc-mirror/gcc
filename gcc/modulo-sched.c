@@ -212,7 +212,7 @@ static int compute_split_row (sbitmap, int, int, int, ddg_node_ptr);
 static int sms_order_nodes (ddg_ptr, int, int *, int *);
 static void set_node_sched_params (ddg_ptr);
 static partial_schedule_ptr sms_schedule_by_order (ddg_ptr, int, int, int *);
-static void permute_partial_schedule (partial_schedule_ptr, rtx);
+static void permute_partial_schedule (partial_schedule_ptr, rtx_insn *);
 static void generate_prolog_epilog (partial_schedule_ptr, struct loop *,
                                     rtx, rtx);
 static int calculate_stage_count (partial_schedule_ptr, int);
@@ -876,7 +876,7 @@ reset_sched_times (partial_schedule_ptr ps, int amount)
    row ii-1, and position them right before LAST.  This schedules
    the insns of the loop kernel.  */
 static void
-permute_partial_schedule (partial_schedule_ptr ps, rtx last)
+permute_partial_schedule (partial_schedule_ptr ps, rtx_insn *last)
 {
   int ii = ps->ii;
   int row;

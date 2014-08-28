@@ -113,7 +113,7 @@ typedef struct
   HOST_WIDE_INT beg_delay_args_size, end_delay_args_size;
 
   /* The first EH insn in the trace, where beg_delay_args_size must be set.  */
-  rtx eh_head;
+  rtx_insn *eh_head;
 
   /* The following variables contain data used in interpreting frame related
      expressions.  These are not part of the "real" row state as defined by
@@ -876,7 +876,7 @@ notice_args_size (rtx insn)
    data within the trace related to EH insns and args_size.  */
 
 static void
-notice_eh_throw (rtx insn)
+notice_eh_throw (rtx_insn *insn)
 {
   HOST_WIDE_INT args_size;
 
@@ -2577,10 +2577,10 @@ create_cfi_notes (void)
 
 /* Return the insn before the first NOTE_INSN_CFI after START.  */
 
-static rtx
-before_next_cfi_note (rtx start)
+static rtx_insn *
+before_next_cfi_note (rtx_insn *start)
 {
-  rtx prev = start;
+  rtx_insn *prev = start;
   while (start)
     {
       if (NOTE_P (start) && NOTE_KIND (start) == NOTE_INSN_CFI)
@@ -2675,7 +2675,7 @@ connect_traces (void)
 
       if (dump_file && add_cfi_insn != ti->head)
 	{
-	  rtx note;
+	  rtx_insn *note;
 
 	  fprintf (dump_file, "Fixup between trace %u and %u:\n",
 		   prev_ti->id, ti->id);

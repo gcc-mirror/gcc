@@ -1733,7 +1733,7 @@
     rtx t0_hi = gen_rtx_SUBREG (HImode, t0, 2);
     rtx t1_hi = gen_rtx_SUBREG (HImode, t1, 2);
 
-    rtx insn = emit_insn (gen_lshrsi3 (t0, operands[1], GEN_INT (16)));
+    rtx_insn *insn = emit_insn (gen_lshrsi3 (t0, operands[1], GEN_INT (16)));
     emit_insn (gen_lshrsi3 (t1, operands[2], GEN_INT (16)));
     emit_insn (gen_umulhisi3 (t2, op1_hi, op2_hi));
     emit_insn (gen_mpyh_si (t3, operands[1], operands[2]));
@@ -1794,7 +1794,7 @@
     rtx op2_hi = gen_rtx_SUBREG (HImode, operands[2], 2);
     rtx t0_hi = gen_rtx_SUBREG (HImode, t0, 2);
 
-    rtx insn = emit_insn (gen_rotlsi3 (t0, operands[2], GEN_INT (16)));
+    rtx_insn *insn = emit_insn (gen_rotlsi3 (t0, operands[2], GEN_INT (16)));
     emit_insn (gen_umulhisi3 (t1, op1_hi, op2_hi));
     emit_insn (gen_umulhisi3 (t2, op1_hi, t0_hi));
     emit_insn (gen_mpyhhu_si (t3, operands[1], t0));

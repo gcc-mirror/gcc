@@ -2161,7 +2161,7 @@ process_insert_insn (struct expr *expr)
 static void
 insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 {
-  rtx insn = BB_END (bb);
+  rtx_insn *insn = BB_END (bb);
   rtx_insn *new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
@@ -2188,7 +2188,7 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 	 if cc0 isn't set.  */
       rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
       if (note)
-	insn = XEXP (note, 0);
+	insn = safe_as_a <rtx_insn *> (XEXP (note, 0));
       else
 	{
 	  rtx_insn *maybe_cc0_setter = prev_nonnote_insn (insn);
