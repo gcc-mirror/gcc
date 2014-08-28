@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "df.h"
 #include "cfgloop.h"
+#include "rtl-iter.h"
 
 /* Target register optimizations - these are performed after reload.  */
 
@@ -113,9 +114,6 @@ static int issue_rate;
 
 static int basic_block_freq (const_basic_block);
 static int insn_sets_btr_p (const rtx_insn *, int, int *);
-static rtx *find_btr_use (rtx);
-static int btr_referenced_p (rtx, rtx *);
-static int find_btr_reference (rtx *, void *);
 static void find_btr_def_group (btr_def_group *, btr_def);
 static btr_def add_btr_def (fibheap_t, basic_block, int, rtx_insn *,
 			    unsigned int, int, btr_def_group *);
@@ -184,37 +182,27 @@ basic_block_freq (const_basic_block bb)
   return bb->frequency;
 }
 
-static rtx *btr_reference_found;
-
-/* A subroutine of btr_referenced_p, called through for_each_rtx.
-   PREG is a pointer to an rtx that is to be excluded from the
-   traversal.  If we find a reference to a target register anywhere
-   else, return 1, and put a pointer to it into btr_reference_found.  */
-static int
-find_btr_reference (rtx *px, void *preg)
+/* If X references (sets or reads) any branch target register, return one
+   such register.  If EXCLUDEP is set, disregard any references within
+   that location.  */
+static rtx *
+find_btr_use (rtx x, rtx *excludep = 0)
 {
-  rtx x;
-
-  if (px == preg)
-    return -1;
-  x = *px;
-  if (!REG_P (x))
-    return 0;
-  if (overlaps_hard_reg_set_p (all_btrs, GET_MODE (x), REGNO (x)))
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, &x, NONCONST)
     {
-      btr_reference_found = px;
-      return 1;
+      rtx *loc = *iter;
+      if (loc == excludep)
+	iter.skip_subrtxes ();
+      else
+	{
+	  const_rtx x = *loc;
+	  if (REG_P (x)
+	      && overlaps_hard_reg_set_p (all_btrs, GET_MODE (x), REGNO (x)))
+	    return loc;
+	}
     }
-  return -1;
-}
-
-/* Return nonzero if X references (sets or reads) any branch target register.
-   If EXCLUDEP is set, disregard any references within the rtx pointed to
-   by it.  If returning nonzero, also set btr_reference_found as above.  */
-static int
-btr_referenced_p (rtx x, rtx *excludep)
-{
-  return for_each_rtx (&x, find_btr_reference, excludep);
+  return 0;
 }
 
 /* Return true if insn is an instruction that sets a target register.
@@ -238,7 +226,7 @@ insn_sets_btr_p (const rtx_insn *insn, int check_const, int *regno)
       if (REG_P (dest)
 	  && TEST_HARD_REG_BIT (all_btrs, REGNO (dest)))
 	{
-	  gcc_assert (!btr_referenced_p (src, NULL));
+	  gcc_assert (!find_btr_use (src));
 
 	  if (!check_const || CONSTANT_P (src))
 	    {
@@ -249,13 +237,6 @@ insn_sets_btr_p (const rtx_insn *insn, int check_const, int *regno)
 	}
     }
   return 0;
-}
-
-/* Find and return a use of a target register within an instruction INSN.  */
-static rtx *
-find_btr_use (rtx insn)
-{
-  return btr_referenced_p (insn, NULL) ? btr_reference_found : NULL;
 }
 
 /* Find the group that the target register definition DEF belongs
@@ -348,7 +329,7 @@ new_btr_user (basic_block bb, int insn_luid, rtx_insn *insn)
       /* We want to ensure that USE is the only use of a target
 	 register in INSN, so that we know that to rewrite INSN to use
 	 a different target register, all we have to do is replace USE.  */
-      unambiguous_single_use = !btr_referenced_p (PATTERN (insn), usep);
+      unambiguous_single_use = !find_btr_use (PATTERN (insn), usep);
       if (!unambiguous_single_use)
 	usep = NULL;
     }
@@ -524,7 +505,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 		}
 	      else
 		{
-		  if (btr_referenced_p (PATTERN (insn), NULL))
+		  if (find_btr_use (PATTERN (insn)))
 		    {
 		      btr_user user = new_btr_user (bb, insn_luid, insn);
 
