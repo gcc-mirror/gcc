@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "gimple.h"
 #include "gimple-ssa.h"
+#include "rtl-iter.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -2087,15 +2088,13 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
     }
 }
 
-/* A for_each_rtx callback in which DATA is the bb_info.  Check to see
-   if LOC is a mem and if it is look at the address and kill any
-   appropriate stores that may be active.  */
+/* Check the address of MEM *LOC and kill any appropriate stores that may
+   be active.  */
 
-static int
-check_mem_read_rtx (rtx *loc, void *data)
+static void
+check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 {
   rtx mem = *loc, mem_addr;
-  bb_info_t bb_info;
   insn_info_t insn_info;
   HOST_WIDE_INT offset = 0;
   HOST_WIDE_INT width = 0;
@@ -2104,10 +2103,6 @@ check_mem_read_rtx (rtx *loc, void *data)
   int group_id;
   read_info_t read_info;
 
-  if (!mem || !MEM_P (mem))
-    return 0;
-
-  bb_info = (bb_info_t) data;
   insn_info = bb_info->last_insn;
 
   if ((MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
@@ -2117,20 +2112,20 @@ check_mem_read_rtx (rtx *loc, void *data)
 	fprintf (dump_file, " adding wild read, volatile or barrier.\n");
       add_wild_read (bb_info);
       insn_info->cannot_delete = true;
-      return 0;
+      return;
     }
 
   /* If it is reading readonly mem, then there can be no conflict with
      another write. */
   if (MEM_READONLY_P (mem))
-    return 0;
+    return;
 
   if (!canon_address (mem, &spill_alias_set, &group_id, &offset, &base))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " adding wild read, canon_address failure.\n");
       add_wild_read (bb_info);
-      return 0;
+      return;
     }
 
   if (GET_MODE (mem) == BLKmode)
@@ -2258,7 +2253,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 						 width)
 		      && replace_read (store_info, i_ptr, read_info,
 				       insn_info, loc, bb_info->regs_live))
-		    return 0;
+		    return;
 
 		  /* The bases are the same, just see if the offsets
 		     overlap.  */
@@ -2325,7 +2320,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 					 offset - store_info->begin, width)
 	      && replace_read (store_info, i_ptr,  read_info, insn_info, loc,
 			       bb_info->regs_live))
-	    return 0;
+	    return;
 
 	  if (!store_info->alias_set)
 	    remove = canon_true_dependence (store_info->mem,
@@ -2349,17 +2344,22 @@ check_mem_read_rtx (rtx *loc, void *data)
 	  i_ptr = i_ptr->next_local_store;
 	}
     }
-  return 0;
 }
 
-/* A for_each_rtx callback in which DATA points the INSN_INFO for
+/* A note_uses callback in which DATA points the INSN_INFO for
    as check_mem_read_rtx.  Nullify the pointer if i_m_r_m_r returns
    true for any part of *LOC.  */
 
 static void
 check_mem_read_use (rtx *loc, void *data)
 {
-  for_each_rtx (loc, check_mem_read_rtx, data);
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, NONCONST)
+    {
+      rtx *loc = *iter;
+      if (MEM_P (*loc))
+	check_mem_read_rtx (loc, (bb_info_t) data);
+    }
 }
 
 
