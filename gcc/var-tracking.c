@@ -118,6 +118,7 @@
 #include "recog.h"
 #include "tm_p.h"
 #include "alias.h"
+#include "rtl-iter.h"
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -5366,16 +5367,16 @@ replace_expr_with_values (rtx loc)
     return cselib_subst_to_values (loc, VOIDmode);
 }
 
-/* Return true if *X is a DEBUG_EXPR.  Usable as an argument to
-   for_each_rtx to tell whether there are any DEBUG_EXPRs within
-   RTX.  */
+/* Return true if X contains a DEBUG_EXPR.  */
 
-static int
-rtx_debug_expr_p (rtx *x, void *data ATTRIBUTE_UNUSED)
+static bool
+rtx_debug_expr_p (const_rtx x)
 {
-  rtx loc = *x;
-
-  return GET_CODE (loc) == DEBUG_EXPR;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (GET_CODE (*iter) == DEBUG_EXPR)
+      return true;
+  return false;
 }
 
 /* Determine what kind of micro operation to choose for a USE.  Return
@@ -5465,7 +5466,7 @@ use_type (rtx loc, struct count_use_info *cui, enum machine_mode *modep)
 		  DEBUG_EXPRs (only happens in the presence of debug
 		  insns).  */
 	       && (!MAY_HAVE_DEBUG_INSNS
-		   || !for_each_rtx (&XEXP (loc, 0), rtx_debug_expr_p, NULL)))
+		   || !rtx_debug_expr_p (XEXP (loc, 0))))
 	return MO_USE;
       else
 	return MO_CLOBBER;
