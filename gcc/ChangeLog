@@ -1,5 +1,11 @@
 2014-08-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* output.h (insn_current_reference_address): Strengthen param
+	from rtx to rtx_insn *.
+	* final.c (insn_current_reference_address): Likewise.
+
+2014-08-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (inside_basic_block_p): Strengthen param from
 	const_rtx to const rtx_insn *.
 	* cfgbuild.c (inside_basic_block_p): Likewise.
