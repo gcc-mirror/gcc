@@ -1,5 +1,14 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* bt-load.c: Include rtl-iter.h.
+	(btr_reference_found, find_btr_reference, btr_referenced_p): Delete.
+	(find_btr_use): Move further up file.  Use FOR_EACH_SUBRTX_PTR
+	to iterate over subrtxes.
+	(insn_sets_btr_p, new_btr_user, compute_defs_uses_and_gen): Use
+	find_btr_use rather than btr_referenced_p.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* alias.c: Include rtl-iter.h.
 	(refs_newer_value_cb): Delete.
 	(refs_newer_value_p): Use FOR_EACH_SUBRTX instead of for_each_rtx.
