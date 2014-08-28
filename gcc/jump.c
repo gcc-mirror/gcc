@@ -953,18 +953,17 @@ returnjump_p (rtx insn)
 
 /* Return true if INSN is a (possibly conditional) return insn.  */
 
-static int
-eh_returnjump_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  return *loc && GET_CODE (*loc) == EH_RETURN;
-}
-
 int
 eh_returnjump_p (rtx insn)
 {
-  if (!JUMP_P (insn))
-    return 0;
-  return for_each_rtx (&PATTERN (insn), eh_returnjump_p_1, NULL);
+  if (JUMP_P (insn))
+    {
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	if (GET_CODE (*iter) == EH_RETURN)
+	  return true;
+    }
+  return false;
 }
 
 /* Return true if INSN is a jump that only transfers control and
