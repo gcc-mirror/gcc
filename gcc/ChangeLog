@@ -1,5 +1,16 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* combine-stack-adj.c: Include rtl-iter.h.
+	(record_stack_refs_data): Delete.
+	(record_stack_refs): Turn from being a for_each_rtx callback
+	to being a function that examines each subrtx itself.
+	Take a pointer to the reflist.  Invert sense of return value
+	so that true means success and false means failure.  Don't
+	handle null rtxes.
+	(combine_stack_adjustments_for_block): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* combine.c (record_truncated_value): Turn from being a for_each_rtx
 	callback to a function that takes an rtx and returns a bool
 	(record_truncated_values): Use FOR_EACH_SUBRTX_VAR instead of
