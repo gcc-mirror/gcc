@@ -702,33 +702,28 @@ apply_debug_insn_changes (struct value_data *vd, unsigned int regno)
   apply_change_group ();
 }
 
-/* Called via for_each_rtx, for all used registers in a real
-   insn apply DEBUG_INSN changes that change registers to the
-   used register.  */
-
-static int
-cprop_find_used_regs_1 (rtx *loc, void *data)
-{
-  if (REG_P (*loc))
-    {
-      struct value_data *vd = (struct value_data *) data;
-      if (vd->e[REGNO (*loc)].debug_insn_changes)
-	{
-	  apply_debug_insn_changes (vd, REGNO (*loc));
-	  free_debug_insn_changes (vd, REGNO (*loc));
-	}
-    }
-  return 0;
-}
-
 /* Called via note_uses, for all used registers in a real insn
    apply DEBUG_INSN changes that change registers to the used
    registers.  */
 
 static void
-cprop_find_used_regs (rtx *loc, void *vd)
+cprop_find_used_regs (rtx *loc, void *data)
 {
-  for_each_rtx (loc, cprop_find_used_regs_1, vd);
+  struct value_data *const vd = (struct value_data *) data;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, *loc, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x))
+	{
+	  unsigned int regno = REGNO (x);
+	  if (vd->e[regno].debug_insn_changes)
+	    {
+	      apply_debug_insn_changes (vd, regno);
+	      free_debug_insn_changes (vd, regno);
+	    }
+	}
+    }
 }
 
 /* Perform the forward copy propagation on basic block BB.  */
