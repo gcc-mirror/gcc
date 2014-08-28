@@ -1,5 +1,15 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.h (get_pool_constant, rtx_referenced_p): Replace rtx parameters
+	with const_rtx parameters.
+	* varasm.c (get_pool_constant): Likewise.
+	* rtlanal.c (rtx_referenced_p_1): Delete.
+	(rtx_referenced_p): Use FOR_EACH_SUBRTX instead of for_each_rtx.
+	Assert that the rtx we're looking for is nonnull.  Allow searches
+	for constant pool SYMBOL_REFs.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* reload1.c: Include rtl-iter.h.
 	(note_reg_elim_costly): Turn from being a for_each_rtx callback
 	to being a function that examines each subrtx itself.

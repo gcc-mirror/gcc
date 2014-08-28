@@ -2557,7 +2557,7 @@ extern rtx force_const_mem (enum machine_mode, rtx);
 /* In varasm.c  */
 
 struct function;
-extern rtx get_pool_constant (rtx);
+extern rtx get_pool_constant (const_rtx);
 extern rtx get_pool_constant_mark (rtx, bool *);
 extern enum machine_mode get_pool_mode (const_rtx);
 extern rtx simplify_subtraction (rtx);
@@ -2800,7 +2800,7 @@ extern void copy_reg_eh_region_note_backward (rtx, rtx, rtx);
 extern int inequality_comparisons_p (const_rtx);
 extern rtx replace_rtx (rtx, rtx, rtx);
 extern int replace_label (rtx *, void *);
-extern int rtx_referenced_p (rtx, rtx);
+extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const_rtx, rtx *, rtx_jump_table_data **);
 extern int computed_jump_p (const_rtx);
 extern bool tls_referenced_p (rtx);
