@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "lower-subreg.h"
+#include "rtl-iter.h"
 
 #ifdef STACK_GROWS_DOWNWARD
 # undef STACK_GROWS_DOWNWARD
@@ -726,46 +727,42 @@ resolve_subreg_p (rtx x)
   return resolve_reg_p (SUBREG_REG (x));
 }
 
-/* This is called via for_each_rtx.  Look for SUBREGs which need to be
-   decomposed.  */
+/* Look for SUBREGs in *LOC which need to be decomposed.  */
 
-static int
-resolve_subreg_use (rtx *px, void *data)
+static bool
+resolve_subreg_use (rtx *loc, rtx insn)
 {
-  rtx insn = (rtx) data;
-  rtx x = *px;
-
-  if (x == NULL_RTX)
-    return 0;
-
-  if (resolve_subreg_p (x))
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, NONCONST)
     {
-      x = simplify_subreg_concatn (GET_MODE (x), SUBREG_REG (x),
-				   SUBREG_BYTE (x));
-
-      /* It is possible for a note to contain a reference which we can
-	 decompose.  In this case, return 1 to the caller to indicate
-	 that the note must be removed.  */
-      if (!x)
+      rtx *loc = *iter;
+      rtx x = *loc;
+      if (resolve_subreg_p (x))
 	{
-	  gcc_assert (!insn);
-	  return 1;
+	  x = simplify_subreg_concatn (GET_MODE (x), SUBREG_REG (x),
+				       SUBREG_BYTE (x));
+
+	  /* It is possible for a note to contain a reference which we can
+	     decompose.  In this case, return 1 to the caller to indicate
+	     that the note must be removed.  */
+	  if (!x)
+	    {
+	      gcc_assert (!insn);
+	      return true;
+	    }
+
+	  validate_change (insn, loc, x, 1);
+	  iter.skip_subrtxes ();
 	}
-
-      validate_change (insn, px, x, 1);
-      return -1;
+      else if (resolve_reg_p (x))
+	/* Return 1 to the caller to indicate that we found a direct
+	   reference to a register which is being decomposed.  This can
+	   happen inside notes, multiword shift or zero-extend
+	   instructions.  */
+	return true;
     }
 
-  if (resolve_reg_p (x))
-    {
-      /* Return 1 to the caller to indicate that we found a direct
-	 reference to a register which is being decomposed.  This can
-	 happen inside notes, multiword shift or zero-extend
-	 instructions.  */
-      return 1;
-    }
-
-  return 0;
+  return false;
 }
 
 /* This is called via for_each_rtx.  Look for SUBREGs which can be
@@ -808,7 +805,7 @@ resolve_reg_notes (rtx_insn *insn)
   if (note)
     {
       int old_count = num_validated_changes ();
-      if (for_each_rtx (&XEXP (note, 0), resolve_subreg_use, NULL))
+      if (resolve_subreg_use (&XEXP (note, 0), NULL_RTX))
 	remove_note (insn, note);
       else
 	if (old_count != num_validated_changes ())
@@ -952,9 +949,9 @@ resolve_simple_move (rtx set, rtx_insn *insn)
       int acg;
 
       if (MEM_P (src))
-	for_each_rtx (&XEXP (src, 0), resolve_subreg_use, NULL_RTX);
+	resolve_subreg_use (&XEXP (src, 0), NULL_RTX);
       if (MEM_P (dest))
-	for_each_rtx (&XEXP (dest, 0), resolve_subreg_use, NULL_RTX);
+	resolve_subreg_use (&XEXP (dest, 0), NULL_RTX);
       acg = apply_change_group ();
       gcc_assert (acg);
     }
@@ -1617,9 +1614,7 @@ decompose_multiword_subregs (bool decompose_copies)
 		    }
 
 		  for (i = recog_data.n_operands - 1; i >= 0; --i)
-		    for_each_rtx (recog_data.operand_loc[i],
-				  resolve_subreg_use,
-				  insn);
+		    resolve_subreg_use (recog_data.operand_loc[i], insn);
 
 		  resolve_reg_notes (insn);
 

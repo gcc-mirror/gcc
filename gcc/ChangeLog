@@ -1,5 +1,14 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lower-subreg.c: Include rtl-iter.h.
+	(resolve_subreg_use): Turn from being a for_each_rtx callback
+	to being a function that examines each subrtx itself.  Remove
+	handling of null rtxes.
+	(resolve_reg_notes, resolve_simple_move): Update accordingly.
+	(decompose_multiword_subregs): Likewise.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* loop-iv.c (altered_reg_used): Turn from being a for_each_rtx callback
 	to being a function that examines each subrtx itself.
 	(simplify_using_condition, simplify_using_initial_values): Update
