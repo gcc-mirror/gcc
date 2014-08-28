@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* varasm.c (mark_constant): Replace this for_each_rtx callback with...
+	(mark_constants_in_pattern): ...this new function to iterate over
+	all the subrtxes.
+	(mark_constants): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* varasm.c: Include rtl-iter.h.
 	(const_rtx_hash_1): Take a const_rtx rather than an rtx *.
 	Remove the pointer to the cumulative hashval_t and just return
