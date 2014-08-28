@@ -1,3 +1,10 @@
+2014-08-28  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (iv_ca_add_use): Delete parameter
+	important_candidates.  Consider all important candidates if
+	IVS doesn't give any result.  Remove check on ivs->upto.
+	(try_add_cand_for): Call iv_ca_add_use only once.
+
 2014-08-28  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
