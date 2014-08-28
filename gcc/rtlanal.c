@@ -3726,10 +3726,11 @@ parms_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
    to the outer function is passed down as a parameter).
    Do not skip BOUNDARY.  */
 rtx_insn *
-find_first_parameter_load (rtx call_insn, rtx boundary)
+find_first_parameter_load (rtx_insn *call_insn, rtx_insn *boundary)
 {
   struct parms_set_data parm;
-  rtx p, before, first_set;
+  rtx p;
+  rtx_insn *before, *first_set;
 
   /* Since different machines initialize their parameter registers
      in different orders, assume nothing.  Collect the set of all
@@ -3787,7 +3788,7 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
 	    break;
 	}
     }
-  return safe_as_a <rtx_insn *> (first_set);
+  return first_set;
 }
 
 /* Return true if we should avoid inserting code between INSN and preceding
