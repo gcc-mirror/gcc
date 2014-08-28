@@ -1,5 +1,12 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* var-tracking.c (add_uses): Take an rtx rather than an rtx *.
+	Give real type of data parameter.  Remove return value.
+	(add_uses_1): Use FOR_EACH_SUBRTX_VAR rather than for_each_rtx
+	to iterate over subrtxes.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* var-tracking.c (use_narrower_mode_test): Turn from being a
 	for_each_rtx callback to being a function that examines each
 	subrtx itself.

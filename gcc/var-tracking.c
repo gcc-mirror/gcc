@@ -665,7 +665,6 @@ static void dataflow_set_destroy (dataflow_set *);
 static bool contains_symbol_ref (rtx);
 static bool track_expr_p (tree, bool);
 static bool same_variable_part_p (rtx, tree, HOST_WIDE_INT);
-static int add_uses (rtx *, void *);
 static void add_uses_1 (rtx *, void *);
 static void add_stores (rtx, const_rtx, void *);
 static bool compute_bb_dataflow (basic_block);
@@ -5552,14 +5551,12 @@ non_suitable_const (const_rtx x)
 }
 
 /* Add uses (register and memory references) LOC which will be tracked
-   to VTI (bb)->mos.  INSN is instruction which the LOC is part of.  */
+   to VTI (bb)->mos.  */
 
-static int
-add_uses (rtx *ploc, void *data)
+static void
+add_uses (rtx loc, struct count_use_info *cui)
 {
-  rtx loc = *ploc;
   enum machine_mode mode = VOIDmode;
-  struct count_use_info *cui = (struct count_use_info *)data;
   enum micro_operation_type type = use_type (loc, cui, &mode);
 
   if (type != MO_CLOBBER)
@@ -5705,8 +5702,6 @@ add_uses (rtx *ploc, void *data)
 	log_op_type (mo.u.loc, cui->bb, cui->insn, mo.type, dump_file);
       VTI (bb)->mos.safe_push (mo);
     }
-
-  return 0;
 }
 
 /* Helper function for finding all uses of REG/MEM in X in insn INSN.  */
@@ -5714,7 +5709,9 @@ add_uses (rtx *ploc, void *data)
 static void
 add_uses_1 (rtx *x, void *cui)
 {
-  for_each_rtx (x, add_uses, cui);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, *x, NONCONST)
+    add_uses (*iter, (struct count_use_info *) cui);
 }
 
 /* This is the value used during expansion of locations.  We want it
