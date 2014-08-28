@@ -2807,12 +2807,11 @@ extern int for_each_rtx_in_insn (rtx_insn **, rtx_function, void *);
    within MEM that sets DEST to SRC + SRCOFF, or SRC if SRCOFF is
    NULL.  The callback is passed the same opaque ARG passed to
    for_each_inc_dec.  Return zero to continue looking for other
-   autoinc operations, -1 to skip OP's operands, and any other value
-   to interrupt the traversal and return that value to the caller of
-   for_each_inc_dec.  */
+   autoinc operations or any other value to interrupt the traversal and
+   return that value to the caller of for_each_inc_dec.  */
 typedef int (*for_each_inc_dec_fn) (rtx mem, rtx op, rtx dest, rtx src,
 				    rtx srcoff, void *arg);
-extern int for_each_inc_dec (rtx_insn **, for_each_inc_dec_fn, void *arg);
+extern int for_each_inc_dec (rtx, for_each_inc_dec_fn, void *arg);
 
 typedef int (*rtx_equal_p_callback_function) (const_rtx *, const_rtx *,
                                               rtx *, rtx *);

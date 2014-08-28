@@ -894,7 +894,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
 
   emit_insn_before (new_insn, insn);
 
-  return -1;
+  return 0;
 }
 
 /* Before we delete INSN_INFO->INSN, make sure that the auto inc/dec, if it
@@ -907,7 +907,8 @@ check_for_inc_dec_1 (insn_info_t insn_info)
   rtx_insn *insn = insn_info->insn;
   rtx note = find_reg_note (insn, REG_INC, NULL_RTX);
   if (note)
-    return for_each_inc_dec (&insn, emit_inc_dec_insn_before, insn_info) == 0;
+    return for_each_inc_dec (PATTERN (insn), emit_inc_dec_insn_before,
+			     insn_info) == 0;
   return true;
 }
 
@@ -926,7 +927,8 @@ check_for_inc_dec (rtx_insn *insn)
   insn_info.fixed_regs_live = NULL;
   note = find_reg_note (insn, REG_INC, NULL_RTX);
   if (note)
-    return for_each_inc_dec (&insn, emit_inc_dec_insn_before, &insn_info) == 0;
+    return for_each_inc_dec (PATTERN (insn), emit_inc_dec_insn_before,
+			     &insn_info) == 0;
   return true;
 }
 
