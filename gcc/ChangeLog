@@ -1,5 +1,13 @@
 2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* loop-iv.c: Include rtl-iter.h.
+	(find_single_def_src): New function.
+	(replace_single_def_regs): Turn from being a for_each_rtx callback
+	to being a function that examines each subrtx itself.
+	(replace_in_expr, simplify_using_initial_values): Update accordingly.
+
+2014-08-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* jump.c (eh_returnjump_p_1): Delete.
 	(eh_returnjump_p): Use FOR_EACH_SUBRTX rather than for_each_rtx.
 	Remove handling of null rtxes.
