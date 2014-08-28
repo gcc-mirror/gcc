@@ -1122,6 +1122,19 @@ set_of (const_rtx pat, const_rtx insn)
   return data.found;
 }
 
+/* Add all hard register in X to *PSET.  */
+void
+find_all_hard_regs (const_rtx x, HARD_REG_SET *pset)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
+	add_to_hard_reg_set (pset, GET_MODE (x), REGNO (x));
+    }
+}
+
 /* This function, called through note_stores, collects sets and
    clobbers of hard registers in a HARD_REG_SET, which is pointed to
    by DATA.  */
@@ -1155,27 +1168,11 @@ find_all_hard_reg_sets (const_rtx insn, HARD_REG_SET *pset, bool implicit)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);
 }
 
-/* A for_each_rtx subroutine of record_hard_reg_uses.  */
-static int
-record_hard_reg_uses_1 (rtx *px, void *data)
-{
-  rtx x = *px;
-  HARD_REG_SET *pused = (HARD_REG_SET *)data;
-
-  if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
-    {
-      int nregs = hard_regno_nregs[REGNO (x)][GET_MODE (x)];
-      while (nregs-- > 0)
-	SET_HARD_REG_BIT (*pused, REGNO (x) + nregs);
-    }
-  return 0;
-}
-
 /* Like record_hard_reg_sets, but called through note_uses.  */
 void
 record_hard_reg_uses (rtx *px, void *data)
 {
-  for_each_rtx (px, record_hard_reg_uses_1, data);
+  find_all_hard_regs (*px, (HARD_REG_SET *) data);
 }
 
 /* Given an INSN, return a SET expression if this insn has only a single SET.
