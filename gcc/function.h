@@ -264,9 +264,9 @@ struct GTY(()) rtl_data {
      Used for detecting stack clobbers.  */
   tree stack_protect_guard;
 
-  /* List (chain of EXPR_LIST) of labels heading the current handlers for
+  /* List (chain of INSN_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
-  rtx_expr_list *x_nonlocal_goto_handler_labels;
+  rtx_insn_list *x_nonlocal_goto_handler_labels;
 
   /* Label that will go on function epilogue.
      Jumping to this label serves as a "return" instruction

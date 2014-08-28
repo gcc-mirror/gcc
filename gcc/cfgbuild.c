@@ -337,10 +337,10 @@ make_edges (basic_block min, basic_block max, int update_p)
 		     taken, then only calls to those functions or to other
 		     nested functions that use them could possibly do
 		     nonlocal gotos.  */
-		  for (rtx_expr_list *x = nonlocal_goto_handler_labels;
+		  for (rtx_insn_list *x = nonlocal_goto_handler_labels;
 		       x;
 		       x = x->next ())
-		    make_label_edge (edge_cache, bb, x->element (),
+		    make_label_edge (edge_cache, bb, x->insn (),
 				     EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
 		}
 

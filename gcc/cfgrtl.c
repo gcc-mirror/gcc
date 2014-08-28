@@ -159,7 +159,7 @@ delete_insn (rtx uncast_insn)
 	    }
 	}
 
-      remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
+      remove_node_from_insn_list (insn, &nonlocal_goto_handler_labels);
     }
 
   if (really_delete)
@@ -4216,7 +4216,7 @@ cfg_layout_duplicate_bb (basic_block bb)
 void
 cfg_layout_initialize (unsigned int flags)
 {
-  rtx_expr_list *x;
+  rtx_insn_list *x;
   basic_block bb;
 
   /* Once bb partitioning is complete, cfg layout mode should not be
@@ -4237,7 +4237,7 @@ cfg_layout_initialize (unsigned int flags)
   /* Make sure that the targets of non local gotos are marked.  */
   for (x = nonlocal_goto_handler_labels; x; x = x->next ())
     {
-      bb = BLOCK_FOR_INSN (x->element ());
+      bb = BLOCK_FOR_INSN (x->insn ());
       bb->flags |= BB_NON_LOCAL_GOTO_TARGET;
     }
 

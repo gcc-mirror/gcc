@@ -6185,7 +6185,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	  /* This is copied from the handling of non-local gotos.  */
 	  expand_builtin_setjmp_setup (buf_addr, label_r);
 	  nonlocal_goto_handler_labels
-	    = gen_rtx_EXPR_LIST (VOIDmode, label_r,
+	    = gen_rtx_INSN_LIST (VOIDmode, label_r,
 				 nonlocal_goto_handler_labels);
 	  /* ??? Do not let expand_label treat us as such since we would
 	     not want to be both on the list of non-local labels and on

@@ -2338,10 +2338,10 @@ create_trace_edges (rtx insn)
 
       /* Process non-local goto edges.  */
       if (can_nonlocal_goto (insn))
-	for (rtx_expr_list *lab = nonlocal_goto_handler_labels;
+	for (rtx_insn_list *lab = nonlocal_goto_handler_labels;
 	     lab;
 	     lab = lab->next ())
-	  maybe_record_trace_start_abnormal (lab->element (), insn);
+	  maybe_record_trace_start_abnormal (lab->insn (), insn);
     }
   else if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
     {

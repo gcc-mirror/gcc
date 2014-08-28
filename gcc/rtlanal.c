@@ -2243,6 +2243,35 @@ remove_node_from_expr_list (const_rtx node, rtx_expr_list **listp)
       temp = temp->next ();
     }
 }
+
+/* Search LISTP (an INSN_LIST) for an entry whose first operand is NODE and
+   remove that entry from the list if it is found.
+
+   A simple equality test is used to determine if NODE matches.  */
+
+void
+remove_node_from_insn_list (const rtx_insn *node, rtx_insn_list **listp)
+{
+  rtx_insn_list *temp = *listp;
+  rtx prev = NULL;
+
+  while (temp)
+    {
+      if (node == temp->insn ())
+	{
+	  /* Splice the node out of the list.  */
+	  if (prev)
+	    XEXP (prev, 1) = temp->next ();
+	  else
+	    *listp = temp->next ();
+
+	  return;
+	}
+
+      prev = temp;
+      temp = temp->next ();
+    }
+}
 
 /* Nonzero if X contains any volatile instructions.  These are instructions
    which may cause unpredictable machine state instructions, and thus no
